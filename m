@@ -1,69 +1,60 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH 00/14] cpufreq: intel_pstate: Fixes, cleanups and optimizations
-Date: Sun, 12 Mar 2017 23:29:24 -0700
-Message-ID: <001301d29bc3$29c351c0$7d49f540$@net>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v4 2/5] PM / Domains: Do not check if simple providers
+ have phandle cells
+Date: Mon, 13 Mar 2017 09:20:43 +0100
+Message-ID: <CAPDyKFoEeErp7heeKK1UgcH=XU-LYyJUsRqH60cJzb5YyTY6gw@mail.gmail.com>
+References: <1488882154-21485-1-git-send-email-d-gerlach@ti.com> <1488882154-21485-3-git-send-email-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta16.telus.net ([209.171.16.89]:54199 "EHLO cmta16.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750801AbdCMG3a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Mar 2017 02:29:30 -0400
-References: n7NGc1Po4sVy3n7NIcDiMl
-In-Reply-To: n7NGc1Po4sVy3n7NIcDiMl
-Content-Language: en-ca
+Received: from mail-ua0-f172.google.com ([209.85.217.172]:34937 "EHLO
+        mail-ua0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750922AbdCMIU4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Mar 2017 04:20:56 -0400
+Received: by mail-ua0-f172.google.com with SMTP id q7so131980230uaf.2
+        for <linux-pm@vger.kernel.org>; Mon, 13 Mar 2017 01:20:44 -0700 (PDT)
+In-Reply-To: <1488882154-21485-3-git-send-email-d-gerlach@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>
-Cc: 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Rob Herring <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Tero Kristo <t-kristo@ti.com>, Sudeep Holla <sudeep.holla@arm.com>
 
-On 2017.03.12 10:12 Rafael J. Wysocki wrote:
-
-> This patch series fixes a couple of bugs in intel_pstate, cleans up the code in
-> it somewhat and makes some changes targeted at overhead reductions.
+On 7 March 2017 at 11:22, Dave Gerlach <d-gerlach@ti.com> wrote:
+> There is no reason that a platform genpd driver registered using
+> of_genpd_add_provider_simple needs to be constrained to having no cells
+> in the "power-domains" phandle. Currently the genpd framework will fail
+> if any arguments are passed with for a simple provider but the framework
+> does not actually care, so remove the check for phandle argument count.
 >
-
-If clean up and overhead reductions are being considered, is there any interest
-in changing the PID controller to a P controller and eliminating the integral
-and derivative code entirely?
-
-Why? The application is not really best suited to a PID
-(Proportional Integral Derivative) controller. 
-
-Integral terms are normally used to null out accumulated errors. For example
-position errors as a function of integrated velocity, where the overall
-position is supposed to be time * nominal velocity, but the actual velocity
-at any sample point is not perfect.
-
-In signal processing, derivatives are difficult at the best of times, let alone
-with the drastic sample time variations (anywhere from 10 milliseconds to 5 seconds)
-experienced here. Myself, I can not think of a need for a derivative term anyhow.
-
-Readers might note the old non-zero integral gain for the old methods used
-with Atom processors (being eliminated in this patch set, see patch 2 of 14).
-However that was due to the low proportional gain used and was needed to get
-target pstates to tick up or down as it settled to some steady state value,
-as otherwise and with a setpoint of 97 (which is what was being used at the
-time), it would not. I'm saying the integral term was being used in way that
-was not intended to overcome another issue. In that scenario, and at the very
-least, the error term should have been cleared upon integration to the point
-where the pstate ticked up or down as a result.
-
-To be clear, I'm not talking about changing the proportional code at all,
-but only about eliminating the integral and derivative code that has never
-been used.
-
-If there is interest, I'll prepare and submit a patch.
-
-> Patch [1/14] is a regression fix, patch [2/14] can be regarded as a fix too,
+> This will allow greater flexibility for genpd providers to use their own
+> arguments that are passed in the phandle and interpret them however they
+> see fit.
 >
-> Patches [3-9/14] are cleanups mostly getting rid of unnecessary stuff.
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+> ---
+> v3->v4:
+>  Drop ti,sci-id device property and instead describe using phandle cell
+>  for id.
 >
-> Patches [10-11/14] make changes to reduce the overhead of utilization update
-> callbacks used in the active mode.
+>  drivers/base/power/domain.c | 2 --
+>  1 file changed, 2 deletions(-)
 >
-> Patches [12-14/14] make more cleanups on top of that.
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index e697dec9d25b..8e0550c27394 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1622,8 +1622,6 @@ static struct generic_pm_domain *genpd_xlate_simple(
+>                                         struct of_phandle_args *genpdspec,
+>                                         void *data)
+>  {
+> -       if (genpdspec->args_count != 0)
+> -               return ERR_PTR(-EINVAL);
+>         return data;
+>  }
 >
-> Refer to the changelogs for details.
+> --
+> 2.11.0
+>
