@@ -1,214 +1,239 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v5 1/4] clk: Add support for runtime PM
-Date: Mon, 13 Mar 2017 13:20:14 +0100
-Message-ID: <CAPDyKFpe1ujO+ZMJ=pYG+NupxSAgY6WjgDkybkUhD1g6YpEfkg@mail.gmail.com>
-References: <CGME20170125115328eucas1p1d97fac29286805b58039f8aec2b9bfe6@eucas1p1.samsung.com>
- <1485345194-3196-1-git-send-email-m.szyprowski@samsung.com> <1485345194-3196-2-git-send-email-m.szyprowski@samsung.com>
+Subject: Re: [PATCH v5 3/4] clk: samsung: exynos5433: Add runtime PM support
+Date: Mon, 13 Mar 2017 14:31:32 +0100
+Message-ID: <CAPDyKFotSo5qcJPt9w99Rf3i_kvQnBZE36iBbfDfuBkiKhsoTw@mail.gmail.com>
+References: <CGME20170125115329eucas1p1f42bbb54d5973b6192e964dc8b3a8081@eucas1p1.samsung.com>
+ <1485345194-3196-1-git-send-email-m.szyprowski@samsung.com> <1485345194-3196-4-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f44.google.com ([209.85.213.44]:33563 "EHLO
-        mail-vk0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751068AbdCMMUQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Mar 2017 08:20:16 -0400
-Received: by mail-vk0-f44.google.com with SMTP id d188so33879373vka.0
-        for <linux-pm@vger.kernel.org>; Mon, 13 Mar 2017 05:20:15 -0700 (PDT)
-In-Reply-To: <1485345194-3196-2-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1485345194-3196-4-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-clk-owner@vger.kernel.org
 To: Marek Szyprowski <m.szyprowski@samsung.com>
 Cc: linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
 On 25 January 2017 at 12:53, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
-> Registers for some clocks might be located in the SOC area, which are under the
-> power domain. To enable access to those registers respective domain has to be
-> turned on. Additionally, registers for such clocks will usually loose its
-> contents when power domain is turned off, so additional saving and restoring of
-> them might be needed in the clock controller driver.
+> Add runtime pm support for all clock controller units (CMU), which belongs
+> to power domains and require special handling during on/off operations.
+> Typically special values has to be written to MUX registers to change
+> internal clocks parents to OSC clock before turning power off. During such
+> operation all clocks, which enters CMU has to be enabled to let MUX to
+> stabilize. Also for each CMU there is one special parent clock, which has
+> to be enabled all the time when any access to CMU registers is done.
 >
-> This patch adds basic infrastructure in the clocks core to allow implementing
-> driver for such clocks under power domains. Clock provider can supply a
-> struct device pointer, which is the used by clock core for tracking and managing
-> clock's controller runtime pm state. Each clk_prepare() operation
-> will first call pm_runtime_get_sync() on the supplied device, while
-> clk_unprepare() will do pm_runtime_put() at the end.
->
-> Additional calls to pm_runtime_get/put functions are required to ensure that any
-> register access (like calculating/changing clock rates and unpreparing/disabling
-> unused clocks on boot) will be done with clock controller in runtime resumend
-> state.
->
-> When one wants to register clock controller, which make use of this feature, he
-> has to:
-> 1. Provide a struct device to the core when registering the provider.
-> 2. Ensure to enable runtime PM for that device before registering clocks.
-> 3. Make sure that the runtime PM status of the controller device reflects
->    the HW state.
+> This patch solves most of the mysterious external abort and freeze issues
+> caused by a lack of proper parent CMU clock enabled or incorrect turn off
+> procedure.
 >
 > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 > ---
->  drivers/clk/clk.c | 132 +++++++++++++++++++++++++++++++++++++++++++++++-------
->  1 file changed, 117 insertions(+), 15 deletions(-)
+
+[...]
+
+> --- a/drivers/clk/samsung/clk-exynos5433.c
+> +++ b/drivers/clk/samsung/clk-exynos5433.c
+> @@ -9,9 +9,14 @@
+>   * Common Clock Framework support for Exynos5443 SoC.
+>   */
 >
-> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> index 0fb39fe217d1..5b9d52c8185b 100644
-> --- a/drivers/clk/clk.c
-> +++ b/drivers/clk/clk.c
-> @@ -21,6 +21,7 @@
+> +#include <linux/clk.h>
+>  #include <linux/clk-provider.h>
 >  #include <linux/of.h>
->  #include <linux/device.h>
->  #include <linux/init.h>
+>  #include <linux/of_address.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
 > +#include <linux/pm_runtime.h>
->  #include <linux/sched.h>
->  #include <linux/clkdev.h>
+> +#include <linux/slab.h>
 >
-> @@ -46,6 +47,7 @@ struct clk_core {
->         const struct clk_ops    *ops;
->         struct clk_hw           *hw;
->         struct module           *owner;
-> +       struct device           *dev;
->         struct clk_core         *parent;
->         const char              **parent_names;
->         struct clk_core         **parents;
-> @@ -87,6 +89,26 @@ struct clk {
->         struct hlist_node clks_node;
->  };
+>  #include <dt-bindings/clock/exynos5433.h>
 >
-> +/***           runtime pm          ***/
-> +static int clk_pm_runtime_get(struct clk_core *core)
+
+[...]
+
+> +struct exynos5433_cmu_data {
+> +       struct samsung_clk_provider ctx;
+> +
+> +       struct samsung_clk_reg_dump *clk_save;
+> +       unsigned int nr_clk_save;
+> +       const struct samsung_clk_reg_dump *clk_suspend;
+> +       unsigned int nr_clk_suspend;
+> +
+> +       struct clk *clk;
+> +       struct clk **pclks;
+> +       int nr_pclks;
+> +};
+> +
+> +static int exynos5433_cmu_suspend(struct device *dev)
 > +{
-> +       int ret = 0;
+> +       struct exynos5433_cmu_data *data = dev_get_drvdata(dev);
+> +       int i;
 > +
-> +       if (!core->dev)
-> +               return 0;
+> +       samsung_clk_save(data->ctx.reg_base, data->clk_save,
+> +                        data->nr_clk_save);
 > +
-> +       ret = pm_runtime_get_sync(core->dev);
-> +       return ret < 0 ? ret : 0;
+> +       for (i = 0; i < data->nr_pclks; i++)
+> +               clk_enable(data->pclks[i]);
+> +
+> +       samsung_clk_restore(data->ctx.reg_base, data->clk_suspend,
+> +                           data->nr_clk_suspend);
+> +
+> +       for (i = 0; i < data->nr_pclks; i++)
+> +               clk_disable(data->pclks[i]);
+> +
+> +       clk_disable(data->clk);
+> +
+> +       return 0;
 > +}
 > +
-> +static void clk_pm_runtime_put(struct clk_core *core)
+> +static int exynos5433_cmu_resume(struct device *dev)
 > +{
-> +       if (!core->dev)
-> +               return;
+> +       struct exynos5433_cmu_data *data = dev_get_drvdata(dev);
+> +       int i;
 > +
-> +       pm_runtime_put(core->dev);
-
-I would rather change this to a pm_runtime_put_sync().
-
-The reason is that users of clocks (drivers being clock consumers),
-which has runtime PM support deployed, often performs clock
-gating/ungating from their runtime PM callbacks.
-
-In other words, using async or sync runtime PM APIs, is better decided
-by the user of the clock itself.
-
-
+> +       clk_enable(data->clk);
+> +
+> +       for (i = 0; i < data->nr_pclks; i++)
+> +               clk_enable(data->pclks[i]);
+> +
+> +       samsung_clk_restore(data->ctx.reg_base, data->clk_save,
+> +                           data->nr_clk_save);
+> +
+> +       for (i = 0; i < data->nr_pclks; i++)
+> +               clk_disable(data->pclks[i]);
+> +
+> +       return 0;
 > +}
 > +
->  /***           locking             ***/
->  static void clk_prepare_lock(void)
->  {
-> @@ -150,6 +172,8 @@ static void clk_enable_unlock(unsigned long flags)
->
->  static bool clk_core_is_prepared(struct clk_core *core)
->  {
-> +       bool status;
+> +static int __init exynos5433_cmu_probe(struct platform_device *pdev)
+> +{
+> +       const struct samsung_cmu_info *info;
+> +       struct exynos5433_cmu_data *data;
+> +       struct samsung_clk_provider *ctx;
+> +       struct device *dev = &pdev->dev;
+> +       struct resource *res;
+> +       void __iomem *reg_base;
+> +       struct clk **clk_table;
+> +       int i;
 > +
->         /*
->          * .is_prepared is optional for clocks that can prepare
->          * fall back to software usage counter if it is missing
-> @@ -157,11 +181,20 @@ static bool clk_core_is_prepared(struct clk_core *core)
->         if (!core->ops->is_prepared)
->                 return core->prepare_count;
->
-> -       return core->ops->is_prepared(core->hw);
-> +       if (clk_pm_runtime_get(core) == 0) {
-> +               status = core->ops->is_prepared(core->hw);
-> +               clk_pm_runtime_put(core);
-> +       } else {
-> +               status = false;
-
-To simplify this, you could assign status to false when defining it.
-Perhaps also rename it from "status" to "ret", as that name is more
-commonly used, I think.
-
+> +       info = of_device_get_match_data(dev);
+> +
+> +       data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+> +       if (!data)
+> +               return -ENOMEM;
+> +       ctx = &data->ctx;
+> +
+> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +       reg_base = devm_ioremap_resource(dev, res);
+> +       if (!reg_base) {
+> +               dev_err(dev, "failed to map registers\n");
+> +               return -ENOMEM;
 > +       }
 > +
-> +       return status;
->  }
->
->  static bool clk_core_is_enabled(struct clk_core *core)
->  {
-> +       bool status;
-
-Maybe name the variable ret instead, to be more consistent.
-
+> +       clk_table = devm_kcalloc(dev, info->nr_clk_ids, sizeof(struct clk *),
+> +                                GFP_KERNEL);
+> +       if (!clk_table)
+> +               return -ENOMEM;
 > +
->         /*
->          * .is_enabled is only mandatory for clocks that gate
->          * fall back to software usage counter if .is_enabled is missing
-> @@ -169,7 +202,30 @@ static bool clk_core_is_enabled(struct clk_core *core)
->         if (!core->ops->is_enabled)
->                 return core->enable_count;
->
-> -       return core->ops->is_enabled(core->hw);
-> +       /*
-> +        * Check if clock controller's device is runtime active before
-> +        * calling .is_enabled callback. If not, assume that clock is
-> +        * disabled, because we might be called from atomic context, from
-> +        * which pm_runtime_get() is not allowed.
-> +        * This function is called mainly from clk_disable_unused_subtree,
-> +        * which ensures proper runtime pm activation of controller before
-> +        * taking enable spinlock, but the below check is needed if one tries
-> +        * to call it from other places.
-> +        */
-> +       if (core->dev) {
-> +               pm_runtime_get_noresume(core->dev);
-> +               if (!pm_runtime_active(core->dev)) {
-> +                       status = false;
-> +                       goto done;
+> +       for (i = 0; i < info->nr_clk_ids; ++i)
+> +               clk_table[i] = ERR_PTR(-ENOENT);
+> +
+> +       ctx->clk_data.clks = clk_table;
+> +       ctx->clk_data.clk_num = info->nr_clk_ids;
+> +       ctx->reg_base = reg_base;
+> +       ctx->dev = dev;
+> +       spin_lock_init(&ctx->lock);
+> +
+> +       data->clk_save = samsung_clk_alloc_reg_dump(info->clk_regs,
+> +                                                   info->nr_clk_regs);
+> +       data->nr_clk_save = info->nr_clk_regs;
+> +       data->clk_suspend = info->suspend_regs;
+> +       data->nr_clk_suspend = info->nr_suspend_regs;
+> +       data->nr_pclks = of_count_phandle_with_args(dev->of_node, "clocks",
+> +                                                   "#clock-cells");
+> +       if (data->nr_pclks > 0) {
+> +               data->pclks = devm_kcalloc(dev, sizeof(struct clk *),
+> +                                          data->nr_pclks, GFP_KERNEL);
+> +
+> +               for (i = 0; i < data->nr_pclks; i++) {
+> +                       struct clk *clk = of_clk_get(dev->of_node, i);
+> +
+> +                       if (IS_ERR(clk))
+> +                               return PTR_ERR(clk);
+> +                       data->pclks[i] = clk;
 > +               }
 > +       }
 > +
-> +       status = core->ops->is_enabled(core->hw);
-> +done:
-> +       if (core->dev)
-> +               pm_runtime_put(core->dev);
+> +       /*
+> +        * Prepare all parent clocks here to avoid potential deadlock caused
+> +        * by global clock "prepare lock" grabbed by runtime pm callbacks
+> +        * from pm workers.
+> +        */
 
-Let's use clk_pm_runtime_put() here instead.
+I don't understand why this potentially could cause a deadlock. Can
+you please elaborate.
 
+To me, I think you should be fine doing clk_prepare_enable() and
+clk_disable_unprepare() from exynos5433_cmu_suspend|resume(), but I
+may be missing something.
+
+> +       for (i = 0; i < data->nr_pclks; i++)
+> +               clk_prepare(data->pclks[i]);
 > +
-> +       return status;
->  }
+> +       if (info->clk_name)
+> +               data->clk = clk_get(dev, info->clk_name);
+> +       clk_prepare_enable(data->clk);
+> +
+> +       platform_set_drvdata(pdev, data);
+> +
+> +       /*
+> +        * Enable runtime pm here, so clock core with use runtime pm for all
+> +        * registered clocks. Additionally call pm_runtime_get_sync to ensure
+> +        * that clock core will not runtime suspend our clock controller in
+> +        * the middle of clock registration (clock core might call runtime pm
+> +        * on newly registered clocks, for example to recalculate clock rate).
+> +        */
+
+Instead of the rather confusing comment about the call to
+pm_runtime_get_sync(), let's instead state that we increase the
+runtime PM usage count during the clock registration, to avoid the
+clock core from runtime suspending the device.
+
+In other words, before calling pm_runtime_set_active(), add a call
+pm_runtime_get_noresume() and then remove the latter call to
+pm_runtime_get_sync().
+
+> +       pm_runtime_set_active(dev);
+> +       pm_runtime_enable(dev);
+> +       pm_runtime_get_sync(dev);
+> +
+> +       if (info->pll_clks)
+> +               samsung_clk_register_pll(ctx, info->pll_clks, info->nr_pll_clks,
+> +                                        reg_base);
+> +       if (info->mux_clks)
+> +               samsung_clk_register_mux(ctx, info->mux_clks,
+> +                                        info->nr_mux_clks);
+> +       if (info->div_clks)
+> +               samsung_clk_register_div(ctx, info->div_clks,
+> +                                        info->nr_div_clks);
+> +       if (info->gate_clks)
+> +               samsung_clk_register_gate(ctx, info->gate_clks,
+> +                                         info->nr_gate_clks);
+> +       if (info->fixed_clks)
+> +               samsung_clk_register_fixed_rate(ctx, info->fixed_clks,
+> +                                               info->nr_fixed_clks);
+> +       if (info->fixed_factor_clks)
+> +               samsung_clk_register_fixed_factor(ctx, info->fixed_factor_clks,
+> +                                                 info->nr_fixed_factor_clks);
+> +
+> +       samsung_clk_of_add_provider(dev->of_node, ctx);
+> +       pm_runtime_put(dev);
+> +
+> +       return 0;
+> +}
 >
 
 [...]
-
-> @@ -1036,9 +1111,13 @@ long clk_get_accuracy(struct clk *clk)
->  static unsigned long clk_recalc(struct clk_core *core,
->                                 unsigned long parent_rate)
->  {
-> -       if (core->ops->recalc_rate)
-> -               return core->ops->recalc_rate(core->hw, parent_rate);
-> -       return parent_rate;
-> +       unsigned long rate = parent_rate;
-> +
-> +       if (core->ops->recalc_rate && clk_pm_runtime_get(core) == 0) {
-
-To be consistent, let's not check against "== 0", but instead just use
-a "!" before the expression.
-
-> +               rate = core->ops->recalc_rate(core->hw, parent_rate);
-> +               clk_pm_runtime_put(core);
-> +       }
-> +       return rate;
->  }
->
-
-[...]
-
-Overall, this looks good to me. So with the minor changes suggested
-above, feel free to add my reviewed-by tag.
 
 Kind regards
 Uffe
