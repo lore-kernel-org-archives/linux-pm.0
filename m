@@ -1,111 +1,66 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Mon, 13 Mar 2017 14:51:27 +0000
-Message-ID: <e35e3aa7-575a-f11b-02ee-19c4e48c7ee6@nvidia.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <52493231-71f4-1b62-b325-8532e63e4229@nvidia.com>
- <CAMuHMdUAN+PHr_GSvyMzA8N6LgzPEXhQyG_rSwFUOvc9_v7JiA@mail.gmail.com>
- <f4b3a93e-e29f-6fc6-6e7f-8c51081cbe15@nvidia.com>
- <CAPDyKFp20tDickB9mF1ZSRUvYBEsfATysENeMzGV9O8KXH2wig@mail.gmail.com>
- <3e88692d-613b-9c25-2554-7d399c45637a@nvidia.com>
- <CAMuHMdVfkD935iJdsmTLA4HTsqXW1M21TxJfGZTmXqSPwQqY8A@mail.gmail.com>
- <161ee6b9-7a76-c7b4-3cb4-06259fef4898@nvidia.com>
- <CAMuHMdU9uEaRuqkGFcrJqVCBa0KLiDgZmV1twqF5+tQVj4Ukkg@mail.gmail.com>
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [RFC PATCH] fix: thermal: avoid possible deadlock calling
+ thermal_zone_get_temp()
+Date: Mon, 13 Mar 2017 14:52:30 +0000
+Message-ID: <15cc711d-b409-06a0-097d-56afe815e0d7@arm.com>
+References: <20170210161547.28625-1-lukasz.luba@arm.com>
+ <1489373034.5841.14.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:14612 "EHLO
-        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751566AbdCMOwD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Mar 2017 10:52:03 -0400
-In-Reply-To: <CAMuHMdU9uEaRuqkGFcrJqVCBa0KLiDgZmV1twqF5+tQVj4Ukkg@mail.gmail.com>
+Received: from foss.arm.com ([217.140.101.70]:50624 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751244AbdCMOwd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 Mar 2017 10:52:33 -0400
+In-Reply-To: <1489373034.5841.14.camel@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Stanimir Varbanov <stanimir.varbanov@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>
+To: Zhang Rui <rui.zhang@intel.com>, edubezval@gmail.com, linux-pm@vger.kernel.org
 
-Hi Geert,
 
-On 13/03/17 14:38, Geert Uytterhoeven wrote:
-> Hi Jon,
-> 
-> On Mon, Mar 13, 2017 at 3:27 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
->> On 13/03/17 14:19, Geert Uytterhoeven wrote:
->>> On Mon, Mar 13, 2017 at 3:09 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
->>>> On 13/03/17 11:45, Ulf Hansson wrote:
->>>>> +Björn
->>>>>
->>>>> On 13 March 2017 at 10:37, Jon Hunter <jonathanh@nvidia.com> wrote:
->>>>>> Looks like there is still some interest/needs in/for this. Any thoughts
->>>>>> on how we can move this forward?
->>>>>
->>>>> At the Linaro Connect last week, I was talking to Björn, Rajendra and
->>>>> Stephen more about these related issues.
->>>>>
->>>>> It definitely seems like we need to progress with this somehow,
->>>>> meaning we need a solution for being able to associate a device with
->>>>> more than one PM domain. In that context, I don't think genpd based on
->>>>> its current design, is a good fit to solve the problem.
->>>>>
->>>>> Instead I think we need something entirely new (perhaps some code can
->>>>> be borrowed from genpd), which is more similar to the clock/regulator
->>>>> framework. In other words, what you also were suggesting in a earlier
->>>>> reply.
->>>>> In this way, the driver/subsystem gains full flexibility of managing
->>>>> its device's PM domains, which seems like the best future-proof
->>>>> solution.
->>>>
->>>> I agree, I think that that would give us the most flexibility to handle
->>>> whatever scenario. However, I was thinking that we could still use the
->>>> genpd core to register pm-domains with and control. My thought was to
->>>> allow devices to have a bindings with multiple pm-domains ...
->>>>
->>>>         dev-xyz {
->>>>                 ...
->>>>                 power-domains = <&domain-a>, <&domain-b>;
->>>>         };
->>>>
->>>> Then in the genpd core we do having something like ...
->>>>
->>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>>> index e697dec9d25b..d1ae6ddf4903 100644
->>>> --- a/drivers/base/power/domain.c
->>>> +++ b/drivers/base/power/domain.c
->>>> @@ -2026,6 +2026,15 @@ int genpd_dev_pm_attach(struct device *dev)
->>>>                                                 "samsung,power-domain", 0);
->>>>                 if (!pd_args.np)
->>>>                         return -ENOENT;
->>>> +       } else if (ret > 1) {
->>>> +               /*
->>>> +                * If there are more than one PM domain defined for a device,
->>>> +                * then these need to be manually controlled by the device
->>>> +                * driver because the genpd core cannot bind a device with
->>>
->>> Which device driver?
->>> The driver for the device that belongs to multiple PM domains?
 >>
->> Yes, exactly. So maybe I would need to say ... "manually controlled by
->> the driver for *this* device ..."
-> 
-> That looks a bit cumbersome to me.
-> 
-> Power (and clock) domains are platform features.  Any IP core may show up
-> in a new SoC, and suddenly have become part of one or more PM Domains.
-> Having to handle that in each individual driver will cause lots of churn.
-> Especially as the multiple PM Domains a device may belong to may be
-> fairly orthogonal to each other.
+>> tz->gov->throttle() [=power_allocator_throttle]
+>>   power_allocator_throttle
+>>     allocate_power
+>> ==>   (lock tz->lock taken)
+>>       (for each cooling device:)
+>>          cdev->ops->get_requested_power
+>>          [=devfreq_cooling_get_requested_power]
+>>               get_static_power
+>>                  (call driver specific function)
+>>                  dfc->power_ops->get_static_power
+>>                  [=mock_devfreq_get_static_power]
+>>                       tz = thermal_zone_get_zone_by_name()
+>>                       thermal_zone_get_temp(tz, &temp)
+>> ===>                    (try to lock again tz->lock)
+>>
+> I didn't find mock_devfreq_get_static_power, thus I don't understand
+> why thermal_zone_get_zone_by_name() and thermal_zone_get_temp() needs
+> to be called in .get_static_power() callback.
 
-Yes that's true. However, in order to make this work for everyone and
-have a generic solution I am not sure how that can be avoided. If there
-are cases where devices require multiple PM domains but the usage is
-quite simple (ie. all on when device in use and all off when device is
-not in use), I could see the APIs I proposed being extended to include
-some _bulk() versions like we have for regulators.
+The mock_devfreq_get_static_power is just the mock function which
+mimics a driver function registered to get_static_power.
+Inside this function you can ask for thermal zone pointer
+to check the temperature in that thermal_zone.
+Based on that temperature you can scale your static power value
+before returning it to the framework.
 
-Cheers
-Jon
+So in this case the driver code should not scale the static
+power based on temperature (for now).
 
--- 
-nvpublic
+>
+>> This patch changes the mutex_lock into mutex_trylock
+>> just to avoid the deadlock.
+>>
+> Well, I don't think this is the right solution.
+> We should either avoid poking thermal lock in .get_static_power()
+> callback, in the thermal driver, or avoid invoking the callback with
+> lock hold, in power_allocator code.
+
+I agree that this is not the solution.
+It just highlights the problem.
+I will try to allocate some time for this issue.
+
+Regards,
+Lukasz Luba
