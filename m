@@ -1,66 +1,99 @@
-From: Jun Li <jun.li@nxp.com>
-Subject: RE: [PATCH v19 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Tue, 14 Mar 2017 01:10:38 +0000
-Message-ID: <HE1PR04MB2972189B0532136078A5221D89240@HE1PR04MB2972.eurprd04.prod.outlook.com>
-References: <cover.1487578977.git.baolin.wang@linaro.org>
- <87zih3m73h.fsf@notabene.neil.brown.name>
- <CAMz4ku+98HAgVnMoCg0YaPpcY1NvdKdbK6AuDyzgNOrcbpaz9A@mail.gmail.com>
- <AM5PR04MB29614C707DE344E5A05FAB3889210@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4kuJ31wVhbYOV+LB9tu=Wb7x9gRifcUnQPMiQSqRUjER_kQ@mail.gmail.com>
- <AM5PR04MB296177A37D96564D510FA90389210@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4ku+wkZ7webuCK+V9DPuDzdT_Tyy6Dso8==bQPyN9m06vGw@mail.gmail.com>
- <AM5PR04MB29610364B8FA56AE7AD8A68989200@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4kuLNa=sdYQrzXZspPd9ug-Opn2jfUCGHtq2qNT4Omax4Mw@mail.gmail.com>
- <AM5PR04MB29613EEC7C49426020A538B089200@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4ku+jy-Z0L4avYsDGstNnV+f=XhjmP8WS9SLOkB1eGWjjXA@mail.gmail.com>
- <AM5PR04MB29615806A8D175E3BF4BD8B089250@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4kuL=h-2BM093t3BQi9f+ygR2GJ=xBVghJe69HX47re_RTQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Correct frequency setting in the HWP mode
+Date: Mon, 13 Mar 2017 18:30:12 -0700
+Message-ID: <1489455012-21948-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-he1eur01on0071.outbound.protection.outlook.com ([104.47.0.71]:47547
-        "EHLO EUR01-HE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1753370AbdCNBKp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Mar 2017 21:10:45 -0400
-In-Reply-To: <CAMz4kuL=h-2BM093t3BQi9f+ygR2GJ=xBVghJe69HX47re_RTQ@mail.gmail.com>
-Content-Language: en-US
+Received: from mga01.intel.com ([192.55.52.88]:56717 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751769AbdCNBaV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 Mar 2017 21:30:21 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: NeilBrown <neilb@suse.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "robh@kernel.org" <robh@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "grygorii.strashko@ti.com" <grygorii.strashko@ti.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource>
+To: rjw@rjwysocki.net, lenb@kernel.org
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-SGksDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmFvbGluIFdhbmcg
-W21haWx0bzpiYW9saW4ud2FuZ0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBNb25kYXksIE1hcmNoIDEz
-LCAyMDE3IDQ6NDQgUE0NCj4gVG86IEp1biBMaSA8anVuLmxpQG54cC5jb20+DQo+IENjOiBOZWls
-QnJvd24gPG5laWxiQHN1c2UuY29tPjsgRmVsaXBlIEJhbGJpIDxiYWxiaUBrZXJuZWwub3JnPjsg
-R3JlZyBLSA0KPiA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBTZWJhc3RpYW4gUmVpY2hl
-bCA8c3JlQGtlcm5lbC5vcmc+OyBEbWl0cnkNCj4gRXJlbWluLVNvbGVuaWtvdiA8ZGJhcnlzaGtv
-dkBnbWFpbC5jb20+OyBEYXZpZCBXb29kaG91c2UNCj4gPGR3bXcyQGluZnJhZGVhZC5vcmc+OyBy
-b2JoQGtlcm5lbC5vcmc7IE1hcmVrIFN6eXByb3dza2kNCj4gPG0uc3p5cHJvd3NraUBzYW1zdW5n
-LmNvbT47IFJ1c2xhbiBCaWxvdm9sIDxydXNsYW4uYmlsb3ZvbEBnbWFpbC5jb20+Ow0KPiBQZXRl
-ciBDaGVuIDxwZXRlci5jaGVuQGZyZWVzY2FsZS5jb20+OyBBbGFuIFN0ZXJuDQo+IDxzdGVybkBy
-b3dsYW5kLmhhcnZhcmQuZWR1PjsgZ3J5Z29yaWkuc3RyYXNoa29AdGkuY29tOyBZb3NoaWhpcm8g
-U2hpbW9kYQ0KPiA8eW9zaGloaXJvLnNoaW1vZGEudWhAcmVuZXNhcy5jb20+OyBMZWUgSm9uZXMg
-PGxlZS5qb25lc0BsaW5hcm8ub3JnPjsNCj4gTWFyayBCcm93biA8YnJvb25pZUBrZXJuZWwub3Jn
-PjsgSm9obiBTdHVsdHogPGpvaG4uc3R1bHR6QGxpbmFyby5vcmc+Ow0KPiBDaGFybGVzIEtlZXBh
-eCA8Y2tlZXBheEBvcGVuc291cmNlLndvbGZzb25taWNyby5jb20+Ow0KPiBwYXRjaGVzQG9wZW5z
-b3VyY2Uud29sZnNvbm1pY3JvLmNvbTsgTGludXggUE0gbGlzdCA8bGludXgtDQo+IHBtQHZnZXIu
-a2VybmVsLm9yZz47IFVTQiA8bGludXgtdXNiQHZnZXIua2VybmVsLm9yZz47IGRldmljZS0NCj4g
-bWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5kYXRpb24ub3JnOyBMS01MIDxsaW51eC1rZXJuZWxA
-dmdlci5rZXJuZWwub3JnPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYxOSAwLzRdIEludHJvZHVj
-ZSB1c2IgY2hhcmdlciBmcmFtZXdvcmsgdG8gZGVhbCB3aXRoDQo+IHRoZSB1c2IgZ2FkZ2V0IHBv
-d2VyIG5lZ290YXRpb24NCj4gDQouLi4gLi4uDQo+ID4+IFRoYXQgaXMgc2FtZSB3aGF0IFVTQiBj
-aGFyZ2VyIGRpZCwgZnJvbSB0aGlzIHBvaW50LCB3ZSBuZWVkIFVTQg0KPiA+PiBjaGFyZ2VyIHRv
-IHNlbmQgb3V0IHZidXMgZHJhdyBpbmZvcm1hdGlvbiBhY2NvcmRpbmcgdG8gc3BlZWQgYW5kIHVz
-Yg0KPiA+PiBzdGF0ZS4gQnV0IEkgc2hvdWxkIGxpc3RlbiB0byBvdGhlciBndXlzIHN1Z2dlc3Rp
-b24uIFBldGVyIGFuZCBGZWxpcGUsIHdoYXQNCj4gZG8geW91IHRoaW5rPw0KDQpJbnN0ZWFkIG9m
-IHdhaXRpbmcgZm9yIG1haW50YWluZXIncyBjb21tZW50cyBvbiB0aGlzIGxvbmcgZGlzY3Vzc2lv
-biwgSSdkIHN1Z2dlc3QNCnlvdSBkaXJlY3RseSBwb3N0IHRoZSBwYXRjaGVzIGZvciB0aGUgcmVx
-dWlyZWQgY2hhbmdlLCBzbyB0aGV5IGNhbiBlYXNpbHkga25vdw0Kd2hhdCdzIHRoZSBjb25jbHVz
-aW9uL3NvbHV0aW9uIGxvb2tzIGxpa2UuDQoNCkxpIEp1bg0KDQo+ID4NCj4gPiBTbyBub3cgdGhl
-IG9ubHkgdG8gZG8gd29yayBpcyB0byBmaW5kIGEgY29tbW9uIHBsYWNlIHRvIHNlbmQgdGhlDQo+
-ID4gbm90aWZpY2F0aW9uIG91dCAoYmFzZWQgb24gZ2FkZ2V0IHNwZWVkIGFuZCBzYXRlKS4NCj4g
-DQo+IFllcy4NCj4gDQo+IC0tDQo+IEJhb2xpbi53YW5nDQo+IEJlc3QgUmVnYXJkcw0K
+In the functions intel_pstate_hwp_set(), min/max range from HWP capability
+MSR along with max_perf_pct and min_perf_pct, is used to set the HWP
+request MSR. In some cases this doesn't result in the correct HWP max/min
+in HWP request.
+
+For example: In the following case:
+
+HWP capabilities from MSR 0x771
+0x70a1220
+
+Here cpufreq min/max frequencies from above MSR dump are 700MHz and 3.2GHz
+respectively.
+
+This will result in
+hwp_min = 0x07
+hwp_max = 0x20
+
+To limit max frequency to 2GHz:
+
+perf_limits->max_perf_pct = 63 (2GHz as a percent of 3.2GHz rounded up)
+
+With the current calculation:
+adj_range = max_perf_pct * range / 100;
+adj_range = 63 * (32 - 7) / 100
+adj_range = 15
+
+max = hw_min + adj_range;
+max = 7 + 15 = 22
+
+This will result in HWP request of 0x160f, which will result in a
+frequency cap of 2.2GHz not 2GHz.
+
+The problem with the above calculation is that hwp_min of 7 is treated
+as 0% in the range. But max_perf_pct is calculated with respect to minimum
+as 0 and max as 3.2GHz or hwp_max, so adding hwp_min to it will result in
+more than the desired.
+
+Since the min_perf_pct and max_perf_pct is already a percent of max
+frequency or hwp_max, this min/max HWP request value can be calculated
+directly applying these percentage to hwp_max.
+
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 3d37219..118a1f8 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -845,7 +845,7 @@ static struct freq_attr *hwp_cpufreq_attrs[] = {
+ 
+ static void intel_pstate_hwp_set(struct cpufreq_policy *policy)
+ {
+-	int min, hw_min, max, hw_max, cpu, range, adj_range;
++	int min, hw_min, max, hw_max, cpu;
+ 	struct perf_limits *perf_limits = limits;
+ 	u64 value, cap;
+ 
+@@ -863,20 +863,17 @@ static void intel_pstate_hwp_set(struct cpufreq_policy *policy)
+ 			hw_max = HWP_GUARANTEED_PERF(cap);
+ 		else
+ 			hw_max = HWP_HIGHEST_PERF(cap);
+-		range = hw_max - hw_min;
+ 
+ 		max_perf_pct = perf_limits->max_perf_pct;
+ 		min_perf_pct = perf_limits->min_perf_pct;
++		min = hw_max * min_perf_pct / 100;
+ 
+ 		rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
+-		adj_range = min_perf_pct * range / 100;
+-		min = hw_min + adj_range;
++
+ 		value &= ~HWP_MIN_PERF(~0L);
+ 		value |= HWP_MIN_PERF(min);
+ 
+-		adj_range = max_perf_pct * range / 100;
+-		max = hw_min + adj_range;
+-
++		max = hw_max * max_perf_pct / 100;
+ 		value &= ~HWP_MAX_PERF(~0L);
+ 		value |= HWP_MAX_PERF(max);
+ 
+-- 
+2.7.4
