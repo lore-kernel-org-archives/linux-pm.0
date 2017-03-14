@@ -1,61 +1,77 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH] PCI: For d3_delay and d3cold_delay, zero means zero
-Date: Tue, 14 Mar 2017 08:03:05 -0500
-Message-ID: <20170314130305.GH8232@bhelgaas-glaptop.roam.corp.google.com>
-References: <1489484696-14093-1-git-send-email-adrian.hunter@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: [PATCH v3] devfreq_cooling: let the driver supply the real power every time we need it
+Date: Tue, 14 Mar 2017 13:06:13 +0000
+Message-ID: <20170314130616.7711-1-lukasz.luba@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:47802 "EHLO mail.kernel.org"
+Received: from foss.arm.com ([217.140.101.70]:32778 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750803AbdCNNDJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 14 Mar 2017 09:03:09 -0400
-Content-Disposition: inline
-In-Reply-To: <1489484696-14093-1-git-send-email-adrian.hunter@intel.com>
+        id S1751113AbdCNNGs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 14 Mar 2017 09:06:48 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Adrian Hunter <adrian.hunter@intel.com>
-Cc: linux-pci <linux-pci@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+To: linux-pm@vger.kernel.org
+Cc: chris.diamand@arm.com, lukasz.luba@arm.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com
 
-Hi Adrian,
+Hi,
 
-On Tue, Mar 14, 2017 at 11:44:56AM +0200, Adrian Hunter wrote:
-> Do not sleep at all for the respective cases of d3_delay is zero or
-> d3cold_delay is zero.
+This patchset introduces a new interface for devfreq cooling in thermal
+framework. The previous version of the patch can be seen here [1].
+I have simplified the implementation and introduced resource utilization
+scaling factor.
 
-Can you please include a hint here about (1) what msleep() does with an
-argument of zero, and (2) why this change is desirable, e.g., maybe it
-makes suspend/resume faster or something?
+The current implementation in the thermal devfreq cooling subsystem uses
+pre-calculated power table for each device to make a decision about allowed
+running state. When the driver registers itself to the thermal devfreq cooling
+subsystem, the framework creates the power table.
+The power table is then used by the thermal subsystem to keep
+the device in the thermal envelope.
+In the previous implementation the pre-calculated device's power
+table was scaled by current 'utilization'
+('busy_time' and 'total_time' taken from devfreq 'last_status').
 
-> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
-> ---
->  drivers/pci/pci.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 7904d02ffdb9..9779483f81fd 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -66,7 +66,8 @@ static void pci_dev_d3_sleep(struct pci_dev *dev)
->  	if (delay < pci_pm_d3_delay)
->  		delay = pci_pm_d3_delay;
->  
-> -	msleep(delay);
-> +	if (delay)
-> +		msleep(delay);
->  }
->  
->  #ifdef CONFIG_PCI_DOMAINS
-> @@ -827,7 +828,8 @@ static void __pci_start_power_transition(struct pci_dev *dev, pci_power_t state)
->  		 * because have already delayed for the bridge.
->  		 */
->  		if (dev->runtime_d3cold) {
-> -			msleep(dev->d3cold_delay);
-> +			if (dev->d3cold_delay)
-> +				msleep(dev->d3cold_delay);
->  			/*
->  			 * When powering on a bridge from D3cold, the
->  			 * whole hierarchy may be powered on into
-> -- 
-> 1.9.1
-> 
+This idea meets the expectations of the devices which know better the actual
+power that they consume (thanks to power counters). When some
+parts/features of the device are not used the power value might be lower,
+while the frequency and utilization are the same.
+
+The proposed implementation provides possibility to register a driver to
+thermal devfreq cooling subsystem and use the driver's code during the 
+calculation of the power in runtime.
+
+The device driver can still use pre-calculated power table when these new 
+functions are not provided (the new extension can co-exist with old 
+implementation).
+
+The first patch contains some refactoring for getting the voltage,
+the second implements the new feature, the third one changes trace function.
+Patchset is based on v4.11-rc2.
+
+Changes
+v3:
+- use new OPP interface (no need to lock rcu)
+v2 [2]: 
+- removed 'flags' and power2state function,
+- split into a few patches,
+- simplified the logic of the new interface,
+- added resource utilization scaling factor,
+v1 [1]:
+- basic implementation
+
+Best Regards,
+Lukasz Luba
+
+[1] https://marc.info/?l=linux-pm&m=147395070729989&w=2
+[2] http://marc.info/?l=linux-pm&m=148587920122854&w=2
+
+Lukasz Luba (3):
+  thermal: devfreq_cooling: refactor code and add get_voltage function
+  thermal: devfreq_cooling: add new interface for direct power read
+  trace: thermal: add another parameter *power to the tracing function
+
+ drivers/thermal/devfreq_cooling.c | 117 ++++++++++++++++++++++++++++----------
+ include/linux/devfreq_cooling.h   |  17 ++++++
+ include/trace/events/thermal.h    |  11 ++--
+ 3 files changed, 110 insertions(+), 35 deletions(-)
+
+-- 
+2.9.2
