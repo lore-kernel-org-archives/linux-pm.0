@@ -1,57 +1,46 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH v7 3/3] x86: Make the GDT remapping read-only on 64-bit
-Date: Tue, 14 Mar 2017 14:20:19 -0700
-Message-ID: <CAJcbSZG7ds+q76dHtzOkYtMkkTXWwG3e7MAxKJi0=SmdmqA6tA@mail.gmail.com>
-References: <20170314170508.100882-1-thgarnie@google.com> <20170314170508.100882-3-thgarnie@google.com>
- <20170314210424.GA5023@amd>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: Fix and clean up show_cpuinfo_cur_freq()
+Date: Wed, 15 Mar 2017 00:12:16 +0100
+Message-ID: <2254422.RMefVc1hHr@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20170314210424.GA5023@amd>
-Sender: owner-linux-mm@kvack.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Jonathan Corbet <corbet@lwn.net>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Lorenzo Stoakes <lstoakes@gmail.com>, Kees Cook <keescook@chromium.org>, Juergen Gross <jgross@suse.com>, Andy Lutomirski <luto@kernel.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, zijun_hu <zijun_hu@htc.com>, Chris Wilson <chris@chris-wilson.co.uk>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Rusty
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61056 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751073AbdCNXRn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Mar 2017 19:17:43 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Tue, Mar 14, 2017 at 2:04 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Tue 2017-03-14 10:05:08, Thomas Garnier wrote:
->> This patch makes the GDT remapped pages read-only to prevent corruption.
->> This change is done only on 64-bit.
->>
->> The native_load_tr_desc function was adapted to correctly handle a
->> read-only GDT. The LTR instruction always writes to the GDT TSS entry.
->> This generates a page fault if the GDT is read-only. This change checks
->> if the current GDT is a remap and swap GDTs as needed. This function was
->> tested by booting multiple machines and checking hibernation works
->> properly.
->>
->> KVM SVM and VMX were adapted to use the writeable GDT. On VMX, the
->> per-cpu variable was removed for functions to fetch the original GDT.
->> Instead of reloading the previous GDT, VMX will reload the fixmap GDT as
->> expected. For testing, VMs were started and restored on multiple
->> configurations.
->>
->> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->
-> Can we get the same change for 32-bit, too? Growing differences
-> between 32 and 64 bit are a bit of a problem...
->                                                                 Pavel
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It was discussed on previous versions that 32-bit read-only support
-would create issues that why it was favor for 64-bit only right now.
+There is a missing newline in show_cpuinfo_cur_freq(), so add it,
+but while at it clean it up somewhat too.
 
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-
-
--- 
-Thomas
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -680,9 +680,11 @@ static ssize_t show_cpuinfo_cur_freq(str
+ 					char *buf)
+ {
+ 	unsigned int cur_freq = __cpufreq_get(policy);
+-	if (!cur_freq)
+-		return sprintf(buf, "<unknown>");
+-	return sprintf(buf, "%u\n", cur_freq);
++
++	if (cur_freq)
++		return sprintf(buf, "%u\n", cur_freq);
++
++	return sprintf(buf, "<unknown>\n");
+ }
+ 
+ /**
