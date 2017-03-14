@@ -1,58 +1,125 @@
-From: Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC v0 1/2] interconnect: Add generic interconnect controller
- API
-Date: Tue, 14 Mar 2017 17:35:57 +0200
-Message-ID: <20fa9f6c-22b8-08d0-8fbd-82cbad9acc87@linaro.org>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [RFC v0 1/2] interconnect: Add generic interconnect controller API
+Date: Tue, 14 Mar 2017 17:39:13 +0200
+Message-ID: <df0f892b-3318-8316-eafb-07e55ddc5406@linaro.org>
 References: <20170301182235.19154-1-georgi.djakov@linaro.org>
  <20170301182235.19154-2-georgi.djakov@linaro.org>
- <15929d7a-65e5-f8ba-2fac-0381c5f8e8fc@infradead.org>
+ <58B8CFDA.3080303@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <15929d7a-65e5-f8ba-2fac-0381c5f8e8fc-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Randy Dunlap <rdunlap-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, skannan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, seansw-Rm6X0d1/PG5y9aJCnZT0Uw@public.gmane.org, davidai-jfJNa2p1gH1BDgjK7y7TUQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <58B8CFDA.3080303@codeaurora.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, vincent.guittot@linaro.org, linux-pm@vger.kernel.org, seansw@qti.qualcomm.com, gregkh@linuxfoundation.org, mturquette@baylibre.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, davidai@quicinc.com, robh+dt@kernel.org, khilman@baylibre.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/03/2017 12:53 AM, Randy Dunlap wrote:
-> On 03/01/17 10:22, Georgi Djakov wrote:
+On 03/03/2017 04:07 AM, Saravana Kannan wrote:
+> On 03/01/2017 10:22 AM, Georgi Djakov wrote:
+>> This patch introduce a new API to get the requirement and configure the
+>> interconnect buses across the entire chipset to fit with the current
+>> demand.
 >>
->> diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
->> new file mode 100644
->> index 000000000000..103524b59905
->> --- /dev/null
->> +++ b/drivers/interconnect/Kconfig
->> @@ -0,0 +1,10 @@
->> +menuconfig INTERCONNECT
->> +	bool "On-Chip Interconnect management support"
+
+[..]
+
+>> +int interconnect_set(struct interconnect_path *path, u32 bandwidth)
+>> +{
+>> +    struct interconnect_node *node;
+>> +
+>> +    list_for_each_entry(node, &path->node_list, search_list) {
+>> +        if (node->icp->ops->set)
+>> +            node->icp->ops->set(node, bandwidth);
 >
-> Why isn't this symbol tristate instead of bool so that the
-> interconnect management support can be built as a loadable module?
+> This ops needs to take a "source" and "dest" input and you'll need to
+> pass in the prev/next nodes of each "node" in this list. This is needed
+> so that each interconnect know the local source/destination and can make
+> the aggregation decisions correctly based on the internal implementation
+> of the interconnect. For the first and last nodes in the list, the
+> source and destination nodes can be NULL, respectively.
+
+I agree. Updated.
+
+>
+>> +    }
+>> +
+>> +    return 0;
+>> +}
+>> +
+
+[..]
+
+>> +void interconnect_put(struct interconnect_path *path)
+>> +{
+>> +    struct interconnect_node *node;
+>> +    struct icn_qos *req;
+>> +    struct hlist_node *tmp;
+>> +
+>> +    if (IS_ERR(path))
+>> +        return;
+>> +
+>> +    list_for_each_entry(node, &path->node_list, search_list) {
+>> +        hlist_for_each_entry_safe(req, tmp, &node->qos_list, node) {
+>> +            if (req->path == path) {
+>> +                hlist_del(&req->node);
+>> +                kfree(req);
+>> +            }
+>
+> Should we go through and remove any bandwidth votes that were made on
+> this path before we free it?
 >
 
-Thanks for the comment! For simplicity, the core API currently is
-only supported as a built-in, but we can definitely try making it
-modular. I can do it after we get some initial feedback on if and
-how this concept fits in the kernel and set the direction we want
-to go.
+Yes, thanks! We should remove the constraints from the path, then
+update the nodes and after that free the memory.
+
+>> +        }
+>> +    }
+>> +
+>> +    kfree(path);
+>> +}
+>> +EXPORT_SYMBOL_GPL(interconnect_put);
+>> +
+>> +int interconnect_add_provider(struct icp *icp)
+>> +{
+>> +    struct interconnect_node *node;
+>> +
+>> +    WARN(!icp->ops->xlate, "%s: .xlate is not implemented\n", __func__);
+>> +    WARN(!icp->ops->set, "%s: .set is not implemented\n", __func__);
+>> +
+>> +    mutex_lock(&interconnect_provider_list_mutex);
+>> +    list_add(&icp->icp_list, &interconnect_provider_list);
+>> +    mutex_unlock(&interconnect_provider_list_mutex);
+>> +
+>> +    list_for_each_entry(node, &icp->nodes, icn_list) {
+>> +        INIT_HLIST_HEAD(&node->qos_list);
+>> +    }
+>> +
+>> +    dev_info(icp->dev, "added interconnect provider %s\n", icp->name);
+>> +
+>> +    return 0;
+>> +}
+>> +EXPORT_SYMBOL_GPL(interconnect_add_provider);
+>> +
+>> +int interconnect_del_provider(struct icp *icp)
+>> +{
+>> +    mutex_lock(&interconnect_provider_list_mutex);
+>> +    of_node_put(icp->of_node);
+>> +    list_del(&icp->icp_list);
+>
+> If there's a path with an active vote, we should probably return a
+> -EBUSY to prevent deleting a provider that's actively used?
+>
+
+Thanks, sounds good. Will do.
 
 BR,
 Georgi
-
->
->> +	help
->> +	  Support for management of the on-chip interconnects.
->> +
->> +	  This framework is designed to provide a generic interface for
->> +          managing the interconnects in a SoC.
->> +
->> +	  If unsure, say no.
->> +
->
->
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
