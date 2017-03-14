@@ -1,59 +1,124 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: Re: [PATCH] PCI: For d3_delay and d3cold_delay, zero means zero
-Date: Tue, 14 Mar 2017 15:23:50 +0200
-Message-ID: <04a3c82b-7adb-adf4-52ed-3067413a2f4a@intel.com>
-References: <20170314130305.GH8232@bhelgaas-glaptop.roam.corp.google.com>
- <1489497718-4099-1-git-send-email-adrian.hunter@intel.com>
+From: Quentin Schulz <quentin.schulz@free-electrons.com>
+Subject: Re: [PATCH v3 01/18] dt-bindings: power: battery: add
+ constant-charge-current property
+Date: Tue, 14 Mar 2017 14:44:21 +0100
+Message-ID: <5f4f8212-e071-9e20-542d-f6557eead260@free-electrons.com>
+References: <20170215004646.23607-1-liam@networkimprov.net>
+ <6a678b03-124a-76b3-066e-858731fc6c80@free-electrons.com>
+ <CAGb2v67913XnRNv9bYty5WcGLAWHYMM6=M9BVmTZ3wjReh_UBg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1489497718-4099-1-git-send-email-adrian.hunter@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci <linux-pci@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAGb2v67913XnRNv9bYty5WcGLAWHYMM6=M9BVmTZ3wjReh_UBg@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lars-Peter Clausen <lars@metafoo.de>, devicetree <devicetree@vger.kernel.org>, linux-iio@vger.kernel.org, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, Liam Breck <liam@networkimprov.net>, Icenowy Zheng <icenowy@aosc.xyz>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Russell King <linux@armlinux.org.uk>, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Forgot to put this is V2, sorry.  It has changes to the commit message as
-requested.
+Hi Chen-Yu,
 
-On 14/03/17 15:21, Adrian Hunter wrote:
-> msleep() still sleeps 1 jiffy even when told to sleep for zero
-> milliseconds. That can end up being 1-2 milliseconds or more. In the cases
-> of d3_delay and d3cold_delay, that unnecessarily increases suspend and/or
-> resume latencies.
+Sorry for the late reply.
+
+On 21/02/2017 05:55, Chen-Yu Tsai wrote:
+> On Wed, Feb 15, 2017 at 4:53 PM, Quentin Schulz
+> <quentin.schulz@free-electrons.com> wrote:
+>> Hi,
+>>
+>> On 15/02/2017 01:46, Liam Breck wrote:
+>>>
+>>> On Tue, 14 Feb 2017 10:40:55 +0100 Quentin Schulz wrote:
+>>>> This adds the constant-charge-current property to the list of optional
+>>>> properties of the battery.
+>>>>
+>>>> The constant charge current is critical for batteries as they can't
+>>>> handle all charge currents.
+>>>>
+>>>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+>>>> ---
+>>>>
+>>>> added in v3
+>>>>
+>>>>  Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
+>>>
+>>> Is constant-charge-current dependent on the battery (e.g. capacity, nominal voltage, etc) or the
+>>> system (charger chip, input current/voltage, etc)?
+>>>
+>>> It belongs in Doc.../power/supply/battery.txt if it's a characteristic of the battery.
+>>>
+>>> Note, this page asserts that constant-current charging applies to NiMH batteries:
+>>> http://power-topics.blogspot.com/2016/05/constant-voltage-constant-current.html
+>>>
+>>> Related properties to be added to battery.txt near-future in a patchset for the BQ24190
+>>> charger are as follows. These are not currently in enum power_supply_property, so the actual names
+>>> are still to be decided.
+>>>
+>>> precharge-current-microamp:
+>>>    maximum charge current during precharge phase (typically 20% of battery capacity)
+>>>
+>>> termination-current-microamp (or endcharge-current):
+>>>    a charge cycle terminates when the battery voltage is above recharge threshold,
+>>>    and the current is below this setting (typically 10% of battery capacity)
+>>>
+>>
+>> We have a client with a board whose battery accepts a maximum of 300mA
+>> for charging. So depending on the battery, we cannot have any charging
+>> current we want. The AXP PmMICs set constant charge current in a range
+>> of 300mA-1800mA, so it is enforced by the charger but needs to be
+>> adapted depending on the battery present in the system.
 > 
-> So, do not sleep at all for the respective cases of d3_delay is zero or
-> d3cold_delay is zero.
-> 
-> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
-> ---
->  drivers/pci/pci.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 7904d02ffdb9..9779483f81fd 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -66,7 +66,8 @@ static void pci_dev_d3_sleep(struct pci_dev *dev)
->  	if (delay < pci_pm_d3_delay)
->  		delay = pci_pm_d3_delay;
->  
-> -	msleep(delay);
-> +	if (delay)
-> +		msleep(delay);
->  }
->  
->  #ifdef CONFIG_PCI_DOMAINS
-> @@ -827,7 +828,8 @@ static void __pci_start_power_transition(struct pci_dev *dev, pci_power_t state)
->  		 * because have already delayed for the bridge.
->  		 */
->  		if (dev->runtime_d3cold) {
-> -			msleep(dev->d3cold_delay);
-> +			if (dev->d3cold_delay)
-> +				msleep(dev->d3cold_delay);
->  			/*
->  			 * When powering on a bridge from D3cold, the
->  			 * whole hierarchy may be powered on into
+> May I ask the capacity of the battery in question?
 > 
 
+It is a 400mAh battery.
+
+Quentin
+
+> Typically one charges LiPo batteries at no more than 1C. So if it's
+> a 1800 mAh battery, the charge current should be no more than 1800 mA.
+> 
+> ChenYu
+> 
+>> The AXP PMICs charge battery with constant current (Ichrg) between the
+>> trickle voltage (Vtrkl which is ~3.0V) and the targeted voltage (Vtrgt;
+>> which seems to be the voltage telling the battery is fully charged).
+>>
+>> So if I understand correctly, "my" constant-charge-current would be
+>> located in the charging cycle between your precharge-current-microamp
+>> and the termination-current-microamp as it is the current for the
+>> charging process as a whole.
+>>
+>> See here[1] for the explanation in the datasheet (page 20).
+>>
+>> That would definitely match what is explained in your link for constant
+>> current.
+>>
+>> [1] http://dl.linux-sunxi.org/AXP/AXP209_Datasheet_v1.0en.pdf
+>>
+>> Let me know if something seems odd,
+>> Thanks,
+>> Quentin
+>>
+>> --
+>> Quentin Schulz, Free Electrons
+>> Embedded Linux and Kernel engineering
+>> http://free-electrons.com
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 
+
+-- 
+Quentin Schulz, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
