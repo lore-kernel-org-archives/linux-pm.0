@@ -1,94 +1,62 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH][RFC v4] ACPI throttling: Disable the MSR T-state if
- enabled after resumed
-Date: Tue, 14 Mar 2017 18:38:03 +0100
-Message-ID: <20170314173803.GA17126@amd>
-References: <1487320050-22894-1-git-send-email-yu.c.chen@intel.com>
- <20170218090207.GB8937@amd>
- <20170219043718.GA4953@yu-desktop-1.sh.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PCI: For d3_delay and d3cold_delay, zero means zero
+Date: Tue, 14 Mar 2017 18:52:48 +0100
+Message-ID: <CAJZ5v0iB81hTsWdhCyPSOoe3GZ1jUKDqhFcZp2i8B8=+Z7DG4A@mail.gmail.com>
+References: <20170314130305.GH8232@bhelgaas-glaptop.roam.corp.google.com> <1489497718-4099-1-git-send-email-adrian.hunter@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="TB36FDmn/VVEgNH/"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170219043718.GA4953@yu-desktop-1.sh.intel.com>
+In-Reply-To: <1489497718-4099-1-git-send-email-adrian.hunter@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
+To: Adrian Hunter <adrian.hunter@intel.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci <linux-pci@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Mar 14, 2017 at 2:21 PM, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> msleep() still sleeps 1 jiffy even when told to sleep for zero
+> milliseconds. That can end up being 1-2 milliseconds or more. In the cases
+> of d3_delay and d3cold_delay, that unnecessarily increases suspend and/or
+> resume latencies.
+>
+> So, do not sleep at all for the respective cases of d3_delay is zero or
+> d3cold_delay is zero.
+>
+> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
 
---TB36FDmn/VVEgNH/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Hi!
-
-> > > However there are still three problems left:
-> > > 1. More and more reports show that other platforms also
-> > >    encountered the same issue, so the quirk list might
-> > >    be endless.
-> > > 2. Each CPUs should take the save/restore operation into
-> > >    consideration, rather than the boot CPU alone.
-> > > 3. Normally ACPI T-state re-evaluation is done on resume,
-> > >    however there is no _TSS on the bogus platform, thus
-> > >    above re-evaluation code does not run on that machine.
-> > >=20
-> > > Solution:
-> > > This patch is based on the fact that, we generally should not
-> > > expect the system to come back from resume with throttling
-> > > enabled, but leverage the OS components to deal with it,
-> > > such as thermal event. So we simply clear the MSR T-state
-> > > and print the warning if it is found to be enabled after
-> > > resumed back. Besides, we can remove the quirk in previous patch
-> > > later.
-> >=20
-> > What if the machine _is_ hot?=20
-> >=20
-> Later the linux has a chance to adjust the tstate if the system is too ho=
-t,
-> with the help of thermal framework.
-
-Will it adjust the tstate? Normally, we do such stuff when tresholds
-are exceeded. If we are already above the threshold, we'll see no
-reason to=20
-
-> But if the cpu is not inside any thermal zone, then there is no way for t=
-he
-> OS to adjust the tstate after resume, however in this case I think it is =
-up
-> to the user space to adjust the tstate msr, for example, by using thermald
-> daemon to bind the cpu to the thermal zone.
-
-Umm. Userland should not access MSRs. And we certainly should not
-depend on userland adjusting the MSRs!
-
-> > Should we introduce generic framework to "fix" all the cpus? Actually,
-> > should this be done right on cpu hotplug?
-> Do you mean, fix other MSR-inconsistent issues, not only the tstate MSR?
-> Currently the tstate re-adjusting is invoked in cpuhotplug notifier
-> after each nonboot cpus are brought up:
-> acpi_soft_cpu_online -> acpi_processor_reevaluate_tstate -> adjust_tstate=
-_msr
-
-Ok.
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---TB36FDmn/VVEgNH/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAljIKnsACgkQMOfwapXb+vKrUACfVmvwRCNVAXGOC2wh6J9aOkSM
-hRoAn3eME4/Gxrzz2KW3rTpttExgtxps
-=uLEd
------END PGP SIGNATURE-----
-
---TB36FDmn/VVEgNH/--
+> ---
+>  drivers/pci/pci.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 7904d02ffdb9..9779483f81fd 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -66,7 +66,8 @@ static void pci_dev_d3_sleep(struct pci_dev *dev)
+>         if (delay < pci_pm_d3_delay)
+>                 delay = pci_pm_d3_delay;
+>
+> -       msleep(delay);
+> +       if (delay)
+> +               msleep(delay);
+>  }
+>
+>  #ifdef CONFIG_PCI_DOMAINS
+> @@ -827,7 +828,8 @@ static void __pci_start_power_transition(struct pci_dev *dev, pci_power_t state)
+>                  * because have already delayed for the bridge.
+>                  */
+>                 if (dev->runtime_d3cold) {
+> -                       msleep(dev->d3cold_delay);
+> +                       if (dev->d3cold_delay)
+> +                               msleep(dev->d3cold_delay);
+>                         /*
+>                          * When powering on a bridge from D3cold, the
+>                          * whole hierarchy may be powered on into
+> --
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
