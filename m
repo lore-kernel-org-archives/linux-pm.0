@@ -1,42 +1,35 @@
-From: Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC v0 0/2] Introduce on-chip interconnect API
-Date: Tue, 14 Mar 2017 17:41:54 +0200
-Message-ID: <7e7c29a7-af04-04a8-cb76-0c406f8f855c@linaro.org>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [RFC v0 1/2] interconnect: Add generic interconnect controller API
+Date: Tue, 14 Mar 2017 17:45:40 +0200
+Message-ID: <12f0e851-6511-3f4f-ca0f-ba614a0bbe65@linaro.org>
 References: <20170301182235.19154-1-georgi.djakov@linaro.org>
- <20170303062145.zpa4oblwgx2ecgv7@rob-hp-laptop>
+ <20170301182235.19154-2-georgi.djakov@linaro.org>
+ <1489053400.32329.43.camel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170303062145.zpa4oblwgx2ecgv7@rob-hp-laptop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, skannan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, seansw-Rm6X0d1/PG5y9aJCnZT0Uw@public.gmane.org, davidai-jfJNa2p1gH1BDgjK7y7TUQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1489053400.32329.43.camel@pengutronix.de>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, vincent.guittot@linaro.org, linux-pm@vger.kernel.org, seansw@qti.qualcomm.com, gregkh@linuxfoundation.org, mturquette@baylibre.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, davidai@quicinc.com, robh+dt@kernel.org, skannan@codeaurora.org, khilman@baylibre.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/03/2017 08:21 AM, Rob Herring wrote:
-> On Wed, Mar 01, 2017 at 08:22:33PM +0200, Georgi Djakov wrote:
->> Modern SoCs have multiple processors and various dedicated cores (video, gpu,
->> graphics, modem). These cores are talking to each other and can generate a lot
->> of data flowing through the on-chip interconnects. These interconnect buses
->> could form different topologies such as crossbar, point to point buses,
->> hierarchical buses or use the network-on-chip concept.
->>
->> These buses have been sized usually to handle use cases with high data
->> throughput but it is not necessary all the time and consume a lot of power.
->> Furthermore, the priority between masters can vary depending on the running
->> use case like video playback or cpu intensive tasks.
->>
->> Having an API to control the requirement of the system in term of bandwidth
->> and QoS, so we can adapt the interconnect configuration to match those by
->> scaling the frequencies, setting link priority and tuning QoS parameters.
->> This configuration can be a static, one-time operation done at boot for some
->> platforms or a dynamic set of operations that happen at run-time.
->>
->> This patchset introduce a new API to get the requirement and configure the
+Hi Lucas,
+Thanks for the comments!
+
+On 03/09/2017 11:56 AM, Lucas Stach wrote:
+> Am Mittwoch, den 01.03.2017, 20:22 +0200 schrieb Georgi Djakov:
+>> This patch introduce a new API to get the requirement and configure the
 >> interconnect buses across the entire chipset to fit with the current demand.
->> The API is NOT for changing the performance of the endpoint devices, but only
->> the interconnect path in between them.
 >>
 >> The API is using a consumer/provider-based model, where the providers are
 >> the interconnect controllers and the consumers could be various drivers.
@@ -48,62 +41,169 @@ On 03/03/2017 08:21 AM, Rob Herring wrote:
 >> constraints. The topology could be complicated and multi-tiered and is SoC
 >> specific.
 >>
->> Below is a simplified diagram of a real-world SoC topology. The interconnect
->> providers are the memory front-end and the NoCs.
+>> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+>> ---
+>>  .../bindings/interconnect/interconnect.txt         |  91 +++++++
+>>  Documentation/interconnect/interconnect.txt        |  68 +++++
+>>  drivers/Kconfig                                    |   2 +
+>>  drivers/Makefile                                   |   1 +
+>>  drivers/interconnect/Kconfig                       |  10 +
+>>  drivers/interconnect/Makefile                      |   1 +
+>>  drivers/interconnect/interconnect.c                | 285 +++++++++++++++++++++
+>>  include/linux/interconnect-consumer.h              |  70 +++++
+>>  include/linux/interconnect-provider.h              |  92 +++++++
+>>  9 files changed, 620 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/interconnect/interconnect.txt
+>>  create mode 100644 Documentation/interconnect/interconnect.txt
+>>  create mode 100644 drivers/interconnect/Kconfig
+>>  create mode 100644 drivers/interconnect/Makefile
+>>  create mode 100644 drivers/interconnect/interconnect.c
+>>  create mode 100644 include/linux/interconnect-consumer.h
+>>  create mode 100644 include/linux/interconnect-provider.h
 >>
->> +----------------+    +----------------+
->> | HW Accelerator |--->|      M NoC     |<---------------+
->> +----------------+    +----------------+                |
->>                         |      |                    +------------+
->>           +-------------+      V       +------+     |            |
->>           |                +--------+  | PCIe |     |            |
->>           |                | Slaves |  +------+     |            |
->>           |                +--------+     |         |   C NoC    |
->>           V                               V         |            |
->> +------------------+   +------------------------+   |            |   +-----+
->> |                  |-->|                        |-->|            |-->| CPU |
->> |                  |-->|                        |<--|            |   +-----+
->> |      Memory      |   |         S NoC          |   +------------+
->> |                  |<--|                        |---------+    |
->> |                  |<--|                        |<------+ |    |   +--------+
->> +------------------+   +------------------------+       | |    +-->| Slaves |
->>    ^     ^    ^           ^                             | |        +--------+
->>    |     |    |           |                             | V
->> +-----+  |  +-----+    +-----+  +---------+   +----------------+   +--------+
->> | CPU |  |  | GPU |    | DSP |  | Masters |-->|       P NoC    |-->| Slaves |
->> +-----+  |  +-----+    +-----+  +---------+   +----------------+   +--------+
->>          |
->>      +-------+
->>      | Modem |
->>      +-------+
->>
->> This RFC does not implement all features but only main skeleton to check the
->> validity of the proposal. Currently it only works with device-tree and platform
->> devices.
->>
->> TODO:
->>  * Constraints are currently stored in internal data structure. Should PM QoS
->>  be used instead?
->>  * Rework the framework to not depend on DT as frameworks cannot be tied
->>  directly to firmware interfaces. Add support for ACPI?
+>> diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+>> new file mode 100644
+>> index 000000000000..c62d86e4c52d
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+>> @@ -0,0 +1,91 @@
+>> +Interconnect Provider Device Tree Bindings
+>> +=========================================
+>> +
+>> +The purpose of this document is to define a common set of generic interconnect
+>> +providers/consumers properties.
+>> +
+>> +
+>> += interconnect providers =
+>> +
+>> +The interconnect provider binding is intended to represent the interconnect
+>> +controllers in the system. Each provider registers a set of interconnect
+>> +nodes, which expose the interconnect related capabilities of the interconnect
+>> +to consumer drivers. These capabilities can be throughput, latency, priority
+>> +etc. The consumer drivers set constraints on interconnect path (or endpoints)
+>> +depending on the usecase.
+>> +
+>> +Required properties:
+>> +- compatible : contains the interconnect provider vendor specific compatible
+>> +	       string
+>> +- reg : register space of the interconnect controller hardware
+>> +- #interconnect-cells : number of cells in a interconnect specifier needed to
+>> +		       encode the interconnect node id.
+>> +
+>> +
+>> +Optional properties:
+>> +interconnect-port : A phandle and interconnect provider specifier as defined by
+>> +		bindings of the interconnect provider specified by phandle.
+>> +		This denotes the port to which the interconnect consumer is
+>> +		wired. It is used when there are multiple interconnect providers
+>> +		that have one or multiple links between them.
 >
-> I would start without DT even. You can always have the data you need in
-> the kernel. This will be more flexible as you're not defining an ABI as
-> this evolves. I think it will take some time to have consensus on how to
-> represent the bus master view of buses/interconnects (It's been
-> attempted before).
+> I think this isn't required. We should try to get a clear definition for
+> both the provider, as well as the consumer without mixing them in the
+> binding.
 >
-> Rob
+> Hierarchical interconnect nodes can always be both a provider and a
+> consumer of interconnect ports at the same time.
 >
 
-Thanks for the comment and for discussing this off-line! As the main
-concern here is to see a list of multiple platforms before we come
-up with a common binding, i will convert this to initially use platform
-data. Then later we will figure out what exactly to pull into DT.
+Yes, this is true - a hierarchical interconnect can be both provider
+and a consumer. Each interconnect provider may have master and slave
+unidirectional ports connected to another interconnect.
 
-BR,
+>> +
+>> +Example:
+>> +
+>> +		snoc: snoc@0580000 {
+>> +			compatible = "qcom,msm-bus-snoc";
+>> +			reg = <0x580000 0x14000>;
+>> +			#interconnect-cells = <1>;
+>> +			clock-names = "bus_clk", "bus_a_clk";
+>> +			clocks = <&rpmcc RPM_SMD_SNOC_CLK>, <&rpmcc RPM_SMD_SNOC_A_CLK>;
+>> +			status = "okay";
+>> +			interconnect-port = <&bimc MAS_SNOC_CFG>,
+>> +					<&bimc SNOC_BIMC_0_MAS>,
+>> +					<&bimc SNOC_BIMC_1_MAS>,
+>> +					<&pnoc SNOC_PNOC_SLV>;
+>> +		};
+>> +		bimc: bimc@0400000 {
+>> +			compatible = "qcom,msm-bus-bimc";
+>> +			reg = <0x400000 0x62000>;
+>> +			#interconnect-cells = <1>;
+>> +			clock-names = "bus_clk", "bus_a_clk";
+>> +			clocks = <&rpmcc RPM_SMD_BIMC_CLK>, <&rpmcc RPM_SMD_BIMC_A_CLK>;
+>> +			status = "okay";
+>> +			interconnect-port = <&snoc BIMC_SNOC_MAS>;
+>> +		};
+>> +		pnoc: pnoc@500000 {
+>> +			compatible = "qcom,msm-bus-pnoc";
+>> +			reg = <0x500000 0x11000>;
+>> +			#interconnect-cells = <1>;
+>> +			clock-names = "bus_clk", "bus_a_clk";
+>> +			clocks = <&rpmcc RPM_SMD_PCNOC_CLK>, <&rpmcc RPM_SMD_PCNOC_A_CLK>;
+>> +			status = "okay";
+>> +			interconnect-port = <&snoc PNOC_SNOC_SLV>;
+>> +		};
+>> +
+>> += interconnect consumers =
+>> +
+>> +The interconnect consumers are device nodes which consume the interconnect
+>> +path(s) provided by the interconnect provider. There can be multiple
+>> +interconnect providers on a SoC and the consumer may consume multiple paths
+>> +from different providers depending on usecase and the components it has to
+>> +interact with.
+>> +
+>> +Required-properties:
+>> +interconnect-port : A phandle and interconnect provider specifier as defined by
+>> +		bindings of the interconnect provider specified by phandle.
+>> +		This denotes the port to which the interconnect consumer is
+>> +		wired.
+>> +interconnect-path : List of phandles to the data path endpoints.
+>> +interconnect-path-names : List of interconnect path name strings sorted in the
+>> +		same order as the interconnect-path property.  Consumers drivers
+>> +		will use interconnect-path-names to match the link names with
+>> +		interconnect specifiers.
+>> +
+>> +Example:
+>> +
+>> +	sdhci@07864000 {
+>> +		...
+>> +		interconnect-port = <&pnoc MAS_PNOC_SDCC_2>;
+>> +		interconnect-path = <&blsp1_uart2>;
+>> +		interconnect-path-names = "spi";
+>> +	};
+>
+> Sorry, but this binding is not entirely clear to me. What do the paths
+> do?
+
+The path specifies the other endpoint, so in the above theoretical
+example the sdhci could tell the system that it will use an average
+bandwidth of X kbps for performing a data transfer to spi.
+
+>
+> From a device perspective you have 1..n master ports, that are wired to
+> 1..n slave ports on the interconnect side. Wouldn't it be sufficient to
+> specify the phandles to the interconnect slave ports?
+
+Specifying the source and the destination would also work. For
+example we could also use:
+interconnect-src = <&xnoc PORT_A>, <&xnoc PORT_B>;
+interconnect-src-names = "low_power", "high_throughput";
+interconnect-dst = <&ynoc PORT_B>, <&znoc PORT_C>;
+interconnect-dst-names = "spi", "mem"
+
+Or we may even replace it with a property containing a list of src and 
+dst pairs?
+
+> Also this should probably be a plural "ports", as a device might have
+> multiple master ports. This would need a "port-names" property, so the
+> device can reference the correct slave port when making QoS requests.
+> For devices with one read and one write port the QoS requirements of
+> both ports may be vastly different.
+
+Yes, this scenario is valid too.
+
+Anyway, i will start converting this to platform data as suggested by
+Rob and meanwhile we can continue the discussion about DT bindings.
+
+Thanks,
 Georgi
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
