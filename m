@@ -1,125 +1,109 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [RFC v0 1/2] interconnect: Add generic interconnect controller API
-Date: Tue, 14 Mar 2017 17:39:13 +0200
-Message-ID: <df0f892b-3318-8316-eafb-07e55ddc5406@linaro.org>
+From: Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC v0 0/2] Introduce on-chip interconnect API
+Date: Tue, 14 Mar 2017 17:41:54 +0200
+Message-ID: <7e7c29a7-af04-04a8-cb76-0c406f8f855c@linaro.org>
 References: <20170301182235.19154-1-georgi.djakov@linaro.org>
- <20170301182235.19154-2-georgi.djakov@linaro.org>
- <58B8CFDA.3080303@codeaurora.org>
+ <20170303062145.zpa4oblwgx2ecgv7@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <58B8CFDA.3080303@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, vincent.guittot@linaro.org, linux-pm@vger.kernel.org, seansw@qti.qualcomm.com, gregkh@linuxfoundation.org, mturquette@baylibre.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, davidai@quicinc.com, robh+dt@kernel.org, khilman@baylibre.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170303062145.zpa4oblwgx2ecgv7@rob-hp-laptop>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, skannan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, seansw-Rm6X0d1/PG5y9aJCnZT0Uw@public.gmane.org, davidai-jfJNa2p1gH1BDgjK7y7TUQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/03/2017 04:07 AM, Saravana Kannan wrote:
-> On 03/01/2017 10:22 AM, Georgi Djakov wrote:
->> This patch introduce a new API to get the requirement and configure the
->> interconnect buses across the entire chipset to fit with the current
->> demand.
+On 03/03/2017 08:21 AM, Rob Herring wrote:
+> On Wed, Mar 01, 2017 at 08:22:33PM +0200, Georgi Djakov wrote:
+>> Modern SoCs have multiple processors and various dedicated cores (video, gpu,
+>> graphics, modem). These cores are talking to each other and can generate a lot
+>> of data flowing through the on-chip interconnects. These interconnect buses
+>> could form different topologies such as crossbar, point to point buses,
+>> hierarchical buses or use the network-on-chip concept.
 >>
-
-[..]
-
->> +int interconnect_set(struct interconnect_path *path, u32 bandwidth)
->> +{
->> +    struct interconnect_node *node;
->> +
->> +    list_for_each_entry(node, &path->node_list, search_list) {
->> +        if (node->icp->ops->set)
->> +            node->icp->ops->set(node, bandwidth);
+>> These buses have been sized usually to handle use cases with high data
+>> throughput but it is not necessary all the time and consume a lot of power.
+>> Furthermore, the priority between masters can vary depending on the running
+>> use case like video playback or cpu intensive tasks.
+>>
+>> Having an API to control the requirement of the system in term of bandwidth
+>> and QoS, so we can adapt the interconnect configuration to match those by
+>> scaling the frequencies, setting link priority and tuning QoS parameters.
+>> This configuration can be a static, one-time operation done at boot for some
+>> platforms or a dynamic set of operations that happen at run-time.
+>>
+>> This patchset introduce a new API to get the requirement and configure the
+>> interconnect buses across the entire chipset to fit with the current demand.
+>> The API is NOT for changing the performance of the endpoint devices, but only
+>> the interconnect path in between them.
+>>
+>> The API is using a consumer/provider-based model, where the providers are
+>> the interconnect controllers and the consumers could be various drivers.
+>> The consumers request interconnect resources (path) to an endpoint and set
+>> the desired constraints on this data flow path. The provider(s) receive
+>> requests from consumers and aggregate these requests for all master-slave
+>> pairs on that path. Then the providers configure each participating in the
+>> topology node according to the requested data flow path, physical links and
+>> constraints. The topology could be complicated and multi-tiered and is SoC
+>> specific.
+>>
+>> Below is a simplified diagram of a real-world SoC topology. The interconnect
+>> providers are the memory front-end and the NoCs.
+>>
+>> +----------------+    +----------------+
+>> | HW Accelerator |--->|      M NoC     |<---------------+
+>> +----------------+    +----------------+                |
+>>                         |      |                    +------------+
+>>           +-------------+      V       +------+     |            |
+>>           |                +--------+  | PCIe |     |            |
+>>           |                | Slaves |  +------+     |            |
+>>           |                +--------+     |         |   C NoC    |
+>>           V                               V         |            |
+>> +------------------+   +------------------------+   |            |   +-----+
+>> |                  |-->|                        |-->|            |-->| CPU |
+>> |                  |-->|                        |<--|            |   +-----+
+>> |      Memory      |   |         S NoC          |   +------------+
+>> |                  |<--|                        |---------+    |
+>> |                  |<--|                        |<------+ |    |   +--------+
+>> +------------------+   +------------------------+       | |    +-->| Slaves |
+>>    ^     ^    ^           ^                             | |        +--------+
+>>    |     |    |           |                             | V
+>> +-----+  |  +-----+    +-----+  +---------+   +----------------+   +--------+
+>> | CPU |  |  | GPU |    | DSP |  | Masters |-->|       P NoC    |-->| Slaves |
+>> +-----+  |  +-----+    +-----+  +---------+   +----------------+   +--------+
+>>          |
+>>      +-------+
+>>      | Modem |
+>>      +-------+
+>>
+>> This RFC does not implement all features but only main skeleton to check the
+>> validity of the proposal. Currently it only works with device-tree and platform
+>> devices.
+>>
+>> TODO:
+>>  * Constraints are currently stored in internal data structure. Should PM QoS
+>>  be used instead?
+>>  * Rework the framework to not depend on DT as frameworks cannot be tied
+>>  directly to firmware interfaces. Add support for ACPI?
 >
-> This ops needs to take a "source" and "dest" input and you'll need to
-> pass in the prev/next nodes of each "node" in this list. This is needed
-> so that each interconnect know the local source/destination and can make
-> the aggregation decisions correctly based on the internal implementation
-> of the interconnect. For the first and last nodes in the list, the
-> source and destination nodes can be NULL, respectively.
-
-I agree. Updated.
-
+> I would start without DT even. You can always have the data you need in
+> the kernel. This will be more flexible as you're not defining an ABI as
+> this evolves. I think it will take some time to have consensus on how to
+> represent the bus master view of buses/interconnects (It's been
+> attempted before).
 >
->> +    }
->> +
->> +    return 0;
->> +}
->> +
-
-[..]
-
->> +void interconnect_put(struct interconnect_path *path)
->> +{
->> +    struct interconnect_node *node;
->> +    struct icn_qos *req;
->> +    struct hlist_node *tmp;
->> +
->> +    if (IS_ERR(path))
->> +        return;
->> +
->> +    list_for_each_entry(node, &path->node_list, search_list) {
->> +        hlist_for_each_entry_safe(req, tmp, &node->qos_list, node) {
->> +            if (req->path == path) {
->> +                hlist_del(&req->node);
->> +                kfree(req);
->> +            }
->
-> Should we go through and remove any bandwidth votes that were made on
-> this path before we free it?
->
-
-Yes, thanks! We should remove the constraints from the path, then
-update the nodes and after that free the memory.
-
->> +        }
->> +    }
->> +
->> +    kfree(path);
->> +}
->> +EXPORT_SYMBOL_GPL(interconnect_put);
->> +
->> +int interconnect_add_provider(struct icp *icp)
->> +{
->> +    struct interconnect_node *node;
->> +
->> +    WARN(!icp->ops->xlate, "%s: .xlate is not implemented\n", __func__);
->> +    WARN(!icp->ops->set, "%s: .set is not implemented\n", __func__);
->> +
->> +    mutex_lock(&interconnect_provider_list_mutex);
->> +    list_add(&icp->icp_list, &interconnect_provider_list);
->> +    mutex_unlock(&interconnect_provider_list_mutex);
->> +
->> +    list_for_each_entry(node, &icp->nodes, icn_list) {
->> +        INIT_HLIST_HEAD(&node->qos_list);
->> +    }
->> +
->> +    dev_info(icp->dev, "added interconnect provider %s\n", icp->name);
->> +
->> +    return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(interconnect_add_provider);
->> +
->> +int interconnect_del_provider(struct icp *icp)
->> +{
->> +    mutex_lock(&interconnect_provider_list_mutex);
->> +    of_node_put(icp->of_node);
->> +    list_del(&icp->icp_list);
->
-> If there's a path with an active vote, we should probably return a
-> -EBUSY to prevent deleting a provider that's actively used?
+> Rob
 >
 
-Thanks, sounds good. Will do.
+Thanks for the comment and for discussing this off-line! As the main
+concern here is to see a list of multiple platforms before we come
+up with a common binding, i will convert this to initially use platform
+data. Then later we will figure out what exactly to pull into DT.
 
 BR,
 Georgi
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
