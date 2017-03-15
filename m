@@ -1,56 +1,36 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU controller
-Date: Wed, 15 Mar 2017 06:20:28 -0700
-Message-ID: <CAJWu+or4AJ6_J8XJicKDJReMP6Dj7t7SbB7k78ia8FdhDdXXoA@mail.gmail.com>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
- <CAEi0qNkAK_3a_2x9BgvyEC+bFvckGFoQX1fjFba6boC1ws_R5w@mail.gmail.com> <20170315112020.GA18557@e110439-lin>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH] cpufreq: dbx500: Manage cooling device from cpufreq driver
+Date: Wed, 15 Mar 2017 14:37:44 +0100
+Message-ID: <CACRpkdbj6UH+ZJfCYD1DKQ=3Qa=Aho9M5EWyQG8mRg=GCDEmXA@mail.gmail.com>
+References: <99cc71f22d0470cb164b0fa05e07a863265bf922.1489468688.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170315112020.GA18557@e110439-lin>
+In-Reply-To: <99cc71f22d0470cb164b0fa05e07a863265bf922.1489468688.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 15, 2017 at 4:20 AM, Patrick Bellasi
-<patrick.bellasi@arm.com> wrote:
-> On 13-Mar 03:46, Joel Fernandes (Google) wrote:
->> On Tue, Feb 28, 2017 at 6:38 AM, Patrick Bellasi
->> <patrick.bellasi@arm.com> wrote:
->> > The CPU CGroup controller allows to assign a specified (maximum)
->> > bandwidth to tasks within a group, however it does not enforce any
->> > constraint on how such bandwidth can be consumed.
->> > With the integration of schedutil, the scheduler has now the proper
->> > information about a task to select  the most suitable frequency to
->> > satisfy tasks needs.
->> [..]
->>
->> > +static u64 cpu_capacity_min_read_u64(struct cgroup_subsys_state *css,
->> > +                                    struct cftype *cft)
->> > +{
->> > +       struct task_group *tg;
->> > +       u64 min_capacity;
->> > +
->> > +       rcu_read_lock();
->> > +       tg = css_tg(css);
->> > +       min_capacity = tg->cap_clamp[CAP_CLAMP_MIN];
->>
->> Shouldn't the cap_clamp be accessed with READ_ONCE (and WRITE_ONCE in
->> the write path) to avoid load-tearing?
+On Tue, Mar 14, 2017 at 6:18 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+
+> The best place to register the CPU cooling device is from the cpufreq
+> driver as we would know if all the resources are already available or
+> not. That's what is done for the cpufreq-dt.c driver as well.
 >
-> tg->cap_clamp is an "unsigned int" and thus I would expect a single
-> memory access to write/read it, isn't it? I mean: I do not expect the
-> compiler "to mess" with these accesses.
+> The cpu-cooling driver for dbx500 platform was just (un)registering
+> with the thermal framework and that can be handled easily by the cpufreq
+> driver as well and in proper sequence as well.
+>
+> Get rid of the cooling driver and its its users and manage everything
+> from the cpufreq driver instead.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Only compile tested.
 
-This depends on compiler and arch. I'm not sure if its in practice
-these days an issue, but see section on 'load tearing' in
-Documentation/memory-barriers.txt . If compiler decided to break down
-the access to multiple accesses due to some reason, then might be a
-problem.
+Works fine. Nice cleanup, thanks!
+Tested-by: Linus Walleij <linus.walleij@linaro.org>
 
-Adding Paul for his expert opinion on the matter ;)
-
-Thanks,
-Joel
+Yours,
+Linus Walleij
