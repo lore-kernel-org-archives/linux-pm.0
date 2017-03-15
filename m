@@ -1,50 +1,99 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [RFC v3 5/5] sched/{core,cpufreq_schedutil}: add capacity
- clamping for RT/DL tasks
-Date: Wed, 15 Mar 2017 16:40:07 -0700
-Message-ID: <CAJWu+ooCmyx7PNXhzrDsUQM=eU1zxo8F3gyp2ihpabpREk5vfg@mail.gmail.com>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <1488292722-19410-6-git-send-email-patrick.bellasi@arm.com>
- <CAEi0qNkn8xS=8vzStXjtJVwYwiXiu4vefZwe3VQPUVqz72YiKw@mail.gmail.com>
- <20170315114052.GB18557@e110439-lin> <CAJWu+opgLoa3EGdhQKXSi+dkQjXtc62tKmTL0krXxpqJp+PjPQ@mail.gmail.com>
- <20170315144449.GH31499@e106622-lin> <CAJWu+orSQbyDxN4O6wk8SYj-t5FyUZA4aO0GQqm8Fgujwr9+Lw@mail.gmail.com>
- <20170315162414.GI31499@e106622-lin>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v8 1/9] devicetree: power: Add battery.txt
+Date: Wed, 15 Mar 2017 18:50:47 -0500
+Message-ID: <CAL_JsqJOFUSRY_KPzwNWrx4FF1_F6XNK8OfkqhqgBpxH9WrZeQ@mail.gmail.com>
+References: <20170227071117.18934-1-liam@networkimprov.net>
+ <20170227071117.18934-2-liam@networkimprov.net> <20170302151449.j7i3ecpy2ipxu6tq@rob-hp-laptop>
+ <CAKvHMgR6eVTUp6je3D_YDUMAksWiHx6JnJc8cRHSHp6tj30OPA@mail.gmail.com>
+ <CAL_Jsq+8Y=GtyjVZA-suZLH+ySDshaoU9qh96BF+PeUYK3FZxg@mail.gmail.com> <CAKvHMgTpqdNKQoWUsChn4YWTtWaN5un_Vpqp+HtbMrxGV_D-ig@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170315162414.GI31499@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, "Joel Fernandes (Google)" <joel.opensrc@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Andres Oportus <andresoportus@google.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:47692 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750912AbdCOXvN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Mar 2017 19:51:13 -0400
+In-Reply-To: <CAKvHMgTpqdNKQoWUsChn4YWTtWaN5un_Vpqp+HtbMrxGV_D-ig@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, "Andrew F. Davis" <afd@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Liam Breck <kernel@networkimprov.net>
 
-On Wed, Mar 15, 2017 at 9:24 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-[..]
->
->> > However, trying to quickly summarize how that would work (for who is
->> > already somewhat familiar with reclaiming bits):
->> >
->> >  - a task utilization contribution is accounted for (at rq level) as
->> >    soon as it wakes up for the first time in a new period
->> >  - its contribution is then removed after the 0lag time (or when the
->> >    task gets throttled)
->> >  - frequency transitions are triggered accordingly
->> >
->> > So, I don't see why triggering a go down request after the 0lag time
->> > expired and quickly reacting to tasks waking up would have create
->> > problems in your case?
+On Wed, Mar 15, 2017 at 5:04 PM, Liam Breck <liam@networkimprov.net> wrote:
+> On Wed, Mar 15, 2017 at 1:10 PM, Rob Herring <robh@kernel.org> wrote:
+>> On Thu, Mar 2, 2017 at 12:31 PM, Liam Breck <liam@networkimprov.net> wrote:
+>>> Hi Rob,
+>>>
+>>> On Thu, Mar 2, 2017 at 7:14 AM, Rob Herring <robh@kernel.org> wrote:
+>>>> On Sun, Feb 26, 2017 at 11:11:09PM -0800, Liam Breck wrote:
+>>>>> From: Liam Breck <kernel@networkimprov.net>
+>>>>>
+>>>>> Documentation of static battery characteristics that can be defined
+>>>>> for batteries which cannot self-identify. This information is required
+>>>>> by fuel-gauge and charger chips for proper handling of the battery.
+>>>>>
+>>>>> Cc: Rob Herring <robh@kernel.org>
+>>>>> Cc: devicetree@vger.kernel.org
+>>>>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>>>>> ---
+>>>>>  .../devicetree/bindings/power/supply/battery.txt   | 42 ++++++++++++++++++++++
+>>>>>  1 file changed, 42 insertions(+)
+>>>>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>>
+>>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>> new file mode 100644
+>>>>> index 0000000..3d916bd
+>>>>> --- /dev/null
+>>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>> @@ -0,0 +1,42 @@
+>>>>> +Battery Characteristics
+>>>>> +
+>>>>> +Required Properties:
+>>>>> + - compatible: Must be "fixed-battery"
+>>>>
+>>>> Still not liking this name, but I don't have a better suggestion. Please
+>>>> describe here what is and isn't a "fixed battery".
+>>>
+>>> Sebastian...?
+>>>
+>>>>> +
+>>>>> +Optional Properties:
+>>>>> + - voltage-min-design-microvolt: drained battery voltage
+>>>>> + - energy-full-design-microwatt-hours: battery design energy
+>>>>> + - charge-full-design-microamp-hours: battery design capacity
+>>>>> +
+>>>>> +Future Properties must be named for the corresponding elements in
+>>>>> +enum power_supply_property, defined in include/linux/power_supply.h.
+>>>>
+>>>> Um, no. That's exactly not how DT bindings should be done.
+>>>
+>>> Power supply components surface stats in sysfs using the names in enum
+>>> power_supply_property. For example,
+>>> /sys/class/power_supply/.../voltage_min_design. Matching input (DT)
+>>> and output (sysfs) names is sensible. The above comment is already
+>>> attached to struct power_supply_battery_info, which is the initial
+>>> destination for the above DT properties.
+>>>
+>>> Shall I mention sysfs in the above comment?
 >>
->> In my experience, the 'reacting to tasks' bit doesn't work very well.
+>> Absolutely not. Bindings should not reference Linux.
+>>
+>> While sometimes things can align, there is no guarantee that they
+>> will. DT is h/w description. sysfs is user configuration.
 >
-> Humm.. but in this case we won't be 'reacting', we will be
-> 'anticipating' tasks' needs, right?
+> sysfs for power_supply also provides fixed hw characteristics.
+>
+> Sebastian proposed DT:battery specifically to be consumed by
+> power_supply_core. Allowing names in DT:battery and
+> power_supply_property to diverge would cause confusion and wasted
+> time, for no particular benefit. As there is no rationale to
+> reconsider the names of these fields for DT:battery, let's write that
+> into the docs.
 
-Are you saying we will start ramping frequency before the next
-activation so that we're ready for it?
+Write it into the Linux docs then. The DT docs need to stand on their
+own for the standalone DT tree[1] that other projects import.
 
-If not, it sounds like it will only make the frequency request on the
-next activation when the Active bandwidth increases due to the task
-waking up. By then task has already started to run, right?
+Rob
 
-Thanks,
-Joel
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/devicetree/devicetree-rebasing.git/
