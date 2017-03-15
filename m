@@ -1,101 +1,158 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC v3 5/5] sched/{core,cpufreq_schedutil}: add capacity
- clamping for RT/DL tasks
-Date: Wed, 15 Mar 2017 14:44:49 +0000
-Message-ID: <20170315144449.GH31499@e106622-lin>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <1488292722-19410-6-git-send-email-patrick.bellasi@arm.com>
- <CAEi0qNkn8xS=8vzStXjtJVwYwiXiu4vefZwe3VQPUVqz72YiKw@mail.gmail.com>
- <20170315114052.GB18557@e110439-lin>
- <CAJWu+opgLoa3EGdhQKXSi+dkQjXtc62tKmTL0krXxpqJp+PjPQ@mail.gmail.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH 3/6] cpufreq: schedutil: ensure max frequency while
+ running RT/DL tasks
+Date: Wed, 15 Mar 2017 14:40:51 +0000
+Message-ID: <20170315144051.GE18557@e110439-lin>
+References: <1488469507-32463-1-git-send-email-patrick.bellasi@arm.com>
+ <20170303083145.GA8206@vireshk-i7>
+ <20170303123830.GB10420@e110439-lin>
+ <4111071.G5qHzPaNa5@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJWu+opgLoa3EGdhQKXSi+dkQjXtc62tKmTL0krXxpqJp+PjPQ@mail.gmail.com>
+In-Reply-To: <4111071.G5qHzPaNa5@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joelaf@google.com>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, "Joel Fernandes (Google)" <joel.opensrc@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Andres Oportus <andresoportus@google.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Chris Redpath <chris.redpath@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Joel,
+On 15-Mar 12:52, Rafael J. Wysocki wrote:
+> On Friday, March 03, 2017 12:38:30 PM Patrick Bellasi wrote:
+> > On 03-Mar 14:01, Viresh Kumar wrote:
+> > > On 02-03-17, 15:45, Patrick Bellasi wrote:
+> > > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > > > @@ -293,15 +305,29 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+> > > >  	if (curr == sg_policy->thread)
+> > > >  		goto done;
+> > > >  
+> > > > +	/*
+> > > > +	 * While RT/DL tasks are running we do not want FAIR tasks to
+> > > > +	 * overwrite this CPU's flags, still we can update utilization and
+> > > > +	 * frequency (if required/possible) to be fair with these tasks.
+> > > > +	 */
+> > > > +	rt_mode = task_has_dl_policy(curr) ||
+> > > > +		  task_has_rt_policy(curr) ||
+> > > > +		  (flags & SCHED_CPUFREQ_RT_DL);
+> > > > +	if (rt_mode)
+> > > > +		sg_cpu->flags |= flags;
+> > > > +	else
+> > > > +		sg_cpu->flags = flags;
+> > > 
+> > > This looks so hacked up :)
+> > 
+> > It is... a bit... :)
+> > 
+> > > Wouldn't it be better to let the scheduler tell us what all kind of tasks it has
+> > > in the rq of a CPU and pass a mask of flags?
+> > 
+> > That would definitively report a more consistent view of what's going
+> > on on each CPU.
+> > 
+> > > I think it wouldn't be difficult (or time consuming) for the
+> > > scheduler to know that, but I am not 100% sure.
+> > 
+> > Main issue perhaps is that cpufreq_update_{util,this_cpu} are
+> > currently called by the scheduling classes codes and not from the core
+> > scheduler. However I agree that it should be possible to build up such
+> > information and make it available to the scheduling classes code.
+> > 
+> > I'll have a look at that.
+> > 
+> > > IOW, the flags field in cpufreq_update_util() will represent all tasks in the
+> > > rq, instead of just the task that is getting enqueued/dequeued..
+> > > 
+> > > And obviously we need to get some utilization numbers for the RT and DL tasks
+> > > going forward, switching to max isn't going to work for ever :)
+> > 
+> > Regarding this last point, there are WIP patches Juri is working on to
+> > feed DL demands to schedutil, his presentation at last ELC partially
+> > covers these developments:
+> >   https://www.youtube.com/watch?v=wzrcWNIneWY&index=37&list=PLbzoR-pLrL6pSlkQDW7RpnNLuxPq6WVUR
+> > 
+> > Instead, RT tasks are currently covered by an rt_avg metric which we
+> > already know is not fitting for most purposes.
+> > It seems that the main goal is twofold: move people to DL whenever
+> > possible otherwise live with the go-to-max policy which is the only
+> > sensible solution to satisfy the RT's class main goal, i.e. latency
+> > reduction.
+> > 
+> > Of course such a go-to-max policy for all RT tasks we already know
+> > that is going to destroy energy on many different mobile scenarios.
+> > 
+> > As a possible mitigation for that, while still being compliant with
+> > the main RT's class goal, we recently posted the SchedTune v3
+> > proposal:
+> >   https://lkml.org/lkml/2017/2/28/355
+> > 
+> > In that proposal, the simple usage of CGroups and the new capacity_max
+> > attribute of the (existing) CPU controller should allow to define what
+> > is the "max" value which is just enough to match the latency
+> > constraints of a mobile application without sacrificing too much
+> > energy.
 
-On 15/03/17 05:59, Joel Fernandes wrote:
-> On Wed, Mar 15, 2017 at 4:40 AM, Patrick Bellasi
-> <patrick.bellasi@arm.com> wrote:
-> > On 13-Mar 03:08, Joel Fernandes (Google) wrote:
-> >> Hi Patrick,
-> >>
-> >> On Tue, Feb 28, 2017 at 6:38 AM, Patrick Bellasi
-> >> <patrick.bellasi@arm.com> wrote:
-> >> > Currently schedutil enforce a maximum OPP when RT/DL tasks are RUNNABLE.
-> >> > Such a mandatory policy can be made more tunable from userspace thus
-> >> > allowing for example to define a reasonable max capacity (i.e.
-> >> > frequency) which is required for the execution of a specific RT/DL
-> >> > workload. This will contribute to make the RT class more "friendly" for
-> >> > power/energy sensible applications.
-> >> >
-> >> > This patch extends the usage of capacity_{min,max} to the RT/DL classes.
-> >> > Whenever a task in these classes is RUNNABLE, the capacity required is
-> >> > defined by the constraints of the control group that task belongs to.
-> >> >
-> >>
-> >> We briefly discussed this at Linaro Connect that this works well for
-> >> sporadic RT tasks that run briefly and then sleep for long periods of
-> >> time - so certainly this patch is good, but its only a partial
-> >> solution to the problem of frequent and short-sleepers and something
-> >> is required to keep the boost active for short non-RUNNABLE as well.
-> >> The behavior with many periodic RT tasks is that they will sleep for
-> >> short intervals and run for short intervals periodically. In this case
-> >> removing the clamp (or the boost as in schedtune v2) on a dequeue will
-> >> essentially mean during a narrow window cpufreq can drop the frequency
-> >> and only to make it go back up again.
-> >>
-> >> Currently for schedtune v2, I am working on prototyping something like
-> >> the following for Android:
-> >> - if RT task is enqueue, introduce the boost.
-> >> - When task is dequeued, start a timer for a  "minimum deboost delay
-> >> time" before taking out the boost.
-> >> - If task is enqueued again before the timer fires, then cancel the timer.
-> >>
-> >> I don't think any "fix" to this particular issue should be to the
-> >> schedutil governor and should be sorted before going to cpufreq itself
-> >> (that is before making the request). What do you think about this?
-> >
-> > My short observations are:
-> >
-> > 1) for certain RT tasks, which have a quite "predictable" activation
-> >    pattern, we should definitively try to use DEADLINE... which will
-> >    factor out all "boosting potential races" since the bandwidth
-> >    requirements are well defined at task description time.
-> 
-> I don't immediately see how deadline can fix this, when a task is
-> dequeued after end of its current runtime, its bandwidth will be
-> subtracted from the active running bandwidth. This is what drives the
-> DL part of the capacity request. In this case, we run into the same
-> issue as with the boost-removal on dequeue. Isn't it?
-> 
+Given the following interesting question, let's add Thomas Gleixner to
+the discussion, which can be interested in sharing his viewpoint.
+ 
+> And who's going to figure out what "max" value is most suitable?  And how?
 
-Unfortunately, I still have to post the set of patches (based on Luca's
-reclaiming set) that introduces driving of clock frequency from
-DEADLINE, so I guess everything we can discuss about how DEADLINE might
-help here might be difficult to understand. :(
+That's usually up to the system profiling which is part of the
+platform optimizations and tunings.
+For example it's possible to run  experiments to measure the bandwidth
+and (completion) latency requirements from the RT workloads.
 
-I should definitely fix that.
+It's something which people developing embedded/mobile systems are
+quite aware of. I'm also quite confident on saying that most of
+them can agree that just going to the max OPP, each and every time a
+RT task becomes RUNNABLE, it is something which is more likely to hurt
+than to give benefits.
 
-However, trying to quickly summarize how that would work (for who is
-already somewhat familiar with reclaiming bits):
+AFAIK the current policy (i.e. "go to max") has been adopted for the
+following main reasons, which I'm reporting with some observations.
 
- - a task utilization contribution is accounted for (at rq level) as
-   soon as it wakes up for the first time in a new period
- - its contribution is then removed after the 0lag time (or when the
-   task gets throttled)
- - frequency transitions are triggered accordingly
 
-So, I don't see why triggering a go down request after the 0lag time
-expired and quickly reacting to tasks waking up would have create
-problems in your case?
+.:: Missing of a suitable utilization metric for RT tasks
 
-Thanks,
+ There is actually a utilization signal (rq->rt_avg) but it has been
+ verified to be "too slow" for the practical usage of driving OPP
+ selection.
+ Other possibilities are perhaps under exploration but they are not
+ yet there.
 
-- Juri
+
+.:: Promote the migration from RT to DEADLINE
+
+ Which makes a lot of sens for many existing use-cases, starting from
+ Android as well. However, it's also true that we cannot (at least yet)
+ split the world in DEALINE vs FAIR.
+ There is still, and there will be, a fair amount of RT tasks which
+ just it makes sense to serve at best both from the performance as
+ well as the power/energy standpoint.
+
+
+.:: Because RT is all about "reducing latencies"
+
+ Running at the maximum OPP is certainly the best way to aim for the
+ minimum latencies but... RT is about doing things "in time", which
+ does not imply "as fast as possible".
+ There can be many different workloads where a lower OPP is just good
+ enough to meet the expected soft RT behaviors provided by the Linux
+ RT scheduler.
+
+
+All that considered, the modifications proposed in this series,
+combined with other bits which are for discussion in this [1] other
+posting, can work together to provide a better and more tunable OPP
+selection policy for RT tasks.
+
+> Thanks,
+> Rafael
+
+Cheers Patrick
+
+[1] https://lkml.org/lkml/2017/2/28/355
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
