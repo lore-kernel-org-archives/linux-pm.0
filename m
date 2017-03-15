@@ -1,102 +1,58 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [RFC v3 5/5] sched/{core,cpufreq_schedutil}: add capacity
- clamping for RT/DL tasks
-Date: Wed, 15 Mar 2017 11:40:52 +0000
-Message-ID: <20170315114052.GB18557@e110439-lin>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC v3 0/5] Add capacity capping support to the CPU controller
+Date: Wed, 15 Mar 2017 12:41:54 +0100
+Message-ID: <1831216.C7tcY13Jiv@aspire.rjw.lan>
 References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <1488292722-19410-6-git-send-email-patrick.bellasi@arm.com>
- <CAEi0qNkn8xS=8vzStXjtJVwYwiXiu4vefZwe3VQPUVqz72YiKw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAEi0qNkn8xS=8vzStXjtJVwYwiXiu4vefZwe3VQPUVqz72YiKw@mail.gmail.com>
+In-Reply-To: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 13-Mar 03:08, Joel Fernandes (Google) wrote:
-> Hi Patrick,
+On Tuesday, February 28, 2017 02:38:37 PM Patrick Bellasi wrote:
+> Was: SchedTune: central, scheduler-driven, power-perfomance control
 > 
-> On Tue, Feb 28, 2017 at 6:38 AM, Patrick Bellasi
-> <patrick.bellasi@arm.com> wrote:
-> > Currently schedutil enforce a maximum OPP when RT/DL tasks are RUNNABLE.
-> > Such a mandatory policy can be made more tunable from userspace thus
-> > allowing for example to define a reasonable max capacity (i.e.
-> > frequency) which is required for the execution of a specific RT/DL
-> > workload. This will contribute to make the RT class more "friendly" for
-> > power/energy sensible applications.
-> >
-> > This patch extends the usage of capacity_{min,max} to the RT/DL classes.
-> > Whenever a task in these classes is RUNNABLE, the capacity required is
-> > defined by the constraints of the control group that task belongs to.
-> >
+> This series presents a possible alternative design for what has been presented
+> in the past as SchedTune. This redesign has been defined to address the main
+> concerns and comments collected in the LKML discussion [1] as well at the last
+> LPC [2].
+> The aim of this posting is to present a working prototype which implements
+> what has been discussed [2] with people like PeterZ, PaulT and TejunH.
 > 
-> We briefly discussed this at Linaro Connect that this works well for
-> sporadic RT tasks that run briefly and then sleep for long periods of
-> time - so certainly this patch is good, but its only a partial
-> solution to the problem of frequent and short-sleepers and something
-> is required to keep the boost active for short non-RUNNABLE as well.
-> The behavior with many periodic RT tasks is that they will sleep for
-> short intervals and run for short intervals periodically. In this case
-> removing the clamp (or the boost as in schedtune v2) on a dequeue will
-> essentially mean during a narrow window cpufreq can drop the frequency
-> and only to make it go back up again.
+> The main differences with respect to the previous proposal [1] are:
+>  1. Task boosting/capping is now implemented as an extension on top of
+>     the existing CGroup CPU controller.
+>  2. The previous boosting strategy, based on the inflation of the CPU's
+>     utilization, has been now replaced by a more simple yet effective set
+>     of capacity constraints.
 > 
-> Currently for schedtune v2, I am working on prototyping something like
-> the following for Android:
-> - if RT task is enqueue, introduce the boost.
-> - When task is dequeued, start a timer for a  "minimum deboost delay
-> time" before taking out the boost.
-> - If task is enqueued again before the timer fires, then cancel the timer.
+> The proposed approach allows to constrain the minimum and maximum capacity
+> of a CPU depending on the set of tasks currently RUNNABLE on that CPU.
+> The set of active constraints are tracked by the core scheduler, thus they
+> apply across all the scheduling classes. The value of the constraints are
+> used to clamp the CPU utilization when the schedutil CPUFreq's governor
+> selects a frequency for that CPU.
 > 
-> I don't think any "fix" to this particular issue should be to the
-> schedutil governor and should be sorted before going to cpufreq itself
-> (that is before making the request). What do you think about this?
+> This means that the new proposed approach allows to extend the concept of
+> tasks classification to frequencies selection, thus allowing informed
+> run-times (e.g. Android, ChromeOS, etc.) to efficiently implement different
+> optimization policies such as:
+>  a) Boosting of important tasks, by enforcing a minimum capacity in the
+>     CPUs where they are enqueued for execution.
+>  b) Capping of background tasks, by enforcing a maximum capacity.
+>  c) Containment of OPPs for RT tasks which cannot easily be switched to
+>     the usage of the DL class, but still don't need to run at the maximum
+>     frequency.
 
-My short observations are:
+Do you have any practical examples of that, like for example what exactly
+Android is going to use this for?
 
-1) for certain RT tasks, which have a quite "predictable" activation
-   pattern, we should definitively try to use DEADLINE... which will
-   factor out all "boosting potential races" since the bandwidth
-   requirements are well defined at task description time.
+I gather that there is some experience with the current EAS implementation
+there, so I wonder how this work is related to that.
 
-2) CPU boosting is, at least for the time being, a best-effort feature
-   which is introduced mainly for FAIR tasks.
-
-3) Tracking the boost at enqueue/dequeue time matches with the design
-   to track features/properties of the currently RUNNABLE tasks, while
-   avoiding to add yet another signal to track CPUs utilization.
-
-4) Previous point is about "separation of concerns", thus IMHO any
-   policy defining how to consume the CPU utilization signal
-   (whether it is boosted or not) should be responsibility of
-   schedutil, which eventually does not exclude useful input from the
-   scheduler.
-
-5) I understand the usefulness of a scale down threshold for schedutil
-   to reduce the current OPP, while I don't get the point for a scale
-   up threshold. If the system is demanding more capacity and there
-   are not HW constrains (e.g. pending changes) then we should go up
-   as soon as possible.
-
-Finally, I think we can improve quite a lot the boosting issues you
-are having with RT tasks by better refining the schedutil thresholds
-implementation.
-
-We already have some patches pending for review:
-   https://lkml.org/lkml/2017/3/2/385
-which fixes some schedutil issue and we will follow up with others
-trying to improve the rate-limiting to not compromise responsiveness.
-
-
-> Thanks,
-> Joel
-
-Cheers Patrick
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Thanks,
+Rafael
