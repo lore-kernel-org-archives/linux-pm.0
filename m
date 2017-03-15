@@ -1,69 +1,77 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] dt-bindings: power/supply: rename max8925_batter.txt to
- max8925_battery.txt
-Date: Wed, 15 Mar 2017 22:13:32 +0100
-Message-ID: <20170315211332.36ko7k6xf2bfofsk@earth>
-References: <20170223153504.16894-1-enric.balletbo@collabora.com>
+Subject: Re: [PATCH v1] power: supply: bq25890: Use gpiod_get()
+Date: Wed, 15 Mar 2017 22:18:55 +0100
+Message-ID: <20170315211855.gih23pquxdufahbf@earth>
+References: <20170220171223.40799-1-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="6rmyezmgq5yd6rjr"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="meqe5ebpqfsbupgu"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:59912 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751765AbdCOVTB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Mar 2017 17:19:01 -0400
 Content-Disposition: inline
-In-Reply-To: <20170223153504.16894-1-enric.balletbo@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20170220171223.40799-1-andriy.shevchenko@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-pm@vger.kernel.org
 
 
---6rmyezmgq5yd6rjr
+--meqe5ebpqfsbupgu
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Feb 23, 2017 at 04:35:04PM +0100, Enric Balletbo i Serra wrote:
-> Fix the max8925_batter typo in the file name.
+On Mon, Feb 20, 2017 at 07:12:23PM +0200, Andy Shevchenko wrote:
+> Since index is always 0, replace gpiod_get_index() by gpiod_get().
 >=20
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 > ---
->  .../bindings/power/supply/{max8925_batter.txt =3D> max8925_battery.txt} =
-    | 0
->  1 file changed, 0 insertions(+), 0 deletions(-)
->  rename Documentation/devicetree/bindings/power/supply/{max8925_batter.tx=
-t =3D> max8925_battery.txt} (100%)
+>  drivers/power/supply/bq25890_charger.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> diff --git a/Documentation/devicetree/bindings/power/supply/max8925_batte=
-r.txt b/Documentation/devicetree/bindings/power/supply/max8925_battery.txt
-> similarity index 100%
-> rename from Documentation/devicetree/bindings/power/supply/max8925_batter=
-=2Etxt
-> rename to Documentation/devicetree/bindings/power/supply/max8925_battery.=
-txt
+> diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/suppl=
+y/bq25890_charger.c
+> index f993a55cde20..8e2c41ded171 100644
+> --- a/drivers/power/supply/bq25890_charger.c
+> +++ b/drivers/power/supply/bq25890_charger.c
+> @@ -723,7 +723,7 @@ static int bq25890_irq_probe(struct bq25890_device *b=
+q)
+>  {
+>  	struct gpio_desc *irq;
+> =20
+> -	irq =3D devm_gpiod_get_index(bq->dev, BQ25890_IRQ_PIN, 0, GPIOD_IN);
+> +	irq =3D devm_gpiod_get(bq->dev, BQ25890_IRQ_PIN, GPIOD_IN);
+>  	if (IS_ERR(irq)) {
+>  		dev_err(bq->dev, "Could not probe irq pin.\n");
+>  		return PTR_ERR(irq);
 
 Thanks, queued.
 
 -- Sebastian
 
---6rmyezmgq5yd6rjr
+--meqe5ebpqfsbupgu
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJrnsACgkQ2O7X88g7
-+ppkFw/9EswhYcvUXw0LD36NHqD/LH87LvrZ6agE6lNbQD+M1PIZhoeMS5FYBlCQ
-mNssrTc/+4peH+FqmOWFo8QuvCXPCBYS53dJjZtubBeIkjLBiZVtXlgjAwDHJalw
-ThSk1AB0ASHuFbjQV/WuWYB/4KWfzm4ZZYkEKAgvWfYQ9FntmarmQGO0Akvau402
-OJbuSy0WWiw/jiVDFlTxSPaJ/UXsUNNnBwEh+Og5KUot/V1kb7w2u79Aqx65jAAl
-nZnoGXBAx1/joJuT3az5mcKjpDoUc7q3/XN1SW0faZ/S/tluPpcSfTzUh/kgePS/
-lEEVXvP18JYqA4tNsK8zV48K/mnCc1E0ghZ0KNrlzI40QfMa9AcRmDq94MuoE1OK
-Vhcy6jvFdx/sBH8gFrLsnx6t/jx6KfR2yXxFQ1kIa0g2aa9fciqyn4JzIFJyRZog
-+Ks1xkq7bfgYEVwh6eNQcnGiLKbFFwpwZmdQmxM7YpJjocz6+7dKTjRU+bn4qA+j
-v7WwtYArULsFwI+05e2wOTRktWK3dvu3xC+rFNfD+q+0IlayPAhMREe+/z7Br35K
-76+oC6rpiostENoKgJOENMPEwn+a8eRR+CEYYkSN6zfNPk3JQ5jJ85jSk5XDzbmY
-Kj5CEzHqrWlLDXXjtqmHUnysEVhNyoSSbCWx9witqQOlUigRRKs=
-=57rA
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJr78ACgkQ2O7X88g7
++ppS/xAAqEOyk7s8Odn1Kqb2dFNTL4IBCtNtUhDhznvTQWJHakKq3ahUOIq5Rls6
+MQrl6Ng8uIt3DQoO9xsDEPduj3VbzGxTY5/IHz93cYdJbZKHVR/LNeg1QzHS/7Lw
+/I2Cu8ZOnXm4gRz+hRxeQowavBCClheK7kqCz/rbdLgrqILMoxmiiAJM5aCNZvkb
+WR7BSArAUHoWEOGft5yj4uS5NwcnXkt1kYg3yYNlhZe1TPy2gWbiPRIIhlecxZd8
+/sZ/pB0k0lDgC50m48XwrqxWnTR6SoUHnL8Yq0QoT4VwTH87zMYTiUo+G50Zm2V0
+tR8QOoH7PTdwrZHrquEnxB/PFxkHIrYpOrZScbGg8B0OnTll9Q2oLeuggnCi9YLQ
+BLAHKnvEkYjD7f4CxUNaIo4Yl1HyWoapkTHiHLVe9bqOf9qmzu7g5vyLhG++kUuf
+A+ZGsxLDLKt6izEGS5NzFNXi4ZDW8fa3snTmr/gfgYMTW8unTe+kXZQgUGBAiWDD
+dS8V/f2XsWOaSLZt8UGm7YaPCbPbwU++ViRnmda8+u6N/B2Gkl+WHJYL/kzpRH+V
+z6CS+Kbogvu6dmVVFAoFSShncQTNiWd2vI0Xjg09DjLJkQDyODbGsDNHZzRotMvJ
+Y6+1D75/qR1QMsC28wDo0IV98J78P1SRB4mdn7SdzX9up55svYU=
+=t9hr
 -----END PGP SIGNATURE-----
 
---6rmyezmgq5yd6rjr--
+--meqe5ebpqfsbupgu--
