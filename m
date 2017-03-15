@@ -1,103 +1,60 @@
-From: "Nayak, Rajendra" <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Wed, 15 Mar 2017 09:17:04 +0530
-Message-ID: <e91820bc-1f6c-54c2-842e-f226307a8a62@codeaurora.org>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <52493231-71f4-1b62-b325-8532e63e4229@nvidia.com>
- <CAMuHMdUAN+PHr_GSvyMzA8N6LgzPEXhQyG_rSwFUOvc9_v7JiA@mail.gmail.com>
- <f4b3a93e-e29f-6fc6-6e7f-8c51081cbe15@nvidia.com>
- <CAPDyKFp20tDickB9mF1ZSRUvYBEsfATysENeMzGV9O8KXH2wig@mail.gmail.com>
- <3e88692d-613b-9c25-2554-7d399c45637a@nvidia.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 2/5] thermal: add trace events to the power allocator governor
+Date: Wed, 15 Mar 2017 09:56:39 +0530
+Message-ID: <CAOh2x==TDQrs3iNX6ZkSBWv+HRS3BoJqoZuyWpwsXGT6pCrK-w@mail.gmail.com>
+References: <1425316643-31991-1-git-send-email-javi.merino@arm.com> <1425316643-31991-3-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <3e88692d-613b-9c25-2554-7d399c45637a-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Andersson <bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f195.google.com ([209.85.161.195]:33629 "EHLO
+        mail-yw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750824AbdCOE0l (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2017 00:26:41 -0400
+In-Reply-To: <1425316643-31991-3-git-send-email-javi.merino@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <punit.agrawal@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Mark Brown <broonie@kernel.org>, Jon Medhurst <tixy@linaro.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
 
-Hey Jon,
+Hi Javi,
 
->>> Looks like there is still some interest/needs in/for this. Any thoughts
->>> on how we can move this forward?
->>
->> At the Linaro Connect last week, I was talking to Björn, Rajendra and
->> Stephen more about these related issues.
->>
->> It definitely seems like we need to progress with this somehow,
->> meaning we need a solution for being able to associate a device with
->> more than one PM domain. In that context, I don't think genpd based on
->> its current design, is a good fit to solve the problem.
->>
->> Instead I think we need something entirely new (perhaps some code can
->> be borrowed from genpd), which is more similar to the clock/regulator
->> framework. In other words, what you also were suggesting in a earlier
->> reply.
->> In this way, the driver/subsystem gains full flexibility of managing
->> its device's PM domains, which seems like the best future-proof
->> solution.
->
-> I agree, I think that that would give us the most flexibility to handle
-> whatever scenario. However, I was thinking that we could still use the
-> genpd core to register pm-domains with and control. My thought was to
-> allow devices to have a bindings with multiple pm-domains ...
->
-> 	dev-xyz {
-> 		...
-> 		power-domains = <&domain-a>, <&domain-b>;
-> 	};
->
-> Then in the genpd core we do having something like ...
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index e697dec9d25b..d1ae6ddf4903 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2026,6 +2026,15 @@ int genpd_dev_pm_attach(struct device *dev)
->                                                 "samsung,power-domain", 0);
->                 if (!pd_args.np)
->                         return -ENOENT;
-> +       } else if (ret > 1) {
-> +               /*
-> +                * If there are more than one PM domain defined for a device,
-> +                * then these need to be manually controlled by the device
-> +                * driver because the genpd core cannot bind a device with
-> +                * more than one PM domain.
-> +                */
-> +               dev_dbg(dev, "cannot add PM domains, %d detected!\n", ret);
-> +               return 0;
->         }
->
-> Then add some new public APIs for getting and controlling the pm-domains ...
->
-> struct generic_pm_domain *pm_genpd_get(struct device *dev, char *name);
-> - Use 'dev->of_node' to look-up pm-domain if populated, else uses name.
->
-> struct generic_pm_domain *of_pm_genpd_get(struct device *dev, int index);
-> void pm_genpd_put(struct generic_pm_domain *pd);
-> int pm_genpd_power_on(struct generic_pm_domain *pd);
-> int pm_genpd_power_off(struct generic_pm_domain *pd);
-> - Power on/off APIs would be synchronous types
+Sorry for picking up an old thread, but i had a question for you.
 
-These would also need some kind of usecounting I guess, since genpd
-otherwise relies on runtime PM to do the usecounting.
+On Mon, Mar 2, 2015 at 10:47 PM, Javi Merino <javi.merino@arm.com> wrote:
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
 
-This overall seems like a reasonable approach to solve the problem we
-have. While we discussed this approach at connect, we thought it would
-be a good idea to bring out some RFC on these lines to get the
-discussion going. Do you think you would be able to work on some quick 
-RFC around these lines, else if you think you would be busy in the near 
-term I can help with hacking up the changes as well.
+> @@ -588,12 +590,20 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+>                                        u32 *power)
+>  {
+>         unsigned long freq;
+> -       int cpu, ret;
+> +       int i = 0, cpu, ret;
+>         u32 static_power, dynamic_power, total_load = 0;
+>         struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+> +       u32 *load_cpu = NULL;
+>
+>         freq = cpufreq_quick_get(cpumask_any(&cpufreq_device->allowed_cpus));
+>
+> +       if (trace_thermal_power_cpu_get_power_enabled()) {
 
-regards,
-Rajendra
+You allocated load_cpu if cpu_get_power trace is enabled.
 
+> +               u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
+> +
+> +               load_cpu = devm_kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
+> +                                       GFP_KERNEL);
+> +       }
+> +
+>         for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
+>                 u32 load;
 >
-> Are there any potential pitfalls of the above?
+> @@ -603,14 +613,29 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+>                         load = 0;
 >
-> Cheers
-> Jon
->
+>                 total_load += load;
+> +               if (trace_thermal_power_cpu_limit_enabled() && load_cpu)
+
+But you store values to it only if cpu_limit trace is also enabled,
+otherwise it is all zeros.
+
+Why?
