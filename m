@@ -1,63 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 0/7] PM / Domains: Implement domain performance states
-Date: Wed, 15 Mar 2017 16:19:57 +0530
-Message-ID: <CAKohpomJj8543r7DARW9LXoL1QERFUAkdG0qXsMf76+zbR7QJw@mail.gmail.com>
-References: <cover.1487926924.git.viresh.kumar@linaro.org> <m237ekrhok.fsf@baylibre.com>
- <20170313103933.GA3102@vireshk-i7>
+From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH v4 01/18] dt-bindings: power: battery: add
+ constant-charge-current property
+Date: Wed, 15 Mar 2017 11:55:20 +0100
+Message-ID: <20170315105537.22349-2-quentin.schulz@free-electrons.com>
+References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
+Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f41.google.com ([209.85.214.41]:37015 "EHLO
-        mail-it0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751694AbdCOKt7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2017 06:49:59 -0400
-Received: by mail-it0-f41.google.com with SMTP id g138so16613168itb.0
-        for <linux-pm@vger.kernel.org>; Wed, 15 Mar 2017 03:49:59 -0700 (PDT)
-In-Reply-To: <20170313103933.GA3102@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBXN3UTDAKGQEOR43WKI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20170315105537.22349-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: icenowy-ymACFijhrKM@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Nishanth Menon <nm@ti.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "Nayak, Rajendra" <rnayak@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>
 
-On 13 March 2017 at 16:09, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 10-03-17, 12:38, Kevin Hilman wrote:
->> Why limit it to just voltage levels.
->>
->> As I suggested earlier, I think this should use OPPs.  Remember that a
->> PM domain is not limited to a hardware power domain, but is just a
->> grouping mechanism for devices that share some PM properties.  As
->> mentioned by Geert, this can also be a clock domain, where frequencies
->> would make sense as well.  One can imagine using this type of PM domain
->> to manage an interconnect/bus which has scalable voltage/frequencies as
->> well.
->
-> Okay, I tried to do that change today and am blocked a bit right now.
->
-> The OPP core and all of its APIs/interfaces have dependency on the
-> "struct device" for their working. It gets the of_node from it, stores
-> the device pointer to manage cases where multiple devices share OPP
-> table, uses it to get clk and regulators.
->
-> But the "genpd" structure doesn't have a 'struct device' associated
-> with it. How should I make both of them work together?
->
-> I tried to create separate helpers that don't accept 'dev', but that
-> is also not good.  Just too much redundant code everywhere.
->
-> Would creating a 'dev' structure within 'generic_pm_domain' be
-> acceptable? Or should we ask the domain-drivers to call something like
-> of_genpd_parse_idle_states(), with a fake 'dev' structure which has
-> its of_node initialized? Or maybe move that hack within the OPP-core
-> API, which can create a dev structure at runtime for the genpd passed
-> to it and get the OPP table out?
+This adds the constant-charge-current property to the list of optional
+properties of the battery.
 
-Ulf/Kevin,
+The constant charge current is critical for batteries as they can't
+handle all charge currents.
 
-I am currently blocked on this decision. Will it be possible for you guys
-to suggest something, so that I can send V3 soon ?
+Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+---
 
-The most ideal solution seems to be adding a device structure in genpd
-structure and add a genpd bus as well probably.
+v4:
+ - switch from constant-charge-current-microamp to constant-charge-microamp,
 
---
-viresh
+added in v3
+
+ Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+index 0278617..9594e1e 100644
+--- a/Documentation/devicetree/bindings/power/supply/battery.txt
++++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+@@ -7,6 +7,7 @@ Optional Properties:
+  - voltage-min-design-microvolt: drained battery voltage
+  - energy-full-design-microwatt-hours: battery design energy
+  - charge-full-design-microamp-hours: battery design capacity
++ - constant-charge-microamp: battery constant charge current
+ 
+ Because drivers surface properties in sysfs using names derived
+ from enum power_supply_property, e.g.
+@@ -30,6 +31,7 @@ Example:
+ 		voltage-min-design-microvolt = <3200000>;
+ 		energy-full-design-microwatt-hours = <5290000>;
+ 		charge-full-design-microamp-hours = <1430000>;
++		constant-charge-microamp = <300000>;
+ 	};
+ 
+ 	charger: charger@11 {
+-- 
+2.9.3
