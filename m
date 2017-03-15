@@ -1,58 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC v3 0/5] Add capacity capping support to the CPU controller
-Date: Wed, 15 Mar 2017 12:41:54 +0100
-Message-ID: <1831216.C7tcY13Jiv@aspire.rjw.lan>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+Subject: Re: [RFC 0/9] cpufreq: schedutil: Allow remote wakeups
+Date: Wed, 15 Mar 2017 12:45:27 +0100
+Message-ID: <4261790.UfzOU18DRK@aspire.rjw.lan>
+References: <cover.1489058244.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+In-Reply-To: <cover.1489058244.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, February 28, 2017 02:38:37 PM Patrick Bellasi wrote:
-> Was: SchedTune: central, scheduler-driven, power-perfomance control
+On Thursday, March 09, 2017 05:15:10 PM Viresh Kumar wrote:
+> Hi,
 > 
-> This series presents a possible alternative design for what has been presented
-> in the past as SchedTune. This redesign has been defined to address the main
-> concerns and comments collected in the LKML discussion [1] as well at the last
-> LPC [2].
-> The aim of this posting is to present a working prototype which implements
-> what has been discussed [2] with people like PeterZ, PaulT and TejunH.
+> This is based of the work done by Steve Muckle [1] before he left Linaro
+> and most of the patches are still under his authorship. I have done
+> couple of improvements (detailed in individual patches) and removed the
+> late callback support [2] as I wasn't sure of the value it adds. We can
+> include it separately if others feel it is required. This series is
+> based on pm/linux-next with patches [3] and [4] applied on top of it.
 > 
-> The main differences with respect to the previous proposal [1] are:
->  1. Task boosting/capping is now implemented as an extension on top of
->     the existing CGroup CPU controller.
->  2. The previous boosting strategy, based on the inflation of the CPU's
->     utilization, has been now replaced by a more simple yet effective set
->     of capacity constraints.
+> With Android UI and benchmarks the latency of cpufreq response to
+> certain scheduling events can become very critical. Currently, callbacks
+> into schedutil are only made from the scheduler if the target CPU of the
+> event is the same as the current CPU. This means there are certain
+> situations where a target CPU may not run schedutil for some time.
 > 
-> The proposed approach allows to constrain the minimum and maximum capacity
-> of a CPU depending on the set of tasks currently RUNNABLE on that CPU.
-> The set of active constraints are tracked by the core scheduler, thus they
-> apply across all the scheduling classes. The value of the constraints are
-> used to clamp the CPU utilization when the schedutil CPUFreq's governor
-> selects a frequency for that CPU.
+> One testcase to show this behavior is where a task starts running on
+> CPU0, then a new task is also spawned on CPU0 by a task on CPU1. If the
+> system is configured such that new tasks should receive maximum demand
+> initially, this should result in CPU0 increasing frequency immediately.
+> Because of the above mentioned limitation though this does not occur.
+> This is verified using ftrace with the sample [5] application.
 > 
-> This means that the new proposed approach allows to extend the concept of
-> tasks classification to frequencies selection, thus allowing informed
-> run-times (e.g. Android, ChromeOS, etc.) to efficiently implement different
-> optimization policies such as:
->  a) Boosting of important tasks, by enforcing a minimum capacity in the
->     CPUs where they are enqueued for execution.
->  b) Capping of background tasks, by enforcing a maximum capacity.
->  c) Containment of OPPs for RT tasks which cannot easily be switched to
->     the usage of the DL class, but still don't need to run at the maximum
->     frequency.
+> This patchset updates the scheduler to call cpufreq callbacks for remote
+> CPUs as well and updates schedutil governor to deal with it. An
+> additional flag is added to cpufreq policies to avoid sending IPIs to
+> remote CPUs to update the frequency, if CPUs on the platform can change
+> frequency of any other CPU.
+> 
+> This series is tested with couple of usecases (Android: hackbench,
+> recentfling, galleryfling, vellamo, Ubuntu: hackbench) on ARM hikey
+> board (64 bit octa-core, single policy). Only galleryfling showed minor
+> improvements, while others didn't had much deviation.
+> 
+> The reason being that this patchset only targets a corner case, where
+> following are required to be true to improve performance and that
+> doesn't happen too often with these tests:
+> 
+> - Task is migrated to another CPU.
+> - The task has maximum demand initially, and should take the CPU to
+>   higher OPPs.
+> - And the target CPU doesn't call into schedutil until the next tick,
+>   without this patchset.
 
-Do you have any practical examples of that, like for example what exactly
-Android is going to use this for?
+>From the first quick look patches [1-3/9] seem to be split out somewhat
+artificially.
 
-I gather that there is some experience with the current EAS implementation
-there, so I wonder how this work is related to that.
+Any chance to fold them into the patches where the new stuff is actually used?
+
+I'll be looking at the rest of the patchset shortly.
 
 Thanks,
 Rafael
