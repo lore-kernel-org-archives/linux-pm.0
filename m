@@ -1,118 +1,76 @@
-From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v4 3/5] dt-bindings: Add TI SCI PM Domains
-Date: Wed, 15 Mar 2017 15:14:59 -0500
-Message-ID: <4b4e71a1-53d2-cbbb-571f-61a73ada79fc@ti.com>
-References: <1488882154-21485-1-git-send-email-d-gerlach@ti.com>
- <1488882154-21485-4-git-send-email-d-gerlach@ti.com>
- <20170315175341.alba5snfgz5xyrzf@rob-hp-laptop>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/2] power: reset: syscon-poweroff: add a mask property
+Date: Wed, 15 Mar 2017 21:45:13 +0100
+Message-ID: <20170315204513.i3cpl4ptyevtyyp5@earth>
+References: <1486472054-4367-1-git-send-email-guy.shapiro@mobi-wize.com>
+ <1486482966-4497-1-git-send-email-guy.shapiro@mobi-wize.com>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170315175341.alba5snfgz5xyrzf@rob-hp-laptop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="wspwyo7wchrwmhxp"
+Return-path: <rtc-linux+bncBDXMLNOH5ANRBX6PU3DAKGQEHTRZIJY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Disposition: inline
+In-Reply-To: <1486482966-4497-1-git-send-email-guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/15/2017 12:53 PM, Rob Herring wrote:
-> On Tue, Mar 07, 2017 at 04:22:32AM -0600, Dave Gerlach wrote:
->> Add a generic power domain implementation, TI SCI PM Domains, that
->> will hook into the genpd framework and allow the TI SCI protocol to
->> control device power states.
->>
->> Also, provide macros representing each device index as understood
->> by TI SCI to be used in the device node power-domain references.
->> These are identifiers for the K2G devices managed by the PMMC.
->>
->> Signed-off-by: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
->> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
->> ---
->>  .../devicetree/bindings/soc/ti/sci-pm-domain.txt   | 59 ++++++++++++++
->>  MAINTAINERS                                        |  2 +
->>  include/dt-bindings/genpd/k2g.h                    | 90 ++++++++++++++++++++++
->>  3 files changed, 151 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->>  create mode 100644 include/dt-bindings/genpd/k2g.h
->>
->> diff --git a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->> new file mode 100644
->> index 000000000000..86a6a3d52ed6
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->> @@ -0,0 +1,59 @@
->> +Texas Instruments TI-SCI Generic Power Domain
->> +---------------------------------------------
->> +
->> +Some TI SoCs contain a system controller (like the PMMC, etc...) that is
->> +responsible for controlling the state of the IPs that are present.
->> +Communication between the host processor running an OS and the system
->> +controller happens through a protocol known as TI-SCI [1]. This pm domain
->> +implementation plugs into the generic pm domain framework and makes use of
->> +the TI SCI protocol power on and off each device when needed.
->
-> The last sentence is mostly Linux implementation details. The binding is
-> power domains. The Linux framework is PM domains. Let's keep those
-> distinct and the latter doesn't belong in bindings.
 
-Ok, I will send an update to just this patch and drop the last sentence above.
+--wspwyo7wchrwmhxp
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 
-Regards,
-Dave
+Hi,
 
->
->> +
->> +[1] Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
->> +
->> +PM Domain Node
->> +==============
->> +The PM domain node represents the global PM domain managed by the PMMC, which
->> +in this case is the implementation as documented by the generic PM domain
->> +bindings in Documentation/devicetree/bindings/power/power_domain.txt.  Because
->> +this relies on the TI SCI protocol to communicate with the PMMC it must be a
->> +child of the pmmc node.
->> +
->> +Required Properties:
->> +--------------------
->> +- compatible: should be "ti,sci-pm-domain"
->> +- #power-domain-cells: Must be 1 so that an id can be provided in each
->> +		       device node.
->> +
->> +Example (K2G):
->> +-------------
->> +	pmmc: pmmc {
->> +		compatible = "ti,k2g-sci";
->> +		...
->> +
->> +		k2g_pds: power-controller {
->> +			compatible = "ti,sci-pm-domain";
->> +			#power-domain-cells = <1>;
->> +		};
->> +	};
->> +
->> +PM Domain Consumers
->> +===================
->> +Hardware blocks belonging to a PM domain should contain a "power-domains"
->> +property that is a phandle pointing to the corresponding PM domain node
->> +along with an index representing the device id to be passed to the PMMC
->> +for device control.
->> +
->> +Required Properties:
->> +--------------------
->> +- power-domains: phandle pointing to the corresponding PM domain node
->> +		 and an ID representing the device.
->> +
->> +See dt-bindings/genpd/k2g.h for the list of valid identifiers for k2g.
->> +
->> +Example (K2G):
->> +--------------------
->> +	uart0: serial@02530c00 {
->> +		compatible = "ns16550a";
->> +		...
->> +		power-domains = <&k2g_pds K2G_DEV_UART0>;
->> +	};
+On Tue, Feb 07, 2017 at 05:56:05PM +0200, Guy Shapiro wrote:
+> Make the syscon-poweroff driver accept value and mask instead of
+> just value.
+> 
+> Prior to this patch, the property name for the value was 'mask'. If
+> only the mask property is defined on a node, maintain compatibility
+> by using it as the value.
+> 
+> Signed-off-by: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks, queued with Rob's Acked-By.
+
+-- Sebastian
+
+-- 
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
+
+--wspwyo7wchrwmhxp
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJp9cACgkQ2O7X88g7
++poUXg//YVvSVFLN+yCg282zEWVPHRSG0sqsj14LykFmOBm6P/x6wlzDRm57AQ6t
+RAwigdpSzPdi7BEjXnvNDv2oHx0xd3h52wSx3NdxUHUxQfa3D0K/eNU+LK4HbdB6
+Whs0gaRYC4D1SjWrZ6+GFWSDSfIW/r8CBEUTF6MG5uIy1F1ErIVzKeX80KOM+I8I
+2eNj6wV2Lq8z5HSrt+Mswmsm5PaKUwucs1zNrl2f56tjkh0DmReXXoB1arYuzoVz
+MiRwPlIZq4MOzAwsHf3sH3SIj4NBeMi4Q14O3aS2BsxmvNSUxV2PuMhmMLZ0FzqB
+K973y9yS4yuKCNONY4AVEFen0d12jzs74UhNCHLcZBDH9ecX8DaHbDGsKEkgPaSX
+BluMFrdBy0kCTkZJKLGVLMwSEtLRmLV4qDjKX4UgW8264uEqJnHV57tMw7LX+BCc
+dIxGBWu/r8PrrfuXwUAzVslTEGbA+Agtp6Asz36ZuS+B55J/Dl3/q/j8XjKhgvSe
+tlBD1ZxVszngAqbhQ4s1xMOWuHWvVNo55asg1MrmTsGMQJfffAOxxqoxTTIMTbw3
+C/h9JJwn/Vm1GPdJaFlMvebKYMDZIu63zKBgbltEc5WkYnSr1yVyiSLWJcUb9AHg
+A2rl70vxMLWglhCSqKNGLmlgY4PMZ9YoPmtsmIvkSQFVv6iQa1M=
+=auno
+-----END PGP SIGNATURE-----
+
+--wspwyo7wchrwmhxp--
