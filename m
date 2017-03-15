@@ -1,77 +1,119 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH 1/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE
- enter
-Date: Wed, 15 Mar 2017 18:06:48 +0000
-Message-ID: <20170315180648.GJ18557@e110439-lin>
-References: <1488469507-32463-1-git-send-email-patrick.bellasi@arm.com>
- <1488469507-32463-2-git-send-email-patrick.bellasi@arm.com>
- <20170303034125.GH13760@vireshk-i7>
- <20170306092959.561fdf26@gandalf.local.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170306092959.561fdf26@gandalf.local.home>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Chris Redpath <chris.redpath@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v10 0/8] devicetree battery support and client bq27xxx_battery
+Date: Wed, 15 Mar 2017 12:26:45 -0700
+Message-ID: <20170315192653.26799-1-liam@networkimprov.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:35015 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751168AbdCOT1J (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2017 15:27:09 -0400
+Received: by mail-pf0-f195.google.com with SMTP id x63so3018850pfx.2
+        for <linux-pm@vger.kernel.org>; Wed, 15 Mar 2017 12:27:08 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
 
-On 06-Mar 09:29, Steven Rostedt wrote:
-> On Fri, 3 Mar 2017 09:11:25 +0530
-> Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> 
-> > On 02-03-17, 15:45, Patrick Bellasi wrote:
-> > > diff --git a/include/linux/sched.h b/include/linux/sched.h
-> > > index e2ed46d..739b29d 100644
-> > > --- a/include/linux/sched.h
-> > > +++ b/include/linux/sched.h
-> > > @@ -3653,6 +3653,7 @@ static inline unsigned long rlimit_max(unsigned int limit)
-> > >  #define SCHED_CPUFREQ_RT	(1U << 0)
-> > >  #define SCHED_CPUFREQ_DL	(1U << 1)
-> > >  #define SCHED_CPUFREQ_IOWAIT	(1U << 2)
-> > > +#define SCHED_CPUFREQ_IDLE	(1U << 3)
-> > >  
-> > >  #define SCHED_CPUFREQ_RT_DL	(SCHED_CPUFREQ_RT | SCHED_CPUFREQ_DL)
-> > >  
-> > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > > index fd46593..084a98b 100644
-> > > --- a/kernel/sched/cpufreq_schedutil.c
-> > > +++ b/kernel/sched/cpufreq_schedutil.c
-> > > @@ -281,6 +281,12 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
-> > >  
-> > >  	raw_spin_lock(&sg_policy->update_lock);
-> > >  
-> > > +	/* CPU is entering IDLE, reset flags without triggering an update */
-> > > +	if (flags & SCHED_CPUFREQ_IDLE) {  
-> > 
-> > Will "flags == SCHED_CPUFREQ_IDLE" generate better assembly ?
-> > 
-> 
-> Even if it does, a bit check and an equal check are pretty negligible
-> in difference wrt execution time. I would choose whatever is the most
-> readable to humans.
-> 
->  flags == SCHED_CPUFREQ_IDLE
-> 
-> will tell me (as a reviewer) that we expect no other flag to be set.
-> 
->  flags & SCHED_CPUFREQ_IDLE
-> 
-> will tell me that we only care about the IDLE flag.
-> 
-> Which ever is the more meaningful is what should be used.
+Overview:
+* new devicetree battery node specifies static battery data
+* fuel gauge and charger nodes shall use monitored-battery=<&battery_node>
+* new power_supply_get_battery_info() reads battery data from devicetree
+* new struct power_supply_battery_info provides battery data to drivers
+* drivers surface battery data in sysfs via related power_supply_prop_* fields
+* bq27xxx driver calls the above and writes battery data to RAM/NVM for params
+  essential to correct operation: energy-full-design-microwatt-hours,
+  charge-full-design-microamp-hours, voltage-min-design-microvolt
 
-Agree on the approach, whenever not silly code should be written to be
-easy to understand from other humans.
+Changes in v10:
+  bq27xxx_battery:
+*   pass actual chip ID into _setup()
+*   add di->unseal_key & di->dm_regs; drop static arrays
+*   support bq27425, 441, 621
 
-Here the intent is "whatever flags you set, if the IDLE one is set" we
-assume we are entering idle. Thus, to me the current version is easier
-to understand without being "overkilling" in its semantics.
+Changes in v9:
+  bq27xxx_battery:
+*   fix set_cfgupdate()
+*   support bq27500, 545, 421; defer others
+*   drop print_dm_blocks() patch
+*   minor polishing
+  Documentation/devicetree/.../battery.txt:
+*   describe rationale for enum power_supply_property names
 
-Cheers Patrick
+Changes in v8:
+  bq27xxx_battery:
+*   wait on flag after set_cfgupdate & soft_reset
+*   drop print_config(), report status in update_dm_block()
+*   clarify error messages
+*   cleanup from Andrew's feedback; minor polishing
+
+Changes in v7:
+  bq27xxx_battery:
+*   support chips where terminate_voltage & design_* live in separate blocks
+*   draft support for 421, 441, 621 chips
+*   new patch to log chip memory fields
+*   report bus I/O errors; return error code in bq27xxx_battery_i2c
+*   verify checksum in read_dm_block()
+*   use set_cfgupdate only if chip provides it, soft_reset on I/O error
+*   block_data_control=0 only in write_dm_block()
+*   note toxic code from TI bqtool in write_dm_block()
+*   lots of functionally neutral polishing
+  Documentation/devicetree/.../battery.txt:
+*   mention power_supply_get_battery_info()
+
+Changes in v6:
+* Documentation/devictree/... fixes
+* bq27xxx_battery: clarify names
+* bq27xxx_battery: verify that selected registers are supported
+* bq27xxx_battery: allocate NVM buffer on stack
+* bq27xxx_battery_i2c: fix return code of bulk_read
+
+Changes in v5:
+* incorporate feedback into Documentation/devicetree/.../battery.txt
+* use power_supply_prop_* names in devicetree and power_supply_battery_info
+* default fields to -EINVAL in power_supply_battery_info
+* power_supply_get_battery_info() always looks for "monitored-battery"
+* power_supply_get_battery_info() emits a warning if !psy->of_node
+* squash patches for power_supply_battery_info
+* bq27xxx_battery: check power_supply_battery_info values
+* bq27xxx_battery: note missing power_supply_prop_* features
+* bq27xxx_battery: new patch for access methods
+
+Changes in v4:
+* add "fixed-battery" compatible field to be be more consistant with devicetree
+
+Changes in v3:
+* split i2c changes into respective patches
+* add documentation for battery information for fuel gauge
+* rebased documentation patches on change on the list
+* abstracted the battery configuration for the state machine
+  to an generic struct and platform data access function
+
+Changes in v2:
+* add documentation for uWh and uAh property units
+* change devicetree entries to match new property units
+
+Liam (5):
+  devicetree: power: Add battery.txt
+  devicetree: power: bq27xxx: Add monitored-battery documentation
+  power: power_supply: Add power_supply_battery_info and API
+  power: bq27xxx_battery: Keep track of specific chip id
+  power: bq27xxx_battery: Add power_supply_battery_info support
+
+Matt Ranostay (3):
+  devicetree: property-units: Add uWh and uAh units
+  power: bq27xxx_battery: Define access methods to write chip registers
+  power: bq27xxx_battery_i2c: Add I2C bulk read/write functions
+
+ .../devicetree/bindings/power/supply/battery.txt   |  45 ++
+ .../devicetree/bindings/power/supply/bq27xxx.txt   |  11 +-
+ .../devicetree/bindings/property-units.txt         |   2 +
+ drivers/power/supply/bq27xxx_battery.c             | 477 ++++++++++++++++++++-
+ drivers/power/supply/bq27xxx_battery_i2c.c         |  98 ++++-
+ drivers/power/supply/power_supply_core.c           |  40 ++
+ include/linux/power/bq27xxx_battery.h              |  30 +-
+ include/linux/power_supply.h                       |  18 +
+ 8 files changed, 702 insertions(+), 19 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+2.9.3
