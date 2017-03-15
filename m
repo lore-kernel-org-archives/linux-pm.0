@@ -1,60 +1,147 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 2/5] thermal: add trace events to the power allocator governor
-Date: Wed, 15 Mar 2017 09:56:39 +0530
-Message-ID: <CAOh2x==TDQrs3iNX6ZkSBWv+HRS3BoJqoZuyWpwsXGT6pCrK-w@mail.gmail.com>
-References: <1425316643-31991-1-git-send-email-javi.merino@arm.com> <1425316643-31991-3-git-send-email-javi.merino@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [v2 PATCH] powernv-cpuidle: Validate DT property array size
+Date: Wed, 15 Mar 2017 13:45:53 +0530
+Message-ID: <1489565753-2693-1-git-send-email-ego@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f195.google.com ([209.85.161.195]:33629 "EHLO
-        mail-yw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750824AbdCOE0l (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2017 00:26:41 -0400
-In-Reply-To: <1425316643-31991-3-git-send-email-javi.merino@arm.com>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:40051 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1751303AbdCOIQK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2017 04:16:10 -0400
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id v2F88kdA189623
+        for <linux-pm@vger.kernel.org>; Wed, 15 Mar 2017 04:16:09 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 296nnr7c4t-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Wed, 15 Mar 2017 04:16:08 -0400
+Received: from localhost
+        by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+        Wed, 15 Mar 2017 04:16:08 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <punit.agrawal@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Mark Brown <broonie@kernel.org>, Jon Medhurst <tixy@linaro.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>, Stewart Smith <stewart@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Hi Javi,
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Sorry for picking up an old thread, but i had a question for you.
+The various properties associated with powernv idle states such as
+names, flags, residency-ns, latencies-ns, psscr, psscr-mask are
+exposed in the device-tree as property arrays such the pointwise
+entries in each of these arrays correspond to the properties of the
+same idle state.
 
-On Mon, Mar 2, 2015 at 10:47 PM, Javi Merino <javi.merino@arm.com> wrote:
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+This patch validates that the lengths of the property arrays are the
+same. If there is a mismatch, the patch will ensure that we bail out
+and not expose the platform idle states via cpuidle.
 
-> @@ -588,12 +590,20 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
->                                        u32 *power)
->  {
->         unsigned long freq;
-> -       int cpu, ret;
-> +       int i = 0, cpu, ret;
->         u32 static_power, dynamic_power, total_load = 0;
->         struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
-> +       u32 *load_cpu = NULL;
->
->         freq = cpufreq_quick_get(cpumask_any(&cpufreq_device->allowed_cpus));
->
-> +       if (trace_thermal_power_cpu_get_power_enabled()) {
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+v1: https://lkml.org/lkml/2017/2/23/349
+Changes from v1: Print the full property array name in warning message.
 
-You allocated load_cpu if cpu_get_power trace is enabled.
+ drivers/cpuidle/cpuidle-powernv.c | 64 +++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 61 insertions(+), 3 deletions(-)
 
-> +               u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
-> +
-> +               load_cpu = devm_kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
-> +                                       GFP_KERNEL);
-> +       }
-> +
->         for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
->                 u32 load;
->
-> @@ -603,14 +613,29 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
->                         load = 0;
->
->                 total_load += load;
-> +               if (trace_thermal_power_cpu_limit_enabled() && load_cpu)
-
-But you store values to it only if cpu_limit trace is also enabled,
-otherwise it is all zeros.
-
-Why?
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 3705930..a06df51 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -197,11 +197,25 @@ static inline void add_powernv_state(int index, const char *name,
+ 	stop_psscr_table[index].mask = psscr_mask;
+ }
+ 
++/*
++ * Returns 0 if prop1_len == prop2_len. Else returns -1
++ */
++static inline int validate_dt_prop_sizes(const char *prop1, int prop1_len,
++					 const char *prop2, int prop2_len)
++{
++	if (prop1_len == prop2_len)
++		return 0;
++
++	pr_warn("cpuidle-powernv: array sizes don't match for %s and %s\n",
++		prop1, prop2);
++	return -1;
++}
++
+ static int powernv_add_idle_states(void)
+ {
+ 	struct device_node *power_mgt;
+ 	int nr_idle_states = 1; /* Snooze */
+-	int dt_idle_states;
++	int dt_idle_states, count;
+ 	u32 latency_ns[CPUIDLE_STATE_MAX];
+ 	u32 residency_ns[CPUIDLE_STATE_MAX];
+ 	u32 flags[CPUIDLE_STATE_MAX];
+@@ -226,6 +240,21 @@ static int powernv_add_idle_states(void)
+ 		goto out;
+ 	}
+ 
++	count = of_property_count_u32_elems(power_mgt,
++					    "ibm,cpu-idle-state-latencies-ns");
++
++	if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags", dt_idle_states,
++				   "ibm,cpu-idle-state-latencies-ns",
++				   count) != 0)
++		goto out;
++
++	count = of_property_count_strings(power_mgt,
++					  "ibm,cpu-idle-state-names");
++	if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags", dt_idle_states,
++				   "ibm,cpu-idle-state-names",
++				   count) != 0)
++		goto out;
++
+ 	/*
+ 	 * Since snooze is used as first idle state, max idle states allowed is
+ 	 * CPUIDLE_STATE_MAX -1
+@@ -260,6 +289,22 @@ static int powernv_add_idle_states(void)
+ 	has_stop_states = (flags[0] &
+ 			   (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP));
+ 	if (has_stop_states) {
++		count = of_property_count_u64_elems(power_mgt,
++						    "ibm,cpu-idle-state-psscr");
++		if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags",
++					   dt_idle_states,
++					   "ibm,cpu-idle-state-psscr",
++					   count) != 0)
++			goto out;
++
++		count = of_property_count_u64_elems(power_mgt,
++						    "ibm,cpu-idle-state-psscr-mask");
++		if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags",
++					   dt_idle_states,
++					   "ibm,cpu-idle-state-psscr-mask",
++					   count) != 0)
++			goto out;
++
+ 		if (of_property_read_u64_array(power_mgt,
+ 		    "ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states)) {
+ 			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-psscr in DT\n");
+@@ -274,8 +319,21 @@ static int powernv_add_idle_states(void)
+ 		}
+ 	}
+ 
+-	rc = of_property_read_u32_array(power_mgt,
+-		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
++	count = of_property_count_u32_elems(power_mgt,
++					    "ibm,cpu-idle-state-residency-ns");
++
++	if (count < 0) {
++		rc = count;
++	} else if (validate_dt_prop_sizes("ibm,cpu-idle-state-flags",
++					  dt_idle_states,
++					  "ibm,cpu-idle-state-residency-ns",
++					  count) != 0) {
++		goto out;
++	} else {
++		rc = of_property_read_u32_array(power_mgt,
++						"ibm,cpu-idle-state-residency-ns",
++						residency_ns, dt_idle_states);
++	}
+ 
+ 	for (i = 0; i < dt_idle_states; i++) {
+ 		unsigned int exit_latency, target_residency;
+-- 
+1.9.4
