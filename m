@@ -1,156 +1,772 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v10 8/8] power: bq27xxx_battery_i2c: Add I2C bulk
- read/write functions
-Date: Wed, 15 Mar 2017 15:34:23 -0700
-Message-ID: <CAKvHMgSuvFjD39nv9cfkEs4U+79F=K_DBuBPcAqqvDejszeGfQ@mail.gmail.com>
-References: <20170315192653.26799-1-liam@networkimprov.net>
- <20170315192653.26799-9-liam@networkimprov.net> <20170315221414.mcig3c6bp44bitcu@earth>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 13/18] power: supply: add battery driver
+ for AXP20X and AXP22X PMICs
+Date: Wed, 15 Mar 2017 23:38:22 +0100
+Message-ID: <20170315223822.km3q2qwibg7623ew@earth>
+References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
+ <20170315105537.22349-14-quentin.schulz@free-electrons.com>
+Reply-To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:33602 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751867AbdCOWet (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2017 18:34:49 -0400
-Received: by mail-it0-f65.google.com with SMTP id g138so4582674itb.0
-        for <linux-pm@vger.kernel.org>; Wed, 15 Mar 2017 15:34:24 -0700 (PDT)
-In-Reply-To: <20170315221414.mcig3c6bp44bitcu@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="jhbkik7o57orndxd"
+Return-path: <linux-sunxi+bncBDXMLNOH5ANRBZUEU7DAKGQE46355II-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Disposition: inline
+In-Reply-To: <20170315105537.22349-14-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: icenowy-ymACFijhrKM@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-On Wed, Mar 15, 2017 at 3:14 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
->
-> On Wed, Mar 15, 2017 at 12:26:53PM -0700, Liam Breck wrote:
->> From: Matt Ranostay <matt@ranostay.consulting>
->>
->> write(), read_bulk(), write_bulk() are required by bq27xxx_battery
->> power_supply_battery_info code.
->>
->> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
->> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->
-> This is required by the previous patch, so your order is not bisect
-> safe. Please just merge it with Patch 5.
 
-It is bisect-safe; bq27xxx_battery only uses the functions if available.
+--jhbkik7o57orndxd
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Patch 5 could be merged with 7. But the I2C implementation should be
-separate from the header.
+Hi,
 
->>  drivers/power/supply/bq27xxx_battery_i2c.c | 82 +++++++++++++++++++++++++++++-
->>  1 file changed, 81 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
->> index 13def59..abdc266 100644
->> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
->> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
->> @@ -38,7 +38,7 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
->>  {
->>       struct i2c_client *client = to_i2c_client(di->dev);
->>       struct i2c_msg msg[2];
->> -     unsigned char data[2];
->> +     u8 data[2];
->>       int ret;
->>
->>       if (!client->adapter)
->> @@ -68,6 +68,82 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
->>       return ret;
->>  }
->>
->> +static int bq27xxx_battery_i2c_write(struct bq27xxx_device_info *di, u8 reg,
->> +                                  int value, bool single)
->> +{
->> +     struct i2c_client *client = to_i2c_client(di->dev);
->> +     struct i2c_msg msg;
->> +     u8 data[4];
->> +     int ret;
->> +
->> +     if (!client->adapter)
->> +             return -ENODEV;
->> +
->> +     data[0] = reg;
->> +     if (single) {
->> +             data[1] = (u8) value;
->> +             msg.len = 2;
->> +     } else {
->> +             put_unaligned_le16(value, &data[1]);
->> +             msg.len = 3;
->> +     }
->> +
->> +     msg.buf = data;
->> +     msg.addr = client->addr;
->> +     msg.flags = 0;
->> +
->> +     ret = i2c_transfer(client->adapter, &msg, 1);
->> +     if (ret < 0)
->> +             return ret;
->> +     if (ret != 1)
->> +             return -EINVAL;
->> +     return 0;
->> +}
->> +
->> +static int bq27xxx_battery_i2c_bulk_read(struct bq27xxx_device_info *di, u8 reg,
->> +                                      u8 *data, int len)
->> +{
->> +     struct i2c_client *client = to_i2c_client(di->dev);
->> +     int ret;
->> +
->> +     if (!client->adapter)
->> +             return -ENODEV;
->> +
->> +     ret = i2c_smbus_read_i2c_block_data(client, reg, len, data);
->> +     if (ret < 0)
->> +             return ret;
->> +     if (ret != len)
->> +             return -EINVAL;
->> +     return 0;
->> +}
->> +
->> +static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
->> +                                       u8 reg, u8 *data, int len)
->> +{
->> +     struct i2c_client *client = to_i2c_client(di->dev);
->> +     struct i2c_msg msg;
->> +     u8 buf[33];
->> +     int ret;
->> +
->> +     if (!client->adapter)
->> +             return -ENODEV;
->> +
->> +     buf[0] = reg;
->> +     memcpy(&buf[1], data, len);
->> +
->> +     msg.buf = buf;
->> +     msg.addr = client->addr;
->> +     msg.flags = 0;
->> +     msg.len = len + 1;
->> +
->> +     ret = i2c_transfer(client->adapter, &msg, 1);
->> +     if (ret < 0)
->> +             return ret;
->> +     if (ret != 1)
->> +             return -EINVAL;
->> +     return 0;
->> +}
->> +
->>  static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
->>                                    const struct i2c_device_id *id)
->>  {
->> @@ -95,7 +171,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
->>       di->dev = &client->dev;
->>       di->chip = id->driver_data;
->>       di->name = name;
->> +
->>       di->bus.read = bq27xxx_battery_i2c_read;
->> +     di->bus.write = bq27xxx_battery_i2c_write;
->> +     di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
->> +     di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
->>
->>       ret = bq27xxx_battery_setup(di);
->>       if (ret)
->> --
->> 2.9.3
->>
+On Wed, Mar 15, 2017 at 11:55:32AM +0100, Quentin Schulz wrote:
+> The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
+>=20
+> This patch adds the battery power supply driver to get various data from
+> the PMIC, such as the battery status (charging, discharging, full,
+> dead), current max limit, current current, battery capacity (in
+> percentage), voltage max and min limits, current voltage and battery
+> capacity (in Ah).
+>=20
+> This battery driver uses the AXP20X/AXP22X ADC driver as PMIC data
+> provider.
+>=20
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> Acked-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+
+I think this should be named axp20x-battery-fuel-gauge or just
+axp20x-battery. For my own reference:
+
+Acked-by: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+
+-- Sebastian
+
+> v4:
+>  - removed useless axp20x_dev variable in struct axp20x_batt_ps,
+>  - added struct device and maximum constant current charge variables in s=
+truct
+>  axp20x_batt_ps,
+>  - fixed wrong maximum constant current charge formula for AXP22X (forgot=
+ to add
+>  a custom formula so it was calculated like the AXP209),
+>  - when a battery node in DT does not have a valid constant current charg=
+e or
+>  there is no battery, the maximum current constant current charge are set=
+ to the
+>  lowest possible value,
+>  - it is possible to set maximum constant current charge now but a warn m=
+essage
+>  is printed when trying to increase it to inform people it is risky,
+>  - added a check to verify the constant current charge to be set is under=
+ the
+>  maximum allowed,
+>  - lower the current constant charge current if it is higher than the max=
+imum
+>  current value to be set,
+>=20
+> v3:
+>  - added axp20x_set_voltage_min_design function so it can be reused,
+>  - used power_supply_get_battery_info for setting constant charge current
+>  instead of x-powers,constant-charge-current introduced in v2,
+>  - used power_supply_get_battery_info for setting voltage min design of
+>  the battery,
+>=20
+> v2:
+>  - changed BIT(x) to 1 << x when describing bits purpose for which 2 <<
+>  x or 3 << x exists, to be consistent,
+>  - switched from POWER_SUPPLY_PROP_CURRENT_MAX to
+>  POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+>  - added POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX to the list of
+>  readable properties,
+>  - replaced =C2=B5 character by a common u for micro units to make checkp=
+atch
+>  happy,
+>  - factorized code in axp20x_battery_set_max_voltage,
+>  - added a axp20x_set_constant_charge_current function to be used when
+>  setting the value from sysfs and from the DT,
+>  - removed some dead code,
+>  - added a DT property to set constant current charge of the battery
+>  (x-powers,constant-charge-current),
+>  - migrated to dev_get_regmap instead of manually looking for the regmap
+>  in the drvdata of the parent,
+>  - switched from int to uintptr_t cast to make sure the cast is always
+>=20
+>  for the same size type (make build on 64bits platforms happy mainly),
+>  drivers/power/supply/Kconfig          |  12 +
+>  drivers/power/supply/Makefile         |   1 +
+>  drivers/power/supply/axp20x_battery.c | 565 ++++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 578 insertions(+)
+>  create mode 100644 drivers/power/supply/axp20x_battery.c
+>=20
+> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+> index da54ac8..8306e98 100644
+> --- a/drivers/power/supply/Kconfig
+> +++ b/drivers/power/supply/Kconfig
+> @@ -232,6 +232,18 @@ config CHARGER_AXP20X
+>  	  This driver can also be built as a module. If so, the module will be
+>  	  called axp20x_ac_power.
+> =20
+> +config BATTERY_AXP20X
+> +	tristate "X-Powers AXP20X battery driver"
+> +	depends on MFD_AXP20X
+> +	depends on AXP20X_ADC
+> +	depends on IIO
+> +	help
+> +	  Say Y here to enable support for X-Powers AXP20X PMICs' battery power
+> +	  supply.
+> +
+> +	  This driver can also be built as a module. If so, the module will be
+> +	  called axp20x_battery.
+> +
+>  config AXP288_CHARGER
+>  	tristate "X-Powers AXP288 Charger"
+>  	depends on MFD_AXP20X && EXTCON_AXP288
+> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefil=
+e
+> index 3789a2c..52dd17d 100644
+> --- a/drivers/power/supply/Makefile
+> +++ b/drivers/power/supply/Makefile
+> @@ -18,6 +18,7 @@ obj-$(CONFIG_TEST_POWER)	+=3D test_power.o
+> =20
+>  obj-$(CONFIG_BATTERY_88PM860X)	+=3D 88pm860x_battery.o
+>  obj-$(CONFIG_BATTERY_ACT8945A)	+=3D act8945a_charger.o
+> +obj-$(CONFIG_BATTERY_AXP20X)	+=3D axp20x_battery.o
+>  obj-$(CONFIG_CHARGER_AXP20X)	+=3D axp20x_ac_power.o
+>  obj-$(CONFIG_BATTERY_DS2760)	+=3D ds2760_battery.o
+>  obj-$(CONFIG_BATTERY_DS2780)	+=3D ds2780_battery.o
+> diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply=
+/axp20x_battery.c
+> new file mode 100644
+> index 0000000..dcc017a
+> --- /dev/null
+> +++ b/drivers/power/supply/axp20x_battery.c
+> @@ -0,0 +1,565 @@
+> +/*
+> + * Battery power supply driver for X-Powers AXP20X and AXP22X PMICs
+> + *
+> + * Copyright 2016 Free Electrons NextThing Co.
+> + *	Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> + *
+> + * This driver is based on a previous upstreaming attempt by:
+> + *	Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+> + *
+> + * This file is subject to the terms and conditions of the GNU General
+> + * Public License. See the file "COPYING" in the main directory of this
+> + * archive for more details.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#include <linux/err.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/irq.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/power_supply.h>
+> +#include <linux/regmap.h>
+> +#include <linux/slab.h>
+> +#include <linux/time.h>
+> +#include <linux/iio/iio.h>
+> +#include <linux/iio/consumer.h>
+> +#include <linux/mfd/axp20x.h>
+> +
+> +#define AXP20X_PWR_STATUS_BAT_CHARGING	BIT(2)
+> +
+> +#define AXP20X_PWR_OP_BATT_PRESENT	BIT(5)
+> +#define AXP20X_PWR_OP_BATT_ACTIVATED	BIT(3)
+> +
+> +#define AXP209_FG_PERCENT		GENMASK(6, 0)
+> +#define AXP22X_FG_VALID			BIT(7)
+> +
+> +#define AXP20X_CHRG_CTRL1_TGT_VOLT	GENMASK(6, 5)
+> +#define AXP20X_CHRG_CTRL1_TGT_4_1V	(0 << 5)
+> +#define AXP20X_CHRG_CTRL1_TGT_4_15V	(1 << 5)
+> +#define AXP20X_CHRG_CTRL1_TGT_4_2V	(2 << 5)
+> +#define AXP20X_CHRG_CTRL1_TGT_4_36V	(3 << 5)
+> +
+> +#define AXP22X_CHRG_CTRL1_TGT_4_22V	(1 << 5)
+> +#define AXP22X_CHRG_CTRL1_TGT_4_24V	(3 << 5)
+> +
+> +#define AXP20X_CHRG_CTRL1_TGT_CURR	GENMASK(3, 0)
+> +
+> +#define AXP20X_V_OFF_MASK		GENMASK(2, 0)
+> +
+> +struct axp20x_batt_ps {
+> +	struct regmap *regmap;
+> +	struct power_supply *batt;
+> +	struct device *dev;
+> +	struct iio_channel *batt_chrg_i;
+> +	struct iio_channel *batt_dischrg_i;
+> +	struct iio_channel *batt_v;
+> +	/* Maximum constant charge current */
+> +	unsigned int max_ccc;
+> +	u8 axp_id;
+> +};
+> +
+> +static int axp20x_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_=
+batt,
+> +					  int *val)
+> +{
+> +	int ret, reg;
+> +
+> +	ret =3D regmap_read(axp20x_batt->regmap, AXP20X_CHRG_CTRL1, &reg);
+> +	if (ret)
+> +		return ret;
+> +
+> +	switch (reg & AXP20X_CHRG_CTRL1_TGT_VOLT) {
+> +	case AXP20X_CHRG_CTRL1_TGT_4_1V:
+> +		*val =3D 4100000;
+> +		break;
+> +	case AXP20X_CHRG_CTRL1_TGT_4_15V:
+> +		*val =3D 4150000;
+> +		break;
+> +	case AXP20X_CHRG_CTRL1_TGT_4_2V:
+> +		*val =3D 4200000;
+> +		break;
+> +	case AXP20X_CHRG_CTRL1_TGT_4_36V:
+> +		*val =3D 4360000;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int axp22x_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_=
+batt,
+> +					  int *val)
+> +{
+> +	int ret, reg;
+> +
+> +	ret =3D regmap_read(axp20x_batt->regmap, AXP20X_CHRG_CTRL1, &reg);
+> +	if (ret)
+> +		return ret;
+> +
+> +	switch (reg & AXP20X_CHRG_CTRL1_TGT_VOLT) {
+> +	case AXP20X_CHRG_CTRL1_TGT_4_1V:
+> +		*val =3D 4100000;
+> +		break;
+> +	case AXP20X_CHRG_CTRL1_TGT_4_2V:
+> +		*val =3D 4200000;
+> +		break;
+> +	case AXP22X_CHRG_CTRL1_TGT_4_22V:
+> +		*val =3D 4220000;
+> +		break;
+> +	case AXP22X_CHRG_CTRL1_TGT_4_24V:
+> +		*val =3D 4240000;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int axp20x_get_constant_charge_current(struct axp20x_batt_ps *axp=
+,
+> +					      int *val)
+> +{
+> +	int ret;
+> +
+> +	ret =3D regmap_read(axp->regmap, AXP20X_CHRG_CTRL1, val);
+> +	if (ret)
+> +		return ret;
+> +
+> +	*val &=3D AXP20X_CHRG_CTRL1_TGT_CURR;
+> +
+> +	if (axp->axp_id =3D=3D AXP209_ID)
+> +		*val =3D *val * 100000 + 300000;
+> +	else
+> +		*val =3D *val * 150000 + 300000;
+> +
+> +	return 0;
+> +}
+> +
+> +static int axp20x_battery_get_prop(struct power_supply *psy,
+> +				   enum power_supply_property psp,
+> +				   union power_supply_propval *val)
+> +{
+> +	struct axp20x_batt_ps *axp20x_batt =3D power_supply_get_drvdata(psy);
+> +	struct iio_channel *chan;
+> +	int ret =3D 0, reg, val1;
+> +
+> +	switch (psp) {
+> +	case POWER_SUPPLY_PROP_PRESENT:
+> +	case POWER_SUPPLY_PROP_ONLINE:
+> +		ret =3D regmap_read(axp20x_batt->regmap, AXP20X_PWR_OP_MODE,
+> +				  &reg);
+> +		if (ret)
+> +			return ret;
+> +
+> +		val->intval =3D !!(reg & AXP20X_PWR_OP_BATT_PRESENT);
+> +		break;
+> +
+> +	case POWER_SUPPLY_PROP_STATUS:
+> +		ret =3D regmap_read(axp20x_batt->regmap, AXP20X_PWR_INPUT_STATUS,
+> +				  &reg);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if (reg & AXP20X_PWR_STATUS_BAT_CHARGING) {
+> +			val->intval =3D POWER_SUPPLY_STATUS_CHARGING;
+> +			return 0;
+> +		}
+> +
+> +		ret =3D iio_read_channel_processed(axp20x_batt->batt_dischrg_i,
+> +						 &val1);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if (val1) {
+> +			val->intval =3D POWER_SUPPLY_STATUS_DISCHARGING;
+> +			return 0;
+> +		}
+> +
+> +		ret =3D regmap_read(axp20x_batt->regmap, AXP20X_FG_RES, &val1);
+> +		if (ret)
+> +			return ret;
+> +
+> +		/*
+> +		 * Fuel Gauge data takes 7 bits but the stored value seems to be
+> +		 * directly the raw percentage without any scaling to 7 bits.
+> +		 */
+> +		if ((val1 & AXP209_FG_PERCENT) =3D=3D 100)
+> +			val->intval =3D POWER_SUPPLY_STATUS_FULL;
+> +		else
+> +			val->intval =3D POWER_SUPPLY_STATUS_NOT_CHARGING;
+> +		break;
+> +
+> +	case POWER_SUPPLY_PROP_HEALTH:
+> +		ret =3D regmap_read(axp20x_batt->regmap, AXP20X_PWR_OP_MODE,
+> +				  &val1);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if (val1 & AXP20X_PWR_OP_BATT_ACTIVATED) {
+> +			val->intval =3D POWER_SUPPLY_HEALTH_DEAD;
+> +			return 0;
+> +		}
+> +
+> +		val->intval =3D POWER_SUPPLY_HEALTH_GOOD;
+> +		break;
+> +
+> +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+> +		ret =3D axp20x_get_constant_charge_current(axp20x_batt,
+> +							 &val->intval);
+> +		if (ret)
+> +			return ret;
+> +		break;
+> +
+> +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
+> +		val->intval =3D axp20x_batt->max_ccc;
+> +		break;
+> +
+> +	case POWER_SUPPLY_PROP_CURRENT_NOW:
+> +		ret =3D regmap_read(axp20x_batt->regmap, AXP20X_PWR_INPUT_STATUS,
+> +				  &reg);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if (reg & AXP20X_PWR_STATUS_BAT_CHARGING)
+> +			chan =3D axp20x_batt->batt_chrg_i;
+> +		else
+> +			chan =3D axp20x_batt->batt_dischrg_i;
+> +
+> +		ret =3D iio_read_channel_processed(chan, &val->intval);
+> +		if (ret)
+> +			return ret;
+> +
+> +		/* IIO framework gives mA but Power Supply framework gives uA */
+> +		val->intval *=3D 1000;
+> +		break;
+> +
+> +	case POWER_SUPPLY_PROP_CAPACITY:
+> +		/* When no battery is present, return capacity is 100% */
+> +		ret =3D regmap_read(axp20x_batt->regmap, AXP20X_PWR_OP_MODE,
+> +				  &reg);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if (!(reg & AXP20X_PWR_OP_BATT_PRESENT)) {
+> +			val->intval =3D 100;
+> +			return 0;
+> +		}
+> +
+> +		ret =3D regmap_read(axp20x_batt->regmap, AXP20X_FG_RES, &reg);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if (axp20x_batt->axp_id =3D=3D AXP221_ID &&
+> +		    !(reg & AXP22X_FG_VALID))
+> +			return -EINVAL;
+> +
+> +		/*
+> +		 * Fuel Gauge data takes 7 bits but the stored value seems to be
+> +		 * directly the raw percentage without any scaling to 7 bits.
+> +		 */
+> +		val->intval =3D reg & AXP209_FG_PERCENT;
+> +		break;
+> +
+> +	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+> +		if (axp20x_batt->axp_id =3D=3D AXP209_ID)
+> +			return axp20x_battery_get_max_voltage(axp20x_batt,
+> +							      &val->intval);
+> +		return axp22x_battery_get_max_voltage(axp20x_batt,
+> +						      &val->intval);
+> +
+> +	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+> +		ret =3D regmap_read(axp20x_batt->regmap, AXP20X_V_OFF, &reg);
+> +		if (ret)
+> +			return ret;
+> +
+> +		val->intval =3D 2600000 + 100000 * (reg & AXP20X_V_OFF_MASK);
+> +		break;
+> +
+> +	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> +		ret =3D iio_read_channel_processed(axp20x_batt->batt_v,
+> +						 &val->intval);
+> +		if (ret)
+> +			return ret;
+> +
+> +		/* IIO framework gives mV but Power Supply framework gives uV */
+> +		val->intval *=3D 1000;
+> +		break;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int axp20x_battery_set_max_voltage(struct axp20x_batt_ps *axp20x_=
+batt,
+> +					  int val)
+> +{
+> +	switch (val) {
+> +	case 4100000:
+> +		val =3D AXP20X_CHRG_CTRL1_TGT_4_1V;
+> +		break;
+> +
+> +	case 4150000:
+> +		if (axp20x_batt->axp_id =3D=3D AXP221_ID)
+> +			return -EINVAL;
+> +
+> +		val =3D AXP20X_CHRG_CTRL1_TGT_4_15V;
+> +		break;
+> +
+> +	case 4200000:
+> +		val =3D AXP20X_CHRG_CTRL1_TGT_4_2V;
+> +		break;
+> +
+> +	default:
+> +		/*
+> +		 * AXP20x max voltage can be set to 4.36V and AXP22X max voltage
+> +		 * can be set to 4.22V and 4.24V, but these voltages are too
+> +		 * high for Lithium based batteries (AXP PMICs are supposed to
+> +		 * be used with these kinds of battery).
+> +		 */
+> +		return -EINVAL;
+> +	}
+> +
+> +	return regmap_update_bits(axp20x_batt->regmap, AXP20X_CHRG_CTRL1,
+> +				  AXP20X_CHRG_CTRL1_TGT_VOLT, val);
+> +}
+> +
+> +static int axp20x_set_constant_charge_current(struct axp20x_batt_ps *axp=
+_batt,
+> +					      int charge_current)
+> +{
+> +	if (charge_current > axp_batt->max_ccc)
+> +		return -EINVAL;
+> +
+> +	if (axp_batt->axp_id =3D=3D AXP209_ID)
+> +		charge_current =3D (charge_current - 300000) / 100000;
+> +	else
+> +		charge_current =3D (charge_current - 300000) / 150000;
+> +
+> +	if (charge_current > AXP20X_CHRG_CTRL1_TGT_CURR || charge_current < 0)
+> +		return -EINVAL;
+> +
+> +	return regmap_update_bits(axp_batt->regmap, AXP20X_CHRG_CTRL1,
+> +				  AXP20X_CHRG_CTRL1_TGT_CURR, charge_current);
+> +}
+> +
+> +static int axp20x_set_max_constant_charge_current(struct axp20x_batt_ps =
+*axp,
+> +						  int charge_current)
+> +{
+> +	bool lower_max =3D false;
+> +
+> +	if (axp->axp_id =3D=3D AXP209_ID)
+> +		charge_current =3D (charge_current - 300000) / 100000;
+> +	else
+> +		charge_current =3D (charge_current - 300000) / 150000;
+> +
+> +	if (charge_current > AXP20X_CHRG_CTRL1_TGT_CURR || charge_current < 0)
+> +		return -EINVAL;
+> +
+> +	if (axp->axp_id =3D=3D AXP209_ID)
+> +		charge_current =3D charge_current * 100000 + 300000;
+> +	else
+> +		charge_current =3D charge_current * 150000 + 300000;
+> +
+> +	if (charge_current > axp->max_ccc)
+> +		dev_warn(axp->dev,
+> +			 "Setting max constant charge current higher than previously defined.=
+ Note that increasing the constant charge current may damage your battery.\=
+n");
+> +	else
+> +		lower_max =3D true;
+> +
+> +	axp->max_ccc =3D charge_current;
+> +
+> +	if (lower_max) {
+> +		int current_cc;
+> +
+> +		axp20x_get_constant_charge_current(axp, &current_cc);
+> +		if (current_cc > charge_current)
+> +			axp20x_set_constant_charge_current(axp, charge_current);
+> +	}
+> +
+> +	return 0;
+> +}
+> +static int axp20x_set_voltage_min_design(struct axp20x_batt_ps *axp_batt=
+,
+> +					 int min_voltage)
+> +{
+> +	int val1 =3D (min_voltage - 2600000) / 100000;
+> +
+> +	if (val1 < 0 || val1 > AXP20X_V_OFF_MASK)
+> +		return -EINVAL;
+> +
+> +	return regmap_update_bits(axp_batt->regmap, AXP20X_V_OFF,
+> +				  AXP20X_V_OFF_MASK, val1);
+> +}
+> +
+> +static int axp20x_battery_set_prop(struct power_supply *psy,
+> +				   enum power_supply_property psp,
+> +				   const union power_supply_propval *val)
+> +{
+> +	struct axp20x_batt_ps *axp20x_batt =3D power_supply_get_drvdata(psy);
+> +
+> +	switch (psp) {
+> +	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+> +		return axp20x_set_voltage_min_design(axp20x_batt, val->intval);
+> +
+> +	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+> +		return axp20x_battery_set_max_voltage(axp20x_batt, val->intval);
+> +
+> +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+> +		return axp20x_set_constant_charge_current(axp20x_batt,
+> +							  val->intval);
+> +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
+> +		return axp20x_set_max_constant_charge_current(axp20x_batt,
+> +							      val->intval);
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static enum power_supply_property axp20x_battery_props[] =3D {
+> +	POWER_SUPPLY_PROP_PRESENT,
+> +	POWER_SUPPLY_PROP_ONLINE,
+> +	POWER_SUPPLY_PROP_STATUS,
+> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+> +	POWER_SUPPLY_PROP_CURRENT_NOW,
+> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
+> +	POWER_SUPPLY_PROP_HEALTH,
+> +	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
+> +	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
+> +	POWER_SUPPLY_PROP_CAPACITY,
+> +};
+> +
+> +static int axp20x_battery_prop_writeable(struct power_supply *psy,
+> +					 enum power_supply_property psp)
+> +{
+> +	return psp =3D=3D POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN ||
+> +	       psp =3D=3D POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN ||
+> +	       psp =3D=3D POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT ||
+> +	       psp =3D=3D POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX;
+> +}
+> +
+> +static const struct power_supply_desc axp20x_batt_ps_desc =3D {
+> +	.name =3D "axp20x-battery",
+> +	.type =3D POWER_SUPPLY_TYPE_BATTERY,
+> +	.properties =3D axp20x_battery_props,
+> +	.num_properties =3D ARRAY_SIZE(axp20x_battery_props),
+> +	.property_is_writeable =3D axp20x_battery_prop_writeable,
+> +	.get_property =3D axp20x_battery_get_prop,
+> +	.set_property =3D axp20x_battery_set_prop,
+> +};
+> +
+> +static const struct of_device_id axp20x_battery_ps_id[] =3D {
+> +	{
+> +		.compatible =3D "x-powers,axp209-battery-power-supply",
+> +		.data =3D (void *)AXP209_ID,
+> +	}, {
+> +		.compatible =3D "x-powers,axp221-battery-power-supply",
+> +		.data =3D (void *)AXP221_ID,
+> +	}, { /* sentinel */ },
+> +};
+> +MODULE_DEVICE_TABLE(of, axp20x_battery_ps_id);
+> +
+> +static int axp20x_power_probe(struct platform_device *pdev)
+> +{
+> +	struct axp20x_batt_ps *axp20x_batt;
+> +	struct power_supply_config psy_cfg =3D {};
+> +	struct power_supply_battery_info info;
+> +
+> +	if (!of_device_is_available(pdev->dev.of_node))
+> +		return -ENODEV;
+> +
+> +	axp20x_batt =3D devm_kzalloc(&pdev->dev, sizeof(*axp20x_batt),
+> +				   GFP_KERNEL);
+> +	if (!axp20x_batt)
+> +		return -ENOMEM;
+> +
+> +	axp20x_batt->dev =3D &pdev->dev;
+> +
+> +	axp20x_batt->batt_v =3D devm_iio_channel_get(&pdev->dev, "batt_v");
+> +	if (IS_ERR(axp20x_batt->batt_v)) {
+> +		if (PTR_ERR(axp20x_batt->batt_v) =3D=3D -ENODEV)
+> +			return -EPROBE_DEFER;
+> +		return PTR_ERR(axp20x_batt->batt_v);
+> +	}
+> +
+> +	axp20x_batt->batt_chrg_i =3D devm_iio_channel_get(&pdev->dev,
+> +							"batt_chrg_i");
+> +	if (IS_ERR(axp20x_batt->batt_chrg_i)) {
+> +		if (PTR_ERR(axp20x_batt->batt_chrg_i) =3D=3D -ENODEV)
+> +			return -EPROBE_DEFER;
+> +		return PTR_ERR(axp20x_batt->batt_chrg_i);
+> +	}
+> +
+> +	axp20x_batt->batt_dischrg_i =3D devm_iio_channel_get(&pdev->dev,
+> +							   "batt_dischrg_i");
+> +	if (IS_ERR(axp20x_batt->batt_dischrg_i)) {
+> +		if (PTR_ERR(axp20x_batt->batt_dischrg_i) =3D=3D -ENODEV)
+> +			return -EPROBE_DEFER;
+> +		return PTR_ERR(axp20x_batt->batt_dischrg_i);
+> +	}
+> +
+> +	axp20x_batt->regmap =3D dev_get_regmap(pdev->dev.parent, NULL);
+> +	platform_set_drvdata(pdev, axp20x_batt);
+> +
+> +	psy_cfg.drv_data =3D axp20x_batt;
+> +	psy_cfg.of_node =3D pdev->dev.of_node;
+> +
+> +	axp20x_batt->axp_id =3D (uintptr_t)of_device_get_match_data(&pdev->dev)=
+;
+> +
+> +	axp20x_batt->batt =3D devm_power_supply_register(&pdev->dev,
+> +						       &axp20x_batt_ps_desc,
+> +						       &psy_cfg);
+> +	if (IS_ERR(axp20x_batt->batt)) {
+> +		dev_err(&pdev->dev, "failed to register power supply: %ld\n",
+> +			PTR_ERR(axp20x_batt->batt));
+> +		return PTR_ERR(axp20x_batt->batt);
+> +	}
+> +
+> +	if (!power_supply_get_battery_info(axp20x_batt->batt, &info)) {
+> +		int vmin =3D info.voltage_min_design_uv;
+> +		int ccc =3D info.constant_charge_ua;
+> +
+> +		if (vmin > 0 && axp20x_set_voltage_min_design(axp20x_batt,
+> +							      vmin))
+> +			dev_err(&pdev->dev,
+> +				"couldn't set voltage_min_design\n");
+> +
+> +		/* Set max to unverified value to be able to set CCC */
+> +		axp20x_batt->max_ccc =3D ccc;
+> +
+> +		if (ccc <=3D 0 || axp20x_set_constant_charge_current(axp20x_batt,
+> +								   ccc)) {
+> +			dev_err(&pdev->dev,
+> +				"couldn't set constant charge current from DT: fallback to minimum v=
+alue\n");
+> +			ccc =3D 300000;
+> +			axp20x_batt->max_ccc =3D ccc;
+> +			axp20x_set_constant_charge_current(axp20x_batt, ccc);
+> +		}
+> +	}
+> +
+> +	/*
+> +	 * Update max CCC to a valid value if battery info is present or set it
+> +	 * to current register value by default.
+> +	 */
+> +	axp20x_get_constant_charge_current(axp20x_batt,
+> +					   &axp20x_batt->max_ccc);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver axp20x_batt_driver =3D {
+> +	.probe    =3D axp20x_power_probe,
+> +	.driver   =3D {
+> +		.name  =3D "axp20x-battery-power-supply",
+> +		.of_match_table =3D axp20x_battery_ps_id,
+> +	},
+> +};
+> +
+> +module_platform_driver(axp20x_batt_driver);
+> +
+> +MODULE_DESCRIPTION("Battery power supply driver for AXP20X and AXP22X PM=
+ICs");
+> +MODULE_AUTHOR("Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>");
+> +MODULE_LICENSE("GPL");
+> --=20
+> 2.9.3
+>=20
+
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
+
+--jhbkik7o57orndxd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJwl4ACgkQ2O7X88g7
++ppPvhAAhN+vNQ25KwGJEyDuGFA5dNJLxUJMKnB+Tjwh6ezQiLZRGz+YE3Klqnm1
+zXO6GL5kOLnfYJCQFEajqG0gTDNMTs+rENUkDOBrkfmNBHf/58yxqszRO7LQ77JY
+jfQqZDtxvWVLTIn2yDU7zdl6LceCZsGETSxJvop29O82hGsIS4R3jkjddCGc0Ej2
++R4eC5nVeQOmIVj2u6CTB6HYXl2DuRA2/4lzg39o6mfFdl2so/6oAsEbUPLFbW1s
+ErIdt+o3lXT8G68aZh1Iy0lrjE5VCPJqCNpILfLA7CHCh+nPpdCHpS7eMOW13TZo
+pR9tnejywvj5NRuRJqQxwtRLhuwRZjl+15CeDwSPAUcCCgLLYnWo/yHookkzgeRe
+fdtbwWVwDTlIR0KlrzGgN3FeuK+6uN2FW/aOi6Wi3ZPTuSW7wLm8dcd8b7CtMjV9
+1ZeF4KKHqy6xKZ5shKoknYIez0ux7R8qiBIAgjeYtXf35BqW3KyWHb415j7SEAJ7
+JE78F5JUajI/tluFUPfnFpi4TQ4giVSpKCayOAOq+sO1pcCMv5CPJdiAbTDjCmvp
+ZWvL0NeCepr3A71uOIKHpDyMQsNNjglxu6T+ybo4QttlvfBlN1LqfM/3XacZQaIc
+goZOw353nGtfvnwSG+qAVmxZjXxRaksK7u7FEGimxrgxLCzkGOA=
+=9cHe
+-----END PGP SIGNATURE-----
+
+--jhbkik7o57orndxd--
