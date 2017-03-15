@@ -1,56 +1,45 @@
-From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Subject: [PATCH v10 3/8] devicetree: power: bq27xxx: Add monitored-battery documentation
-Date: Wed, 15 Mar 2017 12:26:48 -0700
-Message-ID: <20170315192653.26799-4-liam@networkimprov.net>
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v10 5/8] power: bq27xxx_battery: Define access methods to write chip registers
+Date: Wed, 15 Mar 2017 12:26:50 -0700
+Message-ID: <20170315192653.26799-6-liam@networkimprov.net>
 References: <20170315192653.26799-1-liam@networkimprov.net>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170315192653.26799-1-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:35146 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752644AbdCOT1a (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2017 15:27:30 -0400
+Received: by mail-pg0-f66.google.com with SMTP id g2so3254071pge.2
+        for <linux-pm@vger.kernel.org>; Wed, 15 Mar 2017 12:27:29 -0700 (PDT)
+In-Reply-To: <20170315192653.26799-1-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+From: Matt Ranostay <matt@ranostay.consulting>
 
-Document monitored-battery = <&battery_node>
+write(), read_bulk(), write_bulk() support setting chip registers,
+e.g. with data obtained from power_supply_battery_info.
 
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- Documentation/devicetree/bindings/power/supply/bq27xxx.txt | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ include/linux/power/bq27xxx_battery.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-index b0c95ef..cf83371 100644
---- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-+++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-@@ -28,9 +28,18 @@ Required properties:
-  * "ti,bq27621" - BQ27621
- - reg: integer, i2c address of the device.
- 
-+Optional properties:
-+- monitored-battery: phandle of battery information devicetree node
-+
-+  See Documentation/devicetree/bindings/power/supply/battery.txt
-+  If either of the referenced battery's *-full-design-*-hours properties are set,
-+  then both must be.
-+
- Example:
- 
--bq27510g3 {
-+bq27510g3 : fuel-gauge@55 {
-     compatible = "ti,bq27510g3";
-     reg = <0x55>;
-+
-+    monitored-battery = <&bat>;
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index bed9557..92df553 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -32,6 +32,9 @@ struct bq27xxx_platform_data {
+ struct bq27xxx_device_info;
+ struct bq27xxx_access_methods {
+ 	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
++	int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
++	int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
++	int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
  };
+ 
+ struct bq27xxx_reg_cache {
 -- 
 2.9.3
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
