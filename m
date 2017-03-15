@@ -1,69 +1,80 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v4 11/18] dt-bindings: power: supply: add
- AXP20X/AXP22X battery DT binding
-Date: Thu, 16 Mar 2017 00:02:29 +0100
-Message-ID: <20170315230229.woqzt6dthzmpuohd@earth>
-References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
- <20170315105537.22349-12-quentin.schulz@free-electrons.com>
- <20170315222852.z2qrwoexcsjt7vs6@earth>
- <761e35fc-932a-953c-cfad-7e967ea3d126@free-electrons.com>
-Reply-To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v10 8/8] power: bq27xxx_battery_i2c: Add I2C bulk
+ read/write functions
+Date: Thu, 16 Mar 2017 00:03:59 +0100
+Message-ID: <20170315230359.xvrvlcrjs3p6apjc@earth>
+References: <20170315192653.26799-1-liam@networkimprov.net>
+ <20170315192653.26799-9-liam@networkimprov.net>
+ <20170315221414.mcig3c6bp44bitcu@earth>
+ <CAKvHMgSuvFjD39nv9cfkEs4U+79F=K_DBuBPcAqqvDejszeGfQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="efz7gnmstlbr6cht"
-Return-path: <linux-sunxi+bncBDXMLNOH5ANRBDMQU7DAKGQEAQNFM6Q-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+        protocol="application/pgp-signature"; boundary="imxuhosxz5wukxdo"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:44512 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752035AbdCOXEQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Mar 2017 19:04:16 -0400
 Content-Disposition: inline
-In-Reply-To: <761e35fc-932a-953c-cfad-7e967ea3d126-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <CAKvHMgSuvFjD39nv9cfkEs4U+79F=K_DBuBPcAqqvDejszeGfQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
 
---efz7gnmstlbr6cht
-Content-Type: text/plain; charset=UTF-8
+--imxuhosxz5wukxdo
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Mar 15, 2017 at 11:41:07PM +0100, Quentin Schulz wrote:
-> Hi,
-> 
-> On 15/03/2017 23:28, Sebastian Reichel wrote:
+On Wed, Mar 15, 2017 at 03:34:23PM -0700, Liam Breck wrote:
+> On Wed, Mar 15, 2017 at 3:14 PM, Sebastian Reichel <sre@kernel.org> wrote:
 > > Hi,
-> > 
-> > On Wed, Mar 15, 2017 at 11:55:30AM +0100, Quentin Schulz wrote:
-> >> The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
+> >
+> > On Wed, Mar 15, 2017 at 12:26:53PM -0700, Liam Breck wrote:
+> >> From: Matt Ranostay <matt@ranostay.consulting>
 > >>
-> >> This patch adds the DT binding documentation for the battery power
-> >> supply which gets various data from the PMIC, such as the battery status
-> >> (charging, discharging, full, dead), current max limit, current current,
-> >> battery capacity (in percentage), voltage max and min limits, current
-> >> voltage and battery capacity (in Ah).
+> >> write(), read_bulk(), write_bulk() are required by bq27xxx_battery
+> >> power_supply_battery_info code.
 > >>
-> >> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> >> Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-> >> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> > 
-> > I suggest to do "s/battery-power-supply/battery-fuel-gauge/g"
-> > 
-> 
-> The IP is way more than a simple fuel gauge, you have info about the
-> voltage, current, you can set different things, even though you have the
-> percentage of the battery returned by the PMIC.
+> >> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+> >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> >
+> > This is required by the previous patch, so your order is not bisect
+> > safe. Please just merge it with Patch 5.
+>=20
+> It is bisect-safe; bq27xxx_battery only uses the functions if available.
 
-Most chips sold under the label battery-fuel-gauges actually give
-you that kind of information ;)
+ok.
 
-> Does it really make sense to rename it that way?
+> Patch 5 could be merged with 7. But the I2C implementation should be
+> separate from the header.
 
-If everybody is fine with it I don't mind too much.
+Please at least move the patches together.
 
 -- Sebastian
---efz7gnmstlbr6cht--
+
+--imxuhosxz5wukxdo
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJyF8ACgkQ2O7X88g7
++ppP5g//Xr0qdqc2lXOW3I/tLHuKI/7MS4m6w1AqtiFI+9Q/nxRkukQtu7K+7lnu
+Hcr6Uc+q55k39QOxjo1uLHvo8jBww9KLfO7YNI/UA/h92OaILqMQtie9KyUQBWFY
+P/LRqZoIEgMyqPAs8egLumnmkQNqsZapiou1ZKbbmUIN9HG76W/sSWqLlUzJpqPo
++D9HCE9ywMdZrDLd58WbQnzLB35WjL5RYGjMJBkOCVJW4P3ocQp7eK/C35/brVl8
+BAEc/f+Tl8JE1l1HXk2F43amIAlJDGg4aPdaNsylVYZjJVYNR09wHmvsXpf+IuDF
+eri8VS5Sa0JAgWbUlAm9V84MZYW7rKZ/j3/GCS5JeHQs79LbbvcRBRlPJmzgtc4Z
+s3VFUF7euDyzdHDzN7wQIaxETyDiRv9ZI+rFOgFEz5a+VnJRqExuwKUhnwglVwmx
+Oo/PVD7IVe/HyeX54D2JH5aDNaRc2zG3XnSzChNyhdiGaDgDmFGnPDMDm81vC4vH
+Jkwp1yc3mn9R6Gbb3c+VT7HC7G1ksRTk+ABgK1fr5P2oLkLcnwEgJNhxEVwQBHbl
+Ox18jDa2+vq54ZLFmdgy2YNnNadekBI4l/7Yj/zi6MIIIzg9YO2oKfqkOvUoPUFO
+b7exY9VsjGVt1Swjy0jIPo2lAyStuaMFIAuLAqbtQOMdaaoX3mg=
+=yo/e
+-----END PGP SIGNATURE-----
+
+--imxuhosxz5wukxdo--
