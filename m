@@ -1,130 +1,101 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC v3 5/5] sched/{core,cpufreq_schedutil}: add capacity
- clamping for RT/DL tasks
-Date: Wed, 15 Mar 2017 16:24:14 +0000
-Message-ID: <20170315162414.GI31499@e106622-lin>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU
+ controller
+Date: Wed, 15 Mar 2017 16:44:39 +0000
+Message-ID: <20170315164439.GG18557@e110439-lin>
 References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <1488292722-19410-6-git-send-email-patrick.bellasi@arm.com>
- <CAEi0qNkn8xS=8vzStXjtJVwYwiXiu4vefZwe3VQPUVqz72YiKw@mail.gmail.com>
- <20170315114052.GB18557@e110439-lin>
- <CAJWu+opgLoa3EGdhQKXSi+dkQjXtc62tKmTL0krXxpqJp+PjPQ@mail.gmail.com>
- <20170315144449.GH31499@e106622-lin>
- <CAJWu+orSQbyDxN4O6wk8SYj-t5FyUZA4aO0GQqm8Fgujwr9+Lw@mail.gmail.com>
+ <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
+ <CAEi0qNkAK_3a_2x9BgvyEC+bFvckGFoQX1fjFba6boC1ws_R5w@mail.gmail.com>
+ <20170315112020.GA18557@e110439-lin>
+ <CAJWu+or4AJ6_J8XJicKDJReMP6Dj7t7SbB7k78ia8FdhDdXXoA@mail.gmail.com>
+ <20170315161048.GJ3637@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:49282 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752608AbdCOQYB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Mar 2017 12:24:01 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJWu+orSQbyDxN4O6wk8SYj-t5FyUZA4aO0GQqm8Fgujwr9+Lw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170315161048.GJ3637@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Joel Fernandes <joelaf@google.com>, "Joel Fernandes (Google)" <joel.opensrc@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Joel Fernandes <joelaf@google.com>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, "Joel Fernandes (Google)" <joel.opensrc@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Andres Oportus <andresoportus@google.com>
 
-On 15/03/17 09:13, Joel Fernandes wrote:
-> On Wed, Mar 15, 2017 at 7:44 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> > Hi Joel,
-> >
-> > On 15/03/17 05:59, Joel Fernandes wrote:
-> >> On Wed, Mar 15, 2017 at 4:40 AM, Patrick Bellasi
-> >> <patrick.bellasi@arm.com> wrote:
-> >> > On 13-Mar 03:08, Joel Fernandes (Google) wrote:
-> >> >> Hi Patrick,
-> >> >>
-> >> >> On Tue, Feb 28, 2017 at 6:38 AM, Patrick Bellasi
-> >> >> <patrick.bellasi@arm.com> wrote:
-> >> >> > Currently schedutil enforce a maximum OPP when RT/DL tasks are RUNNABLE.
-> >> >> > Such a mandatory policy can be made more tunable from userspace thus
-> >> >> > allowing for example to define a reasonable max capacity (i.e.
-> >> >> > frequency) which is required for the execution of a specific RT/DL
-> >> >> > workload. This will contribute to make the RT class more "friendly" for
-> >> >> > power/energy sensible applications.
-> >> >> >
-> >> >> > This patch extends the usage of capacity_{min,max} to the RT/DL classes.
-> >> >> > Whenever a task in these classes is RUNNABLE, the capacity required is
-> >> >> > defined by the constraints of the control group that task belongs to.
-> >> >> >
-> >> >>
-> >> >> We briefly discussed this at Linaro Connect that this works well for
-> >> >> sporadic RT tasks that run briefly and then sleep for long periods of
-> >> >> time - so certainly this patch is good, but its only a partial
-> >> >> solution to the problem of frequent and short-sleepers and something
-> >> >> is required to keep the boost active for short non-RUNNABLE as well.
-> >> >> The behavior with many periodic RT tasks is that they will sleep for
-> >> >> short intervals and run for short intervals periodically. In this case
-> >> >> removing the clamp (or the boost as in schedtune v2) on a dequeue will
-> >> >> essentially mean during a narrow window cpufreq can drop the frequency
-> >> >> and only to make it go back up again.
-> >> >>
-> >> >> Currently for schedtune v2, I am working on prototyping something like
-> >> >> the following for Android:
-> >> >> - if RT task is enqueue, introduce the boost.
-> >> >> - When task is dequeued, start a timer for a  "minimum deboost delay
-> >> >> time" before taking out the boost.
-> >> >> - If task is enqueued again before the timer fires, then cancel the timer.
-> >> >>
-> >> >> I don't think any "fix" to this particular issue should be to the
-> >> >> schedutil governor and should be sorted before going to cpufreq itself
-> >> >> (that is before making the request). What do you think about this?
-> >> >
-> >> > My short observations are:
-> >> >
-> >> > 1) for certain RT tasks, which have a quite "predictable" activation
-> >> >    pattern, we should definitively try to use DEADLINE... which will
-> >> >    factor out all "boosting potential races" since the bandwidth
-> >> >    requirements are well defined at task description time.
-> >>
-> >> I don't immediately see how deadline can fix this, when a task is
-> >> dequeued after end of its current runtime, its bandwidth will be
-> >> subtracted from the active running bandwidth. This is what drives the
-> >> DL part of the capacity request. In this case, we run into the same
-> >> issue as with the boost-removal on dequeue. Isn't it?
-> >>
-> >
-> > Unfortunately, I still have to post the set of patches (based on Luca's
-> > reclaiming set) that introduces driving of clock frequency from
-> > DEADLINE, so I guess everything we can discuss about how DEADLINE might
-> > help here might be difficult to understand. :(
-> >
-> > I should definitely fix that.
+On 15-Mar 09:10, Paul E. McKenney wrote:
+> On Wed, Mar 15, 2017 at 06:20:28AM -0700, Joel Fernandes wrote:
+> > On Wed, Mar 15, 2017 at 4:20 AM, Patrick Bellasi
+> > <patrick.bellasi@arm.com> wrote:
+> > > On 13-Mar 03:46, Joel Fernandes (Google) wrote:
+> > >> On Tue, Feb 28, 2017 at 6:38 AM, Patrick Bellasi
+> > >> <patrick.bellasi@arm.com> wrote:
+> > >> > The CPU CGroup controller allows to assign a specified (maximum)
+> > >> > bandwidth to tasks within a group, however it does not enforce any
+> > >> > constraint on how such bandwidth can be consumed.
+> > >> > With the integration of schedutil, the scheduler has now the proper
+> > >> > information about a task to select  the most suitable frequency to
+> > >> > satisfy tasks needs.
+> > >> [..]
+> > >>
+> > >> > +static u64 cpu_capacity_min_read_u64(struct cgroup_subsys_state *css,
+> > >> > +                                    struct cftype *cft)
+> > >> > +{
+> > >> > +       struct task_group *tg;
+> > >> > +       u64 min_capacity;
+> > >> > +
+> > >> > +       rcu_read_lock();
+> > >> > +       tg = css_tg(css);
+> > >> > +       min_capacity = tg->cap_clamp[CAP_CLAMP_MIN];
+> > >>
+> > >> Shouldn't the cap_clamp be accessed with READ_ONCE (and WRITE_ONCE in
+> > >> the write path) to avoid load-tearing?
+> > >
+> > > tg->cap_clamp is an "unsigned int" and thus I would expect a single
+> > > memory access to write/read it, isn't it? I mean: I do not expect the
+> > > compiler "to mess" with these accesses.
+> > 
+> > This depends on compiler and arch. I'm not sure if its in practice
+> > these days an issue, but see section on 'load tearing' in
+> > Documentation/memory-barriers.txt . If compiler decided to break down
+> > the access to multiple accesses due to some reason, then might be a
+> > problem.
 > 
-> I fully understand, Sorry to be discussing this too soon here...
+> The compiler might also be able to inline cpu_capacity_min_read_u64()
+> fuse the load from tg->cap_clamp[CAP_CLAMP_MIN] with other accesses.
+> If min_capacity is used several times in the ensuing code, the compiler
+> could reload multiple times from tg->cap_clamp[CAP_CLAMP_MIN], which at
+> best might be a bit confusing.
+
+That's actually an interesting case, however I don't think it applies
+in this case since cpu_capacity_min_read_u64() is called only via
+a function poninter and thus it will never be inlined. isn't it?
+
+> > Adding Paul for his expert opinion on the matter ;)
 > 
+> My personal approach is to use READ_ONCE() and WRITE_ONCE() unless
+> I can absolutely prove that the compiler cannot do any destructive
+> optimizations.  And I not-infrequently find unsuspected opportunities
+> for destructive optimization in my own code.  Your mileage may vary.  ;-)
 
-No problem. I just thought I should clarify before people go WTH are
-these guys talking about?! :)
+I guess here the main concern from Joel is that such a pattern:
 
-> > However, trying to quickly summarize how that would work (for who is
-> > already somewhat familiar with reclaiming bits):
-> >
-> >  - a task utilization contribution is accounted for (at rq level) as
-> >    soon as it wakes up for the first time in a new period
-> >  - its contribution is then removed after the 0lag time (or when the
-> >    task gets throttled)
-> >  - frequency transitions are triggered accordingly
-> >
-> > So, I don't see why triggering a go down request after the 0lag time
-> > expired and quickly reacting to tasks waking up would have create
-> > problems in your case?
-> 
-> In my experience, the 'reacting to tasks' bit doesn't work very well.
+   u64 var = unsigned_int_value_from_memory;
 
-Humm.. but in this case we won't be 'reacting', we will be
-'anticipating' tasks' needs, right?
+can result is a couple of "load from memory" operations.
 
-> For short running period tasks, we need to set the frequency to
-> something and not ramp it down too quickly (for ex, runtime 1.5ms and
-> period 3ms). In this case the 0-lag time would be < 3ms. I guess if
-> we're going to use 0-lag time, then we'd need to set it runtime and
-> period to be higher than exactly matching the task's? So would we be
-> assigning the same bandwidth but for R/T instead of r/t (Where r, R
-> are the runtimes and t,T are periods, and R > r and T > t)?
-> 
+In that case a similar:
 
-In general, I guess, you could let the Period be the task's period and
-set Runtime to be somewhat greater that the task's runtime (so to
-account for system overhead and such, e.g. hw limits regarding frequency
-switching).
+  unsigned_int_left_value = new_unsigned_int_value;
+
+executed on a different thread can overlap with the previous memory
+read operations and ending up in "var" containing a not consistent
+value.
+
+Question is: can this really happen, given the data types in use?
+
+
+> 							Thanx, Paul
+
+Thanks! ;-)
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
