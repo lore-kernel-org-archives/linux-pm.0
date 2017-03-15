@@ -1,61 +1,57 @@
-From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v4 16/18] ARM: dtsi: axp22x: add battery power
- supply subnode
-Date: Wed, 15 Mar 2017 11:55:35 +0100
-Message-ID: <20170315105537.22349-17-quentin.schulz@free-electrons.com>
-References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
-Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU
+ controller
+Date: Wed, 15 Mar 2017 11:20:20 +0000
+Message-ID: <20170315112020.GA18557@e110439-lin>
+References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+ <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
+ <CAEi0qNkAK_3a_2x9BgvyEC+bFvckGFoQX1fjFba6boC1ws_R5w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBB2F3UTDAKGQEBBNWSBI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20170315105537.22349-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: icenowy-ymACFijhrKM@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAEi0qNkAK_3a_2x9BgvyEC+bFvckGFoQX1fjFba6boC1ws_R5w@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP22X PMIC exposes battery supply various data such as
-the battery status (charging, discharging, full, dead), current max
-limit, current current, battery capacity (in percentage), voltage max
-limit, current voltage, and battery capacity (in Ah).
+On 13-Mar 03:46, Joel Fernandes (Google) wrote:
+> On Tue, Feb 28, 2017 at 6:38 AM, Patrick Bellasi
+> <patrick.bellasi@arm.com> wrote:
+> > The CPU CGroup controller allows to assign a specified (maximum)
+> > bandwidth to tasks within a group, however it does not enforce any
+> > constraint on how such bandwidth can be consumed.
+> > With the integration of schedutil, the scheduler has now the proper
+> > information about a task to select  the most suitable frequency to
+> > satisfy tasks needs.
+> [..]
+> 
+> > +static u64 cpu_capacity_min_read_u64(struct cgroup_subsys_state *css,
+> > +                                    struct cftype *cft)
+> > +{
+> > +       struct task_group *tg;
+> > +       u64 min_capacity;
+> > +
+> > +       rcu_read_lock();
+> > +       tg = css_tg(css);
+> > +       min_capacity = tg->cap_clamp[CAP_CLAMP_MIN];
+> 
+> Shouldn't the cap_clamp be accessed with READ_ONCE (and WRITE_ONCE in
+> the write path) to avoid load-tearing?
 
-This adds the battery power supply subnode for AXP22X PMIC.
+tg->cap_clamp is an "unsigned int" and thus I would expect a single
+memory access to write/read it, isn't it? I mean: I do not expect the
+compiler "to mess" with these accesses.
 
-Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
----
+However, if your concerns are more about overlapping read/write for the
+same capacity from different threads, then perhaps we should better
+use a mutex to serialize these two functions... not entirely convinced...
 
-v2:
- - changed DT node name from battery_power_supply to
- battery-power-supply,
- - removed io-channels and io-channel-names from DT (the IIO mapping is
- done in the IIO ADC driver now),
+> Thanks,
+> Joel
 
- arch/arm/boot/dts/axp22x.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/arch/arm/boot/dts/axp22x.dtsi b/arch/arm/boot/dts/axp22x.dtsi
-index 67331c5..87fb08e 100644
---- a/arch/arm/boot/dts/axp22x.dtsi
-+++ b/arch/arm/boot/dts/axp22x.dtsi
-@@ -57,6 +57,11 @@
- 		status = "disabled";
- 	};
- 
-+	battery_power_supply: battery-power-supply {
-+		compatible = "x-powers,axp221-battery-power-supply";
-+		status = "disabled";
-+	};
-+
- 	regulators {
- 		/* Default work frequency for buck regulators */
- 		x-powers,dcdc-freq = <3000>;
 -- 
-2.9.3
+#include <best/regards.h>
+
+Patrick Bellasi
