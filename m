@@ -1,175 +1,90 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v10 4/8] power: power_supply: Add
- power_supply_battery_info and API
-Date: Wed, 15 Mar 2017 23:07:02 +0100
-Message-ID: <20170315220702.mesuaquxg6apzjpr@earth>
-References: <20170315192653.26799-1-liam@networkimprov.net>
- <20170315192653.26799-5-liam@networkimprov.net>
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: Re: [PATCH v8 1/9] devicetree: power: Add battery.txt
+Date: Wed, 15 Mar 2017 15:04:00 -0700
+Message-ID: <CAKvHMgTpqdNKQoWUsChn4YWTtWaN5un_Vpqp+HtbMrxGV_D-ig@mail.gmail.com>
+References: <20170227071117.18934-1-liam@networkimprov.net>
+ <20170227071117.18934-2-liam@networkimprov.net> <20170302151449.j7i3ecpy2ipxu6tq@rob-hp-laptop>
+ <CAKvHMgR6eVTUp6je3D_YDUMAksWiHx6JnJc8cRHSHp6tj30OPA@mail.gmail.com> <CAL_Jsq+8Y=GtyjVZA-suZLH+ySDshaoU9qh96BF+PeUYK3FZxg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ndtuwtux2qwszabo"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:38846 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752035AbdCOWHI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Mar 2017 18:07:08 -0400
-Content-Disposition: inline
-In-Reply-To: <20170315192653.26799-5-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAL_Jsq+8Y=GtyjVZA-suZLH+ySDshaoU9qh96BF+PeUYK3FZxg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
+On Wed, Mar 15, 2017 at 1:10 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Thu, Mar 2, 2017 at 12:31 PM, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> wrote:
+>> Hi Rob,
+>>
+>> On Thu, Mar 2, 2017 at 7:14 AM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>>> On Sun, Feb 26, 2017 at 11:11:09PM -0800, Liam Breck wrote:
+>>>> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>>>>
+>>>> Documentation of static battery characteristics that can be defined
+>>>> for batteries which cannot self-identify. This information is required
+>>>> by fuel-gauge and charger chips for proper handling of the battery.
+>>>>
+>>>> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>>>> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>>>> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+>>>> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>>>> ---
+>>>>  .../devicetree/bindings/power/supply/battery.txt   | 42 ++++++++++++++++++++++
+>>>>  1 file changed, 42 insertions(+)
+>>>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>> new file mode 100644
+>>>> index 0000000..3d916bd
+>>>> --- /dev/null
+>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>> @@ -0,0 +1,42 @@
+>>>> +Battery Characteristics
+>>>> +
+>>>> +Required Properties:
+>>>> + - compatible: Must be "fixed-battery"
+>>>
+>>> Still not liking this name, but I don't have a better suggestion. Please
+>>> describe here what is and isn't a "fixed battery".
+>>
+>> Sebastian...?
+>>
+>>>> +
+>>>> +Optional Properties:
+>>>> + - voltage-min-design-microvolt: drained battery voltage
+>>>> + - energy-full-design-microwatt-hours: battery design energy
+>>>> + - charge-full-design-microamp-hours: battery design capacity
+>>>> +
+>>>> +Future Properties must be named for the corresponding elements in
+>>>> +enum power_supply_property, defined in include/linux/power_supply.h.
+>>>
+>>> Um, no. That's exactly not how DT bindings should be done.
+>>
+>> Power supply components surface stats in sysfs using the names in enum
+>> power_supply_property. For example,
+>> /sys/class/power_supply/.../voltage_min_design. Matching input (DT)
+>> and output (sysfs) names is sensible. The above comment is already
+>> attached to struct power_supply_battery_info, which is the initial
+>> destination for the above DT properties.
+>>
+>> Shall I mention sysfs in the above comment?
+>
+> Absolutely not. Bindings should not reference Linux.
+>
+> While sometimes things can align, there is no guarantee that they
+> will. DT is h/w description. sysfs is user configuration.
 
---ndtuwtux2qwszabo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+sysfs for power_supply also provides fixed hw characteristics.
 
-Hi,
-
-On Wed, Mar 15, 2017 at 12:26:49PM -0700, Liam Breck wrote:
-> From: Liam Breck <kernel@networkimprov.net>
->=20
-> power_supply_get_battery_info() reads battery data from devicetree.
-> struct power_supply_battery_info provides battery data to drivers.
-> Drivers may surface battery data in sysfs via corresponding
-> POWER_SUPPLY_PROP_* fields.
->=20
-> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-
-Acked-By: Sebastian Reichel <sre@kernel.org>
-
--- Sebastian
-
-> ---
->  drivers/power/supply/power_supply_core.c | 40 ++++++++++++++++++++++++++=
-++++++
->  include/linux/power_supply.h             | 18 ++++++++++++++
->  2 files changed, 58 insertions(+)
->=20
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
-ply/power_supply_core.c
-> index a74d8ca..c121931 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -17,6 +17,7 @@
->  #include <linux/device.h>
->  #include <linux/notifier.h>
->  #include <linux/err.h>
-> +#include <linux/of.h>
->  #include <linux/power_supply.h>
->  #include <linux/thermal.h>
->  #include "power_supply.h"
-> @@ -487,6 +488,45 @@ struct power_supply *devm_power_supply_get_by_phandl=
-e(struct device *dev,
->  EXPORT_SYMBOL_GPL(devm_power_supply_get_by_phandle);
->  #endif /* CONFIG_OF */
-> =20
-> +int power_supply_get_battery_info(struct power_supply *psy,
-> +				  struct power_supply_battery_info *info)
-> +{
-> +	struct device_node *battery_np;
-> +	const char *value;
-> +	int err;
-> +
-> +	info->energy_full_design_uwh =3D -EINVAL;
-> +	info->charge_full_design_uah =3D -EINVAL;
-> +	info->voltage_min_design_uv  =3D -EINVAL;
-> +
-> +	if (!psy->of_node) {
-> +		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
-> +			 __func__);
-> +		return -ENXIO;
-> +	}
-> +
-> +	battery_np =3D of_parse_phandle(psy->of_node, "monitored-battery", 0);
-> +	if (!battery_np)
-> +		return -ENODEV;
-> +
-> +	err =3D of_property_read_string(battery_np, "compatible", &value);
-> +	if (err)
-> +		return err;
-> +
-> +	if (strcmp("fixed-battery", value))
-> +		return -ENODEV;
-> +
-> +	of_property_read_u32(battery_np, "energy-full-design-microwatt-hours",
-> +			     &info->energy_full_design_uwh);
-> +	of_property_read_u32(battery_np, "charge-full-design-microamp-hours",
-> +			     &info->charge_full_design_uah);
-> +	of_property_read_u32(battery_np, "voltage-min-design-microvolt",
-> +			     &info->voltage_min_design_uv);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(power_supply_get_battery_info);
-> +
->  int power_supply_get_property(struct power_supply *psy,
->  			    enum power_supply_property psp,
->  			    union power_supply_propval *val)
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index 3965503..e84f1d3 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -288,6 +288,21 @@ struct power_supply_info {
->  	int use_for_apm;
->  };
-> =20
-> +/*
-> + * This is the recommended struct to manage static battery parameters,
-> + * populated by power_supply_get_battery_info(). Most platform drivers s=
-hould
-> + * use these for consistency.
-> + * Its field names must correspond to elements in enum power_supply_prop=
-erty.
-> + * The default field value is -EINVAL.
-> + * Power supply class itself doesn't use this.
-> + */
-> +
-> +struct power_supply_battery_info {
-> +	int energy_full_design_uwh;	/* microWatt-hours */
-> +	int charge_full_design_uah;	/* microAmp-hours */
-> +	int voltage_min_design_uv;	/* microVolts */
-> +};
-> +
->  extern struct atomic_notifier_head power_supply_notifier;
->  extern int power_supply_reg_notifier(struct notifier_block *nb);
->  extern void power_supply_unreg_notifier(struct notifier_block *nb);
-> @@ -306,6 +321,9 @@ static inline struct power_supply *
->  devm_power_supply_get_by_phandle(struct device *dev, const char *propert=
-y)
->  { return NULL; }
->  #endif /* CONFIG_OF */
-> +
-> +extern int power_supply_get_battery_info(struct power_supply *psy,
-> +					 struct power_supply_battery_info *info);
->  extern void power_supply_changed(struct power_supply *psy);
->  extern int power_supply_am_i_supplied(struct power_supply *psy);
->  extern int power_supply_set_battery_charged(struct power_supply *psy);
-> --=20
-> 2.9.3
->=20
-
---ndtuwtux2qwszabo
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJuwYACgkQ2O7X88g7
-+pr9/g//QhTn1RP8CfyGw4pD/dTijRSkzNzQ/wug2/VmRusTKo+xJrIVilkYT8MF
-cqjqIPjR9PTqn7xYJ11EQF8zPgx3sKLOfbD/ScbUkWb3q/nHRL5F3Mu75zRmWFnp
-f3KuV8cxssLWstjOMgcJVthHG4STbAyt0TnOD6yqPV2ITSEOzhFWWKsP5K0EoXGm
-WVQJyXOKVJYXgTsFnyiB9SJ34NpFeB8+qBCK6tE3rAxHqoRL7yzpgvLnzYqAQDgg
-iHzjogY26hJ+R31hbsUgJSlgyLmZOedIX6KzmjBUTt7DpPQ8xjMJI5uJP5hZY/0W
-1vgJfP8aYXwf7ysNNMQ0h6T/XBvSG7wHeKDNlNXp16Vo2snMvQr2fXrWQ0TzQ7gL
-9E68cc3BITCXM8kCYgQ0cYm3lP3tz3ygho9v3h8iHgDV7mJ4nfWnbgMNTWIEy+rd
-zpb7csNtLUS1D2Wt/zBBRPpMqR5Uh/ylLYku8ciSe2gMbTNVNyldrbJlKFV212of
-gnQkzgjjanTV2pvnVzB6VO4WHBGdaWR7d/6aEkE1GGYk4Vu4zH/b0meP9Vzjenx0
-lMp6VNdkjKF2n/AqWosWZFDJB8R04HTXMe1cS1KmU+E+Onbaj9ion9Y/AtwrVfbo
-G0w8kiDino7pRiJTlxGS8Bb/V4dxf0TfjSdpRL9R0TIDN5/TU8g=
-=B0uo
------END PGP SIGNATURE-----
-
---ndtuwtux2qwszabo--
+Sebastian proposed DT:battery specifically to be consumed by
+power_supply_core. Allowing names in DT:battery and
+power_supply_property to diverge would cause confusion and wasted
+time, for no particular benefit. As there is no rationale to
+reconsider the names of these fields for DT:battery, let's write that
+into the docs.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
