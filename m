@@ -1,99 +1,175 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v10 3/8] devicetree: power: bq27xxx: Add
- monitored-battery documentation
-Date: Wed, 15 Mar 2017 23:06:27 +0100
-Message-ID: <20170315220627.g6lcatf43als6tnt@earth>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v10 4/8] power: power_supply: Add
+ power_supply_battery_info and API
+Date: Wed, 15 Mar 2017 23:07:02 +0100
+Message-ID: <20170315220702.mesuaquxg6apzjpr@earth>
 References: <20170315192653.26799-1-liam@networkimprov.net>
- <20170315192653.26799-4-liam@networkimprov.net>
+ <20170315192653.26799-5-liam@networkimprov.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="dryamcuzrp4vrld7"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+        protocol="application/pgp-signature"; boundary="ndtuwtux2qwszabo"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:38846 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752035AbdCOWHI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Mar 2017 18:07:08 -0400
 Content-Disposition: inline
-In-Reply-To: <20170315192653.26799-4-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Cc: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+In-Reply-To: <20170315192653.26799-5-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
 
---dryamcuzrp4vrld7
+--ndtuwtux2qwszabo
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Mar 15, 2017 at 12:26:48PM -0700, Liam Breck wrote:
-> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->=20
-> Document monitored-battery =3D <&battery_node>
->=20
-> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Hi,
 
-Acked-by: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+On Wed, Mar 15, 2017 at 12:26:49PM -0700, Liam Breck wrote:
+> From: Liam Breck <kernel@networkimprov.net>
+>=20
+> power_supply_get_battery_info() reads battery data from devicetree.
+> struct power_supply_battery_info provides battery data to drivers.
+> Drivers may surface battery data in sysfs via corresponding
+> POWER_SUPPLY_PROP_* fields.
+>=20
+> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+
+Acked-By: Sebastian Reichel <sre@kernel.org>
 
 -- Sebastian
 
 > ---
->  Documentation/devicetree/bindings/power/supply/bq27xxx.txt | 11 ++++++++=
-++-
->  1 file changed, 10 insertions(+), 1 deletion(-)
+>  drivers/power/supply/power_supply_core.c | 40 ++++++++++++++++++++++++++=
+++++++
+>  include/linux/power_supply.h             | 18 ++++++++++++++
+>  2 files changed, 58 insertions(+)
 >=20
-> diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b=
-/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-> index b0c95ef..cf83371 100644
-> --- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-> +++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-> @@ -28,9 +28,18 @@ Required properties:
->   * "ti,bq27621" - BQ27621
->  - reg: integer, i2c address of the device.
+> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
+ply/power_supply_core.c
+> index a74d8ca..c121931 100644
+> --- a/drivers/power/supply/power_supply_core.c
+> +++ b/drivers/power/supply/power_supply_core.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/device.h>
+>  #include <linux/notifier.h>
+>  #include <linux/err.h>
+> +#include <linux/of.h>
+>  #include <linux/power_supply.h>
+>  #include <linux/thermal.h>
+>  #include "power_supply.h"
+> @@ -487,6 +488,45 @@ struct power_supply *devm_power_supply_get_by_phandl=
+e(struct device *dev,
+>  EXPORT_SYMBOL_GPL(devm_power_supply_get_by_phandle);
+>  #endif /* CONFIG_OF */
 > =20
-> +Optional properties:
-> +- monitored-battery: phandle of battery information devicetree node
+> +int power_supply_get_battery_info(struct power_supply *psy,
+> +				  struct power_supply_battery_info *info)
+> +{
+> +	struct device_node *battery_np;
+> +	const char *value;
+> +	int err;
 > +
-> +  See Documentation/devicetree/bindings/power/supply/battery.txt
-> +  If either of the referenced battery's *-full-design-*-hours properties=
- are set,
-> +  then both must be.
+> +	info->energy_full_design_uwh =3D -EINVAL;
+> +	info->charge_full_design_uah =3D -EINVAL;
+> +	info->voltage_min_design_uv  =3D -EINVAL;
 > +
->  Example:
-> =20
-> -bq27510g3 {
-> +bq27510g3 : fuel-gauge@55 {
->      compatible =3D "ti,bq27510g3";
->      reg =3D <0x55>;
+> +	if (!psy->of_node) {
+> +		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
+> +			 __func__);
+> +		return -ENXIO;
+> +	}
 > +
-> +    monitored-battery =3D <&bat>;
+> +	battery_np =3D of_parse_phandle(psy->of_node, "monitored-battery", 0);
+> +	if (!battery_np)
+> +		return -ENODEV;
+> +
+> +	err =3D of_property_read_string(battery_np, "compatible", &value);
+> +	if (err)
+> +		return err;
+> +
+> +	if (strcmp("fixed-battery", value))
+> +		return -ENODEV;
+> +
+> +	of_property_read_u32(battery_np, "energy-full-design-microwatt-hours",
+> +			     &info->energy_full_design_uwh);
+> +	of_property_read_u32(battery_np, "charge-full-design-microamp-hours",
+> +			     &info->charge_full_design_uah);
+> +	of_property_read_u32(battery_np, "voltage-min-design-microvolt",
+> +			     &info->voltage_min_design_uv);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(power_supply_get_battery_info);
+> +
+>  int power_supply_get_property(struct power_supply *psy,
+>  			    enum power_supply_property psp,
+>  			    union power_supply_propval *val)
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index 3965503..e84f1d3 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -288,6 +288,21 @@ struct power_supply_info {
+>  	int use_for_apm;
 >  };
+> =20
+> +/*
+> + * This is the recommended struct to manage static battery parameters,
+> + * populated by power_supply_get_battery_info(). Most platform drivers s=
+hould
+> + * use these for consistency.
+> + * Its field names must correspond to elements in enum power_supply_prop=
+erty.
+> + * The default field value is -EINVAL.
+> + * Power supply class itself doesn't use this.
+> + */
+> +
+> +struct power_supply_battery_info {
+> +	int energy_full_design_uwh;	/* microWatt-hours */
+> +	int charge_full_design_uah;	/* microAmp-hours */
+> +	int voltage_min_design_uv;	/* microVolts */
+> +};
+> +
+>  extern struct atomic_notifier_head power_supply_notifier;
+>  extern int power_supply_reg_notifier(struct notifier_block *nb);
+>  extern void power_supply_unreg_notifier(struct notifier_block *nb);
+> @@ -306,6 +321,9 @@ static inline struct power_supply *
+>  devm_power_supply_get_by_phandle(struct device *dev, const char *propert=
+y)
+>  { return NULL; }
+>  #endif /* CONFIG_OF */
+> +
+> +extern int power_supply_get_battery_info(struct power_supply *psy,
+> +					 struct power_supply_battery_info *info);
+>  extern void power_supply_changed(struct power_supply *psy);
+>  extern int power_supply_am_i_supplied(struct power_supply *psy);
+>  extern int power_supply_set_battery_charged(struct power_supply *psy);
 > --=20
 > 2.9.3
 >=20
 
---dryamcuzrp4vrld7
+--ndtuwtux2qwszabo
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJuuMACgkQ2O7X88g7
-+ppopQ//Z8JmLCFE0wFkk40Ykk+t37WamBrxOxHRUp2keZ5opvyZq4Vq/nxKl7H8
-3z1wN7ec/RRuYu8GScczNi3SfQJuregoZj61rDIlsaepMn12NJwvDdlHsS0rBAQf
-xffHon0Cl3LQyT8sHw67oer+tKsgmoCf+Gfnaca9h2SnMqa1cnO0sOron5yxrX4k
-DbouM8Dxl/fyL4XXEl/7g2ISkrHKm73LesjwL7cKOxqNAxAwBjcPT/JMaTFJas7G
-iADLnd5KXpajbi3ISmD3VMG+H4nULTDAWvbPTnqgh2aiWnz/VHAL4GgvF/lCx41V
-6n3nCmhGa1hEc7BCZEYu1MicY1lxTBER47PXjjBBomNVkp/5G7P8pEb16fnVC6aH
-RgB1i1zF70fiehjkQ/O3fxjUPxfXnoACSsZt6od7GyPffZnt+tu75rEJiq+DNMFc
-msqK8RQSTfcblKurg9h5z2S/XQGzXMZ4yDAkBAXTo2IC2WXsrm2ntUJxiQnHNyFn
-Ke/jTMEuoEJsE1NIJO5mNwQ+NTRgW/IJZjEnOAAX57Jm8ULV0J5SVFHrpMtM5vn1
-9nuQkOv0wDjZfQ1GPKJDn5jH6to+BmqYWVcNFZryHz8fA381PTw2hVR/9zsxnYmK
-kcJUm314RD/YwAlaeSwTP8R0gyubuDdw7pWekf1NMV7qCE46Eeo=
-=wN3o
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJuwYACgkQ2O7X88g7
++pr9/g//QhTn1RP8CfyGw4pD/dTijRSkzNzQ/wug2/VmRusTKo+xJrIVilkYT8MF
+cqjqIPjR9PTqn7xYJ11EQF8zPgx3sKLOfbD/ScbUkWb3q/nHRL5F3Mu75zRmWFnp
+f3KuV8cxssLWstjOMgcJVthHG4STbAyt0TnOD6yqPV2ITSEOzhFWWKsP5K0EoXGm
+WVQJyXOKVJYXgTsFnyiB9SJ34NpFeB8+qBCK6tE3rAxHqoRL7yzpgvLnzYqAQDgg
+iHzjogY26hJ+R31hbsUgJSlgyLmZOedIX6KzmjBUTt7DpPQ8xjMJI5uJP5hZY/0W
+1vgJfP8aYXwf7ysNNMQ0h6T/XBvSG7wHeKDNlNXp16Vo2snMvQr2fXrWQ0TzQ7gL
+9E68cc3BITCXM8kCYgQ0cYm3lP3tz3ygho9v3h8iHgDV7mJ4nfWnbgMNTWIEy+rd
+zpb7csNtLUS1D2Wt/zBBRPpMqR5Uh/ylLYku8ciSe2gMbTNVNyldrbJlKFV212of
+gnQkzgjjanTV2pvnVzB6VO4WHBGdaWR7d/6aEkE1GGYk4Vu4zH/b0meP9Vzjenx0
+lMp6VNdkjKF2n/AqWosWZFDJB8R04HTXMe1cS1KmU+E+Onbaj9ion9Y/AtwrVfbo
+G0w8kiDino7pRiJTlxGS8Bb/V4dxf0TfjSdpRL9R0TIDN5/TU8g=
+=B0uo
 -----END PGP SIGNATURE-----
 
---dryamcuzrp4vrld7--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--ndtuwtux2qwszabo--
