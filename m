@@ -1,13 +1,13 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v4 09/18] ARM: dts: sun8i: sina33: enable ACIN
- power supply subnode
-Date: Wed, 15 Mar 2017 11:55:28 +0100
-Message-ID: <20170315105537.22349-10-quentin.schulz@free-electrons.com>
+Subject: [PATCH v4 17/18] ARM: dts: sun8i: sina33: enable
+ battery power supply subnode
+Date: Wed, 15 Mar 2017 11:55:36 +0100
+Message-ID: <20170315105537.22349-18-quentin.schulz@free-electrons.com>
 References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBYV3UTDAKGQES2EKJ7Q-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBB2F3UTDAKGQEBBNWSBI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <20170315105537.22349-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -20,25 +20,25 @@ To: icenowy-ymACFijhrKM@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrI
 Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The Sinlinx SinA33 has an AXP223 PMIC and an ACIN connector, thus, we
-enable the ACIN power supply in its Device Tree.
+The Sinlinx SinA33 has an AXP223 PMIC and a battery connector, thus, we
+enable the battery power supply subnode in its Device Tree.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 ---
  arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts | 4 ++++
  1 file changed, 4 insertions(+)
 
 diff --git a/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts b/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
-index cde14b3..c012afe 100644
+index c012afe..547b6ce 100644
 --- a/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
 +++ b/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
-@@ -174,6 +174,10 @@
+@@ -178,6 +178,10 @@
+ 	status = "okay";
+ };
  
- #include "axp223.dtsi"
- 
-+&ac_power_supply {
++&battery_power_supply {
 +	status = "okay";
 +};
 +
