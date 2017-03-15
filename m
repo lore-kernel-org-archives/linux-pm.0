@@ -1,13 +1,13 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v4 03/18] mfd: axp20x: correct name of
- temperature data ADC registers
-Date: Wed, 15 Mar 2017 11:55:22 +0100
-Message-ID: <20170315105537.22349-4-quentin.schulz@free-electrons.com>
+Subject: [PATCH v4 05/18] mfd: axp20x: add ADC cells for AXP20X
+ and AXP22X PMICs
+Date: Wed, 15 Mar 2017 11:55:24 +0100
+Message-ID: <20170315105537.22349-6-quentin.schulz@free-electrons.com>
 References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBXV3UTDAKGQE5YNPTXQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBX53UTDAKGQEQVLJRUI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <20170315105537.22349-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -20,51 +20,52 @@ To: icenowy-ymACFijhrKM@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrI
 Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The registers 0x56 and 0x57 of AXP22X PMIC store the value of the
-internal temperature of the PMIC.
-
-This patch modifies the name of these registers from AXP22X_PMIC_ADC_H/L
-to AXP22X_PMIC_TEMP_H/L so their purpose is clearer.
+This adds the AXP20X/AXP22x ADCs driver to the mfd cells of the AXP209,
+AXP221 and AXP223 MFD.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 ---
 
-added in v2
+v3:
+ - removed of_compatible as DT node has been removed,
+ - use different names to probe the ADC driver,
 
- drivers/mfd/axp20x.c       | 2 +-
- include/linux/mfd/axp20x.h | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/mfd/axp20x.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 25115fe..56472c2 100644
+index 56472c2..0b6361e 100644
 --- a/drivers/mfd/axp20x.c
 +++ b/drivers/mfd/axp20x.c
-@@ -100,7 +100,7 @@ static const struct regmap_range axp22x_volatile_ranges[] = {
- 	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
- 	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
- 	regmap_reg_range(AXP22X_GPIO_STATE, AXP22X_GPIO_STATE),
--	regmap_reg_range(AXP22X_PMIC_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
-+	regmap_reg_range(AXP22X_PMIC_TEMP_H, AXP20X_IPSOUT_V_HIGH_L),
- 	regmap_reg_range(AXP20X_FG_RES, AXP20X_FG_RES),
- };
- 
-diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-index 0d9a1ff..dc8798c 100644
---- a/include/linux/mfd/axp20x.h
-+++ b/include/linux/mfd/axp20x.h
-@@ -228,8 +228,8 @@ enum axp20x_variants {
- #define AXP20X_OCV_MAX			0xf
- 
- /* AXP22X specific registers */
--#define AXP22X_PMIC_ADC_H		0x56
--#define AXP22X_PMIC_ADC_L		0x57
-+#define AXP22X_PMIC_TEMP_H		0x56
-+#define AXP22X_PMIC_TEMP_L		0x57
- #define AXP22X_TS_ADC_H			0x58
- #define AXP22X_TS_ADC_L			0x59
- #define AXP22X_BATLOW_THRES1		0xe6
+@@ -589,6 +589,8 @@ static struct mfd_cell axp20x_cells[] = {
+ 	}, {
+ 		.name		= "axp20x-regulator",
+ 	}, {
++		.name		= "axp20x-adc",
++	}, {
+ 		.name		= "axp20x-ac-power-supply",
+ 		.of_compatible	= "x-powers,axp202-ac-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
+@@ -609,6 +611,8 @@ static struct mfd_cell axp221_cells[] = {
+ 	}, {
+ 		.name		= "axp20x-regulator",
+ 	}, {
++		.name		= "axp22x-adc"
++	}, {
+ 		.name		= "axp20x-usb-power-supply",
+ 		.of_compatible	= "x-powers,axp221-usb-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
+@@ -622,6 +626,8 @@ static struct mfd_cell axp223_cells[] = {
+ 		.num_resources		= ARRAY_SIZE(axp22x_pek_resources),
+ 		.resources		= axp22x_pek_resources,
+ 	}, {
++		.name		= "axp22x-adc",
++	}, {
+ 		.name			= "axp20x-regulator",
+ 	}, {
+ 		.name		= "axp20x-usb-power-supply",
 -- 
 2.9.3
