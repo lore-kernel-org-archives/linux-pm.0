@@ -1,80 +1,108 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v10 8/8] power: bq27xxx_battery_i2c: Add I2C bulk
- read/write functions
-Date: Thu, 16 Mar 2017 00:03:59 +0100
-Message-ID: <20170315230359.xvrvlcrjs3p6apjc@earth>
-References: <20170315192653.26799-1-liam@networkimprov.net>
- <20170315192653.26799-9-liam@networkimprov.net>
- <20170315221414.mcig3c6bp44bitcu@earth>
- <CAKvHMgSuvFjD39nv9cfkEs4U+79F=K_DBuBPcAqqvDejszeGfQ@mail.gmail.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v4 01/18] dt-bindings: power: battery: add
+ constant-charge-current property
+Date: Wed, 15 Mar 2017 15:45:15 -0700
+Message-ID: <CAKvHMgSbG4dJ87Bi+pq-TedfVdwqkj3GVEOow-Sf2Q8wgzCO=w@mail.gmail.com>
+References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
+ <20170315105537.22349-2-quentin.schulz@free-electrons.com>
+ <CAKvHMgSnyPPMEZ1o70Ed2oBHGcMho=-jjFhfXGn4t+2bdALEew@mail.gmail.com> <ce6f2ddb-f875-0370-ca45-293397d97495@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="imxuhosxz5wukxdo"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:44512 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752035AbdCOXEQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Mar 2017 19:04:16 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKvHMgSuvFjD39nv9cfkEs4U+79F=K_DBuBPcAqqvDejszeGfQ@mail.gmail.com>
+Received: from mail-io0-f194.google.com ([209.85.223.194]:36150 "EHLO
+        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754011AbdCOWpR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2017 18:45:17 -0400
+In-Reply-To: <ce6f2ddb-f875-0370-ca45-293397d97495@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: Sebastian Reichel <sre@kernel.org>, robh+dt@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+
+On Wed, Mar 15, 2017 at 6:10 AM, Quentin Schulz
+<quentin.schulz@free-electrons.com> wrote:
+> Hi Liam,
+>
+> On 15/03/2017 13:08, Liam Breck wrote:
+>> I dropped most of the CCs, pls re-add anyone essential. Use Cc lines
+>> in patch description to direct a patch to interested parties and
+>> relevant lists. I don't want to see all 19 patches in this series.
+>>
+>> On Wed, Mar 15, 2017 at 3:55 AM, Quentin Schulz
+>> <quentin.schulz@free-electrons.com> wrote:
+>>> This adds the constant-charge-current property to the list of optional
+>>> properties of the battery.
+>>>
+>>> The constant charge current is critical for batteries as they can't
+>>> handle all charge currents.
+>>>
+>>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+>>> Acked-by: Rob Herring <robh@kernel.org>
+>>> ---
+>>>
+>>> v4:
+>>>  - switch from constant-charge-current-microamp to constant-charge-microamp,
+>>
+>> Must be constant-charge-current-microamp for the reasons discussed in
+>> battery.txt - consistency with sysfs names.
+>>
+>
+> Hum. Just nitpicking, but I disagree with the use of 'must'. IIRC there
+> is nothing in the code that would require the property to be named after
+> a property from the enum power_supply_property.
+>
+> I would say that you _want_ it to be named like that because it
+> underlines the relation between the DT property and the actual impacted
+> property in the power supply subsystem. I'm fine with this reason but in
+> the end, the maintainer's opinion prevails (if (s)he does not want it,
+> (s)he will not take it). So, basically, I actually don't mind either
+> option and I see arguments on each side.
+>
+> So, just waiting for maintainer's opinion to make the final version of
+> this patch.
+
+But one should explain one's reasoning to the maintainer if he missed it :-)
+
+And the docs for power_supply_get_battery_info() recommend naming
+alignment with power_supply_property.
 
 
---imxuhosxz5wukxdo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Wed, Mar 15, 2017 at 03:34:23PM -0700, Liam Breck wrote:
-> On Wed, Mar 15, 2017 at 3:14 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> > Hi,
-> >
-> > On Wed, Mar 15, 2017 at 12:26:53PM -0700, Liam Breck wrote:
-> >> From: Matt Ranostay <matt@ranostay.consulting>
-> >>
-> >> write(), read_bulk(), write_bulk() are required by bq27xxx_battery
-> >> power_supply_battery_info code.
-> >>
-> >> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
-> >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> >
-> > This is required by the previous patch, so your order is not bisect
-> > safe. Please just merge it with Patch 5.
->=20
-> It is bisect-safe; bq27xxx_battery only uses the functions if available.
-
-ok.
-
-> Patch 5 could be merged with 7. But the I2C implementation should be
-> separate from the header.
-
-Please at least move the patches together.
-
--- Sebastian
-
---imxuhosxz5wukxdo
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJyF8ACgkQ2O7X88g7
-+ppP5g//Xr0qdqc2lXOW3I/tLHuKI/7MS4m6w1AqtiFI+9Q/nxRkukQtu7K+7lnu
-Hcr6Uc+q55k39QOxjo1uLHvo8jBww9KLfO7YNI/UA/h92OaILqMQtie9KyUQBWFY
-P/LRqZoIEgMyqPAs8egLumnmkQNqsZapiou1ZKbbmUIN9HG76W/sSWqLlUzJpqPo
-+D9HCE9ywMdZrDLd58WbQnzLB35WjL5RYGjMJBkOCVJW4P3ocQp7eK/C35/brVl8
-BAEc/f+Tl8JE1l1HXk2F43amIAlJDGg4aPdaNsylVYZjJVYNR09wHmvsXpf+IuDF
-eri8VS5Sa0JAgWbUlAm9V84MZYW7rKZ/j3/GCS5JeHQs79LbbvcRBRlPJmzgtc4Z
-s3VFUF7euDyzdHDzN7wQIaxETyDiRv9ZI+rFOgFEz5a+VnJRqExuwKUhnwglVwmx
-Oo/PVD7IVe/HyeX54D2JH5aDNaRc2zG3XnSzChNyhdiGaDgDmFGnPDMDm81vC4vH
-Jkwp1yc3mn9R6Gbb3c+VT7HC7G1ksRTk+ABgK1fr5P2oLkLcnwEgJNhxEVwQBHbl
-Ox18jDa2+vq54ZLFmdgy2YNnNadekBI4l/7Yj/zi6MIIIzg9YO2oKfqkOvUoPUFO
-b7exY9VsjGVt1Swjy0jIPo2lAyStuaMFIAuLAqbtQOMdaaoX3mg=
-=yo/e
------END PGP SIGNATURE-----
-
---imxuhosxz5wukxdo--
+>> Also applies to power_supply_core.c patch.
+>>
+>> Rob: enum power_supply_property also lists constant-charge-voltage,
+>> hence the -current
+>>
+>>
+>>> added in v3
+>>>
+>>>  Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
+>>>  1 file changed, 2 insertions(+)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>> index 0278617..9594e1e 100644
+>>> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
+>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>> @@ -7,6 +7,7 @@ Optional Properties:
+>>>   - voltage-min-design-microvolt: drained battery voltage
+>>>   - energy-full-design-microwatt-hours: battery design energy
+>>>   - charge-full-design-microamp-hours: battery design capacity
+>>> + - constant-charge-microamp: battery constant charge current
+>>>
+>>>  Because drivers surface properties in sysfs using names derived
+>>>  from enum power_supply_property, e.g.
+>>> @@ -30,6 +31,7 @@ Example:
+>>>                 voltage-min-design-microvolt = <3200000>;
+>>>                 energy-full-design-microwatt-hours = <5290000>;
+>>>                 charge-full-design-microamp-hours = <1430000>;
+>>> +               constant-charge-microamp = <300000>;
+>>>         };
+>>>
+>>>         charger: charger@11 {
+>>> --
+>>> 2.9.3
+>>>
+>
+> --
+> Quentin Schulz, Free Electrons
+> Embedded Linux and Kernel engineering
+> http://free-electrons.com
