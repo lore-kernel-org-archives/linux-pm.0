@@ -1,65 +1,128 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v3 2/2] power: supply: max17040: Add OF device ID table
-Date: Wed, 15 Mar 2017 21:50:00 +0100
-Message-ID: <20170315205000.oliqozqk2dzczcc3@earth>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: [PATCH v3 1/2] power: supply: ltc2941-battery-gauge: Add OF
+ device ID table
+Date: Wed, 15 Mar 2017 17:59:24 -0300
+Message-ID: <4554bede-4977-c0b3-d9d8-468b0faae3d0@osg.samsung.com>
 References: <20170315034349.8494-1-javier@osg.samsung.com>
- <20170315034349.8494-2-javier@osg.samsung.com>
+ <20170315205518.sjzijt6likrrau7b@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="2r3vr77a77apxnnu"
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:57022 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751183AbdCOUuH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Mar 2017 16:50:07 -0400
-Content-Disposition: inline
-In-Reply-To: <20170315034349.8494-2-javier@osg.samsung.com>
+Received: from ec2-52-27-115-49.us-west-2.compute.amazonaws.com ([52.27.115.49]:49637
+        "EHLO osg.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1751822AbdCOU7g (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2017 16:59:36 -0400
+In-Reply-To: <20170315205518.sjzijt6likrrau7b@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javier Martinez Canillas <javier@osg.samsung.com>
+To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
+Hello Sebastian,
 
---2r3vr77a77apxnnu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 03/15/2017 05:55 PM, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Wed, Mar 15, 2017 at 12:43:48AM -0300, Javier Martinez Canillas wrote:
+>> The driver doesn't have a struct of_device_id table but supported devices
+>> are registered via Device Trees. This is working on the assumption that a
+>> I2C device registered via OF will always match a legacy I2C device ID and
+>> that the MODALIAS reported will always be of the form i2c:<device>.
+> 
+> I don't get hits for "grep -r ltc294[13]" in arch/.
+>
 
-Hi,
+There isn't a mainline DTS that use these but the compatible strings (without a
+vendor prefix) are listed in the following DT binding document:
 
-On Wed, Mar 15, 2017 at 12:43:49AM -0300, Javier Martinez Canillas wrote:
-> The driver doesn't have a struct of_device_id table but supported devices
-> are registered via Device Trees. This is working on the assumption that a
-> I2C device registered via OF will always match a legacy I2C device ID and
-> that the MODALIAS reported will always be of the form i2c:<device>.
->=20
-> But this could change in the future so the correct approach is to have an
-> OF device ID table if the devices are registered via OF.
->=20
-> Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+Documentation/devicetree/bindings/power/supply/ltc2941.txt.
+ 
+>> But this could change in the future so the correct approach is to have an
+>> OF device ID table if the devices are registered via OF.
+>>
+>> The compatible strings don't have a vendor prefix because that's how it's
+>> used currently, and changing this will be a Device Tree ABI break.
+> 
+> I think the DT strings should have a vendor prefix.
+> So I will only queue this with an explicit Acked-By from Rob or Mark.
+>
 
-Thanks, queued.
+Yes, I agree with you. I don't know though what should happen with DT bindings
+that mentions a compatible without a vendor prefix as the one for this driver.
 
--- Sebastian
+> -- Sebastian
+> 
+>> Changes in v3:
+>> - Don't use of_match_ptr() to avoid build warning when CONFIG_OF is disabled.
+>>
+>> Changes in v2:
+>>  Fix build warning reported by kbuild test robot.
+>> - Fix wrong compatible strings due a copy & paste error.
+>>
+>>  drivers/power/supply/ltc2941-battery-gauge.c | 19 +++++++++++++++++--
+>>  1 file changed, 17 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
+>> index 4adf2ba021ce..d3052be1bead 100644
+>> --- a/drivers/power/supply/ltc2941-battery-gauge.c
+>> +++ b/drivers/power/supply/ltc2941-battery-gauge.c
+>> @@ -9,6 +9,7 @@
+>>   */
+>>  #include <linux/kernel.h>
+>>  #include <linux/module.h>
+>> +#include <linux/of_device.h>
+>>  #include <linux/types.h>
+>>  #include <linux/errno.h>
+>>  #include <linux/swab.h>
+>> @@ -61,7 +62,7 @@ struct ltc294x_info {
+>>  	struct power_supply *supply;	/* Supply pointer */
+>>  	struct power_supply_desc supply_desc;	/* Supply description */
+>>  	struct delayed_work work;	/* Work scheduler */
+>> -	int num_regs;	/* Number of registers (chip type) */
+>> +	unsigned long num_regs;	/* Number of registers (chip type) */
+>>  	int charge;	/* Last charge register content */
+>>  	int r_sense;	/* mOhm */
+>>  	int Qlsb;	/* nAh */
+>> @@ -387,7 +388,7 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
+>>  
+>>  	np = of_node_get(client->dev.of_node);
+>>  
+>> -	info->num_regs = id->driver_data;
+>> +	info->num_regs = (unsigned long)of_device_get_match_data(&client->dev);
+>>  	info->supply_desc.name = np->name;
+>>  
+>>  	/* r_sense can be negative, when sense+ is connected to the battery
+>> @@ -497,9 +498,23 @@ static const struct i2c_device_id ltc294x_i2c_id[] = {
+>>  };
+>>  MODULE_DEVICE_TABLE(i2c, ltc294x_i2c_id);
+>>  
+>> +static const struct of_device_id ltc294x_i2c_of_match[] = {
+>> +	{
+>> +		.compatible = "ltc2941",
+>> +		.data = (void *)LTC2941_NUM_REGS
+>> +	},
+>> +	{
+>> +		.compatible = "ltc2943",
+>> +		.data = (void *)LTC2943_NUM_REGS
+>> +	},
+>> +	{ },
+>> +};
+>> +MODULE_DEVICE_TABLE(of, ltc294x_i2c_of_match);
+>> +
+>>  static struct i2c_driver ltc294x_driver = {
+>>  	.driver = {
+>>  		.name	= "LTC2941",
+>> +		.of_match_table = ltc294x_i2c_of_match,
+>>  		.pm	= LTC294X_PM_OPS,
+>>  	},
+>>  	.probe		= ltc294x_i2c_probe,
+>> -- 
+>> 2.9.3
+>>
 
---2r3vr77a77apxnnu
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJqPgACgkQ2O7X88g7
-+ppiaxAAgEdtryGMK3k97dDhSVW+26o83QUxwNQV0UBlHYDDc71guIo9KgWcbJ7/
-j6ZBheAnCHOxGWgwsNcNEtzGHbrjVxT3095ulzDMvm/S9+Yehpr3JIkg8eKYrqjZ
-oJgvnLf8GuUTN4Ydq0yjZMWoiigvJQndz5aEsJeXKrtoF0UFprJ+JtVzFXNO/PM7
-igN1ncUzkIFrIBQz7YvZV57b5CQoOMachslmS0qAkqXYpMc2U1W7nLQqtC6/sgRy
-Yn7yISIFh4dn96nuZQYB5bvNcssHHIZzaGYQMPudCTQdf5BPFiskbOiYdaVzJN2f
-uFg/1Uqf3N3AwX6sxDFdnYzcoSWax2hCQWf4vvSKDbzPmL4AEA0h8pWFGzmVFShR
-mjD4ZAJK7MhGKRDfv1vvwHIvBtdLXUoSQczCp9XmOX9HiW060hrLHObTg2qC8BJG
-c3Brie8qmiisFF0k5jxbMUOwSfSURtJqDzWHaH6gTgUtLAw2TRTbZjpdRNZhn80t
-v1V9OK9zrJYjGhQIJoejX17OB6lzCRbriX02DCLbdf1+MmuwuLSrDxKGSnNTPTBa
-n5TLdc+uyz1anLCeBQ4iUem6bMYFz2f1DP+EocmurDENtwQjKb2VWX/g8PxpvfNj
-qlCdgkRhCdJivNEsBAy3qjZd2S1tkWk+rne7Opi2pQE3zyafYQE=
-=TFqP
------END PGP SIGNATURE-----
-
---2r3vr77a77apxnnu--
+Best regards,
+-- 
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
