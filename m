@@ -1,76 +1,67 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/2] power: reset: syscon-poweroff: add a mask property
-Date: Wed, 15 Mar 2017 21:45:13 +0100
-Message-ID: <20170315204513.i3cpl4ptyevtyyp5@earth>
-References: <1486472054-4367-1-git-send-email-guy.shapiro@mobi-wize.com>
- <1486482966-4497-1-git-send-email-guy.shapiro@mobi-wize.com>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCHv4 0/2] Two bq24190 PM improvments
+Date: Wed, 15 Mar 2017 21:46:16 +0100
+Message-ID: <20170315204616.2axcvv3yoteoh6dj@earth>
+References: <20170208231301.1666-1-tony@atomide.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="wspwyo7wchrwmhxp"
-Return-path: <rtc-linux+bncBDXMLNOH5ANRBX6PU3DAKGQEHTRZIJY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+        protocol="application/pgp-signature"; boundary="gmoptbfa2wf5rw5q"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:56636 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750877AbdCOUqW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Mar 2017 16:46:22 -0400
 Content-Disposition: inline
-In-Reply-To: <1486482966-4497-1-git-send-email-guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <20170208231301.1666-1-tony@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
 
---wspwyo7wchrwmhxp
-Content-Type: text/plain; charset=UTF-8
+--gmoptbfa2wf5rw5q
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Feb 07, 2017 at 05:56:05PM +0200, Guy Shapiro wrote:
-> Make the syscon-poweroff driver accept value and mask instead of
-> just value.
-> 
-> Prior to this patch, the property name for the value was 'mask'. If
-> only the mask property is defined on a node, maintain compatibility
-> by using it as the value.
-> 
-> Signed-off-by: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
+On Wed, Feb 08, 2017 at 03:12:59PM -0800, Tony Lindgren wrote:
+> Here's v4 repost of the two bq24190 patches against current power-supply
+> tree.
+>
+> [...]
+>
+> Tony Lindgren (2):
+>   power: bq24190_charger: Check the interrupt status on resume
+>   power: bq24190_charger: Use PM runtime autosuspend
+>=20
+>  drivers/power/supply/bq24190_charger.c | 214 +++++++++++++++++++++++++--=
+------
+>  1 file changed, 164 insertions(+), 50 deletions(-)
 
-Thanks, queued with Rob's Acked-By.
+Thanks, queued.
 
 -- Sebastian
 
--- 
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
---- 
-You received this message because you are subscribed to the Google Groups "rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
-
---wspwyo7wchrwmhxp
+--gmoptbfa2wf5rw5q
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJp9cACgkQ2O7X88g7
-+poUXg//YVvSVFLN+yCg282zEWVPHRSG0sqsj14LykFmOBm6P/x6wlzDRm57AQ6t
-RAwigdpSzPdi7BEjXnvNDv2oHx0xd3h52wSx3NdxUHUxQfa3D0K/eNU+LK4HbdB6
-Whs0gaRYC4D1SjWrZ6+GFWSDSfIW/r8CBEUTF6MG5uIy1F1ErIVzKeX80KOM+I8I
-2eNj6wV2Lq8z5HSrt+Mswmsm5PaKUwucs1zNrl2f56tjkh0DmReXXoB1arYuzoVz
-MiRwPlIZq4MOzAwsHf3sH3SIj4NBeMi4Q14O3aS2BsxmvNSUxV2PuMhmMLZ0FzqB
-K973y9yS4yuKCNONY4AVEFen0d12jzs74UhNCHLcZBDH9ecX8DaHbDGsKEkgPaSX
-BluMFrdBy0kCTkZJKLGVLMwSEtLRmLV4qDjKX4UgW8264uEqJnHV57tMw7LX+BCc
-dIxGBWu/r8PrrfuXwUAzVslTEGbA+Agtp6Asz36ZuS+B55J/Dl3/q/j8XjKhgvSe
-tlBD1ZxVszngAqbhQ4s1xMOWuHWvVNo55asg1MrmTsGMQJfffAOxxqoxTTIMTbw3
-C/h9JJwn/Vm1GPdJaFlMvebKYMDZIu63zKBgbltEc5WkYnSr1yVyiSLWJcUb9AHg
-A2rl70vxMLWglhCSqKNGLmlgY4PMZ9YoPmtsmIvkSQFVv6iQa1M=
-=auno
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJqBgACgkQ2O7X88g7
++poi4A/7BEqoPGMxpePoXyYmTGe1aeQNI4wuwWUkXBR312O5qti68J9fz5HKepdr
+h+ZF2fgNnia2lK6D4j2PO2V0/cIABZTqF+9WJliya72uyLFLJ09f2myuzAjTdRKm
+N+hAoYqQR8ShXSBS6fWfHTn7O6mmIQ3F7bSF5WpDfHHJXfsE3ih4deuOl+XXWRDd
+HNxU5UwdXUl04HIAfZ7/0Z+/o/+3LCSAznZiUojNlKeQXcQQ9/WL68ffnHOWiDbi
+RQ9hoXdeVHlu1VslTq/6yTtkuY/5zk9BUZ8vkNpqZCJavwoahGiw/W+mOUJvPo7+
+o7mlMZupxdWeNiywWj9iOKVOEcqyDAWUTd2yfbf4EJyiKKs62cyqxqZSuTfEtPbh
+kUliWe7zU0BXfaVUnRlVgWJTNV6vEVmhu2NNLccJGlEIA7IXOAMvf9voXOpsREXI
+W+4jDzAsAmlMGxuFLQwvTEk2iwwR3wAREehUBt4DYm7wqr0pGo3mhJd9j73FwduQ
+n+b+pDdZxBDKI5Nf3ordiy7bxi5E9yCv0XXQOKPshzQzxqXSf0sjhv1QWkoUhoDn
+0t2hBfhX9TpPbtsfU6E4LIfN9zgFSlTVvUGcDf6XEcivJjTgSC+AFYBw2tnZ/qP1
+uGN2/TcN1+r5OS1xN/ovjk0Jj60UVYUgFNR5TmRc9YqGG8qwkgg=
+=29MV
 -----END PGP SIGNATURE-----
 
---wspwyo7wchrwmhxp--
+--gmoptbfa2wf5rw5q--
