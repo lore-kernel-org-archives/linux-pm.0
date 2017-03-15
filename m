@@ -1,108 +1,177 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v4 01/18] dt-bindings: power: battery: add
- constant-charge-current property
-Date: Wed, 15 Mar 2017 15:45:15 -0700
-Message-ID: <CAKvHMgSbG4dJ87Bi+pq-TedfVdwqkj3GVEOow-Sf2Q8wgzCO=w@mail.gmail.com>
-References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
- <20170315105537.22349-2-quentin.schulz@free-electrons.com>
- <CAKvHMgSnyPPMEZ1o70Ed2oBHGcMho=-jjFhfXGn4t+2bdALEew@mail.gmail.com> <ce6f2ddb-f875-0370-ca45-293397d97495@free-electrons.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/6] cpufreq: schedutil: ensure max frequency while
+ running RT/DL tasks
+Date: Thu, 16 Mar 2017 00:32:10 +0100
+Message-ID: <CAJZ5v0g7sz6V328byKpZOcieDjU14E1=sRfO88XvB9DGa5ZnDA@mail.gmail.com>
+References: <1488469507-32463-1-git-send-email-patrick.bellasi@arm.com>
+ <20170303083145.GA8206@vireshk-i7> <20170303123830.GB10420@e110439-lin>
+ <4111071.G5qHzPaNa5@aspire.rjw.lan> <20170315144051.GE18557@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f194.google.com ([209.85.223.194]:36150 "EHLO
-        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754011AbdCOWpR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Mar 2017 18:45:17 -0400
-In-Reply-To: <ce6f2ddb-f875-0370-ca45-293397d97495@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170315144051.GE18557@e110439-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Chris Redpath <chris.redpath@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.c>
 List-Id: linux-pm@vger.kernel.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: Sebastian Reichel <sre@kernel.org>, robh+dt@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Wed, Mar 15, 2017 at 6:10 AM, Quentin Schulz
-<quentin.schulz@free-electrons.com> wrote:
-> Hi Liam,
+On Wed, Mar 15, 2017 at 3:40 PM, Patrick Bellasi
+<patrick.bellasi@arm.com> wrote:
+> On 15-Mar 12:52, Rafael J. Wysocki wrote:
+>> On Friday, March 03, 2017 12:38:30 PM Patrick Bellasi wrote:
+>> > On 03-Mar 14:01, Viresh Kumar wrote:
+>> > > On 02-03-17, 15:45, Patrick Bellasi wrote:
+>> > > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+>> > > > @@ -293,15 +305,29 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>> > > >         if (curr == sg_policy->thread)
+>> > > >                 goto done;
+>> > > >
+>> > > > +       /*
+>> > > > +        * While RT/DL tasks are running we do not want FAIR tasks to
+>> > > > +        * overwrite this CPU's flags, still we can update utilization and
+>> > > > +        * frequency (if required/possible) to be fair with these tasks.
+>> > > > +        */
+>> > > > +       rt_mode = task_has_dl_policy(curr) ||
+>> > > > +                 task_has_rt_policy(curr) ||
+>> > > > +                 (flags & SCHED_CPUFREQ_RT_DL);
+>> > > > +       if (rt_mode)
+>> > > > +               sg_cpu->flags |= flags;
+>> > > > +       else
+>> > > > +               sg_cpu->flags = flags;
+>> > >
+>> > > This looks so hacked up :)
+>> >
+>> > It is... a bit... :)
+>> >
+>> > > Wouldn't it be better to let the scheduler tell us what all kind of tasks it has
+>> > > in the rq of a CPU and pass a mask of flags?
+>> >
+>> > That would definitively report a more consistent view of what's going
+>> > on on each CPU.
+>> >
+>> > > I think it wouldn't be difficult (or time consuming) for the
+>> > > scheduler to know that, but I am not 100% sure.
+>> >
+>> > Main issue perhaps is that cpufreq_update_{util,this_cpu} are
+>> > currently called by the scheduling classes codes and not from the core
+>> > scheduler. However I agree that it should be possible to build up such
+>> > information and make it available to the scheduling classes code.
+>> >
+>> > I'll have a look at that.
+>> >
+>> > > IOW, the flags field in cpufreq_update_util() will represent all tasks in the
+>> > > rq, instead of just the task that is getting enqueued/dequeued..
+>> > >
+>> > > And obviously we need to get some utilization numbers for the RT and DL tasks
+>> > > going forward, switching to max isn't going to work for ever :)
+>> >
+>> > Regarding this last point, there are WIP patches Juri is working on to
+>> > feed DL demands to schedutil, his presentation at last ELC partially
+>> > covers these developments:
+>> >   https://www.youtube.com/watch?v=wzrcWNIneWY&index=37&list=PLbzoR-pLrL6pSlkQDW7RpnNLuxPq6WVUR
+>> >
+>> > Instead, RT tasks are currently covered by an rt_avg metric which we
+>> > already know is not fitting for most purposes.
+>> > It seems that the main goal is twofold: move people to DL whenever
+>> > possible otherwise live with the go-to-max policy which is the only
+>> > sensible solution to satisfy the RT's class main goal, i.e. latency
+>> > reduction.
+>> >
+>> > Of course such a go-to-max policy for all RT tasks we already know
+>> > that is going to destroy energy on many different mobile scenarios.
+>> >
+>> > As a possible mitigation for that, while still being compliant with
+>> > the main RT's class goal, we recently posted the SchedTune v3
+>> > proposal:
+>> >   https://lkml.org/lkml/2017/2/28/355
+>> >
+>> > In that proposal, the simple usage of CGroups and the new capacity_max
+>> > attribute of the (existing) CPU controller should allow to define what
+>> > is the "max" value which is just enough to match the latency
+>> > constraints of a mobile application without sacrificing too much
+>> > energy.
 >
-> On 15/03/2017 13:08, Liam Breck wrote:
->> I dropped most of the CCs, pls re-add anyone essential. Use Cc lines
->> in patch description to direct a patch to interested parties and
->> relevant lists. I don't want to see all 19 patches in this series.
->>
->> On Wed, Mar 15, 2017 at 3:55 AM, Quentin Schulz
->> <quentin.schulz@free-electrons.com> wrote:
->>> This adds the constant-charge-current property to the list of optional
->>> properties of the battery.
->>>
->>> The constant charge current is critical for batteries as they can't
->>> handle all charge currents.
->>>
->>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
->>> Acked-by: Rob Herring <robh@kernel.org>
->>> ---
->>>
->>> v4:
->>>  - switch from constant-charge-current-microamp to constant-charge-microamp,
->>
->> Must be constant-charge-current-microamp for the reasons discussed in
->> battery.txt - consistency with sysfs names.
->>
+> Given the following interesting question, let's add Thomas Gleixner to
+> the discussion, which can be interested in sharing his viewpoint.
 >
-> Hum. Just nitpicking, but I disagree with the use of 'must'. IIRC there
-> is nothing in the code that would require the property to be named after
-> a property from the enum power_supply_property.
+>> And who's going to figure out what "max" value is most suitable?  And how?
 >
-> I would say that you _want_ it to be named like that because it
-> underlines the relation between the DT property and the actual impacted
-> property in the power supply subsystem. I'm fine with this reason but in
-> the end, the maintainer's opinion prevails (if (s)he does not want it,
-> (s)he will not take it). So, basically, I actually don't mind either
-> option and I see arguments on each side.
+> That's usually up to the system profiling which is part of the
+> platform optimizations and tunings.
+> For example it's possible to run  experiments to measure the bandwidth
+> and (completion) latency requirements from the RT workloads.
 >
-> So, just waiting for maintainer's opinion to make the final version of
-> this patch.
+> It's something which people developing embedded/mobile systems are
+> quite aware of.
 
-But one should explain one's reasoning to the maintainer if he missed it :-)
+Well, I was expecting an answer like this to be honest and let me say
+that it is not too convincing from my perspective.
 
-And the docs for power_supply_get_battery_info() recommend naming
-alignment with power_supply_property.
+At least throwing embedded and mobile into one bag seems to be a
+stretch, because the usage patterns of those two groups are quite
+different, even though they may be similar from the hardware POV.
 
+Mobile are mostly used as general-purpose computers nowadays (and I
+guess we're essentially talking about anything running Android, not
+just phones, aren't we?) with applications installed by users rather
+than by system integrators, so I'm doubtful about the viability of the
+"system integrators should take care of it" assumption in this
+particular case.
 
->> Also applies to power_supply_core.c patch.
->>
->> Rob: enum power_supply_property also lists constant-charge-voltage,
->> hence the -current
->>
->>
->>> added in v3
->>>
->>>  Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
->>>  1 file changed, 2 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->>> index 0278617..9594e1e 100644
->>> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
->>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->>> @@ -7,6 +7,7 @@ Optional Properties:
->>>   - voltage-min-design-microvolt: drained battery voltage
->>>   - energy-full-design-microwatt-hours: battery design energy
->>>   - charge-full-design-microamp-hours: battery design capacity
->>> + - constant-charge-microamp: battery constant charge current
->>>
->>>  Because drivers surface properties in sysfs using names derived
->>>  from enum power_supply_property, e.g.
->>> @@ -30,6 +31,7 @@ Example:
->>>                 voltage-min-design-microvolt = <3200000>;
->>>                 energy-full-design-microwatt-hours = <5290000>;
->>>                 charge-full-design-microamp-hours = <1430000>;
->>> +               constant-charge-microamp = <300000>;
->>>         };
->>>
->>>         charger: charger@11 {
->>> --
->>> 2.9.3
->>>
+> I'm also quite confident on saying that most of
+> them can agree that just going to the max OPP, each and every time a
+> RT task becomes RUNNABLE, it is something which is more likely to hurt
+> than to give benefits.
+
+It would be good to be able to estimate that likelihood somehow ...
+
+> AFAIK the current policy (i.e. "go to max") has been adopted for the
+> following main reasons, which I'm reporting with some observations.
 >
-> --
-> Quentin Schulz, Free Electrons
-> Embedded Linux and Kernel engineering
-> http://free-electrons.com
+>
+> .:: Missing of a suitable utilization metric for RT tasks
+>
+>  There is actually a utilization signal (rq->rt_avg) but it has been
+>  verified to be "too slow" for the practical usage of driving OPP
+>  selection.
+>  Other possibilities are perhaps under exploration but they are not
+>  yet there.
+>
+>
+> .:: Promote the migration from RT to DEADLINE
+>
+>  Which makes a lot of sens for many existing use-cases, starting from
+>  Android as well. However, it's also true that we cannot (at least yet)
+>  split the world in DEALINE vs FAIR.
+>  There is still, and there will be, a fair amount of RT tasks which
+>  just it makes sense to serve at best both from the performance as
+>  well as the power/energy standpoint.
+>
+>
+> .:: Because RT is all about "reducing latencies"
+>
+>  Running at the maximum OPP is certainly the best way to aim for the
+>  minimum latencies but... RT is about doing things "in time", which
+>  does not imply "as fast as possible".
+>  There can be many different workloads where a lower OPP is just good
+>  enough to meet the expected soft RT behaviors provided by the Linux
+>  RT scheduler.
+
+AFAICS, RT is about determinism and meeting deadlines is one aspect of that.
+
+Essentially, the problem here is to know which OPP is sufficient to do
+things "on time" and there simply is no good way to figure that out
+for RT tasks, again, AFAICS.
+
+And since we can't say which OPP is sufficient, we pretty much have no
+choice but to use the top-most one.
+
+> All that considered, the modifications proposed in this series,
+> combined with other bits which are for discussion in this [1] other
+> posting, can work together to provide a better and more tunable OPP
+> selection policy for RT tasks.
+
+OK, but "more tunable" need not imply "better".
+
+Thanks,
+Rafael
