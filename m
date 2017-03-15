@@ -1,184 +1,129 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v3 1/2] power: supply: ltc2941-battery-gauge: Add OF
- device ID table
-Date: Wed, 15 Mar 2017 22:10:22 +0100
-Message-ID: <20170315211022.y4lwiniyr4ho4bxd@earth>
-References: <20170315034349.8494-1-javier@osg.samsung.com>
- <20170315205518.sjzijt6likrrau7b@earth>
- <4554bede-4977-c0b3-d9d8-468b0faae3d0@osg.samsung.com>
+Subject: Re: [PATCH 2/2 RESEND] power: reset: Add a driver for the Gemini
+ poweroff
+Date: Wed, 15 Mar 2017 22:11:49 +0100
+Message-ID: <20170315211149.of3xvrnlq7ne7r5w@earth>
+References: <20170312223621.3010-1-linus.walleij@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="tkejqpefpalvfxo4"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:58948 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751357AbdCOVKu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Mar 2017 17:10:50 -0400
-Content-Disposition: inline
-In-Reply-To: <4554bede-4977-c0b3-d9d8-468b0faae3d0@osg.samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============3248743441256729878=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170312223621.3010-1-linus.walleij@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: openwrt-devel@openwrt.org, Florian Fainelli <f.fainelli@gmail.com>, Paulius Zaleckas <paulius.zaleckas@gmail.com>, linux-pm@vger.kernel.org, Hans Ulli Kroll <ulli.kroll@googlemail.com>inux-pm@vger.kernel.org, Janos Laube <janos.dev@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mike Looijmans <mike.looijmans@topic.nl>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 
 
---tkejqpefpalvfxo4
+--===============3248743441256729878==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="jtlot5hsk45z3qlj"
+Content-Disposition: inline
+
+
+--jtlot5hsk45z3qlj
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Javier,
+Hi Linus,
 
-On Wed, Mar 15, 2017 at 05:59:24PM -0300, Javier Martinez Canillas wrote:
-> Hello Sebastian,
+On Sun, Mar 12, 2017 at 11:36:21PM +0100, Linus Walleij wrote:
+> The Gemini (SL3516) SoC has a special power controller block
+> that only deal with shutting down the system.
 >=20
-> On 03/15/2017 05:55 PM, Sebastian Reichel wrote:
-> > Hi,
-> >=20
-> > On Wed, Mar 15, 2017 at 12:43:48AM -0300, Javier Martinez Canillas wrot=
-e:
-> >> The driver doesn't have a struct of_device_id table but supported devi=
-ces
-> >> are registered via Device Trees. This is working on the assumption tha=
-t a
-> >> I2C device registered via OF will always match a legacy I2C device ID =
-and
-> >> that the MODALIAS reported will always be of the form i2c:<device>.
-> >=20
-> > I don't get hits for "grep -r ltc294[13]" in arch/.
-> >
+> If you do not register a driver and activate the block, the
+> power button on the systems utilizing this SoC will do an
+> uncontrolled power cut, which is why it is important to have
+> a special poweroff driver.
 >=20
-> There isn't a mainline DTS that use these but the compatible strings (wit=
-hout a
-> vendor prefix) are listed in the following DT binding document:
+> The most basic functionality is to just shut down the system
+> by writing a special bit in the control register after the
+> system has reached pm_poweroff.
 >=20
-> Documentation/devicetree/bindings/power/supply/ltc2941.txt.
+> It also handles the poweroff from a button or other sources:
+>=20
+> When the poweroff button is pressed, or a signal is sent to
+> poweroff from an infrared remote control, or when the RTC
+> fires a special alarm (!) the system emits an interrupt.
+> At this point, Linux must acknowledge the interrupt and
+> proceed to do an orderly shutdown of the system.
+>=20
+> After adding this driver, pressing the poweroff button gives
+> this dmesg:
+>=20
+> root@gemini:/
+> root@gemini:/ gemini-poweroff 4b000000.power-controller:
+> poweroff button pressed
+>=20
+> calling shutdown scripts..
+> setting /dev/rtc0 from system time
+> unmounting file systems...
+> umount: tmpfs busy - remounted read-only
+> umount: can't unmount /: Invalid argument
+> The system is going down NOW!
+> Sent SIGTERM to all processes
+> Sent SIGKILL to all processes
+> Requesting system poweroff
+> uhci_hcd 0000:00:09.1: HCRESET not completed yet!
+> uhci_hcd 0000:00:09.0: HCRESET not completed yet!
+> reboot: Power down
+> gemini-poweroff 4b000000.power-controller: Gemini power off
+>=20
+> Cc: Janos Laube <janos.dev@gmail.com>
+> Cc: Paulius Zaleckas <paulius.zaleckas@gmail.com>
+> Cc: Hans Ulli Kroll <ulli.kroll@googlemail.com>
+> Cc: Florian Fainelli <f.fainelli@gmail.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+> ---
+> Sebastian: please just merge this when your are pleased
+> with it. I will funnel the ARM parts through the ARM SoC tree.
 
-Looks like I didn't notice when I merged the binding document :(
-
-> >> But this could change in the future so the correct approach is to have=
- an
-> >> OF device ID table if the devices are registered via OF.
-> >>
-> >> The compatible strings don't have a vendor prefix because that's how i=
-t's
-> >> used currently, and changing this will be a Device Tree ABI break.
-> >=20
-> > I think the DT strings should have a vendor prefix.
-> > So I will only queue this with an explicit Acked-By from Rob or Mark.
-> >
->=20
-> Yes, I agree with you. I don't know though what should happen with DT bin=
-dings
-> that mentions a compatible without a vendor prefix as the one for this dr=
-iver.
-
-Adding Rob, Mark (DT binding maintainers) and Mike (submitter of
-the DT binding). I think we should add vendor prefix. If it is
-actually used we could keep the variant without the vendor prefix
-with a deprecation notice in the DT binding document.
+DONE.
 
 -- Sebastian
 
-> > -- Sebastian
-> >=20
-> >> Changes in v3:
-> >> - Don't use of_match_ptr() to avoid build warning when CONFIG_OF is di=
-sabled.
-> >>
-> >> Changes in v2:
-> >>  Fix build warning reported by kbuild test robot.
-> >> - Fix wrong compatible strings due a copy & paste error.
-> >>
-> >>  drivers/power/supply/ltc2941-battery-gauge.c | 19 +++++++++++++++++--
-> >>  1 file changed, 17 insertions(+), 2 deletions(-)
-> >>
-> >> diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/po=
-wer/supply/ltc2941-battery-gauge.c
-> >> index 4adf2ba021ce..d3052be1bead 100644
-> >> --- a/drivers/power/supply/ltc2941-battery-gauge.c
-> >> +++ b/drivers/power/supply/ltc2941-battery-gauge.c
-> >> @@ -9,6 +9,7 @@
-> >>   */
-> >>  #include <linux/kernel.h>
-> >>  #include <linux/module.h>
-> >> +#include <linux/of_device.h>
-> >>  #include <linux/types.h>
-> >>  #include <linux/errno.h>
-> >>  #include <linux/swab.h>
-> >> @@ -61,7 +62,7 @@ struct ltc294x_info {
-> >>  	struct power_supply *supply;	/* Supply pointer */
-> >>  	struct power_supply_desc supply_desc;	/* Supply description */
-> >>  	struct delayed_work work;	/* Work scheduler */
-> >> -	int num_regs;	/* Number of registers (chip type) */
-> >> +	unsigned long num_regs;	/* Number of registers (chip type) */
-> >>  	int charge;	/* Last charge register content */
-> >>  	int r_sense;	/* mOhm */
-> >>  	int Qlsb;	/* nAh */
-> >> @@ -387,7 +388,7 @@ static int ltc294x_i2c_probe(struct i2c_client *cl=
-ient,
-> >> =20
-> >>  	np =3D of_node_get(client->dev.of_node);
-> >> =20
-> >> -	info->num_regs =3D id->driver_data;
-> >> +	info->num_regs =3D (unsigned long)of_device_get_match_data(&client->=
-dev);
-> >>  	info->supply_desc.name =3D np->name;
-> >> =20
-> >>  	/* r_sense can be negative, when sense+ is connected to the battery
-> >> @@ -497,9 +498,23 @@ static const struct i2c_device_id ltc294x_i2c_id[=
-] =3D {
-> >>  };
-> >>  MODULE_DEVICE_TABLE(i2c, ltc294x_i2c_id);
-> >> =20
-> >> +static const struct of_device_id ltc294x_i2c_of_match[] =3D {
-> >> +	{
-> >> +		.compatible =3D "ltc2941",
-> >> +		.data =3D (void *)LTC2941_NUM_REGS
-> >> +	},
-> >> +	{
-> >> +		.compatible =3D "ltc2943",
-> >> +		.data =3D (void *)LTC2943_NUM_REGS
-> >> +	},
-> >> +	{ },
-> >> +};
-> >> +MODULE_DEVICE_TABLE(of, ltc294x_i2c_of_match);
-> >> +
-> >>  static struct i2c_driver ltc294x_driver =3D {
-> >>  	.driver =3D {
-> >>  		.name	=3D "LTC2941",
-> >> +		.of_match_table =3D ltc294x_i2c_of_match,
-> >>  		.pm	=3D LTC294X_PM_OPS,
-> >>  	},
-> >>  	.probe		=3D ltc294x_i2c_probe,
-> >> --=20
-> >> 2.9.3
-> >>
->=20
-> Best regards,
-> --=20
-> Javier Martinez Canillas
-> Open Source Group
-> Samsung Research America
-
---tkejqpefpalvfxo4
+--jtlot5hsk45z3qlj
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJrbcACgkQ2O7X88g7
-+ppsFQ//ddjFCRNPHkJS9ggFIR96XeQWx1bpWRZMLS2HiFJqWFaJu5Ca2fceC4Cb
-51c4KZocrtXX7oaWjyye0PjZcvj2gorX6FWpGbaPvagX7HHSO/1L0qaNxUfO6RJU
-ArpUxDH26FR0Q2x6rauKVMPr6cC/vJqPZ7bAIvGw7v/Dq6xhXevdCNKc4jUe+b+N
-qddnh3DwOUTZI+XpaXiUyT2xPuPFJkaVQmrPocEAvrteuJsYQCof9g/zgXHu4/rW
-TWBr+wvnovdbSV0Jpwlup2Pda1BXcIz/5ixg/1kS/DSB9QoV9KwsIFEvckpDd2h+
-kRFNWNP8Te0p4VDg8ICxis7AQYDgpZP/Paco5upVM5Gj0v/4Ks26KZRcoW8yTjoJ
-SDqgZW1AjnGSriy44UCTDdayEb8CSHjnClJheKGgEaQ35lTqLScwSs/2BT8uddDT
-CqA9qSxxGzwD/l5y5+osFkwBRG0y6NUrnCPYnJF2N2Z+5RyE0tInDHe5jO11xQyd
-0o7Y1W9k9VlkACjK1jFAqCQsDIYsh7bSAsiUleKySHNDUFNw2prnScdIvFNPTVgC
-svBPQudX723dEJQYMYyfNfREIeR9ZyHnzNnO1wXXy0ewBvmQhKRsFfEJLj8Dx+YW
-2iJWgspWQiwuma+DcYFKSsssTjG3DlLxkgy/QA8anJrgOlE/83E=
-=o3kJ
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJrhUACgkQ2O7X88g7
++ppFJQ//fkF9AS64QqGdWA1U9u14Y/GwFwPr+wEmsfYz1Oc8XCPrEfuR3GfwWnY3
+1DjUDDyasvBMmxKpaxaXUfvVj0JU1dMinMIqY8kLeF+KTUkyt3i71kaxjMpG9AgT
+j4S+UKfb+aH5eYZJt6q6bl88Cjh/M10lN3wTEtTmXmzG/aCw6siCNklMsiDoIG99
+2odl9WUfKvU/NcKQ0OAhAJ/Q9m7w4F3NLLIJQYNNF/uczotD4rSD4ZN1tOhvejL/
+/luMk7kNdYYeCTYERh0X7KK2ek5+2o3s4OGjTHCs2LuH8lDRM8A8Oe5Ji/jvgNur
+xSK+JVRhTpc06TBarlZ7Z2eHf2KLNpGPkioDOWLByYLZstVgoo16//uUV1wJ76zM
+8S0pgYJU9ikSeKuLIHImreKSkXOaYK7091SAQ3N7ey9lkydtZ0SaXezXFhylFt6j
+H2lJFx9GREmCFL26Knex7jZo99wxb69JKRXX6kZ9JaSN9vjBA5FAl340mGk5ijJc
+45fLW5ubLCxniMvdlN+Mrnvic0LVJYOS2S1z0NHZ5lQcyTIjAC7Vg1cBCgbSubpz
+HyS824tkF0VldiaNJR84pGsqo5AR8FKrQsEAht7kYw0v7pYKlpgllDCxI67sMYXg
+wTqwyvGE7xVnOquZ4vS2ju2J1eI1EFZr4urskNQGLS5BI4nIBZ8=
+=63P5
 -----END PGP SIGNATURE-----
 
---tkejqpefpalvfxo4--
+--jtlot5hsk45z3qlj--
+
+
+--===============3248743441256729878==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============3248743441256729878==--
