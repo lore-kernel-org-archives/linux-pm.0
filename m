@@ -1,63 +1,69 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: supply: twl4030_charger: remove incorrect __exit
- markups
-Date: Wed, 15 Mar 2017 22:12:32 +0100
-Message-ID: <20170315211232.fslnl6qwhftzcvbp@earth>
-References: <20170301234453.GA13831@dtor-ws>
+Subject: Re: [PATCH] dt-bindings: power/supply: rename max8925_batter.txt to
+ max8925_battery.txt
+Date: Wed, 15 Mar 2017 22:13:32 +0100
+Message-ID: <20170315211332.36ko7k6xf2bfofsk@earth>
+References: <20170223153504.16894-1-enric.balletbo@collabora.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="que2yga7vhr7hbfg"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:59340 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750819AbdCOVOT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Mar 2017 17:14:19 -0400
+        protocol="application/pgp-signature"; boundary="6rmyezmgq5yd6rjr"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170301234453.GA13831@dtor-ws>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+In-Reply-To: <20170223153504.16894-1-enric.balletbo@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
---que2yga7vhr7hbfg
+--6rmyezmgq5yd6rjr
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Dmitry,
+Hi,
 
-On Wed, Mar 01, 2017 at 03:44:53PM -0800, Dmitry Torokhov wrote:
-> Even if bus is not hot-pluggable, the devices can be unbound from the
-> driver via sysfs, so we should not be using __exit annotations on
-> remove() methods. The only exception is drivers registered with
-> platform_driver_probe() which specifically disables sysfs bind/unbind
-> attributes.
+On Thu, Feb 23, 2017 at 04:35:04PM +0100, Enric Balletbo i Serra wrote:
+> Fix the max8925_batter typo in the file name.
 >=20
-> Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+>  .../bindings/power/supply/{max8925_batter.txt =3D> max8925_battery.txt} =
+    | 0
+>  1 file changed, 0 insertions(+), 0 deletions(-)
+>  rename Documentation/devicetree/bindings/power/supply/{max8925_batter.tx=
+t =3D> max8925_battery.txt} (100%)
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/supply/max8925_batte=
+r.txt b/Documentation/devicetree/bindings/power/supply/max8925_battery.txt
+> similarity index 100%
+> rename from Documentation/devicetree/bindings/power/supply/max8925_batter=
+=2Etxt
+> rename to Documentation/devicetree/bindings/power/supply/max8925_battery.=
+txt
 
-Thanks, merged.
+Thanks, queued.
 
 -- Sebastian
 
---que2yga7vhr7hbfg
+--6rmyezmgq5yd6rjr
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJrkAACgkQ2O7X88g7
-+pqvHw/8ClmjY4kOcWgopftQah1ggwxUkhGzcdkCW9LHZBJfNT9jTq+evY9QbFjK
-UL+YyCZs6X/bxWficENGlsjdNYgEvaiN4+Otsbyivac0JBoltonZAJdV5dHq9E6k
-nx/5PPsqeEM6xRZtPVdEOBdgevkqEseS9ZuHztaDVAe1Xie5/0v5OQJMpTzIBYpr
-E4oU+Kc6e2GplugMgzHiJdvnd8HmTEf6koPl2rBJaAArMhhTuT+cG1L+gW5++ttC
-JB3mhmW0IisTdU0IbmWzVx7yMnRwiTDJoV02Fa61+NhE0xjwAl9KnNF2xR7h7l9B
-ovZmKYkeHIA46X1YDDBmdQfSCNMnVgc+l3yTzy5qZrodOWbUiWuscLd4ANTNRqnT
-T8VO9hcsaVY0aJy4cWo8+H7a+kgsuUEOkVGIZzTIN9aat6kO1FIGNmxdbGll+en/
-m7ajmxg+ZyP1Vs0lDWQzh4NMrHHdl1AHu6CX36RPt2izikWQfKmtR+m0cX4O0WNp
-4jD+BhwkNjTccqysi4yBuMgHiAyRfoOHbr6eavHv2H9mKyFSwjOrMynMzFAYjXqb
-Pq0QHpQDQFYaP/2FpCm/di6+OOPwQALDetMEUgydR9Agd8rvLc5Bmw142sGYmnqF
-ZMZKFrLr2gxUbWrTVsSI6JHepI72BwtPrT8bGqIU/+ZKnJaZjPU=
-=Z7ra
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljJrnsACgkQ2O7X88g7
++ppkFw/9EswhYcvUXw0LD36NHqD/LH87LvrZ6agE6lNbQD+M1PIZhoeMS5FYBlCQ
+mNssrTc/+4peH+FqmOWFo8QuvCXPCBYS53dJjZtubBeIkjLBiZVtXlgjAwDHJalw
+ThSk1AB0ASHuFbjQV/WuWYB/4KWfzm4ZZYkEKAgvWfYQ9FntmarmQGO0Akvau402
+OJbuSy0WWiw/jiVDFlTxSPaJ/UXsUNNnBwEh+Og5KUot/V1kb7w2u79Aqx65jAAl
+nZnoGXBAx1/joJuT3az5mcKjpDoUc7q3/XN1SW0faZ/S/tluPpcSfTzUh/kgePS/
+lEEVXvP18JYqA4tNsK8zV48K/mnCc1E0ghZ0KNrlzI40QfMa9AcRmDq94MuoE1OK
+Vhcy6jvFdx/sBH8gFrLsnx6t/jx6KfR2yXxFQ1kIa0g2aa9fciqyn4JzIFJyRZog
++Ks1xkq7bfgYEVwh6eNQcnGiLKbFFwpwZmdQmxM7YpJjocz6+7dKTjRU+bn4qA+j
+v7WwtYArULsFwI+05e2wOTRktWK3dvu3xC+rFNfD+q+0IlayPAhMREe+/z7Br35K
+76+oC6rpiostENoKgJOENMPEwn+a8eRR+CEYYkSN6zfNPk3JQ5jJ85jSk5XDzbmY
+Kj5CEzHqrWlLDXXjtqmHUnysEVhNyoSSbCWx9witqQOlUigRRKs=
+=57rA
 -----END PGP SIGNATURE-----
 
---que2yga7vhr7hbfg--
+--6rmyezmgq5yd6rjr--
