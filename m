@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 17/17] thermal: cpu_cooling: Rearrange struct cpufreq_cooling_device
-Date: Thu, 16 Mar 2017 10:59:52 +0530
-Message-ID: <57676b8e5f4e21ae1645b8cc2a2ddb5f059262bc.1489640000.git.viresh.kumar@linaro.org>
+Subject: [PATCH 14/17] thermal: cpu_cooling: get_level() can't fail
+Date: Thu, 16 Mar 2017 10:59:49 +0530
+Message-ID: <670bd7723463c1a8e45bb9fb1c40b7a6e3ee73e0.1489640000.git.viresh.kumar@linaro.org>
 References: <be952dc502195304ddecfe4eefa7043eb71d0c6b.1489639999.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <be952dc502195304ddecfe4eefa7043eb71d0c6b.1489639999.git.viresh.kumar@linaro.org>
@@ -12,60 +12,61 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, Javi Merino <javi.merino@kernel.org>, Zh
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This shrinks the size of the structure on arm64 by 8 bytes by avoiding
-padding of 4 bytes at two places.
+The frequency passed to get_level() is returned by cpu_power_to_freq()
+and it is guaranteed that get_level() can't fail.
 
-Also add missing doc comment for freq_table
+Get rid of error code.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/thermal/cpu_cooling.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/thermal/cpu_cooling.c | 20 +++++---------------
+ 1 file changed, 5 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 768a95bcc392..f31c753ac08f 100644
+index 69388a903706..fd84802d2e8e 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -75,17 +75,18 @@ struct time_in_idle {
-  * struct cpufreq_cooling_device - data for cooling device with cpufreq
-  * @id: unique integer value corresponding to each cpufreq_cooling_device
-  *	registered.
-- * @cdev: thermal_cooling_device pointer to keep track of the
-- *	registered cooling device.
-- * @policy: cpufreq policy.
-+ * @last_load: load measured by the latest call to cpufreq_get_requested_power()
-  * @cpufreq_state: integer value representing the current state of cpufreq
-  *	cooling	devices.
-  * @clipped_freq: integer value representing the absolute value of the clipped
-  *	frequency.
-  * @max_level: maximum cooling level. One less than total number of valid
-  *	cpufreq frequencies.
-+ * @freq_table: Freq table in descending order of frequencies
-+ * @cdev: thermal_cooling_device pointer to keep track of the
-+ *	registered cooling device.
-+ * @policy: cpufreq policy.
-  * @node: list_head to link all cpufreq_cooling_device together.
-- * @last_load: load measured by the latest call to cpufreq_get_requested_power()
-  * @idle_time: idle time stats
-  * @plat_get_static_power: callback to calculate the static power
+@@ -120,22 +120,19 @@ static LIST_HEAD(cpufreq_dev_list);
+  * @cpufreq_dev: cpufreq_dev for which the property is required
+  * @freq: Frequency
   *
-@@ -94,14 +95,14 @@ struct time_in_idle {
+- * Return: level on success, THERMAL_CSTATE_INVALID on error.
++ * Return: level corresponding to the frequency.
   */
- struct cpufreq_cooling_device {
- 	int id;
--	struct thermal_cooling_device *cdev;
--	struct cpufreq_policy *policy;
-+	u32 last_load;
- 	unsigned int cpufreq_state;
- 	unsigned int clipped_freq;
- 	unsigned int max_level;
- 	struct freq_table *freq_table;	/* In descending order */
-+	struct thermal_cooling_device *cdev;
-+	struct cpufreq_policy *policy;
- 	struct list_head node;
--	u32 last_load;
- 	struct time_in_idle *idle_time;
- 	get_static_t plat_get_static_power;
- };
+ static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_dev,
+ 			       unsigned int freq)
+ {
++	struct freq_table *freq_table = cpufreq_dev->freq_table;
+ 	unsigned long level;
+ 
+-	for (level = 0; level <= cpufreq_dev->max_level; level++) {
+-		if (freq == cpufreq_dev->freq_table[level].frequency)
+-			return level;
+-
+-		if (freq > cpufreq_dev->freq_table[level].frequency)
++	for (level = 1; level < cpufreq_dev->max_level; level++)
++		if (freq > freq_table[level].frequency)
+ 			break;
+-	}
+ 
+-	return THERMAL_CSTATE_INVALID;
++	return level - 1;
+ }
+ 
+ /**
+@@ -624,13 +621,6 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
+ 	target_freq = cpu_power_to_freq(cpufreq_dev, normalised_power);
+ 
+ 	*state = get_level(cpufreq_dev, target_freq);
+-	if (*state == THERMAL_CSTATE_INVALID) {
+-		dev_err_ratelimited(&cdev->device,
+-				    "Failed to convert %dKHz for cpu %d into a cdev state\n",
+-				    target_freq, policy->cpu);
+-		return -EINVAL;
+-	}
+-
+ 	trace_thermal_power_cpu_limit(policy->related_cpus, target_freq, *state,
+ 				      power);
+ 	return 0;
 -- 
 2.7.1.410.g6faf27b
