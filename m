@@ -1,112 +1,138 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 1/2] acpi: utils: Add new acpi_dev_present helper
-Date: Thu, 16 Mar 2017 17:17:35 +0100
-Message-ID: <20170316161736.339-2-hdegoede@redhat.com>
-References: <20170316161736.339-1-hdegoede@redhat.com>
+Subject: [PATCH 2/4] acpi: ac: Add acpi_ac_unregister() function
+Date: Thu, 16 Mar 2017 17:15:59 +0100
+Message-ID: <20170316161601.32267-3-hdegoede@redhat.com>
+References: <20170316161601.32267-1-hdegoede@redhat.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170316161736.339-1-hdegoede@redhat.com>
+In-Reply-To: <20170316161601.32267-1-hdegoede@redhat.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>
 Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-acpi_dev_found just iterates over all acpi-ids and sees if one matches.
-This means that it will return true for devices which are in the dsdt
-but disabled (their _STA method returns 0).
+On some systems we have a native pmic driver which provides Mains
+monitoring, while the acpi ac driver is broken on these systems
+due to bad dstds or because of missing vendor specific acpi opregion
+(e.g. BMOP opregion) support, which the acpi ac device in the dsdt
+relies on. This leads for example to a ADP1 power_supply which reports
+itself as always online even if no mains are connected.
 
-For some drivers it is useful to be able to check if a certain hid
-is not only present in the namespace, but also actually present as in
-acpi_device_is_present() will return true for the device. For example
-because if a certain device is present then the driver will want to use
-an extcon or IIO adc channel provided by that device.
-
-This commit adds a new acpi_dev_present helper which drivers can use
-to this end.
-
-Arguably acpi_dev_present is what acpi_dev_found should have been, but
-there are too many users to just change acpi_dev_found without the risk
-of breaking something.
+This commit adds an acpi_ac_unregister() function which native pmic
+drivers can call after successfully registering their own power_supply
+to unregister the (potentially broken) acpi-ac power_supply.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/acpi/utils.c    | 34 ++++++++++++++++++++++++++++++++++
- include/acpi/acpi_bus.h |  1 +
- include/linux/acpi.h    |  5 +++++
- 3 files changed, 40 insertions(+)
+ drivers/acpi/ac.c          | 42 +++++++++++++++++++++++++++++++++++++-----
+ include/linux/power/acpi.h |  6 ++++++
+ 2 files changed, 43 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
-index 22c0995..40f8953 100644
---- a/drivers/acpi/utils.c
-+++ b/drivers/acpi/utils.c
-@@ -736,6 +736,40 @@ bool acpi_dev_found(const char *hid)
- }
- EXPORT_SYMBOL(acpi_dev_found);
+diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
+index f71b756..1c60e18 100644
+--- a/drivers/acpi/ac.c
++++ b/drivers/acpi/ac.c
+@@ -26,12 +26,14 @@
+ #include <linux/types.h>
+ #include <linux/dmi.h>
+ #include <linux/delay.h>
++#include <linux/mutex.h>
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ #endif
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
++#include <linux/power/acpi.h>
+ #include <linux/acpi.h>
+ #include "battery.h"
  
-+static acpi_status acpi_dev_present_cb(acpi_handle ah, u32 level, void *ctx,
-+				     void **retval)
-+{
-+	/*
-+	 * acpi_get_devices() does all the work for us, if we get called
-+	 * a device with a matching hid has been found and its _STA indicates
-+	 * it is present.
-+	 */
-+	*(bool *)ctx = true;
-+	return AE_CTRL_TERMINATE;
-+}
+@@ -422,17 +424,27 @@ static int acpi_ac_remove(struct acpi_device *device)
+ 	return 0;
+ }
+ 
++enum init_state_enum { AC_NONE, AC_INITIALIZED, AC_EXITED };
 +
-+/**
-+ * acpi_dev_present - Detect that a given ACPI device is present
-+ * @hid: Hardware ID of the device.
-+ *
-+ * Return %true if the device was present at the moment of invocation.
-+ * Note that if the device is pluggable, it may since have disappeared.
-+ *
-+ * Note that unlike acpi_dev_found() this function checks the status
-+ * of the device so for devices which are present in the dsdt, but
-+ * which are disabled (their _STA callback returns 0) this function
-+ * will return false.
-+ */
-+bool acpi_dev_present(const char *hid)
-+{
-+	bool present = false;
++static enum init_state_enum init_state;
++static DEFINE_MUTEX(init_state_mutex);
 +
-+	acpi_get_devices(hid, acpi_dev_present_cb, &present, NULL);
+ static int __init acpi_ac_init(void)
+ {
+-	int result;
++	int result, ret = -ENODEV;
+ 
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+ 
++	/* Check if acpi_ac_unregister got called before _init() */
++	mutex_lock(&init_state_mutex);
++	if (init_state != AC_NONE)
++		goto out_unlock;
 +
-+	return present;
-+}
-+EXPORT_SYMBOL(acpi_dev_present);
-+
- /*
-  * acpi_backlight= handling, this is done here rather then in video_detect.c
-  * because __setup cannot be used in modules.
-diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-index ef0ae8a..29f6b5f 100644
---- a/include/acpi/acpi_bus.h
-+++ b/include/acpi/acpi_bus.h
-@@ -88,6 +88,7 @@ acpi_evaluate_dsm_typed(acpi_handle handle, const u8 *uuid, u64 rev, u64 func,
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 	acpi_ac_dir = acpi_lock_ac_dir();
+ 	if (!acpi_ac_dir)
+-		return -ENODEV;
++		goto out_unlock;
+ #endif
+ 
+ 
+@@ -441,18 +453,38 @@ static int __init acpi_ac_init(void)
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 		acpi_unlock_ac_dir(acpi_ac_dir);
+ #endif
+-		return -ENODEV;
++		goto out_unlock;
  	}
  
- bool acpi_dev_found(const char *hid);
-+bool acpi_dev_present(const char *hid);
- 
- #ifdef CONFIG_ACPI
- 
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 673acda..059ffdc 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -614,6 +614,11 @@ static inline bool acpi_dev_found(const char *hid)
- 	return false;
+-	return 0;
++	init_state = AC_INITIALIZED;
++	ret = 0;
++out_unlock:
++	mutex_unlock(&init_state_mutex);
++	return ret;
  }
  
-+static inline bool acpi_dev_present(const char *hid)
+-static void __exit acpi_ac_exit(void)
++void acpi_ac_unregister(void)
+ {
++	/* Check if _init() is done and only do unregister once */
++	mutex_lock(&init_state_mutex);
++	if (init_state != AC_INITIALIZED)
++		goto out_exit;
++
+ 	acpi_bus_unregister_driver(&acpi_ac_driver);
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 	acpi_unlock_ac_dir(acpi_ac_dir);
+ #endif
++
++out_exit:
++	init_state = AC_EXITED;
++	mutex_unlock(&init_state_mutex);
+ }
++EXPORT_SYMBOL_GPL(acpi_ac_unregister);
++
++static void __exit acpi_ac_exit(void)
 +{
-+	return false;
++	acpi_ac_unregister();
 +}
 +
- static inline bool is_acpi_node(struct fwnode_handle *fwnode)
- {
- 	return false;
+ module_init(acpi_ac_init);
+ module_exit(acpi_ac_exit);
+diff --git a/include/linux/power/acpi.h b/include/linux/power/acpi.h
+index 83bdfb9..b50ae69 100644
+--- a/include/linux/power/acpi.h
++++ b/include/linux/power/acpi.h
+@@ -15,4 +15,10 @@ void acpi_battery_unregister(void);
+ static inline void acpi_battery_unregister(void) {}
+ #endif
+ 
++#if IS_ENABLED(CONFIG_ACPI_AC)
++void acpi_ac_unregister(void);
++#else
++static inline void acpi_ac_unregister(void) {}
++#endif
++
+ #endif
 -- 
 2.9.3
 
