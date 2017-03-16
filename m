@@ -1,72 +1,79 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 14/17] thermal: cpu_cooling: get_level() can't fail
-Date: Thu, 16 Mar 2017 10:59:49 +0530
-Message-ID: <670bd7723463c1a8e45bb9fb1c40b7a6e3ee73e0.1489640000.git.viresh.kumar@linaro.org>
+Subject: [PATCH 10/17] thermal: cpu_cooling: OPPs are registered for all CPUs
+Date: Thu, 16 Mar 2017 10:59:45 +0530
+Message-ID: <7a99a212c7c7b4a0b8ce9cc723bb2f16b7ef0962.1489640000.git.viresh.kumar@linaro.org>
 References: <be952dc502195304ddecfe4eefa7043eb71d0c6b.1489639999.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:35907 "EHLO
+        mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751638AbdCPFaf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Mar 2017 01:30:35 -0400
+Received: by mail-pf0-f172.google.com with SMTP id o126so18994103pfb.3
+        for <linux-pm@vger.kernel.org>; Wed, 15 Mar 2017 22:30:34 -0700 (PDT)
 In-Reply-To: <be952dc502195304ddecfe4eefa7043eb71d0c6b.1489639999.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1489639999.git.viresh.kumar@linaro.org>
 References: <cover.1489639999.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-The frequency passed to get_level() is returned by cpu_power_to_freq()
-and it is guaranteed that get_level() can't fail.
-
-Get rid of error code.
+The OPPs are registered for all CPUs of a cpufreq policy now and we
+don't need to run the loop in build_dyn_power_table(). Just check for
+the policy->cpu and we should be fine.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/thermal/cpu_cooling.c | 20 +++++---------------
- 1 file changed, 5 insertions(+), 15 deletions(-)
+ drivers/thermal/cpu_cooling.c | 26 +++++++++++---------------
+ 1 file changed, 11 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 69388a903706..fd84802d2e8e 100644
+index 7590279bf1de..1df6c9039e45 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -120,22 +120,19 @@ static LIST_HEAD(cpufreq_dev_list);
-  * @cpufreq_dev: cpufreq_dev for which the property is required
-  * @freq: Frequency
+@@ -83,7 +83,7 @@ struct power_table {
+  * @dyn_power_table: array of struct power_table for frequency to power
+  *	conversion, sorted in ascending order.
+  * @dyn_power_table_entries: number of entries in the @dyn_power_table array
+- * @cpu_dev: the first cpu_device from @allowed_cpus that has OPPs registered
++ * @cpu_dev: the cpu_device of policy->cpu.
+  * @plat_get_static_power: callback to calculate the static power
   *
-- * Return: level on success, THERMAL_CSTATE_INVALID on error.
-+ * Return: level corresponding to the frequency.
-  */
- static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_dev,
- 			       unsigned int freq)
- {
-+	struct freq_table *freq_table = cpufreq_dev->freq_table;
- 	unsigned long level;
+  * This structure is required for keeping information of each registered
+@@ -208,24 +208,20 @@ static int build_dyn_power_table(struct cpufreq_cooling_device *cpufreq_dev,
+ 	struct power_table *power_table;
+ 	struct dev_pm_opp *opp;
+ 	struct device *dev = NULL;
+-	int num_opps = 0, cpu, i, ret = 0;
++	int num_opps = 0, cpu = cpufreq_dev->policy->cpu, i, ret = 0;
+ 	unsigned long freq;
  
--	for (level = 0; level <= cpufreq_dev->max_level; level++) {
--		if (freq == cpufreq_dev->freq_table[level].frequency)
--			return level;
+-	for_each_cpu(cpu, &cpufreq_dev->allowed_cpus) {
+-		dev = get_cpu_device(cpu);
+-		if (!dev) {
+-			dev_warn(&cpufreq_dev->cdev->device,
+-				 "No cpu device for cpu %d\n", cpu);
+-			continue;
+-		}
 -
--		if (freq > cpufreq_dev->freq_table[level].frequency)
-+	for (level = 1; level < cpufreq_dev->max_level; level++)
-+		if (freq > freq_table[level].frequency)
- 			break;
--	}
+-		num_opps = dev_pm_opp_get_opp_count(dev);
+-		if (num_opps > 0)
+-			break;
+-		else if (num_opps < 0)
+-			return num_opps;
++	dev = get_cpu_device(cpu);
++	if (unlikely(!dev)) {
++		dev_warn(&cpufreq_dev->cdev->device,
++			 "No cpu device for cpu %d\n", cpu);
++		return -ENODEV;
+ 	}
  
--	return THERMAL_CSTATE_INVALID;
-+	return level - 1;
- }
++	num_opps = dev_pm_opp_get_opp_count(dev);
++	if (num_opps < 0)
++		return num_opps;
++
+ 	if (num_opps == 0)
+ 		return -EINVAL;
  
- /**
-@@ -624,13 +621,6 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
- 	target_freq = cpu_power_to_freq(cpufreq_dev, normalised_power);
- 
- 	*state = get_level(cpufreq_dev, target_freq);
--	if (*state == THERMAL_CSTATE_INVALID) {
--		dev_err_ratelimited(&cdev->device,
--				    "Failed to convert %dKHz for cpu %d into a cdev state\n",
--				    target_freq, policy->cpu);
--		return -EINVAL;
--	}
--
- 	trace_thermal_power_cpu_limit(policy->related_cpus, target_freq, *state,
- 				      power);
- 	return 0;
 -- 
 2.7.1.410.g6faf27b
