@@ -1,148 +1,55 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v4 01/18] dt-bindings: power: battery: add
- constant-charge-current property
-Date: Thu, 16 Mar 2017 00:42:03 -0700
-Message-ID: <CAKvHMgRKroPFDdNMb=F=bA4bTwg9bYMAR-5Z4DKLzHJtCYz3_Q@mail.gmail.com>
-References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
- <20170315105537.22349-2-quentin.schulz@free-electrons.com>
- <CAKvHMgSnyPPMEZ1o70Ed2oBHGcMho=-jjFhfXGn4t+2bdALEew@mail.gmail.com>
- <ce6f2ddb-f875-0370-ca45-293397d97495@free-electrons.com> <CAKvHMgR58sDnB-nn386Bd-H0Duevkeoc8eEfz=otLAumc8FD+w@mail.gmail.com>
- <765fc3be-23db-0997-85b1-b6c85b3aceef@free-electrons.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [RFC] linkage: new macros for functions and data
+Date: Thu, 16 Mar 2017 09:02:57 +0100
+Message-ID: <20170316080257.GA7815@gmail.com>
+References: <20170307082750.GA1695@gmail.com>
+ <20170307172404.27374-1-jslaby@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:36219 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751104AbdCPHmF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Mar 2017 03:42:05 -0400
-In-Reply-To: <765fc3be-23db-0997-85b1-b6c85b3aceef@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <xen-devel-bounces@lists.xen.org>
+Content-Disposition: inline
+In-Reply-To: <20170307172404.27374-1-jslaby@suse.cz>
+List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
+ <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
+List-Post: <mailto:xen-devel@lists.xen.org>
+List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
+List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
+ <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
+Errors-To: xen-devel-bounces@lists.xen.org
+Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, x86@kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-pm@vger.kernel.org, hpa@zytor.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mingo@redhat.com, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, jpoimboe@redhat.com, xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: Sebastian Reichel <sre@kernel.org>, robh+dt@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Thu, Mar 16, 2017 at 12:03 AM, Quentin Schulz
-<quentin.schulz@free-electrons.com> wrote:
-> Hi Liam,
->
-> On 16/03/2017 07:27, Liam Breck wrote:
->> Hi Rob,
->>
->> On Wed, Mar 15, 2017 at 6:10 AM, Quentin Schulz
->> <quentin.schulz@free-electrons.com> wrote:
->>> Hi Liam,
->>>
->>> On 15/03/2017 13:08, Liam Breck wrote:
->>>> I dropped most of the CCs, pls re-add anyone essential. Use Cc lines
->>>> in patch description to direct a patch to interested parties and
->>>> relevant lists. I don't want to see all 19 patches in this series.
->>>>
->>>> On Wed, Mar 15, 2017 at 3:55 AM, Quentin Schulz
->>>> <quentin.schulz@free-electrons.com> wrote:
->>>>> This adds the constant-charge-current property to the list of optional
->>>>> properties of the battery.
->>>>>
->>>>> The constant charge current is critical for batteries as they can't
->>>>> handle all charge currents.
->>>>>
->>>>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
->>>>> Acked-by: Rob Herring <robh@kernel.org>
->>>>> ---
->>>>>
->>>>> v4:
->>>>>  - switch from constant-charge-current-microamp to constant-charge-microamp,
->>
->> Sebastian is on record supporting name alignment between DT:battery
->> properties and enum power_supply_property.
->>
->> Could you OK a change back to constant-charge-current-microamp in this patch?
->>
->> Note that the following could appear in DT:battery in future:
->>
->> constant-charge-current-microamp
->> constant-charge-current-max-microamp
->
-> OK. I am actually setting max constant charge current and constant
-> current charge with the same DT property so I might need to adapt my
-> patches.
-
-I suspect you should set battery:*-current-max with DT, as -current is
-"programmed by charger" so seems to be a stat, not a fixed
-characteristic.
-
-You may program your charger's -current with the battery's
--current-max, of course.
-
-Note that your charger also has a -current-max characteristic, likely
-different than your battery. You may not need that in DT tho.
-
->> constant-charge-voltage-microvolt
->> constant-charge-voltage-max-microvolt
->>
->> Thanks!
->>
->>>> Must be constant-charge-current-microamp for the reasons discussed in
->>>> battery.txt - consistency with sysfs names.
->>>>
->>>
->>> Hum. Just nitpicking, but I disagree with the use of 'must'. IIRC there
->>> is nothing in the code that would require the property to be named after
->>> a property from the enum power_supply_property.
->>>
->>> I would say that you _want_ it to be named like that because it
->>> underlines the relation between the DT property and the actual impacted
->>> property in the power supply subsystem. I'm fine with this reason but in
->>> the end, the maintainer's opinion prevails (if (s)he does not want it,
->>> (s)he will not take it). So, basically, I actually don't mind either
->>> option and I see arguments on each side.
->>>
->>> So, just waiting for maintainer's opinion to make the final version of
->>> this patch.
->>>
->>> Thanks,
->>> Quentin
->>>
->>>> Also applies to power_supply_core.c patch.
->>>>
->>>> Rob: enum power_supply_property also lists constant-charge-voltage,
->>>> hence the -current
->>>>
->>>>
->>>>> added in v3
->>>>>
->>>>>  Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
->>>>>  1 file changed, 2 insertions(+)
->>>>>
->>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>> index 0278617..9594e1e 100644
->>>>> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>> @@ -7,6 +7,7 @@ Optional Properties:
->>>>>   - voltage-min-design-microvolt: drained battery voltage
->>>>>   - energy-full-design-microwatt-hours: battery design energy
->>>>>   - charge-full-design-microamp-hours: battery design capacity
->>>>> + - constant-charge-microamp: battery constant charge current
->>>>>
->>>>>  Because drivers surface properties in sysfs using names derived
->>>>>  from enum power_supply_property, e.g.
->>>>> @@ -30,6 +31,7 @@ Example:
->>>>>                 voltage-min-design-microvolt = <3200000>;
->>>>>                 energy-full-design-microwatt-hours = <5290000>;
->>>>>                 charge-full-design-microamp-hours = <1430000>;
->>>>> +               constant-charge-microamp = <300000>;
->>>>>         };
->>>>>
->>>>>         charger: charger@11 {
->>>>> --
->>>>> 2.9.3
->>>>>
->>>
->>> --
->>> Quentin Schulz, Free Electrons
->>> Embedded Linux and Kernel engineering
->>> http://free-electrons.com
->
-> --
-> Quentin Schulz, Free Electrons
-> Embedded Linux and Kernel engineering
-> http://free-electrons.com
+CiogSmlyaSBTbGFieSA8anNsYWJ5QHN1c2UuY3o+IHdyb3RlOgoKPiBTWU1fTE9DQUxfQUxJQVNf
+U1RBUlQgLS0gdXNlIHdoZXJlIHRoZXJlIGFyZSB0d28gbG9jYWwgbmFtZXMgZm9yIG9uZSBjb2Rl
+Cj4gU1lNX0FMSUFTX1NUQVJUIC0tIHVzZSB3aGVyZSB0aGVyZSBhcmUgdHdvIGdsb2JhbCBuYW1l
+cyBmb3Igb25lIGNvZGUKPiBTWU1fTE9DQUxfRlVOQ19TVEFSVCAtLSB1c2UgZm9yIGxvY2FsIGZ1
+bmN0aW9ucwo+IFNZTV9GVU5DVElPTl9TVEFSVCAtLSB1c2UgZm9yIGdsb2JhbCBmdW5jdGlvbnMK
+PiBTWU1fV0VBS19GVU5DX1NUQVJUIC0tIHVzZSBmb3Igd2VhayBmdW5jdGlvbnMKPiBTWU1fQUxJ
+QVNfRU5EIC0tIHRoZSBlbmQgb2YgTE9DQUxBTElBU2VkIG9yIEFMSUFTZWQgY29kZQo+IFNZTV9G
+VU5DVElPTl9FTkQgLS0gdGhlIGVuZCBvZiBTWU1fTE9DQUxfRlVOQ19TVEFSVCwgU1lNX0ZVTkNU
+SU9OX1NUQVJULCBTWU1fV0VBS19GVU5DX1NUQVJULCAuLi4KPiBTWU1fREFUQV9TVEFSVCAtLSBn
+bG9iYWwgZGF0YSBzeW1ib2wKPiBTWU1fREFUQV9FTkQgLS0gdGhlIGVuZCBvZiBTWU1fREFUQV9T
+VEFSVCBzeW1ib2wKClRoaXMgbG9va3MgbW9zdGx5IGdvb2QgdG8gbWUsIHdpdGggbWlub3IgZGV0
+YWlsczoKCi0gVGhlIG1peGVkICdGVU5DJyBhbmQgJ0ZVTkNUSU9OJyBuYW1pbmcgbG9va3MgYSBi
+aXQgY29uZnVzaW5nIC0gSSdkIHBpY2sgb25lIGFuZAogIHVzZSB0aGF0IGNvbnNpc3RlbnRseS4K
+Ci0gSSdkIGFsc28gbWFrZSB0aGUgU1RBUlQvRU5EIGNvbnN0cnVjdHMgbG9vayBtb3JlIHN5bW1l
+dHJpYywgaS5lLiBtYWtlIHRoZSAKICBhdHRyaWJ1dGUgYSBwb3N0Zml4LCBub3QgYSBwcmVmaXgu
+CgotIEluIGZhY3QgSSdkIG1ha2UgdGhlICdhbGlhcycgbm90aW9uIGFuIGF0dHJpYnV0ZSBhcyB3
+ZWxsIC0gd2hhdCBtYXR0ZXJzIG1vc3RseSAKICBpcyB0aGF0IGl0J3MgYSBmdW5jdGlvbiBzeW1i
+b2wsIGFuZCB0aGF0IGZhY3QgaXMgbG9zdCBmcm9tIHRoZSBTWU1fQUxJQVMgbmFtaW5nLgoKSS5l
+LiBzb21ldGhpbmcgbGlrZSB0aGlzOgoKCVNZTV9GVU5DVElPTl9TVEFSVAoJU1lNX0ZVTkNUSU9O
+X1NUQVJUX1dFQUsKCVNZTV9GVU5DVElPTl9TVEFSVF9MT0NBTAoJU1lNX0ZVTkNUSU9OX1NUQVJU
+X0FMSUFTCglTWU1fRlVOQ1RJT05fU1RBUlRfTE9DQUxfQUxJQVMKCS4uLgoJU1lNX0ZVTkNUSU9O
+X0VORAoKCVNZTV9EQVRBX1NUQVJUCglTWU1fREFUQV9FTkQKCk5vdGUgaG93IHNpbXBsZSBhbmQg
+c3RydWN0dXJlZCBsb29raW5nIHRoZSBub21lbmNsYXR1cmUgaXMgd2hlbiBncm91cGVkIGluIHN1
+Y2ggYSAKd2F5LCBob3cgZWFzeSBpdCBpcyB0byB2ZXJpZnkgYXQgYSBnbGFuY2UsIGFuZCBob3cg
+ZWFzeSBpdCBpcyB0byBleHRlbmQgd2l0aCBuZXcgCnBvc3RmaXhlcy4KCiggSW4gdGhlb3J5IHdl
+IGNvdWxkIGFsc28gbWFrZSB0aGUgYXR0cmlidXRlcyBhIHJlYWwgbWFjcm8gYXJndW1lbnQgaW4g
+dGhlIGZ1dHVyZSwKICBzaG91bGQgdGhlIG51bWJlciBvZiBhdHRyaWJ1dGVzIGluY3JlYXNlIHNp
+Z25pZmljYW50bHkuICkKCkRvZXMgdGhpcyBsb29rIGdvb2QgdG8gZXZlcnlvbmU/CgpUaGFua3Ms
+CgoJSW5nbwoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+WGVuLWRldmVsIG1haWxpbmcgbGlzdApYZW4tZGV2ZWxAbGlzdHMueGVuLm9yZwpodHRwczovL2xp
+c3RzLnhlbi5vcmcveGVuLWRldmVsCg==
