@@ -1,89 +1,112 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 2/2] power: supply: axp288_charger: Only wait for INT3496 device if present
-Date: Thu, 16 Mar 2017 17:17:36 +0100
-Message-ID: <20170316161736.339-3-hdegoede@redhat.com>
+Subject: [PATCH 1/2] acpi: utils: Add new acpi_dev_present helper
+Date: Thu, 16 Mar 2017 17:17:35 +0100
+Message-ID: <20170316161736.339-2-hdegoede@redhat.com>
 References: <20170316161736.339-1-hdegoede@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:39356 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753235AbdCPQRo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 Mar 2017 12:17:44 -0400
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <20170316161736.339-1-hdegoede@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>
 Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On some devices with an axp288 pmic setting vbus path based on the
-id-pin is handled by an ACPI _AIE interrupt on the gpio and the
-INT3496 device is disabled.
+acpi_dev_found just iterates over all acpi-ids and sees if one matches.
+This means that it will return true for devices which are in the dsdt
+but disabled (their _STA method returns 0).
 
-Instead of returning -EPROBE_DEFER on these devices waiting for the
-never to show up INT3496 device, check for its presence and only
-request and monitor the matching extcon if the device is there,
-otherwise let the firmware handle the vbus path control.
+For some drivers it is useful to be able to check if a certain hid
+is not only present in the namespace, but also actually present as in
+acpi_device_is_present() will return true for the device. For example
+because if a certain device is present then the driver will want to use
+an extcon or IIO adc channel provided by that device.
+
+This commit adds a new acpi_dev_present helper which drivers can use
+to this end.
+
+Arguably acpi_dev_present is what acpi_dev_found should have been, but
+there are too many users to just change acpi_dev_found without the risk
+of breaking something.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_charger.c | 24 +++++++++++++++---------
- 1 file changed, 15 insertions(+), 9 deletions(-)
+ drivers/acpi/utils.c    | 34 ++++++++++++++++++++++++++++++++++
+ include/acpi/acpi_bus.h |  1 +
+ include/linux/acpi.h    |  5 +++++
+ 3 files changed, 40 insertions(+)
 
-diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index d3bf4b2..6c4ad66 100644
---- a/drivers/power/supply/axp288_charger.c
-+++ b/drivers/power/supply/axp288_charger.c
-@@ -14,6 +14,7 @@
-  * GNU General Public License for more details.
-  */
+diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
+index 22c0995..40f8953 100644
+--- a/drivers/acpi/utils.c
++++ b/drivers/acpi/utils.c
+@@ -736,6 +736,40 @@ bool acpi_dev_found(const char *hid)
+ }
+ EXPORT_SYMBOL(acpi_dev_found);
  
-+#include <linux/acpi.h>
- #include <linux/module.h>
- #include <linux/device.h>
- #include <linux/regmap.h>
-@@ -114,7 +115,8 @@
- #define ILIM_3000MA			3000	/* 3000mA */
- 
- #define AXP288_EXTCON_DEV_NAME		"axp288_extcon"
--#define USB_HOST_EXTCON_DEV_NAME	"INT3496:00"
-+#define USB_HOST_EXTCON_HID		"INT3496"
-+#define USB_HOST_EXTCON_NAME		"INT3496:00"
- 
- static const unsigned int cable_ids[] =
- 	{ EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP, EXTCON_CHG_USB_DCP };
-@@ -808,10 +810,12 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		return -EPROBE_DEFER;
++static acpi_status acpi_dev_present_cb(acpi_handle ah, u32 level, void *ctx,
++				     void **retval)
++{
++	/*
++	 * acpi_get_devices() does all the work for us, if we get called
++	 * a device with a matching hid has been found and its _STA indicates
++	 * it is present.
++	 */
++	*(bool *)ctx = true;
++	return AE_CTRL_TERMINATE;
++}
++
++/**
++ * acpi_dev_present - Detect that a given ACPI device is present
++ * @hid: Hardware ID of the device.
++ *
++ * Return %true if the device was present at the moment of invocation.
++ * Note that if the device is pluggable, it may since have disappeared.
++ *
++ * Note that unlike acpi_dev_found() this function checks the status
++ * of the device so for devices which are present in the dsdt, but
++ * which are disabled (their _STA callback returns 0) this function
++ * will return false.
++ */
++bool acpi_dev_present(const char *hid)
++{
++	bool present = false;
++
++	acpi_get_devices(hid, acpi_dev_present_cb, &present, NULL);
++
++	return present;
++}
++EXPORT_SYMBOL(acpi_dev_present);
++
+ /*
+  * acpi_backlight= handling, this is done here rather then in video_detect.c
+  * because __setup cannot be used in modules.
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index ef0ae8a..29f6b5f 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -88,6 +88,7 @@ acpi_evaluate_dsm_typed(acpi_handle handle, const u8 *uuid, u64 rev, u64 func,
  	}
  
--	info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_DEV_NAME);
--	if (info->otg.cable == NULL) {
--		dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
--		return -EPROBE_DEFER;
-+	if (acpi_dev_present(USB_HOST_EXTCON_HID)) {
-+		info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_NAME);
-+		if (info->otg.cable == NULL) {
-+			dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
-+			return -EPROBE_DEFER;
-+		}
- 	}
+ bool acpi_dev_found(const char *hid);
++bool acpi_dev_present(const char *hid);
  
- 	platform_set_drvdata(pdev, info);
-@@ -850,11 +854,13 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	/* Register for OTG notification */
- 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
- 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
--	ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
-+	if (info->otg.cable) {
-+		ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
- 					EXTCON_USB_HOST, &info->otg.id_nb);
--	if (ret) {
--		dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
--		return ret;
-+		if (ret) {
-+			dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
-+			return ret;
-+		}
- 	}
- 	schedule_work(&info->otg.work);
+ #ifdef CONFIG_ACPI
  
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 673acda..059ffdc 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -614,6 +614,11 @@ static inline bool acpi_dev_found(const char *hid)
+ 	return false;
+ }
+ 
++static inline bool acpi_dev_present(const char *hid)
++{
++	return false;
++}
++
+ static inline bool is_acpi_node(struct fwnode_handle *fwnode)
+ {
+ 	return false;
 -- 
 2.9.3
+
