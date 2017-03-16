@@ -1,106 +1,215 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC v3 5/5] sched/{core,cpufreq_schedutil}: add capacity
- clamping for RT/DL tasks
-Date: Thu, 16 Mar 2017 17:17:12 +0000
-Message-ID: <20170316171712.GR31499@e106622-lin>
-References: <20170315114052.GB18557@e110439-lin>
- <CAJWu+opgLoa3EGdhQKXSi+dkQjXtc62tKmTL0krXxpqJp+PjPQ@mail.gmail.com>
- <20170315144449.GH31499@e106622-lin>
- <CAJWu+orSQbyDxN4O6wk8SYj-t5FyUZA4aO0GQqm8Fgujwr9+Lw@mail.gmail.com>
- <20170315162414.GI31499@e106622-lin>
- <CAJWu+ooCmyx7PNXhzrDsUQM=eU1zxo8F3gyp2ihpabpREk5vfg@mail.gmail.com>
- <20170316111644.GP31499@e106622-lin>
- <20170316122726.GA10171@e110439-lin>
- <20170316124420.GQ31499@e106622-lin>
- <CAJWu+oqPDnxTHkMFFhN3q1prWYhXALZXCyA7FiD+aBo7S+8i2g@mail.gmail.com>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [PATCH v5 3/5] dt-bindings: Add TI SCI PM Domains
+Date: Thu, 16 Mar 2017 13:27:22 -0500
+Message-ID: <20170316182722.18486-1-d-gerlach@ti.com>
+References: <1488882154-21485-4-git-send-email-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37004 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752179AbdCPRRA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 Mar 2017 13:17:00 -0400
-Content-Disposition: inline
-In-Reply-To: <CAJWu+oqPDnxTHkMFFhN3q1prWYhXALZXCyA7FiD+aBo7S+8i2g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1488882154-21485-4-git-send-email-d-gerlach@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Rob Herring <robh+dt@kernel.org>
+Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Joel Fernandes <joelaf@google.com>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, "Joel Fernandes (Google)" <joel.opensrc@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Andres Oportus <andresoportus@google.com>
 
-On 16/03/17 09:58, Joel Fernandes wrote:
-> On Thu, Mar 16, 2017 at 5:44 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> > On 16/03/17 12:27, Patrick Bellasi wrote:
-> >> On 16-Mar 11:16, Juri Lelli wrote:
-> >> > On 15/03/17 16:40, Joel Fernandes wrote:
-> >> > > On Wed, Mar 15, 2017 at 9:24 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> >> > > [..]
-> >> > > >
-> >> > > >> > However, trying to quickly summarize how that would work (for who is
-> >> > > >> > already somewhat familiar with reclaiming bits):
-> >> > > >> >
-> >> > > >> >  - a task utilization contribution is accounted for (at rq level) as
-> >> > > >> >    soon as it wakes up for the first time in a new period
-> >> > > >> >  - its contribution is then removed after the 0lag time (or when the
-> >> > > >> >    task gets throttled)
-> >> > > >> >  - frequency transitions are triggered accordingly
-> >> > > >> >
-> >> > > >> > So, I don't see why triggering a go down request after the 0lag time
-> >> > > >> > expired and quickly reacting to tasks waking up would have create
-> >> > > >> > problems in your case?
-> >> > > >>
-> >> > > >> In my experience, the 'reacting to tasks' bit doesn't work very well.
-> >> > > >
-> >> > > > Humm.. but in this case we won't be 'reacting', we will be
-> >> > > > 'anticipating' tasks' needs, right?
-> >> > >
-> >> > > Are you saying we will start ramping frequency before the next
-> >> > > activation so that we're ready for it?
-> >> > >
-> >> >
-> >> > I'm saying that there is no need to ramp, simply select the frequency
-> >> > that is needed for a task (or a set of them).
-> >> >
-> >> > > If not, it sounds like it will only make the frequency request on the
-> >> > > next activation when the Active bandwidth increases due to the task
-> >> > > waking up. By then task has already started to run, right?
-> >> > >
-> >> >
-> >> > When the task is enqueued back we select the frequency considering its
-> >> > bandwidth request (and the bandwidth/utilization of the others). So,
-> >> > when it actually starts running it will already have enough capacity to
-> >> > finish in time.
-> >>
-> >> Here we are factoring out the time required to actually switch to the
-> >> required OPP. I think Joel was referring to this time.
-> >>
-> 
-> Yes, that's what I meant.
-> 
-> >
-> > Right. But, this is an HW limitation. It seems a problem that every
-> > scheduler driven decision will have to take into account. So, doesn't
-> > make more sense to let the driver (or the governor shim layer) introduce
-> > some sort of hysteresis to frequency changes if needed?
-> 
-> The problem IMO which Hysterisis in the governor will not help is what
-> if you had a DL task that is not waking up for several periods and
-> then wakes up, then for that wake up, we would still be subject to the
-> HW limitation of time taken to switch to needed OPP. Right?
-> 
+Add a generic power domain implementation, TI SCI PM Domains, that
+will hook into the genpd framework and allow the TI SCI protocol to
+control device power states.
 
-True, but in this case the problem is that you cannot really predict the
-future anyway. So, if your HW is so slow to react that it always causes
-latency problems then I guess you'll be forced to statically raise your
-min_freq value to cope with that HW limitation, indipendently from
-scheduling policies/heuristics?
+Also, provide macros representing each device index as understood
+by TI SCI to be used in the device node power-domain references.
+These are identifiers for the K2G devices managed by the PMMC.
 
-OTOH, hysteresis, when properly tuned, should cover the 'normal' cases.
+Signed-off-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+---
+ .../devicetree/bindings/soc/ti/sci-pm-domain.txt   | 57 ++++++++++++++
+ MAINTAINERS                                        |  2 +
+ include/dt-bindings/genpd/k2g.h                    | 90 ++++++++++++++++++++++
+ 3 files changed, 149 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+ create mode 100644 include/dt-bindings/genpd/k2g.h
 
-> >> That time cannot really be eliminated but from having faster OOP
-> >> swiching HW support. Still, jumping strating to the "optimal" OPP
-> >> instead of rumping up is a big improvement.
-> 
-> Yes I think so.
-> 
-> Thanks,
-> Joel
+diff --git a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+new file mode 100644
+index 000000000000..c705db07d820
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+@@ -0,0 +1,57 @@
++Texas Instruments TI-SCI Generic Power Domain
++---------------------------------------------
++
++Some TI SoCs contain a system controller (like the PMMC, etc...) that is
++responsible for controlling the state of the IPs that are present.
++Communication between the host processor running an OS and the system
++controller happens through a protocol known as TI-SCI [1].
++
++[1] Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
++
++PM Domain Node
++==============
++The PM domain node represents the global PM domain managed by the PMMC, which
++in this case is the implementation as documented by the generic PM domain
++bindings in Documentation/devicetree/bindings/power/power_domain.txt.  Because
++this relies on the TI SCI protocol to communicate with the PMMC it must be a
++child of the pmmc node.
++
++Required Properties:
++--------------------
++- compatible: should be "ti,sci-pm-domain"
++- #power-domain-cells: Must be 1 so that an id can be provided in each
++		       device node.
++
++Example (K2G):
++-------------
++	pmmc: pmmc {
++		compatible = "ti,k2g-sci";
++		...
++
++		k2g_pds: power-controller {
++			compatible = "ti,sci-pm-domain";
++			#power-domain-cells = <1>;
++		};
++	};
++
++PM Domain Consumers
++===================
++Hardware blocks belonging to a PM domain should contain a "power-domains"
++property that is a phandle pointing to the corresponding PM domain node
++along with an index representing the device id to be passed to the PMMC
++for device control.
++
++Required Properties:
++--------------------
++- power-domains: phandle pointing to the corresponding PM domain node
++		 and an ID representing the device.
++
++See dt-bindings/genpd/k2g.h for the list of valid identifiers for k2g.
++
++Example (K2G):
++--------------------
++	uart0: serial@02530c00 {
++		compatible = "ns16550a";
++		...
++		power-domains = <&k2g_pds K2G_DEV_UART0>;
++	};
+diff --git a/MAINTAINERS b/MAINTAINERS
+index c265a5fe4848..aaf96a9b4cd4 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -12383,6 +12383,8 @@ S:	Maintained
+ F:	Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
+ F:	drivers/firmware/ti_sci*
+ F:	include/linux/soc/ti/ti_sci_protocol.h
++F:	Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
++F:	include/dt-bindings/genpd/k2g.h
+ 
+ THANKO'S RAREMONO AM/FM/SW RADIO RECEIVER USB DRIVER
+ M:	Hans Verkuil <hverkuil@xs4all.nl>
+diff --git a/include/dt-bindings/genpd/k2g.h b/include/dt-bindings/genpd/k2g.h
+new file mode 100644
+index 000000000000..1f31f17e19eb
+--- /dev/null
++++ b/include/dt-bindings/genpd/k2g.h
+@@ -0,0 +1,90 @@
++/*
++ * TI K2G SoC Device definitions
++ *
++ * Copyright (C) 2015-2017 Texas Instruments Incorporated - http://www.ti.com/
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef _DT_BINDINGS_GENPD_K2G_H
++#define _DT_BINDINGS_GENPD_K2G_H
++
++/* Documented in http://processors.wiki.ti.com/index.php/TISCI */
++
++#define K2G_DEV_PMMC0			0x0000
++#define K2G_DEV_MLB0			0x0001
++#define K2G_DEV_DSS0			0x0002
++#define K2G_DEV_MCBSP0			0x0003
++#define K2G_DEV_MCASP0			0x0004
++#define K2G_DEV_MCASP1			0x0005
++#define K2G_DEV_MCASP2			0x0006
++#define K2G_DEV_DCAN0			0x0008
++#define K2G_DEV_DCAN1			0x0009
++#define K2G_DEV_EMIF0			0x000a
++#define K2G_DEV_MMCHS0			0x000b
++#define K2G_DEV_MMCHS1			0x000c
++#define K2G_DEV_GPMC0			0x000d
++#define K2G_DEV_ELM0			0x000e
++#define K2G_DEV_SPI0			0x0010
++#define K2G_DEV_SPI1			0x0011
++#define K2G_DEV_SPI2			0x0012
++#define K2G_DEV_SPI3			0x0013
++#define K2G_DEV_ICSS0			0x0014
++#define K2G_DEV_ICSS1			0x0015
++#define K2G_DEV_USB0			0x0016
++#define K2G_DEV_USB1			0x0017
++#define K2G_DEV_NSS0			0x0018
++#define K2G_DEV_PCIE0			0x0019
++#define K2G_DEV_GPIO0			0x001b
++#define K2G_DEV_GPIO1			0x001c
++#define K2G_DEV_TIMER64_0		0x001d
++#define K2G_DEV_TIMER64_1		0x001e
++#define K2G_DEV_TIMER64_2		0x001f
++#define K2G_DEV_TIMER64_3		0x0020
++#define K2G_DEV_TIMER64_4		0x0021
++#define K2G_DEV_TIMER64_5		0x0022
++#define K2G_DEV_TIMER64_6		0x0023
++#define K2G_DEV_MSGMGR0			0x0025
++#define K2G_DEV_BOOTCFG0		0x0026
++#define K2G_DEV_ARM_BOOTROM0		0x0027
++#define K2G_DEV_DSP_BOOTROM0		0x0029
++#define K2G_DEV_DEBUGSS0		0x002b
++#define K2G_DEV_UART0			0x002c
++#define K2G_DEV_UART1			0x002d
++#define K2G_DEV_UART2			0x002e
++#define K2G_DEV_EHRPWM0			0x002f
++#define K2G_DEV_EHRPWM1			0x0030
++#define K2G_DEV_EHRPWM2			0x0031
++#define K2G_DEV_EHRPWM3			0x0032
++#define K2G_DEV_EHRPWM4			0x0033
++#define K2G_DEV_EHRPWM5			0x0034
++#define K2G_DEV_EQEP0			0x0035
++#define K2G_DEV_EQEP1			0x0036
++#define K2G_DEV_EQEP2			0x0037
++#define K2G_DEV_ECAP0			0x0038
++#define K2G_DEV_ECAP1			0x0039
++#define K2G_DEV_I2C0			0x003a
++#define K2G_DEV_I2C1			0x003b
++#define K2G_DEV_I2C2			0x003c
++#define K2G_DEV_EDMA0			0x003f
++#define K2G_DEV_SEMAPHORE0		0x0040
++#define K2G_DEV_INTC0			0x0041
++#define K2G_DEV_GIC0			0x0042
++#define K2G_DEV_QSPI0			0x0043
++#define K2G_DEV_ARM_64B_COUNTER0	0x0044
++#define K2G_DEV_TETRIS0			0x0045
++#define K2G_DEV_CGEM0			0x0046
++#define K2G_DEV_MSMC0			0x0047
++#define K2G_DEV_CBASS0			0x0049
++#define K2G_DEV_BOARD0			0x004c
++#define K2G_DEV_EDMA1			0x004f
++
++#endif
+-- 
+2.11.0
