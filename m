@@ -1,112 +1,46 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH v7 1/3] x86/mm: Adapt MODULES_END based on Fixmap section size
-Date: Thu, 16 Mar 2017 08:33:32 -0700
-Message-ID: <CAJcbSZEB09inR2KLF_puOnmAK7QUv-zJHcguiF0qucUYTtg1Pw@mail.gmail.com>
-References: <20170314170508.100882-1-thgarnie@google.com> <20170316081013.GB7815@gmail.com>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: [PATCH 0/2] Hi all,
+Date: Thu, 16 Mar 2017 11:05:28 -0500
+Message-ID: <20170316160530.14956-1-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20170316081013.GB7815@gmail.com>
-Sender: owner-linux-mm@kvack.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Jonathan Corbet <corbet@lwn.net>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Lorenzo Stoakes <lstoakes@gmail.com>, Kees Cook <keescook@chromium.org>, Juergen Gross <jgross@suse.com>, Andy Lutomirski <luto@kernel.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, zijun_hu <zijun_hu@htc.com>, Chris Wilson <chris@chris-wilson.co.uk>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.o>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fllnx209.ext.ti.com ([198.47.19.16]:14149 "EHLO
+        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753017AbdCPQGr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Mar 2017 12:06:47 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F . Davis" <afd@ti.com>
 
-On Thu, Mar 16, 2017 at 1:10 AM, Ingo Molnar <mingo@kernel.org> wrote:
->
-> Note that asm/fixmap.h is an x86-ism that isn't present in many other
-> architectures, so this hunk will break the build.
->
-> To make progress with these patches I've fixed it up with an ugly #ifdef
-> CONFIG_X86, but it needs a real solution instead before this can be pushed
-> upstream.
+To finish the work started in this patch[0] we needed to reorganize
+the 1-wire subsystem a bit, this is done here[1]. After that is taken
+this series can remove the need for a platform driver for supporting
+1-wire connected BQ27xxx devices.
 
-I also saw an error on x86 tip on special configuration. I found this
-new patch below to be a good solution to both.
+Thanks,
+Andrew
 
-Let me know what you think.
+[0] https://patchwork.kernel.org/patch/7684371/
+[1] https://lkml.org/lkml/2017/3/16/604
 
-=====
+Andrew F. Davis (2):
+  power: supply: move HDQ interface for bq27xxx from w1 to power/supply
+  power: supply: bq27xxx: move platform driver code into
+    bq27xxx_battery_hdq.c
 
-This patch aligns MODULES_END to the beginning of the Fixmap section.
-It optimizes the space available for both sections. The address is
-pre-computed based on the number of pages required by the Fixmap
-section.
-
-It will allow GDT remapping in the Fixmap section. The current
-MODULES_END static address does not provide enough space for the kernel
-to support a large number of processors.
-
-Signed-off-by: Thomas Garnier <thgarnie@google.com>
----
-Based on next-20170308
----
- Documentation/x86/x86_64/mm.txt         | 5 ++++-
- arch/x86/include/asm/pgtable_64.h       | 1 +
- arch/x86/include/asm/pgtable_64_types.h | 3 ++-
- 3 files changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/x86/x86_64/mm.txt b/Documentation/x86/x86_64/mm.txt
-index 5724092db811..ee3f9c30957c 100644
---- a/Documentation/x86/x86_64/mm.txt
-+++ b/Documentation/x86/x86_64/mm.txt
-@@ -19,7 +19,7 @@ ffffff0000000000 - ffffff7fffffffff (=39 bits) %esp
-fixup stacks
- ffffffef00000000 - fffffffeffffffff (=64 GB) EFI region mapping space
- ... unused hole ...
- ffffffff80000000 - ffffffff9fffffff (=512 MB)  kernel text mapping, from phys 0
--ffffffffa0000000 - ffffffffff5fffff (=1526 MB) module mapping space
-+ffffffffa0000000 - ffffffffff5fffff (=1526 MB) module mapping space (variable)
- ffffffffff600000 - ffffffffffdfffff (=8 MB) vsyscalls
- ffffffffffe00000 - ffffffffffffffff (=2 MB) unused hole
-
-@@ -39,6 +39,9 @@ memory window (this size is arbitrary, it can be
-raised later if needed).
- The mappings are not part of any other kernel PGD and are only available
- during EFI runtime calls.
-
-+The module mapping space size changes based on the CONFIG requirements for the
-+following fixmap section.
-+
- Note that if CONFIG_RANDOMIZE_MEMORY is enabled, the direct mapping of all
- physical memory, vmalloc/ioremap space and virtual memory map are randomized.
- Their order is preserved but their base will be offset early at boot time.
-diff --git a/arch/x86/include/asm/pgtable_64.h
-b/arch/x86/include/asm/pgtable_64.h
-index 73c7ccc38912..67608d4abc2c 100644
---- a/arch/x86/include/asm/pgtable_64.h
-+++ b/arch/x86/include/asm/pgtable_64.h
-@@ -13,6 +13,7 @@
- #include <asm/processor.h>
- #include <linux/bitops.h>
- #include <linux/threads.h>
-+#include <asm/fixmap.h>
-
- extern pud_t level3_kernel_pgt[512];
- extern pud_t level3_ident_pgt[512];
-diff --git a/arch/x86/include/asm/pgtable_64_types.h
-b/arch/x86/include/asm/pgtable_64_types.h
-index 3a264200c62f..bb05e21cf3c7 100644
---- a/arch/x86/include/asm/pgtable_64_types.h
-+++ b/arch/x86/include/asm/pgtable_64_types.h
-@@ -67,7 +67,8 @@ typedef struct { pteval_t pte; } pte_t;
- #endif /* CONFIG_RANDOMIZE_MEMORY */
- #define VMALLOC_END (VMALLOC_START + _AC((VMALLOC_SIZE_TB << 40) - 1, UL))
- #define MODULES_VADDR    (__START_KERNEL_map + KERNEL_IMAGE_SIZE)
--#define MODULES_END      _AC(0xffffffffff000000, UL)
-+/* The module sections ends with the start of the fixmap */
-+#define MODULES_END   __fix_to_virt(__end_of_fixed_addresses + 1)
- #define MODULES_LEN   (MODULES_END - MODULES_VADDR)
- #define ESPFIX_PGD_ENTRY _AC(-2, UL)
- #define ESPFIX_BASE_ADDR (ESPFIX_PGD_ENTRY << PGDIR_SHIFT)
--- 
-2.12.0.367.g23dc2f6d3c-goog
+ drivers/power/supply/Kconfig               |   9 ++
+ drivers/power/supply/Makefile              |   1 +
+ drivers/power/supply/bq27xxx_battery.c     | 104 ----------------------
+ drivers/power/supply/bq27xxx_battery_hdq.c | 135 +++++++++++++++++++++++++++++
+ drivers/w1/slaves/Kconfig                  |   6 --
+ drivers/w1/slaves/Makefile                 |   1 -
+ drivers/w1/slaves/w1_bq27000.c             | 117 -------------------------
+ include/linux/power/bq27xxx_battery.h      |  17 ----
+ 8 files changed, 145 insertions(+), 245 deletions(-)
+ create mode 100644 drivers/power/supply/bq27xxx_battery_hdq.c
+ delete mode 100644 drivers/w1/slaves/w1_bq27000.c
 
 -- 
-Thomas
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+2.11.0
