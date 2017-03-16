@@ -1,55 +1,86 @@
 From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [RFC] linkage: new macros for functions and data
-Date: Thu, 16 Mar 2017 09:02:57 +0100
-Message-ID: <20170316080257.GA7815@gmail.com>
-References: <20170307082750.GA1695@gmail.com>
- <20170307172404.27374-1-jslaby@suse.cz>
+Subject: Re: [PATCH v7 1/3] x86/mm: Adapt MODULES_END based on Fixmap section
+ size
+Date: Thu, 16 Mar 2017 09:10:13 +0100
+Message-ID: <20170316081013.GB7815@gmail.com>
+References: <20170314170508.100882-1-thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xen.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
 Content-Disposition: inline
-In-Reply-To: <20170307172404.27374-1-jslaby@suse.cz>
-List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xen.org>
-List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
-List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xen.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, x86@kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-pm@vger.kernel.org, hpa@zytor.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mingo@redhat.com, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, jpoimboe@redhat.com, xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20170314170508.100882-1-thgarnie@google.com>
+Sender: owner-linux-mm@kvack.org
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Jonathan Corbet <corbet@lwn.net>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Lorenzo Stoakes <lstoakes@gmail.com>, Kees Cook <keescook@chromium.org>, Juergen Gross <jgross@suse.com>, Andy Lutomirski <luto@kernel.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, zijun_hu <zijun_hu@htc.com>, Chris Wilson <chris@chris-wilson.co.uk>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ost>
 List-Id: linux-pm@vger.kernel.org
 
-CiogSmlyaSBTbGFieSA8anNsYWJ5QHN1c2UuY3o+IHdyb3RlOgoKPiBTWU1fTE9DQUxfQUxJQVNf
-U1RBUlQgLS0gdXNlIHdoZXJlIHRoZXJlIGFyZSB0d28gbG9jYWwgbmFtZXMgZm9yIG9uZSBjb2Rl
-Cj4gU1lNX0FMSUFTX1NUQVJUIC0tIHVzZSB3aGVyZSB0aGVyZSBhcmUgdHdvIGdsb2JhbCBuYW1l
-cyBmb3Igb25lIGNvZGUKPiBTWU1fTE9DQUxfRlVOQ19TVEFSVCAtLSB1c2UgZm9yIGxvY2FsIGZ1
-bmN0aW9ucwo+IFNZTV9GVU5DVElPTl9TVEFSVCAtLSB1c2UgZm9yIGdsb2JhbCBmdW5jdGlvbnMK
-PiBTWU1fV0VBS19GVU5DX1NUQVJUIC0tIHVzZSBmb3Igd2VhayBmdW5jdGlvbnMKPiBTWU1fQUxJ
-QVNfRU5EIC0tIHRoZSBlbmQgb2YgTE9DQUxBTElBU2VkIG9yIEFMSUFTZWQgY29kZQo+IFNZTV9G
-VU5DVElPTl9FTkQgLS0gdGhlIGVuZCBvZiBTWU1fTE9DQUxfRlVOQ19TVEFSVCwgU1lNX0ZVTkNU
-SU9OX1NUQVJULCBTWU1fV0VBS19GVU5DX1NUQVJULCAuLi4KPiBTWU1fREFUQV9TVEFSVCAtLSBn
-bG9iYWwgZGF0YSBzeW1ib2wKPiBTWU1fREFUQV9FTkQgLS0gdGhlIGVuZCBvZiBTWU1fREFUQV9T
-VEFSVCBzeW1ib2wKClRoaXMgbG9va3MgbW9zdGx5IGdvb2QgdG8gbWUsIHdpdGggbWlub3IgZGV0
-YWlsczoKCi0gVGhlIG1peGVkICdGVU5DJyBhbmQgJ0ZVTkNUSU9OJyBuYW1pbmcgbG9va3MgYSBi
-aXQgY29uZnVzaW5nIC0gSSdkIHBpY2sgb25lIGFuZAogIHVzZSB0aGF0IGNvbnNpc3RlbnRseS4K
-Ci0gSSdkIGFsc28gbWFrZSB0aGUgU1RBUlQvRU5EIGNvbnN0cnVjdHMgbG9vayBtb3JlIHN5bW1l
-dHJpYywgaS5lLiBtYWtlIHRoZSAKICBhdHRyaWJ1dGUgYSBwb3N0Zml4LCBub3QgYSBwcmVmaXgu
-CgotIEluIGZhY3QgSSdkIG1ha2UgdGhlICdhbGlhcycgbm90aW9uIGFuIGF0dHJpYnV0ZSBhcyB3
-ZWxsIC0gd2hhdCBtYXR0ZXJzIG1vc3RseSAKICBpcyB0aGF0IGl0J3MgYSBmdW5jdGlvbiBzeW1i
-b2wsIGFuZCB0aGF0IGZhY3QgaXMgbG9zdCBmcm9tIHRoZSBTWU1fQUxJQVMgbmFtaW5nLgoKSS5l
-LiBzb21ldGhpbmcgbGlrZSB0aGlzOgoKCVNZTV9GVU5DVElPTl9TVEFSVAoJU1lNX0ZVTkNUSU9O
-X1NUQVJUX1dFQUsKCVNZTV9GVU5DVElPTl9TVEFSVF9MT0NBTAoJU1lNX0ZVTkNUSU9OX1NUQVJU
-X0FMSUFTCglTWU1fRlVOQ1RJT05fU1RBUlRfTE9DQUxfQUxJQVMKCS4uLgoJU1lNX0ZVTkNUSU9O
-X0VORAoKCVNZTV9EQVRBX1NUQVJUCglTWU1fREFUQV9FTkQKCk5vdGUgaG93IHNpbXBsZSBhbmQg
-c3RydWN0dXJlZCBsb29raW5nIHRoZSBub21lbmNsYXR1cmUgaXMgd2hlbiBncm91cGVkIGluIHN1
-Y2ggYSAKd2F5LCBob3cgZWFzeSBpdCBpcyB0byB2ZXJpZnkgYXQgYSBnbGFuY2UsIGFuZCBob3cg
-ZWFzeSBpdCBpcyB0byBleHRlbmQgd2l0aCBuZXcgCnBvc3RmaXhlcy4KCiggSW4gdGhlb3J5IHdl
-IGNvdWxkIGFsc28gbWFrZSB0aGUgYXR0cmlidXRlcyBhIHJlYWwgbWFjcm8gYXJndW1lbnQgaW4g
-dGhlIGZ1dHVyZSwKICBzaG91bGQgdGhlIG51bWJlciBvZiBhdHRyaWJ1dGVzIGluY3JlYXNlIHNp
-Z25pZmljYW50bHkuICkKCkRvZXMgdGhpcyBsb29rIGdvb2QgdG8gZXZlcnlvbmU/CgpUaGFua3Ms
-CgoJSW5nbwoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-WGVuLWRldmVsIG1haWxpbmcgbGlzdApYZW4tZGV2ZWxAbGlzdHMueGVuLm9yZwpodHRwczovL2xp
-c3RzLnhlbi5vcmcveGVuLWRldmVsCg==
+
+* Thomas Garnier <thgarnie@google.com> wrote:
+
+> This patch aligns MODULES_END to the beginning of the Fixmap section.
+> It optimizes the space available for both sections. The address is
+> pre-computed based on the number of pages required by the Fixmap
+> section.
+> 
+> It will allow GDT remapping in the Fixmap section. The current
+> MODULES_END static address does not provide enough space for the kernel
+> to support a large number of processors.
+> 
+> Signed-off-by: Thomas Garnier <thgarnie@google.com>
+> ---
+> Based on next-20170308
+> ---
+>  Documentation/x86/x86_64/mm.txt         | 5 ++++-
+>  arch/x86/include/asm/pgtable_64_types.h | 3 ++-
+>  arch/x86/kernel/module.c                | 1 +
+>  arch/x86/mm/dump_pagetables.c           | 1 +
+>  arch/x86/mm/kasan_init_64.c             | 1 +
+>  mm/vmalloc.c                            | 1 +
+
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -35,6 +35,7 @@
+>  #include <linux/uaccess.h>
+>  #include <asm/tlbflush.h>
+>  #include <asm/shmparam.h>
+> +#include <asm/fixmap.h>
+>  
+>  #include "internal.h"
+
+Note that asm/fixmap.h is an x86-ism that isn't present in many other 
+architectures, so this hunk will break the build.
+
+To make progress with these patches I've fixed it up with an ugly #ifdef 
+CONFIG_X86, but it needs a real solution instead before this can be pushed 
+upstream.
+
+Thanks,
+
+	Ingo
+
+=====================>
+ mm/vmalloc.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+index dabea6a29fad..b7d2a23349f4 100644
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -35,7 +35,10 @@
+ #include <linux/uaccess.h>
+ #include <asm/tlbflush.h>
+ #include <asm/shmparam.h>
+-#include <asm/fixmap.h>
++
++#ifdef CONFIG_X86
++# include <asm/fixmap.h>
++#endif
+ 
+ #include "internal.h"
+ 
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
