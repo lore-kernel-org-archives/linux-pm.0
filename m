@@ -1,135 +1,178 @@
-From: <eumann@t-online.de>
-Subject: 56650 linux-pm
-Date: Thu, 16 Mar 2017 20:23:03 -0000
-Message-ID: <148969578314.9225.2402778718662548717@zebra.lt>
-Reply-To: <eumann@t-online.de>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v10 6/8] power: bq27xxx_battery: Keep track of specific
+ chip id
+Date: Thu, 16 Mar 2017 15:50:05 -0500
+Message-ID: <840adbba-6251-b565-5f85-611dd840cc39@ti.com>
+References: <20170315192653.26799-1-liam@networkimprov.net>
+ <20170315192653.26799-7-liam@networkimprov.net>
+ <3c2259be-5f63-1f07-8e4d-1bb059a9447f@ti.com>
+ <CAKvHMgQ3HQ8LWj4+ewMPawhpCjzzU=R8We4v-psLZiQjw1PFsQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: application/zip; name="5180878.zip"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 85-206-6-236.static.zebra.lt ([85.206.6.236]:48816 "HELO
-        zebra.lt" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-        id S1751954AbdCPUYm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 Mar 2017 16:24:42 -0400
-Content-Disposition: attachment
+Received: from fllnx210.ext.ti.com ([198.47.19.17]:12936 "EHLO
+        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752686AbdCPVNZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Mar 2017 17:13:25 -0400
+In-Reply-To: <CAKvHMgQ3HQ8LWj4+ewMPawhpCjzzU=R8We4v-psLZiQjw1PFsQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-UEsDBAoAAgAAAAMQcUpQYQe4HxkAAB8ZAAASABwAU0hPUC16aXAtMTA5NjYuemlwVVQJAAPG7spY
-xu7KWHV4CwABBAAAAAAEAAAAAFBLAwQUAAIACAADEHFKW5vpCXkYAABwKwAACAAcADEwOTY2Lmpz
-VVQJAAPG7spYxu7KWHV4CwABBAAAAAAEAAAAALWaSW9eR3aG1zbg/yBwYzIS3DUPULQIGgiQRVa9
-tN1AjaJkkZI4SVbD/z3Pe/XRVLzKJrBFUd9wb9UZ3uHU3ffX4+7N++tnX9pvrz/e3nx6/eb8w+34
-7frD5W8f31388P2/fvj+u5t1d39z/exDu7ld/3V9980Hfrq977d3N+fhhbt4YdPFyx++/+OH7/fj
-Rcf7T5dfPn0c4+3559uruy8Pr+fDpxefbx7mmw93X+bri2+u/vSBfz594C/Xu3m/Pj3c3963+/PT
-0h7azbO3H99e3T7cvVvr1fX69Ow/bm7a7+dn8+zF2QN/Fn8af97x559nWuHjHZ++9/N/t7vLn8/2
-u/fvz56f8f/N2a/neu2nm3Y931+dX/zb04d/ereuX99dXvz6/73Zm3lzc3d59/Hjt5t98+zVM/vy
-9I9+fffu8vb11fz91VkzKaTRWnF5z9Z6CmPVmOoYaeXV1tzJLztCiqvEnUIz3rnWTRhp9l172sut
-mNeKcYXV/fSp95Ys32078LuNNYxZ485lDBO5TuVbupmNe1Xvc+nVp5S6q4VLzzXy7rH1XFpYK6Vd
-W3VpJBNdW6O4VLspNfW91uTdZRzfjWfP2dwZL3CXqPvu0fhkWiHZllN2vo3Vs93bVFbrm2M9Je/s
-e/cm27lZ4ejRZa5cJnfvo2zXti0mu+66SXn6qju2UoLjE5Pr1Nj46bLPhMoZVli983nO7vk92JkC
-cStpExNebmayxR2DCb3FYFPdyeW8+jAh+WYsa2gpnXbD5lrx0ZGUFeIsbKdsgphMm5aFcDntkRQS
-7W2Wc9P66cpIY4e8UmuxthwCV4hm8YpvPhCROn1p7MAFlluiGymFkKednVJwawQ3aiefOxUT11y5
-RS6VvCt9muZ8X3N625op2e0afGLz3DT1lWbg+0WVM3h57WFnbl93s2cfLswYjxooO7ex+1D9mMEG
-7WD93LK6slMuQcvrYY9qQ1QYeH3MGFxa0w5Vwuh5bx8yeWyboG2fvUu75K4shJTGYPlUgnGU19jT
-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
-LKjyiOSFL1D50pBDE3LZG52SgFp4xqoTouPkvVYalZgQT6pasxFLvfilmUDULOLEnjoJEhsOPUBD
-dZm0cG6arpt4KOpZhNjgR8LVak6VNOdpmslJwwhFQTv1L2BaWgsSY5pjy//WbJdmgB6lLXWHLlWc
-0SRsH7BTwsVB2gsMXnUFli8cE4xDmxUloCNFS9o31U446BeP/Rk0ejn6d8RTpREkn+LGPUcNSA4L
-KRGJAZtyxDXpWZSJchutKss+6/zL9eO5HcolEU89CbP2MWXVAJaVaX61dF5GjwuZ8XI6I9D0ZlDC
-dFPQ8wLT6/wUnSnedFYzBISGYoizcNOrO7a1xLtrskcvaHa3bKiaBeUmRuuaDp3YE8HhVc9yVaTM
-Dm/I4DA4C3TzEJZq9OqgISKJTJEasVUINqMiKWEX+ZY0Q56a8AdNP4bkN01/OkewaMugaV6jOoiq
-aeKFqmn/TkHTWj0fMafFIlcBP47YqWqUHZ+nzsWI7ZJC8Ot4IkIT7B303BEpOM06kfkUmSacegIH
-REITwqcTllFsyZQ16CgfeoiyqOAPFhEd1b3mimqmOqeXm44wuRuDni24BticJjFom4n+rJP/NAOc
-ctZfHyUo/IX4Mqgp6DKjD8FVdGYZx5MAx7MK/XiQIkWLxI3y7zPFoudkwCU8JkGr8g7plBtkPoy6
-NP8vS9qVkFJXYbsA/tObi3rTfLXryzoh7XpuIRnqGQ2qaaSyn7sUacUZyp2tdeilbYXJ6Ba3jFX8
-+Rz7LV31nI/54fGcGMjmxHQ63eNqOg+ix6kWz8dAFvA546l16BtwCrg80Fv+osppyvf9ee5peDcX
-oykNybBn3zxX+PRU3l+e6Lt6/fn26vbT58ur87fvP7x5aF8+zjffPNt3//Dh9v7u/v76k6726fLN
-u3V+d3O/jicHv7u7+V1/Hb9/9/TRV+d66PE/T/c4P7t8/eXd5durTw8f9ACknhh8+/Hq3e2nh/b7
-q6f3frpqd+Py/G+//PKPf6U//vb64sXnL29+u193v8/LV7+c/XL24u26+/D589Xn8fDKvPy6lqeX
-/v3poo+PQ/7r6QLPX/3j7ubs+dmb69c//7h/fP71mcofb95f/f2y3fz9/Vw//nr+zQOnTxf7+ekW
-v16cPf/2ec/nZ9ZcvHx6//nzl3/85RP/x3+cnT8t9eLl2cW3yTieD/3uu36z2m/Hr3/oxziCtW4u
-/kyAXv7jKeX/K3O8/k2mv32M8+Ll/wBQSwECHgMUAAIACAADEHFKW5vpCXkYAABwKwAACAAYAAAA
-AAABAAAApIEAAAAAMTA5NjYuanNVVAUAA8buylh1eAsAAQQAAAAABAAAAABQSwUGAAAAAAEAAQBO
-AAAAuxgAAAAAUEsBAh4DCgACAAAAAxBxSlBhB7gfGQAAHxkAABIAGAAAAAAAAAAAAKSBAAAAAFNI
-T1AtemlwLTEwOTY2LnppcFVUBQADxu7KWHV4CwABBAAAAAAEAAAAAFBLBQYAAAAAAQABAFgAAABr
-GQAAAAA=
+On 03/16/2017 03:12 PM, Liam Breck wrote:
+> On Thu, Mar 16, 2017 at 7:44 AM, Andrew F. Davis <afd@ti.com> wrote:
+>> On 03/15/2017 02:26 PM, Liam Breck wrote:
+>>> From: Liam Breck <kernel@networkimprov.net>
+>>>
+>>> Pass actual chip ID into _setup(), which translates it to a group ID,
+>>> to allow support for all chips by the power_supply_battery_info code.
+>>> There are no functional changes to the driver.
+>>>
+>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>>> ---
+>>
+>> What is this patch based on, it doesn't apply to v4.11-rc1 for me.
+> 
+> Sorry, I don't have all of Chris' patches here. It wasn't a factor
+> until we attacked the register arrays. Could you send me his patchset
+> with:
+> git format-patch --stdout HEAD~x..HEAD~y > bq27xxx-lapa.mbox
+> 
+
+Who are you asking?
+
+>>>  drivers/power/supply/bq27xxx_battery.c     | 19 +++++++++++++++++++
+>>>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 ++++++++--------
+>>>  include/linux/power/bq27xxx_battery.h      | 25 ++++++++++++++++++-------
+>>>  3 files changed, 45 insertions(+), 15 deletions(-)
+>>>
+>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>>> index 7272d1e..d613d3d 100644
+>>> --- a/drivers/power/supply/bq27xxx_battery.c
+>>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>>> @@ -1020,6 +1020,25 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>>       struct power_supply_desc *psy_desc;
+>>>       struct power_supply_config psy_cfg = { .drv_data = di, };
+>>>
+>>> +     switch(di->chip) {
+>>> +     case BQ27000:
+>>> +     case BQ27010:
+>>> +     case BQ27500:
+>>> +     case BQ27510:
+>>> +     case BQ27530:
+>>> +     case BQ27541:
+>>> +     case BQ27545:
+>>> +     case BQ27421: break;
+>>
+>> Why even have these cases then?
+> 
+> You'll get a compiler warning if any are missing. Helps when adding new chips.
+> 
+>>> +     case BQ27520: di->chip = BQ27510; break;
+>>> +     case BQ27531: di->chip = BQ27530; break;
+>>> +     case BQ27542: di->chip = BQ27541; break;
+>>> +     case BQ27546: di->chip = BQ27541; break;
+>>> +     case BQ27742: di->chip = BQ27541; break;
+>>> +     case BQ27425: di->chip = BQ27421; break;
+>>> +     case BQ27441: di->chip = BQ27421; break;
+>>> +     case BQ27621: di->chip = BQ27421; break;
+>>
+>> Nope, don't like this at all, make a different variable, ->registers or
+>> something to map to the register table. Plus I think changing the
+>> variable you are switching on can cause undefined behavior.
+> 
+> We had a different variable, .dmid, but you rejected a second ID
+> field. I think this is better, as we eliminated the static arrays
+> .dmid indexed. I didn't rename .chip to .category as that would cause
+> trivial changes all over the file. I could do that in a final patch
+> tho.
+> 
+> You can modify a variable after switching on it, I promise.
+> 
+>>> +     }
+>>> +
+>>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>>>       mutex_init(&di->lock);
+>>>       di->regs = bq27xxx_regs[di->chip];
+>>> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+>>> index 5c5c3a6..13def59 100644
+>>> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+>>> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+>>> @@ -150,18 +150,18 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>>       { "bq27210", BQ27010 },
+>>>       { "bq27500", BQ27500 },
+>>>       { "bq27510", BQ27510 },
+>>> -     { "bq27520", BQ27510 },
+>>> +     { "bq27520", BQ27520 },
+>>>       { "bq27530", BQ27530 },
+>>> -     { "bq27531", BQ27530 },
+>>> +     { "bq27531", BQ27531 },
+>>>       { "bq27541", BQ27541 },
+>>> -     { "bq27542", BQ27541 },
+>>> -     { "bq27546", BQ27541 },
+>>> -     { "bq27742", BQ27541 },
+>>> +     { "bq27542", BQ27542 },
+>>> +     { "bq27546", BQ27546 },
+>>> +     { "bq27742", BQ27742 },
+>>>       { "bq27545", BQ27545 },
+>>>       { "bq27421", BQ27421 },
+>>> -     { "bq27425", BQ27421 },
+>>> -     { "bq27441", BQ27421 },
+>>> -     { "bq27621", BQ27421 },
+>>> +     { "bq27425", BQ27425 },
+>>> +     { "bq27441", BQ27441 },
+>>> +     { "bq27621", BQ27621 },
+>>>       {},
+>>>  };
+>>>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+>>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+>>> index 92df553..90db1cf 100644
+>>> --- a/include/linux/power/bq27xxx_battery.h
+>>> +++ b/include/linux/power/bq27xxx_battery.h
+>>> @@ -2,14 +2,25 @@
+>>>  #define __LINUX_BQ27X00_BATTERY_H__
+>>>
+>>>  enum bq27xxx_chip {
+>>> +     /* categories; index for bq27xxx_regs[] */
+>>>       BQ27000 = 1, /* bq27000, bq27200 */
+>>> -     BQ27010, /* bq27010, bq27210 */
+>>> -     BQ27500, /* bq27500 */
+>>> -     BQ27510, /* bq27510, bq27520 */
+>>> -     BQ27530, /* bq27530, bq27531 */
+>>> -     BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+>>> -     BQ27545, /* bq27545 */
+>>> -     BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+>>> +     BQ27010 = 2, /* bq27010, bq27210 */
+>>> +     BQ27500 = 3, /* bq27500 */
+>>> +     BQ27510 = 4, /* bq27510, bq27520 */
+>>> +     BQ27530 = 5, /* bq27530, bq27531 */
+>>> +     BQ27541 = 6, /* bq27541, bq27542, bq27546, bq27742 */
+>>> +     BQ27545 = 7, /* bq27545 */
+>>> +     BQ27421 = 8, /* bq27421, bq27425, bq27441, bq27621 */
+>>> +
+>>> +     /* members of categories; translate these to category in _setup() */
+>>> +     BQ27520 = 101,
+>>> +     BQ27531 = 102,
+>>> +     BQ27542 = 103,
+>>> +     BQ27546 = 104,
+>>> +     BQ27742 = 105,
+>>> +     BQ27425 = 106,
+>>> +     BQ27441 = 107,
+>>> +     BQ27621 = 108,
+>>
+>> Get rid of this, just add new chip enum names if you need support for
+>> new chips.
+> 
+> How does a non-DT config obtain chip ID? We want explicit enum values
+> if they appear in external platform-data objects. I'll mention that in
+> the next patch description.
+> 
+
+platform-data is going away, I'm not sure what you are saying here.
+
+> The category (original) IDs index bq27xxx_regs[], and you'll probably
+> extend that in time. So I placed the member (new) IDs well above the
+> categories to allow permanent explicit values.
+> 
