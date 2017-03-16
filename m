@@ -1,7 +1,7 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister duplicate ACPI battery supply
-Date: Thu, 16 Mar 2017 17:16:00 +0100
-Message-ID: <20170316161601.32267-4-hdegoede@redhat.com>
+Subject: [PATCH 1/4] acpi: battery: Add acpi_battery_unregister() function
+Date: Thu, 16 Mar 2017 17:15:58 +0100
+Message-ID: <20170316161601.32267-2-hdegoede@redhat.com>
 References: <20170316161601.32267-1-hdegoede@redhat.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <20170316161601.32267-1-hdegoede@redhat.com>
@@ -10,65 +10,134 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebas
 Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On some systems with axp288 PMIC the dsdt also exports an ACPI battery
-device (PNP0C0A device). This leads to there being 2 battery
-power_supply-s registed like this:
+On some systems we have a native pmic driver which provides battery
+monitoring, while the acpi battery driver is broken on these systems
+due to bad dstds or because of missing vendor specific acpi opregion
+(e.g. BMOP opregion) support, which the acpi battery device in the
+dsdt relies on.
+
+This leads to there being 2 battery power_supply-s registed like this:
 
 ~$ acpi
 Battery 0: Charging, 84%, 00:49:39 until charged
 Battery 1: Unknown, 0%, rate information unavailable
 
-Note that the ACPI battery device does not work properly this is due
-to Linux missing support for the vendor specific BMOP ACPI opregion.
-But even if the ACPI battery where to function fine we still do not
+Even if the acpi battery where to function fine (which on systems
+where we have a native pmic driver it often doesn't) we still do not
 want to export the same battery to userspace twice.
 
-Therefor this commit calls acpi_battery_unregister() after successfully
-registering the axp288-fuel-gauge power_supply to remove the duplicate
-(and often broken) ACPI battery power_supply.
+This commit adds an acpi_battery_unregister() function which native
+pmic drivers can call to tell the acpi-battery driver to unregister
+itself so that we do not end up with 2 power_supply-s for the same
+battery device.
 
 BugLink: https://bugzilla.kernel.org/show_bug.cgi?id=194811
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Tested-by: Sergei Trusov <t.rus76@ya.ru>
 ---
- drivers/power/supply/Kconfig             | 2 ++
- drivers/power/supply/axp288_fuel_gauge.c | 3 +++
- 2 files changed, 5 insertions(+)
+ drivers/acpi/battery.c     | 32 +++++++++++++++++++++++++++++++-
+ include/linux/power/acpi.h | 18 ++++++++++++++++++
+ 2 files changed, 49 insertions(+), 1 deletion(-)
+ create mode 100644 include/linux/power/acpi.h
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index d0453ca..e504644 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -242,6 +242,8 @@ config AXP288_CHARGER
- config AXP288_FUEL_GAUGE
- 	tristate "X-Powers AXP288 Fuel Gauge"
- 	depends on MFD_AXP20X && IIO
-+	# if ACPI_BATTERY=m, this can't be 'y'
-+	depends on ACPI_BATTERY || !ACPI_BATTERY
- 	help
- 	  Say yes here to have support for X-Power power management IC (PMIC)
- 	  Fuel Gauge. The device provides battery statistics and status
-diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-index a8dcabc..15f10ce 100644
---- a/drivers/power/supply/axp288_fuel_gauge.c
-+++ b/drivers/power/supply/axp288_fuel_gauge.c
-@@ -26,6 +26,7 @@
- #include <linux/mfd/axp20x.h>
- #include <linux/platform_device.h>
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index 4ef1e46..644e154 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -31,6 +31,7 @@
+ #include <linux/delay.h>
+ #include <linux/slab.h>
+ #include <linux/suspend.h>
++#include <linux/mutex.h>
+ #include <asm/unaligned.h>
+ 
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+@@ -41,6 +42,7 @@
+ 
+ #include <linux/acpi.h>
  #include <linux/power_supply.h>
 +#include <linux/power/acpi.h>
- #include <linux/iio/consumer.h>
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
-@@ -754,6 +755,8 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
- 		return ret;
- 	}
  
-+	acpi_battery_unregister();
+ #include "battery.h"
+ 
+@@ -66,6 +68,10 @@ MODULE_AUTHOR("Alexey Starikovskiy <astarikovskiy@suse.de>");
+ MODULE_DESCRIPTION("ACPI Battery Driver");
+ MODULE_LICENSE("GPL");
+ 
++enum init_state_enum { BAT_NONE, BAT_INITIALIZED, BAT_EXITED };
 +
- 	fuel_gauge_create_debugfs(info);
- 	fuel_gauge_init_irq(info);
- 	schedule_delayed_work(&info->status_monitor, STATUS_MON_DELAY_JIFFIES);
++static enum init_state_enum init_state;
++static DEFINE_MUTEX(init_state_mutex);
+ static async_cookie_t async_cookie;
+ static int battery_bix_broken_package;
+ static int battery_notification_delay_ms;
+@@ -1336,17 +1342,41 @@ static int __init acpi_battery_init(void)
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+ 
++	/* Check if acpi_battery_unregister got called before _init() */
++	mutex_lock(&init_state_mutex);
++	if (init_state != BAT_NONE)
++		goto out_unlock;
++
+ 	async_cookie = async_schedule(acpi_battery_init_async, NULL);
++	init_state = BAT_INITIALIZED;
++out_unlock:
++	mutex_unlock(&init_state_mutex);
++
+ 	return 0;
+ }
+ 
+-static void __exit acpi_battery_exit(void)
++void acpi_battery_unregister(void)
+ {
++	/* Check if _init() is done and only do unregister once */
++	mutex_lock(&init_state_mutex);
++	if (init_state != BAT_INITIALIZED)
++		goto out_exit;
++
+ 	async_synchronize_cookie(async_cookie + 1);
+ 	acpi_bus_unregister_driver(&acpi_battery_driver);
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 	acpi_unlock_battery_dir(acpi_battery_dir);
+ #endif
++
++out_exit:
++	init_state = BAT_EXITED;
++	mutex_unlock(&init_state_mutex);
++}
++EXPORT_SYMBOL_GPL(acpi_battery_unregister);
++
++static void __exit acpi_battery_exit(void)
++{
++	acpi_battery_unregister();
+ }
+ 
+ module_init(acpi_battery_init);
+diff --git a/include/linux/power/acpi.h b/include/linux/power/acpi.h
+new file mode 100644
+index 0000000..83bdfb9
+--- /dev/null
++++ b/include/linux/power/acpi.h
+@@ -0,0 +1,18 @@
++/*
++ * Functions exported by the acpi power_supply drivers
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef __LINUX_POWER_ACPI_H_
++#define __LINUX_POWER_ACPI_H_
++
++#if IS_ENABLED(CONFIG_ACPI_BATTERY)
++void acpi_battery_unregister(void);
++#else
++static inline void acpi_battery_unregister(void) {}
++#endif
++
++#endif
 -- 
 2.9.3
 
