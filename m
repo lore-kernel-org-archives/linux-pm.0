@@ -1,84 +1,166 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC v3 5/5] sched/{core,cpufreq_schedutil}: add capacity
- clamping for RT/DL tasks
-Date: Thu, 16 Mar 2017 12:44:20 +0000
-Message-ID: <20170316124420.GQ31499@e106622-lin>
-References: <1488292722-19410-6-git-send-email-patrick.bellasi@arm.com>
- <CAEi0qNkn8xS=8vzStXjtJVwYwiXiu4vefZwe3VQPUVqz72YiKw@mail.gmail.com>
- <20170315114052.GB18557@e110439-lin>
- <CAJWu+opgLoa3EGdhQKXSi+dkQjXtc62tKmTL0krXxpqJp+PjPQ@mail.gmail.com>
- <20170315144449.GH31499@e106622-lin>
- <CAJWu+orSQbyDxN4O6wk8SYj-t5FyUZA4aO0GQqm8Fgujwr9+Lw@mail.gmail.com>
- <20170315162414.GI31499@e106622-lin>
- <CAJWu+ooCmyx7PNXhzrDsUQM=eU1zxo8F3gyp2ihpabpREk5vfg@mail.gmail.com>
- <20170316111644.GP31499@e106622-lin>
- <20170316122726.GA10171@e110439-lin>
+From: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v10 1/8] devicetree: power: Add battery.txt
+Date: Thu, 16 Mar 2017 08:21:13 -0500
+Message-ID: <d548b5e6-af6e-3fa6-e926-b24636a676a8@ti.com>
+References: <20170315192653.26799-1-liam@networkimprov.net>
+ <20170315192653.26799-2-liam@networkimprov.net>
+ <20170315220425.qeidvmanbsmq4wxk@earth>
+ <CAKvHMgSF2rsaAaUqFw1qF+b2NA9CkABYKYOTd2p+imuPAHq9JA@mail.gmail.com>
+ <20170315225709.ugjibnoqfukay657@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170316122726.GA10171@e110439-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Joel Fernandes <joelaf@google.com>, "Joel Fernandes (Google)" <joel.opensrc@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Andres Oportus <andresoportus@google.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170315225709.ugjibnoqfukay657@earth>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 16/03/17 12:27, Patrick Bellasi wrote:
-> On 16-Mar 11:16, Juri Lelli wrote:
-> > On 15/03/17 16:40, Joel Fernandes wrote:
-> > > On Wed, Mar 15, 2017 at 9:24 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> > > [..]
-> > > >
-> > > >> > However, trying to quickly summarize how that would work (for who is
-> > > >> > already somewhat familiar with reclaiming bits):
-> > > >> >
-> > > >> >  - a task utilization contribution is accounted for (at rq level) as
-> > > >> >    soon as it wakes up for the first time in a new period
-> > > >> >  - its contribution is then removed after the 0lag time (or when the
-> > > >> >    task gets throttled)
-> > > >> >  - frequency transitions are triggered accordingly
-> > > >> >
-> > > >> > So, I don't see why triggering a go down request after the 0lag time
-> > > >> > expired and quickly reacting to tasks waking up would have create
-> > > >> > problems in your case?
-> > > >>
-> > > >> In my experience, the 'reacting to tasks' bit doesn't work very well.
-> > > >
-> > > > Humm.. but in this case we won't be 'reacting', we will be
-> > > > 'anticipating' tasks' needs, right?
-> > > 
-> > > Are you saying we will start ramping frequency before the next
-> > > activation so that we're ready for it?
-> > > 
-> > 
-> > I'm saying that there is no need to ramp, simply select the frequency
-> > that is needed for a task (or a set of them).
-> > 
-> > > If not, it sounds like it will only make the frequency request on the
-> > > next activation when the Active bandwidth increases due to the task
-> > > waking up. By then task has already started to run, right?
-> > > 
-> > 
-> > When the task is enqueued back we select the frequency considering its
-> > bandwidth request (and the bandwidth/utilization of the others). So,
-> > when it actually starts running it will already have enough capacity to
-> > finish in time.
+On 03/15/2017 05:57 PM, Sebastian Reichel wrote:
+> Hi,
 > 
-> Here we are factoring out the time required to actually switch to the
-> required OPP. I think Joel was referring to this time.
+> On Wed, Mar 15, 2017 at 03:18:17PM -0700, Liam Breck wrote:
+>> Hey Sebastian, welcome back :-)
+>>
+>> I've taken over work on this patchset from Matt.
+> 
+> Ok.
+> 
+>> On Wed, Mar 15, 2017 at 3:04 PM, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>>> Hi Liam & Matt,
+>>>
+>>> Sorry for my absence in the discussion. I skipped the previous
+>>> iterations for now and start with this version.
+>>>
+>>> On Wed, Mar 15, 2017 at 12:26:46PM -0700, Liam Breck wrote:
+>>>> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>>>>
+>>>> Documentation of static battery characteristics that can be defined
+>>>> for batteries which cannot self-identify. This information is required
+>>>> by fuel-gauge and charger chips for proper handling of the battery.
+>>>>
+>>>> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>>>> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>>>> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+>>>> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>>>> ---
+>>>>  .../devicetree/bindings/power/supply/battery.txt   | 45 ++++++++++++++++++++++
+>>>>  1 file changed, 45 insertions(+)
+>>>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>> new file mode 100644
+>>>> index 0000000..0278617
+>>>> --- /dev/null
+>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>> @@ -0,0 +1,45 @@
+>>>> +Battery Characteristics
+>>>
+>>> Maybe add something like
+>>>
+>>> This device provides static battery information, that is usually
+>>> available in the EEPROM of a smart battery. It's supposed to be
+>>> used for batteries, which do not have their own EEPROM (or if its
+>>> unusable).
+>>
+>> OK.
+>>
+>>>> +Required Properties:
+>>>> + - compatible: Must be "fixed-battery"
+>>
+>> Rob questioned the term "fixed". Shall we consider other terms --
+>> simple-battery, plain-battery...?
+> 
+> I don't like the term either, but it was the best I came up with.
+> They are known as "dumb" batteries, but that term looks too
+> colloquial for DT usage. While I think "simple-battery" is not
+> perfect either, it's better than "fixed-battery", so please switch
+> to that in the next revision.
 > 
 
-Right. But, this is an HW limitation. It seems a problem that every
-scheduler driven decision will have to take into account. So, doesn't
-make more sense to let the driver (or the governor shim layer) introduce
-some sort of hysteresis to frequency changes if needed?
+I rather like "fixed-battery", it matches the regulator and other power
+source DTs better. To answer Rob's question on what a non-fixed battery
+would look like we can think of a future battery that can change its
+physical properties (chemical or physical perhaps) in response to
+software. Although I've not seen such a battery I don't think it's too
+far-fetched.
 
-> That time cannot really be eliminated but from having faster OOP
-> swiching HW support. Still, jumping strating to the "optimal" OPP
-> instead of rumping up is a big improvement.
+All the properties described here are "fixed", if we say "simple" then a
+battery with more properties would be a "complex" battery..
+
+>>>> +Optional Properties:
+>>>> + - voltage-min-design-microvolt: drained battery voltage
+>>>> + - energy-full-design-microwatt-hours: battery design energy
+>>>> + - charge-full-design-microamp-hours: battery design capacity
+>>>
+>>> Looks fine to me.
+>>>
+>>>> +Because drivers surface properties in sysfs using names derived
+>>>> +from enum power_supply_property, e.g.
+>>>> +/sys/class/power_supply/<device>/charge_full_design, our
+>>>> +battery properties must be named for the corresponding elements in
+>>>> +enum power_supply_property, defined in include/linux/power_supply.h.
+>>>
+>>> This is Linux/implementation specific and does not belong
+>>> into a DT binding document.
+>>
+>> I just wrote on a thread for an earlier version of this patch:
+>>
+>> "Sebastian proposed DT:battery specifically to be consumed by
+>> power_supply_core. Allowing names in DT:battery and
+>> power_supply_property to diverge would cause confusion and wasted
+>> time, for no particular benefit. As there is no rationale to
+>> reconsider the names of these fields for DT:battery, let's write that
+>> into the docs."
 > 
+> DT bindings are not "Linux hardware information bindings". Of course
+> there is no need to diverge without a good reason, but that kind of
+> Documentation just does not belong into the DT bindings.
 > 
-> -- 
-> #include <best/regards.h>
+>>>> +Batteries must be referenced by chargers and/or fuel-gauges
+>>>> +using a phandle. The phandle's property should be named
+>>>> +"monitored-battery".
+>>>
+>>> This looks fine.
+>>>
+>>>> +Driver code should call power_supply_get_battery_info() to obtain
+>>>> +battery properties via monitored-battery. For details see:
+>>>> +  drivers/power/supply/power_supply_core.c
+>>>> +  drivers/power/supply/bq27xxx_battery.c
+>>>
+>>> This is also Linux/implementation specific and should be dropped.
+>>
+>> We ought to mention how drivers are expected to consume DT:battery.
 > 
-> Patrick Bellasi
+> That kind of documentation does not belong into
+> Documentation/devicetree/bindings. We can add something to
+> Documentation/power/power_supply_class.txt instead.
+> 
+>>>> +Example:
+>>>> +
+>>>> +     bat: battery {
+>>>> +             compatible = "fixed-battery";
+>>>> +             voltage-min-design-microvolt = <3200000>;
+>>>> +             energy-full-design-microwatt-hours = <5290000>;
+>>>> +             charge-full-design-microamp-hours = <1430000>;
+>>>> +     };
+>>>> +
+>>>> +     charger: charger@11 {
+>>>> +             ....
+>>>> +             monitored-battery = <&bat>;
+>>>> +             ...
+>>>> +     };
+>>>> +
+>>>> +     fuel_gauge: fuel-gauge@22 {
+>>>> +             ....
+>>>> +             monitored-battery = <&bat>;
+>>>> +             ...
+>>>> +     };
+>>>> --
+>>>> 2.9.3
+>>>>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
