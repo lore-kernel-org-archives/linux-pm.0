@@ -1,56 +1,141 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 3/3] mfd: intel_soc_pmic_bxtwc: Rename header to follow c-file
-Date: Fri, 17 Mar 2017 17:37:15 +0200
-Message-ID: <20170317153715.48555-3-andriy.shevchenko@linux.intel.com>
-References: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Subject: [PATCH v3 1/3] mfd: intel_soc_pmic: Fix a mess with compilation units
+Date: Fri, 17 Mar 2017 17:37:13 +0200
+Message-ID: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-For better understanding of relationship between headers and modules
-rename:
-	intel_bxtwc.h -> intel_soc_pmic_bxtwc.h
+Crystal Cove and Whiskey Cove are two different PMICs which are
+installed on Intel Atom SoC based platforms.
 
-While here, remove file name from the file itself.
+Moreover there are two independent drivers that by some reason were
+supposed (*) to get into one kernel module.
 
+Fix the mess by clarifying Kconfig option for Crystal Cove and split
+Whiskey Cove out of it.
+
+(*) It looks like the configuration was never tested with
+    INTEL_SOC_PMIC=n. The line in Makefile is actually wrong.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net> (supporter:ACPI)
+Cc: Linus Walleij <linus.walleij@linaro.org> (maintainer:GPIO SUBSYSTEM)
+Cc: Zhang Rui <rui.zhang@intel.com> (supporter:THERMAL)
+Cc: Eduardo Valentin <edubezval@gmail.com> (supporter:THERMAL)
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/mfd/intel_soc_pmic_bxtwc.c                          | 2 +-
- include/linux/mfd/{intel_bxtwc.h => intel_soc_pmic_bxtwc.h} | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
- rename include/linux/mfd/{intel_bxtwc.h => intel_soc_pmic_bxtwc.h} (96%)
+- make option visible
+- fix dependencies
+ drivers/acpi/Kconfig         |  2 +-
+ drivers/gpio/Kconfig         |  2 +-
+ drivers/mfd/Kconfig          | 14 ++++++++++++--
+ drivers/mfd/Makefile         |  2 +-
+ drivers/platform/x86/Kconfig |  2 +-
+ drivers/thermal/Kconfig      |  2 +-
+ 6 files changed, 17 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/mfd/intel_soc_pmic_bxtwc.c b/drivers/mfd/intel_soc_pmic_bxtwc.c
-index c71db687b7ca..1496a862baa6 100644
---- a/drivers/mfd/intel_soc_pmic_bxtwc.c
-+++ b/drivers/mfd/intel_soc_pmic_bxtwc.c
-@@ -20,8 +20,8 @@
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
- #include <linux/mfd/core.h>
--#include <linux/mfd/intel_bxtwc.h>
- #include <linux/mfd/intel_soc_pmic.h>
-+#include <linux/mfd/intel_soc_pmic_bxtwc.h>
- #include <asm/intel_pmc_ipc.h>
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index 83e5f7e1a20d..03708e08fcb4 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -512,7 +512,7 @@ config XPOWER_PMIC_OPREGION
  
- /* PMIC device registers */
-diff --git a/include/linux/mfd/intel_bxtwc.h b/include/linux/mfd/intel_soc_pmic_bxtwc.h
-similarity index 96%
-rename from include/linux/mfd/intel_bxtwc.h
-rename to include/linux/mfd/intel_soc_pmic_bxtwc.h
-index 240d6752ec64..0c351bc85d2d 100644
---- a/include/linux/mfd/intel_bxtwc.h
-+++ b/include/linux/mfd/intel_soc_pmic_bxtwc.h
-@@ -1,5 +1,5 @@
- /*
-- * intel_bxtwc.h - Header file for Intel Broxton Whiskey Cove PMIC
-+ * Header file for Intel Broxton Whiskey Cove PMIC
-  *
-  * Copyright (C) 2015 Intel Corporation. All rights reserved.
-  *
+ config BXT_WC_PMIC_OPREGION
+ 	bool "ACPI operation region support for BXT WhiskeyCove PMIC"
+-	depends on INTEL_SOC_PMIC
++	depends on INTEL_SOC_PMIC_BXTWC
+ 	help
+ 	  This config adds ACPI operation region support for BXT WhiskeyCove PMIC.
+ 
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 05043071fc98..9b1bcb4d0df7 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -1054,7 +1054,7 @@ config GPIO_UCB1400
+ 
+ config GPIO_WHISKEY_COVE
+ 	tristate "GPIO support for Whiskey Cove PMIC"
+-	depends on (X86 || COMPILE_TEST) && INTEL_SOC_PMIC
++	depends on (X86 || COMPILE_TEST) && INTEL_SOC_PMIC_BXTWC
+ 	select GPIOLIB_IRQCHIP
+ 	help
+ 	  Support for GPIO pins on Whiskey Cove PMIC.
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 55ecdfb74d31..e43afb8956ea 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -425,18 +425,28 @@ config LPC_SCH
+ 	  System Management Bus and General Purpose I/O.
+ 
+ config INTEL_SOC_PMIC
+-	bool "Support for Intel Atom SoC PMIC"
++	bool "Support for Crystal Cove PMIC"
+ 	depends on GPIOLIB
+ 	depends on I2C=y
+ 	select MFD_CORE
+ 	select REGMAP_I2C
+ 	select REGMAP_IRQ
+ 	help
+-	  Select this option to enable support for the PMIC device
++	  Select this option to enable support for Crystal Cove PMIC
+ 	  on some Intel SoC systems. The PMIC provides ADC, GPIO,
+ 	  thermal, charger and related power management functions
+ 	  on these systems.
+ 
++config INTEL_SOC_PMIC_BXTWC
++	tristate "Support for Intel Broxton Whiskey Cove PMIC"
++	select MFD_CORE
++	select REGMAP_IRQ
++	help
++	  Select this option to enable support for Whiskey Cove PMIC
++	  on Intel Broxton systems. The PMIC provides ADC, GPIO,
++	  thermal, charger and related power management functions
++	  on these systems.
++
+ config MFD_INTEL_LPSS
+ 	tristate
+ 	select COMMON_CLK
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index 31ce07611a6f..201aeaf5112a 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -207,8 +207,8 @@ obj-$(CONFIG_MFD_RT5033)	+= rt5033.o
+ obj-$(CONFIG_MFD_SKY81452)	+= sky81452.o
+ 
+ intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
+-intel-soc-pmic-$(CONFIG_INTEL_PMC_IPC)	+= intel_soc_pmic_bxtwc.o
+ obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
++obj-$(CONFIG_INTEL_SOC_PMIC_BXTWC)	+= intel_soc_pmic_bxtwc.o
+ obj-$(CONFIG_MFD_MT6397)	+= mt6397-core.o
+ 
+ obj-$(CONFIG_MFD_ALTERA_A10SR)	+= altera-a10sr.o
+diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+index e1bffc9bb194..883fbe7a2466 100644
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -1019,7 +1019,7 @@ config INTEL_PMC_IPC
+ config INTEL_BXTWC_PMIC_TMU
+ 	tristate "Intel BXT Whiskey Cove TMU Driver"
+ 	depends on REGMAP
+-	depends on INTEL_SOC_PMIC && INTEL_PMC_IPC
++	depends on INTEL_SOC_PMIC_BXTWC && INTEL_PMC_IPC
+ 	---help---
+ 	  Select this driver to use Intel BXT Whiskey Cove PMIC TMU feature.
+ 	  This driver enables the alarm wakeup functionality in the TMU unit
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 776b34396144..751e50a3d946 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -365,7 +365,7 @@ endmenu
+ 
+ config INTEL_BXT_PMIC_THERMAL
+ 	tristate "Intel Broxton PMIC thermal driver"
+-	depends on X86 && INTEL_SOC_PMIC && REGMAP
++	depends on X86 && INTEL_SOC_PMIC_BXTWC && REGMAP
+ 	help
+ 	  Select this driver for Intel Broxton PMIC with ADC channels monitoring
+ 	  system temperature measurements and alerts.
 -- 
 2.11.0
-
