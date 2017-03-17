@@ -1,339 +1,355 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 01/15] mfd: Add Cherry Trail Whiskey Cove PMIC driver
-Date: Fri, 17 Mar 2017 10:55:13 +0100
-Message-ID: <20170317095527.10487-2-hdegoede@redhat.com>
+Subject: [PATCH 02/15] ACPI / PMIC: Add opregion driver for Intel CHT Whiskey Cove PMIC
+Date: Fri, 17 Mar 2017 10:55:14 +0100
+Message-ID: <20170317095527.10487-3-hdegoede@redhat.com>
 References: <20170317095527.10487-1-hdegoede@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:60162 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751017AbdCQJ4t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 17 Mar 2017 05:56:49 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170317095527.10487-1-hdegoede@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 Cc: Hans de Goede <hdegoede@redhat.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Bin Gao <bin.gao@intel.com>, Felipe Balbi <felipe.balbi@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-Add mfd driver for Intel CHT Whiskey Cove PMIC, based on various non
-upstreamed CHT Whiskey Cove PMIC patches.
-
-This is a somewhat minimal version which adds irqchip support and cells
-for: ACPI PMIC opregion support, the i2c-controller driving the external
-charger irc and the pwrsrc/extcon block.
-
-Further cells can be added in the future if/when drivers are upstreamed
-for them.
+Add opregion driver for Intel CHT Whiskey Cove PMIC, based on various
+non upstreamed CHT Whiskey Cove PMIC patches. This does not include
+support for the Thermal opregion (DPTF) due to lacking documentation.
 
 Cc: Bin Gao <bin.gao@intel.com>
 Cc: Felipe Balbi <felipe.balbi@linux.intel.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
 Changes in v2:
--Since this uses plain mfd and not the intel_soc_pmic stuff give it
- its own Kconfig and allow this to be built as a module
--Add missing #include <acpi/acpi_bus.h>
+-s/WhiskeyCove/Whiskey Cove/
+-Some minor style tweaks
+-Allow building as module
 Changes in v3:
--Drop #include <acpi/acpi_bus.h> again, not the right fix for the build errors
--Error out when the upper byte of the register-address passed to the regmap
- functions is 0 rather then hardcoding an address in that case
--Various minor style tweaks / cleanups
+-Drop filename from copyright header
+-Simplify intel_cht_wc_pmic_update_power to 1 line
 -Move defines of regulator register addresses to intel_pmic_chtwc.c,
  it is the only place where they are used
--Drop now empty include/linux/mfd/intel_chtwc.h
--Rename intel_soc_pmic_chtwc.c to intel_cht_wc.c to match Kconfig option name
--Add irqchip support
--Add external charger cell
--Add pwrsrc cell
 ---
- drivers/mfd/Kconfig                |  11 ++
- drivers/mfd/Makefile               |   1 +
- drivers/mfd/intel_soc_pmic_chtwc.c | 243 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 255 insertions(+)
- create mode 100644 drivers/mfd/intel_soc_pmic_chtwc.c
+ drivers/acpi/Kconfig                 |   6 +
+ drivers/acpi/Makefile                |   1 +
+ drivers/acpi/pmic/intel_pmic_chtwc.c | 280 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 287 insertions(+)
+ create mode 100644 drivers/acpi/pmic/intel_pmic_chtwc.c
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 55ecdfb..d427a10 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -437,6 +437,17 @@ config INTEL_SOC_PMIC
- 	  thermal, charger and related power management functions
- 	  on these systems.
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index 83e5f7e..e3c4ef0 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -516,6 +516,12 @@ config BXT_WC_PMIC_OPREGION
+ 	help
+ 	  This config adds ACPI operation region support for BXT WhiskeyCove PMIC.
  
-+config INTEL_SOC_PMIC_CHTWC
-+	tristate "Support for Intel Cherry Trail Whiskey Cove PMIC"
-+	depends on ACPI
-+	depends on I2C
-+	select MFD_CORE
-+	select REGMAP_I2C
-+	select REGMAP_IRQ
++config CHT_WC_PMIC_OPREGION
++	tristate "ACPI operation region support for CHT Whiskey Cove PMIC"
++	depends on INTEL_SOC_PMIC_CHTWC
 +	help
-+	  Select this option to enable support for the Intel Cherry Trail
-+	  Whiskey Cove PMIC found on some Intel Cherry Trail systems.
++	  This config adds ACPI operation region support for CHT Whiskey Cove PMIC.
 +
- config MFD_INTEL_LPSS
- 	tristate
- 	select COMMON_CLK
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 31ce076..d2ca514 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -209,6 +209,7 @@ obj-$(CONFIG_MFD_SKY81452)	+= sky81452.o
- intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
- intel-soc-pmic-$(CONFIG_INTEL_PMC_IPC)	+= intel_soc_pmic_bxtwc.o
- obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
-+obj-$(CONFIG_INTEL_SOC_PMIC_CHTWC) += intel_soc_pmic_chtwc.o
- obj-$(CONFIG_MFD_MT6397)	+= mt6397-core.o
+ endif
  
- obj-$(CONFIG_MFD_ALTERA_A10SR)	+= altera-a10sr.o
-diff --git a/drivers/mfd/intel_soc_pmic_chtwc.c b/drivers/mfd/intel_soc_pmic_chtwc.c
+ config ACPI_CONFIGFS
+diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+index a391bbc..6f6b47f 100644
+--- a/drivers/acpi/Makefile
++++ b/drivers/acpi/Makefile
+@@ -102,6 +102,7 @@ obj-$(CONFIG_PMIC_OPREGION)	+= pmic/intel_pmic.o
+ obj-$(CONFIG_CRC_PMIC_OPREGION) += pmic/intel_pmic_crc.o
+ obj-$(CONFIG_XPOWER_PMIC_OPREGION) += pmic/intel_pmic_xpower.o
+ obj-$(CONFIG_BXT_WC_PMIC_OPREGION) += pmic/intel_pmic_bxtwc.o
++obj-$(CONFIG_CHT_WC_PMIC_OPREGION) += pmic/intel_pmic_chtwc.o
+ 
+ obj-$(CONFIG_ACPI_CONFIGFS)	+= acpi_configfs.o
+ 
+diff --git a/drivers/acpi/pmic/intel_pmic_chtwc.c b/drivers/acpi/pmic/intel_pmic_chtwc.c
 new file mode 100644
-index 0000000..449462a
+index 0000000..85636d7
 --- /dev/null
-+++ b/drivers/mfd/intel_soc_pmic_chtwc.c
-@@ -0,0 +1,243 @@
++++ b/drivers/acpi/pmic/intel_pmic_chtwc.c
+@@ -0,0 +1,280 @@
 +/*
-+ * MFD core driver for Intel Cherrytrail Whiskey Cove PMIC
++ * Intel CHT Whiskey Cove PMIC operation region driver
 + * Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
 + *
 + * Based on various non upstream patches to support the CHT Whiskey Cove PMIC:
 + * Copyright (C) 2013-2015 Intel Corporation. All rights reserved.
 + *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version
++ * 2 as published by the Free Software Foundation.
 + *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + */
 +
 +#include <linux/acpi.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/i2c.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/core.h>
++#include <linux/init.h>
 +#include <linux/mfd/intel_soc_pmic.h>
-+#include <linux/module.h>
++#include <linux/platform_device.h>
 +#include <linux/regmap.h>
++#include "intel_pmic.h"
 +
-+/* PMIC device registers */
-+#define REG_OFFSET_MASK		GENMASK(7, 0)
-+#define REG_ADDR_MASK		GENMASK(15, 8)
-+#define REG_ADDR_SHIFT		8
-+
-+#define CHT_WC_IRQLVL1		0x6e02
-+#define CHT_WC_IRQLVL1_MASK	0x6e0e
-+
-+/* Whiskey Cove PMIC share same ACPI ID between different platforms */
-+#define CHT_WC_HRV		3
-+
-+/* Level 1 IRQs (level 2 IRQs are handled in the child device drivers) */
-+enum {
-+	CHT_WC_PWRSRC_IRQ = 0,
-+	CHT_WC_THRM_IRQ,
-+	CHT_WC_BCU_IRQ,
-+	CHT_WC_ADC_IRQ,
-+	CHT_WC_EXT_CHGR_IRQ,
-+	CHT_WC_GPIO_IRQ,
-+	/* There is no irq 6 */
-+	CHT_WC_CRIT_IRQ = 7,
-+};
-+
-+static struct resource cht_wc_pwrsrc_resources[] = {
-+	DEFINE_RES_IRQ(CHT_WC_PWRSRC_IRQ),
-+};
-+
-+static struct resource cht_wc_ext_charger_resources[] = {
-+	DEFINE_RES_IRQ(CHT_WC_EXT_CHGR_IRQ),
-+};
-+
-+static struct mfd_cell cht_wc_dev[] = {
-+	{
-+		.name = "cht_wcove_pwrsrc",
-+		.num_resources = ARRAY_SIZE(cht_wc_pwrsrc_resources),
-+		.resources = cht_wc_pwrsrc_resources,
-+	},
-+	{
-+		.name = "cht_wcove_ext_chgr",
-+		.num_resources = ARRAY_SIZE(cht_wc_ext_charger_resources),
-+		.resources = cht_wc_ext_charger_resources,
-+	},
-+	{
-+		.name = "cht_wcove_region",
-+	},
-+};
++#define CHT_WC_V1P05A_CTRL		0x6e3b
++#define CHT_WC_V1P15_CTRL		0x6e3c
++#define CHT_WC_V1P05A_VSEL		0x6e3d
++#define CHT_WC_V1P15_VSEL		0x6e3e
++#define CHT_WC_V1P8A_CTRL		0x6e56
++#define CHT_WC_V1P8SX_CTRL		0x6e57
++#define CHT_WC_VDDQ_CTRL		0x6e58
++#define CHT_WC_V1P2A_CTRL		0x6e59
++#define CHT_WC_V1P2SX_CTRL		0x6e5a
++#define CHT_WC_V1P8A_VSEL		0x6e5b
++#define CHT_WC_VDDQ_VSEL		0x6e5c
++#define CHT_WC_V2P8SX_CTRL		0x6e5d
++#define CHT_WC_V3P3A_CTRL		0x6e5e
++#define CHT_WC_V3P3SD_CTRL		0x6e5f
++#define CHT_WC_VSDIO_CTRL		0x6e67
++#define CHT_WC_V3P3A_VSEL		0x6e68
++#define CHT_WC_VPROG1A_CTRL		0x6e90
++#define CHT_WC_VPROG1B_CTRL		0x6e91
++#define CHT_WC_VPROG1F_CTRL		0x6e95
++#define CHT_WC_VPROG2D_CTRL		0x6e99
++#define CHT_WC_VPROG3A_CTRL		0x6e9a
++#define CHT_WC_VPROG3B_CTRL		0x6e9b
++#define CHT_WC_VPROG4A_CTRL		0x6e9c
++#define CHT_WC_VPROG4B_CTRL		0x6e9d
++#define CHT_WC_VPROG4C_CTRL		0x6e9e
++#define CHT_WC_VPROG4D_CTRL		0x6e9f
++#define CHT_WC_VPROG5A_CTRL		0x6ea0
++#define CHT_WC_VPROG5B_CTRL		0x6ea1
++#define CHT_WC_VPROG6A_CTRL		0x6ea2
++#define CHT_WC_VPROG6B_CTRL		0x6ea3
++#define CHT_WC_VPROG1A_VSEL		0x6ec0
++#define CHT_WC_VPROG1B_VSEL		0x6ec1
++#define CHT_WC_V1P8SX_VSEL		0x6ec2
++#define CHT_WC_V1P2SX_VSEL		0x6ec3
++#define CHT_WC_V1P2A_VSEL		0x6ec4
++#define CHT_WC_VPROG1F_VSEL		0x6ec5
++#define CHT_WC_VSDIO_VSEL		0x6ec6
++#define CHT_WC_V2P8SX_VSEL		0x6ec7
++#define CHT_WC_V3P3SD_VSEL		0x6ec8
++#define CHT_WC_VPROG2D_VSEL		0x6ec9
++#define CHT_WC_VPROG3A_VSEL		0x6eca
++#define CHT_WC_VPROG3B_VSEL		0x6ecb
++#define CHT_WC_VPROG4A_VSEL		0x6ecc
++#define CHT_WC_VPROG4B_VSEL		0x6ecd
++#define CHT_WC_VPROG4C_VSEL		0x6ece
++#define CHT_WC_VPROG4D_VSEL		0x6ecf
++#define CHT_WC_VPROG5A_VSEL		0x6ed0
++#define CHT_WC_VPROG5B_VSEL		0x6ed1
++#define CHT_WC_VPROG6A_VSEL		0x6ed2
++#define CHT_WC_VPROG6B_VSEL		0x6ed3
 +
 +/*
-+ * The CHT Whiskey Cove covers multiple i2c addresses, with a 1 byte
-+ * register address space per i2c address, so we use 16 bit register
-+ * addresses where the high 8 bits contain the i2c client address.
++ * Regulator support is based on the non upstream patch:
++ * "regulator: whiskey_cove: implements Whiskey Cove pmic VRF support"
++ * https://github.com/intel-aero/meta-intel-aero/blob/master/recipes-kernel/linux/linux-yocto/0019-regulator-whiskey_cove-implements-WhiskeyCove-pmic-V.patch
 + */
-+static int cht_wc_byte_reg_read(void *context, unsigned int reg,
-+				unsigned int *val)
++static struct pmic_table power_table[] = {
++	{
++		.address = 0x0,
++		.reg = CHT_WC_V1P8A_CTRL,
++		.bit = 0x01,
++	}, /* V18A */
++	{
++		.address = 0x04,
++		.reg = CHT_WC_V1P8SX_CTRL,
++		.bit = 0x07,
++	}, /* V18X */
++	{
++		.address = 0x08,
++		.reg = CHT_WC_VDDQ_CTRL,
++		.bit = 0x01,
++	}, /* VDDQ */
++	{
++		.address = 0x0c,
++		.reg = CHT_WC_V1P2A_CTRL,
++		.bit = 0x07,
++	}, /* V12A */
++	{
++		.address = 0x10,
++		.reg = CHT_WC_V1P2SX_CTRL,
++		.bit = 0x07,
++	}, /* V12X */
++	{
++		.address = 0x14,
++		.reg = CHT_WC_V2P8SX_CTRL,
++		.bit = 0x07,
++	}, /* V28X */
++	{
++		.address = 0x18,
++		.reg = CHT_WC_V3P3A_CTRL,
++		.bit = 0x01,
++	}, /* V33A */
++	{
++		.address = 0x1c,
++		.reg = CHT_WC_V3P3SD_CTRL,
++		.bit = 0x07,
++	}, /* V3SD */
++	{
++		.address = 0x20,
++		.reg = CHT_WC_VSDIO_CTRL,
++		.bit = 0x07,
++	}, /* VSD */
++/*	{
++		.address = 0x24,
++		.reg = ??,
++		.bit = ??,
++	}, ** VSW2 */
++/*	{
++		.address = 0x28,
++		.reg = ??,
++		.bit = ??,
++	}, ** VSW1 */
++/*	{
++		.address = 0x2c,
++		.reg = ??,
++		.bit = ??,
++	}, ** VUPY */
++/*	{
++		.address = 0x30,
++		.reg = ??,
++		.bit = ??,
++	}, ** VRSO */
++	{
++		.address = 0x34,
++		.reg = CHT_WC_VPROG1A_CTRL,
++		.bit = 0x07,
++	}, /* VP1A */
++	{
++		.address = 0x38,
++		.reg = CHT_WC_VPROG1B_CTRL,
++		.bit = 0x07,
++	}, /* VP1B */
++	{
++		.address = 0x3c,
++		.reg = CHT_WC_VPROG1F_CTRL,
++		.bit = 0x07,
++	}, /* VP1F */
++	{
++		.address = 0x40,
++		.reg = CHT_WC_VPROG2D_CTRL,
++		.bit = 0x07,
++	}, /* VP2D */
++	{
++		.address = 0x44,
++		.reg = CHT_WC_VPROG3A_CTRL,
++		.bit = 0x07,
++	}, /* VP3A */
++	{
++		.address = 0x48,
++		.reg = CHT_WC_VPROG3B_CTRL,
++		.bit = 0x07,
++	}, /* VP3B */
++	{
++		.address = 0x4c,
++		.reg = CHT_WC_VPROG4A_CTRL,
++		.bit = 0x07,
++	}, /* VP4A */
++	{
++		.address = 0x50,
++		.reg = CHT_WC_VPROG4B_CTRL,
++		.bit = 0x07,
++	}, /* VP4B */
++	{
++		.address = 0x54,
++		.reg = CHT_WC_VPROG4C_CTRL,
++		.bit = 0x07,
++	}, /* VP4C */
++	{
++		.address = 0x58,
++		.reg = CHT_WC_VPROG4D_CTRL,
++		.bit = 0x07,
++	}, /* VP4D */
++	{
++		.address = 0x5c,
++		.reg = CHT_WC_VPROG5A_CTRL,
++		.bit = 0x07,
++	}, /* VP5A */
++	{
++		.address = 0x60,
++		.reg = CHT_WC_VPROG5B_CTRL,
++		.bit = 0x07,
++	}, /* VP5B */
++	{
++		.address = 0x64,
++		.reg = CHT_WC_VPROG6A_CTRL,
++		.bit = 0x07,
++	}, /* VP6A */
++	{
++		.address = 0x68,
++		.reg = CHT_WC_VPROG6B_CTRL,
++		.bit = 0x07,
++	}, /* VP6B */
++/*	{
++		.address = 0x6c,
++		.reg = ??,
++		.bit = ??,
++	}  ** VP7A */
++};
++
++static int intel_cht_wc_pmic_get_power(struct regmap *regmap, int reg,
++		int bit, u64 *value)
 +{
-+	struct i2c_client *client = context;
-+	int ret, orig_addr = client->addr;
++	int data;
 +
-+	if (!(reg & REG_ADDR_MASK)) {
-+		dev_err(&client->dev, "Error i2c address not specified\n");
-+		return -EINVAL;
-+	}
++	if (regmap_read(regmap, reg, &data))
++		return -EIO;
 +
-+	client->addr = (reg & REG_ADDR_MASK) >> REG_ADDR_SHIFT;
-+	ret = i2c_smbus_read_byte_data(client, reg & REG_OFFSET_MASK);
-+	client->addr = orig_addr;
-+
-+	if (ret < 0)
-+		return ret;
-+
-+	*val = ret;
++	*value = (data & bit) ? 1 : 0;
 +	return 0;
 +}
 +
-+static int cht_wc_byte_reg_write(void *context, unsigned int reg,
-+				 unsigned int val)
++static int intel_cht_wc_pmic_update_power(struct regmap *regmap, int reg,
++		int bitmask, bool on)
 +{
-+	struct i2c_client *client = context;
-+	int ret, orig_addr = client->addr;
-+
-+	if (!(reg & REG_ADDR_MASK)) {
-+		dev_err(&client->dev, "Error i2c address not specified\n");
-+		return -EINVAL;
-+	}
-+
-+	client->addr = (reg & REG_ADDR_MASK) >> REG_ADDR_SHIFT;
-+	ret = i2c_smbus_write_byte_data(client, reg & REG_OFFSET_MASK, val);
-+	client->addr = orig_addr;
-+
-+	return ret;
++	return regmap_update_bits(regmap, reg, bitmask, on ? 1 : 0);
 +}
 +
-+static const struct regmap_config cht_wc_regmap_cfg = {
-+	.reg_bits = 16,
-+	.val_bits = 8,
-+	.reg_write = cht_wc_byte_reg_write,
-+	.reg_read = cht_wc_byte_reg_read,
++/*
++ * The thermal table and ops are empty, we do not support the Thermal opregion
++ * (DPTF) due to lacking documentation.
++ */
++static struct intel_pmic_opregion_data intel_cht_wc_pmic_opregion_data = {
++	.get_power		= intel_cht_wc_pmic_get_power,
++	.update_power		= intel_cht_wc_pmic_update_power,
++	.power_table		= power_table,
++	.power_table_count	= ARRAY_SIZE(power_table),
 +};
 +
-+static const struct regmap_irq cht_wc_regmap_irqs[] = {
-+	REGMAP_IRQ_REG(CHT_WC_PWRSRC_IRQ, 0, BIT(CHT_WC_PWRSRC_IRQ)),
-+	REGMAP_IRQ_REG(CHT_WC_THRM_IRQ, 0, BIT(CHT_WC_THRM_IRQ)),
-+	REGMAP_IRQ_REG(CHT_WC_BCU_IRQ, 0, BIT(CHT_WC_BCU_IRQ)),
-+	REGMAP_IRQ_REG(CHT_WC_ADC_IRQ, 0, BIT(CHT_WC_ADC_IRQ)),
-+	REGMAP_IRQ_REG(CHT_WC_EXT_CHGR_IRQ, 0, BIT(CHT_WC_EXT_CHGR_IRQ)),
-+	REGMAP_IRQ_REG(CHT_WC_GPIO_IRQ, 0, BIT(CHT_WC_GPIO_IRQ)),
-+	REGMAP_IRQ_REG(CHT_WC_CRIT_IRQ, 0, BIT(CHT_WC_CRIT_IRQ)),
-+};
-+
-+static const struct regmap_irq_chip cht_wc_regmap_irq_chip = {
-+	.name = "cht_wc_irq_chip",
-+	.status_base = CHT_WC_IRQLVL1,
-+	.mask_base = CHT_WC_IRQLVL1_MASK,
-+	.irqs = cht_wc_regmap_irqs,
-+	.num_irqs = ARRAY_SIZE(cht_wc_regmap_irqs),
-+	.num_regs = 1,
-+};
-+
-+static int cht_wc_probe(struct i2c_client *client,
-+			const struct i2c_device_id *i2c_id)
++static int intel_cht_wc_pmic_opregion_probe(struct platform_device *pdev)
 +{
-+	struct device *dev = &client->dev;
-+	struct intel_soc_pmic *pmic;
-+	acpi_status status;
-+	unsigned long long hrv;
-+	int ret;
++	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
 +
-+	status = acpi_evaluate_integer(ACPI_HANDLE(dev), "_HRV", NULL, &hrv);
-+	if (ACPI_FAILURE(status)) {
-+		dev_err(dev, "Failed to get PMIC hardware revision\n");
-+		return -ENODEV;
-+	}
-+	if (hrv != CHT_WC_HRV) {
-+		dev_err(dev, "Invalid PMIC hardware revision: %llu\n", hrv);
-+		return -ENODEV;
-+	}
-+	if (client->irq < 0) {
-+		dev_err(dev, "Invalid IRQ\n");
-+		return -ENODEV;
-+	}
-+
-+	pmic = devm_kzalloc(dev, sizeof(*pmic), GFP_KERNEL);
-+	if (!pmic)
-+		return -ENOMEM;
-+
-+	pmic->irq = client->irq;
-+	pmic->dev = dev;
-+	i2c_set_clientdata(client, pmic);
-+
-+	pmic->regmap = devm_regmap_init(dev, NULL, client, &cht_wc_regmap_cfg);
-+	if (IS_ERR(pmic->regmap))
-+		return PTR_ERR(pmic->regmap);
-+
-+	ret = devm_regmap_add_irq_chip(dev, pmic->regmap, pmic->irq,
-+				       IRQF_ONESHOT | IRQF_SHARED, 0,
-+				       &cht_wc_regmap_irq_chip,
-+				       &pmic->irq_chip_data);
-+	if (ret)
-+		return ret;
-+
-+	return devm_mfd_add_devices(dev, -1, cht_wc_dev, ARRAY_SIZE(cht_wc_dev),
-+			NULL, 0, regmap_irq_get_domain(pmic->irq_chip_data));
++	return intel_pmic_install_opregion_handler(&pdev->dev,
++			ACPI_HANDLE(pdev->dev.parent),
++			pmic->regmap,
++			&intel_cht_wc_pmic_opregion_data);
 +}
 +
-+static void cht_wc_shutdown(struct i2c_client *client)
-+{
-+	struct intel_soc_pmic *pmic = i2c_get_clientdata(client);
-+
-+	disable_irq(pmic->irq);
-+}
-+
-+static int __maybe_unused cht_wc_suspend(struct device *dev)
-+{
-+	struct intel_soc_pmic *pmic = dev_get_drvdata(dev);
-+
-+	disable_irq(pmic->irq);
-+	return 0;
-+}
-+
-+static int __maybe_unused cht_wc_resume(struct device *dev)
-+{
-+	struct intel_soc_pmic *pmic = dev_get_drvdata(dev);
-+
-+	enable_irq(pmic->irq);
-+	return 0;
-+}
-+
-+static SIMPLE_DEV_PM_OPS(cht_wc_pm_ops, cht_wc_suspend, cht_wc_resume);
-+
-+static const struct i2c_device_id cht_wc_i2c_id[] = {
-+	{ }
++static struct platform_device_id cht_wc_opregion_id_table[] = {
++	{ .name = "cht_wcove_region" },
++	{},
 +};
-+MODULE_DEVICE_TABLE(i2c, cht_wc_i2c_id);
++MODULE_DEVICE_TABLE(platform, cht_wc_opregion_id_table);
 +
-+static const struct acpi_device_id cht_wc_acpi_ids[] = {
-+	{ "INT34D3", },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(acpi, cht_wc_acpi_ids);
-+
-+static struct i2c_driver cht_wc_driver = {
-+	.driver	= {
-+		.name	= "CHT Whiskey Cove PMIC",
-+		.pm     = &cht_wc_pm_ops,
-+		.acpi_match_table = ACPI_PTR(cht_wc_acpi_ids),
++static struct platform_driver intel_cht_wc_pmic_opregion_driver = {
++	.probe = intel_cht_wc_pmic_opregion_probe,
++	.driver = {
++		.name = "cht_whiskey_cove_pmic",
 +	},
-+	.probe = cht_wc_probe,
-+	.shutdown = cht_wc_shutdown,
-+	.id_table = cht_wc_i2c_id,
++	.id_table = cht_wc_opregion_id_table,
 +};
++module_platform_driver(intel_cht_wc_pmic_opregion_driver);
 +
-+module_i2c_driver(cht_wc_driver);
-+
-+MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("Intel CHT Whiskey Cove PMIC operation region driver");
 +MODULE_AUTHOR("Hans de Goede <hdegoede@redhat.com>");
++MODULE_LICENSE("GPL");
 -- 
 2.9.3
