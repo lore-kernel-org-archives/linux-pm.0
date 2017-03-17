@@ -1,52 +1,56 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 2/3] mfd: intel_soc_pmic_bxtwc: Move inclusion to c-file
-Date: Fri, 17 Mar 2017 17:37:14 +0200
-Message-ID: <20170317153715.48555-2-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v3 3/3] mfd: intel_soc_pmic_bxtwc: Rename header to follow c-file
+Date: Fri, 17 Mar 2017 17:37:15 +0200
+Message-ID: <20170317153715.48555-3-andriy.shevchenko@linux.intel.com>
 References: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:48743 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751031AbdCQPiU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 17 Mar 2017 11:38:20 -0400
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-There is no need to include intel_soc_pmic.h into header which doesn't
-require it.
+For better understanding of relationship between headers and modules
+rename:
+	intel_bxtwc.h -> intel_soc_pmic_bxtwc.h
+
+While here, remove file name from the file itself.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/mfd/intel_soc_pmic_bxtwc.c | 1 +
- include/linux/mfd/intel_bxtwc.h    | 2 --
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ drivers/mfd/intel_soc_pmic_bxtwc.c                          | 2 +-
+ include/linux/mfd/{intel_bxtwc.h => intel_soc_pmic_bxtwc.h} | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+ rename include/linux/mfd/{intel_bxtwc.h => intel_soc_pmic_bxtwc.h} (96%)
 
 diff --git a/drivers/mfd/intel_soc_pmic_bxtwc.c b/drivers/mfd/intel_soc_pmic_bxtwc.c
-index 699c8c7c9052..c71db687b7ca 100644
+index c71db687b7ca..1496a862baa6 100644
 --- a/drivers/mfd/intel_soc_pmic_bxtwc.c
 +++ b/drivers/mfd/intel_soc_pmic_bxtwc.c
-@@ -21,6 +21,7 @@
+@@ -20,8 +20,8 @@
+ #include <linux/interrupt.h>
  #include <linux/kernel.h>
  #include <linux/mfd/core.h>
- #include <linux/mfd/intel_bxtwc.h>
-+#include <linux/mfd/intel_soc_pmic.h>
+-#include <linux/mfd/intel_bxtwc.h>
+ #include <linux/mfd/intel_soc_pmic.h>
++#include <linux/mfd/intel_soc_pmic_bxtwc.h>
  #include <asm/intel_pmc_ipc.h>
  
  /* PMIC device registers */
-diff --git a/include/linux/mfd/intel_bxtwc.h b/include/linux/mfd/intel_bxtwc.h
-index 1a0ee9d6efe9..240d6752ec64 100644
+diff --git a/include/linux/mfd/intel_bxtwc.h b/include/linux/mfd/intel_soc_pmic_bxtwc.h
+similarity index 96%
+rename from include/linux/mfd/intel_bxtwc.h
+rename to include/linux/mfd/intel_soc_pmic_bxtwc.h
+index 240d6752ec64..0c351bc85d2d 100644
 --- a/include/linux/mfd/intel_bxtwc.h
-+++ b/include/linux/mfd/intel_bxtwc.h
-@@ -13,8 +13,6 @@
-  * more details.
-  */
- 
--#include <linux/mfd/intel_soc_pmic.h>
--
- #ifndef __INTEL_BXTWC_H__
- #define __INTEL_BXTWC_H__
- 
++++ b/include/linux/mfd/intel_soc_pmic_bxtwc.h
+@@ -1,5 +1,5 @@
+ /*
+- * intel_bxtwc.h - Header file for Intel Broxton Whiskey Cove PMIC
++ * Header file for Intel Broxton Whiskey Cove PMIC
+  *
+  * Copyright (C) 2015 Intel Corporation. All rights reserved.
+  *
 -- 
 2.11.0
+
