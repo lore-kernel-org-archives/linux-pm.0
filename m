@@ -1,82 +1,286 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 02/15] ACPI / PMIC: Add opregion driver for Intel CHT Whiskey Cove PMIC
-Date: Fri, 17 Mar 2017 10:55:14 +0100
-Message-ID: <20170317095527.10487-3-hdegoede@redhat.com>
+Subject: [PATCH 14/15] power: supply: Add driver for Cherry Trail Whiskey Cove PMIC Fuel Gauge
+Date: Fri, 17 Mar 2017 10:55:26 +0100
+Message-ID: <20170317095527.10487-15-hdegoede@redhat.com>
 References: <20170317095527.10487-1-hdegoede@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:56014 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751087AbdCQJ4t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 17 Mar 2017 05:56:49 -0400
 In-Reply-To: <20170317095527.10487-1-hdegoede@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Bin Gao <bin.gao@intel.com>, Felipe Balbi <felipe.balbi@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Add opregion driver for Intel CHT Whiskey Cove PMIC, based on various
-non upstreamed CHT Whiskey Cove PMIC patches. This does not include
-support for the Thermal opregion (DPTF) due to lacking documentation.
+Add a driver for the Cherry Trail Whiskey Cove PMIC Fuel Gauge, note
+the Cherry Trail Whiskey Cove PMIC Fuel Gauge block is purely a fuel gauge
+and not a full battery controller. As such it offers a platform_data
+callback for extra power_supply properties for the actual external-charger
+ic driver and does not register a power_supply itself.
 
-Cc: Bin Gao <bin.gao@intel.com>
-Cc: Felipe Balbi <felipe.balbi@linux.intel.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
-Changes in v2:
--s/WhiskeyCove/Whiskey Cove/
--Some minor style tweaks
--Allow building as module
-Changes in v3:
--Drop filename from copyright header
--Simplify intel_cht_wc_pmic_update_power to 1 line
--Move defines of regulator register addresses to intel_pmic_chtwc.c,
- it is the only place where they are used
----
- drivers/acpi/Kconfig                 |   6 +
- drivers/acpi/Makefile                |   1 +
- drivers/acpi/pmic/intel_pmic_chtwc.c | 280 +++++++++++++++++++++++++++++++++++
- 3 files changed, 287 insertions(+)
- create mode 100644 drivers/acpi/pmic/intel_pmic_chtwc.c
+ drivers/power/supply/Kconfig             |   9 ++
+ drivers/power/supply/Makefile            |   1 +
+ drivers/power/supply/cht_wc_fuel_gauge.c | 209 +++++++++++++++++++++++++++++++
+ include/linux/power/cht_wc_fuel_gauge.h  |  21 ++++
+ 4 files changed, 240 insertions(+)
+ create mode 100644 drivers/power/supply/cht_wc_fuel_gauge.c
+ create mode 100644 include/linux/power/cht_wc_fuel_gauge.h
 
-diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index 83e5f7e..e3c4ef0 100644
---- a/drivers/acpi/Kconfig
-+++ b/drivers/acpi/Kconfig
-@@ -516,6 +516,12 @@ config BXT_WC_PMIC_OPREGION
- 	help
- 	  This config adds ACPI operation region support for BXT WhiskeyCove PMIC.
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index fd93110..34ebfca 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -538,4 +538,13 @@ config AXP20X_POWER
+ 	  This driver provides support for the power supply features of
+ 	  AXP20x PMIC.
  
-+config CHT_WC_PMIC_OPREGION
-+	tristate "ACPI operation region support for CHT Whiskey Cove PMIC"
++config CHT_WC_FUEL_GAUGE
++	tristate "Intel Cherry Trail Whiskey Cove PMIC Fuel Gauge"
 +	depends on INTEL_SOC_PMIC_CHTWC
 +	help
-+	  This config adds ACPI operation region support for CHT Whiskey Cove PMIC.
++	  This adds support for the battery fuel gauge found in the Intel
++	  Cherry Trail Whiskey Cove PMIC. This driver allows monitoring
++	  of the charge level of the battery on Intel Cherry Trail systems
++	  with a Whiskey Cove PMIC.
 +
- endif
- 
- config ACPI_CONFIGFS
-diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
-index a391bbc..6f6b47f 100644
---- a/drivers/acpi/Makefile
-+++ b/drivers/acpi/Makefile
-@@ -102,6 +102,7 @@ obj-$(CONFIG_PMIC_OPREGION)	+= pmic/intel_pmic.o
- obj-$(CONFIG_CRC_PMIC_OPREGION) += pmic/intel_pmic_crc.o
- obj-$(CONFIG_XPOWER_PMIC_OPREGION) += pmic/intel_pmic_xpower.o
- obj-$(CONFIG_BXT_WC_PMIC_OPREGION) += pmic/intel_pmic_bxtwc.o
-+obj-$(CONFIG_CHT_WC_PMIC_OPREGION) += pmic/intel_pmic_chtwc.o
- 
- obj-$(CONFIG_ACPI_CONFIGFS)	+= acpi_configfs.o
- 
-diff --git a/drivers/acpi/pmic/intel_pmic_chtwc.c b/drivers/acpi/pmic/intel_pmic_chtwc.c
+ endif # POWER_SUPPLY
+diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+index 3789a2c..702e28a 100644
+--- a/drivers/power/supply/Makefile
++++ b/drivers/power/supply/Makefile
+@@ -74,3 +74,4 @@ obj-$(CONFIG_CHARGER_TPS65090)	+= tps65090-charger.o
+ obj-$(CONFIG_CHARGER_TPS65217)	+= tps65217_charger.o
+ obj-$(CONFIG_AXP288_FUEL_GAUGE) += axp288_fuel_gauge.o
+ obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
++obj-$(CONFIG_CHT_WC_FUEL_GAUGE)	+= cht_wc_fuel_gauge.o
+diff --git a/drivers/power/supply/cht_wc_fuel_gauge.c b/drivers/power/supply/cht_wc_fuel_gauge.c
 new file mode 100644
-index 0000000..85636d7
+index 0000000..56f6e5a
 --- /dev/null
-+++ b/drivers/acpi/pmic/intel_pmic_chtwc.c
-@@ -0,0 +1,280 @@
++++ b/drivers/power/supply/cht_wc_fuel_gauge.c
+@@ -0,0 +1,209 @@
 +/*
-+ * Intel CHT Whiskey Cove PMIC operation region driver
++ * Intel CHT Whiskey Cove Fuel Gauge driver
 + * Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
 + *
-+ * Based on various non upstream patches to support the CHT Whiskey Cove PMIC:
-+ * Copyright (C) 2013-2015 Intel Corporation. All rights reserved.
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version
++ * 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * Cherrytrail Whiskey Cove devices have 2 functional blocks which interact
++ * with the battery.
++ *
++ * 1) The fuel-gauge which is build into the Whiskey Cove PMIC, but has its
++ * own i2c bus and i2c client addresses separately from the rest of the PMIC.
++ * That block is what this driver is for.
++ *
++ * 2) An external charger IC, which is connected to the SMBUS controller
++ * which is part of the rest of the Whiskey Cove PMIC, mfd/intel_cht_wc.c
++ * registers a platform device for the SMBUS controller and
++ * i2c/busses/i2c-cht-wc.c contains the i2c-adapter driver for this.
++ *
++ * However we want to present this as a single power_supply device to
++ * userspace. So this driver offers a callback to get the fuel-gauge
++ * power_supply properties, which gets passed to the external charger
++ * driver via i2c_board_info when i2c-cht-wc.c calls i2c_new_device().
++ */
++
++#include <linux/acpi.h>
++#include <linux/delay.h>
++#include <linux/i2c.h>
++#include <linux/interrupt.h>
++#include <linux/mfd/intel_soc_pmic.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/power_supply.h>
++#include <linux/power/cht_wc_fuel_gauge.h>
++#include <linux/slab.h>
++
++#define REG_CHARGE_NOW		0x05
++#define REG_VOLTAGE_NOW		0x09
++#define REG_CURRENT_NOW		0x0a
++#define REG_CURRENT_AVG		0x0b
++#define REG_CHARGE_FULL		0x10
++#define REG_CHARGE_DESIGN	0x18
++#define REG_VOLTAGE_AVG		0x19
++#define REG_VOLTAGE_OCV		0x1b /* Only updated during charging */
++
++#define CHT_WC_FG_PTYPE		4
++
++struct cht_wc_fg_data {
++	struct device *dev;
++	struct i2c_client *client;
++};
++
++static DEFINE_MUTEX(cht_wc_fg_mutex);
++static struct cht_wc_fg_data *cht_wc_fg;
++
++static int cht_wc_fg_read(struct cht_wc_fg_data *fg, u8 reg,
++			  union power_supply_propval *val, int scale,
++			  int sign_extend)
++{
++	int ret;
++
++	ret = i2c_smbus_read_word_data(fg->client, reg);
++	if (ret < 0)
++		return ret;
++
++	if (sign_extend)
++		ret = sign_extend32(ret, 15);
++
++	val->intval = ret * scale;
++
++	return 0;
++}
++
++int cht_wc_fg_get_property(enum power_supply_property prop,
++			   union power_supply_propval *val)
++{
++	int ret = 0;
++
++	mutex_lock(&cht_wc_fg_mutex);
++
++	if (!cht_wc_fg) {
++		ret = -ENXIO;
++		goto out_unlock;
++	}
++
++	switch (prop) {
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		ret = cht_wc_fg_read(cht_wc_fg, REG_VOLTAGE_NOW, val, 75, 0);
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++		ret = cht_wc_fg_read(cht_wc_fg, REG_VOLTAGE_AVG, val, 75, 0);
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
++		ret = cht_wc_fg_read(cht_wc_fg, REG_VOLTAGE_OCV, val, 75, 0);
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		ret = cht_wc_fg_read(cht_wc_fg, REG_CURRENT_NOW, val, 150, 1);
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_AVG:
++		ret = cht_wc_fg_read(cht_wc_fg, REG_CURRENT_AVG, val, 150, 1);
++		break;
++	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
++		ret = cht_wc_fg_read(cht_wc_fg, REG_CHARGE_DESIGN, val, 500, 0);
++		break;
++	case POWER_SUPPLY_PROP_CHARGE_FULL:
++		ret = cht_wc_fg_read(cht_wc_fg, REG_CHARGE_FULL, val, 500, 0);
++		break;
++	case POWER_SUPPLY_PROP_CHARGE_NOW:
++		ret = cht_wc_fg_read(cht_wc_fg, REG_CHARGE_NOW, val, 500, 0);
++		break;
++	default:
++		ret = -ENODATA;
++	}
++out_unlock:
++	mutex_unlock(&cht_wc_fg_mutex);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(cht_wc_fg_get_property);
++
++static int cht_wc_fg_probe(struct i2c_client *client,
++			const struct i2c_device_id *i2c_id)
++{
++	struct device *dev = &client->dev;
++	struct cht_wc_fg_data *fg;
++	acpi_status status;
++	unsigned long long ptyp;
++
++	fg = devm_kzalloc(dev, sizeof(*fg), GFP_KERNEL);
++	if (!fg)
++		return -ENOMEM;
++
++	status = acpi_evaluate_integer(ACPI_HANDLE(dev), "PTYP", NULL, &ptyp);
++	if (ACPI_FAILURE(status)) {
++		dev_err(dev, "Failed to get PTYPE\n");
++		return -ENODEV;
++	}
++
++	/*
++	 * The same ACPI HID is used with different PMICs check PTYP to
++	 * ensure that we are dealing with a Whiskey Cove PMIC.
++	 */
++	if (ptyp != CHT_WC_FG_PTYPE)
++		return -ENODEV;
++
++	fg->dev = dev;
++	/*
++	 * The current resource settings table for the fuel gauge contains
++	 * multiple i2c devices on 2 different i2c-busses. The one we actually
++	 * want is the second resource (index 1).
++	 */
++	fg->client = i2c_acpi_new_device(dev, 1);
++	if (!fg->client)
++		return -EPROBE_DEFER;
++
++	i2c_set_clientdata(client, fg);
++
++	mutex_lock(&cht_wc_fg_mutex);
++	cht_wc_fg = fg;
++	mutex_unlock(&cht_wc_fg_mutex);
++
++	return 0;
++}
++
++static int cht_wc_fg_remove(struct i2c_client *i2c)
++{
++	struct cht_wc_fg_data *fg = i2c_get_clientdata(i2c);
++
++	mutex_lock(&cht_wc_fg_mutex);
++	cht_wc_fg = NULL;
++	mutex_unlock(&cht_wc_fg_mutex);
++
++	i2c_unregister_device(fg->client);
++
++	return 0;
++}
++
++static const struct i2c_device_id cht_wc_fg_i2c_id[] = {
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, cht_wc_fg_i2c_id);
++
++static const struct acpi_device_id cht_wc_fg_acpi_ids[] = {
++	{ "INT33FE", },
++	{ }
++};
++MODULE_DEVICE_TABLE(acpi, cht_wc_fg_acpi_ids);
++
++static struct i2c_driver cht_wc_fg_driver = {
++	.driver	= {
++		.name	= "CHT Whiskey Cove PMIC Fuel Gauge",
++		.acpi_match_table = ACPI_PTR(cht_wc_fg_acpi_ids),
++	},
++	.probe = cht_wc_fg_probe,
++	.remove = cht_wc_fg_remove,
++	.id_table = cht_wc_fg_i2c_id,
++	.irq_index = 1,
++};
++
++module_i2c_driver(cht_wc_fg_driver);
++
++MODULE_DESCRIPTION("Intel CHT Whiskey Cove PMIC Fuel Gauge driver");
++MODULE_AUTHOR("Hans de Goede <hdegoede@redhat.com>");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/power/cht_wc_fuel_gauge.h b/include/linux/power/cht_wc_fuel_gauge.h
+new file mode 100644
+index 0000000..4b4e051
+--- /dev/null
++++ b/include/linux/power/cht_wc_fuel_gauge.h
+@@ -0,0 +1,21 @@
++/*
++ * Intel CHT Whiskey Cove Fuel Gauge driver
++ * Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License version
@@ -88,268 +292,12 @@ index 0000000..85636d7
 + * GNU General Public License for more details.
 + */
 +
-+#include <linux/acpi.h>
-+#include <linux/init.h>
-+#include <linux/mfd/intel_soc_pmic.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include "intel_pmic.h"
++#ifndef __CHT_WC_FUEL_GAUGE_H
++#define __CHT_WC_FUEL_GAUGE_H
 +
-+#define CHT_WC_V1P05A_CTRL		0x6e3b
-+#define CHT_WC_V1P15_CTRL		0x6e3c
-+#define CHT_WC_V1P05A_VSEL		0x6e3d
-+#define CHT_WC_V1P15_VSEL		0x6e3e
-+#define CHT_WC_V1P8A_CTRL		0x6e56
-+#define CHT_WC_V1P8SX_CTRL		0x6e57
-+#define CHT_WC_VDDQ_CTRL		0x6e58
-+#define CHT_WC_V1P2A_CTRL		0x6e59
-+#define CHT_WC_V1P2SX_CTRL		0x6e5a
-+#define CHT_WC_V1P8A_VSEL		0x6e5b
-+#define CHT_WC_VDDQ_VSEL		0x6e5c
-+#define CHT_WC_V2P8SX_CTRL		0x6e5d
-+#define CHT_WC_V3P3A_CTRL		0x6e5e
-+#define CHT_WC_V3P3SD_CTRL		0x6e5f
-+#define CHT_WC_VSDIO_CTRL		0x6e67
-+#define CHT_WC_V3P3A_VSEL		0x6e68
-+#define CHT_WC_VPROG1A_CTRL		0x6e90
-+#define CHT_WC_VPROG1B_CTRL		0x6e91
-+#define CHT_WC_VPROG1F_CTRL		0x6e95
-+#define CHT_WC_VPROG2D_CTRL		0x6e99
-+#define CHT_WC_VPROG3A_CTRL		0x6e9a
-+#define CHT_WC_VPROG3B_CTRL		0x6e9b
-+#define CHT_WC_VPROG4A_CTRL		0x6e9c
-+#define CHT_WC_VPROG4B_CTRL		0x6e9d
-+#define CHT_WC_VPROG4C_CTRL		0x6e9e
-+#define CHT_WC_VPROG4D_CTRL		0x6e9f
-+#define CHT_WC_VPROG5A_CTRL		0x6ea0
-+#define CHT_WC_VPROG5B_CTRL		0x6ea1
-+#define CHT_WC_VPROG6A_CTRL		0x6ea2
-+#define CHT_WC_VPROG6B_CTRL		0x6ea3
-+#define CHT_WC_VPROG1A_VSEL		0x6ec0
-+#define CHT_WC_VPROG1B_VSEL		0x6ec1
-+#define CHT_WC_V1P8SX_VSEL		0x6ec2
-+#define CHT_WC_V1P2SX_VSEL		0x6ec3
-+#define CHT_WC_V1P2A_VSEL		0x6ec4
-+#define CHT_WC_VPROG1F_VSEL		0x6ec5
-+#define CHT_WC_VSDIO_VSEL		0x6ec6
-+#define CHT_WC_V2P8SX_VSEL		0x6ec7
-+#define CHT_WC_V3P3SD_VSEL		0x6ec8
-+#define CHT_WC_VPROG2D_VSEL		0x6ec9
-+#define CHT_WC_VPROG3A_VSEL		0x6eca
-+#define CHT_WC_VPROG3B_VSEL		0x6ecb
-+#define CHT_WC_VPROG4A_VSEL		0x6ecc
-+#define CHT_WC_VPROG4B_VSEL		0x6ecd
-+#define CHT_WC_VPROG4C_VSEL		0x6ece
-+#define CHT_WC_VPROG4D_VSEL		0x6ecf
-+#define CHT_WC_VPROG5A_VSEL		0x6ed0
-+#define CHT_WC_VPROG5B_VSEL		0x6ed1
-+#define CHT_WC_VPROG6A_VSEL		0x6ed2
-+#define CHT_WC_VPROG6B_VSEL		0x6ed3
++int cht_wc_fg_get_property(enum power_supply_property prop,
++			   union power_supply_propval *val);
 +
-+/*
-+ * Regulator support is based on the non upstream patch:
-+ * "regulator: whiskey_cove: implements Whiskey Cove pmic VRF support"
-+ * https://github.com/intel-aero/meta-intel-aero/blob/master/recipes-kernel/linux/linux-yocto/0019-regulator-whiskey_cove-implements-WhiskeyCove-pmic-V.patch
-+ */
-+static struct pmic_table power_table[] = {
-+	{
-+		.address = 0x0,
-+		.reg = CHT_WC_V1P8A_CTRL,
-+		.bit = 0x01,
-+	}, /* V18A */
-+	{
-+		.address = 0x04,
-+		.reg = CHT_WC_V1P8SX_CTRL,
-+		.bit = 0x07,
-+	}, /* V18X */
-+	{
-+		.address = 0x08,
-+		.reg = CHT_WC_VDDQ_CTRL,
-+		.bit = 0x01,
-+	}, /* VDDQ */
-+	{
-+		.address = 0x0c,
-+		.reg = CHT_WC_V1P2A_CTRL,
-+		.bit = 0x07,
-+	}, /* V12A */
-+	{
-+		.address = 0x10,
-+		.reg = CHT_WC_V1P2SX_CTRL,
-+		.bit = 0x07,
-+	}, /* V12X */
-+	{
-+		.address = 0x14,
-+		.reg = CHT_WC_V2P8SX_CTRL,
-+		.bit = 0x07,
-+	}, /* V28X */
-+	{
-+		.address = 0x18,
-+		.reg = CHT_WC_V3P3A_CTRL,
-+		.bit = 0x01,
-+	}, /* V33A */
-+	{
-+		.address = 0x1c,
-+		.reg = CHT_WC_V3P3SD_CTRL,
-+		.bit = 0x07,
-+	}, /* V3SD */
-+	{
-+		.address = 0x20,
-+		.reg = CHT_WC_VSDIO_CTRL,
-+		.bit = 0x07,
-+	}, /* VSD */
-+/*	{
-+		.address = 0x24,
-+		.reg = ??,
-+		.bit = ??,
-+	}, ** VSW2 */
-+/*	{
-+		.address = 0x28,
-+		.reg = ??,
-+		.bit = ??,
-+	}, ** VSW1 */
-+/*	{
-+		.address = 0x2c,
-+		.reg = ??,
-+		.bit = ??,
-+	}, ** VUPY */
-+/*	{
-+		.address = 0x30,
-+		.reg = ??,
-+		.bit = ??,
-+	}, ** VRSO */
-+	{
-+		.address = 0x34,
-+		.reg = CHT_WC_VPROG1A_CTRL,
-+		.bit = 0x07,
-+	}, /* VP1A */
-+	{
-+		.address = 0x38,
-+		.reg = CHT_WC_VPROG1B_CTRL,
-+		.bit = 0x07,
-+	}, /* VP1B */
-+	{
-+		.address = 0x3c,
-+		.reg = CHT_WC_VPROG1F_CTRL,
-+		.bit = 0x07,
-+	}, /* VP1F */
-+	{
-+		.address = 0x40,
-+		.reg = CHT_WC_VPROG2D_CTRL,
-+		.bit = 0x07,
-+	}, /* VP2D */
-+	{
-+		.address = 0x44,
-+		.reg = CHT_WC_VPROG3A_CTRL,
-+		.bit = 0x07,
-+	}, /* VP3A */
-+	{
-+		.address = 0x48,
-+		.reg = CHT_WC_VPROG3B_CTRL,
-+		.bit = 0x07,
-+	}, /* VP3B */
-+	{
-+		.address = 0x4c,
-+		.reg = CHT_WC_VPROG4A_CTRL,
-+		.bit = 0x07,
-+	}, /* VP4A */
-+	{
-+		.address = 0x50,
-+		.reg = CHT_WC_VPROG4B_CTRL,
-+		.bit = 0x07,
-+	}, /* VP4B */
-+	{
-+		.address = 0x54,
-+		.reg = CHT_WC_VPROG4C_CTRL,
-+		.bit = 0x07,
-+	}, /* VP4C */
-+	{
-+		.address = 0x58,
-+		.reg = CHT_WC_VPROG4D_CTRL,
-+		.bit = 0x07,
-+	}, /* VP4D */
-+	{
-+		.address = 0x5c,
-+		.reg = CHT_WC_VPROG5A_CTRL,
-+		.bit = 0x07,
-+	}, /* VP5A */
-+	{
-+		.address = 0x60,
-+		.reg = CHT_WC_VPROG5B_CTRL,
-+		.bit = 0x07,
-+	}, /* VP5B */
-+	{
-+		.address = 0x64,
-+		.reg = CHT_WC_VPROG6A_CTRL,
-+		.bit = 0x07,
-+	}, /* VP6A */
-+	{
-+		.address = 0x68,
-+		.reg = CHT_WC_VPROG6B_CTRL,
-+		.bit = 0x07,
-+	}, /* VP6B */
-+/*	{
-+		.address = 0x6c,
-+		.reg = ??,
-+		.bit = ??,
-+	}  ** VP7A */
-+};
-+
-+static int intel_cht_wc_pmic_get_power(struct regmap *regmap, int reg,
-+		int bit, u64 *value)
-+{
-+	int data;
-+
-+	if (regmap_read(regmap, reg, &data))
-+		return -EIO;
-+
-+	*value = (data & bit) ? 1 : 0;
-+	return 0;
-+}
-+
-+static int intel_cht_wc_pmic_update_power(struct regmap *regmap, int reg,
-+		int bitmask, bool on)
-+{
-+	return regmap_update_bits(regmap, reg, bitmask, on ? 1 : 0);
-+}
-+
-+/*
-+ * The thermal table and ops are empty, we do not support the Thermal opregion
-+ * (DPTF) due to lacking documentation.
-+ */
-+static struct intel_pmic_opregion_data intel_cht_wc_pmic_opregion_data = {
-+	.get_power		= intel_cht_wc_pmic_get_power,
-+	.update_power		= intel_cht_wc_pmic_update_power,
-+	.power_table		= power_table,
-+	.power_table_count	= ARRAY_SIZE(power_table),
-+};
-+
-+static int intel_cht_wc_pmic_opregion_probe(struct platform_device *pdev)
-+{
-+	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
-+
-+	return intel_pmic_install_opregion_handler(&pdev->dev,
-+			ACPI_HANDLE(pdev->dev.parent),
-+			pmic->regmap,
-+			&intel_cht_wc_pmic_opregion_data);
-+}
-+
-+static struct platform_device_id cht_wc_opregion_id_table[] = {
-+	{ .name = "cht_wcove_region" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(platform, cht_wc_opregion_id_table);
-+
-+static struct platform_driver intel_cht_wc_pmic_opregion_driver = {
-+	.probe = intel_cht_wc_pmic_opregion_probe,
-+	.driver = {
-+		.name = "cht_whiskey_cove_pmic",
-+	},
-+	.id_table = cht_wc_opregion_id_table,
-+};
-+module_platform_driver(intel_cht_wc_pmic_opregion_driver);
-+
-+MODULE_DESCRIPTION("Intel CHT Whiskey Cove PMIC operation region driver");
-+MODULE_AUTHOR("Hans de Goede <hdegoede@redhat.com>");
-+MODULE_LICENSE("GPL");
++#endif
 -- 
 2.9.3
