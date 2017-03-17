@@ -1,71 +1,74 @@
 From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
         <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH v2 6/7] thermal: rcar_gen3_thermal: store device match data in private structure
-Date: Fri, 17 Mar 2017 16:52:59 +0100
-Message-ID: <20170317155300.21566-7-niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH v2 2/7] thermal: rcar_gen3_thermal: remove unneeded mutex
+Date: Fri, 17 Mar 2017 16:52:55 +0100
+Message-ID: <20170317155300.21566-3-niklas.soderlund+renesas@ragnatech.se>
 References: <20170317155300.21566-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp-4.sys.kth.se ([130.237.48.193]:54566 "EHLO
-        smtp-4.sys.kth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751023AbdCQP4y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2017 11:56:54 -0400
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <20170317155300.21566-1-niklas.soderlund+renesas@ragnatech.se>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-renesas-soc-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
 Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+List-Id: linux-pm@vger.kernel.org
 
-The device match data needs to be accessible outside the probe function,
-store it in the private data structure.
+There is no point in protecting a register read with a lock. This is
+most likely a leftover from when the driver was reworked before submitted
+for upstream.
 
 Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/thermal/rcar_gen3_thermal.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
 diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index dc019b7873273cf2..438fb9988eabb91b 100644
+index ec477d47d0bae8e5..cb5c362c00009921 100644
 --- a/drivers/thermal/rcar_gen3_thermal.c
 +++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -85,6 +85,7 @@ struct rcar_gen3_thermal_tsc {
+@@ -20,7 +20,6 @@
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+-#include <linux/mutex.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+@@ -72,7 +71,6 @@ struct rcar_gen3_thermal_tsc {
+ 	void __iomem *base;
+ 	struct thermal_zone_device *zone;
+ 	struct equation_coefs coef;
+-	struct mutex lock;
  };
  
  struct rcar_gen3_thermal_priv {
-+	const struct rcar_gen3_thermal_data *data;
- 	spinlock_t lock; /* Protect interrupts on and off */
- 	unsigned int num_tscs;
- 	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
-@@ -353,8 +354,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 	struct thermal_zone_device *zone;
- 	int ret, irq, i;
- 	char *irqname;
--	const struct rcar_gen3_thermal_data *match_data =
--		of_device_get_match_data(dev);
+@@ -163,16 +161,12 @@ static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
+ 	u32 reg;
  
- 	/* default values if FUSEs are missing */
- 	/* TODO: Read values from hardware on supported platforms */
-@@ -369,6 +368,8 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 	if (!priv)
- 		return -ENOMEM;
+ 	/* Read register and convert to mili Celsius */
+-	mutex_lock(&tsc->lock);
+-
+ 	reg = rcar_gen3_thermal_read(tsc, REG_GEN3_TEMP) & CTEMP_MASK;
  
-+	priv->data = of_device_get_match_data(dev);
-+
- 	spin_lock_init(&priv->lock);
+ 	val1 = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b1, tsc->coef.a1);
+ 	val2 = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b2, tsc->coef.a2);
+ 	mcelsius = FIXPT_TO_MCELSIUS((val1 + val2) / 2);
  
- 	platform_set_drvdata(pdev, priv);
-@@ -414,7 +415,7 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+-	mutex_unlock(&tsc->lock);
+-
+ 	/* Make sure we are inside specifications */
+ 	if ((mcelsius < MCELSIUS(-40)) || (mcelsius > MCELSIUS(125)))
+ 		return -EIO;
+@@ -299,7 +293,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ 		}
  
  		priv->tscs[i] = tsc;
+-		mutex_init(&tsc->lock);
  
--		match_data->thermal_init(tsc);
-+		priv->data->thermal_init(tsc);
+ 		match_data->thermal_init(tsc);
  		rcar_gen3_thermal_calc_coefs(&tsc->coef, ptat, thcode[i]);
- 
- 		zone = devm_thermal_zone_of_sensor_register(dev, i, tsc,
 -- 
 2.12.0
