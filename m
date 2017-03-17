@@ -1,141 +1,262 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 1/3] mfd: intel_soc_pmic: Fix a mess with compilation units
-Date: Fri, 17 Mar 2017 17:37:13 +0200
-Message-ID: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
+        <niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH v2 5/7] thermal: rcar_gen3_thermal: enable hardware interrupts for trip points
+Date: Fri, 17 Mar 2017 16:52:58 +0100
+Message-ID: <20170317155300.21566-6-niklas.soderlund+renesas@ragnatech.se>
+References: <20170317155300.21566-1-niklas.soderlund+renesas@ragnatech.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp-4.sys.kth.se ([130.237.48.193]:54565 "EHLO
+        smtp-4.sys.kth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751049AbdCQP4y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2017 11:56:54 -0400
+In-Reply-To: <20170317155300.21566-1-niklas.soderlund+renesas@ragnatech.se>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
 
-Crystal Cove and Whiskey Cove are two different PMICs which are
-installed on Intel Atom SoC based platforms.
+Enable hardware trip points by implementing the set_trips callback. The
+thermal core will take care of setting the initial trip point window and
+to update it once the driver reports a TSC has moved outside it.
 
-Moreover there are two independent drivers that by some reason were
-supposed (*) to get into one kernel module.
+The interrupt structure for this device is a bit odd. There is not a
+dedicated IRQ for each TSC, instead the interrupts are shared between
+all TSCs. IRQn is fired if the temp monitored in IRQTEMPn is reached in
+any of the TSCs, example IRQ3 is fired if temperature in IRQTEMP3 is
+reached in either TSC0, TSC1 or TSC2.
 
-Fix the mess by clarifying Kconfig option for Crystal Cove and split
-Whiskey Cove out of it.
+For this reason the usage of interrupts in this driver is an all-on or
+all-off design. When an interrupt happens all TSCs are checked and all
+thermal zones are updated. This could be refined to be more fine grained
+but the thermal core takes care of only updating the thermal zones that
+have left their trip point window.
 
-(*) It looks like the configuration was never tested with
-    INTEL_SOC_PMIC=n. The line in Makefile is actually wrong.
-
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net> (supporter:ACPI)
-Cc: Linus Walleij <linus.walleij@linaro.org> (maintainer:GPIO SUBSYSTEM)
-Cc: Zhang Rui <rui.zhang@intel.com> (supporter:THERMAL)
-Cc: Eduardo Valentin <edubezval@gmail.com> (supporter:THERMAL)
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 ---
-- make option visible
-- fix dependencies
- drivers/acpi/Kconfig         |  2 +-
- drivers/gpio/Kconfig         |  2 +-
- drivers/mfd/Kconfig          | 14 ++++++++++++--
- drivers/mfd/Makefile         |  2 +-
- drivers/platform/x86/Kconfig |  2 +-
- drivers/thermal/Kconfig      |  2 +-
- 6 files changed, 17 insertions(+), 7 deletions(-)
+ drivers/thermal/rcar_gen3_thermal.c | 129 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 128 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index 83e5f7e1a20d..03708e08fcb4 100644
---- a/drivers/acpi/Kconfig
-+++ b/drivers/acpi/Kconfig
-@@ -512,7 +512,7 @@ config XPOWER_PMIC_OPREGION
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+index 3b6e85abfadc61a3..dc019b7873273cf2 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -23,8 +23,11 @@
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
++#include <linux/spinlock.h>
+ #include <linux/thermal.h>
  
- config BXT_WC_PMIC_OPREGION
- 	bool "ACPI operation region support for BXT WhiskeyCove PMIC"
--	depends on INTEL_SOC_PMIC
-+	depends on INTEL_SOC_PMIC_BXTWC
- 	help
- 	  This config adds ACPI operation region support for BXT WhiskeyCove PMIC.
- 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 05043071fc98..9b1bcb4d0df7 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -1054,7 +1054,7 @@ config GPIO_UCB1400
- 
- config GPIO_WHISKEY_COVE
- 	tristate "GPIO support for Whiskey Cove PMIC"
--	depends on (X86 || COMPILE_TEST) && INTEL_SOC_PMIC
-+	depends on (X86 || COMPILE_TEST) && INTEL_SOC_PMIC_BXTWC
- 	select GPIOLIB_IRQCHIP
- 	help
- 	  Support for GPIO pins on Whiskey Cove PMIC.
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 55ecdfb74d31..e43afb8956ea 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -425,18 +425,28 @@ config LPC_SCH
- 	  System Management Bus and General Purpose I/O.
- 
- config INTEL_SOC_PMIC
--	bool "Support for Intel Atom SoC PMIC"
-+	bool "Support for Crystal Cove PMIC"
- 	depends on GPIOLIB
- 	depends on I2C=y
- 	select MFD_CORE
- 	select REGMAP_I2C
- 	select REGMAP_IRQ
- 	help
--	  Select this option to enable support for the PMIC device
-+	  Select this option to enable support for Crystal Cove PMIC
- 	  on some Intel SoC systems. The PMIC provides ADC, GPIO,
- 	  thermal, charger and related power management functions
- 	  on these systems.
- 
-+config INTEL_SOC_PMIC_BXTWC
-+	tristate "Support for Intel Broxton Whiskey Cove PMIC"
-+	select MFD_CORE
-+	select REGMAP_IRQ
-+	help
-+	  Select this option to enable support for Whiskey Cove PMIC
-+	  on Intel Broxton systems. The PMIC provides ADC, GPIO,
-+	  thermal, charger and related power management functions
-+	  on these systems.
++#include "thermal_core.h"
 +
- config MFD_INTEL_LPSS
- 	tristate
- 	select COMMON_CLK
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 31ce07611a6f..201aeaf5112a 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -207,8 +207,8 @@ obj-$(CONFIG_MFD_RT5033)	+= rt5033.o
- obj-$(CONFIG_MFD_SKY81452)	+= sky81452.o
+ /* Register offsets */
+ #define REG_GEN3_IRQSTR		0x04
+ #define REG_GEN3_IRQMSK		0x08
+@@ -40,6 +43,14 @@
+ #define REG_GEN3_THCODE2	0x54
+ #define REG_GEN3_THCODE3	0x58
  
- intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
--intel-soc-pmic-$(CONFIG_INTEL_PMC_IPC)	+= intel_soc_pmic_bxtwc.o
- obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
-+obj-$(CONFIG_INTEL_SOC_PMIC_BXTWC)	+= intel_soc_pmic_bxtwc.o
- obj-$(CONFIG_MFD_MT6397)	+= mt6397-core.o
++/* IRQ{STR,MSK,EN} bits */
++#define IRQ_TEMP1		BIT(0)
++#define IRQ_TEMP2		BIT(1)
++#define IRQ_TEMP3		BIT(2)
++#define IRQ_TEMPD1		BIT(3)
++#define IRQ_TEMPD2		BIT(4)
++#define IRQ_TEMPD3		BIT(5)
++
+ /* CTSR bits */
+ #define CTSR_PONM	BIT(8)
+ #define CTSR_AOUT	BIT(7)
+@@ -74,6 +85,7 @@ struct rcar_gen3_thermal_tsc {
+ };
  
- obj-$(CONFIG_MFD_ALTERA_A10SR)	+= altera-a10sr.o
-diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-index e1bffc9bb194..883fbe7a2466 100644
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -1019,7 +1019,7 @@ config INTEL_PMC_IPC
- config INTEL_BXTWC_PMIC_TMU
- 	tristate "Intel BXT Whiskey Cove TMU Driver"
- 	depends on REGMAP
--	depends on INTEL_SOC_PMIC && INTEL_PMC_IPC
-+	depends on INTEL_SOC_PMIC_BXTWC && INTEL_PMC_IPC
- 	---help---
- 	  Select this driver to use Intel BXT Whiskey Cove PMIC TMU feature.
- 	  This driver enables the alarm wakeup functionality in the TMU unit
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 776b34396144..751e50a3d946 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -365,7 +365,7 @@ endmenu
+ struct rcar_gen3_thermal_priv {
++	spinlock_t lock; /* Protect interrupts on and off */
+ 	unsigned int num_tscs;
+ 	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
+ };
+@@ -113,6 +125,7 @@ static inline void rcar_gen3_thermal_write(struct rcar_gen3_thermal_tsc *tsc,
  
- config INTEL_BXT_PMIC_THERMAL
- 	tristate "Intel Broxton PMIC thermal driver"
--	depends on X86 && INTEL_SOC_PMIC && REGMAP
-+	depends on X86 && INTEL_SOC_PMIC_BXTWC && REGMAP
- 	help
- 	  Select this driver for Intel Broxton PMIC with ADC channels monitoring
- 	  system temperature measurements and alerts.
+ #define FIXPT_SHIFT 7
+ #define FIXPT_INT(_x) ((_x) << FIXPT_SHIFT)
++#define INT_FIXPT(_x) ((_x) >> FIXPT_SHIFT)
+ #define FIXPT_DIV(_a, _b) DIV_ROUND_CLOSEST(((_a) << FIXPT_SHIFT), (_b))
+ #define FIXPT_TO_MCELSIUS(_x) ((_x) * 1000 >> FIXPT_SHIFT)
+ 
+@@ -178,10 +191,89 @@ static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
+ 	return 0;
+ }
+ 
++static int rcar_gen3_thermal_mcelsius_to_temp(struct rcar_gen3_thermal_tsc *tsc,
++					      int mcelsius)
++{
++	int celsius, val1, val2;
++
++	celsius = DIV_ROUND_CLOSEST(mcelsius, 1000);
++	val1 = celsius * tsc->coef.a1 + tsc->coef.b1;
++	val2 = celsius * tsc->coef.a2 + tsc->coef.b2;
++
++	return INT_FIXPT((val1 + val2) / 2);
++}
++
++static int rcar_gen3_thermal_set_trips(void *devdata, int low, int high)
++{
++	struct rcar_gen3_thermal_tsc *tsc = devdata;
++
++	low = clamp_val(low, -40000, 125000);
++	high = clamp_val(high, -40000, 125000);
++
++	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP1,
++				rcar_gen3_thermal_mcelsius_to_temp(tsc, low));
++
++	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP2,
++				rcar_gen3_thermal_mcelsius_to_temp(tsc, high));
++
++	return 0;
++}
++
+ static struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops = {
+ 	.get_temp	= rcar_gen3_thermal_get_temp,
++	.set_trips	= rcar_gen3_thermal_set_trips,
+ };
+ 
++static void rcar_thermal_irq_set(struct rcar_gen3_thermal_priv *priv, int on)
++{
++	unsigned int i;
++	u32 val;
++
++	val = on ? IRQ_TEMPD1 | IRQ_TEMP2 : 0;
++
++	for (i = 0; i < priv->num_tscs; i++)
++		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQMSK, val);
++}
++
++static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
++{
++	struct rcar_gen3_thermal_priv *priv = data;
++	unsigned long flags;
++	u32 status;
++	int i, ret = IRQ_HANDLED;
++
++	spin_lock_irqsave(&priv->lock, flags);
++	for (i = 0; i < priv->num_tscs; i++) {
++		status = rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
++		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
++		if (status)
++			ret = IRQ_WAKE_THREAD;
++	}
++
++	if (ret == IRQ_WAKE_THREAD)
++		rcar_thermal_irq_set(priv, 0);
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	return ret;
++}
++
++static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
++{
++	struct rcar_gen3_thermal_priv *priv = data;
++	unsigned long flags;
++	int i;
++
++	for (i = 0; i < priv->num_tscs; i++)
++		thermal_zone_device_update(priv->tscs[i]->zone,
++					   THERMAL_EVENT_UNSPECIFIED);
++
++	spin_lock_irqsave(&priv->lock, flags);
++	rcar_thermal_irq_set(priv, 1);
++	spin_unlock_irqrestore(&priv->lock, flags);
++
++	return IRQ_HANDLED;
++}
++
+ static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
+ {
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  CTSR_THBGR);
+@@ -190,7 +282,11 @@ static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
+ 	usleep_range(1000, 2000);
+ 
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR, CTSR_PONM);
++
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
++	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
++	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN, IRQ_TEMPD1 | IRQ_TEMP2);
++
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
+ 				CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN);
+ 
+@@ -214,6 +310,9 @@ static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
+ 	usleep_range(1000, 2000);
+ 
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
++	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
++	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN, IRQ_TEMPD1 | IRQ_TEMP2);
++
+ 	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
+ 	reg_val |= THCTR_THSST;
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
+@@ -252,7 +351,8 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct resource *res;
+ 	struct thermal_zone_device *zone;
+-	int ret, i;
++	int ret, irq, i;
++	char *irqname;
+ 	const struct rcar_gen3_thermal_data *match_data =
+ 		of_device_get_match_data(dev);
+ 
+@@ -269,8 +369,27 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ 	if (!priv)
+ 		return -ENOMEM;
+ 
++	spin_lock_init(&priv->lock);
++
+ 	platform_set_drvdata(pdev, priv);
+ 
++	for (i = 0; i < 2; i++) {
++		irq = platform_get_irq(pdev, i);
++		if (irq < 0)
++			return irq;
++
++		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
++					 dev_name(dev), i);
++		if (!irqname)
++			return -ENOMEM;
++
++		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
++						rcar_gen3_thermal_irq_thread,
++						IRQF_SHARED, irqname, priv);
++		if (ret)
++			return ret;
++	}
++
+ 	pm_runtime_enable(dev);
+ 	pm_runtime_get_sync(dev);
+ 
+@@ -307,6 +426,12 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ 		}
+ 		tsc->zone = zone;
+ 		priv->num_tscs++;
++
++		ret = of_thermal_get_ntrips(tsc->zone);
++		if (ret < 0)
++			goto error_unregister;
++
++		dev_info(dev, "TSC%d: Loaded %d trip points\n", i, ret);
+ 	}
+ 
+ 	if (!priv->num_tscs) {
+@@ -314,6 +439,8 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ 		goto error_unregister;
+ 	}
+ 
++	rcar_thermal_irq_set(priv, 1);
++
+ 	return 0;
+ 
+ error_unregister:
 -- 
-2.11.0
+2.12.0
