@@ -1,168 +1,287 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH 14/15] power: supply: Add driver for Cherry Trail
- Whiskey Cove PMIC Fuel Gauge
-Date: Fri, 17 Mar 2017 19:58:49 +0200
-Message-ID: <1489773529.19767.84.camel@linux.intel.com>
+Subject: Re: [PATCH 15/15] i2c-cht-wc: Add Intel Cherry Trail Whiskey Cove
+ SMBUS controller driver
+Date: Fri, 17 Mar 2017 20:22:12 +0200
+Message-ID: <1489774932.19767.86.camel@linux.intel.com>
 References: <20170317095527.10487-1-hdegoede@redhat.com>
-         <20170317095527.10487-15-hdegoede@redhat.com>
+         <20170317095527.10487-16-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170317095527.10487-15-hdegoede@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170317095527.10487-16-hdegoede@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On Fri, 2017-03-17 at 10:55 +0100, Hans de Goede wrote:
-> Add a driver for the Cherry Trail Whiskey Cove PMIC Fuel Gauge, note
-> the Cherry Trail Whiskey Cove PMIC Fuel Gauge block is purely a fuel
-> gauge
-> and not a full battery controller. As such it offers a platform_data
-> callback for extra power_supply properties for the actual external-
-> charger
-> ic driver and does not register a power_supply itself.
+> The Intel Cherry Trail Whiskey Cove PMIC has a builtin SMBUS
+> controller
+> for talking to an external PMIC. Add a driver for this.
 
-ic -> IC
+Looking to all this mess we have with PMICs, perhaps some file under
+Documentation to explain all those dependencies with nice ASCII flow
+charts would be created.
 
-Can we move to something like built-in device properties for additional
-properties instead of extending platform data?
+>  drivers/i2c/busses/i2c-cht-wc.c | 338 
 
-> +config CHT_WC_FUEL_GAUGE
+File name: i2c-chtwc.c
 
-I would use similar pattern:
+> +#include <linux/power/cht_wc_fuel_gauge.h>
 
-FUEL_GAUGE_INTEL_CHTWC (or FUEL_GAUGE_CHTWC, but this might be less
-obvious about vendor)
+Perhaps chtwc_fuel_gauge or intel_chtwc_fuel_gauge.h (see previous patch
+for comment regarding naming).
 
-> --- /dev/null
-> +++ b/drivers/power/supply/cht_wc_fuel_gauge.c
-> @@ -0,0 +1,209 @@
-> +/*
-> + * Intel CHT Whiskey Cove Fuel Gauge driver
-
-CHT -> Cherry Trail 
-
-> + *
-> + * Cherrytrail Whiskey Cove devices have 2 functional blocks which
-> interact
-> + * with the battery.
-
-Cherry Trail? 
-
-> +#define REG_CHARGE_NOW		0x05
-> +#define REG_VOLTAGE_NOW		0x09
-> +#define REG_CURRENT_NOW		0x0a
-> +#define REG_CURRENT_AVG		0x0b
-> +#define REG_CHARGE_FULL		0x10
-> +#define REG_CHARGE_DESIGN	0x18
-> +#define REG_VOLTAGE_AVG		0x19
-
-> +#define REG_VOLTAGE_OCV		0x1b /* Only updated during
-> charging */
-
-I think comment makes more sense where actual update is happening in the
-code.
-
+> +#include <linux/slab.h>
 > +
-> +static int cht_wc_fg_read(struct cht_wc_fg_data *fg, u8 reg,
-> +			  union power_supply_propval *val, int scale,
-> +			  int sign_extend)
-> +{
-> +	int ret;
+> +#define CHT_WC_I2C_CTRL			0x5e24
+> +#define CHT_WC_I2C_CTRL_WR		BIT(0)
+> +#define CHT_WC_I2C_CTRL_RD		BIT(1)
+> +#define CHT_WC_I2C_CLIENT_ADDR		0x5e25
+> +#define CHT_WC_I2C_REG_OFFSET		0x5e26
+> +#define CHT_WC_I2C_WRDATA		0x5e27
+> +#define CHT_WC_I2C_RDDATA		0x5e28
 > +
-> +	ret = i2c_smbus_read_word_data(fg->client, reg);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	if (sign_extend)
-> +		ret = sign_extend32(ret, 15);
-
-Magic?
-
-> +
-> +	val->intval = ret * scale;
-> +
-> +	return 0;
-> +}
-
-
-> +
-> +int cht_wc_fg_get_property(enum power_supply_property prop,
-> +			   union power_supply_propval *val)
-> +{
-> +	int ret = 0;
-
-Sounds like redundant assignment...
-
-> +
-> +	mutex_lock(&cht_wc_fg_mutex);
-> +
+> +#define CHT_WC_EXTCHGRIRQ		0x6e0a
+> +#define CHT_WC_EXTCHGRIRQ_CLIENT_IRQ	BIT(0)
+> +#define CHT_WC_EXTCHGRIRQ_WRITE_IRQ	BIT(1)
+> +#define CHT_WC_EXTCHGRIRQ_READ_IRQ	BIT(2)
+> +#define CHT_WC_EXTCHGRIRQ_NACK_IRQ	BIT(3)
 > 
 
-> +	if (!cht_wc_fg) {
-> +		ret = -ENXIO;
-> +		goto out_unlock;
-> +	}
+> +#define CHT_WC_EXTCHGRIRQ_ADAP_IRQS	((u8)(BIT(1) | BIT(2) |
+> BIT(3)))
 
-...otherwise maybe
+_IRQ_MASK ?
 
-ret = cht_wc_fg ? 0 : -ENXIO;
-if (ret)
- goto ...;
+GENMASK() ?
 
-?
+> +#define CHT_WC_EXTCHGRIRQ_MSK		0x6e17
 
-> +	default:
-> +		ret = -ENODATA;
-> +	}
-> +out_unlock:
-> +	mutex_unlock(&cht_wc_fg_mutex);
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(cht_wc_fg_get_property);
-
+> +struct cht_wc_i2c_adap {
+> +	struct i2c_adapter adapter;
+> +	wait_queue_head_t wait;
+> +	struct irq_chip irqchip;
+> +	struct mutex irqchip_lock;
+> +	struct regmap *regmap;
+> +	struct irq_domain *irq_domain;
+> +	struct i2c_client *client;
+> +	int client_irq;
+> +	u8 irq_mask;
+> +	u8 old_irq_mask;
+> +	bool nack;
+> +	bool done;
+> +};
 > +
-> +static int cht_wc_fg_probe(struct i2c_client *client,
-> +			const struct i2c_device_id *i2c_id)
+> +static irqreturn_t cht_wc_i2c_adap_thread_handler(int id, void *data)
 > +{
-> +	struct device *dev = &client->dev;
-> +	struct cht_wc_fg_data *fg;
-> +	acpi_status status;
-> +	unsigned long long ptyp;
+> +	struct cht_wc_i2c_adap *adap = data;
+> +	int ret, reg;
+> +
+> +	/* Read irqs */
 
-> +	status = acpi_evaluate_integer(ACPI_HANDLE(dev), "PTYP",
-> NULL, &ptyp);
-> +	if (ACPI_FAILURE(status)) {
-> +		dev_err(dev, "Failed to get PTYPE\n");
-> +		return -ENODEV;
+IRQs
+
+> +	ret = regmap_read(adap->regmap, CHT_WC_EXTCHGRIRQ, &reg);
+> +	if (ret) {
+> +		dev_err(&adap->adapter.dev, "Error reading extchgrirq
+> reg\n");
+> +		return IRQ_NONE;
 > +	}
+> +
+> +	reg &= ~adap->irq_mask;
 > +
 > +	/*
-> +	 * The same ACPI HID is used with different PMICs check PTYP
-> to
-> +	 * ensure that we are dealing with a Whiskey Cove PMIC.
+> +	 * Immediately ack irqs, so that if new irqs arrives while
+> we're
+> +	 * handling the previous ones our irq will re-trigger when
+> we're done.
 > +	 */
-> +	if (ptyp != CHT_WC_FG_PTYPE)
-> +		return -ENODEV;
+> +	ret = regmap_write(adap->regmap, CHT_WC_EXTCHGRIRQ, reg);
+> +	if (ret)
+> +		dev_err(&adap->adapter.dev, "Error writing extchgrirq
+> reg\n");
+> +
+> +	/*
+> +	 * Do NOT use handle_nested_irq here, the client irq handler
+> will
+> +	 * likely want to do i2c transfers and the i2c controller
+> uses this
+> +	 * interrupt handler as well, so running the client irq
+> handler from
+> +	 * this thread will cause things to lock up.
+> +	 */
+> +	if (reg & CHT_WC_EXTCHGRIRQ_CLIENT_IRQ) {
+> +		/*
+> +		 * generic_handle_irq expects local irqs to be
+> disabled
+> +		 * as normally it is called from interrupt context.
+> +		 */
+> +		local_irq_disable();
+> +		generic_handle_irq(adap->client_irq);
+> +		local_irq_enable();
+> +	}
+> +
+> +	if (reg & CHT_WC_EXTCHGRIRQ_ADAP_IRQS) {
 
-Logically I would split this part to be a main driver for device which
-would use actual driver based on this, though I think it too much churn
-for no benefit right now.
+> +		if (reg & CHT_WC_EXTCHGRIRQ_NACK_IRQ)
+> +			adap->nack = true;
 
-> +	mutex_lock(&cht_wc_fg_mutex);
-> +	cht_wc_fg = fg;
-> +	mutex_unlock(&cht_wc_fg_mutex);
+adap->nack = !!(reg & ...);
 
-It's pity we have no common storage of single possible present device
-drivers in the kernel. I would use some kind of framework rather then
-keeping all those global variables with locking. Perhaps radix / RB
-tree.
+> +		adap->done = true;
+> +		wake_up(&adap->wait);
+> +	}
+> +
+> +	return IRQ_HANDLED;
+> +}
 
+> +static u32 cht_wc_i2c_adap_master_func(struct i2c_adapter *adap)
+> +{
+> +	/* This i2c adapter only supports smbus byte transfers */
+
+smbus -> SMBUS
+
+> +	return I2C_FUNC_SMBUS_BYTE_DATA;
+> +}
+> +
+> +static int cht_wc_i2c_adap_smbus_xfer(struct i2c_adapter *_adap, u16
+> addr,
+> +				      unsigned short flags, char
+> read_write,
+> +				      u8 command, int size,
+> +				      union i2c_smbus_data *data)
+> +{
+> +	struct cht_wc_i2c_adap *adap = i2c_get_adapdata(_adap);
+> +	int ret, reg;
+> +
+
+> +
+> +	/* 3 second timeout, during cable plug the PMIC responds
+> quite slow */
+> +	ret = wait_event_timeout(adap->wait, adap->done, HZ * 3);
+
+3 * HZ
+
+> +	if (ret == 0)
+> +		return -ETIMEDOUT;
+> +	if (adap->nack)
+> +		return -EIO;
+> +
+> +	if (read_write == I2C_SMBUS_READ) {
+> +		ret = regmap_read(adap->regmap, CHT_WC_I2C_RDDATA,
+> &reg);
+> +		if (ret)
+> +			return ret;
+> +
+> +		data->byte = reg;
+> +	}
 > +
 > +	return 0;
 > +}
+
+> +/**** irqchip for the client connected to the extchgr i2c adapter
+> ****/
+
+Useless ?
+
+> +static void cht_wc_i2c_irq_lock(struct irq_data *data)
+> +{
+> +	struct cht_wc_i2c_adap *adap =
+> irq_data_get_irq_chip_data(data);
+> +
+> +	mutex_lock(&adap->irqchip_lock);
+> +}
+> +
+> +static void cht_wc_i2c_irq_sync_unlock(struct irq_data *data)
+> +{
+> +	struct cht_wc_i2c_adap *adap =
+> irq_data_get_irq_chip_data(data);
+> +	int ret;
+> +
+> +	if (adap->irq_mask != adap->old_irq_mask) {
+> +		ret = regmap_write(adap->regmap,
+> CHT_WC_EXTCHGRIRQ_MSK,
+> +				   adap->irq_mask);
+> +		if (ret == 0)
+> +			adap->old_irq_mask = adap->irq_mask;
+> +		else
+> +			dev_err(&adap->adapter.dev, "Error writing
+> extchgrirq_msk\n");
+
+extchgrirq_msk -> EXTCHGRIRQ_MSK ?
+> +	}
+> +
+> +	mutex_unlock(&adap->irqchip_lock);
+> +}
+
+
+> +static const struct bq24190_platform_data bq24190_pdata = {
+> +	.no_register_reset = true,
+> +	.extcon_name = "cht_wcove_pwrsrc",
+> +	.get_ext_bat_property = cht_wc_fg_get_property,
+> +};
+> +
+> +static int cht_wc_i2c_adap_i2c_probe(struct platform_device *pdev)
+> +{
+> +	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev-
+> >dev.parent);
+> +	struct cht_wc_i2c_adap *adap;
+
+> +	struct i2c_board_info board_info = {
+> +		.type = "bq24190",
+> +		.addr = 0x6b,
+> +		.platform_data = (void *)&bq24190_pdata,
+> +	};
+> +	int ret, irq;
+> +
+
+> +	/* Clear and activate i2c-adapter interrupts, disable client
+> irq */
+
+irq -> IRQ
+
+> +
+> +	/* Alloc and register client irq */
+
+Ditto.
+
+> +	adap->irq_domain = irq_domain_add_linear(pdev->dev.of_node,
+> 1,
+> +						 &irq_domain_simple_o
+> ps, NULL);
+
+Can you use irq_domain_add_simple()?
+
+And why do we need separate domain for one IRQ line?
+
+> +	if (!adap->irq_domain)
+> +		return -ENOMEM;
+> +
+> +	adap->client_irq = irq_create_mapping(adap->irq_domain, 0);
+> +	if (!adap->client_irq) {
+> +		ret = -ENOMEM;
+> +		goto remove_irq_domain;
+> +	}
+> +
+> +	irq_set_chip_data(adap->client_irq, adap);
+> +	irq_set_chip_and_handler(adap->client_irq, &adap->irqchip,
+> +				 handle_simple_irq);
+> +
+
+> +	board_info.irq = adap->client_irq;
+> +	adap->client = i2c_new_device(&adap->adapter, &board_info);
+> +	if (!adap->client) {
+> +		ret = -ENOMEM;
+> +		goto del_adapter;
+> +	}
+
+I would split this to some other module with board info.
+
+Does it make sense?
+
+By the way, doesn't ACPI have the charger IC node?
 
 -- 
 Andy Shevchenko <andriy.shevchenko@linux.intel.com>
