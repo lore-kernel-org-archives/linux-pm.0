@@ -1,214 +1,121 @@
 From: "Niklas =?iso-8859-1?Q?S=F6derlund?=" <niklas.soderlund@ragnatech.se>
 Subject: Re: [PATCH 5/7] thermal: rcar_gen3_thermal: enable hardware
  interrupts for trip points
-Date: Fri, 17 Mar 2017 11:06:30 +0100
-Message-ID: <20170317100630.GA20587@bigcity.dyn.berto.se>
+Date: Fri, 17 Mar 2017 11:07:58 +0100
+Message-ID: <20170317100758.GB20587@bigcity.dyn.berto.se>
 References: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se>
  <20170306200401.29923-6-niklas.soderlund+renesas@ragnatech.se>
- <20170307195533.GE2554@tetsubishi>
+ <CAMuHMdWXw8dQKU4KkH8ouB4Kvngm_H4-4W11EBxnx=QXE3Ffjg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f43.google.com ([209.85.215.43]:33371 "EHLO
+        mail-lf0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750885AbdCQKIB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2017 06:08:01 -0400
+Received: by mail-lf0-f43.google.com with SMTP id a6so31065581lfa.0
+        for <linux-pm@vger.kernel.org>; Fri, 17 Mar 2017 03:08:00 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20170307195533.GE2554@tetsubishi>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+In-Reply-To: <CAMuHMdWXw8dQKU4KkH8ouB4Kvngm_H4-4W11EBxnx=QXE3Ffjg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Hi Wolfram,
+Hi Geert,
 
 Thanks for your feedback.
 
-On 2017-03-07 20:55:33 +0100, Wolfram Sang wrote:
-> Hi Niklas,
-> 
-> thanks for your work!
-> 
-> On Mon, Mar 06, 2017 at 09:03:59PM +0100, Niklas Söderlund wrote:
+On 2017-03-07 16:36:00 +0100, Geert Uytterhoeven wrote:
+> On Mon, Mar 6, 2017 at 9:03 PM, Niklas Söderlund
+> <niklas.soderlund+renesas@ragnatech.se> wrote:
 > > Enable hardware trip points by implementing the set_trips callback. The
 > > thermal core will take care of setting the initial trip point window and
 > > to update it once the driver reports a TSC have moved outside it.
-> > 
+> 
+> has moved
+> 
 > > The interrupt structure for this device is a bit odd. There is not a
 > > dedicated IRQ for each TSC, instead the interrupts are shared between
 > > all TSC. IRQn is fired if the temp monitored in IRQTEMPn is reached in
+> 
+> all TSCs
+> 
 > > any of the TSC, example IRQ3 is fired if temperature in IRQTEMP3 is
+> 
+> TSCs
+> 
 > > reached in either TSC0, TSC1 or TSC2.
-> > 
+> >
 > > For this reason the usage of interrupts in this driver is a all on or
 > 
-> s/a all/an all/
-
-Will fix
-
+> an all-on or all-off
 > 
 > > all off design. When an interrupt happens all TSC are checked and all
+> 
+> TSCs
+> 
 > > thermal zones are updated. This could be refined to be more fine grained
 > > but the thermal core takes care of only updating the thermal zones that
 > > have left there trip point window.
 > 
-> s/there/the/
+> their
+> 
+> > Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+> 
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Will fix
+I will fix all the spelling suggestions above, thanks! But I will not 
+add your Reviewed-by since Wolframs comments suggest I need to update 
+some parts of this patch.
 
 > 
-> > 
-> > Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 > > ---
 > >  drivers/thermal/rcar_gen3_thermal.c | 137 ++++++++++++++++++++++++++++++++++++
 > >  1 file changed, 137 insertions(+)
-> > 
-> > +static int rcar_gen3_thermal_set_trips(void *devdata, int low, int high)
-> > +{
-> > +	struct rcar_gen3_thermal_tsc *tsc = devdata;
-> > +
-> > +	if (low < -40000)
-> > +		low = -40000;
-> > +	if (high > 125000)
-> > +		high = 125000;
+> >
+> > diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+> > index 65f7204936a18278..e52181015e589a7f 100644
+> > --- a/drivers/thermal/rcar_gen3_thermal.c
+> > +++ b/drivers/thermal/rcar_gen3_thermal.c
 > 
-> Use clamp_val()?
-
-Good idea, will use.
-
-> 
-> > +
-> > +	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP1,
-> > +				rcar_gen3_thermal_mcelsius_to_temp(tsc, low));
-> > +
-> > +	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP2,
-> > +				rcar_gen3_thermal_mcelsius_to_temp(tsc, high));
-> > +
-> > +	dev_dbg(tsc->dev, "TSC%d: low: %d high: %d\n", tsc->num, low, high);
-> 
-> Is there no sysfs/debugfs way to get this from thermal core? I'd bet
-> this is of generic interest. Bonus point: if we drop this dbg, we can
-> also drop the 'dev' and 'num' members from the struct again.
-
-I can't find any sysfs or debugfs knobs to show this information, what 
-do exist is a dev_dbg in thermal_zone_set_trips() which can print 
-similar information. The difference is that the trip values have not 
-been clamped to the device specification in that printout since it 
-happens before the call to the rcar_gen3_thermal_set_trips() call (where 
-they are still clamped before anything is written to hardware):
-
-
-thermal_zone_set_trips():
-[    2.014173] thermal thermal_zone0: new temperature boundaries: -2147483647 < x < 120000
-
-rcar_gen3_thermal_set_trips():
-[    2.014180] rcar_gen3_thermal e6198000.thermal: TSC0: low: -40000 high: 120000
-
-But this is for debugging so I see no issue whit dropping this debug 
-printout from the driver and depend on the one from thermal core. Will 
-remove this and the patch which stores tsc->dev and tsc->num form the 
-next version.
-
-> 
-> > +
-> > +	return 0;
-> > +}
-> > +
-> >  static struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops = {
-> >  	.get_temp	= rcar_gen3_thermal_get_temp,
-> > +	.set_trips	= rcar_gen3_thermal_set_trips,
+> > @@ -76,6 +87,7 @@ struct rcar_gen3_thermal_tsc {
 > >  };
-> >  
+> >
+> >  struct rcar_gen3_thermal_priv {
+> > +       spinlock_t lock;
+> 
+> When declaring a spinlock, please add a comment what exactly is
+> protected by the lock.
+
+Will do thanks.
+
+> 
 > > +static void rcar_thermal_irq_disable(struct rcar_gen3_thermal_priv *priv)
 > > +{
-> > +	int i;
+> > +       int i;
+> 
+> unsigned int (for all positive loop counters)
+
+Thanks, will fix.
+
+> 
 > > +
-> > +	for (i = 0; i < TSC_MAX_NUM; i++)
-> > +		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQMSK, 0);
-> > +}
-> > +
-> > +static void rcar_thermal_irq_enable(struct rcar_gen3_thermal_priv *priv)
-> > +{
-> > +	int i;
-> > +
-> > +	for (i = 0; i < TSC_MAX_NUM; i++)
-> > +		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQMSK,
-> > +					IRQ_TEMPD1 | IRQ_TEMP2);
+> > +       for (i = 0; i < TSC_MAX_NUM; i++)
+> > +               rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQMSK, 0);
 > > +}
 > 
-> Merge the two into one with a second parameter which is bool?
-> rcar_gen3_irq_enable(priv, true/false)?
-
-OK
-
+> Gr{oetje,eeting}s,
 > 
-> >  	pm_runtime_enable(dev);
-> > @@ -277,6 +388,8 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
-> >  
-> >  	for (i = 0; i < TSC_MAX_NUM; i++) {
-> >  		struct rcar_gen3_thermal_tsc *tsc;
-> > +		char *irqname;
-> > +		int irq;
-> >  
-> >  		tsc = devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
-> >  		if (!tsc) {
-> > @@ -299,6 +412,25 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
-> >  			goto error_unregister;
-> >  		}
-> >  
-> > +		irq = platform_get_irq(pdev, i);
+>                         Geert
 > 
-> Hmmm, with reusing 'i' for getting the interrupt resource, you assume
-> that the number of TSC will always equal the number of interrupts. It's
-> somewhat reasonable, yet we have seen enough surprises in HW to better
-> not assume it IMO.
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 > 
-> Another advantage of decoupling it into a seperate loop is that you only
-> need to register as much interrupts as the driver actually uses. It uses
-> 2 interrupts, so no need for installing 3 handlers, no?
-
-That is correct, will update for next version.
-
-> 
-> > +		if (irq < 0) {
-> > +			ret = irq;
-> > +			goto error_unregister;
-> > +		}
-> 
-> ...
-> 
-> > +
-> > +		dev_info(tsc->dev, "TSC%d: Loaded %d trip points\n", tsc->num,
-> > +			 of_thermal_get_ntrips(tsc->zone));
-> 
-> I'd think the of_thermal_get_ntrips is a little bit hidden in the
-> dev_info. Would like it more explicitly. Also, it cannot fail? What
-> happens if DT provides broken trip points...
-
-All thermal zones are parsed by the thermal core by 
-of_parse_thermal_zones() called from thermal_init() which is called 
-using fs_initcall(thermal_init). Then the call chain
-
-devm_thermal_zone_of_sensor_register()
-    thermal_zone_of_sensor_register()
-       thermal_zone_of_add_sensor()
-          thermal_zone_get_zone_by_name()
-
-Finds the zone parsed at init time, so if the zone is broken in some way 
-it would not be available and devm_thermal_zone_of_sensor_register() 
-would fail.
-
-But you are correct of_thermal_get_ntrips() could return -ENODEV I will 
-add check for this and error out if that is the case.
-
-> 
-> >  	}
-> >  
-> > +	rcar_thermal_irq_enable(priv);
-> 
-> ... because we enable interrupts unconditionally here?
-> 
-> Regards,
-> 
->    Wolfram
-> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
 
 -- 
 Regards,
