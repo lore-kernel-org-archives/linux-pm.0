@@ -1,78 +1,75 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH 10/15] power: supply: bq24190_charger: Use extcon to
- determine ilimit, 5v boost
-Date: Fri, 17 Mar 2017 19:33:31 +0200
-Message-ID: <1489772011.19767.75.camel@linux.intel.com>
+Subject: Re: [PATCH 11/15] i2c: core: Allow getting ACPI info by index
+Date: Fri, 17 Mar 2017 19:35:42 +0200
+Message-ID: <1489772142.19767.76.camel@linux.intel.com>
 References: <20170317095527.10487-1-hdegoede@redhat.com>
-         <20170317095527.10487-11-hdegoede@redhat.com>
+         <20170317095527.10487-12-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170317095527.10487-11-hdegoede@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170317095527.10487-12-hdegoede@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jarkko Nikula <jarkko.nikula@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 On Fri, 2017-03-17 at 10:55 +0100, Hans de Goede wrote:
-> Add support for monitoring an extcon device with SDP/CDP/DCP and HOST
-> cables and adjust ilimit and enable/disable the 5v boost converter
-> accordingly. This is necessary on systems where the PSEL pin is
-> hardwired
-> high and ILIM needs to be set by software based on the detected
-> charger
-> type.
+> Modify struct i2c_acpi_lookup and i2c_acpi_fill_info() to allow
+> using them to get the info from a certain index in the ACPI-resource
+> list rather then taking the first I2cSerialBus resource.
 > 
 
->  config CHARGER_BQ24190
->  	tristate "TI BQ24190 battery charger driver"
->  	depends on I2C
++Cc: Jarkko (our main I2C guy)
 
-> +	depends on EXTCON
-
-I dunno what is preferred here, but if we would like to keep
-compatibility with previous configurations "select" should be used over
-"depends on".
-
-> +static void bq24190_extcon_work(struct work_struct *work)
-> +{
-> +	struct bq24190_dev_info *bdi =
-> +		container_of(work, struct bq24190_dev_info,
-> extcon_work);
-> +	int ret, iinlim = 0;
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+>  drivers/i2c/i2c-core.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
+> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> index d2402bb..32b58fb 100644
+> --- a/drivers/i2c/i2c-core.c
+> +++ b/drivers/i2c/i2c-core.c
+> @@ -112,6 +112,8 @@ struct i2c_acpi_lookup {
+>  	acpi_handle adapter_handle;
+>  	acpi_handle device_handle;
+>  	acpi_handle search_handle;
+> +	int n;
+> +	int index;
+>  	u32 speed;
+>  	u32 min_speed;
+>  };
+> @@ -123,6 +125,9 @@ static int i2c_acpi_fill_info(struct acpi_resource
+> *ares, void *data)
+>  	struct acpi_resource_i2c_serialbus *sb;
+>  	acpi_status status;
+>  
+> +	if (lookup->index != -1 && lookup->n++ != lookup->index)
+> +		return 1;
 > +
-> +	if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_SDP) == 1)
-> +		iinlim = 500000;
-> +	else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_CDP) ==
-> 1 ||
-> +		 extcon_get_state(bdi->extcon, EXTCON_CHG_USB_ACA) ==
-> 1)
-> +		iinlim = 1500000;
-> +	else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_DCP) ==
-> 1)
-> +		iinlim = 2000000;
-> +
-
-> +	if (iinlim) {
-
-Could be possible to call below unconditionally here (use 0)?
-
-> +		ret = bq24190_set_field_val(bdi, BQ24190_REG_ISC,
-> +				BQ24190_REG_ISC_IINLIM_MASK,
-> +				BQ24190_REG_ISC_IINLIM_SHIFT,
-> +				bq24190_iinlim_values,
-> +				ARRAY_SIZE(bq24190_iinlim_values),
-> +				iinlim);
-> +		if (ret)
-> +			dev_err(bdi->dev, "Can't set IINLIM: %d\n",
-> ret);
-> +	}
-
-Perhaps make above as a helper?
-
-In that case no need for "if (iinlim)" and perhaps switch-case might be
-used instead of if-else-if (latter is up to you).
+>  	if (info->addr || ares->type !=
+> ACPI_RESOURCE_TYPE_SERIAL_BUS)
+>  		return 1;
+>  
+> @@ -182,6 +187,7 @@ static int i2c_acpi_get_info(struct acpi_device
+> *adev,
+>  
+>  	memset(&lookup, 0, sizeof(lookup));
+>  	lookup.info = info;
+> +	lookup.index = -1;
+>  
+>  	ret = i2c_acpi_do_lookup(adev, &lookup);
+>  	if (ret)
+> @@ -328,6 +334,7 @@ u32 i2c_acpi_find_bus_speed(struct device *dev)
+>  	lookup.search_handle = ACPI_HANDLE(dev);
+>  	lookup.min_speed = UINT_MAX;
+>  	lookup.info = &dummy;
+> +	lookup.index = -1;
+>  
+>  	status = acpi_walk_namespace(ACPI_TYPE_DEVICE,
+> ACPI_ROOT_OBJECT,
+>  				     I2C_ACPI_MAX_SCAN_DEPTH,
 
 -- 
 Andy Shevchenko <andriy.shevchenko@linux.intel.com>
