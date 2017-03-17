@@ -1,76 +1,39 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH 11/15] i2c: core: Allow getting ACPI info by index
-Date: Fri, 17 Mar 2017 19:35:42 +0200
-Message-ID: <1489772142.19767.76.camel@linux.intel.com>
-References: <20170317095527.10487-1-hdegoede@redhat.com>
-         <20170317095527.10487-12-hdegoede@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: Restore policy min/max limits on CPU online
+Date: Fri, 17 Mar 2017 18:40:29 +0100
+Message-ID: <CAJZ5v0h1C6o72boe_DJRS_U3xebaU6h=kzL8biNjGUoA1S8B8w@mail.gmail.com>
+References: <2084010.4xkKok06Gp@aspire.rjw.lan> <20170317032016.GC31040@vireshk-i7>
+ <CAJZ5v0jNp9t8uu0S4yRjT-TLHOcrAeMmjFzU6eBaaCp+C4j5Wg@mail.gmail.com> <CAKohponGNdnd0Q8rEhMAa=M8EiUiEE6H0nkJYFCFCu+Ow3zw2Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170317095527.10487-12-hdegoede@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f196.google.com ([74.125.82.196]:34778 "EHLO
+        mail-ot0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751057AbdCQRkb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2017 13:40:31 -0400
+In-Reply-To: <CAKohponGNdnd0Q8rEhMAa=M8EiUiEE6H0nkJYFCFCu+Ow3zw2Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Fri, 2017-03-17 at 10:55 +0100, Hans de Goede wrote:
-> Modify struct i2c_acpi_lookup and i2c_acpi_fill_info() to allow
-> using them to get the info from a certain index in the ACPI-resource
-> list rather then taking the first I2cSerialBus resource.
-> 
+On Fri, Mar 17, 2017 at 5:43 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 17 March 2017 at 22:01, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+>> IMO if we are not going to restore the governor, we also should not
+>> restore the limits as those things are related.  Now, the governor can
+>> be unloaded while the CPU is offline.
+>
+> I thought about it earlier but then governor and policy min/max
+> looked independent to me. Why do you think they are related?
 
-+Cc: Jarkko (our main I2C guy)
+They are parts of one set of settings.
 
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
->  drivers/i2c/i2c-core.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index d2402bb..32b58fb 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -112,6 +112,8 @@ struct i2c_acpi_lookup {
->  	acpi_handle adapter_handle;
->  	acpi_handle device_handle;
->  	acpi_handle search_handle;
-> +	int n;
-> +	int index;
->  	u32 speed;
->  	u32 min_speed;
->  };
-> @@ -123,6 +125,9 @@ static int i2c_acpi_fill_info(struct acpi_resource
-> *ares, void *data)
->  	struct acpi_resource_i2c_serialbus *sb;
->  	acpi_status status;
->  
-> +	if (lookup->index != -1 && lookup->n++ != lookup->index)
-> +		return 1;
-> +
->  	if (info->addr || ares->type !=
-> ACPI_RESOURCE_TYPE_SERIAL_BUS)
->  		return 1;
->  
-> @@ -182,6 +187,7 @@ static int i2c_acpi_get_info(struct acpi_device
-> *adev,
->  
->  	memset(&lookup, 0, sizeof(lookup));
->  	lookup.info = info;
-> +	lookup.index = -1;
->  
->  	ret = i2c_acpi_do_lookup(adev, &lookup);
->  	if (ret)
-> @@ -328,6 +334,7 @@ u32 i2c_acpi_find_bus_speed(struct device *dev)
->  	lookup.search_handle = ACPI_HANDLE(dev);
->  	lookup.min_speed = UINT_MAX;
->  	lookup.info = &dummy;
-> +	lookup.index = -1;
->  
->  	status = acpi_walk_namespace(ACPI_TYPE_DEVICE,
-> ACPI_ROOT_OBJECT,
->  				     I2C_ACPI_MAX_SCAN_DEPTH,
+If the governor is not restored, the policy starts with the default
+one, so why would it not start with the default limits then?
 
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+My opinion is that either we restore everything the way it was, or we
+start afresh entirely.
+
+Thanks,
+Rafael
