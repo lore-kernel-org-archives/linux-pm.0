@@ -1,100 +1,169 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] cpufreq: Restore policy min/max limits on CPU online
-Date: Fri, 17 Mar 2017 18:44:27 +0100
-Message-ID: <2046616.ZgG7lPIpjH@aspire.rjw.lan>
-References: <2084010.4xkKok06Gp@aspire.rjw.lan> <CAJZ5v0jNp9t8uu0S4yRjT-TLHOcrAeMmjFzU6eBaaCp+C4j5Wg@mail.gmail.com> <CAKohponGNdnd0Q8rEhMAa=M8EiUiEE6H0nkJYFCFCu+Ow3zw2Q@mail.gmail.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH 14/15] power: supply: Add driver for Cherry Trail
+ Whiskey Cove PMIC Fuel Gauge
+Date: Fri, 17 Mar 2017 19:58:49 +0200
+Message-ID: <1489773529.19767.84.camel@linux.intel.com>
+References: <20170317095527.10487-1-hdegoede@redhat.com>
+         <20170317095527.10487-15-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:43567 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751187AbdCQRve (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2017 13:51:34 -0400
-In-Reply-To: <CAKohponGNdnd0Q8rEhMAa=M8EiUiEE6H0nkJYFCFCu+Ow3zw2Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170317095527.10487-15-hdegoede@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH] cpufreq: Restore policy min/max limits on CPU online
+On Fri, 2017-03-17 at 10:55 +0100, Hans de Goede wrote:
+> Add a driver for the Cherry Trail Whiskey Cove PMIC Fuel Gauge, note
+> the Cherry Trail Whiskey Cove PMIC Fuel Gauge block is purely a fuel
+> gauge
+> and not a full battery controller. As such it offers a platform_data
+> callback for extra power_supply properties for the actual external-
+> charger
+> ic driver and does not register a power_supply itself.
 
-On CPU online the cpufreq core restores the previous governor (or
-the previous "policy" setting for ->setpolicy drivers), but it does
-not restore the min/max limits at the same time, which is confusing,
-inconsistent and real pain for users who set the limits and then
-suspend/resume the system (using full suspend), in which case the
-limits are reset for all CPUs except for the boot one (on systems
-with one CPU per policy, which means the vast majority of laptops,
-for example).
+ic -> IC
 
-Fix this by making cpufreq_online() restore the limits when it
-sees that this is CPU online and not initialization from scratch.
+Can we move to something like built-in device properties for additional
+properties instead of extending platform data?
 
-Also move the governor restoration code to the place where the limits
-are restored for consistency.
+> +config CHT_WC_FUEL_GAUGE
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+I would use similar pattern:
 
-Here it goes for completeness:
+FUEL_GAUGE_INTEL_CHTWC (or FUEL_GAUGE_CHTWC, but this might be less
+obvious about vendor)
 
--> v2: Avoid code duplication by adding a helper function for copying values.
+> --- /dev/null
+> +++ b/drivers/power/supply/cht_wc_fuel_gauge.c
+> @@ -0,0 +1,209 @@
+> +/*
+> + * Intel CHT Whiskey Cove Fuel Gauge driver
 
----
- drivers/cpufreq/cpufreq.c |   17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+CHT -> Cherry Trail 
 
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -969,6 +969,13 @@ __weak struct cpufreq_governor *cpufreq_
- 	return NULL;
- }
- 
-+static void policy_copy_user_min_max(struct cpufreq_policy *to,
-+				     struct cpufreq_policy *from)
-+{
-+	to->min = from->user_policy.min;
-+	to->max = from->user_policy.max;
-+}
-+
- static int cpufreq_init_policy(struct cpufreq_policy *policy)
- {
- 	struct cpufreq_governor *gov = NULL;
-@@ -979,6 +986,7 @@ static int cpufreq_init_policy(struct cp
- 	/* Update governor of new_policy to the governor used before hotplug */
- 	gov = find_governor(policy->last_governor);
- 	if (gov) {
-+		policy_copy_user_min_max(&new_policy, policy);
- 		pr_debug("Restoring governor %s for cpu %d\n",
- 				policy->governor->name, policy->cpu);
- 	} else {
-@@ -991,11 +999,13 @@ static int cpufreq_init_policy(struct cp
- 
- 	/* Use the default policy if there is no last_policy. */
- 	if (cpufreq_driver->setpolicy) {
--		if (policy->last_policy)
-+		if (policy->last_policy) {
- 			new_policy.policy = policy->last_policy;
--		else
-+			policy_copy_user_min_max(&new_policy, policy);
-+		} else {
- 			cpufreq_parse_governor(gov->name, &new_policy.policy,
- 					       NULL);
-+		}
- 	}
- 	/* set default policy */
- 	return cpufreq_set_policy(policy, &new_policy);
-@@ -2263,8 +2273,7 @@ void cpufreq_update_policy(unsigned int
- 
- 	pr_debug("updating policy for CPU %u\n", cpu);
- 	memcpy(&new_policy, policy, sizeof(*policy));
--	new_policy.min = policy->user_policy.min;
--	new_policy.max = policy->user_policy.max;
-+	policy_copy_user_min_max(&new_policy, policy);
- 
- 	/*
- 	 * BIOS might change freq behind our back
+> + *
+> + * Cherrytrail Whiskey Cove devices have 2 functional blocks which
+> interact
+> + * with the battery.
+
+Cherry Trail? 
+
+> +#define REG_CHARGE_NOW		0x05
+> +#define REG_VOLTAGE_NOW		0x09
+> +#define REG_CURRENT_NOW		0x0a
+> +#define REG_CURRENT_AVG		0x0b
+> +#define REG_CHARGE_FULL		0x10
+> +#define REG_CHARGE_DESIGN	0x18
+> +#define REG_VOLTAGE_AVG		0x19
+
+> +#define REG_VOLTAGE_OCV		0x1b /* Only updated during
+> charging */
+
+I think comment makes more sense where actual update is happening in the
+code.
+
+> +
+> +static int cht_wc_fg_read(struct cht_wc_fg_data *fg, u8 reg,
+> +			  union power_supply_propval *val, int scale,
+> +			  int sign_extend)
+> +{
+> +	int ret;
+> +
+> +	ret = i2c_smbus_read_word_data(fg->client, reg);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	if (sign_extend)
+> +		ret = sign_extend32(ret, 15);
+
+Magic?
+
+> +
+> +	val->intval = ret * scale;
+> +
+> +	return 0;
+> +}
+
+
+> +
+> +int cht_wc_fg_get_property(enum power_supply_property prop,
+> +			   union power_supply_propval *val)
+> +{
+> +	int ret = 0;
+
+Sounds like redundant assignment...
+
+> +
+> +	mutex_lock(&cht_wc_fg_mutex);
+> +
+> 
+
+> +	if (!cht_wc_fg) {
+> +		ret = -ENXIO;
+> +		goto out_unlock;
+> +	}
+
+...otherwise maybe
+
+ret = cht_wc_fg ? 0 : -ENXIO;
+if (ret)
+ goto ...;
+
+?
+
+> +	default:
+> +		ret = -ENODATA;
+> +	}
+> +out_unlock:
+> +	mutex_unlock(&cht_wc_fg_mutex);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(cht_wc_fg_get_property);
+
+> +
+> +static int cht_wc_fg_probe(struct i2c_client *client,
+> +			const struct i2c_device_id *i2c_id)
+> +{
+> +	struct device *dev = &client->dev;
+> +	struct cht_wc_fg_data *fg;
+> +	acpi_status status;
+> +	unsigned long long ptyp;
+
+> +	status = acpi_evaluate_integer(ACPI_HANDLE(dev), "PTYP",
+> NULL, &ptyp);
+> +	if (ACPI_FAILURE(status)) {
+> +		dev_err(dev, "Failed to get PTYPE\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	/*
+> +	 * The same ACPI HID is used with different PMICs check PTYP
+> to
+> +	 * ensure that we are dealing with a Whiskey Cove PMIC.
+> +	 */
+> +	if (ptyp != CHT_WC_FG_PTYPE)
+> +		return -ENODEV;
+
+Logically I would split this part to be a main driver for device which
+would use actual driver based on this, though I think it too much churn
+for no benefit right now.
+
+> +	mutex_lock(&cht_wc_fg_mutex);
+> +	cht_wc_fg = fg;
+> +	mutex_unlock(&cht_wc_fg_mutex);
+
+It's pity we have no common storage of single possible present device
+drivers in the kernel. I would use some kind of framework rather then
+keeping all those global variables with locking. Perhaps radix / RB
+tree.
+
+> +
+> +	return 0;
+> +}
+
+-- 
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
