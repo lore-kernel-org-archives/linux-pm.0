@@ -1,80 +1,149 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH 01/15] mfd: Add Cherry Trail Whiskey Cove PMIC driver
-Date: Fri, 17 Mar 2017 19:00:46 +0200
-Message-ID: <1489770046.19767.66.camel@linux.intel.com>
+Subject: Re: [PATCH 03/15] extcon: cht-wc: Add Intel Cherry Trail Whiskey
+ Cove PMIC extcon driver
+Date: Fri, 17 Mar 2017 19:18:18 +0200
+Message-ID: <1489771098.19767.69.camel@linux.intel.com>
 References: <20170317095527.10487-1-hdegoede@redhat.com>
-         <20170317095527.10487-2-hdegoede@redhat.com>
+         <20170317095527.10487-4-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170317095527.10487-2-hdegoede@redhat.com>
+In-Reply-To: <20170317095527.10487-4-hdegoede@redhat.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Bin Gao <bin.gao@intel.com>, Felipe Balbi <felipe.balbi@linux.intel.com>
+Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Felipe Balbi <felipe.balbi@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 On Fri, 2017-03-17 at 10:55 +0100, Hans de Goede wrote:
-> Add mfd driver for Intel CHT Whiskey Cove PMIC, based on various non
-> upstreamed CHT Whiskey Cove PMIC patches.
-> 
-> This is a somewhat minimal version which adds irqchip support and
-> cells
-> for: ACPI PMIC opregion support, the i2c-controller driving the
-> external
-> charger irc and the pwrsrc/extcon block.
-> 
-> Further cells can be added in the future if/when drivers are
-> upstreamed
-> for them.
+> Add a driver for charger detection / control on the Intel Cherrytrail
+> Whiskey Cove PMIC.
 
-Couple of minor comments, otherwise looks good to me:
++Cc: Felipe for some question(s) below.
 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+>  drivers/extcon/extcon-cht-wc.c | 356 
 
-> +/* Whiskey Cove PMIC share same ACPI ID between different platforms
-> */
-> +#define CHT_WC_HRV		3
+I would use same pattern across drivers, i.e. "chtwc" (same for the rest
+of the drivers in this series).
+
+> +#define CHT_WC_PWRSRC_IRQ		0x6e03
+> +#define CHT_WC_PWRSRC_IRQ_MASK		0x6e0f
+> +#define CHT_WC_PWRSRC_STS		0x6e1e
+> +#define CHT_WC_PWRSRC_VBUS		BIT(0)
+> +#define CHT_WC_PWRSRC_DC		BIT(1)
+> +#define CHT_WC_PWRSRC_BAT		BIT(2)
+> +#define CHT_WC_PWRSRC_ID_GND		BIT(3)
+> +#define CHT_WC_PWRSRC_ID_FLOAT		BIT(4)
+
+Not obvious for which register those bit definitions are.
+Also, keep them ordered by offset.
+
 > +
-> +/* Level 1 IRQs (level 2 IRQs are handled in the child device
-> drivers) */
-> +enum {
-> +	CHT_WC_PWRSRC_IRQ = 0,
-> +	CHT_WC_THRM_IRQ,
-> +	CHT_WC_BCU_IRQ,
-> +	CHT_WC_ADC_IRQ,
-> +	CHT_WC_EXT_CHGR_IRQ,
-> +	CHT_WC_GPIO_IRQ,
-> +	/* There is no irq 6 */
-> +	CHT_WC_CRIT_IRQ = 7,
-
-I would prefer explicit over implicit (adding = N to each line), but
-this is minor.
-
-> +};
-
-> +	pmic->regmap = devm_regmap_init(dev, NULL, client,
-> &cht_wc_regmap_cfg);
-> +	if (IS_ERR(pmic->regmap))
-> +		return PTR_ERR(pmic->regmap);
+> +#define CHT_WC_PHYCTRL			0x5e07
 > +
-> +	ret = devm_regmap_add_irq_chip(dev, pmic->regmap, pmic->irq,
-> +				       IRQF_ONESHOT | IRQF_SHARED, 0,
-> +				       &cht_wc_regmap_irq_chip,
-> +				       &pmic->irq_chip_data);
+
+> +#define CHT_WC_CHGRCTRL0		0x5e16
+
+Dup!
+
+> +
+> +#define CHT_WC_CHGRCTRL0		0x5e16
+
+> +static int cht_wc_extcon_get_charger(struct cht_wc_extcon_data *ext)
+> +{
+> +	int ret, usbsrc, status, retries = 5;
+> +
+> +	do {
+> +		ret = regmap_read(ext->regmap, CHT_WC_USBSRC,
+> &usbsrc);
+> +		if (ret) {
+> +			dev_err(ext->dev, "Error reading usbsrc:
+> %d\n", ret);
+> +			return ret;
+> +		}
+> +		status = usbsrc & CHT_WC_USBSRC_STS_MASK;
+> +		if (status == CHT_WC_USBSRC_STS_SUCCESS ||
+> +		    status == CHT_WC_USBSRC_STS_FAIL)
+> +			break;
+> +
+
+> +		msleep(200);
+
+Comment why and why so long?
+
+> +	} while (retries--);
+
+> +static void cht_wc_extcon_det_event(struct cht_wc_extcon_data *ext)
+
+det -> detect ?
+
+
+> 
++static irqreturn_t cht_wc_extcon_isr(int irq, void *data)
+> +{
+> +	struct cht_wc_extcon_data *ext = data;
+> +	int ret, irqs;
+> +
+> +	ret = regmap_read(ext->regmap, CHT_WC_PWRSRC_IRQ, &irqs);
 > +	if (ret)
-> +		return ret;
+> +		dev_err(ext->dev, "Error reading irqs: %d\n", ret);
+
+Shouldn't we return IRQ_NONE here?
+Perhaps comment is needed.
+
+> +
+> +	cht_wc_extcon_det_event(ext);
+> +
+> +	ret = regmap_write(ext->regmap, CHT_WC_PWRSRC_IRQ, irqs);
+> +	if (ret)
+> +		dev_err(ext->dev, "Error writing irqs: %d\n", ret);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+
+> +/* usb_id sysfs attribute for debug / testing purposes */
+
+Hmm... I would use debugfs for debug, otherwise it looks like it should
+be framework (extcon) wide.
+
+Perhaps Felipe can advise something here.
+
+> +static int cht_wc_extcon_probe(struct platform_device *pdev)
+> +{
+
+> +	struct cht_wc_extcon_data *ext;
+> +	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev-
+> >dev.parent);
+
+Exchange them (assignment first).
+
+> +	int irq, ret;
 > +
 
 
-> +	return devm_mfd_add_devices(dev, -1, cht_wc_dev,
-> ARRAY_SIZE(cht_wc_dev),
-> +			NULL, 0, regmap_irq_get_domain(pmic-
-> >irq_chip_data));
+> +	ret = devm_request_threaded_irq(ext->dev, irq, NULL,
+> cht_wc_extcon_isr,
+> +					IRQF_ONESHOT, pdev->name,
+> ext);
+> +	if (ret) {
+> +		dev_err(ext->dev, "Failed to request interrupt\n");
+> +		return ret;
+> +	}
+> +
+> +	/* Unmask irqs */
+> +	ret = regmap_write(ext->regmap, CHT_WC_PWRSRC_IRQ_MASK,
+> +			   (int)~(CHT_WC_PWRSRC_VBUS | 
 
-PLATFORM_DEVID_NONE, please.
+Hmm... Do you need explicit casting here?
 
-> +}
+> CHT_WC_PWRSRC_ID_GND |
+> +				  CHT_WC_PWRSRC_ID_FLOAT));
+> +	if (ret) {
+> +		dev_err(ext->dev, "Error writing irq-mask: %d\n",
+> ret);
+> +		return ret;
+> +	}
 
 -- 
 Andy Shevchenko <andriy.shevchenko@linux.intel.com>
