@@ -1,8 +1,8 @@
 From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
         <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH v2 2/7] thermal: rcar_gen3_thermal: remove unneeded mutex
-Date: Fri, 17 Mar 2017 16:52:55 +0100
-Message-ID: <20170317155300.21566-3-niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH v2 1/7] thermal: rcar_gen3_thermal: add delay in .thermal_init on r8a7796
+Date: Fri, 17 Mar 2017 16:52:54 +0100
+Message-ID: <20170317155300.21566-2-niklas.soderlund+renesas@ragnatech.se>
 References: <20170317155300.21566-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -14,61 +14,42 @@ To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
 Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
 List-Id: linux-pm@vger.kernel.org
 
-There is no point in protecting a register read with a lock. This is
-most likely a leftover from when the driver was reworked before submitted
-for upstream.
+The .thermal_init needs to be delayed a short amount of time to allow
+for the TEMP register to contain something useful. If it's not delayed
+these warnings are common during boot:
 
+thermal thermal_zone0: failed to read out thermal zone (-5)
+thermal thermal_zone1: failed to read out thermal zone (-5)
+thermal thermal_zone2: failed to read out thermal zone (-5)
+
+The warnings are triggered by the first call to .get_temp() while the
+TEMP register contains 0 and rcar_gen3_thermal_get_temp() returns -EIO
+since a TEMP value of 0 will result in a temperature reading which is
+out of specifications.
+
+This should have been done in the initial commit which adds the driver
+as the same issue was found and corrected for r8a7795.
+
+Fixes: 564e73d283af9d4c ("thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal driver")
 Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 7 -------
- 1 file changed, 7 deletions(-)
+ drivers/thermal/rcar_gen3_thermal.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index ec477d47d0bae8e5..cb5c362c00009921 100644
+index d33c845244b1d819..ec477d47d0bae8e5 100644
 --- a/drivers/thermal/rcar_gen3_thermal.c
 +++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -20,7 +20,6 @@
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/module.h>
--#include <linux/mutex.h>
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
-@@ -72,7 +71,6 @@ struct rcar_gen3_thermal_tsc {
- 	void __iomem *base;
- 	struct thermal_zone_device *zone;
- 	struct equation_coefs coef;
--	struct mutex lock;
- };
+@@ -222,6 +222,8 @@ static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
+ 	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
+ 	reg_val |= THCTR_THSST;
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
++
++	usleep_range(1000, 2000);
+ }
  
- struct rcar_gen3_thermal_priv {
-@@ -163,16 +161,12 @@ static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
- 	u32 reg;
- 
- 	/* Read register and convert to mili Celsius */
--	mutex_lock(&tsc->lock);
--
- 	reg = rcar_gen3_thermal_read(tsc, REG_GEN3_TEMP) & CTEMP_MASK;
- 
- 	val1 = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b1, tsc->coef.a1);
- 	val2 = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b2, tsc->coef.a2);
- 	mcelsius = FIXPT_TO_MCELSIUS((val1 + val2) / 2);
- 
--	mutex_unlock(&tsc->lock);
--
- 	/* Make sure we are inside specifications */
- 	if ((mcelsius < MCELSIUS(-40)) || (mcelsius > MCELSIUS(125)))
- 		return -EIO;
-@@ -299,7 +293,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 		}
- 
- 		priv->tscs[i] = tsc;
--		mutex_init(&tsc->lock);
- 
- 		match_data->thermal_init(tsc);
- 		rcar_gen3_thermal_calc_coefs(&tsc->coef, ptat, thcode[i]);
+ static const struct rcar_gen3_thermal_data r8a7795_data = {
 -- 
 2.12.0
