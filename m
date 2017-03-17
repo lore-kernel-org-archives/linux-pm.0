@@ -1,52 +1,58 @@
 From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
         <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH v2 3/7] thermal: rcar_gen3_thermal: check that TSC exists before memory allocation
-Date: Fri, 17 Mar 2017 16:52:56 +0100
-Message-ID: <20170317155300.21566-4-niklas.soderlund+renesas@ragnatech.se>
-References: <20170317155300.21566-1-niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH v2 0/7] thermal: rcar_gen3_thermal: add support for interrupt triggerd trip points
+Date: Fri, 17 Mar 2017 16:52:53 +0100
+Message-ID: <20170317155300.21566-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20170317155300.21566-1-niklas.soderlund+renesas@ragnatech.se>
-Sender: linux-renesas-soc-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp-4.sys.kth.se ([130.237.48.193]:56330 "EHLO
+        smtp-4.sys.kth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751057AbdCQQCG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2017 12:02:06 -0400
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
 Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
-List-Id: linux-pm@vger.kernel.org
 
-Move the check for a TSC resource before allocating memory for a new
-TSC. If no TSC is found there is little point in allocating memory for
-it.
+Hi,
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
----
- drivers/thermal/rcar_gen3_thermal.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+This series adds support for hardware backed trip point windows. It is
+based on top of v4.11-rc1 and is tested on R-Car H3 and M3-W.
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index cb5c362c00009921..9b6bc03dd142a8dd 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -276,16 +276,16 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 	for (i = 0; i < TSC_MAX_NUM; i++) {
- 		struct rcar_gen3_thermal_tsc *tsc;
- 
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
-+		if (!res)
-+			break;
-+
- 		tsc = devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
- 		if (!tsc) {
- 			ret = -ENOMEM;
- 			goto error_unregister;
- 		}
- 
--		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
--		if (!res)
--			break;
--
- 		tsc->base = devm_ioremap_resource(dev, res);
- 		if (IS_ERR(tsc->base)) {
- 			ret = PTR_ERR(tsc->base);
+The series starts out by fixing three issues (1/7, 2/7, 3/7) that should
+have been fixed by me before the initial driver where submitted to
+upstream. Sorry for not spotting the issues sooner.
+
+The series then extends the rcar_gen3_thermal driver with hardware
+interrupts for trip point windows by implementing the .set_trips()
+callback of struct thermal_zone_of_device_ops (4/7, 5/7). It then adds
+suspend and resume handlers so that the hardware interrupts are
+preserved across suspend/resume cycles (6/7, 7/7).
+
+* Changes since v1
+- Added check that at least one TSC is found
+- Record number of TSC in private data structure
+- Request interrupts separately from TSCs
+- Have only one function which controls both IRQ on and off
+- Check return value from of_thermal_get_ntrips()
+- Fixed spelling in commit messages
+- Add Reviewed-by tags
+
+Niklas Söderlund (7):
+  thermal: rcar_gen3_thermal: add delay in .thermal_init on r8a7796
+  thermal: rcar_gen3_thermal: remove unneeded mutex
+  thermal: rcar_gen3_thermal: check that TSC exists before memory
+    allocation
+  thermal: rcar_gen3_thermal: record and check number of TSCs found
+  thermal: rcar_gen3_thermal: enable hardware interrupts for trip points
+  thermal: rcar_gen3_thermal: store device match data in private
+    structure
+  thermal: rcar_gen3_thermal: add suspend and resume support
+
+ drivers/thermal/rcar_gen3_thermal.c | 195 +++++++++++++++++++++++++++++++++---
+ 1 file changed, 180 insertions(+), 15 deletions(-)
+
 -- 
 2.12.0
