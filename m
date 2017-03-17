@@ -1,65 +1,62 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 04/15] power: supply: bq24190_charger: Add no_register_reset pdata flag
-Date: Fri, 17 Mar 2017 10:55:16 +0100
-Message-ID: <20170317095527.10487-5-hdegoede@redhat.com>
+Subject: [PATCH 09/15] power: supply: bq24190_charger: Add voltage_max_design prop to battery
+Date: Fri, 17 Mar 2017 10:55:21 +0100
+Message-ID: <20170317095527.10487-10-hdegoede@redhat.com>
 References: <20170317095527.10487-1-hdegoede@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:33584 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751057AbdCQJ4t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 17 Mar 2017 05:56:49 -0400
 In-Reply-To: <20170317095527.10487-1-hdegoede@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 Cc: Hans de Goede <hdegoede@redhat.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-On some platforms the register have been setup with platform specific
-values by the firmware and should not be reset.
+When combined with an external fuel-gauge, upower needs voltage_max_design
+as it internally does all its calculations in Watts and converts the
+charge_foo properties from A to Watts by using voltage_max_design.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/bq24190_charger.c | 5 +++++
- include/linux/power/bq24190_charger.h  | 1 +
- 2 files changed, 6 insertions(+)
+ drivers/power/supply/bq24190_charger.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index a4f0849..c92a40e4 100644
+index 9fe69a5..82cb33d 100644
 --- a/drivers/power/supply/bq24190_charger.c
 +++ b/drivers/power/supply/bq24190_charger.c
-@@ -151,6 +151,7 @@ struct bq24190_dev_info {
- 	struct device			*dev;
- 	struct power_supply		*charger;
- 	struct power_supply		*battery;
-+	struct bq24190_platform_data	*pdata;
- 	char				model_name[I2C_NAME_SIZE];
- 	kernel_ulong_t			model;
- 	unsigned int			gpio_int;
-@@ -506,6 +507,9 @@ static int bq24190_register_reset(struct bq24190_dev_info *bdi)
- 	int ret, limit = 100;
- 	u8 v;
- 
-+	if (bdi->pdata && bdi->pdata->no_register_reset)
-+		return 0;
-+
- 	/* Reset the registers */
- 	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
- 			BQ24190_REG_POC_RESET_MASK,
-@@ -1339,6 +1343,7 @@ static int bq24190_probe(struct i2c_client *client,
- 	bdi->client = client;
- 	bdi->dev = dev;
- 	bdi->model = id->driver_data;
-+	bdi->pdata = client->dev.platform_data;
- 	strncpy(bdi->model_name, id->name, I2C_NAME_SIZE);
- 	mutex_init(&bdi->f_reg_lock);
- 	bdi->f_reg = 0;
-diff --git a/include/linux/power/bq24190_charger.h b/include/linux/power/bq24190_charger.h
-index 9f02837..cb49717 100644
---- a/include/linux/power/bq24190_charger.h
-+++ b/include/linux/power/bq24190_charger.h
-@@ -11,6 +11,7 @@
- 
- struct bq24190_platform_data {
- 	unsigned int	gpio_int;	/* GPIO pin that's connected to INT# */
-+	bool no_register_reset;
- };
- 
- #endif
+@@ -1103,6 +1103,13 @@ static int bq24190_battery_get_property(struct power_supply *psy,
+ 		val->intval = POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
+ 		ret = 0;
+ 		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
++		/*
++		 * Report charger configured voltage as max design voltage,
++		 * not entirely correct, but userspace needs something here.
++		 */
++		ret = bq24190_charger_get_voltage(bdi, val);
++		break;
+ 	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+ 		ret = bq24190_battery_get_temp_alert_max(bdi, val);
+ 		break;
+@@ -1169,6 +1176,7 @@ static enum power_supply_property bq24190_battery_properties[] = {
+ 	POWER_SUPPLY_PROP_HEALTH,
+ 	POWER_SUPPLY_PROP_ONLINE,
+ 	POWER_SUPPLY_PROP_TECHNOLOGY,
++	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
+ 	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
+ 	POWER_SUPPLY_PROP_SCOPE,
+ 	/* Begin of extended battery properties */
+@@ -1186,7 +1194,7 @@ static const struct power_supply_desc bq24190_battery_desc = {
+ 	.name			= "bq24190-battery",
+ 	.type			= POWER_SUPPLY_TYPE_BATTERY,
+ 	.properties		= bq24190_battery_properties,
+-	.num_properties		= 6,
++	.num_properties		= 7,
+ 	.get_property		= bq24190_battery_get_property,
+ 	.set_property		= bq24190_battery_set_property,
+ 	.property_is_writeable	= bq24190_battery_property_is_writeable,
 -- 
 2.9.3
