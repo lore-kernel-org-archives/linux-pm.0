@@ -1,68 +1,215 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 05/15] power: supply: bq24190_charger: Limit charging voltage to 4.3V
-Date: Fri, 17 Mar 2017 10:55:17 +0100
-Message-ID: <20170317095527.10487-6-hdegoede@redhat.com>
-References: <20170317095527.10487-1-hdegoede@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170317095527.10487-1-hdegoede@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: "Niklas =?iso-8859-1?Q?S=F6derlund?=" <niklas.soderlund@ragnatech.se>
+Subject: Re: [PATCH 5/7] thermal: rcar_gen3_thermal: enable hardware
+ interrupts for trip points
+Date: Fri, 17 Mar 2017 11:06:30 +0100
+Message-ID: <20170317100630.GA20587@bigcity.dyn.berto.se>
+References: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se>
+ <20170306200401.29923-6-niklas.soderlund+renesas@ragnatech.se>
+ <20170307195533.GE2554@tetsubishi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170307195533.GE2554@tetsubishi>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-When the platform data asks us to not reset the charger to its default
-values and instead trust the firmware set values check the charging
-voltage and clamp it to 4.304V.
+Hi Wolfram,
 
-Some firmwares set really too high voltages, e.g. the GPD-win I've been
-working on uses 4.384V. New LiHV (High Voltage) batteries may be charged
-upto 4.35V but that significantly impacts their lifetime, limit charging
-to 4.304V for safety and lifetime reasons.
+Thanks for your feedback.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/bq24190_charger.c | 27 ++++++++++++++++++++++++---
- 1 file changed, 24 insertions(+), 3 deletions(-)
+On 2017-03-07 20:55:33 +0100, Wolfram Sang wrote:
+> Hi Niklas,
+> 
+> thanks for your work!
+> 
+> On Mon, Mar 06, 2017 at 09:03:59PM +0100, Niklas Söderlund wrote:
+> > Enable hardware trip points by implementing the set_trips callback. The
+> > thermal core will take care of setting the initial trip point window and
+> > to update it once the driver reports a TSC have moved outside it.
+> > 
+> > The interrupt structure for this device is a bit odd. There is not a
+> > dedicated IRQ for each TSC, instead the interrupts are shared between
+> > all TSC. IRQn is fired if the temp monitored in IRQTEMPn is reached in
+> > any of the TSC, example IRQ3 is fired if temperature in IRQTEMP3 is
+> > reached in either TSC0, TSC1 or TSC2.
+> > 
+> > For this reason the usage of interrupts in this driver is a all on or
+> 
+> s/a all/an all/
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index c92a40e4..7bca8d0 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -504,11 +504,32 @@ static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
- 
- static int bq24190_register_reset(struct bq24190_dev_info *bdi)
- {
--	int ret, limit = 100;
-+	int ret, voltage, limit = 100;
- 	u8 v;
- 
--	if (bdi->pdata && bdi->pdata->no_register_reset)
--		return 0;
-+	if (bdi->pdata && bdi->pdata->no_register_reset) {
-+		/*
-+		 * We've been asked to keep the firmware settings as is, but
-+		 * some firmwares set really too high voltages (e.g. 4.384V).
-+		 * New LiHV (High Voltage) batteries may be charged upto 4.35V
-+		 * but that significantly impacts their lifetime, limit
-+		 * charging to 4.304V for safety and lifetime reasons.
-+		 */
-+		ret = bq24190_get_field_val(bdi, BQ24190_REG_CVC,
-+			BQ24190_REG_CVC_VREG_MASK, BQ24190_REG_CVC_VREG_SHIFT,
-+			bq24190_cvc_vreg_values,
-+			ARRAY_SIZE(bq24190_cvc_vreg_values), &voltage);
-+		if (ret < 0)
-+			return ret;
-+
-+		if (voltage <= 4304000)
-+			return 0;
-+
-+		return bq24190_set_field_val(bdi, BQ24190_REG_CVC,
-+			BQ24190_REG_CVC_VREG_MASK, BQ24190_REG_CVC_VREG_SHIFT,
-+			bq24190_cvc_vreg_values,
-+			ARRAY_SIZE(bq24190_cvc_vreg_values), 4304000);
-+	}
- 
- 	/* Reset the registers */
- 	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
+Will fix
+
+> 
+> > all off design. When an interrupt happens all TSC are checked and all
+> > thermal zones are updated. This could be refined to be more fine grained
+> > but the thermal core takes care of only updating the thermal zones that
+> > have left there trip point window.
+> 
+> s/there/the/
+
+Will fix
+
+> 
+> > 
+> > Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+> > ---
+> >  drivers/thermal/rcar_gen3_thermal.c | 137 ++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 137 insertions(+)
+> > 
+> > +static int rcar_gen3_thermal_set_trips(void *devdata, int low, int high)
+> > +{
+> > +	struct rcar_gen3_thermal_tsc *tsc = devdata;
+> > +
+> > +	if (low < -40000)
+> > +		low = -40000;
+> > +	if (high > 125000)
+> > +		high = 125000;
+> 
+> Use clamp_val()?
+
+Good idea, will use.
+
+> 
+> > +
+> > +	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP1,
+> > +				rcar_gen3_thermal_mcelsius_to_temp(tsc, low));
+> > +
+> > +	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP2,
+> > +				rcar_gen3_thermal_mcelsius_to_temp(tsc, high));
+> > +
+> > +	dev_dbg(tsc->dev, "TSC%d: low: %d high: %d\n", tsc->num, low, high);
+> 
+> Is there no sysfs/debugfs way to get this from thermal core? I'd bet
+> this is of generic interest. Bonus point: if we drop this dbg, we can
+> also drop the 'dev' and 'num' members from the struct again.
+
+I can't find any sysfs or debugfs knobs to show this information, what 
+do exist is a dev_dbg in thermal_zone_set_trips() which can print 
+similar information. The difference is that the trip values have not 
+been clamped to the device specification in that printout since it 
+happens before the call to the rcar_gen3_thermal_set_trips() call (where 
+they are still clamped before anything is written to hardware):
+
+
+thermal_zone_set_trips():
+[    2.014173] thermal thermal_zone0: new temperature boundaries: -2147483647 < x < 120000
+
+rcar_gen3_thermal_set_trips():
+[    2.014180] rcar_gen3_thermal e6198000.thermal: TSC0: low: -40000 high: 120000
+
+But this is for debugging so I see no issue whit dropping this debug 
+printout from the driver and depend on the one from thermal core. Will 
+remove this and the patch which stores tsc->dev and tsc->num form the 
+next version.
+
+> 
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >  static struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops = {
+> >  	.get_temp	= rcar_gen3_thermal_get_temp,
+> > +	.set_trips	= rcar_gen3_thermal_set_trips,
+> >  };
+> >  
+> > +static void rcar_thermal_irq_disable(struct rcar_gen3_thermal_priv *priv)
+> > +{
+> > +	int i;
+> > +
+> > +	for (i = 0; i < TSC_MAX_NUM; i++)
+> > +		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQMSK, 0);
+> > +}
+> > +
+> > +static void rcar_thermal_irq_enable(struct rcar_gen3_thermal_priv *priv)
+> > +{
+> > +	int i;
+> > +
+> > +	for (i = 0; i < TSC_MAX_NUM; i++)
+> > +		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQMSK,
+> > +					IRQ_TEMPD1 | IRQ_TEMP2);
+> > +}
+> 
+> Merge the two into one with a second parameter which is bool?
+> rcar_gen3_irq_enable(priv, true/false)?
+
+OK
+
+> 
+> >  	pm_runtime_enable(dev);
+> > @@ -277,6 +388,8 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+> >  
+> >  	for (i = 0; i < TSC_MAX_NUM; i++) {
+> >  		struct rcar_gen3_thermal_tsc *tsc;
+> > +		char *irqname;
+> > +		int irq;
+> >  
+> >  		tsc = devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
+> >  		if (!tsc) {
+> > @@ -299,6 +412,25 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+> >  			goto error_unregister;
+> >  		}
+> >  
+> > +		irq = platform_get_irq(pdev, i);
+> 
+> Hmmm, with reusing 'i' for getting the interrupt resource, you assume
+> that the number of TSC will always equal the number of interrupts. It's
+> somewhat reasonable, yet we have seen enough surprises in HW to better
+> not assume it IMO.
+> 
+> Another advantage of decoupling it into a seperate loop is that you only
+> need to register as much interrupts as the driver actually uses. It uses
+> 2 interrupts, so no need for installing 3 handlers, no?
+
+That is correct, will update for next version.
+
+> 
+> > +		if (irq < 0) {
+> > +			ret = irq;
+> > +			goto error_unregister;
+> > +		}
+> 
+> ...
+> 
+> > +
+> > +		dev_info(tsc->dev, "TSC%d: Loaded %d trip points\n", tsc->num,
+> > +			 of_thermal_get_ntrips(tsc->zone));
+> 
+> I'd think the of_thermal_get_ntrips is a little bit hidden in the
+> dev_info. Would like it more explicitly. Also, it cannot fail? What
+> happens if DT provides broken trip points...
+
+All thermal zones are parsed by the thermal core by 
+of_parse_thermal_zones() called from thermal_init() which is called 
+using fs_initcall(thermal_init). Then the call chain
+
+devm_thermal_zone_of_sensor_register()
+    thermal_zone_of_sensor_register()
+       thermal_zone_of_add_sensor()
+          thermal_zone_get_zone_by_name()
+
+Finds the zone parsed at init time, so if the zone is broken in some way 
+it would not be available and devm_thermal_zone_of_sensor_register() 
+would fail.
+
+But you are correct of_thermal_get_ntrips() could return -ENODEV I will 
+add check for this and error out if that is the case.
+
+> 
+> >  	}
+> >  
+> > +	rcar_thermal_irq_enable(priv);
+> 
+> ... because we enable interrupts unconditionally here?
+> 
+> Regards,
+> 
+>    Wolfram
+> 
+
 -- 
-2.9.3
+Regards,
+Niklas Söderlund
