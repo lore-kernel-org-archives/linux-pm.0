@@ -1,42 +1,69 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] PM / Domain: remove conditional from error case
-Date: Fri, 17 Mar 2017 11:19:21 +0530
-Message-ID: <4e38240a7a65b5a7de90d4a0feb2dac277024aa6.1489729740.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v7 1/3] x86/mm: Adapt MODULES_END based on Fixmap section
+ size
+Date: Fri, 17 Mar 2017 08:34:37 +0100
+Message-ID: <20170317073437.GA14797@gmail.com>
+References: <20170314170508.100882-1-thgarnie@google.com>
+ <20170316081013.GB7815@gmail.com>
+ <CAJcbSZEB09inR2KLF_puOnmAK7QUv-zJHcguiF0qucUYTtg1Pw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <CAJcbSZEB09inR2KLF_puOnmAK7QUv-zJHcguiF0qucUYTtg1Pw@mail.gmail.com>
+Sender: owner-linux-mm@kvack.org
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Jonathan Corbet <corbet@lwn.net>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Lorenzo Stoakes <lstoakes@gmail.com>, Kees Cook <keescook@chromium.org>, Juergen Gross <jgross@suse.com>, Andy Lutomirski <luto@kernel.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, zijun_hu <zijun_hu@htc.com>, Chris Wilson <chris@chris-wilson.co.uk>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ost>
 List-Id: linux-pm@vger.kernel.org
 
-There is no point running the conditional 'if' statement if the genpd
-isn't present.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/domain.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+* Thomas Garnier <thgarnie@google.com> wrote:
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 202effbebfd1..03dd7a61f08a 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1789,12 +1789,12 @@ int of_genpd_add_provider_simple(struct device_node *np,
- 
- 	mutex_lock(&gpd_list_lock);
- 
--	if (pm_genpd_present(genpd))
-+	if (pm_genpd_present(genpd)) {
- 		ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
--
--	if (!ret) {
--		genpd->provider = &np->fwnode;
--		genpd->has_provider = true;
-+		if (!ret) {
-+			genpd->provider = &np->fwnode;
-+			genpd->has_provider = true;
-+		}
- 	}
- 
- 	mutex_unlock(&gpd_list_lock);
--- 
-2.12.0.432.g71c3a4f4ba37
+> On Thu, Mar 16, 2017 at 1:10 AM, Ingo Molnar <mingo@kernel.org> wrote:
+> >
+> > Note that asm/fixmap.h is an x86-ism that isn't present in many other
+> > architectures, so this hunk will break the build.
+> >
+> > To make progress with these patches I've fixed it up with an ugly #ifdef
+> > CONFIG_X86, but it needs a real solution instead before this can be pushed
+> > upstream.
+> 
+> I also saw an error on x86 tip on special configuration. I found this
+> new patch below to be a good solution to both.
+> 
+> Let me know what you think.
+> 
+> =====
+> 
+> This patch aligns MODULES_END to the beginning of the Fixmap section.
+> It optimizes the space available for both sections. The address is
+> pre-computed based on the number of pages required by the Fixmap
+> section.
+> 
+> It will allow GDT remapping in the Fixmap section. The current
+> MODULES_END static address does not provide enough space for the kernel
+> to support a large number of processors.
+> 
+> Signed-off-by: Thomas Garnier <thgarnie@google.com>
+> ---
+> Based on next-20170308
+> ---
+>  Documentation/x86/x86_64/mm.txt         | 5 ++++-
+>  arch/x86/include/asm/pgtable_64.h       | 1 +
+>  arch/x86/include/asm/pgtable_64_types.h | 3 ++-
+>  3 files changed, 7 insertions(+), 2 deletions(-)
+
+The patch is heavily whitespace and line wrap damaged :-(
+
+Please send a properly titled, changelogged delta patch against tip:master (or 
+tip:x86/mm) to remove the CONFIG_X86 hack and fix the build bug.
+
+Thanks,
+
+	Ingo
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
