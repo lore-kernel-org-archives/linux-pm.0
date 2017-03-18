@@ -1,110 +1,153 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [09/15] power: supply: bq24190_charger: Add voltage_max_design
- prop to battery
-Date: Sat, 18 Mar 2017 12:34:34 -0700
-Message-ID: <CAKvHMgQEqa1aTZQs-34R_207UTDp5s3YHPbyxeQoAA4oMCgokg@mail.gmail.com>
-References: <20170318071019.4561-6-liam@networkimprov.net> <6c675434-4ac1-2cd4-c4e3-7edf7a3b5af5@redhat.com>
+Subject: Re: [07/15] power: supply: bq24190_charger: Add support for bq24192[i]
+Date: Sat, 18 Mar 2017 12:10:00 -0700
+Message-ID: <CAKvHMgRXc+OAZkfDf6TZiFQgCT_L0mUvjnmOORm3skoxF4izWw@mail.gmail.com>
+References: <20170318071019.4561-4-liam@networkimprov.net> <d670369f-4f0c-2658-e6e2-4c6e4604f987@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:34542 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751708AbdCRTeg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 15:34:36 -0400
-Received: by mail-it0-f65.google.com with SMTP id r141so10071331ita.1
-        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 12:34:35 -0700 (PDT)
-In-Reply-To: <6c675434-4ac1-2cd4-c4e3-7edf7a3b5af5@redhat.com>
+Received: from mail-it0-f67.google.com ([209.85.214.67]:34955 "EHLO
+        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751174AbdCRTmW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 15:42:22 -0400
+Received: by mail-it0-f67.google.com with SMTP id y18so10124719itc.2
+        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 12:42:21 -0700 (PDT)
+In-Reply-To: <d670369f-4f0c-2658-e6e2-4c6e4604f987@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-On Sat, Mar 18, 2017 at 7:34 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+On Sat, Mar 18, 2017 at 7:30 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 > Hi,
 >
 > On 18-03-17 08:10, Liam Breck wrote:
 >>
->> On Fri, 17 Mar 2017 10:55:21 +0100, Hans de Goede wrote:
+>> On Fri, 17 Mar 2017 10:55:19 +0100, Hans de Goede wrote:
 >>
->>> When combined with an external fuel-gauge, upower needs
->>> voltage_max_design
->>> as it internally does all its calculations in Watts and converts the
->>> charge_foo properties from A to Watts by using voltage_max_design.
+>>> The bq24192 and bq24192i are mostly identical to the bq24190, TI even
+>>> published a single datasheet for all 3 of them. The difference
+>>> between the bq24190 and bq24192[i] is the way charger-type detection
+>>> is done, the bq24190 is to be directly connected to the USB a/b lines,
+>>> where as the the bq24192[i] has a gpio which should be driven high/low
+>>> externally depending on the type of charger connected, from a register
+>>> level access pov there is no difference.
+>>>
+>>> The differences between the bq24192 and bq24192i are:
+>>> 1) Lower default charge rate on the bq24192i
+>>> 2) Pre-charge-current can be max 640 mA on the bq24192i
+>>>
+>>> Since we do not provide an API for setting the pre-charge-current,
+>>> these differences can be ignored and we can simply use the existing
+>>> code as-is with the bq24192 and bq24192i.
 >>
 >>
->> This is a battery characteristic which should be obtained from the fuel
->> gauge (e.g. V at charge
->> termination)
+>> FYI, coming patchset will set pre- and termination-charge current via DT.
 >
 >
-> V at charge termination is *exactly* what bq24190_charger_get_voltage()
-> returns. And the fuel-gauge only measures charging it does not control
-> it, so unless we had some nvram to store things in over time the fg
-> driver cannot no what "V at charge termination" will be, where as the
-> bq24190_charger code actually knows as it controls at which voltage
-> the charger switches from constant current to constant voltage mode.
->
->> or external battery config.
->>
->> See also https://patchwork.kernel.org/patch/9626487/
->
->
-> There is no external battery config on x86.
-
-ACPI? The battery data/config should really be used to set the charger
-register in question.
-
-charger/voltage_max already has this. Can you find a way to use that?
-
-> Regards,
->
-> Hans
+> Ok, note that this again is something which we cannot do on x86,
+> so we need to retain the BIOS set values there. I assume this will
+> not be a problem since you will need to keep the driver working
+> with device-trees which do not specify this info, for compatibility
+> with existing devicetrees.
 >
 >
 >>
 >>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 >>> ---
->>>  drivers/power/supply/bq24190_charger.c | 10 +++++++++-
->>>  1 file changed, 9 insertions(+), 1 deletion(-)
+>>>  drivers/power/supply/bq24190_charger.c | 12 ++++++++++--
+>>>  1 file changed, 10 insertions(+), 2 deletions(-)
 >>>
 >>> diff --git a/drivers/power/supply/bq24190_charger.c
 >>> b/drivers/power/supply/bq24190_charger.c
->>> index 9fe69a5..82cb33d 100644
+>>> index 9c4b171..9014dee 100644
 >>> --- a/drivers/power/supply/bq24190_charger.c
 >>> +++ b/drivers/power/supply/bq24190_charger.c
->>> @@ -1103,6 +1103,13 @@ static int bq24190_battery_get_property(struct
->>> power_supply *psy,
->>>                 val->intval = POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
->>>                 ret = 0;
->>>                 break;
->>> +       case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
->>> +               /*
->>> +                * Report charger configured voltage as max design
->>> voltage,
->>> +                * not entirely correct, but userspace needs something
->>> here.
->>> +                */
->>> +               ret = bq24190_charger_get_voltage(bdi, val);
+>>> @@ -1275,7 +1275,14 @@ static int bq24190_hw_init(struct bq24190_dev_info
+>>> *bdi)
+>>>         if (ret < 0)
+>>>                 goto out;
+>>>
+>>> -       if (v != bdi->model) {
+>>> +       switch (v) {
+>>> +       case BQ24190_REG_VPRS_PN_24190:
+>>> +       case BQ24190_REG_VPRS_PN_24192:
+>>> +       case BQ24190_REG_VPRS_PN_24192I:
+>>> +               bdi->model = v;
+>>
+>>
+>> We should set model in probe(). Doesn't the previous code still work?
+>
+>
+> On x86 we know we have a variant but not which variant, since the
+> driver supports all variants we can simply make the driver flexible
+> enough to handle all variants and be done with it.
+
+How do we know it supports all variants sufficiently?
+
+>>
 >>> +               break;
->>>         case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
->>>                 ret = bq24190_battery_get_temp_alert_max(bdi, val);
->>>                 break;
->>> @@ -1169,6 +1176,7 @@ static enum power_supply_property
->>> bq24190_battery_properties[] = {
->>>         POWER_SUPPLY_PROP_HEALTH,
->>>         POWER_SUPPLY_PROP_ONLINE,
->>>         POWER_SUPPLY_PROP_TECHNOLOGY,
->>> +       POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
->>>         POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
->>>         POWER_SUPPLY_PROP_SCOPE,
->>>         /* Begin of extended battery properties */
->>> @@ -1186,7 +1194,7 @@ static const struct power_supply_desc
->>> bq24190_battery_desc = {
->>>         .name                   = "bq24190-battery",
->>>         .type                   = POWER_SUPPLY_TYPE_BATTERY,
->>>         .properties             = bq24190_battery_properties,
->>> -       .num_properties         = 6,
->>> +       .num_properties         = 7,
->>>         .get_property           = bq24190_battery_get_property,
->>>         .set_property           = bq24190_battery_set_property,
->>>         .property_is_writeable  = bq24190_battery_property_is_writeable,
+>>> +       default:
+>>> +               dev_err(bdi->dev, "Error unknown model: 0x%02x\n", v);
+>>
+>>
+>> Feel free to add the error msg.
+>>
+>>>                 ret = -ENODEV;
+>>>                 goto out;
+>>>         }
+>>> @@ -1316,7 +1323,6 @@ static int bq24190_probe(struct i2c_client *client,
+>>>
+>>>         bdi->client = client;
+>>>         bdi->dev = dev;
+>>> -       bdi->model = id->driver_data;
+>>
+>>
+>> Is driver_data no longer always correct?
+>
+>
+> See above, I was actually planning on dropping the
+> setting of driver_data from the ids tables, but I forgot.
+
+I suspect we want a platform_data field and
+
+bdi->model = pdata ? pdata->model : id->driver_data
+
+>>
+>>>         bdi->pdata = client->dev.platform_data;
+>>>         strncpy(bdi->model_name, id->name, I2C_NAME_SIZE);
+>>>         mutex_init(&bdi->f_reg_lock);
+>>> @@ -1450,6 +1456,8 @@ static SIMPLE_DEV_PM_OPS(bq24190_pm_ops,
+>>> bq24190_pm_suspend, bq24190_pm_resume);
+>>>   */
+>>>  static const struct i2c_device_id bq24190_i2c_ids[] = {
+>>>         { "bq24190", BQ24190_REG_VPRS_PN_24190 },
+>>> +       { "bq24192", BQ24190_REG_VPRS_PN_24192 },
+>>> +       { "bq24192i", BQ24190_REG_VPRS_PN_24192I },
+>>
+>>
+>> This may be the only essential change.
+>
+>
+> See above, actually this should have been:
+>
+> static const struct i2c_device_id bq24190_i2c_ids[] = {
+>         { "bq24190" },
+>         { "bq24192" },
+>         { "bq24192i" },
+>         { },
+> };
+>
+> Or (also works for me): just:
+>
+> static const struct i2c_device_id bq24190_i2c_ids[] = {
+>         { "bq24190" },
+>         { },
+> };
+>
+> And use the same compatible for all variants as they are
+> all compatible anyways.
+>
+> Regards,
+>
+> Hans
