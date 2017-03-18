@@ -1,152 +1,303 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [07/15] power: supply: bq24190_charger: Add support for bq24192[i]
-Date: Sat, 18 Mar 2017 12:10:00 -0700
-Message-ID: <CAKvHMgRXc+OAZkfDf6TZiFQgCT_L0mUvjnmOORm3skoxF4izWw@mail.gmail.com>
-References: <20170318071019.4561-4-liam@networkimprov.net> <d670369f-4f0c-2658-e6e2-4c6e4604f987@redhat.com>
+Subject: Re: [10/15] power: supply: bq24190_charger: Use extcon to determine
+ ilimit, 5v boost
+Date: Sat, 18 Mar 2017 12:57:05 -0700
+Message-ID: <CAKvHMgRT4K8MctU+AZKzeikec1TUiuzo8Jpw2OSJBWw5DA7yGg@mail.gmail.com>
+References: <20170318071019.4561-7-liam@networkimprov.net> <7c95dcef-b93f-0f71-8f1c-13f1329eb64d@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f67.google.com ([209.85.214.67]:34955 "EHLO
-        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751174AbdCRTmW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 15:42:22 -0400
-Received: by mail-it0-f67.google.com with SMTP id y18so10124719itc.2
-        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 12:42:21 -0700 (PDT)
-In-Reply-To: <d670369f-4f0c-2658-e6e2-4c6e4604f987@redhat.com>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:33392 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751127AbdCRT5H (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 15:57:07 -0400
+Received: by mail-it0-f65.google.com with SMTP id g138so10071818itb.0
+        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 12:57:06 -0700 (PDT)
+In-Reply-To: <7c95dcef-b93f-0f71-8f1c-13f1329eb64d@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-On Sat, Mar 18, 2017 at 7:30 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+On Sat, Mar 18, 2017 at 7:42 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 > Hi,
 >
 > On 18-03-17 08:10, Liam Breck wrote:
 >>
->> On Fri, 17 Mar 2017 10:55:19 +0100, Hans de Goede wrote:
+>> Tony, question for you below...
 >>
->>> The bq24192 and bq24192i are mostly identical to the bq24190, TI even
->>> published a single datasheet for all 3 of them. The difference
->>> between the bq24190 and bq24192[i] is the way charger-type detection
->>> is done, the bq24190 is to be directly connected to the USB a/b lines,
->>> where as the the bq24192[i] has a gpio which should be driven high/low
->>> externally depending on the type of charger connected, from a register
->>> level access pov there is no difference.
->>>
->>> The differences between the bq24192 and bq24192i are:
->>> 1) Lower default charge rate on the bq24192i
->>> 2) Pre-charge-current can be max 640 mA on the bq24192i
->>>
->>> Since we do not provide an API for setting the pre-charge-current,
->>> these differences can be ignored and we can simply use the existing
->>> code as-is with the bq24192 and bq24192i.
+>> On Fri, 17 Mar 2017 10:55:22 +0100, Hans de Goede wrote:
+>>
+>>> Add support for monitoring an extcon device with SDP/CDP/DCP and HOST
 >>
 >>
->> FYI, coming patchset will set pre- and termination-charge current via DT.
+>> insert: USB X.0
+>>
+>>> cables and adjust ilimit and enable/disable the 5v boost converter
+>>> accordingly. This is necessary on systems where the PSEL pin is hardwired
+>>> high and ILIM needs to be set by software based on the detected charger
+>>> type.
+>>
+>>
+>> This description is rather thin for the extent of the changes. What
+>> specific systems
+>> require this?
 >
 >
-> Ok, note that this again is something which we cannot do on x86,
-> so we need to retain the BIOS set values there. I assume this will
-> not be a problem since you will need to keep the driver working
-> with device-trees which do not specify this info, for compatibility
-> with existing devicetrees.
+> Systems which use a variant with a PSEL pin where the PSEL pin is hardwired
+> high.
+
+I gathered that :-p  It's illuminating to include detailed background
+in a patch description; please paint us a picture :-)
+
+Also you can set IINLIM via sysfs, so consider doing this from the
+PMIC driver, or pseudo-driver. I don't see that BQ24190 generally
+needs to handle extcon events.
+
+>> What drivers generate the event?
+>
+>
+> The driver which registers the extcon with the name "extcon_name"
+> the bq24190_charger driver really does not need to know more.
+> In the use-case we are talking about now the driver is
+> the new extcon-cht-wc.c driver which is part of the patch-set
+> as I initially posted it.
+>
+>> Also provide URLs to docs/datasheets.
+>
+>
+> I've no access to docs / datasheets for the Whiskey Cove PMIC.
 >
 >
 >>
 >>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 >>> ---
->>>  drivers/power/supply/bq24190_charger.c | 12 ++++++++++--
->>>  1 file changed, 10 insertions(+), 2 deletions(-)
+>>>  drivers/power/supply/Kconfig           |  1 +
+>>>  drivers/power/supply/bq24190_charger.c | 85
+>>> ++++++++++++++++++++++++++++++++++
+>>>  include/linux/power/bq24190_charger.h  |  1 +
+>>>  3 files changed, 87 insertions(+)
 >>>
+>>> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+>>> index f8b6e64..fd93110 100644
+>>> --- a/drivers/power/supply/Kconfig
+>>> +++ b/drivers/power/supply/Kconfig
+>>> @@ -442,6 +442,7 @@ config CHARGER_BQ2415X
+>>>  config CHARGER_BQ24190
+>>>         tristate "TI BQ24190 battery charger driver"
+>>>         depends on I2C
+>>> +       depends on EXTCON
+>>>         depends on GPIOLIB || COMPILE_TEST
+>>>         help
+>>>           Say Y to enable support for the TI BQ24190 battery charger.
 >>> diff --git a/drivers/power/supply/bq24190_charger.c
 >>> b/drivers/power/supply/bq24190_charger.c
->>> index 9c4b171..9014dee 100644
+>>> index 82cb33d..03990e2 100644
 >>> --- a/drivers/power/supply/bq24190_charger.c
 >>> +++ b/drivers/power/supply/bq24190_charger.c
->>> @@ -1275,7 +1275,14 @@ static int bq24190_hw_init(struct bq24190_dev_info
->>> *bdi)
->>>         if (ret < 0)
->>>                 goto out;
+>>> @@ -11,10 +11,12 @@
+>>>  #include <linux/module.h>
+>>>  #include <linux/interrupt.h>
+>>>  #include <linux/delay.h>
+>>> +#include <linux/extcon.h>
+>>>  #include <linux/of_irq.h>
+>>>  #include <linux/of_device.h>
+>>>  #include <linux/pm_runtime.h>
+>>>  #include <linux/power_supply.h>
+>>> +#include <linux/workqueue.h>
+>>>  #include <linux/gpio.h>
+>>>  #include <linux/i2c.h>
 >>>
->>> -       if (v != bdi->model) {
->>> +       switch (v) {
->>> +       case BQ24190_REG_VPRS_PN_24190:
->>> +       case BQ24190_REG_VPRS_PN_24192:
->>> +       case BQ24190_REG_VPRS_PN_24192I:
->>> +               bdi->model = v;
->>
->>
->> We should set model in probe(). Doesn't the previous code still work?
->
->
-> On x86 we know we have a variant but not which variant, since the
-> driver supports all variants we can simply make the driver flexible
-> enough to handle all variants and be done with it.
-
-How do we know it supports all variants sufficiently?
-
->>
->>> +               break;
->>> +       default:
->>> +               dev_err(bdi->dev, "Error unknown model: 0x%02x\n", v);
->>
->>
->> Feel free to add the error msg.
->>
->>>                 ret = -ENODEV;
->>>                 goto out;
->>>         }
->>> @@ -1316,7 +1323,6 @@ static int bq24190_probe(struct i2c_client *client,
->>>
->>>         bdi->client = client;
->>>         bdi->dev = dev;
->>> -       bdi->model = id->driver_data;
->>
->>
->> Is driver_data no longer always correct?
->
->
-> See above, I was actually planning on dropping the
-> setting of driver_data from the ids tables, but I forgot.
-
-I suspect we want a platform_data field and
-
-bdi->model = pdata ? pdata->model : id->driver_data
-
->>
->>>         bdi->pdata = client->dev.platform_data;
->>>         strncpy(bdi->model_name, id->name, I2C_NAME_SIZE);
->>>         mutex_init(&bdi->f_reg_lock);
->>> @@ -1450,6 +1456,8 @@ static SIMPLE_DEV_PM_OPS(bq24190_pm_ops,
->>> bq24190_pm_suspend, bq24190_pm_resume);
+>>> @@ -39,6 +41,8 @@
+>>>  #define BQ24190_REG_POC_WDT_RESET_SHIFT                6
+>>>  #define BQ24190_REG_POC_CHG_CONFIG_MASK                (BIT(5) | BIT(4))
+>>>  #define BQ24190_REG_POC_CHG_CONFIG_SHIFT       4
+>>> +#define BQ24190_REG_POC_CHG_CONFIG_CHARGE      1
+>>> +#define BQ24190_REG_POC_CHG_CONFIG_OTG         2
+>>>  #define BQ24190_REG_POC_SYS_MIN_MASK           (BIT(3) | BIT(2) |
+>>> BIT(1))
+>>>  #define BQ24190_REG_POC_SYS_MIN_SHIFT          1
+>>>  #define BQ24190_REG_POC_BOOST_LIM_MASK         BIT(0)
+>>> @@ -152,6 +156,9 @@ struct bq24190_dev_info {
+>>>         struct power_supply             *charger;
+>>>         struct power_supply             *battery;
+>>>         struct bq24190_platform_data    *pdata;
+>>> +       struct extcon_dev               *extcon;
+>>> +       struct notifier_block           extcon_nb;
+>>> +       struct work_struct              extcon_work;
+>>>         char                            model_name[I2C_NAME_SIZE];
+>>>         kernel_ulong_t                  model;
+>>>         struct mutex                    f_reg_lock;
+>>> @@ -167,6 +174,11 @@ struct bq24190_dev_info {
+>>>   * number at that index in the array is the real-world value that it
+>>>   * represents.
 >>>   */
->>>  static const struct i2c_device_id bq24190_i2c_ids[] = {
->>>         { "bq24190", BQ24190_REG_VPRS_PN_24190 },
->>> +       { "bq24192", BQ24190_REG_VPRS_PN_24192 },
->>> +       { "bq24192i", BQ24190_REG_VPRS_PN_24192I },
+>>> +
+>>> +/* REG00[2:0] (IINLIM) in uAh */
+>>> +static const int bq24190_iinlim_values[] = {
+>>> +       100000, 150000, 500000, 900000, 1200000, 1500000, 2000000,
+>>> 3000000 };
+>>> +
+>>>  /* REG02[7:2] (ICHG) in uAh */
+>>>  static const int bq24190_ccc_ichg_values[] = {
+>>>          512000,  576000,  640000,  704000,  768000,  832000,  896000,
+>>> 960000,
+>>> @@ -1290,6 +1302,61 @@ static irqreturn_t bq24190_irq_handler_thread(int
+>>> irq, void *data)
+>>>         return IRQ_HANDLED;
+>>>  }
+>>>
+>>> +static void bq24190_extcon_work(struct work_struct *work)
+>>> +{
 >>
 >>
->> This may be the only essential change.
+>> Does this need pm_runtime_get_sync(), etc?
+>> (See linux-next patches to driver.)
 >
 >
-> See above, actually this should have been:
+> Yes with runtime pm this will need to do a
+> pm_runtime_get_sync(bdi->Dev) before accessing
+> the device.
 >
-> static const struct i2c_device_id bq24190_i2c_ids[] = {
->         { "bq24190" },
->         { "bq24192" },
->         { "bq24192i" },
->         { },
-> };
 >
-> Or (also works for me): just:
 >
-> static const struct i2c_device_id bq24190_i2c_ids[] = {
->         { "bq24190" },
->         { },
-> };
 >
-> And use the same compatible for all variants as they are
-> all compatible anyways.
+>>
+>>> +       struct bq24190_dev_info *bdi =
+>>> +               container_of(work, struct bq24190_dev_info, extcon_work);
+>>> +       int ret, iinlim = 0;
+>>> +
+>>> +       if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_SDP) == 1)
+>>> +               iinlim = 500000;
+>>> +       else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_CDP) == 1
+>>> ||
+>>> +                extcon_get_state(bdi->extcon, EXTCON_CHG_USB_ACA) == 1)
+>>> +               iinlim = 1500000;
+>>> +       else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_DCP) == 1)
+>>> +               iinlim = 2000000;
+>>> +
+>>> +       if (iinlim) {
+>>> +               ret = bq24190_set_field_val(bdi, BQ24190_REG_ISC,
+>>> +                               BQ24190_REG_ISC_IINLIM_MASK,
+>>> +                               BQ24190_REG_ISC_IINLIM_SHIFT,
+>>> +                               bq24190_iinlim_values,
+>>> +                               ARRAY_SIZE(bq24190_iinlim_values),
+>>> +                               iinlim);
+>>> +               if (ret)
+>>> +                       dev_err(bdi->dev, "Can't set IINLIM: %d\n", ret);
+>>> +       }
+>>> +
+>>> +       /*
+>>> +        * If no charger has been detected and host mode is requested,
+>>> activate
+>>> +        * the 5V boost converter, otherwise deactivate it.
+>>> +        */
+>>> +       if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) ==
+>>> 1) {
+>>> +               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>>> +                                        BQ24190_REG_POC_CHG_CONFIG_MASK,
+>>> +
+>>> BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+>>> +                                        BQ24190_REG_POC_CHG_CONFIG_OTG);
+>>> +       } else {
+>>> +               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>>> +                                        BQ24190_REG_POC_CHG_CONFIG_MASK,
+>>> +
+>>> BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+>>> +
+>>> BQ24190_REG_POC_CHG_CONFIG_CHARGE);
+>>> +       }
+>>> +       if (ret)
+>>> +               dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", ret);
+>>> +}
+>>> +
+>>> +static int bq24190_extcon_event(struct notifier_block *nb, unsigned long
+>>> event,
+>>> +                               void *param)
+>>> +{
+>>> +       struct bq24190_dev_info *bdi =
+>>> +               container_of(nb, struct bq24190_dev_info, extcon_nb);
+>>> +
+>>> +       schedule_work(&bdi->extcon_work);
+>>> +
+>>> +       return NOTIFY_OK;
+>>> +}
+>>> +
+>>>  static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+>>>  {
+>>>         u8 v;
+>>> @@ -1375,6 +1442,12 @@ static int bq24190_probe(struct i2c_client
+>>> *client,
+>>>                         return -EPROBE_DEFER;
+>>>         }
+>>>
+>>> +       if (bdi->pdata && bdi->pdata->extcon_name) {
+>>
+>>
+>> Verify that extcon_name has an expected value?
+>
+>
+> The whole idea is that the bq24190 does not need to care about
+> which extcon driver it is told to use, just that it has to
+> use *a* extcon driver.
+>
+>>
+>>> +               bdi->extcon =
+>>> extcon_get_extcon_dev(bdi->pdata->extcon_name);
+>>> +               if (!bdi->extcon)
+>>> +                       return -EPROBE_DEFER;
+>>
+>>
+>> dev_info() a msg about this linkage, including info about the other side.
+>
+>
+> dev_info on success I assume, not on PROBE_DEFER, otherwise we will
+> end up spamming the log quite a lot while modules are loading.
+>
+>
+>
+>
+>>
+>>> +       }
+>>> +
+>>>         pm_runtime_enable(dev);
+>>>         pm_runtime_resume(dev);
+>>>
+>>> @@ -1423,6 +1496,18 @@ static int bq24190_probe(struct i2c_client
+>>> *client,
+>>>                 goto out4;
+>>>         }
+>>>
+>>> +       if (bdi->extcon) {
+>>> +               INIT_WORK(&bdi->extcon_work, bq24190_extcon_work);
+>>> +               bdi->extcon_nb.notifier_call = bq24190_extcon_event;
+>>> +               ret = devm_extcon_register_notifier(dev, bdi->extcon, -1,
+>>> +                                                   &bdi->extcon_nb);
+>>> +               if (ret)
+>>> +                       goto out4;
+>>> +
+>>> +               /* Sync initial cable state */
+>>> +               schedule_work(&bdi->extcon_work);
+>>> +       }
+>>> +
+>>>         return 0;
+>>>
+>>>  out4:
+>>> diff --git a/include/linux/power/bq24190_charger.h
+>>> b/include/linux/power/bq24190_charger.h
+>>> index 02d248b..909c5b9 100644
+>>> --- a/include/linux/power/bq24190_charger.h
+>>> +++ b/include/linux/power/bq24190_charger.h
+>>> @@ -13,6 +13,7 @@
+>>>
+>>>  struct bq24190_platform_data {
+>>>         bool no_register_reset;
+>>> +       const char *extcon_name;
+>>>         int (*get_ext_bat_property)(enum power_supply_property prop,
+>>>                                     union power_supply_propval *val);
+>>>  };
+>>
+>>
 >
 > Regards,
 >
