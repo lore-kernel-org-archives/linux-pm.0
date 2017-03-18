@@ -1,40 +1,90 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 3/7] thermal: rcar_gen3_thermal: check that TSC exists
- before memory allocation
-Date: Sat, 18 Mar 2017 15:06:54 +0100
-Message-ID: <CAMuHMdWHFWTpLcf9dVut-0G359mCWuoknNJ+Y2Fuum+-+XFh_g@mail.gmail.com>
-References: <20170317155300.21566-1-niklas.soderlund+renesas@ragnatech.se> <20170317155300.21566-4-niklas.soderlund+renesas@ragnatech.se>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [09/15] power: supply: bq24190_charger: Add voltage_max_design
+ prop to battery
+Date: Sat, 18 Mar 2017 15:34:54 +0100
+Message-ID: <6c675434-4ac1-2cd4-c4e3-7edf7a3b5af5@redhat.com>
+References: <20170318071019.4561-6-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20170317155300.21566-4-niklas.soderlund+renesas@ragnatech.se>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:3900 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751555AbdCROqN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 18 Mar 2017 10:46:13 -0400
+In-Reply-To: <20170318071019.4561-6-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-On Fri, Mar 17, 2017 at 4:52 PM, Niklas S=C3=B6derlund
-<niklas.soderlund+renesas@ragnatech.se> wrote:
-> Move the check for a TSC resource before allocating memory for a new
-> TSC. If no TSC is found there is little point in allocating memory for
-> it.
+Hi,
+
+On 18-03-17 08:10, Liam Breck wrote:
+> On Fri, 17 Mar 2017 10:55:21 +0100, Hans de Goede wrote:
 >
-> Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.=
-se>
+>> When combined with an external fuel-gauge, upower needs voltage_max_design
+>> as it internally does all its calculations in Watts and converts the
+>> charge_foo properties from A to Watts by using voltage_max_design.
+>
+> This is a battery characteristic which should be obtained from the fuel gauge (e.g. V at charge
+> termination)
 
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+V at charge termination is *exactly* what bq24190_charger_get_voltage()
+returns. And the fuel-gauge only measures charging it does not control
+it, so unless we had some nvram to store things in over time the fg
+driver cannot no what "V at charge termination" will be, where as the
+bq24190_charger code actually knows as it controls at which voltage
+the charger switches from constant current to constant voltage mode.
 
-Gr{oetje,eeting}s,
+> or external battery config.
+>
+> See also https://patchwork.kernel.org/patch/9626487/
 
-                        Geert
+There is no external battery config on x86.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+Regards,
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+Hans
+
+>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> ---
+>>  drivers/power/supply/bq24190_charger.c | 10 +++++++++-
+>>  1 file changed, 9 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+>> index 9fe69a5..82cb33d 100644
+>> --- a/drivers/power/supply/bq24190_charger.c
+>> +++ b/drivers/power/supply/bq24190_charger.c
+>> @@ -1103,6 +1103,13 @@ static int bq24190_battery_get_property(struct power_supply *psy,
+>>  		val->intval = POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
+>>  		ret = 0;
+>>  		break;
+>> +	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+>> +		/*
+>> +		 * Report charger configured voltage as max design voltage,
+>> +		 * not entirely correct, but userspace needs something here.
+>> +		 */
+>> +		ret = bq24190_charger_get_voltage(bdi, val);
+>> +		break;
+>>  	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+>>  		ret = bq24190_battery_get_temp_alert_max(bdi, val);
+>>  		break;
+>> @@ -1169,6 +1176,7 @@ static enum power_supply_property bq24190_battery_properties[] = {
+>>  	POWER_SUPPLY_PROP_HEALTH,
+>>  	POWER_SUPPLY_PROP_ONLINE,
+>>  	POWER_SUPPLY_PROP_TECHNOLOGY,
+>> +	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
+>>  	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
+>>  	POWER_SUPPLY_PROP_SCOPE,
+>>  	/* Begin of extended battery properties */
+>> @@ -1186,7 +1194,7 @@ static const struct power_supply_desc bq24190_battery_desc = {
+>>  	.name			= "bq24190-battery",
+>>  	.type			= POWER_SUPPLY_TYPE_BATTERY,
+>>  	.properties		= bq24190_battery_properties,
+>> -	.num_properties		= 6,
+>> +	.num_properties		= 7,
+>>  	.get_property		= bq24190_battery_get_property,
+>>  	.set_property		= bq24190_battery_set_property,
+>>  	.property_is_writeable	= bq24190_battery_property_is_writeable,
