@@ -1,114 +1,56 @@
-From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>
-Subject: [PATCH 2/2] thermal: broadcom: add Raspberry Pi thermal driver
-Date: Sat, 18 Mar 2017 01:01:32 +0100
-Message-ID: <20170318000132.9212-2-zajec5@gmail.com>
+From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH V2 1/2] dt-bindings: thermal: add support for Raspberry Pi thermal
+Date: Sat, 18 Mar 2017 01:06:02 +0100
+Message-ID: <20170318000603.10158-1-zajec5@gmail.com>
 References: <20170318000132.9212-1-zajec5@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170318000132.9212-1-zajec5@gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Scott Branden <sbranden@broadcom.com>, Stephen Warren <swarren@wwwdotorg.org>, Ray Jui <rjui@broadcom.com>, linux-pm@vger.kernel.org, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Rob Herring <robh+dt@kernel.org>, bcm-kernel-feedback-list@broadcom.com, linux-rpi-kernel@lists.infradead.org, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170318000132.9212-1-zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogUmFmYcWCIE1pxYJlY2tpIDxyYWZhbEBtaWxlY2tpLnBsPgoKUmFzcGJlcnJ5IFBpIGRl
-dmljZXMgdXNlIEJDTTI4M1s1NjddIFNvQ3Mgd2l0aCBhIHRoZXJtYWwgZGV2aWNlIGluc2lkZS4K
-UXVlcnlpbmcgaXQgaXMgcG9zc2libGUgdXNpbmcgUmFzcGJlcnJ5IHNwZWNpZmljIGZpcm13YXJl
-IGludGVyZmFjZS4KVGhpcyBzaW1wbGUgZHJpdmVyIGFsbG93cyByZWFkaW5nIFNvQyB0ZW1wZXJh
-dHVyZS4KClNpZ25lZC1vZmYtYnk6IFJhZmHFgiBNacWCZWNraSA8cmFmYWxAbWlsZWNraS5wbD4K
-LS0tCiBkcml2ZXJzL3RoZXJtYWwvS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAgIHwgIDUg
-KysKIGRyaXZlcnMvdGhlcm1hbC9NYWtlZmlsZSAgICAgICAgICAgICAgICAgICAgICAgfCAgMSAr
-CiBkcml2ZXJzL3RoZXJtYWwvYnJvYWRjb20vS2NvbmZpZyAgICAgICAgICAgICAgIHwgIDcgKysr
-CiBkcml2ZXJzL3RoZXJtYWwvYnJvYWRjb20vTWFrZWZpbGUgICAgICAgICAgICAgIHwgIDEgKwog
-ZHJpdmVycy90aGVybWFsL2Jyb2FkY29tL3Jhc3BiZXJyeXBpLXRoZXJtYWwuYyB8IDg1ICsrKysr
-KysrKysrKysrKysrKysrKysrKysrCiA1IGZpbGVzIGNoYW5nZWQsIDk5IGluc2VydGlvbnMoKykK
-IGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3RoZXJtYWwvYnJvYWRjb20vS2NvbmZpZwogY3Jl
-YXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvdGhlcm1hbC9icm9hZGNvbS9NYWtlZmlsZQogY3JlYXRl
-IG1vZGUgMTAwNjQ0IGRyaXZlcnMvdGhlcm1hbC9icm9hZGNvbS9yYXNwYmVycnlwaS10aGVybWFs
-LmMKCmRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZyBiL2RyaXZlcnMvdGhlcm1h
-bC9LY29uZmlnCmluZGV4IDc3NmIzNDM5NjE0NC4uMDA4ZTE3M2VjODI1IDEwMDY0NAotLS0gYS9k
-cml2ZXJzL3RoZXJtYWwvS2NvbmZpZworKysgYi9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZwpAQCAt
-MzkyLDYgKzM5MiwxMSBAQCBjb25maWcgTVRLX1RIRVJNQUwKIAkgIEVuYWJsZSB0aGlzIG9wdGlv
-biBpZiB5b3Ugd2FudCB0byBoYXZlIHN1cHBvcnQgZm9yIHRoZXJtYWwgbWFuYWdlbWVudAogCSAg
-Y29udHJvbGxlciBwcmVzZW50IGluIE1lZGlhdGVrIFNvQ3MKIAorbWVudSAiQnJvYWRjb20gdGhl
-cm1hbCBkcml2ZXJzIgorZGVwZW5kcyBvbiBBUkNIX0JDTSB8fCBDT01QSUxFX1RFU1QKK3NvdXJj
-ZSAiZHJpdmVycy90aGVybWFsL2Jyb2FkY29tL0tjb25maWciCitlbmRtZW51CisKIG1lbnUgIlRl
-eGFzIEluc3RydW1lbnRzIHRoZXJtYWwgZHJpdmVycyIKIGRlcGVuZHMgb24gQVJDSF9IQVNfQkFO
-REdBUCB8fCBDT01QSUxFX1RFU1QKIGRlcGVuZHMgb24gSEFTX0lPTUVNCmRpZmYgLS1naXQgYS9k
-cml2ZXJzL3RoZXJtYWwvTWFrZWZpbGUgYi9kcml2ZXJzL3RoZXJtYWwvTWFrZWZpbGUKaW5kZXgg
-N2FkYWUyMDI5MzU1Li41NDlkODFiNjM2M2MgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdGhlcm1hbC9N
-YWtlZmlsZQorKysgYi9kcml2ZXJzL3RoZXJtYWwvTWFrZWZpbGUKQEAgLTI3LDYgKzI3LDcgQEAg
-dGhlcm1hbF9zeXMtJChDT05GSUdfQ0xPQ0tfVEhFUk1BTCkJKz0gY2xvY2tfY29vbGluZy5vCiB0
-aGVybWFsX3N5cy0kKENPTkZJR19ERVZGUkVRX1RIRVJNQUwpICs9IGRldmZyZXFfY29vbGluZy5v
-CiAKICMgcGxhdGZvcm0gdGhlcm1hbCBkcml2ZXJzCitvYmoteQkJCQkrPSBicm9hZGNvbS8KIG9i
-ai0kKENPTkZJR19RQ09NX1NQTUlfVEVNUF9BTEFSTSkJKz0gcWNvbS1zcG1pLXRlbXAtYWxhcm0u
-bwogb2JqLSQoQ09ORklHX1NQRUFSX1RIRVJNQUwpCSs9IHNwZWFyX3RoZXJtYWwubwogb2JqLSQo
-Q09ORklHX1JPQ0tDSElQX1RIRVJNQUwpCSs9IHJvY2tjaGlwX3RoZXJtYWwubwpkaWZmIC0tZ2l0
-IGEvZHJpdmVycy90aGVybWFsL2Jyb2FkY29tL0tjb25maWcgYi9kcml2ZXJzL3RoZXJtYWwvYnJv
-YWRjb20vS2NvbmZpZwpuZXcgZmlsZSBtb2RlIDEwMDY0NAppbmRleCAwMDAwMDAwMDAwMDAuLjAz
-ZDUyZDFkMTQwMwotLS0gL2Rldi9udWxsCisrKyBiL2RyaXZlcnMvdGhlcm1hbC9icm9hZGNvbS9L
-Y29uZmlnCkBAIC0wLDAgKzEsNyBAQAorY29uZmlnIFJBU1BCRVJSWVBJX1RIRVJNQUwKKwl0cmlz
-dGF0ZSAiUmFzcGJlcnJ5IFBpIHRoZXJtYWwgZHJpdmVyIgorCWRlcGVuZHMgb24gQVJDSF9CQ00y
-ODM1IHx8IENPTVBJTEVfVEVTVAorCWRlcGVuZHMgb24gUkFTUEJFUlJZUElfRklSTVdBUkU9eQor
-CWhlbHAKKwkgIFRoaXMgZW5hYmxlcyBzdXBwb3J0IGZvciB0aGUgUlBpIHBvd2VyIGRvbWFpbnMg
-d2hpY2ggY2FuIGJlIGVuYWJsZWQKKwkgIG9yIGRpc2FibGVkIHZpYSB0aGUgUlBpIGZpcm13YXJl
-LgpkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL2Jyb2FkY29tL01ha2VmaWxlIGIvZHJpdmVy
-cy90aGVybWFsL2Jyb2FkY29tL01ha2VmaWxlCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAw
-MDAwMDAwMDAwMC4uNWVhN2Y4ODE5YjdkCi0tLSAvZGV2L251bGwKKysrIGIvZHJpdmVycy90aGVy
-bWFsL2Jyb2FkY29tL01ha2VmaWxlCkBAIC0wLDAgKzEgQEAKK29iai0kKENPTkZJR19SQVNQQkVS
-UllQSV9USEVSTUFMKQkrPSByYXNwYmVycnlwaS10aGVybWFsLm8KZGlmZiAtLWdpdCBhL2RyaXZl
-cnMvdGhlcm1hbC9icm9hZGNvbS9yYXNwYmVycnlwaS10aGVybWFsLmMgYi9kcml2ZXJzL3RoZXJt
-YWwvYnJvYWRjb20vcmFzcGJlcnJ5cGktdGhlcm1hbC5jCm5ldyBmaWxlIG1vZGUgMTAwNjQ0Cmlu
-ZGV4IDAwMDAwMDAwMDAwMC4uZDljMWRiMDZmODA2Ci0tLSAvZGV2L251bGwKKysrIGIvZHJpdmVy
-cy90aGVybWFsL2Jyb2FkY29tL3Jhc3BiZXJyeXBpLXRoZXJtYWwuYwpAQCAtMCwwICsxLDg1IEBA
-CisvKgorICogQ29weXJpZ2h0IChDKSAyMDE3IFJhZmHFgiBNacWCZWNraSA8cmFmYWxAbWlsZWNr
-aS5wbD4KKyAqCisgKiBUaGlzIHByb2dyYW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRp
-c3RyaWJ1dGUgaXQgYW5kL29yIG1vZGlmeQorICogaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBH
-TlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSB2ZXJzaW9uIDIgYXMKKyAqIHB1Ymxpc2hlZCBieSB0
-aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uLgorICovCisKKyNpbmNsdWRlIDxsaW51eC9tb2R1
-bGUuaD4KKyNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4KKyNpbmNsdWRlIDxsaW51
-eC90aGVybWFsLmg+CisKKyNpbmNsdWRlIDxzb2MvYmNtMjgzNS9yYXNwYmVycnlwaS1maXJtd2Fy
-ZS5oPgorCitzdHJ1Y3QgcnBpX3RoZXJtYWwgeworCXN0cnVjdCBycGlfZmlybXdhcmUgKmZ3Owor
-fTsKKworc3RhdGljIGludCBycGlfdGhlcm1hbF9nZXRfdGVtcCh2b2lkICpkYXRhLCBpbnQgKnRl
-bXApCit7CisJc3RydWN0IHJwaV90aGVybWFsICpycGlfdGhlcm1hbCA9IGRhdGE7CisJc3RydWN0
-IHsKKwkJdTMyIGlkOworCQl1MzIgdGVtcDsKKwl9IHRhZ19kYXRhID0ge307CisJaW50IGVycjsK
-KworCWVyciA9IHJwaV9maXJtd2FyZV9wcm9wZXJ0eShycGlfdGhlcm1hbC0+ZncsCisJCQkJICAg
-IFJQSV9GSVJNV0FSRV9HRVRfVEVNUEVSQVRVUkUsCisJCQkJICAgICZ0YWdfZGF0YSwgc2l6ZW9m
-KHRhZ19kYXRhKSk7CisJaWYgKCFlcnIpCisJCSp0ZW1wID0gdGFnX2RhdGEudGVtcDsKKworCXJl
-dHVybiBlcnI7Cit9CisKK2NvbnN0IHN0cnVjdCB0aGVybWFsX3pvbmVfb2ZfZGV2aWNlX29wcyBy
-cGlfdGhlcm1hbF9vcHMgPSB7CisJLmdldF90ZW1wID0gcnBpX3RoZXJtYWxfZ2V0X3RlbXAsCit9
-OworCitzdGF0aWMgaW50IHJwaV90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2Ug
-KnBkZXYpCit7CisJc3RydWN0IGRldmljZSAqZGV2ID0gJnBkZXYtPmRldjsKKwlzdHJ1Y3QgcnBp
-X3RoZXJtYWwgKnJwaV90aGVybWFsOworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqZndfbnA7CisJc3Ry
-dWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6ZDsKKworCXJwaV90aGVybWFsID0gZGV2bV9remFs
-bG9jKGRldiwgc2l6ZW9mKCpycGlfdGhlcm1hbCksIEdGUF9LRVJORUwpOworCWlmICghcnBpX3Ro
-ZXJtYWwpCisJCXJldHVybiAtRU5PTUVNOworCisJZndfbnAgPSBvZl9wYXJzZV9waGFuZGxlKGRl
-di0+b2Zfbm9kZSwgImZpcm13YXJlIiwgMCk7CisJaWYgKCFmd19ucCkgeworCQlkZXZfZXJyKGRl
-diwgIkZhaWxlZCB0byBnZXQgZmlybXdhcmUgcGhhbmRsZVxuIik7CisJCXJldHVybiAtRU5PRU5U
-OworCX0KKworCXJwaV90aGVybWFsLT5mdyA9IHJwaV9maXJtd2FyZV9nZXQoZndfbnApOworCW9m
-X25vZGVfcHV0KGZ3X25wKTsKKwlpZiAoIXJwaV90aGVybWFsLT5mdykKKwkJcmV0dXJuIC1FTk9E
-RVY7CisKKwl0emQgPSBkZXZtX3RoZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXIoZGV2LCAw
-LCBycGlfdGhlcm1hbCwKKwkJCQkJCSAgICZycGlfdGhlcm1hbF9vcHMpOworCisJcmV0dXJuIFBU
-Ul9FUlJfT1JfWkVSTyh0emQpOworfQorCitzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9p
-ZCBycGlfdGhlcm1hbF9vZl9tYXRjaFtdID0geworCXsgLmNvbXBhdGlibGUgPSAicmFzcGJlcnJ5
-cGksYmNtMjgzNS10aGVybWFsIiwgfSwKKwl7fSwKK307CitNT0RVTEVfREVWSUNFX1RBQkxFKG9m
-LCBycGlfdGhlcm1hbF9vZl9tYXRjaCk7CisKK3N0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVy
-IHJwaV90aGVybWFsX2RyaXZlciA9IHsKKwkucHJvYmUJCT0gcnBpX3RoZXJtYWxfcHJvYmUsCisJ
-LmRyaXZlciA9IHsKKwkJLm5hbWUgPSAicmFzcGJlcnJ5cGktdGhlcm1hbCIsCisJCS5vZl9tYXRj
-aF90YWJsZSA9IHJwaV90aGVybWFsX29mX21hdGNoLAorCX0sCit9OworbW9kdWxlX3BsYXRmb3Jt
-X2RyaXZlcihycGlfdGhlcm1hbF9kcml2ZXIpOworCitNT0RVTEVfREVTQ1JJUFRJT04oIlJhc3Bi
-ZXJyeSBQaSB0aGVybWFsIGRyaXZlciIpOworTU9EVUxFX0xJQ0VOU0UoIkdQTCB2MiIpOwotLSAK
-Mi4xMS4wCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-bGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZy
-YWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
-dXgtYXJtLWtlcm5lbAo=
+From: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+
+This commit documents binding for BCM2835 SoC thermal used in Raspberry
+Pi devices.
+
+Signed-off-by: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+---
+ .../bindings/thermal/raspberrypi,bcm2835-thermal        | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/raspberrypi,bcm2835-thermal
+
+diff --git a/Documentation/devicetree/bindings/thermal/raspberrypi,bcm2835-thermal b/Documentation/devicetree/bindings/thermal/raspberrypi,bcm2835-thermal
+new file mode 100644
+index 000000000000..fbffa9291ba9
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/raspberrypi,bcm2835-thermal
+@@ -0,0 +1,17 @@
++* Broadcom BCM2835 SoC Raspberry Pi Thermal
++
++This binding describes thermal sensor that is part of BCM2835 SoC.
++
++Required properties:
++- compatible : Must be "raspberrypi,bcm2835-thermal"
++- firmware : Reference to the Raspberry Pi firmware device node, see
++	raspberrypi,bcm2835-firmware for details
++- #thermal-sensor-cells : Should be <0>
++
++Example:
++
++thermal {
++	compatible = "raspberrypi,bcm2835-thermal";
++	firmware = <&firmware>;
++	#thermal-sensor-cells = <0>;
++};
+-- 
+2.11.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
