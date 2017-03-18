@@ -1,99 +1,184 @@
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH] cpuidle: Validate cpu_dev in cpuidle_add_sysfs
-Date: Sun, 19 Mar 2017 00:51:59 +0530
-Message-ID: <20170318192159.20819-1-svaidy@linux.vnet.ibm.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [08/15] power: supply: bq24190_charger: Add support for external
+ fuel gauge
+Date: Sat, 18 Mar 2017 12:18:51 -0700
+Message-ID: <CAKvHMgTMqQPM1+OsJeaiqUFAgQC8Hby15xpbN39tVy=pqh+_3w@mail.gmail.com>
+References: <20170318071019.4561-5-liam@networkimprov.net> <a9286000-751f-dace-2408-f0389a6f44ac@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:43101 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751795AbdCRTW4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 15:22:56 -0400
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id v2IJJ439046357
-        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 15:22:55 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 298y7c203b-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 15:22:54 -0400
-Received: from localhost
-        by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <svaidy@linux.vnet.ibm.com>;
-        Sun, 19 Mar 2017 05:22:52 +1000
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
-        by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id v2IJMgWp45154344
-        for <linux-pm@vger.kernel.org>; Sun, 19 Mar 2017 06:22:50 +1100
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
-        by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id v2IJMH2C018917
-        for <linux-pm@vger.kernel.org>; Sun, 19 Mar 2017 06:22:18 +1100
+Received: from mail-it0-f66.google.com ([209.85.214.66]:35760 "EHLO
+        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751406AbdCRTZX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 15:25:23 -0400
+Received: by mail-it0-f66.google.com with SMTP id y18so10078121itc.2
+        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 12:25:22 -0700 (PDT)
+In-Reply-To: <a9286000-751f-dace-2408-f0389a6f44ac@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-If a given cpu is not in cpu_present and cpu hotplug
-is disabled, arch can skip setting up the cpu_dev.
+On Sat, Mar 18, 2017 at 7:31 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
+>
+> On 18-03-17 08:10, Liam Breck wrote:
+>>
+>> On Fri, 17 Mar 2017 10:55:20 +0100, Hans de Goede wrote:
+>>
+>>> Some platforms with a bq24190_charger have an external fuel gauge which
+>>> makes it possible to reliably report battery (dis)charge state, at
+>>> support for this by adding an optional get_ext_bat_property callback
+>>> to the platform_data and using this if the platform provides it.
+>>
+>>
+>> Please do not pollute the charger with fuel-gauge functionality; use the
+>> gauge driver directly.
+>
+>
+> That is not how the userspace ABI works, the userspace ABI says one
+> battery one power_supply device, so we need to combine the data from
+> the 2 sources.
 
-Arch cpuidle driver should pass correct cpu mask
-for registration, but failing to do so by the driver
-causes error to propagate and crash like this:
+Reference?
 
-[   30.076045] Unable to handle kernel paging request for data at address 0x00000048
-[   30.076100] Faulting instruction address: 0xc0000000007b2f30
-cpu 0x4d: Vector: 300 (Data Access) at [c000003feb18b670]
-    pc: c0000000007b2f30: kobject_get+0x20/0x70
-    lr: c0000000007b3c94: kobject_add_internal+0x54/0x3f0
-    sp: c000003feb18b8f0
-   msr: 9000000000009033
-   dar: 48
- dsisr: 40000000
-  current = 0xc000003fd2ed8300
-  paca    = 0xc00000000fbab500   softe: 0        irq_happened: 0x01
-    pid   = 1, comm = swapper/0
-Linux version 4.11.0-rc2-svaidy+ (sv@sagarika) (gcc version 6.2.0
-20161005 (Ubuntu 6.2.0-5ubuntu12) ) #10 SMP Sun Mar 19 00:08:09 IST 2017
-enter ? for help
-[c000003feb18b960] c0000000007b3c94 kobject_add_internal+0x54/0x3f0
-[c000003feb18b9f0] c0000000007b43a4 kobject_init_and_add+0x64/0xa0
-[c000003feb18ba70] c000000000e284f4 cpuidle_add_sysfs+0xb4/0x130
-[c000003feb18baf0] c000000000e26038 cpuidle_register_device+0x118/0x1c0
-[c000003feb18bb30] c000000000e26c48 cpuidle_register+0x78/0x120
-[c000003feb18bbc0] c00000000168fd9c powernv_processor_idle_init+0x110/0x1c4
-[c000003feb18bc40] c00000000000cff8 do_one_initcall+0x68/0x1d0
-[c000003feb18bd00] c0000000016242f4 kernel_init_freeable+0x280/0x360
-[c000003feb18bdc0] c00000000000d864 kernel_init+0x24/0x160
-[c000003feb18be30] c00000000000b4e8 ret_from_kernel_thread+0x5c/0x74
+See patch 04 discussion about fuel-gauge as primary point of contact.
 
-Validating cpu_dev fixes the crash and reports correct error message like:
+Another approach to consider: a pseudo-driver which uses sysfs or
+callbacks into two actual drivers.
 
-[   30.163506] Failed to register cpuidle device for cpu136
-[   30.173329] Registration of powernv driver failed.
+>> And calling into a mystery module with a pointer from platform-data is
+>> scary! St. Patrick's
+>> Day is wrong for this; try April Fool's or Halloween ;-)
+>
+>
+> Since we control both the caller and the callee I fail to see how
+> this is scary in any way.
 
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
- drivers/cpuidle/sysfs.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+This patch looks like a hack to me. Pls find another way.
 
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index c5adc8c..19dcf32 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -615,6 +615,18 @@ int cpuidle_add_sysfs(struct cpuidle_device *dev)
- 	struct device *cpu_dev = get_cpu_device((unsigned long)dev->cpu);
- 	int error;
- 
-+	/*
-+	 * Return if cpu_device is not setup for this cpu.
-+	 * This could happen if arch did not setup cpu_device
-+	 * since this cpu is not in cpu_present mask and
-+	 * driver did not send correct cpu mask at registration.
-+	 * Without this check we would end up passing bogus
-+	 * value for &cpu_dev->kobj in kobject_init_and_add()
-+	 */
-+
-+	if (!cpu_dev)
-+		return -ENODEV;
-+
- 	kdev = kzalloc(sizeof(*kdev), GFP_KERNEL);
- 	if (!kdev)
- 		return -ENOMEM;
--- 
-2.9.3
+> Regards,
+>
+> Hans
+>
+>
+>
+>>
+>>> By convention the callback will return -ENXIO when it is not ready yet,
+>>> or the driver providing it has been unbound from its device. Since it
+>>> returns the same error when unbound it cannot return -EPROBE_DEFER
+>>> as that is not a valid errno.
+>>>
+>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>>> ---
+>>>  drivers/power/supply/bq24190_charger.c | 41
+>>> +++++++++++++++++++++++++++++++---
+>>>  include/linux/power/bq24190_charger.h  |  4 ++++
+>>>  2 files changed, 42 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/drivers/power/supply/bq24190_charger.c
+>>> b/drivers/power/supply/bq24190_charger.c
+>>> index 9014dee..9fe69a5 100644
+>>> --- a/drivers/power/supply/bq24190_charger.c
+>>> +++ b/drivers/power/supply/bq24190_charger.c
+>>> @@ -1111,7 +1111,10 @@ static int bq24190_battery_get_property(struct
+>>> power_supply *psy,
+>>>                 ret = 0;
+>>>                 break;
+>>>         default:
+>>> -               ret = -ENODATA;
+>>> +               if (bdi->pdata && bdi->pdata->get_ext_bat_property)
+>>> +                       ret = bdi->pdata->get_ext_bat_property(psp, val);
+>>> +               else
+>>> +                       ret = -ENODATA;
+>>>         }
+>>>
+>>>         pm_runtime_put_sync(bdi->dev);
+>>> @@ -1168,12 +1171,31 @@ static enum power_supply_property
+>>> bq24190_battery_properties[] = {
+>>>         POWER_SUPPLY_PROP_TECHNOLOGY,
+>>>         POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
+>>>         POWER_SUPPLY_PROP_SCOPE,
+>>> +       /* Begin of extended battery properties */
+>>> +       POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>>> +       POWER_SUPPLY_PROP_VOLTAGE_AVG,
+>>> +       POWER_SUPPLY_PROP_VOLTAGE_OCV,
+>>> +       POWER_SUPPLY_PROP_CURRENT_NOW,
+>>> +       POWER_SUPPLY_PROP_CURRENT_AVG,
+>>> +       POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+>>> +       POWER_SUPPLY_PROP_CHARGE_FULL,
+>>> +       POWER_SUPPLY_PROP_CHARGE_NOW,
+>>>  };
+>>>
+>>>  static const struct power_supply_desc bq24190_battery_desc = {
+>>>         .name                   = "bq24190-battery",
+>>>         .type                   = POWER_SUPPLY_TYPE_BATTERY,
+>>>         .properties             = bq24190_battery_properties,
+>>> +       .num_properties         = 6,
+>>> +       .get_property           = bq24190_battery_get_property,
+>>> +       .set_property           = bq24190_battery_set_property,
+>>> +       .property_is_writeable  = bq24190_battery_property_is_writeable,
+>>> +};
+>>> +
+>>> +static const struct power_supply_desc bq24190_ext_battery_desc = {
+>>> +       .name                   = "bq24190-battery",
+>>> +       .type                   = POWER_SUPPLY_TYPE_BATTERY,
+>>> +       .properties             = bq24190_battery_properties,
+>>>         .num_properties         = ARRAY_SIZE(bq24190_battery_properties),
+>>>         .get_property           = bq24190_battery_get_property,
+>>>         .set_property           = bq24190_battery_set_property,
+>>> @@ -1336,6 +1358,15 @@ static int bq24190_probe(struct i2c_client
+>>> *client,
+>>>                 return -EINVAL;
+>>>         }
+>>>
+>>> +       if (bdi->pdata && bdi->pdata->get_ext_bat_property) {
+>>> +               union power_supply_propval val;
+>>> +
+>>> +               /* Check external fuel gauge is ready */
+>>> +               ret = bdi->pdata->get_ext_bat_property(0, &val);
+>>> +               if (ret == -ENXIO)
+>>> +                       return -EPROBE_DEFER;
+>>> +       }
+>>> +
+>>>         pm_runtime_enable(dev);
+>>>         pm_runtime_resume(dev);
+>>>
+>>> @@ -1357,8 +1388,12 @@ static int bq24190_probe(struct i2c_client
+>>> *client,
+>>>         }
+>>>
+>>>         battery_cfg.drv_data = bdi;
+>>> -       bdi->battery = power_supply_register(dev, &bq24190_battery_desc,
+>>> -                                               &battery_cfg);
+>>> +       if (bdi->pdata && bdi->pdata->get_ext_bat_property)
+>>> +               bdi->battery = power_supply_register(dev,
+>>> +                                   &bq24190_ext_battery_desc,
+>>> &battery_cfg);
+>>> +       else
+>>> +               bdi->battery = power_supply_register(dev,
+>>> +                                   &bq24190_battery_desc, &battery_cfg);
+>>>         if (IS_ERR(bdi->battery)) {
+>>>                 dev_err(dev, "Can't register battery\n");
+>>>                 ret = PTR_ERR(bdi->battery);
+>>> diff --git a/include/linux/power/bq24190_charger.h
+>>> b/include/linux/power/bq24190_charger.h
+>>> index 8d918cb..02d248b 100644
+>>> --- a/include/linux/power/bq24190_charger.h
+>>> +++ b/include/linux/power/bq24190_charger.h
+>>> @@ -9,8 +9,12 @@
+>>>  #ifndef _BQ24190_CHARGER_H_
+>>>  #define _BQ24190_CHARGER_H_
+>>>
+>>> +#include <linux/power_supply.h>
+>>> +
+>>>  struct bq24190_platform_data {
+>>>         bool no_register_reset;
+>>> +       int (*get_ext_bat_property)(enum power_supply_property prop,
+>>> +                                   union power_supply_propval *val);
+>>>  };
+>>>
+>>>  #endif
+>>
+>>
+>
