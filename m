@@ -1,186 +1,99 @@
-From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH 2/2] thermal: broadcom: add Northstar thermal driver
-Date: Sat, 18 Mar 2017 16:56:32 +0100
-Message-ID: <20170318155632.18099-2-zajec5@gmail.com>
-References: <20170318155632.18099-1-zajec5@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170318155632.18099-1-zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: [PATCH] cpuidle: Validate cpu_dev in cpuidle_add_sysfs
+Date: Sun, 19 Mar 2017 00:51:59 +0530
+Message-ID: <20170318192159.20819-1-svaidy@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:43101 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751795AbdCRTW4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 15:22:56 -0400
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id v2IJJ439046357
+        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 15:22:55 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 298y7c203b-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 15:22:54 -0400
+Received: from localhost
+        by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <svaidy@linux.vnet.ibm.com>;
+        Sun, 19 Mar 2017 05:22:52 +1000
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+        by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id v2IJMgWp45154344
+        for <linux-pm@vger.kernel.org>; Sun, 19 Mar 2017 06:22:50 +1100
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+        by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id v2IJMH2C018917
+        for <linux-pm@vger.kernel.org>; Sun, 19 Mar 2017 06:22:18 +1100
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
 
-From: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+If a given cpu is not in cpu_present and cpu hotplug
+is disabled, arch can skip setting up the cpu_dev.
 
-Northstar is a SoC family commonly used in home routers. This commit
-adds a driver for checking CPU temperature.
+Arch cpuidle driver should pass correct cpu mask
+for registration, but failing to do so by the driver
+causes error to propagate and crash like this:
 
-Signed-off-by: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+[   30.076045] Unable to handle kernel paging request for data at address 0x00000048
+[   30.076100] Faulting instruction address: 0xc0000000007b2f30
+cpu 0x4d: Vector: 300 (Data Access) at [c000003feb18b670]
+    pc: c0000000007b2f30: kobject_get+0x20/0x70
+    lr: c0000000007b3c94: kobject_add_internal+0x54/0x3f0
+    sp: c000003feb18b8f0
+   msr: 9000000000009033
+   dar: 48
+ dsisr: 40000000
+  current = 0xc000003fd2ed8300
+  paca    = 0xc00000000fbab500   softe: 0        irq_happened: 0x01
+    pid   = 1, comm = swapper/0
+Linux version 4.11.0-rc2-svaidy+ (sv@sagarika) (gcc version 6.2.0
+20161005 (Ubuntu 6.2.0-5ubuntu12) ) #10 SMP Sun Mar 19 00:08:09 IST 2017
+enter ? for help
+[c000003feb18b960] c0000000007b3c94 kobject_add_internal+0x54/0x3f0
+[c000003feb18b9f0] c0000000007b43a4 kobject_init_and_add+0x64/0xa0
+[c000003feb18ba70] c000000000e284f4 cpuidle_add_sysfs+0xb4/0x130
+[c000003feb18baf0] c000000000e26038 cpuidle_register_device+0x118/0x1c0
+[c000003feb18bb30] c000000000e26c48 cpuidle_register+0x78/0x120
+[c000003feb18bbc0] c00000000168fd9c powernv_processor_idle_init+0x110/0x1c4
+[c000003feb18bc40] c00000000000cff8 do_one_initcall+0x68/0x1d0
+[c000003feb18bd00] c0000000016242f4 kernel_init_freeable+0x280/0x360
+[c000003feb18bdc0] c00000000000d864 kernel_init+0x24/0x160
+[c000003feb18be30] c00000000000b4e8 ret_from_kernel_thread+0x5c/0x74
+
+Validating cpu_dev fixes the crash and reports correct error message like:
+
+[   30.163506] Failed to register cpuidle device for cpu136
+[   30.173329] Registration of powernv driver failed.
+
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
- drivers/thermal/Kconfig               |  5 ++
- drivers/thermal/Makefile              |  1 +
- drivers/thermal/broadcom/Kconfig      |  7 +++
- drivers/thermal/broadcom/Makefile     |  1 +
- drivers/thermal/broadcom/ns-thermal.c | 93 +++++++++++++++++++++++++++++++++++
- 5 files changed, 107 insertions(+)
- create mode 100644 drivers/thermal/broadcom/Kconfig
- create mode 100644 drivers/thermal/broadcom/Makefile
- create mode 100644 drivers/thermal/broadcom/ns-thermal.c
+ drivers/cpuidle/sysfs.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 776b34396144..008e173ec825 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -392,6 +392,11 @@ config MTK_THERMAL
- 	  Enable this option if you want to have support for thermal management
- 	  controller present in Mediatek SoCs
+diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+index c5adc8c..19dcf32 100644
+--- a/drivers/cpuidle/sysfs.c
++++ b/drivers/cpuidle/sysfs.c
+@@ -615,6 +615,18 @@ int cpuidle_add_sysfs(struct cpuidle_device *dev)
+ 	struct device *cpu_dev = get_cpu_device((unsigned long)dev->cpu);
+ 	int error;
  
-+menu "Broadcom thermal drivers"
-+depends on ARCH_BCM || COMPILE_TEST
-+source "drivers/thermal/broadcom/Kconfig"
-+endmenu
++	/*
++	 * Return if cpu_device is not setup for this cpu.
++	 * This could happen if arch did not setup cpu_device
++	 * since this cpu is not in cpu_present mask and
++	 * driver did not send correct cpu mask at registration.
++	 * Without this check we would end up passing bogus
++	 * value for &cpu_dev->kobj in kobject_init_and_add()
++	 */
 +
- menu "Texas Instruments thermal drivers"
- depends on ARCH_HAS_BANDGAP || COMPILE_TEST
- depends on HAS_IOMEM
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 7adae2029355..549d81b6363c 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -27,6 +27,7 @@ thermal_sys-$(CONFIG_CLOCK_THERMAL)	+= clock_cooling.o
- thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
- 
- # platform thermal drivers
-+obj-y				+= broadcom/
- obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
- obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
- obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
-diff --git a/drivers/thermal/broadcom/Kconfig b/drivers/thermal/broadcom/Kconfig
-new file mode 100644
-index 000000000000..08457a461794
---- /dev/null
-+++ b/drivers/thermal/broadcom/Kconfig
-@@ -0,0 +1,7 @@
-+config BCM_NS_THERMAL
-+	tristate "Northstar thermal driver"
-+	depends on ARCH_BCM_5301X || COMPILE_TEST
-+	help
-+	  Northstar's DMU (Device Management Unit) block contains a thermal
-+	  sensor that allows checking CPU temperature. This driver provides
-+	  support for it.
-diff --git a/drivers/thermal/broadcom/Makefile b/drivers/thermal/broadcom/Makefile
-new file mode 100644
-index 000000000000..059df9a0ed69
---- /dev/null
-+++ b/drivers/thermal/broadcom/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_BCM_NS_THERMAL)		+= ns-thermal.o
-diff --git a/drivers/thermal/broadcom/ns-thermal.c b/drivers/thermal/broadcom/ns-thermal.c
-new file mode 100644
-index 000000000000..1ec710febc55
---- /dev/null
-+++ b/drivers/thermal/broadcom/ns-thermal.c
-@@ -0,0 +1,93 @@
-+/*
-+ * Copyright (C) 2017 Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
++	if (!cpu_dev)
++		return -ENODEV;
 +
-+#include <linux/module.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/thermal.h>
-+
-+#define PVTMON_CONTROL0		0x00
-+#define PVTMON_STATUS		0x08
-+
-+struct ns_thermal {
-+	void __iomem *pvtmon;
-+};
-+
-+static int ns_thermal_get_temp(void *data, int *temp)
-+{
-+	struct ns_thermal *ns_thermal = data;
-+	u32 val;
-+
-+	val = readl(ns_thermal->pvtmon + PVTMON_STATUS);
-+	*temp = 418000 - (val * 556);
-+
-+	return 0;
-+}
-+
-+const struct thermal_zone_of_device_ops ns_thermal_ops = {
-+	.get_temp = ns_thermal_get_temp,
-+};
-+
-+static int ns_thermal_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct ns_thermal *ns_thermal;
-+	struct thermal_zone_device *tzd;
-+	u32 val;
-+
-+	ns_thermal = devm_kzalloc(dev, sizeof(*ns_thermal), GFP_KERNEL);
-+	if (!ns_thermal)
-+		return -ENOMEM;
-+
-+	ns_thermal->pvtmon = of_iomap(dev_of_node(dev), 0);
-+	if (WARN_ON(!ns_thermal->pvtmon))
-+		return -ENOENT;
-+
-+	val = readl(ns_thermal->pvtmon + PVTMON_CONTROL0);
-+	if (val & 0xf)
-+		writel(val & ~0xf, ns_thermal->pvtmon + PVTMON_CONTROL0);
-+
-+	tzd = devm_thermal_zone_of_sensor_register(dev, 0, ns_thermal,
-+						   &ns_thermal_ops);
-+	if (IS_ERR(tzd)) {
-+		iounmap(ns_thermal->pvtmon);
-+		return PTR_ERR(tzd);
-+	}
-+
-+	platform_set_drvdata(pdev, ns_thermal);
-+
-+	return 0;
-+}
-+
-+static int ns_thermal_remove(struct platform_device *pdev)
-+{
-+	struct ns_thermal *ns_thermal = platform_get_drvdata(pdev);
-+
-+	iounmap(ns_thermal->pvtmon);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id ns_thermal_of_match[] = {
-+	{ .compatible = "brcm,ns-thermal", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, ns_thermal_of_match);
-+
-+static struct platform_driver ns_thermal_driver = {
-+	.probe		= ns_thermal_probe,
-+	.remove		= ns_thermal_remove,
-+	.driver = {
-+		.name = "ns-thermal",
-+		.of_match_table = ns_thermal_of_match,
-+	},
-+};
-+module_platform_driver(ns_thermal_driver);
-+
-+MODULE_DESCRIPTION("Northstar thermal driver");
-+MODULE_LICENSE("GPL v2");
+ 	kdev = kzalloc(sizeof(*kdev), GFP_KERNEL);
+ 	if (!kdev)
+ 		return -ENOMEM;
 -- 
-2.11.0
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+2.9.3
