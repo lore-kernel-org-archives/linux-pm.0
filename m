@@ -1,134 +1,86 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [07/15] power: supply: bq24190_charger: Add support for
- bq24192[i]
-Date: Sat, 18 Mar 2017 23:55:27 +0100
-Message-ID: <4a313e87-1b3e-1a05-c43a-267154eec353@redhat.com>
-References: <20170318071019.4561-4-liam@networkimprov.net>
- <d670369f-4f0c-2658-e6e2-4c6e4604f987@redhat.com>
- <CAKvHMgRXc+OAZkfDf6TZiFQgCT_L0mUvjnmOORm3skoxF4izWw@mail.gmail.com>
+Subject: Re: [08/15] power: supply: bq24190_charger: Add support for external
+ fuel gauge
+Date: Sun, 19 Mar 2017 00:02:15 +0100
+Message-ID: <a064b347-6f23-8eac-50d4-620208f5a201@redhat.com>
+References: <20170318071019.4561-5-liam@networkimprov.net>
+ <a9286000-751f-dace-2408-f0389a6f44ac@redhat.com>
+ <CAKvHMgTMqQPM1+OsJeaiqUFAgQC8Hby15xpbN39tVy=pqh+_3w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:47126 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:59058 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751181AbdCRWzb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 18 Mar 2017 18:55:31 -0400
-In-Reply-To: <CAKvHMgRXc+OAZkfDf6TZiFQgCT_L0mUvjnmOORm3skoxF4izWw@mail.gmail.com>
+        id S1751181AbdCRXDL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 18 Mar 2017 19:03:11 -0400
+In-Reply-To: <CAKvHMgTMqQPM1+OsJeaiqUFAgQC8Hby15xpbN39tVy=pqh+_3w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-HI,
+Hi,
 
-On 18-03-17 20:10, Liam Breck wrote:
-> On Sat, Mar 18, 2017 at 7:30 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+On 18-03-17 20:18, Liam Breck wrote:
+> On Sat, Mar 18, 2017 at 7:31 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 >> Hi,
 >>
 >> On 18-03-17 08:10, Liam Breck wrote:
 >>>
->>> On Fri, 17 Mar 2017 10:55:19 +0100, Hans de Goede wrote:
+>>> On Fri, 17 Mar 2017 10:55:20 +0100, Hans de Goede wrote:
 >>>
->>>> The bq24192 and bq24192i are mostly identical to the bq24190, TI even
->>>> published a single datasheet for all 3 of them. The difference
->>>> between the bq24190 and bq24192[i] is the way charger-type detection
->>>> is done, the bq24190 is to be directly connected to the USB a/b lines,
->>>> where as the the bq24192[i] has a gpio which should be driven high/low
->>>> externally depending on the type of charger connected, from a register
->>>> level access pov there is no difference.
->>>>
->>>> The differences between the bq24192 and bq24192i are:
->>>> 1) Lower default charge rate on the bq24192i
->>>> 2) Pre-charge-current can be max 640 mA on the bq24192i
->>>>
->>>> Since we do not provide an API for setting the pre-charge-current,
->>>> these differences can be ignored and we can simply use the existing
->>>> code as-is with the bq24192 and bq24192i.
+>>>> Some platforms with a bq24190_charger have an external fuel gauge which
+>>>> makes it possible to reliably report battery (dis)charge state, at
+>>>> support for this by adding an optional get_ext_bat_property callback
+>>>> to the platform_data and using this if the platform provides it.
 >>>
 >>>
->>> FYI, coming patchset will set pre- and termination-charge current via DT.
+>>> Please do not pollute the charger with fuel-gauge functionality; use the
+>>> gauge driver directly.
 >>
 >>
->> Ok, note that this again is something which we cannot do on x86,
->> so we need to retain the BIOS set values there. I assume this will
->> not be a problem since you will need to keep the driver working
->> with device-trees which do not specify this info, for compatibility
->> with existing devicetrees.
->>
->>
->>>
->>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->>>> ---
->>>>  drivers/power/supply/bq24190_charger.c | 12 ++++++++++--
->>>>  1 file changed, 10 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/power/supply/bq24190_charger.c
->>>> b/drivers/power/supply/bq24190_charger.c
->>>> index 9c4b171..9014dee 100644
->>>> --- a/drivers/power/supply/bq24190_charger.c
->>>> +++ b/drivers/power/supply/bq24190_charger.c
->>>> @@ -1275,7 +1275,14 @@ static int bq24190_hw_init(struct bq24190_dev_info
->>>> *bdi)
->>>>         if (ret < 0)
->>>>                 goto out;
->>>>
->>>> -       if (v != bdi->model) {
->>>> +       switch (v) {
->>>> +       case BQ24190_REG_VPRS_PN_24190:
->>>> +       case BQ24190_REG_VPRS_PN_24192:
->>>> +       case BQ24190_REG_VPRS_PN_24192I:
->>>> +               bdi->model = v;
->>>
->>>
->>> We should set model in probe(). Doesn't the previous code still work?
->>
->>
->> On x86 we know we have a variant but not which variant, since the
->> driver supports all variants we can simply make the driver flexible
->> enough to handle all variants and be done with it.
+>> That is not how the userspace ABI works, the userspace ABI says one
+>> battery one power_supply device, so we need to combine the data from
+>> the 2 sources.
 >
-> How do we know it supports all variants sufficiently?
+> Reference?
 
-I've compared all the datasheets (actually TI has all variants
-in a single datasheet) and all the registers are the same with
-the exception of the 24192I having a lower Pre-charge-current
-maximum then the others.
-
+This is just how things work, if you define 2 battery type power-supplies
+upower will export battery info for 2 batteries to userspace and
+battery panel applets will show 2 batteries (which is useful for
+laptops which actually have 2 batteries like eg the Lenovo T440, X240, etc.
+which have both an internal battery and a replace battery at the back.
 
 >
->>>
->>>> +               break;
->>>> +       default:
->>>> +               dev_err(bdi->dev, "Error unknown model: 0x%02x\n", v);
->>>
->>>
->>> Feel free to add the error msg.
->>>
->>>>                 ret = -ENODEV;
->>>>                 goto out;
->>>>         }
->>>> @@ -1316,7 +1323,6 @@ static int bq24190_probe(struct i2c_client *client,
->>>>
->>>>         bdi->client = client;
->>>>         bdi->dev = dev;
->>>> -       bdi->model = id->driver_data;
->>>
->>>
->>> Is driver_data no longer always correct?
->>
->>
->> See above, I was actually planning on dropping the
->> setting of driver_data from the ids tables, but I forgot.
+> See patch 04 discussion about fuel-gauge as primary point of contact.
 >
-> I suspect we want a platform_data field and
->
-> bdi->model = pdata ? pdata->model : id->driver_data
+> Another approach to consider: a pseudo-driver which uses sysfs or
+> callbacks into two actual drivers.
 
-I want the pmic code to be generic, it does not know
-which exact model it is dealing with, it can find that out,
-but that would be duplicating code already present in
-bq24190_charger.c
+Already answered in the patch 04 discussion.
+
+>>> And calling into a mystery module with a pointer from platform-data is
+>>> scary! St. Patrick's
+>>> Day is wrong for this; try April Fool's or Halloween ;-)
+>>
+>>
+>> Since we control both the caller and the callee I fail to see how
+>> this is scary in any way.
+>
+> This patch looks like a hack to me. Pls find another way.
+
+Poking sysfs files from kernelspace is a much bugger hack, that +
+the code duplication required in making the fuel-gauge the leading
+driver really makes me believe this "hack" is the best solution.
+
+Also keep in mind that the fuel-gauge has no status interrupt for
+events like power getting plugged in charging being done, fault
+interrupts, etc. So we would also need some way to tap into
+the bq24190's interrupt from the fuel-gauge driver.
+
+Anways lets continue this discussion in the patch 04 part
+of the thread.
 
 Regards,
 
@@ -136,42 +88,122 @@ Hans
 
 
 
->
+
+>>>> By convention the callback will return -ENXIO when it is not ready yet,
+>>>> or the driver providing it has been unbound from its device. Since it
+>>>> returns the same error when unbound it cannot return -EPROBE_DEFER
+>>>> as that is not a valid errno.
+>>>>
+>>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>>>> ---
+>>>>  drivers/power/supply/bq24190_charger.c | 41
+>>>> +++++++++++++++++++++++++++++++---
+>>>>  include/linux/power/bq24190_charger.h  |  4 ++++
+>>>>  2 files changed, 42 insertions(+), 3 deletions(-)
+>>>>
+>>>> diff --git a/drivers/power/supply/bq24190_charger.c
+>>>> b/drivers/power/supply/bq24190_charger.c
+>>>> index 9014dee..9fe69a5 100644
+>>>> --- a/drivers/power/supply/bq24190_charger.c
+>>>> +++ b/drivers/power/supply/bq24190_charger.c
+>>>> @@ -1111,7 +1111,10 @@ static int bq24190_battery_get_property(struct
+>>>> power_supply *psy,
+>>>>                 ret = 0;
+>>>>                 break;
+>>>>         default:
+>>>> -               ret = -ENODATA;
+>>>> +               if (bdi->pdata && bdi->pdata->get_ext_bat_property)
+>>>> +                       ret = bdi->pdata->get_ext_bat_property(psp, val);
+>>>> +               else
+>>>> +                       ret = -ENODATA;
+>>>>         }
+>>>>
+>>>>         pm_runtime_put_sync(bdi->dev);
+>>>> @@ -1168,12 +1171,31 @@ static enum power_supply_property
+>>>> bq24190_battery_properties[] = {
+>>>>         POWER_SUPPLY_PROP_TECHNOLOGY,
+>>>>         POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
+>>>>         POWER_SUPPLY_PROP_SCOPE,
+>>>> +       /* Begin of extended battery properties */
+>>>> +       POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>>>> +       POWER_SUPPLY_PROP_VOLTAGE_AVG,
+>>>> +       POWER_SUPPLY_PROP_VOLTAGE_OCV,
+>>>> +       POWER_SUPPLY_PROP_CURRENT_NOW,
+>>>> +       POWER_SUPPLY_PROP_CURRENT_AVG,
+>>>> +       POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+>>>> +       POWER_SUPPLY_PROP_CHARGE_FULL,
+>>>> +       POWER_SUPPLY_PROP_CHARGE_NOW,
+>>>>  };
+>>>>
+>>>>  static const struct power_supply_desc bq24190_battery_desc = {
+>>>>         .name                   = "bq24190-battery",
+>>>>         .type                   = POWER_SUPPLY_TYPE_BATTERY,
+>>>>         .properties             = bq24190_battery_properties,
+>>>> +       .num_properties         = 6,
+>>>> +       .get_property           = bq24190_battery_get_property,
+>>>> +       .set_property           = bq24190_battery_set_property,
+>>>> +       .property_is_writeable  = bq24190_battery_property_is_writeable,
+>>>> +};
+>>>> +
+>>>> +static const struct power_supply_desc bq24190_ext_battery_desc = {
+>>>> +       .name                   = "bq24190-battery",
+>>>> +       .type                   = POWER_SUPPLY_TYPE_BATTERY,
+>>>> +       .properties             = bq24190_battery_properties,
+>>>>         .num_properties         = ARRAY_SIZE(bq24190_battery_properties),
+>>>>         .get_property           = bq24190_battery_get_property,
+>>>>         .set_property           = bq24190_battery_set_property,
+>>>> @@ -1336,6 +1358,15 @@ static int bq24190_probe(struct i2c_client
+>>>> *client,
+>>>>                 return -EINVAL;
+>>>>         }
+>>>>
+>>>> +       if (bdi->pdata && bdi->pdata->get_ext_bat_property) {
+>>>> +               union power_supply_propval val;
+>>>> +
+>>>> +               /* Check external fuel gauge is ready */
+>>>> +               ret = bdi->pdata->get_ext_bat_property(0, &val);
+>>>> +               if (ret == -ENXIO)
+>>>> +                       return -EPROBE_DEFER;
+>>>> +       }
+>>>> +
+>>>>         pm_runtime_enable(dev);
+>>>>         pm_runtime_resume(dev);
+>>>>
+>>>> @@ -1357,8 +1388,12 @@ static int bq24190_probe(struct i2c_client
+>>>> *client,
+>>>>         }
+>>>>
+>>>>         battery_cfg.drv_data = bdi;
+>>>> -       bdi->battery = power_supply_register(dev, &bq24190_battery_desc,
+>>>> -                                               &battery_cfg);
+>>>> +       if (bdi->pdata && bdi->pdata->get_ext_bat_property)
+>>>> +               bdi->battery = power_supply_register(dev,
+>>>> +                                   &bq24190_ext_battery_desc,
+>>>> &battery_cfg);
+>>>> +       else
+>>>> +               bdi->battery = power_supply_register(dev,
+>>>> +                                   &bq24190_battery_desc, &battery_cfg);
+>>>>         if (IS_ERR(bdi->battery)) {
+>>>>                 dev_err(dev, "Can't register battery\n");
+>>>>                 ret = PTR_ERR(bdi->battery);
+>>>> diff --git a/include/linux/power/bq24190_charger.h
+>>>> b/include/linux/power/bq24190_charger.h
+>>>> index 8d918cb..02d248b 100644
+>>>> --- a/include/linux/power/bq24190_charger.h
+>>>> +++ b/include/linux/power/bq24190_charger.h
+>>>> @@ -9,8 +9,12 @@
+>>>>  #ifndef _BQ24190_CHARGER_H_
+>>>>  #define _BQ24190_CHARGER_H_
+>>>>
+>>>> +#include <linux/power_supply.h>
+>>>> +
+>>>>  struct bq24190_platform_data {
+>>>>         bool no_register_reset;
+>>>> +       int (*get_ext_bat_property)(enum power_supply_property prop,
+>>>> +                                   union power_supply_propval *val);
+>>>>  };
+>>>>
+>>>>  #endif
 >>>
->>>>         bdi->pdata = client->dev.platform_data;
->>>>         strncpy(bdi->model_name, id->name, I2C_NAME_SIZE);
->>>>         mutex_init(&bdi->f_reg_lock);
->>>> @@ -1450,6 +1456,8 @@ static SIMPLE_DEV_PM_OPS(bq24190_pm_ops,
->>>> bq24190_pm_suspend, bq24190_pm_resume);
->>>>   */
->>>>  static const struct i2c_device_id bq24190_i2c_ids[] = {
->>>>         { "bq24190", BQ24190_REG_VPRS_PN_24190 },
->>>> +       { "bq24192", BQ24190_REG_VPRS_PN_24192 },
->>>> +       { "bq24192i", BQ24190_REG_VPRS_PN_24192I },
 >>>
->>>
->>> This may be the only essential change.
 >>
->>
->> See above, actually this should have been:
->>
->> static const struct i2c_device_id bq24190_i2c_ids[] = {
->>         { "bq24190" },
->>         { "bq24192" },
->>         { "bq24192i" },
->>         { },
->> };
->>
->> Or (also works for me): just:
->>
->> static const struct i2c_device_id bq24190_i2c_ids[] = {
->>         { "bq24190" },
->>         { },
->> };
->>
->> And use the same compatible for all variants as they are
->> all compatible anyways.
->>
->> Regards,
->>
->> Hans
