@@ -1,263 +1,431 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [10/15] power: supply: bq24190_charger: Use extcon to determine
- ilimit, 5v boost
-Date: Sat, 18 Mar 2017 15:42:33 +0100
-Message-ID: <7c95dcef-b93f-0f71-8f1c-13f1329eb64d@redhat.com>
-References: <20170318071019.4561-7-liam@networkimprov.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2] cpufreq: intel_pstate: One set of global limits in active mode
+Date: Sat, 18 Mar 2017 16:11:13 +0100
+Message-ID: <2203453.nUU9e3ErAb@aspire.rjw.lan>
+References: <6156083.Tk2Q3PH0av@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:33462 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751007AbdCRPgN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 18 Mar 2017 11:36:13 -0400
-In-Reply-To: <20170318071019.4561-7-liam@networkimprov.net>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55196 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751105AbdCRPoy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 11:44:54 -0400
+In-Reply-To: <6156083.Tk2Q3PH0av@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
 
-Hi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On 18-03-17 08:10, Liam Breck wrote:
-> Tony, question for you below...
->
-> On Fri, 17 Mar 2017 10:55:22 +0100, Hans de Goede wrote:
->
->> Add support for monitoring an extcon device with SDP/CDP/DCP and HOST
->
-> insert: USB X.0
->
->> cables and adjust ilimit and enable/disable the 5v boost converter
->> accordingly. This is necessary on systems where the PSEL pin is hardwired
->> high and ILIM needs to be set by software based on the detected charger
->> type.
->
-> This description is rather thin for the extent of the changes. What specific systems
-> require this?
+In the active mode intel_pstate currently uses two sets of global
+limits, each associated with one of the possible scaling_governor
+settings in that mode: "powersave" or "performance".
 
-Systems which use a variant with a PSEL pin where the PSEL pin is hardwired
-high.
+The driver switches over from one of those sets to the other
+depending on the scaling_governor setting for the last CPU whose
+per-policy cpufreq interface in sysfs was last used to change
+parameters exposed in there.  That obviously leads to no end of
+issues when the scaling_governor settings differ between CPUs.
 
-> What drivers generate the event?
+The most recent issue was introduced by commit a240c4aa5d0f (cpufreq:
+intel_pstate: Do not reinit performance limits in ->setpolicy)
+that eliminated the reinitialization of "performance" limits in
+intel_pstate_set_policy() preventing the max limit from being set
+to anything below 100, among other things.
 
-The driver which registers the extcon with the name "extcon_name"
-the bq24190_charger driver really does not need to know more.
-In the use-case we are talking about now the driver is
-the new extcon-cht-wc.c driver which is part of the patch-set
-as I initially posted it.
+Namely, an undesirable side effect of commit a240c4aa5d0f is that
+now, after setting scaling_governor to "performance" in the active
+mode, the per-policy limits for the CPU in question go to the highest
+level and stay there even when it is switched back to "powersave"
+later.
 
-> Also provide URLs to docs/datasheets.
+As it turns out, some distributions set scaling_governor to
+"performance" temporarily for all CPUs to speed-up system
+initialization, so that change causes them to misbehave later.
 
-I've no access to docs / datasheets for the Whiskey Cove PMIC.
+To fix that, get rid of the performance/powersave global limits
+split and use just one set of global limits for everything.
 
+>From the user's persepctive, after this modification, when
+scaling_governor is switched from "performance" to "powersave"
+or the other way around on one CPU, the limits settings (ie. the
+global max/min_perf_pct and per-policy scaling_max/min_freq for
+any CPUs) will not change.  Still, switching from "performance"
+to "powersave" or the other way around changes the way in which
+P-states are selected and in particular "performance" causes the
+driver to always request the highest P-state it is allowed to ask
+for for the given CPU.
 
+Fixes: a240c4aa5d0f (cpufreq: intel_pstate: Do not reinit performance limits in ->setpolicy)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
->
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> ---
->>  drivers/power/supply/Kconfig           |  1 +
->>  drivers/power/supply/bq24190_charger.c | 85 ++++++++++++++++++++++++++++++++++
->>  include/linux/power/bq24190_charger.h  |  1 +
->>  3 files changed, 87 insertions(+)
->>
->> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
->> index f8b6e64..fd93110 100644
->> --- a/drivers/power/supply/Kconfig
->> +++ b/drivers/power/supply/Kconfig
->> @@ -442,6 +442,7 @@ config CHARGER_BQ2415X
->>  config CHARGER_BQ24190
->>  	tristate "TI BQ24190 battery charger driver"
->>  	depends on I2C
->> +	depends on EXTCON
->>  	depends on GPIOLIB || COMPILE_TEST
->>  	help
->>  	  Say Y to enable support for the TI BQ24190 battery charger.
->> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
->> index 82cb33d..03990e2 100644
->> --- a/drivers/power/supply/bq24190_charger.c
->> +++ b/drivers/power/supply/bq24190_charger.c
->> @@ -11,10 +11,12 @@
->>  #include <linux/module.h>
->>  #include <linux/interrupt.h>
->>  #include <linux/delay.h>
->> +#include <linux/extcon.h>
->>  #include <linux/of_irq.h>
->>  #include <linux/of_device.h>
->>  #include <linux/pm_runtime.h>
->>  #include <linux/power_supply.h>
->> +#include <linux/workqueue.h>
->>  #include <linux/gpio.h>
->>  #include <linux/i2c.h>
->>
->> @@ -39,6 +41,8 @@
->>  #define BQ24190_REG_POC_WDT_RESET_SHIFT		6
->>  #define BQ24190_REG_POC_CHG_CONFIG_MASK		(BIT(5) | BIT(4))
->>  #define BQ24190_REG_POC_CHG_CONFIG_SHIFT	4
->> +#define BQ24190_REG_POC_CHG_CONFIG_CHARGE	1
->> +#define BQ24190_REG_POC_CHG_CONFIG_OTG		2
->>  #define BQ24190_REG_POC_SYS_MIN_MASK		(BIT(3) | BIT(2) | BIT(1))
->>  #define BQ24190_REG_POC_SYS_MIN_SHIFT		1
->>  #define BQ24190_REG_POC_BOOST_LIM_MASK		BIT(0)
->> @@ -152,6 +156,9 @@ struct bq24190_dev_info {
->>  	struct power_supply		*charger;
->>  	struct power_supply		*battery;
->>  	struct bq24190_platform_data	*pdata;
->> +	struct extcon_dev		*extcon;
->> +	struct notifier_block		extcon_nb;
->> +	struct work_struct		extcon_work;
->>  	char				model_name[I2C_NAME_SIZE];
->>  	kernel_ulong_t			model;
->>  	struct mutex			f_reg_lock;
->> @@ -167,6 +174,11 @@ struct bq24190_dev_info {
->>   * number at that index in the array is the real-world value that it
->>   * represents.
->>   */
->> +
->> +/* REG00[2:0] (IINLIM) in uAh */
->> +static const int bq24190_iinlim_values[] = {
->> +	100000, 150000, 500000, 900000, 1200000, 1500000, 2000000, 3000000 };
->> +
->>  /* REG02[7:2] (ICHG) in uAh */
->>  static const int bq24190_ccc_ichg_values[] = {
->>  	 512000,  576000,  640000,  704000,  768000,  832000,  896000,  960000,
->> @@ -1290,6 +1302,61 @@ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
->>  	return IRQ_HANDLED;
->>  }
->>
->> +static void bq24190_extcon_work(struct work_struct *work)
->> +{
->
-> Does this need pm_runtime_get_sync(), etc?
-> (See linux-next patches to driver.)
+-> v2:
+Make intel_pstate_hwp_set() set the same number (ie. the maximum P-state
+it is allowed to use) as both the maximum and minimum P-state limit for HWP
+if scaling_governor for this CPU is set to "performance" to ensure the maximum
+capacity in that case (regardless of the processor's reaction to the EPP=0
+setting).
 
-Yes with runtime pm this will need to do a
-pm_runtime_get_sync(bdi->Dev) before accessing
-the device.
+---
+ drivers/cpufreq/intel_pstate.c |  142 +++++++++++++----------------------------
+ 1 file changed, 46 insertions(+), 96 deletions(-)
 
-
-
->
->> +	struct bq24190_dev_info *bdi =
->> +		container_of(work, struct bq24190_dev_info, extcon_work);
->> +	int ret, iinlim = 0;
->> +
->> +	if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_SDP) == 1)
->> +		iinlim = 500000;
->> +	else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_CDP) == 1 ||
->> +		 extcon_get_state(bdi->extcon, EXTCON_CHG_USB_ACA) == 1)
->> +		iinlim = 1500000;
->> +	else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_DCP) == 1)
->> +		iinlim = 2000000;
->> +
->> +	if (iinlim) {
->> +		ret = bq24190_set_field_val(bdi, BQ24190_REG_ISC,
->> +				BQ24190_REG_ISC_IINLIM_MASK,
->> +				BQ24190_REG_ISC_IINLIM_SHIFT,
->> +				bq24190_iinlim_values,
->> +				ARRAY_SIZE(bq24190_iinlim_values),
->> +				iinlim);
->> +		if (ret)
->> +			dev_err(bdi->dev, "Can't set IINLIM: %d\n", ret);
->> +	}
->> +
->> +	/*
->> +	 * If no charger has been detected and host mode is requested, activate
->> +	 * the 5V boost converter, otherwise deactivate it.
->> +	 */
->> +	if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) == 1) {
->> +		ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->> +					 BQ24190_REG_POC_CHG_CONFIG_MASK,
->> +					 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->> +					 BQ24190_REG_POC_CHG_CONFIG_OTG);
->> +	} else {
->> +		ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->> +					 BQ24190_REG_POC_CHG_CONFIG_MASK,
->> +					 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->> +					 BQ24190_REG_POC_CHG_CONFIG_CHARGE);
->> +	}
->> +	if (ret)
->> +		dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", ret);
->> +}
->> +
->> +static int bq24190_extcon_event(struct notifier_block *nb, unsigned long event,
->> +				void *param)
->> +{
->> +	struct bq24190_dev_info *bdi =
->> +		container_of(nb, struct bq24190_dev_info, extcon_nb);
->> +
->> +	schedule_work(&bdi->extcon_work);
->> +
->> +	return NOTIFY_OK;
->> +}
->> +
->>  static int bq24190_hw_init(struct bq24190_dev_info *bdi)
->>  {
->>  	u8 v;
->> @@ -1375,6 +1442,12 @@ static int bq24190_probe(struct i2c_client *client,
->>  			return -EPROBE_DEFER;
->>  	}
->>
->> +	if (bdi->pdata && bdi->pdata->extcon_name) {
->
-> Verify that extcon_name has an expected value?
-
-The whole idea is that the bq24190 does not need to care about
-which extcon driver it is told to use, just that it has to
-use *a* extcon driver.
-
->
->> +		bdi->extcon = extcon_get_extcon_dev(bdi->pdata->extcon_name);
->> +		if (!bdi->extcon)
->> +			return -EPROBE_DEFER;
->
-> dev_info() a msg about this linkage, including info about the other side.
-
-dev_info on success I assume, not on PROBE_DEFER, otherwise we will
-end up spamming the log quite a lot while modules are loading.
-
-
-
->
->> +	}
->> +
->>  	pm_runtime_enable(dev);
->>  	pm_runtime_resume(dev);
->>
->> @@ -1423,6 +1496,18 @@ static int bq24190_probe(struct i2c_client *client,
->>  		goto out4;
->>  	}
->>
->> +	if (bdi->extcon) {
->> +		INIT_WORK(&bdi->extcon_work, bq24190_extcon_work);
->> +		bdi->extcon_nb.notifier_call = bq24190_extcon_event;
->> +		ret = devm_extcon_register_notifier(dev, bdi->extcon, -1,
->> +						    &bdi->extcon_nb);
->> +		if (ret)
->> +			goto out4;
->> +
->> +		/* Sync initial cable state */
->> +		schedule_work(&bdi->extcon_work);
->> +	}
->> +
->>  	return 0;
->>
->>  out4:
->> diff --git a/include/linux/power/bq24190_charger.h b/include/linux/power/bq24190_charger.h
->> index 02d248b..909c5b9 100644
->> --- a/include/linux/power/bq24190_charger.h
->> +++ b/include/linux/power/bq24190_charger.h
->> @@ -13,6 +13,7 @@
->>
->>  struct bq24190_platform_data {
->>  	bool no_register_reset;
->> +	const char *extcon_name;
->>  	int (*get_ext_bat_property)(enum power_supply_property prop,
->>  				    union power_supply_propval *val);
->>  };
->
-
-Regards,
-
-Hans
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -364,9 +364,7 @@ static bool driver_registered __read_mos
+ static bool acpi_ppc;
+ #endif
+ 
+-static struct perf_limits performance_limits;
+-static struct perf_limits powersave_limits;
+-static struct perf_limits *limits;
++static struct perf_limits global;
+ 
+ static void intel_pstate_init_limits(struct perf_limits *limits)
+ {
+@@ -377,14 +375,6 @@ static void intel_pstate_init_limits(str
+ 	limits->max_sysfs_pct = 100;
+ }
+ 
+-static void intel_pstate_set_performance_limits(struct perf_limits *limits)
+-{
+-	intel_pstate_init_limits(limits);
+-	limits->min_perf_pct = 100;
+-	limits->min_perf = int_ext_tofp(1);
+-	limits->min_sysfs_pct = 100;
+-}
+-
+ static DEFINE_MUTEX(intel_pstate_driver_lock);
+ static DEFINE_MUTEX(intel_pstate_limits_lock);
+ 
+@@ -507,7 +497,7 @@ static void intel_pstate_init_acpi_perf_
+ 	 * correct max turbo frequency based on the turbo state.
+ 	 * Also need to convert to MHz as _PSS freq is in MHz.
+ 	 */
+-	if (!limits->turbo_disabled)
++	if (!global.turbo_disabled)
+ 		cpu->acpi_perf_data.states[0].core_frequency =
+ 					policy->cpuinfo.max_freq / 1000;
+ 	cpu->valid_pss_table = true;
+@@ -626,7 +616,7 @@ static inline void update_turbo_state(vo
+ 
+ 	cpu = all_cpu_data[0];
+ 	rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
+-	limits->turbo_disabled =
++	global.turbo_disabled =
+ 		(misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ||
+ 		 cpu->pstate.max_pstate == cpu->pstate.turbo_pstate);
+ }
+@@ -851,7 +841,7 @@ static struct freq_attr *hwp_cpufreq_att
+ static void intel_pstate_hwp_set(struct cpufreq_policy *policy)
+ {
+ 	int min, hw_min, max, hw_max, cpu;
+-	struct perf_limits *perf_limits = limits;
++	struct perf_limits *perf_limits = &global;
+ 	u64 value, cap;
+ 
+ 	for_each_cpu(cpu, policy->cpus) {
+@@ -863,19 +853,22 @@ static void intel_pstate_hwp_set(struct
+ 
+ 		rdmsrl_on_cpu(cpu, MSR_HWP_CAPABILITIES, &cap);
+ 		hw_min = HWP_LOWEST_PERF(cap);
+-		if (limits->no_turbo)
++		if (global.no_turbo)
+ 			hw_max = HWP_GUARANTEED_PERF(cap);
+ 		else
+ 			hw_max = HWP_HIGHEST_PERF(cap);
+ 
+-		min = fp_ext_toint(hw_max * perf_limits->min_perf);
++		max = fp_ext_toint(hw_max * perf_limits->max_perf);
++		if (cpu_data->policy == CPUFREQ_POLICY_PERFORMANCE)
++			min = max;
++		else
++			min = fp_ext_toint(hw_max * perf_limits->min_perf);
+ 
+ 		rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
+ 
+ 		value &= ~HWP_MIN_PERF(~0L);
+ 		value |= HWP_MIN_PERF(min);
+ 
+-		max = fp_ext_toint(hw_max * perf_limits->max_perf);
+ 		value &= ~HWP_MAX_PERF(~0L);
+ 		value |= HWP_MAX_PERF(max);
+ 
+@@ -968,20 +961,11 @@ static int intel_pstate_resume(struct cp
+ }
+ 
+ static void intel_pstate_update_policies(void)
+-	__releases(&intel_pstate_limits_lock)
+-	__acquires(&intel_pstate_limits_lock)
+ {
+-	struct perf_limits *saved_limits = limits;
+ 	int cpu;
+ 
+-	mutex_unlock(&intel_pstate_limits_lock);
+-
+ 	for_each_possible_cpu(cpu)
+ 		cpufreq_update_policy(cpu);
+-
+-	mutex_lock(&intel_pstate_limits_lock);
+-
+-	limits = saved_limits;
+ }
+ 
+ /************************** debugfs begin ************************/
+@@ -1060,7 +1044,7 @@ static void intel_pstate_debug_hide_para
+ 	static ssize_t show_##file_name					\
+ 	(struct kobject *kobj, struct attribute *attr, char *buf)	\
+ 	{								\
+-		return sprintf(buf, "%u\n", limits->object);		\
++		return sprintf(buf, "%u\n", global.object);		\
+ 	}
+ 
+ static ssize_t intel_pstate_show_status(char *buf);
+@@ -1151,10 +1135,10 @@ static ssize_t show_no_turbo(struct kobj
+ 	}
+ 
+ 	update_turbo_state();
+-	if (limits->turbo_disabled)
+-		ret = sprintf(buf, "%u\n", limits->turbo_disabled);
++	if (global.turbo_disabled)
++		ret = sprintf(buf, "%u\n", global.turbo_disabled);
+ 	else
+-		ret = sprintf(buf, "%u\n", limits->no_turbo);
++		ret = sprintf(buf, "%u\n", global.no_turbo);
+ 
+ 	mutex_unlock(&intel_pstate_driver_lock);
+ 
+@@ -1181,19 +1165,19 @@ static ssize_t store_no_turbo(struct kob
+ 	mutex_lock(&intel_pstate_limits_lock);
+ 
+ 	update_turbo_state();
+-	if (limits->turbo_disabled) {
++	if (global.turbo_disabled) {
+ 		pr_warn("Turbo disabled by BIOS or unavailable on processor\n");
+ 		mutex_unlock(&intel_pstate_limits_lock);
+ 		mutex_unlock(&intel_pstate_driver_lock);
+ 		return -EPERM;
+ 	}
+ 
+-	limits->no_turbo = clamp_t(int, input, 0, 1);
+-
+-	intel_pstate_update_policies();
++	global.no_turbo = clamp_t(int, input, 0, 1);
+ 
+ 	mutex_unlock(&intel_pstate_limits_lock);
+ 
++	intel_pstate_update_policies();
++
+ 	mutex_unlock(&intel_pstate_driver_lock);
+ 
+ 	return count;
+@@ -1218,19 +1202,16 @@ static ssize_t store_max_perf_pct(struct
+ 
+ 	mutex_lock(&intel_pstate_limits_lock);
+ 
+-	limits->max_sysfs_pct = clamp_t(int, input, 0 , 100);
+-	limits->max_perf_pct = min(limits->max_policy_pct,
+-				   limits->max_sysfs_pct);
+-	limits->max_perf_pct = max(limits->min_policy_pct,
+-				   limits->max_perf_pct);
+-	limits->max_perf_pct = max(limits->min_perf_pct,
+-				   limits->max_perf_pct);
+-	limits->max_perf = percent_ext_fp(limits->max_perf_pct);
+-
+-	intel_pstate_update_policies();
++	global.max_sysfs_pct = clamp_t(int, input, 0 , 100);
++	global.max_perf_pct = min(global.max_policy_pct, global.max_sysfs_pct);
++	global.max_perf_pct = max(global.min_policy_pct, global.max_perf_pct);
++	global.max_perf_pct = max(global.min_perf_pct, global.max_perf_pct);
++	global.max_perf = percent_ext_fp(global.max_perf_pct);
+ 
+ 	mutex_unlock(&intel_pstate_limits_lock);
+ 
++	intel_pstate_update_policies();
++
+ 	mutex_unlock(&intel_pstate_driver_lock);
+ 
+ 	return count;
+@@ -1255,19 +1236,16 @@ static ssize_t store_min_perf_pct(struct
+ 
+ 	mutex_lock(&intel_pstate_limits_lock);
+ 
+-	limits->min_sysfs_pct = clamp_t(int, input, 0 , 100);
+-	limits->min_perf_pct = max(limits->min_policy_pct,
+-				   limits->min_sysfs_pct);
+-	limits->min_perf_pct = min(limits->max_policy_pct,
+-				   limits->min_perf_pct);
+-	limits->min_perf_pct = min(limits->max_perf_pct,
+-				   limits->min_perf_pct);
+-	limits->min_perf = percent_ext_fp(limits->min_perf_pct);
+-
+-	intel_pstate_update_policies();
++	global.min_sysfs_pct = clamp_t(int, input, 0 , 100);
++	global.min_perf_pct = max(global.min_policy_pct, global.min_sysfs_pct);
++	global.min_perf_pct = min(global.max_policy_pct, global.min_perf_pct);
++	global.min_perf_pct = min(global.max_perf_pct, global.min_perf_pct);
++	global.min_perf = percent_ext_fp(global.min_perf_pct);
+ 
+ 	mutex_unlock(&intel_pstate_limits_lock);
+ 
++	intel_pstate_update_policies();
++
+ 	mutex_unlock(&intel_pstate_driver_lock);
+ 
+ 	return count;
+@@ -1387,7 +1365,7 @@ static u64 atom_get_val(struct cpudata *
+ 	u32 vid;
+ 
+ 	val = (u64)pstate << 8;
+-	if (limits->no_turbo && !limits->turbo_disabled)
++	if (global.no_turbo && !global.turbo_disabled)
+ 		val |= (u64)1 << 32;
+ 
+ 	vid_fp = cpudata->vid.min + mul_fp(
+@@ -1557,7 +1535,7 @@ static u64 core_get_val(struct cpudata *
+ 	u64 val;
+ 
+ 	val = (u64)pstate << 8;
+-	if (limits->no_turbo && !limits->turbo_disabled)
++	if (global.no_turbo && !global.turbo_disabled)
+ 		val |= (u64)1 << 32;
+ 
+ 	return val;
+@@ -1683,9 +1661,9 @@ static void intel_pstate_get_min_max(str
+ 	int max_perf = cpu->pstate.turbo_pstate;
+ 	int max_perf_adj;
+ 	int min_perf;
+-	struct perf_limits *perf_limits = limits;
++	struct perf_limits *perf_limits = &global;
+ 
+-	if (limits->no_turbo || limits->turbo_disabled)
++	if (global.no_turbo || global.turbo_disabled)
+ 		max_perf = cpu->pstate.max_pstate;
+ 
+ 	if (per_cpu_limits)
+@@ -1820,7 +1798,7 @@ static inline int32_t get_target_pstate_
+ 
+ 	sample->busy_scaled = busy_frac * 100;
+ 
+-	target = limits->no_turbo || limits->turbo_disabled ?
++	target = global.no_turbo || global.turbo_disabled ?
+ 			cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
+ 	target += target >> 2;
+ 	target = mul_fp(target, busy_frac);
+@@ -2116,7 +2094,7 @@ static void intel_pstate_update_perf_lim
+ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ {
+ 	struct cpudata *cpu;
+-	struct perf_limits *perf_limits = NULL;
++	struct perf_limits *perf_limits = &global;
+ 
+ 	if (!policy->cpuinfo.max_freq)
+ 		return -ENODEV;
+@@ -2139,21 +2117,6 @@ static int intel_pstate_set_policy(struc
+ 
+ 	mutex_lock(&intel_pstate_limits_lock);
+ 
+-	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
+-		pr_debug("set performance\n");
+-		if (!perf_limits) {
+-			limits = &performance_limits;
+-			perf_limits = limits;
+-		}
+-	} else {
+-		pr_debug("set powersave\n");
+-		if (!perf_limits) {
+-			limits = &powersave_limits;
+-			perf_limits = limits;
+-		}
+-
+-	}
+-
+ 	intel_pstate_update_perf_limits(policy, perf_limits);
+ 
+ 	if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
+@@ -2177,16 +2140,9 @@ static int intel_pstate_set_policy(struc
+ static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
+ {
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+-	struct perf_limits *perf_limits;
+-
+-	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE)
+-		perf_limits = &performance_limits;
+-	else
+-		perf_limits = &powersave_limits;
+ 
+ 	update_turbo_state();
+-	policy->cpuinfo.max_freq = perf_limits->turbo_disabled ||
+-					perf_limits->no_turbo ?
++	policy->cpuinfo.max_freq = global.turbo_disabled || global.no_turbo ?
+ 					cpu->pstate.max_freq :
+ 					cpu->pstate.turbo_freq;
+ 
+@@ -2201,9 +2157,9 @@ static int intel_pstate_verify_policy(st
+ 		unsigned int max_freq, min_freq;
+ 
+ 		max_freq = policy->cpuinfo.max_freq *
+-					perf_limits->max_sysfs_pct / 100;
++					global.max_sysfs_pct / 100;
+ 		min_freq = policy->cpuinfo.max_freq *
+-					perf_limits->min_sysfs_pct / 100;
++					global.min_sysfs_pct / 100;
+ 		cpufreq_verify_within_limits(policy, min_freq, max_freq);
+ 	}
+ 
+@@ -2255,7 +2211,7 @@ static int __intel_pstate_cpu_init(struc
+ 	/* cpuinfo and default policy values */
+ 	policy->cpuinfo.min_freq = cpu->pstate.min_pstate * cpu->pstate.scaling;
+ 	update_turbo_state();
+-	policy->cpuinfo.max_freq = limits->turbo_disabled ?
++	policy->cpuinfo.max_freq = global.turbo_disabled ?
+ 			cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
+ 	policy->cpuinfo.max_freq *= cpu->pstate.scaling;
+ 
+@@ -2275,7 +2231,7 @@ static int intel_pstate_cpu_init(struct
+ 		return ret;
+ 
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+-	if (limits->min_perf_pct == 100 && limits->max_perf_pct == 100)
++	if (IS_ENABLED(CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE))
+ 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
+ 	else
+ 		policy->policy = CPUFREQ_POLICY_POWERSAVE;
+@@ -2301,7 +2257,7 @@ static int intel_cpufreq_verify_policy(s
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+ 
+ 	update_turbo_state();
+-	policy->cpuinfo.max_freq = limits->turbo_disabled ?
++	policy->cpuinfo.max_freq = global.turbo_disabled ?
+ 			cpu->pstate.max_freq : cpu->pstate.turbo_freq;
+ 
+ 	cpufreq_verify_within_cpu_limits(policy);
+@@ -2317,7 +2273,7 @@ static unsigned int intel_cpufreq_turbo_
+ 
+ 	update_turbo_state();
+ 
+-	max_freq = limits->no_turbo || limits->turbo_disabled ?
++	max_freq = global.no_turbo || global.turbo_disabled ?
+ 			cpu->pstate.max_freq : cpu->pstate.turbo_freq;
+ 	policy->cpuinfo.max_freq = max_freq;
+ 	if (policy->max > max_freq)
+@@ -2425,13 +2381,7 @@ static int intel_pstate_register_driver(
+ {
+ 	int ret;
+ 
+-	intel_pstate_init_limits(&powersave_limits);
+-	intel_pstate_set_performance_limits(&performance_limits);
+-	if (IS_ENABLED(CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE) &&
+-	    intel_pstate_driver == &intel_pstate)
+-		limits = &performance_limits;
+-	else
+-		limits = &powersave_limits;
++	intel_pstate_init_limits(&global);
+ 
+ 	ret = cpufreq_register_driver(intel_pstate_driver);
+ 	if (ret) {
