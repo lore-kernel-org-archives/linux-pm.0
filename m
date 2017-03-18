@@ -1,333 +1,293 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [10/15] power: supply: bq24190_charger: Use extcon to determine
- ilimit, 5v boost
-Date: Sun, 19 Mar 2017 00:11:00 +0100
-Message-ID: <bd112d67-b6cb-b7e2-3f3b-47f20ea34631@redhat.com>
-References: <20170318071019.4561-7-liam@networkimprov.net>
- <7c95dcef-b93f-0f71-8f1c-13f1329eb64d@redhat.com>
- <CAKvHMgRT4K8MctU+AZKzeikec1TUiuzo8Jpw2OSJBWw5DA7yGg@mail.gmail.com>
+Subject: Re: [04/15] power: supply: bq24190_charger: Add no_register_reset
+ pdata flag
+Date: Sat, 18 Mar 2017 23:51:52 +0100
+Message-ID: <6a0e54e3-581d-6162-b521-82b7567b6e74@redhat.com>
+References: <20170318071019.4561-1-liam@networkimprov.net>
+ <6ad6ecd2-ea0f-b613-8519-66ad424c623a@redhat.com>
+ <CAKvHMgQ-hnS_XkL_7Mwkm94hNDc9Q++xHBAOUK1bKmvO=YnSXQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:54242 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:38948 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751300AbdCRXLP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 18 Mar 2017 19:11:15 -0400
-In-Reply-To: <CAKvHMgRT4K8MctU+AZKzeikec1TUiuzo8Jpw2OSJBWw5DA7yGg@mail.gmail.com>
+        id S1751283AbdCRXDL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 18 Mar 2017 19:03:11 -0400
+In-Reply-To: <CAKvHMgQ-hnS_XkL_7Mwkm94hNDc9Q++xHBAOUK1bKmvO=YnSXQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
 Hi,
 
-On 18-03-17 20:57, Liam Breck wrote:
-> On Sat, Mar 18, 2017 at 7:42 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+On 18-03-17 19:51, Liam Breck wrote:
+> On Sat, Mar 18, 2017 at 7:13 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 >> Hi,
 >>
 >> On 18-03-17 08:10, Liam Breck wrote:
 >>>
->>> Tony, question for you below...
+>>> [dropped CC's not relevant to BQ24190; pls re-add anyone appropriate]
 >>>
->>> On Fri, 17 Mar 2017 10:55:22 +0100, Hans de Goede wrote:
+>>> Hi Hans,
 >>>
->>>> Add support for monitoring an extcon device with SDP/CDP/DCP and HOST
->>>
->>>
->>> insert: USB X.0
->>>
->>>> cables and adjust ilimit and enable/disable the 5v boost converter
->>>> accordingly. This is necessary on systems where the PSEL pin is hardwired
->>>> high and ILIM needs to be set by software based on the detected charger
->>>> type.
->>>
->>>
->>> This description is rather thin for the extent of the changes. What
->>> specific systems
->>> require this?
+>>> I am the de facto maintainer of BQ24190, with help from Tony. I contracted
+>>> the original author to
+>>> create the driver. I'm not aware of anyone else relying on it at present.
 >>
 >>
->> Systems which use a variant with a PSEL pin where the PSEL pin is hardwired
->> high.
+>> Hi Liam, nice to meet you.
+>>
+>>> Pls rebase to -next (!) and post BQ24190 changes in a separate patchset.
+>>
+>>
+>> Ok, I will rebase these patches on top of
+>> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/log/?h=for-next
 >
-> I gathered that :-p  It's illuminating to include detailed background
-> in a patch description; please paint us a picture :-)
+> Yep.
 >
-> Also you can set IINLIM via sysfs, so consider doing this from the
-> PMIC driver, or pseudo-driver.
+>>> Reference any
+>>>
+>>> dependencies in other patchsets with Depends-on lines in patch
+>>> descriptions linking to
+>>> patchwork.kernel.org. If any dependency might be controversial, pls defer
+>>> the BQ24190 patchset til
+>>> controversy resolves.
+>>
+>> There are no dependencies for the BQ24190 patches, they are a dependency for
+>> some of the other changes but they can go upstream as is.
+>
+> The extcon driver elsewhere in patchset?
 
-sysfs is a userspace API not an in kernel API (there maybe some ways
-around that but that is not a good idea in general).
+That is only a runtime dependency and only when the extcon_name is
+set in the platform_data, the patches can be merged upstream without
+this (no compile / linktime dependency). Even runtime things will
+not explode if the extcon driver is not there and asked for in
+platform data, the probe() function will then simply return -EPROBE_DEFER.
 
-Also if anything is a hack it is the entire BQ24190 sysfs interface
-I understand is useful for driver debugging (although not that
-useful as we also have i2cdump / i2cset / i2cget in userspace),
-but it really belongs behind a DEBUG #ifdef.
+>
+>>> You may be interested in these, which I will support in BQ24190 in near
+>>> future:
+>>> https://patchwork.kernel.org/patch/9626487/
+>>> https://patchwork.kernel.org/patch/9626491/
+>>
+>>
+>> Yeah those are not going to matter for the use-case I'm looking at.
+>> I've a feeling you've only looked at the bq24190 patches and not the
+>> rest of the set. There is a reason I posted these all together as I
+>> mentioned in the cover-letter:
+>>
+>> "I'm sending this as a single series so that people can see how all the bits
+>> fit together."
+>
+> Reading the entire patchset may be a lot to ask some folks, altho I
+> did. It's best to give relevant background in each patch description.
+>
+>> Anyways I will try to clarify things by answering you questions /
+>> responding to your remarks.
+>>
+>>> Further comments below...
+>>>
+>>> On Fri, 17 Mar 2017 10:55:16 +0100, Hans de Goede wrote:
+>>>
+>>>> On some platforms the register have been setup with platform specific
+>>>> values by the firmware and should not be reset.
+>>>
+>>>
+>>> Pls describe this mysterious, meddling firmware. Who wrote it, when does
+>>> it run, on what devices,
+>>> etc? Include URLs to docs, etc. BTW it's not really "firmware" if it runs
+>>> on the main cpu, IMO.
+>>> A boot loader is not firmware.
+>>
+>>
+>> So not all the world runs on ARM and not all devices using the
+>> TI BQ24190 (and variants) use an ARM processor or devicetree
+>> for that matter). Having worked on both ARM and x86 quite a bit
+>> I've a feeling that you are approaching my patchset with somewhat
+>> of an ARM focussed pov.
+>>
+>> The primary device I'm trying to get battery/charger monitoring
+>> working for is the GPDwin: http://www.gpd.hk/gpdwin.asp
+>>
+>> Which is an Intel Cherrytrail using machine with an Intel
+>> Cherrytrail Whiskey Cove PMIC.
+>>
+>> The firmware I'm talking about here is the EFI system firmware
+>> which boots the machine aka the BIOS.
+>
+> Mention all of the above in patch descriptions.
+>
+>>> We probably don't want to disable register_reset in all circumstances. Can
+>>> you record the
+>>> firmware's settings for charger?
+>>
+>>
+>> Yes after a (re)boot they are always reset to the same values.
+>
+> So record those settings in a platform_data field. That's your
+> external config in this case.
 
-> I don't see that BQ24190 generally needs to handle extcon events.
+Assuming the platform_data has sane values like uA that means
+re-implementing most of the bq24190 driver in the code filling
+the platform data (to go from register values to uA) that does
+not seem like a sane approach when a simple do not reset
+flag suffices. Note also see below for another way to deal
+with this.
 
-Yet charger drivers handling extcon events to determine how much
-current they can draw is a design pattern we already see in use
-in the kernel:
+> The driver does a register_reset on resume so it has a consistent
+> state with chip.
 
-[hans@shalem linux]$ grep -l extcon drivers/power/supply/*.c
-drivers/power/supply/axp288_charger.c
-drivers/power/supply/bq24190_charger.c
-drivers/power/supply/charger-manager.c
-drivers/power/supply/qcom_smbb.c
+That assumes someone may be mucking with the chip during
+suspend which usually is not the case arguably this is a
+bad idea in general since if the chip is programmed with
+lower then reset charging limits it may now charge above
+the limits until the limits are re-applied.
+
+I really wonder what the reset is there for at all TBH,
+are there any cases where this really is necessary ?
+Maybe it would be best to just drop the reset altogether,
+or make it opt in rather then opt out.
+
+>
+>>> I suspect we should replay them in set_mode_host() -- to be
+>>> renamed set_operating_params in forthcoming patchset.
+>>
+>>
+>> That is not going to work, the Cherrytrail Whiskey Cove PMIC
+>> is used on many different boards and there is no way to get
+>> the info from the firmware other then reading it back from
+>> the chip, hence the no_register_reset flag.
+>
+> This isn't about the PMIC. You need to know how boot code for a
+> certain device configures the charger. Encode that knowledge in
+> platform_data.
+
+Again that info is already there in the registers and as long
+as we do not touch them we're fine. Also see above about
+needing to reproduce almost all of the bq24190 driver to
+actually fill in platform_data from the registers.
+
+> Also have you asked the vendor for docs?
+
+Yes I've asked both the manufacturer and the chip vendor (Intel)
+for docs, but I've not gotten an answer from either.
+
+>>> What generates your platform_data objects?
+>>
+>>
+>> The last patch in the patch-set shows this. The
+>> Cherrytrail Whiskey Cove PMIC does charger type detection
+>> and has a fuelgauge, but it does not contain a battery
+>> charger itself. Instead it contains an i2c controller
+>> to which an external charger chip, one of the
+>> TI BQ24190 variants, gets connected.
+>
+> More useful background for patch descriptions :-)
+
+I can put this in the patch descriptions as example.
+but the patches are intended to be generally useful in case
+a similar external fuel gauge situation comes along, which
+is why I left the details out of the commit messages.
+
+> Given that design, it sounds like the PMIC driver should be the point
+> of contact with userspace, and use sysfs
+> (/sys/class/power_supply/bq24190-charger/f_*) to get/set charger
+> stats. We can amend the driver to extend that feature. (Also a good
+> way to test chip knobs.)
+
+One driver poking into the sysfs files of another driver is
+not a sane intra driver interface, also this will require
+(again) duplicating much of the bq24190 driver for all the
+power_supply properties which it already implement.
+
+I really do not see what your objection is against the
+"power: supply: bq24190_charger: Add support for external fuel gauge"
+patch is, the changes to bq24190_charger.c are minimal it defines
+a clean, clear and simple interface. Where as the go through sysfs
+interface solution you are proposing is neither of these 3.
+
+I would appreciate it if you would actually think along with
+me in how we can make this all work together nicely, currently
+I'm getting the feeling that you want to make as little changes
+to the bq24190-charger code as possible, even if that means
+adding 10 times as much code elsewhere, that is not an acceptable
+solution IMHO.
+
+
+>
+> Some TI fuel gauges also work this way - I2C link to external charger.
+>
+>> The driver for this i2c-controller calls i2c_new_device
+>> with i2c_board_info describing the BQ24190 charger
+>> after calling i2c_add_adapter().
+>>
+>>> Are you forced to use platform_data for some reason?
+>>
+>>
+>> Since this is info being passed around inside the kernel
+>> using platform_data is a hell of a lot simpler (and cleaner
+>> no need to check types, etc on the receiving side) then
+>> using device-properties. Device-properties are nice when
+>> getting info from firmware, but this is not that.
+>
+> OK
+>
+>> Also one of the things passed is actually a function
+>> pointer to a function to get extra power_supply_properties
+>> from the fuel-gauge, and passing function pointers certainly
+>> is not something which should be done through device-props.
+>>
+>>>
+>>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>>>
+>>>
+>>> Add to all BQ24190 patches:
+>>> Cc: Liam Breck <kernel@networkimprov.net>
+>>> Cc: Tony Lindgren <tony@atomide.com>
+>>>
+>>> Pls don't CC me on the related patchsets.
+>>>
+>>>> ---
+>>>>  drivers/power/supply/bq24190_charger.c | 5 +++++
+>>>>  include/linux/power/bq24190_charger.h  | 1 +
+>>>>  2 files changed, 6 insertions(+)
+>>>>
+>>>> diff --git a/drivers/power/supply/bq24190_charger.c
+>>>> b/drivers/power/supply/bq24190_charger.c
+>>>> index a4f0849..c92a40e4 100644
+>>>> --- a/drivers/power/supply/bq24190_charger.c
+>>>> +++ b/drivers/power/supply/bq24190_charger.c
+>>>> @@ -151,6 +151,7 @@ struct bq24190_dev_info {
+>>>>         struct device                   *dev;
+>>>>         struct power_supply             *charger;
+>>>>         struct power_supply             *battery;
+>>>> +       struct bq24190_platform_data    *pdata;
+>>>
+>>>
+>>> Use a register settings array/struct here, instead of platform-data. None
+>>> of your other patches need
+>>> to retain pdata.
+>>
+>>
+>> Sure I can make a 1:1 copy of each field in pdata here, but that
+>> is just more lines of code for the same result.
+>
+> I mean record the chip's UEFI-supplied state here.
+
+Ok, so a flag get state from chip in platform_data would be
+an acceptable solution to me as then I can re-use all the
+code in bq24190_charger.c to go from register values to
+uA (and uV).
+
+> Currently
+> no_register_reset appears to be the only pdata field used after
+> probe()
+
+The get_ext_bat_property callback also gets used after probe, but
+that could be a separate variable in bq24190_dev_info.
 
 Regards,
 
 Hans
-
-
->
->>> What drivers generate the event?
->>
->>
->> The driver which registers the extcon with the name "extcon_name"
->> the bq24190_charger driver really does not need to know more.
->> In the use-case we are talking about now the driver is
->> the new extcon-cht-wc.c driver which is part of the patch-set
->> as I initially posted it.
->>
->>> Also provide URLs to docs/datasheets.
->>
->>
->> I've no access to docs / datasheets for the Whiskey Cove PMIC.
->>
->>
->>>
->>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->>>> ---
->>>>  drivers/power/supply/Kconfig           |  1 +
->>>>  drivers/power/supply/bq24190_charger.c | 85
->>>> ++++++++++++++++++++++++++++++++++
->>>>  include/linux/power/bq24190_charger.h  |  1 +
->>>>  3 files changed, 87 insertions(+)
->>>>
->>>> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
->>>> index f8b6e64..fd93110 100644
->>>> --- a/drivers/power/supply/Kconfig
->>>> +++ b/drivers/power/supply/Kconfig
->>>> @@ -442,6 +442,7 @@ config CHARGER_BQ2415X
->>>>  config CHARGER_BQ24190
->>>>         tristate "TI BQ24190 battery charger driver"
->>>>         depends on I2C
->>>> +       depends on EXTCON
->>>>         depends on GPIOLIB || COMPILE_TEST
->>>>         help
->>>>           Say Y to enable support for the TI BQ24190 battery charger.
->>>> diff --git a/drivers/power/supply/bq24190_charger.c
->>>> b/drivers/power/supply/bq24190_charger.c
->>>> index 82cb33d..03990e2 100644
->>>> --- a/drivers/power/supply/bq24190_charger.c
->>>> +++ b/drivers/power/supply/bq24190_charger.c
->>>> @@ -11,10 +11,12 @@
->>>>  #include <linux/module.h>
->>>>  #include <linux/interrupt.h>
->>>>  #include <linux/delay.h>
->>>> +#include <linux/extcon.h>
->>>>  #include <linux/of_irq.h>
->>>>  #include <linux/of_device.h>
->>>>  #include <linux/pm_runtime.h>
->>>>  #include <linux/power_supply.h>
->>>> +#include <linux/workqueue.h>
->>>>  #include <linux/gpio.h>
->>>>  #include <linux/i2c.h>
->>>>
->>>> @@ -39,6 +41,8 @@
->>>>  #define BQ24190_REG_POC_WDT_RESET_SHIFT                6
->>>>  #define BQ24190_REG_POC_CHG_CONFIG_MASK                (BIT(5) | BIT(4))
->>>>  #define BQ24190_REG_POC_CHG_CONFIG_SHIFT       4
->>>> +#define BQ24190_REG_POC_CHG_CONFIG_CHARGE      1
->>>> +#define BQ24190_REG_POC_CHG_CONFIG_OTG         2
->>>>  #define BQ24190_REG_POC_SYS_MIN_MASK           (BIT(3) | BIT(2) |
->>>> BIT(1))
->>>>  #define BQ24190_REG_POC_SYS_MIN_SHIFT          1
->>>>  #define BQ24190_REG_POC_BOOST_LIM_MASK         BIT(0)
->>>> @@ -152,6 +156,9 @@ struct bq24190_dev_info {
->>>>         struct power_supply             *charger;
->>>>         struct power_supply             *battery;
->>>>         struct bq24190_platform_data    *pdata;
->>>> +       struct extcon_dev               *extcon;
->>>> +       struct notifier_block           extcon_nb;
->>>> +       struct work_struct              extcon_work;
->>>>         char                            model_name[I2C_NAME_SIZE];
->>>>         kernel_ulong_t                  model;
->>>>         struct mutex                    f_reg_lock;
->>>> @@ -167,6 +174,11 @@ struct bq24190_dev_info {
->>>>   * number at that index in the array is the real-world value that it
->>>>   * represents.
->>>>   */
->>>> +
->>>> +/* REG00[2:0] (IINLIM) in uAh */
->>>> +static const int bq24190_iinlim_values[] = {
->>>> +       100000, 150000, 500000, 900000, 1200000, 1500000, 2000000,
->>>> 3000000 };
->>>> +
->>>>  /* REG02[7:2] (ICHG) in uAh */
->>>>  static const int bq24190_ccc_ichg_values[] = {
->>>>          512000,  576000,  640000,  704000,  768000,  832000,  896000,
->>>> 960000,
->>>> @@ -1290,6 +1302,61 @@ static irqreturn_t bq24190_irq_handler_thread(int
->>>> irq, void *data)
->>>>         return IRQ_HANDLED;
->>>>  }
->>>>
->>>> +static void bq24190_extcon_work(struct work_struct *work)
->>>> +{
->>>
->>>
->>> Does this need pm_runtime_get_sync(), etc?
->>> (See linux-next patches to driver.)
->>
->>
->> Yes with runtime pm this will need to do a
->> pm_runtime_get_sync(bdi->Dev) before accessing
->> the device.
->>
->>
->>
->>
->>>
->>>> +       struct bq24190_dev_info *bdi =
->>>> +               container_of(work, struct bq24190_dev_info, extcon_work);
->>>> +       int ret, iinlim = 0;
->>>> +
->>>> +       if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_SDP) == 1)
->>>> +               iinlim = 500000;
->>>> +       else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_CDP) == 1
->>>> ||
->>>> +                extcon_get_state(bdi->extcon, EXTCON_CHG_USB_ACA) == 1)
->>>> +               iinlim = 1500000;
->>>> +       else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_DCP) == 1)
->>>> +               iinlim = 2000000;
->>>> +
->>>> +       if (iinlim) {
->>>> +               ret = bq24190_set_field_val(bdi, BQ24190_REG_ISC,
->>>> +                               BQ24190_REG_ISC_IINLIM_MASK,
->>>> +                               BQ24190_REG_ISC_IINLIM_SHIFT,
->>>> +                               bq24190_iinlim_values,
->>>> +                               ARRAY_SIZE(bq24190_iinlim_values),
->>>> +                               iinlim);
->>>> +               if (ret)
->>>> +                       dev_err(bdi->dev, "Can't set IINLIM: %d\n", ret);
->>>> +       }
->>>> +
->>>> +       /*
->>>> +        * If no charger has been detected and host mode is requested,
->>>> activate
->>>> +        * the 5V boost converter, otherwise deactivate it.
->>>> +        */
->>>> +       if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) ==
->>>> 1) {
->>>> +               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->>>> +                                        BQ24190_REG_POC_CHG_CONFIG_MASK,
->>>> +
->>>> BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->>>> +                                        BQ24190_REG_POC_CHG_CONFIG_OTG);
->>>> +       } else {
->>>> +               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->>>> +                                        BQ24190_REG_POC_CHG_CONFIG_MASK,
->>>> +
->>>> BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->>>> +
->>>> BQ24190_REG_POC_CHG_CONFIG_CHARGE);
->>>> +       }
->>>> +       if (ret)
->>>> +               dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", ret);
->>>> +}
->>>> +
->>>> +static int bq24190_extcon_event(struct notifier_block *nb, unsigned long
->>>> event,
->>>> +                               void *param)
->>>> +{
->>>> +       struct bq24190_dev_info *bdi =
->>>> +               container_of(nb, struct bq24190_dev_info, extcon_nb);
->>>> +
->>>> +       schedule_work(&bdi->extcon_work);
->>>> +
->>>> +       return NOTIFY_OK;
->>>> +}
->>>> +
->>>>  static int bq24190_hw_init(struct bq24190_dev_info *bdi)
->>>>  {
->>>>         u8 v;
->>>> @@ -1375,6 +1442,12 @@ static int bq24190_probe(struct i2c_client
->>>> *client,
->>>>                         return -EPROBE_DEFER;
->>>>         }
->>>>
->>>> +       if (bdi->pdata && bdi->pdata->extcon_name) {
->>>
->>>
->>> Verify that extcon_name has an expected value?
->>
->>
->> The whole idea is that the bq24190 does not need to care about
->> which extcon driver it is told to use, just that it has to
->> use *a* extcon driver.
->>
->>>
->>>> +               bdi->extcon =
->>>> extcon_get_extcon_dev(bdi->pdata->extcon_name);
->>>> +               if (!bdi->extcon)
->>>> +                       return -EPROBE_DEFER;
->>>
->>>
->>> dev_info() a msg about this linkage, including info about the other side.
->>
->>
->> dev_info on success I assume, not on PROBE_DEFER, otherwise we will
->> end up spamming the log quite a lot while modules are loading.
->>
->>
->>
->>
->>>
->>>> +       }
->>>> +
->>>>         pm_runtime_enable(dev);
->>>>         pm_runtime_resume(dev);
->>>>
->>>> @@ -1423,6 +1496,18 @@ static int bq24190_probe(struct i2c_client
->>>> *client,
->>>>                 goto out4;
->>>>         }
->>>>
->>>> +       if (bdi->extcon) {
->>>> +               INIT_WORK(&bdi->extcon_work, bq24190_extcon_work);
->>>> +               bdi->extcon_nb.notifier_call = bq24190_extcon_event;
->>>> +               ret = devm_extcon_register_notifier(dev, bdi->extcon, -1,
->>>> +                                                   &bdi->extcon_nb);
->>>> +               if (ret)
->>>> +                       goto out4;
->>>> +
->>>> +               /* Sync initial cable state */
->>>> +               schedule_work(&bdi->extcon_work);
->>>> +       }
->>>> +
->>>>         return 0;
->>>>
->>>>  out4:
->>>> diff --git a/include/linux/power/bq24190_charger.h
->>>> b/include/linux/power/bq24190_charger.h
->>>> index 02d248b..909c5b9 100644
->>>> --- a/include/linux/power/bq24190_charger.h
->>>> +++ b/include/linux/power/bq24190_charger.h
->>>> @@ -13,6 +13,7 @@
->>>>
->>>>  struct bq24190_platform_data {
->>>>         bool no_register_reset;
->>>> +       const char *extcon_name;
->>>>         int (*get_ext_bat_property)(enum power_supply_property prop,
->>>>                                     union power_supply_propval *val);
->>>>  };
->>>
->>>
->>
->> Regards,
->>
->> Hans
