@@ -1,18 +1,18 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [05/15] power: supply: bq24190_charger: Limit charging voltage to
- 4.3V
-Date: Sat, 18 Mar 2017 15:24:02 +0100
-Message-ID: <e2d21bb8-4165-ed3f-a290-05e7c274429c@redhat.com>
-References: <20170318071019.4561-2-liam@networkimprov.net>
+Subject: Re: [08/15] power: supply: bq24190_charger: Add support for external
+ fuel gauge
+Date: Sat, 18 Mar 2017 15:31:35 +0100
+Message-ID: <a9286000-751f-dace-2408-f0389a6f44ac@redhat.com>
+References: <20170318071019.4561-5-liam@networkimprov.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:40498 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:45710 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751134AbdCROcM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S1751272AbdCROcM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Sat, 18 Mar 2017 10:32:12 -0400
-In-Reply-To: <20170318071019.4561-2-liam@networkimprov.net>
+In-Reply-To: <20170318071019.4561-5-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
@@ -21,95 +21,136 @@ Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@
 Hi,
 
 On 18-03-17 08:10, Liam Breck wrote:
-> On Fri, 17 Mar 2017 10:55:17 +0100, Hans de Goede wrote:
+> On Fri, 17 Mar 2017 10:55:20 +0100, Hans de Goede wrote:
 >
->> When the platform data asks us to not reset the charger to its default
->> values and instead trust the firmware set values check the charging
->> voltage and clamp it to 4.304V.
->>
->> Some firmwares set really too high voltages, e.g. the GPD-win I've been
->> working on uses 4.384V. New LiHV (High Voltage) batteries may be charged
->> upto 4.35V but that significantly impacts their lifetime, limit charging
->> to 4.304V for safety and lifetime reasons.
+>> Some platforms with a bq24190_charger have an external fuel gauge which
+>> makes it possible to reliably report battery (dis)charge state, at
+>> support for this by adding an optional get_ext_bat_property callback
+>> to the platform_data and using this if the platform provides it.
 >
-> See comments on patch 04; pls specify the offending firmwares and exactly how they
-> misconfigure the charger. Include URLs to datasheets, etc.
+> Please do not pollute the charger with fuel-gauge functionality; use the gauge driver directly.
 
-As mentioned this is a x86 machine, without any datasheets. I can add an URL to
-the page describing the device. Also misconfiguring may be a bit of a strong
-word, this is a LiHV battery so 4.384V is mostly fine, I would just rather
-use a max charge voltage with slightly more margin.
+That is not how the userspace ABI works, the userspace ABI says one
+battery one power_supply device, so we need to combine the data from
+the 2 sources.
 
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> ---
->>  drivers/power/supply/bq24190_charger.c | 27 ++++++++++++++++++++++++---
->>  1 file changed, 24 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
->> index c92a40e4..7bca8d0 100644
->> --- a/drivers/power/supply/bq24190_charger.c
->> +++ b/drivers/power/supply/bq24190_charger.c
->> @@ -504,11 +504,32 @@ static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
->>
->>  static int bq24190_register_reset(struct bq24190_dev_info *bdi)
->>  {
->> -	int ret, limit = 100;
->> +	int ret, voltage, limit = 100;
->>  	u8 v;
->>
->> -	if (bdi->pdata && bdi->pdata->no_register_reset)
->> -		return 0;
->> +	if (bdi->pdata && bdi->pdata->no_register_reset) {
->
-> See comments on patch 04. Invoke this in set_mode_host() using value from settings config.
+> And calling into a mystery module with a pointer from platform-data is scary! St. Patrick's
+> Day is wrong for this; try April Fool's or Halloween ;-)
 
-Again, this is x86, there is no settings config (or one that we can get too)
-other then the one stored in the registers of the IC.
-
->
->> +		/*
->> +		 * We've been asked to keep the firmware settings as is, but
->> +		 * some firmwares set really too high voltages (e.g. 4.384V).
->> +		 * New LiHV (High Voltage) batteries may be charged upto 4.35V
->> +		 * but that significantly impacts their lifetime, limit
->> +		 * charging to 4.304V for safety and lifetime reasons.
->> +		 */
->
-> Docs which belong in external config.
-
-Again there is NO external config. The i2c-adapter driver which registers
-the client (and passed in any config) is a generic driver for any board
-using a Cherrytrail Whiskey Cove PMIC. All that the ACPI tables tell us
-is that there is a Cherrytrail Whiskey Cove PMIC and matching fuel-gauge,
-for anything else we are on our own.
-
-
->
->> +		ret = bq24190_get_field_val(bdi, BQ24190_REG_CVC,
->> +			BQ24190_REG_CVC_VREG_MASK, BQ24190_REG_CVC_VREG_SHIFT,
->> +			bq24190_cvc_vreg_values,
->> +			ARRAY_SIZE(bq24190_cvc_vreg_values), &voltage);
->> +		if (ret < 0)
->> +			return ret;
->> +
->> +		if (voltage <= 4304000)
->> +			return 0;
->
-> The limit value should come from settings config.
-
-See above.
-
->
->> +		return bq24190_set_field_val(bdi, BQ24190_REG_CVC,
->> +			BQ24190_REG_CVC_VREG_MASK, BQ24190_REG_CVC_VREG_SHIFT,
->> +			bq24190_cvc_vreg_values,
->> +			ARRAY_SIZE(bq24190_cvc_vreg_values), 4304000);
->> +	}
->>
->>  	/* Reset the registers */
->>  	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->
+Since we control both the caller and the callee I fail to see how
+this is scary in any way.
 
 Regards,
 
 Hans
+
+
+>
+>> By convention the callback will return -ENXIO when it is not ready yet,
+>> or the driver providing it has been unbound from its device. Since it
+>> returns the same error when unbound it cannot return -EPROBE_DEFER
+>> as that is not a valid errno.
+>>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> ---
+>>  drivers/power/supply/bq24190_charger.c | 41 +++++++++++++++++++++++++++++++---
+>>  include/linux/power/bq24190_charger.h  |  4 ++++
+>>  2 files changed, 42 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+>> index 9014dee..9fe69a5 100644
+>> --- a/drivers/power/supply/bq24190_charger.c
+>> +++ b/drivers/power/supply/bq24190_charger.c
+>> @@ -1111,7 +1111,10 @@ static int bq24190_battery_get_property(struct power_supply *psy,
+>>  		ret = 0;
+>>  		break;
+>>  	default:
+>> -		ret = -ENODATA;
+>> +		if (bdi->pdata && bdi->pdata->get_ext_bat_property)
+>> +			ret = bdi->pdata->get_ext_bat_property(psp, val);
+>> +		else
+>> +			ret = -ENODATA;
+>>  	}
+>>
+>>  	pm_runtime_put_sync(bdi->dev);
+>> @@ -1168,12 +1171,31 @@ static enum power_supply_property bq24190_battery_properties[] = {
+>>  	POWER_SUPPLY_PROP_TECHNOLOGY,
+>>  	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
+>>  	POWER_SUPPLY_PROP_SCOPE,
+>> +	/* Begin of extended battery properties */
+>> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>> +	POWER_SUPPLY_PROP_VOLTAGE_AVG,
+>> +	POWER_SUPPLY_PROP_VOLTAGE_OCV,
+>> +	POWER_SUPPLY_PROP_CURRENT_NOW,
+>> +	POWER_SUPPLY_PROP_CURRENT_AVG,
+>> +	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+>> +	POWER_SUPPLY_PROP_CHARGE_FULL,
+>> +	POWER_SUPPLY_PROP_CHARGE_NOW,
+>>  };
+>>
+>>  static const struct power_supply_desc bq24190_battery_desc = {
+>>  	.name			= "bq24190-battery",
+>>  	.type			= POWER_SUPPLY_TYPE_BATTERY,
+>>  	.properties		= bq24190_battery_properties,
+>> +	.num_properties		= 6,
+>> +	.get_property		= bq24190_battery_get_property,
+>> +	.set_property		= bq24190_battery_set_property,
+>> +	.property_is_writeable	= bq24190_battery_property_is_writeable,
+>> +};
+>> +
+>> +static const struct power_supply_desc bq24190_ext_battery_desc = {
+>> +	.name			= "bq24190-battery",
+>> +	.type			= POWER_SUPPLY_TYPE_BATTERY,
+>> +	.properties		= bq24190_battery_properties,
+>>  	.num_properties		= ARRAY_SIZE(bq24190_battery_properties),
+>>  	.get_property		= bq24190_battery_get_property,
+>>  	.set_property		= bq24190_battery_set_property,
+>> @@ -1336,6 +1358,15 @@ static int bq24190_probe(struct i2c_client *client,
+>>  		return -EINVAL;
+>>  	}
+>>
+>> +	if (bdi->pdata && bdi->pdata->get_ext_bat_property) {
+>> +		union power_supply_propval val;
+>> +
+>> +		/* Check external fuel gauge is ready */
+>> +		ret = bdi->pdata->get_ext_bat_property(0, &val);
+>> +		if (ret == -ENXIO)
+>> +			return -EPROBE_DEFER;
+>> +	}
+>> +
+>>  	pm_runtime_enable(dev);
+>>  	pm_runtime_resume(dev);
+>>
+>> @@ -1357,8 +1388,12 @@ static int bq24190_probe(struct i2c_client *client,
+>>  	}
+>>
+>>  	battery_cfg.drv_data = bdi;
+>> -	bdi->battery = power_supply_register(dev, &bq24190_battery_desc,
+>> -						&battery_cfg);
+>> +	if (bdi->pdata && bdi->pdata->get_ext_bat_property)
+>> +		bdi->battery = power_supply_register(dev,
+>> +				    &bq24190_ext_battery_desc, &battery_cfg);
+>> +	else
+>> +		bdi->battery = power_supply_register(dev,
+>> +				    &bq24190_battery_desc, &battery_cfg);
+>>  	if (IS_ERR(bdi->battery)) {
+>>  		dev_err(dev, "Can't register battery\n");
+>>  		ret = PTR_ERR(bdi->battery);
+>> diff --git a/include/linux/power/bq24190_charger.h b/include/linux/power/bq24190_charger.h
+>> index 8d918cb..02d248b 100644
+>> --- a/include/linux/power/bq24190_charger.h
+>> +++ b/include/linux/power/bq24190_charger.h
+>> @@ -9,8 +9,12 @@
+>>  #ifndef _BQ24190_CHARGER_H_
+>>  #define _BQ24190_CHARGER_H_
+>>
+>> +#include <linux/power_supply.h>
+>> +
+>>  struct bq24190_platform_data {
+>>  	bool no_register_reset;
+>> +	int (*get_ext_bat_property)(enum power_supply_property prop,
+>> +				    union power_supply_propval *val);
+>>  };
+>>
+>>  #endif
+>
