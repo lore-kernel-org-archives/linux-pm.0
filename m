@@ -1,20 +1,20 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [08/15] power: supply: bq24190_charger: Add support for external
- fuel gauge
-Date: Sun, 19 Mar 2017 00:02:15 +0100
-Message-ID: <a064b347-6f23-8eac-50d4-620208f5a201@redhat.com>
-References: <20170318071019.4561-5-liam@networkimprov.net>
- <a9286000-751f-dace-2408-f0389a6f44ac@redhat.com>
- <CAKvHMgTMqQPM1+OsJeaiqUFAgQC8Hby15xpbN39tVy=pqh+_3w@mail.gmail.com>
+Subject: Re: [09/15] power: supply: bq24190_charger: Add voltage_max_design
+ prop to battery
+Date: Sun, 19 Mar 2017 00:10:46 +0100
+Message-ID: <94785ca6-747a-779b-6a44-1f14eba100be@redhat.com>
+References: <20170318071019.4561-6-liam@networkimprov.net>
+ <6c675434-4ac1-2cd4-c4e3-7edf7a3b5af5@redhat.com>
+ <CAKvHMgQEqa1aTZQs-34R_207UTDp5s3YHPbyxeQoAA4oMCgokg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:59058 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:43388 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751181AbdCRXDL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 18 Mar 2017 19:03:11 -0400
-In-Reply-To: <CAKvHMgTMqQPM1+OsJeaiqUFAgQC8Hby15xpbN39tVy=pqh+_3w@mail.gmail.com>
+        id S1751285AbdCRXLP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 18 Mar 2017 19:11:15 -0400
+In-Reply-To: <CAKvHMgQEqa1aTZQs-34R_207UTDp5s3YHPbyxeQoAA4oMCgokg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
@@ -22,65 +22,58 @@ Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@
 
 Hi,
 
-On 18-03-17 20:18, Liam Breck wrote:
-> On Sat, Mar 18, 2017 at 7:31 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+On 18-03-17 20:34, Liam Breck wrote:
+> On Sat, Mar 18, 2017 at 7:34 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 >> Hi,
 >>
 >> On 18-03-17 08:10, Liam Breck wrote:
 >>>
->>> On Fri, 17 Mar 2017 10:55:20 +0100, Hans de Goede wrote:
+>>> On Fri, 17 Mar 2017 10:55:21 +0100, Hans de Goede wrote:
 >>>
->>>> Some platforms with a bq24190_charger have an external fuel gauge which
->>>> makes it possible to reliably report battery (dis)charge state, at
->>>> support for this by adding an optional get_ext_bat_property callback
->>>> to the platform_data and using this if the platform provides it.
+>>>> When combined with an external fuel-gauge, upower needs
+>>>> voltage_max_design
+>>>> as it internally does all its calculations in Watts and converts the
+>>>> charge_foo properties from A to Watts by using voltage_max_design.
 >>>
 >>>
->>> Please do not pollute the charger with fuel-gauge functionality; use the
->>> gauge driver directly.
+>>> This is a battery characteristic which should be obtained from the fuel
+>>> gauge (e.g. V at charge
+>>> termination)
 >>
 >>
->> That is not how the userspace ABI works, the userspace ABI says one
->> battery one power_supply device, so we need to combine the data from
->> the 2 sources.
->
-> Reference?
-
-This is just how things work, if you define 2 battery type power-supplies
-upower will export battery info for 2 batteries to userspace and
-battery panel applets will show 2 batteries (which is useful for
-laptops which actually have 2 batteries like eg the Lenovo T440, X240, etc.
-which have both an internal battery and a replace battery at the back.
-
->
-> See patch 04 discussion about fuel-gauge as primary point of contact.
->
-> Another approach to consider: a pseudo-driver which uses sysfs or
-> callbacks into two actual drivers.
-
-Already answered in the patch 04 discussion.
-
->>> And calling into a mystery module with a pointer from platform-data is
->>> scary! St. Patrick's
->>> Day is wrong for this; try April Fool's or Halloween ;-)
+>> V at charge termination is *exactly* what bq24190_charger_get_voltage()
+>> returns. And the fuel-gauge only measures charging it does not control
+>> it, so unless we had some nvram to store things in over time the fg
+>> driver cannot no what "V at charge termination" will be, where as the
+>> bq24190_charger code actually knows as it controls at which voltage
+>> the charger switches from constant current to constant voltage mode.
+>>
+>>> or external battery config.
+>>>
+>>> See also https://patchwork.kernel.org/patch/9626487/
 >>
 >>
->> Since we control both the caller and the callee I fail to see how
->> this is scary in any way.
+>> There is no external battery config on x86.
 >
-> This patch looks like a hack to me. Pls find another way.
+> ACPI?
 
-Poking sysfs files from kernelspace is a much bugger hack, that +
-the code duplication required in making the fuel-gauge the leading
-driver really makes me believe this "hack" is the best solution.
+Ideally yes, in practice no.
 
-Also keep in mind that the fuel-gauge has no status interrupt for
-events like power getting plugged in charging being done, fault
-interrupts, etc. So we would also need some way to tap into
-the bq24190's interrupt from the fuel-gauge driver.
+> The battery data/config should really be used to set the charger
+> register in question.
 
-Anways lets continue this discussion in the patch 04 part
-of the thread.
+Again the contents of the register is the config, but as mentioned
+in the patch04 discussion I'm fine with adding a flag to read the
+info from the registers, rather then just not touching the registers,
+just as long as the going from register contents to "battery data"
+is done in the bq24190_charger driver as that already has all the
+lookup tables, etc.
+
+> charger/voltage_max already has this. Can you find a way to use that?
+
+Nope, upower will look at the battery/max_voltage attribute, so we
+need it under the battery power_supply, we cannot just make up
+new userspace ABI here.
 
 Regards,
 
@@ -88,122 +81,49 @@ Hans
 
 
 
-
->>>> By convention the callback will return -ENXIO when it is not ready yet,
->>>> or the driver providing it has been unbound from its device. Since it
->>>> returns the same error when unbound it cannot return -EPROBE_DEFER
->>>> as that is not a valid errno.
->>>>
 >>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 >>>> ---
->>>>  drivers/power/supply/bq24190_charger.c | 41
->>>> +++++++++++++++++++++++++++++++---
->>>>  include/linux/power/bq24190_charger.h  |  4 ++++
->>>>  2 files changed, 42 insertions(+), 3 deletions(-)
+>>>>  drivers/power/supply/bq24190_charger.c | 10 +++++++++-
+>>>>  1 file changed, 9 insertions(+), 1 deletion(-)
 >>>>
 >>>> diff --git a/drivers/power/supply/bq24190_charger.c
 >>>> b/drivers/power/supply/bq24190_charger.c
->>>> index 9014dee..9fe69a5 100644
+>>>> index 9fe69a5..82cb33d 100644
 >>>> --- a/drivers/power/supply/bq24190_charger.c
 >>>> +++ b/drivers/power/supply/bq24190_charger.c
->>>> @@ -1111,7 +1111,10 @@ static int bq24190_battery_get_property(struct
+>>>> @@ -1103,6 +1103,13 @@ static int bq24190_battery_get_property(struct
 >>>> power_supply *psy,
+>>>>                 val->intval = POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
 >>>>                 ret = 0;
 >>>>                 break;
->>>>         default:
->>>> -               ret = -ENODATA;
->>>> +               if (bdi->pdata && bdi->pdata->get_ext_bat_property)
->>>> +                       ret = bdi->pdata->get_ext_bat_property(psp, val);
->>>> +               else
->>>> +                       ret = -ENODATA;
->>>>         }
->>>>
->>>>         pm_runtime_put_sync(bdi->dev);
->>>> @@ -1168,12 +1171,31 @@ static enum power_supply_property
+>>>> +       case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+>>>> +               /*
+>>>> +                * Report charger configured voltage as max design
+>>>> voltage,
+>>>> +                * not entirely correct, but userspace needs something
+>>>> here.
+>>>> +                */
+>>>> +               ret = bq24190_charger_get_voltage(bdi, val);
+>>>> +               break;
+>>>>         case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+>>>>                 ret = bq24190_battery_get_temp_alert_max(bdi, val);
+>>>>                 break;
+>>>> @@ -1169,6 +1176,7 @@ static enum power_supply_property
 >>>> bq24190_battery_properties[] = {
+>>>>         POWER_SUPPLY_PROP_HEALTH,
+>>>>         POWER_SUPPLY_PROP_ONLINE,
 >>>>         POWER_SUPPLY_PROP_TECHNOLOGY,
+>>>> +       POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
 >>>>         POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
 >>>>         POWER_SUPPLY_PROP_SCOPE,
->>>> +       /* Begin of extended battery properties */
->>>> +       POWER_SUPPLY_PROP_VOLTAGE_NOW,
->>>> +       POWER_SUPPLY_PROP_VOLTAGE_AVG,
->>>> +       POWER_SUPPLY_PROP_VOLTAGE_OCV,
->>>> +       POWER_SUPPLY_PROP_CURRENT_NOW,
->>>> +       POWER_SUPPLY_PROP_CURRENT_AVG,
->>>> +       POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
->>>> +       POWER_SUPPLY_PROP_CHARGE_FULL,
->>>> +       POWER_SUPPLY_PROP_CHARGE_NOW,
->>>>  };
->>>>
->>>>  static const struct power_supply_desc bq24190_battery_desc = {
+>>>>         /* Begin of extended battery properties */
+>>>> @@ -1186,7 +1194,7 @@ static const struct power_supply_desc
+>>>> bq24190_battery_desc = {
 >>>>         .name                   = "bq24190-battery",
 >>>>         .type                   = POWER_SUPPLY_TYPE_BATTERY,
 >>>>         .properties             = bq24190_battery_properties,
->>>> +       .num_properties         = 6,
->>>> +       .get_property           = bq24190_battery_get_property,
->>>> +       .set_property           = bq24190_battery_set_property,
->>>> +       .property_is_writeable  = bq24190_battery_property_is_writeable,
->>>> +};
->>>> +
->>>> +static const struct power_supply_desc bq24190_ext_battery_desc = {
->>>> +       .name                   = "bq24190-battery",
->>>> +       .type                   = POWER_SUPPLY_TYPE_BATTERY,
->>>> +       .properties             = bq24190_battery_properties,
->>>>         .num_properties         = ARRAY_SIZE(bq24190_battery_properties),
+>>>> -       .num_properties         = 6,
+>>>> +       .num_properties         = 7,
 >>>>         .get_property           = bq24190_battery_get_property,
 >>>>         .set_property           = bq24190_battery_set_property,
->>>> @@ -1336,6 +1358,15 @@ static int bq24190_probe(struct i2c_client
->>>> *client,
->>>>                 return -EINVAL;
->>>>         }
->>>>
->>>> +       if (bdi->pdata && bdi->pdata->get_ext_bat_property) {
->>>> +               union power_supply_propval val;
->>>> +
->>>> +               /* Check external fuel gauge is ready */
->>>> +               ret = bdi->pdata->get_ext_bat_property(0, &val);
->>>> +               if (ret == -ENXIO)
->>>> +                       return -EPROBE_DEFER;
->>>> +       }
->>>> +
->>>>         pm_runtime_enable(dev);
->>>>         pm_runtime_resume(dev);
->>>>
->>>> @@ -1357,8 +1388,12 @@ static int bq24190_probe(struct i2c_client
->>>> *client,
->>>>         }
->>>>
->>>>         battery_cfg.drv_data = bdi;
->>>> -       bdi->battery = power_supply_register(dev, &bq24190_battery_desc,
->>>> -                                               &battery_cfg);
->>>> +       if (bdi->pdata && bdi->pdata->get_ext_bat_property)
->>>> +               bdi->battery = power_supply_register(dev,
->>>> +                                   &bq24190_ext_battery_desc,
->>>> &battery_cfg);
->>>> +       else
->>>> +               bdi->battery = power_supply_register(dev,
->>>> +                                   &bq24190_battery_desc, &battery_cfg);
->>>>         if (IS_ERR(bdi->battery)) {
->>>>                 dev_err(dev, "Can't register battery\n");
->>>>                 ret = PTR_ERR(bdi->battery);
->>>> diff --git a/include/linux/power/bq24190_charger.h
->>>> b/include/linux/power/bq24190_charger.h
->>>> index 8d918cb..02d248b 100644
->>>> --- a/include/linux/power/bq24190_charger.h
->>>> +++ b/include/linux/power/bq24190_charger.h
->>>> @@ -9,8 +9,12 @@
->>>>  #ifndef _BQ24190_CHARGER_H_
->>>>  #define _BQ24190_CHARGER_H_
->>>>
->>>> +#include <linux/power_supply.h>
->>>> +
->>>>  struct bq24190_platform_data {
->>>>         bool no_register_reset;
->>>> +       int (*get_ext_bat_property)(enum power_supply_property prop,
->>>> +                                   union power_supply_propval *val);
->>>>  };
->>>>
->>>>  #endif
->>>
->>>
->>
+>>>>         .property_is_writeable  = bq24190_battery_property_is_writeable,
