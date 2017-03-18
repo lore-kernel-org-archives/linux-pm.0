@@ -1,92 +1,85 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [07/15] power: supply: bq24190_charger: Add support for bq24192[i]
-Date: Sat, 18 Mar 2017 00:10:16 -0700
-Message-ID: <20170318071019.4561-4-liam@networkimprov.net>
-References: <20170317095527.10487-8-hdegoede@redhat.com>
+Subject: Re: [05/15] power: supply: bq24190_charger: Limit charging voltage to 4.3V
+Date: Sat, 18 Mar 2017 00:10:14 -0700
+Message-ID: <20170318071019.4561-2-liam@networkimprov.net>
+References: <20170317095527.10487-6-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f68.google.com ([74.125.83.68]:36257 "EHLO
-        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751025AbdCRHLa (ORCPT
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:33808 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750971AbdCRHLa (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 03:11:30 -0400
-Received: by mail-pg0-f68.google.com with SMTP id 81so4681216pgh.3
-        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 00:11:26 -0700 (PDT)
-In-Reply-To: <20170317095527.10487-8-hdegoede@redhat.com>
+Received: by mail-pf0-f195.google.com with SMTP id o126so10954098pfb.1
+        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 00:11:23 -0700 (PDT)
+In-Reply-To: <20170317095527.10487-6-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-On Fri, 17 Mar 2017 10:55:19 +0100, Hans de Goede wrote:
+On Fri, 17 Mar 2017 10:55:17 +0100, Hans de Goede wrote:
 
-> The bq24192 and bq24192i are mostly identical to the bq24190, TI even
-> published a single datasheet for all 3 of them. The difference
-> between the bq24190 and bq24192[i] is the way charger-type detection
-> is done, the bq24190 is to be directly connected to the USB a/b lines,
-> where as the the bq24192[i] has a gpio which should be driven high/low
-> externally depending on the type of charger connected, from a register
-> level access pov there is no difference.
+> When the platform data asks us to not reset the charger to its default
+> values and instead trust the firmware set values check the charging
+> voltage and clamp it to 4.304V.
 > 
-> The differences between the bq24192 and bq24192i are:
-> 1) Lower default charge rate on the bq24192i
-> 2) Pre-charge-current can be max 640 mA on the bq24192i
-> 
-> Since we do not provide an API for setting the pre-charge-current,
-> these differences can be ignored and we can simply use the existing
-> code as-is with the bq24192 and bq24192i.
+> Some firmwares set really too high voltages, e.g. the GPD-win I've been
+> working on uses 4.384V. New LiHV (High Voltage) batteries may be charged
+> upto 4.35V but that significantly impacts their lifetime, limit charging
+> to 4.304V for safety and lifetime reasons.
 
-FYI, coming patchset will set pre- and termination-charge current via DT.
+See comments on patch 04; pls specify the offending firmwares and exactly how they 
+misconfigure the charger. Include URLs to datasheets, etc.
 
 > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 > ---
->  drivers/power/supply/bq24190_charger.c | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
+>  drivers/power/supply/bq24190_charger.c | 27 ++++++++++++++++++++++++---
+>  1 file changed, 24 insertions(+), 3 deletions(-)
 > 
 > diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index 9c4b171..9014dee 100644
+> index c92a40e4..7bca8d0 100644
 > --- a/drivers/power/supply/bq24190_charger.c
 > +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -1275,7 +1275,14 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
->  	if (ret < 0)
->  		goto out;
+> @@ -504,11 +504,32 @@ static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
 >  
-> -	if (v != bdi->model) {
-> +	switch (v) {
-> +	case BQ24190_REG_VPRS_PN_24190:
-> +	case BQ24190_REG_VPRS_PN_24192:
-> +	case BQ24190_REG_VPRS_PN_24192I:
-> +		bdi->model = v;
-
-We should set model in probe(). Doesn't the previous code still work?
-
-> +		break;
-> +	default:
-> +		dev_err(bdi->dev, "Error unknown model: 0x%02x\n", v);
-
-Feel free to add the error msg.
-
->  		ret = -ENODEV;
->  		goto out;
->  	}
-> @@ -1316,7 +1323,6 @@ static int bq24190_probe(struct i2c_client *client,
+>  static int bq24190_register_reset(struct bq24190_dev_info *bdi)
+>  {
+> -	int ret, limit = 100;
+> +	int ret, voltage, limit = 100;
+>  	u8 v;
 >  
->  	bdi->client = client;
->  	bdi->dev = dev;
-> -	bdi->model = id->driver_data;
+> -	if (bdi->pdata && bdi->pdata->no_register_reset)
+> -		return 0;
+> +	if (bdi->pdata && bdi->pdata->no_register_reset) {
 
-Is driver_data no longer always correct?
+See comments on patch 04. Invoke this in set_mode_host() using value from settings config.
 
->  	bdi->pdata = client->dev.platform_data;
->  	strncpy(bdi->model_name, id->name, I2C_NAME_SIZE);
->  	mutex_init(&bdi->f_reg_lock);
-> @@ -1450,6 +1456,8 @@ static SIMPLE_DEV_PM_OPS(bq24190_pm_ops, bq24190_pm_suspend, bq24190_pm_resume);
->   */
->  static const struct i2c_device_id bq24190_i2c_ids[] = {
->  	{ "bq24190", BQ24190_REG_VPRS_PN_24190 },
-> +	{ "bq24192", BQ24190_REG_VPRS_PN_24192 },
-> +	{ "bq24192i", BQ24190_REG_VPRS_PN_24192I },
+> +		/*
+> +		 * We've been asked to keep the firmware settings as is, but
+> +		 * some firmwares set really too high voltages (e.g. 4.384V).
+> +		 * New LiHV (High Voltage) batteries may be charged upto 4.35V
+> +		 * but that significantly impacts their lifetime, limit
+> +		 * charging to 4.304V for safety and lifetime reasons.
+> +		 */
 
-This may be the only essential change.
+Docs which belong in external config.
 
->  	{ },
->  };
->  MODULE_DEVICE_TABLE(i2c, bq24190_i2c_ids);
+> +		ret = bq24190_get_field_val(bdi, BQ24190_REG_CVC,
+> +			BQ24190_REG_CVC_VREG_MASK, BQ24190_REG_CVC_VREG_SHIFT,
+> +			bq24190_cvc_vreg_values,
+> +			ARRAY_SIZE(bq24190_cvc_vreg_values), &voltage);
+> +		if (ret < 0)
+> +			return ret;
+> +
+> +		if (voltage <= 4304000)
+> +			return 0;
+
+The limit value should come from settings config.
+
+> +		return bq24190_set_field_val(bdi, BQ24190_REG_CVC,
+> +			BQ24190_REG_CVC_VREG_MASK, BQ24190_REG_CVC_VREG_SHIFT,
+> +			bq24190_cvc_vreg_values,
+> +			ARRAY_SIZE(bq24190_cvc_vreg_values), 4304000);
+> +	}
+>  
+>  	/* Reset the registers */
+>  	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
