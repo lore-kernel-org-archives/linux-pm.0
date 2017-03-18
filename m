@@ -1,145 +1,186 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [05/15] power: supply: bq24190_charger: Limit charging voltage to 4.3V
-Date: Sat, 18 Mar 2017 12:01:45 -0700
-Message-ID: <CAKvHMgS6oD4Q1Z-=WQKCxtQ8G8ukyXFD2Pw2v5KBRdHE_woBwA@mail.gmail.com>
-References: <20170318071019.4561-2-liam@networkimprov.net> <e2d21bb8-4165-ed3f-a290-05e7c274429c@redhat.com>
+From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH 2/2] thermal: broadcom: add Northstar thermal driver
+Date: Sat, 18 Mar 2017 16:56:32 +0100
+Message-ID: <20170318155632.18099-2-zajec5@gmail.com>
+References: <20170318155632.18099-1-zajec5@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f68.google.com ([209.85.214.68]:36415 "EHLO
-        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751685AbdCRTBr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 15:01:47 -0400
-Received: by mail-it0-f68.google.com with SMTP id u69so9944431ita.3
-        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 12:01:46 -0700 (PDT)
-In-Reply-To: <e2d21bb8-4165-ed3f-a290-05e7c274429c@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170318155632.18099-1-zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-On Sat, Mar 18, 2017 at 7:24 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> Hi,
->
-> On 18-03-17 08:10, Liam Breck wrote:
->>
->> On Fri, 17 Mar 2017 10:55:17 +0100, Hans de Goede wrote:
->>
->>> When the platform data asks us to not reset the charger to its default
->>> values and instead trust the firmware set values check the charging
->>> voltage and clamp it to 4.304V.
->>>
->>> Some firmwares set really too high voltages, e.g. the GPD-win I've been
->>> working on uses 4.384V. New LiHV (High Voltage) batteries may be charged
->>> upto 4.35V but that significantly impacts their lifetime, limit charging
->>> to 4.304V for safety and lifetime reasons.
->>
->>
->> See comments on patch 04; pls specify the offending firmwares and exactly
->> how they
->> misconfigure the charger. Include URLs to datasheets, etc.
->
->
-> As mentioned this is a x86 machine, without any datasheets. I can add an URL
-> to
-> the page describing the device. Also misconfiguring may be a bit of a strong
-> word, this is a LiHV battery so 4.384V is mostly fine, I would just rather
-> use a max charge voltage with slightly more margin.
+From: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
 
-You can also ask for docs, and cut/paste sections, if not in Cantonese :-)
+Northstar is a SoC family commonly used in home routers. This commit
+adds a driver for checking CPU temperature.
 
->>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->>> ---
->>>  drivers/power/supply/bq24190_charger.c | 27 ++++++++++++++++++++++++---
->>>  1 file changed, 24 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/power/supply/bq24190_charger.c
->>> b/drivers/power/supply/bq24190_charger.c
->>> index c92a40e4..7bca8d0 100644
->>> --- a/drivers/power/supply/bq24190_charger.c
->>> +++ b/drivers/power/supply/bq24190_charger.c
->>> @@ -504,11 +504,32 @@ static int bq24190_set_mode_host(struct
->>> bq24190_dev_info *bdi)
->>>
->>>  static int bq24190_register_reset(struct bq24190_dev_info *bdi)
->>>  {
->>> -       int ret, limit = 100;
->>> +       int ret, voltage, limit = 100;
->>>         u8 v;
->>>
->>> -       if (bdi->pdata && bdi->pdata->no_register_reset)
->>> -               return 0;
->>> +       if (bdi->pdata && bdi->pdata->no_register_reset) {
->>
->>
->> See comments on patch 04. Invoke this in set_mode_host() using value from
->> settings config.
->
->
-> Again, this is x86, there is no settings config (or one that we can get too)
-> other then the one stored in the registers of the IC.
+Signed-off-by: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+---
+ drivers/thermal/Kconfig               |  5 ++
+ drivers/thermal/Makefile              |  1 +
+ drivers/thermal/broadcom/Kconfig      |  7 +++
+ drivers/thermal/broadcom/Makefile     |  1 +
+ drivers/thermal/broadcom/ns-thermal.c | 93 +++++++++++++++++++++++++++++++++++
+ 5 files changed, 107 insertions(+)
+ create mode 100644 drivers/thermal/broadcom/Kconfig
+ create mode 100644 drivers/thermal/broadcom/Makefile
+ create mode 100644 drivers/thermal/broadcom/ns-thermal.c
 
-Addressed on patch 04 discussion.
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 776b34396144..008e173ec825 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -392,6 +392,11 @@ config MTK_THERMAL
+ 	  Enable this option if you want to have support for thermal management
+ 	  controller present in Mediatek SoCs
+ 
++menu "Broadcom thermal drivers"
++depends on ARCH_BCM || COMPILE_TEST
++source "drivers/thermal/broadcom/Kconfig"
++endmenu
++
+ menu "Texas Instruments thermal drivers"
+ depends on ARCH_HAS_BANDGAP || COMPILE_TEST
+ depends on HAS_IOMEM
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 7adae2029355..549d81b6363c 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -27,6 +27,7 @@ thermal_sys-$(CONFIG_CLOCK_THERMAL)	+= clock_cooling.o
+ thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
+ 
+ # platform thermal drivers
++obj-y				+= broadcom/
+ obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
+ obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+ obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
+diff --git a/drivers/thermal/broadcom/Kconfig b/drivers/thermal/broadcom/Kconfig
+new file mode 100644
+index 000000000000..08457a461794
+--- /dev/null
++++ b/drivers/thermal/broadcom/Kconfig
+@@ -0,0 +1,7 @@
++config BCM_NS_THERMAL
++	tristate "Northstar thermal driver"
++	depends on ARCH_BCM_5301X || COMPILE_TEST
++	help
++	  Northstar's DMU (Device Management Unit) block contains a thermal
++	  sensor that allows checking CPU temperature. This driver provides
++	  support for it.
+diff --git a/drivers/thermal/broadcom/Makefile b/drivers/thermal/broadcom/Makefile
+new file mode 100644
+index 000000000000..059df9a0ed69
+--- /dev/null
++++ b/drivers/thermal/broadcom/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_BCM_NS_THERMAL)		+= ns-thermal.o
+diff --git a/drivers/thermal/broadcom/ns-thermal.c b/drivers/thermal/broadcom/ns-thermal.c
+new file mode 100644
+index 000000000000..1ec710febc55
+--- /dev/null
++++ b/drivers/thermal/broadcom/ns-thermal.c
+@@ -0,0 +1,93 @@
++/*
++ * Copyright (C) 2017 Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/module.h>
++#include <linux/of_address.h>
++#include <linux/platform_device.h>
++#include <linux/thermal.h>
++
++#define PVTMON_CONTROL0		0x00
++#define PVTMON_STATUS		0x08
++
++struct ns_thermal {
++	void __iomem *pvtmon;
++};
++
++static int ns_thermal_get_temp(void *data, int *temp)
++{
++	struct ns_thermal *ns_thermal = data;
++	u32 val;
++
++	val = readl(ns_thermal->pvtmon + PVTMON_STATUS);
++	*temp = 418000 - (val * 556);
++
++	return 0;
++}
++
++const struct thermal_zone_of_device_ops ns_thermal_ops = {
++	.get_temp = ns_thermal_get_temp,
++};
++
++static int ns_thermal_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct ns_thermal *ns_thermal;
++	struct thermal_zone_device *tzd;
++	u32 val;
++
++	ns_thermal = devm_kzalloc(dev, sizeof(*ns_thermal), GFP_KERNEL);
++	if (!ns_thermal)
++		return -ENOMEM;
++
++	ns_thermal->pvtmon = of_iomap(dev_of_node(dev), 0);
++	if (WARN_ON(!ns_thermal->pvtmon))
++		return -ENOENT;
++
++	val = readl(ns_thermal->pvtmon + PVTMON_CONTROL0);
++	if (val & 0xf)
++		writel(val & ~0xf, ns_thermal->pvtmon + PVTMON_CONTROL0);
++
++	tzd = devm_thermal_zone_of_sensor_register(dev, 0, ns_thermal,
++						   &ns_thermal_ops);
++	if (IS_ERR(tzd)) {
++		iounmap(ns_thermal->pvtmon);
++		return PTR_ERR(tzd);
++	}
++
++	platform_set_drvdata(pdev, ns_thermal);
++
++	return 0;
++}
++
++static int ns_thermal_remove(struct platform_device *pdev)
++{
++	struct ns_thermal *ns_thermal = platform_get_drvdata(pdev);
++
++	iounmap(ns_thermal->pvtmon);
++
++	return 0;
++}
++
++static const struct of_device_id ns_thermal_of_match[] = {
++	{ .compatible = "brcm,ns-thermal", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, ns_thermal_of_match);
++
++static struct platform_driver ns_thermal_driver = {
++	.probe		= ns_thermal_probe,
++	.remove		= ns_thermal_remove,
++	.driver = {
++		.name = "ns-thermal",
++		.of_match_table = ns_thermal_of_match,
++	},
++};
++module_platform_driver(ns_thermal_driver);
++
++MODULE_DESCRIPTION("Northstar thermal driver");
++MODULE_LICENSE("GPL v2");
+-- 
+2.11.0
 
->>
->>> +               /*
->>> +                * We've been asked to keep the firmware settings as is,
->>> but
->>> +                * some firmwares set really too high voltages (e.g.
->>> 4.384V).
->>> +                * New LiHV (High Voltage) batteries may be charged upto
->>> 4.35V
->>> +                * but that significantly impacts their lifetime, limit
->>> +                * charging to 4.304V for safety and lifetime reasons.
->>> +                */
->>
->>
->> Docs which belong in external config.
->
->
-> Again there is NO external config. The i2c-adapter driver which registers
-> the client (and passed in any config) is a generic driver for any board
-> using a Cherrytrail Whiskey Cove PMIC. All that the ACPI tables tell us
-> is that there is a Cherrytrail Whiskey Cove PMIC and matching fuel-gauge,
-> for anything else we are on our own.
-
-External config is platform_data. Put this comment above your
-platform_data instance. Include the limit value in it.
-
-But first consider making the fuel-gauge the envoy to userspace as
-discussed in patch 04.
-
->>
->>> +               ret = bq24190_get_field_val(bdi, BQ24190_REG_CVC,
->>> +                       BQ24190_REG_CVC_VREG_MASK,
->>> BQ24190_REG_CVC_VREG_SHIFT,
->>> +                       bq24190_cvc_vreg_values,
->>> +                       ARRAY_SIZE(bq24190_cvc_vreg_values), &voltage);
->>> +               if (ret < 0)
->>> +                       return ret;
->>> +
->>> +               if (voltage <= 4304000)
->>> +                       return 0;
->>
->>
->> The limit value should come from settings config.
->
->
-> See above.
->
->>
->>> +               return bq24190_set_field_val(bdi, BQ24190_REG_CVC,
->>> +                       BQ24190_REG_CVC_VREG_MASK,
->>> BQ24190_REG_CVC_VREG_SHIFT,
->>> +                       bq24190_cvc_vreg_values,
->>> +                       ARRAY_SIZE(bq24190_cvc_vreg_values), 4304000);
->>> +       }
->>>
->>>         /* Reset the registers */
->>>         ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->>
->>
->
-> Regards,
->
-> Hans
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
