@@ -1,120 +1,177 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v8 1/9] devicetree: power: Add battery.txt
-Date: Sat, 18 Mar 2017 15:34:11 -0500
-Message-ID: <CAL_JsqKacL68=0EMPU_ftB2RH6+sX2fss3BWXkrSiJxv289Jng@mail.gmail.com>
-References: <20170227071117.18934-1-liam@networkimprov.net>
- <20170227071117.18934-2-liam@networkimprov.net> <20170302151449.j7i3ecpy2ipxu6tq@rob-hp-laptop>
- <CAKvHMgR6eVTUp6je3D_YDUMAksWiHx6JnJc8cRHSHp6tj30OPA@mail.gmail.com>
- <CAL_Jsq+8Y=GtyjVZA-suZLH+ySDshaoU9qh96BF+PeUYK3FZxg@mail.gmail.com>
- <CAKvHMgTpqdNKQoWUsChn4YWTtWaN5un_Vpqp+HtbMrxGV_D-ig@mail.gmail.com>
- <CAL_JsqJOFUSRY_KPzwNWrx4FF1_F6XNK8OfkqhqgBpxH9WrZeQ@mail.gmail.com> <CAKvHMgQujE4uYNt0vPkt6qUOtVqdvzXs0zXTkDVRq9YLNvunBQ@mail.gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [07/15] power: supply: bq24190_charger: Add support for
+ bq24192[i]
+Date: Sat, 18 Mar 2017 23:55:27 +0100
+Message-ID: <4a313e87-1b3e-1a05-c43a-267154eec353@redhat.com>
+References: <20170318071019.4561-4-liam@networkimprov.net>
+ <d670369f-4f0c-2658-e6e2-4c6e4604f987@redhat.com>
+ <CAKvHMgRXc+OAZkfDf6TZiFQgCT_L0mUvjnmOORm3skoxF4izWw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAKvHMgQujE4uYNt0vPkt6qUOtVqdvzXs0zXTkDVRq9YLNvunBQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:47126 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751181AbdCRWzb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 18 Mar 2017 18:55:31 -0400
+In-Reply-To: <CAKvHMgRXc+OAZkfDf6TZiFQgCT_L0mUvjnmOORm3skoxF4izWw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-On Thu, Mar 16, 2017 at 1:45 AM, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> wrote:
-> On Wed, Mar 15, 2017 at 4:50 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
->> On Wed, Mar 15, 2017 at 5:04 PM, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> wrote:
->>> On Wed, Mar 15, 2017 at 1:10 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
->>>> On Thu, Mar 2, 2017 at 12:31 PM, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> wrote:
->>>>> Hi Rob,
->>>>>
->>>>> On Thu, Mar 2, 2017 at 7:14 AM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
->>>>>> On Sun, Feb 26, 2017 at 11:11:09PM -0800, Liam Breck wrote:
->>>>>>> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->>>>>>>
->>>>>>> Documentation of static battery characteristics that can be defined
->>>>>>> for batteries which cannot self-identify. This information is required
->>>>>>> by fuel-gauge and charger chips for proper handling of the battery.
->>>>>>>
->>>>>>> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->>>>>>> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->>>>>>> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
->>>>>>> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->>>>>>> ---
->>>>>>>  .../devicetree/bindings/power/supply/battery.txt   | 42 ++++++++++++++++++++++
->>>>>>>  1 file changed, 42 insertions(+)
->>>>>>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>
->>>>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>> new file mode 100644
->>>>>>> index 0000000..3d916bd
->>>>>>> --- /dev/null
->>>>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>> @@ -0,0 +1,42 @@
->>>>>>> +Battery Characteristics
->>>>>>> +
->>>>>>> +Required Properties:
->>>>>>> + - compatible: Must be "fixed-battery"
->>>>>>
->>>>>> Still not liking this name, but I don't have a better suggestion. Please
->>>>>> describe here what is and isn't a "fixed battery".
->>>>>
->>>>> Sebastian...?
->>>>>
->>>>>>> +
->>>>>>> +Optional Properties:
->>>>>>> + - voltage-min-design-microvolt: drained battery voltage
->>>>>>> + - energy-full-design-microwatt-hours: battery design energy
->>>>>>> + - charge-full-design-microamp-hours: battery design capacity
->>>>>>> +
->>>>>>> +Future Properties must be named for the corresponding elements in
->>>>>>> +enum power_supply_property, defined in include/linux/power_supply.h.
->>>>>>
->>>>>> Um, no. That's exactly not how DT bindings should be done.
->>>>>
->>>>> Power supply components surface stats in sysfs using the names in enum
->>>>> power_supply_property. For example,
->>>>> /sys/class/power_supply/.../voltage_min_design. Matching input (DT)
->>>>> and output (sysfs) names is sensible. The above comment is already
->>>>> attached to struct power_supply_battery_info, which is the initial
->>>>> destination for the above DT properties.
->>>>>
->>>>> Shall I mention sysfs in the above comment?
->>>>
->>>> Absolutely not. Bindings should not reference Linux.
->>>>
->>>> While sometimes things can align, there is no guarantee that they
->>>> will. DT is h/w description. sysfs is user configuration.
->>>
->>> sysfs for power_supply also provides fixed hw characteristics.
->>>
->>> Sebastian proposed DT:battery specifically to be consumed by
->>> power_supply_core. Allowing names in DT:battery and
->>> power_supply_property to diverge would cause confusion and wasted
->>> time, for no particular benefit. As there is no rationale to
->>> reconsider the names of these fields for DT:battery, let's write that
->>> into the docs.
+HI,
+
+On 18-03-17 20:10, Liam Breck wrote:
+> On Sat, Mar 18, 2017 at 7:30 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> Hi,
 >>
->> Write it into the Linux docs then. The DT docs need to stand on their
->> own for the standalone DT tree[1] that other projects import.
+>> On 18-03-17 08:10, Liam Breck wrote:
+>>>
+>>> On Fri, 17 Mar 2017 10:55:19 +0100, Hans de Goede wrote:
+>>>
+>>>> The bq24192 and bq24192i are mostly identical to the bq24190, TI even
+>>>> published a single datasheet for all 3 of them. The difference
+>>>> between the bq24190 and bq24192[i] is the way charger-type detection
+>>>> is done, the bq24190 is to be directly connected to the USB a/b lines,
+>>>> where as the the bq24192[i] has a gpio which should be driven high/low
+>>>> externally depending on the type of charger connected, from a register
+>>>> level access pov there is no difference.
+>>>>
+>>>> The differences between the bq24192 and bq24192i are:
+>>>> 1) Lower default charge rate on the bq24192i
+>>>> 2) Pre-charge-current can be max 640 mA on the bq24192i
+>>>>
+>>>> Since we do not provide an API for setting the pre-charge-current,
+>>>> these differences can be ignored and we can simply use the existing
+>>>> code as-is with the bq24192 and bq24192i.
+>>>
+>>>
+>>> FYI, coming patchset will set pre- and termination-charge current via DT.
+>>
+>>
+>> Ok, note that this again is something which we cannot do on x86,
+>> so we need to retain the BIOS set values there. I assume this will
+>> not be a problem since you will need to keep the driver working
+>> with device-trees which do not specify this info, for compatibility
+>> with existing devicetrees.
+>>
+>>
+>>>
+>>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>>>> ---
+>>>>  drivers/power/supply/bq24190_charger.c | 12 ++++++++++--
+>>>>  1 file changed, 10 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/drivers/power/supply/bq24190_charger.c
+>>>> b/drivers/power/supply/bq24190_charger.c
+>>>> index 9c4b171..9014dee 100644
+>>>> --- a/drivers/power/supply/bq24190_charger.c
+>>>> +++ b/drivers/power/supply/bq24190_charger.c
+>>>> @@ -1275,7 +1275,14 @@ static int bq24190_hw_init(struct bq24190_dev_info
+>>>> *bdi)
+>>>>         if (ret < 0)
+>>>>                 goto out;
+>>>>
+>>>> -       if (v != bdi->model) {
+>>>> +       switch (v) {
+>>>> +       case BQ24190_REG_VPRS_PN_24190:
+>>>> +       case BQ24190_REG_VPRS_PN_24192:
+>>>> +       case BQ24190_REG_VPRS_PN_24192I:
+>>>> +               bdi->model = v;
+>>>
+>>>
+>>> We should set model in probe(). Doesn't the previous code still work?
+>>
+>>
+>> On x86 we know we have a variant but not which variant, since the
+>> driver supports all variants we can simply make the driver flexible
+>> enough to handle all variants and be done with it.
 >
-> We will document it on the Linux side. But referencing a Linux header
-> file as the origin of property names in DT;battery does not create a
-> Linux dependency for standalone DT. It merely clarifies the naming
-> scheme.
+> How do we know it supports all variants sufficiently?
 
-Perhaps, but it doesn't help the perception that bindings located in
-the kernel tree are "kernel bindings". The policy is bindings should
-stand on their own.
+I've compared all the datasheets (actually TI has all variants
+in a single datasheet) and all the registers are the same with
+the exception of the 24192I having a lower Pre-charge-current
+maximum then the others.
 
-> Also a huge number of DT bindings are Linux-specific, as they are
-> implemented by some kernel driver. Do you plan to rip those out of
-> devicetree-rebasing?
 
-Care to highlight some? I'm aware of a few cases, but hardly a "huge
-number". I hear lots of complaints of bindings/dts's being Linux
-specific, but no specific examples nor attempts to fix those cases.
-I'd happily take patches to at least mark bad or linux specific
-bindings.
+>
+>>>
+>>>> +               break;
+>>>> +       default:
+>>>> +               dev_err(bdi->dev, "Error unknown model: 0x%02x\n", v);
+>>>
+>>>
+>>> Feel free to add the error msg.
+>>>
+>>>>                 ret = -ENODEV;
+>>>>                 goto out;
+>>>>         }
+>>>> @@ -1316,7 +1323,6 @@ static int bq24190_probe(struct i2c_client *client,
+>>>>
+>>>>         bdi->client = client;
+>>>>         bdi->dev = dev;
+>>>> -       bdi->model = id->driver_data;
+>>>
+>>>
+>>> Is driver_data no longer always correct?
+>>
+>>
+>> See above, I was actually planning on dropping the
+>> setting of driver_data from the ids tables, but I forgot.
+>
+> I suspect we want a platform_data field and
+>
+> bdi->model = pdata ? pdata->model : id->driver_data
 
-Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I want the pmic code to be generic, it does not know
+which exact model it is dealing with, it can find that out,
+but that would be duplicating code already present in
+bq24190_charger.c
+
+Regards,
+
+Hans
+
+
+
+>
+>>>
+>>>>         bdi->pdata = client->dev.platform_data;
+>>>>         strncpy(bdi->model_name, id->name, I2C_NAME_SIZE);
+>>>>         mutex_init(&bdi->f_reg_lock);
+>>>> @@ -1450,6 +1456,8 @@ static SIMPLE_DEV_PM_OPS(bq24190_pm_ops,
+>>>> bq24190_pm_suspend, bq24190_pm_resume);
+>>>>   */
+>>>>  static const struct i2c_device_id bq24190_i2c_ids[] = {
+>>>>         { "bq24190", BQ24190_REG_VPRS_PN_24190 },
+>>>> +       { "bq24192", BQ24190_REG_VPRS_PN_24192 },
+>>>> +       { "bq24192i", BQ24190_REG_VPRS_PN_24192I },
+>>>
+>>>
+>>> This may be the only essential change.
+>>
+>>
+>> See above, actually this should have been:
+>>
+>> static const struct i2c_device_id bq24190_i2c_ids[] = {
+>>         { "bq24190" },
+>>         { "bq24192" },
+>>         { "bq24192i" },
+>>         { },
+>> };
+>>
+>> Or (also works for me): just:
+>>
+>> static const struct i2c_device_id bq24190_i2c_ids[] = {
+>>         { "bq24190" },
+>>         { },
+>> };
+>>
+>> And use the same compatible for all variants as they are
+>> all compatible anyways.
+>>
+>> Regards,
+>>
+>> Hans
