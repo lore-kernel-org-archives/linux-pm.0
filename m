@@ -1,62 +1,114 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: intel_pstate: Fix policy data management in passive mode
-Date: Sat, 18 Mar 2017 02:36:36 +0100
-Message-ID: <48065078.runFWWt2Wa@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [04/15] power: supply: bq24190_charger: Add no_register_reset pdata flag
+Date: Sat, 18 Mar 2017 00:10:13 -0700
+Message-ID: <20170318071019.4561-1-liam@networkimprov.net>
+References: <20170317095527.10487-5-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:56683 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751023AbdCRBsq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Mar 2017 21:48:46 -0400
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:33306 "EHLO
+        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750712AbdCRHK5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 03:10:57 -0400
+Received: by mail-pf0-f193.google.com with SMTP id p189so5421420pfp.0
+        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 00:10:56 -0700 (PDT)
+In-Reply-To: <20170317095527.10487-5-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+[dropped CC's not relevant to BQ24190; pls re-add anyone appropriate]
 
-The policy->cpuinfo.max_freq and policy->max updates in
-intel_cpufreq_turbo_update() are excessive as they are done for no
-good reason and may lead to problems in principle, so drop them.
+Hi Hans,
 
-Moreover, fix intel_cpufreq_verify_policy() so that it checks
-global.no_turbo in addition to global.turbo_disabled when updating
-policy->cpuinfo.max_freq to make it consistent with
-intel_pstate_verify_policy().
+I am the de facto maintainer of BQ24190, with help from Tony. I contracted the original author to 
+create the driver. I'm not aware of anyone else relying on it at present.
 
-Fixes: 001c76f05b01 (cpufreq: intel_pstate: Generic governors support)
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Pls rebase to -next (!) and post BQ24190 changes in a separate patchset. Reference any 
+dependencies in other patchsets with Depends-on lines in patch descriptions linking to 
+patchwork.kernel.org. If any dependency might be controversial, pls defer the BQ24190 patchset til 
+controversy resolves.
 
-One more fix related to the passive mode.
+You may be interested in these, which I will support in BQ24190 in near future:
+https://patchwork.kernel.org/patch/9626487/
+https://patchwork.kernel.org/patch/9626491/
 
----
- drivers/cpufreq/intel_pstate.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+Further comments below...
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2247,7 +2247,7 @@ static int intel_cpufreq_verify_policy(s
- 	struct cpudata *cpu = all_cpu_data[policy->cpu];
- 
- 	update_turbo_state();
--	policy->cpuinfo.max_freq = global.turbo_disabled ?
-+	policy->cpuinfo.max_freq = global.no_turbo || global.turbo_disabled ?
- 			cpu->pstate.max_freq : cpu->pstate.turbo_freq;
- 
- 	cpufreq_verify_within_cpu_limits(policy);
-@@ -2265,10 +2265,6 @@ static unsigned int intel_cpufreq_turbo_
- 
- 	max_freq = global.no_turbo || global.turbo_disabled ?
- 			cpu->pstate.max_freq : cpu->pstate.turbo_freq;
--	policy->cpuinfo.max_freq = max_freq;
--	if (policy->max > max_freq)
--		policy->max = max_freq;
--
- 	if (target_freq > max_freq)
- 		target_freq = max_freq;
- 
+On Fri, 17 Mar 2017 10:55:16 +0100, Hans de Goede wrote:
+
+> On some platforms the register have been setup with platform specific
+> values by the firmware and should not be reset.
+
+Pls describe this mysterious, meddling firmware. Who wrote it, when does it run, on what devices, 
+etc? Include URLs to docs, etc. BTW it's not really "firmware" if it runs on the main cpu, IMO. 
+A boot loader is not firmware.
+
+We probably don't want to disable register_reset in all circumstances. Can you record the 
+firmware's settings for charger? I suspect we should replay them in set_mode_host() -- to be 
+renamed set_operating_params in forthcoming patchset.
+
+What generates your platform_data objects?
+Are you forced to use platform_data for some reason?
+
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+
+Add to all BQ24190 patches:
+Cc: Liam Breck <kernel@networkimprov.net>
+Cc: Tony Lindgren <tony@atomide.com>
+
+Pls don't CC me on the related patchsets.
+
+> ---
+>  drivers/power/supply/bq24190_charger.c | 5 +++++
+>  include/linux/power/bq24190_charger.h  | 1 +
+>  2 files changed, 6 insertions(+)
+> 
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> index a4f0849..c92a40e4 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -151,6 +151,7 @@ struct bq24190_dev_info {
+>  	struct device			*dev;
+>  	struct power_supply		*charger;
+>  	struct power_supply		*battery;
+> +	struct bq24190_platform_data	*pdata;
+
+Use a register settings array/struct here, instead of platform-data. None of your other patches need 
+to retain pdata.
+
+>  	char				model_name[I2C_NAME_SIZE];
+>  	kernel_ulong_t			model;
+>  	unsigned int			gpio_int;
+> @@ -506,6 +507,9 @@ static int bq24190_register_reset(struct bq24190_dev_info *bdi)
+>  	int ret, limit = 100;
+>  	u8 v;
+>  
+> +	if (bdi->pdata && bdi->pdata->no_register_reset)
+> +		return 0;
+> +
+>  	/* Reset the registers */
+>  	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>  			BQ24190_REG_POC_RESET_MASK,
+> @@ -1339,6 +1343,7 @@ static int bq24190_probe(struct i2c_client *client,
+>  	bdi->client = client;
+>  	bdi->dev = dev;
+>  	bdi->model = id->driver_data;
+> +	bdi->pdata = client->dev.platform_data;
+>  	strncpy(bdi->model_name, id->name, I2C_NAME_SIZE);
+>  	mutex_init(&bdi->f_reg_lock);
+>  	bdi->f_reg = 0;
+> diff --git a/include/linux/power/bq24190_charger.h b/include/linux/power/bq24190_charger.h
+> index 9f02837..cb49717 100644
+> --- a/include/linux/power/bq24190_charger.h
+> +++ b/include/linux/power/bq24190_charger.h
+> @@ -11,6 +11,7 @@
+>  
+>  struct bq24190_platform_data {
+>  	unsigned int	gpio_int;	/* GPIO pin that's connected to INT# */
+> +	bool no_register_reset;
+>  };
+>  
+>  #endif
+
+Thanks,
+Liam
