@@ -1,85 +1,164 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [05/15] power: supply: bq24190_charger: Limit charging voltage to 4.3V
-Date: Sat, 18 Mar 2017 00:10:14 -0700
-Message-ID: <20170318071019.4561-2-liam@networkimprov.net>
-References: <20170317095527.10487-6-hdegoede@redhat.com>
+Subject: Re: [06/15] power: supply: bq24190_charger: Use i2c-core irq-mapping code
+Date: Sat, 18 Mar 2017 00:10:15 -0700
+Message-ID: <20170318071019.4561-3-liam@networkimprov.net>
+References: <20170317095527.10487-7-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:33808 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750971AbdCRHLa (ORCPT
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:36250 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750990AbdCRHLa (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 03:11:30 -0400
-Received: by mail-pf0-f195.google.com with SMTP id o126so10954098pfb.1
-        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 00:11:23 -0700 (PDT)
-In-Reply-To: <20170317095527.10487-6-hdegoede@redhat.com>
+Received: by mail-pg0-f66.google.com with SMTP id 81so4681175pgh.3
+        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 00:11:25 -0700 (PDT)
+In-Reply-To: <20170317095527.10487-7-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-On Fri, 17 Mar 2017 10:55:17 +0100, Hans de Goede wrote:
+On Fri, 17 Mar 2017 10:55:18 +0100, Hans de Goede wrote:
 
-> When the platform data asks us to not reset the charger to its default
-> values and instead trust the firmware set values check the charging
-> voltage and clamp it to 4.304V.
+> The i2c-core already maps of irqs before calling the driver's probe
+> function and there are no in tree users of
+> bq24190_platform_data->gpio_int.
 > 
-> Some firmwares set really too high voltages, e.g. the GPD-win I've been
-> working on uses 4.384V. New LiHV (High Voltage) batteries may be charged
-> upto 4.35V but that significantly impacts their lifetime, limit charging
-> to 4.304V for safety and lifetime reasons.
-
-See comments on patch 04; pls specify the offending firmwares and exactly how they 
-misconfigure the charger. Include URLs to datasheets, etc.
-
+> Remove the redundant custom irq-mapping code and just use client->irq.
+> 
 > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 > ---
->  drivers/power/supply/bq24190_charger.c | 27 ++++++++++++++++++++++++---
->  1 file changed, 24 insertions(+), 3 deletions(-)
+>  drivers/power/supply/bq24190_charger.c | 61 ++--------------------------------
+>  include/linux/power/bq24190_charger.h  |  1 -
+>  2 files changed, 2 insertions(+), 60 deletions(-)
 > 
 > diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index c92a40e4..7bca8d0 100644
+> index 7bca8d0..9c4b171 100644
 > --- a/drivers/power/supply/bq24190_charger.c
 > +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -504,11 +504,32 @@ static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
+> @@ -154,8 +154,6 @@ struct bq24190_dev_info {
+>  	struct bq24190_platform_data	*pdata;
+>  	char				model_name[I2C_NAME_SIZE];
+>  	kernel_ulong_t			model;
+> -	unsigned int			gpio_int;
+> -	unsigned int			irq;
+>  	struct mutex			f_reg_lock;
+>  	u8				f_reg;
+>  	u8				ss_reg;
+> @@ -1296,56 +1294,11 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+>  	return ret;
+>  }
 >  
->  static int bq24190_register_reset(struct bq24190_dev_info *bdi)
+> -#ifdef CONFIG_OF
+> -static int bq24190_setup_dt(struct bq24190_dev_info *bdi)
+> -{
+> -	bdi->irq = irq_of_parse_and_map(bdi->dev->of_node, 0);
+> -	if (bdi->irq <= 0)
+> -		return -1;
+> -
+> -	return 0;
+> -}
+> -#else
+> -static int bq24190_setup_dt(struct bq24190_dev_info *bdi)
+> -{
+> -	return -1;
+> -}
+> -#endif
+
+I am adding a DT binding to this driver, using the above function. If it doesn't need the irq call, 
+you can remove that. You may need to rebase on my patchset, coming next week.
+
+> -static int bq24190_setup_pdata(struct bq24190_dev_info *bdi,
+> -		struct bq24190_platform_data *pdata)
+> -{
+> -	int ret;
+> -
+> -	if (!gpio_is_valid(pdata->gpio_int))
+> -		return -1;
+> -
+> -	ret = gpio_request(pdata->gpio_int, dev_name(bdi->dev));
+> -	if (ret < 0)
+> -		return -1;
+> -
+> -	ret = gpio_direction_input(pdata->gpio_int);
+> -	if (ret < 0)
+> -		goto out;
+> -
+> -	bdi->irq = gpio_to_irq(pdata->gpio_int);
+> -	if (!bdi->irq)
+> -		goto out;
+> -
+> -	bdi->gpio_int = pdata->gpio_int;
+> -	return 0;
+> -
+> -out:
+> -	gpio_free(pdata->gpio_int);
+> -	return -1;
+> -}
+> -
+>  static int bq24190_probe(struct i2c_client *client,
+>  		const struct i2c_device_id *id)
 >  {
-> -	int ret, limit = 100;
-> +	int ret, voltage, limit = 100;
->  	u8 v;
+>  	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+>  	struct device *dev = &client->dev;
+> -	struct bq24190_platform_data *pdata = client->dev.platform_data;
+>  	struct power_supply_config charger_cfg = {}, battery_cfg = {};
+>  	struct bq24190_dev_info *bdi;
+>  	int ret;
+> @@ -1372,12 +1325,7 @@ static int bq24190_probe(struct i2c_client *client,
 >  
-> -	if (bdi->pdata && bdi->pdata->no_register_reset)
-> -		return 0;
-> +	if (bdi->pdata && bdi->pdata->no_register_reset) {
-
-See comments on patch 04. Invoke this in set_mode_host() using value from settings config.
-
-> +		/*
-> +		 * We've been asked to keep the firmware settings as is, but
-> +		 * some firmwares set really too high voltages (e.g. 4.384V).
-> +		 * New LiHV (High Voltage) batteries may be charged upto 4.35V
-> +		 * but that significantly impacts their lifetime, limit
-> +		 * charging to 4.304V for safety and lifetime reasons.
-> +		 */
-
-Docs which belong in external config.
-
-> +		ret = bq24190_get_field_val(bdi, BQ24190_REG_CVC,
-> +			BQ24190_REG_CVC_VREG_MASK, BQ24190_REG_CVC_VREG_SHIFT,
-> +			bq24190_cvc_vreg_values,
-> +			ARRAY_SIZE(bq24190_cvc_vreg_values), &voltage);
-> +		if (ret < 0)
-> +			return ret;
-> +
-> +		if (voltage <= 4304000)
-> +			return 0;
-
-The limit value should come from settings config.
-
-> +		return bq24190_set_field_val(bdi, BQ24190_REG_CVC,
-> +			BQ24190_REG_CVC_VREG_MASK, BQ24190_REG_CVC_VREG_SHIFT,
-> +			bq24190_cvc_vreg_values,
-> +			ARRAY_SIZE(bq24190_cvc_vreg_values), 4304000);
-> +	}
+>  	i2c_set_clientdata(client, bdi);
 >  
->  	/* Reset the registers */
->  	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
+> -	if (dev->of_node)
+> -		ret = bq24190_setup_dt(bdi);
+
+And keep the above, adding:
+		if (ret < 0) return ret;
+
+> -	else
+> -		ret = bq24190_setup_pdata(bdi, pdata);
+> -
+> -	if (ret) {
+> +	if (!client->irq) {
+>  		dev_err(dev, "Can't get irq info\n");
+>  		return -EINVAL;
+>  	}
+> @@ -1417,7 +1365,7 @@ static int bq24190_probe(struct i2c_client *client,
+>  		goto out3;
+>  	}
+>  
+> -	ret = devm_request_threaded_irq(dev, bdi->irq, NULL,
+> +	ret = devm_request_threaded_irq(dev, client->irq, NULL,
+>  			bq24190_irq_handler_thread,
+>  			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+>  			"bq24190-charger", bdi);
+> @@ -1439,8 +1387,6 @@ static int bq24190_probe(struct i2c_client *client,
+>  
+>  out1:
+>  	pm_runtime_disable(dev);
+> -	if (bdi->gpio_int)
+> -		gpio_free(bdi->gpio_int);
+>  	return ret;
+>  }
+>  
+> @@ -1457,9 +1403,6 @@ static int bq24190_remove(struct i2c_client *client)
+>  	power_supply_unregister(bdi->charger);
+>  	pm_runtime_disable(bdi->dev);
+>  
+> -	if (bdi->gpio_int)
+> -		gpio_free(bdi->gpio_int);
+> -
+>  	return 0;
+>  }
+>  
+> diff --git a/include/linux/power/bq24190_charger.h b/include/linux/power/bq24190_charger.h
+> index cb49717..8d918cb 100644
+> --- a/include/linux/power/bq24190_charger.h
+> +++ b/include/linux/power/bq24190_charger.h
+> @@ -10,7 +10,6 @@
+>  #define _BQ24190_CHARGER_H_
+>  
+>  struct bq24190_platform_data {
+> -	unsigned int	gpio_int;	/* GPIO pin that's connected to INT# */
+>  	bool no_register_reset;
+>  };
+ 
