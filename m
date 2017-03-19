@@ -1,19 +1,19 @@
 From: Liam Breck <liam@networkimprov.net>
 Subject: Re: [08/15] power: supply: bq24190_charger: Add support for external
  fuel gauge
-Date: Sat, 18 Mar 2017 18:01:59 -0700
-Message-ID: <CAKvHMgQW-8+3Lg4RoPMd9Snt1RHNRXeKgZRVBZVYtgxsHPr6aA@mail.gmail.com>
+Date: Sat, 18 Mar 2017 20:52:10 -0700
+Message-ID: <CAKvHMgTRGwK4gV=28WM+1e5iQeP=9oaG1hFva_WJ7EvM7eAsLg@mail.gmail.com>
 References: <20170318071019.4561-5-liam@networkimprov.net> <a9286000-751f-dace-2408-f0389a6f44ac@redhat.com>
  <CAKvHMgTMqQPM1+OsJeaiqUFAgQC8Hby15xpbN39tVy=pqh+_3w@mail.gmail.com> <a064b347-6f23-8eac-50d4-620208f5a201@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:33223 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751275AbdCSBCL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 21:02:11 -0400
-Received: by mail-it0-f66.google.com with SMTP id g138so10773848itb.0
-        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 18:02:01 -0700 (PDT)
+Received: from mail-it0-f65.google.com ([209.85.214.65]:36507 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751327AbdCSDwM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Mar 2017 23:52:12 -0400
+Received: by mail-it0-f65.google.com with SMTP id 190so654051itm.3
+        for <linux-pm@vger.kernel.org>; Sat, 18 Mar 2017 20:52:11 -0700 (PDT)
 In-Reply-To: <a064b347-6f23-8eac-50d4-620208f5a201@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -61,7 +61,8 @@ On Sat, Mar 18, 2017 at 4:02 PM, Hans de Goede <hdegoede@redhat.com> wrote:
 > laptops which actually have 2 batteries like eg the Lenovo T440, X240, etc.
 > which have both an internal battery and a replace battery at the back.
 
-You said ABI; are there docs?
+Have you looked into patching upower? I'd say the de facto ABI is
+separate charger and gauge devices...
 
 >> See patch 04 discussion about fuel-gauge as primary point of contact.
 >>
