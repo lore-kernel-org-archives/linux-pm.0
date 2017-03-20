@@ -1,137 +1,114 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v11 07/10] power: bq27xxx_battery: Keep track of specific chip id
-Date: Mon, 20 Mar 2017 02:43:32 -0700
-Message-ID: <20170320094335.19224-8-liam@networkimprov.net>
-References: <20170320094335.19224-1-liam@networkimprov.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:34331 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753747AbdCTJyC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 05:54:02 -0400
-Received: by mail-pg0-f65.google.com with SMTP id b5so19001288pgg.1
-        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2017 02:53:03 -0700 (PDT)
-In-Reply-To: <20170320094335.19224-1-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V4 9/9] PM / Domain: Add support to parse domain's OPP table
+Date: Mon, 20 Mar 2017 15:02:21 +0530
+Message-ID: <4816e672e5f3495d87c85cda353e29df3885a0b1.1490001099.git.viresh.kumar@linaro.org>
+References: <cover.1490001099.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1490001099.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1490001099.git.viresh.kumar@linaro.org>
+References: <cover.1490001099.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-From: Liam Breck <kernel@networkimprov.net>
+Parse the OPP table from of_genpd_add_provider_simple() by calling
+dev_pm_opp_of_add_table(), if the power domain supports changing of
+performance states.
 
-Pass actual chip ID into _setup(), which translates it to a group ID,
-to allow support for all chips by the power_supply_battery_info code.
-There are no functional changes to the driver.
-
-Signed-off-by: Liam Breck <kernel@networkimprov.net>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/power/supply/bq27xxx_battery.c     | 27 +++++++++++++++++++++++++++
- drivers/power/supply/bq27xxx_battery_i2c.c | 16 ++++++++--------
- include/linux/power/bq27xxx_battery.h      | 11 +++++++++++
- 3 files changed, 46 insertions(+), 8 deletions(-)
+ drivers/base/power/domain.c | 46 +++++++++++++++++++++++++++++++++++++--------
+ include/linux/pm_domain.h   |  1 +
+ 2 files changed, 39 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index f36a6f1..db1a388 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -1391,6 +1391,33 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
- 	struct power_supply_desc *psy_desc;
- 	struct power_supply_config psy_cfg = { .drv_data = di, };
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 51d3afc0476d..8155f95b0db2 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -10,6 +10,7 @@
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
++#include <linux/pm_opp.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/pm_domain.h>
+ #include <linux/pm_qos.h>
+@@ -1806,15 +1807,37 @@ int of_genpd_add_provider_simple(struct device_node *np,
  
-+	switch(di->chip) {
-+	case BQ27000:
-+	case BQ27010:
-+	case BQ2750X:
-+	case BQ2751X:
-+	case BQ27500:
-+	case BQ27510G1:
-+	case BQ27510G2:
-+	case BQ27510G3:
-+	case BQ27520G1:
-+	case BQ27520G2:
-+	case BQ27520G3:
-+	case BQ27520G4:
-+	case BQ27530:
-+	case BQ27541:
-+	case BQ27545:
-+	case BQ27421: break;
-+	case BQ2752X: di->chip = BQ2751X; break;
-+	case BQ27531: di->chip = BQ27530; break;
-+	case BQ27542: di->chip = BQ27541; break;
-+	case BQ27546: di->chip = BQ27541; break;
-+	case BQ27742: di->chip = BQ27541; break;
-+	case BQ27425: di->chip = BQ27421; break;
-+	case BQ27441: di->chip = BQ27421; break;
-+	case BQ27621: di->chip = BQ27421; break;
+ 	mutex_lock(&gpd_list_lock);
+ 
+-	if (pm_genpd_present(genpd)) {
+-		ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
+-		if (!ret) {
+-			genpd->provider = &np->fwnode;
+-			genpd->has_provider = true;
+-			genpd->dev->of_node = np;
++	if (!pm_genpd_present(genpd))
++		goto unlock;
++
++	genpd->dev.of_node = np;
++
++	/* Parse genpd OPP table */
++	if (genpd->set_performance_state) {
++		ret = dev_pm_opp_of_add_table(&genpd->dev);
++		if (ret) {
++			dev_err(&genpd->dev, "Failed to add OPP table: %d\n",
++				ret);
++			goto unlock;
++		}
++
++		genpd->has_opp_table = true;
 +	}
 +
- 	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
- 	mutex_init(&di->lock);
- 	di->regs = bq27xxx_regs[di->chip];
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index c68fbc3..b3f2494 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -150,7 +150,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
- 	{ "bq27210", BQ27010 },
- 	{ "bq27500", BQ2750X },
- 	{ "bq27510", BQ2751X },
--	{ "bq27520", BQ2751X },
-+	{ "bq27520", BQ2752X },
- 	{ "bq27500-1", BQ27500 },
- 	{ "bq27510g1", BQ27510G1 },
- 	{ "bq27510g2", BQ27510G2 },
-@@ -160,16 +160,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
- 	{ "bq27520g3", BQ27520G3 },
- 	{ "bq27520g4", BQ27520G4 },
- 	{ "bq27530", BQ27530 },
--	{ "bq27531", BQ27530 },
-+	{ "bq27531", BQ27531 },
- 	{ "bq27541", BQ27541 },
--	{ "bq27542", BQ27541 },
--	{ "bq27546", BQ27541 },
--	{ "bq27742", BQ27541 },
-+	{ "bq27542", BQ27542 },
-+	{ "bq27546", BQ27546 },
-+	{ "bq27742", BQ27742 },
- 	{ "bq27545", BQ27545 },
- 	{ "bq27421", BQ27421 },
--	{ "bq27425", BQ27421 },
--	{ "bq27441", BQ27421 },
--	{ "bq27621", BQ27421 },
-+	{ "bq27425", BQ27425 },
-+	{ "bq27441", BQ27441 },
-+	{ "bq27621", BQ27621 },
- 	{},
- };
- MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index c3369fa..96cec17 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -2,6 +2,7 @@
- #define __LINUX_BQ27X00_BATTERY_H__
- 
- enum bq27xxx_chip {
-+	/* categories; index for bq27xxx_regs[] */
- 	BQ27000 = 1, /* bq27000, bq27200 */
- 	BQ27010, /* bq27010, bq27210 */
- 	BQ2750X, /* bq27500 deprecated alias */
-@@ -18,6 +19,16 @@ enum bq27xxx_chip {
- 	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
- 	BQ27545, /* bq27545 */
- 	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
++	ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
++	if (ret) {
++		if (genpd->has_opp_table) {
++			genpd->has_opp_table = false;
++			dev_pm_opp_of_remove_table(&genpd->dev);
+ 		}
 +
-+	/* members of categories; translate these to category in _setup() */
-+	BQ2752X, /* deprecated alias */
-+	BQ27531,
-+	BQ27542,
-+	BQ27546,
-+	BQ27742,
-+	BQ27425,
-+	BQ27441,
-+	BQ27621,
- };
++		goto unlock;
+ 	}
  
- /**
++	genpd->provider = &np->fwnode;
++	genpd->has_provider = true;
++
++unlock:
+ 	mutex_unlock(&gpd_list_lock);
+ 
+ 	return ret;
+@@ -1887,10 +1910,17 @@ void of_genpd_del_provider(struct device_node *np)
+ 			 * provider, set the 'has_provider' to false
+ 			 * so that the PM domain can be safely removed.
+ 			 */
+-			list_for_each_entry(gpd, &gpd_list, gpd_list_node)
+-				if (gpd->provider == &np->fwnode)
++			list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
++				if (gpd->provider == &np->fwnode) {
+ 					gpd->has_provider = false;
+ 
++					if (!gpd->has_opp_table)
++						continue;
++
++					dev_pm_opp_of_remove_table(&gpd->dev);
++				}
++			}
++
+ 			list_del(&cp->link);
+ 			of_node_put(cp->node);
+ 			kfree(cp);
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index d55c0112dcde..821d7cf5974b 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -57,6 +57,7 @@ struct generic_pm_domain {
+ 	struct work_struct power_off_work;
+ 	struct fwnode_handle *provider;	/* Identity of the domain provider */
+ 	bool has_provider;
++	bool has_opp_table;
+ 	const char *name;
+ 	atomic_t sd_count;	/* Number of subdomains with power "on" */
+ 	enum gpd_status status;	/* Current state of the domain */
 -- 
-2.9.3
+2.12.0.432.g71c3a4f4ba37
