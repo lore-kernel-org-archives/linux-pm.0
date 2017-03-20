@@ -1,13 +1,13 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [RESEND PATCH v4 8/9] ARM: sun5i: chip: enable ACIN
- power supply subnode
-Date: Mon, 20 Mar 2017 09:16:52 +0100
-Message-ID: <20170320081653.8884-9-quentin.schulz@free-electrons.com>
+Subject: [RESEND PATCH v4 4/9] mfd: axp20x: add AC power supply
+ cells for AXP22X PMICs
+Date: Mon, 20 Mar 2017 09:16:48 +0100
+Message-ID: <20170320081653.8884-5-quentin.schulz@free-electrons.com>
 References: <20170320081653.8884-1-quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBFFAX3DAKGQEBMCUZJA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBDFAX3DAKGQEFBJT7SI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <20170320081653.8884-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -20,32 +20,48 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@
 Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The NextThing Co. CHIP has an AXP209 PMIC and can be power-supplied by
-ACIN via the CHG-IN pin.
+The X-Powers AXP20X and AXP22X PMICs expose the status of AC power
+supply.
 
-This enables the ACIN power supply subnode in the DT.
+This adds the AC power supply driver to the MFD cells of the AXP22X
+PMICs.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Acked-By: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- arch/arm/boot/dts/sun5i-r8-chip.dts | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/mfd/axp20x.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/arm/boot/dts/sun5i-r8-chip.dts b/arch/arm/boot/dts/sun5i-r8-chip.dts
-index c9a1821..d078560 100644
---- a/arch/arm/boot/dts/sun5i-r8-chip.dts
-+++ b/arch/arm/boot/dts/sun5i-r8-chip.dts
-@@ -128,6 +128,10 @@
- 
- #include "axp209.dtsi"
- 
-+&ac_power_supply {
-+	status = "okay";
-+};
-+
- &i2c1 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&i2c1_pins_a>;
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index 46bdd23..37643b1 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -614,6 +614,11 @@ static struct mfd_cell axp221_cells[] = {
+ 	}, {
+ 		.name		= "axp22x-adc"
+ 	}, {
++		.name		= "axp20x-ac-power-supply",
++		.of_compatible	= "x-powers,axp221-ac-power-supply",
++		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
++		.resources	= axp20x_ac_power_supply_resources,
++	}, {
+ 		.name		= "axp20x-usb-power-supply",
+ 		.of_compatible	= "x-powers,axp221-usb-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
+@@ -631,6 +636,11 @@ static struct mfd_cell axp223_cells[] = {
+ 	}, {
+ 		.name			= "axp20x-regulator",
+ 	}, {
++		.name		= "axp20x-ac-power-supply",
++		.of_compatible	= "x-powers,axp221-ac-power-supply",
++		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
++		.resources	= axp20x_ac_power_supply_resources,
++	}, {
+ 		.name		= "axp20x-usb-power-supply",
+ 		.of_compatible	= "x-powers,axp223-usb-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
 -- 
 2.9.3
