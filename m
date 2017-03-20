@@ -1,15 +1,15 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v11 04/10] power: power_supply: Add power_supply_battery_info and API
-Date: Mon, 20 Mar 2017 02:43:29 -0700
-Message-ID: <20170320094335.19224-5-liam@networkimprov.net>
+Subject: [PATCH v11 06/10] power: bq27xxx_battery: Define access methods to write chip registers
+Date: Mon, 20 Mar 2017 02:43:31 -0700
+Message-ID: <20170320094335.19224-7-liam@networkimprov.net>
 References: <20170320094335.19224-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:34671 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753406AbdCTJwp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 05:52:45 -0400
-Received: by mail-pf0-f196.google.com with SMTP id o126so16430588pfb.1
-        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2017 02:52:44 -0700 (PDT)
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:35452 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752940AbdCTJuj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 05:50:39 -0400
+Received: by mail-pg0-f68.google.com with SMTP id g2so18936695pge.2
+        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2017 02:50:38 -0700 (PDT)
 In-Reply-To: <20170320094335.19224-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,140 +18,77 @@ Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <mat
 
 From: Liam Breck <kernel@networkimprov.net>
 
-power_supply_get_battery_info() reads battery data from devicetree.
-struct power_supply_battery_info provides battery data to drivers.
-Drivers may surface battery data in sysfs via corresponding
-POWER_SUPPLY_PROP_* fields.
+Declare bus.write/read_bulk/write_bulk() to support get/set of chip registers,
+e.g. with inputs from power_supply_battery_info.
+
+Add bq27xxx_write() & bq27xxx_xfer() helper functions to call the above.
 
 Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- Documentation/power/power_supply_class.txt | 12 ++++++++
- drivers/power/supply/power_supply_core.c   | 45 ++++++++++++++++++++++++++++++
- include/linux/power_supply.h               | 18 ++++++++++++
- 3 files changed, 75 insertions(+)
+ drivers/power/supply/bq27xxx_battery.c | 35 ++++++++++++++++++++++++++++++++++
+ include/linux/power/bq27xxx_battery.h  |  3 +++
+ 2 files changed, 38 insertions(+)
 
-diff --git a/Documentation/power/power_supply_class.txt b/Documentation/power/power_supply_class.txt
-index 0c72588..dc92c77 100644
---- a/Documentation/power/power_supply_class.txt
-+++ b/Documentation/power/power_supply_class.txt
-@@ -174,6 +174,18 @@ issued by external power supply will notify supplicants via
- external_power_changed callback.
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 2e2a3a8..f36a6f1 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -807,6 +807,41 @@ static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
+ 	return ret;
+ }
  
- 
-+Devicetree battery characteristics
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+Drivers should call power_supply_get_battery_info() to obtain battery 
-+characteristics from a devicetree battery node, defined in
-+Documentation/devicetree/bindings/power/supply/battery.txt. This is 
-+implemented in drivers/power/supply/bq27xxx_battery.c. 
-+
-+Properties in struct power_supply_battery_info and their counterparts in the 
-+battery node have names corresponding to elements in enum power_supply_property,
-+for naming consistency between sysfs attributes and battery node properties.
-+
-+
- QA
- ~~
- Q: Where is POWER_SUPPLY_PROP_XYZ attribute?
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index a74d8ca..61e20b1 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -17,6 +17,7 @@
- #include <linux/device.h>
- #include <linux/notifier.h>
- #include <linux/err.h>
-+#include <linux/of.h>
- #include <linux/power_supply.h>
- #include <linux/thermal.h>
- #include "power_supply.h"
-@@ -487,6 +488,50 @@ struct power_supply *devm_power_supply_get_by_phandle(struct device *dev,
- EXPORT_SYMBOL_GPL(devm_power_supply_get_by_phandle);
- #endif /* CONFIG_OF */
- 
-+int power_supply_get_battery_info(struct power_supply *psy,
-+				  struct power_supply_battery_info *info)
++static inline int bq27xxx_write(struct bq27xxx_device_info *di, int reg_index,
++				u16 value, bool single)
 +{
-+	struct device_node *battery_np;
-+	const char *value;
-+	int err;
++	int ret;
 +
-+	info->energy_full_design_uwh = -EINVAL;
-+	info->charge_full_design_uah = -EINVAL;
-+	info->voltage_min_design_uv  = -EINVAL;
++	if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
++		return -EINVAL;
 +
-+	if (!psy->of_node) {
-+		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
-+			 __func__);
-+		return -ENXIO;
-+	}
++	ret = di->bus.write(di, di->regs[reg_index], value, single);
++	if (ret < 0)
++		dev_dbg(di->dev, "failed to write register 0x%02x (index %d)\n",
++			di->regs[reg_index], reg_index);
 +
-+	battery_np = of_parse_phandle(psy->of_node, "monitored-battery", 0);
-+	if (!battery_np)
-+		return -ENODEV;
-+
-+	err = of_property_read_string(battery_np, "compatible", &value);
-+	if (err)
-+		return err;
-+
-+	if (strcmp("simple-battery", value))
-+		return -ENODEV;
-+
-+	/* The property and field names below must correspond to elements
-+	 * in enum power_supply_property. For reasoning, see
-+	 * Documentation/power/power_supply_class.txt.
-+	 */
-+
-+	of_property_read_u32(battery_np, "energy-full-design-microwatt-hours",
-+			     &info->energy_full_design_uwh);
-+	of_property_read_u32(battery_np, "charge-full-design-microamp-hours",
-+			     &info->charge_full_design_uah);
-+	of_property_read_u32(battery_np, "voltage-min-design-microvolt",
-+			     &info->voltage_min_design_uv);
-+
-+	return 0;
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(power_supply_get_battery_info);
 +
- int power_supply_get_property(struct power_supply *psy,
- 			    enum power_supply_property psp,
- 			    union power_supply_propval *val)
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 3965503..e84f1d3 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -288,6 +288,21 @@ struct power_supply_info {
- 	int use_for_apm;
++static inline int bq27xxx_xfer(struct bq27xxx_device_info *di,
++			       struct bq27xxx_dm_buf *buf, bool read)
++{
++	int ret;
++	int (*xfer)(struct bq27xxx_device_info*, u8, u8*, int) =
++		read ? di->bus.read_bulk : di->bus.write_bulk;
++
++	if (!di || di->regs[BQ27XXX_DM_DATA] == INVALID_REG_ADDR)
++		return -EINVAL;
++
++	ret = xfer(di, di->regs[BQ27XXX_DM_DATA], buf->a, BQ27XXX_DM_SZ);
++	if (ret < 0)
++		dev_dbg(di->dev, "failed to %s_bulk register 0x%02x (index %d)\n",
++			read ? "read" : "write",
++			di->regs[BQ27XXX_DM_DATA], BQ27XXX_DM_DATA);
++
++	return ret;
++}
++
+ /*
+  * Return the battery State-of-Charge
+  * Or < 0 if something fails.
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index b312bce..c3369fa 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -40,6 +40,9 @@ struct bq27xxx_platform_data {
+ struct bq27xxx_device_info;
+ struct bq27xxx_access_methods {
+ 	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
++	int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
++	int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
++	int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
  };
  
-+/*
-+ * This is the recommended struct to manage static battery parameters,
-+ * populated by power_supply_get_battery_info(). Most platform drivers should
-+ * use these for consistency.
-+ * Its field names must correspond to elements in enum power_supply_property.
-+ * The default field value is -EINVAL.
-+ * Power supply class itself doesn't use this.
-+ */
-+
-+struct power_supply_battery_info {
-+	int energy_full_design_uwh;	/* microWatt-hours */
-+	int charge_full_design_uah;	/* microAmp-hours */
-+	int voltage_min_design_uv;	/* microVolts */
-+};
-+
- extern struct atomic_notifier_head power_supply_notifier;
- extern int power_supply_reg_notifier(struct notifier_block *nb);
- extern void power_supply_unreg_notifier(struct notifier_block *nb);
-@@ -306,6 +321,9 @@ static inline struct power_supply *
- devm_power_supply_get_by_phandle(struct device *dev, const char *property)
- { return NULL; }
- #endif /* CONFIG_OF */
-+
-+extern int power_supply_get_battery_info(struct power_supply *psy,
-+					 struct power_supply_battery_info *info);
- extern void power_supply_changed(struct power_supply *psy);
- extern int power_supply_am_i_supplied(struct power_supply *psy);
- extern int power_supply_set_battery_charged(struct power_supply *psy);
+ struct bq27xxx_reg_cache {
 -- 
 2.9.3
