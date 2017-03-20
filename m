@@ -1,159 +1,87 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 4/9] PM / QOS: Add DEV_PM_QOS_PERFORMANCE request
-Date: Mon, 20 Mar 2017 15:02:16 +0530
-Message-ID: <1dbed263e2fcc42906daaf584d3257c01aa11e13.1490001099.git.viresh.kumar@linaro.org>
+Subject: [PATCH V4 2/9] PM / Domains: Use OPP tables for power-domains
+Date: Mon, 20 Mar 2017 15:02:14 +0530
+Message-ID: <5619ac7777689f282f8aafabbde22d71b46a979b.1490001099.git.viresh.kumar@linaro.org>
 References: <cover.1490001099.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f42.google.com ([74.125.83.42]:34571 "EHLO
-        mail-pg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753013AbdCTJck (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 05:32:40 -0400
-Received: by mail-pg0-f42.google.com with SMTP id 21so41259330pgg.1
-        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2017 02:32:39 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1490001099.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1490001099.git.viresh.kumar@linaro.org>
 References: <cover.1490001099.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Some platforms have the capability to configure the performance state of
-their Power Domains. The performance levels are identified by positive
-integer values, a lower value represents lower performance state. The
-power domain driver should be able to retrieve all information required
-to configure the performance state of the power domain, with the help of
-the performance constraint's target value.
+The OPP table bindings contains all the necessary fields to support
+power-domains now. Update the power-domain bindings to allow
+"operating-points-v2" to be present within the power-domain node.
 
-This patch adds a new QOS request type: DEV_PM_QOS_PERFORMANCE to
-support runtime performance constraints for the devices. Also allow
-notifiers to be registered against it, which will be used by frameworks
-like genpd.
+Also allow consumer devices, that don't use OPP tables, to specify the
+parent power-domain's performance level using the
+"domain-performance-state" property.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- Documentation/power/pm_qos_interface.txt |  2 +-
- drivers/base/power/qos.c                 | 21 +++++++++++++++++++++
- include/linux/pm_qos.h                   | 10 ++++++++++
- 3 files changed, 32 insertions(+), 1 deletion(-)
+ .../devicetree/bindings/power/power_domain.txt     | 42 ++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
-index 21d2d48f87a2..4b7decdebf98 100644
---- a/Documentation/power/pm_qos_interface.txt
-+++ b/Documentation/power/pm_qos_interface.txt
-@@ -168,7 +168,7 @@ The per-device PM QoS framework has a per-device notification tree.
- int dev_pm_qos_add_notifier(device, notifier):
- Adds a notification callback function for the device.
- The callback is called when the aggregated value of the device constraints list
--is changed (for resume latency device PM QoS only).
-+is changed (for resume latency and performance device PM QoS only).
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 723e1ad937da..5db112fa5d7c 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -38,6 +38,9 @@ phandle arguments (so called PM domain specifiers) of length specified by the
+   domain's idle states. In the absence of this property, the domain would be
+   considered as capable of being powered-on or powered-off.
  
- int dev_pm_qos_remove_notifier(device, notifier):
- Removes the notification callback function for the device.
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 654d8a12c2e7..084d26960dae 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -150,6 +150,10 @@ static int apply_constraint(struct dev_pm_qos_request *req,
- 			req->dev->power.set_latency_tolerance(req->dev, value);
- 		}
- 		break;
-+	case DEV_PM_QOS_PERFORMANCE:
-+		ret = pm_qos_update_target(&qos->performance, &req->data.pnode,
-+					   action, value);
-+		break;
- 	case DEV_PM_QOS_FLAGS:
- 		ret = pm_qos_update_flags(&qos->flags, &req->data.flr,
- 					  action, value);
-@@ -194,6 +198,14 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- 	c->no_constraint_value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
- 	c->type = PM_QOS_MIN;
- 
-+	c = &qos->performance;
-+	plist_head_init(&c->list);
-+	c->target_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->default_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->no_constraint_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->type = PM_QOS_MAX;
-+	c->notifiers = &qos->notifiers;
++- operating-points-v2 : This describes the performance states of a PM domain.
++  Refer to ../opp/opp.txt for more information.
 +
- 	INIT_LIST_HEAD(&qos->flags.list);
+ Example:
  
- 	spin_lock_irq(&dev->power.lock);
-@@ -252,6 +264,11 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
- 		memset(req, 0, sizeof(*req));
- 	}
-+	c = &qos->performance;
-+	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
-+		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-+		memset(req, 0, sizeof(*req));
-+	}
- 	f = &qos->flags;
- 	list_for_each_entry_safe(req, tmp, &f->list, data.flr.node) {
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-@@ -362,6 +379,7 @@ static int __dev_pm_qos_update_request(struct dev_pm_qos_request *req,
- 	switch(req->type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 	case DEV_PM_QOS_LATENCY_TOLERANCE:
-+	case DEV_PM_QOS_PERFORMANCE:
- 		curr_value = req->data.pnode.prio;
- 		break;
- 	case DEV_PM_QOS_FLAGS:
-@@ -571,6 +589,9 @@ static void __dev_pm_qos_drop_user_request(struct device *dev,
- 		req = dev->power.qos->flags_req;
- 		dev->power.qos->flags_req = NULL;
- 		break;
-+	case DEV_PM_QOS_PERFORMANCE:
-+		dev_err(dev, "Invalid user request (performance)\n");
-+		return;
- 	}
- 	__dev_pm_qos_remove_request(req);
- 	kfree(req);
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index bcae6abb3f21..0f5135d55406 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -36,6 +36,7 @@ enum pm_qos_flags_status {
- #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
-+#define PM_QOS_PERFORMANCE_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_ANY			((s32)(~(__u32)0 >> 1))
+ 	power: power-controller@12340000 {
+@@ -118,4 +121,43 @@ The node above defines a typical PM domain consumer device, which is located
+ inside a PM domain with index 0 of a power controller represented by a node
+ with the label "power".
  
- #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
-@@ -55,6 +56,7 @@ struct pm_qos_flags_request {
- enum dev_pm_qos_req_type {
- 	DEV_PM_QOS_RESUME_LATENCY = 1,
- 	DEV_PM_QOS_LATENCY_TOLERANCE,
-+	DEV_PM_QOS_PERFORMANCE,
- 	DEV_PM_QOS_FLAGS,
- };
- 
-@@ -96,9 +98,11 @@ struct pm_qos_flags {
- struct dev_pm_qos {
- 	struct pm_qos_constraints resume_latency;
- 	struct pm_qos_constraints latency_tolerance;
-+	struct pm_qos_constraints performance;
- 	struct pm_qos_flags flags;
- 	struct dev_pm_qos_request *resume_latency_req;
- 	struct dev_pm_qos_request *latency_tolerance_req;
-+	struct dev_pm_qos_request *performance_req;
- 	struct dev_pm_qos_request *flags_req;
- 	struct blocking_notifier_head notifiers; /* common for all constraints */
- };
-@@ -121,6 +125,12 @@ static inline bool dev_pm_qos_notifier_is_resume_latency(struct device *dev,
- 	return &dev->power.qos->resume_latency == c;
- }
- 
-+static inline bool dev_pm_qos_notifier_is_performance(struct device *dev,
-+		struct pm_qos_constraints *c)
-+{
-+	return &dev->power.qos->performance == c;
-+}
++Optional properties:
++- domain-performance-state: A positive integer value representing the minimum
++  power-domain performance level required by the consumer device. The integer
++  value '0' represents the lowest performance level and the higher values
++  represent higher performance levels. The value of "domain-performance-state"
++  field should match the "domain-performance-state" field of one of the OPP
++  nodes in the parent power-domain's OPP table.
 +
- int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
- 			 enum pm_qos_req_action action, int value);
- bool pm_qos_update_flags(struct pm_qos_flags *pqf,
++
++
++Example:
++
++	domain_opp_table: opp_table {
++		compatible = "operating-points-v2";
++
++		opp@1 {
++			domain-performance-state = <1>;
++			opp-microvolt = <975000 970000 985000>;
++		};
++		opp@2 {
++			domain-performance-state = <2>;
++			opp-microvolt = <1075000 1000000 1085000>;
++		};
++	};
++
++	parent: power-controller@12340000 {
++		compatible = "foo,power-controller";
++		reg = <0x12340000 0x1000>;
++		#power-domain-cells = <0>;
++		operating-points-v2 = <&domain_opp_table>;
++	};
++
++	leaky-device@12350000 {
++		compatible = "foo,i-leak-current";
++		reg = <0x12350000 0x1000>;
++		power-domains = <&power 0>;
++		domain-performance-state = <2>;
++	};
++
+ [1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
 -- 
 2.12.0.432.g71c3a4f4ba37
