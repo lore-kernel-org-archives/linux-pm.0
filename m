@@ -1,13 +1,13 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [RESEND PATCH v4 1/9] mfd: axp20x: correct name of
- temperature data ADC registers
-Date: Mon, 20 Mar 2017 09:16:45 +0100
-Message-ID: <20170320081653.8884-2-quentin.schulz@free-electrons.com>
+Subject: [RESEND PATCH v4 5/9] ARM: dtsi: axp209: add AC power
+ supply subnode
+Date: Mon, 20 Mar 2017 09:16:49 +0100
+Message-ID: <20170320081653.8884-6-quentin.schulz@free-electrons.com>
 References: <20170320081653.8884-1-quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBCVAX3DAKGQEW7OCE2I-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBDFAX3DAKGQEFBJT7SI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <20170320081653.8884-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -20,51 +20,40 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@
 Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The registers 0x56 and 0x57 of AXP22X PMIC store the value of the
-internal temperature of the PMIC.
+The X-Powers AXP20X PMIC exposes the status of AC power supply, the
+current current and voltage supplied to the board by the AC power
+supply.
 
-This patch modifies the name of these registers from AXP22X_PMIC_ADC_H/L
-to AXP22X_PMIC_TEMP_H/L so their purpose is clearer.
+This adds the AC power supply subnode for AXP20X PMIC.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
 
-added in v2
+v2:
+ - changed DT node name from ac_power_supply to ac-power-supply,
+ - removed io-channels and io-channel-names from DT (the IIO mapping is
+ done in the IIO ADC driver now),
 
- drivers/mfd/axp20x.c       | 2 +-
- include/linux/mfd/axp20x.h | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/arm/boot/dts/axp209.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 0512900..e02edf1 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -101,7 +101,7 @@ static const struct regmap_range axp22x_volatile_ranges[] = {
- 	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
- 	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
- 	regmap_reg_range(AXP22X_GPIO_STATE, AXP22X_GPIO_STATE),
--	regmap_reg_range(AXP22X_PMIC_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
-+	regmap_reg_range(AXP22X_PMIC_TEMP_H, AXP20X_IPSOUT_V_HIGH_L),
- 	regmap_reg_range(AXP20X_FG_RES, AXP20X_FG_RES),
- };
+diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
+index 675bb0f..9677dd5 100644
+--- a/arch/arm/boot/dts/axp209.dtsi
++++ b/arch/arm/boot/dts/axp209.dtsi
+@@ -53,6 +53,11 @@
+ 	interrupt-controller;
+ 	#interrupt-cells = <1>;
  
-diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-index 0d9a1ff..dc8798c 100644
---- a/include/linux/mfd/axp20x.h
-+++ b/include/linux/mfd/axp20x.h
-@@ -228,8 +228,8 @@ enum axp20x_variants {
- #define AXP20X_OCV_MAX			0xf
- 
- /* AXP22X specific registers */
--#define AXP22X_PMIC_ADC_H		0x56
--#define AXP22X_PMIC_ADC_L		0x57
-+#define AXP22X_PMIC_TEMP_H		0x56
-+#define AXP22X_PMIC_TEMP_L		0x57
- #define AXP22X_TS_ADC_H			0x58
- #define AXP22X_TS_ADC_L			0x59
- #define AXP22X_BATLOW_THRES1		0xe6
++	ac_power_supply: ac-power-supply {
++		compatible = "x-powers,axp202-ac-power-supply";
++		status = "disabled";
++	};
++
+ 	axp_gpio: gpio {
+ 		compatible = "x-powers,axp209-gpio";
+ 		gpio-controller;
 -- 
 2.9.3
