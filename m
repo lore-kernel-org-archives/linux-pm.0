@@ -1,174 +1,135 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 3/9] PM / QOS: Keep common notifier list for genpd constraints
-Date: Mon, 20 Mar 2017 15:02:15 +0530
-Message-ID: <d87cf1bc22f1756a70ce21cbd853c89c2b90f9fb.1490001099.git.viresh.kumar@linaro.org>
+Subject: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for power-domains
+Date: Mon, 20 Mar 2017 15:02:13 +0530
+Message-ID: <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
 References: <cover.1490001099.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f52.google.com ([74.125.83.52]:36239 "EHLO
+        mail-pg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753292AbdCTJca (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 05:32:30 -0400
+Received: by mail-pg0-f52.google.com with SMTP id g2so74180035pge.3
+        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2017 02:32:29 -0700 (PDT)
 In-Reply-To: <cover.1490001099.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1490001099.git.viresh.kumar@linaro.org>
 References: <cover.1490001099.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org
 
-Only the resume_latency constraint uses the notifiers right now. In
-order to prepare for adding new constraint types with notifiers, move to
-a common notifier list.
+Power-domains need to express their active states in DT and what's
+better than OPP table for that.
 
-Update pm_qos_update_target() to pass a pointer to the constraint
-structure to the notifier callbacks. Also update the notifier callbacks
-as well to error out for unexpected constraints.
+This patch allows power-domains to reuse OPP tables to express their
+active states. The "opp-hz" property isn't a required property anymore
+as power-domains may not always use them.
+
+Add a new property "domain-performance-state", which will contain
+positive integer values to represent performance levels of the
+power-domains as described in this patch.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/domain.c | 26 +++++++++++++++++++-------
- drivers/base/power/qos.c    | 15 ++++-----------
- include/linux/pm_qos.h      |  7 +++++++
- kernel/power/qos.c          |  2 +-
- 4 files changed, 31 insertions(+), 19 deletions(-)
+ Documentation/devicetree/bindings/opp/opp.txt | 73 ++++++++++++++++++++++++++-
+ 1 file changed, 71 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 1a0549f1944a..6e4e22aa14a2 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -416,14 +416,10 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
- 	return ret;
- }
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index 63725498bd20..d0b95c9e1011 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -76,10 +76,9 @@ This describes the OPPs belonging to a device. This node can have following
+ This defines voltage-current-frequency combinations along with other related
+ properties.
  
--static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
--				     unsigned long val, void *ptr)
-+static int __resume_latency_notifier(struct generic_pm_domain_data *gpd_data,
-+				     unsigned long val)
- {
--	struct generic_pm_domain_data *gpd_data;
--	struct device *dev;
--
--	gpd_data = container_of(nb, struct generic_pm_domain_data, nb);
--	dev = gpd_data->base.dev;
-+	struct device *dev = gpd_data->base.dev;
+-Required properties:
++Optional properties:
+ - opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer.
  
- 	for (;;) {
- 		struct generic_pm_domain *genpd;
-@@ -456,6 +452,22 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
- 	return NOTIFY_DONE;
- }
+-Optional properties:
+ - opp-microvolt: voltage in micro Volts.
  
-+static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
-+				     unsigned long val, void *ptr)
-+{
-+	struct generic_pm_domain_data *gpd_data;
-+	struct device *dev;
+   A single regulator's voltage is specified with an array of size one or three.
+@@ -154,6 +153,19 @@ properties.
+ 
+ - status: Marks the node enabled/disabled.
+ 
++- domain-performance-state: A positive integer value representing the minimum
++  power-domain performance level required by the device for the OPP node. The
++  integer value '0' represents the lowest performance level and the higher
++  values represent higher performance levels. When present in the OPP table of a
++  power-domain, it represents the performance level of the domain. When present
++  in the OPP table of a normal device, it represents the performance level of
++  the parent power-domain. The OPP table can contain the
++  "domain-performance-state" property, only if the device node contains the
++  "power-domains" or "#power-domain-cells" property. The OPP nodes aren't
++  allowed to contain the "domain-performance-state" property partially, i.e.
++  Either all OPP nodes in the OPP table have the "domain-performance-state"
++  property or none of them have it.
 +
-+	gpd_data = container_of(nb, struct generic_pm_domain_data, nb);
-+	dev = gpd_data->base.dev;
-+
-+	if (dev_pm_qos_notifier_is_resume_latency(dev, ptr))
-+		return __resume_latency_notifier(gpd_data, val);
-+
-+	dev_err(dev, "%s: Unexpected notifier call\n", __func__);
-+	return NOTIFY_BAD;
-+}
-+
- /**
-  * genpd_power_off_work_fn - Power off PM domain whose subdomain count is 0.
-  * @work: Work structure used for scheduling the execution of this function.
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index f850daeffba4..654d8a12c2e7 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -172,18 +172,12 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- {
- 	struct dev_pm_qos *qos;
- 	struct pm_qos_constraints *c;
--	struct blocking_notifier_head *n;
+ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
  
- 	qos = kzalloc(sizeof(*qos), GFP_KERNEL);
- 	if (!qos)
- 		return -ENOMEM;
- 
--	n = kzalloc(sizeof(*n), GFP_KERNEL);
--	if (!n) {
--		kfree(qos);
--		return -ENOMEM;
--	}
--	BLOCKING_INIT_NOTIFIER_HEAD(n);
-+	BLOCKING_INIT_NOTIFIER_HEAD(&qos->notifiers);
- 
- 	c = &qos->resume_latency;
- 	plist_head_init(&c->list);
-@@ -191,7 +185,7 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- 	c->default_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
- 	c->no_constraint_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
- 	c->type = PM_QOS_MIN;
--	c->notifiers = n;
-+	c->notifiers = &qos->notifiers;
- 
- 	c = &qos->latency_tolerance;
- 	plist_head_init(&c->list);
-@@ -268,7 +262,6 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
- 	dev->power.qos = ERR_PTR(-ENODEV);
- 	spin_unlock_irq(&dev->power.lock);
- 
--	kfree(qos->resume_latency.notifiers);
- 	kfree(qos);
- 
-  out:
-@@ -487,7 +480,7 @@ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier)
- 		ret = dev_pm_qos_constraints_allocate(dev);
- 
- 	if (!ret)
--		ret = blocking_notifier_chain_register(dev->power.qos->resume_latency.notifiers,
-+		ret = blocking_notifier_chain_register(&dev->power.qos->notifiers,
- 						       notifier);
- 
- 	mutex_unlock(&dev_pm_qos_mtx);
-@@ -514,7 +507,7 @@ int dev_pm_qos_remove_notifier(struct device *dev,
- 
- 	/* Silently return if the constraints object is not present. */
- 	if (!IS_ERR_OR_NULL(dev->power.qos))
--		retval = blocking_notifier_chain_unregister(dev->power.qos->resume_latency.notifiers,
-+		retval = blocking_notifier_chain_unregister(&dev->power.qos->notifiers,
- 							    notifier);
- 
- 	mutex_unlock(&dev_pm_qos_mtx);
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 032b55909145..bcae6abb3f21 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -100,6 +100,7 @@ struct dev_pm_qos {
- 	struct dev_pm_qos_request *resume_latency_req;
- 	struct dev_pm_qos_request *latency_tolerance_req;
- 	struct dev_pm_qos_request *flags_req;
-+	struct blocking_notifier_head notifiers; /* common for all constraints */
+ / {
+@@ -528,3 +540,60 @@ Example 5: opp-supported-hw
+ 		};
+ 	};
  };
- 
- /* Action requested to pm_qos_update_target */
-@@ -114,6 +115,12 @@ static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
- 	return req->dev != NULL;
- }
- 
-+static inline bool dev_pm_qos_notifier_is_resume_latency(struct device *dev,
-+		struct pm_qos_constraints *c)
-+{
-+	return &dev->power.qos->resume_latency == c;
-+}
 +
- int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
- 			 enum pm_qos_req_action action, int value);
- bool pm_qos_update_flags(struct pm_qos_flags *pqf,
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 97b0df71303e..073324e0c3c8 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -315,7 +315,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
- 		if (c->notifiers)
- 			blocking_notifier_call_chain(c->notifiers,
- 						     (unsigned long)curr_value,
--						     NULL);
-+						     c);
- 	} else {
- 		ret = 0;
- 	}
++Example 7: domain-Performance-state:
++(example: For 1GHz require domain state 1 and for 1.1 & 1.2 GHz require state 2)
++
++/ {
++	domain_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++
++		opp@1 {
++			domain-performance-state = <1>;
++			opp-microvolt = <975000 970000 985000>;
++		};
++		opp@2 {
++			domain-performance-state = <2>;
++			opp-microvolt = <1075000 1000000 1085000>;
++		};
++	};
++
++	foo_domain: power-controller@12340000 {
++		compatible = "foo,power-controller";
++		reg = <0x12340000 0x1000>;
++		#power-domain-cells = <0>;
++		operating-points-v2 = <&domain_opp_table>;
++	}
++
++	cpu0_opp_table: opp_table1 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++			domain-performance-state = <1>;
++		};
++		opp@1100000000 {
++			opp-hz = /bits/ 64 <1100000000>;
++			domain-performance-state = <2>;
++		};
++		opp@1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			domain-performance-state = <2>;
++		};
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu@0 {
++			compatible = "arm,cortex-a9";
++			reg = <0>;
++			clocks = <&clk_controller 0>;
++			clock-names = "cpu";
++			operating-points-v2 = <&cpu0_opp_table>;
++			power-domains = <&foo_domain>;
++		};
++	};
++};
 -- 
 2.12.0.432.g71c3a4f4ba37
