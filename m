@@ -1,207 +1,163 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 03/15] extcon: cht-wc: Add Intel Cherry Trail Whiskey Cove
- PMIC extcon driver
-Date: Mon, 20 Mar 2017 19:08:22 +0100
-Message-ID: <c6020cde-5406-0442-adea-f973bded326b@redhat.com>
-References: <20170317095527.10487-1-hdegoede@redhat.com>
- <20170317095527.10487-4-hdegoede@redhat.com>
- <1489771098.19767.69.camel@linux.intel.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU
+ controller
+Date: Mon, 20 Mar 2017 18:08:37 +0000
+Message-ID: <20170320180837.GB28391@e110439-lin>
+References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+ <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
+ <20170320171511.GB3623@htj.duckdns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1489771098.19767.69.camel@linux.intel.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Felipe Balbi <felipe.balbi@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170320171511.GB3623@htj.duckdns.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On 20-Mar 13:15, Tejun Heo wrote:
+> Hello,
+> 
+> On Tue, Feb 28, 2017 at 02:38:38PM +0000, Patrick Bellasi wrote:
+> > This patch extends the CPU controller by adding a couple of new
+> > attributes, capacity_min and capacity_max, which can be used to enforce
+> > bandwidth boosting and capping. More specifically:
+> > 
+> > - capacity_min: defines the minimum capacity which should be granted
+> >                 (by schedutil) when a task in this group is running,
+> >                 i.e. the task will run at least at that capacity
+> > 
+> > - capacity_max: defines the maximum capacity which can be granted
+> >                 (by schedutil) when a task in this group is running,
+> >                 i.e. the task can run up to that capacity
+> 
+> cpu.capacity.min and cpu.capacity.max are the more conventional names.
 
-On 17-03-17 18:18, Andy Shevchenko wrote:
-> On Fri, 2017-03-17 at 10:55 +0100, Hans de Goede wrote:
->> Add a driver for charger detection / control on the Intel Cherrytrail
->> Whiskey Cove PMIC.
->
-> +Cc: Felipe for some question(s) below.
->
->>  drivers/extcon/extcon-cht-wc.c | 356
->
-> I would use same pattern across drivers, i.e. "chtwc" (same for the rest
-> of the drivers in this series).
+Ok, should be an easy renaming.
 
-I already answered this in another part of the thread,
-but for the archives sake let me copy and paste my answer:
+> I'm not sure about the name capacity as it doesn't encode what it does
+> and is difficult to tell apart from cpu bandwidth limits.  I think
+> it'd be better to represent what it controls more explicitly.
 
-"One thing I disagree with is the cht_wc > chtwc rename you are
-proposing for one Cherry Trail and Whiskey Cove are 2 different
-words (4 if you look at spelling but 2 if you look at pronunciation,
-so IMHO cht_wc is more readable other then that I see the suggested
-rename as a lot of extra churn without any tangible benefits."
+In the scheduler jargon, capacity represents the amount of computation
+that a CPU can provide and it's usually defined to be 1024 for the
+biggest CPU (on non SMP systems) running at the highest OPP (i.e.
+maximum frequency).
 
->
->> +#define CHT_WC_PWRSRC_IRQ		0x6e03
->> +#define CHT_WC_PWRSRC_IRQ_MASK		0x6e0f
->> +#define CHT_WC_PWRSRC_STS		0x6e1e
->> +#define CHT_WC_PWRSRC_VBUS		BIT(0)
->> +#define CHT_WC_PWRSRC_DC		BIT(1)
->> +#define CHT_WC_PWRSRC_BAT		BIT(2)
->> +#define CHT_WC_PWRSRC_ID_GND		BIT(3)
->> +#define CHT_WC_PWRSRC_ID_FLOAT		BIT(4)
->
-> Not obvious for which register those bit definitions are.
+It's true that it kind of overlaps with the concept of "bandwidth".
+However, the main difference here is that "bandwidth" is not frequency
+(and architecture) scaled.
+Thus, for example, assuming we have only one CPU with these two OPPs:
 
-They are for all 3 CHT_WC_PWRSRC_* registers, this is the
-more or less usual irq setup for some i2c devices where
-there is a status register, an irq register where the hardware
-sets bits to 1 (and we write 1 to clear) when the corresponding
-status bits changes and a mask register to select which irq
-register bits actually will raise the interrupt line.
+   OPP | Frequency | Capacity
+     1 |    500MHz |      512
+     2 |      1GHz |     1024
 
-> Also, keep them ordered by offset.
+a task running 60% of the time on that CPU when configured to run at
+500MHz, from the bandwidth standpoint it's using 60% bandwidth but, from
+the capacity standpoint, is using only 30% of the available capacity.
 
-Will fix.
+IOW, bandwidth is purely temporal based while capacity factors in both
+frequency and architectural differences.
+Thus, while a "bandwidth" constraint limits the amount of time a task
+can use a CPU, independently from the "actual computation" performed,
+with the new "capacity" constraints we can enforce much "actual
+computation" a task can perform in the "unit of time".
 
->
->> +
->> +#define CHT_WC_PHYCTRL			0x5e07
->> +
->
->> +#define CHT_WC_CHGRCTRL0		0x5e16
->
-> Dup!
+> > These attributes:
+> > a) are tunable at all hierarchy levels, i.e. root group too
+> 
+> This usually is problematic because there should be a non-cgroup way
+> of configuring the feature in case cgroup isn't configured or used,
+> and it becomes awkward to have two separate mechanisms configuring the
+> same thing.  Maybe the feature is cgroup specific enough that it makes
+> sense here but this needs more explanation / justification.
 
-Good catch, will fix.
+In the previous proposal I used to expose global tunables under
+procfs, e.g.:
+
+ /proc/sys/kernel/sched_capacity_min
+ /proc/sys/kernel/sched_capacity_max
+
+which can be used to defined tunable root constraints when CGroups are
+not available, and becomes RO when CGroups are.
+
+Can this be eventually an acceptable option?
+
+In any case I think that this feature will be mainly targeting CGroup
+based systems. Indeed, one of the main goals is to collect
+"application specific" information from "informed run-times". Being
+"application specific" means that we need a way to classify
+applications depending on the runtime context... and that capability
+in Linux is ultimately provided via the CGroup interface.
+
+> > b) allow to create subgroups of tasks which are not violating the
+> >    capacity constraints defined by the parent group.
+> >    Thus, tasks on a subgroup can only be more boosted and/or more
+> 
+> For both limits and protections, the parent caps the maximum the
+> children can get.  At least that's what memcg does for memory.low.
+> Doing that makes sense for memcg because for memory the parent can
+> still do protections regardless of what its children are doing and it
+> makes delegation safe by default.
+
+Just to be more clear, the current proposal enforces:
+
+- capacity_max_child <= capacity_max_parent
+
+  Since, if a task is constrained to get only up to a certain amount
+  of capacity, than its childs cannot use more than that... eventually
+  they can only be further constrained.
+
+- capacity_min_child >= capacity_min_parent
+
+  Since, if a task has been boosted to run at least as much fast, than
+  its childs cannot be constrained to go slower without eventually
+  impacting parent performance.
+
+> I understand why you would want a property like capacity to be the
+> other direction as that way you get more specific as you walk down the
+> tree for both limits and protections;
+
+Right, the protection schema is defined in such a way to never affect
+parent constraints.
+
+> however, I think we need to
+> think a bit more about it and ensure that the resulting interface
+> isn't confusing.
+
+Sure.
+
+> Would it work for capacity to behave the other
+> direction - ie. a parent's min restricting the highest min that its
+> descendants can get?  It's completely fine if that's weird.
+
+I had a thought about that possibility and it was not convincing me
+from the use-cases standpoint, at least for the ones I've considered.
+
+Reason is that capacity_min is used to implement a concept of
+"boosting" where, let say we want to "run a task faster then a minimum
+frequency". Assuming that this constraint has been defined because we
+know that this task, and likely all its descendant threads, needs at
+least that capacity level to perform according to expectations.
+
+In that case the "refining down the hierarchy" can require to boost
+further some threads but likely not less.
+
+Does this make sense?
+
+To me this seems to match quite well at least Android/ChromeOS
+specific use-cases. I'm not sure if there can be other different
+use-cases in the domain for example of managed containers.
 
 
->
->> +
->> +#define CHT_WC_CHGRCTRL0		0x5e16
->
->> +static int cht_wc_extcon_get_charger(struct cht_wc_extcon_data *ext)
->> +{
->> +	int ret, usbsrc, status, retries = 5;
->> +
->> +	do {
->> +		ret = regmap_read(ext->regmap, CHT_WC_USBSRC,
->> &usbsrc);
->> +		if (ret) {
->> +			dev_err(ext->dev, "Error reading usbsrc:
->> %d\n", ret);
->> +			return ret;
->> +		}
->> +		status = usbsrc & CHT_WC_USBSRC_STS_MASK;
->> +		if (status == CHT_WC_USBSRC_STS_SUCCESS ||
->> +		    status == CHT_WC_USBSRC_STS_FAIL)
->> +			break;
->> +
->
->> +		msleep(200);
->
-> Comment why and why so long?
+> Thanks.
+> 
+> -- 
+> tejun
 
-Fixed for v2 (actually switched to using jiffies +
-time_before for a more accurate timeout).
+-- 
+#include <best/regards.h>
 
->> +	} while (retries--);
->
->> +static void cht_wc_extcon_det_event(struct cht_wc_extcon_data *ext)
->
-> det -> detect ?
-
-Renamed to more accurate cht_wc_extcon_pwrsrc_event
-
-> +static irqreturn_t cht_wc_extcon_isr(int irq, void *data)
->> +{
->> +	struct cht_wc_extcon_data *ext = data;
->> +	int ret, irqs;
->> +
->> +	ret = regmap_read(ext->regmap, CHT_WC_PWRSRC_IRQ, &irqs);
->> +	if (ret)
->> +		dev_err(ext->dev, "Error reading irqs: %d\n", ret);
->
-> Shouldn't we return IRQ_NONE here?
-
-I was wondering the same myself here, there is no good
-answer here, this should simply never fail ... which does
-make returning IRQ_NONE a good idea, I was worried that
-would lead to a "nobody cared, disabling irq", but as said this
-should never happen, so when it does, disabling the irq is
-probably for the best. Will fix.
-
->
->> +
->> +	cht_wc_extcon_det_event(ext);
->> +
->> +	ret = regmap_write(ext->regmap, CHT_WC_PWRSRC_IRQ, irqs);
->> +	if (ret)
->> +		dev_err(ext->dev, "Error writing irqs: %d\n", ret);
->> +
->> +	return IRQ_HANDLED;
->> +}
->> +
->
->> +/* usb_id sysfs attribute for debug / testing purposes */
->
-> Hmm... I would use debugfs for debug, otherwise it looks like it should
-> be framework (extcon) wide.
-
-Unfortunately these kinda sysfs files are somewhat normal when
-dealing with USB-OTG. For example my board does not have the
-id-pin hooked up to the connector, so to test host mode
-I need to echo "gnd" to the sysfs attr. But also if I actually
-want to use host-mode (or anyone else with the same or a similar
-board).
-
-This definitely is not something which belongs in the extcon-core.
-
-> Perhaps Felipe can advise something here.
->
->> +static int cht_wc_extcon_probe(struct platform_device *pdev)
->> +{
->
->> +	struct cht_wc_extcon_data *ext;
->> +	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev-
->>> dev.parent);
->
-> Exchange them (assignment first).
-
-Fixed.
-
->
->> +	int irq, ret;
->> +
->
->
->> +	ret = devm_request_threaded_irq(ext->dev, irq, NULL,
->> cht_wc_extcon_isr,
->> +					IRQF_ONESHOT, pdev->name,
->> ext);
->> +	if (ret) {
->> +		dev_err(ext->dev, "Failed to request interrupt\n");
->> +		return ret;
->> +	}
->> +
->> +	/* Unmask irqs */
->> +	ret = regmap_write(ext->regmap, CHT_WC_PWRSRC_IRQ_MASK,
->> +			   (int)~(CHT_WC_PWRSRC_VBUS |
->
-> Hmm... Do you need explicit casting here?
-
-Yes because the BIT(x) macros are unsigned longs and the ~ sets
-the MSB so then the compiler complaints about truncating the
-variable without the cast.
-
->
->> CHT_WC_PWRSRC_ID_GND |
->> +				  CHT_WC_PWRSRC_ID_FLOAT));
->> +	if (ret) {
->> +		dev_err(ext->dev, "Error writing irq-mask: %d\n",
->> ret);
->> +		return ret;
->> +	}
->
-
-Regards,
-
-Hans
+Patrick Bellasi
