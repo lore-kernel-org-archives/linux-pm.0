@@ -1,78 +1,230 @@
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-Subject: Re: [PATCH v2 02/10] x86: assembly, FUNC_START for fn,
- DATA_START for data
-Date: Mon, 20 Mar 2017 11:07:19 -0500
-Message-ID: <20170320160719.57xlo2stclruyzwo@treble>
-References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
- <20170320123222.15453-1-jslaby@suse.cz>
- <20170320123222.15453-2-jslaby@suse.cz>
- <20170320133243.5rvae6liwwqg4dve@treble>
- <cf9b5094-a7b0-76ae-714a-7e4c8a0f79fb@suse.cz>
+From: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v10 1/8] devicetree: power: Add battery.txt
+Date: Mon, 20 Mar 2017 11:45:53 -0500
+Message-ID: <c8d6af7b-da01-be62-843b-6a741b4a454a@ti.com>
+References: <20170315192653.26799-1-liam@networkimprov.net>
+ <20170315192653.26799-2-liam@networkimprov.net>
+ <20170315220425.qeidvmanbsmq4wxk@earth>
+ <CAKvHMgSF2rsaAaUqFw1qF+b2NA9CkABYKYOTd2p+imuPAHq9JA@mail.gmail.com>
+ <20170315225709.ugjibnoqfukay657@earth>
+ <d548b5e6-af6e-3fa6-e926-b24636a676a8@ti.com>
+ <CAKvHMgS4dRm7LfxVFSh9UeeUA=ZFVoArtG8wZOpZyZDjiKkKwQ@mail.gmail.com>
+ <691553d1-cff7-958f-d9d9-6194210b4f87@ti.com>
+ <CAKvHMgS92WFoJa=imfAFiEEc0VyiSsDBbuYi4yzZ=LEa7__yKA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xen.org>
-Content-Disposition: inline
-In-Reply-To: <cf9b5094-a7b0-76ae-714a-7e4c8a0f79fb@suse.cz>
-List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xen.org>
-List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
-List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xen.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mingo@redhat.com, Pavel Machek <pavel@ucw.cz>, hpa@zytor.com, xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, tglx@linutronix.de
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAKvHMgS92WFoJa=imfAFiEEc0VyiSsDBbuYi4yzZ=LEa7__yKA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBNYXIgMjAsIDIwMTcgYXQgMDQ6MzI6MDlQTSArMDEwMCwgSmlyaSBTbGFieSB3cm90
-ZToKPiBPbiAwMy8yMC8yMDE3LCAwMjozMiBQTSwgSm9zaCBQb2ltYm9ldWYgd3JvdGU6Cj4gPiBP
-biBNb24sIE1hciAyMCwgMjAxNyBhdCAwMTozMjoxNFBNICswMTAwLCBKaXJpIFNsYWJ5IHdyb3Rl
-Ogo+ID4+IFRoaXMgaXMgYSBzdGFydCBvZiBzZXJpZXMgdG8gY2xlYW51cCBtYWNyb3MgdXNlZCBm
-b3Igc3RhcnRpbmcgZnVuY3Rpb25zLAo+ID4+IGRhdGEsIGdsb2JhbHMgZXRjLiBhY3Jvc3MgeDg2
-LiBXaGVuIHdlIGhhdmUgYWxsIHRoaXMgc29ydGVkIG91dCwgdGhpcwo+ID4+IHdpbGwgaGVscCB0
-byBpbmplY3QgRFdBUkYgdW53aW5kaW5nIGluZm8gYnkgb2JqdG9vbCBsYXRlci4KPiA+Pgo+ID4+
-IFRoZSBnb2FsIGlzIGZvcmNpbmcgU1lNX0ZVTkNfU1RBUlQgdG8gZW1pdCAuY2ZpX3N0YXJ0cHJv
-YyBhbmQKPiA+PiBTWU1fRlVOQ19FTkQgdG8gZW1pdCAuY2ZpX2VuZHByb2MuIEF1dG9tYXRpY2Fs
-bHkgYXQgYmVzdC4KPiA+IAo+ID4gRG8gd2Ugc3RpbGwgd2FudCB0byBlbWl0IC5jZmlfc3RhcnRw
-cm9jL2VuZHByb2MgZnJvbSB0aGUgbWFjcm8/ICBGcm9tCj4gPiBvdXIgbGFzdCBkaXNjdXNzaW9u
-LCB0aGF0IHNlZW1lZCB0byBiZSB1cCBpbiB0aGUgYWlyLgo+ID4gCj4gPiAgIGh0dHBzOi8vbGtt
-bC5rZXJuZWwub3JnL3IvMjAxNzAyMTcyMTE4MDQuajZsMmQ3dDVtZnpxem1idEB0cmVibGUKPiAK
-PiAiQXV0b21hdGljYWxseSBhdCBiZXN0IiBhYm92ZSBtZWFucyAiY29tcGxldGVseSBmcm9tIG9i
-anRvb2wiLiBJIGFtCj4gc3RpbGwgdW5jZXJ0YWluIHdoZXRoZXIgaXQgd2lsbCB3b3JrIDEwMCUg
-b3Igd2Ugd291bGQgaGF2ZSB0byBoZWxwIGJ5Cj4gZ2VuZXJhdGluZyBzb21lIHBpZWNlcyBmcm9t
-IHRoZSBhZGRlZCBtYWNyb3MuIEluIHBhcnRpY3VsYXIsIHRoZSBBTElBU2VzCj4gYXJlIGV2aWwg
-d2hpY2ggY2F1c2UgaGFybSBoZXJlOgo+IAo+IGZ1bl9hbGlhczoKPiBmdW46Cj4gPGNvZGU+Cj4g
-LnNpemUgZnVuLCAuLWZ1bgo+IC50eXBlIGZ1biBTVFRfRlVOQwo+IC5zaXplIGZ1bl9hbGlhcywg
-Li1mdW5fYWxpYXMKPiAudHlwZSBmdW5fYWxpYXMgU1RUX0ZVTkMKPiAKPiBCb3RoIGNhbm5vdCBj
-cmVhdGUgKG92ZXJsYXBwaW5nKSAuY2ZpX3N0YXJ0cHJvYy9lbmRwcm9jLCBvbmx5IHRoZSBpbm5l
-cgo+IHNoYWxsLgo+IAo+IEJ1dCBpdCBzZWVtcyBzbyBmYXIsIHRoYXQgd2UgbWlnaHQgYmUgYWJs
-ZSB0byBkZWFsIHdpdGggYWxsIG9mIHRoYXQgZnJvbQo+IG9ianRvb2wuLi4gKEkgaGF2ZSBub3Qg
-YmVlbiB0aGlua2luZyBhYm91dCB0aGlzIHBhcnRpY3VsYXIgdGhpbmcgZGVlcAo+IGVub3VnaCB5
-ZXQuKSBTb21lIHNvcnQgb2YgImZyb20gdGhlIGxhc3QgbGFiZWwgdGhhdCBpcyBtYXJrZWQgYXMK
-PiBTVFRfRlVOQyB0aWxsIGl0cyAuc2l6ZSIgbWlnaHQgd29yay4KCk9rLgoKPiA+IFdoYXQgZGlk
-IHlvdSB0aGluayBhYm91dCBtYWtpbmcgQ0ZJIHJlYWQtb25seSBmb3IgLmMgb2JqZWN0IGZpbGVz
-IGFuZAo+ID4gd3JpdGUtb25seSBmb3IgLlMgb2JqZWN0IGZpbGVzPwo+IAo+IFRoZXJlIGFyZSB0
-aG9zZSBmdW5jdGlvbnMgbGlrZSBzeW5jX2NvcmUoKSBvciBuYXRpdmVfc2F2ZV9mbCgpIHdpdGgK
-PiBpbmxpbmUgYXNtLiBBbmQgdGhleSBzZWVtIHRvIG5lZWQgYSkgcmVhZC13cml0ZSBzdXBwb3J0
-LCBvciBiKSBtYW51YWwKPiBhbm5vdGF0aW9uLiBJIHdvdWxkIGxpa2UgdG8gYXZvaWQgYikgZm9y
-IHN1cmUuCgpBaCwgc28gSSBndWVzcyB0aG9zZSBpbmxpbmUgYXNtIGZ1bmN0aW9ucyBjYXVzZSBw
-cm9ibGVtcyBiZWNhdXNlIHRoZXkKbXVjayB3aXRoIHRoZSBzdGFjayBwb2ludGVyIHdpdGggcHVz
-aGVzIGFuZCBwb3BzPwoKSSBkb24ndCB0aGluayBtYW51YWwgYW5ub3RhdGlvbiBvZiBpbmxpbmUg
-YXNtIHdvdWxkIGJlIHNvIGJhZC4gIElJVUMsIGl0CndvdWxkIG9ubHkgbWVhbiByZXBsYWNpbmcg
-dGhlIHB1c2hlcyBhbmQgcG9wcyB3aXRoIGEgbWFjcm8gd2hpY2ggZG9lcwp0aGUgQ0ZJLWFubm90
-YXRlZCB2ZXJzaW9uLCBsaWtlIFBVU0hfQ0ZJIGFuZCBQT1BfQ0ZJLiAgQW5kIHRoZSBiZW5lZml0
-CndvdWxkIGJlIHRoYXQgb2JqdG9vbCBkb2Vzbid0IGhhdmUgdG8gdHJ5IHRvIHJld3JpdGUgYSBi
-dW5jaCBvZiAuYwpvYmplY3QgZmlsZXMuCgpPYmp0b29sIHJlYWQtd3JpdGUgd29ycmllcyBtZSBi
-ZWNhdXNlIGl0IGdpdmVzIG1vcmUgcmVzcG9uc2liaWxpdHkgdG8Kb2JqdG9vbC4gIEl0IGNvdWxk
-IGJlIHRyaWNreSB0byBpbnNlcnQgQ0ZJIGluc3RydWN0aW9ucyB3aXRoaW4gdGhlIG9uZXMKYWxy
-ZWFkeSBjcmVhdGVkIGJ5IGdjYy4gIEFsc28sIHdoaWxlIHVubGlrZWx5LCBhIGJ1ZyBpbiBvYmp0
-b29sIGNvdWxkCnRoZW9yZXRpY2FsbHkgY29ycnVwdCBhbiBvYmplY3QgZmlsZSBhbmQgYnJpY2sg
-dGhlIGtlcm5lbC4gIEFsc28gSQp3b25kZXIgaG93IGFsbCB0aG9zZSBleHRyYSBmaWxlIHdyaXRl
-cyB3b3VsZCBhZmZlY3QgYnVpbGQgcGVyZm9ybWFuY2UuCgpJZiBhdCBhbGwgcG9zc2libGUsIEkg
-d291bGQgcmF0aGVyIG9ianRvb2wgc3RheSBvdXQgb2YgdGhlIHdheSBvZiB0aGUKY29tcGlsZXIg
-YW5kIGxldCBnY2MgZG8gaXRzIGpvYiBvZiBnZW5lcmF0aW5nIENGSS4KCi0tIApKb3NoCgpfX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpYZW4tZGV2ZWwgbWFp
-bGluZyBsaXN0Clhlbi1kZXZlbEBsaXN0cy54ZW4ub3JnCmh0dHBzOi8vbGlzdHMueGVuLm9yZy94
-ZW4tZGV2ZWwK
+On 03/17/2017 04:43 PM, Liam Breck wrote:
+> On Fri, Mar 17, 2017 at 8:21 AM, Andrew F. Davis <afd-l0cyMroinI0@public.gmane.org> wrote:
+>> On 03/16/2017 05:58 PM, Liam Breck wrote:
+>>> On Thu, Mar 16, 2017 at 6:21 AM, Andrew F. Davis <afd-l0cyMroinI0@public.gmane.org> wrote:
+>>>> On 03/15/2017 05:57 PM, Sebastian Reichel wrote:
+>>>>> Hi,
+>>>>>
+>>>>> On Wed, Mar 15, 2017 at 03:18:17PM -0700, Liam Breck wrote:
+>>>>>> Hey Sebastian, welcome back :-)
+>>>>>>
+>>>>>> I've taken over work on this patchset from Matt.
+>>>>>
+>>>>> Ok.
+>>>>>
+>>>>>> On Wed, Mar 15, 2017 at 3:04 PM, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>>>>>>> Hi Liam & Matt,
+>>>>>>>
+>>>>>>> Sorry for my absence in the discussion. I skipped the previous
+>>>>>>> iterations for now and start with this version.
+>>>>>>>
+>>>>>>> On Wed, Mar 15, 2017 at 12:26:46PM -0700, Liam Breck wrote:
+>>>>>>>> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>>>>>>>>
+>>>>>>>> Documentation of static battery characteristics that can be defined
+>>>>>>>> for batteries which cannot self-identify. This information is required
+>>>>>>>> by fuel-gauge and charger chips for proper handling of the battery.
+>>>>>>>>
+>>>>>>>> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>>>>>>>> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>>>>>>>> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+>>>>>>>> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>>>>>>>> ---
+>>>>>>>>  .../devicetree/bindings/power/supply/battery.txt   | 45 ++++++++++++++++++++++
+>>>>>>>>  1 file changed, 45 insertions(+)
+>>>>>>>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>>>>>
+>>>>>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>>>>> new file mode 100644
+>>>>>>>> index 0000000..0278617
+>>>>>>>> --- /dev/null
+>>>>>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>>>>> @@ -0,0 +1,45 @@
+>>>>>>>> +Battery Characteristics
+>>>>>>>
+>>>>>>> Maybe add something like
+>>>>>>>
+>>>>>>> This device provides static battery information, that is usually
+>>>>>>> available in the EEPROM of a smart battery. It's supposed to be
+>>>>>>> used for batteries, which do not have their own EEPROM (or if its
+>>>>>>> unusable).
+>>>>>>
+>>>>>> OK.
+>>>>>>
+>>>>>>>> +Required Properties:
+>>>>>>>> + - compatible: Must be "fixed-battery"
+>>>>>>
+>>>>>> Rob questioned the term "fixed". Shall we consider other terms --
+>>>>>> simple-battery, plain-battery...?
+>>>>>
+>>>>> I don't like the term either, but it was the best I came up with.
+>>>>> They are known as "dumb" batteries, but that term looks too
+>>>>> colloquial for DT usage. While I think "simple-battery" is not
+>>>>> perfect either, it's better than "fixed-battery", so please switch
+>>>>> to that in the next revision.
+>>>>>
+>>>>
+>>>> I rather like "fixed-battery", it matches the regulator and other power
+>>>> source DTs better. To answer Rob's question on what a non-fixed battery
+>>>> would look like we can think of a future battery that can change its
+>>>> physical properties (chemical or physical perhaps) in response to
+>>>> software. Although I've not seen such a battery I don't think it's too
+>>>> far-fetched.
+>>>
+>>> A "fixed" battery sounds like a non-removable one to me. I'll switch
+>>> to "simple-battery" in v11 unless a better idea bubbles up first.
+>>>
+>>
+>> Are fixed-regulators non-removable, or do most people understand. Also
+>> this is for non-removable batteries, if a battery is changeable then
+>> this DT is not valid as it would be describing the current configuration
+>> of the device. I guess it could be done with overlays for the current
+>> battery, not sure, but something to think about.
+> 
+> I know little about regulators, but wikipedia mentions fixed and
+> variable/adjustable kinds. We're not contemplating an "adjustable
+> battery" type, so the fixed/adjustable dichotomy isn't a natural fit
+> here.
+> 
+
+I think we are though, you are saying this is a "simple" battery because
+it has fixed design parameters. Any battery that does not have fixed
+design parameters is some kinda futuristic adjustable battery, what else
+would you call a battery with non-fixed design parameters?
+
+>>>> All the properties described here are "fixed", if we say "simple" then a
+>>>> battery with more properties would be a "complex" battery..
+>>>
+>>> Simple is not a boolean term; it really doesn't mandate a
+>>> "complex-battery" type.
+>>>
+>>
+>> Yes, but the spectrum would imply levels of simplicity, what would *you*
+>> call a "non-simple" battery?
+> 
+> Simple is not an integral term, either :-)
+> 
+> simple-battery, gauged-battery, coin-battery, bare-battery (no
+> protection circuit)...
+> 
+
+Fixed/simple/coin/bare batteries are all the same to DT and so do not
+need new node/compatible names. "Gauged-battery" would be described by a
+node representing the fuel-gauge and that node would then point to the
+battery that it gauges, no still no need for a new term.
+
+In our world we still have only three things:
+Charger -
+  |      |-> Battery
+  \/     |
+Gauge - -
+
+Sometimes we will have a battery, sometimes we will have a charger or a
+gauge with an attached battery, and sometimes we will have charger with
+embedded gauging functions. All these relations can be described in DT
+without adding extra compatibles.
+
+
+>>>>>>>> +Optional Properties:
+>>>>>>>> + - voltage-min-design-microvolt: drained battery voltage
+>>>>>>>> + - energy-full-design-microwatt-hours: battery design energy
+>>>>>>>> + - charge-full-design-microamp-hours: battery design capacity
+>>>>>>>
+>>>>>>> Looks fine to me.
+>>>>>>>
+>>>>>>>> +Because drivers surface properties in sysfs using names derived
+>>>>>>>> +from enum power_supply_property, e.g.
+>>>>>>>> +/sys/class/power_supply/<device>/charge_full_design, our
+>>>>>>>> +battery properties must be named for the corresponding elements in
+>>>>>>>> +enum power_supply_property, defined in include/linux/power_supply.h.
+>>>>>>>
+>>>>>>> This is Linux/implementation specific and does not belong
+>>>>>>> into a DT binding document.
+>>>>>>
+>>>>>> I just wrote on a thread for an earlier version of this patch:
+>>>>>>
+>>>>>> "Sebastian proposed DT:battery specifically to be consumed by
+>>>>>> power_supply_core. Allowing names in DT:battery and
+>>>>>> power_supply_property to diverge would cause confusion and wasted
+>>>>>> time, for no particular benefit. As there is no rationale to
+>>>>>> reconsider the names of these fields for DT:battery, let's write that
+>>>>>> into the docs."
+>>>>>
+>>>>> DT bindings are not "Linux hardware information bindings". Of course
+>>>>> there is no need to diverge without a good reason, but that kind of
+>>>>> Documentation just does not belong into the DT bindings.
+>>>>>
+>>>>>>>> +Batteries must be referenced by chargers and/or fuel-gauges
+>>>>>>>> +using a phandle. The phandle's property should be named
+>>>>>>>> +"monitored-battery".
+>>>>>>>
+>>>>>>> This looks fine.
+>>>>>>>
+>>>>>>>> +Driver code should call power_supply_get_battery_info() to obtain
+>>>>>>>> +battery properties via monitored-battery. For details see:
+>>>>>>>> +  drivers/power/supply/power_supply_core.c
+>>>>>>>> +  drivers/power/supply/bq27xxx_battery.c
+>>>>>>>
+>>>>>>> This is also Linux/implementation specific and should be dropped.
+>>>>>>
+>>>>>> We ought to mention how drivers are expected to consume DT:battery.
+>>>>>
+>>>>> That kind of documentation does not belong into
+>>>>> Documentation/devicetree/bindings. We can add something to
+>>>>> Documentation/power/power_supply_class.txt instead.
+>>>>>
+>>>>>>>> +Example:
+>>>>>>>> +
+>>>>>>>> +     bat: battery {
+>>>>>>>> +             compatible = "fixed-battery";
+>>>>>>>> +             voltage-min-design-microvolt = <3200000>;
+>>>>>>>> +             energy-full-design-microwatt-hours = <5290000>;
+>>>>>>>> +             charge-full-design-microamp-hours = <1430000>;
+>>>>>>>> +     };
+>>>>>>>> +
+>>>>>>>> +     charger: charger@11 {
+>>>>>>>> +             ....
+>>>>>>>> +             monitored-battery = <&bat>;
+>>>>>>>> +             ...
+>>>>>>>> +     };
+>>>>>>>> +
+>>>>>>>> +     fuel_gauge: fuel-gauge@22 {
+>>>>>>>> +             ....
+>>>>>>>> +             monitored-battery = <&bat>;
+>>>>>>>> +             ...
+>>>>>>>> +     };
+>>>>>>>> --
+>>>>>>>> 2.9.3
+>>>>>>>>
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+>>> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
