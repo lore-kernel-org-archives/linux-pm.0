@@ -1,48 +1,40 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU
- controller
-Date: Mon, 20 Mar 2017 13:36:11 -0400
-Message-ID: <20170320173611.GA7398@htj.duckdns.org>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
- <20170320171511.GB3623@htj.duckdns.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 1/4] PM / Domains: Clean up code validating genpd's status
+Date: Mon, 20 Mar 2017 18:10:38 +0100
+Message-ID: <3305095.GcIPqx65Co@amdc3058>
+References: <1490005163-28633-1-git-send-email-ulf.hansson@linaro.org>
+ <1490005163-28633-2-git-send-email-ulf.hansson@linaro.org>
+ <CGME20170320171040epcas1p3ed2179e98b8dbeead3cb81571dd8fbf3@epcas1p3.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f194.google.com ([209.85.161.194]:35092 "EHLO
-        mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753614AbdCTRgO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 13:36:14 -0400
-Content-Disposition: inline
-In-Reply-To: <20170320171511.GB3623@htj.duckdns.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:44024 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753217AbdCTRnK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 13:43:10 -0400
+Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
+ by mailout4.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0ON401I3LIDTYG40@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 21 Mar 2017 02:10:41 +0900 (KST)
+In-reply-to: <1490005163-28633-2-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Mon, Mar 20, 2017 at 01:15:11PM -0400, Tejun Heo wrote:
-> > a) are tunable at all hierarchy levels, i.e. root group too
+On Monday, March 20, 2017 11:19:20 AM Ulf Hansson wrote:
+> There exists several similar validations of the genpd->status, against
+> GPD_STATE_ACTIVE and GPD_STATE_POWER_OFF. Let's clean up this code by
+> converting to use a helper macro, genpd_status_on().
 > 
-> This usually is problematic because there should be a non-cgroup way
-> of configuring the feature in case cgroup isn't configured or used,
-> and it becomes awkward to have two separate mechanisms configuring the
-> same thing.  Maybe the feature is cgroup specific enough that it makes
-> sense here but this needs more explanation / justification.
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-A related issue here is that what the non-cgroup interface and its
-interaction with cgroup should be.  In the long term, I think it's
-better to have a generic non-cgroup interface for these new features,
-and we've gotten it wrong, or at least inconsistent, across different
-settings - most don't affect API accessible settings and just confine
-the configuration requested by the application inside the cgroup
-constraints; however, cpuset does it the other way and overwrites
-configurations set by individual applications.
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-If we agree that exposing this only through cgroup is fine, this isn't
-a concern, but, given that this is a thread property and can obviously
-be useful outside cgroups, that seems debatable at the very least.
-
-Thanks.
-
--- 
-tejun
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
