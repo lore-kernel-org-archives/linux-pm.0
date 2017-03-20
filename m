@@ -1,69 +1,72 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH RFC 1/3] thermal: allow hwmon devices to be created for
- of-thermal zones
-Date: Mon, 20 Mar 2017 12:15:52 -0500
-Message-ID: <20170320171552.o2ye73c2okcvhluq@rob-hp-laptop>
-References: <E1cn8qC-0002uz-PB@rmk-PC.armlinux.org.uk>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU
+ controller
+Date: Mon, 20 Mar 2017 13:15:11 -0400
+Message-ID: <20170320171511.GB3623@htj.duckdns.org>
+References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+ <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f194.google.com ([209.85.161.194]:36817 "EHLO
+        mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754166AbdCTRXx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 13:23:53 -0400
 Content-Disposition: inline
-In-Reply-To: <E1cn8qC-0002uz-PB@rmk-PC.armlinux.org.uk>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Russell King <rmk+kernel@armlinux.org.uk>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, devicetree@vger.kernel.org, Gregory Clement <gregory.clement@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+In-Reply-To: <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-On Sun, Mar 12, 2017 at 07:07:40PM +0000, Russell King wrote:
-> Allow hwmon devices to be optionally created for of-thermal zones,
-> rather than permanently denying them "in case" there is a hwmon
-> driver duplicating the thermal driver.
-> 
-> Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
-> ---
-> Without this, "sensors" is unable to report the temperature of the
-> Dove SoC when it supports thermal zones.
-> 
->  Documentation/devicetree/bindings/thermal/thermal.txt | 3 +++
->  arch/arm/boot/dts/dove.dtsi                           | 1 +
->  drivers/thermal/of-thermal.c                          | 3 ++-
->  3 files changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-> index 88b6ea1ad290..1478735fff85 100644
-> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> @@ -175,6 +175,9 @@ containing trip nodes and one sub-node containing all the zone cooling maps.
->  			2000mW, while on a 10'' tablet is around
->  			4500mW.
->  
-> +- linux,hwmon:		Allow Linux to create hwmon devices for the thermal
-> +  Type: bool		zone.
-> +
->  Note: The delay properties are bound to the maximum dT/dt (temperature
->  derivative over time) in two situations for a thermal zone:
->  (i)  - when passive cooling is activated (polling-delay-passive); and
-> diff --git a/arch/arm/boot/dts/dove.dtsi b/arch/arm/boot/dts/dove.dtsi
-> index 40fb98687230..00f5971cd039 100644
-> --- a/arch/arm/boot/dts/dove.dtsi
-> +++ b/arch/arm/boot/dts/dove.dtsi
-> @@ -804,6 +804,7 @@
->  
->  	thermal-zones {
->  		soc-thermal {
-> +			linux,hwmon;
+Hello,
 
-I'd prefer to see a black or white list of sensor compatibles here. Then 
-the dtb doesn't need to change if things move between hwmon and thermal 
-zones.
+On Tue, Feb 28, 2017 at 02:38:38PM +0000, Patrick Bellasi wrote:
+> This patch extends the CPU controller by adding a couple of new
+> attributes, capacity_min and capacity_max, which can be used to enforce
+> bandwidth boosting and capping. More specifically:
+> 
+> - capacity_min: defines the minimum capacity which should be granted
+>                 (by schedutil) when a task in this group is running,
+>                 i.e. the task will run at least at that capacity
+> 
+> - capacity_max: defines the maximum capacity which can be granted
+>                 (by schedutil) when a task in this group is running,
+>                 i.e. the task can run up to that capacity
 
-Rob
+cpu.capacity.min and cpu.capacity.max are the more conventional names.
+I'm not sure about the name capacity as it doesn't encode what it does
+and is difficult to tell apart from cpu bandwidth limits.  I think
+it'd be better to represent what it controls more explicitly.
+
+> These attributes:
+> a) are tunable at all hierarchy levels, i.e. root group too
+
+This usually is problematic because there should be a non-cgroup way
+of configuring the feature in case cgroup isn't configured or used,
+and it becomes awkward to have two separate mechanisms configuring the
+same thing.  Maybe the feature is cgroup specific enough that it makes
+sense here but this needs more explanation / justification.
+
+> b) allow to create subgroups of tasks which are not violating the
+>    capacity constraints defined by the parent group.
+>    Thus, tasks on a subgroup can only be more boosted and/or more
+
+For both limits and protections, the parent caps the maximum the
+children can get.  At least that's what memcg does for memory.low.
+Doing that makes sense for memcg because for memory the parent can
+still do protections regardless of what its children are doing and it
+makes delegation safe by default.
+
+I understand why you would want a property like capacity to be the
+other direction as that way you get more specific as you walk down the
+tree for both limits and protections; however, I think we need to
+think a bit more about it and ensure that the resulting interface
+isn't confusing.  Would it work for capacity to behave the other
+direction - ie. a parent's min restricting the highest min that its
+descendants can get?  It's completely fine if that's weird.
+
+Thanks.
+
+-- 
+tejun
