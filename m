@@ -1,18 +1,18 @@
 From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RESEND PATCH v4 3/9] mfd: axp20x: add ADC cells
- for AXP20X and AXP22X PMICs
-Date: Mon, 20 Mar 2017 10:43:45 +0000
-Message-ID: <20170320104345.3qjsv3j3cip7uj4i@dell>
+Subject: Re: [RESEND PATCH v4 4/9] mfd: axp20x: add AC power
+ supply cells for AXP22X PMICs
+Date: Mon, 20 Mar 2017 10:43:58 +0000
+Message-ID: <20170320104358.37h3tn2ikwpyhalj@dell>
 References: <20170320081653.8884-1-quentin.schulz@free-electrons.com>
- <20170320081653.8884-4-quentin.schulz@free-electrons.com>
+ <20170320081653.8884-5-quentin.schulz@free-electrons.com>
 Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDA7X7F2WUEBBZHEX3DAKGQEXZNB3JY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBDA7X7F2WUEBB4PEX3DAKGQEVKANZDI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Content-Disposition: inline
-In-Reply-To: <20170320081653.8884-4-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+In-Reply-To: <20170320081653.8884-5-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Archive: <https://groups.google.com/group/linux-sunxi
@@ -25,55 +25,51 @@ List-Id: linux-pm@vger.kernel.org
 
 On Mon, 20 Mar 2017, Quentin Schulz wrote:
 
-> This adds the AXP20X/AXP22x ADCs driver to the mfd cells of the AXP209,
-> AXP221 and AXP223 MFD.
+> The X-Powers AXP20X and AXP22X PMICs expose the status of AC power
+> supply.
+>=20
+> This adds the AC power supply driver to the MFD cells of the AXP22X
+> PMICs.
 >=20
 > Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 > Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Acked-By: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 > Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+> Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 > ---
->=20
-> v3:
->  - removed of_compatible as DT node has been removed,
->  - use different names to probe the ADC driver,
->=20
->  drivers/mfd/axp20x.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  drivers/mfd/axp20x.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
 
 Applied, thanks.
 
 > diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> index e02edf1..46bdd23 100644
+> index 46bdd23..37643b1 100644
 > --- a/drivers/mfd/axp20x.c
 > +++ b/drivers/mfd/axp20x.c
-> @@ -590,6 +590,8 @@ static struct mfd_cell axp20x_cells[] =3D {
+> @@ -614,6 +614,11 @@ static struct mfd_cell axp221_cells[] =3D {
 >  	}, {
->  		.name		=3D "axp20x-regulator",
+>  		.name		=3D "axp22x-adc"
 >  	}, {
-> +		.name		=3D "axp20x-adc",
-> +	}, {
->  		.name		=3D "axp20x-ac-power-supply",
->  		.of_compatible	=3D "x-powers,axp202-ac-power-supply",
->  		.num_resources	=3D ARRAY_SIZE(axp20x_ac_power_supply_resources),
-> @@ -610,6 +612,8 @@ static struct mfd_cell axp221_cells[] =3D {
->  	}, {
->  		.name		=3D "axp20x-regulator",
->  	}, {
-> +		.name		=3D "axp22x-adc"
+> +		.name		=3D "axp20x-ac-power-supply",
+> +		.of_compatible	=3D "x-powers,axp221-ac-power-supply",
+> +		.num_resources	=3D ARRAY_SIZE(axp20x_ac_power_supply_resources),
+> +		.resources	=3D axp20x_ac_power_supply_resources,
 > +	}, {
 >  		.name		=3D "axp20x-usb-power-supply",
 >  		.of_compatible	=3D "x-powers,axp221-usb-power-supply",
 >  		.num_resources	=3D ARRAY_SIZE(axp22x_usb_power_supply_resources),
-> @@ -623,6 +627,8 @@ static struct mfd_cell axp223_cells[] =3D {
->  		.num_resources		=3D ARRAY_SIZE(axp22x_pek_resources),
->  		.resources		=3D axp22x_pek_resources,
+> @@ -631,6 +636,11 @@ static struct mfd_cell axp223_cells[] =3D {
 >  	}, {
-> +		.name		=3D "axp22x-adc",
-> +	}, {
 >  		.name			=3D "axp20x-regulator",
 >  	}, {
+> +		.name		=3D "axp20x-ac-power-supply",
+> +		.of_compatible	=3D "x-powers,axp221-ac-power-supply",
+> +		.num_resources	=3D ARRAY_SIZE(axp20x_ac_power_supply_resources),
+> +		.resources	=3D axp20x_ac_power_supply_resources,
+> +	}, {
 >  		.name		=3D "axp20x-usb-power-supply",
+>  		.of_compatible	=3D "x-powers,axp223-usb-power-supply",
+>  		.num_resources	=3D ARRAY_SIZE(axp22x_usb_power_supply_resources),
 
 --=20
 Lee Jones
