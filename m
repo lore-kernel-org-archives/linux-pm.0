@@ -1,53 +1,40 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 2/2] cpufreq: schedutil: Force max frequency on busy CPUs
-Date: Mon, 20 Mar 2017 13:35:12 +0100
-Message-ID: <1846666.Va7CsUJLIx@aspire.rjw.lan>
-References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan> <20170320103645.5jm2rwrx6bndwqmw@hirez.programming.kicks-ass.net>
+Subject: Re: [PATCH 1/2] cpufreq: schedutil: Fix per-CPU structure initialization in sugov_start()
+Date: Mon, 20 Mar 2017 13:36:06 +0100
+Message-ID: <3822450.QzCeJBOUoJ@aspire.rjw.lan>
+References: <4366682.tsferJN35u@aspire.rjw.lan> <2230625.Zj7J7bOCCf@aspire.rjw.lan> <20170320032840.GA25659@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170320103645.5jm2rwrx6bndwqmw@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49436 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753477AbdCTMlo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 08:41:44 -0400
+In-Reply-To: <20170320032840.GA25659@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 
-On Monday, March 20, 2017 11:36:45 AM Peter Zijlstra wrote:
-> On Sun, Mar 19, 2017 at 02:34:32PM +0100, Rafael J. Wysocki wrote:
+On Monday, March 20, 2017 08:58:40 AM Viresh Kumar wrote:
+> On 19-03-17, 14:30, Rafael J. Wysocki wrote:
 > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > > 
-> > The PELT metric used by the schedutil governor underestimates the
-> > CPU utilization in some cases.  The reason for that may be time spent
-> > in interrupt handlers and similar which is not accounted for by PELT.
+> > sugov_start() only initializes struct sugov_cpu per-CPU structures
+> > for shared policies, but it should do that for single-CPU policies too.
 > > 
-> > That can be easily demonstrated by running kernel compilation on
-> > a Sandy Bridge Intel processor, running turbostat in parallel with
-> > it and looking at the values written to the MSR_IA32_PERF_CTL
-> > register.  Namely, the expected result would be that when all CPUs
-> > were 100% busy, all of them would be requested to run in the maximum
-> > P-state, but observation shows that this clearly isn't the case.
-> > The CPUs run in the maximum P-state for a while and then are
-> > requested to run slower and go back to the maximum P-state after
-> > a while again.  That causes the actual frequency of the processor to
-> > visibly oscillate below the sustainable maximum in a jittery fashion
-> > which clearly is not desirable.
+> > That in particular makes the IO-wait boost mechanism work in the
+> > cases when cpufreq policies correspond to individual CPUs.
 > > 
-> > To work around this issue use the observation that, from the
-> > schedutil governor's perspective, CPUs that are never idle should
-> > always run at the maximum frequency and make that happen.
-> > 
-> > To that end, add a counter of idle calls to struct sugov_cpu and
-> > modify cpuidle_idle_call() to increment that counter every time it
-> > is about to put the given CPU into an idle state.  Next, make the
-> > schedutil governor look at that counter for the current CPU every
-> > time before it is about to start heavy computations.  If the counter
-> > has not changed for over SUGOV_BUSY_THRESHOLD time (equal to 50 ms),
-> > the CPU has not been idle for at least that long and the governor
-> > will choose the maximum frequency for it without looking at the PELT
-> > metric at all.
+> > Fixes: 21ca6d2c52f8 (cpufreq: schedutil: Add iowait boosting)
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Why the time limit?
+> Cc: 4.9+ <stable@vger.kernel.org> # 4.9+
 
-One iteration appeared to be a bit too aggressive, but honestly I think
-I need to check again if this thing is regarded as viable at all.
+"stable" checks Fixes: tags too, but yes.
+
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Thanks,
+Rafael
