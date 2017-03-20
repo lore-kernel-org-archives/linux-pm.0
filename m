@@ -1,146 +1,59 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 1/4] ACPI: battery: Add acpi_battery_unregister() function
-Date: Mon, 20 Mar 2017 14:21:47 +0100
-Message-ID: <20170320132150.18771-1-hdegoede@redhat.com>
+Subject: Re: [PATCH 0/4] Avoid duplicate registering of ACPI and native
+ power-supplies
+Date: Mon, 20 Mar 2017 14:11:15 +0100
+Message-ID: <5bdbcb12-57c1-13cf-a591-22c9334d85b6@redhat.com>
+References: <20170316161601.32267-1-hdegoede@redhat.com>
+ <20170320013305.v4mof5qoie3w7xdb@earth>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170320013305.v4mof5qoie3w7xdb@earth>
 Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On some systems we have a native PMIC driver which provides battery
-monitoring, while the ACPI battery driver is broken on these systems
-due to bad DSTDs or because of missing vendor specific ACPI opregion
-(e.g. BMOP opregion) support, which the ACPI battery device in the
-dsdt relies on.
+Hi,
 
-This leads to there being 2 battery power_supply-s registed like this:
+On 20-03-17 02:33, Sebastian Reichel wrote:
+> Hi,
+>
+> On Thu, Mar 16, 2017 at 05:15:57PM +0100, Hans de Goede wrote:
+>> The last 2 patches of this series depend on the first 2, as such it might
+>> be better to merge all 4 through the acpi tree if Sebastius is ok with
+>> that.
+>>
+>> Otherwise these patches are pretty self-explanatory.
+>
+> I'm fine with this going through acpi. I wonder if acpi has a method
+> to avoid loading the generic drivers in the first place, though.
 
-~$ acpi
-Battery 0: Charging, 84%, 00:49:39 until charged
-Battery 1: Unknown, 0%, rate information unavailable
+I thought about just not loading them as a first approach, but it is
+not really doable in a clean way. For example the Whiskey Cove fuel
+gauge driver I'm working on will need to do the same thing, but devices
+with that fuel-gauge use the same ACPI HID for different fuel-gauges
+and we've some extra magic in the fuel-gauge's probe method to see
+if it really is the one we want like this:
 
-Even if the ACPI battery where to function fine (which on systems
-where we have a native PMIC driver it often doesn't) we still do not
-want to export the same battery to userspace twice.
+         status = acpi_evaluate_integer(ACPI_HANDLE(dev), "PTYP", NULL, &ptyp);
+         if (ACPI_FAILURE(status)) {
+                 dev_err(dev, "Failed to get PTYPE\n");
+                 return -ENODEV;
+         }
 
-This commit adds an acpi_battery_unregister() function which native
-PMIC drivers can call to tell the ACPI-battery driver to unregister
-itself so that we do not end up with 2 power_supply-s for the same
-battery device.
+         /*
+          * The same ACPI HID is used with different PMICs check PTYP to
+          * ensure that we are dealing with a Whiskey Cove PMIC.
+          */
+         if (ptyp != CHT_WC_FG_PTYPE)
+                 return -ENODEV;
 
-BugLink: https://bugzilla.kernel.org/show_bug.cgi?id=194811
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Tested-by: Sergei Trusov <t.rus76@ya.ru>
----
-Changes in v2:
--Fix capitalization in commit msg
--Minor style cleanups
----
- drivers/acpi/battery.c     | 33 ++++++++++++++++++++++++++++++++-
- include/linux/power/acpi.h | 18 ++++++++++++++++++
- 2 files changed, 50 insertions(+), 1 deletion(-)
- create mode 100644 include/linux/power/acpi.h
+And on some Bay Trail / Cherry Trail devices there is a functional
+ACPI battery so we really only want to not use the ACPI battery if
+we have an alternative battery power_supply driver.
 
-diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-index 4ef1e46..b26a2b7 100644
---- a/drivers/acpi/battery.c
-+++ b/drivers/acpi/battery.c
-@@ -29,6 +29,7 @@
- #include <linux/async.h>
- #include <linux/dmi.h>
- #include <linux/delay.h>
-+#include <linux/mutex.h>
- #include <linux/slab.h>
- #include <linux/suspend.h>
- #include <asm/unaligned.h>
-@@ -40,6 +41,7 @@
- #endif
- 
- #include <linux/acpi.h>
-+#include <linux/power/acpi.h>
- #include <linux/power_supply.h>
- 
- #include "battery.h"
-@@ -66,6 +68,10 @@ MODULE_AUTHOR("Alexey Starikovskiy <astarikovskiy@suse.de>");
- MODULE_DESCRIPTION("ACPI Battery Driver");
- MODULE_LICENSE("GPL");
- 
-+enum init_state_enum { BAT_NONE, BAT_INITIALIZED, BAT_EXITED };
-+
-+static enum init_state_enum init_state;
-+static DEFINE_MUTEX(init_state_mutex);
- static async_cookie_t async_cookie;
- static int battery_bix_broken_package;
- static int battery_notification_delay_ms;
-@@ -1336,17 +1342,42 @@ static int __init acpi_battery_init(void)
- 	if (acpi_disabled)
- 		return -ENODEV;
- 
-+	/* Check if acpi_battery_unregister() got called before _init() */
-+	mutex_lock(&init_state_mutex);
-+	if (init_state != BAT_NONE)
-+		goto out_unlock;
-+
- 	async_cookie = async_schedule(acpi_battery_init_async, NULL);
-+	init_state = BAT_INITIALIZED;
-+
-+out_unlock:
-+	mutex_unlock(&init_state_mutex);
-+
- 	return 0;
- }
- 
--static void __exit acpi_battery_exit(void)
-+void acpi_battery_unregister(void)
- {
-+	/* Check if _init() is done and only do unregister once */
-+	mutex_lock(&init_state_mutex);
-+	if (init_state != BAT_INITIALIZED)
-+		goto out_exit;
-+
- 	async_synchronize_cookie(async_cookie + 1);
- 	acpi_bus_unregister_driver(&acpi_battery_driver);
- #ifdef CONFIG_ACPI_PROCFS_POWER
- 	acpi_unlock_battery_dir(acpi_battery_dir);
- #endif
-+
-+out_exit:
-+	init_state = BAT_EXITED;
-+	mutex_unlock(&init_state_mutex);
-+}
-+EXPORT_SYMBOL_GPL(acpi_battery_unregister);
-+
-+static void __exit acpi_battery_exit(void)
-+{
-+	acpi_battery_unregister();
- }
- 
- module_init(acpi_battery_init);
-diff --git a/include/linux/power/acpi.h b/include/linux/power/acpi.h
-new file mode 100644
-index 0000000..83bdfb9
---- /dev/null
-+++ b/include/linux/power/acpi.h
-@@ -0,0 +1,18 @@
-+/*
-+ * Functions exported by the acpi power_supply drivers
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef __LINUX_POWER_ACPI_H_
-+#define __LINUX_POWER_ACPI_H_
-+
-+#if IS_ENABLED(CONFIG_ACPI_BATTERY)
-+void acpi_battery_unregister(void);
-+#else
-+static inline void acpi_battery_unregister(void) {}
-+#endif
-+
-+#endif
--- 
-2.9.3
+Regards,
 
+Hans
