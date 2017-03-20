@@ -1,197 +1,207 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [04/15] power: supply: bq24190_charger: Add no_register_reset
- pdata flag
-Date: Mon, 20 Mar 2017 10:51:29 -0700
-Message-ID: <CAKvHMgTLcgtPCbaTAAbEL+deQpnF-mhszBvQW57jH5AXt5o3iQ@mail.gmail.com>
-References: <20170318071019.4561-1-liam@networkimprov.net> <6ad6ecd2-ea0f-b613-8519-66ad424c623a@redhat.com>
- <CAKvHMgQ-hnS_XkL_7Mwkm94hNDc9Q++xHBAOUK1bKmvO=YnSXQ@mail.gmail.com>
- <6a0e54e3-581d-6162-b521-82b7567b6e74@redhat.com> <CAKvHMgTYqypPiv0KcoFZqpojq50yUDoU=HL8uiwPyKP7HLTy1A@mail.gmail.com>
- <f7b3fda0-eeff-b6ab-4908-86c4180bda8a@redhat.com> <12321f48-def6-33cb-1df5-853ecc8f1061@redhat.com>
- <20170320052715.hrgaxsxwdrv7ynbu@earth> <6de63319-f30f-cae7-6d7a-0df2edd12859@redhat.com>
- <5e7becad-44e4-8cc8-aabb-cc678b03098b@redhat.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH 03/15] extcon: cht-wc: Add Intel Cherry Trail Whiskey Cove
+ PMIC extcon driver
+Date: Mon, 20 Mar 2017 19:08:22 +0100
+Message-ID: <c6020cde-5406-0442-adea-f973bded326b@redhat.com>
+References: <20170317095527.10487-1-hdegoede@redhat.com>
+ <20170317095527.10487-4-hdegoede@redhat.com>
+ <1489771098.19767.69.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f54.google.com ([209.85.214.54]:35290 "EHLO
-        mail-it0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932214AbdCTRvc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 13:51:32 -0400
-Received: by mail-it0-f54.google.com with SMTP id y18so43961874itc.0
-        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2017 10:51:31 -0700 (PDT)
-In-Reply-To: <5e7becad-44e4-8cc8-aabb-cc678b03098b@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1489771098.19767.69.camel@linux.intel.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Felipe Balbi <felipe.balbi@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On Mon, Mar 20, 2017 at 10:04 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> Hi,
->
->
-> On 20-03-17 14:54, Hans de Goede wrote:
->>
->> Hi,
->>
->> On 20-03-17 06:27, Sebastian Reichel wrote:
->>>
->>> Hi,
->>>
->>> On Sun, Mar 19, 2017 at 10:42:00AM +0100, Hans de Goede wrote:
->>
->>
->> <snip>
->>
->>>> We want one driver which is solidly in control of the charger
->>>> since getting that wrong is quite bad and we want to extend
->>>> the information it is exporting to userspace in the form of
->>>> power_supply properties with some extra info.
->>>>
->>>> So taking that as a starting point and generalizing that,
->>>> I think that if we want we can make something more generic then
->>>> my original patch for this. My idea is to introduce something
->>>> called a power_supply_properties_provider, with an API
->>>> like this:
->>>
->>>
->>> Thanks for thinking about this. From what I can see it should
->>> be enough to just avoid exposing a battery device at all in
->>> the charger driver, though. It does not really provide useful
->>> information anyways.
->>
->>
->> Interesting suggestion, 2 remarks / questions:
->>
->> 1) Given that we do not want to break existing setups
->> which may depend on the existing battery interface on the bq24190
->> driver and add a flag to not register it, or are you suggesting
->> to simply remove it all together? Removing it all together would
->> be better from a maintenance pov. Liam, you indicated that you
->> are the main user of the bq24190 driver currently, do you need
->> the battery power_supply interface for your use case ?
->>
->> 2) Not using the battery interface of the bq24190 driver at all
->> means that the fuelgauge driver needs to grow some extra
->> properties, specifically it will need to start reporting status,
->> something which the bq24190 driver really has a better idea
->> of the the fuel gauge.
+Hi,
 
-Our userspace looks at bq24190-battery & -charger. If your userspace
-can work with /sys/class/power_supply/whisky_cove-battery/* can't you
-leave .bq24190-battery as is?
+On 17-03-17 18:18, Andy Shevchenko wrote:
+> On Fri, 2017-03-17 at 10:55 +0100, Hans de Goede wrote:
+>> Add a driver for charger detection / control on the Intel Cherrytrail
+>> Whiskey Cove PMIC.
+>
+> +Cc: Felipe for some question(s) below.
+>
+>>  drivers/extcon/extcon-cht-wc.c | 356
+>
+> I would use same pattern across drivers, i.e. "chtwc" (same for the rest
+> of the drivers in this series).
 
-bq24190-battery's properties could move to -charger, tho health &
-online would have to change name, replace same in -charger, or be
-dropped.
+I already answered this in another part of the thread,
+but for the archives sake let me copy and paste my answer:
 
->> Note that I do not have documentation on the fuel-gauge (not even
->> an out of tree driver from android-x86). It is all based on dumping
->> registers every 5 minutes during a charge / discharge cycle and
->> then puzzling together which register is what. I'm quite confident
->> I've this all right, but this does make adding a status property
->> harder (might involve some heuristics instead of being able
->> to get the absolute truth from the charge ic itself).
->>
->> As such I think the power_supply_properties_provider proposal I'm
->> doing might still be a good idea. Anyways I will dig through the
->> dumps I've some more to see if I can find a good way to get
->> charging status from the fuel gauge and get back to you when
->> I'm done with looking at the dumps.
+"One thing I disagree with is the cht_wc > chtwc rename you are
+proposing for one Cherry Trail and Whiskey Cove are 2 different
+words (4 if you look at spelling but 2 if you look at pronunciation,
+so IMHO cht_wc is more readable other then that I see the suggested
+rename as a lot of extra churn without any tangible benefits."
+
+>
+>> +#define CHT_WC_PWRSRC_IRQ		0x6e03
+>> +#define CHT_WC_PWRSRC_IRQ_MASK		0x6e0f
+>> +#define CHT_WC_PWRSRC_STS		0x6e1e
+>> +#define CHT_WC_PWRSRC_VBUS		BIT(0)
+>> +#define CHT_WC_PWRSRC_DC		BIT(1)
+>> +#define CHT_WC_PWRSRC_BAT		BIT(2)
+>> +#define CHT_WC_PWRSRC_ID_GND		BIT(3)
+>> +#define CHT_WC_PWRSRC_ID_FLOAT		BIT(4)
+>
+> Not obvious for which register those bit definitions are.
+
+They are for all 3 CHT_WC_PWRSRC_* registers, this is the
+more or less usual irq setup for some i2c devices where
+there is a status register, an irq register where the hardware
+sets bits to 1 (and we write 1 to clear) when the corresponding
+status bits changes and a mask register to select which irq
+register bits actually will raise the interrupt line.
+
+> Also, keep them ordered by offset.
+
+Will fix.
+
+>
+>> +
+>> +#define CHT_WC_PHYCTRL			0x5e07
+>> +
+>
+>> +#define CHT_WC_CHGRCTRL0		0x5e16
+>
+> Dup!
+
+Good catch, will fix.
+
+
+>
+>> +
+>> +#define CHT_WC_CHGRCTRL0		0x5e16
+>
+>> +static int cht_wc_extcon_get_charger(struct cht_wc_extcon_data *ext)
+>> +{
+>> +	int ret, usbsrc, status, retries = 5;
+>> +
+>> +	do {
+>> +		ret = regmap_read(ext->regmap, CHT_WC_USBSRC,
+>> &usbsrc);
+>> +		if (ret) {
+>> +			dev_err(ext->dev, "Error reading usbsrc:
+>> %d\n", ret);
+>> +			return ret;
+>> +		}
+>> +		status = usbsrc & CHT_WC_USBSRC_STS_MASK;
+>> +		if (status == CHT_WC_USBSRC_STS_SUCCESS ||
+>> +		    status == CHT_WC_USBSRC_STS_FAIL)
+>> +			break;
+>> +
+>
+>> +		msleep(200);
+>
+> Comment why and why so long?
+
+Fixed for v2 (actually switched to using jiffies +
+time_before for a more accurate timeout).
+
+>> +	} while (retries--);
+>
+>> +static void cht_wc_extcon_det_event(struct cht_wc_extcon_data *ext)
+>
+> det -> detect ?
+
+Renamed to more accurate cht_wc_extcon_pwrsrc_event
+
+> +static irqreturn_t cht_wc_extcon_isr(int irq, void *data)
+>> +{
+>> +	struct cht_wc_extcon_data *ext = data;
+>> +	int ret, irqs;
+>> +
+>> +	ret = regmap_read(ext->regmap, CHT_WC_PWRSRC_IRQ, &irqs);
+>> +	if (ret)
+>> +		dev_err(ext->dev, "Error reading irqs: %d\n", ret);
+>
+> Shouldn't we return IRQ_NONE here?
+
+I was wondering the same myself here, there is no good
+answer here, this should simply never fail ... which does
+make returning IRQ_NONE a good idea, I was worried that
+would lead to a "nobody cared, disabling irq", but as said this
+should never happen, so when it does, disabling the irq is
+probably for the best. Will fix.
+
+>
+>> +
+>> +	cht_wc_extcon_det_event(ext);
+>> +
+>> +	ret = regmap_write(ext->regmap, CHT_WC_PWRSRC_IRQ, irqs);
+>> +	if (ret)
+>> +		dev_err(ext->dev, "Error writing irqs: %d\n", ret);
+>> +
+>> +	return IRQ_HANDLED;
+>> +}
+>> +
+>
+>> +/* usb_id sysfs attribute for debug / testing purposes */
+>
+> Hmm... I would use debugfs for debug, otherwise it looks like it should
+> be framework (extcon) wide.
+
+Unfortunately these kinda sysfs files are somewhat normal when
+dealing with USB-OTG. For example my board does not have the
+id-pin hooked up to the connector, so to test host mode
+I need to echo "gnd" to the sysfs attr. But also if I actually
+want to use host-mode (or anyone else with the same or a similar
+board).
+
+This definitely is not something which belongs in the extcon-core.
+
+> Perhaps Felipe can advise something here.
+>
+>> +static int cht_wc_extcon_probe(struct platform_device *pdev)
+>> +{
+>
+>> +	struct cht_wc_extcon_data *ext;
+>> +	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev-
+>>> dev.parent);
+>
+> Exchange them (assignment first).
+
+Fixed.
+
+>
+>> +	int irq, ret;
+>> +
 >
 >
-> Ok, it looks like this approach should work. Downside is that
-> the fuel-gauge does not get interrupts when changing state,
-> but I can use extcon to get power being plugged in / removed
-> which is the most important state change to immediately
-> notify userspace about.
+>> +	ret = devm_request_threaded_irq(ext->dev, irq, NULL,
+>> cht_wc_extcon_isr,
+>> +					IRQF_ONESHOT, pdev->name,
+>> ext);
+>> +	if (ret) {
+>> +		dev_err(ext->dev, "Failed to request interrupt\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	/* Unmask irqs */
+>> +	ret = regmap_write(ext->regmap, CHT_WC_PWRSRC_IRQ_MASK,
+>> +			   (int)~(CHT_WC_PWRSRC_VBUS |
 >
-> I will rework the patch-set accordingly. For now I'm just
-> going to throw in a patch completely removing the battery
-> power_supply from the bq24190_charger driver. If that is a
-> problem then that one can be replaced by one using a device
-> property to enable/disable the battery power_supply device,
-> question if we are going for a property for this, what should
-> the default be ? I tend toward a default of off / no battery
-> interface unless requested but that may break compatibility
-> with some existing dt files + userspace expecting it to be
-> there ?
+> Hmm... Do you need explicit casting here?
+
+Yes because the BIT(x) macros are unsigned longs and the ~ sets
+the MSB so then the compiler complaints about truncating the
+variable without the cast.
+
 >
+>> CHT_WC_PWRSRC_ID_GND |
+>> +				  CHT_WC_PWRSRC_ID_FLOAT));
+>> +	if (ret) {
+>> +		dev_err(ext->dev, "Error writing irq-mask: %d\n",
+>> ret);
+>> +		return ret;
+>> +	}
 >
-> Regards,
->
-> Hans
->
->
->
->
->
->>>> typedef int (*power_supply_properties_provider_get_property_t)(
->>>>     enum power_supply_property prop, union power_supply_propval *val,
->>>>     void *driver_data);
->>>>
->>>> struct power_supply_properties_provider;
->>>>
->>>> struct power_supply_properties_provider *
->>>> power_supply_properties_provider_register(
->>>>     const char *name,
->>>>     power_supply_properties_provider_get_property_t get_property,
->>>>     const enum power_supply_property *properties,
->>>>     size_t num_properties,
->>>>     void *driver_data);
->>>>
->>>> void power_supply_properties_provider_unregister(
->>>>     struct power_supply_properties_provider *pspp);
->>>>
->>>> struct power_supply_properties_provider *
->>>>     power_supply_properties_provider_get(const char *name);
->>>>
->>>> void power_supply_properties_provider_put(
->>>>     struct power_supply_properties_provider *pspp);
->>>>
->>>> int power_supply_properties_provider_merge_properties(
->>>>     struct power_supply_properties_provider *pspp,
->>>>     const enum power_supply_property *properties,
->>>>     size_t num_properties,
->>>>     enum power_supply_property **merged_properties_ret,
->>>>     size_t *merged_num_properties_ret);
->>>>
->>>> int power_supply_properties_provider_get_property(
->>>>     struct power_supply_properties_provider *pspp,
->>>>     enum power_supply_property prop,
->>>>     union power_supply_propval *val);
->>>>
->>>> So in this case the faul-gauge driver would call
->>>> power_supply_properties_provider_register() from probe and
->>>> power_supply_properties_provider_unregister() from remove.
->>>>
->>>> The struct power_supply_properties_provider will be ref-counted
->>>> so that it will stick around after unregister in case any
->>>> consumers who have gotten a ref through
->>>> power_supply_properties_provider_get can still call
->>>> power_supply_properties_provider_get_property, which after
->>>> unregister will simply always return -ENXIO.
->>>>
->>>> A driver wanting to use extra properties like bq24190_charger
->>>> will call power_supply_properties_provider_get (with a name
->>>> provided through platform_data), use a dynamically allocated
->>>> struct power_supply_desc and fill the properties of that
->>>> using power_supply_properties_provider_merge_properties
->>>> to merge its own properties with the
->>>> power_supply_properties_provider's properties and in its
->>>> get_property method have a default label which calls
->>>> power_supply_properties_provider_get_property.
->>>>
->>>> This would still add quite a bit more code then my original
->>>> patch for what may very well end up being a one-of solution,
->>>> but I guess we may encounter this problem more often and
->>>> this will offer a nice generic and clean way for dealing
->>>> with adding extra info from other sources to a power_supply
->>>> driver, so I'm happy to turn this idea / design into working
->>>> code if people like this better then my original patch.
->>>>
->>>> Liam, Sebastian what do you think of the above proposal?
->>>>
->>>> Regards,
->>>>
->>>> Hans
->>>>
->
+
+Regards,
+
+Hans
