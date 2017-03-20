@@ -1,187 +1,82 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC][PATCH 2/2] cpufreq: schedutil: Force max frequency on busy CPUs
-Date: Mon, 20 Mar 2017 09:26:34 +0100
-Message-ID: <CAKfTPtD8bp-mB=9Rjufeyj3weg6T3b1J-o+Sc2Oe2EMGX3zKzQ@mail.gmail.com>
-References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan>
- <20170320035745.GC25659@vireshk-i7>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH 2/2] power: supply: axp288_charger: Only wait for INT3496
+ device if present
+Date: Mon, 20 Mar 2017 16:56:18 +0800
+Message-ID: <CAGb2v67VFa-Pu3j0rUUsFRKe4nndrbuPWN34j1F=R4uhB6papw@mail.gmail.com>
+References: <20170316161736.339-1-hdegoede@redhat.com> <20170316161736.339-3-hdegoede@redhat.com>
+ <20170320013039.vyi3zd5cc5ujqd5o@earth>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f48.google.com ([209.85.218.48]:33828 "EHLO
-        mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753013AbdCTI04 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 04:26:56 -0400
-Received: by mail-oi0-f48.google.com with SMTP id w81so18621812oig.1
-        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2017 01:26:55 -0700 (PDT)
-In-Reply-To: <20170320035745.GC25659@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170320013039.vyi3zd5cc5ujqd5o@earth>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, "open list:THERMAL" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 
-On 20 March 2017 at 04:57, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 19-03-17, 14:34, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> The PELT metric used by the schedutil governor underestimates the
->> CPU utilization in some cases.  The reason for that may be time spent
->> in interrupt handlers and similar which is not accounted for by PELT.
+Hi,
 
-Are you sure of the root cause  described above (time stolen by irq
-handler) or is it just a hypotheses ? That would be good to be sure of
-the root cause
-Furthermore, IIRC the time spent in irq context is also accounted as
-run time for the running cfs task but not RT and deadline task running
-time
-So I'm not really aligned with the description of your problem: PELT
-metric underestimates the load of the CPU.  The PELT is just about
-tracking CFS task utilization but not whole CPU utilization and
-according to your description of the problem (time stolen by irq),
-your problem doesn't come from an underestimation of CFS task but from
-time spent in something else but not accounted in the value used by
-schedutil
-
-That would be good to be sure of what is running during this not
-accounted time and find a way to account them
-
-
->>
->> That can be easily demonstrated by running kernel compilation on
->> a Sandy Bridge Intel processor, running turbostat in parallel with
->> it and looking at the values written to the MSR_IA32_PERF_CTL
->> register.  Namely, the expected result would be that when all CPUs
->> were 100% busy, all of them would be requested to run in the maximum
->> P-state, but observation shows that this clearly isn't the case.
->> The CPUs run in the maximum P-state for a while and then are
->> requested to run slower and go back to the maximum P-state after
->> a while again.  That causes the actual frequency of the processor to
->> visibly oscillate below the sustainable maximum in a jittery fashion
->> which clearly is not desirable.
->>
->> To work around this issue use the observation that, from the
->> schedutil governor's perspective, CPUs that are never idle should
->> always run at the maximum frequency and make that happen.
->>
->> To that end, add a counter of idle calls to struct sugov_cpu and
->> modify cpuidle_idle_call() to increment that counter every time it
->> is about to put the given CPU into an idle state.  Next, make the
->> schedutil governor look at that counter for the current CPU every
->> time before it is about to start heavy computations.  If the counter
->> has not changed for over SUGOV_BUSY_THRESHOLD time (equal to 50 ms),
->> the CPU has not been idle for at least that long and the governor
->> will choose the maximum frequency for it without looking at the PELT
->> metric at all.
+On Mon, Mar 20, 2017 at 9:30 AM, Sebastian Reichel <sre@kernel.org> wrote:
+> Hi,
 >
-> Looks like we are fixing a PELT problem with a schedutil Hack :)
-
-I would not say that it's a PELT problem (at least based on current
-description) but more that we don't track all
-activities of CPU
-
->
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> On Thu, Mar 16, 2017 at 05:17:36PM +0100, Hans de Goede wrote:
+>> On some devices with an axp288 pmic setting vbus path based on the
+>> id-pin is handled by an ACPI _AIE interrupt on the gpio and the
+>> INT3496 device is disabled.
+>>
+>> Instead of returning -EPROBE_DEFER on these devices waiting for the
+>> never to show up INT3496 device, check for its presence and only
+>> request and monitor the matching extcon if the device is there,
+>> otherwise let the firmware handle the vbus path control.
+>>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 >> ---
->>  include/linux/sched/cpufreq.h    |    6 ++++++
->>  kernel/sched/cpufreq_schedutil.c |   38 ++++++++++++++++++++++++++++++++++++--
->>  kernel/sched/idle.c              |    3 +++
->>  3 files changed, 45 insertions(+), 2 deletions(-)
+>>  drivers/power/supply/axp288_charger.c | 24 +++++++++++++++---------
+>>  1 file changed, 15 insertions(+), 9 deletions(-)
 >>
->> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
->> ===================================================================
->> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
->> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
->> @@ -20,6 +20,7 @@
->>  #include "sched.h"
+>> diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
+>> index d3bf4b2..6c4ad66 100644
+>> --- a/drivers/power/supply/axp288_charger.c
+>> +++ b/drivers/power/supply/axp288_charger.c
+>> @@ -14,6 +14,7 @@
+>>   * GNU General Public License for more details.
+>>   */
 >>
->>  #define SUGOV_KTHREAD_PRIORITY       50
->> +#define SUGOV_BUSY_THRESHOLD (50 * NSEC_PER_MSEC)
+>> +#include <linux/acpi.h>
+>>  #include <linux/module.h>
+>>  #include <linux/device.h>
+>>  #include <linux/regmap.h>
+>> @@ -114,7 +115,8 @@
+>>  #define ILIM_3000MA                  3000    /* 3000mA */
 >>
->>  struct sugov_tunables {
->>       struct gov_attr_set attr_set;
->> @@ -55,6 +56,9 @@ struct sugov_cpu {
+>>  #define AXP288_EXTCON_DEV_NAME               "axp288_extcon"
+>> -#define USB_HOST_EXTCON_DEV_NAME     "INT3496:00"
+>> +#define USB_HOST_EXTCON_HID          "INT3496"
+>> +#define USB_HOST_EXTCON_NAME         "INT3496:00"
 >>
->>       unsigned long iowait_boost;
->>       unsigned long iowait_boost_max;
->> +     unsigned long idle_calls;
->> +     unsigned long saved_idle_calls;
->> +     u64 busy_start;
->>       u64 last_update;
->>
->>       /* The fields below are only needed when sharing a policy. */
->> @@ -192,6 +196,34 @@ static void sugov_iowait_boost(struct su
->>       sg_cpu->iowait_boost >>= 1;
->>  }
->>
->> +void cpufreq_schedutil_idle_call(void)
->> +{
->> +     struct sugov_cpu *sg_cpu = this_cpu_ptr(&sugov_cpu);
->> +
->> +     sg_cpu->idle_calls++;
->> +}
->> +
->> +static bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu)
->> +{
->> +     if (sg_cpu->idle_calls != sg_cpu->saved_idle_calls) {
->> +             sg_cpu->busy_start = 0;
->> +             return false;
->> +     }
->> +
->> +     if (!sg_cpu->busy_start) {
->> +             sg_cpu->busy_start = sg_cpu->last_update;
->> +             return false;
->> +     }
->> +
->> +     return sg_cpu->last_update - sg_cpu->busy_start > SUGOV_BUSY_THRESHOLD;
->> +}
->> +
->> +static void sugov_save_idle_calls(struct sugov_cpu *sg_cpu)
->> +{
->> +     if (!sg_cpu->busy_start)
->> +             sg_cpu->saved_idle_calls = sg_cpu->idle_calls;
->
-> Why aren't we doing this in sugov_cpu_is_busy() itself ? And isn't it possible
-> for idle_calls to get incremented by this time?
->
->> +}
->> +
->>  static void sugov_update_single(struct update_util_data *hook, u64 time,
->>                               unsigned int flags)
->>  {
->> @@ -207,7 +239,7 @@ static void sugov_update_single(struct u
->>       if (!sugov_should_update_freq(sg_policy, time))
->>               return;
->>
->> -     if (flags & SCHED_CPUFREQ_RT_DL) {
->> +     if ((flags & SCHED_CPUFREQ_RT_DL) || sugov_cpu_is_busy(sg_cpu)) {
->>               next_f = policy->cpuinfo.max_freq;
->>       } else {
->>               sugov_get_util(&util, &max);
->> @@ -215,6 +247,7 @@ static void sugov_update_single(struct u
->>               next_f = get_next_freq(sg_policy, util, max);
->>       }
->>       sugov_update_commit(sg_policy, time, next_f);
->> +     sugov_save_idle_calls(sg_cpu);
->>  }
->>
->>  static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu)
->> @@ -278,12 +311,13 @@ static void sugov_update_shared(struct u
->>       sg_cpu->last_update = time;
->>
->>       if (sugov_should_update_freq(sg_policy, time)) {
->> -             if (flags & SCHED_CPUFREQ_RT_DL)
->> +             if ((flags & SCHED_CPUFREQ_RT_DL) || sugov_cpu_is_busy(sg_cpu))
->
-> What about others CPUs in this policy?
->
->>                       next_f = sg_policy->policy->cpuinfo.max_freq;
->>               else
->>                       next_f = sugov_next_freq_shared(sg_cpu);
->>
->>               sugov_update_commit(sg_policy, time, next_f);
->> +             sugov_save_idle_calls(sg_cpu);
+>>  static const unsigned int cable_ids[] =
+>>       { EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP, EXTCON_CHG_USB_DCP };
+>> @@ -808,10 +810,12 @@ static int axp288_charger_probe(struct platform_device *pdev)
+>>               return -EPROBE_DEFER;
 >>       }
 >>
->>       raw_spin_unlock(&sg_policy->update_lock);
+>> -     info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_DEV_NAME);
+>> -     if (info->otg.cable == NULL) {
+>> -             dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
+>> -             return -EPROBE_DEFER;
+>> +     if (acpi_dev_present(USB_HOST_EXTCON_HID)) {
 >
-> --
-> viresh
+> I may have missed something, but as far as I can see axp288 also
+> supports DT based init, so that should be handled here.
+
+I doubt that will happen. AXP288 was designed specifically for Intel
+Bay Trail platforms, which AFAIK use ACPI. For the other AXP series
+PMIC we have another battery driver for them coming in.
+
+If you look in drivers/mfd/axp20x.c and drivers/mfd/axp20x-i2c.c,
+you'll see that AXP288 is only instantiated from ACPI, and all
+the axp288 named drivers are only instantiated for the AXP288
+mfd device.
+
+Regards
+ChenYu
