@@ -1,69 +1,167 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: bq24190_charger: mark PM functions as
- __maybe_unused
-Date: Mon, 20 Mar 2017 22:39:37 +0100
-Message-ID: <20170320213937.ssk5ztffifna5sfp@earth>
-References: <20170320131424.271241-1-arnd@arndb.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [RFC][PATCH v2 2/2] cpufreq: schedutil: Avoid decreasing frequency of busy CPUs
+Date: Mon, 20 Mar 2017 22:46:27 +0100
+Message-ID: <3300960.HE4b3sK4dn@aspire.rjw.lan>
+References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="nggept5cdypatvf5"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40220 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755123AbdCTVjo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 20 Mar 2017 17:39:44 -0400
-Content-Disposition: inline
-In-Reply-To: <20170320131424.271241-1-arnd@arndb.de>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:43738 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752673AbdCTVwA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 17:52:00 -0400
+In-Reply-To: <2185243.flNrap3qq1@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Tony Lindgren <tony@atomide.com>, Liam Breck <liam@networkimprov.net>, Mark Greer <mgreer@animalcreek.com>, Colin Ian King <colin.king@canonical.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---nggept5cdypatvf5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The way the schedutil governor uses the PELT metric causes it to
+underestimate the CPU utilization in some cases.
 
-Hi,
+That can be easily demonstrated by running kernel compilation on
+a Sandy Bridge Intel processor, running turbostat in parallel with
+it and looking at the values written to the MSR_IA32_PERF_CTL
+register.  Namely, the expected result would be that when all CPUs
+were 100% busy, all of them would be requested to run in the maximum
+P-state, but observation shows that this clearly isn't the case.
+The CPUs run in the maximum P-state for a while and then are
+requested to run slower and go back to the maximum P-state after
+a while again.  That causes the actual frequency of the processor to
+visibly oscillate below the sustainable maximum in a jittery fashion
+which clearly is not desirable.
 
-On Mon, Mar 20, 2017 at 02:14:15PM +0100, Arnd Bergmann wrote:
-> Without CONFIG_PM, we get a harmless warning:
->=20
-> drivers/power/supply/bq24190_charger.c:1514:12: error: 'bq24190_runtime_r=
-esume' defined but not used [-Werror=3Dunused-function]
-> drivers/power/supply/bq24190_charger.c:1501:12: error: 'bq24190_runtime_s=
-uspend' defined but not used [-Werror=3Dunused-function]
->=20
-> To avoid the warning, we can mark all four PM functions as __maybe_unused,
-> which also lets us remove the incorrect #ifdef.
->=20
-> Fixes: 3d8090cba638 ("power: bq24190_charger: Check the interrupt status =
-on resume")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+To work around this issue use the observation that, from the
+schedutil governor's perspective, it does not make sense to decrease
+the frequency of a CPU that doesn't enter idle and avoid decreasing
+the frequency of busy CPUs.
 
-Thanks, queued.
+To that end, use the counter of idle calls in the timekeeping code.
+Namely, make the schedutil governor look at that counter for the
+current CPU every time before it is about to set a new frequency
+for that CPU's policy.  If the counter has not changed since the
+previous iteration, the CPU has been busy for all that time and
+its frequency should not be decreased, so if the new frequency would
+be lower than the one set previously, the governor will skip the
+frequency update.
 
--- Sebastian
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
---nggept5cdypatvf5
-Content-Type: application/pgp-signature; name="signature.asc"
+This is a slightly different approach (avoid decreasing frequency for busy CPUs
+instead of bumping if for them to the max upfront) and it works around the
+original problem too.
 
------BEGIN PGP SIGNATURE-----
+I tried to address a few Peter's comments here and the result doesn't seem to
+be too heavy-wieght.
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljQTBkACgkQ2O7X88g7
-+pqb4g/+KH9tqz3ExsvCQ1nQ2rey/WquY+sbFnNQZVxQY7xt/9DwaDdIFZ8kxsO/
-LqbX1+jGSFQVeCcnk+eBtWAerL9BePLh8tY9xMUi15ti3TRAVHBvY1+ofBDsWmu8
-URdx1Ek3oL4RLxaCXaenOWE8d0B1MD/xJcr81xg88wlJF9mkST5rixfj/m84kLE4
-DhCeeIqllaujczVVr8dQC5fH5n8eXooLOJVYagZDHMy2MFzWJmplvXy/5tApPnc9
-exfsBXC07HlcV/oWJB38gfHUUYDQv7Gdl893z5YDEqQMarLsepJRf0DIXm7cP2le
-Jy7EtKswDso2qyn8hsCgB1BHuw29Ff8Sbby3cLpMmBipS384lgw7N7p2OjrADt0f
-CvMRUZt1hPlJnxQpsSj4RP9dDcNvpdcvU3CDd0KO/vJ/1SFreo1EIi2zof6hdPAT
-qWu/uwRVQEz03MkRQRP8idgP3kkQhH92Jy/mWRuEhZTSUbxlD/Hw4ijHjjJCLjNX
-6prdWLl0iUEJbA1TENcjBCeRFTXXeSW/JGDiSCob7Qm+kEx6osf+HMTZL2x2XnRH
-iOaBlePS4SBi4+2LoahdB+1ylI9IPoHIIQ4wqhTQezt/ypbUUf5x+n/ZaPyvk8To
-qz+N8PQbz8zcDzpfV7VAGCKhflNQX3PnENARDn/zxql0WqrVQ5E=
-=+6e8
------END PGP SIGNATURE-----
+Thanks,
+Rafael
 
---nggept5cdypatvf5--
+---
+ include/linux/tick.h             |    1 +
+ kernel/sched/cpufreq_schedutil.c |   28 ++++++++++++++++++++++++----
+ kernel/time/tick-sched.c         |   12 ++++++++++++
+ 3 files changed, 37 insertions(+), 4 deletions(-)
+
+Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+===================================================================
+--- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
++++ linux-pm/kernel/sched/cpufreq_schedutil.c
+@@ -56,6 +56,9 @@ struct sugov_cpu {
+ 	unsigned long iowait_boost;
+ 	unsigned long iowait_boost_max;
+ 	u64 last_update;
++#ifdef CONFIG_NO_HZ_COMMON
++	unsigned long saved_idle_calls;
++#endif
+ 
+ 	/* The fields below are only needed when sharing a policy. */
+ 	unsigned long util;
+@@ -88,11 +91,28 @@ static bool sugov_should_update_freq(str
+ 	return delta_ns >= sg_policy->freq_update_delay_ns;
+ }
+ 
+-static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+-				unsigned int next_freq)
++#ifdef CONFIG_NO_HZ_COMMON
++static bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu)
++{
++	unsigned long idle_calls = tick_nohz_get_idle_calls();
++	bool ret = idle_calls == sg_cpu->saved_idle_calls;
++
++	sg_cpu->saved_idle_calls = idle_calls;
++	return ret;
++}
++#else
++static inline bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu) { return false; }
++#endif /* CONFIG_NO_HZ_COMMON */
++
++static void sugov_update_commit(struct sugov_cpu *sg_cpu,
++				struct sugov_policy *sg_policy,
++				u64 time, unsigned int next_freq)
+ {
+ 	struct cpufreq_policy *policy = sg_policy->policy;
+ 
++	if (sugov_cpu_is_busy(sg_cpu) && next_freq < sg_policy->next_freq)
++		next_freq = sg_policy->next_freq;
++
+ 	if (policy->fast_switch_enabled) {
+ 		if (sg_policy->next_freq == next_freq) {
+ 			trace_cpu_frequency(policy->cur, smp_processor_id());
+@@ -214,7 +234,7 @@ static void sugov_update_single(struct u
+ 		sugov_iowait_boost(sg_cpu, &util, &max);
+ 		next_f = get_next_freq(sg_policy, util, max);
+ 	}
+-	sugov_update_commit(sg_policy, time, next_f);
++	sugov_update_commit(sg_cpu, sg_policy, time, next_f);
+ }
+ 
+ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu)
+@@ -283,7 +303,7 @@ static void sugov_update_shared(struct u
+ 		else
+ 			next_f = sugov_next_freq_shared(sg_cpu);
+ 
+-		sugov_update_commit(sg_policy, time, next_f);
++		sugov_update_commit(sg_cpu, sg_policy, time, next_f);
+ 	}
+ 
+ 	raw_spin_unlock(&sg_policy->update_lock);
+Index: linux-pm/include/linux/tick.h
+===================================================================
+--- linux-pm.orig/include/linux/tick.h
++++ linux-pm/include/linux/tick.h
+@@ -117,6 +117,7 @@ extern void tick_nohz_idle_enter(void);
+ extern void tick_nohz_idle_exit(void);
+ extern void tick_nohz_irq_exit(void);
+ extern ktime_t tick_nohz_get_sleep_length(void);
++extern unsigned long tick_nohz_get_idle_calls(void);
+ extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+ extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+ #else /* !CONFIG_NO_HZ_COMMON */
+Index: linux-pm/kernel/time/tick-sched.c
+===================================================================
+--- linux-pm.orig/kernel/time/tick-sched.c
++++ linux-pm/kernel/time/tick-sched.c
+@@ -993,6 +993,18 @@ ktime_t tick_nohz_get_sleep_length(void)
+ 	return ts->sleep_length;
+ }
+ 
++/**
++ * tick_nohz_get_idle_calls - return the current idle calls counter value
++ *
++ * Called from the schedutil frequency scaling governor in scheduler context.
++ */
++unsigned long tick_nohz_get_idle_calls(void)
++{
++	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
++
++	return ts->idle_calls;
++}
++
+ static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
+ {
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
