@@ -1,161 +1,108 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [04/15] power: supply: bq24190_charger: Add no_register_reset
- pdata flag
-Date: Mon, 20 Mar 2017 14:54:57 +0100
-Message-ID: <6de63319-f30f-cae7-6d7a-0df2edd12859@redhat.com>
-References: <20170318071019.4561-1-liam@networkimprov.net>
- <6ad6ecd2-ea0f-b613-8519-66ad424c623a@redhat.com>
- <CAKvHMgQ-hnS_XkL_7Mwkm94hNDc9Q++xHBAOUK1bKmvO=YnSXQ@mail.gmail.com>
- <6a0e54e3-581d-6162-b521-82b7567b6e74@redhat.com>
- <CAKvHMgTYqypPiv0KcoFZqpojq50yUDoU=HL8uiwPyKP7HLTy1A@mail.gmail.com>
- <f7b3fda0-eeff-b6ab-4908-86c4180bda8a@redhat.com>
- <12321f48-def6-33cb-1df5-853ecc8f1061@redhat.com>
- <20170320052715.hrgaxsxwdrv7ynbu@earth>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [RFC][PATCH 2/2] cpufreq: schedutil: Force max frequency on busy
+ CPUs
+Date: Mon, 20 Mar 2017 14:13:08 +0000
+Message-ID: <20170320141308.GD27896@e110439-lin>
+References: <4366682.tsferJN35u@aspire.rjw.lan>
+ <20170320125009.nmi3mvrxappjrvgo@hirez.programming.kicks-ass.net>
+ <20170320130615.GC27896@e110439-lin>
+ <11131190.KAQLyFuH4P@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:43922 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753116AbdCTNzl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 20 Mar 2017 09:55:41 -0400
-In-Reply-To: <20170320052715.hrgaxsxwdrv7ynbu@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <11131190.KAQLyFuH4P@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Liam Breck <liam@networkimprov.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-Hi,
+On 20-Mar 14:05, Rafael J. Wysocki wrote:
+> On Monday, March 20, 2017 01:06:15 PM Patrick Bellasi wrote:
+> > On 20-Mar 13:50, Peter Zijlstra wrote:
+> > > On Mon, Mar 20, 2017 at 01:35:12PM +0100, Rafael J. Wysocki wrote:
+> > > > On Monday, March 20, 2017 11:36:45 AM Peter Zijlstra wrote:
+> > > > > On Sun, Mar 19, 2017 at 02:34:32PM +0100, Rafael J. Wysocki wrote:
+> > > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > > > 
+> > > > > > The PELT metric used by the schedutil governor underestimates the
+> > > > > > CPU utilization in some cases.  The reason for that may be time spent
+> > > > > > in interrupt handlers and similar which is not accounted for by PELT.
+> > > > > > 
+> > > > > > That can be easily demonstrated by running kernel compilation on
+> > > > > > a Sandy Bridge Intel processor, running turbostat in parallel with
+> > > > > > it and looking at the values written to the MSR_IA32_PERF_CTL
+> > > > > > register.  Namely, the expected result would be that when all CPUs
+> > > > > > were 100% busy, all of them would be requested to run in the maximum
+> > > > > > P-state, but observation shows that this clearly isn't the case.
+> > > > > > The CPUs run in the maximum P-state for a while and then are
+> > > > > > requested to run slower and go back to the maximum P-state after
+> > > > > > a while again.  That causes the actual frequency of the processor to
+> > > > > > visibly oscillate below the sustainable maximum in a jittery fashion
+> > > > > > which clearly is not desirable.
+> > > > > > 
+> > > > > > To work around this issue use the observation that, from the
+> > > > > > schedutil governor's perspective, CPUs that are never idle should
+> > > > > > always run at the maximum frequency and make that happen.
+> > > > > > 
+> > > > > > To that end, add a counter of idle calls to struct sugov_cpu and
+> > > > > > modify cpuidle_idle_call() to increment that counter every time it
+> > > > > > is about to put the given CPU into an idle state.  Next, make the
+> > > > > > schedutil governor look at that counter for the current CPU every
+> > > > > > time before it is about to start heavy computations.  If the counter
+> > > > > > has not changed for over SUGOV_BUSY_THRESHOLD time (equal to 50 ms),
+> > > > > > the CPU has not been idle for at least that long and the governor
+> > > > > > will choose the maximum frequency for it without looking at the PELT
+> > > > > > metric at all.
+> > > > > 
+> > > > > Why the time limit?
+> > > > 
+> > > > One iteration appeared to be a bit too aggressive, but honestly I think
+> > > > I need to check again if this thing is regarded as viable at all.
+> > > > 
+> > > 
+> > > I don't hate the idea; if we don't hit idle; we shouldn't shift down. I
+> > > just wonder if we don't already keep a idle-seqcount somewhere; NOHZ and
+> > > RCU come to mind as things that might already use something like that.
+> > 
+> > Maybe the problem is not going down (e.g. when there are only small
+> > CFS tasks it makes perfectly sense) but instead not being fast enough
+> > on rampin-up when a new RT task is activated.
+> > 
+> > And this boils down to two main point:
+> > 1) throttling for up transitions perhaps is only harmful
+> > 2) the call sites for schedutils updates are not properly positioned
+> >    in specific scheduler decision points.
+> > 
+> > The proposed patch is adding yet another throttling mechanism, perhaps
+> > on top of one which already needs to be improved.
+> 
+> It is not throttling anything.
 
-On 20-03-17 06:27, Sebastian Reichel wrote:
-> Hi,
->
-> On Sun, Mar 19, 2017 at 10:42:00AM +0100, Hans de Goede wrote:
+It's a kind-of...
 
-<snip>
+-       if (flags & SCHED_CPUFREQ_RT_DL) { 
++       if ((flags & SCHED_CPUFREQ_RT_DL) || sugov_cpu_is_busy(sg_cpu)) {
+                next_f = policy->cpuinfo.max_freq;
 
->> We want one driver which is solidly in control of the charger
->> since getting that wrong is quite bad and we want to extend
->> the information it is exporting to userspace in the form of
->> power_supply properties with some extra info.
->>
->> So taking that as a starting point and generalizing that,
->> I think that if we want we can make something more generic then
->> my original patch for this. My idea is to introduce something
->> called a power_supply_properties_provider, with an API
->> like this:
->
-> Thanks for thinking about this. From what I can see it should
-> be enough to just avoid exposing a battery device at all in
-> the charger driver, though. It does not really provide useful
-> information anyways.
+This check disregard any signal the scheduler can provide.
 
-Interesting suggestion, 2 remarks / questions:
+A 60% CFS task with a 100ms period, with such a policy will end up
+running at the highest OPP for just 10% of its entire activation.
+Moreover, when it completes, we are likely to enter an idle OPP while
+still remaining at the highest OPP.
 
-1) Given that we do not want to break existing setups
-which may depend on the existing battery interface on the bq24190
-driver and add a flag to not register it, or are you suggesting
-to simply remove it all together? Removing it all together would
-be better from a maintenance pov. Liam, you indicated that you
-are the main user of the bq24190 driver currently, do you need
-the battery power_supply interface for your use case ?
+IMHO the ultimate goal of scheduitl should be that to be driven by the
+scheduler, which has (or can have) all the required information to
+support OPP selection.
 
-2) Not using the battery interface of the bq24190 driver at all
-means that the fuelgauge driver needs to grow some extra
-properties, specifically it will need to start reporting status,
-something which the bq24190 driver really has a better idea
-of the the fuel gauge.
+If something is not working, well, then we should properly fix the
+signals and/or provide (at least) a per-task tunable interface.
 
-Note that I do not have documentation on the fuel-gauge (not even
-an out of tree driver from android-x86). It is all based on dumping
-registers every 5 minutes during a charge / discharge cycle and
-then puzzling together which register is what. I'm quite confident
-I've this all right, but this does make adding a status property
-harder (might involve some heuristics instead of being able
-to get the absolute truth from the charge ic itself).
+Adding an hardcoded threshold is an easy fix but it will ultimately
+increase the complexity of the governor.
 
-As such I think the power_supply_properties_provider proposal I'm
-doing might still be a good idea. Anyways I will dig through the
-dumps I've some more to see if I can find a good way to get
-charging status from the fuel gauge and get back to you when
-I'm done with looking at the dumps.
+-- 
+#include <best/regards.h>
 
-Regards,
-
-Hans
-
-
-
-
-
->
->> typedef int (*power_supply_properties_provider_get_property_t)(
->> 	enum power_supply_property prop, union power_supply_propval *val,
->> 	void *driver_data);
->>
->> struct power_supply_properties_provider;
->>
->> struct power_supply_properties_provider *
->> power_supply_properties_provider_register(
->> 	const char *name,
->> 	power_supply_properties_provider_get_property_t get_property,
->> 	const enum power_supply_property *properties,
->> 	size_t num_properties,
->> 	void *driver_data);
->>
->> void power_supply_properties_provider_unregister(
->> 	struct power_supply_properties_provider *pspp);
->>
->> struct power_supply_properties_provider *
->> 	power_supply_properties_provider_get(const char *name);
->>
->> void power_supply_properties_provider_put(
->> 	struct power_supply_properties_provider *pspp);
->>
->> int power_supply_properties_provider_merge_properties(
->> 	struct power_supply_properties_provider *pspp,
->> 	const enum power_supply_property *properties,
->> 	size_t num_properties,
->> 	enum power_supply_property **merged_properties_ret,
->> 	size_t *merged_num_properties_ret);
->>
->> int power_supply_properties_provider_get_property(
->> 	struct power_supply_properties_provider *pspp,
->> 	enum power_supply_property prop,
->> 	union power_supply_propval *val);
->>
->> So in this case the faul-gauge driver would call
->> power_supply_properties_provider_register() from probe and
->> power_supply_properties_provider_unregister() from remove.
->>
->> The struct power_supply_properties_provider will be ref-counted
->> so that it will stick around after unregister in case any
->> consumers who have gotten a ref through
->> power_supply_properties_provider_get can still call
->> power_supply_properties_provider_get_property, which after
->> unregister will simply always return -ENXIO.
->>
->> A driver wanting to use extra properties like bq24190_charger
->> will call power_supply_properties_provider_get (with a name
->> provided through platform_data), use a dynamically allocated
->> struct power_supply_desc and fill the properties of that
->> using power_supply_properties_provider_merge_properties
->> to merge its own properties with the
->> power_supply_properties_provider's properties and in its
->> get_property method have a default label which calls
->> power_supply_properties_provider_get_property.
->>
->> This would still add quite a bit more code then my original
->> patch for what may very well end up being a one-of solution,
->> but I guess we may encounter this problem more often and
->> this will offer a nice generic and clean way for dealing
->> with adding extra info from other sources to a power_supply
->> driver, so I'm happy to turn this idea / design into working
->> code if people like this better then my original patch.
->>
->> Liam, Sebastian what do you think of the above proposal?
->>
->> Regards,
->>
->> Hans
->>
+Patrick Bellasi
