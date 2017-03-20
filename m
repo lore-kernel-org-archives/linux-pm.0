@@ -1,75 +1,89 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 01/15] mfd: Add Cherry Trail Whiskey Cove PMIC driver
-Date: Mon, 20 Mar 2017 10:41:52 +0000
-Message-ID: <20170320104152.lba24r2qilpjr2kk@dell>
-References: <20170317095527.10487-1-hdegoede@redhat.com>
- <20170317095527.10487-2-hdegoede@redhat.com>
- <1489770046.19767.66.camel@linux.intel.com>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RESEND PATCH v4 1/9] mfd: axp20x: correct name of
+ temperature data ADC registers
+Date: Mon, 20 Mar 2017 10:43:29 +0000
+Message-ID: <20170320104329.ymusypmxljnitmwr@dell>
+References: <20170320081653.8884-1-quentin.schulz@free-electrons.com>
+ <20170320081653.8884-2-quentin.schulz@free-electrons.com>
+Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-sunxi+bncBDA7X7F2WUEBBVPEX3DAKGQEKTTTNAQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Content-Disposition: inline
-In-Reply-To: <1489770046.19767.66.camel@linux.intel.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Bin Gao <bin.gao@intel.com>, Felipe Balbi <felipe.balbi@linux.intel.com>
+In-Reply-To: <20170320081653.8884-2-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 17 Mar 2017, Andy Shevchenko wrote:
+On Mon, 20 Mar 2017, Quentin Schulz wrote:
 
-> On Fri, 2017-03-17 at 10:55 +0100, Hans de Goede wrote:
-> > Add mfd driver for Intel CHT Whiskey Cove PMIC, based on various non
-> > upstreamed CHT Whiskey Cove PMIC patches.
-> > 
-> > This is a somewhat minimal version which adds irqchip support and
-> > cells
-> > for: ACPI PMIC opregion support, the i2c-controller driving the
-> > external
-> > charger irc and the pwrsrc/extcon block.
-> > 
-> > Further cells can be added in the future if/when drivers are
-> > upstreamed
-> > for them.
-> 
-> Couple of minor comments, otherwise looks good to me:
-> 
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> 
-> > +/* Whiskey Cove PMIC share same ACPI ID between different platforms
-> > */
-> > +#define CHT_WC_HRV		3
-> > +
-> > +/* Level 1 IRQs (level 2 IRQs are handled in the child device
-> > drivers) */
-> > +enum {
-> > +	CHT_WC_PWRSRC_IRQ = 0,
-> > +	CHT_WC_THRM_IRQ,
-> > +	CHT_WC_BCU_IRQ,
-> > +	CHT_WC_ADC_IRQ,
-> > +	CHT_WC_EXT_CHGR_IRQ,
-> > +	CHT_WC_GPIO_IRQ,
-> > +	/* There is no irq 6 */
-> > +	CHT_WC_CRIT_IRQ = 7,
-> 
-> I would prefer explicit over implicit (adding = N to each line), but
-> this is minor.
+> The registers 0x56 and 0x57 of AXP22X PMIC store the value of the
+> internal temperature of the PMIC.
+>=20
+> This patch modifies the name of these registers from AXP22X_PMIC_ADC_H/L
+> to AXP22X_PMIC_TEMP_H/L so their purpose is clearer.
+>=20
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>=20
+> added in v2
+>=20
+>  drivers/mfd/axp20x.c       | 2 +-
+>  include/linux/mfd/axp20x.h | 4 ++--
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 
-No need.  The C standard is clear on what is expected of enums.
+Applied, thanks.
 
-[...]
+> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> index 0512900..e02edf1 100644
+> --- a/drivers/mfd/axp20x.c
+> +++ b/drivers/mfd/axp20x.c
+> @@ -101,7 +101,7 @@ static const struct regmap_range axp22x_volatile_rang=
+es[] =3D {
+>  	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
+>  	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
+>  	regmap_reg_range(AXP22X_GPIO_STATE, AXP22X_GPIO_STATE),
+> -	regmap_reg_range(AXP22X_PMIC_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
+> +	regmap_reg_range(AXP22X_PMIC_TEMP_H, AXP20X_IPSOUT_V_HIGH_L),
+>  	regmap_reg_range(AXP20X_FG_RES, AXP20X_FG_RES),
+>  };
+> =20
+> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+> index 0d9a1ff..dc8798c 100644
+> --- a/include/linux/mfd/axp20x.h
+> +++ b/include/linux/mfd/axp20x.h
+> @@ -228,8 +228,8 @@ enum axp20x_variants {
+>  #define AXP20X_OCV_MAX			0xf
+> =20
+>  /* AXP22X specific registers */
+> -#define AXP22X_PMIC_ADC_H		0x56
+> -#define AXP22X_PMIC_ADC_L		0x57
+> +#define AXP22X_PMIC_TEMP_H		0x56
+> +#define AXP22X_PMIC_TEMP_L		0x57
+>  #define AXP22X_TS_ADC_H			0x58
+>  #define AXP22X_TS_ADC_L			0x59
+>  #define AXP22X_BATLOW_THRES1		0xe6
 
-> > +	return devm_mfd_add_devices(dev, -1, cht_wc_dev,
-> > ARRAY_SIZE(cht_wc_dev),
-> > +			NULL, 0, regmap_irq_get_domain(pmic-
-> > >irq_chip_data));
-> 
-> PLATFORM_DEVID_NONE, please.
-
-+1
-
--- 
+--=20
 Lee Jones
 Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
+Linaro.org =E2=94=82 Open source software for ARM SoCs
 Follow Linaro: Facebook | Twitter | Blog
+
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
