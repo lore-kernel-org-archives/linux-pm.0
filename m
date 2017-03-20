@@ -1,230 +1,181 @@
-From: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v10 1/8] devicetree: power: Add battery.txt
-Date: Mon, 20 Mar 2017 11:45:53 -0500
-Message-ID: <c8d6af7b-da01-be62-843b-6a741b4a454a@ti.com>
-References: <20170315192653.26799-1-liam@networkimprov.net>
- <20170315192653.26799-2-liam@networkimprov.net>
- <20170315220425.qeidvmanbsmq4wxk@earth>
- <CAKvHMgSF2rsaAaUqFw1qF+b2NA9CkABYKYOTd2p+imuPAHq9JA@mail.gmail.com>
- <20170315225709.ugjibnoqfukay657@earth>
- <d548b5e6-af6e-3fa6-e926-b24636a676a8@ti.com>
- <CAKvHMgS4dRm7LfxVFSh9UeeUA=ZFVoArtG8wZOpZyZDjiKkKwQ@mail.gmail.com>
- <691553d1-cff7-958f-d9d9-6194210b4f87@ti.com>
- <CAKvHMgS92WFoJa=imfAFiEEc0VyiSsDBbuYi4yzZ=LEa7__yKA@mail.gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [04/15] power: supply: bq24190_charger: Add no_register_reset
+ pdata flag
+Date: Mon, 20 Mar 2017 18:04:05 +0100
+Message-ID: <5e7becad-44e4-8cc8-aabb-cc678b03098b@redhat.com>
+References: <20170318071019.4561-1-liam@networkimprov.net>
+ <6ad6ecd2-ea0f-b613-8519-66ad424c623a@redhat.com>
+ <CAKvHMgQ-hnS_XkL_7Mwkm94hNDc9Q++xHBAOUK1bKmvO=YnSXQ@mail.gmail.com>
+ <6a0e54e3-581d-6162-b521-82b7567b6e74@redhat.com>
+ <CAKvHMgTYqypPiv0KcoFZqpojq50yUDoU=HL8uiwPyKP7HLTy1A@mail.gmail.com>
+ <f7b3fda0-eeff-b6ab-4908-86c4180bda8a@redhat.com>
+ <12321f48-def6-33cb-1df5-853ecc8f1061@redhat.com>
+ <20170320052715.hrgaxsxwdrv7ynbu@earth>
+ <6de63319-f30f-cae7-6d7a-0df2edd12859@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAKvHMgS92WFoJa=imfAFiEEc0VyiSsDBbuYi4yzZ=LEa7__yKA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:54247 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753165AbdCTRMO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 20 Mar 2017 13:12:14 -0400
+In-Reply-To: <6de63319-f30f-cae7-6d7a-0df2edd12859@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Liam Breck <liam@networkimprov.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On 03/17/2017 04:43 PM, Liam Breck wrote:
-> On Fri, Mar 17, 2017 at 8:21 AM, Andrew F. Davis <afd-l0cyMroinI0@public.gmane.org> wrote:
->> On 03/16/2017 05:58 PM, Liam Breck wrote:
->>> On Thu, Mar 16, 2017 at 6:21 AM, Andrew F. Davis <afd-l0cyMroinI0@public.gmane.org> wrote:
->>>> On 03/15/2017 05:57 PM, Sebastian Reichel wrote:
->>>>> Hi,
->>>>>
->>>>> On Wed, Mar 15, 2017 at 03:18:17PM -0700, Liam Breck wrote:
->>>>>> Hey Sebastian, welcome back :-)
->>>>>>
->>>>>> I've taken over work on this patchset from Matt.
->>>>>
->>>>> Ok.
->>>>>
->>>>>> On Wed, Mar 15, 2017 at 3:04 PM, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
->>>>>>> Hi Liam & Matt,
->>>>>>>
->>>>>>> Sorry for my absence in the discussion. I skipped the previous
->>>>>>> iterations for now and start with this version.
->>>>>>>
->>>>>>> On Wed, Mar 15, 2017 at 12:26:46PM -0700, Liam Breck wrote:
->>>>>>>> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->>>>>>>>
->>>>>>>> Documentation of static battery characteristics that can be defined
->>>>>>>> for batteries which cannot self-identify. This information is required
->>>>>>>> by fuel-gauge and charger chips for proper handling of the battery.
->>>>>>>>
->>>>>>>> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->>>>>>>> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->>>>>>>> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
->>>>>>>> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->>>>>>>> ---
->>>>>>>>  .../devicetree/bindings/power/supply/battery.txt   | 45 ++++++++++++++++++++++
->>>>>>>>  1 file changed, 45 insertions(+)
->>>>>>>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>>
->>>>>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>> new file mode 100644
->>>>>>>> index 0000000..0278617
->>>>>>>> --- /dev/null
->>>>>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>> @@ -0,0 +1,45 @@
->>>>>>>> +Battery Characteristics
->>>>>>>
->>>>>>> Maybe add something like
->>>>>>>
->>>>>>> This device provides static battery information, that is usually
->>>>>>> available in the EEPROM of a smart battery. It's supposed to be
->>>>>>> used for batteries, which do not have their own EEPROM (or if its
->>>>>>> unusable).
->>>>>>
->>>>>> OK.
->>>>>>
->>>>>>>> +Required Properties:
->>>>>>>> + - compatible: Must be "fixed-battery"
->>>>>>
->>>>>> Rob questioned the term "fixed". Shall we consider other terms --
->>>>>> simple-battery, plain-battery...?
->>>>>
->>>>> I don't like the term either, but it was the best I came up with.
->>>>> They are known as "dumb" batteries, but that term looks too
->>>>> colloquial for DT usage. While I think "simple-battery" is not
->>>>> perfect either, it's better than "fixed-battery", so please switch
->>>>> to that in the next revision.
->>>>>
->>>>
->>>> I rather like "fixed-battery", it matches the regulator and other power
->>>> source DTs better. To answer Rob's question on what a non-fixed battery
->>>> would look like we can think of a future battery that can change its
->>>> physical properties (chemical or physical perhaps) in response to
->>>> software. Although I've not seen such a battery I don't think it's too
->>>> far-fetched.
->>>
->>> A "fixed" battery sounds like a non-removable one to me. I'll switch
->>> to "simple-battery" in v11 unless a better idea bubbles up first.
->>>
+Hi,
+
+On 20-03-17 14:54, Hans de Goede wrote:
+> Hi,
+>
+> On 20-03-17 06:27, Sebastian Reichel wrote:
+>> Hi,
 >>
->> Are fixed-regulators non-removable, or do most people understand. Also
->> this is for non-removable batteries, if a battery is changeable then
->> this DT is not valid as it would be describing the current configuration
->> of the device. I guess it could be done with overlays for the current
->> battery, not sure, but something to think about.
-> 
-> I know little about regulators, but wikipedia mentions fixed and
-> variable/adjustable kinds. We're not contemplating an "adjustable
-> battery" type, so the fixed/adjustable dichotomy isn't a natural fit
-> here.
-> 
-
-I think we are though, you are saying this is a "simple" battery because
-it has fixed design parameters. Any battery that does not have fixed
-design parameters is some kinda futuristic adjustable battery, what else
-would you call a battery with non-fixed design parameters?
-
->>>> All the properties described here are "fixed", if we say "simple" then a
->>>> battery with more properties would be a "complex" battery..
+>> On Sun, Mar 19, 2017 at 10:42:00AM +0100, Hans de Goede wrote:
+>
+> <snip>
+>
+>>> We want one driver which is solidly in control of the charger
+>>> since getting that wrong is quite bad and we want to extend
+>>> the information it is exporting to userspace in the form of
+>>> power_supply properties with some extra info.
 >>>
->>> Simple is not a boolean term; it really doesn't mandate a
->>> "complex-battery" type.
->>>
+>>> So taking that as a starting point and generalizing that,
+>>> I think that if we want we can make something more generic then
+>>> my original patch for this. My idea is to introduce something
+>>> called a power_supply_properties_provider, with an API
+>>> like this:
 >>
->> Yes, but the spectrum would imply levels of simplicity, what would *you*
->> call a "non-simple" battery?
-> 
-> Simple is not an integral term, either :-)
-> 
-> simple-battery, gauged-battery, coin-battery, bare-battery (no
-> protection circuit)...
-> 
+>> Thanks for thinking about this. From what I can see it should
+>> be enough to just avoid exposing a battery device at all in
+>> the charger driver, though. It does not really provide useful
+>> information anyways.
+>
+> Interesting suggestion, 2 remarks / questions:
+>
+> 1) Given that we do not want to break existing setups
+> which may depend on the existing battery interface on the bq24190
+> driver and add a flag to not register it, or are you suggesting
+> to simply remove it all together? Removing it all together would
+> be better from a maintenance pov. Liam, you indicated that you
+> are the main user of the bq24190 driver currently, do you need
+> the battery power_supply interface for your use case ?
+>
+> 2) Not using the battery interface of the bq24190 driver at all
+> means that the fuelgauge driver needs to grow some extra
+> properties, specifically it will need to start reporting status,
+> something which the bq24190 driver really has a better idea
+> of the the fuel gauge.
+>
+> Note that I do not have documentation on the fuel-gauge (not even
+> an out of tree driver from android-x86). It is all based on dumping
+> registers every 5 minutes during a charge / discharge cycle and
+> then puzzling together which register is what. I'm quite confident
+> I've this all right, but this does make adding a status property
+> harder (might involve some heuristics instead of being able
+> to get the absolute truth from the charge ic itself).
+>
+> As such I think the power_supply_properties_provider proposal I'm
+> doing might still be a good idea. Anyways I will dig through the
+> dumps I've some more to see if I can find a good way to get
+> charging status from the fuel gauge and get back to you when
+> I'm done with looking at the dumps.
 
-Fixed/simple/coin/bare batteries are all the same to DT and so do not
-need new node/compatible names. "Gauged-battery" would be described by a
-node representing the fuel-gauge and that node would then point to the
-battery that it gauges, no still no need for a new term.
+Ok, it looks like this approach should work. Downside is that
+the fuel-gauge does not get interrupts when changing state,
+but I can use extcon to get power being plugged in / removed
+which is the most important state change to immediately
+notify userspace about.
 
-In our world we still have only three things:
-Charger -
-  |      |-> Battery
-  \/     |
-Gauge - -
+I will rework the patch-set accordingly. For now I'm just
+going to throw in a patch completely removing the battery
+power_supply from the bq24190_charger driver. If that is a
+problem then that one can be replaced by one using a device
+property to enable/disable the battery power_supply device,
+question if we are going for a property for this, what should
+the default be ? I tend toward a default of off / no battery
+interface unless requested but that may break compatibility
+with some existing dt files + userspace expecting it to be
+there ?
 
-Sometimes we will have a battery, sometimes we will have a charger or a
-gauge with an attached battery, and sometimes we will have charger with
-embedded gauging functions. All these relations can be described in DT
-without adding extra compatibles.
+Regards,
+
+Hans
 
 
->>>>>>>> +Optional Properties:
->>>>>>>> + - voltage-min-design-microvolt: drained battery voltage
->>>>>>>> + - energy-full-design-microwatt-hours: battery design energy
->>>>>>>> + - charge-full-design-microamp-hours: battery design capacity
->>>>>>>
->>>>>>> Looks fine to me.
->>>>>>>
->>>>>>>> +Because drivers surface properties in sysfs using names derived
->>>>>>>> +from enum power_supply_property, e.g.
->>>>>>>> +/sys/class/power_supply/<device>/charge_full_design, our
->>>>>>>> +battery properties must be named for the corresponding elements in
->>>>>>>> +enum power_supply_property, defined in include/linux/power_supply.h.
->>>>>>>
->>>>>>> This is Linux/implementation specific and does not belong
->>>>>>> into a DT binding document.
->>>>>>
->>>>>> I just wrote on a thread for an earlier version of this patch:
->>>>>>
->>>>>> "Sebastian proposed DT:battery specifically to be consumed by
->>>>>> power_supply_core. Allowing names in DT:battery and
->>>>>> power_supply_property to diverge would cause confusion and wasted
->>>>>> time, for no particular benefit. As there is no rationale to
->>>>>> reconsider the names of these fields for DT:battery, let's write that
->>>>>> into the docs."
->>>>>
->>>>> DT bindings are not "Linux hardware information bindings". Of course
->>>>> there is no need to diverge without a good reason, but that kind of
->>>>> Documentation just does not belong into the DT bindings.
->>>>>
->>>>>>>> +Batteries must be referenced by chargers and/or fuel-gauges
->>>>>>>> +using a phandle. The phandle's property should be named
->>>>>>>> +"monitored-battery".
->>>>>>>
->>>>>>> This looks fine.
->>>>>>>
->>>>>>>> +Driver code should call power_supply_get_battery_info() to obtain
->>>>>>>> +battery properties via monitored-battery. For details see:
->>>>>>>> +  drivers/power/supply/power_supply_core.c
->>>>>>>> +  drivers/power/supply/bq27xxx_battery.c
->>>>>>>
->>>>>>> This is also Linux/implementation specific and should be dropped.
->>>>>>
->>>>>> We ought to mention how drivers are expected to consume DT:battery.
->>>>>
->>>>> That kind of documentation does not belong into
->>>>> Documentation/devicetree/bindings. We can add something to
->>>>> Documentation/power/power_supply_class.txt instead.
->>>>>
->>>>>>>> +Example:
->>>>>>>> +
->>>>>>>> +     bat: battery {
->>>>>>>> +             compatible = "fixed-battery";
->>>>>>>> +             voltage-min-design-microvolt = <3200000>;
->>>>>>>> +             energy-full-design-microwatt-hours = <5290000>;
->>>>>>>> +             charge-full-design-microamp-hours = <1430000>;
->>>>>>>> +     };
->>>>>>>> +
->>>>>>>> +     charger: charger@11 {
->>>>>>>> +             ....
->>>>>>>> +             monitored-battery = <&bat>;
->>>>>>>> +             ...
->>>>>>>> +     };
->>>>>>>> +
->>>>>>>> +     fuel_gauge: fuel-gauge@22 {
->>>>>>>> +             ....
->>>>>>>> +             monitored-battery = <&bat>;
->>>>>>>> +             ...
->>>>>>>> +     };
->>>>>>>> --
->>>>>>>> 2.9.3
->>>>>>>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
->>> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
+>>> typedef int (*power_supply_properties_provider_get_property_t)(
+>>>     enum power_supply_property prop, union power_supply_propval *val,
+>>>     void *driver_data);
 >>>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> struct power_supply_properties_provider;
+>>>
+>>> struct power_supply_properties_provider *
+>>> power_supply_properties_provider_register(
+>>>     const char *name,
+>>>     power_supply_properties_provider_get_property_t get_property,
+>>>     const enum power_supply_property *properties,
+>>>     size_t num_properties,
+>>>     void *driver_data);
+>>>
+>>> void power_supply_properties_provider_unregister(
+>>>     struct power_supply_properties_provider *pspp);
+>>>
+>>> struct power_supply_properties_provider *
+>>>     power_supply_properties_provider_get(const char *name);
+>>>
+>>> void power_supply_properties_provider_put(
+>>>     struct power_supply_properties_provider *pspp);
+>>>
+>>> int power_supply_properties_provider_merge_properties(
+>>>     struct power_supply_properties_provider *pspp,
+>>>     const enum power_supply_property *properties,
+>>>     size_t num_properties,
+>>>     enum power_supply_property **merged_properties_ret,
+>>>     size_t *merged_num_properties_ret);
+>>>
+>>> int power_supply_properties_provider_get_property(
+>>>     struct power_supply_properties_provider *pspp,
+>>>     enum power_supply_property prop,
+>>>     union power_supply_propval *val);
+>>>
+>>> So in this case the faul-gauge driver would call
+>>> power_supply_properties_provider_register() from probe and
+>>> power_supply_properties_provider_unregister() from remove.
+>>>
+>>> The struct power_supply_properties_provider will be ref-counted
+>>> so that it will stick around after unregister in case any
+>>> consumers who have gotten a ref through
+>>> power_supply_properties_provider_get can still call
+>>> power_supply_properties_provider_get_property, which after
+>>> unregister will simply always return -ENXIO.
+>>>
+>>> A driver wanting to use extra properties like bq24190_charger
+>>> will call power_supply_properties_provider_get (with a name
+>>> provided through platform_data), use a dynamically allocated
+>>> struct power_supply_desc and fill the properties of that
+>>> using power_supply_properties_provider_merge_properties
+>>> to merge its own properties with the
+>>> power_supply_properties_provider's properties and in its
+>>> get_property method have a default label which calls
+>>> power_supply_properties_provider_get_property.
+>>>
+>>> This would still add quite a bit more code then my original
+>>> patch for what may very well end up being a one-of solution,
+>>> but I guess we may encounter this problem more often and
+>>> this will offer a nice generic and clean way for dealing
+>>> with adding extra info from other sources to a power_supply
+>>> driver, so I'm happy to turn this idea / design into working
+>>> code if people like this better then my original patch.
+>>>
+>>> Liam, Sebastian what do you think of the above proposal?
+>>>
+>>> Regards,
+>>>
+>>> Hans
+>>>
