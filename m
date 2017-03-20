@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [RESEND PATCH v4 9/9] mfd: axp20x: add CHRG_CTRL1/2/3
- to writeable regs for AXP20X/AXP22X
-Date: Mon, 20 Mar 2017 09:16:53 +0100
-Message-ID: <20170320081653.8884-10-quentin.schulz@free-electrons.com>
+Subject: [RESEND PATCH v4 8/9] ARM: sun5i: chip: enable ACIN
+ power supply subnode
+Date: Mon, 20 Mar 2017 09:16:52 +0100
+Message-ID: <20170320081653.8884-9-quentin.schulz@free-electrons.com>
 References: <20170320081653.8884-1-quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
@@ -20,49 +20,32 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@
 Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The CHRG_CTRL1 and CHRG_CTRL2 registers are made for controlling
-different battery charging settings such as the constant current charge
-value.
+The NextThing Co. CHIP has an AXP209 PMIC and can be power-supplied by
+ACIN via the CHG-IN pin.
 
-The AXP22X also have a third register CHRG_CTRL3 which has settings for
-battery charging too.
-
-This adds the CHRG_CTRL1, CHRG_CTRL2 and CHRG_CTRL3 registers to the
-list of writeable registers for AXP20X and AXP22X PMICs.
+This enables the ACIN power supply subnode in the DT.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
+ arch/arm/boot/dts/sun5i-r8-chip.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-v2:
- - added AXP20X_CHRG_CTRL2 and AXP20X_CHRG_CTRL3 to the writeable
- registers table,
- - removed added reg range for ADC data in volatile regs range,
-
- drivers/mfd/axp20x.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 37643b1..5ba3b04 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -68,6 +68,7 @@ static const struct regmap_access_table axp152_volatile_table = {
+diff --git a/arch/arm/boot/dts/sun5i-r8-chip.dts b/arch/arm/boot/dts/sun5i-r8-chip.dts
+index c9a1821..d078560 100644
+--- a/arch/arm/boot/dts/sun5i-r8-chip.dts
++++ b/arch/arm/boot/dts/sun5i-r8-chip.dts
+@@ -128,6 +128,10 @@
  
- static const struct regmap_range axp20x_writeable_ranges[] = {
- 	regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
-+	regmap_reg_range(AXP20X_CHRG_CTRL1, AXP20X_CHRG_CTRL2),
- 	regmap_reg_range(AXP20X_DCDC_MODE, AXP20X_FG_RES),
- 	regmap_reg_range(AXP20X_RDC_H, AXP20X_OCV(AXP20X_OCV_MAX)),
- };
-@@ -94,6 +95,7 @@ static const struct regmap_access_table axp20x_volatile_table = {
- /* AXP22x ranges are shared with the AXP809, as they cover the same range */
- static const struct regmap_range axp22x_writeable_ranges[] = {
- 	regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
-+	regmap_reg_range(AXP20X_CHRG_CTRL1, AXP22X_CHRG_CTRL3),
- 	regmap_reg_range(AXP20X_DCDC_MODE, AXP22X_BATLOW_THRES1),
- };
+ #include "axp209.dtsi"
  
++&ac_power_supply {
++	status = "okay";
++};
++
+ &i2c1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&i2c1_pins_a>;
 -- 
 2.9.3
