@@ -1,113 +1,167 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 09/15] power: supply: bq24190_charger: Add
- voltage_max_design prop to battery
-Date: Mon, 20 Mar 2017 06:12:25 +0100
-Message-ID: <20170320051225.d4fsffx3updncdqd@earth>
-References: <20170317095527.10487-1-hdegoede@redhat.com>
- <20170317095527.10487-10-hdegoede@redhat.com>
+Subject: Re: [04/15] power: supply: bq24190_charger: Add no_register_reset
+ pdata flag
+Date: Mon, 20 Mar 2017 06:27:15 +0100
+Message-ID: <20170320052715.hrgaxsxwdrv7ynbu@earth>
+References: <20170318071019.4561-1-liam@networkimprov.net>
+ <6ad6ecd2-ea0f-b613-8519-66ad424c623a@redhat.com>
+ <CAKvHMgQ-hnS_XkL_7Mwkm94hNDc9Q++xHBAOUK1bKmvO=YnSXQ@mail.gmail.com>
+ <6a0e54e3-581d-6162-b521-82b7567b6e74@redhat.com>
+ <CAKvHMgTYqypPiv0KcoFZqpojq50yUDoU=HL8uiwPyKP7HLTy1A@mail.gmail.com>
+ <f7b3fda0-eeff-b6ab-4908-86c4180bda8a@redhat.com>
+ <12321f48-def6-33cb-1df5-853ecc8f1061@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="n6mfio3fwvnqn5gp"
+        protocol="application/pgp-signature"; boundary="2dkejef55l754j72"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:38668 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:39690 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750972AbdCTFMb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 20 Mar 2017 01:12:31 -0400
+        id S1750943AbdCTF1V (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 20 Mar 2017 01:27:21 -0400
 Content-Disposition: inline
-In-Reply-To: <20170317095527.10487-10-hdegoede@redhat.com>
+In-Reply-To: <12321f48-def6-33cb-1df5-853ecc8f1061@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Liam Breck <liam@networkimprov.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
 
---n6mfio3fwvnqn5gp
+--2dkejef55l754j72
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Mar 17, 2017 at 10:55:21AM +0100, Hans de Goede wrote:
-> When combined with an external fuel-gauge, upower needs voltage_max_design
-> as it internally does all its calculations in Watts and converts the
-> charge_foo properties from A to Watts by using voltage_max_design.
+On Sun, Mar 19, 2017 at 10:42:00AM +0100, Hans de Goede wrote:
+> On 19-03-17 09:22, Hans de Goede wrote:
+> > > Then consider the pseudo-driver concept. That would be generally
+> > > useful for any charger/gauge pairing. Both drivers would provide
+> > > callbacks to it.
+> >=20
+> > So your rejecting a patch which adds 30 lines of code for some
+> > vague generic pseudo-driver concept without offering any design
+> > direction on what such a concept would look like and without taking
+> > into account that so far this seems to be a one-of problem.
 >=20
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> I still think the pseudo-driver idea is a bad idea. Having 1 driver
+> which somehow combines things from 2 drivers without clear semantics
+> feels wrong.
 
-Assuming, that my comment on patch 14 works POWER_SUPPLY_PROP_VOLTAGE_MAX_D=
-ESIGN
-is required in the fuel-gauge driver instead. As far as I understand
-it the charger voltage was too high for your device anyways, so that
-you capped it at 4.3V. So I assume, that you can just provide it via
-device properties.
+Apart from being ugly, that does not work anyways, how should the
+drivers know when its ok to expose their info to userspace and when
+its not.
 
--- Sebastian
-
->  drivers/power/supply/bq24190_charger.c | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
+> As said before I think your suggested solution lacks any
+> design direction, I've been thinking about this a bit more and
+> I've come up with an alternative solution with clearly defined
+> goals and semantics.
 >=20
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/suppl=
-y/bq24190_charger.c
-> index 9fe69a5..82cb33d 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -1103,6 +1103,13 @@ static int bq24190_battery_get_property(struct pow=
-er_supply *psy,
->  		val->intval =3D POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
->  		ret =3D 0;
->  		break;
-> +	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-> +		/*
-> +		 * Report charger configured voltage as max design voltage,
-> +		 * not entirely correct, but userspace needs something here.
-> +		 */
-> +		ret =3D bq24190_charger_get_voltage(bdi, val);
-> +		break;
->  	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
->  		ret =3D bq24190_battery_get_temp_alert_max(bdi, val);
->  		break;
-> @@ -1169,6 +1176,7 @@ static enum power_supply_property bq24190_battery_p=
-roperties[] =3D {
->  	POWER_SUPPLY_PROP_HEALTH,
->  	POWER_SUPPLY_PROP_ONLINE,
->  	POWER_SUPPLY_PROP_TECHNOLOGY,
-> +	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
->  	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
->  	POWER_SUPPLY_PROP_SCOPE,
->  	/* Begin of extended battery properties */
-> @@ -1186,7 +1194,7 @@ static const struct power_supply_desc bq24190_batte=
-ry_desc =3D {
->  	.name			=3D "bq24190-battery",
->  	.type			=3D POWER_SUPPLY_TYPE_BATTERY,
->  	.properties		=3D bq24190_battery_properties,
-> -	.num_properties		=3D 6,
-> +	.num_properties		=3D 7,
->  	.get_property		=3D bq24190_battery_get_property,
->  	.set_property		=3D bq24190_battery_set_property,
->  	.property_is_writeable	=3D bq24190_battery_property_is_writeable,
-> --=20
-> 2.9.3
+> We want one driver which is solidly in control of the charger
+> since getting that wrong is quite bad and we want to extend
+> the information it is exporting to userspace in the form of
+> power_supply properties with some extra info.
+>=20
+> So taking that as a starting point and generalizing that,
+> I think that if we want we can make something more generic then
+> my original patch for this. My idea is to introduce something
+> called a power_supply_properties_provider, with an API
+> like this:
+
+Thanks for thinking about this. From what I can see it should
+be enough to just avoid exposing a battery device at all in
+the charger driver, though. It does not really provide useful
+information anyways.
+
+> typedef int (*power_supply_properties_provider_get_property_t)(
+> 	enum power_supply_property prop, union power_supply_propval *val,
+> 	void *driver_data);
+>=20
+> struct power_supply_properties_provider;
+>=20
+> struct power_supply_properties_provider *
+> power_supply_properties_provider_register(
+> 	const char *name,
+> 	power_supply_properties_provider_get_property_t get_property,
+> 	const enum power_supply_property *properties,
+> 	size_t num_properties,
+> 	void *driver_data);
+>=20
+> void power_supply_properties_provider_unregister(
+> 	struct power_supply_properties_provider *pspp);
+>=20
+> struct power_supply_properties_provider *
+> 	power_supply_properties_provider_get(const char *name);
+>=20
+> void power_supply_properties_provider_put(
+> 	struct power_supply_properties_provider *pspp);
+>=20
+> int power_supply_properties_provider_merge_properties(
+> 	struct power_supply_properties_provider *pspp,
+> 	const enum power_supply_property *properties,
+> 	size_t num_properties,
+> 	enum power_supply_property **merged_properties_ret,
+> 	size_t *merged_num_properties_ret);
+>=20
+> int power_supply_properties_provider_get_property(
+> 	struct power_supply_properties_provider *pspp,
+> 	enum power_supply_property prop,
+> 	union power_supply_propval *val);
+>=20
+> So in this case the faul-gauge driver would call
+> power_supply_properties_provider_register() from probe and
+> power_supply_properties_provider_unregister() from remove.
+>=20
+> The struct power_supply_properties_provider will be ref-counted
+> so that it will stick around after unregister in case any
+> consumers who have gotten a ref through
+> power_supply_properties_provider_get can still call
+> power_supply_properties_provider_get_property, which after
+> unregister will simply always return -ENXIO.
+>=20
+> A driver wanting to use extra properties like bq24190_charger
+> will call power_supply_properties_provider_get (with a name
+> provided through platform_data), use a dynamically allocated
+> struct power_supply_desc and fill the properties of that
+> using power_supply_properties_provider_merge_properties
+> to merge its own properties with the
+> power_supply_properties_provider's properties and in its
+> get_property method have a default label which calls
+> power_supply_properties_provider_get_property.
+>=20
+> This would still add quite a bit more code then my original
+> patch for what may very well end up being a one-of solution,
+> but I guess we may encounter this problem more often and
+> this will offer a nice generic and clean way for dealing
+> with adding extra info from other sources to a power_supply
+> driver, so I'm happy to turn this idea / design into working
+> code if people like this better then my original patch.
+>=20
+> Liam, Sebastian what do you think of the above proposal?
+>=20
+> Regards,
+>=20
+> Hans
 >=20
 
---n6mfio3fwvnqn5gp
+--2dkejef55l754j72
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljPZLkACgkQ2O7X88g7
-+pqozA//WB8B7ZlYSz+ZNUNN/NpgjsYCV30hINT2n+0r1acdD64r+bEFQtOGbRJc
-/Gm6YcOivBRqYEPIE5bjtuWlH9s8Kfbc/KrgPQEYYFDWWMBi9/u/pRTDd9FX0aZ3
-SK6JVJxMB584miE0UqbKVjvMHCcxUlHb/mq75KsCioviuy1xiUhwQdQ6h32IlcDd
-xe4lsIcPXd13UPuCwKXvv9nJqqgzJGo5LpL84Y3xEoUPs76osg0CXYXrlTX7Xj1p
-zpFHm4apjSnXaFcchtiwwolSc6iv2CSoDPfVuHNyOyjbZcZ7YdeaDefEIhHA4QXb
-rjQLUHpg7xq2aciPTksEr3AO7VLs/K71TR9a7JDLvOqMADCTSIibMsk7mwmKm7y1
-I63fkUmnrTZARKbKRI0Hckowyrh6ShLuIwu0XP1BLb5mYizI0TXMfrULFNp+e1da
-AMp7Z/PdR3oh2jdqR9oupqc0CXQc6w3CnvNxdOwj3vNBxRQM6+Y/+rkTJG7gcX0O
-XotRcgCUYVLm5rLLJAiZcJY2YLciWrysXBEIYBaCjYqN2vxZhfPSovKQH/dtKCjL
-RyyeUdifnpfGnoSvqmIyI+xrkJeEgMg8A9v+LXtumsbZGesM6W/lz/pJ6YWJ25Dg
-2aYPTyEyFdBXB7Zjocc5aEH0hCEgdasu9KyfCmmuvhb3HfB2EuA=
-=rwPB
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljPaDEACgkQ2O7X88g7
++poXTg//TtchQC48ZDaukFeTBbyQCphM6agAC1+CDj2vblqAhBtzQNfkgllvNiTN
+AIYGd3UdTTmuQGzGxtJ0+wFxRNFdHmYesxIguvJT8QrarNavEztzsqXiTWT0RjYt
+/KLAvdS8OsfijV+99R1NdJ2kkPJrkhomQGtIEhfQMWM9AvXY20toJlS8NpdPvy6y
+TOwi+KzTI+y6FnfeI4Mu+14m8XPa9FaOlbsjxKU0KX0peuM1PJV6zB6UvUvSz0jh
+LssM8oINLsMA7aEA3DataokjPqZJPhtDY+vZgB55+acFGG6seXP/mirDGkhCVqj2
+EoLhVqD9nVUcMAsb/mnbTJpDVZjGDC3wWvhY1vYNbG2+mfbCcIO2cI4rwx8H1anS
+YA/x2hK3ANTu1ggVwQvIG6/YF+IKMYQ8qTd0QzHE82hm8BY5A/Obu5TnKYGtaPGy
+/bdM57w09S8NANIrfJ6/r3JBZrrwYlL/xIYnl5xBaCowd8eHylghgsvZNmN0x5Oj
+tPoTeYapnomsnHQCGuwYTDJddccvQVa/6dkV5C4EkU5bKsMg5/NfGDri9pelmMNW
+zZw4/koBpmOfAT+eA9OdlFTU7UbLAmlSKTqE8P+X+7Xrde0XXZvdXYs8iU5DIGgI
+F/5lx8kuzGZDbUzzLXI6QD9W1tYd6MBSRt1NHEEWwFY4qdX+AY0=
+=LWWA
 -----END PGP SIGNATURE-----
 
---n6mfio3fwvnqn5gp--
+--2dkejef55l754j72--
