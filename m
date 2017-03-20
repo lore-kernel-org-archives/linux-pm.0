@@ -1,58 +1,116 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/4] PM / Domains: Don't warn about IRQ safe device for
- an always on PM domain
-Date: Mon, 20 Mar 2017 16:42:50 +0530
-Message-ID: <20170320111250.GK25659@vireshk-i7>
+Subject: Re: [PATCH 2/4] PM / Domains: Enable users of genpd to specify
+ always on PM domains
+Date: Mon, 20 Mar 2017 16:41:23 +0530
+Message-ID: <20170320111123.GI25659@vireshk-i7>
 References: <1490005163-28633-1-git-send-email-ulf.hansson@linaro.org>
- <1490005163-28633-5-git-send-email-ulf.hansson@linaro.org>
+ <1490005163-28633-3-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:35958 "EHLO
-        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750873AbdCTLN3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 07:13:29 -0400
-Received: by mail-pf0-f176.google.com with SMTP id o126so64531520pfb.3
-        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2017 04:12:54 -0700 (PDT)
+Received: from mail-pg0-f43.google.com ([74.125.83.43]:35000 "EHLO
+        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753465AbdCTLVI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 07:21:08 -0400
+Received: by mail-pg0-f43.google.com with SMTP id t143so10011711pgb.2
+        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2017 04:20:24 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1490005163-28633-5-git-send-email-ulf.hansson@linaro.org>
+In-Reply-To: <1490005163-28633-3-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
 On 20-03-17, 11:19, Ulf Hansson wrote:
-> When an IRQ safe device is attached to a no sleep domain, genpd prints a
-> warning once, as to indicate it is a suboptimal configuration from power
-> consumption point of view.
+> The current way to implement an always on PM domain consists of returning
+> -EBUSY from the ->power_off() callback. This is a bit different compared to
+> using the always on genpd governor, which prevents the PM domain from being
+> powered off via runtime suspend, but not via system suspend.
 > 
-> However the warning doesn't make sense for an always on domain, since it
-> anyway remains powered on. Therefore, let's change to not print the warning
-> for this configuration.
+> The approach to return -EBUSY from the ->power_off() callback to support
+> always on PM domains in genpd is suboptimal. That is because it requires
+> genpd to follow the regular execution path of the power off sequence, which
+> ends by invoking the ->power_off() callback.
+> 
+> To enable genpd to early abort the power off sequence for always on PM
+> domains, it needs static information about these configurations. Therefore
+> let's add a new genpd configuration flag, GENPD_FLAG_ALWAYS_ON.
+> 
+> Users of the new GENPD_FLAG_ALWAYS_ON flag, are by genpd required to make
+> sure the PM domain is powered on before calling pm_genpd_init(). Moreover,
+> users don't need to implement the ->power_off() callback, as genpd doesn't
+> ever invoke it.
 > 
 > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > ---
->  drivers/base/power/domain.c | 8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
+>  drivers/base/power/domain.c | 14 ++++++++++++--
+>  include/linux/pm_domain.h   |  1 +
+>  2 files changed, 13 insertions(+), 2 deletions(-)
 > 
 > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 8a2bfc8..bfba02f 100644
+> index 7a8e70d..e63712d 100644
 > --- a/drivers/base/power/domain.c
 > +++ b/drivers/base/power/domain.c
-> @@ -132,8 +132,12 @@ static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
+> @@ -123,6 +123,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
 >  
->  	ret = pm_runtime_is_irq_safe(dev) && !genpd_is_irq_safe(genpd);
+>  #define genpd_status_on(genpd)		(genpd->status == GPD_STATE_ACTIVE)
+>  #define genpd_is_irq_safe(genpd)	(genpd->flags & GENPD_FLAG_IRQ_SAFE)
+> +#define genpd_is_always_on(genpd)	(genpd->flags & GENPD_FLAG_ALWAYS_ON)
 >  
-> -	/* Warn once if IRQ safe dev in no sleep domain */
-> -	if (ret)
+>  static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
+>  		struct generic_pm_domain *genpd)
+> @@ -300,7 +301,12 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
+>  	if (!genpd_status_on(genpd) || genpd->prepared_count > 0)
+>  		return 0;
+>  
+> -	if (atomic_read(&genpd->sd_count) > 0)
 > +	/*
-> +	 * Warn once if an IRQ safe device is attached to a no sleep domain, as
-> +	 * to indicate a suboptimal configuration for PM. For an always on
-> +	 * domain this isn't case, thus don't warn.
+> +	 * Abort power off for the PM domain in the following situations:
+> +	 * (1) The domain is configured as always on.
+> +	 * (2) When the domain has a subdomain being powered on.
 > +	 */
-> +	if (ret && !genpd_is_always_on(genpd))
->  		dev_warn_once(dev, "PM domain %s will not be powered off\n",
->  				genpd->name);
+> +	if (genpd_is_always_on(genpd) || atomic_read(&genpd->sd_count) > 0)
+>  		return -EBUSY;
+>  
+>  	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
+> @@ -752,7 +758,7 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
+>  {
+>  	struct gpd_link *link;
+>  
+> -	if (!genpd_status_on(genpd))
+> +	if (!genpd_status_on(genpd) || genpd_is_always_on(genpd))
+
+If we want to have similar code in all the places then maybe we can
+write this as:
+
+	if (genpd_is_always_on(genpd) || !genpd_status_on(genpd))
+
+>  		return;
+>  
+>  	if (genpd->suspended_count != genpd->device_count
+> @@ -1491,6 +1497,10 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+>  		genpd->dev_ops.start = pm_clk_resume;
+>  	}
+>  
+> +	/* Always-on domains must be powered on at initialization. */
+> +	if (genpd_is_always_on(genpd) && !genpd_status_on(genpd))
+> +		return -EINVAL;
+> +
+>  	/* Use only one "off" state if there were no states declared */
+>  	if (genpd->state_count == 0) {
+>  		ret = genpd_set_default_power_state(genpd);
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 5339ed5..9b6abe6 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -20,6 +20,7 @@
+>  /* Defines used for the flags field in the struct generic_pm_domain */
+>  #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
+>  #define GENPD_FLAG_IRQ_SAFE	(1U << 1) /* PM domain operates in atomic */
+> +#define GENPD_FLAG_ALWAYS_ON	(1U << 2) /* PM domain is always powered on */
+>  
+>  enum gpd_status {
+>  	GPD_STATE_ACTIVE = 0,	/* PM domain is active */
 
 Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 
