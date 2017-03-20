@@ -1,33 +1,58 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [RFC v3 0/5] Add capacity capping support to the CPU controller
-Date: Mon, 20 Mar 2017 10:51:31 -0400
-Message-ID: <20170320145131.GA3623@htj.duckdns.org>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: Re: [PATCH v2 02/10] x86: assembly, FUNC_START for fn,
+ DATA_START for data
+Date: Mon, 20 Mar 2017 16:32:09 +0100
+Message-ID: <cf9b5094-a7b0-76ae-714a-7e4c8a0f79fb@suse.cz>
+References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
+ <20170320123222.15453-1-jslaby@suse.cz>
+ <20170320123222.15453-2-jslaby@suse.cz>
+ <20170320133243.5rvae6liwwqg4dve@treble>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <xen-devel-bounces@lists.xen.org>
+In-Reply-To: <20170320133243.5rvae6liwwqg4dve@treble>
+List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
+ <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
+List-Post: <mailto:xen-devel@lists.xen.org>
+List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
+List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
+ <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
+Errors-To: xen-devel-bounces@lists.xen.org
+Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mingo@redhat.com, Pavel Machek <pavel@ucw.cz>, hpa@zytor.com, xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-Hello, Patrick.
-
-On Tue, Feb 28, 2017 at 02:38:37PM +0000, Patrick Bellasi wrote:
->  a) Boosting of important tasks, by enforcing a minimum capacity in the
->     CPUs where they are enqueued for execution.
->  b) Capping of background tasks, by enforcing a maximum capacity.
->  c) Containment of OPPs for RT tasks which cannot easily be switched to
->     the usage of the DL class, but still don't need to run at the maximum
->     frequency.
-
-As this is something completely new, I think it'd be a great idea to
-give a couple concerete examples in the head message to help people
-understand what it's for.
-
-Thanks.
-
--- 
-tejun
+T24gMDMvMjAvMjAxNywgMDI6MzIgUE0sIEpvc2ggUG9pbWJvZXVmIHdyb3RlOgo+IE9uIE1vbiwg
+TWFyIDIwLCAyMDE3IGF0IDAxOjMyOjE0UE0gKzAxMDAsIEppcmkgU2xhYnkgd3JvdGU6Cj4+IFRo
+aXMgaXMgYSBzdGFydCBvZiBzZXJpZXMgdG8gY2xlYW51cCBtYWNyb3MgdXNlZCBmb3Igc3RhcnRp
+bmcgZnVuY3Rpb25zLAo+PiBkYXRhLCBnbG9iYWxzIGV0Yy4gYWNyb3NzIHg4Ni4gV2hlbiB3ZSBo
+YXZlIGFsbCB0aGlzIHNvcnRlZCBvdXQsIHRoaXMKPj4gd2lsbCBoZWxwIHRvIGluamVjdCBEV0FS
+RiB1bndpbmRpbmcgaW5mbyBieSBvYmp0b29sIGxhdGVyLgo+Pgo+PiBUaGUgZ29hbCBpcyBmb3Jj
+aW5nIFNZTV9GVU5DX1NUQVJUIHRvIGVtaXQgLmNmaV9zdGFydHByb2MgYW5kCj4+IFNZTV9GVU5D
+X0VORCB0byBlbWl0IC5jZmlfZW5kcHJvYy4gQXV0b21hdGljYWxseSBhdCBiZXN0Lgo+IAo+IERv
+IHdlIHN0aWxsIHdhbnQgdG8gZW1pdCAuY2ZpX3N0YXJ0cHJvYy9lbmRwcm9jIGZyb20gdGhlIG1h
+Y3JvPyAgRnJvbQo+IG91ciBsYXN0IGRpc2N1c3Npb24sIHRoYXQgc2VlbWVkIHRvIGJlIHVwIGlu
+IHRoZSBhaXIuCj4gCj4gICBodHRwczovL2xrbWwua2VybmVsLm9yZy9yLzIwMTcwMjE3MjExODA0
+Lmo2bDJkN3Q1bWZ6cXptYnRAdHJlYmxlCgoiQXV0b21hdGljYWxseSBhdCBiZXN0IiBhYm92ZSBt
+ZWFucyAiY29tcGxldGVseSBmcm9tIG9ianRvb2wiLiBJIGFtCnN0aWxsIHVuY2VydGFpbiB3aGV0
+aGVyIGl0IHdpbGwgd29yayAxMDAlIG9yIHdlIHdvdWxkIGhhdmUgdG8gaGVscCBieQpnZW5lcmF0
+aW5nIHNvbWUgcGllY2VzIGZyb20gdGhlIGFkZGVkIG1hY3Jvcy4gSW4gcGFydGljdWxhciwgdGhl
+IEFMSUFTZXMKYXJlIGV2aWwgd2hpY2ggY2F1c2UgaGFybSBoZXJlOgoKZnVuX2FsaWFzOgpmdW46
+Cjxjb2RlPgouc2l6ZSBmdW4sIC4tZnVuCi50eXBlIGZ1biBTVFRfRlVOQwouc2l6ZSBmdW5fYWxp
+YXMsIC4tZnVuX2FsaWFzCi50eXBlIGZ1bl9hbGlhcyBTVFRfRlVOQwoKQm90aCBjYW5ub3QgY3Jl
+YXRlIChvdmVybGFwcGluZykgLmNmaV9zdGFydHByb2MvZW5kcHJvYywgb25seSB0aGUgaW5uZXIK
+c2hhbGwuCgpCdXQgaXQgc2VlbXMgc28gZmFyLCB0aGF0IHdlIG1pZ2h0IGJlIGFibGUgdG8gZGVh
+bCB3aXRoIGFsbCBvZiB0aGF0IGZyb20Kb2JqdG9vbC4uLiAoSSBoYXZlIG5vdCBiZWVuIHRoaW5r
+aW5nIGFib3V0IHRoaXMgcGFydGljdWxhciB0aGluZyBkZWVwCmVub3VnaCB5ZXQuKSBTb21lIHNv
+cnQgb2YgImZyb20gdGhlIGxhc3QgbGFiZWwgdGhhdCBpcyBtYXJrZWQgYXMKU1RUX0ZVTkMgdGls
+bCBpdHMgLnNpemUiIG1pZ2h0IHdvcmsuCgo+IFdoYXQgZGlkIHlvdSB0aGluayBhYm91dCBtYWtp
+bmcgQ0ZJIHJlYWQtb25seSBmb3IgLmMgb2JqZWN0IGZpbGVzIGFuZAo+IHdyaXRlLW9ubHkgZm9y
+IC5TIG9iamVjdCBmaWxlcz8KClRoZXJlIGFyZSB0aG9zZSBmdW5jdGlvbnMgbGlrZSBzeW5jX2Nv
+cmUoKSBvciBuYXRpdmVfc2F2ZV9mbCgpIHdpdGgKaW5saW5lIGFzbS4gQW5kIHRoZXkgc2VlbSB0
+byBuZWVkIGEpIHJlYWQtd3JpdGUgc3VwcG9ydCwgb3IgYikgbWFudWFsCmFubm90YXRpb24uIEkg
+d291bGQgbGlrZSB0byBhdm9pZCBiKSBmb3Igc3VyZS4KCnRoYW5rcywKLS0gCmpzCnN1c2UgbGFi
+cwoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KWGVuLWRl
+dmVsIG1haWxpbmcgbGlzdApYZW4tZGV2ZWxAbGlzdHMueGVuLm9yZwpodHRwczovL2xpc3RzLnhl
+bi5vcmcveGVuLWRldmVsCg==
