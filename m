@@ -1,59 +1,75 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 0/4] Avoid duplicate registering of ACPI and native
- power-supplies
-Date: Mon, 20 Mar 2017 14:11:15 +0100
-Message-ID: <5bdbcb12-57c1-13cf-a591-22c9334d85b6@redhat.com>
-References: <20170316161601.32267-1-hdegoede@redhat.com>
- <20170320013305.v4mof5qoie3w7xdb@earth>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170320013305.v4mof5qoie3w7xdb@earth>
-Sender: linux-acpi-owner@vger.kernel.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] power: bq24190_charger: mark PM functions as __maybe_unused
+Date: Mon, 20 Mar 2017 14:14:15 +0100
+Message-ID: <20170320131424.271241-1-arnd@arndb.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Tony Lindgren <tony@atomide.com>, Liam Breck <liam@networkimprov.net>, Mark Greer <mgreer@animalcreek.com>, Colin Ian King <colin.king@canonical.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Without CONFIG_PM, we get a harmless warning:
 
-On 20-03-17 02:33, Sebastian Reichel wrote:
-> Hi,
->
-> On Thu, Mar 16, 2017 at 05:15:57PM +0100, Hans de Goede wrote:
->> The last 2 patches of this series depend on the first 2, as such it might
->> be better to merge all 4 through the acpi tree if Sebastius is ok with
->> that.
->>
->> Otherwise these patches are pretty self-explanatory.
->
-> I'm fine with this going through acpi. I wonder if acpi has a method
-> to avoid loading the generic drivers in the first place, though.
+drivers/power/supply/bq24190_charger.c:1514:12: error: 'bq24190_runtime_resume' defined but not used [-Werror=unused-function]
+drivers/power/supply/bq24190_charger.c:1501:12: error: 'bq24190_runtime_suspend' defined but not used [-Werror=unused-function]
 
-I thought about just not loading them as a first approach, but it is
-not really doable in a clean way. For example the Whiskey Cove fuel
-gauge driver I'm working on will need to do the same thing, but devices
-with that fuel-gauge use the same ACPI HID for different fuel-gauges
-and we've some extra magic in the fuel-gauge's probe method to see
-if it really is the one we want like this:
+To avoid the warning, we can mark all four PM functions as __maybe_unused,
+which also lets us remove the incorrect #ifdef.
 
-         status = acpi_evaluate_integer(ACPI_HANDLE(dev), "PTYP", NULL, &ptyp);
-         if (ACPI_FAILURE(status)) {
-                 dev_err(dev, "Failed to get PTYPE\n");
-                 return -ENODEV;
-         }
+Fixes: 3d8090cba638 ("power: bq24190_charger: Check the interrupt status on resume")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/power/supply/bq24190_charger.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-         /*
-          * The same ACPI HID is used with different PMICs check PTYP to
-          * ensure that we are dealing with a Whiskey Cove PMIC.
-          */
-         if (ptyp != CHT_WC_FG_PTYPE)
-                 return -ENODEV;
-
-And on some Bay Trail / Cherry Trail devices there is a functional
-ACPI battery so we really only want to not use the ACPI battery if
-we have an alternative battery power_supply driver.
-
-Regards,
-
-Hans
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index 6d80670586eb..451f2bc05ea5 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -1498,7 +1498,7 @@ static int bq24190_remove(struct i2c_client *client)
+ 	return 0;
+ }
+ 
+-static int bq24190_runtime_suspend(struct device *dev)
++static __maybe_unused int bq24190_runtime_suspend(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
+@@ -1511,7 +1511,7 @@ static int bq24190_runtime_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int bq24190_runtime_resume(struct device *dev)
++static __maybe_unused int bq24190_runtime_resume(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
+@@ -1527,8 +1527,7 @@ static int bq24190_runtime_resume(struct device *dev)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_PM_SLEEP
+-static int bq24190_pm_suspend(struct device *dev)
++static __maybe_unused int bq24190_pm_suspend(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
+@@ -1550,7 +1549,7 @@ static int bq24190_pm_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int bq24190_pm_resume(struct device *dev)
++static __maybe_unused int bq24190_pm_resume(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
+@@ -1580,7 +1579,6 @@ static int bq24190_pm_resume(struct device *dev)
+ 
+ 	return 0;
+ }
+-#endif
+ 
+ static const struct dev_pm_ops bq24190_pm_ops = {
+ 	SET_RUNTIME_PM_OPS(bq24190_runtime_suspend, bq24190_runtime_resume,
+-- 
+2.9.0
