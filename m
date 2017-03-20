@@ -1,45 +1,69 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 4/4] PM / Domains: Don't warn about IRQ safe device for an
- always on PM domain
-Date: Mon, 20 Mar 2017 18:14:18 +0100
-Message-ID: <4551343.REDde4ApgN@amdc3058>
-References: <1490005163-28633-1-git-send-email-ulf.hansson@linaro.org>
- <1490005163-28633-5-git-send-email-ulf.hansson@linaro.org>
- <CGME20170320171420epcas1p2f4598561c0bb9b81f8182a2566a4d93d@epcas1p2.samsung.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH RFC 1/3] thermal: allow hwmon devices to be created for
+ of-thermal zones
+Date: Mon, 20 Mar 2017 12:15:52 -0500
+Message-ID: <20170320171552.o2ye73c2okcvhluq@rob-hp-laptop>
+References: <E1cn8qC-0002uz-PB@rmk-PC.armlinux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:44871 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754624AbdCTROY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 13:14:24 -0400
-Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
- by mailout1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0ON402911IJYJV60@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 21 Mar 2017 02:14:22 +0900 (KST)
-In-reply-to: <1490005163-28633-5-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <E1cn8qC-0002uz-PB@rmk-PC.armlinux.org.uk>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Russell King <rmk+kernel@armlinux.org.uk>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, devicetree@vger.kernel.org, Gregory Clement <gregory.clement@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Monday, March 20, 2017 11:19:23 AM Ulf Hansson wrote:
-> When an IRQ safe device is attached to a no sleep domain, genpd prints a
-> warning once, as to indicate it is a suboptimal configuration from power
-> consumption point of view.
+On Sun, Mar 12, 2017 at 07:07:40PM +0000, Russell King wrote:
+> Allow hwmon devices to be optionally created for of-thermal zones,
+> rather than permanently denying them "in case" there is a hwmon
+> driver duplicating the thermal driver.
 > 
-> However the warning doesn't make sense for an always on domain, since it
-> anyway remains powered on. Therefore, let's change to not print the warning
-> for this configuration.
+> Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+> ---
+> Without this, "sensors" is unable to report the temperature of the
+> Dove SoC when it supports thermal zones.
 > 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>  Documentation/devicetree/bindings/thermal/thermal.txt | 3 +++
+>  arch/arm/boot/dts/dove.dtsi                           | 1 +
+>  drivers/thermal/of-thermal.c                          | 3 ++-
+>  3 files changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+> index 88b6ea1ad290..1478735fff85 100644
+> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+> @@ -175,6 +175,9 @@ containing trip nodes and one sub-node containing all the zone cooling maps.
+>  			2000mW, while on a 10'' tablet is around
+>  			4500mW.
+>  
+> +- linux,hwmon:		Allow Linux to create hwmon devices for the thermal
+> +  Type: bool		zone.
+> +
+>  Note: The delay properties are bound to the maximum dT/dt (temperature
+>  derivative over time) in two situations for a thermal zone:
+>  (i)  - when passive cooling is activated (polling-delay-passive); and
+> diff --git a/arch/arm/boot/dts/dove.dtsi b/arch/arm/boot/dts/dove.dtsi
+> index 40fb98687230..00f5971cd039 100644
+> --- a/arch/arm/boot/dts/dove.dtsi
+> +++ b/arch/arm/boot/dts/dove.dtsi
+> @@ -804,6 +804,7 @@
+>  
+>  	thermal-zones {
+>  		soc-thermal {
+> +			linux,hwmon;
 
-Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+I'd prefer to see a black or white list of sensor compatibles here. Then 
+the dtb doesn't need to change if things move between hwmon and thermal 
+zones.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Rob
