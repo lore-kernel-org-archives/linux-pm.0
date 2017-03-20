@@ -1,31 +1,33 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] power: bq24190_charger: mark PM functions as
- __maybe_unused
-Date: Mon, 20 Mar 2017 07:33:09 -0700
-Message-ID: <20170320143309.GF20572@atomide.com>
-References: <20170320131424.271241-1-arnd@arndb.de>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [RFC v3 0/5] Add capacity capping support to the CPU controller
+Date: Mon, 20 Mar 2017 10:51:31 -0400
+Message-ID: <20170320145131.GA3623@htj.duckdns.org>
+References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170320131424.271241-1-arnd@arndb.de>
+In-Reply-To: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <liam@networkimprov.net>, Mark Greer <mgreer@animalcreek.com>, Colin Ian King <colin.king@canonical.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-* Arnd Bergmann <arnd@arndb.de> [170320 06:17]:
-> Without CONFIG_PM, we get a harmless warning:
-> 
-> drivers/power/supply/bq24190_charger.c:1514:12: error: 'bq24190_runtime_resume' defined but not used [-Werror=unused-function]
-> drivers/power/supply/bq24190_charger.c:1501:12: error: 'bq24190_runtime_suspend' defined but not used [-Werror=unused-function]
-> 
-> To avoid the warning, we can mark all four PM functions as __maybe_unused,
-> which also lets us remove the incorrect #ifdef.
-> 
-> Fixes: 3d8090cba638 ("power: bq24190_charger: Check the interrupt status on resume")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Hello, Patrick.
 
-Thanks for fixing that:
+On Tue, Feb 28, 2017 at 02:38:37PM +0000, Patrick Bellasi wrote:
+>  a) Boosting of important tasks, by enforcing a minimum capacity in the
+>     CPUs where they are enqueued for execution.
+>  b) Capping of background tasks, by enforcing a maximum capacity.
+>  c) Containment of OPPs for RT tasks which cannot easily be switched to
+>     the usage of the DL class, but still don't need to run at the maximum
+>     frequency.
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+As this is something completely new, I think it'd be a great idea to
+give a couple concerete examples in the head message to help people
+understand what it's for.
+
+Thanks.
+
+-- 
+tejun
