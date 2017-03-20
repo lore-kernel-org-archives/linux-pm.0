@@ -1,163 +1,111 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU
- controller
-Date: Mon, 20 Mar 2017 18:08:37 +0000
-Message-ID: <20170320180837.GB28391@e110439-lin>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
- <20170320171511.GB3623@htj.duckdns.org>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [04/15] power: supply: bq24190_charger: Add no_register_reset
+ pdata flag
+Date: Mon, 20 Mar 2017 19:01:15 +0100
+Message-ID: <f1d03393-ff94-aef8-b999-9d4438a0c7b3@redhat.com>
+References: <20170318071019.4561-1-liam@networkimprov.net>
+ <6ad6ecd2-ea0f-b613-8519-66ad424c623a@redhat.com>
+ <CAKvHMgQ-hnS_XkL_7Mwkm94hNDc9Q++xHBAOUK1bKmvO=YnSXQ@mail.gmail.com>
+ <6a0e54e3-581d-6162-b521-82b7567b6e74@redhat.com>
+ <CAKvHMgTYqypPiv0KcoFZqpojq50yUDoU=HL8uiwPyKP7HLTy1A@mail.gmail.com>
+ <f7b3fda0-eeff-b6ab-4908-86c4180bda8a@redhat.com>
+ <12321f48-def6-33cb-1df5-853ecc8f1061@redhat.com>
+ <20170320052715.hrgaxsxwdrv7ynbu@earth>
+ <6de63319-f30f-cae7-6d7a-0df2edd12859@redhat.com>
+ <5e7becad-44e4-8cc8-aabb-cc678b03098b@redhat.com>
+ <CAKvHMgTLcgtPCbaTAAbEL+deQpnF-mhszBvQW57jH5AXt5o3iQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170320171511.GB3623@htj.duckdns.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:48050 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1756037AbdCTSCP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 20 Mar 2017 14:02:15 -0400
+In-Reply-To: <CAKvHMgTLcgtPCbaTAAbEL+deQpnF-mhszBvQW57jH5AXt5o3iQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On 20-Mar 13:15, Tejun Heo wrote:
-> Hello,
-> 
-> On Tue, Feb 28, 2017 at 02:38:38PM +0000, Patrick Bellasi wrote:
-> > This patch extends the CPU controller by adding a couple of new
-> > attributes, capacity_min and capacity_max, which can be used to enforce
-> > bandwidth boosting and capping. More specifically:
-> > 
-> > - capacity_min: defines the minimum capacity which should be granted
-> >                 (by schedutil) when a task in this group is running,
-> >                 i.e. the task will run at least at that capacity
-> > 
-> > - capacity_max: defines the maximum capacity which can be granted
-> >                 (by schedutil) when a task in this group is running,
-> >                 i.e. the task can run up to that capacity
-> 
-> cpu.capacity.min and cpu.capacity.max are the more conventional names.
+Hi,
 
-Ok, should be an easy renaming.
+On 20-03-17 18:51, Liam Breck wrote:
+> On Mon, Mar 20, 2017 at 10:04 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> Hi,
+>>
+>>
+>> On 20-03-17 14:54, Hans de Goede wrote:
+>>>
+>>> Hi,
+>>>
+>>> On 20-03-17 06:27, Sebastian Reichel wrote:
+>>>>
+>>>> Hi,
+>>>>
+>>>> On Sun, Mar 19, 2017 at 10:42:00AM +0100, Hans de Goede wrote:
+>>>
+>>>
+>>> <snip>
+>>>
+>>>>> We want one driver which is solidly in control of the charger
+>>>>> since getting that wrong is quite bad and we want to extend
+>>>>> the information it is exporting to userspace in the form of
+>>>>> power_supply properties with some extra info.
+>>>>>
+>>>>> So taking that as a starting point and generalizing that,
+>>>>> I think that if we want we can make something more generic then
+>>>>> my original patch for this. My idea is to introduce something
+>>>>> called a power_supply_properties_provider, with an API
+>>>>> like this:
+>>>>
+>>>>
+>>>> Thanks for thinking about this. From what I can see it should
+>>>> be enough to just avoid exposing a battery device at all in
+>>>> the charger driver, though. It does not really provide useful
+>>>> information anyways.
+>>>
+>>>
+>>> Interesting suggestion, 2 remarks / questions:
+>>>
+>>> 1) Given that we do not want to break existing setups
+>>> which may depend on the existing battery interface on the bq24190
+>>> driver and add a flag to not register it, or are you suggesting
+>>> to simply remove it all together? Removing it all together would
+>>> be better from a maintenance pov. Liam, you indicated that you
+>>> are the main user of the bq24190 driver currently, do you need
+>>> the battery power_supply interface for your use case ?
+>>>
+>>> 2) Not using the battery interface of the bq24190 driver at all
+>>> means that the fuelgauge driver needs to grow some extra
+>>> properties, specifically it will need to start reporting status,
+>>> something which the bq24190 driver really has a better idea
+>>> of the the fuel gauge.
+>
+> Our userspace looks at bq24190-battery & -charger. If your userspace
+> can work with /sys/class/power_supply/whisky_cove-battery/* can't you
+> leave .bq24190-battery as is?
 
-> I'm not sure about the name capacity as it doesn't encode what it does
-> and is difficult to tell apart from cpu bandwidth limits.  I think
-> it'd be better to represent what it controls more explicitly.
+No, my userspace is a generic distro which uses upower, which as I
+explained before will look at *all* battery type power_supply devices
+and will consider each of them being a separate battery. There *must*
+be only one battery type power_supply per physical battery, that is
+simply how the userspace ABI works.
 
-In the scheduler jargon, capacity represents the amount of computation
-that a CPU can provide and it's usually defined to be 1024 for the
-biggest CPU (on non SMP systems) running at the highest OPP (i.e.
-maximum frequency).
+> bq24190-battery's properties could move to -charger, tho health &
+> online would have to change name, replace same in -charger, or be
+> dropped.
 
-It's true that it kind of overlaps with the concept of "bandwidth".
-However, the main difference here is that "bandwidth" is not frequency
-(and architecture) scaled.
-Thus, for example, assuming we have only one CPU with these two OPPs:
+That is one option, I can also simply make the registration dependent
+on a device-property, then you do not need to change your userspace.
 
-   OPP | Frequency | Capacity
-     1 |    500MHz |      512
-     2 |      1GHz |     1024
+In that case I would prefer for the behavior to be to not register
+the battery power_supply device unless the boolean device(tree)-property
+named "linux,register-battery-power-supply" is present. But if you
+need things to keep working the same with older dtb files which
+will not contain that property, we can also go for:
+"linux,disable-battery-power-supply"
 
-a task running 60% of the time on that CPU when configured to run at
-500MHz, from the bandwidth standpoint it's using 60% bandwidth but, from
-the capacity standpoint, is using only 30% of the available capacity.
+Regards,
 
-IOW, bandwidth is purely temporal based while capacity factors in both
-frequency and architectural differences.
-Thus, while a "bandwidth" constraint limits the amount of time a task
-can use a CPU, independently from the "actual computation" performed,
-with the new "capacity" constraints we can enforce much "actual
-computation" a task can perform in the "unit of time".
-
-> > These attributes:
-> > a) are tunable at all hierarchy levels, i.e. root group too
-> 
-> This usually is problematic because there should be a non-cgroup way
-> of configuring the feature in case cgroup isn't configured or used,
-> and it becomes awkward to have two separate mechanisms configuring the
-> same thing.  Maybe the feature is cgroup specific enough that it makes
-> sense here but this needs more explanation / justification.
-
-In the previous proposal I used to expose global tunables under
-procfs, e.g.:
-
- /proc/sys/kernel/sched_capacity_min
- /proc/sys/kernel/sched_capacity_max
-
-which can be used to defined tunable root constraints when CGroups are
-not available, and becomes RO when CGroups are.
-
-Can this be eventually an acceptable option?
-
-In any case I think that this feature will be mainly targeting CGroup
-based systems. Indeed, one of the main goals is to collect
-"application specific" information from "informed run-times". Being
-"application specific" means that we need a way to classify
-applications depending on the runtime context... and that capability
-in Linux is ultimately provided via the CGroup interface.
-
-> > b) allow to create subgroups of tasks which are not violating the
-> >    capacity constraints defined by the parent group.
-> >    Thus, tasks on a subgroup can only be more boosted and/or more
-> 
-> For both limits and protections, the parent caps the maximum the
-> children can get.  At least that's what memcg does for memory.low.
-> Doing that makes sense for memcg because for memory the parent can
-> still do protections regardless of what its children are doing and it
-> makes delegation safe by default.
-
-Just to be more clear, the current proposal enforces:
-
-- capacity_max_child <= capacity_max_parent
-
-  Since, if a task is constrained to get only up to a certain amount
-  of capacity, than its childs cannot use more than that... eventually
-  they can only be further constrained.
-
-- capacity_min_child >= capacity_min_parent
-
-  Since, if a task has been boosted to run at least as much fast, than
-  its childs cannot be constrained to go slower without eventually
-  impacting parent performance.
-
-> I understand why you would want a property like capacity to be the
-> other direction as that way you get more specific as you walk down the
-> tree for both limits and protections;
-
-Right, the protection schema is defined in such a way to never affect
-parent constraints.
-
-> however, I think we need to
-> think a bit more about it and ensure that the resulting interface
-> isn't confusing.
-
-Sure.
-
-> Would it work for capacity to behave the other
-> direction - ie. a parent's min restricting the highest min that its
-> descendants can get?  It's completely fine if that's weird.
-
-I had a thought about that possibility and it was not convincing me
-from the use-cases standpoint, at least for the ones I've considered.
-
-Reason is that capacity_min is used to implement a concept of
-"boosting" where, let say we want to "run a task faster then a minimum
-frequency". Assuming that this constraint has been defined because we
-know that this task, and likely all its descendant threads, needs at
-least that capacity level to perform according to expectations.
-
-In that case the "refining down the hierarchy" can require to boost
-further some threads but likely not less.
-
-Does this make sense?
-
-To me this seems to match quite well at least Android/ChromeOS
-specific use-cases. I'm not sure if there can be other different
-use-cases in the domain for example of managed containers.
-
-
-> Thanks.
-> 
-> -- 
-> tejun
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Hans
