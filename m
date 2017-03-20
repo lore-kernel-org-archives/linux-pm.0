@@ -1,142 +1,130 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 2/4] ACPI: ac: Add acpi_ac_unregister() function
-Date: Mon, 20 Mar 2017 14:21:48 +0100
-Message-ID: <20170320132150.18771-2-hdegoede@redhat.com>
-References: <20170320132150.18771-1-hdegoede@redhat.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170320132150.18771-1-hdegoede@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC][PATCH 2/2] cpufreq: schedutil: Force max frequency on busy CPUs
+Date: Mon, 20 Mar 2017 14:20:13 +0100
+Message-ID: <CAKfTPtBEr=E0BE9Aq5UzB1T6pTxUQkay2HAnRjaK=eE-ppuamw@mail.gmail.com>
+References: <4366682.tsferJN35u@aspire.rjw.lan> <20170320035745.GC25659@vireshk-i7>
+ <CAKfTPtD8bp-mB=9Rjufeyj3weg6T3b1J-o+Sc2Oe2EMGX3zKzQ@mail.gmail.com> <3315477.nk1LFSfS7V@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3315477.nk1LFSfS7V@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On some systems we have a native PMIC driver which provides Mains
-monitoring, while the ACPI ac driver is broken on these systems
-due to bad DSTDs or because of missing vendor specific ACPI opregion
-(e.g. BMOP opregion) support, which the ACPI ac device in the dsdt
-relies on. This leads for example to a ADP1 power_supply which reports
-itself as always online even if no mains are connected.
+On 20 March 2017 at 13:59, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, March 20, 2017 09:26:34 AM Vincent Guittot wrote:
+>> On 20 March 2017 at 04:57, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > On 19-03-17, 14:34, Rafael J. Wysocki wrote:
+>> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >>
+>> >> The PELT metric used by the schedutil governor underestimates the
+>> >> CPU utilization in some cases.  The reason for that may be time spent
+>> >> in interrupt handlers and similar which is not accounted for by PELT.
+>>
+>> Are you sure of the root cause  described above (time stolen by irq
+>> handler) or is it just a hypotheses ? That would be good to be sure of
+>> the root cause
+>
+> No, I'm not sure.  That's why I said "may be". :-)
+>
+>> Furthermore, IIRC the time spent in irq context is also accounted as
+>> run time for the running cfs task but not RT and deadline task running
+>> time
+>
+> OK
+>
+> Anyway, the problem is that we have a 100% busy CPU which quite evidently
+> is not reported as 100% busy by the metric we use.
 
-This commit adds an acpi_ac_unregister() function which native PMIC
-drivers can call after successfully registering their own power_supply
-to unregister the (potentially broken) ACPI-ac power_supply.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
-Changes in v2:
--Fix capitalization in commit msg
--Minor style cleanups
----
- drivers/acpi/ac.c          | 43 ++++++++++++++++++++++++++++++++++++++-----
- include/linux/power/acpi.h |  6 ++++++
- 2 files changed, 44 insertions(+), 5 deletions(-)
+>
+> Now, if I was sure about the root cause, I would fix it rather than suggest
+> workarounds.
+>
+>> So I'm not really aligned with the description of your problem: PELT
+>> metric underestimates the load of the CPU.  The PELT is just about
+>> tracking CFS task utilization but not whole CPU utilization and
+>> according to your description of the problem (time stolen by irq),
+>> your problem doesn't come from an underestimation of CFS task but from
+>> time spent in something else but not accounted in the value used by
+>> schedutil
+>
+> That's fair enough, but the assumption was that PELT would be sufficient for
+> that.  To me, it clearly isn't, so the assumption was incorrect.
 
-diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
-index f71b756..b42affb 100644
---- a/drivers/acpi/ac.c
-+++ b/drivers/acpi/ac.c
-@@ -26,11 +26,13 @@
- #include <linux/types.h>
- #include <linux/dmi.h>
- #include <linux/delay.h>
-+#include <linux/mutex.h>
- #ifdef CONFIG_ACPI_PROCFS_POWER
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #endif
- #include <linux/platform_device.h>
-+#include <linux/power/acpi.h>
- #include <linux/power_supply.h>
- #include <linux/acpi.h>
- #include "battery.h"
-@@ -422,17 +424,27 @@ static int acpi_ac_remove(struct acpi_device *device)
- 	return 0;
- }
- 
-+enum init_state_enum { AC_NONE, AC_INITIALIZED, AC_EXITED };
-+
-+static enum init_state_enum init_state;
-+static DEFINE_MUTEX(init_state_mutex);
-+
- static int __init acpi_ac_init(void)
- {
--	int result;
-+	int result, ret = -ENODEV;
- 
- 	if (acpi_disabled)
- 		return -ENODEV;
- 
-+	/* Check if acpi_ac_unregister() got called before _init() */
-+	mutex_lock(&init_state_mutex);
-+	if (init_state != AC_NONE)
-+		goto out_unlock;
-+
- #ifdef CONFIG_ACPI_PROCFS_POWER
- 	acpi_ac_dir = acpi_lock_ac_dir();
- 	if (!acpi_ac_dir)
--		return -ENODEV;
-+		goto out_unlock;
- #endif
- 
- 
-@@ -441,18 +453,39 @@ static int __init acpi_ac_init(void)
- #ifdef CONFIG_ACPI_PROCFS_POWER
- 		acpi_unlock_ac_dir(acpi_ac_dir);
- #endif
--		return -ENODEV;
-+		goto out_unlock;
- 	}
- 
--	return 0;
-+	init_state = AC_INITIALIZED;
-+	ret = 0;
-+
-+out_unlock:
-+	mutex_unlock(&init_state_mutex);
-+	return ret;
- }
- 
--static void __exit acpi_ac_exit(void)
-+void acpi_ac_unregister(void)
- {
-+	/* Check if _init() is done and only do unregister once */
-+	mutex_lock(&init_state_mutex);
-+	if (init_state != AC_INITIALIZED)
-+		goto out_exit;
-+
- 	acpi_bus_unregister_driver(&acpi_ac_driver);
- #ifdef CONFIG_ACPI_PROCFS_POWER
- 	acpi_unlock_ac_dir(acpi_ac_dir);
- #endif
-+
-+out_exit:
-+	init_state = AC_EXITED;
-+	mutex_unlock(&init_state_mutex);
- }
-+EXPORT_SYMBOL_GPL(acpi_ac_unregister);
-+
-+static void __exit acpi_ac_exit(void)
-+{
-+	acpi_ac_unregister();
-+}
-+
- module_init(acpi_ac_init);
- module_exit(acpi_ac_exit);
-diff --git a/include/linux/power/acpi.h b/include/linux/power/acpi.h
-index 83bdfb9..b50ae69 100644
---- a/include/linux/power/acpi.h
-+++ b/include/linux/power/acpi.h
-@@ -15,4 +15,10 @@ void acpi_battery_unregister(void);
- static inline void acpi_battery_unregister(void) {}
- #endif
- 
-+#if IS_ENABLED(CONFIG_ACPI_AC)
-+void acpi_ac_unregister(void);
-+#else
-+static inline void acpi_ac_unregister(void) {}
-+#endif
-+
- #endif
--- 
-2.9.3
+So PELT is just about CFS utilization and we need metrics for other
+sched class as well
+I know that Juri and other people are working on the dealine part
 
+In current kernel, the only available metric is rt_avg (and
+scale_rt_capacity) which gives you the available compute capacity for
+CFS and in some way the amount of capacity used by RT and deadline.
+That would be interesting to see if the amount of capacity used by RT
+tasks (i assume  that you don't have deadline task in your use case)
+is similar to the amount of underestimation of CFS
+
+>
+>> That would be good to be sure of what is running during this not
+>> accounted time and find a way to account them
+>
+> Yes, I agree.
+>
+> I'm not sure if I can carry out full investigation of that any time soon, however.
+
+If you can share traces as Patrick proposed, we could estimate how
+much time/capacity is used by rt tasks and if this can explain the
+underestimation.
+
+>
+> I sent this mostly to let everybody know that there was a problem and how it
+> could be worked around.  That's why it is an RFC.
+
+Ok
+
+>
+>>
+>> >>
+>> >> That can be easily demonstrated by running kernel compilation on
+>> >> a Sandy Bridge Intel processor, running turbostat in parallel with
+>> >> it and looking at the values written to the MSR_IA32_PERF_CTL
+>> >> register.  Namely, the expected result would be that when all CPUs
+>> >> were 100% busy, all of them would be requested to run in the maximum
+>> >> P-state, but observation shows that this clearly isn't the case.
+>> >> The CPUs run in the maximum P-state for a while and then are
+>> >> requested to run slower and go back to the maximum P-state after
+>> >> a while again.  That causes the actual frequency of the processor to
+>> >> visibly oscillate below the sustainable maximum in a jittery fashion
+>> >> which clearly is not desirable.
+>> >>
+>> >> To work around this issue use the observation that, from the
+>> >> schedutil governor's perspective, CPUs that are never idle should
+>> >> always run at the maximum frequency and make that happen.
+>> >>
+>> >> To that end, add a counter of idle calls to struct sugov_cpu and
+>> >> modify cpuidle_idle_call() to increment that counter every time it
+>> >> is about to put the given CPU into an idle state.  Next, make the
+>> >> schedutil governor look at that counter for the current CPU every
+>> >> time before it is about to start heavy computations.  If the counter
+>> >> has not changed for over SUGOV_BUSY_THRESHOLD time (equal to 50 ms),
+>> >> the CPU has not been idle for at least that long and the governor
+>> >> will choose the maximum frequency for it without looking at the PELT
+>> >> metric at all.
+>> >
+>> > Looks like we are fixing a PELT problem with a schedutil Hack :)
+>>
+>> I would not say that it's a PELT problem (at least based on current
+>> description) but more that we don't track all
+>> activities of CPU
+>
+> I generally agree.  PELT does what it does.
+>
+> However, using PELT the way we do that in schedutil turns out to be problematic.
+
+yes. PELT is not enough but just part of the equation
+
+>
+> Thanks,
+> Rafael
+>
