@@ -1,242 +1,352 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 10/15] power: supply: bq24190_charger: Use extcon to
- determine ilimit, 5v boost
-Date: Mon, 20 Mar 2017 05:52:21 +0100
-Message-ID: <20170320045221.j25we3brb3mtloss@earth>
+Subject: Re: [PATCH 14/15] power: supply: Add driver for Cherry Trail Whiskey
+ Cove PMIC Fuel Gauge
+Date: Mon, 20 Mar 2017 06:07:22 +0100
+Message-ID: <20170320050722.3ot5ckhqn3sn7w6a@earth>
 References: <20170317095527.10487-1-hdegoede@redhat.com>
- <20170317095527.10487-11-hdegoede@redhat.com>
+ <20170317095527.10487-15-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="pqqyszwiwknurfqv"
-Return-path: <linux-acpi-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="my22qcqtn2laiytu"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170317095527.10487-11-hdegoede@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
+In-Reply-To: <20170317095527.10487-15-hdegoede@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
 Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---pqqyszwiwknurfqv
+--my22qcqtn2laiytu
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Mar 17, 2017 at 10:55:22AM +0100, Hans de Goede wrote:
-> Add support for monitoring an extcon device with SDP/CDP/DCP and HOST
-> cables and adjust ilimit and enable/disable the 5v boost converter
-> accordingly. This is necessary on systems where the PSEL pin is hardwired
-> high and ILIM needs to be set by software based on the detected charger
-> type.
+On Fri, Mar 17, 2017 at 10:55:26AM +0100, Hans de Goede wrote:
+> Add a driver for the Cherry Trail Whiskey Cove PMIC Fuel Gauge, note
+> the Cherry Trail Whiskey Cove PMIC Fuel Gauge block is purely a fuel gauge
+> and not a full battery controller. As such it offers a platform_data
+> callback for extra power_supply properties for the actual external-charger
+> ic driver and does not register a power_supply itself.
 >=20
 > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-Acked-By: Sebastian Reichel <sre@kernel.org>
+I think this should become a normal battery-type power-supply
+driver. bq24190_charger driver should only expose a charger-type
+power-supply device on your system (and probably most others, its
+very rare, that systems have a programmable charger and no
+fuel-gauge).
 
 -- Sebastian
 
 > ---
->  drivers/power/supply/Kconfig           |  1 +
->  drivers/power/supply/bq24190_charger.c | 85 ++++++++++++++++++++++++++++=
+>  drivers/power/supply/Kconfig             |   9 ++
+>  drivers/power/supply/Makefile            |   1 +
+>  drivers/power/supply/cht_wc_fuel_gauge.c | 209 +++++++++++++++++++++++++=
 ++++++
->  include/linux/power/bq24190_charger.h  |  1 +
->  3 files changed, 87 insertions(+)
+>  include/linux/power/cht_wc_fuel_gauge.h  |  21 ++++
+>  4 files changed, 240 insertions(+)
+>  create mode 100644 drivers/power/supply/cht_wc_fuel_gauge.c
+>  create mode 100644 include/linux/power/cht_wc_fuel_gauge.h
 >=20
 > diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> index f8b6e64..fd93110 100644
+> index fd93110..34ebfca 100644
 > --- a/drivers/power/supply/Kconfig
 > +++ b/drivers/power/supply/Kconfig
-> @@ -442,6 +442,7 @@ config CHARGER_BQ2415X
->  config CHARGER_BQ24190
->  	tristate "TI BQ24190 battery charger driver"
->  	depends on I2C
-> +	depends on EXTCON
->  	depends on GPIOLIB || COMPILE_TEST
->  	help
->  	  Say Y to enable support for the TI BQ24190 battery charger.
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/suppl=
-y/bq24190_charger.c
-> index 82cb33d..03990e2 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -11,10 +11,12 @@
->  #include <linux/module.h>
->  #include <linux/interrupt.h>
->  #include <linux/delay.h>
-> +#include <linux/extcon.h>
->  #include <linux/of_irq.h>
->  #include <linux/of_device.h>
->  #include <linux/pm_runtime.h>
->  #include <linux/power_supply.h>
-> +#include <linux/workqueue.h>
->  #include <linux/gpio.h>
->  #include <linux/i2c.h>
+> @@ -538,4 +538,13 @@ config AXP20X_POWER
+>  	  This driver provides support for the power supply features of
+>  	  AXP20x PMIC.
 > =20
-> @@ -39,6 +41,8 @@
->  #define BQ24190_REG_POC_WDT_RESET_SHIFT		6
->  #define BQ24190_REG_POC_CHG_CONFIG_MASK		(BIT(5) | BIT(4))
->  #define BQ24190_REG_POC_CHG_CONFIG_SHIFT	4
-> +#define BQ24190_REG_POC_CHG_CONFIG_CHARGE	1
-> +#define BQ24190_REG_POC_CHG_CONFIG_OTG		2
->  #define BQ24190_REG_POC_SYS_MIN_MASK		(BIT(3) | BIT(2) | BIT(1))
->  #define BQ24190_REG_POC_SYS_MIN_SHIFT		1
->  #define BQ24190_REG_POC_BOOST_LIM_MASK		BIT(0)
-> @@ -152,6 +156,9 @@ struct bq24190_dev_info {
->  	struct power_supply		*charger;
->  	struct power_supply		*battery;
->  	struct bq24190_platform_data	*pdata;
-> +	struct extcon_dev		*extcon;
-> +	struct notifier_block		extcon_nb;
-> +	struct work_struct		extcon_work;
->  	char				model_name[I2C_NAME_SIZE];
->  	kernel_ulong_t			model;
->  	struct mutex			f_reg_lock;
-> @@ -167,6 +174,11 @@ struct bq24190_dev_info {
->   * number at that index in the array is the real-world value that it
->   * represents.
->   */
+> +config CHT_WC_FUEL_GAUGE
+> +	tristate "Intel Cherry Trail Whiskey Cove PMIC Fuel Gauge"
+> +	depends on INTEL_SOC_PMIC_CHTWC
+> +	help
+> +	  This adds support for the battery fuel gauge found in the Intel
+> +	  Cherry Trail Whiskey Cove PMIC. This driver allows monitoring
+> +	  of the charge level of the battery on Intel Cherry Trail systems
+> +	  with a Whiskey Cove PMIC.
 > +
-> +/* REG00[2:0] (IINLIM) in uAh */
-> +static const int bq24190_iinlim_values[] =3D {
-> +	100000, 150000, 500000, 900000, 1200000, 1500000, 2000000, 3000000 };
+>  endif # POWER_SUPPLY
+> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+> index 3789a2c..702e28a 100644
+> --- a/drivers/power/supply/Makefile
+> +++ b/drivers/power/supply/Makefile
+> @@ -74,3 +74,4 @@ obj-$(CONFIG_CHARGER_TPS65090)	+=3D tps65090-charger.o
+>  obj-$(CONFIG_CHARGER_TPS65217)	+=3D tps65217_charger.o
+>  obj-$(CONFIG_AXP288_FUEL_GAUGE) +=3D axp288_fuel_gauge.o
+>  obj-$(CONFIG_AXP288_CHARGER)	+=3D axp288_charger.o
+> +obj-$(CONFIG_CHT_WC_FUEL_GAUGE)	+=3D cht_wc_fuel_gauge.o
+> diff --git a/drivers/power/supply/cht_wc_fuel_gauge.c b/drivers/power/sup=
+ply/cht_wc_fuel_gauge.c
+> new file mode 100644
+> index 0000000..56f6e5a
+> --- /dev/null
+> +++ b/drivers/power/supply/cht_wc_fuel_gauge.c
+> @@ -0,0 +1,209 @@
+> +/*
+> + * Intel CHT Whiskey Cove Fuel Gauge driver
+> + * Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License version
+> + * 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * Cherrytrail Whiskey Cove devices have 2 functional blocks which inter=
+act
+> + * with the battery.
+> + *
+> + * 1) The fuel-gauge which is build into the Whiskey Cove PMIC, but has =
+its
+> + * own i2c bus and i2c client addresses separately from the rest of the =
+PMIC.
+> + * That block is what this driver is for.
+> + *
+> + * 2) An external charger IC, which is connected to the SMBUS controller
+> + * which is part of the rest of the Whiskey Cove PMIC, mfd/intel_cht_wc.c
+> + * registers a platform device for the SMBUS controller and
+> + * i2c/busses/i2c-cht-wc.c contains the i2c-adapter driver for this.
+> + *
+> + * However we want to present this as a single power_supply device to
+> + * userspace. So this driver offers a callback to get the fuel-gauge
+> + * power_supply properties, which gets passed to the external charger
+> + * driver via i2c_board_info when i2c-cht-wc.c calls i2c_new_device().
+> + */
 > +
->  /* REG02[7:2] (ICHG) in uAh */
->  static const int bq24190_ccc_ichg_values[] =3D {
->  	 512000,  576000,  640000,  704000,  768000,  832000,  896000,  960000,
-> @@ -1290,6 +1302,61 @@ static irqreturn_t bq24190_irq_handler_thread(int =
-irq, void *data)
->  	return IRQ_HANDLED;
->  }
-> =20
-> +static void bq24190_extcon_work(struct work_struct *work)
+> +#include <linux/acpi.h>
+> +#include <linux/delay.h>
+> +#include <linux/i2c.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/mfd/intel_soc_pmic.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/power_supply.h>
+> +#include <linux/power/cht_wc_fuel_gauge.h>
+> +#include <linux/slab.h>
+> +
+> +#define REG_CHARGE_NOW		0x05
+> +#define REG_VOLTAGE_NOW		0x09
+> +#define REG_CURRENT_NOW		0x0a
+> +#define REG_CURRENT_AVG		0x0b
+> +#define REG_CHARGE_FULL		0x10
+> +#define REG_CHARGE_DESIGN	0x18
+> +#define REG_VOLTAGE_AVG		0x19
+> +#define REG_VOLTAGE_OCV		0x1b /* Only updated during charging */
+> +
+> +#define CHT_WC_FG_PTYPE		4
+> +
+> +struct cht_wc_fg_data {
+> +	struct device *dev;
+> +	struct i2c_client *client;
+> +};
+> +
+> +static DEFINE_MUTEX(cht_wc_fg_mutex);
+> +static struct cht_wc_fg_data *cht_wc_fg;
+> +
+> +static int cht_wc_fg_read(struct cht_wc_fg_data *fg, u8 reg,
+> +			  union power_supply_propval *val, int scale,
+> +			  int sign_extend)
 > +{
-> +	struct bq24190_dev_info *bdi =3D
-> +		container_of(work, struct bq24190_dev_info, extcon_work);
-> +	int ret, iinlim =3D 0;
+> +	int ret;
 > +
-> +	if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_SDP) =3D=3D 1)
-> +		iinlim =3D 500000;
-> +	else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_CDP) =3D=3D 1 ||
-> +		 extcon_get_state(bdi->extcon, EXTCON_CHG_USB_ACA) =3D=3D 1)
-> +		iinlim =3D 1500000;
-> +	else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_DCP) =3D=3D 1)
-> +		iinlim =3D 2000000;
+> +	ret =3D i2c_smbus_read_word_data(fg->client, reg);
+> +	if (ret < 0)
+> +		return ret;
 > +
-> +	if (iinlim) {
-> +		ret =3D bq24190_set_field_val(bdi, BQ24190_REG_ISC,
-> +				BQ24190_REG_ISC_IINLIM_MASK,
-> +				BQ24190_REG_ISC_IINLIM_SHIFT,
-> +				bq24190_iinlim_values,
-> +				ARRAY_SIZE(bq24190_iinlim_values),
-> +				iinlim);
-> +		if (ret)
-> +			dev_err(bdi->dev, "Can't set IINLIM: %d\n", ret);
+> +	if (sign_extend)
+> +		ret =3D sign_extend32(ret, 15);
+> +
+> +	val->intval =3D ret * scale;
+> +
+> +	return 0;
+> +}
+> +
+> +int cht_wc_fg_get_property(enum power_supply_property prop,
+> +			   union power_supply_propval *val)
+> +{
+> +	int ret =3D 0;
+> +
+> +	mutex_lock(&cht_wc_fg_mutex);
+> +
+> +	if (!cht_wc_fg) {
+> +		ret =3D -ENXIO;
+> +		goto out_unlock;
+> +	}
+> +
+> +	switch (prop) {
+> +	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> +		ret =3D cht_wc_fg_read(cht_wc_fg, REG_VOLTAGE_NOW, val, 75, 0);
+> +		break;
+> +	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
+> +		ret =3D cht_wc_fg_read(cht_wc_fg, REG_VOLTAGE_AVG, val, 75, 0);
+> +		break;
+> +	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
+> +		ret =3D cht_wc_fg_read(cht_wc_fg, REG_VOLTAGE_OCV, val, 75, 0);
+> +		break;
+> +	case POWER_SUPPLY_PROP_CURRENT_NOW:
+> +		ret =3D cht_wc_fg_read(cht_wc_fg, REG_CURRENT_NOW, val, 150, 1);
+> +		break;
+> +	case POWER_SUPPLY_PROP_CURRENT_AVG:
+> +		ret =3D cht_wc_fg_read(cht_wc_fg, REG_CURRENT_AVG, val, 150, 1);
+> +		break;
+> +	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+> +		ret =3D cht_wc_fg_read(cht_wc_fg, REG_CHARGE_DESIGN, val, 500, 0);
+> +		break;
+> +	case POWER_SUPPLY_PROP_CHARGE_FULL:
+> +		ret =3D cht_wc_fg_read(cht_wc_fg, REG_CHARGE_FULL, val, 500, 0);
+> +		break;
+> +	case POWER_SUPPLY_PROP_CHARGE_NOW:
+> +		ret =3D cht_wc_fg_read(cht_wc_fg, REG_CHARGE_NOW, val, 500, 0);
+> +		break;
+> +	default:
+> +		ret =3D -ENODATA;
+> +	}
+> +out_unlock:
+> +	mutex_unlock(&cht_wc_fg_mutex);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(cht_wc_fg_get_property);
+> +
+> +static int cht_wc_fg_probe(struct i2c_client *client,
+> +			const struct i2c_device_id *i2c_id)
+> +{
+> +	struct device *dev =3D &client->dev;
+> +	struct cht_wc_fg_data *fg;
+> +	acpi_status status;
+> +	unsigned long long ptyp;
+> +
+> +	fg =3D devm_kzalloc(dev, sizeof(*fg), GFP_KERNEL);
+> +	if (!fg)
+> +		return -ENOMEM;
+> +
+> +	status =3D acpi_evaluate_integer(ACPI_HANDLE(dev), "PTYP", NULL, &ptyp);
+> +	if (ACPI_FAILURE(status)) {
+> +		dev_err(dev, "Failed to get PTYPE\n");
+> +		return -ENODEV;
 > +	}
 > +
 > +	/*
-> +	 * If no charger has been detected and host mode is requested, activate
-> +	 * the 5V boost converter, otherwise deactivate it.
+> +	 * The same ACPI HID is used with different PMICs check PTYP to
+> +	 * ensure that we are dealing with a Whiskey Cove PMIC.
 > +	 */
-> +	if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) =3D=3D 1)=
- {
-> +		ret =3D bq24190_write_mask(bdi, BQ24190_REG_POC,
-> +					 BQ24190_REG_POC_CHG_CONFIG_MASK,
-> +					 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
-> +					 BQ24190_REG_POC_CHG_CONFIG_OTG);
-> +	} else {
-> +		ret =3D bq24190_write_mask(bdi, BQ24190_REG_POC,
-> +					 BQ24190_REG_POC_CHG_CONFIG_MASK,
-> +					 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
-> +					 BQ24190_REG_POC_CHG_CONFIG_CHARGE);
-> +	}
-> +	if (ret)
-> +		dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", ret);
+> +	if (ptyp !=3D CHT_WC_FG_PTYPE)
+> +		return -ENODEV;
+> +
+> +	fg->dev =3D dev;
+> +	/*
+> +	 * The current resource settings table for the fuel gauge contains
+> +	 * multiple i2c devices on 2 different i2c-busses. The one we actually
+> +	 * want is the second resource (index 1).
+> +	 */
+> +	fg->client =3D i2c_acpi_new_device(dev, 1);
+> +	if (!fg->client)
+> +		return -EPROBE_DEFER;
+> +
+> +	i2c_set_clientdata(client, fg);
+> +
+> +	mutex_lock(&cht_wc_fg_mutex);
+> +	cht_wc_fg =3D fg;
+> +	mutex_unlock(&cht_wc_fg_mutex);
+> +
+> +	return 0;
 > +}
 > +
-> +static int bq24190_extcon_event(struct notifier_block *nb, unsigned long=
- event,
-> +				void *param)
+> +static int cht_wc_fg_remove(struct i2c_client *i2c)
 > +{
-> +	struct bq24190_dev_info *bdi =3D
-> +		container_of(nb, struct bq24190_dev_info, extcon_nb);
+> +	struct cht_wc_fg_data *fg =3D i2c_get_clientdata(i2c);
 > +
-> +	schedule_work(&bdi->extcon_work);
+> +	mutex_lock(&cht_wc_fg_mutex);
+> +	cht_wc_fg =3D NULL;
+> +	mutex_unlock(&cht_wc_fg_mutex);
 > +
-> +	return NOTIFY_OK;
+> +	i2c_unregister_device(fg->client);
+> +
+> +	return 0;
 > +}
 > +
->  static int bq24190_hw_init(struct bq24190_dev_info *bdi)
->  {
->  	u8 v;
-> @@ -1375,6 +1442,12 @@ static int bq24190_probe(struct i2c_client *client,
->  			return -EPROBE_DEFER;
->  	}
-> =20
-> +	if (bdi->pdata && bdi->pdata->extcon_name) {
-> +		bdi->extcon =3D extcon_get_extcon_dev(bdi->pdata->extcon_name);
-> +		if (!bdi->extcon)
-> +			return -EPROBE_DEFER;
-> +	}
+> +static const struct i2c_device_id cht_wc_fg_i2c_id[] =3D {
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(i2c, cht_wc_fg_i2c_id);
 > +
->  	pm_runtime_enable(dev);
->  	pm_runtime_resume(dev);
-> =20
-> @@ -1423,6 +1496,18 @@ static int bq24190_probe(struct i2c_client *client,
->  		goto out4;
->  	}
-> =20
-> +	if (bdi->extcon) {
-> +		INIT_WORK(&bdi->extcon_work, bq24190_extcon_work);
-> +		bdi->extcon_nb.notifier_call =3D bq24190_extcon_event;
-> +		ret =3D devm_extcon_register_notifier(dev, bdi->extcon, -1,
-> +						    &bdi->extcon_nb);
-> +		if (ret)
-> +			goto out4;
+> +static const struct acpi_device_id cht_wc_fg_acpi_ids[] =3D {
+> +	{ "INT33FE", },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(acpi, cht_wc_fg_acpi_ids);
 > +
-> +		/* Sync initial cable state */
-> +		schedule_work(&bdi->extcon_work);
-> +	}
+> +static struct i2c_driver cht_wc_fg_driver =3D {
+> +	.driver	=3D {
+> +		.name	=3D "CHT Whiskey Cove PMIC Fuel Gauge",
+> +		.acpi_match_table =3D ACPI_PTR(cht_wc_fg_acpi_ids),
+> +	},
+> +	.probe =3D cht_wc_fg_probe,
+> +	.remove =3D cht_wc_fg_remove,
+> +	.id_table =3D cht_wc_fg_i2c_id,
+> +	.irq_index =3D 1,
+> +};
 > +
->  	return 0;
-> =20
->  out4:
-> diff --git a/include/linux/power/bq24190_charger.h b/include/linux/power/=
-bq24190_charger.h
-> index 02d248b..909c5b9 100644
-> --- a/include/linux/power/bq24190_charger.h
-> +++ b/include/linux/power/bq24190_charger.h
-> @@ -13,6 +13,7 @@
-> =20
->  struct bq24190_platform_data {
->  	bool no_register_reset;
-> +	const char *extcon_name;
->  	int (*get_ext_bat_property)(enum power_supply_property prop,
->  				    union power_supply_propval *val);
->  };
+> +module_i2c_driver(cht_wc_fg_driver);
+> +
+> +MODULE_DESCRIPTION("Intel CHT Whiskey Cove PMIC Fuel Gauge driver");
+> +MODULE_AUTHOR("Hans de Goede <hdegoede@redhat.com>");
+> +MODULE_LICENSE("GPL");
+> diff --git a/include/linux/power/cht_wc_fuel_gauge.h b/include/linux/powe=
+r/cht_wc_fuel_gauge.h
+> new file mode 100644
+> index 0000000..4b4e051
+> --- /dev/null
+> +++ b/include/linux/power/cht_wc_fuel_gauge.h
+> @@ -0,0 +1,21 @@
+> +/*
+> + * Intel CHT Whiskey Cove Fuel Gauge driver
+> + * Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License version
+> + * 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#ifndef __CHT_WC_FUEL_GAUGE_H
+> +#define __CHT_WC_FUEL_GAUGE_H
+> +
+> +int cht_wc_fg_get_property(enum power_supply_property prop,
+> +			   union power_supply_propval *val);
+> +
+> +#endif
 > --=20
 > 2.9.3
 >=20
 
---pqqyszwiwknurfqv
+--my22qcqtn2laiytu
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljPYAUACgkQ2O7X88g7
-+ppmWBAApnBld0Wi/TVmBwXwnn42zIo/UXy41SPGmf6c/g4aRU4i8JLHE0SIQSKz
-2yO8BNyJIaYgjyLBZrSybmsiUaba9GYjO7q/AJomrdsCOYnRpppDxlPoWt9kEBD0
-PgS1pDYj1ecK5VZNvLZNJA0qxDzkZWCcbl7UvyBrt76cPwk+awK791aWNezOWHXS
-V/ggubDJ16Em/6e8m7v1Bja8WcLFWyJGbGyzLMeCwyel8+KqtgeLZkAtP7IQshyA
-rRNnVOAWiUwy/QnbZif8/yZMKEiKKCZJYlsUtr/skSwEQwGuvskSDJMikochAx3R
-tjgcb1BFAjPg2X9Y53+RMN0M1qUvycxjFIzYp/mZ76iSrDIhpKZY7inVR5DTvItB
-QHFyyB3Lp8dEf2VsilAEidMx4qDeea9igl0I2lZ/jYvHhMh9eY6hst/dbd2oPq8r
-rH4c3QvMP1LLdaU3YvuPnWWf8xSgD2ZnYJc0n2ascpVdf7Wkw8vyvhtEzhyl1ETp
-ooeOao7VhrBQ03vDnmuk4nWDh2VTZBpn5dImHklqneE1lPOW1CJ3g5FaqOvyxp4l
-RzGIeMfw+nMGyHODyiUr74hD7Fen5y8C1HILqWzQ9XJ/M+xPGyar9ZkLO9AZnRaQ
-W5CXUKNcqDtx6adAg7KG1lLLRZ2BM65LDrehHffEav281LZ4Z/I=
-=fBdQ
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljPY4cACgkQ2O7X88g7
++ppIPg//a3pIljza6TQKmV2HewKq+Gm/EnEQrwdIZyqjyj4SR3aSG4/YUcy70JGf
+yqRzbu9GFzCKTf3L+a3BWF4BqY4Om2Y5CZxNjeKXmko+aRpDcr3brQDhPtl8JNJP
+xZgO790LfETL4iJmgSjV5uYOFrSJSGqJr4z+xJPRgqFyNKjzlLDU47d7oPjsRF0/
+UfBCJcxwUF1d8QNnU4eS2t5j+ljhKbWwUFC25xaNy3tG1szhBE3ClBBllWNBYb85
++Sm726zbd+imE2YlrcxJm2C/0edTfcL+4W1YZlUoJ1JmaWEjjm3MLlf6hVfMwhR+
+T4vEDkpAgXL/71R9LUP1KZPwRQlXIJuJDEftLvKsL3tisOKMIDsJzRJnKbV5siFk
+yOg49afA2iQ56VQUVBuraQ3ai61tn5wX/1ixwegL3WsctoGLc+oux2Pd5IfHnTBd
+Xp3hm0urHzBzceqR5RBvO6LJvVkMr7QHMFlm/GcVjMQkkLISH+/YtwxJcO7S9GU1
+6cSAslLzo4i4IgL/svYidA0CdeOVK+fbnERQ6ORFY7MAw/haV5vDXphvq4zj67ed
+ZFGQWjp28TnHRwF9R9H2Xb66Pzy3Aw5NXFzeAqgiUwpBWCgGiyoNnCrZYRZHNh2c
+QWY2rOJ01P4ZlicFCm2gbR6afbRMgAyDcka+Hgp1OvNtMxdPzsY=
+=WJJA
 -----END PGP SIGNATURE-----
 
---pqqyszwiwknurfqv--
+--my22qcqtn2laiytu--
