@@ -1,84 +1,257 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Subject: [PATCH v2 02/10] x86: assembly, FUNC_START for fn,
-	DATA_START for data
-Date: Mon, 20 Mar 2017 13:32:14 +0100
-Message-ID: <20170320123222.15453-2-jslaby@suse.cz>
-References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
- <20170320123222.15453-1-jslaby@suse.cz>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [RFC][PATCH 2/2] cpufreq: schedutil: Force max frequency on busy
+ CPUs
+Date: Mon, 20 Mar 2017 12:34:16 +0000
+Message-ID: <20170320123416.GB27896@e110439-lin>
+References: <4366682.tsferJN35u@aspire.rjw.lan>
+ <2185243.flNrap3qq1@aspire.rjw.lan>
+ <20170320035745.GC25659@vireshk-i7>
+ <CAKfTPtD8bp-mB=9Rjufeyj3weg6T3b1J-o+Sc2Oe2EMGX3zKzQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xen.org>
-In-Reply-To: <20170320123222.15453-1-jslaby@suse.cz>
-List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xen.org>
-List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
-List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xen.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
-To: mingo@redhat.com
-Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, hpa@zytor.com, linux-pm@vger.kernel.org, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, jpoimboe@redhat.com, xen-devel@lists.xenproject.org, tglx@linutronix.de, Jiri Slaby <jslaby@suse.cz>, Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:37700 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754894AbdCTMfI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 20 Mar 2017 08:35:08 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtD8bp-mB=9Rjufeyj3weg6T3b1J-o+Sc2Oe2EMGX3zKzQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 
-VGhpcyBpcyBhIHN0YXJ0IG9mIHNlcmllcyB0byBjbGVhbnVwIG1hY3JvcyB1c2VkIGZvciBzdGFy
-dGluZyBmdW5jdGlvbnMsCmRhdGEsIGdsb2JhbHMgZXRjLiBhY3Jvc3MgeDg2LiBXaGVuIHdlIGhh
-dmUgYWxsIHRoaXMgc29ydGVkIG91dCwgdGhpcwp3aWxsIGhlbHAgdG8gaW5qZWN0IERXQVJGIHVu
-d2luZGluZyBpbmZvIGJ5IG9ianRvb2wgbGF0ZXIuCgpUaGUgZ29hbCBpcyBmb3JjaW5nIFNZTV9G
-VU5DX1NUQVJUIHRvIGVtaXQgLmNmaV9zdGFydHByb2MgYW5kClNZTV9GVU5DX0VORCB0byBlbWl0
-IC5jZmlfZW5kcHJvYy4gQXV0b21hdGljYWxseSBhdCBiZXN0LgoKVGhpcyBwYXJ0aWN1bGFyIHBh
-dGNoIG1ha2VzIHByb3BlciB1c2Ugb2YgU1lNX0RBVEFfU1RBUlQgb24gZGF0YSBhbmQKU1lNX0ZV
-TkNfU1RBUlQgb24gYSBmdW5jdGlvbiB3aGljaCB3YXMgbm90IHRoZSBjYXNlIG9uIDQgbG9jYXRp
-b25zLgoKU2lnbmVkLW9mZi1ieTogSmlyaSBTbGFieSA8anNsYWJ5QHN1c2UuY3o+CkNjOiBUaG9t
-YXMgR2xlaXhuZXIgPHRnbHhAbGludXRyb25peC5kZT4KQ2M6IEluZ28gTW9sbmFyIDxtaW5nb0By
-ZWRoYXQuY29tPgpDYzogIkguIFBldGVyIEFudmluIiA8aHBhQHp5dG9yLmNvbT4KQ2M6IDx4ODZA
-a2VybmVsLm9yZz4KQ2M6IEJvcmlzIE9zdHJvdnNreSA8Ym9yaXMub3N0cm92c2t5QG9yYWNsZS5j
-b20+CkNjOiBKdWVyZ2VuIEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+ClJldmlld2VkLWJ5OiBKdWVy
-Z2VuIEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+IFt4ZW4gcGFydHNdCkNjOiA8eGVuLWRldmVsQGxp
-c3RzLnhlbnByb2plY3Qub3JnPgpDYzogIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHJqd3lzb2Nr
-aS5uZXQ+CkNjOiBMZW4gQnJvd24gPGxlbi5icm93bkBpbnRlbC5jb20+CkNjOiBQYXZlbCBNYWNo
-ZWsgPHBhdmVsQHVjdy5jej4KQ2M6IDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc+Ci0tLQogYXJj
-aC94ODYvZW50cnkvZW50cnlfNjRfY29tcGF0LlMgfCAgMyArLS0KIGFyY2gveDg2L2tlcm5lbC9h
-Y3BpL3dha2V1cF82NC5TIHwgMTQgKysrKysrKy0tLS0tLS0KIGFyY2gveDg2L2tlcm5lbC9oZWFk
-XzY0LlMgICAgICAgIHwgIDIgKy0KIGFyY2gveDg2L2tlcm5lbC9tY291bnRfNjQuUyAgICAgIHwg
-IDIgKy0KIDQgZmlsZXMgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygrKSwgMTEgZGVsZXRpb25zKC0p
-CgpkaWZmIC0tZ2l0IGEvYXJjaC94ODYvZW50cnkvZW50cnlfNjRfY29tcGF0LlMgYi9hcmNoL3g4
-Ni9lbnRyeS9lbnRyeV82NF9jb21wYXQuUwppbmRleCBlMTcyMWRhZmJjYjEuLjczZDdmZjBiMTI1
-YyAxMDA2NDQKLS0tIGEvYXJjaC94ODYvZW50cnkvZW50cnlfNjRfY29tcGF0LlMKKysrIGIvYXJj
-aC94ODYvZW50cnkvZW50cnlfNjRfY29tcGF0LlMKQEAgLTM0Miw4ICszNDIsNyBAQCBFTlRSWShl
-bnRyeV9JTlQ4MF9jb21wYXQpCiAJam1wCXJlc3RvcmVfcmVnc19hbmRfaXJldAogRU5EKGVudHJ5
-X0lOVDgwX2NvbXBhdCkKIAotCUFMSUdOCi1HTE9CQUwoc3R1YjMyX2Nsb25lKQorU1lNX0ZVTkNf
-U1RBUlQoc3R1YjMyX2Nsb25lKQogCS8qCiAJICogVGhlIDMyLWJpdCBjbG9uZSBBQkkgaXM6IGNs
-b25lKC4uLiwgaW50IHRsc192YWwsIGludCAqY2hpbGRfdGlkcHRyKS4KIAkgKiBUaGUgNjQtYml0
-IGNsb25lIEFCSSBpczogY2xvbmUoLi4uLCBpbnQgKmNoaWxkX3RpZHB0ciwgaW50IHRsc192YWwp
-LgpkaWZmIC0tZ2l0IGEvYXJjaC94ODYva2VybmVsL2FjcGkvd2FrZXVwXzY0LlMgYi9hcmNoL3g4
-Ni9rZXJuZWwvYWNwaS93YWtldXBfNjQuUwppbmRleCA1MGI4ZWQwMzE3YTMuLjBiNWE1NTczZjU3
-ZCAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2VybmVsL2FjcGkvd2FrZXVwXzY0LlMKKysrIGIvYXJj
-aC94ODYva2VybmVsL2FjcGkvd2FrZXVwXzY0LlMKQEAgLTEyNSwxMiArMTI1LDEyIEBAIEVOVFJZ
-KGRvX3N1c3BlbmRfbG93bGV2ZWwpCiBFTkRQUk9DKGRvX3N1c3BlbmRfbG93bGV2ZWwpCiAKIC5k
-YXRhCi1FTlRSWShzYXZlZF9yYnApCS5xdWFkCTAKLUVOVFJZKHNhdmVkX3JzaSkJLnF1YWQJMAot
-RU5UUlkoc2F2ZWRfcmRpKQkucXVhZAkwCi1FTlRSWShzYXZlZF9yYngpCS5xdWFkCTAKK1NZTV9E
-QVRBX1NUQVJUKHNhdmVkX3JicCkJCS5xdWFkCTAKK1NZTV9EQVRBX1NUQVJUKHNhdmVkX3JzaSkJ
-CS5xdWFkCTAKK1NZTV9EQVRBX1NUQVJUKHNhdmVkX3JkaSkJCS5xdWFkCTAKK1NZTV9EQVRBX1NU
-QVJUKHNhdmVkX3JieCkJCS5xdWFkCTAKIAotRU5UUlkoc2F2ZWRfcmlwKQkucXVhZAkwCi1FTlRS
-WShzYXZlZF9yc3ApCS5xdWFkCTAKK1NZTV9EQVRBX1NUQVJUKHNhdmVkX3JpcCkJCS5xdWFkCTAK
-K1NZTV9EQVRBX1NUQVJUKHNhdmVkX3JzcCkJCS5xdWFkCTAKIAotRU5UUlkoc2F2ZWRfbWFnaWMp
-CS5xdWFkCTAKK1NZTV9EQVRBX1NUQVJUKHNhdmVkX21hZ2ljKQkucXVhZAkwCmRpZmYgLS1naXQg
-YS9hcmNoL3g4Ni9rZXJuZWwvaGVhZF82NC5TIGIvYXJjaC94ODYva2VybmVsL2hlYWRfNjQuUwpp
-bmRleCBhYzlkMzI3ZDJlNDIuLmUwOTNhODA0ZjFmYiAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2Vy
-bmVsL2hlYWRfNjQuUworKysgYi9hcmNoL3g4Ni9rZXJuZWwvaGVhZF82NC5TCkBAIC00ODcsNyAr
-NDg3LDcgQEAgZWFybHlfZ2R0X2Rlc2NyOgogZWFybHlfZ2R0X2Rlc2NyX2Jhc2U6CiAJLnF1YWQJ
-SU5JVF9QRVJfQ1BVX1ZBUihnZHRfcGFnZSkKIAotRU5UUlkocGh5c19iYXNlKQorU1lNX0RBVEFf
-U1RBUlQocGh5c19iYXNlKQogCS8qIFRoaXMgbXVzdCBtYXRjaCB0aGUgZmlyc3QgZW50cnkgaW4g
-bGV2ZWwyX2tlcm5lbF9wZ3QgKi8KIAkucXVhZCAgIDB4MDAwMDAwMDAwMDAwMDAwMAogRVhQT1JU
-X1NZTUJPTChwaHlzX2Jhc2UpCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9rZXJuZWwvbWNvdW50XzY0
-LlMgYi9hcmNoL3g4Ni9rZXJuZWwvbWNvdW50XzY0LlMKaW5kZXggN2IwZDNkYTUyZmI0Li4yYjRk
-NzA0NWU4MjMgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2L2tlcm5lbC9tY291bnRfNjQuUworKysgYi9h
-cmNoL3g4Ni9rZXJuZWwvbWNvdW50XzY0LlMKQEAgLTMyMCw3ICszMjAsNyBAQCBFTlRSWShmdHJh
-Y2VfZ3JhcGhfY2FsbGVyKQogCXJldHEKIEVORChmdHJhY2VfZ3JhcGhfY2FsbGVyKQogCi1HTE9C
-QUwocmV0dXJuX3RvX2hhbmRsZXIpCitTWU1fRlVOQ19TVEFSVChyZXR1cm5fdG9faGFuZGxlcikK
-IAlzdWJxICAkMjQsICVyc3AKIAogCS8qIFNhdmUgdGhlIHJldHVybiB2YWx1ZXMgKi8KLS0gCjIu
-MTIuMAoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fClhl
-bi1kZXZlbCBtYWlsaW5nIGxpc3QKWGVuLWRldmVsQGxpc3RzLnhlbi5vcmcKaHR0cHM6Ly9saXN0
-cy54ZW4ub3JnL3hlbi1kZXZlbAo=
+On 20-Mar 09:26, Vincent Guittot wrote:
+> On 20 March 2017 at 04:57, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 19-03-17, 14:34, Rafael J. Wysocki wrote:
+> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>
+> >> The PELT metric used by the schedutil governor underestimates the
+> >> CPU utilization in some cases.  The reason for that may be time spent
+> >> in interrupt handlers and similar which is not accounted for by PELT.
+> 
+> Are you sure of the root cause  described above (time stolen by irq
+> handler) or is it just a hypotheses ? That would be good to be sure of
+> the root cause
+> Furthermore, IIRC the time spent in irq context is also accounted as
+> run time for the running cfs task but not RT and deadline task running
+> time
+
+As long as the IRQ processing does not generate a context switch,
+which is happening (eventually) if the top half schedule some deferred
+work to be executed by a bottom half.
+
+Thus, me too I would say that all the top half time is accounted in
+PELT, since the current task is still RUNNABLE/RUNNING.
+
+> So I'm not really aligned with the description of your problem: PELT
+> metric underestimates the load of the CPU.  The PELT is just about
+> tracking CFS task utilization but not whole CPU utilization and
+> according to your description of the problem (time stolen by irq),
+> your problem doesn't come from an underestimation of CFS task but from
+> time spent in something else but not accounted in the value used by
+> schedutil
+
+Quite likely. Indeed, it can really be that the CFS task is preempted
+because of some RT activity generated by the IRQ handler.
+
+More in general, I've also noticed many suboptimal freq switches when
+RT tasks interleave with CFS ones, because of:
+- relatively long down _and up_ throttling times
+- the way schedutil's flags are tracked and updated
+- the callsites from where we call schedutil updates
+
+For example it can really happen that we are running at the highest
+OPP because of some RT activity. Then we switch back to a relatively
+low utilization CFS workload and then:
+1. a tick happens which produces a frequency drop
+2. right after a new IRQ starts a RT task
+
+Well, because of the schedutil's throttling mechanism we can end up
+running at the reduce OPP for quite long before (eventually) going
+back to the higher OPP... if and only we are lucky enough to get a new
+RT task starting outside of a throttling window.
+
+I guess that if we have quite a lot of IRQ->RT activations in a CPU
+with a relatively low CFS utilization, this unwanted frequency hopping
+is quite likely.
+
+> That would be good to be sure of what is running during this not
+> accounted time and find a way to account them
+
+Do we have any number to characterize the frequency of IRQ/RT
+activations?
+
+We should notice also that, while CFS tasks are preempted by RT ones,
+the PELT signal decays. This can contribute on lowering even further
+the utilization demand from the CFS class.
+
+> >> That can be easily demonstrated by running kernel compilation on
+> >> a Sandy Bridge Intel processor, running turbostat in parallel with
+> >> it and looking at the values written to the MSR_IA32_PERF_CTL
+> >> register.  Namely, the expected result would be that when all CPUs
+> >> were 100% busy, all of them would be requested to run in the maximum
+> >> P-state, but observation shows that this clearly isn't the case.
+
+Can you share a trace with at least sched_switch events enabled?
+This can help on identify which workloads are there and how they
+interact with schedutil.
+
+> >> The CPUs run in the maximum P-state for a while and then are
+> >> requested to run slower and go back to the maximum P-state after
+> >> a while again.  That causes the actual frequency of the processor to
+
+That's possibly exactly the pattern I've described above.
+
+> >> visibly oscillate below the sustainable maximum in a jittery fashion
+> >> which clearly is not desirable.
+> >>
+> >> To work around this issue use the observation that, from the
+> >> schedutil governor's perspective, CPUs that are never idle should
+> >> always run at the maximum frequency and make that happen.
+
+Perhaps some of the patches I've posted in this series:
+   https://lkml.org/lkml/2017/3/2/385
+can help on that side.
+
+The pattern you report seems to me quite matching with the case "b"
+described in the cover letter. I've also shared a notebook:
+   https://gist.github.com/derkling/d6a21b459a18091b2b058668a550010d
+which clearly shows that behavior happening in the first plot,
+cell named Out[15].
+
+Did you had a chance to have a look at them?
+
+It would be nice to know if they can provide some benefits to your
+use-case.
+
+> >> To that end, add a counter of idle calls to struct sugov_cpu and
+> >> modify cpuidle_idle_call() to increment that counter every time it
+> >> is about to put the given CPU into an idle state.  Next, make the
+> >> schedutil governor look at that counter for the current CPU every
+> >> time before it is about to start heavy computations.  If the counter
+> >> has not changed for over SUGOV_BUSY_THRESHOLD time (equal to 50 ms),
+> >> the CPU has not been idle for at least that long and the governor
+> >> will choose the maximum frequency for it without looking at the PELT
+> >> metric at all.
+> >
+> > Looks like we are fixing a PELT problem with a schedutil Hack :)
+> 
+> I would not say that it's a PELT problem (at least based on current
+> description) but more that we don't track all
+> activities of CPU
+
+Agree... with both comments.
+
+
+> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> ---
+> >>  include/linux/sched/cpufreq.h    |    6 ++++++
+> >>  kernel/sched/cpufreq_schedutil.c |   38 ++++++++++++++++++++++++++++++++++++--
+> >>  kernel/sched/idle.c              |    3 +++
+> >>  3 files changed, 45 insertions(+), 2 deletions(-)
+> >>
+> >> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+> >> ===================================================================
+> >> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
+> >> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
+> >> @@ -20,6 +20,7 @@
+> >>  #include "sched.h"
+> >>
+> >>  #define SUGOV_KTHREAD_PRIORITY       50
+> >> +#define SUGOV_BUSY_THRESHOLD (50 * NSEC_PER_MSEC)
+> >>
+> >>  struct sugov_tunables {
+> >>       struct gov_attr_set attr_set;
+> >> @@ -55,6 +56,9 @@ struct sugov_cpu {
+> >>
+> >>       unsigned long iowait_boost;
+> >>       unsigned long iowait_boost_max;
+> >> +     unsigned long idle_calls;
+> >> +     unsigned long saved_idle_calls;
+> >> +     u64 busy_start;
+> >>       u64 last_update;
+> >>
+> >>       /* The fields below are only needed when sharing a policy. */
+> >> @@ -192,6 +196,34 @@ static void sugov_iowait_boost(struct su
+> >>       sg_cpu->iowait_boost >>= 1;
+> >>  }
+> >>
+> >> +void cpufreq_schedutil_idle_call(void)
+> >> +{
+> >> +     struct sugov_cpu *sg_cpu = this_cpu_ptr(&sugov_cpu);
+> >> +
+> >> +     sg_cpu->idle_calls++;
+> >> +}
+> >> +
+> >> +static bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu)
+> >> +{
+> >> +     if (sg_cpu->idle_calls != sg_cpu->saved_idle_calls) {
+> >> +             sg_cpu->busy_start = 0;
+> >> +             return false;
+> >> +     }
+> >> +
+> >> +     if (!sg_cpu->busy_start) {
+> >> +             sg_cpu->busy_start = sg_cpu->last_update;
+> >> +             return false;
+> >> +     }
+> >> +
+> >> +     return sg_cpu->last_update - sg_cpu->busy_start > SUGOV_BUSY_THRESHOLD;
+> >> +}
+> >> +
+> >> +static void sugov_save_idle_calls(struct sugov_cpu *sg_cpu)
+> >> +{
+> >> +     if (!sg_cpu->busy_start)
+> >> +             sg_cpu->saved_idle_calls = sg_cpu->idle_calls;
+> >
+> > Why aren't we doing this in sugov_cpu_is_busy() itself ? And isn't it possible
+> > for idle_calls to get incremented by this time?
+> >
+> >> +}
+> >> +
+> >>  static void sugov_update_single(struct update_util_data *hook, u64 time,
+> >>                               unsigned int flags)
+> >>  {
+> >> @@ -207,7 +239,7 @@ static void sugov_update_single(struct u
+> >>       if (!sugov_should_update_freq(sg_policy, time))
+> >>               return;
+> >>
+> >> -     if (flags & SCHED_CPUFREQ_RT_DL) {
+> >> +     if ((flags & SCHED_CPUFREQ_RT_DL) || sugov_cpu_is_busy(sg_cpu)) {
+> >>               next_f = policy->cpuinfo.max_freq;
+> >>       } else {
+> >>               sugov_get_util(&util, &max);
+> >> @@ -215,6 +247,7 @@ static void sugov_update_single(struct u
+> >>               next_f = get_next_freq(sg_policy, util, max);
+> >>       }
+> >>       sugov_update_commit(sg_policy, time, next_f);
+> >> +     sugov_save_idle_calls(sg_cpu);
+> >>  }
+> >>
+> >>  static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu)
+> >> @@ -278,12 +311,13 @@ static void sugov_update_shared(struct u
+> >>       sg_cpu->last_update = time;
+> >>
+> >>       if (sugov_should_update_freq(sg_policy, time)) {
+> >> -             if (flags & SCHED_CPUFREQ_RT_DL)
+> >> +             if ((flags & SCHED_CPUFREQ_RT_DL) || sugov_cpu_is_busy(sg_cpu))
+> >
+> > What about others CPUs in this policy?
+> >
+> >>                       next_f = sg_policy->policy->cpuinfo.max_freq;
+> >>               else
+> >>                       next_f = sugov_next_freq_shared(sg_cpu);
+> >>
+> >>               sugov_update_commit(sg_policy, time, next_f);
+> >> +             sugov_save_idle_calls(sg_cpu);
+> >>       }
+> >>
+> >>       raw_spin_unlock(&sg_policy->update_lock);
+> >
+> > --
+> > viresh
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
