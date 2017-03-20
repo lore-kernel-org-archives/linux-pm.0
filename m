@@ -1,70 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 2/2] cpufreq: schedutil: Force max frequency on busy CPUs
-Date: Mon, 20 Mar 2017 14:04:16 +0100
-Message-ID: <3708982.k2nGuG987y@aspire.rjw.lan>
-References: <4366682.tsferJN35u@aspire.rjw.lan> <1846666.Va7CsUJLIx@aspire.rjw.lan> <20170320125009.nmi3mvrxappjrvgo@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: [PATCH v2 3/4] power: supply: axp288_fuel_gauge: Unregister duplicate ACPI battery supply
+Date: Mon, 20 Mar 2017 14:21:49 +0100
+Message-ID: <20170320132150.18771-3-hdegoede@redhat.com>
+References: <20170320132150.18771-1-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:48312 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1754983AbdCTNQe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 09:16:34 -0400
-In-Reply-To: <20170320125009.nmi3mvrxappjrvgo@hirez.programming.kicks-ass.net>
+Received: from mx1.redhat.com ([209.132.183.28]:51536 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753936AbdCTNV6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 20 Mar 2017 09:21:58 -0400
+In-Reply-To: <20170320132150.18771-1-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Monday, March 20, 2017 01:50:09 PM Peter Zijlstra wrote:
-> On Mon, Mar 20, 2017 at 01:35:12PM +0100, Rafael J. Wysocki wrote:
-> > On Monday, March 20, 2017 11:36:45 AM Peter Zijlstra wrote:
-> > > On Sun, Mar 19, 2017 at 02:34:32PM +0100, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > 
-> > > > The PELT metric used by the schedutil governor underestimates the
-> > > > CPU utilization in some cases.  The reason for that may be time spent
-> > > > in interrupt handlers and similar which is not accounted for by PELT.
-> > > > 
-> > > > That can be easily demonstrated by running kernel compilation on
-> > > > a Sandy Bridge Intel processor, running turbostat in parallel with
-> > > > it and looking at the values written to the MSR_IA32_PERF_CTL
-> > > > register.  Namely, the expected result would be that when all CPUs
-> > > > were 100% busy, all of them would be requested to run in the maximum
-> > > > P-state, but observation shows that this clearly isn't the case.
-> > > > The CPUs run in the maximum P-state for a while and then are
-> > > > requested to run slower and go back to the maximum P-state after
-> > > > a while again.  That causes the actual frequency of the processor to
-> > > > visibly oscillate below the sustainable maximum in a jittery fashion
-> > > > which clearly is not desirable.
-> > > > 
-> > > > To work around this issue use the observation that, from the
-> > > > schedutil governor's perspective, CPUs that are never idle should
-> > > > always run at the maximum frequency and make that happen.
-> > > > 
-> > > > To that end, add a counter of idle calls to struct sugov_cpu and
-> > > > modify cpuidle_idle_call() to increment that counter every time it
-> > > > is about to put the given CPU into an idle state.  Next, make the
-> > > > schedutil governor look at that counter for the current CPU every
-> > > > time before it is about to start heavy computations.  If the counter
-> > > > has not changed for over SUGOV_BUSY_THRESHOLD time (equal to 50 ms),
-> > > > the CPU has not been idle for at least that long and the governor
-> > > > will choose the maximum frequency for it without looking at the PELT
-> > > > metric at all.
-> > > 
-> > > Why the time limit?
-> > 
-> > One iteration appeared to be a bit too aggressive, but honestly I think
-> > I need to check again if this thing is regarded as viable at all.
-> > 
-> 
-> I don't hate the idea; if we don't hit idle; we shouldn't shift down.
+On some systems with axp288 PMIC the dsdt also exports an ACPI battery
+device (PNP0C0A device). This leads to there being 2 battery
+power_supply-s registed like this:
 
-OK
+~$ acpi
+Battery 0: Charging, 84%, 00:49:39 until charged
+Battery 1: Unknown, 0%, rate information unavailable
 
-> I just wonder if we don't already keep a idle-seqcount somewhere; NOHZ and
-> RCU come to mind as things that might already use something like that.
+Note that the ACPI battery device does not work properly this is due
+to Linux missing support for the vendor specific BMOP ACPI opregion.
+But even if the ACPI battery where to function fine we still do not
+want to export the same battery to userspace twice.
 
-NOHZ does that, but I did't want this to artificially depend on NOHZ.  That said,
-yes, we can use that one too.
+Therefor this commit calls acpi_battery_unregister() after successfully
+registering the axp288-fuel-gauge power_supply to remove the duplicate
+(and often broken) ACPI battery power_supply.
+
+BugLink: https://bugzilla.kernel.org/show_bug.cgi?id=194811
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Tested-by: Sergei Trusov <t.rus76@ya.ru>
+---
+ drivers/power/supply/Kconfig             | 2 ++
+ drivers/power/supply/axp288_fuel_gauge.c | 3 +++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index d978d75..ae8363b 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -242,6 +242,8 @@ config AXP288_CHARGER
+ config AXP288_FUEL_GAUGE
+ 	tristate "X-Powers AXP288 Fuel Gauge"
+ 	depends on MFD_AXP20X && IIO
++	# if ACPI_BATTERY=m, this can't be 'y'
++	depends on ACPI_BATTERY || !ACPI_BATTERY
+ 	help
+ 	  Say yes here to have support for X-Power power management IC (PMIC)
+ 	  Fuel Gauge. The device provides battery statistics and status
+diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
+index a8dcabc..b6efe7d 100644
+--- a/drivers/power/supply/axp288_fuel_gauge.c
++++ b/drivers/power/supply/axp288_fuel_gauge.c
+@@ -25,6 +25,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/mfd/axp20x.h>
+ #include <linux/platform_device.h>
++#include <linux/power/acpi.h>
+ #include <linux/power_supply.h>
+ #include <linux/iio/consumer.h>
+ #include <linux/debugfs.h>
+@@ -754,6 +755,8 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	acpi_battery_unregister();
++
+ 	fuel_gauge_create_debugfs(info);
+ 	fuel_gauge_init_irq(info);
+ 	schedule_delayed_work(&info->status_monitor, STATUS_MON_DELAY_JIFFIES);
+-- 
+2.9.3
