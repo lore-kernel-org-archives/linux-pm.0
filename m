@@ -1,75 +1,142 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] power: bq24190_charger: mark PM functions as __maybe_unused
-Date: Mon, 20 Mar 2017 14:14:15 +0100
-Message-ID: <20170320131424.271241-1-arnd@arndb.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Tony Lindgren <tony@atomide.com>, Liam Breck <liam@networkimprov.net>, Mark Greer <mgreer@animalcreek.com>, Colin Ian King <colin.king@canonical.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: [PATCH v2 2/4] ACPI: ac: Add acpi_ac_unregister() function
+Date: Mon, 20 Mar 2017 14:21:48 +0100
+Message-ID: <20170320132150.18771-2-hdegoede@redhat.com>
+References: <20170320132150.18771-1-hdegoede@redhat.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170320132150.18771-1-hdegoede@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Without CONFIG_PM, we get a harmless warning:
+On some systems we have a native PMIC driver which provides Mains
+monitoring, while the ACPI ac driver is broken on these systems
+due to bad DSTDs or because of missing vendor specific ACPI opregion
+(e.g. BMOP opregion) support, which the ACPI ac device in the dsdt
+relies on. This leads for example to a ADP1 power_supply which reports
+itself as always online even if no mains are connected.
 
-drivers/power/supply/bq24190_charger.c:1514:12: error: 'bq24190_runtime_resume' defined but not used [-Werror=unused-function]
-drivers/power/supply/bq24190_charger.c:1501:12: error: 'bq24190_runtime_suspend' defined but not used [-Werror=unused-function]
+This commit adds an acpi_ac_unregister() function which native PMIC
+drivers can call after successfully registering their own power_supply
+to unregister the (potentially broken) ACPI-ac power_supply.
 
-To avoid the warning, we can mark all four PM functions as __maybe_unused,
-which also lets us remove the incorrect #ifdef.
-
-Fixes: 3d8090cba638 ("power: bq24190_charger: Check the interrupt status on resume")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/bq24190_charger.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+Changes in v2:
+-Fix capitalization in commit msg
+-Minor style cleanups
+---
+ drivers/acpi/ac.c          | 43 ++++++++++++++++++++++++++++++++++++++-----
+ include/linux/power/acpi.h |  6 ++++++
+ 2 files changed, 44 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index 6d80670586eb..451f2bc05ea5 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -1498,7 +1498,7 @@ static int bq24190_remove(struct i2c_client *client)
+diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
+index f71b756..b42affb 100644
+--- a/drivers/acpi/ac.c
++++ b/drivers/acpi/ac.c
+@@ -26,11 +26,13 @@
+ #include <linux/types.h>
+ #include <linux/dmi.h>
+ #include <linux/delay.h>
++#include <linux/mutex.h>
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ #endif
+ #include <linux/platform_device.h>
++#include <linux/power/acpi.h>
+ #include <linux/power_supply.h>
+ #include <linux/acpi.h>
+ #include "battery.h"
+@@ -422,17 +424,27 @@ static int acpi_ac_remove(struct acpi_device *device)
  	return 0;
  }
  
--static int bq24190_runtime_suspend(struct device *dev)
-+static __maybe_unused int bq24190_runtime_suspend(struct device *dev)
++enum init_state_enum { AC_NONE, AC_INITIALIZED, AC_EXITED };
++
++static enum init_state_enum init_state;
++static DEFINE_MUTEX(init_state_mutex);
++
+ static int __init acpi_ac_init(void)
  {
- 	struct i2c_client *client = to_i2c_client(dev);
- 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-@@ -1511,7 +1511,7 @@ static int bq24190_runtime_suspend(struct device *dev)
- 	return 0;
+-	int result;
++	int result, ret = -ENODEV;
+ 
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+ 
++	/* Check if acpi_ac_unregister() got called before _init() */
++	mutex_lock(&init_state_mutex);
++	if (init_state != AC_NONE)
++		goto out_unlock;
++
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 	acpi_ac_dir = acpi_lock_ac_dir();
+ 	if (!acpi_ac_dir)
+-		return -ENODEV;
++		goto out_unlock;
+ #endif
+ 
+ 
+@@ -441,18 +453,39 @@ static int __init acpi_ac_init(void)
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 		acpi_unlock_ac_dir(acpi_ac_dir);
+ #endif
+-		return -ENODEV;
++		goto out_unlock;
+ 	}
+ 
+-	return 0;
++	init_state = AC_INITIALIZED;
++	ret = 0;
++
++out_unlock:
++	mutex_unlock(&init_state_mutex);
++	return ret;
  }
  
--static int bq24190_runtime_resume(struct device *dev)
-+static __maybe_unused int bq24190_runtime_resume(struct device *dev)
+-static void __exit acpi_ac_exit(void)
++void acpi_ac_unregister(void)
  {
- 	struct i2c_client *client = to_i2c_client(dev);
- 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-@@ -1527,8 +1527,7 @@ static int bq24190_runtime_resume(struct device *dev)
- 	return 0;
++	/* Check if _init() is done and only do unregister once */
++	mutex_lock(&init_state_mutex);
++	if (init_state != AC_INITIALIZED)
++		goto out_exit;
++
+ 	acpi_bus_unregister_driver(&acpi_ac_driver);
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 	acpi_unlock_ac_dir(acpi_ac_dir);
+ #endif
++
++out_exit:
++	init_state = AC_EXITED;
++	mutex_unlock(&init_state_mutex);
  }
++EXPORT_SYMBOL_GPL(acpi_ac_unregister);
++
++static void __exit acpi_ac_exit(void)
++{
++	acpi_ac_unregister();
++}
++
+ module_init(acpi_ac_init);
+ module_exit(acpi_ac_exit);
+diff --git a/include/linux/power/acpi.h b/include/linux/power/acpi.h
+index 83bdfb9..b50ae69 100644
+--- a/include/linux/power/acpi.h
++++ b/include/linux/power/acpi.h
+@@ -15,4 +15,10 @@ void acpi_battery_unregister(void);
+ static inline void acpi_battery_unregister(void) {}
+ #endif
  
--#ifdef CONFIG_PM_SLEEP
--static int bq24190_pm_suspend(struct device *dev)
-+static __maybe_unused int bq24190_pm_suspend(struct device *dev)
- {
- 	struct i2c_client *client = to_i2c_client(dev);
- 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-@@ -1550,7 +1549,7 @@ static int bq24190_pm_suspend(struct device *dev)
- 	return 0;
- }
- 
--static int bq24190_pm_resume(struct device *dev)
-+static __maybe_unused int bq24190_pm_resume(struct device *dev)
- {
- 	struct i2c_client *client = to_i2c_client(dev);
- 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-@@ -1580,7 +1579,6 @@ static int bq24190_pm_resume(struct device *dev)
- 
- 	return 0;
- }
--#endif
- 
- static const struct dev_pm_ops bq24190_pm_ops = {
- 	SET_RUNTIME_PM_OPS(bq24190_runtime_suspend, bq24190_runtime_resume,
++#if IS_ENABLED(CONFIG_ACPI_AC)
++void acpi_ac_unregister(void);
++#else
++static inline void acpi_ac_unregister(void) {}
++#endif
++
+ #endif
 -- 
-2.9.0
+2.9.3
+
