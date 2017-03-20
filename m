@@ -1,217 +1,242 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 06/15] power: supply: bq24190_charger: Use i2c-core
- irq-mapping code
-Date: Mon, 20 Mar 2017 05:46:43 +0100
-Message-ID: <20170320044643.keud4saopjscd5jf@earth>
+Subject: Re: [PATCH 10/15] power: supply: bq24190_charger: Use extcon to
+ determine ilimit, 5v boost
+Date: Mon, 20 Mar 2017 05:52:21 +0100
+Message-ID: <20170320045221.j25we3brb3mtloss@earth>
 References: <20170317095527.10487-1-hdegoede@redhat.com>
- <20170317095527.10487-7-hdegoede@redhat.com>
- <1489771454.19767.73.camel@linux.intel.com>
+ <20170317095527.10487-11-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="sndk4qf6n4zunler"
-Return-path: <linux-i2c-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="pqqyszwiwknurfqv"
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1489771454.19767.73.camel@linux.intel.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20170317095527.10487-11-hdegoede@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---sndk4qf6n4zunler
-Content-Type: text/plain; charset=iso-8859-1
+--pqqyszwiwknurfqv
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Mar 17, 2017 at 07:24:14PM +0200, Andy Shevchenko wrote:
-> On Fri, 2017-03-17 at 10:55 +0100, Hans de Goede wrote:
-> > The i2c-core already maps of irqs before calling the driver's probe
-> > function and there are no in tree users of
-> > bq24190_platform_data->gpio_int.
-> >=20
-> > Remove the redundant custom irq-mapping code and just use client->irq.
-> >=20
+On Fri, Mar 17, 2017 at 10:55:22AM +0100, Hans de Goede wrote:
+> Add support for monitoring an extcon device with SDP/CDP/DCP and HOST
+> cables and adjust ilimit and enable/disable the 5v boost converter
+> accordingly. This is necessary on systems where the PSEL pin is hardwired
+> high and ILIM needs to be set by software based on the detected charger
+> type.
 >=20
-> Nice! I did similar clean up to some other driver, so,
->=20
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
->=20
-> P.S. This should be first in the series against bq24190.
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-Right.
-
-Acked-by: Sebastian Reichel <sre@kernel.org>
+Acked-By: Sebastian Reichel <sre@kernel.org>
 
 -- Sebastian
 
-> > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> > ---
-> > =A0drivers/power/supply/bq24190_charger.c | 61 ++-----------------------
-> > ---------
-> > =A0include/linux/power/bq24190_charger.h=A0=A0|=A0=A01 -
-> > =A02 files changed, 2 insertions(+), 60 deletions(-)
-> >=20
-> > diff --git a/drivers/power/supply/bq24190_charger.c
-> > b/drivers/power/supply/bq24190_charger.c
-> > index 7bca8d0..9c4b171 100644
-> > --- a/drivers/power/supply/bq24190_charger.c
-> > +++ b/drivers/power/supply/bq24190_charger.c
-> > @@ -154,8 +154,6 @@ struct bq24190_dev_info {
-> > =A0	struct bq24190_platform_data	*pdata;
-> > =A0	char				model_name[I2C_NAME_SIZE]
-> > ;
-> > =A0	kernel_ulong_t			model;
-> > -	unsigned int			gpio_int;
-> > -	unsigned int			irq;
-> > =A0	struct mutex			f_reg_lock;
-> > =A0	u8				f_reg;
-> > =A0	u8				ss_reg;
-> > @@ -1296,56 +1294,11 @@ static int bq24190_hw_init(struct
-> > bq24190_dev_info *bdi)
-> > =A0	return ret;
-> > =A0}
-> > =A0
-> > -#ifdef CONFIG_OF
-> > -static int bq24190_setup_dt(struct bq24190_dev_info *bdi)
-> > -{
-> > -	bdi->irq =3D irq_of_parse_and_map(bdi->dev->of_node, 0);
-> > -	if (bdi->irq <=3D 0)
-> > -		return -1;
-> > -
-> > -	return 0;
-> > -}
-> > -#else
-> > -static int bq24190_setup_dt(struct bq24190_dev_info *bdi)
-> > -{
-> > -	return -1;
-> > -}
-> > -#endif
-> > -
-> > -static int bq24190_setup_pdata(struct bq24190_dev_info *bdi,
-> > -		struct bq24190_platform_data *pdata)
-> > -{
-> > -	int ret;
-> > -
-> > -	if (!gpio_is_valid(pdata->gpio_int))
-> > -		return -1;
-> > -
-> > -	ret =3D gpio_request(pdata->gpio_int, dev_name(bdi->dev));
-> > -	if (ret < 0)
-> > -		return -1;
-> > -
-> > -	ret =3D gpio_direction_input(pdata->gpio_int);
-> > -	if (ret < 0)
-> > -		goto out;
-> > -
-> > -	bdi->irq =3D gpio_to_irq(pdata->gpio_int);
-> > -	if (!bdi->irq)
-> > -		goto out;
-> > -
-> > -	bdi->gpio_int =3D pdata->gpio_int;
-> > -	return 0;
-> > -
-> > -out:
-> > -	gpio_free(pdata->gpio_int);
-> > -	return -1;
-> > -}
-> > -
-> > =A0static int bq24190_probe(struct i2c_client *client,
-> > =A0		const struct i2c_device_id *id)
-> > =A0{
-> > =A0	struct i2c_adapter *adapter =3D to_i2c_adapter(client-
-> > >dev.parent);
-> > =A0	struct device *dev =3D &client->dev;
-> > -	struct bq24190_platform_data *pdata =3D client-
-> > >dev.platform_data;
-> > =A0	struct power_supply_config charger_cfg =3D {}, battery_cfg =3D
-> > {};
-> > =A0	struct bq24190_dev_info *bdi;
-> > =A0	int ret;
-> > @@ -1372,12 +1325,7 @@ static int bq24190_probe(struct i2c_client
-> > *client,
-> > =A0
-> > =A0	i2c_set_clientdata(client, bdi);
-> > =A0
-> > -	if (dev->of_node)
-> > -		ret =3D bq24190_setup_dt(bdi);
-> > -	else
-> > -		ret =3D bq24190_setup_pdata(bdi, pdata);
-> > -
-> > -	if (ret) {
-> > +	if (!client->irq) {
-> > =A0		dev_err(dev, "Can't get irq info\n");
-> > =A0		return -EINVAL;
-> > =A0	}
-> > @@ -1417,7 +1365,7 @@ static int bq24190_probe(struct i2c_client
-> > *client,
-> > =A0		goto out3;
-> > =A0	}
-> > =A0
-> > -	ret =3D devm_request_threaded_irq(dev, bdi->irq, NULL,
-> > +	ret =3D devm_request_threaded_irq(dev, client->irq, NULL,
-> > =A0			bq24190_irq_handler_thread,
-> > =A0			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
-> > =A0			"bq24190-charger", bdi);
-> > @@ -1439,8 +1387,6 @@ static int bq24190_probe(struct i2c_client
-> > *client,
-> > =A0
-> > =A0out1:
-> > =A0	pm_runtime_disable(dev);
-> > -	if (bdi->gpio_int)
-> > -		gpio_free(bdi->gpio_int);
-> > =A0	return ret;
-> > =A0}
-> > =A0
-> > @@ -1457,9 +1403,6 @@ static int bq24190_remove(struct i2c_client
-> > *client)
-> > =A0	power_supply_unregister(bdi->charger);
-> > =A0	pm_runtime_disable(bdi->dev);
-> > =A0
-> > -	if (bdi->gpio_int)
-> > -		gpio_free(bdi->gpio_int);
-> > -
-> > =A0	return 0;
-> > =A0}
-> > =A0
-> > diff --git a/include/linux/power/bq24190_charger.h
-> > b/include/linux/power/bq24190_charger.h
-> > index cb49717..8d918cb 100644
-> > --- a/include/linux/power/bq24190_charger.h
-> > +++ b/include/linux/power/bq24190_charger.h
-> > @@ -10,7 +10,6 @@
-> > =A0#define _BQ24190_CHARGER_H_
-> > =A0
-> > =A0struct bq24190_platform_data {
-> > -	unsigned int	gpio_int;	/* GPIO pin that's
-> > connected to INT# */
-> > =A0	bool no_register_reset;
-> > =A0};
-> > =A0
+> ---
+>  drivers/power/supply/Kconfig           |  1 +
+>  drivers/power/supply/bq24190_charger.c | 85 ++++++++++++++++++++++++++++=
+++++++
+>  include/linux/power/bq24190_charger.h  |  1 +
+>  3 files changed, 87 insertions(+)
 >=20
+> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+> index f8b6e64..fd93110 100644
+> --- a/drivers/power/supply/Kconfig
+> +++ b/drivers/power/supply/Kconfig
+> @@ -442,6 +442,7 @@ config CHARGER_BQ2415X
+>  config CHARGER_BQ24190
+>  	tristate "TI BQ24190 battery charger driver"
+>  	depends on I2C
+> +	depends on EXTCON
+>  	depends on GPIOLIB || COMPILE_TEST
+>  	help
+>  	  Say Y to enable support for the TI BQ24190 battery charger.
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/suppl=
+y/bq24190_charger.c
+> index 82cb33d..03990e2 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -11,10 +11,12 @@
+>  #include <linux/module.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/delay.h>
+> +#include <linux/extcon.h>
+>  #include <linux/of_irq.h>
+>  #include <linux/of_device.h>
+>  #include <linux/pm_runtime.h>
+>  #include <linux/power_supply.h>
+> +#include <linux/workqueue.h>
+>  #include <linux/gpio.h>
+>  #include <linux/i2c.h>
+> =20
+> @@ -39,6 +41,8 @@
+>  #define BQ24190_REG_POC_WDT_RESET_SHIFT		6
+>  #define BQ24190_REG_POC_CHG_CONFIG_MASK		(BIT(5) | BIT(4))
+>  #define BQ24190_REG_POC_CHG_CONFIG_SHIFT	4
+> +#define BQ24190_REG_POC_CHG_CONFIG_CHARGE	1
+> +#define BQ24190_REG_POC_CHG_CONFIG_OTG		2
+>  #define BQ24190_REG_POC_SYS_MIN_MASK		(BIT(3) | BIT(2) | BIT(1))
+>  #define BQ24190_REG_POC_SYS_MIN_SHIFT		1
+>  #define BQ24190_REG_POC_BOOST_LIM_MASK		BIT(0)
+> @@ -152,6 +156,9 @@ struct bq24190_dev_info {
+>  	struct power_supply		*charger;
+>  	struct power_supply		*battery;
+>  	struct bq24190_platform_data	*pdata;
+> +	struct extcon_dev		*extcon;
+> +	struct notifier_block		extcon_nb;
+> +	struct work_struct		extcon_work;
+>  	char				model_name[I2C_NAME_SIZE];
+>  	kernel_ulong_t			model;
+>  	struct mutex			f_reg_lock;
+> @@ -167,6 +174,11 @@ struct bq24190_dev_info {
+>   * number at that index in the array is the real-world value that it
+>   * represents.
+>   */
+> +
+> +/* REG00[2:0] (IINLIM) in uAh */
+> +static const int bq24190_iinlim_values[] =3D {
+> +	100000, 150000, 500000, 900000, 1200000, 1500000, 2000000, 3000000 };
+> +
+>  /* REG02[7:2] (ICHG) in uAh */
+>  static const int bq24190_ccc_ichg_values[] =3D {
+>  	 512000,  576000,  640000,  704000,  768000,  832000,  896000,  960000,
+> @@ -1290,6 +1302,61 @@ static irqreturn_t bq24190_irq_handler_thread(int =
+irq, void *data)
+>  	return IRQ_HANDLED;
+>  }
+> =20
+> +static void bq24190_extcon_work(struct work_struct *work)
+> +{
+> +	struct bq24190_dev_info *bdi =3D
+> +		container_of(work, struct bq24190_dev_info, extcon_work);
+> +	int ret, iinlim =3D 0;
+> +
+> +	if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_SDP) =3D=3D 1)
+> +		iinlim =3D 500000;
+> +	else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_CDP) =3D=3D 1 ||
+> +		 extcon_get_state(bdi->extcon, EXTCON_CHG_USB_ACA) =3D=3D 1)
+> +		iinlim =3D 1500000;
+> +	else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_DCP) =3D=3D 1)
+> +		iinlim =3D 2000000;
+> +
+> +	if (iinlim) {
+> +		ret =3D bq24190_set_field_val(bdi, BQ24190_REG_ISC,
+> +				BQ24190_REG_ISC_IINLIM_MASK,
+> +				BQ24190_REG_ISC_IINLIM_SHIFT,
+> +				bq24190_iinlim_values,
+> +				ARRAY_SIZE(bq24190_iinlim_values),
+> +				iinlim);
+> +		if (ret)
+> +			dev_err(bdi->dev, "Can't set IINLIM: %d\n", ret);
+> +	}
+> +
+> +	/*
+> +	 * If no charger has been detected and host mode is requested, activate
+> +	 * the 5V boost converter, otherwise deactivate it.
+> +	 */
+> +	if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) =3D=3D 1)=
+ {
+> +		ret =3D bq24190_write_mask(bdi, BQ24190_REG_POC,
+> +					 BQ24190_REG_POC_CHG_CONFIG_MASK,
+> +					 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+> +					 BQ24190_REG_POC_CHG_CONFIG_OTG);
+> +	} else {
+> +		ret =3D bq24190_write_mask(bdi, BQ24190_REG_POC,
+> +					 BQ24190_REG_POC_CHG_CONFIG_MASK,
+> +					 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+> +					 BQ24190_REG_POC_CHG_CONFIG_CHARGE);
+> +	}
+> +	if (ret)
+> +		dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", ret);
+> +}
+> +
+> +static int bq24190_extcon_event(struct notifier_block *nb, unsigned long=
+ event,
+> +				void *param)
+> +{
+> +	struct bq24190_dev_info *bdi =3D
+> +		container_of(nb, struct bq24190_dev_info, extcon_nb);
+> +
+> +	schedule_work(&bdi->extcon_work);
+> +
+> +	return NOTIFY_OK;
+> +}
+> +
+>  static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+>  {
+>  	u8 v;
+> @@ -1375,6 +1442,12 @@ static int bq24190_probe(struct i2c_client *client,
+>  			return -EPROBE_DEFER;
+>  	}
+> =20
+> +	if (bdi->pdata && bdi->pdata->extcon_name) {
+> +		bdi->extcon =3D extcon_get_extcon_dev(bdi->pdata->extcon_name);
+> +		if (!bdi->extcon)
+> +			return -EPROBE_DEFER;
+> +	}
+> +
+>  	pm_runtime_enable(dev);
+>  	pm_runtime_resume(dev);
+> =20
+> @@ -1423,6 +1496,18 @@ static int bq24190_probe(struct i2c_client *client,
+>  		goto out4;
+>  	}
+> =20
+> +	if (bdi->extcon) {
+> +		INIT_WORK(&bdi->extcon_work, bq24190_extcon_work);
+> +		bdi->extcon_nb.notifier_call =3D bq24190_extcon_event;
+> +		ret =3D devm_extcon_register_notifier(dev, bdi->extcon, -1,
+> +						    &bdi->extcon_nb);
+> +		if (ret)
+> +			goto out4;
+> +
+> +		/* Sync initial cable state */
+> +		schedule_work(&bdi->extcon_work);
+> +	}
+> +
+>  	return 0;
+> =20
+>  out4:
+> diff --git a/include/linux/power/bq24190_charger.h b/include/linux/power/=
+bq24190_charger.h
+> index 02d248b..909c5b9 100644
+> --- a/include/linux/power/bq24190_charger.h
+> +++ b/include/linux/power/bq24190_charger.h
+> @@ -13,6 +13,7 @@
+> =20
+>  struct bq24190_platform_data {
+>  	bool no_register_reset;
+> +	const char *extcon_name;
+>  	int (*get_ext_bat_property)(enum power_supply_property prop,
+>  				    union power_supply_propval *val);
+>  };
 > --=20
-> Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Intel Finland Oy
+> 2.9.3
+>=20
 
---sndk4qf6n4zunler
+--pqqyszwiwknurfqv
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljPXrMACgkQ2O7X88g7
-+pr4tA/+POQjDFKfpMEqyFGvSN51CUjvjEktWG0dRokBSyTjAFY+Xny4n4lSl1JS
-IBLthsceQNZMLo+Nnz4zeNFuVNJeuN14F9xl4+P9N8qCve6jLi0/OlAf2bB6T8oK
-/TbzgsDTuZ7k8xYMWcozOJbY27qGmoc3AOgTQtDV5HsZVbICutXSdoawI05UB4Hb
-llLxBVFxjShCNRnbUtyNci5Bn7ltQz9NnNPBQOqAwTy5f5qpPf+7K0Ah8gUsJLnx
-W8qWfdFMUx2UE3dg8Qdlxn0jEeIVQkep5TWeSniG37WUVl3yClefR/LtBmfAceBz
-/RHeVX7lwFztoEnDWo3y3fbDs+PZoruDPjnh6SR8YqXJCOp/zj3swmfcs/Aja7cG
-fuXQO+VAv52t3BQNI8Rfbn9ULkv6wUW7STHi/jw1bDcUoPXclWKiGdOjasfZoeCd
-lQlOIcMi5EtG+V3Pf7W0imCCXHxb0hjflw7GDwtJSXC8PnOOcmd43vgQGRNUF59r
-I7yksKkRVItCy89oc03kLEjs7qUHbcmtEfGOpHKQK3T9OLyGTPBCoU87tY+hAlyv
-8+5B6NpSNROoq72LHjuZba/CHS85J9TaGvTujcb11z0ocDOJNublostPevHkH1B5
-srca0M0c+v9vQssqMpB24NBQKCVj1KkyQUJq0wdSzKW6i6/i4cA=
-=ntJu
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljPYAUACgkQ2O7X88g7
++ppmWBAApnBld0Wi/TVmBwXwnn42zIo/UXy41SPGmf6c/g4aRU4i8JLHE0SIQSKz
+2yO8BNyJIaYgjyLBZrSybmsiUaba9GYjO7q/AJomrdsCOYnRpppDxlPoWt9kEBD0
+PgS1pDYj1ecK5VZNvLZNJA0qxDzkZWCcbl7UvyBrt76cPwk+awK791aWNezOWHXS
+V/ggubDJ16Em/6e8m7v1Bja8WcLFWyJGbGyzLMeCwyel8+KqtgeLZkAtP7IQshyA
+rRNnVOAWiUwy/QnbZif8/yZMKEiKKCZJYlsUtr/skSwEQwGuvskSDJMikochAx3R
+tjgcb1BFAjPg2X9Y53+RMN0M1qUvycxjFIzYp/mZ76iSrDIhpKZY7inVR5DTvItB
+QHFyyB3Lp8dEf2VsilAEidMx4qDeea9igl0I2lZ/jYvHhMh9eY6hst/dbd2oPq8r
+rH4c3QvMP1LLdaU3YvuPnWWf8xSgD2ZnYJc0n2ascpVdf7Wkw8vyvhtEzhyl1ETp
+ooeOao7VhrBQ03vDnmuk4nWDh2VTZBpn5dImHklqneE1lPOW1CJ3g5FaqOvyxp4l
+RzGIeMfw+nMGyHODyiUr74hD7Fen5y8C1HILqWzQ9XJ/M+xPGyar9ZkLO9AZnRaQ
+W5CXUKNcqDtx6adAg7KG1lLLRZ2BM65LDrehHffEav281LZ4Z/I=
+=fBdQ
 -----END PGP SIGNATURE-----
 
---sndk4qf6n4zunler--
+--pqqyszwiwknurfqv--
