@@ -1,7 +1,7 @@
 From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Subject: [PATCH v11 01/10] devicetree: power: Add battery.txt
-Date: Mon, 20 Mar 2017 02:43:26 -0700
-Message-ID: <20170320094335.19224-2-liam@networkimprov.net>
+Subject: [PATCH v11 03/10] devicetree: power: bq27xxx: Add monitored-battery documentation
+Date: Mon, 20 Mar 2017 02:43:28 -0700
+Message-ID: <20170320094335.19224-4-liam@networkimprov.net>
 References: <20170320094335.19224-1-liam@networkimprov.net>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <20170320094335.19224-1-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
@@ -12,68 +12,42 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 
-Documentation of static battery characteristics that can be defined
-for batteries which cannot self-identify. This information is required
-by fuel-gauge and charger chips for proper handling of the battery.
+Document monitored-battery = <&battery_node>
 
 Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
 Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Acked-by: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 ---
- .../devicetree/bindings/power/supply/battery.txt   | 43 ++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+ Documentation/devicetree/bindings/power/supply/bq27xxx.txt | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
-new file mode 100644
-index 0000000..53a68c0
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-@@ -0,0 +1,43 @@
-+Battery Characteristics
+diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+index b0c95ef..cf83371 100644
+--- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
++++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+@@ -28,9 +28,18 @@ Required properties:
+  * "ti,bq27621" - BQ27621
+ - reg: integer, i2c address of the device.
+ 
++Optional properties:
++- monitored-battery: phandle of battery information devicetree node
 +
-+The devicetree battery node provides static battery characteristics. 
-+In smart batteries, these are typically stored in non-volatile memory 
-+on a fuel gauge chip. The battery node should be used where there is 
-+no appropriate non-volatile memory, or it is unprogrammed/incorrect.
++  See Documentation/devicetree/bindings/power/supply/battery.txt
++  If either of the referenced battery's *-full-design-*-hours properties are set,
++  then both must be.
 +
-+Required Properties:
-+ - compatible: Must be "simple-battery"
+ Example:
+ 
+-bq27510g3 {
++bq27510g3 : fuel-gauge@55 {
+     compatible = "ti,bq27510g3";
+     reg = <0x55>;
 +
-+Optional Properties:
-+ - voltage-min-design-microvolt: drained battery voltage
-+ - energy-full-design-microwatt-hours: battery design energy
-+ - charge-full-design-microamp-hours: battery design capacity
-+
-+Battery properties are named, where possible, for the corresponding 
-+elements in enum power_supply_property, defined in
-+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/power_supply.h#n86
-+
-+Batteries must be referenced by chargers and/or fuel-gauges
-+using a phandle. The phandle's property should be named
-+"monitored-battery".
-+
-+Example:
-+
-+	bat: battery {
-+		compatible = "simple-battery";
-+		voltage-min-design-microvolt = <3200000>;
-+		energy-full-design-microwatt-hours = <5290000>;
-+		charge-full-design-microamp-hours = <1430000>;
-+	};
-+
-+	charger: charger@11 {
-+		....
-+		monitored-battery = <&bat>;
-+		...
-+	};
-+
-+	fuel_gauge: fuel-gauge@22 {
-+		....
-+		monitored-battery = <&bat>;
-+		...
-+	};
++    monitored-battery = <&bat>;
+ };
 -- 
 2.9.3
 
