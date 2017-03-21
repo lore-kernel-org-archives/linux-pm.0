@@ -1,36 +1,44 @@
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-Subject: Re: [PATCH v2 03/10] x86: assembly, use SYM_FUNC_END for functions
-Date: Tue, 21 Mar 2017 09:48:41 -0500
-Message-ID: <20170321144841.oeaqqarhgzyhehth@treble>
-References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
- <20170320123222.15453-1-jslaby@suse.cz>
- <20170320123222.15453-3-jslaby@suse.cz>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC][PATCH v2 2/2] cpufreq: schedutil: Avoid decreasing
+ frequency of busy CPUs
+Date: Tue, 21 Mar 2017 15:03:25 +0100
+Message-ID: <20170321140325.gf64gc7eaqu335t5@hirez.programming.kicks-ass.net>
+References: <4366682.tsferJN35u@aspire.rjw.lan>
+ <2185243.flNrap3qq1@aspire.rjw.lan>
+ <3300960.HE4b3sK4dn@aspire.rjw.lan>
+ <CAKfTPtB0WpvSz66UNK5HNQF8W-PKCYNyRSCzz9L9WRAKNy+KYw@mail.gmail.com>
+ <20170321132253.vjp7f72qkubpttmf@hirez.programming.kicks-ass.net>
+ <CAKfTPtBp7GevDfnOTrOnrc79XP1mbY0onq=uh4Aw2tGu-DgHGw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170320123222.15453-3-jslaby@suse.cz>
+In-Reply-To: <CAKfTPtBp7GevDfnOTrOnrc79XP1mbY0onq=uh4Aw2tGu-DgHGw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 20, 2017 at 01:32:15PM +0100, Jiri Slaby wrote:
->  ENTRY(ftrace_caller)
->  	/* save_mcount_regs fills in first two parameters */
-> @@ -184,11 +184,12 @@ GLOBAL(ftrace_epilogue)
->  GLOBAL(ftrace_graph_call)
->  	jmp ftrace_stub
->  #endif
-> +SYM_FUNC_END(ftrace_caller)
->  
->  /* This is weak to keep gas from relaxing the jumps */
->  WEAK(ftrace_stub)
->  	retq
-> -END(ftrace_caller)
-> +SYM_FUNC_END(ftrace_caller)
+On Tue, Mar 21, 2017 at 02:37:08PM +0100, Vincent Guittot wrote:
+> On 21 March 2017 at 14:22, Peter Zijlstra <peterz@infradead.org> wrote:
 
-This gives ftrace_caller() two ends.
+> For the not overloaded case, it makes sense to immediately update to
+> OPP to be aligned with the new utilization of the CPU even if it was
+> not idle in the past couple of ticks
 
--- 
-Josh
+Yeah, but we cannot know. Also, who cares?
+
+> > does exactly that. Note that the lack of idle time is an exact
+> > equivalent of 100% utilized.
+> >
+> > So even while we cannot currently detect the 100% utilized state through
+> > the running state tracking; because averages etc.. we can detect the
+> > lack of idle time.
+> 
+> But after how much lack of idle time do we consider that we are overloaded ?
+
+0 :-)
+
+Note that utilization is an absolute metric, not a windowed one. That
+is, there is no actual time associated with it. Now, for practical
+purposes we end up using windowed things in many places,
