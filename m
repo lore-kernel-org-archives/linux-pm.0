@@ -1,64 +1,86 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 5/7] thermal: rcar_gen3_thermal: enable hardware
- interrupts for trip points
-Date: Tue, 21 Mar 2017 14:50:59 +0100
-Message-ID: <CAMuHMdXJpVdNosRcwqjmy40gDDXo7myKLZtF8y+p-q0cZbqq2Q@mail.gmail.com>
-References: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se>
- <20170306200401.29923-6-niklas.soderlund+renesas@ragnatech.se>
- <20170307195533.GE2554@tetsubishi> <20170317100630.GA20587@bigcity.dyn.berto.se>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2 02/10] x86: assembly, FUNC_START for fn,
+ DATA_START for data
+Date: Tue, 21 Mar 2017 15:08:41 +0100
+Message-ID: <20170321140840.GA23311@amd>
+References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
+ <20170320123222.15453-1-jslaby@suse.cz>
+ <20170320123222.15453-2-jslaby@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f196.google.com ([209.85.223.196]:34326 "EHLO
-        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757076AbdCUNvj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 09:51:39 -0400
-In-Reply-To: <20170317100630.GA20587@bigcity.dyn.berto.se>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============5168699477915138554=="
+Return-path: <xen-devel-bounces@lists.xen.org>
+In-Reply-To: <20170320123222.15453-2-jslaby@suse.cz>
+List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
+ <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
+List-Post: <mailto:xen-devel@lists.xen.org>
+List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
+List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
+ <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
+Errors-To: xen-devel-bounces@lists.xen.org
+Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, hpa@zytor.com, linux-pm@vger.kernel.org, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mingo@redhat.com, jpoimboe@redhat.com, xen-devel@lists.xenproject.org, tglx@linutronix.de, Boris Ostrovsky <boris.ostrovsky@oracle.com>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Linux PM list <linux-pm@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Hi Niklas,
 
-On Fri, Mar 17, 2017 at 11:06 AM, Niklas S=C3=B6derlund
-<niklas.soderlund@ragnatech.se> wrote:
-> On 2017-03-07 20:55:33 +0100, Wolfram Sang wrote:
->> On Mon, Mar 06, 2017 at 09:03:59PM +0100, Niklas S=C3=B6derlund wrote:
->> > Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnate=
-ch.se>
->> > ---
->> >  drivers/thermal/rcar_gen3_thermal.c | 137 +++++++++++++++++++++++++++=
-+++++++++
->> >  1 file changed, 137 insertions(+)
->> >
->> > +static int rcar_gen3_thermal_set_trips(void *devdata, int low, int hi=
-gh)
->> > +{
->> > +   struct rcar_gen3_thermal_tsc *tsc =3D devdata;
->> > +
->> > +   if (low < -40000)
->> > +           low =3D -40000;
->> > +   if (high > 125000)
->> > +           high =3D 125000;
->>
->> Use clamp_val()?
->
-> Good idea, will use.
+--===============5168699477915138554==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
+Content-Disposition: inline
 
-Why not clamp()? Does the type checking stand in the way?
 
-Gr{oetje,eeting}s,
+--rwEMma7ioTxnRzrJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-                        Geert
+Hi!
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+> -ENTRY(saved_rbp)	.quad	0
+> -ENTRY(saved_rsi)	.quad	0
+> -ENTRY(saved_rdi)	.quad	0
+> -ENTRY(saved_rbx)	.quad	0
+> +SYM_DATA_START(saved_rbp)		.quad	0
+> +SYM_DATA_START(saved_rsi)		.quad	0
+> +SYM_DATA_START(saved_rdi)		.quad	0
+> +SYM_DATA_START(saved_rbx)		.quad	0
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+Does it make sense to call it SYM_DATA_*START* when there's no
+corresponding end?
+
+Plus... it looks like saved_rsi (and friends) are only used inside
+wakeup_64.S. Could we just delete the "ENTRY" annotations?
+
+Thanks,
+								Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--rwEMma7ioTxnRzrJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAljRM+gACgkQMOfwapXb+vKgVACdGCXFP24IJi5TzHp3JSy+qrsi
+zHkAnjG3GFxgL+GH0ngTUOcZyv/nGLH/
+=IcHn
+-----END PGP SIGNATURE-----
+
+--rwEMma7ioTxnRzrJ--
+
+
+--===============5168699477915138554==
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KWGVuLWRldmVs
+IG1haWxpbmcgbGlzdApYZW4tZGV2ZWxAbGlzdHMueGVuLm9yZwpodHRwczovL2xpc3RzLnhlbi5v
+cmcveGVuLWRldmVsCg==
+
+--===============5168699477915138554==--
