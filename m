@@ -1,369 +1,187 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [RFC v3 0/5] Add capacity capping support to the CPU controller
-Date: Tue, 21 Mar 2017 11:01:38 +0000
-Message-ID: <20170321110138.GA11054@e110439-lin>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <1831216.C7tcY13Jiv@aspire.rjw.lan>
- <20170315125957.GD18557@e110439-lin>
- <CAJZ5v0je7vPOrcAAu7jB6h+FDFMJZ048EZf4_Cemk2dvt-ffHA@mail.gmail.com>
- <CAJWu+opFdFYnKks8ywcbto1CAk=-k437bwzez-txp+8tRb3QzA@mail.gmail.com>
- <CAJZ5v0hyvL-hzpmM5TkEH4FRbJ1JyK4m7Q=urSO1F_Ghz8Vf4A@mail.gmail.com>
+Subject: Re: [RFC][PATCH v2 2/2] cpufreq: schedutil: Avoid decreasing
+ frequency of busy CPUs
+Date: Tue, 21 Mar 2017 11:50:49 +0000
+Message-ID: <20170321115049.GB11054@e110439-lin>
+References: <4366682.tsferJN35u@aspire.rjw.lan>
+ <2185243.flNrap3qq1@aspire.rjw.lan>
+ <3300960.HE4b3sK4dn@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:50888 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:51508 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756756AbdCULKo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 21 Mar 2017 07:10:44 -0400
+        id S1756996AbdCULuz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 21 Mar 2017 07:50:55 -0400
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hyvL-hzpmM5TkEH4FRbJ1JyK4m7Q=urSO1F_Ghz8Vf4A@mail.gmail.com>
+In-Reply-To: <3300960.HE4b3sK4dn@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Joel Fernandes <joelaf@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Jonathan Corbet <corbet@lwn.net>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 
-On 20-Mar 23:51, Rafael J. Wysocki wrote:
-> On Thu, Mar 16, 2017 at 4:15 AM, Joel Fernandes <joelaf@google.com> wrote:
-> > Hi Rafael,
+On 20-Mar 22:46, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Hi,
+> The way the schedutil governor uses the PELT metric causes it to
+> underestimate the CPU utilization in some cases.
 > 
-> > On Wed, Mar 15, 2017 at 6:04 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >> On Wed, Mar 15, 2017 at 1:59 PM, Patrick Bellasi
-> >>>> Do you have any practical examples of that, like for example what exactly
-> >>>> Android is going to use this for?
-> >>>
-> >>> In general, every "informed run-time" usually know quite a lot about
-> >>> tasks requirements and how they impact the user experience.
-> >>>
-> >>> In Android for example tasks are classified depending on their _current_
-> >>> role. We can distinguish for example between:
-> >>>
-> >>> - TOP_APP:    which are tasks currently affecting the UI, i.e. part of
-> >>>               the app currently in foreground
-> >>> - BACKGROUND: which are tasks not directly impacting the user
-> >>>               experience
-> >>>
-> >>> Given these information it could make sense to adopt different
-> >>> service/optimization policy for different tasks.
-> >>> For example, we can be interested in
-> >>> giving maximum responsiveness to TOP_APP tasks while we still want to
-> >>> be able to save as much energy as possible for the BACKGROUND tasks.
-> >>>
-> >>> That's where the proposal in this series (partially) comes on hand.
-> >>
-> >> A question: Does "responsiveness" translate directly to "capacity" somehow?
-> >>
-> >> Moreover, how exactly is "responsiveness" defined?
-> >
-> > Responsiveness is basically how quickly the UI is responding to user
-> > interaction after doing its computation, application-logic and
-> > rendering. Android apps have 2 important threads, the main thread (or
-> > UI thread) which does all the work and computation for the app, and a
-> > Render thread which does the rendering and submission of frames to
-> > display pipeline for further composition and display.
-> >
-> > We wish to bias towards performance than energy for this work since
-> > this front facing to the user and we don't care about much about
-> > energy for these tasks at this point, what's most critical is
-> > completion as quickly as possible so the user experience doesn't
-> > suffer from a performance issue that is noticeable.
-> >
-> > One metric to define this is "Jank" where we drop frames and aren't
-> > able to render on time. One of the reasons this can happen because the
-> > main thread (UI thread) took longer than expected for some
-> > computation. Whatever the interface - we'd just like to bias the
-> > scheduling and frequency guidance to be more concerned with
-> > performance and less with energy. And use this information for both
-> > frequency selection and task placement. 'What we need' is also app
-> > dependent since every app has its own main thread and is free to
-> > compute whatever it needs. So Android can't estimate this - but we do
-> > know that this app is user facing so in broad terms the interface is
-> > used to say please don't sacrifice performance for these top-apps -
-> > without accurately defining what these performance needs really are
-> > because we don't know it.
-> > For YouTube app for example, the complexity of the video decoding and
-> > the frame rate are very variable depending on the encoding scheme and
-> > the video being played. The flushing of the frames through the display
-> > pipeline is also variable (frame rate depends on the video being
-> > decoded), so this work is variable and we can't say for sure in
-> > definitive terms how much capacity we need.
-> >
-> > What we can do is with Patrick's work, we can take the worst case
-> > based on measurements and specify say we need atleast this much
-> > capacity regardless of what load-tracking thinks we need and then we
-> > can scale frequency accordingly. This is the usecase for the minimum
-> > capacity in his clamping patch. This is still not perfect in terms of
-> > defining something accurately because - we don't even know how much we
-> > need, but atleast in broad terms we have some way of telling the
-> > governor to maintain atleast X capacity.
+> That can be easily demonstrated by running kernel compilation on
+> a Sandy Bridge Intel processor, running turbostat in parallel with
+> it and looking at the values written to the MSR_IA32_PERF_CTL
+> register.  Namely, the expected result would be that when all CPUs
+> were 100% busy, all of them would be requested to run in the maximum
+> P-state, but observation shows that this clearly isn't the case.
+> The CPUs run in the maximum P-state for a while and then are
+> requested to run slower and go back to the maximum P-state after
+> a while again.  That causes the actual frequency of the processor to
+> visibly oscillate below the sustainable maximum in a jittery fashion
+> which clearly is not desirable.
 > 
-> First off, it all seems to depend a good deal on what your
-> expectations regarding the in-kernel performance scaling are.
+> To work around this issue use the observation that, from the
+> schedutil governor's perspective, it does not make sense to decrease
+> the frequency of a CPU that doesn't enter idle and avoid decreasing
+> the frequency of busy CPUs.
 > 
-> You seem to be expecting it to decide whether or not to sacrifice some
-> performance for energy savings, but it can't do that really, simply
-> because it has no guidance on that.  It doesn't know how much
-> performance (or capacity) it can trade for a given amount of energy,
-> for example.
-
-That's true, right now. But in ARM we are working since a cpuple of
-years to refine the concept of an energy model which improves the
-scheduler knowledge about the energy-vs-performance trade-off.
-
-> What it can do and what I expect it to be doing is to avoid
-> maintaining excess capacity (maintaining capacity is expensive in
-> general and a clear waste if the capacity is not actually used).
+> To that end, use the counter of idle calls in the timekeeping code.
+> Namely, make the schedutil governor look at that counter for the
+> current CPU every time before it is about to set a new frequency
+> for that CPU's policy.  If the counter has not changed since the
+> previous iteration, the CPU has been busy for all that time and
+> its frequency should not be decreased, so if the new frequency would
+> be lower than the one set previously, the governor will skip the
+> frequency update.
 > 
-> For instance, if you take the schedutil governor, it doesn't do
-> anything really fancy.  It just attempts to set a frequency sufficient
-> to run the given workload without slowing it down artificially, but
-> not much higher than that, and that's not based on any arcane
-> energy-vs-performance considerations.  It's based on an (arguably
-> vague) idea about how fast should be sufficient.
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
 > 
-> So if you want to say "please don't sacrifice performance for these
-> top-apps" to it, chances are it will not understand what you are
-> asking it for. :-)
+> This is a slightly different approach (avoid decreasing frequency for busy CPUs
+> instead of bumping if for them to the max upfront) and it works around the
+> original problem too.
 
-Actually, this series are the foundation bits of a more complete
-solution, already in use on Pixel phones.
+I like much better this version where we do not enforce max frequency
+as well as we removed the hardcoded time threshold. ;-)
 
-While this proposal focuses just on "OPP biasing", some additional
-bits (not yet posted to keep things simple) exploit the Energy Model
-information to provide support for "task placement biasing".
+Makes sense to me also to avoid down scaling until we don't hit an IDLE.
 
-Those bits address also the concept of:
+However, I also agree with Vincent's observation: this constraint should be
+there only for "overutilized" CPUs... but unfortunately, in mainline we are
+still missing that flag and thus we should probably use the
+"overloaded" one for the time being.
 
-   how much energy I want to sacrifice to get a certain speedup?
+> I tried to address a few Peter's comments here and the result doesn't seem to
+> be too heavy-wieght.
 
-> It only may take the minimum capacity limit for a task as a correction
-> to its idea about how fast is sufficient in this particular case (and
-> energy doesn't even enter the picture at this point).  Now, of course,
-> its idea about what should be sufficient may be entirely incorrect for
-> some reason, but then the question really is: why?  And whether or not
-> it can be fixed without supplying corrections from user space in a
-> very direct way.
+Nice!
 
-- Why the estimation is incorrect?
-
-Because, looking at CFS tasks for example, PELT is a "running
-estimator". Its view about how much capacity a task needs changes
-continuously over time. In short it is missing an aggregation and
-consolidation mechanism which allows to exploit better information on
-task's past activations.
-We have a proposal to possibly fix that and we will post if soonish.
-
-However, still it can be that for a certain task you want to add some
-"safety margin" to accommodate for possible workload variations.
-That's required also if you have a perfect knowledge about task
-requirements for a task, which has been built entirely in kernel
-space, based on past activations.
-if your task is such important, you don't care to give it "just
-enough".  You need to know how much more to give him, and this
-information can come only from user-space where someone with more
-information can use a properly defined API to feed them to the
-scheduler using a per-task interface.
-
-- Can it be fixed without corrections from user-space?
-
-Not completely, more details hereafter.
-
-> What you are saying generally indicates that you see under-provisioned
-> tasks and that's rather nor because the kernel tries to sacrifice
-> performance for energy.  Maybe the CPU utilization is under-estimated
-> by schedutil or the scheduler doesn't give enough time to these
-> particular tasks for some reason.  In any case, having a way to set a
-> limit from user space may allow you to work around these issues quite
-> bluntly and is not a solution.  And even if the underlying problems
-> are solved, the user space interface will stay there and will have to
-> be maintained going forward.
-
-I don't agree on that point, mainly because I don't see that as a
-workaround. In your view you it seems that everything can be solved
-entirely in kernel space. In my view instead what we are after is a
-properly defined interface where kernel-space and user-space can
-potentially close a control loop where:
-a) user-space, which has much more a-priori information about tasks
-   requirements can feed some constraints to kernel-space.
-b) kernel-space, which has optimized end efficient mechanisms, enforce
-   these constraints on a per task basis.
-
-After all this is not a new concept on OS design, we already have
-different interfaces which allows to tune scheduler behaviors on a
-per-task bias. What we are missing right now is a similar _per-task
-interface_ to bias OPP selection and a slightly improved/alternative
-way to bias task placement _without_ doing scheduling decisions in
-user-space.
-
-Here is a graphical representation of these concepts:
-
-      +-------------+    +-------------+  +-------------+
-      | App1 Tasks  ++   | App2 Tasks  ++ | App3 Tasks  ++
-      |             ||   |             || |             ||
-      +--------------|   +--------------| +--------------|
-       +-------------+    +-------------+  +-------------+
-                |               |              |
-  +----------------------------------------------------------+
-  |                                                          |
-  |      +--------------------------------------------+      |
-  |      |  +-------------------------------------+   |      |
-  |      |  |      Run-Time Optimized Services    |   |      |
-  |      |  |        (e.g. execution model)       |   |      |
-  |      |  +-------------------------------------+   |      |
-  |      |                                            |      |
-  |      |     Informed Run-Time Resource Manager     |      |
-  |      |   (Android, ChromeOS, Kubernets, etc...)   |      |
-  |      +------------------------------------------^-+      |
-  |        |                                        |        |
-  |        |Constraints                             |        |
-  |        |(OPP and Task Placement biasing)        |        |
-  |        |                                        |        |
-  |        |                             Monitoring |        |
-  |      +-v------------------------------------------+      |
-  |      |               Linux Kernel                 |      |
-  |      |         (Scheduler, schedutil, ...)        |      |
-  |      +--------------------------------------------+      |
-  |                                                          |
-  | Closed control and optimization loop                     |
-  +----------------------------------------------------------+
-
-What is important to notice is that there is a middleware, in between
-the kernel and the applications. This is a special kind of user-space
-where it is still safe for the kernel to delegate some "decisions".
-
-> Also when you set a minimum frequency limit from user space, you may
-> easily over-provision the task and that would defeat the purpose of
-> what the kernel tries to achieve.
-
-No, if an "informed user-space" wants to over-provision a task it's
-because it has already decided that it makes sense to limit the kernel
-energy optimization for that specific class of tasks.
-It is not necessarily kernel business to know why, it is just required
-to do its best within the provided constraints.
-
-> > For the clamping of maximum capacity, there are usecases like
-> > background tasks like Patrick said, but also usecases where we don't
-> > want to run at max frequency even though load-tracking thinks that we
-> > need to. For example, there are case where for foreground camera
-> > tasks, where we want to provide sustainable performance without
-> > entering thermal throttling, so the capping will help there.
-> 
-> Fair enough.
-> 
-> To me, that case is more compelling than the previous one, but again
-> I'm not sure if the ability to set a specific capacity limit may fit
-> the bill entirely.  You need to know what limit to set in the first
-> place (and that may depend on multiple factors in principle) and then
-> you may need to adjust it over time and so on.
-
-Exactly and again, the informed run-time knows which limits to set,
-on which tasks and when change/update/tune them.
-
-> >>> What we propose is a "standard" interface to collect sensible
-> >>> information from "informed run-times" which can be used to:
-> >>>
-> >>> a) classify tasks according to the main optimization goals:
-> >>>    performance boosting vs energy saving
-> >>>
-> >>> b) support a more dynamic tuning of kernel side behaviors, mainly
-> >>>    OPPs selection and tasks placement
-> >>>
-> >>> Regarding this last point, this series specifically represents a
-> >>> proposal for the integration with schedutil. The main usages we are
-> >>> looking for in Android are:
-> >>>
-> >>> a) Boosting the OPP selected for certain critical tasks, with the goal
-> >>>    to speed-up their completion regardless of (potential) energy impacts.
-> >>>    A kind-of "race-to-idle" policy for certain tasks.
-> >>
-> >> It looks like this could be addressed by adding a "this task should
-> >> race to idle" flag too.
-> >
-> > But he said 'kind-of' race-to-idle. Racing to idle all the time for
-> > ex. at max frequency will be wasteful of energy so although we don't
-> > care about energy much for top-apps, we do care a bit.
-> 
-> You actually don't know whether or not it will be wasteful and there
-> may even be differences from workload to workload on the same system
-> in that respect.
-
-The workload dependencies are solved by the "informed run-time",
-that's why what we are proposing is a per-task interface.
-Moreover, notice that most of the optimization can still be targeted
-to services provided by the "informed run-time". Thus the dependencies
-on the actual applications are kind-of limited and still they can be
-factored in by properly defined interfaces exposed by the "informed
-run-time".
-
-> >>> b) Capping the OPP selection for certain non critical tasks, which is
-> >>>    a major concerns especially for RT tasks in mobile context, but
-> >>>    it also apply to FAIR tasks representing background activities.
-> >>
-> >> Well, is the information on how much CPU capacity assign to those
-> >> tasks really there in user space?  What's the source of it if so?
-> >
-> > I believe this is just a matter of tuning and modeling for what is
-> > needed. For ex. to prevent thermal throttling as I mentioned and also
-> > to ensure background activities aren't running at highest frequency
-> > and consuming excessive energy (since racing to idle at higher
-> > frequency is more expensive energy than running slower to idle since
-> > we run at higher voltages at higher frequency and the slow of the
-> > perf/W curve is steeper - p = c * V^2 * F. So the V component being
-> > higher just drains more power quadratic-ally which is of no use to
-> > background tasks - infact in some tests, we're just as happy with
-> > setting them at much lower frequencies than what load-tracking thinks
-> > is needed.
-> 
-> As I said, I actually can see a need to go lower than what performance
-> scaling thinks, because the way it tries to estimate the sufficient
-> capacity is by checking how much utilization is there for the
-> currently provided capacity and adjusting if necessary.  OTOH, there
-> are applications aggressive enough to be able to utilize *any*
-> capacity provided to them.
-
-Here you are not considering the control role exercised by the
-middleware layer. Apps cannot really do whatever they want, they get
-only what the "informed run-time" considers it sufficient for them.
-
-IOW, they live in a "managed user-space".
-
-> >>>> I gather that there is some experience with the current EAS implementation
-> >>>> there, so I wonder how this work is related to that.
-> >>>
-> >>> You right. We started developing a task boosting strategy a couple of
-> >>> years ago. The first implementation we did is what is currently in use
-> >>> by the EAS version in used on Pixel smartphones.
-> >>>
-> >>> Since the beginning our attitude has always been "mainline first".
-> >>> However, we found it extremely valuable to proof both interface's
-> >>> design and feature's benefits on real devices. That's why we keep
-> >>> backporting these bits on different Android kernels.
-> >>>
-> >>> Google, which primary representatives are in CC, is also quite focused
-> >>> on using mainline solutions for their current and future solutions.
-> >>> That's why, after the release of the Pixel devices end of last year,
-> >>> we refreshed and posted the proposal on LKML [1] and collected a first
-> >>> run of valuable feedbacks at LCP [2].
-> >>
-> >> Thanks for the info, but my question was more about how it was related
-> >> from the technical angle.  IOW, there surely is some experience
-> >> related to how user space can deal with energy problems and I would
-> >> expect that experience to be an important factor in designing a kernel
-> >> interface for that user space, so I wonder if any particular needs of
-> >> the Android user space are addressed here.
-> >>
-> >> I'm not intimately familiar with Android, so I guess I would like to
-> >> be educated somewhat on that. :-)
-> >
-> > Hope this sheds some light into the Android side of things a bit.
-> 
-> Yes, it does, thanks!
-
-Interesting discussion, thanks! ;-)
-
-> Best regards,
+> Thanks,
 > Rafael
+> 
+> ---
+>  include/linux/tick.h             |    1 +
+>  kernel/sched/cpufreq_schedutil.c |   28 ++++++++++++++++++++++++----
+>  kernel/time/tick-sched.c         |   12 ++++++++++++
+>  3 files changed, 37 insertions(+), 4 deletions(-)
+> 
+> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+> ===================================================================
+> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
+> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
+> @@ -56,6 +56,9 @@ struct sugov_cpu {
+>  	unsigned long iowait_boost;
+>  	unsigned long iowait_boost_max;
+>  	u64 last_update;
+> +#ifdef CONFIG_NO_HZ_COMMON
+> +	unsigned long saved_idle_calls;
+> +#endif
+>  
+>  	/* The fields below are only needed when sharing a policy. */
+>  	unsigned long util;
+> @@ -88,11 +91,28 @@ static bool sugov_should_update_freq(str
+>  	return delta_ns >= sg_policy->freq_update_delay_ns;
+>  }
+>  
+> -static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+> -				unsigned int next_freq)
+> +#ifdef CONFIG_NO_HZ_COMMON
+> +static bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu)
+> +{
+> +	unsigned long idle_calls = tick_nohz_get_idle_calls();
+> +	bool ret = idle_calls == sg_cpu->saved_idle_calls;
+> +
+> +	sg_cpu->saved_idle_calls = idle_calls;
+> +	return ret;
+> +}
+> +#else
+> +static inline bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu) { return false; }
+> +#endif /* CONFIG_NO_HZ_COMMON */
+> +
+> +static void sugov_update_commit(struct sugov_cpu *sg_cpu,
+> +				struct sugov_policy *sg_policy,
+> +				u64 time, unsigned int next_freq)
+>  {
+>  	struct cpufreq_policy *policy = sg_policy->policy;
+>  
+> +	if (sugov_cpu_is_busy(sg_cpu) && next_freq < sg_policy->next_freq)
+> +		next_freq = sg_policy->next_freq;
+> +
+>  	if (policy->fast_switch_enabled) {
+>  		if (sg_policy->next_freq == next_freq) {
+>  			trace_cpu_frequency(policy->cur, smp_processor_id());
+> @@ -214,7 +234,7 @@ static void sugov_update_single(struct u
+>  		sugov_iowait_boost(sg_cpu, &util, &max);
+>  		next_f = get_next_freq(sg_policy, util, max);
+>  	}
+> -	sugov_update_commit(sg_policy, time, next_f);
+> +	sugov_update_commit(sg_cpu, sg_policy, time, next_f);
+>  }
+>  
+>  static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu)
+> @@ -283,7 +303,7 @@ static void sugov_update_shared(struct u
+>  		else
+>  			next_f = sugov_next_freq_shared(sg_cpu);
+>  
+> -		sugov_update_commit(sg_policy, time, next_f);
+> +		sugov_update_commit(sg_cpu, sg_policy, time, next_f);
+>  	}
+>  
+>  	raw_spin_unlock(&sg_policy->update_lock);
+> Index: linux-pm/include/linux/tick.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/tick.h
+> +++ linux-pm/include/linux/tick.h
+> @@ -117,6 +117,7 @@ extern void tick_nohz_idle_enter(void);
+>  extern void tick_nohz_idle_exit(void);
+>  extern void tick_nohz_irq_exit(void);
+>  extern ktime_t tick_nohz_get_sleep_length(void);
+> +extern unsigned long tick_nohz_get_idle_calls(void);
+>  extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+>  extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+>  #else /* !CONFIG_NO_HZ_COMMON */
+> Index: linux-pm/kernel/time/tick-sched.c
+> ===================================================================
+> --- linux-pm.orig/kernel/time/tick-sched.c
+> +++ linux-pm/kernel/time/tick-sched.c
+> @@ -993,6 +993,18 @@ ktime_t tick_nohz_get_sleep_length(void)
+>  	return ts->sleep_length;
+>  }
+>  
+> +/**
+> + * tick_nohz_get_idle_calls - return the current idle calls counter value
+> + *
+> + * Called from the schedutil frequency scaling governor in scheduler context.
+> + */
+> +unsigned long tick_nohz_get_idle_calls(void)
+> +{
+> +	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+> +
+> +	return ts->idle_calls;
+> +}
+> +
+>  static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
+>  {
+>  #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+> 
 
 -- 
 #include <best/regards.h>
