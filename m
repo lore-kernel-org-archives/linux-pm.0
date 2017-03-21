@@ -1,297 +1,200 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Fwd: [PATCH v11 10/10] power: bq27xxx_battery: Remove duplicate
- register arrays
-Date: Tue, 21 Mar 2017 01:58:02 -0700
-Message-ID: <CAKvHMgTC3eDhY=d-7obEbG9m7_3aStqBwAvOiyj88TjWNCui9A@mail.gmail.com>
-References: <20170320094335.19224-1-liam@networkimprov.net>
- <20170320094335.19224-11-liam@networkimprov.net> <CAKvHMgS9ajgE3ZpseSkT=BiW5yBL03s-8XNFeHE=V0gz7W7x3w@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC][PATCH v2 2/2] cpufreq: schedutil: Avoid decreasing
+ frequency of busy CPUs
+Date: Tue, 21 Mar 2017 09:50:28 +0100
+Message-ID: <CAKfTPtB0WpvSz66UNK5HNQF8W-PKCYNyRSCzz9L9WRAKNy+KYw@mail.gmail.com>
+References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan>
+ <3300960.HE4b3sK4dn@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f193.google.com ([209.85.223.193]:35894 "EHLO
-        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932173AbdCUI6E (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 04:58:04 -0400
-Received: by mail-io0-f193.google.com with SMTP id 68so6659791ioh.3
-        for <linux-pm@vger.kernel.org>; Tue, 21 Mar 2017 01:58:03 -0700 (PDT)
-In-Reply-To: <CAKvHMgS9ajgE3ZpseSkT=BiW5yBL03s-8XNFeHE=V0gz7W7x3w@mail.gmail.com>
+Received: from mail-oi0-f49.google.com ([209.85.218.49]:34765 "EHLO
+        mail-oi0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932305AbdCUI6R (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 04:58:17 -0400
+Received: by mail-oi0-f49.google.com with SMTP id w81so33940497oig.1
+        for <linux-pm@vger.kernel.org>; Tue, 21 Mar 2017 01:58:16 -0700 (PDT)
+In-Reply-To: <3300960.HE4b3sK4dn@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 
-Resend to list...
-
-
----------- Forwarded message ----------
-Date: Mon, Mar 20, 2017 at 6:23 PM
-To: Chris@lapa.com.au
-Cc: Matt Ranostay <matt@ranostay.consulting>,
-linux-pm@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>, Sebastian
-Reichel <sre@kernel.org>
-
-Chris & Andrew,
-
-Can we make id bq2750x an alias for bq27500 and remove the associated arrays?
-
-This patch does that for three IDs which are dups, although bq2750x &
-bq27500 are not exact dups.
-
-
-On Mar 20, 2017 2:44 AM, "Liam Breck" <liam@networkimprov.net> wrote:
+On 20 March 2017 at 22:46, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> From: Liam Breck <kernel@networkimprov.net>
+> The way the schedutil governor uses the PELT metric causes it to
+> underestimate the CPU utilization in some cases.
 >
-> BQ2751X & BQ27510G3 are identical.
-> BQ27500 & BQ27510G1 & BQ27510G2 are identical.
-> Make BQ2751X & BQ27510G1/2 category members.
-> Remove the duplicate arrays, etc.
+> That can be easily demonstrated by running kernel compilation on
+> a Sandy Bridge Intel processor, running turbostat in parallel with
+> it and looking at the values written to the MSR_IA32_PERF_CTL
+> register.  Namely, the expected result would be that when all CPUs
+> were 100% busy, all of them would be requested to run in the maximum
+> P-state, but observation shows that this clearly isn't the case.
+> The CPUs run in the maximum P-state for a while and then are
+> requested to run slower and go back to the maximum P-state after
+> a while again.  That causes the actual frequency of the processor to
+> visibly oscillate below the sustainable maximum in a jittery fashion
+> which clearly is not desirable.
 >
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> To work around this issue use the observation that, from the
+> schedutil governor's perspective, it does not make sense to decrease
+> the frequency of a CPU that doesn't enter idle and avoid decreasing
+> the frequency of busy CPUs.
+
+I don't fully agree with that statement.
+If there are 2 runnable tasks on CPU A and scheduler migrates the
+waiting task to another CPU B so CPU A is less loaded now, it makes
+sense to reduce the OPP. That's even for that purpose that we have
+decided to use scheduler metrics in cpufreq governor so we can adjust
+OPP immediately when tasks migrate.
+That being said, i probably know why you see such OPP switches in your
+use case. When we migrate a task, we also migrate/remove its
+utilization from CPU.
+If the CPU is not overloaded, it means that runnable tasks have all
+computation that they need and don't have any reason to use more when
+a task migrates to another CPU. so decreasing the OPP makes sense
+because the utilzation is decreasing
+If the CPU is overloaded, it means that runnable tasks have to share
+CPU time and probably don't have all computations that they would like
+so when a task migrate, the remaining tasks on the CPU will increase
+their utilization and fill space left by the task that has just
+migrated. So the CPU's utilization will decrease when a task migrates
+(and as a result the OPP) but then its utilization will increase with
+remaining tasks running more time as well as the OPP
+
+So you need to make the difference between this 2 cases: Is a CPU
+overloaded or not. You can't really rely on the utilization to detect
+that but you could take advantage of the load which take into account
+the waiting time of tasks
+
+Vincent
+>
+> To that end, use the counter of idle calls in the timekeeping code.
+> Namely, make the schedutil governor look at that counter for the
+> current CPU every time before it is about to set a new frequency
+> for that CPU's policy.  If the counter has not changed since the
+> previous iteration, the CPU has been busy for all that time and
+> its frequency should not be decreased, so if the new frequency would
+> be lower than the one set previously, the governor will skip the
+> frequency update.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  drivers/power/supply/bq27xxx_battery.c | 148 ++-------------------------------
->  include/linux/power/bq27xxx_battery.h  |  12 +--
->  2 files changed, 11 insertions(+), 149 deletions(-)
 >
-> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-> index 7f08f36..ccc74e6 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -197,30 +197,6 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->                 [BQ27XXX_DM_DATA] = 0x40,
->                 [BQ27XXX_DM_CKSUM] = 0x60,
->         },
-> -       [BQ2751X] = {
-> -               [BQ27XXX_REG_CTRL] = 0x00,
-> -               [BQ27XXX_REG_TEMP] = 0x06,
-> -               [BQ27XXX_REG_INT_TEMP] = 0x28,
-> -               [BQ27XXX_REG_VOLT] = 0x08,
-> -               [BQ27XXX_REG_AI] = 0x14,
-> -               [BQ27XXX_REG_FLAGS] = 0x0a,
-> -               [BQ27XXX_REG_TTE] = 0x16,
-> -               [BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-> -               [BQ27XXX_REG_TTES] = 0x1a,
-> -               [BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-> -               [BQ27XXX_REG_NAC] = 0x0c,
-> -               [BQ27XXX_REG_FCC] = 0x12,
-> -               [BQ27XXX_REG_CYCT] = 0x1e,
-> -               [BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-> -               [BQ27XXX_REG_SOC] = 0x20,
-> -               [BQ27XXX_REG_DCAP] = 0x2e,
-> -               [BQ27XXX_REG_AP] = INVALID_REG_ADDR,
-> -               [BQ27XXX_DM_CTRL] = 0x61,
-> -               [BQ27XXX_DM_CLASS] = 0x3e,
-> -               [BQ27XXX_DM_BLOCK] = 0x3f,
-> -               [BQ27XXX_DM_DATA] = 0x40,
-> -               [BQ27XXX_DM_CKSUM] = 0x60,
-> -       },
->         [BQ27500] = {
->                 [BQ27XXX_REG_CTRL] = 0x00,
->                 [BQ27XXX_REG_TEMP] = 0x06,
-> @@ -245,54 +221,6 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->                 [BQ27XXX_DM_DATA] = 0x40,
->                 [BQ27XXX_DM_CKSUM] = 0x60,
->         },
-> -       [BQ27510G1] = {
-> -               [BQ27XXX_REG_CTRL] = 0x00,
-> -               [BQ27XXX_REG_TEMP] = 0x06,
-> -               [BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
-> -               [BQ27XXX_REG_VOLT] = 0x08,
-> -               [BQ27XXX_REG_AI] = 0x14,
-> -               [BQ27XXX_REG_FLAGS] = 0x0a,
-> -               [BQ27XXX_REG_TTE] = 0x16,
-> -               [BQ27XXX_REG_TTF] = 0x18,
-> -               [BQ27XXX_REG_TTES] = 0x1c,
-> -               [BQ27XXX_REG_TTECP] = 0x26,
-> -               [BQ27XXX_REG_NAC] = 0x0c,
-> -               [BQ27XXX_REG_FCC] = 0x12,
-> -               [BQ27XXX_REG_CYCT] = 0x2a,
-> -               [BQ27XXX_REG_AE] = 0x22,
-> -               [BQ27XXX_REG_SOC] = 0x2c,
-> -               [BQ27XXX_REG_DCAP] = 0x3c,
-> -               [BQ27XXX_REG_AP] = 0x24,
-> -               [BQ27XXX_DM_CTRL] = 0x61,
-> -               [BQ27XXX_DM_CLASS] = 0x3e,
-> -               [BQ27XXX_DM_BLOCK] = 0x3f,
-> -               [BQ27XXX_DM_DATA] = 0x40,
-> -               [BQ27XXX_DM_CKSUM] = 0x60,
-> -       },
-> -       [BQ27510G2] = {
-> -               [BQ27XXX_REG_CTRL] = 0x00,
-> -               [BQ27XXX_REG_TEMP] = 0x06,
-> -               [BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
-> -               [BQ27XXX_REG_VOLT] = 0x08,
-> -               [BQ27XXX_REG_AI] = 0x14,
-> -               [BQ27XXX_REG_FLAGS] = 0x0a,
-> -               [BQ27XXX_REG_TTE] = 0x16,
-> -               [BQ27XXX_REG_TTF] = 0x18,
-> -               [BQ27XXX_REG_TTES] = 0x1c,
-> -               [BQ27XXX_REG_TTECP] = 0x26,
-> -               [BQ27XXX_REG_NAC] = 0x0c,
-> -               [BQ27XXX_REG_FCC] = 0x12,
-> -               [BQ27XXX_REG_CYCT] = 0x2a,
-> -               [BQ27XXX_REG_AE] = 0x22,
-> -               [BQ27XXX_REG_SOC] = 0x2c,
-> -               [BQ27XXX_REG_DCAP] = 0x3c,
-> -               [BQ27XXX_REG_AP] = 0x24,
-> -               [BQ27XXX_DM_CTRL] = 0x61,
-> -               [BQ27XXX_DM_CLASS] = 0x3e,
-> -               [BQ27XXX_DM_BLOCK] = 0x3f,
-> -               [BQ27XXX_DM_DATA] = 0x40,
-> -               [BQ27XXX_DM_CKSUM] = 0x60,
-> -       },
->         [BQ27510G3] = {
->                 [BQ27XXX_REG_CTRL] = 0x00,
->                 [BQ27XXX_REG_TEMP] = 0x06,
-> @@ -571,24 +499,6 @@ static enum power_supply_property bq2750x_battery_props[] = {
->         POWER_SUPPLY_PROP_MANUFACTURER,
->  };
+> This is a slightly different approach (avoid decreasing frequency for busy CPUs
+> instead of bumping if for them to the max upfront) and it works around the
+> original problem too.
 >
-> -static enum power_supply_property bq2751x_battery_props[] = {
-> -       POWER_SUPPLY_PROP_STATUS,
-> -       POWER_SUPPLY_PROP_PRESENT,
-> -       POWER_SUPPLY_PROP_VOLTAGE_NOW,
-> -       POWER_SUPPLY_PROP_CURRENT_NOW,
-> -       POWER_SUPPLY_PROP_CAPACITY,
-> -       POWER_SUPPLY_PROP_CAPACITY_LEVEL,
-> -       POWER_SUPPLY_PROP_TEMP,
-> -       POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
-> -       POWER_SUPPLY_PROP_TECHNOLOGY,
-> -       POWER_SUPPLY_PROP_CHARGE_FULL,
-> -       POWER_SUPPLY_PROP_CHARGE_NOW,
-> -       POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-> -       POWER_SUPPLY_PROP_CYCLE_COUNT,
-> -       POWER_SUPPLY_PROP_HEALTH,
-> -       POWER_SUPPLY_PROP_MANUFACTURER,
-> -};
-> -
->  static enum power_supply_property bq27500_battery_props[] = {
->         POWER_SUPPLY_PROP_STATUS,
->         POWER_SUPPLY_PROP_PRESENT,
-> @@ -610,48 +520,6 @@ static enum power_supply_property bq27500_battery_props[] = {
->         POWER_SUPPLY_PROP_MANUFACTURER,
->  };
+> I tried to address a few Peter's comments here and the result doesn't seem to
+> be too heavy-wieght.
 >
-> -static enum power_supply_property bq27510g1_battery_props[] = {
-> -       POWER_SUPPLY_PROP_STATUS,
-> -       POWER_SUPPLY_PROP_PRESENT,
-> -       POWER_SUPPLY_PROP_VOLTAGE_NOW,
-> -       POWER_SUPPLY_PROP_CURRENT_NOW,
-> -       POWER_SUPPLY_PROP_CAPACITY,
-> -       POWER_SUPPLY_PROP_CAPACITY_LEVEL,
-> -       POWER_SUPPLY_PROP_TEMP,
-> -       POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
-> -       POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
-> -       POWER_SUPPLY_PROP_TECHNOLOGY,
-> -       POWER_SUPPLY_PROP_CHARGE_FULL,
-> -       POWER_SUPPLY_PROP_CHARGE_NOW,
-> -       POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-> -       POWER_SUPPLY_PROP_CYCLE_COUNT,
-> -       POWER_SUPPLY_PROP_ENERGY_NOW,
-> -       POWER_SUPPLY_PROP_POWER_AVG,
-> -       POWER_SUPPLY_PROP_HEALTH,
-> -       POWER_SUPPLY_PROP_MANUFACTURER,
-> -};
-> -
-> -static enum power_supply_property bq27510g2_battery_props[] = {
-> -       POWER_SUPPLY_PROP_STATUS,
-> -       POWER_SUPPLY_PROP_PRESENT,
-> -       POWER_SUPPLY_PROP_VOLTAGE_NOW,
-> -       POWER_SUPPLY_PROP_CURRENT_NOW,
-> -       POWER_SUPPLY_PROP_CAPACITY,
-> -       POWER_SUPPLY_PROP_CAPACITY_LEVEL,
-> -       POWER_SUPPLY_PROP_TEMP,
-> -       POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
-> -       POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
-> -       POWER_SUPPLY_PROP_TECHNOLOGY,
-> -       POWER_SUPPLY_PROP_CHARGE_FULL,
-> -       POWER_SUPPLY_PROP_CHARGE_NOW,
-> -       POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-> -       POWER_SUPPLY_PROP_CYCLE_COUNT,
-> -       POWER_SUPPLY_PROP_ENERGY_NOW,
-> -       POWER_SUPPLY_PROP_POWER_AVG,
-> -       POWER_SUPPLY_PROP_HEALTH,
-> -       POWER_SUPPLY_PROP_MANUFACTURER,
-> -};
-> -
->  static enum power_supply_property bq27510g3_battery_props[] = {
->         POWER_SUPPLY_PROP_STATUS,
->         POWER_SUPPLY_PROP_PRESENT,
-> @@ -831,10 +699,7 @@ static struct {
->         BQ27XXX_PROP(BQ27000, bq27000_battery_props),
->         BQ27XXX_PROP(BQ27010, bq27010_battery_props),
->         BQ27XXX_PROP(BQ2750X, bq2750x_battery_props),
-> -       BQ27XXX_PROP(BQ2751X, bq2751x_battery_props),
->         BQ27XXX_PROP(BQ27500, bq27500_battery_props),
-> -       BQ27XXX_PROP(BQ27510G1, bq27510g1_battery_props),
-> -       BQ27XXX_PROP(BQ27510G2, bq27510g2_battery_props),
->         BQ27XXX_PROP(BQ27510G3, bq27510g3_battery_props),
->         BQ27XXX_PROP(BQ27520G1, bq27520g1_battery_props),
->         BQ27XXX_PROP(BQ27520G2, bq27520g2_battery_props),
-> @@ -1521,10 +1386,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+> Thanks,
+> Rafael
+>
+> ---
+>  include/linux/tick.h             |    1 +
+>  kernel/sched/cpufreq_schedutil.c |   28 ++++++++++++++++++++++++----
+>  kernel/time/tick-sched.c         |   12 ++++++++++++
+>  3 files changed, 37 insertions(+), 4 deletions(-)
+>
+> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+> ===================================================================
+> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
+> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
+> @@ -56,6 +56,9 @@ struct sugov_cpu {
+>         unsigned long iowait_boost;
+>         unsigned long iowait_boost_max;
+>         u64 last_update;
+> +#ifdef CONFIG_NO_HZ_COMMON
+> +       unsigned long saved_idle_calls;
+> +#endif
+>
+>         /* The fields below are only needed when sharing a policy. */
+>         unsigned long util;
+> @@ -88,11 +91,28 @@ static bool sugov_should_update_freq(str
+>         return delta_ns >= sg_policy->freq_update_delay_ns;
+>  }
+>
+> -static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+> -                               unsigned int next_freq)
+> +#ifdef CONFIG_NO_HZ_COMMON
+> +static bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu)
+> +{
+> +       unsigned long idle_calls = tick_nohz_get_idle_calls();
+> +       bool ret = idle_calls == sg_cpu->saved_idle_calls;
+> +
+> +       sg_cpu->saved_idle_calls = idle_calls;
+> +       return ret;
+> +}
+> +#else
+> +static inline bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu) { return false; }
+> +#endif /* CONFIG_NO_HZ_COMMON */
+> +
+> +static void sugov_update_commit(struct sugov_cpu *sg_cpu,
+> +                               struct sugov_policy *sg_policy,
+> +                               u64 time, unsigned int next_freq)
 >  {
->         switch (di->chip) {
->         case BQ2750X:
-> -       case BQ2751X:
->         case BQ27500:
-> -       case BQ27510G1:
-> -       case BQ27510G2:
->         case BQ27510G3:
->         case BQ27520G1:
->         case BQ27520G2:
-> @@ -1891,11 +1753,8 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->         switch(di->chip) {
->         case BQ27000:
->         case BQ27010:
-> -       case BQ2750X:
-> -       case BQ2751X: break;
-> +       case BQ2750X: break;
->         case BQ27500: BQ27XXX_INIT(BQ27500, bq27500_dm_regs, 0x04143672); break;
-> -       case BQ27510G1:
-> -       case BQ27510G2:
->         case BQ27510G3:
->         case BQ27520G1:
->         case BQ27520G2:
-> @@ -1905,7 +1764,10 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->         case BQ27541: break;
->         case BQ27545: BQ27XXX_INIT(BQ27545, bq27545_dm_regs, 0x04143672); break;
->         case BQ27421: BQ27XXX_INIT(BQ27421, bq27421_dm_regs, 0x80008000); break;
-> -       case BQ2752X: di->chip = BQ2751X; break;
-> +       case BQ2751X: di->chip = BQ27510G3; break;
-> +       case BQ2752X: di->chip = BQ27510G3; break;
-> +       case BQ27510G1: di->chip = BQ27500; break;
-> +       case BQ27510G2: di->chip = BQ27500; break;
->         case BQ27531: di->chip = BQ27530; break;
->         case BQ27542: di->chip = BQ27541; break;
->         case BQ27546: di->chip = BQ27541; break;
-> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-> index 014e59f..81f7ffa 100644
-> --- a/include/linux/power/bq27xxx_battery.h
-> +++ b/include/linux/power/bq27xxx_battery.h
-> @@ -6,11 +6,8 @@ enum bq27xxx_chip {
->         BQ27000 = 1, /* bq27000, bq27200 */
->         BQ27010, /* bq27010, bq27210 */
->         BQ2750X, /* bq27500 deprecated alias */
-> -       BQ2751X, /* bq27510, bq27520 deprecated alias */
-> -       BQ27500, /* bq27500/1 */
-> -       BQ27510G1, /* bq27510G1 */
-> -       BQ27510G2, /* bq27510G2 */
-> -       BQ27510G3, /* bq27510G3 */
-> +       BQ27500, /* bq27500/1, bq27510G1, bq27510G2 */
-> +       BQ27510G3, /* bq27510G3, bq27510, bq27520 */
->         BQ27520G1, /* bq27520G1 */
->         BQ27520G2, /* bq27520G2 */
->         BQ27520G3, /* bq27520G3 */
-> @@ -21,7 +18,10 @@ enum bq27xxx_chip {
->         BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+>         struct cpufreq_policy *policy = sg_policy->policy;
 >
->         /* members of categories; translate these to category in _setup() */
-> -       BQ2752X, /* deprecated alias */
-> +       BQ2751X, /* bq27510 deprecated alias */
-> +       BQ2752X, /* bq27520 deprecated alias */
-> +       BQ27510G1,
-> +       BQ27510G2,
->         BQ27531,
->         BQ27542,
->         BQ27546,
-> --
-> 2.9.3
+> +       if (sugov_cpu_is_busy(sg_cpu) && next_freq < sg_policy->next_freq)
+> +               next_freq = sg_policy->next_freq;
+> +
+>         if (policy->fast_switch_enabled) {
+>                 if (sg_policy->next_freq == next_freq) {
+>                         trace_cpu_frequency(policy->cur, smp_processor_id());
+> @@ -214,7 +234,7 @@ static void sugov_update_single(struct u
+>                 sugov_iowait_boost(sg_cpu, &util, &max);
+>                 next_f = get_next_freq(sg_policy, util, max);
+>         }
+> -       sugov_update_commit(sg_policy, time, next_f);
+> +       sugov_update_commit(sg_cpu, sg_policy, time, next_f);
+>  }
+>
+>  static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu)
+> @@ -283,7 +303,7 @@ static void sugov_update_shared(struct u
+>                 else
+>                         next_f = sugov_next_freq_shared(sg_cpu);
+>
+> -               sugov_update_commit(sg_policy, time, next_f);
+> +               sugov_update_commit(sg_cpu, sg_policy, time, next_f);
+>         }
+>
+>         raw_spin_unlock(&sg_policy->update_lock);
+> Index: linux-pm/include/linux/tick.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/tick.h
+> +++ linux-pm/include/linux/tick.h
+> @@ -117,6 +117,7 @@ extern void tick_nohz_idle_enter(void);
+>  extern void tick_nohz_idle_exit(void);
+>  extern void tick_nohz_irq_exit(void);
+>  extern ktime_t tick_nohz_get_sleep_length(void);
+> +extern unsigned long tick_nohz_get_idle_calls(void);
+>  extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+>  extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+>  #else /* !CONFIG_NO_HZ_COMMON */
+> Index: linux-pm/kernel/time/tick-sched.c
+> ===================================================================
+> --- linux-pm.orig/kernel/time/tick-sched.c
+> +++ linux-pm/kernel/time/tick-sched.c
+> @@ -993,6 +993,18 @@ ktime_t tick_nohz_get_sleep_length(void)
+>         return ts->sleep_length;
+>  }
+>
+> +/**
+> + * tick_nohz_get_idle_calls - return the current idle calls counter value
+> + *
+> + * Called from the schedutil frequency scaling governor in scheduler context.
+> + */
+> +unsigned long tick_nohz_get_idle_calls(void)
+> +{
+> +       struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+> +
+> +       return ts->idle_calls;
+> +}
+> +
+>  static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
+>  {
+>  #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+>
