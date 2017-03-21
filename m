@@ -1,13 +1,13 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v1 1/7] devicetree: power: battery: Add properties for pre-charge and end-charge current
-Date: Tue, 21 Mar 2017 15:09:15 -0700
-Message-ID: <20170321220921.5834-2-liam@networkimprov.net>
+Subject: [PATCH v1 2/7] devicetree: power: Add docs for TI BQ24190 battery charger
+Date: Tue, 21 Mar 2017 15:09:16 -0700
+Message-ID: <20170321220921.5834-3-liam@networkimprov.net>
 References: <20170321220921.5834-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:35191 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933034AbdCUWRy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 18:17:54 -0400
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:34811 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755793AbdCUWSn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 18:18:43 -0400
 In-Reply-To: <20170321220921.5834-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -16,38 +16,68 @@ Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <h
 
 From: Liam Breck <kernel@networkimprov.net>
 
-precharge-current-microamp and endcharge-current-microamp are used
-by battery chargers at the beginning and end of a charging cycle.
+Document monitored-battery and ti,system-minimum-microvolt properties.
 
-Depends-on: https://patchwork.kernel.org/patch/9633605/
 Cc: Rob Herring <robh@kernel.org>
 Cc: devicetree@vger.kernel.org
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- Documentation/devicetree/bindings/power/supply/battery.txt | 4 ++++
- 1 file changed, 4 insertions(+)
+ .../devicetree/bindings/power/supply/bq24190.txt   | 47 ++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/bq24190.txt
 
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
-index 53a68c0..494374a 100644
---- a/Documentation/devicetree/bindings/power/supply/battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-@@ -12,6 +12,8 @@ Optional Properties:
-  - voltage-min-design-microvolt: drained battery voltage
-  - energy-full-design-microwatt-hours: battery design energy
-  - charge-full-design-microamp-hours: battery design capacity
-+ - precharge-current-microamp: current for pre-charge phase
-+ - endcharge-current-microamp: current for charge termination phase
- 
- Battery properties are named, where possible, for the corresponding 
- elements in enum power_supply_property, defined in
-@@ -28,6 +30,8 @@ Example:
- 		voltage-min-design-microvolt = <3200000>;
- 		energy-full-design-microwatt-hours = <5290000>;
- 		charge-full-design-microamp-hours = <1430000>;
-+		precharge-current-microamp = <256000>;
-+		endcharge-current-microamp = <128000>;
- 	};
- 
- 	charger: charger@11 {
+diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+new file mode 100644
+index 0000000..d252d10
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+@@ -0,0 +1,47 @@
++Binding for TI BQ24190 Li-Ion Battery Charger
++
++Required properties:
++- compatible: Should contain one of the following:
++    * "ti,bq24190"
++- reg: integer, I2C address of the device.
++
++Optional properties:
++- monitored-battery: phandle of battery information devicetree node
++    These battery properties are relevant:
++    + precharge-current-microamp: maximum charge current during precharge
++      phase (typically 20% of battery capacity).
++    + endcharge-current-microamp: a charge cycle terminates when the
++      battery voltage is above recharge threshold, and the current is below
++      this setting (typically 10% of battery capacity).
++    See Documentation/devicetree/bindings/power/supply/battery.txt
++- ti,system-minimum-microvolt: when power is connected and the battery
++    is below minimum system voltage, the system will be regulated above this
++    setting.
++
++Other features:
++- Use gpio-hog to set the OTG pin high to enable 500mA charge current on USB SDP port.
++
++Example:
++
++bat: battery {
++	compatible = "simple-battery";
++	precharge-current-microamp = <256000>;
++	endcharge-current-microamp = <128000>;
++};
++
++bq24190 charger@6a {
++	compatible = "ti,bq24190";
++	reg = <0x6a>;
++	// interrupt configuration here
++	monitored-battery = <&bat>;
++	ti,system-minimum-microvolt = <3200000>;
++};
++
++&twl_gpio {
++	otg {
++		gpio-hog;
++		gpios = <6 0>;
++		output-high;
++		line-name = "otg-gpio";
++	};
++};
 -- 
 2.9.3
