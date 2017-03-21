@@ -1,179 +1,75 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH v2 2/2] cpufreq: schedutil: Avoid decreasing frequency of busy CPUs
-Date: Tue, 21 Mar 2017 16:18:52 +0100
-Message-ID: <2131318.dozmYt7JVU@aspire.rjw.lan>
-References: <4366682.tsferJN35u@aspire.rjw.lan> <1844525.jBn1oKmyb6@aspire.rjw.lan> <20170321150403.GU3093@worktop>
+From: <joseph.x.hronec@espn.com>
+Subject: 44373 linux-pm
+Date: Tue, 21 Mar 2017 15:45:30 -0000
+Message-ID: <149011113085.16099.9376798735132632148@bezeqint.net>
+Reply-To: <joseph.x.hronec@espn.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: application/zip; name="030492720869.zip"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57805 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1756607AbdCUPY0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 11:24:26 -0400
-In-Reply-To: <20170321150403.GU3093@worktop>
+Received: from bzq-109-65-75-223.red.bezeqint.net ([109.65.75.223]:52539 "HELO
+        bezeqint.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+        id S1757607AbdCUPrS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 21 Mar 2017 11:47:18 -0400
+Content-Disposition: attachment
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
+To: linux-pm <linux-pm@vger.kernel.org>
 
-On Tuesday, March 21, 2017 04:04:03 PM Peter Zijlstra wrote:
-> On Tue, Mar 21, 2017 at 03:46:07PM +0100, Rafael J. Wysocki wrote:
-> > @@ -207,6 +212,8 @@ static void sugov_update_single(struct u
-> >  	if (!sugov_should_update_freq(sg_policy, time))
-> >  		return;
-> >  
-> > +	sg_policy->overload = this_rq()->rd->overload;
-> > +
-> 
-> Same problem as before; rd->overload is set if _any_ CPU in the root
-> domain has more than 1 runnable task at a random point in history (when
-> we ran the load balance tick -- and since that is the same tick used for
-> timers, there's a bias to over-account there).
-
-OK
-
-What about the one below then?
-
-It checks both the idle calls count and overload and only then it will prevent
-the frequency from being decreased.
-
-It is sufficient for the case at hand.
-
-I guess if rd->overload is not set, this means that none of the CPUs is
-oversubscribed and we just saturate the capacity in a one-task-per-CPU kind
-of fashion.  Right?
-
----
- include/linux/tick.h             |    1 +
- kernel/sched/cpufreq_schedutil.c |   27 +++++++++++++++++++++++++++
- kernel/time/tick-sched.c         |   12 ++++++++++++
- 3 files changed, 40 insertions(+)
-
-Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-===================================================================
---- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-+++ linux-pm/kernel/sched/cpufreq_schedutil.c
-@@ -37,6 +37,7 @@ struct sugov_policy {
- 	s64 freq_update_delay_ns;
- 	unsigned int next_freq;
- 	unsigned int cached_raw_freq;
-+	bool busy;
- 
- 	/* The next fields are only needed if fast switch cannot be used. */
- 	struct irq_work irq_work;
-@@ -56,11 +57,15 @@ struct sugov_cpu {
- 	unsigned long iowait_boost;
- 	unsigned long iowait_boost_max;
- 	u64 last_update;
-+#ifdef CONFIG_NO_HZ_COMMON
-+	unsigned long saved_idle_calls;
-+#endif
- 
- 	/* The fields below are only needed when sharing a policy. */
- 	unsigned long util;
- 	unsigned long max;
- 	unsigned int flags;
-+	bool busy;
- };
- 
- static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
-@@ -93,6 +98,9 @@ static void sugov_update_commit(struct s
- {
- 	struct cpufreq_policy *policy = sg_policy->policy;
- 
-+	if (sg_policy->busy && next_freq < sg_policy->next_freq)
-+		next_freq = sg_policy->next_freq;
-+
- 	if (policy->fast_switch_enabled) {
- 		if (sg_policy->next_freq == next_freq) {
- 			trace_cpu_frequency(policy->cur, smp_processor_id());
-@@ -192,6 +200,19 @@ static void sugov_iowait_boost(struct su
- 	sg_cpu->iowait_boost >>= 1;
- }
- 
-+#ifdef CONFIG_NO_HZ_COMMON
-+static bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu)
-+{
-+	unsigned long idle_calls = tick_nohz_get_idle_calls();
-+	bool not_idle = idle_calls == sg_cpu->saved_idle_calls;
-+
-+	sg_cpu->saved_idle_calls = idle_calls;
-+	return not_idle && this_rq()->rd->overload;
-+}
-+#else
-+static inline bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu) { return false; }
-+#endif /* CONFIG_NO_HZ_COMMON */
-+
- static void sugov_update_single(struct update_util_data *hook, u64 time,
- 				unsigned int flags)
- {
-@@ -207,6 +228,8 @@ static void sugov_update_single(struct u
- 	if (!sugov_should_update_freq(sg_policy, time))
- 		return;
- 
-+	sg_policy->busy = sugov_cpu_is_busy(sg_cpu);
-+
- 	if (flags & SCHED_CPUFREQ_RT_DL) {
- 		next_f = policy->cpuinfo.max_freq;
- 	} else {
-@@ -225,6 +248,8 @@ static unsigned int sugov_next_freq_shar
- 	unsigned long util = 0, max = 1;
- 	unsigned int j;
- 
-+	sg_policy->busy = false;
-+
- 	for_each_cpu(j, policy->cpus) {
- 		struct sugov_cpu *j_sg_cpu = &per_cpu(sugov_cpu, j);
- 		unsigned long j_util, j_max;
-@@ -253,6 +278,7 @@ static unsigned int sugov_next_freq_shar
- 		}
- 
- 		sugov_iowait_boost(j_sg_cpu, &util, &max);
-+		sg_policy->busy = sg_policy->busy || sg_cpu->busy;
- 	}
- 
- 	return get_next_freq(sg_policy, util, max);
-@@ -273,6 +299,7 @@ static void sugov_update_shared(struct u
- 	sg_cpu->util = util;
- 	sg_cpu->max = max;
- 	sg_cpu->flags = flags;
-+	sg_cpu->busy = sugov_cpu_is_busy(sg_cpu);
- 
- 	sugov_set_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
-Index: linux-pm/include/linux/tick.h
-===================================================================
---- linux-pm.orig/include/linux/tick.h
-+++ linux-pm/include/linux/tick.h
-@@ -117,6 +117,7 @@ extern void tick_nohz_idle_enter(void);
- extern void tick_nohz_idle_exit(void);
- extern void tick_nohz_irq_exit(void);
- extern ktime_t tick_nohz_get_sleep_length(void);
-+extern unsigned long tick_nohz_get_idle_calls(void);
- extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
- extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
- #else /* !CONFIG_NO_HZ_COMMON */
-Index: linux-pm/kernel/time/tick-sched.c
-===================================================================
---- linux-pm.orig/kernel/time/tick-sched.c
-+++ linux-pm/kernel/time/tick-sched.c
-@@ -993,6 +993,18 @@ ktime_t tick_nohz_get_sleep_length(void)
- 	return ts->sleep_length;
- }
- 
-+/**
-+ * tick_nohz_get_idle_calls - return the current idle calls counter value
-+ *
-+ * Called from the schedutil frequency scaling governor in scheduler context.
-+ */
-+unsigned long tick_nohz_get_idle_calls(void)
-+{
-+	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
-+
-+	return ts->idle_calls;
-+}
-+
- static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
- {
- #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+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
+AAABAAEAUwAAAB8MAAAAAA==
