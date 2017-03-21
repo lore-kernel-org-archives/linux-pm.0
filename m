@@ -1,75 +1,64 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC][PATCH v2 2/2] cpufreq: schedutil: Avoid decreasing
- frequency of busy CPUs
-Date: Tue, 21 Mar 2017 14:37:08 +0100
-Message-ID: <CAKfTPtBp7GevDfnOTrOnrc79XP1mbY0onq=uh4Aw2tGu-DgHGw@mail.gmail.com>
-References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan>
- <3300960.HE4b3sK4dn@aspire.rjw.lan> <CAKfTPtB0WpvSz66UNK5HNQF8W-PKCYNyRSCzz9L9WRAKNy+KYw@mail.gmail.com>
- <20170321132253.vjp7f72qkubpttmf@hirez.programming.kicks-ass.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 5/7] thermal: rcar_gen3_thermal: enable hardware
+ interrupts for trip points
+Date: Tue, 21 Mar 2017 14:50:59 +0100
+Message-ID: <CAMuHMdXJpVdNosRcwqjmy40gDDXo7myKLZtF8y+p-q0cZbqq2Q@mail.gmail.com>
+References: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se>
+ <20170306200401.29923-6-niklas.soderlund+renesas@ragnatech.se>
+ <20170307195533.GE2554@tetsubishi> <20170317100630.GA20587@bigcity.dyn.berto.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f41.google.com ([209.85.218.41]:34467 "EHLO
-        mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756855AbdCUNhl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 09:37:41 -0400
-Received: by mail-oi0-f41.google.com with SMTP id w81so36803250oig.1
-        for <linux-pm@vger.kernel.org>; Tue, 21 Mar 2017 06:37:29 -0700 (PDT)
-In-Reply-To: <20170321132253.vjp7f72qkubpttmf@hirez.programming.kicks-ass.net>
+Received: from mail-io0-f196.google.com ([209.85.223.196]:34326 "EHLO
+        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757076AbdCUNvj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 09:51:39 -0400
+In-Reply-To: <20170317100630.GA20587@bigcity.dyn.berto.se>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
+To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
+Cc: Wolfram Sang <wsa@the-dreams.de>, Linux PM list <linux-pm@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-On 21 March 2017 at 14:22, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Tue, Mar 21, 2017 at 09:50:28AM +0100, Vincent Guittot wrote:
->> On 20 March 2017 at 22:46, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
->> > To work around this issue use the observation that, from the
->> > schedutil governor's perspective, it does not make sense to decrease
->> > the frequency of a CPU that doesn't enter idle and avoid decreasing
->> > the frequency of busy CPUs.
+Hi Niklas,
+
+On Fri, Mar 17, 2017 at 11:06 AM, Niklas S=C3=B6derlund
+<niklas.soderlund@ragnatech.se> wrote:
+> On 2017-03-07 20:55:33 +0100, Wolfram Sang wrote:
+>> On Mon, Mar 06, 2017 at 09:03:59PM +0100, Niklas S=C3=B6derlund wrote:
+>> > Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnate=
+ch.se>
+>> > ---
+>> >  drivers/thermal/rcar_gen3_thermal.c | 137 +++++++++++++++++++++++++++=
++++++++++
+>> >  1 file changed, 137 insertions(+)
+>> >
+>> > +static int rcar_gen3_thermal_set_trips(void *devdata, int low, int hi=
+gh)
+>> > +{
+>> > +   struct rcar_gen3_thermal_tsc *tsc =3D devdata;
+>> > +
+>> > +   if (low < -40000)
+>> > +           low =3D -40000;
+>> > +   if (high > 125000)
+>> > +           high =3D 125000;
 >>
->> I don't fully agree with that statement.
->> If there are 2 runnable tasks on CPU A and scheduler migrates the
->> waiting task to another CPU B so CPU A is less loaded now, it makes
->> sense to reduce the OPP. That's even for that purpose that we have
->> decided to use scheduler metrics in cpufreq governor so we can adjust
->> OPP immediately when tasks migrate.
->> That being said, i probably know why you see such OPP switches in your
->> use case. When we migrate a task, we also migrate/remove its
->> utilization from CPU.
->> If the CPU is not overloaded, it means that runnable tasks have all
->> computation that they need and don't have any reason to use more when
->> a task migrates to another CPU. so decreasing the OPP makes sense
->> because the utilzation is decreasing
->> If the CPU is overloaded, it means that runnable tasks have to share
->> CPU time and probably don't have all computations that they would like
->> so when a task migrate, the remaining tasks on the CPU will increase
->> their utilization and fill space left by the task that has just
->> migrated. So the CPU's utilization will decrease when a task migrates
->> (and as a result the OPP) but then its utilization will increase with
->> remaining tasks running more time as well as the OPP
->>
->> So you need to make the difference between this 2 cases: Is a CPU
->> overloaded or not. You can't really rely on the utilization to detect
->> that but you could take advantage of the load which take into account
->> the waiting time of tasks
+>> Use clamp_val()?
 >
-> I'm confused. What two cases? You only list the overloaded case, but he
+> Good idea, will use.
 
-overloaded vs not overloaded use case.
-For the not overloaded case, it makes sense to immediately update to
-OPP to be aligned with the new utilization of the CPU even if it was
-not idle in the past couple of ticks
+Why not clamp()? Does the type checking stand in the way?
 
-> does exactly that. Note that the lack of idle time is an exact
-> equivalent of 100% utilized.
->
-> So even while we cannot currently detect the 100% utilized state through
-> the running state tracking; because averages etc.. we can detect the
-> lack of idle time.
+Gr{oetje,eeting}s,
 
-But after how much lack of idle time do we consider that we are overloaded ?
+                        Geert
 
->
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
