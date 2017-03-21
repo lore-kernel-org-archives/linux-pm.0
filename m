@@ -1,46 +1,78 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3] cpufreq: Restore policy min/max limits on CPU online
-Date: Tue, 21 Mar 2017 11:36:06 +0530
-Message-ID: <96b7044b50a37b3c4c302e6e22d3cbc6e8864cd4.1490076285.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 03/15] extcon: cht-wc: Add Intel Cherry Trail Whiskey Cove
+ PMIC extcon driver
+Date: Tue, 21 Mar 2017 15:27:18 +0900
+Message-ID: <58D0C7C6.1090008@samsung.com>
+References: <20170317095527.10487-1-hdegoede@redhat.com>
+ <CGME20170317095544epcas5p42dd4115627c9cf9de3911b433024ac93@epcas5p4.samsung.com>
+ <20170317095527.10487-4-hdegoede@redhat.com> <58CF3183.4090101@samsung.com>
+ <1490014841.19767.106.camel@linux.intel.com> <58D0A3E8.6090609@samsung.com>
+ <58D0B868.6060602@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-reply-to: <58D0B868.6060602@samsung.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On CPU online the cpufreq core restores the previous governor (or
-the previous "policy" setting for ->setpolicy drivers), but it does
-not restore the min/max limits at the same time, which is confusing,
-inconsistent and real pain for users who set the limits and then
-suspend/resume the system (using full suspend), in which case the
-limits are reset on all CPUs except for the boot one.
+Hi,
 
-Fix this by making cpufreq_online() restore the limits when an inactive
-policy is brought online.
+I think it again.
+The "cht_wcove_pwrsrc' is ok, if the register use the 'pwrsrc' word
+and using the 'wcove' instead of 'wc'. It is not big matter.
 
-The commit log and patch are inspired from Rafael's earlier work.
+I agree to use the 'cht_wcove_pwrsrc'.
 
-Reported-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V1 and V2 were sent by Rafael and were trying to fix this differently.
+Best Regards,
+Chanwoo Choi
 
- drivers/cpufreq/cpufreq.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 38b9fdf854a4..87e7b9d0db1b 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1182,6 +1182,9 @@ static int cpufreq_online(unsigned int cpu)
- 		for_each_cpu(j, policy->related_cpus)
- 			per_cpu(cpufreq_cpu_data, j) = policy;
- 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	} else {
-+		policy->min = policy->user_policy.min;
-+		policy->max = policy->user_policy.max;
- 	}
- 
- 	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
--- 
-2.12.0.432.g71c3a4f4ba37
+On 2017년 03월 21일 14:21, Chanwoo Choi wrote:
+> On 2017년 03월 21일 12:54, Chanwoo Choi wrote:
+>> On 2017년 03월 20일 22:00, Andy Shevchenko wrote:
+>>> On Mon, 2017-03-20 at 10:33 +0900, Chanwoo Choi wrote:
+>>>> On 2017년 03월 17일 18:55, Hans de Goede wrote:
+>>>
+>>>>> +static const struct platform_device_id cht_wc_extcon_table[] = {
+>>>>> +	{ .name = "cht_wcove_pwrsrc" },
+>>>>
+>>>> You use the 'cht_wc' word instead of 'cht_wcove_pwrsrc'.
+>>>> So, To maintain the consistency, you better to use the 'cht-wc' as the
+>>>> name.
+>>>> - I prefer to use '-' instead of '_' in the name.
+>>>> 	.name ="cht-wc"
+>>>
+>>> I would keep as Hans did for the sake of consistency among all Whiskey
+>>> Cove device drivers (and predecessors like Crystal Cove).
+>>
+>> The 'wcove' short word is not used in this patch.
+>> If the author want to use the 'wcove', I recommend that
+>> you should use the 'wcove' instead of 'wc' in this patch.
+>>
+>> And, I think that  'pwrsrc' is not ambiguous.
+> 
+> I'm sorry. I used the wrong word. I mean that 'pwrsrc' is not correct.
+> 
+>> Hans might use the 'pwrsrc' as the 'Power Source'.
+>> But, this driver is not power source. Instead,
+>> this driver supports the detection of external connector.
+>>
+>> I think 'power source' means the power supply instead of detector.
+>>
+>>>
+>>> I understand your point from extcon subsystem view, but PMICs like
+>>> Whiskey Cove are multi-functional devices, and thus naming across them
+>>> (same prefix in use to be precise) is better idea.
+>>>
+>>>>
+>>>>> +	{},
+>>>>> +};
+>>>>> +MODULE_DEVICE_TABLE(platform, cht_wc_extcon_table);
+>>>
+>>
+>>
+> 
+> 
