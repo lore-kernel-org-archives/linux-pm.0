@@ -1,44 +1,204 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v1 0/7] BQ24190 support for power_supply_battery_info and DT binding
-Date: Tue, 21 Mar 2017 15:09:14 -0700
-Message-ID: <20170321220921.5834-1-liam@networkimprov.net>
+Subject: [PATCH v1 6/7] power: bq24190_charger: Add power_supply_battery_info and devicetree support
+Date: Tue, 21 Mar 2017 15:09:20 -0700
+Message-ID: <20170321220921.5834-7-liam@networkimprov.net>
+References: <20170321220921.5834-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:34995 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932865AbdCUWRU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 18:17:20 -0400
-Received: by mail-pg0-f65.google.com with SMTP id g2so27300081pge.2
-        for <linux-pm@vger.kernel.org>; Tue, 21 Mar 2017 15:17:20 -0700 (PDT)
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:35083 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933021AbdCUWRi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 18:17:38 -0400
+Received: by mail-pg0-f68.google.com with SMTP id g2so27300624pge.2
+        for <linux-pm@vger.kernel.org>; Tue, 21 Mar 2017 15:17:32 -0700 (PDT)
+In-Reply-To: <20170321220921.5834-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
+Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Mark Greer <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>
 
-Overview:
-BQ24190 needs settings for pre-charge & end-charge current and system min voltage to function 
-correctly. Pre- and end-charge current belong in power_supply_battery_info as they are based on 
-battery capacity. We add _PRECHARGE & _ENDCHARGE elements to enum power_supply_property.
+From: Liam Breck <kernel@networkimprov.net>
 
-Issues in v1:
-* power_supply_prop_precharge & endcharge are added at end of enum to avoid sysfs breakage
-* "Set bq24190-battery device .type=unknown" is a temporary workaround to be fixed in v2
+Obtain pre-charge and end-charge current values from power_supply_battery_info.
+Obtain minimum system voltage level from devicetree.
 
-Liam Breck (7):
-  devicetree: power: battery: Add properties for pre-charge and end-charge current
-  devicetree: power: Add docs for TI BQ24190 battery charger
-  power: power_supply_core: Add *_battery_info fields for pre- and end-charge current
-  power: bq24190_charger: Uniform pm_runtime_get() failure handling
-  power: bq24190_charger: Reorder init sequence in probe()
-  power: bq24190_charger: Add power_supply_battery_info and devicetree support
-  power: bq24190_charger: Set bq24190-battery device .type=unknown
+Cc: Mark Greer <mgreer@animalcreek.com>
+Signed-off-by: Liam Breck <kernel@networkimprov.net>
+---
+ drivers/power/supply/bq24190_charger.c | 102 +++++++++++++++++++++++++++++----
+ 1 file changed, 90 insertions(+), 12 deletions(-)
 
- .../devicetree/bindings/power/supply/battery.txt   |   4 +
- .../devicetree/bindings/power/supply/bq24190.txt   |  47 +++++++
- drivers/power/supply/bq24190_charger.c             | 152 ++++++++++++++++-----
- drivers/power/supply/power_supply_core.c           |   6 +
- include/linux/power_supply.h                       |   5 +
- 5 files changed, 179 insertions(+), 35 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/bq24190.txt
-
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index 2fbc7f3..a52816b 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -43,6 +43,8 @@
+ #define BQ24190_REG_POC_SYS_MIN_SHIFT		1
+ #define BQ24190_REG_POC_BOOST_LIM_MASK		BIT(0)
+ #define BQ24190_REG_POC_BOOST_LIM_SHIFT		0
++#define BQ24190_REG_POC_SYS_MIN_MIN		3000
++#define BQ24190_REG_POC_SYS_MIN_MAX		3700
+ 
+ #define BQ24190_REG_CCC		0x02 /* Charge Current Control */
+ #define BQ24190_REG_CCC_ICHG_MASK		(BIT(7) | BIT(6) | BIT(5) | \
+@@ -58,6 +60,10 @@
+ #define BQ24190_REG_PCTCC_ITERM_MASK		(BIT(3) | BIT(2) | BIT(1) | \
+ 						 BIT(0))
+ #define BQ24190_REG_PCTCC_ITERM_SHIFT		0
++#define BQ24190_REG_PCTCC_IPRECHG_MIN		128
++#define BQ24190_REG_PCTCC_IPRECHG_MAX		2048
++#define BQ24190_REG_PCTCC_ITERM_MIN		128
++#define BQ24190_REG_PCTCC_ITERM_MAX		2048
+ 
+ #define BQ24190_REG_CVC		0x04 /* Charge Voltage Control */
+ #define BQ24190_REG_CVC_VREG_MASK		(BIT(7) | BIT(6) | BIT(5) | \
+@@ -157,6 +163,9 @@ struct bq24190_dev_info {
+ 	unsigned int			irq;
+ 	bool				initialized;
+ 	bool				irq_event;
++	u16				sys_min;
++	u16				iprechg;
++	u16				iterm;
+ 	struct mutex			f_reg_lock;
+ 	u8				f_reg;
+ 	u8				ss_reg;
+@@ -496,19 +505,20 @@ static int bq24190_sysfs_create_group(struct bq24190_dev_info *bdi)
+ static inline void bq24190_sysfs_remove_group(struct bq24190_dev_info *bdi) {}
+ #endif
+ 
+-/*
+- * According to the "Host Mode and default Mode" section of the
+- * manual, a write to any register causes the bq24190 to switch
+- * from default mode to host mode.  It will switch back to default
+- * mode after a WDT timeout unless the WDT is turned off as well.
+- * So, by simply turning off the WDT, we accomplish both with the
+- * same write.
+- */
+-static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
++static int bq24190_set_operating_params(struct bq24190_dev_info *bdi)
+ {
+ 	int ret;
+ 	u8 v;
+ 
++	/*
++	 * According to the "Host Mode and default Mode" section of the
++	 * manual, a write to any register causes the bq24190 to switch
++	 * from default mode to host mode.  It will switch back to default
++	 * mode after a WDT timeout unless the WDT is turned off as well.
++	 * So, by simply turning off the WDT, we accomplish both with the
++	 * same write.
++	 */
++
+ 	ret = bq24190_read(bdi, BQ24190_REG_CTTC, &v);
+ 	if (ret < 0)
+ 		return ret;
+@@ -517,7 +527,41 @@ static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
+ 					BQ24190_REG_CTTC_WATCHDOG_SHIFT);
+ 	v &= ~BQ24190_REG_CTTC_WATCHDOG_MASK;
+ 
+-	return bq24190_write(bdi, BQ24190_REG_CTTC, v);
++	ret = bq24190_write(bdi, BQ24190_REG_CTTC, v);
++	if (ret < 0)
++		return ret;
++
++	if (bdi->sys_min) {
++		v = bdi->sys_min / 100 - 30; // manual section 9.5.1.2, table 9
++		ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
++					 BQ24190_REG_POC_SYS_MIN_MASK,
++					 BQ24190_REG_POC_SYS_MIN_SHIFT,
++					 v);
++		if (ret < 0)
++			return ret;
++	}
++
++	if (bdi->iprechg) {
++		v = bdi->iprechg / 128 - 1; // manual section 9.5.1.4, table 11
++		ret = bq24190_write_mask(bdi, BQ24190_REG_PCTCC,
++					 BQ24190_REG_PCTCC_IPRECHG_MASK,
++					 BQ24190_REG_PCTCC_IPRECHG_SHIFT,
++					 v);
++		if (ret < 0)
++			return ret;
++	}
++
++	if (bdi->iterm) {
++		v = bdi->iterm / 128 - 1; // manual section 9.5.1.4, table 11
++		ret = bq24190_write_mask(bdi, BQ24190_REG_PCTCC,
++					 BQ24190_REG_PCTCC_ITERM_MASK,
++					 BQ24190_REG_PCTCC_ITERM_SHIFT,
++					 v);
++		if (ret < 0)
++			return ret;
++	}
++
++	return 0;
+ }
+ 
+ static int bq24190_register_reset(struct bq24190_dev_info *bdi)
+@@ -1304,7 +1348,7 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	ret = bq24190_set_mode_host(bdi);
++	ret = bq24190_set_operating_params(bdi);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -1314,6 +1358,39 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+ #ifdef CONFIG_OF
+ static int bq24190_setup_dt(struct bq24190_dev_info *bdi)
+ {
++	struct power_supply_battery_info info = {};
++	const char const* s = "ti,system-minimum-microvolt";
++	int v;
++
++	if (!of_property_read_u32(bdi->dev->of_node, s, &v)) {
++		v /= 1000;
++		if (v >= BQ24190_REG_POC_SYS_MIN_MIN
++		 && v <= BQ24190_REG_POC_SYS_MIN_MAX)
++			bdi->sys_min = v;
++		else
++			dev_err(bdi->dev, "invalid value for %s: %u\n", s, v);
++	}
++
++	if (!power_supply_get_battery_info(bdi->battery, &info)) {
++		v = info.precharge_current_ua / 1000;
++		if (v >= BQ24190_REG_PCTCC_IPRECHG_MIN
++		 && v <= BQ24190_REG_PCTCC_IPRECHG_MAX)
++			bdi->iprechg = v;
++		else
++			dev_err(bdi->dev,
++				"invalid value for battery:precharge-current-microamp: %d\n",
++				v);
++
++		v = info.endcharge_current_ua / 1000;
++		if (v >= BQ24190_REG_PCTCC_ITERM_MIN
++		 && v <= BQ24190_REG_PCTCC_ITERM_MAX)
++			bdi->iterm = v;
++		else
++			dev_err(bdi->dev,
++				"invalid value for battery:endcharge-current-microamp: %d\n",
++				v);
++	}
++
+ 	bdi->irq = irq_of_parse_and_map(bdi->dev->of_node, 0);
+ 	if (bdi->irq <= 0)
+ 		return -1;
+@@ -1407,6 +1484,7 @@ static int bq24190_probe(struct i2c_client *client,
+ 	}
+ 
+ 	battery_cfg.drv_data = bdi;
++	battery_cfg.of_node = dev->of_node;
+ 	bdi->battery = power_supply_register(dev, &bq24190_battery_desc,
+ 						&battery_cfg);
+ 	if (IS_ERR(bdi->battery)) {
+@@ -1570,7 +1648,7 @@ static int bq24190_pm_resume(struct device *dev)
+ 	}
+ 
+ 	bq24190_register_reset(bdi);
+-	bq24190_set_mode_host(bdi);
++	bq24190_set_operating_params(bdi);
+ 	bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+ 
+ 	if (error >= 0) {
 -- 
 2.9.3
