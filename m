@@ -1,78 +1,48 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 03/15] extcon: cht-wc: Add Intel Cherry Trail Whiskey Cove
- PMIC extcon driver
-Date: Tue, 21 Mar 2017 15:27:18 +0900
-Message-ID: <58D0C7C6.1090008@samsung.com>
-References: <20170317095527.10487-1-hdegoede@redhat.com>
- <CGME20170317095544epcas5p42dd4115627c9cf9de3911b433024ac93@epcas5p4.samsung.com>
- <20170317095527.10487-4-hdegoede@redhat.com> <58CF3183.4090101@samsung.com>
- <1490014841.19767.106.camel@linux.intel.com> <58D0A3E8.6090609@samsung.com>
- <58D0B868.6060602@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC][PATCH v2 2/2] cpufreq: schedutil: Avoid decreasing
+ frequency of busy CPUs
+Date: Tue, 21 Mar 2017 12:10:44 +0530
+Message-ID: <20170321064044.GO25659@vireshk-i7>
+References: <4366682.tsferJN35u@aspire.rjw.lan>
+ <2185243.flNrap3qq1@aspire.rjw.lan>
+ <3300960.HE4b3sK4dn@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-reply-to: <58D0B868.6060602@samsung.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <3300960.HE4b3sK4dn@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On 20-03-17, 22:46, Rafael J. Wysocki wrote:
+> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
 
-I think it again.
-The "cht_wcove_pwrsrc' is ok, if the register use the 'pwrsrc' word
-and using the 'wcove' instead of 'wc'. It is not big matter.
+> +static void sugov_update_commit(struct sugov_cpu *sg_cpu,
+> +				struct sugov_policy *sg_policy,
+> +				u64 time, unsigned int next_freq)
+>  {
+>  	struct cpufreq_policy *policy = sg_policy->policy;
+>  
+> +	if (sugov_cpu_is_busy(sg_cpu) && next_freq < sg_policy->next_freq)
+> +		next_freq = sg_policy->next_freq;
+> +
 
-I agree to use the 'cht_wcove_pwrsrc'.
+In the earlier version you said that we want to be opportunistic and
+don't want to do heavy computation and so check only for current CPU.
 
-Best Regards,
-Chanwoo Choi
+But in this version, all those computations are already done by now.
+Why shouldn't we check all CPUs in the policy now? I am asking as we
+will still have the same problem, we are trying to work-around if the
+current CPU isn't busy but others sharing the policy are.
 
+Also, why not return directly from within the if block? To run
+trace_cpu_frequency()?
 
-On 2017년 03월 21일 14:21, Chanwoo Choi wrote:
-> On 2017년 03월 21일 12:54, Chanwoo Choi wrote:
->> On 2017년 03월 20일 22:00, Andy Shevchenko wrote:
->>> On Mon, 2017-03-20 at 10:33 +0900, Chanwoo Choi wrote:
->>>> On 2017년 03월 17일 18:55, Hans de Goede wrote:
->>>
->>>>> +static const struct platform_device_id cht_wc_extcon_table[] = {
->>>>> +	{ .name = "cht_wcove_pwrsrc" },
->>>>
->>>> You use the 'cht_wc' word instead of 'cht_wcove_pwrsrc'.
->>>> So, To maintain the consistency, you better to use the 'cht-wc' as the
->>>> name.
->>>> - I prefer to use '-' instead of '_' in the name.
->>>> 	.name ="cht-wc"
->>>
->>> I would keep as Hans did for the sake of consistency among all Whiskey
->>> Cove device drivers (and predecessors like Crystal Cove).
->>
->> The 'wcove' short word is not used in this patch.
->> If the author want to use the 'wcove', I recommend that
->> you should use the 'wcove' instead of 'wc' in this patch.
->>
->> And, I think that  'pwrsrc' is not ambiguous.
-> 
-> I'm sorry. I used the wrong word. I mean that 'pwrsrc' is not correct.
-> 
->> Hans might use the 'pwrsrc' as the 'Power Source'.
->> But, this driver is not power source. Instead,
->> this driver supports the detection of external connector.
->>
->> I think 'power source' means the power supply instead of detector.
->>
->>>
->>> I understand your point from extcon subsystem view, but PMICs like
->>> Whiskey Cove are multi-functional devices, and thus naming across them
->>> (same prefix in use to be precise) is better idea.
->>>
->>>>
->>>>> +	{},
->>>>> +};
->>>>> +MODULE_DEVICE_TABLE(platform, cht_wc_extcon_table);
->>>
->>
->>
-> 
-> 
+I don't remember exactly, but why don't we run that for !fast-switch
+case? We can simplify the code a bit if we check for no freq change at
+the top of the routine.
+
+-- 
+viresh
