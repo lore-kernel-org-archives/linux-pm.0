@@ -1,47 +1,46 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [vireshk:opp/genpd-performance-state 10/11]
- drivers/soc/tegra/pmc.c:577:1: warning: the frame size of 1176 bytes is
- larger than 1024 bytes
-Date: Tue, 21 Mar 2017 10:56:20 +0530
-Message-ID: <20170321052620.GN25659@vireshk-i7>
-References: <201703211237.8SX8YFBW%fengguang.wu@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f41.google.com ([74.125.83.41]:32836 "EHLO
-        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755279AbdCUF0i (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 01:26:38 -0400
-Received: by mail-pg0-f41.google.com with SMTP id n190so88439038pga.0
-        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2017 22:26:24 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <201703211237.8SX8YFBW%fengguang.wu@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH V3] cpufreq: Restore policy min/max limits on CPU online
+Date: Tue, 21 Mar 2017 11:36:06 +0530
+Message-ID: <96b7044b50a37b3c4c302e6e22d3cbc6e8864cd4.1490076285.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <fengguang.wu@intel.com>
-Cc: kbuild-all@01.org, linux-pm@vger.kernel.org
 
-On 21-03-17, 12:17, kbuild test robot wrote:
-> tree:   https://git.linaro.org/people/vireshk/linux opp/genpd-performance-state
-> head:   a7599bffacf277fa414af9fd0bccd31fedcd9573
-> commit: bf0b21ab085088476f15bf69d9205d41055cd54e [10/11] PM / Domain: Add struct device to genpd
-> config: arm-allmodconfig (attached as .config)
-> compiler: arm-linux-gnueabi-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> reproduce:
->         wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         git checkout bf0b21ab085088476f15bf69d9205d41055cd54e
->         # save the attached .config to linux build tree
->         make.cross ARCH=arm 
-> 
-> All warnings (new ones prefixed by >>):
-> 
->    drivers/soc/tegra/pmc.c: In function 'tegra_powergate_sequence_power_up':
-> >> drivers/soc/tegra/pmc.c:577:1: warning: the frame size of 1176 bytes is larger than 1024 bytes [-Wframe-larger-than=]
->     }
->     ^
+On CPU online the cpufreq core restores the previous governor (or
+the previous "policy" setting for ->setpolicy drivers), but it does
+not restore the min/max limits at the same time, which is confusing,
+inconsistent and real pain for users who set the limits and then
+suspend/resume the system (using full suspend), in which case the
+limits are reset on all CPUs except for the boot one.
 
-Fixed, thanks.
+Fix this by making cpufreq_online() restore the limits when an inactive
+policy is brought online.
 
+The commit log and patch are inspired from Rafael's earlier work.
+
+Reported-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1 and V2 were sent by Rafael and were trying to fix this differently.
+
+ drivers/cpufreq/cpufreq.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 38b9fdf854a4..87e7b9d0db1b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1182,6 +1182,9 @@ static int cpufreq_online(unsigned int cpu)
+ 		for_each_cpu(j, policy->related_cpus)
+ 			per_cpu(cpufreq_cpu_data, j) = policy;
+ 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
++	} else {
++		policy->min = policy->user_policy.min;
++		policy->max = policy->user_policy.max;
+ 	}
+ 
+ 	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
 -- 
-viresh
+2.12.0.432.g71c3a4f4ba37
