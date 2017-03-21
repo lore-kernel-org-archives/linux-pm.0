@@ -1,55 +1,50 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC][PATCH v2 2/2] cpufreq: schedutil: Avoid decreasing
- frequency of busy CPUs
-Date: Tue, 21 Mar 2017 18:00:59 +0100
-Message-ID: <CAKfTPtBzeKZkYeyw2pp7g3fvhnY0gzViargmDpEbkPhA+df72g@mail.gmail.com>
-References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan>
- <3300960.HE4b3sK4dn@aspire.rjw.lan> <CAKfTPtB0WpvSz66UNK5HNQF8W-PKCYNyRSCzz9L9WRAKNy+KYw@mail.gmail.com>
- <20170321132253.vjp7f72qkubpttmf@hirez.programming.kicks-ass.net>
- <CAKfTPtBp7GevDfnOTrOnrc79XP1mbY0onq=uh4Aw2tGu-DgHGw@mail.gmail.com>
- <20170321140325.gf64gc7eaqu335t5@hirez.programming.kicks-ass.net>
- <CAKfTPtALorn7HNpz4LOfWWSc3u+9y5iHB5byzfTHGQXDA+tVJQ@mail.gmail.com> <20170321145808.GS3093@worktop>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH v2 2/2] cpufreq: schedutil: Avoid decreasing frequency of busy CPUs
+Date: Tue, 21 Mar 2017 18:17:07 +0100
+Message-ID: <1560652.F01cW7lor0@aspire.rjw.lan>
+References: <4366682.tsferJN35u@aspire.rjw.lan> <2131318.dozmYt7JVU@aspire.rjw.lan> <20170321170017.tqxcwmtolsqkc4ui@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170321145808.GS3093@worktop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50001 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1757292AbdCURWo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 13:22:44 -0400
+In-Reply-To: <20170321170017.tqxcwmtolsqkc4ui@hirez.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 
-On 21 March 2017 at 15:58, Peter Zijlstra <peterz@infradead.org> wrote:
->
-> On Tue, Mar 21, 2017 at 03:16:19PM +0100, Vincent Guittot wrote:
-> > On 21 March 2017 at 15:03, Peter Zijlstra <peterz@infradead.org> wrote:
-> >
-> > > On Tue, Mar 21, 2017 at 02:37:08PM +0100, Vincent Guittot wrote:
-> > > > On 21 March 2017 at 14:22, Peter Zijlstra <peterz@infradead.org> wrote:
-> > >
-> > > > For the not overloaded case, it makes sense to immediately update to
-> > > > OPP to be aligned with the new utilization of the CPU even if it was
-> > > > not idle in the past couple of ticks
-> > >
-> > > Yeah, but we cannot know. Also, who cares?
-> > >
-> >
-> > embedded system that doesn't want to stay at higest OPP if significant part
-> > of the utilzation has moved away as an example
-> > AFAICT, schedutil tries to select the best OPP according to the current
-> > utilization of the CPU so if the utilization decreases, the OPP should also
-> > decrease
->
-> Sure I get that; but given the lack of crystal ball instructions we
-> cannot know if this is the case or not.
+On Tuesday, March 21, 2017 06:00:17 PM Peter Zijlstra wrote:
+> On Tue, Mar 21, 2017 at 04:18:52PM +0100, Rafael J. Wysocki wrote:
+> > +static bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu)
+> > +{
+> > +	unsigned long idle_calls = tick_nohz_get_idle_calls();
+> > +	bool not_idle = idle_calls == sg_cpu->saved_idle_calls;
+> > +
+> > +	sg_cpu->saved_idle_calls = idle_calls;
+> > +	return not_idle && this_rq()->rd->overload;
+> > +}
+> 
+> So I really don't understand the rd->overload thing. What is it supposed
+> to do here?
 
-cfs_rq->avg.load_avg account the waiting time of CPU (in addition to
-the weight of task) so i was wondering if we can't use it to detect if
-we are in the overloaded  case or not even if utilization is not mac
-capacity because we have just migrated a task (and its utilization)
-out
+The idea was that if the CPU was running one task saturating the capacity which
+then was migrated out of it, the frequency should still be reduced.
 
+And since rd->overload covers all CPUs (in general) it kind of tells us whether
+or not there are other tasks to replace the migrated one any time soon.
 
+However, if there are no tasks to replace the migrated one, the CPU will go
+idle quickly (as there are no taks to run on it), in which case keeping the
+current frequency on it shouldn't matter.
 
->
-> And if we really dropped below 100% utilization, we should hit idle
-> fairly soon.
+In all of the other cases keeping the current frequency is the right thing to
+do IMO.
+
+So, it looks like checking this_rq()->rd->overload doesn't really help after all. :-)
+
+Thanks,
+Rafael
