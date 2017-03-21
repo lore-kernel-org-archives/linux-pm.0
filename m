@@ -1,115 +1,66 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v3] cpufreq: intel_pstate: Fix policy data management in passive mode
-Date: Tue, 21 Mar 2017 01:56:33 +0100
-Message-ID: <5948160.vOMzsooekK@aspire.rjw.lan>
-References: <48065078.runFWWt2Wa@aspire.rjw.lan> <1972182.uOfXaANt30@aspire.rjw.lan>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 03/15] extcon: cht-wc: Add Intel Cherry Trail Whiskey Cove
+ PMIC extcon driver
+Date: Tue, 21 Mar 2017 12:54:16 +0900
+Message-ID: <58D0A3E8.6090609@samsung.com>
+References: <20170317095527.10487-1-hdegoede@redhat.com>
+ <CGME20170317095544epcas5p42dd4115627c9cf9de3911b433024ac93@epcas5p4.samsung.com>
+ <20170317095527.10487-4-hdegoede@redhat.com> <58CF3183.4090101@samsung.com>
+ <1490014841.19767.106.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52812 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753629AbdCUBIr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 21:08:47 -0400
-In-Reply-To: <1972182.uOfXaANt30@aspire.rjw.lan>
+Received: from mailout4.samsung.com ([203.254.224.34]:35906 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751249AbdCUDyU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 23:54:20 -0400
+In-reply-to: <1490014841.19767.106.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 2017년 03월 20일 22:00, Andy Shevchenko wrote:
+> On Mon, 2017-03-20 at 10:33 +0900, Chanwoo Choi wrote:
+>> On 2017년 03월 17일 18:55, Hans de Goede wrote:
+> 
+>>> +static const struct platform_device_id cht_wc_extcon_table[] = {
+>>> +	{ .name = "cht_wcove_pwrsrc" },
+>>
+>> You use the 'cht_wc' word instead of 'cht_wcove_pwrsrc'.
+>> So, To maintain the consistency, you better to use the 'cht-wc' as the
+>> name.
+>> - I prefer to use '-' instead of '_' in the name.
+>> 	.name ="cht-wc"
+> 
+> I would keep as Hans did for the sake of consistency among all Whiskey
+> Cove device drivers (and predecessors like Crystal Cove).
 
-The policy->cpuinfo.max_freq and policy->max updates in
-intel_cpufreq_turbo_update() are excessive as they are done for no
-good reason and may lead to problems in principle, so they should be
-dropped.  However, after dropping them intel_cpufreq_turbo_update()
-becomes almost entirely pointless, because the check made by it is
-made again down the road in intel_pstate_prepare_request().  The
-only thing in it that still needs to be done is the call to
-update_turbo_state(), so drop intel_cpufreq_turbo_update() altogether
-and make its callers invoke update_turbo_state() directly instead of
-it.
+The 'wcove' short word is not used in this patch.
+If the author want to use the 'wcove', I recommend that
+you should use the 'wcove' instead of 'wc' in this patch.
 
-In addition to that, fix intel_cpufreq_verify_policy() so that it
-checks global.no_turbo in addition to global.turbo_disabled when
-updating policy->cpuinfo.max_freq to make it consistent with
-intel_pstate_verify_policy().
+And, I think that  'pwrsrc' is not ambiguous.
+Hans might use the 'pwrsrc' as the 'Power Source'.
+But, this driver is not power source. Instead,
+this driver supports the detection of external connector.
 
-Fixes: 001c76f05b01 (cpufreq: intel_pstate: Generic governors support)
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+I think 'power source' means the power supply instead of detector.
 
-v2 -> v3:
-Make the previous callers of intel_cpufreq_turbo_update() invoke
-update_turbo_state() directly (since it was called by the former).
+> 
+> I understand your point from extcon subsystem view, but PMICs like
+> Whiskey Cove are multi-functional devices, and thus naming across them
+> (same prefix in use to be precise) is better idea.
+> 
+>>
+>>> +	{},
+>>> +};
+>>> +MODULE_DEVICE_TABLE(platform, cht_wc_extcon_table);
+> 
 
--> v2:
-Drop intel_cpufreq_turbo_update() as it is pointless without the
-excessive updates that need to be dropped.
 
----
- drivers/cpufreq/intel_pstate.c |   29 ++++++-----------------------
- 1 file changed, 6 insertions(+), 23 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2247,7 +2247,7 @@ static int intel_cpufreq_verify_policy(s
- 	struct cpudata *cpu = all_cpu_data[policy->cpu];
- 
- 	update_turbo_state();
--	policy->cpuinfo.max_freq = global.turbo_disabled ?
-+	policy->cpuinfo.max_freq = global.no_turbo || global.turbo_disabled ?
- 			cpu->pstate.max_freq : cpu->pstate.turbo_freq;
- 
- 	cpufreq_verify_within_cpu_limits(policy);
-@@ -2255,26 +2255,6 @@ static int intel_cpufreq_verify_policy(s
- 	return 0;
- }
- 
--static unsigned int intel_cpufreq_turbo_update(struct cpudata *cpu,
--					       struct cpufreq_policy *policy,
--					       unsigned int target_freq)
--{
--	unsigned int max_freq;
--
--	update_turbo_state();
--
--	max_freq = global.no_turbo || global.turbo_disabled ?
--			cpu->pstate.max_freq : cpu->pstate.turbo_freq;
--	policy->cpuinfo.max_freq = max_freq;
--	if (policy->max > max_freq)
--		policy->max = max_freq;
--
--	if (target_freq > max_freq)
--		target_freq = max_freq;
--
--	return target_freq;
--}
--
- static int intel_cpufreq_target(struct cpufreq_policy *policy,
- 				unsigned int target_freq,
- 				unsigned int relation)
-@@ -2283,8 +2263,10 @@ static int intel_cpufreq_target(struct c
- 	struct cpufreq_freqs freqs;
- 	int target_pstate;
- 
-+	update_turbo_state();
-+
- 	freqs.old = policy->cur;
--	freqs.new = intel_cpufreq_turbo_update(cpu, policy, target_freq);
-+	freqs.new = target_freq;
- 
- 	cpufreq_freq_transition_begin(policy, &freqs);
- 	switch (relation) {
-@@ -2316,7 +2298,8 @@ static unsigned int intel_cpufreq_fast_s
- 	struct cpudata *cpu = all_cpu_data[policy->cpu];
- 	int target_pstate;
- 
--	target_freq = intel_cpufreq_turbo_update(cpu, policy, target_freq);
-+	update_turbo_state();
-+
- 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
- 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
- 	intel_pstate_update_pstate(cpu, target_pstate);
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
