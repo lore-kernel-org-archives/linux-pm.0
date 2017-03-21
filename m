@@ -1,66 +1,36 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 03/15] extcon: cht-wc: Add Intel Cherry Trail Whiskey Cove
- PMIC extcon driver
-Date: Tue, 21 Mar 2017 12:54:16 +0900
-Message-ID: <58D0A3E8.6090609@samsung.com>
-References: <20170317095527.10487-1-hdegoede@redhat.com>
- <CGME20170317095544epcas5p42dd4115627c9cf9de3911b433024ac93@epcas5p4.samsung.com>
- <20170317095527.10487-4-hdegoede@redhat.com> <58CF3183.4090101@samsung.com>
- <1490014841.19767.106.camel@linux.intel.com>
+From: Mark Greer <mgreer@animalcreek.com>
+Subject: Re: [PATCH] power: bq24190_charger: mark PM functions as
+ __maybe_unused
+Date: Mon, 20 Mar 2017 20:55:56 -0700
+Message-ID: <20170321035556.GA17398@animalcreek.com>
+References: <20170320131424.271241-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:35906 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751249AbdCUDyU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 23:54:20 -0400
-In-reply-to: <1490014841.19767.106.camel@linux.intel.com>
+Received: from out1-smtp.messagingengine.com ([66.111.4.25]:37949 "EHLO
+        out1-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1754594AbdCUDz6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Mar 2017 23:55:58 -0400
+Content-Disposition: inline
+In-Reply-To: <20170320131424.271241-1-arnd@arndb.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, Liam Breck <liam@networkimprov.net>, Mark Greer <mgreer@animalcreek.com>, Colin Ian King <colin.king@canonical.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2017년 03월 20일 22:00, Andy Shevchenko wrote:
-> On Mon, 2017-03-20 at 10:33 +0900, Chanwoo Choi wrote:
->> On 2017년 03월 17일 18:55, Hans de Goede wrote:
+On Mon, Mar 20, 2017 at 02:14:15PM +0100, Arnd Bergmann wrote:
+> Without CONFIG_PM, we get a harmless warning:
 > 
->>> +static const struct platform_device_id cht_wc_extcon_table[] = {
->>> +	{ .name = "cht_wcove_pwrsrc" },
->>
->> You use the 'cht_wc' word instead of 'cht_wcove_pwrsrc'.
->> So, To maintain the consistency, you better to use the 'cht-wc' as the
->> name.
->> - I prefer to use '-' instead of '_' in the name.
->> 	.name ="cht-wc"
+> drivers/power/supply/bq24190_charger.c:1514:12: error: 'bq24190_runtime_resume' defined but not used [-Werror=unused-function]
+> drivers/power/supply/bq24190_charger.c:1501:12: error: 'bq24190_runtime_suspend' defined but not used [-Werror=unused-function]
 > 
-> I would keep as Hans did for the sake of consistency among all Whiskey
-> Cove device drivers (and predecessors like Crystal Cove).
-
-The 'wcove' short word is not used in this patch.
-If the author want to use the 'wcove', I recommend that
-you should use the 'wcove' instead of 'wc' in this patch.
-
-And, I think that  'pwrsrc' is not ambiguous.
-Hans might use the 'pwrsrc' as the 'Power Source'.
-But, this driver is not power source. Instead,
-this driver supports the detection of external connector.
-
-I think 'power source' means the power supply instead of detector.
-
+> To avoid the warning, we can mark all four PM functions as __maybe_unused,
+> which also lets us remove the incorrect #ifdef.
 > 
-> I understand your point from extcon subsystem view, but PMICs like
-> Whiskey Cove are multi-functional devices, and thus naming across them
-> (same prefix in use to be precise) is better idea.
-> 
->>
->>> +	{},
->>> +};
->>> +MODULE_DEVICE_TABLE(platform, cht_wc_extcon_table);
-> 
+> Fixes: 3d8090cba638 ("power: bq24190_charger: Check the interrupt status on resume")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
 
+Probably too late but if it isn't...
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Acked-by: Mark Greer <mgreer@animalcreek.com>
