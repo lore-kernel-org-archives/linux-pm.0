@@ -1,68 +1,47 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 03/15] extcon: cht-wc: Add Intel Cherry Trail Whiskey Cove
- PMIC extcon driver
-Date: Tue, 21 Mar 2017 14:21:44 +0900
-Message-ID: <58D0B868.6060602@samsung.com>
-References: <20170317095527.10487-1-hdegoede@redhat.com>
- <CGME20170317095544epcas5p42dd4115627c9cf9de3911b433024ac93@epcas5p4.samsung.com>
- <20170317095527.10487-4-hdegoede@redhat.com> <58CF3183.4090101@samsung.com>
- <1490014841.19767.106.camel@linux.intel.com> <58D0A3E8.6090609@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [vireshk:opp/genpd-performance-state 10/11]
+ drivers/soc/tegra/pmc.c:577:1: warning: the frame size of 1176 bytes is
+ larger than 1024 bytes
+Date: Tue, 21 Mar 2017 10:56:20 +0530
+Message-ID: <20170321052620.GN25659@vireshk-i7>
+References: <201703211237.8SX8YFBW%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-reply-to: <58D0A3E8.6090609@samsung.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f41.google.com ([74.125.83.41]:32836 "EHLO
+        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755279AbdCUF0i (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 01:26:38 -0400
+Received: by mail-pg0-f41.google.com with SMTP id n190so88439038pga.0
+        for <linux-pm@vger.kernel.org>; Mon, 20 Mar 2017 22:26:24 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <201703211237.8SX8YFBW%fengguang.wu@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kbuild test robot <fengguang.wu@intel.com>
+Cc: kbuild-all@01.org, linux-pm@vger.kernel.org
 
-On 2017년 03월 21일 12:54, Chanwoo Choi wrote:
-> On 2017년 03월 20일 22:00, Andy Shevchenko wrote:
->> On Mon, 2017-03-20 at 10:33 +0900, Chanwoo Choi wrote:
->>> On 2017년 03월 17일 18:55, Hans de Goede wrote:
->>
->>>> +static const struct platform_device_id cht_wc_extcon_table[] = {
->>>> +	{ .name = "cht_wcove_pwrsrc" },
->>>
->>> You use the 'cht_wc' word instead of 'cht_wcove_pwrsrc'.
->>> So, To maintain the consistency, you better to use the 'cht-wc' as the
->>> name.
->>> - I prefer to use '-' instead of '_' in the name.
->>> 	.name ="cht-wc"
->>
->> I would keep as Hans did for the sake of consistency among all Whiskey
->> Cove device drivers (and predecessors like Crystal Cove).
+On 21-03-17, 12:17, kbuild test robot wrote:
+> tree:   https://git.linaro.org/people/vireshk/linux opp/genpd-performance-state
+> head:   a7599bffacf277fa414af9fd0bccd31fedcd9573
+> commit: bf0b21ab085088476f15bf69d9205d41055cd54e [10/11] PM / Domain: Add struct device to genpd
+> config: arm-allmodconfig (attached as .config)
+> compiler: arm-linux-gnueabi-gcc (Debian 6.1.1-9) 6.1.1 20160705
+> reproduce:
+>         wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         git checkout bf0b21ab085088476f15bf69d9205d41055cd54e
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=arm 
 > 
-> The 'wcove' short word is not used in this patch.
-> If the author want to use the 'wcove', I recommend that
-> you should use the 'wcove' instead of 'wc' in this patch.
+> All warnings (new ones prefixed by >>):
 > 
-> And, I think that  'pwrsrc' is not ambiguous.
+>    drivers/soc/tegra/pmc.c: In function 'tegra_powergate_sequence_power_up':
+> >> drivers/soc/tegra/pmc.c:577:1: warning: the frame size of 1176 bytes is larger than 1024 bytes [-Wframe-larger-than=]
+>     }
+>     ^
 
-I'm sorry. I used the wrong word. I mean that 'pwrsrc' is not correct.
-
-> Hans might use the 'pwrsrc' as the 'Power Source'.
-> But, this driver is not power source. Instead,
-> this driver supports the detection of external connector.
-> 
-> I think 'power source' means the power supply instead of detector.
-> 
->>
->> I understand your point from extcon subsystem view, but PMICs like
->> Whiskey Cove are multi-functional devices, and thus naming across them
->> (same prefix in use to be precise) is better idea.
->>
->>>
->>>> +	{},
->>>> +};
->>>> +MODULE_DEVICE_TABLE(platform, cht_wc_extcon_table);
->>
-> 
-> 
-
+Fixed, thanks.
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+viresh
