@@ -1,38 +1,59 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v1 5/7] power: bq24190_charger: Reorder init sequence in
- probe()
-Date: Wed, 22 Mar 2017 13:14:40 +0100
-Message-ID: <7d826cba-8d4a-4c09-0865-1c042edb552a@redhat.com>
+Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery device
+ .type=unknown
+Date: Wed, 22 Mar 2017 13:25:47 +0100
+Message-ID: <7e117a52-bbf0-2a12-e98f-843da227e0c7@redhat.com>
 References: <20170321220921.5834-1-liam@networkimprov.net>
- <20170321220921.5834-6-liam@networkimprov.net>
+ <20170321220921.5834-8-liam@networkimprov.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:44014 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:36876 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934256AbdCVMYs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 22 Mar 2017 08:24:48 -0400
-In-Reply-To: <20170321220921.5834-6-liam@networkimprov.net>
+        id S1758843AbdCVM02 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 Mar 2017 08:26:28 -0400
+In-Reply-To: <20170321220921.5834-8-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
-Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Mark Greer <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>
+Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
 Hi,
 
 On 21-03-17 23:09, Liam Breck wrote:
 > From: Liam Breck <kernel@networkimprov.net>
 >
-> We need a struct power_supply object from register() before
-> calling setup_dt()
+> Not for upstream. Temporary workaround to prevent bq24190-battery device
+> from interfering with a fuel gauge that has .type=power_supply_type_battery
 >
-> Cc: Mark Greer <mgreer@animalcreek.com>
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> I'll move properties from -battery device to -charger in a subsequent version.
+>
+> Cc: Hans de Goede <hdegoede@redhat.com>
 
-Looks good to me:
+Hmm, I don't like this. I was about to post v2 of my patches (which I will
+rebase on top of this series), which contains a patch to completely remove
+the battery power_supply. I understand if you think it is too early for
+that, but I believe that if we (temporarily) want to keep it around,
+it would be better to do something like this:
 
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+     /*
+      * Note the disable-battery-power-supply property is purely an in
+      * kernel interface to avoid having 2 battery type power_supplies for
+      * a single physical battery when there also is a fuel-gauge driver.
+      * The plan is to remove the battery power_supply from the bq24190
+      * driver completely, but that still needs some work.
+      * Do NOT use this property in DT files.
+      */
+     if (!device_property_read_bool(dev, "disable-battery-power-supply")) {
+         register(battery)...
+     }
+
+Sebastian would something like the above work for you as an interim
+solution ? Since this uses device-properties I can easily add the
+property to my i2c_board_info, and when the battery power_supply gets
+removed all together the board_info can be updated independently of
+the power_supply driver, so we can easily clean this up afterwards.
 
 Regards,
 
@@ -40,83 +61,20 @@ Hans
 
 
 > ---
->  drivers/power/supply/bq24190_charger.c | 37 +++++++++++++++++-----------------
->  1 file changed, 19 insertions(+), 18 deletions(-)
+>  drivers/power/supply/bq24190_charger.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
 > diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index ad09e48..2fbc7f3 100644
+> index a52816b..12f3780 100644
 > --- a/drivers/power/supply/bq24190_charger.c
 > +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -1386,16 +1386,6 @@ static int bq24190_probe(struct i2c_client *client,
+> @@ -1228,7 +1228,7 @@ static enum power_supply_property bq24190_battery_properties[] = {
 >
->  	i2c_set_clientdata(client, bdi);
->
-> -	if (dev->of_node)
-> -		ret = bq24190_setup_dt(bdi);
-> -	else
-> -		ret = bq24190_setup_pdata(bdi, pdata);
-> -
-> -	if (ret) {
-> -		dev_err(dev, "Can't get irq info\n");
-> -		return -EINVAL;
-> -	}
-> -
->  	pm_runtime_enable(dev);
->  	pm_runtime_use_autosuspend(dev);
->  	pm_runtime_set_autosuspend_delay(dev, 600);
-> @@ -1405,12 +1395,6 @@ static int bq24190_probe(struct i2c_client *client,
->  		goto out1;
->  	}
->
-> -	ret = bq24190_hw_init(bdi);
-> -	if (ret < 0) {
-> -		dev_err(dev, "Hardware init failed\n");
-> -		goto out2;
-> -	}
-> -
->  	charger_cfg.drv_data = bdi;
->  	charger_cfg.supplied_to = bq24190_charger_supplied_to;
->  	charger_cfg.num_supplicants = ARRAY_SIZE(bq24190_charger_supplied_to),
-> @@ -1431,6 +1415,23 @@ static int bq24190_probe(struct i2c_client *client,
->  		goto out3;
->  	}
->
-> +	if (dev->of_node)
-> +		ret = bq24190_setup_dt(bdi);
-> +	else
-> +		ret = bq24190_setup_pdata(bdi, pdata);
-> +
-> +	if (ret) {
-> +		dev_err(dev, "Can't get irq info\n");
-> +		ret = -EINVAL;
-> +		goto out4;
-> +	}
-> +
-> +	ret = bq24190_hw_init(bdi);
-> +	if (ret < 0) {
-> +		dev_err(dev, "Hardware init failed\n");
-> +		goto out4;
-> +	}
-> +
->  	ret = bq24190_sysfs_create_group(bdi);
->  	if (ret) {
->  		dev_err(dev, "Can't create sysfs entries\n");
-> @@ -1459,6 +1460,8 @@ static int bq24190_probe(struct i2c_client *client,
->  	bq24190_sysfs_remove_group(bdi);
->
->  out4:
-> +	if (bdi->gpio_int)
-> +		gpio_free(bdi->gpio_int);
->  	power_supply_unregister(bdi->battery);
->
->  out3:
-> @@ -1470,8 +1473,6 @@ static int bq24190_probe(struct i2c_client *client,
->  out1:
->  	pm_runtime_dont_use_autosuspend(dev);
->  	pm_runtime_disable(dev);
-> -	if (bdi->gpio_int)
-> -		gpio_free(bdi->gpio_int);
->  	return ret;
->  }
->
+>  static const struct power_supply_desc bq24190_battery_desc = {
+>  	.name			= "bq24190-battery",
+> -	.type			= POWER_SUPPLY_TYPE_BATTERY,
+> +	.type			= POWER_SUPPLY_TYPE_UNKNOWN,
+>  	.properties		= bq24190_battery_properties,
+>  	.num_properties		= ARRAY_SIZE(bq24190_battery_properties),
+>  	.get_property		= bq24190_battery_get_property,
 >
