@@ -1,7 +1,7 @@
 From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [RFC 4/8] regulator: core: Check enabling bypass respects constraints
-Date: Wed, 22 Mar 2017 18:53:06 +0200
-Message-ID: <1edff9bc610969b0c53fa1080d5db021c8e00b2d.1490199005.git.leonard.crestez@nxp.com>
+Subject: [RFC 6/8] regulator: core: Add regulator_is_bypass function
+Date: Wed, 22 Mar 2017 18:53:08 +0200
+Message-ID: <e74c2f4d2b452cbe01aa2a48edde5c024212ffcb.1490199005.git.leonard.crestez@nxp.com>
 References: <cover.1490199005.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,94 +21,62 @@ To: Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Viresh
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Leonard Crestez <leonard.crestez@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Enabling bypass mode makes a regulator passthrough the supply voltage
-directly. It is possible that the supply voltage is set high enough that
-it violates machine constraints so let's check for that.
-
-The supply voltage might be higher because of min_dropout_uV or maybe
-there is just an unrelated consumer who requested a higher voltage.
+This is a simple kernel API to query the bypass state of a regulator.
 
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 ---
- drivers/regulator/core.c | 52 ++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 50 insertions(+), 2 deletions(-)
+ drivers/regulator/core.c           | 26 ++++++++++++++++++++++++++
+ include/linux/regulator/consumer.h |  1 +
+ 2 files changed, 27 insertions(+)
 
 diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 53d4fc7..9d893aa 100644
+index 9d893aa..7d4f59e 100644
 --- a/drivers/regulator/core.c
 +++ b/drivers/regulator/core.c
-@@ -3453,6 +3453,54 @@ int regulator_set_load(struct regulator *regulator, int uA_load)
- }
- EXPORT_SYMBOL_GPL(regulator_set_load);
+@@ -3554,6 +3554,32 @@ int regulator_allow_bypass(struct regulator *regulator, bool enable)
+ EXPORT_SYMBOL_GPL(regulator_allow_bypass);
  
-+static int _regulator_set_bypass(struct regulator *regulator, bool bypass)
+ /**
++ * regulator_is_bypass - Determine if the regulator is in bypass mode
++ *
++ * @regulator: Regulator to examine
++ *
++ * @return 0 or 1 for true/false or errno on failure
++ *
++ * Returns zero on a regulator without bypass support.
++ */
++int regulator_is_bypass(struct regulator *regulator)
 +{
 +	struct regulator_dev *rdev = regulator->rdev;
-+	int output_voltage;
-+	int supply_voltage;
++	bool bypass;
++	int ret = 0;
 +
-+	if (bypass && !rdev->supply) {
-+		rdev_err(rdev, "Refuse to set bypass on regulator with no supply!\n");
-+		return -EINVAL;
-+	}
++	if (!rdev->desc->ops->get_bypass)
++		return 0;
 +
-+	/* Check that enabling bypass won't break constraints */
-+	if (bypass && _regulator_is_enabled(rdev)) {
-+		output_voltage = _regulator_get_voltage(rdev);
-+		if (output_voltage < 0) {
-+			rdev_err(rdev, "Failed to get old output voltage before"
-+					" enabling bypass: %d\n", output_voltage);
-+			return output_voltage;
-+		}
-+		supply_voltage = _regulator_get_voltage(rdev->supply->rdev);
-+		if (supply_voltage < 0) {
-+			rdev_err(rdev, "Failed to get supply voltage before"
-+					" enabling bypass: %d\n", supply_voltage);
-+			return supply_voltage;
-+		}
-+		if (supply_voltage < rdev->constraints->min_uV ||
-+				supply_voltage > rdev->constraints->max_uV) {
-+			rdev_err(rdev, "Enabling bypass would change voltage"
-+					" from %duV to %duV violating"
-+					" constraint range %duV to %duV\n",
-+				output_voltage,
-+				supply_voltage,
-+				rdev->constraints->min_uV,
-+				rdev->constraints->max_uV);
-+			return -EINVAL;
-+		}
-+		rdev_dbg(rdev, "Enabling bypass would change voltage"
-+				" from %duV to %duV respecting"
-+				" constraint range %duV to %duV\n",
-+			output_voltage,
-+			supply_voltage,
-+			rdev->constraints->min_uV,
-+			rdev->constraints->max_uV);
-+	}
++	mutex_lock(&rdev->mutex);
++	ret = rdev->desc->ops->get_bypass(rdev, &bypass);
++	mutex_unlock(&rdev->mutex);
 +
-+	return rdev->desc->ops->set_bypass(rdev, bypass);
++	return ret ? ret : !!bypass;
 +}
++EXPORT_SYMBOL_GPL(regulator_is_bypass);
 +
- /**
-  * regulator_allow_bypass - allow the regulator to go into bypass mode
-  *
-@@ -3481,7 +3529,7 @@ int regulator_allow_bypass(struct regulator *regulator, bool enable)
- 		rdev->bypass_count++;
++/**
+  * regulator_register_notifier - register regulator event notifier
+  * @regulator: regulator source
+  * @nb: notifier block
+diff --git a/include/linux/regulator/consumer.h b/include/linux/regulator/consumer.h
+index ea0fffa..ba78511 100644
+--- a/include/linux/regulator/consumer.h
++++ b/include/linux/regulator/consumer.h
+@@ -261,6 +261,7 @@ int regulator_get_error_flags(struct regulator *regulator,
+ int regulator_set_load(struct regulator *regulator, int load_uA);
  
- 		if (rdev->bypass_count == rdev->open_count) {
--			ret = rdev->desc->ops->set_bypass(rdev, enable);
-+			ret = _regulator_set_bypass(regulator, enable);
- 			if (ret != 0)
- 				rdev->bypass_count--;
- 		}
-@@ -3490,7 +3538,7 @@ int regulator_allow_bypass(struct regulator *regulator, bool enable)
- 		rdev->bypass_count--;
+ int regulator_allow_bypass(struct regulator *regulator, bool allow);
++int regulator_is_bypass(struct regulator *regulator);
  
- 		if (rdev->bypass_count != rdev->open_count) {
--			ret = rdev->desc->ops->set_bypass(rdev, enable);
-+			ret = _regulator_set_bypass(regulator, enable);
- 			if (ret != 0)
- 				rdev->bypass_count++;
- 		}
+ struct regmap *regulator_get_regmap(struct regulator *regulator);
+ int regulator_get_hardware_vsel_register(struct regulator *regulator,
 -- 
 2.7.4
