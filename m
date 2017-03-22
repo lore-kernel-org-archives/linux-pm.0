@@ -1,408 +1,111 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 7/7] power: supply: bq24190_charger: Remove battery power_supply device
-Date: Wed, 22 Mar 2017 15:55:36 +0100
-Message-ID: <20170322145536.30570-8-hdegoede@redhat.com>
-References: <20170322145536.30570-1-hdegoede@redhat.com>
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+Subject: Re: [PATCH v2 02/10] x86: assembly, FUNC_START for fn, DATA_START
+ for data
+Date: Wed, 22 Mar 2017 10:33:36 -0500
+Message-ID: <20170322153336.srnce5vwq2727vuy@treble>
+References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
+ <20170320123222.15453-1-jslaby@suse.cz>
+ <20170320123222.15453-2-jslaby@suse.cz>
+ <20170321140840.GA23311@amd>
+ <20170322072557.GA13904@gmail.com>
+ <ee3242f9-1fab-f3a8-947d-85fc1a660a49@suse.cz>
+ <20170322074616.GA10809@gmail.com>
+ <20170322141123.opss3u4gpupqgl2q@treble>
+ <049e6c03-8d7d-e869-96bd-0a98e6471227@suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:48506 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:54548 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S935176AbdCVPFS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 22 Mar 2017 11:05:18 -0400
-In-Reply-To: <20170322145536.30570-1-hdegoede@redhat.com>
+        id S1751321AbdCVPdn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 Mar 2017 11:33:43 -0400
+Content-Disposition: inline
+In-Reply-To: <049e6c03-8d7d-e869-96bd-0a98e6471227@suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Ingo Molnar <mingo@kernel.org>, Pavel Machek <pavel@ucw.cz>, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, linux-kernel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-The TI bq24190 chip is purely a charger chip, as such it has very
-little battery info to export to userspace and in practice it is almost
-always used together with a separate fuel-gauge chip which does have
-interesting info to export.
+On Wed, Mar 22, 2017 at 04:01:08PM +0100, Jiri Slaby wrote:
+> On 03/22/2017, 03:11 PM, Josh Poimboeuf wrote:
+> > Or, here's a much easier way to do it, without involving objtool:
+> > 
+> > --- a/include/linux/linkage.h
+> > +++ b/include/linux/linkage.h
+> > @@ -138,9 +138,17 @@
+> >  	name:
+> >  #endif
+> >  
+> > +#ifndef CHECK_DUP_SYM_END
+> > +#define CHECK_DUP_SYM_END(name)				\
+> > +	.pushsection .discard.sym_func_end ASM_NL	\
+> > +	SYM_END_##name: .byte 0 ASM_NL			\
+> > +	.popsection
+> > +#endif
+> > +
+> >  /* SYM_END -- use only if you have to */
+> >  #ifndef SYM_END
+> >  #define SYM_END(name, sym_type)				\
+> > +	CHECK_DUP_SYM_END(name) ASM_NL			\
+> >  	.type name sym_type ASM_NL			\
+> >  	.size name, .-name
+> >  #endif
+> 
+> I tried this approach and it didn't work for me inside .macros. Oh,
+> well, the name cannot be first, so now, we can have a check for both
+> correct pairing _and_ duplicate ends in one:
+> 
+> #define SYM_CHECK_START(name)                           \
+>         .pushsection .rodata.bubak ASM_NL               \
+>         .long has_no_SYM_END_##name - . ASM_NL          \
+>         .popsection
+> 
+> #define SYM_CHECK_END(name)                             \
+>         has_no_SYM_END_##name:
+> 
+> /* SYM_START -- use only if you have to */
+> #ifndef SYM_START
+> #define SYM_START(name, align, visibility, entry)       \
+>         SYM_CHECK_START(name) ASM_NL                    \
+>         visibility(name) ASM_NL                         \
+>         align ASM_NL                                    \
+>         name: ASM_NL                                    \
+>         entry
+> #endif
+> 
+> /* SYM_END -- use only if you have to */
+> #ifndef SYM_END
+> #define SYM_END(name, sym_type, exit)                   \
+>         exit ASM_NL                                     \
+>         SYM_CHECK_END(name) ASM_NL                      \
+>         .type name sym_type ASM_NL                      \
+>         .size name, .-name
+> #endif
+> 
+> 
+> So for the ftrace mistake I did:
+> 
+>   AS      arch/x86/kernel/mcount_64.o
+> /home/latest/linux/arch/x86/kernel/mcount_64.S: Assembler messages:
+> /home/latest/linux/arch/x86/kernel/mcount_64.S:192: Error: symbol
+> `has_no_SYM_END_ftrace_caller' is already defined
+> 
+> 
+> or if I remove SYM_END_FUNC completely:
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+> arch/x86/built-in.o:(.rodata.bubak+0x130): undefined reference to
+> `has_no_SYM_END_ftrace_stub'
+> 
+> 
+> Sad is that this occurs only during linking, so I cannot put it in the
+> .discard section -- ideas?
 
-Since the userspace ABI requires there to be only 1 power_supply device
-registered per physical battery, the limited battery power_supply device
-the bq24190_charger driver is registering is actually getting in the way
-of a fuel-gauge driver exporting more useful info, therefor this commit
-removes the battery power_supply device.
+Ah, interesting idea but I can't think of a way to do the missing end
+check before link time.
 
-Cc: Liam Breck <kernel@networkimprov.net>
-Cc: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
-Changes in v2:
--This is a new patch in v2 of this patch-set
----
- drivers/power/supply/bq24190_charger.c | 290 +--------------------------------
- 1 file changed, 5 insertions(+), 285 deletions(-)
+But it would be easy for objtool to check for a missing end because the
+symbol would have a zero size.
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index 5e3da66..52d8756 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -151,7 +151,6 @@ struct bq24190_dev_info {
- 	struct i2c_client		*client;
- 	struct device			*dev;
- 	struct power_supply		*charger;
--	struct power_supply		*battery;
- 	struct extcon_dev		*extcon;
- 	struct notifier_block		extcon_nb;
- 	struct delayed_work		extcon_work;
-@@ -910,266 +909,9 @@ static const struct power_supply_desc bq24190_charger_desc = {
- 	.property_is_writeable	= bq24190_charger_property_is_writeable,
- };
- 
--/* Battery power supply property routines */
--
--static int bq24190_battery_get_status(struct bq24190_dev_info *bdi,
--		union power_supply_propval *val)
--{
--	u8 ss_reg, chrg_fault;
--	int status, ret;
--
--	mutex_lock(&bdi->f_reg_lock);
--	chrg_fault = bdi->f_reg;
--	mutex_unlock(&bdi->f_reg_lock);
--
--	chrg_fault &= BQ24190_REG_F_CHRG_FAULT_MASK;
--	chrg_fault >>= BQ24190_REG_F_CHRG_FAULT_SHIFT;
--
--	ret = bq24190_read(bdi, BQ24190_REG_SS, &ss_reg);
--	if (ret < 0)
--		return ret;
--
--	/*
--	 * The battery must be discharging when any of these are true:
--	 * - there is no good power source;
--	 * - there is a charge fault.
--	 * Could also be discharging when in "supplement mode" but
--	 * there is no way to tell when its in that mode.
--	 */
--	if (!(ss_reg & BQ24190_REG_SS_PG_STAT_MASK) || chrg_fault) {
--		status = POWER_SUPPLY_STATUS_DISCHARGING;
--	} else {
--		ss_reg &= BQ24190_REG_SS_CHRG_STAT_MASK;
--		ss_reg >>= BQ24190_REG_SS_CHRG_STAT_SHIFT;
--
--		switch (ss_reg) {
--		case 0x0: /* Not Charging */
--			status = POWER_SUPPLY_STATUS_NOT_CHARGING;
--			break;
--		case 0x1: /* Pre-charge */
--		case 0x2: /* Fast Charging */
--			status = POWER_SUPPLY_STATUS_CHARGING;
--			break;
--		case 0x3: /* Charge Termination Done */
--			status = POWER_SUPPLY_STATUS_FULL;
--			break;
--		default:
--			ret = -EIO;
--		}
--	}
--
--	if (!ret)
--		val->intval = status;
--
--	return ret;
--}
--
--static int bq24190_battery_get_health(struct bq24190_dev_info *bdi,
--		union power_supply_propval *val)
--{
--	u8 v;
--	int health;
--
--	mutex_lock(&bdi->f_reg_lock);
--	v = bdi->f_reg;
--	mutex_unlock(&bdi->f_reg_lock);
--
--	if (v & BQ24190_REG_F_BAT_FAULT_MASK) {
--		health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
--	} else {
--		v &= BQ24190_REG_F_NTC_FAULT_MASK;
--		v >>= BQ24190_REG_F_NTC_FAULT_SHIFT;
--
--		switch (v) {
--		case 0x0: /* Normal */
--			health = POWER_SUPPLY_HEALTH_GOOD;
--			break;
--		case 0x1: /* TS1 Cold */
--		case 0x3: /* TS2 Cold */
--		case 0x5: /* Both Cold */
--			health = POWER_SUPPLY_HEALTH_COLD;
--			break;
--		case 0x2: /* TS1 Hot */
--		case 0x4: /* TS2 Hot */
--		case 0x6: /* Both Hot */
--			health = POWER_SUPPLY_HEALTH_OVERHEAT;
--			break;
--		default:
--			health = POWER_SUPPLY_HEALTH_UNKNOWN;
--		}
--	}
--
--	val->intval = health;
--	return 0;
--}
--
--static int bq24190_battery_get_online(struct bq24190_dev_info *bdi,
--		union power_supply_propval *val)
--{
--	u8 batfet_disable;
--	int ret;
--
--	ret = bq24190_read_mask(bdi, BQ24190_REG_MOC,
--			BQ24190_REG_MOC_BATFET_DISABLE_MASK,
--			BQ24190_REG_MOC_BATFET_DISABLE_SHIFT, &batfet_disable);
--	if (ret < 0)
--		return ret;
--
--	val->intval = !batfet_disable;
--	return 0;
--}
--
--static int bq24190_battery_set_online(struct bq24190_dev_info *bdi,
--		const union power_supply_propval *val)
--{
--	return bq24190_write_mask(bdi, BQ24190_REG_MOC,
--			BQ24190_REG_MOC_BATFET_DISABLE_MASK,
--			BQ24190_REG_MOC_BATFET_DISABLE_SHIFT, !val->intval);
--}
--
--static int bq24190_battery_get_temp_alert_max(struct bq24190_dev_info *bdi,
--		union power_supply_propval *val)
--{
--	int temp, ret;
--
--	ret = bq24190_get_field_val(bdi, BQ24190_REG_ICTRC,
--			BQ24190_REG_ICTRC_TREG_MASK,
--			BQ24190_REG_ICTRC_TREG_SHIFT,
--			bq24190_ictrc_treg_values,
--			ARRAY_SIZE(bq24190_ictrc_treg_values), &temp);
--	if (ret < 0)
--		return ret;
--
--	val->intval = temp;
--	return 0;
--}
--
--static int bq24190_battery_set_temp_alert_max(struct bq24190_dev_info *bdi,
--		const union power_supply_propval *val)
--{
--	return bq24190_set_field_val(bdi, BQ24190_REG_ICTRC,
--			BQ24190_REG_ICTRC_TREG_MASK,
--			BQ24190_REG_ICTRC_TREG_SHIFT,
--			bq24190_ictrc_treg_values,
--			ARRAY_SIZE(bq24190_ictrc_treg_values), val->intval);
--}
--
--static int bq24190_battery_get_property(struct power_supply *psy,
--		enum power_supply_property psp, union power_supply_propval *val)
--{
--	struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
--	int ret;
--
--	dev_dbg(bdi->dev, "prop: %d\n", psp);
--
--	ret = pm_runtime_get_sync(bdi->dev);
--	if (ret < 0)
--		return ret;
--
--	switch (psp) {
--	case POWER_SUPPLY_PROP_STATUS:
--		ret = bq24190_battery_get_status(bdi, val);
--		break;
--	case POWER_SUPPLY_PROP_HEALTH:
--		ret = bq24190_battery_get_health(bdi, val);
--		break;
--	case POWER_SUPPLY_PROP_ONLINE:
--		ret = bq24190_battery_get_online(bdi, val);
--		break;
--	case POWER_SUPPLY_PROP_TECHNOLOGY:
--		/* Could be Li-on or Li-polymer but no way to tell which */
--		val->intval = POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
--		ret = 0;
--		break;
--	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
--		ret = bq24190_battery_get_temp_alert_max(bdi, val);
--		break;
--	case POWER_SUPPLY_PROP_SCOPE:
--		val->intval = POWER_SUPPLY_SCOPE_SYSTEM;
--		ret = 0;
--		break;
--	default:
--		ret = -ENODATA;
--	}
--
--	pm_runtime_mark_last_busy(bdi->dev);
--	pm_runtime_put_autosuspend(bdi->dev);
--
--	return ret;
--}
--
--static int bq24190_battery_set_property(struct power_supply *psy,
--		enum power_supply_property psp,
--		const union power_supply_propval *val)
--{
--	struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
--	int ret;
--
--	dev_dbg(bdi->dev, "prop: %d\n", psp);
--
--	ret = pm_runtime_get_sync(bdi->dev);
--	if (ret < 0)
--		return ret;
--
--	switch (psp) {
--	case POWER_SUPPLY_PROP_ONLINE:
--		ret = bq24190_battery_set_online(bdi, val);
--		break;
--	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
--		ret = bq24190_battery_set_temp_alert_max(bdi, val);
--		break;
--	default:
--		ret = -EINVAL;
--	}
--
--	pm_runtime_mark_last_busy(bdi->dev);
--	pm_runtime_put_autosuspend(bdi->dev);
--
--	return ret;
--}
--
--static int bq24190_battery_property_is_writeable(struct power_supply *psy,
--		enum power_supply_property psp)
--{
--	int ret;
--
--	switch (psp) {
--	case POWER_SUPPLY_PROP_ONLINE:
--	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
--		ret = 1;
--		break;
--	default:
--		ret = 0;
--	}
--
--	return ret;
--}
--
--static enum power_supply_property bq24190_battery_properties[] = {
--	POWER_SUPPLY_PROP_STATUS,
--	POWER_SUPPLY_PROP_HEALTH,
--	POWER_SUPPLY_PROP_ONLINE,
--	POWER_SUPPLY_PROP_TECHNOLOGY,
--	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
--	POWER_SUPPLY_PROP_SCOPE,
--};
--
--static const struct power_supply_desc bq24190_battery_desc = {
--	.name			= "bq24190-battery",
--	.type			= POWER_SUPPLY_TYPE_BATTERY,
--	.properties		= bq24190_battery_properties,
--	.num_properties		= ARRAY_SIZE(bq24190_battery_properties),
--	.get_property		= bq24190_battery_get_property,
--	.set_property		= bq24190_battery_set_property,
--	.property_is_writeable	= bq24190_battery_property_is_writeable,
--};
--
- static void bq24190_check_status(struct bq24190_dev_info *bdi)
- {
--	const u8 battery_mask_ss = BQ24190_REG_SS_CHRG_STAT_MASK;
--	const u8 battery_mask_f = BQ24190_REG_F_BAT_FAULT_MASK
--				| BQ24190_REG_F_NTC_FAULT_MASK;
--	bool alert_charger = false, alert_battery = false;
-+	bool alert_charger = false;
- 	u8 ss_reg = 0, f_reg = 0;
- 	int i, ret;
- 
-@@ -1202,12 +944,9 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
- 				!!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
- 
- 		mutex_lock(&bdi->f_reg_lock);
--		if ((bdi->f_reg & battery_mask_f) != (f_reg & battery_mask_f))
--			alert_battery = true;
--		if ((bdi->f_reg & ~battery_mask_f) != (f_reg & ~battery_mask_f))
--			alert_charger = true;
- 		bdi->f_reg = f_reg;
- 		mutex_unlock(&bdi->f_reg_lock);
-+		alert_charger = true;
- 	}
- 
- 	if (ss_reg != bdi->ss_reg) {
-@@ -1226,17 +965,12 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
- 					ret);
- 		}
- 
--		if ((bdi->ss_reg & battery_mask_ss) != (ss_reg & battery_mask_ss))
--			alert_battery = true;
--		if ((bdi->ss_reg & ~battery_mask_ss) != (ss_reg & ~battery_mask_ss))
--			alert_charger = true;
- 		bdi->ss_reg = ss_reg;
-+		alert_charger = true;
- 	}
- 
- 	if (alert_charger)
- 		power_supply_changed(bdi->charger);
--	if (alert_battery)
--		power_supply_changed(bdi->battery);
- 
- 	dev_dbg(bdi->dev, "ss_reg: 0x%02x, f_reg: 0x%02x\n", ss_reg, f_reg);
- }
-@@ -1363,7 +1097,7 @@ static int bq24190_probe(struct i2c_client *client,
- {
- 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
- 	struct device *dev = &client->dev;
--	struct power_supply_config charger_cfg = {}, battery_cfg = {};
-+	struct power_supply_config charger_cfg = {};
- 	struct bq24190_dev_info *bdi;
- 	const char *name;
- 	int ret;
-@@ -1427,19 +1161,10 @@ static int bq24190_probe(struct i2c_client *client,
- 		goto pm_runtime_disable;
- 	}
- 
--	battery_cfg.drv_data = bdi;
--	bdi->battery = power_supply_register(dev, &bq24190_battery_desc,
--						&battery_cfg);
--	if (IS_ERR(bdi->battery)) {
--		dev_err(dev, "Can't register battery\n");
--		ret = PTR_ERR(bdi->battery);
--		goto unregister_charger;
--	}
--
- 	ret = bq24190_sysfs_create_group(bdi);
- 	if (ret) {
- 		dev_err(dev, "Can't create sysfs entries\n");
--		goto unregister_battery;
-+		goto unregister_charger;
- 	}
- 
- 	bdi->initialized = true;
-@@ -1475,9 +1200,6 @@ static int bq24190_probe(struct i2c_client *client,
- remove_sysfs_group:
- 	bq24190_sysfs_remove_group(bdi);
- 
--unregister_battery:
--	power_supply_unregister(bdi->battery);
--
- unregister_charger:
- 	power_supply_unregister(bdi->charger);
- 
-@@ -1500,7 +1222,6 @@ static int bq24190_remove(struct i2c_client *client)
- 	}
- 
- 	bq24190_sysfs_remove_group(bdi);
--	power_supply_unregister(bdi->battery);
- 	power_supply_unregister(bdi->charger);
- 	if (error >= 0)
- 		pm_runtime_put_sync(bdi->dev);
-@@ -1568,7 +1289,6 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
- 
- 	/* Things may have changed while suspended so alert upper layer */
- 	power_supply_changed(bdi->charger);
--	power_supply_changed(bdi->battery);
- 
- 	return 0;
- }
 -- 
-2.9.3
+Josh
