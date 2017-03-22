@@ -1,59 +1,70 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v6 4/4] clk: samsung: exynos-audss: Use runtime PM
-Date: Wed, 22 Mar 2017 13:00:56 +0100
-Message-ID: <CAPDyKFrL9pvGQw+09rP52p72FqKuh6rLNt0NEUZ-TFxU838Nzw@mail.gmail.com>
-References: <CGME20170322113556eucas1p1b3434935701aba1db7868415a9c3b4f9@eucas1p1.samsung.com>
- <1490182543-28550-1-git-send-email-m.szyprowski@samsung.com> <1490182543-28550-5-git-send-email-m.szyprowski@samsung.com>
+From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH v1 1/7] devicetree: power: battery: Add properties for
+ pre-charge and end-charge current
+Date: Wed, 22 Mar 2017 13:04:26 +0100
+Message-ID: <d73af3ca-cfa4-f48b-ba5e-cd07900de058@redhat.com>
+References: <20170321220921.5834-1-liam@networkimprov.net>
+ <20170321220921.5834-2-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1490182543-28550-5-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170321220921.5834-2-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 22 March 2017 at 12:35, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
-> This patch adds support for runtime PM to Exynos Audio SubSystem driver to
-> enable full support for audio power domain on Exynos5 SoCs. The main change
-> is moving register saving and restoring code from system sleep PM ops to
-> runtime PM ops and implementing system sleep PM ops with generic
-> pm_runtime_force_suspend/resume helpers. Runtime PM of the Exynos AudSS
-> device is managed from clock core depending on the preparation status
-> of the provided clocks.
+Hi,
+
+On 21-03-17 23:09, Liam Breck wrote:
+> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 >
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Minor nitpick below.
-
-[...]
-
+> precharge-current-microamp and endcharge-current-microamp are used
+> by battery chargers at the beginning and end of a charging cycle.
 >
-> -#ifdef CONFIG_PM_SLEEP
->  static unsigned long reg_save[][2] = {
->         { ASS_CLK_SRC,  0 },
->         { ASS_CLK_DIV,  0 },
->         { ASS_CLK_GATE, 0 },
->  };
+> Depends-on: https://patchwork.kernel.org/patch/9633605/
+> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+
+Looks good to me:
+
+Reviewed-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+
+Regards,
+
+Hans
+
+
+> ---
+>  Documentation/devicetree/bindings/power/supply/battery.txt | 4 ++++
+>  1 file changed, 4 insertions(+)
 >
-> -static int exynos_audss_clk_suspend(struct device *dev)
-> +static int __maybe_unused exynos_audss_clk_suspend(struct device *dev)
-
-Instead of using "__maybe_unused", I would rather change from
-"CONFIG_PM_SLEEP" to "CONFIG_PM". However, no strong opinion.
-
-Perhaps you need something like this for patch 3/4 as well?
-
->  {
->         int i;
+> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+> index 53a68c0..494374a 100644
+> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+> @@ -12,6 +12,8 @@ Optional Properties:
+>   - voltage-min-design-microvolt: drained battery voltage
+>   - energy-full-design-microwatt-hours: battery design energy
+>   - charge-full-design-microamp-hours: battery design capacity
+> + - precharge-current-microamp: current for pre-charge phase
+> + - endcharge-current-microamp: current for charge termination phase
 >
-> @@ -54,7 +54,7 @@ static int exynos_audss_clk_suspend(struct device *dev)
->         return 0;
->  }
-
-[...]
-
-Kind regards
-Uffe
+>  Battery properties are named, where possible, for the corresponding
+>  elements in enum power_supply_property, defined in
+> @@ -28,6 +30,8 @@ Example:
+>  		voltage-min-design-microvolt = <3200000>;
+>  		energy-full-design-microwatt-hours = <5290000>;
+>  		charge-full-design-microamp-hours = <1430000>;
+> +		precharge-current-microamp = <256000>;
+> +		endcharge-current-microamp = <128000>;
+>  	};
+>
+>  	charger: charger@11 {
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
