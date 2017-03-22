@@ -1,73 +1,50 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: Re: [PATCH v2 0/8] thermal: ti-soc-thermal: Migrate slope/offset data
- to device tree
-Date: Wed, 22 Mar 2017 09:12:47 +0530
-Message-ID: <64ab8413-6cf1-864f-0550-9c8db59523f7@ti.com>
-References: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: schedutil: Always trace frequency if it does
+ not change
+Date: Wed, 22 Mar 2017 09:46:53 +0530
+Message-ID: <20170322041653.GW25659@vireshk-i7>
+References: <10655562.4O9KtquB0A@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, linux-kernel@vger.kernel.org, t-kristo@ti.com, robh+dt@kernel.org, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:33732 "EHLO
+        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751370AbdCVEQ5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 00:16:57 -0400
+Received: by mail-pf0-f175.google.com with SMTP id o190so6573559pfo.0
+        for <linux-pm@vger.kernel.org>; Tue, 21 Mar 2017 21:16:56 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <10655562.4O9KtquB0A@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-
-
-On Thursday 09 March 2017 01:35 PM, Keerthy wrote:
-> Currently the slope and offset values for calculating the
-> hot spot temperature of a particular thermal zone is part
-> of driver data. Pass them here instead and obtain the values
-> while of node parsing.
+On 22-03-17, 01:56, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Tested for the slope and constant values on DRA7-EVM, OMAP3-BEAGLE. 
+> sugov_update_commit() calls trace_cpu_frequency() to record the
+> current CPU frequency if it has not changed in the fast switch case
+> to prevent utilities from getting confused (they may report that the
+> CPU is idle if the frequency has not been recorded for too long, for
+> example).
+> 
+> However, the same problem may occur for a cpufreq driver that doesn't
+> support fast frequency switching and implements the ->target callback
+> (that is, it doesn't use frequency tables), but trace_cpu_frequency()
+> is not called if frequency updates are skipped in that case.
+> 
+> For this reason, modify sugov_update_commit() to always call
+> trace_cpu_frequency() when the new frequency to be set is equal to
+> the one that was set previously and reorganize the code in there to
+> reduce duplication somewhat.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  kernel/sched/cpufreq_schedutil.c |   18 +++++++++---------
+>  1 file changed, 9 insertions(+), 9 deletions(-)
 
-Hi Eduardo,
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-If the series looks okay could you please pull this?
-
-Regards,
-Keerthy
-
-> 
-> Changes in v2:
-> 
->   * Added OMAP3 changes along with DRA7/OMAP4/OMAP5.
-> 
-> Keerthy (8):
->   arm: dts: omap3: Add cpu_thermal zone
->   ARM: DRA7: Thermal: Add slope and offset values
->   ARM: OMAP5: Thermal: Add slope and offset values
->   ARM: OMAP443x: Thermal: Add slope and offset values
->   ARM: OMAP4460: Thermal: Add slope and offset values
->   thermal: ti-soc-thermal: Fetch slope and offset from DT
->   thermal: ti-soc-thermal: Remove redundant constants
->   thermal: ti-soc-thermal: Remove redundant code
-> 
->  arch/arm/boot/dts/dra7.dtsi                        |  17 +++
->  arch/arm/boot/dts/omap3-cpu-thermal.dtsi           |  20 +++
->  arch/arm/boot/dts/omap34xx.dtsi                    |   8 +-
->  arch/arm/boot/dts/omap36xx.dtsi                    |   8 +-
->  arch/arm/boot/dts/omap443x.dtsi                    |   4 +
->  arch/arm/boot/dts/omap4460.dtsi                    |   4 +
->  arch/arm/boot/dts/omap5.dtsi                       |   9 ++
->  .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  10 --
->  .../thermal/ti-soc-thermal/omap3-thermal-data.c    |   4 -
->  .../thermal/ti-soc-thermal/omap4-thermal-data.c    |   6 -
->  .../thermal/ti-soc-thermal/omap5-thermal-data.c    |   4 -
->  drivers/thermal/ti-soc-thermal/ti-bandgap.h        |   4 -
->  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 158 +--------------------
->  drivers/thermal/ti-soc-thermal/ti-thermal.h        |  16 ---
->  14 files changed, 71 insertions(+), 201 deletions(-)
->  create mode 100644 arch/arm/boot/dts/omap3-cpu-thermal.dtsi
-> 
+-- 
+viresh
