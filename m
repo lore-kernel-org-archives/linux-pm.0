@@ -1,80 +1,56 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery device
- .type=unknown
-Date: Wed, 22 Mar 2017 13:25:47 +0100
-Message-ID: <7e117a52-bbf0-2a12-e98f-843da227e0c7@redhat.com>
-References: <20170321220921.5834-1-liam@networkimprov.net>
- <20170321220921.5834-8-liam@networkimprov.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: schedutil: Always trace frequency if it does not change
+Date: Wed, 22 Mar 2017 13:52:04 +0100
+Message-ID: <CAJZ5v0jFDQ9fxHwVWM_Dg-Or5y6o_YJ5=sdyQDZ3Dt0U2bqy_A@mail.gmail.com>
+References: <10655562.4O9KtquB0A@aspire.rjw.lan> <20170322092951.GX5680@worktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:36876 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1758843AbdCVM02 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 22 Mar 2017 08:26:28 -0400
-In-Reply-To: <20170321220921.5834-8-liam@networkimprov.net>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:32857 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934407AbdCVMwH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 08:52:07 -0400
+In-Reply-To: <20170322092951.GX5680@worktop>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
-Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-Hi,
-
-On 21-03-17 23:09, Liam Breck wrote:
-> From: Liam Breck <kernel@networkimprov.net>
+On Wed, Mar 22, 2017 at 10:29 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, Mar 22, 2017 at 01:56:53AM +0100, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> sugov_update_commit() calls trace_cpu_frequency() to record the
+>> current CPU frequency if it has not changed in the fast switch case
+>> to prevent utilities from getting confused (they may report that the
+>> CPU is idle if the frequency has not been recorded for too long, for
+>> example).
 >
-> Not for upstream. Temporary workaround to prevent bq24190-battery device
-> from interfering with a fuel gauge that has .type=power_supply_type_battery
+> That seems like buggy tools; we should then fix the tools, not the
+> kernel to emit more superfluous information.
 >
-> I'll move properties from -battery device to -charger in a subsequent version.
+>> However, the same problem may occur for a cpufreq driver that doesn't
+>> support fast frequency switching and implements the ->target callback
+>> (that is, it doesn't use frequency tables), but trace_cpu_frequency()
+>> is not called if frequency updates are skipped in that case.
 >
-> Cc: Hans de Goede <hdegoede@redhat.com>
+> I'm having trouble parsing that; am I right in understanding this is the
+> exact same scenario where only superfluous changes are omitted?
 
-Hmm, I don't like this. I was about to post v2 of my patches (which I will
-rebase on top of this series), which contains a patch to completely remove
-the battery power_supply. I understand if you think it is too early for
-that, but I believe that if we (temporarily) want to keep it around,
-it would be better to do something like this:
+Yes, that's the same scenario basically, which is the point of the patch. :-)
 
-     /*
-      * Note the disable-battery-power-supply property is purely an in
-      * kernel interface to avoid having 2 battery type power_supplies for
-      * a single physical battery when there also is a fuel-gauge driver.
-      * The plan is to remove the battery power_supply from the bq24190
-      * driver completely, but that still needs some work.
-      * Do NOT use this property in DT files.
-      */
-     if (!device_property_read_bool(dev, "disable-battery-power-supply")) {
-         register(battery)...
-     }
-
-Sebastian would something like the above work for you as an interim
-solution ? Since this uses device-properties I can easily add the
-property to my i2c_board_info, and when the battery power_supply gets
-removed all together the board_info can be updated independently of
-the power_supply driver, so we can easily clean this up afterwards.
-
-Regards,
-
-Hans
-
-
-> ---
->  drivers/power/supply/bq24190_charger.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>> For this reason, modify sugov_update_commit() to always call
+>> trace_cpu_frequency() when the new frequency to be set is equal to
+>> the one that was set previously and reorganize the code in there to
+>> reduce duplication somewhat.
 >
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index a52816b..12f3780 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -1228,7 +1228,7 @@ static enum power_supply_property bq24190_battery_properties[] = {
->
->  static const struct power_supply_desc bq24190_battery_desc = {
->  	.name			= "bq24190-battery",
-> -	.type			= POWER_SUPPLY_TYPE_BATTERY,
-> +	.type			= POWER_SUPPLY_TYPE_UNKNOWN,
->  	.properties		= bq24190_battery_properties,
->  	.num_properties		= ARRAY_SIZE(bq24190_battery_properties),
->  	.get_property		= bq24190_battery_get_property,
->
+> So why not fix the tools?
+
+Because I can't.
+
+I just can't go and fix all of the tools binaries that people use out
+there and I want them to use recent kernels at the same time.
+
+But anyway, I think that the code with the patch looks better than
+without it regardless and having a frivolous difference there between
+the two cases is not useful.
