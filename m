@@ -1,198 +1,42 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 14/15] power: supply: Add driver for Cherry Trail Whiskey
- Cove PMIC Fuel Gauge
-Date: Wed, 22 Mar 2017 18:03:36 +0100
-Message-ID: <fadc90e1-204c-fcb6-ed02-d5514ff3e395@redhat.com>
-References: <20170317095527.10487-1-hdegoede@redhat.com>
- <20170317095527.10487-15-hdegoede@redhat.com>
- <1489773529.19767.84.camel@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: schedutil: Always trace frequency if it does not change
+Date: Wed, 22 Mar 2017 18:13:21 +0100
+Message-ID: <CAJZ5v0gpF_8qCW8Qtxr+MCpJwz9r+OHhMRvaG3QOYxYBFhw3Dg@mail.gmail.com>
+References: <10655562.4O9KtquB0A@aspire.rjw.lan> <20170322092951.GX5680@worktop>
+ <CAJZ5v0jFDQ9fxHwVWM_Dg-Or5y6o_YJ5=sdyQDZ3Dt0U2bqy_A@mail.gmail.com> <20170322142116.qpe2faqwbmlmhft7@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1489773529.19767.84.camel@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f194.google.com ([74.125.82.194]:36319 "EHLO
+        mail-ot0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1760279AbdCVRN2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 13:13:28 -0400
+In-Reply-To: <20170322142116.qpe2faqwbmlmhft7@hirez.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-Hi,
-
-On 17-03-17 18:58, Andy Shevchenko wrote:
-> On Fri, 2017-03-17 at 10:55 +0100, Hans de Goede wrote:
->> Add a driver for the Cherry Trail Whiskey Cove PMIC Fuel Gauge, note
->> the Cherry Trail Whiskey Cove PMIC Fuel Gauge block is purely a fuel
->> gauge
->> and not a full battery controller. As such it offers a platform_data
->> callback for extra power_supply properties for the actual external-
->> charger
->> ic driver and does not register a power_supply itself.
+On Wed, Mar 22, 2017 at 3:21 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, Mar 22, 2017 at 01:52:04PM +0100, Rafael J. Wysocki wrote:
+>> On Wed, Mar 22, 2017 at 10:29 AM, Peter Zijlstra <peterz@infradead.org> wrote:
 >
-> ic -> IC
->
-> Can we move to something like built-in device properties for additional
-> properties instead of extending platform data?
->
->> +config CHT_WC_FUEL_GAUGE
->
-> I would use similar pattern:
->
-> FUEL_GAUGE_INTEL_CHTWC (or FUEL_GAUGE_CHTWC, but this might be less
-> obvious about vendor)
-
-Good point, although all the fuel-gauge's seem to use
-BATTERY as prefix, so I've gone with that.
-
->
->> --- /dev/null
->> +++ b/drivers/power/supply/cht_wc_fuel_gauge.c
->> @@ -0,0 +1,209 @@
->> +/*
->> + * Intel CHT Whiskey Cove Fuel Gauge driver
->
-> CHT -> Cherry Trail
-
-Fixed.
-
->
->> + *
->> + * Cherrytrail Whiskey Cove devices have 2 functional blocks which
->> interact
->> + * with the battery.
->
-> Cherry Trail?
-
-Since after discussion about how to deal with the charger / fuel_gauge
-comment v2 is going to be a stand-alone power_supply driver this
-comment has been dropped.
-
->
->> +#define REG_CHARGE_NOW		0x05
->> +#define REG_VOLTAGE_NOW		0x09
->> +#define REG_CURRENT_NOW		0x0a
->> +#define REG_CURRENT_AVG		0x0b
->> +#define REG_CHARGE_FULL		0x10
->> +#define REG_CHARGE_DESIGN	0x18
->> +#define REG_VOLTAGE_AVG		0x19
->
->> +#define REG_VOLTAGE_OCV		0x1b /* Only updated during
->> charging */
->
-> I think comment makes more sense where actual update is happening in the
-> code.
->
->> +
->> +static int cht_wc_fg_read(struct cht_wc_fg_data *fg, u8 reg,
->> +			  union power_supply_propval *val, int scale,
->> +			  int sign_extend)
->> +{
->> +	int ret;
->> +
->> +	ret = i2c_smbus_read_word_data(fg->client, reg);
->> +	if (ret < 0)
->> +		return ret;
->> +
->> +	if (sign_extend)
->> +		ret = sign_extend32(ret, 15);
->
-> Magic?
-
-Nope just simply dealing with i2c_smbus_read_word_data always
-returning 16 bit unsigned data (or a negative error code)
-and some of the registers being 16 bit signed.
-
->
->> +
->> +	val->intval = ret * scale;
->> +
->> +	return 0;
->> +}
->
->
->> +
->> +int cht_wc_fg_get_property(enum power_supply_property prop,
->> +			   union power_supply_propval *val)
->> +{
->> +	int ret = 0;
->
-> Sounds like redundant assignment...
-
-No longer redundant in v2.
-
->
->> +
->> +	mutex_lock(&cht_wc_fg_mutex);
->> +
+>> > So why not fix the tools?
+>>
+>> Because I can't.
+>>
+>> I just can't go and fix all of the tools binaries that people use out
+>> there and I want them to use recent kernels at the same time.
 >>
 >
->> +	if (!cht_wc_fg) {
->> +		ret = -ENXIO;
->> +		goto out_unlock;
->> +	}
->
-> ...otherwise maybe
->
-> ret = cht_wc_fg ? 0 : -ENXIO;
-> if (ret)
->  goto ...;
->
-> ?
+> Thing is; you're now letting random tracepoint user dictate kernel
+> implementation. That's a bad state to be in.
 
-With the stand-alone power_supply driver version this ugliness is gone.
+Fair enough.
 
->
->> +	default:
->> +		ret = -ENODATA;
->> +	}
->> +out_unlock:
->> +	mutex_unlock(&cht_wc_fg_mutex);
->> +	return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(cht_wc_fg_get_property);
->
->> +
->> +static int cht_wc_fg_probe(struct i2c_client *client,
->> +			const struct i2c_device_id *i2c_id)
->> +{
->> +	struct device *dev = &client->dev;
->> +	struct cht_wc_fg_data *fg;
->> +	acpi_status status;
->> +	unsigned long long ptyp;
->
->> +	status = acpi_evaluate_integer(ACPI_HANDLE(dev), "PTYP",
->> NULL, &ptyp);
->> +	if (ACPI_FAILURE(status)) {
->> +		dev_err(dev, "Failed to get PTYPE\n");
->> +		return -ENODEV;
->> +	}
->> +
->> +	/*
->> +	 * The same ACPI HID is used with different PMICs check PTYP
->> to
->> +	 * ensure that we are dealing with a Whiskey Cove PMIC.
->> +	 */
->> +	if (ptyp != CHT_WC_FG_PTYPE)
->> +		return -ENODEV;
->
-> Logically I would split this part to be a main driver for device which
-> would use actual driver based on this, though I think it too much churn
-> for no benefit right now.
-
-Ack.
-
->
->> +	mutex_lock(&cht_wc_fg_mutex);
->> +	cht_wc_fg = fg;
->> +	mutex_unlock(&cht_wc_fg_mutex);
->
-> It's pity we have no common storage of single possible present device
-> drivers in the kernel. I would use some kind of framework rather then
-> keeping all those global variables with locking. Perhaps radix / RB
-> tree.
-
-With the stand-alone power_supply driver version this ugliness is gone.
-
-Regards,
-
-Hans
-
+Admittedly, I was sort of divided on whether or not to drop the
+trace_cpu_frequency() call entirely and now I see another reason to do
+that.  There is a change queued up for 4.12 that will cause the
+tracepoint to be triggered more often totally in vain which I don't
+think is a good thing at all.  So I'll send a v2 dropping that call
+and we'll see if anyone complains.
