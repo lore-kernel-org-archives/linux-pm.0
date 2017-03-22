@@ -1,15 +1,16 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v8 2/3] dmaengine: pl330: remove pdata based initialization
-Date: Wed, 22 Mar 2017 09:22:23 +0100
-Message-ID: <f0d36362-ce75-02a0-0bfa-e265cba03b8b@samsung.com>
-References: <1486650171-20598-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170209142308eucas1p24d52db3d52e19228e8f423c3dc8b085b@eucas1p2.samsung.com>
- <1486650171-20598-3-git-send-email-m.szyprowski@samsung.com>
+Subject: Re: [PATCH v5 3/4] clk: samsung: exynos5433: Add runtime PM support
+Date: Wed, 22 Mar 2017 09:26:09 +0100
+Message-ID: <68edccfb-c86d-3412-82f4-2a5183f4a16c@samsung.com>
+References: <CGME20170125115329eucas1p1f42bbb54d5973b6192e964dc8b3a8081@eucas1p1.samsung.com>
+ <1485345194-3196-1-git-send-email-m.szyprowski@samsung.com>
+ <1485345194-3196-4-git-send-email-m.szyprowski@samsung.com>
+ <CAPDyKFotSo5qcJPt9w99Rf3i_kvQnBZE36iBbfDfuBkiKhsoTw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1486650171-20598-3-git-send-email-m.szyprowski@samsung.com>
+In-reply-to: <CAPDyKFotSo5qcJPt9w99Rf3i_kvQnBZE36iBbfDfuBkiKhsoTw@mail.gmail.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,191 +20,244 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Michael Turquette <mturquette@baylibre.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Vinod
+Hi Ulf,
 
+On 2017-03-13 14:31, Ulf Hansson wrote:
+> On 25 January 2017 at 12:53, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+>> Add runtime pm support for all clock controller units (CMU), which belongs
+>> to power domains and require special handling during on/off operations.
+>> Typically special values has to be written to MUX registers to change
+>> internal clocks parents to OSC clock before turning power off. During such
+>> operation all clocks, which enters CMU has to be enabled to let MUX to
+>> stabilize. Also for each CMU there is one special parent clock, which has
+>> to be enabled all the time when any access to CMU registers is done.
+>>
+>> This patch solves most of the mysterious external abort and freeze issues
+>> caused by a lack of proper parent CMU clock enabled or incorrect turn off
+>> procedure.
+>>
+>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+>> ---
 
-On 2017-02-09 15:22, Marek Szyprowski wrote:
-> This driver is now used only on platforms which support device tree, so
-> it is safe to remove legacy platform data based initialization code.
+Thanks for your review!
+
+> [...]
+>> --- a/drivers/clk/samsung/clk-exynos5433.c
+>> +++ b/drivers/clk/samsung/clk-exynos5433.c
+>> @@ -9,9 +9,14 @@
+>>    * Common Clock Framework support for Exynos5443 SoC.
+>>    */
+>>
+>> +#include <linux/clk.h>
+>>   #include <linux/clk-provider.h>
+>>   #include <linux/of.h>
+>>   #include <linux/of_address.h>
+>> +#include <linux/of_device.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/pm_runtime.h>
+>> +#include <linux/slab.h>
+>>
+>>   #include <dt-bindings/clock/exynos5433.h>
+>>
+> [...]
 >
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> For plat-samsung:
-> Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+>> +struct exynos5433_cmu_data {
+>> +       struct samsung_clk_provider ctx;
+>> +
+>> +       struct samsung_clk_reg_dump *clk_save;
+>> +       unsigned int nr_clk_save;
+>> +       const struct samsung_clk_reg_dump *clk_suspend;
+>> +       unsigned int nr_clk_suspend;
+>> +
+>> +       struct clk *clk;
+>> +       struct clk **pclks;
+>> +       int nr_pclks;
+>> +};
+>> +
+>> +static int exynos5433_cmu_suspend(struct device *dev)
+>> +{
+>> +       struct exynos5433_cmu_data *data = dev_get_drvdata(dev);
+>> +       int i;
+>> +
+>> +       samsung_clk_save(data->ctx.reg_base, data->clk_save,
+>> +                        data->nr_clk_save);
+>> +
+>> +       for (i = 0; i < data->nr_pclks; i++)
+>> +               clk_enable(data->pclks[i]);
+>> +
+>> +       samsung_clk_restore(data->ctx.reg_base, data->clk_suspend,
+>> +                           data->nr_clk_suspend);
+>> +
+>> +       for (i = 0; i < data->nr_pclks; i++)
+>> +               clk_disable(data->pclks[i]);
+>> +
+>> +       clk_disable(data->clk);
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +static int exynos5433_cmu_resume(struct device *dev)
+>> +{
+>> +       struct exynos5433_cmu_data *data = dev_get_drvdata(dev);
+>> +       int i;
+>> +
+>> +       clk_enable(data->clk);
+>> +
+>> +       for (i = 0; i < data->nr_pclks; i++)
+>> +               clk_enable(data->pclks[i]);
+>> +
+>> +       samsung_clk_restore(data->ctx.reg_base, data->clk_save,
+>> +                           data->nr_clk_save);
+>> +
+>> +       for (i = 0; i < data->nr_pclks; i++)
+>> +               clk_disable(data->pclks[i]);
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +static int __init exynos5433_cmu_probe(struct platform_device *pdev)
+>> +{
+>> +       const struct samsung_cmu_info *info;
+>> +       struct exynos5433_cmu_data *data;
+>> +       struct samsung_clk_provider *ctx;
+>> +       struct device *dev = &pdev->dev;
+>> +       struct resource *res;
+>> +       void __iomem *reg_base;
+>> +       struct clk **clk_table;
+>> +       int i;
+>> +
+>> +       info = of_device_get_match_data(dev);
+>> +
+>> +       data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+>> +       if (!data)
+>> +               return -ENOMEM;
+>> +       ctx = &data->ctx;
+>> +
+>> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>> +       reg_base = devm_ioremap_resource(dev, res);
+>> +       if (!reg_base) {
+>> +               dev_err(dev, "failed to map registers\n");
+>> +               return -ENOMEM;
+>> +       }
+>> +
+>> +       clk_table = devm_kcalloc(dev, info->nr_clk_ids, sizeof(struct clk *),
+>> +                                GFP_KERNEL);
+>> +       if (!clk_table)
+>> +               return -ENOMEM;
+>> +
+>> +       for (i = 0; i < info->nr_clk_ids; ++i)
+>> +               clk_table[i] = ERR_PTR(-ENOENT);
+>> +
+>> +       ctx->clk_data.clks = clk_table;
+>> +       ctx->clk_data.clk_num = info->nr_clk_ids;
+>> +       ctx->reg_base = reg_base;
+>> +       ctx->dev = dev;
+>> +       spin_lock_init(&ctx->lock);
+>> +
+>> +       data->clk_save = samsung_clk_alloc_reg_dump(info->clk_regs,
+>> +                                                   info->nr_clk_regs);
+>> +       data->nr_clk_save = info->nr_clk_regs;
+>> +       data->clk_suspend = info->suspend_regs;
+>> +       data->nr_clk_suspend = info->nr_suspend_regs;
+>> +       data->nr_pclks = of_count_phandle_with_args(dev->of_node, "clocks",
+>> +                                                   "#clock-cells");
+>> +       if (data->nr_pclks > 0) {
+>> +               data->pclks = devm_kcalloc(dev, sizeof(struct clk *),
+>> +                                          data->nr_pclks, GFP_KERNEL);
+>> +
+>> +               for (i = 0; i < data->nr_pclks; i++) {
+>> +                       struct clk *clk = of_clk_get(dev->of_node, i);
+>> +
+>> +                       if (IS_ERR(clk))
+>> +                               return PTR_ERR(clk);
+>> +                       data->pclks[i] = clk;
+>> +               }
+>> +       }
+>> +
+>> +       /*
+>> +        * Prepare all parent clocks here to avoid potential deadlock caused
+>> +        * by global clock "prepare lock" grabbed by runtime pm callbacks
+>> +        * from pm workers.
+>> +        */
+> I don't understand why this potentially could cause a deadlock. Can
+> you please elaborate.
 
-Vinod: This patch is completely independent from the rest of the changes
-from that patchset. Could you apply it, or do you want me to resend it
-separately? Runtime pm related changes will wait until a new DMA engine API
-is ready.
+This deadlock was caused by using pm_runtime_put() in the clk core, but
+after switching to pm_runtime_put_sync() it's gone. While tracking this
+issue I also found another possible deadlock related to device_links.
+I will send a separate patch for it.
 
-> ---
->   arch/arm/plat-samsung/devs.c |  1 -
->   drivers/dma/pl330.c          | 42 ++++++++----------------------------------
->   include/linux/amba/pl330.h   | 35 -----------------------------------
->   3 files changed, 8 insertions(+), 70 deletions(-)
->   delete mode 100644 include/linux/amba/pl330.h
+> To me, I think you should be fine doing clk_prepare_enable() and
+> clk_disable_unprepare() from exynos5433_cmu_suspend|resume(), but I
+> may be missing something.
 >
-> diff --git a/arch/arm/plat-samsung/devs.c b/arch/arm/plat-samsung/devs.c
-> index 03fac123676d..dc269d9143bc 100644
-> --- a/arch/arm/plat-samsung/devs.c
-> +++ b/arch/arm/plat-samsung/devs.c
-> @@ -10,7 +10,6 @@
->    * published by the Free Software Foundation.
->   */
->   
-> -#include <linux/amba/pl330.h>
->   #include <linux/kernel.h>
->   #include <linux/types.h>
->   #include <linux/interrupt.h>
-> diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
-> index f37f4978dabb..8b0da7fa520d 100644
-> --- a/drivers/dma/pl330.c
-> +++ b/drivers/dma/pl330.c
-> @@ -22,7 +22,6 @@
->   #include <linux/dma-mapping.h>
->   #include <linux/dmaengine.h>
->   #include <linux/amba/bus.h>
-> -#include <linux/amba/pl330.h>
->   #include <linux/scatterlist.h>
->   #include <linux/of.h>
->   #include <linux/of_dma.h>
-> @@ -2077,18 +2076,6 @@ static void pl330_tasklet(unsigned long data)
->   	}
->   }
->   
-> -bool pl330_filter(struct dma_chan *chan, void *param)
-> -{
-> -	u8 *peri_id;
-> -
-> -	if (chan->device->dev->driver != &pl330_driver.drv)
-> -		return false;
-> -
-> -	peri_id = chan->private;
-> -	return *peri_id == (unsigned long)param;
-> -}
-> -EXPORT_SYMBOL(pl330_filter);
-> -
->   static struct dma_chan *of_dma_pl330_xlate(struct of_phandle_args *dma_spec,
->   						struct of_dma *ofdma)
->   {
-> @@ -2833,7 +2820,6 @@ static int __maybe_unused pl330_resume(struct device *dev)
->   static int
->   pl330_probe(struct amba_device *adev, const struct amba_id *id)
->   {
-> -	struct dma_pl330_platdata *pdat;
->   	struct pl330_config *pcfg;
->   	struct pl330_dmac *pl330;
->   	struct dma_pl330_chan *pch, *_p;
-> @@ -2843,8 +2829,6 @@ static int __maybe_unused pl330_resume(struct device *dev)
->   	int num_chan;
->   	struct device_node *np = adev->dev.of_node;
->   
-> -	pdat = dev_get_platdata(&adev->dev);
-> -
->   	ret = dma_set_mask_and_coherent(&adev->dev, DMA_BIT_MASK(32));
->   	if (ret)
->   		return ret;
-> @@ -2857,7 +2841,7 @@ static int __maybe_unused pl330_resume(struct device *dev)
->   	pd = &pl330->ddma;
->   	pd->dev = &adev->dev;
->   
-> -	pl330->mcbufsz = pdat ? pdat->mcbuf_sz : 0;
-> +	pl330->mcbufsz = 0;
->   
->   	/* get quirk */
->   	for (i = 0; i < ARRAY_SIZE(of_quirks); i++)
-> @@ -2901,10 +2885,7 @@ static int __maybe_unused pl330_resume(struct device *dev)
->   	INIT_LIST_HEAD(&pd->channels);
->   
->   	/* Initialize channel parameters */
-> -	if (pdat)
-> -		num_chan = max_t(int, pdat->nr_valid_peri, pcfg->num_chan);
-> -	else
-> -		num_chan = max_t(int, pcfg->num_peri, pcfg->num_chan);
-> +	num_chan = max_t(int, pcfg->num_peri, pcfg->num_chan);
->   
->   	pl330->num_peripherals = num_chan;
->   
-> @@ -2916,11 +2897,8 @@ static int __maybe_unused pl330_resume(struct device *dev)
->   
->   	for (i = 0; i < num_chan; i++) {
->   		pch = &pl330->peripherals[i];
-> -		if (!adev->dev.of_node)
-> -			pch->chan.private = pdat ? &pdat->peri_id[i] : NULL;
-> -		else
-> -			pch->chan.private = adev->dev.of_node;
->   
-> +		pch->chan.private = adev->dev.of_node;
->   		INIT_LIST_HEAD(&pch->submitted_list);
->   		INIT_LIST_HEAD(&pch->work_list);
->   		INIT_LIST_HEAD(&pch->completed_list);
-> @@ -2933,15 +2911,11 @@ static int __maybe_unused pl330_resume(struct device *dev)
->   		list_add_tail(&pch->chan.device_node, &pd->channels);
->   	}
->   
-> -	if (pdat) {
-> -		pd->cap_mask = pdat->cap_mask;
-> -	} else {
-> -		dma_cap_set(DMA_MEMCPY, pd->cap_mask);
-> -		if (pcfg->num_peri) {
-> -			dma_cap_set(DMA_SLAVE, pd->cap_mask);
-> -			dma_cap_set(DMA_CYCLIC, pd->cap_mask);
-> -			dma_cap_set(DMA_PRIVATE, pd->cap_mask);
-> -		}
-> +	dma_cap_set(DMA_MEMCPY, pd->cap_mask);
-> +	if (pcfg->num_peri) {
-> +		dma_cap_set(DMA_SLAVE, pd->cap_mask);
-> +		dma_cap_set(DMA_CYCLIC, pd->cap_mask);
-> +		dma_cap_set(DMA_PRIVATE, pd->cap_mask);
->   	}
->   
->   	pd->device_alloc_chan_resources = pl330_alloc_chan_resources;
-> diff --git a/include/linux/amba/pl330.h b/include/linux/amba/pl330.h
-> deleted file mode 100644
-> index fe93758e8403..000000000000
-> --- a/include/linux/amba/pl330.h
-> +++ /dev/null
-> @@ -1,35 +0,0 @@
-> -/* linux/include/linux/amba/pl330.h
-> - *
-> - * Copyright (C) 2010 Samsung Electronics Co. Ltd.
-> - *	Jaswinder Singh <jassi.brar@samsung.com>
-> - *
-> - * This program is free software; you can redistribute it and/or modify
-> - * it under the terms of the GNU General Public License as published by
-> - * the Free Software Foundation; either version 2 of the License, or
-> - * (at your option) any later version.
-> - */
-> -
-> -#ifndef	__AMBA_PL330_H_
-> -#define	__AMBA_PL330_H_
-> -
-> -#include <linux/dmaengine.h>
-> -
-> -struct dma_pl330_platdata {
-> -	/*
-> -	 * Number of valid peripherals connected to DMAC.
-> -	 * This may be different from the value read from
-> -	 * CR0, as the PL330 implementation might have 'holes'
-> -	 * in the peri list or the peri could also be reached
-> -	 * from another DMAC which the platform prefers.
-> -	 */
-> -	u8 nr_valid_peri;
-> -	/* Array of valid peripherals */
-> -	u8 *peri_id;
-> -	/* Operational capabilities */
-> -	dma_cap_mask_t cap_mask;
-> -	/* Bytes to allocate for MC buffer */
-> -	unsigned mcbuf_sz;
-> -};
-> -
-> -extern bool pl330_filter(struct dma_chan *chan, void *param);
-> -#endif	/* __AMBA_PL330_H_ */
+>> +       for (i = 0; i < data->nr_pclks; i++)
+>> +               clk_prepare(data->pclks[i]);
+>> +
+>> +       if (info->clk_name)
+>> +               data->clk = clk_get(dev, info->clk_name);
+>> +       clk_prepare_enable(data->clk);
+>> +
+>> +       platform_set_drvdata(pdev, data);
+>> +
+>> +       /*
+>> +        * Enable runtime pm here, so clock core with use runtime pm for all
+>> +        * registered clocks. Additionally call pm_runtime_get_sync to ensure
+>> +        * that clock core will not runtime suspend our clock controller in
+>> +        * the middle of clock registration (clock core might call runtime pm
+>> +        * on newly registered clocks, for example to recalculate clock rate).
+>> +        */
+> Instead of the rather confusing comment about the call to
+> pm_runtime_get_sync(), let's instead state that we increase the
+> runtime PM usage count during the clock registration, to avoid the
+> clock core from runtime suspending the device.
+>
+> In other words, before calling pm_runtime_set_active(), add a call
+> pm_runtime_get_noresume() and then remove the latter call to
+> pm_runtime_get_sync().
+
+Thanks for the hint!
+
+>> +       pm_runtime_set_active(dev);
+>> +       pm_runtime_enable(dev);
+>> +       pm_runtime_get_sync(dev);
+>> +
+>> +       if (info->pll_clks)
+>> +               samsung_clk_register_pll(ctx, info->pll_clks, info->nr_pll_clks,
+>> +                                        reg_base);
+>> +       if (info->mux_clks)
+>> +               samsung_clk_register_mux(ctx, info->mux_clks,
+>> +                                        info->nr_mux_clks);
+>> +       if (info->div_clks)
+>> +               samsung_clk_register_div(ctx, info->div_clks,
+>> +                                        info->nr_div_clks);
+>> +       if (info->gate_clks)
+>> +               samsung_clk_register_gate(ctx, info->gate_clks,
+>> +                                         info->nr_gate_clks);
+>> +       if (info->fixed_clks)
+>> +               samsung_clk_register_fixed_rate(ctx, info->fixed_clks,
+>> +                                               info->nr_fixed_clks);
+>> +       if (info->fixed_factor_clks)
+>> +               samsung_clk_register_fixed_factor(ctx, info->fixed_factor_clks,
+>> +                                                 info->nr_fixed_factor_clks);
+>> +
+>> +       samsung_clk_of_add_provider(dev->of_node, ctx);
+>> +       pm_runtime_put(dev);
+>> +
+>> +       return 0;
+>> +}
+>>
+> [...]
+>
+> Kind regards
+> Uffe
+>
+>
+>
 
 Best regards
 -- 
