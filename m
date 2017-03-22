@@ -1,265 +1,79 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v5 3/4] clk: samsung: exynos5433: Add runtime PM support
-Date: Wed, 22 Mar 2017 09:26:09 +0100
-Message-ID: <68edccfb-c86d-3412-82f4-2a5183f4a16c@samsung.com>
-References: <CGME20170125115329eucas1p1f42bbb54d5973b6192e964dc8b3a8081@eucas1p1.samsung.com>
- <1485345194-3196-1-git-send-email-m.szyprowski@samsung.com>
- <1485345194-3196-4-git-send-email-m.szyprowski@samsung.com>
- <CAPDyKFotSo5qcJPt9w99Rf3i_kvQnBZE36iBbfDfuBkiKhsoTw@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC][PATCH v3 2/2] cpufreq: schedutil: Avoid reducing frequency
+ of busy CPUs prematurely
+Date: Wed, 22 Mar 2017 10:26:46 +0100
+Message-ID: <20170322092646.GW5680@worktop>
+References: <4366682.tsferJN35u@aspire.rjw.lan>
+ <2185243.flNrap3qq1@aspire.rjw.lan>
+ <3300960.HE4b3sK4dn@aspire.rjw.lan>
+ <2997922.DidfPadJuT@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <CAPDyKFotSo5qcJPt9w99Rf3i_kvQnBZE36iBbfDfuBkiKhsoTw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Michael Turquette <mturquette@baylibre.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([65.50.211.133]:39164 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1759083AbdCVJ1B (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 05:27:01 -0400
+Content-Disposition: inline
+In-Reply-To: <2997922.DidfPadJuT@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
 
-Hi Ulf,
+On Wed, Mar 22, 2017 at 12:08:50AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The way the schedutil governor uses the PELT metric causes it to
+> underestimate the CPU utilization in some cases.
+> 
+> That can be easily demonstrated by running kernel compilation on
+> a Sandy Bridge Intel processor, running turbostat in parallel with
+> it and looking at the values written to the MSR_IA32_PERF_CTL
+> register.  Namely, the expected result would be that when all CPUs
+> were 100% busy, all of them would be requested to run in the maximum
+> P-state, but observation shows that this clearly isn't the case.
+> The CPUs run in the maximum P-state for a while and then are
+> requested to run slower and go back to the maximum P-state after
+> a while again.  That causes the actual frequency of the processor to
+> visibly oscillate below the sustainable maximum in a jittery fashion
+> which clearly is not desirable.
+> 
+> That has been attributed to CPU utilization metric updates on task
+> migration that cause the total utilization value for the CPU to be
+> reduced by the utilization of the migrated task.  If that happens,
+> the schedutil governor may see a CPU utilization reduction and will
+> attempt to reduce the CPU frequency accordingly right away.  That
+> may be premature, though, for example if the system is generally
+> busy and there are other runnable tasks waiting to be run on that
+> CPU already.
+> 
+> This is unlikely to be an issue on systems where cpufreq policies are
+> shared between multiple CPUs, because in those cases the policy
+> utilization is computed as the maximum of the CPU utilization values
+> over the whole policy and if that turns out to be low, reducing the
+> frequency for the policy most likely is a good idea anyway.  On
+> systems with one CPU per policy, however, it may affect performance
+> adversely and even lead to increased energy consumption in some cases.
+> 
+> On those systems it may be addressed by taking another utilization
+> metric into consideration, like whether or not the CPU whose
+> frequency is about to be reduced has been idle recently, because if
+> that's not the case, the CPU is likely to be busy in the near future
+> and its frequency should not be reduced.
+> 
+> To that end, use the counter of idle calls in the timekeeping code.
+> Namely, make the schedutil governor look at that counter for the
+> current CPU every time before its frequency is about to be reduced.
+> If the counter has not changed since the previous iteration of the
+> governor computations for that CPU, the CPU has been busy for all
+> that time and its frequency should not be decreased, so if the new
+> frequency would be lower than the one set previously, the governor
+> will skip the frequency update.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On 2017-03-13 14:31, Ulf Hansson wrote:
-> On 25 January 2017 at 12:53, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
->> Add runtime pm support for all clock controller units (CMU), which belongs
->> to power domains and require special handling during on/off operations.
->> Typically special values has to be written to MUX registers to change
->> internal clocks parents to OSC clock before turning power off. During such
->> operation all clocks, which enters CMU has to be enabled to let MUX to
->> stabilize. Also for each CMU there is one special parent clock, which has
->> to be enabled all the time when any access to CMU registers is done.
->>
->> This patch solves most of the mysterious external abort and freeze issues
->> caused by a lack of proper parent CMU clock enabled or incorrect turn off
->> procedure.
->>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> ---
+Right; this makes sense to me. Of course it would be good to have some
+more measurements on this, but in principle:
 
-Thanks for your review!
-
-> [...]
->> --- a/drivers/clk/samsung/clk-exynos5433.c
->> +++ b/drivers/clk/samsung/clk-exynos5433.c
->> @@ -9,9 +9,14 @@
->>    * Common Clock Framework support for Exynos5443 SoC.
->>    */
->>
->> +#include <linux/clk.h>
->>   #include <linux/clk-provider.h>
->>   #include <linux/of.h>
->>   #include <linux/of_address.h>
->> +#include <linux/of_device.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/pm_runtime.h>
->> +#include <linux/slab.h>
->>
->>   #include <dt-bindings/clock/exynos5433.h>
->>
-> [...]
->
->> +struct exynos5433_cmu_data {
->> +       struct samsung_clk_provider ctx;
->> +
->> +       struct samsung_clk_reg_dump *clk_save;
->> +       unsigned int nr_clk_save;
->> +       const struct samsung_clk_reg_dump *clk_suspend;
->> +       unsigned int nr_clk_suspend;
->> +
->> +       struct clk *clk;
->> +       struct clk **pclks;
->> +       int nr_pclks;
->> +};
->> +
->> +static int exynos5433_cmu_suspend(struct device *dev)
->> +{
->> +       struct exynos5433_cmu_data *data = dev_get_drvdata(dev);
->> +       int i;
->> +
->> +       samsung_clk_save(data->ctx.reg_base, data->clk_save,
->> +                        data->nr_clk_save);
->> +
->> +       for (i = 0; i < data->nr_pclks; i++)
->> +               clk_enable(data->pclks[i]);
->> +
->> +       samsung_clk_restore(data->ctx.reg_base, data->clk_suspend,
->> +                           data->nr_clk_suspend);
->> +
->> +       for (i = 0; i < data->nr_pclks; i++)
->> +               clk_disable(data->pclks[i]);
->> +
->> +       clk_disable(data->clk);
->> +
->> +       return 0;
->> +}
->> +
->> +static int exynos5433_cmu_resume(struct device *dev)
->> +{
->> +       struct exynos5433_cmu_data *data = dev_get_drvdata(dev);
->> +       int i;
->> +
->> +       clk_enable(data->clk);
->> +
->> +       for (i = 0; i < data->nr_pclks; i++)
->> +               clk_enable(data->pclks[i]);
->> +
->> +       samsung_clk_restore(data->ctx.reg_base, data->clk_save,
->> +                           data->nr_clk_save);
->> +
->> +       for (i = 0; i < data->nr_pclks; i++)
->> +               clk_disable(data->pclks[i]);
->> +
->> +       return 0;
->> +}
->> +
->> +static int __init exynos5433_cmu_probe(struct platform_device *pdev)
->> +{
->> +       const struct samsung_cmu_info *info;
->> +       struct exynos5433_cmu_data *data;
->> +       struct samsung_clk_provider *ctx;
->> +       struct device *dev = &pdev->dev;
->> +       struct resource *res;
->> +       void __iomem *reg_base;
->> +       struct clk **clk_table;
->> +       int i;
->> +
->> +       info = of_device_get_match_data(dev);
->> +
->> +       data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
->> +       if (!data)
->> +               return -ENOMEM;
->> +       ctx = &data->ctx;
->> +
->> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->> +       reg_base = devm_ioremap_resource(dev, res);
->> +       if (!reg_base) {
->> +               dev_err(dev, "failed to map registers\n");
->> +               return -ENOMEM;
->> +       }
->> +
->> +       clk_table = devm_kcalloc(dev, info->nr_clk_ids, sizeof(struct clk *),
->> +                                GFP_KERNEL);
->> +       if (!clk_table)
->> +               return -ENOMEM;
->> +
->> +       for (i = 0; i < info->nr_clk_ids; ++i)
->> +               clk_table[i] = ERR_PTR(-ENOENT);
->> +
->> +       ctx->clk_data.clks = clk_table;
->> +       ctx->clk_data.clk_num = info->nr_clk_ids;
->> +       ctx->reg_base = reg_base;
->> +       ctx->dev = dev;
->> +       spin_lock_init(&ctx->lock);
->> +
->> +       data->clk_save = samsung_clk_alloc_reg_dump(info->clk_regs,
->> +                                                   info->nr_clk_regs);
->> +       data->nr_clk_save = info->nr_clk_regs;
->> +       data->clk_suspend = info->suspend_regs;
->> +       data->nr_clk_suspend = info->nr_suspend_regs;
->> +       data->nr_pclks = of_count_phandle_with_args(dev->of_node, "clocks",
->> +                                                   "#clock-cells");
->> +       if (data->nr_pclks > 0) {
->> +               data->pclks = devm_kcalloc(dev, sizeof(struct clk *),
->> +                                          data->nr_pclks, GFP_KERNEL);
->> +
->> +               for (i = 0; i < data->nr_pclks; i++) {
->> +                       struct clk *clk = of_clk_get(dev->of_node, i);
->> +
->> +                       if (IS_ERR(clk))
->> +                               return PTR_ERR(clk);
->> +                       data->pclks[i] = clk;
->> +               }
->> +       }
->> +
->> +       /*
->> +        * Prepare all parent clocks here to avoid potential deadlock caused
->> +        * by global clock "prepare lock" grabbed by runtime pm callbacks
->> +        * from pm workers.
->> +        */
-> I don't understand why this potentially could cause a deadlock. Can
-> you please elaborate.
-
-This deadlock was caused by using pm_runtime_put() in the clk core, but
-after switching to pm_runtime_put_sync() it's gone. While tracking this
-issue I also found another possible deadlock related to device_links.
-I will send a separate patch for it.
-
-> To me, I think you should be fine doing clk_prepare_enable() and
-> clk_disable_unprepare() from exynos5433_cmu_suspend|resume(), but I
-> may be missing something.
->
->> +       for (i = 0; i < data->nr_pclks; i++)
->> +               clk_prepare(data->pclks[i]);
->> +
->> +       if (info->clk_name)
->> +               data->clk = clk_get(dev, info->clk_name);
->> +       clk_prepare_enable(data->clk);
->> +
->> +       platform_set_drvdata(pdev, data);
->> +
->> +       /*
->> +        * Enable runtime pm here, so clock core with use runtime pm for all
->> +        * registered clocks. Additionally call pm_runtime_get_sync to ensure
->> +        * that clock core will not runtime suspend our clock controller in
->> +        * the middle of clock registration (clock core might call runtime pm
->> +        * on newly registered clocks, for example to recalculate clock rate).
->> +        */
-> Instead of the rather confusing comment about the call to
-> pm_runtime_get_sync(), let's instead state that we increase the
-> runtime PM usage count during the clock registration, to avoid the
-> clock core from runtime suspending the device.
->
-> In other words, before calling pm_runtime_set_active(), add a call
-> pm_runtime_get_noresume() and then remove the latter call to
-> pm_runtime_get_sync().
-
-Thanks for the hint!
-
->> +       pm_runtime_set_active(dev);
->> +       pm_runtime_enable(dev);
->> +       pm_runtime_get_sync(dev);
->> +
->> +       if (info->pll_clks)
->> +               samsung_clk_register_pll(ctx, info->pll_clks, info->nr_pll_clks,
->> +                                        reg_base);
->> +       if (info->mux_clks)
->> +               samsung_clk_register_mux(ctx, info->mux_clks,
->> +                                        info->nr_mux_clks);
->> +       if (info->div_clks)
->> +               samsung_clk_register_div(ctx, info->div_clks,
->> +                                        info->nr_div_clks);
->> +       if (info->gate_clks)
->> +               samsung_clk_register_gate(ctx, info->gate_clks,
->> +                                         info->nr_gate_clks);
->> +       if (info->fixed_clks)
->> +               samsung_clk_register_fixed_rate(ctx, info->fixed_clks,
->> +                                               info->nr_fixed_clks);
->> +       if (info->fixed_factor_clks)
->> +               samsung_clk_register_fixed_factor(ctx, info->fixed_factor_clks,
->> +                                                 info->nr_fixed_factor_clks);
->> +
->> +       samsung_clk_of_add_provider(dev->of_node, ctx);
->> +       pm_runtime_put(dev);
->> +
->> +       return 0;
->> +}
->>
-> [...]
->
-> Kind regards
-> Uffe
->
->
->
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
