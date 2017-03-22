@@ -1,66 +1,47 @@
-From: Jonathan Cameron <jic23@jic23.retrosnub.co.uk>
-Subject: Re: [RESEND PATCH v4 2/9] iio: adc: add support for X-Powers AXP20X
- and AXP22X PMICs ADCs
-Date: Wed, 22 Mar 2017 06:31:24 +0000
-Message-ID: <B745132F-4A85-496A-93FC-515DF126895A@jic23.retrosnub.co.uk>
+From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [RESEND PATCH v4 0/9] add support for AXP20X and
+ AXP22X power supply drivers
+Date: Wed, 22 Mar 2017 08:11:34 +0100
+Message-ID: <20170322071134.mbd3x3ncllje2ovs@lukather>
 References: <20170320081653.8884-1-quentin.schulz@free-electrons.com>
- <20170320081653.8884-3-quentin.schulz@free-electrons.com>
- <CAGb2v66JC65=9WiMy-Nu+9tTFRLsJL2Eyb0wfJV_K=65ABc6Zg@mail.gmail.com>
+Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAGb2v66JC65=9WiMy-Nu+9tTFRLsJL2Eyb0wfJV_K=65ABc6Zg@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Chen-Yu Tsai <wens@csie.org>, Jonathan Cameron <jic23@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Liam Breck <liam@networkimprov.net>, linux-kernel <linux-kernel@vger.kernel.org>, linux-sunxi <linux-sunxi@googlegroups.com>, Sebastian Reichel <sre@kernel.org>, linux-iio@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Quentin Schulz <quentin.schulz@free-electrons.com>, devicetree <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="brzsmkykpecuwfmh"
+Return-path: <linux-sunxi+bncBDSJBYGBRIMBBJ6HZDDAKGQENZ3A4GI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Disposition: inline
+In-Reply-To: <20170320081653.8884-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 
+--brzsmkykpecuwfmh
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 
-On 22 March 2017 04:34:45 GMT+00:00, Chen-Yu Tsai <wens@csie.org> wrote:
->Hi,
->
->On Mon, Mar 20, 2017 at 4:16 PM, Quentin Schulz
-><quentin.schulz@free-electrons.com> wrote:
->> The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose
->the
->> battery voltage, battery charge and discharge currents, AC-in and
->VBUS
->> voltages and currents, 2 GPIOs muxable in ADC mode and PMIC
->temperature.
->>
->> This adds support for most of AXP20X and AXP22X ADCs.
->>
->> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
->> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
->> Acked-by: Chen-Yu Tsai <wens@csie.org>
->> Reviewed-by: Jonathan Cameron <jic23@kernel.org>
->
->This patch seems to depend on commit 4707274714ef ("mfd: axp20x:
->Correct name
->of temperature data ADC registers") currently in the mfd tree.
->
->Jonathan, would it be ok for Lee to take this patch through the mfd
->tree
->as well?
-Sure.
->
->
->Thanks
->ChenYu
->
->P.S. I'm thinking about having MFD_AXP20X imply its various
->sub-drivers.
->Not sure if that was the intended usage of the new imply syntax though.
+On Mon, Mar 20, 2017 at 09:16:44AM +0100, Quentin Schulz wrote:
+> These patches haven't changed since v4. The goal is to split the series in
+> two series, one (this one) with patches ready to be merged and the other
+> one (everything impacting the battery power supply) which depends on an
+> ongoing series by Liam Breck to be merged once the ongoing series has a
+> consensus.
+> 
+> Therefore, this series of patch is ready to be merged. I don't see any
+> dependency between subsystems.
+
+Merged the patches 5-8, thanks!
+Maxime
 
 -- 
-Sent from my Android device with K-9 Mail. Please excuse my brevity.
+Maxime Ripard, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
+--brzsmkykpecuwfmh--
