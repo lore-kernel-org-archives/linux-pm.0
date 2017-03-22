@@ -1,50 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: schedutil: Always trace frequency if it does
- not change
-Date: Wed, 22 Mar 2017 09:46:53 +0530
-Message-ID: <20170322041653.GW25659@vireshk-i7>
-References: <10655562.4O9KtquB0A@aspire.rjw.lan>
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: Re: [RESEND PATCH v4 2/9] iio: adc: add support for
+ X-Powers AXP20X and AXP22X PMICs ADCs
+Date: Wed, 22 Mar 2017 12:34:45 +0800
+Message-ID: <CAGb2v66JC65=9WiMy-Nu+9tTFRLsJL2Eyb0wfJV_K=65ABc6Zg@mail.gmail.com>
+References: <20170320081653.8884-1-quentin.schulz@free-electrons.com> <20170320081653.8884-3-quentin.schulz@free-electrons.com>
+Reply-To: wens-jdAy2FN1RRM@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:33732 "EHLO
-        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751370AbdCVEQ5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 00:16:57 -0400
-Received: by mail-pf0-f175.google.com with SMTP id o190so6573559pfo.0
-        for <linux-pm@vger.kernel.org>; Tue, 21 Mar 2017 21:16:56 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <10655562.4O9KtquB0A@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sunxi+bncBCMILY6JWQBBB7P5Y7DAKGQEQJ4UZVA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20170320081653.8884-3-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, knaack.h-Mmb7MZpHnFY@public.gmane.org, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Icenowy Zheng <icenowy-ymACFijhrKM@public.gmane.org>, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 22-03-17, 01:56, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> sugov_update_commit() calls trace_cpu_frequency() to record the
-> current CPU frequency if it has not changed in the fast switch case
-> to prevent utilities from getting confused (they may report that the
-> CPU is idle if the frequency has not been recorded for too long, for
-> example).
-> 
-> However, the same problem may occur for a cpufreq driver that doesn't
-> support fast frequency switching and implements the ->target callback
-> (that is, it doesn't use frequency tables), but trace_cpu_frequency()
-> is not called if frequency updates are skipped in that case.
-> 
-> For this reason, modify sugov_update_commit() to always call
-> trace_cpu_frequency() when the new frequency to be set is equal to
-> the one that was set previously and reorganize the code in there to
-> reduce duplication somewhat.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  kernel/sched/cpufreq_schedutil.c |   18 +++++++++---------
->  1 file changed, 9 insertions(+), 9 deletions(-)
+Hi,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Mon, Mar 20, 2017 at 4:16 PM, Quentin Schulz
+<quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+> The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose the
+> battery voltage, battery charge and discharge currents, AC-in and VBUS
+> voltages and currents, 2 GPIOs muxable in ADC mode and PMIC temperature.
+>
+> This adds support for most of AXP20X and AXP22X ADCs.
+>
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+> Reviewed-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
--- 
-viresh
+This patch seems to depend on commit 4707274714ef ("mfd: axp20x: Correct name
+of temperature data ADC registers") currently in the mfd tree.
+
+Jonathan, would it be ok for Lee to take this patch through the mfd tree
+as well?
+
+
+Thanks
+ChenYu
+
+P.S. I'm thinking about having MFD_AXP20X imply its various sub-drivers.
+Not sure if that was the intended usage of the new imply syntax though.
