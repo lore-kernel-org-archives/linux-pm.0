@@ -1,79 +1,126 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v2 4/7] power: supply: bq24190_charger: Never reset the
- charger chip
-Date: Wed, 22 Mar 2017 08:51:25 -0700
-Message-ID: <20170322155124.GY8575@atomide.com>
-References: <20170322145536.30570-1-hdegoede@redhat.com>
- <20170322145536.30570-5-hdegoede@redhat.com>
- <20170322154313.GU8575@atomide.com>
- <2ab0b7d5-61b0-2a1f-7c45-07d7f3f180b6@redhat.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2 02/10] x86: assembly, FUNC_START for fn, DATA_START
+ for data
+Date: Wed, 22 Mar 2017 16:52:45 +0100
+Message-ID: <20170322155245.GA27894@amd>
+References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
+ <20170320123222.15453-1-jslaby@suse.cz>
+ <20170320123222.15453-2-jslaby@suse.cz>
+ <20170321140840.GA23311@amd>
+ <fd0cb783-b07f-f636-04a8-d8a115de1a17@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="nFreZHaLTZJo0R7j"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:41224 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1759980AbdCVPvt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 22 Mar 2017 11:51:49 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34756 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751640AbdCVPwt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 11:52:49 -0400
 Content-Disposition: inline
-In-Reply-To: <2ab0b7d5-61b0-2a1f-7c45-07d7f3f180b6@redhat.com>
+In-Reply-To: <fd0cb783-b07f-f636-04a8-d8a115de1a17@suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, jpoimboe@redhat.com, linux-kernel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-* Hans de Goede <hdegoede@redhat.com> [170322 08:47]:
+
+--nFreZHaLTZJo0R7j
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed 2017-03-22 13:06:54, Jiri Slaby wrote:
 > Hi,
-> 
-> On 22-03-17 16:43, Tony Lindgren wrote:
-> > * Hans de Goede <hdegoede@redhat.com> [170322 07:57]:
-> > > Resetting the charger should never be necessary it should always have
-> > > sane values programmed. If it is running with invalid values while we
-> > > are not running (system turned off or suspended) there is a big problem
-> > > as that may lead to overcharging the battery.
-> > 
-> > And some systems may only configure it in the bootloader with no
-> > configuration passed to the kernel at all.
-> 
-> Right.
-> 
-> > > The reset in suspend() is meant to put the charger back into default
-> > > mode, but this is not necessary and not a good idea. If the charger has
-> > > been programmed with a higher max charge_current / charge_voltage then
-> > > putting it back in default-mode will reset those to the safe power-on
-> > > defaults, leading to slower charging, or charging to a lower voltage
-> > > (and thus not using the full capacity) while suspended which is
-> > > undesirable. Reprogramming the max charge_current / charge_voltage
-> > > after the reset will not help here as that will put the charger back
-> > > in host mode and start the i2c watchdog if the host then does not do
-> > > anything for 40s (iow if we're suspended for more then 40s) the watchdog
-> > > expires resetting the device to default-mode, including resetting all
-> > > the registers to there safe power-on defaults. So the only way to keep
-> > > using custom charge settings while suspending is to keep the charger in
-> > > its normal running state with the i2c watchdog disabled. This is fine
-> > > as the charger will still automatically switch from constant current
-> > > to constant voltage and stop charging when the battery is full.
-> > > 
-> > > Besides never being necessary resetting the charger also causes problems
-> > > on systems where the charge voltage limit is set higher then the reset
-> > > value, if this is the case and the charger is reset while charging and
-> > > the battery voltage is between the 2 voltages, then about half the time
-> > > the charger gets confused and claims to be charging (REG08 contains 0x64)
-> > > but in reality the charger has decoupled itself from VBUS (Q1 off) and
-> > > is drawing 0A from VBUS, leaving the system running from the battery.
-> > 
-> > We do have cases where Linux kernel is the bootloader though using
-> > kexec. And in those cases we may need to reset, so I wonder if the
-> > reset should just be optional based on a proper device tree
-> > (or platform_data) configuration?
-> 
-> As described above during my testing I've found that the chip does not
-> respond well to reset under certain conditions, so I think that if
-> we have settings to apply we should just overwrite the settings with
-> our settings, what does doing a reset before overwriting the registers
-> buy us? We still need to do the overwrite anyways.
+>=20
+> On 03/21/2017, 03:08 PM, Pavel Machek wrote:
+> >> -ENTRY(saved_rbp)	.quad	0
+> >> -ENTRY(saved_rsi)	.quad	0
+> >> -ENTRY(saved_rdi)	.quad	0
+> >> -ENTRY(saved_rbx)	.quad	0
+> >> +SYM_DATA_START(saved_rbp)		.quad	0
+> >> +SYM_DATA_START(saved_rsi)		.quad	0
+> >> +SYM_DATA_START(saved_rdi)		.quad	0
+> >> +SYM_DATA_START(saved_rbx)		.quad	0
+> >=20
+> > Does it make sense to call it SYM_DATA_*START* when there's no
+> > corresponding end?
+> >=20
+> > Plus... it looks like saved_rsi (and friends) are only used inside
+> > wakeup_64.S. Could we just delete the "ENTRY" annotations?
+>=20
+>=20
+> So, now I have:
+>=20
+> =3D=3D=3D linkage.h =3D=3D=3D
+>=20
+> /* SYM_DATA_SIMPLE -- start+end wrapper around simple global data */
+> #ifndef SYM_DATA_SIMPLE
+> #define SYM_DATA_SIMPLE(name, data)                             \
+>         SYM_DATA_START(name) ASM_NL                             \
+>         data ASM_NL                                             \
+>         SYM_DATA_END(name)
+> #endif
+>=20
+> /* SYM_DATA_SIMPLE_LOCAL -- start+end wrapper around simple local data */
+> #ifndef SYM_DATA_SIMPLE_LOCAL
+> #define SYM_DATA_SIMPLE_LOCAL(name, data)                       \
+>         SYM_DATA_START_LOCAL(name) ASM_NL                       \
+>         data ASM_NL                                             \
+>         SYM_DATA_END(name)
+> #endif
+>=20
+> =3D=3D=3D wakeup_64.S =3D=3D=3D
+>=20
+> SYM_DATA_SIMPLE_LOCAL(saved_rbp, .quad 0)
+> SYM_DATA_SIMPLE_LOCAL(saved_rsi, .quad 0)
+> SYM_DATA_SIMPLE_LOCAL(saved_rdi, .quad 0)
+> SYM_DATA_SIMPLE_LOCAL(saved_rbx, .quad 0)
+>=20
+> SYM_DATA_SIMPLE_LOCAL(saved_rip, .quad 0)
+> SYM_DATA_SIMPLE_LOCAL(saved_rsp, .quad 0)
+>=20
+> SYM_DATA_SIMPLE_LOCAL(saved_magic, .quad 0)
+>=20
+> =3D=3D=3D original =3D=3D=3D
+>=20
+>     10: 0000000000000060     0 NOTYPE  GLOBAL DEFAULT    3 saved_magic
+>     11: 0000000000000050     0 NOTYPE  GLOBAL DEFAULT    3 saved_rsp
+>     12: 0000000000000030     0 NOTYPE  GLOBAL DEFAULT    3 saved_rbx
+>     13: 0000000000000020     0 NOTYPE  GLOBAL DEFAULT    3 saved_rdi
+>     14: 0000000000000010     0 NOTYPE  GLOBAL DEFAULT    3 saved_rsi
+>     15: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT    3 saved_rbp
+>     16: 0000000000000040     0 NOTYPE  GLOBAL DEFAULT    3 saved_rip
+>=20
+> =3D=3D=3D new =3D=3D=3D
+>=20
+>      4: 0000000000000030     8 OBJECT  LOCAL  DEFAULT    3 saved_magic
+>      6: 0000000000000028     8 OBJECT  LOCAL  DEFAULT    3 saved_rsp
+>      7: 0000000000000018     8 OBJECT  LOCAL  DEFAULT    3 saved_rbx
+>      8: 0000000000000010     8 OBJECT  LOCAL  DEFAULT    3 saved_rdi
+>      9: 0000000000000008     8 OBJECT  LOCAL  DEFAULT    3 saved_rsi
+>     10: 0000000000000000     8 OBJECT  LOCAL  DEFAULT    3 saved_rbp
+>     11: 0000000000000020     8 OBJECT  LOCAL  DEFAULT    3 saved_rip
+>=20
+> =3D=3D=3D EOF =3D=3D=3D
+>=20
+> BTW, ENTRY() aligned the data to 2^4 =3D 16 as we can see in the original.
+> But I see no point aligning data like this.
 
-OK with me if that works and reset is buggy.
+Yep, that's a bug, too. I guess it hurts even more on 32-bit....
 
-Regards,
+Thanks for fixing this,
+									Pavel
 
-Tony
+--nFreZHaLTZJo0R7j
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAljSnc0ACgkQMOfwapXb+vLEDQCfXqt2Dj6Nc+r/aqSduyqwokvE
+HTwAoKiVoBBUWg35ppAEPd1XftRjDDWb
+=HS1e
+-----END PGP SIGNATURE-----
+
+--nFreZHaLTZJo0R7j--
