@@ -1,80 +1,70 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v6 4/4] clk: samsung: exynos-audss: Use runtime PM
-Date: Wed, 22 Mar 2017 14:32:32 +0100
-Message-ID: <42b06c10-4a80-ed62-a120-e6b86b2af0b2@samsung.com>
-References: <CGME20170322113556eucas1p1b3434935701aba1db7868415a9c3b4f9@eucas1p1.samsung.com>
- <1490182543-28550-1-git-send-email-m.szyprowski@samsung.com>
- <1490182543-28550-5-git-send-email-m.szyprowski@samsung.com>
- <CAPDyKFrL9pvGQw+09rP52p72FqKuh6rLNt0NEUZ-TFxU838Nzw@mail.gmail.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery device .type=unknown
+Date: Wed, 22 Mar 2017 06:37:50 -0700
+Message-ID: <CAKvHMgRB6O4agD+0TGabAeS_g0TsixXWwB7dc1kvNWeM-qgbKA@mail.gmail.com>
+References: <20170321220921.5834-1-liam@networkimprov.net> <20170321220921.5834-8-liam@networkimprov.net>
+ <7e117a52-bbf0-2a12-e98f-843da227e0c7@redhat.com> <aaa05be7-9019-01ee-ce1d-f2211938164b@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <CAPDyKFrL9pvGQw+09rP52p72FqKuh6rLNt0NEUZ-TFxU838Nzw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Michael Turquette <mturquette@baylibre.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:36035 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933145AbdCVNhw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 09:37:52 -0400
+Received: by mail-it0-f68.google.com with SMTP id 190so4643438itm.3
+        for <linux-pm@vger.kernel.org>; Wed, 22 Mar 2017 06:37:51 -0700 (PDT)
+In-Reply-To: <aaa05be7-9019-01ee-ce1d-f2211938164b@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-Hi Ulf,
-
-On 2017-03-22 13:00, Ulf Hansson wrote:
-> On 22 March 2017 at 12:35, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
->> This patch adds support for runtime PM to Exynos Audio SubSystem driver to
->> enable full support for audio power domain on Exynos5 SoCs. The main change
->> is moving register saving and restoring code from system sleep PM ops to
->> runtime PM ops and implementing system sleep PM ops with generic
->> pm_runtime_force_suspend/resume helpers. Runtime PM of the Exynos AudSS
->> device is managed from clock core depending on the preparation status
->> of the provided clocks.
+On Wed, Mar 22, 2017 at 6:15 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
+>
+> On 22-03-17 13:25, Hans de Goede wrote:
 >>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
->
-> Minor nitpick below.
->
-> [...]
->
->> -#ifdef CONFIG_PM_SLEEP
->>   static unsigned long reg_save[][2] = {
->>          { ASS_CLK_SRC,  0 },
->>          { ASS_CLK_DIV,  0 },
->>          { ASS_CLK_GATE, 0 },
->>   };
+>> Hi,
 >>
->> -static int exynos_audss_clk_suspend(struct device *dev)
->> +static int __maybe_unused exynos_audss_clk_suspend(struct device *dev)
-> Instead of using "__maybe_unused", I would rather change from
-> "CONFIG_PM_SLEEP" to "CONFIG_PM". However, no strong opinion.
->
-> Perhaps you need something like this for patch 3/4 as well?
-
-Frankly, this matters only for compile-time tests. All Exynos platforms
-require CONFIG_PM, so that code will be always used in runtime.
-
-For compile-time tests probably it is better to use __maybe_unused approach
-to have higher coverage.
-
->>   {
->>          int i;
+>> On 21-03-17 23:09, Liam Breck wrote:
+>>>
+>>> From: Liam Breck <kernel@networkimprov.net>
+>>>
+>>> Not for upstream. Temporary workaround to prevent bq24190-battery device
+>>> from interfering with a fuel gauge that has
+>>> .type=power_supply_type_battery
+>>>
+>>> I'll move properties from -battery device to -charger in a subsequent
+>>> version.
+>>>
+>>> Cc: Hans de Goede <hdegoede@redhat.com>
 >>
->> @@ -54,7 +54,7 @@ static int exynos_audss_clk_suspend(struct device *dev)
->>          return 0;
->>   }
-> [...]
+>>
+>> Hmm, I don't like this. I was about to post v2 of my patches (which I will
+>> rebase on top of this series)
 >
-> Kind regards
-> Uffe
+>
+> It seems this series does not apply to:
+>
+> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/log/?h=for-next
+>
+> It looks like there is another series which sits in between ?
 
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+Yes, see two patches linked in Depends-on lines. Could you add those and rebase?
+
+> So I'm going to send the current v2 set of my bq24190_charger
+> patches as is for review purposes.
+>
+> I'm fine with rebasing it on top of your series if that is considered
+> ready for merging soon. Do you have a git-repo / branch somewhere
+> with your complete series ?
+
+https://github.com/networkimprov/linux/commits/anvl-v4.9-bq24190-dt-1.1/
+
+However this includes much unrelated stuff, and two patches from Tony
+which are already in -next. Prob easier to git am the patches linked
+by Depends-on.
+
+> Otherwise if Sebastian is happy with my patches we can do it the
+> other way around and merge my series first and then rebase yours on top.
+> Eitherway we will figure it out.
