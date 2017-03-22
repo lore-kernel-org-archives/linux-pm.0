@@ -1,56 +1,60 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: schedutil: Always trace frequency if it does not change
-Date: Wed, 22 Mar 2017 13:52:04 +0100
-Message-ID: <CAJZ5v0jFDQ9fxHwVWM_Dg-Or5y6o_YJ5=sdyQDZ3Dt0U2bqy_A@mail.gmail.com>
-References: <10655562.4O9KtquB0A@aspire.rjw.lan> <20170322092951.GX5680@worktop>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery device
+ .type=unknown
+Date: Wed, 22 Mar 2017 14:15:56 +0100
+Message-ID: <aaa05be7-9019-01ee-ce1d-f2211938164b@redhat.com>
+References: <20170321220921.5834-1-liam@networkimprov.net>
+ <20170321220921.5834-8-liam@networkimprov.net>
+ <7e117a52-bbf0-2a12-e98f-843da227e0c7@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f65.google.com ([209.85.218.65]:32857 "EHLO
-        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934407AbdCVMwH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 08:52:07 -0400
-In-Reply-To: <20170322092951.GX5680@worktop>
+Received: from mx1.redhat.com ([209.132.183.28]:41054 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1758663AbdCVNQi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 Mar 2017 09:16:38 -0400
+In-Reply-To: <7e117a52-bbf0-2a12-e98f-843da227e0c7@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
+Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-On Wed, Mar 22, 2017 at 10:29 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, Mar 22, 2017 at 01:56:53AM +0100, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
+
+On 22-03-17 13:25, Hans de Goede wrote:
+> Hi,
+>
+> On 21-03-17 23:09, Liam Breck wrote:
+>> From: Liam Breck <kernel@networkimprov.net>
 >>
->> sugov_update_commit() calls trace_cpu_frequency() to record the
->> current CPU frequency if it has not changed in the fast switch case
->> to prevent utilities from getting confused (they may report that the
->> CPU is idle if the frequency has not been recorded for too long, for
->> example).
+>> Not for upstream. Temporary workaround to prevent bq24190-battery device
+>> from interfering with a fuel gauge that has .type=power_supply_type_battery
+>>
+>> I'll move properties from -battery device to -charger in a subsequent version.
+>>
+>> Cc: Hans de Goede <hdegoede@redhat.com>
 >
-> That seems like buggy tools; we should then fix the tools, not the
-> kernel to emit more superfluous information.
->
->> However, the same problem may occur for a cpufreq driver that doesn't
->> support fast frequency switching and implements the ->target callback
->> (that is, it doesn't use frequency tables), but trace_cpu_frequency()
->> is not called if frequency updates are skipped in that case.
->
-> I'm having trouble parsing that; am I right in understanding this is the
-> exact same scenario where only superfluous changes are omitted?
+> Hmm, I don't like this. I was about to post v2 of my patches (which I will
+> rebase on top of this series)
 
-Yes, that's the same scenario basically, which is the point of the patch. :-)
+It seems this series does not apply to:
 
->> For this reason, modify sugov_update_commit() to always call
->> trace_cpu_frequency() when the new frequency to be set is equal to
->> the one that was set previously and reorganize the code in there to
->> reduce duplication somewhat.
->
-> So why not fix the tools?
+https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/log/?h=for-next
 
-Because I can't.
+It looks like there is another series which sits in between ?
 
-I just can't go and fix all of the tools binaries that people use out
-there and I want them to use recent kernels at the same time.
+So I'm going to send the current v2 set of my bq24190_charger
+patches as is for review purposes.
 
-But anyway, I think that the code with the patch looks better than
-without it regardless and having a frivolous difference there between
-the two cases is not useful.
+I'm fine with rebasing it on top of your series if that is considered
+ready for merging soon. Do you have a git-repo / branch somewhere
+with your complete series ?
+
+Otherwise if Sebastian is happy with my patches we can do it the
+other way around and merge my series first and then rebase yours on top.
+Eitherway we will figure it out.
+
+Regards,
+
+Hans
