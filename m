@@ -1,46 +1,61 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] cpufreq: schedutil: Always trace frequency if it does
- not change
-Date: Wed, 22 Mar 2017 10:29:51 +0100
-Message-ID: <20170322092951.GX5680@worktop>
-References: <10655562.4O9KtquB0A@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH] PM / runtime: Use synchronous runtime PM call in
+ rpm_put_suppliers()
+Date: Wed, 22 Mar 2017 10:22:50 +0100
+Message-ID: <1490174570-18345-1-git-send-email-m.szyprowski@samsung.com>
+References: <CGME20170322092305eucas1p20d2a6dfede483210febea5b5e0ff68db@eucas1p2.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:44144 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1759040AbdCVJ37 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 05:29:59 -0400
-Content-Disposition: inline
-In-Reply-To: <10655562.4O9KtquB0A@aspire.rjw.lan>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:55661 "EHLO
+        mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933703AbdCVJfw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 05:35:52 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
+To: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Wed, Mar 22, 2017 at 01:56:53AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> sugov_update_commit() calls trace_cpu_frequency() to record the
-> current CPU frequency if it has not changed in the fast switch case
-> to prevent utilities from getting confused (they may report that the
-> CPU is idle if the frequency has not been recorded for too long, for
-> example).
+rpm_put_suppliers() might be called as a result of pm_runtime_put_sync()
+call, where the called explicitly wants to perform the operation in
+synchronous way to avoid some deadlocks related to concurrent code
+execution in the PM workers. However the current code for handling device
+links always use asynchronous calls. This patch changes it to always use
+the synchronous calls.
 
-That seems like buggy tools; we should then fix the tools, not the
-kernel to emit more superfluous information.
+This patch fixes the potential deadlock, which appears during adding
+runtime PM support to clock framework, which uses global mutex, which is
+reentrant only for the current process, so trying to execute runtime PM
+callback from the worker results in deadlock (the mentioned mutex is
+already taken by the current process, which waits for execution of PM
+worker).
 
-> However, the same problem may occur for a cpufreq driver that doesn't
-> support fast frequency switching and implements the ->target callback
-> (that is, it doesn't use frequency tables), but trace_cpu_frequency()
-> is not called if frequency updates are skipped in that case.
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+Hi Rafael & Ulf,
 
-I'm having trouble parsing that; am I right in understanding this is the
-exact same scenario where only superfluous changes are omitted?
+This was the simplest way of fixing this issue. Other way would be to
+propagate rpmflags to rpm_get/put_suppliers() to ensure that synchronous
+calls will be also done on the linked devices. Which way is better in
+your opinion?
 
-> For this reason, modify sugov_update_commit() to always call
-> trace_cpu_frequency() when the new frequency to be set is equal to
-> the one that was set previously and reorganize the code in there to
-> reduce duplication somewhat.
+Best regards
+Marek Szyprowski
+Samsung R&D Institute Poland
+---
+ drivers/base/power/runtime.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-So why not fix the tools?
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 7bcf80fa9ada..b7df589ae579 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -292,7 +292,7 @@ static void rpm_put_suppliers(struct device *dev)
+ 	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
+ 		if (link->rpm_active &&
+ 		    READ_ONCE(link->status) != DL_STATE_SUPPLIER_UNBIND) {
+-			pm_runtime_put(link->supplier);
++			pm_runtime_put_sync(link->supplier);
+ 			link->rpm_active = false;
+ 		}
+ }
+-- 
+1.9.1
