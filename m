@@ -1,37 +1,38 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] cpufreq: schedutil: Always trace frequency if it does
- not change
-Date: Wed, 22 Mar 2017 15:21:16 +0100
-Message-ID: <20170322142116.qpe2faqwbmlmhft7@hirez.programming.kicks-ass.net>
-References: <10655562.4O9KtquB0A@aspire.rjw.lan>
- <20170322092951.GX5680@worktop>
- <CAJZ5v0jFDQ9fxHwVWM_Dg-Or5y6o_YJ5=sdyQDZ3Dt0U2bqy_A@mail.gmail.com>
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+Subject: Re: [PATCH v2 03/10] x86: assembly, use SYM_FUNC_END for functions
+Date: Wed, 22 Mar 2017 09:26:10 -0500
+Message-ID: <20170322142610.bo5c6wzlbqnxrgt3@treble>
+References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
+ <20170320123222.15453-1-jslaby@suse.cz>
+ <20170320123222.15453-3-jslaby@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:47502 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1759745AbdCVOVX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 10:21:23 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:45432 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751539AbdCVO0y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 Mar 2017 10:26:54 -0400
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jFDQ9fxHwVWM_Dg-Or5y6o_YJ5=sdyQDZ3Dt0U2bqy_A@mail.gmail.com>
+In-Reply-To: <20170320123222.15453-3-jslaby@suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org
 
-On Wed, Mar 22, 2017 at 01:52:04PM +0100, Rafael J. Wysocki wrote:
-> On Wed, Mar 22, 2017 at 10:29 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-
-> > So why not fix the tools?
+On Mon, Mar 20, 2017 at 01:32:15PM +0100, Jiri Slaby wrote:
+> Somewhere END was used to end a function, elsewhere, nothing was used.
+> So unify it and mark them all by SYM_FUNC_END.
 > 
-> Because I can't.
-> 
-> I just can't go and fix all of the tools binaries that people use out
-> there and I want them to use recent kernels at the same time.
-> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 
-Thing is; you're now letting random tracepoint user dictate kernel
-implementation. That's a bad state to be in.
+For me these patches would be easier to review if the SYM_FUNC_START and
+SYM_FUNC_END pairs for a given function are done in the same patch.
 
-(and why I hate tracepoint to begin with)
+Also I noticed several cases in entry_64.S where the old ENTRY macro is
+still used, and paired with SYM_FUNC_END.
+
+Maybe there should be an x86 version of the deprecated ENTRY/ENDPROC/etc
+macros which throw a warning or an error?
+
+-- 
+Josh
