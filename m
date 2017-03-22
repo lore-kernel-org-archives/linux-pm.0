@@ -1,70 +1,73 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: supply: cpcap-charger: Add minimal CPCAP PMIC
- battery charger
-Date: Wed, 22 Mar 2017 03:15:14 +0100
-Message-ID: <20170322021514.ewipilqbfm2cwua6@earth>
-References: <20170317022152.21427-1-tony@atomide.com>
+From: Keerthy <j-keerthy@ti.com>
+Subject: Re: [PATCH v2 0/8] thermal: ti-soc-thermal: Migrate slope/offset data
+ to device tree
+Date: Wed, 22 Mar 2017 09:12:47 +0530
+Message-ID: <64ab8413-6cf1-864f-0550-9c8db59523f7@ti.com>
+References: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="baxxlrf32bzdp76x"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:37340 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751419AbdCVCP0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 21 Mar 2017 22:15:26 -0400
-Content-Disposition: inline
-In-Reply-To: <20170317022152.21427-1-tony@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, tony@atomide.com, linux-kernel@vger.kernel.org, t-kristo@ti.com, robh+dt@kernel.org, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
 
 
---baxxlrf32bzdp76x
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Thursday 09 March 2017 01:35 PM, Keerthy wrote:
+> Currently the slope and offset values for calculating the
+> hot spot temperature of a particular thermal zone is part
+> of driver data. Pass them here instead and obtain the values
+> while of node parsing.
+> 
+> Tested for the slope and constant values on DRA7-EVM, OMAP3-BEAGLE. 
 
-On Thu, Mar 16, 2017 at 07:21:52PM -0700, Tony Lindgren wrote:
-> The custom CPCAP PMIC used on Motorola phones such as Droid 4 has a
-> USB battery charger. It can optionally also have a companion chip that
-> is used for wireless charging.
->=20
-> The charger on CPCAP also can feed VBUS for the USB host mode. This
-> can be handled by the existing kernel phy_companion interface.
->=20
-> Cc: devicetree@vger.kernel.org
-> Cc: Marcel Partap <mpartap@gmx.net>
-> Cc: Michael Scott <michael.scott@linaro.org>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
+Hi Eduardo,
 
-Driver looks ok and works for me, but values are not scaled
-correctly. The power-supply subsystem exposes values in microamps
-and microvolt. IIO provides values in millivolt/milliamps instead,
-so it should be scaled with 1000.
+If the series looks okay could you please pull this?
 
--- Sebastian
+Regards,
+Keerthy
 
---baxxlrf32bzdp76x
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljR3i8ACgkQ2O7X88g7
-+prR2Q/8CZFujxOHcUhDM0TjDwBl1NPV20gEWc7/iCk1MAd75jLfeV67YtFRT4bR
-0d1ipCrM7R+rf2kDcrZ7mR4+AJpKSTXdFxLGxEqGkojmUKkVRJpXSyR3grEmlLk3
-XBpIeOV1xCN9w/F+w/JK3YMjzdX0e7NTtz/S7mhhKzuDs23Hnq0QTeh/vFJ9rHk6
-3jruFaGoG7r1f5AEgtvBpUyF8gye2iV4B3LznGVCmD3fxzk9XOJ9a5WKuPiwRMB1
-2b0oj7X04wwgOO5K1VF1u/s6jochXSHO6Tn3huzjZAOpNgwFnEaurPhCZ2EtQqc/
-tJ9dbgoaD47GEjE5s+6QSddRlO6mgOguC/yYUyZS8Rfj7E8U41R+dWeGze1iqarg
-X2W4aIL0KGPdVJb1LMMbUKsVjI+jEuypptAZ8DOYLDo246bd9FH220YwkijzUGvw
-6WQgkXe2X3h4b6cxscJr2rd5ORspv2dSdGKUc9KvdHtGkZWEjjlwHnVxjDhbBfiC
-BbSHxQmamNEbAIyxuBFdBQKnVibPFKv392h9i1207KaLrT98SFDHvL9pSM2SOBcu
-nm3XZrj5p01C4r8t+OJ5XzL6g9Fq56GHL/4LYV0w7DMu25oJ4735e/qWsV/qwh/d
-qgABvU5GmYfV1KQAirS8yzd0i3CENUgB8mZTl8I45bDmREi0YMg=
-=enRp
------END PGP SIGNATURE-----
-
---baxxlrf32bzdp76x--
+> 
+> Changes in v2:
+> 
+>   * Added OMAP3 changes along with DRA7/OMAP4/OMAP5.
+> 
+> Keerthy (8):
+>   arm: dts: omap3: Add cpu_thermal zone
+>   ARM: DRA7: Thermal: Add slope and offset values
+>   ARM: OMAP5: Thermal: Add slope and offset values
+>   ARM: OMAP443x: Thermal: Add slope and offset values
+>   ARM: OMAP4460: Thermal: Add slope and offset values
+>   thermal: ti-soc-thermal: Fetch slope and offset from DT
+>   thermal: ti-soc-thermal: Remove redundant constants
+>   thermal: ti-soc-thermal: Remove redundant code
+> 
+>  arch/arm/boot/dts/dra7.dtsi                        |  17 +++
+>  arch/arm/boot/dts/omap3-cpu-thermal.dtsi           |  20 +++
+>  arch/arm/boot/dts/omap34xx.dtsi                    |   8 +-
+>  arch/arm/boot/dts/omap36xx.dtsi                    |   8 +-
+>  arch/arm/boot/dts/omap443x.dtsi                    |   4 +
+>  arch/arm/boot/dts/omap4460.dtsi                    |   4 +
+>  arch/arm/boot/dts/omap5.dtsi                       |   9 ++
+>  .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  10 --
+>  .../thermal/ti-soc-thermal/omap3-thermal-data.c    |   4 -
+>  .../thermal/ti-soc-thermal/omap4-thermal-data.c    |   6 -
+>  .../thermal/ti-soc-thermal/omap5-thermal-data.c    |   4 -
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.h        |   4 -
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 158 +--------------------
+>  drivers/thermal/ti-soc-thermal/ti-thermal.h        |  16 ---
+>  14 files changed, 71 insertions(+), 201 deletions(-)
+>  create mode 100644 arch/arm/boot/dts/omap3-cpu-thermal.dtsi
+> 
