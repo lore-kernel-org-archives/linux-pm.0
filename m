@@ -1,47 +1,57 @@
-From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [RESEND PATCH v4 0/9] add support for AXP20X and
- AXP22X power supply drivers
-Date: Wed, 22 Mar 2017 08:11:34 +0100
-Message-ID: <20170322071134.mbd3x3ncllje2ovs@lukather>
-References: <20170320081653.8884-1-quentin.schulz@free-electrons.com>
-Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v2 02/10] x86: assembly, FUNC_START for fn, DATA_START
+ for data
+Date: Wed, 22 Mar 2017 08:25:57 +0100
+Message-ID: <20170322072557.GA13904@gmail.com>
+References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
+ <20170320123222.15453-1-jslaby@suse.cz>
+ <20170320123222.15453-2-jslaby@suse.cz>
+ <20170321140840.GA23311@amd>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="brzsmkykpecuwfmh"
-Return-path: <linux-sunxi+bncBDSJBYGBRIMBBJ6HZDDAKGQENZ3A4GI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f195.google.com ([209.85.128.195]:35371 "EHLO
+        mail-wr0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757351AbdCVH0X (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 03:26:23 -0400
 Content-Disposition: inline
-In-Reply-To: <20170320081653.8884-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20170321140840.GA23311@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jiri Slaby <jslaby@suse.cz>, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, jpoimboe@redhat.com, linux-kernel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
 
---brzsmkykpecuwfmh
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+* Pavel Machek <pavel@ucw.cz> wrote:
 
-On Mon, Mar 20, 2017 at 09:16:44AM +0100, Quentin Schulz wrote:
-> These patches haven't changed since v4. The goal is to split the series in
-> two series, one (this one) with patches ready to be merged and the other
-> one (everything impacting the battery power supply) which depends on an
-> ongoing series by Liam Breck to be merged once the ongoing series has a
-> consensus.
+> Hi!
 > 
-> Therefore, this series of patch is ready to be merged. I don't see any
-> dependency between subsystems.
+> > -ENTRY(saved_rbp)	.quad	0
+> > -ENTRY(saved_rsi)	.quad	0
+> > -ENTRY(saved_rdi)	.quad	0
+> > -ENTRY(saved_rbx)	.quad	0
+> > +SYM_DATA_START(saved_rbp)		.quad	0
+> > +SYM_DATA_START(saved_rsi)		.quad	0
+> > +SYM_DATA_START(saved_rdi)		.quad	0
+> > +SYM_DATA_START(saved_rbx)		.quad	0
+> 
+> Does it make sense to call it SYM_DATA_*START* when there's no
+> corresponding end?
 
-Merged the patches 5-8, thanks!
-Maxime
+That looks like a bug - I think we should strive for them to always be in pairs.
 
--- 
-Maxime Ripard, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
---brzsmkykpecuwfmh--
+Jiri, Josh, could objtool help here perhaps, to detect 'non-terminated' 
+SYM_*_START() uses? This could be done by emitting debug data into a special 
+section and then analyzing that section for unpaired entries. The section can be 
+discarded in the final link, it won't show up in the kernel image.
+
+We don't ever nest symbols, right?
+
+> Plus... it looks like saved_rsi (and friends) are only used inside
+> wakeup_64.S. Could we just delete the "ENTRY" annotations?
+
+That appears to make sense as well.
+
+Thanks,
+
+	Ingo
