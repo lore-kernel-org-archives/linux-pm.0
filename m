@@ -1,76 +1,70 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: schedutil: Always trace frequency if it does not change
-Date: Wed, 22 Mar 2017 01:56:53 +0100
-Message-ID: <10655562.4O9KtquB0A@aspire.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: supply: cpcap-charger: Add minimal CPCAP PMIC
+ battery charger
+Date: Wed, 22 Mar 2017 03:15:14 +0100
+Message-ID: <20170322021514.ewipilqbfm2cwua6@earth>
+References: <20170317022152.21427-1-tony@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="baxxlrf32bzdp76x"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58513 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1757730AbdCVBC3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Mar 2017 21:02:29 -0400
+Received: from mail.kernel.org ([198.145.29.136]:37340 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751419AbdCVCP0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 21 Mar 2017 22:15:26 -0400
+Content-Disposition: inline
+In-Reply-To: <20170317022152.21427-1-tony@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-sugov_update_commit() calls trace_cpu_frequency() to record the
-current CPU frequency if it has not changed in the fast switch case
-to prevent utilities from getting confused (they may report that the
-CPU is idle if the frequency has not been recorded for too long, for
-example).
+--baxxlrf32bzdp76x
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-However, the same problem may occur for a cpufreq driver that doesn't
-support fast frequency switching and implements the ->target callback
-(that is, it doesn't use frequency tables), but trace_cpu_frequency()
-is not called if frequency updates are skipped in that case.
+Hi,
 
-For this reason, modify sugov_update_commit() to always call
-trace_cpu_frequency() when the new frequency to be set is equal to
-the one that was set previously and reorganize the code in there to
-reduce duplication somewhat.
+On Thu, Mar 16, 2017 at 07:21:52PM -0700, Tony Lindgren wrote:
+> The custom CPCAP PMIC used on Motorola phones such as Droid 4 has a
+> USB battery charger. It can optionally also have a companion chip that
+> is used for wireless charging.
+>=20
+> The charger on CPCAP also can feed VBUS for the USB host mode. This
+> can be handled by the existing kernel phy_companion interface.
+>=20
+> Cc: devicetree@vger.kernel.org
+> Cc: Marcel Partap <mpartap@gmx.net>
+> Cc: Michael Scott <michael.scott@linaro.org>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/sched/cpufreq_schedutil.c |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+Driver looks ok and works for me, but values are not scaled
+correctly. The power-supply subsystem exposes values in microamps
+and microvolt. IIO provides values in millivolt/milliamps instead,
+so it should be scaled with 1000.
 
-Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-===================================================================
---- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-+++ linux-pm/kernel/sched/cpufreq_schedutil.c
-@@ -98,22 +98,22 @@ static void sugov_update_commit(struct s
- {
- 	struct cpufreq_policy *policy = sg_policy->policy;
- 
-+	if (sg_policy->next_freq == next_freq) {
-+		trace_cpu_frequency(policy->cur, smp_processor_id());
-+		return;
-+	}
-+
-+	sg_policy->next_freq = next_freq;
-+	sg_policy->last_freq_update_time = time;
-+
- 	if (policy->fast_switch_enabled) {
--		if (sg_policy->next_freq == next_freq) {
--			trace_cpu_frequency(policy->cur, smp_processor_id());
--			return;
--		}
--		sg_policy->next_freq = next_freq;
--		sg_policy->last_freq_update_time = time;
- 		next_freq = cpufreq_driver_fast_switch(policy, next_freq);
- 		if (next_freq == CPUFREQ_ENTRY_INVALID)
- 			return;
- 
- 		policy->cur = next_freq;
- 		trace_cpu_frequency(next_freq, smp_processor_id());
--	} else if (sg_policy->next_freq != next_freq) {
--		sg_policy->next_freq = next_freq;
--		sg_policy->last_freq_update_time = time;
-+	} else {
- 		sg_policy->work_in_progress = true;
- 		irq_work_queue(&sg_policy->irq_work);
- 	}
+-- Sebastian
+
+--baxxlrf32bzdp76x
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljR3i8ACgkQ2O7X88g7
++prR2Q/8CZFujxOHcUhDM0TjDwBl1NPV20gEWc7/iCk1MAd75jLfeV67YtFRT4bR
+0d1ipCrM7R+rf2kDcrZ7mR4+AJpKSTXdFxLGxEqGkojmUKkVRJpXSyR3grEmlLk3
+XBpIeOV1xCN9w/F+w/JK3YMjzdX0e7NTtz/S7mhhKzuDs23Hnq0QTeh/vFJ9rHk6
+3jruFaGoG7r1f5AEgtvBpUyF8gye2iV4B3LznGVCmD3fxzk9XOJ9a5WKuPiwRMB1
+2b0oj7X04wwgOO5K1VF1u/s6jochXSHO6Tn3huzjZAOpNgwFnEaurPhCZ2EtQqc/
+tJ9dbgoaD47GEjE5s+6QSddRlO6mgOguC/yYUyZS8Rfj7E8U41R+dWeGze1iqarg
+X2W4aIL0KGPdVJb1LMMbUKsVjI+jEuypptAZ8DOYLDo246bd9FH220YwkijzUGvw
+6WQgkXe2X3h4b6cxscJr2rd5ORspv2dSdGKUc9KvdHtGkZWEjjlwHnVxjDhbBfiC
+BbSHxQmamNEbAIyxuBFdBQKnVibPFKv392h9i1207KaLrT98SFDHvL9pSM2SOBcu
+nm3XZrj5p01C4r8t+OJ5XzL6g9Fq56GHL/4LYV0w7DMu25oJ4735e/qWsV/qwh/d
+qgABvU5GmYfV1KQAirS8yzd0i3CENUgB8mZTl8I45bDmREi0YMg=
+=enRp
+-----END PGP SIGNATURE-----
+
+--baxxlrf32bzdp76x--
