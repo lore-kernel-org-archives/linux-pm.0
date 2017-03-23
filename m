@@ -1,119 +1,168 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v11 05/10] power: bq27xxx_battery: Make error reporting
- consistent
-Date: Thu, 23 Mar 2017 11:33:15 +0100
-Message-ID: <20170323103315.u5mcxzmme6g5izhf@earth>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v11 07/10] power: bq27xxx_battery: Keep track of specific
+ chip id
+Date: Thu, 23 Mar 2017 03:35:33 -0700
+Message-ID: <CAKvHMgQsuTNcGUXZL7qk_YZ+qcdcLJ1+1xPB0zP97DqiitHJXA@mail.gmail.com>
 References: <20170320094335.19224-1-liam@networkimprov.net>
- <20170320094335.19224-6-liam@networkimprov.net>
- <6e387ba3-c5ce-ef88-d5ab-560b190e8352@ti.com>
- <CAKvHMgSvUo+7CdsCRyHFgTEBKbZq7LeQokkGFs1P+6_4oPLqvg@mail.gmail.com>
- <20170323101154.eixbsbeyjywwozws@earth>
- <CAKvHMgSKrPnJNLRN-61u_BRYAHQuMc1WNU4binjTMMTLGq95Kg@mail.gmail.com>
+ <20170320094335.19224-8-liam@networkimprov.net> <20170323102825.vvxfzvuvvnhyzlna@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ckrnzzlttxrhr2ea"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:47838 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932635AbdCWKdU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 23 Mar 2017 06:33:20 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKvHMgSKrPnJNLRN-61u_BRYAHQuMc1WNU4binjTMMTLGq95Kg@mail.gmail.com>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:33967 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750915AbdCWKfp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 06:35:45 -0400
+Received: by mail-io0-f195.google.com with SMTP id n76so12790887ioe.1
+        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 03:35:34 -0700 (PDT)
+In-Reply-To: <20170323102825.vvxfzvuvvnhyzlna@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
+To: Sebastian Reichel <sre@kernel.org>
 Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
+On Thu, Mar 23, 2017 at 3:28 AM, Sebastian Reichel <sre@kernel.org> wrote:
+> Hi,
+>
+> On Mon, Mar 20, 2017 at 02:43:32AM -0700, Liam Breck wrote:
+>> From: Liam Breck <kernel@networkimprov.net>
+>>
+>> Pass actual chip ID into _setup(), which translates it to a group ID,
+>> to allow support for all chips by the power_supply_battery_info code.
+>> There are no functional changes to the driver.
+>>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>
+> This is really ugly. If we need chip ID and group ID let's store
+> them in different variables. For example put the detailed chipid
+> into di->realchip and then do
 
---ckrnzzlttxrhr2ea
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I tried this in a previous version, and Andrew rejected it as
+confusing to have two IDs. That was while you were away on business
+:-)
 
-Hi,
-
-On Thu, Mar 23, 2017 at 03:24:40AM -0700, Liam Breck wrote:
-> On Thu, Mar 23, 2017 at 3:11 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> > On Mon, Mar 20, 2017 at 10:59:18AM -0700, Liam Breck wrote:
-> >> On Mon, Mar 20, 2017 at 9:57 AM, Andrew F. Davis <afd@ti.com> wrote:
-> >> > On 03/20/2017 04:43 AM, Liam Breck wrote:
-> >> >> From: Liam Breck <kernel@networkimprov.net>
-> >> >>
-> >> >> Previously errors were reported in a mix of styles via both dev_err=
-() & dev_dbg().
-> >> >> Report all errors with dev_err() and include error code in message.
-> >> >> Report register ID separately in dev_dbg() message.
-> >> >>
-> >> >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> >> >> ---
-> >> >>  drivers/power/supply/bq27xxx_battery.c | 35 ++++++++++++++++++----=
-------------
-> >> >>  1 file changed, 19 insertions(+), 16 deletions(-)
-> >> >>
-> >> >> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power=
-/supply/bq27xxx_battery.c
-> >> >> index 398801a..2e2a3a8 100644
-> >> >> --- a/drivers/power/supply/bq27xxx_battery.c
-> >> >> +++ b/drivers/power/supply/bq27xxx_battery.c
-> >> >> @@ -794,11 +794,17 @@ MODULE_PARM_DESC(poll_interval,
-> >> >>  static inline int bq27xxx_read(struct bq27xxx_device_info *di, int=
- reg_index,
-> >> >>                              bool single)
-> >> >>  {
-> >> >> -     /* Reports EINVAL for invalid/missing registers */
-> >> >> +     int ret;
-> >> >> +
-> >> >>       if (!di || di->regs[reg_index] =3D=3D INVALID_REG_ADDR)
-> >> >>               return -EINVAL;
-> >> >>
-> >> >> -     return di->bus.read(di, di->regs[reg_index], single);
-> >> >> +     ret =3D di->bus.read(di, di->regs[reg_index], single);
-> >> >> +     if (ret < 0)
-> >> >> +             dev_dbg(di->dev, "failed to read register 0x%02x (ind=
-ex %d)\n",
-> >> >> +                     di->regs[reg_index], reg_index);
-> >> >> +
-> >> >
-> >> > If we print out the error code here we don't have to do that in each=
- of
-> >> > the below printouts.
-> >>
-> >> This is a dev_dbg, the below are dev_err, and I think you want error
-> >> code in dev_err. BTW the above addresses your request to learn which
-> >> register was in play in the event of a DM read/write failure.
-> >
-> > Just make it dev_err and also print ret. Then we can remove all
-> > other prints. That will result in some information-loss (name
-> > of the register), but
->=20
-> Andrew specifically asked for error reporting that gives the error
-> context elsewhere in the patchset. In complying with that request, I
-> filed this patch.
->=20
-> We could pass a context string into read() ...
-
-That's fine with me.
-
--- Sebastian
-
---ckrnzzlttxrhr2ea
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljTpGsACgkQ2O7X88g7
-+poYow//bGt4OeHInDgSjqO2D5LmpmVHX0fYsCXvIAizJrqz6oOqOqgfGY8+P+AC
-B1htVf3t9zegpU5W8HxFNm/eOW0a+qRBO2ixg/kA3Dw+nJVnresJKAZ++3P9ugTp
-1veMnea8njb+SazHrs1yIyxNpP/kbbxuiuHtIqcbGAtWhSsa3yMeqlBOKEb6lSA+
-vhyEnjivY8HFkCYfSN1eQMfaIz37W7Vk4sIq/r4+6g6uEr/8T1nHtwE+zEKPASeH
-pjslP4RBLLQFgI79keaN0nGCh0kk2DfGageuUlu7N61XdZGXj95pLw8cbk2Vzow5
-ECqzIFBf8OWzkfQ9PREz2WSoIjNWASGrQt8wdEolpD3jxCrPGaYrzwTGbHN2k8vV
-f4OVMckuDVM5pnBIuTAbX2AisMqxlPG+0HclZW34E9tBB5E06+N0ZbW1V/VbFKr/
-eKdP68nqqzs7E9YYdEDVHBvZ/kdBZRqpFVFHLp4uMSHF/BNiZ90Ocwa6lrS95TxQ
-GaW+D4hK+89ILQ4nQzcks/rlwCK2Kr8BonO/SxkgPWnA6JcBmsblxHRYWONiVoxG
-SBYgEEbyJy3xJ6YjK/kIYd2q7Dm1uT15wC0m870WhDeBCA6iurRfDyAHR2+b4wWU
-fx5ra/ce/FgZ++X6khaR8Rfs5S0Kg1Jxe+B0wFpGvCC7uIcMkIo=
-=x+Lu
------END PGP SIGNATURE-----
-
---ckrnzzlttxrhr2ea--
+> switch(di->realchip) {
+> case FOO:
+>     di->chip = GRP_FOO;
+>     break;
+> case BAR:
+>     di->chip = GRP_BAR;
+>     break;
+> default:
+>     di->chip = di->realchip;
+>     break;
+> }
+>
+> -- Sebastian
+>
+>>  drivers/power/supply/bq27xxx_battery.c     | 27 +++++++++++++++++++++++++++
+>>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 ++++++++--------
+>>  include/linux/power/bq27xxx_battery.h      | 11 +++++++++++
+>>  3 files changed, 46 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>> index f36a6f1..db1a388 100644
+>> --- a/drivers/power/supply/bq27xxx_battery.c
+>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>> @@ -1391,6 +1391,33 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>       struct power_supply_desc *psy_desc;
+>>       struct power_supply_config psy_cfg = { .drv_data = di, };
+>>
+>> +     switch(di->chip) {
+>> +     case BQ27000:
+>> +     case BQ27010:
+>> +     case BQ2750X:
+>> +     case BQ2751X:
+>> +     case BQ27500:
+>> +     case BQ27510G1:
+>> +     case BQ27510G2:
+>> +     case BQ27510G3:
+>> +     case BQ27520G1:
+>> +     case BQ27520G2:
+>> +     case BQ27520G3:
+>> +     case BQ27520G4:
+>> +     case BQ27530:
+>> +     case BQ27541:
+>> +     case BQ27545:
+>> +     case BQ27421: break;
+>> +     case BQ2752X: di->chip = BQ2751X; break;
+>> +     case BQ27531: di->chip = BQ27530; break;
+>> +     case BQ27542: di->chip = BQ27541; break;
+>> +     case BQ27546: di->chip = BQ27541; break;
+>> +     case BQ27742: di->chip = BQ27541; break;
+>> +     case BQ27425: di->chip = BQ27421; break;
+>> +     case BQ27441: di->chip = BQ27421; break;
+>> +     case BQ27621: di->chip = BQ27421; break;
+>> +     }
+>> +
+>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>>       mutex_init(&di->lock);
+>>       di->regs = bq27xxx_regs[di->chip];
+>> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> index c68fbc3..b3f2494 100644
+>> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+>> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> @@ -150,7 +150,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>       { "bq27210", BQ27010 },
+>>       { "bq27500", BQ2750X },
+>>       { "bq27510", BQ2751X },
+>> -     { "bq27520", BQ2751X },
+>> +     { "bq27520", BQ2752X },
+>>       { "bq27500-1", BQ27500 },
+>>       { "bq27510g1", BQ27510G1 },
+>>       { "bq27510g2", BQ27510G2 },
+>> @@ -160,16 +160,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>       { "bq27520g3", BQ27520G3 },
+>>       { "bq27520g4", BQ27520G4 },
+>>       { "bq27530", BQ27530 },
+>> -     { "bq27531", BQ27530 },
+>> +     { "bq27531", BQ27531 },
+>>       { "bq27541", BQ27541 },
+>> -     { "bq27542", BQ27541 },
+>> -     { "bq27546", BQ27541 },
+>> -     { "bq27742", BQ27541 },
+>> +     { "bq27542", BQ27542 },
+>> +     { "bq27546", BQ27546 },
+>> +     { "bq27742", BQ27742 },
+>>       { "bq27545", BQ27545 },
+>>       { "bq27421", BQ27421 },
+>> -     { "bq27425", BQ27421 },
+>> -     { "bq27441", BQ27421 },
+>> -     { "bq27621", BQ27421 },
+>> +     { "bq27425", BQ27425 },
+>> +     { "bq27441", BQ27441 },
+>> +     { "bq27621", BQ27621 },
+>>       {},
+>>  };
+>>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+>> index c3369fa..96cec17 100644
+>> --- a/include/linux/power/bq27xxx_battery.h
+>> +++ b/include/linux/power/bq27xxx_battery.h
+>> @@ -2,6 +2,7 @@
+>>  #define __LINUX_BQ27X00_BATTERY_H__
+>>
+>>  enum bq27xxx_chip {
+>> +     /* categories; index for bq27xxx_regs[] */
+>>       BQ27000 = 1, /* bq27000, bq27200 */
+>>       BQ27010, /* bq27010, bq27210 */
+>>       BQ2750X, /* bq27500 deprecated alias */
+>> @@ -18,6 +19,16 @@ enum bq27xxx_chip {
+>>       BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+>>       BQ27545, /* bq27545 */
+>>       BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+>> +
+>> +     /* members of categories; translate these to category in _setup() */
+>> +     BQ2752X, /* deprecated alias */
+>> +     BQ27531,
+>> +     BQ27542,
+>> +     BQ27546,
+>> +     BQ27742,
+>> +     BQ27425,
+>> +     BQ27441,
+>> +     BQ27621,
+>>  };
+>>
+>>  /**
+>> --
+>> 2.9.3
+>>
