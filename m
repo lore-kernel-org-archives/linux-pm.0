@@ -1,224 +1,112 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v3] power: supply: bq24190_charger: Use extcon to determine ilimit, 5v boost
-Date: Thu, 23 Mar 2017 09:32:35 +0100
-Message-ID: <20170323083235.15072-1-hdegoede@redhat.com>
+Subject: Re: [PATCH v2 4/7] power: supply: bq24190_charger: Never reset the
+ charger chip
+Date: Thu, 23 Mar 2017 09:44:29 +0100
+Message-ID: <a8cd7854-38e0-e808-e22f-844c023cab88@redhat.com>
+References: <20170322145536.30570-1-hdegoede@redhat.com>
+ <20170322145536.30570-5-hdegoede@redhat.com>
+ <20170322154313.GU8575@atomide.com>
+ <2ab0b7d5-61b0-2a1f-7c45-07d7f3f180b6@redhat.com>
+ <CAKvHMgSy0iobRDEYWrOwVSz940TPNhOQXxRCUftT-8q3mUfXwA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:51906 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:52592 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754409AbdCWIkH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 23 Mar 2017 04:40:07 -0400
+        id S1751406AbdCWIod (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 Mar 2017 04:44:33 -0400
+In-Reply-To: <CAKvHMgSy0iobRDEYWrOwVSz940TPNhOQXxRCUftT-8q3mUfXwA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
+To: Liam Breck <liam@networkimprov.net>
+Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-Add support for monitoring an extcon device with USB SDP/CDP/DCP and HOST
-cables and adjust ilimit and enable/disable the 5V boost converter
-accordingly. This is necessary on systems where the PSEL pin is hardwired
-high and ILIM needs to be set by software based on the detected charger
-type, as well as on systems where the 5V boost converter is used, as
-that always needs to be enabled from software.
+Hi,
 
-Cc: Liam Breck <kernel@networkimprov.net>
-Cc: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Sebastian Reichel <sre@kernel.org>
----
-Changes in v2:
--Use a device-property for extcon-name instead of platform_data
--Delay 300ms before applying the extcon detected charger-type to iinlim
- (see the added comment for why this is done)
-Changes in v3:
--Print a msg with dev_info when an extcon is used do determine iinlim
----
- drivers/power/supply/Kconfig           |   1 +
- drivers/power/supply/bq24190_charger.c | 109 +++++++++++++++++++++++++++++++++
- 2 files changed, 110 insertions(+)
+On 23-03-17 08:16, Liam Breck wrote:
+> On Wed, Mar 22, 2017 at 8:45 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> Hi,
+>>
+>> On 22-03-17 16:43, Tony Lindgren wrote:
+>>>
+>>> * Hans de Goede <hdegoede@redhat.com> [170322 07:57]:
+>>>>
+>>>> Resetting the charger should never be necessary it should always have
+>>>> sane values programmed. If it is running with invalid values while we
+>>>> are not running (system turned off or suspended) there is a big problem
+>>>> as that may lead to overcharging the battery.
+>>>
+>>>
+>>> And some systems may only configure it in the bootloader with no
+>>> configuration passed to the kernel at all.
+>>
+>>
+>> Right.
+>>
+>>
+>>>> The reset in suspend() is meant to put the charger back into default
+>>>> mode, but this is not necessary and not a good idea. If the charger has
+>>>> been programmed with a higher max charge_current / charge_voltage then
+>>>> putting it back in default-mode will reset those to the safe power-on
+>>>> defaults, leading to slower charging, or charging to a lower voltage
+>>>> (and thus not using the full capacity) while suspended which is
+>>>> undesirable. Reprogramming the max charge_current / charge_voltage
+>>>> after the reset will not help here as that will put the charger back
+>>>> in host mode and start the i2c watchdog if the host then does not do
+>>>> anything for 40s (iow if we're suspended for more then 40s) the watchdog
+>>>> expires resetting the device to default-mode, including resetting all
+>>>> the registers to there safe power-on defaults. So the only way to keep
+>>>> using custom charge settings while suspending is to keep the charger in
+>>>> its normal running state with the i2c watchdog disabled. This is fine
+>>>> as the charger will still automatically switch from constant current
+>>>> to constant voltage and stop charging when the battery is full.
+>>>>
+>>>> Besides never being necessary resetting the charger also causes problems
+>>>> on systems where the charge voltage limit is set higher then the reset
+>>>> value, if this is the case and the charger is reset while charging and
+>>>> the battery voltage is between the 2 voltages, then about half the time
+>>>> the charger gets confused and claims to be charging (REG08 contains 0x64)
+>>>> but in reality the charger has decoupled itself from VBUS (Q1 off) and
+>>>> is drawing 0A from VBUS, leaving the system running from the battery.
+>>>
+>>>
+>>> We do have cases where Linux kernel is the bootloader though using
+>>> kexec. And in those cases we may need to reset, so I wonder if the
+>>> reset should just be optional based on a proper device tree
+>>> (or platform_data) configuration?
+>>
+>>
+>> As described above during my testing I've found that the chip does not
+>> respond well to reset under certain conditions, so I think that if
+>> we have settings to apply we should just overwrite the settings with
+>> our settings, what does doing a reset before overwriting the registers
+>> buy us? We still need to do the overwrite anyways.
+>
+> When driver loads on any conceivable hw, how do we know the chip is in
+> a state we predicted?
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index f8b6e64..fd93110 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -442,6 +442,7 @@ config CHARGER_BQ2415X
- config CHARGER_BQ24190
- 	tristate "TI BQ24190 battery charger driver"
- 	depends on I2C
-+	depends on EXTCON
- 	depends on GPIOLIB || COMPILE_TEST
- 	help
- 	  Say Y to enable support for the TI BQ24190 battery charger.
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index d74c8cc..2c404a5 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -11,10 +11,12 @@
- #include <linux/module.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
-+#include <linux/extcon.h>
- #include <linux/of_irq.h>
- #include <linux/of_device.h>
- #include <linux/pm_runtime.h>
- #include <linux/power_supply.h>
-+#include <linux/workqueue.h>
- #include <linux/gpio.h>
- #include <linux/i2c.h>
- 
-@@ -36,6 +38,8 @@
- #define BQ24190_REG_POC_WDT_RESET_SHIFT		6
- #define BQ24190_REG_POC_CHG_CONFIG_MASK		(BIT(5) | BIT(4))
- #define BQ24190_REG_POC_CHG_CONFIG_SHIFT	4
-+#define BQ24190_REG_POC_CHG_CONFIG_CHARGE	1
-+#define BQ24190_REG_POC_CHG_CONFIG_OTG		2
- #define BQ24190_REG_POC_SYS_MIN_MASK		(BIT(3) | BIT(2) | BIT(1))
- #define BQ24190_REG_POC_SYS_MIN_SHIFT		1
- #define BQ24190_REG_POC_BOOST_LIM_MASK		BIT(0)
-@@ -148,6 +152,9 @@ struct bq24190_dev_info {
- 	struct device			*dev;
- 	struct power_supply		*charger;
- 	struct power_supply		*battery;
-+	struct extcon_dev		*extcon;
-+	struct notifier_block		extcon_nb;
-+	struct delayed_work		extcon_work;
- 	char				model_name[I2C_NAME_SIZE];
- 	bool				initialized;
- 	bool				irq_event;
-@@ -164,6 +171,11 @@ struct bq24190_dev_info {
-  * number at that index in the array is the real-world value that it
-  * represents.
-  */
-+
-+/* REG00[2:0] (IINLIM) in uAh */
-+static const int bq24190_iinlim_values[] = {
-+	100000, 150000, 500000, 900000, 1200000, 1500000, 2000000, 3000000 };
-+
- /* REG02[7:2] (ICHG) in uAh */
- static const int bq24190_ccc_ichg_values[] = {
- 	 512000,  576000,  640000,  704000,  768000,  832000,  896000,  960000,
-@@ -1277,6 +1289,78 @@ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
-+static void bq24190_extcon_work(struct work_struct *work)
-+{
-+	struct bq24190_dev_info *bdi =
-+		container_of(work, struct bq24190_dev_info, extcon_work.work);
-+	int ret, iinlim = 0;
-+
-+	ret = pm_runtime_get_sync(bdi->dev);
-+	if (ret < 0) {
-+		dev_err(bdi->dev, "Error getting runtime-pm ref: %d\n", ret);
-+		return;
-+	}
-+
-+	if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_SDP) == 1)
-+		iinlim = 500000;
-+	else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_CDP) == 1 ||
-+		 extcon_get_state(bdi->extcon, EXTCON_CHG_USB_ACA) == 1)
-+		iinlim = 1500000;
-+	else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_DCP) == 1)
-+		iinlim = 2000000;
-+
-+	if (iinlim) {
-+		ret = bq24190_set_field_val(bdi, BQ24190_REG_ISC,
-+				BQ24190_REG_ISC_IINLIM_MASK,
-+				BQ24190_REG_ISC_IINLIM_SHIFT,
-+				bq24190_iinlim_values,
-+				ARRAY_SIZE(bq24190_iinlim_values),
-+				iinlim);
-+		if (ret)
-+			dev_err(bdi->dev, "Can't set IINLIM: %d\n", ret);
-+	}
-+
-+	/*
-+	 * If no charger has been detected and host mode is requested, activate
-+	 * the 5V boost converter, otherwise deactivate it.
-+	 */
-+	if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) == 1) {
-+		ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
-+					 BQ24190_REG_POC_CHG_CONFIG_MASK,
-+					 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
-+					 BQ24190_REG_POC_CHG_CONFIG_OTG);
-+	} else {
-+		ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
-+					 BQ24190_REG_POC_CHG_CONFIG_MASK,
-+					 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
-+					 BQ24190_REG_POC_CHG_CONFIG_CHARGE);
-+	}
-+	if (ret)
-+		dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", ret);
-+
-+	pm_runtime_mark_last_busy(bdi->dev);
-+	pm_runtime_put_autosuspend(bdi->dev);
-+}
-+
-+static int bq24190_extcon_event(struct notifier_block *nb, unsigned long event,
-+				void *param)
-+{
-+	struct bq24190_dev_info *bdi =
-+		container_of(nb, struct bq24190_dev_info, extcon_nb);
-+
-+	/*
-+	 * The Power-Good detection may take up to 220ms, sometimes
-+	 * the external charger detection is quicker, and the bq24190 will
-+	 * reset to iinlim based on its own charger detection (which is not
-+	 * hooked up when using external charger detection) resulting in
-+	 * a too low default 500mA iinlim. Delay applying the extcon value
-+	 * for 300ms to avoid this.
-+	 */
-+	queue_delayed_work(system_wq, &bdi->extcon_work, msecs_to_jiffies(300));
-+
-+	return NOTIFY_OK;
-+}
-+
- static int bq24190_hw_init(struct bq24190_dev_info *bdi)
- {
- 	u8 v;
-@@ -1314,6 +1398,7 @@ static int bq24190_probe(struct i2c_client *client,
- 	struct device *dev = &client->dev;
- 	struct power_supply_config charger_cfg = {}, battery_cfg = {};
- 	struct bq24190_dev_info *bdi;
-+	const char *name;
- 	int ret;
- 
- 	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
-@@ -1341,6 +1426,18 @@ static int bq24190_probe(struct i2c_client *client,
- 		return -EINVAL;
- 	}
- 
-+	/*
-+	 * The extcon-name property is purely an in kernel interface for
-+	 * x86/ACPI use, DT platforms should get extcon via phandle.
-+	 */
-+	if (device_property_read_string(dev, "extcon-name", &name) == 0) {
-+		bdi->extcon = extcon_get_extcon_dev(name);
-+		if (!bdi->extcon)
-+			return -EPROBE_DEFER;
-+
-+		dev_info(bdi->dev, "using extcon device %s\n", name);
-+	}
-+
- 	pm_runtime_enable(dev);
- 	pm_runtime_use_autosuspend(dev);
- 	pm_runtime_set_autosuspend_delay(dev, 600);
-@@ -1391,6 +1488,18 @@ static int bq24190_probe(struct i2c_client *client,
- 		goto out5;
- 	}
- 
-+	if (bdi->extcon) {
-+		INIT_DELAYED_WORK(&bdi->extcon_work, bq24190_extcon_work);
-+		bdi->extcon_nb.notifier_call = bq24190_extcon_event;
-+		ret = devm_extcon_register_notifier(dev, bdi->extcon, -1,
-+						    &bdi->extcon_nb);
-+		if (ret)
-+			goto out5;
-+
-+		/* Sync initial cable state */
-+		queue_delayed_work(system_wq, &bdi->extcon_work, 0);
-+	}
-+
- 	enable_irq_wake(client->irq);
- 
- 	pm_runtime_mark_last_busy(dev);
--- 
-2.9.3
+Any non reset values have to come from somewhere, likely firmware,
+and unless we've platform data telling us the exact settings we should
+use why would we decide the reset values are better then the ones
+the charger was *already using* before our driver loads ? As said in
+the commit msg: "If it is running with invalid values while we
+are not running (system turned off or suspended) there is a big problem
+as that may lead to overcharging the battery."
+
+> If it isn't, how can we fix any undesirable
+> settings?
+
+Why would the chip not be in a sane state? Where would the undesirable
+settings come from ?
+
+> Reset + fix a,b,c is simple way to do that.
+
+As my testing using real-world hardware under real-world conditions
+has shown resetting the charger IC while it is charging can cause it
+to misbehave. So we have this theoretical problem of there somehow
+being undesirable settings at boot vs a real-world problem...
+
+Regards,
+
+Hans
