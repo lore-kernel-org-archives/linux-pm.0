@@ -1,115 +1,76 @@
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-Subject: Re: [PATCH v2 02/10] x86: assembly, FUNC_START for fn, DATA_START
- for data
-Date: Thu, 23 Mar 2017 08:24:58 -0500
-Message-ID: <20170323132458.wuil6uvri4o2kyom@treble>
-References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
- <20170320123222.15453-1-jslaby@suse.cz>
- <20170320123222.15453-2-jslaby@suse.cz>
- <20170321140840.GA23311@amd>
- <20170322072557.GA13904@gmail.com>
- <ee3242f9-1fab-f3a8-947d-85fc1a660a49@suse.cz>
- <20170322074616.GA10809@gmail.com>
- <20170322141123.opss3u4gpupqgl2q@treble>
- <20170323073819.GA14258@gmail.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v2 5/7] power: supply: bq24190_charger: Don't spam the
+ logs on charger plug / unplug
+Date: Thu, 23 Mar 2017 06:34:41 -0700
+Message-ID: <CAKvHMgRsF8pEAtYjp1=H1C0B-ex7ZfKZ_hx2xxs=3cWG8Q-zmA@mail.gmail.com>
+References: <20170322145536.30570-1-hdegoede@redhat.com> <20170322145536.30570-6-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170323073819.GA14258@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Jiri Slaby <jslaby@suse.cz>, Pavel Machek <pavel@ucw.cz>, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, linux-kernel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f196.google.com ([209.85.223.196]:33614 "EHLO
+        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933968AbdCWNen (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 09:34:43 -0400
+Received: by mail-io0-f196.google.com with SMTP id f84so13289839ioj.0
+        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 06:34:42 -0700 (PDT)
+In-Reply-To: <20170322145536.30570-6-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
 
-On Thu, Mar 23, 2017 at 08:38:20AM +0100, Ingo Molnar wrote:
-> 
-> * Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> 
-> > On Wed, Mar 22, 2017 at 08:46:16AM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Jiri Slaby <jslaby@suse.cz> wrote:
-> > > 
-> > > > On 03/22/2017, 08:25 AM, Ingo Molnar wrote:
-> > > > > 
-> > > > > * Pavel Machek <pavel@ucw.cz> wrote:
-> > > > > 
-> > > > >> Hi!
-> > > > >>
-> > > > >>> -ENTRY(saved_rbp)	.quad	0
-> > > > >>> -ENTRY(saved_rsi)	.quad	0
-> > > > >>> -ENTRY(saved_rdi)	.quad	0
-> > > > >>> -ENTRY(saved_rbx)	.quad	0
-> > > > >>> +SYM_DATA_START(saved_rbp)		.quad	0
-> > > > >>> +SYM_DATA_START(saved_rsi)		.quad	0
-> > > > >>> +SYM_DATA_START(saved_rdi)		.quad	0
-> > > > >>> +SYM_DATA_START(saved_rbx)		.quad	0
-> > > > >>
-> > > > >> Does it make sense to call it SYM_DATA_*START* when there's no
-> > > > >> corresponding end?
-> > > > > 
-> > > > > That looks like a bug - I think we should strive for them to always be in pairs.
-> > > > > 
-> > > > > Jiri, Josh, could objtool help here perhaps, to detect 'non-terminated' 
-> > > > > SYM_*_START() uses? This could be done by emitting debug data into a special 
-> > > > > section and then analyzing that section for unpaired entries. The section can be 
-> > > > > discarded in the final link, it won't show up in the kernel image.
-> > > > 
-> > > > It should be easier than that. No introduction of other info needed --
-> > > > every global symbol without a ".type" or ".size" (i.e. SYM_*_END) should
-> > > > be a bug now.
-> > > 
-> > > I'm all for that!
-> > 
-> > It would be easy to add this checking to objtool since it already reads
-> > the symbol table.  The hard part is figuring out the logistics. :-)
-> > 
-> > - Should the warnings be on by default?
-> 
-> Yes, if objtool is running. Keep it simple.
-> 
-> > - Part of the "objtool check" command or something else?
-> 
-> Yes - I think it's still within the 'object file check' functionality.
-> 
-> > - Separate config option or just include it with
-> >   CONFIG_STACK_VALIDATION?
-> 
-> Yeah, but I'd rename CONFIG_STACK_VALIDATION to CONFIG_OBJ_VALIDATION or such. As 
-> I predicted early on, objtool will go beyond stack checking! ;-)
-> 
-> > - Should all asm files be checked, including those currently skipped by
-> >   objtool with OBJECT_FILES_NON_STANDARD?
-> 
-> The symbol syntax check should definitely be for all files, yes.
+On Wed, Mar 22, 2017 at 7:55 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> If the charger gets unplugged before the battery is fully charged we will
+> get a one time Input fault. Ignore this rather then logging a message for
+> it. Likewise on the next interrupt after the one time Input fault all
+> fault flags will be 0, do not log a message when there are no faults.
+>
+> This fixes messages like these getting logged on charger unplug + replug:
+> bq24190-charger 15-006b: Fault: boost 0, charge 1, battery 0, ntc 0
+> bq24190-charger 15-006b: Fault: boost 0, charge 0, battery 0, ntc 0
+>
+> Cc: Liam Breck <kernel@networkimprov.net>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+> Changes in v2:
+> -This is a new patch in v2 of this patch-set
+> ---
+>  drivers/power/supply/bq24190_charger.c | 17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> index b535f24..351e020 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -1189,12 +1189,17 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
+>         } while (f_reg && ++i < 2);
+>
+>         if (f_reg != bdi->f_reg) {
+> -               dev_info(bdi->dev,
+> -                       "Fault: boost %d, charge %d, battery %d, ntc %d\n",
+> -                       !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+> -                       !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
+> -                       !!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
+> -                       !!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
+> +               /*
+> +                * Don't spam the logs if all faults are cleared, or when the
+> +                * cable providing Vbus gets unplugged.
+> +                */
+> +               if  (f_reg && f_reg != (1 << BQ24190_REG_F_CHRG_FAULT_SHIFT))
 
-That all sounds reasonable.  I'll work something up.
+I have seen this too, but I think you masked input over-voltage, as
+it's not differentiated from under-voltage. Maybe check pgstat?
 
-> Could we perhaps emit 'non-standard stack frames' information into the .o itself 
-> (via a flag or a special section?), so that objtool can decide on its own whether 
-> to complain about any weirdnesses there?
-
-For the OBJECT_FILES_NON_STANDARD case, where the whole file is
-"special", we can just provide a flag to "objtool check" to tell it to
-skip stack checking for that file, but still do the symbol checks.
-
-> > > Can we detect double ends as well - i.e. do a build check of the full syntax of 
-> > > these symbol definition primitives?
-> > 
-> > Detecting double ends would be a little trickier.  The second SYM_*_END
-> > supersedes the first, so that information isn't in the ELF symbol table.
-> 
-> Indeed.
-> 
-> > We could use a special section to annotate all the macro uses and have
-> > objtool do the checking, similar to what you suggested earlier.
-> 
-> That might be useful for other purposes as well - such as the non-standard stack 
-> frame annotations?
-
-To start with we can try going without all the special sections (other
-than the SYM_END double end check).  If we end up finding another case
-which isn't covered then we can always add the special sections later.
-
--- 
-Josh
+> +                       dev_info(bdi->dev,
+> +                               "Fault: boost %d, charge %d, battery %d, ntc %d\n",
+> +                               !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+> +                               !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
+> +                               !!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
+> +                               !!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
+>
+>                 mutex_lock(&bdi->f_reg_lock);
+>                 if ((bdi->f_reg & battery_mask_f) != (f_reg & battery_mask_f))
+> --
+> 2.9.3
+>
