@@ -1,154 +1,176 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v2 6/7] power: supply: bq24190_charger: Cleanup error-exit
- labels in probe()
-Date: Thu, 23 Mar 2017 12:46:11 +0100
-Message-ID: <123f2009-36d2-c50f-e63a-3731100a14e4@redhat.com>
-References: <20170322145536.30570-1-hdegoede@redhat.com>
- <20170322145536.30570-7-hdegoede@redhat.com>
- <20170323112139.4no4ffwabjixtild@earth>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v2 4/7] power: supply: bq24190_charger: Never reset the
+ charger chip
+Date: Thu, 23 Mar 2017 04:47:12 -0700
+Message-ID: <CAKvHMgSOdOCOj3JJSa2QCRC5_pg=jJN4NbX6D253poiSF7yQhQ@mail.gmail.com>
+References: <20170322145536.30570-1-hdegoede@redhat.com> <20170322145536.30570-5-hdegoede@redhat.com>
+ <20170322154313.GU8575@atomide.com> <2ab0b7d5-61b0-2a1f-7c45-07d7f3f180b6@redhat.com>
+ <CAKvHMgSy0iobRDEYWrOwVSz940TPNhOQXxRCUftT-8q3mUfXwA@mail.gmail.com>
+ <a8cd7854-38e0-e808-e22f-844c023cab88@redhat.com> <CAKvHMgS1Bc=G2Qa9SVFsjePTyoDJo0etA7d4-fJ+y03xpwwGqQ@mail.gmail.com>
+ <ff62ab2b-b0d7-87f2-1b42-624e26e9ef52@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:42300 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932855AbdCWLqP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 23 Mar 2017 07:46:15 -0400
-In-Reply-To: <20170323112139.4no4ffwabjixtild@earth>
+Received: from mail-io0-f175.google.com ([209.85.223.175]:33240 "EHLO
+        mail-io0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751455AbdCWLrx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 07:47:53 -0400
+Received: by mail-io0-f175.google.com with SMTP id f84so80546261ioj.0
+        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 04:47:13 -0700 (PDT)
+In-Reply-To: <ff62ab2b-b0d7-87f2-1b42-624e26e9ef52@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-Hi,
-
-On 23-03-17 12:21, Sebastian Reichel wrote:
+On Thu, Mar 23, 2017 at 4:44 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 > Hi,
 >
-> On Wed, Mar 22, 2017 at 03:55:35PM +0100, Hans de Goede wrote:
->> Names like out1, out2, etc. do not make it easier to follow what is
->> going on and make it harder (require renaming) if any steps are
->> later added / removed. Rename the labels to sane names.
->>
->> This also folds out1 and out2 into one pm_runtime_disable step,
->> if pm_runtime_get_sync fails we still need to do the put, it
->> failing means that the device failed to resume, but the refcount
->> will have been incremented and we need to decrement it.
->>
->> Cc: Liam Breck <kernel@networkimprov.net>
->> Cc: Tony Lindgren <tony@atomide.com>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> ---
->> Changes in v2:
->> -This is a new patch in v2 of this patch-set
->> ---
 >
-> I tried to queue this, but it does not apply without the reset
-> patch.
-
-Thank you for queuing the others, this is mainly a preparation
-patch to make the patch removing the battery interface cleaner,
-so merging this can wait till some form of the reset patch
-is merged.
-
-Regards,
-
-Hans
-
-
-
+> On 23-03-17 12:36, Liam Breck wrote:
+>>
+>> On Thu, Mar 23, 2017 at 1:44 AM, Hans de Goede <hdegoede@redhat.com>
+>> wrote:
+>>>
+>>> Hi,
+>>>
+>>>
+>>> On 23-03-17 08:16, Liam Breck wrote:
+>>>>
+>>>>
+>>>> On Wed, Mar 22, 2017 at 8:45 AM, Hans de Goede <hdegoede@redhat.com>
+>>>> wrote:
+>>>>>
+>>>>>
+>>>>> Hi,
+>>>>>
+>>>>> On 22-03-17 16:43, Tony Lindgren wrote:
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> * Hans de Goede <hdegoede@redhat.com> [170322 07:57]:
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> Resetting the charger should never be necessary it should always have
+>>>>>>> sane values programmed. If it is running with invalid values while we
+>>>>>>> are not running (system turned off or suspended) there is a big
+>>>>>>> problem
+>>>>>>> as that may lead to overcharging the battery.
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> And some systems may only configure it in the bootloader with no
+>>>>>> configuration passed to the kernel at all.
+>>>>>
+>>>>>
+>>>>>
+>>>>>
+>>>>> Right.
+>>>>>
+>>>>>
+>>>>>>> The reset in suspend() is meant to put the charger back into default
+>>>>>>> mode, but this is not necessary and not a good idea. If the charger
+>>>>>>> has
+>>>>>>> been programmed with a higher max charge_current / charge_voltage
+>>>>>>> then
+>>>>>>> putting it back in default-mode will reset those to the safe power-on
+>>>>>>> defaults, leading to slower charging, or charging to a lower voltage
+>>>>>>> (and thus not using the full capacity) while suspended which is
+>>>>>>> undesirable. Reprogramming the max charge_current / charge_voltage
+>>>>>>> after the reset will not help here as that will put the charger back
+>>>>>>> in host mode and start the i2c watchdog if the host then does not do
+>>>>>>> anything for 40s (iow if we're suspended for more then 40s) the
+>>>>>>> watchdog
+>>>>>>> expires resetting the device to default-mode, including resetting all
+>>>>>>> the registers to there safe power-on defaults. So the only way to
+>>>>>>> keep
+>>>>>>> using custom charge settings while suspending is to keep the charger
+>>>>>>> in
+>>>>>>> its normal running state with the i2c watchdog disabled. This is fine
+>>>>>>> as the charger will still automatically switch from constant current
+>>>>>>> to constant voltage and stop charging when the battery is full.
+>>>>>>>
+>>>>>>> Besides never being necessary resetting the charger also causes
+>>>>>>> problems
+>>>>>>> on systems where the charge voltage limit is set higher then the
+>>>>>>> reset
+>>>>>>> value, if this is the case and the charger is reset while charging
+>>>>>>> and
+>>>>>>> the battery voltage is between the 2 voltages, then about half the
+>>>>>>> time
+>>>>>>> the charger gets confused and claims to be charging (REG08 contains
+>>>>>>> 0x64)
+>>>>>>> but in reality the charger has decoupled itself from VBUS (Q1 off)
+>>>>>>> and
+>>>>>>> is drawing 0A from VBUS, leaving the system running from the battery.
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> We do have cases where Linux kernel is the bootloader though using
+>>>>>> kexec. And in those cases we may need to reset, so I wonder if the
+>>>>>> reset should just be optional based on a proper device tree
+>>>>>> (or platform_data) configuration?
+>>>>>
+>>>>>
+>>>>>
+>>>>>
+>>>>> As described above during my testing I've found that the chip does not
+>>>>> respond well to reset under certain conditions, so I think that if
+>>>>> we have settings to apply we should just overwrite the settings with
+>>>>> our settings, what does doing a reset before overwriting the registers
+>>>>> buy us? We still need to do the overwrite anyways.
+>>>>
+>>>>
+>>>>
+>>>> When driver loads on any conceivable hw, how do we know the chip is in
+>>>> a state we predicted?
+>>>
+>>>
+>>>
+>>> Any non reset values have to come from somewhere, likely firmware,
+>>> and unless we've platform data telling us the exact settings we should
+>>> use why would we decide the reset values are better then the ones
+>>> the charger was *already using* before our driver loads ? As said in
+>>> the commit msg: "If it is running with invalid values while we
+>>> are not running (system turned off or suspended) there is a big problem
+>>> as that may lead to overcharging the battery."
+>>>
+>>>> If it isn't, how can we fix any undesirable
+>>>> settings?
+>>>
+>>>
+>>>
+>>> Why would the chip not be in a sane state? Where would the undesirable
+>>> settings come from ?
+>>>
+>>>> Reset + fix a,b,c is simple way to do that.
+>>>
+>>>
+>>>
+>>> As my testing using real-world hardware under real-world conditions
+>>> has shown resetting the charger IC while it is charging can cause it
+>>> to misbehave. So we have this theoretical problem of there somehow
+>>> being undesirable settings at boot vs a real-world problem...
+>>
+>>
+>> A bug in the charger? Or in the platform hw/fw?
 >
-> -- Sebastian
 >
->>  drivers/power/supply/bq24190_charger.c | 24 +++++++++++-------------
->>  1 file changed, 11 insertions(+), 13 deletions(-)
->>
->> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
->> index 351e020..5e3da66 100644
->> --- a/drivers/power/supply/bq24190_charger.c
->> +++ b/drivers/power/supply/bq24190_charger.c
->> @@ -1408,12 +1408,12 @@ static int bq24190_probe(struct i2c_client *client,
->>  	pm_runtime_set_autosuspend_delay(dev, 600);
->>  	ret = pm_runtime_get_sync(dev);
->>  	if (ret < 0)
->> -		goto out1;
->> +		goto pm_runtime_disable;
->>
->>  	ret = bq24190_hw_init(bdi);
->>  	if (ret < 0) {
->>  		dev_err(dev, "Hardware init failed\n");
->> -		goto out2;
->> +		goto pm_runtime_disable;
->>  	}
->>
->>  	charger_cfg.drv_data = bdi;
->> @@ -1424,7 +1424,7 @@ static int bq24190_probe(struct i2c_client *client,
->>  	if (IS_ERR(bdi->charger)) {
->>  		dev_err(dev, "Can't register charger\n");
->>  		ret = PTR_ERR(bdi->charger);
->> -		goto out2;
->> +		goto pm_runtime_disable;
->>  	}
->>
->>  	battery_cfg.drv_data = bdi;
->> @@ -1433,13 +1433,13 @@ static int bq24190_probe(struct i2c_client *client,
->>  	if (IS_ERR(bdi->battery)) {
->>  		dev_err(dev, "Can't register battery\n");
->>  		ret = PTR_ERR(bdi->battery);
->> -		goto out3;
->> +		goto unregister_charger;
->>  	}
->>
->>  	ret = bq24190_sysfs_create_group(bdi);
->>  	if (ret) {
->>  		dev_err(dev, "Can't create sysfs entries\n");
->> -		goto out4;
->> +		goto unregister_battery;
->>  	}
->>
->>  	bdi->initialized = true;
->> @@ -1450,7 +1450,7 @@ static int bq24190_probe(struct i2c_client *client,
->>  			"bq24190-charger", bdi);
->>  	if (ret < 0) {
->>  		dev_err(dev, "Can't set up irq handler\n");
->> -		goto out5;
->> +		goto remove_sysfs_group;
->>  	}
->>
->>  	if (bdi->extcon) {
->> @@ -1459,7 +1459,7 @@ static int bq24190_probe(struct i2c_client *client,
->>  		ret = devm_extcon_register_notifier(dev, bdi->extcon, -1,
->>  						    &bdi->extcon_nb);
->>  		if (ret)
->> -			goto out5;
->> +			goto remove_sysfs_group;
->>
->>  		/* Sync initial cable state */
->>  		queue_delayed_work(system_wq, &bdi->extcon_work, 0);
->> @@ -1472,19 +1472,17 @@ static int bq24190_probe(struct i2c_client *client,
->>
->>  	return 0;
->>
->> -out5:
->> +remove_sysfs_group:
->>  	bq24190_sysfs_remove_group(bdi);
->>
->> -out4:
->> +unregister_battery:
->>  	power_supply_unregister(bdi->battery);
->>
->> -out3:
->> +unregister_charger:
->>  	power_supply_unregister(bdi->charger);
->>
->> -out2:
->> +pm_runtime_disable:
->>  	pm_runtime_put_sync(dev);
->> -
->> -out1:
->>  	pm_runtime_dont_use_autosuspend(dev);
->>  	pm_runtime_disable(dev);
->>  	return ret;
->> --
->> 2.9.3
->>
+> I'm pretty sure the fw is not touching the charger, still the problem
+> might be something specific to my hw. Either way there does not seem
+> to be a good reason to reset the chip and doing a reset despite it
+> not being necessary does cause real problems independently of the
+> root cause (I'm running this on production hardware which many
+> people have, so no way to modify the hardware).
+>
+> If you want to test this on your systems you can easily add a
+> patch on top of your current branch which just comments out
+> all the reset calls (and the bq24190_set_mode_host call in
+> resume) to get the same result on top of your current branch.
+
+I'll try it.
+
+Why would you not want set_mode_host()?
