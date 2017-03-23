@@ -1,95 +1,72 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 4/7] power: supply: bq24190_charger: Never reset the
- charger chip
-Date: Thu, 23 Mar 2017 11:59:46 +0100
-Message-ID: <20170323105946.53b5pwq252orqea7@earth>
+Subject: Re: [PATCH v2 1/7] power: supply: bq24190_charger: Use i2c-core
+ irq-mapping code
+Date: Thu, 23 Mar 2017 12:11:59 +0100
+Message-ID: <20170323111159.hdhtpqlzht74cgec@earth>
 References: <20170322145536.30570-1-hdegoede@redhat.com>
- <20170322145536.30570-5-hdegoede@redhat.com>
- <CAKvHMgQ0XCuYg6MG4x+gouNPSoNKvmpj5x79_J_3PxnGKZkfUw@mail.gmail.com>
+ <20170322145536.30570-2-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ppmhxn7mppmg6nv3"
+        protocol="application/pgp-signature"; boundary="j2c26b3xoiyijtuy"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:53260 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:54898 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932133AbdCWK7v (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 23 Mar 2017 06:59:51 -0400
+        id S1752023AbdCWLMF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 Mar 2017 07:12:05 -0400
 Content-Disposition: inline
-In-Reply-To: <CAKvHMgQ0XCuYg6MG4x+gouNPSoNKvmpj5x79_J_3PxnGKZkfUw@mail.gmail.com>
+In-Reply-To: <20170322145536.30570-2-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Hans de Goede <hdegoede@redhat.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
 
 
---ppmhxn7mppmg6nv3
+--j2c26b3xoiyijtuy
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Mar 22, 2017 at 11:41:14AM -0700, Liam Breck wrote:
-> On Wed, Mar 22, 2017 at 7:55 AM, Hans de Goede <hdegoede@redhat.com> wrot=
-e:
-> > -static int bq24190_register_reset(struct bq24190_dev_info *bdi)
-> > -{
-> > -       int ret, limit =3D 100;
-> > -       u8 v;
-> > -
-> > -       /* Reset the registers */
-> > -       ret =3D bq24190_write_mask(bdi, BQ24190_REG_POC,
-> > -                       BQ24190_REG_POC_RESET_MASK,
-> > -                       BQ24190_REG_POC_RESET_SHIFT,
-> > -                       0x1);
-> > -       if (ret < 0)
-> > -               return ret;
-> > -
-> > -       /* Reset bit will be cleared by hardware so poll until it is */
-> > -       do {
-> > -               ret =3D bq24190_read_mask(bdi, BQ24190_REG_POC,
-> > -                               BQ24190_REG_POC_RESET_MASK,
-> > -                               BQ24190_REG_POC_RESET_SHIFT,
-> > -                               &v);
-> > -               if (ret < 0)
-> > -                       return ret;
-> > -
-> > -               if (!v)
-> > -                       break;
-> > -
-> > -               udelay(10);
-> > -       } while (--limit);
-> > -
-> > -       if (!limit)
-> > -               return -EIO;
-> > -
-> > -       return 0;
-> > -}
+On Wed, Mar 22, 2017 at 03:55:30PM +0100, Hans de Goede wrote:
+> The i2c-core already maps of irqs before calling the driver's probe
+> function and there are no in tree users of
+> bq24190_platform_data->gpio_int.
 >=20
-> Let's leave this in with __maybe_unused.
+> Remove the redundant custom irq-mapping code and just use client->irq.
+>=20
+> Cc: Liam Breck <kernel@networkimprov.net>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Acked-by: Sebastian Reichel <sre@kernel.org>
+> ---
+> Changes in v2:
+> -Completely drop platform_data and include/linux/power/bq24190_charger.h
+> ---
 
-It's named __maybe_unused instead of __always_unused for a reason.
+Thanks, queued.
 
 -- Sebastian
 
---ppmhxn7mppmg6nv3
+--j2c26b3xoiyijtuy
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljTqqIACgkQ2O7X88g7
-+pqQzRAAg3mk71QbxJ6mvd8ctEgME5xFBzFL3aVLs7EPK6bfeagXjb26Dn+RD2pY
-hcxDBwEzU6qcFNxv8yVZd4WuWfEue0RGFXp7wrOTZ+dwACI2r2evr4DMFPgGeq+/
-9saTkbTy0xqXTKVfMymdzQQ4KdR3BLhh5nonJm+q8wjgLUimLGy599RfAzF7ZNF3
-ZfJJ/RCRDVYrW6a6i9UPoErY47xcnykhUAuR4UOZJa7YwOsxHAQphRYF0XYEyx9P
-Qu7/OAQJKKIoYTqD8nuR+zzjG9tMmB1A7aBtByeI8lNs8W802CAz7baTjW0WAZwR
-kgtorpIhivfWFJjEHCy+HcaSq67odLkekMTe8b7OBU6/a4rctQ8ShxSLGAp+AgIj
-dLvtPjtm7nBPwMaOIklRKUTbYQGYb+bRKEPlqKuHv4ZBiezc9P0XW6IpGtWeIwTZ
-qh3f78QAm5lcNBGPvU18Z5MrZVeA+Hoa1jnb+x9t67Wx80EcXjAxBaqRdkn8tN4e
-PLX+DtLxL7S6NIVsZSfi0Xcdg1RKbQ1LW/wJtQquo49wxvLZ4otxT3hjCjiwyzR1
-bFjulDCIpFlncgO7AjnYB5wY67b7+a5t5WOWxnnYlNF1tc458t0ImU1NAWu+OfH6
-E6vC9rc+12yu4SAStT/AkK0E/vIxLGC6eUFWLX0y+8wiieGJJpU=
-=0QPC
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljTrXwACgkQ2O7X88g7
++po/cg/9FOHOL6528qOmGTgJHRJUVs04Pkx2YMdc42KEIF1b20CcOtPxi2zQFINW
+ZdObeXXWGG0TbY/rizjTUOvdd8NTcg55OSROqmGpO0MXBj0fiXiKQgZNCirEWfiF
+hhVtFVdm2U693TW0Je6trjAPnbMYnslYuzBhvUim9LwiNST29iqRSn4IAsbHG7cD
+QQ+e09AKUgfc/RvrJkHoUDRo8KkXwzchQYoOeY/xIu8ddNimH1RzDZz6K+65o6xF
+hWv+0DODqqpzGvrfLpjJ81eYcgVPsPnyQwU07uLjWAiNv4rqf3RYKtdXV/bh6dm8
+vKZV5B9A1rfc8n2A/MzHTyORA8Pi+9o0GcMQ2Nl9X+b+rnhbNYwFoTQsecVjyanD
+1UBTpd5MayC8+25LsioDp9PgQOf98mKh4mnqndYKA4EPYgLPhLwA+sIzJnj2Hb+O
+8SDLEBPC9OXgE5eZiilA75gnz6zTmKqnBOZJjch9IOypmuY6qAxv2vI2p61GZtUL
+BJBd69PUY6OMHcm0hUEPY4U6rSAzRuYXF9F+rSKHgp/WwJRLAY02it3nAtou+snp
+RQEdi+ROtSu5xBINrHHNN6AzLZKEHMzT6x459J46+TPd4bLo/ahkXrnyWH9/shMH
+rsgFMpwrt493E9tb4gdOusq7LxIEcjophZwjFGvUOR8i/pERzMo=
+=4nXC
 -----END PGP SIGNATURE-----
 
---ppmhxn7mppmg6nv3--
+--j2c26b3xoiyijtuy--
