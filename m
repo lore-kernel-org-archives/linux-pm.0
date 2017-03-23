@@ -1,97 +1,74 @@
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 1/2] powerpc/powernv/cpuidle: Pass correct
- drv->cpumask for registration
-Date: Thu, 23 Mar 2017 21:12:29 +0530
-Message-ID: <20170323154229.GB9058@drishya.in.ibm.com>
-References: <20170323152247.14733-1-svaidy@linux.vnet.ibm.com>
- <20170323152247.14733-2-svaidy@linux.vnet.ibm.com>
- <CAJZ5v0jujyxWYbUAKkzkq9ZdT476LsHLfD2S9GtwHBPQByKWUw@mail.gmail.com>
-Reply-To: svaidy@linux.vnet.ibm.com
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU
+ controller
+Date: Thu, 23 Mar 2017 12:01:12 -0400
+Message-ID: <20170323160112.GA5953@htj.duckdns.org>
+References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+ <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
+ <20170320171511.GB3623@htj.duckdns.org>
+ <20170320180837.GB28391@e110439-lin>
+ <CAEi0qNmQWxc+SWYPfbf7jzz3w4-k-uatUHT1r2m_68EOFAVp=A@mail.gmail.com>
+ <20170323103254.GA11362@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:44737 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S933773AbdCWPms (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 11:42:48 -0400
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id v2NFd7do083012
-        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 11:42:40 -0400
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 29cg2q4rns-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 11:42:40 -0400
-Received: from localhost
-        by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <svaidy@linux.vnet.ibm.com>;
-        Thu, 23 Mar 2017 21:12:37 +0530
+Received: from mail-yw0-f194.google.com ([209.85.161.194]:34293 "EHLO
+        mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934419AbdCWQBP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 12:01:15 -0400
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jujyxWYbUAKkzkq9ZdT476LsHLfD2S9GtwHBPQByKWUw@mail.gmail.com>
+In-Reply-To: <20170323103254.GA11362@e110439-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-* Rafael J. Wysocki <rafael@kernel.org> [2017-03-23 16:28:31]:
+Hello,
 
-> On Thu, Mar 23, 2017 at 4:22 PM, Vaidyanathan Srinivasan
-> <svaidy@linux.vnet.ibm.com> wrote:
-> > drv->cpumask defaults to cpu_possible_mask in __cpuidle_driver_init().
-> > On PowerNV platform cpu_present could be less than cpu_possible in cases
-> > where firmware detects the cpu, but it is not available to the OS.  When
-> > CONFIG_HOTPLUG_CPU=n, such cpus are not hotplugable at runtime and hence
-> > we skip creating cpu_device.
-> >
-> > This breaks cpuidle on powernv where register_cpu() is not called for
-> > cpus in cpu_possible_mask that cannot be hot-added at runtime.
-> >
-> > Trying cpuidle_register_device() on cpu without cpu_device will cause
-> > crash like this:
-> >
-> > cpu 0xf: Vector: 380 (Data SLB Access) at [c000000ff1503490]
-> >     pc: c00000000022c8bc: string+0x34/0x60
-> >     lr: c00000000022ed78: vsnprintf+0x284/0x42c
-> >     sp: c000000ff1503710
-> >    msr: 9000000000009033
-> >    dar: 6000000060000000
-> >   current = 0xc000000ff1480000
-> >   paca    = 0xc00000000fe82d00   softe: 0        irq_happened: 0x01
-> >     pid   = 1, comm = swapper/8
-> > Linux version 4.11.0-rc2 (sv@sagarika) (gcc version 4.9.4
-> > (Buildroot 2017.02-00004-gc28573e) ) #15 SMP Fri Mar 17 19:32:02 IST 2017
-> > enter ? for help
-> > [link register   ] c00000000022ed78 vsnprintf+0x284/0x42c
-> > [c000000ff1503710] c00000000022ebb8 vsnprintf+0xc4/0x42c (unreliable)
-> > [c000000ff1503800] c00000000022ef40 vscnprintf+0x20/0x44
-> > [c000000ff1503830] c0000000000ab61c vprintk_emit+0x94/0x2cc
-> > [c000000ff15038a0] c0000000000acc9c vprintk_func+0x60/0x74
-> > [c000000ff15038c0] c000000000619694 printk+0x38/0x4c
-> > [c000000ff15038e0] c000000000224950 kobject_get+0x40/0x60
-> > [c000000ff1503950] c00000000022507c kobject_add_internal+0x60/0x2c4
-> > [c000000ff15039e0] c000000000225350 kobject_init_and_add+0x70/0x78
-> > [c000000ff1503a60] c00000000053c288 cpuidle_add_sysfs+0x9c/0xe0
-> > [c000000ff1503ae0] c00000000053aeac cpuidle_register_device+0xd4/0x12c
-> > [c000000ff1503b30] c00000000053b108 cpuidle_register+0x98/0xcc
-> > [c000000ff1503bc0] c00000000085eaf0 powernv_processor_idle_init+0x140/0x1e0
-> > [c000000ff1503c60] c00000000000cd60 do_one_initcall+0xc0/0x15c
-> > [c000000ff1503d20] c000000000833e84 kernel_init_freeable+0x1a0/0x25c
-> > [c000000ff1503dc0] c00000000000d478 kernel_init+0x24/0x12c
-> > [c000000ff1503e30] c00000000000b564 ret_from_kernel_thread+0x5c/0x78
-> >
-> > This patch fixes the bug by passing correct cpumask from
-> > powernv-cpuidle driver.
-> >
-> > Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+On Thu, Mar 23, 2017 at 10:32:54AM +0000, Patrick Bellasi wrote:
+> > But then we would lose out on being able to attach capacity
+> > constraints to specific tasks or groups of tasks?
 > 
-> That needs to be ACKed by someone familiar with powernv.
+> Yes, right. If CGroups are not available than you cannot specify
+> per-task constraints. This is just a system-wide global tunable.
+> 
+> Question is: does this overall proposal makes sense outside the scope
+> of task groups classification? (more on that afterwards)
 
-Previous version at
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-March/155587.html
+I think it does, given that it's a per-thread property which requires
+internal application knowledge to tune.
 
-I had not CCed linux-pm in the first post.
+> > I think the concern raised is more about whether CGroups is the right
+> > interface to use for attaching capacity constraints to task or groups
+> > of tasks, or is there a better way to attach such constraints?
+> 
+> Notice that CGroups based classification allows to easily enforce
+> the concept of "delegation containment". I think this feature should
+> be nice to have whatever interface we choose.
+> 
+> However, potentially we can define a proper per-task API; are you
+> thinking to something specifically?
 
-Michael and Mikey have reviewed the previous version.  Let me get an
-ack for you to proceed with the merge.
+I don't think the overall outcome was too good when we used cgroup as
+the direct way of configuring certain attributes - it either excludes
+the possibility of easily accessible API from application side or
+conflicts with the attributes set through such API.  It's a lot
+clearer when cgroup just sets what's allowed under the hierarchy.
 
-Thanks,
-Vaidy
+This is also in line with the aspect that cgroup for the most part is
+a scoping mechanism - it's the most straight-forward to implement and
+use when the behavior inside cgroup matches a system without cgroup,
+just scoped.  It shows up here too.  If you take out the cgroup part,
+you're left with an interface which is hardly useful.  cgroup isn't
+scoping the global system here.  It's becoming the primary interface
+for this feature which most likely isn't a good sign.
+
+So, my suggestion is to implement it as a per-task API.  If the
+feature calls for scoped restrictions, we definitely can add cgroup
+support for that but I'm really not convinced about using cgroup as
+the primary interface for this.
+
+Thanks.
+
+-- 
+tejun
