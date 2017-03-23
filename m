@@ -1,76 +1,83 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v2 5/7] power: supply: bq24190_charger: Don't spam the
- logs on charger plug / unplug
-Date: Thu, 23 Mar 2017 06:34:41 -0700
-Message-ID: <CAKvHMgRsF8pEAtYjp1=H1C0B-ex7ZfKZ_hx2xxs=3cWG8Q-zmA@mail.gmail.com>
-References: <20170322145536.30570-1-hdegoede@redhat.com> <20170322145536.30570-6-hdegoede@redhat.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery
+ device .type=unknown
+Date: Thu, 23 Mar 2017 14:37:30 +0100
+Message-ID: <20170323133729.jexsnpwrmbxswn26@earth>
+References: <20170321220921.5834-1-liam@networkimprov.net>
+ <20170321220921.5834-8-liam@networkimprov.net>
+ <20170323105221.qnyw2m4cgjcb24cl@earth>
+ <CAKvHMgS4oRCYRRgqo8GbeYxC5uhwgLPqe2j3ZBHQJMDBRYeA_w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="odirkygnrt7zmrhr"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f196.google.com ([209.85.223.196]:33614 "EHLO
-        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933968AbdCWNen (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 09:34:43 -0400
-Received: by mail-io0-f196.google.com with SMTP id f84so13289839ioj.0
-        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 06:34:42 -0700 (PDT)
-In-Reply-To: <20170322145536.30570-6-hdegoede@redhat.com>
+Received: from mail.kernel.org ([198.145.29.136]:50348 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751249AbdCWNhf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 Mar 2017 09:37:35 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKvHMgS4oRCYRRgqo8GbeYxC5uhwgLPqe2j3ZBHQJMDBRYeA_w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
+To: Liam Breck <liam@networkimprov.net>
+Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
 
-On Wed, Mar 22, 2017 at 7:55 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> If the charger gets unplugged before the battery is fully charged we will
-> get a one time Input fault. Ignore this rather then logging a message for
-> it. Likewise on the next interrupt after the one time Input fault all
-> fault flags will be 0, do not log a message when there are no faults.
->
-> This fixes messages like these getting logged on charger unplug + replug:
-> bq24190-charger 15-006b: Fault: boost 0, charge 1, battery 0, ntc 0
-> bq24190-charger 15-006b: Fault: boost 0, charge 0, battery 0, ntc 0
->
-> Cc: Liam Breck <kernel@networkimprov.net>
-> Cc: Tony Lindgren <tony@atomide.com>
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
-> Changes in v2:
-> -This is a new patch in v2 of this patch-set
-> ---
->  drivers/power/supply/bq24190_charger.c | 17 +++++++++++------
->  1 file changed, 11 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index b535f24..351e020 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -1189,12 +1189,17 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
->         } while (f_reg && ++i < 2);
->
->         if (f_reg != bdi->f_reg) {
-> -               dev_info(bdi->dev,
-> -                       "Fault: boost %d, charge %d, battery %d, ntc %d\n",
-> -                       !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
-> -                       !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
-> -                       !!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
-> -                       !!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
-> +               /*
-> +                * Don't spam the logs if all faults are cleared, or when the
-> +                * cable providing Vbus gets unplugged.
-> +                */
-> +               if  (f_reg && f_reg != (1 << BQ24190_REG_F_CHRG_FAULT_SHIFT))
 
-I have seen this too, but I think you masked input over-voltage, as
-it's not differentiated from under-voltage. Maybe check pgstat?
+--odirkygnrt7zmrhr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> +                       dev_info(bdi->dev,
-> +                               "Fault: boost %d, charge %d, battery %d, ntc %d\n",
-> +                               !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
-> +                               !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
-> +                               !!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
-> +                               !!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
->
->                 mutex_lock(&bdi->f_reg_lock);
->                 if ((bdi->f_reg & battery_mask_f) != (f_reg & battery_mask_f))
-> --
-> 2.9.3
->
+Hi,
+
+On Thu, Mar 23, 2017 at 04:31:50AM -0700, Liam Breck wrote:
+>> That still leaves the health status reading, though. From
+>> userspace's point-of-view this should be merged into the
+>> battery device, if fuel-gauge can't provide that information.
+>=20
+> I think the bigger issue is that multiple sysfs devices for what is
+> conceptually one power supply is awkward. With the addition of static
+> battery object, we have yet another set of properties which belong to
+> that supply.
+
+The simple-battery is consumed by the fuel-gauge, so not a problem.
+
+> A solution to this would be a core registry which allows various
+> drivers to submit properties to a named supply. Properties with the
+> same id (e.g. health) are OK given a tag (input-V, NTC-1, battery-V)
+> to differentiate them. Duplicates would be dropped (e.g. both drivers
+> submit monitored-battery stats). The result would be represented in
+> sysfs as a single device, where each property would appear as a file
+> or directory as necessary. And perhaps also as a file "health_summary"
+> which indicates whether there's trouble below decks.
+
+Yes, that would be the proper solution. Might become important, if
+more platforms with multiple chips providing battery information
+appear. Since I don't think you want to implement your suggestion,
+I suggest sticking to the custom "bat_fault" sysfs property. That
+should already be exposed for the charger device as far as I can
+see.
+
+-- Sebastian
+
+--odirkygnrt7zmrhr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljTz5cACgkQ2O7X88g7
++pqLwA/6AounOAlf+RlbPaAcQqkpFqwjmikICa1cY3ZYWJHITASHHCf/vC7OpyxM
+5gU7608vBZDQcn3BSqMR3ofDEl1TBsyUpy1TGeLL2LpBrXR6+0zZglB+tut6hE9z
+dZSnQ/zVm0udY9aAzgPdt4SrTlHIudD1W7V4Z9BM/SLBFwD/AJ813PxkY9VrnIyv
+i0BOwmRMXd9c1fFpwvq1ISnJ/Z+SBBOg2vUlhimuB35xobqVSqESj5LviGKhCKZ1
+7aJXZZOpk6fMbKoKLE3ey8GegzwwmBQqmBK0zTUhKl5jnUR/7x7JtwvLcDH6JuLX
+SbCWf4XgODFLbP+eDUup6XJs0Ru0yW+SPznSIy7PDrHo4p1iwcuyoJc9Pb+T2Rm/
+My5YKrYLxMPPmKskNemWjipjPKfoxE+nv65RiflLGJpP1kB5AQzcLpv5wIuXr3K6
+uffmAe1zSCP8RlP/vCvnDNpV7kyIrK2g1E9s8rbs7a5sOyxutCEeYQVyxWM+WK1Q
+XYlPcw5ivXjFdqaP2IKpVSMWKIr30U/HvX8mP4Bcbc2k/KFOODey4ao9+2OxINwF
+KgukTyZcwkM146k0s746wiA6jdFz5ODeY66oIBe36J3f0K1h4WKN7o3g0TersTA9
+xewAb0H0Jn6lWQLrlwmwVQIGUgYGclBC+9hIuAkrYS3STVijvXg=
+=7OYO
+-----END PGP SIGNATURE-----
+
+--odirkygnrt7zmrhr--
