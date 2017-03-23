@@ -1,55 +1,59 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery device .type=unknown
-Date: Thu, 23 Mar 2017 12:05:37 -0700
-Message-ID: <CAKvHMgQCq0zBeYXHL9hkbvtndEbrNocPzuPeRcPfKEON0+W4zA@mail.gmail.com>
-References: <20170321220921.5834-1-liam@networkimprov.net> <20170321220921.5834-8-liam@networkimprov.net>
- <20170323105221.qnyw2m4cgjcb24cl@earth> <CAKvHMgS4oRCYRRgqo8GbeYxC5uhwgLPqe2j3ZBHQJMDBRYeA_w@mail.gmail.com>
- <20170323133729.jexsnpwrmbxswn26@earth>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Jon Mason <jon.mason@broadcom.com>
+Subject: [RFC 3/3] ARM: dts: BCM5301X: Add Thermal Support
+Date: Thu, 23 Mar 2017 15:18:48 -0400
+Message-ID: <1490296728-14733-4-git-send-email-jon.mason@broadcom.com>
+References: <1490296728-14733-1-git-send-email-jon.mason@broadcom.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f173.google.com ([209.85.223.173]:33486 "EHLO
-        mail-io0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751679AbdCWTFj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 15:05:39 -0400
-Received: by mail-io0-f173.google.com with SMTP id f84so3573968ioj.0
-        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 12:05:39 -0700 (PDT)
-In-Reply-To: <20170323133729.jexsnpwrmbxswn26@earth>
+Received: from mail-wm0-f48.google.com ([74.125.82.48]:35692 "EHLO
+        mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753764AbdCWTTL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 15:19:11 -0400
+Received: by mail-wm0-f48.google.com with SMTP id u132so69835088wmg.0
+        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 12:19:10 -0700 (PDT)
+In-Reply-To: <1490296728-14733-1-git-send-email-jon.mason@broadcom.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
+To: zajec5@gmail.com
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com
 
-On Thu, Mar 23, 2017 at 6:37 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
->
-> On Thu, Mar 23, 2017 at 04:31:50AM -0700, Liam Breck wrote:
->>> That still leaves the health status reading, though. From
->>> userspace's point-of-view this should be merged into the
->>> battery device, if fuel-gauge can't provide that information.
->>
->> I think the bigger issue is that multiple sysfs devices for what is
->> conceptually one power supply is awkward. With the addition of static
->> battery object, we have yet another set of properties which belong to
->> that supply.
->
-> The simple-battery is consumed by the fuel-gauge, so not a problem.
->
->> A solution to this would be a core registry which allows various
->> drivers to submit properties to a named supply. Properties with the
->> same id (e.g. health) are OK given a tag (input-V, NTC-1, battery-V)
->> to differentiate them. Duplicates would be dropped (e.g. both drivers
->> submit monitored-battery stats). The result would be represented in
->> sysfs as a single device, where each property would appear as a file
->> or directory as necessary. And perhaps also as a file "health_summary"
->> which indicates whether there's trouble below decks.
->
-> Yes, that would be the proper solution. Might become important, if
-> more platforms with multiple chips providing battery information
-> appear. Since I don't think you want to implement your suggestion,
+Add thermal support via the ns-thermal driver and create a single
+thermal zone for the entire SoC.
 
-If you're genuinely interested, I could probably ask Matt to work on this...
+Signed-off-by: Jon Mason <jon.mason@broadcom.com>
+---
+ arch/arm/boot/dts/bcm5301x.dtsi | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-> I suggest sticking to the custom "bat_fault" sysfs property. That
-> should already be exposed for the charger device as far as I can
-> see.
+diff --git a/arch/arm/boot/dts/bcm5301x.dtsi b/arch/arm/boot/dts/bcm5301x.dtsi
+index ceca664..ba4bcef 100644
+--- a/arch/arm/boot/dts/bcm5301x.dtsi
++++ b/arch/arm/boot/dts/bcm5301x.dtsi
+@@ -351,6 +351,12 @@
+ 				     "sata2";
+ 	};
+ 
++	pvtmon: thermal@1800c2c0 {
++		compatible = "brcm,ns-thermal";
++		reg = <0x1800c2c0 0x10>;
++		#thermal-sensor-cells = <0>;
++	};
++
+ 	srab: srab@18007000 {
+ 		compatible = "brcm,bcm5301x-srab";
+ 		reg = <0x18007000 0x1000>;
+@@ -414,4 +420,13 @@
+ 			status = "disabled";
+ 		};
+ 	};
++
++	thermal-zones {
++		soc {
++			polling-delay-passive = <100>; /* milliseconds */
++			polling-delay = <5000>; /* milliseconds */
++
++			thermal-sensors = <&pvtmon>;
++		};
++	};
+ };
+-- 
+2.7.4
