@@ -1,74 +1,95 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery
- device .type=unknown
-Date: Thu, 23 Mar 2017 11:52:21 +0100
-Message-ID: <20170323105221.qnyw2m4cgjcb24cl@earth>
-References: <20170321220921.5834-1-liam@networkimprov.net>
- <20170321220921.5834-8-liam@networkimprov.net>
+Subject: Re: [PATCH v2 4/7] power: supply: bq24190_charger: Never reset the
+ charger chip
+Date: Thu, 23 Mar 2017 11:59:46 +0100
+Message-ID: <20170323105946.53b5pwq252orqea7@earth>
+References: <20170322145536.30570-1-hdegoede@redhat.com>
+ <20170322145536.30570-5-hdegoede@redhat.com>
+ <CAKvHMgQ0XCuYg6MG4x+gouNPSoNKvmpj5x79_J_3PxnGKZkfUw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="kwrlitqydavvxhwe"
+        protocol="application/pgp-signature"; boundary="ppmhxn7mppmg6nv3"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:52006 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:53260 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932224AbdCWKwh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 23 Mar 2017 06:52:37 -0400
+        id S932133AbdCWK7v (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 Mar 2017 06:59:51 -0400
 Content-Disposition: inline
-In-Reply-To: <20170321220921.5834-8-liam@networkimprov.net>
+In-Reply-To: <CAKvHMgQ0XCuYg6MG4x+gouNPSoNKvmpj5x79_J_3PxnGKZkfUw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
-Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
 
 
---kwrlitqydavvxhwe
+--ppmhxn7mppmg6nv3
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Mar 21, 2017 at 03:09:21PM -0700, Liam Breck wrote:
-> From: Liam Breck <kernel@networkimprov.net>
+On Wed, Mar 22, 2017 at 11:41:14AM -0700, Liam Breck wrote:
+> On Wed, Mar 22, 2017 at 7:55 AM, Hans de Goede <hdegoede@redhat.com> wrot=
+e:
+> > -static int bq24190_register_reset(struct bq24190_dev_info *bdi)
+> > -{
+> > -       int ret, limit =3D 100;
+> > -       u8 v;
+> > -
+> > -       /* Reset the registers */
+> > -       ret =3D bq24190_write_mask(bdi, BQ24190_REG_POC,
+> > -                       BQ24190_REG_POC_RESET_MASK,
+> > -                       BQ24190_REG_POC_RESET_SHIFT,
+> > -                       0x1);
+> > -       if (ret < 0)
+> > -               return ret;
+> > -
+> > -       /* Reset bit will be cleared by hardware so poll until it is */
+> > -       do {
+> > -               ret =3D bq24190_read_mask(bdi, BQ24190_REG_POC,
+> > -                               BQ24190_REG_POC_RESET_MASK,
+> > -                               BQ24190_REG_POC_RESET_SHIFT,
+> > -                               &v);
+> > -               if (ret < 0)
+> > -                       return ret;
+> > -
+> > -               if (!v)
+> > -                       break;
+> > -
+> > -               udelay(10);
+> > -       } while (--limit);
+> > -
+> > -       if (!limit)
+> > -               return -EIO;
+> > -
+> > -       return 0;
+> > -}
 >=20
-> Not for upstream.
+> Let's leave this in with __maybe_unused.
 
-Obviously.
-
-> Temporary workaround to prevent bq24190-battery device
-> from interfering with a fuel gauge that has .type=3Dpower_supply_type_bat=
-tery
->=20
-> I'll move properties from -battery device to -charger in a subsequent ver=
-sion.
-
-I thought about the transistor, which can take the battery
-offline and IMHO it should be exposed as regulator.
-
-That still leaves the health status reading, though. From
-userspace's point-of-view this should be merged into the
-battery device, if fuel-gauge can't provide that information.
+It's named __maybe_unused instead of __always_unused for a reason.
 
 -- Sebastian
 
---kwrlitqydavvxhwe
+--ppmhxn7mppmg6nv3
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljTqOMACgkQ2O7X88g7
-+pojrA//UcedlJOoTa+cMCfIpChwky2HXzJFjNgNH6w6YFQkLoQzhwMLPbePvN6G
-+fgUen+TmNYIxhICJT6VInFpbM+kpGXGmL99mvIXnyVuOate1LCXr0VrkHvviCFf
-G9pyL/KNHR1a5qlyxnLlFQo9y1K/jbUT2bNJW5Yhxiv6D6hJ0pMDNIf459uxSyQM
-ebqVSFc2NPMjD38ZThAzfNFQmRh6MkhZtD1zABnwkrfqu9wdn9cjkwYmmk0Qfy9x
-UR1699wZFcE0tiUuq39MUw3OyoAJRNypniG82KUXCuQlX6GRFFQmpfowwV+uSk/O
-g7YXMU/rszezjupwJ+Zhm74DU/cbA3zug95wYhd3lZA0J92WFQwWSxitqwH/Wfu4
-ErHGXn88SwV1gB2kibhJJuUv+n3yiqlTyQIoLvL3yPS6aKmC9vYVUIeUr2WQSHp+
-wsZaAaHKpwU4Zcc2YXKgy7lHsPx5mPvH8EVCMMH1bFdjywTFf5eDhMz+FO50TBFy
-r6xEXknYELBeMn3K/79K/AU/r+qsrdgTPnesCy74XfsekbYABQ7ZYEXg3K+guupv
-RUZeh1vAvygTkNH3A0NFW8qAFptquTeVR/JJCCmjY8/8ck4OkPvegrhJXDb75ogA
-vxtnuSo0IW05CXueZeq3mXM5rMFYidGMm6c9eZoTe/mFsaCtNtU=
-=0ex7
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljTqqIACgkQ2O7X88g7
++pqQzRAAg3mk71QbxJ6mvd8ctEgME5xFBzFL3aVLs7EPK6bfeagXjb26Dn+RD2pY
+hcxDBwEzU6qcFNxv8yVZd4WuWfEue0RGFXp7wrOTZ+dwACI2r2evr4DMFPgGeq+/
+9saTkbTy0xqXTKVfMymdzQQ4KdR3BLhh5nonJm+q8wjgLUimLGy599RfAzF7ZNF3
+ZfJJ/RCRDVYrW6a6i9UPoErY47xcnykhUAuR4UOZJa7YwOsxHAQphRYF0XYEyx9P
+Qu7/OAQJKKIoYTqD8nuR+zzjG9tMmB1A7aBtByeI8lNs8W802CAz7baTjW0WAZwR
+kgtorpIhivfWFJjEHCy+HcaSq67odLkekMTe8b7OBU6/a4rctQ8ShxSLGAp+AgIj
+dLvtPjtm7nBPwMaOIklRKUTbYQGYb+bRKEPlqKuHv4ZBiezc9P0XW6IpGtWeIwTZ
+qh3f78QAm5lcNBGPvU18Z5MrZVeA+Hoa1jnb+x9t67Wx80EcXjAxBaqRdkn8tN4e
+PLX+DtLxL7S6NIVsZSfi0Xcdg1RKbQ1LW/wJtQquo49wxvLZ4otxT3hjCjiwyzR1
+bFjulDCIpFlncgO7AjnYB5wY67b7+a5t5WOWxnnYlNF1tc458t0ImU1NAWu+OfH6
+E6vC9rc+12yu4SAStT/AkK0E/vIxLGC6eUFWLX0y+8wiieGJJpU=
+=0QPC
 -----END PGP SIGNATURE-----
 
---kwrlitqydavvxhwe--
+--ppmhxn7mppmg6nv3--
