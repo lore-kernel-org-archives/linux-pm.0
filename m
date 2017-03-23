@@ -1,105 +1,85 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / runtime: Use synchronous runtime PM call in rpm_put_suppliers()
-Date: Thu, 23 Mar 2017 13:47:46 +0100
-Message-ID: <CAPDyKFot3C1C1k45JovwKHFkvTJAFvdetoE8_ADAhMCkFw3hPA@mail.gmail.com>
-References: <CGME20170322092305eucas1p20d2a6dfede483210febea5b5e0ff68db@eucas1p2.samsung.com>
- <1490174570-18345-1-git-send-email-m.szyprowski@samsung.com>
- <CAPDyKFq+mTvruQb5ifj3etMxSCWgDZTZ6ebGkk84UCQDqjR4-A@mail.gmail.com> <CAJZ5v0ihYQp4_oJCu3Tugbqrm=68hcxdg8-yUphbCXCUw3UzPw@mail.gmail.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v11 05/10] power: bq27xxx_battery: Make error reporting consistent
+Date: Thu, 23 Mar 2017 05:49:47 -0700
+Message-ID: <CAKvHMgRdDeXDfa5GaTbqhuks9WBxnft4yitnCH=ix+AqM4yqyA@mail.gmail.com>
+References: <20170320094335.19224-1-liam@networkimprov.net>
+ <20170320094335.19224-6-liam@networkimprov.net> <6e387ba3-c5ce-ef88-d5ab-560b190e8352@ti.com>
+ <CAKvHMgSvUo+7CdsCRyHFgTEBKbZq7LeQokkGFs1P+6_4oPLqvg@mail.gmail.com>
+ <20170323101154.eixbsbeyjywwozws@earth> <CAKvHMgSKrPnJNLRN-61u_BRYAHQuMc1WNU4binjTMMTLGq95Kg@mail.gmail.com>
+ <20170323103315.u5mcxzmme6g5izhf@earth>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0ihYQp4_oJCu3Tugbqrm=68hcxdg8-yUphbCXCUw3UzPw@mail.gmail.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f194.google.com ([209.85.223.194]:35684 "EHLO
+        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932127AbdCWMtt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 08:49:49 -0400
+Received: by mail-io0-f194.google.com with SMTP id f103so13101354ioi.2
+        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 05:49:49 -0700 (PDT)
+In-Reply-To: <20170323103315.u5mcxzmme6g5izhf@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-On 22 March 2017 at 21:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Wed, Mar 22, 2017 at 12:34 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> On 22 March 2017 at 10:22, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
->>> rpm_put_suppliers() might be called as a result of pm_runtime_put_sync()
->>> call, where the called explicitly wants to perform the operation in
->>> synchronous way to avoid some deadlocks related to concurrent code
->>> execution in the PM workers. However the current code for handling device
->>> links always use asynchronous calls. This patch changes it to always use
->>> the synchronous calls.
+On Thu, Mar 23, 2017 at 3:33 AM, Sebastian Reichel <sre@kernel.org> wrote:
+> Hi,
+>
+> On Thu, Mar 23, 2017 at 03:24:40AM -0700, Liam Breck wrote:
+>> On Thu, Mar 23, 2017 at 3:11 AM, Sebastian Reichel <sre@kernel.org> wrote:
+>> > On Mon, Mar 20, 2017 at 10:59:18AM -0700, Liam Breck wrote:
+>> >> On Mon, Mar 20, 2017 at 9:57 AM, Andrew F. Davis <afd@ti.com> wrote:
+>> >> > On 03/20/2017 04:43 AM, Liam Breck wrote:
+>> >> >> From: Liam Breck <kernel@networkimprov.net>
+>> >> >>
+>> >> >> Previously errors were reported in a mix of styles via both dev_err() & dev_dbg().
+>> >> >> Report all errors with dev_err() and include error code in message.
+>> >> >> Report register ID separately in dev_dbg() message.
+>> >> >>
+>> >> >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>> >> >> ---
+>> >> >>  drivers/power/supply/bq27xxx_battery.c | 35 ++++++++++++++++++----------------
+>> >> >>  1 file changed, 19 insertions(+), 16 deletions(-)
+>> >> >>
+>> >> >> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>> >> >> index 398801a..2e2a3a8 100644
+>> >> >> --- a/drivers/power/supply/bq27xxx_battery.c
+>> >> >> +++ b/drivers/power/supply/bq27xxx_battery.c
+>> >> >> @@ -794,11 +794,17 @@ MODULE_PARM_DESC(poll_interval,
+>> >> >>  static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
+>> >> >>                              bool single)
+>> >> >>  {
+>> >> >> -     /* Reports EINVAL for invalid/missing registers */
+>> >> >> +     int ret;
+>> >> >> +
+>> >> >>       if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
+>> >> >>               return -EINVAL;
+>> >> >>
+>> >> >> -     return di->bus.read(di, di->regs[reg_index], single);
+>> >> >> +     ret = di->bus.read(di, di->regs[reg_index], single);
+>> >> >> +     if (ret < 0)
+>> >> >> +             dev_dbg(di->dev, "failed to read register 0x%02x (index %d)\n",
+>> >> >> +                     di->regs[reg_index], reg_index);
+>> >> >> +
+>> >> >
+>> >> > If we print out the error code here we don't have to do that in each of
+>> >> > the below printouts.
+>> >>
+>> >> This is a dev_dbg, the below are dev_err, and I think you want error
+>> >> code in dev_err. BTW the above addresses your request to learn which
+>> >> register was in play in the event of a DM read/write failure.
+>> >
+>> > Just make it dev_err and also print ret. Then we can remove all
+>> > other prints. That will result in some information-loss (name
+>> > of the register), but
 >>
->> This is a good idea! It is better to leave the decision to the "leaf"
->> node of whether to use asynchronous mode or not.
->
-> One immediate concern that I have is that this happens in an SRCU
-> read-side critical section and sync runtime suspend can take arbitrary
-> amount of time, especially if those devices have suppliers etc.  You
-> may very well wait for an entire subtree to suspend synchronously
-> here.
-
-Yes that's a problem. Can we address that somehow?
-
->
-> Moreover, if the suppliers have parents, those parents won't be
-> suspended synchronously anyway, so this only addresses the first level
-> of hierarchy in that case.
->
-> Also the behavior for suppliers follows the behavior for parents and I
-> don't quite see the reason for these two cases to behave differently
-> in principle.
-
-Yes, you are right!
-
-We shouldn't change this for suppliers unless we also change this for parents.
-
->
->>>
->>> This patch fixes the potential deadlock, which appears during adding
->>> runtime PM support to clock framework, which uses global mutex, which is
->>> reentrant only for the current process, so trying to execute runtime PM
->>> callback from the worker results in deadlock (the mentioned mutex is
->>> already taken by the current process, which waits for execution of PM
->>> worker).
+>> Andrew specifically asked for error reporting that gives the error
+>> context elsewhere in the patchset. In complying with that request, I
+>> filed this patch.
 >>
->> This just tells that the locking mechanism for clocks are fragile.
+>> We could pass a context string into read() ...
 >
-> Right.
->
-> We seem to be working around problems in there with this patch.
->
->> Whether it is a good motivation for this change, I am not sure.
->>
->> In either case, I like the change!
->
-> Why exactly do you like it?
+> That's fine with me.
 
-Okay, let me try to elaborate.
-
-For the async runtime PM suspend/idle case (including runtime PM autosuspend):
-When a driver for a children/consumer decides to use the async runtime
-PM APIs, I assume it's because the driver expects the device to be
-used in some kind of a "bursty" manner. Meaning it doesn't make sense
-to save power in-between every request, but instead leave the device
-powered for little while after a request has been served. The purpose
-is often to avoid the wakeup-latency for *each* request, when these
-comes in bursts.
-
-For these cases the driver has already traded some power savings for
-improved performance of requests in bursts. When this trade is done
-for the children/consumer, I think it seems reasonable to not further
-defer the parent/supplier to be be runtime suspended/idled, as that
-would further trade power for performance, which is what happens when
-rpm_idle|suspend() decides to punt this to a work.
-
-Moreover, scheduling a work for each parent/supplier seems suboptimal
-to me, as in the async case we are already executing from within a
-work. In cases of a higher level of device hierarchy, several works
-becomes scheduled.
-
-For the sync runtime PM suspend/idle case:
-When a driver for a children/consumers decides to use the sync runtime
-PM APIs, it's most likely because it wants the device to enter its low
-power state as soon as possible. In other words, there is no need to
-trade power for performance, either because power is more important
-than performance or because the wakeup latency is negligible. To me, I
-think it seems reasonable to respect this policy for parents/suppliers
-as well instead of always punting to a work.
-
-Kind regards
-Uffe
+And it's really outside the scope of this patchset. Let Andrew do that
+after this goes in :-)
