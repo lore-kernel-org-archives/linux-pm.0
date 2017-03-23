@@ -1,85 +1,96 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v11 05/10] power: bq27xxx_battery: Make error reporting consistent
-Date: Thu, 23 Mar 2017 05:49:47 -0700
-Message-ID: <CAKvHMgRdDeXDfa5GaTbqhuks9WBxnft4yitnCH=ix+AqM4yqyA@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v11 07/10] power: bq27xxx_battery: Keep track of specific
+ chip id
+Date: Thu, 23 Mar 2017 14:06:51 +0100
+Message-ID: <20170323130651.ruvs4j3kpf4moxrr@earth>
 References: <20170320094335.19224-1-liam@networkimprov.net>
- <20170320094335.19224-6-liam@networkimprov.net> <6e387ba3-c5ce-ef88-d5ab-560b190e8352@ti.com>
- <CAKvHMgSvUo+7CdsCRyHFgTEBKbZq7LeQokkGFs1P+6_4oPLqvg@mail.gmail.com>
- <20170323101154.eixbsbeyjywwozws@earth> <CAKvHMgSKrPnJNLRN-61u_BRYAHQuMc1WNU4binjTMMTLGq95Kg@mail.gmail.com>
- <20170323103315.u5mcxzmme6g5izhf@earth>
+ <20170320094335.19224-8-liam@networkimprov.net>
+ <20170323102825.vvxfzvuvvnhyzlna@earth>
+ <CAKvHMgQsuTNcGUXZL7qk_YZ+qcdcLJ1+1xPB0zP97DqiitHJXA@mail.gmail.com>
+ <20170323123054.jyngk44mea435cal@earth>
+ <CAKvHMgSpkfgQxMMLmw7MdLqP_LFMt-V9k63oRg5SsDDXTN5rXQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="wxpg7p7p4c2zfsiu"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f194.google.com ([209.85.223.194]:35684 "EHLO
-        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932127AbdCWMtt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 08:49:49 -0400
-Received: by mail-io0-f194.google.com with SMTP id f103so13101354ioi.2
-        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 05:49:49 -0700 (PDT)
-In-Reply-To: <20170323103315.u5mcxzmme6g5izhf@earth>
+Received: from mail.kernel.org ([198.145.29.136]:45290 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752034AbdCWNG4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 Mar 2017 09:06:56 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKvHMgSpkfgQxMMLmw7MdLqP_LFMt-V9k63oRg5SsDDXTN5rXQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
+To: Liam Breck <liam@networkimprov.net>
 Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-On Thu, Mar 23, 2017 at 3:33 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
->
-> On Thu, Mar 23, 2017 at 03:24:40AM -0700, Liam Breck wrote:
->> On Thu, Mar 23, 2017 at 3:11 AM, Sebastian Reichel <sre@kernel.org> wrote:
->> > On Mon, Mar 20, 2017 at 10:59:18AM -0700, Liam Breck wrote:
->> >> On Mon, Mar 20, 2017 at 9:57 AM, Andrew F. Davis <afd@ti.com> wrote:
->> >> > On 03/20/2017 04:43 AM, Liam Breck wrote:
->> >> >> From: Liam Breck <kernel@networkimprov.net>
->> >> >>
->> >> >> Previously errors were reported in a mix of styles via both dev_err() & dev_dbg().
->> >> >> Report all errors with dev_err() and include error code in message.
->> >> >> Report register ID separately in dev_dbg() message.
->> >> >>
->> >> >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->> >> >> ---
->> >> >>  drivers/power/supply/bq27xxx_battery.c | 35 ++++++++++++++++++----------------
->> >> >>  1 file changed, 19 insertions(+), 16 deletions(-)
->> >> >>
->> >> >> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->> >> >> index 398801a..2e2a3a8 100644
->> >> >> --- a/drivers/power/supply/bq27xxx_battery.c
->> >> >> +++ b/drivers/power/supply/bq27xxx_battery.c
->> >> >> @@ -794,11 +794,17 @@ MODULE_PARM_DESC(poll_interval,
->> >> >>  static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
->> >> >>                              bool single)
->> >> >>  {
->> >> >> -     /* Reports EINVAL for invalid/missing registers */
->> >> >> +     int ret;
->> >> >> +
->> >> >>       if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
->> >> >>               return -EINVAL;
->> >> >>
->> >> >> -     return di->bus.read(di, di->regs[reg_index], single);
->> >> >> +     ret = di->bus.read(di, di->regs[reg_index], single);
->> >> >> +     if (ret < 0)
->> >> >> +             dev_dbg(di->dev, "failed to read register 0x%02x (index %d)\n",
->> >> >> +                     di->regs[reg_index], reg_index);
->> >> >> +
->> >> >
->> >> > If we print out the error code here we don't have to do that in each of
->> >> > the below printouts.
->> >>
->> >> This is a dev_dbg, the below are dev_err, and I think you want error
->> >> code in dev_err. BTW the above addresses your request to learn which
->> >> register was in play in the event of a DM read/write failure.
->> >
->> > Just make it dev_err and also print ret. Then we can remove all
->> > other prints. That will result in some information-loss (name
->> > of the register), but
->>
->> Andrew specifically asked for error reporting that gives the error
->> context elsewhere in the patchset. In complying with that request, I
->> filed this patch.
->>
->> We could pass a context string into read() ...
->
-> That's fine with me.
 
-And it's really outside the scope of this patchset. Let Andrew do that
-after this goes in :-)
+--wxpg7p7p4c2zfsiu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Thu, Mar 23, 2017 at 05:39:09AM -0700, Liam Breck wrote:
+> On Thu, Mar 23, 2017 at 5:30 AM, Sebastian Reichel <sre@kernel.org> wrote:
+> > Hi,
+> >
+> > On Thu, Mar 23, 2017 at 03:35:33AM -0700, Liam Breck wrote:
+> >> On Thu, Mar 23, 2017 at 3:28 AM, Sebastian Reichel <sre@kernel.org> wr=
+ote:
+> >> > Hi,
+> >> >
+> >> > On Mon, Mar 20, 2017 at 02:43:32AM -0700, Liam Breck wrote:
+> >> >> From: Liam Breck <kernel@networkimprov.net>
+> >> >>
+> >> >> Pass actual chip ID into _setup(), which translates it to a group I=
+D,
+> >> >> to allow support for all chips by the power_supply_battery_info cod=
+e.
+> >> >> There are no functional changes to the driver.
+> >> >>
+> >> >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> >> >
+> >> > This is really ugly. If we need chip ID and group ID let's store
+> >> > them in different variables. For example put the detailed chipid
+> >> > into di->realchip and then do
+> >>
+> >> I tried this in a previous version, and Andrew rejected it as
+> >> confusing to have two IDs. That was while you were away on business
+> >> :-)
+> >
+> > now we have two IDs in the same variable.
+> > That definitely more confusing. We can name the second variable
+> > group to reduce confusion.
+>=20
+> I was trying not to rename every instance of di->chip; there's a lot.
+>=20
+> But we can pass real_chip as an argument to this function, so that
+> gets you what you wanted.
+
+That's fine with me.
+
+-- Sebastian
+
+--wxpg7p7p4c2zfsiu
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljTyGsACgkQ2O7X88g7
++po5HQ//TKTSfRiridzm16miFPqVVxM2noJv1FyH389z3ow/9JXD/1P4w7KCeSYC
+jCCOT1NatuWHRTRmk7aZ1NIbmZYdZL4CWY5ZwTf1rudnkRbNjKCEEJMXC7xTtrEY
+p4Oxp+ffUc6q8TrJgBXX8moT7mHDwkmUPZ4/ZAi/Vx+Un3LheXy8fMl9K5Ba4LA2
+Af0S3OKPhIeRXp5XJ8Kj3NnX6fQyJWo7uN5dpG3C5KXe2zUFMeKZRnH1q6ASnWXJ
+VNd5jzBDxvZYCJmZm/YDc6rl9qHjzTYHAmROfJ1IHlaPCQ+NRIT3WPeYQyqsoj8n
+3DKBN+4ITXHcI2C88EWYlrksLHdt9/AD/4csG2vr4tcAtcmi6ah07+sr/YxYHkRj
+xMXSfiVWtekCxgbxkhCxVwsI2cixdk23R2J2B5KftI7vICZgbKW+ZU5CybEKynap
+avoD6+SLK5zF4fCW2AJ9pn/GGlcRI7IFDafL58nkttIZ148LiXH2D0Ab0woqItmU
+6azhs8xnRl9YgHoutPNgwpgo/eV/Zp1yAdZJ6Ed6L9deSDx0ffb7YGz72WVztRNq
+YJeQ6cym6Y3QgIXagAALnjH+pQK3UDrYxwcb7NozHKrNbyBVGwSkw0AUOz9dQ3mv
+2SAnBlJnsXa40J50QOceDuPEmgIW1fBCNEnSb8w1bdbHW5uP/yg=
+=MEvV
+-----END PGP SIGNATURE-----
+
+--wxpg7p7p4c2zfsiu--
