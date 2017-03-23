@@ -1,81 +1,94 @@
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH v2 2/2] cpuidle: Validate cpu_dev in cpuidle_add_sysfs
-Date: Thu, 23 Mar 2017 20:52:47 +0530
-Message-ID: <20170323152247.14733-3-svaidy@linux.vnet.ibm.com>
-References: <20170323152247.14733-1-svaidy@linux.vnet.ibm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170323152247.14733-1-svaidy@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 2/2] cpuidle: Validate cpu_dev in cpuidle_add_sysfs
+Date: Thu, 23 Mar 2017 16:27:31 +0100
+Message-ID: <CAJZ5v0hkgKEqMy0N9V21zt2fseoAoriLKYP4GaMJ40q+B9BtvA@mail.gmail.com>
+References: <20170323152247.14733-1-svaidy@linux.vnet.ibm.com> <20170323152247.14733-3-svaidy@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:36186 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755909AbdCWP1d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 11:27:33 -0400
+In-Reply-To: <20170323152247.14733-3-svaidy@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-If a given cpu is not in cpu_present and cpu hotplug
-is disabled, arch can skip setting up the cpu_dev.
+On Thu, Mar 23, 2017 at 4:22 PM, Vaidyanathan Srinivasan
+<svaidy@linux.vnet.ibm.com> wrote:
+> If a given cpu is not in cpu_present and cpu hotplug
+> is disabled, arch can skip setting up the cpu_dev.
+>
+> Arch cpuidle driver should pass correct cpu mask
+> for registration, but failing to do so by the driver
+> causes error to propagate and crash like this:
+>
+> [   30.076045] Unable to handle kernel paging request for
+>                                 data at address 0x00000048
+> [   30.076100] Faulting instruction address: 0xc0000000007b2f30
+> cpu 0x4d: Vector: 300 (Data Access) at [c000003feb18b670]
+>     pc: c0000000007b2f30: kobject_get+0x20/0x70
+>     lr: c0000000007b3c94: kobject_add_internal+0x54/0x3f0
+>     sp: c000003feb18b8f0
+>    msr: 9000000000009033
+>    dar: 48
+>  dsisr: 40000000
+>   current = 0xc000003fd2ed8300
+>   paca    = 0xc00000000fbab500   softe: 0        irq_happened: 0x01
+>     pid   = 1, comm = swapper/0
+> Linux version 4.11.0-rc2-svaidy+ (sv@sagarika) (gcc version 6.2.0
+> 20161005 (Ubuntu 6.2.0-5ubuntu12) ) #10 SMP Sun Mar 19 00:08:09 IST 2017
+> enter ? for help
+> [c000003feb18b960] c0000000007b3c94 kobject_add_internal+0x54/0x3f0
+> [c000003feb18b9f0] c0000000007b43a4 kobject_init_and_add+0x64/0xa0
+> [c000003feb18ba70] c000000000e284f4 cpuidle_add_sysfs+0xb4/0x130
+> [c000003feb18baf0] c000000000e26038 cpuidle_register_device+0x118/0x1c0
+> [c000003feb18bb30] c000000000e26c48 cpuidle_register+0x78/0x120
+> [c000003feb18bbc0] c00000000168fd9c powernv_processor_idle_init+0x110/0x1c4
+> [c000003feb18bc40] c00000000000cff8 do_one_initcall+0x68/0x1d0
+> [c000003feb18bd00] c0000000016242f4 kernel_init_freeable+0x280/0x360
+> [c000003feb18bdc0] c00000000000d864 kernel_init+0x24/0x160
+> [c000003feb18be30] c00000000000b4e8 ret_from_kernel_thread+0x5c/0x74
+>
+> Validating cpu_dev fixes the crash and reports correct error message like:
+>
+> [   30.163506] Failed to register cpuidle device for cpu136
+> [   30.173329] Registration of powernv driver failed.
+>
+> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-Arch cpuidle driver should pass correct cpu mask
-for registration, but failing to do so by the driver
-causes error to propagate and crash like this:
+The previous version is in linux-next already and I'm going to push it
+for merging shortly.
 
-[   30.076045] Unable to handle kernel paging request for
-				data at address 0x00000048
-[   30.076100] Faulting instruction address: 0xc0000000007b2f30
-cpu 0x4d: Vector: 300 (Data Access) at [c000003feb18b670]
-    pc: c0000000007b2f30: kobject_get+0x20/0x70
-    lr: c0000000007b3c94: kobject_add_internal+0x54/0x3f0
-    sp: c000003feb18b8f0
-   msr: 9000000000009033
-   dar: 48
- dsisr: 40000000
-  current = 0xc000003fd2ed8300
-  paca    = 0xc00000000fbab500   softe: 0        irq_happened: 0x01
-    pid   = 1, comm = swapper/0
-Linux version 4.11.0-rc2-svaidy+ (sv@sagarika) (gcc version 6.2.0
-20161005 (Ubuntu 6.2.0-5ubuntu12) ) #10 SMP Sun Mar 19 00:08:09 IST 2017
-enter ? for help
-[c000003feb18b960] c0000000007b3c94 kobject_add_internal+0x54/0x3f0
-[c000003feb18b9f0] c0000000007b43a4 kobject_init_and_add+0x64/0xa0
-[c000003feb18ba70] c000000000e284f4 cpuidle_add_sysfs+0xb4/0x130
-[c000003feb18baf0] c000000000e26038 cpuidle_register_device+0x118/0x1c0
-[c000003feb18bb30] c000000000e26c48 cpuidle_register+0x78/0x120
-[c000003feb18bbc0] c00000000168fd9c powernv_processor_idle_init+0x110/0x1c4
-[c000003feb18bc40] c00000000000cff8 do_one_initcall+0x68/0x1d0
-[c000003feb18bd00] c0000000016242f4 kernel_init_freeable+0x280/0x360
-[c000003feb18bdc0] c00000000000d864 kernel_init+0x24/0x160
-[c000003feb18be30] c00000000000b4e8 ret_from_kernel_thread+0x5c/0x74
-
-Validating cpu_dev fixes the crash and reports correct error message like:
-
-[   30.163506] Failed to register cpuidle device for cpu136
-[   30.173329] Registration of powernv driver failed.
-
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
- drivers/cpuidle/sysfs.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index c5adc8c..f2c3bce 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -615,6 +615,18 @@ int cpuidle_add_sysfs(struct cpuidle_device *dev)
- 	struct device *cpu_dev = get_cpu_device((unsigned long)dev->cpu);
- 	int error;
- 
-+	/*
-+	 * Return error if cpu_device is not setup for this cpu.  This
-+	 * could happen if arch did not setup cpu_device since this
-+	 * cpu is not in cpu_present mask and the driver did not send
-+	 * correct cpu mask at registration.  Without this check we
-+	 * would end up passing bogus value for &cpu_dev->kobj in
-+	 * kobject_init_and_add().
-+	 */
-+
-+	if (!cpu_dev)
-+		return -ENODEV;
-+
- 	kdev = kzalloc(sizeof(*kdev), GFP_KERNEL);
- 	if (!kdev)
- 		return -ENOMEM;
--- 
-2.9.3
+> ---
+>  drivers/cpuidle/sysfs.c | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
+>
+> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+> index c5adc8c..f2c3bce 100644
+> --- a/drivers/cpuidle/sysfs.c
+> +++ b/drivers/cpuidle/sysfs.c
+> @@ -615,6 +615,18 @@ int cpuidle_add_sysfs(struct cpuidle_device *dev)
+>         struct device *cpu_dev = get_cpu_device((unsigned long)dev->cpu);
+>         int error;
+>
+> +       /*
+> +        * Return error if cpu_device is not setup for this cpu.  This
+> +        * could happen if arch did not setup cpu_device since this
+> +        * cpu is not in cpu_present mask and the driver did not send
+> +        * correct cpu mask at registration.  Without this check we
+> +        * would end up passing bogus value for &cpu_dev->kobj in
+> +        * kobject_init_and_add().
+> +        */
+> +
+> +       if (!cpu_dev)
+> +               return -ENODEV;
+> +
+>         kdev = kzalloc(sizeof(*kdev), GFP_KERNEL);
+>         if (!kdev)
+>                 return -ENOMEM;
+> --
+> 2.9.3
+>
