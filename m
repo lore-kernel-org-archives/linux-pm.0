@@ -1,76 +1,74 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 194963] New: schedutil governor causes audio problem in game
-Date: Thu, 23 Mar 2017 10:40:58 +0000
-Message-ID: <bug-194963-137361@https.bugzilla.kernel.org/>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery
+ device .type=unknown
+Date: Thu, 23 Mar 2017 11:52:21 +0100
+Message-ID: <20170323105221.qnyw2m4cgjcb24cl@earth>
+References: <20170321220921.5834-1-liam@networkimprov.net>
+ <20170321220921.5834-8-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="kwrlitqydavvxhwe"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:60372 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S932484AbdCWKlA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 06:41:00 -0400
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 3807227C14
-        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 10:40:59 +0000 (UTC)
-Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id EFA3627C14
-        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 10:40:58 +0000 (UTC)
+Received: from mail.kernel.org ([198.145.29.136]:52006 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932224AbdCWKwh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 Mar 2017 06:52:37 -0400
+Content-Disposition: inline
+In-Reply-To: <20170321220921.5834-8-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
-
-https://bugzilla.kernel.org/show_bug.cgi?id=194963
-
-            Bug ID: 194963
-           Summary: schedutil governor causes audio problem in game
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 4.10.4
-          Hardware: x86-64
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-          Assignee: linux-pm@vger.kernel.org
-          Reporter: john.ettedgui@gmail.com
-        Regression: No
-
-Created attachment 255443
-  --> https://bugzilla.kernel.org/attachment.cgi?id=255443&action=edit
-dmesg
-
-Hello,
-
-I'm on the kernel 4.10.4 but I've had the same issues for a few weeks already,
-definitely on .3 and probably on .2 but not sure anymore.
-
-When I switched the cpu governor from ondemand or performance to schedutil, it
-all seemed fine, but actually playing a game in wine gives me audio cracking
-every now and then, fairly similarly to when we didn't have a pulseaudio
-backend in wine. (I have not tried using only alsa).
-
-Interestingly I've tried 2 different games in Wine and the problem only happens
-with one, I assume the more CPU intensive one: StarCraft 2.
-
-Restarting the computer, killing pulseaudio and restarting it, limiting the
-apps opened, not of that changed anything, but switching the governor back
-fixed it right away.
-
-My CPU is an Intel i7 4790k, this is my kernel line:
-linux   /vmlinuz-linux root=/dev/sda3 rw  rootfstype=btrfs raid=noautodetect
-intel_iommu=on quiet add_efi_memmap clocksource=hpet hpet=enable splash
-consoleblank=0 intel_pstate=disable sysrq_always_enabled=1
+To: Liam Breck <liam@networkimprov.net>
+Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
 
 
-I am not sure what else to provide, there was nothing in dmesg that seemed
-related, nor any error in Wine, please tell me how I can help.
+--kwrlitqydavvxhwe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thank you,
-John
+Hi,
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+On Tue, Mar 21, 2017 at 03:09:21PM -0700, Liam Breck wrote:
+> From: Liam Breck <kernel@networkimprov.net>
+>=20
+> Not for upstream.
+
+Obviously.
+
+> Temporary workaround to prevent bq24190-battery device
+> from interfering with a fuel gauge that has .type=3Dpower_supply_type_bat=
+tery
+>=20
+> I'll move properties from -battery device to -charger in a subsequent ver=
+sion.
+
+I thought about the transistor, which can take the battery
+offline and IMHO it should be exposed as regulator.
+
+That still leaves the health status reading, though. From
+userspace's point-of-view this should be merged into the
+battery device, if fuel-gauge can't provide that information.
+
+-- Sebastian
+
+--kwrlitqydavvxhwe
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljTqOMACgkQ2O7X88g7
++pojrA//UcedlJOoTa+cMCfIpChwky2HXzJFjNgNH6w6YFQkLoQzhwMLPbePvN6G
++fgUen+TmNYIxhICJT6VInFpbM+kpGXGmL99mvIXnyVuOate1LCXr0VrkHvviCFf
+G9pyL/KNHR1a5qlyxnLlFQo9y1K/jbUT2bNJW5Yhxiv6D6hJ0pMDNIf459uxSyQM
+ebqVSFc2NPMjD38ZThAzfNFQmRh6MkhZtD1zABnwkrfqu9wdn9cjkwYmmk0Qfy9x
+UR1699wZFcE0tiUuq39MUw3OyoAJRNypniG82KUXCuQlX6GRFFQmpfowwV+uSk/O
+g7YXMU/rszezjupwJ+Zhm74DU/cbA3zug95wYhd3lZA0J92WFQwWSxitqwH/Wfu4
+ErHGXn88SwV1gB2kibhJJuUv+n3yiqlTyQIoLvL3yPS6aKmC9vYVUIeUr2WQSHp+
+wsZaAaHKpwU4Zcc2YXKgy7lHsPx5mPvH8EVCMMH1bFdjywTFf5eDhMz+FO50TBFy
+r6xEXknYELBeMn3K/79K/AU/r+qsrdgTPnesCy74XfsekbYABQ7ZYEXg3K+guupv
+RUZeh1vAvygTkNH3A0NFW8qAFptquTeVR/JJCCmjY8/8ck4OkPvegrhJXDb75ogA
+vxtnuSo0IW05CXueZeq3mXM5rMFYidGMm6c9eZoTe/mFsaCtNtU=
+=0ex7
+-----END PGP SIGNATURE-----
+
+--kwrlitqydavvxhwe--
