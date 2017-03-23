@@ -1,180 +1,196 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v11 07/10] power: bq27xxx_battery: Keep track of specific
- chip id
-Date: Thu, 23 Mar 2017 14:44:58 -0700
-Message-ID: <CAKvHMgR=bcw2kO_8QLQfyAm241Ynk2woMw81pPnVGUDCu7vMBA@mail.gmail.com>
-References: <20170320094335.19224-1-liam@networkimprov.net>
- <20170320094335.19224-8-liam@networkimprov.net> <20170323102825.vvxfzvuvvnhyzlna@earth>
- <CAKvHMgQsuTNcGUXZL7qk_YZ+qcdcLJ1+1xPB0zP97DqiitHJXA@mail.gmail.com> <f8e49417-ea2a-3486-26c2-63eb3306990a@ti.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v2 4/7] power: supply: bq24190_charger: Never reset the
+ charger chip
+Date: Thu, 23 Mar 2017 23:01:11 +0100
+Message-ID: <65527878-47cb-70a8-f605-b251835b94ed@redhat.com>
+References: <20170322145536.30570-1-hdegoede@redhat.com>
+ <20170322145536.30570-5-hdegoede@redhat.com>
+ <20170322154313.GU8575@atomide.com>
+ <2ab0b7d5-61b0-2a1f-7c45-07d7f3f180b6@redhat.com>
+ <CAKvHMgSy0iobRDEYWrOwVSz940TPNhOQXxRCUftT-8q3mUfXwA@mail.gmail.com>
+ <a8cd7854-38e0-e808-e22f-844c023cab88@redhat.com>
+ <CAKvHMgS1Bc=G2Qa9SVFsjePTyoDJo0etA7d4-fJ+y03xpwwGqQ@mail.gmail.com>
+ <ff62ab2b-b0d7-87f2-1b42-624e26e9ef52@redhat.com>
+ <CAKvHMgSSihQRTcXwZXtS6sOgtr7Pxzkb-Jb_iMeys7YLtOGv3A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f196.google.com ([209.85.223.196]:33785 "EHLO
-        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751837AbdCWVpA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 17:45:00 -0400
-Received: by mail-io0-f196.google.com with SMTP id f84so965024ioj.0
-        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 14:44:59 -0700 (PDT)
-In-Reply-To: <f8e49417-ea2a-3486-26c2-63eb3306990a@ti.com>
+Received: from mx1.redhat.com ([209.132.183.28]:46330 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750761AbdCWWBP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 Mar 2017 18:01:15 -0400
+In-Reply-To: <CAKvHMgSSihQRTcXwZXtS6sOgtr7Pxzkb-Jb_iMeys7YLtOGv3A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
+To: Liam Breck <liam@networkimprov.net>
+Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On Thu, Mar 23, 2017 at 7:49 AM, Andrew F. Davis <afd@ti.com> wrote:
-> On 03/23/2017 05:35 AM, Liam Breck wrote:
->> On Thu, Mar 23, 2017 at 3:28 AM, Sebastian Reichel <sre@kernel.org> wrote:
->>> Hi,
->>>
->>> On Mon, Mar 20, 2017 at 02:43:32AM -0700, Liam Breck wrote:
->>>> From: Liam Breck <kernel@networkimprov.net>
->>>>
->>>> Pass actual chip ID into _setup(), which translates it to a group ID,
->>>> to allow support for all chips by the power_supply_battery_info code.
->>>> There are no functional changes to the driver.
->>>>
->>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->>>
->>> This is really ugly. If we need chip ID and group ID let's store
->>> them in different variables. For example put the detailed chipid
->>> into di->realchip and then do
+Hi,
+
+On 23-03-17 21:33, Liam Breck wrote:
+> On Thu, Mar 23, 2017 at 4:44 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> Hi,
 >>
->> I tried this in a previous version, and Andrew rejected it as
->> confusing to have two IDs. That was while you were away on business
->> :-)
 >>
+>> On 23-03-17 12:36, Liam Breck wrote:
+>>>
+>>> On Thu, Mar 23, 2017 at 1:44 AM, Hans de Goede <hdegoede@redhat.com>
+>>> wrote:
+>>>>
+>>>> Hi,
+>>>>
+>>>>
+>>>> On 23-03-17 08:16, Liam Breck wrote:
+>>>>>
+>>>>>
+>>>>> On Wed, Mar 22, 2017 at 8:45 AM, Hans de Goede <hdegoede@redhat.com>
+>>>>> wrote:
+>>>>>>
+>>>>>>
+>>>>>> Hi,
+>>>>>>
+>>>>>> On 22-03-17 16:43, Tony Lindgren wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> * Hans de Goede <hdegoede@redhat.com> [170322 07:57]:
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> Resetting the charger should never be necessary it should always have
+>>>>>>>> sane values programmed. If it is running with invalid values while we
+>>>>>>>> are not running (system turned off or suspended) there is a big
+>>>>>>>> problem
+>>>>>>>> as that may lead to overcharging the battery.
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> And some systems may only configure it in the bootloader with no
+>>>>>>> configuration passed to the kernel at all.
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> Right.
+>>>>>>
+>>>>>>
+>>>>>>>> The reset in suspend() is meant to put the charger back into default
+>>>>>>>> mode, but this is not necessary and not a good idea. If the charger
+>>>>>>>> has
+>>>>>>>> been programmed with a higher max charge_current / charge_voltage
+>>>>>>>> then
+>>>>>>>> putting it back in default-mode will reset those to the safe power-on
+>>>>>>>> defaults, leading to slower charging, or charging to a lower voltage
+>>>>>>>> (and thus not using the full capacity) while suspended which is
+>>>>>>>> undesirable. Reprogramming the max charge_current / charge_voltage
+>>>>>>>> after the reset will not help here as that will put the charger back
+>>>>>>>> in host mode and start the i2c watchdog if the host then does not do
+>>>>>>>> anything for 40s (iow if we're suspended for more then 40s) the
+>>>>>>>> watchdog
+>>>>>>>> expires resetting the device to default-mode, including resetting all
+>>>>>>>> the registers to there safe power-on defaults. So the only way to
+>>>>>>>> keep
+>>>>>>>> using custom charge settings while suspending is to keep the charger
+>>>>>>>> in
+>>>>>>>> its normal running state with the i2c watchdog disabled. This is fine
+>>>>>>>> as the charger will still automatically switch from constant current
+>>>>>>>> to constant voltage and stop charging when the battery is full.
+>>>>>>>>
+>>>>>>>> Besides never being necessary resetting the charger also causes
+>>>>>>>> problems
+>>>>>>>> on systems where the charge voltage limit is set higher then the
+>>>>>>>> reset
+>>>>>>>> value, if this is the case and the charger is reset while charging
+>>>>>>>> and
+>>>>>>>> the battery voltage is between the 2 voltages, then about half the
+>>>>>>>> time
+>>>>>>>> the charger gets confused and claims to be charging (REG08 contains
+>>>>>>>> 0x64)
+>>>>>>>> but in reality the charger has decoupled itself from VBUS (Q1 off)
+>>>>>>>> and
+>>>>>>>> is drawing 0A from VBUS, leaving the system running from the battery.
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> We do have cases where Linux kernel is the bootloader though using
+>>>>>>> kexec. And in those cases we may need to reset, so I wonder if the
+>>>>>>> reset should just be optional based on a proper device tree
+>>>>>>> (or platform_data) configuration?
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> As described above during my testing I've found that the chip does not
+>>>>>> respond well to reset under certain conditions, so I think that if
+>>>>>> we have settings to apply we should just overwrite the settings with
+>>>>>> our settings, what does doing a reset before overwriting the registers
+>>>>>> buy us? We still need to do the overwrite anyways.
+>>>>>
+>>>>>
+>>>>>
+>>>>> When driver loads on any conceivable hw, how do we know the chip is in
+>>>>> a state we predicted?
+>>>>
+>>>>
+>>>>
+>>>> Any non reset values have to come from somewhere, likely firmware,
+>>>> and unless we've platform data telling us the exact settings we should
+>>>> use why would we decide the reset values are better then the ones
+>>>> the charger was *already using* before our driver loads ? As said in
+>>>> the commit msg: "If it is running with invalid values while we
+>>>> are not running (system turned off or suspended) there is a big problem
+>>>> as that may lead to overcharging the battery."
+>>>>
+>>>>> If it isn't, how can we fix any undesirable
+>>>>> settings?
+>>>>
+>>>>
+>>>>
+>>>> Why would the chip not be in a sane state? Where would the undesirable
+>>>> settings come from ?
+>>>>
+>>>>> Reset + fix a,b,c is simple way to do that.
+>>>>
+>>>>
+>>>>
+>>>> As my testing using real-world hardware under real-world conditions
+>>>> has shown resetting the charger IC while it is charging can cause it
+>>>> to misbehave. So we have this theoretical problem of there somehow
+>>>> being undesirable settings at boot vs a real-world problem...
+>>>
+>>>
+>>> A bug in the charger? Or in the platform hw/fw?
+>>
+>>
+>> I'm pretty sure the fw is not touching the charger, still the problem
+>> might be something specific to my hw. Either way there does not seem
+>> to be a good reason to reset the chip and doing a reset despite it
+>> not being necessary does cause real problems independently of the
+>> root cause (I'm running this on production hardware which many
+>> people have, so no way to modify the hardware).
+>>
+>> If you want to test this on your systems you can easily add a
+>> patch on top of your current branch which just comments out
+>> all the reset calls (and the bq24190_set_mode_host call in
+>> resume) to get the same result on top of your current branch.
 >
-> I rejected two tables, to indexes is what I've been pushing for a while.
+> My mistake... what I need to try is reproducing your failure due to
+> reset during charge. Can you explain what switches I need to flip and
+> dials to watch?
 
-On March 9, you wrote, "each chip should have one unique ID, I think
-what ever way you prefer would work for the table structure, lets just
-keep the chip ID enums clean"
+The GPDwin mini laptop I'm developing this on /for has a bq24292i
+(bq24192i compatible) with a LiHV battery and max charging
+voltage set to 4.38V When resetting the charger while the
+battery voltage is between 4.1V (reset max volt) and 4.38V
+and the charger is charging. Sometimes instead of just
+turning of charging as the bat voltage is now above the max
+voltage, it turns of Q1 (disconnects itself from Vbus) while
+it thinks it is still charging (observed from REG08 as well
+as the charging LED.
 
-Anyway, we have a solution - realid via argument.
+Regards,
 
->>> switch(di->realchip) {
->>> case FOO:
->>>     di->chip = GRP_FOO;
->>>     break;
->>> case BAR:
->>>     di->chip = GRP_BAR;
->>>     break;
->>> default:
->>>     di->chip = di->realchip;
->>>     break;
->>> }
->>>
->>> -- Sebastian
->>>
->>>>  drivers/power/supply/bq27xxx_battery.c     | 27 +++++++++++++++++++++++++++
->>>>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 ++++++++--------
->>>>  include/linux/power/bq27xxx_battery.h      | 11 +++++++++++
->>>>  3 files changed, 46 insertions(+), 8 deletions(-)
->>>>
->>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->>>> index f36a6f1..db1a388 100644
->>>> --- a/drivers/power/supply/bq27xxx_battery.c
->>>> +++ b/drivers/power/supply/bq27xxx_battery.c
->>>> @@ -1391,6 +1391,33 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>>>       struct power_supply_desc *psy_desc;
->>>>       struct power_supply_config psy_cfg = { .drv_data = di, };
->>>>
->>>> +     switch(di->chip) {
->>>> +     case BQ27000:
->>>> +     case BQ27010:
->>>> +     case BQ2750X:
->>>> +     case BQ2751X:
->>>> +     case BQ27500:
->>>> +     case BQ27510G1:
->>>> +     case BQ27510G2:
->>>> +     case BQ27510G3:
->>>> +     case BQ27520G1:
->>>> +     case BQ27520G2:
->>>> +     case BQ27520G3:
->>>> +     case BQ27520G4:
->>>> +     case BQ27530:
->>>> +     case BQ27541:
->>>> +     case BQ27545:
->>>> +     case BQ27421: break;
->>>> +     case BQ2752X: di->chip = BQ2751X; break;
->>>> +     case BQ27531: di->chip = BQ27530; break;
->>>> +     case BQ27542: di->chip = BQ27541; break;
->>>> +     case BQ27546: di->chip = BQ27541; break;
->>>> +     case BQ27742: di->chip = BQ27541; break;
->>>> +     case BQ27425: di->chip = BQ27421; break;
->>>> +     case BQ27441: di->chip = BQ27421; break;
->>>> +     case BQ27621: di->chip = BQ27421; break;
->>>> +     }
->>>> +
->>>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
->>>>       mutex_init(&di->lock);
->>>>       di->regs = bq27xxx_regs[di->chip];
->>>> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
->>>> index c68fbc3..b3f2494 100644
->>>> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
->>>> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
->>>> @@ -150,7 +150,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>>>       { "bq27210", BQ27010 },
->>>>       { "bq27500", BQ2750X },
->>>>       { "bq27510", BQ2751X },
->>>> -     { "bq27520", BQ2751X },
->>>> +     { "bq27520", BQ2752X },
->>>>       { "bq27500-1", BQ27500 },
->>>>       { "bq27510g1", BQ27510G1 },
->>>>       { "bq27510g2", BQ27510G2 },
->>>> @@ -160,16 +160,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>>>       { "bq27520g3", BQ27520G3 },
->>>>       { "bq27520g4", BQ27520G4 },
->>>>       { "bq27530", BQ27530 },
->>>> -     { "bq27531", BQ27530 },
->>>> +     { "bq27531", BQ27531 },
->>>>       { "bq27541", BQ27541 },
->>>> -     { "bq27542", BQ27541 },
->>>> -     { "bq27546", BQ27541 },
->>>> -     { "bq27742", BQ27541 },
->>>> +     { "bq27542", BQ27542 },
->>>> +     { "bq27546", BQ27546 },
->>>> +     { "bq27742", BQ27742 },
->>>>       { "bq27545", BQ27545 },
->>>>       { "bq27421", BQ27421 },
->>>> -     { "bq27425", BQ27421 },
->>>> -     { "bq27441", BQ27421 },
->>>> -     { "bq27621", BQ27421 },
->>>> +     { "bq27425", BQ27425 },
->>>> +     { "bq27441", BQ27441 },
->>>> +     { "bq27621", BQ27621 },
->>>>       {},
->>>>  };
->>>>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
->>>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
->>>> index c3369fa..96cec17 100644
->>>> --- a/include/linux/power/bq27xxx_battery.h
->>>> +++ b/include/linux/power/bq27xxx_battery.h
->>>> @@ -2,6 +2,7 @@
->>>>  #define __LINUX_BQ27X00_BATTERY_H__
->>>>
->>>>  enum bq27xxx_chip {
->>>> +     /* categories; index for bq27xxx_regs[] */
->>>>       BQ27000 = 1, /* bq27000, bq27200 */
->>>>       BQ27010, /* bq27010, bq27210 */
->>>>       BQ2750X, /* bq27500 deprecated alias */
->>>> @@ -18,6 +19,16 @@ enum bq27xxx_chip {
->>>>       BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
->>>>       BQ27545, /* bq27545 */
->>>>       BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
->>>> +
->>>> +     /* members of categories; translate these to category in _setup() */
->>>> +     BQ2752X, /* deprecated alias */
->>>> +     BQ27531,
->>>> +     BQ27542,
->>>> +     BQ27546,
->>>> +     BQ27742,
->>>> +     BQ27425,
->>>> +     BQ27441,
->>>> +     BQ27621,
->>>>  };
->>>>
->>>>  /**
->>>> --
->>>> 2.9.3
->>>>
+Hans
