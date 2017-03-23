@@ -1,243 +1,228 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v11 05/10] power: bq27xxx_battery: Make error reporting
- consistent
-Date: Thu, 23 Mar 2017 11:11:55 +0100
-Message-ID: <20170323101154.eixbsbeyjywwozws@earth>
+Subject: Re: [PATCH v11 04/10] power: power_supply: Add
+ power_supply_battery_info and API
+Date: Thu, 23 Mar 2017 11:17:27 +0100
+Message-ID: <20170323101727.y53vc74fskqxdw34@earth>
 References: <20170320094335.19224-1-liam@networkimprov.net>
- <20170320094335.19224-6-liam@networkimprov.net>
- <6e387ba3-c5ce-ef88-d5ab-560b190e8352@ti.com>
- <CAKvHMgSvUo+7CdsCRyHFgTEBKbZq7LeQokkGFs1P+6_4oPLqvg@mail.gmail.com>
+ <20170320094335.19224-5-liam@networkimprov.net>
+ <CAKvHMgTpRLx+8NHsjcaGpqN=W-7ujBoiXtRwm9A+JGbcNANS-w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="uo4kxg5bzdpkz4v7"
+        protocol="application/pgp-signature"; boundary="6lhths7l6htwcw44"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:43912 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:44698 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751617AbdCWKMB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 23 Mar 2017 06:12:01 -0400
+        id S932198AbdCWKRd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 Mar 2017 06:17:33 -0400
 Content-Disposition: inline
-In-Reply-To: <CAKvHMgSvUo+7CdsCRyHFgTEBKbZq7LeQokkGFs1P+6_4oPLqvg@mail.gmail.com>
+In-Reply-To: <CAKvHMgTpRLx+8NHsjcaGpqN=W-7ujBoiXtRwm9A+JGbcNANS-w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
 Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
 
---uo4kxg5bzdpkz4v7
+--6lhths7l6htwcw44
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Mar 20, 2017 at 10:59:18AM -0700, Liam Breck wrote:
-> On Mon, Mar 20, 2017 at 9:57 AM, Andrew F. Davis <afd@ti.com> wrote:
-> > On 03/20/2017 04:43 AM, Liam Breck wrote:
-> >> From: Liam Breck <kernel@networkimprov.net>
-> >>
-> >> Previously errors were reported in a mix of styles via both dev_err() =
-& dev_dbg().
-> >> Report all errors with dev_err() and include error code in message.
-> >> Report register ID separately in dev_dbg() message.
-> >>
-> >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> >> ---
-> >>  drivers/power/supply/bq27xxx_battery.c | 35 ++++++++++++++++++-------=
----------
-> >>  1 file changed, 19 insertions(+), 16 deletions(-)
-> >>
-> >> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/su=
-pply/bq27xxx_battery.c
-> >> index 398801a..2e2a3a8 100644
-> >> --- a/drivers/power/supply/bq27xxx_battery.c
-> >> +++ b/drivers/power/supply/bq27xxx_battery.c
-> >> @@ -794,11 +794,17 @@ MODULE_PARM_DESC(poll_interval,
-> >>  static inline int bq27xxx_read(struct bq27xxx_device_info *di, int re=
-g_index,
-> >>                              bool single)
-> >>  {
-> >> -     /* Reports EINVAL for invalid/missing registers */
-> >> +     int ret;
-> >> +
-> >>       if (!di || di->regs[reg_index] =3D=3D INVALID_REG_ADDR)
-> >>               return -EINVAL;
-> >>
-> >> -     return di->bus.read(di, di->regs[reg_index], single);
-> >> +     ret =3D di->bus.read(di, di->regs[reg_index], single);
-> >> +     if (ret < 0)
-> >> +             dev_dbg(di->dev, "failed to read register 0x%02x (index =
-%d)\n",
-> >> +                     di->regs[reg_index], reg_index);
-> >> +
+On Mon, Mar 20, 2017 at 01:59:01PM -0700, Liam Breck wrote:
+> On Mon, Mar 20, 2017 at 2:43 AM, Liam Breck <liam@networkimprov.net> wrot=
+e:
+> > From: Liam Breck <kernel@networkimprov.net>
 > >
-> > If we print out the error code here we don't have to do that in each of
-> > the below printouts.
+> > power_supply_get_battery_info() reads battery data from devicetree.
+> > struct power_supply_battery_info provides battery data to drivers.
+> > Drivers may surface battery data in sysfs via corresponding
+> > POWER_SUPPLY_PROP_* fields.
+> >
+> > Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+> > Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> > ---
+> >  Documentation/power/power_supply_class.txt | 12 ++++++++
+> >  drivers/power/supply/power_supply_core.c   | 45 ++++++++++++++++++++++=
+++++++++
+> >  include/linux/power_supply.h               | 18 ++++++++++++
+> >  3 files changed, 75 insertions(+)
+> >
+> > diff --git a/Documentation/power/power_supply_class.txt b/Documentation=
+/power/power_supply_class.txt
+> > index 0c72588..dc92c77 100644
+> > --- a/Documentation/power/power_supply_class.txt
+> > +++ b/Documentation/power/power_supply_class.txt
+> > @@ -174,6 +174,18 @@ issued by external power supply will notify suppli=
+cants via
+> >  external_power_changed callback.
+> >
+> >
+> > +Devicetree battery characteristics
+> > +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> > +Drivers should call power_supply_get_battery_info() to obtain battery
+> > +characteristics from a devicetree battery node, defined in
+> > +Documentation/devicetree/bindings/power/supply/battery.txt. This is
+> > +implemented in drivers/power/supply/bq27xxx_battery.c.
+> > +
+> > +Properties in struct power_supply_battery_info and their counterparts =
+in the
+> > +battery node have names corresponding to elements in enum power_supply=
+_property,
+> > +for naming consistency between sysfs attributes and battery node prope=
+rties.
+> > +
+> > +
+> >  QA
+> >  ~~
+> >  Q: Where is POWER_SUPPLY_PROP_XYZ attribute?
+> > diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/s=
+upply/power_supply_core.c
+> > index a74d8ca..61e20b1 100644
+> > --- a/drivers/power/supply/power_supply_core.c
+> > +++ b/drivers/power/supply/power_supply_core.c
+> > @@ -17,6 +17,7 @@
+> >  #include <linux/device.h>
+> >  #include <linux/notifier.h>
+> >  #include <linux/err.h>
+> > +#include <linux/of.h>
+> >  #include <linux/power_supply.h>
+> >  #include <linux/thermal.h>
+> >  #include "power_supply.h"
+> > @@ -487,6 +488,50 @@ struct power_supply *devm_power_supply_get_by_phan=
+dle(struct device *dev,
+> >  EXPORT_SYMBOL_GPL(devm_power_supply_get_by_phandle);
+> >  #endif /* CONFIG_OF */
+> >
+> > +int power_supply_get_battery_info(struct power_supply *psy,
+> > +                                 struct power_supply_battery_info *inf=
+o)
+> > +{
+> > +       struct device_node *battery_np;
+> > +       const char *value;
+> > +       int err;
+> > +
+> > +       info->energy_full_design_uwh =3D -EINVAL;
+> > +       info->charge_full_design_uah =3D -EINVAL;
+> > +       info->voltage_min_design_uv  =3D -EINVAL;
+> > +
+> > +       if (!psy->of_node) {
+> > +               dev_warn(&psy->dev, "%s currently only supports devicet=
+ree\n",
+> > +                        __func__);
+> > +               return -ENXIO;
+> > +       }
+> > +
+> > +       battery_np =3D of_parse_phandle(psy->of_node, "monitored-batter=
+y", 0);
+> > +       if (!battery_np)
+> > +               return -ENODEV;
+> > +
+> > +       err =3D of_property_read_string(battery_np, "compatible", &valu=
+e);
+> > +       if (err)
+> > +               return err;
+> > +
+> > +       if (strcmp("simple-battery", value))
+> > +               return -ENODEV;
+> > +
+> > +       /* The property and field names below must correspond to elemen=
+ts
+> > +        * in enum power_supply_property. For reasoning, see
+> > +        * Documentation/power/power_supply_class.txt.
+> > +        */
+
+Let's make this "should correspond".
+
+> > +       of_property_read_u32(battery_np, "energy-full-design-microwatt-=
+hours",
+> > +                            &info->energy_full_design_uwh);
+> > +       of_property_read_u32(battery_np, "charge-full-design-microamp-h=
+ours",
+> > +                            &info->charge_full_design_uah);
+> > +       of_property_read_u32(battery_np, "voltage-min-design-microvolt",
+> > +                            &info->voltage_min_design_uv);
+
+> Should we also check for an acpi_handle, and use
+> device_property_read_* here? Tho presumably the acpi property names
+> would be different...
 >=20
-> This is a dev_dbg, the below are dev_err, and I think you want error
-> code in dev_err. BTW the above addresses your request to learn which
-> register was in play in the event of a DM read/write failure.
+> I wouldn't have a way to test that however.
 
-Just make it dev_err and also print ret. Then we can remove all
-other prints. That will result in some information-loss (name
-of the register), but
+Yes, please use device_property_read_* instead of of_property_read_*.
+Apart from that you do not have to care for ACPI for now. It can be
+added once needed.
 
-1. it's not that important anyways. If you read battery voltage file
-   in sysfs, then obviously reading voltage fails and so on.
-2. the error should be very unlikely on productive systems, since
-   it basically mean the i2c/1-wire transaction failed.
-
--- Sebastian
-
-> > Otherwise looks good:
-> > Acked-by: Andrew F. Davis <afd@ti.com>
+> > +
+> > +       return 0;
+> > +}
+> > +EXPORT_SYMBOL_GPL(power_supply_get_battery_info);
+> > +
+> >  int power_supply_get_property(struct power_supply *psy,
+> >                             enum power_supply_property psp,
+> >                             union power_supply_propval *val)
+> > diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> > index 3965503..e84f1d3 100644
+> > --- a/include/linux/power_supply.h
+> > +++ b/include/linux/power_supply.h
+> > @@ -288,6 +288,21 @@ struct power_supply_info {
+> >         int use_for_apm;
+> >  };
 > >
-> >> +     return ret;
-> >>  }
-> >>
-> >>  /*
-> >> @@ -815,7 +821,7 @@ static int bq27xxx_battery_read_soc(struct bq27xxx=
-_device_info *di)
-> >>               soc =3D bq27xxx_read(di, BQ27XXX_REG_SOC, false);
-> >>
-> >>       if (soc < 0)
-> >> -             dev_dbg(di->dev, "error reading State-of-Charge\n");
-> >> +             dev_err(di->dev, "error %d reading state-of-charge\n", s=
-oc);
-> >>
-> >>       return soc;
-> >>  }
-> >> @@ -830,8 +836,7 @@ static int bq27xxx_battery_read_charge(struct bq27=
-xxx_device_info *di, u8 reg)
-> >>
-> >>       charge =3D bq27xxx_read(di, reg, false);
-> >>       if (charge < 0) {
-> >> -             dev_dbg(di->dev, "error reading charge register %02x: %d=
-\n",
-> >> -                     reg, charge);
-> >> +             dev_err(di->dev, "error %d reading charge\n", charge);
-> >>               return charge;
-> >>       }
-> >>
-> >> @@ -883,7 +888,7 @@ static int bq27xxx_battery_read_dcap(struct bq27xx=
-x_device_info *di)
-> >>               dcap =3D bq27xxx_read(di, BQ27XXX_REG_DCAP, false);
-> >>
-> >>       if (dcap < 0) {
-> >> -             dev_dbg(di->dev, "error reading initial last measured di=
-scharge\n");
-> >> +             dev_err(di->dev, "error %d reading design capacity\n", d=
-cap);
-> >>               return dcap;
-> >>       }
-> >>
-> >> @@ -905,7 +910,7 @@ static int bq27xxx_battery_read_energy(struct bq27=
-xxx_device_info *di)
-> >>
-> >>       ae =3D bq27xxx_read(di, BQ27XXX_REG_AE, false);
-> >>       if (ae < 0) {
-> >> -             dev_dbg(di->dev, "error reading available energy\n");
-> >> +             dev_err(di->dev, "error %d reading available energy\n", =
-ae);
-> >>               return ae;
-> >>       }
-> >>
-> >> @@ -927,7 +932,7 @@ static int bq27xxx_battery_read_temperature(struct=
- bq27xxx_device_info *di)
-> >>
-> >>       temp =3D bq27xxx_read(di, BQ27XXX_REG_TEMP, false);
-> >>       if (temp < 0) {
-> >> -             dev_err(di->dev, "error reading temperature\n");
-> >> +             dev_err(di->dev, "error %d reading temperature\n", temp);
-> >>               return temp;
-> >>       }
-> >>
-> >> @@ -947,7 +952,7 @@ static int bq27xxx_battery_read_cyct(struct bq27xx=
-x_device_info *di)
-> >>
-> >>       cyct =3D bq27xxx_read(di, BQ27XXX_REG_CYCT, false);
-> >>       if (cyct < 0)
-> >> -             dev_err(di->dev, "error reading cycle count total\n");
-> >> +             dev_err(di->dev, "error %d reading cycle count total\n",=
- cyct);
-> >>
-> >>       return cyct;
-> >>  }
-> >> @@ -962,8 +967,7 @@ static int bq27xxx_battery_read_time(struct bq27xx=
-x_device_info *di, u8 reg)
-> >>
-> >>       tval =3D bq27xxx_read(di, reg, false);
-> >>       if (tval < 0) {
-> >> -             dev_dbg(di->dev, "error reading time register %02x: %d\n=
-",
-> >> -                     reg, tval);
-> >> +             dev_err(di->dev, "error %d reading time\n", tval);
-> >>               return tval;
-> >>       }
-> >>
-> >> @@ -983,8 +987,7 @@ static int bq27xxx_battery_read_pwr_avg(struct bq2=
-7xxx_device_info *di)
-> >>
-> >>       tval =3D bq27xxx_read(di, BQ27XXX_REG_AP, false);
-> >>       if (tval < 0) {
-> >> -             dev_err(di->dev, "error reading average power register  =
-%02x: %d\n",
-> >> -                     BQ27XXX_REG_AP, tval);
-> >> +             dev_err(di->dev, "error %d reading average power\n", tva=
-l);
-> >>               return tval;
-> >>       }
-> >>
-> >> @@ -1054,7 +1057,7 @@ static int bq27xxx_battery_read_health(struct bq=
-27xxx_device_info *di)
-> >>
-> >>       flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, has_singe_flag);
-> >>       if (flags < 0) {
-> >> -             dev_err(di->dev, "error reading flag register:%d\n", fla=
-gs);
-> >> +             dev_err(di->dev, "error %d reading flags\n", flags);
-> >>               return flags;
-> >>       }
-> >>
-> >> @@ -1147,7 +1150,7 @@ static int bq27xxx_battery_current(struct bq27xx=
-x_device_info *di,
-> >>
-> >>       curr =3D bq27xxx_read(di, BQ27XXX_REG_AI, false);
-> >>       if (curr < 0) {
-> >> -             dev_err(di->dev, "error reading current\n");
-> >> +             dev_err(di->dev, "error %d reading current\n", curr);
-> >>               return curr;
-> >>       }
-> >>
-> >> @@ -1236,7 +1239,7 @@ static int bq27xxx_battery_voltage(struct bq27xx=
-x_device_info *di,
-> >>
-> >>       volt =3D bq27xxx_read(di, BQ27XXX_REG_VOLT, false);
-> >>       if (volt < 0) {
-> >> -             dev_err(di->dev, "error reading voltage\n");
-> >> +             dev_err(di->dev, "error %d reading voltage\n", volt);
-> >>               return volt;
-> >>       }
-> >>
-> >>
+> > +/*
+> > + * This is the recommended struct to manage static battery parameters,
+> > + * populated by power_supply_get_battery_info(). Most platform drivers=
+ should
+> > + * use these for consistency.
+> > + * Its field names must correspond to elements in enum power_supply_pr=
+operty.
+> > + * The default field value is -EINVAL.
+> > + * Power supply class itself doesn't use this.
+> > + */
+> > +
+> > +struct power_supply_battery_info {
+> > +       int energy_full_design_uwh;     /* microWatt-hours */
+> > +       int charge_full_design_uah;     /* microAmp-hours */
+> > +       int voltage_min_design_uv;      /* microVolts */
+> > +};
+> > +
+> >  extern struct atomic_notifier_head power_supply_notifier;
+> >  extern int power_supply_reg_notifier(struct notifier_block *nb);
+> >  extern void power_supply_unreg_notifier(struct notifier_block *nb);
+> > @@ -306,6 +321,9 @@ static inline struct power_supply *
+> >  devm_power_supply_get_by_phandle(struct device *dev, const char *prope=
+rty)
+> >  { return NULL; }
+> >  #endif /* CONFIG_OF */
+> > +
+> > +extern int power_supply_get_battery_info(struct power_supply *psy,
+> > +                                        struct power_supply_battery_in=
+fo *info);
+> >  extern void power_supply_changed(struct power_supply *psy);
+> >  extern int power_supply_am_i_supplied(struct power_supply *psy);
+> >  extern int power_supply_set_battery_charged(struct power_supply *psy);
+> > --
+> > 2.9.3
+> >
 
---uo4kxg5bzdpkz4v7
+--6lhths7l6htwcw44
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljTn2gACgkQ2O7X88g7
-+prgMw/+J8fXDnn2tNRXkuF/fEFq6a0WQ9cWZehpxcCfE233eo+KGB/yf22uHF93
-qLcuwUDOq9c97Us0baRxsn7niEBh0eqERLjgM6SpcF0AYtZ0xDvyOWhPgPmtW+Ti
-CSG8rI+s9BcKobEUXp/d9rs2EAOTCbs7aA+AqTW4LIwnjV6fOcKmkoVB9O4zGFOa
-qX1jBmERQGGva5uh55qQzNH2nln5pETVurOyHadMrIbhEwutatN7gePUc/UCO+0D
-oqDcB1S8l4gn6E2Lg9vMaEDgHnrf5qcoOZoHfpmj5O6/65b4S/zNljivOF/kHhuH
-EkS7pq6y/64e5ZZBsSTCEjV9hu5LqYc2jlXvkLwGJVT6KsyKqXxNZ6RfGZDSlYOL
-BgKASypnF2JNwL6mSosMAfrAvvIKrA6eF0JeoltlGsLI4CAh+EDuzFWLmgywNDtv
-DiOXQIPpG7mH3ZFaA8/kWpwKP1LRELeJVKKnV+BvkwxIINnTdiYsTpn8klfMGwdQ
-mithEhpRe7fz4pV4/Td8E1zP3nEd7CbNLqYCj9S4IG1dIS86OSkTPIvjptfP3WcX
-UdPz4ebjfhrSVomuOOvqWVtdhYzCayTATD5bOuf9bfL0uKdhXV7voKxlkvr+V1ZL
-W5TnzAa3a4wtCet0682PLsSycgmQe12Cpa/8xrwdx8qHQlILMBk=
-=1YgM
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljToLcACgkQ2O7X88g7
++prvoA//VO9NPSdB3ONWa2i35nCqcyZP6nu0QfdCzYKXpFLiwhpd7ybluPwG3G6r
+HvpKg8yR4DkvDCsgz2LCQ9tHzrftKbBZ3R8/aVC/dQq38onQaFVPzNTPOavswdzb
+TraiqqBjk+OBIJAwAeAFj09brtM2wDDry5IV4oi+l7sTJe0E03hv1yu/dUBQTUQw
+YHB9+e/y68udkp6vT3bNL2sea8pCKyANi3eDkhJpPPfOHAt3/vt6pKqw1cky9vPQ
+1E71RJA4TnufoWv/MwC3pGMY6J1HG+BGvlgDZA1C6jcmiEkE6GUadTUqK0VTo4ya
+UTaP29o4mbG8RqSrKpgCgHSOjzIRj8iiCZgQxVrKfREzZTYf9bVXIONXZ4P4O4EA
+4xx+c2xM+la2/tTaMRNY7b2wChPGYMvPy1MPNwFqSLkaAI3Yf1CFTkApnUwjNxsN
+1HHPDg8f2HApdNkDRHNJ4Xe0ifmP2PRAVZProGBIr+RwUDXxAxA7CfdZ9k3ZlWSv
+fHsl892od8Btbv7lpU3l2QDvT3XNXVJPJaKTTnL4PBYHE/vWT8wAZz5IUo/ZtQwi
+//1KxFnAgjaC3turc7TMC1M7wyp8yo8V6dOPHUbB83bYXhIWGudkmMH1XaVIuUMx
+HiPX7u3o8KuKYzQQS3G5BZvAYef5YlMm4ywdYM0mF7nszrCmiAk=
+=OJ7J
 -----END PGP SIGNATURE-----
 
---uo4kxg5bzdpkz4v7--
+--6lhths7l6htwcw44--
