@@ -1,112 +1,160 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v2 4/7] power: supply: bq24190_charger: Never reset the
- charger chip
-Date: Thu, 23 Mar 2017 09:44:29 +0100
-Message-ID: <a8cd7854-38e0-e808-e22f-844c023cab88@redhat.com>
-References: <20170322145536.30570-1-hdegoede@redhat.com>
- <20170322145536.30570-5-hdegoede@redhat.com>
- <20170322154313.GU8575@atomide.com>
- <2ab0b7d5-61b0-2a1f-7c45-07d7f3f180b6@redhat.com>
- <CAKvHMgSy0iobRDEYWrOwVSz940TPNhOQXxRCUftT-8q3mUfXwA@mail.gmail.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery device .type=unknown
+Date: Thu, 23 Mar 2017 01:55:12 -0700
+Message-ID: <CAKvHMgSUDAm5jF496GOzGJNUjAyqE1KXvQRo0wh5FmzH9=zwXg@mail.gmail.com>
+References: <20170321220921.5834-1-liam@networkimprov.net> <20170321220921.5834-8-liam@networkimprov.net>
+ <7e117a52-bbf0-2a12-e98f-843da227e0c7@redhat.com> <aaa05be7-9019-01ee-ce1d-f2211938164b@redhat.com>
+ <CAKvHMgRB6O4agD+0TGabAeS_g0TsixXWwB7dc1kvNWeM-qgbKA@mail.gmail.com>
+ <41f97886-306e-725f-4b05-dc98a3b57fa1@redhat.com> <CAKvHMgQ2JFDYWuhoL=WFh-RGQEcSKCM8xWBKNo5JJLoHEkYCqg@mail.gmail.com>
+ <32d7cb28-d697-aa4c-7760-d9b0117bed9b@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:52592 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751406AbdCWIod (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 23 Mar 2017 04:44:33 -0400
-In-Reply-To: <CAKvHMgSy0iobRDEYWrOwVSz940TPNhOQXxRCUftT-8q3mUfXwA@mail.gmail.com>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:33353 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751807AbdCWIzP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 04:55:15 -0400
+Received: by mail-it0-f65.google.com with SMTP id 76so7051017itj.0
+        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 01:55:14 -0700 (PDT)
+In-Reply-To: <32d7cb28-d697-aa4c-7760-d9b0117bed9b@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-Hi,
-
-On 23-03-17 08:16, Liam Breck wrote:
-> On Wed, Mar 22, 2017 at 8:45 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->> Hi,
->>
->> On 22-03-17 16:43, Tony Lindgren wrote:
->>>
->>> * Hans de Goede <hdegoede@redhat.com> [170322 07:57]:
->>>>
->>>> Resetting the charger should never be necessary it should always have
->>>> sane values programmed. If it is running with invalid values while we
->>>> are not running (system turned off or suspended) there is a big problem
->>>> as that may lead to overcharging the battery.
->>>
->>>
->>> And some systems may only configure it in the bootloader with no
->>> configuration passed to the kernel at all.
->>
->>
->> Right.
->>
->>
->>>> The reset in suspend() is meant to put the charger back into default
->>>> mode, but this is not necessary and not a good idea. If the charger has
->>>> been programmed with a higher max charge_current / charge_voltage then
->>>> putting it back in default-mode will reset those to the safe power-on
->>>> defaults, leading to slower charging, or charging to a lower voltage
->>>> (and thus not using the full capacity) while suspended which is
->>>> undesirable. Reprogramming the max charge_current / charge_voltage
->>>> after the reset will not help here as that will put the charger back
->>>> in host mode and start the i2c watchdog if the host then does not do
->>>> anything for 40s (iow if we're suspended for more then 40s) the watchdog
->>>> expires resetting the device to default-mode, including resetting all
->>>> the registers to there safe power-on defaults. So the only way to keep
->>>> using custom charge settings while suspending is to keep the charger in
->>>> its normal running state with the i2c watchdog disabled. This is fine
->>>> as the charger will still automatically switch from constant current
->>>> to constant voltage and stop charging when the battery is full.
->>>>
->>>> Besides never being necessary resetting the charger also causes problems
->>>> on systems where the charge voltage limit is set higher then the reset
->>>> value, if this is the case and the charger is reset while charging and
->>>> the battery voltage is between the 2 voltages, then about half the time
->>>> the charger gets confused and claims to be charging (REG08 contains 0x64)
->>>> but in reality the charger has decoupled itself from VBUS (Q1 off) and
->>>> is drawing 0A from VBUS, leaving the system running from the battery.
->>>
->>>
->>> We do have cases where Linux kernel is the bootloader though using
->>> kexec. And in those cases we may need to reset, so I wonder if the
->>> reset should just be optional based on a proper device tree
->>> (or platform_data) configuration?
->>
->>
->> As described above during my testing I've found that the chip does not
->> respond well to reset under certain conditions, so I think that if
->> we have settings to apply we should just overwrite the settings with
->> our settings, what does doing a reset before overwriting the registers
->> buy us? We still need to do the overwrite anyways.
+On Thu, Mar 23, 2017 at 1:18 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
 >
-> When driver loads on any conceivable hw, how do we know the chip is in
-> a state we predicted?
+>
+> On 22-03-17 19:33, Liam Breck wrote:
+>>
+>> On Wed, Mar 22, 2017 at 7:41 AM, Hans de Goede <hdegoede@redhat.com>
+>> wrote:
+>>>
+>>> Hi,
+>>>
+>>> On 22-03-17 14:37, Liam Breck wrote:
+>>>>
+>>>>
+>>>> On Wed, Mar 22, 2017 at 6:15 AM, Hans de Goede <hdegoede@redhat.com>
+>>>> wrote:
+>>>>>
+>>>>>
+>>>>> Hi,
+>>>>>
+>>>>> On 22-03-17 13:25, Hans de Goede wrote:
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> Hi,
+>>>>>>
+>>>>>> On 21-03-17 23:09, Liam Breck wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> From: Liam Breck <kernel@networkimprov.net>
+>>>>>>>
+>>>>>>> Not for upstream. Temporary workaround to prevent bq24190-battery
+>>>>>>> device
+>>>>>>> from interfering with a fuel gauge that has
+>>>>>>> .type=power_supply_type_battery
+>>>>>>>
+>>>>>>> I'll move properties from -battery device to -charger in a subsequent
+>>>>>>> version.
+>>>>>>>
+>>>>>>> Cc: Hans de Goede <hdegoede@redhat.com>
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> Hmm, I don't like this. I was about to post v2 of my patches (which I
+>>>>>> will
+>>>>>> rebase on top of this series)
+>>>>>
+>>>>>
+>>>>>
+>>>>>
+>>>>> It seems this series does not apply to:
+>>>>>
+>>>>>
+>>>>>
+>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/log/?h=for-next
+>>>>>
+>>>>> It looks like there is another series which sits in between ?
+>>>>
+>>>>
+>>>>
+>>>> Yes, see two patches linked in Depends-on lines. Could you add those and
+>>>> rebase?
+>>>
+>>>
+>>>
+>>> I can confirm that with those 2 patches thrown in things apply
+>>> cleanly on linux-power-supply/for-next.
+>>>
+>>> I see that these 2 patches add a new devicetree binding for describing
+>>> a battery. That is really cool stuff and long overdue IMHO I'm glad
+>>> to see someone doing this.
+>>>
+>>> But (sorry) in my experience getting new devicetree bindings upstream
+>>> often takes a while, while people are discussing the best way to
+>>> solve things. So I'm not quite sure this will go upstream real soon
+>>> now and I would like to get my patches into -next in time for 4.12
+>>> if possible.
+>>
+>>
+>> Sebastian asked us to write those two patches, and has acked one, I
+>> expect ack on the docs for this version (the DT api is settled). The
+>> only thing holding up that patchset is a test pass by the TI
+>> maintainer of bq27xxx_battery. But we can separate the
+>> power_supply_core changes from that if nec.
+>
+>
+> Ok, lets let Sebastian decide on the order in which to merge these.
+>
+>> I would like to run your patches in my environment for some time
+>> before acking. For that, I need the -battery back! And also this
+>> patchset.
+>
+>
+> If Sebastian decides he wants to wait with merging these till your
+> patches are merged then I'll rebase, otherwise you need to rebase
+> anyways and can do so for your testing.
 
-Any non reset values have to come from somewhere, likely firmware,
-and unless we've platform data telling us the exact settings we should
-use why would we decide the reset values are better then the ones
-the charger was *already using* before our driver loads ? As said in
-the commit msg: "If it is running with invalid values while we
-are not running (system turned off or suspended) there is a big problem
-as that may lead to overcharging the battery."
+I'm grateful for your patches, and I do need to test your code before
+it's merged. Pls do what you can to make that straightforward. If
+there's a reason to expedite your patchset, do let me know.
 
-> If it isn't, how can we fix any undesirable
-> settings?
+To clarify my role, I hired Mark to write this driver from scratch
+four years ago, and since then have hired Tony periodically to
+test/fix it. I've also invested a significant cash and man-years on
+the hw design that has this chip. After looking at this code and the
+docs over all this time, I realized I could be improving it myself,
+hence the recent commits.
 
-Why would the chip not be in a sane state? Where would the undesirable
-settings come from ?
+If I had a spare board to send to facilitate your efforts, I would,
+but the yield on last prototype run was abysmal. Later this year I can
+get you one.
 
-> Reset + fix a,b,c is simple way to do that.
+>> How's progress on the pmic-gauge battery driver? I'd be curious to see
+>> it since I've been adding features to the bq27xxx driver lately.
+>
+>
+> Progress is good I hope to post a v2 today, in the mean time
+> you can find it here:
+>
+> https://github.com/jwrdegoede/linux-sunxi/commit/7b667e5068393afc29c7173c9f4eae46b026a849
 
-As my testing using real-world hardware under real-world conditions
-has shown resetting the charger IC while it is charging can cause it
-to misbehave. So we have this theoretical problem of there somehow
-being undesirable settings at boot vs a real-world problem...
+Nice!
 
-Regards,
-
-Hans
+>
+>
+>
+>>
+>>> So for now I'm going to hold of on rebasing and just send v2 as is
+>>> (based on linux-power-supply/for-next). If Sebastian thinks your
+>>> patches should go first I will happily do a rebased v3.
+>>>
+>>> Regards,
+>>>
+>>> Hans
