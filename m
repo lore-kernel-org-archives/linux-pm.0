@@ -1,84 +1,112 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC][PATCH 2/2] cpufreq: schedutil: Force max frequency on busy CPUs
-Date: Thu, 23 Mar 2017 23:08:10 +0100
-Message-ID: <CAKfTPtD=xKb1UCUL6CWFOfr8ina_sNSOdaM-11teWhKe_xmedA@mail.gmail.com>
-References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan>
- <20170320035745.GC25659@vireshk-i7> <CAKfTPtD8bp-mB=9Rjufeyj3weg6T3b1J-o+Sc2Oe2EMGX3zKzQ@mail.gmail.com>
- <20170320123416.GB27896@e110439-lin> <CAJWu+oocwa0Nxch+ShqG6BPfVRXUhS0GQwYK1qBu04kuvh6vig@mail.gmail.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v2 5/7] power: supply: bq24190_charger: Don't spam the
+ logs on charger plug / unplug
+Date: Thu, 23 Mar 2017 15:24:15 -0700
+Message-ID: <CAKvHMgQP_hZCt+-U85MCJfjoxf6muKrks2V+B52JQx8WCWcqyw@mail.gmail.com>
+References: <20170322145536.30570-1-hdegoede@redhat.com> <20170322145536.30570-6-hdegoede@redhat.com>
+ <CAKvHMgQdccLPDz2HyxopdDgQxk+6DMtBrvFxKD--wxLPfe5DQQ@mail.gmail.com> <07ee304f-f86d-ae79-8bda-9f0538db11c7@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJWu+oocwa0Nxch+ShqG6BPfVRXUhS0GQwYK1qBu04kuvh6vig@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joelaf@google.com>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f66.google.com ([209.85.214.66]:35360 "EHLO
+        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750952AbdCWWYR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 18:24:17 -0400
+Received: by mail-it0-f66.google.com with SMTP id y18so24111itc.2
+        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 15:24:16 -0700 (PDT)
+In-Reply-To: <07ee304f-f86d-ae79-8bda-9f0538db11c7@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
 
-On 23 March 2017 at 00:56, Joel Fernandes <joelaf@google.com> wrote:
-> On Mon, Mar 20, 2017 at 5:34 AM, Patrick Bellasi
-> <patrick.bellasi@arm.com> wrote:
->> On 20-Mar 09:26, Vincent Guittot wrote:
->>> On 20 March 2017 at 04:57, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> > On 19-03-17, 14:34, Rafael J. Wysocki wrote:
->>> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> >>
->>> >> The PELT metric used by the schedutil governor underestimates the
->>> >> CPU utilization in some cases.  The reason for that may be time spent
->>> >> in interrupt handlers and similar which is not accounted for by PELT.
+On Thu, Mar 23, 2017 at 3:02 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
+>
+>
+> On 23-03-17 22:31, Liam Breck wrote:
+>>
+>> On Wed, Mar 22, 2017 at 7:55 AM, Hans de Goede <hdegoede@redhat.com>
+>> wrote:
 >>>
->>> Are you sure of the root cause  described above (time stolen by irq
->>> handler) or is it just a hypotheses ? That would be good to be sure of
->>> the root cause
->>> Furthermore, IIRC the time spent in irq context is also accounted as
->>> run time for the running cfs task but not RT and deadline task running
->>> time
+>>> If the charger gets unplugged before the battery is fully charged we will
+>>> get a one time Input fault. Ignore this rather then logging a message for
+>>> it. Likewise on the next interrupt after the one time Input fault all
+>>> fault flags will be 0, do not log a message when there are no faults.
+>>>
+>>> This fixes messages like these getting logged on charger unplug + replug:
+>>> bq24190-charger 15-006b: Fault: boost 0, charge 1, battery 0, ntc 0
+>>> bq24190-charger 15-006b: Fault: boost 0, charge 0, battery 0, ntc 0
+>>>
+>>> Cc: Liam Breck <kernel@networkimprov.net>
+>>> Cc: Tony Lindgren <tony@atomide.com>
+>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>>> ---
+>>> Changes in v2:
+>>> -This is a new patch in v2 of this patch-set
+>>> ---
+>>>  drivers/power/supply/bq24190_charger.c | 17 +++++++++++------
+>>>  1 file changed, 11 insertions(+), 6 deletions(-)
+>>>
+>>> diff --git a/drivers/power/supply/bq24190_charger.c
+>>> b/drivers/power/supply/bq24190_charger.c
+>>> index b535f24..351e020 100644
+>>> --- a/drivers/power/supply/bq24190_charger.c
+>>> +++ b/drivers/power/supply/bq24190_charger.c
+>>> @@ -1189,12 +1189,17 @@ static void bq24190_check_status(struct
+>>> bq24190_dev_info *bdi)
+>>>         } while (f_reg && ++i < 2);
+>>>
+>>>         if (f_reg != bdi->f_reg) {
+>>> -               dev_info(bdi->dev,
+>>> -                       "Fault: boost %d, charge %d, battery %d, ntc
+>>> %d\n",
+>>> -                       !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+>>> -                       !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
+>>> -                       !!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
+>>> -                       !!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
+>>> +               /*
+>>> +                * Don't spam the logs if all faults are cleared, or when
+>>> the
+>>> +                * cable providing Vbus gets unplugged.
+>>> +                */
+>>> +               if  (f_reg && f_reg != (1 <<
+>>> BQ24190_REG_F_CHRG_FAULT_SHIFT))
 >>
->> As long as the IRQ processing does not generate a context switch,
->> which is happening (eventually) if the top half schedule some deferred
->> work to be executed by a bottom half.
 >>
->> Thus, me too I would say that all the top half time is accounted in
->> PELT, since the current task is still RUNNABLE/RUNNING.
+>> if (f_reg && ((ss_reg & BQ24190_REG_SS_PG_STAT_MASK) ||
+>>     f_reg != (1 << BQ24190_REG_F_CHRG_FAULT_SHIFT)) )
 >
-> Sorry if I'm missing something but doesn't this depend on whether you
-> have CONFIG_IRQ_TIME_ACCOUNTING enabled?
 >
-> __update_load_avg uses rq->clock_task for deltas which I think
-> shouldn't account IRQ time with that config option. So it should be
-> quite possible for IRQ time spent to reduce the PELT signal right?
->
->>
->>> So I'm not really aligned with the description of your problem: PELT
->>> metric underestimates the load of the CPU.  The PELT is just about
->>> tracking CFS task utilization but not whole CPU utilization and
->>> according to your description of the problem (time stolen by irq),
->>> your problem doesn't come from an underestimation of CFS task but from
->>> time spent in something else but not accounted in the value used by
->>> schedutil
->>
->> Quite likely. Indeed, it can really be that the CFS task is preempted
->> because of some RT activity generated by the IRQ handler.
->>
->> More in general, I've also noticed many suboptimal freq switches when
->> RT tasks interleave with CFS ones, because of:
->> - relatively long down _and up_ throttling times
->> - the way schedutil's flags are tracked and updated
->> - the callsites from where we call schedutil updates
->>
->> For example it can really happen that we are running at the highest
->> OPP because of some RT activity. Then we switch back to a relatively
->> low utilization CFS workload and then:
->> 1. a tick happens which produces a frequency drop
->
-> Any idea why this frequency drop would happen? Say a running CFS task
-> gets preempted by RT task, the PELT signal shouldn't drop for the
-> duration the CFS task is preempted because the task is runnable, so
+> Sebastian has already merged the original patch into his for-next branch,
+> please
+> provide a patch on top.
 
-utilization only tracks the running state but not runnable state.
-Runnable state is tracked in load_avg
+I recall Sebastian merging and then dropping a commit from the other
+series I'm working on.
 
-> once the CFS task gets CPU back, schedutil should still maintain the
-> capacity right?
+I'll return to the charger once the dependency for my charger patchset
+is merged. I just got a big change request for that.
+
+
+>>> +                       dev_info(bdi->dev,
+
+This should probably be dev_warn now.
+
+>>> +                               "Fault: boost %d, charge %d, battery %d,
+>>> ntc %d\n",
+>>> +                               !!(f_reg &
+>>> BQ24190_REG_F_BOOST_FAULT_MASK),
+>>> +                               !!(f_reg &
+>>> BQ24190_REG_F_CHRG_FAULT_MASK),
+>>> +                               !!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
+>>> +                               !!(f_reg &
+>>> BQ24190_REG_F_NTC_FAULT_MASK));
+>>>
+>>>                 mutex_lock(&bdi->f_reg_lock);
+>>>                 if ((bdi->f_reg & battery_mask_f) != (f_reg &
+>>> battery_mask_f))
+>>> --
+>>> 2.9.3
+>>>
 >
-> Regards,
-> Joel
