@@ -1,43 +1,129 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 194963] schedutil governor causes audio problem in game
-Date: Thu, 23 Mar 2017 13:07:48 +0000
-Message-ID: <bug-194963-137361-vGxfr1kDsw@https.bugzilla.kernel.org/>
-References: <bug-194963-137361@https.bugzilla.kernel.org/>
+From: Evgenii Shatokhin <eugene.shatokhin@yandex.ru>
+Subject: Re: [PATCH] hibernation: on 32-bit x86, disabled in favor of KASLR
+Date: Thu, 23 Mar 2017 16:23:45 +0300
+Message-ID: <58D3CC61.8080609@yandex.ru>
+References: <20170323002701.GA90470@beast>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:50082 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S932370AbdCWNHt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 09:07:49 -0400
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 76CD227D5E
-        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 13:07:48 +0000 (UTC)
-Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 44BF727D5E
-        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 13:07:48 +0000 (UTC)
-In-Reply-To: <bug-194963-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170323002701.GA90470@beast>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=194963
+On 23.03.2017 03:27, Kees Cook wrote:
+> This is a modified revert of commit 65fe935dd238 ("x86/KASLR, x86/power:
+> Remove x86 hibernation restrictions"), since it appears that 32-bit
+> hibernation still can't support KASLR. 64-bit is fine. Since people have
+> been running with KASLR by default on 32-bit since v4.8, this disables
+> hibernation (with a warning). Booting with "nokaslr" will disable KASLR
+> and enable hibernation.
+>
+> Reported-by: Evgenii Shatokhin <eugene.shatokhin@yandex.ru>
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> Cc: stable@vger.kernel.org # v4.8+
 
---- Comment #1 from John (john.ettedgui@gmail.com) ---
-I just tried a few more tests:
+The patch does not work as intended on my system, unfortunately.
 
-1) pstate's powersave: no issue (but it also doesn't scale for me...)
+I tried the mainline kernel v4.11-rc3 and added this patch. With 
+"nokaslr" in the kernel command line, the system fails to hibernate. It 
+complains this way in the log:
 
-2) cpufreq's powersave: I have more the issue than not (in my original posting
-it was maybe once every 2 seconds or so, in this case it's much more frequent).
+<...>
+kernel: PM: writing image.
+kernel: PM: Cannot find swap device, try swapon -a.
+kernel: PM: Cannot get swap writer
+kernel: PM: Basic memory bitmaps freed
+kernel: Restarting tasks ... done.
+systemd[1]: Time has been changed
+systemd[3948]: Time has been changed
+systemd[14825]: Time has been changed
+systemd[1]: systemd-hibernate.service: main process exited, code=exited, 
+status=1/FAILURE
+systemd[1]: Failed to start Hibernate.
+<...>
 
-3) cpufreq's conservative: better than powersave but still no good.
+The swap device (swap file, actually) is available, however:
+-------------
+# swapon -s
+Filename  Type  Size    Used  Priority
+/swap     file  6297596 0     -1
+-------------
 
-4) cpufreq's ondemand: all good as expected.
+I built the same kernel without this patch then, added "nokaslr" in the 
+kernel command line again, and the system hibernates and resumes fine.
 
-Based on that I'm guessing it's scaling related.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+> ---
+>   Documentation/admin-guide/kernel-parameters.txt |  5 +++++
+>   arch/x86/boot/compressed/kaslr.c                |  3 +++
+>   kernel/power/hibernate.c                        | 18 +++++++++++++++++-
+>   3 files changed, 25 insertions(+), 1 deletion(-)
+>
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index 2ba45caabada..6f899c7f587d 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -1725,6 +1725,11 @@
+>   			kernel and module base offset ASLR (Address Space
+>   			Layout Randomization).
+>
+> +			On 32-bit x86 with CONFIG_HIBERNATION, hibernation
+> +			is disabled if KASLR is enabled. If "nokaslr" is
+> +			specified, KASLR will be diabled and hibernation
+> +			will be enabled.
+> +
+>   	keepinitrd	[HW,ARM]
+>
+>   	kernelcore=	[KNL,X86,IA-64,PPC]
+> diff --git a/arch/x86/boot/compressed/kaslr.c b/arch/x86/boot/compressed/kaslr.c
+> index 8b7c9e75edcb..b694af45f1e0 100644
+> --- a/arch/x86/boot/compressed/kaslr.c
+> +++ b/arch/x86/boot/compressed/kaslr.c
+> @@ -572,6 +572,9 @@ void choose_random_location(unsigned long input,
+>   		return;
+>   	}
+>
+> +	if (IS_ENABLED(CONFIG_X86_32) && IS_ENABLED(CONFIG_HIBERNATION))
+> +		warn("KASLR active: hibernation disabled on 32-bit x86.");
+> +
+>   	boot_params->hdr.loadflags |= KASLR_FLAG;
+>
+>   	/* Prepare to add new identity pagetables on demand. */
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index a8b978c35a6a..1d8f1fe1b7f4 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -37,9 +37,14 @@
+>   #include "power.h"
+>
+>
+> -static int nocompress;
+> +#if defined(CONFIG_X86_32) && defined(CONFIG_RANDOMIZE_BASE)
+> +static int noresume = 1;
+> +static int nohibernate = 1;
+> +#else
+>   static int noresume;
+>   static int nohibernate;
+> +#endif
+> +static int nocompress;
+>   static int resume_wait;
+>   static unsigned int resume_delay;
+>   static char resume_file[256] = CONFIG_PM_STD_PARTITION;
+> @@ -1194,3 +1199,14 @@ __setup("hibernate=", hibernate_setup);
+>   __setup("resumewait", resumewait_setup);
+>   __setup("resumedelay=", resumedelay_setup);
+>   __setup("nohibernate", nohibernate_setup);
+> +
+> +/* Allow hibernation to be disabled in favor of KASLR on 32-bit x86. */
+> +#if defined(CONFIG_X86_32) && defined(CONFIG_RANDOMIZE_BASE)
+> +static int __init nokaslr_hibernate_setup(char *str)
+> +{
+> +	noresume = 0;
+> +	nohibernate = 0;
+> +	return 1;
+> +}
+> +__setup("nokaslr", nokaslr_hibernate_setup);
+> +#endif
+>
