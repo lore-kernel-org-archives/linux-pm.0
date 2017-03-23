@@ -1,85 +1,101 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [RFC][PATCH 2/2] cpufreq: schedutil: Force max frequency on busy CPUs
-Date: Wed, 22 Mar 2017 16:56:40 -0700
-Message-ID: <CAJWu+oocwa0Nxch+ShqG6BPfVRXUhS0GQwYK1qBu04kuvh6vig@mail.gmail.com>
-References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan>
- <20170320035745.GC25659@vireshk-i7> <CAKfTPtD8bp-mB=9Rjufeyj3weg6T3b1J-o+Sc2Oe2EMGX3zKzQ@mail.gmail.com>
- <20170320123416.GB27896@e110439-lin>
+From: Kees Cook <keescook@chromium.org>
+Subject: [PATCH] hibernation: on 32-bit x86, disabled in favor of KASLR
+Date: Wed, 22 Mar 2017 17:27:01 -0700
+Message-ID: <20170323002701.GA90470@beast>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ua0-f176.google.com ([209.85.217.176]:32982 "EHLO
-        mail-ua0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751725AbdCVX4m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Mar 2017 19:56:42 -0400
-Received: by mail-ua0-f176.google.com with SMTP id u30so85492580uau.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Mar 2017 16:56:41 -0700 (PDT)
-In-Reply-To: <20170320123416.GB27896@e110439-lin>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-doc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, Evgenii Shatokhin <eugene.shatokhin@yandex.ru>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 
-On Mon, Mar 20, 2017 at 5:34 AM, Patrick Bellasi
-<patrick.bellasi@arm.com> wrote:
-> On 20-Mar 09:26, Vincent Guittot wrote:
->> On 20 March 2017 at 04:57, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > On 19-03-17, 14:34, Rafael J. Wysocki wrote:
->> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >>
->> >> The PELT metric used by the schedutil governor underestimates the
->> >> CPU utilization in some cases.  The reason for that may be time spent
->> >> in interrupt handlers and similar which is not accounted for by PELT.
->>
->> Are you sure of the root cause  described above (time stolen by irq
->> handler) or is it just a hypotheses ? That would be good to be sure of
->> the root cause
->> Furthermore, IIRC the time spent in irq context is also accounted as
->> run time for the running cfs task but not RT and deadline task running
->> time
->
-> As long as the IRQ processing does not generate a context switch,
-> which is happening (eventually) if the top half schedule some deferred
-> work to be executed by a bottom half.
->
-> Thus, me too I would say that all the top half time is accounted in
-> PELT, since the current task is still RUNNABLE/RUNNING.
+This is a modified revert of commit 65fe935dd238 ("x86/KASLR, x86/power:
+Remove x86 hibernation restrictions"), since it appears that 32-bit
+hibernation still can't support KASLR. 64-bit is fine. Since people have
+been running with KASLR by default on 32-bit since v4.8, this disables
+hibernation (with a warning). Booting with "nokaslr" will disable KASLR
+and enable hibernation.
 
-Sorry if I'm missing something but doesn't this depend on whether you
-have CONFIG_IRQ_TIME_ACCOUNTING enabled?
+Reported-by: Evgenii Shatokhin <eugene.shatokhin@yandex.ru>
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Cc: stable@vger.kernel.org # v4.8+
+---
+ Documentation/admin-guide/kernel-parameters.txt |  5 +++++
+ arch/x86/boot/compressed/kaslr.c                |  3 +++
+ kernel/power/hibernate.c                        | 18 +++++++++++++++++-
+ 3 files changed, 25 insertions(+), 1 deletion(-)
 
-__update_load_avg uses rq->clock_task for deltas which I think
-shouldn't account IRQ time with that config option. So it should be
-quite possible for IRQ time spent to reduce the PELT signal right?
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 2ba45caabada..6f899c7f587d 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -1725,6 +1725,11 @@
+ 			kernel and module base offset ASLR (Address Space
+ 			Layout Randomization).
+ 
++			On 32-bit x86 with CONFIG_HIBERNATION, hibernation
++			is disabled if KASLR is enabled. If "nokaslr" is
++			specified, KASLR will be diabled and hibernation
++			will be enabled.
++
+ 	keepinitrd	[HW,ARM]
+ 
+ 	kernelcore=	[KNL,X86,IA-64,PPC]
+diff --git a/arch/x86/boot/compressed/kaslr.c b/arch/x86/boot/compressed/kaslr.c
+index 8b7c9e75edcb..b694af45f1e0 100644
+--- a/arch/x86/boot/compressed/kaslr.c
++++ b/arch/x86/boot/compressed/kaslr.c
+@@ -572,6 +572,9 @@ void choose_random_location(unsigned long input,
+ 		return;
+ 	}
+ 
++	if (IS_ENABLED(CONFIG_X86_32) && IS_ENABLED(CONFIG_HIBERNATION))
++		warn("KASLR active: hibernation disabled on 32-bit x86.");
++
+ 	boot_params->hdr.loadflags |= KASLR_FLAG;
+ 
+ 	/* Prepare to add new identity pagetables on demand. */
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index a8b978c35a6a..1d8f1fe1b7f4 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -37,9 +37,14 @@
+ #include "power.h"
+ 
+ 
+-static int nocompress;
++#if defined(CONFIG_X86_32) && defined(CONFIG_RANDOMIZE_BASE)
++static int noresume = 1;
++static int nohibernate = 1;
++#else
+ static int noresume;
+ static int nohibernate;
++#endif
++static int nocompress;
+ static int resume_wait;
+ static unsigned int resume_delay;
+ static char resume_file[256] = CONFIG_PM_STD_PARTITION;
+@@ -1194,3 +1199,14 @@ __setup("hibernate=", hibernate_setup);
+ __setup("resumewait", resumewait_setup);
+ __setup("resumedelay=", resumedelay_setup);
+ __setup("nohibernate", nohibernate_setup);
++
++/* Allow hibernation to be disabled in favor of KASLR on 32-bit x86. */
++#if defined(CONFIG_X86_32) && defined(CONFIG_RANDOMIZE_BASE)
++static int __init nokaslr_hibernate_setup(char *str)
++{
++	noresume = 0;
++	nohibernate = 0;
++	return 1;
++}
++__setup("nokaslr", nokaslr_hibernate_setup);
++#endif
+-- 
+2.7.4
 
->
->> So I'm not really aligned with the description of your problem: PELT
->> metric underestimates the load of the CPU.  The PELT is just about
->> tracking CFS task utilization but not whole CPU utilization and
->> according to your description of the problem (time stolen by irq),
->> your problem doesn't come from an underestimation of CFS task but from
->> time spent in something else but not accounted in the value used by
->> schedutil
->
-> Quite likely. Indeed, it can really be that the CFS task is preempted
-> because of some RT activity generated by the IRQ handler.
->
-> More in general, I've also noticed many suboptimal freq switches when
-> RT tasks interleave with CFS ones, because of:
-> - relatively long down _and up_ throttling times
-> - the way schedutil's flags are tracked and updated
-> - the callsites from where we call schedutil updates
->
-> For example it can really happen that we are running at the highest
-> OPP because of some RT activity. Then we switch back to a relatively
-> low utilization CFS workload and then:
-> 1. a tick happens which produces a frequency drop
 
-Any idea why this frequency drop would happen? Say a running CFS task
-gets preempted by RT task, the PELT signal shouldn't drop for the
-duration the CFS task is preempted because the task is runnable, so
-once the CFS task gets CPU back, schedutil should still maintain the
-capacity right?
-
-Regards,
-Joel
+-- 
+Kees Cook
+Pixel Security
