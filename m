@@ -1,55 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: schedutil: Trace frequency only if it has
- changed
-Date: Thu, 23 Mar 2017 10:02:13 +0530
-Message-ID: <20170323043213.GC12094@vireshk-i7>
-References: <10655562.4O9KtquB0A@aspire.rjw.lan>
- <2563394.lUgF3b60iC@aspire.rjw.lan>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC 2/8] cpufreq: imx6q: Fix handling EPROBE_DEFER from
+ regulator
+Date: Thu, 23 Mar 2017 10:03:34 +0530
+Message-ID: <20170323043334.GD12094@vireshk-i7>
+References: <cover.1490199005.git.leonard.crestez@nxp.com>
+ <7f2618363d43b30db29f5f8ae822df413392f99d.1490199005.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:32875 "EHLO
-        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751271AbdCWEcS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 00:32:18 -0400
-Received: by mail-pf0-f179.google.com with SMTP id o190so18378545pfo.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Mar 2017 21:32:17 -0700 (PDT)
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <2563394.lUgF3b60iC@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <7f2618363d43b30db29f5f8ae822df413392f99d.1490199005.git.leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Robin Gong <yibin.gong-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Irina Tirdea <irina.tirdea-3arQi8VN3Tc@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 22-03-17, 18:32, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 22-03-17, 18:53, Leonard Crestez wrote:
+> From: Irina Tirdea <irina.tirdea-3arQi8VN3Tc@public.gmane.org>
 > 
-> sugov_update_commit() calls trace_cpu_frequency() to record the
-> current CPU frequency if it has not changed in the fast switch case
-> to prevent utilities from getting confused (they may report that the
-> CPU is idle if the frequency has not been recorded for too long, for
-> example).
+> If there are any errors in getting the cpu0 regulators, the driver returns
+> -ENOENT. In case the regulators are not yet available, the devm_regulator_get
+> calls will return -EPROBE_DEFER, so that the driver can be probed later.
+> If we return -ENOENT, the driver will fail its initialization and will
+> not try to probe again (when the regulators become available).
 > 
-> However, that may cause the tracepoint to be triggered quite often
-> for no real reason (if the frequency doesn't change, we will not
-> modify the last update time stamp and governor computations may
-> run again shortly when that happens), so don't do that (arguably, it
-> is done to work around a utilities bug anyway).
+> Return the actual error received from regulator_get in probe. Print a
+> differentiated message in case we need to probe the device later and
+> in case we actually failed. Also add a message to inform when the
+> driver has been successfully registered.
 > 
-> That allows code duplication in sugov_update_commit() to be reduced
-> somewhat too.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Irina Tirdea <irina.tirdea-3arQi8VN3Tc@public.gmane.org>
+> Signed-off-by: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
 > ---
-> 
-> -> v2:
-> Drop the trace_cpu_frequency() call in the sg_policy->next_freq == next_freq case.
-> 
-> ---
->  kernel/sched/cpufreq_schedutil.c |   16 +++++++---------
->  1 file changed, 7 insertions(+), 9 deletions(-)
+>  drivers/cpufreq/imx6q-cpufreq.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
 -- 
 viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
