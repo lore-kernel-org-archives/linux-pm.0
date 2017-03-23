@@ -1,191 +1,163 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v2 4/7] power: supply: bq24190_charger: Never reset the
- charger chip
-Date: Thu, 23 Mar 2017 12:48:55 +0100
-Message-ID: <14857b8e-8adf-2f07-64cd-8923c12eb030@redhat.com>
-References: <20170322145536.30570-1-hdegoede@redhat.com>
- <20170322145536.30570-5-hdegoede@redhat.com>
- <20170322154313.GU8575@atomide.com>
- <2ab0b7d5-61b0-2a1f-7c45-07d7f3f180b6@redhat.com>
- <CAKvHMgSy0iobRDEYWrOwVSz940TPNhOQXxRCUftT-8q3mUfXwA@mail.gmail.com>
- <a8cd7854-38e0-e808-e22f-844c023cab88@redhat.com>
- <CAKvHMgS1Bc=G2Qa9SVFsjePTyoDJo0etA7d4-fJ+y03xpwwGqQ@mail.gmail.com>
- <ff62ab2b-b0d7-87f2-1b42-624e26e9ef52@redhat.com>
- <CAKvHMgSOdOCOj3JJSa2QCRC5_pg=jJN4NbX6D253poiSF7yQhQ@mail.gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v3 1/3] mfd: intel_soc_pmic: Fix a mess with compilation
+ units
+Date: Thu, 23 Mar 2017 12:12:52 +0000
+Message-ID: <20170323121252.vi7oggwr6bfghe3b@dell>
+References: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:58486 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751567AbdCWLtJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 23 Mar 2017 07:49:09 -0400
-In-Reply-To: <CAKvHMgSOdOCOj3JJSa2QCRC5_pg=jJN4NbX6D253poiSF7yQhQ@mail.gmail.com>
+Received: from mail-wm0-f45.google.com ([74.125.82.45]:38066 "EHLO
+        mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751365AbdCWMM6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 08:12:58 -0400
+Received: by mail-wm0-f45.google.com with SMTP id t189so61271228wmt.1
+        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 05:12:57 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Hi,
+On Fri, 17 Mar 2017, Andy Shevchenko wrote:
 
-On 23-03-17 12:47, Liam Breck wrote:
-> On Thu, Mar 23, 2017 at 4:44 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->> Hi,
->>
->>
->> On 23-03-17 12:36, Liam Breck wrote:
->>>
->>> On Thu, Mar 23, 2017 at 1:44 AM, Hans de Goede <hdegoede@redhat.com>
->>> wrote:
->>>>
->>>> Hi,
->>>>
->>>>
->>>> On 23-03-17 08:16, Liam Breck wrote:
->>>>>
->>>>>
->>>>> On Wed, Mar 22, 2017 at 8:45 AM, Hans de Goede <hdegoede@redhat.com>
->>>>> wrote:
->>>>>>
->>>>>>
->>>>>> Hi,
->>>>>>
->>>>>> On 22-03-17 16:43, Tony Lindgren wrote:
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>> * Hans de Goede <hdegoede@redhat.com> [170322 07:57]:
->>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>> Resetting the charger should never be necessary it should always have
->>>>>>>> sane values programmed. If it is running with invalid values while we
->>>>>>>> are not running (system turned off or suspended) there is a big
->>>>>>>> problem
->>>>>>>> as that may lead to overcharging the battery.
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>> And some systems may only configure it in the bootloader with no
->>>>>>> configuration passed to the kernel at all.
->>>>>>
->>>>>>
->>>>>>
->>>>>>
->>>>>> Right.
->>>>>>
->>>>>>
->>>>>>>> The reset in suspend() is meant to put the charger back into default
->>>>>>>> mode, but this is not necessary and not a good idea. If the charger
->>>>>>>> has
->>>>>>>> been programmed with a higher max charge_current / charge_voltage
->>>>>>>> then
->>>>>>>> putting it back in default-mode will reset those to the safe power-on
->>>>>>>> defaults, leading to slower charging, or charging to a lower voltage
->>>>>>>> (and thus not using the full capacity) while suspended which is
->>>>>>>> undesirable. Reprogramming the max charge_current / charge_voltage
->>>>>>>> after the reset will not help here as that will put the charger back
->>>>>>>> in host mode and start the i2c watchdog if the host then does not do
->>>>>>>> anything for 40s (iow if we're suspended for more then 40s) the
->>>>>>>> watchdog
->>>>>>>> expires resetting the device to default-mode, including resetting all
->>>>>>>> the registers to there safe power-on defaults. So the only way to
->>>>>>>> keep
->>>>>>>> using custom charge settings while suspending is to keep the charger
->>>>>>>> in
->>>>>>>> its normal running state with the i2c watchdog disabled. This is fine
->>>>>>>> as the charger will still automatically switch from constant current
->>>>>>>> to constant voltage and stop charging when the battery is full.
->>>>>>>>
->>>>>>>> Besides never being necessary resetting the charger also causes
->>>>>>>> problems
->>>>>>>> on systems where the charge voltage limit is set higher then the
->>>>>>>> reset
->>>>>>>> value, if this is the case and the charger is reset while charging
->>>>>>>> and
->>>>>>>> the battery voltage is between the 2 voltages, then about half the
->>>>>>>> time
->>>>>>>> the charger gets confused and claims to be charging (REG08 contains
->>>>>>>> 0x64)
->>>>>>>> but in reality the charger has decoupled itself from VBUS (Q1 off)
->>>>>>>> and
->>>>>>>> is drawing 0A from VBUS, leaving the system running from the battery.
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>> We do have cases where Linux kernel is the bootloader though using
->>>>>>> kexec. And in those cases we may need to reset, so I wonder if the
->>>>>>> reset should just be optional based on a proper device tree
->>>>>>> (or platform_data) configuration?
->>>>>>
->>>>>>
->>>>>>
->>>>>>
->>>>>> As described above during my testing I've found that the chip does not
->>>>>> respond well to reset under certain conditions, so I think that if
->>>>>> we have settings to apply we should just overwrite the settings with
->>>>>> our settings, what does doing a reset before overwriting the registers
->>>>>> buy us? We still need to do the overwrite anyways.
->>>>>
->>>>>
->>>>>
->>>>> When driver loads on any conceivable hw, how do we know the chip is in
->>>>> a state we predicted?
->>>>
->>>>
->>>>
->>>> Any non reset values have to come from somewhere, likely firmware,
->>>> and unless we've platform data telling us the exact settings we should
->>>> use why would we decide the reset values are better then the ones
->>>> the charger was *already using* before our driver loads ? As said in
->>>> the commit msg: "If it is running with invalid values while we
->>>> are not running (system turned off or suspended) there is a big problem
->>>> as that may lead to overcharging the battery."
->>>>
->>>>> If it isn't, how can we fix any undesirable
->>>>> settings?
->>>>
->>>>
->>>>
->>>> Why would the chip not be in a sane state? Where would the undesirable
->>>> settings come from ?
->>>>
->>>>> Reset + fix a,b,c is simple way to do that.
->>>>
->>>>
->>>>
->>>> As my testing using real-world hardware under real-world conditions
->>>> has shown resetting the charger IC while it is charging can cause it
->>>> to misbehave. So we have this theoretical problem of there somehow
->>>> being undesirable settings at boot vs a real-world problem...
->>>
->>>
->>> A bug in the charger? Or in the platform hw/fw?
->>
->>
->> I'm pretty sure the fw is not touching the charger, still the problem
->> might be something specific to my hw. Either way there does not seem
->> to be a good reason to reset the chip and doing a reset despite it
->> not being necessary does cause real problems independently of the
->> root cause (I'm running this on production hardware which many
->> people have, so no way to modify the hardware).
->>
->> If you want to test this on your systems you can easily add a
->> patch on top of your current branch which just comments out
->> all the reset calls (and the bq24190_set_mode_host call in
->> resume) to get the same result on top of your current branch.
->
-> I'll try it.
->
-> Why would you not want set_mode_host()?
+> Crystal Cove and Whiskey Cove are two different PMICs which are
+> installed on Intel Atom SoC based platforms.
+> 
+> Moreover there are two independent drivers that by some reason were
+> supposed (*) to get into one kernel module.
+> 
+> Fix the mess by clarifying Kconfig option for Crystal Cove and split
+> Whiskey Cove out of it.
+> 
+> (*) It looks like the configuration was never tested with
+>     INTEL_SOC_PMIC=n. The line in Makefile is actually wrong.
+> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net> (supporter:ACPI)
+> Cc: Linus Walleij <linus.walleij@linaro.org> (maintainer:GPIO SUBSYSTEM)
+> Cc: Zhang Rui <rui.zhang@intel.com> (supporter:THERMAL)
+> Cc: Eduardo Valentin <edubezval@gmail.com> (supporter:THERMAL)
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+> - make option visible
+> - fix dependencies
+>  drivers/acpi/Kconfig         |  2 +-
 
-Doing set_mode_host() on resume is redundant if we do not
-reset the chip on suspend/resume. Note we still want the
-set_mode_host on boot / probe and my patch preservers that
-set_mode_host call.
+This needs an ACPI Ack before I can do anything with it.
 
-Regards,
+>  drivers/gpio/Kconfig         |  2 +-
+>  drivers/mfd/Kconfig          | 14 ++++++++++++--
+>  drivers/mfd/Makefile         |  2 +-
+>  drivers/platform/x86/Kconfig |  2 +-
+>  drivers/thermal/Kconfig      |  2 +-
+>  6 files changed, 17 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index 83e5f7e1a20d..03708e08fcb4 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -512,7 +512,7 @@ config XPOWER_PMIC_OPREGION
+>  
+>  config BXT_WC_PMIC_OPREGION
+>  	bool "ACPI operation region support for BXT WhiskeyCove PMIC"
+> -	depends on INTEL_SOC_PMIC
+> +	depends on INTEL_SOC_PMIC_BXTWC
+>  	help
+>  	  This config adds ACPI operation region support for BXT WhiskeyCove PMIC.
+>  
+> diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+> index 05043071fc98..9b1bcb4d0df7 100644
+> --- a/drivers/gpio/Kconfig
+> +++ b/drivers/gpio/Kconfig
+> @@ -1054,7 +1054,7 @@ config GPIO_UCB1400
+>  
+>  config GPIO_WHISKEY_COVE
+>  	tristate "GPIO support for Whiskey Cove PMIC"
+> -	depends on (X86 || COMPILE_TEST) && INTEL_SOC_PMIC
+> +	depends on (X86 || COMPILE_TEST) && INTEL_SOC_PMIC_BXTWC
+>  	select GPIOLIB_IRQCHIP
+>  	help
+>  	  Support for GPIO pins on Whiskey Cove PMIC.
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index 55ecdfb74d31..e43afb8956ea 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -425,18 +425,28 @@ config LPC_SCH
+>  	  System Management Bus and General Purpose I/O.
+>  
+>  config INTEL_SOC_PMIC
+> -	bool "Support for Intel Atom SoC PMIC"
+> +	bool "Support for Crystal Cove PMIC"
+>  	depends on GPIOLIB
+>  	depends on I2C=y
+>  	select MFD_CORE
+>  	select REGMAP_I2C
+>  	select REGMAP_IRQ
+>  	help
+> -	  Select this option to enable support for the PMIC device
+> +	  Select this option to enable support for Crystal Cove PMIC
+>  	  on some Intel SoC systems. The PMIC provides ADC, GPIO,
+>  	  thermal, charger and related power management functions
+>  	  on these systems.
+>  
+> +config INTEL_SOC_PMIC_BXTWC
+> +	tristate "Support for Intel Broxton Whiskey Cove PMIC"
+> +	select MFD_CORE
+> +	select REGMAP_IRQ
+> +	help
+> +	  Select this option to enable support for Whiskey Cove PMIC
+> +	  on Intel Broxton systems. The PMIC provides ADC, GPIO,
+> +	  thermal, charger and related power management functions
+> +	  on these systems.
+> +
+>  config MFD_INTEL_LPSS
+>  	tristate
+>  	select COMMON_CLK
+> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> index 31ce07611a6f..201aeaf5112a 100644
+> --- a/drivers/mfd/Makefile
+> +++ b/drivers/mfd/Makefile
+> @@ -207,8 +207,8 @@ obj-$(CONFIG_MFD_RT5033)	+= rt5033.o
+>  obj-$(CONFIG_MFD_SKY81452)	+= sky81452.o
+>  
+>  intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
+> -intel-soc-pmic-$(CONFIG_INTEL_PMC_IPC)	+= intel_soc_pmic_bxtwc.o
+>  obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
+> +obj-$(CONFIG_INTEL_SOC_PMIC_BXTWC)	+= intel_soc_pmic_bxtwc.o
+>  obj-$(CONFIG_MFD_MT6397)	+= mt6397-core.o
+>  
+>  obj-$(CONFIG_MFD_ALTERA_A10SR)	+= altera-a10sr.o
+> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+> index e1bffc9bb194..883fbe7a2466 100644
+> --- a/drivers/platform/x86/Kconfig
+> +++ b/drivers/platform/x86/Kconfig
+> @@ -1019,7 +1019,7 @@ config INTEL_PMC_IPC
+>  config INTEL_BXTWC_PMIC_TMU
+>  	tristate "Intel BXT Whiskey Cove TMU Driver"
+>  	depends on REGMAP
+> -	depends on INTEL_SOC_PMIC && INTEL_PMC_IPC
+> +	depends on INTEL_SOC_PMIC_BXTWC && INTEL_PMC_IPC
+>  	---help---
+>  	  Select this driver to use Intel BXT Whiskey Cove PMIC TMU feature.
+>  	  This driver enables the alarm wakeup functionality in the TMU unit
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 776b34396144..751e50a3d946 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -365,7 +365,7 @@ endmenu
+>  
+>  config INTEL_BXT_PMIC_THERMAL
+>  	tristate "Intel Broxton PMIC thermal driver"
+> -	depends on X86 && INTEL_SOC_PMIC && REGMAP
+> +	depends on X86 && INTEL_SOC_PMIC_BXTWC && REGMAP
+>  	help
+>  	  Select this driver for Intel Broxton PMIC with ADC channels monitoring
+>  	  system temperature measurements and alerts.
 
-Hans
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
