@@ -1,106 +1,69 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 1/2] powerpc/powernv/cpuidle: Pass correct drv->cpumask
- for registration
-Date: Thu, 23 Mar 2017 16:28:31 +0100
-Message-ID: <CAJZ5v0jujyxWYbUAKkzkq9ZdT476LsHLfD2S9GtwHBPQByKWUw@mail.gmail.com>
-References: <20170323152247.14733-1-svaidy@linux.vnet.ibm.com> <20170323152247.14733-2-svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH] hibernation: on 32-bit x86, disabled in favor of KASLR
+Date: Thu, 23 Mar 2017 16:30:06 +0100
+Message-ID: <CAJZ5v0ipWcaRhKueF_0w+kXHXRLD7qvqxhk3RcWHeyWv=GV5Mw@mail.gmail.com>
+References: <20170323002701.GA90470@beast> <58D3CC61.8080609@yandex.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:33330 "EHLO
-        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S964903AbdCWP2d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 11:28:33 -0400
-In-Reply-To: <20170323152247.14733-2-svaidy@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <58D3CC61.8080609@yandex.ru>
+Sender: linux-doc-owner@vger.kernel.org
+To: Evgenii Shatokhin <eugene.shatokhin@yandex.ru>
+Cc: Kees Cook <keescook@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Thu, Mar 23, 2017 at 4:22 PM, Vaidyanathan Srinivasan
-<svaidy@linux.vnet.ibm.com> wrote:
-> drv->cpumask defaults to cpu_possible_mask in __cpuidle_driver_init().
-> On PowerNV platform cpu_present could be less than cpu_possible in cases
-> where firmware detects the cpu, but it is not available to the OS.  When
-> CONFIG_HOTPLUG_CPU=n, such cpus are not hotplugable at runtime and hence
-> we skip creating cpu_device.
+On Thu, Mar 23, 2017 at 2:23 PM, Evgenii Shatokhin
+<eugene.shatokhin@yandex.ru> wrote:
+> On 23.03.2017 03:27, Kees Cook wrote:
+>>
+>> This is a modified revert of commit 65fe935dd238 ("x86/KASLR, x86/power:
+>> Remove x86 hibernation restrictions"), since it appears that 32-bit
+>> hibernation still can't support KASLR. 64-bit is fine. Since people have
+>> been running with KASLR by default on 32-bit since v4.8, this disables
+>> hibernation (with a warning). Booting with "nokaslr" will disable KASLR
+>> and enable hibernation.
+>>
+>> Reported-by: Evgenii Shatokhin <eugene.shatokhin@yandex.ru>
+>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>> Cc: stable@vger.kernel.org # v4.8+
 >
-> This breaks cpuidle on powernv where register_cpu() is not called for
-> cpus in cpu_possible_mask that cannot be hot-added at runtime.
 >
-> Trying cpuidle_register_device() on cpu without cpu_device will cause
-> crash like this:
+> The patch does not work as intended on my system, unfortunately.
 >
-> cpu 0xf: Vector: 380 (Data SLB Access) at [c000000ff1503490]
->     pc: c00000000022c8bc: string+0x34/0x60
->     lr: c00000000022ed78: vsnprintf+0x284/0x42c
->     sp: c000000ff1503710
->    msr: 9000000000009033
->    dar: 6000000060000000
->   current = 0xc000000ff1480000
->   paca    = 0xc00000000fe82d00   softe: 0        irq_happened: 0x01
->     pid   = 1, comm = swapper/8
-> Linux version 4.11.0-rc2 (sv@sagarika) (gcc version 4.9.4
-> (Buildroot 2017.02-00004-gc28573e) ) #15 SMP Fri Mar 17 19:32:02 IST 2017
-> enter ? for help
-> [link register   ] c00000000022ed78 vsnprintf+0x284/0x42c
-> [c000000ff1503710] c00000000022ebb8 vsnprintf+0xc4/0x42c (unreliable)
-> [c000000ff1503800] c00000000022ef40 vscnprintf+0x20/0x44
-> [c000000ff1503830] c0000000000ab61c vprintk_emit+0x94/0x2cc
-> [c000000ff15038a0] c0000000000acc9c vprintk_func+0x60/0x74
-> [c000000ff15038c0] c000000000619694 printk+0x38/0x4c
-> [c000000ff15038e0] c000000000224950 kobject_get+0x40/0x60
-> [c000000ff1503950] c00000000022507c kobject_add_internal+0x60/0x2c4
-> [c000000ff15039e0] c000000000225350 kobject_init_and_add+0x70/0x78
-> [c000000ff1503a60] c00000000053c288 cpuidle_add_sysfs+0x9c/0xe0
-> [c000000ff1503ae0] c00000000053aeac cpuidle_register_device+0xd4/0x12c
-> [c000000ff1503b30] c00000000053b108 cpuidle_register+0x98/0xcc
-> [c000000ff1503bc0] c00000000085eaf0 powernv_processor_idle_init+0x140/0x1e0
-> [c000000ff1503c60] c00000000000cd60 do_one_initcall+0xc0/0x15c
-> [c000000ff1503d20] c000000000833e84 kernel_init_freeable+0x1a0/0x25c
-> [c000000ff1503dc0] c00000000000d478 kernel_init+0x24/0x12c
-> [c000000ff1503e30] c00000000000b564 ret_from_kernel_thread+0x5c/0x78
+> I tried the mainline kernel v4.11-rc3 and added this patch. With "nokaslr"
+> in the kernel command line, the system fails to hibernate. It complains this
+> way in the log:
 >
-> This patch fixes the bug by passing correct cpumask from
-> powernv-cpuidle driver.
+> <...>
+> kernel: PM: writing image.
+> kernel: PM: Cannot find swap device, try swapon -a.
+> kernel: PM: Cannot get swap writer
+> kernel: PM: Basic memory bitmaps freed
+> kernel: Restarting tasks ... done.
+> systemd[1]: Time has been changed
+> systemd[3948]: Time has been changed
+> systemd[14825]: Time has been changed
+> systemd[1]: systemd-hibernate.service: main process exited, code=exited,
+> status=1/FAILURE
+> systemd[1]: Failed to start Hibernate.
+> <...>
 >
-> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> The swap device (swap file, actually) is available, however:
+> -------------
+> # swapon -s
+> Filename  Type  Size    Used  Priority
+> /swap     file  6297596 0     -1
+> -------------
+>
+> I built the same kernel without this patch then, added "nokaslr" in the
+> kernel command line again, and the system hibernates and resumes fine.
 
-That needs to be ACKed by someone familiar with powernv.
+With the patch applied and "nokaslr" in the kernel command line, what
+shows up when you do
 
-> ---
->  drivers/cpuidle/cpuidle-powernv.c | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
->
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index a06df51..82f7b33 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -175,6 +175,24 @@ static int powernv_cpuidle_driver_init(void)
->                 drv->state_count += 1;
->         }
->
-> +       /*
-> +        * On PowerNV platform cpu_present may be less that cpu_possible in
-> +        * cases where firmware detects the cpu, but it is not available to the
-> +        * OS.  If CONFIG_HOTPLUG_CPU=n then such CPUs are not hotplugable at
-> +        * runtime and hence cpu_devices are not created for those cpus by
-> +        * generic topology_init().
-> +        *
-> +        * drv->cpumask defaults to cpu_possible_mask in
-> +        * __cpuidle_driver_init().  This breaks cpuidle on powernv where
-> +        * cpu_devices are not created for cpus in cpu_possible_mask that
-> +        * cannot be hot-added later at runtime.
-> +        *
-> +        * Trying cpuidle_register_device() on a cpu without cpu_devices is
-> +        * incorrect. Hence pass correct cpu mask to generic cpuidle driver.
-> +        */
-> +
-> +       drv->cpumask = (struct cpumask *)cpu_present_mask;
-> +
->         return 0;
->  }
->
-> --
-> 2.9.3
->
+$ cat /sys/power/state
+
+?
+
+Thanks,
+Rafael
