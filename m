@@ -1,118 +1,115 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery device
- .type=unknown
-Date: Thu, 23 Mar 2017 09:18:50 +0100
-Message-ID: <32d7cb28-d697-aa4c-7760-d9b0117bed9b@redhat.com>
-References: <20170321220921.5834-1-liam@networkimprov.net>
- <20170321220921.5834-8-liam@networkimprov.net>
- <7e117a52-bbf0-2a12-e98f-843da227e0c7@redhat.com>
- <aaa05be7-9019-01ee-ce1d-f2211938164b@redhat.com>
- <CAKvHMgRB6O4agD+0TGabAeS_g0TsixXWwB7dc1kvNWeM-qgbKA@mail.gmail.com>
- <41f97886-306e-725f-4b05-dc98a3b57fa1@redhat.com>
- <CAKvHMgQ2JFDYWuhoL=WFh-RGQEcSKCM8xWBKNo5JJLoHEkYCqg@mail.gmail.com>
+Subject: Re: [PATCH v2 4/7] power: supply: bq24190_charger: Never reset the
+ charger chip
+Date: Thu, 23 Mar 2017 09:16:05 +0100
+Message-ID: <0596c651-8009-d103-e02f-4b709cbfb9b3@redhat.com>
+References: <20170322145536.30570-1-hdegoede@redhat.com>
+ <20170322145536.30570-5-hdegoede@redhat.com>
+ <CAKvHMgQ0XCuYg6MG4x+gouNPSoNKvmpj5x79_J_3PxnGKZkfUw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:43154 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:37108 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751757AbdCWISx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 23 Mar 2017 04:18:53 -0400
-In-Reply-To: <CAKvHMgQ2JFDYWuhoL=WFh-RGQEcSKCM8xWBKNo5JJLoHEkYCqg@mail.gmail.com>
+        id S1751449AbdCWIYL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 Mar 2017 04:24:11 -0400
+In-Reply-To: <CAKvHMgQ0XCuYg6MG4x+gouNPSoNKvmpj5x79_J_3PxnGKZkfUw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
 
 Hi,
 
-On 22-03-17 19:33, Liam Breck wrote:
-> On Wed, Mar 22, 2017 at 7:41 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->> Hi,
+On 22-03-17 19:41, Liam Breck wrote:
+> On Wed, Mar 22, 2017 at 7:55 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> Resetting the charger should never be necessary it should always have
+>> sane values programmed. If it is running with invalid values while we
+>> are not running (system turned off or suspended) there is a big problem
+>> as that may lead to overcharging the battery.
 >>
->> On 22-03-17 14:37, Liam Breck wrote:
->>>
->>> On Wed, Mar 22, 2017 at 6:15 AM, Hans de Goede <hdegoede@redhat.com>
->>> wrote:
->>>>
->>>> Hi,
->>>>
->>>> On 22-03-17 13:25, Hans de Goede wrote:
->>>>>
->>>>>
->>>>> Hi,
->>>>>
->>>>> On 21-03-17 23:09, Liam Breck wrote:
->>>>>>
->>>>>>
->>>>>> From: Liam Breck <kernel@networkimprov.net>
->>>>>>
->>>>>> Not for upstream. Temporary workaround to prevent bq24190-battery
->>>>>> device
->>>>>> from interfering with a fuel gauge that has
->>>>>> .type=power_supply_type_battery
->>>>>>
->>>>>> I'll move properties from -battery device to -charger in a subsequent
->>>>>> version.
->>>>>>
->>>>>> Cc: Hans de Goede <hdegoede@redhat.com>
->>>>>
->>>>>
->>>>>
->>>>> Hmm, I don't like this. I was about to post v2 of my patches (which I
->>>>> will
->>>>> rebase on top of this series)
->>>>
->>>>
->>>>
->>>> It seems this series does not apply to:
->>>>
->>>>
->>>> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/log/?h=for-next
->>>>
->>>> It looks like there is another series which sits in between ?
->>>
->>>
->>> Yes, see two patches linked in Depends-on lines. Could you add those and
->>> rebase?
+>> The reset in suspend() is meant to put the charger back into default
+>> mode, but this is not necessary and not a good idea. If the charger has
+>> been programmed with a higher max charge_current / charge_voltage then
+>> putting it back in default-mode will reset those to the safe power-on
+>> defaults, leading to slower charging, or charging to a lower voltage
+>> (and thus not using the full capacity) while suspended which is
+>> undesirable. Reprogramming the max charge_current / charge_voltage
+>> after the reset will not help here as that will put the charger back
+>> in host mode and start the i2c watchdog if the host then does not do
+>> anything for 40s (iow if we're suspended for more then 40s) the watchdog
+>> expires resetting the device to default-mode, including resetting all
+>> the registers to there safe power-on defaults. So the only way to keep
+>> using custom charge settings while suspending is to keep the charger in
+>> its normal running state with the i2c watchdog disabled. This is fine
+>> as the charger will still automatically switch from constant current
+>> to constant voltage and stop charging when the battery is full.
 >>
+>> Besides never being necessary resetting the charger also causes problems
+>> on systems where the charge voltage limit is set higher then the reset
+>> value, if this is the case and the charger is reset while charging and
+>> the battery voltage is between the 2 voltages, then about half the time
+>> the charger gets confused and claims to be charging (REG08 contains 0x64)
+>> but in reality the charger has decoupled itself from VBUS (Q1 off) and
+>> is drawing 0A from VBUS, leaving the system running from the battery.
 >>
->> I can confirm that with those 2 patches thrown in things apply
->> cleanly on linux-power-supply/for-next.
+>> Cc: Liam Breck <kernel@networkimprov.net>
+>> Cc: Tony Lindgren <tony@atomide.com>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> ---
+>> Changes in v2:
+>> -This is a new patch in v2 of this patch-set
+>> ---
+>>  drivers/power/supply/bq24190_charger.c | 58 ----------------------------------
+>>  1 file changed, 58 deletions(-)
 >>
->> I see that these 2 patches add a new devicetree binding for describing
->> a battery. That is really cool stuff and long overdue IMHO I'm glad
->> to see someone doing this.
+>> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+>> index 7a2a496..b535f24 100644
+>> --- a/drivers/power/supply/bq24190_charger.c
+>> +++ b/drivers/power/supply/bq24190_charger.c
+>> @@ -526,40 +526,6 @@ static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
+>>         return bq24190_write(bdi, BQ24190_REG_CTTC, v);
+>>  }
 >>
->> But (sorry) in my experience getting new devicetree bindings upstream
->> often takes a while, while people are discussing the best way to
->> solve things. So I'm not quite sure this will go upstream real soon
->> now and I would like to get my patches into -next in time for 4.12
->> if possible.
+>> -static int bq24190_register_reset(struct bq24190_dev_info *bdi)
+>> -{
+>> -       int ret, limit = 100;
+>> -       u8 v;
+>> -
+>> -       /* Reset the registers */
+>> -       ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>> -                       BQ24190_REG_POC_RESET_MASK,
+>> -                       BQ24190_REG_POC_RESET_SHIFT,
+>> -                       0x1);
+>> -       if (ret < 0)
+>> -               return ret;
+>> -
+>> -       /* Reset bit will be cleared by hardware so poll until it is */
+>> -       do {
+>> -               ret = bq24190_read_mask(bdi, BQ24190_REG_POC,
+>> -                               BQ24190_REG_POC_RESET_MASK,
+>> -                               BQ24190_REG_POC_RESET_SHIFT,
+>> -                               &v);
+>> -               if (ret < 0)
+>> -                       return ret;
+>> -
+>> -               if (!v)
+>> -                       break;
+>> -
+>> -               udelay(10);
+>> -       } while (--limit);
+>> -
+>> -       if (!limit)
+>> -               return -EIO;
+>> -
+>> -       return 0;
+>> -}
 >
-> Sebastian asked us to write those two patches, and has acked one, I
-> expect ack on the docs for this version (the DT api is settled). The
-> only thing holding up that patchset is a test pass by the TI
-> maintainer of bq27xxx_battery. But we can separate the
-> power_supply_core changes from that if nec.
+> Let's leave this in with __maybe_unused.
 
-Ok, lets let Sebastian decide on the order in which to merge these.
-
-> I would like to run your patches in my environment for some time
-> before acking. For that, I need the -battery back! And also this
-> patchset.
-
-If Sebastian decides he wants to wait with merging these till your
-patches are merged then I'll rebase, otherwise you need to rebase
-anyways and can do so for your testing.
-
-> How's progress on the pmic-gauge battery driver? I'd be curious to see
-> it since I've been adding features to the bq27xxx driver lately.
-
-Progress is good I hope to post a v2 today, in the mean time
-you can find it here:
-
-https://github.com/jwrdegoede/linux-sunxi/commit/7b667e5068393afc29c7173c9f4eae46b026a849
+I don't like leaving dead code around and bringing it back from git
+history is quite easy.
 
 Regards,
 
@@ -120,10 +117,61 @@ Hans
 
 
 >
->> So for now I'm going to hold of on rebasing and just send v2 as is
->> (based on linux-power-supply/for-next). If Sebastian thinks your
->> patches should go first I will happily do a rebased v3.
+>>  /* Charger power supply property routines */
 >>
->> Regards,
+>>  static int bq24190_charger_get_charge_type(struct bq24190_dev_info *bdi,
+>> @@ -1380,10 +1346,6 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+>>                 return -ENODEV;
+>>         }
 >>
->> Hans
+>> -       ret = bq24190_register_reset(bdi);
+>> -       if (ret < 0)
+>> -               return ret;
+>> -
+>>         ret = bq24190_set_mode_host(bdi);
+>>         if (ret < 0)
+>>                 return ret;
+>> @@ -1534,7 +1496,6 @@ static int bq24190_remove(struct i2c_client *client)
+>>                 pm_runtime_put_noidle(bdi->dev);
+>>         }
+>>
+>> -       bq24190_register_reset(bdi);
+>>         bq24190_sysfs_remove_group(bdi);
+>>         power_supply_unregister(bdi->battery);
+>>         power_supply_unregister(bdi->charger);
+>> @@ -1577,23 +1538,6 @@ static __maybe_unused int bq24190_runtime_resume(struct device *dev)
+>>
+>>  static __maybe_unused int bq24190_pm_suspend(struct device *dev)
+>>  {
+>> -       struct i2c_client *client = to_i2c_client(dev);
+>> -       struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
+>> -       int error;
+>> -
+>> -       error = pm_runtime_get_sync(bdi->dev);
+>> -       if (error < 0) {
+>> -               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
+>> -               pm_runtime_put_noidle(bdi->dev);
+>> -       }
+>> -
+>> -       bq24190_register_reset(bdi);
+>> -
+>> -       if (error >= 0) {
+>> -               pm_runtime_mark_last_busy(bdi->dev);
+>> -               pm_runtime_put_autosuspend(bdi->dev);
+>> -       }
+>> -
+>>         return 0;
+>>  }
+>>
+>> @@ -1612,8 +1556,6 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
+>>                 pm_runtime_put_noidle(bdi->dev);
+>>         }
+>>
+>> -       bq24190_register_reset(bdi);
+>> -       bq24190_set_mode_host(bdi);
+>>         bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+>>
+>>         if (error >= 0) {
+>> --
+>> 2.9.3
+>>
