@@ -1,55 +1,105 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v11 07/10] power: bq27xxx_battery: Keep track of specific
- chip id
-Date: Thu, 23 Mar 2017 05:39:09 -0700
-Message-ID: <CAKvHMgSpkfgQxMMLmw7MdLqP_LFMt-V9k63oRg5SsDDXTN5rXQ@mail.gmail.com>
-References: <20170320094335.19224-1-liam@networkimprov.net>
- <20170320094335.19224-8-liam@networkimprov.net> <20170323102825.vvxfzvuvvnhyzlna@earth>
- <CAKvHMgQsuTNcGUXZL7qk_YZ+qcdcLJ1+1xPB0zP97DqiitHJXA@mail.gmail.com> <20170323123054.jyngk44mea435cal@earth>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / runtime: Use synchronous runtime PM call in rpm_put_suppliers()
+Date: Thu, 23 Mar 2017 13:47:46 +0100
+Message-ID: <CAPDyKFot3C1C1k45JovwKHFkvTJAFvdetoE8_ADAhMCkFw3hPA@mail.gmail.com>
+References: <CGME20170322092305eucas1p20d2a6dfede483210febea5b5e0ff68db@eucas1p2.samsung.com>
+ <1490174570-18345-1-git-send-email-m.szyprowski@samsung.com>
+ <CAPDyKFq+mTvruQb5ifj3etMxSCWgDZTZ6ebGkk84UCQDqjR4-A@mail.gmail.com> <CAJZ5v0ihYQp4_oJCu3Tugbqrm=68hcxdg8-yUphbCXCUw3UzPw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f170.google.com ([209.85.223.170]:36697 "EHLO
-        mail-io0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933321AbdCWMjV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 08:39:21 -0400
-Received: by mail-io0-f170.google.com with SMTP id l7so81350030ioe.3
-        for <linux-pm@vger.kernel.org>; Thu, 23 Mar 2017 05:39:20 -0700 (PDT)
-In-Reply-To: <20170323123054.jyngk44mea435cal@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0ihYQp4_oJCu3Tugbqrm=68hcxdg8-yUphbCXCUw3UzPw@mail.gmail.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-On Thu, Mar 23, 2017 at 5:30 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
->
-> On Thu, Mar 23, 2017 at 03:35:33AM -0700, Liam Breck wrote:
->> On Thu, Mar 23, 2017 at 3:28 AM, Sebastian Reichel <sre@kernel.org> wrote:
->> > Hi,
->> >
->> > On Mon, Mar 20, 2017 at 02:43:32AM -0700, Liam Breck wrote:
->> >> From: Liam Breck <kernel@networkimprov.net>
->> >>
->> >> Pass actual chip ID into _setup(), which translates it to a group ID,
->> >> to allow support for all chips by the power_supply_battery_info code.
->> >> There are no functional changes to the driver.
->> >>
->> >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->> >
->> > This is really ugly. If we need chip ID and group ID let's store
->> > them in different variables. For example put the detailed chipid
->> > into di->realchip and then do
+On 22 March 2017 at 21:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Mar 22, 2017 at 12:34 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 22 March 2017 at 10:22, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+>>> rpm_put_suppliers() might be called as a result of pm_runtime_put_sync()
+>>> call, where the called explicitly wants to perform the operation in
+>>> synchronous way to avoid some deadlocks related to concurrent code
+>>> execution in the PM workers. However the current code for handling device
+>>> links always use asynchronous calls. This patch changes it to always use
+>>> the synchronous calls.
 >>
->> I tried this in a previous version, and Andrew rejected it as
->> confusing to have two IDs. That was while you were away on business
->> :-)
+>> This is a good idea! It is better to leave the decision to the "leaf"
+>> node of whether to use asynchronous mode or not.
 >
-> now we have two IDs in the same variable.
-> That definitely more confusing. We can name the second variable
-> group to reduce confusion.
+> One immediate concern that I have is that this happens in an SRCU
+> read-side critical section and sync runtime suspend can take arbitrary
+> amount of time, especially if those devices have suppliers etc.  You
+> may very well wait for an entire subtree to suspend synchronously
+> here.
 
-I was trying not to rename every instance of di->chip; there's a lot.
+Yes that's a problem. Can we address that somehow?
 
-But we can pass real_chip as an argument to this function, so that
-gets you what you wanted.
+>
+> Moreover, if the suppliers have parents, those parents won't be
+> suspended synchronously anyway, so this only addresses the first level
+> of hierarchy in that case.
+>
+> Also the behavior for suppliers follows the behavior for parents and I
+> don't quite see the reason for these two cases to behave differently
+> in principle.
+
+Yes, you are right!
+
+We shouldn't change this for suppliers unless we also change this for parents.
+
+>
+>>>
+>>> This patch fixes the potential deadlock, which appears during adding
+>>> runtime PM support to clock framework, which uses global mutex, which is
+>>> reentrant only for the current process, so trying to execute runtime PM
+>>> callback from the worker results in deadlock (the mentioned mutex is
+>>> already taken by the current process, which waits for execution of PM
+>>> worker).
+>>
+>> This just tells that the locking mechanism for clocks are fragile.
+>
+> Right.
+>
+> We seem to be working around problems in there with this patch.
+>
+>> Whether it is a good motivation for this change, I am not sure.
+>>
+>> In either case, I like the change!
+>
+> Why exactly do you like it?
+
+Okay, let me try to elaborate.
+
+For the async runtime PM suspend/idle case (including runtime PM autosuspend):
+When a driver for a children/consumer decides to use the async runtime
+PM APIs, I assume it's because the driver expects the device to be
+used in some kind of a "bursty" manner. Meaning it doesn't make sense
+to save power in-between every request, but instead leave the device
+powered for little while after a request has been served. The purpose
+is often to avoid the wakeup-latency for *each* request, when these
+comes in bursts.
+
+For these cases the driver has already traded some power savings for
+improved performance of requests in bursts. When this trade is done
+for the children/consumer, I think it seems reasonable to not further
+defer the parent/supplier to be be runtime suspended/idled, as that
+would further trade power for performance, which is what happens when
+rpm_idle|suspend() decides to punt this to a work.
+
+Moreover, scheduling a work for each parent/supplier seems suboptimal
+to me, as in the async case we are already executing from within a
+work. In cases of a higher level of device hierarchy, several works
+becomes scheduled.
+
+For the sync runtime PM suspend/idle case:
+When a driver for a children/consumers decides to use the sync runtime
+PM APIs, it's most likely because it wants the device to enter its low
+power state as soon as possible. In other words, there is no need to
+trade power for performance, either because power is more important
+than performance or because the wakeup latency is negligible. To me, I
+think it seems reasonable to respect this policy for parents/suppliers
+as well instead of always punting to a work.
+
+Kind regards
+Uffe
