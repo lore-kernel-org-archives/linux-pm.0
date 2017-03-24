@@ -1,70 +1,97 @@
-From: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
-Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU controller
-Date: Fri, 24 Mar 2017 00:02:15 -0700
-Message-ID: <CAEi0qNmocGZxh-wcpayMt8rzeQfuk70Su=0vaZWBC8jZKP1gxw@mail.gmail.com>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
- <20170320171511.GB3623@htj.duckdns.org> <20170320180837.GB28391@e110439-lin>
- <CAEi0qNmQWxc+SWYPfbf7jzz3w4-k-uatUHT1r2m_68EOFAVp=A@mail.gmail.com> <20170323103254.GA11362@e110439-lin>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH V11 2/6] thermal: of-thermal: Implement signed
+ coefficient support
+Date: Fri, 24 Mar 2017 08:27:23 +0100 (CET)
+Message-ID: <872776681.149555.1490340443231@email.1und1.de>
+References: <1489356665-3175-1-git-send-email-stefan.wahren@i2se.com>
+ <1489356665-3175-3-git-send-email-stefan.wahren@i2se.com>
+ <58D45B0A.5050500@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170323103254.GA11362@e110439-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Tejun Heo <tj@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.133]:56950 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751991AbdCXH2G (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2017 03:28:06 -0400
+In-Reply-To: <58D45B0A.5050500@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Frank Rowand <frowand.list@gmail.com>, kernel@martin.sperl.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Eric Anholt <eric@anholt.net>, Rob Herring <robh+dt@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi Patrick,
 
-On Thu, Mar 23, 2017 at 3:32 AM, Patrick Bellasi
-<patrick.bellasi@arm.com> wrote:
-[..]
->> > which can be used to defined tunable root constraints when CGroups are
->> > not available, and becomes RO when CGroups are.
->> >
->> > Can this be eventually an acceptable option?
->> >
->> > In any case I think that this feature will be mainly targeting CGroup
->> > based systems. Indeed, one of the main goals is to collect
->> > "application specific" information from "informed run-times". Being
->> > "application specific" means that we need a way to classify
->> > applications depending on the runtime context... and that capability
->> > in Linux is ultimately provided via the CGroup interface.
->>
->> I think the concern raised is more about whether CGroups is the right
->> interface to use for attaching capacity constraints to task or groups
->> of tasks, or is there a better way to attach such constraints?
->
-> Notice that CGroups based classification allows to easily enforce
-> the concept of "delegation containment". I think this feature should
-> be nice to have whatever interface we choose.
->
-> However, potentially we can define a proper per-task API; are you
-> thinking to something specifically?
->
+> Frank Rowand <frowand.list@gmail.com> hat am 24. März 2017 um 00:32 geschrieben:
+> 
+> 
+> On 03/12/17 15:11, Stefan Wahren wrote:
+> > Use the new function of_property_read_s32_array() to prepare
+> > of-thermal for negative coefficients. These are used by
+> > the upcoming bcm2835_thermal driver.
+> > 
+> > Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+> > ---
+> >  drivers/thermal/of-thermal.c |    5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> > index d04ec3b..491d58a 100644
+> > --- a/drivers/thermal/of-thermal.c
+> > +++ b/drivers/thermal/of-thermal.c
+> > @@ -821,7 +821,8 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+> >  	struct device_node *child = NULL, *gchild;
+> >  	struct __thermal_zone *tz;
+> >  	int ret, i;
+> > -	u32 prop, coef[2];
+> > +	u32 prop;
+> > +	s32 coef[2];
+> >  
+> >  	if (!np) {
+> >  		pr_err("no thermal zone np\n");
+> > @@ -851,7 +852,7 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+> >  	 * one sensor per thermal zone. Thus, we are considering
+> >  	 * only the first two values as slope and offset.
+> >  	 */
+> > -	ret = of_property_read_u32_array(np, "coefficients", coef, 2);
+> > +	ret = of_property_read_s32_array(np, "coefficients", coef, 2);
+> >  	if (ret == 0) {
+> >  		tz->slope = coef[0];
+> >  		tz->offset = coef[1];
+> > 
+> 
+> Since you are doing so much work to fix reading the array of s32 property, you
+> might also want to do the same for the s32 properties, "polling-delay-passive"
+> and "polling-delay".  Just change of_property_read_u32() to of_property_read_s32()
+> and change the type of prop to match.
+> 
 
-I was thinking how about adding per-task constraints to the resource
-limits API if it makes sense to? There's already RLIMIT_CPU and
-RLIMIT_NICE. An informed-runtime could then modify the limits of tasks
-using prlimit.
+The intension behind this patch series is adding a new thermal driver not fixing of-thermal. Since the initial version of this series was posted by Martin in May 2016 i do not want to wait much longer.
 
->> The other advantage of such interface is we don't have to
->> create a separate CGroup for every new constraint limit and can have
->> several tasks with different unique constraints.
->
-> That's still possible using CGroups and IMO it will not be the "most
-> common case".
-> Don't you think that in general we will need to set constraints at
-> applications level, thus group of tasks?
+Btw changing polling-delay-passive and polling-delay into a signed doesn't make any sense to me. Why do we need negative delays?
 
-Some applications could be a single task, also not all tasks in an
-application may need constraints right?
+I suggest to send a separate patch for this issue.
 
-> As a general rule we should probably go for an interface which makes
-> easy the most common case.
+Thanks for the review.
 
-I agree.
-
-Thanks,
-Joel
+> 
+> drivers/thermal/of-thermal.c: In function 'thermal_of_build_thermal_zone':
+> drivers/thermal/of-thermal.c:841:2: warning: conversion to 'int' from 'u32' may change the sign of the result [-Wsign-conversion]
+> drivers/thermal/of-thermal.c:848:2: warning: conversion to 'int' from 'u32' may change the sign of the result [-Wsign-conversion]
+> 
+> 
+>  836         ret = of_property_read_u32(np, "polling-delay-passive", &prop);
+>  837         if (ret < 0) {
+>  838                 pr_err("missing polling-delay-passive property\n");
+>  839                 goto free_tz;
+>  840         }
+>  841         tz->passive_delay = prop;
+>  842
+>  843         ret = of_property_read_u32(np, "polling-delay", &prop);
+>  844         if (ret < 0) {
+>  845                 pr_err("missing polling-delay property\n");
+>  846                 goto free_tz;
+>  847         }
+>  848         tz->polling_delay = prop;
+> 
+> 
+> -Frank
