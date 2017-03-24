@@ -1,85 +1,64 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: Re: [PATCH v2 0/8] thermal: ti-soc-thermal: Migrate slope/offset data
- to device tree
-Date: Fri, 24 Mar 2017 08:56:55 +0530
-Message-ID: <a410d37f-92e5-39b4-ac6c-158673163cb0@ti.com>
-References: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
- <64ab8413-6cf1-864f-0550-9c8db59523f7@ti.com>
- <20170323205256.GO10760@atomide.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 194963] schedutil governor causes audio problem in game
+Date: Fri, 24 Mar 2017 04:02:21 +0000
+Message-ID: <bug-194963-137361-0ezpm8lLZ8@https.bugzilla.kernel.org/>
+References: <bug-194963-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170323205256.GO10760@atomide.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: t-kristo@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, edubezval@gmail.com, robh+dt@kernel.org, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:51836 "EHLO
+        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751205AbdCXECX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2017 00:02:23 -0400
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id ABF8928474
+        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 04:02:21 +0000 (UTC)
+Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 51C0226E56
+        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 04:02:21 +0000 (UTC)
+In-Reply-To: <bug-194963-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@kernel.org
+
+https://bugzilla.kernel.org/show_bug.cgi?id=194963
+
+--- Comment #8 from John (john.ettedgui@gmail.com) ---
+(In reply to Rafael J. Wysocki from comment #7)
+> OK, this means that schedutil is not a good match for you.
+> 
+> It is a bit less aggressive than ondemand, on purpose.
+
+Oh I see, I didn't realize that, I thought it was about as dynamic as ondemand.
+Then I am sorry about a wrong report!
+
+> There is one more schedutil change that you may try, but I need to prepare a
+> patch for that first.
+> 
+
+I'll be happy to test it whenever it's ready. Since I have plenty of workaround
+there's of course no sense of urgence on my end.
+
+> If you mean scaling_governor=performance, then it will always request the
+> max P-state now, as that's what it is supposed to be doing.
+
+Yes that is what I meant, I thought scaling_governor=performance with
+driver=intel_pstate would scale unlike with driver=cpufreq, I was wrong again.
+
+> Thanks for the testing, the intel_pstate change will be queued up for 4.12
+> in the next couple of days.
+
+Well thank you for this patch, I am happy to finally be able to use pstate :)
 
 
+If you don't mind me asking here, since we talked about many different
+governors, and their drivers, which one do you recommend for a desktop, that
+does run games, but also other things that don't require much power. Based on
+my tests I'm thinking either cpufreq's ondemand or pstate's powersave.
 
-On Friday 24 March 2017 02:22 AM, Tony Lindgren wrote:
-> * Keerthy <j-keerthy@ti.com> [170321 20:45]:
->>
->>
->> On Thursday 09 March 2017 01:35 PM, Keerthy wrote:
->>> Currently the slope and offset values for calculating the
->>> hot spot temperature of a particular thermal zone is part
->>> of driver data. Pass them here instead and obtain the values
->>> while of node parsing.
->>>
->>> Tested for the slope and constant values on DRA7-EVM, OMAP3-BEAGLE. 
->>
->> Hi Eduardo,
->>
->> If the series looks okay could you please pull this?
-> 
-> Also.. Are the dts changes safe for me to pick separately?
+Thank you!
 
-Yes Tony they are safe to pulled separately.
-
-> 
-> Regards,
-> 
-> Tony
-> 
-> 
->>> Changes in v2:
->>>
->>>   * Added OMAP3 changes along with DRA7/OMAP4/OMAP5.
->>>
->>> Keerthy (8):
->>>   arm: dts: omap3: Add cpu_thermal zone
->>>   ARM: DRA7: Thermal: Add slope and offset values
->>>   ARM: OMAP5: Thermal: Add slope and offset values
->>>   ARM: OMAP443x: Thermal: Add slope and offset values
->>>   ARM: OMAP4460: Thermal: Add slope and offset values
->>>   thermal: ti-soc-thermal: Fetch slope and offset from DT
->>>   thermal: ti-soc-thermal: Remove redundant constants
->>>   thermal: ti-soc-thermal: Remove redundant code
->>>
->>>  arch/arm/boot/dts/dra7.dtsi                        |  17 +++
->>>  arch/arm/boot/dts/omap3-cpu-thermal.dtsi           |  20 +++
->>>  arch/arm/boot/dts/omap34xx.dtsi                    |   8 +-
->>>  arch/arm/boot/dts/omap36xx.dtsi                    |   8 +-
->>>  arch/arm/boot/dts/omap443x.dtsi                    |   4 +
->>>  arch/arm/boot/dts/omap4460.dtsi                    |   4 +
->>>  arch/arm/boot/dts/omap5.dtsi                       |   9 ++
->>>  .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  10 --
->>>  .../thermal/ti-soc-thermal/omap3-thermal-data.c    |   4 -
->>>  .../thermal/ti-soc-thermal/omap4-thermal-data.c    |   6 -
->>>  .../thermal/ti-soc-thermal/omap5-thermal-data.c    |   4 -
->>>  drivers/thermal/ti-soc-thermal/ti-bandgap.h        |   4 -
->>>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 158 +--------------------
->>>  drivers/thermal/ti-soc-thermal/ti-thermal.h        |  16 ---
->>>  14 files changed, 71 insertions(+), 201 deletions(-)
->>>  create mode 100644 arch/arm/boot/dts/omap3-cpu-thermal.dtsi
->>>
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
