@@ -1,92 +1,66 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.11-rc4
-Date: Fri, 24 Mar 2017 02:30:15 +0100
-Message-ID: <CAJZ5v0hrfZjWO6dFNnLtnPbEeeeF+4duPw_R1r2SqMTmjohkrA@mail.gmail.com>
+Subject: Re: [RFC][PATCH v3 2/2] cpufreq: schedutil: Avoid reducing frequency
+ of busy CPUs prematurely
+Date: Fri, 24 Mar 2017 02:39:03 +0100
+Message-ID: <CAJZ5v0jTi6BkKiCXp9PLMAoHmC_rz9bobU5nZKo-OXq2dUKSeQ@mail.gmail.com>
+References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan>
+ <3300960.HE4b3sK4dn@aspire.rjw.lan> <2997922.DidfPadJuT@aspire.rjw.lan> <58D42173.2080205@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f196.google.com ([74.125.82.196]:36456 "EHLO
-        mail-ot0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753029AbdCXBaR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 21:30:17 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <58D42173.2080205@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sai Gurrappadi <sgurrappadi@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Boonstoppel <pboonstoppel@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Linus,
+On Thu, Mar 23, 2017 at 8:26 PM, Sai Gurrappadi <sgurrappadi@nvidia.com> wrote:
+> Hi Rafael,
 
-Please pull from the tag
+Hi,
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.11-rc4
+> On 03/21/2017 04:08 PM, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> <snip>
+>
+>>
+>> That has been attributed to CPU utilization metric updates on task
+>> migration that cause the total utilization value for the CPU to be
+>> reduced by the utilization of the migrated task.  If that happens,
+>> the schedutil governor may see a CPU utilization reduction and will
+>> attempt to reduce the CPU frequency accordingly right away.  That
+>> may be premature, though, for example if the system is generally
+>> busy and there are other runnable tasks waiting to be run on that
+>> CPU already.
+>>
+>> This is unlikely to be an issue on systems where cpufreq policies are
+>> shared between multiple CPUs, because in those cases the policy
+>> utilization is computed as the maximum of the CPU utilization values
+>> over the whole policy and if that turns out to be low, reducing the
+>> frequency for the policy most likely is a good idea anyway.  On
+>
+> I have observed this issue even in the shared policy case (one clock domain for many CPUs). On migrate, the actual load update is split into two updates:
+>
+> 1. Add to removed_load on src_cpu (cpu_util(src_cpu) not updated yet)
+> 2. Do wakeup on dst_cpu, add load to dst_cpu
+>
+> Now if src_cpu manages to do a PELT update before 2. happens, ex: say a small periodic task woke up on src_cpu, it'll end up subtracting the removed_load from its utilization and issue a frequency update before 2. happens.
+>
+> This causes a premature dip in frequency which doesn't get corrected until the next util update that fires after rate_limit_us. The dst_cpu freq. update from step 2. above gets rate limited in this scenario.
 
-with top-most commit 90ff2b729e181fba628b854eac2097e5ccc22e66
+Interesting, and this seems to be related to last_freq_update_time
+being per-policy (which it has to be, because frequency updates are
+per-policy too and that's what we need to rate-limit).
 
- Merge branch 'pm-cpuidle-fixes'
+Does this happen often enough to be a real concern in practice on
+those configurations, though?
 
-on top of commit 97da3854c526d3a6ee05c849c96e48d21527606c
+The other CPUs in the policy need to be either idle (so schedutil
+doesn't take them into account at all) or lightly utilized for that to
+happen, so that would affect workloads with one CPU hog type of task
+that is migrated from one CPU to another within a policy and that
+doesn't happen too often AFAICS.
 
- Linux 4.11-rc3
-
-to receive power management fixes for v4.11-rc4.
-
-One of these is an intel_pstate regression fix and it is not a small
-change, but it mostly removes code that shouldn't be there.  That
-code was acquired by mistake and has been a source of constant pain
-since then, so the time has come to get rid of it finally.  We have
-not seen problems with this change in the lab, so fingers crossed.
-
-The rest is more usual: one more intel_pstate commit removing useless
-code, a cpufreq core fix to make it restore policy limits on CPU
-online (which prevents the limits from being reset over system
-suspend/resume), a schedutil cpufreq governor initialization fix to
-make it actually work as advertised on all systems and an extra
-sanity check in the cpuidle core to prevent crashes from happening
-if the arch code messes things up.
-
-Specifics:
-
- - Make intel_pstate use one set of global P-state limits in the
-   active mode regardless of the scaling_governor settings for
-   individual CPUs instead of switching back and forth between two
-   of them in a way that is hard to control (Rafael Wysocki).
-
- - Drop a useless function from intel_pstate to prevent it from
-   modifying the maximum supported frequency value unexpectedly
-   which may confuse the cpufreq core (Rafael Wysocki).
-
- - Fix the cpufreq core to restore policy limits on CPU online so
-   that the limits are not reset over system suspend/resume, among
-   other things (Viresh Kumar).
-
- - Fix the initialization of the schedutil cpufreq governor to
-   make the IO-wait boosting mechanism in it actually work on
-   systems with one CPU per cpufreq policy (Rafael Wysocki).
-
- - Add a sanity check to the cpuidle core to prevent crashes from
-   happening if the architecture code initialization fails to set
-   up things as expected (Vaidyanathan Srinivasan).
-
-Thanks!
-
----------------
-
-Rafael J. Wysocki (3):
-      cpufreq: intel_pstate: One set of global limits in active mode
-      cpufreq: schedutil: Fix per-CPU structure initialization in sugov_start()
-      cpufreq: intel_pstate: Fix policy data management in passive mode
-
-Vaidyanathan Srinivasan (1):
-      cpuidle: Validate cpu_dev in cpuidle_add_sysfs()
-
-Viresh Kumar (1):
-      cpufreq: Restore policy min/max limits on CPU online
-
----------------
-
- drivers/cpufreq/cpufreq.c        |   3 +
- drivers/cpufreq/intel_pstate.c   | 167 ++++++++++++---------------------------
- drivers/cpuidle/sysfs.c          |  12 +++
- kernel/sched/cpufreq_schedutil.c |  20 ++---
- 4 files changed, 72 insertions(+), 130 deletions(-)
+Thanks,
+Rafael
