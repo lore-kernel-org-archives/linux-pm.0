@@ -1,124 +1,112 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v1 3/7] power: power_supply_core: Add *_battery_info
- fields for pre- and end-charge current
-Date: Fri, 24 Mar 2017 10:07:37 +0100
-Message-ID: <20170324090737.n6rkh6czomgrkpxz@earth>
+Subject: Re: [PATCH v1 4/7] power: bq24190_charger: Uniform pm_runtime_get()
+ failure handling
+Date: Fri, 24 Mar 2017 10:13:02 +0100
+Message-ID: <20170324091302.lhmbk62iihy2bqle@earth>
 References: <20170321220921.5834-1-liam@networkimprov.net>
- <20170321220921.5834-4-liam@networkimprov.net>
+ <20170321220921.5834-5-liam@networkimprov.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="i4minoqwvx6pur37"
+        protocol="application/pgp-signature"; boundary="yxng6qwwhs44ikul"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40278 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:40784 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756416AbdCXJHn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 24 Mar 2017 05:07:43 -0400
+        id S965012AbdCXJNH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 24 Mar 2017 05:13:07 -0400
 Content-Disposition: inline
-In-Reply-To: <20170321220921.5834-4-liam@networkimprov.net>
+In-Reply-To: <20170321220921.5834-5-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
-Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>
+Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Mark Greer <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>
 
 
---i4minoqwvx6pur37
+--yxng6qwwhs44ikul
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Mar 21, 2017 at 03:09:17PM -0700, Liam Breck wrote:
+On Tue, Mar 21, 2017 at 03:09:18PM -0700, Liam Breck wrote:
 > From: Liam Breck <kernel@networkimprov.net>
 >=20
-> Battery chargers use precharge_current_ua and endcharge_current_ua
-> at the beginning and end of a charging cycle. These values are set
-> according to battery capacity.
+> On pm_runtime_get() failure, always emit error message,
+> and call pm_runtime_put_noidle() in irq handler.
 >=20
-> Depends-on: https://patchwork.kernel.org/patch/9633613/
+> Fixes: 13d6fa8447fa power: bq24190_charger: Use PM runtime autosuspend
+> Cc: Mark Greer <mgreer@animalcreek.com>
 > Signed-off-by: Liam Breck <kernel@networkimprov.net>
 > ---
->  drivers/power/supply/power_supply_core.c | 6 ++++++
->  include/linux/power_supply.h             | 5 +++++
->  2 files changed, 11 insertions(+)
+>  drivers/power/supply/bq24190_charger.c | 13 ++++++++-----
+>  1 file changed, 8 insertions(+), 5 deletions(-)
 >=20
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
-ply/power_supply_core.c
-> index 61e20b1..17088c5 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -498,6 +498,8 @@ int power_supply_get_battery_info(struct power_supply=
- *psy,
->  	info->energy_full_design_uwh =3D -EINVAL;
->  	info->charge_full_design_uah =3D -EINVAL;
->  	info->voltage_min_design_uv  =3D -EINVAL;
-> +	info->precharge_current_ua   =3D -EINVAL;
-> +	info->endcharge_current_ua   =3D -EINVAL;
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/suppl=
+y/bq24190_charger.c
+> index c443988..ad09e48 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -1267,12 +1267,13 @@ static void bq24190_check_status(struct bq24190_d=
+ev_info *bdi)
+>  static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
+>  {
+>  	struct bq24190_dev_info *bdi =3D data;
+> -	int ret;
+> +	int error;
 > =20
->  	if (!psy->of_node) {
->  		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
-> @@ -527,6 +529,10 @@ int power_supply_get_battery_info(struct power_suppl=
-y *psy,
->  			     &info->charge_full_design_uah);
->  	of_property_read_u32(battery_np, "voltage-min-design-microvolt",
->  			     &info->voltage_min_design_uv);
-> +	of_property_read_u32(battery_np, "precharge-current-microamp",
-> +			     &info->precharge_current_ua);
-> +	of_property_read_u32(battery_np, "endcharge-current-microamp",
-> +			     &info->endcharge_current_ua);
-> =20
->  	return 0;
->  }
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index e84f1d3..864214c 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -152,6 +152,9 @@ enum power_supply_property {
->  	POWER_SUPPLY_PROP_MODEL_NAME,
->  	POWER_SUPPLY_PROP_MANUFACTURER,
->  	POWER_SUPPLY_PROP_SERIAL_NUMBER,
-> +/* where to place these? inserting above causes sysfs errors */
-> +	POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
-> +	POWER_SUPPLY_PROP_ENDCHARGE_CURRENT,
->  };
+>  	bdi->irq_event =3D true;
+> -	ret =3D pm_runtime_get_sync(bdi->dev);
+> -	if (ret < 0) {
+> -		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
+> +	error =3D pm_runtime_get_sync(bdi->dev);
+> +	if (error < 0) {
+> +		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
+> +		pm_runtime_put_noidle(bdi->dev);
+>  		return IRQ_NONE;
+>  	}
+>  	bq24190_check_status(bdi);
+> @@ -1399,8 +1400,10 @@ static int bq24190_probe(struct i2c_client *client,
+>  	pm_runtime_use_autosuspend(dev);
+>  	pm_runtime_set_autosuspend_delay(dev, 600);
+>  	ret =3D pm_runtime_get_sync(dev);
+> -	if (ret < 0)
+> +	if (ret < 0) {
+> +		dev_err(dev, "pm_runtime_get failed: %i\n", ret);
+>  		goto out1;
+> +	}
 
-Ack on adding standard property for charge current of pre & end
-phase. Please do this in its own patch. This requires modification
-of a few places, see for example the following commit adding
-CHARGE_CURRENT_MAX: 2815b786c3bb86fff97f1f6e2f0874903ff2339b
+This should goto out2, which will make out1 not used anymore.
+Would be nice, if you move this patch to the beginning of the
+series in the next version, so that I can pick it already while
+waiting for Acks on the DT binding.
 
->  enum power_supply_type {
-> @@ -301,6 +304,8 @@ struct power_supply_battery_info {
->  	int energy_full_design_uwh;	/* microWatt-hours */
->  	int charge_full_design_uah;	/* microAmp-hours */
->  	int voltage_min_design_uv;	/* microVolts */
-> +	int precharge_current_ua;	/* microAmps */
-> +	int endcharge_current_ua;       /* microAmps */
->  };
+-- Sebastian
+
 > =20
->  extern struct atomic_notifier_head power_supply_notifier;
+>  	ret =3D bq24190_hw_init(bdi);
+>  	if (ret < 0) {
 > --=20
 > 2.9.3
 >=20
 
---i4minoqwvx6pur37
+--yxng6qwwhs44ikul
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljU4dkACgkQ2O7X88g7
-+pqQEw/+PD/soOxcQ/5BGDt/pNN1awjCLJewLo5YzXqLQlikImAW/x6tO4/rZLq5
-zAtPs09erPatYlrSydjNKBMB/F1K5lrKZJvSEPVi5oMf845HTiray3HYgxCpP0rb
-rVWTjMB4g1PWsOrrgEHl41nDU4uVIMfMAb7ZwJsH83PcCSxuUWYP5LdgxUluHUHZ
-of2WblbsQh8kroIjik9G624Lnpx8ZgxBqJP6WCS9inSfnVHl9VnHGTxiBPLPF//e
-YVh1+ux0vQ3+aV5jb3Fs6kQqKsCIYjBCcn/ijYvSzkILNKwqMBLGrAanur+uCzMt
-Z5GzwldKeIcFURl3b0kb0DHk3ZJGwzFw7i/hdNNvIMbhVWUWxFfXZViPtaJCz/m5
-FiEvWnirEHrP7nbcRr+N7oGtPOG/wiqU8VMDCXK31hWEjoHANNELwjoz+fG8dCFQ
-XWnVyw/Eco5v4pfgsJGSwVeAlWeyFxzaJzlekK4p9sIKLwMnHUMJ083RO5suif9f
-IYwE5+NlUzQpmRNpgQgG1BXjBdcbsAZ0aFlZbz2NrZZ7Lg+iQF/Jddxi7aDRqCXP
-TaJU39XgzOQQudJw/ZYNRX4HbJEMXaW2y6Tz3RDU3nuI7EeEzVWI94/izxM5ZqK0
-oRSWdZvUb/Tu4i+10gvMF1QD2eUaWlQdV1BSJm3NbByUCrs2ttA=
-=cIbi
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljU4x4ACgkQ2O7X88g7
++pokuBAAgARhA7PruU6NOHYjUuqb9W10mbaBV3VQq+mifUxOz23TcEpjNK9Q6VIV
+Oj1LKp8GPqM8X4mW6rUuNsYOgo8ftEeKjRTrT2mYkT/k1BeEDN8+gQpOheV8C6C1
+8ASfKfjqsVmNGCD+CE2fBe2mug/q9AQybRcSSAlLRFKAGYECw68vVRcUfD+Fn5Kq
+D8467wHNrqbcwRvqclFjfav37VbOI8ATsPH8orrcuW75soU5XNPWPvwHZwYStl05
+oE1pJNvU09jJKOpjmsyEzoy1YiytI/I1msoKvtwas0ACo8DB5h1gqxfCjdxRaLwp
+Spz9hu23l2iBy8MuiePk2u9z+vS6wLSLlI6sgw6e+n58NM2yACd9CBl+is/2P/7j
+gTeJvbx1L1940uHUNo15xrbdLgx1ICq3J8Jql1Rwdgw/0rdEwQUl1rymqrfJt00o
+dBSYQD7vmFCCqgan/9uJIWLxZYB+Gh/wFb8S57/JKV4zG9FLON2EueKmtGktCbec
+/zQnF31ndsJU6BBVynPCUwPWnERIuBvb8H/C45FfZ52uWDXKGV0pSm94j2ofLht8
+fBGlJU/YdOzevu9n+1RdUYuWwtpxcVrSUahd/X3LQygfYPi9A7fNTdU5p9nBmcT8
+h85XQgetXRxU9oQ9tTEOcwbJXCi7Q6B0u7fhXjJgwwLVeGibw+4=
+=jFUG
 -----END PGP SIGNATURE-----
 
---i4minoqwvx6pur37--
+--yxng6qwwhs44ikul--
