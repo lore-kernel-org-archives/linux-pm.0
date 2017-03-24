@@ -1,54 +1,129 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 194963] schedutil governor causes audio problem in game
-Date: Fri, 24 Mar 2017 23:06:51 +0000
-Message-ID: <bug-194963-137361-HkpyuRHUVQ@https.bugzilla.kernel.org/>
-References: <bug-194963-137361@https.bugzilla.kernel.org/>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v2 5/7] power: supply: bq24190_charger: Don't spam the
+ logs on charger plug / unplug
+Date: Fri, 24 Mar 2017 16:31:43 -0700
+Message-ID: <CAKvHMgSPS4pAQFRt5-kx=WhhEJ7j0yFAH6KW5LOK44Chs7veGw@mail.gmail.com>
+References: <20170322145536.30570-1-hdegoede@redhat.com> <20170322145536.30570-6-hdegoede@redhat.com>
+ <CAKvHMgQdccLPDz2HyxopdDgQxk+6DMtBrvFxKD--wxLPfe5DQQ@mail.gmail.com>
+ <07ee304f-f86d-ae79-8bda-9f0538db11c7@redhat.com> <CAKvHMgQP_hZCt+-U85MCJfjoxf6muKrks2V+B52JQx8WCWcqyw@mail.gmail.com>
+ <20170324092521.pnb3pcvrtub5glit@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:60752 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753411AbdCXXGy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2017 19:06:54 -0400
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 6557126E56
-        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 23:06:53 +0000 (UTC)
-Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id D203F26E56
-        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 23:06:51 +0000 (UTC)
-In-Reply-To: <bug-194963-137361@https.bugzilla.kernel.org/>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:33554 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932972AbdCXXbp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2017 19:31:45 -0400
+Received: by mail-it0-f68.google.com with SMTP id 76so923698itj.0
+        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 16:31:44 -0700 (PDT)
+In-Reply-To: <20170324092521.pnb3pcvrtub5glit@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=194963
+On Fri, Mar 24, 2017 at 2:25 AM, Sebastian Reichel <sre@kernel.org> wrote:
+> Hi,
+>
+> On Thu, Mar 23, 2017 at 03:24:15PM -0700, Liam Breck wrote:
+>> On Thu, Mar 23, 2017 at 3:02 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> > On 23-03-17 22:31, Liam Breck wrote:
+>> >> On Wed, Mar 22, 2017 at 7:55 AM, Hans de Goede <hdegoede@redhat.com>
+>> >> wrote:
+>> >>>
+>> >>> If the charger gets unplugged before the battery is fully charged we will
+>> >>> get a one time Input fault. Ignore this rather then logging a message for
+>> >>> it. Likewise on the next interrupt after the one time Input fault all
+>> >>> fault flags will be 0, do not log a message when there are no faults.
+>> >>>
+>> >>> This fixes messages like these getting logged on charger unplug + replug:
+>> >>> bq24190-charger 15-006b: Fault: boost 0, charge 1, battery 0, ntc 0
+>> >>> bq24190-charger 15-006b: Fault: boost 0, charge 0, battery 0, ntc 0
+>> >>>
+>> >>> Cc: Liam Breck <kernel@networkimprov.net>
+>> >>> Cc: Tony Lindgren <tony@atomide.com>
+>> >>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> >>> ---
+>> >>> Changes in v2:
+>> >>> -This is a new patch in v2 of this patch-set
+>> >>> ---
+>> >>>  drivers/power/supply/bq24190_charger.c | 17 +++++++++++------
+>> >>>  1 file changed, 11 insertions(+), 6 deletions(-)
+>> >>>
+>> >>> diff --git a/drivers/power/supply/bq24190_charger.c
+>> >>> b/drivers/power/supply/bq24190_charger.c
+>> >>> index b535f24..351e020 100644
+>> >>> --- a/drivers/power/supply/bq24190_charger.c
+>> >>> +++ b/drivers/power/supply/bq24190_charger.c
+>> >>> @@ -1189,12 +1189,17 @@ static void bq24190_check_status(struct
+>> >>> bq24190_dev_info *bdi)
+>> >>>         } while (f_reg && ++i < 2);
+>> >>>
+>> >>>         if (f_reg != bdi->f_reg) {
+>> >>> -               dev_info(bdi->dev,
+>> >>> -                       "Fault: boost %d, charge %d, battery %d, ntc
+>> >>> %d\n",
+>> >>> -                       !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+>> >>> -                       !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
+>> >>> -                       !!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
+>> >>> -                       !!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
+>> >>> +               /*
+>> >>> +                * Don't spam the logs if all faults are cleared, or when
+>> >>> the
+>> >>> +                * cable providing Vbus gets unplugged.
+>> >>> +                */
+>> >>> +               if  (f_reg && f_reg != (1 <<
+>> >>> BQ24190_REG_F_CHRG_FAULT_SHIFT))
+>> >>
+>> >>
+>> >> if (f_reg && ((ss_reg & BQ24190_REG_SS_PG_STAT_MASK) ||
+>> >>     f_reg != (1 << BQ24190_REG_F_CHRG_FAULT_SHIFT)) )
+>> >
+>> >
+>> > Sebastian has already merged the original patch into his for-next branch,
+>> > please
+>> > provide a patch on top.
+>>
+>> I recall Sebastian merging and then dropping a commit from the other
+>> series I'm working on.
+>
+> Yeah, I thought it was a fix, but it was useless without the
+> remaining series.
+>
+>> I'll return to the charger once the dependency for my charger patchset
+>> is merged. I just got a big change request for that.
+>
+> Ok.
+>
+>>
+>> >>> +                       dev_info(bdi->dev,
+>>
+>> This should probably be dev_warn now.
+>
+> makes sense to me.
+>
+> FWIW I think a follow-up commit for this is enough, but I can also
+> swap the existing commit.
 
---- Comment #10 from John (john.ettedgui@gmail.com) ---
-(In reply to Rafael J. Wysocki from comment #9)
-> I would use intel_pstate "powersave" (with the patch you have tested
-> applied).
-> 
-Alright.
-> One more question, though.
-> 
-> I guess that you used "schedutil" with acpi-cpufreq as a scaling_driver?
-> 
-Correct.
-> If that's correct, can you please also try to run intel_pstate in the
-> passive mode (that is, pass "intel_pstate=passive" to the kernel command
-> line) and use "schedutil" with that (scaling_driver will show
-> "intel_cpufreq" in that configuration)?
-> 
-> With acpi-cpufreq "schedutil" may under-provision things due to the way in
-> which turbo P-states are represented in the ACPI tables.
+I posted a replacement for this commit.
 
-I just tested it, and still had the audio cracking. I'm not convinced it was
-any different from using it with acpi-cpufreq, but since I don't measure the
-time between audio distortions I could be wrong.
+In future could you wait for my ack on patches for this driver? I have
+more time to study this stuff than Tony does.
 
-Thank you!
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+>> >>> +                               "Fault: boost %d, charge %d, battery %d,
+>> >>> ntc %d\n",
+>> >>> +                               !!(f_reg &
+>> >>> BQ24190_REG_F_BOOST_FAULT_MASK),
+>> >>> +                               !!(f_reg &
+>> >>> BQ24190_REG_F_CHRG_FAULT_MASK),
+>> >>> +                               !!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
+>> >>> +                               !!(f_reg &
+>> >>> BQ24190_REG_F_NTC_FAULT_MASK));
+>> >>>
+>> >>>                 mutex_lock(&bdi->f_reg_lock);
+>> >>>                 if ((bdi->f_reg & battery_mask_f) != (f_reg &
+>> >>> battery_mask_f))
+>> >>> --
+>> >>> 2.9.3
+>> >>>
+>> >
