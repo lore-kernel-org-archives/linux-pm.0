@@ -1,66 +1,85 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC][PATCH v3 2/2] cpufreq: schedutil: Avoid reducing frequency
- of busy CPUs prematurely
-Date: Fri, 24 Mar 2017 02:39:03 +0100
-Message-ID: <CAJZ5v0jTi6BkKiCXp9PLMAoHmC_rz9bobU5nZKo-OXq2dUKSeQ@mail.gmail.com>
-References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan>
- <3300960.HE4b3sK4dn@aspire.rjw.lan> <2997922.DidfPadJuT@aspire.rjw.lan> <58D42173.2080205@nvidia.com>
+From: Keerthy <j-keerthy@ti.com>
+Subject: Re: [PATCH v2 0/8] thermal: ti-soc-thermal: Migrate slope/offset data
+ to device tree
+Date: Fri, 24 Mar 2017 08:56:55 +0530
+Message-ID: <a410d37f-92e5-39b4-ac6c-158673163cb0@ti.com>
+References: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
+ <64ab8413-6cf1-864f-0550-9c8db59523f7@ti.com>
+ <20170323205256.GO10760@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <58D42173.2080205@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sai Gurrappadi <sgurrappadi@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Boonstoppel <pboonstoppel@nvidia.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170323205256.GO10760@atomide.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: t-kristo@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, edubezval@gmail.com, robh+dt@kernel.org, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 23, 2017 at 8:26 PM, Sai Gurrappadi <sgurrappadi@nvidia.com> wrote:
-> Hi Rafael,
 
-Hi,
 
-> On 03/21/2017 04:08 PM, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> <snip>
->
+On Friday 24 March 2017 02:22 AM, Tony Lindgren wrote:
+> * Keerthy <j-keerthy@ti.com> [170321 20:45]:
 >>
->> That has been attributed to CPU utilization metric updates on task
->> migration that cause the total utilization value for the CPU to be
->> reduced by the utilization of the migrated task.  If that happens,
->> the schedutil governor may see a CPU utilization reduction and will
->> attempt to reduce the CPU frequency accordingly right away.  That
->> may be premature, though, for example if the system is generally
->> busy and there are other runnable tasks waiting to be run on that
->> CPU already.
 >>
->> This is unlikely to be an issue on systems where cpufreq policies are
->> shared between multiple CPUs, because in those cases the policy
->> utilization is computed as the maximum of the CPU utilization values
->> over the whole policy and if that turns out to be low, reducing the
->> frequency for the policy most likely is a good idea anyway.  On
->
-> I have observed this issue even in the shared policy case (one clock domain for many CPUs). On migrate, the actual load update is split into two updates:
->
-> 1. Add to removed_load on src_cpu (cpu_util(src_cpu) not updated yet)
-> 2. Do wakeup on dst_cpu, add load to dst_cpu
->
-> Now if src_cpu manages to do a PELT update before 2. happens, ex: say a small periodic task woke up on src_cpu, it'll end up subtracting the removed_load from its utilization and issue a frequency update before 2. happens.
->
-> This causes a premature dip in frequency which doesn't get corrected until the next util update that fires after rate_limit_us. The dst_cpu freq. update from step 2. above gets rate limited in this scenario.
+>> On Thursday 09 March 2017 01:35 PM, Keerthy wrote:
+>>> Currently the slope and offset values for calculating the
+>>> hot spot temperature of a particular thermal zone is part
+>>> of driver data. Pass them here instead and obtain the values
+>>> while of node parsing.
+>>>
+>>> Tested for the slope and constant values on DRA7-EVM, OMAP3-BEAGLE. 
+>>
+>> Hi Eduardo,
+>>
+>> If the series looks okay could you please pull this?
+> 
+> Also.. Are the dts changes safe for me to pick separately?
 
-Interesting, and this seems to be related to last_freq_update_time
-being per-policy (which it has to be, because frequency updates are
-per-policy too and that's what we need to rate-limit).
+Yes Tony they are safe to pulled separately.
 
-Does this happen often enough to be a real concern in practice on
-those configurations, though?
-
-The other CPUs in the policy need to be either idle (so schedutil
-doesn't take them into account at all) or lightly utilized for that to
-happen, so that would affect workloads with one CPU hog type of task
-that is migrated from one CPU to another within a policy and that
-doesn't happen too often AFAICS.
-
-Thanks,
-Rafael
+> 
+> Regards,
+> 
+> Tony
+> 
+> 
+>>> Changes in v2:
+>>>
+>>>   * Added OMAP3 changes along with DRA7/OMAP4/OMAP5.
+>>>
+>>> Keerthy (8):
+>>>   arm: dts: omap3: Add cpu_thermal zone
+>>>   ARM: DRA7: Thermal: Add slope and offset values
+>>>   ARM: OMAP5: Thermal: Add slope and offset values
+>>>   ARM: OMAP443x: Thermal: Add slope and offset values
+>>>   ARM: OMAP4460: Thermal: Add slope and offset values
+>>>   thermal: ti-soc-thermal: Fetch slope and offset from DT
+>>>   thermal: ti-soc-thermal: Remove redundant constants
+>>>   thermal: ti-soc-thermal: Remove redundant code
+>>>
+>>>  arch/arm/boot/dts/dra7.dtsi                        |  17 +++
+>>>  arch/arm/boot/dts/omap3-cpu-thermal.dtsi           |  20 +++
+>>>  arch/arm/boot/dts/omap34xx.dtsi                    |   8 +-
+>>>  arch/arm/boot/dts/omap36xx.dtsi                    |   8 +-
+>>>  arch/arm/boot/dts/omap443x.dtsi                    |   4 +
+>>>  arch/arm/boot/dts/omap4460.dtsi                    |   4 +
+>>>  arch/arm/boot/dts/omap5.dtsi                       |   9 ++
+>>>  .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  10 --
+>>>  .../thermal/ti-soc-thermal/omap3-thermal-data.c    |   4 -
+>>>  .../thermal/ti-soc-thermal/omap4-thermal-data.c    |   6 -
+>>>  .../thermal/ti-soc-thermal/omap5-thermal-data.c    |   4 -
+>>>  drivers/thermal/ti-soc-thermal/ti-bandgap.h        |   4 -
+>>>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 158 +--------------------
+>>>  drivers/thermal/ti-soc-thermal/ti-thermal.h        |  16 ---
+>>>  14 files changed, 71 insertions(+), 201 deletions(-)
+>>>  create mode 100644 arch/arm/boot/dts/omap3-cpu-thermal.dtsi
+>>>
