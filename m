@@ -1,112 +1,162 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v1 6/7] power: bq24190_charger: Add
- power_supply_battery_info and devicetree support
-Date: Fri, 24 Mar 2017 10:20:15 +0100
-Message-ID: <20170324092015.to2yyy5465o4w7lm@earth>
-References: <20170321220921.5834-1-liam@networkimprov.net>
- <20170321220921.5834-7-liam@networkimprov.net>
+Subject: Re: [PATCH v2 5/7] power: supply: bq24190_charger: Don't spam the
+ logs on charger plug / unplug
+Date: Fri, 24 Mar 2017 10:25:21 +0100
+Message-ID: <20170324092521.pnb3pcvrtub5glit@earth>
+References: <20170322145536.30570-1-hdegoede@redhat.com>
+ <20170322145536.30570-6-hdegoede@redhat.com>
+ <CAKvHMgQdccLPDz2HyxopdDgQxk+6DMtBrvFxKD--wxLPfe5DQQ@mail.gmail.com>
+ <07ee304f-f86d-ae79-8bda-9f0538db11c7@redhat.com>
+ <CAKvHMgQP_hZCt+-U85MCJfjoxf6muKrks2V+B52JQx8WCWcqyw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="zqwctgetz754gtoa"
+        protocol="application/pgp-signature"; boundary="rqcms65lhfy44xez"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:41558 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:42124 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934157AbdCXJUU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 24 Mar 2017 05:20:20 -0400
+        id S965497AbdCXJZj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 24 Mar 2017 05:25:39 -0400
 Content-Disposition: inline
-In-Reply-To: <20170321220921.5834-7-liam@networkimprov.net>
+In-Reply-To: <CAKvHMgQP_hZCt+-U85MCJfjoxf6muKrks2V+B52JQx8WCWcqyw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
-Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Mark Greer <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>
+Cc: Hans de Goede <hdegoede@redhat.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
 
 
---zqwctgetz754gtoa
+--rqcms65lhfy44xez
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Mar 21, 2017 at 03:09:20PM -0700, Liam Breck wrote:
-> From: Liam Breck <kernel@networkimprov.net>
+On Thu, Mar 23, 2017 at 03:24:15PM -0700, Liam Breck wrote:
+> On Thu, Mar 23, 2017 at 3:02 PM, Hans de Goede <hdegoede@redhat.com> wrot=
+e:
+> > On 23-03-17 22:31, Liam Breck wrote:
+> >> On Wed, Mar 22, 2017 at 7:55 AM, Hans de Goede <hdegoede@redhat.com>
+> >> wrote:
+> >>>
+> >>> If the charger gets unplugged before the battery is fully charged we =
+will
+> >>> get a one time Input fault. Ignore this rather then logging a message=
+ for
+> >>> it. Likewise on the next interrupt after the one time Input fault all
+> >>> fault flags will be 0, do not log a message when there are no faults.
+> >>>
+> >>> This fixes messages like these getting logged on charger unplug + rep=
+lug:
+> >>> bq24190-charger 15-006b: Fault: boost 0, charge 1, battery 0, ntc 0
+> >>> bq24190-charger 15-006b: Fault: boost 0, charge 0, battery 0, ntc 0
+> >>>
+> >>> Cc: Liam Breck <kernel@networkimprov.net>
+> >>> Cc: Tony Lindgren <tony@atomide.com>
+> >>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> >>> ---
+> >>> Changes in v2:
+> >>> -This is a new patch in v2 of this patch-set
+> >>> ---
+> >>>  drivers/power/supply/bq24190_charger.c | 17 +++++++++++------
+> >>>  1 file changed, 11 insertions(+), 6 deletions(-)
+> >>>
+> >>> diff --git a/drivers/power/supply/bq24190_charger.c
+> >>> b/drivers/power/supply/bq24190_charger.c
+> >>> index b535f24..351e020 100644
+> >>> --- a/drivers/power/supply/bq24190_charger.c
+> >>> +++ b/drivers/power/supply/bq24190_charger.c
+> >>> @@ -1189,12 +1189,17 @@ static void bq24190_check_status(struct
+> >>> bq24190_dev_info *bdi)
+> >>>         } while (f_reg && ++i < 2);
+> >>>
+> >>>         if (f_reg !=3D bdi->f_reg) {
+> >>> -               dev_info(bdi->dev,
+> >>> -                       "Fault: boost %d, charge %d, battery %d, ntc
+> >>> %d\n",
+> >>> -                       !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+> >>> -                       !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
+> >>> -                       !!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
+> >>> -                       !!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
+> >>> +               /*
+> >>> +                * Don't spam the logs if all faults are cleared, or =
+when
+> >>> the
+> >>> +                * cable providing Vbus gets unplugged.
+> >>> +                */
+> >>> +               if  (f_reg && f_reg !=3D (1 <<
+> >>> BQ24190_REG_F_CHRG_FAULT_SHIFT))
+> >>
+> >>
+> >> if (f_reg && ((ss_reg & BQ24190_REG_SS_PG_STAT_MASK) ||
+> >>     f_reg !=3D (1 << BQ24190_REG_F_CHRG_FAULT_SHIFT)) )
+> >
+> >
+> > Sebastian has already merged the original patch into his for-next branc=
+h,
+> > please
+> > provide a patch on top.
 >=20
-> Obtain pre-charge and end-charge current values from power_supply_battery=
-_info.
-> Obtain minimum system voltage level from devicetree.
+> I recall Sebastian merging and then dropping a commit from the other
+> series I'm working on.
+
+Yeah, I thought it was a fix, but it was useless without the
+remaining series.
+
+> I'll return to the charger once the dependency for my charger patchset
+> is merged. I just got a big change request for that.
+
+Ok.
+
 >=20
-> Cc: Mark Greer <mgreer@animalcreek.com>
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->
-> [...]
->
-> @@ -1314,6 +1358,39 @@ static int bq24190_hw_init(struct bq24190_dev_info=
- *bdi)
->  #ifdef CONFIG_OF
->  static int bq24190_setup_dt(struct bq24190_dev_info *bdi)
->  {
-> +	struct power_supply_battery_info info =3D {};
-> +	const char const* s =3D "ti,system-minimum-microvolt";
-> +	int v;
-> +
-> +	if (!of_property_read_u32(bdi->dev->of_node, s, &v)) {
-> +		v /=3D 1000;
-> +		if (v >=3D BQ24190_REG_POC_SYS_MIN_MIN
-> +		 && v <=3D BQ24190_REG_POC_SYS_MIN_MAX)
-> +			bdi->sys_min =3D v;
-> +		else
-> +			dev_err(bdi->dev, "invalid value for %s: %u\n", s, v);
-> +	}
+> >>> +                       dev_info(bdi->dev,
+>=20
+> This should probably be dev_warn now.
 
-Let's use device_property_read_u32 here. With that change
-there is nothing DT specific, so the function can be named
-bq24190_setup (or everything is done directly in probe, that's
-also fine with me).
+makes sense to me.
 
-> +	if (!power_supply_get_battery_info(bdi->battery, &info)) {
-> +		v =3D info.precharge_current_ua / 1000;
-> +		if (v >=3D BQ24190_REG_PCTCC_IPRECHG_MIN
-> +		 && v <=3D BQ24190_REG_PCTCC_IPRECHG_MAX)
-> +			bdi->iprechg =3D v;
-> +		else
-> +			dev_err(bdi->dev,
-> +				"invalid value for battery:precharge-current-microamp: %d\n",
-> +				v);
-> +
-> +		v =3D info.endcharge_current_ua / 1000;
-> +		if (v >=3D BQ24190_REG_PCTCC_ITERM_MIN
-> +		 && v <=3D BQ24190_REG_PCTCC_ITERM_MAX)
-> +			bdi->iterm =3D v;
-> +		else
-> +			dev_err(bdi->dev,
-> +				"invalid value for battery:endcharge-current-microamp: %d\n",
-> +				v);
-> +	}
-> +
->  	bdi->irq =3D irq_of_parse_and_map(bdi->dev->of_node, 0);
->  	if (bdi->irq <=3D 0)
->  		return -1;
+FWIW I think a follow-up commit for this is enough, but I can also
+swap the existing commit.
 
 -- Sebastian
 
---zqwctgetz754gtoa
+> >>> +                               "Fault: boost %d, charge %d, battery =
+%d,
+> >>> ntc %d\n",
+> >>> +                               !!(f_reg &
+> >>> BQ24190_REG_F_BOOST_FAULT_MASK),
+> >>> +                               !!(f_reg &
+> >>> BQ24190_REG_F_CHRG_FAULT_MASK),
+> >>> +                               !!(f_reg & BQ24190_REG_F_BAT_FAULT_MA=
+SK),
+> >>> +                               !!(f_reg &
+> >>> BQ24190_REG_F_NTC_FAULT_MASK));
+> >>>
+> >>>                 mutex_lock(&bdi->f_reg_lock);
+> >>>                 if ((bdi->f_reg & battery_mask_f) !=3D (f_reg &
+> >>> battery_mask_f))
+> >>> --
+> >>> 2.9.3
+> >>>
+> >
+
+--rqcms65lhfy44xez
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljU5M8ACgkQ2O7X88g7
-+poZ8A/9Eyt6cJ1tilXM2GMIxGZ6pTMhFsrcTLWCBAn9Xh1rUZJfgwfx25Bdy8b0
-KuP90rEKMJG3mHdDuTrMOf0GlaBuQRbYmkZjVQidbtpkjHSU/nE86+jvhx3bOaB8
-K5pQAC+HSGTAOSlcyRwxHen9tQWaWdzww7xPO8OhasO40MnBCp0ShbWat55WxTuR
-S/uMOfsGFDE+Ys/K5MyDhpKZgjnHR/RAHwAIvUNZj/0EQP2tA+D81PxGGzoPmMBF
-4VapvxpLLcJcWc3Yd3X9jRIP+KqzpfyKh1njpeQH1oxP34FJJVGYQbLc4KBsdrCo
-VNLlm9gN72yLxraPBlDrISbS0zQ3H7fM7h7UQyAcImLgrYmCi+R1k04VEAG8QxL0
-JlxnZfklKjFj43LhaWxVuSEY0YHybWC+nFgWBs5gxTzfdsqCYIEw7tZG5tNu2meF
-0Ago47RFszDaL5d3TOwDnKo+JrD0LR+ClSnpypa2B42df03eqg5BuU6/ecGomBlQ
-PG8yHnwDNQKONJHlUPAfhhT/MiwxKz65iyqJ+J+Td2miGwFmC308h9rQe7W94xlF
-i3D/D1hPZ6M3ueeg9nKxttUMdZTdjPBTx6GQ1Yiilv5hGxVT+oYw0ORXwch13MtS
-wZZO4Fa8U6sxYzdTVlC62pmOn0quaN1jcQDWhKeJFQXLwAN88Ac=
-=fVC8
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljU5gAACgkQ2O7X88g7
++pqGrA//ZU5TN5yE5kVbV6moNSltisZ86kBsAdWOO+KQQPrkuEB5adKdJ/s5lFml
+LRxA2qWFd6dMZ63WNWxmNQNeCZ7yrSWRo6Vv7E9TDb5w7ZFjsq0gY2g1/6V8TAyU
+RCawG1Xy2/mvOleKjzbEPPMjORMNZ64ArwpMwJrdNBALqQbvLtAqz0ArywW+u8Cn
+OFlCrmobPselxMWYmOxYZKBe5yaBxAL0WWw2bARr/8+S/aMRqu/LWTZnFwqOA3Fl
+ZzhIC6avhsFIIHvlcJ17tv31zjzsELoZZtHlBplK+KMiaugsXPWRG5t+DI14GAsi
+9legr/OPs2a/qHoLWBtAiorZvvnQBJ3XXXRszYUeNTM/pqFQhBRw0c+3G0sFrNga
+0NEpnBhzDuHxSlx0LE7tFRVwkzphD4GTwxnh4rVa5c8YkZ2IWTEKNNoQNMu2UKdB
+OrcKKrZhgNl7gcrem9WfVzDAS9TRtq8Tf5t3xtGTLqMLmmn00YiqdfwR0xcZZxH4
+IQxQxVyXuHfA06ayPmhRzWGjekQ0XgHQDggek7UphXPMhczWyQLwAg02E0gEeQGu
+VOaFrlEwyrid4UsucjQeNNrKx+3K7f4/v1rLlokOat5dATHGB+zfS3gspNh1ViEv
+i7RUsu6agY/ZuqN6htN7cW3Bj1OyELyD5793Czc/3W9hoNhe4/Q=
+=rXsr
 -----END PGP SIGNATURE-----
 
---zqwctgetz754gtoa--
+--rqcms65lhfy44xez--
