@@ -1,129 +1,110 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v2 5/7] power: supply: bq24190_charger: Don't spam the
- logs on charger plug / unplug
-Date: Fri, 24 Mar 2017 16:31:43 -0700
-Message-ID: <CAKvHMgSPS4pAQFRt5-kx=WhhEJ7j0yFAH6KW5LOK44Chs7veGw@mail.gmail.com>
-References: <20170322145536.30570-1-hdegoede@redhat.com> <20170322145536.30570-6-hdegoede@redhat.com>
- <CAKvHMgQdccLPDz2HyxopdDgQxk+6DMtBrvFxKD--wxLPfe5DQQ@mail.gmail.com>
- <07ee304f-f86d-ae79-8bda-9f0538db11c7@redhat.com> <CAKvHMgQP_hZCt+-U85MCJfjoxf6muKrks2V+B52JQx8WCWcqyw@mail.gmail.com>
- <20170324092521.pnb3pcvrtub5glit@earth>
+Subject: Re: [PATCH v2 2/7] power: supply: bq24190_charger: Add support for bq24192i
+Date: Fri, 24 Mar 2017 16:34:42 -0700
+Message-ID: <CAKvHMgQXm02hw12pgnnK-KOrYpY==4DfiaGP7hZnYnx77qSH+g@mail.gmail.com>
+References: <20170322145536.30570-1-hdegoede@redhat.com> <20170322145536.30570-3-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f68.google.com ([209.85.214.68]:33554 "EHLO
-        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932972AbdCXXbp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2017 19:31:45 -0400
-Received: by mail-it0-f68.google.com with SMTP id 76so923698itj.0
-        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 16:31:44 -0700 (PDT)
-In-Reply-To: <20170324092521.pnb3pcvrtub5glit@earth>
+Received: from mail-it0-f67.google.com ([209.85.214.67]:36055 "EHLO
+        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751504AbdCXXeo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2017 19:34:44 -0400
+Received: by mail-it0-f67.google.com with SMTP id 190so914343itm.3
+        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 16:34:43 -0700 (PDT)
+In-Reply-To: <20170322145536.30570-3-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
 
-On Fri, Mar 24, 2017 at 2:25 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
+On Wed, Mar 22, 2017 at 7:55 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> The bq24192 and bq24192i are mostly identical to the bq24190, TI even
+> published a single datasheet for all 3 of them. The difference
+> between the bq24190 and bq24192[i] is the way charger-type detection
+> is done, the bq24190 is to be directly connected to the USB a/b lines,
+> where as the the bq24192[i] has a gpio which should be driven high/low
+> externally depending on the type of charger connected, from a register
+> level access pov there is no difference.
 >
-> On Thu, Mar 23, 2017 at 03:24:15PM -0700, Liam Breck wrote:
->> On Thu, Mar 23, 2017 at 3:02 PM, Hans de Goede <hdegoede@redhat.com> wrote:
->> > On 23-03-17 22:31, Liam Breck wrote:
->> >> On Wed, Mar 22, 2017 at 7:55 AM, Hans de Goede <hdegoede@redhat.com>
->> >> wrote:
->> >>>
->> >>> If the charger gets unplugged before the battery is fully charged we will
->> >>> get a one time Input fault. Ignore this rather then logging a message for
->> >>> it. Likewise on the next interrupt after the one time Input fault all
->> >>> fault flags will be 0, do not log a message when there are no faults.
->> >>>
->> >>> This fixes messages like these getting logged on charger unplug + replug:
->> >>> bq24190-charger 15-006b: Fault: boost 0, charge 1, battery 0, ntc 0
->> >>> bq24190-charger 15-006b: Fault: boost 0, charge 0, battery 0, ntc 0
->> >>>
->> >>> Cc: Liam Breck <kernel@networkimprov.net>
->> >>> Cc: Tony Lindgren <tony@atomide.com>
->> >>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> >>> ---
->> >>> Changes in v2:
->> >>> -This is a new patch in v2 of this patch-set
->> >>> ---
->> >>>  drivers/power/supply/bq24190_charger.c | 17 +++++++++++------
->> >>>  1 file changed, 11 insertions(+), 6 deletions(-)
->> >>>
->> >>> diff --git a/drivers/power/supply/bq24190_charger.c
->> >>> b/drivers/power/supply/bq24190_charger.c
->> >>> index b535f24..351e020 100644
->> >>> --- a/drivers/power/supply/bq24190_charger.c
->> >>> +++ b/drivers/power/supply/bq24190_charger.c
->> >>> @@ -1189,12 +1189,17 @@ static void bq24190_check_status(struct
->> >>> bq24190_dev_info *bdi)
->> >>>         } while (f_reg && ++i < 2);
->> >>>
->> >>>         if (f_reg != bdi->f_reg) {
->> >>> -               dev_info(bdi->dev,
->> >>> -                       "Fault: boost %d, charge %d, battery %d, ntc
->> >>> %d\n",
->> >>> -                       !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
->> >>> -                       !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
->> >>> -                       !!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
->> >>> -                       !!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
->> >>> +               /*
->> >>> +                * Don't spam the logs if all faults are cleared, or when
->> >>> the
->> >>> +                * cable providing Vbus gets unplugged.
->> >>> +                */
->> >>> +               if  (f_reg && f_reg != (1 <<
->> >>> BQ24190_REG_F_CHRG_FAULT_SHIFT))
->> >>
->> >>
->> >> if (f_reg && ((ss_reg & BQ24190_REG_SS_PG_STAT_MASK) ||
->> >>     f_reg != (1 << BQ24190_REG_F_CHRG_FAULT_SHIFT)) )
->> >
->> >
->> > Sebastian has already merged the original patch into his for-next branch,
->> > please
->> > provide a patch on top.
->>
->> I recall Sebastian merging and then dropping a commit from the other
->> series I'm working on.
+> The differences between the bq24192 and bq24192i are:
+> 1) Lower default charge rate on the bq24192i
+> 2) Pre-charge-current can be max 640 mA on the bq24192i
 >
-> Yeah, I thought it was a fix, but it was useless without the
-> remaining series.
+> On x86/ACPI systems the code which instantiates the i2c client may not
+> know the exact variant being used, so instead of coding the model-id
+> in the i2c_id struct and bailing if it does not match, check the reported
+> model-id matches one of the supported variants.
 >
->> I'll return to the charger once the dependency for my charger patchset
->> is merged. I just got a big change request for that.
+> This commit only adds support for the bq24192i as I don't
+> have a bq24192 to test with, adding support for the bq24192 should
+> be as simple as also accepting its model-id in the model-id test.
 >
-> Ok.
->
->>
->> >>> +                       dev_info(bdi->dev,
->>
->> This should probably be dev_warn now.
->
-> makes sense to me.
->
-> FWIW I think a follow-up commit for this is enough, but I can also
-> swap the existing commit.
+> Cc: Liam Breck <kernel@networkimprov.net>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-I posted a replacement for this commit.
+Acked-by: Liam Breck <kernel@networkimprov.net>
 
-In future could you wait for my ack on patches for this driver? I have
-more time to study this stuff than Tony does.
 
->> >>> +                               "Fault: boost %d, charge %d, battery %d,
->> >>> ntc %d\n",
->> >>> +                               !!(f_reg &
->> >>> BQ24190_REG_F_BOOST_FAULT_MASK),
->> >>> +                               !!(f_reg &
->> >>> BQ24190_REG_F_CHRG_FAULT_MASK),
->> >>> +                               !!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
->> >>> +                               !!(f_reg &
->> >>> BQ24190_REG_F_NTC_FAULT_MASK));
->> >>>
->> >>>                 mutex_lock(&bdi->f_reg_lock);
->> >>>                 if ((bdi->f_reg & battery_mask_f) != (f_reg &
->> >>> battery_mask_f))
->> >>> --
->> >>> 2.9.3
->> >>>
->> >
+> ---
+> Changes in v2:
+> -Improve commit msg
+> -Drop model-id from bq24190_i2c_ids table and bdi struct
+> -Only add support for the bq24192i and not for the bq24192
+> ---
+>  drivers/power/supply/bq24190_charger.c | 15 ++++++---------
+>  1 file changed, 6 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> index fa2d2da..d74c8cc 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -149,7 +149,6 @@ struct bq24190_dev_info {
+>         struct power_supply             *charger;
+>         struct power_supply             *battery;
+>         char                            model_name[I2C_NAME_SIZE];
+> -       kernel_ulong_t                  model;
+>         bool                            initialized;
+>         bool                            irq_event;
+>         struct mutex                    f_reg_lock;
+> @@ -1291,8 +1290,11 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+>         if (ret < 0)
+>                 return ret;
+>
+> -       if (v != bdi->model)
+> +       if (v != BQ24190_REG_VPRS_PN_24190 &&
+> +           v != BQ24190_REG_VPRS_PN_24192I) {
+> +               dev_err(bdi->dev, "Error unknown model: 0x%02x\n", v);
+>                 return -ENODEV;
+> +       }
+>
+>         ret = bq24190_register_reset(bdi);
+>         if (ret < 0)
+> @@ -1327,7 +1329,6 @@ static int bq24190_probe(struct i2c_client *client,
+>
+>         bdi->client = client;
+>         bdi->dev = dev;
+> -       bdi->model = id->driver_data;
+>         strncpy(bdi->model_name, id->name, I2C_NAME_SIZE);
+>         mutex_init(&bdi->f_reg_lock);
+>         bdi->f_reg = 0;
+> @@ -1526,13 +1527,9 @@ static const struct dev_pm_ops bq24190_pm_ops = {
+>         SET_SYSTEM_SLEEP_PM_OPS(bq24190_pm_suspend, bq24190_pm_resume)
+>  };
+>
+> -/*
+> - * Only support the bq24190 right now.  The bq24192, bq24192i, and bq24193
+> - * are similar but not identical so the driver needs to be extended to
+> - * support them.
+> - */
+>  static const struct i2c_device_id bq24190_i2c_ids[] = {
+> -       { "bq24190", BQ24190_REG_VPRS_PN_24190 },
+> +       { "bq24190" },
+> +       { "bq24192i" },
+>         { },
+>  };
+>  MODULE_DEVICE_TABLE(i2c, bq24190_i2c_ids);
+> --
+> 2.9.3
+>
