@@ -1,136 +1,91 @@
-From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCHv2] power: supply: cpcap-charger: Add minimal CPCAP PMIC
- battery charger
-Date: Fri, 24 Mar 2017 07:08:07 -0700
-Message-ID: <20170324140807.GW10760@atomide.com>
-References: <20170322234210.5557-1-tony@atomide.com>
- <20170324100622.mzra66z35xlndhdj@earth>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170324100622.mzra66z35xlndhdj@earth>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>, Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: [RFD PATCH 0/5] SCHED_DEADLINE freq/cpu invariance and OPP selection
+Date: Fri, 24 Mar 2017 14:08:55 +0000
+Message-ID: <20170324140900.7334-1-juri.lelli@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:41164 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752352AbdCXOJS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 24 Mar 2017 10:09:18 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, juri.lelli@arm.com
 
-* Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> [170324 03:08]:
-> On Wed, Mar 22, 2017 at 04:42:10PM -0700, Tony Lindgren wrote:
-> > +Required properties:
-> > +- compatible: Shall be "motorola,cpcap-charger" or
-> > +	      "motorola,mapphone-cpcap-charger"
-> > +- interrupts: Interrupts used on the CPCAP PMIC
-> > +- interrupt-names: Names of the interrupts
-> 
-> That's usually done like
-> 
-> interrupts: Interrupt specifier for each name in interrupt-names
-> interrupt-names: Should contain the following entries:
->  "bla", "foo", "42"
+Hi,
 
-Sure will update.
+this is a very exploratory set implementing frequency/cpu invariance and OPP
+selection for SCHED_DEADLINE. The set has been slightly tested on a Juno
+platform. While the actual implementation is very premature, I'm posting this
+early to facilitate discussion at OSPM-summit [1].
 
-> > +- io-channels: IIO ADC channels used by the charger
-> > +- io-channel-names: Names of the IIO ADC channels
-> 
-> Same as for interrupts.
+Results of the testing, highlighting why these features are useful are
+available here:
 
-OK
+ - without the set
+   https://gist.github.com/a6e3ee99cec32e00cc537b53cd3d54d2
 
-> > +Optional properties:
-> > +- mode-gpios: Optionally CPCAP charger can have a companion wireless
-> > +	      charge controller that is controlled with two GPIOs
-> 
-> DT people prefer to have GPIO activity (high/low) to be specified in the
-> binding.
+ - with the set
+   https://gist.github.com/1f7d485fc3ce9234fe627dcb53b2935c
 
-OK will add.
+The set is based on tip/sched/core as of today (bc4278987e38) plus a couple of
+schedutil fixes coming from linux-pm/linux-next and Luca's "CPU reclaiming for
+SCHED_DEADLINE" v5 [2].
 
-> > --- a/drivers/power/supply/Kconfig
-> > +++ b/drivers/power/supply/Kconfig
-> > @@ -317,6 +317,13 @@ config BATTERY_RX51
-> >  	  Say Y here to enable support for battery information on Nokia
-> >  	  RX-51, also known as N900 tablet.
-> >  
-> > +config CHARGER_CPCAP
-> > +	tristate "CPCAP PMIC Charger Driver"
-> > +	depends on MFD_CPCAP
-> > +	help
-> > +	  Say Y to enable support for CPCAP PMIC charger driver for Motorola
-> > +	  mobile devices such as Droid 4.
-> > +
-> 
-> I think adding "default MFD_CPCAP" for CPCPAP's subdrivers would be nice.
+Patches high level description:
 
-OK
+ o [01-02]/05 add the necessary links to start accounting DEADLINE contribution
+              to OPP selection 
+ o 03/05      it's an hack to make possible (on ARM) to change frequency for
+              DEADLINE tasks (that would possibly delay the SCHED_FIFO worker
+              kthread); suggestions on how to do this properly are very welcome
+ o 04/05      it's a schedutil change that copes with the fact that DEADLINE
+              doesn't require periodic OPP selection triggering point
+ o 05/05      implements frequency/cpu invariance for tasks' reservation
+              parameters*; which basically means that we implement GRUB-PA [3]
 
-> > diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-> > --- a/drivers/power/supply/Makefile
-> > +++ b/drivers/power/supply/Makefile
-> > 
-> > [...]
-> >
-> > +#include <linux/gpio/consumer.h>
-> > +#include <linux/usb/phy_companion.h>
-> > +#include <linux/phy/omap_usb.h>
-> > +#include <linux/usb/otg.h>
-> > +#include <linux/iio/consumer.h>
-> > +#include <linux/mfd/motorola-cpcap.h>
-> 
-> This looks very entangled with mapphone specific things,
-> so maybe we should not add "motorola,cpcap-charger" for
-> now?
+Please have a look. Feedback on how we want to shape this is the sole purpose
+of this posting.
 
-Yeah I think that's a good idea as we have no documentation for
-the mystery companion charger chip there that has "6500" printed
-on it.
+In case you would like to test this out:
 
-> > +static int cpcap_charger_get_ints_state(struct cpcap_charger_ddata *ddata,
-> > +					struct cpcap_charger_ints_state *s)
-> > +{
-> > +	int val, error;
-> > +
-> > +	error = regmap_read(ddata->reg, CPCAP_REG_INTS1, &val);
-> > +	if (error)
-> > +		return error;
-> > +
-> > +	s->chrg_det = val & BIT(13);
-> > +	s->rvrs_chrg = val & BIT(12);
-> > +	s->vbusov = val & BIT(11);
-> > +
-> > +	error = regmap_read(ddata->reg, CPCAP_REG_INTS2, &val);
-> > +	if (error)
-> > +		return error;
-> > +
-> > +	s->chrg_se1b = val & BIT(13);
-> > +	s->rvrs_mode = val & BIT(6);
-> > +	s->chrgcurr1 = val & BIT(4);
-> > +	s->vbusvld = val & BIT(3);
-> > +
-> > +	error = regmap_read(ddata->reg, CPCAP_REG_INTS4, &val);
-> > +	if (error)
-> > +		return error;
-> > +
-> > +	s->battdetb = val & BIT(6);
-> 
-> Did you avoid using cpcap_sense_virq() for performance reasons?
+ git://linux-arm.org/linux-jl.git upstream/deadline/freq-rfd
 
-I don't think performance is an issue here :)
+Best,
 
-> s->battdetb = cpcap_sense_virq(ddata->reg, ddata->irq_battdetb);
-> (and so on)
-> 
-> looks cleaner IMHO.
+- Juri
 
-I figured I'll do a follow up patch for when available to remove
-dependencies between subsystems.
+[1] http://retis.sssup.it/ospm-summit/index.html
+[2] https://marc.info/?l=linux-kernel&m=149029880524038
+[3] C. Scordino, G. Lipari, A Resource Reservation Algorithm for Power-Aware
+    Scheduling of Periodic and Aperiodic Real-Time Tasks, IEEE Transactions
+    on Computers, December 2006.
 
-Regards,
+* Notice that this currently breaks !CONFIG_SMP, as arch_scale_{freq,cpu}
+_capacity and SCHED_CAPACITY_SCALE are only defined on CONFIG_SMP. Fixing
+this particular issue is straightforward, but we should probably look into
+making frequency scaling (and PELT averages) available on !CONFIG_SMP as well
+(so that schedutil can work on such configurations for example). Since this is
+only an RFD and since a proper rework might be non trivial, I decided to leave
+it out of scope for the time being.
 
-Tony
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Juri Lelli (5):
+  sched/cpufreq_schedutil: make use of DEADLINE utilization signal
+  sched/deadline: move cpu frequency selection triggering points
+  sched/cpufreq_schedutil: make worker kthread be SCHED_DEADLINE
+  sched/cpufreq_schedutil: always consider all CPUs when deciding next
+    freq
+  sched/deadline: make bandwidth enforcement scale-invariant
+
+ include/linux/sched.h            |  1 +
+ include/linux/sched/cpufreq.h    |  2 --
+ include/uapi/linux/sched.h       |  1 +
+ kernel/sched/core.c              | 19 +++++++++++++++++--
+ kernel/sched/cpufreq_schedutil.c | 37 ++++++++++++++++++++++---------------
+ kernel/sched/deadline.c          | 40 +++++++++++++++++++++++++++++++++-------
+ kernel/sched/fair.c              |  2 --
+ kernel/sched/sched.h             | 10 +++++++++-
+ 8 files changed, 83 insertions(+), 29 deletions(-)
+
+-- 
+2.10.0
