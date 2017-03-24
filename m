@@ -1,80 +1,49 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC 5/8] regulator: anatop: fix min dropout for bypass mode
-Date: Fri, 24 Mar 2017 12:54:38 +0000
-Message-ID: <20170324125438.5wy3r2mr3g5eaxvy@sirena.org.uk>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC 6/8] regulator: core: Add regulator_is_bypass function
+Date: Fri, 24 Mar 2017 12:55:06 +0000
+Message-ID: <20170324125506.5cxiykpq2tzzkltb@sirena.org.uk>
 References: <cover.1490199005.git.leonard.crestez@nxp.com>
- <cd944a7223cfe68788c299082a5f262e8bea2136.1490199005.git.leonard.crestez@nxp.com>
+ <e74c2f4d2b452cbe01aa2a48edde5c024212ffcb.1490199005.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2818595801705483939=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <cd944a7223cfe68788c299082a5f262e8bea2136.1490199005.git.leonard.crestez@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="mxjbbgni576g7z4k"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <e74c2f4d2b452cbe01aa2a48edde5c024212ffcb.1490199005.git.leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+Cc: Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Robin Gong <yibin.gong-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Irina Tirdea <irina.tirdea-3arQi8VN3Tc@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============2818595801705483939==
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="dz6kxsv2xorkot4i"
-Content-Disposition: inline
-
-
---dz6kxsv2xorkot4i
+--mxjbbgni576g7z4k
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Wed, Mar 22, 2017 at 06:53:07PM +0200, Leonard Crestez wrote:
+On Wed, Mar 22, 2017 at 06:53:08PM +0200, Leonard Crestez wrote:
 
-> +	if (anatop_reg->bypass)
-> +		anatop_reg->rdesc.min_dropout_uV = 0;
-> +	else
-> +		anatop_reg->rdesc.min_dropout_uV = LDO_MIN_DROPOUT_UV;
+>  /**
+> + * regulator_is_bypass - Determine if the regulator is in bypass mode
 
-No, this is completely broken - you can't expect to randomly change hthe
-regulator description at runtime behind the back of the framework and
-expect things to work.  If there is a need to do this we need an
-interface for getting the current value and a way to notify of changes.
+Bypass is a verb so this should be regulator_is_bypassed()
 
-That said I would not expect the dropout voltage to be considered at
-all when the regulator is bypassed, since the regulator is not
-regulating it doesn't need any headroom.
-
---dz6kxsv2xorkot4i
+--mxjbbgni576g7z4k
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAljVFw0ACgkQJNaLcl1U
-h9AvYAf/TpiB7ItJL+A3pg4IFaSeA1CIu8UWkP7BjIJTWd0ocWsAd80stAe7gPKW
-uUA/vu2waeiSVN/jkXqqKwyYTOVmCbj+0bY0wzgxlEXHsrHRPhYLv4JxufgvH0tc
-L2J7JxG5YBsWfrDLgHXcAzWdZq5nzyhZiDyP/IRX0u8loiTzU0WlWoxpb48VfyWi
-UsTKLZq7UeSVFipZmn1lEOp6w5z3PIb67XAQkgYSHUO6xKIECNSZ7ZiGGbsdh3PU
-mQlxRL1X1R6zvW/DNHVwhSp8JcQ13AS0dtXPNKl1fFhbhE7e/kjr/aIJdZOJh/Xi
-stL9akOic9UCC1eSKfhwlyxX/ytYjg==
-=MXDG
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAljVFyoACgkQJNaLcl1U
+h9Cp4gf/amxDv6E7U6vF/bSis4X66YACCr46vlRbpd1JmHhuCUMkZCWo6WHq384O
+AHOp0BzJsAWQ383h5U7zNPOfS+zhAiH9x99T1ZITRHkUWXH6QuISoqAjMb6lsI2N
+Y/kC7iY+FIilp+U5qPy5XIUj2aishnNKd2tq69HKHnsEHBl1Lxua1PwO7Kc3ZDWx
+iAXrS4F6eJINhEDlQji//mSYsHb91vCLlfnQD1QKvNCs7+SAgZGJ9rIbgAAhBdyo
+t/OKQxu0g4UJKEg0TpEy9Eq6vkSRLlXI744njppaVOzflITDbxw8eu8r0zQ5ScVK
+fSv5M920sFZMXgbqhzz8cXJj/WhU5w==
+=45TB
 -----END PGP SIGNATURE-----
 
---dz6kxsv2xorkot4i--
-
-
---===============2818595801705483939==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============2818595801705483939==--
+--mxjbbgni576g7z4k--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
