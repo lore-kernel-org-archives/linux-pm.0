@@ -1,107 +1,45 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery
- device .type=unknown
-Date: Fri, 24 Mar 2017 12:22:15 +0100
-Message-ID: <20170324112215.uleonp3hu4oxprau@earth>
-References: <20170321220921.5834-1-liam@networkimprov.net>
- <20170321220921.5834-8-liam@networkimprov.net>
- <20170323105221.qnyw2m4cgjcb24cl@earth>
- <CAKvHMgROkDF43sGgvPG8Eb+z=yjuTOL9UXkOREkd=APL47DMvw@mail.gmail.com>
- <20170324093949.rno2olzywz4cds6k@earth>
- <CAKvHMgTVvytGyzxR_ay7v216qwYnekn_c3O72XzdPANhX7zwtQ@mail.gmail.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH] PM / runtime: Use synchronous runtime PM call in
+ rpm_put_suppliers()
+Date: Fri, 24 Mar 2017 12:37:36 +0100
+Message-ID: <20170324113736.GA21618@h08.hostsharing.net>
+References: <CGME20170322092305eucas1p20d2a6dfede483210febea5b5e0ff68db@eucas1p2.samsung.com>
+ <1490174570-18345-1-git-send-email-m.szyprowski@samsung.com>
+ <CAPDyKFq+mTvruQb5ifj3etMxSCWgDZTZ6ebGkk84UCQDqjR4-A@mail.gmail.com>
+ <CAJZ5v0ihYQp4_oJCu3Tugbqrm=68hcxdg8-yUphbCXCUw3UzPw@mail.gmail.com>
+ <CAPDyKFot3C1C1k45JovwKHFkvTJAFvdetoE8_ADAhMCkFw3hPA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="zdnu5hbn76aj6mfs"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:57944 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751274AbdCXLWV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 24 Mar 2017 07:22:21 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKvHMgTVvytGyzxR_ay7v216qwYnekn_c3O72XzdPANhX7zwtQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
-
-
---zdnu5hbn76aj6mfs
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-clk-owner@vger.kernel.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <CAPDyKFot3C1C1k45JovwKHFkvTJAFvdetoE8_ADAhMCkFw3hPA@mail.gmail.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, Mar 23, 2017 at 01:47:46PM +0100, Ulf Hansson wrote:
+> For the sync runtime PM suspend/idle case:
+> When a driver for a children/consumers decides to use the sync runtime
+> PM APIs, it's most likely because it wants the device to enter its low
+> power state as soon as possible.
 
-On Fri, Mar 24, 2017 at 03:44:51AM -0700, Liam Breck wrote:
-> On Fri, Mar 24, 2017 at 2:39 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> > On Thu, Mar 23, 2017 at 01:47:23PM -0700, Liam Breck wrote:
-> > > On Thu, Mar 23, 2017 at 3:52 AM, Sebastian Reichel <sre@kernel.org> w=
-rote:
-> > > > That still leaves the health status reading, though. From
-> > > > userspace's point-of-view this should be merged into the
-> > > > battery device, if fuel-gauge can't provide that information.
-> > >
-> > > You mean merged into the -charger device? -battery is the one
-> > > we're dropping.
-> > >
-> > > If you did mean -battery, could you elaborate?
-> >
-> > I was not talking about bq24190-battery. I meant the battery
-> > device provided by the fuel-gauge. From userspace's point of
-> > view a battery device, which is usually derived from the
-> > fuel-gauge should contain battery related information.
->=20
-> It doesn't sound right to ask every gauge to absorb features from a
-> specific charger. Userspace apps are already watching both USB and
-> battery power supply types for a given battery. They'll pick up a
-> health issue if we merge -battery and -charger health. Isn't that
-> enough?
+I think a driver is doing it wrong if it uses sync vs. async to achieve
+a certain policy.  (As in the example you've given above.)  That should
+be left to the PM core, and the PM core should try to suspend as early
+and as often as possible in order to save power.  If the driver wants to
+achieve a policy such as "suspend this device ASAP but let this other
+device idle a bit before suspend because its usage pattern is bursty"
+then the correct way to implement this is via a sane default value for
+the autosuspend delay.
 
-Technically it's not correct, since high battery temperature is a
-much bigger safety risk than high charger chip temperature. I guess
-it's good enough, though. I guess the battery temperature health is
-related to charging anyways, which is different from the ones making
-the battery itself dangerous. So I'm fine with that solution.
+Generelly, async should be used.  One example where sync is warranted
+is when the ->runtime_suspend hook needs to be finished before power
+is cut to the device.  That's a hard constraint.  E.g. vga_switcheroo
+does this when runtime suspending the GPU.  In this case, "runtime
+suspend" means that the driver puts the device in a state from which
+power can be cut.  The actual power switch is toggled afterwards.
 
-> > Since the battery health information is battery related it
-> > should somehow be merged into the data from the fuel-gauge.
-> > That's what Hans implemented with the function-pointer
-> > construct and what you suggested to implement in this mail:
-> >
-> > http://marc.info/?l=3Dlinux-pm&m=3D149026871313238&w=3D2
->=20
-> The merge I suggested was of properties from all power drivers into a
-> single sysfs device. Which I would work on if you are eager to have
-> it. I realize it would take a while to be merged.
+Regards,
 
-Only the devices belonging to the same battery should be
-exposed as one device. Also charger is extra device, since
-it may be used to charge multiple batteries. So far its
-pretty uncommon, that charger chip provides information
-about the battery, so you would spent lots of time for
-a single corner case. So while I would like to have it,
-I don't think its worth the time to implement it.
-
--- Sebastian
-
---zdnu5hbn76aj6mfs
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljVAWUACgkQ2O7X88g7
-+ppkiA//bPpGSRgaXN7pIhUqovevygolbtrcQ2bg+qpvkqgm7EqtDBGfD9eyrj8F
-iYPFioFzXAae5kBo4LTRpQ87ePstYlGR0leZFZeFPNZr44heWt+pYKjkAz5pMY3f
-D35//sTdSt5ymuvqywa6aUQw/oKZUrkMju/QzDIQxWBu/2dNQ1d+E/kQ9h8m4+BN
-Scb/mTLEvnidroYIHwMazkXo89E9mDwjfRNNdZE0aJlgB30kHpDWyJasfhms+dhB
-Xpi1PUtcYTOnQ3LEPUdkH/1TsnaloFOHpXwHR4E9dbSXDV4Xsocv9CVWEsZ7WOgd
-Ne76J5vbVOPbzGvTrZRqXiS7F2CEsYJabTS5ueM3NDPOTarJmEtHx+V9QjfsJBbY
-b2OfFhN5a58ZbYEiY37xc5oSIB3y94S71rxWgZSBGUmC48xJ4DfhocB5rN2D0GSX
-C1RY40/w4QJfmzof7xCj7Ab33z6aI1YW8hXmmm/JxpV933A9cBL4MFlCTHwwu8XR
-o/WRP4C/pJI7WePNIWbLxt1lHD3gfdP4g81kpdcmXw+GMtWRh7PrJ+k0MsEp82Rm
-OTb+7cEmmzoFQ6U63NbwDtx9/401ZR9mOeMV83OODvp/7gIzv+U2FR95w+JtDet4
-0g3YPnBUijneJZCfDPxj6nMZuviTKlSKGNp4VwSDggWp0Zz9xSw=
-=uzZO
------END PGP SIGNATURE-----
-
---zdnu5hbn76aj6mfs--
+Lukas
