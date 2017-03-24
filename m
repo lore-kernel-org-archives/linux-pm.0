@@ -1,50 +1,33 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 194963] schedutil governor causes audio problem in game
-Date: Fri, 24 Mar 2017 15:17:28 +0000
-Message-ID: <bug-194963-137361-7RjhcEm97Y@https.bugzilla.kernel.org/>
-References: <bug-194963-137361@https.bugzilla.kernel.org/>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 1/2] dt-bindings: thermal: add support for Broadcom's
+ Northstar thermal
+Date: Fri, 24 Mar 2017 10:19:13 -0500
+Message-ID: <20170324151913.lr224la5choqtwxt@rob-hp-laptop>
+References: <20170318155632.18099-1-zajec5@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:45824 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S934613AbdCXPRl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2017 11:17:41 -0400
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id F2FBC26E56
-        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 15:17:29 +0000 (UTC)
-Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id C2A4126E56
-        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 15:17:29 +0000 (UTC)
-In-Reply-To: <bug-194963-137361@https.bugzilla.kernel.org/>
+Received: from mail-ot0-f175.google.com ([74.125.82.175]:34721 "EHLO
+        mail-ot0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756746AbdCXPUE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2017 11:20:04 -0400
+Content-Disposition: inline
+In-Reply-To: <20170318155632.18099-1-zajec5@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
+To: =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=194963
+On Sat, Mar 18, 2017 at 04:56:31PM +0100, Rafał Miłecki wrote:
+> From: Rafał Miłecki <rafal@milecki.pl>
+> 
+> This commit documents binding for thermal used in Northstar family SoCs.
+> 
+> Signed-off-by: Rafał Miłecki <rafal@milecki.pl>
+> ---
+>  .../devicetree/bindings/thermal/brcm,ns-thermal         | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/brcm,ns-thermal
 
-Rafael J. Wysocki (rjw@rjwysocki.net) changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|ASSIGNED                    |NEEDINFO
-
---- Comment #9 from Rafael J. Wysocki (rjw@rjwysocki.net) ---
-I would use intel_pstate "powersave" (with the patch you have tested applied).
-
-One more question, though.
-
-I guess that you used "schedutil" with acpi-cpufreq as a scaling_driver?
-
-If that's correct, can you please also try to run intel_pstate in the passive
-mode (that is, pass "intel_pstate=passive" to the kernel command line) and use
-"schedutil" with that (scaling_driver will show "intel_cpufreq" in that
-configuration)?
-
-With acpi-cpufreq "schedutil" may under-provision things due to the way in
-which turbo P-states are represented in the ACPI tables.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Acked-by: Rob Herring <robh@kernel.org>
