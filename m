@@ -1,64 +1,51 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCHv2] power: supply: cpcap-charger: Add minimal CPCAP PMIC
- battery charger
-Date: Fri, 24 Mar 2017 22:04:24 +0100
-Message-ID: <20170324210423.4exvxg2tysqzenqo@earth>
-References: <20170322234210.5557-1-tony@atomide.com>
- <20170324100622.mzra66z35xlndhdj@earth>
- <20170324140807.GW10760@atomide.com>
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: Re: [PATCH v11 01/10] devicetree: power: Add battery.txt
+Date: Fri, 24 Mar 2017 14:11:56 -0700
+Message-ID: <CAKvHMgTMWsQFNUYpoH-rbBpgCSeTF-CRdK42bEVeLoFOZPg5cQ@mail.gmail.com>
+References: <20170320094335.19224-1-liam@networkimprov.net>
+ <20170320094335.19224-2-liam@networkimprov.net> <20170324155531.gn6iw6w3f5nqbpnx@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="eb76ak4yejpygfzk"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170324140807.GW10760-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+In-Reply-To: <20170324155531.gn6iw6w3f5nqbpnx@rob-hp-laptop>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>, Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Rob,
 
---eb76ak4yejpygfzk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Mar 24, 2017 at 8:55 AM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Mon, Mar 20, 2017 at 02:43:26AM -0700, Liam Breck wrote:
+>> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>>
+>> Documentation of static battery characteristics that can be defined
+>> for batteries which cannot self-identify. This information is required
+>> by fuel-gauge and charger chips for proper handling of the battery.
+>>
+>> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+>> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>> ---
+>>  .../devicetree/bindings/power/supply/battery.txt   | 43 ++++++++++++++++++++++
+>>  1 file changed, 43 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+>
+> While "simple" is not generally something I like to see in a compatible
+> string, we've beat this one to death.
+>
+> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
-Hi,
+Thanks. Are you in agreement with Sebastian on the following, or is
+this OK to include?
 
-On Fri, Mar 24, 2017 at 07:08:07AM -0700, Tony Lindgren wrote:
-> > s->battdetb =3D cpcap_sense_virq(ddata->reg, ddata->irq_battdetb);
-> > (and so on)
-> >=20
-> > looks cleaner IMHO.
->=20
-> I figured I'll do a follow up patch for when available to remove
-> dependencies between subsystems.
-
-Ok. I'm fine with that.
-
--- Sebastian
-
---eb76ak4yejpygfzk
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljVidUACgkQ2O7X88g7
-+pq7xg/+KgoderjiZr3m+6EOEHwjTu6aod5uCm2T1aMa5vN3GnDqtO9GMJMfXlXu
-QVht3uc0oOqaLcnGcO+ruGUYcW3uR5ZFGi6Iaeiw6K3mlvQp695ZnLFsLBQR3Jv5
-mYXY9APbnrtgjecj9LHBF9/F7TLmJkK1mF7uVnVoct19asV40fCiJ55jq1Hqf43L
-pLuOB78+aSiABCpvhVU+GC25DS8xnz2v4FPGB0lUrx/9nT+BRXozip8D/dsrajsu
-yd/18kq/tLKTuKE310Gg+K+8Mxnd+PZG3SNwDLF+nm36t1TjoExgBuHDIyjzBNfD
-c33mxhnjX4DENW5akyHvXnANZ7pAZZtlQ1Ru0Fw/tcZlUsQy56HUS5LzKBDNo1gK
-rCB2aO6t4wS6pgUEHVEPOMTE3QRNdDosqL6X+aMRIXrTgsEadWBfW8Ne7ASH5L7M
-9n21V7iIxwD2Z9Y94BnvZS0sfUld2ZNRhBBJU5/HMVBXCEa7o1yptuQVZj6I+24Z
-ENhejOkAI+gjfZfTyUb1fLrgJkIsnEXtPV5vQeqibPOkV2CevHpGBp6owzjhZqnX
-S3Bbw/4oQsttT4PF56OKFpdIvik674OXo5+FKtp+RUSSUpGHyy+Zkp/d5J6K6sIU
-E220gnhIEFEfI7gHCJw3uAbhkus9V4iU+39X9zVPsm3ND9oan/4=
-=/39p
------END PGP SIGNATURE-----
-
---eb76ak4yejpygfzk--
+On Thu, Mar 23, 2017 at 3:20 AM, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>> +Battery properties are named, where possible, for the corresponding
+>> +elements in enum power_supply_property, defined in
+>> +https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/power_supply.h#n86
+>
+>The above paragraph does not belong into DT bindings.
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
