@@ -1,81 +1,136 @@
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-Subject: Re: [PATCH RFC 1/3] thermal: allow hwmon devices to be created for
- of-thermal zones
-Date: Fri, 24 Mar 2017 13:23:13 +0000
-Message-ID: <20170324132312.GF7909@n2100.armlinux.org.uk>
-References: <E1cn8qC-0002uz-PB@rmk-PC.armlinux.org.uk>
- <20170320171552.o2ye73c2okcvhluq@rob-hp-laptop>
+From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCHv2] power: supply: cpcap-charger: Add minimal CPCAP PMIC
+ battery charger
+Date: Fri, 24 Mar 2017 07:08:07 -0700
+Message-ID: <20170324140807.GW10760@atomide.com>
+References: <20170322234210.5557-1-tony@atomide.com>
+ <20170324100622.mzra66z35xlndhdj@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170320171552.o2ye73c2okcvhluq@rob-hp-laptop>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, devicetree@vger.kernel.org, Gregory Clement <gregory.clement@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+In-Reply-To: <20170324100622.mzra66z35xlndhdj@earth>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>, Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 20, 2017 at 12:15:52PM -0500, Rob Herring wrote:
-> On Sun, Mar 12, 2017 at 07:07:40PM +0000, Russell King wrote:
-> > Allow hwmon devices to be optionally created for of-thermal zones,
-> > rather than permanently denying them "in case" there is a hwmon
-> > driver duplicating the thermal driver.
-> > 
-> > Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
-> > ---
-> > Without this, "sensors" is unable to report the temperature of the
-> > Dove SoC when it supports thermal zones.
-> > 
-> >  Documentation/devicetree/bindings/thermal/thermal.txt | 3 +++
-> >  arch/arm/boot/dts/dove.dtsi                           | 1 +
-> >  drivers/thermal/of-thermal.c                          | 3 ++-
-> >  3 files changed, 6 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-> > index 88b6ea1ad290..1478735fff85 100644
-> > --- a/Documentation/devicetree/bindings/thermal/thermal.txt
-> > +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> > @@ -175,6 +175,9 @@ containing trip nodes and one sub-node containing all the zone cooling maps.
-> >  			2000mW, while on a 10'' tablet is around
-> >  			4500mW.
-> >  
-> > +- linux,hwmon:		Allow Linux to create hwmon devices for the thermal
-> > +  Type: bool		zone.
-> > +
-> >  Note: The delay properties are bound to the maximum dT/dt (temperature
-> >  derivative over time) in two situations for a thermal zone:
-> >  (i)  - when passive cooling is activated (polling-delay-passive); and
-> > diff --git a/arch/arm/boot/dts/dove.dtsi b/arch/arm/boot/dts/dove.dtsi
-> > index 40fb98687230..00f5971cd039 100644
-> > --- a/arch/arm/boot/dts/dove.dtsi
-> > +++ b/arch/arm/boot/dts/dove.dtsi
-> > @@ -804,6 +804,7 @@
-> >  
-> >  	thermal-zones {
-> >  		soc-thermal {
-> > +			linux,hwmon;
+* Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> [170324 03:08]:
+> On Wed, Mar 22, 2017 at 04:42:10PM -0700, Tony Lindgren wrote:
+> > +Required properties:
+> > +- compatible: Shall be "motorola,cpcap-charger" or
+> > +	      "motorola,mapphone-cpcap-charger"
+> > +- interrupts: Interrupts used on the CPCAP PMIC
+> > +- interrupt-names: Names of the interrupts
 > 
-> I'd prefer to see a black or white list of sensor compatibles here. Then 
-> the dtb doesn't need to change if things move between hwmon and thermal 
-> zones.
+> That's usually done like
+> 
+> interrupts: Interrupt specifier for each name in interrupt-names
+> interrupt-names: Should contain the following entries:
+>  "bla", "foo", "42"
 
-I'm not sure what you mean, and I can't see how that would be coded up.
-The thermal layer doesn't give the option of individually selecting
-which sensors have hwmon stuff created - it seems to be all or nothing.
-I suspect what you're asking would require something of a rewrite of
-the thermal code.  The sensors are registered completely independently
-of parsing the thermal zone data.
+Sure will update.
 
--- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+> > +- io-channels: IIO ADC channels used by the charger
+> > +- io-channel-names: Names of the IIO ADC channels
+> 
+> Same as for interrupts.
+
+OK
+
+> > +Optional properties:
+> > +- mode-gpios: Optionally CPCAP charger can have a companion wireless
+> > +	      charge controller that is controlled with two GPIOs
+> 
+> DT people prefer to have GPIO activity (high/low) to be specified in the
+> binding.
+
+OK will add.
+
+> > --- a/drivers/power/supply/Kconfig
+> > +++ b/drivers/power/supply/Kconfig
+> > @@ -317,6 +317,13 @@ config BATTERY_RX51
+> >  	  Say Y here to enable support for battery information on Nokia
+> >  	  RX-51, also known as N900 tablet.
+> >  
+> > +config CHARGER_CPCAP
+> > +	tristate "CPCAP PMIC Charger Driver"
+> > +	depends on MFD_CPCAP
+> > +	help
+> > +	  Say Y to enable support for CPCAP PMIC charger driver for Motorola
+> > +	  mobile devices such as Droid 4.
+> > +
+> 
+> I think adding "default MFD_CPCAP" for CPCPAP's subdrivers would be nice.
+
+OK
+
+> > diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+> > --- a/drivers/power/supply/Makefile
+> > +++ b/drivers/power/supply/Makefile
+> > 
+> > [...]
+> >
+> > +#include <linux/gpio/consumer.h>
+> > +#include <linux/usb/phy_companion.h>
+> > +#include <linux/phy/omap_usb.h>
+> > +#include <linux/usb/otg.h>
+> > +#include <linux/iio/consumer.h>
+> > +#include <linux/mfd/motorola-cpcap.h>
+> 
+> This looks very entangled with mapphone specific things,
+> so maybe we should not add "motorola,cpcap-charger" for
+> now?
+
+Yeah I think that's a good idea as we have no documentation for
+the mystery companion charger chip there that has "6500" printed
+on it.
+
+> > +static int cpcap_charger_get_ints_state(struct cpcap_charger_ddata *ddata,
+> > +					struct cpcap_charger_ints_state *s)
+> > +{
+> > +	int val, error;
+> > +
+> > +	error = regmap_read(ddata->reg, CPCAP_REG_INTS1, &val);
+> > +	if (error)
+> > +		return error;
+> > +
+> > +	s->chrg_det = val & BIT(13);
+> > +	s->rvrs_chrg = val & BIT(12);
+> > +	s->vbusov = val & BIT(11);
+> > +
+> > +	error = regmap_read(ddata->reg, CPCAP_REG_INTS2, &val);
+> > +	if (error)
+> > +		return error;
+> > +
+> > +	s->chrg_se1b = val & BIT(13);
+> > +	s->rvrs_mode = val & BIT(6);
+> > +	s->chrgcurr1 = val & BIT(4);
+> > +	s->vbusvld = val & BIT(3);
+> > +
+> > +	error = regmap_read(ddata->reg, CPCAP_REG_INTS4, &val);
+> > +	if (error)
+> > +		return error;
+> > +
+> > +	s->battdetb = val & BIT(6);
+> 
+> Did you avoid using cpcap_sense_virq() for performance reasons?
+
+I don't think performance is an issue here :)
+
+> s->battdetb = cpcap_sense_virq(ddata->reg, ddata->irq_battdetb);
+> (and so on)
+> 
+> looks cleaner IMHO.
+
+I figured I'll do a follow up patch for when available to remove
+dependencies between subsystems.
+
+Regards,
+
+Tony
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
