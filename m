@@ -1,227 +1,146 @@
-From: Jon Mason <jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH V2 2/2] thermal: broadcom: add Northstar thermal driver
-Date: Fri, 24 Mar 2017 10:35:36 -0400
-Message-ID: <20170324143535.GA31953@broadcom.com>
-References: <20170318155632.18099-1-zajec5@gmail.com>
- <20170323223045.15786-1-zajec5@gmail.com>
- <20170323223045.15786-2-zajec5@gmail.com>
+From: Russell King - ARM Linux <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>
+Subject: Re: [PATCH RFC 1/3] thermal: allow hwmon devices to be created for
+ of-thermal zones
+Date: Fri, 24 Mar 2017 14:40:29 +0000
+Message-ID: <20170324144029.GG7909@n2100.armlinux.org.uk>
+References: <E1cn8qC-0002uz-PB@rmk-PC.armlinux.org.uk>
+ <20170320171552.o2ye73c2okcvhluq@rob-hp-laptop>
+ <20170324132312.GF7909@n2100.armlinux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170323223045.15786-2-zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+In-Reply-To: <20170324132312.GF7909-l+eeeJia6m9URfEZ8mYm6t73F7V6hmMc@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 23, 2017 at 11:30:45PM +0100, Rafał Miłecki wrote:
-> From: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+On Fri, Mar 24, 2017 at 01:23:13PM +0000, Russell King - ARM Linux wrote:
+> On Mon, Mar 20, 2017 at 12:15:52PM -0500, Rob Herring wrote:
+> > On Sun, Mar 12, 2017 at 07:07:40PM +0000, Russell King wrote:
+> > > Allow hwmon devices to be optionally created for of-thermal zones,
+> > > rather than permanently denying them "in case" there is a hwmon
+> > > driver duplicating the thermal driver.
+> > > 
+> > > Signed-off-by: Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>
+> > > ---
+> > > Without this, "sensors" is unable to report the temperature of the
+> > > Dove SoC when it supports thermal zones.
+> > > 
+> > >  Documentation/devicetree/bindings/thermal/thermal.txt | 3 +++
+> > >  arch/arm/boot/dts/dove.dtsi                           | 1 +
+> > >  drivers/thermal/of-thermal.c                          | 3 ++-
+> > >  3 files changed, 6 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+> > > index 88b6ea1ad290..1478735fff85 100644
+> > > --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+> > > +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+> > > @@ -175,6 +175,9 @@ containing trip nodes and one sub-node containing all the zone cooling maps.
+> > >  			2000mW, while on a 10'' tablet is around
+> > >  			4500mW.
+> > >  
+> > > +- linux,hwmon:		Allow Linux to create hwmon devices for the thermal
+> > > +  Type: bool		zone.
+> > > +
+> > >  Note: The delay properties are bound to the maximum dT/dt (temperature
+> > >  derivative over time) in two situations for a thermal zone:
+> > >  (i)  - when passive cooling is activated (polling-delay-passive); and
+> > > diff --git a/arch/arm/boot/dts/dove.dtsi b/arch/arm/boot/dts/dove.dtsi
+> > > index 40fb98687230..00f5971cd039 100644
+> > > --- a/arch/arm/boot/dts/dove.dtsi
+> > > +++ b/arch/arm/boot/dts/dove.dtsi
+> > > @@ -804,6 +804,7 @@
+> > >  
+> > >  	thermal-zones {
+> > >  		soc-thermal {
+> > > +			linux,hwmon;
+> > 
+> > I'd prefer to see a black or white list of sensor compatibles here. Then 
+> > the dtb doesn't need to change if things move between hwmon and thermal 
+> > zones.
 > 
-> Northstar is a SoC family commonly used in home routers. This commit
-> adds a driver for checking CPU temperature. As Northstar Plus seems to
-> also have this IP block this new symbol gets ARCH_BCM_IPROC dependency.
-> 
-> Signed-off-by: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
-> Signed-off-by: Jon Mason <jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-> ---
-> V2: Make it iProc specific as NSP can also use this driver
->     Select proper symbols in config ARCH_BCM_IPROC
->     Define PVTMON register bits
->     Update code selecting temperature monitor mode
->     Thank you Jon!
-> ---
->  arch/arm/mach-bcm/Kconfig             |  2 +
->  drivers/thermal/Kconfig               |  5 ++
->  drivers/thermal/Makefile              |  1 +
->  drivers/thermal/broadcom/Kconfig      |  7 +++
->  drivers/thermal/broadcom/Makefile     |  1 +
->  drivers/thermal/broadcom/ns-thermal.c | 98 +++++++++++++++++++++++++++++++++++
->  6 files changed, 114 insertions(+)
->  create mode 100644 drivers/thermal/broadcom/Kconfig
->  create mode 100644 drivers/thermal/broadcom/Makefile
->  create mode 100644 drivers/thermal/broadcom/ns-thermal.c
-> 
-> diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
-> index a0e66d8200c5..da2bfeb8e390 100644
-> --- a/arch/arm/mach-bcm/Kconfig
-> +++ b/arch/arm/mach-bcm/Kconfig
-> @@ -19,6 +19,8 @@ config ARCH_BCM_IPROC
->  	select GPIOLIB
->  	select ARM_AMBA
->  	select PINCTRL
-> +	select THERMAL
-> +	select THERMAL_OF
->  	help
->  	  This enables support for systems based on Broadcom IPROC architected SoCs.
->  	  The IPROC complex contains one or more ARM CPUs along with common
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 776b34396144..008e173ec825 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -392,6 +392,11 @@ config MTK_THERMAL
->  	  Enable this option if you want to have support for thermal management
->  	  controller present in Mediatek SoCs
->  
-> +menu "Broadcom thermal drivers"
-> +depends on ARCH_BCM || COMPILE_TEST
-> +source "drivers/thermal/broadcom/Kconfig"
-> +endmenu
-> +
->  menu "Texas Instruments thermal drivers"
->  depends on ARCH_HAS_BANDGAP || COMPILE_TEST
->  depends on HAS_IOMEM
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 7adae2029355..549d81b6363c 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -27,6 +27,7 @@ thermal_sys-$(CONFIG_CLOCK_THERMAL)	+= clock_cooling.o
->  thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
->  
->  # platform thermal drivers
-> +obj-y				+= broadcom/
->  obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
->  obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
->  obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
-> diff --git a/drivers/thermal/broadcom/Kconfig b/drivers/thermal/broadcom/Kconfig
-> new file mode 100644
-> index 000000000000..39b92a1f3584
-> --- /dev/null
-> +++ b/drivers/thermal/broadcom/Kconfig
-> @@ -0,0 +1,7 @@
-> +config BCM_NS_THERMAL
-> +	tristate "Northstar thermal driver"
-> +	depends on ARCH_BCM_IPROC || COMPILE_TEST
-> +	help
-> +	  Northstar's DMU (Device Management Unit) block contains a thermal
-> +	  sensor that allows checking CPU temperature. This driver provides
-> +	  support for it.
-> diff --git a/drivers/thermal/broadcom/Makefile b/drivers/thermal/broadcom/Makefile
-> new file mode 100644
-> index 000000000000..059df9a0ed69
-> --- /dev/null
-> +++ b/drivers/thermal/broadcom/Makefile
-> @@ -0,0 +1 @@
-> +obj-$(CONFIG_BCM_NS_THERMAL)		+= ns-thermal.o
-> diff --git a/drivers/thermal/broadcom/ns-thermal.c b/drivers/thermal/broadcom/ns-thermal.c
-> new file mode 100644
-> index 000000000000..acf3a4de62a4
-> --- /dev/null
-> +++ b/drivers/thermal/broadcom/ns-thermal.c
-> @@ -0,0 +1,98 @@
-> +/*
-> + * Copyright (C) 2017 Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/of_address.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/thermal.h>
-> +
-> +#define PVTMON_CONTROL0					0x00
-> +#define PVTMON_CONTROL0_SEL_MASK			0x0000000e
-> +#define PVTMON_CONTROL0_SEL_TEMP_MONITOR		0x00000000
-> +#define PVTMON_CONTROL0_SEL_TEST_MODE			0x0000000e
-> +#define PVTMON_STATUS					0x08
-> +
-> +struct ns_thermal {
-> +	void __iomem *pvtmon;
-> +};
-> +
-> +static int ns_thermal_get_temp(void *data, int *temp)
-> +{
-> +	struct ns_thermal *ns_thermal = data;
-> +	u32 val;
-> +
-> +	val = readl(ns_thermal->pvtmon + PVTMON_CONTROL0);
-> +	if ((val & PVTMON_CONTROL0_SEL_MASK) != PVTMON_CONTROL0_SEL_TEMP_MONITOR) {
-> +		val &= ~PVTMON_CONTROL0_SEL_MASK;
-> +		val |= PVTMON_CONTROL0_SEL_TEMP_MONITOR;
+> I'm not sure what you mean, and I can't see how that would be coded up.
+> The thermal layer doesn't give the option of individually selecting
+> which sensors have hwmon stuff created - it seems to be all or nothing.
+> I suspect what you're asking would require something of a rewrite of
+> the thermal code.  The sensors are registered completely independently
+> of parsing the thermal zone data.
 
-I think this is slightly confusing here.  If this was off, ORing in 0
-will not enable it.  I think we need to flip the #define to make it
-PVTMON_CONTROL0_SEL_TEMP_MONITOR_DISABLE (or a less crappy name).
-then use this line here to toggle it.  Something like
+Okay, I'm convinced that what you're asking for (if I'm understanding
+correctly) is just not possible with how the thermal code is (horribly)
+architected at the moment.
 
-                val &= ~PVTMON_CONTROL0_SEL_TEMP_MONITOR_DISABLE;
+While trying to understand how all the thermal zone stuff fits together,
+I found this comment:
 
-Thanks,
-Jon
+                /* For now, thermal framework supports only 1 sensor per zone */
+                ret = of_parse_phandle_with_args(child, "thermal-sensors",
+                                                 "#thermal-sensor-cells",
+                                                 0, &sensor_specs);
 
-> +		writel(val, ns_thermal->pvtmon + PVTMON_CONTROL0);
-> +	}
-> +
-> +	val = readl(ns_thermal->pvtmon + PVTMON_STATUS);
-> +	*temp = (418 - (val * 5556 / 10000)) * 1000;
-> +
-> +	return 0;
-> +}
-> +
-> +const struct thermal_zone_of_device_ops ns_thermal_ops = {
-> +	.get_temp = ns_thermal_get_temp,
-> +};
-> +
-> +static int ns_thermal_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct ns_thermal *ns_thermal;
-> +	struct thermal_zone_device *tzd;
-> +
-> +	ns_thermal = devm_kzalloc(dev, sizeof(*ns_thermal), GFP_KERNEL);
-> +	if (!ns_thermal)
-> +		return -ENOMEM;
-> +
-> +	ns_thermal->pvtmon = of_iomap(dev_of_node(dev), 0);
-> +	if (WARN_ON(!ns_thermal->pvtmon))
-> +		return -ENOENT;
-> +
-> +	tzd = devm_thermal_zone_of_sensor_register(dev, 0, ns_thermal,
-> +						   &ns_thermal_ops);
-> +	if (IS_ERR(tzd)) {
-> +		iounmap(ns_thermal->pvtmon);
-> +		return PTR_ERR(tzd);
-> +	}
-> +
-> +	platform_set_drvdata(pdev, ns_thermal);
-> +
-> +	return 0;
-> +}
-> +
-> +static int ns_thermal_remove(struct platform_device *pdev)
-> +{
-> +	struct ns_thermal *ns_thermal = platform_get_drvdata(pdev);
-> +
-> +	iounmap(ns_thermal->pvtmon);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id ns_thermal_of_match[] = {
-> +	{ .compatible = "brcm,ns-thermal", },
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, ns_thermal_of_match);
-> +
-> +static struct platform_driver ns_thermal_driver = {
-> +	.probe		= ns_thermal_probe,
-> +	.remove		= ns_thermal_remove,
-> +	.driver = {
-> +		.name = "ns-thermal",
-> +		.of_match_table = ns_thermal_of_match,
-> +	},
-> +};
-> +module_platform_driver(ns_thermal_driver);
-> +
-> +MODULE_DESCRIPTION("Northstar thermal driver");
-> +MODULE_LICENSE("GPL v2");
-> -- 
-> 2.11.0
-> 
+so it's really not setup to deal with multiple sensors in DT right now
+(and there's no checking by the code that this is even the case.)
+
+The way the code is architected, the thermal zone devices and hwmon
+support is setup _completely_ independently from attaching the single
+sensor to the zone - the setup of the thermal zone devices and
+registering the sysfs entry happens before the sensors.
+
+The hwmon support is coded such that there is one hwmon device for all
+thermal zones.  Each thermal zone device exports exactly one hwmon
+temperature sensor value with one set of trip points.
+
+A thermal zone device can support multiple sensors, but from the code
+and the above comment, the code does not support this - the sensors
+are not individually exported through hwmon.
+
+So, I think what you're asking for is not possible and is based upon
+a mis-understanding - thermal does not export sensors, but exports the
+_zone_ itself as a hwmon sensor.  The zone temperature is exported,
+along with its thresholds.
+
+Obviously, the separation of thermal vs hwmon is purely a Linux
+phenomenon, and I've wondered why people have to rewrite hwmon drivers
+as thermal drivers just to make use of the thermal subsystem - it seems
+to me like NIH syndrome.  I can't see why hwmon isn't able to export
+individual temperature sensors to thermal and have thermal import the
+values from there.
+
+For example, you could have a hwmon device that has multiple temperature
+sensors (some do) which monitor different parts of the system, and a
+hwmon device should be able to be incorporated into a thermal zone for
+management.
+
+That doesn't seem possible, you have to implement a thermal driver to
+interface your sensor to the thermal stuff, and then have the _zone_
+statistics exported through hwmon.
+
+If you want individual sensors exported, you have to implement a driver
+which has a dual-personality, it has to register with hwmon and thermal.
+
+I'd say that, arguably, the whole "no_hwmon" thing in thermal is also
+wrong - it may _seem_ to be correct because thermal only supports one
+sensor, and we don't want such a dual-personality driver to have two
+entries in sysfs, but that's rather moot when you consider that one is
+exporting the zone (which has DT configured thresholds) and one is
+exporting the sensor itself.
+
+So, my conclusion is that this is all rather messed up, and certainly
+beyond my willingness to put in a lot of effort, creating lots of
+patches to try and bring the code to a point where what you're asking
+for is possible (iow, where we export individual sensors to hwmon,
+and make individual sensors exportable.)
+
+Therefore, I believe that my implementation is entirely reasonable -
+the linux,hwmon flag indicates whether the state of the thermal _zone_
+(not the _sensors_) should be exported via hwmon.
+
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
