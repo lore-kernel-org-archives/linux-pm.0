@@ -1,67 +1,92 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 194963] schedutil governor causes audio problem in game
-Date: Fri, 24 Mar 2017 01:11:35 +0000
-Message-ID: <bug-194963-137361-gwNTh8uXoc@https.bugzilla.kernel.org/>
-References: <bug-194963-137361@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.11-rc4
+Date: Fri, 24 Mar 2017 02:30:15 +0100
+Message-ID: <CAJZ5v0hrfZjWO6dFNnLtnPbEeeeF+4duPw_R1r2SqMTmjohkrA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:43290 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751047AbdCXBLi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 21:11:38 -0400
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 2509328474
-        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 01:11:37 +0000 (UTC)
-Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 809E028474
-        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 01:11:36 +0000 (UTC)
-In-Reply-To: <bug-194963-137361@https.bugzilla.kernel.org/>
+Received: from mail-ot0-f196.google.com ([74.125.82.196]:36456 "EHLO
+        mail-ot0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753029AbdCXBaR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Mar 2017 21:30:17 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=194963
+Hi Linus,
 
-Rafael J. Wysocki (rjw@rjwysocki.net) changed:
+Please pull from the tag
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |ASSIGNED
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.11-rc4
 
---- Comment #7 from Rafael J. Wysocki (rjw@rjwysocki.net) ---
-(In reply to John from comment #6)
-> The schedutil patch didn't seem to change anything, though the 4th hunk of
-> cpufreq_schedutil.c didn't apply and I had to do it manually, so it is
-> possible I messed up somewhere (I copied/pasted it so it's unlikely, but I
-> thought it'd be better to say it).
+with top-most commit 90ff2b729e181fba628b854eac2097e5ccc22e66
 
-OK, this means that schedutil is not a good match for you.
+ Merge branch 'pm-cpuidle-fixes'
 
-It is a bit less aggressive than ondemand, on purpose.
+on top of commit 97da3854c526d3a6ee05c849c96e48d21527606c
 
-There is one more schedutil change that you may try, but I need to prepare a
-patch for that first.
+ Linux 4.11-rc3
 
-> As for pstate, I think that's the first time I've seen my CPU scaling on
-> pstate's powersave. I've tried the game, and I think, but not sure, that
-> when it started the sound cracked for just a bit, maybe before the CPU
-> scaled up enough?
+to receive power management fixes for v4.11-rc4.
 
-Yes, that's possible.
+One of these is an intel_pstate regression fix and it is not a small
+change, but it mostly removes code that shouldn't be there.  That
+code was acquired by mistake and has been a source of constant pain
+since then, so the time has come to get rid of it finally.  We have
+not seen problems with this change in the lab, so fingers crossed.
 
-> After that no issue, and I verified the CPU was at its
-> maximum frequency. When I quit the game, the CPU scaled down to its minimum
-> frequency within 2 seconds. Pstate's performance still doesn't scale, is it
-> expected? I thought on pstate both would.
+The rest is more usual: one more intel_pstate commit removing useless
+code, a cpufreq core fix to make it restore policy limits on CPU
+online (which prevents the limits from being reset over system
+suspend/resume), a schedutil cpufreq governor initialization fix to
+make it actually work as advertised on all systems and an extra
+sanity check in the cpuidle core to prevent crashes from happening
+if the arch code messes things up.
 
-If you mean scaling_governor=performance, then it will always request the max
-P-state now, as that's what it is supposed to be doing.
+Specifics:
 
-Thanks for the testing, the intel_pstate change will be queued up for 4.12 in
-the next couple of days.
+ - Make intel_pstate use one set of global P-state limits in the
+   active mode regardless of the scaling_governor settings for
+   individual CPUs instead of switching back and forth between two
+   of them in a way that is hard to control (Rafael Wysocki).
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+ - Drop a useless function from intel_pstate to prevent it from
+   modifying the maximum supported frequency value unexpectedly
+   which may confuse the cpufreq core (Rafael Wysocki).
+
+ - Fix the cpufreq core to restore policy limits on CPU online so
+   that the limits are not reset over system suspend/resume, among
+   other things (Viresh Kumar).
+
+ - Fix the initialization of the schedutil cpufreq governor to
+   make the IO-wait boosting mechanism in it actually work on
+   systems with one CPU per cpufreq policy (Rafael Wysocki).
+
+ - Add a sanity check to the cpuidle core to prevent crashes from
+   happening if the architecture code initialization fails to set
+   up things as expected (Vaidyanathan Srinivasan).
+
+Thanks!
+
+---------------
+
+Rafael J. Wysocki (3):
+      cpufreq: intel_pstate: One set of global limits in active mode
+      cpufreq: schedutil: Fix per-CPU structure initialization in sugov_start()
+      cpufreq: intel_pstate: Fix policy data management in passive mode
+
+Vaidyanathan Srinivasan (1):
+      cpuidle: Validate cpu_dev in cpuidle_add_sysfs()
+
+Viresh Kumar (1):
+      cpufreq: Restore policy min/max limits on CPU online
+
+---------------
+
+ drivers/cpufreq/cpufreq.c        |   3 +
+ drivers/cpufreq/intel_pstate.c   | 167 ++++++++++++---------------------------
+ drivers/cpuidle/sysfs.c          |  12 +++
+ kernel/sched/cpufreq_schedutil.c |  20 ++---
+ 4 files changed, 72 insertions(+), 130 deletions(-)
