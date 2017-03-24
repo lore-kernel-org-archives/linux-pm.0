@@ -1,112 +1,112 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v1 4/7] power: bq24190_charger: Uniform pm_runtime_get()
- failure handling
-Date: Fri, 24 Mar 2017 10:13:02 +0100
-Message-ID: <20170324091302.lhmbk62iihy2bqle@earth>
+Subject: Re: [PATCH v1 6/7] power: bq24190_charger: Add
+ power_supply_battery_info and devicetree support
+Date: Fri, 24 Mar 2017 10:20:15 +0100
+Message-ID: <20170324092015.to2yyy5465o4w7lm@earth>
 References: <20170321220921.5834-1-liam@networkimprov.net>
- <20170321220921.5834-5-liam@networkimprov.net>
+ <20170321220921.5834-7-liam@networkimprov.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="yxng6qwwhs44ikul"
+        protocol="application/pgp-signature"; boundary="zqwctgetz754gtoa"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40784 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:41558 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S965012AbdCXJNH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 24 Mar 2017 05:13:07 -0400
+        id S934157AbdCXJUU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 24 Mar 2017 05:20:20 -0400
 Content-Disposition: inline
-In-Reply-To: <20170321220921.5834-5-liam@networkimprov.net>
+In-Reply-To: <20170321220921.5834-7-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
 Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Mark Greer <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>
 
 
---yxng6qwwhs44ikul
+--zqwctgetz754gtoa
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Mar 21, 2017 at 03:09:18PM -0700, Liam Breck wrote:
+On Tue, Mar 21, 2017 at 03:09:20PM -0700, Liam Breck wrote:
 > From: Liam Breck <kernel@networkimprov.net>
 >=20
-> On pm_runtime_get() failure, always emit error message,
-> and call pm_runtime_put_noidle() in irq handler.
+> Obtain pre-charge and end-charge current values from power_supply_battery=
+_info.
+> Obtain minimum system voltage level from devicetree.
 >=20
-> Fixes: 13d6fa8447fa power: bq24190_charger: Use PM runtime autosuspend
 > Cc: Mark Greer <mgreer@animalcreek.com>
 > Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> ---
->  drivers/power/supply/bq24190_charger.c | 13 ++++++++-----
->  1 file changed, 8 insertions(+), 5 deletions(-)
->=20
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/suppl=
-y/bq24190_charger.c
-> index c443988..ad09e48 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -1267,12 +1267,13 @@ static void bq24190_check_status(struct bq24190_d=
-ev_info *bdi)
->  static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
+>
+> [...]
+>
+> @@ -1314,6 +1358,39 @@ static int bq24190_hw_init(struct bq24190_dev_info=
+ *bdi)
+>  #ifdef CONFIG_OF
+>  static int bq24190_setup_dt(struct bq24190_dev_info *bdi)
 >  {
->  	struct bq24190_dev_info *bdi =3D data;
-> -	int ret;
-> +	int error;
-> =20
->  	bdi->irq_event =3D true;
-> -	ret =3D pm_runtime_get_sync(bdi->dev);
-> -	if (ret < 0) {
-> -		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
-> +	error =3D pm_runtime_get_sync(bdi->dev);
-> +	if (error < 0) {
-> +		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-> +		pm_runtime_put_noidle(bdi->dev);
->  		return IRQ_NONE;
->  	}
->  	bq24190_check_status(bdi);
-> @@ -1399,8 +1400,10 @@ static int bq24190_probe(struct i2c_client *client,
->  	pm_runtime_use_autosuspend(dev);
->  	pm_runtime_set_autosuspend_delay(dev, 600);
->  	ret =3D pm_runtime_get_sync(dev);
-> -	if (ret < 0)
-> +	if (ret < 0) {
-> +		dev_err(dev, "pm_runtime_get failed: %i\n", ret);
->  		goto out1;
+> +	struct power_supply_battery_info info =3D {};
+> +	const char const* s =3D "ti,system-minimum-microvolt";
+> +	int v;
+> +
+> +	if (!of_property_read_u32(bdi->dev->of_node, s, &v)) {
+> +		v /=3D 1000;
+> +		if (v >=3D BQ24190_REG_POC_SYS_MIN_MIN
+> +		 && v <=3D BQ24190_REG_POC_SYS_MIN_MAX)
+> +			bdi->sys_min =3D v;
+> +		else
+> +			dev_err(bdi->dev, "invalid value for %s: %u\n", s, v);
 > +	}
 
-This should goto out2, which will make out1 not used anymore.
-Would be nice, if you move this patch to the beginning of the
-series in the next version, so that I can pick it already while
-waiting for Acks on the DT binding.
+Let's use device_property_read_u32 here. With that change
+there is nothing DT specific, so the function can be named
+bq24190_setup (or everything is done directly in probe, that's
+also fine with me).
+
+> +	if (!power_supply_get_battery_info(bdi->battery, &info)) {
+> +		v =3D info.precharge_current_ua / 1000;
+> +		if (v >=3D BQ24190_REG_PCTCC_IPRECHG_MIN
+> +		 && v <=3D BQ24190_REG_PCTCC_IPRECHG_MAX)
+> +			bdi->iprechg =3D v;
+> +		else
+> +			dev_err(bdi->dev,
+> +				"invalid value for battery:precharge-current-microamp: %d\n",
+> +				v);
+> +
+> +		v =3D info.endcharge_current_ua / 1000;
+> +		if (v >=3D BQ24190_REG_PCTCC_ITERM_MIN
+> +		 && v <=3D BQ24190_REG_PCTCC_ITERM_MAX)
+> +			bdi->iterm =3D v;
+> +		else
+> +			dev_err(bdi->dev,
+> +				"invalid value for battery:endcharge-current-microamp: %d\n",
+> +				v);
+> +	}
+> +
+>  	bdi->irq =3D irq_of_parse_and_map(bdi->dev->of_node, 0);
+>  	if (bdi->irq <=3D 0)
+>  		return -1;
 
 -- Sebastian
 
-> =20
->  	ret =3D bq24190_hw_init(bdi);
->  	if (ret < 0) {
-> --=20
-> 2.9.3
->=20
-
---yxng6qwwhs44ikul
+--zqwctgetz754gtoa
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljU4x4ACgkQ2O7X88g7
-+pokuBAAgARhA7PruU6NOHYjUuqb9W10mbaBV3VQq+mifUxOz23TcEpjNK9Q6VIV
-Oj1LKp8GPqM8X4mW6rUuNsYOgo8ftEeKjRTrT2mYkT/k1BeEDN8+gQpOheV8C6C1
-8ASfKfjqsVmNGCD+CE2fBe2mug/q9AQybRcSSAlLRFKAGYECw68vVRcUfD+Fn5Kq
-D8467wHNrqbcwRvqclFjfav37VbOI8ATsPH8orrcuW75soU5XNPWPvwHZwYStl05
-oE1pJNvU09jJKOpjmsyEzoy1YiytI/I1msoKvtwas0ACo8DB5h1gqxfCjdxRaLwp
-Spz9hu23l2iBy8MuiePk2u9z+vS6wLSLlI6sgw6e+n58NM2yACd9CBl+is/2P/7j
-gTeJvbx1L1940uHUNo15xrbdLgx1ICq3J8Jql1Rwdgw/0rdEwQUl1rymqrfJt00o
-dBSYQD7vmFCCqgan/9uJIWLxZYB+Gh/wFb8S57/JKV4zG9FLON2EueKmtGktCbec
-/zQnF31ndsJU6BBVynPCUwPWnERIuBvb8H/C45FfZ52uWDXKGV0pSm94j2ofLht8
-fBGlJU/YdOzevu9n+1RdUYuWwtpxcVrSUahd/X3LQygfYPi9A7fNTdU5p9nBmcT8
-h85XQgetXRxU9oQ9tTEOcwbJXCi7Q6B0u7fhXjJgwwLVeGibw+4=
-=jFUG
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljU5M8ACgkQ2O7X88g7
++poZ8A/9Eyt6cJ1tilXM2GMIxGZ6pTMhFsrcTLWCBAn9Xh1rUZJfgwfx25Bdy8b0
+KuP90rEKMJG3mHdDuTrMOf0GlaBuQRbYmkZjVQidbtpkjHSU/nE86+jvhx3bOaB8
+K5pQAC+HSGTAOSlcyRwxHen9tQWaWdzww7xPO8OhasO40MnBCp0ShbWat55WxTuR
+S/uMOfsGFDE+Ys/K5MyDhpKZgjnHR/RAHwAIvUNZj/0EQP2tA+D81PxGGzoPmMBF
+4VapvxpLLcJcWc3Yd3X9jRIP+KqzpfyKh1njpeQH1oxP34FJJVGYQbLc4KBsdrCo
+VNLlm9gN72yLxraPBlDrISbS0zQ3H7fM7h7UQyAcImLgrYmCi+R1k04VEAG8QxL0
+JlxnZfklKjFj43LhaWxVuSEY0YHybWC+nFgWBs5gxTzfdsqCYIEw7tZG5tNu2meF
+0Ago47RFszDaL5d3TOwDnKo+JrD0LR+ClSnpypa2B42df03eqg5BuU6/ecGomBlQ
+PG8yHnwDNQKONJHlUPAfhhT/MiwxKz65iyqJ+J+Td2miGwFmC308h9rQe7W94xlF
+i3D/D1hPZ6M3ueeg9nKxttUMdZTdjPBTx6GQ1Yiilv5hGxVT+oYw0ORXwch13MtS
+wZZO4Fa8U6sxYzdTVlC62pmOn0quaN1jcQDWhKeJFQXLwAN88Ac=
+=fVC8
 -----END PGP SIGNATURE-----
 
---yxng6qwwhs44ikul--
+--zqwctgetz754gtoa--
