@@ -1,57 +1,110 @@
-From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: Re: Re: [RESEND PATCH v4 2/9] iio: adc: add support for
- X-Powers AXP20X and AXP22X PMICs ADCs
-Date: Fri, 24 Mar 2017 16:01:37 +0800
-Message-ID: <CAGb2v65whWFfHFi9BULqvh8to8BbQCub_phOS3wpFVNWuPER0A@mail.gmail.com>
-References: <20170320081653.8884-1-quentin.schulz@free-electrons.com>
- <20170320081653.8884-3-quentin.schulz@free-electrons.com> <CAGb2v66JC65=9WiMy-Nu+9tTFRLsJL2Eyb0wfJV_K=65ABc6Zg@mail.gmail.com>
- <20170323093527.ojcdpvruzqnhvysq@earth> <CAGb2v655AfEavMqVV-XTyYzHWt5qFsMnoMsTVd8HRDkCgjiTeQ@mail.gmail.com>
- <13f2f8ba-af9e-576e-24ee-60c3a1609f80@free-electrons.com>
-Reply-To: wens-jdAy2FN1RRM@public.gmane.org
+From: Gautham R Shenoy <ego.lkml@gmail.com>
+Subject: Re: [PATCH v2 1/2] powerpc/powernv/cpuidle: Pass correct drv->cpumask
+ for registration
+Date: Fri, 24 Mar 2017 13:59:51 +0530
+Message-ID: <CAHZ_5WzhbXio=VybzMSB5-prGXVs5TGz4Rk+-dsAepQb3eWa+A@mail.gmail.com>
+References: <20170323152247.14733-1-svaidy@linux.vnet.ibm.com> <20170323152247.14733-2-svaidy@linux.vnet.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCMILY6JWQBBB6NE2PDAKGQE24MAJGI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <13f2f8ba-af9e-576e-24ee-60c3a1609f80-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Icenowy Zheng <icenowy-ymACFijhrKM@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, knaack.h-Mmb7MZpHnFY@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170323152247.14733-2-svaidy@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 24, 2017 at 3:55 PM, Quentin Schulz
-<quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
-> Hi,
+On Thu, Mar 23, 2017 at 8:52 PM, Vaidyanathan Srinivasan
+<svaidy@linux.vnet.ibm.com> wrote:
+> drv->cpumask defaults to cpu_possible_mask in __cpuidle_driver_init().
+> On PowerNV platform cpu_present could be less than cpu_possible in cases
+> where firmware detects the cpu, but it is not available to the OS.  When
+> CONFIG_HOTPLUG_CPU=n, such cpus are not hotplugable at runtime and hence
+> we skip creating cpu_device.
 >
-> On 23/03/2017 10:52, Chen-Yu Tsai wrote:
->> On Thu, Mar 23, 2017 at 5:35 PM, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
->>> Hi,
->>>
->>> On Wed, Mar 22, 2017 at 12:34:45PM +0800, Chen-Yu Tsai wrote:
->>>> P.S. I'm thinking about having MFD_AXP20X imply its various sub-drivers.
->>>> Not sure if that was the intended usage of the new imply syntax though.
->>>
->>> I think adding "default MFD_AXP20X" to the sub-drivers is cleaner,
->>> as you will not end up with a long list.
->>
->> I'd still need to add imply statements for the various subsystems though,
->> like regulators, power supplies, extcon, etc..
->> But I suppose that's cleaner, and fits the original intent of the syntax.
->>
+> This breaks cpuidle on powernv where register_cpu() is not called for
+> cpus in cpu_possible_mask that cannot be hot-added at runtime.
 >
-> Hum. I don't really understand what you are saying.. Am I supposed to
-> modify something or, is it okay and we're waiting for Lee to apply on
-> his tree?
+> Trying cpuidle_register_device() on cpu without cpu_device will cause
+> crash like this:
 >
-> Thanks in advance for clearing it up,
+> cpu 0xf: Vector: 380 (Data SLB Access) at [c000000ff1503490]
+>     pc: c00000000022c8bc: string+0x34/0x60
+>     lr: c00000000022ed78: vsnprintf+0x284/0x42c
+>     sp: c000000ff1503710
+>    msr: 9000000000009033
+>    dar: 6000000060000000
+>   current = 0xc000000ff1480000
+>   paca    = 0xc00000000fe82d00   softe: 0        irq_happened: 0x01
+>     pid   = 1, comm = swapper/8
+> Linux version 4.11.0-rc2 (sv@sagarika) (gcc version 4.9.4
+> (Buildroot 2017.02-00004-gc28573e) ) #15 SMP Fri Mar 17 19:32:02 IST 2017
+> enter ? for help
+> [link register   ] c00000000022ed78 vsnprintf+0x284/0x42c
+> [c000000ff1503710] c00000000022ebb8 vsnprintf+0xc4/0x42c (unreliable)
+> [c000000ff1503800] c00000000022ef40 vscnprintf+0x20/0x44
+> [c000000ff1503830] c0000000000ab61c vprintk_emit+0x94/0x2cc
+> [c000000ff15038a0] c0000000000acc9c vprintk_func+0x60/0x74
+> [c000000ff15038c0] c000000000619694 printk+0x38/0x4c
+> [c000000ff15038e0] c000000000224950 kobject_get+0x40/0x60
+> [c000000ff1503950] c00000000022507c kobject_add_internal+0x60/0x2c4
+> [c000000ff15039e0] c000000000225350 kobject_init_and_add+0x70/0x78
+> [c000000ff1503a60] c00000000053c288 cpuidle_add_sysfs+0x9c/0xe0
+> [c000000ff1503ae0] c00000000053aeac cpuidle_register_device+0xd4/0x12c
+> [c000000ff1503b30] c00000000053b108 cpuidle_register+0x98/0xcc
+> [c000000ff1503bc0] c00000000085eaf0 powernv_processor_idle_init+0x140/0x1e0
+> [c000000ff1503c60] c00000000000cd60 do_one_initcall+0xc0/0x15c
+> [c000000ff1503d20] c000000000833e84 kernel_init_freeable+0x1a0/0x25c
+> [c000000ff1503dc0] c00000000000d478 kernel_init+0x24/0x12c
+> [c000000ff1503e30] c00000000000b564 ret_from_kernel_thread+0x5c/0x78
 >
-> Quentin
+> This patch fixes the bug by passing correct cpumask from
+> powernv-cpuidle driver.
+>
+> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-I'm just mentioning some follow up tasks I want to do.
-The patch is fine and we're waiting for Lee to take it.
 
-ChenYu
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c | 18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
+>
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index a06df51..82f7b33 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -175,6 +175,24 @@ static int powernv_cpuidle_driver_init(void)
+>                 drv->state_count += 1;
+>         }
+>
+> +       /*
+> +        * On PowerNV platform cpu_present may be less that cpu_possible in
+> +        * cases where firmware detects the cpu, but it is not available to the
+> +        * OS.  If CONFIG_HOTPLUG_CPU=n then such CPUs are not hotplugable at
+> +        * runtime and hence cpu_devices are not created for those cpus by
+> +        * generic topology_init().
+> +        *
+> +        * drv->cpumask defaults to cpu_possible_mask in
+> +        * __cpuidle_driver_init().  This breaks cpuidle on powernv where
+> +        * cpu_devices are not created for cpus in cpu_possible_mask that
+> +        * cannot be hot-added later at runtime.
+> +        *
+> +        * Trying cpuidle_register_device() on a cpu without cpu_devices is
+> +        * incorrect. Hence pass correct cpu mask to generic cpuidle driver.
+> +        */
+> +
+> +       drv->cpumask = (struct cpumask *)cpu_present_mask;
+> +
+>         return 0;
+>  }
+>
+> --
+> 2.9.3
+>
+
+
+
+-- 
+Thanks and Regards
+gautham.
