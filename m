@@ -1,69 +1,39 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v3 1/4] i2c: core: Allow getting ACPI info by index
-Date: Sat, 25 Mar 2017 14:55:47 +0100
-Message-ID: <20170325135550.22509-2-hdegoede@redhat.com>
-References: <20170325135550.22509-1-hdegoede@redhat.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170325135550.22509-1-hdegoede@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org
+From: =?UTF-8?q?Giedrius=20Statkevi=C4=8Dius?=
+        <giedrius.statkevicius@gmail.com>
+Subject: [PATCH] power: supply: lp8788: prevent out of bounds array access
+Date: Sat, 25 Mar 2017 18:00:49 +0200
+Message-ID: <20170325160049.18943-1-giedrius.statkevicius@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: milo.kim@ti.com, sre@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Giedrius=20Statkevi=C4=8Dius?= <giedrius.statkevicius@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Modify struct i2c_acpi_lookup and i2c_acpi_fill_info() to allow
-using them to get the info from a certain index in the ACPI-resource
-list rather then taking the first I2cSerialBus resource.
+val might become 7 in which case stime[7] (array of length 7) would be
+accessed during the scnprintf call later and that will cause issues.
+Obviously, string concatenation is not intended here so just a comma needs
+to be added to fix the issue.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Giedrius Statkevičius <giedrius.statkevicius@gmail.com>
 ---
-Changes in v2:
--No changes
-Changes in v2:
--Increment number of found i2c busses for lookup-by-index after checking
- the acpi-resource is an i2c bus rather then before
----
- drivers/i2c/i2c-core.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/power/supply/lp8788-charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index d2402bb..f7faa99 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -112,6 +112,8 @@ struct i2c_acpi_lookup {
- 	acpi_handle adapter_handle;
- 	acpi_handle device_handle;
- 	acpi_handle search_handle;
-+	int n;
-+	int index;
- 	u32 speed;
- 	u32 min_speed;
- };
-@@ -130,6 +132,9 @@ static int i2c_acpi_fill_info(struct acpi_resource *ares, void *data)
- 	if (sb->type != ACPI_RESOURCE_SERIAL_TYPE_I2C)
- 		return 1;
+diff --git a/drivers/power/supply/lp8788-charger.c b/drivers/power/supply/lp8788-charger.c
+index 509e2b341bd6..677f7c40b25a 100644
+--- a/drivers/power/supply/lp8788-charger.c
++++ b/drivers/power/supply/lp8788-charger.c
+@@ -651,7 +651,7 @@ static ssize_t lp8788_show_eoc_time(struct device *dev,
+ {
+ 	struct lp8788_charger *pchg = dev_get_drvdata(dev);
+ 	char *stime[] = { "400ms", "5min", "10min", "15min",
+-			"20min", "25min", "30min" "No timeout" };
++			"20min", "25min", "30min", "No timeout" };
+ 	u8 val;
  
-+	if (lookup->index != -1 && lookup->n++ != lookup->index)
-+		return 1;
-+
- 	status = acpi_get_handle(lookup->device_handle,
- 				 sb->resource_source.string_ptr,
- 				 &lookup->adapter_handle);
-@@ -182,6 +187,7 @@ static int i2c_acpi_get_info(struct acpi_device *adev,
- 
- 	memset(&lookup, 0, sizeof(lookup));
- 	lookup.info = info;
-+	lookup.index = -1;
- 
- 	ret = i2c_acpi_do_lookup(adev, &lookup);
- 	if (ret)
-@@ -328,6 +334,7 @@ u32 i2c_acpi_find_bus_speed(struct device *dev)
- 	lookup.search_handle = ACPI_HANDLE(dev);
- 	lookup.min_speed = UINT_MAX;
- 	lookup.info = &dummy;
-+	lookup.index = -1;
- 
- 	status = acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
- 				     I2C_ACPI_MAX_SCAN_DEPTH,
+ 	lp8788_read_byte(pchg->lp, LP8788_CHG_EOC, &val);
 -- 
-2.9.3
-
+2.12.0
