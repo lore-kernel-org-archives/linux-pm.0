@@ -1,106 +1,121 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH] hibernation: on 32-bit x86, disabled in favor of KASLR
-Date: Sat, 25 Mar 2017 10:02:43 -0700
-Message-ID: <CAGXu5jLehyQA_WZEsk66WMchm+nyGT8HOtto7GoEX_J=LHsLfA@mail.gmail.com>
-References: <20170323002701.GA90470@beast> <58D3CC61.8080609@yandex.ru>
- <CAJZ5v0ipWcaRhKueF_0w+kXHXRLD7qvqxhk3RcWHeyWv=GV5Mw@mail.gmail.com> <58D6849B.1090106@yandex.ru>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: create sysfs symlink for cpus onlined after boot
+Date: Sat, 25 Mar 2017 18:15:07 +0100
+Message-ID: <372627201.N4ERmeoXuC@aspire.rjw.lan>
+References: <1490304286-18311-1-git-send-email-pprakash@codeaurora.org> <f2e4a303-715d-17f7-7dcd-e48dc3eee407@codeaurora.org> <10150781.HaZ29TrTvP@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <58D6849B.1090106@yandex.ru>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Evgenii Shatokhin <eugene.shatokhin@yandex.ru>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Yu Chen <yu.chen.surf@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63286 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751554AbdCYRUs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 Mar 2017 13:20:48 -0400
+In-Reply-To: <10150781.HaZ29TrTvP@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Prakash, Prashanth" <pprakash@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Sat, Mar 25, 2017 at 7:54 AM, Evgenii Shatokhin
-<eugene.shatokhin@yandex.ru> wrote:
-> On 23.03.2017 18:30, Rafael J. Wysocki wrote:
->>
->> On Thu, Mar 23, 2017 at 2:23 PM, Evgenii Shatokhin
->> <eugene.shatokhin@yandex.ru> wrote:
->>>
->>> On 23.03.2017 03:27, Kees Cook wrote:
->>>>
->>>>
->>>> This is a modified revert of commit 65fe935dd238 ("x86/KASLR, x86/power:
->>>> Remove x86 hibernation restrictions"), since it appears that 32-bit
->>>> hibernation still can't support KASLR. 64-bit is fine. Since people have
->>>> been running with KASLR by default on 32-bit since v4.8, this disables
->>>> hibernation (with a warning). Booting with "nokaslr" will disable KASLR
->>>> and enable hibernation.
->>>>
->>>> Reported-by: Evgenii Shatokhin <eugene.shatokhin@yandex.ru>
->>>> Signed-off-by: Kees Cook <keescook@chromium.org>
->>>> Cc: stable@vger.kernel.org # v4.8+
->>>
->>>
->>>
->>> The patch does not work as intended on my system, unfortunately.
->>>
->>> I tried the mainline kernel v4.11-rc3 and added this patch. With
->>> "nokaslr"
->>> in the kernel command line, the system fails to hibernate. It complains
->>> this
->>> way in the log:
->>>
->>> <...>
->>> kernel: PM: writing image.
->>> kernel: PM: Cannot find swap device, try swapon -a.
->>> kernel: PM: Cannot get swap writer
->>> kernel: PM: Basic memory bitmaps freed
->>> kernel: Restarting tasks ... done.
->>> systemd[1]: Time has been changed
->>> systemd[3948]: Time has been changed
->>> systemd[14825]: Time has been changed
->>> systemd[1]: systemd-hibernate.service: main process exited, code=exited,
->>> status=1/FAILURE
->>> systemd[1]: Failed to start Hibernate.
->>> <...>
->>>
->>> The swap device (swap file, actually) is available, however:
->>> -------------
->>> # swapon -s
->>> Filename  Type  Size    Used  Priority
->>> /swap     file  6297596 0     -1
->>> -------------
->>>
->>> I built the same kernel without this patch then, added "nokaslr" in the
->>> kernel command line again, and the system hibernates and resumes fine.
->>
->>
->> With the patch applied and "nokaslr" in the kernel command line, what
->> shows up when you do
->>
->> $ cat /sys/power/state
->>
->> ?
->
->
-> freeze standby mem disk
->
-> However, I think now that the patch itself is OK.
->
-> I experimented with the patched kernel a bit more and found that hibernate
-> does work when I place "nokaslr" before "resume=xxx resume_offset=xxx" in
-> the kernel command line and does not work when I place "nokaslr" after these
-> options. So I guess there is an issue with parsing of the kernel command
-> line somewhere (dracut scripts? systemd? I do not know). If resume= or
-> resume_offset= were corrupted, that might have been the reason why the
-> system could not find the swap file when hibernating.
->
-> Anyway, that issue is clearly unrelated to this patch and the patch itself
-> works OK for me.
->
-> Thanks a lot!
->
-> Tested-by: Evgenii Shatokhin <eugene.shatokhin@yandex.ru>
+On Saturday, March 25, 2017 02:30:52 PM Rafael J. Wysocki wrote:
+> On Friday, March 24, 2017 10:31:51 AM Prakash, Prashanth wrote:
+> > On 3/23/2017 5:30 PM, Rafael J. Wysocki wrote:
+> > > On Thu, Mar 23, 2017 at 10:24 PM, Prashanth Prakash
+> > > <pprakash@codeaurora.org> wrote:
+> > >> Adds an additional code path within cpufreq_online to create sysfs
+> > >> symlinks for cpus that are bought onilne for the first time after
+> > >> completion of boot.
+> > >>
+> > >> With maxcpus=N kernel parameter, it is possible to bring additional
+> > >> cpus online after boot. In these cases per-cpu "cpufreq" symlinks
+> > >> are not being created during registration as policy may not exist
+> > >> for the cpus that were offline during boot.
+> > >>
+> > >> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
+> > > This looks way overly complicated to me.  Let me look at it in the
+> > > next couple of days.
+> > Sure. Thanks!
+> 
+> So the patch below works for me.  Please test.
+> 
+> The problem is that we only try to create links once, when CPUs are registered
+> or when the cpufreq driver is registered (depending on which happens first),
+> but if all CPUs that would share a policy are offline at that time, the policy is not
+> there and we don't create the links at all.
+> 
+> This means we also need to try to create the links when creating a new policy
+> (because the CPUs may have been added without the links at this point already).
+> 
+> A slight side effect of this is that failures to create links are not regarded
+> as hard errors now and only cause messages to be printed, but I don't see
+> how that could be a big issue.
 
-Ah, right. Hm, that is kind of the fault of the patch (and the prior
-disabling too). Let me see if I can find a better solution...
+Actually, the rwlock around the for_each_cpu() loop in cpufreq_online() doesn't
+matter AFAICS, so the code can be slightly simplified by dropping it.
 
--Kees
+---
+ drivers/cpufreq/cpufreq.c |   33 ++++++++++++++++++---------------
+ 1 file changed, 18 insertions(+), 15 deletions(-)
 
--- 
-Kees Cook
-Pixel Security
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -918,11 +918,20 @@ static struct kobj_type ktype_cpufreq =
+ 	.release	= cpufreq_sysfs_release,
+ };
+ 
+-static int add_cpu_dev_symlink(struct cpufreq_policy *policy,
+-			       struct device *dev)
++static void add_cpu_dev_symlink(struct cpufreq_policy *policy, unsigned int cpu)
+ {
++	struct device *dev;
++
++	if (cpumask_test_and_set_cpu(cpu, policy->real_cpus))
++		return;
++
++	dev = get_cpu_device(cpu);
++	if (!dev)
++		return;
++
+ 	dev_dbg(dev, "%s: Adding symlink\n", __func__);
+-	return sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
++	if (sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq"))
++		dev_err(dev, "cpufreq symlink creation failed\n");
+ }
+ 
+ static void remove_cpu_dev_symlink(struct cpufreq_policy *policy,
+@@ -1180,10 +1189,10 @@ static int cpufreq_online(unsigned int c
+ 		policy->user_policy.min = policy->min;
+ 		policy->user_policy.max = policy->max;
+ 
+-		write_lock_irqsave(&cpufreq_driver_lock, flags);
+-		for_each_cpu(j, policy->related_cpus)
++		for_each_cpu(j, policy->related_cpus) {
+ 			per_cpu(cpufreq_cpu_data, j) = policy;
+-		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
++			add_cpu_dev_symlink(policy, j);
++		}
+ 	} else {
+ 		policy->min = policy->user_policy.min;
+ 		policy->max = policy->user_policy.max;
+@@ -1303,16 +1312,10 @@ static int cpufreq_add_dev(struct device
+ 
+ 	/* Create sysfs link on CPU registration */
+ 	policy = per_cpu(cpufreq_cpu_data, cpu);
+-	if (!policy || cpumask_test_and_set_cpu(cpu, policy->real_cpus))
+-		return 0;
+-
+-	ret = add_cpu_dev_symlink(policy, dev);
+-	if (ret) {
+-		cpumask_clear_cpu(cpu, policy->real_cpus);
+-		cpufreq_offline(cpu);
+-	}
++	if (policy)
++		add_cpu_dev_symlink(policy, cpu);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static int cpufreq_offline(unsigned int cpu)
