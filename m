@@ -1,39 +1,92 @@
-From: =?UTF-8?q?Giedrius=20Statkevi=C4=8Dius?=
-        <giedrius.statkevicius@gmail.com>
-Subject: [PATCH] power: supply: lp8788: prevent out of bounds array access
-Date: Sat, 25 Mar 2017 18:00:49 +0200
-Message-ID: <20170325160049.18943-1-giedrius.statkevicius@gmail.com>
+From: Evgenii Shatokhin <eugene.shatokhin@yandex.ru>
+Subject: Re: [PATCH] hibernation: on 32-bit x86, disabled in favor of KASLR
+Date: Sat, 25 Mar 2017 17:54:19 +0300
+Message-ID: <58D6849B.1090106@yandex.ru>
+References: <20170323002701.GA90470@beast> <58D3CC61.8080609@yandex.ru>
+ <CAJZ5v0ipWcaRhKueF_0w+kXHXRLD7qvqxhk3RcWHeyWv=GV5Mw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0ipWcaRhKueF_0w+kXHXRLD7qvqxhk3RcWHeyWv=GV5Mw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: milo.kim@ti.com, sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Giedrius=20Statkevi=C4=8Dius?= <giedrius.statkevicius@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Yu Chen <yu.chen.surf@gmail.com>
+Cc: Kees Cook <keescook@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-val might become 7 in which case stime[7] (array of length 7) would be
-accessed during the scnprintf call later and that will cause issues.
-Obviously, string concatenation is not intended here so just a comma needs
-to be added to fix the issue.
+On 23.03.2017 18:30, Rafael J. Wysocki wrote:
+> On Thu, Mar 23, 2017 at 2:23 PM, Evgenii Shatokhin
+> <eugene.shatokhin@yandex.ru> wrote:
+>> On 23.03.2017 03:27, Kees Cook wrote:
+>>>
+>>> This is a modified revert of commit 65fe935dd238 ("x86/KASLR, x86/power:
+>>> Remove x86 hibernation restrictions"), since it appears that 32-bit
+>>> hibernation still can't support KASLR. 64-bit is fine. Since people have
+>>> been running with KASLR by default on 32-bit since v4.8, this disables
+>>> hibernation (with a warning). Booting with "nokaslr" will disable KASLR
+>>> and enable hibernation.
+>>>
+>>> Reported-by: Evgenii Shatokhin <eugene.shatokhin@yandex.ru>
+>>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>>> Cc: stable@vger.kernel.org # v4.8+
+>>
+>>
+>> The patch does not work as intended on my system, unfortunately.
+>>
+>> I tried the mainline kernel v4.11-rc3 and added this patch. With "nokaslr"
+>> in the kernel command line, the system fails to hibernate. It complains this
+>> way in the log:
+>>
+>> <...>
+>> kernel: PM: writing image.
+>> kernel: PM: Cannot find swap device, try swapon -a.
+>> kernel: PM: Cannot get swap writer
+>> kernel: PM: Basic memory bitmaps freed
+>> kernel: Restarting tasks ... done.
+>> systemd[1]: Time has been changed
+>> systemd[3948]: Time has been changed
+>> systemd[14825]: Time has been changed
+>> systemd[1]: systemd-hibernate.service: main process exited, code=exited,
+>> status=1/FAILURE
+>> systemd[1]: Failed to start Hibernate.
+>> <...>
+>>
+>> The swap device (swap file, actually) is available, however:
+>> -------------
+>> # swapon -s
+>> Filename  Type  Size    Used  Priority
+>> /swap     file  6297596 0     -1
+>> -------------
+>>
+>> I built the same kernel without this patch then, added "nokaslr" in the
+>> kernel command line again, and the system hibernates and resumes fine.
+>
+> With the patch applied and "nokaslr" in the kernel command line, what
+> shows up when you do
+>
+> $ cat /sys/power/state
+>
+> ?
 
-Signed-off-by: Giedrius Statkevičius <giedrius.statkevicius@gmail.com>
----
- drivers/power/supply/lp8788-charger.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+freeze standby mem disk
 
-diff --git a/drivers/power/supply/lp8788-charger.c b/drivers/power/supply/lp8788-charger.c
-index 509e2b341bd6..677f7c40b25a 100644
---- a/drivers/power/supply/lp8788-charger.c
-+++ b/drivers/power/supply/lp8788-charger.c
-@@ -651,7 +651,7 @@ static ssize_t lp8788_show_eoc_time(struct device *dev,
- {
- 	struct lp8788_charger *pchg = dev_get_drvdata(dev);
- 	char *stime[] = { "400ms", "5min", "10min", "15min",
--			"20min", "25min", "30min" "No timeout" };
-+			"20min", "25min", "30min", "No timeout" };
- 	u8 val;
- 
- 	lp8788_read_byte(pchg->lp, LP8788_CHG_EOC, &val);
--- 
-2.12.0
+However, I think now that the patch itself is OK.
+
+I experimented with the patched kernel a bit more and found that 
+hibernate does work when I place "nokaslr" before "resume=xxx 
+resume_offset=xxx" in the kernel command line and does not work when I 
+place "nokaslr" after these options. So I guess there is an issue with 
+parsing of the kernel command line somewhere (dracut scripts? systemd? I 
+do not know). If resume= or resume_offset= were corrupted, that might 
+have been the reason why the system could not find the swap file when 
+hibernating.
+
+Anyway, that issue is clearly unrelated to this patch and the patch 
+itself works OK for me.
+
+Thanks a lot!
+
+Tested-by: Evgenii Shatokhin <eugene.shatokhin@yandex.ru>
+
+Regards,
+Evgenii
