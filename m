@@ -1,72 +1,64 @@
-From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Subject: Re: [PATCH v1 1/7] devicetree: power: battery: Add properties for
- pre-charge and end-charge current
-Date: Fri, 24 Mar 2017 17:34:26 -0700
-Message-ID: <CAKvHMgQt=C1tmfPz3pp_vwhc3b9DHKau2t=jwp3Rv2b2U6hsaQ@mail.gmail.com>
-References: <20170321220921.5834-1-liam@networkimprov.net> <20170321220921.5834-2-liam@networkimprov.net>
- <20170324090158.tl55neisjws66naf@earth>
+From: Sai Gurrappadi <sgurrappadi@nvidia.com>
+Subject: Re: [RFC][PATCH v3 2/2] cpufreq: schedutil: Avoid reducing frequency
+ of busy CPUs prematurely
+Date: Fri, 24 Mar 2017 18:14:34 -0700
+Message-ID: <58D5C47A.4060305@nvidia.com>
+References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan> <3300960.HE4b3sK4dn@aspire.rjw.lan> <2997922.DidfPadJuT@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170324090158.tl55neisjws66naf@earth>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2997922.DidfPadJuT@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Boonstoppel <pboonstoppel@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 24, 2017 at 2:01 AM, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> Hi,
->
-> On Tue, Mar 21, 2017 at 03:09:15PM -0700, Liam Breck wrote:
->> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->>
->> precharge-current-microamp and endcharge-current-microamp are used
->> by battery chargers at the beginning and end of a charging cycle.
->>
->> Depends-on: https://patchwork.kernel.org/patch/9633605/
->> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->
-> Acked-by: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->
-> I think it makes sense to merge this into the patch adding
-> simple-battery.
+Hi Rafael,
 
-It would make sense, but it means a new _prop_precharge/endcharge
-patch in that patchset, and I am trying to constrain it at this stage.
+On 03/21/2017 04:08 PM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The way the schedutil governor uses the PELT metric causes it to
+> underestimate the CPU utilization in some cases.
+> 
+> That can be easily demonstrated by running kernel compilation on
+> a Sandy Bridge Intel processor, running turbostat in parallel with
+> it and looking at the values written to the MSR_IA32_PERF_CTL
+> register.  Namely, the expected result would be that when all CPUs
+> were 100% busy, all of them would be requested to run in the maximum
+> P-state, but observation shows that this clearly isn't the case.
+> The CPUs run in the maximum P-state for a while and then are
+> requested to run slower and go back to the maximum P-state after
+> a while again.  That causes the actual frequency of the processor to
+> visibly oscillate below the sustainable maximum in a jittery fashion
+> which clearly is not desirable.
+> 
+> That has been attributed to CPU utilization metric updates on task
+> migration that cause the total utilization value for the CPU to be
+> reduced by the utilization of the migrated task.  If that happens,
+> the schedutil governor may see a CPU utilization reduction and will
+> attempt to reduce the CPU frequency accordingly right away.  That
+> may be premature, though, for example if the system is generally
+> busy and there are other runnable tasks waiting to be run on that
+> CPU already.
+> 
 
-So if it's OK, I'd like to keep all that in this patchset.
+Thinking out loud a bit, I wonder if what you really want to do is basically:
 
->>  Documentation/devicetree/bindings/power/supply/battery.txt | 4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->> index 53a68c0..494374a 100644
->> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
->> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->> @@ -12,6 +12,8 @@ Optional Properties:
->>   - voltage-min-design-microvolt: drained battery voltage
->>   - energy-full-design-microwatt-hours: battery design energy
->>   - charge-full-design-microamp-hours: battery design capacity
->> + - precharge-current-microamp: current for pre-charge phase
->> + - endcharge-current-microamp: current for charge termination phase
->>
->>  Battery properties are named, where possible, for the corresponding
->>  elements in enum power_supply_property, defined in
->> @@ -28,6 +30,8 @@ Example:
->>               voltage-min-design-microvolt = <3200000>;
->>               energy-full-design-microwatt-hours = <5290000>;
->>               charge-full-design-microamp-hours = <1430000>;
->> +             precharge-current-microamp = <256000>;
->> +             endcharge-current-microamp = <128000>;
->>       };
->>
->>       charger: charger@11 {
->> --
->> 2.9.3
->>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+schedutil_cpu_util(cpu) = max(cpu_rq(cpu)->cfs.util_avg, total_cpu_util_avg);
+
+Where total_cpu_util_avg tracks the average utilization of the CPU itself over time (% of time the CPU was busy) in the same PELT like manner. The difference here is that it doesn't change instantaneously as tasks migrate in/out but it decays/accumulates just like the per-entity util_avgs.
+
+Over time, total_cpu_util_avg and cfs_rq(cpu)->util_avg will tend towards each other the lesser the amount of 'overlap' / overloading.
+
+Yes, the above metric would 'overestimate' in case all tasks have migrated away and we are left with an idle CPU. A fix for that could be to just use the PELT value like so:
+
+schedutil_cpu_util(cpu) = max(cpu_rq(cpu)->cfs.util_avg, idle_cpu(cpu) ? 0 : total_cpu_util_avg);
+
+Note that the problem described here in the commit message doesn't need fully runnable threads, it just needs two threads to execute in parallel on the same CPU for a period of time. I don't think looking at just idle_calls necessarily covers all cases.
+
+Thoughts?
+
+Thanks,
+-Sai
