@@ -1,81 +1,69 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC][PATCH v3 2/2] cpufreq: schedutil: Avoid reducing frequency
- of busy CPUs prematurely
-Date: Sat, 25 Mar 2017 02:39:05 +0100
-Message-ID: <CAJZ5v0jX9L-t2q+9KdaPqXNx0fcb0SJWe8BJY6=oxEFxA7perA@mail.gmail.com>
+From: Joel Fernandes <joelaf@google.com>
+Subject: Re: [RFC][PATCH 2/2] cpufreq: schedutil: Force max frequency on busy CPUs
+Date: Fri, 24 Mar 2017 20:48:14 -0700
+Message-ID: <CAJWu+ooYuwKo34YiOnt3aQc=xMSWEQfCVRiO5iji3hYvam33Ew@mail.gmail.com>
 References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan>
- <3300960.HE4b3sK4dn@aspire.rjw.lan> <2997922.DidfPadJuT@aspire.rjw.lan> <58D5C47A.4060305@nvidia.com>
+ <20170320035745.GC25659@vireshk-i7> <CAKfTPtD8bp-mB=9Rjufeyj3weg6T3b1J-o+Sc2Oe2EMGX3zKzQ@mail.gmail.com>
+ <20170320123416.GB27896@e110439-lin> <CAJWu+oocwa0Nxch+ShqG6BPfVRXUhS0GQwYK1qBu04kuvh6vig@mail.gmail.com>
+ <CAKfTPtD=xKb1UCUL6CWFOfr8ina_sNSOdaM-11teWhKe_xmedA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <58D5C47A.4060305@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sai Gurrappadi <sgurrappadi@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Boonstoppel <pboonstoppel@nvidia.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vk0-f47.google.com ([209.85.213.47]:35987 "EHLO
+        mail-vk0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S965826AbdCYDsV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Mar 2017 23:48:21 -0400
+Received: by mail-vk0-f47.google.com with SMTP id s68so7716538vke.3
+        for <linux-pm@vger.kernel.org>; Fri, 24 Mar 2017 20:48:20 -0700 (PDT)
+In-Reply-To: <CAKfTPtD=xKb1UCUL6CWFOfr8ina_sNSOdaM-11teWhKe_xmedA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>
 
-On Sat, Mar 25, 2017 at 2:14 AM, Sai Gurrappadi <sgurrappadi@nvidia.com> wr=
-ote:
-> Hi Rafael,
->
-> On 03/21/2017 04:08 PM, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> The way the schedutil governor uses the PELT metric causes it to
->> underestimate the CPU utilization in some cases.
->>
->> That can be easily demonstrated by running kernel compilation on
->> a Sandy Bridge Intel processor, running turbostat in parallel with
->> it and looking at the values written to the MSR_IA32_PERF_CTL
->> register.  Namely, the expected result would be that when all CPUs
->> were 100% busy, all of them would be requested to run in the maximum
->> P-state, but observation shows that this clearly isn't the case.
->> The CPUs run in the maximum P-state for a while and then are
->> requested to run slower and go back to the maximum P-state after
->> a while again.  That causes the actual frequency of the processor to
->> visibly oscillate below the sustainable maximum in a jittery fashion
->> which clearly is not desirable.
->>
->> That has been attributed to CPU utilization metric updates on task
->> migration that cause the total utilization value for the CPU to be
->> reduced by the utilization of the migrated task.  If that happens,
->> the schedutil governor may see a CPU utilization reduction and will
->> attempt to reduce the CPU frequency accordingly right away.  That
->> may be premature, though, for example if the system is generally
->> busy and there are other runnable tasks waiting to be run on that
->> CPU already.
->>
->
-> Thinking out loud a bit, I wonder if what you really want to do is basica=
-lly:
->
-> schedutil_cpu_util(cpu) =3D max(cpu_rq(cpu)->cfs.util_avg, total_cpu_util=
-_avg);
->
-> Where total_cpu_util_avg tracks the average utilization of the CPU itself=
- over time (% of time the CPU was busy) in the same PELT like manner. The d=
-ifference here is that it doesn't change instantaneously as tasks migrate i=
-n/out but it decays/accumulates just like the per-entity util_avgs.
->
-> Over time, total_cpu_util_avg and cfs_rq(cpu)->util_avg will tend towards=
- each other the lesser the amount of 'overlap' / overloading.
->
-> Yes, the above metric would 'overestimate' in case all tasks have migrate=
-d away and we are left with an idle CPU. A fix for that could be to just us=
-e the PELT value like so:
->
-> schedutil_cpu_util(cpu) =3D max(cpu_rq(cpu)->cfs.util_avg, idle_cpu(cpu) =
-? 0 : total_cpu_util_avg);
->
-> Note that the problem described here in the commit message doesn't need f=
-ully runnable threads, it just needs two threads to execute in parallel on =
-the same CPU for a period of time. I don't think looking at just idle_calls=
- necessarily covers all cases.
->
-> Thoughts?
+Hi Vincent,
 
-Well, is the total_cpu_util_avg metric readily available?
+On Thu, Mar 23, 2017 at 3:08 PM, Vincent Guittot
+<vincent.guittot@linaro.org> wrote:
+[..]
+>>>
+>>>> So I'm not really aligned with the description of your problem: PELT
+>>>> metric underestimates the load of the CPU.  The PELT is just about
+>>>> tracking CFS task utilization but not whole CPU utilization and
+>>>> according to your description of the problem (time stolen by irq),
+>>>> your problem doesn't come from an underestimation of CFS task but from
+>>>> time spent in something else but not accounted in the value used by
+>>>> schedutil
+>>>
+>>> Quite likely. Indeed, it can really be that the CFS task is preempted
+>>> because of some RT activity generated by the IRQ handler.
+>>>
+>>> More in general, I've also noticed many suboptimal freq switches when
+>>> RT tasks interleave with CFS ones, because of:
+>>> - relatively long down _and up_ throttling times
+>>> - the way schedutil's flags are tracked and updated
+>>> - the callsites from where we call schedutil updates
+>>>
+>>> For example it can really happen that we are running at the highest
+>>> OPP because of some RT activity. Then we switch back to a relatively
+>>> low utilization CFS workload and then:
+>>> 1. a tick happens which produces a frequency drop
+>>
+>> Any idea why this frequency drop would happen? Say a running CFS task
+>> gets preempted by RT task, the PELT signal shouldn't drop for the
+>> duration the CFS task is preempted because the task is runnable, so
+>
+> utilization only tracks the running state but not runnable state.
+> Runnable state is tracked in load_avg
 
-Thanks,
-Rafael
+Thanks. I got it now.
+
+Correct me if I'm wrong but strictly speaking utilization for a cfs_rq
+(which drives the frequency for CFS) still tracks the blocked/runnable
+time of tasks although its decayed as time moves forward. Only when we
+migrate the rq of a cfs task is the util_avg contribution removed from
+the rq. But I can see now why running RT can decay this load tracking
+signal.
+
+Regards,
+Joel
