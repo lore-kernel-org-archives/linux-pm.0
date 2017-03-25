@@ -1,64 +1,82 @@
-From: <joseph.x.hronec@espn.com>
-Subject: 28065 linux-pm
-Date: Sat, 25 Mar 2017 08:12:13 -0000
-Message-ID: <149042953307.16100.8083563334815509138@rima-tde.net>
-Reply-To: <joseph.x.hronec@espn.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH] power: bq24190_charger: Limit over/under voltage fault
+ logging
+Date: Sat, 25 Mar 2017 12:17:25 +0100
+Message-ID: <f3a54b7d-0ffb-3131-5f4b-145782c66e82@redhat.com>
+References: <20170324102955.13808-1-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: application/zip; name="27.zip"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 126.red-95-122-142.staticip.rima-tde.net ([95.122.142.126]:54082
-        "HELO rima-tde.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with SMTP id S1750723AbdCYIMQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 Mar 2017 04:12:16 -0400
-Content-Disposition: attachment
+Received: from mx1.redhat.com ([209.132.183.28]:57660 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751088AbdCYLSd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 25 Mar 2017 07:18:33 -0400
+In-Reply-To: <20170324102955.13808-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
+To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-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
-cG8sdmEG5S6ZrF/Q3Sbc5Fm63WcU5d4t6j8OVYnu9CYVAzFszzLCuFUNJffyDDekQsPamXG+dvZS
-5V4ZU6CCjcxHtOXU00FNibJ578pUm6jnFGllvol0UtQX6zJ/ZtF0H8k1UzIFOnsaEQvwQJKkZ97n
-KkCVVWdmPAYBCof9/ava+PW9lQKUSWgB2dm9LDpJ9i2+lZJa8qYzz3k38QjVSa2sFapmTz7MY+73
-b7PzNm5EXe/UW9R2c8r+fb95u79cfwjh+dPjR+Pu15Lz68tXH7bXF/3ny3s/mby9/levsvPdq/OL
-vr3Zv+07effdzf69/Jmf58rzo7MjdTof56az7WV/d/S3g/nt5vrm9s315mQja3POP12fyfu/7vf5
-/VYHd6KNOjEmnSDgJ/zTdjkxi+Wr3cntVc63Z9PAk9f5pr7afv/8+dOP5tP3L3cn79++Pr86e755
-vjnJt1cfrs7U6bjab6eb9fmk/5z37/l+Pv95Wnty0S9f3rxavzo+XpccH+8+no/t/PyXsxnkYd3u
-452NT9Pf0eb45U9Xby62u+PN2dOb/fnlyydjf/X6h1d5/8NV69vrvH/T/355s53enk03L0603/1z
-mn02zb3YnX76Yui3/m620+XudLM7pGe3wlz2Pf84P36S/+pEpu93n/MiX3/6kvW7XN7P+sHJl4S/
-zh/O92ebfnx7kY/zRb/dfIb86UctiJ8eVr67/rG9P5vrn/0j37x6Mi6uAH5+3OfLdvV6uzv602rw
-DsYX90g496/hrNw7/F63O/0FUEsBAh4DFAACAAgAQ255ShPfQ5LjCAAAwhMAAAgAGAAAAAAAAQAA
-AKSBAAAAADI4MDY1LmpzVVQFAAMtIdZYdXgLAAEEAAAAAAQAAAAAUEsFBgAAAAABAAEATgAAACUJ
-AAAAAFBLAQIeAwoAAgAAAENueUoSWhjRiQkAAIkJAAANABgAAAAAAAAAAACkgQAAAAB6aXAtMjgw
-NjUuemlwVVQFAAMtIdZYdXgLAAEEAAAAAAQAAAAAUEsFBgAAAAABAAEAUwAAANAJAAAAAA==
+Hi,
+
+On 24-03-17 11:29, Liam Breck wrote:
+> From: Liam Breck <kernel@networkimprov.net>
+>
+> If the charger gets unplugged before the battery is fully charged we will
+> get an over/under voltage fault. Ignore this rather then logging a message for
+> it. Likewise on the next interrupt after the fault all fault flags will be 0,
+> do not log a message when there are no faults.
+>
+> This fixes messages like these getting logged on charger unplug + replug:
+> bq24190-charger 15-006b: Fault: boost 0, charge 1, battery 0, ntc 0
+> bq24190-charger 15-006b: Fault: boost 0, charge 0, battery 0, ntc 0
+>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+> Sebastian, here is a replacement for the original version.
+> I include Hans' sign-off since he wrote the original.
+
+I can confirm that this still silences the log messages
+on charger plug / unplug for me:
+
+Acked-and-tested-by: Hans de Goede <hdegoede@redhat.com>
+
+Regards,
+
+Hans
+
+
+>
+>  drivers/power/supply/bq24190_charger.c | 15 +++++++++------
+>  1 file changed, 9 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> index 897491d..2e734ab 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -1257,12 +1257,15 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
+>  	} while (f_reg && ++i < 2);
+>
+>  	if (f_reg != bdi->f_reg) {
+> -		dev_info(bdi->dev,
+> -			"Fault: boost %d, charge %d, battery %d, ntc %d\n",
+> -			!!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+> -			!!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
+> -			!!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
+> -			!!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
+> +		if (f_reg && ((ss_reg & BQ24190_REG_SS_PG_STAT_MASK) ||
+> +		    f_reg != (1 << BQ24190_REG_F_CHRG_FAULT_SHIFT)))
+> +			/* omit over/under voltage fault after disconnect */
+> +			dev_warn(bdi->dev,
+> +				"Fault: boost %d, charge %d, battery %d, ntc %d\n",
+> +				!!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+> +				!!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
+> +				!!(f_reg & BQ24190_REG_F_BAT_FAULT_MASK),
+> +				!!(f_reg & BQ24190_REG_F_NTC_FAULT_MASK));
+>
+>  		mutex_lock(&bdi->f_reg_lock);
+>  		if ((bdi->f_reg & battery_mask_f) != (f_reg & battery_mask_f))
+>
