@@ -1,432 +1,92 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v3 4/4] power: supply: Add driver for Cherry Trail Whiskey
- Cove PMIC Fuel Gauge
-Date: Sun, 26 Mar 2017 10:56:03 +0200
-Message-ID: <d863d7c3-12c1-94c7-098d-cc695b787fac@redhat.com>
-References: <20170325135550.22509-1-hdegoede@redhat.com>
- <20170325135550.22509-5-hdegoede@redhat.com>
- <20170325184254.4fshbjbcailqxen2@earth>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v2] power: bq24190_charger: Limit over/under voltage fault logging
+Date: Sun, 26 Mar 2017 03:56:08 -0700
+Message-ID: <CAKvHMgQOv=0cYJj6_0QgP9ApKwaxiJWvOwWfShFhBVGQtvpJQg@mail.gmail.com>
+References: <20170325112419.25120-1-liam@networkimprov.net> <be76b89a-7d18-096a-b22c-53101ba43cfc@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:36246 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751142AbdCZI4H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 26 Mar 2017 04:56:07 -0400
-In-Reply-To: <20170325184254.4fshbjbcailqxen2@earth>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:34913 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751264AbdCZK4K (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Mar 2017 06:56:10 -0400
+Received: by mail-it0-f68.google.com with SMTP id y18so6106497itc.2
+        for <linux-pm@vger.kernel.org>; Sun, 26 Mar 2017 03:56:09 -0700 (PDT)
+In-Reply-To: <be76b89a-7d18-096a-b22c-53101ba43cfc@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-Hi,
-
-On 25-03-17 19:42, Sebastian Reichel wrote:
-> Hi Hans,
+On Sun, Mar 26, 2017 at 1:44 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
 >
-> On Sat, Mar 25, 2017 at 02:55:50PM +0100, Hans de Goede wrote:
->> Add a driver for the Cherry Trail Whiskey Cove PMIC Fuel Gauge.
+>
+> On 25-03-17 12:24, Liam Breck wrote:
 >>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->
-> The driver looks fine to me. I think it would be nice to use
-> regmap for accessing the device, though. Its capability to
-> dump registers in debugfs is often useful, especially for
-> reverse engineered drivers.
-
-I just use i2cdump for that ..., TBH I don't see much added
-value in using regmap here, but if you insist I can do a
-v3 using regmap. Note this will require creating 2 regmaps,
-one for each i2c client used.
-
-> Also I assume, that you made sure the reported values are correctly
-> scaled to uV/uA and not mV/mA?
-
-Yes my values are in uV and uA the fuelgauge has quite
-a good resolution for current and voltage measuring and
-the mAh measures are in 0.5 mAh units.
-
-> Just asking, since people regularly
-> get this wrong and your scaling looks suspiciously small.
-
-Understood.
-
-Regards,
-
-Hans
-
-
->
-> -- Sebastian
->
+>> From: Liam Breck <kernel@networkimprov.net>
+>>
+>> If the charger is unplugged before the battery is full we may
+>> see an over/under voltage fault. Ignore this rather then emitting
+>> a message or uevent.
+>>
+>> This fixes messages like these getting logged on charger unplug + replug:
+>> bq24190-charger 15-006b: Fault: boost 0, charge 1, battery 0, ntc 0
+>> bq24190-charger 15-006b: Fault: boost 0, charge 0, battery 0, ntc 0
+>>
+>> Cc: Tony Lindgren <tony@atomide.com>
+>> Cc: Hans de Goede <hdegoede@redhat.com>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
 >> ---
->> Changes in v2:
->> -There was no v2, it is skipped to the version in sync with the rest of
->>  the patch-set
->> Changes in v3:
->> -Change into a stand-alone power_supply battery driver instead of being a
->>  provider of extra properties for another battery driver
->> -Rename Kconfig symbol from CHT_WC_FUEL_GAUGE to BATTERY_INTEL_CHT_WC
->> ---
->>  drivers/power/supply/Kconfig             |   9 +
->>  drivers/power/supply/Makefile            |   1 +
->>  drivers/power/supply/cht_wc_fuel_gauge.c | 319 +++++++++++++++++++++++++++++++
->>  3 files changed, 329 insertions(+)
->>  create mode 100644 drivers/power/supply/cht_wc_fuel_gauge.c
+>> v2: Don't hide clearance of other more urgent faults, or produce
+>>     a uevent for this superficial fault.
 >>
->> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
->> index fd93110..350d86a 100644
->> --- a/drivers/power/supply/Kconfig
->> +++ b/drivers/power/supply/Kconfig
->> @@ -538,4 +538,13 @@ config AXP20X_POWER
->>  	  This driver provides support for the power supply features of
->>  	  AXP20x PMIC.
+>>  drivers/power/supply/bq24190_charger.c | 7 ++++++-
+>>  1 file changed, 6 insertions(+), 1 deletion(-)
 >>
->> +config BATTERY_INTEL_CHT_WC
->> +	tristate "Intel Cherry Trail Whiskey Cove PMIC Fuel Gauge"
->> +	depends on INTEL_SOC_PMIC_CHTWC
->> +	help
->> +	  This adds support for the battery fuel gauge found in the Intel
->> +	  Cherry Trail Whiskey Cove PMIC. This driver allows monitoring
->> +	  of the charge level of the battery on Intel Cherry Trail systems
->> +	  with a Whiskey Cove PMIC.
->> +
->>  endif # POWER_SUPPLY
->> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
->> index 3789a2c..46dca5c 100644
->> --- a/drivers/power/supply/Makefile
->> +++ b/drivers/power/supply/Makefile
->> @@ -74,3 +74,4 @@ obj-$(CONFIG_CHARGER_TPS65090)	+= tps65090-charger.o
->>  obj-$(CONFIG_CHARGER_TPS65217)	+= tps65217_charger.o
->>  obj-$(CONFIG_AXP288_FUEL_GAUGE) += axp288_fuel_gauge.o
->>  obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
->> +obj-$(CONFIG_BATTERY_INTEL_CHT_WC) += cht_wc_fuel_gauge.o
->> diff --git a/drivers/power/supply/cht_wc_fuel_gauge.c b/drivers/power/supply/cht_wc_fuel_gauge.c
->> new file mode 100644
->> index 0000000..0db83ad
->> --- /dev/null
->> +++ b/drivers/power/supply/cht_wc_fuel_gauge.c
->> @@ -0,0 +1,319 @@
->> +/*
->> + * Intel Cherry Trail Whiskey Cove Fuel Gauge driver
->> + * Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License as published by
->> + * the Free Software Foundation; either version 2 of the License, or
->> + * (at your option) any later version.
->> + *
->> + * This program is distributed in the hope that it will be useful,
->> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->> + * GNU General Public License for more details.
->> + */
->> +
->> +#include <linux/acpi.h>
->> +#include <linux/delay.h>
->> +#include <linux/extcon.h>
->> +#include <linux/i2c.h>
->> +#include <linux/interrupt.h>
->> +#include <linux/mfd/intel_soc_pmic.h>
->> +#include <linux/module.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/power_supply.h>
->> +#include <linux/slab.h>
->> +#include <linux/workqueue.h>
->> +
->> +#define FG_CHARGE_NOW			0x05
->> +#define FG_VOLTAGE_NOW			0x09
->> +#define FG_CURRENT_NOW			0x0a
->> +#define FG_CURRENT_AVG			0x0b
->> +#define FG_CHARGE_FULL			0x10
->> +#define FG_CHARGE_DESIGN		0x18
->> +#define FG_VOLTAGE_AVG			0x19
->> +#define FG_VOLTAGE_OCV			0x1b /* Only updated during charging */
->> +
->> +#define PMIC_CHGRSTATUS			0x1a
->> +#define PMIC_CHGRSTATUS_NOT_CHARGING	BIT(0)
->> +
->> +#define CHT_WC_FG_PTYPE		4
->> +
->> +static const unsigned int charger_cable_ids[] = {
->> +	EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP,
->> +	EXTCON_CHG_USB_DCP, EXTCON_CHG_USB_ACA
->> +};
->> +
->> +struct cht_wc_fg_data {
->> +	struct device *dev;
->> +	/*
->> +	 * The ACPI _CRS table contains info for 4 clients, 1 for the charger-
->> +	 * manager part of the pmic and 3 for the actual fuel-gauge (which has
->> +	 * 3 i2c addresses) note we use only 1 fg address/client.
->> +	 */
->> +	struct i2c_client *pmic_client;
->> +	struct i2c_client *fg_client;
->> +	struct extcon_dev *extcon;
->> +	struct power_supply *battery;
->> +	struct work_struct changed_work;
->> +	struct notifier_block extcon_nb;
->> +};
->> +
->> +static int cht_wc_fg_read(struct cht_wc_fg_data *fg, u8 reg,
->> +			  union power_supply_propval *val, int scale,
->> +			  int sign_extend)
->> +{
->> +	int ret;
->> +
->> +	ret = i2c_smbus_read_word_data(fg->fg_client, reg);
->> +	if (ret < 0)
->> +		return ret;
->> +
->> +	if (sign_extend)
->> +		ret = sign_extend32(ret, 15);
->> +
->> +	val->intval = ret * scale;
->> +
->> +	return 0;
->> +}
->> +
->> +static int cht_wc_fg_get_status(struct cht_wc_fg_data *fg,
->> +				union power_supply_propval *val)
->> +{
->> +	int i, ret;
->> +	bool vbus_present = false;
->> +
->> +	for (i = 0; i < ARRAY_SIZE(charger_cable_ids); i++) {
->> +		if (extcon_get_state(fg->extcon, charger_cable_ids[i]) > 0) {
->> +			vbus_present = true;
->> +			break;
->> +		}
->> +	}
->> +
->> +	if (!vbus_present) {
->> +		val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
->> +		return 0;
->> +	}
->> +
->> +	ret = i2c_smbus_read_byte_data(fg->pmic_client, PMIC_CHGRSTATUS);
->> +	if (ret < 0)
->> +		return ret;
->> +
->> +	/* Not charging while we have Vbus means the battery is full */
->> +	if (ret & PMIC_CHGRSTATUS_NOT_CHARGING)
->> +		val->intval = POWER_SUPPLY_STATUS_FULL;
->> +	else
->> +		val->intval = POWER_SUPPLY_STATUS_CHARGING;
->> +
->> +	return 0;
->> +}
->> +
->> +static int cht_wc_fg_get_property(struct power_supply *psy,
->> +	enum power_supply_property prop, union power_supply_propval *val)
->> +{
->> +	struct cht_wc_fg_data *fg = power_supply_get_drvdata(psy);
->> +	int ret = 0;
->> +
->> +	switch (prop) {
->> +	case POWER_SUPPLY_PROP_STATUS:
->> +		ret = cht_wc_fg_get_status(fg, val);
->> +		break;
->> +	case POWER_SUPPLY_PROP_PRESENT:
->> +		val->intval = 1;
->> +		break;
->> +	case POWER_SUPPLY_PROP_TECHNOLOGY:
->> +		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
->> +		break;
->> +	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
->> +		ret = cht_wc_fg_read(fg, FG_VOLTAGE_NOW, val, 75, 0);
->> +		break;
->> +	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
->> +		ret = cht_wc_fg_read(fg, FG_VOLTAGE_AVG, val, 75, 0);
->> +		break;
->> +	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
->> +		ret = cht_wc_fg_read(fg, FG_VOLTAGE_OCV, val, 75, 0);
->> +		break;
->> +	case POWER_SUPPLY_PROP_CURRENT_NOW:
->> +		ret = cht_wc_fg_read(fg, FG_CURRENT_NOW, val, 150, 1);
->> +		break;
->> +	case POWER_SUPPLY_PROP_CURRENT_AVG:
->> +		ret = cht_wc_fg_read(fg, FG_CURRENT_AVG, val, 150, 1);
->> +		break;
->> +	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
->> +		ret = cht_wc_fg_read(fg, FG_CHARGE_DESIGN, val, 500, 0);
->> +		break;
->> +	case POWER_SUPPLY_PROP_CHARGE_FULL:
->> +		ret = cht_wc_fg_read(fg, FG_CHARGE_FULL, val, 500, 0);
->> +		break;
->> +	case POWER_SUPPLY_PROP_CHARGE_NOW:
->> +		ret = cht_wc_fg_read(fg, FG_CHARGE_NOW, val, 500, 0);
->> +		break;
->> +	case POWER_SUPPLY_PROP_SCOPE:
->> +		val->intval = POWER_SUPPLY_SCOPE_SYSTEM;
->> +		break;
->> +	default:
->> +		ret = -ENODATA;
->> +	}
->> +
->> +	return ret;
->> +}
->> +
->> +static void cht_wc_fg_external_power_changed(struct power_supply *psy)
->> +{
->> +	struct cht_wc_fg_data *fg = power_supply_get_drvdata(psy);
->> +
->> +	schedule_work(&fg->changed_work);
->> +}
->> +
->> +static enum power_supply_property cht_wc_fg_properties[] = {
->> +	POWER_SUPPLY_PROP_STATUS,
->> +	POWER_SUPPLY_PROP_PRESENT,
->> +	POWER_SUPPLY_PROP_TECHNOLOGY,
->> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
->> +	POWER_SUPPLY_PROP_VOLTAGE_AVG,
->> +	POWER_SUPPLY_PROP_VOLTAGE_OCV,
->> +	POWER_SUPPLY_PROP_CURRENT_NOW,
->> +	POWER_SUPPLY_PROP_CURRENT_AVG,
->> +	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
->> +	POWER_SUPPLY_PROP_CHARGE_FULL,
->> +	POWER_SUPPLY_PROP_CHARGE_NOW,
->> +	POWER_SUPPLY_PROP_SCOPE,
->> +};
->> +
->> +static const struct power_supply_desc bat_desc = {
->> +	/* Matches charger.supplied_to for external_power_changed callback */
->> +	.name			= "main-battery",
->> +	.type			= POWER_SUPPLY_TYPE_BATTERY,
->> +	.properties		= cht_wc_fg_properties,
->> +	.num_properties		= ARRAY_SIZE(cht_wc_fg_properties),
->> +	.get_property		= cht_wc_fg_get_property,
->> +	.external_power_changed = cht_wc_fg_external_power_changed,
->> +};
->> +
->> +static void cht_wc_fg_changed_work(struct work_struct *work)
->> +{
->> +	struct cht_wc_fg_data *fg =
->> +		container_of(work, struct cht_wc_fg_data, changed_work);
->> +
->> +	/* Wait a bit to allow the fuel-gauge to also detect the new status */
->> +	msleep(200);
->> +
->> +	power_supply_changed(fg->battery);
->> +}
->> +
->> +static int cht_wc_fg_extcon_event(struct notifier_block *nb,
->> +				  unsigned long event, void *param)
->> +{
->> +	struct cht_wc_fg_data *fg =
->> +		container_of(nb, struct cht_wc_fg_data, extcon_nb);
->> +
->> +	schedule_work(&fg->changed_work);
->> +
->> +	return NOTIFY_OK;
->> +}
->> +
->> +static int cht_wc_fg_probe(struct i2c_client *client,
->> +			const struct i2c_device_id *i2c_id)
->> +{
->> +	struct device *dev = &client->dev;
->> +	struct power_supply_config bat_cfg = {};
->> +	struct cht_wc_fg_data *fg;
->> +	acpi_status status;
->> +	unsigned long long ptyp;
->> +	int ret;
->> +
->> +	status = acpi_evaluate_integer(ACPI_HANDLE(dev), "PTYP", NULL, &ptyp);
->> +	if (ACPI_FAILURE(status)) {
->> +		dev_err(dev, "Failed to get PTYPE\n");
->> +		return -ENODEV;
->> +	}
->> +
->> +	/*
->> +	 * The same ACPI HID is used with different PMICs check PTYP to
->> +	 * ensure that we are dealing with a Whiskey Cove PMIC.
->> +	 */
->> +	if (ptyp != CHT_WC_FG_PTYPE)
->> +		return -ENODEV;
->> +
->> +	fg = devm_kzalloc(dev, sizeof(*fg), GFP_KERNEL);
->> +	if (!fg)
->> +		return -ENOMEM;
->> +
->> +	fg->dev = dev;
->> +	fg->pmic_client = client;
->> +	INIT_WORK(&fg->changed_work, cht_wc_fg_changed_work);
->> +
->> +	/*
->> +	 * We use the Whiskey Cove PMIC's pwrsrc detection block to see
->> +	 * if we are charging or not. We could access the pwrsrc regs
->> +	 * ourselves, but that requires re-implementing the extcon code,
->> +	 * so we just use the extcon interface.
->> +	 */
->> +	fg->extcon = extcon_get_extcon_dev("cht_wcove_pwrsrc");
->> +	if (!fg->extcon)
->> +		return -EPROBE_DEFER;
->> +
->> +	/*
->> +	 * The current resource settings table for the fuel gauge contains
->> +	 * multiple i2c devices on 2 different i2c-busses.
->> +	 */
->> +	fg->fg_client = i2c_acpi_new_device(dev, 1);
->> +	if (!fg->fg_client)
->> +		return -EPROBE_DEFER;
->> +
->> +	bat_cfg.drv_data = fg;
->> +	fg->battery = devm_power_supply_register(dev, &bat_desc, &bat_cfg);
->> +	if (IS_ERR(fg->battery)) {
->> +		i2c_unregister_device(fg->fg_client);
->> +		return PTR_ERR(fg->battery);
->> +	}
->> +
->> +	fg->extcon_nb.notifier_call = cht_wc_fg_extcon_event;
->> +	ret = devm_extcon_register_notifier(dev, fg->extcon, -1,
->> +					    &fg->extcon_nb);
->> +	if (ret) {
->> +		i2c_unregister_device(fg->fg_client);
->> +		return ret;
->> +	}
->> +
->> +	i2c_set_clientdata(client, fg);
->> +
->> +	return 0;
->> +}
->> +
->> +static int cht_wc_fg_remove(struct i2c_client *i2c)
->> +{
->> +	struct cht_wc_fg_data *fg = i2c_get_clientdata(i2c);
->> +
->> +	i2c_unregister_device(fg->fg_client);
->> +
->> +	return 0;
->> +}
->> +
->> +static const struct i2c_device_id cht_wc_fg_i2c_id[] = {
->> +	{ }
->> +};
->> +MODULE_DEVICE_TABLE(i2c, cht_wc_fg_i2c_id);
->> +
->> +static const struct acpi_device_id cht_wc_fg_acpi_ids[] = {
->> +	{ "INT33FE", },
->> +	{ }
->> +};
->> +MODULE_DEVICE_TABLE(acpi, cht_wc_fg_acpi_ids);
->> +
->> +static struct i2c_driver cht_wc_fg_driver = {
->> +	.driver	= {
->> +		.name	= "CHT Whiskey Cove PMIC Fuel Gauge",
->> +		.acpi_match_table = ACPI_PTR(cht_wc_fg_acpi_ids),
->> +	},
->> +	.probe = cht_wc_fg_probe,
->> +	.remove = cht_wc_fg_remove,
->> +	.id_table = cht_wc_fg_i2c_id,
->> +	.irq_index = 1,
->> +};
->> +
->> +module_i2c_driver(cht_wc_fg_driver);
->> +
->> +MODULE_DESCRIPTION("Intel CHT Whiskey Cove PMIC Fuel Gauge driver");
->> +MODULE_AUTHOR("Hans de Goede <hdegoede@redhat.com>");
->> +MODULE_LICENSE("GPL");
->> --
->> 2.9.3
+>> diff --git a/drivers/power/supply/bq24190_charger.c
+>> b/drivers/power/supply/bq24190_charger.c
+>> index 897491d..de1c54f 100644
+>> --- a/drivers/power/supply/bq24190_charger.c
+>> +++ b/drivers/power/supply/bq24190_charger.c
+>> @@ -1256,8 +1256,13 @@ static void bq24190_check_status(struct
+>> bq24190_dev_info *bdi)
+>>                 }
+>>         } while (f_reg && ++i < 2);
 >>
+>> +       /* ignore over/under voltage fault after disconnect */
+>> +       if (f_reg == (1 << BQ24190_REG_F_CHRG_FAULT_SHIFT) &&
+>> +           !(ss_reg & BQ24190_REG_SS_PG_STAT_MASK))
+>> +               f_reg = 0;
+>> +
+>>         if (f_reg != bdi->f_reg) {
+>> -               dev_info(bdi->dev,
+>> +               dev_warn(bdi->dev,
+>>                         "Fault: boost %d, charge %d, battery %d, ntc
+>> %d\n",
+>>                         !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+>>                         !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
+>>
+>
+> You're now once again logging a warning when all faults clear,
+
+By design; I want to know when any serious fault clears.
+
+The under-voltage fault on disconnect will not trigger a cleared msg,
+because the orig error is not recorded in bdi->f_reg.
+
+> I believe this should now be:
+>
+>                 if (freg)
+>                         dev_warn(bdi->dev,
+>                                 "Fault: boost %d, charge %d, battery %d, ntc
+> %d\n",
+>                                 !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+>                                 !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
+>
+> Regards,
+>
+> Hans
+>
+>
+>
