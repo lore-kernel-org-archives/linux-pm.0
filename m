@@ -1,105 +1,124 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v2] power: bq24190_charger: Limit over/under voltage fault
- logging
-Date: Sun, 26 Mar 2017 13:04:01 +0200
-Message-ID: <a2a73d00-faee-2032-a5ac-87cf49d94cdd@redhat.com>
-References: <20170325112419.25120-1-liam@networkimprov.net>
- <be76b89a-7d18-096a-b22c-53101ba43cfc@redhat.com>
- <CAKvHMgQOv=0cYJj6_0QgP9ApKwaxiJWvOwWfShFhBVGQtvpJQg@mail.gmail.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v3 3/4] i2c: core: Allow drivers to specify index for
+ irq to get from of / ACPI
+Date: Sun, 26 Mar 2017 15:15:35 +0300
+Message-ID: <1490530535.21738.31.camel@linux.intel.com>
+References: <20170325135550.22509-1-hdegoede@redhat.com>
+         <20170325135550.22509-4-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:35902 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751403AbdCZLEU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 26 Mar 2017 07:04:20 -0400
-In-Reply-To: <CAKvHMgQOv=0cYJj6_0QgP9ApKwaxiJWvOwWfShFhBVGQtvpJQg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170325135550.22509-4-hdegoede@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>, Wolfram Sang <wsa@the-dreams.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-Hi,
+On Sat, 2017-03-25 at 14:55 +0100, Hans de Goede wrote:
+> Some of or ACPI declared / enumerated devices may have multiple irq
+> resources declared and the driver may want to use a different irq then
+> the one with index 0.
+> 
+> This commit adds a new irq_index field to struct i2c_driver and makes
+> the i2c-core pass this to of_irq_get / acpi_dev_gpio_irq_get.
+> 
+> This is esp. useful for ACPI declared devices where the irq with
+> index 0 may be entirely useless and cause i2c_device_probe to fail
+> with
+> -EPROBE_DEFER.
 
-On 26-03-17 12:56, Liam Breck wrote:
-> On Sun, Mar 26, 2017 at 1:44 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->> Hi,
->>
->>
->> On 25-03-17 12:24, Liam Breck wrote:
->>>
->>> From: Liam Breck <kernel@networkimprov.net>
->>>
->>> If the charger is unplugged before the battery is full we may
->>> see an over/under voltage fault. Ignore this rather then emitting
->>> a message or uevent.
->>>
->>> This fixes messages like these getting logged on charger unplug + replug:
->>> bq24190-charger 15-006b: Fault: boost 0, charge 1, battery 0, ntc 0
->>> bq24190-charger 15-006b: Fault: boost 0, charge 0, battery 0, ntc 0
->>>
->>> Cc: Tony Lindgren <tony@atomide.com>
->>> Cc: Hans de Goede <hdegoede@redhat.com>
->>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->>> ---
->>> v2: Don't hide clearance of other more urgent faults, or produce
->>>     a uevent for this superficial fault.
->>>
->>>  drivers/power/supply/bq24190_charger.c | 7 ++++++-
->>>  1 file changed, 6 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/power/supply/bq24190_charger.c
->>> b/drivers/power/supply/bq24190_charger.c
->>> index 897491d..de1c54f 100644
->>> --- a/drivers/power/supply/bq24190_charger.c
->>> +++ b/drivers/power/supply/bq24190_charger.c
->>> @@ -1256,8 +1256,13 @@ static void bq24190_check_status(struct
->>> bq24190_dev_info *bdi)
->>>                 }
->>>         } while (f_reg && ++i < 2);
->>>
->>> +       /* ignore over/under voltage fault after disconnect */
->>> +       if (f_reg == (1 << BQ24190_REG_F_CHRG_FAULT_SHIFT) &&
->>> +           !(ss_reg & BQ24190_REG_SS_PG_STAT_MASK))
->>> +               f_reg = 0;
->>> +
->>>         if (f_reg != bdi->f_reg) {
->>> -               dev_info(bdi->dev,
->>> +               dev_warn(bdi->dev,
->>>                         "Fault: boost %d, charge %d, battery %d, ntc
->>> %d\n",
->>>                         !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
->>>                         !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
->>>
->>
->> You're now once again logging a warning when all faults clear,
->
-> By design; I want to know when any serious fault clears.
->
-> The under-voltage fault on disconnect will not trigger a cleared msg,
-> because the orig error is not recorded in bdi->f_reg.
+Just a side note / question: are we assuming that the index of
+I2cSerialBus() resource and index of GpioInt() resource should be 1:1
+mapped?
 
-Ok fine by me.
+One nit below, and
 
-Regards,
-
-Hans
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
 
->
->> I believe this should now be:
->>
->>                 if (freg)
->>                         dev_warn(bdi->dev,
->>                                 "Fault: boost %d, charge %d, battery %d, ntc
->> %d\n",
->>                                 !!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
->>                                 !!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
->>
->> Regards,
->>
->> Hans
->>
->>
->>
+> 
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+> Changes in v2:
+> -Actually also use the irq_index for of interrupts
+> Changes in v3:
+> -Add kernel doc for new i2c_driver irq_index member
+> -Remove duplicate assignment of driver in i2c_device_probe
+> ---
+>  drivers/i2c/i2c-core.c | 10 ++++++----
+>  include/linux/i2c.h    |  4 ++++
+>  2 files changed, 10 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> index 062b480..a7dfa6c 100644
+> --- a/drivers/i2c/i2c-core.c
+> +++ b/drivers/i2c/i2c-core.c
+> @@ -983,6 +983,8 @@ static int i2c_device_probe(struct device *dev)
+>  	if (!client)
+>  		return 0;
+>  
+> +	driver = to_i2c_driver(dev->driver);
+> +
+>  	if (!client->irq) {
+>  		int irq = -ENOENT;
+>  
+> @@ -992,9 +994,11 @@ static int i2c_device_probe(struct device *dev)
+>  		} else if (dev->of_node) {
+>  			irq = of_irq_get_byname(dev->of_node, "irq");
+>  			if (irq == -EINVAL || irq == -ENODATA)
+> -				irq = of_irq_get(dev->of_node, 0);
+> +				irq = of_irq_get(dev->of_node,
+> +						 driver->irq_index);
+>  		} else if (ACPI_COMPANION(dev)) {
+> -			irq =
+> acpi_dev_gpio_irq_get(ACPI_COMPANION(dev), 0);
+> +			irq =
+> acpi_dev_gpio_irq_get(ACPI_COMPANION(dev),
+> +						    driver-
+> >irq_index);
+>  		}
+>  		if (irq == -EPROBE_DEFER)
+>  			return irq;
+> @@ -1005,8 +1009,6 @@ static int i2c_device_probe(struct device *dev)
+>  		client->irq = irq;
+>  	}
+>  
+> -	driver = to_i2c_driver(dev->driver);
+> -
+>  	/*
+>  	 * An I2C ID table is not mandatory, if and only if, a
+> suitable Device
+>  	 * Tree match table entry is supplied for the probing device.
+> diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+> index 369ebfa..79de1d1 100644
+> --- a/include/linux/i2c.h
+> +++ b/include/linux/i2c.h
+> @@ -149,6 +149,7 @@ enum i2c_alert_protocol {
+>   * @detect: Callback for device detection
+>   * @address_list: The I2C addresses to probe (for detect)
+>   * @clients: List of detected clients we created (for i2c-core use
+> only)
+> + * @irq_index: IRQ index for retreiving irq from OF/ACPI
+>   *
+>   * The driver.owner field should be set to the module owner of this
+> driver.
+>   * The driver.name field should be set to the name of this driver.
+> @@ -212,6 +213,9 @@ struct i2c_driver {
+>  	int (*detect)(struct i2c_client *, struct i2c_board_info *);
+>  	const unsigned short *address_list;
+>  	struct list_head clients;
+
+> +
+> +	/* IRQ index for retreiving irq from OF/ACPI */
+
+Since kernel doc in place the above is redundant.
+
+> +	int irq_index;
+>  };
+>  #define to_i2c_driver(d) container_of(d, struct i2c_driver, driver)
+>  
+
+-- 
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
