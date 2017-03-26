@@ -1,173 +1,76 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: create sysfs symlink for cpus onlined after boot
-Date: Sun, 26 Mar 2017 03:19:54 +0200
-Message-ID: <2246294.s9H9y0mptv@aspire.rjw.lan>
-References: <1490304286-18311-1-git-send-email-pprakash@codeaurora.org> <372627201.N4ERmeoXuC@aspire.rjw.lan> <2716739.7ZKP1HnjcS@aspire.rjw.lan>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v2] power: bq24190_charger: Limit over/under voltage fault
+ logging
+Date: Sun, 26 Mar 2017 10:44:37 +0200
+Message-ID: <be76b89a-7d18-096a-b22c-53101ba43cfc@redhat.com>
+References: <20170325112419.25120-1-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:51801 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751227AbdCZBZn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 Mar 2017 21:25:43 -0400
-In-Reply-To: <2716739.7ZKP1HnjcS@aspire.rjw.lan>
+Received: from mx1.redhat.com ([209.132.183.28]:48738 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751142AbdCZIqG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 26 Mar 2017 04:46:06 -0400
+In-Reply-To: <20170325112419.25120-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Prakash, Prashanth" <pprakash@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-On Sunday, March 26, 2017 03:05:56 AM Rafael J. Wysocki wrote:
-> On Saturday, March 25, 2017 06:15:07 PM Rafael J. Wysocki wrote:
-> > On Saturday, March 25, 2017 02:30:52 PM Rafael J. Wysocki wrote:
-> > > On Friday, March 24, 2017 10:31:51 AM Prakash, Prashanth wrote:
-> > > > On 3/23/2017 5:30 PM, Rafael J. Wysocki wrote:
-> > > > > On Thu, Mar 23, 2017 at 10:24 PM, Prashanth Prakash
-> > > > > <pprakash@codeaurora.org> wrote:
-> > > > >> Adds an additional code path within cpufreq_online to create sysfs
-> > > > >> symlinks for cpus that are bought onilne for the first time after
-> > > > >> completion of boot.
-> > > > >>
-> > > > >> With maxcpus=N kernel parameter, it is possible to bring additional
-> > > > >> cpus online after boot. In these cases per-cpu "cpufreq" symlinks
-> > > > >> are not being created during registration as policy may not exist
-> > > > >> for the cpus that were offline during boot.
-> > > > >>
-> > > > >> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
-> > > > > This looks way overly complicated to me.  Let me look at it in the
-> > > > > next couple of days.
-> > > > Sure. Thanks!
-> > > 
-> > > So the patch below works for me.  Please test.
-> > > 
-> > > The problem is that we only try to create links once, when CPUs are registered
-> > > or when the cpufreq driver is registered (depending on which happens first),
-> > > but if all CPUs that would share a policy are offline at that time, the policy is not
-> > > there and we don't create the links at all.
-> > > 
-> > > This means we also need to try to create the links when creating a new policy
-> > > (because the CPUs may have been added without the links at this point already).
-> > > 
-> > > A slight side effect of this is that failures to create links are not regarded
-> > > as hard errors now and only cause messages to be printed, but I don't see
-> > > how that could be a big issue.
-> > 
-> > Actually, the rwlock around the for_each_cpu() loop in cpufreq_online() doesn't
-> > matter AFAICS, so the code can be slightly simplified by dropping it.
-> 
-> And I forgot about the cleanup on errors in cpufreq_online(), so one more
-> update follows (with a changelog and all).
+Hi,
 
-One more update, sorry.
+On 25-03-17 12:24, Liam Breck wrote:
+> From: Liam Breck <kernel@networkimprov.net>
+>
+> If the charger is unplugged before the battery is full we may
+> see an over/under voltage fault. Ignore this rather then emitting
+> a message or uevent.
+>
+> This fixes messages like these getting logged on charger unplug + replug:
+> bq24190-charger 15-006b: Fault: boost 0, charge 1, battery 0, ntc 0
+> bq24190-charger 15-006b: Fault: boost 0, charge 0, battery 0, ntc 0
+>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Cc: Hans de Goede <hdegoede@redhat.com>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> ---
+> v2: Don't hide clearance of other more urgent faults, or produce
+>     a uevent for this superficial fault.
+>
+>  drivers/power/supply/bq24190_charger.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> index 897491d..de1c54f 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -1256,8 +1256,13 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
+>  		}
+>  	} while (f_reg && ++i < 2);
+>
+> +	/* ignore over/under voltage fault after disconnect */
+> +	if (f_reg == (1 << BQ24190_REG_F_CHRG_FAULT_SHIFT) &&
+> +	    !(ss_reg & BQ24190_REG_SS_PG_STAT_MASK))
+> +		f_reg = 0;
+> +
+>  	if (f_reg != bdi->f_reg) {
+> -		dev_info(bdi->dev,
+> +		dev_warn(bdi->dev,
+>  			"Fault: boost %d, charge %d, battery %d, ntc %d\n",
+>  			!!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+>  			!!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
+>
 
-remove_cpu_dev_symlink() needs a device pointer, not a CPU number.  Also the
-links cleanup need not be done under policy->rwsem.
+You're now once again logging a warning when all faults clear,
+I believe this should now be:
 
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH] cpufreq: Fix creation of symbolic links to policy directories
+		if (freg)
+			dev_warn(bdi->dev,
+				"Fault: boost %d, charge %d, battery %d, ntc %d\n",
+				!!(f_reg & BQ24190_REG_F_BOOST_FAULT_MASK),
+				!!(f_reg & BQ24190_REG_F_CHRG_FAULT_MASK),
 
-The cpufreq core only tries to create symbolic links from CPU
-directories in sysfs to policy directories in cpufreq_add_dev(),
-either when a given CPU is registered or when the cpufreq driver
-is registered, whichever happens first.  That is not sufficient,
-however, because cpufreq_add_dev() may be called for an offline CPU
-whose policy object has not been created yet and, quite obviously,
-the symbolic cannot be added in that case.
+Regards,
 
-Fix that by making cpufreq_online() attempt to add symbolic links to
-policy objects for the CPUs in the related_cpus mask of every new
-policy object created by it.
-
-The cpufreq_driver_lock locking around the for_each_cpu() loop
-in cpufreq_online() is dropped, because it is not necessary and the
-code is somewhat simpler without it.  Moreover, failures to create
-a symbolic link will not be regarded as hard errors any more and
-the CPUs without those links will not be taken offline automatically,
-but that should not be problematic in practice.
-
-Reported-by: Prashanth Prakash <pprakash@codeaurora.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c |   38 +++++++++++++++++++++-----------------
- 1 file changed, 21 insertions(+), 17 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -918,11 +918,19 @@ static struct kobj_type ktype_cpufreq =
- 	.release	= cpufreq_sysfs_release,
- };
- 
--static int add_cpu_dev_symlink(struct cpufreq_policy *policy,
--			       struct device *dev)
-+static void add_cpu_dev_symlink(struct cpufreq_policy *policy, unsigned int cpu)
- {
-+	struct device *dev = get_cpu_device(cpu);
-+
-+	if (!dev)
-+		return;
-+
-+	if (cpumask_test_and_set_cpu(cpu, policy->real_cpus))
-+		return;
-+
- 	dev_dbg(dev, "%s: Adding symlink\n", __func__);
--	return sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
-+	if (sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq"))
-+		dev_err(dev, "cpufreq symlink creation failed\n");
- }
- 
- static void remove_cpu_dev_symlink(struct cpufreq_policy *policy,
-@@ -1180,10 +1188,10 @@ static int cpufreq_online(unsigned int c
- 		policy->user_policy.min = policy->min;
- 		policy->user_policy.max = policy->max;
- 
--		write_lock_irqsave(&cpufreq_driver_lock, flags);
--		for_each_cpu(j, policy->related_cpus)
-+		for_each_cpu(j, policy->related_cpus) {
- 			per_cpu(cpufreq_cpu_data, j) = policy;
--		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+			add_cpu_dev_symlink(policy, j);
-+		}
- 	} else {
- 		policy->min = policy->user_policy.min;
- 		policy->max = policy->user_policy.max;
-@@ -1275,13 +1283,15 @@ out_exit_policy:
- 
- 	if (cpufreq_driver->exit)
- 		cpufreq_driver->exit(policy);
-+
-+	for_each_cpu(j, policy->real_cpus)
-+		remove_cpu_dev_symlink(policy, get_cpu_device(j));
-+
- out_free_policy:
- 	cpufreq_policy_free(policy);
- 	return ret;
- }
- 
--static int cpufreq_offline(unsigned int cpu);
--
- /**
-  * cpufreq_add_dev - the cpufreq interface for a CPU device.
-  * @dev: CPU device.
-@@ -1303,16 +1313,10 @@ static int cpufreq_add_dev(struct device
- 
- 	/* Create sysfs link on CPU registration */
- 	policy = per_cpu(cpufreq_cpu_data, cpu);
--	if (!policy || cpumask_test_and_set_cpu(cpu, policy->real_cpus))
--		return 0;
-+	if (policy)
-+		add_cpu_dev_symlink(policy, cpu);
- 
--	ret = add_cpu_dev_symlink(policy, dev);
--	if (ret) {
--		cpumask_clear_cpu(cpu, policy->real_cpus);
--		cpufreq_offline(cpu);
--	}
--
--	return ret;
-+	return 0;
- }
- 
- static int cpufreq_offline(unsigned int cpu)
+Hans
