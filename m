@@ -1,88 +1,87 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 02/16] cpufreq: intel_pstate: Drop pointless initialization of PID parameters
-Date: Tue, 28 Mar 2017 00:04:30 +0200
-Message-ID: <13687383.3o6irlutMi@aspire.rjw.lan>
-References: <6409323.DYHvh3CYlO@aspire.rjw.lan>
+From: Dave Chinner <david@fromorbit.com>
+Subject: Re: [PATCH] xfs: don't let suspend freeze the buffer workqueue
+Date: Tue, 28 Mar 2017 09:40:45 +1100
+Message-ID: <20170327224045.GJ17542@dastard>
+References: <20170327204611.GA4864@birch.djwong.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6409323.DYHvh3CYlO@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Doug Smythies <dsmythies@telus.net>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ipmail06.adl2.internode.on.net ([150.101.137.129]:33642 "EHLO
+        ipmail06.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752108AbdC0WrI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2017 18:47:08 -0400
+Content-Disposition: inline
+In-Reply-To: <20170327204611.GA4864@birch.djwong.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Darrick J. Wong" <darrick.wong@oracle.com>
+Cc: linux-pm@vger.kernel.org, xfs <linux-xfs@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Mon, Mar 27, 2017 at 01:46:11PM -0700, Darrick J. Wong wrote:
+> Suspend has this annoying behavior in XFS where it freezes workqueues in
+> some arbitrary order.  This is a problem because the sync call can cause
+> an AIL push, which may have to perform a RMW cycle on an inode cluster
+> buffer if that buffer has been reclaimed.  When this happens, the AIL
+> issues a buffer read for which the io completion ends up on the xfs_buf
+> workqueue.  If /that/ workqueue has already been frozen, the suspend
+> will timeout because we froze the workqueues in the wrong order.
+> 
+> It seems suspicious to be freezing IO helper threads[1], so let's just
+> not do that anymore.  Prior to this patch, 4.10 fails to suspend on my
+> laptop about 80% of the time; afterwards, it works every time.  I've not
+> done much suspend-and-crash testing on it though.
 
-The P-state selection algorithm used by intel_pstate for Atom
-processors is not based on the PID controller and the initialization
-of PID parametrs for those processors is pointless and confusing, so
-drop it.
+The problem with doing this is that it opens up an even worse race
+condition - a memory corruption condition, and potentially a
+filesystem corruption condition if not caught after resume quickly
+enough.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/intel_pstate.c |   28 ++--------------------------
- 1 file changed, 2 insertions(+), 26 deletions(-)
+That is, if we don't freeze the m_buf_workqueue, we end up doing
+this:
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1540,14 +1540,6 @@ static struct cpu_defaults core_params =
- };
- 
- static const struct cpu_defaults silvermont_params = {
--	.pid_policy = {
--		.sample_rate_ms = 10,
--		.deadband = 0,
--		.setpoint = 60,
--		.p_gain_pct = 14,
--		.d_gain_pct = 0,
--		.i_gain_pct = 4,
--	},
- 	.funcs = {
- 		.get_max = atom_get_max_pstate,
- 		.get_max_physical = atom_get_max_pstate,
-@@ -1561,14 +1553,6 @@ static const struct cpu_defaults silverm
- };
- 
- static const struct cpu_defaults airmont_params = {
--	.pid_policy = {
--		.sample_rate_ms = 10,
--		.deadband = 0,
--		.setpoint = 60,
--		.p_gain_pct = 14,
--		.d_gain_pct = 0,
--		.i_gain_pct = 4,
--	},
- 	.funcs = {
- 		.get_max = atom_get_max_pstate,
- 		.get_max_physical = atom_get_max_pstate,
-@@ -1602,14 +1586,6 @@ static const struct cpu_defaults knl_par
- };
- 
- static const struct cpu_defaults bxt_params = {
--	.pid_policy = {
--		.sample_rate_ms = 10,
--		.deadband = 0,
--		.setpoint = 60,
--		.p_gain_pct = 14,
--		.d_gain_pct = 0,
--		.i_gain_pct = 4,
--	},
- 	.funcs = {
- 		.get_max = core_get_max_pstate,
- 		.get_max_physical = core_get_max_pstate_physical,
-@@ -2637,9 +2613,9 @@ static int __init intel_pstate_init(void
- 			return -ENODEV;
- 
- 		cpu_def = (struct cpu_defaults *)id->driver_data;
--
--		copy_pid_params(&cpu_def->pid_policy);
- 		copy_cpu_funcs(&cpu_def->funcs);
-+		if (pstate_funcs.get_target_pstate == get_target_pstate_use_performance)
-+			copy_pid_params(&cpu_def->pid_policy);
- 	}
- 
- 	if (intel_pstate_msrs_not_valid())
+freezer			aild		m_buf_workqueue
+.....
+freeze user processes
+sync
+freeze work queues
+			pushes dirty metadata
+			<starts IO>
+freeze kernel threads
+					<IO completion interrupt>
+					<work queued>
+create_image()
+					run IO completion work
+
+At this point, we have IO completion in XFS modifying memory state
+that is being snapshotted by the freezer process. Hence we can end
+up with the hibernation image having an inconsistent state such as
+an inode marked clean (because it was copied after IO completion)
+but the AIL still has the inode item linked into it (because it was
+copied before IO completion).
+
+The only way to avoid this race condition is to ensure that the
+m_buf_workqueue cannot run work while the hibernation image is being
+created. This is still just a workaround - we can lose IO
+completions completely if they occur after the image creation begins
+- but it removes the most common case of memory corruption that has
+previously been seen during hibernation.
+
+Unfortunately, these races are just about impossible to trigger in
+test environments, so it's no surprise that you haven't "seen
+problems".  The decision that I made here is that it is better for
+suspend to hang and annoy people than it is for users to suffer
+silent memory and filesystem corruption resulting in data loss
+that has no obvious logical cause, cannot be reproduced or
+debugged...
+
+AFAICT, we can't fix this problem in XFS - we need the suspend code
+to /freeze the filesystems/ to safely quiesce them because the only
+choices we have right now is to choose the least worst behaviour of
+either "hang during suspend" or "be silent and deadly".
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
