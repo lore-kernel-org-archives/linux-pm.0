@@ -1,62 +1,45 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / runtime: Use synchronous runtime PM call in rpm_put_suppliers()
-Date: Mon, 27 Mar 2017 14:05:57 +0200
-Message-ID: <CAPDyKFoKwXijuSimt=Xr-qp4oYEGwcfZST_rUMFTCTUxS39PqA@mail.gmail.com>
-References: <CGME20170322092305eucas1p20d2a6dfede483210febea5b5e0ff68db@eucas1p2.samsung.com>
- <1490174570-18345-1-git-send-email-m.szyprowski@samsung.com>
- <CAPDyKFq+mTvruQb5ifj3etMxSCWgDZTZ6ebGkk84UCQDqjR4-A@mail.gmail.com>
- <CAJZ5v0ihYQp4_oJCu3Tugbqrm=68hcxdg8-yUphbCXCUw3UzPw@mail.gmail.com>
- <CAPDyKFot3C1C1k45JovwKHFkvTJAFvdetoE8_ADAhMCkFw3hPA@mail.gmail.com> <20170324113736.GA21618@h08.hostsharing.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <20170324113736.GA21618@h08.hostsharing.net>
-Sender: linux-clk-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH v3 3/9] arm: fix return value of parse_cpu_capacity
+Date: Mon, 27 Mar 2017 14:18:19 +0100
+Message-ID: <20170327131825.32134-4-juri.lelli@arm.com>
+References: <20170327131825.32134-1-juri.lelli@arm.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170327131825.32134-1-juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, juri.lelli-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 24 March 2017 at 12:37, Lukas Wunner <lukas@wunner.de> wrote:
-> On Thu, Mar 23, 2017 at 01:47:46PM +0100, Ulf Hansson wrote:
->> For the sync runtime PM suspend/idle case:
->> When a driver for a children/consumers decides to use the sync runtime
->> PM APIs, it's most likely because it wants the device to enter its low
->> power state as soon as possible.
->
-> I think a driver is doing it wrong if it uses sync vs. async to achieve
-> a certain policy.  (As in the example you've given above.)  That should
-> be left to the PM core, and the PM core should try to suspend as early
-> and as often as possible in order to save power.  If the driver wants to
+parse_cpu_capacity() has to return 0 on failure, but it currently returns
+1 instead if raw_capacity kcalloc failed.
 
-I am not really sure what you mean by this.
+Fix it by removing the negation of the return value.
 
-The runtime PM APIs is what we have today and those are of course used
-a bit differently depending on the client. I was trying to summarize
-my impressions from those that using the asynchronous interface.
+Cc: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Reported-by: Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>
+Fixes: 06073ee26775 ('ARM: 8621/3: parse cpu capacity-dmips-mhz from DT')
+Signed-off-by: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+---
+ arch/arm/kernel/topology.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> achieve a policy such as "suspend this device ASAP but let this other
-> device idle a bit before suspend because its usage pattern is bursty"
-> then the correct way to implement this is via a sane default value for
-> the autosuspend delay.
+diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+index f8a3ab82e77f..4e4af809606a 100644
+--- a/arch/arm/kernel/topology.c
++++ b/arch/arm/kernel/topology.c
+@@ -166,7 +166,7 @@ static int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
+ 			if (!raw_capacity) {
+ 				pr_err("cpu_capacity: failed to allocate memory for raw capacities\n");
+ 				cap_parsing_failed = true;
+-				return !ret;
++				return ret;
+ 			}
+ 		}
+ 		capacity_scale = max(cpu_capacity, capacity_scale);
+-- 
+2.10.0
 
-The runtime PM autosuspend feature is per definition asynchronous. And
-since user space anyway can change the value of the timeout, I don't
-think it make sense to consider this as separate case within this
-context.
-
->
-> Generelly, async should be used.  One example where sync is warranted
-> is when the ->runtime_suspend hook needs to be finished before power
-> is cut to the device.  That's a hard constraint.  E.g. vga_switcheroo
-> does this when runtime suspending the GPU.  In this case, "runtime
-> suspend" means that the driver puts the device in a state from which
-> power can be cut.  The actual power switch is toggled afterwards.
-
-No, this isn't a valid case. If this how vga_switcheroo deploys
-runtime PM supports this surely needs to be fixed!
-
-A call to pm_runtime_put_sync() may not trigger the runtime suspend
-callback to be invoked, because userspace via sysfs can prevent that.
-
-Kind regards
-Uffe
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
