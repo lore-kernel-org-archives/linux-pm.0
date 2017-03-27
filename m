@@ -1,178 +1,189 @@
-From: "Zheng, Lv" <lv.zheng@intel.com>
-Subject: RE: [PATCH 1/4] acpi: battery: Add acpi_battery_unregister()
- function
-Date: Mon, 27 Mar 2017 01:16:23 +0000
-Message-ID: <1AE640813FDE7649BE1B193DEA596E886CE675FE@SHSMSX101.ccr.corp.intel.com>
-References: <20170316161601.32267-1-hdegoede@redhat.com>
- <20170316161601.32267-2-hdegoede@redhat.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v3 1/3] mfd: intel_soc_pmic: Fix a mess with compilation
+ units
+Date: Mon, 27 Mar 2017 10:14:42 +0800
+Message-ID: <1490580882.2587.1.camel@intel.com>
+References: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
+         <20170323121252.vi7oggwr6bfghe3b@dell>
+         <1490531879.708.8.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170316161601.32267-2-hdegoede@redhat.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <1490531879.708.8.camel@linux.intel.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Hans
+On Sun, 2017-03-26 at 15:37 +0300, Andy Shevchenko wrote:
+> On Thu, 2017-03-23 at 12:12 +0000, Lee Jones wrote:
+> > 
+> > On Fri, 17 Mar 2017, Andy Shevchenko wrote:
+> > 
+> > > 
+> > > Crystal Cove and Whiskey Cove are two different PMICs which are
+> > > installed on Intel Atom SoC based platforms.
+> > > 
+> > > Moreover there are two independent drivers that by some reason
+> > > were
+> > > supposed (*) to get into one kernel module.
+> > > 
+> > > Fix the mess by clarifying Kconfig option for Crystal Cove and
+> > > split
+> > > Whiskey Cove out of it.
+> > > 
+> > > (*) It looks like the configuration was never tested with
+> > >     INTEL_SOC_PMIC=n. The line in Makefile is actually wrong.
+> > > 
+> > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net> (supporter:ACPI)
+> > > Cc: Linus Walleij <linus.walleij@linaro.org> (maintainer:GPIO
+> > > SUBSYSTEM)
+> > > Cc: Zhang Rui <rui.zhang@intel.com> (supporter:THERMAL)
+> > > Cc: Eduardo Valentin <edubezval@gmail.com> (supporter:THERMAL)
+> > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com
+> > > >
+> > > ---
+> > > - make option visible
+> > > - fix dependencies
+> > >  drivers/acpi/Kconfig         |  2 +-
+> > This needs an ACPI Ack before I can do anything with it.
+> Rafael, can you give you tag?
+> 
+> > 
+> > 
+> > > 
+> > >  drivers/gpio/Kconfig         |  2 +-
+> > >  drivers/mfd/Kconfig          | 14 ++++++++++++--
+> > >  drivers/mfd/Makefile         |  2 +-
+> > >  drivers/platform/x86/Kconfig |  2 +-
+> > > 
 
-> From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-owner@vger.kernel.org] On Behalf Of Hans de
-> Goede
-> Subject: [PATCH 1/4] acpi: battery: Add acpi_battery_unregister() function
-> 
-> On some systems we have a native pmic driver which provides battery
-> monitoring, while the acpi battery driver is broken on these systems
-> due to bad dstds or because of missing vendor specific acpi opregion
+> > >  drivers/thermal/Kconfig      |  2 +-
 
-dstds -> dsdts?
+For the thermal part,
+Acked-by: Zhang Rui <rui.zhang@intel.com>
 
-> (e.g. BMOP opregion) support, which the acpi battery device in the
-> dsdt relies on.
-
-Why don't we support BMOP and leverage between PMIC driver and BMOP opregion driver?
-
-> 
-> This leads to there being 2 battery power_supply-s registed like this:
-> 
-> ~$ acpi
-> Battery 0: Charging, 84%, 00:49:39 until charged
-> Battery 1: Unknown, 0%, rate information unavailable
-> 
-> Even if the acpi battery where to function fine (which on systems
-> where we have a native pmic driver it often doesn't) we still do not
-> want to export the same battery to userspace twice.
-> 
-> This commit adds an acpi_battery_unregister() function which native
-> pmic drivers can call to tell the acpi-battery driver to unregister
-> itself so that we do not end up with 2 power_supply-s for the same
-> battery device.
-
-I'm not sure if this is a good idea:
-Driver A calls Driver B's unregister function in case Driver A should be unware of the existence of Driver B.
-
-For example, acpi_video_unregister() is such a bad practice.
-
-Do we have any other choices?
-For example, driver priority and etc.?
-
-Thanks
-Lv
-
-
-> 
-> BugLink: https://bugzilla.kernel.org/show_bug.cgi?id=194811
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> Tested-by: Sergei Trusov <t.rus76@ya.ru>
-> ---
->  drivers/acpi/battery.c     | 32 +++++++++++++++++++++++++++++++-
->  include/linux/power/acpi.h | 18 ++++++++++++++++++
->  2 files changed, 49 insertions(+), 1 deletion(-)
->  create mode 100644 include/linux/power/acpi.h
-> 
-> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-> index 4ef1e46..644e154 100644
-> --- a/drivers/acpi/battery.c
-> +++ b/drivers/acpi/battery.c
-> @@ -31,6 +31,7 @@
->  #include <linux/delay.h>
->  #include <linux/slab.h>
->  #include <linux/suspend.h>
-> +#include <linux/mutex.h>
->  #include <asm/unaligned.h>
-> 
->  #ifdef CONFIG_ACPI_PROCFS_POWER
-> @@ -41,6 +42,7 @@
-> 
->  #include <linux/acpi.h>
->  #include <linux/power_supply.h>
-> +#include <linux/power/acpi.h>
-> 
->  #include "battery.h"
-> 
-> @@ -66,6 +68,10 @@ MODULE_AUTHOR("Alexey Starikovskiy <astarikovskiy@suse.de>");
->  MODULE_DESCRIPTION("ACPI Battery Driver");
->  MODULE_LICENSE("GPL");
-> 
-> +enum init_state_enum { BAT_NONE, BAT_INITIALIZED, BAT_EXITED };
-> +
-> +static enum init_state_enum init_state;
-> +static DEFINE_MUTEX(init_state_mutex);
->  static async_cookie_t async_cookie;
->  static int battery_bix_broken_package;
->  static int battery_notification_delay_ms;
-> @@ -1336,17 +1342,41 @@ static int __init acpi_battery_init(void)
->  	if (acpi_disabled)
->  		return -ENODEV;
-> 
-> +	/* Check if acpi_battery_unregister got called before _init() */
-> +	mutex_lock(&init_state_mutex);
-> +	if (init_state != BAT_NONE)
-> +		goto out_unlock;
-> +
->  	async_cookie = async_schedule(acpi_battery_init_async, NULL);
-> +	init_state = BAT_INITIALIZED;
-> +out_unlock:
-> +	mutex_unlock(&init_state_mutex);
-> +
->  	return 0;
->  }
-> 
-> -static void __exit acpi_battery_exit(void)
-> +void acpi_battery_unregister(void)
->  {
-> +	/* Check if _init() is done and only do unregister once */
-> +	mutex_lock(&init_state_mutex);
-> +	if (init_state != BAT_INITIALIZED)
-> +		goto out_exit;
-> +
->  	async_synchronize_cookie(async_cookie + 1);
->  	acpi_bus_unregister_driver(&acpi_battery_driver);
->  #ifdef CONFIG_ACPI_PROCFS_POWER
->  	acpi_unlock_battery_dir(acpi_battery_dir);
->  #endif
-> +
-> +out_exit:
-> +	init_state = BAT_EXITED;
-> +	mutex_unlock(&init_state_mutex);
-> +}
-> +EXPORT_SYMBOL_GPL(acpi_battery_unregister);
-> +
-> +static void __exit acpi_battery_exit(void)
-> +{
-> +	acpi_battery_unregister();
->  }
-> 
->  module_init(acpi_battery_init);
-> diff --git a/include/linux/power/acpi.h b/include/linux/power/acpi.h
-> new file mode 100644
-> index 0000000..83bdfb9
-> --- /dev/null
-> +++ b/include/linux/power/acpi.h
-> @@ -0,0 +1,18 @@
-> +/*
-> + * Functions exported by the acpi power_supply drivers
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#ifndef __LINUX_POWER_ACPI_H_
-> +#define __LINUX_POWER_ACPI_H_
-> +
-> +#if IS_ENABLED(CONFIG_ACPI_BATTERY)
-> +void acpi_battery_unregister(void);
-> +#else
-> +static inline void acpi_battery_unregister(void) {}
-> +#endif
-> +
-> +#endif
-> --
-> 2.9.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+thanks,
+rui
+> > >  6 files changed, 17 insertions(+), 7 deletions(-)
+> > > 
+> > > diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> > > index 83e5f7e1a20d..03708e08fcb4 100644
+> > > --- a/drivers/acpi/Kconfig
+> > > +++ b/drivers/acpi/Kconfig
+> > > @@ -512,7 +512,7 @@ config XPOWER_PMIC_OPREGION
+> > >  
+> > >  config BXT_WC_PMIC_OPREGION
+> > >  	bool "ACPI operation region support for BXT WhiskeyCove
+> > > PMIC"
+> > > -	depends on INTEL_SOC_PMIC
+> > > +	depends on INTEL_SOC_PMIC_BXTWC
+> > >  	help
+> > >  	  This config adds ACPI operation region support for BXT
+> > > WhiskeyCove PMIC.
+> > >  
+> > > diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+> > > index 05043071fc98..9b1bcb4d0df7 100644
+> > > --- a/drivers/gpio/Kconfig
+> > > +++ b/drivers/gpio/Kconfig
+> > > @@ -1054,7 +1054,7 @@ config GPIO_UCB1400
+> > >  
+> > >  config GPIO_WHISKEY_COVE
+> > >  	tristate "GPIO support for Whiskey Cove PMIC"
+> > > -	depends on (X86 || COMPILE_TEST) && INTEL_SOC_PMIC
+> > > +	depends on (X86 || COMPILE_TEST) && INTEL_SOC_PMIC_BXTWC
+> > >  	select GPIOLIB_IRQCHIP
+> > >  	help
+> > >  	  Support for GPIO pins on Whiskey Cove PMIC.
+> > > diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> > > index 55ecdfb74d31..e43afb8956ea 100644
+> > > --- a/drivers/mfd/Kconfig
+> > > +++ b/drivers/mfd/Kconfig
+> > > @@ -425,18 +425,28 @@ config LPC_SCH
+> > >  	  System Management Bus and General Purpose I/O.
+> > >  
+> > >  config INTEL_SOC_PMIC
+> > > -	bool "Support for Intel Atom SoC PMIC"
+> > > +	bool "Support for Crystal Cove PMIC"
+> > >  	depends on GPIOLIB
+> > >  	depends on I2C=y
+> > >  	select MFD_CORE
+> > >  	select REGMAP_I2C
+> > >  	select REGMAP_IRQ
+> > >  	help
+> > > -	  Select this option to enable support for the PMIC
+> > > device
+> > > +	  Select this option to enable support for Crystal Cove
+> > > PMIC
+> > >  	  on some Intel SoC systems. The PMIC provides ADC,
+> > > GPIO,
+> > >  	  thermal, charger and related power management
+> > > functions
+> > >  	  on these systems.
+> > >  
+> > > +config INTEL_SOC_PMIC_BXTWC
+> > > +	tristate "Support for Intel Broxton Whiskey Cove PMIC"
+> > > +	select MFD_CORE
+> > > +	select REGMAP_IRQ
+> > > +	help
+> > > +	  Select this option to enable support for Whiskey Cove
+> > > PMIC
+> > > +	  on Intel Broxton systems. The PMIC provides ADC, GPIO,
+> > > +	  thermal, charger and related power management
+> > > functions
+> > > +	  on these systems.
+> > > +
+> > >  config MFD_INTEL_LPSS
+> > >  	tristate
+> > >  	select COMMON_CLK
+> > > diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> > > index 31ce07611a6f..201aeaf5112a 100644
+> > > --- a/drivers/mfd/Makefile
+> > > +++ b/drivers/mfd/Makefile
+> > > @@ -207,8 +207,8 @@ obj-$(CONFIG_MFD_RT5033)	+= rt5033.o
+> > >  obj-$(CONFIG_MFD_SKY81452)	+= sky81452.o
+> > >  
+> > >  intel-soc-pmic-objs		:= intel_soc_pmic_core.o
+> > > intel_soc_pmic_crc.o
+> > > -intel-soc-pmic-$(CONFIG_INTEL_PMC_IPC)	+=
+> > > intel_soc_pmic_bxtwc.o
+> > >  obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
+> > > +obj-$(CONFIG_INTEL_SOC_PMIC_BXTWC)	+=
+> > > intel_soc_pmic_bxtwc.o
+> > >  obj-$(CONFIG_MFD_MT6397)	+= mt6397-core.o
+> > >  
+> > >  obj-$(CONFIG_MFD_ALTERA_A10SR)	+= altera-a10sr.o
+> > > diff --git a/drivers/platform/x86/Kconfig
+> > > b/drivers/platform/x86/Kconfig
+> > > index e1bffc9bb194..883fbe7a2466 100644
+> > > --- a/drivers/platform/x86/Kconfig
+> > > +++ b/drivers/platform/x86/Kconfig
+> > > @@ -1019,7 +1019,7 @@ config INTEL_PMC_IPC
+> > >  config INTEL_BXTWC_PMIC_TMU
+> > >  	tristate "Intel BXT Whiskey Cove TMU Driver"
+> > >  	depends on REGMAP
+> > > -	depends on INTEL_SOC_PMIC && INTEL_PMC_IPC
+> > > +	depends on INTEL_SOC_PMIC_BXTWC && INTEL_PMC_IPC
+> > >  	---help---
+> > >  	  Select this driver to use Intel BXT Whiskey Cove PMIC
+> > > TMU
+> > > feature.
+> > >  	  This driver enables the alarm wakeup functionality in
+> > > the
+> > > TMU unit
+> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > > index 776b34396144..751e50a3d946 100644
+> > > --- a/drivers/thermal/Kconfig
+> > > +++ b/drivers/thermal/Kconfig
+> > > @@ -365,7 +365,7 @@ endmenu
+> > >  
+> > >  config INTEL_BXT_PMIC_THERMAL
+> > >  	tristate "Intel Broxton PMIC thermal driver"
+> > > -	depends on X86 && INTEL_SOC_PMIC && REGMAP
+> > > +	depends on X86 && INTEL_SOC_PMIC_BXTWC && REGMAP
+> > >  	help
+> > >  	  Select this driver for Intel Broxton PMIC with ADC
+> > > channels monitoring
+> > >  	  system temperature measurements and alerts.
+> > 
