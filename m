@@ -1,144 +1,240 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: [ANNOUNCE] OSPM-summit is on next Monday
-Date: Mon, 27 Mar 2017 14:25:35 +0100
-Message-ID: <20170327132535.GJ10289@e106622-lin>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v12 5/9] power: bq27xxx_battery: Add bulk transfer bus
+ methods
+Date: Mon, 27 Mar 2017 09:49:04 -0500
+Message-ID: <b0566e5a-0f68-4938-d717-193ad62c951f@ti.com>
+References: <20170327074159.16213-1-liam@networkimprov.net>
+ <20170327074159.16213-2-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Tommaso Cucinotta <tommaso.cucinotta@sssup.it>, Sudeep Holla <sudeep.holla@arm.com>, juri.lelli@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Paolo Valente <paolo.valente@unimore.it>, Claudio Scordino <claudio@evidence.eu.com>, Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:33714 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753097AbdC0OuN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2017 10:50:13 -0400
+In-Reply-To: <20170327074159.16213-2-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org
+Cc: Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-Hi,
+On 03/27/2017 02:41 AM, Liam Breck wrote:
+> From: Matt Ranostay <matt@ranostay.consulting>
+> 
+> Declare bus.write/read_bulk/write_bulk().
+> Add I2C write/read_bulk/write_bulk() to implement the above.
+> Add bq27xxx_write/read_block/write_block() helper functions to call the above.
+> 
+> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> ---
+>  drivers/power/supply/bq27xxx_battery.c     | 55 +++++++++++++++++++-
+>  drivers/power/supply/bq27xxx_battery_i2c.c | 82 +++++++++++++++++++++++++++++-
+>  include/linux/power/bq27xxx_battery.h      |  3 ++
+>  3 files changed, 137 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index 398801a..f8c919e 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -794,11 +794,62 @@ MODULE_PARM_DESC(poll_interval,
+>  static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
+>  			       bool single)
+>  {
+> -	/* Reports EINVAL for invalid/missing registers */
+> +	int ret;
+> +
+>  	if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
+>  		return -EINVAL;
+>  
+> -	return di->bus.read(di, di->regs[reg_index], single);
+> +	ret = di->bus.read(di, di->regs[reg_index], single);
+> +	if (ret < 0)
+> +		dev_dbg(di->dev, "failed to read register 0x%02x (index %d)\n",
+> +			di->regs[reg_index], reg_index);
+> +
+> +	return ret;
+> +}
+> +
+> +static inline int bq27xxx_write(struct bq27xxx_device_info *di, int reg_index,
+> +				u16 value, bool single)
+> +{
+> +	int ret;
+> +
+> +	if (!di || di->regs[reg_index] == INVALID_REG_ADDR || !di->bus.write)
+> +		return -EINVAL;
+> +
+> +	ret = di->bus.write(di, di->regs[reg_index], value, single);
+> +	if (ret < 0)
+> +		dev_dbg(di->dev, "failed to write register 0x%02x (index %d)\n",
+> +			di->regs[reg_index], reg_index);
+> +
+> +	return ret;
+> +}
+> +
+> +static int bq27xxx_xfer(struct bq27xxx_device_info *di,
+> +			int (*xfer)(struct bq27xxx_device_info*, u8, u8*, int),
+> +			u8* data, int len)
+> +{
 
-we are only a week away from the OSPM-summit!
+I'm not sure why you reverted this change from my suggested patch, it
+only adds a couple lines to have a separate _read/write functions, but
+it makes it 100x more readable. This way includes passing functions and
+all kinds of ternary operators, this isn't a contest to see how clever
+you can code, please keep the readable version.
 
-Pack your bags (or stay tuned for the live streaming).
+> +	int ret;
+> +
+> +	if (!di || di->regs[BQ27XXX_DM_DATA] == INVALID_REG_ADDR || !xfer)
 
-Don't forget to subscribe to the summit mailing list to receive updates by
-either following the instructions available at the following link
-http://groups.google.com/group/ospm-summit-2017/boxsubscribe?email=<your_email>
-or sending an email to ospm-summit-2017+subscribe@googlegroups.com
+NAK, I removed the hard-coded register for a reason, BQ27XXX_DM_DATA is
+not the only register you can bulk read. Let the caller pass in the
+requested register like I showed you.
 
-Archives are available at https://groups.google.com/forum/#!forum/ospm-summit-2017
-
-More information about schedule and logistics follow.
-
----
-
-Power Management and Scheduling in the Linux Kernel (OSPM-summit)
-April 3-4, 2017
-Scuola Superiore Sant'Anna (SSSA)
-Pisa, Italy
-http://retis.sssup.it/ospm-summit/
-
----
-
-.:: FOCUS
-
-Power management and scheduling techniques to reduce energy consumption while
-meeting performance and latency requirements are receiving considerable
-attention from the Linux Kernel development community. 
-
-The Power Management and Scheduling in the Linux Kernel (OSPM-summit) summit
-aims at fostering further interest and discussion to happen.
-
-.:: SCHEDULE
-
-The summit is organized to cover two days of discussions and talks.
-
-What follows is a tentative schedule, subject to last minute changes.
-Find more info and real time updates on this shared document:
-https://docs.google.com/spreadsheets/d/1B-IsUIGitvRa7ZzppEAJBMgGpIgRAAnu_OhDAGYg6SQ/edit?usp=sharing
-
-Monday (2017-04-03)
-*******************
-09:00AM - 09:30AM	Welcome and Introduction (DAY 1)
----
-09:30AM - 10:20AM	Tooling/LISA
----
-10:20AM - 11:10AM	About The Need to Power Instrument The Linux Kernel
----
-11:10AM - 11:20AM	Break
----
-11:20AM - 12:10AM	What are the latest evolutions in PELT and what next
----
-12:10AM - 01:00PM	PELT decay clamping/UTIL_EST
----
-01:00PM - 02:30PM	Lunch
----
-02:30PM - 03:20PM	EAS where we are
----	
-03:20PM - 04:10PM	Energy model/Exotic topologies
----					
-04:10PM - 04:20PM	Break
----
-04:20PM - 05:10PM	Schedtune
----					
-05:10PM - 06:00PM	SCHED_DEADLINE and reclaiming
-
-
-Tuesday (2017-04-04)
-********************
-09:00AM - 09:30AM	Welcome and Introduction (DAY 2)
----
-09:30AM - 10:20AM	Discussion about possible improvements in the schedutil governor
----
-10:20AM - 11:10AM	Schedutil for SCHED_DEADLINE
----
-11:10AM - 11:20AM	Break
----
-11:20AM - 12:10AM	Parameterizing CFS load balancing: nr_running/util/load
----					
-12:10AM - 01:00PM	Tracepoints for PELT
----
-01:00PM - 02:30PM	Lunch
----			
-02:30PM - 03:20PM	IRQ prediction
----		
-03:20PM - 04:10PM	I/O scheduling and power management with storage devices
----					
-04:10PM - 04:20PM	Break
----
-04:20PM - 05:10PM	SCHED_DEADLINE group scheduling
----					
-05:10PM - 06:00PM	A Hierarchical Scheduling Model for Dynamic Soft-Realtime Systems
----
-06:00PM - 06:30PM	Closing Remarks				
-
-We are looking into setting up live streaming of the sessions. Details
-will be soon shared through the shared doc mentioned above and the
-event mailing list.
-
-List of attendees is also available in the doc and on the event website.
-
-.:: VENUE
-
-The workshop will take place at ReTiS Lab*, Scuola Superiore Sant'Anna, Pisa,
-Italy. Pisa is a small town, walking distance from the city center to the venue
-is 20 minutes, walking distance from the airport to the city center is 30
-minutes. More details are available from the summit web page:
-http://retis.sssup.it/ospm-summit/
-
-A map of the town with venue location, points of interest and
-transportation information is available at:
-https://drive.google.com/open?id=1ANKOXr2cuZkABXskDurgrGdl_js&usp=sharing
-
-Bus from Airport to city centre takes about 10 min and costs 1.20 euros
-(2 euros if bought on board). Large bills are usually not accepted.
-
-Taxi from Airport to city centre costs 10/15 euros. Credit cards are not
-accepted.
-
-.:: ORGANIZERS (in alphabetical order)
-
-Luca Abeni (SSSA)
-Patrick Bellasi (ARM)
-Tommaso Cucinotta (SSSA)
-Dietmar Eggemann (ARM)
-Sudeep Holla (ARM)
-Juri Lelli (ARM)
-Lorenzo Pieralisi (ARM)
-Morten Rasmussen (ARM)
+> +		return -EINVAL;
+> +
+> +	ret = xfer(di, di->regs[BQ27XXX_DM_DATA], data, len);
+> +	if (ret < 0)
+> +		dev_dbg(di->dev, "failed to xfer register 0x%02x (index %d)\n",
+> +			di->regs[BQ27XXX_DM_DATA], BQ27XXX_DM_DATA);
+> +
+> +	return ret;
+> +}
+> +
+> +static inline int bq27xxx_read_block(struct bq27xxx_device_info *di,
+> +				     u8* data, int len)
+> +{
+> +	return bq27xxx_xfer(di, di ? di->bus.read_bulk : 0, data, len);
+> +}
+> +
+> +static inline int bq27xxx_write_block(struct bq27xxx_device_info *di,
+> +				      u8* data, int len)
+> +{
+> +	return bq27xxx_xfer(di, di ? di->bus.write_bulk : 0, data, len);
+>  }
+>  
+>  /*
+> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+> index c68fbc3..a597221 100644
+> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+> @@ -38,7 +38,7 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
+>  {
+>  	struct i2c_client *client = to_i2c_client(di->dev);
+>  	struct i2c_msg msg[2];
+> -	unsigned char data[2];
+> +	u8 data[2];
+>  	int ret;
+>  
+>  	if (!client->adapter)
+> @@ -68,6 +68,82 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
+>  	return ret;
+>  }
+>  
+> +static int bq27xxx_battery_i2c_write(struct bq27xxx_device_info *di, u8 reg,
+> +				     int value, bool single)
+> +{
+> +	struct i2c_client *client = to_i2c_client(di->dev);
+> +	struct i2c_msg msg;
+> +	u8 data[4];
+> +	int ret;
+> +
+> +	if (!client->adapter)
+> +		return -ENODEV;
+> +
+> +	data[0] = reg;
+> +	if (single) {
+> +		data[1] = (u8) value;
+> +		msg.len = 2;
+> +	} else {
+> +		put_unaligned_le16(value, &data[1]);
+> +		msg.len = 3;
+> +	}
+> +
+> +	msg.buf = data;
+> +	msg.addr = client->addr;
+> +	msg.flags = 0;
+> +
+> +	ret = i2c_transfer(client->adapter, &msg, 1);
+> +	if (ret < 0)
+> +		return ret;
+> +	if (ret != 1)
+> +		return -EINVAL;
+> +	return 0;
+> +}
+> +
+> +static int bq27xxx_battery_i2c_bulk_read(struct bq27xxx_device_info *di, u8 reg,
+> +					 u8 *data, int len)
+> +{
+> +	struct i2c_client *client = to_i2c_client(di->dev);
+> +	int ret;
+> +
+> +	if (!client->adapter)
+> +		return -ENODEV;
+> +
+> +	ret = i2c_smbus_read_i2c_block_data(client, reg, len, data);
+> +	if (ret < 0)
+> +		return ret;
+> +	if (ret != len)
+> +		return -EINVAL;
+> +	return 0;
+> +}
+> +
+> +static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
+> +					  u8 reg, u8 *data, int len)
+> +{
+> +	struct i2c_client *client = to_i2c_client(di->dev);
+> +	struct i2c_msg msg;
+> +	u8 buf[33];
+> +	int ret;
+> +
+> +	if (!client->adapter)
+> +		return -ENODEV;
+> +
+> +	buf[0] = reg;
+> +	memcpy(&buf[1], data, len);
+> +
+> +	msg.buf = buf;
+> +	msg.addr = client->addr;
+> +	msg.flags = 0;
+> +	msg.len = len + 1;
+> +
+> +	ret = i2c_transfer(client->adapter, &msg, 1);
+> +	if (ret < 0)
+> +		return ret;
+> +	if (ret != 1)
+> +		return -EINVAL;
+> +	return 0;
+> +}
+> +
+>  static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+>  				     const struct i2c_device_id *id)
+>  {
+> @@ -95,7 +171,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+>  	di->dev = &client->dev;
+>  	di->chip = id->driver_data;
+>  	di->name = name;
+> +
+>  	di->bus.read = bq27xxx_battery_i2c_read;
+> +	di->bus.write = bq27xxx_battery_i2c_write;
+> +	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
+> +	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
+>  
+>  	ret = bq27xxx_battery_setup(di);
+>  	if (ret)
+> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+> index b312bce..c3369fa 100644
+> --- a/include/linux/power/bq27xxx_battery.h
+> +++ b/include/linux/power/bq27xxx_battery.h
+> @@ -40,6 +40,9 @@ struct bq27xxx_platform_data {
+>  struct bq27xxx_device_info;
+>  struct bq27xxx_access_methods {
+>  	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
+> +	int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
+> +	int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
+> +	int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
+>  };
+>  
+>  struct bq27xxx_reg_cache {
+> 
