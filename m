@@ -1,74 +1,62 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 1/2] powerpc/powernv/cpuidle: Pass correct drv->cpumask for registration
-Date: Mon, 27 Mar 2017 21:38:35 +1100
-Message-ID: <87y3vrdmxg.fsf@concordia.ellerman.id.au>
-References: <20170323152247.14733-1-svaidy@linux.vnet.ibm.com> <20170323152247.14733-2-svaidy@linux.vnet.ibm.com> <CAJZ5v0jujyxWYbUAKkzkq9ZdT476LsHLfD2S9GtwHBPQByKWUw@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / runtime: Use synchronous runtime PM call in rpm_put_suppliers()
+Date: Mon, 27 Mar 2017 14:05:57 +0200
+Message-ID: <CAPDyKFoKwXijuSimt=Xr-qp4oYEGwcfZST_rUMFTCTUxS39PqA@mail.gmail.com>
+References: <CGME20170322092305eucas1p20d2a6dfede483210febea5b5e0ff68db@eucas1p2.samsung.com>
+ <1490174570-18345-1-git-send-email-m.szyprowski@samsung.com>
+ <CAPDyKFq+mTvruQb5ifj3etMxSCWgDZTZ6ebGkk84UCQDqjR4-A@mail.gmail.com>
+ <CAJZ5v0ihYQp4_oJCu3Tugbqrm=68hcxdg8-yUphbCXCUw3UzPw@mail.gmail.com>
+ <CAPDyKFot3C1C1k45JovwKHFkvTJAFvdetoE8_ADAhMCkFw3hPA@mail.gmail.com> <20170324113736.GA21618@h08.hostsharing.net>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ozlabs.org ([103.22.144.67]:51125 "EHLO ozlabs.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752668AbdC0Ki6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 27 Mar 2017 06:38:58 -0400
-In-Reply-To: <CAJZ5v0jujyxWYbUAKkzkq9ZdT476LsHLfD2S9GtwHBPQByKWUw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <20170324113736.GA21618@h08.hostsharing.net>
+Sender: linux-clk-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-"Rafael J. Wysocki" <rafael@kernel.org> writes:
-
-> On Thu, Mar 23, 2017 at 4:22 PM, Vaidyanathan Srinivasan
-> <svaidy@linux.vnet.ibm.com> wrote:
->> drv->cpumask defaults to cpu_possible_mask in __cpuidle_driver_init().
->> On PowerNV platform cpu_present could be less than cpu_possible in cases
->> where firmware detects the cpu, but it is not available to the OS.  When
->> CONFIG_HOTPLUG_CPU=n, such cpus are not hotplugable at runtime and hence
->> we skip creating cpu_device.
->>
->> This breaks cpuidle on powernv where register_cpu() is not called for
->> cpus in cpu_possible_mask that cannot be hot-added at runtime.
->>
->> Trying cpuidle_register_device() on cpu without cpu_device will cause
->> crash like this:
->>
->> cpu 0xf: Vector: 380 (Data SLB Access) at [c000000ff1503490]
->>     pc: c00000000022c8bc: string+0x34/0x60
->>     lr: c00000000022ed78: vsnprintf+0x284/0x42c
->>     sp: c000000ff1503710
->>    msr: 9000000000009033
->>    dar: 6000000060000000
->>   current = 0xc000000ff1480000
->>   paca    = 0xc00000000fe82d00   softe: 0        irq_happened: 0x01
->>     pid   = 1, comm = swapper/8
->> Linux version 4.11.0-rc2 (sv@sagarika) (gcc version 4.9.4
->> (Buildroot 2017.02-00004-gc28573e) ) #15 SMP Fri Mar 17 19:32:02 IST 2017
->> enter ? for help
->> [link register   ] c00000000022ed78 vsnprintf+0x284/0x42c
->> [c000000ff1503710] c00000000022ebb8 vsnprintf+0xc4/0x42c (unreliable)
->> [c000000ff1503800] c00000000022ef40 vscnprintf+0x20/0x44
->> [c000000ff1503830] c0000000000ab61c vprintk_emit+0x94/0x2cc
->> [c000000ff15038a0] c0000000000acc9c vprintk_func+0x60/0x74
->> [c000000ff15038c0] c000000000619694 printk+0x38/0x4c
->> [c000000ff15038e0] c000000000224950 kobject_get+0x40/0x60
->> [c000000ff1503950] c00000000022507c kobject_add_internal+0x60/0x2c4
->> [c000000ff15039e0] c000000000225350 kobject_init_and_add+0x70/0x78
->> [c000000ff1503a60] c00000000053c288 cpuidle_add_sysfs+0x9c/0xe0
->> [c000000ff1503ae0] c00000000053aeac cpuidle_register_device+0xd4/0x12c
->> [c000000ff1503b30] c00000000053b108 cpuidle_register+0x98/0xcc
->> [c000000ff1503bc0] c00000000085eaf0 powernv_processor_idle_init+0x140/0x1e0
->> [c000000ff1503c60] c00000000000cd60 do_one_initcall+0xc0/0x15c
->> [c000000ff1503d20] c000000000833e84 kernel_init_freeable+0x1a0/0x25c
->> [c000000ff1503dc0] c00000000000d478 kernel_init+0x24/0x12c
->> [c000000ff1503e30] c00000000000b564 ret_from_kernel_thread+0x5c/0x78
->>
->> This patch fixes the bug by passing correct cpumask from
->> powernv-cpuidle driver.
->>
->> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+On 24 March 2017 at 12:37, Lukas Wunner <lukas@wunner.de> wrote:
+> On Thu, Mar 23, 2017 at 01:47:46PM +0100, Ulf Hansson wrote:
+>> For the sync runtime PM suspend/idle case:
+>> When a driver for a children/consumers decides to use the sync runtime
+>> PM APIs, it's most likely because it wants the device to enter its low
+>> power state as soon as possible.
 >
-> That needs to be ACKed by someone familiar with powernv.
+> I think a driver is doing it wrong if it uses sync vs. async to achieve
+> a certain policy.  (As in the example you've given above.)  That should
+> be left to the PM core, and the PM core should try to suspend as early
+> and as often as possible in order to save power.  If the driver wants to
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+I am not really sure what you mean by this.
 
-cheers
+The runtime PM APIs is what we have today and those are of course used
+a bit differently depending on the client. I was trying to summarize
+my impressions from those that using the asynchronous interface.
+
+> achieve a policy such as "suspend this device ASAP but let this other
+> device idle a bit before suspend because its usage pattern is bursty"
+> then the correct way to implement this is via a sane default value for
+> the autosuspend delay.
+
+The runtime PM autosuspend feature is per definition asynchronous. And
+since user space anyway can change the value of the timeout, I don't
+think it make sense to consider this as separate case within this
+context.
+
+>
+> Generelly, async should be used.  One example where sync is warranted
+> is when the ->runtime_suspend hook needs to be finished before power
+> is cut to the device.  That's a hard constraint.  E.g. vga_switcheroo
+> does this when runtime suspending the GPU.  In this case, "runtime
+> suspend" means that the driver puts the device in a state from which
+> power can be cut.  The actual power switch is toggled afterwards.
+
+No, this isn't a valid case. If this how vga_switcheroo deploys
+runtime PM supports this surely needs to be fixed!
+
+A call to pm_runtime_put_sync() may not trigger the runtime suspend
+callback to be invoked, because userspace via sysfs can prevent that.
+
+Kind regards
+Uffe
