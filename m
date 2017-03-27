@@ -1,95 +1,74 @@
-From: "Prakash, Prashanth" <pprakash@codeaurora.org>
-Subject: Re: [PATCH] cpufreq: create sysfs symlink for cpus onlined after boot
-Date: Mon, 27 Mar 2017 10:55:39 -0600
-Message-ID: <276b4adc-3525-d736-795e-09ccb2be1c7c@codeaurora.org>
-References: <1490304286-18311-1-git-send-email-pprakash@codeaurora.org>
- <372627201.N4ERmeoXuC@aspire.rjw.lan> <2716739.7ZKP1HnjcS@aspire.rjw.lan>
- <2246294.s9H9y0mptv@aspire.rjw.lan>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFD PATCH 3/5] sched/cpufreq_schedutil: make worker kthread be
+ SCHED_DEADLINE
+Date: Mon, 27 Mar 2017 18:01:34 +0100
+Message-ID: <20170327170134.GC10289@e106622-lin>
+References: <20170324140900.7334-1-juri.lelli@arm.com>
+ <20170324140900.7334-4-juri.lelli@arm.com>
+ <20170327165011.dpip23cyolnleas6@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:55526 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751303AbdC0Q4i (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2017 12:56:38 -0400
-In-Reply-To: <2246294.s9H9y0mptv@aspire.rjw.lan>
+Received: from foss.arm.com ([217.140.101.70]:38006 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751288AbdC0RMa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 27 Mar 2017 13:12:30 -0400
+Content-Disposition: inline
+In-Reply-To: <20170327165011.dpip23cyolnleas6@hirez.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Mark Brown <broonie@kernel.org>
 
-Hi Rafael,
+On 27/03/17 18:50, Peter Zijlstra wrote:
+> On Fri, Mar 24, 2017 at 02:08:58PM +0000, Juri Lelli wrote:
+> > Worker kthread needs to be able to change frequency for all other
+> > threads.
+> > 
+> > Make it special, just under STOP class.
+> 
+> *yuck* ;-)
+> 
 
-On 3/25/2017 7:19 PM, Rafael J. Wysocki wrote:
-> On Sunday, March 26, 2017 03:05:56 AM Rafael J. Wysocki wrote:
->> On Saturday, March 25, 2017 06:15:07 PM Rafael J. Wysocki wrote:
->>> On Saturday, March 25, 2017 02:30:52 PM Rafael J. Wysocki wrote:
->>>> On Friday, March 24, 2017 10:31:51 AM Prakash, Prashanth wrote:
->>>>> On 3/23/2017 5:30 PM, Rafael J. Wysocki wrote:
->>>>>> On Thu, Mar 23, 2017 at 10:24 PM, Prashanth Prakash
->>>>>> <pprakash@codeaurora.org> wrote:
->>>>>>> Adds an additional code path within cpufreq_online to create sysfs
->>>>>>> symlinks for cpus that are bought onilne for the first time after
->>>>>>> completion of boot.
->>>>>>>
->>>>>>> With maxcpus=N kernel parameter, it is possible to bring additional
->>>>>>> cpus online after boot. In these cases per-cpu "cpufreq" symlinks
->>>>>>> are not being created during registration as policy may not exist
->>>>>>> for the cpus that were offline during boot.
->>>>>>>
->>>>>>> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
->>>>>> This looks way overly complicated to me.  Let me look at it in the
->>>>>> next couple of days.
->>>>> Sure. Thanks!
->>>> So the patch below works for me.  Please test.
->>>>
->>>> The problem is that we only try to create links once, when CPUs are registered
->>>> or when the cpufreq driver is registered (depending on which happens first),
->>>> but if all CPUs that would share a policy are offline at that time, the policy is not
->>>> there and we don't create the links at all.
->>>>
->>>> This means we also need to try to create the links when creating a new policy
->>>> (because the CPUs may have been added without the links at this point already).
->>>>
->>>> A slight side effect of this is that failures to create links are not regarded
->>>> as hard errors now and only cause messages to be printed, but I don't see
->>>> how that could be a big issue.
->>> Actually, the rwlock around the for_each_cpu() loop in cpufreq_online() doesn't
->>> matter AFAICS, so the code can be slightly simplified by dropping it.
->> And I forgot about the cleanup on errors in cpufreq_online(), so one more
->> update follows (with a changelog and all).
-> One more update, sorry.
->
-> remove_cpu_dev_symlink() needs a device pointer, not a CPU number.  Also the
-> links cleanup need not be done under policy->rwsem.
->
-> ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH] cpufreq: Fix creation of symbolic links to policy directories
->
-> The cpufreq core only tries to create symbolic links from CPU
-> directories in sysfs to policy directories in cpufreq_add_dev(),
-> either when a given CPU is registered or when the cpufreq driver
-> is registered, whichever happens first.  That is not sufficient,
-> however, because cpufreq_add_dev() may be called for an offline CPU
-> whose policy object has not been created yet and, quite obviously,
-> the symbolic cannot be added in that case.
->
-> Fix that by making cpufreq_online() attempt to add symbolic links to
-> policy objects for the CPUs in the related_cpus mask of every new
-> policy object created by it.
->
-> The cpufreq_driver_lock locking around the for_each_cpu() loop
-> in cpufreq_online() is dropped, because it is not necessary and the
-> code is somewhat simpler without it.  Moreover, failures to create
-> a symbolic link will not be regarded as hard errors any more and
-> the CPUs without those links will not be taken offline automatically,
-> but that should not be problematic in practice.
->
-> Reported-by: Prashanth Prakash <pprakash@codeaurora.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Eh, I know. :/
 
-Tested on a Qualcomm Centriq board and it works as expected. Thanks!
+> So imagine our I2C/SPI bus is 'busy' and its mutex taken, then this
+> 'soecial' task will need to boost it. Now add BWI to your thinking and
+> shudder.
+> 
 
--Prashanth
+Currently that kthread is FIFO already, so boosting still applies. Not as
+bad as in the BWI case though. More thinking required.
+
+> 
+> On IRC broonie mentioned that:
+> 
+>  - most PMIC operations are fire and forget (no need to wait for a
+>    response).
+>  - PMIC 'packets' are 'small'.
+>  - SPI has the possibility to push stuff on the queue.
+> 
+> Taken together this seems to suggest we can rework cpufreq drivers to
+> function in-context, either directly push the packet on the bus if
+> available, or queue it and let whoever owns it sort it without blocking.
+> 
+> It might be possible to rework/augment I2C to also support pushing stuff
+> on a queue.
+> 
+> 
+> So if we can make all that work, we can do away with this horrible
+> horrible kthread. Which is, IMO, a much better solution.
+> 
+> Thoughts?
+
+Right. This is more a schedutil (cpufreq) problem though, IMHO. Even if
+I agree that what you are proposing is way more clean (and here I
+actually assume it's feasible at all), I fear it will take quite some
+time to get reworked.
+
+Do we want to wait until that moment to get DEADLINE contribution
+accounted for? :(
+
+Thanks,
+
+- Juri
