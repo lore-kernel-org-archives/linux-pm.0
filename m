@@ -1,104 +1,194 @@
-From: "Darrick J. Wong" <darrick.wong@oracle.com>
-Subject: Re: Suspend fails when xfs is involved?
-Date: Mon, 27 Mar 2017 13:46:07 -0700
-Message-ID: <20170327204607.GA4874@birch.djwong.org>
-References: <20170203010401.GR9134@birch.djwong.org>
- <20170203223127.GC32761@dastard>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v12 7/9] power: bq27xxx_battery: Add power_supply_battery_info
+ support
+Date: Mon, 27 Mar 2017 13:52:28 -0700
+Message-ID: <CAKvHMgT_Z6_3YUvp7U-SeKYbFtqwSwxzQuO8o6t0KFyH+0Q8XQ@mail.gmail.com>
+References: <20170327074159.16213-1-liam@networkimprov.net>
+ <20170327074159.16213-4-liam@networkimprov.net> <ba7819ad-d357-02fc-c06b-30d9a4e701cc@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:33499 "EHLO
-        userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751801AbdC0UqO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2017 16:46:14 -0400
-Content-Disposition: inline
-In-Reply-To: <20170203223127.GC32761@dastard>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:34202 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751852AbdC0Uwr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2017 16:52:47 -0400
+Received: by mail-it0-f68.google.com with SMTP id e75so6994684itd.1
+        for <linux-pm@vger.kernel.org>; Mon, 27 Mar 2017 13:52:29 -0700 (PDT)
+In-Reply-To: <ba7819ad-d357-02fc-c06b-30d9a4e701cc@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Chinner <david@fromorbit.com>
-Cc: xfs <linux-xfs@vger.kernel.org>, linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-[cc linux-pm since this intersects with suspend...]
+On Mon, Mar 27, 2017 at 8:01 AM, Andrew F. Davis <afd@ti.com> wrote:
+> On 03/27/2017 02:41 AM, Liam Breck wrote:
+>> From: Liam Breck <kernel@networkimprov.net>
+>>
+>> Previously there was no way to configure these chips in the event that the
+>> defaults didn't match the battery in question.
+>>
+>> We now call power_supply_get_battery_info(), check its values, and write
+>> battery data to chip data memory (flash/RAM/NVM).
+>>
+>
+> How do we know if that is the correct thing to do? Maybe the values in
+> NVM are more correct than the DT and the DT values are just for
+> reference when NVM is not present. Updating NVM with DT values needs to
+> be controllable by the user, not automatic every time this driver probes.
 
-On Sat, Feb 04, 2017 at 09:31:27AM +1100, Dave Chinner wrote:
-> On Thu, Feb 02, 2017 at 05:04:01PM -0800, Darrick J. Wong wrote:
-> > Hi list,
-> > 
-> > So I've noticed that my laptop consistently fails to suspend with:
-> > 
-> > [1183625.726800] atkbd serio0: Unknown key pressed (translated set 2, code 0xd8 on isa0060/serio0).
-> > [1183625.726804] atkbd serio0: Use 'setkeycodes e058 <keycode>' to make it known.
-> > [1183625.727492] atkbd serio0: Unknown key released (translated set 2, code 0xd8 on isa0060/serio0).
-> > [1183625.727497] atkbd serio0: Use 'setkeycodes e058 <keycode>' to make it known.
-> > [1183626.203928] e1000e: enp0s25 NIC Link is Down
-> > [1183626.422720] PM: Syncing filesystems ... done.
-> > [1183626.450348] Freezing user space processes ... (elapsed 0.002 seconds) done.
-> > [1183626.452995] Freezing remaining freezable tasks ... 
-> > [1183632.657243] atkbd serio0: Unknown key pressed (translated set 2, code 0xd9 on isa0060/serio0).
-> > [1183632.657247] atkbd serio0: Use 'setkeycodes e059 <keycode>' to make it known.
-> > [1183632.657814] atkbd serio0: Unknown key released (translated set 2, code 0xd9 on isa0060/serio0).
-> > [1183632.657817] atkbd serio0: Use 'setkeycodes e059 <keycode>' to make it known.
-> > [1183646.459310] Freezing of tasks failed after 20.006 seconds (1 tasks refusing to freeze, wq_busy=0):
-> > [1183646.459348] xfsaild/dm-1    D    0  1767      2 0x00000000
-> 
-> Yes, this can happen because suspend thinks that "sync" is
-> sufficient to quiesce a filesystem into an idle state. 
-> 
-> > [1183646.459366] Call Trace:
-> > [1183646.459386]  [<ffffffffb5a43b8d>] schedule+0x3d/0x90
-> > [1183646.459390]  [<ffffffffb5a47339>] schedule_timeout+0x239/0x420
-> > [1183646.459401]  [<ffffffffb5a450e6>] wait_for_completion+0xa6/0x120
-> > [1183646.459460]  [<ffffffffb539ba0f>] xfs_buf_submit_wait+0x7f/0x280
-> > [1183646.459466]  [<ffffffffb539bc33>] _xfs_buf_read+0x23/0x30
-> > [1183646.459470]  [<ffffffffb539bd64>] xfs_buf_read_map+0x124/0x1b0
-> > [1183646.459473]  [<ffffffffb53eb270>] xfs_trans_read_buf_map+0x110/0x370
-> > [1183646.459478]  [<ffffffffb538417e>] xfs_imap_to_bp+0x6e/0xe0
-> > [1183646.459481]  [<ffffffffb53b3883>] xfs_iflush+0xd3/0x230
-> > [1183646.459486]  [<ffffffffb53e0ab4>] xfs_inode_item_push+0xf4/0x150
-> > [1183646.459489]  [<ffffffffb53e9cdf>] xfsaild+0x2df/0x740
-> > [1183646.459500]  [<ffffffffb51101f9>] kthread+0xd9/0xf0
-> 
-> That's inode writeback when the underlying inode buffer has been
-> reclaimed before the dirty cached inode has been written. So the
-> xfsaild is doing read/modify/write cycles to write back dirty
-> inodes. i.e. you're running in active memory reclaim conditions
-> prior to suspend...
+We trust the OS package to contain correct config for RAM-only chips,
+but not NVM? A battery config would not be set in mainline dts files,
+unless the battery is non-removable in the device.
 
-So I wrote up a patch that removes WQ_FREEZABLE from the xfs_buf thread,
-and since then I haven't had any problems suspending my laptop.  Last
-week at LSF I inquired about whether it was proper to be freezing IO
-helper threads as part of suspend, and was told in response "Are you
-convinced that use of WQ_FREEZABLE is even correct?"  TBH I can't see
-why you'd want to freeze IO helper workqueues at all.
+If NVM is unexpectedly present, then the entire device is unexpected,
+and you have bigger issues than battery config.
 
-So, I'm going to email that patch out as an RFC and if anyone wants to
-follow up the discussion, let's do it there.  I get it, suspend really
-should just fsfreeze, but the question I really want to know is, why
-does XFS freeze its own threads?  They seem to go to sleep just fine
-after we're done doing all the IO we want.
+We could prevent a DT referencing a different gauge than is present
+from taking effect by checking device_type via control register. But
+it's not clear that second-guessing the DT is wise.
 
-> > ISTR Dave or someone grumbling about this being some artifact of the log
-> > trying to read in some buffer or other as part of flushing the log prior
-> > to suspend, but the io completion ends up tied to a workqueue that's
-> > already been put to sleep, so xfs gets stuck forever.
-> 
-> Yup, suspend is just completely fucked, has been for more than 10
-> years. It needs to freeze filesystems so they are quiesced sanely,
-> not left to run while random parts of the kernel infrastructure they
-> rely on are shut down behind the filesystem's back.
-> 
-> > Look familiar to anyone before I try to debug this tomorrow?
-> 
-> See this as a recent starting point.
-> 
-> https://lwn.net/Articles/705269/
 
-I wonder if they've done any work on freezing filesystems...
-
---D
-
-> 
-> -Dave.
-> -- 
-> Dave Chinner
-> david@fromorbit.com
+>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>> ---
+>>  drivers/power/supply/bq27xxx_battery.c | 105 ++++++++++++++++++++++++++++++++-
+>>  1 file changed, 104 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>> index ad152cc..d845ade 100644
+>> --- a/drivers/power/supply/bq27xxx_battery.c
+>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>> @@ -1210,6 +1210,98 @@ static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
+>>       return ret;
+>>  }
+>>
+>> +static void bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
+>> +                                    struct power_supply_battery_info *info)
+>> +{
+>> +     struct bq27xxx_dm_buf bd = BQ27XXX_DM_BUF(di, BQ27XXX_DM_DESIGN_CAPACITY);
+>> +     struct bq27xxx_dm_buf bt = BQ27XXX_DM_BUF(di, BQ27XXX_DM_TERMINATE_VOLTAGE);
+>> +
+>> +     if (bq27xxx_battery_unseal(di) < 0)
+>> +             return;
+>> +
+>> +     if (info->charge_full_design_uah != -EINVAL &&
+>> +         info->energy_full_design_uwh != -EINVAL) {
+>> +             bq27xxx_battery_read_dm_block(di, &bd);
+>> +             /* assume design energy & capacity are in same block */
+>> +             bq27xxx_battery_update_dm_block(di, &bd,
+>> +                                     BQ27XXX_DM_DESIGN_CAPACITY,
+>> +                                     info->charge_full_design_uah / 1000);
+>> +             bq27xxx_battery_update_dm_block(di, &bd,
+>> +                                     BQ27XXX_DM_DESIGN_ENERGY,
+>> +                                     info->energy_full_design_uwh / 1000);
+>> +     }
+>> +
+>> +     if (info->voltage_min_design_uv != -EINVAL) {
+>> +             bool same = bd.class == bt.class && bd.block == bt.block;
+>> +             if (!same)
+>> +                     bq27xxx_battery_read_dm_block(di, &bt);
+>> +             bq27xxx_battery_update_dm_block(di, same ? &bd : &bt,
+>> +                                     BQ27XXX_DM_TERMINATE_VOLTAGE,
+>> +                                     info->voltage_min_design_uv / 1000);
+>> +     }
+>> +
+>> +     bq27xxx_battery_write_dm_block(di, &bd);
+>> +     bq27xxx_battery_write_dm_block(di, &bt);
+>> +
+>> +     bq27xxx_battery_seal(di);
+>> +
+>> +     if (di->chip != BQ27421) { /* not a cfgupdate chip, so reset */
+>> +             bq27xxx_write(di, BQ27XXX_REG_CTRL, BQ27XXX_RESET, false);
+>> +             BQ27XXX_MSLEEP(300); /* reset time is not documented */
+>> +     }
+>> +     /* assume bq27xxx_battery_update() is called hereafter */
+>> +}
+>> +
+>> +void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
+>> +{
+>> +     struct power_supply_battery_info info = {};
+>> +     unsigned int min, max;
+>> +
+>> +     if (!di->dm_regs)
+>> +             return;
+>> +
+>> +     if (power_supply_get_battery_info(di->bat, &info) < 0)
+>> +             return;
+>> +
+>> +     if (info.energy_full_design_uwh != info.charge_full_design_uah) {
+>> +             if (info.energy_full_design_uwh == -EINVAL)
+>> +                     dev_warn(di->dev, "missing battery:energy-full-design-microwatt-hours\n");
+>> +             else if (info.charge_full_design_uah == -EINVAL)
+>> +                     dev_warn(di->dev, "missing battery:charge-full-design-microamp-hours\n");
+>> +     }
+>> +
+>> +     /* assume min == 0 */
+>> +     max = di->dm_regs[BQ27XXX_DM_DESIGN_ENERGY].max;
+>> +     if (info.energy_full_design_uwh > max * 1000) {
+>> +             dev_err(di->dev, "invalid battery:energy-full-design-microwatt-hours %d\n",
+>> +                     info.energy_full_design_uwh);
+>> +             info.energy_full_design_uwh = -EINVAL;
+>> +     }
+>> +
+>> +     /* assume min == 0 */
+>> +     max = di->dm_regs[BQ27XXX_DM_DESIGN_CAPACITY].max;
+>> +     if (info.charge_full_design_uah > max * 1000) {
+>> +             dev_err(di->dev, "invalid battery:charge-full-design-microamp-hours %d\n",
+>> +                     info.charge_full_design_uah);
+>> +             info.charge_full_design_uah = -EINVAL;
+>> +     }
+>> +
+>> +     min = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].min;
+>> +     max = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].max;
+>> +     if ((info.voltage_min_design_uv < min * 1000 ||
+>> +          info.voltage_min_design_uv > max * 1000) &&
+>> +          info.voltage_min_design_uv != -EINVAL) {
+>> +             dev_err(di->dev, "invalid battery:voltage-min-design-microvolt %d\n",
+>> +                     info.voltage_min_design_uv);
+>> +             info.voltage_min_design_uv = -EINVAL;
+>> +     }
+>> +
+>> +     if ((info.energy_full_design_uwh != -EINVAL &&
+>> +          info.charge_full_design_uah != -EINVAL) ||
+>> +          info.voltage_min_design_uv  != -EINVAL)
+>> +             bq27xxx_battery_set_config(di, &info);
+>> +}
+>> +
+>>  /*
+>>   * Return the battery State-of-Charge
+>>   * Or < 0 if something fails.
+>> @@ -1727,6 +1819,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+>>       case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+>>               ret = bq27xxx_simple_value(di->charge_design_full, val);
+>>               break;
+>> +     /*
+>> +      * TODO: Implement these to make registers set from
+>> +      * power_supply_battery_info visible in sysfs.
+>> +      */
+>> +     case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
+>> +     case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+>> +             return -EINVAL;
+>>       case POWER_SUPPLY_PROP_CYCLE_COUNT:
+>>               ret = bq27xxx_simple_value(di->cache.cycle_count, val);
+>>               break;
+>> @@ -1760,7 +1859,10 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+>>  int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>  {
+>>       struct power_supply_desc *psy_desc;
+>> -     struct power_supply_config psy_cfg = { .drv_data = di, };
+>> +     struct power_supply_config psy_cfg = {
+>> +             .of_node = di->dev->of_node,
+>> +             .drv_data = di,
+>> +     };
+>>
+>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>>       mutex_init(&di->lock);
+>> @@ -1785,6 +1887,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>
+>>       dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+>>
+>> +     bq27xxx_battery_settings(di);
+>>       bq27xxx_battery_update(di);
+>>
+>>       mutex_lock(&bq27xxx_list_lock);
+>>
