@@ -1,247 +1,106 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v12 8/9] power: bq27xxx_battery: Enable chip data memory
- update for certain chips
-Date: Mon, 27 Mar 2017 14:12:45 -0700
-Message-ID: <CAKvHMgTJsYv0J+yZRtZMedae90jFqzyfctN2bxB90XBd7XQjxA@mail.gmail.com>
-References: <20170327074159.16213-1-liam@networkimprov.net>
- <20170327074159.16213-5-liam@networkimprov.net> <5f1a297f-d99e-7fcc-c98c-f0802625abe3@ti.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH][RFC] cpufreq: Bring CPUs up even if cpufreq_online failed
+Date: Mon, 27 Mar 2017 23:32:35 +0200
+Message-ID: <CAJZ5v0i1DN8vJSF6_VD6r3dYFeuRTkaotFU5=wtQpquoEfTMtg@mail.gmail.com>
+References: <1490415611-16945-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:32933 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751629AbdC0VWj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2017 17:22:39 -0400
-Received: by mail-it0-f65.google.com with SMTP id 76so14264608itj.0
-        for <linux-pm@vger.kernel.org>; Mon, 27 Mar 2017 14:22:38 -0700 (PDT)
-In-Reply-To: <5f1a297f-d99e-7fcc-c98c-f0802625abe3@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1490415611-16945-1-git-send-email-yu.c.chen@intel.com>
+Sender: stable-owner@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "Stable # 4 . 9+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On Mon, Mar 27, 2017 at 8:05 AM, Andrew F. Davis <afd@ti.com> wrote:
-> On 03/27/2017 02:41 AM, Liam Breck wrote:
->> From: Liam Breck <kernel@networkimprov.net>
->>
->> Support data memory update of BQ27500, 545, 421, 425, 441, 621.
->>
->> Pass actual chip ID into _setup() to allow support for previously unID'd chips.
->>
->> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->> ---
->>  drivers/power/supply/bq27xxx_battery.c     | 70 ++++++++++++++++++++++++++++--
->>  drivers/power/supply/bq27xxx_battery_i2c.c | 19 ++++----
->>  include/linux/power/bq27xxx_battery.h      | 13 +++++-
->>  3 files changed, 88 insertions(+), 14 deletions(-)
->>
->> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->> index d845ade..95f86ad 100644
->> --- a/drivers/power/supply/bq27xxx_battery.c
->> +++ b/drivers/power/supply/bq27xxx_battery.c
->> @@ -894,6 +894,36 @@ static const char* bq27xxx_dm_reg_name[] = {
->>       [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
->>  };
->>
->> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
->> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
->> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
->> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
->> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
->> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
->> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
->> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
->> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
->> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
->> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
->> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
->> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
->> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
->> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
->> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
->> +};
->> +
->>
->>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
->>  {
->> @@ -1856,7 +1886,12 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
->>       schedule_delayed_work(&di->work, 0);
->>  }
->>
->> -int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->> +#define BQ27XXX_INIT(c,d,k)   \
->> +     di->chip       = (c); \
->> +     di->dm_regs    = (d); \
->> +     di->unseal_key = (k)
+On Sat, Mar 25, 2017 at 5:20 AM, Chen Yu <yu.c.chen@intel.com> wrote:
+> There is a report that after
+> commit 27622b061eb4 ("cpufreq: Convert to hotplug state machine"),
+> the normal CPU offline/online cycle failed on some platforms.
+> According to the ftrace result, this problem was triggered on
+> platforms using acpi-freq as the default cpufreq driver,
+> and due to the lack of some ACPI freq method(_PCT eg), the
+> cpufreq_online failed and returned a negative value, thus the cpu
+> hotplug statemachine rollbacked the CPU online process. Actually
+> the failure of cpufreq_online should not impact the whole CPU
+> online process according to the original semantics before above patch.
+> BTW, during system bootup the cpufreq_online is not invoked via
+> cpuhotplug statemachine but by the cpufreq device creation process,
+> thus the APs can be brought up although cpufreq_online failed in that
+> stage.
 >
-> These are static values per device, use a mapping table from chip ->
-> dm_regs/unseal_key, no need to fill in a static table at run-time.
+> This patch ignores the return value of cpufreq_online/offline and
+> prints a warning if there is a failure.
 >
->> +
->> +int bq27xxx_battery_setup(struct bq27xxx_device_info *di, enum bq27xxx_chip real_chip)
->>  {
->>       struct power_supply_desc *psy_desc;
->>       struct power_supply_config psy_cfg = {
->> @@ -1864,6 +1899,36 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>               .drv_data = di,
->>       };
->>
->> +     switch(real_chip) {
->> +                     /* categories */
->> +     case BQ27000:   BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27010:   BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ2750X:   BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27500:   BQ27XXX_INIT(real_chip, bq27500_dm_regs, 0x04143672); break;
->> +     case BQ2751X:   BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27510G1: BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27510G2: BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27510G3: BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27520G1: BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27520G2: BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27520G3: BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27520G4: BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27530:   BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27541:   BQ27XXX_INIT(real_chip, 0, 0); break;
->> +     case BQ27545:   BQ27XXX_INIT(real_chip, bq27545_dm_regs, 0x04143672); break;
->> +     case BQ27421:   BQ27XXX_INIT(real_chip, bq27421_dm_regs, 0x80008000); break;
->> +
->> +                     /* members of categories */
->> +     case BQ2752X:   BQ27XXX_INIT(BQ27510G3, 0, 0); break;
->> +     case BQ27531:   BQ27XXX_INIT(BQ27530,   0, 0); break;
->> +     case BQ27542:   BQ27XXX_INIT(BQ27541,   0, 0); break;
->> +     case BQ27546:   BQ27XXX_INIT(BQ27541,   0, 0); break;
->> +     case BQ27742:   BQ27XXX_INIT(BQ27541,   0, 0); break;
->> +     case BQ27425:   BQ27XXX_INIT(BQ27421,   bq27425_dm_regs, 0x04143672); break;
->> +     case BQ27441:   BQ27XXX_INIT(BQ27421,   bq27421_dm_regs, 0x80008000); break;
->> +     case BQ27621:   BQ27XXX_INIT(BQ27421,   bq27621_dm_regs, 0x80008000); break;
->> +     }
->> +
->>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
->>       mutex_init(&di->lock);
->>       di->regs = bq27xxx_regs[di->chip];
->> @@ -1981,11 +2046,10 @@ static int bq27xxx_battery_platform_probe(struct platform_device *pdev)
->>       platform_set_drvdata(pdev, di);
->>
->>       di->dev = &pdev->dev;
->> -     di->chip = pdata->chip;
->>       di->name = pdata->name ?: dev_name(&pdev->dev);
->>       di->bus.read = bq27xxx_battery_platform_read;
->>
->> -     return bq27xxx_battery_setup(di);
->> +     return bq27xxx_battery_setup(di, pdata->chip);
->>  }
->>
->>  static int bq27xxx_battery_platform_remove(struct platform_device *pdev)
->> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
->> index a597221..aaeddc0 100644
->> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
->> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
->> @@ -169,7 +169,6 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
->>
->>       di->id = num;
->>       di->dev = &client->dev;
->> -     di->chip = id->driver_data;
->>       di->name = name;
->>
->>       di->bus.read = bq27xxx_battery_i2c_read;
->> @@ -177,7 +176,7 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
->>       di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
->>       di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
->>
->> -     ret = bq27xxx_battery_setup(di);
->> +     ret = bq27xxx_battery_setup(di, id->driver_data);
->>       if (ret)
->>               goto err_failed;
->>
->> @@ -230,7 +229,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>       { "bq27210", BQ27010 },
->>       { "bq27500", BQ2750X },
->>       { "bq27510", BQ2751X },
->> -     { "bq27520", BQ2751X },
->> +     { "bq27520", BQ2752X },
->>       { "bq27500-1", BQ27500 },
->>       { "bq27510g1", BQ27510G1 },
->>       { "bq27510g2", BQ27510G2 },
->> @@ -240,16 +239,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>       { "bq27520g3", BQ27520G3 },
->>       { "bq27520g4", BQ27520G4 },
->>       { "bq27530", BQ27530 },
->> -     { "bq27531", BQ27530 },
->> +     { "bq27531", BQ27531 },
->>       { "bq27541", BQ27541 },
->> -     { "bq27542", BQ27541 },
->> -     { "bq27546", BQ27541 },
->> -     { "bq27742", BQ27541 },
->> +     { "bq27542", BQ27542 },
->> +     { "bq27546", BQ27546 },
->> +     { "bq27742", BQ27742 },
->>       { "bq27545", BQ27545 },
->>       { "bq27421", BQ27421 },
->> -     { "bq27425", BQ27421 },
->> -     { "bq27441", BQ27421 },
->> -     { "bq27621", BQ27421 },
->> +     { "bq27425", BQ27425 },
->> +     { "bq27441", BQ27441 },
->> +     { "bq27621", BQ27621 },
->>       {},
->>  };
->>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
->> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
->> index 227eb08..4577727 100644
->> --- a/include/linux/power/bq27xxx_battery.h
->> +++ b/include/linux/power/bq27xxx_battery.h
->> @@ -2,6 +2,7 @@
->>  #define __LINUX_BQ27X00_BATTERY_H__
->>
->>  enum bq27xxx_chip {
->> +     /* categories; index for bq27xxx_regs[] */
->>       BQ27000 = 1, /* bq27000, bq27200 */
->>       BQ27010, /* bq27010, bq27210 */
->>       BQ2750X, /* bq27500 deprecated alias */
->> @@ -18,6 +19,16 @@ enum bq27xxx_chip {
->>       BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
->>       BQ27545, /* bq27545 */
->>       BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
->> +
->> +     /* members of categories; translate these to category in _setup() */
->> +     BQ2752X, /* deprecated alias */
->> +     BQ27531,
->> +     BQ27542,
->> +     BQ27546,
->> +     BQ27742,
->> +     BQ27425,
->> +     BQ27441,
->> +     BQ27621,
->>  };
->>
->>  /**
->> @@ -78,7 +89,7 @@ struct bq27xxx_device_info {
->>  };
->>
->>  void bq27xxx_battery_update(struct bq27xxx_device_info *di);
->> -int bq27xxx_battery_setup(struct bq27xxx_device_info *di);
->> +int bq27xxx_battery_setup(struct bq27xxx_device_info *di, enum bq27xxx_chip real_chip);
+> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=194581
+> Fixes: 27622b061eb4 ("cpufreq: Convert to hotplug state machine")
+> Reported-and-tested-by: Tomasz Maciej Nowak <tmn505@gmail.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Stable <stable@vger.kernel.org> # 4.9+
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++--
+>  1 file changed, 24 insertions(+), 2 deletions(-)
 >
-> struct bq27xxx_device_info contains all needed info, if you want more
-> info passed into battery_setup() then add that into bq27xxx_device_info.
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index b8ff617..1c13873 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2391,6 +2391,28 @@ EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
+>   *********************************************************************/
+>  static enum cpuhp_state hp_online;
+>
+> +static int cpuhp_cpufreq_online(unsigned int cpu)
+> +{
+> +       int ret = cpufreq_online(cpu);
+> +
+> +       if (ret)
+> +               pr_err("Failed to bring cpufreq online for CPU%u. (%d)\n",
+> +                       cpu, ret);
 
-So add di->realchip, even tho it isn't used outside _setup() ? It's
-easier to use di->chip and alter it in setup, but Sebastian complained
-about that.
+This pr_err() is not particularly useful IMO, because cpufreq_online()
+complains on the majority of errors.
 
->>  void bq27xxx_battery_teardown(struct bq27xxx_device_info *di);
->>
->>  #endif
->>
+It would be better to make cpufreq_online() log errors with pr_err()
+in all cases instead.
+
+> +
+> +       return 0;
+> +}
+> +
+> +static int cpuhp_cpufreq_offline(unsigned int cpu)
+> +{
+> +       int ret = cpufreq_offline(cpu);
+> +
+> +       if (ret)
+> +               pr_err("Failed to put cpufreq offline for CPU%u. (%d)\n",
+> +                       cpu, ret);
+
+And analogously here.
+
+> +
+> +       return 0;
+> +}
+> +
+>  /**
+>   * cpufreq_register_driver - register a CPU Frequency driver
+>   * @driver_data: A struct cpufreq_driver containing the values#
+> @@ -2453,8 +2475,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+>         }
+>
+>         ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "cpufreq:online",
+> -                                       cpufreq_online,
+> -                                       cpufreq_offline);
+> +                                       cpuhp_cpufreq_online,
+> +                                       cpuhp_cpufreq_offline);
+>         if (ret < 0)
+>                 goto err_if_unreg;
+>         hp_online = ret;
+> --
+> 2.7.4
+
+The rest looks OK to me.
+
+Thanks,
+Rafael
