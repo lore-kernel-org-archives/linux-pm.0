@@ -1,225 +1,171 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v12 5/9] power: bq27xxx_battery: Add bulk transfer bus methods
-Date: Mon, 27 Mar 2017 00:41:55 -0700
-Message-ID: <20170327074159.16213-2-liam@networkimprov.net>
+Subject: [PATCH v12 7/9] power: bq27xxx_battery: Add power_supply_battery_info support
+Date: Mon, 27 Mar 2017 00:41:57 -0700
+Message-ID: <20170327074159.16213-4-liam@networkimprov.net>
 References: <20170327074159.16213-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f67.google.com ([74.125.83.67]:34662 "EHLO
-        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751563AbdC0HmP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2017 03:42:15 -0400
-Received: by mail-pg0-f67.google.com with SMTP id o123so7875207pga.1
-        for <linux-pm@vger.kernel.org>; Mon, 27 Mar 2017 00:42:14 -0700 (PDT)
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:36275 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751607AbdC0Hmg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2017 03:42:36 -0400
+Received: by mail-pg0-f65.google.com with SMTP id 81so10609962pgh.3
+        for <linux-pm@vger.kernel.org>; Mon, 27 Mar 2017 00:42:35 -0700 (PDT)
 In-Reply-To: <20170327074159.16213-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
 Cc: Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-From: Matt Ranostay <matt@ranostay.consulting>
+From: Liam Breck <kernel@networkimprov.net>
 
-Declare bus.write/read_bulk/write_bulk().
-Add I2C write/read_bulk/write_bulk() to implement the above.
-Add bq27xxx_write/read_block/write_block() helper functions to call the above.
+Previously there was no way to configure these chips in the event that the
+defaults didn't match the battery in question.
+
+We now call power_supply_get_battery_info(), check its values, and write
+battery data to chip data memory (flash/RAM/NVM).
 
 Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- drivers/power/supply/bq27xxx_battery.c     | 55 +++++++++++++++++++-
- drivers/power/supply/bq27xxx_battery_i2c.c | 82 +++++++++++++++++++++++++++++-
- include/linux/power/bq27xxx_battery.h      |  3 ++
- 3 files changed, 137 insertions(+), 3 deletions(-)
+ drivers/power/supply/bq27xxx_battery.c | 105 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 104 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 398801a..f8c919e 100644
+index ad152cc..d845ade 100644
 --- a/drivers/power/supply/bq27xxx_battery.c
 +++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -794,11 +794,62 @@ MODULE_PARM_DESC(poll_interval,
- static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
- 			       bool single)
- {
--	/* Reports EINVAL for invalid/missing registers */
-+	int ret;
-+
- 	if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
- 		return -EINVAL;
- 
--	return di->bus.read(di, di->regs[reg_index], single);
-+	ret = di->bus.read(di, di->regs[reg_index], single);
-+	if (ret < 0)
-+		dev_dbg(di->dev, "failed to read register 0x%02x (index %d)\n",
-+			di->regs[reg_index], reg_index);
-+
-+	return ret;
-+}
-+
-+static inline int bq27xxx_write(struct bq27xxx_device_info *di, int reg_index,
-+				u16 value, bool single)
-+{
-+	int ret;
-+
-+	if (!di || di->regs[reg_index] == INVALID_REG_ADDR || !di->bus.write)
-+		return -EINVAL;
-+
-+	ret = di->bus.write(di, di->regs[reg_index], value, single);
-+	if (ret < 0)
-+		dev_dbg(di->dev, "failed to write register 0x%02x (index %d)\n",
-+			di->regs[reg_index], reg_index);
-+
-+	return ret;
-+}
-+
-+static int bq27xxx_xfer(struct bq27xxx_device_info *di,
-+			int (*xfer)(struct bq27xxx_device_info*, u8, u8*, int),
-+			u8* data, int len)
-+{
-+	int ret;
-+
-+	if (!di || di->regs[BQ27XXX_DM_DATA] == INVALID_REG_ADDR || !xfer)
-+		return -EINVAL;
-+
-+	ret = xfer(di, di->regs[BQ27XXX_DM_DATA], data, len);
-+	if (ret < 0)
-+		dev_dbg(di->dev, "failed to xfer register 0x%02x (index %d)\n",
-+			di->regs[BQ27XXX_DM_DATA], BQ27XXX_DM_DATA);
-+
-+	return ret;
-+}
-+
-+static inline int bq27xxx_read_block(struct bq27xxx_device_info *di,
-+				     u8* data, int len)
-+{
-+	return bq27xxx_xfer(di, di ? di->bus.read_bulk : 0, data, len);
-+}
-+
-+static inline int bq27xxx_write_block(struct bq27xxx_device_info *di,
-+				      u8* data, int len)
-+{
-+	return bq27xxx_xfer(di, di ? di->bus.write_bulk : 0, data, len);
- }
- 
- /*
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index c68fbc3..a597221 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -38,7 +38,7 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
- {
- 	struct i2c_client *client = to_i2c_client(di->dev);
- 	struct i2c_msg msg[2];
--	unsigned char data[2];
-+	u8 data[2];
- 	int ret;
- 
- 	if (!client->adapter)
-@@ -68,6 +68,82 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
+@@ -1210,6 +1210,98 @@ static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
  	return ret;
  }
  
-+static int bq27xxx_battery_i2c_write(struct bq27xxx_device_info *di, u8 reg,
-+				     int value, bool single)
++static void bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
++				       struct power_supply_battery_info *info)
 +{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	struct i2c_msg msg;
-+	u8 data[4];
-+	int ret;
++	struct bq27xxx_dm_buf bd = BQ27XXX_DM_BUF(di, BQ27XXX_DM_DESIGN_CAPACITY);
++	struct bq27xxx_dm_buf bt = BQ27XXX_DM_BUF(di, BQ27XXX_DM_TERMINATE_VOLTAGE);
 +
-+	if (!client->adapter)
-+		return -ENODEV;
++	if (bq27xxx_battery_unseal(di) < 0)
++		return;
 +
-+	data[0] = reg;
-+	if (single) {
-+		data[1] = (u8) value;
-+		msg.len = 2;
-+	} else {
-+		put_unaligned_le16(value, &data[1]);
-+		msg.len = 3;
++	if (info->charge_full_design_uah != -EINVAL &&
++	    info->energy_full_design_uwh != -EINVAL) {
++		bq27xxx_battery_read_dm_block(di, &bd);
++		/* assume design energy & capacity are in same block */
++		bq27xxx_battery_update_dm_block(di, &bd,
++					BQ27XXX_DM_DESIGN_CAPACITY,
++					info->charge_full_design_uah / 1000);
++		bq27xxx_battery_update_dm_block(di, &bd,
++					BQ27XXX_DM_DESIGN_ENERGY,
++					info->energy_full_design_uwh / 1000);
 +	}
 +
-+	msg.buf = data;
-+	msg.addr = client->addr;
-+	msg.flags = 0;
++	if (info->voltage_min_design_uv != -EINVAL) {
++		bool same = bd.class == bt.class && bd.block == bt.block;
++		if (!same)
++			bq27xxx_battery_read_dm_block(di, &bt);
++		bq27xxx_battery_update_dm_block(di, same ? &bd : &bt,
++					BQ27XXX_DM_TERMINATE_VOLTAGE,
++					info->voltage_min_design_uv / 1000);
++	}
 +
-+	ret = i2c_transfer(client->adapter, &msg, 1);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != 1)
-+		return -EINVAL;
-+	return 0;
++	bq27xxx_battery_write_dm_block(di, &bd);
++	bq27xxx_battery_write_dm_block(di, &bt);
++
++	bq27xxx_battery_seal(di);
++
++	if (di->chip != BQ27421) { /* not a cfgupdate chip, so reset */
++		bq27xxx_write(di, BQ27XXX_REG_CTRL, BQ27XXX_RESET, false);
++		BQ27XXX_MSLEEP(300); /* reset time is not documented */
++	}
++	/* assume bq27xxx_battery_update() is called hereafter */
 +}
 +
-+static int bq27xxx_battery_i2c_bulk_read(struct bq27xxx_device_info *di, u8 reg,
-+					 u8 *data, int len)
++void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
 +{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	int ret;
++	struct power_supply_battery_info info = {};
++	unsigned int min, max;
 +
-+	if (!client->adapter)
-+		return -ENODEV;
++	if (!di->dm_regs)
++		return;
 +
-+	ret = i2c_smbus_read_i2c_block_data(client, reg, len, data);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != len)
-+		return -EINVAL;
-+	return 0;
++	if (power_supply_get_battery_info(di->bat, &info) < 0)
++		return;
++
++	if (info.energy_full_design_uwh != info.charge_full_design_uah) {
++		if (info.energy_full_design_uwh == -EINVAL)
++			dev_warn(di->dev, "missing battery:energy-full-design-microwatt-hours\n");
++		else if (info.charge_full_design_uah == -EINVAL)
++			dev_warn(di->dev, "missing battery:charge-full-design-microamp-hours\n");
++	}
++
++	/* assume min == 0 */
++	max = di->dm_regs[BQ27XXX_DM_DESIGN_ENERGY].max;
++	if (info.energy_full_design_uwh > max * 1000) {
++		dev_err(di->dev, "invalid battery:energy-full-design-microwatt-hours %d\n",
++			info.energy_full_design_uwh);
++		info.energy_full_design_uwh = -EINVAL;
++	}
++
++	/* assume min == 0 */
++	max = di->dm_regs[BQ27XXX_DM_DESIGN_CAPACITY].max;
++	if (info.charge_full_design_uah > max * 1000) {
++		dev_err(di->dev, "invalid battery:charge-full-design-microamp-hours %d\n",
++			info.charge_full_design_uah);
++		info.charge_full_design_uah = -EINVAL;
++	}
++
++	min = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].min;
++	max = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].max;
++	if ((info.voltage_min_design_uv < min * 1000 ||
++	     info.voltage_min_design_uv > max * 1000) &&
++	     info.voltage_min_design_uv != -EINVAL) {
++		dev_err(di->dev, "invalid battery:voltage-min-design-microvolt %d\n",
++			info.voltage_min_design_uv);
++		info.voltage_min_design_uv = -EINVAL;
++	}
++
++	if ((info.energy_full_design_uwh != -EINVAL &&
++	     info.charge_full_design_uah != -EINVAL) ||
++	     info.voltage_min_design_uv  != -EINVAL)
++		bq27xxx_battery_set_config(di, &info);
 +}
 +
-+static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
-+					  u8 reg, u8 *data, int len)
-+{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	struct i2c_msg msg;
-+	u8 buf[33];
-+	int ret;
-+
-+	if (!client->adapter)
-+		return -ENODEV;
-+
-+	buf[0] = reg;
-+	memcpy(&buf[1], data, len);
-+
-+	msg.buf = buf;
-+	msg.addr = client->addr;
-+	msg.flags = 0;
-+	msg.len = len + 1;
-+
-+	ret = i2c_transfer(client->adapter, &msg, 1);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != 1)
+ /*
+  * Return the battery State-of-Charge
+  * Or < 0 if something fails.
+@@ -1727,6 +1819,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+ 		ret = bq27xxx_simple_value(di->charge_design_full, val);
+ 		break;
++	/*
++	 * TODO: Implement these to make registers set from
++	 * power_supply_battery_info visible in sysfs.
++	 */
++	case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
++	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
 +		return -EINVAL;
-+	return 0;
-+}
-+
- static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 				     const struct i2c_device_id *id)
+ 	case POWER_SUPPLY_PROP_CYCLE_COUNT:
+ 		ret = bq27xxx_simple_value(di->cache.cycle_count, val);
+ 		break;
+@@ -1760,7 +1859,10 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
  {
-@@ -95,7 +171,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 	di->dev = &client->dev;
- 	di->chip = id->driver_data;
- 	di->name = name;
-+
- 	di->bus.read = bq27xxx_battery_i2c_read;
-+	di->bus.write = bq27xxx_battery_i2c_write;
-+	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
-+	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
+ 	struct power_supply_desc *psy_desc;
+-	struct power_supply_config psy_cfg = { .drv_data = di, };
++	struct power_supply_config psy_cfg = {
++		.of_node = di->dev->of_node,
++		.drv_data = di,
++	};
  
- 	ret = bq27xxx_battery_setup(di);
- 	if (ret)
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index b312bce..c3369fa 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -40,6 +40,9 @@ struct bq27xxx_platform_data {
- struct bq27xxx_device_info;
- struct bq27xxx_access_methods {
- 	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
-+	int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
-+	int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
-+	int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
- };
+ 	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+ 	mutex_init(&di->lock);
+@@ -1785,6 +1887,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
  
- struct bq27xxx_reg_cache {
+ 	dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+ 
++	bq27xxx_battery_settings(di);
+ 	bq27xxx_battery_update(di);
+ 
+ 	mutex_lock(&bq27xxx_list_lock);
 -- 
 2.9.3
