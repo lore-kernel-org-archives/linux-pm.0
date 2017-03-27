@@ -1,164 +1,115 @@
-From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Subject: RE: [RESEND PATCH V5 7/8] thermal: da9062/61: Thermal junction
- temperature monitoring driver
-Date: Mon, 27 Mar 2017 10:09:35 +0000
-Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CD69BD3@SW-EX-MBX02.diasemi.com>
-References: <cover.1486026227.git.stwiss.opensource@diasemi.com>
- <6a1a651530fdaedd3e380aa33749ca5fce1a80a8.1486026227.git.stwiss.opensource@diasemi.com>
- <20170219014007.GA20845@localhost.localdomain>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH] PM / runtime: Use synchronous runtime PM call in
+ rpm_put_suppliers()
+Date: Mon, 27 Mar 2017 12:14:12 +0200
+Message-ID: <55b66219-e210-fe27-441c-177125afc3e0@samsung.com>
+References: <CGME20170322092305eucas1p20d2a6dfede483210febea5b5e0ff68db@eucas1p2.samsung.com>
+ <1490174570-18345-1-git-send-email-m.szyprowski@samsung.com>
+ <CAPDyKFq+mTvruQb5ifj3etMxSCWgDZTZ6ebGkk84UCQDqjR4-A@mail.gmail.com>
+ <CAJZ5v0ihYQp4_oJCu3Tugbqrm=68hcxdg8-yUphbCXCUw3UzPw@mail.gmail.com>
+ <CAPDyKFot3C1C1k45JovwKHFkvTJAFvdetoE8_ADAhMCkFw3hPA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170219014007.GA20845-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lukasz Luba <lukasz.luba-5wv7dgnIgG8@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-reply-to: <CAPDyKFot3C1C1k45JovwKHFkvTJAFvdetoE8_ADAhMCkFw3hPA@mail.gmail.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 19 February 2017 01:40, Eduardo Valentin wrote:
+Hi Ulf,
 
-Hi Eduardo,
+On 2017-03-23 13:47, Ulf Hansson wrote:
+> On 22 March 2017 at 21:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> On Wed, Mar 22, 2017 at 12:34 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>> On 22 March 2017 at 10:22, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+>>>> rpm_put_suppliers() might be called as a result of pm_runtime_put_sync()
+>>>> call, where the called explicitly wants to perform the operation in
+>>>> synchronous way to avoid some deadlocks related to concurrent code
+>>>> execution in the PM workers. However the current code for handling device
+>>>> links always use asynchronous calls. This patch changes it to always use
+>>>> the synchronous calls.
+>>> This is a good idea! It is better to leave the decision to the "leaf"
+>>> node of whether to use asynchronous mode or not.
+>> One immediate concern that I have is that this happens in an SRCU
+>> read-side critical section and sync runtime suspend can take arbitrary
+>> amount of time, especially if those devices have suppliers etc.  You
+>> may very well wait for an entire subtree to suspend synchronously
+>> here.
+> Yes that's a problem. Can we address that somehow?
 
-My apologies in taking so long to reply.
-There were *no* problems with implementing your requests. See below.
-I will have sent these changes as PATCH V6.
+Just a stupid question: why this is issue in case of rpm_put_suppliers()
+and call to pm_runtime_put_sync(), but it is okay in rpm_get_suppliers()
+and pm_runtime_get_sync(), which can also take a long time to complete?
 
-https://lkml.org/lkml/2017/3/27/253
+>> Moreover, if the suppliers have parents, those parents won't be
+>> suspended synchronously anyway, so this only addresses the first level
+>> of hierarchy in that case.
+>>
+>> Also the behavior for suppliers follows the behavior for parents and I
+>> don't quite see the reason for these two cases to behave differently
+>> in principle.
+> Yes, you are right!
+>
+> We shouldn't change this for suppliers unless we also change this for parents.
 
-Regards,
-Steve
+Right, this can also lead to the deadlock similar to the one observed with
+links. Once again, it looks that if caller wants a synchronous operation,
+it should be propagated to parents also.
 
-> To: Steve Twiss
-> Subject: Re: [RESEND PATCH V5 7/8] thermal: da9062/61: Thermal junction
-> temperature monitoring driver
+>>>> This patch fixes the potential deadlock, which appears during adding
+>>>> runtime PM support to clock framework, which uses global mutex, which is
+>>>> reentrant only for the current process, so trying to execute runtime PM
+>>>> callback from the worker results in deadlock (the mentioned mutex is
+>>>> already taken by the current process, which waits for execution of PM
+>>>> worker).
+>>> This just tells that the locking mechanism for clocks are fragile.
+>> Right.
+>>
+>> We seem to be working around problems in there with this patch.
+>>
+>>> Whether it is a good motivation for this change, I am not sure.
+>>>
+>>> In either case, I like the change!
+>> Why exactly do you like it?
+> Okay, let me try to elaborate.
+>
+> For the async runtime PM suspend/idle case (including runtime PM autosuspend):
+> When a driver for a children/consumer decides to use the async runtime
+> PM APIs, I assume it's because the driver expects the device to be
+> used in some kind of a "bursty" manner. Meaning it doesn't make sense
+> to save power in-between every request, but instead leave the device
+> powered for little while after a request has been served. The purpose
+> is often to avoid the wakeup-latency for *each* request, when these
+> comes in bursts.
+>
+> For these cases the driver has already traded some power savings for
+> improved performance of requests in bursts. When this trade is done
+> for the children/consumer, I think it seems reasonable to not further
+> defer the parent/supplier to be be runtime suspended/idled, as that
+> would further trade power for performance, which is what happens when
+> rpm_idle|suspend() decides to punt this to a work.
+>
+> Moreover, scheduling a work for each parent/supplier seems suboptimal
+> to me, as in the async case we are already executing from within a
+> work. In cases of a higher level of device hierarchy, several works
+> becomes scheduled.
+>
+> For the sync runtime PM suspend/idle case:
+> When a driver for a children/consumers decides to use the sync runtime
+> PM APIs, it's most likely because it wants the device to enter its low
+> power state as soon as possible. In other words, there is no need to
+> trade power for performance, either because power is more important
+> than performance or because the wakeup latency is negligible. To me, I
+> think it seems reasonable to respect this policy for parents/suppliers
+> as well instead of always punting to a work.
 
-[...]
+Thanks for the detailed explanation. It looks that is should be safe to
+use sync for both links and parents in all cases...
 
-> I see no reason why this driver cannot have the COMPILE_TEST flag.
-> Tested myself here so:
-> 
-> +	depends on MFD_DA9062 || COMPILE_TEST
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
-Added.
-
-> please cleanup the minor issues checkpatch complains:
-> /scripts/checkpatch.pl --strict <your patch>
-
-I have fixed all of those for latest checkpatch.pl script, this time using "--strict".
-
-[...]
-
-> > +static void da9062_thermal_poll_on(struct work_struct *work)
-> > +{
-> > +	struct da9062_thermal *thermal = container_of(work,
-> > +						struct da9062_thermal,
-> > +						work.work);
-> > +	unsigned int val;
-> > +	int ret;
-> > +
-> > +	/* clear E_TEMP */
-> > +	ret = regmap_write(thermal->hw->regmap,
-> > +				DA9062AA_EVENT_B,
-> > +				DA9062AA_E_TEMP_MASK);
-> > +	if (ret < 0) {
-> > +		dev_err(thermal->dev,
-> > +			"Cannot clear the TJUNC temperature status\n");
-> > +		goto err_enable_irq;
-> > +	}
-> > +
-> > +	/* Now read E_TEMP again: it is acting like a status bit.
-> > +	 * If over-temperature, then this status will be true.
-> > +	 * If not over-temperature, this status will be false.
-> > +	 */
-> > +	ret = regmap_read(thermal->hw->regmap,
-> > +			  DA9062AA_EVENT_B,
-> > +			  &val);
-> > +	if (ret < 0) {
-> > +		dev_err(thermal->dev,
-> > +			"Cannot check the TJUNC temperature status\n");
-> > +		goto err_enable_irq;
-> > +	} else {
-> > +		if (val & DA9062AA_E_TEMP_MASK) {
-> > +			mutex_lock(&thermal->lock);
-> > +			thermal->temperature = DA9062_MILLI_CELSIUS(125);
-> > +			mutex_unlock(&thermal->lock);
-> > +			thermal_zone_device_update(thermal->zone,
-> > +				THERMAL_EVENT_UNSPECIFIED);
-> > +
-> > +			schedule_delayed_work(&thermal->work,
-> > +				msecs_to_jiffies(thermal->zone->passive_delay));
-> > +			return;
-> > +		} else {
-> > +			mutex_lock(&thermal->lock);
-> > +			thermal->temperature = DA9062_MILLI_CELSIUS(0);
-> > +			mutex_unlock(&thermal->lock);
-> > +			thermal_zone_device_update(thermal->zone,
-> > +				THERMAL_EVENT_UNSPECIFIED);
-> > +		}
-> > +	}
-> 
-> The above code is a little confusing, can it be maybe, better read like
-> this?
-> 
-> diff --git a/drivers/thermal/da9062-thermal.c b/drivers/thermal/da9062-
-> thermal.c
-> index 52a095d..6ac8574 100644
-> --- a/drivers/thermal/da9062-thermal.c
-> +++ b/drivers/thermal/da9062-thermal.c
-> @@ -95,26 +95,26 @@ static void da9062_thermal_poll_on(struct work_struct
-> *work)
->  		dev_err(thermal->dev,
->  			"Cannot check the TJUNC temperature status\n");
->  		goto err_enable_irq;
-> -	} else {
-> -		if (val & DA9062AA_E_TEMP_MASK) {
-> -			mutex_lock(&thermal->lock);
-> -			thermal->temperature = DA9062_MILLI_CELSIUS(125);
-> -			mutex_unlock(&thermal->lock);
-> -			thermal_zone_device_update(thermal->zone,
-> -				THERMAL_EVENT_UNSPECIFIED);
-> -
-> -			schedule_delayed_work(&thermal->work,
-> +	}
-> +
-> +	if (val & DA9062AA_E_TEMP_MASK) {
-> +		mutex_lock(&thermal->lock);
-> +		thermal->temperature = DA9062_MILLI_CELSIUS(125);
-> +		mutex_unlock(&thermal->lock);
-> +		thermal_zone_device_update(thermal->zone,
-> +				THERMAL_EVENT_UNSPECIFIED);
-> +
-> +		schedule_delayed_work(&thermal->work,
->  				msecs_to_jiffies(thermal->zone->passive_delay));
-> -			return;
-> -		} else {
-> -			mutex_lock(&thermal->lock);
-> -			thermal->temperature = DA9062_MILLI_CELSIUS(0);
-> -			mutex_unlock(&thermal->lock);
-> -			thermal_zone_device_update(thermal->zone,
-> -			THERMAL_EVENT_UNSPECIFIED);
-> -		}
-> +		return;
->  	}
-> 
-> +	mutex_lock(&thermal->lock);
-> +	thermal->temperature = DA9062_MILLI_CELSIUS(0);
-> +	mutex_unlock(&thermal->lock);
-> +	thermal_zone_device_update(thermal->zone,
-> +			THERMAL_EVENT_UNSPECIFIED);
-> +
->  err_enable_irq:
->  	enable_irq(thermal->irq);
->  }
-
-That makes more sense getting rid of those else clauses.
-Applied that, thanks.
-
-Regards,
-Steve
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
