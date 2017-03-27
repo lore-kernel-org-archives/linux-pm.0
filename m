@@ -1,97 +1,247 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC][PATCH v3 2/2] cpufreq: schedutil: Avoid reducing frequency
- of busy CPUs prematurely
-Date: Mon, 27 Mar 2017 23:11:12 +0200
-Message-ID: <CAJZ5v0ghzyNG-HL8gnfcPeq=t7sosd6b54rr2gQbm7FpVkUh9Q@mail.gmail.com>
-References: <4366682.tsferJN35u@aspire.rjw.lan> <2185243.flNrap3qq1@aspire.rjw.lan>
- <3300960.HE4b3sK4dn@aspire.rjw.lan> <2997922.DidfPadJuT@aspire.rjw.lan>
- <58D5C47A.4060305@nvidia.com> <CAKfTPtDAVZg--KchHN9S3hdgRB9OzQKJTR7ioCh8hTksRDDekg@mail.gmail.com>
- <58D97DBE.2090508@nvidia.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v12 8/9] power: bq27xxx_battery: Enable chip data memory
+ update for certain chips
+Date: Mon, 27 Mar 2017 14:12:45 -0700
+Message-ID: <CAKvHMgTJsYv0J+yZRtZMedae90jFqzyfctN2bxB90XBd7XQjxA@mail.gmail.com>
+References: <20170327074159.16213-1-liam@networkimprov.net>
+ <20170327074159.16213-5-liam@networkimprov.net> <5f1a297f-d99e-7fcc-c98c-f0802625abe3@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f196.google.com ([74.125.82.196]:32846 "EHLO
-        mail-ot0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752309AbdC0VLs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2017 17:11:48 -0400
-In-Reply-To: <58D97DBE.2090508@nvidia.com>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:32933 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751629AbdC0VWj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Mar 2017 17:22:39 -0400
+Received: by mail-it0-f65.google.com with SMTP id 76so14264608itj.0
+        for <linux-pm@vger.kernel.org>; Mon, 27 Mar 2017 14:22:38 -0700 (PDT)
+In-Reply-To: <5f1a297f-d99e-7fcc-c98c-f0802625abe3@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sai Gurrappadi <sgurrappadi@nvidia.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Boonstoppel <pboonstoppel@nvidia.com>
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On Mon, Mar 27, 2017 at 11:01 PM, Sai Gurrappadi <sgurrappadi@nvidia.com> w=
-rote:
-> Hi Vincent,
->
-> On 03/27/2017 12:04 AM, Vincent Guittot wrote:
->> On 25 March 2017 at 02:14, Sai Gurrappadi <sgurrappadi@nvidia.com> wrote=
-:
->>> Hi Rafael,
->>>
->>> On 03/21/2017 04:08 PM, Rafael J. Wysocki wrote:
->>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>>
->>>> The way the schedutil governor uses the PELT metric causes it to
->>>> underestimate the CPU utilization in some cases.
->>>>
->>>> That can be easily demonstrated by running kernel compilation on
->>>> a Sandy Bridge Intel processor, running turbostat in parallel with
->>>> it and looking at the values written to the MSR_IA32_PERF_CTL
->>>> register.  Namely, the expected result would be that when all CPUs
->>>> were 100% busy, all of them would be requested to run in the maximum
->>>> P-state, but observation shows that this clearly isn't the case.
->>>> The CPUs run in the maximum P-state for a while and then are
->>>> requested to run slower and go back to the maximum P-state after
->>>> a while again.  That causes the actual frequency of the processor to
->>>> visibly oscillate below the sustainable maximum in a jittery fashion
->>>> which clearly is not desirable.
->>>>
->>>> That has been attributed to CPU utilization metric updates on task
->>>> migration that cause the total utilization value for the CPU to be
->>>> reduced by the utilization of the migrated task.  If that happens,
->>>> the schedutil governor may see a CPU utilization reduction and will
->>>> attempt to reduce the CPU frequency accordingly right away.  That
->>>> may be premature, though, for example if the system is generally
->>>> busy and there are other runnable tasks waiting to be run on that
->>>> CPU already.
->>>>
->>>
->>> Thinking out loud a bit, I wonder if what you really want to do is basi=
-cally:
->>>
->>> schedutil_cpu_util(cpu) =3D max(cpu_rq(cpu)->cfs.util_avg, total_cpu_ut=
-il_avg);
->>>
->>> Where total_cpu_util_avg tracks the average utilization of the CPU itse=
-lf over time (% of time the CPU was busy) in the same PELT like manner. The=
- difference here is that it doesn't change instantaneously as tasks migrate=
- in/out but it decays/accumulates just like the per-entity util_avgs.
+On Mon, Mar 27, 2017 at 8:05 AM, Andrew F. Davis <afd@ti.com> wrote:
+> On 03/27/2017 02:41 AM, Liam Breck wrote:
+>> From: Liam Breck <kernel@networkimprov.net>
 >>
->> But we loose the interest of immediate decrease when tasks migrate.
+>> Support data memory update of BQ27500, 545, 421, 425, 441, 621.
+>>
+>> Pass actual chip ID into _setup() to allow support for previously unID'd chips.
+>>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>> ---
+>>  drivers/power/supply/bq27xxx_battery.c     | 70 ++++++++++++++++++++++++++++--
+>>  drivers/power/supply/bq27xxx_battery_i2c.c | 19 ++++----
+>>  include/linux/power/bq27xxx_battery.h      | 13 +++++-
+>>  3 files changed, 88 insertions(+), 14 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>> index d845ade..95f86ad 100644
+>> --- a/drivers/power/supply/bq27xxx_battery.c
+>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>> @@ -894,6 +894,36 @@ static const char* bq27xxx_dm_reg_name[] = {
+>>       [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>>  };
+>>
+>> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
+>> +};
+>> +
+>>
+>>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
+>>  {
+>> @@ -1856,7 +1886,12 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+>>       schedule_delayed_work(&di->work, 0);
+>>  }
+>>
+>> -int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>> +#define BQ27XXX_INIT(c,d,k)   \
+>> +     di->chip       = (c); \
+>> +     di->dm_regs    = (d); \
+>> +     di->unseal_key = (k)
 >
-> Indeed, this is not ideal.
+> These are static values per device, use a mapping table from chip ->
+> dm_regs/unseal_key, no need to fill in a static table at run-time.
 >
->> Instead of total_cpu_util_avg we should better track RT utilization in
->> the same manner so with ongoing work for deadline we will have :
->> total_utilization =3D cfs.util_avg + rt's util_avg + deadline's util avg
->> and we still take advantage of task migration effect
+>> +
+>> +int bq27xxx_battery_setup(struct bq27xxx_device_info *di, enum bq27xxx_chip real_chip)
+>>  {
+>>       struct power_supply_desc *psy_desc;
+>>       struct power_supply_config psy_cfg = {
+>> @@ -1864,6 +1899,36 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>               .drv_data = di,
+>>       };
+>>
+>> +     switch(real_chip) {
+>> +                     /* categories */
+>> +     case BQ27000:   BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27010:   BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ2750X:   BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27500:   BQ27XXX_INIT(real_chip, bq27500_dm_regs, 0x04143672); break;
+>> +     case BQ2751X:   BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27510G1: BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27510G2: BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27510G3: BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27520G1: BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27520G2: BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27520G3: BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27520G4: BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27530:   BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27541:   BQ27XXX_INIT(real_chip, 0, 0); break;
+>> +     case BQ27545:   BQ27XXX_INIT(real_chip, bq27545_dm_regs, 0x04143672); break;
+>> +     case BQ27421:   BQ27XXX_INIT(real_chip, bq27421_dm_regs, 0x80008000); break;
+>> +
+>> +                     /* members of categories */
+>> +     case BQ2752X:   BQ27XXX_INIT(BQ27510G3, 0, 0); break;
+>> +     case BQ27531:   BQ27XXX_INIT(BQ27530,   0, 0); break;
+>> +     case BQ27542:   BQ27XXX_INIT(BQ27541,   0, 0); break;
+>> +     case BQ27546:   BQ27XXX_INIT(BQ27541,   0, 0); break;
+>> +     case BQ27742:   BQ27XXX_INIT(BQ27541,   0, 0); break;
+>> +     case BQ27425:   BQ27XXX_INIT(BQ27421,   bq27425_dm_regs, 0x04143672); break;
+>> +     case BQ27441:   BQ27XXX_INIT(BQ27421,   bq27421_dm_regs, 0x80008000); break;
+>> +     case BQ27621:   BQ27XXX_INIT(BQ27421,   bq27621_dm_regs, 0x80008000); break;
+>> +     }
+>> +
+>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>>       mutex_init(&di->lock);
+>>       di->regs = bq27xxx_regs[di->chip];
+>> @@ -1981,11 +2046,10 @@ static int bq27xxx_battery_platform_probe(struct platform_device *pdev)
+>>       platform_set_drvdata(pdev, di);
+>>
+>>       di->dev = &pdev->dev;
+>> -     di->chip = pdata->chip;
+>>       di->name = pdata->name ?: dev_name(&pdev->dev);
+>>       di->bus.read = bq27xxx_battery_platform_read;
+>>
+>> -     return bq27xxx_battery_setup(di);
+>> +     return bq27xxx_battery_setup(di, pdata->chip);
+>>  }
+>>
+>>  static int bq27xxx_battery_platform_remove(struct platform_device *pdev)
+>> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> index a597221..aaeddc0 100644
+>> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+>> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> @@ -169,7 +169,6 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+>>
+>>       di->id = num;
+>>       di->dev = &client->dev;
+>> -     di->chip = id->driver_data;
+>>       di->name = name;
+>>
+>>       di->bus.read = bq27xxx_battery_i2c_read;
+>> @@ -177,7 +176,7 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+>>       di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
+>>       di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
+>>
+>> -     ret = bq27xxx_battery_setup(di);
+>> +     ret = bq27xxx_battery_setup(di, id->driver_data);
+>>       if (ret)
+>>               goto err_failed;
+>>
+>> @@ -230,7 +229,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>       { "bq27210", BQ27010 },
+>>       { "bq27500", BQ2750X },
+>>       { "bq27510", BQ2751X },
+>> -     { "bq27520", BQ2751X },
+>> +     { "bq27520", BQ2752X },
+>>       { "bq27500-1", BQ27500 },
+>>       { "bq27510g1", BQ27510G1 },
+>>       { "bq27510g2", BQ27510G2 },
+>> @@ -240,16 +239,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>       { "bq27520g3", BQ27520G3 },
+>>       { "bq27520g4", BQ27520G4 },
+>>       { "bq27530", BQ27530 },
+>> -     { "bq27531", BQ27530 },
+>> +     { "bq27531", BQ27531 },
+>>       { "bq27541", BQ27541 },
+>> -     { "bq27542", BQ27541 },
+>> -     { "bq27546", BQ27541 },
+>> -     { "bq27742", BQ27541 },
+>> +     { "bq27542", BQ27542 },
+>> +     { "bq27546", BQ27546 },
+>> +     { "bq27742", BQ27742 },
+>>       { "bq27545", BQ27545 },
+>>       { "bq27421", BQ27421 },
+>> -     { "bq27425", BQ27421 },
+>> -     { "bq27441", BQ27421 },
+>> -     { "bq27621", BQ27421 },
+>> +     { "bq27425", BQ27425 },
+>> +     { "bq27441", BQ27441 },
+>> +     { "bq27621", BQ27621 },
+>>       {},
+>>  };
+>>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+>> index 227eb08..4577727 100644
+>> --- a/include/linux/power/bq27xxx_battery.h
+>> +++ b/include/linux/power/bq27xxx_battery.h
+>> @@ -2,6 +2,7 @@
+>>  #define __LINUX_BQ27X00_BATTERY_H__
+>>
+>>  enum bq27xxx_chip {
+>> +     /* categories; index for bq27xxx_regs[] */
+>>       BQ27000 = 1, /* bq27000, bq27200 */
+>>       BQ27010, /* bq27010, bq27210 */
+>>       BQ2750X, /* bq27500 deprecated alias */
+>> @@ -18,6 +19,16 @@ enum bq27xxx_chip {
+>>       BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+>>       BQ27545, /* bq27545 */
+>>       BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+>> +
+>> +     /* members of categories; translate these to category in _setup() */
+>> +     BQ2752X, /* deprecated alias */
+>> +     BQ27531,
+>> +     BQ27542,
+>> +     BQ27546,
+>> +     BQ27742,
+>> +     BQ27425,
+>> +     BQ27441,
+>> +     BQ27621,
+>>  };
+>>
+>>  /**
+>> @@ -78,7 +89,7 @@ struct bq27xxx_device_info {
+>>  };
+>>
+>>  void bq27xxx_battery_update(struct bq27xxx_device_info *di);
+>> -int bq27xxx_battery_setup(struct bq27xxx_device_info *di);
+>> +int bq27xxx_battery_setup(struct bq27xxx_device_info *di, enum bq27xxx_chip real_chip);
 >
-> I agree that we need better tracking for RT and DL tasks but that doesn't=
- solve the overloaded case with more than one CFS thread sharing a CPU.
->
-> In the overloaded case, we care not just about the instant where the migr=
-ate happens but also subsequent windows where the PELT metric is slowly ram=
-ping up to reflect the real utilization of a task now that it has a CPU to =
-itself.
->
-> Maybe there are better ways to solve that though :-)
+> struct bq27xxx_device_info contains all needed info, if you want more
+> info passed into battery_setup() then add that into bq27xxx_device_info.
 
-I wonder if it's viable to postpone the utilization update on both the
-source and target runqueues until the task has been fully migrated?
+So add di->realchip, even tho it isn't used outside _setup() ? It's
+easier to use di->chip and alter it in setup, but Sebastian complained
+about that.
 
-That would make the artificial utilization reductions go away.
-
-Thanks,
-Rafael
+>>  void bq27xxx_battery_teardown(struct bq27xxx_device_info *di);
+>>
+>>  #endif
+>>
