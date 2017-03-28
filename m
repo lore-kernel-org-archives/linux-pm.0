@@ -1,205 +1,98 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v12 7/9] power: bq27xxx_battery: Add power_supply_battery_info
- support
-Date: Tue, 28 Mar 2017 12:19:33 -0700
-Message-ID: <CAKvHMgStPD9qqg4-=50PW19c=BQUuqL0PR2sAZA7Ky7UKPCpkA@mail.gmail.com>
-References: <20170327074159.16213-1-liam@networkimprov.net>
- <20170327074159.16213-4-liam@networkimprov.net> <ba7819ad-d357-02fc-c06b-30d9a4e701cc@ti.com>
- <CAKvHMgT_Z6_3YUvp7U-SeKYbFtqwSwxzQuO8o6t0KFyH+0Q8XQ@mail.gmail.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [RFC 4/8] regulator: core: Check enabling bypass respects
+ constraints
+Date: Tue, 28 Mar 2017 22:49:55 +0300
+Message-ID: <1490730595.15830.1.camel@nxp.com>
+References: <cover.1490199005.git.leonard.crestez@nxp.com>
+         <1edff9bc610969b0c53fa1080d5db021c8e00b2d.1490199005.git.leonard.crestez@nxp.com>
+         <20170324125212.vikgekqxsnu7htzl@sirena.org.uk>
+         <1490704781.3546.57.camel@nxp.com>
+         <20170328164754.z2c2ttovs3sxbcos@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:36620 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755292AbdC1TTf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Mar 2017 15:19:35 -0400
-Received: by mail-it0-f65.google.com with SMTP id 190so5430470itm.3
-        for <linux-pm@vger.kernel.org>; Tue, 28 Mar 2017 12:19:34 -0700 (PDT)
-In-Reply-To: <CAKvHMgT_Z6_3YUvp7U-SeKYbFtqwSwxzQuO8o6t0KFyH+0Q8XQ@mail.gmail.com>
+Received: from mail-sn1nam01on0084.outbound.protection.outlook.com ([104.47.32.84]:38079
+        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1752637AbdC1TuF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 28 Mar 2017 15:50:05 -0400
+In-Reply-To: <20170328164754.z2c2ttovs3sxbcos@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Sascha Hauer <kernel@pengutronix.de>, Liam Girdwood <lgirdwood@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawnguo@kernel.org>, Robin Gong <yibin.gong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Mar 27, 2017 at 1:52 PM, Liam Breck <liam@networkimprov.net> wrote:
-> On Mon, Mar 27, 2017 at 8:01 AM, Andrew F. Davis <afd@ti.com> wrote:
->> On 03/27/2017 02:41 AM, Liam Breck wrote:
->>> From: Liam Breck <kernel@networkimprov.net>
->>>
->>> Previously there was no way to configure these chips in the event that the
->>> defaults didn't match the battery in question.
->>>
->>> We now call power_supply_get_battery_info(), check its values, and write
->>> battery data to chip data memory (flash/RAM/NVM).
->>>
->>
->> How do we know if that is the correct thing to do? Maybe the values in
->> NVM are more correct than the DT and the DT values are just for
->> reference when NVM is not present. Updating NVM with DT values needs to
->> be controllable by the user, not automatic every time this driver probes.
->
-> We trust the OS package to contain correct config for RAM-only chips,
-> but not NVM? A battery config would not be set in mainline dts files,
-> unless the battery is non-removable in the device.
+On Tue, 2017-03-28 at 17:47 +0100, Mark Brown wrote:
+> On Tue, Mar 28, 2017 at 03:39:41PM +0300, Leonard Crestez wrote:
+> > On Fri, 2017-03-24 at 12:52 +0000, Mark Brown wrote:
 
-Re DT provisioning... Device makers and distros are extremely careful
-about what they put into DTs and what dtbs are included with a kernel
-package. They know that a misconfigured DT is a showstopper, and could
-be catastrophic. I've seen the latter -- an experienced kernel
-maintainer whom I work with gave the DT for a prototype a wrong
-voltage value and fried its eMMC chip.
+> Please fix your mail client to word wrap within paragraphs at something
+> substantially less than 80 columns.  Doing this makes your messages much
+> easier to read and reply to.
 
-So if the DT says use xyz gauge config, we jolly well better do it :-)
+Sorry, still messing around with Evolution and Exchange.
 
-> If NVM is unexpectedly present, then the entire device is unexpected,
-> and you have bigger issues than battery config.
->
-> We could prevent a DT referencing a different gauge than is present
-> from taking effect by checking device_type via control register. But
-> it's not clear that second-guessing the DT is wise.
->
->
->>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
->>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->>> ---
->>>  drivers/power/supply/bq27xxx_battery.c | 105 ++++++++++++++++++++++++++++++++-
->>>  1 file changed, 104 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->>> index ad152cc..d845ade 100644
->>> --- a/drivers/power/supply/bq27xxx_battery.c
->>> +++ b/drivers/power/supply/bq27xxx_battery.c
->>> @@ -1210,6 +1210,98 @@ static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
->>>       return ret;
->>>  }
->>>
->>> +static void bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
->>> +                                    struct power_supply_battery_info *info)
->>> +{
->>> +     struct bq27xxx_dm_buf bd = BQ27XXX_DM_BUF(di, BQ27XXX_DM_DESIGN_CAPACITY);
->>> +     struct bq27xxx_dm_buf bt = BQ27XXX_DM_BUF(di, BQ27XXX_DM_TERMINATE_VOLTAGE);
->>> +
->>> +     if (bq27xxx_battery_unseal(di) < 0)
->>> +             return;
->>> +
->>> +     if (info->charge_full_design_uah != -EINVAL &&
->>> +         info->energy_full_design_uwh != -EINVAL) {
->>> +             bq27xxx_battery_read_dm_block(di, &bd);
->>> +             /* assume design energy & capacity are in same block */
->>> +             bq27xxx_battery_update_dm_block(di, &bd,
->>> +                                     BQ27XXX_DM_DESIGN_CAPACITY,
->>> +                                     info->charge_full_design_uah / 1000);
->>> +             bq27xxx_battery_update_dm_block(di, &bd,
->>> +                                     BQ27XXX_DM_DESIGN_ENERGY,
->>> +                                     info->energy_full_design_uwh / 1000);
->>> +     }
->>> +
->>> +     if (info->voltage_min_design_uv != -EINVAL) {
->>> +             bool same = bd.class == bt.class && bd.block == bt.block;
->>> +             if (!same)
->>> +                     bq27xxx_battery_read_dm_block(di, &bt);
->>> +             bq27xxx_battery_update_dm_block(di, same ? &bd : &bt,
->>> +                                     BQ27XXX_DM_TERMINATE_VOLTAGE,
->>> +                                     info->voltage_min_design_uv / 1000);
->>> +     }
->>> +
->>> +     bq27xxx_battery_write_dm_block(di, &bd);
->>> +     bq27xxx_battery_write_dm_block(di, &bt);
->>> +
->>> +     bq27xxx_battery_seal(di);
->>> +
->>> +     if (di->chip != BQ27421) { /* not a cfgupdate chip, so reset */
->>> +             bq27xxx_write(di, BQ27XXX_REG_CTRL, BQ27XXX_RESET, false);
->>> +             BQ27XXX_MSLEEP(300); /* reset time is not documented */
->>> +     }
->>> +     /* assume bq27xxx_battery_update() is called hereafter */
->>> +}
->>> +
->>> +void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
->>> +{
->>> +     struct power_supply_battery_info info = {};
->>> +     unsigned int min, max;
->>> +
->>> +     if (!di->dm_regs)
->>> +             return;
->>> +
->>> +     if (power_supply_get_battery_info(di->bat, &info) < 0)
->>> +             return;
->>> +
->>> +     if (info.energy_full_design_uwh != info.charge_full_design_uah) {
->>> +             if (info.energy_full_design_uwh == -EINVAL)
->>> +                     dev_warn(di->dev, "missing battery:energy-full-design-microwatt-hours\n");
->>> +             else if (info.charge_full_design_uah == -EINVAL)
->>> +                     dev_warn(di->dev, "missing battery:charge-full-design-microamp-hours\n");
->>> +     }
->>> +
->>> +     /* assume min == 0 */
->>> +     max = di->dm_regs[BQ27XXX_DM_DESIGN_ENERGY].max;
->>> +     if (info.energy_full_design_uwh > max * 1000) {
->>> +             dev_err(di->dev, "invalid battery:energy-full-design-microwatt-hours %d\n",
->>> +                     info.energy_full_design_uwh);
->>> +             info.energy_full_design_uwh = -EINVAL;
->>> +     }
->>> +
->>> +     /* assume min == 0 */
->>> +     max = di->dm_regs[BQ27XXX_DM_DESIGN_CAPACITY].max;
->>> +     if (info.charge_full_design_uah > max * 1000) {
->>> +             dev_err(di->dev, "invalid battery:charge-full-design-microamp-hours %d\n",
->>> +                     info.charge_full_design_uah);
->>> +             info.charge_full_design_uah = -EINVAL;
->>> +     }
->>> +
->>> +     min = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].min;
->>> +     max = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].max;
->>> +     if ((info.voltage_min_design_uv < min * 1000 ||
->>> +          info.voltage_min_design_uv > max * 1000) &&
->>> +          info.voltage_min_design_uv != -EINVAL) {
->>> +             dev_err(di->dev, "invalid battery:voltage-min-design-microvolt %d\n",
->>> +                     info.voltage_min_design_uv);
->>> +             info.voltage_min_design_uv = -EINVAL;
->>> +     }
->>> +
->>> +     if ((info.energy_full_design_uwh != -EINVAL &&
->>> +          info.charge_full_design_uah != -EINVAL) ||
->>> +          info.voltage_min_design_uv  != -EINVAL)
->>> +             bq27xxx_battery_set_config(di, &info);
->>> +}
->>> +
->>>  /*
->>>   * Return the battery State-of-Charge
->>>   * Or < 0 if something fails.
->>> @@ -1727,6 +1819,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
->>>       case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
->>>               ret = bq27xxx_simple_value(di->charge_design_full, val);
->>>               break;
->>> +     /*
->>> +      * TODO: Implement these to make registers set from
->>> +      * power_supply_battery_info visible in sysfs.
->>> +      */
->>> +     case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
->>> +     case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
->>> +             return -EINVAL;
->>>       case POWER_SUPPLY_PROP_CYCLE_COUNT:
->>>               ret = bq27xxx_simple_value(di->cache.cycle_count, val);
->>>               break;
->>> @@ -1760,7 +1859,10 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
->>>  int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>>  {
->>>       struct power_supply_desc *psy_desc;
->>> -     struct power_supply_config psy_cfg = { .drv_data = di, };
->>> +     struct power_supply_config psy_cfg = {
->>> +             .of_node = di->dev->of_node,
->>> +             .drv_data = di,
->>> +     };
->>>
->>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
->>>       mutex_init(&di->lock);
->>> @@ -1785,6 +1887,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>>
->>>       dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
->>>
->>> +     bq27xxx_battery_settings(di);
->>>       bq27xxx_battery_update(di);
->>>
->>>       mutex_lock(&bq27xxx_list_lock);
->>>
+> > > to the supply.  Usually bypass is used for low power retention modes
+> > > with different settings to those used in normal operation that wouldn't
+> > > be desired in normal operation, if we were going to have constraints for
+> > > this I'd expect a separate set used during bypass.
+> > 
+> > In this particular case it's not possible to set constraints on the parent
+> > regulator so that both ldo-enable and ldo-bypass modes work. The maximum allowed
+> > voltage for ldo-bypass is lower than the minimum required to support the chip at
+> > max frequency wit ldo-enable.
+> 
+> If things are really so sensitive that you can't bypass without lowering
+> the voltage then it's hard to see how you can safely transition into and
+> out of bypass mode.
+
+The CPU frequency is set to the minimum value so that when bypass mode
+is entered and voltage rises (because the dropout goes away) it is
+still low enough. Transitioning out of bypass mode is not implemented
+but you would presumably have to go to the minimum frequency again,
+raise the voltage above what is required and the flip the switch.
+
+> > I'm not sure I understand why you are against applying constraints to the parent
+> > when in bypass mode, it seems like the obvious thing to do if you want to
+> > support flexible configuration. The check I introduced is probably not enough to
+> > cover all cases, for example it would still be possible to explicitly change
+> > parent voltage afterwards.
+> 
+> To repeat what I said previously the whole point of bypassing is to not
+> do regulation and generally the constraints in the unregulated idle case
+> are substantially more relaxed.  This would break use cases relying on
+> the existing behaviour which wouldn't expect to affect the parent
+> voltage at all, either stopping things working or making them less
+> efficient by needlessly regulating the voltage down which defeats the
+> main point of bypassing.
+
+So what you want is to prevent voltage changes unless strictly
+required, even lowering? What I want is to get the minimum voltage in
+the SOC because that's where power is being consumed.
+
+It's not at all obvious that in bypass mode the output constraints of a
+regulator need not be respected by the core. I expected the opposite,
+this is something that should be documented.
+
+But if the bypassed regulator has a downstream consumer then it's
+requirements should definitely still be met in bypass mode, right? I
+could set my maximum voltage directly from cpufreq in that case.
+
+Or should a bypassed regulator ignore all other requests? One of the
+behaviors that this patch series relies on is that calling set_voltage
+on a bypassed regulator propagates this request to the supply and picks
+the minimum voltage there. An alternative implementation would be to
+call set_voltage directly on the supply regulator by changing the
+"{arm,soc,pu}-supply" references in DT to point to the PMIC instead.
+Would that be better?
+
+Both approaches work. Relying on propagation feels like it is the
+"right way" to handle this, even if it's harder to get right and the
+regulator core does not entirely support it. But it's possible that
+this is based on a misunderstanding of what "bypass" is actually
+supposed to do.
+
+-- 
+Regards,
+Leonard
