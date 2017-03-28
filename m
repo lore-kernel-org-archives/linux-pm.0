@@ -1,313 +1,205 @@
-From: Icenowy Zheng <icenowy@aosc.io>
-Subject: [RFC PATCH 2/3] iio: adc: sun4i-gpadc-iio: add support for H3 thermal sensor
-Date: Wed, 29 Mar 2017 01:30:12 +0800
-Message-ID: <20170328173013.16539-3-icenowy@aosc.io>
-References: <20170328173013.16539-1-icenowy@aosc.io>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170328173013.16539-1-icenowy@aosc.io>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Jonathan Cameron <jic23@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, Icenowy Zheng <icenowy@aosc.io>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v12 7/9] power: bq27xxx_battery: Add power_supply_battery_info
+ support
+Date: Tue, 28 Mar 2017 12:19:33 -0700
+Message-ID: <CAKvHMgStPD9qqg4-=50PW19c=BQUuqL0PR2sAZA7Ky7UKPCpkA@mail.gmail.com>
+References: <20170327074159.16213-1-liam@networkimprov.net>
+ <20170327074159.16213-4-liam@networkimprov.net> <ba7819ad-d357-02fc-c06b-30d9a4e701cc@ti.com>
+ <CAKvHMgT_Z6_3YUvp7U-SeKYbFtqwSwxzQuO8o6t0KFyH+0Q8XQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:36620 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755292AbdC1TTf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Mar 2017 15:19:35 -0400
+Received: by mail-it0-f65.google.com with SMTP id 190so5430470itm.3
+        for <linux-pm@vger.kernel.org>; Tue, 28 Mar 2017 12:19:34 -0700 (PDT)
+In-Reply-To: <CAKvHMgT_Z6_3YUvp7U-SeKYbFtqwSwxzQuO8o6t0KFyH+0Q8XQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: linux-pm@vger.kernel.org
 
-This adds support for the Allwinner H3 thermal sensor.
+On Mon, Mar 27, 2017 at 1:52 PM, Liam Breck <liam@networkimprov.net> wrote:
+> On Mon, Mar 27, 2017 at 8:01 AM, Andrew F. Davis <afd@ti.com> wrote:
+>> On 03/27/2017 02:41 AM, Liam Breck wrote:
+>>> From: Liam Breck <kernel@networkimprov.net>
+>>>
+>>> Previously there was no way to configure these chips in the event that the
+>>> defaults didn't match the battery in question.
+>>>
+>>> We now call power_supply_get_battery_info(), check its values, and write
+>>> battery data to chip data memory (flash/RAM/NVM).
+>>>
+>>
+>> How do we know if that is the correct thing to do? Maybe the values in
+>> NVM are more correct than the DT and the DT values are just for
+>> reference when NVM is not present. Updating NVM with DT values needs to
+>> be controllable by the user, not automatic every time this driver probes.
+>
+> We trust the OS package to contain correct config for RAM-only chips,
+> but not NVM? A battery config would not be set in mainline dts files,
+> unless the battery is non-removable in the device.
 
-Allwinner H3 has a thermal sensor like the one in A33, but have its
-registers nearly all re-arranged, sample clock moved to CCU and a pair
-of bus clock and reset added. It's also the base of newer SoCs' thermal
-sensors.
+Re DT provisioning... Device makers and distros are extremely careful
+about what they put into DTs and what dtbs are included with a kernel
+package. They know that a misconfigured DT is a showstopper, and could
+be catastrophic. I've seen the latter -- an experienced kernel
+maintainer whom I work with gave the DT for a prototype a wrong
+voltage value and fried its eMMC chip.
 
-An option is added to gpadc_data struct, to indicate whether this device
-is a new-generation Allwinner thermal sensor.
+So if the DT says use xyz gauge config, we jolly well better do it :-)
 
-The thermal sensors on A64 and H5 is like the one on H3, but with of
-course different formula factors.
-
-Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
----
- drivers/iio/adc/sun4i-gpadc-iio.c | 130 ++++++++++++++++++++++++++++++++------
- include/linux/mfd/sun4i-gpadc.h   |  33 +++++++++-
- 2 files changed, 141 insertions(+), 22 deletions(-)
-
-diff --git a/drivers/iio/adc/sun4i-gpadc-iio.c b/drivers/iio/adc/sun4i-gpadc-iio.c
-index 74705aa37982..7512b1cae877 100644
---- a/drivers/iio/adc/sun4i-gpadc-iio.c
-+++ b/drivers/iio/adc/sun4i-gpadc-iio.c
-@@ -22,6 +22,7 @@
-  * shutdown for not being used.
-  */
- 
-+#include <linux/clk.h>
- #include <linux/completion.h>
- #include <linux/interrupt.h>
- #include <linux/io.h>
-@@ -31,6 +32,7 @@
- #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
- #include <linux/regmap.h>
-+#include <linux/reset.h>
- #include <linux/thermal.h>
- #include <linux/delay.h>
- 
-@@ -56,6 +58,7 @@ struct gpadc_data {
- 	unsigned int	tp_adc_select;
- 	unsigned int	(*adc_chan_select)(unsigned int chan);
- 	unsigned int	adc_chan_mask;
-+	bool		gen2_ths;
- };
- 
- static const struct gpadc_data sun4i_gpadc_data = {
-@@ -88,7 +91,20 @@ static const struct gpadc_data sun6i_gpadc_data = {
- static const struct gpadc_data sun8i_a33_gpadc_data = {
- 	.temp_offset = -1662,
- 	.temp_scale = 162,
--	.tp_mode_en = SUN8I_GPADC_CTRL1_CHOP_TEMP_EN,
-+	.tp_mode_en = SUN8I_A23_GPADC_CTRL1_CHOP_TEMP_EN,
-+};
-+
-+static const struct gpadc_data sun8i_h3_gpadc_data = {
-+	/*
-+	 * The original formula on the datasheet seems to be wrong.
-+	 * These factors are calculated based on the formula in the BSP
-+	 * kernel, which is originally Tem = 217 - (T / 8.253), in which Tem
-+	 * is the temperature in Celsius degree and T is the raw value
-+	 * from the sensor.
-+	 */
-+	.temp_offset = -1791,
-+	.temp_scale = -121,
-+	.gen2_ths = true,
- };
- 
- struct sun4i_gpadc_iio {
-@@ -103,6 +119,9 @@ struct sun4i_gpadc_iio {
- 	atomic_t			ignore_temp_data_irq;
- 	const struct gpadc_data		*data;
- 	bool				no_irq;
-+	struct clk			*ths_bus_clk;
-+	struct clk			*ths_clk;
-+	struct reset_control		*reset;
- 	/* prevents concurrent reads of temperature and ADC */
- 	struct mutex			mutex;
- };
-@@ -274,7 +293,11 @@ static int sun4i_gpadc_temp_read(struct iio_dev *indio_dev, int *val)
- 	if (info->no_irq) {
- 		pm_runtime_get_sync(indio_dev->dev.parent);
- 
--		regmap_read(info->regmap, SUN4I_GPADC_TEMP_DATA, val);
-+		if (info->data->gen2_ths)
-+			regmap_read(info->regmap, SUN8I_H3_GPADC_TEMP_DATA,
-+				    val);
-+		else
-+			regmap_read(info->regmap, SUN4I_GPADC_TEMP_DATA, val);
- 
- 		pm_runtime_mark_last_busy(indio_dev->dev.parent);
- 		pm_runtime_put_autosuspend(indio_dev->dev.parent);
-@@ -386,10 +409,15 @@ static int sun4i_gpadc_runtime_suspend(struct device *dev)
- {
- 	struct sun4i_gpadc_iio *info = iio_priv(dev_get_drvdata(dev));
- 
--	/* Disable the ADC on IP */
--	regmap_write(info->regmap, SUN4I_GPADC_CTRL1, 0);
--	/* Disable temperature sensor on IP */
--	regmap_write(info->regmap, SUN4I_GPADC_TPR, 0);
-+	if (info->data->gen2_ths) {
-+		/* Disable temperature sensor */
-+		regmap_write(info->regmap, SUN8I_H3_GPADC_CTRL2, 0);
-+	} else {
-+		/* Disable the ADC on IP */
-+		regmap_write(info->regmap, SUN4I_GPADC_CTRL1, 0);
-+		/* Disable temperature sensor on IP */
-+		regmap_write(info->regmap, SUN4I_GPADC_TPR, 0);
-+	}
- 
- 	return 0;
- }
-@@ -398,19 +426,36 @@ static int sun4i_gpadc_runtime_resume(struct device *dev)
- {
- 	struct sun4i_gpadc_iio *info = iio_priv(dev_get_drvdata(dev));
- 
--	/* clkin = 6MHz */
--	regmap_write(info->regmap, SUN4I_GPADC_CTRL0,
--		     SUN4I_GPADC_CTRL0_ADC_CLK_DIVIDER(2) |
--		     SUN4I_GPADC_CTRL0_FS_DIV(7) |
--		     SUN4I_GPADC_CTRL0_T_ACQ(63));
--	regmap_write(info->regmap, SUN4I_GPADC_CTRL1, info->data->tp_mode_en);
--	regmap_write(info->regmap, SUN4I_GPADC_CTRL3,
--		     SUN4I_GPADC_CTRL3_FILTER_EN |
--		     SUN4I_GPADC_CTRL3_FILTER_TYPE(1));
--	/* period = SUN4I_GPADC_TPR_TEMP_PERIOD * 256 * 16 / clkin; ~0.6s */
--	regmap_write(info->regmap, SUN4I_GPADC_TPR,
--		     SUN4I_GPADC_TPR_TEMP_ENABLE |
--		     SUN4I_GPADC_TPR_TEMP_PERIOD(800));
-+	if (info->data->gen2_ths) {
-+		regmap_write(info->regmap, SUN8I_H3_GPADC_CTRL2,
-+			     SUN8I_H3_GPADC_CTRL2_TEMP_SENSE_EN |
-+			     SUN8I_H3_GPADC_CTRL2_T_ACQ1(31));
-+		regmap_write(info->regmap, SUN4I_GPADC_CTRL0,
-+			     SUN4I_GPADC_CTRL0_T_ACQ(31));
-+		regmap_write(info->regmap, SUN8I_H3_GPADC_CTRL3,
-+			     SUN4I_GPADC_CTRL3_FILTER_EN |
-+			     SUN4I_GPADC_CTRL3_FILTER_TYPE(1));
-+		regmap_write(info->regmap, SUN8I_H3_GPADC_INTC,
-+			     SUN8I_H3_GPADC_INTC_TEMP_PERIOD(800));
-+	} else {
-+		/* clkin = 6MHz */
-+		regmap_write(info->regmap, SUN4I_GPADC_CTRL0,
-+			     SUN4I_GPADC_CTRL0_ADC_CLK_DIVIDER(2) |
-+			     SUN4I_GPADC_CTRL0_FS_DIV(7) |
-+			     SUN4I_GPADC_CTRL0_T_ACQ(63));
-+		regmap_write(info->regmap, SUN4I_GPADC_CTRL1,
-+			     info->data->tp_mode_en);
-+		regmap_write(info->regmap, SUN4I_GPADC_CTRL3,
-+			     SUN4I_GPADC_CTRL3_FILTER_EN |
-+			     SUN4I_GPADC_CTRL3_FILTER_TYPE(1));
-+		/*
-+		 * period = SUN4I_GPADC_TPR_TEMP_PERIOD * 256 * 16 / clkin;
-+		 * ~0.6s
-+		 */
-+		regmap_write(info->regmap, SUN4I_GPADC_TPR,
-+			     SUN4I_GPADC_TPR_TEMP_ENABLE |
-+			     SUN4I_GPADC_TPR_TEMP_PERIOD(800));
-+	}
- 
- 	return 0;
- }
-@@ -494,6 +539,10 @@ static const struct of_device_id sun4i_gpadc_of_id[] = {
- 		.compatible = "allwinner,sun8i-a33-ths",
- 		.data = &sun8i_a33_gpadc_data,
- 	},
-+	{
-+		.compatible = "allwinner,sun8i-h3-ths",
-+		.data = &sun8i_h3_gpadc_data,
-+	},
- 	{ /* sentinel */ }
- };
- 
-@@ -529,6 +578,43 @@ static int sun4i_gpadc_probe_dt(struct platform_device *pdev,
- 		return ret;
- 	}
- 
-+	if (info->data->gen2_ths) {
-+		info->reset = devm_reset_control_get(&pdev->dev, NULL);
-+		if (IS_ERR(info->reset)) {
-+			ret = PTR_ERR(info->reset);
-+			return ret;
-+		}
-+
-+		ret = reset_control_deassert(info->reset);
-+		if (ret)
-+			return ret;
-+
-+		info->ths_bus_clk = devm_clk_get(&pdev->dev, "bus");
-+		if (IS_ERR(info->ths_bus_clk)) {
-+			ret = PTR_ERR(info->ths_bus_clk);
-+			return ret;
-+		}
-+
-+		ret = clk_prepare_enable(info->ths_bus_clk);
-+		if (ret)
-+			return ret;
-+
-+		info->ths_clk = devm_clk_get(&pdev->dev, "ths");
-+		if (IS_ERR(info->ths_clk)) {
-+			ret = PTR_ERR(info->ths_clk);
-+			return ret;
-+		}
-+
-+		/* Running at 6MHz */
-+		ret = clk_set_rate(info->ths_clk, 6000000);
-+		if (ret)
-+			return ret;
-+
-+		ret = clk_prepare_enable(info->ths_clk);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	if (!IS_ENABLED(CONFIG_THERMAL_OF))
- 		return 0;
- 
-@@ -691,6 +777,12 @@ static int sun4i_gpadc_remove(struct platform_device *pdev)
- 	if (!info->no_irq && IS_ENABLED(CONFIG_THERMAL_OF))
- 		iio_map_array_unregister(indio_dev);
- 
-+	if (info->data->gen2_ths) {
-+		clk_disable_unprepare(info->ths_clk);
-+		clk_disable_unprepare(info->ths_bus_clk);
-+		reset_control_deassert(info->reset);
-+	}
-+
- 	return 0;
- }
- 
-diff --git a/include/linux/mfd/sun4i-gpadc.h b/include/linux/mfd/sun4i-gpadc.h
-index 139872c2e0fe..f794a2988a93 100644
---- a/include/linux/mfd/sun4i-gpadc.h
-+++ b/include/linux/mfd/sun4i-gpadc.h
-@@ -38,9 +38,12 @@
- #define SUN6I_GPADC_CTRL1_ADC_CHAN_SELECT(x)		(GENMASK(3, 0) & BIT(x))
- #define SUN6I_GPADC_CTRL1_ADC_CHAN_MASK			GENMASK(3, 0)
- 
--/* TP_CTRL1 bits for sun8i SoCs */
--#define SUN8I_GPADC_CTRL1_CHOP_TEMP_EN			BIT(8)
--#define SUN8I_GPADC_CTRL1_GPADC_CALI_EN			BIT(7)
-+/* TP_CTRL1 bits for sun8i A23/A33 SoCs */
-+#define SUN8I_A23_GPADC_CTRL1_CHOP_TEMP_EN		BIT(8)
-+#define SUN8I_A23_GPADC_CTRL1_GPADC_CALI_EN		BIT(7)
-+
-+/* TP_CTRL1 bits for SoCs after H3 */
-+#define SUN8I_H3_GPADC_CTRL1_GPADC_CALI_EN		BIT(17)
- 
- #define SUN4I_GPADC_CTRL2				0x08
- 
-@@ -49,7 +52,17 @@
- #define SUN4I_GPADC_CTRL2_PRE_MEA_EN			BIT(24)
- #define SUN4I_GPADC_CTRL2_PRE_MEA_THRE_CNT(x)		(GENMASK(23, 0) & (x))
- 
-+#define SUN8I_H3_GPADC_CTRL2				0x40
-+
-+#define SUN8I_H3_GPADC_CTRL2_TEMP_SENSE_EN		BIT(0)
-+#define SUN8I_H3_GPADC_CTRL2_T_ACQ1(x)			((GENMASK(15, 0) * (x)) << 16)
-+
- #define SUN4I_GPADC_CTRL3				0x0c
-+/*
-+ * This register is named "Average filter Control Register" in H3 Datasheet,
-+ * but the register's definition is the same as the old CTRL3 register.
-+ */
-+#define SUN8I_H3_GPADC_CTRL3				0x70
- 
- #define SUN4I_GPADC_CTRL3_FILTER_EN			BIT(2)
- #define SUN4I_GPADC_CTRL3_FILTER_TYPE(x)		(GENMASK(1, 0) & (x))
-@@ -71,6 +84,13 @@
- #define SUN4I_GPADC_INT_FIFOC_TP_UP_IRQ_EN		BIT(1)
- #define SUN4I_GPADC_INT_FIFOC_TP_DOWN_IRQ_EN		BIT(0)
- 
-+#define SUN8I_H3_GPADC_INTC				0x44
-+
-+#define SUN8I_H3_GPADC_INTC_TEMP_PERIOD(x)		((GENMASK(19, 0) & (x)) << 12)
-+#define SUN8I_H3_GPADC_INTC_TEMP_DATA			BIT(8)
-+#define SUN8I_H3_GPADC_INTC_TEMP_SHUT			BIT(4)
-+#define SUN8I_H3_GPADC_INTC_TEMP_ALARM			BIT(0)
-+
- #define SUN4I_GPADC_INT_FIFOS				0x14
- 
- #define SUN4I_GPADC_INT_FIFOS_TEMP_DATA_PENDING		BIT(18)
-@@ -80,9 +100,16 @@
- #define SUN4I_GPADC_INT_FIFOS_TP_UP_PENDING		BIT(1)
- #define SUN4I_GPADC_INT_FIFOS_TP_DOWN_PENDING		BIT(0)
- 
-+#define SUN8I_H3_GPADC_INTS				0x44
-+
-+#define SUN8I_H3_GPADC_INTS_TEMP_DATA			BIT(8)
-+#define SUN8I_H3_GPADC_INTS_TEMP_SHUT			BIT(4)
-+#define SUN8I_H3_GPADC_INTS_TEMP_ALARM			BIT(0)
-+
- #define SUN4I_GPADC_CDAT				0x1c
- #define SUN4I_GPADC_TEMP_DATA				0x20
- #define SUN4I_GPADC_DATA				0x24
-+#define SUN8I_H3_GPADC_TEMP_DATA			0x80
- 
- #define SUN4I_GPADC_IRQ_FIFO_DATA			0
- #define SUN4I_GPADC_IRQ_TEMP_DATA			1
--- 
-2.12.0
+> If NVM is unexpectedly present, then the entire device is unexpected,
+> and you have bigger issues than battery config.
+>
+> We could prevent a DT referencing a different gauge than is present
+> from taking effect by checking device_type via control register. But
+> it's not clear that second-guessing the DT is wise.
+>
+>
+>>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>>> ---
+>>>  drivers/power/supply/bq27xxx_battery.c | 105 ++++++++++++++++++++++++++++++++-
+>>>  1 file changed, 104 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>>> index ad152cc..d845ade 100644
+>>> --- a/drivers/power/supply/bq27xxx_battery.c
+>>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>>> @@ -1210,6 +1210,98 @@ static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
+>>>       return ret;
+>>>  }
+>>>
+>>> +static void bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
+>>> +                                    struct power_supply_battery_info *info)
+>>> +{
+>>> +     struct bq27xxx_dm_buf bd = BQ27XXX_DM_BUF(di, BQ27XXX_DM_DESIGN_CAPACITY);
+>>> +     struct bq27xxx_dm_buf bt = BQ27XXX_DM_BUF(di, BQ27XXX_DM_TERMINATE_VOLTAGE);
+>>> +
+>>> +     if (bq27xxx_battery_unseal(di) < 0)
+>>> +             return;
+>>> +
+>>> +     if (info->charge_full_design_uah != -EINVAL &&
+>>> +         info->energy_full_design_uwh != -EINVAL) {
+>>> +             bq27xxx_battery_read_dm_block(di, &bd);
+>>> +             /* assume design energy & capacity are in same block */
+>>> +             bq27xxx_battery_update_dm_block(di, &bd,
+>>> +                                     BQ27XXX_DM_DESIGN_CAPACITY,
+>>> +                                     info->charge_full_design_uah / 1000);
+>>> +             bq27xxx_battery_update_dm_block(di, &bd,
+>>> +                                     BQ27XXX_DM_DESIGN_ENERGY,
+>>> +                                     info->energy_full_design_uwh / 1000);
+>>> +     }
+>>> +
+>>> +     if (info->voltage_min_design_uv != -EINVAL) {
+>>> +             bool same = bd.class == bt.class && bd.block == bt.block;
+>>> +             if (!same)
+>>> +                     bq27xxx_battery_read_dm_block(di, &bt);
+>>> +             bq27xxx_battery_update_dm_block(di, same ? &bd : &bt,
+>>> +                                     BQ27XXX_DM_TERMINATE_VOLTAGE,
+>>> +                                     info->voltage_min_design_uv / 1000);
+>>> +     }
+>>> +
+>>> +     bq27xxx_battery_write_dm_block(di, &bd);
+>>> +     bq27xxx_battery_write_dm_block(di, &bt);
+>>> +
+>>> +     bq27xxx_battery_seal(di);
+>>> +
+>>> +     if (di->chip != BQ27421) { /* not a cfgupdate chip, so reset */
+>>> +             bq27xxx_write(di, BQ27XXX_REG_CTRL, BQ27XXX_RESET, false);
+>>> +             BQ27XXX_MSLEEP(300); /* reset time is not documented */
+>>> +     }
+>>> +     /* assume bq27xxx_battery_update() is called hereafter */
+>>> +}
+>>> +
+>>> +void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
+>>> +{
+>>> +     struct power_supply_battery_info info = {};
+>>> +     unsigned int min, max;
+>>> +
+>>> +     if (!di->dm_regs)
+>>> +             return;
+>>> +
+>>> +     if (power_supply_get_battery_info(di->bat, &info) < 0)
+>>> +             return;
+>>> +
+>>> +     if (info.energy_full_design_uwh != info.charge_full_design_uah) {
+>>> +             if (info.energy_full_design_uwh == -EINVAL)
+>>> +                     dev_warn(di->dev, "missing battery:energy-full-design-microwatt-hours\n");
+>>> +             else if (info.charge_full_design_uah == -EINVAL)
+>>> +                     dev_warn(di->dev, "missing battery:charge-full-design-microamp-hours\n");
+>>> +     }
+>>> +
+>>> +     /* assume min == 0 */
+>>> +     max = di->dm_regs[BQ27XXX_DM_DESIGN_ENERGY].max;
+>>> +     if (info.energy_full_design_uwh > max * 1000) {
+>>> +             dev_err(di->dev, "invalid battery:energy-full-design-microwatt-hours %d\n",
+>>> +                     info.energy_full_design_uwh);
+>>> +             info.energy_full_design_uwh = -EINVAL;
+>>> +     }
+>>> +
+>>> +     /* assume min == 0 */
+>>> +     max = di->dm_regs[BQ27XXX_DM_DESIGN_CAPACITY].max;
+>>> +     if (info.charge_full_design_uah > max * 1000) {
+>>> +             dev_err(di->dev, "invalid battery:charge-full-design-microamp-hours %d\n",
+>>> +                     info.charge_full_design_uah);
+>>> +             info.charge_full_design_uah = -EINVAL;
+>>> +     }
+>>> +
+>>> +     min = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].min;
+>>> +     max = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].max;
+>>> +     if ((info.voltage_min_design_uv < min * 1000 ||
+>>> +          info.voltage_min_design_uv > max * 1000) &&
+>>> +          info.voltage_min_design_uv != -EINVAL) {
+>>> +             dev_err(di->dev, "invalid battery:voltage-min-design-microvolt %d\n",
+>>> +                     info.voltage_min_design_uv);
+>>> +             info.voltage_min_design_uv = -EINVAL;
+>>> +     }
+>>> +
+>>> +     if ((info.energy_full_design_uwh != -EINVAL &&
+>>> +          info.charge_full_design_uah != -EINVAL) ||
+>>> +          info.voltage_min_design_uv  != -EINVAL)
+>>> +             bq27xxx_battery_set_config(di, &info);
+>>> +}
+>>> +
+>>>  /*
+>>>   * Return the battery State-of-Charge
+>>>   * Or < 0 if something fails.
+>>> @@ -1727,6 +1819,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+>>>       case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+>>>               ret = bq27xxx_simple_value(di->charge_design_full, val);
+>>>               break;
+>>> +     /*
+>>> +      * TODO: Implement these to make registers set from
+>>> +      * power_supply_battery_info visible in sysfs.
+>>> +      */
+>>> +     case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
+>>> +     case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+>>> +             return -EINVAL;
+>>>       case POWER_SUPPLY_PROP_CYCLE_COUNT:
+>>>               ret = bq27xxx_simple_value(di->cache.cycle_count, val);
+>>>               break;
+>>> @@ -1760,7 +1859,10 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+>>>  int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>>  {
+>>>       struct power_supply_desc *psy_desc;
+>>> -     struct power_supply_config psy_cfg = { .drv_data = di, };
+>>> +     struct power_supply_config psy_cfg = {
+>>> +             .of_node = di->dev->of_node,
+>>> +             .drv_data = di,
+>>> +     };
+>>>
+>>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>>>       mutex_init(&di->lock);
+>>> @@ -1785,6 +1887,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>>
+>>>       dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+>>>
+>>> +     bq27xxx_battery_settings(di);
+>>>       bq27xxx_battery_update(di);
+>>>
+>>>       mutex_lock(&bq27xxx_list_lock);
+>>>
