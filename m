@@ -1,71 +1,44 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFD PATCH 3/5] sched/cpufreq_schedutil: make worker kthread be
- SCHED_DEADLINE
-Date: Tue, 28 Mar 2017 12:20:31 +0200
-Message-ID: <20170328102031.vkzkjq2gcqwcwb67@hirez.programming.kicks-ass.net>
-References: <20170324140900.7334-1-juri.lelli@arm.com>
- <20170324140900.7334-4-juri.lelli@arm.com>
- <20170327165011.dpip23cyolnleas6@hirez.programming.kicks-ass.net>
- <CAKfTPtCgQQU-8fdxyq+9pywAtu-DFo7ZBugjEaFxjVVxu_pqjw@mail.gmail.com>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
+Subject: RE: [PATCH V6 4/7] mfd: da9061: MFD core support
+Date: Tue, 28 Mar 2017 10:42:42 +0000
+Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CD69ECA@SW-EX-MBX02.diasemi.com>
+References: <539b8756120ab3558c906f7457e65f94dbe37425.1490608293.git.stwiss.opensource@diasemi.com>
+ <201703272258.hWlipe1g%fengguang.wu@intel.com>
+ <20170328082141.u2rgnhei5yhhzxdn@dell>
+ <CAMuHMdX8WH959h50zGQCV7o4E249xBKDn_cVtRbFwYVsVebu9w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:43034 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932114AbdC1KU7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Mar 2017 06:20:59 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtCgQQU-8fdxyq+9pywAtu-DFo7ZBugjEaFxjVVxu_pqjw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdX8WH959h50zGQCV7o4E249xBKDn_cVtRbFwYVsVebu9w@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Lee Jones <lee.jones@linaro.org>
+Cc: kbuild test robot <lkp@intel.com>, Steve Twiss <stwiss.opensource@diasemi.com>, "kbuild-all@01.org" <kbuild-all@01.org>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, "mingo@redhat.com" <mingo@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, viresh kumar <viresh.kumar@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, Mathieu Poirier <mathieu.poirier@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-On Tue, Mar 28, 2017 at 11:29:31AM +0200, Vincent Guittot wrote:
-> On 27 March 2017 at 18:50, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Fri, Mar 24, 2017 at 02:08:58PM +0000, Juri Lelli wrote:
-> >> Worker kthread needs to be able to change frequency for all other
-> >> threads.
-> >>
-> >> Make it special, just under STOP class.
-> >
-> > *yuck* ;-)
-> >
-> > So imagine our I2C/SPI bus is 'busy' and its mutex taken, then this
-> > 'soecial' task will need to boost it. Now add BWI to your thinking and
-> > shudder.
-> >
-> >
-> > On IRC broonie mentioned that:
-> >
-> >  - most PMIC operations are fire and forget (no need to wait for a
-> >    response).
-> >  - PMIC 'packets' are 'small'.
-> >  - SPI has the possibility to push stuff on the queue.
-> >
-> > Taken together this seems to suggest we can rework cpufreq drivers to
-> > function in-context, either directly push the packet on the bus if
-> > available, or queue it and let whoever owns it sort it without blocking.
-> >
-> > It might be possible to rework/augment I2C to also support pushing stuff
-> > on a queue.
-> 
-> But sending new voltage value to PMIC is only part of the sequence.
-> When cpufreq set a new opp, it does
-> 
-> -set new voltage
-> -wait for the voltage to settle down.
-> -set the new clock frequency
-> 
-> you can even have to switch to an intermediate clock source.
-> 
-> When such sequence is managed by the kernel, we can't easily git ride
-> of a kthread
-
-That stinks :-(
-
-The whole blocking and bandwidth inheritance stuff gives me nightmares.
-Makes all this stuff almost impossible to analyse.
-
-Esp. if the bus (SPI/I2C) is shared with some other 'expensive' device
-like a DSP or MMC flash crud.
+T24gMjggTWFyY2ggMjAxNyAwOTozNywgR2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOg0KPiBTdWJq
+ZWN0OiBSZTogW1BBVENIIFY2IDQvN10gbWZkOiBkYTkwNjE6IE1GRCBjb3JlIHN1cHBvcnQNCj4g
+DQo+IEhpIExlZSwNCj4gDQo+IE9uIFR1ZSwgTWFyIDI4LCAyMDE3IGF0IDEwOjIxIEFNLCBMZWUg
+Sm9uZXMgPGxlZS5qb25lc0BsaW5hcm8ub3JnPiB3cm90ZToNCj4gPj4gW2F1dG8gYnVpbGQgdGVz
+dCBXQVJOSU5HIG9uIGxqb25lcy1tZmQvZm9yLW1mZC1uZXh0XQ0KPiA+PiBbYWxzbyBidWlsZCB0
+ZXN0IFdBUk5JTkcgb24gdjQuMTEtcmM0IG5leHQtMjAxNzAzMjddDQo+ID4+IGJhc2U6ICAgaHR0
+cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbGVlL21mZC5naXQg
+Zm9yLW1mZC1uZXh0DQo+ID4+IGNvbmZpZzogeDg2XzY0LXJhbmRjb25maWcteDAwOS0yMDE3MTMg
+KGF0dGFjaGVkIGFzIC5jb25maWcpDQo+ID4+IGNvbXBpbGVyOiBnY2MtNiAoRGViaWFuIDYuMi4w
+LTMpIDYuMi4wIDIwMTYwOTAxDQo+ID4+IHJlcHJvZHVjZToNCj4gPj4gICAgICAgICAjIHNhdmUg
+dGhlIGF0dGFjaGVkIC5jb25maWcgdG8gbGludXggYnVpbGQgdHJlZQ0KPiA+PiAgICAgICAgIG1h
+a2UgQVJDSD14ODZfNjQNCj4gPj4NCj4gPj4gQWxsIHdhcm5pbmdzIChuZXcgb25lcyBwcmVmaXhl
+ZCBieSA+Pik6DQo+ID4+DQo+ID4+ICAgIGRyaXZlcnMvL21mZC9kYTkwNjItY29yZS5jOiBJbiBm
+dW5jdGlvbiAnZGE5MDYyX2kyY19wcm9iZSc6DQo+ID4+ID4+IGRyaXZlcnMvL21mZC9kYTkwNjIt
+Y29yZS5jOjg0NToyMTogd2FybmluZzogY2FzdCBmcm9tIHBvaW50ZXIgdG8gaW50ZWdlciBvZiBk
+aWZmZXJlbnQgc2l6ZSBbLVdwb2ludGVyLXRvLWludC1jYXN0XQ0KPiA+PiAgICAgICBjaGlwLT5j
+aGlwX3R5cGUgPSAoaW50KW1hdGNoLT5kYXRhOw0KPiA+PiAgICAgICAgICAgICAgICAgICAgICAg
+IF4NCj4gPg0KPiA+IFBsZWFzZSB1c2UgbG9uZ3Mgb3IgZW51bXMuDQo+IA0KPiBFbnVtcyB3b3Vs
+ZCBzdGlsbCBnaXZlIGEgd2FybmluZyBvbiA2NC1iaXQuDQo+IFRoZSBzaW1wbGUgZml4IGlzIGNo
+YW5nZSB0aGUgY2FzdCBmcm9tIChpbnQpIHRvICh1aW50cHRyX3QpLg0KDQpIaSBMZWUgYW5kIEdl
+ZXJ0LA0KDQpIb3cgYWJvdXQgdGhpcz8gRml4IGJ5IHJlZGVmaW5pbmcgdGhlIGVudW0gY2hpcF90
+eXBlIHRvIGJlIGFuIGludC4NClRoZW4sIGp1c3QgdXNlIHN1YnN0aXR1dGlvbjoNCiNkZWZpbmUg
+Q09NUEFUX1RZUEVfREE5MDYxICAxDQojZGVmaW5lIENPTVBBVF9UWVBFX0RBOTA2MiAgMg0KDQpU
+aGF0IHdvdWxkIGJlIHNpbXBsZS4NCkFyZSB0aGVyZSBhbnkgcmVhc29ucyB0aGlzIHdvdWxkIG5v
+dCBiZSBhY2NlcHRhYmxlPw0KDQpSZWdhcmRzLA0KU3RldmUNCg==
