@@ -1,162 +1,47 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH] power: bq24190_charger: Uniform pm_runtime_get() failure
- handling
-Date: Tue, 28 Mar 2017 13:49:49 +0200
-Message-ID: <ad5be5ae-c204-d6b4-ff57-61cf07e8a805@redhat.com>
-References: <20170328100128.25512-1-liam@networkimprov.net>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [RFC 5/8] regulator: anatop: fix min dropout for bypass mode
+Date: Tue, 28 Mar 2017 14:52:46 +0300
+Message-ID: <1490701966.3546.24.camel@nxp.com>
+References: <cover.1490199005.git.leonard.crestez@nxp.com>
+ <cd944a7223cfe68788c299082a5f262e8bea2136.1490199005.git.leonard.crestez@nxp.com>
+ <20170324125438.5wy3r2mr3g5eaxvy@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:48504 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751430AbdC1LuM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 28 Mar 2017 07:50:12 -0400
-In-Reply-To: <20170328100128.25512-1-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170324125438.5wy3r2mr3g5eaxvy@sirena.org.uk>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-Hi,
-
-On 28-03-17 12:01, Liam Breck wrote:
-> From: Liam Breck <kernel@networkimprov.net>
->
-> On pm_runtime_get() failure, always emit an error message.
-> Prevent unbalanced pm_runtime_get by calling:
->   pm_runtime_put_noidle() in irq handler
->   pm_runtime_put_sync() on any probe() failure
-> Rename probe() out labels instead of renumbering them.
->
-> Fixes: 13d6fa8447fa power: bq24190_charger: Use PM runtime autosuspend
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: Hans de Goede <hdegoede@redhat.com>
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-
-Patch looks good to me:
-
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-
-Regards,
-
-Hans
-
-
-> ---
->  drivers/power/supply/bq24190_charger.c | 41 ++++++++++++++++++----------------
->  1 file changed, 22 insertions(+), 19 deletions(-)
->
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index 64a48b9..cf7557f 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -1278,12 +1278,13 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
->  static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
->  {
->  	struct bq24190_dev_info *bdi = data;
-> -	int ret;
-> +	int error;
->
->  	bdi->irq_event = true;
-> -	ret = pm_runtime_get_sync(bdi->dev);
-> -	if (ret < 0) {
-> -		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
-> +	error = pm_runtime_get_sync(bdi->dev);
-> +	if (error < 0) {
-> +		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-> +		pm_runtime_put_noidle(bdi->dev);
->  		return IRQ_NONE;
->  	}
->  	bq24190_check_status(bdi);
-> @@ -1447,13 +1448,15 @@ static int bq24190_probe(struct i2c_client *client,
->  	pm_runtime_use_autosuspend(dev);
->  	pm_runtime_set_autosuspend_delay(dev, 600);
->  	ret = pm_runtime_get_sync(dev);
-> -	if (ret < 0)
-> -		goto out1;
-> +	if (ret < 0) {
-> +		dev_err(dev, "pm_runtime_get failed: %i\n", ret);
-> +		goto out_pmrt;
-> +	}
->
->  	ret = bq24190_hw_init(bdi);
->  	if (ret < 0) {
->  		dev_err(dev, "Hardware init failed\n");
-> -		goto out2;
-> +		goto out_pmrt;
->  	}
->
->  	charger_cfg.drv_data = bdi;
-> @@ -1464,7 +1467,7 @@ static int bq24190_probe(struct i2c_client *client,
->  	if (IS_ERR(bdi->charger)) {
->  		dev_err(dev, "Can't register charger\n");
->  		ret = PTR_ERR(bdi->charger);
-> -		goto out2;
-> +		goto out_pmrt;
->  	}
->
->  	battery_cfg.drv_data = bdi;
-> @@ -1473,13 +1476,13 @@ static int bq24190_probe(struct i2c_client *client,
->  	if (IS_ERR(bdi->battery)) {
->  		dev_err(dev, "Can't register battery\n");
->  		ret = PTR_ERR(bdi->battery);
-> -		goto out3;
-> +		goto out_charger;
->  	}
->
->  	ret = bq24190_sysfs_create_group(bdi);
->  	if (ret) {
->  		dev_err(dev, "Can't create sysfs entries\n");
-> -		goto out4;
-> +		goto out_battery;
->  	}
->
->  	bdi->initialized = true;
-> @@ -1490,7 +1493,7 @@ static int bq24190_probe(struct i2c_client *client,
->  			"bq24190-charger", bdi);
->  	if (ret < 0) {
->  		dev_err(dev, "Can't set up irq handler\n");
-> -		goto out5;
-> +		goto out_sysfs;
->  	}
->
->  	if (bdi->extcon) {
-> @@ -1498,8 +1501,10 @@ static int bq24190_probe(struct i2c_client *client,
->  		bdi->extcon_nb.notifier_call = bq24190_extcon_event;
->  		ret = devm_extcon_register_notifier(dev, bdi->extcon, -1,
->  						    &bdi->extcon_nb);
-> -		if (ret)
-> -			goto out5;
-> +		if (ret) {
-> +			dev_err(dev, "Can't register extcon\n");
-> +			goto out_sysfs;
-> +		}
->
->  		/* Sync initial cable state */
->  		queue_delayed_work(system_wq, &bdi->extcon_work, 0);
-> @@ -1512,19 +1517,17 @@ static int bq24190_probe(struct i2c_client *client,
->
->  	return 0;
->
-> -out5:
-> +out_sysfs:
->  	bq24190_sysfs_remove_group(bdi);
->
-> -out4:
-> +out_battery:
->  	power_supply_unregister(bdi->battery);
->
-> -out3:
-> +out_charger:
->  	power_supply_unregister(bdi->charger);
->
-> -out2:
-> +out_pmrt:
->  	pm_runtime_put_sync(dev);
-> -
-> -out1:
->  	pm_runtime_dont_use_autosuspend(dev);
->  	pm_runtime_disable(dev);
->  	return ret;
->
+T24gRnJpLCAyMDE3LTAzLTI0IGF0IDEyOjU0ICswMDAwLCBNYXJrIEJyb3duIHdyb3RlOgo+IE9u
+IFdlZCwgTWFyIDIyLCAyMDE3IGF0IDA2OjUzOjA3UE0gKzAyMDAsIExlb25hcmQgQ3Jlc3RleiB3
+cm90ZToKPiA+ICsJaWYgKGFuYXRvcF9yZWctPmJ5cGFzcykKPiA+ICsJCWFuYXRvcF9yZWctPnJk
+ZXNjLm1pbl9kcm9wb3V0X3VWID0gMDsKPiA+ICsJZWxzZQo+ID4gKwkJYW5hdG9wX3JlZy0+cmRl
+c2MubWluX2Ryb3BvdXRfdVYgPSBMRE9fTUlOX0RST1BPVVRfVVY7Cj4gTm8sIHRoaXMgaXMgY29t
+cGxldGVseSBicm9rZW4gLSB5b3UgY2FuJ3QgZXhwZWN0IHRvIHJhbmRvbWx5IGNoYW5nZSBodGhl
+Cj4gcmVndWxhdG9yIGRlc2NyaXB0aW9uIGF0IHJ1bnRpbWUgYmVoaW5kIHRoZSBiYWNrIG9mIHRo
+ZSBmcmFtZXdvcmsgYW5kCj4gZXhwZWN0IHRoaW5ncyB0byB3b3JrLsKgwqBJZiB0aGVyZSBpcyBh
+IG5lZWQgdG8gZG8gdGhpcyB3ZSBuZWVkIGFuCj4gaW50ZXJmYWNlIGZvciBnZXR0aW5nIHRoZSBj
+dXJyZW50IHZhbHVlIGFuZCBhIHdheSB0byBub3RpZnkgb2YgY2hhbmdlcy4KPiAKPiBUaGF0IHNh
+aWQgSSB3b3VsZCBub3QgZXhwZWN0IHRoZSBkcm9wb3V0IHZvbHRhZ2UgdG8gYmUgY29uc2lkZXJl
+ZCBhdAo+IGFsbCB3aGVuIHRoZSByZWd1bGF0b3IgaXMgYnlwYXNzZWQsIHNpbmNlIHRoZSByZWd1
+bGF0b3IgaXMgbm90Cj4gcmVndWxhdGluZyBpdCBkb2Vzbid0IG5lZWQgYW55IGhlYWRyb29tLgoK
+SXQncyBhIG1vcmUgY29tcGxleCBzb2x1dGlvbiBidXQgdGhpcyBjb3VsZCBiZSBoYW5kbGVkIGlu
+IHRoZSBjb3JlIGluc3RlYWQuCkJhc2ljYWxseSB0aGUgY29yZSB3b3VsZCB0cmVhdCBtaW5fZHJv
+cG91dF91ViBhcyB6ZXJvIGlmIHRoZSByZWd1bGF0b3IgaXMKY3VycmVudGx5IGluIGJ5cGFzcyBt
+b2RlLgoKSW4gdGhlb3J5IGEgZnVuY3Rpb24gY291bGQgYmUgYWRkZWQgaW4gcmVndWxhdG9yX29w
+cyB0byBhc2sgYSByZWd1bGF0b3IgZHJpdmVyCndoYXQgcmVxdWlyZW1lbnRzIGl0IGhhcyBmb3Ig
+aXRzIHN1cHBseSBidXQgdGhpcyBkb2VzIG5vdCBzZWVtIG5lY2Vzc2FyeS4KCgpfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1h
+aWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xp
+c3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
