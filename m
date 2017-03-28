@@ -1,58 +1,162 @@
-From: Steve Twiss <stwiss.opensource@diasemi.com>
-Subject: RE: [PATCH V6 4/7] mfd: da9061: MFD core support
-Date: Tue, 28 Mar 2017 11:24:29 +0000
-Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CD6A1E1@SW-EX-MBX02.diasemi.com>
-References: <539b8756120ab3558c906f7457e65f94dbe37425.1490608293.git.stwiss.opensource@diasemi.com>
- <201703272258.hWlipe1g%fengguang.wu@intel.com>
- <20170328082141.u2rgnhei5yhhzxdn@dell>
- <CAMuHMdX8WH959h50zGQCV7o4E249xBKDn_cVtRbFwYVsVebu9w@mail.gmail.com>
- <6ED8E3B22081A4459DAC7699F3695FB7018CD69ECA@SW-EX-MBX02.diasemi.com>
- <CAMuHMdU-kaAZ-Reji2v3jSypoDSiwYEWqD0vyYWwJpr6+rAPOA@mail.gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH] power: bq24190_charger: Uniform pm_runtime_get() failure
+ handling
+Date: Tue, 28 Mar 2017 13:49:49 +0200
+Message-ID: <ad5be5ae-c204-d6b4-ff57-61cf07e8a805@redhat.com>
+References: <20170328100128.25512-1-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdU-kaAZ-Reji2v3jSypoDSiwYEWqD0vyYWwJpr6+rAPOA@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Lee Jones <lee.jones@linaro.org>, kbuild test robot <lkp@intel.com>, "kbuild-all@01.org" <kbuild-all@01.org>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:48504 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751430AbdC1LuM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 28 Mar 2017 07:50:12 -0400
+In-Reply-To: <20170328100128.25512-1-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-T24gMjggTWFyY2ggMjAxNyAxMTo1MSwgR2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOg0KPiBIaSBT
-dGV2ZSwNCj4gDQo+IE9uIFR1ZSwgTWFyIDI4LCAyMDE3IGF0IDEyOjQyIFBNLCBTdGV2ZSBUd2lz
-cyB3cm90ZToNCj4gPiBPbiAyOCBNYXJjaCAyMDE3IDA5OjM3LCBHZWVydCBVeXR0ZXJob2V2ZW4g
-d3JvdGU6DQo+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjYgNC83XSBtZmQ6IGRhOTA2MTogTUZE
-IGNvcmUgc3VwcG9ydA0KPiA+PiBPbiBUdWUsIE1hciAyOCwgMjAxNyBhdCAxMDoyMSBBTSwgTGVl
-IEpvbmVzIDxsZWUuam9uZXNAbGluYXJvLm9yZz4gd3JvdGU6DQo+ID4+ID4+IFthdXRvIGJ1aWxk
-IHRlc3QgV0FSTklORyBvbiBsam9uZXMtbWZkL2Zvci1tZmQtbmV4dF0NCj4gPj4gPj4gW2Fsc28g
-YnVpbGQgdGVzdCBXQVJOSU5HIG9uIHY0LjExLXJjNCBuZXh0LTIwMTcwMzI3XQ0KPiA+PiA+PiBi
-YXNlOiAgIGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L2xl
-ZS9tZmQuZ2l0IGZvci1tZmQtbmV4dA0KPiA+PiA+PiBjb25maWc6IHg4Nl82NC1yYW5kY29uZmln
-LXgwMDktMjAxNzEzIChhdHRhY2hlZCBhcyAuY29uZmlnKQ0KPiA+PiA+PiBjb21waWxlcjogZ2Nj
-LTYgKERlYmlhbiA2LjIuMC0zKSA2LjIuMCAyMDE2MDkwMQ0KPiA+PiA+PiByZXByb2R1Y2U6DQo+
-ID4+ID4+ICAgICAgICAgIyBzYXZlIHRoZSBhdHRhY2hlZCAuY29uZmlnIHRvIGxpbnV4IGJ1aWxk
-IHRyZWUNCj4gPj4gPj4gICAgICAgICBtYWtlIEFSQ0g9eDg2XzY0DQo+ID4+ID4+DQo+ID4+ID4+
-IEFsbCB3YXJuaW5ncyAobmV3IG9uZXMgcHJlZml4ZWQgYnkgPj4pOg0KPiA+PiA+Pg0KPiA+PiA+
-PiAgICBkcml2ZXJzLy9tZmQvZGE5MDYyLWNvcmUuYzogSW4gZnVuY3Rpb24gJ2RhOTA2Ml9pMmNf
-cHJvYmUnOg0KPiA+PiA+PiA+PiBkcml2ZXJzLy9tZmQvZGE5MDYyLWNvcmUuYzo4NDU6MjE6IHdh
-cm5pbmc6IGNhc3QgZnJvbSBwb2ludGVyIHRvIGludGVnZXIgb2YgZGlmZmVyZW50IHNpemUgWy1X
-cG9pbnRlci10by1pbnQtY2FzdF0NCj4gPj4gPj4gICAgICAgY2hpcC0+Y2hpcF90eXBlID0gKGlu
-dCltYXRjaC0+ZGF0YTsNCj4gPj4gPj4gICAgICAgICAgICAgICAgICAgICAgICBeDQo+ID4+ID4N
-Cj4gPj4gPiBQbGVhc2UgdXNlIGxvbmdzIG9yIGVudW1zLg0KPiA+Pg0KPiA+PiBFbnVtcyB3b3Vs
-ZCBzdGlsbCBnaXZlIGEgd2FybmluZyBvbiA2NC1iaXQuDQo+ID4+IFRoZSBzaW1wbGUgZml4IGlz
-IGNoYW5nZSB0aGUgY2FzdCBmcm9tIChpbnQpIHRvICh1aW50cHRyX3QpLg0KPiA+DQo+ID4gSGkg
-TGVlIGFuZCBHZWVydCwNCj4gPg0KPiA+IEhvdyBhYm91dCB0aGlzPyBGaXggYnkgcmVkZWZpbmlu
-ZyB0aGUgZW51bSBjaGlwX3R5cGUgdG8gYmUgYW4gaW50Lg0KPiA+IFRoZW4sIGp1c3QgdXNlIHN1
-YnN0aXR1dGlvbjoNCj4gPiAjZGVmaW5lIENPTVBBVF9UWVBFX0RBOTA2MSAgMQ0KPiA+ICNkZWZp
-bmUgQ09NUEFUX1RZUEVfREE5MDYyICAyDQo+ID4NCj4gPiBUaGF0IHdvdWxkIGJlIHNpbXBsZS4N
-Cj4gPiBBcmUgdGhlcmUgYW55IHJlYXNvbnMgdGhpcyB3b3VsZCBub3QgYmUgYWNjZXB0YWJsZT8N
-Cj4gDQo+IEkgZG9uJ3Qgc2VlIGhvdyB0aGF0IGNhbiBoZWxwLg0KPiBUaGUgd2FybmluZyBpcyBj
-YXVzZWQgYnkgY2FzdGluZyB0aGUgInZvaWQgKiIgKHdoaWNoIGlzIGVpdGhlciAzMi1iaXQgb3IN
-Cj4gNjQtYml0KSBpbiBvZl9kZXZpY2VfaWYuZGF0YSB0byBhbiBpbnRlZ2VyIG9yIGVudW0gKHdo
-aWNoIGlzIGFsd2F5cyAzMi1iaXQpLg0KPiANCj4gVGhlIHJpZ2h0IGZpeCBpcyB0byBjYXN0IGl0
-IHRvIHVpbnRwdHJfdCBpbnRlYWQgb2YgaW50LCBsaWtlIG90aGVyIGRyaXZlcnMgZG8uDQoNClRo
-YW5rcyBHZWVydCwNClVtLiBPZiBjb3Vyc2UuIFRoYW5rcywgYW5kIG15IGFwb2xvZ2llcy4gSXQg
-d291bGQgaGF2ZSBoZWxwZWQgaWYgSSBoYWQgY29tcGlsZSB0ZXN0ZWQgdGhlIHJpZ2h0IGZpbGUg
-IDooDQpJJ2xsIGZvbGxvdyB0aGUgY29udmVudGlvbiBhbmQgY2FzdCAodWludHB0cl90KS4NClRo
-YW5rcywNClN0ZXZlDQoNCg==
+Hi,
+
+On 28-03-17 12:01, Liam Breck wrote:
+> From: Liam Breck <kernel@networkimprov.net>
+>
+> On pm_runtime_get() failure, always emit an error message.
+> Prevent unbalanced pm_runtime_get by calling:
+>   pm_runtime_put_noidle() in irq handler
+>   pm_runtime_put_sync() on any probe() failure
+> Rename probe() out labels instead of renumbering them.
+>
+> Fixes: 13d6fa8447fa power: bq24190_charger: Use PM runtime autosuspend
+> Cc: Tony Lindgren <tony@atomide.com>
+> Cc: Hans de Goede <hdegoede@redhat.com>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+
+Patch looks good to me:
+
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+
+Regards,
+
+Hans
+
+
+> ---
+>  drivers/power/supply/bq24190_charger.c | 41 ++++++++++++++++++----------------
+>  1 file changed, 22 insertions(+), 19 deletions(-)
+>
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> index 64a48b9..cf7557f 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -1278,12 +1278,13 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
+>  static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
+>  {
+>  	struct bq24190_dev_info *bdi = data;
+> -	int ret;
+> +	int error;
+>
+>  	bdi->irq_event = true;
+> -	ret = pm_runtime_get_sync(bdi->dev);
+> -	if (ret < 0) {
+> -		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
+> +	error = pm_runtime_get_sync(bdi->dev);
+> +	if (error < 0) {
+> +		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
+> +		pm_runtime_put_noidle(bdi->dev);
+>  		return IRQ_NONE;
+>  	}
+>  	bq24190_check_status(bdi);
+> @@ -1447,13 +1448,15 @@ static int bq24190_probe(struct i2c_client *client,
+>  	pm_runtime_use_autosuspend(dev);
+>  	pm_runtime_set_autosuspend_delay(dev, 600);
+>  	ret = pm_runtime_get_sync(dev);
+> -	if (ret < 0)
+> -		goto out1;
+> +	if (ret < 0) {
+> +		dev_err(dev, "pm_runtime_get failed: %i\n", ret);
+> +		goto out_pmrt;
+> +	}
+>
+>  	ret = bq24190_hw_init(bdi);
+>  	if (ret < 0) {
+>  		dev_err(dev, "Hardware init failed\n");
+> -		goto out2;
+> +		goto out_pmrt;
+>  	}
+>
+>  	charger_cfg.drv_data = bdi;
+> @@ -1464,7 +1467,7 @@ static int bq24190_probe(struct i2c_client *client,
+>  	if (IS_ERR(bdi->charger)) {
+>  		dev_err(dev, "Can't register charger\n");
+>  		ret = PTR_ERR(bdi->charger);
+> -		goto out2;
+> +		goto out_pmrt;
+>  	}
+>
+>  	battery_cfg.drv_data = bdi;
+> @@ -1473,13 +1476,13 @@ static int bq24190_probe(struct i2c_client *client,
+>  	if (IS_ERR(bdi->battery)) {
+>  		dev_err(dev, "Can't register battery\n");
+>  		ret = PTR_ERR(bdi->battery);
+> -		goto out3;
+> +		goto out_charger;
+>  	}
+>
+>  	ret = bq24190_sysfs_create_group(bdi);
+>  	if (ret) {
+>  		dev_err(dev, "Can't create sysfs entries\n");
+> -		goto out4;
+> +		goto out_battery;
+>  	}
+>
+>  	bdi->initialized = true;
+> @@ -1490,7 +1493,7 @@ static int bq24190_probe(struct i2c_client *client,
+>  			"bq24190-charger", bdi);
+>  	if (ret < 0) {
+>  		dev_err(dev, "Can't set up irq handler\n");
+> -		goto out5;
+> +		goto out_sysfs;
+>  	}
+>
+>  	if (bdi->extcon) {
+> @@ -1498,8 +1501,10 @@ static int bq24190_probe(struct i2c_client *client,
+>  		bdi->extcon_nb.notifier_call = bq24190_extcon_event;
+>  		ret = devm_extcon_register_notifier(dev, bdi->extcon, -1,
+>  						    &bdi->extcon_nb);
+> -		if (ret)
+> -			goto out5;
+> +		if (ret) {
+> +			dev_err(dev, "Can't register extcon\n");
+> +			goto out_sysfs;
+> +		}
+>
+>  		/* Sync initial cable state */
+>  		queue_delayed_work(system_wq, &bdi->extcon_work, 0);
+> @@ -1512,19 +1517,17 @@ static int bq24190_probe(struct i2c_client *client,
+>
+>  	return 0;
+>
+> -out5:
+> +out_sysfs:
+>  	bq24190_sysfs_remove_group(bdi);
+>
+> -out4:
+> +out_battery:
+>  	power_supply_unregister(bdi->battery);
+>
+> -out3:
+> +out_charger:
+>  	power_supply_unregister(bdi->charger);
+>
+> -out2:
+> +out_pmrt:
+>  	pm_runtime_put_sync(dev);
+> -
+> -out1:
+>  	pm_runtime_dont_use_autosuspend(dev);
+>  	pm_runtime_disable(dev);
+>  	return ret;
+>
