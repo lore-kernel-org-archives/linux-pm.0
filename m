@@ -1,74 +1,146 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [RFC 4/8] regulator: core: Check enabling bypass respects
- constraints
-Date: Tue, 28 Mar 2017 15:39:41 +0300
-Message-ID: <1490704781.3546.57.camel@nxp.com>
-References: <cover.1490199005.git.leonard.crestez@nxp.com>
- <1edff9bc610969b0c53fa1080d5db021c8e00b2d.1490199005.git.leonard.crestez@nxp.com>
- <20170324125212.vikgekqxsnu7htzl@sirena.org.uk>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: [RFC PATCH 3/4] PM / Domains: Add OF helpers for getting PM domains
+Date: Tue, 28 Mar 2017 15:14:02 +0100
+Message-ID: <1490710443-27425-4-git-send-email-jonathanh@nvidia.com>
+References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170324125212.vikgekqxsnu7htzl@sirena.org.uk>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mark Brown <broonie@kernel.org>, Sascha Hauer <kernel@pengutronix.de>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, geert@linux-m68k.org, rnayak@codeaurora.org
+Cc: stanimir.varbanov@linaro.org, sboyd@codeaurora.org, Marek Szyprowski <m.szyprowski@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCAyMDE3LTAzLTI0IGF0IDEyOjUyICswMDAwLCBNYXJrIEJyb3duIHdyb3RlOgo+IE9u
-IFdlZCwgTWFyIDIyLCAyMDE3IGF0IDA2OjUzOjA2UE0gKzAyMDAsIExlb25hcmQgQ3Jlc3RleiB3
-cm90ZToKPiAKPiA+IAo+ID4gRW5hYmxpbmcgYnlwYXNzIG1vZGUgbWFrZXMgYSByZWd1bGF0b3Ig
-cGFzc3Rocm91Z2ggdGhlIHN1cHBseSB2b2x0YWdlCj4gPiBkaXJlY3RseS4gSXQgaXMgcG9zc2li
-bGUgdGhhdCB0aGUgc3VwcGx5IHZvbHRhZ2UgaXMgc2V0IGhpZ2ggZW5vdWdoIHRoYXQKPiA+IGl0
-IHZpb2xhdGVzIG1hY2hpbmUgY29uc3RyYWludHMgc28gbGV0J3MgY2hlY2sgZm9yIHRoYXQuCj4g
-PiAKPiA+IFRoZSBzdXBwbHkgdm9sdGFnZSBtaWdodCBiZSBoaWdoZXIgYmVjYXVzZSBvZiBtaW5f
-ZHJvcG91dF91ViBvciBtYXliZQo+ID4gdGhlcmUgaXMganVzdCBhbiB1bnJlbGF0ZWQgY29uc3Vt
-ZXIgd2hvIHJlcXVlc3RlZCBhIGhpZ2hlciB2b2x0YWdlLgo+IEkgd291bGQgZXhwZWN0IHRoYXQg
-aWYgYnlwYXNzIGlzIGVuYWJsZWQgdGhlbiB0aGUgY29uc3RyYWludHMgb24gdGhlCj4gcGFyZW50
-IHJlZ3VsYXRvciB3b3VsZCBiZSBzZXQgYXBwcm9wcmlhdGVseSB0byBzdXBwb3J0IHRoaXMsIEkg
-d291bGRuJ3QKPiBleHBlY3QgdGhhdCB3ZSdkIHRyeSB0byBhcHBseSB0aGUgb3BlcmF0aW5nIGNv
-bnN0cmFpbnRzIG9mIHRoZSByZWd1bGF0b3IKPiB0byB0aGUgc3VwcGx5LsKgwqBVc3VhbGx5IGJ5
-cGFzcyBpcyB1c2VkIGZvciBsb3cgcG93ZXIgcmV0ZW50aW9uIG1vZGVzCj4gd2l0aCBkaWZmZXJl
-bnQgc2V0dGluZ3MgdG8gdGhvc2UgdXNlZCBpbiBub3JtYWwgb3BlcmF0aW9uIHRoYXQgd291bGRu
-J3QKPiBiZSBkZXNpcmVkIGluIG5vcm1hbCBvcGVyYXRpb24sIGlmIHdlIHdlcmUgZ29pbmcgdG8g
-aGF2ZSBjb25zdHJhaW50cyBmb3IKPiB0aGlzIEknZCBleHBlY3QgYSBzZXBhcmF0ZSBzZXQgdXNl
-ZCBkdXJpbmcgYnlwYXNzLgoKSW4gdGhpcyBwYXJ0aWN1bGFyIGNhc2UgaXQncyBub3QgcG9zc2li
-bGUgdG8gc2V0IGNvbnN0cmFpbnRzIG9uIHRoZSBwYXJlbnQKcmVndWxhdG9yIHNvIHRoYXQgYm90
-aCBsZG8tZW5hYmxlIGFuZCBsZG8tYnlwYXNzIG1vZGVzIHdvcmsuIFRoZSBtYXhpbXVtIGFsbG93
-ZWQKdm9sdGFnZSBmb3IgbGRvLWJ5cGFzcyBpcyBsb3dlciB0aGFuIHRoZSBtaW5pbXVtIHJlcXVp
-cmVkIHRvIHN1cHBvcnQgdGhlIGNoaXAgYXQKbWF4IGZyZXF1ZW5jeSB3aXQgbGRvLWVuYWJsZS4K
-Ckl0IHdvdWxkIGJlIHBvc3NpYmxlIHRvIGFsc28gY2hhbmdlIHRoZSBjb25zdHJhaW50IHZhbHVl
-cyBvbiB0aGUgUE1JQyB0b2dldGhlcgp3aXRoIGxkby1ieXBhc3MgaW4gdGhlIC5kdHMgZmlsZXMg
-YnV0IHRoYXQgc2VlbXMgYXdmdWwuCgpJJ20gbm90IHN1cmUgSSB1bmRlcnN0YW5kIHdoeSB5b3Ug
-YXJlIGFnYWluc3QgYXBwbHlpbmcgY29uc3RyYWludHMgdG8gdGhlIHBhcmVudAp3aGVuIGluIGJ5
-cGFzcyBtb2RlLCBpdCBzZWVtcyBsaWtlIHRoZSBvYnZpb3VzIHRoaW5nIHRvIGRvIGlmIHlvdSB3
-YW50IHRvCnN1cHBvcnQgZmxleGlibGUgY29uZmlndXJhdGlvbi4gVGhlIGNoZWNrIEkgaW50cm9k
-dWNlZCBpcyBwcm9iYWJseSBub3QgZW5vdWdoIHRvCmNvdmVyIGFsbCBjYXNlcywgZm9yIGV4YW1w
-bGUgaXQgd291bGQgc3RpbGwgYmUgcG9zc2libGUgdG8gZXhwbGljaXRseSBjaGFuZ2UKcGFyZW50
-IHZvbHRhZ2UgYWZ0ZXJ3YXJkcy4KCkEgcmVndWxhdG9yX2RldiByZWdpc3RlcnMgYSBjb25zdW1l
-ciBmb3IgdGhlIHN1cHBseS4gUmlnaHQgbm93IHRoaXMgaXMgYmVpbmcKdXNlZCB0byBwcm9wYWdh
-dGUgbWluaW11bSB2b2x0YWdlcyB1cHdhcmRzIHNpbmNlIGNvbW1pdCBmYzQyMTEyYzBlYWEgKCJQ
-cm9wYWdhdGUKdm9sdGFnZSBjaGFuZ2VzIHRvIHN1cHBseSByZWd1bGF0b3JzIikuIEl0IHNlZW1z
-IHRvIG1lIGxpa2UgaXQgd291bGQgYmUKcmVhc29uYWJsZSB0byBhbHNvIHVzZSBpdCB0byBwcm9w
-YWdhdGUgbWF4aW11bSB2b2x0YWdlIGZyb20gY29uc3RyYWludHMsIHJpZ2h0PwoKSW5zdGVhZCBv
-ZiBhc2tpbmcgZm9yIFtiZXN0X3VWICsgbWluX2Ryb3BvdXRfdVYsIElOVF9NQVhdIGl0IGNvdWxk
-IGluc3RlYWQgYXNrCmZvciBbbWluX3VWICsgYnlwYXNzID8gbWluX2Ryb3BvdXRfdVYgOiAwLCBt
-aW4obWF4X3VWLCBjb25zdHJhaW50cy0+bWF4X3VWKV0uClRoZSBfcmVndWxhdG9yX2RvX3NldF92
-b2x0YWdlIGNhbGwgb24gdGhlIHN1cHBseSBjYW4gZGVhbCB3aXRoIHN0dWZmIGxpa2UKbWFwcGlu
-ZyBpdCB0byBhIHNlbGVjdG9yLCBqdXN0IGxpa2UgaXQgZG9lcyBmb3IgcmVndWxhdG9yIGNvbnN1
-bWVycy4KCklmIG1vcmUgZWxhYm9yYXRlIGNvbnN0cmFpbnRzIGFyZSByZXF1aXJlZCBpbnN0ZWFk
-IG9mIHRoaXMgc2ltcGxlIGJlaGF2aW9yIGl0CmNvdWxkIGJlIGhhbmRsZWQgYnnCoGFkZGluZyBh
-biBpbnRlcmZhY2UgZm9yIGRyaXZlcnMgdG8gZXhwb3NlIGV4cGxpY2l0IGR5bmFtaWMKbWluL21h
-eCBjb25zdHJhaW50cy4KCi0tClJlZ2FyZHMsCkxlb25hcmQKCl9fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0
-CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
-ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+Add helper functions for getting PM domains via device-tree that are to
+be controlled explicitly via the pm_genpd_poweron/off() APIs. PM domains
+can be retrieved by either index or name. Retrieving a PM domain by name
+requires that the 'power-domain-names' property is present for the
+consumer.
+
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+---
+ drivers/base/power/domain.c | 72 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h   | 17 +++++++++++
+ 2 files changed, 89 insertions(+)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 4980ec157750..77516b2b3e58 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2285,6 +2285,78 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(of_genpd_parse_idle_states);
++
++static struct generic_pm_domain *genpd_get(struct device_node *np, int index)
++{
++	struct of_phandle_args genpdspec;
++	struct generic_pm_domain *genpd;
++	int ret;
++
++	if (index < 0)
++		return ERR_PTR(-EINVAL);
++
++	ret = of_parse_phandle_with_args(np, "power-domains",
++					 "#power-domain-cells", index,
++					 &genpdspec);
++	if (ret)
++		return ERR_PTR(ret);
++
++	mutex_lock(&gpd_list_lock);
++
++	genpd = genpd_get_from_provider(&genpdspec);
++	of_node_put(genpdspec.np);
++
++	if (!IS_ERR(genpd)) {
++		genpd_lock(genpd);
++		genpd->device_count++;
++		genpd->suspended_count++;
++		genpd_unlock(genpd);
++	}
++
++	mutex_unlock(&gpd_list_lock);
++
++	return genpd;
++}
++
++/**
++ * of_genpd_get() - Get a PM domain by index using a device node
++ * @np: pointer to PM domain consumer node
++ * @index: index reference for a PM domain in the consumer node
++ *
++ * This function parses the 'power-domains' property using the index
++ * provided to look up a PM domain from the registered list of PM domain
++ * providers.
++ */
++struct generic_pm_domain *of_genpd_get(struct device_node *np, int index)
++{
++	return genpd_get(np, index);
++}
++EXPORT_SYMBOL(of_genpd_get);
++
++/**
++ * of_genpd_get_by_name() - Get a PM domain by name using a device node
++ * @np: pointer to PM domain consumer node
++ * @name: name reference for a PM domain in the consumer node
++ *
++ * This function parses the 'power-domains' and 'power-domain-names'
++ * properties, and uses them to look up a PM domain from the registered
++ * list of PM domain providers.
++ */
++struct generic_pm_domain *of_genpd_get_by_name(struct device_node *np,
++					       const char *name)
++{
++	int index;
++
++	if (!np || !name)
++		return ERR_PTR(-EINVAL);
++
++	index = of_property_match_string(np, "power-domain-names", name);
++	if (index < 0)
++		return ERR_PTR(index);
++
++	return genpd_get(np, index);
++}
++EXPORT_SYMBOL(of_genpd_get_by_name);
+ #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+ 
+ 
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index b3aa1f237d96..d0183d96a1b3 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -240,6 +240,10 @@ extern int of_genpd_add_subdomain(struct of_phandle_args *parent,
+ extern struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
+ extern int of_genpd_parse_idle_states(struct device_node *dn,
+ 			struct genpd_power_state **states, int *n);
++extern struct generic_pm_domain *of_genpd_get(struct device_node *np,
++					      int index);
++extern struct generic_pm_domain *of_genpd_get_by_name(struct device_node *np,
++						      const char *name);
+ 
+ int genpd_dev_pm_attach(struct device *dev);
+ #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+@@ -285,6 +289,19 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
+ {
+ 	return ERR_PTR(-ENOTSUPP);
+ }
++
++static inline
++struct generic_pm_domain *of_genpd_get(struct device_node *np, int index)
++{
++	return ERR_PTR(-ENOTSUPP);
++}
++
++static inline
++struct generic_pm_domain *of_genpd_get_by_name(struct device_node *np,
++					       const char *name)
++{
++	return ERR_PTR(-ENOTSUPP);
++}
+ #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+ 
+ #ifdef CONFIG_PM
+-- 
+2.7.4
