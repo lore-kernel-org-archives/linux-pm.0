@@ -1,70 +1,63 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2 0/8] thermal: ti-soc-thermal: Migrate slope/offset
- data to device tree
-Date: Tue, 28 Mar 2017 21:37:55 -0700
-Message-ID: <20170329043753.GB1596@localhost.localdomain>
-References: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
- <64ab8413-6cf1-864f-0550-9c8db59523f7@ti.com>
- <20170323205256.GO10760@atomide.com>
- <a410d37f-92e5-39b4-ac6c-158673163cb0@ti.com>
- <20170324142610.GX10760@atomide.com>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V11 2/6] thermal: of-thermal: Implement signed
+ coefficient support
+Date: Tue, 28 Mar 2017 21:52:16 -0700
+Message-ID: <20170329045215.GA2582@localhost.localdomain>
+References: <1489356665-3175-1-git-send-email-stefan.wahren@i2se.com>
+ <1489356665-3175-3-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f180.google.com ([209.85.192.180]:34563 "EHLO
-        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750954AbdC2EiG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2017 00:38:06 -0400
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170324142610.GX10760@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1489356665-3175-3-git-send-email-stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Keerthy <j-keerthy@ti.com>, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robh+dt@kernel.org, t-kristo@ti.com
 
-Keerthy,
+Stefen,
 
-On Fri, Mar 24, 2017 at 07:26:10AM -0700, Tony Lindgren wrote:
-> * Keerthy <j-keerthy@ti.com> [170323 20:29]:
-> > 
-> > 
-> > On Friday 24 March 2017 02:22 AM, Tony Lindgren wrote:
-> > > * Keerthy <j-keerthy@ti.com> [170321 20:45]:
-> > >>
-> > >>
-> > >> On Thursday 09 March 2017 01:35 PM, Keerthy wrote:
-> > >>> Currently the slope and offset values for calculating the
-> > >>> hot spot temperature of a particular thermal zone is part
-> > >>> of driver data. Pass them here instead and obtain the values
-> > >>> while of node parsing.
-> > >>>
-> > >>> Tested for the slope and constant values on DRA7-EVM, OMAP3-BEAGLE. 
-
-Have you tried on boards that need negative coefficients?
-
-https://patchwork.kernel.org/patch/9619577/
-
-> > >>
-> > >> Hi Eduardo,
-> > >>
-> > >> If the series looks okay could you please pull this?
-> > > 
-> > > Also.. Are the dts changes safe for me to pick separately?
-> > 
-> > Yes Tony they are safe to pulled separately.
+On Sun, Mar 12, 2017 at 10:11:01PM +0000, Stefan Wahren wrote:
+> Use the new function of_property_read_s32_array() to prepare
+> of-thermal for negative coefficients. These are used by
+> the upcoming bcm2835_thermal driver.
 > 
-> OK applying patches 1 - 5 of this series into omap-for-v4.12/dt-v2.
+> Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
 
-Keerthy,
+Once done with the comment pointed by Frank, you can add my
+Reviewed-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-The only thing I want you to confirm is if you are really getting the
-negative coefficients, because currently of-thermal reads the array
-using an OF helper that understands only unsigned. For this reason, I
-will be queueing your patches only for next merge window, not as a fix,
-not for rc's.
-
-
+> ---
+>  drivers/thermal/of-thermal.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 > 
-> Thanks,
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index d04ec3b..491d58a 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -821,7 +821,8 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+>  	struct device_node *child = NULL, *gchild;
+>  	struct __thermal_zone *tz;
+>  	int ret, i;
+> -	u32 prop, coef[2];
+> +	u32 prop;
+> +	s32 coef[2];
+>  
+>  	if (!np) {
+>  		pr_err("no thermal zone np\n");
+> @@ -851,7 +852,7 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+>  	 * one sensor per thermal zone. Thus, we are considering
+>  	 * only the first two values as slope and offset.
+>  	 */
+> -	ret = of_property_read_u32_array(np, "coefficients", coef, 2);
+> +	ret = of_property_read_s32_array(np, "coefficients", coef, 2);
+>  	if (ret == 0) {
+>  		tz->slope = coef[0];
+>  		tz->offset = coef[1];
+> -- 
+> 1.7.9.5
 > 
-> Tony
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
