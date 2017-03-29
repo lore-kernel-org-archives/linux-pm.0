@@ -1,58 +1,93 @@
-From: Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>
-Subject: [PATCH v4 1/2] power: supply: ltc2941-battery-gauge: Add vendor to compatibles in binding
-Date: Wed, 29 Mar 2017 12:00:56 -0400
-Message-ID: <20170329160057.8298-1-javier@osg.samsung.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: [PATCH v4 2/2] power: supply: ltc2941-battery-gauge: Add OF device ID table
+Date: Wed, 29 Mar 2017 12:00:57 -0400
+Message-ID: <20170329160057.8298-2-javier@osg.samsung.com>
+References: <20170329160057.8298-1-javier@osg.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170329160057.8298-1-javier@osg.samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The DT binding document for LTC2941 and LTC2943 battery gauges did not use
-a vendor prefix in the listed compatible strings. The driver says that the
-manufacturer is Linear Technology which is "lltc" in vendor-prefixes.txt.
+The driver doesn't have a struct of_device_id table but supported devices
+are registered via Device Trees. This is working on the assumption that a
+I2C device registered via OF will always match a legacy I2C device ID and
+that the MODALIAS reported will always be of the form i2c:<device>.
 
-There isn't an upstream Device Tree source file that has nodes defined for
-these devices, so there's no need to keep the old compatible strings.
+But this could change in the future so the correct approach is to have an
+OF device ID table if the devices are registered via OF.
 
-Signed-off-by: Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+
 ---
 
-Changes in v4: None
-Changes in v3: None
-Changes in v2: None
+Changes in v4:
+- Add a vendor prefix to OF device compatible strings (Sebastian Reichel).
 
- Documentation/devicetree/bindings/power/supply/ltc2941.txt | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Changes in v3:
+- Don't use of_match_ptr() to avoid build warning when CONFIG_OF is disabled.
 
-diff --git a/Documentation/devicetree/bindings/power/supply/ltc2941.txt b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
-index ea42ae12d924..a9d7aa60558b 100644
---- a/Documentation/devicetree/bindings/power/supply/ltc2941.txt
-+++ b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
-@@ -6,8 +6,8 @@ temperature monitoring, and uses a slightly different conversion
- formula for the charge counter.
+Changes in v2:
+- Fix build warning reported by kbuild test robot.
+- Fix wrong compatible strings due a copy & paste error.
+
+ drivers/power/supply/ltc2941-battery-gauge.c | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
+index 4adf2ba021ce..7efb908f4451 100644
+--- a/drivers/power/supply/ltc2941-battery-gauge.c
++++ b/drivers/power/supply/ltc2941-battery-gauge.c
+@@ -9,6 +9,7 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/of_device.h>
+ #include <linux/types.h>
+ #include <linux/errno.h>
+ #include <linux/swab.h>
+@@ -61,7 +62,7 @@ struct ltc294x_info {
+ 	struct power_supply *supply;	/* Supply pointer */
+ 	struct power_supply_desc supply_desc;	/* Supply description */
+ 	struct delayed_work work;	/* Work scheduler */
+-	int num_regs;	/* Number of registers (chip type) */
++	unsigned long num_regs;	/* Number of registers (chip type) */
+ 	int charge;	/* Last charge register content */
+ 	int r_sense;	/* mOhm */
+ 	int Qlsb;	/* nAh */
+@@ -387,7 +388,7 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
  
- Required properties:
--- compatible: Should contain "ltc2941" or "ltc2943" which also indicates the
--    type of I2C chip attached.
-+- compatible: Should contain "lltc,ltc2941" or "lltc,ltc2943" which also
-+    indicates the type of I2C chip attached.
- - reg: The 7-bit I2C address.
- - lltc,resistor-sense: The sense resistor value in milli-ohms. Can be a 32-bit
-     negative value when the battery has been connected to the wrong end of the
-@@ -20,7 +20,7 @@ Required properties:
- Example from the Topic Miami Florida board:
+ 	np = of_node_get(client->dev.of_node);
  
- 	fuelgauge: ltc2943@64 {
--		compatible = "ltc2943";
-+		compatible = "lltc,ltc2943";
- 		reg = <0x64>;
- 		lltc,resistor-sense = <15>;
- 		lltc,prescaler-exponent = <5>; /* 2^(2*5) = 1024 */
+-	info->num_regs = id->driver_data;
++	info->num_regs = (unsigned long)of_device_get_match_data(&client->dev);
+ 	info->supply_desc.name = np->name;
+ 
+ 	/* r_sense can be negative, when sense+ is connected to the battery
+@@ -497,9 +498,23 @@ static const struct i2c_device_id ltc294x_i2c_id[] = {
+ };
+ MODULE_DEVICE_TABLE(i2c, ltc294x_i2c_id);
+ 
++static const struct of_device_id ltc294x_i2c_of_match[] = {
++	{
++		.compatible = "lltc,ltc2941",
++		.data = (void *)LTC2941_NUM_REGS
++	},
++	{
++		.compatible = "lltc,ltc2943",
++		.data = (void *)LTC2943_NUM_REGS
++	},
++	{ },
++};
++MODULE_DEVICE_TABLE(of, ltc294x_i2c_of_match);
++
+ static struct i2c_driver ltc294x_driver = {
+ 	.driver = {
+ 		.name	= "LTC2941",
++		.of_match_table = ltc294x_i2c_of_match,
+ 		.pm	= LTC294X_PM_OPS,
+ 	},
+ 	.probe		= ltc294x_i2c_probe,
 -- 
 2.9.3
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
