@@ -1,39 +1,62 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] intel_pstate: Add support for Gemini Lake
-Date: Wed, 29 Mar 2017 09:45:57 -0700
-Message-ID: <1490805957-4268-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:13555 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751603AbdC2QqR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 Mar 2017 12:46:17 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH 1/2] acpi: utils: Add new acpi_dev_present helper
+Date: Wed, 29 Mar 2017 19:50:52 +0300
+Message-ID: <1490806252.708.53.camel@linux.intel.com>
+References: <20170316161736.339-1-hdegoede@redhat.com>
+         <20170316161736.339-2-hdegoede@redhat.com>
+         <4029834.c3GWUpRlkb@aspire.rjw.lan>
+         <20170329092638.GU2957@lahna.fi.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170329092638.GU2957@lahna.fi.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, lenb@kernel.org
-Cc: linux-pm@vger.kernel.org, "Box, David E" <david.e.box@intel.com>, Box@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-From: "Box, David E" <david.e.box@intel.com>
+On Wed, 2017-03-29 at 12:26 +0300, Mika Westerberg wrote:
+> On Tue, Mar 28, 2017 at 11:42:29PM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, March 16, 2017 05:17:35 PM Hans de Goede wrote:
+> > > acpi_dev_found just iterates over all acpi-ids and sees if one
+> > > matches.
+> > > This means that it will return true for devices which are in the
+> > > dsdt
+> > > but disabled (their _STA method returns 0).
+> > > 
+> > > For some drivers it is useful to be able to check if a certain hid
+> > > is not only present in the namespace, but also actually present as
+> > > in
+> > > acpi_device_is_present() will return true for the device. For
+> > > example
+> > > because if a certain device is present then the driver will want
+> > > to use
+> > > an extcon or IIO adc channel provided by that device.
+> > > 
+> > > This commit adds a new acpi_dev_present helper which drivers can
+> > > use
+> > > to this end.
+> > > 
+> > > Arguably acpi_dev_present is what acpi_dev_found should have been,
+> > > but
+> > > there are too many users to just change acpi_dev_found without the
+> > > risk
+> > > of breaking something.
+> > > 
+> > > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> > 
+> > Andy, Mika, any concerns about this patch, please?
+> 
+> No concerns from my side.
+> 
+> Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 
-Use same parameters as INTEL_FAM6_ATOM_GOLDMONT to enable
-Gemini Lake.
+Neither from me.
 
-Signed-off-by: Box, David E <david.e.box@intel.com>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 1 +
- 1 file changed, 1 insertion(+)
+I briefly looked in the code and indeed we have no existing helper as a
+such, so, if you think this is the best way to go, I would agree.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index b62daf5..c31b72b 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1861,6 +1861,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
- 	ICPU(INTEL_FAM6_XEON_PHI_KNL,		knl_funcs),
- 	ICPU(INTEL_FAM6_XEON_PHI_KNM,		knl_funcs),
- 	ICPU(INTEL_FAM6_ATOM_GOLDMONT,		bxt_funcs),
-+	ICPU(INTEL_FAM6_ATOM_GEMINI_LAKE,       bxt_funcs),
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
 -- 
-2.7.4
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
