@@ -1,68 +1,39 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V11 6/6] thermal: bcm2835: add thermal driver for bcm2835
- SoC
-Date: Tue, 28 Mar 2017 21:58:09 -0700
-Message-ID: <20170329045807.GC2582@localhost.localdomain>
-References: <1489356665-3175-1-git-send-email-stefan.wahren@i2se.com>
- <1489356665-3175-7-git-send-email-stefan.wahren@i2se.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 194963] schedutil governor causes audio problem in game
+Date: Wed, 29 Mar 2017 05:21:39 +0000
+Message-ID: <bug-194963-137361-PmQgFzvV6x@https.bugzilla.kernel.org/>
+References: <bug-194963-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1489356665-3175-7-git-send-email-stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:54924 "EHLO
+        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752410AbdC2FVm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2017 01:21:42 -0400
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id EF49528456
+        for <linux-pm@vger.kernel.org>; Wed, 29 Mar 2017 05:21:40 +0000 (UTC)
+Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id EAAD02845B
+        for <linux-pm@vger.kernel.org>; Wed, 29 Mar 2017 05:21:39 +0000 (UTC)
+In-Reply-To: <bug-194963-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@kernel.org
 
-On Sun, Mar 12, 2017 at 10:11:05PM +0000, Stefan Wahren wrote:
-> Add basic thermal driver for bcm2835 SoC.
-> 
-> This driver currently make sure that tsense HW block is set up
-> correctly.
-> 
-> Signed-off-by: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
-> Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-> Acked-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+https://bugzilla.kernel.org/show_bug.cgi?id=194963
 
-I see no issue with this driver at this point.
+--- Comment #13 from John (john.ettedgui@gmail.com) ---
+I've tested it quickly and it seems to work just fine.
+I've re-used my 4.10 kconfig file, and defaulted every new other option.
 
-As I mentioned, the full series needs to go together. You either get an
-Ack from OF maintainers, and I take the series, or you can add my
+I'll keep running it and we'll see.
 
-Acked-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Is it ok that I didn't test the repository without the extra patch?
 
-after fixing the small comment from Nobuhiro.
+Thank you!
 
-> ---
->  drivers/thermal/Kconfig           |    8 +
->  drivers/thermal/Makefile          |    1 +
->  drivers/thermal/bcm2835_thermal.c |  315 +++++++++++++++++++++++++++++++++++++
->  3 files changed, 324 insertions(+)
->  create mode 100644 drivers/thermal/bcm2835_thermal.c
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 776b343..3bd2406 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -453,4 +453,12 @@ config ZX2967_THERMAL
->  	  the primitive temperature sensor embedded in zx2967 SoCs.
->  	  This sensor generates the real time die temperature.
->  
-> +config BCM2835_THERMAL
-> +	tristate "Thermal sensors on bcm2835 SoC"
-> +	depends on ARCH_BCM2835 || COMPILE_TEST
-> +	depends on HAS_IOMEM
-> +	depends on THERMAL_OF
-> +	help
-> +	  Support for thermal sensors on Broadcom bcm2835 SoCs.
-
-small suggestion here:
-
--If you are sending a new version fixing Nobuhiro comment, you could take
-the opportunity to improve the driver Kconfig help description.
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
