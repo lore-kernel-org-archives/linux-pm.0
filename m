@@ -1,75 +1,82 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Subject: Re: [PATCH 0/4] ARM: exynos: Fix Odroid U3 USB/LAN when TFTP booting
- (power sequence)
-Date: Wed, 29 Mar 2017 13:12:21 +0200
-Message-ID: <308964a5-84f0-d144-6358-bd334f9dc603@xs4all.nl>
-References: <20170107085203.4431-1-krzk@kernel.org>
+From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [RFC PATCH 2/3] iio: adc: sun4i-gpadc-iio: add support for H3
+ thermal sensor
+Date: Wed, 29 Mar 2017 14:28:29 +0200
+Message-ID: <20170329122829.23bezwgdywigxshh@lukather>
+References: <20170329065717.D0AF37C1EFF@relay.mailchannels.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170107085203.4431-1-krzk@kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Anand Moon <linux.amoon@gmail.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Peter Chen <peter.chen@nxp.com>, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, sre@kernel.org, robh+dt@kernel.org, Markus Reichl <m.reichl@fivetechno.de>, broonie@kernel.org, stern@rowland.harvard.edu, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="eqclnj4teheii7g7"
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170329065717.D0AF37C1EFF-Y9/x5g2N/Tt0ykcd9G8QkxTxI0vvWBSX@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
 
-On 07/01/17 09:51, Krzysztof Kozlowski wrote:
-> Hi,
-> 
-> Thanks to Markus Reichl, I got an Odroid U3 to work with. Thanks to Peter
-> Chen, we got a power sequence generic library which solves my long
-> standing Odroid U3 problem - no LAN9730 if it was enabled by bootloader.
-> 
-> My previous attempts for this can be found here [0].
-> 
-> This patchset is based on Peter's v11 of power sequence [1].
-> Patchset is available also on my Github [2].
-> 
-> More detailed analysis is described in patch 2/4 ("ARM: dts: exynos: Fix
-> LAN9730 on Odroid U3 after tftpboot").
+--eqclnj4teheii7g7
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It's rather late, but I finally had a chance to test this and it works.
+On Wed, Mar 29, 2017 at 02:57:02PM +0800, Icenowy Zheng wrote:
+> > > @@ -691,6 +777,12 @@ static int sun4i_gpadc_remove(struct platform_de=
+vice *pdev)=20
+> > >=A0 if (!info->no_irq && IS_ENABLED(CONFIG_THERMAL_OF))=20
+> > >=A0 iio_map_array_unregister(indio_dev);=20
+> > >=A0=20
+> > > + if (info->data->gen2_ths) {=20
+> > > + clk_disable_unprepare(info->ths_clk);=20
+> > > + clk_disable_unprepare(info->ths_bus_clk);=20
+> > > + reset_control_deassert(info->reset);=20
+> > > + }=20
+> > > +=20
+> >
+> > I'm not really fond of using this boolean as I don't see it being=20
+> > possibly reused for any other SoCs that has a GPADC or THS.=20
+>=20
+> Because you didn't care new SoCs :-)
+>=20
+> All SoCs after H3 (A64, H5, R40) uses the same THS architecture with
+> H3.
 
-So:
+That's not really Quentin's point. His point is that having things
+like flags and/or variables to identify various behaviours that might
+differ from one SoC to the other usually works better when you want to
+support several of them.
 
-Tested-by: Hans Verkuil <hans.verkuil@cisco.com>
+For example, replacing the gen2_ths by one variable with the number of
+clocks, one with the number of channels, a bool to say it has a reset,
+etc. definitely works better for us when Allwinner does some mix and
+match between each SoC. And this happen most of the time.
 
-This was with u-boot version v2016.09.01 and kernel 4.11.0-rc1.
+Maxime
 
-Regards,
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
 
-	Hans
+--eqclnj4teheii7g7
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> 
-> 
-> Best regards,
-> Krzysztof
-> 
-> 
-> [0] http://www.spinics.net/lists/linux-mmc/msg37386.html
-> [1] https://lwn.net/Articles/710736/
-> [2] https://github.com/krzk/linux/commits/for-next/odroid-u3-usb3503-pwrseq
-> 
-> Krzysztof Kozlowski (4):
->   ARM: dts: exynos: Fix indentation of EHCI and OHCI ports
->   ARM: dts: exynos: Fix LAN9730 on Odroid U3 after tftpboot
->   ARM: exynos_defconfig: Enable power sequence for Odroid U3
->   ARM: multi_v7_defconfig: Enable power sequence for Odroid U3
-> 
->  arch/arm/boot/dts/exynos4.dtsi            | 24 ++++++++++++------------
->  arch/arm/boot/dts/exynos4412-odroidu3.dts | 21 +++++++++++++++++++++
->  arch/arm/configs/exynos_defconfig         |  2 ++
->  arch/arm/configs/multi_v7_defconfig       |  1 +
->  4 files changed, 36 insertions(+), 12 deletions(-)
-> 
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJY26hpAAoJEBx+YmzsjxAg54QP/3RoDQzmzpPlWUvTR00t+vK3
+eIhkg+iWCr2gfqEKRQMx6KC7xQUh39vIpa6u16eOkIg06SWY032srY4lk7q7929K
+bv+Hvj7VztFV/gcH6TizW/TyWwXqXxWV2LFc/GvFIZsRqUd3vdxvtfDdN1Xu45TE
+w1nVGcz09LtZGdKy24iO8Q5E8cA9OHOy9SFidBURJZ7/U8bu7ApB+CKgXb685B3o
+6NTzPZiQN2OLkCIqWpyzOPQgn6uHTj7kg1n6bOJypMY/t5oIQwhn+0PRxu8Jyprg
+oQOj4N991ChuKi1LLMJDAqC4rcsupinMqFhsUlC6WM6bNjUMlDZl8vyhe/G1WTdY
+ZUtDHPtTh8AhBrLoaKgvVAslS5DAA3r/VvjSmt7Fvip55N7BAop2L7Zu0DI5G+gZ
+x6tg/gSazzdKvnhlef1Ipj5JITGot6xcUybUVprPMWVpzmvPvlbnB3n93DYxzKwJ
+7yqqn53qimyBWULWRoPumUrtSdYfj1SysDmrlZ46nxW7PeuSxL5CYsfC5jPZRlH5
+9QQG2Bl9vXdldn1yrGPKZWb9Pd7cuZxKiObq0yU5DyNYNufG/2BgENa9Vj8ITvUZ
+JFjTqvB7ersA9pyKAHCaPkt6ykYh+QrjvWd2brHjiOKQTCO55AXwatvxPTBN2WXQ
+ganghCIWcecj2qgDa6oR
+=mudX
+-----END PGP SIGNATURE-----
+
+--eqclnj4teheii7g7--
