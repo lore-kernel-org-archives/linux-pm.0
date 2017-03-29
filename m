@@ -1,101 +1,280 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH V6 4/7] mfd: da9061: MFD core support
-Date: Wed, 29 Mar 2017 11:12:26 +0200
-Message-ID: <CAMuHMdXyJYCgKok0C1EgNSq4gc8RUe+P=P1TRbZ=j0UQ5M12LA@mail.gmail.com>
-References: <539b8756120ab3558c906f7457e65f94dbe37425.1490608293.git.stwiss.opensource@diasemi.com>
- <201703272258.hWlipe1g%fengguang.wu@intel.com> <20170328082141.u2rgnhei5yhhzxdn@dell>
- <CAMuHMdX8WH959h50zGQCV7o4E249xBKDn_cVtRbFwYVsVebu9w@mail.gmail.com>
- <6ED8E3B22081A4459DAC7699F3695FB7018CD69ECA@SW-EX-MBX02.diasemi.com>
- <CAMuHMdU-kaAZ-Reji2v3jSypoDSiwYEWqD0vyYWwJpr6+rAPOA@mail.gmail.com> <20170329083058.6pcslbsq3qnifwjv@dell>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v4 01/18] dt-bindings: power: battery: add
+ constant-charge-current property
+Date: Wed, 29 Mar 2017 02:26:19 -0700
+Message-ID: <CAKvHMgQf=Zod-F9SMPDDj5Eq3v=JHGh7uns-T_=ynQM0dMtEvw@mail.gmail.com>
+References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
+ <20170315105537.22349-2-quentin.schulz@free-electrons.com>
+ <CAKvHMgSnyPPMEZ1o70Ed2oBHGcMho=-jjFhfXGn4t+2bdALEew@mail.gmail.com>
+ <ce6f2ddb-f875-0370-ca45-293397d97495@free-electrons.com> <CAKvHMgR58sDnB-nn386Bd-H0Duevkeoc8eEfz=otLAumc8FD+w@mail.gmail.com>
+ <765fc3be-23db-0997-85b1-b6c85b3aceef@free-electrons.com> <CAKvHMgRKroPFDdNMb=F=bA4bTwg9bYMAR-5Z4DKLzHJtCYz3_Q@mail.gmail.com>
+ <CAKvHMgRtEnNbokYReu2vEs9UKH6qZnncdyQD=1JMDTZeN+aYCA@mail.gmail.com>
+ <659fb6a3-d49d-5429-8770-88917e4fd0b3@free-electrons.com> <CAKvHMgSFNBmr3fU-biHDo5tzCDV7QaCpFnbChgn4wgSN_1FBig@mail.gmail.com>
+ <8853ebb9-9c4f-d9bf-8c82-daad4650c4f8@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170329083058.6pcslbsq3qnifwjv@dell>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, kbuild test robot <lkp-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "kbuild-all-JC7UmRfGjtg@public.gmane.org" <kbuild-all-JC7UmRfGjtg@public.gmane.org>, LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:34374 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753355AbdC2J0V (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2017 05:26:21 -0400
+In-Reply-To: <8853ebb9-9c4f-d9bf-8c82-daad4650c4f8@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: Sebastian Reichel <sre@kernel.org>, robh+dt@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi Lee,
-
-On Wed, Mar 29, 2017 at 10:30 AM, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> On Tue, 28 Mar 2017, Geert Uytterhoeven wrote:
->> On Tue, Mar 28, 2017 at 12:42 PM, Steve Twiss
->> <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org> wrote:
->> > On 28 March 2017 09:37, Geert Uytterhoeven wrote:
->> >> Subject: Re: [PATCH V6 4/7] mfd: da9061: MFD core support
->> >> On Tue, Mar 28, 2017 at 10:21 AM, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->> >> >> [auto build test WARNING on ljones-mfd/for-mfd-next]
->> >> >> [also build test WARNING on v4.11-rc4 next-20170327]
->> >> >> base:   https://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git for-mfd-next
->> >> >> config: x86_64-randconfig-x009-201713 (attached as .config)
->> >> >> compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
->> >> >> reproduce:
->> >> >>         # save the attached .config to linux build tree
->> >> >>         make ARCH=x86_64
->> >> >>
->> >> >> All warnings (new ones prefixed by >>):
->> >> >>
->> >> >>    drivers//mfd/da9062-core.c: In function 'da9062_i2c_probe':
->> >> >> >> drivers//mfd/da9062-core.c:845:21: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
->> >> >>       chip->chip_type = (int)match->data;
->> >> >>                        ^
->> >> >
->> >> > Please use longs or enums.
->> >>
->> >> Enums would still give a warning on 64-bit.
->> >> The simple fix is change the cast from (int) to (uintptr_t).
->> >
->> > Hi Lee and Geert,
->> >
->> > How about this? Fix by redefining the enum chip_type to be an int.
->> > Then, just use substitution:
->> > #define COMPAT_TYPE_DA9061  1
->> > #define COMPAT_TYPE_DA9062  2
->> >
->> > That would be simple.
->> > Are there any reasons this would not be acceptable?
->>
->> I don't see how that can help.
->> The warning is caused by casting the "void *" (which is either 32-bit or
->> 64-bit) in of_device_if.data to an integer or enum (which is always 32-bit).
->>
->> The right fix is to cast it to uintptr_t intead of int, like other drivers do.
+On Wed, Mar 29, 2017 at 12:54 AM, Quentin Schulz
+<quentin.schulz@free-electrons.com> wrote:
+> Hi,
 >
-> That's a hack though, isn't it?  chip->chip_type is not of type
-> uintptr_t, so all you're doing here is making the compiler happy.
+> On 29/03/2017 09:39, Liam Breck wrote:
+>> On Wed, Mar 29, 2017 at 12:09 AM, Quentin Schulz
+>> <quentin.schulz@free-electrons.com> wrote:
+>>> Hi Liam,
+>>>
+>>> On 29/03/2017 08:55, Liam Breck wrote:
+>>>> Hi Quentin,
+>>>>
+>>>> On Thu, Mar 16, 2017 at 12:42 AM, Liam Breck <liam@networkimprov.net> wrote:
+>>>>> On Thu, Mar 16, 2017 at 12:03 AM, Quentin Schulz
+>>>>> <quentin.schulz@free-electrons.com> wrote:
+>>>>>> Hi Liam,
+>>>>>>
+>>>>>> On 16/03/2017 07:27, Liam Breck wrote:
+>>>>>>> Hi Rob,
+>>>>>>>
+>>>>>>> On Wed, Mar 15, 2017 at 6:10 AM, Quentin Schulz
+>>>>>>> <quentin.schulz@free-electrons.com> wrote:
+>>>>>>>> Hi Liam,
+>>>>>>>>
+>>>>>>>> On 15/03/2017 13:08, Liam Breck wrote:
+>>>>>>>>> I dropped most of the CCs, pls re-add anyone essential. Use Cc lines
+>>>>>>>>> in patch description to direct a patch to interested parties and
+>>>>>>>>> relevant lists. I don't want to see all 19 patches in this series.
+>>>>>>>>>
+>>>>>>>>> On Wed, Mar 15, 2017 at 3:55 AM, Quentin Schulz
+>>>>>>>>> <quentin.schulz@free-electrons.com> wrote:
+>>>>>>>>>> This adds the constant-charge-current property to the list of optional
+>>>>>>>>>> properties of the battery.
+>>>>>>>>>>
+>>>>>>>>>> The constant charge current is critical for batteries as they can't
+>>>>>>>>>> handle all charge currents.
+>>>>>>>>>>
+>>>>>>>>>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+>>>>>>>>>> Acked-by: Rob Herring <robh@kernel.org>
+>>>>>>>>>> ---
+>>>>>>>>>>
+>>>>>>>>>> v4:
+>>>>>>>>>>  - switch from constant-charge-current-microamp to constant-charge-microamp,
+>>>>>>>
+>>>>>>> Sebastian is on record supporting name alignment between DT:battery
+>>>>>>> properties and enum power_supply_property.
+>>>>>>>
+>>>>>>> Could you OK a change back to constant-charge-current-microamp in this patch?
+>>>>>>>
+>>>>>>> Note that the following could appear in DT:battery in future:
+>>>>>>>
+>>>>>>> constant-charge-current-microamp
+>>>>>>> constant-charge-current-max-microamp
+>>>>>>
+>>>>>> OK. I am actually setting max constant charge current and constant
+>>>>>> current charge with the same DT property so I might need to adapt my
+>>>>>> patches.
+>>>>>
+>>>>> I suspect you should set battery:*-current-max with DT, as -current is
+>>>>> "programmed by charger" so seems to be a stat, not a fixed
+>>>>> characteristic.
+>>>>
+>>>> Did you resolve this issue?
+>>>>
+>>>
+>>> Sorry, completely missed your first mail.
+>>>
+>>> Constant charge current is actually what I set in the PMIC. The maximum
+>>> constant charge current is completely PMIC-agnostic in my driver as it
+>>> is used to tell the user that (s)he shouldn't really have a constant
+>>> charge current over the maximum limit as the battery might not be able
+>>> to handle such high current.
+>>>
+>>> What I suggest is to have both properties in DT. I'll set the maximum as
+>>> I do today and we can give the user the ability to set a "default"
+>>> constant charge current (below maximum constant charge current) in the
+>>> DT. Maybe we do not want to recharge your battery with the maximum value
+>>> by default?
+>>
+>> The scope here is just static battery characteristics. For the battery
+>> node, I think constant-charge-current-max-microamp is the relevant
+>> term.
+>
+> If it's only for static battery characteristics, I agree.
+>
+>
+>> If we added both properties, one would be an alias for the
+>> other, which doesn't seem useful.
 
-It's a hack, in the sense that using casts is usually a hack :-)
-(I would love for C to have casts you can easily grep for, like C++ has)
+Meaning if both properties describe static characteristics of the
+battery, they wouldn't have different meaning.
 
-In this case, it's not really a hack, as the void * is intended to store
-arbitrary data, both pointers and integers.
+> Hum. Not really an alias. In my driver, I have a maximum which avoids to
+> set a constant charge current higher than what the battery is supposed
+> to be able to handle. The maximum can be increased via sysfs if ever the
+> user decides to go wild (or if (s)he changes the battery for example).
+> The maximum is never input in any of PMIC registers, it is not dealing
+> with the PMIC at all.
 
-> I see people using (int)(uintptr_t), which I guess keeps the
-> compiler happy in the first instance and actually culminates in a
-> correct cast to the right type.
+Using the battery's -max as the default for your user-adjustable max
+sounds sensible. However the user-adjustable max should perhaps appear
+in a custom sysfs attribute, not
+/sys/class.../constant_charge_current_max (see comment re regulator).
 
-The cast to int isn't really needed.
+If the battery changes, the DT battery node should also change, esp if
+its -max drops. I realize that's not nec trivial.
 
-> So how about something like (enum da9062_compatible_types)(long)?
+> If I have only the max constant charge current in the DT, I'll set the
+> max and constant charge current with the same DT entry. That's perfectly
+> fine.
 
-"uintptr_t" is the proper C standard type for conversion between pointers and
-integers.  The cast to the enum isn't really needed, so I'd remove it (the
-less number of casts, the better!).
+I assume the pmic ccc setting is adjustable via
+/sys/class.../constant_charge_current?
 
-Long is the hack that works on ILP32 and LP64 platforms only ;-)
+> However, what I was thinking is to have a "default" value taken from DT
+> for constant charge current (which will be below maximum ccc) if ever
+> someone wants to set a maximum but use a lower ccc value. Anyway, I
+> guess it's more a "fancy" feature than a requirement (unlike max-ccc).
 
-Gr{oetje,eeting}s,
+Maybe a lower default ccc than battery's -max could be provided via a
+% value in the pmic DT node? Then multiply battery -max by that to set
+ccc.
 
-                        Geert
+>> The pmic can report both independently of the battery characteristic,
+>> and take a driver-specific DT property for
+>> constant-charge-current-microamp which it applies if less than the
+>> battery's -max setting.
+>
+> Indeed.
+>
+>> Or you could set that in userspace via
+>> /sys/class.../constant_charge_current.
+>
+> The goal is to have both. The DT for default values (given by the
+> vendor/upstream) and sysfs for custom values (interesting if you don't
+> want to/can't recompile a DT.
+>
+>> The charger's -max value would
+>> be a characteristic of its regulator.
+>>
+>
+> I don't really understand what you mean by that.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+I believe the pmic's -max value is a characteristic of its electrical
+design, the max current it can deliver. The power_supply_class docs
+are not very clear - "maximum charge current supported by the power
+supply object".
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+>> Or am I missing something...?
+>>
+>>>> Rob & Sebastian want me to merge all items for
+>>>> bindings/power/supply/battery.txt. If I do that I'll also roll up
+>>>> their counterparts in power_supply_core.c and submit a patchset for
+>>>> those two files.
+>>>>
+>>>
+>>> I guess that adding the two properties make sense, don't you think?
+>>>
+>>> Also, could you Cc me on your next version of your patches? So I know
+>>> when to rebase and slightly rework my patches once your patch series is
+>>> merged.
+>>
+>> Surely.
+>>
+>>> Thanks,
+>>> Quentin
+>>>
+>>>>> You may program your charger's -current with the battery's
+>>>>> -current-max, of course.
+>>>>>
+>>>>> Note that your charger also has a -current-max characteristic, likely
+>>>>> different than your battery. You may not need that in DT tho.
+>>>>>
+>>>>>>> constant-charge-voltage-microvolt
+>>>>>>> constant-charge-voltage-max-microvolt
+>>>>>>>
+>>>>>>> Thanks!
+>>>>>>>
+>>>>>>>>> Must be constant-charge-current-microamp for the reasons discussed in
+>>>>>>>>> battery.txt - consistency with sysfs names.
+>>>>>>>>>
+>>>>>>>>
+>>>>>>>> Hum. Just nitpicking, but I disagree with the use of 'must'. IIRC there
+>>>>>>>> is nothing in the code that would require the property to be named after
+>>>>>>>> a property from the enum power_supply_property.
+>>>>>>>>
+>>>>>>>> I would say that you _want_ it to be named like that because it
+>>>>>>>> underlines the relation between the DT property and the actual impacted
+>>>>>>>> property in the power supply subsystem. I'm fine with this reason but in
+>>>>>>>> the end, the maintainer's opinion prevails (if (s)he does not want it,
+>>>>>>>> (s)he will not take it). So, basically, I actually don't mind either
+>>>>>>>> option and I see arguments on each side.
+>>>>>>>>
+>>>>>>>> So, just waiting for maintainer's opinion to make the final version of
+>>>>>>>> this patch.
+>>>>>>>>
+>>>>>>>> Thanks,
+>>>>>>>> Quentin
+>>>>>>>>
+>>>>>>>>> Also applies to power_supply_core.c patch.
+>>>>>>>>>
+>>>>>>>>> Rob: enum power_supply_property also lists constant-charge-voltage,
+>>>>>>>>> hence the -current
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>> added in v3
+>>>>>>>>>>
+>>>>>>>>>>  Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
+>>>>>>>>>>  1 file changed, 2 insertions(+)
+>>>>>>>>>>
+>>>>>>>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>>>>>>> index 0278617..9594e1e 100644
+>>>>>>>>>> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>>>>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>>>>>>> @@ -7,6 +7,7 @@ Optional Properties:
+>>>>>>>>>>   - voltage-min-design-microvolt: drained battery voltage
+>>>>>>>>>>   - energy-full-design-microwatt-hours: battery design energy
+>>>>>>>>>>   - charge-full-design-microamp-hours: battery design capacity
+>>>>>>>>>> + - constant-charge-microamp: battery constant charge current
+>>>>>>>>>>
+>>>>>>>>>>  Because drivers surface properties in sysfs using names derived
+>>>>>>>>>>  from enum power_supply_property, e.g.
+>>>>>>>>>> @@ -30,6 +31,7 @@ Example:
+>>>>>>>>>>                 voltage-min-design-microvolt = <3200000>;
+>>>>>>>>>>                 energy-full-design-microwatt-hours = <5290000>;
+>>>>>>>>>>                 charge-full-design-microamp-hours = <1430000>;
+>>>>>>>>>> +               constant-charge-microamp = <300000>;
+>>>>>>>>>>         };
+>>>>>>>>>>
+>>>>>>>>>>         charger: charger@11 {
+>>>>>>>>>> --
+>>>>>>>>>> 2.9.3
+>>>>>>>>>>
+>>>>>>>>
+>>>>>>>> --
+>>>>>>>> Quentin Schulz, Free Electrons
+>>>>>>>> Embedded Linux and Kernel engineering
+>>>>>>>> http://free-electrons.com
+>>>>>>
+>>>>>> --
+>>>>>> Quentin Schulz, Free Electrons
+>>>>>> Embedded Linux and Kernel engineering
+>>>>>> http://free-electrons.com
+>>>
+>>> --
+>>> Quentin Schulz, Free Electrons
+>>> Embedded Linux and Kernel engineering
+>>> http://free-electrons.com
+>
+> --
+> Quentin Schulz, Free Electrons
+> Embedded Linux and Kernel engineering
+> http://free-electrons.com
