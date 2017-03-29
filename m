@@ -1,53 +1,94 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v1 1/7] devicetree: power: battery: Add properties for
- pre-charge and end-charge current
-Date: Tue, 28 Mar 2017 19:43:02 -0500
-Message-ID: <20170329004302.6eyka3mqxs6zfvpn@rob-hp-laptop>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v1 2/7] devicetree: power: Add docs for TI BQ24190
+ battery charger
+Date: Tue, 28 Mar 2017 19:47:43 -0500
+Message-ID: <20170329004743.6mwpk3lzt5l666gw@rob-hp-laptop>
 References: <20170321220921.5834-1-liam@networkimprov.net>
- <20170321220921.5834-2-liam@networkimprov.net>
- <20170324090158.tl55neisjws66naf@earth>
- <CAKvHMgQt=C1tmfPz3pp_vwhc3b9DHKau2t=jwp3Rv2b2U6hsaQ@mail.gmail.com>
+ <20170321220921.5834-3-liam@networkimprov.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f195.google.com ([74.125.82.195]:34629 "EHLO
-        mail-ot0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932619AbdC2AnF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Mar 2017 20:43:05 -0400
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <CAKvHMgQt=C1tmfPz3pp_vwhc3b9DHKau2t=jwp3Rv2b2U6hsaQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170321220921.5834-3-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, devicetree@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On Fri, Mar 24, 2017 at 05:34:26PM -0700, Liam Breck wrote:
-> On Fri, Mar 24, 2017 at 2:01 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> > Hi,
-> >
-> > On Tue, Mar 21, 2017 at 03:09:15PM -0700, Liam Breck wrote:
-> >> From: Liam Breck <kernel@networkimprov.net>
-> >>
-> >> precharge-current-microamp and endcharge-current-microamp are used
-> >> by battery chargers at the beginning and end of a charging cycle.
-> >>
-> >> Depends-on: https://patchwork.kernel.org/patch/9633605/
-> >> Cc: Rob Herring <robh@kernel.org>
-> >> Cc: devicetree@vger.kernel.org
-> >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> >
-> > Acked-by: Sebastian Reichel <sre@kernel.org>
-> >
-> > I think it makes sense to merge this into the patch adding
-> > simple-battery.
-
-Agreed.
-
+On Tue, Mar 21, 2017 at 03:09:16PM -0700, Liam Breck wrote:
+> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 > 
-> It would make sense, but it means a new _prop_precharge/endcharge
-> patch in that patchset, and I am trying to constrain it at this stage.
+> Document monitored-battery and ti,system-minimum-microvolt properties.
+> 
+> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+> ---
+>  .../devicetree/bindings/power/supply/bq24190.txt   | 47 ++++++++++++++++++++++
+>  1 file changed, 47 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/bq24190.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+> new file mode 100644
+> index 0000000..d252d10
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+> @@ -0,0 +1,47 @@
+> +Binding for TI BQ24190 Li-Ion Battery Charger
+> +
+> +Required properties:
+> +- compatible: Should contain one of the following:
+> +    * "ti,bq24190"
+> +- reg: integer, I2C address of the device.
+> +
+> +Optional properties:
+> +- monitored-battery: phandle of battery information devicetree node
+> +    These battery properties are relevant:
+> +    + precharge-current-microamp: maximum charge current during precharge
+> +      phase (typically 20% of battery capacity).
+> +    + endcharge-current-microamp: a charge cycle terminates when the
+> +      battery voltage is above recharge threshold, and the current is below
+> +      this setting (typically 10% of battery capacity).
+> +    See Documentation/devicetree/bindings/power/supply/battery.txt
 
-Please make bindings complete as possible. You don't have to have the 
-driver side.
+This isn't really relevant to the binding. The battery properties 
+shouldn't vary with the charger.
 
-Rob
+> +- ti,system-minimum-microvolt: when power is connected and the battery
+> +    is below minimum system voltage, the system will be regulated above this
+> +    setting.
+> +
+> +Other features:
+> +- Use gpio-hog to set the OTG pin high to enable 500mA charge current on USB SDP port.
+> +
+> +Example:
+> +
+> +bat: battery {
+> +	compatible = "simple-battery";
+> +	precharge-current-microamp = <256000>;
+> +	endcharge-current-microamp = <128000>;
+> +};
+> +
+> +bq24190 charger@6a {
+> +	compatible = "ti,bq24190";
+> +	reg = <0x6a>;
+> +	// interrupt configuration here
+> +	monitored-battery = <&bat>;
+> +	ti,system-minimum-microvolt = <3200000>;
+> +};
+> +
+> +&twl_gpio {
+> +	otg {
+> +		gpio-hog;
+> +		gpios = <6 0>;
+> +		output-high;
+> +		line-name = "otg-gpio";
+> +	};
+> +};
+> -- 
+> 2.9.3
+> 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
