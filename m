@@ -1,79 +1,97 @@
 From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Subject: Re: [PATCH v1 1/7] devicetree: power: battery: Add properties for
- pre-charge and end-charge current
-Date: Tue, 28 Mar 2017 18:42:42 -0700
-Message-ID: <CAKvHMgRWP6HAYOPCDaLfHUeTfQTYTb5ORg9bt19MDYQ7ubniMg@mail.gmail.com>
-References: <20170321220921.5834-1-liam@networkimprov.net> <20170321220921.5834-2-liam@networkimprov.net>
- <20170329003946.3eyqmsozj2sxrtiw@rob-hp-laptop>
+Subject: Re: [PATCH v1 2/7] devicetree: power: Add docs for TI BQ24190 battery charger
+Date: Tue, 28 Mar 2017 18:48:14 -0700
+Message-ID: <CAKvHMgT8wntpXy1U7=w6XXFwrc91epqpgiaiDi+z5iBd+oOCew@mail.gmail.com>
+References: <20170321220921.5834-1-liam@networkimprov.net> <20170321220921.5834-3-liam@networkimprov.net>
+ <20170329004743.6mwpk3lzt5l666gw@rob-hp-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170329003946.3eyqmsozj2sxrtiw@rob-hp-laptop>
+In-Reply-To: <20170329004743.6mwpk3lzt5l666gw@rob-hp-laptop>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi Rob,
 
-On Tue, Mar 28, 2017 at 5:39 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> On Tue, Mar 21, 2017 at 03:09:15PM -0700, Liam Breck wrote:
+On Tue, Mar 28, 2017 at 5:47 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Tue, Mar 21, 2017 at 03:09:16PM -0700, Liam Breck wrote:
 >> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 >>
->> precharge-current-microamp and endcharge-current-microamp are used
->> by battery chargers at the beginning and end of a charging cycle.
+>> Document monitored-battery and ti,system-minimum-microvolt properties.
 >>
->> Depends-on: https://patchwork.kernel.org/patch/9633605/
 >> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 >> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 >> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 >> ---
->>  Documentation/devicetree/bindings/power/supply/battery.txt | 4 ++++
->>  1 file changed, 4 insertions(+)
+>>  .../devicetree/bindings/power/supply/bq24190.txt   | 47 ++++++++++++++++++++++
+>>  1 file changed, 47 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/supply/bq24190.txt
 >>
->> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->> index 53a68c0..494374a 100644
->> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
->> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->> @@ -12,6 +12,8 @@ Optional Properties:
->>   - voltage-min-design-microvolt: drained battery voltage
->>   - energy-full-design-microwatt-hours: battery design energy
->>   - charge-full-design-microamp-hours: battery design capacity
->> + - precharge-current-microamp: current for pre-charge phase
->> + - endcharge-current-microamp: current for charge termination phase
+>> diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+>> new file mode 100644
+>> index 0000000..d252d10
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+>> @@ -0,0 +1,47 @@
+>> +Binding for TI BQ24190 Li-Ion Battery Charger
+>> +
+>> +Required properties:
+>> +- compatible: Should contain one of the following:
+>> +    * "ti,bq24190"
+>> +- reg: integer, I2C address of the device.
+>> +
+>> +Optional properties:
+>> +- monitored-battery: phandle of battery information devicetree node
+>> +    These battery properties are relevant:
+>> +    + precharge-current-microamp: maximum charge current during precharge
+>> +      phase (typically 20% of battery capacity).
+>> +    + endcharge-current-microamp: a charge cycle terminates when the
+>> +      battery voltage is above recharge threshold, and the current is below
+>> +      this setting (typically 10% of battery capacity).
+>> +    See Documentation/devicetree/bindings/power/supply/battery.txt
 >
-> current is implied by microamp, so perhaps just pre-charge-microamp and
-> end-charge-microamp.
+> This isn't really relevant to the binding. The battery properties
+> shouldn't vary with the charger.
 
-Ah, this is why I want to document the naming scheme for battery node
-properties in battery.txt, by referring to a linux header file :-)
+Different components need different properties from the battery node.
+This charger needs the above two, so we should document that, no?
 
-The names mirror enum power_supply_property elements wherever
-possible. Shortening them as you suggest makes dts code a little more
-terse, but obscures their relationship with power_supply sysfs
-attributes. I prefer brevity myself, but there is no strong case to
-reword the names for DT use.
-
-> I know little about batteries, but don't you also need to know when each
-> phase starts/ends?
-
-Meaning at what voltage levels? We don't need it for this
-battery/charger pair; no idea about others...
-
-> I mainly ask because we just added the previous properties and now we're
-> adding 2 more. While fine to add features to a driver one by one, we
-> really shouldn't for bindings. The h/w is not evolving (in a month).
-
-And a third patchset from Quentin Schulz adds another :-)
-
-I think you may need to accept piecemeal assembly in this case... No
-one has made a study of all properties that should be in the battery
-node. (precharge_current wasn't even in power_supply_property until
-this patchset.) Sebastian requested we create this binding in the
-process of adding DT support to a fuel gauge, so we coded what that
-called for.
-
-I hope that helps...
+>> +- ti,system-minimum-microvolt: when power is connected and the battery
+>> +    is below minimum system voltage, the system will be regulated above this
+>> +    setting.
+>> +
+>> +Other features:
+>> +- Use gpio-hog to set the OTG pin high to enable 500mA charge current on USB SDP port.
+>> +
+>> +Example:
+>> +
+>> +bat: battery {
+>> +     compatible = "simple-battery";
+>> +     precharge-current-microamp = <256000>;
+>> +     endcharge-current-microamp = <128000>;
+>> +};
+>> +
+>> +bq24190 charger@6a {
+>> +     compatible = "ti,bq24190";
+>> +     reg = <0x6a>;
+>> +     // interrupt configuration here
+>> +     monitored-battery = <&bat>;
+>> +     ti,system-minimum-microvolt = <3200000>;
+>> +};
+>> +
+>> +&twl_gpio {
+>> +     otg {
+>> +             gpio-hog;
+>> +             gpios = <6 0>;
+>> +             output-high;
+>> +             line-name = "otg-gpio";
+>> +     };
+>> +};
+>> --
+>> 2.9.3
+>>
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
