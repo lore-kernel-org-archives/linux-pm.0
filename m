@@ -1,54 +1,78 @@
 From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
         <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH v3 3/7] thermal: rcar_gen3_thermal: check that TSC exists before memory allocation
-Date: Wed, 29 Mar 2017 20:43:52 +0200
-Message-ID: <20170329184356.8610-4-niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH v3 2/7] thermal: rcar_gen3_thermal: remove unneeded mutex
+Date: Wed, 29 Mar 2017 20:43:51 +0200
+Message-ID: <20170329184356.8610-3-niklas.soderlund+renesas@ragnatech.se>
 References: <20170329184356.8610-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp-3.sys.kth.se ([130.237.48.192]:55196 "EHLO
+        smtp-3.sys.kth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752113AbdC2SpS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2017 14:45:18 -0400
 In-Reply-To: <20170329184356.8610-1-niklas.soderlund+renesas@ragnatech.se>
-Sender: linux-renesas-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
 Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
-List-Id: linux-pm@vger.kernel.org
 
-Move the check for a TSC resource before allocating memory for a new
-TSC. If no TSC is found there is little point in allocating memory for
-it.
+There is no point in protecting a register read with a lock. This is
+most likely a leftover from when the driver was reworked before being
+submitted for upstream.
 
 Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/thermal/rcar_gen3_thermal.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
 diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index cb5c362c00009921..9b6bc03dd142a8dd 100644
+index ec477d47d0bae8e5..cb5c362c00009921 100644
 --- a/drivers/thermal/rcar_gen3_thermal.c
 +++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -276,16 +276,16 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 	for (i = 0; i < TSC_MAX_NUM; i++) {
- 		struct rcar_gen3_thermal_tsc *tsc;
+@@ -20,7 +20,6 @@
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+-#include <linux/mutex.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+@@ -72,7 +71,6 @@ struct rcar_gen3_thermal_tsc {
+ 	void __iomem *base;
+ 	struct thermal_zone_device *zone;
+ 	struct equation_coefs coef;
+-	struct mutex lock;
+ };
  
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
-+		if (!res)
-+			break;
-+
- 		tsc = devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
- 		if (!tsc) {
- 			ret = -ENOMEM;
- 			goto error_unregister;
+ struct rcar_gen3_thermal_priv {
+@@ -163,16 +161,12 @@ static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
+ 	u32 reg;
+ 
+ 	/* Read register and convert to mili Celsius */
+-	mutex_lock(&tsc->lock);
+-
+ 	reg = rcar_gen3_thermal_read(tsc, REG_GEN3_TEMP) & CTEMP_MASK;
+ 
+ 	val1 = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b1, tsc->coef.a1);
+ 	val2 = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b2, tsc->coef.a2);
+ 	mcelsius = FIXPT_TO_MCELSIUS((val1 + val2) / 2);
+ 
+-	mutex_unlock(&tsc->lock);
+-
+ 	/* Make sure we are inside specifications */
+ 	if ((mcelsius < MCELSIUS(-40)) || (mcelsius > MCELSIUS(125)))
+ 		return -EIO;
+@@ -299,7 +293,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
  		}
  
--		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
--		if (!res)
--			break;
--
- 		tsc->base = devm_ioremap_resource(dev, res);
- 		if (IS_ERR(tsc->base)) {
- 			ret = PTR_ERR(tsc->base);
+ 		priv->tscs[i] = tsc;
+-		mutex_init(&tsc->lock);
+ 
+ 		match_data->thermal_init(tsc);
+ 		rcar_gen3_thermal_calc_coefs(&tsc->coef, ptat, thcode[i]);
 -- 
 2.12.1
