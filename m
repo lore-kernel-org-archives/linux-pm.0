@@ -1,137 +1,144 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery
- device .type=unknown
-Date: Wed, 29 Mar 2017 16:12:48 +0200
-Message-ID: <20170329141247.nl5s6zglvl3onzab@earth>
-References: <20170321220921.5834-1-liam@networkimprov.net>
- <20170321220921.5834-8-liam@networkimprov.net>
- <20170323105221.qnyw2m4cgjcb24cl@earth>
- <CAKvHMgROkDF43sGgvPG8Eb+z=yjuTOL9UXkOREkd=APL47DMvw@mail.gmail.com>
- <20170324093949.rno2olzywz4cds6k@earth>
- <CAKvHMgTVvytGyzxR_ay7v216qwYnekn_c3O72XzdPANhX7zwtQ@mail.gmail.com>
- <20170324112215.uleonp3hu4oxprau@earth>
- <CAKvHMgTrsLCL_rxLUmVS_qNVeaa8n2kbh49o2iup746BiGBVUQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="z664tnzbfpvmdvpy"
+From: Andi Shyti <andi.shyti@gmail.com>
+Subject: [PATCH] power: supply: charger manager: refactor return statements
+Date: Thu, 30 Mar 2017 00:13:57 +0900
+Message-ID: <20170329151357.1841-1-andi@etezian.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:33554 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751828AbdC2OM6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 Mar 2017 10:12:58 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKvHMgTrsLCL_rxLUmVS_qNVeaa8n2kbh49o2iup746BiGBVUQ@mail.gmail.com>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:34274 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752108AbdC2POK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2017 11:14:10 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
+To: Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Jiri Kosina <trivial@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andi Shyti <andi@etezian.org>, Andi Shyti <andi.shyti@samsung.com>
 
+Some trivial improvements on the returning value of the
+functions:
 
---z664tnzbfpvmdvpy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ - remove unnecessary goto labels that just return, return
+   immediately, instead.
 
-On Fri, Mar 24, 2017 at 04:56:34AM -0700, Liam Breck wrote:
-> On Fri, Mar 24, 2017 at 4:22 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> > Hi,
-> >
-> > On Fri, Mar 24, 2017 at 03:44:51AM -0700, Liam Breck wrote:
-> >> On Fri, Mar 24, 2017 at 2:39 AM, Sebastian Reichel <sre@kernel.org> wr=
-ote:
-> >> > On Thu, Mar 23, 2017 at 01:47:23PM -0700, Liam Breck wrote:
-> >> > > On Thu, Mar 23, 2017 at 3:52 AM, Sebastian Reichel <sre@kernel.org=
-> wrote:
-> >> > > > That still leaves the health status reading, though. From
-> >> > > > userspace's point-of-view this should be merged into the
-> >> > > > battery device, if fuel-gauge can't provide that information.
-> >> > >
-> >> > > You mean merged into the -charger device? -battery is the one
-> >> > > we're dropping.
-> >> > >
-> >> > > If you did mean -battery, could you elaborate?
-> >> >
-> >> > I was not talking about bq24190-battery. I meant the battery
-> >> > device provided by the fuel-gauge. From userspace's point of
-> >> > view a battery device, which is usually derived from the
-> >> > fuel-gauge should contain battery related information.
-> >>
-> >> It doesn't sound right to ask every gauge to absorb features from a
-> >> specific charger. Userspace apps are already watching both USB and
-> >> battery power supply types for a given battery. They'll pick up a
-> >> health issue if we merge -battery and -charger health. Isn't that
-> >> enough?
-> >
-> > Technically it's not correct, since high battery temperature is a
-> > much bigger safety risk than high charger chip temperature. I guess
-> > it's good enough, though. I guess the battery temperature health is
-> > related to charging anyways, which is different from the ones making
-> > the battery itself dangerous. So I'm fine with that solution.
-> >
-> >> > Since the battery health information is battery related it
-> >> > should somehow be merged into the data from the fuel-gauge.
-> >> > That's what Hans implemented with the function-pointer
-> >> > construct and what you suggested to implement in this mail:
-> >> >
-> >> > http://marc.info/?l=3Dlinux-pm&m=3D149026871313238&w=3D2
-> >>
-> >> The merge I suggested was of properties from all power drivers into a
-> >> single sysfs device. Which I would work on if you are eager to have
-> >> it. I realize it would take a while to be merged.
-> >
-> > Only the devices belonging to the same battery should be
-> > exposed as one device. Also charger is extra device, since
-> > it may be used to charge multiple batteries. So far its
-> > pretty uncommon, that charger chip provides information
-> > about the battery, so you would spent lots of time for
-> > a single corner case. So while I would like to have it,
-> > I don't think its worth the time to implement it.
->=20
-> Don't most battery-powered boxes register separate TYPE_BATTERY and
-> TYPE_USB/MAINS power supplies? This would unify properties from both
-> under a single sysfs node, so it's probably lots of cases.
+ - do not initialize when not needed.
 
-Well that will be problematic for systems providing USB and MAINS
-and can use both at the same time. The only thing, that should be
-unified are properties for the same battery with charger !=3D battery.
-Instead ".supplied_to" should be set correctly for the charger, so
-that the system knows, that a charger supplies its energy to a
-specific battery.
+ - return the value from the calling function that fails instead
+   of politically choosing -EINVAL.
 
-> A charger aware of multiple batteries would register properties at a
-> named supply (sysfs node) for each battery. There would be no charger
-> sysfs node. Maybe there would be a "DC in" node for its common
-> regulator functions.
->=20
-> There would be no more chip names appearing as sysfs nodes. System
-> config (DT, etc) would name the power sysfs nodes.
->=20
-> Hm, the first to-do is mock-up sysfs trees for various use cases...
+Signed-off-by: Andi Shyti <andi@etezian.org>
+---
+ drivers/power/supply/charger-manager.c | 35 ++++++++++++++--------------------
+ 1 file changed, 14 insertions(+), 21 deletions(-)
 
-I don't see any advantage in that. It also breaks userspace ABI by
-removing the charger node and results in work being done by the kernel,
-that can easily be done in userspace.
-
--- Sebastian
-
---z664tnzbfpvmdvpy
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljbwN0ACgkQ2O7X88g7
-+prNHg//aDQIL7Jn6uZUrm8Wvdq+fa/LPwDSbPtu9Z8mPo/qj/HEtPayfy2GD+1A
-VnkgmI34V9JCvUTVkarC28eE5l7EmFNj6NHCa5D4evpvaC0O+p7iQA4ZPvpcJ8VW
-okIHccvV8VXnNdUmTfJlYQ6/FtSG71jHjyipNnVzvl15J5OzQRs/PkwbHc3z1yOs
-0/e1RKxFrI6or3Okx/2ohRnsB8KvqQukMBqSVBVfgICALHmNxKeyj0HD7gAZUf2A
-jLpYz1gBYhx63sldUm2lu9W7zDQ7K3z2LHrg4L1MwyxE90N+FCn1zGgy/YnFFj7t
-ZTQZ7FI39T4pft/R7k2SNS6Cz9n36dH6gm2juZkd3DkZfdOTqc7jh3wr+LuH79St
-9Ig956/s2Nm/sPWB1GHfv9YrVlQM2lvqGYGzNLinLYS/FvHnd80vHup8xOF6mB9W
-Q+62gL5TXsTYVD/wKf3aBzXVAA7ieM0SJbzPl+/0/PzNTZYyBIOhSU7W77fdAz9a
-FOLuumwUG0L+95mnHjPeT5+2yulaknC73SPB5bn35Dn+3TY+vjjuGCJtb/lJaSGq
-KCAIcSjXTyDkchjRSZuabaOfgqm5eysZPVMeIV2I0/JbxxESj8fPhfbM1Mnaksre
-ksNtEHJaSUH7mxzQLcY3t1GnTwk1E4+SKt9VdMJH2Ejtw2JxywA=
-=wzR3
------END PGP SIGNATURE-----
-
---z664tnzbfpvmdvpy--
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index e664ca7c0afd..adc3761831e1 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -1198,7 +1198,7 @@ static int charger_extcon_notifier(struct notifier_block *self,
+ static int charger_extcon_init(struct charger_manager *cm,
+ 		struct charger_cable *cable)
+ {
+-	int ret = 0;
++	int ret;
+ 
+ 	/*
+ 	 * Charger manager use Extcon framework to identify
+@@ -1232,7 +1232,7 @@ static int charger_manager_register_extcon(struct charger_manager *cm)
+ {
+ 	struct charger_desc *desc = cm->desc;
+ 	struct charger_regulator *charger;
+-	int ret = 0;
++	int ret;
+ 	int i;
+ 	int j;
+ 
+@@ -1255,15 +1255,14 @@ static int charger_manager_register_extcon(struct charger_manager *cm)
+ 			if (ret < 0) {
+ 				dev_err(cm->dev, "Cannot initialize charger(%s)\n",
+ 					charger->regulator_name);
+-				goto err;
++				return ret;
+ 			}
+ 			cable->charger = charger;
+ 			cable->cm = cm;
+ 		}
+ 	}
+ 
+-err:
+-	return ret;
++	return 0;
+ }
+ 
+ /* help function of sysfs node to control charger(regulator) */
+@@ -1372,7 +1371,7 @@ static int charger_manager_register_sysfs(struct charger_manager *cm)
+ 	int chargers_externally_control = 1;
+ 	char buf[11];
+ 	char *str;
+-	int ret = 0;
++	int ret;
+ 	int i;
+ 
+ 	/* Create sysfs entry to control charger(regulator) */
+@@ -1382,10 +1381,9 @@ static int charger_manager_register_sysfs(struct charger_manager *cm)
+ 		snprintf(buf, 10, "charger.%d", i);
+ 		str = devm_kzalloc(cm->dev,
+ 				sizeof(char) * (strlen(buf) + 1), GFP_KERNEL);
+-		if (!str) {
+-			ret = -ENOMEM;
+-			goto err;
+-		}
++		if (!str)
++			return -ENOMEM;
++
+ 		strcpy(str, buf);
+ 
+ 		charger->attrs[0] = &charger->attr_name.attr;
+@@ -1426,19 +1424,16 @@ static int charger_manager_register_sysfs(struct charger_manager *cm)
+ 		if (ret < 0) {
+ 			dev_err(cm->dev, "Cannot create sysfs entry of %s regulator\n",
+ 				charger->regulator_name);
+-			ret = -EINVAL;
+-			goto err;
++			return ret;
+ 		}
+ 	}
+ 
+ 	if (chargers_externally_control) {
+ 		dev_err(cm->dev, "Cannot register regulator because charger-manager must need at least one charger for charging battery\n");
+-		ret = -EINVAL;
+-		goto err;
++		return -EINVAL;
+ 	}
+ 
+-err:
+-	return ret;
++	return 0;
+ }
+ 
+ static int cm_init_thermal_data(struct charger_manager *cm,
+@@ -1626,7 +1621,7 @@ static int charger_manager_probe(struct platform_device *pdev)
+ {
+ 	struct charger_desc *desc = cm_get_drv_data(pdev);
+ 	struct charger_manager *cm;
+-	int ret = 0, i = 0;
++	int ret, i = 0;
+ 	int j = 0;
+ 	union power_supply_propval val;
+ 	struct power_supply *fuel_gauge;
+@@ -1887,14 +1882,12 @@ MODULE_DEVICE_TABLE(platform, charger_manager_id);
+ 
+ static int cm_suspend_noirq(struct device *dev)
+ {
+-	int ret = 0;
+-
+ 	if (device_may_wakeup(dev)) {
+ 		device_set_wakeup_capable(dev, false);
+-		ret = -EAGAIN;
++		return -EAGAIN;
+ 	}
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static bool cm_need_to_awake(void)
+-- 
+2.11.0
