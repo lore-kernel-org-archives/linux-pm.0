@@ -1,135 +1,65 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v2] power: bq24190_charger: Uniform pm_runtime_get() failure handling
-Date: Tue, 28 Mar 2017 18:49:13 -0700
-Message-ID: <20170329014913.3970-1-liam@networkimprov.net>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v2 3/8] ARM: OMAP5: Thermal: Add slope and offset values
+Date: Tue, 28 Mar 2017 21:33:04 -0700
+Message-ID: <20170329043302.GA1596@localhost.localdomain>
+References: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
+ <1489046762-11288-4-git-send-email-j-keerthy@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f68.google.com ([74.125.83.68]:34693 "EHLO
-        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751194AbdC2Bt5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Mar 2017 21:49:57 -0400
-Received: by mail-pg0-f68.google.com with SMTP id o123so636323pga.1
-        for <linux-pm@vger.kernel.org>; Tue, 28 Mar 2017 18:49:56 -0700 (PDT)
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:35552 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751024AbdC2EdO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2017 00:33:14 -0400
+Content-Disposition: inline
+In-Reply-To: <1489046762-11288-4-git-send-email-j-keerthy@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>
+To: Keerthy <j-keerthy@ti.com>
+Cc: tony@atomide.com, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robh+dt@kernel.org, t-kristo@ti.com
 
-From: Liam Breck <kernel@networkimprov.net>
+On Thu, Mar 09, 2017 at 01:35:57PM +0530, Keerthy wrote:
+> Currently the slope and offset values for calculating the
+> hot spot temperature of a particular thermal zone is part
+> of driver data. Pass them here instead and obtain the values
+> while of node parsing.
 
-On pm_runtime_get() failure, always emit an error message.
-Prevent unbalanced pm_runtime_get by calling:
-  pm_runtime_put_noidle() in irq handler
-  pm_runtime_put_sync() on any probe() failure
-Rename probe() out labels instead of renumbering them.
 
-Fixes: 13d6fa8447fa power: bq24190_charger: Use PM runtime autosuspend
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Liam Breck <kernel@networkimprov.net>
----
-v2: not rebased to Hans' extcon patch, which needs some work.
+The patch is fine.. but
 
- drivers/power/supply/bq24190_charger.c | 35 +++++++++++++++++-----------------
- 1 file changed, 18 insertions(+), 17 deletions(-)
+> 
+> Signed-off-by: Keerthy <j-keerthy@ti.com>
+> ---
+>  arch/arm/boot/dts/omap5.dtsi | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/omap5.dtsi b/arch/arm/boot/dts/omap5.dtsi
+> index 222155c..eaff2a5 100644
+> --- a/arch/arm/boot/dts/omap5.dtsi
+> +++ b/arch/arm/boot/dts/omap5.dtsi
+> @@ -1127,6 +1127,15 @@
+>  
+>  &cpu_thermal {
+>  	polling-delay = <500>; /* milliseconds */
+> +	coefficients = <65 (-1791)>;
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index 64a48b9..b1c1ee8 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -1278,12 +1278,13 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
- static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
- {
- 	struct bq24190_dev_info *bdi = data;
--	int ret;
-+	int error;
- 
- 	bdi->irq_event = true;
--	ret = pm_runtime_get_sync(bdi->dev);
--	if (ret < 0) {
--		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
-+	error = pm_runtime_get_sync(bdi->dev);
-+	if (error < 0) {
-+		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-+		pm_runtime_put_noidle(bdi->dev);
- 		return IRQ_NONE;
- 	}
- 	bq24190_check_status(bdi);
-@@ -1447,13 +1448,15 @@ static int bq24190_probe(struct i2c_client *client,
- 	pm_runtime_use_autosuspend(dev);
- 	pm_runtime_set_autosuspend_delay(dev, 600);
- 	ret = pm_runtime_get_sync(dev);
--	if (ret < 0)
--		goto out1;
-+	if (ret < 0) {
-+		dev_err(dev, "pm_runtime_get failed: %i\n", ret);
-+		goto out_pmrt;
-+	}
- 
- 	ret = bq24190_hw_init(bdi);
- 	if (ret < 0) {
- 		dev_err(dev, "Hardware init failed\n");
--		goto out2;
-+		goto out_pmrt;
- 	}
- 
- 	charger_cfg.drv_data = bdi;
-@@ -1464,7 +1467,7 @@ static int bq24190_probe(struct i2c_client *client,
- 	if (IS_ERR(bdi->charger)) {
- 		dev_err(dev, "Can't register charger\n");
- 		ret = PTR_ERR(bdi->charger);
--		goto out2;
-+		goto out_pmrt;
- 	}
- 
- 	battery_cfg.drv_data = bdi;
-@@ -1473,13 +1476,13 @@ static int bq24190_probe(struct i2c_client *client,
- 	if (IS_ERR(bdi->battery)) {
- 		dev_err(dev, "Can't register battery\n");
- 		ret = PTR_ERR(bdi->battery);
--		goto out3;
-+		goto out_charger;
- 	}
- 
- 	ret = bq24190_sysfs_create_group(bdi);
- 	if (ret) {
- 		dev_err(dev, "Can't create sysfs entries\n");
--		goto out4;
-+		goto out_battery;
- 	}
- 
- 	bdi->initialized = true;
-@@ -1490,7 +1493,7 @@ static int bq24190_probe(struct i2c_client *client,
- 			"bq24190-charger", bdi);
- 	if (ret < 0) {
- 		dev_err(dev, "Can't set up irq handler\n");
--		goto out5;
-+		goto out_sysfs;
- 	}
- 
- 	if (bdi->extcon) {
-@@ -1512,19 +1515,17 @@ static int bq24190_probe(struct i2c_client *client,
- 
- 	return 0;
- 
--out5:
-+out_sysfs:
- 	bq24190_sysfs_remove_group(bdi);
- 
--out4:
-+out_battery:
- 	power_supply_unregister(bdi->battery);
- 
--out3:
-+out_charger:
- 	power_supply_unregister(bdi->charger);
- 
--out2:
-+out_pmrt:
- 	pm_runtime_put_sync(dev);
--
--out1:
- 	pm_runtime_dont_use_autosuspend(dev);
- 	pm_runtime_disable(dev);
- 	return ret;
--- 
-2.9.3
+I suppose you tried this change with this patch:
+https://patchwork.kernel.org/patch/9619577/
+?
+
+Otherwise, I do not see how your coeff would work, right?
+
+>  };
+>  
+>  /include/ "omap54xx-clocks.dtsi"
+> +
+> +&gpu_thermal {
+> +	coefficients = <117 (-2992)>;
+> +};
+> +
+> +&core_thermal {
+> +	coefficients = <0 2000>;
+> +};
+> -- 
+> 1.9.1
+> 
