@@ -1,71 +1,170 @@
-From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
-        <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH v3 6/7] thermal: rcar_gen3_thermal: store device match data in private structure
-Date: Wed, 29 Mar 2017 20:43:55 +0200
-Message-ID: <20170329184356.8610-7-niklas.soderlund+renesas@ragnatech.se>
-References: <20170329184356.8610-1-niklas.soderlund+renesas@ragnatech.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp-3.sys.kth.se ([130.237.48.192]:55228 "EHLO
-        smtp-3.sys.kth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752809AbdC2SpV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2017 14:45:21 -0400
-In-Reply-To: <20170329184356.8610-1-niklas.soderlund+renesas@ragnatech.se>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mauro Carvalho Chehab <mchehab-JsYNTwtnfakRB7SZvlqPiA@public.gmane.org>
+Subject: [PATCH 21/22] docs-rst: fix usb cross-references
+Date: Wed, 29 Mar 2017 15:54:20 -0300
+Message-ID: <08a43b314eb2eb80bf0bc93ca81951b69939074b.1490813422.git.mchehab@s-opensource.com>
+References: <4f2a7480ba9a3c89e726869fddf17e31cf82b3c7.1490813422.git.mchehab@s-opensource.com>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <4f2a7480ba9a3c89e726869fddf17e31cf82b3c7.1490813422.git.mchehab-JsYNTwtnfakRB7SZvlqPiA@public.gmane.org>
+In-Reply-To: <4f2a7480ba9a3c89e726869fddf17e31cf82b3c7.1490813422.git.mchehab-JsYNTwtnfakRB7SZvlqPiA@public.gmane.org>
+References: <4f2a7480ba9a3c89e726869fddf17e31cf82b3c7.1490813422.git.mchehab-JsYNTwtnfakRB7SZvlqPiA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Linux Media Mailing List <linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Doc Mailing List <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: Mauro Carvalho Chehab <mchehab-JsYNTwtnfakRB7SZvlqPiA@public.gmane.org>, Mauro Carvalho Chehab <mchehab-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, John Youn <johnyoun-HKixBCOQz3hWk0Htik3J/w@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Jonathan Corbet <corbet-T1hC0tSOHrs@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Mauro Carvalho Chehab <mchehab-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Masanari Iida <standby24x7-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Oliver Neukum <oneukum-IBi9RG/b67k@public.gmane.org>, Christian Gromm <christian.gromm-UWL1GkI3JZL3oGB3hsPCZA@public.gmane.org>, Andrey Shvetsov <andrey.shvetsov-cks0jjGtjBA@public.gmane.org>, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>, Heikki Krogerus <heikki.krogerus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Masahiro Yamada <yamada.masahi>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
 
-The device match data needs to be accessible outside the probe function,
-store it in the private data structure.
+As some USB documentation files got moved, adjust their
+cross-references to their new place.
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab-JsYNTwtnfakRB7SZvlqPiA@public.gmane.org>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ Documentation/ABI/stable/sysfs-bus-usb            | 2 +-
+ Documentation/driver-api/usb/URB.rst              | 2 ++
+ Documentation/driver-api/usb/callbacks.rst        | 4 ++--
+ Documentation/driver-api/usb/error-codes.rst      | 2 ++
+ Documentation/driver-api/usb/persist.rst          | 2 ++
+ Documentation/driver-api/usb/power-management.rst | 2 +-
+ Documentation/driver-api/usb/usb.rst              | 4 ++--
+ Documentation/power/swsusp.txt                    | 2 +-
+ drivers/staging/most/hdm-usb/hdm_usb.c            | 2 +-
+ drivers/usb/core/Kconfig                          | 2 +-
+ 10 files changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index d37c7d8f8fcd6619..f259a995c66c976a 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -88,6 +88,7 @@ struct rcar_gen3_thermal_priv {
- 	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
- 	unsigned int num_tscs;
- 	spinlock_t lock; /* Protect interrupts on and off */
-+	const struct rcar_gen3_thermal_data *data;
- };
+diff --git a/Documentation/ABI/stable/sysfs-bus-usb b/Documentation/ABI/stable/sysfs-bus-usb
+index 831f15d9672f..b832eeff9999 100644
+--- a/Documentation/ABI/stable/sysfs-bus-usb
++++ b/Documentation/ABI/stable/sysfs-bus-usb
+@@ -9,7 +9,7 @@ Description:
+ 		hubs this facility is always enabled and their device
+ 		directories will not contain this file.
  
- struct rcar_gen3_thermal_data {
-@@ -351,8 +352,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 	struct thermal_zone_device *zone;
- 	int ret, irq, i;
- 	char *irqname;
--	const struct rcar_gen3_thermal_data *match_data =
--		of_device_get_match_data(dev);
+-		For more information, see Documentation/usb/persist.txt.
++		For more information, see Documentation/driver-api/usb/persist.rst.
  
- 	/* default values if FUSEs are missing */
- 	/* TODO: Read values from hardware on supported platforms */
-@@ -367,6 +366,8 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 	if (!priv)
- 		return -ENOMEM;
- 
-+	priv->data = of_device_get_match_data(dev);
+ What:		/sys/bus/usb/devices/.../power/autosuspend
+ Date:		March 2007
+diff --git a/Documentation/driver-api/usb/URB.rst b/Documentation/driver-api/usb/URB.rst
+index c5d2b68b4dae..d9ea6a3996e7 100644
+--- a/Documentation/driver-api/usb/URB.rst
++++ b/Documentation/driver-api/usb/URB.rst
+@@ -1,3 +1,5 @@
++.. _usb-urb:
 +
- 	spin_lock_init(&priv->lock);
+ USB Request Block (URB)
+ ~~~~~~~~~~~~~~~~~~~~~~~
  
- 	platform_set_drvdata(pdev, priv);
-@@ -417,7 +418,7 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+diff --git a/Documentation/driver-api/usb/callbacks.rst b/Documentation/driver-api/usb/callbacks.rst
+index 93a8d53e27e7..2b80cf54bcc3 100644
+--- a/Documentation/driver-api/usb/callbacks.rst
++++ b/Documentation/driver-api/usb/callbacks.rst
+@@ -8,7 +8,7 @@ Usbcore will call into a driver through callbacks defined in the driver
+ structure and through the completion handler of URBs a driver submits.
+ Only the former are in the scope of this document. These two kinds of
+ callbacks are completely independent of each other. Information on the
+-completion callback can be found in Documentation/usb/URB.txt.
++completion callback can be found in :ref:`usb-urb`.
  
- 		priv->tscs[i] = tsc;
+ The callbacks defined in the driver structure are:
  
--		match_data->thermal_init(tsc);
-+		priv->data->thermal_init(tsc);
- 		rcar_gen3_thermal_calc_coefs(&tsc->coef, ptat, thcode[i]);
+@@ -53,7 +53,7 @@ The callbacks defined in the driver structure are:
  
- 		zone = devm_thermal_zone_of_sensor_register(dev, i, tsc,
+ The ioctl interface (2) should be used only if you have a very good
+ reason. Sysfs is preferred these days. The PM callbacks are covered
+-separately in Documentation/usb/power-management.txt.
++separately in :ref:`usb-power-management`.
+ 
+ Calling conventions
+ ===================
+diff --git a/Documentation/driver-api/usb/error-codes.rst b/Documentation/driver-api/usb/error-codes.rst
+index 715cc35b29b0..5bc5eda58520 100644
+--- a/Documentation/driver-api/usb/error-codes.rst
++++ b/Documentation/driver-api/usb/error-codes.rst
+@@ -1,3 +1,5 @@
++.. _usb-error-codes:
++
+ USB Error codes
+ ~~~~~~~~~~~~~~~
+ 
+diff --git a/Documentation/driver-api/usb/persist.rst b/Documentation/driver-api/usb/persist.rst
+index af02baf61f57..8ee2a62d889b 100644
+--- a/Documentation/driver-api/usb/persist.rst
++++ b/Documentation/driver-api/usb/persist.rst
+@@ -1,3 +1,5 @@
++.. _usb-persist:
++
+ USB device persistence during system suspend
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+diff --git a/Documentation/driver-api/usb/power-management.rst b/Documentation/driver-api/usb/power-management.rst
+index 7c547d6b8372..3e4ebbf47b76 100644
+--- a/Documentation/driver-api/usb/power-management.rst
++++ b/Documentation/driver-api/usb/power-management.rst
+@@ -329,7 +329,7 @@ possible to work around the hibernation-forces-disconnect problem by
+ using the USB Persist facility.)
+ 
+ The ``reset_resume`` method is used by the USB Persist facility (see
+-``Documentation/usb/persist.txt``) and it can also be used under certain
++:ref:`usb-persist`) and it can also be used under certain
+ circumstances when ``CONFIG_USB_PERSIST`` is not enabled.  Currently, if a
+ device is reset during a resume and the driver does not have a
+ ``reset_resume`` method, the driver won't receive any notification about
+diff --git a/Documentation/driver-api/usb/usb.rst b/Documentation/driver-api/usb/usb.rst
+index 5ebaf669704c..6824089ef4c8 100644
+--- a/Documentation/driver-api/usb/usb.rst
++++ b/Documentation/driver-api/usb/usb.rst
+@@ -424,8 +424,8 @@ header.
+ Unless noted otherwise, the ioctl requests described here will update
+ the modification time on the usbfs file to which they are applied
+ (unless they fail). A return of zero indicates success; otherwise, a
+-standard USB error code is returned. (These are documented in
+-``Documentation/usb/error-codes.txt`` in your kernel sources.)
++standard USB error code is returned (These are documented in
++:ref:`usb-error-codes`).
+ 
+ Each of these files multiplexes access to several I/O streams, one per
+ endpoint. Each device has one control endpoint (endpoint zero) which
+diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
+index 8cc17ca71813..9f2f942a01cf 100644
+--- a/Documentation/power/swsusp.txt
++++ b/Documentation/power/swsusp.txt
+@@ -406,7 +406,7 @@ Firewire, CompactFlash, MMC, external SATA, or even IDE hotplug bays)
+ before suspending; then remount them after resuming.
+ 
+ There is a work-around for this problem.  For more information, see
+-Documentation/usb/persist.txt.
++Documentation/driver-api/usb/persist.rst.
+ 
+ Q: Can I suspend-to-disk using a swap partition under LVM?
+ 
+diff --git a/drivers/staging/most/hdm-usb/hdm_usb.c b/drivers/staging/most/hdm-usb/hdm_usb.c
+index 65211d1824b7..2bfea9b48366 100644
+--- a/drivers/staging/most/hdm-usb/hdm_usb.c
++++ b/drivers/staging/most/hdm-usb/hdm_usb.c
+@@ -490,7 +490,7 @@ static void hdm_write_completion(struct urb *urb)
+  * disconnect.  In the interval before the hub driver starts disconnect
+  * processing, devices may receive such fault reports for every request.
+  *
+- * See <https://www.kernel.org/doc/Documentation/usb/error-codes.txt>
++ * See <https://www.kernel.org/doc/Documentation/driver-api/usb/error-codes.rst>
+  */
+ static void hdm_read_completion(struct urb *urb)
+ {
+diff --git a/drivers/usb/core/Kconfig b/drivers/usb/core/Kconfig
+index 0e5a889742b3..4d75d9a80001 100644
+--- a/drivers/usb/core/Kconfig
++++ b/drivers/usb/core/Kconfig
+@@ -26,7 +26,7 @@ config USB_DEFAULT_PERSIST
+ 	  unplugged, causing any mounted filesystems to be lost.  The
+ 	  persist feature can still be enabled for individual devices
+ 	  through the power/persist sysfs node. See
+-	  Documentation/usb/persist.txt for more info.
++	  Documentation/driver-api/usb/persist.rst for more info.
+ 
+ 	  If you have any questions about this, say Y here, only say N
+ 	  if you know exactly what you are doing.
 -- 
-2.12.1
+2.9.3
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
