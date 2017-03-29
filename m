@@ -1,84 +1,76 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: [PATCH v2 1/3] PM / Domains: Allow overriding the ->xlate() callback
-Date: Wed, 29 Mar 2017 18:34:50 +0200
-Message-ID: <20170329163452.10761-2-thierry.reding@gmail.com>
-References: <20170329163452.10761-1-thierry.reding@gmail.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH v3] power: supply: bq24190_charger: Use extcon to
+ determine ilimit, 5v boost
+Date: Wed, 29 Mar 2017 09:38:06 -0700
+Message-ID: <20170329163806.GQ8575@atomide.com>
+References: <20170323083235.15072-1-hdegoede@redhat.com>
+ <CAKvHMgTqyW8MnVLyzR5L3+DjQHZ+04GZtW+MhkNAt7HBrqUhBw@mail.gmail.com>
+ <0b3d3f1e-0f86-1090-4812-1a574d9dadb0@redhat.com>
+ <CAKvHMgTu_HNKoxX-Ogj33xLOvQwczFMCjcB1h6cLRxOLyvwyBg@mail.gmail.com>
+ <5990b469-8c86-428e-428d-d2be77569dd3@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f196.google.com ([209.85.128.196]:34059 "EHLO
-        mail-wr0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752869AbdC2Qe6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2017 12:34:58 -0400
-In-Reply-To: <20170329163452.10761-1-thierry.reding@gmail.com>
+Received: from muru.com ([72.249.23.125]:42684 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752320AbdC2QiL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 Mar 2017 12:38:11 -0400
+Content-Disposition: inline
+In-Reply-To: <5990b469-8c86-428e-428d-d2be77569dd3@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Jonathan Hunter <jonathanh@nvidia.com>, Stefan Kristiansson <stefank@nvidia.com>, Mikko Perttunen <mperttunen@nvidia.com>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-From: Thierry Reding <treding@nvidia.com>
+* Hans de Goede <hdegoede@redhat.com> [170329 02:36]:
+> Hi,
+> 
+> On 29-03-17 10:21, Liam Breck wrote:
+> > On Wed, Mar 29, 2017 at 12:34 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> > > Hi,
+> > > 
+> > > On 29-03-17 03:12, Liam Breck wrote:
+> > > > 
+> > > > Sebastian, this patch needs some work, could you drop it from -next
+> > > > and look for v4 from Hans?
+> > > 
+> > > 
+> > > Nack.
+> > > 
+> > > Liam this whole dropping patches from -next business is not how
+> > > things are normally done in kernel-land, please stop expecting it.
+> > > 
+> > > The whole dropping patches all the time thing means people don't have
+> > > a stable base to base future patches on which is unworkable.
+> > 
+> > This was merged 3h after you posted it without acks from Tony or me.
+> > So maybe asking for a do-over in this case isn't unreasonable :-)
+> > Another of your patches has a replacement pending already. We'd both
+> > benefit from a clean history wherever possible. And new-feature
+> > patches should really simmer on the list for a little while.
+> 
+> When I posted my initial series you asked me to rebase it onto
+> -next, which I agreed to as that is the normal way to do things.
+> 
+> All I'm asking of you is to do the same you've asked of me and
+> base your patches on top of -next too.
+> 
+> Dropping patches out of -next is a rare thing and nothing something
+> which we should do every other patch. This can all easily be
+> fixed up with a follow-up patch without breaking bisectability
+> or some-such.
 
-Allow generic power domain providers to override the ->xlate() callback
-in case the default genpd_xlate_onecell() translation callback is not
-good enough.
+Yeah agreed. Let's not start redoing branches if possible and
+instead do incremental changes on top. Mistakes can happen, but
+with multiple people patching the same code it's important to
+have a branch we can all pull from.
 
-One potential use-case for this is to allow generic power domains to be
-specified by an ID rather than an index.
+> Actually having a follow-up patch to remove the 5v boost support
+> is useful from a history pov as it documents why there is no 5v
+> boost support in the extcon handling.
 
-Signed-off-by: Thierry Reding <treding@nvidia.com>
----
- drivers/base/power/domain.c | 8 ++++----
- include/linux/pm_domain.h   | 4 ++++
- 2 files changed, 8 insertions(+), 4 deletions(-)
+Yeah works for me.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index e697dec9d25b..c102557f6c7e 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1570,9 +1570,6 @@ EXPORT_SYMBOL_GPL(pm_genpd_remove);
- 
- #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
- 
--typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
--						   void *data);
--
- /*
-  * Device Tree based PM domain providers.
-  *
-@@ -1730,6 +1727,9 @@ int of_genpd_add_provider_onecell(struct device_node *np,
- 
- 	mutex_lock(&gpd_list_lock);
- 
-+	if (!data->xlate)
-+		data->xlate = genpd_xlate_onecell;
-+
- 	for (i = 0; i < data->num_domains; i++) {
- 		if (!data->domains[i])
- 			continue;
-@@ -1740,7 +1740,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
- 		data->domains[i]->has_provider = true;
- 	}
- 
--	ret = genpd_add_provider(np, genpd_xlate_onecell, data);
-+	ret = genpd_add_provider(np, data->xlate, data);
- 	if (ret < 0)
- 		goto error;
- 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 5339ed5bd6f9..5163f371a308 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -204,9 +204,13 @@ static inline void pm_genpd_syscore_poweron(struct device *dev) {}
- /* OF PM domain providers */
- struct of_device_id;
- 
-+typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
-+						   void *data);
-+
- struct genpd_onecell_data {
- 	struct generic_pm_domain **domains;
- 	unsigned int num_domains;
-+	genpd_xlate_t xlate;
- };
- 
- #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
--- 
-2.12.0
+Regards,
+
+Tony
