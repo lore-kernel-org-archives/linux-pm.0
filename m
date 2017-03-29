@@ -1,57 +1,53 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+From: Rob Herring <robh@kernel.org>
 Subject: Re: [PATCH v1 1/7] devicetree: power: battery: Add properties for
  pre-charge and end-charge current
-Date: Tue, 28 Mar 2017 19:39:46 -0500
-Message-ID: <20170329003946.3eyqmsozj2sxrtiw@rob-hp-laptop>
+Date: Tue, 28 Mar 2017 19:43:02 -0500
+Message-ID: <20170329004302.6eyka3mqxs6zfvpn@rob-hp-laptop>
 References: <20170321220921.5834-1-liam@networkimprov.net>
  <20170321220921.5834-2-liam@networkimprov.net>
+ <20170324090158.tl55neisjws66naf@earth>
+ <CAKvHMgQt=C1tmfPz3pp_vwhc3b9DHKau2t=jwp3Rv2b2U6hsaQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f195.google.com ([74.125.82.195]:34629 "EHLO
+        mail-ot0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932619AbdC2AnF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Mar 2017 20:43:05 -0400
 Content-Disposition: inline
-In-Reply-To: <20170321220921.5834-2-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+In-Reply-To: <CAKvHMgQt=C1tmfPz3pp_vwhc3b9DHKau2t=jwp3Rv2b2U6hsaQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, devicetree@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On Tue, Mar 21, 2017 at 03:09:15PM -0700, Liam Breck wrote:
-> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+On Fri, Mar 24, 2017 at 05:34:26PM -0700, Liam Breck wrote:
+> On Fri, Mar 24, 2017 at 2:01 AM, Sebastian Reichel <sre@kernel.org> wrote:
+> > Hi,
+> >
+> > On Tue, Mar 21, 2017 at 03:09:15PM -0700, Liam Breck wrote:
+> >> From: Liam Breck <kernel@networkimprov.net>
+> >>
+> >> precharge-current-microamp and endcharge-current-microamp are used
+> >> by battery chargers at the beginning and end of a charging cycle.
+> >>
+> >> Depends-on: https://patchwork.kernel.org/patch/9633605/
+> >> Cc: Rob Herring <robh@kernel.org>
+> >> Cc: devicetree@vger.kernel.org
+> >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> >
+> > Acked-by: Sebastian Reichel <sre@kernel.org>
+> >
+> > I think it makes sense to merge this into the patch adding
+> > simple-battery.
+
+Agreed.
+
 > 
-> precharge-current-microamp and endcharge-current-microamp are used
-> by battery chargers at the beginning and end of a charging cycle.
-> 
-> Depends-on: https://patchwork.kernel.org/patch/9633605/
-> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-> ---
->  Documentation/devicetree/bindings/power/supply/battery.txt | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
-> index 53a68c0..494374a 100644
-> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
-> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-> @@ -12,6 +12,8 @@ Optional Properties:
->   - voltage-min-design-microvolt: drained battery voltage
->   - energy-full-design-microwatt-hours: battery design energy
->   - charge-full-design-microamp-hours: battery design capacity
-> + - precharge-current-microamp: current for pre-charge phase
-> + - endcharge-current-microamp: current for charge termination phase
+> It would make sense, but it means a new _prop_precharge/endcharge
+> patch in that patchset, and I am trying to constrain it at this stage.
 
-current is implied by microamp, so perhaps just pre-charge-microamp and 
-end-charge-microamp.
-
-I know little about batteries, but don't you also need to know when each 
-phase starts/ends? 
-
-I mainly ask because we just added the previous properties and now we're 
-adding 2 more. While fine to add features to a driver one by one, we 
-really shouldn't for bindings. The h/w is not evolving (in a month).
+Please make bindings complete as possible. You don't have to have the 
+driver side.
 
 Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
