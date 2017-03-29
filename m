@@ -1,8 +1,8 @@
 From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
         <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH v3 1/7] thermal: rcar_gen3_thermal: add delay in .thermal_init on r8a7796
-Date: Wed, 29 Mar 2017 20:43:50 +0200
-Message-ID: <20170329184356.8610-2-niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH v3 4/7] thermal: rcar_gen3_thermal: record and check number of TSCs found
+Date: Wed, 29 Mar 2017 20:43:53 +0200
+Message-ID: <20170329184356.8610-5-niklas.soderlund+renesas@ragnatech.se>
 References: <20170329184356.8610-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -14,42 +14,42 @@ To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
 Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
 List-Id: linux-pm@vger.kernel.org
 
-The .thermal_init needs to be delayed a short amount of time to allow
-for the TEMP register to contain something useful. If it's not delayed
-these warnings are common during boot:
+Record how many TSCs are found in struct rcar_gen3_thermal_priv, this is
+needed to be able to add hardware interrupts for trip points later. Also
+add a check to make sure at least one TSC is found.
 
-thermal thermal_zone0: failed to read out thermal zone (-5)
-thermal thermal_zone1: failed to read out thermal zone (-5)
-thermal thermal_zone2: failed to read out thermal zone (-5)
-
-The warnings are triggered by the first call to .get_temp() while the
-TEMP register contains 0 and rcar_gen3_thermal_get_temp() returns -EIO
-since a TEMP value of 0 will result in a temperature reading which is
-out of specifications.
-
-This should have been done in the initial commit which adds the driver
-as the same issue was found and corrected for r8a7795.
-
-Fixes: 564e73d283af9d4c ("thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal driver")
 Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/thermal/rcar_gen3_thermal.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index d33c845244b1d819..ec477d47d0bae8e5 100644
+index 9b6bc03dd142a8dd..4a08b35533dcc3a9 100644
 --- a/drivers/thermal/rcar_gen3_thermal.c
 +++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -222,6 +222,8 @@ static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
- 	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
- 	reg_val |= THCTR_THSST;
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
-+
-+	usleep_range(1000, 2000);
- }
+@@ -75,6 +75,7 @@ struct rcar_gen3_thermal_tsc {
  
- static const struct rcar_gen3_thermal_data r8a7795_data = {
+ struct rcar_gen3_thermal_priv {
+ 	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
++	unsigned int num_tscs;
+ };
+ 
+ struct rcar_gen3_thermal_data {
+@@ -307,6 +308,13 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ 		tsc->zone = zone;
+ 	}
+ 
++	priv->num_tscs = i;
++
++	if (!priv->num_tscs) {
++		ret = -ENODEV;
++		goto error_unregister;
++	}
++
+ 	return 0;
+ 
+ error_unregister:
 -- 
 2.12.1
