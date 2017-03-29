@@ -1,43 +1,73 @@
-From: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
-Subject: Re: [RFC 8/8] ARM: dts: imx6qdl-sabresd: Enable fsl,ldo-bypass
-Date: Wed, 29 Mar 2017 16:32:23 +0300
-Message-ID: <1490794343.5481.33.camel@nxp.com>
-References: <cover.1490199005.git.leonard.crestez@nxp.com>
-         <8f4dca5609781f0362009dfa7f6d5c0990b5ea6d.1490199005.git.leonard.crestez@nxp.com>
-         <1490202830.29056.8.camel@pengutronix.de>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v11 04/10] power: power_supply: Add
+ power_supply_battery_info and API
+Date: Wed, 29 Mar 2017 15:50:10 +0200
+Message-ID: <20170329135010.3oo3xhnt5ossw55h@earth>
+References: <20170320094335.19224-1-liam@networkimprov.net>
+ <20170320094335.19224-5-liam@networkimprov.net>
+ <CAKvHMgTpRLx+8NHsjcaGpqN=W-7ujBoiXtRwm9A+JGbcNANS-w@mail.gmail.com>
+ <20170323101727.y53vc74fskqxdw34@earth>
+ <CAKvHMgSzM+XRPLCsM-nUHqf6AnSPzc+ABg8pMerHW_A5=K2Dvw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1490202830.29056.8.camel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Irina Tirdea <irina.tirdea-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, Robin Gong <yibin.gong-3arQi8VN3Tc@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="bpgoa7zcp6d7b45f"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:58586 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932219AbdC2NuY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 Mar 2017 09:50:24 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKvHMgSzM+XRPLCsM-nUHqf6AnSPzc+ABg8pMerHW_A5=K2Dvw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-On Wed, 2017-03-22 at 18:13 +0100, Lucas Stach wrote:
-> Am Mittwoch, den 22.03.2017, 18:53 +0200 schrieb Leonard Crestez:
 
-> > This enables LDO bypass by default on the imx6qdl-sabresd boards. New
-> > dts files with -ldo suffix are added for users who want to run with LDOs
-> > enabled on these boards anyway.
+--bpgoa7zcp6d7b45f
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Given that using LDO bypass affects the device lifetime negatively (see
-> AN4724), I think the default should still be to use LDO enabled mode and
-> have new DTs for people that desire to shorten the lifetime of the SoC
-> for a minimal drop in power consumption.
+Hi,
 
-This was based on what the Freescale BSP does, I don't particularly
-object to upstream having a different default. It would be nice for
-testing if this ldo-bypass path was enabled by default for some boards
-but it's not a very good reason.
+On Sat, Mar 25, 2017 at 04:19:24PM -0700, Liam Breck wrote:
+> >> > +               dev_warn(&psy->dev, "%s currently only supports devi=
+cetree\n",
+> >> > +                        __func__);
+> >> > +               return -ENXIO;
+> >> > +       }
+> >> > +
+> >> > +       battery_np =3D of_parse_phandle(psy->of_node, "monitored-bat=
+tery", 0);
+>=20
+> Does that change? If not, will psy->dev work in device_property_read_* ?
 
-I will switch the default.
+Oh right, we don't have a device for usage with device_property_read_*.
+Then don't mind for now. We can think about this once ACPI/platform based
+init is required. Probably simple-battery should get a real driver
+at that point.
 
--- 
-Regards,
-Leonard
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- Sebastian
+
+--bpgoa7zcp6d7b45f
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljbu48ACgkQ2O7X88g7
++pp6sA//XVK3YBnWQ6d1xsA93EcX5FaSN2ECLDGlIq60xYUDPnap6wgHJTiuuiic
+valtsByDklKlW3DeyZpL/7aq4o9wRBZmI7SBhH/yyQax1W309xI1h9pIIeLMB+OP
+kL1dFWD/hDBJvq7D0qvwsr110xeFBQRurOEp4qqY+CCHxGuJ0fT1PZaNz7JxppkF
+kPlJnqtLvKMA6Z9H5oJPwEj0MRAE8rBJpOQp9ussBnsDz9hNKkR5Yb8IqhPIM2H4
+NPsAwZSw9nf3BVycrDE/GbZX4JyWQZUKml38cc1YB0evaGTou8jhDMlnfyXp2bfT
+b0vwlomrrCNreMJHu0dqpcucxmQITgeajFsvvTY/Asn0A1KILObZ5Cs7Zr+ISqFs
+/QYU0I9I8NYKPC+iEAEk7whgkX27HQLQh+pfFGPiic04PWCWn26/Prv5tzz123lN
+pQ9Bsyu/RanxkhD907qUfeUCmnvTkg4S0feCgziu/WAU37QXvxJOAP2qaQKIsUm3
+LqLp7Rd3ZwgU/J9OyICakYB9PbxgzRHBoYVdAXCv8k1ajeYGduzgiHIfYG9HXESr
+NLF1+IYf8L0VGJEeO/8M3283Vut1Kj5Rodf0bObDZ8gnYem1rkrK0ULZAomf6NRC
+UeejR0qXSLeJcj8EXbLsObZbAKVCBcQWhTZ5RNcjvAcRXcZA8vA=
+=PC3W
+-----END PGP SIGNATURE-----
+
+--bpgoa7zcp6d7b45f--
