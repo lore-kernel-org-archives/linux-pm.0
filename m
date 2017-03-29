@@ -1,8 +1,8 @@
 From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 Subject: Re: [PATCH V11 2/6] thermal: of-thermal: Implement signed
  coefficient support
-Date: Tue, 28 Mar 2017 21:52:16 -0700
-Message-ID: <20170329045215.GA2582@localhost.localdomain>
+Date: Tue, 28 Mar 2017 21:54:24 -0700
+Message-ID: <20170329045422.GB2582@localhost.localdomain>
 References: <1489356665-3175-1-git-send-email-stefan.wahren@i2se.com>
  <1489356665-3175-3-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
@@ -15,7 +15,6 @@ To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
 Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Stefen,
 
 On Sun, Mar 12, 2017 at 10:11:01PM +0000, Stefan Wahren wrote:
 > Use the new function of_property_read_s32_array() to prepare
@@ -23,10 +22,6 @@ On Sun, Mar 12, 2017 at 10:11:01PM +0000, Stefan Wahren wrote:
 > the upcoming bcm2835_thermal driver.
 > 
 > Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-
-Once done with the comment pointed by Frank, you can add my
-Reviewed-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-
 > ---
 >  drivers/thermal/of-thermal.c |    5 +++--
 >  1 file changed, 3 insertions(+), 2 deletions(-)
@@ -51,6 +46,13 @@ Reviewed-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 >  	 */
 > -	ret = of_property_read_u32_array(np, "coefficients", coef, 2);
 > +	ret = of_property_read_s32_array(np, "coefficients", coef, 2);
+
+For the scope of the proposed change I see not problem with this patch.
+
+However, this needs to go in after the of core change gets accepted.
+Alternatively, I could take the full series if you get an Ack from OF
+maintainers.
+
 >  	if (ret == 0) {
 >  		tz->slope = coef[0];
 >  		tz->offset = coef[1];
