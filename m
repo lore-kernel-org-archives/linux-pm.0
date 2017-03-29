@@ -1,64 +1,67 @@
 From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V11 2/6] thermal: of-thermal: Implement signed
- coefficient support
-Date: Tue, 28 Mar 2017 21:54:24 -0700
-Message-ID: <20170329045422.GB2582@localhost.localdomain>
+Subject: Re: [PATCH V11 6/6] thermal: bcm2835: add thermal driver for bcm2835
+ SoC
+Date: Tue, 28 Mar 2017 21:58:09 -0700
+Message-ID: <20170329045807.GC2582@localhost.localdomain>
 References: <1489356665-3175-1-git-send-email-stefan.wahren@i2se.com>
- <1489356665-3175-3-git-send-email-stefan.wahren@i2se.com>
+ <1489356665-3175-7-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1489356665-3175-3-git-send-email-stefan.wahren-eS4NqCHxEME@public.gmane.org>
+In-Reply-To: <1489356665-3175-7-git-send-email-stefan.wahren-eS4NqCHxEME@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
 Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-
-On Sun, Mar 12, 2017 at 10:11:01PM +0000, Stefan Wahren wrote:
-> Use the new function of_property_read_s32_array() to prepare
-> of-thermal for negative coefficients. These are used by
-> the upcoming bcm2835_thermal driver.
+On Sun, Mar 12, 2017 at 10:11:05PM +0000, Stefan Wahren wrote:
+> Add basic thermal driver for bcm2835 SoC.
 > 
+> This driver currently make sure that tsense HW block is set up
+> correctly.
+> 
+> Signed-off-by: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
 > Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+> Acked-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+
+I see no issue with this driver at this point.
+
+As I mentioned, the full series needs to go together. You either get an
+Ack from OF maintainers, and I take the series, or you can add my
+
+Acked-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+
+after fixing the small comment from Nobuhiro.
+
 > ---
->  drivers/thermal/of-thermal.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+>  drivers/thermal/Kconfig           |    8 +
+>  drivers/thermal/Makefile          |    1 +
+>  drivers/thermal/bcm2835_thermal.c |  315 +++++++++++++++++++++++++++++++++++++
+>  3 files changed, 324 insertions(+)
+>  create mode 100644 drivers/thermal/bcm2835_thermal.c
 > 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index d04ec3b..491d58a 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -821,7 +821,8 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
->  	struct device_node *child = NULL, *gchild;
->  	struct __thermal_zone *tz;
->  	int ret, i;
-> -	u32 prop, coef[2];
-> +	u32 prop;
-> +	s32 coef[2];
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 776b343..3bd2406 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -453,4 +453,12 @@ config ZX2967_THERMAL
+>  	  the primitive temperature sensor embedded in zx2967 SoCs.
+>  	  This sensor generates the real time die temperature.
 >  
->  	if (!np) {
->  		pr_err("no thermal zone np\n");
-> @@ -851,7 +852,7 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
->  	 * one sensor per thermal zone. Thus, we are considering
->  	 * only the first two values as slope and offset.
->  	 */
-> -	ret = of_property_read_u32_array(np, "coefficients", coef, 2);
-> +	ret = of_property_read_s32_array(np, "coefficients", coef, 2);
+> +config BCM2835_THERMAL
+> +	tristate "Thermal sensors on bcm2835 SoC"
+> +	depends on ARCH_BCM2835 || COMPILE_TEST
+> +	depends on HAS_IOMEM
+> +	depends on THERMAL_OF
+> +	help
+> +	  Support for thermal sensors on Broadcom bcm2835 SoCs.
 
-For the scope of the proposed change I see not problem with this patch.
+small suggestion here:
 
-However, this needs to go in after the of core change gets accepted.
-Alternatively, I could take the full series if you get an Ack from OF
-maintainers.
+-If you are sending a new version fixing Nobuhiro comment, you could take
+the opportunity to improve the driver Kconfig help description.
 
->  	if (ret == 0) {
->  		tz->slope = coef[0];
->  		tz->offset = coef[1];
-> -- 
-> 1.7.9.5
-> 
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
