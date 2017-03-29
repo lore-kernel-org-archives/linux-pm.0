@@ -1,258 +1,56 @@
-From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: Re: [PATCH v4 01/18] dt-bindings: power: battery: add
- constant-charge-current property
-Date: Wed, 29 Mar 2017 09:54:21 +0200
-Message-ID: <8853ebb9-9c4f-d9bf-8c82-daad4650c4f8@free-electrons.com>
-References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
- <20170315105537.22349-2-quentin.schulz@free-electrons.com>
- <CAKvHMgSnyPPMEZ1o70Ed2oBHGcMho=-jjFhfXGn4t+2bdALEew@mail.gmail.com>
- <ce6f2ddb-f875-0370-ca45-293397d97495@free-electrons.com>
- <CAKvHMgR58sDnB-nn386Bd-H0Duevkeoc8eEfz=otLAumc8FD+w@mail.gmail.com>
- <765fc3be-23db-0997-85b1-b6c85b3aceef@free-electrons.com>
- <CAKvHMgRKroPFDdNMb=F=bA4bTwg9bYMAR-5Z4DKLzHJtCYz3_Q@mail.gmail.com>
- <CAKvHMgRtEnNbokYReu2vEs9UKH6qZnncdyQD=1JMDTZeN+aYCA@mail.gmail.com>
- <659fb6a3-d49d-5429-8770-88917e4fd0b3@free-electrons.com>
- <CAKvHMgSFNBmr3fU-biHDo5tzCDV7QaCpFnbChgn4wgSN_1FBig@mail.gmail.com>
+From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v3 3/9] arm: fix return value of parse_cpu_capacity
+Date: Wed, 29 Mar 2017 09:06:03 +0100
+Message-ID: <20170329080603.GV10289@e106622-lin>
+References: <20170327131825.32134-1-juri.lelli@arm.com>
+ <20170327131825.32134-4-juri.lelli@arm.com>
+ <CAKfTPtCswVBMCaEUzBF4w_GZf-2iLORsS5S0HhGD94ps4+J1Xg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:57307 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753932AbdC2Hyn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2017 03:54:43 -0400
-In-Reply-To: <CAKvHMgSFNBmr3fU-biHDo5tzCDV7QaCpFnbChgn4wgSN_1FBig@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtCswVBMCaEUzBF4w_GZf-2iLORsS5S0HhGD94ps4+J1Xg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LAK <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>, Dietmar Eggemann <dietmar.eggemann-5wv7dgnIgG8@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org" <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, robh+dt@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi,
-
-On 29/03/2017 09:39, Liam Breck wrote:
-> On Wed, Mar 29, 2017 at 12:09 AM, Quentin Schulz
-> <quentin.schulz@free-electrons.com> wrote:
->> Hi Liam,
->>
->> On 29/03/2017 08:55, Liam Breck wrote:
->>> Hi Quentin,
->>>
->>> On Thu, Mar 16, 2017 at 12:42 AM, Liam Breck <liam@networkimprov.net> wrote:
->>>> On Thu, Mar 16, 2017 at 12:03 AM, Quentin Schulz
->>>> <quentin.schulz@free-electrons.com> wrote:
->>>>> Hi Liam,
->>>>>
->>>>> On 16/03/2017 07:27, Liam Breck wrote:
->>>>>> Hi Rob,
->>>>>>
->>>>>> On Wed, Mar 15, 2017 at 6:10 AM, Quentin Schulz
->>>>>> <quentin.schulz@free-electrons.com> wrote:
->>>>>>> Hi Liam,
->>>>>>>
->>>>>>> On 15/03/2017 13:08, Liam Breck wrote:
->>>>>>>> I dropped most of the CCs, pls re-add anyone essential. Use Cc lines
->>>>>>>> in patch description to direct a patch to interested parties and
->>>>>>>> relevant lists. I don't want to see all 19 patches in this series.
->>>>>>>>
->>>>>>>> On Wed, Mar 15, 2017 at 3:55 AM, Quentin Schulz
->>>>>>>> <quentin.schulz@free-electrons.com> wrote:
->>>>>>>>> This adds the constant-charge-current property to the list of optional
->>>>>>>>> properties of the battery.
->>>>>>>>>
->>>>>>>>> The constant charge current is critical for batteries as they can't
->>>>>>>>> handle all charge currents.
->>>>>>>>>
->>>>>>>>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
->>>>>>>>> Acked-by: Rob Herring <robh@kernel.org>
->>>>>>>>> ---
->>>>>>>>>
->>>>>>>>> v4:
->>>>>>>>>  - switch from constant-charge-current-microamp to constant-charge-microamp,
->>>>>>
->>>>>> Sebastian is on record supporting name alignment between DT:battery
->>>>>> properties and enum power_supply_property.
->>>>>>
->>>>>> Could you OK a change back to constant-charge-current-microamp in this patch?
->>>>>>
->>>>>> Note that the following could appear in DT:battery in future:
->>>>>>
->>>>>> constant-charge-current-microamp
->>>>>> constant-charge-current-max-microamp
->>>>>
->>>>> OK. I am actually setting max constant charge current and constant
->>>>> current charge with the same DT property so I might need to adapt my
->>>>> patches.
->>>>
->>>> I suspect you should set battery:*-current-max with DT, as -current is
->>>> "programmed by charger" so seems to be a stat, not a fixed
->>>> characteristic.
->>>
->>> Did you resolve this issue?
->>>
->>
->> Sorry, completely missed your first mail.
->>
->> Constant charge current is actually what I set in the PMIC. The maximum
->> constant charge current is completely PMIC-agnostic in my driver as it
->> is used to tell the user that (s)he shouldn't really have a constant
->> charge current over the maximum limit as the battery might not be able
->> to handle such high current.
->>
->> What I suggest is to have both properties in DT. I'll set the maximum as
->> I do today and we can give the user the ability to set a "default"
->> constant charge current (below maximum constant charge current) in the
->> DT. Maybe we do not want to recharge your battery with the maximum value
->> by default?
+On 29/03/17 09:37, Vincent Guittot wrote:
+> On 27 March 2017 at 15:18, Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org> wrote:
+> > parse_cpu_capacity() has to return 0 on failure, but it currently returns
+> > 1 instead if raw_capacity kcalloc failed.
+> >
+> > Fix it by removing the negation of the return value.
+> >
+> > Cc: Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+> > Reported-by: Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>
+> > Fixes: 06073ee26775 ('ARM: 8621/3: parse cpu capacity-dmips-mhz from DT')
+> > Signed-off-by: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+> > ---
+> >  arch/arm/kernel/topology.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+> > index f8a3ab82e77f..4e4af809606a 100644
+> > --- a/arch/arm/kernel/topology.c
+> > +++ b/arch/arm/kernel/topology.c
+> > @@ -166,7 +166,7 @@ static int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
+> >                         if (!raw_capacity) {
+> >                                 pr_err("cpu_capacity: failed to allocate memory for raw capacities\n");
+> >                                 cap_parsing_failed = true;
+> > -                               return !ret;
+> > +                               return ret;
 > 
-> The scope here is just static battery characteristics. For the battery
-> node, I think constant-charge-current-max-microamp is the relevant
-> term.
-
-If it's only for static battery characteristics, I agree.
-
-
-> If we added both properties, one would be an alias for the
-> other, which doesn't seem useful.
+> Why not directly returning 0 ? whatever the value of ret, the parse of
+> cpu capacity has failed in this case
 > 
 
-Hum. Not really an alias. In my driver, I have a maximum which avoids to
-set a constant charge current higher than what the battery is supposed
-to be able to handle. The maximum can be increased via sysfs if ever the
-user decides to go wild (or if (s)he changes the battery for example).
-The maximum is never input in any of PMIC registers, it is not dealing
-with the PMIC at all.
+Sure, can change that.
 
-If I have only the max constant charge current in the DT, I'll set the
-max and constant charge current with the same DT entry. That's perfectly
-fine.
+Thanks,
 
-However, what I was thinking is to have a "default" value taken from DT
-for constant charge current (which will be below maximum ccc) if ever
-someone wants to set a maximum but use a lower ccc value. Anyway, I
-guess it's more a "fancy" feature than a requirement (unlike max-ccc).
-
-> The pmic can report both independently of the battery characteristic,
-> and take a driver-specific DT property for
-> constant-charge-current-microamp which it applies if less than the
-> battery's -max setting.
-
-Indeed.
-
-> Or you could set that in userspace via
-> /sys/class.../constant_charge_current.
-
-The goal is to have both. The DT for default values (given by the
-vendor/upstream) and sysfs for custom values (interesting if you don't
-want to/can't recompile a DT.
-
-> The charger's -max value would
-> be a characteristic of its regulator.
-> 
-
-I don't really understand what you mean by that.
-
-> Or am I missing something...?
-> 
->>> Rob & Sebastian want me to merge all items for
->>> bindings/power/supply/battery.txt. If I do that I'll also roll up
->>> their counterparts in power_supply_core.c and submit a patchset for
->>> those two files.
->>>
->>
->> I guess that adding the two properties make sense, don't you think?
->>
->> Also, could you Cc me on your next version of your patches? So I know
->> when to rebase and slightly rework my patches once your patch series is
->> merged.
-> 
-> Surely.
-> 
->> Thanks,
->> Quentin
->>
->>>> You may program your charger's -current with the battery's
->>>> -current-max, of course.
->>>>
->>>> Note that your charger also has a -current-max characteristic, likely
->>>> different than your battery. You may not need that in DT tho.
->>>>
->>>>>> constant-charge-voltage-microvolt
->>>>>> constant-charge-voltage-max-microvolt
->>>>>>
->>>>>> Thanks!
->>>>>>
->>>>>>>> Must be constant-charge-current-microamp for the reasons discussed in
->>>>>>>> battery.txt - consistency with sysfs names.
->>>>>>>>
->>>>>>>
->>>>>>> Hum. Just nitpicking, but I disagree with the use of 'must'. IIRC there
->>>>>>> is nothing in the code that would require the property to be named after
->>>>>>> a property from the enum power_supply_property.
->>>>>>>
->>>>>>> I would say that you _want_ it to be named like that because it
->>>>>>> underlines the relation between the DT property and the actual impacted
->>>>>>> property in the power supply subsystem. I'm fine with this reason but in
->>>>>>> the end, the maintainer's opinion prevails (if (s)he does not want it,
->>>>>>> (s)he will not take it). So, basically, I actually don't mind either
->>>>>>> option and I see arguments on each side.
->>>>>>>
->>>>>>> So, just waiting for maintainer's opinion to make the final version of
->>>>>>> this patch.
->>>>>>>
->>>>>>> Thanks,
->>>>>>> Quentin
->>>>>>>
->>>>>>>> Also applies to power_supply_core.c patch.
->>>>>>>>
->>>>>>>> Rob: enum power_supply_property also lists constant-charge-voltage,
->>>>>>>> hence the -current
->>>>>>>>
->>>>>>>>
->>>>>>>>> added in v3
->>>>>>>>>
->>>>>>>>>  Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
->>>>>>>>>  1 file changed, 2 insertions(+)
->>>>>>>>>
->>>>>>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>>> index 0278617..9594e1e 100644
->>>>>>>>> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>>> @@ -7,6 +7,7 @@ Optional Properties:
->>>>>>>>>   - voltage-min-design-microvolt: drained battery voltage
->>>>>>>>>   - energy-full-design-microwatt-hours: battery design energy
->>>>>>>>>   - charge-full-design-microamp-hours: battery design capacity
->>>>>>>>> + - constant-charge-microamp: battery constant charge current
->>>>>>>>>
->>>>>>>>>  Because drivers surface properties in sysfs using names derived
->>>>>>>>>  from enum power_supply_property, e.g.
->>>>>>>>> @@ -30,6 +31,7 @@ Example:
->>>>>>>>>                 voltage-min-design-microvolt = <3200000>;
->>>>>>>>>                 energy-full-design-microwatt-hours = <5290000>;
->>>>>>>>>                 charge-full-design-microamp-hours = <1430000>;
->>>>>>>>> +               constant-charge-microamp = <300000>;
->>>>>>>>>         };
->>>>>>>>>
->>>>>>>>>         charger: charger@11 {
->>>>>>>>> --
->>>>>>>>> 2.9.3
->>>>>>>>>
->>>>>>>
->>>>>>> --
->>>>>>> Quentin Schulz, Free Electrons
->>>>>>> Embedded Linux and Kernel engineering
->>>>>>> http://free-electrons.com
->>>>>
->>>>> --
->>>>> Quentin Schulz, Free Electrons
->>>>> Embedded Linux and Kernel engineering
->>>>> http://free-electrons.com
->>
->> --
->> Quentin Schulz, Free Electrons
->> Embedded Linux and Kernel engineering
->> http://free-electrons.com
-
--- 
-Quentin Schulz, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+- Juri
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
