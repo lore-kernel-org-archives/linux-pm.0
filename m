@@ -1,115 +1,120 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [Update][PATCH v3 2/3] cpufreq: intel_pstate: Do not reinit performance limits in ->setpolicy
-Date: Wed, 29 Mar 2017 15:01:17 -0700
-Message-ID: <004101d2a8d7$ff31bb50$fd9531f0$@net>
-References: <2694426.SgxlQuL17D@aspire.rjw.lan> <2326598.n0dkg1GrdM@aspire.rjw.lan> <2188688.SPioTUuSuO@aspire.rjw.lan> jZL3cbFe8sVy3jZL4c6fog
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC 6/9] sched: cpufreq: detect, process remote callbacks
+Date: Wed, 29 Mar 2017 23:58:07 +0200
+Message-ID: <2471781.eoW74D262T@aspire.rjw.lan>
+References: <cover.1489058244.git.viresh.kumar@linaro.org> <2e807adcbf0d5136876f9de48c62e9e2dd2a5b06.1489058244.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: jZL3cbFe8sVy3jZL4c6fog
-Content-Language: en-ca
-Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:51495 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753647AbdC2WDv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2017 18:03:51 -0400
+In-Reply-To: <2e807adcbf0d5136876f9de48c62e9e2dd2a5b06.1489058244.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org
 
-Hi Rafael,
+On Thursday, March 09, 2017 05:15:16 PM Viresh Kumar wrote:
+> From: Steve Muckle <smuckle.linux@gmail.com>
+> 
+> A callback is considered remote if the target CPU is not the current CPU
+> and if it is not managed by the policy managing the current CPU or the
+> current CPU can't do DVFS on its behalf.
+> 
+> Queue the irq work for remote callbacks on the destination CPU. The irq
+> work will carry out the fast or slow switch as appropriate.
+> 
+> Signed-off-by: Steve Muckle <smuckle.linux@gmail.com>
+> [ vk: commit log, code cleanups, introduce dvfs_possible_from_any_cpu
+>       and drop late callback support to avoid IPIs on remote CPUs. ]
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 40 +++++++++++++++++++++++++++++++++++-----
+>  1 file changed, 35 insertions(+), 5 deletions(-)
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index b168c31f1c8f..9bad579b6b08 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -100,11 +100,11 @@ static void sugov_fast_switch(struct cpufreq_policy *policy,
+>  }
+>  
+>  static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+> -				unsigned int next_freq)
+> +				int cpu, bool remote, unsigned int next_freq)
+>  {
+>  	struct cpufreq_policy *policy = sg_policy->policy;
+>  
+> -	if (policy->fast_switch_enabled) {
+> +	if (policy->fast_switch_enabled && !remote) {
+>  		if (sg_policy->next_freq == next_freq) {
+>  			trace_cpu_frequency(policy->cur, policy->cpu);
+>  			return;
+> @@ -116,7 +116,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+>  		sg_policy->next_freq = next_freq;
+>  		sg_policy->last_freq_update_time = time;
+>  		sg_policy->work_in_progress = true;
+> -		irq_work_queue(&sg_policy->irq_work);
+> +		irq_work_queue_on(&sg_policy->irq_work, cpu);
+>  	}
+>  }
+>  
+> @@ -206,6 +206,20 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>  	struct cpufreq_policy *policy = sg_policy->policy;
+>  	unsigned long util, max;
+>  	unsigned int next_f;
+> +	int cpu, this_cpu = smp_processor_id();
+> +	bool remote;
+> +
+> +	if (policy->dvfs_possible_from_any_cpu) {
+> +		/*
+> +		 * Avoid sending IPI to 'hook->cpu' if this CPU can change
+> +		 * frequency on its behalf.
+> +		 */
+> +		remote = false;
+> +		cpu = this_cpu;
+> +	} else {
+> +		cpu = hook->cpu;
+> +		remote = this_cpu != hook->cpu;
+> +	}
 
-Sorry for the delay, but I didn't notice until today that this
-commit causes a regression, at least in my computer.
+Honestly, this dvfs_possible_from_any_cpu thing doesn't make the code
+particularly clear and I wouldn't bother adding it, at least to start with.
 
-I have not figured out exactly what is wrong, as I must
-admit I am finding these policy interactions difficult
-to follow.
+I would just not do the fast switch for remote updates at all.
 
-On 2017.03.02 14:29 Rafael J. Wysocki wrote:
->From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> If the current P-state selection algorithm is set to "performance"
-> in intel_pstate_set_policy(), the limits may be initialized from
+Plus, the single-CPU policy case is additionally complicated by the recent
+addition of sugov_cpu_is_busy(), so that needs to be take into account too.
 
-... [cut] ...
+>  
+>  	sugov_set_iowait_boost(sg_cpu, time, flags);
+>  	sg_cpu->last_update = time;
+> @@ -220,7 +234,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>  		sugov_iowait_boost(sg_cpu, &util, &max);
+>  		next_f = get_next_freq(sg_policy, util, max);
+>  	}
+> -	sugov_update_commit(sg_policy, time, next_f);
+> +	sugov_update_commit(sg_policy, time, cpu, remote, next_f);
+>  }
+>  
+>  static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu)
+> @@ -269,8 +283,24 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>  {
+>  	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
+>  	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+> +	struct cpufreq_policy *policy = sg_policy->policy;
+>  	unsigned long util, max;
+>  	unsigned int next_f;
+> +	int cpu, this_cpu = smp_processor_id();
+> +	bool remote;
+> +
+> +	if (policy->dvfs_possible_from_any_cpu ||
+> +	    cpumask_test_cpu(this_cpu, policy->cpus)) {
 
-Going back to kernel 4.11-rc1 I get this after boot**:
+Again, is this actually worth it?
 
-$ uname -a
-Linux s15 4.11.0-rc1-stock #217 SMP Sun Mar 5 15:34:38 PST 2017 x86_64 x86_64 x86_64 GNU/Linux
-
-$ grep . /sys/devices/system/cpu/intel_pstate/*
-/sys/devices/system/cpu/intel_pstate/max_perf_pct:100  <<< Correct
-/sys/devices/system/cpu/intel_pstate/min_perf_pct:43   <<< Correct
-/sys/devices/system/cpu/intel_pstate/no_turbo:0
-/sys/devices/system/cpu/intel_pstate/num_pstates:23
-/sys/devices/system/cpu/intel_pstate/status:active
-/sys/devices/system/cpu/intel_pstate/turbo_pct:18
-
-$ grep . /sys/devices/system/cpu/cpu0/cpufreq/*
-/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0
-grep: /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq: Permission denied
-/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq:3800000  <<< Correct
-/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq:1600000  <<< Correct
-/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_transition_latency:4294967295
-/sys/devices/system/cpu/cpu0/cpufreq/related_cpus:0
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors:performance powersave
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq:1600805
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver:intel_pstate
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:powersave  <<< Notice
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq:3800000  <<< Correct
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq:1600000  <<< Correct
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed:<unsupported>
-
-$ sudo rdmsr --bitfield 15:8 -d -a 0x199 <<< Requested P-States
-16
-16
-17
-17
-16
-16
-16
-16
-
-Going back to kernel 4.11-rc2 I get this after boot**:
-
-~$ uname -a
-Linux s15 4.11.0-rc2-stock #218 SMP Sun Mar 12 23:57:44 PDT 2017 x86_64 x86_64 x86_64 GNU/Linux
-
-$ grep . /sys/devices/system/cpu/intel_pstate/*
-/sys/devices/system/cpu/intel_pstate/max_perf_pct:100  <<< Correct
-/sys/devices/system/cpu/intel_pstate/min_perf_pct:100  <<< Incorrect
-/sys/devices/system/cpu/intel_pstate/no_turbo:0
-/sys/devices/system/cpu/intel_pstate/num_pstates:23
-/sys/devices/system/cpu/intel_pstate/status:active
-/sys/devices/system/cpu/intel_pstate/turbo_pct:18
-
-$ grep . /sys/devices/system/cpu/cpu0/cpufreq/*
-/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0
-grep: /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq: Permission denied
-/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq:3800000  <<< Correct
-/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq:1600000  <<< Correct
-/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_transition_latency:4294967295
-/sys/devices/system/cpu/cpu0/cpufreq/related_cpus:0
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors:performance powersave
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq:1600805
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver:intel_pstate
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:powersave  <<< Notice
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq:3800000  <<< Correct
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq:3800000  <<< Incorrect
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed:<unsupported>
-
-$ sudo rdmsr --bitfield 15:8 -d -a 0x199  <<< Requested P-States
-38   <<<< All are pinned, system is idle
-38
-38
-38
-38
-38
-38
-38
-
-**: After boot means > 1 minute after boot, because my distro (Ubtunu)
-starts up using the performance governor and then changes to powersave
-after 1 minute.
-
-... Doug
+Thanks,
+Rafael
