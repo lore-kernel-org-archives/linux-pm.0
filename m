@@ -1,86 +1,69 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister duplicate ACPI battery supply
-Date: Wed, 29 Mar 2017 22:31:47 +0200
-Message-ID: <6382698.NuYXpb6L7h@aspire.rjw.lan>
-References: <20170316161601.32267-1-hdegoede@redhat.com> <20170316161601.32267-4-hdegoede@redhat.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH v3 5/7] thermal: rcar_gen3_thermal: enable hardware
+ interrupts for trip points
+Date: Wed, 29 Mar 2017 22:50:54 +0200
+Message-ID: <20170329205054.GA1440@katana>
+References: <20170329184356.8610-1-niklas.soderlund+renesas@ragnatech.se>
+ <20170329184356.8610-6-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63128 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753441AbdC2Uhb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Mar 2017 16:37:31 -0400
-In-Reply-To: <20170316161601.32267-4-hdegoede@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="xHFwDpU9dbj6ez1V"
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170329184356.8610-6-niklas.soderlund+renesas@ragnatech.se>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+Cc: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thursday, March 16, 2017 05:16:00 PM Hans de Goede wrote:
-> On some systems with axp288 PMIC the dsdt also exports an ACPI battery
-> device (PNP0C0A device). This leads to there being 2 battery
-> power_supply-s registed like this:
-> 
-> ~$ acpi
-> Battery 0: Charging, 84%, 00:49:39 until charged
-> Battery 1: Unknown, 0%, rate information unavailable
-> 
-> Note that the ACPI battery device does not work properly this is due
-> to Linux missing support for the vendor specific BMOP ACPI opregion.
-> But even if the ACPI battery where to function fine we still do not
-> want to export the same battery to userspace twice.
-> 
-> Therefor this commit calls acpi_battery_unregister() after successfully
-> registering the axp288-fuel-gauge power_supply to remove the duplicate
-> (and often broken) ACPI battery power_supply.
-> 
-> BugLink: https://bugzilla.kernel.org/show_bug.cgi?id=194811
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> Tested-by: Sergei Trusov <t.rus76@ya.ru>
-> ---
->  drivers/power/supply/Kconfig             | 2 ++
->  drivers/power/supply/axp288_fuel_gauge.c | 3 +++
->  2 files changed, 5 insertions(+)
-> 
-> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> index d0453ca..e504644 100644
-> --- a/drivers/power/supply/Kconfig
-> +++ b/drivers/power/supply/Kconfig
-> @@ -242,6 +242,8 @@ config AXP288_CHARGER
->  config AXP288_FUEL_GAUGE
->  	tristate "X-Powers AXP288 Fuel Gauge"
->  	depends on MFD_AXP20X && IIO
-> +	# if ACPI_BATTERY=m, this can't be 'y'
-> +	depends on ACPI_BATTERY || !ACPI_BATTERY
->  	help
->  	  Say yes here to have support for X-Power power management IC (PMIC)
->  	  Fuel Gauge. The device provides battery statistics and status
-> diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-> index a8dcabc..15f10ce 100644
-> --- a/drivers/power/supply/axp288_fuel_gauge.c
-> +++ b/drivers/power/supply/axp288_fuel_gauge.c
-> @@ -26,6 +26,7 @@
->  #include <linux/mfd/axp20x.h>
->  #include <linux/platform_device.h>
->  #include <linux/power_supply.h>
-> +#include <linux/power/acpi.h>
->  #include <linux/iio/consumer.h>
->  #include <linux/debugfs.h>
->  #include <linux/seq_file.h>
-> @@ -754,6 +755,8 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
->  		return ret;
->  	}
->  
-> +	acpi_battery_unregister();
-> +
 
-What if the ACPI battery driver is loaded after this has been called already?
+--xHFwDpU9dbj6ez1V
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->  	fuel_gauge_create_debugfs(info);
->  	fuel_gauge_init_irq(info);
->  	schedule_delayed_work(&info->status_monitor, STATUS_MON_DELAY_JIFFIES);
-> 
+On Wed, Mar 29, 2017 at 08:43:54PM +0200, Niklas S=C3=B6derlund wrote:
+> Enable hardware trip points by implementing the set_trips callback. The
+> thermal core will take care of setting the initial trip point window and
+> to update it once the driver reports a TSC has moved outside it.
+>=20
+> The interrupt structure for this device is a bit odd. There is not a
+> dedicated IRQ for each TSC, instead the interrupts are shared between
+> all TSCs. IRQn is fired if the temp monitored in IRQTEMPn is reached in
+> any of the TSCs, example IRQ3 is fired if temperature in IRQTEMP3 is
+> reached in either TSC0, TSC1 or TSC2.
+>=20
+> For this reason the usage of interrupts in this driver is an all-on or
+> all-off design. When an interrupt happens all TSCs are checked and all
+> thermal zones are updated. This could be refined to be more fine grained
+> but the thermal core takes care of only updating the thermal zones that
+> have left their trip point window.
+>=20
+> Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.=
+se>
 
-Thanks,
-Rafael
+Reviewed-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+
+
+--xHFwDpU9dbj6ez1V
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJY3B4uAAoJEBQN5MwUoCm2kowP/2rgT008E/9NP/YJVUln5cGt
+6cmmZUUMFbWVwfBcZB0bedNg5C0Q+uxVnWPKXNYHYW5wDXjM6NFwM+aPG3YdnXNB
+geVv1Zy33xomXdq/Y+qsuw1cJPXejLRudB31R3dhZP0jroLVP/puZ4wsRLSeIgah
+sWmO2qwTE/B0L3WdySklpZdmgzc4KdJc9Z6sU+F7O6lIxqp0sEA83MsipPp8LWPb
+DOTZTbO9Au6PKBgTxNfmFm/8PEgfLWaxeGXpk6fXlCmD+37lo5tX7AZ5Krf1Abtp
+6NUtxMdxvaFzn046bTvjPWzTi2OnSeKisT/mpMPVG2G3/2lADjHbooJr/ZIYKr07
+0zhIkfAFcZ/e4HllwflaU72SsSsV3IXXIeR4ylLvdBU6tA3KS6jBrjoOH/byal/i
+Xjs17p1CMpKsw/LklomGj2ECcM1IijAbM0LL8xrGL1nNGjC4w2aBu5j8gcToMf3A
+vC3lpIilwb20D0Kwa/8rRcv21YPIN9C4oO2sarhj+cxSvoJnUEIxAPTgcUVBvgZf
+sE7y/gJi6m49wLruI588m0eIilblj0CA6XH7sZxFhV4S6wV3cN5ZRtQPK408+Nty
+N/TIsPbPYAqw7s5NF4UM0MN+ue6kS/9SWSKYcBmssXhOBiZxqVHHGATBGB+84HCa
+IvFZkgDOohlOqhP07mo3
+=eVYA
+-----END PGP SIGNATURE-----
+
+--xHFwDpU9dbj6ez1V--
