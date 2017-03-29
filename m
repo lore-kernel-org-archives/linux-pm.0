@@ -1,98 +1,135 @@
-From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Subject: Re: [PATCH v1 2/7] devicetree: power: Add docs for TI BQ24190 battery charger
-Date: Tue, 28 Mar 2017 18:48:14 -0700
-Message-ID: <CAKvHMgT8wntpXy1U7=w6XXFwrc91epqpgiaiDi+z5iBd+oOCew@mail.gmail.com>
-References: <20170321220921.5834-1-liam@networkimprov.net> <20170321220921.5834-3-liam@networkimprov.net>
- <20170329004743.6mwpk3lzt5l666gw@rob-hp-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170329004743.6mwpk3lzt5l666gw@rob-hp-laptop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v2] power: bq24190_charger: Uniform pm_runtime_get() failure handling
+Date: Tue, 28 Mar 2017 18:49:13 -0700
+Message-ID: <20170329014913.3970-1-liam@networkimprov.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:34693 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751194AbdC2Bt5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Mar 2017 21:49:57 -0400
+Received: by mail-pg0-f68.google.com with SMTP id o123so636323pga.1
+        for <linux-pm@vger.kernel.org>; Tue, 28 Mar 2017 18:49:56 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>
 
-Hi Rob,
+From: Liam Breck <kernel@networkimprov.net>
 
-On Tue, Mar 28, 2017 at 5:47 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> On Tue, Mar 21, 2017 at 03:09:16PM -0700, Liam Breck wrote:
->> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->>
->> Document monitored-battery and ti,system-minimum-microvolt properties.
->>
->> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->> ---
->>  .../devicetree/bindings/power/supply/bq24190.txt   | 47 ++++++++++++++++++++++
->>  1 file changed, 47 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/power/supply/bq24190.txt
->>
->> diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b/Documentation/devicetree/bindings/power/supply/bq24190.txt
->> new file mode 100644
->> index 0000000..d252d10
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
->> @@ -0,0 +1,47 @@
->> +Binding for TI BQ24190 Li-Ion Battery Charger
->> +
->> +Required properties:
->> +- compatible: Should contain one of the following:
->> +    * "ti,bq24190"
->> +- reg: integer, I2C address of the device.
->> +
->> +Optional properties:
->> +- monitored-battery: phandle of battery information devicetree node
->> +    These battery properties are relevant:
->> +    + precharge-current-microamp: maximum charge current during precharge
->> +      phase (typically 20% of battery capacity).
->> +    + endcharge-current-microamp: a charge cycle terminates when the
->> +      battery voltage is above recharge threshold, and the current is below
->> +      this setting (typically 10% of battery capacity).
->> +    See Documentation/devicetree/bindings/power/supply/battery.txt
->
-> This isn't really relevant to the binding. The battery properties
-> shouldn't vary with the charger.
+On pm_runtime_get() failure, always emit an error message.
+Prevent unbalanced pm_runtime_get by calling:
+  pm_runtime_put_noidle() in irq handler
+  pm_runtime_put_sync() on any probe() failure
+Rename probe() out labels instead of renumbering them.
 
-Different components need different properties from the battery node.
-This charger needs the above two, so we should document that, no?
+Fixes: 13d6fa8447fa power: bq24190_charger: Use PM runtime autosuspend
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Liam Breck <kernel@networkimprov.net>
+---
+v2: not rebased to Hans' extcon patch, which needs some work.
 
->> +- ti,system-minimum-microvolt: when power is connected and the battery
->> +    is below minimum system voltage, the system will be regulated above this
->> +    setting.
->> +
->> +Other features:
->> +- Use gpio-hog to set the OTG pin high to enable 500mA charge current on USB SDP port.
->> +
->> +Example:
->> +
->> +bat: battery {
->> +     compatible = "simple-battery";
->> +     precharge-current-microamp = <256000>;
->> +     endcharge-current-microamp = <128000>;
->> +};
->> +
->> +bq24190 charger@6a {
->> +     compatible = "ti,bq24190";
->> +     reg = <0x6a>;
->> +     // interrupt configuration here
->> +     monitored-battery = <&bat>;
->> +     ti,system-minimum-microvolt = <3200000>;
->> +};
->> +
->> +&twl_gpio {
->> +     otg {
->> +             gpio-hog;
->> +             gpios = <6 0>;
->> +             output-high;
->> +             line-name = "otg-gpio";
->> +     };
->> +};
->> --
->> 2.9.3
->>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ drivers/power/supply/bq24190_charger.c | 35 +++++++++++++++++-----------------
+ 1 file changed, 18 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index 64a48b9..b1c1ee8 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -1278,12 +1278,13 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
+ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
+ {
+ 	struct bq24190_dev_info *bdi = data;
+-	int ret;
++	int error;
+ 
+ 	bdi->irq_event = true;
+-	ret = pm_runtime_get_sync(bdi->dev);
+-	if (ret < 0) {
+-		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
++	error = pm_runtime_get_sync(bdi->dev);
++	if (error < 0) {
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
++		pm_runtime_put_noidle(bdi->dev);
+ 		return IRQ_NONE;
+ 	}
+ 	bq24190_check_status(bdi);
+@@ -1447,13 +1448,15 @@ static int bq24190_probe(struct i2c_client *client,
+ 	pm_runtime_use_autosuspend(dev);
+ 	pm_runtime_set_autosuspend_delay(dev, 600);
+ 	ret = pm_runtime_get_sync(dev);
+-	if (ret < 0)
+-		goto out1;
++	if (ret < 0) {
++		dev_err(dev, "pm_runtime_get failed: %i\n", ret);
++		goto out_pmrt;
++	}
+ 
+ 	ret = bq24190_hw_init(bdi);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Hardware init failed\n");
+-		goto out2;
++		goto out_pmrt;
+ 	}
+ 
+ 	charger_cfg.drv_data = bdi;
+@@ -1464,7 +1467,7 @@ static int bq24190_probe(struct i2c_client *client,
+ 	if (IS_ERR(bdi->charger)) {
+ 		dev_err(dev, "Can't register charger\n");
+ 		ret = PTR_ERR(bdi->charger);
+-		goto out2;
++		goto out_pmrt;
+ 	}
+ 
+ 	battery_cfg.drv_data = bdi;
+@@ -1473,13 +1476,13 @@ static int bq24190_probe(struct i2c_client *client,
+ 	if (IS_ERR(bdi->battery)) {
+ 		dev_err(dev, "Can't register battery\n");
+ 		ret = PTR_ERR(bdi->battery);
+-		goto out3;
++		goto out_charger;
+ 	}
+ 
+ 	ret = bq24190_sysfs_create_group(bdi);
+ 	if (ret) {
+ 		dev_err(dev, "Can't create sysfs entries\n");
+-		goto out4;
++		goto out_battery;
+ 	}
+ 
+ 	bdi->initialized = true;
+@@ -1490,7 +1493,7 @@ static int bq24190_probe(struct i2c_client *client,
+ 			"bq24190-charger", bdi);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Can't set up irq handler\n");
+-		goto out5;
++		goto out_sysfs;
+ 	}
+ 
+ 	if (bdi->extcon) {
+@@ -1512,19 +1515,17 @@ static int bq24190_probe(struct i2c_client *client,
+ 
+ 	return 0;
+ 
+-out5:
++out_sysfs:
+ 	bq24190_sysfs_remove_group(bdi);
+ 
+-out4:
++out_battery:
+ 	power_supply_unregister(bdi->battery);
+ 
+-out3:
++out_charger:
+ 	power_supply_unregister(bdi->charger);
+ 
+-out2:
++out_pmrt:
+ 	pm_runtime_put_sync(dev);
+-
+-out1:
+ 	pm_runtime_dont_use_autosuspend(dev);
+ 	pm_runtime_disable(dev);
+ 	return ret;
+-- 
+2.9.3
