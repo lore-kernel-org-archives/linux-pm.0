@@ -1,81 +1,241 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v12.2 0/5] bq27xxx_battery partial series
-Date: Thu, 30 Mar 2017 12:45:49 -0700
-Message-ID: <CAKvHMgRE7tx3QNYT9k3n9+Wpcb9Eskp7H6WOriJ7drbBz1TuYA@mail.gmail.com>
-References: <20170330090216.12381-1-liam@networkimprov.net> <8b13168b-845e-7ca2-b763-ef61f4f6b81d@ti.com>
+Subject: Re: [PATCH v12.2 5/9] power: bq27xxx_battery: Add bulk transfer bus methods
+Date: Thu, 30 Mar 2017 12:48:44 -0700
+Message-ID: <CAKvHMgSQ+btz5BbaEMehppF54f0o16dbsNnE-C_hCSLZawqv3Q@mail.gmail.com>
+References: <20170330090216.12381-1-liam@networkimprov.net>
+ <20170330090216.12381-2-liam@networkimprov.net> <f731d9f3-5022-9884-d8f7-e2047eea6d2f@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f194.google.com ([209.85.223.194]:36646 "EHLO
-        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933661AbdC3Tpv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 15:45:51 -0400
-Received: by mail-io0-f194.google.com with SMTP id 68so3988917ioh.3
-        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 12:45:50 -0700 (PDT)
-In-Reply-To: <8b13168b-845e-7ca2-b763-ef61f4f6b81d@ti.com>
+Received: from mail-it0-f66.google.com ([209.85.214.66]:35639 "EHLO
+        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934152AbdC3Tsq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 15:48:46 -0400
+Received: by mail-it0-f66.google.com with SMTP id y18so101926itc.2
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 12:48:45 -0700 (PDT)
+In-Reply-To: <f731d9f3-5022-9884-d8f7-e2047eea6d2f@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Andrew F. Davis" <afd@ti.com>
-Cc: linux-pm@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On Thu, Mar 30, 2017 at 5:39 AM, Andrew F. Davis <afd@ti.com> wrote:
->
+On Thu, Mar 30, 2017 at 5:45 AM, Andrew F. Davis <afd@ti.com> wrote:
 > On 03/30/2017 04:02 AM, Liam Breck wrote:
-> > Changes in this rev:
-> >
-> > Removed macro for if (...) dev_dbg(...) from I/O helper functions.
-> >
-> > Moved update_dm_block() to patch "Add power_supply_battery_info support".
-> > No more refactoring please; it's not really improving the code itself :-)
-> >
+>> From: Matt Ranostay <matt@ranostay.consulting>
+>>
+>> Declare bus.write/read_bulk/write_bulk().
+>> Add I2C write/read_bulk/write_bulk() to implement the above.
+>> Add bq27xxx_write/read_block/write_block() helper functions to call the above.
+>>
+>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>> ---
+>>  drivers/power/supply/bq27xxx_battery.c     | 58 ++++++++++++++++++++-
+>>  drivers/power/supply/bq27xxx_battery_i2c.c | 82 +++++++++++++++++++++++++++++-
+>>  include/linux/power/bq27xxx_battery.h      |  3 ++
+>>  3 files changed, 140 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>> index 398801a..e3472c3 100644
+>> --- a/drivers/power/supply/bq27xxx_battery.c
+>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>> @@ -794,11 +794,65 @@ MODULE_PARM_DESC(poll_interval,
+>>  static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
+>>                              bool single)
+>>  {
+>> -     /* Reports EINVAL for invalid/missing registers */
+>> +     int ret;
+>> +
+>>       if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
+>>               return -EINVAL;
+>>
+>> -     return di->bus.read(di, di->regs[reg_index], single);
+>> +     ret = di->bus.read(di, di->regs[reg_index], single);
+>> +     if (ret < 0)
+>> +             dev_dbg(di->dev, "failed to read register 0x%02x (index %d)\n",
+>> +                     di->regs[reg_index], reg_index);
+>> +
+>> +     return ret;
+>> +}
+>> +
+>> +static inline int bq27xxx_write(struct bq27xxx_device_info *di, int reg_index,
+>> +                             u16 value, bool single)
+>> +{
+>> +     int ret;
+>> +
+>> +     if (!di || di->regs[reg_index] == INVALID_REG_ADDR || !di->bus.write)
+>> +             return -EINVAL;
 >
-> Thats a big no can do :), refactoring is important for patch review,
-> each patch needs to be a single logical change that stands on its own. I
-> hate refactoring as much as the next guy, but no one said working on
-> Linux would be easy!
+> Perhaps (!di || !di->bus.write) should return "not implemented" or some
+> similar separate error code.
 
-In the past two years 3 other patchsets on linux-pm have reached 14
-versions (where we are counting partial series). One of those is a new
-kernel framework. You suggested one additional patch in your fixup
-pass, and I did that. It's enough.
+That would be -ENOSYS. Is OK?
 
-> > set_cfgupdate is required for DM write on certain chips, see this Q&A
-> > https://e2e.ti.com/support/power_management/battery_management/f/180/p/577798/2121489#2121489
-> >
+> Otherwise,
+> Acked-by: Andrew F. Davis <afd@ti.com>
 >
-> So lets add the functionality for those chips in a separate patch. I
-> don't like the way you did set_cfgupdate() so lets not block a patch I
-> do like (read/write_block) by including that change in it.
-
-The chips that most need this patchset are the RAM-only ones; they all
-require set_cfgupdate. Our hardware has such a chip. I have spent
-considerable time making this code compatible with any bq27 part. I
-can't donate more time to chips I can't test. set_cfgupdate is
-implemented correctly. It doesn't help anyone to patch it separately.
-
-> > Renamed dm_buf .full => .has_data, .updt => .dirty
-> > dm_buf has 3 states: !has_data, has_data && !dirty, has_data && dirty
-> > I considered a single field and enum values, but I think this is clearer.
-> >
-> > Renamed set_cfgupdate(..., u16 flag => state)
-> > We call set_cfgupdate(di, BQ27XXX_FLAG_CFGUP or 0)
-> > We !!state to print the intended flag state in error msg.
-> >
->
-> Just print that it is a flag, or map from state to string. Personally I
-> would just put that in a debug print and not worry if it is pretty.
-
-One msg flags an error condition; it's not a dev_dbg case. We need to
-print the expected flag value, anything else is confusing.
-
-> >   power: bq27xxx_battery: Add bulk transfer bus methods
-> >   power: bq27xxx_battery: Add chip data memory read/write support
-> >   power: bq27xxx_battery: Add power_supply_battery_info support
-> >   power: bq27xxx_battery: Enable chip data memory update for certain chips
-> >   power: bq27xxx_battery: Remove duplicate register arrays
-> >
-> >  drivers/power/supply/bq27xxx_battery.c     | 700 +++++++++++++++++++++++------
-> >  drivers/power/supply/bq27xxx_battery_i2c.c |  98 +++-
-> >  include/linux/power/bq27xxx_battery.h      |  26 +-
-> >  3 files changed, 682 insertions(+), 142 deletions(-)
-> >
+>> +
+>> +     ret = di->bus.write(di, di->regs[reg_index], value, single);
+>> +     if (ret < 0)
+>> +             dev_dbg(di->dev, "failed to write register 0x%02x (index %d)\n",
+>> +                     di->regs[reg_index], reg_index);
+>> +
+>> +     return ret;
+>> +}
+>> +
+>> +static inline int bq27xxx_read_block(struct bq27xxx_device_info *di, int reg_index,
+>> +                                  u8 *data, int len)
+>> +{
+>> +     int ret;
+>> +
+>> +     if (!di || di->regs[reg_index] == INVALID_REG_ADDR || !di->bus.read_bulk)
+>> +             return -EINVAL;
+>> +
+>> +     ret = di->bus.read_bulk(di, di->regs[reg_index], data, len);
+>> +     if (ret < 0)
+>> +             dev_dbg(di->dev, "failed to read_bulk register 0x%02x (index %d)\n",
+>> +                     di->regs[reg_index], reg_index);
+>> +
+>> +     return ret;
+>> +}
+>> +
+>> +static inline int bq27xxx_write_block(struct bq27xxx_device_info *di, int reg_index,
+>> +                                   u8 *data, int len)
+>> +{
+>> +     int ret;
+>> +
+>> +     if (!di || di->regs[reg_index] == INVALID_REG_ADDR || !di->bus.write_bulk)
+>> +             return -EINVAL;
+>> +
+>> +     ret = di->bus.write_bulk(di, di->regs[reg_index], data, len);
+>> +     if (ret < 0)
+>> +             dev_dbg(di->dev, "failed to write_bulk register 0x%02x (index %d)\n",
+>> +                     di->regs[reg_index], reg_index);
+>> +
+>> +     return ret;
+>>  }
+>>
+>>  /*
+>> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> index c68fbc3..a597221 100644
+>> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+>> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> @@ -38,7 +38,7 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
+>>  {
+>>       struct i2c_client *client = to_i2c_client(di->dev);
+>>       struct i2c_msg msg[2];
+>> -     unsigned char data[2];
+>> +     u8 data[2];
+>>       int ret;
+>>
+>>       if (!client->adapter)
+>> @@ -68,6 +68,82 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
+>>       return ret;
+>>  }
+>>
+>> +static int bq27xxx_battery_i2c_write(struct bq27xxx_device_info *di, u8 reg,
+>> +                                  int value, bool single)
+>> +{
+>> +     struct i2c_client *client = to_i2c_client(di->dev);
+>> +     struct i2c_msg msg;
+>> +     u8 data[4];
+>> +     int ret;
+>> +
+>> +     if (!client->adapter)
+>> +             return -ENODEV;
+>> +
+>> +     data[0] = reg;
+>> +     if (single) {
+>> +             data[1] = (u8) value;
+>> +             msg.len = 2;
+>> +     } else {
+>> +             put_unaligned_le16(value, &data[1]);
+>> +             msg.len = 3;
+>> +     }
+>> +
+>> +     msg.buf = data;
+>> +     msg.addr = client->addr;
+>> +     msg.flags = 0;
+>> +
+>> +     ret = i2c_transfer(client->adapter, &msg, 1);
+>> +     if (ret < 0)
+>> +             return ret;
+>> +     if (ret != 1)
+>> +             return -EINVAL;
+>> +     return 0;
+>> +}
+>> +
+>> +static int bq27xxx_battery_i2c_bulk_read(struct bq27xxx_device_info *di, u8 reg,
+>> +                                      u8 *data, int len)
+>> +{
+>> +     struct i2c_client *client = to_i2c_client(di->dev);
+>> +     int ret;
+>> +
+>> +     if (!client->adapter)
+>> +             return -ENODEV;
+>> +
+>> +     ret = i2c_smbus_read_i2c_block_data(client, reg, len, data);
+>> +     if (ret < 0)
+>> +             return ret;
+>> +     if (ret != len)
+>> +             return -EINVAL;
+>> +     return 0;
+>> +}
+>> +
+>> +static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
+>> +                                       u8 reg, u8 *data, int len)
+>> +{
+>> +     struct i2c_client *client = to_i2c_client(di->dev);
+>> +     struct i2c_msg msg;
+>> +     u8 buf[33];
+>> +     int ret;
+>> +
+>> +     if (!client->adapter)
+>> +             return -ENODEV;
+>> +
+>> +     buf[0] = reg;
+>> +     memcpy(&buf[1], data, len);
+>> +
+>> +     msg.buf = buf;
+>> +     msg.addr = client->addr;
+>> +     msg.flags = 0;
+>> +     msg.len = len + 1;
+>> +
+>> +     ret = i2c_transfer(client->adapter, &msg, 1);
+>> +     if (ret < 0)
+>> +             return ret;
+>> +     if (ret != 1)
+>> +             return -EINVAL;
+>> +     return 0;
+>> +}
+>> +
+>>  static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+>>                                    const struct i2c_device_id *id)
+>>  {
+>> @@ -95,7 +171,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+>>       di->dev = &client->dev;
+>>       di->chip = id->driver_data;
+>>       di->name = name;
+>> +
+>>       di->bus.read = bq27xxx_battery_i2c_read;
+>> +     di->bus.write = bq27xxx_battery_i2c_write;
+>> +     di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
+>> +     di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
+>>
+>>       ret = bq27xxx_battery_setup(di);
+>>       if (ret)
+>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+>> index b312bce..c3369fa 100644
+>> --- a/include/linux/power/bq27xxx_battery.h
+>> +++ b/include/linux/power/bq27xxx_battery.h
+>> @@ -40,6 +40,9 @@ struct bq27xxx_platform_data {
+>>  struct bq27xxx_device_info;
+>>  struct bq27xxx_access_methods {
+>>       int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
+>> +     int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
+>> +     int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
+>> +     int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
+>>  };
+>>
+>>  struct bq27xxx_reg_cache {
+>>
