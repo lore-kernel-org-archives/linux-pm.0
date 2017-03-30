@@ -1,108 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 5/5] cpufreq: intel_pstate: Document the current behavior and user interface
-Date: Thu, 30 Mar 2017 02:19:09 +0200
-Message-ID: <1508495.qXATtFiRmu@aspire.rjw.lan>
-References: <2025489.DxMTzKos7o@aspire.rjw.lan> <001f01d2a6c3$ef7f0c00$ce7d2400$@net>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal management updates for v4.11-rc5
+Date: Thu, 30 Mar 2017 10:50:09 +0800
+Message-ID: <1490842209.2347.9.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <001f01d2a6c3$ef7f0c00$ce7d2400$@net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Jonathan Corbet' <corbet@lwn.net>, 'Linux PM' <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:3764 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752733AbdC3CuN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 Mar 2017 22:50:13 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Sunday, March 26, 2017 11:32:37 PM Doug Smythies wrote:
-> On 2017.03.22 16:32 Rafael J. Wysocki wrote:
-> 
-> I realize that there is tradeoff between a succinct and brief
-> document and having to write a full book, but I have a couple of
-> comments anyhow.
-> 
-> > Add a document describing the current behavior and user space
-> > interface of the intel_pstate driver in the RST format and
-> > drop the existing outdated intel_pstate.txt document.
-> 
-> ... [cut]...
-> 
-> > +The second variant of the ``powersave`` P-state selection algorithm, used in all
-> > +of the other cases (generally, on processors from the Core line, so it is
-> > +referred to as the "Core" algorithm), is based on the values read from the APERF
-> > +and MPERF feedback registers alone
-> 
-> And target pstate over the last sample interval.
+Hi, Linus,
 
-Fair enough.
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git for-rc
 
-> > and it does not really take CPU utilization
-> > +into account explicitly.  Still, it causes the CPU P-state to ramp up very
-> > +quickly in response to increased utilization which is generally desirable in
-> > +server environments.
-> 
-> It will only ramp up quickly if another CPU has already ramped up such that the
-> effective pstate is much higher than the target, giving a very very high "load"
-> (actually scaled_busy) see comments further down.
+to receive the latest Thermal Management updates for v4.11-rc5 with
+top-most commit 3ea3217cf91804be6ed9b368ef4ac7911eb1dadc:
 
-I really wouldn't like to go into too much detail here.
+  thermal: cpu_cooling: Check OPP for errors (2017-03-13 10:06:55
++0800)
 
-I'm about to write something along these lines:
+on top of commit 4495c08e84729385774601b5146d51d9e5849f81:
 
-"It does not really take CPU utilization into account explicitly, but as a rule it
-causes the CPU P-state to ramp up [...]".
+  Linux 4.11-rc2 (2017-03-12 14:47:08 -0700)
 
-> ... [cut]...
-> 
-> > +Turbo P-states Support
-> > +======================
-> ...
-> > +Some processors allow multiple cores to be in turbo P-states at the same time,
-> > +but the maximum P-state that can be set for them generally depends on the number
-> > +of cores running concurrently.  The maximum turbo P-state that can be set for 3
-> > +cores at the same time usually is lower than the analogous maximum P-state for
-> > +2 cores, which in turn usually is lower than the maximum turbo P-state that can
-> > +be set for 1 core.  The one-core maximum turbo P-state is thus the maximum
-> > +supported one overall.
-> 
-> The above segment was retained because it is relevant to footnote 1 below.
-> 
-> ...[cut]...
-> 
-> > +For example, the default values of the PID controller parameters for the Sandy
-> > +Bridge generation of processors are
-> > +
-> > +| ``deadband`` = 0
-> > +| ``d_gain_pct`` = 0
-> > +| ``i_gain_pct`` = 0
-> > +| ``p_gain_pct`` = 20
-> > +| ``sample_rate_ms`` = 10
-> > +| ``setpoint`` = 97
-> > +
-> > +If the derivative and integral coefficients in the PID algorithm are both equal
-> > +to 0 (which is the case above), the next P-State value will be equal to:
-> > +
-> > +  ``current_pstate`` - ((``setpoint`` - ``current_load``) * ``p_gain_pct``)
-> > +
-> > +where ``current_pstate`` is the P-state currently set for the given CPU and
-> > +``current_load`` is the current load estimate for it based on the current values
-> > +of feedback registers.
-> 
-> While mentioned earlier, it should be emphasized again here that this
-> "current_load" might be, and very often is, very very different than
-> the actual load on the CPU. It can be as high as the ratio of the maximum
-> P state / minimum P state. I.E. for my older i7 processor it can be
-> 38/16 *100% = 237.5%. For more recent processors, that maximum can be much
-> higher. This is how this control algorithm can achieve a very rapid ramp
-> of pstate on a CPU that was previously idle, with these settings, and when
-> other CPUs were already active and ramped up.
+Specifics:
 
-I actually copied this part from the existing intel_pstate.txt document and only
-edited it somewhat.  Now I realize that it really was not too accurate at all
-originally.
+- Fix a potential deadlock in cpu_cooling driver, which was introduced
+in 4.11-rc1. (Matthew Wilcox)
 
-I think I'll simply skip the entire example part of this section, as the original
-simply doesn't reflect the reality and I don't think it's particularly useful
-to try to describe it more accurately here.
+- Fix the cpu_cooling and devfreq_cooling code to handle possible error
+return value from OPP calls, together with three minor fixes in the
+same patch series. (Viresh Kumar)
 
-Thanks,
-Rafael
+thanks,
+rui
+
+----------------------------------------------------------------
+Matthew Wilcox (1):
+      thermal: Fix potential deadlock in cpu_cooling
+
+Viresh Kumar (5):
+      thermal: devfreq: Simplify expression
+      thermal: devfreq_cooling: Replace dev_warn with dev_err
+      thermal: devfreq: Check OPP for errors
+      thermal: cpu_cooling: Replace dev_warn with dev_err
+      thermal: cpu_cooling: Check OPP for errors
+
+ drivers/thermal/cpu_cooling.c     | 39 ++++++++++++++++++++++++-------
+--------
+ drivers/thermal/devfreq_cooling.c | 14 ++++++++++----
+ 2 files changed, 34 insertions(+), 19 deletions(-)
