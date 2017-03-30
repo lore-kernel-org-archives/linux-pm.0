@@ -1,176 +1,61 @@
-From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
-Subject: [PATCH v2 21/22] docs-rst: fix usb cross-references
-Date: Thu, 30 Mar 2017 07:45:55 -0300
-Message-ID: <50db04845612db92568d121fa1eed29271d77e21.1490870599.git.mchehab@s-opensource.com>
-References: <3068fc7fac09293300b9c59ece0adb985232de12.1490870599.git.mchehab@s-opensource.com>
+From: Oleksij Rempel <ore@pengutronix.de>
+Subject: proper power off implementation for iMX6 with external pmic
+Date: Thu, 30 Mar 2017 13:02:54 +0200
+Message-ID: <d8d013f7-9417-c7c9-5f60-dd33465e9b42@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <3068fc7fac09293300b9c59ece0adb985232de12.1490870599.git.mchehab@s-opensource.com>
-In-Reply-To: <3068fc7fac09293300b9c59ece0adb985232de12.1490870599.git.mchehab@s-opensource.com>
-References: <3068fc7fac09293300b9c59ece0adb985232de12.1490870599.git.mchehab@s-opensource.com>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Linux Media Mailing List <linux-media@vger.kernel.org>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: devel@driverdev.osuosl.org, Len Brown <len.brown@intel.com>, Oliver Neukum <oneukum@suse.com>, Jonathan Corbet <corbet@lwn.net>, John Youn <johnyoun@synopsys.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mauro Carvalho Chehab <mchehab@infradead.org>, Mauro Carvalho Chehab <mchehab@s-opensource.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Peter Chen <peter.chen@nxp.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Pavel Machek <pavel@ucw.cz>, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>, Christian Gromm <christian.gromm@microchip.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, linux-rpi-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:57549 "EHLO
+        metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S932558AbdC3LC5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 07:02:57 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, linux-arm-kernel@lists.infradead.org, Sascha Hauer <kernel@pengutronix.de>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 
-As some USB documentation files got moved, adjust their
-cross-references to their new place.
+Hallo all,
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
----
- Documentation/ABI/stable/sysfs-bus-usb            | 2 +-
- Documentation/driver-api/usb/URB.rst              | 2 ++
- Documentation/driver-api/usb/callbacks.rst        | 4 ++--
- Documentation/driver-api/usb/error-codes.rst      | 2 ++
- Documentation/driver-api/usb/persist.rst          | 2 ++
- Documentation/driver-api/usb/power-management.rst | 2 +-
- Documentation/driver-api/usb/usb.rst              | 4 ++--
- Documentation/power/swsusp.txt                    | 2 +-
- drivers/staging/most/hdm-usb/hdm_usb.c            | 2 +-
- drivers/usb/core/Kconfig                          | 2 +-
- 10 files changed, 15 insertions(+), 9 deletions(-)
+i'm looking for proper way to implement pm_power_off for IMX6 with 
+external PMIC.
 
-diff --git a/Documentation/ABI/stable/sysfs-bus-usb b/Documentation/ABI/stable/sysfs-bus-usb
-index 831f15d9672f..b832eeff9999 100644
---- a/Documentation/ABI/stable/sysfs-bus-usb
-+++ b/Documentation/ABI/stable/sysfs-bus-usb
-@@ -9,7 +9,7 @@ Description:
- 		hubs this facility is always enabled and their device
- 		directories will not contain this file.
- 
--		For more information, see Documentation/usb/persist.txt.
-+		For more information, see Documentation/driver-api/usb/persist.rst.
- 
- What:		/sys/bus/usb/devices/.../power/autosuspend
- Date:		March 2007
-diff --git a/Documentation/driver-api/usb/URB.rst b/Documentation/driver-api/usb/URB.rst
-index 2bcd06c2c5aa..810ceb0e71bb 100644
---- a/Documentation/driver-api/usb/URB.rst
-+++ b/Documentation/driver-api/usb/URB.rst
-@@ -1,3 +1,5 @@
-+.. _usb-urb:
-+
- USB Request Block (URB)
- ~~~~~~~~~~~~~~~~~~~~~~~
- 
-diff --git a/Documentation/driver-api/usb/callbacks.rst b/Documentation/driver-api/usb/callbacks.rst
-index 93a8d53e27e7..2b80cf54bcc3 100644
---- a/Documentation/driver-api/usb/callbacks.rst
-+++ b/Documentation/driver-api/usb/callbacks.rst
-@@ -8,7 +8,7 @@ Usbcore will call into a driver through callbacks defined in the driver
- structure and through the completion handler of URBs a driver submits.
- Only the former are in the scope of this document. These two kinds of
- callbacks are completely independent of each other. Information on the
--completion callback can be found in Documentation/usb/URB.txt.
-+completion callback can be found in :ref:`usb-urb`.
- 
- The callbacks defined in the driver structure are:
- 
-@@ -53,7 +53,7 @@ The callbacks defined in the driver structure are:
- 
- The ioctl interface (2) should be used only if you have a very good
- reason. Sysfs is preferred these days. The PM callbacks are covered
--separately in Documentation/usb/power-management.txt.
-+separately in :ref:`usb-power-management`.
- 
- Calling conventions
- ===================
-diff --git a/Documentation/driver-api/usb/error-codes.rst b/Documentation/driver-api/usb/error-codes.rst
-index 9c11a0fd16cb..a3e84bfac776 100644
---- a/Documentation/driver-api/usb/error-codes.rst
-+++ b/Documentation/driver-api/usb/error-codes.rst
-@@ -1,3 +1,5 @@
-+.. _usb-error-codes:
-+
- USB Error codes
- ~~~~~~~~~~~~~~~
- 
-diff --git a/Documentation/driver-api/usb/persist.rst b/Documentation/driver-api/usb/persist.rst
-index ea1b43f0559e..08cafc6292c1 100644
---- a/Documentation/driver-api/usb/persist.rst
-+++ b/Documentation/driver-api/usb/persist.rst
-@@ -1,3 +1,5 @@
-+.. _usb-persist:
-+
- USB device persistence during system suspend
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
-diff --git a/Documentation/driver-api/usb/power-management.rst b/Documentation/driver-api/usb/power-management.rst
-index c068257f6d27..79beb807996b 100644
---- a/Documentation/driver-api/usb/power-management.rst
-+++ b/Documentation/driver-api/usb/power-management.rst
-@@ -328,7 +328,7 @@ possible to work around the hibernation-forces-disconnect problem by
- using the USB Persist facility.)
- 
- The ``reset_resume`` method is used by the USB Persist facility (see
--``Documentation/usb/persist.txt``) and it can also be used under certain
-+:ref:`usb-persist`) and it can also be used under certain
- circumstances when ``CONFIG_USB_PERSIST`` is not enabled.  Currently, if a
- device is reset during a resume and the driver does not have a
- ``reset_resume`` method, the driver won't receive any notification about
-diff --git a/Documentation/driver-api/usb/usb.rst b/Documentation/driver-api/usb/usb.rst
-index 5ebaf669704c..6824089ef4c8 100644
---- a/Documentation/driver-api/usb/usb.rst
-+++ b/Documentation/driver-api/usb/usb.rst
-@@ -424,8 +424,8 @@ header.
- Unless noted otherwise, the ioctl requests described here will update
- the modification time on the usbfs file to which they are applied
- (unless they fail). A return of zero indicates success; otherwise, a
--standard USB error code is returned. (These are documented in
--``Documentation/usb/error-codes.txt`` in your kernel sources.)
-+standard USB error code is returned (These are documented in
-+:ref:`usb-error-codes`).
- 
- Each of these files multiplexes access to several I/O streams, one per
- endpoint. Each device has one control endpoint (endpoint zero) which
-diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
-index 8cc17ca71813..9f2f942a01cf 100644
---- a/Documentation/power/swsusp.txt
-+++ b/Documentation/power/swsusp.txt
-@@ -406,7 +406,7 @@ Firewire, CompactFlash, MMC, external SATA, or even IDE hotplug bays)
- before suspending; then remount them after resuming.
- 
- There is a work-around for this problem.  For more information, see
--Documentation/usb/persist.txt.
-+Documentation/driver-api/usb/persist.rst.
- 
- Q: Can I suspend-to-disk using a swap partition under LVM?
- 
-diff --git a/drivers/staging/most/hdm-usb/hdm_usb.c b/drivers/staging/most/hdm-usb/hdm_usb.c
-index 65211d1824b7..2bfea9b48366 100644
---- a/drivers/staging/most/hdm-usb/hdm_usb.c
-+++ b/drivers/staging/most/hdm-usb/hdm_usb.c
-@@ -490,7 +490,7 @@ static void hdm_write_completion(struct urb *urb)
-  * disconnect.  In the interval before the hub driver starts disconnect
-  * processing, devices may receive such fault reports for every request.
-  *
-- * See <https://www.kernel.org/doc/Documentation/usb/error-codes.txt>
-+ * See <https://www.kernel.org/doc/Documentation/driver-api/usb/error-codes.rst>
-  */
- static void hdm_read_completion(struct urb *urb)
- {
-diff --git a/drivers/usb/core/Kconfig b/drivers/usb/core/Kconfig
-index 0e5a889742b3..4d75d9a80001 100644
---- a/drivers/usb/core/Kconfig
-+++ b/drivers/usb/core/Kconfig
-@@ -26,7 +26,7 @@ config USB_DEFAULT_PERSIST
- 	  unplugged, causing any mounted filesystems to be lost.  The
- 	  persist feature can still be enabled for individual devices
- 	  through the power/persist sysfs node. See
--	  Documentation/usb/persist.txt for more info.
-+	  Documentation/driver-api/usb/persist.rst for more info.
- 
- 	  If you have any questions about this, say Y here, only say N
- 	  if you know exactly what you are doing.
--- 
-2.9.3
+http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6DQRM.pdf
+page 5083
+
+According to this documentation, there are two ways to power off, 
+depending on board configuration. With internal and external PMIC.
+
+Internal variant is implemented in:
+drivers/power/reset/imx-snvs-poweroff.c
+
+and should provide support for fallowing sequence:
+
+Configuration with internal PMIC:
+1.  SoC button is pressed for a short duration.
+2.  Interrupt request (irq) is sent to SoC from FSM
+3.  Alarm timer is set up by software routine and started.
+4.  Upon alarm_in assertion to '1', PMIC_ON_REQ goes '0'.
+5.  External regulator goes OFF.
+
+Suddenly i can't find any existing code for external PMIC.
+
+Configuration with external PMIC:
+1.  Button is pressed for a short duration on the external PMIC.
+2.  Interrupt request (irq) is sent to SoC from external PMIC
+3.  SoC is programming PMIC for power off when standby is asserted.
+4.  In CCM STOP mode, Standby is asserted, PMIC gates SoC supplies.
+
+partially needed  code is implemented here:
+  arch/arm/mach-imx/pm-imx6.c
+...
+         case STOP_POWER_OFF:
+                 val |= 0x2 << BP_CLPCR_LPM;
+                 val |= 0x3 << BP_CLPCR_STBY_COUNT;
+                 val |= BM_CLPCR_VSTBY;
+                 val |= BM_CLPCR_SBYOS;
+....
+but used only for PM_SUSPEND_MEM and never for pm_power_off.
+
+do i miss some thing, or are there any patches floating around?
+If it is not implemented jet and no one is working on this i would do it.
+I assume it should be configurable over device tree. Correct?
