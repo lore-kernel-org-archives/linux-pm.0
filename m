@@ -1,241 +1,296 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v12.2 5/9] power: bq27xxx_battery: Add bulk transfer bus methods
-Date: Thu, 30 Mar 2017 12:48:44 -0700
-Message-ID: <CAKvHMgSQ+btz5BbaEMehppF54f0o16dbsNnE-C_hCSLZawqv3Q@mail.gmail.com>
+Subject: Re: [PATCH v12.2 6/9] power: bq27xxx_battery: Add chip data memory
+ read/write support
+Date: Thu, 30 Mar 2017 13:04:09 -0700
+Message-ID: <CAKvHMgSPQH1S=wEBjG-68mypkshWcKysS=UWkmp-M1An=K845g@mail.gmail.com>
 References: <20170330090216.12381-1-liam@networkimprov.net>
- <20170330090216.12381-2-liam@networkimprov.net> <f731d9f3-5022-9884-d8f7-e2047eea6d2f@ti.com>
+ <20170330090216.12381-3-liam@networkimprov.net> <d8c550c5-1d57-baa9-4d8e-dc3f2f05704f@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:35639 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934152AbdC3Tsq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 15:48:46 -0400
-Received: by mail-it0-f66.google.com with SMTP id y18so101926itc.2
-        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 12:48:45 -0700 (PDT)
-In-Reply-To: <f731d9f3-5022-9884-d8f7-e2047eea6d2f@ti.com>
+Received: from mail-io0-f194.google.com ([209.85.223.194]:33427 "EHLO
+        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934711AbdC3UEL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 16:04:11 -0400
+Received: by mail-io0-f194.google.com with SMTP id f84so4031084ioj.0
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 13:04:10 -0700 (PDT)
+In-Reply-To: <d8c550c5-1d57-baa9-4d8e-dc3f2f05704f@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Andrew F. Davis" <afd@ti.com>
-Cc: linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
+Cc: linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-On Thu, Mar 30, 2017 at 5:45 AM, Andrew F. Davis <afd@ti.com> wrote:
+On Thu, Mar 30, 2017 at 5:55 AM, Andrew F. Davis <afd@ti.com> wrote:
 > On 03/30/2017 04:02 AM, Liam Breck wrote:
->> From: Matt Ranostay <matt@ranostay.consulting>
+>> From: Liam Breck <kernel@networkimprov.net>
 >>
->> Declare bus.write/read_bulk/write_bulk().
->> Add I2C write/read_bulk/write_bulk() to implement the above.
->> Add bq27xxx_write/read_block/write_block() helper functions to call the above.
+>> Add the following to enable read/write of chip data memory (DM) RAM/NVM/flash:
+>>   bq27xxx_battery_seal()
+>>   bq27xxx_battery_unseal()
+>>   bq27xxx_battery_set_cfgupdate()
+>>   bq27xxx_battery_read_dm_block()
+>>   bq27xxx_battery_write_dm_block()
+>>   bq27xxx_battery_checksum_dm_block()
 >>
 >> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
 >> ---
->>  drivers/power/supply/bq27xxx_battery.c     | 58 ++++++++++++++++++++-
->>  drivers/power/supply/bq27xxx_battery_i2c.c | 82 +++++++++++++++++++++++++++++-
->>  include/linux/power/bq27xxx_battery.h      |  3 ++
->>  3 files changed, 140 insertions(+), 3 deletions(-)
+>>  drivers/power/supply/bq27xxx_battery.c | 285 +++++++++++++++++++++++++++++++++
+>>  include/linux/power/bq27xxx_battery.h  |   1 +
+>>  2 files changed, 286 insertions(+)
 >>
 >> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->> index 398801a..e3472c3 100644
+>> index e3472c3..dbcf14a 100644
 >> --- a/drivers/power/supply/bq27xxx_battery.c
 >> +++ b/drivers/power/supply/bq27xxx_battery.c
->> @@ -794,11 +794,65 @@ MODULE_PARM_DESC(poll_interval,
->>  static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
->>                              bool single)
->>  {
->> -     /* Reports EINVAL for invalid/missing registers */
->> +     int ret;
->> +
->>       if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
->>               return -EINVAL;
+
+>> @@ -757,6 +849,18 @@ static struct {
+>>  static DEFINE_MUTEX(bq27xxx_list_lock);
+>>  static LIST_HEAD(bq27xxx_battery_devices);
 >>
->> -     return di->bus.read(di, di->regs[reg_index], single);
->> +     ret = di->bus.read(di, di->regs[reg_index], single);
->> +     if (ret < 0)
->> +             dev_dbg(di->dev, "failed to read register 0x%02x (index %d)\n",
->> +                     di->regs[reg_index], reg_index);
+>> +#define BQ27XXX_MSLEEP(i) usleep_range((i)*1000, (i)*1000+500)
 >> +
->> +     return ret;
->> +}
+>> +#define BQ27XXX_DM_SZ        32
 >> +
->> +static inline int bq27xxx_write(struct bq27xxx_device_info *di, int reg_index,
->> +                             u16 value, bool single)
->> +{
->> +     int ret;
+>> +struct bq27xxx_dm_buf {
+>> +     u8 class;
+>> +     u8 block;
+>> +     u8 data[BQ27XXX_DM_SZ];
+>> +     bool has_data, dirty;
+>> +};
 >> +
->> +     if (!di || di->regs[reg_index] == INVALID_REG_ADDR || !di->bus.write)
->> +             return -EINVAL;
 >
-> Perhaps (!di || !di->bus.write) should return "not implemented" or some
-> similar separate error code.
-
-That would be -ENOSYS. Is OK?
-
-> Otherwise,
-> Acked-by: Andrew F. Davis <afd@ti.com>
+> kernel-doc this struct
 >
 >> +
->> +     ret = di->bus.write(di, di->regs[reg_index], value, single);
->> +     if (ret < 0)
->> +             dev_dbg(di->dev, "failed to write register 0x%02x (index %d)\n",
->> +                     di->regs[reg_index], reg_index);
->> +
->> +     return ret;
->> +}
->> +
->> +static inline int bq27xxx_read_block(struct bq27xxx_device_info *di, int reg_index,
->> +                                  u8 *data, int len)
->> +{
->> +     int ret;
->> +
->> +     if (!di || di->regs[reg_index] == INVALID_REG_ADDR || !di->bus.read_bulk)
->> +             return -EINVAL;
->> +
->> +     ret = di->bus.read_bulk(di, di->regs[reg_index], data, len);
->> +     if (ret < 0)
->> +             dev_dbg(di->dev, "failed to read_bulk register 0x%02x (index %d)\n",
->> +                     di->regs[reg_index], reg_index);
->> +
->> +     return ret;
->> +}
->> +
->> +static inline int bq27xxx_write_block(struct bq27xxx_device_info *di, int reg_index,
->> +                                   u8 *data, int len)
->> +{
->> +     int ret;
->> +
->> +     if (!di || di->regs[reg_index] == INVALID_REG_ADDR || !di->bus.write_bulk)
->> +             return -EINVAL;
->> +
->> +     ret = di->bus.write_bulk(di, di->regs[reg_index], data, len);
->> +     if (ret < 0)
->> +             dev_dbg(di->dev, "failed to write_bulk register 0x%02x (index %d)\n",
->> +                     di->regs[reg_index], reg_index);
->> +
->> +     return ret;
->>  }
->>
->>  /*
->> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
->> index c68fbc3..a597221 100644
->> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
->> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
->> @@ -38,7 +38,7 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
+>>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
 >>  {
->>       struct i2c_client *client = to_i2c_client(di->dev);
->>       struct i2c_msg msg[2];
->> -     unsigned char data[2];
->> +     u8 data[2];
->>       int ret;
->>
->>       if (!client->adapter)
->> @@ -68,6 +68,82 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
+>>       struct bq27xxx_device_info *di;
+>> @@ -855,6 +959,187 @@ static inline int bq27xxx_write_block(struct bq27xxx_device_info *di, int reg_in
 >>       return ret;
 >>  }
 >>
->> +static int bq27xxx_battery_i2c_write(struct bq27xxx_device_info *di, u8 reg,
->> +                                  int value, bool single)
+>> +static int bq27xxx_battery_seal(struct bq27xxx_device_info *di)
 >> +{
->> +     struct i2c_client *client = to_i2c_client(di->dev);
->> +     struct i2c_msg msg;
->> +     u8 data[4];
 >> +     int ret;
 >> +
->> +     if (!client->adapter)
->> +             return -ENODEV;
+>> +     ret = bq27xxx_write(di, BQ27XXX_REG_CTRL, BQ27XXX_SEALED, false);
+>> +     if (ret >= 0)
+>> +             return 0;
 >> +
->> +     data[0] = reg;
->> +     if (single) {
->> +             data[1] = (u8) value;
->> +             msg.len = 2;
->> +     } else {
->> +             put_unaligned_le16(value, &data[1]);
->> +             msg.len = 3;
+>
+> This logic is reversed, return on error first.
+
+It mirrors the structure of all the other functions, with an out:
+error case at the end. Can I use goto-out here too?
+
+>> +     dev_err(di->dev, "bus error on seal: %d\n", ret);
+>> +     return ret;
+>> +}
+>> +
+>> +static int bq27xxx_battery_unseal(struct bq27xxx_device_info *di)
+>> +{
+>> +     int ret;
+>> +
+>> +     ret = bq27xxx_write(di, BQ27XXX_REG_CTRL, (u16)(di->unseal_key >> 16), false);
+>> +     if (ret < 0)
+>> +             goto out;
+>> +
+>> +     ret = bq27xxx_write(di, BQ27XXX_REG_CTRL, (u16)di->unseal_key, false);
+>> +     if (ret < 0)
+>> +             goto out;
+>> +
+>> +     return 0;
+>> +
+>> +out:
+>> +     dev_err(di->dev, "bus error on unseal: %d\n", ret);
+>> +     return ret;
+>> +}
+>> +
+>> +static u8 bq27xxx_battery_checksum_dm_block(struct bq27xxx_dm_buf *buf)
+>> +{
+>> +     u16 sum = 0;
+>
+> I haven't tested this, but maybe you could:
+>
+> u8 sum = 0xff;
+>
+> for (i = 0; i < BQ27XXX_DM_SZ; i++)
+>         sum -= buf->data[i];
+>
+> return sum;
+
+I gracefully decline. I prefer the bqtool algorithm. We will cause
+confusion with distinct logic. Also using subtraction in a checkSUM is
+odd.
+
+>> +     int i;
+>> +
+>> +     for (i = 0; i < BQ27XXX_DM_SZ; i++)
+>> +             sum += buf->data[i];
+>> +     sum &= 0xff;
+>> +
+>> +     return 0xff - sum;
+>> +}
+>> +
+>> +static int bq27xxx_battery_read_dm_block(struct bq27xxx_device_info *di,
+>> +                                      struct bq27xxx_dm_buf *buf)
+>> +{
+>> +     int ret;
+>> +
+>> +     buf->has_data = false;
+>> +
+>> +     ret = bq27xxx_write(di, BQ27XXX_DM_CLASS, buf->class, true);
+>> +     if (ret < 0)
+>> +             goto out;
+>> +
+>> +     ret = bq27xxx_write(di, BQ27XXX_DM_BLOCK, buf->block, true);
+>> +     if (ret < 0)
+>> +             goto out;
+>> +
+>> +     BQ27XXX_MSLEEP(1);
+>> +
+>> +     ret = bq27xxx_read_block(di, BQ27XXX_DM_DATA, buf->data, BQ27XXX_DM_SZ);
+>> +     if (ret < 0)
+>> +             goto out;
+>> +
+>> +     ret = bq27xxx_read(di, BQ27XXX_DM_CKSUM, true);
+>> +     if (ret < 0)
+>> +             goto out;
+>> +
+>> +     if ((u8)ret != bq27xxx_battery_checksum_dm_block(buf)) {
+>> +             ret = -EINVAL;
+>> +             goto out;
 >> +     }
 >> +
->> +     msg.buf = data;
->> +     msg.addr = client->addr;
->> +     msg.flags = 0;
+>> +     buf->has_data = true;
+>> +     buf->dirty = false;
 >> +
->> +     ret = i2c_transfer(client->adapter, &msg, 1);
->> +     if (ret < 0)
->> +             return ret;
->> +     if (ret != 1)
->> +             return -EINVAL;
 >> +     return 0;
+>> +
+>> +out:
+>> +     dev_err(di->dev, "bus error reading chip memory: %d\n", ret);
+>> +     return ret;
 >> +}
 >> +
->> +static int bq27xxx_battery_i2c_bulk_read(struct bq27xxx_device_info *di, u8 reg,
->> +                                      u8 *data, int len)
+>> +static int bq27xxx_battery_set_cfgupdate(struct bq27xxx_device_info *di, u16 state)
 >> +{
->> +     struct i2c_client *client = to_i2c_client(di->dev);
+>> +     const int limit = 100;
+>> +     int ret, try = limit;
+>> +
+>> +     ret = bq27xxx_write(di, BQ27XXX_REG_CTRL,
+>> +                         state ? BQ27XXX_SET_CFGUPDATE : BQ27XXX_SOFT_RESET,
+>> +                         false);
+>> +     if (ret < 0)
+>> +             goto out;
+>> +
+>> +     do {
+>> +             BQ27XXX_MSLEEP(25);
+>> +             ret = di->bus.read(di, di->regs[BQ27XXX_REG_FLAGS], false);
+>> +             if (ret < 0)
+>> +                     goto out;
+>> +     } while ((ret & BQ27XXX_FLAG_CFGUP) != state && --try);
+>> +
+>> +     if (!try) {
+>> +             dev_err(di->dev, "timed out waiting for cfgupdate flag %d\n", !!state);
+>> +             return -EINVAL;
+>> +     }
+>> +
+>> +     if (limit-try > 3)
+>> +             dev_warn(di->dev, "cfgupdate %d, retries %d\n", !!state, limit-try);
+>> +
+>> +     return 0;
+>> +
+>> +out:
+>> +     dev_err(di->dev, "bus error on %s: %d\n", state ? "set_cfgupdate" : "soft_reset", ret);
+>> +     return ret;
+>> +}
+>> +
+>> +static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
+>> +                                       struct bq27xxx_dm_buf *buf)
+>> +{
+>> +     bool cfgup = di->chip == BQ27421; /* assume group supports cfgupdate */
 >> +     int ret;
 >> +
->> +     if (!client->adapter)
->> +             return -ENODEV;
+>> +     if (!buf->dirty)
+>> +             return 0;
 >> +
->> +     ret = i2c_smbus_read_i2c_block_data(client, reg, len, data);
+>> +     if (cfgup) {
+>> +             ret = bq27xxx_battery_set_cfgupdate(di, BQ27XXX_FLAG_CFGUP);
+>> +             if (ret < 0)
+>> +                     return ret;
+>> +     }
+>> +
+>> +     ret = bq27xxx_write(di, BQ27XXX_DM_CTRL, 0, true);
 >> +     if (ret < 0)
->> +             return ret;
->> +     if (ret != len)
->> +             return -EINVAL;
+>> +             goto out;
+>> +
+>> +     ret = bq27xxx_write(di, BQ27XXX_DM_CLASS, buf->class, true);
+>> +     if (ret < 0)
+>> +             goto out;
+>> +
+>> +     ret = bq27xxx_write(di, BQ27XXX_DM_BLOCK, buf->block, true);
+>> +     if (ret < 0)
+>> +             goto out;
+>> +
+>> +     BQ27XXX_MSLEEP(1);
+>> +
+>> +     ret = bq27xxx_write_block(di, BQ27XXX_DM_DATA, buf->data, BQ27XXX_DM_SZ);
+>> +     if (ret < 0)
+>> +             goto out;
+>> +
+>> +     ret = bq27xxx_write(di, BQ27XXX_DM_CKSUM,
+>> +                         bq27xxx_battery_checksum_dm_block(buf), true);
+>> +     if (ret < 0)
+>> +             goto out;
+>> +
+>> +     /* DO NOT read BQ27XXX_DM_CKSUM here to verify it! That may cause NVM
+>> +      * corruption on the '425 chip (and perhaps others), which can damage
+>> +      * the chip. See TI bqtool for what not to do:
+>
+> The bqtool does work, it even says delay needs to be long enough.
+
+It doesn't say the result is catastrophic if the delay isn't
+sufficient. It does increase the delay and retry on failure, implying
+that the starting value is flexible.
+
+>> +      * http://git.ti.com/bms-linux/bqtool/blobs/master/gauge.c#line328
+>> +      */
+>> +
+>> +     if (cfgup) {
+>> +             BQ27XXX_MSLEEP(1);
+>> +             ret = bq27xxx_battery_set_cfgupdate(di, 0);
+>> +             if (ret < 0)
+>> +                     return ret;
+>> +     } else {
+>> +             BQ27XXX_MSLEEP(100); /* flash DM updates in <100ms */
+>> +     }
+>> +
+>> +     buf->dirty = false;
+>> +
 >> +     return 0;
+>> +
+>> +out:
+>> +     if (cfgup)
+>> +             bq27xxx_battery_set_cfgupdate(di, 0);
+>> +
+>> +     dev_err(di->dev, "bus error writing chip memory: %d\n", ret);
+>> +     return ret;
 >> +}
 >> +
->> +static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
->> +                                       u8 reg, u8 *data, int len)
->> +{
->> +     struct i2c_client *client = to_i2c_client(di->dev);
->> +     struct i2c_msg msg;
->> +     u8 buf[33];
->> +     int ret;
->> +
->> +     if (!client->adapter)
->> +             return -ENODEV;
->> +
->> +     buf[0] = reg;
->> +     memcpy(&buf[1], data, len);
->> +
->> +     msg.buf = buf;
->> +     msg.addr = client->addr;
->> +     msg.flags = 0;
->> +     msg.len = len + 1;
->> +
->> +     ret = i2c_transfer(client->adapter, &msg, 1);
->> +     if (ret < 0)
->> +             return ret;
->> +     if (ret != 1)
->> +             return -EINVAL;
->> +     return 0;
->> +}
->> +
->>  static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
->>                                    const struct i2c_device_id *id)
->>  {
->> @@ -95,7 +171,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
->>       di->dev = &client->dev;
->>       di->chip = id->driver_data;
->>       di->name = name;
->> +
->>       di->bus.read = bq27xxx_battery_i2c_read;
->> +     di->bus.write = bq27xxx_battery_i2c_write;
->> +     di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
->> +     di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
->>
->>       ret = bq27xxx_battery_setup(di);
->>       if (ret)
+>>  /*
+>>   * Return the battery State-of-Charge
+>>   * Or < 0 if something fails.
 >> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
->> index b312bce..c3369fa 100644
+>> index c3369fa..b1defb8 100644
 >> --- a/include/linux/power/bq27xxx_battery.h
 >> +++ b/include/linux/power/bq27xxx_battery.h
->> @@ -40,6 +40,9 @@ struct bq27xxx_platform_data {
->>  struct bq27xxx_device_info;
->>  struct bq27xxx_access_methods {
->>       int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
->> +     int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
->> +     int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
->> +     int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
->>  };
->>
->>  struct bq27xxx_reg_cache {
+>> @@ -64,6 +64,7 @@ struct bq27xxx_device_info {
+>>       int id;
+>>       enum bq27xxx_chip chip;
+>>       const char *name;
+>> +     u32 unseal_key;
+>>       struct bq27xxx_access_methods bus;
+>>       struct bq27xxx_reg_cache cache;
+>>       int charge_design_full;
 >>
