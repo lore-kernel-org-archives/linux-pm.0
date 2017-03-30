@@ -1,73 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC/RFT][PATCH] cpufreq: schedutil: Reduce frequencies slower
-Date: Thu, 30 Mar 2017 23:36:41 +0200
-Message-ID: <1514608.eWxQqcMBcc@aspire.rjw.lan>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCHv3] power: supply: cpcap-charger: Add minimal CPCAP PMIC
+ battery charger
+Date: Thu, 30 Mar 2017 18:24:02 -0500
+Message-ID: <20170330232402.o4jslzlw3kgfnjqz@rob-hp-laptop>
+References: <20170327032513.22890-1-tony@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, John <john.ettedgui@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:34784 "EHLO
+        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751210AbdC3XYE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 19:24:04 -0400
+Content-Disposition: inline
+In-Reply-To: <20170327032513.22890-1-tony@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Sun, Mar 26, 2017 at 08:25:13PM -0700, Tony Lindgren wrote:
+> The custom CPCAP PMIC used on Motorola phones such as Droid 4 has a
+> USB battery charger. It can optionally also have a companion chip that
+> is used for wireless charging.
+> 
+> The charger on CPCAP also can feed VBUS for the USB host mode. This
+> can be handled by the existing kernel phy_companion interface.
+> 
+> Cc: devicetree@vger.kernel.org
+> Cc: Marcel Partap <mpartap@gmx.net>
+> Cc: Michael Scott <michael.scott@linaro.org>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> ---
+> 
+> Changes since v2:
+> 
+> - Update binding based on comments by Sebastian Reichel <sre@kernel.org>
+> 
+> - Drop "motorola,cpcap-charger" compatible for now as this seems specific
+>   to the motorola-mapphone
+> 
+> - Update Kconfig for "depends on IIO" and "default MFD_CPCAP"
+> 
+> Changes since v1:
+> 
+> - Fix scaling of IIO values as pointed out by Sebastian Reichel
+>   <sre@kernel.org>
+> 
+> - Use iio_read_channel_processed() instead of iio_read_channel_scaled()
+>   as changed in the v2 of the ADC driver
+> 
+> - Add GPL v2 license header
+> 
+> ---
+>  .../bindings/power/supply/cpcap-charger.txt        |  38 ++
 
-The schedutil governor reduces frequencies too fast in some
-situations which cases undesirable performance drops to
-appear.
+Acked-by: Rob Herring <robh@kernel.org>
 
-To address that issue, make schedutil reduce the frequency slower by
-setting it to the average of the value chosen during the previous
-iteration of governor computations and the new one coming from its
-frequency selection formula.
-
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=194963
-Reported-by: John <john.ettedgui@gmail.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-This addresses a practical issue, but one in the "responsiveness" or
-"interactivity" category which is quite hard to represent quantitatively.
-
-As reported by John in BZ194963, schedutil does not ramp up P-states quickly
-enough which causes audio issues to appear in his gaming setup.  At least it
-evidently is worse than ondemand in this respect and the patch below helps.
-
-The patch essentially repeats the trick added some time ago to the load-based
-P-state selection algorithm in intel_pstate, which allowed us to make it viable
-for performance-oriented users, and which is to reduce frequencies at a slower
-pace.
-
-The reason why I chose the average is because it is computationally cheap
-and pretty much the max reasonable slowdown and the idea is that in case
-there's something about to run that we don't know about yet, it is better to
-stay at a higher level for a while more to avoid having to get up from the floor
-every time.
-
-But technically speaking it is a filter. :-)
-
-So among other things I'm wondering if that leads to substantial increases in
-energy consumption anywhere.
-
-Thanks,
-Rafael
-
----
- kernel/sched/cpufreq_schedutil.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-===================================================================
---- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-+++ linux-pm/kernel/sched/cpufreq_schedutil.c
-@@ -101,6 +101,9 @@ static void sugov_update_commit(struct s
- 	if (sg_policy->next_freq == next_freq)
- 		return;
- 
-+	if (sg_policy->next_freq > next_freq)
-+		next_freq = (sg_policy->next_freq + next_freq) >> 1;
-+
- 	sg_policy->next_freq = next_freq;
- 	sg_policy->last_freq_update_time = time;
- 
+>  drivers/power/supply/Kconfig                       |   8 +
+>  drivers/power/supply/Makefile                      |   1 +
+>  drivers/power/supply/cpcap-charger.c               | 681 +++++++++++++++++++++
+>  4 files changed, 728 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/cpcap-charger.txt
+>  create mode 100644 drivers/power/supply/cpcap-charger.c
