@@ -1,101 +1,205 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: Preventing PM from suspending device
-Date: Thu, 30 Mar 2017 18:44:20 +0200
-Message-ID: <CAPDyKFqP2YO-f-L3+hCp8H32c5L5MBHcXuisA9iy8HwtgeAU+g@mail.gmail.com>
-References: <20170109172247.GI29854@bigcity.dyn.berto.se> <CAPDyKFq0pbk3=Ne2wE9b62g+tCzNrT6Mm-5H1C+0obgJmTQSzw@mail.gmail.com>
- <CAMuHMdXhtJQ-1nt3gTvkAJZpZ1o=A4iz_67VKZox5jSBOxN3oQ@mail.gmail.com>
- <CAPDyKFqWEzMSTkz+pzXckXebzr8WH4dDHOE38OFX+w771J5ZEA@mail.gmail.com> <20170329192827.GI24709@bigcity.dyn.berto.se>
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: Re: [PATCH v6 1/4] clk: Add support for runtime PM
+Date: Thu, 30 Mar 2017 10:11:13 -0700
+Message-ID: <149089387341.31513.7531874072502656432@resonance>
+References: <1490182543-28550-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170322113554eucas1p27471f0de278c55d5dce7fdf120395e09@eucas1p2.samsung.com>
+ <1490182543-28550-2-git-send-email-m.szyprowski@samsung.com>
+ <149081897388.31513.7062843004022908296@resonance>
+ <75509e0f-26cd-52e7-8c71-b004ab6abc81@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f50.google.com ([209.85.213.50]:36223 "EHLO
-        mail-vk0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932919AbdC3QoW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 12:44:22 -0400
-Received: by mail-vk0-f50.google.com with SMTP id s68so61517000vke.3
-        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 09:44:21 -0700 (PDT)
-In-Reply-To: <20170329192827.GI24709@bigcity.dyn.berto.se>
+Received: from mail-pg0-f54.google.com ([74.125.83.54]:34608 "EHLO
+        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933024AbdC3RLX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 13:11:23 -0400
+Received: by mail-pg0-f54.google.com with SMTP id 21so45816128pgg.1
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 10:11:22 -0700 (PDT)
+In-Reply-To: <75509e0f-26cd-52e7-8c71-b004ab6abc81@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 29 March 2017 at 21:28, Niklas S=C3=B6derlund
-<niklas.soderlund@ragnatech.se> wrote:
-> Hi Ulf,
->
-> On 2017-01-12 18:02:40 +0100, Ulf Hansson wrote:
->> On 12 January 2017 at 08:10, Geert Uytterhoeven <geert@linux-m68k.org> w=
-rote:
->> > Hi Ulf,
->> >
->> > On Thu, Jan 12, 2017 at 12:19 AM, Ulf Hansson <ulf.hansson@linaro.org>=
- wrote:
->> >> On 9 January 2017 at 18:22, Niklas S=C3=B6derlund
->> >> <niklas.soderlund@ragnatech.se> wrote:
->> >>> Hi Ulf and Linux PM,
->> >>>
->> >>> I have a question regarding if a driver can signal to the PM core th=
-at
->> >>> it should not be suspended from its struct dev_pm_ops suspend callba=
-ck.
->> >>
->> >> No. The driver/subsystem needs to deal this.
->> >>
->> >>> My use-case is the sh_eth driver which I have added Wake-on-Lan supp=
-ort
->> >>> to, see [1]. In this driver I need to prevent the PM core to disable=
- the
->> >>> module clock to the device if WoL is enabled. Currently I call
->> >>> clk_enable()/clk_disable() from the suspend/resume callbacks to modi=
-fy
->> >>> the usage count of the clock to prevent the clock from being switche=
-d
->> >>> off by PM. This do not feel like the best solution to my problem.
->> >>
->> >> I am not sure I get this. Is someone else than the driver performing
->> >> clk gateing/un-gating of the same clock?
->> >>>
->> >>> Is there a more generic way to let PM know that I'm fine with the sy=
-stem
->> >>> being suspended and I have suspended as much as I can but I'm a wake=
- up source
->> >>> so could please not switch of my clock and power domain?
->> >>
->> >> Seems like a quite common issue, but before we go into more details,
->> >> are you using genpd as the power domain? If not, what?
->> >
->> > The Ethernet device is part of a PM Domain, hence it's power-managed b=
-y
->> > genpd.
->> > On most SoCs, that PM Domain is a clock domain, so Runtime PM and syst=
-em
->> > suspend disable the device's module clock, the latter breaking WoL.
->> > Calling clk_enable() from the suspend callback works around that.
->> > On some SoCs, that PM Domain is both a clock domain and a power domain=
-.
->> > Calling clk_enable() from the suspend callback is not sufficient here,=
- but
->> > fortunately the power domain stays powered for another reason (it cont=
-ains
->> > the memory controller).
->>
->> Thanks for the additional information, very useful.
->>
->> Allow me to think of this a little bit, before I give any further
->> suggestions. Indeed a very interesting use-case, well worth to think
->> more about! :-)
->
-> I'm curious if you have had the opportunity to think about this. If not
-> no rush, I'm just checking in :-)
+Quoting Marek Szyprowski (2017-03-30 00:24:15)
+> Hi Michael,
+> =
 
-Yes I have! :-) It's soon reaching my top of my TODO list.
+> On 2017-03-29 22:22, Michael Turquette wrote:
+> > Quoting Marek Szyprowski (2017-03-22 04:35:40)
+> >> Registers for some clocks might be located in the SOC area, which are =
+under the
+> >> power domain. To enable access to those registers respective domain ha=
+s to be
+> >> turned on. Additionally, registers for such clocks will usually loose =
+its
+> >> contents when power domain is turned off, so additional saving and res=
+toring of
+> >> them might be needed in the clock controller driver.
+> >>
+> >> This patch adds basic infrastructure in the clocks core to allow imple=
+menting
+> >> driver for such clocks under power domains. Clock provider can supply a
+> >> struct device pointer, which is the used by clock core for tracking an=
+d managing
+> >> clock's controller runtime pm state. Each clk_prepare() operation
+> >> will first call pm_runtime_get_sync() on the supplied device, while
+> >> clk_unprepare() will do pm_runtime_put_sync() at the end.
+> >>
+> >> Additional calls to pm_runtime_get/put functions are required to ensur=
+e that any
+> >> register access (like calculating/changing clock rates and unpreparing=
+/disabling
+> >> unused clocks on boot) will be done with clock controller in runtime r=
+esumend
+> >> state.
+> > The above is a bit confusing. Is clk_prepare really special? It seems to
+> > me that every single clk_ops callback will need this?
+> =
 
-I realized that thinking isn't sufficient, I need to do some
-prototyping to convince myself about the best approach.
+> clk_prepare/unprepare are special, because they allow sleeping, so they =
 
-Sorry for the delay!
+> are natural
+> candidates for the place for calling runtime PM operations. =
 
-Br
-Uffe
+> clk_enable()/disable()
+> is called under a spinlock, so runtime pm cannot be called efficiently =
+
+> there, but
+> core guarantees that they are called after clk_prepare(), so accessing =
+
+> hw registers
+> is safe. The only remaining calls are not guaranteed to be called always =
+
+> after
+> clk_prepare(), so those additional calls and checks in runtime pm are =
+
+> needed there.
+
+Right, so any call that holds prepare_lock and might touch the hardware
+needs to first call pm_runtime_get_sync.
+
+> =
+
+> > That leads to my second question: why put this in the clk core? Can the
+> > clk provider driver simply add pm_runtime_{get,put} calls into its
+> > clk_ops callbacks instead? The clk core does not directly touch hardware
+> > (e.g. reading registers) so putting the pm runtime calls into the
+> > provider callbacks should be sufficient.
+> =
+
+> In theory is should be possible to duplicate all kind of clock build bloc=
+ks
+> (gates, muxes, dividers, ...) with additional runtime pm calls. This =
+
+> would however
+> end in much more code and a bit more complicated locking. Implementing =
+
+> it in clk
+> core made the code simpler. It also turned out that runtime pm =
+
+> integration is
+> needed for more that a single clock provider: besides Samsung SoCs =
+
+> (Exynos 5433
+> and newer, Exynos 4412 ISP, Exynos Audio Subsystem, hacks in Exynos 542x =
+
+> can be
+> also replaced by runtime PM calls), Ulf mentioned that exactly similar =
+
+> pattern
+> is used for some UX500 SoCs (STE). More will probably come once the =
+
+> feature is
+> in, because for now such drivers simply forces runtime active state as a
+> workaround or don't instantiate related power domains at all.
+
+I agree with the above, but I'm also wondering about the folks that use
+regmap internally to their own clock provider drivers. I guess they will
+have the option to either do their own thing or use this framework-level
+solution.
+
+I've started reviewing the code itself and will respond to those mails
+separately.
+
+Thanks,
+Mike
+
+> =
+
+> It is not that uncommon to have runtime PM integrated in the framework =
+
+> (examples:
+> mmc, scsi). Please not that this is optional for clock providers - if =
+
+> they don't
+> enable runtime PM for the provided clock controller device during clock
+> registration, the clock core will behave exactly the same way as now.
+> =
+
+> >> When one wants to register clock controller, which make use of this fe=
+ature, he
+> >> has to:
+> >> 1. Provide a struct device to the core when registering the provider.
+> >> 2. Ensure to enable runtime PM for that device before registering cloc=
+ks.
+> >> 3. Make sure that the runtime PM status of the controller device refle=
+cts
+> >>     the HW state.
+> > Third question: is there a case where more than one device is required?
+> > Is is possible that a single pm_runtime_get call against a single device
+> > will not be enough for some clk provider drivers? If so then this
+> > solution does not scale very well and the clk provider driver will have
+> > to implement this in the clk_ops callbacks (as I mentioned above in my
+> > second question).
+> =
+
+> This is a generic question about runtime PM. There are various methods to
+> model hardware relations to control pm/runtime pm state of a set of devic=
+es:
+> child-parent-bus relations (setting child to active state also activates a
+> parent), gen_pd power domains and sub-domains and recently merged device =
+pm
+> links, which allows to model relations across the typical child-parent tr=
+ee
+> hierarchy. IMHO device core pm related framework provides enough features=
+ to
+> solve the case when one needs to control more than one device - what is
+> worth to mention - in all cases the client only need to call pm_runtime
+> funtions on the ONE leaf device, everything else will be handled by pm co=
+re.
+> =
+
+> > Fourth & final question: I'm under the impression that pm runtime calls
+> > be be nested and re-enter, but I want to make sure (Ulf?). For instance
+> > it is highly likely that this new feature would cause something like:
+> >
+> > pm_runtime_get()              - called by random driver
+> > -> clk_prepare_enable()       - genpd enables functioal clocks
+> >     -> pm_runtime_get()        - called by clk_pm_runtime_get in clk co=
+re
+> >        -> clk_prepare_enable() - genpd enables interface or bus clocks
+> >
+> > I guess this is safe from the pm_runtime_get/genpd perspective, but want
+> > to make sure first.
+> =
+
+> Yes, this will work fine after recent fixes. Tested with Exynos IIS ASoC
+> driver (which is also a clock provider), which in turn is a client for
+> Exynos Audio Subsystem clock provider.
+> =
+
+> > Thanks,
+> =
+
+>  >> [...]
+> =
+
+> Best regards
+> -- =
+
+> Marek Szyprowski, PhD
+> Samsung R&D Institute Poland
+>=20
