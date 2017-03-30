@@ -1,32 +1,42 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 194963] schedutil governor causes audio problem in game
-Date: Thu, 30 Mar 2017 14:24:34 +0000
-Message-ID: <bug-194963-137361-S3Pa0Adq4a@https.bugzilla.kernel.org/>
-References: <bug-194963-137361@https.bugzilla.kernel.org/>
+From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Subject: How binding of cpu cooling dev with tzd works when using
+ thermal_zone_of_.... functions
+Date: Thu, 30 Mar 2017 16:38:45 +0200
+Message-ID: <CAHKzcEPTkrxvKT1_AgAMD6ZdpXnH3_hq6HoZ4gjEaFb20J0VBg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:56518 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S933693AbdC3OYr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 10:24:47 -0400
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 3791D284E7
-        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 14:24:46 +0000 (UTC)
-Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id E2634284E7
-        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 14:24:45 +0000 (UTC)
-In-Reply-To: <bug-194963-137361@https.bugzilla.kernel.org/>
+Received: from mail-wr0-f175.google.com ([209.85.128.175]:33114 "EHLO
+        mail-wr0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751084AbdC3Oj1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 10:39:27 -0400
+Received: by mail-wr0-f175.google.com with SMTP id w43so63546850wrb.0
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 07:39:26 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
+To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=194963
+Hi,
 
---- Comment #17 from Rafael J. Wysocki (rjw@rjwysocki.net) ---
-Cool, thanks!
+Recently, I started to work with thermal framework and I write a
+thermal driver. I did it, say normal way,  with
+thermal_zone_device_register() + cpufreq_cooling_register(), but now I
+want to define complete thermal zone with trips and cooling maps in
+DT.
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+I use  devm_thermal_zone_of_sensor_register() which works nice, but I
+can see it does not register a cpu cooling device. I assume
+intentionally.  Even if I  cpufreq_cooling_register as in a normal way
+before devm_thermal_zone_of_sensor_register() in the probe(). I cannot
+see it binds tz with cooling dev as I assume bind cb is missing in
+thermal_zone_of_device_ops struct.
+
+How  should I bind cpu cooling dev  with thermal zone if I use
+devm_thermal_zone_of_sensor_register() ?
+
+
+Any help appreciated.
+
+Thanks,
+
+/Waldek
