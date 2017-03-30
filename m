@@ -1,59 +1,82 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal management updates for v4.11-rc5
-Date: Thu, 30 Mar 2017 10:50:09 +0800
-Message-ID: <1490842209.2347.9.camel@intel.com>
+Subject: Re: [BUG] v4.11-rc1: CPUFREQ Circular locking dependency
+Date: Thu, 30 Mar 2017 10:51:08 +0800
+Message-ID: <1490842268.2347.10.camel@intel.com>
+References: <20170310150218.GW21222@n2100.armlinux.org.uk>
+         <CAJZ5v0jGRH_hwvvm9OLsaYgbghqWKOke9PyGNnkvP_ZiMqAxSw@mail.gmail.com>
+         <BY2PR21MB00362E60448FD2E00C120FFCCB200@BY2PR21MB0036.namprd21.prod.outlook.com>
+         <BY2PR21MB00361C512E03B09DBCE715D3CB200@BY2PR21MB0036.namprd21.prod.outlook.com>
+         <20170310234325.GB21222@n2100.armlinux.org.uk>
+         <1489373088.5841.15.camel@intel.com>
+         <20170329175100.GD7909@n2100.armlinux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:3764 "EHLO mga04.intel.com"
+Received: from mga14.intel.com ([192.55.52.115]:33472 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752733AbdC3CuN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 Mar 2017 22:50:13 -0400
+        id S1754233AbdC3CvM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 Mar 2017 22:51:12 -0400
+In-Reply-To: <20170329175100.GD7909@n2100.armlinux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Russell King - ARM Linux <linux@armlinux.org.uk>
+Cc: Matthew Wilcox <mawilcox@microsoft.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi, Linus,
+On Wed, 2017-03-29 at 18:51 +0100, Russell King - ARM Linux wrote:
+> On Mon, Mar 13, 2017 at 10:44:48AM +0800, Zhang Rui wrote:
+> > 
+> > On Fri, 2017-03-10 at 23:43 +0000, Russell King - ARM Linux wrote:
+> > > 
+> > > On Fri, Mar 10, 2017 at 06:33:28PM +0000, Matthew Wilcox wrote:
+> > > > 
+> > > > 
+> > > > From cd5401d81633d5e48e39d67d4e65156e6759537e Mon Sep 17
+> > > > 00:00:00
+> > > > 2001
+> > > > From: Matthew Wilcox <mawilcox@microsoft.com>
+> > > > Date: Fri, 10 Mar 2017 13:22:53 -0500
+> > > > Subject: [PATCH] thermal: Fix potential deadlock in cpu_cooling
+> > > > 
+> > > > I expanded the scope of cooling_list_lock a little too far; it
+> > > > was
+> > > > not just covering cpufreq_dev_count, it was also covering the
+> > > > calls
+> > > > to cpufreq_register_notifier() and
+> > > > cpufreq_unregister_notifier().
+> > > > Since cooling_list_lock is also used within
+> > > > cpufreq_thermal_notifier(),
+> > > > lockdep reports a potential deadlock.  I don't think that's
+> > > > actually
+> > > > possible, but it's easy enough to make it impossible by testing
+> > > > the
+> > > > condition under cooling_list_lock and dropping the lock before
+> > > > calling
+> > > > cpufreq_register_notifier().
+> > > > 
+> > > > As a bonus, I noticed that cpufreq_dev_count is only used for
+> > > > the
+> > > > purpose
+> > > > of knowing whether this is the first or last cooling device
+> > > > registered,
+> > > > and we know that anyway because we know whether the list
+> > > > transitioned
+> > > > between empty and not-empty.  So we can delete that variable
+> > > > too.
+> > > > 
+> > > > Fixes: ae606089621ef0349402cfcbeca33a82abbd0fd0
+> > > > Reported-by: Russell King <linux@armlinux.org.uk>
+> > > > Signed-off-by: Matthew Wilcox <mawilcox@microsoft.com>
+> > > Thanks Matthew, appears to solve the problem.
+> > > 
+> > > Tested-by: Russell King <rmk+kernel@armlinux.org.uk>
+> > > 
+> > patch applied.
+> It's almost three weeks, and it isn't in Linus' tree.  What's
+> happening
+> with this _fix_ for a regression that occured during the merge
+> window?
+> 
+Pull request just sent out, thanks for the reminder.
 
-Please pull from
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git for-rc
-
-to receive the latest Thermal Management updates for v4.11-rc5 with
-top-most commit 3ea3217cf91804be6ed9b368ef4ac7911eb1dadc:
-
-  thermal: cpu_cooling: Check OPP for errors (2017-03-13 10:06:55
-+0800)
-
-on top of commit 4495c08e84729385774601b5146d51d9e5849f81:
-
-  Linux 4.11-rc2 (2017-03-12 14:47:08 -0700)
-
-Specifics:
-
-- Fix a potential deadlock in cpu_cooling driver, which was introduced
-in 4.11-rc1. (Matthew Wilcox)
-
-- Fix the cpu_cooling and devfreq_cooling code to handle possible error
-return value from OPP calls, together with three minor fixes in the
-same patch series. (Viresh Kumar)
-
-thanks,
-rui
-
-----------------------------------------------------------------
-Matthew Wilcox (1):
-      thermal: Fix potential deadlock in cpu_cooling
-
-Viresh Kumar (5):
-      thermal: devfreq: Simplify expression
-      thermal: devfreq_cooling: Replace dev_warn with dev_err
-      thermal: devfreq: Check OPP for errors
-      thermal: cpu_cooling: Replace dev_warn with dev_err
-      thermal: cpu_cooling: Check OPP for errors
-
- drivers/thermal/cpu_cooling.c     | 39 ++++++++++++++++++++++++-------
---------
- drivers/thermal/devfreq_cooling.c | 14 ++++++++++----
- 2 files changed, 34 insertions(+), 19 deletions(-)
+-rui
