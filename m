@@ -1,84 +1,55 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2 0/8] thermal: ti-soc-thermal: Migrate slope/offset
- data to device tree
-Date: Wed, 29 Mar 2017 21:46:19 -0700
-Message-ID: <20170330044617.GA12753@localhost.localdomain>
-References: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
- <64ab8413-6cf1-864f-0550-9c8db59523f7@ti.com>
- <20170323205256.GO10760@atomide.com>
- <a410d37f-92e5-39b4-ac6c-158673163cb0@ti.com>
- <20170324142610.GX10760@atomide.com>
- <20170329043753.GB1596@localhost.localdomain>
- <5380b1bc-f3c6-a0ef-e458-7509d95d631e@ti.com>
+Subject: Re: [PATCH V11 6/6] thermal: bcm2835: add thermal driver for bcm2835
+ SoC
+Date: Wed, 29 Mar 2017 21:57:27 -0700
+Message-ID: <20170330045725.GA12995@localhost.localdomain>
+References: <1489356665-3175-1-git-send-email-stefan.wahren@i2se.com>
+ <1489356665-3175-7-git-send-email-stefan.wahren@i2se.com>
+ <20170329045807.GC2582@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:34545 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754233AbdC3E5b (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 00:57:31 -0400
 Content-Disposition: inline
-In-Reply-To: <5380b1bc-f3c6-a0ef-e458-7509d95d631e@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robh+dt@kernel.org, t-kristo@ti.com
+In-Reply-To: <20170329045807.GC2582@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, kernel@martin.sperl.org, Eric Anholt <eric@anholt.net>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, Mar 30, 2017 at 08:59:31AM +0530, Keerthy wrote:
+On Tue, Mar 28, 2017 at 09:58:09PM -0700, Eduardo Valentin wrote:
+> On Sun, Mar 12, 2017 at 10:11:05PM +0000, Stefan Wahren wrote:
+> > Add basic thermal driver for bcm2835 SoC.
+> > 
+> > This driver currently make sure that tsense HW block is set up
+> > correctly.
+> > 
+> > Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+> > Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+> > Acked-by: Eric Anholt <eric@anholt.net>
 > 
+> I see no issue with this driver at this point.
 > 
-> On Wednesday 29 March 2017 10:07 AM, Eduardo Valentin wrote:
-> > Keerthy,
-> > 
-> > On Fri, Mar 24, 2017 at 07:26:10AM -0700, Tony Lindgren wrote:
-> >> * Keerthy <j-keerthy@ti.com> [170323 20:29]:
-> >>>
-> >>>
-> >>> On Friday 24 March 2017 02:22 AM, Tony Lindgren wrote:
-> >>>> * Keerthy <j-keerthy@ti.com> [170321 20:45]:
-> >>>>>
-> >>>>>
-> >>>>> On Thursday 09 March 2017 01:35 PM, Keerthy wrote:
-> >>>>>> Currently the slope and offset values for calculating the
-> >>>>>> hot spot temperature of a particular thermal zone is part
-> >>>>>> of driver data. Pass them here instead and obtain the values
-> >>>>>> while of node parsing.
-> >>>>>>
-> >>>>>> Tested for the slope and constant values on DRA7-EVM, OMAP3-BEAGLE. 
-> > 
-> > Have you tried on boards that need negative coefficients?
-> > 
-> > https://patchwork.kernel.org/patch/9619577/
+> As I mentioned, the full series needs to go together. You either get an
+> Ack from OF maintainers, and I take the series, or you can add my
 > 
-> Yes. I retrieved the negative values nicely in the driver passed via
-> Device Tree.
+> Acked-by: Eduardo Valentin <edubezval@gmail.com>
 > 
-> > 
-> >>>>>
-> >>>>> Hi Eduardo,
-> >>>>>
-> >>>>> If the series looks okay could you please pull this?
-> >>>>
-> >>>> Also.. Are the dts changes safe for me to pick separately?
-> >>>
-> >>> Yes Tony they are safe to pulled separately.
-> >>
-> >> OK applying patches 1 - 5 of this series into omap-for-v4.12/dt-v2.
-> > 
-> > Keerthy,
-> > 
-> > The only thing I want you to confirm is if you are really getting the
-> > negative coefficients, because currently of-thermal reads the array
-> > using an OF helper that understands only unsigned. For this reason, I
-> > will be queueing your patches only for next merge window, not as a fix,
-> > not for rc's.
+> after fixing the small comment from Nobuhiro.
 > 
-> I am getting negative co-efficients.
 
-OK. That is odd. Might be simply we get still converted after simply
-assigning the unsigned to the int in the thermal device data struct.
-Anyways, still not for rc, given the amount of changes in the driver.
+Based on other drivers that require negative values, I assume patches 1
+and 2 of these series are needed, but more for enforcing the API, given
+that the current of-thermal driver still retrieves the negative values
+from DTB [1].
 
-> 
-> > 
-> > 
-> >>
-> >> Thanks,
-> >>
-> >> Tony
+A third option on top of what I suggested above is to split the series.
+Given that you could still get the proper coefficients
+with current of-thermal, I would suggest you to split this series into
+two (patches 1-2, 3-6) in your next version, so we avoid futher delays
+on the driver, while patches 1-2 waits for acks from OF side.
+
+[1] - https://patchwork.kernel.org/patch/9612613/
