@@ -1,217 +1,58 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v12.2 8/9] power: bq27xxx_battery: Enable chip data memory
- update for certain chips
-Date: Thu, 30 Mar 2017 13:14:48 -0700
-Message-ID: <CAKvHMgQf5dje8TjUjK29HLtOed2A0zVn64FjyFMorXJK22UbuA@mail.gmail.com>
-References: <20170330090216.12381-1-liam@networkimprov.net>
- <20170330090216.12381-5-liam@networkimprov.net> <f56356ed-089d-7722-39e7-93eaa97a8e3a@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFD PATCH 3/5] sched/cpufreq_schedutil: make worker kthread be SCHED_DEADLINE
+Date: Thu, 30 Mar 2017 22:22:24 +0200
+Message-ID: <2683548.WpoELJxfrb@aspire.rjw.lan>
+References: <20170324140900.7334-1-juri.lelli@arm.com> <1721120.3Th1GMboUn@aspire.rjw.lan> <cfffdfdd5251ae7921f65d1e0360a289@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f193.google.com ([209.85.223.193]:34035 "EHLO
-        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934787AbdC3UOu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 16:14:50 -0400
-Received: by mail-io0-f193.google.com with SMTP id n76so4062834ioe.1
-        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 13:14:49 -0700 (PDT)
-In-Reply-To: <f56356ed-089d-7722-39e7-93eaa97a8e3a@ti.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53430 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1754322AbdC3U2J (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 16:28:09 -0400
+In-Reply-To: <cfffdfdd5251ae7921f65d1e0360a289@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
+To: Vikram Mulukutla <markivx@codeaurora.org>, Mark Brown <broonie@kernel.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, Peter Zijlstra <peterz@infradead.org>, mingo@redhat.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, linux-kernel-owner@vger.kernel.org
 
-On Thu, Mar 30, 2017 at 5:58 AM, Andrew F. Davis <afd@ti.com> wrote:
-> On 03/30/2017 04:02 AM, Liam Breck wrote:
->> From: Liam Breck <kernel@networkimprov.net>
->>
->> Support data memory update of BQ27500, 545, 421, 425, 441, 621.
->>
->> Create IDs for for previously unID'd chips, to index arrays for unseal keys
->> and data memory register tables.
->>
->> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->> ---
->>  drivers/power/supply/bq27xxx_battery.c     | 73 +++++++++++++++++++++++++++++-
->>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 +++----
->>  include/linux/power/bq27xxx_battery.h      | 11 +++++
->>  3 files changed, 90 insertions(+), 10 deletions(-)
->>
->> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->> index 4c7a13e..70b8d1c 100644
->> --- a/drivers/power/supply/bq27xxx_battery.c
->> +++ b/drivers/power/supply/bq27xxx_battery.c
->> @@ -57,7 +57,7 @@
->>
->>  #include <linux/power/bq27xxx_battery.h>
->>
->> -#define DRIVER_VERSION               "1.2.0"
->> +#define DRIVER_VERSION               "1.3.0"
->>
->>  #define BQ27XXX_MANUFACTURER "Texas Instruments"
->>
->> @@ -894,6 +894,54 @@ static const char* bq27xxx_dm_reg_name[] = {
->>       [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
->>  };
->>
->> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
->> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
->> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
->> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
->> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
->> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
->> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
->> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
->> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
->> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
->> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
->> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
->> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
->> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
->> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
->> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
->> +     [BQ27500] = bq27500_dm_regs,
->> +     [BQ27545] = bq27545_dm_regs,
->> +     [BQ27421] = bq27421_dm_regs,
->> +     [BQ27425] = bq27425_dm_regs,
->> +     [BQ27441] = bq27421_dm_regs,
->> +     [BQ27621] = bq27621_dm_regs,
->> +};
->> +
->> +static u32 bq27xxx_unseal_keys[] = {
->> +     [BQ27500] = 0x04143672,
->> +     [BQ27545] = 0x04143672,
->> +     [BQ27421] = 0x80008000,
->> +     [BQ27425] = 0x04143672,
->> +     [BQ27441] = 0x80008000,
->> +     [BQ27621] = 0x80008000,
->> +};
->> +
->>
->>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
->>  {
->> @@ -1861,9 +1909,30 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>               .drv_data = di,
->>       };
->>
->> +     di->unseal_key = bq27xxx_unseal_keys[di->chip];
->> +     di->dm_regs = bq27xxx_dm_regs[di->chip];
->> +
->> +     switch(di->chip) {  /* translate members of categories */
->> +     case BQ2752X:
->> +             di->chip = BQ27510G3; break;
->> +     case BQ27531:
->> +             di->chip = BQ27530;   break;
->> +     case BQ27542:
->> +     case BQ27546:
->> +     case BQ27742:
->> +             di->chip = BQ27541;   break;
->> +     case BQ27425:
->> +     case BQ27441:
->> +     case BQ27621:
->> +             di->chip = BQ27421;   break;
->> +     default:
->> +             break;
->> +     }
->> +
->> +     di->regs = bq27xxx_regs[di->chip];
->> +
->>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
->>       mutex_init(&di->lock);
->> -     di->regs = bq27xxx_regs[di->chip];
->>
->>       psy_desc = devm_kzalloc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
->>       if (!psy_desc)
->> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
->> index a597221..0b11ed4 100644
->> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
->> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
->> @@ -230,7 +230,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>       { "bq27210", BQ27010 },
->>       { "bq27500", BQ2750X },
->>       { "bq27510", BQ2751X },
->> -     { "bq27520", BQ2751X },
->> +     { "bq27520", BQ2752X },
->>       { "bq27500-1", BQ27500 },
->>       { "bq27510g1", BQ27510G1 },
->>       { "bq27510g2", BQ27510G2 },
->> @@ -240,16 +240,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>       { "bq27520g3", BQ27520G3 },
->>       { "bq27520g4", BQ27520G4 },
->>       { "bq27530", BQ27530 },
->> -     { "bq27531", BQ27530 },
->> +     { "bq27531", BQ27531 },
->>       { "bq27541", BQ27541 },
->> -     { "bq27542", BQ27541 },
->> -     { "bq27546", BQ27541 },
->> -     { "bq27742", BQ27541 },
->> +     { "bq27542", BQ27542 },
->> +     { "bq27546", BQ27546 },
->> +     { "bq27742", BQ27742 },
->>       { "bq27545", BQ27545 },
->>       { "bq27421", BQ27421 },
->> -     { "bq27425", BQ27421 },
->> -     { "bq27441", BQ27421 },
->> -     { "bq27621", BQ27421 },
->> +     { "bq27425", BQ27425 },
->> +     { "bq27441", BQ27441 },
->> +     { "bq27621", BQ27621 },
->>       {},
->>  };
->>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
->> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
->> index 227eb08..014e59f 100644
->> --- a/include/linux/power/bq27xxx_battery.h
->> +++ b/include/linux/power/bq27xxx_battery.h
->> @@ -2,6 +2,7 @@
->>  #define __LINUX_BQ27X00_BATTERY_H__
->>
->>  enum bq27xxx_chip {
->> +     /* categories; index for bq27xxx_regs[] */
->>       BQ27000 = 1, /* bq27000, bq27200 */
->>       BQ27010, /* bq27010, bq27210 */
->>       BQ2750X, /* bq27500 deprecated alias */
->> @@ -18,6 +19,16 @@ enum bq27xxx_chip {
->>       BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
->>       BQ27545, /* bq27545 */
->>       BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
->> +
->> +     /* members of categories; translate these to category in _setup() */
->
-> These don't need to be separate from the others, these are valid chip
-> IDs, we may use another compatible ID for register array index right now
-> but these are not "categories".
+On Thursday, March 30, 2017 08:50:11 AM Vikram Mulukutla wrote:
+> 
+> > OK
+> > 
+> > So there are two pieces here.
+> > 
+> > One is that if we want *all* drivers to work with schedutil, we need to 
+> > keep
+> > the kthread for the ones that will never be reworked (because nobody 
+> > cares
+> > etc).  But then perhaps the kthread implementation may be left alone 
+> > (because
+> > nobody cares etc).
+> > 
+> > The second one is that there are drivers operating in-context that work 
+> > with
+> > schedutil already, so I don't see major obstacles to making more 
+> > drivers work
+> > that way.  That would be only a matter of reworking the drivers in 
+> > question.
+> > 
+> > Thanks,
+> > Rafael
+> 
+> There are some MSM platforms that do need a kthread and would love to 
+> use
+> schedutil. This is all mainly due to the point that Vincent raised; 
+> having
+> to actually wait for voltage transitions before clock switches. I can't
+> speak about the future, but that's the situation right now. Leaving the
+> kthread alone for now would be appreciated!
 
-The above were indeed treated like categories, as the I2C ID table
-mapped other chips to them. We could call them category|class
-"leaders" (prototypes? models? patterns?) instead.
+I was not arguing for removing the kthread (quite opposite rather).
 
-The below are not valid in di->chip, they must be converted. So it
-makes sense to group them.
+My point was that *if* it is viable to rework drivers to operate in-context,
+that would be the way to go IMO instead of messing up with the kthread thing.
 
->> +     BQ2752X, /* deprecated alias */
->> +     BQ27531,
->> +     BQ27542,
->> +     BQ27546,
->> +     BQ27742,
->> +     BQ27425,
->> +     BQ27441,
->> +     BQ27621,
->>  };
->>
->>  /**
->>
+Thanks,
+Rafael
