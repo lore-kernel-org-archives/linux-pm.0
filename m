@@ -1,45 +1,101 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v6 1/4] clk: Add support for runtime PM
-Date: Thu, 30 Mar 2017 18:29:04 +0200
-Message-ID: <CAPDyKFpugXy0c0nx7ThsfQ7w7H_ZoA-f=k=a0xfRVHtiY9rNdg@mail.gmail.com>
-References: <1490182543-28550-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170322113554eucas1p27471f0de278c55d5dce7fdf120395e09@eucas1p2.samsung.com>
- <1490182543-28550-2-git-send-email-m.szyprowski@samsung.com> <149081897388.31513.7062843004022908296@resonance>
+Subject: Re: Preventing PM from suspending device
+Date: Thu, 30 Mar 2017 18:44:20 +0200
+Message-ID: <CAPDyKFqP2YO-f-L3+hCp8H32c5L5MBHcXuisA9iy8HwtgeAU+g@mail.gmail.com>
+References: <20170109172247.GI29854@bigcity.dyn.berto.se> <CAPDyKFq0pbk3=Ne2wE9b62g+tCzNrT6Mm-5H1C+0obgJmTQSzw@mail.gmail.com>
+ <CAMuHMdXhtJQ-1nt3gTvkAJZpZ1o=A4iz_67VKZox5jSBOxN3oQ@mail.gmail.com>
+ <CAPDyKFqWEzMSTkz+pzXckXebzr8WH4dDHOE38OFX+w771J5ZEA@mail.gmail.com> <20170329192827.GI24709@bigcity.dyn.berto.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <149081897388.31513.7062843004022908296@resonance>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vk0-f50.google.com ([209.85.213.50]:36223 "EHLO
+        mail-vk0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932919AbdC3QoW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 12:44:22 -0400
+Received: by mail-vk0-f50.google.com with SMTP id s68so61517000vke.3
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 09:44:21 -0700 (PDT)
+In-Reply-To: <20170329192827.GI24709@bigcity.dyn.berto.se>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-[...]
-
+On 29 March 2017 at 21:28, Niklas S=C3=B6derlund
+<niklas.soderlund@ragnatech.se> wrote:
+> Hi Ulf,
 >
-> Fourth & final question: I'm under the impression that pm runtime calls
-> be be nested and re-enter, but I want to make sure (Ulf?). For instance
-> it is highly likely that this new feature would cause something like:
+> On 2017-01-12 18:02:40 +0100, Ulf Hansson wrote:
+>> On 12 January 2017 at 08:10, Geert Uytterhoeven <geert@linux-m68k.org> w=
+rote:
+>> > Hi Ulf,
+>> >
+>> > On Thu, Jan 12, 2017 at 12:19 AM, Ulf Hansson <ulf.hansson@linaro.org>=
+ wrote:
+>> >> On 9 January 2017 at 18:22, Niklas S=C3=B6derlund
+>> >> <niklas.soderlund@ragnatech.se> wrote:
+>> >>> Hi Ulf and Linux PM,
+>> >>>
+>> >>> I have a question regarding if a driver can signal to the PM core th=
+at
+>> >>> it should not be suspended from its struct dev_pm_ops suspend callba=
+ck.
+>> >>
+>> >> No. The driver/subsystem needs to deal this.
+>> >>
+>> >>> My use-case is the sh_eth driver which I have added Wake-on-Lan supp=
+ort
+>> >>> to, see [1]. In this driver I need to prevent the PM core to disable=
+ the
+>> >>> module clock to the device if WoL is enabled. Currently I call
+>> >>> clk_enable()/clk_disable() from the suspend/resume callbacks to modi=
+fy
+>> >>> the usage count of the clock to prevent the clock from being switche=
+d
+>> >>> off by PM. This do not feel like the best solution to my problem.
+>> >>
+>> >> I am not sure I get this. Is someone else than the driver performing
+>> >> clk gateing/un-gating of the same clock?
+>> >>>
+>> >>> Is there a more generic way to let PM know that I'm fine with the sy=
+stem
+>> >>> being suspended and I have suspended as much as I can but I'm a wake=
+ up source
+>> >>> so could please not switch of my clock and power domain?
+>> >>
+>> >> Seems like a quite common issue, but before we go into more details,
+>> >> are you using genpd as the power domain? If not, what?
+>> >
+>> > The Ethernet device is part of a PM Domain, hence it's power-managed b=
+y
+>> > genpd.
+>> > On most SoCs, that PM Domain is a clock domain, so Runtime PM and syst=
+em
+>> > suspend disable the device's module clock, the latter breaking WoL.
+>> > Calling clk_enable() from the suspend callback works around that.
+>> > On some SoCs, that PM Domain is both a clock domain and a power domain=
+.
+>> > Calling clk_enable() from the suspend callback is not sufficient here,=
+ but
+>> > fortunately the power domain stays powered for another reason (it cont=
+ains
+>> > the memory controller).
+>>
+>> Thanks for the additional information, very useful.
+>>
+>> Allow me to think of this a little bit, before I give any further
+>> suggestions. Indeed a very interesting use-case, well worth to think
+>> more about! :-)
 >
-> pm_runtime_get()              - called by random driver
-> -> clk_prepare_enable()       - genpd enables functioal clocks
->    -> pm_runtime_get()        - called by clk_pm_runtime_get in clk core
->       -> clk_prepare_enable() - genpd enables interface or bus clocks
->
-> I guess this is safe from the pm_runtime_get/genpd perspective, but want
-> to make sure first.
+> I'm curious if you have had the opportunity to think about this. If not
+> no rush, I'm just checking in :-)
 
-I noticed Marek's reply, which perhaps is sufficient. However, to
-clarify also from genpd and runtime PM point of view the re-entrant
-issue is safe and it is already quite commonly used.
+Yes I have! :-) It's soon reaching my top of my TODO list.
 
-For example, from a random driver's ->runtime_resume() callback
-clk_prepare_enable() is called. When such clock is managed behind a
-i2c interface the i2c controller also needs to be runtime resumed,
-meaning its driver calls pm_runtime_get_sync(), before it can serve
-the request and ungate the clock.
+I realized that thinking isn't sufficient, I need to do some
+prototyping to convince myself about the best approach.
 
-[...]
+Sorry for the delay!
 
-Kind regards
+Br
 Uffe
