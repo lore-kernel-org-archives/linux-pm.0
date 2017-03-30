@@ -1,93 +1,108 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH V5 3/9] kernel/cpu_pm: Add runtime PM support for CPUs
-Date: Wed, 29 Mar 2017 16:54:53 -0700
-Message-ID: <m2tw6b4p0y.fsf@baylibre.com>
-References: <1488573695-106680-1-git-send-email-lina.iyer@linaro.org>
-        <1488573695-106680-4-git-send-email-lina.iyer@linaro.org>
-        <CAPDyKFqXLzuge6+pQV-UzotENTV2gxZUCT6eU4CLtckdNZoYSw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 5/5] cpufreq: intel_pstate: Document the current behavior and user interface
+Date: Thu, 30 Mar 2017 02:19:09 +0200
+Message-ID: <1508495.qXATtFiRmu@aspire.rjw.lan>
+References: <2025489.DxMTzKos7o@aspire.rjw.lan> <001f01d2a6c3$ef7f0c00$ce7d2400$@net>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqXLzuge6+pQV-UzotENTV2gxZUCT6eU4CLtckdNZoYSw@mail.gmail.com>
-        (Ulf Hansson's message of "Tue, 14 Mar 2017 08:45:00 +0100")
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Lina Iyer <lina.iyer@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <001f01d2a6c3$ef7f0c00$ce7d2400$@net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Jonathan Corbet' <corbet@lwn.net>, 'Linux PM' <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+On Sunday, March 26, 2017 11:32:37 PM Doug Smythies wrote:
+> On 2017.03.22 16:32 Rafael J. Wysocki wrote:
+> 
+> I realize that there is tradeoff between a succinct and brief
+> document and having to write a full book, but I have a couple of
+> comments anyhow.
+> 
+> > Add a document describing the current behavior and user space
+> > interface of the intel_pstate driver in the RST format and
+> > drop the existing outdated intel_pstate.txt document.
+> 
+> ... [cut]...
+> 
+> > +The second variant of the ``powersave`` P-state selection algorithm, used in all
+> > +of the other cases (generally, on processors from the Core line, so it is
+> > +referred to as the "Core" algorithm), is based on the values read from the APERF
+> > +and MPERF feedback registers alone
+> 
+> And target pstate over the last sample interval.
 
-> On 3 March 2017 at 21:41, Lina Iyer <lina.iyer@linaro.org> wrote:
->> Notify runtime PM when the CPU is going to be powered off in the idle
->> state. This allows for runtime PM suspend/resume of the CPU as well as
->> its PM domain.
->>
->> Cc: Kevin Hilman <khilman@kernel.org>
->> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Fair enough.
 
-[...]
+> > and it does not really take CPU utilization
+> > +into account explicitly.  Still, it causes the CPU P-state to ramp up very
+> > +quickly in response to increased utilization which is generally desirable in
+> > +server environments.
+> 
+> It will only ramp up quickly if another CPU has already ramped up such that the
+> effective pstate is much higher than the target, giving a very very high "load"
+> (actually scaled_busy) see comments further down.
 
->> @@ -99,6 +102,7 @@ int cpu_pm_enter(void)
->>  {
->>         int nr_calls;
->>         int ret = 0;
->> +       struct device *dev = get_cpu_device(smp_processor_id());
->>
->>         read_lock(&cpu_pm_notifier_lock);
->>         ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
->> @@ -110,6 +114,10 @@ int cpu_pm_enter(void)
->>                 cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
->>         read_unlock(&cpu_pm_notifier_lock);
->>
->> +       /* Notify Runtime PM that we are suspending the CPU */
->> +       if (!ret && dev)
->> +               RCU_NONIDLE(pm_runtime_put_sync_suspend(dev));
->> +
->
-> I am trying to understand how the runtime PM usage count becomes
-> properly balanced.
->
-> I believe you could you end up first calling a
-> pm_runtime_put_sync_suspend(), without earlier having called
-> pm_runtime_get*(). I am not sure though, but perhaps you can
-> elaborate.
->
-> Anyway, in patch2/9, where you enable runtime PM there is only a call
-> to pm_runtime_set_active(), which doesn't increase the usage count. To
-> me, it seems like that change also needs a pm_runtime_get_noresume().
+I really wouldn't like to go into too much detail here.
 
-IIUC, the CPU hotplug callback below (cpu_pm_cpu_starting) will do the
-first _get_sync(), and I'm assuming that will happen before any of the
-CPU PM notifiers get called, so I think the usecount will always be at
-least 1 by the time any CPU PM callbacks happen.
+I'm about to write something along these lines:
 
-[...]
+"It does not really take CPU utilization into account explicitly, but as a rule it
+causes the CPU P-state to ramp up [...]".
 
->> +#ifdef CONFIG_HOTPLUG_CPU
->> +static int cpu_pm_cpu_dying(unsigned int cpu)
->> +{
->> +       struct device *dev = get_cpu_device(cpu);
->> +
->> +       if (dev)
->> +               pm_runtime_put_sync_suspend(dev);
->> +
->> +       return 0;
->> +}
->> +
->> +static int cpu_pm_cpu_starting(unsigned int cpu)
->> +{
->> +       struct device *dev = get_cpu_device(cpu);
->> +
->> +       if (dev)
->> +               pm_runtime_get_sync(dev);
->
-> I assume that according to my comment above, you somehow need to
-> compensate for either of the cases when CONFIG_HOTPLUG_CPU is set or
-> unset. Right?
+> ... [cut]...
+> 
+> > +Turbo P-states Support
+> > +======================
+> ...
+> > +Some processors allow multiple cores to be in turbo P-states at the same time,
+> > +but the maximum P-state that can be set for them generally depends on the number
+> > +of cores running concurrently.  The maximum turbo P-state that can be set for 3
+> > +cores at the same time usually is lower than the analogous maximum P-state for
+> > +2 cores, which in turn usually is lower than the maximum turbo P-state that can
+> > +be set for 1 core.  The one-core maximum turbo P-state is thus the maximum
+> > +supported one overall.
+> 
+> The above segment was retained because it is relevant to footnote 1 below.
+> 
+> ...[cut]...
+> 
+> > +For example, the default values of the PID controller parameters for the Sandy
+> > +Bridge generation of processors are
+> > +
+> > +| ``deadband`` = 0
+> > +| ``d_gain_pct`` = 0
+> > +| ``i_gain_pct`` = 0
+> > +| ``p_gain_pct`` = 20
+> > +| ``sample_rate_ms`` = 10
+> > +| ``setpoint`` = 97
+> > +
+> > +If the derivative and integral coefficients in the PID algorithm are both equal
+> > +to 0 (which is the case above), the next P-State value will be equal to:
+> > +
+> > +  ``current_pstate`` - ((``setpoint`` - ``current_load``) * ``p_gain_pct``)
+> > +
+> > +where ``current_pstate`` is the P-state currently set for the given CPU and
+> > +``current_load`` is the current load estimate for it based on the current values
+> > +of feedback registers.
+> 
+> While mentioned earlier, it should be emphasized again here that this
+> "current_load" might be, and very often is, very very different than
+> the actual load on the CPU. It can be as high as the ratio of the maximum
+> P state / minimum P state. I.E. for my older i7 processor it can be
+> 38/16 *100% = 237.5%. For more recent processors, that maximum can be much
+> higher. This is how this control algorithm can achieve a very rapid ramp
+> of pstate on a CPU that was previously idle, with these settings, and when
+> other CPUs were already active and ramped up.
 
-Right, if for some reason CONFIG_HOTPLUG_CPU=n, we'll have a problem
-where there is never an initial _get() so the usecount will be zero when
-CPU PM notifiers get called the first time.
+I actually copied this part from the existing intel_pstate.txt document and only
+edited it somewhat.  Now I realize that it really was not too accurate at all
+originally.
 
-Kevin
+I think I'll simply skip the entire example part of this section, as the original
+simply doesn't reflect the reality and I don't think it's particularly useful
+to try to describe it more accurately here.
+
+Thanks,
+Rafael
