@@ -1,52 +1,32 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFD PATCH 4/5] sched/cpufreq_schedutil: always consider all CPUs
- when deciding next freq
-Date: Thu, 30 Mar 2017 15:21:57 +0200
-Message-ID: <CAKfTPtC+FdARdK=TO_i=k_UrnZviwUb8rm_=9OW8yCXLRixMBA@mail.gmail.com>
-References: <20170324140900.7334-1-juri.lelli@arm.com> <20170324140900.7334-5-juri.lelli@arm.com>
- <2348394.hDdCk9fbgK@aspire.rjw.lan> <20170330085805.GF18960@e106622-lin>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 194963] schedutil governor causes audio problem in game
+Date: Thu, 30 Mar 2017 14:24:34 +0000
+Message-ID: <bug-194963-137361-S3Pa0Adq4a@https.bugzilla.kernel.org/>
+References: <bug-194963-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170330085805.GF18960@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, viresh kumar <viresh.kumar@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>, Luca Abeni <luca.abeni@santannapisa.it>, claudio@evidence.eu.com, Tommaso Cucinotta <tommaso.cucinotta@santannapisa.it>, bristot@redhat.com, Mathieu Poirier <mathieu.poirier@linaro.org>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.c>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:56518 "EHLO
+        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S933693AbdC3OYr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 10:24:47 -0400
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 3791D284E7
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 14:24:46 +0000 (UTC)
+Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id E2634284E7
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 14:24:45 +0000 (UTC)
+In-Reply-To: <bug-194963-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@kernel.org
 
-On 30 March 2017 at 10:58, Juri Lelli <juri.lelli@arm.com> wrote:
-> Hi,
->
-> On 30/03/17 00:41, Rafael J. Wysocki wrote:
->> On Friday, March 24, 2017 02:08:59 PM Juri Lelli wrote:
->> > No assumption can be made upon the rate at which frequency updates get
->> > triggered, as there are scheduling policies (like SCHED_DEADLINE) which
->> > don't trigger them so frequently.
->> >
->> > Remove such assumption from the code.
->>
->> But the util/max values for idle CPUs may be stale, no?
->>
->
-> Right, that might be a problem. A proper solution I think would be to
-> remotely update such values for idle CPUs, and I believe Vincent is
-> working on a patch for that.
+https://bugzilla.kernel.org/show_bug.cgi?id=194963
 
-Yes. I'm working on a patch that will regularly update the blocked
-load/utilization of idle CPU. This update will be done on a slow pace
-to make sure that utilization and load will be decayed regularly
+--- Comment #17 from Rafael J. Wysocki (rjw@rjwysocki.net) ---
+Cool, thanks!
 
->
-> As mid-term workarounds, changing a bit the current one, come to my
-> mind:
->
->  - consider TICK_NSEC (continue) only when SCHED_CPUFREQ_DL is not set
->  - remove CFS contribution (without triggering a freq update) when a CPU
->    enters IDLE; this might not work well, though, as we probably want
->    to keep in blocked util contribution for a bit
->
-> What you think is the way to go?
->
-> Thanks,
->
-> - Juri
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
