@@ -1,59 +1,67 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v3 3/4] i2c: core: Allow drivers to specify index for irq
- to get from of / ACPI
-Date: Thu, 30 Mar 2017 19:39:04 +0200
-Message-ID: <1935239d-fdd8-3917-9865-de389e6728e8@redhat.com>
-References: <20170325135550.22509-1-hdegoede@redhat.com>
- <20170325135550.22509-4-hdegoede@redhat.com>
- <1490530535.21738.31.camel@linux.intel.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH V11 6/6] thermal: bcm2835: add thermal driver for
+ bcm2835 SoC
+Date: Thu, 30 Mar 2017 21:11:41 +0200 (CEST)
+Message-ID: <1620097357.332334.1490901102005@email.1und1.de>
+References: <1489356665-3175-1-git-send-email-stefan.wahren@i2se.com>
+ <1489356665-3175-7-git-send-email-stefan.wahren@i2se.com>
+ <20170329045807.GC2582@localhost.localdomain>
+ <20170330045725.GA12995@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1490530535.21738.31.camel@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.187]:60926 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934538AbdC3TM0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 15:12:26 -0400
+In-Reply-To: <20170330045725.GA12995@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Frank Rowand <frowand.list@gmail.com>, kernel@martin.sperl.org, Eric Anholt <eric@anholt.net>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi,
+Hi Eduardo,
 
-Sorry for doing this in the middle of the thread, but this is the only
-mail I could find in my archives (I guess I delete mail to aggressively).
+> Eduardo Valentin <edubezval@gmail.com> hat am 30. März 2017 um 06:57 geschrieben:
+> 
+> 
+> On Tue, Mar 28, 2017 at 09:58:09PM -0700, Eduardo Valentin wrote:
+> > On Sun, Mar 12, 2017 at 10:11:05PM +0000, Stefan Wahren wrote:
+> > > Add basic thermal driver for bcm2835 SoC.
+> > > 
+> > > This driver currently make sure that tsense HW block is set up
+> > > correctly.
+> > > 
+> > > Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+> > > Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+> > > Acked-by: Eric Anholt <eric@anholt.net>
+> > 
+> > I see no issue with this driver at this point.
+> > 
+> > As I mentioned, the full series needs to go together. You either get an
+> > Ack from OF maintainers, and I take the series, or you can add my
+> > 
+> > Acked-by: Eduardo Valentin <edubezval@gmail.com>
+> > 
+> > after fixing the small comment from Nobuhiro.
+> > 
+> 
+> Based on other drivers that require negative values, I assume patches 1
+> and 2 of these series are needed, but more for enforcing the API, given
+> that the current of-thermal driver still retrieves the negative values
+> from DTB [1].
+> 
+> A third option on top of what I suggested above is to split the series.
+> Given that you could still get the proper coefficients
+> with current of-thermal, I would suggest you to split this series into
+> two (patches 1-2, 3-6) in your next version, so we avoid futher delays
+> on the driver, while patches 1-2 waits for acks from OF side.
 
-Anyways self-nack for this series, there are multiple issues with it:
+i revert patches #1, #2 and the slope value was still correct. So i will choose the third option and split the series.
 
-1) In hindsight the irq_index is a bad idea and instead we need a noirq
-flag in i2c_driver
+Thanks
+Stefan
 
-2) The i2c_acpi_new_device() function needs to have a board_info
-argument
-
-3) The cht_wc_fuel_gauge driver actually is a driver for the
-Maxim MAX17047 Fuel Gauge. After much poking and reading of
-the dsdt I've finally found out what the mysterious INT33FE
-ACPI device in the dsdt represents, here is a comment from
-a new platform/x86 driver I'm writing for it:
-
-/*
-  * Intel Cherry Trail ACPI INT33FE pseudo device driver
-  * Some Intel Cherry Trail based device which ship with Windows 10, have
-  * this weird INT33FE ACPI device with a CRS table with 4 I2cSerialBusV2
-  * resources, for 4 different chips attached to various i2c busses:
-  * 1. The Whiskey Cove pmic, which is also described by the INT34D3 ACPI device
-  * 2. Maxim MAX17047 Fuel Gauge Controller
-  * 3. FUSB300C USB Type-C Controller
-  * 4. PI3USB30532 USB switch
-  *
-  * So this driver is a stub / pseudo driver whose only purpose is to
-  * instantiate i2c-clients for chips 2 - 4, so that standard i2c drivers
-  * for these chips can bind to the them.
-  */
-
-So the plan is to have this stub driver instantiate an i2c client
-with an id of max17047 and then have a proper max17047 battery
-power-supply driver which will get bound to that i2c-client.
-
-Regards,
-
-Hans
+> 
+> [1] - https://patchwork.kernel.org/patch/9612613/
