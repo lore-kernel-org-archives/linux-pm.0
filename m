@@ -1,61 +1,76 @@
-From: Oleksij Rempel <ore@pengutronix.de>
-Subject: proper power off implementation for iMX6 with external pmic
-Date: Thu, 30 Mar 2017 13:02:54 +0200
-Message-ID: <d8d013f7-9417-c7c9-5f60-dd33465e9b42@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:57549 "EHLO
-        metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S932558AbdC3LC5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 07:02:57 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Subject: [PATCH] i2c: designware: Do nothing in system suspend/resume when RT suspended
+Date: Thu, 30 Mar 2017 15:04:44 +0300
+Message-ID: <20170330120444.12499-1-jarkko.nikula@linux.intel.com>
+Return-path: <linux-i2c-owner@vger.kernel.org>
+Sender: linux-i2c-owner@vger.kernel.org
+To: linux-i2c@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, linux-arm-kernel@lists.infradead.org, Sascha Hauer <kernel@pengutronix.de>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 
-Hallo all,
+There is possibility to enter dw_i2c_plat_suspend() callback twice
+during system suspend under certain cases which is causing here warnings
+from clk_core_disable() and clk_core_unprepare() as well as accessing the
+registers that can be power gated.
 
-i'm looking for proper way to implement pm_power_off for IMX6 with 
-external PMIC.
+Commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming during
+system suspend") implemented a prepare callback that checks for runtime
+suspended device which allow PM core to set direct_complete flag and
+skip system suspend and resume callbacks.
 
-http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6DQRM.pdf
-page 5083
+However it can still happen if nothing resumes the device prior system
+syspend (e.g. acpi_subsys_suspend()) and there is a slave device which
+unsets the direct_complete flag of the parent in __device_suspend() thus
+causing PM code to not skip the system suspend/resume callbacks.
 
-According to this documentation, there are two ways to power off, 
-depending on board configuration. With internal and external PMIC.
+Avoid this by checking runtime status in suspend and resume callbacks
+and return directly if device is runtime suspended. This affects only
+system suspend/resume since during runtime suspend/resume runtime status
+is suspending (not suspended) or resuming.
 
-Internal variant is implemented in:
-drivers/power/reset/imx-snvs-poweroff.c
+Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+---
+I'm able to trigger system suspend callback while device is runtime
+suspended by removing the pm_runtime_resume() call from
+drivers/mfd/intel-lpss.c: resume_lpss_device() and having unbound I2C
+slave (ACPI enumerated but doesn't bind due an error in probe function).
+In that case __device_suspend() for that unbound device has NULL suspend
+callback, and thus doesn't cause any runtime resume chain but still unsets
+the parent's direct_complete flag.
+John Stult <john.stultz@linaro.org> has reported he can trigger this on
+HiKey board too.
 
-and should provide support for fallowing sequence:
+I'm not sure is this the right thing to do. It feels something the PM core
+should do but I'm not sure that either. One alternative could be to resume
+runtime suspended parent in in __device_suspend() right after where
+parent's direct_complete flag is unset.
+---
+ drivers/i2c/busses/i2c-designware-platdrv.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Configuration with internal PMIC:
-1.  SoC button is pressed for a short duration.
-2.  Interrupt request (irq) is sent to SoC from FSM
-3.  Alarm timer is set up by software routine and started.
-4.  Upon alarm_in assertion to '1', PMIC_ON_REQ goes '0'.
-5.  External regulator goes OFF.
-
-Suddenly i can't find any existing code for external PMIC.
-
-Configuration with external PMIC:
-1.  Button is pressed for a short duration on the external PMIC.
-2.  Interrupt request (irq) is sent to SoC from external PMIC
-3.  SoC is programming PMIC for power off when standby is asserted.
-4.  In CCM STOP mode, Standby is asserted, PMIC gates SoC supplies.
-
-partially needed  code is implemented here:
-  arch/arm/mach-imx/pm-imx6.c
-...
-         case STOP_POWER_OFF:
-                 val |= 0x2 << BP_CLPCR_LPM;
-                 val |= 0x3 << BP_CLPCR_STBY_COUNT;
-                 val |= BM_CLPCR_VSTBY;
-                 val |= BM_CLPCR_SBYOS;
-....
-but used only for PM_SUSPEND_MEM and never for pm_power_off.
-
-do i miss some thing, or are there any patches floating around?
-If it is not implemented jet and no one is working on this i would do it.
-I assume it should be configurable over device tree. Correct?
+diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/busses/i2c-designware-platdrv.c
+index a597ba32de7e..42a9cd09aa64 100644
+--- a/drivers/i2c/busses/i2c-designware-platdrv.c
++++ b/drivers/i2c/busses/i2c-designware-platdrv.c
+@@ -377,6 +377,9 @@ static int dw_i2c_plat_suspend(struct device *dev)
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct dw_i2c_dev *i_dev = platform_get_drvdata(pdev);
+ 
++	if (pm_runtime_suspended(dev))
++		return 0;
++
+ 	i2c_dw_disable(i_dev);
+ 	i2c_dw_plat_prepare_clk(i_dev, false);
+ 
+@@ -388,6 +391,9 @@ static int dw_i2c_plat_resume(struct device *dev)
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct dw_i2c_dev *i_dev = platform_get_drvdata(pdev);
+ 
++	if (pm_runtime_suspended(dev))
++		return 0;
++
+ 	i2c_dw_plat_prepare_clk(i_dev, true);
+ 	i2c_dw_init(i_dev);
+ 
+-- 
+2.11.0
