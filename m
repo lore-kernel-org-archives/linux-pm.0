@@ -1,47 +1,176 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v12.2 0/5] bq27xxx_battery partial series
-Date: Thu, 30 Mar 2017 02:02:11 -0700
-Message-ID: <20170330090216.12381-1-liam@networkimprov.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f41.google.com ([74.125.83.41]:34870 "EHLO
-        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932221AbdC3JCM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 05:02:12 -0400
-Received: by mail-pg0-f41.google.com with SMTP id 81so33574534pgh.2
-        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 02:02:11 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+Subject: [PATCH v2 21/22] docs-rst: fix usb cross-references
+Date: Thu, 30 Mar 2017 07:45:55 -0300
+Message-ID: <50db04845612db92568d121fa1eed29271d77e21.1490870599.git.mchehab@s-opensource.com>
+References: <3068fc7fac09293300b9c59ece0adb985232de12.1490870599.git.mchehab@s-opensource.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <3068fc7fac09293300b9c59ece0adb985232de12.1490870599.git.mchehab@s-opensource.com>
+In-Reply-To: <3068fc7fac09293300b9c59ece0adb985232de12.1490870599.git.mchehab@s-opensource.com>
+References: <3068fc7fac09293300b9c59ece0adb985232de12.1490870599.git.mchehab@s-opensource.com>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Linux Media Mailing List <linux-media@vger.kernel.org>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: devel@driverdev.osuosl.org, Len Brown <len.brown@intel.com>, Oliver Neukum <oneukum@suse.com>, Jonathan Corbet <corbet@lwn.net>, John Youn <johnyoun@synopsys.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mauro Carvalho Chehab <mchehab@infradead.org>, Mauro Carvalho Chehab <mchehab@s-opensource.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Peter Chen <peter.chen@nxp.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Pavel Machek <pavel@ucw.cz>, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>, Christian Gromm <christian.gromm@microchip.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, linux-rpi-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
 
-Changes in this rev:
+As some USB documentation files got moved, adjust their
+cross-references to their new place.
 
-Removed macro for if (...) dev_dbg(...) from I/O helper functions.
+Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+---
+ Documentation/ABI/stable/sysfs-bus-usb            | 2 +-
+ Documentation/driver-api/usb/URB.rst              | 2 ++
+ Documentation/driver-api/usb/callbacks.rst        | 4 ++--
+ Documentation/driver-api/usb/error-codes.rst      | 2 ++
+ Documentation/driver-api/usb/persist.rst          | 2 ++
+ Documentation/driver-api/usb/power-management.rst | 2 +-
+ Documentation/driver-api/usb/usb.rst              | 4 ++--
+ Documentation/power/swsusp.txt                    | 2 +-
+ drivers/staging/most/hdm-usb/hdm_usb.c            | 2 +-
+ drivers/usb/core/Kconfig                          | 2 +-
+ 10 files changed, 15 insertions(+), 9 deletions(-)
 
-Moved update_dm_block() to patch "Add power_supply_battery_info support".
-No more refactoring please; it's not really improving the code itself :-)
-
-set_cfgupdate is required for DM write on certain chips, see this Q&A
-https://e2e.ti.com/support/power_management/battery_management/f/180/p/577798/2121489#2121489
-
-Renamed dm_buf .full => .has_data, .updt => .dirty
-dm_buf has 3 states: !has_data, has_data && !dirty, has_data && dirty
-I considered a single field and enum values, but I think this is clearer.
-
-Renamed set_cfgupdate(..., u16 flag => state)
-We call set_cfgupdate(di, BQ27XXX_FLAG_CFGUP or 0)
-We !!state to print the intended flag state in error msg.
-
-
-  power: bq27xxx_battery: Add bulk transfer bus methods
-  power: bq27xxx_battery: Add chip data memory read/write support
-  power: bq27xxx_battery: Add power_supply_battery_info support
-  power: bq27xxx_battery: Enable chip data memory update for certain chips
-  power: bq27xxx_battery: Remove duplicate register arrays
-
- drivers/power/supply/bq27xxx_battery.c     | 700 +++++++++++++++++++++++------
- drivers/power/supply/bq27xxx_battery_i2c.c |  98 +++-
- include/linux/power/bq27xxx_battery.h      |  26 +-
- 3 files changed, 682 insertions(+), 142 deletions(-)
-
+diff --git a/Documentation/ABI/stable/sysfs-bus-usb b/Documentation/ABI/stable/sysfs-bus-usb
+index 831f15d9672f..b832eeff9999 100644
+--- a/Documentation/ABI/stable/sysfs-bus-usb
++++ b/Documentation/ABI/stable/sysfs-bus-usb
+@@ -9,7 +9,7 @@ Description:
+ 		hubs this facility is always enabled and their device
+ 		directories will not contain this file.
+ 
+-		For more information, see Documentation/usb/persist.txt.
++		For more information, see Documentation/driver-api/usb/persist.rst.
+ 
+ What:		/sys/bus/usb/devices/.../power/autosuspend
+ Date:		March 2007
+diff --git a/Documentation/driver-api/usb/URB.rst b/Documentation/driver-api/usb/URB.rst
+index 2bcd06c2c5aa..810ceb0e71bb 100644
+--- a/Documentation/driver-api/usb/URB.rst
++++ b/Documentation/driver-api/usb/URB.rst
+@@ -1,3 +1,5 @@
++.. _usb-urb:
++
+ USB Request Block (URB)
+ ~~~~~~~~~~~~~~~~~~~~~~~
+ 
+diff --git a/Documentation/driver-api/usb/callbacks.rst b/Documentation/driver-api/usb/callbacks.rst
+index 93a8d53e27e7..2b80cf54bcc3 100644
+--- a/Documentation/driver-api/usb/callbacks.rst
++++ b/Documentation/driver-api/usb/callbacks.rst
+@@ -8,7 +8,7 @@ Usbcore will call into a driver through callbacks defined in the driver
+ structure and through the completion handler of URBs a driver submits.
+ Only the former are in the scope of this document. These two kinds of
+ callbacks are completely independent of each other. Information on the
+-completion callback can be found in Documentation/usb/URB.txt.
++completion callback can be found in :ref:`usb-urb`.
+ 
+ The callbacks defined in the driver structure are:
+ 
+@@ -53,7 +53,7 @@ The callbacks defined in the driver structure are:
+ 
+ The ioctl interface (2) should be used only if you have a very good
+ reason. Sysfs is preferred these days. The PM callbacks are covered
+-separately in Documentation/usb/power-management.txt.
++separately in :ref:`usb-power-management`.
+ 
+ Calling conventions
+ ===================
+diff --git a/Documentation/driver-api/usb/error-codes.rst b/Documentation/driver-api/usb/error-codes.rst
+index 9c11a0fd16cb..a3e84bfac776 100644
+--- a/Documentation/driver-api/usb/error-codes.rst
++++ b/Documentation/driver-api/usb/error-codes.rst
+@@ -1,3 +1,5 @@
++.. _usb-error-codes:
++
+ USB Error codes
+ ~~~~~~~~~~~~~~~
+ 
+diff --git a/Documentation/driver-api/usb/persist.rst b/Documentation/driver-api/usb/persist.rst
+index ea1b43f0559e..08cafc6292c1 100644
+--- a/Documentation/driver-api/usb/persist.rst
++++ b/Documentation/driver-api/usb/persist.rst
+@@ -1,3 +1,5 @@
++.. _usb-persist:
++
+ USB device persistence during system suspend
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+diff --git a/Documentation/driver-api/usb/power-management.rst b/Documentation/driver-api/usb/power-management.rst
+index c068257f6d27..79beb807996b 100644
+--- a/Documentation/driver-api/usb/power-management.rst
++++ b/Documentation/driver-api/usb/power-management.rst
+@@ -328,7 +328,7 @@ possible to work around the hibernation-forces-disconnect problem by
+ using the USB Persist facility.)
+ 
+ The ``reset_resume`` method is used by the USB Persist facility (see
+-``Documentation/usb/persist.txt``) and it can also be used under certain
++:ref:`usb-persist`) and it can also be used under certain
+ circumstances when ``CONFIG_USB_PERSIST`` is not enabled.  Currently, if a
+ device is reset during a resume and the driver does not have a
+ ``reset_resume`` method, the driver won't receive any notification about
+diff --git a/Documentation/driver-api/usb/usb.rst b/Documentation/driver-api/usb/usb.rst
+index 5ebaf669704c..6824089ef4c8 100644
+--- a/Documentation/driver-api/usb/usb.rst
++++ b/Documentation/driver-api/usb/usb.rst
+@@ -424,8 +424,8 @@ header.
+ Unless noted otherwise, the ioctl requests described here will update
+ the modification time on the usbfs file to which they are applied
+ (unless they fail). A return of zero indicates success; otherwise, a
+-standard USB error code is returned. (These are documented in
+-``Documentation/usb/error-codes.txt`` in your kernel sources.)
++standard USB error code is returned (These are documented in
++:ref:`usb-error-codes`).
+ 
+ Each of these files multiplexes access to several I/O streams, one per
+ endpoint. Each device has one control endpoint (endpoint zero) which
+diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
+index 8cc17ca71813..9f2f942a01cf 100644
+--- a/Documentation/power/swsusp.txt
++++ b/Documentation/power/swsusp.txt
+@@ -406,7 +406,7 @@ Firewire, CompactFlash, MMC, external SATA, or even IDE hotplug bays)
+ before suspending; then remount them after resuming.
+ 
+ There is a work-around for this problem.  For more information, see
+-Documentation/usb/persist.txt.
++Documentation/driver-api/usb/persist.rst.
+ 
+ Q: Can I suspend-to-disk using a swap partition under LVM?
+ 
+diff --git a/drivers/staging/most/hdm-usb/hdm_usb.c b/drivers/staging/most/hdm-usb/hdm_usb.c
+index 65211d1824b7..2bfea9b48366 100644
+--- a/drivers/staging/most/hdm-usb/hdm_usb.c
++++ b/drivers/staging/most/hdm-usb/hdm_usb.c
+@@ -490,7 +490,7 @@ static void hdm_write_completion(struct urb *urb)
+  * disconnect.  In the interval before the hub driver starts disconnect
+  * processing, devices may receive such fault reports for every request.
+  *
+- * See <https://www.kernel.org/doc/Documentation/usb/error-codes.txt>
++ * See <https://www.kernel.org/doc/Documentation/driver-api/usb/error-codes.rst>
+  */
+ static void hdm_read_completion(struct urb *urb)
+ {
+diff --git a/drivers/usb/core/Kconfig b/drivers/usb/core/Kconfig
+index 0e5a889742b3..4d75d9a80001 100644
+--- a/drivers/usb/core/Kconfig
++++ b/drivers/usb/core/Kconfig
+@@ -26,7 +26,7 @@ config USB_DEFAULT_PERSIST
+ 	  unplugged, causing any mounted filesystems to be lost.  The
+ 	  persist feature can still be enabled for individual devices
+ 	  through the power/persist sysfs node. See
+-	  Documentation/usb/persist.txt for more info.
++	  Documentation/driver-api/usb/persist.rst for more info.
+ 
+ 	  If you have any questions about this, say Y here, only say N
+ 	  if you know exactly what you are doing.
 -- 
 2.9.3
