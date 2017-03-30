@@ -1,51 +1,217 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFD PATCH 4/5] sched/cpufreq_schedutil: always consider all CPUs
- when deciding next freq
-Date: Thu, 30 Mar 2017 22:13:50 +0200
-Message-ID: <CAJZ5v0jyHkVg80Uk5rh4Ax1wqFk=i+nbYEUfakDNrhu8zLnRzg@mail.gmail.com>
-References: <20170324140900.7334-1-juri.lelli@arm.com> <20170324140900.7334-5-juri.lelli@arm.com>
- <2348394.hDdCk9fbgK@aspire.rjw.lan> <20170330085805.GF18960@e106622-lin>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v12.2 8/9] power: bq27xxx_battery: Enable chip data memory
+ update for certain chips
+Date: Thu, 30 Mar 2017 13:14:48 -0700
+Message-ID: <CAKvHMgQf5dje8TjUjK29HLtOed2A0zVn64FjyFMorXJK22UbuA@mail.gmail.com>
+References: <20170330090216.12381-1-liam@networkimprov.net>
+ <20170330090216.12381-5-liam@networkimprov.net> <f56356ed-089d-7722-39e7-93eaa97a8e3a@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170330085805.GF18960@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Steven Rostedt <rostedt@goodmis.org>, Luca Abeni <luca.abeni@santannapisa.it>, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f193.google.com ([209.85.223.193]:34035 "EHLO
+        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934787AbdC3UOu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 16:14:50 -0400
+Received: by mail-io0-f193.google.com with SMTP id n76so4062834ioe.1
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 13:14:49 -0700 (PDT)
+In-Reply-To: <f56356ed-089d-7722-39e7-93eaa97a8e3a@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On Thu, Mar 30, 2017 at 10:58 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> Hi,
-
-Hi,
-
-> On 30/03/17 00:41, Rafael J. Wysocki wrote:
->> On Friday, March 24, 2017 02:08:59 PM Juri Lelli wrote:
->> > No assumption can be made upon the rate at which frequency updates get
->> > triggered, as there are scheduling policies (like SCHED_DEADLINE) which
->> > don't trigger them so frequently.
->> >
->> > Remove such assumption from the code.
+On Thu, Mar 30, 2017 at 5:58 AM, Andrew F. Davis <afd@ti.com> wrote:
+> On 03/30/2017 04:02 AM, Liam Breck wrote:
+>> From: Liam Breck <kernel@networkimprov.net>
 >>
->> But the util/max values for idle CPUs may be stale, no?
+>> Support data memory update of BQ27500, 545, 421, 425, 441, 621.
 >>
+>> Create IDs for for previously unID'd chips, to index arrays for unseal keys
+>> and data memory register tables.
+>>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>> ---
+>>  drivers/power/supply/bq27xxx_battery.c     | 73 +++++++++++++++++++++++++++++-
+>>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 +++----
+>>  include/linux/power/bq27xxx_battery.h      | 11 +++++
+>>  3 files changed, 90 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>> index 4c7a13e..70b8d1c 100644
+>> --- a/drivers/power/supply/bq27xxx_battery.c
+>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>> @@ -57,7 +57,7 @@
+>>
+>>  #include <linux/power/bq27xxx_battery.h>
+>>
+>> -#define DRIVER_VERSION               "1.2.0"
+>> +#define DRIVER_VERSION               "1.3.0"
+>>
+>>  #define BQ27XXX_MANUFACTURER "Texas Instruments"
+>>
+>> @@ -894,6 +894,54 @@ static const char* bq27xxx_dm_reg_name[] = {
+>>       [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>>  };
+>>
+>> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
+>> +     [BQ27500] = bq27500_dm_regs,
+>> +     [BQ27545] = bq27545_dm_regs,
+>> +     [BQ27421] = bq27421_dm_regs,
+>> +     [BQ27425] = bq27425_dm_regs,
+>> +     [BQ27441] = bq27421_dm_regs,
+>> +     [BQ27621] = bq27621_dm_regs,
+>> +};
+>> +
+>> +static u32 bq27xxx_unseal_keys[] = {
+>> +     [BQ27500] = 0x04143672,
+>> +     [BQ27545] = 0x04143672,
+>> +     [BQ27421] = 0x80008000,
+>> +     [BQ27425] = 0x04143672,
+>> +     [BQ27441] = 0x80008000,
+>> +     [BQ27621] = 0x80008000,
+>> +};
+>> +
+>>
+>>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
+>>  {
+>> @@ -1861,9 +1909,30 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>               .drv_data = di,
+>>       };
+>>
+>> +     di->unseal_key = bq27xxx_unseal_keys[di->chip];
+>> +     di->dm_regs = bq27xxx_dm_regs[di->chip];
+>> +
+>> +     switch(di->chip) {  /* translate members of categories */
+>> +     case BQ2752X:
+>> +             di->chip = BQ27510G3; break;
+>> +     case BQ27531:
+>> +             di->chip = BQ27530;   break;
+>> +     case BQ27542:
+>> +     case BQ27546:
+>> +     case BQ27742:
+>> +             di->chip = BQ27541;   break;
+>> +     case BQ27425:
+>> +     case BQ27441:
+>> +     case BQ27621:
+>> +             di->chip = BQ27421;   break;
+>> +     default:
+>> +             break;
+>> +     }
+>> +
+>> +     di->regs = bq27xxx_regs[di->chip];
+>> +
+>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>>       mutex_init(&di->lock);
+>> -     di->regs = bq27xxx_regs[di->chip];
+>>
+>>       psy_desc = devm_kzalloc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
+>>       if (!psy_desc)
+>> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> index a597221..0b11ed4 100644
+>> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+>> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> @@ -230,7 +230,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>       { "bq27210", BQ27010 },
+>>       { "bq27500", BQ2750X },
+>>       { "bq27510", BQ2751X },
+>> -     { "bq27520", BQ2751X },
+>> +     { "bq27520", BQ2752X },
+>>       { "bq27500-1", BQ27500 },
+>>       { "bq27510g1", BQ27510G1 },
+>>       { "bq27510g2", BQ27510G2 },
+>> @@ -240,16 +240,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>       { "bq27520g3", BQ27520G3 },
+>>       { "bq27520g4", BQ27520G4 },
+>>       { "bq27530", BQ27530 },
+>> -     { "bq27531", BQ27530 },
+>> +     { "bq27531", BQ27531 },
+>>       { "bq27541", BQ27541 },
+>> -     { "bq27542", BQ27541 },
+>> -     { "bq27546", BQ27541 },
+>> -     { "bq27742", BQ27541 },
+>> +     { "bq27542", BQ27542 },
+>> +     { "bq27546", BQ27546 },
+>> +     { "bq27742", BQ27742 },
+>>       { "bq27545", BQ27545 },
+>>       { "bq27421", BQ27421 },
+>> -     { "bq27425", BQ27421 },
+>> -     { "bq27441", BQ27421 },
+>> -     { "bq27621", BQ27421 },
+>> +     { "bq27425", BQ27425 },
+>> +     { "bq27441", BQ27441 },
+>> +     { "bq27621", BQ27621 },
+>>       {},
+>>  };
+>>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+>> index 227eb08..014e59f 100644
+>> --- a/include/linux/power/bq27xxx_battery.h
+>> +++ b/include/linux/power/bq27xxx_battery.h
+>> @@ -2,6 +2,7 @@
+>>  #define __LINUX_BQ27X00_BATTERY_H__
+>>
+>>  enum bq27xxx_chip {
+>> +     /* categories; index for bq27xxx_regs[] */
+>>       BQ27000 = 1, /* bq27000, bq27200 */
+>>       BQ27010, /* bq27010, bq27210 */
+>>       BQ2750X, /* bq27500 deprecated alias */
+>> @@ -18,6 +19,16 @@ enum bq27xxx_chip {
+>>       BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+>>       BQ27545, /* bq27545 */
+>>       BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+>> +
+>> +     /* members of categories; translate these to category in _setup() */
 >
-> Right, that might be a problem. A proper solution I think would be to
-> remotely update such values for idle CPUs, and I believe Vincent is
-> working on a patch for that.
->
-> As mid-term workarounds, changing a bit the current one, come to my
-> mind:
->
->  - consider TICK_NSEC (continue) only when SCHED_CPUFREQ_DL is not set
->  - remove CFS contribution (without triggering a freq update) when a CPU
->    enters IDLE; this might not work well, though, as we probably want
->    to keep in blocked util contribution for a bit
->
-> What you think is the way to go?
+> These don't need to be separate from the others, these are valid chip
+> IDs, we may use another compatible ID for register array index right now
+> but these are not "categories".
 
-Well, do we want SCHED_DEADLINE util contribution to be there even for
-idle CPUs?
+The above were indeed treated like categories, as the I2C ID table
+mapped other chips to them. We could call them category|class
+"leaders" (prototypes? models? patterns?) instead.
 
-Thanks,
-Rafael
+The below are not valid in di->chip, they must be converted. So it
+makes sense to group them.
+
+>> +     BQ2752X, /* deprecated alias */
+>> +     BQ27531,
+>> +     BQ27542,
+>> +     BQ27546,
+>> +     BQ27742,
+>> +     BQ27425,
+>> +     BQ27441,
+>> +     BQ27621,
+>>  };
+>>
+>>  /**
+>>
