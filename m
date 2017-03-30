@@ -1,331 +1,86 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v4 01/18] dt-bindings: power: battery: add
- constant-charge-current property
-Date: Thu, 30 Mar 2017 00:30:32 -0700
-Message-ID: <CAKvHMgRo2f71okiQU6r0-QxkhQ97iuYtiDZuhLd2qV8FLZUtoA@mail.gmail.com>
-References: <20170315105537.22349-1-quentin.schulz@free-electrons.com>
- <20170315105537.22349-2-quentin.schulz@free-electrons.com>
- <CAKvHMgSnyPPMEZ1o70Ed2oBHGcMho=-jjFhfXGn4t+2bdALEew@mail.gmail.com>
- <ce6f2ddb-f875-0370-ca45-293397d97495@free-electrons.com> <CAKvHMgR58sDnB-nn386Bd-H0Duevkeoc8eEfz=otLAumc8FD+w@mail.gmail.com>
- <765fc3be-23db-0997-85b1-b6c85b3aceef@free-electrons.com> <CAKvHMgRKroPFDdNMb=F=bA4bTwg9bYMAR-5Z4DKLzHJtCYz3_Q@mail.gmail.com>
- <CAKvHMgRtEnNbokYReu2vEs9UKH6qZnncdyQD=1JMDTZeN+aYCA@mail.gmail.com>
- <659fb6a3-d49d-5429-8770-88917e4fd0b3@free-electrons.com> <CAKvHMgSFNBmr3fU-biHDo5tzCDV7QaCpFnbChgn4wgSN_1FBig@mail.gmail.com>
- <8853ebb9-9c4f-d9bf-8c82-daad4650c4f8@free-electrons.com> <CAKvHMgQf=Zod-F9SMPDDj5Eq3v=JHGh7uns-T_=ynQM0dMtEvw@mail.gmail.com>
- <614aa4ef-6900-0c56-a364-0ef4e8af2f97@free-electrons.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH 1/2] acpi: utils: Add new acpi_dev_present helper
+Date: Thu, 30 Mar 2017 10:33:41 +0200
+Message-ID: <20170330083341.GA10207@h08.hostsharing.net>
+References: <20170316161736.339-1-hdegoede@redhat.com>
+ <20170316161736.339-2-hdegoede@redhat.com>
+ <4029834.c3GWUpRlkb@aspire.rjw.lan>
+ <20170329092638.GU2957@lahna.fi.intel.com>
+ <1490806252.708.53.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f67.google.com ([209.85.214.67]:36546 "EHLO
-        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752733AbdC3Hae (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 03:30:34 -0400
-In-Reply-To: <614aa4ef-6900-0c56-a364-0ef4e8af2f97@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1490806252.708.53.camel@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Robert Moore <robert.moore@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: Sebastian Reichel <sre@kernel.org>, robh+dt@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Wed, Mar 29, 2017 at 11:41 PM, Quentin Schulz
-<quentin.schulz@free-electrons.com> wrote:
-> Hi,
+[cc += Robert Moore]
+
+Hi Hans,
+
+I'm the author of acpi_dev_found(), please in the future use git blame
+to determine relevant authors of existing code that should be cc'ed,
+I noticed your patch only now:
+
+On Thursday, March 16, 2017 05:17:35 PM Hans de Goede wrote:
+> acpi_dev_found just iterates over all acpi-ids and sees if one matches.
+> This means that it will return true for devices which are in the dsdt
+> but disabled (their _STA method returns 0).
 >
-> On 29/03/2017 11:26, Liam Breck wrote:
->> On Wed, Mar 29, 2017 at 12:54 AM, Quentin Schulz
->> <quentin.schulz@free-electrons.com> wrote:
->>> Hi,
->>>
->>> On 29/03/2017 09:39, Liam Breck wrote:
->>>> On Wed, Mar 29, 2017 at 12:09 AM, Quentin Schulz
->>>> <quentin.schulz@free-electrons.com> wrote:
->>>>> Hi Liam,
->>>>>
->>>>> On 29/03/2017 08:55, Liam Breck wrote:
->>>>>> Hi Quentin,
->>>>>>
->>>>>> On Thu, Mar 16, 2017 at 12:42 AM, Liam Breck <liam@networkimprov.net> wrote:
->>>>>>> On Thu, Mar 16, 2017 at 12:03 AM, Quentin Schulz
->>>>>>> <quentin.schulz@free-electrons.com> wrote:
->>>>>>>> Hi Liam,
->>>>>>>>
->>>>>>>> On 16/03/2017 07:27, Liam Breck wrote:
->>>>>>>>> Hi Rob,
->>>>>>>>>
->>>>>>>>> On Wed, Mar 15, 2017 at 6:10 AM, Quentin Schulz
->>>>>>>>> <quentin.schulz@free-electrons.com> wrote:
->>>>>>>>>> Hi Liam,
->>>>>>>>>>
->>>>>>>>>> On 15/03/2017 13:08, Liam Breck wrote:
->>>>>>>>>>> I dropped most of the CCs, pls re-add anyone essential. Use Cc lines
->>>>>>>>>>> in patch description to direct a patch to interested parties and
->>>>>>>>>>> relevant lists. I don't want to see all 19 patches in this series.
->>>>>>>>>>>
->>>>>>>>>>> On Wed, Mar 15, 2017 at 3:55 AM, Quentin Schulz
->>>>>>>>>>> <quentin.schulz@free-electrons.com> wrote:
->>>>>>>>>>>> This adds the constant-charge-current property to the list of optional
->>>>>>>>>>>> properties of the battery.
->>>>>>>>>>>>
->>>>>>>>>>>> The constant charge current is critical for batteries as they can't
->>>>>>>>>>>> handle all charge currents.
->>>>>>>>>>>>
->>>>>>>>>>>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
->>>>>>>>>>>> Acked-by: Rob Herring <robh@kernel.org>
->>>>>>>>>>>> ---
->>>>>>>>>>>>
->>>>>>>>>>>> v4:
->>>>>>>>>>>>  - switch from constant-charge-current-microamp to constant-charge-microamp,
->>>>>>>>>
->>>>>>>>> Sebastian is on record supporting name alignment between DT:battery
->>>>>>>>> properties and enum power_supply_property.
->>>>>>>>>
->>>>>>>>> Could you OK a change back to constant-charge-current-microamp in this patch?
->>>>>>>>>
->>>>>>>>> Note that the following could appear in DT:battery in future:
->>>>>>>>>
->>>>>>>>> constant-charge-current-microamp
->>>>>>>>> constant-charge-current-max-microamp
->>>>>>>>
->>>>>>>> OK. I am actually setting max constant charge current and constant
->>>>>>>> current charge with the same DT property so I might need to adapt my
->>>>>>>> patches.
->>>>>>>
->>>>>>> I suspect you should set battery:*-current-max with DT, as -current is
->>>>>>> "programmed by charger" so seems to be a stat, not a fixed
->>>>>>> characteristic.
->>>>>>
->>>>>> Did you resolve this issue?
->>>>>>
->>>>>
->>>>> Sorry, completely missed your first mail.
->>>>>
->>>>> Constant charge current is actually what I set in the PMIC. The maximum
->>>>> constant charge current is completely PMIC-agnostic in my driver as it
->>>>> is used to tell the user that (s)he shouldn't really have a constant
->>>>> charge current over the maximum limit as the battery might not be able
->>>>> to handle such high current.
->>>>>
->>>>> What I suggest is to have both properties in DT. I'll set the maximum as
->>>>> I do today and we can give the user the ability to set a "default"
->>>>> constant charge current (below maximum constant charge current) in the
->>>>> DT. Maybe we do not want to recharge your battery with the maximum value
->>>>> by default?
->>>>
->>>> The scope here is just static battery characteristics. For the battery
->>>> node, I think constant-charge-current-max-microamp is the relevant
->>>> term.
->>>
->>> If it's only for static battery characteristics, I agree.
->>>
->>>
->>>> If we added both properties, one would be an alias for the
->>>> other, which doesn't seem useful.
->>
->> Meaning if both properties describe static characteristics of the
->> battery, they wouldn't have different meaning.
->>
->>> Hum. Not really an alias. In my driver, I have a maximum which avoids to
->>> set a constant charge current higher than what the battery is supposed
->>> to be able to handle. The maximum can be increased via sysfs if ever the
->>> user decides to go wild (or if (s)he changes the battery for example).
->>> The maximum is never input in any of PMIC registers, it is not dealing
->>> with the PMIC at all.
->>
->> Using the battery's -max as the default for your user-adjustable max
->> sounds sensible. However the user-adjustable max should perhaps appear
->> in a custom sysfs attribute, not
->> /sys/class.../constant_charge_current_max (see comment re regulator).
->>
+> For some drivers it is useful to be able to check if a certain hid
+> is not only present in the namespace, but also actually present as in
+> acpi_device_is_present() will return true for the device. For example
+> because if a certain device is present then the driver will want to use
+> an extcon or IIO adc channel provided by that device.
 >
-> Why?
-
-Because charger's ccc_max should refer to its electrical
-characteristics, not a user-adjustable setting. Maybe
-/sys/class.../constant_charge_current_max_local or similar.
-
->> If the battery changes, the DT battery node should also change, esp if
->> its -max drops. I realize that's not nec trivial.
->>
+> This commit adds a new acpi_dev_present helper which drivers can use
+> to this end.
 >
-> Disagree. That's definitely not user friendly.
+> Arguably acpi_dev_present is what acpi_dev_found should have been, but
+> there are too many users to just change acpi_dev_found without the risk
+> of breaking something.
 
-There are ways to field-upgrade the dtb, tho that might not be
-workable in all cases :-)
+I originally did submit an acpi_dev_present() function which was identical
+to what you've submitted now:
+http://www.spinics.net/lists/linux-acpi/msg61865.html
 
->>> If I have only the max constant charge current in the DT, I'll set the
->>> max and constant charge current with the same DT entry. That's perfectly
->>> fine.
->>
->> I assume the pmic ccc setting is adjustable via
->> /sys/class.../constant_charge_current?
->>
->
-> Yes, it is then limited by a user-modifiable constant_charge_current_max.
->
->>> However, what I was thinking is to have a "default" value taken from DT
->>> for constant charge current (which will be below maximum ccc) if ever
->>> someone wants to set a maximum but use a lower ccc value. Anyway, I
->>> guess it's more a "fancy" feature than a requirement (unlike max-ccc).
->>
->> Maybe a lower default ccc than battery's -max could be provided via a
->> % value in the pmic DT node? Then multiply battery -max by that to set
->> ccc.
->>
->
-> That's battery-specific, why would you want to put it in the PMIC node?
+However Robert Moore raised an objection that "Traversing the namespace
+over and over is truly brute force":
+http://www.spinics.net/lists/linux-acpi/msg61911.html
 
-A % modifier is not too battery-specific. If you want a specific
-alternate default ccc, you could certainly put it in the battery node,
-and read it from your driver the way power_supply_get_battery_info()
-does. But if you are expecting battery changes which alter
-characteristics, the less you hard-wire into DT, the better.
+For my use case, which was apple_gmux_present(), just detecting presence
+of the HID in the namespace was sufficient, I did not have the need to
+execute _STA.  Hence to address Robert Moore's concern I switched to
+simply traversing the acpi_bus_id_list.
 
->>>> The pmic can report both independently of the battery characteristic,
->>>> and take a driver-specific DT property for
->>>> constant-charge-current-microamp which it applies if less than the
->>>> battery's -max setting.
->>>
->>> Indeed.
->>>
->>>> Or you could set that in userspace via
->>>> /sys/class.../constant_charge_current.
->>>
->>> The goal is to have both. The DT for default values (given by the
->>> vendor/upstream) and sysfs for custom values (interesting if you don't
->>> want to/can't recompile a DT.
->>>
->>>> The charger's -max value would
->>>> be a characteristic of its regulator.
->>>>
->>>
->>> I don't really understand what you mean by that.
->>
->> I believe the pmic's -max value is a characteristic of its electrical
->> design, the max current it can deliver. The power_supply_class docs
->> are not very clear - "maximum charge current supported by the power
->> supply object".
->>
->
-> This PMIC can deliver a maximum of 1.8A or 2.5A depending on the variant
-> for constant charge current but you do not want to easily allow your
-> user to put such a high value as the battery is most likely not able to
-> handle such a high current.
+Rafael objected to the acpi_dev_present() name as it suggested that _STA
+is checked even though it wasn't, so I renamed the function to
+acpi_dev_found() with commit c68ae33e7fb4.
 
-Right, and /sys/class.../constant_charge_current_max should probably
-report exactly that. Hence the suggestion for ccc_max_local for the
-adjustable ccc_max.
+The objection raised by Robert Moore applies to your patch as well since
+it is identical to my original patch.  The return value of _STA seems to
+be cached in the "status" field of struct acpi_device, so you may
+be able to overcome Robert Moore's objection by calling bus_find_device()
+with a callback which contains the check in acpi_device_is_present().
+See drivers/firmware/efi/dev-path-parser.c for an example (parse_acpi_path()
+and match_acpi_dev()).  This is probably faster than acpi_get_devices()
+because it just traverses a list instead of walking the namespace and it
+avoids the call to _STA.  (Some devices just return a constant when _STA
+is called, others may take more time.)
 
-We really shouldn't be wondering what do do here, but alas, the kernel
-power-supply framework is a bit under-developed :-p
+FWIW, all existing users of acpi_dev_found(), except for the hisilicon
+Ethernet driver, originally used acpi_get_devices() and I converted
+them to acpi_dev_found to deduplicate code.  Thus it would be safe to
+convert those to your new function acpi_dev_present().  I also converted
+sound/soc/intel/common/sst-match-acpi.c to acpi_dev_found() but the
+Intel folks switched back to acpi_get_devices() because just like you
+they had the need to check _STA.  If you introduce a new helper which
+checks _STA, it would be good if you could amend sst-match-acpi.c to
+use it so as to deduplicate code.
 
-Anyway I plan to add constant-charge-current-max-microamp in the
-forthcoming patchset.
+Thanks,
 
->>>> Or am I missing something...?
->>>>
->>>>>> Rob & Sebastian want me to merge all items for
->>>>>> bindings/power/supply/battery.txt. If I do that I'll also roll up
->>>>>> their counterparts in power_supply_core.c and submit a patchset for
->>>>>> those two files.
->>>>>>
->>>>>
->>>>> I guess that adding the two properties make sense, don't you think?
->>>>>
->>>>> Also, could you Cc me on your next version of your patches? So I know
->>>>> when to rebase and slightly rework my patches once your patch series is
->>>>> merged.
->>>>
->>>> Surely.
->>>>
->>>>> Thanks,
->>>>> Quentin
->>>>>
->>>>>>> You may program your charger's -current with the battery's
->>>>>>> -current-max, of course.
->>>>>>>
->>>>>>> Note that your charger also has a -current-max characteristic, likely
->>>>>>> different than your battery. You may not need that in DT tho.
->>>>>>>
->>>>>>>>> constant-charge-voltage-microvolt
->>>>>>>>> constant-charge-voltage-max-microvolt
->>>>>>>>>
->>>>>>>>> Thanks!
->>>>>>>>>
->>>>>>>>>>> Must be constant-charge-current-microamp for the reasons discussed in
->>>>>>>>>>> battery.txt - consistency with sysfs names.
->>>>>>>>>>>
->>>>>>>>>>
->>>>>>>>>> Hum. Just nitpicking, but I disagree with the use of 'must'. IIRC there
->>>>>>>>>> is nothing in the code that would require the property to be named after
->>>>>>>>>> a property from the enum power_supply_property.
->>>>>>>>>>
->>>>>>>>>> I would say that you _want_ it to be named like that because it
->>>>>>>>>> underlines the relation between the DT property and the actual impacted
->>>>>>>>>> property in the power supply subsystem. I'm fine with this reason but in
->>>>>>>>>> the end, the maintainer's opinion prevails (if (s)he does not want it,
->>>>>>>>>> (s)he will not take it). So, basically, I actually don't mind either
->>>>>>>>>> option and I see arguments on each side.
->>>>>>>>>>
->>>>>>>>>> So, just waiting for maintainer's opinion to make the final version of
->>>>>>>>>> this patch.
->>>>>>>>>>
->>>>>>>>>> Thanks,
->>>>>>>>>> Quentin
->>>>>>>>>>
->>>>>>>>>>> Also applies to power_supply_core.c patch.
->>>>>>>>>>>
->>>>>>>>>>> Rob: enum power_supply_property also lists constant-charge-voltage,
->>>>>>>>>>> hence the -current
->>>>>>>>>>>
->>>>>>>>>>>
->>>>>>>>>>>> added in v3
->>>>>>>>>>>>
->>>>>>>>>>>>  Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
->>>>>>>>>>>>  1 file changed, 2 insertions(+)
->>>>>>>>>>>>
->>>>>>>>>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>>>>>> index 0278617..9594e1e 100644
->>>>>>>>>>>> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>>>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>>>>>> @@ -7,6 +7,7 @@ Optional Properties:
->>>>>>>>>>>>   - voltage-min-design-microvolt: drained battery voltage
->>>>>>>>>>>>   - energy-full-design-microwatt-hours: battery design energy
->>>>>>>>>>>>   - charge-full-design-microamp-hours: battery design capacity
->>>>>>>>>>>> + - constant-charge-microamp: battery constant charge current
->>>>>>>>>>>>
->>>>>>>>>>>>  Because drivers surface properties in sysfs using names derived
->>>>>>>>>>>>  from enum power_supply_property, e.g.
->>>>>>>>>>>> @@ -30,6 +31,7 @@ Example:
->>>>>>>>>>>>                 voltage-min-design-microvolt = <3200000>;
->>>>>>>>>>>>                 energy-full-design-microwatt-hours = <5290000>;
->>>>>>>>>>>>                 charge-full-design-microamp-hours = <1430000>;
->>>>>>>>>>>> +               constant-charge-microamp = <300000>;
->>>>>>>>>>>>         };
->>>>>>>>>>>>
->>>>>>>>>>>>         charger: charger@11 {
->>>>>>>>>>>> --
->>>>>>>>>>>> 2.9.3
->>>>>>>>>>>>
->>>>>>>>>>
->>>>>>>>>> --
->>>>>>>>>> Quentin Schulz, Free Electrons
->>>>>>>>>> Embedded Linux and Kernel engineering
->>>>>>>>>> http://free-electrons.com
->>>>>>>>
->>>>>>>> --
->>>>>>>> Quentin Schulz, Free Electrons
->>>>>>>> Embedded Linux and Kernel engineering
->>>>>>>> http://free-electrons.com
->>>>>
->>>>> --
->>>>> Quentin Schulz, Free Electrons
->>>>> Embedded Linux and Kernel engineering
->>>>> http://free-electrons.com
->>>
->>> --
->>> Quentin Schulz, Free Electrons
->>> Embedded Linux and Kernel engineering
->>> http://free-electrons.com
->
-> --
-> Quentin Schulz, Free Electrons
-> Embedded Linux and Kernel engineering
-> http://free-electrons.com
+Lukas
