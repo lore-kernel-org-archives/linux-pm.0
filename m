@@ -1,82 +1,52 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [BUG] v4.11-rc1: CPUFREQ Circular locking dependency
-Date: Thu, 30 Mar 2017 10:51:08 +0800
-Message-ID: <1490842268.2347.10.camel@intel.com>
-References: <20170310150218.GW21222@n2100.armlinux.org.uk>
-         <CAJZ5v0jGRH_hwvvm9OLsaYgbghqWKOke9PyGNnkvP_ZiMqAxSw@mail.gmail.com>
-         <BY2PR21MB00362E60448FD2E00C120FFCCB200@BY2PR21MB0036.namprd21.prod.outlook.com>
-         <BY2PR21MB00361C512E03B09DBCE715D3CB200@BY2PR21MB0036.namprd21.prod.outlook.com>
-         <20170310234325.GB21222@n2100.armlinux.org.uk>
-         <1489373088.5841.15.camel@intel.com>
-         <20170329175100.GD7909@n2100.armlinux.org.uk>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v19 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Thu, 30 Mar 2017 11:16:59 +0800
+Message-ID: <CAMz4ku+PAn3nUGg7gs04cPHhn16cKgNv_+duv-kz0GqOEYTYkQ@mail.gmail.com>
+References: <cover.1487578977.git.baolin.wang@linaro.org> <87zih3m73h.fsf@notabene.neil.brown.name>
+ <CAMz4ku+98HAgVnMoCg0YaPpcY1NvdKdbK6AuDyzgNOrcbpaz9A@mail.gmail.com> <8737dx6m0b.fsf@notabene.neil.brown.name>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:33472 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754233AbdC3CvM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 Mar 2017 22:51:12 -0400
-In-Reply-To: <20170329175100.GD7909@n2100.armlinux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <8737dx6m0b.fsf@notabene.neil.brown.name>
+Sender: linux-kernel-owner@vger.kernel.org
+To: NeilBrown <neilb@suse.com>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfou
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Matthew Wilcox <mawilcox@microsoft.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, 2017-03-29 at 18:51 +0100, Russell King - ARM Linux wrote:
-> On Mon, Mar 13, 2017 at 10:44:48AM +0800, Zhang Rui wrote:
-> > 
-> > On Fri, 2017-03-10 at 23:43 +0000, Russell King - ARM Linux wrote:
-> > > 
-> > > On Fri, Mar 10, 2017 at 06:33:28PM +0000, Matthew Wilcox wrote:
-> > > > 
-> > > > 
-> > > > From cd5401d81633d5e48e39d67d4e65156e6759537e Mon Sep 17
-> > > > 00:00:00
-> > > > 2001
-> > > > From: Matthew Wilcox <mawilcox@microsoft.com>
-> > > > Date: Fri, 10 Mar 2017 13:22:53 -0500
-> > > > Subject: [PATCH] thermal: Fix potential deadlock in cpu_cooling
-> > > > 
-> > > > I expanded the scope of cooling_list_lock a little too far; it
-> > > > was
-> > > > not just covering cpufreq_dev_count, it was also covering the
-> > > > calls
-> > > > to cpufreq_register_notifier() and
-> > > > cpufreq_unregister_notifier().
-> > > > Since cooling_list_lock is also used within
-> > > > cpufreq_thermal_notifier(),
-> > > > lockdep reports a potential deadlock.  I don't think that's
-> > > > actually
-> > > > possible, but it's easy enough to make it impossible by testing
-> > > > the
-> > > > condition under cooling_list_lock and dropping the lock before
-> > > > calling
-> > > > cpufreq_register_notifier().
-> > > > 
-> > > > As a bonus, I noticed that cpufreq_dev_count is only used for
-> > > > the
-> > > > purpose
-> > > > of knowing whether this is the first or last cooling device
-> > > > registered,
-> > > > and we know that anyway because we know whether the list
-> > > > transitioned
-> > > > between empty and not-empty.  So we can delete that variable
-> > > > too.
-> > > > 
-> > > > Fixes: ae606089621ef0349402cfcbeca33a82abbd0fd0
-> > > > Reported-by: Russell King <linux@armlinux.org.uk>
-> > > > Signed-off-by: Matthew Wilcox <mawilcox@microsoft.com>
-> > > Thanks Matthew, appears to solve the problem.
-> > > 
-> > > Tested-by: Russell King <rmk+kernel@armlinux.org.uk>
-> > > 
-> > patch applied.
-> It's almost three weeks, and it isn't in Linus' tree.  What's
-> happening
-> with this _fix_ for a regression that occured during the merge
-> window?
-> 
-Pull request just sent out, thanks for the reminder.
+Hi,
 
--rui
+On 29 March 2017 at 07:04, NeilBrown <neilb@suse.com> wrote:
+> On Tue, Mar 07 2017, Baolin Wang wrote:
+>
+>> On 3 March 2017 at 10:23, NeilBrown <neilb@suse.com> wrote:
+>>
+>>>
+>>> I understand your reluctance to change drivers that you cannot test.
+>>> An alternative it do change all the
+>>>   atomic_notifier_call_chain(.*notifier,
+>>> calls that don't pass a pointer to vbus_draw to pass NULL, and to
+>>> declare the passing of NULL to be deprecated (so hopefully people won't
+>>> use it in new code).
+>>> Then any notification callback that expects a current can just ignore
+>>> calls where the pointer is NULL.
+>>
+>> I am afraid if it is enough to send out vbus draw information from USB
+>> phy driver, for example you will miss super speed (900mA), which need
+>> get the speed information from gadget driver.
+>
+> When the gadget driver determines that 900mA is available, it calls
+> usb_phy_set_power() which calls the ->set_power() method on the usb_phy.
+> The usb_phy the uses the notifier to inform all interested parties
+> that 900mA is available.
+
+That is one possible way. Now we only set vbus draw by
+usb_gadget_vbus_draw() after setting config and suspend/resume usb
+device. Maybe we can add one condition in usb_gadget_vbus_draw() like:
+
+if (mA >= 500 && gadet->speed >= SUPER_SPEED)
+     mA = 900;
+
+-- 
+Baolin.wang
+Best Regards
