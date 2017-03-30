@@ -1,67 +1,81 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [PATCH V11 6/6] thermal: bcm2835: add thermal driver for
- bcm2835 SoC
-Date: Thu, 30 Mar 2017 21:11:41 +0200 (CEST)
-Message-ID: <1620097357.332334.1490901102005@email.1und1.de>
-References: <1489356665-3175-1-git-send-email-stefan.wahren@i2se.com>
- <1489356665-3175-7-git-send-email-stefan.wahren@i2se.com>
- <20170329045807.GC2582@localhost.localdomain>
- <20170330045725.GA12995@localhost.localdomain>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v12.2 0/5] bq27xxx_battery partial series
+Date: Thu, 30 Mar 2017 12:45:49 -0700
+Message-ID: <CAKvHMgRE7tx3QNYT9k3n9+Wpcb9Eskp7H6WOriJ7drbBz1TuYA@mail.gmail.com>
+References: <20170330090216.12381-1-liam@networkimprov.net> <8b13168b-845e-7ca2-b763-ef61f4f6b81d@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.187]:60926 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934538AbdC3TM0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 15:12:26 -0400
-In-Reply-To: <20170330045725.GA12995@localhost.localdomain>
+Received: from mail-io0-f194.google.com ([209.85.223.194]:36646 "EHLO
+        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933661AbdC3Tpv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 15:45:51 -0400
+Received: by mail-io0-f194.google.com with SMTP id 68so3988917ioh.3
+        for <linux-pm@vger.kernel.org>; Thu, 30 Mar 2017 12:45:50 -0700 (PDT)
+In-Reply-To: <8b13168b-845e-7ca2-b763-ef61f4f6b81d@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Frank Rowand <frowand.list@gmail.com>, kernel@martin.sperl.org, Eric Anholt <eric@anholt.net>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: linux-pm@vger.kernel.org
 
-Hi Eduardo,
+On Thu, Mar 30, 2017 at 5:39 AM, Andrew F. Davis <afd@ti.com> wrote:
+>
+> On 03/30/2017 04:02 AM, Liam Breck wrote:
+> > Changes in this rev:
+> >
+> > Removed macro for if (...) dev_dbg(...) from I/O helper functions.
+> >
+> > Moved update_dm_block() to patch "Add power_supply_battery_info support".
+> > No more refactoring please; it's not really improving the code itself :-)
+> >
+>
+> Thats a big no can do :), refactoring is important for patch review,
+> each patch needs to be a single logical change that stands on its own. I
+> hate refactoring as much as the next guy, but no one said working on
+> Linux would be easy!
 
-> Eduardo Valentin <edubezval@gmail.com> hat am 30. März 2017 um 06:57 geschrieben:
-> 
-> 
-> On Tue, Mar 28, 2017 at 09:58:09PM -0700, Eduardo Valentin wrote:
-> > On Sun, Mar 12, 2017 at 10:11:05PM +0000, Stefan Wahren wrote:
-> > > Add basic thermal driver for bcm2835 SoC.
-> > > 
-> > > This driver currently make sure that tsense HW block is set up
-> > > correctly.
-> > > 
-> > > Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
-> > > Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-> > > Acked-by: Eric Anholt <eric@anholt.net>
-> > 
-> > I see no issue with this driver at this point.
-> > 
-> > As I mentioned, the full series needs to go together. You either get an
-> > Ack from OF maintainers, and I take the series, or you can add my
-> > 
-> > Acked-by: Eduardo Valentin <edubezval@gmail.com>
-> > 
-> > after fixing the small comment from Nobuhiro.
-> > 
-> 
-> Based on other drivers that require negative values, I assume patches 1
-> and 2 of these series are needed, but more for enforcing the API, given
-> that the current of-thermal driver still retrieves the negative values
-> from DTB [1].
-> 
-> A third option on top of what I suggested above is to split the series.
-> Given that you could still get the proper coefficients
-> with current of-thermal, I would suggest you to split this series into
-> two (patches 1-2, 3-6) in your next version, so we avoid futher delays
-> on the driver, while patches 1-2 waits for acks from OF side.
+In the past two years 3 other patchsets on linux-pm have reached 14
+versions (where we are counting partial series). One of those is a new
+kernel framework. You suggested one additional patch in your fixup
+pass, and I did that. It's enough.
 
-i revert patches #1, #2 and the slope value was still correct. So i will choose the third option and split the series.
+> > set_cfgupdate is required for DM write on certain chips, see this Q&A
+> > https://e2e.ti.com/support/power_management/battery_management/f/180/p/577798/2121489#2121489
+> >
+>
+> So lets add the functionality for those chips in a separate patch. I
+> don't like the way you did set_cfgupdate() so lets not block a patch I
+> do like (read/write_block) by including that change in it.
 
-Thanks
-Stefan
+The chips that most need this patchset are the RAM-only ones; they all
+require set_cfgupdate. Our hardware has such a chip. I have spent
+considerable time making this code compatible with any bq27 part. I
+can't donate more time to chips I can't test. set_cfgupdate is
+implemented correctly. It doesn't help anyone to patch it separately.
 
-> 
-> [1] - https://patchwork.kernel.org/patch/9612613/
+> > Renamed dm_buf .full => .has_data, .updt => .dirty
+> > dm_buf has 3 states: !has_data, has_data && !dirty, has_data && dirty
+> > I considered a single field and enum values, but I think this is clearer.
+> >
+> > Renamed set_cfgupdate(..., u16 flag => state)
+> > We call set_cfgupdate(di, BQ27XXX_FLAG_CFGUP or 0)
+> > We !!state to print the intended flag state in error msg.
+> >
+>
+> Just print that it is a flag, or map from state to string. Personally I
+> would just put that in a debug print and not worry if it is pretty.
+
+One msg flags an error condition; it's not a dev_dbg case. We need to
+print the expected flag value, anything else is confusing.
+
+> >   power: bq27xxx_battery: Add bulk transfer bus methods
+> >   power: bq27xxx_battery: Add chip data memory read/write support
+> >   power: bq27xxx_battery: Add power_supply_battery_info support
+> >   power: bq27xxx_battery: Enable chip data memory update for certain chips
+> >   power: bq27xxx_battery: Remove duplicate register arrays
+> >
+> >  drivers/power/supply/bq27xxx_battery.c     | 700 +++++++++++++++++++++++------
+> >  drivers/power/supply/bq27xxx_battery_i2c.c |  98 +++-
+> >  include/linux/power/bq27xxx_battery.h      |  26 +-
+> >  3 files changed, 682 insertions(+), 142 deletions(-)
+> >
