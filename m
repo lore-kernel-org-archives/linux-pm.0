@@ -1,52 +1,87 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v19 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Thu, 30 Mar 2017 11:16:59 +0800
-Message-ID: <CAMz4ku+PAn3nUGg7gs04cPHhn16cKgNv_+duv-kz0GqOEYTYkQ@mail.gmail.com>
-References: <cover.1487578977.git.baolin.wang@linaro.org> <87zih3m73h.fsf@notabene.neil.brown.name>
- <CAMz4ku+98HAgVnMoCg0YaPpcY1NvdKdbK6AuDyzgNOrcbpaz9A@mail.gmail.com> <8737dx6m0b.fsf@notabene.neil.brown.name>
+From: Keerthy <j-keerthy@ti.com>
+Subject: Re: [PATCH v2 3/8] ARM: OMAP5: Thermal: Add slope and offset values
+Date: Thu, 30 Mar 2017 08:57:59 +0530
+Message-ID: <b8437eb3-4a96-2da6-65d8-f0baf4e0c29c@ti.com>
+References: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
+ <1489046762-11288-4-git-send-email-j-keerthy@ti.com>
+ <20170329043302.GA1596@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8737dx6m0b.fsf@notabene.neil.brown.name>
-Sender: linux-kernel-owner@vger.kernel.org
-To: NeilBrown <neilb@suse.com>
-Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfou
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170329043302.GA1596@localhost.localdomain>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, tony@atomide.com, linux-kernel@vger.kernel.org, t-kristo@ti.com, robh+dt@kernel.org, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-On 29 March 2017 at 07:04, NeilBrown <neilb@suse.com> wrote:
-> On Tue, Mar 07 2017, Baolin Wang wrote:
->
->> On 3 March 2017 at 10:23, NeilBrown <neilb@suse.com> wrote:
+
+On Wednesday 29 March 2017 10:03 AM, Eduardo Valentin wrote:
+> On Thu, Mar 09, 2017 at 01:35:57PM +0530, Keerthy wrote:
+>> Currently the slope and offset values for calculating the
+>> hot spot temperature of a particular thermal zone is part
+>> of driver data. Pass them here instead and obtain the values
+>> while of node parsing.
+> 
+> 
+> The patch is fine.. but
+> 
 >>
->>>
->>> I understand your reluctance to change drivers that you cannot test.
->>> An alternative it do change all the
->>>   atomic_notifier_call_chain(.*notifier,
->>> calls that don't pass a pointer to vbus_draw to pass NULL, and to
->>> declare the passing of NULL to be deprecated (so hopefully people won't
->>> use it in new code).
->>> Then any notification callback that expects a current can just ignore
->>> calls where the pointer is NULL.
+>> Signed-off-by: Keerthy <j-keerthy@ti.com>
+>> ---
+>>  arch/arm/boot/dts/omap5.dtsi | 9 +++++++++
+>>  1 file changed, 9 insertions(+)
 >>
->> I am afraid if it is enough to send out vbus draw information from USB
->> phy driver, for example you will miss super speed (900mA), which need
->> get the speed information from gadget driver.
->
-> When the gadget driver determines that 900mA is available, it calls
-> usb_phy_set_power() which calls the ->set_power() method on the usb_phy.
-> The usb_phy the uses the notifier to inform all interested parties
-> that 900mA is available.
+>> diff --git a/arch/arm/boot/dts/omap5.dtsi b/arch/arm/boot/dts/omap5.dtsi
+>> index 222155c..eaff2a5 100644
+>> --- a/arch/arm/boot/dts/omap5.dtsi
+>> +++ b/arch/arm/boot/dts/omap5.dtsi
+>> @@ -1127,6 +1127,15 @@
+>>  
+>>  &cpu_thermal {
+>>  	polling-delay = <500>; /* milliseconds */
+>> +	coefficients = <65 (-1791)>;
+> 
+> I suppose you tried this change with this patch:
+> https://patchwork.kernel.org/patch/9619577/
+> ?
+> 
+> Otherwise, I do not see how your coeff would work, right?
 
-That is one possible way. Now we only set vbus draw by
-usb_gadget_vbus_draw() after setting config and suspend/resume usb
-device. Maybe we can add one condition in usb_gadget_vbus_draw() like:
+IIRC i did not have that patch.
 
-if (mA >= 500 && gadet->speed >= SUPER_SPEED)
-     mA = 900;
+But No issues there. I did try deliberately with negative values and i
+retrieved the negative values in driver nicely.
 
--- 
-Baolin.wang
-Best Regards
+Fox ex: -20 unsigned when retrieved in driver as an int coeff will give
+me -20. I checked with multiple negative co-efficients and i retrieved
+the passed negative co-efficients in driver from DT.
+
+Regards,
+Keerthy
+
+
+> 
+>>  };
+>>  
+>>  /include/ "omap54xx-clocks.dtsi"
+>> +
+>> +&gpu_thermal {
+>> +	coefficients = <117 (-2992)>;
+>> +};
+>> +
+>> +&core_thermal {
+>> +	coefficients = <0 2000>;
+>> +};
+>> -- 
+>> 1.9.1
+>>
