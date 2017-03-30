@@ -1,507 +1,208 @@
 From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v12.2 6/9] power: bq27xxx_battery: Add chip data memory
- read/write support
-Date: Thu, 30 Mar 2017 07:55:08 -0500
-Message-ID: <d8c550c5-1d57-baa9-4d8e-dc3f2f05704f@ti.com>
+Subject: Re: [PATCH v12.2 8/9] power: bq27xxx_battery: Enable chip data memory
+ update for certain chips
+Date: Thu, 30 Mar 2017 07:58:54 -0500
+Message-ID: <f56356ed-089d-7722-39e7-93eaa97a8e3a@ti.com>
 References: <20170330090216.12381-1-liam@networkimprov.net>
- <20170330090216.12381-3-liam@networkimprov.net>
+ <20170330090216.12381-5-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx193.ext.ti.com ([198.47.27.77]:33015 "EHLO
-        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754241AbdC3MzT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 08:55:19 -0400
-In-Reply-To: <20170330090216.12381-3-liam@networkimprov.net>
+Received: from fllnx210.ext.ti.com ([198.47.19.17]:16139 "EHLO
+        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933173AbdC3M66 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 08:58:58 -0400
+In-Reply-To: <20170330090216.12381-5-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org
-Cc: Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
+Cc: Liam Breck <kernel@networkimprov.net>
 
 On 03/30/2017 04:02 AM, Liam Breck wrote:
 > From: Liam Breck <kernel@networkimprov.net>
 > 
-> Add the following to enable read/write of chip data memory (DM) RAM/NVM/flash:
->   bq27xxx_battery_seal()
->   bq27xxx_battery_unseal()
->   bq27xxx_battery_set_cfgupdate()
->   bq27xxx_battery_read_dm_block()
->   bq27xxx_battery_write_dm_block()
->   bq27xxx_battery_checksum_dm_block()
+> Support data memory update of BQ27500, 545, 421, 425, 441, 621.
 > 
-> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+> Create IDs for for previously unID'd chips, to index arrays for unseal keys
+> and data memory register tables.
+> 
 > Signed-off-by: Liam Breck <kernel@networkimprov.net>
 > ---
->  drivers/power/supply/bq27xxx_battery.c | 285 +++++++++++++++++++++++++++++++++
->  include/linux/power/bq27xxx_battery.h  |   1 +
->  2 files changed, 286 insertions(+)
+>  drivers/power/supply/bq27xxx_battery.c     | 73 +++++++++++++++++++++++++++++-
+>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 +++----
+>  include/linux/power/bq27xxx_battery.h      | 11 +++++
+>  3 files changed, 90 insertions(+), 10 deletions(-)
 > 
 > diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-> index e3472c3..dbcf14a 100644
+> index 4c7a13e..70b8d1c 100644
 > --- a/drivers/power/supply/bq27xxx_battery.c
 > +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -65,6 +65,7 @@
->  #define BQ27XXX_FLAG_DSC	BIT(0)
->  #define BQ27XXX_FLAG_SOCF	BIT(1) /* State-of-Charge threshold final */
->  #define BQ27XXX_FLAG_SOC1	BIT(2) /* State-of-Charge threshold 1 */
-> +#define BQ27XXX_FLAG_CFGUP	BIT(4)
->  #define BQ27XXX_FLAG_FC		BIT(9)
->  #define BQ27XXX_FLAG_OTD	BIT(14)
->  #define BQ27XXX_FLAG_OTC	BIT(15)
-> @@ -78,6 +79,12 @@
->  #define BQ27000_FLAG_FC		BIT(5)
->  #define BQ27000_FLAG_CHGS	BIT(7) /* Charge state flag */
+> @@ -57,7 +57,7 @@
 >  
-> +/* control register params */
-> +#define BQ27XXX_SEALED			0x20
-> +#define BQ27XXX_SET_CFGUPDATE		0x13
-> +#define BQ27XXX_SOFT_RESET		0x42
-> +#define BQ27XXX_RESET			0x41
-> +
->  #define BQ27XXX_RS			(20) /* Resistor sense mOhm */
->  #define BQ27XXX_POWER_CONSTANT		(29200) /* 29.2 µV^2 * 1000 */
->  #define BQ27XXX_CURRENT_CONSTANT	(3570) /* 3.57 µV * 1000 */
-> @@ -108,6 +115,11 @@ enum bq27xxx_reg_index {
->  	BQ27XXX_REG_SOC,	/* State-of-Charge */
->  	BQ27XXX_REG_DCAP,	/* Design Capacity */
->  	BQ27XXX_REG_AP,		/* Average Power */
-> +	BQ27XXX_DM_CTRL,	/* Block Data Control */
-> +	BQ27XXX_DM_CLASS,	/* Data Class */
-> +	BQ27XXX_DM_BLOCK,	/* Data Block */
-> +	BQ27XXX_DM_DATA,	/* Block Data */
-> +	BQ27XXX_DM_CKSUM,	/* Block Data Checksum */
->  	BQ27XXX_REG_MAX,	/* sentinel */
+>  #include <linux/power/bq27xxx_battery.h>
+>  
+> -#define DRIVER_VERSION		"1.2.0"
+> +#define DRIVER_VERSION		"1.3.0"
+>  
+>  #define BQ27XXX_MANUFACTURER	"Texas Instruments"
+>  
+> @@ -894,6 +894,54 @@ static const char* bq27xxx_dm_reg_name[] = {
+>  	[BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
 >  };
 >  
-> @@ -131,6 +143,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x0b,
->  		[BQ27XXX_REG_DCAP] = 0x76,
->  		[BQ27XXX_REG_AP] = 0x24,
-> +		[BQ27XXX_DM_CTRL] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_CLASS] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_BLOCK] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_DATA] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_CKSUM] = INVALID_REG_ADDR,
->  	},
->  	[BQ27010] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -150,6 +167,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x0b,
->  		[BQ27XXX_REG_DCAP] = 0x76,
->  		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_CTRL] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_CLASS] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_BLOCK] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_DATA] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_CKSUM] = INVALID_REG_ADDR,
->  	},
->  	[BQ2750X] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -169,6 +191,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x2c,
->  		[BQ27XXX_REG_DCAP] = 0x3c,
->  		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ2751X] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -188,6 +215,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x20,
->  		[BQ27XXX_REG_DCAP] = 0x2e,
->  		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27500] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -207,6 +239,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x2c,
->  		[BQ27XXX_REG_DCAP] = 0x3c,
->  		[BQ27XXX_REG_AP] = 0x24,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27510G1] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -226,6 +263,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x2c,
->  		[BQ27XXX_REG_DCAP] = 0x3c,
->  		[BQ27XXX_REG_AP] = 0x24,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27510G2] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -245,6 +287,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x2c,
->  		[BQ27XXX_REG_DCAP] = 0x3c,
->  		[BQ27XXX_REG_AP] = 0x24,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27510G3] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -264,6 +311,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x20,
->  		[BQ27XXX_REG_DCAP] = 0x2e,
->  		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27520G1] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -283,6 +335,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x2c,
->  		[BQ27XXX_REG_DCAP] = 0x3c,
->  		[BQ27XXX_REG_AP] = 0x24,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27520G2] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -302,6 +359,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x2c,
->  		[BQ27XXX_REG_DCAP] = 0x3c,
->  		[BQ27XXX_REG_AP] = 0x24,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27520G3] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -321,6 +383,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x2c,
->  		[BQ27XXX_REG_DCAP] = 0x3c,
->  		[BQ27XXX_REG_AP] = 0x24,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27520G4] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -340,6 +407,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x20,
->  		[BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
->  		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27530] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -359,6 +431,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x2c,
->  		[BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
->  		[BQ27XXX_REG_AP] = 0x24,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27541] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -378,6 +455,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x2c,
->  		[BQ27XXX_REG_DCAP] = 0x3c,
->  		[BQ27XXX_REG_AP] = 0x24,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27545] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -397,6 +479,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x2c,
->  		[BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
->  		[BQ27XXX_REG_AP] = 0x24,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  	[BQ27421] = {
->  		[BQ27XXX_REG_CTRL] = 0x00,
-> @@ -416,6 +503,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->  		[BQ27XXX_REG_SOC] = 0x1c,
->  		[BQ27XXX_REG_DCAP] = 0x3c,
->  		[BQ27XXX_REG_AP] = 0x18,
-> +		[BQ27XXX_DM_CTRL] = 0x61,
-> +		[BQ27XXX_DM_CLASS] = 0x3e,
-> +		[BQ27XXX_DM_BLOCK] = 0x3f,
-> +		[BQ27XXX_DM_DATA] = 0x40,
-> +		[BQ27XXX_DM_CKSUM] = 0x60,
->  	},
->  };
->  
-> @@ -757,6 +849,18 @@ static struct {
->  static DEFINE_MUTEX(bq27xxx_list_lock);
->  static LIST_HEAD(bq27xxx_battery_devices);
->  
-> +#define BQ27XXX_MSLEEP(i) usleep_range((i)*1000, (i)*1000+500)
-> +
-> +#define BQ27XXX_DM_SZ	32
-> +
-> +struct bq27xxx_dm_buf {
-> +	u8 class;
-> +	u8 block;
-> +	u8 data[BQ27XXX_DM_SZ];
-> +	bool has_data, dirty;
+> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
+> +	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
+> +	[BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
+> +	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
 > +};
 > +
-
-kernel-doc this struct
-
+> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
+> +	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
+> +	[BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
+> +	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
+> +};
 > +
+> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
+> +	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+> +	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+> +	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
+> +};
+> +
+> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
+> +	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
+> +	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
+> +	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
+> +};
+> +
+> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
+> +	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
+> +	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
+> +	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
+> +};
+> +
+> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
+> +	[BQ27500] = bq27500_dm_regs,
+> +	[BQ27545] = bq27545_dm_regs,
+> +	[BQ27421] = bq27421_dm_regs,
+> +	[BQ27425] = bq27425_dm_regs,
+> +	[BQ27441] = bq27421_dm_regs,
+> +	[BQ27621] = bq27621_dm_regs,
+> +};
+> +
+> +static u32 bq27xxx_unseal_keys[] = {
+> +	[BQ27500] = 0x04143672,
+> +	[BQ27545] = 0x04143672,
+> +	[BQ27421] = 0x80008000,
+> +	[BQ27425] = 0x04143672,
+> +	[BQ27441] = 0x80008000,
+> +	[BQ27621] = 0x80008000,
+> +};
+> +
+>  
 >  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
 >  {
->  	struct bq27xxx_device_info *di;
-> @@ -855,6 +959,187 @@ static inline int bq27xxx_write_block(struct bq27xxx_device_info *di, int reg_in
->  	return ret;
->  }
+> @@ -1861,9 +1909,30 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>  		.drv_data = di,
+>  	};
 >  
-> +static int bq27xxx_battery_seal(struct bq27xxx_device_info *di)
-> +{
-> +	int ret;
+> +	di->unseal_key = bq27xxx_unseal_keys[di->chip];
+> +	di->dm_regs = bq27xxx_dm_regs[di->chip];
 > +
-> +	ret = bq27xxx_write(di, BQ27XXX_REG_CTRL, BQ27XXX_SEALED, false);
-> +	if (ret >= 0)
-> +		return 0;
-> +
-
-This logic is reversed, return on error first.
-
-> +	dev_err(di->dev, "bus error on seal: %d\n", ret);
-> +	return ret;
-> +}
-> +
-> +static int bq27xxx_battery_unseal(struct bq27xxx_device_info *di)
-> +{
-> +	int ret;
-> +
-> +	ret = bq27xxx_write(di, BQ27XXX_REG_CTRL, (u16)(di->unseal_key >> 16), false);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	ret = bq27xxx_write(di, BQ27XXX_REG_CTRL, (u16)di->unseal_key, false);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	return 0;
-> +
-> +out:
-> +	dev_err(di->dev, "bus error on unseal: %d\n", ret);
-> +	return ret;
-> +}
-> +
-> +static u8 bq27xxx_battery_checksum_dm_block(struct bq27xxx_dm_buf *buf)
-> +{
-> +	u16 sum = 0;
-
-I haven't tested this, but maybe you could:
-
-u8 sum = 0xff;
-
-for (i = 0; i < BQ27XXX_DM_SZ; i++)
-	sum -= buf->data[i];
-
-return sum;
-
-> +	int i;
-> +
-> +	for (i = 0; i < BQ27XXX_DM_SZ; i++)
-> +		sum += buf->data[i];
-> +	sum &= 0xff;
-> +
-> +	return 0xff - sum;
-> +}
-> +
-> +static int bq27xxx_battery_read_dm_block(struct bq27xxx_device_info *di,
-> +					 struct bq27xxx_dm_buf *buf)
-> +{
-> +	int ret;
-> +
-> +	buf->has_data = false;
-> +
-> +	ret = bq27xxx_write(di, BQ27XXX_DM_CLASS, buf->class, true);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	ret = bq27xxx_write(di, BQ27XXX_DM_BLOCK, buf->block, true);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	BQ27XXX_MSLEEP(1);
-> +
-> +	ret = bq27xxx_read_block(di, BQ27XXX_DM_DATA, buf->data, BQ27XXX_DM_SZ);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	ret = bq27xxx_read(di, BQ27XXX_DM_CKSUM, true);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	if ((u8)ret != bq27xxx_battery_checksum_dm_block(buf)) {
-> +		ret = -EINVAL;
-> +		goto out;
+> +	switch(di->chip) {  /* translate members of categories */
+> +	case BQ2752X:
+> +		di->chip = BQ27510G3; break;
+> +	case BQ27531:
+> +		di->chip = BQ27530;   break;
+> +	case BQ27542:
+> +	case BQ27546:
+> +	case BQ27742:
+> +		di->chip = BQ27541;   break;
+> +	case BQ27425:
+> +	case BQ27441:
+> +	case BQ27621:
+> +		di->chip = BQ27421;   break;
+> +	default:
+> +		break;
 > +	}
 > +
-> +	buf->has_data = true;
-> +	buf->dirty = false;
+> +	di->regs = bq27xxx_regs[di->chip];
 > +
-> +	return 0;
-> +
-> +out:
-> +	dev_err(di->dev, "bus error reading chip memory: %d\n", ret);
-> +	return ret;
-> +}
-> +
-> +static int bq27xxx_battery_set_cfgupdate(struct bq27xxx_device_info *di, u16 state)
-> +{
-> +	const int limit = 100;
-> +	int ret, try = limit;
-> +
-> +	ret = bq27xxx_write(di, BQ27XXX_REG_CTRL,
-> +			    state ? BQ27XXX_SET_CFGUPDATE : BQ27XXX_SOFT_RESET,
-> +			    false);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	do {
-> +		BQ27XXX_MSLEEP(25);
-> +		ret = di->bus.read(di, di->regs[BQ27XXX_REG_FLAGS], false);
-> +		if (ret < 0)
-> +			goto out;
-> +	} while ((ret & BQ27XXX_FLAG_CFGUP) != state && --try);
-> +
-> +	if (!try) {
-> +		dev_err(di->dev, "timed out waiting for cfgupdate flag %d\n", !!state);
-> +		return -EINVAL;
-> +	}
-> +
-> +	if (limit-try > 3)
-> +		dev_warn(di->dev, "cfgupdate %d, retries %d\n", !!state, limit-try);
-> +
-> +	return 0;
-> +
-> +out:
-> +	dev_err(di->dev, "bus error on %s: %d\n", state ? "set_cfgupdate" : "soft_reset", ret);
-> +	return ret;
-> +}
-> +
-> +static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
-> +					  struct bq27xxx_dm_buf *buf)
-> +{
-> +	bool cfgup = di->chip == BQ27421; /* assume group supports cfgupdate */
-> +	int ret;
-> +
-> +	if (!buf->dirty)
-> +		return 0;
-> +
-> +	if (cfgup) {
-> +		ret = bq27xxx_battery_set_cfgupdate(di, BQ27XXX_FLAG_CFGUP);
-> +		if (ret < 0)
-> +			return ret;
-> +	}
-> +
-> +	ret = bq27xxx_write(di, BQ27XXX_DM_CTRL, 0, true);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	ret = bq27xxx_write(di, BQ27XXX_DM_CLASS, buf->class, true);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	ret = bq27xxx_write(di, BQ27XXX_DM_BLOCK, buf->block, true);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	BQ27XXX_MSLEEP(1);
-> +
-> +	ret = bq27xxx_write_block(di, BQ27XXX_DM_DATA, buf->data, BQ27XXX_DM_SZ);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	ret = bq27xxx_write(di, BQ27XXX_DM_CKSUM,
-> +			    bq27xxx_battery_checksum_dm_block(buf), true);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +	/* DO NOT read BQ27XXX_DM_CKSUM here to verify it! That may cause NVM
-> +	 * corruption on the '425 chip (and perhaps others), which can damage
-> +	 * the chip. See TI bqtool for what not to do:
-
-The bqtool does work, it even says delay needs to be long enough.
-
-> +	 * http://git.ti.com/bms-linux/bqtool/blobs/master/gauge.c#line328
-> +	 */
-> +
-> +	if (cfgup) {
-> +		BQ27XXX_MSLEEP(1);
-> +		ret = bq27xxx_battery_set_cfgupdate(di, 0);
-> +		if (ret < 0)
-> +			return ret;
-> +	} else {
-> +		BQ27XXX_MSLEEP(100); /* flash DM updates in <100ms */
-> +	}
-> +
-> +	buf->dirty = false;
-> +
-> +	return 0;
-> +
-> +out:
-> +	if (cfgup)
-> +		bq27xxx_battery_set_cfgupdate(di, 0);
-> +
-> +	dev_err(di->dev, "bus error writing chip memory: %d\n", ret);
-> +	return ret;
-> +}
-> +
->  /*
->   * Return the battery State-of-Charge
->   * Or < 0 if something fails.
+>  	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>  	mutex_init(&di->lock);
+> -	di->regs = bq27xxx_regs[di->chip];
+>  
+>  	psy_desc = devm_kzalloc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
+>  	if (!psy_desc)
+> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+> index a597221..0b11ed4 100644
+> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+> @@ -230,7 +230,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>  	{ "bq27210", BQ27010 },
+>  	{ "bq27500", BQ2750X },
+>  	{ "bq27510", BQ2751X },
+> -	{ "bq27520", BQ2751X },
+> +	{ "bq27520", BQ2752X },
+>  	{ "bq27500-1", BQ27500 },
+>  	{ "bq27510g1", BQ27510G1 },
+>  	{ "bq27510g2", BQ27510G2 },
+> @@ -240,16 +240,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>  	{ "bq27520g3", BQ27520G3 },
+>  	{ "bq27520g4", BQ27520G4 },
+>  	{ "bq27530", BQ27530 },
+> -	{ "bq27531", BQ27530 },
+> +	{ "bq27531", BQ27531 },
+>  	{ "bq27541", BQ27541 },
+> -	{ "bq27542", BQ27541 },
+> -	{ "bq27546", BQ27541 },
+> -	{ "bq27742", BQ27541 },
+> +	{ "bq27542", BQ27542 },
+> +	{ "bq27546", BQ27546 },
+> +	{ "bq27742", BQ27742 },
+>  	{ "bq27545", BQ27545 },
+>  	{ "bq27421", BQ27421 },
+> -	{ "bq27425", BQ27421 },
+> -	{ "bq27441", BQ27421 },
+> -	{ "bq27621", BQ27421 },
+> +	{ "bq27425", BQ27425 },
+> +	{ "bq27441", BQ27441 },
+> +	{ "bq27621", BQ27621 },
+>  	{},
+>  };
+>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
 > diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-> index c3369fa..b1defb8 100644
+> index 227eb08..014e59f 100644
 > --- a/include/linux/power/bq27xxx_battery.h
 > +++ b/include/linux/power/bq27xxx_battery.h
-> @@ -64,6 +64,7 @@ struct bq27xxx_device_info {
->  	int id;
->  	enum bq27xxx_chip chip;
->  	const char *name;
-> +	u32 unseal_key;
->  	struct bq27xxx_access_methods bus;
->  	struct bq27xxx_reg_cache cache;
->  	int charge_design_full;
+> @@ -2,6 +2,7 @@
+>  #define __LINUX_BQ27X00_BATTERY_H__
+>  
+>  enum bq27xxx_chip {
+> +	/* categories; index for bq27xxx_regs[] */
+>  	BQ27000 = 1, /* bq27000, bq27200 */
+>  	BQ27010, /* bq27010, bq27210 */
+>  	BQ2750X, /* bq27500 deprecated alias */
+> @@ -18,6 +19,16 @@ enum bq27xxx_chip {
+>  	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+>  	BQ27545, /* bq27545 */
+>  	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+> +
+> +	/* members of categories; translate these to category in _setup() */
+
+These don't need to be separate from the others, these are valid chip
+IDs, we may use another compatible ID for register array index right now
+but these are not "categories".
+
+> +	BQ2752X, /* deprecated alias */
+> +	BQ27531,
+> +	BQ27542,
+> +	BQ27546,
+> +	BQ27742,
+> +	BQ27425,
+> +	BQ27441,
+> +	BQ27621,
+>  };
+>  
+>  /**
 > 
