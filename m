@@ -1,100 +1,60 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister
- duplicate ACPI battery supply
-Date: Fri, 31 Mar 2017 11:57:47 +0200
-Message-ID: <0c1cc4fc-d127-54d1-334b-9a569354d2a3@redhat.com>
-References: <20170316161601.32267-1-hdegoede@redhat.com>
- <20170316161601.32267-4-hdegoede@redhat.com>
- <6382698.NuYXpb6L7h@aspire.rjw.lan>
- <0ed23626-b6b2-a42e-2a1d-762c8c833f7b@redhat.com>
- <CAJZ5v0h466y6hBy_-12AEgcpAUXEA7cZkNwXZwvsHnjWtoqFeg@mail.gmail.com>
- <eb52c4b4-fc3c-b11b-edef-a35c6bb0d82d@redhat.com>
- <CAJZ5v0i7TN+iJLR_SeaCrpKJ13g1_bQ-G54cugAF9Dm4=pifAg@mail.gmail.com>
+Subject: Re: [PATCH v3 3/4] i2c: core: Allow drivers to specify index for irq
+ to get from of / ACPI
+Date: Fri, 31 Mar 2017 12:03:44 +0200
+Message-ID: <149df3eb-8111-4c91-472e-f6c708302ede@redhat.com>
+References: <20170325135550.22509-1-hdegoede@redhat.com>
+ <20170325135550.22509-4-hdegoede@redhat.com>
+ <1490530535.21738.31.camel@linux.intel.com>
+ <1935239d-fdd8-3917-9865-de389e6728e8@redhat.com>
+ <20170330203954.GA1452@katana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:39076 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932299AbdCaJ5y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 31 Mar 2017 05:57:54 -0400
-In-Reply-To: <CAJZ5v0i7TN+iJLR_SeaCrpKJ13g1_bQ-G54cugAF9Dm4=pifAg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170330203954.GA1452@katana>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
 Hi,
 
-On 31-03-17 11:11, Rafael J. Wysocki wrote:
-> On Fri, Mar 31, 2017 at 11:08 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->> Hi,
->>
->> On 31-03-17 11:05, Rafael J. Wysocki wrote:
->>>
->>> On Fri, Mar 31, 2017 at 11:01 AM, Hans de Goede <hdegoede@redhat.com>
->>> wrote:
->>>
->>> [cut]
->>>
->>>>>> --- a/drivers/power/supply/axp288_fuel_gauge.c
->>>>>> +++ b/drivers/power/supply/axp288_fuel_gauge.c
->>>>>> @@ -26,6 +26,7 @@
->>>>>>  #include <linux/mfd/axp20x.h>
->>>>>>  #include <linux/platform_device.h>
->>>>>>  #include <linux/power_supply.h>
->>>>>> +#include <linux/power/acpi.h>
->>>>>>  #include <linux/iio/consumer.h>
->>>>>>  #include <linux/debugfs.h>
->>>>>>  #include <linux/seq_file.h>
->>>>>> @@ -754,6 +755,8 @@ static int axp288_fuel_gauge_probe(struct
->>>>>> platform_device *pdev)
->>>>>>                 return ret;
->>>>>>         }
->>>>>>
->>>>>> +       acpi_battery_unregister();
->>>>>> +
->>>>>
->>>>>
->>>>>
->>>>> What if the ACPI battery driver is loaded after this has been called
->>>>> already?
->>>>
->>>>
->>>>
->>>> The module exports that symbol so it must be loaded already.
->>>
->>>
->>> But then it may be unloaded manually and loaded again, may it not?
->>
->>
->> Only if you first unload axp288_fuel_gauge.ko otherwise it will
->> have a refcount > 0.
+On 30-03-17 22:39, Wolfram Sang wrote:
+> Hi Hans,
 >
-> OK
+>> Sorry for doing this in the middle of the thread, but this is the only
+>> mail I could find in my archives (I guess I delete mail to aggressively).
 >
-> Anyway, I'd prefer blacklists in the battery and ac drivers to be honest.
+> I use patchwork to track patches (which is mentioned in MAINTAINERS).
+> And patchwork has the nice feature to download patches or series of
+> patches as mbox. And from there you can reply directly, or bounce to
+> yourself first, etc. That's what I do when I lost a mail.
 
-As I explained in my reply to the discussion around the first patch that
-is somewhat hard to do and requires encoding knowledge in those drivers
-which really does not belong there:
+Ok, I will do that the next time.
 
-"The problem is that Intel re-uses HIDs between generations and
-for the Whiskey Cove PMIC we want to not use the ACPI battery
-and ac drivers on Cherry Trail (where they are known to be
-broken) but things are different on Apollo Lake. Yet both
-use the same HID for their companion Whiskey Cove PMIC even
-though they are 2 completely different revisions of the PMIC
-(e.g. one uses i2c the other does not).
+>> Anyways self-nack for this series, there are multiple issues with it:
+>>
+>> 1) In hindsight the irq_index is a bad idea and instead we need a noirq
+>> flag in i2c_driver
+>
+> What do you mean by that? No IRQ assigned? In Linux, 0 is no irq. I
+> guess you mean something else...
 
-The 2 native drivers have code to detect which revision they
-are dealing with and exit with -ENODEV if it is not the
-revision they were written for, but this means that simple
-HID blacklisting will not work. So IMHO the decision to
-unregister the  ACPI battery / ac interface really belongs
-in the native driver as that has all the nitty gritty detail
-needed to make that decision."
+Note I said "flag in i2c_driver" the idea is that the driver can tell
+the i2c_core that it is not going to use i2c_client->irq by
+setting i2c_driver->no_irq and that the i2c_core then will not bother
+with trying to get an irq in i2c_device_probe(), this is esp. useful
+for ACPI i2c instantiated devices where we otherwise might end up
+returning -EPROBE_DEFER (waiting for an irq to show up) without
+needing the irq, which is esp. troublesome when there is no driver
+for the irqchip the ACPI irq resource points to as then we end up
+waiting indefinitely.
+
+I hope this makes things more clear, if you've another suggestion
+for handling this I'm all ears.
 
 Regards,
 
 Hans
+
