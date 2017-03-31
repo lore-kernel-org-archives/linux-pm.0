@@ -1,63 +1,114 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH 2/5] cpufreq: imx6q: Fix handling EPROBE_DEFER from regulator
-Date: Fri, 31 Mar 2017 22:25:37 +0300
-Message-ID: <36c230773c14d37037dbe8cadf4f99b0d875e679.1490987945.git.leonard.crestez@nxp.com>
-References: <cover.1490987945.git.leonard.crestez@nxp.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH v3 3/4] i2c: core: Allow drivers to specify index for irq
+ to get from of / ACPI
+Date: Fri, 31 Mar 2017 21:54:07 +0200
+Message-ID: <20170331195407.GA1449@katana>
+References: <20170325135550.22509-1-hdegoede@redhat.com>
+ <20170325135550.22509-4-hdegoede@redhat.com>
+ <1490530535.21738.31.camel@linux.intel.com>
+ <1935239d-fdd8-3917-9865-de389e6728e8@redhat.com>
+ <20170330203954.GA1452@katana>
+ <149df3eb-8111-4c91-472e-f6c708302ede@redhat.com>
+ <20170331162332.dar3f3mval2ch2uh@ninjato>
+ <2b4d002f-9e6b-b193-7dc3-2f4c20a93276@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <cover.1490987945.git.leonard.crestez@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Mark Brown <broonie@kernel.org>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, linux-arm-kernel@lists.infradead.org, Lucas Stach <l.stach@pengutronix.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="qDbXVdCdHGoSgWSk"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.zeus03.de ([194.117.254.33]:55288 "EHLO mail.zeus03.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754132AbdCaTyL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 31 Mar 2017 15:54:11 -0400
+Content-Disposition: inline
+In-Reply-To: <2b4d002f-9e6b-b193-7dc3-2f4c20a93276@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org
 
-From: Irina Tirdea <irina.tirdea@nxp.com>
 
-If there are any errors in getting the cpu0 regulators, the driver returns
--ENOENT. In case the regulators are not yet available, the devm_regulator_get
-calls will return -EPROBE_DEFER, so that the driver can be probed later.
-If we return -ENOENT, the driver will fail its initialization and will
-not try to probe again (when the regulators become available).
+--qDbXVdCdHGoSgWSk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Return the actual error received from regulator_get in probe. Print a
-differentiated message in case we need to probe the device later and
-in case we actually failed. Also add a message to inform when the
-driver has been successfully registered.
+Hi Hans,
 
-Signed-off-by: Irina Tirdea <irina.tirdea@nxp.com>
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/imx6q-cpufreq.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+> The problem here is that the i2c system is somewhat special in that
+> it does irq mapping on behalf of the driver and does not even bother
+> to call the driver's probe() if the acpi_dev_gpio_irq_get() call
+> returns -EPROBE_DEFER.
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 7719b02..be90ee3 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -222,6 +222,13 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 	arm_reg = regulator_get(cpu_dev, "arm");
- 	pu_reg = regulator_get_optional(cpu_dev, "pu");
- 	soc_reg = regulator_get(cpu_dev, "soc");
-+	if (PTR_ERR(arm_reg) == -EPROBE_DEFER ||
-+			PTR_ERR(soc_reg) == -EPROBE_DEFER ||
-+			PTR_ERR(pu_reg) == -EPROBE_DEFER) {
-+		ret = -EPROBE_DEFER;
-+		dev_dbg(cpu_dev, "regulators not ready, defer\n");
-+		goto put_reg;
-+	}
- 	if (IS_ERR(arm_reg) || IS_ERR(soc_reg)) {
- 		dev_err(cpu_dev, "failed to get regulators\n");
- 		ret = -ENOENT;
--- 
-2.7.4
+Yes, the client->irq handling is cruft, I am fully aware of that.
+
+> >Or maybe you simply want to be early and don't want to get deferred? Are
+> >we talking then about boot optimizations or necessities?
+>=20
+> The problem which I'm trying to fix is not having to write a (complex)
+> gpio driver for an undocumented PMIC which I (and AFAICT no-one) needs (*)
+> just because the i2c-core needs to be "special" and do the acpi_dev_gpio_=
+irq_get
+> for me even though in this specific driver I don't need the irq at index
+> 0 at all. IOW the problem which I'm trying to fix is to get i2c_device_pr=
+obe
+> to not out-smart me and never call my driver's probe method for
+> invalid reasons.
+
+So, it is a necessity because you have an ACPI entry to a PMIC which is
+totally undocumented. Point taken.
+
+>=20
+> My previous patch for this added an irq_index member to i2c_driver instea=
+d,
+> because my use-case does actually need an irq, but the one with
+> resource-index 1, not the useless one at index 0. Which is yet another
+> indication that the naive irq-handling in the i2c-core sometimes get
+> somewhat in the way. In my experience many more complex i2c devices have
+> more then 1 irq line.
+
+I am aware of this problem as well.
+
+> That previous patch works for me too (and even simplifies my driver somew=
+hat),
+> if you like it better I can go back to that. But thinking more about this
+> I decided that having a "dear i2c-core please don't try to out-smart the
+> driver, leave irq handling to me" flag would be better / more generally
+> useful.
+
+I agree. The last sentence made me understand that you want to flag
+"this driver wants custom irq handling" more than "this driver does not
+use irq" what I misinterpreted before. This is a much broader use case
+and we can probably help more people with that. I like it. Maybe we
+should name the flag something like "custom_irq_handling" to prevent
+similar misunderstandings? Just an idea.
+
+Sorry if you got annoyed by my questions, yet with the prospect of
+not only adding code to the core but also adding something to
+i2c_driver, I really want to make sure it is worth it.
+
+Have a nice weekend,
+
+   Wolfram
+
+--qDbXVdCdHGoSgWSk
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJY3rPfAAoJEBQN5MwUoCm2h6IP/3qRAwstM8UEy4x4ybiFAYy5
+o4Ar/jvAOZjeWHa7LsjD67BIARtnT1MZANY7OZ1XWS6wlbKQMve2tj9XEY/i1LUA
+VRMGkTIfwL8QbeKkESOa31af9LN+Ce+GwBoy6u+trj4r8djv/TTNfpDVOGfAIuh4
+rfhk31VjYZZdW6fYvKEdmU4AR9zB/h0X8fn731zxAQx1hSXWXdIO+GTSZ9IJuxom
+C1dop90qltUCxA2k0Z9vXnRns40s9p8W45YTKC2NJdFelJdO5tBp/SYNZGeLJ2uy
+pRsUGSyE+HeW+3mA0/8u4IIgMP3puaGK/FtOoOLi5WrfnfkUTqND/88Nuup5d0zD
+Z6Js08mYQlFyh0lecMwCFR8gS58M44geQJ6Hhd1xxLj23r5+ihRN8c7TfXLJs1BB
+jv6xXY3DBc2wDoavwol+d7moKaVM8QjFUO0bDnF8LSf690EldkFCunUepgB8adJ8
+BnEzexhrwKLjTsM85za2cUTn/Tw4sLojBfsLrmFtrAKFgCiGv3ZaWTj1yl3CmFTc
+Qkkt3Rt40ljIJikufD55KgeG8AvWQMK5myTQX285W2ObFvddeDe9jqtNQ1tFuvdU
+qgtHwZBNyH3bG1EAXE4HP+QbM8ZYqXowsD9NelTDiQ8AvQ5Kr1Q+lo6zt/XKBDpX
+oNCx5iesOnBlPuXuktTK
+=2s6o
+-----END PGP SIGNATURE-----
+
+--qDbXVdCdHGoSgWSk--
