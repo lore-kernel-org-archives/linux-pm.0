@@ -1,67 +1,62 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v3 3/4] i2c: core: Allow drivers to specify index for irq
- to get from of / ACPI
-Date: Fri, 31 Mar 2017 23:19:05 +0200
-Message-ID: <20170331211905.frbdixlix24gt35c@ninjato>
-References: <20170325135550.22509-1-hdegoede@redhat.com>
- <20170325135550.22509-4-hdegoede@redhat.com>
- <1490530535.21738.31.camel@linux.intel.com>
- <1935239d-fdd8-3917-9865-de389e6728e8@redhat.com>
- <20170330203954.GA1452@katana>
- <149df3eb-8111-4c91-472e-f6c708302ede@redhat.com>
- <20170331162332.dar3f3mval2ch2uh@ninjato>
- <2b4d002f-9e6b-b193-7dc3-2f4c20a93276@redhat.com>
- <20170331195407.GA1449@katana>
- <0ff7a58f-b6d3-edb2-2751-e30069098c61@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.11-rc5
+Date: Fri, 31 Mar 2017 23:33:06 +0200
+Message-ID: <CAJZ5v0jFhv_M50MGyeUyYvshhzt8M9V_aLssVEYhFaG4ZzKciA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="co6ceiplha5zzcmj"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <0ff7a58f-b6d3-edb2-2751-e30069098c61@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:34466 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753430AbdCaVdH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2017 17:33:07 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+Hi Linus,
 
---co6ceiplha5zzcmj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Please pull from the tag
 
-Hans,
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.11-rc5
 
-> So I'm going to throw in a fifth option for a name for the flag:
->=20
-> "disable_i2c_core_irq_mapping"
+with top-most commit 46e1d5e972db830379533f4d2d282cbb812dbb9b
 
-I am fine with that. It is only used once per driver, so "clarity over
-brevity" from my POV.
+ Merge branches 'pm-cpufreq-fixes' and 'pm-cpuidle-fixes'
 
-Thanks,
+on top of commit c02ed2e75ef4c74e41e421acb4ef1494671585e8
 
-   Wolfram
+ Linux 4.11-rc4
 
+to receive power management fixes for v4.11-rc5.
 
---co6ceiplha5zzcmj
-Content-Type: application/pgp-signature; name="signature.asc"
+These fix a cpufreq core issue with the initialization of the cpufreq
+sysfs interface and a cpuidle powernv driver initialization issue.
 
------BEGIN PGP SIGNATURE-----
+Specifics:
 
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAljex8kACgkQFA3kzBSg
-KbakDQ/9E68GHOjoNK+Gd6XEq9u+fPcmfhgLqZCOuTvzvLoXQmTwu1uy3V5Vhdrl
-g/ULNoMTQuIaedHWk5Gw0+S1spkgpTIQeSGu+CadGSOFZcgQxsFVYOV4E+R1n0rO
-hx/gKy8ax39cKbXeNDrfuUrNm5FSWHVi9vkVR54ODzfIr/tXItxndkzhMtycYgKV
-uVvH36YoO+X0RUIDZqQnFvnF8kYiBwh2TYoCvCyUHYDvPT76QoDIXZrzKQZU3hG8
-HbQ+eFD+F5YurPzX3UwGWg5GOPpVBpnWI/HVrgxDtA/0QMxXCyXanHisLQVjB3Mt
-XwrHy4bCRkUPjeAB0B+HcdpejqxODdCVPzSLxj7WcnGlOQ9c7VNA1GuLTFodAfBH
-HChaGvEm3VbusNOlBKgDqFSWwCKDn5TKWE6mAU+pjrioZxzSsHRcylNnY6zs7v0Q
-IdqRKwK3y1+1/tkz5kClfh/mRrOAwCqlG+7RuoU+4fh8sdSGGN3wTUJWz24cEJOi
-t1lfTEqGen544iitRfSn6OeUQk7u3Sxu9ci5bYAm3kkabxvHaZseHakcr830ztWl
-jqzu+Y7R1bXzt+MgxEw/9H79w6CuVmcJo8qhkL5z7RDd1kQzAYsocrM/GYWpLilK
-3b5XvLTm1cgh9C6LuSlylZPQ6YyAH7qnx0se5ev+WRD+C6jefLo=
-=wIUu
------END PGP SIGNATURE-----
+ - Symbolic links from CPU directories to the corresponding cpufreq
+   policy directories in sysfs are not created during initialization
+   in some cases which confuses user space, so prevent that from
+   happening (Rafael Wysocki).
 
---co6ceiplha5zzcmj--
+ - The powernv cpuidle driver fails to pass a correct cpumaks to
+   the cpuidle core in some cases which causes subsequent failures
+   to occur, so fix it (Vaidyanathan Srinivasan).
+
+Thanks!
+
+---------------
+
+Rafael J. Wysocki (1):
+      cpufreq: Fix creation of symbolic links to policy directories
+
+Vaidyanathan Srinivasan (1):
+      cpuidle: powernv: Pass correct drv->cpumask for registration
+
+---------------
+
+ drivers/cpufreq/cpufreq.c         | 38 +++++++++++++++++++++-----------------
+ drivers/cpuidle/cpuidle-powernv.c | 18 ++++++++++++++++++
+ 2 files changed, 39 insertions(+), 17 deletions(-)
