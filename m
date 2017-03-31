@@ -1,65 +1,67 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFD PATCH 4/5] sched/cpufreq_schedutil: always consider all
- CPUs when deciding next freq
-Date: Fri, 31 Mar 2017 08:31:26 +0100
-Message-ID: <20170331073126.GK19929@e106622-lin>
-References: <20170324140900.7334-1-juri.lelli@arm.com>
- <20170324140900.7334-5-juri.lelli@arm.com>
- <2348394.hDdCk9fbgK@aspire.rjw.lan>
- <20170330085805.GF18960@e106622-lin>
- <CAJZ5v0jyHkVg80Uk5rh4Ax1wqFk=i+nbYEUfakDNrhu8zLnRzg@mail.gmail.com>
+From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH V3 1/2] dt-bindings: thermal: add support for Broadcom's Northstar thermal
+Date: Fri, 31 Mar 2017 09:31:31 +0200
+Message-ID: <20170331073132.21457-1-zajec5@gmail.com>
+References: <20170323223045.15786-1-zajec5@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:55448 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753661AbdCaHbd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 31 Mar 2017 03:31:33 -0400
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jyHkVg80Uk5rh4Ax1wqFk=i+nbYEUfakDNrhu8zLnRzg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170323223045.15786-1-zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Steven Rostedt <rostedt@goodmis.org>, Luca Abeni <luca.abeni@santannapisa.it>, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
 
-On 30/03/17 22:13, Rafael J. Wysocki wrote:
-> On Thu, Mar 30, 2017 at 10:58 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> > Hi,
-> 
-> Hi,
-> 
-> > On 30/03/17 00:41, Rafael J. Wysocki wrote:
-> >> On Friday, March 24, 2017 02:08:59 PM Juri Lelli wrote:
-> >> > No assumption can be made upon the rate at which frequency updates get
-> >> > triggered, as there are scheduling policies (like SCHED_DEADLINE) which
-> >> > don't trigger them so frequently.
-> >> >
-> >> > Remove such assumption from the code.
-> >>
-> >> But the util/max values for idle CPUs may be stale, no?
-> >>
-> >
-> > Right, that might be a problem. A proper solution I think would be to
-> > remotely update such values for idle CPUs, and I believe Vincent is
-> > working on a patch for that.
-> >
-> > As mid-term workarounds, changing a bit the current one, come to my
-> > mind:
-> >
-> >  - consider TICK_NSEC (continue) only when SCHED_CPUFREQ_DL is not set
-> >  - remove CFS contribution (without triggering a freq update) when a CPU
-> >    enters IDLE; this might not work well, though, as we probably want
-> >    to keep in blocked util contribution for a bit
-> >
-> > What you think is the way to go?
-> 
-> Well, do we want SCHED_DEADLINE util contribution to be there even for
-> idle CPUs?
-> 
+From: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
 
-DEADLINE util contribution is removed, even if the CPU is idle, by the
-reclaiming mechanism when we know (applying GRUB algorithm rules [1])
-that it can't be used anymore by a task (roughly speaking). So, we
-shouldn't have this problem in the DEADLINE case.
+This commit documents binding for thermal used in Northstar family SoCs.
 
-[1] https://marc.info/?l=linux-kernel&m=149029880524038
+Signed-off-by: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+---
+V3: Add thermal-zones to the example
+    Rob: Because of this update, I didn't include Acked-by I got for V2
+---
+ .../devicetree/bindings/thermal/brcm,ns-thermal    | 26 ++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,ns-thermal
+
+diff --git a/Documentation/devicetree/bindings/thermal/brcm,ns-thermal b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal
+new file mode 100644
+index 000000000000..c561c7349f17
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal
+@@ -0,0 +1,26 @@
++* Broadcom Northstar Thermal
++
++This binding describes thermal sensor that is part of Northstar's DMU (Device
++Management Unit).
++
++Required properties:
++- compatible : Must be "brcm,ns-thermal"
++- reg : iomem address range of PVTMON registers
++- #thermal-sensor-cells : Should be <0>
++
++Example:
++
++thermal: thermal@1800c2c0 {
++	compatible = "brcm,ns-thermal";
++	reg = <0x1800c2c0 0x10>;
++	#thermal-sensor-cells = <0>;
++};
++
++thermal-zones {
++	cpu_thermal: cpu-thermal {
++		polling-delay-passive = <0>;
++		polling-delay = <1000>;
++		coefficients = <(-556) 418000>;
++		thermal-sensors = <&thermal>;
++	};
++};
+-- 
+2.11.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
