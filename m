@@ -1,64 +1,51 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCHv3] power: supply: cpcap-charger: Add minimal CPCAP PMIC
- battery charger
-Date: Thu, 30 Mar 2017 18:24:02 -0500
-Message-ID: <20170330232402.o4jslzlw3kgfnjqz@rob-hp-laptop>
-References: <20170327032513.22890-1-tony@atomide.com>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V11 6/6] thermal: bcm2835: add thermal driver for bcm2835
+ SoC
+Date: Thu, 30 Mar 2017 18:06:45 -0700
+Message-ID: <20170331010643.GA1923@localhost.localdomain>
+References: <1489356665-3175-1-git-send-email-stefan.wahren@i2se.com>
+ <1489356665-3175-7-git-send-email-stefan.wahren@i2se.com>
+ <20170329045807.GC2582@localhost.localdomain>
+ <20170330045725.GA12995@localhost.localdomain>
+ <1620097357.332334.1490901102005@email.1und1.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:34784 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751210AbdC3XYE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 19:24:04 -0400
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170327032513.22890-1-tony@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1620097357.332334.1490901102005-7tX72C7vayboQLBSYMtkGA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Cc: Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
 
-On Sun, Mar 26, 2017 at 08:25:13PM -0700, Tony Lindgren wrote:
-> The custom CPCAP PMIC used on Motorola phones such as Droid 4 has a
-> USB battery charger. It can optionally also have a companion chip that
-> is used for wireless charging.
+Hello,
+On Thu, Mar 30, 2017 at 09:11:41PM +0200, Stefan Wahren wrote:
+> Hi Eduardo,
 > 
-> The charger on CPCAP also can feed VBUS for the USB host mode. This
-> can be handled by the existing kernel phy_companion interface.
-> 
-> Cc: devicetree@vger.kernel.org
-> Cc: Marcel Partap <mpartap@gmx.net>
-> Cc: Michael Scott <michael.scott@linaro.org>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
-> 
-> Changes since v2:
-> 
-> - Update binding based on comments by Sebastian Reichel <sre@kernel.org>
-> 
-> - Drop "motorola,cpcap-charger" compatible for now as this seems specific
->   to the motorola-mapphone
-> 
-> - Update Kconfig for "depends on IIO" and "default MFD_CPCAP"
-> 
-> Changes since v1:
-> 
-> - Fix scaling of IIO values as pointed out by Sebastian Reichel
->   <sre@kernel.org>
-> 
-> - Use iio_read_channel_processed() instead of iio_read_channel_scaled()
->   as changed in the v2 of the ADC driver
-> 
-> - Add GPL v2 license header
-> 
-> ---
->  .../bindings/power/supply/cpcap-charger.txt        |  38 ++
+> > Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> hat am 30. März 2017 um 06:57 geschrieben:
+> > 
+> > 
 
-Acked-by: Rob Herring <robh@kernel.org>
+<cut>
 
->  drivers/power/supply/Kconfig                       |   8 +
->  drivers/power/supply/Makefile                      |   1 +
->  drivers/power/supply/cpcap-charger.c               | 681 +++++++++++++++++++++
->  4 files changed, 728 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/cpcap-charger.txt
->  create mode 100644 drivers/power/supply/cpcap-charger.c
+> > A third option on top of what I suggested above is to split the series.
+> > Given that you could still get the proper coefficients
+> > with current of-thermal, I would suggest you to split this series into
+> > two (patches 1-2, 3-6) in your next version, so we avoid futher delays
+> > on the driver, while patches 1-2 waits for acks from OF side.
+> 
+> i revert patches #1, #2 and the slope value was still correct. So i will choose the third option and split the series.
+
+Sounds good to me.
+
+> 
+> Thanks
+> Stefan
+> 
+> > 
+> > [1] - https://patchwork.kernel.org/patch/9612613/
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
