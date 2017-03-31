@@ -1,64 +1,51 @@
 From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH 0/5] ARM: imx: Set LDO regulator supply
-Date: Fri, 31 Mar 2017 22:25:35 +0300
-Message-ID: <cover.1490987945.git.leonard.crestez@nxp.com>
+Subject: [PATCH 3/5] cpufreq: imx6q: Set max suspend_freq to avoid changes during suspend
+Date: Fri, 31 Mar 2017 22:25:38 +0300
+Message-ID: <94d99b261124b813adecf11e86a0ffe05c37f276.1490987945.git.leonard.crestez@nxp.com>
+References: <cover.1490987945.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1490987945.git.leonard.crestez@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Mark Brown <broonie@kernel.org>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, linux-arm-kernel@lists.infradead.org, Lucas Stach <l.stach@pengutronix.de>
+Cc: Leonard Crestez <leonard.crestez@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, Robin Gong <yibin.gong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Setting the LDO regulator parent is optional but beneficial. It will cause
-the PMIC output voltage to be dynamically set to the minimum input for the
-LDOs, this should be more efficient.
+If the cpufreq driver tries to modify voltage/freq during suspend/resume
+it might need to control an external PMIC via I2C or SPI but those
+devices might be already suspended.
 
-This propagation was introduced by:
-commit fc42112c0eaa ("regulator: core: Propagate voltage changes to supply
-regulators")
+To avoid this scenario we just increase cpufreq to highest setpoint
+before suspend. This issue can easily be triggered by ldo-bypass but in
+theory any regulator set_voltage call can end up having to modify
+external supply voltages.
 
-In this case it is desirable that the parent regulator sets the minimum
-voltage for it's consumers. It's not clear if this behavior from the
-regulator core is entirely intentional. If it's not then perhaps it should
-be made configurable through DT somehow?
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/imx6q-cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-This makes probe order more complicated, fix that in patches 1 and 2.
-
-It can also break suspend because cpufreq voltage switches can end up
-talking to a PMIC via I2C which is already suspended. This is fixed in
-patch 3.
-
-It's good to have these issues fixed upstream because they might affect
-other complex configurations.
-
-These changes are required for LDO bypass but they are also useful
-standalone. Here's a link to the that other discussion:
-https://lkml.org/lkml/2017/3/22/640
-
-Irina Tirdea (1):
-  cpufreq: imx6q: Fix handling EPROBE_DEFER from regulator
-
-Leonard Crestez (4):
-  ARM: imx: gpc: Do not print error message for EPROBE_DEFER
-  cpufreq: imx6q: Set max suspend_freq to avoid changes during suspend
-  ARM: dts: imx6qdl-sabresd: Set LDO regulator supply
-  ARM: dts: imx6qp-sabresd: Set reg_arm regulator supply
-
- arch/arm/boot/dts/imx6qdl-sabresd.dtsi | 12 ++++++++++++
- arch/arm/boot/dts/imx6qp-sabresd.dts   |  4 ++--
- arch/arm/mach-imx/gpc.c                |  6 +++++-
- drivers/cpufreq/imx6q-cpufreq.c        |  9 +++++++++
- 4 files changed, 28 insertions(+), 3 deletions(-)
-
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index be90ee3..e2c1fbf 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -162,6 +162,7 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	policy->clk = arm_clk;
++	policy->suspend_freq = freq_table[soc_opp_count - 1].frequency;
+ 	return cpufreq_generic_init(policy, freq_table, transition_latency);
+ }
+ 
+@@ -173,6 +174,7 @@ static struct cpufreq_driver imx6q_cpufreq_driver = {
+ 	.init = imx6q_cpufreq_init,
+ 	.name = "imx6q-cpufreq",
+ 	.attr = cpufreq_generic_attr,
++	.suspend = cpufreq_generic_suspend,
+ };
+ 
+ static int imx6q_cpufreq_probe(struct platform_device *pdev)
 -- 
 2.7.4
