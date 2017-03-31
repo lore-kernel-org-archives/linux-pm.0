@@ -1,89 +1,68 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v3] power: supply: bq24190_charger: Use extcon to
- determine ilimit, 5v boost
-Date: Fri, 31 Mar 2017 17:43:02 +0200
-Message-ID: <ed292253-c1ea-4041-6799-3e2cbb829cb0@redhat.com>
-References: <20170323083235.15072-1-hdegoede@redhat.com>
- <CAKvHMgTqyW8MnVLyzR5L3+DjQHZ+04GZtW+MhkNAt7HBrqUhBw@mail.gmail.com>
- <0b3d3f1e-0f86-1090-4812-1a574d9dadb0@redhat.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH v3 3/4] i2c: core: Allow drivers to specify index for irq
+ to get from of / ACPI
+Date: Fri, 31 Mar 2017 18:23:33 +0200
+Message-ID: <20170331162332.dar3f3mval2ch2uh@ninjato>
+References: <20170325135550.22509-1-hdegoede@redhat.com>
+ <20170325135550.22509-4-hdegoede@redhat.com>
+ <1490530535.21738.31.camel@linux.intel.com>
+ <1935239d-fdd8-3917-9865-de389e6728e8@redhat.com>
+ <20170330203954.GA1452@katana>
+ <149df3eb-8111-4c91-472e-f6c708302ede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:17254 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S933217AbdCaPnG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 31 Mar 2017 11:43:06 -0400
-In-Reply-To: <0b3d3f1e-0f86-1090-4812-1a574d9dadb0@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="34gmuqwk37mjcy6l"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <149df3eb-8111-4c91-472e-f6c708302ede@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Tony Lindgren <tony@atomide.com>
 
-Hi,
 
-On 29-03-17 09:34, Hans de Goede wrote:
+--34gmuqwk37mjcy6l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-<snip>
 
->>> @@ -36,6 +38,8 @@
->>>  #define BQ24190_REG_POC_WDT_RESET_SHIFT                6
->>>  #define BQ24190_REG_POC_CHG_CONFIG_MASK                (BIT(5) | BIT(4))
->>>  #define BQ24190_REG_POC_CHG_CONFIG_SHIFT       4
->>> +#define BQ24190_REG_POC_CHG_CONFIG_CHARGE      1
->>> +#define BQ24190_REG_POC_CHG_CONFIG_OTG         2
->>
->> Place these at the end of the reg_poc section, so the mask & shift
->> names are together.
+> Note I said "flag in i2c_driver" the idea is that the driver can tell
+> the i2c_core that it is not going to use i2c_client->irq by
+> setting i2c_driver->no_irq and that the i2c_core then will not bother
+> with trying to get an irq in i2c_device_probe(), this is esp. useful
+> for ACPI i2c instantiated devices where we otherwise might end up
+> returning -EPROBE_DEFER (waiting for an irq to show up) without
+> needing the irq, which is esp. troublesome when there is no driver
+> for the irqchip the ACPI irq resource points to as then we end up
+> waiting indefinitely.
 
-Small note while I'm sending an email anyways: the BQ24190_REG_VPRS defines
-do things the same way and I believe that keeping the masks and the
-values for the bits together is better.
+Okay, thanks. I understand the big picture. But does it really need to
+be fixed in I2C core? Independent of I2C: if an irq is described in ACPI
+and the driver for the needed irq controller is not available, that can
+lead to various problems everywhere.
 
-<snip>
+Or maybe you simply want to be early and don't want to get deferred? Are
+we talking then about boot optimizations or necessities?
 
->>> +       /*
->>> +        * If no charger has been detected and host mode is requested, activate
->>> +        * the 5V boost converter, otherwise deactivate it.
->>> +        */
->>
->> u8 val = BQ24190_REG_POC_CHG_CONFIG_CHARGE;
->>
->>> +       if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) == 1) {
->>
->> if (above) val = BQ24190_REG_POC_CHG_CONFIG_OTG;
->>
->> Then call write_mask once, with val.
->
-> Good idea,
 
-Scrap that I thought you were trying to fold the ilimit and boost-converter
-writes into 1 write which would be good I now see that those are 2 different
-regs and what you're suggesting is a coding style change only. I don't like
-your proposed change, this is a clear example where using an if-else
-construct is much more readable then using the:
-val=condition-false-value; if (condition) val=condition-true-value
-construct you suggest.
+--34gmuqwk37mjcy6l
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> but actually I found out by booting my board with a host-cable
-> (USB-C equivalent of id-pin connected to ground) plugged in that there is
-> a second 5v boost converter on the board and that that-one gets used by
-> the firmware, so I will submit a patch soon-ish dropping the EXTCON_USB_HOST
-> handling all together.
+-----BEGIN PGP SIGNATURE-----
 
-Ok scrap that, yes my board has 2 5v boost converters, yes the firmware
-uses the one which is not part of the bq24190, but that is a BAD idea,
-because even if we stop the bq24190 from trying to charge the
-battery from the 5v boost converter, by driving not-CE high, it still
-tries to supply Vsys from the 5v boost converter causing an extra 300mA
-of battery drain as long as the other 5v boost converter is active.
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAljegoEACgkQFA3kzBSg
+KbYyHhAAiZaNfmzUBc11Gh9JZMI1zs1otTiuNYsBc5CxZSpcQzTtrmR5qv6rt8rl
+Dmur4KQHkgHyqpPy17I7iORu+1+HfqmQbstDvr8cMoaHDsdqHsRWRKvEmkmG+pMa
+xWBA/YqBzJ2Kp6/CNKEltUPvBxdjNCepzVZy+cU0wuq6PUu+9k27Tpu0tildQbaa
+CbaEV5hAq0f4Ko6ElZcgP6Z6l7cwUv2O/BbvVCoAYc1lro7BMOrPWBcoL0IuANox
+Es50HnmCpLycJau/FkikhsFsVbEuR0lGD80sPcSLgi9qe649hSVhbUTaLs1EXHf3
+Dej/lU0+pfa+DqbJ8E5zna3VufjG+zca9rtSrM9k/DfIIlgPP1ytt/sJ2c7164/u
+K9H0Wd2m2FJmVvu6UCti60euCAMBHMSexnXXPL2mA1lul+sqRHMWGO7/tVn0IWxo
+JIW4Xf/jrVEP6W+GimZfpt+PJgHf0zeduu5gU7zLwt5qil0E5nqgfmYSspe33goc
+yrvSbqkTDVQdDrHJuvocZxdBk5Qhn/Bc13jD4ZSQ/kRI3dKnxuxX/m8ToXj39y6N
+RSnW91i1qDPVFoMuMc5d0DRt6YrBalIWtPJjNXEBbMYvv81RigPP+cmpVPz4A8ov
+e6Mn0hTCrzMSZP2Jm8Feu/5kTINyfGDeKIBx5IIuB3oofduBTMU=
+=I8V2
+-----END PGP SIGNATURE-----
 
-So what the firmware is doing is stupid and I'm not going to send a patch
-to remove the 5v boost converter enabling from the bq24190 extcon handling
-as that is actually what we want. Instead I'll do a patch for the
-pmic-extcon driver to turn off the other 5v boost converter at boot,
-as it should never be used on machines with a bq24190.
-
-Regards,
-
-Hans
+--34gmuqwk37mjcy6l--
