@@ -1,70 +1,44 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V2 1/2] dt-bindings: thermal: add support for Broadcom's
- Northstar thermal
-Date: Thu, 30 Mar 2017 20:17:23 -0700
-Message-ID: <20170331031721.GB3161@localhost.localdomain>
-References: <20170318155632.18099-1-zajec5@gmail.com>
- <20170323223045.15786-1-zajec5@gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 194963] schedutil governor causes audio problem in game
+Date: Fri, 31 Mar 2017 03:51:21 +0000
+Message-ID: <bug-194963-137361-LrUA4dIsS0@https.bugzilla.kernel.org/>
+References: <bug-194963-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f68.google.com ([74.125.83.68]:35603 "EHLO
-        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753359AbdCaDR2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 23:17:28 -0400
-Content-Disposition: inline
-In-Reply-To: <20170323223045.15786-1-zajec5@gmail.com>
+Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:52938 "EHLO
+        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753730AbdCaDvY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 23:51:24 -0400
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 688662867F
+        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2017 03:51:23 +0000 (UTC)
+Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id D08682867F
+        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2017 03:51:22 +0000 (UTC)
+In-Reply-To: <bug-194963-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>
+To: linux-pm@kernel.org
 
-Hello Rafal,
+https://bugzilla.kernel.org/show_bug.cgi?id=194963
 
-On Thu, Mar 23, 2017 at 11:30:44PM +0100, Rafał Miłecki wrote:
-> From: Rafał Miłecki <rafal@milecki.pl>
-> 
-> This commit documents binding for thermal used in Northstar family SoCs.
-> 
-> Signed-off-by: Rafał Miłecki <rafal@milecki.pl>
-> ---
->  .../devicetree/bindings/thermal/brcm,ns-thermal         | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/brcm,ns-thermal
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/brcm,ns-thermal b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal
-> new file mode 100644
-> index 000000000000..9a22dd76ec01
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal
-> @@ -0,0 +1,17 @@
-> +* Broadcom Northstar Thermal
-> +
-> +This binding describes thermal sensor that is part of Northstar's DMU (Device
-> +Management Unit).
-> +
-> +Required properties:
-> +- compatible : Must be "brcm,ns-thermal"
-> +- reg : iomem address range of PVTMON registers
-> +- #thermal-sensor-cells : Should be <0>
-> +
-> +Example:
-> +
-> +thermal {
-> +	compatible = "brcm,ns-thermal";
-> +	reg = <0x1800c2c0 0x10>;
-> +	#thermal-sensor-cells = <0>;
-> +};
+--- Comment #18 from John (john.ettedgui@gmail.com) ---
+So I've been on passive for about a day, and I didn't notice any difference
+with acpi-cpufreq. As you've correctly stated in your email, I am not doing any
+measurements so it's all a bit of a guesswork. I could plot frequencies if
+needed.
 
+One thing I forgot to mention earlier is that I use the most cpu intensive
+resample method in pulseaudio (speex-float-10).
 
-Could you please also include an example of the thermal zone one should
-include in the board/cpu DTS while using this sensor? 
+On another forum, one user tried to replicate my tests and never had any issue
+or worse performance with standard schedutil from 4.10 on a 2500k.  I don't
+know if he's using pulse or straight alsa, and if the former which resampler is
+used. I'll try to get this information. Not sure what that means, but I thought
+I might as well share this.
 
-Besides, based on what I saw you in your driver, you could also describe
-your offset and slope in DT, and read them using thermal helpers.
-
-BR,
-> -- 
-> 2.11.0
-> 
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
