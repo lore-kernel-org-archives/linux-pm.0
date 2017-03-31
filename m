@@ -1,127 +1,80 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH] thermal: core: Add a back up thermal shutdown mechanism
-Date: Fri, 31 Mar 2017 12:00:20 +0530
-Message-ID: <1490941820-13511-1-git-send-email-j-keerthy@ti.com>
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+Subject: Re: [PATCH V2 2/2] thermal: broadcom: add Northstar thermal driver
+Date: Fri, 31 Mar 2017 09:03:34 +0200
+Message-ID: <d678d252-a95a-58c0-8098-4401c67040a1@gmail.com>
+References: <20170318155632.18099-1-zajec5@gmail.com>
+ <20170323223045.15786-1-zajec5@gmail.com>
+ <20170323223045.15786-2-zajec5@gmail.com>
+ <20170324143535.GA31953@broadcom.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:34010 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932545AbdCaGbt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2017 02:31:49 -0400
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:36849 "EHLO
+        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750777AbdCaHDj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2017 03:03:39 -0400
+In-Reply-To: <20170324143535.GA31953@broadcom.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: j-keerthy@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
+To: Jon Mason <jon.mason@broadcom.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>
 
-orderly_poweroff is triggered when a graceful shutdown
-of system is desired. This may be used in many critical states of the
-kernel such as when subsystems detects conditions such as critical
-temperature conditions. However, in certain conditions in system
-boot up sequences like those in the middle of driver probes being
-initiated, userspace will be unable to power off the system in a clean
-manner and leaves the system in a critical state. In cases like these,
-the /sbin/poweroff will return success (having forked off to attempt
-powering off the system. However, the system overall will fail to
-completely poweroff (since other modules will be probed) and the system
-is still functional with no userspace (since that would have shut itself
-off).
+On 03/24/2017 03:35 PM, Jon Mason wrote:
+> On Thu, Mar 23, 2017 at 11:30:45PM +0100, Rafał Miłecki wrote:
+>> diff --git a/drivers/thermal/broadcom/ns-thermal.c b/drivers/thermal/broadcom/ns-thermal.c
+>> new file mode 100644
+>> index 000000000000..acf3a4de62a4
+>> --- /dev/null
+>> +++ b/drivers/thermal/broadcom/ns-thermal.c
+>> @@ -0,0 +1,98 @@
+>> +/*
+>> + * Copyright (C) 2017 Rafał Miłecki <rafal@milecki.pl>
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 as
+>> + * published by the Free Software Foundation.
+>> + */
+>> +
+>> +#include <linux/module.h>
+>> +#include <linux/of_address.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/thermal.h>
+>> +
+>> +#define PVTMON_CONTROL0					0x00
+>> +#define PVTMON_CONTROL0_SEL_MASK			0x0000000e
+>> +#define PVTMON_CONTROL0_SEL_TEMP_MONITOR		0x00000000
+>> +#define PVTMON_CONTROL0_SEL_TEST_MODE			0x0000000e
+>> +#define PVTMON_STATUS					0x08
+>> +
+>> +struct ns_thermal {
+>> +	void __iomem *pvtmon;
+>> +};
+>> +
+>> +static int ns_thermal_get_temp(void *data, int *temp)
+>> +{
+>> +	struct ns_thermal *ns_thermal = data;
+>> +	u32 val;
+>> +
+>> +	val = readl(ns_thermal->pvtmon + PVTMON_CONTROL0);
+>> +	if ((val & PVTMON_CONTROL0_SEL_MASK) != PVTMON_CONTROL0_SEL_TEMP_MONITOR) {
+>> +		val &= ~PVTMON_CONTROL0_SEL_MASK;
+>> +		val |= PVTMON_CONTROL0_SEL_TEMP_MONITOR;
+>
+> I think this is slightly confusing here.  If this was off, ORing in 0
+> will not enable it.  I think we need to flip the #define to make it
+> PVTMON_CONTROL0_SEL_TEMP_MONITOR_DISABLE (or a less crappy name).
+> then use this line here to toggle it.  Something like
+>
+>                 val &= ~PVTMON_CONTROL0_SEL_TEMP_MONITOR_DISABLE;
 
-However, there is no clean way of detecting such failure of userspace
-powering off the system. In such scenarios, it is necessary for a backup
-workqueue to be able to force a shutdown of the system when orderly
-shutdown is not successful after a configurable time period.
+I don't understand this, can you help me further?
 
-Reported-by: Nishanth Menon <nm@ti.com>
-Signed-off-by: Keerthy <j-keerthy@ti.com>
----
- drivers/thermal/Kconfig        | 13 +++++++++++++
- drivers/thermal/thermal_core.c | 42 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 55 insertions(+)
+OR-ing with 0 is only a cosmetic thing obviously - just to make it clear which
+value we expect to be set in bits 1:3. The important part is:
+val &= ~PVTMON_CONTROL0_SEL_MASK;
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 0a16cf4..4cc55f9 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -15,6 +15,19 @@ menuconfig THERMAL
- 
- if THERMAL
- 
-+config THERMAL_EMERGENCY_POWEROFF_DELAY_MS
-+	int "Emergency poweroff delay in milli-seconds"
-+	depends on THERMAL
-+	default 0
-+	help
-+	  The number of milliseconds to delay before emergency
-+	  poweroff kicks in. The delay should be carefully profiled
-+	  so as to give adequate time for orderly_poweroff. In case
-+	  of failure of an orderly_poweroff the emergency poweroff
-+	  kicks in after the delay has elapsed and shuts down the system.
-+
-+	  If set to 0 poweroff will happen immediately.
-+
- config THERMAL_HWMON
- 	bool
- 	prompt "Expose thermal sensors as hwmon device"
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 11f0675..dc7fdd4 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -322,6 +322,47 @@ static void handle_non_critical_trips(struct thermal_zone_device *tz,
- 		       def_governor->throttle(tz, trip);
- }
- 
-+/**
-+ * emergency_poweroff_func - emergency poweroff work after a known delay
-+ * @work: work_struct associated with the emergency poweroff function
-+ *
-+ * This function is called in very critical situations to force
-+ * a kernel poweroff after a configurable timeout value.
-+ */
-+static void emergency_poweroff_func(struct work_struct *work)
-+{
-+	/**
-+	 * We have reached here after the emergency thermal shutdown
-+	 * Waiting period has expired. This means orderly_poweroff has
-+	 * not been able to shut off the system for some reason.
-+	 * Try to shut down the system immediately using pm_power_off
-+	 * if populated
-+	 */
-+	pr_warn("Attempting kernel_power_off\n");
-+	if (pm_power_off)
-+		pm_power_off();
-+
-+	/**
-+	 * Worst of the worst case trigger emergency restart
-+	 */
-+	pr_warn("kernel_power_off has failed! Attempting emergency_restart\n");
-+	emergency_restart();
-+}
-+
-+static DECLARE_DELAYED_WORK(emergency_poweroff_work, emergency_poweroff_func);
-+
-+/**
-+ * emergency_poweroff - Trigger an emergency system poweroff
-+ *
-+ * This may be called from any critical situation to trigger a system shutdown
-+ * after a known period of time. By default the delay is 0 millisecond
-+ */
-+void thermal_emergency_poweroff(void)
-+{
-+	schedule_delayed_work(&emergency_poweroff_work,
-+			      msecs_to_jiffies(CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS));
-+}
-+
- static void handle_critical_trips(struct thermal_zone_device *tz,
- 				  int trip, enum thermal_trip_type trip_type)
- {
-@@ -343,6 +384,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
- 			  "critical temperature reached(%d C),shutting down\n",
- 			  tz->temperature / 1000);
- 		orderly_poweroff(true);
-+		thermal_emergency_poweroff();
- 	}
- }
- 
--- 
-1.9.1
+AFAIU selecting any mode other than TEMP_MONITOR will disable monitor access.
+AFAIU even switchint to TEST_MODE will prevent access to temp, so I don't see
+how we could use PVTMON_CONTROL0_SEL_TEMP_MONITOR_DISABLE. It could be any
+value other than 0.
