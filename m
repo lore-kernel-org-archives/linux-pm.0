@@ -1,96 +1,100 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2] power: supply: axp288_charger: Only wait for INT3496 device if present
-Date: Fri, 31 Mar 2017 13:01:25 +0200
-Message-ID: <20170331110125.27006-1-hdegoede@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:51400 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932566AbdCaLBc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 31 Mar 2017 07:01:32 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Jon Mason <jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH V2 2/2] thermal: broadcom: add Northstar thermal driver
+Date: Fri, 31 Mar 2017 10:23:49 -0400
+Message-ID: <CAC3K-4q=npvHBjb2YeWmyCv89r14=vXdUzRW74mcrETs+NRh1Q@mail.gmail.com>
+References: <20170318155632.18099-1-zajec5@gmail.com> <20170323223045.15786-1-zajec5@gmail.com>
+ <20170323223045.15786-2-zajec5@gmail.com> <20170324143535.GA31953@broadcom.com>
+ <d678d252-a95a-58c0-8098-4401c67040a1@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <d678d252-a95a-58c0-8098-4401c67040a1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, BCM Kernel Feedback <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
 
-On some devices with an axp288 pmic setting vbus path based on the
-id-pin is handled by an ACPI _AIE interrupt on the gpio and the
-INT3496 device is disabled.
+On Fri, Mar 31, 2017 at 3:03 AM, Rafa=C5=82 Mi=C5=82ecki <zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>=
+ wrote:
+> On 03/24/2017 03:35 PM, Jon Mason wrote:
+>>
+>> On Thu, Mar 23, 2017 at 11:30:45PM +0100, Rafa=C5=82 Mi=C5=82ecki wrote:
+>>>
+>>> diff --git a/drivers/thermal/broadcom/ns-thermal.c
+>>> b/drivers/thermal/broadcom/ns-thermal.c
+>>> new file mode 100644
+>>> index 000000000000..acf3a4de62a4
+>>> --- /dev/null
+>>> +++ b/drivers/thermal/broadcom/ns-thermal.c
+>>> @@ -0,0 +1,98 @@
+>>> +/*
+>>> + * Copyright (C) 2017 Rafa=C5=82 Mi=C5=82ecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+>>> + *
+>>> + * This program is free software; you can redistribute it and/or modif=
+y
+>>> + * it under the terms of the GNU General Public License version 2 as
+>>> + * published by the Free Software Foundation.
+>>> + */
+>>> +
+>>> +#include <linux/module.h>
+>>> +#include <linux/of_address.h>
+>>> +#include <linux/platform_device.h>
+>>> +#include <linux/thermal.h>
+>>> +
+>>> +#define PVTMON_CONTROL0                                        0x00
+>>> +#define PVTMON_CONTROL0_SEL_MASK                       0x0000000e
+>>> +#define PVTMON_CONTROL0_SEL_TEMP_MONITOR               0x00000000
+>>> +#define PVTMON_CONTROL0_SEL_TEST_MODE                  0x0000000e
+>>> +#define PVTMON_STATUS                                  0x08
+>>> +
+>>> +struct ns_thermal {
+>>> +       void __iomem *pvtmon;
+>>> +};
+>>> +
+>>> +static int ns_thermal_get_temp(void *data, int *temp)
+>>> +{
+>>> +       struct ns_thermal *ns_thermal =3D data;
+>>> +       u32 val;
+>>> +
+>>> +       val =3D readl(ns_thermal->pvtmon + PVTMON_CONTROL0);
+>>> +       if ((val & PVTMON_CONTROL0_SEL_MASK) !=3D
+>>> PVTMON_CONTROL0_SEL_TEMP_MONITOR) {
+>>> +               val &=3D ~PVTMON_CONTROL0_SEL_MASK;
+>>> +               val |=3D PVTMON_CONTROL0_SEL_TEMP_MONITOR;
+>>
+>>
+>> I think this is slightly confusing here.  If this was off, ORing in 0
+>> will not enable it.  I think we need to flip the #define to make it
+>> PVTMON_CONTROL0_SEL_TEMP_MONITOR_DISABLE (or a less crappy name).
+>> then use this line here to toggle it.  Something like
+>>
+>>                 val &=3D ~PVTMON_CONTROL0_SEL_TEMP_MONITOR_DISABLE;
+>
+>
+> I don't understand this, can you help me further?
+>
+> OR-ing with 0 is only a cosmetic thing obviously - just to make it clear
+> which
+> value we expect to be set in bits 1:3. The important part is:
+> val &=3D ~PVTMON_CONTROL0_SEL_MASK;
 
-Instead of returning -EPROBE_DEFER on these devices waiting for the
-never to show up INT3496 device, check for its presence and only
-request and monitor the matching extcon if the device is there,
-otherwise let the firmware handle the vbus path control.
+You are using a side effect of the masking to clear/enable the block.
+I'm simply saying that we should be explicit about enabling it.  My
+concern is that using the side effect hides what is being done and
+could result in a bug somewhere down the line.  I think this is
+improbable based on the code, but wanted to err on the side of
+caution.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Sebastian Reichel <sre@kernel.org>
----
-Changes in v2:
--Do not schedule otg.work to sync the id-pin state when we don't have
- the extcon, this avoids turning off charging as soon as the driver loads
- on devices without the extcon
----
- drivers/power/supply/axp288_charger.c | 26 ++++++++++++++++----------
- 1 file changed, 16 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 7d4e64c..a64c720 100644
---- a/drivers/power/supply/axp288_charger.c
-+++ b/drivers/power/supply/axp288_charger.c
-@@ -14,6 +14,7 @@
-  * GNU General Public License for more details.
-  */
- 
-+#include <linux/acpi.h>
- #include <linux/module.h>
- #include <linux/device.h>
- #include <linux/regmap.h>
-@@ -114,7 +115,8 @@
- #define ILIM_3000MA			3000	/* 3000mA */
- 
- #define AXP288_EXTCON_DEV_NAME		"axp288_extcon"
--#define USB_HOST_EXTCON_DEV_NAME	"INT3496:00"
-+#define USB_HOST_EXTCON_HID		"INT3496"
-+#define USB_HOST_EXTCON_NAME		"INT3496:00"
- 
- static const unsigned int cable_ids[] =
- 	{ EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP, EXTCON_CHG_USB_DCP };
-@@ -808,10 +810,12 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		return -EPROBE_DEFER;
- 	}
- 
--	info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_DEV_NAME);
--	if (info->otg.cable == NULL) {
--		dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
--		return -EPROBE_DEFER;
-+	if (acpi_dev_present(USB_HOST_EXTCON_HID)) {
-+		info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_NAME);
-+		if (info->otg.cable == NULL) {
-+			dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
-+			return -EPROBE_DEFER;
-+		}
- 	}
- 
- 	platform_set_drvdata(pdev, info);
-@@ -850,13 +854,15 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	/* Register for OTG notification */
- 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
- 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
--	ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
-+	if (info->otg.cable) {
-+		ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
- 					EXTCON_USB_HOST, &info->otg.id_nb);
--	if (ret) {
--		dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
--		return ret;
-+		if (ret) {
-+			dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
-+			return ret;
-+		}
-+		schedule_work(&info->otg.work);
- 	}
--	schedule_work(&info->otg.work);
- 
- 	/* Register charger interrupts */
- 	for (i = 0; i < CHRG_INTR_END; i++) {
--- 
-2.9.3
+>
+> AFAIU selecting any mode other than TEMP_MONITOR will disable monitor
+> access.
+> AFAIU even switchint to TEST_MODE will prevent access to temp, so I don't
+> see
+> how we could use PVTMON_CONTROL0_SEL_TEMP_MONITOR_DISABLE. It could be an=
+y
+> value other than 0.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
