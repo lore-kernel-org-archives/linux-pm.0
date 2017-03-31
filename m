@@ -1,106 +1,65 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister
- duplicate ACPI battery supply
-Date: Fri, 31 Mar 2017 11:01:14 +0200
-Message-ID: <0ed23626-b6b2-a42e-2a1d-762c8c833f7b@redhat.com>
-References: <20170316161601.32267-1-hdegoede@redhat.com>
- <20170316161601.32267-4-hdegoede@redhat.com>
- <6382698.NuYXpb6L7h@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFD PATCH 4/5] sched/cpufreq_schedutil: always consider all CPUs
+ when deciding next freq
+Date: Fri, 31 Mar 2017 11:03:36 +0200
+Message-ID: <CAJZ5v0jgpLrZ1GNWSqZACrUT0NLQzo1Kktdo5wYbmaZ-vM=NcQ@mail.gmail.com>
+References: <20170324140900.7334-1-juri.lelli@arm.com> <20170324140900.7334-5-juri.lelli@arm.com>
+ <2348394.hDdCk9fbgK@aspire.rjw.lan> <20170330085805.GF18960@e106622-lin>
+ <CAJZ5v0jyHkVg80Uk5rh4Ax1wqFk=i+nbYEUfakDNrhu8zLnRzg@mail.gmail.com> <20170331073126.GK19929@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <6382698.NuYXpb6L7h@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170331073126.GK19929@e106622-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Steven Rostedt <rostedt@goodmis.org>, Luca Abeni <luca.abeni@santannapisa.it>, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On 29-03-17 22:31, Rafael J. Wysocki wrote:
-> On Thursday, March 16, 2017 05:16:00 PM Hans de Goede wrote:
->> On some systems with axp288 PMIC the dsdt also exports an ACPI battery
->> device (PNP0C0A device). This leads to there being 2 battery
->> power_supply-s registed like this:
+On Fri, Mar 31, 2017 at 9:31 AM, Juri Lelli <juri.lelli@arm.com> wrote:
+> On 30/03/17 22:13, Rafael J. Wysocki wrote:
+>> On Thu, Mar 30, 2017 at 10:58 AM, Juri Lelli <juri.lelli@arm.com> wrote:
+>> > Hi,
 >>
->> ~$ acpi
->> Battery 0: Charging, 84%, 00:49:39 until charged
->> Battery 1: Unknown, 0%, rate information unavailable
+>> Hi,
 >>
->> Note that the ACPI battery device does not work properly this is due
->> to Linux missing support for the vendor specific BMOP ACPI opregion.
->> But even if the ACPI battery where to function fine we still do not
->> want to export the same battery to userspace twice.
+>> > On 30/03/17 00:41, Rafael J. Wysocki wrote:
+>> >> On Friday, March 24, 2017 02:08:59 PM Juri Lelli wrote:
+>> >> > No assumption can be made upon the rate at which frequency updates get
+>> >> > triggered, as there are scheduling policies (like SCHED_DEADLINE) which
+>> >> > don't trigger them so frequently.
+>> >> >
+>> >> > Remove such assumption from the code.
+>> >>
+>> >> But the util/max values for idle CPUs may be stale, no?
+>> >>
+>> >
+>> > Right, that might be a problem. A proper solution I think would be to
+>> > remotely update such values for idle CPUs, and I believe Vincent is
+>> > working on a patch for that.
+>> >
+>> > As mid-term workarounds, changing a bit the current one, come to my
+>> > mind:
+>> >
+>> >  - consider TICK_NSEC (continue) only when SCHED_CPUFREQ_DL is not set
+>> >  - remove CFS contribution (without triggering a freq update) when a CPU
+>> >    enters IDLE; this might not work well, though, as we probably want
+>> >    to keep in blocked util contribution for a bit
+>> >
+>> > What you think is the way to go?
 >>
->> Therefor this commit calls acpi_battery_unregister() after successfully
->> registering the axp288-fuel-gauge power_supply to remove the duplicate
->> (and often broken) ACPI battery power_supply.
->>
->> BugLink: https://bugzilla.kernel.org/show_bug.cgi?id=194811
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> Tested-by: Sergei Trusov <t.rus76@ya.ru>
->> ---
->>  drivers/power/supply/Kconfig             | 2 ++
->>  drivers/power/supply/axp288_fuel_gauge.c | 3 +++
->>  2 files changed, 5 insertions(+)
->>
->> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
->> index d0453ca..e504644 100644
->> --- a/drivers/power/supply/Kconfig
->> +++ b/drivers/power/supply/Kconfig
->> @@ -242,6 +242,8 @@ config AXP288_CHARGER
->>  config AXP288_FUEL_GAUGE
->>  	tristate "X-Powers AXP288 Fuel Gauge"
->>  	depends on MFD_AXP20X && IIO
->> +	# if ACPI_BATTERY=m, this can't be 'y'
->> +	depends on ACPI_BATTERY || !ACPI_BATTERY
->>  	help
->>  	  Say yes here to have support for X-Power power management IC (PMIC)
->>  	  Fuel Gauge. The device provides battery statistics and status
->> diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
->> index a8dcabc..15f10ce 100644
->> --- a/drivers/power/supply/axp288_fuel_gauge.c
->> +++ b/drivers/power/supply/axp288_fuel_gauge.c
->> @@ -26,6 +26,7 @@
->>  #include <linux/mfd/axp20x.h>
->>  #include <linux/platform_device.h>
->>  #include <linux/power_supply.h>
->> +#include <linux/power/acpi.h>
->>  #include <linux/iio/consumer.h>
->>  #include <linux/debugfs.h>
->>  #include <linux/seq_file.h>
->> @@ -754,6 +755,8 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
->>  		return ret;
->>  	}
->>
->> +	acpi_battery_unregister();
->> +
->
-> What if the ACPI battery driver is loaded after this has been called already?
-
-The module exports that symbol so it must be loaded already. If both are
-built-in then the probe method of the axp288_fuel_gauge may run first,
-acpi_battery_unregister() sets a (mutex proteted) flag which gets
-checked by acpi_battery_probe() which will then exit with -ENODEV
-when it runs later.
-
-So this is already taken care of :)  Also see the first patch in
-this series which implements acpi_battery_unregister().
-
-Regards,
-
-Hans
-
-
-
-
->
->>  	fuel_gauge_create_debugfs(info);
->>  	fuel_gauge_init_irq(info);
->>  	schedule_delayed_work(&info->status_monitor, STATUS_MON_DELAY_JIFFIES);
+>> Well, do we want SCHED_DEADLINE util contribution to be there even for
+>> idle CPUs?
 >>
 >
-> Thanks,
-> Rafael
+> DEADLINE util contribution is removed, even if the CPU is idle, by the
+> reclaiming mechanism when we know (applying GRUB algorithm rules [1])
+> that it can't be used anymore by a task (roughly speaking). So, we
+> shouldn't have this problem in the DEADLINE case.
 >
+> [1] https://marc.info/?l=linux-kernel&m=149029880524038
+
+OK
+
+Why don't you store the contributions from DL and CFS separately, then
+(say, as util_dl, util_cfs, respectively) and only discard the CFS one
+if delta_ns > TICK_NSEC?
