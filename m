@@ -1,238 +1,96 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v12.3 5/10] power: bq27xxx_battery: Add bulk transfer bus methods
-Date: Fri, 31 Mar 2017 03:25:28 -0700
-Message-ID: <20170331102533.27528-2-liam@networkimprov.net>
-References: <20170331102533.27528-1-liam@networkimprov.net>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: [PATCH v2] power: supply: axp288_charger: Only wait for INT3496 device if present
+Date: Fri, 31 Mar 2017 13:01:25 +0200
+Message-ID: <20170331110125.27006-1-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:35621 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932618AbdCaKZu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2017 06:25:50 -0400
-Received: by mail-pg0-f66.google.com with SMTP id g2so16247507pge.2
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2017 03:25:49 -0700 (PDT)
-In-Reply-To: <20170331102533.27528-1-liam@networkimprov.net>
+Received: from mx1.redhat.com ([209.132.183.28]:51400 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932566AbdCaLBc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 31 Mar 2017 07:01:32 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
-Cc: Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
+To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
 
-From: Matt Ranostay <matt@ranostay.consulting>
+On some devices with an axp288 pmic setting vbus path based on the
+id-pin is handled by an ACPI _AIE interrupt on the gpio and the
+INT3496 device is disabled.
 
-Declare bus.write/read_bulk/write_bulk().
-Add I2C write/read_bulk/write_bulk() to implement the above.
-Add bq27xxx_write/read_block/write_block() helper functions to call the above.
+Instead of returning -EPROBE_DEFER on these devices waiting for the
+never to show up INT3496 device, check for its presence and only
+request and monitor the matching extcon if the device is there,
+otherwise let the firmware handle the vbus path control.
 
-Acked-by: "Andrew F. Davis" <afd@ti.com>
-Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
-Signed-off-by: Liam Breck <kernel@networkimprov.net>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Sebastian Reichel <sre@kernel.org>
 ---
- drivers/power/supply/bq27xxx_battery.c     | 67 +++++++++++++++++++++++-
- drivers/power/supply/bq27xxx_battery_i2c.c | 82 +++++++++++++++++++++++++++++-
- include/linux/power/bq27xxx_battery.h      |  3 ++
- 3 files changed, 149 insertions(+), 3 deletions(-)
+Changes in v2:
+-Do not schedule otg.work to sync the id-pin state when we don't have
+ the extcon, this avoids turning off charging as soon as the driver loads
+ on devices without the extcon
+---
+ drivers/power/supply/axp288_charger.c | 26 ++++++++++++++++----------
+ 1 file changed, 16 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 398801a..ede7fac 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -794,11 +794,74 @@ MODULE_PARM_DESC(poll_interval,
- static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
- 			       bool single)
- {
--	/* Reports EINVAL for invalid/missing registers */
-+	int ret;
-+
- 	if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
- 		return -EINVAL;
+diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
+index 7d4e64c..a64c720 100644
+--- a/drivers/power/supply/axp288_charger.c
++++ b/drivers/power/supply/axp288_charger.c
+@@ -14,6 +14,7 @@
+  * GNU General Public License for more details.
+  */
  
--	return di->bus.read(di, di->regs[reg_index], single);
-+	ret = di->bus.read(di, di->regs[reg_index], single);
-+	if (ret < 0)
-+		dev_dbg(di->dev, "failed to read register 0x%02x (index %d)\n",
-+		        di->regs[reg_index], reg_index);
-+
-+	return ret;
-+}
-+
-+static inline int bq27xxx_write(struct bq27xxx_device_info *di, int reg_index,
-+				u16 value, bool single)
-+{
-+	int ret;
-+
-+	if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
-+		return -EINVAL;
-+
-+	if (!di->bus.write)
-+		return -ENOSYS;
-+
-+	ret = di->bus.write(di, di->regs[reg_index], value, single);
-+	if (ret < 0)
-+		dev_dbg(di->dev, "failed to write register 0x%02x (index %d)\n",
-+		        di->regs[reg_index], reg_index);
-+
-+	return ret;
-+}
-+
-+static inline int bq27xxx_read_block(struct bq27xxx_device_info *di, int reg_index,
-+				     u8 *data, int len)
-+{
-+	int ret;
-+
-+	if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
-+		return -EINVAL;
-+
-+	if (!di->bus.read_bulk)
-+		return -ENOSYS;
-+
-+	ret = di->bus.read_bulk(di, di->regs[reg_index], data, len);
-+	if (ret < 0)
-+		dev_dbg(di->dev, "failed to read_bulk register 0x%02x (index %d)\n",
-+		        di->regs[reg_index], reg_index);
-+
-+	return ret;
-+}
-+
-+static inline int bq27xxx_write_block(struct bq27xxx_device_info *di, int reg_index,
-+				      u8 *data, int len)
-+{
-+	int ret;
-+
-+	if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
-+		return -EINVAL;
-+
-+	if (!di->bus.write_bulk)
-+		return -ENOSYS;
-+
-+	ret = di->bus.write_bulk(di, di->regs[reg_index], data, len);
-+	if (ret < 0)
-+		dev_dbg(di->dev, "failed to write_bulk register 0x%02x (index %d)\n",
-+		        di->regs[reg_index], reg_index);
-+
-+	return ret;
- }
++#include <linux/acpi.h>
+ #include <linux/module.h>
+ #include <linux/device.h>
+ #include <linux/regmap.h>
+@@ -114,7 +115,8 @@
+ #define ILIM_3000MA			3000	/* 3000mA */
  
- /*
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index c68fbc3..a597221 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -38,7 +38,7 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
- {
- 	struct i2c_client *client = to_i2c_client(di->dev);
- 	struct i2c_msg msg[2];
--	unsigned char data[2];
-+	u8 data[2];
- 	int ret;
+ #define AXP288_EXTCON_DEV_NAME		"axp288_extcon"
+-#define USB_HOST_EXTCON_DEV_NAME	"INT3496:00"
++#define USB_HOST_EXTCON_HID		"INT3496"
++#define USB_HOST_EXTCON_NAME		"INT3496:00"
  
- 	if (!client->adapter)
-@@ -68,6 +68,82 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
- 	return ret;
- }
+ static const unsigned int cable_ids[] =
+ 	{ EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP, EXTCON_CHG_USB_DCP };
+@@ -808,10 +810,12 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 		return -EPROBE_DEFER;
+ 	}
  
-+static int bq27xxx_battery_i2c_write(struct bq27xxx_device_info *di, u8 reg,
-+				     int value, bool single)
-+{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	struct i2c_msg msg;
-+	u8 data[4];
-+	int ret;
-+
-+	if (!client->adapter)
-+		return -ENODEV;
-+
-+	data[0] = reg;
-+	if (single) {
-+		data[1] = (u8) value;
-+		msg.len = 2;
-+	} else {
-+		put_unaligned_le16(value, &data[1]);
-+		msg.len = 3;
-+	}
-+
-+	msg.buf = data;
-+	msg.addr = client->addr;
-+	msg.flags = 0;
-+
-+	ret = i2c_transfer(client->adapter, &msg, 1);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != 1)
-+		return -EINVAL;
-+	return 0;
-+}
-+
-+static int bq27xxx_battery_i2c_bulk_read(struct bq27xxx_device_info *di, u8 reg,
-+					 u8 *data, int len)
-+{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	int ret;
-+
-+	if (!client->adapter)
-+		return -ENODEV;
-+
-+	ret = i2c_smbus_read_i2c_block_data(client, reg, len, data);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != len)
-+		return -EINVAL;
-+	return 0;
-+}
-+
-+static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
-+					  u8 reg, u8 *data, int len)
-+{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	struct i2c_msg msg;
-+	u8 buf[33];
-+	int ret;
-+
-+	if (!client->adapter)
-+		return -ENODEV;
-+
-+	buf[0] = reg;
-+	memcpy(&buf[1], data, len);
-+
-+	msg.buf = buf;
-+	msg.addr = client->addr;
-+	msg.flags = 0;
-+	msg.len = len + 1;
-+
-+	ret = i2c_transfer(client->adapter, &msg, 1);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != 1)
-+		return -EINVAL;
-+	return 0;
-+}
-+
- static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 				     const struct i2c_device_id *id)
- {
-@@ -95,7 +171,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 	di->dev = &client->dev;
- 	di->chip = id->driver_data;
- 	di->name = name;
-+
- 	di->bus.read = bq27xxx_battery_i2c_read;
-+	di->bus.write = bq27xxx_battery_i2c_write;
-+	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
-+	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
+-	info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_DEV_NAME);
+-	if (info->otg.cable == NULL) {
+-		dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
+-		return -EPROBE_DEFER;
++	if (acpi_dev_present(USB_HOST_EXTCON_HID)) {
++		info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_NAME);
++		if (info->otg.cable == NULL) {
++			dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
++			return -EPROBE_DEFER;
++		}
+ 	}
  
- 	ret = bq27xxx_battery_setup(di);
- 	if (ret)
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index b312bce..c3369fa 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -40,6 +40,9 @@ struct bq27xxx_platform_data {
- struct bq27xxx_device_info;
- struct bq27xxx_access_methods {
- 	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
-+	int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
-+	int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
-+	int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
- };
+ 	platform_set_drvdata(pdev, info);
+@@ -850,13 +854,15 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 	/* Register for OTG notification */
+ 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
+ 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
+-	ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
++	if (info->otg.cable) {
++		ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
+ 					EXTCON_USB_HOST, &info->otg.id_nb);
+-	if (ret) {
+-		dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
+-		return ret;
++		if (ret) {
++			dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
++			return ret;
++		}
++		schedule_work(&info->otg.work);
+ 	}
+-	schedule_work(&info->otg.work);
  
- struct bq27xxx_reg_cache {
+ 	/* Register charger interrupts */
+ 	for (i = 0; i < CHRG_INTR_END; i++) {
 -- 
 2.9.3
