@@ -1,42 +1,53 @@
 From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH 5/5] ARM: dts: imx6qp-sabresd: Set reg_arm regulator supply
-Date: Fri, 31 Mar 2017 22:25:40 +0300
-Message-ID: <6711393cb78e8f975014e26e4008481828459463.1490987945.git.leonard.crestez@nxp.com>
+Subject: [PATCH 1/5] ARM: imx: gpc: Do not print error message for EPROBE_DEFER
+Date: Fri, 31 Mar 2017 22:25:36 +0300
+Message-ID: <ac58dbed203260f9bb93d7685c8f0e08407e0019.1490987945.git.leonard.crestez@nxp.com>
 References: <cover.1490987945.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <cover.1490987945.git.leonard.crestez@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Mark Brown <broonie@kernel.org>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, Robin Gong <yibin.gong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Leonard Crestez <leonard.crestez@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, linux-arm-kernel@lists.infradead.org, Lucas Stach <l.stach@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On imx6qp-sabresd LDO_ARM is connected to a different PMIC output than
-the other imx6qdl-sabresd boards.
+The pu regulator request will return -EPROBE_DEFER if it has a supply
+from PMIC and this supply is not yet registered. This does not represent
+an error since the driver will call probe again later, so only print a
+warning message in this case.
 
-Setting cpu0 arm-supply to sw2_reg is wrong, this must have mistakenly
-slipped out of the vendor tree where this is are used for LDO bypass.
-
+Signed-off-by: Irina Tirdea <irina.tirdea@nxp.com>
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 ---
- arch/arm/boot/dts/imx6qp-sabresd.dts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/mach-imx/gpc.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/imx6qp-sabresd.dts b/arch/arm/boot/dts/imx6qp-sabresd.dts
-index b234580..a8a5004 100644
---- a/arch/arm/boot/dts/imx6qp-sabresd.dts
-+++ b/arch/arm/boot/dts/imx6qp-sabresd.dts
-@@ -50,8 +50,8 @@
- 	compatible = "fsl,imx6qp-sabresd", "fsl,imx6qp";
- };
+diff --git a/arch/arm/mach-imx/gpc.c b/arch/arm/mach-imx/gpc.c
+index 1dc2a34..ce64d11 100644
+--- a/arch/arm/mach-imx/gpc.c
++++ b/arch/arm/mach-imx/gpc.c
+@@ -466,7 +466,11 @@ static int imx_gpc_probe(struct platform_device *pdev)
+ 		pu_reg = NULL;
+ 	if (IS_ERR(pu_reg)) {
+ 		ret = PTR_ERR(pu_reg);
+-		dev_err(&pdev->dev, "failed to get pu regulator: %d\n", ret);
++		if (ret == -EPROBE_DEFER)
++			dev_dbg(&pdev->dev, "pu regulator not ready, retry\n");
++		else
++			dev_err(&pdev->dev, "failed to get pu regulator: %d\n",
++					ret);
+ 		return ret;
+ 	}
  
--&cpu0 {
--	arm-supply = <&sw2_reg>;
-+&reg_arm {
-+	vin-supply = <&sw2_reg>;
- };
- 
- &iomuxc {
 -- 
 2.7.4
