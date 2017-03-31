@@ -1,81 +1,100 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFD PATCH 4/5] sched/cpufreq_schedutil: always consider all
- CPUs when deciding next freq
-Date: Fri, 31 Mar 2017 10:16:30 +0100
-Message-ID: <20170331091630.GP19929@e106622-lin>
-References: <20170324140900.7334-1-juri.lelli@arm.com>
- <20170324140900.7334-5-juri.lelli@arm.com>
- <2348394.hDdCk9fbgK@aspire.rjw.lan>
- <20170330085805.GF18960@e106622-lin>
- <CAJZ5v0jyHkVg80Uk5rh4Ax1wqFk=i+nbYEUfakDNrhu8zLnRzg@mail.gmail.com>
- <20170331073126.GK19929@e106622-lin>
- <CAJZ5v0jgpLrZ1GNWSqZACrUT0NLQzo1Kktdo5wYbmaZ-vM=NcQ@mail.gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister
+ duplicate ACPI battery supply
+Date: Fri, 31 Mar 2017 11:57:47 +0200
+Message-ID: <0c1cc4fc-d127-54d1-334b-9a569354d2a3@redhat.com>
+References: <20170316161601.32267-1-hdegoede@redhat.com>
+ <20170316161601.32267-4-hdegoede@redhat.com>
+ <6382698.NuYXpb6L7h@aspire.rjw.lan>
+ <0ed23626-b6b2-a42e-2a1d-762c8c833f7b@redhat.com>
+ <CAJZ5v0h466y6hBy_-12AEgcpAUXEA7cZkNwXZwvsHnjWtoqFeg@mail.gmail.com>
+ <eb52c4b4-fc3c-b11b-edef-a35c6bb0d82d@redhat.com>
+ <CAJZ5v0i7TN+iJLR_SeaCrpKJ13g1_bQ-G54cugAF9Dm4=pifAg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56894 "EHLO foss.arm.com"
+Received: from mx1.redhat.com ([209.132.183.28]:39076 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932554AbdCaJQh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 31 Mar 2017 05:16:37 -0400
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jgpLrZ1GNWSqZACrUT0NLQzo1Kktdo5wYbmaZ-vM=NcQ@mail.gmail.com>
+        id S932299AbdCaJ5y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 31 Mar 2017 05:57:54 -0400
+In-Reply-To: <CAJZ5v0i7TN+iJLR_SeaCrpKJ13g1_bQ-G54cugAF9Dm4=pifAg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Steven Rostedt <rostedt@goodmis.org>, Luca Abeni <luca.abeni@santannapisa.it>, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On 31/03/17 11:03, Rafael J. Wysocki wrote:
-> On Fri, Mar 31, 2017 at 9:31 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> > On 30/03/17 22:13, Rafael J. Wysocki wrote:
-> >> On Thu, Mar 30, 2017 at 10:58 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> >> > Hi,
-> >>
-> >> Hi,
-> >>
-> >> > On 30/03/17 00:41, Rafael J. Wysocki wrote:
-> >> >> On Friday, March 24, 2017 02:08:59 PM Juri Lelli wrote:
-> >> >> > No assumption can be made upon the rate at which frequency updates get
-> >> >> > triggered, as there are scheduling policies (like SCHED_DEADLINE) which
-> >> >> > don't trigger them so frequently.
-> >> >> >
-> >> >> > Remove such assumption from the code.
-> >> >>
-> >> >> But the util/max values for idle CPUs may be stale, no?
-> >> >>
-> >> >
-> >> > Right, that might be a problem. A proper solution I think would be to
-> >> > remotely update such values for idle CPUs, and I believe Vincent is
-> >> > working on a patch for that.
-> >> >
-> >> > As mid-term workarounds, changing a bit the current one, come to my
-> >> > mind:
-> >> >
-> >> >  - consider TICK_NSEC (continue) only when SCHED_CPUFREQ_DL is not set
-> >> >  - remove CFS contribution (without triggering a freq update) when a CPU
-> >> >    enters IDLE; this might not work well, though, as we probably want
-> >> >    to keep in blocked util contribution for a bit
-> >> >
-> >> > What you think is the way to go?
-> >>
-> >> Well, do we want SCHED_DEADLINE util contribution to be there even for
-> >> idle CPUs?
-> >>
-> >
-> > DEADLINE util contribution is removed, even if the CPU is idle, by the
-> > reclaiming mechanism when we know (applying GRUB algorithm rules [1])
-> > that it can't be used anymore by a task (roughly speaking). So, we
-> > shouldn't have this problem in the DEADLINE case.
-> >
-> > [1] https://marc.info/?l=linux-kernel&m=149029880524038
-> 
+Hi,
+
+On 31-03-17 11:11, Rafael J. Wysocki wrote:
+> On Fri, Mar 31, 2017 at 11:08 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> Hi,
+>>
+>> On 31-03-17 11:05, Rafael J. Wysocki wrote:
+>>>
+>>> On Fri, Mar 31, 2017 at 11:01 AM, Hans de Goede <hdegoede@redhat.com>
+>>> wrote:
+>>>
+>>> [cut]
+>>>
+>>>>>> --- a/drivers/power/supply/axp288_fuel_gauge.c
+>>>>>> +++ b/drivers/power/supply/axp288_fuel_gauge.c
+>>>>>> @@ -26,6 +26,7 @@
+>>>>>>  #include <linux/mfd/axp20x.h>
+>>>>>>  #include <linux/platform_device.h>
+>>>>>>  #include <linux/power_supply.h>
+>>>>>> +#include <linux/power/acpi.h>
+>>>>>>  #include <linux/iio/consumer.h>
+>>>>>>  #include <linux/debugfs.h>
+>>>>>>  #include <linux/seq_file.h>
+>>>>>> @@ -754,6 +755,8 @@ static int axp288_fuel_gauge_probe(struct
+>>>>>> platform_device *pdev)
+>>>>>>                 return ret;
+>>>>>>         }
+>>>>>>
+>>>>>> +       acpi_battery_unregister();
+>>>>>> +
+>>>>>
+>>>>>
+>>>>>
+>>>>> What if the ACPI battery driver is loaded after this has been called
+>>>>> already?
+>>>>
+>>>>
+>>>>
+>>>> The module exports that symbol so it must be loaded already.
+>>>
+>>>
+>>> But then it may be unloaded manually and loaded again, may it not?
+>>
+>>
+>> Only if you first unload axp288_fuel_gauge.ko otherwise it will
+>> have a refcount > 0.
+>
 > OK
-> 
-> Why don't you store the contributions from DL and CFS separately, then
-> (say, as util_dl, util_cfs, respectively) and only discard the CFS one
-> if delta_ns > TICK_NSEC?
+>
+> Anyway, I'd prefer blacklists in the battery and ac drivers to be honest.
 
-Sure, this should work as well. I'll try this approach for next version.
+As I explained in my reply to the discussion around the first patch that
+is somewhat hard to do and requires encoding knowledge in those drivers
+which really does not belong there:
 
-Thanks,
+"The problem is that Intel re-uses HIDs between generations and
+for the Whiskey Cove PMIC we want to not use the ACPI battery
+and ac drivers on Cherry Trail (where they are known to be
+broken) but things are different on Apollo Lake. Yet both
+use the same HID for their companion Whiskey Cove PMIC even
+though they are 2 completely different revisions of the PMIC
+(e.g. one uses i2c the other does not).
 
-- Juri
+The 2 native drivers have code to detect which revision they
+are dealing with and exit with -ENODEV if it is not the
+revision they were written for, but this means that simple
+HID blacklisting will not work. So IMHO the decision to
+unregister the  ACPI battery / ac interface really belongs
+in the native driver as that has all the nitty gritty detail
+needed to make that decision."
+
+Regards,
+
+Hans
