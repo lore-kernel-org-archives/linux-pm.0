@@ -1,44 +1,40 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 194963] schedutil governor causes audio problem in game
-Date: Fri, 31 Mar 2017 03:51:21 +0000
-Message-ID: <bug-194963-137361-LrUA4dIsS0@https.bugzilla.kernel.org/>
-References: <bug-194963-137361@https.bugzilla.kernel.org/>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v3 0/7] thermal: rcar_gen3_thermal: add support for
+ interrupt triggerd trip points
+Date: Thu, 30 Mar 2017 21:56:49 -0700
+Message-ID: <20170331045647.GA2194@localhost.localdomain>
+References: <20170329184356.8610-1-niklas.soderlund+renesas@ragnatech.se>
+ <20170329205139.GB1440@katana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:52938 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753730AbdCaDvY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Mar 2017 23:51:24 -0400
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 688662867F
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2017 03:51:23 +0000 (UTC)
-Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id D08682867F
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2017 03:51:22 +0000 (UTC)
-In-Reply-To: <bug-194963-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170329205139.GB1440@katana>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund+renesas@ragnatech.se>, linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=194963
-
---- Comment #18 from John (john.ettedgui@gmail.com) ---
-So I've been on passive for about a day, and I didn't notice any difference
-with acpi-cpufreq. As you've correctly stated in your email, I am not doing any
-measurements so it's all a bit of a guesswork. I could plot frequencies if
-needed.
-
-One thing I forgot to mention earlier is that I use the most cpu intensive
-resample method in pulseaudio (speex-float-10).
-
-On another forum, one user tried to replicate my tests and never had any issue
-or worse performance with standard schedutil from 4.10 on a 2500k.  I don't
-know if he's using pulse or straight alsa, and if the former which resampler is
-used. I'll try to get this information. Not sure what that means, but I thought
-I might as well share this.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+On Wed, Mar 29, 2017 at 10:51:39PM +0200, Wolfram Sang wrote:
+> On Wed, Mar 29, 2017 at 08:43:49PM +0200, Niklas Söderlund wrote:
+> > Hi,
+> > 
+> > This series adds support for hardware backed trip point windows. It is
+> > based on top of v4.11-rc1 and is tested on R-Car H3 and M3-W.
+> > 
+> > The series starts out by fixing three issues (1/7, 2/7, 3/7) that should
+> > have been fixed by me before the initial driver where submitted to
+> > upstream. Sorry for not spotting the issues sooner.
+> > 
+> > The series then extends the rcar_gen3_thermal driver with hardware
+> > interrupts for trip point windows by implementing the .set_trips()
+> > callback of struct thermal_zone_of_device_ops (4/7, 5/7). It then adds
+> > suspend and resume handlers so that the hardware interrupts are
+> > preserved across suspend/resume cycles (6/7, 7/7).
+> 
+> Thanks, Niklas! From my PoV, this series is good to go upstream!
+> 
+Agreed here. Good job with the patches Niklas. Given the nature of
+changes in the driver, I am allowing some time for them to sit on
+linux-next. Queued them on my branch -linus, for next merge window.
