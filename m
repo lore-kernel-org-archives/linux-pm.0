@@ -1,50 +1,72 @@
 From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 Subject: Re: [PATCH V11 6/6] thermal: bcm2835: add thermal driver for bcm2835
  SoC
-Date: Thu, 30 Mar 2017 18:06:45 -0700
-Message-ID: <20170331010643.GA1923@localhost.localdomain>
+Date: Thu, 30 Mar 2017 18:08:38 -0700
+Message-ID: <20170331010836.GB1923@localhost.localdomain>
 References: <1489356665-3175-1-git-send-email-stefan.wahren@i2se.com>
  <1489356665-3175-7-git-send-email-stefan.wahren@i2se.com>
  <20170329045807.GC2582@localhost.localdomain>
  <20170330045725.GA12995@localhost.localdomain>
- <1620097357.332334.1490901102005@email.1und1.de>
+ <1205844664.21224.1490855429497@email.1und1.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1620097357.332334.1490901102005-7tX72C7vayboQLBSYMtkGA@public.gmane.org>
+In-Reply-To: <1205844664.21224.1490855429497-7tX72C7vayboQLBSYMtkGA@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
 Cc: Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 Hello,
-On Thu, Mar 30, 2017 at 09:11:41PM +0200, Stefan Wahren wrote:
-> Hi Eduardo,
+
+On Thu, Mar 30, 2017 at 08:30:29AM +0200, Stefan Wahren wrote:
 > 
 > > Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> hat am 30. März 2017 um 06:57 geschrieben:
 > > 
 > > 
-
-<cut>
-
-> > A third option on top of what I suggested above is to split the series.
-> > Given that you could still get the proper coefficients
-> > with current of-thermal, I would suggest you to split this series into
-> > two (patches 1-2, 3-6) in your next version, so we avoid futher delays
-> > on the driver, while patches 1-2 waits for acks from OF side.
-> 
-> i revert patches #1, #2 and the slope value was still correct. So i will choose the third option and split the series.
-
-Sounds good to me.
-
-> 
-> Thanks
-> Stefan
-> 
+> > On Tue, Mar 28, 2017 at 09:58:09PM -0700, Eduardo Valentin wrote:
+> > > On Sun, Mar 12, 2017 at 10:11:05PM +0000, Stefan Wahren wrote:
+> > > > Add basic thermal driver for bcm2835 SoC.
+> > > > 
+> > > > This driver currently make sure that tsense HW block is set up
+> > > > correctly.
+> > > > 
+> > > > Signed-off-by: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+> > > > Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+> > > > Acked-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+> > > 
+> > > I see no issue with this driver at this point.
+> > > 
+> > > As I mentioned, the full series needs to go together. You either get an
+> > > Ack from OF maintainers, and I take the series, or you can add my
+> > > 
+> > > Acked-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> > > 
+> > > after fixing the small comment from Nobuhiro.
+> > > 
+> > 
+> > Based on other drivers that require negative values, I assume patches 1
+> > and 2 of these series are needed, but more for enforcing the API, given
+> > that the current of-thermal driver still retrieves the negative values
+> > from DTB [1].
 > > 
 > > [1] - https://patchwork.kernel.org/patch/9612613/
+> 
+> I can't see that the OMAP5 thermal driver is using thermal_zone_get_slope() [2]. I got the wrong values without patch 1 and 2. So i wouldn't rely on that statement. But i will doublecheck it.
+
+The TI-SoC driver is not currently using the slope and offset from DT.
+But on my -linus branch I have added three patches from Keerthy that
+adds that support.
+
+Anyways, I am assuming you are also getting correct values at your end,
+based on your other email.
+
+BR,
+
+> 
+> [2] - http://elixir.free-electrons.com/ident?v=4.11-rc4&i=thermal_zone_get_slope
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
