@@ -1,62 +1,129 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.11-rc5
-Date: Fri, 31 Mar 2017 23:33:06 +0200
-Message-ID: <CAJZ5v0jFhv_M50MGyeUyYvshhzt8M9V_aLssVEYhFaG4ZzKciA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC/RFT][PATCH] cpufreq: schedutil: Reduce frequencies slower
+Date: Fri, 31 Mar 2017 23:51:16 +0200
+Message-ID: <6978951.cfP8K2rCI0@aspire.rjw.lan>
+References: <1514608.eWxQqcMBcc@aspire.rjw.lan> <20170331102223.GS19929@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f195.google.com ([209.85.223.195]:34466 "EHLO
-        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753430AbdCaVdH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2017 17:33:07 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170331102223.GS19929@e106622-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, John <john.ettedgui@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Linus,
+On Friday, March 31, 2017 11:22:23 AM Juri Lelli wrote:
+> Hi Rafael,
 
-Please pull from the tag
+Hi Juri,
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.11-rc5
+> On 30/03/17 23:36, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > The schedutil governor reduces frequencies too fast in some
+> > situations which cases undesirable performance drops to
+> > appear.
+> > 
+> > To address that issue, make schedutil reduce the frequency slower by
+> > setting it to the average of the value chosen during the previous
+> > iteration of governor computations and the new one coming from its
+> > frequency selection formula.
+> > 
+> 
+> I'm curious to test this out on Pixel phones once back in office, but
+> I've already got some considerations about this patch. Please find them
+> inline below.
+> 
+> > Link: https://bugzilla.kernel.org/show_bug.cgi?id=194963
+> > Reported-by: John <john.ettedgui@gmail.com>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> > 
+> > This addresses a practical issue, but one in the "responsiveness" or
+> > "interactivity" category which is quite hard to represent quantitatively.
+> > 
+> > As reported by John in BZ194963, schedutil does not ramp up P-states quickly
+> > enough which causes audio issues to appear in his gaming setup.  At least it
+> > evidently is worse than ondemand in this respect and the patch below helps.
+> > 
+> 
+> Might also be a PELT problem?
 
-with top-most commit 46e1d5e972db830379533f4d2d282cbb812dbb9b
+I don't think so.
 
- Merge branches 'pm-cpufreq-fixes' and 'pm-cpuidle-fixes'
+As mentioned below, intel_pstate had it too and it doesn't use PELT. :-)
 
-on top of commit c02ed2e75ef4c74e41e421acb4ef1494671585e8
+This appears to be a general issue with load-based (or utilization-based)
+frequency selection algorithms using periodic sampling.  Roughly, if something
+unanticipated is going to happen shortly (such as a burst in audio activity in
+a game), it may take a whole period to notice what's going on and the frequency
+set for that period can make a difference between sufficient and insufficient
+provisioning.
 
- Linux 4.11-rc4
+What the patch does is to increase the likelihood that the frequency in
+question will be sufficient to avoid noticeable effects (such as audio cracks)
+and it tends to do the trick most of the time.
 
-to receive power management fixes for v4.11-rc5.
+[Of course, you may argue that this is related to the rate limitting in
+ schedutil and intel_pstate, but then PELT itself is sampled periodically
+ AFAICS.]
 
-These fix a cpufreq core issue with the initialization of the cpufreq
-sysfs interface and a cpuidle powernv driver initialization issue.
+> > The patch essentially repeats the trick added some time ago to the load-based
+> > P-state selection algorithm in intel_pstate, which allowed us to make it viable
+> > for performance-oriented users, and which is to reduce frequencies at a slower
+> > pace.
+> > 
+> > The reason why I chose the average is because it is computationally cheap
+> > and pretty much the max reasonable slowdown and the idea is that in case
+> > there's something about to run that we don't know about yet, it is better to
+> > stay at a higher level for a while more to avoid having to get up from the floor
+> > every time.
+> > 
+> 
+> Another approach we have been playing with on Android (to solve what
+> seem to me similar issues) is to have decoupled up and down frequency
+> changes thresholds. With this you can decide how much quick to react to
+> a sudden increase in utilization and how much "hysteresis" you want to
+> have before slowing down. Every platfrom can also be easily tuned as
+> needed (instead of having the same filter applied for every platform).
+> 
+> We seemed to actually recently come to the consideration that the up
+> threshold is probably not much needed (and it is in fact set to very
+> small values in practice). Once one is confident that the utilization
+> signal is not too jumpy, responding to a request for additional capacity
+> quickly seems the right thing to do (especially for RT/DL policies).
+> 
+> What's your opinion?
 
-Specifics:
+As I said, responding to increased load may take a whole period to notice
+and it looks like what happens during that period may be quite important.
 
- - Symbolic links from CPU directories to the corresponding cpufreq
-   policy directories in sysfs are not created during initialization
-   in some cases which confuses user space, so prevent that from
-   happening (Rafael Wysocki).
+To me, thresholds have a problem that from the algorithm perspective they
+are constant values set externally.  This means they likely need to be tuned
+once in a while by whatever entity that had set them (it is difficult to
+imagine that the same values will always be suitable for every workload) and
+that means an additional layer of (dynamic) control on top of the governor.
 
- - The powernv cpuidle driver fails to pass a correct cpumaks to
-   the cpuidle core in some cases which causes subsequent failures
-   to occur, so fix it (Vaidyanathan Srinivasan).
+> > But technically speaking it is a filter. :-)
+> > 
+> > So among other things I'm wondering if that leads to substantial increases in
+> > energy consumption anywhere.
+> > 
+> 
+> Having a tunable might help getting the tradeoff right for different
+> platforms, maybe?
 
-Thanks!
+It might, but it would mean additional computational cost (at least one more
+integer multiplication AFAICS).
 
----------------
+> As we discussed at the last LPC, having an energy model handy and use
+> that to decide how quickly to ramp up or slow down seems the desirable
+> long term solution, but we probably need something (as you are
+> proposing) until we get there.
 
-Rafael J. Wysocki (1):
-      cpufreq: Fix creation of symbolic links to policy directories
+Well, we definitely need something to address real use cases, like the one that
+I responded to with this patch. :-)
 
-Vaidyanathan Srinivasan (1):
-      cpuidle: powernv: Pass correct drv->cpumask for registration
-
----------------
-
- drivers/cpufreq/cpufreq.c         | 38 +++++++++++++++++++++-----------------
- drivers/cpuidle/cpuidle-powernv.c | 18 ++++++++++++++++++
- 2 files changed, 39 insertions(+), 17 deletions(-)
+Thanks,
+Rafael
