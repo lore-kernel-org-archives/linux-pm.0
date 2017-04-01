@@ -1,228 +1,500 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V4 2/2] thermal: broadcom: add Northstar thermal driver
-Date: Sat, 1 Apr 2017 12:54:45 -0700
-Message-ID: <20170401195443.GE28514@localhost.localdomain>
-References: <20170331073132.21457-2-zajec5@gmail.com>
- <20170331201124.656-1-zajec5@gmail.com>
- <20170331201124.656-2-zajec5@gmail.com>
+Subject: Re: [PATCH V7 6/7] thermal: da9062/61: Thermal junction temperature
+ monitoring driver
+Date: Sat, 1 Apr 2017 12:59:18 -0700
+Message-ID: <20170401195916.GF28514@localhost.localdomain>
+References: <cover.1490712213.git.stwiss.opensource@diasemi.com>
+ <2c1ee249b6746ae3914041a4fc106c89a561f7de.1490712213.git.stwiss.opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:33057 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751958AbdDATyu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Apr 2017 15:54:50 -0400
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:34937 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751855AbdDAT7X (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Apr 2017 15:59:23 -0400
 Content-Disposition: inline
-In-Reply-To: <20170331201124.656-2-zajec5@gmail.com>
+In-Reply-To: <2c1ee249b6746ae3914041a4fc106c89a561f7de.1490712213.git.stwiss.opensource@diasemi.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, Jon Mason <jon.mason@broadcom.com>
+To: Steve Twiss <stwiss.opensource@diasemi.com>
+Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>
 
-On Fri, Mar 31, 2017 at 10:11:24PM +0200, Rafał Miłecki wrote:
-> From: Rafał Miłecki <rafal@milecki.pl>
+Hello,
+
+On Tue, Mar 28, 2017 at 03:43:33PM +0100, Steve Twiss wrote:
+> From: Steve Twiss <stwiss.opensource@diasemi.com>
 > 
-> Northstar is a SoC family commonly used in home routers. This commit
-> adds a driver for checking CPU temperature. As Northstar Plus seems to
-> also have this IP block this new symbol gets ARCH_BCM_IPROC dependency.
+> Add junction temperature monitoring supervisor device driver, compatible
+> with the DA9062 and DA9061 PMICs. A MODULE_DEVICE_TABLE() macro is added.
 > 
-> Signed-off-by: Rafał Miłecki <rafal@milecki.pl>
-> Signed-off-by: Jon Mason <jon.mason@broadcom.com>
+> If the PMIC's internal junction temperature rises above T_WARN (125 degC)
+> an interrupt is issued. This T_WARN level is defined as the
+> THERMAL_TRIP_HOT trip-wire inside the device driver.
+> 
+> The thermal triggering mechanism is interrupt based and happens when the
+> temperature rises above a given threshold level. The component cannot
+> return an exact temperature, it only has knowledge if the temperature is
+> above or below a given threshold value. A status bit must be polled to
+> detect when the temperature falls below that threshold level again. A
+> kernel work queue is configured to repeatedly poll and detect when the
+> temperature falls below this trip-wire, between 1 and 10 second intervals
+> (defaulting at 3 seconds).
+> 
+> This scheme is provided as an example. It would be expected that any
+> final implementation will also include a notify() function and any of these
+> settings could be altered to match the application where appropriate.
+> 
+> When over-temperature is reached, the interrupt from the DA9061/2 will be
+> repeatedly triggered. The IRQ is therefore disabled when the first
+> over-temperature event happens and the status bit is polled using a
+> work-queue until it becomes false.
+> 
+> This strategy is designed to allow the periodic transmission of uevents
+> (HOT trip point) as the first level of temperature supervision method. It
+> is intended for non-invasive temperature control, where the necessary
+> measures for cooling the system down are left to the host software. Once
+> the temperature falls again, the IRQ is re-enabled so a new critical
+> over-temperature event can be detected.
+> 
+> Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+> Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
+
+I have had a look on the history of this driver on its previous
+versions, and I do not think I have any other point to request on it.
+Obviously, I still need to state that I do not like its oddness as it is
+not really benefiting much of the thermal control implemented on the
+thermal subsystem.
+
+What is the plan for this series? Am I expected to get this driver
+through thermal tree ? Or is this series going into a one shot?
+
+If option 1 is the expected, would the driver need to get its
+mfd parent merged first?
+> 
 > ---
-
-This driver looks fine from what concerns the of thermal usage.
-I had only one request on the DT bindings example. I believe better to
-get the example fixed so bad DTs does not get copied.
-
-
-> V2: Make it iProc specific as NSP can also use this driver
->     Select proper symbols in config ARCH_BCM_IPROC
->     Define PVTMON register bits
->     Update code selecting temperature monitor mode
->     Thank you Jon!
-> V3: More details in help message for BCM_NS_THERMAL
->     Use slope & offset
->     Drop arch code change (I'll be submitted using a proper tree)
->     Thank you Eduardo!
-> V4: Comment operations on PVTMON_CONTROL0 register
-> ---
->  drivers/thermal/Kconfig               |   5 ++
->  drivers/thermal/Makefile              |   1 +
->  drivers/thermal/broadcom/Kconfig      |   8 +++
->  drivers/thermal/broadcom/Makefile     |   1 +
->  drivers/thermal/broadcom/ns-thermal.c | 105 ++++++++++++++++++++++++++++++++++
-
-Also, I have just merged a BRCM driver. Does it make sense to move it
-here too?
-
-It does not need to be a blocking request for this driver though.
-
->  5 files changed, 120 insertions(+)
->  create mode 100644 drivers/thermal/broadcom/Kconfig
->  create mode 100644 drivers/thermal/broadcom/Makefile
->  create mode 100644 drivers/thermal/broadcom/ns-thermal.c
+> This patch applies against linux-next and v4.11-rc3
+> 
+> v6 -> v7
+>  - NO CODE CHANGE
+>  - Compile tested ARCH=x86_64
+> 
+> v5 -> v6
+>  - Patch renamed from [PATCH V5 7/8] to [PATCH V6 6/7]
+>  - Rebased from v4.9 to v4.11-rc3
+>  - Modify Copyright to match Dialog latest legal statement
+>  - Various checkpatch warnings (from --strict) have been fixed
+>  - Added COMPILE_TEST to Kconfig
+> 
+> v4 -> v5
+>  - Rebased from v4.8 to v4.9
+>  - Updates from comments by Eduardo Valentin
+>  - Replace vendor defined dlg,tjunc-temp-polling-period-ms with standard
+>    thermal core polling-delay-passive as part of the device tree
+>    initialisation
+>  - Change to the commit message content and device driver source code to
+>    include an explanation of the repeated uevent strategy for monitoring
+>    over-temperature
+>  - Rename warning threshold name from TEMP_WARN to T_WARN to match the
+>    latest datasheet naming convention
+>  - Added reviewed-by Lukasz Luba to commit message
+> 
+> v3 -> v4
+>  - Patch renamed from [PATCH V3 8/9] to [PATCH V4 7/8]
+>  - Reordering of cancel_delayed_work_sync() in remove function
+>  - dev_warn() message for out-of-range polling period requests
+>  - Explanatory comment for expected values defined for
+>    DEFAULT_POLLING_MS_PERIOD, MAX_POLLING_MS_PERIOD and
+>    MIN_POLLING_MS_PERIOD
+> 
+> v2 -> v3
+>  - Patch renamed from [PATCH V2 09/10] to [PATCH V3 8/9]
+>  - Addition of MODULE_DEVICE_TABLE macro to allow modinfo additions
+> 
+> v1 -> v2
+>  - Patch renamed from [PATCH V1 05/10] to [PATCH V2 09/10] -- these
+>    changes were made to fix checkpatch warnings caused by the patch
+>    set dependency order
+>  - List the header files in alphabetical order
+>  - Remove "GPL v2" and replace with MODULE_LICENSE("GPL") to match the
+>    copyright "GNU Public License v2 or later" option in the header
+>    comment for this file. See the allowed identifiers in the file
+>    include/linux/module.h +170
+>  - Remove notify function "da9062_thermal_notify" function.
+>  - MODULE_AUTHOR() macros removes Company Name and just gives Name in
+>    accordance with include/linux/module.h +200
+>  - Remove the compatible "dlg,da9061-thermal" option in the of_device_id
+>    struct table. This patch now assumes the use of a DA9062 fallback
+>    compatible string in the DTS when using the DA9061 thermal component
+>    of the DA9061 device.
+>  - Re-ordered some assignments earlier in the probe() for thermal->hw,
+>    thermal->polling_period, thermal->mode, thermal->dev
+>  - Added further information in the patch description to explain the use
+>    of the device driver's built-in work-queue.
+> 
+> Regards,
+> Steve Twiss, Dialog Semiconductor
+> 
+> 
+>  drivers/thermal/Kconfig          |  10 ++
+>  drivers/thermal/Makefile         |   1 +
+>  drivers/thermal/da9062-thermal.c | 315 +++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 326 insertions(+)
+>  create mode 100644 drivers/thermal/da9062-thermal.c
 > 
 > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 776b34396144..008e173ec825 100644
+> index 776b3439..a784b02 100644
 > --- a/drivers/thermal/Kconfig
 > +++ b/drivers/thermal/Kconfig
-> @@ -392,6 +392,11 @@ config MTK_THERMAL
->  	  Enable this option if you want to have support for thermal management
->  	  controller present in Mediatek SoCs
+> @@ -303,6 +303,16 @@ config DB8500_CPUFREQ_COOLING
+>  	  bound cpufreq cooling device turns active to set CPU frequency low to
+>  	  cool down the CPU.
 >  
-> +menu "Broadcom thermal drivers"
-> +depends on ARCH_BCM || COMPILE_TEST
-> +source "drivers/thermal/broadcom/Kconfig"
-> +endmenu
+> +config DA9062_THERMAL
+> +	tristate "DA9062/DA9061 Dialog Semiconductor thermal driver"
+> +	depends on MFD_DA9062 || COMPILE_TEST
+> +	depends on OF
+> +	help
+> +	  Enable this for the Dialog Semiconductor thermal sensor driver.
+> +	  This will report PMIC junction over-temperature for one thermal trip
+> +	  zone.
+> +	  Compatible with the DA9062 and DA9061 PMICs.
 > +
->  menu "Texas Instruments thermal drivers"
->  depends on ARCH_HAS_BANDGAP || COMPILE_TEST
->  depends on HAS_IOMEM
+>  config INTEL_POWERCLAMP
+>  	tristate "Intel PowerClamp idle injection driver"
+>  	depends on THERMAL
 > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 7adae2029355..549d81b6363c 100644
+> index 7adae20..297849e 100644
 > --- a/drivers/thermal/Makefile
 > +++ b/drivers/thermal/Makefile
-> @@ -27,6 +27,7 @@ thermal_sys-$(CONFIG_CLOCK_THERMAL)	+= clock_cooling.o
->  thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
->  
->  # platform thermal drivers
-> +obj-y				+= broadcom/
->  obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
->  obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
->  obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
-> diff --git a/drivers/thermal/broadcom/Kconfig b/drivers/thermal/broadcom/Kconfig
+> @@ -42,6 +42,7 @@ obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
+>  obj-$(CONFIG_MAX77620_THERMAL)	+= max77620_thermal.o
+>  obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
+>  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+> +obj-$(CONFIG_DA9062_THERMAL)	+= da9062-thermal.o
+>  obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+>  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
+>  obj-$(CONFIG_INTEL_SOC_DTS_IOSF_CORE)	+= intel_soc_dts_iosf.o
+> diff --git a/drivers/thermal/da9062-thermal.c b/drivers/thermal/da9062-thermal.c
 > new file mode 100644
-> index 000000000000..f0dea8a8e002
+> index 0000000..dd8dd94
 > --- /dev/null
-> +++ b/drivers/thermal/broadcom/Kconfig
-> @@ -0,0 +1,8 @@
-> +config BCM_NS_THERMAL
-> +	tristate "Northstar thermal driver"
-> +	depends on ARCH_BCM_IPROC || COMPILE_TEST
-> +	help
-> +	  Northstar is a family of SoCs that includes e.g. BCM4708, BCM47081,
-> +	  BCM4709 and BCM47094. It contains DMU (Device Management Unit) block
-> +	  with a thermal sensor that allows checking CPU temperature. This
-> +	  driver provides support for it.
-> diff --git a/drivers/thermal/broadcom/Makefile b/drivers/thermal/broadcom/Makefile
-> new file mode 100644
-> index 000000000000..059df9a0ed69
-> --- /dev/null
-> +++ b/drivers/thermal/broadcom/Makefile
-> @@ -0,0 +1 @@
-> +obj-$(CONFIG_BCM_NS_THERMAL)		+= ns-thermal.o
-> diff --git a/drivers/thermal/broadcom/ns-thermal.c b/drivers/thermal/broadcom/ns-thermal.c
-> new file mode 100644
-> index 000000000000..eab96b3572b9
-> --- /dev/null
-> +++ b/drivers/thermal/broadcom/ns-thermal.c
-> @@ -0,0 +1,105 @@
+> +++ b/drivers/thermal/da9062-thermal.c
+> @@ -0,0 +1,315 @@
 > +/*
-> + * Copyright (C) 2017 Rafał Miłecki <rafal@milecki.pl>
+> + * Thermal device driver for DA9062 and DA9061
+> + * Copyright (C) 2017  Dialog Semiconductor
 > + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version 2
+> + * of the License, or (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
 > + */
 > +
+> +/* When over-temperature is reached, an interrupt from the device will be
+> + * triggered. Following this event the interrupt will be disabled and
+> + * periodic transmission of uevents (HOT trip point) should define the
+> + * first level of temperature supervision. It is expected that any final
+> + * implementation of the thermal driver will include a .notify() function
+> + * to implement these uevents to userspace.
+> + *
+> + * These uevents are intended to indicate non-invasive temperature control
+> + * of the system, where the necessary measures for cooling are the
+> + * responsibility of the host software. Once the temperature falls again,
+> + * the IRQ is re-enabled so the start of a new over-temperature event can
+> + * be detected without constant software monitoring.
+> + */
+> +
+> +#include <linux/errno.h>
+> +#include <linux/interrupt.h>
 > +#include <linux/module.h>
-> +#include <linux/of_address.h>
+> +#include <linux/of.h>
 > +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
 > +#include <linux/thermal.h>
+> +#include <linux/workqueue.h>
 > +
-> +#define PVTMON_CONTROL0					0x00
-> +#define PVTMON_CONTROL0_SEL_MASK			0x0000000e
-> +#define PVTMON_CONTROL0_SEL_TEMP_MONITOR		0x00000000
-> +#define PVTMON_CONTROL0_SEL_TEST_MODE			0x0000000e
-> +#define PVTMON_STATUS					0x08
+> +#include <linux/mfd/da9062/core.h>
+> +#include <linux/mfd/da9062/registers.h>
 > +
-> +struct ns_thermal {
-> +	struct thermal_zone_device *tz;
-> +	void __iomem *pvtmon;
+> +/* Minimum, maximum and default polling millisecond periods are provided
+> + * here as an example. It is expected that any final implementation to also
+> + * include a modification of these settings to match the required
+> + * application.
+> + */
+> +#define DA9062_DEFAULT_POLLING_MS_PERIOD	3000
+> +#define DA9062_MAX_POLLING_MS_PERIOD		10000
+> +#define DA9062_MIN_POLLING_MS_PERIOD		1000
+> +
+> +#define DA9062_MILLI_CELSIUS(t)			((t) * 1000)
+> +
+> +struct da9062_thermal_config {
+> +	const char *name;
 > +};
 > +
-> +static int ns_thermal_get_temp(void *data, int *temp)
+> +struct da9062_thermal {
+> +	struct da9062 *hw;
+> +	struct delayed_work work;
+> +	struct thermal_zone_device *zone;
+> +	enum thermal_device_mode mode;
+> +	struct mutex lock; /* protection for da9062_thermal temperature */
+> +	int temperature;
+> +	int irq;
+> +	const struct da9062_thermal_config *config;
+> +	struct device *dev;
+> +};
+> +
+> +static void da9062_thermal_poll_on(struct work_struct *work)
 > +{
-> +	struct ns_thermal *ns_thermal = data;
-> +	int offset = thermal_zone_get_offset(ns_thermal->tz);
-> +	int slope = thermal_zone_get_slope(ns_thermal->tz);
-> +	u32 val;
+> +	struct da9062_thermal *thermal = container_of(work,
+> +						struct da9062_thermal,
+> +						work.work);
+> +	unsigned long delay;
+> +	unsigned int val;
+> +	int ret;
 > +
-> +	val = readl(ns_thermal->pvtmon + PVTMON_CONTROL0);
-> +	if ((val & PVTMON_CONTROL0_SEL_MASK) != PVTMON_CONTROL0_SEL_TEMP_MONITOR) {
-> +		/* Clear current mode selection */
-> +		val &= ~PVTMON_CONTROL0_SEL_MASK;
-> +
-> +		/* Set temp monitor mode (it's the default actually) */
-> +		val |= PVTMON_CONTROL0_SEL_TEMP_MONITOR;
-> +
-> +		writel(val, ns_thermal->pvtmon + PVTMON_CONTROL0);
+> +	/* clear E_TEMP */
+> +	ret = regmap_write(thermal->hw->regmap,
+> +			   DA9062AA_EVENT_B,
+> +			   DA9062AA_E_TEMP_MASK);
+> +	if (ret < 0) {
+> +		dev_err(thermal->dev,
+> +			"Cannot clear the TJUNC temperature status\n");
+> +		goto err_enable_irq;
 > +	}
 > +
-> +	val = readl(ns_thermal->pvtmon + PVTMON_STATUS);
-> +	*temp = slope * val + offset;
-> +
-> +	return 0;
-> +}
-> +
-> +const struct thermal_zone_of_device_ops ns_thermal_ops = {
-> +	.get_temp = ns_thermal_get_temp,
-> +};
-> +
-> +static int ns_thermal_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct ns_thermal *ns_thermal;
-> +
-> +	ns_thermal = devm_kzalloc(dev, sizeof(*ns_thermal), GFP_KERNEL);
-> +	if (!ns_thermal)
-> +		return -ENOMEM;
-> +
-> +	ns_thermal->pvtmon = of_iomap(dev_of_node(dev), 0);
-> +	if (WARN_ON(!ns_thermal->pvtmon))
-> +		return -ENOENT;
-> +
-> +	ns_thermal->tz = devm_thermal_zone_of_sensor_register(dev, 0,
-> +							      ns_thermal,
-> +							      &ns_thermal_ops);
-> +	if (IS_ERR(ns_thermal->tz)) {
-> +		iounmap(ns_thermal->pvtmon);
-> +		return PTR_ERR(ns_thermal->tz);
+> +	/* Now read E_TEMP again: it is acting like a status bit.
+> +	 * If over-temperature, then this status will be true.
+> +	 * If not over-temperature, this status will be false.
+> +	 */
+> +	ret = regmap_read(thermal->hw->regmap,
+> +			  DA9062AA_EVENT_B,
+> +			  &val);
+> +	if (ret < 0) {
+> +		dev_err(thermal->dev,
+> +			"Cannot check the TJUNC temperature status\n");
+> +		goto err_enable_irq;
 > +	}
 > +
-> +	platform_set_drvdata(pdev, ns_thermal);
+> +	if (val & DA9062AA_E_TEMP_MASK) {
+> +		mutex_lock(&thermal->lock);
+> +		thermal->temperature = DA9062_MILLI_CELSIUS(125);
+> +		mutex_unlock(&thermal->lock);
+> +		thermal_zone_device_update(thermal->zone,
+> +					   THERMAL_EVENT_UNSPECIFIED);
 > +
-> +	return 0;
+> +		delay = msecs_to_jiffies(thermal->zone->passive_delay);
+> +		schedule_delayed_work(&thermal->work, delay);
+> +		return;
+> +	}
+> +
+> +	mutex_lock(&thermal->lock);
+> +	thermal->temperature = DA9062_MILLI_CELSIUS(0);
+> +	mutex_unlock(&thermal->lock);
+> +	thermal_zone_device_update(thermal->zone,
+> +				   THERMAL_EVENT_UNSPECIFIED);
+> +
+> +err_enable_irq:
+> +	enable_irq(thermal->irq);
 > +}
 > +
-> +static int ns_thermal_remove(struct platform_device *pdev)
+> +static irqreturn_t da9062_thermal_irq_handler(int irq, void *data)
 > +{
-> +	struct ns_thermal *ns_thermal = platform_get_drvdata(pdev);
+> +	struct da9062_thermal *thermal = data;
 > +
-> +	iounmap(ns_thermal->pvtmon);
+> +	disable_irq_nosync(thermal->irq);
+> +	schedule_delayed_work(&thermal->work, 0);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static int da9062_thermal_get_mode(struct thermal_zone_device *z,
+> +				   enum thermal_device_mode *mode)
+> +{
+> +	struct da9062_thermal *thermal = z->devdata;
+> +	*mode = thermal->mode;
+> +	return 0;
+> +}
+> +
+> +static int da9062_thermal_get_trip_type(struct thermal_zone_device *z,
+> +					int trip,
+> +					enum thermal_trip_type *type)
+> +{
+> +	struct da9062_thermal *thermal = z->devdata;
+> +
+> +	switch (trip) {
+> +	case 0:
+> +		*type = THERMAL_TRIP_HOT;
+> +		break;
+> +	default:
+> +		dev_err(thermal->dev,
+> +			"Driver does not support more than 1 trip-wire\n");
+> +		return -EINVAL;
+> +	}
 > +
 > +	return 0;
 > +}
 > +
-> +static const struct of_device_id ns_thermal_of_match[] = {
-> +	{ .compatible = "brcm,ns-thermal", },
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, ns_thermal_of_match);
+> +static int da9062_thermal_get_trip_temp(struct thermal_zone_device *z,
+> +					int trip,
+> +					int *temp)
+> +{
+> +	struct da9062_thermal *thermal = z->devdata;
 > +
-> +static struct platform_driver ns_thermal_driver = {
-> +	.probe		= ns_thermal_probe,
-> +	.remove		= ns_thermal_remove,
-> +	.driver = {
-> +		.name = "ns-thermal",
-> +		.of_match_table = ns_thermal_of_match,
+> +	switch (trip) {
+> +	case 0:
+> +		*temp = DA9062_MILLI_CELSIUS(125);
+> +		break;
+> +	default:
+> +		dev_err(thermal->dev,
+> +			"Driver does not support more than 1 trip-wire\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int da9062_thermal_get_temp(struct thermal_zone_device *z,
+> +				   int *temp)
+> +{
+> +	struct da9062_thermal *thermal = z->devdata;
+> +
+> +	mutex_lock(&thermal->lock);
+> +	*temp = thermal->temperature;
+> +	mutex_unlock(&thermal->lock);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct thermal_zone_device_ops da9062_thermal_ops = {
+> +	.get_temp	= da9062_thermal_get_temp,
+> +	.get_mode	= da9062_thermal_get_mode,
+> +	.get_trip_type	= da9062_thermal_get_trip_type,
+> +	.get_trip_temp	= da9062_thermal_get_trip_temp,
+> +};
+> +
+> +static const struct da9062_thermal_config da9062_config = {
+> +	.name = "da9062-thermal",
+> +};
+> +
+> +static const struct of_device_id da9062_compatible_reg_id_table[] = {
+> +	{ .compatible = "dlg,da9062-thermal", .data = &da9062_config },
+> +	{ },
+> +};
+> +
+> +MODULE_DEVICE_TABLE(of, da9062_compatible_reg_id_table);
+> +
+> +static int da9062_thermal_probe(struct platform_device *pdev)
+> +{
+> +	struct da9062 *chip = dev_get_drvdata(pdev->dev.parent);
+> +	struct da9062_thermal *thermal;
+> +	unsigned int pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
+> +	const struct of_device_id *match;
+> +	int ret = 0;
+> +
+> +	match = of_match_node(da9062_compatible_reg_id_table,
+> +			      pdev->dev.of_node);
+> +	if (!match)
+> +		return -ENXIO;
+> +
+> +	if (pdev->dev.of_node) {
+> +		if (!of_property_read_u32(pdev->dev.of_node,
+> +					  "polling-delay-passive",
+> +					  &pp_tmp)) {
+> +			if (pp_tmp < DA9062_MIN_POLLING_MS_PERIOD ||
+> +			    pp_tmp > DA9062_MAX_POLLING_MS_PERIOD) {
+> +				dev_warn(&pdev->dev,
+> +					 "Out-of-range polling period %d ms\n",
+> +					 pp_tmp);
+> +				pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
+> +			}
+> +		}
+> +	}
+> +
+> +	thermal = devm_kzalloc(&pdev->dev, sizeof(struct da9062_thermal),
+> +			       GFP_KERNEL);
+> +	if (!thermal) {
+> +		ret = -ENOMEM;
+> +		goto err;
+> +	}
+> +
+> +	thermal->config = match->data;
+> +	thermal->hw = chip;
+> +	thermal->mode = THERMAL_DEVICE_ENABLED;
+> +	thermal->dev = &pdev->dev;
+> +
+> +	INIT_DELAYED_WORK(&thermal->work, da9062_thermal_poll_on);
+> +	mutex_init(&thermal->lock);
+> +
+> +	thermal->zone = thermal_zone_device_register(thermal->config->name,
+> +					1, 0, thermal,
+> +					&da9062_thermal_ops, NULL, pp_tmp,
+> +					0);
+> +	if (IS_ERR(thermal->zone)) {
+> +		dev_err(&pdev->dev, "Cannot register thermal zone device\n");
+> +		ret = PTR_ERR(thermal->zone);
+> +		goto err;
+> +	}
+> +
+> +	dev_dbg(&pdev->dev,
+> +		"TJUNC temperature polling period set at %d ms\n",
+> +		thermal->zone->passive_delay);
+> +
+> +	ret = platform_get_irq_byname(pdev, "THERMAL");
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "Failed to get platform IRQ.\n");
+> +		goto err_zone;
+> +	}
+> +	thermal->irq = ret;
+> +
+> +	ret = request_threaded_irq(thermal->irq, NULL,
+> +				   da9062_thermal_irq_handler,
+> +				   IRQF_TRIGGER_LOW | IRQF_ONESHOT,
+> +				   "THERMAL", thermal);
+> +	if (ret) {
+> +		dev_err(&pdev->dev,
+> +			"Failed to request thermal device IRQ.\n");
+> +		goto err_zone;
+> +	}
+> +
+> +	platform_set_drvdata(pdev, thermal);
+> +	return 0;
+> +
+> +err_zone:
+> +	thermal_zone_device_unregister(thermal->zone);
+> +err:
+> +	return ret;
+> +}
+> +
+> +static int da9062_thermal_remove(struct platform_device *pdev)
+> +{
+> +	struct	da9062_thermal *thermal = platform_get_drvdata(pdev);
+> +
+> +	free_irq(thermal->irq, thermal);
+> +	cancel_delayed_work_sync(&thermal->work);
+> +	thermal_zone_device_unregister(thermal->zone);
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver da9062_thermal_driver = {
+> +	.probe	= da9062_thermal_probe,
+> +	.remove	= da9062_thermal_remove,
+> +	.driver	= {
+> +		.name	= "da9062-thermal",
+> +		.of_match_table = da9062_compatible_reg_id_table,
 > +	},
 > +};
-> +module_platform_driver(ns_thermal_driver);
 > +
-> +MODULE_DESCRIPTION("Northstar thermal driver");
-> +MODULE_LICENSE("GPL v2");
+> +module_platform_driver(da9062_thermal_driver);
+> +
+> +MODULE_AUTHOR("Steve Twiss");
+> +MODULE_DESCRIPTION("Thermal TJUNC device driver for Dialog DA9062 and DA9061");
+> +MODULE_LICENSE("GPL");
+> +MODULE_ALIAS("platform:da9062-thermal");
 > -- 
-> 2.11.0
+> end-of-patch for PATCH V7
 > 
