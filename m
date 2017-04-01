@@ -1,60 +1,95 @@
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>
-Subject: Re: [PATCH V4 2/2] thermal: broadcom: add Northstar thermal driver
-Date: Sat, 1 Apr 2017 23:41:08 +0200
-Message-ID: <426f06c2-e972-a9b0-e72c-88e7dde991ed@milecki.pl>
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V4 1/2] dt-bindings: thermal: add support for Broadcom's
+ Northstar thermal
+Date: Sat, 1 Apr 2017 23:50:26 +0200
+Message-ID: <6dd907e4-c213-3174-8613-99427e6ea0e9@gmail.com>
 References: <20170331073132.21457-2-zajec5@gmail.com>
  <20170331201124.656-1-zajec5@gmail.com>
- <20170331201124.656-2-zajec5@gmail.com>
- <20170401195443.GE28514@localhost.localdomain>
+ <20170401195136.GD28514@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170401195443.GE28514@localhost.localdomain>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Scott Branden <sbranden@broadcom.com>, Stephen Warren <swarren@wwwdotorg.org>, Ray Jui <rjui@broadcom.com>, linux-pm@vger.kernel.org, Lee Jones <lee@kernel.org>, Jon Mason <jon.mason@broadcom.com>, Eric Anholt <eric@anholt.net>, Rob Herring <robh+dt@kernel.org>, bcm-kernel-feedback-list@broadcom.com, linux-rpi-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170401195136.GD28514-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jon Mason <jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDQvMDEvMjAxNyAwOTo1NCBQTSwgRWR1YXJkbyBWYWxlbnRpbiB3cm90ZToKPiBPbiBGcmks
-IE1hciAzMSwgMjAxNyBhdCAxMDoxMToyNFBNICswMjAwLCBSYWZhxYIgTWnFgmVja2kgd3JvdGU6
-Cj4+IEZyb206IFJhZmHFgiBNacWCZWNraSA8cmFmYWxAbWlsZWNraS5wbD4KPj4KPj4gTm9ydGhz
-dGFyIGlzIGEgU29DIGZhbWlseSBjb21tb25seSB1c2VkIGluIGhvbWUgcm91dGVycy4gVGhpcyBj
-b21taXQKPj4gYWRkcyBhIGRyaXZlciBmb3IgY2hlY2tpbmcgQ1BVIHRlbXBlcmF0dXJlLiBBcyBO
-b3J0aHN0YXIgUGx1cyBzZWVtcyB0bwo+PiBhbHNvIGhhdmUgdGhpcyBJUCBibG9jayB0aGlzIG5l
-dyBzeW1ib2wgZ2V0cyBBUkNIX0JDTV9JUFJPQyBkZXBlbmRlbmN5Lgo+Pgo+PiBTaWduZWQtb2Zm
-LWJ5OiBSYWZhxYIgTWnFgmVja2kgPHJhZmFsQG1pbGVja2kucGw+Cj4+IFNpZ25lZC1vZmYtYnk6
-IEpvbiBNYXNvbiA8am9uLm1hc29uQGJyb2FkY29tLmNvbT4KPj4gLS0tCj4KPiBUaGlzIGRyaXZl
-ciBsb29rcyBmaW5lIGZyb20gd2hhdCBjb25jZXJucyB0aGUgb2YgdGhlcm1hbCB1c2FnZS4KPiBJ
-IGhhZCBvbmx5IG9uZSByZXF1ZXN0IG9uIHRoZSBEVCBiaW5kaW5ncyBleGFtcGxlLiBJIGJlbGll
-dmUgYmV0dGVyIHRvCj4gZ2V0IHRoZSBleGFtcGxlIGZpeGVkIHNvIGJhZCBEVHMgZG9lcyBub3Qg
-Z2V0IGNvcGllZC4KClRoYW5rcyEgSSdsbCBjb21tZW50IG9uIHRoaXMgaW4gYSByZXBseSB0byBw
-YXRjaCAxLzIuCgoKPj4gVjI6IE1ha2UgaXQgaVByb2Mgc3BlY2lmaWMgYXMgTlNQIGNhbiBhbHNv
-IHVzZSB0aGlzIGRyaXZlcgo+PiAgICAgU2VsZWN0IHByb3BlciBzeW1ib2xzIGluIGNvbmZpZyBB
-UkNIX0JDTV9JUFJPQwo+PiAgICAgRGVmaW5lIFBWVE1PTiByZWdpc3RlciBiaXRzCj4+ICAgICBV
-cGRhdGUgY29kZSBzZWxlY3RpbmcgdGVtcGVyYXR1cmUgbW9uaXRvciBtb2RlCj4+ICAgICBUaGFu
-ayB5b3UgSm9uIQo+PiBWMzogTW9yZSBkZXRhaWxzIGluIGhlbHAgbWVzc2FnZSBmb3IgQkNNX05T
-X1RIRVJNQUwKPj4gICAgIFVzZSBzbG9wZSAmIG9mZnNldAo+PiAgICAgRHJvcCBhcmNoIGNvZGUg
-Y2hhbmdlIChJJ2xsIGJlIHN1Ym1pdHRlZCB1c2luZyBhIHByb3BlciB0cmVlKQo+PiAgICAgVGhh
-bmsgeW91IEVkdWFyZG8hCj4+IFY0OiBDb21tZW50IG9wZXJhdGlvbnMgb24gUFZUTU9OX0NPTlRS
-T0wwIHJlZ2lzdGVyCj4+IC0tLQo+PiAgZHJpdmVycy90aGVybWFsL0tjb25maWcgICAgICAgICAg
-ICAgICB8ICAgNSArKwo+PiAgZHJpdmVycy90aGVybWFsL01ha2VmaWxlICAgICAgICAgICAgICB8
-ICAgMSArCj4+ICBkcml2ZXJzL3RoZXJtYWwvYnJvYWRjb20vS2NvbmZpZyAgICAgIHwgICA4ICsr
-Kwo+PiAgZHJpdmVycy90aGVybWFsL2Jyb2FkY29tL01ha2VmaWxlICAgICB8ICAgMSArCj4+ICBk
-cml2ZXJzL3RoZXJtYWwvYnJvYWRjb20vbnMtdGhlcm1hbC5jIHwgMTA1ICsrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysKPgo+IEFsc28sIEkgaGF2ZSBqdXN0IG1lcmdlZCBhIEJSQ00g
-ZHJpdmVyLiBEb2VzIGl0IG1ha2Ugc2Vuc2UgdG8gbW92ZSBpdAo+IGhlcmUgdG9vPwo+Cj4gSXQg
-ZG9lcyBub3QgbmVlZCB0byBiZSBhIGJsb2NraW5nIHJlcXVlc3QgZm9yIHRoaXMgZHJpdmVyIHRo
-b3VnaC4KClllcywgSSBwbGFuIHRvIHNlbmQgYSBwYXRjaCBmb3IgdGhhdCBhZnRlciBnZXR0aW5n
-IHRoaXMgb25lIGFjY2VwdGVkLgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5l
-bEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4v
-bGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
+On 04/01/2017 09:51 PM, Eduardo Valentin wrote:
+> On Fri, Mar 31, 2017 at 10:11:23PM +0200, Rafał Miłecki wrote:
+>> From: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+>>
+>> This commit documents binding for thermal used in Northstar family SoCs.
+>>
+>> Signed-off-by: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+>> ---
+>> V3: Add thermal-zones to the example
+>>     Rob: Because of this update, I didn't include Acked-by I got for V2
+>> ---
+>>  .../devicetree/bindings/thermal/brcm,ns-thermal    | 26 ++++++++++++++++++++++
+>>  1 file changed, 26 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/thermal/brcm,ns-thermal
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/brcm,ns-thermal b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal
+>> new file mode 100644
+>> index 000000000000..c561c7349f17
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal
+>> @@ -0,0 +1,26 @@
+>> +* Broadcom Northstar Thermal
+>> +
+>> +This binding describes thermal sensor that is part of Northstar's DMU (Device
+>> +Management Unit).
+>> +
+>> +Required properties:
+>> +- compatible : Must be "brcm,ns-thermal"
+>> +- reg : iomem address range of PVTMON registers
+>> +- #thermal-sensor-cells : Should be <0>
+>> +
+>> +Example:
+>> +
+>> +thermal: thermal@1800c2c0 {
+>> +	compatible = "brcm,ns-thermal";
+>> +	reg = <0x1800c2c0 0x10>;
+>> +	#thermal-sensor-cells = <0>;
+>> +};
+>> +
+>> +thermal-zones {
+>> +	cpu_thermal: cpu-thermal {
+>> +		polling-delay-passive = <0>;
+>> +		polling-delay = <1000>;
+>> +		coefficients = <(-556) 418000>;
+>> +		thermal-sensors = <&thermal>;
+>
+> You need to define trips and cooling devices here. Otherwise, makes
+> little sense to have this device in thermal subsystem. Here is an
+> example of minimal set:
+> https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git/commit/?h=linus&id=1e2ac9821de6a85d3e8358f238436708d1d46869
+>
+> The above has no passive action. It is just gonna shutdown the system if
+> temperature crosses a threshold.
+>
+> But, a typical cooling device would be CPU frequency throttling. Do you have
+> that up and running in your routers?
+
+I don't have CPU freq throttling, so shutdown will be the only solution for
+critical temp right now.
+
+I know I should have at least a trip for critical temperature, but the problem
+is I don't know what value to use. There isn't any info about this in public
+datasheets. Broadcom's SDK doesn't mention it. Vendors share only the max
+environment temp, not the max CPU temp.
+
+So for now I only meant to provide user space access to reading current CPU
+temperature. I could do some stress tests and ask other users to do it as well.
+
+Or maybe I could just put in Documentation some round value that makes more or
+less sense and then work on a proper content of real DTS files?
+
+Unless we can get some hint from Broadcom people. Jon? Florian? Anyone?
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
