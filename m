@@ -1,43 +1,39 @@
-From: =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>
-Subject: Re: [PATCH V12 4/4] thermal: bcm2835: add thermal driver for bcm2835
- SoC
-Date: Fri, 31 Mar 2017 23:22:44 +0200
-Message-ID: <8a96e828806c94be51820c1cd1557025@milecki.pl>
-References: <1490990586-30898-1-git-send-email-stefan.wahren@i2se.com>
- <1490990586-30898-5-git-send-email-stefan.wahren@i2se.com>
+From: Juri Lelli <Juri.Lelli@arm.com>
+Subject: Re: [ANNOUNCE] OSPM-summit is on next Monday
+Date: Sat, 1 Apr 2017 12:44:06 +0100
+Message-ID: <20170401114406.GC9429@e106622-lin>
+References: <20170327132535.GJ10289@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 16.mo1.mail-out.ovh.net ([178.33.104.224]:46272 "EHLO
-        16.mo1.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754930AbdDAA7e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Mar 2017 20:59:34 -0400
-Received: from player795.ha.ovh.net (b9.ovh.net [213.186.33.59])
-        by mo1.mail-out.ovh.net (Postfix) with ESMTP id 619EB661FD
-        for <linux-pm@vger.kernel.org>; Fri, 31 Mar 2017 23:22:55 +0200 (CEST)
-In-Reply-To: <1490990586-30898-5-git-send-email-stefan.wahren@i2se.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170327132535.GJ10289@e106622-lin>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-rt-users@vger.kernel.org" <linux-rt-users@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Tommaso Cucinotta <tommaso.cucinotta@sssup.it>, Sudeep Holla <Sudeep.Holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Patrick Bellasi <Patrick.Bellasi@arm.com>, Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Paolo Valente <paolo.valente@unimore.it>, Claudio Scordino <claudio@evidence.eu.com>, Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, kernel@martin.sperl.org, Eric Anholt <eric@anholt.net>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 2017-03-31 22:03, Stefan Wahren wrote:
-> Add basic thermal driver for bcm2835 SoC.
+Hi,
+
+On 27/03/17 14:25, Juri Lelli wrote:
+>    Hi,
 > 
-> This driver currently make sure that tsense HW block is set up
-> correctly.
+>    we are only a week away from the OSPM-summit!
 > 
-> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
-> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-> Acked-by: Eric Anholt <eric@anholt.net>
-> Acked-by: Eduardo Valentin <edubezval@gmail.com>
+>    Pack your bags (or stay tuned for the live streaming).
+> 
 
-It works great on Raspberry Pi Zero W!
+Quick update.
 
-Tested-by: Rafał Miłecki <rafal@milecki.pl>
+Live streaming events are now ready to start on RetisLab Youtube channel:
 
-Sorry for the earlier false failure report. I guess I was missing 
-something,
-maybe some DT change? Anyway, it works now! :)
+https://www.youtube.com/channel/UC9s6mcKszFdIRU7ZpsknfKA/videos?live_view=502&shelf_id=3&view=2&sort=dd
+
+There is the possibility to join the sessions via Hangouts. Since only a
+max of 10 remote participants are allowed, invites to join will be sent
+on a per need basis. Don't hesitate to ask to join by replying to this
+email.
+
+Best,
+
+- Juri
