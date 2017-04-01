@@ -1,110 +1,74 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU
- controller
-Date: Sat, 1 Apr 2017 17:25:11 +0100
-Message-ID: <20170401162511.GA14490@derkdell>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
- <20170320171511.GB3623@htj.duckdns.org>
- <20170320180837.GB28391@e110439-lin>
- <CAPM31RJtWrvAk54gnjtDqpjmRf98D-aEqvcO39Qz7BiJWc457A@mail.gmail.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v3 3/4] i2c: core: Allow drivers to specify index for irq
+ to get from of / ACPI
+Date: Sat, 1 Apr 2017 09:33:33 -0700
+Message-ID: <20170401163333.GB17130@dtor-ws>
+References: <20170325135550.22509-1-hdegoede@redhat.com>
+ <20170325135550.22509-4-hdegoede@redhat.com>
+ <1490530535.21738.31.camel@linux.intel.com>
+ <1935239d-fdd8-3917-9865-de389e6728e8@redhat.com>
+ <20170330203954.GA1452@katana>
+ <149df3eb-8111-4c91-472e-f6c708302ede@redhat.com>
+ <20170331162332.dar3f3mval2ch2uh@ninjato>
+ <2b4d002f-9e6b-b193-7dc3-2f4c20a93276@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:41128 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751736AbdDAQZT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 1 Apr 2017 12:25:19 -0400
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAPM31RJtWrvAk54gnjtDqpjmRf98D-aEqvcO39Qz7BiJWc457A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <2b4d002f-9e6b-b193-7dc3-2f4c20a93276@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, linux-acpi@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Turner <pjt@google.com>
-Cc: Tejun Heo <tj@kernel.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-Hi Paul,
-
-On 30-Mar 14:15, Paul Turner wrote:
-> On Mon, Mar 20, 2017 at 11:08 AM, Patrick Bellasi
-> <patrick.bellasi@arm.com> wrote:
-> > On 20-Mar 13:15, Tejun Heo wrote:
-> >> Hello,
-> >>
-> >> On Tue, Feb 28, 2017 at 02:38:38PM +0000, Patrick Bellasi wrote:
-> >> > This patch extends the CPU controller by adding a couple of new
-> >> > attributes, capacity_min and capacity_max, which can be used to enforce
-> >> > bandwidth boosting and capping. More specifically:
-> >> >
-> >> > - capacity_min: defines the minimum capacity which should be granted
-> >> >                 (by schedutil) when a task in this group is running,
-> >> >                 i.e. the task will run at least at that capacity
-> >> >
-> >> > - capacity_max: defines the maximum capacity which can be granted
-> >> >                 (by schedutil) when a task in this group is running,
-> >> >                 i.e. the task can run up to that capacity
-> >>
-> >> cpu.capacity.min and cpu.capacity.max are the more conventional names.
-> >
-> > Ok, should be an easy renaming.
-> >
-> >> I'm not sure about the name capacity as it doesn't encode what it does
-> >> and is difficult to tell apart from cpu bandwidth limits.  I think
-> >> it'd be better to represent what it controls more explicitly.
-> >
-> > In the scheduler jargon, capacity represents the amount of computation
-> > that a CPU can provide and it's usually defined to be 1024 for the
-> > biggest CPU (on non SMP systems) running at the highest OPP (i.e.
-> > maximum frequency).
-> >
-> > It's true that it kind of overlaps with the concept of "bandwidth".
-> > However, the main difference here is that "bandwidth" is not frequency
-> > (and architecture) scaled.
-> > Thus, for example, assuming we have only one CPU with these two OPPs:
-> >
-> >    OPP | Frequency | Capacity
-> >      1 |    500MHz |      512
-> >      2 |      1GHz |     1024
+On Fri, Mar 31, 2017 at 08:22:55PM +0200, Hans de Goede wrote:
+> Hi,
 > 
-> I think exposing capacity in this manner is extremely challenging.
-> It's not normalized in any way between architectures, which places a
-> lot of the ABI in the API.
+> On 31-03-17 18:23, Wolfram Sang wrote:
+> >
+> >>Note I said "flag in i2c_driver" the idea is that the driver can tell
+> >>the i2c_core that it is not going to use i2c_client->irq by
+> >>setting i2c_driver->no_irq and that the i2c_core then will not bother
+> >>with trying to get an irq in i2c_device_probe(), this is esp. useful
+> >>for ACPI i2c instantiated devices where we otherwise might end up
+> >>returning -EPROBE_DEFER (waiting for an irq to show up) without
+> >>needing the irq, which is esp. troublesome when there is no driver
+> >>for the irqchip the ACPI irq resource points to as then we end up
+> >>waiting indefinitely.
+> >
+> >Okay, thanks. I understand the big picture. But does it really need to
+> >be fixed in I2C core? Independent of I2C: if an irq is described in ACPI
+> >and the driver for the needed irq controller is not available, that can
+> >lead to various problems everywhere.
+> 
+> Normally drivers call acpi_dev_gpio_irq_get themselves in their probe
+> method and the -EPROBE_DEFER handling is done in the drivers probe
+> itself, giving drivers various options to deal with irqs.
+> 
+> The problem here is that the i2c system is somewhat special in that
+> it does irq mapping on behalf of the driver and does not even bother
+> to call the driver's probe() if the acpi_dev_gpio_irq_get() call
+> returns -EPROBE_DEFER.
+> 
+> >Or maybe you simply want to be early and don't want to get deferred? Are
+> >we talking then about boot optimizations or necessities?
+> 
+> The problem which I'm trying to fix is not having to write a (complex)
+> gpio driver for an undocumented PMIC which I (and AFAICT no-one) needs (*)
+> just because the i2c-core needs to be "special" and do the acpi_dev_gpio_irq_get
+> for me even though in this specific driver I don't need the irq at index
+> 0 at all. IOW the problem which I'm trying to fix is to get i2c_device_probe
+> to not out-smart me and never call my driver's probe method for
+> invalid reasons.
 
-Capacities of CPUs are already exposed, at least for ARM platforms, using
-a platform independent definition which is documented here:
+I wonder if, instead of adding flags to I2C core (which I think behaves
+quite sanely), we could not have a "simple" GPIO stub driver for that
+PMIC that just registers gpiochip and does nothing (until somebody finds
+a use case and actually adds meat to it). This will stop
+acpi_dev_gpio_irq_get() returning -EPROBE_DEFER and all will be well in
+the kingdom.
 
-   http://lxr.free-electrons.com/source/Documentation/devicetree/bindings/arm/cpus.txt#L245
-
-As the notes in the documentation highlight, it's not a perfect
-metrics but still it allows to distinguish between computational
-capabilities of different (micro)architectures and/or OPPs.
-
-Within the scheduler we use SCHED_CAPACITY_SCALE:
-   http://lxr.free-electrons.com/ident?i=SCHED_CAPACITY_SCALE
-for everything related to actual CPU computational capabilities.
-
-That's why in the current implementation we expose the same metric to
-define capacity constraints.
-
-We considered also the idea to expose a more generic percentage value
-[0..100], do you think that could be better?
-Consider that at the end we will still have to scale 100% to 1024.
-
-> Have you considered any schemes for normalizing this in a reasonable fashion?
-
-For each specific target platform, capacities are already normalized
-to 1024, which is the capacity of the most capable CPU running at the
-highest OPP. Thus, 1024 always represents 100% of the available
-computational capabilities of the most preforming system's CPU.
-
-Perhaps I cannot completely get what what you mean when you say that
-it should be "normalized between architectures".
-Can you explain better, maybe with an example?
-
-[...]
-
-Cheers Patrick
+Thanks.
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Dmitry
