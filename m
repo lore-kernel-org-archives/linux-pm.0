@@ -1,147 +1,76 @@
-From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [RFC PATCH v2 3/4] iio: adc: sun4i-gpadc-iio: add
- support for H3 thermal sensor
-Date: Sun, 2 Apr 2017 16:29:55 +0200
-Message-ID: <09000fca-7eec-0f9f-0bee-923f3b41cbd8@free-electrons.com>
+From: Quentin Schulz <quentin.schulz@free-electrons.com>
+Subject: Re: [RFC PATCH v2 4/4] ARM: sun8i: h3: add support for the thermal
+ sensor in H3
+Date: Sun, 2 Apr 2017 16:34:55 +0200
+Message-ID: <3f13c07d-be6a-0350-6d86-de1a4d4e33a8@free-electrons.com>
 References: <20170402133304.56824-1-icenowy@aosc.io>
- <20170402133304.56824-4-icenowy@aosc.io>
-Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+ <20170402133304.56824-5-icenowy@aosc.io>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBZMVQTDQKGQEMHUL47I-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20170402133304.56824-4-icenowy-h8G6r0blFSE@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: icenowy-h8G6r0blFSE@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.free-electrons.com ([62.4.15.54]:40044 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751460AbdDBOe6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 2 Apr 2017 10:34:58 -0400
+In-Reply-To: <20170402133304.56824-5-icenowy@aosc.io>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: icenowy@aosc.io, Lee Jones <lee.jones@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Jonathan Cameron <jic23@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, linux-sunxi@googlegroups.com
 
 Hi Icenowy,
 
 On 02/04/2017 15:33, Icenowy Zheng wrote:
-> This adds support for the Allwinner H3 thermal sensor.
+> As we have gained the support for the thermal sensor in H3, we can now
+> add its device nodes to the device tree.
 > 
-> Allwinner H3 has a thermal sensor like the one in A33, but have its
-> registers nearly all re-arranged, sample clock moved to CCU and a pair
-> of bus clock and reset added. It's also the base of newer SoCs' thermal
-> sensors.
+> Add them to the H3 device tree.
 > 
-> Some new options is added to gpadc_data struct, to mark the difference
-> between the old GPADCs and THS's and the new THS's.
+> The H5 thermal sensor has some differences, and will be added furtherly.
 > 
-> The thermal sensors on A64 and H5 is like the one on H3, but with of
-> course different formula factors.
-> 
-> Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+> Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
 > ---
-[...]
-> +static int sun4i_gpadc_sample_start(struct sun4i_gpadc_iio *info)
-> +{
->  	/* clkin = 6MHz */
->  	regmap_write(info->regmap, SUN4I_GPADC_CTRL0,
->  		     SUN4I_GPADC_CTRL0_ADC_CLK_DIVIDER(2) |
->  		     SUN4I_GPADC_CTRL0_FS_DIV(7) |
->  		     SUN4I_GPADC_CTRL0_T_ACQ(63));
-> -	regmap_write(info->regmap, SUN4I_GPADC_CTRL1, info->data->tp_mode_en);
-> +	regmap_write(info->regmap, SUN4I_GPADC_CTRL1,
-> +		     info->data->tp_mode_en);
->  	regmap_write(info->regmap, SUN4I_GPADC_CTRL3,
->  		     SUN4I_GPADC_CTRL3_FILTER_EN |
->  		     SUN4I_GPADC_CTRL3_FILTER_TYPE(1));
-> -	/* period = SUN4I_GPADC_TPR_TEMP_PERIOD * 256 * 16 / clkin; ~0.6s */
-> +	/*
-> +	 * period = SUN4I_GPADC_TPR_TEMP_PERIOD * 256 * 16 / clkin;
-> +	 * ~0.6s
-> +	 */
-
-Nothing's changed, I don't remember checkpatch complaining about those
-lines. What's wrong with the original ones?
-
-[...]
+>  arch/arm/boot/dts/sun8i-h3.dtsi | 26 ++++++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
+> index b36f9f423c39..552217bb9266 100644
+> --- a/arch/arm/boot/dts/sun8i-h3.dtsi
+> +++ b/arch/arm/boot/dts/sun8i-h3.dtsi
+> @@ -72,6 +72,32 @@
+>  		};
+>  	};
 >  
-> +	if (info->data->has_bus_rst) {
-> +		info->reset = devm_reset_control_get(&pdev->dev, NULL);
-> +		if (IS_ERR(info->reset)) {
-> +			ret = PTR_ERR(info->reset);
-> +			return ret;
-> +		}
+> +	iio-hwmon {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&ths>;
+> +	};
 > +
-> +		ret = reset_control_deassert(info->reset);
-> +		if (ret)
-> +			return ret;
-> +	}
+> +	soc {
+> +		ths: ths@01c25000 {
+> +			compatible = "allwinner,sun8i-h3-ths";
+> +			reg = <0x01c25000 0x100>;
+> +			clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
+> +			clock-names = "bus", "ths";
+> +			resets = <&ccu RST_BUS_THS>;
+> +			#thermal-sensor-cells = <0>;
+> +			#io-channel-cells = <0>;
+> +		};
+> +	};
 > +
-> +	if (info->data->has_bus_clk) {
-> +		info->ths_bus_clk = devm_clk_get(&pdev->dev, "bus");
-> +		if (IS_ERR(info->ths_bus_clk)) {
-> +			ret = PTR_ERR(info->ths_bus_clk);
-> +			return ret;
-> +		}
-> +
-> +		ret = clk_prepare_enable(info->ths_bus_clk);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	if (info->data->has_ths_clk) {
-> +		info->ths_clk = devm_clk_get(&pdev->dev, "ths");
-> +		if (IS_ERR(info->ths_clk)) {
-> +			ret = PTR_ERR(info->ths_clk);
-> +			return ret;
-> +		}
-> +
-> +		/* Running at 6MHz */
-> +		ret = clk_set_rate(info->ths_clk, 6000000);
-> +		if (ret)
-> +			return ret;
-> +
-> +		ret = clk_prepare_enable(info->ths_clk);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
+> +	thermal-zones {
+> +		cpu_thermal {
+> +			/* milliseconds */
+> +			polling-delay-passive = <250>;
+> +			polling-delay = <1000>;
+> +			thermal-sensors = <&ths>;
+> +		};
 
-I think you're missing the clk_disable_unprepare when one of the clk_foo
-func fails.
+Would it make sense to add the CPU temp trip points in this patch? Or do
+we wait to have CPU OPPs and thermal throttling to add them?
 
-I've never dealt with reset control but it seems odd to have a
-reset_control_deassert in the probe and in the remove functions.
-
->  	if (!IS_ENABLED(CONFIG_THERMAL_OF))
->  		return 0;
->  
-> @@ -691,6 +817,15 @@ static int sun4i_gpadc_remove(struct platform_device *pdev)
->  	if (!info->no_irq && IS_ENABLED(CONFIG_THERMAL_OF))
->  		iio_map_array_unregister(indio_dev);
->  
-> +	if (info->data->has_ths_clk)
-> +		clk_disable_unprepare(info->ths_clk);
-> +
-> +	if (info->data->has_bus_clk)
-> +		clk_disable_unprepare(info->ths_bus_clk);
-> +
-> +	if (info->data->has_bus_rst)
-> +		reset_control_deassert(info->reset);
-> +
->  	return 0;
->  }
->  
-> diff --git a/include/linux/mfd/sun4i-gpadc.h b/include/linux/mfd/sun4i-gpadc.h
-> index d31d962bb7d8..36046a0d91f3 100644
-> --- a/include/linux/mfd/sun4i-gpadc.h
-> +++ b/include/linux/mfd/sun4i-gpadc.h
-> @@ -39,9 +39,13 @@
->  #define SUN6I_GPADC_CTRL1_ADC_CHAN_MASK			GENMASK(3, 0)
->  
->  /* TP_CTRL1 bits for sun8i A23/A33 SoCs */
-> +/* TP_CTRL1 bits for sun8i A23/A33 SoCs */
-
-Spurious change?
+I guess you can find them either in the datasheet or in vendor tree.
 
 Thanks,
 Quentin
