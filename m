@@ -1,125 +1,76 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V4 1/2] dt-bindings: thermal: add support for Broadcom's
- Northstar thermal
-Date: Sat, 1 Apr 2017 21:13:40 -0700
-Message-ID: <20170402041338.GA31441@localhost.localdomain>
-References: <20170331073132.21457-2-zajec5@gmail.com>
- <20170331201124.656-1-zajec5@gmail.com>
- <20170401195136.GD28514@localhost.localdomain>
- <6dd907e4-c213-3174-8613-99427e6ea0e9@gmail.com>
+From: Andres Oportus <andresoportus@android.com>
+Subject: Re: [RFC/RFT][PATCH] cpufreq: schedutil: Reduce frequencies slower
+Date: Sat, 1 Apr 2017 21:38:12 -0700
+Message-ID: <CAFEhuF=n9+LkQoMVLsNCo9peLNUo5XRBX8NTmcsuuJwYJwUtGw@mail.gmail.com>
+References: <1514608.eWxQqcMBcc@aspire.rjw.lan> <20170331102223.GS19929@e106622-lin>
+ <6978951.cfP8K2rCI0@aspire.rjw.lan> <CAFEhuF=sWvuC3Q1NsqdRuiGzK4uD8ie5zbEnVsuGMdJK3y9e3Q@mail.gmail.com>
+ <CAFEhuFnf=N3z2fvajqGT4mN7NtU3fAeGq1CUa_WRQj-PBonwUQ@mail.gmail.com> <CAJZ5v0h=+XM6ZP62n_M8zq2mNGm6o8j0XxWehz3jam8Cgdo=vg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <6dd907e4-c213-3174-8613-99427e6ea0e9-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jon Mason <jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f177.google.com ([209.85.216.177]:36803 "EHLO
+        mail-qt0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750780AbdDBEiN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 2 Apr 2017 00:38:13 -0400
+Received: by mail-qt0-f177.google.com with SMTP id r45so91474488qte.3
+        for <linux-pm@vger.kernel.org>; Sat, 01 Apr 2017 21:38:13 -0700 (PDT)
+In-Reply-To: <CAJZ5v0h=+XM6ZP62n_M8zq2mNGm6o8j0XxWehz3jam8Cgdo=vg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, John <john.ettedgui@gmail.com>
 
-Hey,
+On Sat, Apr 1, 2017 at 7:03 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Sun, Apr 2, 2017 at 1:29 AM, Andres Oportus
+> <andresoportus@android.com> wrote:
+>> On Sat, Apr 1, 2017 at 1:39 PM, Andres Oportus
+>> <andresoportus@android.com> wrote:
+>>> Hi Rafael, Juri,
+>
+> [cut]
+>
+>>>>
+>>>> > As we discussed at the last LPC, having an energy model handy and use
+>>>> > that to decide how quickly to ramp up or slow down seems the desirable
+>>>> > long term solution, but we probably need something (as you are
+>>>> > proposing) until we get there.
+>>>>
+>>>> Well, we definitely need something to address real use cases, like the one
+>>>> that
+>>>> I responded to with this patch. :-)
+>>>
+>>> I don't know the history/intent behind schedutil rate limiting, but if we
+>
+> Basically, the hardware cannot be requested to change the frequency
+> too often as that would be too expensive in general.
+Expensiveness of changing the frequency too often is one of the
+reasons we need to have down throttle in Android, but we can't have
+this value also slow down the frequency increases (so up throttle
+being equal to down throttle is bad for us) which would affect
+interactivity/response-time.
 
-On Sat, Apr 01, 2017 at 11:50:26PM +0200, Rafał Miłecki wrote:
-> On 04/01/2017 09:51 PM, Eduardo Valentin wrote:
-> >On Fri, Mar 31, 2017 at 10:11:23PM +0200, Rafał Miłecki wrote:
-> >>From: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
-> >>
-> >>This commit documents binding for thermal used in Northstar family SoCs.
-> >>
-> >>Signed-off-by: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
-> >>---
-> >>V3: Add thermal-zones to the example
-> >>    Rob: Because of this update, I didn't include Acked-by I got for V2
-> >>---
-> >> .../devicetree/bindings/thermal/brcm,ns-thermal    | 26 ++++++++++++++++++++++
-> >> 1 file changed, 26 insertions(+)
-> >> create mode 100644 Documentation/devicetree/bindings/thermal/brcm,ns-thermal
-> >>
-> >>diff --git a/Documentation/devicetree/bindings/thermal/brcm,ns-thermal b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal
-> >>new file mode 100644
-> >>index 000000000000..c561c7349f17
-> >>--- /dev/null
-> >>+++ b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal
-> >>@@ -0,0 +1,26 @@
-> >>+* Broadcom Northstar Thermal
-> >>+
-> >>+This binding describes thermal sensor that is part of Northstar's DMU (Device
-> >>+Management Unit).
-> >>+
-> >>+Required properties:
-> >>+- compatible : Must be "brcm,ns-thermal"
-> >>+- reg : iomem address range of PVTMON registers
-> >>+- #thermal-sensor-cells : Should be <0>
-> >>+
-> >>+Example:
-> >>+
-> >>+thermal: thermal@1800c2c0 {
-> >>+	compatible = "brcm,ns-thermal";
-> >>+	reg = <0x1800c2c0 0x10>;
-> >>+	#thermal-sensor-cells = <0>;
-> >>+};
-> >>+
-> >>+thermal-zones {
-> >>+	cpu_thermal: cpu-thermal {
-> >>+		polling-delay-passive = <0>;
-> >>+		polling-delay = <1000>;
-> >>+		coefficients = <(-556) 418000>;
-> >>+		thermal-sensors = <&thermal>;
-> >
-> >You need to define trips and cooling devices here. Otherwise, makes
-> >little sense to have this device in thermal subsystem. Here is an
-> >example of minimal set:
-> >https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git/commit/?h=linus&id=1e2ac9821de6a85d3e8358f238436708d1d46869
-> >
-> >The above has no passive action. It is just gonna shutdown the system if
-> >temperature crosses a threshold.
-> >
-> >But, a typical cooling device would be CPU frequency throttling. Do you have
-> >that up and running in your routers?
-> 
-> I don't have CPU freq throttling, so shutdown will be the only solution for
-> critical temp right now.
+>
+>>> make it to be only "down" as Juri mentioned we would not be adding a new
+>>> tunable but rather changing the current one to be more restricted (maybe
+>>> some renaming would be in order if this is done), this would provide
+>>> hysteresis to reduce this problem without locking the amount of the
+>>> hysteresis which may not work for all platforms.  I also agree that "it is
+>>> difficult to imagine that the same values will always be suitable for every
+>>> workload", but without any value to control the whole system, we get nothing
+>>> in between.  Ultimately I also think we should solve the hysteresis problem
+>>> at the root, i.e. the input to the governor in the form of util/load that
+>>> has not only hysteresis and energy model, but also any other behavioral
+>>> inputs built-in.
+>
+> That's long-term, though, and besides knobs only help if users change
+> the defaults.  From my experience they usually don't do that.
+Agreed that it is long term.  Regarding knobs, we are already tuning
+the down throttle value for Android (we currently do 50ms down for the
+similar knob in schedfreq).
 
-OK. Is there any plans to get cpu cooling / DVFS working on your boards?
+>
+> Thanks,
+> Rafael
 
-> 
-> I know I should have at least a trip for critical temperature, but the problem
-> is I don't know what value to use. There isn't any info about this in public
-
-And that is enough justification to block this to go upstream. We need
-the correct shutdown threshold value to put as example. If we don't,
-users of this drivers will be pretty much guessing.
-
-> datasheets. Broadcom's SDK doesn't mention it. Vendors share only the max
-> environment temp, not the max CPU temp.
-
-Silicon goes bad typically at 125C. But that also typically requires a
-good extrapolation of hotspot(s). Some drivers prefer to play safer and
-use lower numbers (100C).
-
-> 
-> So for now I only meant to provide user space access to reading current CPU
-> temperature. I could do some stress tests and ask other users to do it as well.
-> 
-
-I see..
-
-
-> Or maybe I could just put in Documentation some round value that makes more or
-> less sense and then work on a proper content of real DTS files?
-> 
-
-The problem with the above is that I see very commonly examples being
-copied into DTS. So, better to have a good binding
-example/documentation. That is what they are for anyway.
-
-> Unless we can get some hint from Broadcom people. Jon? Florian? Anyone?
-> 
-
-Yeah, that would be probably best.
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Andres
