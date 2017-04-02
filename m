@@ -1,78 +1,44 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v3 4/4] power: bq24190_charger: Delay before polling reset
- flag
-Date: Sun, 2 Apr 2017 14:29:04 +0200
-Message-ID: <66a0a8ca-16e2-ecbb-a5c3-73ef94d869c7@redhat.com>
-References: <20170401202519.16280-1-liam@networkimprov.net>
- <20170401202519.16280-5-liam@networkimprov.net>
+From: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+Subject: [RFC PATCH v2 0/4] IIO-based thermal sensor driver for
+ Allwinner H3 SoC
+Date: Sun,  2 Apr 2017 21:33:00 +0800
+Message-ID: <20170402133304.56824-1-icenowy@aosc.io>
+Reply-To: icenowy-h8G6r0blFSE@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:53004 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751014AbdDBM3W (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 2 Apr 2017 08:29:22 -0400
-In-Reply-To: <20170401202519.16280-5-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sunxi+bncBDS6XAN6ZADRBV73QPDQKGQEHNFCG3I-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-Hi,
+Allwiner H3 SoC has a thermal sensor, which is a large refactored version of
+the old Allwinner "GPADC" (although it have already only thermal part left
+in A33).
 
-On 01-04-17 22:25, Liam Breck wrote:
-> From: Liam Breck <kernel@networkimprov.net>
->
-> On chip reset, polling loop was reading reset register immediately.
-> Instead, call udelay() before reading chip register.
+This patch tried to add support for the sensor in H3 based on the A33
+thermal sensor patchset by Quentin Schulz at [1].
 
-Why ? What does this buy us ?
+[1] http://lists.infradead.org/pipermail/linux-arm-kernel/2017-March/495505.html
 
-Also I've yet to hear back from you on my patch to remove doing
-resets of the device altogether have you find any bad side-effects
-of that patch in your testing ?
+Icenowy Zheng (4):
+  dt-bindings: update the Allwinner GPADC device tree binding for H3
+  iio: adc: sun4i-gpadc-iio: rename A23/A33-specified registers to
+    contain A23
+  iio: adc: sun4i-gpadc-iio: add support for H3 thermal sensor
+  ARM: sun8i: h3: add support for the thermal sensor in H3
 
-If not I would like us to proceed with simply removing the reset
-code as my patch does.
+ .../devicetree/bindings/mfd/sun4i-gpadc.txt        |  23 ++-
+ arch/arm/boot/dts/sun8i-h3.dtsi                    |  26 +++
+ drivers/iio/adc/sun4i-gpadc-iio.c                  | 215 +++++++++++++++++----
+ include/linux/mfd/sun4i-gpadc.h                    |  36 +++-
+ 4 files changed, 254 insertions(+), 46 deletions(-)
 
-Regards,
-
-Hans
-
-
-
->
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: Hans de Goede <hdegoede@redhat.com>
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> ---
->  drivers/power/supply/bq24190_charger.c | 8 ++------
->  1 file changed, 2 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index 52389c5..898faed 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -543,18 +543,14 @@ static int bq24190_register_reset(struct bq24190_dev_info *bdi)
->
->  	/* Reset bit will be cleared by hardware so poll until it is */
->  	do {
-> +		udelay(10);
->  		ret = bq24190_read_mask(bdi, BQ24190_REG_POC,
->  				BQ24190_REG_POC_RESET_MASK,
->  				BQ24190_REG_POC_RESET_SHIFT,
->  				&v);
->  		if (ret < 0)
->  			return ret;
-> -
-> -		if (!v)
-> -			break;
-> -
-> -		udelay(10);
-> -	} while (--limit);
-> +	} while (v && --limit);
->
->  	if (!limit)
->  		return -EIO;
->
+-- 
+2.12.2
