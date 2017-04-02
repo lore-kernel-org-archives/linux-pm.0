@@ -1,93 +1,72 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v3 1/3] mfd: intel_soc_pmic: Fix a mess with compilation units
-Date: Sun, 2 Apr 2017 23:18:21 +0300
-Message-ID: <CAHp75Vdt3ys=tFax5iK5tnANNCLj-b4-VxO78b4ZT0jqdAnsdg@mail.gmail.com>
-References: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com> <201704030357.HdHD43mM%fengguang.wu@intel.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v3 4/4] power: bq24190_charger: Delay before polling reset
+ flag
+Date: Sun, 2 Apr 2017 22:35:22 +0200
+Message-ID: <e2c571c8-cb8a-95a5-3290-e950337181b1@redhat.com>
+References: <20170401202519.16280-1-liam@networkimprov.net>
+ <20170401202519.16280-5-liam@networkimprov.net>
+ <66a0a8ca-16e2-ecbb-a5c3-73ef94d869c7@redhat.com>
+ <CAKvHMgSq5LAo7294p4X4EuzzBii9yB5pgajW7HJtuw-X7MehUw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f193.google.com ([209.85.220.193]:33572 "EHLO
-        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751240AbdDBUSX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 2 Apr 2017 16:18:23 -0400
-In-Reply-To: <201704030357.HdHD43mM%fengguang.wu@intel.com>
+Received: from mx1.redhat.com ([209.132.183.28]:44314 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751663AbdDBUfc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 2 Apr 2017 16:35:32 -0400
+In-Reply-To: <CAKvHMgSq5LAo7294p4X4EuzzBii9yB5pgajW7HJtuw-X7MehUw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <lkp@intel.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, kbuild-all@01.org, Lee Jones <lee.jones@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-On Sun, Apr 2, 2017 at 11:03 PM, kbuild test robot <lkp@intel.com> wrote:
-> Hi Andy,
->
-> [auto build test ERROR on ljones-mfd/for-mfd-next]
-> [also build test ERROR on v4.11-rc4 next-20170331]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+Hi,
 
-Thank you for report, though...
+On 02-04-17 22:16, Liam Breck wrote:
+> On Sun, Apr 2, 2017 at 5:29 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> Hi,
+>>
+>> On 01-04-17 22:25, Liam Breck wrote:
+>>>
+>>> From: Liam Breck <kernel@networkimprov.net>
+>>>
+>>> On chip reset, polling loop was reading reset register immediately.
+>>> Instead, call udelay() before reading chip register.
+>>
+>>
+>> Why ? What does this buy us ?
+>>
+>> Also I've yet to hear back from you on my patch to remove doing
+>> resets of the device altogether have you find any bad side-effects
+>> of that patch in your testing ?
+>
+> On a DT-configured device, we don't want any charger settings done
+> prior to probe(), as we are going to apply DT values. So
+> register_reset() on probe seems right.
 
->
-> url:    https://github.com/0day-ci/linux/commits/Andy-Shevchenko/mfd-intel_soc_pmic-Fix-a-mess-with-compilation-units/20170320-153539
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git for-mfd-next
-> config: tile-allyesconfig (attached as .config)
-> compiler: tilegx-linux-gcc (GCC) 4.6.2
-> reproduce:
->         wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
+If no charger settings are done prior to probe, why bother with
+a reset ? "seems right" does not seem like a good argument when
+reset has shown to cause problems in real world scenarios and
+as I explained in my commit msg there really are no strong
+arguments in favor of doing the reset and several against it.
 
->         make.cross ARCH=tile
+If you really really want to keep doing a reset for no good
+reasons then we could introduce a flag which DT can set to
+force a reset on probe, but IMHO the reset should just be
+removed all together.
 
-...I doubt how below is related to my patch. This is obvious x86 code
-which was initially submitted without
-depend on X86
-line in corresponding Kconfig.
+> If that can trigger a charger
+> bug, we should find a way to make the charger recover.
+>
+> I will test for the possible bug you described when I have a chance;
+> I'm occupied with other stuff near-future. For the time being, let's
+> use the no_register_reset property from your first patchset.
 
->
-> All errors (new ones prefixed by >>):
->
->>> drivers/mfd/intel_soc_pmic_bxtwc.c:24:31: fatal error: asm/intel_pmc_ipc.h: No such file or directory
->    compilation terminated.
->
-> vim +24 drivers/mfd/intel_soc_pmic_bxtwc.c
->
-> 39d047c0 Qipeng Zha 2015-09-15   8   * version 2, as published by the Free Software Foundation.
-> 39d047c0 Qipeng Zha 2015-09-15   9   *
-> 39d047c0 Qipeng Zha 2015-09-15  10   * This program is distributed in the hope it will be useful, but WITHOUT
-> 39d047c0 Qipeng Zha 2015-09-15  11   * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> 39d047c0 Qipeng Zha 2015-09-15  12   * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> 39d047c0 Qipeng Zha 2015-09-15  13   * more details.
-> 39d047c0 Qipeng Zha 2015-09-15  14   */
-> 39d047c0 Qipeng Zha 2015-09-15  15
-> 39d047c0 Qipeng Zha 2015-09-15  16  #include <linux/module.h>
-> 39d047c0 Qipeng Zha 2015-09-15  17  #include <linux/acpi.h>
-> 39d047c0 Qipeng Zha 2015-09-15  18  #include <linux/err.h>
-> 39d047c0 Qipeng Zha 2015-09-15  19  #include <linux/delay.h>
-> 39d047c0 Qipeng Zha 2015-09-15  20  #include <linux/interrupt.h>
-> 39d047c0 Qipeng Zha 2015-09-15  21  #include <linux/kernel.h>
-> 39d047c0 Qipeng Zha 2015-09-15  22  #include <linux/mfd/core.h>
-> 39d047c0 Qipeng Zha 2015-09-15  23  #include <linux/mfd/intel_bxtwc.h>
-> 39d047c0 Qipeng Zha 2015-09-15 @24  #include <asm/intel_pmc_ipc.h>
-> 39d047c0 Qipeng Zha 2015-09-15  25
-> 39d047c0 Qipeng Zha 2015-09-15  26  /* PMIC device registers */
-> 39d047c0 Qipeng Zha 2015-09-15  27  #define REG_ADDR_MASK               0xFF00
-> 39d047c0 Qipeng Zha 2015-09-15  28  #define REG_ADDR_SHIFT              8
-> 39d047c0 Qipeng Zha 2015-09-15  29  #define REG_OFFSET_MASK             0xFF
-> 39d047c0 Qipeng Zha 2015-09-15  30
-> 39d047c0 Qipeng Zha 2015-09-15  31  /* Interrupt Status Registers */
-> 39d047c0 Qipeng Zha 2015-09-15  32  #define BXTWC_IRQLVL1               0x4E02
->
-> :::::: The code at line 24 was first introduced by commit
-> :::::: 39d047c0b1c812e9f0014e7100e372e61f2de3de mfd: add Intel Broxton Whiskey Cove PMIC driver
->
-> :::::: TO: Qipeng Zha <qipeng.zha@intel.com>
-> :::::: CC: Lee Jones <lee.jones@linaro.org>
->
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+As I said above I really see nothing gained from doing the
+reset and "seems right" is not really a good technical argument
+for keeping it.
 
+Regards,
 
-
--- 
-With Best Regards,
-Andy Shevchenko
+Hans
