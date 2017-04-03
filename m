@@ -1,91 +1,73 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v3 2/4] power: bq24190_charger: Clean up extcon code
-Date: Mon, 3 Apr 2017 10:17:48 +0200
-Message-ID: <3f8cf5e0-bd49-f492-f1ec-9dd0336bb3cb@redhat.com>
-References: <20170401202519.16280-1-liam@networkimprov.net>
- <20170401202519.16280-3-liam@networkimprov.net>
- <6dbb405d-a840-7216-395f-7e4fa327cd70@redhat.com>
- <CAKvHMgQ6gJ822W_hXO8jGAq_vr4L8NaFJpNHA5sKYJ+kTRtQgg@mail.gmail.com>
- <857a9dd7-8ed3-0afe-d1e2-2420928263aa@redhat.com>
+From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [RFC PATCH v2 1/4] dt-bindings: update the
+ Allwinner GPADC device tree binding for H3
+Date: Mon, 3 Apr 2017 11:15:23 +0200
+Message-ID: <20170403091523.6atl7nq4m2qkpn3d@lukather>
+References: <20170402133304.56824-1-icenowy@aosc.io>
+ <20170402133304.56824-2-icenowy@aosc.io>
+Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:37364 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751500AbdDCISE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 3 Apr 2017 04:18:04 -0400
-In-Reply-To: <857a9dd7-8ed3-0afe-d1e2-2420928263aa@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="vh5pm2scqdolestx"
+Return-path: <linux-sunxi+bncBDSJBYGBRIMBBLFFRDDQKGQEI7QIS7I-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Disposition: inline
+In-Reply-To: <20170402133304.56824-2-icenowy-h8G6r0blFSE@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-Hi,
 
-On 03-04-17 08:53, Hans de Goede wrote:
+--vh5pm2scqdolestx
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 
-<snip>
+On Sun, Apr 02, 2017 at 09:33:01PM +0800, Icenowy Zheng wrote:
+> Allwinner H3 features a thermal sensor like the one in A33, but has its
+> register re-arranged, the clock divider moved to CCU (originally the
+> clock divider is in ADC) and added a pair of bus clock and reset.
+> 
+> Update the binding document to cover H3.
+> 
+> Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+> ---
+>  .../devicetree/bindings/mfd/sun4i-gpadc.txt        | 23 ++++++++++++++++++++--
+>  1 file changed, 21 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt b/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt
+> index badff3611a98..7753133ca0ff 100644
+> --- a/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt
+> +++ b/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt
+> @@ -4,12 +4,20 @@ The Allwinner SoCs all have an ADC that can also act as a thermal sensor
+>  and sometimes as a touchscreen controller.
+>  
+>  Required properties:
+> -  - compatible: "allwinner,sun8i-a33-ths",
+> +  - compatible: must contain one of the following compatibles:
+> +		- "allwinner,sun8i-a33-ths"
+> +		- "allwinner,sun8i-h3-ths"
+>    - reg: mmio address range of the chip,
+>    - #thermal-sensor-cells: shall be 0,
+>    - #io-channel-cells: shall be 0,
+>  
+> -Example:
+> +Required properties for the following compatibles:
+> +		- "allwinner,sun8i-h3-ths"
+> +  - clocks: the bus clock and the input clock of the ADC,
+> +  - clock-names: should be "bus" and "ths",
 
->> You only have this code for the Atom device because I designed and
->> built hardware with this part and hired Mark to write the driver from
->> scratch. I'd like a little goodwill in exchange!
->
-> And here we get to the root of the problem, that you keep claiming
-> ownership of the driver because you paid Mark to write it,
-> this is not how the Linux kernel works. Yes you paid Mark to write
-> a driver and in return you get an entire kernel. You no less own
-> the bq24190_charger driver then other people own other parts of
-> the kernel.
->
-> Your remarks against Sebastian that he MUST wait for your ack
-> before merging anything are quite frankly completely out of line
-> and I have been on the verge of saying something about this
-> several times already but I decided to stay quiet (until now).
->
-> So yes I apologize for my tone getting a bit cutting as I never
-> want that, but TBH I've found the way you're claiming to be
-> THE authority on the bq24190_charger driver and have been behaving
-> if everyone needs to do exactly as you say when it comes to that
-> driver quite off-putting / abrasive.
+I guess mod instead of ths would be more consistent.
 
-So thinking some more about this, let me try to explain better why
-I feel some friction when discussing things with you.
+Maxime
 
-Lets take for example the discussion about whether to remove the
-resetting of the charger from the driver or to keep it, as
-seen in 2 different threads through my admittedly colored glasses:
-
-1) I reply to your "power: bq24190_charger: Clean up extcon code"
-in what is admittedly a bit cutting tone.
-
-2) We've some discussion about the reset stuff in the
-"power: bq24190_charger: Delay before polling reset flag"
-part of the thread. I notice that I've yet to hear "a good
-technical argument for keeping it".
-
-3) You rightfully point out my cutting tone in 1. is not
-appreciated, which is good, please keep pointing out if
-you find my tone to be not to your liking.
-
-4) But in the same mail you also re-iterate the point where
-you claim some sort of special authority over the driver
-because you paid Mark for writing it.
-
-4. Is where the friction in our discussions come from on
-my side. The Linux kernel is a meritocracy if you disagree
-with something I'm proposing please convince me with
-technical arguments not some claimed authority over the
-driver.
-
-Or if I'm trying to fix a specific issue suggest a good
-alternative. As for example Sebastian did with my
-function-pointer to add extra properties and he suggested
-to just make the fuel-gauge driver register a battery
-interface and remove the battery interface from the
-bq24190 driver. Something which I instantly recognized as
-a nice and clean solution.
-
-Regards,
-
-Hans
+-- 
+Maxime Ripard, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
+--vh5pm2scqdolestx--
