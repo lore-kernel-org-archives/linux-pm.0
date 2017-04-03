@@ -1,96 +1,82 @@
-From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [RFC PATCH v2 4/4] ARM: sun8i: h3: add support for
- the thermal sensor in H3
-Date: Mon, 3 Apr 2017 08:42:08 +0200
-Message-ID: <20170403064208.llk6usgtkbg5ejzw@lukather>
-References: <20170402133304.56824-1-icenowy@aosc.io>
- <20170402133304.56824-5-icenowy@aosc.io>
- <3f13c07d-be6a-0350-6d86-de1a4d4e33a8@free-electrons.com>
-Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v3 2/4] power: bq24190_charger: Clean up extcon code
+Date: Mon, 3 Apr 2017 08:53:37 +0200
+Message-ID: <857a9dd7-8ed3-0afe-d1e2-2420928263aa@redhat.com>
+References: <20170401202519.16280-1-liam@networkimprov.net>
+ <20170401202519.16280-3-liam@networkimprov.net>
+ <6dbb405d-a840-7216-395f-7e4fa327cd70@redhat.com>
+ <CAKvHMgQ6gJ822W_hXO8jGAq_vr4L8NaFJpNHA5sKYJ+kTRtQgg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="j5sdxdc32svkkqg5"
-Return-path: <linux-sunxi+bncBDSJBYGBRIMBBQO5Q7DQKGQE2SOA54Q-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <3f13c07d-be6a-0350-6d86-de1a4d4e33a8-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: icenowy-h8G6r0blFSE@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:33300 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751220AbdDCGxw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 3 Apr 2017 02:53:52 -0400
+In-Reply-To: <CAKvHMgQ6gJ822W_hXO8jGAq_vr4L8NaFJpNHA5sKYJ+kTRtQgg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
+Hi,
 
---j5sdxdc32svkkqg5
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+On 03-04-17 00:03, Liam Breck wrote:
 
-On Sun, Apr 02, 2017 at 04:34:55PM +0200, Quentin Schulz wrote:
-> Hi Icenowy,
-> 
-> On 02/04/2017 15:33, Icenowy Zheng wrote:
-> > As we have gained the support for the thermal sensor in H3, we can now
-> > add its device nodes to the device tree.
-> > 
-> > Add them to the H3 device tree.
-> > 
-> > The H5 thermal sensor has some differences, and will be added furtherly.
-> > 
-> > Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-> > ---
-> >  arch/arm/boot/dts/sun8i-h3.dtsi | 26 ++++++++++++++++++++++++++
-> >  1 file changed, 26 insertions(+)
-> > 
-> > diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
-> > index b36f9f423c39..552217bb9266 100644
-> > --- a/arch/arm/boot/dts/sun8i-h3.dtsi
-> > +++ b/arch/arm/boot/dts/sun8i-h3.dtsi
-> > @@ -72,6 +72,32 @@
-> >  		};
-> >  	};
-> >  
-> > +	iio-hwmon {
-> > +		compatible = "iio-hwmon";
-> > +		io-channels = <&ths>;
-> > +	};
-> > +
-> > +	soc {
-> > +		ths: ths@01c25000 {
-> > +			compatible = "allwinner,sun8i-h3-ths";
-> > +			reg = <0x01c25000 0x100>;
-> > +			clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
-> > +			clock-names = "bus", "ths";
-> > +			resets = <&ccu RST_BUS_THS>;
-> > +			#thermal-sensor-cells = <0>;
-> > +			#io-channel-cells = <0>;
-> > +		};
-> > +	};
-> > +
-> > +	thermal-zones {
-> > +		cpu_thermal {
-> > +			/* milliseconds */
-> > +			polling-delay-passive = <250>;
-> > +			polling-delay = <1000>;
-> > +			thermal-sensors = <&ths>;
-> > +		};
-> 
-> Would it make sense to add the CPU temp trip points in this patch?
+<snip>
 
-No.
+> Could you adjust your tone to be more collaborative and less cutting?
 
-This is a separate, unrelated, change that has nothing to do with what
-is described either in the commit title or the commit log.
+I'm sorry if I sounded a bit cutting.
 
-The thermal zone itself shouldn't even be in this patch.
+I've tried nothing but to be collaborative and work with you
+until now, but this patch introduces several changes I already
+mentioned were not a good idea in your review of my original
+patch and IMHO do nothing to improve the code.
 
-Maxime
+> You only have this code for the Atom device because I designed and
+> built hardware with this part and hired Mark to write the driver from
+> scratch. I'd like a little goodwill in exchange!
 
--- 
-Maxime Ripard, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
---j5sdxdc32svkkqg5--
+And here we get to the root of the problem, that you keep claiming
+ownership of the driver because you paid Mark to write it,
+this is not how the Linux kernel works. Yes you paid Mark to write
+a driver and in return you get an entire kernel. You no less own
+the bq24190_charger driver then other people own other parts of
+the kernel.
+
+Your remarks against Sebastian that he MUST wait for your ack
+before merging anything are quite frankly completely out of line
+and I have been on the verge of saying something about this
+several times already but I decided to stay quiet (until now).
+
+So yes I apologize for my tone getting a bit cutting as I never
+want that, but TBH I've found the way you're claiming to be
+THE authority on the bq24190_charger driver and have been behaving
+if everyone needs to do exactly as you say when it comes to that
+driver quite off-putting / abrasive.
+
+As for me "only having this code for the Atom devices", it would
+have likely taken me way less time to knock out a new driver
+(like I've done for the fuel-gauge) then all the coordination with
+you is costing me...
+
+> And also gratitude
+> for taking time to fix two of your patches.
+
+I reviewed and acked the first fix, which is my way of saying
+thank you. As for this set of fixes, I never asked for those
+and I think they are a bad idea.
+
+> I expect discussion of charger patches with an experienced kernel
+> contributor to look like these threads:
+>
+> https://patchwork.kernel.org/project/linux-pm/list/?submitter=109&state=*&q=bq24190_charger%3A+Use+PM+runtime+autosuspend&archive=both
+
+So do I and usually conversations I take place in look like that
+...
+
+Regards,
+
+Hans
