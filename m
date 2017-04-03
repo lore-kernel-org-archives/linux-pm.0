@@ -1,26 +1,56 @@
-From: Steve Twiss <stwiss.opensource@diasemi.com>
-Subject: RE: [PATCH V7 4/7] mfd: da9061: MFD core support
-Date: Mon, 3 Apr 2017 14:20:09 +0000
-Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CD6B183@SW-EX-MBX02.diasemi.com>
-References: <cover.1490712213.git.stwiss.opensource@diasemi.com>
- <8987877cc54940358c5b7a65ca003cedc5586f0d.1490712213.git.stwiss.opensource@diasemi.com>
- <20170403141214.q6ndii6c47pqfqx6@dell>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH 2/3] dt-bindings: Add bindings for
+ nvidia,tegra186-ccplex-cluster
+Date: Mon, 3 Apr 2017 15:24:30 +0100
+Message-ID: <87a034c6-ed81-4656-9593-b5708e65edb1@nvidia.com>
+References: <1491223345-24386-1-git-send-email-mperttunen@nvidia.com>
+ <1491223345-24386-2-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <20170403141214.q6ndii6c47pqfqx6@dell>
-Content-Language: en-US
-Sender: linux-input-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:10260 "EHLO
+        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752490AbdDCOYg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Apr 2017 10:24:36 -0400
+In-Reply-To: <1491223345-24386-2-git-send-email-mperttunen@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikko Perttunen <mperttunen@nvidia.com>, rjw@rjwysocki.net, viresh.kumar@linaro.org, thierry.reding@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
 
-T24gMDMgQXByaWwgMjAxNyAxNToxMiwgTGVlIEpvbmVzIHdyb3RlOg0KDQo+ID4gQEAgLTQ3NSw3
-ICs4NTUsMjUgQEAgc3RhdGljIGludCBkYTkwNjJfaTJjX3Byb2JlKHN0cnVjdCBpMmNfY2xpZW50
-ICppMmMsDQo+ID4gIAkJcmV0dXJuIC1FSU5WQUw7DQo+ID4gIAl9DQo+ID4NCj4gPiAtCWNoaXAt
-PnJlZ21hcCA9IGRldm1fcmVnbWFwX2luaXRfaTJjKGkyYywgJmRhOTA2Ml9yZWdtYXBfY29uZmln
-KTsNCj4gPiArCXN3aXRjaCAoY2hpcC0+Y2hpcF90eXBlKSB7DQo+ID4gKwljYXNlKENPTVBBVF9U
-WVBFX0RBOTA2MSk6DQo+IA0KPiBCcmFja2V0cyBhcm91bmQgdGhlIGNhc2UgdmFsdWU/DQo+IA0K
-PiBUaGF0J3MgYSBuZXcgb25lIG9uIG1lLg0KDQpIbS4gRG8geW91IHdhbnQgbWUgdG8gcmVzZW5k
-IGl0IHdpdGhvdXQgYnJhY2VzPw0KDQpSZWdhcmRzLA0KU3RlcGhlbg0K
+
+On 03/04/17 13:42, Mikko Perttunen wrote:
+> The Tegra186 CCPLEX_CLUSTER area contains memory-mapped
+> registers that initiate CPU frequency/voltage transitions.
+> 
+> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+> ---
+>  .../arm/tegra/nvidia,tegra186-ccplex-cluster.txt   | 22 ++++++++++++++++++++++
+>  1 file changed, 22 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt
+> new file mode 100644
+> index 000000000000..50cd615219e9
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt
+> @@ -0,0 +1,22 @@
+> +NVIDIA Tegra CCPLEX_CLUSTER area
+> +
+> +Required properties:
+> +- compatible: Should contain one of the following:
+> +  - "nvidia,tegra186-ccplex-cluster": for Tegra186
+
+Nit pick ... any reason why we append 'cluster' here? The TRM just says
+the "CPU Complex" consists of two CPU clusters. So
+"nvidia,tegra186-cpu-complex" or "nvidia,tegra186-ccplex" seems fine.
+
+BTW, I do see references in the TRM to CCPLEX_CLUSTER0/1, but never
+CCPLEX_CLUSTER in reference to both. I think it is just CCPLEX AFAICT.
+
+Cheers
+Jon
+
+-- 
+nvpublic
