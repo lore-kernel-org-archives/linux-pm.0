@@ -1,82 +1,40 @@
-From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH V5 1/2] dt-bindings: thermal: add support for Broadcom's Northstar thermal
-Date: Mon,  3 Apr 2017 17:48:28 +0200
-Message-ID: <20170403154829.29780-1-zajec5@gmail.com>
-References: <20170331201124.656-1-zajec5@gmail.com>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
+Subject: RE: [PATCH V7 4/7] mfd: da9061: MFD core support
+Date: Mon, 3 Apr 2017 15:56:22 +0000
+Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CD6B207@SW-EX-MBX02.diasemi.com>
+References: <cover.1490712213.git.stwiss.opensource@diasemi.com>
+ <8987877cc54940358c5b7a65ca003cedc5586f0d.1490712213.git.stwiss.opensource@diasemi.com>
+ <20170403141214.q6ndii6c47pqfqx6@dell>
+ <6ED8E3B22081A4459DAC7699F3695FB7018CD6B183@SW-EX-MBX02.diasemi.com>
+ <20170403143049.qyi4dagwi4cdenok@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170331201124.656-1-zajec5-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ray Jui <rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Scott Branden <sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <20170403143049.qyi4dagwi4cdenok@dell>
+Content-Language: en-US
+Sender: linux-input-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
-
-This commit documents binding for thermal used in Northstar family SoCs.
-
-There isn't any known Northstar device with active cooling system so DT
-example has empty cooling-maps node. There is also no support for CPU
-frequency throttling so I put only a critical trip in the example.
-
-Signed-off-by: Rafał Miłecki <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
----
-V3: Add thermal-zones to the example
-V5: Extend example by including trips and cooling-maps. Update commit message
----
- .../devicetree/bindings/thermal/brcm,ns-thermal    | 37 ++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/brcm,ns-thermal
-
-diff --git a/Documentation/devicetree/bindings/thermal/brcm,ns-thermal b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal
-new file mode 100644
-index 000000000000..68e047170039
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal
-@@ -0,0 +1,37 @@
-+* Broadcom Northstar Thermal
-+
-+This binding describes thermal sensor that is part of Northstar's DMU (Device
-+Management Unit).
-+
-+Required properties:
-+- compatible : Must be "brcm,ns-thermal"
-+- reg : iomem address range of PVTMON registers
-+- #thermal-sensor-cells : Should be <0>
-+
-+Example:
-+
-+thermal: thermal@1800c2c0 {
-+	compatible = "brcm,ns-thermal";
-+	reg = <0x1800c2c0 0x10>;
-+	#thermal-sensor-cells = <0>;
-+};
-+
-+thermal-zones {
-+	cpu_thermal: cpu-thermal {
-+		polling-delay-passive = <0>;
-+		polling-delay = <1000>;
-+		coefficients = <(-556) 418000>;
-+		thermal-sensors = <&thermal>;
-+
-+		trips {
-+			cpu-crit {
-+				temperature	= <125000>;
-+				hysteresis	= <0>;
-+				type		= "critical";
-+			};
-+		};
-+
-+		cooling-maps {
-+		};
-+	};
-+};
--- 
-2.11.0
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+T24gMDMgQXByaWwgMjAxNyAxNTozMSwgTGVlIEpvbmVzIHdyb3RlOg0KDQo+IFN1YmplY3Q6IFJl
+OiBbUEFUQ0ggVjcgNC83XSBtZmQ6IGRhOTA2MTogTUZEIGNvcmUgc3VwcG9ydA0KPiANCj4gT24g
+TW9uLCAwMyBBcHIgMjAxNywgU3RldmUgVHdpc3Mgd3JvdGU6DQo+ID4gT24gMDMgQXByaWwgMjAx
+NyAxNToxMiwgTGVlIEpvbmVzIHdyb3RlOg0KPiA+DQo+ID4gPiA+IEBAIC00NzUsNyArODU1LDI1
+IEBAIHN0YXRpYyBpbnQgZGE5MDYyX2kyY19wcm9iZShzdHJ1Y3QgaTJjX2NsaWVudCAqaTJjLA0K
+PiA+ID4gPiAgCQlyZXR1cm4gLUVJTlZBTDsNCj4gPiA+ID4gIAl9DQo+ID4gPiA+DQo+ID4gPiA+
+IC0JY2hpcC0+cmVnbWFwID0gZGV2bV9yZWdtYXBfaW5pdF9pMmMoaTJjLCAmZGE5MDYyX3JlZ21h
+cF9jb25maWcpOw0KPiA+ID4gPiArCXN3aXRjaCAoY2hpcC0+Y2hpcF90eXBlKSB7DQo+ID4gPiA+
+ICsJY2FzZShDT01QQVRfVFlQRV9EQTkwNjEpOg0KPiA+ID4NCj4gPiA+IEJyYWNrZXRzIGFyb3Vu
+ZCB0aGUgY2FzZSB2YWx1ZT8NCj4gPiA+DQo+ID4gPiBUaGF0J3MgYSBuZXcgb25lIG9uIG1lLg0K
+PiA+DQo+ID4gSG0uIERvIHlvdSB3YW50IG1lIHRvIHJlc2VuZCBpdCB3aXRob3V0IGJyYWNlcz8N
+Cj4gDQo+IFllcyBwbGVhc2UuICBBbmQgYSBzcGFjZSBhZnRlciB0aGUgJ2Nhc2UnLg0KDQpIaSBM
+ZWUsDQoNCkkgaGF2ZSByZXNlbnQgUEFUQ0ggVjcgdG8gY2hhbmdlICJjYXNlKFgpOiIgdG8gYmUg
+ImNhc2UgWDoiLg0KLSBSZW1vdmVkIGJyYWNrZXRzIHN1cnJvdW5kaW5nIGNhc2Ugc3RhdGVtZW50
+cyBmb3INCiAgICBjYXNlIENPTVBBVF9UWVBFX0RBOTA2MToNCiAgICBjYXNlIENPTVBBVF9UWVBF
+X0RBOTA2MjoNCg0KTmV3IHBhdGNoIGlzIGhlcmU6DQpodHRwczovL2xrbWwub3JnL2xrbWwvMjAx
+Ny80LzMvNDYyDQoNClRoZSBwYXRjaCBpdCBpcyBjYWxsZWQgYnkgdGhlIHNhbWUgdGl0bGUgIltQ
+QVRDSCBWNyA0LzddIG1mZDogZGE5MDYxOiBNRkQgY29yZSBzdXBwb3J0Ii4NCkkndmUgbm90IHVw
+ZGF0ZWQgdGhlIHdob2xlIHBhdGNoLXNldCBvciBjaGFuZ2VkIHRoZSBwYXRjaCB2ZXJzaW9uIG51
+bWJlciBmcm9tIFY3Lg0KDQpSZWdhcmRzLA0KU3RldmUNCg==
