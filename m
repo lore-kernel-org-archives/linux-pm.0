@@ -1,70 +1,153 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [kbuild-all] [PATCH v3 1/3] mfd: intel_soc_pmic: Fix a mess with
- compilation units
-Date: Mon, 3 Apr 2017 15:33:17 +0100
-Message-ID: <20170403143317.3wfqx2nek2p4dyt3@dell>
+Subject: Re: [PATCH v3 1/3] mfd: intel_soc_pmic: Fix a mess with compilation
+ units
+Date: Mon, 3 Apr 2017 15:34:30 +0100
+Message-ID: <20170403143430.4efwx7muuveun72f@dell>
 References: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
- <201704030357.HdHD43mM%fengguang.wu@intel.com>
- <CAHp75Vdt3ys=tFax5iK5tnANNCLj-b4-VxO78b4ZT0jqdAnsdg@mail.gmail.com>
- <20170403092028.z4xtrwz5wj3go3jd@dell>
- <CAHp75VcGgSF-spv6OZWuAE9ardAW=Q6GjC7T8Eto=7subAuW2g@mail.gmail.com>
- <20170403110631.2fksvvnj22plih7o@wfg-t540p.sh.intel.com>
- <CAHp75VeWmR0W1=V29OFYrAfodKam=M5bdU8bTQUj_NHVTY2gjg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Return-path: <linux-gpio-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAHp75VeWmR0W1=V29OFYrAfodKam=M5bdU8bTQUj_NHVTY2gjg@mail.gmail.com>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Fengguang Wu <lkp@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, kbuild-all@01.org, Zhang Rui <rui.zhang@intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 03 Apr 2017, Andy Shevchenko wrote:
+On Fri, 17 Mar 2017, Andy Shevchenko wrote:
 
-> On Mon, Apr 3, 2017 at 2:06 PM, Fengguang Wu <lkp@intel.com> wrote:
-> > On Mon, Apr 03, 2017 at 12:26:54PM +0300, Andy Shevchenko wrote:
-> >> On Mon, Apr 3, 2017 at 12:20 PM, Lee Jones <lee.jones@linaro.org> wrote:
-> >>> On Sun, 02 Apr 2017, Andy Shevchenko wrote:
-> >>>> On Sun, Apr 2, 2017 at 11:03 PM, kbuild test robot <lkp@intel.com>
-> >>>> wrote:
-> >>>> > Hi Andy,
-> >>>> >
-> >>>> > [auto build test ERROR on ljones-mfd/for-mfd-next]
-> >>>> > [also build test ERROR on v4.11-rc4 next-20170331]
-> >>>> > [if your patch is applied to the wrong git tree, please drop us a note
-> >>>> > to help improve the system]
-> >>>>
-> >>>> Thank you for report, though...
+> Crystal Cove and Whiskey Cove are two different PMICs which are
+> installed on Intel Atom SoC based platforms.
 > 
-> >>>> ...I doubt how below is related to my patch. This is obvious x86 code
-> >>>> which was initially submitted without
-> >>>> depend on X86
-> >>>> line in corresponding Kconfig.
-> >>>
-> >>>
-> >>> I think you should probably specify the architecture in the Kconfig
-> >>> entry, or else some `randconfig`s will fail.
-> >>
-> >>
-> >> Yes, I understand how to fix this, though it's not a problem of this
-> >> patch per se.
-> >>
-> >> Fengguang, is there any possible way to determine the relation between
-> >> an error and a root cause change?
-> >
-> >
-> > Andy, our 0day build error reports are all bisected ones. It means the
-> > error happens since the reported patch/commit, which is either
-> > responsible for the root cause, or somehow triggers (or changes the
-> > exact form of) an old bug.
+> Moreover there are two independent drivers that by some reason were
+> supposed (*) to get into one kernel module.
 > 
-> Thanks, like you said in this case it looks pretty much for triggering
-> an old bug.
+> Fix the mess by clarifying Kconfig option for Crystal Cove and split
+> Whiskey Cove out of it.
+> 
+> (*) It looks like the configuration was never tested with
+>     INTEL_SOC_PMIC=n. The line in Makefile is actually wrong.
+> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net> (supporter:ACPI)
+> Cc: Linus Walleij <linus.walleij@linaro.org> (maintainer:GPIO SUBSYSTEM)
+> Cc: Zhang Rui <rui.zhang@intel.com> (supporter:THERMAL)
+> Cc: Eduardo Valentin <edubezval@gmail.com> (supporter:THERMAL)
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+> - make option visible
+> - fix dependencies
+>  drivers/acpi/Kconfig         |  2 +-
+>  drivers/gpio/Kconfig         |  2 +-
+>  drivers/mfd/Kconfig          | 14 ++++++++++++--
+>  drivers/mfd/Makefile         |  2 +-
+>  drivers/platform/x86/Kconfig |  2 +-
+>  drivers/thermal/Kconfig      |  2 +-
+>  6 files changed, 17 insertions(+), 7 deletions(-)
 
-Quite.  But as a good open source citizen, you'll follow up with
-patches too, right? :)
+Applied, thanks.
+
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index 83e5f7e1a20d..03708e08fcb4 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -512,7 +512,7 @@ config XPOWER_PMIC_OPREGION
+>  
+>  config BXT_WC_PMIC_OPREGION
+>  	bool "ACPI operation region support for BXT WhiskeyCove PMIC"
+> -	depends on INTEL_SOC_PMIC
+> +	depends on INTEL_SOC_PMIC_BXTWC
+>  	help
+>  	  This config adds ACPI operation region support for BXT WhiskeyCove PMIC.
+>  
+> diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+> index 05043071fc98..9b1bcb4d0df7 100644
+> --- a/drivers/gpio/Kconfig
+> +++ b/drivers/gpio/Kconfig
+> @@ -1054,7 +1054,7 @@ config GPIO_UCB1400
+>  
+>  config GPIO_WHISKEY_COVE
+>  	tristate "GPIO support for Whiskey Cove PMIC"
+> -	depends on (X86 || COMPILE_TEST) && INTEL_SOC_PMIC
+> +	depends on (X86 || COMPILE_TEST) && INTEL_SOC_PMIC_BXTWC
+>  	select GPIOLIB_IRQCHIP
+>  	help
+>  	  Support for GPIO pins on Whiskey Cove PMIC.
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index 55ecdfb74d31..e43afb8956ea 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -425,18 +425,28 @@ config LPC_SCH
+>  	  System Management Bus and General Purpose I/O.
+>  
+>  config INTEL_SOC_PMIC
+> -	bool "Support for Intel Atom SoC PMIC"
+> +	bool "Support for Crystal Cove PMIC"
+>  	depends on GPIOLIB
+>  	depends on I2C=y
+>  	select MFD_CORE
+>  	select REGMAP_I2C
+>  	select REGMAP_IRQ
+>  	help
+> -	  Select this option to enable support for the PMIC device
+> +	  Select this option to enable support for Crystal Cove PMIC
+>  	  on some Intel SoC systems. The PMIC provides ADC, GPIO,
+>  	  thermal, charger and related power management functions
+>  	  on these systems.
+>  
+> +config INTEL_SOC_PMIC_BXTWC
+> +	tristate "Support for Intel Broxton Whiskey Cove PMIC"
+> +	select MFD_CORE
+> +	select REGMAP_IRQ
+> +	help
+> +	  Select this option to enable support for Whiskey Cove PMIC
+> +	  on Intel Broxton systems. The PMIC provides ADC, GPIO,
+> +	  thermal, charger and related power management functions
+> +	  on these systems.
+> +
+>  config MFD_INTEL_LPSS
+>  	tristate
+>  	select COMMON_CLK
+> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> index 31ce07611a6f..201aeaf5112a 100644
+> --- a/drivers/mfd/Makefile
+> +++ b/drivers/mfd/Makefile
+> @@ -207,8 +207,8 @@ obj-$(CONFIG_MFD_RT5033)	+= rt5033.o
+>  obj-$(CONFIG_MFD_SKY81452)	+= sky81452.o
+>  
+>  intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
+> -intel-soc-pmic-$(CONFIG_INTEL_PMC_IPC)	+= intel_soc_pmic_bxtwc.o
+>  obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
+> +obj-$(CONFIG_INTEL_SOC_PMIC_BXTWC)	+= intel_soc_pmic_bxtwc.o
+>  obj-$(CONFIG_MFD_MT6397)	+= mt6397-core.o
+>  
+>  obj-$(CONFIG_MFD_ALTERA_A10SR)	+= altera-a10sr.o
+> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+> index e1bffc9bb194..883fbe7a2466 100644
+> --- a/drivers/platform/x86/Kconfig
+> +++ b/drivers/platform/x86/Kconfig
+> @@ -1019,7 +1019,7 @@ config INTEL_PMC_IPC
+>  config INTEL_BXTWC_PMIC_TMU
+>  	tristate "Intel BXT Whiskey Cove TMU Driver"
+>  	depends on REGMAP
+> -	depends on INTEL_SOC_PMIC && INTEL_PMC_IPC
+> +	depends on INTEL_SOC_PMIC_BXTWC && INTEL_PMC_IPC
+>  	---help---
+>  	  Select this driver to use Intel BXT Whiskey Cove PMIC TMU feature.
+>  	  This driver enables the alarm wakeup functionality in the TMU unit
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 776b34396144..751e50a3d946 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -365,7 +365,7 @@ endmenu
+>  
+>  config INTEL_BXT_PMIC_THERMAL
+>  	tristate "Intel Broxton PMIC thermal driver"
+> -	depends on X86 && INTEL_SOC_PMIC && REGMAP
+> +	depends on X86 && INTEL_SOC_PMIC_BXTWC && REGMAP
+>  	help
+>  	  Select this driver for Intel Broxton PMIC with ADC channels monitoring
+>  	  system temperature measurements and alerts.
 
 -- 
 Lee Jones
