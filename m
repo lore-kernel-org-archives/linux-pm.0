@@ -1,61 +1,72 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [kbuild-all] [PATCH v3 1/3] mfd: intel_soc_pmic: Fix a mess with
- compilation units
-Date: Mon, 3 Apr 2017 14:12:45 +0300
-Message-ID: <CAHp75VeWmR0W1=V29OFYrAfodKam=M5bdU8bTQUj_NHVTY2gjg@mail.gmail.com>
-References: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
- <201704030357.HdHD43mM%fengguang.wu@intel.com> <CAHp75Vdt3ys=tFax5iK5tnANNCLj-b4-VxO78b4ZT0jqdAnsdg@mail.gmail.com>
- <20170403092028.z4xtrwz5wj3go3jd@dell> <CAHp75VcGgSF-spv6OZWuAE9ardAW=Q6GjC7T8Eto=7subAuW2g@mail.gmail.com>
- <20170403110631.2fksvvnj22plih7o@wfg-t540p.sh.intel.com>
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [bug report] thermal: devfreq_cooling: refactor code and add
+ get_voltage function
+Date: Mon, 3 Apr 2017 12:14:34 +0100
+Message-ID: <2d406449-e3dd-d51c-5383-fc885008a3c3@arm.com>
+References: <20170331151916.GA24860@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170403110631.2fksvvnj22plih7o@wfg-t540p.sh.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Fengguang Wu <lkp@intel.com>
-Cc: Lee Jones <lee.jones@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, kbuild-all@01.org, Zhang Rui <rui.zhang@intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:57724 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751759AbdDCLOh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 3 Apr 2017 07:14:37 -0400
+In-Reply-To: <20170331151916.GA24860@mwanda>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: linux-pm@vger.kernel.org
 
-On Mon, Apr 3, 2017 at 2:06 PM, Fengguang Wu <lkp@intel.com> wrote:
-> On Mon, Apr 03, 2017 at 12:26:54PM +0300, Andy Shevchenko wrote:
->> On Mon, Apr 3, 2017 at 12:20 PM, Lee Jones <lee.jones@linaro.org> wrote:
->>> On Sun, 02 Apr 2017, Andy Shevchenko wrote:
->>>> On Sun, Apr 2, 2017 at 11:03 PM, kbuild test robot <lkp@intel.com>
->>>> wrote:
->>>> > Hi Andy,
->>>> >
->>>> > [auto build test ERROR on ljones-mfd/for-mfd-next]
->>>> > [also build test ERROR on v4.11-rc4 next-20170331]
->>>> > [if your patch is applied to the wrong git tree, please drop us a note
->>>> > to help improve the system]
->>>>
->>>> Thank you for report, though...
+Hello Dan,
 
->>>> ...I doubt how below is related to my patch. This is obvious x86 code
->>>> which was initially submitted without
->>>> depend on X86
->>>> line in corresponding Kconfig.
->>>
->>>
->>> I think you should probably specify the architecture in the Kconfig
->>> entry, or else some `randconfig`s will fail.
->>
->>
->> Yes, I understand how to fix this, though it's not a problem of this
->> patch per se.
->>
->> Fengguang, is there any possible way to determine the relation between
->> an error and a root cause change?
+On 31/03/17 16:19, Dan Carpenter wrote:
+> Hello Lukasz Luba,
 >
+> The patch 88db6ba9fd98: "thermal: devfreq_cooling: refactor code and
+> add get_voltage function" from Mar 14, 2017, leads to the following
+> static checker warning:
 >
-> Andy, our 0day build error reports are all bisected ones. It means the
-> error happens since the reported patch/commit, which is either
-> responsible for the root cause, or somehow triggers (or changes the
-> exact form of) an old bug.
+> 	drivers/thermal/devfreq_cooling.c:187 get_voltage()
+> 	error: 'opp' dereferencing possible ERR_PTR()
+>
+> drivers/thermal/devfreq_cooling.c
+>    176  static unsigned long get_voltage(struct devfreq *df, unsigned long freq)
+>    177  {
+>    178          struct device *dev = df->dev.parent;
+>    179          unsigned long voltage;
+>    180          struct dev_pm_opp *opp;
+>    181
+>    182          opp = dev_pm_opp_find_freq_exact(dev, freq, true);
+>    183          if (IS_ERR(opp) && (PTR_ERR(opp) == -ERANGE))
+>
+> Let's imagine that opp is ERR_PTR(-ENOMEM);
+>
+>    184                  opp = dev_pm_opp_find_freq_exact(dev, freq, false);
+>    185
+>    186          voltage = dev_pm_opp_get_voltage(opp) / 1000; /* mV */
+>    187          dev_pm_opp_put(opp);
+>                                ^^^
+> Then we would Oops here.
+>
+>    188
+>    189          if (voltage == 0) {
+>    190                  dev_warn_ratelimited(dev,
+>    191                                       "Failed to get voltage for frequency %lu: %ld\n",
+>    192                                       freq, IS_ERR(opp) ? PTR_ERR(opp) : 0);
+>    193          }
+>    194
+>    195          return voltage;
+>    196  }
+>
 
-Thanks, like you said in this case it looks pretty much for triggering
-an old bug.
+Thank you for the feedback.
+Yes you are right.
+I can see that in mainline, commit:
+a4e49c9bc98d099b2a19933b
+has this fix (also reported by you).
 
--- 
-With Best Regards,
-Andy Shevchenko
+I will re-base the patch set.
+
+Regards,
+Lukasz Luba
