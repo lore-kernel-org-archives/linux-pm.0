@@ -1,345 +1,93 @@
-From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [PATCH 1/3] cpufreq: Add Tegra186 cpufreq driver
-Date: Mon, 3 Apr 2017 15:42:23 +0300
-Message-ID: <1491223345-24386-1-git-send-email-mperttunen@nvidia.com>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
+Subject: RE: [PATCH V7 6/7] thermal: da9062/61: Thermal junction temperature
+ monitoring driver
+Date: Mon, 3 Apr 2017 13:21:19 +0000
+Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CD6B0A2@SW-EX-MBX02.diasemi.com>
+References: <cover.1490712213.git.stwiss.opensource@diasemi.com>
+ <2c1ee249b6746ae3914041a4fc106c89a561f7de.1490712213.git.stwiss.opensource@diasemi.com>
+ <20170401195916.GF28514@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, thierry.reding@gmail.com, jonathanh@nvidia.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, Mikko Perttunen <mperttunen@nvidia.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail1.bemta3.messagelabs.com ([195.245.230.164]:46888 "EHLO
+        mail1.bemta3.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751732AbdDCNVt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Apr 2017 09:21:49 -0400
+In-Reply-To: <20170401195916.GF28514@localhost.localdomain>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Lee Jones <lee.jones@linaro.org>
+Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>
 
-Add a new cpufreq driver for Tegra186 (and likely later).
-The CPUs are organized into two clusters, Denver and A57,
-with two and four cores respectively. CPU frequency can be
-adjusted by writing the desired rate divisor and a voltage
-hint to a special per-core register.
+On 01 April 2017 @20:59, Eduardo Valentin wrote:
 
-The frequency of each core can be set individually; however,
-this is just a hint as all CPUs in a cluster will run at
-the maximum rate of non-idle CPUs in the cluster.
+> Subject: Re: [PATCH V7 6/7] thermal: da9062/61: Thermal junction temperature monitoring driver
+> 
+> On Tue, Mar 28, 2017 at 03:43:33PM +0100, Steve Twiss wrote:
+> > From: Steve Twiss <stwiss.opensource@diasemi.com>
+> >
+> > Add junction temperature monitoring supervisor device driver, compatible
+> > with the DA9062 and DA9061 PMICs. A MODULE_DEVICE_TABLE() macro is added.
+> >
+> > If the PMIC's internal junction temperature rises above T_WARN (125 degC)
+> > an interrupt is issued. This T_WARN level is defined as the
+> > THERMAL_TRIP_HOT trip-wire inside the device driver.
+> >
+> > The thermal triggering mechanism is interrupt based and happens when the
+> > temperature rises above a given threshold level. The component cannot
+> > return an exact temperature, it only has knowledge if the temperature is
+> > above or below a given threshold value. A status bit must be polled to
+> > detect when the temperature falls below that threshold level again. A
+> > kernel work queue is configured to repeatedly poll and detect when the
+> > temperature falls below this trip-wire, between 1 and 10 second intervals
+> > (defaulting at 3 seconds).
+> >
+> > This scheme is provided as an example. It would be expected that any
+> > final implementation will also include a notify() function and any of these
+> > settings could be altered to match the application where appropriate.
+> >
+> > When over-temperature is reached, the interrupt from the DA9061/2 will be
+> > repeatedly triggered. The IRQ is therefore disabled when the first
+> > over-temperature event happens and the status bit is polled using a
+> > work-queue until it becomes false.
+> >
+> > This strategy is designed to allow the periodic transmission of uevents
+> > (HOT trip point) as the first level of temperature supervision method. It
+> > is intended for non-invasive temperature control, where the necessary
+> > measures for cooling the system down are left to the host software. Once
+> > the temperature falls again, the IRQ is re-enabled so a new critical
+> > over-temperature event can be detected.
+> >
+> > Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+> > Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
+> 
+> I have had a look on the history of this driver on its previous
+> versions, and I do not think I have any other point to request on it.
 
-Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
----
- drivers/cpufreq/Kconfig.arm        |   7 +
- drivers/cpufreq/Makefile           |   1 +
- drivers/cpufreq/tegra186-cpufreq.c | 277 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 285 insertions(+)
- create mode 100644 drivers/cpufreq/tegra186-cpufreq.c
+Thank you.
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 74fa5c5904d3..168d36fa4a58 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -247,6 +247,13 @@ config ARM_TEGRA124_CPUFREQ
- 	help
- 	  This adds the CPUFreq driver support for Tegra124 SOCs.
- 
-+config ARM_TEGRA186_CPUFREQ
-+	tristate "Tegra186 CPUFreq support"
-+	depends on ARCH_TEGRA && TEGRA_BPMP
-+	default y
-+	help
-+	  This adds the CPUFreq driver support for Tegra186 SOCs.
-+
- config ARM_TI_CPUFREQ
- 	bool "Texas Instruments CPUFreq support"
- 	depends on ARCH_OMAP2PLUS
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 9f5a8045f36d..b7e78f063c4f 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -77,6 +77,7 @@ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
- obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
- obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
- obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
-+obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
- obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
- obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
- obj-$(CONFIG_ACPI_CPPC_CPUFREQ) += cppc_cpufreq.o
-diff --git a/drivers/cpufreq/tegra186-cpufreq.c b/drivers/cpufreq/tegra186-cpufreq.c
-new file mode 100644
-index 000000000000..794c1f2d8231
---- /dev/null
-+++ b/drivers/cpufreq/tegra186-cpufreq.c
-@@ -0,0 +1,277 @@
-+/*
-+ * Copyright (c) 2017, NVIDIA CORPORATION. All rights reserved
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ */
-+
-+#include <linux/cpufreq.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+
-+#include <soc/tegra/bpmp.h>
-+#include <soc/tegra/bpmp-abi.h>
-+
-+#define EDVD_CORE_VOLT_FREQ(core)		(0x20 + (core) * 0x4)
-+#define EDVD_CORE_VOLT_FREQ_F_SHIFT		0
-+#define EDVD_CORE_VOLT_FREQ_F_MASK		0xff
-+#define EDVD_CORE_VOLT_FREQ_V_SHIFT		16
-+#define EDVD_CORE_VOLT_FREQ_V_MASK		0xff
-+
-+#define CLUSTER_DENVER				0
-+#define CLUSTER_A57				1
-+#define NUM_CLUSTERS				2
-+
-+struct tegra186_cpufreq_cluster {
-+	const char *name;
-+	unsigned int num_cores;
-+};
-+
-+static const struct tegra186_cpufreq_cluster CLUSTERS[] = {
-+	{
-+		.name = "denver",
-+		.num_cores = 2,
-+	},
-+	{
-+		.name = "a57",
-+		.num_cores = 4,
-+	}
-+};
-+
-+struct tegra186_cpufreq_data {
-+	void __iomem *regs[NUM_CLUSTERS];
-+	struct cpufreq_frequency_table *tables[NUM_CLUSTERS];
-+};
-+
-+static void get_cluster_core(int cpu, int *cluster, int *core)
-+{
-+	switch (cpu) {
-+	case 0:
-+		*cluster = CLUSTER_A57; *core = 0; break;
-+	case 3:
-+		*cluster = CLUSTER_A57; *core = 1; break;
-+	case 4:
-+		*cluster = CLUSTER_A57; *core = 2; break;
-+	case 5:
-+		*cluster = CLUSTER_A57; *core = 3; break;
-+	case 1:
-+		*cluster = CLUSTER_DENVER; *core = 0; break;
-+	case 2:
-+		*cluster = CLUSTER_DENVER; *core = 1; break;
-+	}
-+}
-+
-+static int tegra186_cpufreq_init(struct cpufreq_policy *policy)
-+{
-+	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
-+	struct cpufreq_frequency_table *table;
-+	int cluster, core;
-+
-+	get_cluster_core(policy->cpu, &cluster, &core);
-+
-+	table = data->tables[cluster];
-+	cpufreq_table_validate_and_show(policy, table);
-+
-+	policy->cpuinfo.transition_latency = 300 * 1000;
-+
-+	return 0;
-+}
-+
-+static void write_volt_freq(uint8_t vidx, uint8_t ndiv, void __iomem *regs,
-+			unsigned int core)
-+{
-+	u32 val = 0;
-+
-+	val |= ndiv << EDVD_CORE_VOLT_FREQ_F_SHIFT;
-+	val |= vidx << EDVD_CORE_VOLT_FREQ_V_SHIFT;
-+
-+	writel(val, regs + EDVD_CORE_VOLT_FREQ(core));
-+}
-+
-+static int tegra186_cpufreq_set_target(struct cpufreq_policy *policy,
-+				       unsigned int index)
-+{
-+	struct cpufreq_frequency_table *tbl = policy->freq_table + index;
-+	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
-+	uint16_t vidx = tbl->driver_data >> 16;
-+	uint16_t ndiv = tbl->driver_data & 0xffff;
-+	int cluster, core;
-+
-+	get_cluster_core(policy->cpu, &cluster, &core);
-+	write_volt_freq(vidx, ndiv, data->regs[cluster], core);
-+
-+	return 0;
-+}
-+
-+static struct cpufreq_driver tegra186_cpufreq_driver = {
-+	.name = "tegra186",
-+	.flags = CPUFREQ_STICKY | CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
-+	.verify = cpufreq_generic_frequency_table_verify,
-+	.target_index = tegra186_cpufreq_set_target,
-+	.init = tegra186_cpufreq_init,
-+	.attr = cpufreq_generic_attr,
-+};
-+
-+static int init_vhint_table(struct platform_device *pdev,
-+			    struct tegra_bpmp *bpmp, uint32_t cluster_id,
-+			    struct cpufreq_frequency_table **table)
-+{
-+	struct mrq_cpu_vhint_request req;
-+	struct tegra_bpmp_message msg;
-+	struct cpu_vhint_data *data;
-+	int err, i, j, num_rates;
-+	dma_addr_t phys;
-+	void *virt;
-+
-+	virt = dma_alloc_coherent(bpmp->dev, MSG_DATA_MIN_SZ, &phys,
-+				  GFP_KERNEL | GFP_DMA32);
-+	if (!virt)
-+		return -ENOMEM;
-+
-+	data = (struct cpu_vhint_data *)virt;
-+
-+	memset(&req, 0, sizeof(req));
-+	req.addr = phys;
-+	req.cluster_id = cluster_id;
-+
-+	memset(&msg, 0, sizeof(msg));
-+	msg.mrq = MRQ_CPU_VHINT;
-+	msg.tx.data = &req;
-+	msg.tx.size = sizeof(req);
-+
-+	err = tegra_bpmp_transfer(bpmp, &msg);
-+	if (err)
-+		goto end;
-+
-+	num_rates = 0;
-+
-+	for (i = data->vfloor; i < data->vceil + 1; ++i) {
-+		uint16_t ndiv = data->ndiv[i];
-+
-+		if (ndiv < data->ndiv_min || ndiv > data->ndiv_max)
-+			continue;
-+
-+		/* Only store lowest voltage index for each rate */
-+		if (i > 0 && ndiv == data->ndiv[i-1])
-+			continue;
-+
-+		++num_rates;
-+	}
-+
-+	*table = devm_kcalloc(&pdev->dev, num_rates + 1, sizeof(**table),
-+			      GFP_KERNEL);
-+	if (!*table) {
-+		err = -ENOMEM;
-+		goto end;
-+	}
-+
-+	for (i = data->vfloor, j = 0; i < data->vceil + 1; ++i) {
-+		struct cpufreq_frequency_table *point;
-+		uint16_t ndiv = data->ndiv[i];
-+
-+		if (ndiv < data->ndiv_min || ndiv > data->ndiv_max)
-+			continue;
-+
-+		/* Only store lowest voltage index for each rate */
-+		if (i > 0 && ndiv == data->ndiv[i-1])
-+			continue;
-+
-+		point = &(*table)[j++];
-+		point->driver_data = (i << 16) | (ndiv);
-+		point->frequency = data->ref_clk_hz * ndiv / data->pdiv /
-+			data->mdiv / 1000;
-+	}
-+
-+	(*table)[j].frequency = CPUFREQ_TABLE_END;
-+
-+end:
-+	dma_free_coherent(bpmp->dev, MSG_DATA_MIN_SZ, virt, phys);
-+
-+	return err;
-+}
-+
-+static int tegra186_cpufreq_probe(struct platform_device *pdev)
-+{
-+	struct tegra186_cpufreq_data *data;
-+	struct tegra_bpmp *bpmp;
-+	int i, err;
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	bpmp = tegra_bpmp_get(&pdev->dev);
-+	if (IS_ERR(bpmp))
-+		return PTR_ERR(bpmp);
-+
-+	for (i = 0; i < NUM_CLUSTERS; ++i) {
-+		struct resource *res;
-+
-+		res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
-+						   CLUSTERS[i].name);
-+		if (!res) {
-+			err = -ENXIO;
-+			goto put_bpmp;
-+		}
-+
-+		data->regs[i] = devm_ioremap_resource(&pdev->dev, res);
-+		if (IS_ERR(data->regs[i])) {
-+			err = PTR_ERR(data->regs[i]);
-+			goto put_bpmp;
-+		}
-+
-+		err = init_vhint_table(pdev, bpmp, i, &data->tables[i]);
-+		if (err)
-+			goto put_bpmp;
-+	}
-+
-+	tegra_bpmp_put(bpmp);
-+
-+	tegra186_cpufreq_driver.driver_data = data;
-+
-+	err = cpufreq_register_driver(&tegra186_cpufreq_driver);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+
-+put_bpmp:
-+	tegra_bpmp_put(bpmp);
-+
-+	return err;
-+}
-+
-+static int tegra186_cpufreq_remove(struct platform_device *pdev)
-+{
-+	cpufreq_unregister_driver(&tegra186_cpufreq_driver);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id tegra186_cpufreq_of_match[] = {
-+	{ .compatible = "nvidia,tegra186-ccplex-cluster", },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, tegra186_cpufreq_of_match);
-+
-+static struct platform_driver tegra186_cpufreq_platform_driver = {
-+	.driver = {
-+		.name = "tegra186-cpufreq",
-+		.of_match_table = tegra186_cpufreq_of_match,
-+	},
-+	.probe = tegra186_cpufreq_probe,
-+	.remove = tegra186_cpufreq_remove,
-+};
-+module_platform_driver(tegra186_cpufreq_platform_driver);
-+
-+MODULE_AUTHOR("Mikko Perttunen <mperttunen@nvidia.com>");
-+MODULE_DESCRIPTION("Tegra186 cpufreq driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.1.4
+> Obviously, I still need to state that I do not like its oddness as it is
+> not really benefiting much of the thermal control implemented on the
+> thermal subsystem.
+
+Agreed.
+But, it should be useful in the case of an over-temperature in the system PMIC 
+when the OS needs to be notified to bring core temperature under control.
+
+> What is the plan for this series? Am I expected to get this driver
+> through thermal tree ? Or is this series going into a one shot?
+> 
+> If option 1 is the expected, would the driver need to get its
+> mfd parent merged first?
+
+Other components such as the ONKEY and Watchdog have not required the MFD
+to be merged first. I don't see any strong dependency for the MFD to exist with this
+thermal component.
+
+I'm not sure how much Lee is waiting for Acks to exist before proceeding with the MFD.
+I have TO:'d Lee Jones, for this case.
+
+Regards,
+Steve
