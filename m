@@ -1,318 +1,79 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH 2/2] power: tps65217_charger: Add properties like voltage and current charge
-Date: Mon,  3 Apr 2017 18:44:46 +0200
-Message-ID: <20170403164446.28076-2-enric.balletbo@collabora.com>
-References: <20170403164446.28076-1-enric.balletbo@collabora.com>
+From: "santosh.shilimkar@oracle.com" <santosh.shilimkar@oracle.com>
+Subject: Re: [PATCH v4 0/5] ARM: K2G: Add support for TI-SCI Generic PM Domains
+Date: Mon, 3 Apr 2017 09:58:34 -0700
+Message-ID: <1bf8091a-76d2-1b2b-b23d-76d3493eb33c@oracle.com>
+References: <1488882154-21485-1-git-send-email-d-gerlach@ti.com>
+ <2133897.t9KqoeriS0@aspire.rjw.lan> <58CAD9F5.7030904@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170403164446.28076-1-enric.balletbo@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Lee Jones <lee.jones@linaro.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <58CAD9F5.7030904@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Dave Gerlach <d-gerlach@ti.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
+Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Hilman <khilman@kernel.org>, Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Allow the possibility to configure the charge and the current voltage of
-the charger and also the NTC type for battery temperature measurement.
+Hi Dave,
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
- .../bindings/power/supply/tps65217_charger.txt     |  15 ++
- drivers/power/supply/tps65217_charger.c            | 187 +++++++++++++++++++--
- include/linux/mfd/tps65217.h                       |   2 +
- 3 files changed, 192 insertions(+), 12 deletions(-)
+On 3/16/17 11:31 AM, Dave Gerlach wrote:
+> Santosh,
+> On 03/12/2017 12:02 PM, Rafael J. Wysocki wrote:
 
-diff --git a/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt b/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
-index a11072c..600da6e 100644
---- a/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
-+++ b/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
-@@ -6,6 +6,18 @@ Required Properties:
-              Should be <0> for the USB charger and <1> for the AC adapter.
- -interrupt-names: Should be "USB" and "AC"
- 
-+Optional properties:
-+-ti,charge-voltage-uvolt: set the charge voltage. The value can be: 4100000,
-+	4150000, 4200000, 4250000; default: 4100000
-+
-+-ti,charge-current-uamp: set the charging current. The value can be: 300000,
-+	400000, 500000, 700000; default: 500000
-+
-+-ti,ntc-type: set the NTC type for battery temperature measurement. The value
-+	must be 0 or 1, where:
-+	  0 – 100k (curve 1, B = 3960)
-+	  1 – 10k  (curve 2, B = 3480) (default)
-+
- This node is a subnode of the tps65217 PMIC.
- 
- Example:
-@@ -14,4 +26,7 @@ Example:
- 		compatible = "ti,tps65217-charger";
- 		interrupts = <0>, <1>;
- 		interrupt-names = "USB", "AC";
-+		ti,charge-voltage-uvolt = <4100000>;
-+		ti,charge-current-uamp = <500000>;
-+		ti,ntc-type = <1>;
- 	};
-diff --git a/drivers/power/supply/tps65217_charger.c b/drivers/power/supply/tps65217_charger.c
-index 1f52340..1d7055d 100644
---- a/drivers/power/supply/tps65217_charger.c
-+++ b/drivers/power/supply/tps65217_charger.c
-@@ -39,6 +39,12 @@
- #define NUM_CHARGER_IRQS	2
- #define POLL_INTERVAL		(HZ * 2)
- 
-+struct tps65217_charger_platform_data {
-+	u32	charge_current_uamp;
-+	u32	charge_voltage_uvolt;
-+	int	ntc_type;
-+};
-+
- struct tps65217_charger {
- 	struct tps65217 *tps;
- 	struct device *dev;
-@@ -48,16 +54,82 @@ struct tps65217_charger {
- 	int	prev_online;
- 
- 	struct task_struct	*poll_task;
-+	struct tps65217_charger_platform_data *pdata;
- };
- 
- static enum power_supply_property tps65217_charger_props[] = {
- 	POWER_SUPPLY_PROP_ONLINE,
- };
- 
--static int tps65217_config_charger(struct tps65217_charger *charger)
-+static int tps65217_set_charge_current(struct tps65217_charger *charger,
-+				       unsigned int uamp)
-+{
-+	int ret, val;
-+
-+	dev_dbg(charger->dev, "setting charge current to %d uA\n", uamp);
-+
-+	if (uamp == 300000)
-+		val = 0x00;
-+	else if (uamp == 400000)
-+		val = 0x01;
-+	else if (uamp == 500000)
-+		val = 0x02;
-+	else if (uamp == 700000)
-+		val = 0x03;
-+	else
-+		return -EINVAL;
-+
-+	ret = tps65217_set_bits(charger->tps, TPS65217_REG_CHGCONFIG3,
-+				TPS65217_CHGCONFIG3_ICHRG_MASK,
-+				val << TPS65217_CHGCONFIG3_ICHRG_SHIFT,
-+				TPS65217_PROTECT_NONE);
-+	if (ret) {
-+		dev_err(charger->dev,
-+			"failed to set ICHRG setting to 0x%02x (err: %d)\n",
-+			val, ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int tps65217_set_charge_voltage(struct tps65217_charger *charger,
-+				       unsigned int uvolt)
-+{
-+	int ret, val;
-+
-+	dev_dbg(charger->dev, "setting charge voltage to %d uV\n", uvolt);
-+
-+	if (uvolt != 4100000 && uvolt != 4150000 &&
-+	    uvolt != 4200000 && uvolt != 4250000)
-+		return -EINVAL;
-+
-+	val = (uvolt - 4100000) / 50000;
-+
-+	ret = tps65217_set_bits(charger->tps, TPS65217_REG_CHGCONFIG2,
-+				TPS65217_CHGCONFIG2_VOREG_MASK,
-+				val << TPS65217_CHGCONFIG2_VOREG_SHIFT,
-+				TPS65217_PROTECT_NONE);
-+	if (ret) {
-+		dev_err(charger->dev,
-+			"failed to set VOCHG setting to 0x%02x (err: %d)\n",
-+			val, ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int tps65217_set_ntc_type(struct tps65217_charger *charger,
-+				 unsigned int ntc)
- {
- 	int ret;
- 
-+	dev_dbg(charger->dev, "setting NTC type to %d\n", ntc);
-+
-+	if (ntc != 0 && ntc != 1)
-+		return -EINVAL;
-+
- 	/*
- 	 * tps65217 rev. G, p. 31 (see p. 32 for NTC schematic)
- 	 *
-@@ -74,14 +146,57 @@ static int tps65217_config_charger(struct tps65217_charger *charger)
- 	 * NTC TYPE (for battery temperature measurement)
- 	 *   0 – 100k (curve 1, B = 3960)
- 	 *   1 – 10k  (curve 2, B = 3480) (default on reset)
--	 *
- 	 */
--	ret = tps65217_clear_bits(charger->tps, TPS65217_REG_CHGCONFIG1,
--				  TPS65217_CHGCONFIG1_NTC_TYPE,
--				  TPS65217_PROTECT_NONE);
-+	if (ntc) {
-+		ret = tps65217_set_bits(charger->tps, TPS65217_REG_CHGCONFIG1,
-+					TPS65217_CHGCONFIG1_NTC_TYPE,
-+					TPS65217_CHGCONFIG1_NTC_TYPE,
-+					TPS65217_PROTECT_NONE);
-+		if (ret) {
-+			dev_err(charger->dev,
-+				"failed to set NTC type to 10K: %d\n", ret);
-+			return ret;
-+		}
-+	} else {
-+		ret = tps65217_clear_bits(charger->tps, TPS65217_REG_CHGCONFIG1,
-+					  TPS65217_CHGCONFIG1_NTC_TYPE,
-+					  TPS65217_PROTECT_NONE);
-+		if (ret) {
-+			dev_err(charger->dev,
-+				"failed to set NTC type to 100K: %d\n", ret);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int tps65217_config_charger(struct tps65217_charger *charger)
-+{
-+	int ret;
-+	struct tps65217_charger_platform_data *pdata = charger->pdata;
-+
-+	if (!charger->pdata)
-+		return -EINVAL;
-+
-+	ret = tps65217_set_charge_voltage(charger, pdata->charge_voltage_uvolt);
- 	if (ret) {
- 		dev_err(charger->dev,
--			"failed to set 100k NTC setting: %d\n", ret);
-+			"failed to set charge voltage setting: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = tps65217_set_charge_current(charger, pdata->charge_current_uamp);
-+	if (ret) {
-+		dev_err(charger->dev,
-+			"failed to set charge current setting: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = tps65217_set_ntc_type(charger, pdata->ntc_type);
-+	if (ret) {
-+		dev_err(charger->dev,
-+			"failed to set NTC type setting: %d\n", ret);
- 		return ret;
- 	}
- 
-@@ -185,6 +300,48 @@ static int tps65217_charger_poll_task(void *data)
- 	return 0;
- }
- 
-+#ifdef CONFIG_OF
-+static struct tps65217_charger_platform_data *tps65217_charger_pdata_init(
-+		struct platform_device *pdev)
-+{
-+	struct tps65217_charger_platform_data *pdata;
-+	struct device_node *np = pdev->dev.of_node;
-+	int ret;
-+
-+	if (!np) {
-+		dev_err(&pdev->dev, "No charger OF node\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
-+	if (!pdata)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ret = of_property_read_u32(np, "ti,charge-voltage-uvolt",
-+				   &pdata->charge_voltage_uvolt);
-+	if (ret)
-+		pdata->charge_voltage_uvolt = 4100000;
-+
-+	ret = of_property_read_u32(np, "ti,charge-current-uamp",
-+				   &pdata->charge_current_uamp);
-+	if (ret)
-+		pdata->charge_current_uamp = 500000;
-+
-+	ret = of_property_read_u32(np, "ti,ntc-type",
-+				   &pdata->ntc_type);
-+	if (ret)
-+		pdata->ntc_type = 1;	/* 10k  (curve 2, B = 3480) */
-+
-+	return pdata;
-+}
-+#else /* CONFIG_OF */
-+static struct tps65217_charger_platform_data *tps65217_charger_pdata_init(
-+		struct platform_device *pdev)
-+{
-+	return NULL;
-+}
-+#endif /* CONFIG_OF */
-+
- static const struct power_supply_desc tps65217_charger_desc = {
- 	.name			= "tps65217-charger",
- 	.type			= POWER_SUPPLY_TYPE_MAINS,
-@@ -214,6 +371,18 @@ static int tps65217_charger_probe(struct platform_device *pdev)
- 	cfg.of_node = pdev->dev.of_node;
- 	cfg.drv_data = charger;
- 
-+	charger->pdata = tps65217_charger_pdata_init(pdev);
-+	if (IS_ERR(charger->pdata)) {
-+		dev_err(charger->dev, "failed: getting platform data\n");
-+		return PTR_ERR(charger->pdata);
-+	}
-+
-+	ret = tps65217_config_charger(charger);
-+	if (ret < 0) {
-+		dev_err(charger->dev, "charger config failed, err %d\n", ret);
-+		return ret;
-+	}
-+
- 	charger->psy = devm_power_supply_register(&pdev->dev,
- 						  &tps65217_charger_desc,
- 						  &cfg);
-@@ -225,12 +394,6 @@ static int tps65217_charger_probe(struct platform_device *pdev)
- 	irq[0] = platform_get_irq_byname(pdev, "USB");
- 	irq[1] = platform_get_irq_byname(pdev, "AC");
- 
--	ret = tps65217_config_charger(charger);
--	if (ret < 0) {
--		dev_err(charger->dev, "charger config failed, err %d\n", ret);
--		return ret;
--	}
--
- 	/* Create a polling thread if an interrupt is invalid */
- 	if (irq[0] < 0 || irq[1] < 0) {
- 		poll_task = kthread_run(tps65217_charger_poll_task,
-diff --git a/include/linux/mfd/tps65217.h b/include/linux/mfd/tps65217.h
-index eac2857..d040062 100644
---- a/include/linux/mfd/tps65217.h
-+++ b/include/linux/mfd/tps65217.h
-@@ -103,8 +103,10 @@
- #define TPS65217_CHGCONFIG2_DYNTMR	BIT(7)
- #define TPS65217_CHGCONFIG2_VPREGHG	BIT(6)
- #define TPS65217_CHGCONFIG2_VOREG_MASK	0x30
-+#define TPS65217_CHGCONFIG2_VOREG_SHIFT	4
- 
- #define TPS65217_CHGCONFIG3_ICHRG_MASK	0xC0
-+#define TPS65217_CHGCONFIG3_ICHRG_SHIFT	6
- #define TPS65217_CHGCONFIG3_DPPMTH_MASK	0x30
- #define TPS65217_CHGCONFIG2_PCHRGT	BIT(3)
- #define TPS65217_CHGCONFIG2_TERMIF	0x06
--- 
-2.9.3
+[...]
+
+>>> I did not update the "power-domain" binding document because in regards to
+>>> #power-domain-cells it already states "can be any value as specified by device
+>>> tree binding documentation of particular provider" which I think already
+>>> describes the change in patch 2.
+>>
+>> I'm assuming that this will go in through the arm-soc tree.
+>
+> Assuming that Rob is OK with the v5 of patch 3 that I just sent in response to
+> the v4 patch email, can this series go through you? We should be good to go with
+> v4 of the series + the small v5 update to patch 3 if Rob is ok with it.
+>
+Yes I can queue this up for arm-soc. Please repost the v5 with all the
+patches and acks.
+
+
+Hi Arnd, Olof,
+Is it ok to send this as a single pull request ? Am asking since it
+is touching few topics which goes via different heads.
+
+------------------------
+Dave Gerlach (5):
+   PM / Domains: Add generic data pointer to genpd data struct
+   PM / Domains: Do not check if simple providers have phandle cells
+   dt-bindings: Add TI SCI PM Domains
+   soc: ti: Add ti_sci_pm_domains driver
+   ARM: keystone: Drop PM domain support for k2g
+
+  .../devicetree/bindings/soc/ti/sci-pm-domain.txt   |  59 ++++++
+  MAINTAINERS                                        |   3 +
+  arch/arm/mach-keystone/Kconfig                     |   1 +
+  arch/arm/mach-keystone/pm_domain.c                 |   4 +-
+  drivers/base/power/domain.c                        |   2 -
+  drivers/soc/ti/Kconfig                             |  12 ++
+  drivers/soc/ti/Makefile                            |   1 +
+  drivers/soc/ti/ti_sci_pm_domains.c                 | 202 
++++++++++++++++++++++
+  include/dt-bindings/genpd/k2g.h                    |  90 +++++++++
+  include/linux/pm_domain.h                          |   1 +
+  10 files changed, 372 insertions(+), 3 deletions(-)
+  create mode 100644 
+Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+  create mode 100644 drivers/soc/ti/ti_sci_pm_domains.c
+  create mode 100644 include/dt-bindings/genpd/k2g.h
+
+
+regards,
+Santosh
