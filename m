@@ -1,185 +1,85 @@
 From: David Lechner <david@lechnology.com>
-Subject: [PATCH] power: supply: sysfs: parse string as enum when writing property
-Date: Mon,  3 Apr 2017 14:52:57 -0500
-Message-ID: <1491249177-8945-1-git-send-email-david@lechnology.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: David Lechner <david@lechnology.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 3/3] ARM: dts: da850: Add node for LEGO MINDSTORMS EV3 Battery
+Date: Mon,  3 Apr 2017 15:23:49 -0500
+Message-ID: <1491251029-23256-4-git-send-email-david@lechnology.com>
+References: <1491251029-23256-1-git-send-email-david@lechnology.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1491251029-23256-1-git-send-email-david@lechnology.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Mark Rutland <mark.rutland@arm.com>, David Lechner <david@lechnology.com>, Kevin Hilman <khilman@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This fixes the TODO to parse strings and convert them to enum values
-when writing to a power_supply class property sysfs attribute.
-
-There is at least one driver that has a writable enum property that
-previously could only be written as an integer, so a fallback to writing
-enums as integers instead of strings is provided so we don't break existing
-userspace programs.
+This adds a new node to the LEGO MINDSTORMS EV3 device tree for the battery.
 
 Signed-off-by: David Lechner <david@lechnology.com>
 ---
- drivers/power/supply/power_supply_sysfs.c | 124 ++++++++++++++++++++----------
- 1 file changed, 85 insertions(+), 39 deletions(-)
+ arch/arm/boot/dts/da850-lego-ev3.dts | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index bcde8d1..b2002b4 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -40,35 +40,42 @@
- 
- static struct device_attribute power_supply_attrs[];
- 
-+static const char * const power_supply_type_text[] = {
-+	"Unknown", "Battery", "UPS", "Mains", "USB",
-+	"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
-+	"USB_PD", "USB_PD_DRP"
-+};
-+
-+static const char * const power_supply_status_text[] = {
-+	"Unknown", "Charging", "Discharging", "Not charging", "Full"
-+};
-+
-+static const char * const power_supply_charge_type_text[] = {
-+	"Unknown", "N/A", "Trickle", "Fast"
-+};
-+
-+static const char * const power_supply_health_text[] = {
-+	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
-+	"Unspecified failure", "Cold", "Watchdog timer expire",
-+	"Safety timer expire"
-+};
-+
-+static const char * const power_supply_technology_text[] = {
-+	"Unknown", "NiMH", "Li-ion", "Li-poly", "LiFe", "NiCd",
-+	"LiMn"
-+};
-+
-+static const char * const power_supply_capacity_level_text[] = {
-+	"Unknown", "Critical", "Low", "Normal", "High", "Full"
-+};
-+
-+static const char * const power_supply_scope_text[] = {
-+	"Unknown", "System", "Device"
-+};
-+
- static ssize_t power_supply_show_property(struct device *dev,
- 					  struct device_attribute *attr,
- 					  char *buf) {
--	static char *type_text[] = {
--		"Unknown", "Battery", "UPS", "Mains", "USB",
--		"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
--		"USB_PD", "USB_PD_DRP"
--	};
--	static char *status_text[] = {
--		"Unknown", "Charging", "Discharging", "Not charging", "Full"
--	};
--	static char *charge_type[] = {
--		"Unknown", "N/A", "Trickle", "Fast"
--	};
--	static char *health_text[] = {
--		"Unknown", "Good", "Overheat", "Dead", "Over voltage",
--		"Unspecified failure", "Cold", "Watchdog timer expire",
--		"Safety timer expire"
--	};
--	static char *technology_text[] = {
--		"Unknown", "NiMH", "Li-ion", "Li-poly", "LiFe", "NiCd",
--		"LiMn"
--	};
--	static char *capacity_level_text[] = {
--		"Unknown", "Critical", "Low", "Normal", "High", "Full"
--	};
--	static char *scope_text[] = {
--		"Unknown", "System", "Device"
--	};
- 	ssize_t ret = 0;
- 	struct power_supply *psy = dev_get_drvdata(dev);
- 	const ptrdiff_t off = attr - power_supply_attrs;
-@@ -91,19 +98,26 @@ static ssize_t power_supply_show_property(struct device *dev,
- 	}
- 
- 	if (off == POWER_SUPPLY_PROP_STATUS)
--		return sprintf(buf, "%s\n", status_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_status_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_CHARGE_TYPE)
--		return sprintf(buf, "%s\n", charge_type[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_charge_type_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_HEALTH)
--		return sprintf(buf, "%s\n", health_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_health_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_TECHNOLOGY)
--		return sprintf(buf, "%s\n", technology_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_technology_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_CAPACITY_LEVEL)
--		return sprintf(buf, "%s\n", capacity_level_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_capacity_level_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_TYPE)
--		return sprintf(buf, "%s\n", type_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_type_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_SCOPE)
--		return sprintf(buf, "%s\n", scope_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_scope_text[value.intval]);
- 	else if (off >= POWER_SUPPLY_PROP_MODEL_NAME)
- 		return sprintf(buf, "%s\n", value.strval);
- 
-@@ -117,14 +131,46 @@ static ssize_t power_supply_store_property(struct device *dev,
- 	struct power_supply *psy = dev_get_drvdata(dev);
- 	const ptrdiff_t off = attr - power_supply_attrs;
- 	union power_supply_propval value;
--	long long_val;
- 
--	/* TODO: support other types than int */
--	ret = kstrtol(buf, 10, &long_val);
--	if (ret < 0)
--		return ret;
-+	/* maybe it is a enum property? */
-+	switch (off) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		ret = sysfs_match_string(power_supply_status_text, buf);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		ret = sysfs_match_string(power_supply_charge_type_text, buf);
-+		break;
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		ret = sysfs_match_string(power_supply_health_text, buf);
-+		break;
-+	case POWER_SUPPLY_PROP_TECHNOLOGY:
-+		ret = sysfs_match_string(power_supply_technology_text, buf);
-+		break;
-+	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
-+		ret = sysfs_match_string(power_supply_capacity_level_text, buf);
-+		break;
-+	case POWER_SUPPLY_PROP_SCOPE:
-+		ret = sysfs_match_string(power_supply_scope_text, buf);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
+diff --git a/arch/arm/boot/dts/da850-lego-ev3.dts b/arch/arm/boot/dts/da850-lego-ev3.dts
+index c20580a..99cd561 100644
+--- a/arch/arm/boot/dts/da850-lego-ev3.dts
++++ b/arch/arm/boot/dts/da850-lego-ev3.dts
+@@ -172,6 +172,18 @@
+ 		gpio = <&gpio 111 GPIO_ACTIVE_HIGH>;
+ 		enable-active-high;
+ 	};
 +
 +	/*
-+	 * If no match was found, then check to see if it is an integer.
-+	 * Integer values are valid for enums in addition to the text value.
++	 * The EV3 can use 6-AA batteries or a rechargable Li-ion battery pack.
 +	 */
-+	if (ret < 0) {
-+		long long_val;
-+
-+		ret = kstrtol(buf, 10, &long_val);
-+		if (ret < 0)
-+			return ret;
-+
-+		ret = long_val;
-+	}
++	battery {
++		pinctrl-names = "default";
++		pintctrl-0 = <&battery_pins>;
++		compatible = "lego,ev3-battery";
++		io-channels = <&adc 4>, <&adc 3>;
++		io-channel-names = "voltage", "current";
++		rechargeable-gpios = <&gpio 136 GPIO_ACTIVE_LOW>;
++	};
+ };
  
--	value.intval = long_val;
-+	value.intval = ret;
+ &pmx_core {
+@@ -235,6 +247,15 @@
+ 			0x34 0x00000008 0x0000000f
+ 		>;
+ 	};
++
++	battery_pins: pinmux_battery_pins {
++		pinctrl-single,bits = <
++			/* GP0[6] */
++			0x04 0x00000080 0x000000f0
++			/* GP8[8] */
++			0x4c 0x00000080 0x000000f0
++		>;
++	};
+ };
  
- 	ret = power_supply_set_property(psy, off, &value);
- 	if (ret < 0)
+ &pinconf {
+@@ -349,6 +370,13 @@
+ 
+ &gpio {
+ 	status = "okay";
++
++	/* Don't pull down battery voltage adc io channel */
++	batt_volt_en {
++		gpio-hog;
++		gpios = <6 GPIO_ACTIVE_HIGH>;
++		output-low;
++	};
+ };
+ 
+ &usb_phy {
 -- 
 2.7.4
