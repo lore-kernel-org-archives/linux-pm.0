@@ -1,204 +1,101 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH V7 3/7] Documentation: devicetree: mfd: da9062/61 MFD
- binding
-Date: Mon, 3 Apr 2017 14:39:22 +0100
-Message-ID: <20170403133922.iikcgoboisn7qg2e@dell>
-References: <cover.1490712213.git.stwiss.opensource@diasemi.com>
- <1c12168d005cec5be6cab78f99c4dce95caa128b.1490712213.git.stwiss.opensource@diasemi.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH 2/3] dt-bindings: Add bindings for
+ nvidia,tegra186-ccplex-cluster
+Date: Mon, 3 Apr 2017 16:06:17 +0200
+Message-ID: <20170403140617.GA22966@ulmo.ba.sec>
+References: <1491223345-24386-1-git-send-email-mperttunen@nvidia.com>
+ <1491223345-24386-2-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-input-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="PNTmBPCT7hxwcZjr"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f196.google.com ([209.85.128.196]:33669 "EHLO
+        mail-wr0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751672AbdDCOGU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Apr 2017 10:06:20 -0400
 Content-Disposition: inline
-In-Reply-To: <1c12168d005cec5be6cab78f99c4dce95caa128b.1490712213.git.stwiss.opensource@diasemi.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Steve Twiss <stwiss.opensource@diasemi.com>
-Cc: DEVICETREE <devicetree@vger.kernel.org>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
+In-Reply-To: <1491223345-24386-2-git-send-email-mperttunen@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikko Perttunen <mperttunen@nvidia.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, jonathanh@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
 
-On Tue, 28 Mar 2017, Steve Twiss wrote:
 
-> From: Steve Twiss <stwiss.opensource@diasemi.com>
-> 
-> Extend existing DA9062 binding information to include the DA9061 PMIC for
-> MFD core and regulators.
-> 
-> Add a da9062-onkey link to the existing onkey binding file.
-> 
-> Add a da9062-thermal link to the new temperature monitoring binding file.
-> 
-> Delete the da9062-watchdog section and replace it with a link to the new
-> DA9061/62 binding information file.
-> 
-> Acked-by: Rob Herring <robh@kernel.org>
-> Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
-> 
+--PNTmBPCT7hxwcZjr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Apr 03, 2017 at 03:42:24PM +0300, Mikko Perttunen wrote:
+> The Tegra186 CCPLEX_CLUSTER area contains memory-mapped
+> registers that initiate CPU frequency/voltage transitions.
+>=20
+> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
 > ---
-> This patch applies against linux-next and v4.11-rc3
-> 
-> v6 -> v7
->  - NO CODE CHANGE
-> 
-> v5 -> v6
->  - NO CODE CHANGE
->  - Rebased from v4.9 to v4.11-rc3
-> 
-> v4 -> v5
->  - NO CODE CHANGE
->  - Rebased from v4.8 to v4.9
-> 
-> v3 -> v4
->  - Patch renamed from [PATCH V3 4/9] to [PATCH V4 3/8]
->  - Remove double newline spacing in text file
->  - Added Acked-by Rob Herring
-> 
-> v2 -> v3
->  - Patch renamed from [PATCH V2 04/10] to [PATCH V3 4/9]
->  - Ensure binding description concentrates on the device not the
->    device driver
->  - Separate the DA9061 and DA9062 sub-device tables to distinguish
->    the difference between the two devices
->  - Update the commit message to describe this change
->  - Add e-mail information about associated patches from this set
->    without describing them as being explicitly dependent on this
->    binding
-> 
-> v1 -> v2
->  - Patch renamed from [PATCH V1 09/10] to [PATCH V2 04/10] -- these
->    changes were made to fix checkpatch warnings caused by the patch
->    set dependency order
-> 
-> Hi,
-> 
-> Added an Ack from Rob Herring for the PATCH V3 version.
-> 
-> As previously:
-> Other information:
-> The device driver from this patch set (associated with this binding) is
-> 
-> - [PATCH V5 4/8] mfd: da9061: MFD core support
-> 
-> and also the following binding file changes:
-> 
-> - Binding for onkey (already applied by Dmitry Torokhov)
-> - [PATCH V5 1/8] Binding for watchdog
-> - [PATCH V5 2/8] Binding for thermal
-> 
-> Regards,
-> Steve Twiss, Dialog Semiconductor
-> 
-> 
->  Documentation/devicetree/bindings/mfd/da9062.txt | 49 +++++++++++++++++-------
->  1 file changed, 36 insertions(+), 13 deletions(-)
+>  .../arm/tegra/nvidia,tegra186-ccplex-cluster.txt   | 22 ++++++++++++++++=
+++++++
+>  1 file changed, 22 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/arm/tegra/nvidia,te=
+gra186-ccplex-cluster.txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-=
+ccplex-cluster.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,teg=
+ra186-ccplex-cluster.txt
+> new file mode 100644
+> index 000000000000..50cd615219e9
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-=
+cluster.txt
+> @@ -0,0 +1,22 @@
+> +NVIDIA Tegra CCPLEX_CLUSTER area
+> +
+> +Required properties:
+> +- compatible: Should contain one of the following:
+> +  - "nvidia,tegra186-ccplex-cluster": for Tegra186
+> +- reg: Must contain an (offset, length) pair of the register set for each
+> +  entry in reg-names.
+> +- reg-names: Must include the following entries:
+> +  - "a57": Public aperture for A57 CPU cluster
+> +  - "denver": Public aperture for Denver CPU cluster
+> +- nvidia,bpmp: Phandle to BPMP device that can be queried for OPP tables
 
-Applied, thanks.
+"phandle"
 
-> diff --git a/Documentation/devicetree/bindings/mfd/da9062.txt b/Documentation/devicetree/bindings/mfd/da9062.txt
-> index 38802b5..c0a418c 100644
-> --- a/Documentation/devicetree/bindings/mfd/da9062.txt
-> +++ b/Documentation/devicetree/bindings/mfd/da9062.txt
-> @@ -1,22 +1,39 @@
->  * Dialog DA9062 Power Management Integrated Circuit (PMIC)
->  
-> -DA9062 consists of a large and varied group of sub-devices:
-> +Product information for the DA9062 and DA9061 devices can be found here:
-> +- http://www.dialog-semiconductor.com/products/da9062
-> +- http://www.dialog-semiconductor.com/products/da9061
+> +Example:
 > +
-> +The DA9062 PMIC consists of:
->  
->  Device                   Supply Names    Description
->  ------                   ------------    -----------
->  da9062-regulator        :               : LDOs & BUCKs
->  da9062-rtc              :               : Real-Time Clock
-> +da9062-onkey            :               : On Key
-> +da9062-watchdog         :               : Watchdog Timer
-> +da9062-thermal          :               : Thermal
+> +	ccplex@e000000 {
+> +		compatible =3D "nvidia,tegra186-ccplex-cluster";
+> +		reg =3D <0x0 0x0e060000 0x0 0x1000>,
+> +		      <0x0 0x0e070000 0x0 0x1000>;
+> +		reg-names =3D "a57", "denver";
 > +
-> +The DA9061 PMIC consists of:
-> +
-> +Device                   Supply Names    Description
-> +------                   ------------    -----------
-> +da9062-regulator        :               : LDOs & BUCKs
-> +da9062-onkey            :               : On Key
->  da9062-watchdog         :               : Watchdog Timer
-> +da9062-thermal          :               : Thermal
->  
->  ======
->  
->  Required properties:
->  
-> -- compatible : Should be "dlg,da9062".
-> +- compatible : Should be
-> +    "dlg,da9062" for DA9062
-> +    "dlg,da9061" for DA9061
->  - reg : Specifies the I2C slave address (this defaults to 0x58 but it can be
->    modified to match the chip's OTP settings).
->  - interrupt-parent : Specifies the reference to the interrupt controller for
-> -  the DA9062.
-> +  the DA9062 or DA9061.
->  - interrupts : IRQ line information.
->  - interrupt-controller
->  
-> @@ -25,8 +42,8 @@ further information on IRQ bindings.
->  
->  Sub-nodes:
->  
-> -- regulators : This node defines the settings for the LDOs and BUCKs. The
-> -  DA9062 regulators are bound using their names listed below:
-> +- regulators : This node defines the settings for the LDOs and BUCKs.
-> +  The DA9062 regulators are bound using their names listed below:
->  
->      buck1    : BUCK_1
->      buck2    : BUCK_2
-> @@ -37,19 +54,29 @@ Sub-nodes:
->      ldo3     : LDO_3
->      ldo4     : LDO_4
->  
-> +  The DA9061 regulators are bound using their names listed below:
-> +
-> +    buck1    : BUCK_1
-> +    buck2    : BUCK_2
-> +    buck3    : BUCK_3
-> +    ldo1     : LDO_1
-> +    ldo2     : LDO_2
-> +    ldo3     : LDO_3
-> +    ldo4     : LDO_4
-> +
->    The component follows the standard regulator framework and the bindings
->    details of individual regulator device can be found in:
->    Documentation/devicetree/bindings/regulator/regulator.txt
->  
-> -
->  - rtc : This node defines settings required for the Real-Time Clock associated
->    with the DA9062. There are currently no entries in this binding, however
->    compatible = "dlg,da9062-rtc" should be added if a node is created.
->  
-> -- watchdog: This node defines the settings for the watchdog driver associated
-> -  with the DA9062 PMIC. The compatible = "dlg,da9062-watchdog" should be added
-> -  if a node is created.
-> +- onkey : See ../input/da9062-onkey.txt
-> +
-> +- watchdog: See ../watchdog/da9062-watchdog.txt
->  
-> +- thermal : See ../thermal/da9062-thermal.txt
->  
->  Example:
->  
-> @@ -64,10 +91,6 @@ Example:
->  			compatible = "dlg,da9062-rtc";
->  		};
->  
-> -		watchdog {
-> -			compatible = "dlg,da9062-watchdog";
-> -		};
-> -
->  		regulators {
->  			DA9062_BUCK1: buck1 {
->  				regulator-name = "BUCK1";
+> +		nvidia,bpmp =3D <&bpmp>;
+> +	};
 
--- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Where's the information about the register offsets coming from? The TRM
+says that CCPLEX_CLUSTER has a single aperture from 0x0e000000 to
+0x0e3fffff.
+
+Thierry
+
+--PNTmBPCT7hxwcZjr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAljiVtUACgkQ3SOs138+
+s6EXWg/+OFksuW+8LtdYGlcR8zVFkAvtfbSt2dMzhPtfiiA6BloS6cKyQZjXShTW
+O9i98bKmR8w1lr6Qu3/YdEdwpXBOseRlGqaZcOatCjqeI1PPI/skFShVlO8hC/5k
+FMJ+xBmVXDLzvsdqKdayLAVScU2giNDcdgjylkmzpMCEBOsOMY6aduxYX9CNjrbg
+NFLaCy5Fb9Y/FAQpjr21AeTZvtmJDss8tlPd8afyZuHngJsW9xisxLZw5bJwQJgC
+aRJK6CKco/BKAWVJDl02UpUgSie3rOKYDSa/naCk/zPUqTbOJ+yilvAa8viRWf0h
+Xn0/yNHMz3b3f8EU5AJ6FoCY1LZbauwS8g0qnfQirTE602DTWBuyin+IdYxAiMyO
+MO4HzIlJJICFLNGoZd5Zgs1mZnX+uhWX3jpM1+hTCrfFaEMYlXjFUrSiXhhvmUVH
+wxfDBX8izhcTiplF42DIalgGdInhVBAFeNLosVNV/xFlGVqtRw3jvqMklJEgka1F
+kh8sLVf1rBiT4/Bi/JEg1PnTSeGx0OxRqUcJKfsBdovVTQb65rG9VailgVA1XIfh
+p/BG1xSbjEscEI3fKGvDGCXDBRYpeOxH+nii4FuAGWG7jYySp53g4sZMNDm6ymyL
+ByMH3eoQlMBOFvdXSL8xf+HWpu0f7wNPB19ujE0+eqJvBrgvW3k=
+=h41V
+-----END PGP SIGNATURE-----
+
+--PNTmBPCT7hxwcZjr--
