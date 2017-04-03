@@ -1,57 +1,68 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v3 1/3] mfd: intel_soc_pmic: Fix a mess with compilation units
-Date: Mon, 3 Apr 2017 12:26:54 +0300
-Message-ID: <CAHp75VcGgSF-spv6OZWuAE9ardAW=Q6GjC7T8Eto=7subAuW2g@mail.gmail.com>
-References: <20170317153715.48555-1-andriy.shevchenko@linux.intel.com>
- <201704030357.HdHD43mM%fengguang.wu@intel.com> <CAHp75Vdt3ys=tFax5iK5tnANNCLj-b4-VxO78b4ZT0jqdAnsdg@mail.gmail.com>
- <20170403092028.z4xtrwz5wj3go3jd@dell>
+From: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+Subject: Re: [RFC PATCH v2 1/4] dt-bindings: update the Allwinner GPADC device
+ tree binding for H3
+Date: Mon, 3 Apr 2017 17:31:11 +0800
+Message-ID: <e4d50e78-afe7-6107-6d9a-15e4c732d79a@aosc.io>
+References: <20170402133304.56824-1-icenowy@aosc.io>
+ <20170402133304.56824-2-icenowy@aosc.io>
+ <20170403091523.6atl7nq4m2qkpn3d@lukather>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <20170403092028.z4xtrwz5wj3go3jd@dell>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: kbuild test robot <lkp@intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, kbuild-all@01.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170403091523.6atl7nq4m2qkpn3d@lukather>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 3, 2017 at 12:20 PM, Lee Jones <lee.jones@linaro.org> wrote:
-> On Sun, 02 Apr 2017, Andy Shevchenko wrote:
+
+
+在 2017年04月03日 17:15, Maxime Ripard 写道:
+> On Sun, Apr 02, 2017 at 09:33:01PM +0800, Icenowy Zheng wrote:
+>> Allwinner H3 features a thermal sensor like the one in A33, but has its
+>> register re-arranged, the clock divider moved to CCU (originally the
+>> clock divider is in ADC) and added a pair of bus clock and reset.
+>>
+>> Update the binding document to cover H3.
+>>
+>> Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+>> ---
+>>  .../devicetree/bindings/mfd/sun4i-gpadc.txt        | 23 ++++++++++++++++++++--
+>>  1 file changed, 21 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt b/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt
+>> index badff3611a98..7753133ca0ff 100644
+>> --- a/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt
+>> +++ b/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt
+>> @@ -4,12 +4,20 @@ The Allwinner SoCs all have an ADC that can also act as a thermal sensor
+>>  and sometimes as a touchscreen controller.
+>>
+>>  Required properties:
+>> -  - compatible: "allwinner,sun8i-a33-ths",
+>> +  - compatible: must contain one of the following compatibles:
+>> +		- "allwinner,sun8i-a33-ths"
+>> +		- "allwinner,sun8i-h3-ths"
+>>    - reg: mmio address range of the chip,
+>>    - #thermal-sensor-cells: shall be 0,
+>>    - #io-channel-cells: shall be 0,
+>>
+>> -Example:
+>> +Required properties for the following compatibles:
+>> +		- "allwinner,sun8i-h3-ths"
+>> +  - clocks: the bus clock and the input clock of the ADC,
+>> +  - clock-names: should be "bus" and "ths",
 >
->> On Sun, Apr 2, 2017 at 11:03 PM, kbuild test robot <lkp@intel.com> wrote:
->> > Hi Andy,
->> >
->> > [auto build test ERROR on ljones-mfd/for-mfd-next]
->> > [also build test ERROR on v4.11-rc4 next-20170331]
->> > [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->>
->> Thank you for report, though...
->>
->> >
->> > url:    https://github.com/0day-ci/linux/commits/Andy-Shevchenko/mfd-intel_soc_pmic-Fix-a-mess-with-compilation-units/20170320-153539
->> > base:   https://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git for-mfd-next
->> > config: tile-allyesconfig (attached as .config)
->> > compiler: tilegx-linux-gcc (GCC) 4.6.2
->> > reproduce:
->> >         wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->> >         chmod +x ~/bin/make.cross
->> >         # save the attached .config to linux build tree
->>
->> >         make.cross ARCH=tile
->>
->> ...I doubt how below is related to my patch. This is obvious x86 code
->> which was initially submitted without
->> depend on X86
->> line in corresponding Kconfig.
+> I guess mod instead of ths would be more consistent.
+
+In fact I will prefer "sample" here if not "ths", as it's used
+for the sampling, not like other mod clocks, which controls
+all the IP block's logic.
+
 >
-> I think you should probably specify the architecture in the Kconfig
-> entry, or else some `randconfig`s will fail.
-
-Yes, I understand how to fix this, though it's not a problem of this
-patch per se.
-
-Fengguang, is there any possible way to determine the relation between
-an error and a root cause change?
-
--- 
-With Best Regards,
-Andy Shevchenko
+> Maxime
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
