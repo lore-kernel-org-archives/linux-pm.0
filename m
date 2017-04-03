@@ -1,526 +1,212 @@
-From: Mikko Perttunen <cyndis@kapsi.fi>
-Subject: Re: [PATCH 1/3] cpufreq: Add Tegra186 cpufreq driver
-Date: Mon, 3 Apr 2017 18:38:57 +0300
-Message-ID: <13c2b07a-d7bd-0a9c-7cbc-53dcb47b409a@kapsi.fi>
-References: <1491223345-24386-1-git-send-email-mperttunen@nvidia.com>
- <20170403144704.GB22966@ulmo.ba.sec>
+From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>
+Subject: [PATCH V5 2/2] thermal: broadcom: add Northstar thermal driver
+Date: Mon,  3 Apr 2017 17:48:29 +0200
+Message-ID: <20170403154829.29780-2-zajec5@gmail.com>
+References: <20170331201124.656-1-zajec5@gmail.com>
+ <20170403154829.29780-1-zajec5@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170403144704.GB22966@ulmo.ba.sec>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>, Mikko Perttunen <mperttunen@nvidia.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, jonathanh@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:34342 "EHLO
+        mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753851AbdDCPsn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Apr 2017 11:48:43 -0400
+In-Reply-To: <20170403154829.29780-1-zajec5@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>, Jon Mason <jon.mason@broadcom.com>
 
-On 04/03/2017 05:47 PM, Thierry Reding wrote:
-> On Mon, Apr 03, 2017 at 03:42:23PM +0300, Mikko Perttunen wrote:
->> Add a new cpufreq driver for Tegra186 (and likely later).
->> The CPUs are organized into two clusters, Denver and A57,
->> with two and four cores respectively. CPU frequency can be
->> adjusted by writing the desired rate divisor and a voltage
->> hint to a special per-core register.
->>
->> The frequency of each core can be set individually; however,
->> this is just a hint as all CPUs in a cluster will run at
->> the maximum rate of non-idle CPUs in the cluster.
->>
->> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
->> ---
->>  drivers/cpufreq/Kconfig.arm        |   7 +
->>  drivers/cpufreq/Makefile           |   1 +
->>  drivers/cpufreq/tegra186-cpufreq.c | 277 +++++++++++++++++++++++++++++++++++++
->>  3 files changed, 285 insertions(+)
->>  create mode 100644 drivers/cpufreq/tegra186-cpufreq.c
->>
->> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->> index 74fa5c5904d3..168d36fa4a58 100644
->> --- a/drivers/cpufreq/Kconfig.arm
->> +++ b/drivers/cpufreq/Kconfig.arm
->> @@ -247,6 +247,13 @@ config ARM_TEGRA124_CPUFREQ
->>  	help
->>  	  This adds the CPUFreq driver support for Tegra124 SOCs.
->>
->> +config ARM_TEGRA186_CPUFREQ
->> +	tristate "Tegra186 CPUFreq support"
->> +	depends on ARCH_TEGRA && TEGRA_BPMP
->> +	default y
->
-> I'd rather not default this to "y". We can use the defconfig to enable
-> this.
+From: Rafał Miłecki <rafal@milecki.pl>
 
-Sure.
+Northstar is a SoC family commonly used in home routers. This commit
+adds a driver for checking CPU temperature. As Northstar Plus seems to
+also have this IP block this new symbol gets ARCH_BCM_IPROC dependency.
 
->
->> +	help
->> +	  This adds the CPUFreq driver support for Tegra186 SOCs.
->> +
->>  config ARM_TI_CPUFREQ
->>  	bool "Texas Instruments CPUFreq support"
->>  	depends on ARCH_OMAP2PLUS
->> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
->> index 9f5a8045f36d..b7e78f063c4f 100644
->> --- a/drivers/cpufreq/Makefile
->> +++ b/drivers/cpufreq/Makefile
->> @@ -77,6 +77,7 @@ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
->>  obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
->>  obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
->>  obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
->> +obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
->>  obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
->>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
->>  obj-$(CONFIG_ACPI_CPPC_CPUFREQ) += cppc_cpufreq.o
->> diff --git a/drivers/cpufreq/tegra186-cpufreq.c b/drivers/cpufreq/tegra186-cpufreq.c
->> new file mode 100644
->> index 000000000000..794c1f2d8231
->> --- /dev/null
->> +++ b/drivers/cpufreq/tegra186-cpufreq.c
->> @@ -0,0 +1,277 @@
->> +/*
->> + * Copyright (c) 2017, NVIDIA CORPORATION. All rights reserved
->> + *
->> + * This program is free software; you can redistribute it and/or modify it
->> + * under the terms and conditions of the GNU General Public License,
->> + * version 2, as published by the Free Software Foundation.
->> + *
->> + * This program is distributed in the hope it will be useful, but WITHOUT
->> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
->> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
->> + * more details.
->> + */
->> +
->> +#include <linux/cpufreq.h>
->> +#include <linux/dma-mapping.h>
->> +#include <linux/module.h>
->> +#include <linux/of.h>
->> +#include <linux/platform_device.h>
->> +
->> +#include <soc/tegra/bpmp.h>
->> +#include <soc/tegra/bpmp-abi.h>
->> +
->> +#define EDVD_CORE_VOLT_FREQ(core)		(0x20 + (core) * 0x4)
->> +#define EDVD_CORE_VOLT_FREQ_F_SHIFT		0
->> +#define EDVD_CORE_VOLT_FREQ_F_MASK		0xff
->> +#define EDVD_CORE_VOLT_FREQ_V_SHIFT		16
->> +#define EDVD_CORE_VOLT_FREQ_V_MASK		0xff
->> +
->> +#define CLUSTER_DENVER				0
->> +#define CLUSTER_A57				1
->> +#define NUM_CLUSTERS				2
->> +
->> +struct tegra186_cpufreq_cluster {
->> +	const char *name;
->> +	unsigned int num_cores;
->> +};
->> +
->> +static const struct tegra186_cpufreq_cluster CLUSTERS[] = {
->
-> We don't usually use uppercase letters for variable names.
+Signed-off-by: Rafał Miłecki <rafal@milecki.pl>
+Signed-off-by: Jon Mason <jon.mason@broadcom.com>
+---
+V2: Make it iProc specific as NSP can also use this driver
+    Select proper symbols in config ARCH_BCM_IPROC
+    Define PVTMON register bits
+    Update code selecting temperature monitor mode
+    Thank you Jon!
+V3: More details in help message for BCM_NS_THERMAL
+    Use slope & offset
+    Drop arch code change (I'll be submitted using a proper tree)
+    Thank you Eduardo!
+V4: Comment operations on PVTMON_CONTROL0 register
+---
+ drivers/thermal/Kconfig               |   5 ++
+ drivers/thermal/Makefile              |   1 +
+ drivers/thermal/broadcom/Kconfig      |   8 +++
+ drivers/thermal/broadcom/Makefile     |   1 +
+ drivers/thermal/broadcom/ns-thermal.c | 105 ++++++++++++++++++++++++++++++++++
+ 5 files changed, 120 insertions(+)
+ create mode 100644 drivers/thermal/broadcom/Kconfig
+ create mode 100644 drivers/thermal/broadcom/Makefile
+ create mode 100644 drivers/thermal/broadcom/ns-thermal.c
 
-You're right. Looks like I've misapplied some style rules from other 
-projects :e
-
->
->> +	{
->> +		.name = "denver",
->> +		.num_cores = 2,
->> +	},
->> +	{
->> +		.name = "a57",
->> +		.num_cores = 4,
->> +	}
->> +};
->> +
->> +struct tegra186_cpufreq_data {
->> +	void __iomem *regs[NUM_CLUSTERS];
->> +	struct cpufreq_frequency_table *tables[NUM_CLUSTERS];
->> +};
->
-> Given my comments regarding the aperture, perhaps it would be useful to
-> only have a single range of memory-mapped registers and add an offset to
-> struct tegra186_cpufreq_cluster that points into that region?
-
-Yes, that might be cleaner. Would slightly simplify the probe code as well.
-
->
-> Also, you're somewhat mixing arrays of NUM_CLUSTERS elements and
-> dynamically sized ones (CLUSTERS[]). Probably best to just stick to one
-> of them.
->
-> Might be worth considering to dynamically allocate based on the cluster
-> table, but that could be done in a separate patch if we ever get a
-> configuration where NUM_CLUSTERS != 2.
-
-I think we will have that eventually, so I'll do this for v2.
-
->
->> +static void get_cluster_core(int cpu, int *cluster, int *core)
->
-> These can all be unsigned int.
-
-Yes.
-
->
->> +{
->> +	switch (cpu) {
->> +	case 0:
->> +		*cluster = CLUSTER_A57; *core = 0; break;
->> +	case 3:
->> +		*cluster = CLUSTER_A57; *core = 1; break;
->> +	case 4:
->> +		*cluster = CLUSTER_A57; *core = 2; break;
->> +	case 5:
->> +		*cluster = CLUSTER_A57; *core = 3; break;
->> +	case 1:
->> +		*cluster = CLUSTER_DENVER; *core = 0; break;
->> +	case 2:
->> +		*cluster = CLUSTER_DENVER; *core = 1; break;
->> +	}
->> +}
->
-> This is weirdly formatted. Also, what if cpu > 5? Do we need to be
-> careful and WARN_ON()?
-
-Each case was on a single line but checkpatch didn't like that.
-
->
-> Perhaps in order to make this more easily extensible this could go
-> into struct tegra186_cpufreq_cluster? Or a separate table that has
-> information about the cluster and a list of CPUs?
->
-> Again, probably not necessary right away, but something to keep in
-> mind for parameterization if we ever need to support other configs.
-
-I'll try to think of a better way for v2.
-
->
->> +static int tegra186_cpufreq_init(struct cpufreq_policy *policy)
->> +{
->> +	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
->> +	struct cpufreq_frequency_table *table;
->> +	int cluster, core;
->> +
->> +	get_cluster_core(policy->cpu, &cluster, &core);
->> +
->> +	table = data->tables[cluster];
->> +	cpufreq_table_validate_and_show(policy, table);
->> +
->> +	policy->cpuinfo.transition_latency = 300 * 1000;
->> +
->> +	return 0;
->> +}
->> +
->> +static void write_volt_freq(uint8_t vidx, uint8_t ndiv, void __iomem *regs,
->
-> uint8_t -> u8
-
-Will do.
-
->
->> +			unsigned int core)
->> +{
->> +	u32 val = 0;
->> +
->> +	val |= ndiv << EDVD_CORE_VOLT_FREQ_F_SHIFT;
->> +	val |= vidx << EDVD_CORE_VOLT_FREQ_V_SHIFT;
->> +
->> +	writel(val, regs + EDVD_CORE_VOLT_FREQ(core));
->> +}
->> +
->> +static int tegra186_cpufreq_set_target(struct cpufreq_policy *policy,
->> +				       unsigned int index)
->> +{
->> +	struct cpufreq_frequency_table *tbl = policy->freq_table + index;
->> +	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
->> +	uint16_t vidx = tbl->driver_data >> 16;
->> +	uint16_t ndiv = tbl->driver_data & 0xffff;
->
-> uint16_t -> u16
-
-Will do.
-
->
-> Also it's slightly strange that you store u16 here and pass it to a
-> function that takes
-
-Ugh, yeah, write_volt_freq should take u16 (that's what the register 
-size is), although in practice 8 bits is enough.
-
->
->> +	int cluster, core;
->> +
->> +	get_cluster_core(policy->cpu, &cluster, &core);
->> +	write_volt_freq(vidx, ndiv, data->regs[cluster], core);
->> +
->> +	return 0;
->> +}
->> +
->> +static struct cpufreq_driver tegra186_cpufreq_driver = {
->> +	.name = "tegra186",
->> +	.flags = CPUFREQ_STICKY | CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
->> +	.verify = cpufreq_generic_frequency_table_verify,
->> +	.target_index = tegra186_cpufreq_set_target,
->> +	.init = tegra186_cpufreq_init,
->> +	.attr = cpufreq_generic_attr,
->> +};
->> +
->> +static int init_vhint_table(struct platform_device *pdev,
->> +			    struct tegra_bpmp *bpmp, uint32_t cluster_id,
->> +			    struct cpufreq_frequency_table **table)
->> +{
->> +	struct mrq_cpu_vhint_request req;
->> +	struct tegra_bpmp_message msg;
->> +	struct cpu_vhint_data *data;
->> +	int err, i, j, num_rates;
->> +	dma_addr_t phys;
->> +	void *virt;
->> +
->> +	virt = dma_alloc_coherent(bpmp->dev, MSG_DATA_MIN_SZ, &phys,
->> +				  GFP_KERNEL | GFP_DMA32);
->> +	if (!virt)
->> +		return -ENOMEM;
->
-> This seems wrong. MSG_DATA_MIN_SZ is 120 but struct cpu_vhint_data is a
-> lot larger than that (836 bytes, if I'm not mistaken). It probably works
-> because dma_alloc_coherent() will always give you at least a whole page,
-> but you should still use the correct size here.
-
-Oops! Well spotted.
-
->
->> +
->> +	data = (struct cpu_vhint_data *)virt;
->> +
->> +	memset(&req, 0, sizeof(req));
->> +	req.addr = phys;
->> +	req.cluster_id = cluster_id;
->> +
->> +	memset(&msg, 0, sizeof(msg));
->> +	msg.mrq = MRQ_CPU_VHINT;
->> +	msg.tx.data = &req;
->> +	msg.tx.size = sizeof(req);
->> +
->> +	err = tegra_bpmp_transfer(bpmp, &msg);
->> +	if (err)
->> +		goto end;
->> +
->> +	num_rates = 0;
->
-> This could be initialized when it is declared.
-
-Will fix.
-
->
->> +
->> +	for (i = data->vfloor; i < data->vceil + 1; ++i) {
->
-> i <= data->vceil? That seems more intuitive to me. Also, please only use
-> pre-decrement if really necessary.
-
-Will fix.
-
->
->> +		uint16_t ndiv = data->ndiv[i];
->> +
->> +		if (ndiv < data->ndiv_min || ndiv > data->ndiv_max)
->> +			continue;
->> +
->> +		/* Only store lowest voltage index for each rate */
->> +		if (i > 0 && ndiv == data->ndiv[i-1])
->
-> Needs spaces around '-', I think checkpatch would complain otherwise.
-
-Sure; checkpatch did not complain though.
-
->
-> Also, why is this even happening? Why would MRQ_CPU_VHINT return the
-> same ndiv value twice?
-
-The array is indexed by voltage values, so if the achievable frequency 
-doesn't increase when the voltage is increased by one step, there are 
-two or more successive entries with the same ndiv value.
-
->
->> +			continue;
->> +
->> +		++num_rates;
->
-> Again, post-increment is preferred over pre-increment.
-
-Will fix.
-
->
->> +	}
->> +
->> +	*table = devm_kcalloc(&pdev->dev, num_rates + 1, sizeof(**table),
->> +			      GFP_KERNEL);
->
-> There's a lot of dereferencing here and in the code below. Why not
-> simply return a struct cpufreq_frequency_table * from this function, and
-> an ERR_PTR()-encoded error on failure, rather than returning this in a
-> parameter, requiring the repeated deref?
-
-Yep, that's a good idea.
-
->
->> +	if (!*table) {
->> +		err = -ENOMEM;
->> +		goto end;
->> +	}
->> +
->> +	for (i = data->vfloor, j = 0; i < data->vceil + 1; ++i) {
->> +		struct cpufreq_frequency_table *point;
->> +		uint16_t ndiv = data->ndiv[i];
->> +
->> +		if (ndiv < data->ndiv_min || ndiv > data->ndiv_max)
->> +			continue;
->> +
->> +		/* Only store lowest voltage index for each rate */
->> +		if (i > 0 && ndiv == data->ndiv[i-1])
->> +			continue;
->> +
->> +		point = &(*table)[j++];
->> +		point->driver_data = (i << 16) | (ndiv);
->> +		point->frequency = data->ref_clk_hz * ndiv / data->pdiv /
->> +			data->mdiv / 1000;
->> +	}
->> +
->> +	(*table)[j].frequency = CPUFREQ_TABLE_END;
->> +
->> +end:
->
-> free: would be a more accurate name for this label.
-
-Will change.
-
->
->> +	dma_free_coherent(bpmp->dev, MSG_DATA_MIN_SZ, virt, phys);
->> +
->> +	return err;
->> +}
->> +
->> +static int tegra186_cpufreq_probe(struct platform_device *pdev)
->> +{
->> +	struct tegra186_cpufreq_data *data;
->> +	struct tegra_bpmp *bpmp;
->> +	int i, err;
->
-> unsigned int i?
-
-Will change.
-
->
->> +
->> +	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
->> +	if (!data)
->> +		return -ENOMEM;
->> +
->> +	bpmp = tegra_bpmp_get(&pdev->dev);
->> +	if (IS_ERR(bpmp))
->> +		return PTR_ERR(bpmp);
->> +
->> +	for (i = 0; i < NUM_CLUSTERS; ++i) {
->> +		struct resource *res;
->> +
->> +		res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
->> +						   CLUSTERS[i].name);
->> +		if (!res) {
->> +			err = -ENXIO;
->> +			goto put_bpmp;
->> +		}
->
-> No need for this check, devm_ioremap_resource() will take care of it.
-
-Will fix.
-
->
->> +
->> +		data->regs[i] = devm_ioremap_resource(&pdev->dev, res);
->> +		if (IS_ERR(data->regs[i])) {
->> +			err = PTR_ERR(data->regs[i]);
->> +			goto put_bpmp;
->> +		}
->> +
->> +		err = init_vhint_table(pdev, bpmp, i, &data->tables[i]);
->> +		if (err)
->> +			goto put_bpmp;
->
-> This could become something along the lines of:
->
-> 		data->tables[i] = init_vhint_table(pdev, bpmp, i);
-> 		if (IS_ERR(data->tables[i])) {
-> 			err = PTR_ERR(data->tables[i]);
-> 			goto put_bpmp;
-> 		}
->
-> Which is slightly more verbose than the original, but you get a lot more
-> clarity in return because you can just deal with straight pointers above
-> in init_vhint_table().
-
-Yep.
-
->
->> +	}
->> +
->> +	tegra_bpmp_put(bpmp);
->> +
->> +	tegra186_cpufreq_driver.driver_data = data;
->> +
->> +	err = cpufreq_register_driver(&tegra186_cpufreq_driver);
->> +	if (err)
->> +		return err;
->> +
->> +	return 0;
->> +
->> +put_bpmp:
->> +	tegra_bpmp_put(bpmp);
->> +
->> +	return err;
->> +}
->> +
->> +static int tegra186_cpufreq_remove(struct platform_device *pdev)
->> +{
->> +	cpufreq_unregister_driver(&tegra186_cpufreq_driver);
->> +
->> +	return 0;
->> +}
->> +
->> +static const struct of_device_id tegra186_cpufreq_of_match[] = {
->> +	{ .compatible = "nvidia,tegra186-ccplex-cluster", },
->> +	{ }
->> +};
->> +MODULE_DEVICE_TABLE(of, tegra186_cpufreq_of_match);
->> +
->> +static struct platform_driver tegra186_cpufreq_platform_driver = {
->> +	.driver = {
->> +		.name = "tegra186-cpufreq",
->> +		.of_match_table = tegra186_cpufreq_of_match,
->> +	},
->> +	.probe = tegra186_cpufreq_probe,
->> +	.remove = tegra186_cpufreq_remove,
->> +};
->> +module_platform_driver(tegra186_cpufreq_platform_driver);
->> +
->> +MODULE_AUTHOR("Mikko Perttunen <mperttunen@nvidia.com>");
->> +MODULE_DESCRIPTION("Tegra186 cpufreq driver");
->
-> NVIDIA Tegra186?
-
-Will change.
-
->
-> I very much like how simple this driver is compared to previous
-> generations.
-
-I agree :) Though as discussed, it's not perfect - I skipped the clock 
-rate get function because of how difficult it is to implement and how (I 
-believe) poor the result is. But we should be able to live without that.
-
->
-> Thierry
->
-
-Thanks for reviewing!
-
-Mikko
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 3bd24063375e..ac7301703d03 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -392,6 +392,11 @@ config MTK_THERMAL
+ 	  Enable this option if you want to have support for thermal management
+ 	  controller present in Mediatek SoCs
+ 
++menu "Broadcom thermal drivers"
++depends on ARCH_BCM || COMPILE_TEST
++source "drivers/thermal/broadcom/Kconfig"
++endmenu
++
+ menu "Texas Instruments thermal drivers"
+ depends on ARCH_HAS_BANDGAP || COMPILE_TEST
+ depends on HAS_IOMEM
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index f23cde05dac6..6b7706b9f27c 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -27,6 +27,7 @@ thermal_sys-$(CONFIG_CLOCK_THERMAL)	+= clock_cooling.o
+ thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
+ 
+ # platform thermal drivers
++obj-y				+= broadcom/
+ obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
+ obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+ obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
+diff --git a/drivers/thermal/broadcom/Kconfig b/drivers/thermal/broadcom/Kconfig
+new file mode 100644
+index 000000000000..f0dea8a8e002
+--- /dev/null
++++ b/drivers/thermal/broadcom/Kconfig
+@@ -0,0 +1,8 @@
++config BCM_NS_THERMAL
++	tristate "Northstar thermal driver"
++	depends on ARCH_BCM_IPROC || COMPILE_TEST
++	help
++	  Northstar is a family of SoCs that includes e.g. BCM4708, BCM47081,
++	  BCM4709 and BCM47094. It contains DMU (Device Management Unit) block
++	  with a thermal sensor that allows checking CPU temperature. This
++	  driver provides support for it.
+diff --git a/drivers/thermal/broadcom/Makefile b/drivers/thermal/broadcom/Makefile
+new file mode 100644
+index 000000000000..059df9a0ed69
+--- /dev/null
++++ b/drivers/thermal/broadcom/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_BCM_NS_THERMAL)		+= ns-thermal.o
+diff --git a/drivers/thermal/broadcom/ns-thermal.c b/drivers/thermal/broadcom/ns-thermal.c
+new file mode 100644
+index 000000000000..eab96b3572b9
+--- /dev/null
++++ b/drivers/thermal/broadcom/ns-thermal.c
+@@ -0,0 +1,105 @@
++/*
++ * Copyright (C) 2017 Rafał Miłecki <rafal@milecki.pl>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/module.h>
++#include <linux/of_address.h>
++#include <linux/platform_device.h>
++#include <linux/thermal.h>
++
++#define PVTMON_CONTROL0					0x00
++#define PVTMON_CONTROL0_SEL_MASK			0x0000000e
++#define PVTMON_CONTROL0_SEL_TEMP_MONITOR		0x00000000
++#define PVTMON_CONTROL0_SEL_TEST_MODE			0x0000000e
++#define PVTMON_STATUS					0x08
++
++struct ns_thermal {
++	struct thermal_zone_device *tz;
++	void __iomem *pvtmon;
++};
++
++static int ns_thermal_get_temp(void *data, int *temp)
++{
++	struct ns_thermal *ns_thermal = data;
++	int offset = thermal_zone_get_offset(ns_thermal->tz);
++	int slope = thermal_zone_get_slope(ns_thermal->tz);
++	u32 val;
++
++	val = readl(ns_thermal->pvtmon + PVTMON_CONTROL0);
++	if ((val & PVTMON_CONTROL0_SEL_MASK) != PVTMON_CONTROL0_SEL_TEMP_MONITOR) {
++		/* Clear current mode selection */
++		val &= ~PVTMON_CONTROL0_SEL_MASK;
++
++		/* Set temp monitor mode (it's the default actually) */
++		val |= PVTMON_CONTROL0_SEL_TEMP_MONITOR;
++
++		writel(val, ns_thermal->pvtmon + PVTMON_CONTROL0);
++	}
++
++	val = readl(ns_thermal->pvtmon + PVTMON_STATUS);
++	*temp = slope * val + offset;
++
++	return 0;
++}
++
++const struct thermal_zone_of_device_ops ns_thermal_ops = {
++	.get_temp = ns_thermal_get_temp,
++};
++
++static int ns_thermal_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct ns_thermal *ns_thermal;
++
++	ns_thermal = devm_kzalloc(dev, sizeof(*ns_thermal), GFP_KERNEL);
++	if (!ns_thermal)
++		return -ENOMEM;
++
++	ns_thermal->pvtmon = of_iomap(dev_of_node(dev), 0);
++	if (WARN_ON(!ns_thermal->pvtmon))
++		return -ENOENT;
++
++	ns_thermal->tz = devm_thermal_zone_of_sensor_register(dev, 0,
++							      ns_thermal,
++							      &ns_thermal_ops);
++	if (IS_ERR(ns_thermal->tz)) {
++		iounmap(ns_thermal->pvtmon);
++		return PTR_ERR(ns_thermal->tz);
++	}
++
++	platform_set_drvdata(pdev, ns_thermal);
++
++	return 0;
++}
++
++static int ns_thermal_remove(struct platform_device *pdev)
++{
++	struct ns_thermal *ns_thermal = platform_get_drvdata(pdev);
++
++	iounmap(ns_thermal->pvtmon);
++
++	return 0;
++}
++
++static const struct of_device_id ns_thermal_of_match[] = {
++	{ .compatible = "brcm,ns-thermal", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, ns_thermal_of_match);
++
++static struct platform_driver ns_thermal_driver = {
++	.probe		= ns_thermal_probe,
++	.remove		= ns_thermal_remove,
++	.driver = {
++		.name = "ns-thermal",
++		.of_match_table = ns_thermal_of_match,
++	},
++};
++module_platform_driver(ns_thermal_driver);
++
++MODULE_DESCRIPTION("Northstar thermal driver");
++MODULE_LICENSE("GPL v2");
+-- 
+2.11.0
