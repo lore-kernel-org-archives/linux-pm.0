@@ -1,62 +1,54 @@
 From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH 3/5] cpufreq: imx6q: Set max suspend_freq to avoid
- changes during suspend
-Date: Tue, 04 Apr 2017 11:51:40 +0200
-Message-ID: <1491299500.2367.16.camel@pengutronix.de>
+Subject: Re: [PATCH 5/5] ARM: dts: imx6qp-sabresd: Set reg_arm regulator supply
+Date: Tue, 04 Apr 2017 11:53:08 +0200
+Message-ID: <1491299588.2367.18.camel@pengutronix.de>
 References: <cover.1490987945.git.leonard.crestez@nxp.com>
-         <94d99b261124b813adecf11e86a0ffe05c37f276.1490987945.git.leonard.crestez@nxp.com>
+ <6711393cb78e8f975014e26e4008481828459463.1490987945.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <94d99b261124b813adecf11e86a0ffe05c37f276.1490987945.git.leonard.crestez@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <6711393cb78e8f975014e26e4008481828459463.1490987945.git.leonard.crestez@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Mark Brown <broonie@kernel.org>, Robin Gong <yibin.gong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 Am Freitag, den 31.03.2017, 22:25 +0300 schrieb Leonard Crestez:
-> If the cpufreq driver tries to modify voltage/freq during suspend/resume
-> it might need to control an external PMIC via I2C or SPI but those
-> devices might be already suspended.
+> On imx6qp-sabresd LDO_ARM is connected to a different PMIC output than
+> the other imx6qdl-sabresd boards.
 > 
-> To avoid this scenario we just increase cpufreq to highest setpoint
-> before suspend. This issue can easily be triggered by ldo-bypass but in
-> theory any regulator set_voltage call can end up having to modify
-> external supply voltages.
+> Setting cpu0 arm-supply to sw2_reg is wrong, this must have mistakenly
+> slipped out of the vendor tree where this is are used for LDO bypass.
 > 
 > Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
+
 > ---
->  drivers/cpufreq/imx6q-cpufreq.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  arch/arm/boot/dts/imx6qp-sabresd.dts | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index be90ee3..e2c1fbf 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -162,6 +162,7 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
->  {
->  	policy->clk = arm_clk;
-> +	policy->suspend_freq = freq_table[soc_opp_count - 1].frequency;
-
-I think soc_opp_count includes all OPPs from the DT, some of which might
-be disabled based on the fuse settings of the SoC. So this should
-probably not switch to the highest OPP unconditionally, but rather
-switch to the highest _enabled_ OPP.
-
-Regards,
-Lucas
- 
->  	return cpufreq_generic_init(policy, freq_table, transition_latency);
->  }
->  
-> @@ -173,6 +174,7 @@ static struct cpufreq_driver imx6q_cpufreq_driver = {
->  	.init = imx6q_cpufreq_init,
->  	.name = "imx6q-cpufreq",
->  	.attr = cpufreq_generic_attr,
-> +	.suspend = cpufreq_generic_suspend,
+> diff --git a/arch/arm/boot/dts/imx6qp-sabresd.dts b/arch/arm/boot/dts/imx6qp-sabresd.dts
+> index b234580..a8a5004 100644
+> --- a/arch/arm/boot/dts/imx6qp-sabresd.dts
+> +++ b/arch/arm/boot/dts/imx6qp-sabresd.dts
+> @@ -50,8 +50,8 @@
+>  	compatible = "fsl,imx6qp-sabresd", "fsl,imx6qp";
 >  };
 >  
->  static int imx6q_cpufreq_probe(struct platform_device *pdev)
+> -&cpu0 {
+> -	arm-supply = <&sw2_reg>;
+> +&reg_arm {
+> +	vin-supply = <&sw2_reg>;
+>  };
+>  
+>  &iomuxc {
