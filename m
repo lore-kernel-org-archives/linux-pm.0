@@ -1,56 +1,66 @@
 From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH 3/5] cpufreq: imx6q: Set max suspend_freq to avoid
- changes during suspend
-Date: Tue, 4 Apr 2017 20:04:55 +0300
-Message-ID: <1491325495.27463.7.camel@nxp.com>
-References: <cover.1490987945.git.leonard.crestez@nxp.com>
-         <94d99b261124b813adecf11e86a0ffe05c37f276.1490987945.git.leonard.crestez@nxp.com>
-         <1491299500.2367.16.camel@pengutronix.de>
+Subject: [PATCH v2 2/4] cpufreq: imx6q: Set max suspend_freq to avoid changes
+ during suspend
+Date: Tue, 4 Apr 2017 20:04:12 +0300
+Message-ID: <5f61b819733127ddc7d41e82bf703a355c845b49.1491324640.git.leonard.crestez@nxp.com>
+References: <cover.1491324640.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1491299500.2367.16.camel@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Mark Brown <broonie@kernel.org>, Robin Gong <yibin.gong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <cover.1491324640.git.leonard.crestez@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lucas Stach <l.stach@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
+Cc: Leonard Crestez <leonard.crestez@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2017-04-04 at 11:51 +0200, Lucas Stach wrote:
-> Am Freitag, den 31.03.2017, 22:25 +0300 schrieb Leonard Crestez:
-> > 
-> > If the cpufreq driver tries to modify voltage/freq during suspend/resume
-> > it might need to control an external PMIC via I2C or SPI but those
-> > devices might be already suspended.
-> > 
-> > To avoid this scenario we just increase cpufreq to highest setpoint
-> > before suspend. This issue can easily be triggered by ldo-bypass but in
-> > theory any regulator set_voltage call can end up having to modify
-> > external supply voltages.
-> > 
-> > Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  drivers/cpufreq/imx6q-cpufreq.c | 2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> > index be90ee3..e2c1fbf 100644
-> > --- a/drivers/cpufreq/imx6q-cpufreq.c
-> > +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> > @@ -162,6 +162,7 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
-> >  static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
-> >  {
-> >  	policy->clk = arm_clk;
-> > +	policy->suspend_freq = freq_table[soc_opp_count - 1].frequency;
-> I think soc_opp_count includes all OPPs from the DT, some of which might
-> be disabled based on the fuse settings of the SoC. So this should
-> probably not switch to the highest OPP unconditionally, but rather
-> switch to the highest _enabled_ OPP.
+If the cpufreq driver tries to modify voltage/freq during suspend/resume
+it might need to control an external PMIC via I2C or SPI but those
+devices might be already suspended. This issue is likely to happen
+whenever the LDOs have their vin-supply set.
 
-You're right, this does not appear to be correct. Looking at
-soc_opp_count it should probably be a local variable in the code
-initializing imx6_soc_volt. And the imx6_soc_volt array itself could
-now be replaced with opp's support for multiple supply voltages.
+To avoid this scenario we just increase cpufreq to the maximum before
+suspend.
 
-I'll post v2.
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+---
+ drivers/cpufreq/imx6q-cpufreq.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index be90ee3..786122e 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -161,8 +161,13 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 
+ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+ {
++	int ret;
++
+ 	policy->clk = arm_clk;
+-	return cpufreq_generic_init(policy, freq_table, transition_latency);
++	ret = cpufreq_generic_init(policy, freq_table, transition_latency);
++	policy->suspend_freq = policy->max;
++
++	return ret;
+ }
+ 
+ static struct cpufreq_driver imx6q_cpufreq_driver = {
+@@ -173,6 +178,7 @@ static struct cpufreq_driver imx6q_cpufreq_driver = {
+ 	.init = imx6q_cpufreq_init,
+ 	.name = "imx6q-cpufreq",
+ 	.attr = cpufreq_generic_attr,
++	.suspend = cpufreq_generic_suspend,
+ };
+ 
+ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+-- 
+2.7.4
