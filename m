@@ -1,123 +1,349 @@
-From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [RFC PATCH v2 1/4] dt-bindings: update the
- Allwinner GPADC device tree binding for H3
-Date: Tue, 4 Apr 2017 15:20:01 +0200
-Message-ID: <20170404132001.4et5yaovpnqmbe6v@lukather>
-References: <20170402133304.56824-1-icenowy@aosc.io>
- <20170402133304.56824-2-icenowy@aosc.io>
- <20170403091523.6atl7nq4m2qkpn3d@lukather>
- <e4d50e78-afe7-6107-6d9a-15e4c732d79a@aosc.io>
-Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: Mikko Perttunen <mperttunen@nvidia.com>
+Subject: [PATCH v2 1/3] cpufreq: Add Tegra186 cpufreq driver
+Date: Tue, 4 Apr 2017 16:43:35 +0300
+Message-ID: <1491313417-25085-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="anxvhyjov4mrkalh"
-Return-path: <linux-sunxi+bncBDSJBYGBRIMBBDF3R3DQKGQEECEU63Q-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <e4d50e78-afe7-6107-6d9a-15e4c732d79a-h8G6r0blFSE@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, thierry.reding@gmail.com, jonathanh@nvidia.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, Mikko Perttunen <mperttunen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
+Add a new cpufreq driver for Tegra186 (and likely later).
+The CPUs are organized into two clusters, Denver and A57,
+with two and four cores respectively. CPU frequency can be
+adjusted by writing the desired rate divisor and a voltage
+hint to a special per-core register.
 
---anxvhyjov4mrkalh
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The frequency of each core can be set individually; however,
+this is just a hint as all CPUs in a cluster will run at
+the maximum rate of non-idle CPUs in the cluster.
 
-On Mon, Apr 03, 2017 at 05:31:11PM +0800, Icenowy Zheng wrote:
->=20
->=20
-> =E5=9C=A8 2017=E5=B9=B404=E6=9C=8803=E6=97=A5 17:15, Maxime Ripard =E5=86=
-=99=E9=81=93:
-> > On Sun, Apr 02, 2017 at 09:33:01PM +0800, Icenowy Zheng wrote:
-> > > Allwinner H3 features a thermal sensor like the one in A33, but has i=
-ts
-> > > register re-arranged, the clock divider moved to CCU (originally the
-> > > clock divider is in ADC) and added a pair of bus clock and reset.
-> > >=20
-> > > Update the binding document to cover H3.
-> > >=20
-> > > Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-> > > ---
-> > >  .../devicetree/bindings/mfd/sun4i-gpadc.txt        | 23 ++++++++++++=
-++++++++--
-> > >  1 file changed, 21 insertions(+), 2 deletions(-)
-> > >=20
-> > > diff --git a/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt b/=
-Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt
-> > > index badff3611a98..7753133ca0ff 100644
-> > > --- a/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt
-> > > +++ b/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt
-> > > @@ -4,12 +4,20 @@ The Allwinner SoCs all have an ADC that can also ac=
-t as a thermal sensor
-> > >  and sometimes as a touchscreen controller.
-> > >=20
-> > >  Required properties:
-> > > -  - compatible: "allwinner,sun8i-a33-ths",
-> > > +  - compatible: must contain one of the following compatibles:
-> > > +		- "allwinner,sun8i-a33-ths"
-> > > +		- "allwinner,sun8i-h3-ths"
-> > >    - reg: mmio address range of the chip,
-> > >    - #thermal-sensor-cells: shall be 0,
-> > >    - #io-channel-cells: shall be 0,
-> > >=20
-> > > -Example:
-> > > +Required properties for the following compatibles:
-> > > +		- "allwinner,sun8i-h3-ths"
-> > > +  - clocks: the bus clock and the input clock of the ADC,
-> > > +  - clock-names: should be "bus" and "ths",
-> >=20
-> > I guess mod instead of ths would be more consistent.
->=20
-> In fact I will prefer "sample" here if not "ths", as it's used
-> for the sampling, not like other mod clocks, which controls
-> all the IP block's logic.
+Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+---
+v2:
+- Many cosmetic / restructuring changes
+- Only one aperture read from DT now, with a new
+  structure containing the offset among other details
+  per cluster.
+- Don't enable the driver by default.
 
-All the other mod clocks control some sort of sampling. The audio mod
-clocks will be used to sample data in capture, same thing for NAND,
-MMC, SPI, etc.
+ drivers/cpufreq/Kconfig.arm        |   6 +
+ drivers/cpufreq/Makefile           |   1 +
+ drivers/cpufreq/tegra186-cpufreq.c | 275 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 282 insertions(+)
+ create mode 100644 drivers/cpufreq/tegra186-cpufreq.c
 
-Please remain consistent.
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
-
---anxvhyjov4mrkalh
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJY4519AAoJEBx+YmzsjxAgwJIP/2Tc8hkHB4Jh1aLo9Rwax23D
-J8hQLRMi3tEcP+FdmfJn8WPk462xNgYStRn/vJaFrOOxFvqkoQI5Yw89m8oCEdl7
-iZVPc957vhSsdP9HhQDJwgIhfeWBHWMgU+5t+Mod5tqVaH885D6d6uhWvqJybdS4
-pYZ1SKmZbE3IGqkvKnyyNTV2IcYzJHF2MnF7lQWnA8WQHStZ78syKC26RoU0zMM7
-UIfBbGrh7K5flRWRtH82Vd53x8eZ9RM7HqJw3Fbe90ocpLPtmSCeOWLvGgSQuxJr
-N09UacJJPNt8W5YcfPSRuJbNnEpbRtlWWN1BbBdFHjnCEuvDyjsxa6lsbsCYWazW
-BtBlA2gl0ebgfqEwYYhkCMOp68PazAMl+LQMfcPWcX+tRTkxk4T+j8zCL4fyBGuB
-RG5XDLHCMjmbfoMcWr+vstwJ3joykvXq6641lt7oYgedR3AEwbygE30Tv7YmNjr0
-9cjDOqFLigCi0g9sKUWfw8lETRwN+TAq0aGIDLMztOmrQQvWAP3CUZRAXEcXqYmA
-vHGFuwT+C062V906DlAGbFNumjyBCEkxaPw0HOt0K6iPVQuPKfWWR72vb04XfYV2
-CKpW6jyP2hyGgSQFAx8xsvU6M+ou5WsD4cBmbQLWRXztVhtWxHk/4wPLfi8fD8AS
-JLsLLPuy3qqGQy1AC1rW
-=PqyA
------END PGP SIGNATURE-----
-
---anxvhyjov4mrkalh--
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 74fa5c5904d3..74ed7e9a7f27 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -247,6 +247,12 @@ config ARM_TEGRA124_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver support for Tegra124 SOCs.
+ 
++config ARM_TEGRA186_CPUFREQ
++	tristate "Tegra186 CPUFreq support"
++	depends on ARCH_TEGRA && TEGRA_BPMP
++	help
++	  This adds the CPUFreq driver support for Tegra186 SOCs.
++
+ config ARM_TI_CPUFREQ
+ 	bool "Texas Instruments CPUFreq support"
+ 	depends on ARCH_OMAP2PLUS
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 9f5a8045f36d..b7e78f063c4f 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -77,6 +77,7 @@ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+ obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
++obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
+ obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
+ obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+ obj-$(CONFIG_ACPI_CPPC_CPUFREQ) += cppc_cpufreq.o
+diff --git a/drivers/cpufreq/tegra186-cpufreq.c b/drivers/cpufreq/tegra186-cpufreq.c
+new file mode 100644
+index 000000000000..3c49591fa0ff
+--- /dev/null
++++ b/drivers/cpufreq/tegra186-cpufreq.c
+@@ -0,0 +1,275 @@
++/*
++ * Copyright (c) 2017, NVIDIA CORPORATION. All rights reserved
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++#include <linux/cpufreq.h>
++#include <linux/dma-mapping.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++
++#include <soc/tegra/bpmp.h>
++#include <soc/tegra/bpmp-abi.h>
++
++#define EDVD_CORE_VOLT_FREQ(core)		(0x20 + (core) * 0x4)
++#define EDVD_CORE_VOLT_FREQ_F_SHIFT		0
++#define EDVD_CORE_VOLT_FREQ_V_SHIFT		16
++
++struct tegra186_cpufreq_cluster_info {
++	unsigned long offset;
++	int cpus[4];
++	unsigned int bpmp_cluster_id;
++};
++
++#define NO_CPU -1
++static const struct tegra186_cpufreq_cluster_info tegra186_clusters[] = {
++	/* Denver cluster */
++	{
++		.offset = SZ_64K * 7,
++		.cpus = { 1, 2, NO_CPU, NO_CPU },
++		.bpmp_cluster_id = 0,
++	},
++	/* A57 cluster */
++	{
++		.offset = SZ_64K * 6,
++		.cpus = { 0, 3, 4, 5 },
++		.bpmp_cluster_id = 1,
++	},
++};
++
++struct tegra186_cpufreq_cluster {
++	const struct tegra186_cpufreq_cluster_info *info;
++	struct cpufreq_frequency_table *table;
++};
++
++struct tegra186_cpufreq_data {
++	void __iomem *regs;
++
++	size_t num_clusters;
++	struct tegra186_cpufreq_cluster *clusters;
++};
++
++static int tegra186_cpufreq_init(struct cpufreq_policy *policy)
++{
++	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
++	unsigned int i;
++
++	for (i = 0; i < data->num_clusters; i++) {
++		struct tegra186_cpufreq_cluster *cluster = &data->clusters[i];
++		const struct tegra186_cpufreq_cluster_info *info =
++			cluster->info;
++		int core;
++
++		for (core = 0; core < ARRAY_SIZE(info->cpus); core++) {
++			if (info->cpus[core] == policy->cpu)
++				break;
++		}
++		if (core == ARRAY_SIZE(info->cpus))
++			continue;
++
++		policy->driver_data =
++			data->regs + info->offset + EDVD_CORE_VOLT_FREQ(core);
++		cpufreq_table_validate_and_show(policy, cluster->table);
++	}
++
++	policy->cpuinfo.transition_latency = 300 * 1000;
++
++	return 0;
++}
++
++static int tegra186_cpufreq_set_target(struct cpufreq_policy *policy,
++				       unsigned int index)
++{
++	struct cpufreq_frequency_table *tbl = policy->freq_table + index;
++	void __iomem *edvd_reg = policy->driver_data;
++	u32 edvd_val = tbl->driver_data;
++
++	writel(edvd_val, edvd_reg);
++
++	return 0;
++}
++
++static struct cpufreq_driver tegra186_cpufreq_driver = {
++	.name = "tegra186",
++	.flags = CPUFREQ_STICKY | CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
++	.verify = cpufreq_generic_frequency_table_verify,
++	.target_index = tegra186_cpufreq_set_target,
++	.init = tegra186_cpufreq_init,
++	.attr = cpufreq_generic_attr,
++};
++
++static struct cpufreq_frequency_table *init_vhint_table(
++	struct platform_device *pdev, struct tegra_bpmp *bpmp,
++	unsigned int cluster_id)
++{
++	struct cpufreq_frequency_table *table;
++	struct mrq_cpu_vhint_request req;
++	struct tegra_bpmp_message msg;
++	struct cpu_vhint_data *data;
++	int err, i, j, num_rates = 0;
++	dma_addr_t phys;
++	void *virt;
++
++	virt = dma_alloc_coherent(bpmp->dev, sizeof(*data), &phys,
++				  GFP_KERNEL | GFP_DMA32);
++	if (!virt)
++		return ERR_PTR(-ENOMEM);
++
++	data = (struct cpu_vhint_data *)virt;
++
++	memset(&req, 0, sizeof(req));
++	req.addr = phys;
++	req.cluster_id = cluster_id;
++
++	memset(&msg, 0, sizeof(msg));
++	msg.mrq = MRQ_CPU_VHINT;
++	msg.tx.data = &req;
++	msg.tx.size = sizeof(req);
++
++	err = tegra_bpmp_transfer(bpmp, &msg);
++	if (err) {
++		table = ERR_PTR(err);
++		goto free;
++	}
++
++	for (i = data->vfloor; i <= data->vceil; i++) {
++		u16 ndiv = data->ndiv[i];
++
++		if (ndiv < data->ndiv_min || ndiv > data->ndiv_max)
++			continue;
++
++		/* Only store lowest voltage index for each rate */
++		if (i > 0 && ndiv == data->ndiv[i - 1])
++			continue;
++
++		num_rates++;
++	}
++
++	table = devm_kcalloc(&pdev->dev, num_rates + 1, sizeof(*table),
++			     GFP_KERNEL);
++	if (!table) {
++		table = ERR_PTR(-ENOMEM);
++		goto free;
++	}
++
++	for (i = data->vfloor, j = 0; i <= data->vceil; i++) {
++		struct cpufreq_frequency_table *point;
++		u16 ndiv = data->ndiv[i];
++		u32 edvd_val = 0;
++
++		if (ndiv < data->ndiv_min || ndiv > data->ndiv_max)
++			continue;
++
++		/* Only store lowest voltage index for each rate */
++		if (i > 0 && ndiv == data->ndiv[i - 1])
++			continue;
++
++		edvd_val |= i << EDVD_CORE_VOLT_FREQ_V_SHIFT;
++		edvd_val |= ndiv << EDVD_CORE_VOLT_FREQ_F_SHIFT;
++
++		point = &table[j++];
++		point->driver_data = edvd_val;
++		point->frequency = data->ref_clk_hz * ndiv / data->pdiv /
++			data->mdiv / 1000;
++	}
++
++	table[j].frequency = CPUFREQ_TABLE_END;
++
++free:
++	dma_free_coherent(bpmp->dev, MSG_DATA_MIN_SZ, virt, phys);
++
++	return table;
++}
++
++static int tegra186_cpufreq_probe(struct platform_device *pdev)
++{
++	struct tegra186_cpufreq_data *data;
++	struct tegra_bpmp *bpmp;
++	struct resource *res;
++	unsigned int i = 0, err;
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->clusters = devm_kcalloc(&pdev->dev, ARRAY_SIZE(tegra186_clusters),
++				      sizeof(*data->clusters), GFP_KERNEL);
++	if (!data->clusters)
++		return -ENOMEM;
++
++	data->num_clusters = ARRAY_SIZE(tegra186_clusters);
++
++	bpmp = tegra_bpmp_get(&pdev->dev);
++	if (IS_ERR(bpmp))
++		return PTR_ERR(bpmp);
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	data->regs = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(data->regs)) {
++		err = PTR_ERR(data->regs);
++		goto put_bpmp;
++	}
++
++	for (i = 0; i < data->num_clusters; i++) {
++		struct tegra186_cpufreq_cluster *cluster = &data->clusters[i];
++
++		cluster->info = &tegra186_clusters[i];
++		cluster->table = init_vhint_table(
++			pdev, bpmp, cluster->info->bpmp_cluster_id);
++		if (IS_ERR(cluster->table)) {
++			err = PTR_ERR(cluster->table);
++			goto put_bpmp;
++		}
++	}
++
++	tegra_bpmp_put(bpmp);
++
++	tegra186_cpufreq_driver.driver_data = data;
++
++	err = cpufreq_register_driver(&tegra186_cpufreq_driver);
++	if (err)
++		return err;
++
++	return 0;
++
++put_bpmp:
++	tegra_bpmp_put(bpmp);
++
++	return err;
++}
++
++static int tegra186_cpufreq_remove(struct platform_device *pdev)
++{
++	cpufreq_unregister_driver(&tegra186_cpufreq_driver);
++
++	return 0;
++}
++
++static const struct of_device_id tegra186_cpufreq_of_match[] = {
++	{ .compatible = "nvidia,tegra186-ccplex-cluster", },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, tegra186_cpufreq_of_match);
++
++static struct platform_driver tegra186_cpufreq_platform_driver = {
++	.driver = {
++		.name = "tegra186-cpufreq",
++		.of_match_table = tegra186_cpufreq_of_match,
++	},
++	.probe = tegra186_cpufreq_probe,
++	.remove = tegra186_cpufreq_remove,
++};
++module_platform_driver(tegra186_cpufreq_platform_driver);
++
++MODULE_AUTHOR("Mikko Perttunen <mperttunen@nvidia.com>");
++MODULE_DESCRIPTION("NVIDIA Tegra186 cpufreq driver");
++MODULE_LICENSE("GPL v2");
+-- 
+2.1.4
