@@ -1,14 +1,14 @@
 From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH 5/5] ARM: dts: imx6qp-sabresd: Set reg_arm regulator supply
-Date: Tue, 04 Apr 2017 11:53:08 +0200
-Message-ID: <1491299588.2367.18.camel@pengutronix.de>
+Subject: Re: [PATCH 4/5] ARM: dts: imx6qdl-sabresd: Set LDO regulator supply
+Date: Tue, 04 Apr 2017 11:52:21 +0200
+Message-ID: <1491299541.2367.17.camel@pengutronix.de>
 References: <cover.1490987945.git.leonard.crestez@nxp.com>
- <6711393cb78e8f975014e26e4008481828459463.1490987945.git.leonard.crestez@nxp.com>
+ <48ebd72d94b5be37318f57e47c8ba5c6ab606470.1490987945.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <6711393cb78e8f975014e26e4008481828459463.1490987945.git.leonard.crestez@nxp.com>
+In-Reply-To: <48ebd72d94b5be37318f57e47c8ba5c6ab606470.1490987945.git.leonard.crestez@nxp.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -23,32 +23,37 @@ Cc: Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Vire
 List-Id: linux-pm@vger.kernel.org
 
 Am Freitag, den 31.03.2017, 22:25 +0300 schrieb Leonard Crestez:
-> On imx6qp-sabresd LDO_ARM is connected to a different PMIC output than
-> the other imx6qdl-sabresd boards.
-> 
-> Setting cpu0 arm-supply to sw2_reg is wrong, this must have mistakenly
-> slipped out of the vendor tree where this is are used for LDO bypass.
+> Setting the supply is optional but beneficial, it will cause PMIC
+> voltages to be dynamically changed with cpu frequency.
 > 
 > Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 
 Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
 
 > ---
->  arch/arm/boot/dts/imx6qp-sabresd.dts | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  arch/arm/boot/dts/imx6qdl-sabresd.dtsi | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 > 
-> diff --git a/arch/arm/boot/dts/imx6qp-sabresd.dts b/arch/arm/boot/dts/imx6qp-sabresd.dts
-> index b234580..a8a5004 100644
-> --- a/arch/arm/boot/dts/imx6qp-sabresd.dts
-> +++ b/arch/arm/boot/dts/imx6qp-sabresd.dts
-> @@ -50,8 +50,8 @@
->  	compatible = "fsl,imx6qp-sabresd", "fsl,imx6qp";
+> diff --git a/arch/arm/boot/dts/imx6qdl-sabresd.dtsi b/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
+> index 63bf95e..58055ce 100644
+> --- a/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
+> +++ b/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
+> @@ -548,6 +548,18 @@
+>  	status = "okay";
 >  };
 >  
-> -&cpu0 {
-> -	arm-supply = <&sw2_reg>;
 > +&reg_arm {
-> +	vin-supply = <&sw2_reg>;
+> +       vin-supply = <&sw1a_reg>;
+> +};
+> +
+> +&reg_pu {
+> +       vin-supply = <&sw1c_reg>;
+> +};
+> +
+> +&reg_soc {
+> +       vin-supply = <&sw1c_reg>;
+> +};
+> +
+>  &snvs_poweroff {
+>  	status = "okay";
 >  };
->  
->  &iomuxc {
