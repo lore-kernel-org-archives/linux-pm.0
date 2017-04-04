@@ -1,8 +1,7 @@
 From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH v2 2/4] cpufreq: imx6q: Set max suspend_freq to avoid changes
- during suspend
-Date: Tue, 4 Apr 2017 20:04:12 +0300
-Message-ID: <5f61b819733127ddc7d41e82bf703a355c845b49.1491324640.git.leonard.crestez@nxp.com>
+Subject: [PATCH v2 3/4] ARM: dts: imx6qdl-sabresd: Set LDO regulator supply
+Date: Tue, 4 Apr 2017 20:04:13 +0300
+Message-ID: <0e90881cb5b766eec66db692522591aa47165663.1491324640.git.leonard.crestez@nxp.com>
 References: <cover.1491324640.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,45 +21,37 @@ To: Lucas Stach <l.stach@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Leonard Crestez <leonard.crestez@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-If the cpufreq driver tries to modify voltage/freq during suspend/resume
-it might need to control an external PMIC via I2C or SPI but those
-devices might be already suspended. This issue is likely to happen
-whenever the LDOs have their vin-supply set.
-
-To avoid this scenario we just increase cpufreq to the maximum before
-suspend.
+Setting the supply is optional but beneficial, it will cause PMIC
+voltages to be dynamically changed with cpu frequency.
 
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
 ---
- drivers/cpufreq/imx6q-cpufreq.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/imx6qdl-sabresd.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index be90ee3..786122e 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -161,8 +161,13 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
- 
- static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
- {
-+	int ret;
-+
- 	policy->clk = arm_clk;
--	return cpufreq_generic_init(policy, freq_table, transition_latency);
-+	ret = cpufreq_generic_init(policy, freq_table, transition_latency);
-+	policy->suspend_freq = policy->max;
-+
-+	return ret;
- }
- 
- static struct cpufreq_driver imx6q_cpufreq_driver = {
-@@ -173,6 +178,7 @@ static struct cpufreq_driver imx6q_cpufreq_driver = {
- 	.init = imx6q_cpufreq_init,
- 	.name = "imx6q-cpufreq",
- 	.attr = cpufreq_generic_attr,
-+	.suspend = cpufreq_generic_suspend,
+diff --git a/arch/arm/boot/dts/imx6qdl-sabresd.dtsi b/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
+index 63bf95e..58055ce 100644
+--- a/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
++++ b/arch/arm/boot/dts/imx6qdl-sabresd.dtsi
+@@ -548,6 +548,18 @@
+ 	status = "okay";
  };
  
- static int imx6q_cpufreq_probe(struct platform_device *pdev)
++&reg_arm {
++       vin-supply = <&sw1a_reg>;
++};
++
++&reg_pu {
++       vin-supply = <&sw1c_reg>;
++};
++
++&reg_soc {
++       vin-supply = <&sw1c_reg>;
++};
++
+ &snvs_poweroff {
+ 	status = "okay";
+ };
 -- 
 2.7.4
