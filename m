@@ -1,124 +1,60 @@
-From: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Subject: Re: [RFC PATCH v2 1/4] dt-bindings: update the
- Allwinner GPADC device tree binding for H3
-Date: Tue, 4 Apr 2017 23:02:52 +0800
-Message-ID: <bdc43a73-a2d6-01ae-8113-277f7174697c@aosc.io>
-References: <20170402133304.56824-1-icenowy@aosc.io>
- <20170402133304.56824-2-icenowy@aosc.io>
- <20170404144715.fa5sy427u2cz4e6z@rob-hp-laptop>
-Reply-To: icenowy-h8G6r0blFSE@public.gmane.org
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: [PATCH] CPUFREQ: Loongson2: drop set_cpus_allowed_ptr()
+Date: Tue,  4 Apr 2017 17:49:57 +0200
+Message-ID: <20170404154957.19678-1-bigeasy@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDS6XAN6ZADRBTPLR3DQKGQECTMBGAI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20170404144715.fa5sy427u2cz4e6z@rob-hp-laptop>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from Galois.linutronix.de ([146.0.238.70]:55319 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753759AbdDDPuA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Apr 2017 11:50:00 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-mips@linux-mips.org
+Cc: tglx@linutronix.de, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
+It is pure mystery to me why we need to be on a specific CPU while
+looking up a value in an array.
+My best shot at this is that before commit d4019f0a92ab ("cpufreq: move
+freq change notifications to cpufreq core") it was required to invoke
+cpufreq_notify_transition() on a special CPU.
 
+Since it looks like a waste, remove it.
 
-=E5=9C=A8 2017=E5=B9=B404=E6=9C=8804=E6=97=A5 22:47, Rob Herring =E5=86=99=
-=E9=81=93:
-> On Sun, Apr 02, 2017 at 09:33:01PM +0800, Icenowy Zheng wrote:
->> Allwinner H3 features a thermal sensor like the one in A33, but has its
->> register re-arranged, the clock divider moved to CCU (originally the
->> clock divider is in ADC) and added a pair of bus clock and reset.
->>
->> Update the binding document to cover H3.
->>
->> Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
->> ---
->>  .../devicetree/bindings/mfd/sun4i-gpadc.txt        | 23 +++++++++++++++=
-+++++--
->>  1 file changed, 21 insertions(+), 2 deletions(-)
->>
->> diff --git a/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt b/Doc=
-umentation/devicetree/bindings/mfd/sun4i-gpadc.txt
->> index badff3611a98..7753133ca0ff 100644
->> --- a/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt
->> +++ b/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt
->> @@ -4,12 +4,20 @@ The Allwinner SoCs all have an ADC that can also act a=
-s a thermal sensor
->>  and sometimes as a touchscreen controller.
->>
->>  Required properties:
->> -  - compatible: "allwinner,sun8i-a33-ths",
->> +  - compatible: must contain one of the following compatibles:
->> +		- "allwinner,sun8i-a33-ths"
->> +		- "allwinner,sun8i-h3-ths"
->>    - reg: mmio address range of the chip,
->>    - #thermal-sensor-cells: shall be 0,
->>    - #io-channel-cells: shall be 0,
->>
->> -Example:
->> +Required properties for the following compatibles:
->> +		- "allwinner,sun8i-h3-ths"
->> +  - clocks: the bus clock and the input clock of the ADC,
->> +  - clock-names: should be "bus" and "ths",
->> +  - resets: the bus reset of the ADC,
->> +
->> +Example for A33:
->>  	ths: ths@01c25000 {
->>  		compatible =3D "allwinner,sun8i-a33-ths";
->>  		reg =3D <0x01c25000 0x100>;
->> @@ -17,6 +25,17 @@ Example:
->>  		#io-channel-cells =3D <0>;
->>  	};
->>
->> +Example for H3:
->> +	ths: ths@01c25000 {
->
-> adc@...
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+ drivers/cpufreq/loongson2_cpufreq.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
-It's a thermal sensor, so I think call it THS is more appropriate
-here. It's implemented as an ADC driver just because the internal
-code reusing of Linux. From device tree binding view I choose to
-call it ths.
-
->
-> And drop the leading 0.
-
-OK.
-
->
->> +		compatible =3D "allwinner,sun8i-h3-ths";
->> +		reg =3D <0x01c25000 0x100>;
->> +		clocks =3D <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
->> +		clock-names =3D "bus", "ths";
->> +		resets =3D <&ccu RST_BUS_THS>;
->> +		#thermal-sensor-cells =3D <0>;
->> +		#io-channel-cells =3D <0>;
->> +	};
->> +
->>  sun4i, sun5i and sun6i SoCs are also supported via the older binding:
->>
->>  sun4i resistive touchscreen controller
->> --
->> 2.12.2
->>
->>
->> _______________________________________________
->> linux-arm-kernel mailing list
->> linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
->> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
->
-
+diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson=
+2_cpufreq.c
+index 6bbdac1065ff..9ac27b22476c 100644
+--- a/drivers/cpufreq/loongson2_cpufreq.c
++++ b/drivers/cpufreq/loongson2_cpufreq.c
+@@ -51,19 +51,12 @@ static int loongson2_cpu_freq_notifier(struct notifier_=
+block *nb,
+ static int loongson2_cpufreq_target(struct cpufreq_policy *policy,
+ 				     unsigned int index)
+ {
+-	unsigned int cpu =3D policy->cpu;
+-	cpumask_t cpus_allowed;
+ 	unsigned int freq;
+=20
+-	cpus_allowed =3D current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+-
+ 	freq =3D
+ 	    ((cpu_clock_freq / 1000) *
+ 	     loongson2_clockmod_table[index].driver_data) / 8;
+=20
+-	set_cpus_allowed_ptr(current, &cpus_allowed);
+-
+ 	/* setting the cpu frequency */
+ 	clk_set_rate(policy->clk, freq * 1000);
+=20
 --=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+2.11.0
