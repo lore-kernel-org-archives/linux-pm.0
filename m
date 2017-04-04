@@ -1,238 +1,80 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v12.4 4/10] power: bq27xxx_battery: Add bulk transfer bus methods
-Date: Tue,  4 Apr 2017 01:57:00 -0700
-Message-ID: <20170404085706.32592-2-liam@networkimprov.net>
+Subject: [PATCH v12.4 8/10] devicetree: power: bq27xxx: Add monitored-battery documentation
+Date: Tue,  4 Apr 2017 01:57:04 -0700
+Message-ID: <20170404085706.32592-6-liam@networkimprov.net>
 References: <20170404085706.32592-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:34090 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752204AbdDDI5l (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Apr 2017 04:57:41 -0400
-Received: by mail-pg0-f65.google.com with SMTP id o123so35811702pga.1
-        for <linux-pm@vger.kernel.org>; Tue, 04 Apr 2017 01:57:41 -0700 (PDT)
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:34139 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752314AbdDDI5q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Apr 2017 04:57:46 -0400
 In-Reply-To: <20170404085706.32592-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
-Cc: Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
+Cc: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-From: Matt Ranostay <matt@ranostay.consulting>
+From: Liam Breck <kernel@networkimprov.net>
 
-Declare bus.write/read_bulk/write_bulk().
-Add I2C write/read_bulk/write_bulk() to implement the above.
-Add bq27xxx_write/read_block/write_block() helper functions to call the above.
+Document monitored-battery = <&battery_node>
 
-Acked-by: "Andrew F. Davis" <afd@ti.com>
+Cc: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
+Acked-by: Rob Herring <robh@kernel.org>
+Acked-by: Sebastian Reichel <sre@kernel.org>
 ---
- drivers/power/supply/bq27xxx_battery.c     | 67 +++++++++++++++++++++++-
- drivers/power/supply/bq27xxx_battery_i2c.c | 82 +++++++++++++++++++++++++++++-
- include/linux/power/bq27xxx_battery.h      |  3 ++
- 3 files changed, 149 insertions(+), 3 deletions(-)
+ .../devicetree/bindings/power/supply/bq27xxx.txt   | 31 +++++++++++++++++-----
+ 1 file changed, 24 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 398801a..ede7fac 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -794,11 +794,74 @@ MODULE_PARM_DESC(poll_interval,
- static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
- 			       bool single)
- {
--	/* Reports EINVAL for invalid/missing registers */
-+	int ret;
-+
- 	if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
- 		return -EINVAL;
+diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+index b0c95ef..a4b62b3 100644
+--- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
++++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+@@ -1,7 +1,7 @@
+-Binding for TI BQ27XXX fuel gauge family
++TI BQ27XXX fuel gauge family
  
--	return di->bus.read(di, di->regs[reg_index], single);
-+	ret = di->bus.read(di, di->regs[reg_index], single);
-+	if (ret < 0)
-+		dev_dbg(di->dev, "failed to read register 0x%02x (index %d)\n",
-+		        di->regs[reg_index], reg_index);
+ Required properties:
+-- compatible: Should contain one of the following:
++- compatible: contains one of the following:
+  * "ti,bq27200" - BQ27200
+  * "ti,bq27210" - BQ27210
+  * "ti,bq27500" - deprecated, use revision specific property below
+@@ -26,11 +26,28 @@ Required properties:
+  * "ti,bq27425" - BQ27425
+  * "ti,bq27441" - BQ27441
+  * "ti,bq27621" - BQ27621
+-- reg: integer, i2c address of the device.
++- reg: integer, I2C address of the fuel gauge.
 +
-+	return ret;
-+}
-+
-+static inline int bq27xxx_write(struct bq27xxx_device_info *di, int reg_index,
-+				u16 value, bool single)
-+{
-+	int ret;
-+
-+	if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
-+		return -EINVAL;
-+
-+	if (!di->bus.write)
-+		return -ENOSYS;
-+
-+	ret = di->bus.write(di, di->regs[reg_index], value, single);
-+	if (ret < 0)
-+		dev_dbg(di->dev, "failed to write register 0x%02x (index %d)\n",
-+		        di->regs[reg_index], reg_index);
-+
-+	return ret;
-+}
-+
-+static inline int bq27xxx_read_block(struct bq27xxx_device_info *di, int reg_index,
-+				     u8 *data, int len)
-+{
-+	int ret;
-+
-+	if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
-+		return -EINVAL;
-+
-+	if (!di->bus.read_bulk)
-+		return -ENOSYS;
-+
-+	ret = di->bus.read_bulk(di, di->regs[reg_index], data, len);
-+	if (ret < 0)
-+		dev_dbg(di->dev, "failed to read_bulk register 0x%02x (index %d)\n",
-+		        di->regs[reg_index], reg_index);
-+
-+	return ret;
-+}
-+
-+static inline int bq27xxx_write_block(struct bq27xxx_device_info *di, int reg_index,
-+				      u8 *data, int len)
-+{
-+	int ret;
-+
-+	if (!di || di->regs[reg_index] == INVALID_REG_ADDR)
-+		return -EINVAL;
-+
-+	if (!di->bus.write_bulk)
-+		return -ENOSYS;
-+
-+	ret = di->bus.write_bulk(di, di->regs[reg_index], data, len);
-+	if (ret < 0)
-+		dev_dbg(di->dev, "failed to write_bulk register 0x%02x (index %d)\n",
-+		        di->regs[reg_index], reg_index);
-+
-+	return ret;
- }
++Optional properties:
++- monitored-battery: phandle of battery characteristics devicetree node
++    The fuel gauge uses the following battery properties:
++    + energy-full-design-microwatt-hours
++    + charge-full-design-microamp-hours
++    + voltage-min-design-microvolt
++  Both or neither of the *-full-design-*-hours properties must be set.
++  See Documentation/devicetree/bindings/power/supply/battery.txt
  
- /*
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index c68fbc3..a597221 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -38,7 +38,7 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
- {
- 	struct i2c_client *client = to_i2c_client(di->dev);
- 	struct i2c_msg msg[2];
--	unsigned char data[2];
-+	u8 data[2];
- 	int ret;
+ Example:
  
- 	if (!client->adapter)
-@@ -68,6 +68,82 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
- 	return ret;
- }
- 
-+static int bq27xxx_battery_i2c_write(struct bq27xxx_device_info *di, u8 reg,
-+				     int value, bool single)
-+{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	struct i2c_msg msg;
-+	u8 data[4];
-+	int ret;
+-bq27510g3 {
+-    compatible = "ti,bq27510g3";
+-    reg = <0x55>;
+-};
++	bat: battery {
++		compatible = "simple-battery";
++		voltage-min-design-microvolt = <3200000>;
++		energy-full-design-microwatt-hours = <5290000>;
++		charge-full-design-microamp-hours = <1430000>;
++	};
 +
-+	if (!client->adapter)
-+		return -ENODEV;
-+
-+	data[0] = reg;
-+	if (single) {
-+		data[1] = (u8) value;
-+		msg.len = 2;
-+	} else {
-+		put_unaligned_le16(value, &data[1]);
-+		msg.len = 3;
-+	}
-+
-+	msg.buf = data;
-+	msg.addr = client->addr;
-+	msg.flags = 0;
-+
-+	ret = i2c_transfer(client->adapter, &msg, 1);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != 1)
-+		return -EINVAL;
-+	return 0;
-+}
-+
-+static int bq27xxx_battery_i2c_bulk_read(struct bq27xxx_device_info *di, u8 reg,
-+					 u8 *data, int len)
-+{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	int ret;
-+
-+	if (!client->adapter)
-+		return -ENODEV;
-+
-+	ret = i2c_smbus_read_i2c_block_data(client, reg, len, data);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != len)
-+		return -EINVAL;
-+	return 0;
-+}
-+
-+static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
-+					  u8 reg, u8 *data, int len)
-+{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	struct i2c_msg msg;
-+	u8 buf[33];
-+	int ret;
-+
-+	if (!client->adapter)
-+		return -ENODEV;
-+
-+	buf[0] = reg;
-+	memcpy(&buf[1], data, len);
-+
-+	msg.buf = buf;
-+	msg.addr = client->addr;
-+	msg.flags = 0;
-+	msg.len = len + 1;
-+
-+	ret = i2c_transfer(client->adapter, &msg, 1);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != 1)
-+		return -EINVAL;
-+	return 0;
-+}
-+
- static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 				     const struct i2c_device_id *id)
- {
-@@ -95,7 +171,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 	di->dev = &client->dev;
- 	di->chip = id->driver_data;
- 	di->name = name;
-+
- 	di->bus.read = bq27xxx_battery_i2c_read;
-+	di->bus.write = bq27xxx_battery_i2c_write;
-+	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
-+	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
- 
- 	ret = bq27xxx_battery_setup(di);
- 	if (ret)
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index b312bce..c3369fa 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -40,6 +40,9 @@ struct bq27xxx_platform_data {
- struct bq27xxx_device_info;
- struct bq27xxx_access_methods {
- 	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
-+	int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
-+	int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
-+	int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
- };
- 
- struct bq27xxx_reg_cache {
++	bq27510g3: fuel-gauge@55 {
++		compatible = "ti,bq27510g3";
++		reg = <0x55>;
++		monitored-battery = <&bat>;
++	};
 -- 
 2.9.3
