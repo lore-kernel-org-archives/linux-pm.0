@@ -1,63 +1,69 @@
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] cpuidle: powernv: Don't bounce between low and very
- low thread priority
-Date: Tue, 4 Apr 2017 09:43:43 +0530
-Message-ID: <20170404041343.GE21029@drishya.in.ibm.com>
-References: <20170403215414.16951-1-anton@ozlabs.org>
- <20170404095207.28fc5229@roar.ozlabs.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v3 4/4] power: bq24190_charger: Delay before polling reset flag
+Date: Mon, 3 Apr 2017 21:36:30 -0700
+Message-ID: <CAKvHMgTcrqFW0T8T6fyBmdb7d8w=3Th0YFFqscx-WyC8ke7JnQ@mail.gmail.com>
+References: <20170401202519.16280-1-liam@networkimprov.net>
+ <20170401202519.16280-5-liam@networkimprov.net> <66a0a8ca-16e2-ecbb-a5c3-73ef94d869c7@redhat.com>
+ <CAKvHMgSq5LAo7294p4X4EuzzBii9yB5pgajW7HJtuw-X7MehUw@mail.gmail.com> <e2c571c8-cb8a-95a5-3290-e950337181b1@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:41201 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1750877AbdDDENy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Apr 2017 00:13:54 -0400
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id v344AZTP123983
-        for <linux-pm@vger.kernel.org>; Tue, 4 Apr 2017 00:13:54 -0400
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 29kqbptsqg-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Tue, 04 Apr 2017 00:13:53 -0400
-Received: from localhost
-        by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <svaidy@linux.vnet.ibm.com>;
-        Tue, 4 Apr 2017 09:43:50 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
-        by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id v344Dm1G13172914
-        for <linux-pm@vger.kernel.org>; Tue, 4 Apr 2017 09:43:48 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
-        by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id v344Dj5D013145
-        for <linux-pm@vger.kernel.org>; Tue, 4 Apr 2017 09:43:48 +0530
-Content-Disposition: inline
-In-Reply-To: <20170404095207.28fc5229@roar.ozlabs.ibm.com>
+Received: from mail-it0-f48.google.com ([209.85.214.48]:38144 "EHLO
+        mail-it0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750785AbdDDEgb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Apr 2017 00:36:31 -0400
+Received: by mail-it0-f48.google.com with SMTP id y18so54222012itc.1
+        for <linux-pm@vger.kernel.org>; Mon, 03 Apr 2017 21:36:31 -0700 (PDT)
+In-Reply-To: <e2c571c8-cb8a-95a5-3290-e950337181b1@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, ego@linux.vnet.ibm.com, rjw@rjwysocki.net, daniel.lezcano@linaro.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Matt Ranostay <matt@ranostay.consulting>
 
-* Nicholas Piggin <npiggin@gmail.com> [2017-04-04 09:52:07]:
+On Sun, Apr 2, 2017 at 1:35 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
+>
+> On 02-04-17 22:16, Liam Breck wrote:
+>>
+>> On Sun, Apr 2, 2017 at 5:29 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>>>
+>>> Hi,
+>>>
+>>> On 01-04-17 22:25, Liam Breck wrote:
+>>>>
+>>>>
+>>>> From: Liam Breck <kernel@networkimprov.net>
+>>>>
+>>>> On chip reset, polling loop was reading reset register immediately.
+>>>> Instead, call udelay() before reading chip register.
+>>>
+>>>
+>>>
+>>> Why ? What does this buy us ?
+>>>
+>>> Also I've yet to hear back from you on my patch to remove doing
+>>> resets of the device altogether have you find any bad side-effects
+>>> of that patch in your testing ?
+>>
+>>
+>> On a DT-configured device, we don't want any charger settings done
+>> prior to probe(), as we are going to apply DT values. So
+>> register_reset() on probe seems right.
+>
+>
+> If no charger settings are done prior to probe, why bother with
+> a reset ? "seems right" does not seem like a good argument when
+> reset has shown to cause problems in real world scenarios and
 
-> On Tue,  4 Apr 2017 07:54:12 +1000
-> Anton Blanchard <anton@ozlabs.org> wrote:
-> 
-> > From: Anton Blanchard <anton@samba.org>
-> > 
-> > The core of snooze_loop() continually bounces between low and very
-> > low thread priority. Changing thread priorities is an expensive
-> > operation that can negatively impact other threads on a core.
-> > 
-> > All CPUs that can run PowerNV support very low priority, so we can
-> > avoid the change completely.
-> 
-> This looks good. I have HMT_lowest() which does alt feature patching
-> we can use for pseries and default idle code.
+Did you check TI's docs for errata on the possible charger reset bug
+you found? If there isn't any, it's probably a board-level issue.
 
-Alternatively, if we are going to set priority only once in various
-other places, HMT_low(); HMT_very_low(); should not add to extra
-cycles.  Let me code that up.
+> as I explained in my commit msg there really are no strong
+> arguments in favor of doing the reset and several against it.
 
---Vaidy
+Tony's comments about en_hiz provide the argument in favor. Let's use
+another device_property, as you did before. If we later find a chip
+bug on reset, we'll come up with a workaround, and that's a separate
+issue.
 
- 
+Thanks.
