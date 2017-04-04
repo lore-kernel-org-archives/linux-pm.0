@@ -1,31 +1,51 @@
-From: "santosh.shilimkar@oracle.com" <santosh.shilimkar@oracle.com>
-Subject: Re: [PATCH v5 0/5] ARM: K2G: Add support for TI-SCI Generic PM
- Domains
-Date: Tue, 4 Apr 2017 09:17:22 -0700
-Message-ID: <74de6fcd-ed41-ecae-eb22-85284013e4b4@oracle.com>
-References: <20170404024732.32699-1-d-gerlach@ti.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: [PATCH v2 0/4] ARM: imx: Set LDO regulator supply
+Date: Tue, 4 Apr 2017 20:04:10 +0300
+Message-ID: <cover.1491324640.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:43485 "EHLO
-        userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752518AbdDDQST (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Apr 2017 12:18:19 -0400
-In-Reply-To: <20170404024732.32699-1-d-gerlach@ti.com>
+Received: from mail-sn1nam02on0079.outbound.protection.outlook.com ([104.47.36.79]:60160
+        "EHLO NAM02-SN1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1753452AbdDDREb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 4 Apr 2017 13:04:31 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Rob Herring <robh+dt@kernel.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Tero Kristo <t-kristo@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, Olof Johansson <olof@lixom.net>
+To: Lucas Stach <l.stach@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
+Cc: Leonard Crestez <leonard.crestez@nxp.com>, Mark Brown <broonie@kernel.org>, Robin Gong <yibin.gong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On 4/3/17 7:47 PM, Dave Gerlach wrote:
-> Hi,
-> This is v5 of the series to add support for TI-SCI Generic PM Domains with
-> all ACKs in place and ready for Santosh to merge.
->
-Applied to 'for_4.12/soc-pmdomain' and should show up in next. Based on
-what arm-soc folks say about the single pull request, i will follow
-it up with pull request.
+Setting the LDO regulator parent is optional but beneficial. It will cause
+the PMIC output voltage to be dynamically set to the minimum input for the
+LDOs, this should be more efficient.
 
-Regards,
-Santosh
+This propagation was introduced by:
+commit fc42112c0eaa ("regulator: core: Propagate voltage changes to supply
+regulators")
+
+Changes since v1:
+ * Drop patch 1 since it only avoids logging a warning and the gpc driver
+is going through more changes.
+ * Initialize cpufreq->suspend_freq based on policy->max instead.
+ * Remove reference to ldo-bypass from suspend_freq patch message.
+
+It's not clear if policy->cpuinfo.max would be preferable, at init time
+they should be identical.
+
+Link: https://lkml.org/lkml/2017/3/31/683
+
+Irina Tirdea (1):
+  cpufreq: imx6q: Fix handling EPROBE_DEFER from regulator
+
+Leonard Crestez (3):
+  cpufreq: imx6q: Set max suspend_freq to avoid changes during suspend
+  ARM: dts: imx6qdl-sabresd: Set LDO regulator supply
+  ARM: dts: imx6qp-sabresd: Set reg_arm regulator supply
+
+ arch/arm/boot/dts/imx6qdl-sabresd.dtsi | 12 ++++++++++++
+ arch/arm/boot/dts/imx6qp-sabresd.dts   |  4 ++--
+ drivers/cpufreq/imx6q-cpufreq.c        | 15 ++++++++++++++-
+ 3 files changed, 28 insertions(+), 3 deletions(-)
+
+-- 
+2.7.4
