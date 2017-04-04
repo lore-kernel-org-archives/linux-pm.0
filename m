@@ -1,51 +1,74 @@
-From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [PATCH] i2c: designware: Do nothing in system suspend/resume when
- RT suspended
-Date: Mon, 3 Apr 2017 19:55:10 -0700
-Message-ID: <CALAqxLV7Er9kq-E97zG=U1tLTBqDFyYqC8BdofHNjtU=uo_uvw@mail.gmail.com>
-References: <20170330120444.12499-1-jarkko.nikula@linux.intel.com>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/3] cpuidle: powernv: Don't bounce between low and very
+ low thread priority
+Date: Tue, 4 Apr 2017 09:34:41 +0530
+Message-ID: <20170404040441.GB21029@drishya.in.ibm.com>
+References: <20170403215414.16951-1-anton@ozlabs.org>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f171.google.com ([209.85.128.171]:33195 "EHLO
-        mail-wr0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751647AbdDDCzM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Apr 2017 22:55:12 -0400
-Received: by mail-wr0-f171.google.com with SMTP id w43so194113324wrb.0
-        for <linux-pm@vger.kernel.org>; Mon, 03 Apr 2017 19:55:11 -0700 (PDT)
-In-Reply-To: <20170330120444.12499-1-jarkko.nikula@linux.intel.com>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:52807 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751043AbdDDEFl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Apr 2017 00:05:41 -0400
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id v3443dea000825
+        for <linux-pm@vger.kernel.org>; Tue, 4 Apr 2017 00:05:41 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 29m249n0nq-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Tue, 04 Apr 2017 00:05:40 -0400
+Received: from localhost
+        by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <svaidy@linux.vnet.ibm.com>;
+        Tue, 4 Apr 2017 14:05:38 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+        by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id v3445S5l53608554
+        for <linux-pm@vger.kernel.org>; Tue, 4 Apr 2017 14:05:36 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+        by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id v3444xCV031540
+        for <linux-pm@vger.kernel.org>; Tue, 4 Apr 2017 14:05:00 +1000
+Content-Disposition: inline
+In-Reply-To: <20170403215414.16951-1-anton@ozlabs.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Cc: linux-i2c@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+To: Anton Blanchard <anton@ozlabs.org>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, ego@linux.vnet.ibm.com, rjw@rjwysocki.net, daniel.lezcano@linaro.org, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
 
-On Thu, Mar 30, 2017 at 5:04 AM, Jarkko Nikula
-<jarkko.nikula@linux.intel.com> wrote:
-> There is possibility to enter dw_i2c_plat_suspend() callback twice
-> during system suspend under certain cases which is causing here warnings
-> from clk_core_disable() and clk_core_unprepare() as well as accessing the
-> registers that can be power gated.
->
-> Commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming during
-> system suspend") implemented a prepare callback that checks for runtime
-> suspended device which allow PM core to set direct_complete flag and
-> skip system suspend and resume callbacks.
->
-> However it can still happen if nothing resumes the device prior system
-> syspend (e.g. acpi_subsys_suspend()) and there is a slave device which
-> unsets the direct_complete flag of the parent in __device_suspend() thus
-> causing PM code to not skip the system suspend/resume callbacks.
->
-> Avoid this by checking runtime status in suspend and resume callbacks
-> and return directly if device is runtime suspended. This affects only
-> system suspend/resume since during runtime suspend/resume runtime status
-> is suspending (not suspended) or resuming.
->
-> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+* Anton Blanchard <anton@ozlabs.org> [2017-04-04 07:54:12]:
 
-This works for me on my HiKey board!
+> From: Anton Blanchard <anton@samba.org>
+> 
+> The core of snooze_loop() continually bounces between low and very
+> low thread priority. Changing thread priorities is an expensive
+> operation that can negatively impact other threads on a core.
+> 
+> All CPUs that can run PowerNV support very low priority, so we can
+> avoid the change completely.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Tested-by: John Stultz <john.stultz@linaro.org>
+Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-thanks
--john
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index cda8f62d555b..9d9f164894eb 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -57,7 +57,6 @@ static int snooze_loop(struct cpuidle_device *dev,
+>  	snooze_exit_time = get_tb() + snooze_timeout;
+>  	ppc64_runlatch_off();
+>  	while (!need_resched()) {
+> -		HMT_low();
+>  		HMT_very_low();
+>  		if (snooze_timeout_en && get_tb() > snooze_exit_time)
+>  			break;
+
+
+HMT_low() is legacy and can be removed for powernv platforms.
+
+--Vaidy
