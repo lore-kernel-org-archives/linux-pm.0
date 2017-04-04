@@ -1,14 +1,11 @@
 From: Dave Gerlach <d-gerlach@ti.com>
-Subject: [PATCH v5 1/5] PM / Domains: Add generic data pointer to genpd data
- struct
-Date: Mon, 3 Apr 2017 21:47:28 -0500
-Message-ID: <20170404024732.32699-2-d-gerlach@ti.com>
-References: <20170404024732.32699-1-d-gerlach@ti.com>
+Subject: [PATCH v5 0/5] ARM: K2G: Add support for TI-SCI Generic PM Domains
+Date: Mon, 3 Apr 2017 21:47:27 -0500
+Message-ID: <20170404024732.32699-1-d-gerlach@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170404024732.32699-1-d-gerlach@ti.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -22,29 +19,50 @@ To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.ne
 Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Olof Johansson <olof@lixom.net>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add a void *data pointer to struct generic_pm_domain_data. Because this
-exists for each device associated with a genpd it will allow us to
-assign per-device data if needed on a platform for control of that
-specific device.
+Hi,
+This is v5 of the series to add support for TI-SCI Generic PM Domains with
+all ACKs in place and ready for Santosh to merge.
 
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Kevin Hilman <khilman@baylibre.com>
-Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
----
- include/linux/pm_domain.h | 1 +
- 1 file changed, 1 insertion(+)
+Previous versions can be found here:
 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 5339ed5bd6f9..b213d22daefd 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -117,6 +117,7 @@ struct generic_pm_domain_data {
- 	struct pm_domain_data base;
- 	struct gpd_timing_data td;
- 	struct notifier_block nb;
-+	void *data;
- };
- 
- #ifdef CONFIG_PM_GENERIC_DOMAINS
+v4: https://www.spinics.net/lists/arm-kernel/msg566778.html
+v3: https://www.spinics.net/lists/kernel/msg2413975.html
+v2: https://www.spinics.net/lists/kernel/msg2364612.html
+v1: http://www.spinics.net/lists/arm-kernel/msg525204.html
+
+Mostly just a resend of v4 with all ACKs and Reviewed-by tags in place with
+the exception of a dropped sentence in patch 3 to avoid referencing Linux
+specific behavior in the DT binding doc. Otherwise everything else is
+unmodified.
+
+Ulf and Santosh, I kept your Reviewed-by and Acked-by tags in Patch 3 because
+the change was so minor and I still wanted to give you credit for taking the
+time to review the patch, any issues and I'd be happy to change that.
+
+Regards,
+Dave
+
+Dave Gerlach (5):
+  PM / Domains: Add generic data pointer to genpd data struct
+  PM / Domains: Do not check if simple providers have phandle cells
+  dt-bindings: Add TI SCI PM Domains
+  soc: ti: Add ti_sci_pm_domains driver
+  ARM: keystone: Drop PM domain support for k2g
+
+ .../devicetree/bindings/soc/ti/sci-pm-domain.txt   |  57 ++++++
+ MAINTAINERS                                        |   3 +
+ arch/arm/mach-keystone/Kconfig                     |   1 +
+ arch/arm/mach-keystone/pm_domain.c                 |   4 +-
+ drivers/base/power/domain.c                        |   2 -
+ drivers/soc/ti/Kconfig                             |  12 ++
+ drivers/soc/ti/Makefile                            |   1 +
+ drivers/soc/ti/ti_sci_pm_domains.c                 | 202 +++++++++++++++++++++
+ include/dt-bindings/genpd/k2g.h                    |  90 +++++++++
+ include/linux/pm_domain.h                          |   1 +
+ 10 files changed, 370 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+ create mode 100644 drivers/soc/ti/ti_sci_pm_domains.c
+ create mode 100644 include/dt-bindings/genpd/k2g.h
+
 -- 
 2.11.0
