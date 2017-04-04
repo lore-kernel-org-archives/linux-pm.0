@@ -1,52 +1,45 @@
-From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [PATCH v2 2/3] dt-bindings: Add bindings for nvidia,tegra186-ccplex-cluster
-Date: Tue, 4 Apr 2017 16:43:36 +0300
-Message-ID: <1491313417-25085-2-git-send-email-mperttunen@nvidia.com>
+From: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH v2 3/3] arm64: tegra: Add CCPLEX_CLUSTER area in Tegra186
+Date: Tue, 4 Apr 2017 16:43:37 +0300
+Message-ID: <1491313417-25085-3-git-send-email-mperttunen@nvidia.com>
 References: <1491313417-25085-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1491313417-25085-1-git-send-email-mperttunen@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, thierry.reding@gmail.com, jonathanh@nvidia.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, Mikko Perttunen <mperttunen@nvidia.com>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1491313417-25085-1-git-send-email-mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 The Tegra186 CCPLEX_CLUSTER area contains memory-mapped
 registers that initiate CPU frequency/voltage transitions.
 
-Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+Signed-off-by: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
 v2:
-- Only one regs entry.
-- s/Phandle/phandle/
+- Only one regs entry
 
- .../arm/tegra/nvidia,tegra186-ccplex-cluster.txt        | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt
+ arch/arm64/boot/dts/nvidia/tegra186.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt
-new file mode 100644
-index 000000000000..e8fb416c892b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt
-@@ -0,0 +1,17 @@
-+NVIDIA Tegra CCPLEX_CLUSTER area
-+
-+Required properties:
-+- compatible: Should contain one of the following:
-+  - "nvidia,tegra186-ccplex-cluster": for Tegra186
-+- reg: Must contain an (offset, length) pair of the device's MMIO
-+  register area
-+- nvidia,bpmp: phandle to BPMP device that can be queried for OPP tables
-+
-+Example:
-+
+diff --git a/arch/arm64/boot/dts/nvidia/tegra186.dtsi b/arch/arm64/boot/dts/nvidia/tegra186.dtsi
+index 3ea5e6369bc3..c023af0be43d 100644
+--- a/arch/arm64/boot/dts/nvidia/tegra186.dtsi
++++ b/arch/arm64/boot/dts/nvidia/tegra186.dtsi
+@@ -347,6 +347,13 @@
+ 		reg-names = "pmc", "wake", "aotag", "scratch";
+ 	};
+ 
 +	ccplex@e000000 {
 +		compatible = "nvidia,tegra186-ccplex-cluster";
-+		reg = <0x0 0x0e000000 0x0 0x3fffff>,
++		reg = <0x0 0x0e000000 0x0 0x3fffff>;
 +
 +		nvidia,bpmp = <&bpmp>;
 +	};
++
+ 	sysram@30000000 {
+ 		compatible = "nvidia,tegra186-sysram", "mmio-sram";
+ 		reg = <0x0 0x30000000 0x0 0x50000>;
 -- 
 2.1.4
