@@ -1,169 +1,261 @@
-From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
-Subject: [PATCH v2 21/21] docs-rst: fix usb cross-references
-Date: Wed,  5 Apr 2017 10:23:15 -0300
-Message-ID: <f8c01e61355cf70cbd9f2c6cd010d1af7af2652d.1491398120.git.mchehab@s-opensource.com>
-References: <cover.1491398120.git.mchehab@s-opensource.com>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v12.5 7/10] power: bq27xxx_battery: Enable chip data
+ memory update for certain chips
+Date: Wed, 5 Apr 2017 09:54:08 -0500
+Message-ID: <7fa6ddd8-c13d-ca70-feb1-b0862f43d36e@ti.com>
+References: <20170405054541.32074-1-liam@networkimprov.net>
+ <CAKvHMgQ-DMPj4Tm5nBZiUyAec=i4rXQcPFc3XQuCRa43n3kOmg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ec2-52-27-115-49.us-west-2.compute.amazonaws.com ([52.27.115.49]:40004
-        "EHLO osg.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1755292AbdDENXa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Apr 2017 09:23:30 -0400
-In-Reply-To: <cover.1491398120.git.mchehab@s-opensource.com>
-In-Reply-To: <cover.1491398120.git.mchehab@s-opensource.com>
-References: <cover.1491398120.git.mchehab@s-opensource.com>
+Received: from fllnx210.ext.ti.com ([198.47.19.17]:61282 "EHLO
+        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755784AbdDEOyN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Apr 2017 10:54:13 -0400
+In-Reply-To: <CAKvHMgQ-DMPj4Tm5nBZiUyAec=i4rXQcPFc3XQuCRa43n3kOmg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux Media Mailing List <linux-media@vger.kernel.org>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Cc: Mauro Carvalho Chehab <mchehab@s-opensource.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Masanari Iida <standby24x7@gmail.com>, Oliver Neukum <oneukum@suse.com>, Christian Gromm <christian.gromm@microchip.com>, Andrey Shvetsov <andrey.shvetsov@k2l.de>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Peter Chen <peter.chen@nxp.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
+To: Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org
+Cc: Liam Breck <kernel@networkimprov.net>
 
-As some USB documentation files got moved, adjust their
-cross-references to their new place.
+On 04/05/2017 03:07 AM, Liam Breck wrote:
+> Hi Andrew,
+> 
+> On Tue, Apr 4, 2017 at 10:45 PM, Liam Breck <liam@networkimprov.net> wrote:
+>> From: Liam Breck <kernel@networkimprov.net>
+>>
+>> Support data memory update of BQ27500, 545, 421, 425, 441, 621.
+>>
+>> Create IDs for for previously unID'd chips, to index arrays for unseal keys
+>> and data memory register tables.
+>>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>> ---
+>>  drivers/power/supply/bq27xxx_battery.c     | 88 ++++++++++++++++++++++++++++--
+>>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 +++---
+>>  include/linux/power/bq27xxx_battery.h      | 12 ++++
+>>  3 files changed, 104 insertions(+), 12 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>> index a2a5926..0dbd7e4 100644
+>> --- a/drivers/power/supply/bq27xxx_battery.c
+>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>> @@ -58,7 +58,7 @@
+>>
+>>  #include <linux/power/bq27xxx_battery.h>
+>>
+>> -#define DRIVER_VERSION         "1.2.0"
+>> +#define DRIVER_VERSION         "1.3.0"
+>>
+>>  #define BQ27XXX_MANUFACTURER   "Texas Instruments"
+>>
+>> @@ -132,7 +132,7 @@ enum bq27xxx_reg_index {
+>>         [BQ27XXX_DM_CKSUM] = 0x60
+>>
+>>  /* Register mappings */
+>> -static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>> +static u8 bq27xxx_regs[BQ27MAX][BQ27XXX_REG_MAX] = {
+>>         [BQ27000] = {
+>>                 [BQ27XXX_REG_CTRL] = 0x00,
+>>                 [BQ27XXX_REG_TEMP] = 0x06,
+>> @@ -779,7 +779,7 @@ static enum power_supply_property bq27421_battery_props[] = {
+>>  static struct {
+>>         enum power_supply_property *props;
+>>         size_t size;
+>> -} bq27xxx_battery_props[] = {
+>> +} bq27xxx_battery_props[BQ27MAX] = {
+>>         BQ27XXX_PROP(BQ27000, bq27000_battery_props),
+>>         BQ27XXX_PROP(BQ27010, bq27010_battery_props),
+>>         BQ27XXX_PROP(BQ2750X, bq2750x_battery_props),
+>> @@ -798,6 +798,33 @@ static struct {
+>>         BQ27XXX_PROP(BQ27421, bq27421_battery_props),
+>>  };
+>>
+>> +static enum bq27xxx_chip bq27xxx_prototypes[] = {
+>> +       [BQ27000]   = BQ27000,
+>> +       [BQ27010]   = BQ27010,
+>> +       [BQ2750X]   = BQ2750X,
+>> +       [BQ2751X]   = BQ2751X,
+>> +       [BQ2752X]   = BQ2751X,
+>> +       [BQ27500]   = BQ27500,
+>> +       [BQ27510G1] = BQ27510G1,
+>> +       [BQ27510G2] = BQ27510G2,
+>> +       [BQ27510G3] = BQ27510G3,
+>> +       [BQ27520G1] = BQ27520G1,
+>> +       [BQ27520G2] = BQ27520G2,
+>> +       [BQ27520G3] = BQ27520G3,
+>> +       [BQ27520G4] = BQ27520G4,
+>> +       [BQ27530]   = BQ27530,
+>> +       [BQ27531]   = BQ27530,
+>> +       [BQ27541]   = BQ27541,
+>> +       [BQ27542]   = BQ27541,
+>> +       [BQ27546]   = BQ27541,
+>> +       [BQ27742]   = BQ27541,
+>> +       [BQ27545]   = BQ27545,
+>> +       [BQ27421]   = BQ27421,
+>> +       [BQ27425]   = BQ27421,
+>> +       [BQ27441]   = BQ27421,
+>> +       [BQ27621]   = BQ27421,
+>> +};
+> 
+> The above is essentially the old I2C ID table.
+> 
+> 
+>>  static DEFINE_MUTEX(bq27xxx_list_lock);
+>>  static LIST_HEAD(bq27xxx_battery_devices);
+>>
+>> @@ -856,6 +883,54 @@ static const char* bq27xxx_dm_reg_name[] = {
+>>         [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>>  };
+>>
+>> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
+>> +       [BQ27500] = bq27500_dm_regs,
+>> +       [BQ27545] = bq27545_dm_regs,
+>> +       [BQ27421] = bq27421_dm_regs,
+>> +       [BQ27425] = bq27425_dm_regs,
+>> +       [BQ27441] = bq27421_dm_regs,
+>> +       [BQ27621] = bq27621_dm_regs,
+>> +};
+>> +
+>> +static u32 bq27xxx_unseal_keys[] = {
+>> +       [BQ27500] = 0x04143672,
+>> +       [BQ27545] = 0x04143672,
+>> +       [BQ27421] = 0x80008000,
+>> +       [BQ27425] = 0x04143672,
+>> +       [BQ27441] = 0x80008000,
+>> +       [BQ27621] = 0x80008000,
+>> +};
+>> +
+>>
+>>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
+>>  {
+>> @@ -1831,9 +1906,14 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>                 .drv_data = di,
+>>         };
+>>
+>> +       di->unseal_key = bq27xxx_unseal_keys[di->chip];
+>> +       di->dm_regs = bq27xxx_dm_regs[di->chip];
+>> +       di->chip = bq27xxx_prototypes[di->chip];
+>> +
+>> +       di->regs = bq27xxx_regs[di->chip];
+>> +
+>>         INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>>         mutex_init(&di->lock);
+>> -       di->regs = bq27xxx_regs[di->chip];
+>>
+>>         psy_desc = devm_kzalloc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
+>>         if (!psy_desc)
+>> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> index a597221..0b11ed4 100644
+>> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+>> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> @@ -230,7 +230,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>         { "bq27210", BQ27010 },
+>>         { "bq27500", BQ2750X },
+>>         { "bq27510", BQ2751X },
+>> -       { "bq27520", BQ2751X },
+>> +       { "bq27520", BQ2752X },
+>>         { "bq27500-1", BQ27500 },
+>>         { "bq27510g1", BQ27510G1 },
+>>         { "bq27510g2", BQ27510G2 },
+>> @@ -240,16 +240,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>         { "bq27520g3", BQ27520G3 },
+>>         { "bq27520g4", BQ27520G4 },
+>>         { "bq27530", BQ27530 },
+>> -       { "bq27531", BQ27530 },
+>> +       { "bq27531", BQ27531 },
+>>         { "bq27541", BQ27541 },
+>> -       { "bq27542", BQ27541 },
+>> -       { "bq27546", BQ27541 },
+>> -       { "bq27742", BQ27541 },
+>> +       { "bq27542", BQ27542 },
+>> +       { "bq27546", BQ27546 },
+>> +       { "bq27742", BQ27742 },
+>>         { "bq27545", BQ27545 },
+>>         { "bq27421", BQ27421 },
+>> -       { "bq27425", BQ27421 },
+>> -       { "bq27441", BQ27421 },
+>> -       { "bq27621", BQ27421 },
+>> +       { "bq27425", BQ27425 },
+>> +       { "bq27441", BQ27441 },
+>> +       { "bq27621", BQ27621 },
+>>         {},
+>>  };
+>>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+>> index 227eb08..fc9b08a 100644
+>> --- a/include/linux/power/bq27xxx_battery.h
+>> +++ b/include/linux/power/bq27xxx_battery.h
+>> @@ -2,6 +2,7 @@
+>>  #define __LINUX_BQ27X00_BATTERY_H__
+>>
+>>  enum bq27xxx_chip {
+>> +       /* prototypes; index for bq27xxx_regs[] & bq27xxx_battery_props[] */
+>>         BQ27000 = 1, /* bq27000, bq27200 */
+>>         BQ27010, /* bq27010, bq27210 */
+>>         BQ2750X, /* bq27500 deprecated alias */
+>> @@ -18,6 +19,17 @@ enum bq27xxx_chip {
+>>         BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+>>         BQ27545, /* bq27545 */
+>>         BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+>> +       BQ27MAX,
+>> +
+>> +       /* others, mapped to prototypes in bq27xxx_prototypes[] */
+>> +       BQ2752X, /* deprecated alias */
+>> +       BQ27531,
+>> +       BQ27542,
+>> +       BQ27546,
+>> +       BQ27742,
+>> +       BQ27425,
+>> +       BQ27441,
+>> +       BQ27621,
+>>  };
+> 
+> The "prototypes" subset prevents holes in bq27xxx_regs[] &
+> _battery_props[]. Holes aren't a problem if the bq27xxx_prototypes map
+> is correct. But holes have 0x00 vs. 0xff, so mapping to a hole isn't
+> caught by testing for invalid_reg_addr. Also leaving holes may look
+> like a bug, albeit without ill effect.
+> 
+> Re a second di->id to index bq27xxx_regs without holes, that entails a
+> second enum replicating the prototypes subset. To add a chip with a
+> unique regmap, you'd add to both enums. How is that better than one
+> enum with subsets?
+> 
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
----
- Documentation/ABI/stable/sysfs-bus-usb            | 2 +-
- Documentation/driver-api/usb/URB.rst              | 2 ++
- Documentation/driver-api/usb/callbacks.rst        | 4 ++--
- Documentation/driver-api/usb/error-codes.rst      | 2 ++
- Documentation/driver-api/usb/persist.rst          | 2 ++
- Documentation/driver-api/usb/power-management.rst | 2 +-
- Documentation/driver-api/usb/usb.rst              | 4 ++--
- Documentation/power/swsusp.txt                    | 2 +-
- drivers/staging/most/hdm-usb/hdm_usb.c            | 2 +-
- drivers/usb/core/Kconfig                          | 2 +-
- 10 files changed, 15 insertions(+), 9 deletions(-)
-
-diff --git a/Documentation/ABI/stable/sysfs-bus-usb b/Documentation/ABI/stable/sysfs-bus-usb
-index 831f15d9672f..b832eeff9999 100644
---- a/Documentation/ABI/stable/sysfs-bus-usb
-+++ b/Documentation/ABI/stable/sysfs-bus-usb
-@@ -9,7 +9,7 @@ Description:
- 		hubs this facility is always enabled and their device
- 		directories will not contain this file.
- 
--		For more information, see Documentation/usb/persist.txt.
-+		For more information, see Documentation/driver-api/usb/persist.rst.
- 
- What:		/sys/bus/usb/devices/.../power/autosuspend
- Date:		March 2007
-diff --git a/Documentation/driver-api/usb/URB.rst b/Documentation/driver-api/usb/URB.rst
-index c4a141f29477..61a54da9fce9 100644
---- a/Documentation/driver-api/usb/URB.rst
-+++ b/Documentation/driver-api/usb/URB.rst
-@@ -1,3 +1,5 @@
-+.. _usb-urb:
-+
- USB Request Block (URB)
- ~~~~~~~~~~~~~~~~~~~~~~~
- 
-diff --git a/Documentation/driver-api/usb/callbacks.rst b/Documentation/driver-api/usb/callbacks.rst
-index 93a8d53e27e7..2b80cf54bcc3 100644
---- a/Documentation/driver-api/usb/callbacks.rst
-+++ b/Documentation/driver-api/usb/callbacks.rst
-@@ -8,7 +8,7 @@ Usbcore will call into a driver through callbacks defined in the driver
- structure and through the completion handler of URBs a driver submits.
- Only the former are in the scope of this document. These two kinds of
- callbacks are completely independent of each other. Information on the
--completion callback can be found in Documentation/usb/URB.txt.
-+completion callback can be found in :ref:`usb-urb`.
- 
- The callbacks defined in the driver structure are:
- 
-@@ -53,7 +53,7 @@ The callbacks defined in the driver structure are:
- 
- The ioctl interface (2) should be used only if you have a very good
- reason. Sysfs is preferred these days. The PM callbacks are covered
--separately in Documentation/usb/power-management.txt.
-+separately in :ref:`usb-power-management`.
- 
- Calling conventions
- ===================
-diff --git a/Documentation/driver-api/usb/error-codes.rst b/Documentation/driver-api/usb/error-codes.rst
-index 9c11a0fd16cb..a3e84bfac776 100644
---- a/Documentation/driver-api/usb/error-codes.rst
-+++ b/Documentation/driver-api/usb/error-codes.rst
-@@ -1,3 +1,5 @@
-+.. _usb-error-codes:
-+
- USB Error codes
- ~~~~~~~~~~~~~~~
- 
-diff --git a/Documentation/driver-api/usb/persist.rst b/Documentation/driver-api/usb/persist.rst
-index ea1b43f0559e..08cafc6292c1 100644
---- a/Documentation/driver-api/usb/persist.rst
-+++ b/Documentation/driver-api/usb/persist.rst
-@@ -1,3 +1,5 @@
-+.. _usb-persist:
-+
- USB device persistence during system suspend
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
-diff --git a/Documentation/driver-api/usb/power-management.rst b/Documentation/driver-api/usb/power-management.rst
-index c068257f6d27..79beb807996b 100644
---- a/Documentation/driver-api/usb/power-management.rst
-+++ b/Documentation/driver-api/usb/power-management.rst
-@@ -328,7 +328,7 @@ possible to work around the hibernation-forces-disconnect problem by
- using the USB Persist facility.)
- 
- The ``reset_resume`` method is used by the USB Persist facility (see
--``Documentation/usb/persist.txt``) and it can also be used under certain
-+:ref:`usb-persist`) and it can also be used under certain
- circumstances when ``CONFIG_USB_PERSIST`` is not enabled.  Currently, if a
- device is reset during a resume and the driver does not have a
- ``reset_resume`` method, the driver won't receive any notification about
-diff --git a/Documentation/driver-api/usb/usb.rst b/Documentation/driver-api/usb/usb.rst
-index 5ebaf669704c..6824089ef4c8 100644
---- a/Documentation/driver-api/usb/usb.rst
-+++ b/Documentation/driver-api/usb/usb.rst
-@@ -424,8 +424,8 @@ header.
- Unless noted otherwise, the ioctl requests described here will update
- the modification time on the usbfs file to which they are applied
- (unless they fail). A return of zero indicates success; otherwise, a
--standard USB error code is returned. (These are documented in
--``Documentation/usb/error-codes.txt`` in your kernel sources.)
-+standard USB error code is returned (These are documented in
-+:ref:`usb-error-codes`).
- 
- Each of these files multiplexes access to several I/O streams, one per
- endpoint. Each device has one control endpoint (endpoint zero) which
-diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
-index 8cc17ca71813..9f2f942a01cf 100644
---- a/Documentation/power/swsusp.txt
-+++ b/Documentation/power/swsusp.txt
-@@ -406,7 +406,7 @@ Firewire, CompactFlash, MMC, external SATA, or even IDE hotplug bays)
- before suspending; then remount them after resuming.
- 
- There is a work-around for this problem.  For more information, see
--Documentation/usb/persist.txt.
-+Documentation/driver-api/usb/persist.rst.
- 
- Q: Can I suspend-to-disk using a swap partition under LVM?
- 
-diff --git a/drivers/staging/most/hdm-usb/hdm_usb.c b/drivers/staging/most/hdm-usb/hdm_usb.c
-index 65211d1824b7..2bfea9b48366 100644
---- a/drivers/staging/most/hdm-usb/hdm_usb.c
-+++ b/drivers/staging/most/hdm-usb/hdm_usb.c
-@@ -490,7 +490,7 @@ static void hdm_write_completion(struct urb *urb)
-  * disconnect.  In the interval before the hub driver starts disconnect
-  * processing, devices may receive such fault reports for every request.
-  *
-- * See <https://www.kernel.org/doc/Documentation/usb/error-codes.txt>
-+ * See <https://www.kernel.org/doc/Documentation/driver-api/usb/error-codes.rst>
-  */
- static void hdm_read_completion(struct urb *urb)
- {
-diff --git a/drivers/usb/core/Kconfig b/drivers/usb/core/Kconfig
-index 0e5a889742b3..4d75d9a80001 100644
---- a/drivers/usb/core/Kconfig
-+++ b/drivers/usb/core/Kconfig
-@@ -26,7 +26,7 @@ config USB_DEFAULT_PERSIST
- 	  unplugged, causing any mounted filesystems to be lost.  The
- 	  persist feature can still be enabled for individual devices
- 	  through the power/persist sysfs node. See
--	  Documentation/usb/persist.txt for more info.
-+	  Documentation/driver-api/usb/persist.rst for more info.
- 
- 	  If you have any questions about this, say Y here, only say N
- 	  if you know exactly what you are doing.
--- 
-2.9.3
+If you would like to avoid holes you can re-order the enum like you did,
+but calling them something else is not easy to understand for someone
+adding new devices, even worse we now use this chip->id to map into
+multiple tables, how will you always avoid holes? Lets just fill in the
+holes with table entries and be done with this series already..
