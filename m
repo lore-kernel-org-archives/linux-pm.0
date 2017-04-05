@@ -1,13 +1,13 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v5 6/7] ARM: dts: sun8i: sina33: enable battery
- power supply subnode
-Date: Wed,  5 Apr 2017 10:10:58 +0200
-Message-ID: <20170405081059.1684-7-quentin.schulz@free-electrons.com>
+Subject: [PATCH v5 5/7] ARM: dtsi: axp22x: add battery power
+ supply subnode
+Date: Wed,  5 Apr 2017 10:10:57 +0200
+Message-ID: <20170405081059.1684-6-quentin.schulz@free-electrons.com>
 References: <20170405081059.1684-1-quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBKONSLDQKGQEE25OENY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBKGNSLDQKGQECC3R4DA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <20170405081059.1684-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -20,30 +20,42 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@
 Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The Sinlinx SinA33 has an AXP223 PMIC and a battery connector, thus, we
-enable the battery power supply subnode in its Device Tree.
+The X-Powers AXP22X PMIC exposes battery supply various data such as
+the battery status (charging, discharging, full, dead), current max
+limit, current current, battery capacity (in percentage), voltage max
+limit, current voltage, and battery capacity (in Ah).
+
+This adds the battery power supply subnode for AXP22X PMIC.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 ---
- arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts | 4 ++++
- 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts b/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
-index e34e092..7afe7fe 100644
---- a/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
-+++ b/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
-@@ -182,6 +182,10 @@
- 	status = "okay";
- };
+v2:
+ - changed DT node name from battery_power_supply to
+ battery-power-supply,
+ - removed io-channels and io-channel-names from DT (the IIO mapping is
+ done in the IIO ADC driver now),
+
+ arch/arm/boot/dts/axp22x.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm/boot/dts/axp22x.dtsi b/arch/arm/boot/dts/axp22x.dtsi
+index 67331c5..87fb08e 100644
+--- a/arch/arm/boot/dts/axp22x.dtsi
++++ b/arch/arm/boot/dts/axp22x.dtsi
+@@ -57,6 +57,11 @@
+ 		status = "disabled";
+ 	};
  
-+&battery_power_supply {
-+	status = "okay";
-+};
++	battery_power_supply: battery-power-supply {
++		compatible = "x-powers,axp221-battery-power-supply";
++		status = "disabled";
++	};
 +
- &reg_aldo1 {
- 	regulator-always-on;
- 	regulator-min-microvolt = <3000000>;
+ 	regulators {
+ 		/* Default work frequency for buck regulators */
+ 		x-powers,dcdc-freq = <3000>;
 -- 
 2.9.3
