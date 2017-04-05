@@ -1,65 +1,253 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH v2 2/4] cpufreq: imx6q: Set max suspend_freq to avoid
- changes during suspend
-Date: Wed, 05 Apr 2017 10:03:45 +0200
-Message-ID: <1491379425.2904.0.camel@pengutronix.de>
-References: <cover.1491324640.git.leonard.crestez@nxp.com>
-         <5f61b819733127ddc7d41e82bf703a355c845b49.1491324640.git.leonard.crestez@nxp.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v12.5 7/10] power: bq27xxx_battery: Enable chip data
+ memory update for certain chips
+Date: Wed, 5 Apr 2017 01:07:36 -0700
+Message-ID: <CAKvHMgQ-DMPj4Tm5nBZiUyAec=i4rXQcPFc3XQuCRa43n3kOmg@mail.gmail.com>
+References: <20170405054541.32074-1-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:52523 "EHLO
-        metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752936AbdDEID4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Apr 2017 04:03:56 -0400
-In-Reply-To: <5f61b819733127ddc7d41e82bf703a355c845b49.1491324640.git.leonard.crestez@nxp.com>
+Received: from mail-it0-f66.google.com ([209.85.214.66]:34498 "EHLO
+        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753149AbdDEIHi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Apr 2017 04:07:38 -0400
+Received: by mail-it0-f66.google.com with SMTP id e75so730129itd.1
+        for <linux-pm@vger.kernel.org>; Wed, 05 Apr 2017 01:07:37 -0700 (PDT)
+In-Reply-To: <20170405054541.32074-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Mark Brown <broonie@kernel.org>, Robin Gong <yibin.gong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
+Cc: Liam Breck <kernel@networkimprov.net>
 
-Am Dienstag, den 04.04.2017, 20:04 +0300 schrieb Leonard Crestez:
-> If the cpufreq driver tries to modify voltage/freq during suspend/resume
-> it might need to control an external PMIC via I2C or SPI but those
-> devices might be already suspended. This issue is likely to happen
-> whenever the LDOs have their vin-supply set.
-> 
-> To avoid this scenario we just increase cpufreq to the maximum before
-> suspend.
-> 
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Hi Andrew,
 
-Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
-
+On Tue, Apr 4, 2017 at 10:45 PM, Liam Breck <liam@networkimprov.net> wrote:
+> From: Liam Breck <kernel@networkimprov.net>
+>
+> Support data memory update of BQ27500, 545, 421, 425, 441, 621.
+>
+> Create IDs for for previously unID'd chips, to index arrays for unseal keys
+> and data memory register tables.
+>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
 > ---
->  drivers/cpufreq/imx6q-cpufreq.c | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index be90ee3..786122e 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -161,8 +161,13 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  
->  static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
->  {
-> +	int ret;
-> +
->  	policy->clk = arm_clk;
-> -	return cpufreq_generic_init(policy, freq_table, transition_latency);
-> +	ret = cpufreq_generic_init(policy, freq_table, transition_latency);
-> +	policy->suspend_freq = policy->max;
-> +
-> +	return ret;
->  }
->  
->  static struct cpufreq_driver imx6q_cpufreq_driver = {
-> @@ -173,6 +178,7 @@ static struct cpufreq_driver imx6q_cpufreq_driver = {
->  	.init = imx6q_cpufreq_init,
->  	.name = "imx6q-cpufreq",
->  	.attr = cpufreq_generic_attr,
-> +	.suspend = cpufreq_generic_suspend,
+>  drivers/power/supply/bq27xxx_battery.c     | 88 ++++++++++++++++++++++++++++--
+>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 +++---
+>  include/linux/power/bq27xxx_battery.h      | 12 ++++
+>  3 files changed, 104 insertions(+), 12 deletions(-)
+>
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index a2a5926..0dbd7e4 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -58,7 +58,7 @@
+>
+>  #include <linux/power/bq27xxx_battery.h>
+>
+> -#define DRIVER_VERSION         "1.2.0"
+> +#define DRIVER_VERSION         "1.3.0"
+>
+>  #define BQ27XXX_MANUFACTURER   "Texas Instruments"
+>
+> @@ -132,7 +132,7 @@ enum bq27xxx_reg_index {
+>         [BQ27XXX_DM_CKSUM] = 0x60
+>
+>  /* Register mappings */
+> -static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+> +static u8 bq27xxx_regs[BQ27MAX][BQ27XXX_REG_MAX] = {
+>         [BQ27000] = {
+>                 [BQ27XXX_REG_CTRL] = 0x00,
+>                 [BQ27XXX_REG_TEMP] = 0x06,
+> @@ -779,7 +779,7 @@ static enum power_supply_property bq27421_battery_props[] = {
+>  static struct {
+>         enum power_supply_property *props;
+>         size_t size;
+> -} bq27xxx_battery_props[] = {
+> +} bq27xxx_battery_props[BQ27MAX] = {
+>         BQ27XXX_PROP(BQ27000, bq27000_battery_props),
+>         BQ27XXX_PROP(BQ27010, bq27010_battery_props),
+>         BQ27XXX_PROP(BQ2750X, bq2750x_battery_props),
+> @@ -798,6 +798,33 @@ static struct {
+>         BQ27XXX_PROP(BQ27421, bq27421_battery_props),
 >  };
->  
->  static int imx6q_cpufreq_probe(struct platform_device *pdev)
+>
+> +static enum bq27xxx_chip bq27xxx_prototypes[] = {
+> +       [BQ27000]   = BQ27000,
+> +       [BQ27010]   = BQ27010,
+> +       [BQ2750X]   = BQ2750X,
+> +       [BQ2751X]   = BQ2751X,
+> +       [BQ2752X]   = BQ2751X,
+> +       [BQ27500]   = BQ27500,
+> +       [BQ27510G1] = BQ27510G1,
+> +       [BQ27510G2] = BQ27510G2,
+> +       [BQ27510G3] = BQ27510G3,
+> +       [BQ27520G1] = BQ27520G1,
+> +       [BQ27520G2] = BQ27520G2,
+> +       [BQ27520G3] = BQ27520G3,
+> +       [BQ27520G4] = BQ27520G4,
+> +       [BQ27530]   = BQ27530,
+> +       [BQ27531]   = BQ27530,
+> +       [BQ27541]   = BQ27541,
+> +       [BQ27542]   = BQ27541,
+> +       [BQ27546]   = BQ27541,
+> +       [BQ27742]   = BQ27541,
+> +       [BQ27545]   = BQ27545,
+> +       [BQ27421]   = BQ27421,
+> +       [BQ27425]   = BQ27421,
+> +       [BQ27441]   = BQ27421,
+> +       [BQ27621]   = BQ27421,
+> +};
+
+The above is essentially the old I2C ID table.
+
+
+>  static DEFINE_MUTEX(bq27xxx_list_lock);
+>  static LIST_HEAD(bq27xxx_battery_devices);
+>
+> @@ -856,6 +883,54 @@ static const char* bq27xxx_dm_reg_name[] = {
+>         [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>  };
+>
+> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
+> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
+> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
+> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
+> +};
+> +
+> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
+> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
+> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
+> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
+> +};
+> +
+> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
+> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
+> +};
+> +
+> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
+> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
+> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
+> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
+> +};
+> +
+> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
+> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
+> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
+> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
+> +};
+> +
+> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
+> +       [BQ27500] = bq27500_dm_regs,
+> +       [BQ27545] = bq27545_dm_regs,
+> +       [BQ27421] = bq27421_dm_regs,
+> +       [BQ27425] = bq27425_dm_regs,
+> +       [BQ27441] = bq27421_dm_regs,
+> +       [BQ27621] = bq27621_dm_regs,
+> +};
+> +
+> +static u32 bq27xxx_unseal_keys[] = {
+> +       [BQ27500] = 0x04143672,
+> +       [BQ27545] = 0x04143672,
+> +       [BQ27421] = 0x80008000,
+> +       [BQ27425] = 0x04143672,
+> +       [BQ27441] = 0x80008000,
+> +       [BQ27621] = 0x80008000,
+> +};
+> +
+>
+>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
+>  {
+> @@ -1831,9 +1906,14 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>                 .drv_data = di,
+>         };
+>
+> +       di->unseal_key = bq27xxx_unseal_keys[di->chip];
+> +       di->dm_regs = bq27xxx_dm_regs[di->chip];
+> +       di->chip = bq27xxx_prototypes[di->chip];
+> +
+> +       di->regs = bq27xxx_regs[di->chip];
+> +
+>         INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>         mutex_init(&di->lock);
+> -       di->regs = bq27xxx_regs[di->chip];
+>
+>         psy_desc = devm_kzalloc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
+>         if (!psy_desc)
+> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+> index a597221..0b11ed4 100644
+> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+> @@ -230,7 +230,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>         { "bq27210", BQ27010 },
+>         { "bq27500", BQ2750X },
+>         { "bq27510", BQ2751X },
+> -       { "bq27520", BQ2751X },
+> +       { "bq27520", BQ2752X },
+>         { "bq27500-1", BQ27500 },
+>         { "bq27510g1", BQ27510G1 },
+>         { "bq27510g2", BQ27510G2 },
+> @@ -240,16 +240,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>         { "bq27520g3", BQ27520G3 },
+>         { "bq27520g4", BQ27520G4 },
+>         { "bq27530", BQ27530 },
+> -       { "bq27531", BQ27530 },
+> +       { "bq27531", BQ27531 },
+>         { "bq27541", BQ27541 },
+> -       { "bq27542", BQ27541 },
+> -       { "bq27546", BQ27541 },
+> -       { "bq27742", BQ27541 },
+> +       { "bq27542", BQ27542 },
+> +       { "bq27546", BQ27546 },
+> +       { "bq27742", BQ27742 },
+>         { "bq27545", BQ27545 },
+>         { "bq27421", BQ27421 },
+> -       { "bq27425", BQ27421 },
+> -       { "bq27441", BQ27421 },
+> -       { "bq27621", BQ27421 },
+> +       { "bq27425", BQ27425 },
+> +       { "bq27441", BQ27441 },
+> +       { "bq27621", BQ27621 },
+>         {},
+>  };
+>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+> index 227eb08..fc9b08a 100644
+> --- a/include/linux/power/bq27xxx_battery.h
+> +++ b/include/linux/power/bq27xxx_battery.h
+> @@ -2,6 +2,7 @@
+>  #define __LINUX_BQ27X00_BATTERY_H__
+>
+>  enum bq27xxx_chip {
+> +       /* prototypes; index for bq27xxx_regs[] & bq27xxx_battery_props[] */
+>         BQ27000 = 1, /* bq27000, bq27200 */
+>         BQ27010, /* bq27010, bq27210 */
+>         BQ2750X, /* bq27500 deprecated alias */
+> @@ -18,6 +19,17 @@ enum bq27xxx_chip {
+>         BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+>         BQ27545, /* bq27545 */
+>         BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+> +       BQ27MAX,
+> +
+> +       /* others, mapped to prototypes in bq27xxx_prototypes[] */
+> +       BQ2752X, /* deprecated alias */
+> +       BQ27531,
+> +       BQ27542,
+> +       BQ27546,
+> +       BQ27742,
+> +       BQ27425,
+> +       BQ27441,
+> +       BQ27621,
+>  };
+
+The "prototypes" subset prevents holes in bq27xxx_regs[] &
+_battery_props[]. Holes aren't a problem if the bq27xxx_prototypes map
+is correct. But holes have 0x00 vs. 0xff, so mapping to a hole isn't
+caught by testing for invalid_reg_addr. Also leaving holes may look
+like a bug, albeit without ill effect.
+
+Re a second di->id to index bq27xxx_regs without holes, that entails a
+second enum replicating the prototypes subset. To add a chip with a
+unique regmap, you'd add to both enums. How is that better than one
+enum with subsets?
