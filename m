@@ -1,128 +1,169 @@
-From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Subject: Re: [PATCH v5 1/7] dt-bindings: power: supply: add AXP20X/AXP22X
- battery DT binding
-Date: Wed, 5 Apr 2017 02:08:56 -0700
-Message-ID: <CAKvHMgTO9tBY9b9ddGxe6GA1vC3cChF4CucVwZhojAzw2krvCg@mail.gmail.com>
-References: <20170405081059.1684-1-quentin.schulz@free-electrons.com>
- <20170405081059.1684-2-quentin.schulz@free-electrons.com> <CAKvHMgRD8N4zuW1E4NO8Dzux6V8cHTwiYL+cvoEuz49am2duKQ@mail.gmail.com>
- <c1fd3ae7-4e4a-bb5b-f8ce-123d85d9b937@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <c1fd3ae7-4e4a-bb5b-f8ce-123d85d9b937-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+Subject: [PATCH v2 21/21] docs-rst: fix usb cross-references
+Date: Wed,  5 Apr 2017 10:23:15 -0300
+Message-ID: <f8c01e61355cf70cbd9f2c6cd010d1af7af2652d.1491398120.git.mchehab@s-opensource.com>
+References: <cover.1491398120.git.mchehab@s-opensource.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ec2-52-27-115-49.us-west-2.compute.amazonaws.com ([52.27.115.49]:40004
+        "EHLO osg.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1755292AbdDENXa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Apr 2017 09:23:30 -0400
+In-Reply-To: <cover.1491398120.git.mchehab@s-opensource.com>
+In-Reply-To: <cover.1491398120.git.mchehab@s-opensource.com>
+References: <cover.1491398120.git.mchehab@s-opensource.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux Media Mailing List <linux-media@vger.kernel.org>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
+Cc: Mauro Carvalho Chehab <mchehab@s-opensource.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Masanari Iida <standby24x7@gmail.com>, Oliver Neukum <oneukum@suse.com>, Christian Gromm <christian.gromm@microchip.com>, Andrey Shvetsov <andrey.shvetsov@k2l.de>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Peter Chen <peter.chen@nxp.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
 
-On Wed, Apr 5, 2017 at 1:48 AM, Quentin Schulz
-<quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
-> Hi Liam,
->
-> On 05/04/2017 10:38, Liam Breck wrote:
->> [reduced CC list]
->>
->> Hi Quentin,
->>
->> On Wed, Apr 5, 2017 at 1:10 AM, Quentin Schulz
->> <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
->>> The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
->>>
->>> This patch adds the DT binding documentation for the battery power
->>> supply which gets various data from the PMIC, such as the battery status
->>> (charging, discharging, full, dead), current max limit, current current,
->>> battery capacity (in percentage), voltage max and min limits, current
->>> voltage and battery capacity (in Ah).
->>>
->>> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
->>> Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
->>> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
->>> ---
->>>
->>> v5:
->>>   - removed DT property example from monitored-battery,
->>>
->>> v4:
->>>  - added monitored-battery optional property,
->>>  - added example with battery,
->>>
->>> v3:
->>>  - removed constant charge current property, now should use the WIP
->>>  battery framework,
->>>
->>> v2:
->>>  - changed DT node name from ac_power_supply to ac-power-supply,
->>>  - removed io-channels and io-channel-names from DT (the IIO mapping is
->>>  done in the IIO ADC driver now),
->>>  - added x-powers,constant-charge-current property to set the maximal
->>>  default constant current charge of the battery,
->>>
->>>  .../bindings/power/supply/axp20x_battery.txt       | 28 ++++++++++++++++++++++
->>>  1 file changed, 28 insertions(+)
->>>  create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
->>>
->>> diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
->>> new file mode 100644
->>> index 0000000..63826fd
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
->>> @@ -0,0 +1,28 @@
->>> +AXP20x and AXP22x battery power supply
->>> +
->>> +Required Properties:
->>> + - compatible, one of:
->>> +                       "x-powers,axp209-battery-power-supply"
->>> +                       "x-powers,axp221-battery-power-supply"
->>> +
->>> +Optional properties:
->>> + - monitored-battery, phandle to a fixed battery
->>
->> Say here what properties of the battery your driver considers, e.g.
->> https://patchwork.kernel.org/patch/9660987/
->>
->
-> Sorry but I'm completely lost in your patch series, this isn't your
-> patch series for the battery framework. How do I know from which I
-> should take the name of the DT property then?
+As some USB documentation files got moved, adjust their
+cross-references to their new place.
 
-That's a link from a subset, with just bq27xxx fuel gauge stuff; it
-demonstrates documenting the properties a driver considers from
-battery node.
+Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+---
+ Documentation/ABI/stable/sysfs-bus-usb            | 2 +-
+ Documentation/driver-api/usb/URB.rst              | 2 ++
+ Documentation/driver-api/usb/callbacks.rst        | 4 ++--
+ Documentation/driver-api/usb/error-codes.rst      | 2 ++
+ Documentation/driver-api/usb/persist.rst          | 2 ++
+ Documentation/driver-api/usb/power-management.rst | 2 +-
+ Documentation/driver-api/usb/usb.rst              | 4 ++--
+ Documentation/power/swsusp.txt                    | 2 +-
+ drivers/staging/most/hdm-usb/hdm_usb.c            | 2 +-
+ drivers/usb/core/Kconfig                          | 2 +-
+ 10 files changed, 15 insertions(+), 9 deletions(-)
 
-Here's a link into previous full series:
-https://patchwork.kernel.org/patch/9633605/
-
->>> +
->>> +This node is a subnode of the axp20x/axp22x PMIC.
->>> +
->>> +The AXP20X and AXP22X can read the battery voltage, charge and discharge
->>> +currents of the battery by reading ADC channels from the AXP20X/AXP22X
->>> +ADC.
->>> +
->>> +Example:
->>> +
->>> +battery: battery {
->>> +       compatible = "fixed-battery";
->>
->> This is now "simple-battery". Also needs properties.
->>
->
-> I've removed all the code in the driver to take care of the monitored
-> battery info until your framework is merged. Since there are still
-> discussion around the name to give to the different DT properties and
-> since it's not required in this driver, I'll add them later to the DT
-> binding.
-
-The DT maintainers want complete-file patches, so maybe drop this
-patch until later?
-
-> Quentin
->
-> --
-> Quentin Schulz, Free Electrons
-> Embedded Linux and Kernel engineering
-> http://free-electrons.com
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/Documentation/ABI/stable/sysfs-bus-usb b/Documentation/ABI/stable/sysfs-bus-usb
+index 831f15d9672f..b832eeff9999 100644
+--- a/Documentation/ABI/stable/sysfs-bus-usb
++++ b/Documentation/ABI/stable/sysfs-bus-usb
+@@ -9,7 +9,7 @@ Description:
+ 		hubs this facility is always enabled and their device
+ 		directories will not contain this file.
+ 
+-		For more information, see Documentation/usb/persist.txt.
++		For more information, see Documentation/driver-api/usb/persist.rst.
+ 
+ What:		/sys/bus/usb/devices/.../power/autosuspend
+ Date:		March 2007
+diff --git a/Documentation/driver-api/usb/URB.rst b/Documentation/driver-api/usb/URB.rst
+index c4a141f29477..61a54da9fce9 100644
+--- a/Documentation/driver-api/usb/URB.rst
++++ b/Documentation/driver-api/usb/URB.rst
+@@ -1,3 +1,5 @@
++.. _usb-urb:
++
+ USB Request Block (URB)
+ ~~~~~~~~~~~~~~~~~~~~~~~
+ 
+diff --git a/Documentation/driver-api/usb/callbacks.rst b/Documentation/driver-api/usb/callbacks.rst
+index 93a8d53e27e7..2b80cf54bcc3 100644
+--- a/Documentation/driver-api/usb/callbacks.rst
++++ b/Documentation/driver-api/usb/callbacks.rst
+@@ -8,7 +8,7 @@ Usbcore will call into a driver through callbacks defined in the driver
+ structure and through the completion handler of URBs a driver submits.
+ Only the former are in the scope of this document. These two kinds of
+ callbacks are completely independent of each other. Information on the
+-completion callback can be found in Documentation/usb/URB.txt.
++completion callback can be found in :ref:`usb-urb`.
+ 
+ The callbacks defined in the driver structure are:
+ 
+@@ -53,7 +53,7 @@ The callbacks defined in the driver structure are:
+ 
+ The ioctl interface (2) should be used only if you have a very good
+ reason. Sysfs is preferred these days. The PM callbacks are covered
+-separately in Documentation/usb/power-management.txt.
++separately in :ref:`usb-power-management`.
+ 
+ Calling conventions
+ ===================
+diff --git a/Documentation/driver-api/usb/error-codes.rst b/Documentation/driver-api/usb/error-codes.rst
+index 9c11a0fd16cb..a3e84bfac776 100644
+--- a/Documentation/driver-api/usb/error-codes.rst
++++ b/Documentation/driver-api/usb/error-codes.rst
+@@ -1,3 +1,5 @@
++.. _usb-error-codes:
++
+ USB Error codes
+ ~~~~~~~~~~~~~~~
+ 
+diff --git a/Documentation/driver-api/usb/persist.rst b/Documentation/driver-api/usb/persist.rst
+index ea1b43f0559e..08cafc6292c1 100644
+--- a/Documentation/driver-api/usb/persist.rst
++++ b/Documentation/driver-api/usb/persist.rst
+@@ -1,3 +1,5 @@
++.. _usb-persist:
++
+ USB device persistence during system suspend
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+diff --git a/Documentation/driver-api/usb/power-management.rst b/Documentation/driver-api/usb/power-management.rst
+index c068257f6d27..79beb807996b 100644
+--- a/Documentation/driver-api/usb/power-management.rst
++++ b/Documentation/driver-api/usb/power-management.rst
+@@ -328,7 +328,7 @@ possible to work around the hibernation-forces-disconnect problem by
+ using the USB Persist facility.)
+ 
+ The ``reset_resume`` method is used by the USB Persist facility (see
+-``Documentation/usb/persist.txt``) and it can also be used under certain
++:ref:`usb-persist`) and it can also be used under certain
+ circumstances when ``CONFIG_USB_PERSIST`` is not enabled.  Currently, if a
+ device is reset during a resume and the driver does not have a
+ ``reset_resume`` method, the driver won't receive any notification about
+diff --git a/Documentation/driver-api/usb/usb.rst b/Documentation/driver-api/usb/usb.rst
+index 5ebaf669704c..6824089ef4c8 100644
+--- a/Documentation/driver-api/usb/usb.rst
++++ b/Documentation/driver-api/usb/usb.rst
+@@ -424,8 +424,8 @@ header.
+ Unless noted otherwise, the ioctl requests described here will update
+ the modification time on the usbfs file to which they are applied
+ (unless they fail). A return of zero indicates success; otherwise, a
+-standard USB error code is returned. (These are documented in
+-``Documentation/usb/error-codes.txt`` in your kernel sources.)
++standard USB error code is returned (These are documented in
++:ref:`usb-error-codes`).
+ 
+ Each of these files multiplexes access to several I/O streams, one per
+ endpoint. Each device has one control endpoint (endpoint zero) which
+diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
+index 8cc17ca71813..9f2f942a01cf 100644
+--- a/Documentation/power/swsusp.txt
++++ b/Documentation/power/swsusp.txt
+@@ -406,7 +406,7 @@ Firewire, CompactFlash, MMC, external SATA, or even IDE hotplug bays)
+ before suspending; then remount them after resuming.
+ 
+ There is a work-around for this problem.  For more information, see
+-Documentation/usb/persist.txt.
++Documentation/driver-api/usb/persist.rst.
+ 
+ Q: Can I suspend-to-disk using a swap partition under LVM?
+ 
+diff --git a/drivers/staging/most/hdm-usb/hdm_usb.c b/drivers/staging/most/hdm-usb/hdm_usb.c
+index 65211d1824b7..2bfea9b48366 100644
+--- a/drivers/staging/most/hdm-usb/hdm_usb.c
++++ b/drivers/staging/most/hdm-usb/hdm_usb.c
+@@ -490,7 +490,7 @@ static void hdm_write_completion(struct urb *urb)
+  * disconnect.  In the interval before the hub driver starts disconnect
+  * processing, devices may receive such fault reports for every request.
+  *
+- * See <https://www.kernel.org/doc/Documentation/usb/error-codes.txt>
++ * See <https://www.kernel.org/doc/Documentation/driver-api/usb/error-codes.rst>
+  */
+ static void hdm_read_completion(struct urb *urb)
+ {
+diff --git a/drivers/usb/core/Kconfig b/drivers/usb/core/Kconfig
+index 0e5a889742b3..4d75d9a80001 100644
+--- a/drivers/usb/core/Kconfig
++++ b/drivers/usb/core/Kconfig
+@@ -26,7 +26,7 @@ config USB_DEFAULT_PERSIST
+ 	  unplugged, causing any mounted filesystems to be lost.  The
+ 	  persist feature can still be enabled for individual devices
+ 	  through the power/persist sysfs node. See
+-	  Documentation/usb/persist.txt for more info.
++	  Documentation/driver-api/usb/persist.rst for more info.
+ 
+ 	  If you have any questions about this, say Y here, only say N
+ 	  if you know exactly what you are doing.
+-- 
+2.9.3
