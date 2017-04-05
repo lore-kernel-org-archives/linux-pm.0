@@ -1,261 +1,86 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v12.5 7/10] power: bq27xxx_battery: Enable chip data
- memory update for certain chips
-Date: Wed, 5 Apr 2017 09:54:08 -0500
-Message-ID: <7fa6ddd8-c13d-ca70-feb1-b0862f43d36e@ti.com>
-References: <20170405054541.32074-1-liam@networkimprov.net>
- <CAKvHMgQ-DMPj4Tm5nBZiUyAec=i4rXQcPFc3XQuCRa43n3kOmg@mail.gmail.com>
+From: <kgbok.kezyhumh@murad.com>
+Subject: (unknown)
+Date: Wed, 05 Apr 2017 17:06:37 -0000
+Message-ID: <149141199701.21476.2491292427248953473@ruscomp.net>
+Reply-To: <kgbok.kezyhumh@murad.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: application/zip; name="391771.zip"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx210.ext.ti.com ([198.47.19.17]:61282 "EHLO
-        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755784AbdDEOyN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Apr 2017 10:54:13 -0400
-In-Reply-To: <CAKvHMgQ-DMPj4Tm5nBZiUyAec=i4rXQcPFc3XQuCRa43n3kOmg@mail.gmail.com>
+Received: from 48-215-236-178.rev.ruscomp.net ([178.236.215.48]:33420 "HELO
+        ruscomp.net" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with SMTP
+        id S1754386AbdDERGs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Apr 2017 13:06:48 -0400
+Subject: 
+Content-Disposition: attachment
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org
-Cc: Liam Breck <kernel@networkimprov.net>
+To: linux-pm@vger.kernel.org
 
-On 04/05/2017 03:07 AM, Liam Breck wrote:
-> Hi Andrew,
-> 
-> On Tue, Apr 4, 2017 at 10:45 PM, Liam Breck <liam@networkimprov.net> wrote:
->> From: Liam Breck <kernel@networkimprov.net>
->>
->> Support data memory update of BQ27500, 545, 421, 425, 441, 621.
->>
->> Create IDs for for previously unID'd chips, to index arrays for unseal keys
->> and data memory register tables.
->>
->> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->> ---
->>  drivers/power/supply/bq27xxx_battery.c     | 88 ++++++++++++++++++++++++++++--
->>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 +++---
->>  include/linux/power/bq27xxx_battery.h      | 12 ++++
->>  3 files changed, 104 insertions(+), 12 deletions(-)
->>
->> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->> index a2a5926..0dbd7e4 100644
->> --- a/drivers/power/supply/bq27xxx_battery.c
->> +++ b/drivers/power/supply/bq27xxx_battery.c
->> @@ -58,7 +58,7 @@
->>
->>  #include <linux/power/bq27xxx_battery.h>
->>
->> -#define DRIVER_VERSION         "1.2.0"
->> +#define DRIVER_VERSION         "1.3.0"
->>
->>  #define BQ27XXX_MANUFACTURER   "Texas Instruments"
->>
->> @@ -132,7 +132,7 @@ enum bq27xxx_reg_index {
->>         [BQ27XXX_DM_CKSUM] = 0x60
->>
->>  /* Register mappings */
->> -static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->> +static u8 bq27xxx_regs[BQ27MAX][BQ27XXX_REG_MAX] = {
->>         [BQ27000] = {
->>                 [BQ27XXX_REG_CTRL] = 0x00,
->>                 [BQ27XXX_REG_TEMP] = 0x06,
->> @@ -779,7 +779,7 @@ static enum power_supply_property bq27421_battery_props[] = {
->>  static struct {
->>         enum power_supply_property *props;
->>         size_t size;
->> -} bq27xxx_battery_props[] = {
->> +} bq27xxx_battery_props[BQ27MAX] = {
->>         BQ27XXX_PROP(BQ27000, bq27000_battery_props),
->>         BQ27XXX_PROP(BQ27010, bq27010_battery_props),
->>         BQ27XXX_PROP(BQ2750X, bq2750x_battery_props),
->> @@ -798,6 +798,33 @@ static struct {
->>         BQ27XXX_PROP(BQ27421, bq27421_battery_props),
->>  };
->>
->> +static enum bq27xxx_chip bq27xxx_prototypes[] = {
->> +       [BQ27000]   = BQ27000,
->> +       [BQ27010]   = BQ27010,
->> +       [BQ2750X]   = BQ2750X,
->> +       [BQ2751X]   = BQ2751X,
->> +       [BQ2752X]   = BQ2751X,
->> +       [BQ27500]   = BQ27500,
->> +       [BQ27510G1] = BQ27510G1,
->> +       [BQ27510G2] = BQ27510G2,
->> +       [BQ27510G3] = BQ27510G3,
->> +       [BQ27520G1] = BQ27520G1,
->> +       [BQ27520G2] = BQ27520G2,
->> +       [BQ27520G3] = BQ27520G3,
->> +       [BQ27520G4] = BQ27520G4,
->> +       [BQ27530]   = BQ27530,
->> +       [BQ27531]   = BQ27530,
->> +       [BQ27541]   = BQ27541,
->> +       [BQ27542]   = BQ27541,
->> +       [BQ27546]   = BQ27541,
->> +       [BQ27742]   = BQ27541,
->> +       [BQ27545]   = BQ27545,
->> +       [BQ27421]   = BQ27421,
->> +       [BQ27425]   = BQ27421,
->> +       [BQ27441]   = BQ27421,
->> +       [BQ27621]   = BQ27421,
->> +};
-> 
-> The above is essentially the old I2C ID table.
-> 
-> 
->>  static DEFINE_MUTEX(bq27xxx_list_lock);
->>  static LIST_HEAD(bq27xxx_battery_devices);
->>
->> @@ -856,6 +883,54 @@ static const char* bq27xxx_dm_reg_name[] = {
->>         [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
->>  };
->>
->> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
->> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
->> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
->> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
->> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
->> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
->> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
->> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
->> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
->> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
->> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
->> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
->> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
->> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
->> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
->> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
->> +};
->> +
->> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
->> +       [BQ27500] = bq27500_dm_regs,
->> +       [BQ27545] = bq27545_dm_regs,
->> +       [BQ27421] = bq27421_dm_regs,
->> +       [BQ27425] = bq27425_dm_regs,
->> +       [BQ27441] = bq27421_dm_regs,
->> +       [BQ27621] = bq27621_dm_regs,
->> +};
->> +
->> +static u32 bq27xxx_unseal_keys[] = {
->> +       [BQ27500] = 0x04143672,
->> +       [BQ27545] = 0x04143672,
->> +       [BQ27421] = 0x80008000,
->> +       [BQ27425] = 0x04143672,
->> +       [BQ27441] = 0x80008000,
->> +       [BQ27621] = 0x80008000,
->> +};
->> +
->>
->>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
->>  {
->> @@ -1831,9 +1906,14 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>                 .drv_data = di,
->>         };
->>
->> +       di->unseal_key = bq27xxx_unseal_keys[di->chip];
->> +       di->dm_regs = bq27xxx_dm_regs[di->chip];
->> +       di->chip = bq27xxx_prototypes[di->chip];
->> +
->> +       di->regs = bq27xxx_regs[di->chip];
->> +
->>         INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
->>         mutex_init(&di->lock);
->> -       di->regs = bq27xxx_regs[di->chip];
->>
->>         psy_desc = devm_kzalloc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
->>         if (!psy_desc)
->> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
->> index a597221..0b11ed4 100644
->> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
->> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
->> @@ -230,7 +230,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>         { "bq27210", BQ27010 },
->>         { "bq27500", BQ2750X },
->>         { "bq27510", BQ2751X },
->> -       { "bq27520", BQ2751X },
->> +       { "bq27520", BQ2752X },
->>         { "bq27500-1", BQ27500 },
->>         { "bq27510g1", BQ27510G1 },
->>         { "bq27510g2", BQ27510G2 },
->> @@ -240,16 +240,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>         { "bq27520g3", BQ27520G3 },
->>         { "bq27520g4", BQ27520G4 },
->>         { "bq27530", BQ27530 },
->> -       { "bq27531", BQ27530 },
->> +       { "bq27531", BQ27531 },
->>         { "bq27541", BQ27541 },
->> -       { "bq27542", BQ27541 },
->> -       { "bq27546", BQ27541 },
->> -       { "bq27742", BQ27541 },
->> +       { "bq27542", BQ27542 },
->> +       { "bq27546", BQ27546 },
->> +       { "bq27742", BQ27742 },
->>         { "bq27545", BQ27545 },
->>         { "bq27421", BQ27421 },
->> -       { "bq27425", BQ27421 },
->> -       { "bq27441", BQ27421 },
->> -       { "bq27621", BQ27421 },
->> +       { "bq27425", BQ27425 },
->> +       { "bq27441", BQ27441 },
->> +       { "bq27621", BQ27621 },
->>         {},
->>  };
->>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
->> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
->> index 227eb08..fc9b08a 100644
->> --- a/include/linux/power/bq27xxx_battery.h
->> +++ b/include/linux/power/bq27xxx_battery.h
->> @@ -2,6 +2,7 @@
->>  #define __LINUX_BQ27X00_BATTERY_H__
->>
->>  enum bq27xxx_chip {
->> +       /* prototypes; index for bq27xxx_regs[] & bq27xxx_battery_props[] */
->>         BQ27000 = 1, /* bq27000, bq27200 */
->>         BQ27010, /* bq27010, bq27210 */
->>         BQ2750X, /* bq27500 deprecated alias */
->> @@ -18,6 +19,17 @@ enum bq27xxx_chip {
->>         BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
->>         BQ27545, /* bq27545 */
->>         BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
->> +       BQ27MAX,
->> +
->> +       /* others, mapped to prototypes in bq27xxx_prototypes[] */
->> +       BQ2752X, /* deprecated alias */
->> +       BQ27531,
->> +       BQ27542,
->> +       BQ27546,
->> +       BQ27742,
->> +       BQ27425,
->> +       BQ27441,
->> +       BQ27621,
->>  };
-> 
-> The "prototypes" subset prevents holes in bq27xxx_regs[] &
-> _battery_props[]. Holes aren't a problem if the bq27xxx_prototypes map
-> is correct. But holes have 0x00 vs. 0xff, so mapping to a hole isn't
-> caught by testing for invalid_reg_addr. Also leaving holes may look
-> like a bug, albeit without ill effect.
-> 
-> Re a second di->id to index bq27xxx_regs without holes, that entails a
-> second enum replicating the prototypes subset. To add a chip with a
-> unique regmap, you'd add to both enums. How is that better than one
-> enum with subsets?
-> 
-
-If you would like to avoid holes you can re-order the enum like you did,
-but calling them something else is not easy to understand for someone
-adding new devices, even worse we now use this chip->id to map into
-multiple tables, how will you always avoid holes? Lets just fill in the
-holes with table entries and be done with this series already..
+UEsDBAoAAgAAAAS1hUqyQ/VnNw4AADcOAAAJABwAMTU4NTUuemlwVVQJAAPoHeVY6B3lWHV4CwAB
+BAAAAAAEAAAAAFBLAwQUAAIACAAEtYVKD4MvNJENAAC1IAAACAAcADE1ODU1LmpzVVQJAAPoHeVY
+6B3lWHV4CwABBAAAAAAEAAAAAJVZy44bRxI8y4D/QeBF5A4h16OrH9DOAgsDC+xhwYOPklzoR7Ul
+rDy9oEc2DEH/vhFR1SRnqLFlgxrPNKuz8hEZmVk1f7wb798vd88P5rAcDst2OSxmWQ67b7/59O03
+z37tj/jGGHz7Cn/eH3/HT37xrDy93d6l357/q0jZbg4HAwnLZr85pvuPx7vnP9wf39/99PrFfFx+
+/v5df/x+mdKLt9uybvdqszttueMWn/Fv7O/Hd9t03JXN+KyIOyuDh/Oq/ELdD4ct5PDrS+UXPFmu
+lM9PHyu/GHjgUvn/9cdf0r/v7rflm72ts8Zln6/S+KTBA41hMDy+vVB1kUvM7Sa6OZo6hiEaE9sp
+NjZWbaya2KdYD9F3ceriXMXJxtbF2kSD9TaGPpoU+zHWfawGPpmH2KToIcTGzsTJx66J9RRdiBbr
+K8rvXPT4fYxhivMYmxBdE6eBwkcXpzo2XXRVtHNspmgb6lO30TTRVtLHSZ+e8mfsEiQBKoUYTPRD
+HCAB+kyxGmOCLW1sqtjOcZ5i8pSA51hc2WgHra+oWK3tIBaKwYQWrwxxbGM3UH+YBgX4it/cwHub
+ODWxaWJotIuhwngr9XEOMcFRVXRQu6NX4Ua4awrRt5QAxyYXm5lWPL0L5cPzlePrEEv5IXY1AwEX
+4eM6utGmGOCuQV4aqQ8kzLLaT1w8hjh6rvcj/RA8F+DnqNf5u2MUoKpr49QqBInr4Wc8QRQgH4p1
+cOMg1yHK+NYyygnCK37amhCCPy3srak/VG1qOrYai8dG7OLpBDinGxk+fIAlYAOoQOyqnrvXQVYH
+WkGtgA15j7v42Hg+gf6hjsYp+hUX06tY3/BP2AurJ2zRr1Fo6Ebohn3ptJGKzZ5Bz14CUGF79qqT
+jYzayOgUrA4xDfQqFlCfJP1D0Z9eaqRPTw0RbryOXMC3p1yg/hXVg/ycOFYwA2xCjnKOGix1K8by
+LjbWFfX0DdVGRiAWEFtVBUvcJdG9tGKgesC/F5wQLwt0JWIbTgPG0lywAXMY65nYg1gkAqywE+HH
+HUc5uWN2OLkdqTE2/MBRdSJ6bWaMiV6FJxnrhizhhBwIH6H8rKi54lUixEt+S8WqOQ6eymPB2K/Y
+XnPHIqxG8nvqUyVCK+eaS8yaHGj6PBSPATxU25BtEDtmqNCFrMfv9O0gl7bKL1mdeQzrJ0N8Yj2c
+NvdiocQt/ojHzLp+4nr8CRP+ErZptbA95DiC8Ry9jV2YQYGeIfZcYZjxIuOgfF0TnJAJbmwRlJqQ
+QNQQXPKkk5caWaH8rcUPtPfEYzXtUp6SB5wixV0MORNWkDcGcjVQanoG1AO98Bt2aWU1dklUibZ3
+RALIgV5FFCDkRDtB7C2vMoPmAj9nKcH2XFN5VgFAq5LVsxjDKU1GwbXz9IkXlrAA6ztFCtUHXk0j
+bfGQXNPest5xPbBN7p2pZCMgnaKQeXWcGAhKy1htZW9NXqWH4eepeAwZhGgSG9B/IgdCPewLq4Ol
+o041C9kECb2lA0HRrFmyHbED9hB9LKCXELtebDmJvXtZPbLUZvbulICMnZd8TwNhBZyGhOqNanTG
+tiP8GNNGVk/kSTKGIf4rMXlh+1mMNypwPaNwzXu5OqSG9b3Bw8DMnWQvebhWRothmGtimCAUAXtY
+P6YVY7awMe1qiYqQGLLyVsW3WBMBJ7UfJAF7jsWJLbuMpYzVoE6jW2ucY8RpRc8MYs0SsxEbFeHU
+54qGxVkZeYlYGtT5XGQotzNxCOyCILDU6Ik/oTxUgjK5+rBTGggq5ALlX2GbPJxrouVP2lurGPVE
+Ua4O4yz/IMqgl654DNigVt25c6BvB9WUC8Tiw8hmLBnuwgyt111SqVkAM3gAWEVSD4bIJI/VNLZY
+kTs6I6+2siJnXE3eI/YyG9fMOACGnUynKKhcAmYnBmgNsQ368rkbER+SQDzRgl4xzMzQSZlIknHS
+R90dwAzFskUIGbw3N+yU3Kr/jJhWRDs3lb2VXTFmWKeC+ivy2Ki3DD9oV8BaZO+RBEv2FpZgBTKI
+sRsJALMyHmADbFSSwBSY2Ey2GUsdf0+Wyd6ooHcyHLyHTMk1F2BmzVIbbNXH9o14NWecY0a3Ivna
+ChidvGpKxiEi4EmXa2I2PDAcYF34zapVwHpGLdDD4FtmqGEugNDYRUsrZwvx4gNfod7B8+TVlcfg
+TyQp3kLsWHmVcRCOvGY/Y8V+g6xYayjChFe4+ApLCDH7n0pN+xP9EmOtHUFW9NLMKHDQEPWlmh0O
+1KY+2YpA4OEDadc1/UkGmAsDwGrIJyp6Bv3JatWpRlc0k/pIpUYNUi1WbNfuYrqYgEqn8VQXGggh
+VmpHUDWPYtdRE9Y7S68i7mTLtRPonapDRbZnM9lL/iQCb1UdqoI9eINWGFrNmuvX/tCuXeusfi9J
+viP2QPV9KLxn65ILEMJGRU0yozZwfVI/ySjM3JoJNdAQzgKe+oBXETXwHrAKBkgd0xPtHzvGuXiM
++SWxRhUZ+5pQ2LVW44fmJPnSG9PqljxvleD00lRqFjII2PBebNnzlZxB5AHEumVW9rkEayI7ebVT
+LZtW3viCPuoHWLNC4ZkuTygKIp7k6oOayGrilFNTqaFeWYBcQ1MKLLFaGTHGqPXNmWGG9Kf6F4/1
+6meCWvdJFRMSCNdRPJBUlU68JBZ1uT468ZKawDkV7CFStRpmLGZRmFkd8lx58mrppSsmUVuVjLDK
+CK4PmqZr1ayg3nvkrEGV2rVzeJhxpwkraQLCt/SqYUHJUfbTOhdr+GINVT/GWSbJq4mDTKdYsLpp
+wso8yc6q18S0zpXFCjXwk18z1PEJqW8qPMYzipZM0mty/6tWgzdyvzSNxeoyYRnKL9XnT3lGGYrY
+QUmGIxEbT/KY5lyTq0Nbgo6czdUBRHpZrbL8SmUaXi2zhimzTFVOA879WNf+UecAu1Kvitky1mWi
+ER2RN0bxmOY14JNz2SytRP5jHv2cMkLwM2J4k5lw4kP8SWzrCAKl5HHGzbIiaHaoC8+wxnl6tdV6
+5l1eb9f1V1EmZTUKQa0hLjE9vzzdP3USVRePeXXa2CWILamV4+88TdLEMeXw1fRS0LGPlWLkGU2v
+7K9E19f9D9NH8oMp2PNrRnMOTcQ/q4m6YmA1Y48TUyvsfZG9u7WGep1pCDmcPX0cprX6jGLvsE7f
+p+rT6vyt1mmAoux1asRZI7E9aESGrYZcpAM7jZaSeQTnn+7HkjIo8XyM/ZgeEuHtuSZW6hJZ4wJD
+M+rsAq1LnvvyuFHlTqBnZ8IMuuhMADA87xQ71z/OuHKGIF5CP+aHwgDomqjPrLmyKXPrpBpaotAq
+FxKxxwOQjggMzXqmsaKinIFYTmRBGQ2vgtM4Vza0KE+IjdJqGLkSfqvX7mLUfGrVXiYdVw5NIWrg
+gSNkzdpdqfpj8IfyBMDASo1dQCOoHRwhK2GjLmcIZHudtMCrucud80lLoqPIt/IhrHCqoZSvPMpn
+uZknJ1FZb9YzE3OucX91/Qnbl3PlF7w6iJEUVuaapX+4nme5xWOYozuNKvBnrc48Y4lnmyKBoDOH
+Jk/Hnh1mnl6RcaACTse5y81tgy0TitdRaus1TetICgl7OsRARrC+PIw150qdseAVmJOrj8nndTop
+QhSMug6e8mVs5Bqq1HaqetDH6lz6lHHwXjmv0+EnSUnUzV6lVqeUM7QRtltNTGKMbO+ko0LUFN+s
+52NGbUOts9CBWuW5EjzAUzhN321XrM4ZFIRwcEUrEJJndApX5xNs5U7u39iFSiAUu+5yTxna5VNB
+daFn+a0yqC9nodMlA3QkanJ7dT5P45mD7iY4fTdkoVxzeUbhNE0PyrjMe1PhSS+4mu7ihFzKk8ey
+/k4Kcy5eMZan48wDnt0Xz5dy7HyZs2pN9zxhzhknhPNcvdM5v2KXdJjTaSBiI2qUvI3uESaNZupa
+wZmQT57Jvbemb6+jFavZAT28V5qcZ4HL04CwniLmQKsdovygicxqFgiSv55pICh4hRSh3lu8vXl1
+vk0ql0TX918G/211hffg/osXV/iGEn579/5D2t4fP6adLsHyfVi+ENPa97da9+xZeenqeoxXYIvZ
+7Df5Zg2qLMvt5mbDZf88Hvvft43fWxv2we+7bu8q/tv7bl/Zva3c3rp9h59c1NT65yr8f7dfdKu3
+3JYdXv6s67Tv3rz54ZP//N1Puz2+5BXh7ZvNm80+3x0eoO28HLfSZX1CSVyJ78qzvxfZLz+ku5/u
+362Pb27WpTc3u0/v52356x+3xa6yfvfpLPFz0eLm9uKytNw7ao/XRfjbl798HH65P27t3u12PxaJ
+r4ukt7tXnzc3XIqXt7s/+W2zLbvq4nEN8C4Hajim/r/6lReOD24hc1w/P7yLPKPhIXrMIisW2bPP
+1j24Al5k19Utavb6NUywzQEwoW9g8/k+tXz1+j/9/buX84cF4dOvx/5uWn7e7v5W3ti91S3rI32+
+7rZ11fRxfgBaWwl/dD+sr64s09MvXG4fHlxulwevXwiwL95myFpCVtEq232d4qsil4qfcPAwo69j
+UZ5eaczISuNirBat7nizuUm/9h8+vNnsXl3yCzYsS/dFgMypv8qQs34PDBH2iTHlyF436GaNxPpq
+/vLH8mUWsXLb6cZ89+r/UEsBAh4DFAACAAgABLWFSg+DLzSRDQAAtSAAAAgAGAAAAAAAAQAAAKSB
+AAAAADE1ODU1LmpzVVQFAAPoHeVYdXgLAAEEAAAAAAQAAAAAUEsFBgAAAAABAAEATgAAANMNAAAA
+AFBLAQIeAwoAAgAAAAS1hUqyQ/VnNw4AADcOAAAJABgAAAAAAAAAAACkgQAAAAAxNTg1NS56aXBV
+VAUAA+gd5Vh1eAsAAQQAAAAABAAAAABQSwUGAAAAAAEAAQBPAAAAeg4AAAAA
