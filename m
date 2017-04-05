@@ -1,13 +1,13 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v5 3/7] mfd: axp20x: add MFD cells for AXP20X
- and AXP22X battery driver
-Date: Wed,  5 Apr 2017 10:10:55 +0200
-Message-ID: <20170405081059.1684-4-quentin.schulz@free-electrons.com>
+Subject: [PATCH v5 1/7] dt-bindings: power: supply: add
+ AXP20X/AXP22X battery DT binding
+Date: Wed,  5 Apr 2017 10:10:53 +0200
+Message-ID: <20170405081059.1684-2-quentin.schulz@free-electrons.com>
 References: <20170405081059.1684-1-quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBJWNSLDQKGQEEDRU7ZQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBJGNSLDQKGQEYNFASQQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <20170405081059.1684-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -22,56 +22,72 @@ List-Id: linux-pm@vger.kernel.org
 
 The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
 
-This patch adds the AXP20X/AXP22X battery driver to the MFD cells of the
-AXP209, AXP221 and AXP223 MFD.
+This patch adds the DT binding documentation for the battery power
+supply which gets various data from the PMIC, such as the battery status
+(charging, discharging, full, dead), current max limit, current current,
+battery capacity (in percentage), voltage max and min limits, current
+voltage and battery capacity (in Ah).
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
 
+v5:
+  - removed DT property example from monitored-battery,
+
+v4:
+ - added monitored-battery optional property,
+ - added example with battery,
+
+v3:
+ - removed constant charge current property, now should use the WIP
+ battery framework,
+
 v2:
- - changed DT node name from battery_power_supply to
- battery-power-supply,
+ - changed DT node name from ac_power_supply to ac-power-supply,
  - removed io-channels and io-channel-names from DT (the IIO mapping is
  done in the IIO ADC driver now),
+ - added x-powers,constant-charge-current property to set the maximal
+ default constant current charge of the battery,
 
- drivers/mfd/axp20x.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ .../bindings/power/supply/axp20x_battery.txt       | 28 ++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 5ba3b04..e6f5507 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -594,6 +594,9 @@ static struct mfd_cell axp20x_cells[] = {
- 	}, {
- 		.name		= "axp20x-adc",
- 	}, {
-+		.name		= "axp20x-battery-power-supply",
-+		.of_compatible	= "x-powers,axp209-battery-power-supply",
-+	}, {
- 		.name		= "axp20x-ac-power-supply",
- 		.of_compatible	= "x-powers,axp202-ac-power-supply",
- 		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
-@@ -621,6 +624,9 @@ static struct mfd_cell axp221_cells[] = {
- 		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
- 		.resources	= axp20x_ac_power_supply_resources,
- 	}, {
-+		.name		= "axp20x-battery-power-supply",
-+		.of_compatible	= "x-powers,axp221-battery-power-supply",
-+	}, {
- 		.name		= "axp20x-usb-power-supply",
- 		.of_compatible	= "x-powers,axp221-usb-power-supply",
- 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
-@@ -636,6 +642,9 @@ static struct mfd_cell axp223_cells[] = {
- 	}, {
- 		.name		= "axp22x-adc",
- 	}, {
-+		.name		= "axp20x-battery-power-supply",
-+		.of_compatible	= "x-powers,axp221-battery-power-supply",
-+	}, {
- 		.name			= "axp20x-regulator",
- 	}, {
- 		.name		= "axp20x-ac-power-supply",
+diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+new file mode 100644
+index 0000000..63826fd
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+@@ -0,0 +1,28 @@
++AXP20x and AXP22x battery power supply
++
++Required Properties:
++ - compatible, one of:
++			"x-powers,axp209-battery-power-supply"
++			"x-powers,axp221-battery-power-supply"
++
++Optional properties:
++ - monitored-battery, phandle to a fixed battery
++
++This node is a subnode of the axp20x/axp22x PMIC.
++
++The AXP20X and AXP22X can read the battery voltage, charge and discharge
++currents of the battery by reading ADC channels from the AXP20X/AXP22X
++ADC.
++
++Example:
++
++battery: battery {
++	compatible = "fixed-battery";
++};
++
++&axp209 {
++	battery_power_supply: battery-power-supply {
++		compatible = "x-powers,axp209-battery-power-supply";
++		monitored-battery = <&battery>;
++	}
++};
 -- 
 2.9.3
