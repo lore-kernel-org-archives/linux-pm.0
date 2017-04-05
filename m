@@ -1,50 +1,104 @@
-From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v5 7/7] ARM: sun5i: chip: enable battery power
- supply subnode
-Date: Wed,  5 Apr 2017 10:10:59 +0200
-Message-ID: <20170405081059.1684-8-quentin.schulz@free-electrons.com>
-References: <20170405081059.1684-1-quentin.schulz@free-electrons.com>
-Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v5 1/7] dt-bindings: power: supply: add AXP20X/AXP22X
+ battery DT binding
+Date: Wed, 5 Apr 2017 01:38:08 -0700
+Message-ID: <CAKvHMgRD8N4zuW1E4NO8Dzux6V8cHTwiYL+cvoEuz49am2duKQ@mail.gmail.com>
+References: <20170405081059.1684-1-quentin.schulz@free-electrons.com> <20170405081059.1684-2-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBKWNSLDQKGQE7JJRUHA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20170405081059.1684-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org
-Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f67.google.com ([209.85.214.67]:34538 "EHLO
+        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932080AbdDEIiT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Apr 2017 04:38:19 -0400
+In-Reply-To: <20170405081059.1684-2-quentin.schulz@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: Sebastian Reichel <sre@kernel.org>, robh+dt@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-The NextThing Co. CHIP has an AXP209 PMIC with battery connector.
+[reduced CC list]
 
-This enables the battery power supply subnode.
+Hi Quentin,
 
-Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
----
- arch/arm/boot/dts/sun5i-r8-chip.dts | 4 ++++
- 1 file changed, 4 insertions(+)
+On Wed, Apr 5, 2017 at 1:10 AM, Quentin Schulz
+<quentin.schulz@free-electrons.com> wrote:
+> The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
+>
+> This patch adds the DT binding documentation for the battery power
+> supply which gets various data from the PMIC, such as the battery status
+> (charging, discharging, full, dead), current max limit, current current,
+> battery capacity (in percentage), voltage max and min limits, current
+> voltage and battery capacity (in Ah).
+>
+> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+> Acked-by: Chen-Yu Tsai <wens@csie.org>
+> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+> ---
+>
+> v5:
+>   - removed DT property example from monitored-battery,
+>
+> v4:
+>  - added monitored-battery optional property,
+>  - added example with battery,
+>
+> v3:
+>  - removed constant charge current property, now should use the WIP
+>  battery framework,
+>
+> v2:
+>  - changed DT node name from ac_power_supply to ac-power-supply,
+>  - removed io-channels and io-channel-names from DT (the IIO mapping is
+>  done in the IIO ADC driver now),
+>  - added x-powers,constant-charge-current property to set the maximal
+>  default constant current charge of the battery,
+>
+>  .../bindings/power/supply/axp20x_battery.txt       | 28 ++++++++++++++++++++++
+>  1 file changed, 28 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+>
+> diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+> new file mode 100644
+> index 0000000..63826fd
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+> @@ -0,0 +1,28 @@
+> +AXP20x and AXP22x battery power supply
+> +
+> +Required Properties:
+> + - compatible, one of:
+> +                       "x-powers,axp209-battery-power-supply"
+> +                       "x-powers,axp221-battery-power-supply"
+> +
+> +Optional properties:
+> + - monitored-battery, phandle to a fixed battery
 
-diff --git a/arch/arm/boot/dts/sun5i-r8-chip.dts b/arch/arm/boot/dts/sun5i-r8-chip.dts
-index d078560..879a4b0 100644
---- a/arch/arm/boot/dts/sun5i-r8-chip.dts
-+++ b/arch/arm/boot/dts/sun5i-r8-chip.dts
-@@ -132,6 +132,10 @@
- 	status = "okay";
- };
- 
-+&battery_power_supply {
-+	status = "okay";
-+};
-+
- &i2c1 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&i2c1_pins_a>;
--- 
-2.9.3
+Say here what properties of the battery your driver considers, e.g.
+https://patchwork.kernel.org/patch/9660987/
+
+> +
+> +This node is a subnode of the axp20x/axp22x PMIC.
+> +
+> +The AXP20X and AXP22X can read the battery voltage, charge and discharge
+> +currents of the battery by reading ADC channels from the AXP20X/AXP22X
+> +ADC.
+> +
+> +Example:
+> +
+> +battery: battery {
+> +       compatible = "fixed-battery";
+
+This is now "simple-battery". Also needs properties.
+
+> +};
+> +
+> +&axp209 {
+> +       battery_power_supply: battery-power-supply {
+> +               compatible = "x-powers,axp209-battery-power-supply";
+> +               monitored-battery = <&battery>;
+> +       }
+> +};
+> --
+> 2.9.3
+>
