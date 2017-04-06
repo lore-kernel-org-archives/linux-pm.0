@@ -1,142 +1,51 @@
-From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Subject: [RESEND PATCH V7 1/5] Documentation: devicetree: watchdog: da9062/61
- watchdog timer binding
-Date: Thu, 6 Apr 2017 09:28:27 +0100
-Message-ID: <1d280a35fc522f7b271c730988ab0f186fef25ba.1491467308.git.stwiss.opensource@diasemi.com>
-References: <cover.1491467308.git.stwiss.opensource@diasemi.com>
+From: Jani Nikula <jani.nikula@linux.intel.com>
+Subject: Re: [PATCH] format-security: move static strings to const
+Date: Thu, 06 Apr 2017 11:48:48 +0300
+Message-ID: <87mvbtzztb.fsf@intel.com>
+References: <20170405214711.GA5711@beast>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1491467308.git.stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>
-Cc: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <20170405214711.GA5711@beast>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Kees Cook <keescook@chromium.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mips@linux-mips.org, linux-decnet-user@lists.sourceforge.net, kernel@stlinux.com, Qianqian Xie <xieqianqian@huawei.com>, Mugunthan V N <mugunthanvnm@ti.com>, Tony Lindgren <tony@atomide.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, "Maciej W. Rozycki" <macro@linux-mips.org>, Christian Gromm <christian.gromm@microchip.com>, Daniel Vetter <daniel.vetter@intel.com>, Ingo Molnar <mingo@kernel.org>, Andrey Shvetsov <andrey.shvetsov@k2l.de>, devel@driverdev.osuosl.org, Kejian Yan <yankejian@huawei.com>, Felipe Balbi <felipe.balbi@linux.intel.com>, Russell King <linux@armlinux.org.uk>, Jarod Wilson <jarod@redhat.com>, linux-hippi@sunsite.dk, Daode Huang <huangdaode@hisilicon.com>, linux-serial@vger.kernel.org, Jiri Slaby <jslaby@s>
 List-Id: linux-pm@vger.kernel.org
 
-From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-
-Add binding information for DA9062 and DA9061 watchdog.
-
-Example bindings for both DA9062 and DA9061 devices are added. For
-the DA9061 device, a fallback compatible line is added as a valid
-combination of compatible strings.
-
-The original binding for DA9062 (only) used to reside inside the
-Documentation/devicetree/bindings/mfd/da9062.txt MFD document.
-The da9062-watchdog section was deleted in that file and replaced
-with a link to the new DA9061/62 binding information stored in this
-patch.
-
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Signed-off-by: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-
----
-
-Hi,
-
-I have just noticed.
-
-The driver code changes for the da9062/61 watchdog have been applied to
-the linux kernel. The da9062/61 alterations for
-drivers/watchdog/da9062_wdt.c appear in linux-stable/v4.10-rc1. Those
-changes are linked to this binding patch, but this patch seems to have
-been missed out.
-
-The source code dependency for this patch is given in the commit:
-72106c1 v4.10-rc1 watchdog: da9062/61: watchdog driver
-
-I don't see anything blocking for merge of this patch now.
-
-Regards,
-Steve
-
-This patch applies against linux-next and v4.11-rc3
-
-v6 -> v7
- - NO CODE CHANGE
-
-v5 -> v6
- - NO CODE CHANGE
- - Rebased from v4.9 to v4.11-rc3
-
-v4 -> v5
- - NO CODE CHANGE
- - Rebased from v4.8 to v4.9
-
-v3 -> v4
- - NO CODE CHANGE
- - Patch renamed from [PATCH V3 2/9] to [PATCH V4 1/8]
- - Added Acked-by Rob Herring
-
-v2 -> v3
- - Patch renamed from [PATCH V1 02/10] to [PATCH V3 2/9]
- - Each compatible line should be a valid combination of compatible
-   strings, alter DA9061 line to include the fall back compatible string
- - Update the commit message to describe this change
- - Add information about associated patches from this set without
-   describing them as being explicitly dependent on this binding
-
-v1 -> v2
- - Patch renamed from [PATCH V1 07/10] to [PATCH V2 02/10] -- these
-   changes were made to fix checkpatch warnings caused by the patch
-   set dependency order
- - Updated the patch description to be explicit about where parts of
-   this binding had originally been stored
- - A second example for DA9061 is provided to highlight the use of a
-   fall-back compatible option for the DA9062 watchdog driver
-
-As previously:
-
-For the watchdog case: the DA9062 device driver is compatible with the
-DA9061 and for this reason there is minimal change required to the DA9062
-watchdog device driver. The example for the DA9061 watchdog shows the
-use of a fall-back compatible string.
-
-Other information:
-The device driver from this patch set (associated with this binding) is
-  [PATCH V5 6/8] watchdog: da9061: watchdog driver
- 
-Regards,
-Steve Twiss, Dialog Semiconductor
-
-
- .../devicetree/bindings/watchdog/da9062-wdt.txt    | 23 ++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/watchdog/da9062-wdt.txt
-
-diff --git a/Documentation/devicetree/bindings/watchdog/da9062-wdt.txt b/Documentation/devicetree/bindings/watchdog/da9062-wdt.txt
-new file mode 100644
-index 0000000..b935b52
---- /dev/null
-+++ b/Documentation/devicetree/bindings/watchdog/da9062-wdt.txt
-@@ -0,0 +1,23 @@
-+* Dialog Semiconductor DA9062/61 Watchdog Timer
-+
-+Required properties:
-+
-+- compatible: should be one of the following valid compatible string lines:
-+	"dlg,da9061-watchdog", "dlg,da9062-watchdog"
-+	"dlg,da9062-watchdog"
-+
-+Example: DA9062
-+
-+	pmic0: da9062@58 {
-+		watchdog {
-+			compatible = "dlg,da9062-watchdog";
-+		};
-+	};
-+
-+Example: DA9061 using a fall-back compatible for the DA9062 watchdog driver
-+
-+	pmic0: da9061@58 {
-+		watchdog {
-+			compatible = "dlg,da9061-watchdog", "dlg,da9062-watchdog";
-+		};
-+	};
--- 
-end-of-patch for RESEND PATCH V7
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+T24gVGh1LCAwNiBBcHIgMjAxNywgS2VlcyBDb29rIDxrZWVzY29va0BjaHJvbWl1bS5vcmc+IHdy
+b3RlOgo+IFdoaWxlIGV4YW1pbmluZyBvdXRwdXQgZnJvbSB0cmlhbCBidWlsZHMgd2l0aCAtV2Zv
+cm1hdC1zZWN1cml0eSBlbmFibGVkLAo+IG1hbnkgc3RyaW5ncyB3ZXJlIGZvdW5kIHRoYXQgc2hv
+dWxkIGJlIGRlZmluZWQgYXMgImNvbnN0Iiwgb3IgYXMgYSBjaGFyCj4gYXJyYXkgaW5zdGVhZCBv
+ZiBjaGFyIHBvaW50ZXIuIFRoaXMgbWFrZXMgc29tZSBzdGF0aWMgYW5hbHlzaXMgZWFzaWVyLAo+
+IGJ5IHByb2R1Y2luZyBmZXdlciBmYWxzZSBwb3NpdGl2ZXMuCj4KPiBBcyB0aGVzZSBhcmUgYWxs
+IHRyaXZpYWwgY2hhbmdlcywgaXQgc2VlbWVkIGJlc3QgdG8gcHV0IHRoZW0gYWxsIGluCj4gYSBz
+aW5nbGUgcGF0Y2ggcmF0aGVyIHRoYW4gY2hvcHBpbmcgdGhlbSB1cCBwZXIgbWFpbnRhaW5lci4K
+Cj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fZmJfaGVscGVyLmMgYi9kcml2ZXJz
+L2dwdS9kcm0vZHJtX2ZiX2hlbHBlci5jCj4gaW5kZXggZjZkNGQ5NzAwNzM0Li4xZmY5ZDU5MTJi
+ODMgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL2RybV9mYl9oZWxwZXIuYwo+ICsrKyBi
+L2RyaXZlcnMvZ3B1L2RybS9kcm1fZmJfaGVscGVyLmMKPiBAQCAtMjMzMSw3ICsyMzMxLDcgQEAg
+RVhQT1JUX1NZTUJPTChkcm1fZmJfaGVscGVyX2hvdHBsdWdfZXZlbnQpOwo+ICBpbnQgX19pbml0
+IGRybV9mYl9oZWxwZXJfbW9kaW5pdCh2b2lkKQo+ICB7Cj4gICNpZiBkZWZpbmVkKENPTkZJR19G
+UkFNRUJVRkZFUl9DT05TT0xFX01PRFVMRSkgJiYgIWRlZmluZWQoQ09ORklHX0VYUEVSVCkKPiAt
+CWNvbnN0IGNoYXIgKm5hbWUgPSAiZmJjb24iOwo+ICsJY29uc3QgY2hhciBuYW1lW10gPSAiZmJj
+b24iOwoKSSdkIGFsd2F5cyB3cml0ZSB0aGUgZm9ybWVyIG91dCBvZiBoYWJpdC4gV2h5IHNob3Vs
+ZCBJIHN0YXJ0IHVzaW5nIHRoZQpsYXR0ZXI/IFdoYXQgbWFrZXMgaXQgYmV0dGVyPwoKV2hhdCBr
+ZWVwcyB0aGUga2VybmVsIGZyb20gYWNjdW11bGF0aW5nIHRvbnMgbW9yZSBvZiB0aGUgZm9ybWVy
+PwoKSGVyZSdzIGFuIGludGVyZXN0aW5nIGNvbXBhcmlzb24gb2YgdGhlIGdlbmVyYXRlZCBjb2Rl
+LiBJJ20gYSBiaXQKc3VycHJpc2VkIGJ5IHdoYXQgZ2NjIGRvZXMsIEkgd291bGQgaGF2ZSBleHBl
+Y3RlZCBubyBkaWZmZXJlbmNlLCBsaWtlCmNsYW5nLiBodHRwczovL2dvZGJvbHQub3JnL2cvT2Rx
+VXZOCgpUaGUgb3RoZXIgY2hhbmdlcyBhZGRpbmcgY29uc3QgaW4gdGhpcyBwYXRjaCBhcmUsIG9m
+IGNvdXJzZSwgZ29vZC4KCgpCUiwKSmFuaS4KCi0tIApKYW5pIE5pa3VsYSwgSW50ZWwgT3BlbiBT
+b3VyY2UgVGVjaG5vbG9neSBDZW50ZXIKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJl
+ZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGlu
+Zm8vZHJpLWRldmVsCg==
