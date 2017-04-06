@@ -1,52 +1,104 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH v2 1/4] dt-bindings: update the
- Allwinner GPADC device tree binding for H3
-Date: Thu, 6 Apr 2017 13:11:58 +0100
-Message-ID: <20170406121158.b33rrt4f54k3dz6f@dell>
-References: <20170406095534.299945C355D@relay.mailchannels.net>
-Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v6 1/4] clk: Add support for runtime PM
+Date: Thu, 06 Apr 2017 14:46:55 +0200
+Message-ID: <5b4b2f3e-dc4b-0866-c4b8-4c7e4dba2be0@samsung.com>
+References: <1490182543-28550-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170322113554eucas1p27471f0de278c55d5dce7fdf120395e09@eucas1p2.samsung.com>
+ <1490182543-28550-2-git-send-email-m.szyprowski@samsung.com>
+ <149081897388.31513.7062843004022908296@resonance>
+ <75509e0f-26cd-52e7-8c71-b004ab6abc81@samsung.com>
+ <149089387341.31513.7531874072502656432@resonance>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDA7X7F2WUEBBEXBTDDQKGQEQAX3C5Q-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <20170406095534.299945C355D-Y9/x5g2N/Tt0ykcd9G8QkxTxI0vvWBSX@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-reply-to: <149089387341.31513.7531874072502656432@resonance>
+Sender: linux-clk-owner@vger.kernel.org
+To: Michael Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 06 Apr 2017, Icenowy Zheng wrote:
-> 2017=E5=B9=B44=E6=9C=886=E6=97=A5 03:04=E4=BA=8E Rob Herring <robh@kernel=
-.org>=E5=86=99=E9=81=93=EF=BC=9A
-> > On Tue, Apr 4, 2017 at 10:02 AM, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org> wrote:=
-=20
+Hi Michael,
 
-> > > =E5=9C=A8 2017=E5=B9=B404=E6=9C=8804=E6=97=A5 22:47, Rob Herring =E5=
-=86=99=E9=81=93:=20
+On 2017-03-30 19:11, Michael Turquette wrote:
+> Quoting Marek Szyprowski (2017-03-30 00:24:15)
+>> On 2017-03-29 22:22, Michael Turquette wrote:
+>>> Quoting Marek Szyprowski (2017-03-22 04:35:40)
+>>>> Registers for some clocks might be located in the SOC area, which are under the
+>>>> power domain. To enable access to those registers respective domain has to be
+>>>> turned on. Additionally, registers for such clocks will usually loose its
+>>>> contents when power domain is turned off, so additional saving and restoring of
+>>>> them might be needed in the clock controller driver.
+>>>>
+>>>> This patch adds basic infrastructure in the clocks core to allow implementing
+>>>> driver for such clocks under power domains. Clock provider can supply a
+>>>> struct device pointer, which is the used by clock core for tracking and managing
+>>>> clock's controller runtime pm state. Each clk_prepare() operation
+>>>> will first call pm_runtime_get_sync() on the supplied device, while
+>>>> clk_unprepare() will do pm_runtime_put_sync() at the end.
+>>>>
+>>>> Additional calls to pm_runtime_get/put functions are required to ensure that any
+>>>> register access (like calculating/changing clock rates and unpreparing/disabling
+>>>> unused clocks on boot) will be done with clock controller in runtime resumend
+>>>> state.
+>>> The above is a bit confusing. Is clk_prepare really special? It seems to
+>>> me that every single clk_ops callback will need this?
+>> clk_prepare/unprepare are special, because they allow sleeping, so they
+>> are natural
+>> candidates for the place for calling runtime PM operations.
+>> clk_enable()/disable()
+>> is called under a spinlock, so runtime pm cannot be called efficiently
+>> there, but
+>> core guarantees that they are called after clk_prepare(), so accessing
+>> hw registers
+>> is safe. The only remaining calls are not guaranteed to be called always
+>> after
+>> clk_prepare(), so those additional calls and checks in runtime pm are
+>> needed there.
+> Right, so any call that holds prepare_lock and might touch the hardware
+> needs to first call pm_runtime_get_sync.
+>
+>>> That leads to my second question: why put this in the clk core? Can the
+>>> clk provider driver simply add pm_runtime_{get,put} calls into its
+>>> clk_ops callbacks instead? The clk core does not directly touch hardware
+>>> (e.g. reading registers) so putting the pm runtime calls into the
+>>> provider callbacks should be sufficient.
+>> In theory is should be possible to duplicate all kind of clock build blocks
+>> (gates, muxes, dividers, ...) with additional runtime pm calls. This
+>> would however
+>> end in much more code and a bit more complicated locking. Implementing
+>> it in clk
+>> core made the code simpler. It also turned out that runtime pm
+>> integration is
+>> needed for more that a single clock provider: besides Samsung SoCs
+>> (Exynos 5433
+>> and newer, Exynos 4412 ISP, Exynos Audio Subsystem, hacks in Exynos 542x
+>> can be
+>> also replaced by runtime PM calls), Ulf mentioned that exactly similar
+>> pattern
+>> is used for some UX500 SoCs (STE). More will probably come once the
+>> feature is
+>> in, because for now such drivers simply forces runtime active state as a
+>> workaround or don't instantiate related power domains at all.
+> I agree with the above, but I'm also wondering about the folks that use
+> regmap internally to their own clock provider drivers. I guess they will
+> have the option to either do their own thing or use this framework-level
+> solution.
+>
+> I've started reviewing the code itself and will respond to those mails
+> separately.
 
-> OK. I will make it :
-> ths: temperature-sensor@1c25000
+Is there a chance to get your comments soon? I would really like to give
+this patchset a try in linux-next for a few days, but for now Sylwester
+waits for you.
 
-Can you fix your broken email client please?  You need to set it up to
-reply to mails to they stay threaded.  Your mailer is currently
-sending all of your replies as their own, independent messages.
+Stephen: what is your opinion on this patchset? Would you like to give it
+a try in -next?
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+ > ...
 
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
+
