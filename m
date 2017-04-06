@@ -1,285 +1,80 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v12.4 6/10] power: bq27xxx_battery: Add
- power_supply_battery_info support
-Date: Thu, 6 Apr 2017 09:30:29 -0500
-Message-ID: <54023de5-fd59-777b-36b4-d49a1deb98cc@ti.com>
-References: <20170404085706.32592-1-liam@networkimprov.net>
- <20170404085706.32592-4-liam@networkimprov.net>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>, MSI X99A
+ SLI PLUS i7-5820K,  MSI i7-5930K, MSI X99A Raider i7-5820K
+Date: Thu, 06 Apr 2017 16:37:48 +0000
+Message-ID: <bug-176411-137361-T5mmY1BALw@https.bugzilla.kernel.org/>
+References: <bug-176411-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:10361 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934865AbdDFOag (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Apr 2017 10:30:36 -0400
-In-Reply-To: <20170404085706.32592-4-liam@networkimprov.net>
+Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:33544 "EHLO
+        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S933208AbdDFQhu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Apr 2017 12:37:50 -0400
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 58635285B8
+        for <linux-pm@vger.kernel.org>; Thu,  6 Apr 2017 16:37:49 +0000 (UTC)
+Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 8F636285B1
+        for <linux-pm@vger.kernel.org>; Thu,  6 Apr 2017 16:37:48 +0000 (UTC)
+In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org
-Cc: Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
+To: linux-pm@kernel.org
 
-On 04/04/2017 03:57 AM, Liam Breck wrote:
-> From: Liam Breck <kernel@networkimprov.net>
-> 
-> Previously there was no way to configure these chips in the event that the
-> defaults didn't match the battery in question.
-> 
-> We now call power_supply_get_battery_info(), check its values, and write
-> battery data to chip data memory (flash/RAM/NVM).
-> 
+https://bugzilla.kernel.org/show_bug.cgi?id=176411
 
-I'm almost convinced now this is *not* the correct thing to do, we
-should not be writing to NVM. If the DT states different values than in
-the device we need to trust the device. DT is static for a board, the
-battery data may not be.
+--- Comment #33 from ish@unx.ca ---
+It appears that this has resolved itself for me. I've recently updated to
+kernel:
 
-At most we could have an override flag as a driver param that causes us
-to ignore NVM and use the DT values, but always overwriting the device's
-NVM with the DT values is not what most want.
+Linux desktop 4.10.8-200.fc25.x86_64 #1 SMP Fri Mar 31 13:20:22 UTC 2017 x86_64
+x86_64 x86_64 GNU/Linux
 
-> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> ---
->  drivers/power/supply/bq27xxx_battery.c | 172 ++++++++++++++++++++++++++++++++-
->  include/linux/power/bq27xxx_battery.h  |   1 +
->  2 files changed, 172 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-> index 5f692b1..41eb5b7 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -804,6 +804,13 @@ static LIST_HEAD(bq27xxx_battery_devices);
->  
->  #define BQ27XXX_DM_SZ	32
->  
-> +struct bq27xxx_dm_reg {
-> +	u8 subclass_id;
-> +	u8 offset;
-> +	u8 bytes;
-> +	u16 min, max;
-> +};
-> +
->  /**
->   * struct bq27xxx_dm_buf - chip data memory buffer
->   * @class: data memory subclass_id
-> @@ -821,6 +828,33 @@ struct bq27xxx_dm_buf {
->  	bool has_data, dirty;
->  };
->  
-> +#define BQ27XXX_DM_BUF(di, i) { \
-> +	.class = (di)->dm_regs[i].subclass_id, \
-> +	.block = (di)->dm_regs[i].offset / BQ27XXX_DM_SZ, \
-> +}
-> +
-> +static inline u16* bq27xxx_dm_reg_ptr(struct bq27xxx_dm_buf *buf,
-> +				      struct bq27xxx_dm_reg *reg)
-> +{
-> +	if (buf->class == reg->subclass_id &&
-> +	    buf->block == reg->offset / BQ27XXX_DM_SZ)
-> +		return (u16*) (buf->data + reg->offset % BQ27XXX_DM_SZ);
-> +
-> +	return NULL;
-> +}
-> +
-> +enum bq27xxx_dm_reg_id {
-> +	BQ27XXX_DM_DESIGN_CAPACITY = 0,
-> +	BQ27XXX_DM_DESIGN_ENERGY,
-> +	BQ27XXX_DM_TERMINATE_VOLTAGE,
-> +};
-> +
-> +static const char* bq27xxx_dm_reg_name[] = {
-> +	[BQ27XXX_DM_DESIGN_CAPACITY] = "design-capacity",
-> +	[BQ27XXX_DM_DESIGN_ENERGY] = "design-energy",
-> +	[BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
-> +};
-> +
->  
->  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
->  {
-> @@ -1011,6 +1045,39 @@ static int bq27xxx_battery_read_dm_block(struct bq27xxx_device_info *di,
->  	return ret;
->  }
->  
-> +static void bq27xxx_battery_update_dm_block(struct bq27xxx_device_info *di,
-> +					    struct bq27xxx_dm_buf *buf,
-> +					    enum bq27xxx_dm_reg_id reg_id,
-> +					    unsigned int val)
-> +{
-> +	struct bq27xxx_dm_reg *reg = &di->dm_regs[reg_id];
-> +	const char *str = bq27xxx_dm_reg_name[reg_id];
-> +	u16 *prev = bq27xxx_dm_reg_ptr(buf, reg);
-> +
-> +	if (prev == NULL) {
-> +		dev_warn(di->dev, "buffer does not match %s dm spec\n", str);
-> +		return;
-> +	}
-> +
-> +	if (reg->bytes != 2) {
-> +		dev_warn(di->dev, "%s dm spec has unsupported byte size\n", str);
-> +		return;
-> +	}
-> +
-> +	if (!buf->has_data)
-> +		return;
-> +
-> +	if (be16_to_cpup(prev) == val) {
-> +		dev_info(di->dev, "%s has %u\n", str, val);
-> +		return;
-> +	}
-> +
-> +	dev_info(di->dev, "update %s to %u\n", str, val);
-> +
-> +	*prev = cpu_to_be16(val);
-> +	buf->dirty = true;
-> +}
-> +
->  static int bq27xxx_battery_set_cfgupdate(struct bq27xxx_device_info *di, u16 state)
->  {
->  	const int limit = 100;
-> @@ -1109,6 +1176,98 @@ static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
->  	return ret;
->  }
->  
-> +static void bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
-> +				       struct power_supply_battery_info *info)
-> +{
-> +	struct bq27xxx_dm_buf bd = BQ27XXX_DM_BUF(di, BQ27XXX_DM_DESIGN_CAPACITY);
-> +	struct bq27xxx_dm_buf bt = BQ27XXX_DM_BUF(di, BQ27XXX_DM_TERMINATE_VOLTAGE);
-> +
-> +	if (bq27xxx_battery_unseal(di) < 0)
-> +		return;
-> +
-> +	if (info->charge_full_design_uah != -EINVAL &&
-> +	    info->energy_full_design_uwh != -EINVAL) {
-> +		bq27xxx_battery_read_dm_block(di, &bd);
-> +		/* assume design energy & capacity are in same block */
-> +		bq27xxx_battery_update_dm_block(di, &bd,
-> +					BQ27XXX_DM_DESIGN_CAPACITY,
-> +					info->charge_full_design_uah / 1000);
-> +		bq27xxx_battery_update_dm_block(di, &bd,
-> +					BQ27XXX_DM_DESIGN_ENERGY,
-> +					info->energy_full_design_uwh / 1000);
-> +	}
-> +
-> +	if (info->voltage_min_design_uv != -EINVAL) {
-> +		bool same = bd.class == bt.class && bd.block == bt.block;
-> +		if (!same)
-> +			bq27xxx_battery_read_dm_block(di, &bt);
-> +		bq27xxx_battery_update_dm_block(di, same ? &bd : &bt,
-> +					BQ27XXX_DM_TERMINATE_VOLTAGE,
-> +					info->voltage_min_design_uv / 1000);
-> +	}
-> +
-> +	bq27xxx_battery_write_dm_block(di, &bd);
-> +	bq27xxx_battery_write_dm_block(di, &bt);
-> +
-> +	bq27xxx_battery_seal(di);
-> +
-> +	if (di->chip != BQ27421) { /* not a cfgupdate chip, so reset */
-> +		bq27xxx_write(di, BQ27XXX_REG_CTRL, BQ27XXX_RESET, false);
-> +		BQ27XXX_MSLEEP(300); /* reset time is not documented */
-> +	}
-> +	/* assume bq27xxx_battery_update() is called hereafter */
-> +}
-> +
-> +void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
-> +{
-> +	struct power_supply_battery_info info = {};
-> +	unsigned int min, max;
-> +
-> +	if (!di->dm_regs)
-> +		return;
-> +
-> +	if (power_supply_get_battery_info(di->bat, &info) < 0)
-> +		return;
-> +
-> +	if (info.energy_full_design_uwh != info.charge_full_design_uah) {
-> +		if (info.energy_full_design_uwh == -EINVAL)
-> +			dev_warn(di->dev, "missing battery:energy-full-design-microwatt-hours\n");
-> +		else if (info.charge_full_design_uah == -EINVAL)
-> +			dev_warn(di->dev, "missing battery:charge-full-design-microamp-hours\n");
-> +	}
-> +
-> +	/* assume min == 0 */
-> +	max = di->dm_regs[BQ27XXX_DM_DESIGN_ENERGY].max;
-> +	if (info.energy_full_design_uwh > max * 1000) {
-> +		dev_err(di->dev, "invalid battery:energy-full-design-microwatt-hours %d\n",
-> +			info.energy_full_design_uwh);
-> +		info.energy_full_design_uwh = -EINVAL;
-> +	}
-> +
-> +	/* assume min == 0 */
-> +	max = di->dm_regs[BQ27XXX_DM_DESIGN_CAPACITY].max;
-> +	if (info.charge_full_design_uah > max * 1000) {
-> +		dev_err(di->dev, "invalid battery:charge-full-design-microamp-hours %d\n",
-> +			info.charge_full_design_uah);
-> +		info.charge_full_design_uah = -EINVAL;
-> +	}
-> +
-> +	min = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].min;
-> +	max = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].max;
-> +	if ((info.voltage_min_design_uv < min * 1000 ||
-> +	     info.voltage_min_design_uv > max * 1000) &&
-> +	     info.voltage_min_design_uv != -EINVAL) {
-> +		dev_err(di->dev, "invalid battery:voltage-min-design-microvolt %d\n",
-> +			info.voltage_min_design_uv);
-> +		info.voltage_min_design_uv = -EINVAL;
-> +	}
-> +
-> +	if ((info.energy_full_design_uwh != -EINVAL &&
-> +	     info.charge_full_design_uah != -EINVAL) ||
-> +	     info.voltage_min_design_uv  != -EINVAL)
-> +		bq27xxx_battery_set_config(di, &info);
-> +}
-> +
->  /*
->   * Return the battery State-of-Charge
->   * Or < 0 if something fails.
-> @@ -1626,6 +1785,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
->  	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
->  		ret = bq27xxx_simple_value(di->charge_design_full, val);
->  		break;
-> +	/*
-> +	 * TODO: Implement these to make registers set from
-> +	 * power_supply_battery_info visible in sysfs.
-> +	 */
-> +	case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
-> +	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-> +		return -EINVAL;
->  	case POWER_SUPPLY_PROP_CYCLE_COUNT:
->  		ret = bq27xxx_simple_value(di->cache.cycle_count, val);
->  		break;
-> @@ -1659,7 +1825,10 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
->  int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->  {
->  	struct power_supply_desc *psy_desc;
-> -	struct power_supply_config psy_cfg = { .drv_data = di, };
-> +	struct power_supply_config psy_cfg = {
-> +		.of_node = di->dev->of_node,
-> +		.drv_data = di,
-> +	};
->  
->  	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
->  	mutex_init(&di->lock);
-> @@ -1684,6 +1853,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->  
->  	dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
->  
-> +	bq27xxx_battery_settings(di);
->  	bq27xxx_battery_update(di);
->  
->  	mutex_lock(&bq27xxx_list_lock);
-> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-> index b1defb8..227eb08 100644
-> --- a/include/linux/power/bq27xxx_battery.h
-> +++ b/include/linux/power/bq27xxx_battery.h
-> @@ -64,6 +64,7 @@ struct bq27xxx_device_info {
->  	int id;
->  	enum bq27xxx_chip chip;
->  	const char *name;
-> +	struct bq27xxx_dm_reg *dm_regs;
->  	u32 unseal_key;
->  	struct bq27xxx_access_methods bus;
->  	struct bq27xxx_reg_cache cache;
-> 
+with Fedora 25.
+
+I did a few reboots without power cycle with c-states disabled, which is how I
+last left my bios configured.  Running htop showed CPU percentages after each
+boot, i7z showed cores hitting max mhz.
+
+I then reset my bios to factory default, which enables c-state. And did a few
+non-power cycle reboots, again seeing expected behaviour with the cores.  I did
+not have to power cycle this time to get full speed.
+
+I'll keep monitoring it, but is it possible a kernel update could have fixed
+it?
+
+===> /sys/class/dmi/id/
+
+./product_serial =====> Default string
+./bios_vendor =====> American Megatrends Inc.
+./product_version =====> 5.0
+./chassis_asset_tag =====> Default string
+./chassis_serial =====> Default string
+./board_vendor =====> MSI
+./board_asset_tag =====> To be filled by O.E.M.
+./board_version =====> 5.0
+./power/runtime_suspended_time =====> 0
+./power/autosuspend_delay_ms =====>
+./power/runtime_active_time =====> 0
+./power/control =====> auto
+./power/runtime_status =====> unsupported
+./chassis_vendor =====> MSI
+./modalias =====>
+dmi:bvnAmericanMegatrendsInc.:bvrP.50:bd07/19/2016:svnMSI:pnMS-7885:pvr5.0:rvnMSI:rnX99ARAIDER(MS-7885):rvr5.0:cvnMSI:ct3:cvr5.0:
+./product_uuid =====> AAAAAAAA-AAAA-AAAA-AAAA-D8CB8AEDA146
+./bios_version =====> P.50
+./sys_vendor =====> MSI
+./board_serial =====> To be filled by O.E.M.
+./chassis_version =====> 5.0
+./chassis_type =====> 3
+./uevent =====>
+MODALIAS=dmi:bvnAmericanMegatrendsInc.:bvrP.50:bd07/19/2016:svnMSI:pnMS-7885:pvr5.0:rvnMSI:rnX99ARAIDER(MS-7885):rvr5.0:cvnMSI:ct3:cvr5.0:
+./product_name =====> MS-7885
+./bios_date =====> 07/19/2016
+./board_name =====> X99A RAIDER (MS-7885)
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
