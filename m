@@ -1,116 +1,38 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH] PM / devfreq: Move struct devfreq_governor to devfreq
- directory
-Date: Thu, 06 Apr 2017 13:19:35 +0900
-Message-ID: <1491452375-13815-1-git-send-email-cw00.choi@samsung.com>
-References: <CGME20170406041937epcas1p1b5cd8e13bf4049e1e4e5ff4d2b1b75b1@epcas1p1.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:37790 "EHLO
-        epoutp01.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751180AbdDFETl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Apr 2017 00:19:41 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: [PATCH 11/24] uswsusp: Disable when the kernel is locked down
+Date: Thu, 06 Apr 2017 08:39:52 +0200
+Message-ID: <1491460792.1645.1.camel@suse.com>
+References: <149142326734.5101.4596394505987813763.stgit@warthog.procyon.org.uk>
+         <149142336965.5101.2946578135980499557.stgit@warthog.procyon.org.uk>
+         <CAJZ5v0hp=GJtQ+YnNdaMw6rtbBzNyueY+iqjPkHLKp57t822ZQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-security-module-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hp=GJtQ+YnNdaMw6rtbBzNyueY+iqjPkHLKp57t822ZQ@mail.gmail.com>
+Sender: owner-linux-security-module@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, David Howells <dhowells@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, linux-efi@vger.kernel.org, gnomes@lxorguk.ukuu.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, matthew.garrett@nebula.com
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
-Cc: rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-This patch moves the struct devfreq_governor from header file
-to the devfreq directory because this structure is private data
-and it have to be only accessed by the devfreq core.
+Am Donnerstag, den 06.04.2017, 01:38 +0200 schrieb Rafael J. Wysocki:
+> On Wed, Apr 5, 2017 at 10:16 PM, David Howells <dhowells@redhat.com> wrote:
+> > 
+> > From: Matthew Garrett <mjg59@srcf.ucam.org>
+> > 
+> > uswsusp allows a user process to dump and then restore kernel state, which
+> > makes it possible to modify the running kernel.  Disable this if the kernel
+> > is locked down.
+> > 
+> > Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
+> > Signed-off-by: David Howells <dhowells@redhat.com>
+> > cc: linux-pm@vger.kernel.org
+> 
+> You probably want to disable hibernation altogether in this case.
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/governor.h | 29 +++++++++++++++++++++++++++++
- include/linux/devfreq.h    | 30 +-----------------------------
- 2 files changed, 30 insertions(+), 29 deletions(-)
+Your swap partition may be located on an NVDIMM or be encrypted.
+Isn't this a bit overly drastic?
 
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index 71576b8bdfef..a4f2fa1091e4 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -25,6 +25,35 @@
- #define DEVFREQ_GOV_SUSPEND			0x4
- #define DEVFREQ_GOV_RESUME			0x5
- 
-+/**
-+ * struct devfreq_governor - Devfreq policy governor
-+ * @node:		list node - contains registered devfreq governors
-+ * @name:		Governor's name
-+ * @immutable:		Immutable flag for governor. If the value is 1,
-+ *			this govenror is never changeable to other governor.
-+ * @get_target_freq:	Returns desired operating frequency for the device.
-+ *			Basically, get_target_freq will run
-+ *			devfreq_dev_profile.get_dev_status() to get the
-+ *			status of the device (load = busy_time / total_time).
-+ *			If no_central_polling is set, this callback is called
-+ *			only with update_devfreq() notified by OPP.
-+ * @event_handler:      Callback for devfreq core framework to notify events
-+ *                      to governors. Events include per device governor
-+ *                      init and exit, opp changes out of devfreq, suspend
-+ *                      and resume of per device devfreq during device idle.
-+ *
-+ * Note that the callbacks are called with devfreq->lock locked by devfreq.
-+ */
-+struct devfreq_governor {
-+	struct list_head node;
-+
-+	const char name[DEVFREQ_NAME_LEN];
-+	const unsigned int immutable;
-+	int (*get_target_freq)(struct devfreq *this, unsigned long *freq);
-+	int (*event_handler)(struct devfreq *devfreq,
-+				unsigned int event, void *data);
-+};
-+
- /* Caution: devfreq->lock must be locked before calling update_devfreq */
- extern int update_devfreq(struct devfreq *devfreq);
- 
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index e0acb0e5243b..6c220e4ebb6b 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -27,6 +27,7 @@
- #define DEVFREQ_POSTCHANGE		(1)
- 
- struct devfreq;
-+struct devfreq_governor;
- 
- /**
-  * struct devfreq_dev_status - Data given from devfreq user device to
-@@ -101,35 +102,6 @@ struct devfreq_dev_profile {
- };
- 
- /**
-- * struct devfreq_governor - Devfreq policy governor
-- * @node:		list node - contains registered devfreq governors
-- * @name:		Governor's name
-- * @immutable:		Immutable flag for governor. If the value is 1,
-- *			this govenror is never changeable to other governor.
-- * @get_target_freq:	Returns desired operating frequency for the device.
-- *			Basically, get_target_freq will run
-- *			devfreq_dev_profile.get_dev_status() to get the
-- *			status of the device (load = busy_time / total_time).
-- *			If no_central_polling is set, this callback is called
-- *			only with update_devfreq() notified by OPP.
-- * @event_handler:      Callback for devfreq core framework to notify events
-- *                      to governors. Events include per device governor
-- *                      init and exit, opp changes out of devfreq, suspend
-- *                      and resume of per device devfreq during device idle.
-- *
-- * Note that the callbacks are called with devfreq->lock locked by devfreq.
-- */
--struct devfreq_governor {
--	struct list_head node;
--
--	const char name[DEVFREQ_NAME_LEN];
--	const unsigned int immutable;
--	int (*get_target_freq)(struct devfreq *this, unsigned long *freq);
--	int (*event_handler)(struct devfreq *devfreq,
--				unsigned int event, void *data);
--};
--
--/**
-  * struct devfreq - Device devfreq structure
-  * @node:	list node - contains the devices with devfreq that have been
-  *		registered.
--- 
-1.9.1
+	Regards
+		Oliver
+
