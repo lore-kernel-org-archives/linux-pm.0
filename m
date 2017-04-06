@@ -1,124 +1,146 @@
-From: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Subject: Re: [RFC PATCH v2 1/4] dt-bindings: update the
- Allwinner GPADC device tree binding for H3
-Date: Thu, 06 Apr 2017 03:11:38 +0800
-Message-ID: <58e61093.8c9d810a.74942.1a49SMTPIN_ADDED_MISSING@gmr-mx.google.com>
-Reply-To: icenowy-h8G6r0blFSE@public.gmane.org
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [RESEND PATCH V7 1/5] Documentation: devicetree: watchdog:
+ da9062/61 watchdog timer binding
+Date: Thu, 6 Apr 2017 04:32:18 -0700
+Message-ID: <d258bf91-06cd-dd96-c1e1-ef310c89565e@roeck-us.net>
+References: <cover.1491467308.git.stwiss.opensource@diasemi.com>
+ <1d280a35fc522f7b271c730988ab0f186fef25ba.1491467308.git.stwiss.opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDS6XAN6ZADRBFNBTDDQKGQEHHE62EI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:59887 "EHLO
+        bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754720AbdDFLc1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Apr 2017 07:32:27 -0400
+In-Reply-To: <1d280a35fc522f7b271c730988ab0f186fef25ba.1491467308.git.stwiss.opensource@diasemi.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steve Twiss <stwiss.opensource@diasemi.com>, DEVICETREE <devicetree@vger.kernel.org>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Wim Van Sebroeck <wim@iguana.be>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Zhang Rui <rui.zhang@intel.com>
 
-
-2017=E5=B9=B44=E6=9C=886=E6=97=A5 03:04=E4=BA=8E Rob Herring <robh@kernel.o=
-rg>=E5=86=99=E9=81=93=EF=BC=9A
+On 04/06/2017 01:28 AM, Steve Twiss wrote:
+> From: Steve Twiss <stwiss.opensource@diasemi.com>
 >
-> On Tue, Apr 4, 2017 at 10:02 AM, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org> wrote:=
-=20
-> >=20
-> >=20
-> > =E5=9C=A8 2017=E5=B9=B404=E6=9C=8804=E6=97=A5 22:47, Rob Herring =E5=86=
-=99=E9=81=93:=20
-> >>=20
-> >> On Sun, Apr 02, 2017 at 09:33:01PM +0800, Icenowy Zheng wrote:=20
-> >>>=20
-> >>> Allwinner H3 features a thermal sensor like the one in A33, but has i=
-ts=20
-> >>> register re-arranged, the clock divider moved to CCU (originally the=
-=20
-> >>> clock divider is in ADC) and added a pair of bus clock and reset.=20
-> >>>=20
-> >>> Update the binding document to cover H3.=20
-> >>>=20
-> >>> Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>=20
-> >>> ---=20
-> >>>=C2=A0 .../devicetree/bindings/mfd/sun4i-gpadc.txt=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0 | 23=20
-> >>> ++++++++++++++++++++--=20
-> >>>=C2=A0 1 file changed, 21 insertions(+), 2 deletions(-)=20
-> >>>=20
-> >>> diff --git a/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt=20
-> >>> b/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt=20
-> >>> index badff3611a98..7753133ca0ff 100644=20
-> >>> --- a/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt=20
-> >>> +++ b/Documentation/devicetree/bindings/mfd/sun4i-gpadc.txt=20
-> >>> @@ -4,12 +4,20 @@ The Allwinner SoCs all have an ADC that can also ac=
-t as=20
-> >>> a thermal sensor=20
-> >>>=C2=A0 and sometimes as a touchscreen controller.=20
-> >>>=20
-> >>>=C2=A0 Required properties:=20
-> >>> -=C2=A0 - compatible: "allwinner,sun8i-a33-ths",=20
-> >>> +=C2=A0 - compatible: must contain one of the following compatibles:=
-=20
-> >>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 - "allwinner,sun8i-a33-ths"=20
-> >>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 - "allwinner,sun8i-h3-ths"=20
-> >>>=C2=A0=C2=A0=C2=A0 - reg: mmio address range of the chip,=20
-> >>>=C2=A0=C2=A0=C2=A0 - #thermal-sensor-cells: shall be 0,=20
-> >>>=C2=A0=C2=A0=C2=A0 - #io-channel-cells: shall be 0,=20
-> >>>=20
-> >>> -Example:=20
-> >>> +Required properties for the following compatibles:=20
-> >>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 - "allwinner,sun8i-h3-ths"=20
-> >>> +=C2=A0 - clocks: the bus clock and the input clock of the ADC,=20
-> >>> +=C2=A0 - clock-names: should be "bus" and "ths",=20
-> >>> +=C2=A0 - resets: the bus reset of the ADC,=20
-> >>> +=20
-> >>> +Example for A33:=20
-> >>>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ths: ths@01c25000 {=
-=20
-> >>>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0 compatible =3D "allwinner,sun8i-a33-ths";=20
-> >>>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0 reg =3D <0x01c25000 0x100>;=20
-> >>> @@ -17,6 +25,17 @@ Example:=20
-> >>>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0 #io-channel-cells =3D <0>;=20
-> >>>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 };=20
-> >>>=20
-> >>> +Example for H3:=20
-> >>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ths: ths@01c25000 {=20
-> >>=20
-> >>=20
-> >> adc@...=20
-> >=20
-> >=20
-> > It's a thermal sensor, so I think call it THS is more appropriate=20
-> > here. It's implemented as an ADC driver just because the internal=20
-> > code reusing of Linux. From device tree binding view I choose to=20
-> > call it ths.=20
+> Add binding information for DA9062 and DA9061 watchdog.
 >
-> There's numerous occurrences in this file and the filename that call it a=
-n ADC.=20
+> Example bindings for both DA9062 and DA9061 devices are added. For
+> the DA9061 device, a fallback compatible line is added as a valid
+> combination of compatible strings.
 >
-> Furthermore, node names are supposed to be generic, not part #'s or=20
-> whatever you decide to make up. So pick from adc or temperature-sensor=20
-> as those are the standard names .=20
+> The original binding for DA9062 (only) used to reside inside the
+> Documentation/devicetree/bindings/mfd/da9062.txt MFD document.
+> The da9062-watchdog section was deleted in that file and replaced
+> with a link to the new DA9061/62 binding information stored in this
+> patch.
+>
+> Acked-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
 
-OK. I will make it :
-ths: temperature-sensor@1c25000
-
-(Calling it temperature sensor is according to the datasheet name)
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
 >
-> Rob=20
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+> ---
+>
+> Hi,
+>
+> I have just noticed.
+>
+> The driver code changes for the da9062/61 watchdog have been applied to
+> the linux kernel. The da9062/61 alterations for
+> drivers/watchdog/da9062_wdt.c appear in linux-stable/v4.10-rc1. Those
+> changes are linked to this binding patch, but this patch seems to have
+> been missed out.
+>
+> The source code dependency for this patch is given in the commit:
+> 72106c1 v4.10-rc1 watchdog: da9062/61: watchdog driver
+>
+> I don't see anything blocking for merge of this patch now.
+>
+> Regards,
+> Steve
+>
+> This patch applies against linux-next and v4.11-rc3
+>
+> v6 -> v7
+>  - NO CODE CHANGE
+>
+> v5 -> v6
+>  - NO CODE CHANGE
+>  - Rebased from v4.9 to v4.11-rc3
+>
+> v4 -> v5
+>  - NO CODE CHANGE
+>  - Rebased from v4.8 to v4.9
+>
+> v3 -> v4
+>  - NO CODE CHANGE
+>  - Patch renamed from [PATCH V3 2/9] to [PATCH V4 1/8]
+>  - Added Acked-by Rob Herring
+>
+> v2 -> v3
+>  - Patch renamed from [PATCH V1 02/10] to [PATCH V3 2/9]
+>  - Each compatible line should be a valid combination of compatible
+>    strings, alter DA9061 line to include the fall back compatible string
+>  - Update the commit message to describe this change
+>  - Add information about associated patches from this set without
+>    describing them as being explicitly dependent on this binding
+>
+> v1 -> v2
+>  - Patch renamed from [PATCH V1 07/10] to [PATCH V2 02/10] -- these
+>    changes were made to fix checkpatch warnings caused by the patch
+>    set dependency order
+>  - Updated the patch description to be explicit about where parts of
+>    this binding had originally been stored
+>  - A second example for DA9061 is provided to highlight the use of a
+>    fall-back compatible option for the DA9062 watchdog driver
+>
+> As previously:
+>
+> For the watchdog case: the DA9062 device driver is compatible with the
+> DA9061 and for this reason there is minimal change required to the DA9062
+> watchdog device driver. The example for the DA9061 watchdog shows the
+> use of a fall-back compatible string.
+>
+> Other information:
+> The device driver from this patch set (associated with this binding) is
+>   [PATCH V5 6/8] watchdog: da9061: watchdog driver
+>
+> Regards,
+> Steve Twiss, Dialog Semiconductor
+>
+>
+>  .../devicetree/bindings/watchdog/da9062-wdt.txt    | 23 ++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/watchdog/da9062-wdt.txt
+>
+> diff --git a/Documentation/devicetree/bindings/watchdog/da9062-wdt.txt b/Documentation/devicetree/bindings/watchdog/da9062-wdt.txt
+> new file mode 100644
+> index 0000000..b935b52
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/watchdog/da9062-wdt.txt
+> @@ -0,0 +1,23 @@
+> +* Dialog Semiconductor DA9062/61 Watchdog Timer
+> +
+> +Required properties:
+> +
+> +- compatible: should be one of the following valid compatible string lines:
+> +	"dlg,da9061-watchdog", "dlg,da9062-watchdog"
+> +	"dlg,da9062-watchdog"
+> +
+> +Example: DA9062
+> +
+> +	pmic0: da9062@58 {
+> +		watchdog {
+> +			compatible = "dlg,da9062-watchdog";
+> +		};
+> +	};
+> +
+> +Example: DA9061 using a fall-back compatible for the DA9062 watchdog driver
+> +
+> +	pmic0: da9061@58 {
+> +		watchdog {
+> +			compatible = "dlg,da9061-watchdog", "dlg,da9062-watchdog";
+> +		};
+> +	};
+>
