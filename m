@@ -1,104 +1,62 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v6 1/4] clk: Add support for runtime PM
-Date: Thu, 06 Apr 2017 14:46:55 +0200
-Message-ID: <5b4b2f3e-dc4b-0866-c4b8-4c7e4dba2be0@samsung.com>
-References: <1490182543-28550-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170322113554eucas1p27471f0de278c55d5dce7fdf120395e09@eucas1p2.samsung.com>
- <1490182543-28550-2-git-send-email-m.szyprowski@samsung.com>
- <149081897388.31513.7062843004022908296@resonance>
- <75509e0f-26cd-52e7-8c71-b004ab6abc81@samsung.com>
- <149089387341.31513.7531874072502656432@resonance>
+From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v3 0/9] Fix issues and factorize arm/arm64 capacity
+ information code
+Date: Thu, 6 Apr 2017 15:14:02 +0100
+Message-ID: <20170406141402.GJ9429@e106622-lin>
+References: <20170327131825.32134-1-juri.lelli@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-reply-to: <149089387341.31513.7531874072502656432@resonance>
-Sender: linux-clk-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170327131825.32134-1-juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Michael,
+Hi,
 
-On 2017-03-30 19:11, Michael Turquette wrote:
-> Quoting Marek Szyprowski (2017-03-30 00:24:15)
->> On 2017-03-29 22:22, Michael Turquette wrote:
->>> Quoting Marek Szyprowski (2017-03-22 04:35:40)
->>>> Registers for some clocks might be located in the SOC area, which are under the
->>>> power domain. To enable access to those registers respective domain has to be
->>>> turned on. Additionally, registers for such clocks will usually loose its
->>>> contents when power domain is turned off, so additional saving and restoring of
->>>> them might be needed in the clock controller driver.
->>>>
->>>> This patch adds basic infrastructure in the clocks core to allow implementing
->>>> driver for such clocks under power domains. Clock provider can supply a
->>>> struct device pointer, which is the used by clock core for tracking and managing
->>>> clock's controller runtime pm state. Each clk_prepare() operation
->>>> will first call pm_runtime_get_sync() on the supplied device, while
->>>> clk_unprepare() will do pm_runtime_put_sync() at the end.
->>>>
->>>> Additional calls to pm_runtime_get/put functions are required to ensure that any
->>>> register access (like calculating/changing clock rates and unpreparing/disabling
->>>> unused clocks on boot) will be done with clock controller in runtime resumend
->>>> state.
->>> The above is a bit confusing. Is clk_prepare really special? It seems to
->>> me that every single clk_ops callback will need this?
->> clk_prepare/unprepare are special, because they allow sleeping, so they
->> are natural
->> candidates for the place for calling runtime PM operations.
->> clk_enable()/disable()
->> is called under a spinlock, so runtime pm cannot be called efficiently
->> there, but
->> core guarantees that they are called after clk_prepare(), so accessing
->> hw registers
->> is safe. The only remaining calls are not guaranteed to be called always
->> after
->> clk_prepare(), so those additional calls and checks in runtime pm are
->> needed there.
-> Right, so any call that holds prepare_lock and might touch the hardware
-> needs to first call pm_runtime_get_sync.
->
->>> That leads to my second question: why put this in the clk core? Can the
->>> clk provider driver simply add pm_runtime_{get,put} calls into its
->>> clk_ops callbacks instead? The clk core does not directly touch hardware
->>> (e.g. reading registers) so putting the pm runtime calls into the
->>> provider callbacks should be sufficient.
->> In theory is should be possible to duplicate all kind of clock build blocks
->> (gates, muxes, dividers, ...) with additional runtime pm calls. This
->> would however
->> end in much more code and a bit more complicated locking. Implementing
->> it in clk
->> core made the code simpler. It also turned out that runtime pm
->> integration is
->> needed for more that a single clock provider: besides Samsung SoCs
->> (Exynos 5433
->> and newer, Exynos 4412 ISP, Exynos Audio Subsystem, hacks in Exynos 542x
->> can be
->> also replaced by runtime PM calls), Ulf mentioned that exactly similar
->> pattern
->> is used for some UX500 SoCs (STE). More will probably come once the
->> feature is
->> in, because for now such drivers simply forces runtime active state as a
->> workaround or don't instantiate related power domains at all.
-> I agree with the above, but I'm also wondering about the folks that use
-> regmap internally to their own clock provider drivers. I guess they will
-> have the option to either do their own thing or use this framework-level
-> solution.
->
-> I've started reviewing the code itself and will respond to those mails
-> separately.
+On 27/03/17 14:18, Juri Lelli wrote:
+> Hi,
+> 
+> arm and arm64 topology.c share a lot of code related to parsing of capacity
+> information. This is v3 of a solution [1] (based on Will's, Catalin's and
+> Mark's off-line suggestions) to move such common code in a single place:
+> drivers/base/arch_topology.c (by creating such file and conditionally compiling
+> it for arm and arm64 only).
+> 
+> First 4 patches are actually fixes for the current code.
+> 
+> Patch 5 is the actual refactoring.
+> 
+> Patch 6 is a minor change suggested by Greg and can be squashed as needed.
+> 
+> Patch 7 removes one of the extern symbols by changing a bit the now common
+> code.
+> 
+> Patch 8 removes the remaining externs (as required by Russell during v1 review)
+> by creating a new header file include/linux/arch_topology.h and including that
+> from arm, arm64 and drivers.
+> 
+> Last patch addresses Dietmar's comments to v1 and adds a 'atd_' prefix to
+> interfaces exported by drivers code and used by arch (and potentially others in
+> the future).
+> 
+> Changes from v2:
+> 
+>  - rebase on top of 4.11-rc4
+>  - fix various problems pointed out by Greg, thanks for the review!
+>    (see patch 5 for details)
+> 
 
-Is there a chance to get your comments soon? I would really like to give
-this patchset a try in linux-next for a few days, but for now Sylwester
-waits for you.
+Thanks Vincent for your comments.
 
-Stephen: what is your opinion on this patchset? Would you like to give it
-a try in -next?
+Everybody else, ping?
 
- > ...
+Thanks,
 
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
-
+- Juri
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
