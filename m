@@ -1,30 +1,42 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 11/24] uswsusp: Disable when the kernel is locked down
-Date: Thu, 6 Apr 2017 01:38:10 +0200
-Message-ID: <CAJZ5v0hp=GJtQ+YnNdaMw6rtbBzNyueY+iqjPkHLKp57t822ZQ@mail.gmail.com>
-References: <149142326734.5101.4596394505987813763.stgit@warthog.procyon.org.uk>
- <149142336965.5101.2946578135980499557.stgit@warthog.procyon.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <149142336965.5101.2946578135980499557.stgit-S6HVgzuS8uM4Awkfq6JHfwNdhmdF6hFW@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gnomes-qBU/x9rampVanCEyBjwyrvXRex20P6io@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, keyrings-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v4 0/4] BQ24190 charger fixes
+Date: Wed,  5 Apr 2017 20:10:44 -0700
+Message-ID: <20170406031048.12401-1-liam@networkimprov.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:34851 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751486AbdDFDLA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Apr 2017 23:11:00 -0400
+Received: by mail-pg0-f68.google.com with SMTP id g2so5195116pge.2
+        for <linux-pm@vger.kernel.org>; Wed, 05 Apr 2017 20:11:00 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>
 
-On Wed, Apr 5, 2017 at 10:16 PM, David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org> wrote:
-> From: Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>
->
-> uswsusp allows a user process to dump and then restore kernel state, which
-> makes it possible to modify the running kernel.  Disable this if the kernel
-> is locked down.
->
-> Signed-off-by: Matthew Garrett <mjg59-1xO5oi07KQx4cg9Nei1l7Q@public.gmane.org>
-> Signed-off-by: David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-> cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Hi Sebastian,
 
-You probably want to disable hibernation altogether in this case.
+Here in one patchset are two patches I posted recently, and two more:
 
-Thanks,
-Rafael
+Patch 1 is a replacement (as agreed) for
+  "power: supply: bq24190_charger: Don't spam the logs on charger plug / unplug"
+Patch 2 fixes up Hans' extcon patch. If you would like me to squash it with his
+  original patch, let me know.
+Patch 3 (repost) fixes some issues with PM runtime error handling.
+Patch 4 fixes a nit in register_reset().
+
+Changes in v4:
+* fix definition of bq24190_reg_poc_chg_config_*
+* revert to if (device_property_read... == 0)
+
+Liam Breck (4):
+  power: bq24190_charger: Limit over/under voltage fault logging
+  power: bq24190_charger: Clean up extcon code
+  power: bq24190_charger: Uniform pm_runtime_get() failure handling
+  power: bq24190_charger: Delay before polling reset flag
+
+ drivers/power/supply/bq24190_charger.c | 125 ++++++++++++++++-----------------
+ 1 file changed, 62 insertions(+), 63 deletions(-)
+
+-- 
+2.9.3
