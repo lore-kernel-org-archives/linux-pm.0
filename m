@@ -1,40 +1,49 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH] PM / devfreq: Move struct devfreq_governor to devfreq
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: Move struct devfreq_governor to devfreq
  directory
-Date: Fri, 07 Apr 2017 06:41:33 +0000
-Message-ID: <20170407064133epcms1p6daefde5d8ca9e1253c51b0bd3bc23f2d@epcms1p6>
+Date: Fri, 07 Apr 2017 15:48:34 +0900
+Message-ID: <58E73642.9040104@samsung.com>
 References: <1491452375-13815-1-git-send-email-cw00.choi@samsung.com>
         <CGME20170406041937epcas1p1b5cd8e13bf4049e1e4e5ff4d2b1b75b1@epcms1p6>
-Reply-To: myungjoo.ham@samsung.com
+        <20170407064133epcms1p6daefde5d8ca9e1253c51b0bd3bc23f2d@epcms1p6>
 Mime-Version: 1.0
-Content-Type: multipart/related;
-        boundary="----=_Part_132948_1432243237.1491547293178"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:53705 "EHLO
+Received: from mailout2.samsung.com ([203.254.224.25]:56016 "EHLO
         epoutp02.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1752954AbdDGGlf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Apr 2017 02:41:35 -0400
-Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
-        by epoutp02.samsung.com (KnoxPortal) with ESMTP id 20170407064133epoutp025cfe80e8d6b92d2da0bb4c89dbc055fd~zClxplKq71173011730epoutp02H
-        for <linux-pm@vger.kernel.org>; Fri,  7 Apr 2017 06:41:33 +0000 (GMT)
-In-Reply-To: <1491452375-13815-1-git-send-email-cw00.choi@samsung.com>
+        with ESMTP id S1753067AbdDGGsh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Apr 2017 02:48:37 -0400
+In-reply-to: <20170407064133epcms1p6daefde5d8ca9e1253c51b0bd3bc23f2d@epcms1p6>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>
 Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-------=_Part_132948_1432243237.1491547293178
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
+Hi,
 
-PiBUaGlzIHBhdGNoIG1vdmVzIHRoZSBzdHJ1Y3QgZGV2ZnJlcV9nb3Zlcm5vciBmcm9tIGhlYWRl
-ciBmaWxlDQo+IHRvIHRoZSBkZXZmcmVxIGRpcmVjdG9yeSBiZWNhdXNlIHRoaXMgc3RydWN0dXJl
-IGlzIHByaXZhdGUgZGF0YQ0KPiBhbmQgaXQgaGF2ZSB0byBiZSBvbmx5IGFjY2Vzc2VkIGJ5IHRo
-ZSBkZXZmcmVxIGNvcmUuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBDaGFud29vIENob2kgPGN3MDAu
-Y2hvaUBzYW1zdW5nLmNvbT4NCj4gLS0tDQo+ICBkcml2ZXJzL2RldmZyZXEvZ292ZXJub3IuaCB8
-IDI5ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ICBpbmNsdWRlL2xpbnV4L2RldmZy
-ZXEuaCAgICB8IDMwICstLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiAgMiBmaWxlcyBj
-aGFuZ2VkLCAzMCBpbnNlcnRpb25zKCspLCAyOSBkZWxldGlvbnMoLSkNCj4gDQoNCldoZXJlIGhh
-dmUgeW91IGJhc2VkIG9uIHRoZSBjb21taXQ/DQpJdCdzIG5vdCBhcHBsaWFibGUgdG8gNC4xMS1y
-YzUuDQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg0K
-------=_Part_132948_1432243237.1491547293178--
+On 2017년 04월 07일 15:41, MyungJoo Ham wrote:
+>> This patch moves the struct devfreq_governor from header file
+>> to the devfreq directory because this structure is private data
+>> and it have to be only accessed by the devfreq core.
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  drivers/devfreq/governor.h | 29 +++++++++++++++++++++++++++++
+>>  include/linux/devfreq.h    | 30 +-----------------------------
+>>  2 files changed, 30 insertions(+), 29 deletions(-)
+>>
+> 
+> Where have you based on the commit?
+> It's not appliable to 4.11-rc5.
+
+When I applied it to 4.11-rc5, there is no any conflict.
+
+I used the 'git am' command. Also, As I knew,
+after releasing the 4.11-rc1, there was no patches
+related to both drivers/devfreq/governor.h and include/linux/devfreq.h
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
