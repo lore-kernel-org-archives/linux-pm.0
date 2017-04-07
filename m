@@ -1,32 +1,58 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH v2 4/4] ARM: dts: imx6qp-sabresd: Set reg_arm regulator
- supply
-Date: Fri, 7 Apr 2017 20:21:23 +0800
-Message-ID: <20170407122121.GD16503@dragon>
-References: <cover.1491324640.git.leonard.crestez@nxp.com>
- <f032759a6df750e504d040dfc80d834046c4c540.1491324640.git.leonard.crestez@nxp.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH 1/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE
+ enter
+Date: Fri, 7 Apr 2017 15:59:09 +0100
+Message-ID: <20170407145909.GD29455@e110439-lin>
+References: <1488469507-32463-1-git-send-email-patrick.bellasi@arm.com>
+ <1488469507-32463-2-git-send-email-patrick.bellasi@arm.com>
+ <1642681.8y9FrPCKVW@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:44206 "EHLO mail.kernel.org"
+Received: from foss.arm.com ([217.140.101.70]:56480 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932601AbdDGMVk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 7 Apr 2017 08:21:40 -0400
+        id S933809AbdDGO7P (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 7 Apr 2017 10:59:15 -0400
 Content-Disposition: inline
-In-Reply-To: <f032759a6df750e504d040dfc80d834046c4c540.1491324640.git.leonard.crestez@nxp.com>
+In-Reply-To: <1642681.8y9FrPCKVW@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Mark Brown <broonie@kernel.org>, Robin Gong <yibin.gong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Steven Rostedt <rostedt@goodmis.org>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Chris Redpath <chris.redpath@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-On Tue, Apr 04, 2017 at 08:04:14PM +0300, Leonard Crestez wrote:
-> On imx6qp-sabresd LDO_ARM is connected to a different PMIC output than
-> the other imx6qdl-sabresd boards.
+On 29-Mar 00:18, Rafael J. Wysocki wrote:
+> On Thursday, March 02, 2017 03:45:02 PM Patrick Bellasi wrote:
+> > Currently, sg_cpu's flags are set to the value defined by the last call of
+> > the cpufreq_update_util()/cpufreq_update_this_cpu(); for RT/DL classes
+> > this corresponds to the SCHED_CPUFREQ_{RT/DL} flags always being set.
+> > 
+> > When multiple CPU shares the same frequency domain it might happen that a
+> > CPU which executed an RT task, right before entering IDLE, has one of the
+> > SCHED_CPUFREQ_RT_DL flags set, permanently, until it exits IDLE.
 > 
-> Setting cpu0 arm-supply to sw2_reg is wrong, this must have mistakenly
-> slipped out of the vendor tree where this is are used for LDO bypass.
-> 
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-> Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
+> But if it is idle, it won't be taken into account by sugov_next_freq_shared(), will it?
 
-Applied, thanks.
+Yes, but:
+
+1) This kind of "useless RT requests" are ignored only if more then
+   TICK_NSEC have elapsed since the last update.
+
+2) The proposed patch, apart from resetting the flags, it also bails
+   out without potentially triggering an already too late switch to MAX,
+   which starts also a new throttling interval.
+
+3) By resetting the flags we keep the internal state machine more
+   consistent with what the scheduler knows, i.e. we are now idle.
+
+Considering overall these three points, IMO this small patch makes the
+schedutil machinery a bit more predictable.
+ 
+> Thanks,
+> Rafael
+
+Cheers Patrick
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
