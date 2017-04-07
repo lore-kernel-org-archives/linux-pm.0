@@ -1,49 +1,66 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: Move struct devfreq_governor to devfreq
- directory
-Date: Fri, 07 Apr 2017 15:48:34 +0900
-Message-ID: <58E73642.9040104@samsung.com>
-References: <1491452375-13815-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20170406041937epcas1p1b5cd8e13bf4049e1e4e5ff4d2b1b75b1@epcms1p6>
-        <20170407064133epcms1p6daefde5d8ca9e1253c51b0bd3bc23f2d@epcms1p6>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>, MSI X99A
+ SLI PLUS i7-5820K,  MSI i7-5930K, MSI X99A Raider i7-5820K
+Date: Fri, 07 Apr 2017 06:58:41 +0000
+Message-ID: <bug-176411-137361-HH0LArdmMJ@https.bugzilla.kernel.org/>
+References: <bug-176411-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:56016 "EHLO
-        epoutp02.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1753067AbdDGGsh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Apr 2017 02:48:37 -0400
-In-reply-to: <20170407064133epcms1p6daefde5d8ca9e1253c51b0bd3bc23f2d@epcms1p6>
+Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:56744 "EHLO
+        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752775AbdDGG6r (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Apr 2017 02:58:47 -0400
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id D2444285EE
+        for <linux-pm@vger.kernel.org>; Fri,  7 Apr 2017 06:58:46 +0000 (UTC)
+Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 3047E285F0
+        for <linux-pm@vger.kernel.org>; Fri,  7 Apr 2017 06:58:46 +0000 (UTC)
+In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-pm@kernel.org
 
-Hi,
+https://bugzilla.kernel.org/show_bug.cgi?id=176411
 
-On 2017년 04월 07일 15:41, MyungJoo Ham wrote:
->> This patch moves the struct devfreq_governor from header file
->> to the devfreq directory because this structure is private data
->> and it have to be only accessed by the devfreq core.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  drivers/devfreq/governor.h | 29 +++++++++++++++++++++++++++++
->>  include/linux/devfreq.h    | 30 +-----------------------------
->>  2 files changed, 30 insertions(+), 29 deletions(-)
->>
+Zhang Rui (rui.zhang@intel.com) changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEEDINFO                    |CLOSED
+         Resolution|---                         |UNREPRODUCIBLE
+
+--- Comment #34 from Zhang Rui (rui.zhang@intel.com) ---
+(In reply to ish from comment #33)
+> It appears that this has resolved itself for me. I've recently updated to
+> kernel:
 > 
-> Where have you based on the commit?
-> It's not appliable to 4.11-rc5.
+> Linux desktop 4.10.8-200.fc25.x86_64 #1 SMP Fri Mar 31 13:20:22 UTC 2017
+> x86_64 x86_64 x86_64 GNU/Linux
+> 
+> with Fedora 25.
+> 
 
-When I applied it to 4.11-rc5, there is no any conflict.
+Good to know.
 
-I used the 'git am' command. Also, As I knew,
-after releasing the 4.11-rc1, there was no patches
-related to both drivers/devfreq/governor.h and include/linux/devfreq.h
+> I did a few reboots without power cycle with c-states disabled, which is how
+> I last left my bios configured.  Running htop showed CPU percentages after
+> each boot, i7z showed cores hitting max mhz.
+> 
+> I then reset my bios to factory default, which enables c-state. And did a
+> few non-power cycle reboots, again seeing expected behaviour with the cores.
+> I did not have to power cycle this time to get full speed.
+> 
+> I'll keep monitoring it, but is it possible a kernel update could have fixed
+> it?
+
+Well, maybe, I'm not quite sure, but I do know there is quite a lot of
+intel-pstate fixes in recent kernels.
+Anyway, bug closes as it can not be reproduced. Please feel free to reopen it
+if you can reproduce the problem in the latest upstream kernel again.
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+You are receiving this mail because:
+You are the assignee for the bug.
