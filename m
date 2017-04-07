@@ -1,101 +1,103 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v12.4 6/10] power: bq27xxx_battery: Add
- power_supply_battery_info support
-Date: Fri, 7 Apr 2017 14:19:42 -0500
-Message-ID: <c37f430f-12bd-e84e-66fe-2a9eb7c76339@ti.com>
-References: <20170404085706.32592-1-liam@networkimprov.net>
- <20170404085706.32592-4-liam@networkimprov.net>
- <54023de5-fd59-777b-36b4-d49a1deb98cc@ti.com>
- <CAKvHMgRX9_WzqHuoK3Qs7xQDbsYiCRJokwkP3k5zpiiiFg15Mw@mail.gmail.com>
- <CAKvHMgT6bqtg464r80k0wuR3nWLvZfjrpCGOcgTP+TLBhuYdXA@mail.gmail.com>
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: Re: [PATCH v11 01/10] devicetree: power: Add battery.txt
+Date: Fri, 7 Apr 2017 12:23:29 -0700
+Message-ID: <CAKvHMgTxRJXgfpDgqQ_+=ErFEZAh9CodjVn5ZOoCfqPqSZWetA@mail.gmail.com>
+References: <20170320094335.19224-1-liam@networkimprov.net> <20170320094335.19224-2-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:33238 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932105AbdDGTTp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Apr 2017 15:19:45 -0400
-In-Reply-To: <CAKvHMgT6bqtg464r80k0wuR3nWLvZfjrpCGOcgTP+TLBhuYdXA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170320094335.19224-2-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: linux-pm@vger.kernel.org
 
-On 04/07/2017 01:58 PM, Liam Breck wrote:
-> On Thu, Apr 6, 2017 at 11:23 AM, Liam Breck <liam@networkimprov.net> wrote:
->> On Thu, Apr 6, 2017 at 7:30 AM, Andrew F. Davis <afd@ti.com> wrote:
->>> On 04/04/2017 03:57 AM, Liam Breck wrote:
->>>> From: Liam Breck <kernel@networkimprov.net>
->>>>
->>>> Previously there was no way to configure these chips in the event that the
->>>> defaults didn't match the battery in question.
->>>>
->>>> We now call power_supply_get_battery_info(), check its values, and write
->>>> battery data to chip data memory (flash/RAM/NVM).
->>>>
->>>
->>> I'm almost convinced now this is *not* the correct thing to do, we
->>> should not be writing to NVM. If the DT states different values than in
->>> the device we need to trust the device. DT is static for a board, the
->>> battery data may not be.
->>>
->>> At most we could have an override flag as a driver param that causes us
->>> to ignore NVM and use the DT values, but always overwriting the device's
->>> NVM with the DT values is not what most want.
->>
->> Reprising my previous response, with addenda...
->>
->> We trust the distro/device kernel package to contain correct config
->> for RAM-only chips, but not NVM? A battery config would not be set in
->> mainline dts files, unless a battery is soldered to the board, or
->> similar. I will note this in our DT binding.
->>
+[+CC Tony Lindgren]
 
-DT is for hardware descriptions, in cases where the hardware cannot be
-automatically detected. If we find we can get the battery info from the
-battery gauge why would we not only ignore it, but go and overwrite it
-with the info from DT? This is backwards.
+Rob & Sebastian & Tony & Andrew,
 
->> Re DT provisioning... Device makers and distros are extremely careful
->> about what they put into DTs and what dtbs are included with a kernel
->> package. They know that a misconfigured DT is a showstopper, and could
->> be catastrophic. I've seen the latter -- a guru-level kernel
->> maintainer whom I work with set a DT voltage level wrong on a
->> prototype and fried its eMMC chip. If the DT has a gauge config, the
->> default assumption is that it's correct.
->>
+With this binding we allow a DT to hard-code battery characteristics.
+But mainline dts files for boards & boxes really should NOT include
+immutable battery properties unless the battery is inseparable from
+the electronics. We want to prevent unpredictable behavior due to
+incorrect DT properties after a user changes a battery to a different
+type.
 
-And if that eMMC chip could communicate its requested voltage we would
-not need to describe it in DT, and we certainly would not say "sorry
-eMMC, you requested 3v but DT says you need 33v, so thats what you're
-getting".
+It's OK for device vendors to hard-code battery characteristics in DT,
+but mainline dts is another matter.
 
->> It is wrong to force distros and device makers to include
->> /etc/modprobe.d/xyz.conf to fully configure the hardware.
->>
+If this is agreed, how should we document it?
 
-It's either that or add a driver sysfs entry, we don't configure
-hardware in DT, thats rule #1. You got an ack for a binding that
-describes a "simple-battery"(one that cannot self report), you are
-misusing this binding as input configuration data to feed to batteries
-that *can* report their configuration.
 
->> However we should indeed let users override the DT config with a
->> module param. How about use-on-chip-config=1, type bool?
-> 
-
-If we do add a param it needs to be default "off". It should not update
-saved battery data on the chip in either case, that needs to be a
-manually triggered through sysfs or similar.
-
-> I came up with...
-> 
-> static bool bq27xxx_dt_battery = true;
-> module_param_named(use_dt_battery, bq27xxx_dt_battery, bool, S_IRUGO);
-> MODULE_PARM_DESC(use_dt_battery,
->  "Use devicetree monitored-battery config if present. Default is 1/Y.");
-> 
-> After we check for DT monitored-battery, we test bq27xxx_dt_battery,
-> and if false, emit a warning that we are skipping the DT config.
-> 
+On Mon, Mar 20, 2017 at 2:43 AM, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> wrote:
+> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>
+> Documentation of static battery characteristics that can be defined
+> for batteries which cannot self-identify. This information is required
+> by fuel-gauge and charger chips for proper handling of the battery.
+>
+> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+> ---
+>  .../devicetree/bindings/power/supply/battery.txt   | 43 ++++++++++++++++++++++
+>  1 file changed, 43 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+>
+> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+> new file mode 100644
+> index 0000000..53a68c0
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+> @@ -0,0 +1,43 @@
+> +Battery Characteristics
+> +
+> +The devicetree battery node provides static battery characteristics.
+> +In smart batteries, these are typically stored in non-volatile memory
+> +on a fuel gauge chip. The battery node should be used where there is
+> +no appropriate non-volatile memory, or it is unprogrammed/incorrect.
+> +
+> +Required Properties:
+> + - compatible: Must be "simple-battery"
+> +
+> +Optional Properties:
+> + - voltage-min-design-microvolt: drained battery voltage
+> + - energy-full-design-microwatt-hours: battery design energy
+> + - charge-full-design-microamp-hours: battery design capacity
+> +
+> +Battery properties are named, where possible, for the corresponding
+> +elements in enum power_supply_property, defined in
+> +https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/power_supply.h#n86
+> +
+> +Batteries must be referenced by chargers and/or fuel-gauges
+> +using a phandle. The phandle's property should be named
+> +"monitored-battery".
+> +
+> +Example:
+> +
+> +       bat: battery {
+> +               compatible = "simple-battery";
+> +               voltage-min-design-microvolt = <3200000>;
+> +               energy-full-design-microwatt-hours = <5290000>;
+> +               charge-full-design-microamp-hours = <1430000>;
+> +       };
+> +
+> +       charger: charger@11 {
+> +               ....
+> +               monitored-battery = <&bat>;
+> +               ...
+> +       };
+> +
+> +       fuel_gauge: fuel-gauge@22 {
+> +               ....
+> +               monitored-battery = <&bat>;
+> +               ...
+> +       };
+> --
+> 2.9.3
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
