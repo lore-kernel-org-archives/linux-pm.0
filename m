@@ -1,62 +1,40 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V7 0/7]  da9061: DA9061 driver submission
-Date: Thu, 6 Apr 2017 21:51:21 -0700
-Message-ID: <20170407045120.GA23772@localhost.localdomain>
-References: <cover.1490712213.git.stwiss.opensource@diasemi.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH] PM / devfreq: Move struct devfreq_governor to devfreq
+ directory
+Date: Fri, 07 Apr 2017 06:41:33 +0000
+Message-ID: <20170407064133epcms1p6daefde5d8ca9e1253c51b0bd3bc23f2d@epcms1p6>
+References: <1491452375-13815-1-git-send-email-cw00.choi@samsung.com>
+        <CGME20170406041937epcas1p1b5cd8e13bf4049e1e4e5ff4d2b1b75b1@epcms1p6>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="4Ckj6UjgE2iN1+kY"
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1490712213.git.stwiss.opensource@diasemi.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Steve Twiss <stwiss.opensource@diasemi.com>
-Cc: DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>, Support Opensource <support.opensource@diasemi.com>
+Content-Type: multipart/related;
+        boundary="----=_Part_132948_1432243237.1491547293178"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:53705 "EHLO
+        epoutp02.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1752954AbdDGGlf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Apr 2017 02:41:35 -0400
+Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
+        by epoutp02.samsung.com (KnoxPortal) with ESMTP id 20170407064133epoutp025cfe80e8d6b92d2da0bb4c89dbc055fd~zClxplKq71173011730epoutp02H
+        for <linux-pm@vger.kernel.org>; Fri,  7 Apr 2017 06:41:33 +0000 (GMT)
+In-Reply-To: <1491452375-13815-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+------=_Part_132948_1432243237.1491547293178
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
---4Ckj6UjgE2iN1+kY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hey,
-
-On Tue, Mar 28, 2017 at 03:43:33PM +0100, Steve Twiss wrote:
-> From: Steve Twiss <stwiss.opensource@diasemi.com>
->=20
-> This patch set adds support for the Dialog DA9061 Power Management IC.
-> Support is made by altering the existing DA9062 device driver, where
-> appropriate.
->=20
-> Hello,
->=20
-> Previously, there were only minor changes for v6.
-> The patch v7 introduces a compile test for x86 64-bit.
->=20
-
-Applied patches 2 and 7 on my tree.
-
---4Ckj6UjgE2iN1+kY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJY5xq7AAoJEA6VkvSQfF5TcF8P/1w+me4ny0XScQdGXdgRogRs
-tlw5BiBH4lHvFEm/RM5f4KxhwW+AFHN17CcOhhVFn7RPkJQaVEoV05zWU2LDxM4L
-sGTGNdyxS11LIZHrg8fB/5tH27N+Hg/U1texkn+EXkq3dZMY4mitYMrbKV+dk0rF
-lMRadqhnKHPpo+1joYRLAQrkG4awWx5QGazpt4a9MLyQ1Shya+IvhcBpKrj6m+DS
-YlePeNgW39FimP+6vyo8QD1HwvRUsOOKd38VV6Kaah6YM4khn3HMeK/yajE/i0DL
-FBbO7u6YvxvWyNlgcI33lR5THcVSLCY55PGciY88ONmbMlIbX1PGAc4Eap3rYVfk
-puef9ktlKoIjtKgk0NGl6K/Z8XGmgY9ixFFrcFKr9YTFuKY/ybLgzPdw7luEyerm
-npVLEo61rlN3mi/dqmNUwsgTO8L5rWrv4DsB6PlTbicp9Rz9EkmvoSG+5+/bDnTp
-PxQhm79rNPZybWODdUmruBScxGljOikO7GWz9Kk7aEm3iJhfFprNXOmCx3R5Yi5W
-U2g8yA65oSyawbpwON57b7xV1f21QASSyZ6A6kSes5wKQI50JfIjmUu0eM/fxdf1
-+klGDfrq+8WIBgIJ7OKnOag3xjTpwBDnrol6x1H3myZHtBC/6VwoQH5G0mUGbrTS
-gC7v4YrKNaae3ZGb9weV
-=rbMU
------END PGP SIGNATURE-----
-
---4Ckj6UjgE2iN1+kY--
+PiBUaGlzIHBhdGNoIG1vdmVzIHRoZSBzdHJ1Y3QgZGV2ZnJlcV9nb3Zlcm5vciBmcm9tIGhlYWRl
+ciBmaWxlDQo+IHRvIHRoZSBkZXZmcmVxIGRpcmVjdG9yeSBiZWNhdXNlIHRoaXMgc3RydWN0dXJl
+IGlzIHByaXZhdGUgZGF0YQ0KPiBhbmQgaXQgaGF2ZSB0byBiZSBvbmx5IGFjY2Vzc2VkIGJ5IHRo
+ZSBkZXZmcmVxIGNvcmUuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBDaGFud29vIENob2kgPGN3MDAu
+Y2hvaUBzYW1zdW5nLmNvbT4NCj4gLS0tDQo+ICBkcml2ZXJzL2RldmZyZXEvZ292ZXJub3IuaCB8
+IDI5ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ICBpbmNsdWRlL2xpbnV4L2RldmZy
+ZXEuaCAgICB8IDMwICstLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiAgMiBmaWxlcyBj
+aGFuZ2VkLCAzMCBpbnNlcnRpb25zKCspLCAyOSBkZWxldGlvbnMoLSkNCj4gDQoNCldoZXJlIGhh
+dmUgeW91IGJhc2VkIG9uIHRoZSBjb21taXQ/DQpJdCdzIG5vdCBhcHBsaWFibGUgdG8gNC4xMS1y
+YzUuDQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg0K
+------=_Part_132948_1432243237.1491547293178--
