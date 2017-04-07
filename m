@@ -1,66 +1,118 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>, MSI X99A
- SLI PLUS i7-5820K,  MSI i7-5930K, MSI X99A Raider i7-5820K
-Date: Fri, 07 Apr 2017 06:58:41 +0000
-Message-ID: <bug-176411-137361-HH0LArdmMJ@https.bugzilla.kernel.org/>
-References: <bug-176411-137361@https.bugzilla.kernel.org/>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister
+ duplicate ACPI battery supply
+Date: Fri, 7 Apr 2017 09:18:07 +0200
+Message-ID: <c62e0707-7415-9473-98cb-3741c4f258ff@redhat.com>
+References: <20170316161601.32267-1-hdegoede@redhat.com>
+ <20170316161601.32267-4-hdegoede@redhat.com>
+ <6382698.NuYXpb6L7h@aspire.rjw.lan>
+ <0ed23626-b6b2-a42e-2a1d-762c8c833f7b@redhat.com>
+ <CAJZ5v0h466y6hBy_-12AEgcpAUXEA7cZkNwXZwvsHnjWtoqFeg@mail.gmail.com>
+ <eb52c4b4-fc3c-b11b-edef-a35c6bb0d82d@redhat.com>
+ <CAJZ5v0i7TN+iJLR_SeaCrpKJ13g1_bQ-G54cugAF9Dm4=pifAg@mail.gmail.com>
+ <0c1cc4fc-d127-54d1-334b-9a569354d2a3@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:56744 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752775AbdDGG6r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Apr 2017 02:58:47 -0400
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id D2444285EE
-        for <linux-pm@vger.kernel.org>; Fri,  7 Apr 2017 06:58:46 +0000 (UTC)
-Received: from pdx-korg-bugzilla-1.web.codeaurora.org (unknown [172.30.200.120])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 3047E285F0
-        for <linux-pm@vger.kernel.org>; Fri,  7 Apr 2017 06:58:46 +0000 (UTC)
-In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <0c1cc4fc-d127-54d1-334b-9a569354d2a3@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=176411
+Hi,
 
-Zhang Rui (rui.zhang@intel.com) changed:
+On 31-03-17 11:57, Hans de Goede wrote:
+> Hi,
+>
+> On 31-03-17 11:11, Rafael J. Wysocki wrote:
+>> On Fri, Mar 31, 2017 at 11:08 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>>> Hi,
+>>>
+>>> On 31-03-17 11:05, Rafael J. Wysocki wrote:
+>>>>
+>>>> On Fri, Mar 31, 2017 at 11:01 AM, Hans de Goede <hdegoede@redhat.com>
+>>>> wrote:
+>>>>
+>>>> [cut]
+>>>>
+>>>>>>> --- a/drivers/power/supply/axp288_fuel_gauge.c
+>>>>>>> +++ b/drivers/power/supply/axp288_fuel_gauge.c
+>>>>>>> @@ -26,6 +26,7 @@
+>>>>>>>  #include <linux/mfd/axp20x.h>
+>>>>>>>  #include <linux/platform_device.h>
+>>>>>>>  #include <linux/power_supply.h>
+>>>>>>> +#include <linux/power/acpi.h>
+>>>>>>>  #include <linux/iio/consumer.h>
+>>>>>>>  #include <linux/debugfs.h>
+>>>>>>>  #include <linux/seq_file.h>
+>>>>>>> @@ -754,6 +755,8 @@ static int axp288_fuel_gauge_probe(struct
+>>>>>>> platform_device *pdev)
+>>>>>>>                 return ret;
+>>>>>>>         }
+>>>>>>>
+>>>>>>> +       acpi_battery_unregister();
+>>>>>>> +
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> What if the ACPI battery driver is loaded after this has been called
+>>>>>> already?
+>>>>>
+>>>>>
+>>>>>
+>>>>> The module exports that symbol so it must be loaded already.
+>>>>
+>>>>
+>>>> But then it may be unloaded manually and loaded again, may it not?
+>>>
+>>>
+>>> Only if you first unload axp288_fuel_gauge.ko otherwise it will
+>>> have a refcount > 0.
+>>
+>> OK
+>>
+>> Anyway, I'd prefer blacklists in the battery and ac drivers to be honest.
+>
+> As I explained in my reply to the discussion around the first patch that
+> is somewhat hard to do and requires encoding knowledge in those drivers
+> which really does not belong there:
+>
+> "The problem is that Intel re-uses HIDs between generations and
+> for the Whiskey Cove PMIC we want to not use the ACPI battery
+> and ac drivers on Cherry Trail (where they are known to be
+> broken) but things are different on Apollo Lake. Yet both
+> use the same HID for their companion Whiskey Cove PMIC even
+> though they are 2 completely different revisions of the PMIC
+> (e.g. one uses i2c the other does not).
+>
+> The 2 native drivers have code to detect which revision they
+> are dealing with and exit with -ENODEV if it is not the
+> revision they were written for, but this means that simple
+> HID blacklisting will not work. So IMHO the decision to
+> unregister the  ACPI battery / ac interface really belongs
+> in the native driver as that has all the nitty gritty detail
+> needed to make that decision."
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |CLOSED
-         Resolution|---                         |UNREPRODUCIBLE
+So thinking more about this, esp. after receiving a bug report
+from a user getting ACPI errors because of Linux not implementing
+the proprietary undocumented BMOP opregion before the ACPI battery
+driver gets unregistered by the native one, I thing we do indeed
+need to go with a blacklist.
 
---- Comment #34 from Zhang Rui (rui.zhang@intel.com) ---
-(In reply to ish from comment #33)
-> It appears that this has resolved itself for me. I've recently updated to
-> kernel:
-> 
-> Linux desktop 4.10.8-200.fc25.x86_64 #1 SMP Fri Mar 31 13:20:22 UTC 2017
-> x86_64 x86_64 x86_64 GNU/Linux
-> 
-> with Fedora 25.
-> 
+This means also being able to match by _HRV, as Some HIDs are
+re-used for different hardware between Bay Trail / Cherry Trail /
+Broxton with just a bump of _HRV.
 
-Good to know.
+I'm currently working on respinning my
+"acpi: utils: Add new acpi_dev_present helper" to address the
+review comments on it. I'm going to give it an optional hrv
+function argument for this use, so as to not having to implement
+hrv checking code in both ac.c and battery.c .
 
-> I did a few reboots without power cycle with c-states disabled, which is how
-> I last left my bios configured.  Running htop showed CPU percentages after
-> each boot, i7z showed cores hitting max mhz.
-> 
-> I then reset my bios to factory default, which enables c-state. And did a
-> few non-power cycle reboots, again seeing expected behaviour with the cores.
-> I did not have to power cycle this time to get full speed.
-> 
-> I'll keep monitoring it, but is it possible a kernel update could have fixed
-> it?
+So self-nack for this series as is.
 
-Well, maybe, I'm not quite sure, but I do know there is quite a lot of
-intel-pstate fixes in recent kernels.
-Anyway, bug closes as it can not be reproduced. Please feel free to reopen it
-if you can reproduce the problem in the latest upstream kernel again.
+Regards,
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Hans
