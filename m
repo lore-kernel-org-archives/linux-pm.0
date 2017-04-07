@@ -1,118 +1,120 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister
- duplicate ACPI battery supply
-Date: Fri, 7 Apr 2017 09:18:07 +0200
-Message-ID: <c62e0707-7415-9473-98cb-3741c4f258ff@redhat.com>
-References: <20170316161601.32267-1-hdegoede@redhat.com>
- <20170316161601.32267-4-hdegoede@redhat.com>
- <6382698.NuYXpb6L7h@aspire.rjw.lan>
- <0ed23626-b6b2-a42e-2a1d-762c8c833f7b@redhat.com>
- <CAJZ5v0h466y6hBy_-12AEgcpAUXEA7cZkNwXZwvsHnjWtoqFeg@mail.gmail.com>
- <eb52c4b4-fc3c-b11b-edef-a35c6bb0d82d@redhat.com>
- <CAJZ5v0i7TN+iJLR_SeaCrpKJ13g1_bQ-G54cugAF9Dm4=pifAg@mail.gmail.com>
- <0c1cc4fc-d127-54d1-334b-9a569354d2a3@redhat.com>
+Subject: Re: [PATCH 1/2] acpi: utils: Add new acpi_dev_present helper
+Date: Fri, 7 Apr 2017 12:39:09 +0200
+Message-ID: <29af2f0a-8f3a-dc67-3fb8-59117da33e86@redhat.com>
+References: <20170316161736.339-1-hdegoede@redhat.com>
+ <20170316161736.339-2-hdegoede@redhat.com>
+ <4029834.c3GWUpRlkb@aspire.rjw.lan>
+ <20170329092638.GU2957@lahna.fi.intel.com>
+ <1490806252.708.53.camel@linux.intel.com>
+ <20170330083341.GA10207@h08.hostsharing.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <0c1cc4fc-d127-54d1-334b-9a569354d2a3@redhat.com>
+In-Reply-To: <20170330083341.GA10207@h08.hostsharing.net>
 Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Robert Moore <robert.moore@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi Lukas,
 
-On 31-03-17 11:57, Hans de Goede wrote:
-> Hi,
+On 30-03-17 10:33, Lukas Wunner wrote:
+> [cc += Robert Moore]
 >
-> On 31-03-17 11:11, Rafael J. Wysocki wrote:
->> On Fri, Mar 31, 2017 at 11:08 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->>> Hi,
->>>
->>> On 31-03-17 11:05, Rafael J. Wysocki wrote:
->>>>
->>>> On Fri, Mar 31, 2017 at 11:01 AM, Hans de Goede <hdegoede@redhat.com>
->>>> wrote:
->>>>
->>>> [cut]
->>>>
->>>>>>> --- a/drivers/power/supply/axp288_fuel_gauge.c
->>>>>>> +++ b/drivers/power/supply/axp288_fuel_gauge.c
->>>>>>> @@ -26,6 +26,7 @@
->>>>>>>  #include <linux/mfd/axp20x.h>
->>>>>>>  #include <linux/platform_device.h>
->>>>>>>  #include <linux/power_supply.h>
->>>>>>> +#include <linux/power/acpi.h>
->>>>>>>  #include <linux/iio/consumer.h>
->>>>>>>  #include <linux/debugfs.h>
->>>>>>>  #include <linux/seq_file.h>
->>>>>>> @@ -754,6 +755,8 @@ static int axp288_fuel_gauge_probe(struct
->>>>>>> platform_device *pdev)
->>>>>>>                 return ret;
->>>>>>>         }
->>>>>>>
->>>>>>> +       acpi_battery_unregister();
->>>>>>> +
->>>>>>
->>>>>>
->>>>>>
->>>>>> What if the ACPI battery driver is loaded after this has been called
->>>>>> already?
->>>>>
->>>>>
->>>>>
->>>>> The module exports that symbol so it must be loaded already.
->>>>
->>>>
->>>> But then it may be unloaded manually and loaded again, may it not?
->>>
->>>
->>> Only if you first unload axp288_fuel_gauge.ko otherwise it will
->>> have a refcount > 0.
+> Hi Hans,
+>
+> I'm the author of acpi_dev_found(), please in the future use git blame
+> to determine relevant authors of existing code that should be cc'ed,
+
+Right, sorry about that.
+
+> I noticed your patch only now:
+>
+> On Thursday, March 16, 2017 05:17:35 PM Hans de Goede wrote:
+>> acpi_dev_found just iterates over all acpi-ids and sees if one matches.
+>> This means that it will return true for devices which are in the dsdt
+>> but disabled (their _STA method returns 0).
 >>
->> OK
+>> For some drivers it is useful to be able to check if a certain hid
+>> is not only present in the namespace, but also actually present as in
+>> acpi_device_is_present() will return true for the device. For example
+>> because if a certain device is present then the driver will want to use
+>> an extcon or IIO adc channel provided by that device.
 >>
->> Anyway, I'd prefer blacklists in the battery and ac drivers to be honest.
+>> This commit adds a new acpi_dev_present helper which drivers can use
+>> to this end.
+>>
+>> Arguably acpi_dev_present is what acpi_dev_found should have been, but
+>> there are too many users to just change acpi_dev_found without the risk
+>> of breaking something.
 >
-> As I explained in my reply to the discussion around the first patch that
-> is somewhat hard to do and requires encoding knowledge in those drivers
-> which really does not belong there:
+> I originally did submit an acpi_dev_present() function which was identical
+> to what you've submitted now:
+> http://www.spinics.net/lists/linux-acpi/msg61865.html
 >
-> "The problem is that Intel re-uses HIDs between generations and
-> for the Whiskey Cove PMIC we want to not use the ACPI battery
-> and ac drivers on Cherry Trail (where they are known to be
-> broken) but things are different on Apollo Lake. Yet both
-> use the same HID for their companion Whiskey Cove PMIC even
-> though they are 2 completely different revisions of the PMIC
-> (e.g. one uses i2c the other does not).
+> However Robert Moore raised an objection that "Traversing the namespace
+> over and over is truly brute force":
+> http://www.spinics.net/lists/linux-acpi/msg61911.html
 >
-> The 2 native drivers have code to detect which revision they
-> are dealing with and exit with -ENODEV if it is not the
-> revision they were written for, but this means that simple
-> HID blacklisting will not work. So IMHO the decision to
-> unregister the  ACPI battery / ac interface really belongs
-> in the native driver as that has all the nitty gritty detail
-> needed to make that decision."
+> For my use case, which was apple_gmux_present(), just detecting presence
+> of the HID in the namespace was sufficient, I did not have the need to
+> execute _STA.  Hence to address Robert Moore's concern I switched to
+> simply traversing the acpi_bus_id_list.
+>
+> Rafael objected to the acpi_dev_present() name as it suggested that _STA
+> is checked even though it wasn't, so I renamed the function to
+> acpi_dev_found() with commit c68ae33e7fb4.
+>
+> The objection raised by Robert Moore applies to your patch as well since
+> it is identical to my original patch.  The return value of _STA seems to
+> be cached in the "status" field of struct acpi_device, so you may
+> be able to overcome Robert Moore's objection by calling bus_find_device()
+> with a callback which contains the check in acpi_device_is_present().
+> See drivers/firmware/efi/dev-path-parser.c for an example (parse_acpi_path()
+> and match_acpi_dev()).  This is probably faster than acpi_get_devices()
+> because it just traverses a list instead of walking the namespace and it
+> avoids the call to _STA.  (Some devices just return a constant when _STA
+> is called, others may take more time.)
 
-So thinking more about this, esp. after receiving a bug report
-from a user getting ACPI errors because of Linux not implementing
-the proprietary undocumented BMOP opregion before the ACPI battery
-driver gets unregistered by the native one, I thing we do indeed
-need to go with a blacklist.
+Thank you for your input. I've prepared a new version using your suggestion
+and slightly extended the function with a uid and hrv argument so that
+it becomes more generally useful, e.g. it can be used now to replace
+the code from drivers/firmware/efi/dev-path-parser.c you gave as an
+example how to do this.
 
-This means also being able to match by _HRV, as Some HIDs are
-re-used for different hardware between Bay Trail / Cherry Trail /
-Broxton with just a bump of _HRV.
+I'm going to submit a new version of this patch-set now, including
+a few patches replacing another series from me which can also use the
+new extended functionality.
 
-I'm currently working on respinning my
-"acpi: utils: Add new acpi_dev_present helper" to address the
-review comments on it. I'm going to give it an optional hrv
-function argument for this use, so as to not having to implement
-hrv checking code in both ac.c and battery.c .
+If people like the new v2 acpi_dev_present() I will submit patches
+to replace the custom code for this in drivers/firmware/efi/dev-path-parser.c
+and sound/soc/intel/common/sst-match-acpi.c once it is merged.
 
-So self-nack for this series as is.
+Talking about merging, I also have some none ACPI patches which
+need this pending (such as 2/2 of the orgiinal series) it would be
+great of at least the first patch of the new series could be merged
+in time for 4.12, or alternatively an immutable branch with it
+can be created for 4.13 once 4.12-rc1 is released.
 
 Regards,
 
 Hans
+
+
+>
+> FWIW, all existing users of acpi_dev_found(), except for the hisilicon
+> Ethernet driver, originally used acpi_get_devices() and I converted
+> them to acpi_dev_found to deduplicate code.  Thus it would be safe to
+> convert those to your new function acpi_dev_present().  I also converted
+> sound/soc/intel/common/sst-match-acpi.c to acpi_dev_found() but the
+> Intel folks switched back to acpi_get_devices() because just like you
+> they had the need to check _STA.  If you introduce a new helper which
+> checks _STA, it would be good if you could amend sst-match-acpi.c to
+> use it so as to deduplicate code.
+>
+> Thanks,
+>
+> Lukas
+>
