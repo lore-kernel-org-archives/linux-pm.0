@@ -1,238 +1,41 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v4 2/4] power: bq24190_charger: Clean up extcon code
-Date: Fri, 7 Apr 2017 15:27:48 -0700
-Message-ID: <CAKvHMgS8c=gOFqYAn6jKg8JxwJRO+BNmiE5yj6WmOn7o-9NqTA@mail.gmail.com>
-References: <20170406031048.12401-1-liam@networkimprov.net>
- <20170406031048.12401-3-liam@networkimprov.net> <da9ca342-0573-6a17-7fdb-3a8f88980525@redhat.com>
+From: Colin King <colin.king@canonical.com>
+Subject: [PATCH] power: supply: lp8788: add missing comma between literal strings
+Date: Sat,  8 Apr 2017 00:33:36 +0100
+Message-ID: <20170407233336.9583-1-colin.king@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f194.google.com ([209.85.223.194]:33456 "EHLO
-        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752103AbdDGW1u (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Apr 2017 18:27:50 -0400
-Received: by mail-io0-f194.google.com with SMTP id b140so3851443iof.0
-        for <linux-pm@vger.kernel.org>; Fri, 07 Apr 2017 15:27:50 -0700 (PDT)
-In-Reply-To: <da9ca342-0573-6a17-7fdb-3a8f88980525@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Milo Kim <milo.kim@ti.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-Hallo Hans,
+From: Colin Ian King <colin.king@canonical.com>
 
-On Thu, Apr 6, 2017 at 12:17 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> Hi,
->
->
-> On 06-04-17 05:10, Liam Breck wrote:
->>
->> From: Liam Breck <kernel@networkimprov.net>
->>
->> Polishing and fixes for initial extcon patch.
->>
->> Fixes: 4db249b6f3b4 ("power: supply: bq24190_charger: Use extcon to
->> determine ilimit, 5v boost")
->> Cc: Tony Lindgren <tony@atomide.com>
->> Cc: Hans de Goede <hdegoede@redhat.com>
->> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->> ---
->>  drivers/power/supply/bq24190_charger.c | 73
->> ++++++++++++++++------------------
->>  1 file changed, 35 insertions(+), 38 deletions(-)
->>
->> diff --git a/drivers/power/supply/bq24190_charger.c
->> b/drivers/power/supply/bq24190_charger.c
->> index 64a48b9..10e5324 100644
->> --- a/drivers/power/supply/bq24190_charger.c
->> +++ b/drivers/power/supply/bq24190_charger.c
->> @@ -38,8 +38,9 @@
->>  #define BQ24190_REG_POC_WDT_RESET_SHIFT                6
->>  #define BQ24190_REG_POC_CHG_CONFIG_MASK                (BIT(5) | BIT(4))
->>  #define BQ24190_REG_POC_CHG_CONFIG_SHIFT       4
->> -#define BQ24190_REG_POC_CHG_CONFIG_CHARGE      1
->> -#define BQ24190_REG_POC_CHG_CONFIG_OTG         2
->> +#define BQ24190_REG_POC_CHG_CONFIG_DISABLE             0x0
->> +#define BQ24190_REG_POC_CHG_CONFIG_CHARGE              0x1
->> +#define BQ24190_REG_POC_CHG_CONFIG_OTG                 0x2
->>  #define BQ24190_REG_POC_SYS_MIN_MASK           (BIT(3) | BIT(2) | BIT(1))
->>  #define BQ24190_REG_POC_SYS_MIN_SHIFT          1
->>  #define BQ24190_REG_POC_BOOST_LIM_MASK         BIT(0)
->> @@ -173,8 +174,9 @@ struct bq24190_dev_info {
->>   */
->>
->>  /* REG00[2:0] (IINLIM) in uAh */
->> -static const int bq24190_iinlim_values[] = {
->> -       100000, 150000, 500000, 900000, 1200000, 1500000, 2000000, 3000000
->> };
->> +static const int bq24190_isc_iinlim_values[] = {
->> +        100000,  150000,  500000,  900000, 1200000, 1500000, 2000000,
->> 3000000
->> +};
->>
->>  /* REG02[7:2] (ICHG) in uAh */
->>  static const int bq24190_ccc_ichg_values[] = {
->> @@ -1298,16 +1300,17 @@ static void bq24190_extcon_work(struct work_struct
->> *work)
->>  {
->>         struct bq24190_dev_info *bdi =
->>                 container_of(work, struct bq24190_dev_info,
->> extcon_work.work);
->> -       int ret, iinlim = 0;
->> +       int error, iinlim = 0;
->>
->> -       ret = pm_runtime_get_sync(bdi->dev);
->> -       if (ret < 0) {
->> -               dev_err(bdi->dev, "Error getting runtime-pm ref: %d\n",
->> ret);
->> +       error = pm_runtime_get_sync(bdi->dev);
->> +       if (error < 0) {
->> +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
->> +               pm_runtime_put_noidle(bdi->dev);
->>                 return;
->>         }
->>
->> -       if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_SDP) == 1)
->> -               iinlim = 500000;
->> +       if      (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_SDP) == 1)
->> +               iinlim =  500000;
->>         else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_CDP) == 1 ||
->>                  extcon_get_state(bdi->extcon, EXTCON_CHG_USB_ACA) == 1)
->>                 iinlim = 1500000;
->> @@ -1315,33 +1318,25 @@ static void bq24190_extcon_work(struct work_struct
->> *work)
->>                 iinlim = 2000000;
->>
->>         if (iinlim) {
->> -               ret = bq24190_set_field_val(bdi, BQ24190_REG_ISC,
->> -                               BQ24190_REG_ISC_IINLIM_MASK,
->> -                               BQ24190_REG_ISC_IINLIM_SHIFT,
->> -                               bq24190_iinlim_values,
->> -                               ARRAY_SIZE(bq24190_iinlim_values),
->> -                               iinlim);
->> -               if (ret)
->> -                       dev_err(bdi->dev, "Can't set IINLIM: %d\n", ret);
->> +               error = bq24190_set_field_val(bdi, BQ24190_REG_ISC,
->> +                                             BQ24190_REG_ISC_IINLIM_MASK,
->> +
->> BQ24190_REG_ISC_IINLIM_SHIFT,
->> +                                             bq24190_isc_iinlim_values,
->> +
->> ARRAY_SIZE(bq24190_isc_iinlim_values),
->> +                                             iinlim);
->> +               if (error < 0)
->> +                       dev_err(bdi->dev, "Can't set IINLIM: %d\n",
->> error);
->>         }
->
->
-> The above changes are fine with me,
+There is a missing comma between the last two literal strings in
+array stime, so add it in.
 
-High-five :-)
+Detected by PVS-Studio, warning: V653
 
->> -       /*
->> -        * If no charger has been detected and host mode is requested,
->> activate
->> -        * the 5V boost converter, otherwise deactivate it.
->> -        */
->> -       if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) ==
->> 1) {
->> -               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->> -                                        BQ24190_REG_POC_CHG_CONFIG_MASK,
->> -                                        BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->> -                                        BQ24190_REG_POC_CHG_CONFIG_OTG);
->> -       } else {
->> -               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->> -                                        BQ24190_REG_POC_CHG_CONFIG_MASK,
->> -                                        BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->> -
->> BQ24190_REG_POC_CHG_CONFIG_CHARGE);
->> -       }
->> -       if (ret)
->> -               dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", ret);
->> +       /* Set OTG 5V boost: on if no charger detected and in USB host
->> mode, else off */
->> +       error = bq24190_write_mask(bdi, BQ24190_REG_POC,
->> +                                  BQ24190_REG_POC_CHG_CONFIG_MASK,
->> +                                  BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->> +                       !iinlim && extcon_get_state(bdi->extcon,
->> EXTCON_USB_HOST) == 1
->> +                                ? BQ24190_REG_POC_CHG_CONFIG_OTG
->> +                                : BQ24190_REG_POC_CHG_CONFIG_CHARGE);
->> +       if (error < 0)
->> +               dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", error);
->>
->>         pm_runtime_mark_last_busy(bdi->dev);
->>         pm_runtime_put_autosuspend(bdi->dev);
->
->
-> I still find the refactored code you're proposing here a lot less readable
-> then the original code, and the same goes for the comment. If you insist
-> in changing this, then I suggest changing it into this:
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/power/supply/lp8788-charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-OK. I'll collapse the comment to one line tho.
+diff --git a/drivers/power/supply/lp8788-charger.c b/drivers/power/supply/lp8788-charger.c
+index 509e2b341bd6..677f7c40b25a 100644
+--- a/drivers/power/supply/lp8788-charger.c
++++ b/drivers/power/supply/lp8788-charger.c
+@@ -651,7 +651,7 @@ static ssize_t lp8788_show_eoc_time(struct device *dev,
+ {
+ 	struct lp8788_charger *pchg = dev_get_drvdata(dev);
+ 	char *stime[] = { "400ms", "5min", "10min", "15min",
+-			"20min", "25min", "30min" "No timeout" };
++			"20min", "25min", "30min", "No timeout" };
+ 	u8 val;
+ 
+ 	lp8788_read_byte(pchg->lp, LP8788_CHG_EOC, &val);
+-- 
+2.11.0
 
->         /*
->          * If no charger has been detected and host mode is requested,
-> activate
->          * the 5V boost converter, otherwise deactivate it.
->          */
->         if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) == 1)
->                 chg_config = BQ24190_REG_POC_CHG_CONFIG_OTG;
->         else
->                 chg_config = BQ24190_REG_POC_CHG_CONFIG_CHARGE;
->
->         error = bq24190_write_mask(bdi, BQ24190_REG_POC,
->                                    BQ24190_REG_POC_CHG_CONFIG_MASK,
->                                    BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->                                    chg_config);
->         if (error)
->                 dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", error);
->
->> @@ -1432,8 +1427,8 @@ static int bq24190_probe(struct i2c_client *client,
->>         }
->>
->>         /*
->> -        * The extcon-name property is purely an in kernel interface for
->> -        * x86/ACPI use, DT platforms should get extcon via phandle.
->> +        * ACPI platforms should use device_property "extcon-name".
->> +        * Devicetree platforms should get extcon via phandle (not yet
->> supported).
->>          */
->>         if (device_property_read_string(dev, "extcon-name", &name) == 0) {
->>                 bdi->extcon = extcon_get_extcon_dev(name);
->
->
-> The new comment suggest that extcon-name is something which should actually
-> be used inside ACPI DSDT tables, which it is not, please leave the comment
-> as is.
-
-OK, right. But "in kernel interface" sounds official, and this is
-really a custom msg passing method. A platform-data struct is
-documented in a header, and a module parameter has its own docs
-scheme; and use of those methods is well documented. I can't tell how
-I would invoke this one. How about this...
-
-A Devicetree should provide extcon-name via phandle (not yet supported).
-ACPI extcon drivers/clients[?] should insert[?] device_property
-extcon-name into our device with relevant_api_call(args).
-
-
->> @@ -1498,8 +1493,10 @@ static int bq24190_probe(struct i2c_client *client,
->>                 bdi->extcon_nb.notifier_call = bq24190_extcon_event;
->>                 ret = devm_extcon_register_notifier(dev, bdi->extcon, -1,
->>                                                     &bdi->extcon_nb);
->> -               if (ret)
->> +               if (ret) {
->> +                       dev_err(dev, "Can't register extcon\n");
->>                         goto out5;
->> +               }
->>
->>                 /* Sync initial cable state */
->>                 queue_delayed_work(system_wq, &bdi->extcon_work, 0);
->>
->
->
-> Regards,
->
-> Hans
