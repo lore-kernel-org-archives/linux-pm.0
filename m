@@ -1,69 +1,169 @@
-From: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Subject: [PATCH 5/5] ARM: sun8i: h2+: add SY8113B regulator used
- by Orange Pi Zero board
-Date: Sun,  9 Apr 2017 02:50:25 +0800
-Message-ID: <20170408185025.53841-6-icenowy@aosc.io>
-References: <20170408185025.53841-1-icenowy@aosc.io>
-Reply-To: icenowy-h8G6r0blFSE@public.gmane.org
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v4 2/4] power: bq24190_charger: Clean up extcon code
+Date: Sat, 8 Apr 2017 12:09:00 -0700
+Message-ID: <CAKvHMgQngU5s1M6D6zCt2je=P6GOKD48KVexwd7LK5zMJm8gEg@mail.gmail.com>
+References: <20170406031048.12401-1-liam@networkimprov.net>
+ <20170406031048.12401-3-liam@networkimprov.net> <da9ca342-0573-6a17-7fdb-3a8f88980525@redhat.com>
+ <CAKvHMgS8c=gOFqYAn6jKg8JxwJRO+BNmiE5yj6WmOn7o-9NqTA@mail.gmail.com> <06c84661-ac0d-105f-2896-2615eab7c093@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBDS6XAN6ZADRBFPDUTDQKGQEE5CE4VA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20170408185025.53841-1-icenowy-h8G6r0blFSE@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f66.google.com ([209.85.214.66]:35634 "EHLO
+        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751543AbdDHTJB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Apr 2017 15:09:01 -0400
+Received: by mail-it0-f66.google.com with SMTP id e132so31900ite.2
+        for <linux-pm@vger.kernel.org>; Sat, 08 Apr 2017 12:09:01 -0700 (PDT)
+In-Reply-To: <06c84661-ac0d-105f-2896-2615eab7c093@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-Orange Pi Zero board has a SY8113B regulator, which is controlled via
-GPIO and capable of outputing 1.1V when the PL6 GPIO is set to output 0
-or 1.3V when the PL6 GPIO is set to input or output 1, and the output is
-the power supply of the ARM cores in H2+ SoC.
+On Sat, Apr 8, 2017 at 3:02 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
+>
+> On 08-04-17 00:27, Liam Breck wrote:
+>>
+>> Hallo Hans,
+>>
+>> On Thu, Apr 6, 2017 at 12:17 AM, Hans de Goede <hdegoede@redhat.com>
+>> wrote:
+>
+>
+> <snip>
+>
+>
+>>>> -       /*
+>>>> -        * If no charger has been detected and host mode is requested,
+>>>> activate
+>>>> -        * the 5V boost converter, otherwise deactivate it.
+>>>> -        */
+>>>> -       if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) ==
+>>>> 1) {
+>>>> -               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>>>> -
+>>>> BQ24190_REG_POC_CHG_CONFIG_MASK,
+>>>> -
+>>>> BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+>>>> -
+>>>> BQ24190_REG_POC_CHG_CONFIG_OTG);
+>>>> -       } else {
+>>>> -               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>>>> -
+>>>> BQ24190_REG_POC_CHG_CONFIG_MASK,
+>>>> -
+>>>> BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+>>>> -
+>>>> BQ24190_REG_POC_CHG_CONFIG_CHARGE);
+>>>> -       }
+>>>> -       if (ret)
+>>>> -               dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", ret);
+>>>> +       /* Set OTG 5V boost: on if no charger detected and in USB host
+>>>> mode, else off */
+>>>> +       error = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>>>> +                                  BQ24190_REG_POC_CHG_CONFIG_MASK,
+>>>> +                                  BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+>>>> +                       !iinlim && extcon_get_state(bdi->extcon,
+>>>> EXTCON_USB_HOST) == 1
+>>>> +                                ? BQ24190_REG_POC_CHG_CONFIG_OTG
+>>>> +                                : BQ24190_REG_POC_CHG_CONFIG_CHARGE);
+>>>> +       if (error < 0)
+>>>> +               dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", error);
+>>>>
+>>>>         pm_runtime_mark_last_busy(bdi->dev);
+>>>>         pm_runtime_put_autosuspend(bdi->dev);
+>>>
+>>>
+>>>
+>>> I still find the refactored code you're proposing here a lot less
+>>> readable
+>>> then the original code, and the same goes for the comment. If you insist
+>>> in changing this, then I suggest changing it into this:
+>>
+>>
+>> OK. I'll collapse the comment to one line tho.
+>
+>
+> Please don't having this as 2 lines really is not a problem in any way and
+> I find the longer comment a lot easier to parse.
+>
+>
+>>
+>>>         /*
+>>>          * If no charger has been detected and host mode is requested,
+>>> activate
+>>>          * the 5V boost converter, otherwise deactivate it.
+>>>          */
+>>>         if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) ==
+>>> 1)
+>>>                 chg_config = BQ24190_REG_POC_CHG_CONFIG_OTG;
+>>>         else
+>>>                 chg_config = BQ24190_REG_POC_CHG_CONFIG_CHARGE;
+>>>
+>>>         error = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>>>                                    BQ24190_REG_POC_CHG_CONFIG_MASK,
+>>>                                    BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+>>>                                    chg_config);
+>>>         if (error)
+>>>                 dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", error);
+>>>
+>>>> @@ -1432,8 +1427,8 @@ static int bq24190_probe(struct i2c_client
+>>>> *client,
+>>>>         }
+>>>>
+>>>>         /*
+>>>> -        * The extcon-name property is purely an in kernel interface for
+>>>> -        * x86/ACPI use, DT platforms should get extcon via phandle.
+>>>> +        * ACPI platforms should use device_property "extcon-name".
+>>>> +        * Devicetree platforms should get extcon via phandle (not yet
+>>>> supported).
+>>>>          */
+>>>>         if (device_property_read_string(dev, "extcon-name", &name) == 0)
+>>>> {
+>>>>                 bdi->extcon = extcon_get_extcon_dev(name);
+>>>
+>>>
+>>>
+>>> The new comment suggest that extcon-name is something which should
+>>> actually
+>>> be used inside ACPI DSDT tables, which it is not, please leave the
+>>> comment
+>>> as is.
+>>
+>>
+>> OK, right. But "in kernel interface" sounds official, and this is
+>> really a custom msg passing method. A platform-data struct is
+>> documented in a header, and a module parameter has its own docs
+>> scheme; and use of those methods is well documented. I can't tell how
+>> I would invoke this one. How about this...
+>>
+>> A Devicetree should provide extcon-name via phandle (not yet supported).
+>
+>
+> No a devicetree should not provide a name it would provide a phandle
+> pointing to the extcon, no name (and name based lookup) should be
+> involved.
 
-Add the device tree node of this regulator and set the cpu's cpu-supply
-property to it.
+OK.
 
-Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
----
- arch/arm/boot/dts/sun8i-h2-plus-orangepi-zero.dts | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+>> ACPI extcon drivers/clients[?] should insert[?] device_property
+>> extcon-name into our device with relevant_api_call(args).
+>
+>
+> For an example of how this is used see:
+>
+> https://github.com/jwrdegoede/linux-sunxi/commit/7fa4460e2a18a3f6ffb39ae4940fee1dd2a880a4
+>
+> Around line 214 of i2c-cht-wc.c and later.
 
-diff --git a/arch/arm/boot/dts/sun8i-h2-plus-orangepi-zero.dts b/arch/arm/boot/dts/sun8i-h2-plus-orangepi-zero.dts
-index 9e8b082c134f..8f6acca7d12d 100644
---- a/arch/arm/boot/dts/sun8i-h2-plus-orangepi-zero.dts
-+++ b/arch/arm/boot/dts/sun8i-h2-plus-orangepi-zero.dts
-@@ -93,6 +93,27 @@
- 		reset-gpios = <&r_pio 0 7 GPIO_ACTIVE_LOW>;
- 		post-power-on-delay-ms = <200>;
- 	};
-+
-+	reg_sy8113b: gpio-regulator {
-+		compatible = "regulator-gpio";
-+
-+		regulator-name = "vdd-cpux";
-+		regulator-type = "voltage";
-+		regulator-boot-on;
-+		regulator-always-on;
-+		regulator-min-microvolt = <1100000>;
-+		regulator-max-microvolt = <1300000>;
-+		regulator-ramp-delay = <50>; /* 4ms */
-+
-+		gpios = <&r_pio 0 6 GPIO_ACTIVE_HIGH>; /* PL6 */
-+		gpios-states = <0x1>;
-+		states = <1100000 0x0
-+			  1300000 0x1>;
-+	};
-+};
-+
-+&cpu0 {
-+	cpu-supply = <&reg_sy8113b>;
- };
- 
- &ehci0 {
--- 
-2.12.2
+So a comment like...
+
+On ACPI platforms, extcon clients should invoke this driver with:
+struct i2c_adapter a = { ... };
+i2c_add_adapter(&a);
+struct property_entry pe[] = { PROPERTY_ENTRY_STRING("extcon-name",
+<name>), ... };
+struct i2c_board_info bi = { .type = "bq24190", .addr = 0x6b,
+.properties = pe, .irq = <irq> };
+i2c_new_device(&a, &bi);
