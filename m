@@ -1,172 +1,80 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v3 1/4] ACPI: utils: Add new acpi_dev_present helper
-Date: Sat,  8 Apr 2017 23:23:43 +0200
-Message-ID: <20170408212346.8227-1-hdegoede@redhat.com>
+Subject: [PATCH v3 3/4] ACPI: battery: Add a blacklist with PMIC ACPI HIDs with a native battery driver
+Date: Sat,  8 Apr 2017 23:23:45 +0200
+Message-ID: <20170408212346.8227-3-hdegoede@redhat.com>
+References: <20170408212346.8227-1-hdegoede@redhat.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170408212346.8227-1-hdegoede@redhat.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-acpi_dev_found just iterates over all ACPI-ids and sees if one matches.
-This means that it will return true for devices which are in the dsdt
-but disabled (their _STA method returns 0).
+On some systems we have a native PMIC driver which provides battery
+monitoring, while the ACPI battery driver is broken on these systems
+due to bad DSDTs or because we do not support the proprietary and
+undocumented ACPI opregions these ACPI battery devices rely on
+(e.g. BMOP opregion).
 
-For some drivers it is useful to be able to check if a certain HID
-is not only present in the namespace, but also actually present as in
-acpi_device_is_present() will return true for the device. For example
-because if a certain device is present then the driver will want to use
-an extcon or IIO adc channel provided by that device.
+This leads to there being 2 battery power_supply-s registed like this:
 
-This commit adds a new acpi_dev_present helper which drivers can use
-to this end.
+~$ acpi
+Battery 0: Charging, 84%, 00:49:39 until charged
+Battery 1: Unknown, 0%, rate information unavailable
 
-Like acpi_dev_found, acpi_dev_present take a HID as argument, but
-it also has 2 extra optional arguments to only check for an ACPI
-device with a specific UID and/or HRV value. This makes it more
-generic and allows it to replace custom code doing similar checks
-in several places.
+Even if the ACPI battery where to function fine (which on systems
+where we have a native PMIC driver it often doesn't) we still do not
+want to export the same battery to userspace twice.
 
-Arguably acpi_dev_present is what acpi_dev_found should have been, but
-there are too many users to just change acpi_dev_found without the risk
-of breaking something.
+This commit adds a blacklist with PMIC ACPI HIDs for which we've a
+native battery driver and makes the ACPI battery driver not register
+itself when a PMIC on this list is present.
 
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Lukas Wunner <lukas@wunner.de>
+BugLink: https://bugzilla.kernel.org/show_bug.cgi?id=194811
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
 Changes in v2:
--Switch to using bus_find_device() to avoid "Traversing the namespace
- over and over"
--Add optional (may be NULL / -1) uid and hrv arguments, this will
- allow this new function to replace the custom code for this in
- drivers/firmware/efi/dev-path-parser.c as well as in
- sound/soc/intel/common/sst-match-acpi.c and will allow it to be
- used to implement blacklists to avoid loading the ACPI ac / battery
- driver on systems which have a PMIC / charger acpi device with a
- native driver which offers a better (often working vs not working)
- user experience
--Dropped Mika's reviewd by as this is almost a total rewrite
-Changes in v3:
--memset the entire acpi_dev_present_info struct, this fixes
- acpi_device_id.cls not getting cleared
+-This is a new patch in v2 of this patch-set replacing:
+ "ACPI: battery: Add acpi_battery_unregister() function"
+ "power: supply: axp288_fuel_gauge: Unregister duplicate ACPI battery supply"
 ---
- drivers/acpi/utils.c    | 72 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/acpi/acpi_bus.h |  1 +
- include/linux/acpi.h    |  5 ++++
- 3 files changed, 78 insertions(+)
+ drivers/acpi/battery.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
-index 22c0995..311537a 100644
---- a/drivers/acpi/utils.c
-+++ b/drivers/acpi/utils.c
-@@ -736,6 +736,78 @@ bool acpi_dev_found(const char *hid)
- }
- EXPORT_SYMBOL(acpi_dev_found);
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index b35fca4..eacb816 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -94,6 +94,12 @@ static const struct acpi_device_id battery_device_ids[] = {
  
-+struct acpi_dev_present_info {
-+	struct acpi_device_id hid[2];
-+	const char *uid;
-+	int hrv;
+ MODULE_DEVICE_TABLE(acpi, battery_device_ids);
+ 
++/* Lists of PMIC ACPI HIDs with an (often better) native battery driver */
++static const char * const acpi_battery_blacklist[] = {
++	"INT33F4", /* X-Powers AXP288 PMIC */
++	NULL
 +};
 +
-+static int acpi_dev_present_cb(struct device *dev, void *data)
-+{
-+	struct acpi_device *adev = to_acpi_device(dev);
-+	struct acpi_dev_present_info *match = data;
-+	unsigned long long hrv;
-+	acpi_status status;
-+
-+	if (acpi_match_device_ids(adev, match->hid))
-+		return 0;
-+
-+	if (match->uid && adev->pnp.unique_id &&
-+	    strcmp(adev->pnp.unique_id, match->uid))
-+		return 0;
-+
-+	if (match->uid && !adev->pnp.unique_id &&
-+	    strcmp("0", match->uid))
-+		return 0;
-+
-+	if (match->hrv == -1)
-+		return 1;
-+
-+	status = acpi_evaluate_integer(adev->handle, "_HRV", NULL, &hrv);
-+	if (ACPI_FAILURE(status))
-+		return 0;
-+
-+	return hrv == match->hrv;
-+}
-+
-+/**
-+ * acpi_dev_present - Detect that a given ACPI device is present
-+ * @hid: Hardware ID of the device.
-+ * @uid: Unique ID of the device, pass "0" for devices without a _UID,
-+ *       pass NULL to not check _UID
-+ * @hrv: Hardware Revision of the device, pass -1 to not check _HRV
-+ *
-+ * Return %true if a matching device was present at the moment of invocation.
-+ * Note that if the device is pluggable, it may since have disappeared.
-+ *
-+ * Note that unlike acpi_dev_found() this function checks the status
-+ * of the device so for devices which are present in the dsdt, but
-+ * which are disabled (their _STA callback returns 0) this function
-+ * will return false.
-+ *
-+ * For this function to work, acpi_bus_scan() must have been executed
-+ * which happens in the subsys_initcall() subsection. Hence, do not
-+ * call from a subsys_initcall() or earlier (use acpi_get_devices()
-+ * instead). Calling from module_init() is fine (which is synonymous
-+ * with device_initcall()).
-+ */
-+bool acpi_dev_present(const char *hid, const char *uid, int hrv)
-+{
-+	struct acpi_dev_present_info match;
-+	struct device *dev;
-+
-+	memset(&match, 0, sizeof(match));
-+	strlcpy(match.hid[0].id, hid, sizeof(match.hid[0].id));
-+	match.uid = uid;
-+	match.hrv = hrv;
-+
-+	dev = bus_find_device(&acpi_bus_type, NULL, &match,
-+			      acpi_dev_present_cb);
-+
-+	return dev ? true : false;
-+}
-+EXPORT_SYMBOL(acpi_dev_present);
-+
- /*
-  * acpi_backlight= handling, this is done here rather then in video_detect.c
-  * because __setup cannot be used in modules.
-diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-index ef0ae8a..64498d5 100644
---- a/include/acpi/acpi_bus.h
-+++ b/include/acpi/acpi_bus.h
-@@ -88,6 +88,7 @@ acpi_evaluate_dsm_typed(acpi_handle handle, const u8 *uuid, u64 rev, u64 func,
- 	}
+ enum {
+ 	ACPI_BATTERY_ALARM_PRESENT,
+ 	ACPI_BATTERY_XINFO_PRESENT,
+@@ -1316,7 +1322,15 @@ static struct acpi_driver acpi_battery_driver = {
  
- bool acpi_dev_found(const char *hid);
-+bool acpi_dev_present(const char *hid, const char *uid, int hrv);
- 
- #ifdef CONFIG_ACPI
- 
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 9b05886..e5dd0f1 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -611,6 +611,11 @@ static inline bool acpi_dev_found(const char *hid)
- 	return false;
- }
- 
-+static inline bool acpi_dev_present(const char *hid, const char *uid, int hrv)
-+{
-+	return false;
-+}
-+
- static inline bool is_acpi_node(struct fwnode_handle *fwnode)
+ static void __init acpi_battery_init_async(void *unused, async_cookie_t cookie)
  {
- 	return false;
+-	int result;
++	int i, result;
++
++	for (i = 0; acpi_battery_blacklist[i]; i++)
++		if (acpi_dev_present(acpi_battery_blacklist[i], "1", -1)) {
++			pr_info("ACPI: %s: found native %s PMIC, not loading\n",
++				ACPI_BATTERY_DEVICE_NAME,
++				acpi_battery_blacklist[i]);
++			return;
++		}
+ 
+ 	dmi_check_system(bat_dmi_table);
+ 
 -- 
 2.9.3
 
