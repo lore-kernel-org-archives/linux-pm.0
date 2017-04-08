@@ -1,39 +1,45 @@
 From: Icenowy Zheng <icenowy@aosc.io>
-Subject: [PATCH 2/5] clk: sunxi-ng: allow set parent clock (PLL_CPUX) for CPUX clock on H3
-Date: Sun,  9 Apr 2017 02:50:22 +0800
-Message-ID: <20170408185025.53841-3-icenowy@aosc.io>
+Subject: [PATCH 3/5] cpufreq: dt: Add support for some new Allwinner SoCs
+Date: Sun,  9 Apr 2017 02:50:23 +0800
+Message-ID: <20170408185025.53841-4-icenowy@aosc.io>
 References: <20170408185025.53841-1-icenowy@aosc.io>
-Return-path: <linux-clk-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hermes.aosc.io ([199.195.250.187]:42634 "EHLO hermes.aosc.io"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752109AbdDHSwl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 8 Apr 2017 14:52:41 -0400
 In-Reply-To: <20170408185025.53841-1-icenowy@aosc.io>
-Sender: linux-clk-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Quentin Schulz <quentin.schulz@free-electrons.com>
 Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sunxi@googlegroups.com, Icenowy Zheng <icenowy@aosc.io>
-List-Id: linux-pm@vger.kernel.org
 
-The CPUX clock, which is the main clock of the ARM core on Allwinner H3,
-can be adjusted by changing the frequency of the PLL_CPUX clock.
+Some new Allwinner SoCs get supported in the kernel after the
+compatibles are added to cpufreq-dt-platdev driver.
 
-Allowing setting parent clock for the CPUX clock, thus the PLL_CPUX
-clock can be adjusted when adjusting the CPUX clock.
+Add their compatible strings in the cpufreq-dt-platdev driver.
 
 Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
 ---
- drivers/clk/sunxi-ng/ccu-sun8i-h3.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq-dt-platdev.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
-index 4cbc1b701b7c..90b4e26a70bc 100644
---- a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
-+++ b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
-@@ -135,7 +135,7 @@ static SUNXI_CCU_NM_WITH_FRAC_GATE_LOCK(pll_de_clk, "pll-de",
- static const char * const cpux_parents[] = { "osc32k", "osc24M",
- 					     "pll-cpux" , "pll-cpux" };
- static SUNXI_CCU_MUX(cpux_clk, "cpux", cpux_parents,
--		     0x050, 16, 2, CLK_IS_CRITICAL);
-+		     0x050, 16, 2, CLK_IS_CRITICAL | CLK_SET_RATE_PARENT);
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 921b4a6c3d16..2180e509e383 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -24,7 +24,12 @@ static const struct of_device_id machines[] __initconst = {
+ 	{ .compatible = "allwinner,sun8i-a23", },
+ 	{ .compatible = "allwinner,sun8i-a33", },
+ 	{ .compatible = "allwinner,sun8i-a83t", },
++	{ .compatible = "allwinner,sun8i-h2-plus", },
+ 	{ .compatible = "allwinner,sun8i-h3", },
++	{ .compatible = "allwinner,sun8i-v3s", },
++	{ .compatible = "allwinner,sun50i-a64", },
++	{ .compatible = "allwinner,sun50i-h5", },
++	{ .compatible = "nextthing,gr8", },
  
- static SUNXI_CCU_M(axi_clk, "axi", "cpux", 0x050, 0, 2, 0);
+ 	{ .compatible = "apm,xgene-shadowcat", },
  
 -- 
 2.12.2
-
