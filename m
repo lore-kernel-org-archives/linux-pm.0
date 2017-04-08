@@ -1,53 +1,54 @@
-From: poma <pomidorabelisima@gmail.com>
-Subject: Re: [PATCH 11/24] uswsusp: Disable when the kernel is locked down
-Date: Sat, 8 Apr 2017 05:28:15 +0200
-Message-ID: <83e2dff5-c46b-25b4-253e-cd2650b7db7d@gmail.com>
-References: <149142326734.5101.4596394505987813763.stgit@warthog.procyon.org.uk>
- <149142336965.5101.2946578135980499557.stgit@warthog.procyon.org.uk>
- <CAJZ5v0hp=GJtQ+YnNdaMw6rtbBzNyueY+iqjPkHLKp57t822ZQ@mail.gmail.com>
- <1491460792.1645.1.camel@suse.com> <14980.1491468060@warthog.procyon.org.uk>
- <CAJZ5v0gFeF3hdr0QzUeaT2dS+HhG7KUdVPPWHKeqHVkX78s+Tw@mail.gmail.com>
- <CAJZ5v0jwQPd3HfwE1Yi6bmyULFVegkU4fNvt0uXGvzAdecLEZA@mail.gmail.com>
- <alpine.LSU.2.20.1704062224220.28004@cbobk.fhfr.pm>
+From: <piwet_sokolow@wp.pl>
+Subject: 9146 linux-pm
+Date: Sat, 08 Apr 2017 08:44:16 -0000
+Message-ID: <149164105686.7745.14797714173189566383@mtu-net.ru>
+Reply-To: <piwet_sokolow@wp.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LSU.2.20.1704062224220.28004@cbobk.fhfr.pm>
-Content-Language: en-MW
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Kosina <jikos@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: David Howells <dhowells@redhat.com>, Oliver Neukum <oneukum@suse.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, linux-efi@vger.kernel.org, gnomes@lxorguk.ukuu.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, Joey Lee <JLee@suse.com>, matthew.garrett@nebula.com
+Content-Type: application/zip; name="5.zip"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ppp85-140-70-120.pppoe.mtu-net.ru ([85.140.70.120]:34406 "HELO
+        mtu-net.ru" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+        id S1751569AbdDHIoW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 8 Apr 2017 04:44:22 -0400
+Content-Disposition: attachment
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm <linux-pm@vger.kernel.org>
 
-On 06.04.2017 22:25, Jiri Kosina wrote:
-> On Thu, 6 Apr 2017, Rafael J. Wysocki wrote:
-> 
->>>>> Your swap partition may be located on an NVDIMM or be encrypted.
->>>>
->>>> An NVDIMM should be considered the same as any other persistent storage.
->>>>
->>>> It may be encrypted, but where's the key stored, how easy is it to retrieve
->>>> and does the swapout code know this?
->>>>
->>>>> Isn't this a bit overly drastic?
->>>>
->>>> Perhaps, but if it's on disk and it's not encrypted, then maybe not.
->>>
->>> Right.
->>>
->>> Swap encryption is not mandatory and I'm not sure how the hibernate
->>> code can verify whether or not it is in use.
->>
->> BTW, SUSE has patches adding secure boot support to the hibernate code
->> and Jiri promised me to post them last year even. :-)
-> 
-> Oh, thanks for a friendly ping :) Adding Joey Lee to CC.
-> 
-
-Rafael J., are you talking about HIBERNATE_VERIFICATION ?
-
-Ref.
-https://github.com/joeyli/linux-s4sign/commits/s4sign-hmac-v2-v4.2-rc8
-https://lkml.org/lkml/2015/8/11/47
-https://bugzilla.redhat.com/show_bug.cgi?id=1330335
+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
