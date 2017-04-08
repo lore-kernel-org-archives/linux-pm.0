@@ -1,137 +1,59 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v4 2/4] power: bq24190_charger: Clean up extcon code
-Date: Sat, 8 Apr 2017 12:02:44 +0200
-Message-ID: <06c84661-ac0d-105f-2896-2615eab7c093@redhat.com>
-References: <20170406031048.12401-1-liam@networkimprov.net>
- <20170406031048.12401-3-liam@networkimprov.net>
- <da9ca342-0573-6a17-7fdb-3a8f88980525@redhat.com>
- <CAKvHMgS8c=gOFqYAn6jKg8JxwJRO+BNmiE5yj6WmOn7o-9NqTA@mail.gmail.com>
+From: =?UTF-8?Q?Giedrius_Statkevi=C4=8Dius?=
+        <giedrius.statkevicius@gmail.com>
+Subject: Re: [PATCH] power: supply: lp8788: prevent out of bounds array access
+Date: Sat, 8 Apr 2017 13:55:24 +0300
+Message-ID: <CABNMmsBFUoY99JOB-qPR7Dbxn6tOU5ZRcnQc8LqctEW3P=HwUw@mail.gmail.com>
+References: <20170325160049.18943-1-giedrius.statkevicius@gmail.com> <84e9b377-30c6-d0f2-b869-6382d6c9f770@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:44026 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751358AbdDHKCr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 8 Apr 2017 06:02:47 -0400
-In-Reply-To: <CAKvHMgS8c=gOFqYAn6jKg8JxwJRO+BNmiE5yj6WmOn7o-9NqTA@mail.gmail.com>
+Received: from mail-io0-f194.google.com ([209.85.223.194]:33951 "EHLO
+        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751447AbdDHKz0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Apr 2017 06:55:26 -0400
+In-Reply-To: <84e9b377-30c6-d0f2-b869-6382d6c9f770@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
+To: "Kim, Milo" <milo.kim@ti.com>
+Cc: sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 
-Hi,
+Ping.
 
-On 08-04-17 00:27, Liam Breck wrote:
-> Hallo Hans,
+On Tue, Mar 28, 2017 at 2:23 AM, Kim, Milo <milo.kim@ti.com> wrote:
+> On 3/26/2017 1:00 AM, Giedrius Statkevi=C4=8Dius wrote:
+>>
+>> val might become 7 in which case stime[7] (array of length 7) would be
+>> accessed during the scnprintf call later and that will cause issues.
+>> Obviously, string concatenation is not intended here so just a comma nee=
+ds
+>> to be added to fix the issue.
+>>
+>> Signed-off-by: Giedrius Statkevi=C4=8Dius <giedrius.statkevicius@gmail.c=
+om>
 >
-> On Thu, Apr 6, 2017 at 12:17 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-
-<snip>
-
->>> -       /*
->>> -        * If no charger has been detected and host mode is requested,
->>> activate
->>> -        * the 5V boost converter, otherwise deactivate it.
->>> -        */
->>> -       if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) ==
->>> 1) {
->>> -               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->>> -                                        BQ24190_REG_POC_CHG_CONFIG_MASK,
->>> -                                        BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->>> -                                        BQ24190_REG_POC_CHG_CONFIG_OTG);
->>> -       } else {
->>> -               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->>> -                                        BQ24190_REG_POC_CHG_CONFIG_MASK,
->>> -                                        BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->>> -
->>> BQ24190_REG_POC_CHG_CONFIG_CHARGE);
->>> -       }
->>> -       if (ret)
->>> -               dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", ret);
->>> +       /* Set OTG 5V boost: on if no charger detected and in USB host
->>> mode, else off */
->>> +       error = bq24190_write_mask(bdi, BQ24190_REG_POC,
->>> +                                  BQ24190_REG_POC_CHG_CONFIG_MASK,
->>> +                                  BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->>> +                       !iinlim && extcon_get_state(bdi->extcon,
->>> EXTCON_USB_HOST) == 1
->>> +                                ? BQ24190_REG_POC_CHG_CONFIG_OTG
->>> +                                : BQ24190_REG_POC_CHG_CONFIG_CHARGE);
->>> +       if (error < 0)
->>> +               dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", error);
->>>
->>>         pm_runtime_mark_last_busy(bdi->dev);
->>>         pm_runtime_put_autosuspend(bdi->dev);
->>
->>
->> I still find the refactored code you're proposing here a lot less readable
->> then the original code, and the same goes for the comment. If you insist
->> in changing this, then I suggest changing it into this:
 >
-> OK. I'll collapse the comment to one line tho.
-
-Please don't having this as 2 lines really is not a problem in any way and
-I find the longer comment a lot easier to parse.
-
+> Acked-by: Milo Kim <milo.kim@ti.com>
 >
->>         /*
->>          * If no charger has been detected and host mode is requested,
->> activate
->>          * the 5V boost converter, otherwise deactivate it.
->>          */
->>         if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) == 1)
->>                 chg_config = BQ24190_REG_POC_CHG_CONFIG_OTG;
->>         else
->>                 chg_config = BQ24190_REG_POC_CHG_CONFIG_CHARGE;
->>
->>         error = bq24190_write_mask(bdi, BQ24190_REG_POC,
->>                                    BQ24190_REG_POC_CHG_CONFIG_MASK,
->>                                    BQ24190_REG_POC_CHG_CONFIG_SHIFT,
->>                                    chg_config);
->>         if (error)
->>                 dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", error);
->>
->>> @@ -1432,8 +1427,8 @@ static int bq24190_probe(struct i2c_client *client,
->>>         }
->>>
->>>         /*
->>> -        * The extcon-name property is purely an in kernel interface for
->>> -        * x86/ACPI use, DT platforms should get extcon via phandle.
->>> +        * ACPI platforms should use device_property "extcon-name".
->>> +        * Devicetree platforms should get extcon via phandle (not yet
->>> supported).
->>>          */
->>>         if (device_property_read_string(dev, "extcon-name", &name) == 0) {
->>>                 bdi->extcon = extcon_get_extcon_dev(name);
->>
->>
->> The new comment suggest that extcon-name is something which should actually
->> be used inside ACPI DSDT tables, which it is not, please leave the comment
->> as is.
 >
-> OK, right. But "in kernel interface" sounds official, and this is
-> really a custom msg passing method. A platform-data struct is
-> documented in a header, and a module parameter has its own docs
-> scheme; and use of those methods is well documented. I can't tell how
-> I would invoke this one. How about this...
+>> ---
+>>  drivers/power/supply/lp8788-charger.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/power/supply/lp8788-charger.c
+>> b/drivers/power/supply/lp8788-charger.c
+>> index 509e2b341bd6..677f7c40b25a 100644
+>> --- a/drivers/power/supply/lp8788-charger.c
+>> +++ b/drivers/power/supply/lp8788-charger.c
+>> @@ -651,7 +651,7 @@ static ssize_t lp8788_show_eoc_time(struct device
+>> *dev,
+>>  {
+>>         struct lp8788_charger *pchg =3D dev_get_drvdata(dev);
+>>         char *stime[] =3D { "400ms", "5min", "10min", "15min",
+>> -                       "20min", "25min", "30min" "No timeout" };
+>> +                       "20min", "25min", "30min", "No timeout" };
+>>         u8 val;
+>>
+>>         lp8788_read_byte(pchg->lp, LP8788_CHG_EOC, &val);
+>>
 >
-> A Devicetree should provide extcon-name via phandle (not yet supported).
-
-No a devicetree should not provide a name it would provide a phandle
-pointing to the extcon, no name (and name based lookup) should be
-involved.
-
-> ACPI extcon drivers/clients[?] should insert[?] device_property
-> extcon-name into our device with relevant_api_call(args).
-
-For an example of how this is used see:
-
-https://github.com/jwrdegoede/linux-sunxi/commit/7fa4460e2a18a3f6ffb39ae4940fee1dd2a880a4
-
-Around line 214 of i2c-cht-wc.c and later.
-
-
-Regards,
-
-Hans
