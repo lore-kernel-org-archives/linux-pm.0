@@ -1,7 +1,7 @@
 From: Icenowy Zheng <icenowy@aosc.io>
-Subject: [PATCH 1/5] clk: sunxi-ng: prevent NKMP clocks from temporarily get higher freq
-Date: Sun,  9 Apr 2017 02:50:21 +0800
-Message-ID: <20170408185025.53841-2-icenowy@aosc.io>
+Subject: [PATCH 2/5] clk: sunxi-ng: allow set parent clock (PLL_CPUX) for CPUX clock on H3
+Date: Sun,  9 Apr 2017 02:50:22 +0800
+Message-ID: <20170408185025.53841-3-icenowy@aosc.io>
 References: <20170408185025.53841-1-icenowy@aosc.io>
 Return-path: <linux-clk-owner@vger.kernel.org>
 In-Reply-To: <20170408185025.53841-1-icenowy@aosc.io>
@@ -10,133 +10,29 @@ To: Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.or
 Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sunxi@googlegroups.com, Icenowy Zheng <icenowy@aosc.io>
 List-Id: linux-pm@vger.kernel.org
 
-It seems that on newer SoCs (already observed on A33, H3), when setting
-all NKMP factors at the same time, the multiplier get applied first,
-then the divider get applied. In some situations (e.g. the multiplier
-increased but the divider decreased), this will make the clock
-frequency temporarily higher than both the original frequency and the
-target frequency, which may lead to system hang due to PLL_CPU(X) clock
-usually being a NKMP clock.
+The CPUX clock, which is the main clock of the ARM core on Allwinner H3,
+can be adjusted by changing the frequency of the PLL_CPUX clock.
 
-A comparsion between the old divider (M*P) and the new one is added, and
-if the divider get smaller when changing clock, the multiplier will be
-applied first, so that the clock won't go to a frequency higher than
-normal.
-
-The interval between applying the first group of factors and the second
-group is based on experiments results on an Orange Pi Zero board.
+Allowing setting parent clock for the CPUX clock, thus the PLL_CPUX
+clock can be adjusted when adjusting the CPUX clock.
 
 Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
 ---
- drivers/clk/sunxi-ng/ccu_nkmp.c | 76 +++++++++++++++++++++++++++++++++++------
- 1 file changed, 65 insertions(+), 11 deletions(-)
+ drivers/clk/sunxi-ng/ccu-sun8i-h3.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/clk/sunxi-ng/ccu_nkmp.c b/drivers/clk/sunxi-ng/ccu_nkmp.c
-index e58c95787f94..5da77eb60335 100644
---- a/drivers/clk/sunxi-ng/ccu_nkmp.c
-+++ b/drivers/clk/sunxi-ng/ccu_nkmp.c
-@@ -9,6 +9,7 @@
-  */
+diff --git a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
+index 4cbc1b701b7c..90b4e26a70bc 100644
+--- a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
++++ b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
+@@ -135,7 +135,7 @@ static SUNXI_CCU_NM_WITH_FRAC_GATE_LOCK(pll_de_clk, "pll-de",
+ static const char * const cpux_parents[] = { "osc32k", "osc24M",
+ 					     "pll-cpux" , "pll-cpux" };
+ static SUNXI_CCU_MUX(cpux_clk, "cpux", cpux_parents,
+-		     0x050, 16, 2, CLK_IS_CRITICAL);
++		     0x050, 16, 2, CLK_IS_CRITICAL | CLK_SET_RATE_PARENT);
  
- #include <linux/clk-provider.h>
-+#include <linux/delay.h>
- 
- #include "ccu_gate.h"
- #include "ccu_nkmp.h"
-@@ -130,12 +131,49 @@ static long ccu_nkmp_round_rate(struct clk_hw *hw, unsigned long rate,
- 	return *parent_rate * _nkmp.n * _nkmp.k / (_nkmp.m * _nkmp.p);
- }
- 
-+static void ccu_nkmp_extract_factors(const struct ccu_nkmp *nkmp,
-+				     struct _ccu_nkmp *_nkmp, u32 reg)
-+{
-+	_nkmp->n = ((reg >> nkmp->n.shift) & GENMASK(nkmp->n.width - 1, 0))
-+		   + nkmp->n.offset;
-+	_nkmp->k = ((reg >> nkmp->k.shift) & GENMASK(nkmp->k.width - 1, 0))
-+		   + nkmp->k.offset;
-+	_nkmp->m = ((reg >> nkmp->m.shift) & GENMASK(nkmp->m.width - 1, 0))
-+		   + nkmp->m.offset;
-+	_nkmp->p = 1 <<
-+		   ((reg >> nkmp->p.shift) & GENMASK(nkmp->p.width - 1, 0));
-+}
-+
-+static u32 ccu_nkmp_apply_multiplier(const struct ccu_nkmp *nkmp,
-+				     const struct _ccu_nkmp *_nkmp, u32 reg)
-+{
-+	reg &= ~GENMASK(nkmp->n.width + nkmp->n.shift - 1, nkmp->n.shift);
-+	reg &= ~GENMASK(nkmp->k.width + nkmp->k.shift - 1, nkmp->k.shift);
-+
-+	reg |= (_nkmp->n - nkmp->n.offset) << nkmp->n.shift;
-+	reg |= (_nkmp->k - nkmp->k.offset) << nkmp->k.shift;
-+
-+	return reg;
-+}
-+
-+static u32 ccu_nkmp_apply_divider(const struct ccu_nkmp *nkmp,
-+				  const struct _ccu_nkmp *_nkmp, u32 reg)
-+{
-+	reg &= ~GENMASK(nkmp->m.width + nkmp->m.shift - 1, nkmp->m.shift);
-+	reg &= ~GENMASK(nkmp->p.width + nkmp->p.shift - 1, nkmp->p.shift);
-+
-+	reg |= (_nkmp->m - nkmp->m.offset) << nkmp->m.shift;
-+	reg |= ilog2(_nkmp->p) << nkmp->p.shift;
-+
-+	return reg;
-+}
-+
- static int ccu_nkmp_set_rate(struct clk_hw *hw, unsigned long rate,
- 			   unsigned long parent_rate)
- {
- 	struct ccu_nkmp *nkmp = hw_to_ccu_nkmp(hw);
--	struct _ccu_nkmp _nkmp;
--	unsigned long flags;
-+	struct _ccu_nkmp _nkmp, _nkmp_old;
-+	unsigned long flags, old_mp, mp;
- 	u32 reg;
- 
- 	_nkmp.min_n = nkmp->n.min ?: 1;
-@@ -152,17 +190,33 @@ static int ccu_nkmp_set_rate(struct clk_hw *hw, unsigned long rate,
- 	spin_lock_irqsave(nkmp->common.lock, flags);
- 
- 	reg = readl(nkmp->common.base + nkmp->common.reg);
--	reg &= ~GENMASK(nkmp->n.width + nkmp->n.shift - 1, nkmp->n.shift);
--	reg &= ~GENMASK(nkmp->k.width + nkmp->k.shift - 1, nkmp->k.shift);
--	reg &= ~GENMASK(nkmp->m.width + nkmp->m.shift - 1, nkmp->m.shift);
--	reg &= ~GENMASK(nkmp->p.width + nkmp->p.shift - 1, nkmp->p.shift);
- 
--	reg |= (_nkmp.n - nkmp->n.offset) << nkmp->n.shift;
--	reg |= (_nkmp.k - nkmp->k.offset) << nkmp->k.shift;
--	reg |= (_nkmp.m - nkmp->m.offset) << nkmp->m.shift;
--	reg |= ilog2(_nkmp.p) << nkmp->p.shift;
-+	ccu_nkmp_extract_factors(nkmp, &_nkmp_old, reg);
-+
-+	old_mp = _nkmp_old.m * _nkmp_old.p;
-+	mp = _nkmp.m * _nkmp.p;
-+
-+	if (mp > old_mp) {
-+		reg = ccu_nkmp_apply_divider(nkmp, &_nkmp, reg);
-+		writel(reg, nkmp->common.base + nkmp->common.reg);
-+
-+		/*
-+		 * This value is decided by experiment results on an
-+		 * Allwinner H2+ board (Orange Pi Zero).
-+		 */
-+		udelay(500);
- 
--	writel(reg, nkmp->common.base + nkmp->common.reg);
-+		reg = ccu_nkmp_apply_multiplier(nkmp, &_nkmp, reg);
-+		writel(reg, nkmp->common.base + nkmp->common.reg);
-+	} else {
-+		reg = ccu_nkmp_apply_multiplier(nkmp, &_nkmp, reg);
-+		writel(reg, nkmp->common.base + nkmp->common.reg);
-+
-+		udelay(500);
-+
-+		reg = ccu_nkmp_apply_divider(nkmp, &_nkmp, reg);
-+		writel(reg, nkmp->common.base + nkmp->common.reg);
-+	}
- 
- 	spin_unlock_irqrestore(nkmp->common.lock, flags);
+ static SUNXI_CCU_M(axi_clk, "axi", "cpux", 0x050, 0, 2, 0);
  
 -- 
 2.12.2
