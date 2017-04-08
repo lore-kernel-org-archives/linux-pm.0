@@ -1,45 +1,121 @@
-From: Icenowy Zheng <icenowy@aosc.io>
-Subject: [PATCH 3/5] cpufreq: dt: Add support for some new Allwinner SoCs
-Date: Sun,  9 Apr 2017 02:50:23 +0800
-Message-ID: <20170408185025.53841-4-icenowy@aosc.io>
+From: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+Subject: [PATCH 4/5] ARM: sun8i: h3: add operating-points-v2
+ table for CPU
+Date: Sun,  9 Apr 2017 02:50:24 +0800
+Message-ID: <20170408185025.53841-5-icenowy@aosc.io>
 References: <20170408185025.53841-1-icenowy@aosc.io>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hermes.aosc.io ([199.195.250.187]:42634 "EHLO hermes.aosc.io"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752109AbdDHSwl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 8 Apr 2017 14:52:41 -0400
-In-Reply-To: <20170408185025.53841-1-icenowy@aosc.io>
-Sender: linux-pm-owner@vger.kernel.org
+Reply-To: icenowy-h8G6r0blFSE@public.gmane.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sunxi+bncBDS6XAN6ZADRBBXDUTDQKGQEKMIHOXQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20170408185025.53841-1-icenowy-h8G6r0blFSE@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sunxi@googlegroups.com, Icenowy Zheng <icenowy@aosc.io>
 
-Some new Allwinner SoCs get supported in the kernel after the
-compatibles are added to cpufreq-dt-platdev driver.
+The CPU on Allwinner H3 can do dynamic frequency scaling.
 
-Add their compatible strings in the cpufreq-dt-platdev driver.
+Add a DVFS table based on the one tweaked by Armbian developers, which
+are proven to work stably on BSP kernels.
 
-Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
+Frequencies higher than 1008MHz are temporarily dropped in the table, as
+they may lead to over voltage on boards without proper regulator
+settings or over temperature on boards with proper regulator settings.
+They will be added back once regulator settings are ready and thermal
+sensor driver is merged.
+
+In order to satisfy all different regulators (SY8106A which is 50mV per
+level, SY8113B which have two states: 1.1V and 1.3V, and some board with
+non-tweakable regulators), all the OPPs are defined with a range which has
+the target value as the minimum allowed value, and 1.3V (the highest
+VDD-CPUX voltage suggested by the datasheet) as the maximum allowed value.
+It's proven to work well with a board with SY8113B.
+
+Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
 ---
- drivers/cpufreq/cpufreq-dt-platdev.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm/boot/dts/sun8i-h3.dtsi | 38 +++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 37 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 921b4a6c3d16..2180e509e383 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -24,7 +24,12 @@ static const struct of_device_id machines[] __initconst = {
- 	{ .compatible = "allwinner,sun8i-a23", },
- 	{ .compatible = "allwinner,sun8i-a33", },
- 	{ .compatible = "allwinner,sun8i-a83t", },
-+	{ .compatible = "allwinner,sun8i-h2-plus", },
- 	{ .compatible = "allwinner,sun8i-h3", },
-+	{ .compatible = "allwinner,sun8i-v3s", },
-+	{ .compatible = "allwinner,sun50i-a64", },
-+	{ .compatible = "allwinner,sun50i-h5", },
-+	{ .compatible = "nextthing,gr8", },
+diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
+index b36f9f423c39..a0cee17fe44b 100644
+--- a/arch/arm/boot/dts/sun8i-h3.dtsi
++++ b/arch/arm/boot/dts/sun8i-h3.dtsi
+@@ -43,32 +43,68 @@
+ #include "sunxi-h3-h5.dtsi"
  
- 	{ .compatible = "apm,xgene-shadowcat", },
+ / {
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@480000000 {
++			opp-hz = /bits/ 64 <480000000>;
++			opp-microvolt = <980000 980000 1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@648000000 {
++			opp-hz = /bits/ 64 <816000000>;
++			opp-microvolt = <1020000 1020000 1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@912000000 {
++			opp-hz = /bits/ 64 <960000000>;
++			opp-microvolt = <1080000 1080000 1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp@1008000000 {
++			opp-hz = /bits/ 64 <1008000000>;
++			opp-microvolt = <1140000 1140000 1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++	};
++
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 
+-		cpu@0 {
++		cpu0: cpu@0 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <0>;
++			clocks = <&ccu CLK_CPUX>;
++			clock-names = "cpu";
++			operating-points-v2 = <&cpu0_opp_table>;
++			#cooling-cells = <0x2>;
+ 		};
+ 
+ 		cpu@1 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <1>;
++			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 
+ 		cpu@2 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <2>;
++			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 
+ 		cpu@3 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <3>;
++			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 	};
  
 -- 
 2.12.2
