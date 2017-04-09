@@ -1,81 +1,94 @@
-From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: Re: [PATCH 2/5] clk: sunxi-ng: allow set parent clock
- (PLL_CPUX) for CPUX clock on H3
-Date: Sun, 9 Apr 2017 09:05:32 +0800
-Message-ID: <CAGb2v67qxuFhN_oB4YqSTa04pb7T-7CQcmOrSUoTGTKMjW9CPg@mail.gmail.com>
-References: <20170408185025.53841-1-icenowy@aosc.io> <20170408185025.53841-3-icenowy@aosc.io>
-Reply-To: wens-jdAy2FN1RRM@public.gmane.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCMILY6JWQBBB5MRU3DQKGQEKZEWDNQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20170408185025.53841-3-icenowy-h8G6r0blFSE@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Cc: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-clk <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][v2] cpufreq: Bring CPUs up even if cpufreq_online failed
+Date: Sun,  9 Apr 2017 13:45:16 +0800
+Message-ID: <1491716716-22222-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga06.intel.com ([134.134.136.31]:37943 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751211AbdDIFpa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 9 Apr 2017 01:45:30 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Stable # 4 . 9+" <stable@vger.kernel.org>
 
-Hi,
+There is a report that after
+commit 27622b061eb4 ("cpufreq: Convert to hotplug state machine"),
+the normal CPU offline/online cycle failed on some platforms.
+According to the ftrace result, this problem was triggered on
+platforms using acpi-freq as the default cpufreq driver,
+and due to the lack of some ACPI freq method(_PCT eg), the
+cpufreq_online failed and returned a negative value, thus the CPU
+hotplug statemachine rollbacked the CPU online process. Actually
+from the user's perspective the failure of cpufreq_online should
+not prevent that CPU from being brought up, although cpufreq might
+not work on that CPU. BTW, during system bootup the cpufreq_online
+is not invoked via cpuhotplug statemachine but by the cpufreq device
+creation process, thus the APs can be brought up although cpufreq_online
+failed in that stage.
 
-On Sun, Apr 9, 2017 at 2:50 AM, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org> wrote:
+This patch ignores the return value of cpufreq_online/offline and
+let the cpufreq framework to deal with the failure that, cpufreq_online()
+will do a proper rollback in that case. And if the _PCT is missing,
+the acpi cpufreq driver will print a warning if the corresponding
+debug options have been enabled.
 
-The subject can just say "set CLK_SET_RATE_PARENT for CPUX clock on H3".
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=194581
+Fixes: 27622b061eb4 ("cpufreq: Convert to hotplug state machine")
+Reported-and-tested-by: Tomasz Maciej Nowak <tmn505@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Stable <stable@vger.kernel.org> # 4.9+
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+v2:
+ - According to Rafael and Sebastian's suggestion, remove
+   the error log in cpuhp_cpufreq_online/offline, and let
+   the cpufreq_online and cpufreq_offline to print the warning
+   and do the necessary rollback if they failed.
+---
+ drivers/cpufreq/cpufreq.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-> The CPUX clock, which is the main clock of the ARM core on Allwinner H3,
-> can be adjusted by changing the frequency of the PLL_CPUX clock.
->
-> Allowing setting parent clock for the CPUX clock, thus the PLL_CPUX
-> clock can be adjusted when adjusting the CPUX clock.
->
-
-This paragraph needs some work, particularly the verbs you chose. In the
-clk subsystem "setting parent clock" actually refers to re-parenting.
-
->From include/linux/clk-provider.h:
-
-#define CLK_SET_RATE_PARENT     BIT(2) /* propagate rate change up one level */
-
-So what you want to say is to propagate rate changes to CPUX up one
-level, so PLL_CPUX gets changed as well.
-
-The precise wording could be something like:
-
-    The CPUX clock is the clock source for the ARM cores on the H3 SoC.
-    It is a mux clock fed by, amongst other fixed clock sources, the
-    configurable PLL_CPUX.
-
-    Set CLK_SET_RATE_PARENT on the CPUX clock, so rate changes to it
-    are propagated up one level to the PLL_CPUX clock.
-
-ChenYu
-
-> Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-> ---
->  drivers/clk/sunxi-ng/ccu-sun8i-h3.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
-> index 4cbc1b701b7c..90b4e26a70bc 100644
-> --- a/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
-> +++ b/drivers/clk/sunxi-ng/ccu-sun8i-h3.c
-> @@ -135,7 +135,7 @@ static SUNXI_CCU_NM_WITH_FRAC_GATE_LOCK(pll_de_clk, "pll-de",
->  static const char * const cpux_parents[] = { "osc32k", "osc24M",
->                                              "pll-cpux" , "pll-cpux" };
->  static SUNXI_CCU_MUX(cpux_clk, "cpux", cpux_parents,
-> -                    0x050, 16, 2, CLK_IS_CRITICAL);
-> +                    0x050, 16, 2, CLK_IS_CRITICAL | CLK_SET_RATE_PARENT);
->
->  static SUNXI_CCU_M(axi_clk, "axi", "cpux", 0x050, 0, 2, 0);
->
-> --
-> 2.12.2
->
-> --
-> You received this message because you are subscribed to the Google Groups "linux-sunxi" group.
-> To unsubscribe from this group and stop receiving emails from it, send an email to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-> For more options, visit https://groups.google.com/d/optout.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index bc96d42..0e3f649 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2398,6 +2398,20 @@ EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
+  *********************************************************************/
+ static enum cpuhp_state hp_online;
+ 
++static int cpuhp_cpufreq_online(unsigned int cpu)
++{
++	cpufreq_online(cpu);
++
++	return 0;
++}
++
++static int cpuhp_cpufreq_offline(unsigned int cpu)
++{
++	cpufreq_offline(cpu);
++
++	return 0;
++}
++
+ /**
+  * cpufreq_register_driver - register a CPU Frequency driver
+  * @driver_data: A struct cpufreq_driver containing the values#
+@@ -2460,8 +2474,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+ 	}
+ 
+ 	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "cpufreq:online",
+-					cpufreq_online,
+-					cpufreq_offline);
++					cpuhp_cpufreq_online,
++					cpuhp_cpufreq_offline);
+ 	if (ret < 0)
+ 		goto err_if_unreg;
+ 	hp_online = ret;
+-- 
+2.7.4
