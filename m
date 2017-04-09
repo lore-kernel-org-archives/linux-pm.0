@@ -1,35 +1,208 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH] cpufreq: imx6q: Fix error handling code
-Date: Sun,  9 Apr 2017 09:33:52 +0200
-Message-ID: <20170409073352.8227-1-christophe.jaillet@wanadoo.fr>
-Return-path: <kernel-janitors-owner@vger.kernel.org>
-Sender: kernel-janitors-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v4 1/4] ACPI: utils: Add new acpi_dev_present helper
+Date: Sun, 9 Apr 2017 10:16:43 +0200
+Message-ID: <20170409081643.GB3911@wunner.de>
+References: <20170408214830.17650-1-hdegoede@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170408214830.17650-1-hdegoede@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-According to the previous error handling code, it is likely that
-'goto out_free_opp' is expected here in order to avoid a memory leak in
-error handling path.
+On Sat, Apr 08, 2017 at 11:48:27PM +0200, Hans de Goede wrote:
+> acpi_dev_found just iterates over all ACPI-ids and sees if one matches.
+> This means that it will return true for devices which are in the dsdt
+> but disabled (their _STA method returns 0).
+> 
+> For some drivers it is useful to be able to check if a certain HID
+> is not only present in the namespace, but also actually present as in
+> acpi_device_is_present() will return true for the device. For example
+> because if a certain device is present then the driver will want to use
+> an extcon or IIO adc channel provided by that device.
+> 
+> This commit adds a new acpi_dev_present helper which drivers can use
+> to this end.
+> 
+> Like acpi_dev_found, acpi_dev_present take a HID as argument, but
+> it also has 2 extra optional arguments to only check for an ACPI
+> device with a specific UID and/or HRV value. This makes it more
+> generic and allows it to replace custom code doing similar checks
+> in several places.
+> 
+> Arguably acpi_dev_present is what acpi_dev_found should have been, but
+> there are too many users to just change acpi_dev_found without the risk
+> of breaking something.
+> 
+> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Cc: Lukas Wunner <lukas@wunner.de>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+> Changes in v2:
+> -Switch to using bus_find_device() to avoid "Traversing the namespace
+>  over and over"
+> -Add optional (may be NULL / -1) uid and hrv arguments, this will
+>  allow this new function to replace the custom code for this in
+>  drivers/firmware/efi/dev-path-parser.c as well as in
+>  sound/soc/intel/common/sst-match-acpi.c and will allow it to be
+>  used to implement blacklists to avoid loading the ACPI ac / battery
+>  driver on systems which have a PMIC / charger acpi device with a
+>  native driver which offers a better (often working vs not working)
+>  user experience
+> -Dropped Mika's reviewd by as this is almost a total rewrite
+> Changes in v3:
+> -memset the entire acpi_dev_present_info struct, this fixes
+>  acpi_device_id.cls not getting cleared
+> Changes in v4:
+> -Use empty initializer to zero the acpi_dev_present_info struct
+> ---
+>  drivers/acpi/utils.c    | 71 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/acpi/acpi_bus.h |  1 +
+>  include/linux/acpi.h    |  5 ++++
+>  3 files changed, 77 insertions(+)
+> 
+> diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
+> index 22c0995..ecd86a9 100644
+> --- a/drivers/acpi/utils.c
+> +++ b/drivers/acpi/utils.c
+> @@ -736,6 +736,77 @@ bool acpi_dev_found(const char *hid)
+>  }
+>  EXPORT_SYMBOL(acpi_dev_found);
+>  
+> +struct acpi_dev_present_info {
+> +	struct acpi_device_id hid[2];
+> +	const char *uid;
+> +	int hrv;
+> +};
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
- drivers/cpufreq/imx6q-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+There's a (somewhat theoretical) issue on 32 bit arches with your choice
+of int for hrv:  _HRV returns an "Integer (DWORD)" per the spec.  That's
+32 bit and clashes with your use of -1 to signify "don't care" if the
+arch uses 32 bit to represent an int.
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 7719b02e04f5..b14117dcfff5 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -255,7 +255,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
- 	if (ret) {
- 		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
--		goto put_reg;
-+		goto out_free_opp;
- 	}
- 
- 	/* Make imx6_soc_volt array's size same as arm opp number */
--- 
-2.11.0
+So you need to use a "signed long long" or "s64" here.
 
+
+> +
+> +static int acpi_dev_present_cb(struct device *dev, void *data)
+> +{
+> +	struct acpi_device *adev = to_acpi_device(dev);
+> +	struct acpi_dev_present_info *match = data;
+> +	unsigned long long hrv;
+> +	acpi_status status;
+> +
+> +	if (acpi_match_device_ids(adev, match->hid))
+> +		return 0;
+> +
+> +	if (match->uid && adev->pnp.unique_id &&
+> +	    strcmp(adev->pnp.unique_id, match->uid))
+> +		return 0;
+> +
+> +	if (match->uid && !adev->pnp.unique_id &&
+> +	    strcmp("0", match->uid))
+> +		return 0;
+> +
+> +	if (match->hrv == -1)
+> +		return 1;
+> +
+> +	status = acpi_evaluate_integer(adev->handle, "_HRV", NULL, &hrv);
+> +	if (ACPI_FAILURE(status))
+> +		return 0;
+> +
+> +	return hrv == match->hrv;
+> +}
+> +
+> +/**
+> + * acpi_dev_present - Detect that a given ACPI device is present
+> + * @hid: Hardware ID of the device.
+> + * @uid: Unique ID of the device, pass "0" for devices without a _UID,
+> + *       pass NULL to not check _UID
+> + * @hrv: Hardware Revision of the device, pass -1 to not check _HRV
+> + *
+> + * Return %true if a matching device was present at the moment of invocation.
+> + * Note that if the device is pluggable, it may since have disappeared.
+> + *
+> + * Note that unlike acpi_dev_found() this function checks the status
+> + * of the device so for devices which are present in the dsdt, but
+                   ^
+Minor nit:  I think readability improves if you start a new sentence or
+insert a comma here.  Sorry, just my grammar OCD.
+
+Otherwise,
+Reviewed-by: Lukas Wunner <lukas@wunner.de>
+
+I'm clueless about ACPI battery or charging, so can't say anything about
+the remainder of the series.
+
+Note that the code in drivers/firmware/efi/dev-path-parser.c deliberately
+increments the refcount of the device found and returns a pointer to it,
+whereas acpi_dev_present() as introduced by this patch merely checks
+presence and returns a bool.  So you won't be able to replace the code
+in dev-path-parser.c with acpi_dev_present(), but I think that's
+perfectly fine.
+
+Thanks,
+
+Lukas
+
+> + * which are disabled (their _STA callback returns 0) this function
+> + * will return false.
+> + *
+> + * For this function to work, acpi_bus_scan() must have been executed
+> + * which happens in the subsys_initcall() subsection. Hence, do not
+> + * call from a subsys_initcall() or earlier (use acpi_get_devices()
+> + * instead). Calling from module_init() is fine (which is synonymous
+> + * with device_initcall()).
+> + */
+> +bool acpi_dev_present(const char *hid, const char *uid, int hrv)
+> +{
+> +	struct acpi_dev_present_info match = {};
+> +	struct device *dev;
+> +
+> +	strlcpy(match.hid[0].id, hid, sizeof(match.hid[0].id));
+> +	match.uid = uid;
+> +	match.hrv = hrv;
+> +
+> +	dev = bus_find_device(&acpi_bus_type, NULL, &match,
+> +			      acpi_dev_present_cb);
+> +
+> +	return dev ? true : false;
+> +}
+> +EXPORT_SYMBOL(acpi_dev_present);
+> +
+>  /*
+>   * acpi_backlight= handling, this is done here rather then in video_detect.c
+>   * because __setup cannot be used in modules.
+> diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+> index ef0ae8a..64498d5 100644
+> --- a/include/acpi/acpi_bus.h
+> +++ b/include/acpi/acpi_bus.h
+> @@ -88,6 +88,7 @@ acpi_evaluate_dsm_typed(acpi_handle handle, const u8 *uuid, u64 rev, u64 func,
+>  	}
+>  
+>  bool acpi_dev_found(const char *hid);
+> +bool acpi_dev_present(const char *hid, const char *uid, int hrv);
+>  
+>  #ifdef CONFIG_ACPI
+>  
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> index 9b05886..e5dd0f1 100644
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -611,6 +611,11 @@ static inline bool acpi_dev_found(const char *hid)
+>  	return false;
+>  }
+>  
+> +static inline bool acpi_dev_present(const char *hid, const char *uid, int hrv)
+> +{
+> +	return false;
+> +}
+> +
+>  static inline bool is_acpi_node(struct fwnode_handle *fwnode)
+>  {
+>  	return false;
+> -- 
+> 2.9.3
