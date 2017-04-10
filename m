@@ -1,78 +1,22 @@
 From: Hans de Goede <hdegoede@redhat.com>
 Subject: Re: [PATCH v4 1/4] ACPI: utils: Add new acpi_dev_present helper
-Date: Mon, 10 Apr 2017 20:14:57 +0200
-Message-ID: <3251d226-43fc-2d0d-2713-d69751347f31@redhat.com>
+Date: Mon, 10 Apr 2017 20:24:50 +0200
+Message-ID: <a25d3ef0-2951-4b5e-112e-abec3ce75d75@redhat.com>
 References: <20170408214830.17650-1-hdegoede@redhat.com>
- <2f0397ec-1092-5805-8515-dac350ea6ae4@redhat.com>
+ <20170409081643.GB3911@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2f0397ec-1092-5805-8515-dac350ea6ae4@redhat.com>
+In-Reply-To: <20170409081643.GB3911@wunner.de>
 Sender: linux-acpi-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
 Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-On 10-04-17 09:23, Hans de Goede wrote:
-> Hi All,
->
-> Self-nack for patches 3-4 in this series, it turns out that
-> doing the global blacklist for the ACPI ac / battery is not a
-> good idea.
->
-> Some Bay Trail / Cherry Trail users are running kernels build
-> from my personal tree to get early access to various fixes
-> in there and I got a regression report on the DELL 5855, where
-> the blacklisting of the ACPI battery driver if INT33F4 is
-> present caused the battery monitoring to stop working, that
-> devices has an INT33F4 node with _STA returning 15 yet it
-> is not using an axp288 PMIC at all, I'm still gathering more
-> info, but I believe atm that Dell simply disabled the i2c
-> controller to which the axp288 would be connected if present
-> and left the other bits of the DTSD unmodified.
->
-> One option which comes to mind would be to only count devices
-> as present if all their deps are met, but that will only
-> work if the blacklist check is done after all other drivers
-> have loaded which is not how things work.
->
-> So I believe that my earlier attempts at fixing the double
-> power_supply registration by unregistering the ACPI one when
-> the native one has successfully loaded is better. That guarantees
-> regressions like this one will not happen, because the ACPI
-> power_supply does not get unregistered until the native one
-> has loaded.
-
-Ok scrap that, I've some more info and the INT33F4 node on
-the Dell 5855 is returning 0 from _STA and the blacklist is
-causing problems on that machine for other reason, it could
-be the user was using an older version with the uninitialized
-.cls match info problem, I've asked the user to test the latest
-version.
-
-So assuming that does work, we are good to go with the blacklist
-approach (which seems to be the solution everyone prefers),
-sorry about the noise.
-
-I will send a v5 of this patch addressing Lukas' comments,
-I will re-submit patches 2-4 when I hear back from the Dell
-5855 user.
-
-Regards,
-
-Hans
-
-
-
->
-> Regards,
->
-> Hans
->
->
->
+On 09-04-17 10:16, Lukas Wunner wrote:
 > On Sat, Apr 08, 2017 at 11:48:27PM +0200, Hans de Goede wrote:
 >> acpi_dev_found just iterates over all ACPI-ids and sees if one matches.
 >> This means that it will return true for devices which are in the dsdt
@@ -133,37 +77,47 @@ Hans
 >>  EXPORT_SYMBOL(acpi_dev_found);
 >>
 >> +struct acpi_dev_present_info {
->> +    struct acpi_device_id hid[2];
->> +    const char *uid;
->> +    int hrv;
+>> +	struct acpi_device_id hid[2];
+>> +	const char *uid;
+>> +	int hrv;
 >> +};
+>
+> There's a (somewhat theoretical) issue on 32 bit arches with your choice
+> of int for hrv:  _HRV returns an "Integer (DWORD)" per the spec.  That's
+> 32 bit and clashes with your use of -1 to signify "don't care" if the
+> arch uses 32 bit to represent an int.
+>
+> So you need to use a "signed long long" or "s64" here.
+
+Switched to s64 for v5.
+
 >> +
 >> +static int acpi_dev_present_cb(struct device *dev, void *data)
 >> +{
->> +    struct acpi_device *adev = to_acpi_device(dev);
->> +    struct acpi_dev_present_info *match = data;
->> +    unsigned long long hrv;
->> +    acpi_status status;
+>> +	struct acpi_device *adev = to_acpi_device(dev);
+>> +	struct acpi_dev_present_info *match = data;
+>> +	unsigned long long hrv;
+>> +	acpi_status status;
 >> +
->> +    if (acpi_match_device_ids(adev, match->hid))
->> +        return 0;
+>> +	if (acpi_match_device_ids(adev, match->hid))
+>> +		return 0;
 >> +
->> +    if (match->uid && adev->pnp.unique_id &&
->> +        strcmp(adev->pnp.unique_id, match->uid))
->> +        return 0;
+>> +	if (match->uid && adev->pnp.unique_id &&
+>> +	    strcmp(adev->pnp.unique_id, match->uid))
+>> +		return 0;
 >> +
->> +    if (match->uid && !adev->pnp.unique_id &&
->> +        strcmp("0", match->uid))
->> +        return 0;
+>> +	if (match->uid && !adev->pnp.unique_id &&
+>> +	    strcmp("0", match->uid))
+>> +		return 0;
 >> +
->> +    if (match->hrv == -1)
->> +        return 1;
+>> +	if (match->hrv == -1)
+>> +		return 1;
 >> +
->> +    status = acpi_evaluate_integer(adev->handle, "_HRV", NULL, &hrv);
->> +    if (ACPI_FAILURE(status))
->> +        return 0;
+>> +	status = acpi_evaluate_integer(adev->handle, "_HRV", NULL, &hrv);
+>> +	if (ACPI_FAILURE(status))
+>> +		return 0;
 >> +
->> +    return hrv == match->hrv;
+>> +	return hrv == match->hrv;
 >> +}
 >> +
 >> +/**
@@ -178,6 +132,40 @@ Hans
 >> + *
 >> + * Note that unlike acpi_dev_found() this function checks the status
 >> + * of the device so for devices which are present in the dsdt, but
+>                    ^
+> Minor nit:  I think readability improves if you start a new sentence or
+> insert a comma here.  Sorry, just my grammar OCD.
+
+Started a new sentence at "So for" for v5.
+
+>
+> Otherwise,
+> Reviewed-by: Lukas Wunner <lukas@wunner.de>
+
+Thank you.
+
+> I'm clueless about ACPI battery or charging, so can't say anything about
+> the remainder of the series.
+>
+> Note that the code in drivers/firmware/efi/dev-path-parser.c deliberately
+> increments the refcount of the device found and returns a pointer to it,
+> whereas acpi_dev_present() as introduced by this patch merely checks
+> presence and returns a bool.  So you won't be able to replace the code
+> in dev-path-parser.c with acpi_dev_present(), but I think that's
+> perfectly fine.
+
+Ah, bummer, would have been nice to be able to re-use the code.
+
+Regards,
+
+Hans
+
+
+>
+> Thanks,
+>
+> Lukas
+>
 >> + * which are disabled (their _STA callback returns 0) this function
 >> + * will return false.
 >> + *
@@ -189,17 +177,17 @@ Hans
 >> + */
 >> +bool acpi_dev_present(const char *hid, const char *uid, int hrv)
 >> +{
->> +    struct acpi_dev_present_info match = {};
->> +    struct device *dev;
+>> +	struct acpi_dev_present_info match = {};
+>> +	struct device *dev;
 >> +
->> +    strlcpy(match.hid[0].id, hid, sizeof(match.hid[0].id));
->> +    match.uid = uid;
->> +    match.hrv = hrv;
+>> +	strlcpy(match.hid[0].id, hid, sizeof(match.hid[0].id));
+>> +	match.uid = uid;
+>> +	match.hrv = hrv;
 >> +
->> +    dev = bus_find_device(&acpi_bus_type, NULL, &match,
->> +                  acpi_dev_present_cb);
+>> +	dev = bus_find_device(&acpi_bus_type, NULL, &match,
+>> +			      acpi_dev_present_cb);
 >> +
->> +    return dev ? true : false;
+>> +	return dev ? true : false;
 >> +}
 >> +EXPORT_SYMBOL(acpi_dev_present);
 >> +
@@ -211,7 +199,7 @@ Hans
 >> --- a/include/acpi/acpi_bus.h
 >> +++ b/include/acpi/acpi_bus.h
 >> @@ -88,6 +88,7 @@ acpi_evaluate_dsm_typed(acpi_handle handle, const u8 *uuid, u64 rev, u64 func,
->>      }
+>>  	}
 >>
 >>  bool acpi_dev_found(const char *hid);
 >> +bool acpi_dev_present(const char *hid, const char *uid, int hrv);
@@ -223,16 +211,16 @@ Hans
 >> --- a/include/linux/acpi.h
 >> +++ b/include/linux/acpi.h
 >> @@ -611,6 +611,11 @@ static inline bool acpi_dev_found(const char *hid)
->>      return false;
+>>  	return false;
 >>  }
 >>
 >> +static inline bool acpi_dev_present(const char *hid, const char *uid, int hrv)
 >> +{
->> +    return false;
+>> +	return false;
 >> +}
 >> +
 >>  static inline bool is_acpi_node(struct fwnode_handle *fwnode)
 >>  {
->>      return false;
+>>  	return false;
 >> --
 >> 2.9.3
