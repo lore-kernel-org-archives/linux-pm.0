@@ -1,131 +1,203 @@
-From: Mel Gorman <mgorman@techsingularity.net>
-Subject: Performance of low-cpu utilisation benchmark regressed severely
- since 4.6
-Date: Mon, 10 Apr 2017 09:41:17 +0100
-Message-ID: <20170410084117.rjh3mtdx7hd2i5ze@techsingularity.net>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v4 2/4] power: bq24190_charger: Clean up extcon code
+Date: Mon, 10 Apr 2017 02:03:48 -0700
+Message-ID: <CAKvHMgR0ayZ_pXi4x1Ebc4dKJfhdwH1ZJCUphKSNPYSS9sTuTw@mail.gmail.com>
+References: <20170406031048.12401-1-liam@networkimprov.net>
+ <20170406031048.12401-3-liam@networkimprov.net> <da9ca342-0573-6a17-7fdb-3a8f88980525@redhat.com>
+ <CAKvHMgS8c=gOFqYAn6jKg8JxwJRO+BNmiE5yj6WmOn7o-9NqTA@mail.gmail.com>
+ <06c84661-ac0d-105f-2896-2615eab7c093@redhat.com> <CAKvHMgQngU5s1M6D6zCt2je=P6GOKD48KVexwd7LK5zMJm8gEg@mail.gmail.com>
+ <d82efc98-daa1-cf64-d49b-2e79065886fc@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: rafael.j.wysocki@intel.com
-Cc: jrg.otte@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f171.google.com ([209.85.223.171]:35065 "EHLO
+        mail-io0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752945AbdDJJDt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 05:03:49 -0400
+Received: by mail-io0-f171.google.com with SMTP id r16so33517001ioi.2
+        for <linux-pm@vger.kernel.org>; Mon, 10 Apr 2017 02:03:49 -0700 (PDT)
+In-Reply-To: <d82efc98-daa1-cf64-d49b-2e79065886fc@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-Hi Rafael,
+On Sat, Apr 8, 2017 at 1:05 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
+>
+>
+> On 08-04-17 21:09, Liam Breck wrote:
+>>
+>> On Sat, Apr 8, 2017 at 3:02 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>>>
+>>> Hi,
+>>>
+>>> On 08-04-17 00:27, Liam Breck wrote:
+>>>>
+>>>>
+>>>> Hallo Hans,
+>>>>
+>>>> On Thu, Apr 6, 2017 at 12:17 AM, Hans de Goede <hdegoede@redhat.com>
+>>>> wrote:
+>>>
+>>>
+>>>
+>>> <snip>
+>>>
+>>>
+>>>>>> -       /*
+>>>>>> -        * If no charger has been detected and host mode is requested,
+>>>>>> activate
+>>>>>> -        * the 5V boost converter, otherwise deactivate it.
+>>>>>> -        */
+>>>>>> -       if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST)
+>>>>>> ==
+>>>>>> 1) {
+>>>>>> -               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>>>>>> -
+>>>>>> BQ24190_REG_POC_CHG_CONFIG_MASK,
+>>>>>> -
+>>>>>> BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+>>>>>> -
+>>>>>> BQ24190_REG_POC_CHG_CONFIG_OTG);
+>>>>>> -       } else {
+>>>>>> -               ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>>>>>> -
+>>>>>> BQ24190_REG_POC_CHG_CONFIG_MASK,
+>>>>>> -
+>>>>>> BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+>>>>>> -
+>>>>>> BQ24190_REG_POC_CHG_CONFIG_CHARGE);
+>>>>>> -       }
+>>>>>> -       if (ret)
+>>>>>> -               dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", ret);
+>>>>>> +       /* Set OTG 5V boost: on if no charger detected and in USB host
+>>>>>> mode, else off */
+>>>>>> +       error = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>>>>>> +                                  BQ24190_REG_POC_CHG_CONFIG_MASK,
+>>>>>> +                                  BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+>>>>>> +                       !iinlim && extcon_get_state(bdi->extcon,
+>>>>>> EXTCON_USB_HOST) == 1
+>>>>>> +                                ? BQ24190_REG_POC_CHG_CONFIG_OTG
+>>>>>> +                                : BQ24190_REG_POC_CHG_CONFIG_CHARGE);
+>>>>>> +       if (error < 0)
+>>>>>> +               dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n",
+>>>>>> error);
+>>>>>>
+>>>>>>         pm_runtime_mark_last_busy(bdi->dev);
+>>>>>>         pm_runtime_put_autosuspend(bdi->dev);
+>>>>>
+>>>>>
+>>>>>
+>>>>>
+>>>>> I still find the refactored code you're proposing here a lot less
+>>>>> readable
+>>>>> then the original code, and the same goes for the comment. If you
+>>>>> insist
+>>>>> in changing this, then I suggest changing it into this:
+>>>>
+>>>>
+>>>>
+>>>> OK. I'll collapse the comment to one line tho.
+>>>
+>>>
+>>>
+>>> Please don't having this as 2 lines really is not a problem in any way
+>>> and
+>>> I find the longer comment a lot easier to parse.
+>>>
+>>>
+>>>>
+>>>>>         /*
+>>>>>          * If no charger has been detected and host mode is requested,
+>>>>> activate
+>>>>>          * the 5V boost converter, otherwise deactivate it.
+>>>>>          */
+>>>>>         if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST)
+>>>>> ==
+>>>>> 1)
+>>>>>                 chg_config = BQ24190_REG_POC_CHG_CONFIG_OTG;
+>>>>>         else
+>>>>>                 chg_config = BQ24190_REG_POC_CHG_CONFIG_CHARGE;
+>>>>>
+>>>>>         error = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>>>>>                                    BQ24190_REG_POC_CHG_CONFIG_MASK,
+>>>>>                                    BQ24190_REG_POC_CHG_CONFIG_SHIFT,
+>>>>>                                    chg_config);
+>>>>>         if (error)
+>>>>>                 dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", error);
+>>>>>
+>>>>>> @@ -1432,8 +1427,8 @@ static int bq24190_probe(struct i2c_client
+>>>>>> *client,
+>>>>>>         }
+>>>>>>
+>>>>>>         /*
+>>>>>> -        * The extcon-name property is purely an in kernel interface
+>>>>>> for
+>>>>>> -        * x86/ACPI use, DT platforms should get extcon via phandle.
+>>>>>> +        * ACPI platforms should use device_property "extcon-name".
+>>>>>> +        * Devicetree platforms should get extcon via phandle (not yet
+>>>>>> supported).
+>>>>>>          */
+>>>>>>         if (device_property_read_string(dev, "extcon-name", &name) ==
+>>>>>> 0)
+>>>>>> {
+>>>>>>                 bdi->extcon = extcon_get_extcon_dev(name);
+>>>>>
+>>>>>
+>>>>>
+>>>>>
+>>>>> The new comment suggest that extcon-name is something which should
+>>>>> actually
+>>>>> be used inside ACPI DSDT tables, which it is not, please leave the
+>>>>> comment
+>>>>> as is.
+>>>>
+>>>>
+>>>>
+>>>> OK, right. But "in kernel interface" sounds official, and this is
+>>>> really a custom msg passing method. A platform-data struct is
+>>>> documented in a header, and a module parameter has its own docs
+>>>> scheme; and use of those methods is well documented. I can't tell how
+>>>> I would invoke this one. How about this...
+>>>>
+>>>> A Devicetree should provide extcon-name via phandle (not yet supported).
+>>>
+>>>
+>>>
+>>> No a devicetree should not provide a name it would provide a phandle
+>>> pointing to the extcon, no name (and name based lookup) should be
+>>> involved.
+>>
+>>
+>> OK.
+>>
+>>>> ACPI extcon drivers/clients[?] should insert[?] device_property
+>>>> extcon-name into our device with relevant_api_call(args).
+>>>
+>>>
+>>>
+>>> For an example of how this is used see:
+>>>
+>>>
+>>> https://github.com/jwrdegoede/linux-sunxi/commit/7fa4460e2a18a3f6ffb39ae4940fee1dd2a880a4
+>>>
+>>> Around line 214 of i2c-cht-wc.c and later.
+>>
+>>
+>> So a comment like...
+>>
+>> On ACPI platforms, extcon clients should invoke this driver with:
+>> struct i2c_adapter a = { ... };
+>> i2c_add_adapter(&a);
+>> struct property_entry pe[] = { PROPERTY_ENTRY_STRING("extcon-name",
+>> <name>), ... };
+>> struct i2c_board_info bi = { .type = "bq24190", .addr = 0x6b,
+>> .properties = pe, .irq = <irq> };
+>> i2c_new_device(&a, &bi);
+>
+>
+> Sure that works for me.
 
-Since kernel 4.6, performance of the low CPU intensity workloads was dropped
-severely.  netperf UDP_STREAM has about 15-20% CPU utilisation has regressed
-about 10% relative to 4.4 anad about 6-9% running TCP_STREAM. sockperf has
-similar utilisation fixes but I won't go into these in detail as they were
-running loopback and are sensitive to a lot of factors.
-
-It's far more obvious when looking at the git test suite and the length
-of time it takes to run. This is a shellscript and git intensive workload
-whose CPU utilisatiion is very low but is less sensitive to multiple
-factors than netperf and sockperf.
-
-Bisection indicates that the regression started with commit ffb810563c0c
-("intel_pstate: Avoid getting stuck in high P-states when idle").  However,
-it's no longer the only relevant commit as the following results will show
-
-
-                                 4.4.0                 4.5.0                 4.6.0            4.11.0-rc5            4.11.0-rc5
-                               vanilla               vanilla               vanilla               vanilla           revert-v1r1
-User    min          1786.44 (  0.00%)     1613.72 (  9.67%)     3302.19 (-84.85%)     3487.46 (-95.22%)     2701.84 (-51.24%)
-User    mean         1788.35 (  0.00%)     1616.47 (  9.61%)     3304.14 (-84.76%)     3488.12 (-95.05%)     2715.80 (-51.86%)
-User    stddev          1.43 (  0.00%)        1.75 (-21.84%)        1.12 ( 22.10%)        0.57 ( 60.14%)        7.13 (-397.62%)
-User    coeffvar        0.08 (  0.00%)        0.11 (-34.80%)        0.03 ( 57.83%)        0.02 ( 79.56%)        0.26 (-227.68%)
-User    max          1790.14 (  0.00%)     1618.73 (  9.58%)     3305.40 (-84.64%)     3489.01 (-94.90%)     2721.66 (-52.04%)
-System  min           218.44 (  0.00%)      202.58 (  7.26%)      407.51 (-86.55%)      269.92 (-23.57%)      196.85 (  9.88%)
-System  mean          219.05 (  0.00%)      203.62 (  7.04%)      408.38 (-86.43%)      270.83 (-23.64%)      197.99 (  9.61%)
-System  stddev          0.60 (  0.00%)        0.64 ( -6.30%)        0.77 (-28.89%)        0.59 (  1.47%)        0.87 (-44.72%)
-System  coeffvar        0.27 (  0.00%)        0.31 (-14.35%)        0.19 ( 30.86%)        0.22 ( 20.31%)        0.44 (-60.11%)
-System  max           219.92 (  0.00%)      204.36 (  7.08%)      409.81 (-86.35%)      271.56 (-23.48%)      199.07 (  9.48%)
-Elapsed min          2017.05 (  0.00%)     1827.70 (  9.39%)     3701.00 (-83.49%)     3749.00 (-85.87%)     2904.36 (-43.99%)
-Elapsed mean         2018.83 (  0.00%)     1830.72 (  9.32%)     3703.20 (-83.43%)     3750.20 (-85.76%)     2919.33 (-44.60%)
-Elapsed stddev          1.79 (  0.00%)        2.18 (-21.93%)        1.47 ( 17.90%)        0.75 ( 58.20%)        7.66 (-328.12%)
-Elapsed coeffvar        0.09 (  0.00%)        0.12 (-34.46%)        0.04 ( 55.24%)        0.02 ( 77.50%)        0.26 (-196.07%)
-Elapsed max          2021.41 (  0.00%)     1833.91 (  9.28%)     3705.00 (-83.29%)     3751.00 (-85.56%)     2926.13 (-44.76%)
-CPU     min            99.00 (  0.00%)       99.00 (  0.00%)      100.00 ( -1.01%)      100.00 ( -1.01%)       99.00 (  0.00%)
-CPU     mean           99.00 (  0.00%)       99.00 (  0.00%)      100.00 ( -1.01%)      100.00 ( -1.01%)       99.00 (  0.00%)
-CPU     stddev          0.00 (  0.00%)        0.00 (  0.00%)        0.00 (  0.00%)        0.00 (  0.00%)        0.00 (  0.00%)
-CPU     coeffvar        0.00 (  0.00%)        0.00 (  0.00%)        0.00 (  0.00%)        0.00 (  0.00%)        0.00 (  0.00%)
-CPU     max            99.00 (  0.00%)       99.00 (  0.00%)      100.00 ( -1.01%)      100.00 ( -1.01%)       99.00 (  0.00%)
-
-               4.4.0       4.5.0       4.6.0  4.11.0-rc5  4.11.0-rc5
-             vanilla     vanilla     vanilla     vanilla revert-v1r1
-User        10819.50     9790.02    19914.22    21021.12    16392.80
-System       1327.78     1234.01     2465.45     1635.85     1197.03
-Elapsed     12138.54    11008.49    22247.35    22528.79    17543.60
-
-This is showing the user and system CPU usage as well as the elapsed time
-to run a single iteration of the git test suite with total times at bottom
-report. Overall time takes over 3 hours longer moving from 4.4 to 4.11-rc5
-and reverting the commit does not fully address the problem. It's doing
-a warmup run whose results are discarded and then 5 iterations.
-
-The test shows it took 2018 seconds on average to complete a single iteration
-on 4.4 and 3750 seconds to complete on 4.11-rc5. The major drop is between
-4.5 and 4.6 where it went from 1830 seconds to 3703 seconds and has not
-recovered. A bisection was clean and pointed to the commit mentioned above.
-
-The results show that it's not the only source as a revert (last column)
-doesn't fix the damage although it goes from 3750 seconds (4.11-rc5 vanilla)
-to 2919 seconds (with a revert).
-
-The machine is a relatively old desktop-class machine with a i7-3770 CPU @
-3.40GHz (IvyBridge). It is definitely using intel_pstate
-
-analyzing CPU 0:
-  driver: intel_pstate
-  CPUs which run at the same hardware frequency: 0
-  CPUs which need to have their frequency coordinated by software: 0
-  maximum transition latency:  Cannot determine or is not supported.
-  hardware limits: 1.60 GHz - 3.90 GHz
-  available cpufreq governors: performance powersave
-  current policy: frequency should be within 1.60 GHz and 3.90 GHz.
-                  The governor "powersave" may decide which speed to use
-                  within this range.
-  current CPU frequency: 1.60 GHz (asserted by call to hardware)
-  boost state support:
-    Supported: yes
-    Active: yes
-    3700 MHz max turbo 4 active cores
-    3800 MHz max turbo 3 active cores
-    3900 MHz max turbo 2 active cores
-    3900 MHz max turbo 1 active cores
-
-No special boot parameters are specified.
-
-I didn't poke around too much as the last time I tried, there were too
-many conflicting opinions and requirements so here are the observations.
-
-CPU usage is roughly 10% for the full duratiion of the test.
-Context switches, interrupt activity is not altered by the revert although it has changed substantially since 4.4
-turbostat confirms that busy time is roughtly 10% across the whole machine
-turbostat shows that average MHz is roughly halved in 4.11-rc5-vanilla versus 4.4
-turbostat shows that average MHz is slightly higher with the revert applied
-benchmark in question is doing IO but not a lot. Mostly below 100K/sec writes with small bursts of 6000K/sec
-
-CONFIG_CPU_FREQ_GOV_SCHEDUTIL is *NOT* set. This is deliberate as when
-I evaluated schedutil shortly after it was merged, I found that at best
-it performed comparably with the old code across a range of workloads
-and machines while having higher system CPU usage. I know a lot of
-the recent work has been schedutil-focused so I could find no patch on
-recent discussions that might relevant to this problem. I've not looked
-at schedutil recently but not everyone will be switching to it so the old
-setup is still relevant.
-
-While I accept the logic that CPUs should not remain at the highest
-frequency if completely idle for prolonged periods of time, it appears to
-be too agressive on older CPUs. Low utilisation tasks should still be able
-to get to the higher frequencies for the short bursts they are active for.
-
-I hope the data and the bisection is enough to have some ideas on how
-it can be addressed without impacting Haswell and Jorg's setup that the
-commit was originally intended for.
-
--- 
-Mel Gorman
-SUSE Labs
+Should we export a function from the charger driver to do the above,
+rather than requiring every client driver to replicate it?
