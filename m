@@ -1,78 +1,289 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v12.6 08/11] devicetree: power: bq27xxx: Add monitored-battery documentation
-Date: Sun,  9 Apr 2017 22:07:09 -0700
-Message-ID: <20170410050712.930-5-liam@networkimprov.net>
+Subject: [PATCH v12.6 06/11] power: bq27xxx_battery: Add power_supply_battery_info support
+Date: Sun,  9 Apr 2017 22:07:07 -0700
+Message-ID: <20170410050712.930-3-liam@networkimprov.net>
 References: <20170410050712.930-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:34918 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751615AbdDJFHq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 01:07:46 -0400
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:34751 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751198AbdDJFHo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 01:07:44 -0400
+Received: by mail-pf0-f194.google.com with SMTP id o126so7626651pfb.1
+        for <linux-pm@vger.kernel.org>; Sun, 09 Apr 2017 22:07:44 -0700 (PDT)
 In-Reply-To: <20170410050712.930-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
-Cc: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
+Cc: Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
 From: Liam Breck <kernel@networkimprov.net>
 
-Document monitored-battery = <&battery_node>
+Previously there was no way to configure these chips in the event that the
+defaults didn't match the battery in question.
 
-Cc: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org
+We now call power_supply_get_battery_info(), check its values, and write
+battery data to chip data memory (flash/RAM/NVM) if there is a dm_regs
+table for the chip and module param use_monitored_battery is true.
+
 Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- .../devicetree/bindings/power/supply/bq27xxx.txt   | 31 +++++++++++++++++-----
- 1 file changed, 24 insertions(+), 7 deletions(-)
+ drivers/power/supply/bq27xxx_battery.c | 188 ++++++++++++++++++++++++++++++++-
+ include/linux/power/bq27xxx_battery.h  |   1 +
+ 2 files changed, 188 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-index b0c95ef..6858e1a 100644
---- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-+++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-@@ -1,7 +1,7 @@
--Binding for TI BQ27XXX fuel gauge family
-+TI BQ27XXX fuel gauge family
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 6fb9bc9..f7e4be7 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -805,6 +805,13 @@ static LIST_HEAD(bq27xxx_battery_devices);
  
- Required properties:
--- compatible: Should contain one of the following:
-+- compatible: contains one of the following:
-  * "ti,bq27200" - BQ27200
-  * "ti,bq27210" - BQ27210
-  * "ti,bq27500" - deprecated, use revision specific property below
-@@ -26,11 +26,28 @@ Required properties:
-  * "ti,bq27425" - BQ27425
-  * "ti,bq27441" - BQ27441
-  * "ti,bq27621" - BQ27621
--- reg: integer, i2c address of the device.
-+- reg: integer, I2C address of the fuel gauge.
+ #define BQ27XXX_DM_SZ	32
+ 
++struct bq27xxx_dm_reg {
++	u8 subclass_id;
++	u8 offset;
++	u8 bytes;
++	u16 min, max;
++};
 +
-+Optional properties:
-+- monitored-battery: phandle of battery characteristics node
-+    The fuel gauge uses the following battery properties:
-+    + energy-full-design-microwatt-hours
-+    + charge-full-design-microamp-hours
-+    + voltage-min-design-microvolt
-+  Both or neither of the *-full-design-*-hours properties must be set.
-+  See Documentation/devicetree/bindings/power/supply/battery.txt
+ /**
+  * struct bq27xxx_dm_buf - chip data memory buffer
+  * @class: data memory subclass_id
+@@ -822,6 +829,38 @@ struct bq27xxx_dm_buf {
+ 	bool has_data, dirty;
+ };
  
- Example:
- 
--bq27510g3 {
--    compatible = "ti,bq27510g3";
--    reg = <0x55>;
--};
-+	bat: battery {
-+		compatible = "simple-battery";
-+		voltage-min-design-microvolt = <3200000>;
-+		energy-full-design-microwatt-hours = <5290000>;
-+		charge-full-design-microamp-hours = <1430000>;
-+	};
++#define BQ27XXX_DM_BUF(di, i) { \
++	.class = (di)->dm_regs[i].subclass_id, \
++	.block = (di)->dm_regs[i].offset / BQ27XXX_DM_SZ, \
++}
 +
-+	bq27510g3: fuel-gauge@55 {
-+		compatible = "ti,bq27510g3";
-+		reg = <0x55>;
-+		monitored-battery = <&bat>;
++static inline u16* bq27xxx_dm_reg_ptr(struct bq27xxx_dm_buf *buf,
++				      struct bq27xxx_dm_reg *reg)
++{
++	if (buf->class == reg->subclass_id &&
++	    buf->block == reg->offset / BQ27XXX_DM_SZ)
++		return (u16*) (buf->data + reg->offset % BQ27XXX_DM_SZ);
++
++	return NULL;
++}
++
++enum bq27xxx_dm_reg_id {
++	BQ27XXX_DM_DESIGN_CAPACITY = 0,
++	BQ27XXX_DM_DESIGN_ENERGY,
++	BQ27XXX_DM_TERMINATE_VOLTAGE,
++};
++
++static const char* bq27xxx_dm_reg_name[] = {
++	[BQ27XXX_DM_DESIGN_CAPACITY] = "design-capacity",
++	[BQ27XXX_DM_DESIGN_ENERGY] = "design-energy",
++	[BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
++};
++
++
++static bool bq27xxx_dt_battery = true;
++module_param_named(use_monitored_battery, bq27xxx_dt_battery, bool, S_IRUGO);
++MODULE_PARM_DESC(use_monitored_battery,
++ "Use devicetree monitored-battery config if present. Default is 1/y.");
+ 
+ static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
+ {
+@@ -1017,6 +1056,45 @@ static int bq27xxx_battery_read_dm_block(struct bq27xxx_device_info *di,
+ 	return ret;
+ }
+ 
++static void bq27xxx_battery_update_dm_block(struct bq27xxx_device_info *di,
++					    struct bq27xxx_dm_buf *buf,
++					    enum bq27xxx_dm_reg_id reg_id,
++					    unsigned int val)
++{
++	struct bq27xxx_dm_reg *reg = &di->dm_regs[reg_id];
++	const char *str = bq27xxx_dm_reg_name[reg_id];
++	u16 *prev = bq27xxx_dm_reg_ptr(buf, reg);
++
++	if (prev == NULL) {
++		dev_warn(di->dev, "buffer does not match %s dm spec\n", str);
++		return;
++	}
++
++	if (reg->bytes != 2) {
++		dev_warn(di->dev, "%s dm spec has unsupported byte size\n", str);
++		return;
++	}
++
++	if (!buf->has_data)
++		return;
++
++	if (be16_to_cpup(prev) == val) {
++		dev_info(di->dev, "%s has %u\n", str, val);
++		return;
++	}
++
++	if (!bq27xxx_dt_battery) {
++		dev_warn(di->dev, "%s has %u; update to %u disallowed by use_monitored_battery=0\n",
++		         str, be16_to_cpup(prev), val);
++		return;
++	}
++
++	dev_info(di->dev, "update %s to %u\n", str, val);
++
++	*prev = cpu_to_be16(val);
++	buf->dirty = true;
++}
++
+ static int bq27xxx_battery_set_cfgupdate(struct bq27xxx_device_info *di, u16 state)
+ {
+ 	const int limit = 100;
+@@ -1115,6 +1193,103 @@ static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
+ 	return ret;
+ }
+ 
++static void bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
++				       struct power_supply_battery_info *info)
++{
++	struct bq27xxx_dm_buf bd = BQ27XXX_DM_BUF(di, BQ27XXX_DM_DESIGN_CAPACITY);
++	struct bq27xxx_dm_buf bt = BQ27XXX_DM_BUF(di, BQ27XXX_DM_TERMINATE_VOLTAGE);
++	bool updated;
++
++	if (bq27xxx_battery_unseal(di) < 0)
++		return;
++
++	if (info->charge_full_design_uah != -EINVAL &&
++	    info->energy_full_design_uwh != -EINVAL) {
++		bq27xxx_battery_read_dm_block(di, &bd);
++		/* assume design energy & capacity are in same block */
++		bq27xxx_battery_update_dm_block(di, &bd,
++					BQ27XXX_DM_DESIGN_CAPACITY,
++					info->charge_full_design_uah / 1000);
++		bq27xxx_battery_update_dm_block(di, &bd,
++					BQ27XXX_DM_DESIGN_ENERGY,
++					info->energy_full_design_uwh / 1000);
++	}
++
++	if (info->voltage_min_design_uv != -EINVAL) {
++		bool same = bd.class == bt.class && bd.block == bt.block;
++		if (!same)
++			bq27xxx_battery_read_dm_block(di, &bt);
++		bq27xxx_battery_update_dm_block(di, same ? &bd : &bt,
++					BQ27XXX_DM_TERMINATE_VOLTAGE,
++					info->voltage_min_design_uv / 1000);
++	}
++
++	updated = bd.dirty || bt.dirty;
++
++	bq27xxx_battery_write_dm_block(di, &bd);
++	bq27xxx_battery_write_dm_block(di, &bt);
++
++	bq27xxx_battery_seal(di);
++
++	if (updated && di->chip != BQ27421) { /* not a cfgupdate chip, so reset */
++		bq27xxx_write(di, BQ27XXX_REG_CTRL, BQ27XXX_RESET, false);
++		BQ27XXX_MSLEEP(300); /* reset time is not documented */
++	}
++	/* assume bq27xxx_battery_update() is called hereafter */
++}
++
++void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
++{
++	struct power_supply_battery_info info = {};
++	unsigned int min, max;
++
++	if (power_supply_get_battery_info(di->bat, &info) < 0)
++		return;
++
++	if (!di->dm_regs) {
++		dev_warn(di->dev, "data memory update not supported for chip\n");
++		return;
++	}
++
++	if (info.energy_full_design_uwh != info.charge_full_design_uah) {
++		if (info.energy_full_design_uwh == -EINVAL)
++			dev_warn(di->dev, "missing battery:energy-full-design-microwatt-hours\n");
++		else if (info.charge_full_design_uah == -EINVAL)
++			dev_warn(di->dev, "missing battery:charge-full-design-microamp-hours\n");
++	}
++
++	/* assume min == 0 */
++	max = di->dm_regs[BQ27XXX_DM_DESIGN_ENERGY].max;
++	if (info.energy_full_design_uwh > max * 1000) {
++		dev_err(di->dev, "invalid battery:energy-full-design-microwatt-hours %d\n",
++			info.energy_full_design_uwh);
++		info.energy_full_design_uwh = -EINVAL;
++	}
++
++	/* assume min == 0 */
++	max = di->dm_regs[BQ27XXX_DM_DESIGN_CAPACITY].max;
++	if (info.charge_full_design_uah > max * 1000) {
++		dev_err(di->dev, "invalid battery:charge-full-design-microamp-hours %d\n",
++			info.charge_full_design_uah);
++		info.charge_full_design_uah = -EINVAL;
++	}
++
++	min = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].min;
++	max = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].max;
++	if ((info.voltage_min_design_uv < min * 1000 ||
++	     info.voltage_min_design_uv > max * 1000) &&
++	     info.voltage_min_design_uv != -EINVAL) {
++		dev_err(di->dev, "invalid battery:voltage-min-design-microvolt %d\n",
++			info.voltage_min_design_uv);
++		info.voltage_min_design_uv = -EINVAL;
++	}
++
++	if ((info.energy_full_design_uwh != -EINVAL &&
++	     info.charge_full_design_uah != -EINVAL) ||
++	     info.voltage_min_design_uv  != -EINVAL)
++		bq27xxx_battery_set_config(di, &info);
++}
++
+ /*
+  * Return the battery State-of-Charge
+  * Or < 0 if something fails.
+@@ -1632,6 +1807,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+ 		ret = bq27xxx_simple_value(di->charge_design_full, val);
+ 		break;
++	/*
++	 * TODO: Implement these to make registers set from
++	 * power_supply_battery_info visible in sysfs.
++	 */
++	case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
++	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
++		return -EINVAL;
+ 	case POWER_SUPPLY_PROP_CYCLE_COUNT:
+ 		ret = bq27xxx_simple_value(di->cache.cycle_count, val);
+ 		break;
+@@ -1665,7 +1847,10 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+ {
+ 	struct power_supply_desc *psy_desc;
+-	struct power_supply_config psy_cfg = { .drv_data = di, };
++	struct power_supply_config psy_cfg = {
++		.of_node = di->dev->of_node,
++		.drv_data = di,
 +	};
+ 
+ 	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+ 	mutex_init(&di->lock);
+@@ -1690,6 +1875,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+ 
+ 	dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+ 
++	bq27xxx_battery_settings(di);
+ 	bq27xxx_battery_update(di);
+ 
+ 	mutex_lock(&bq27xxx_list_lock);
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index b1defb8..227eb08 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -64,6 +64,7 @@ struct bq27xxx_device_info {
+ 	int id;
+ 	enum bq27xxx_chip chip;
+ 	const char *name;
++	struct bq27xxx_dm_reg *dm_regs;
+ 	u32 unseal_key;
+ 	struct bq27xxx_access_methods bus;
+ 	struct bq27xxx_reg_cache cache;
 -- 
 2.9.3
