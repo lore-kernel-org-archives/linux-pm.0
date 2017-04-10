@@ -1,44 +1,64 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH V5 1/2] dt-bindings: thermal: add support for Broadcom's
- Northstar thermal
-Date: Mon, 10 Apr 2017 10:00:09 -0500
-Message-ID: <20170410150009.b63cxumt2gy2vuuk@rob-hp-laptop>
-References: <20170331201124.656-1-zajec5@gmail.com>
- <20170403154829.29780-1-zajec5@gmail.com>
+Subject: Re: [PATCH 2/2] power: tps65217_charger: Add properties like voltage
+ and current charge
+Date: Mon, 10 Apr 2017 10:02:46 -0500
+Message-ID: <20170410150246.lwcapmknbcpqbgxi@rob-hp-laptop>
+References: <20170403164446.28076-1-enric.balletbo@collabora.com>
+ <20170403164446.28076-2-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170403154829.29780-1-zajec5@gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Scott Branden <sbranden@broadcom.com>, Stephen Warren <swarren@wwwdotorg.org>, Ray Jui <rjui@broadcom.com>, linux-pm@vger.kernel.org, Lee Jones <lee@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, bcm-kernel-feedback-list@broadcom.com, linux-rpi-kernel@lists.infradead.org, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <20170403164446.28076-2-enric.balletbo@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBBcHIgMDMsIDIwMTcgYXQgMDU6NDg6MjhQTSArMDIwMCwgUmFmYcWCIE1pxYJlY2tp
-IHdyb3RlOgo+IEZyb206IFJhZmHFgiBNacWCZWNraSA8cmFmYWxAbWlsZWNraS5wbD4KPiAKPiBU
-aGlzIGNvbW1pdCBkb2N1bWVudHMgYmluZGluZyBmb3IgdGhlcm1hbCB1c2VkIGluIE5vcnRoc3Rh
-ciBmYW1pbHkgU29Dcy4KPiAKPiBUaGVyZSBpc24ndCBhbnkga25vd24gTm9ydGhzdGFyIGRldmlj
-ZSB3aXRoIGFjdGl2ZSBjb29saW5nIHN5c3RlbSBzbyBEVAo+IGV4YW1wbGUgaGFzIGVtcHR5IGNv
-b2xpbmctbWFwcyBub2RlLiBUaGVyZSBpcyBhbHNvIG5vIHN1cHBvcnQgZm9yIENQVQo+IGZyZXF1
-ZW5jeSB0aHJvdHRsaW5nIHNvIEkgcHV0IG9ubHkgYSBjcml0aWNhbCB0cmlwIGluIHRoZSBleGFt
-cGxlLgo+IAo+IFNpZ25lZC1vZmYtYnk6IFJhZmHFgiBNacWCZWNraSA8cmFmYWxAbWlsZWNraS5w
-bD4KPiAtLS0KPiBWMzogQWRkIHRoZXJtYWwtem9uZXMgdG8gdGhlIGV4YW1wbGUKPiBWNTogRXh0
-ZW5kIGV4YW1wbGUgYnkgaW5jbHVkaW5nIHRyaXBzIGFuZCBjb29saW5nLW1hcHMuIFVwZGF0ZSBj
-b21taXQgbWVzc2FnZQo+IC0tLQo+ICAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL2Jy
-Y20sbnMtdGhlcm1hbCAgICB8IDM3ICsrKysrKysrKysrKysrKysrKysrKysKPiAgMSBmaWxlIGNo
-YW5nZWQsIDM3IGluc2VydGlvbnMoKykKPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL2JyY20sbnMtdGhlcm1hbAoKQWNrZWQtYnk6
-IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5vcmc+CgpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51
-eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5v
-cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On Mon, Apr 03, 2017 at 06:44:46PM +0200, Enric Balletbo i Serra wrote:
+> Allow the possibility to configure the charge and the current voltage of
+> the charger and also the NTC type for battery temperature measurement.
+> 
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+>  .../bindings/power/supply/tps65217_charger.txt     |  15 ++
+>  drivers/power/supply/tps65217_charger.c            | 187 +++++++++++++++++++--
+>  include/linux/mfd/tps65217.h                       |   2 +
+>  3 files changed, 192 insertions(+), 12 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt b/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
+> index a11072c..600da6e 100644
+> --- a/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
+> @@ -6,6 +6,18 @@ Required Properties:
+>               Should be <0> for the USB charger and <1> for the AC adapter.
+>  -interrupt-names: Should be "USB" and "AC"
+>  
+> +Optional properties:
+> +-ti,charge-voltage-uvolt: set the charge voltage. The value can be: 4100000,
+> +	4150000, 4200000, 4250000; default: 4100000
+> +
+> +-ti,charge-current-uamp: set the charging current. The value can be: 300000,
+> +	400000, 500000, 700000; default: 500000
+
+These should be standard properties. (Also, you are not using standard 
+unit suffixes. See bindings/property-units.txt.)
+
+> +
+> +-ti,ntc-type: set the NTC type for battery temperature measurement. The value
+> +	must be 0 or 1, where:
+> +	  0 – 100k (curve 1, B = 3960)
+> +	  1 – 10k  (curve 2, B = 3480) (default)
+> +
+>  This node is a subnode of the tps65217 PMIC.
+>  
+>  Example:
+> @@ -14,4 +26,7 @@ Example:
+>  		compatible = "ti,tps65217-charger";
+>  		interrupts = <0>, <1>;
+>  		interrupt-names = "USB", "AC";
+> +		ti,charge-voltage-uvolt = <4100000>;
+> +		ti,charge-current-uamp = <500000>;
+> +		ti,ntc-type = <1>;
+>  	};
