@@ -1,757 +1,1890 @@
-From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [RESEND PATCH v4] iio: adc: add support for
- X-Powers AXP20X and AXP22X PMICs ADCs
-Date: Mon, 10 Apr 2017 11:18:42 +0200
-Message-ID: <cf07853a-4382-5172-b24f-5324fb4308d3@free-electrons.com>
-References: <20170404063441.7656-1-quentin.schulz@free-electrons.com>
-Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2] PM / OPP: Use - instead of @ for DT entries
+Date: Mon, 10 Apr 2017 14:51:35 +0530
+Message-ID: <70e7c7ee13722ab9c73cb073f88502eaf1ada5f5.1491816050.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBB5E3VXDQKGQEL5EAJMA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20170404063441.7656-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org
-Cc: thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: devicetree@vger.kernel.org, linaro-kernel@lists.linaro.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lee,
+Compiling the DT file with W=1, DTC warns like follows:
 
-Just to make sure you didn't miss that patch (can't find it in
-for-mfd-next and for-mfd-next-next).
+Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
+unit name, but no reg property
 
-Thanks,
-Quentin
+Fix this by replacing '@' with '-' as the OPP nodes will never have a
+"reg" property.
 
-On 04/04/2017 08:34, Quentin Schulz wrote:
-> The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose the
-> battery voltage, battery charge and discharge currents, AC-in and VBUS
-> voltages and currents, 2 GPIOs muxable in ADC mode and PMIC temperature.
-> 
-> This adds support for most of AXP20X and AXP22X ADCs.
-> 
-> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-> Reviewed-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> ---
-> 
-> Lee, could you merge this through the mfd tree please?
->  => https://lkml.org/lkml/2017/3/22/47
-> 
-> v4:
->  - added missing space at the beginning of a comment,
->  - tidied axp20x_adc_offset_voltage and axp20x_write_raw to use switch case
->  instead of if conditions,
->  - added MODULE_DEVICE_TABLE for axp20x_adc_id_match for module autoloading,
->  - merged two lines in axp20x_remove,
-> 
-> v3:
->  - moved from switch to if condition in axp20x_adc_raw and
->  axp22x_adc_raw,
->  - removed DT support as DT node has been dropped,
->    - use of platform_device_id
->  - correctly defined the name of the iio device (name used to probe the
->  driver),
->  - added goto for errors in probe,
->  - added iio_map_array_unregister to the remove function,
-> 
-> v2:
->  - removed unused defines,
->  - changed BIT(x) to 1 << x when describing bits purpose for which 2 <<
->  x or 3 << x exists, to be consistent,
->  - changed ADC rate defines to macro formulas,
->  - reordered IIO channels, now different measures (current/voltage) of
->  the same part of the PMIC (e.g. battery), have the same IIO channel in
->  their respective IIO type. When a part of the PMIC have only one
->  measure, a number is jumped,
->  - left IIO channel mapping in DT to use iio_map structure,
->  - removed indexing of ADC internal temperature,
->  - removed unused iio_dev structure in axp20x_adc_iio,
->  - added a structure for data specific to AXP20X or AXP22X PMICs instead
->  of using an ID and an if condition when needing to separate the
->  behaviour of both,
->  - added a comment on batt_chrg_i really being on 12bits rather than
->  what the Chinese datasheets say (13 bits),
->  - corrected the offset for AXP22X PMIC temperature,
->  - set the ADC rate to a value (100Hz) shared by the AXP20X and AXP22X,
->  - created macro formulas to compute the ADC rate for each,
->  - added a condition on presence of ADC_EN2 reg before setting/resetting
->  it,
->  - switched from devm_iio_device_unregister to the non-devm function
->  because of the need for a remove function,
->  - removed some dead code,
-> 
->  drivers/iio/adc/Kconfig      |  10 +
->  drivers/iio/adc/Makefile     |   1 +
->  drivers/iio/adc/axp20x_adc.c | 617 +++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 628 insertions(+)
->  create mode 100644 drivers/iio/adc/axp20x_adc.c
-> 
-> diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
-> index d777a97..d15e1bd 100644
-> --- a/drivers/iio/adc/Kconfig
-> +++ b/drivers/iio/adc/Kconfig
-> @@ -154,6 +154,16 @@ config AT91_SAMA5D2_ADC
->  	  To compile this driver as a module, choose M here: the module will be
->  	  called at91-sama5d2_adc.
->  
-> +config AXP20X_ADC
-> +	tristate "X-Powers AXP20X and AXP22X ADC driver"
-> +	depends on MFD_AXP20X
-> +	help
-> +	  Say yes here to have support for X-Powers power management IC (PMIC)
-> +	  AXP20X and AXP22X ADC devices.
-> +
-> +	  To compile this driver as a module, choose M here: the module will be
-> +	  called axp20x_adc.
-> +
->  config AXP288_ADC
->  	tristate "X-Powers AXP288 ADC driver"
->  	depends on MFD_AXP20X
-> diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
-> index b11bb57..17899b5 100644
-> --- a/drivers/iio/adc/Makefile
-> +++ b/drivers/iio/adc/Makefile
-> @@ -16,6 +16,7 @@ obj-$(CONFIG_AD7887) += ad7887.o
->  obj-$(CONFIG_AD799X) += ad799x.o
->  obj-$(CONFIG_AT91_ADC) += at91_adc.o
->  obj-$(CONFIG_AT91_SAMA5D2_ADC) += at91-sama5d2_adc.o
-> +obj-$(CONFIG_AXP20X_ADC) += axp20x_adc.o
->  obj-$(CONFIG_AXP288_ADC) += axp288_adc.o
->  obj-$(CONFIG_BCM_IPROC_ADC) += bcm_iproc_adc.o
->  obj-$(CONFIG_BERLIN2_ADC) += berlin2-adc.o
-> diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
-> new file mode 100644
-> index 0000000..11e1771
-> --- /dev/null
-> +++ b/drivers/iio/adc/axp20x_adc.c
-> @@ -0,0 +1,617 @@
-> +/* ADC driver for AXP20X and AXP22X PMICs
-> + *
-> + * Copyright (c) 2016 Free Electrons NextThing Co.
-> + *	Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it under
-> + * the terms of the GNU General Public License version 2 as published by the
-> + * Free Software Foundation.
-> + */
-> +
-> +#include <linux/completion.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/io.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/of_device.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_runtime.h>
-> +#include <linux/regmap.h>
-> +#include <linux/thermal.h>
-> +
-> +#include <linux/iio/iio.h>
-> +#include <linux/iio/driver.h>
-> +#include <linux/iio/machine.h>
-> +#include <linux/mfd/axp20x.h>
-> +
-> +#define AXP20X_ADC_EN1_MASK			GENMASK(7, 0)
-> +
-> +#define AXP20X_ADC_EN2_MASK			(GENMASK(3, 2) | BIT(7))
-> +#define AXP22X_ADC_EN1_MASK			(GENMASK(7, 5) | BIT(0))
-> +
-> +#define AXP20X_GPIO10_IN_RANGE_GPIO0		BIT(0)
-> +#define AXP20X_GPIO10_IN_RANGE_GPIO1		BIT(1)
-> +#define AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(x)	((x) & BIT(0))
-> +#define AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(x)	(((x) & BIT(0)) << 1)
-> +
-> +#define AXP20X_ADC_RATE_MASK			GENMASK(7, 6)
-> +#define AXP20X_ADC_RATE_HZ(x)			((ilog2((x) / 25) << 6) & AXP20X_ADC_RATE_MASK)
-> +#define AXP22X_ADC_RATE_HZ(x)			((ilog2((x) / 100) << 6) & AXP20X_ADC_RATE_MASK)
-> +
-> +#define AXP20X_ADC_CHANNEL(_channel, _name, _type, _reg)	\
-> +	{							\
-> +		.type = _type,					\
-> +		.indexed = 1,					\
-> +		.channel = _channel,				\
-> +		.address = _reg,				\
-> +		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |	\
-> +				      BIT(IIO_CHAN_INFO_SCALE),	\
-> +		.datasheet_name = _name,			\
-> +	}
-> +
-> +#define AXP20X_ADC_CHANNEL_OFFSET(_channel, _name, _type, _reg) \
-> +	{							\
-> +		.type = _type,					\
-> +		.indexed = 1,					\
-> +		.channel = _channel,				\
-> +		.address = _reg,				\
-> +		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |	\
-> +				      BIT(IIO_CHAN_INFO_SCALE) |\
-> +				      BIT(IIO_CHAN_INFO_OFFSET),\
-> +		.datasheet_name = _name,			\
-> +	}
-> +
-> +struct axp_data;
-> +
-> +struct axp20x_adc_iio {
-> +	struct regmap		*regmap;
-> +	struct axp_data		*data;
-> +};
-> +
-> +enum axp20x_adc_channel_v {
-> +	AXP20X_ACIN_V = 0,
-> +	AXP20X_VBUS_V,
-> +	AXP20X_TS_IN,
-> +	AXP20X_GPIO0_V,
-> +	AXP20X_GPIO1_V,
-> +	AXP20X_IPSOUT_V,
-> +	AXP20X_BATT_V,
-> +};
-> +
-> +enum axp20x_adc_channel_i {
-> +	AXP20X_ACIN_I = 0,
-> +	AXP20X_VBUS_I,
-> +	AXP20X_BATT_CHRG_I,
-> +	AXP20X_BATT_DISCHRG_I,
-> +};
-> +
-> +enum axp22x_adc_channel_v {
-> +	AXP22X_TS_IN = 0,
-> +	AXP22X_BATT_V,
-> +};
-> +
-> +enum axp22x_adc_channel_i {
-> +	AXP22X_BATT_CHRG_I = 1,
-> +	AXP22X_BATT_DISCHRG_I,
-> +};
-> +
-> +static struct iio_map axp20x_maps[] = {
-> +	{
-> +		.consumer_dev_name = "axp20x-usb-power-supply",
-> +		.consumer_channel = "vbus_v",
-> +		.adc_channel_label = "vbus_v",
-> +	}, {
-> +		.consumer_dev_name = "axp20x-usb-power-supply",
-> +		.consumer_channel = "vbus_i",
-> +		.adc_channel_label = "vbus_i",
-> +	}, {
-> +		.consumer_dev_name = "axp20x-ac-power-supply",
-> +		.consumer_channel = "acin_v",
-> +		.adc_channel_label = "acin_v",
-> +	}, {
-> +		.consumer_dev_name = "axp20x-ac-power-supply",
-> +		.consumer_channel = "acin_i",
-> +		.adc_channel_label = "acin_i",
-> +	}, {
-> +		.consumer_dev_name = "axp20x-battery-power-supply",
-> +		.consumer_channel = "batt_v",
-> +		.adc_channel_label = "batt_v",
-> +	}, {
-> +		.consumer_dev_name = "axp20x-battery-power-supply",
-> +		.consumer_channel = "batt_chrg_i",
-> +		.adc_channel_label = "batt_chrg_i",
-> +	}, {
-> +		.consumer_dev_name = "axp20x-battery-power-supply",
-> +		.consumer_channel = "batt_dischrg_i",
-> +		.adc_channel_label = "batt_dischrg_i",
-> +	}, { /* sentinel */ }
-> +};
-> +
-> +static struct iio_map axp22x_maps[] = {
-> +	{
-> +		.consumer_dev_name = "axp20x-battery-power-supply",
-> +		.consumer_channel = "batt_v",
-> +		.adc_channel_label = "batt_v",
-> +	}, {
-> +		.consumer_dev_name = "axp20x-battery-power-supply",
-> +		.consumer_channel = "batt_chrg_i",
-> +		.adc_channel_label = "batt_chrg_i",
-> +	}, {
-> +		.consumer_dev_name = "axp20x-battery-power-supply",
-> +		.consumer_channel = "batt_dischrg_i",
-> +		.adc_channel_label = "batt_dischrg_i",
-> +	}, { /* sentinel */ }
-> +};
-> +
-> +/*
-> + * Channels are mapped by physical system. Their channels share the same index.
-> + * i.e. acin_i is in_current0_raw and acin_v is in_voltage0_raw.
-> + * The only exception is for the battery. batt_v will be in_voltage6_raw and
-> + * charge current in_current6_raw and discharge current will be in_current7_raw.
-> + */
-> +static const struct iio_chan_spec axp20x_adc_channels[] = {
-> +	AXP20X_ADC_CHANNEL(AXP20X_ACIN_V, "acin_v", IIO_VOLTAGE,
-> +			   AXP20X_ACIN_V_ADC_H),
-> +	AXP20X_ADC_CHANNEL(AXP20X_ACIN_I, "acin_i", IIO_CURRENT,
-> +			   AXP20X_ACIN_I_ADC_H),
-> +	AXP20X_ADC_CHANNEL(AXP20X_VBUS_V, "vbus_v", IIO_VOLTAGE,
-> +			   AXP20X_VBUS_V_ADC_H),
-> +	AXP20X_ADC_CHANNEL(AXP20X_VBUS_I, "vbus_i", IIO_CURRENT,
-> +			   AXP20X_VBUS_I_ADC_H),
-> +	{
-> +		.type = IIO_TEMP,
-> +		.address = AXP20X_TEMP_ADC_H,
-> +		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |
-> +				      BIT(IIO_CHAN_INFO_SCALE) |
-> +				      BIT(IIO_CHAN_INFO_OFFSET),
-> +		.datasheet_name = "pmic_temp",
-> +	},
-> +	AXP20X_ADC_CHANNEL_OFFSET(AXP20X_GPIO0_V, "gpio0_v", IIO_VOLTAGE,
-> +				  AXP20X_GPIO0_V_ADC_H),
-> +	AXP20X_ADC_CHANNEL_OFFSET(AXP20X_GPIO1_V, "gpio1_v", IIO_VOLTAGE,
-> +				  AXP20X_GPIO1_V_ADC_H),
-> +	AXP20X_ADC_CHANNEL(AXP20X_IPSOUT_V, "ipsout_v", IIO_VOLTAGE,
-> +			   AXP20X_IPSOUT_V_HIGH_H),
-> +	AXP20X_ADC_CHANNEL(AXP20X_BATT_V, "batt_v", IIO_VOLTAGE,
-> +			   AXP20X_BATT_V_H),
-> +	AXP20X_ADC_CHANNEL(AXP20X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
-> +			   AXP20X_BATT_CHRG_I_H),
-> +	AXP20X_ADC_CHANNEL(AXP20X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
-> +			   AXP20X_BATT_DISCHRG_I_H),
-> +};
-> +
-> +static const struct iio_chan_spec axp22x_adc_channels[] = {
-> +	{
-> +		.type = IIO_TEMP,
-> +		.address = AXP22X_PMIC_TEMP_H,
-> +		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |
-> +				      BIT(IIO_CHAN_INFO_SCALE) |
-> +				      BIT(IIO_CHAN_INFO_OFFSET),
-> +		.datasheet_name = "pmic_temp",
-> +	},
-> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_V, "batt_v", IIO_VOLTAGE,
-> +			   AXP20X_BATT_V_H),
-> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
-> +			   AXP20X_BATT_CHRG_I_H),
-> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
-> +			   AXP20X_BATT_DISCHRG_I_H),
-> +};
-> +
-> +static int axp20x_adc_raw(struct iio_dev *indio_dev,
-> +			  struct iio_chan_spec const *chan, int *val)
-> +{
-> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-> +	int size = 12;
-> +
-> +	/*
-> +	 * N.B.:  Unlike the Chinese datasheets tell, the charging current is
-> +	 * stored on 12 bits, not 13 bits. Only discharging current is on 13
-> +	 * bits.
-> +	 */
-> +	if (chan->type == IIO_CURRENT && chan->channel == AXP20X_BATT_DISCHRG_I)
-> +		size = 13;
-> +	else
-> +		size = 12;
-> +
-> +	*val = axp20x_read_variable_width(info->regmap, chan->address, size);
-> +	if (*val < 0)
-> +		return *val;
-> +
-> +	return IIO_VAL_INT;
-> +}
-> +
-> +static int axp22x_adc_raw(struct iio_dev *indio_dev,
-> +			  struct iio_chan_spec const *chan, int *val)
-> +{
-> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-> +	int size;
-> +
-> +	/*
-> +	 * N.B.: Unlike the Chinese datasheets tell, the charging current is
-> +	 * stored on 12 bits, not 13 bits. Only discharging current is on 13
-> +	 * bits.
-> +	 */
-> +	if (chan->type == IIO_CURRENT && chan->channel == AXP22X_BATT_DISCHRG_I)
-> +		size = 13;
-> +	else
-> +		size = 12;
-> +
-> +	*val = axp20x_read_variable_width(info->regmap, chan->address, size);
-> +	if (*val < 0)
-> +		return *val;
-> +
-> +	return IIO_VAL_INT;
-> +}
-> +
-> +static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
-> +{
-> +	switch (channel) {
-> +	case AXP20X_ACIN_V:
-> +	case AXP20X_VBUS_V:
-> +		*val = 1;
-> +		*val2 = 700000;
-> +		return IIO_VAL_INT_PLUS_MICRO;
-> +
-> +	case AXP20X_GPIO0_V:
-> +	case AXP20X_GPIO1_V:
-> +		*val = 0;
-> +		*val2 = 500000;
-> +		return IIO_VAL_INT_PLUS_MICRO;
-> +
-> +	case AXP20X_BATT_V:
-> +		*val = 1;
-> +		*val2 = 100000;
-> +		return IIO_VAL_INT_PLUS_MICRO;
-> +
-> +	case AXP20X_IPSOUT_V:
-> +		*val = 1;
-> +		*val2 = 400000;
-> +		return IIO_VAL_INT_PLUS_MICRO;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +static int axp20x_adc_scale_current(int channel, int *val, int *val2)
-> +{
-> +	switch (channel) {
-> +	case AXP20X_ACIN_I:
-> +		*val = 0;
-> +		*val2 = 625000;
-> +		return IIO_VAL_INT_PLUS_MICRO;
-> +
-> +	case AXP20X_VBUS_I:
-> +		*val = 0;
-> +		*val2 = 375000;
-> +		return IIO_VAL_INT_PLUS_MICRO;
-> +
-> +	case AXP20X_BATT_DISCHRG_I:
-> +	case AXP20X_BATT_CHRG_I:
-> +		*val = 0;
-> +		*val2 = 500000;
-> +		return IIO_VAL_INT_PLUS_MICRO;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +static int axp20x_adc_scale(struct iio_chan_spec const *chan, int *val,
-> +			    int *val2)
-> +{
-> +	switch (chan->type) {
-> +	case IIO_VOLTAGE:
-> +		return axp20x_adc_scale_voltage(chan->channel, val, val2);
-> +
-> +	case IIO_CURRENT:
-> +		return axp20x_adc_scale_current(chan->channel, val, val2);
-> +
-> +	case IIO_TEMP:
-> +		*val = 100;
-> +		return IIO_VAL_INT;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +static int axp22x_adc_scale(struct iio_chan_spec const *chan, int *val,
-> +			    int *val2)
-> +{
-> +	switch (chan->type) {
-> +	case IIO_VOLTAGE:
-> +		if (chan->channel != AXP22X_BATT_V)
-> +			return -EINVAL;
-> +
-> +		*val = 1;
-> +		*val2 = 100000;
-> +		return IIO_VAL_INT_PLUS_MICRO;
-> +
-> +	case IIO_CURRENT:
-> +		*val = 0;
-> +		*val2 = 500000;
-> +		return IIO_VAL_INT_PLUS_MICRO;
-> +
-> +	case IIO_TEMP:
-> +		*val = 100;
-> +		return IIO_VAL_INT;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
-> +				     int *val)
-> +{
-> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-> +	int ret;
-> +
-> +	ret = regmap_read(info->regmap, AXP20X_GPIO10_IN_RANGE, val);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	switch (channel) {
-> +	case AXP20X_GPIO0_V:
-> +		*val &= AXP20X_GPIO10_IN_RANGE_GPIO0;
-> +		break;
-> +
-> +	case AXP20X_GPIO1_V:
-> +		*val &= AXP20X_GPIO10_IN_RANGE_GPIO1;
-> +		break;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	*val = !!(*val) * 700000;
-> +
-> +	return IIO_VAL_INT;
-> +}
-> +
-> +static int axp20x_adc_offset(struct iio_dev *indio_dev,
-> +			     struct iio_chan_spec const *chan, int *val)
-> +{
-> +	switch (chan->type) {
-> +	case IIO_VOLTAGE:
-> +		return axp20x_adc_offset_voltage(indio_dev, chan->channel, val);
-> +
-> +	case IIO_TEMP:
-> +		*val = -1447;
-> +		return IIO_VAL_INT;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +static int axp20x_read_raw(struct iio_dev *indio_dev,
-> +			   struct iio_chan_spec const *chan, int *val,
-> +			   int *val2, long mask)
-> +{
-> +	switch (mask) {
-> +	case IIO_CHAN_INFO_OFFSET:
-> +		return axp20x_adc_offset(indio_dev, chan, val);
-> +
-> +	case IIO_CHAN_INFO_SCALE:
-> +		return axp20x_adc_scale(chan, val, val2);
-> +
-> +	case IIO_CHAN_INFO_RAW:
-> +		return axp20x_adc_raw(indio_dev, chan, val);
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +static int axp22x_read_raw(struct iio_dev *indio_dev,
-> +			   struct iio_chan_spec const *chan, int *val,
-> +			   int *val2, long mask)
-> +{
-> +	switch (mask) {
-> +	case IIO_CHAN_INFO_OFFSET:
-> +		*val = -2677;
-> +		return IIO_VAL_INT;
-> +
-> +	case IIO_CHAN_INFO_SCALE:
-> +		return axp22x_adc_scale(chan, val, val2);
-> +
-> +	case IIO_CHAN_INFO_RAW:
-> +		return axp22x_adc_raw(indio_dev, chan, val);
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +static int axp20x_write_raw(struct iio_dev *indio_dev,
-> +			    struct iio_chan_spec const *chan, int val, int val2,
-> +			    long mask)
-> +{
-> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-> +	unsigned int reg, regval;
-> +
-> +	/*
-> +	 * The AXP20X PMIC allows the user to choose between 0V and 0.7V offsets
-> +	 * for (independently) GPIO0 and GPIO1 when in ADC mode.
-> +	 */
-> +	if (mask != IIO_CHAN_INFO_OFFSET)
-> +		return -EINVAL;
-> +
-> +	if (val != 0 && val != 700000)
-> +		return -EINVAL;
-> +
-> +	switch (chan->channel) {
-> +	case AXP20X_GPIO0_V:
-> +		reg = AXP20X_GPIO10_IN_RANGE_GPIO0;
-> +		regval = AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(!!val);
-> +		break;
-> +
-> +	case AXP20X_GPIO1_V:
-> +		reg = AXP20X_GPIO10_IN_RANGE_GPIO1;
-> +		regval = AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(!!val);
-> +		break;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	return regmap_update_bits(info->regmap, AXP20X_GPIO10_IN_RANGE, reg,
-> +				  regval);
-> +}
-> +
-> +static const struct iio_info axp20x_adc_iio_info = {
-> +	.read_raw = axp20x_read_raw,
-> +	.write_raw = axp20x_write_raw,
-> +	.driver_module = THIS_MODULE,
-> +};
-> +
-> +static const struct iio_info axp22x_adc_iio_info = {
-> +	.read_raw = axp22x_read_raw,
-> +	.driver_module = THIS_MODULE,
-> +};
-> +
-> +static int axp20x_adc_rate(int rate)
-> +{
-> +	return AXP20X_ADC_RATE_HZ(rate);
-> +}
-> +
-> +static int axp22x_adc_rate(int rate)
-> +{
-> +	return AXP22X_ADC_RATE_HZ(rate);
-> +}
-> +
-> +struct axp_data {
-> +	const struct iio_info		*iio_info;
-> +	int				num_channels;
-> +	struct iio_chan_spec const	*channels;
-> +	unsigned long			adc_en1_mask;
-> +	int				(*adc_rate)(int rate);
-> +	bool				adc_en2;
-> +	struct iio_map			*maps;
-> +};
-> +
-> +static const struct axp_data axp20x_data = {
-> +	.iio_info = &axp20x_adc_iio_info,
-> +	.num_channels = ARRAY_SIZE(axp20x_adc_channels),
-> +	.channels = axp20x_adc_channels,
-> +	.adc_en1_mask = AXP20X_ADC_EN1_MASK,
-> +	.adc_rate = axp20x_adc_rate,
-> +	.adc_en2 = true,
-> +	.maps = axp20x_maps,
-> +};
-> +
-> +static const struct axp_data axp22x_data = {
-> +	.iio_info = &axp22x_adc_iio_info,
-> +	.num_channels = ARRAY_SIZE(axp22x_adc_channels),
-> +	.channels = axp22x_adc_channels,
-> +	.adc_en1_mask = AXP22X_ADC_EN1_MASK,
-> +	.adc_rate = axp22x_adc_rate,
-> +	.adc_en2 = false,
-> +	.maps = axp22x_maps,
-> +};
-> +
-> +static const struct platform_device_id axp20x_adc_id_match[] = {
-> +	{ .name = "axp20x-adc", .driver_data = (kernel_ulong_t)&axp20x_data, },
-> +	{ .name = "axp22x-adc", .driver_data = (kernel_ulong_t)&axp22x_data, },
-> +	{ /* sentinel */ },
-> +};
-> +MODULE_DEVICE_TABLE(platform, axp20x_adc_id_match);
-> +
-> +static int axp20x_probe(struct platform_device *pdev)
-> +{
-> +	struct axp20x_adc_iio *info;
-> +	struct iio_dev *indio_dev;
-> +	struct axp20x_dev *axp20x_dev;
-> +	int ret;
-> +
-> +	axp20x_dev = dev_get_drvdata(pdev->dev.parent);
-> +
-> +	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*info));
-> +	if (!indio_dev)
-> +		return -ENOMEM;
-> +
-> +	info = iio_priv(indio_dev);
-> +	platform_set_drvdata(pdev, indio_dev);
-> +
-> +	info->regmap = axp20x_dev->regmap;
-> +	indio_dev->dev.parent = &pdev->dev;
-> +	indio_dev->dev.of_node = pdev->dev.of_node;
-> +	indio_dev->modes = INDIO_DIRECT_MODE;
-> +
-> +	info->data = (struct axp_data *)platform_get_device_id(pdev)->driver_data;
-> +
-> +	indio_dev->name = platform_get_device_id(pdev)->name;
-> +	indio_dev->info = info->data->iio_info;
-> +	indio_dev->num_channels = info->data->num_channels;
-> +	indio_dev->channels = info->data->channels;
-> +
-> +	/* Enable the ADCs on IP */
-> +	regmap_write(info->regmap, AXP20X_ADC_EN1, info->data->adc_en1_mask);
-> +
-> +	if (info->data->adc_en2)
-> +		/* Enable GPIO0/1 and internal temperature ADCs */
-> +		regmap_update_bits(info->regmap, AXP20X_ADC_EN2,
-> +				   AXP20X_ADC_EN2_MASK, AXP20X_ADC_EN2_MASK);
-> +
-> +	/* Configure ADCs rate */
-> +	regmap_update_bits(info->regmap, AXP20X_ADC_RATE, AXP20X_ADC_RATE_MASK,
-> +			   info->data->adc_rate(100));
-> +
-> +	ret = iio_map_array_register(indio_dev, info->data->maps);
-> +	if (ret < 0) {
-> +		dev_err(&pdev->dev, "failed to register IIO maps: %d\n", ret);
-> +		goto fail_map;
-> +	}
-> +
-> +	ret = iio_device_register(indio_dev);
-> +	if (ret < 0) {
-> +		dev_err(&pdev->dev, "could not register the device\n");
-> +		goto fail_register;
-> +	}
-> +
-> +	return 0;
-> +
-> +fail_register:
-> +	iio_map_array_unregister(indio_dev);
-> +
-> +fail_map:
-> +	regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
-> +
-> +	if (info->data->adc_en2)
-> +		regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
-> +
-> +	return ret;
-> +}
-> +
-> +static int axp20x_remove(struct platform_device *pdev)
-> +{
-> +	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
-> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-> +
-> +	iio_device_unregister(indio_dev);
-> +	iio_map_array_unregister(indio_dev);
-> +
-> +	regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
-> +
-> +	if (info->data->adc_en2)
-> +		regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver axp20x_adc_driver = {
-> +	.driver = {
-> +		.name = "axp20x-adc",
-> +	},
-> +	.id_table = axp20x_adc_id_match,
-> +	.probe = axp20x_probe,
-> +	.remove = axp20x_remove,
-> +};
-> +
-> +module_platform_driver(axp20x_adc_driver);
-> +
-> +MODULE_DESCRIPTION("ADC driver for AXP20X and AXP22X PMICs");
-> +MODULE_AUTHOR("Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>");
-> +MODULE_LICENSE("GPL");
-> 
+Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
+Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+Suggested-by: Mark Rutland <mark.rutland@arm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com> (sunxi)
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+V2:
+- Added more *-by tags.
+- Included TI DT and example files as well.
 
+ .../devicetree/bindings/cpufreq/ti-cpufreq.txt     | 20 +++----
+ .../devicetree/bindings/devfreq/exynos-bus.txt     | 46 +++++++--------
+ Documentation/devicetree/bindings/opp/opp.txt      | 38 ++++++-------
+ arch/arm/boot/dts/am4372.dtsi                      | 10 ++--
+ arch/arm/boot/dts/exynos3250.dtsi                  | 46 +++++++--------
+ arch/arm/boot/dts/exynos4210.dtsi                  | 32 +++++------
+ arch/arm/boot/dts/exynos4412-prime.dtsi            |  4 +-
+ arch/arm/boot/dts/exynos4412.dtsi                  | 66 +++++++++++-----------
+ arch/arm/boot/dts/exynos5420.dtsi                  | 40 ++++++-------
+ arch/arm/boot/dts/exynos5800.dtsi                  | 56 +++++++++---------
+ arch/arm/boot/dts/pxa25x.dtsi                      |  8 +--
+ arch/arm/boot/dts/pxa27x.dtsi                      | 14 ++---
+ arch/arm/boot/dts/sun8i-a33.dtsi                   |  8 +--
+ arch/arm/boot/dts/uniphier-pro5.dtsi               | 32 +++++------
+ arch/arm/boot/dts/uniphier-pxs2.dtsi               | 16 +++---
+ arch/arm64/boot/dts/exynos/exynos5433-bus.dtsi     | 48 ++++++++--------
+ arch/arm64/boot/dts/exynos/exynos5433.dtsi         | 50 ++++++++--------
+ arch/arm64/boot/dts/socionext/uniphier-ld11.dtsi   | 14 ++---
+ arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi   | 32 +++++------
+ arch/arm64/boot/dts/zte/zx296718.dtsi              | 10 ++--
+ 20 files changed, 295 insertions(+), 295 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+index ba0e15ad5bd9..0c38e4b8fc51 100644
+--- a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
++++ b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+@@ -63,64 +63,64 @@ cpu0_opp_table: opp-table {
+ 	 * because they can not be enabled simultaneously on a
+ 	 * single SoC.
+ 	 */
+-	opp50@300000000 {
++	opp50-300000000 {
+ 		opp-hz = /bits/ 64 <300000000>;
+ 		opp-microvolt = <950000 931000 969000>;
+ 		opp-supported-hw = <0x06 0x0010>;
+ 		opp-suspend;
+ 	};
+ 
+-	opp100@275000000 {
++	opp100-275000000 {
+ 		opp-hz = /bits/ 64 <275000000>;
+ 		opp-microvolt = <1100000 1078000 1122000>;
+ 		opp-supported-hw = <0x01 0x00FF>;
+ 		opp-suspend;
+ 	};
+ 
+-	opp100@300000000 {
++	opp100-300000000 {
+ 		opp-hz = /bits/ 64 <300000000>;
+ 		opp-microvolt = <1100000 1078000 1122000>;
+ 		opp-supported-hw = <0x06 0x0020>;
+ 		opp-suspend;
+ 	};
+ 
+-	opp100@500000000 {
++	opp100-500000000 {
+ 		opp-hz = /bits/ 64 <500000000>;
+ 		opp-microvolt = <1100000 1078000 1122000>;
+ 		opp-supported-hw = <0x01 0xFFFF>;
+ 	};
+ 
+-	opp100@600000000 {
++	opp100-600000000 {
+ 		opp-hz = /bits/ 64 <600000000>;
+ 		opp-microvolt = <1100000 1078000 1122000>;
+ 		opp-supported-hw = <0x06 0x0040>;
+ 	};
+ 
+-	opp120@600000000 {
++	opp120-600000000 {
+ 		opp-hz = /bits/ 64 <600000000>;
+ 		opp-microvolt = <1200000 1176000 1224000>;
+ 		opp-supported-hw = <0x01 0xFFFF>;
+ 	};
+ 
+-	opp120@720000000 {
++	opp120-720000000 {
+ 		opp-hz = /bits/ 64 <720000000>;
+ 		opp-microvolt = <1200000 1176000 1224000>;
+ 		opp-supported-hw = <0x06 0x0080>;
+ 	};
+ 
+-	oppturbo@720000000 {
++	oppturbo-720000000 {
+ 		opp-hz = /bits/ 64 <720000000>;
+ 		opp-microvolt = <1260000 1234800 1285200>;
+ 		opp-supported-hw = <0x01 0xFFFF>;
+ 	};
+ 
+-	oppturbo@800000000 {
++	oppturbo-800000000 {
+ 		opp-hz = /bits/ 64 <800000000>;
+ 		opp-microvolt = <1260000 1234800 1285200>;
+ 		opp-supported-hw = <0x06 0x0100>;
+ 	};
+ 
+-	oppnitro@1000000000 {
++	oppnitro-1000000000 {
+ 		opp-hz = /bits/ 64 <1000000000>;
+ 		opp-microvolt = <1325000 1298500 1351500>;
+ 		opp-supported-hw = <0x04 0x0200>;
+diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+index d085ef90d27c..f8e946471a58 100644
+--- a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
++++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+@@ -202,23 +202,23 @@ is able to support the bus frequency for all Exynos SoCs.
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@50000000 {
++		opp-50000000 {
+ 			opp-hz = /bits/ 64 <50000000>;
+ 			opp-microvolt = <800000>;
+ 		};
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 			opp-microvolt = <800000>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 			opp-microvolt = <800000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 			opp-microvolt = <825000>;
+ 		};
+-		opp@400000000 {
++		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 			opp-microvolt = <875000>;
+ 		};
+@@ -292,23 +292,23 @@ is able to support the bus frequency for all Exynos SoCs.
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@50000000 {
++		opp-50000000 {
+ 			opp-hz = /bits/ 64 <50000000>;
+ 			opp-microvolt = <900000>;
+ 		};
+-		opp@80000000 {
++		opp-80000000 {
+ 			opp-hz = /bits/ 64 <80000000>;
+ 			opp-microvolt = <900000>;
+ 		};
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 			opp-microvolt = <1000000>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 			opp-microvolt = <1000000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 			opp-microvolt = <1000000>;
+ 		};
+@@ -318,19 +318,19 @@ is able to support the bus frequency for all Exynos SoCs.
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@50000000 {
++		opp-50000000 {
+ 			opp-hz = /bits/ 64 <50000000>;
+ 		};
+-		opp@80000000 {
++		opp-80000000 {
+ 			opp-hz = /bits/ 64 <80000000>;
+ 		};
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 		};
+-		opp@400000000 {
++		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 		};
+ 	};
+@@ -339,19 +339,19 @@ is able to support the bus frequency for all Exynos SoCs.
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@50000000 {
++		opp-50000000 {
+ 			opp-hz = /bits/ 64 <50000000>;
+ 		};
+-		opp@80000000 {
++		opp-80000000 {
+ 			opp-hz = /bits/ 64 <80000000>;
+ 		};
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 		};
+-		opp@300000000 {
++		opp-300000000 {
+ 			opp-hz = /bits/ 64 <300000000>;
+ 		};
+ 	};
+@@ -360,13 +360,13 @@ is able to support the bus frequency for all Exynos SoCs.
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@50000000 {
++		opp-50000000 {
+ 			opp-hz = /bits/ 64 <50000000>;
+ 		};
+-		opp@80000000 {
++		opp-80000000 {
+ 			opp-hz = /bits/ 64 <80000000>;
+ 		};
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+ 	};
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index 63725498bd20..e36d261b9ba6 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -186,20 +186,20 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <975000 970000 985000>;
+ 			opp-microamp = <70000>;
+ 			clock-latency-ns = <300000>;
+ 			opp-suspend;
+ 		};
+-		opp@1100000000 {
++		opp-1100000000 {
+ 			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <1000000 980000 1010000>;
+ 			opp-microamp = <80000>;
+ 			clock-latency-ns = <310000>;
+ 		};
+-		opp@1200000000 {
++		opp-1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1025000>;
+ 			clock-latency-ns = <290000>;
+@@ -265,20 +265,20 @@ independently.
+ 		 * independently.
+ 		 */
+ 
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <975000 970000 985000>;
+ 			opp-microamp = <70000>;
+ 			clock-latency-ns = <300000>;
+ 			opp-suspend;
+ 		};
+-		opp@1100000000 {
++		opp-1100000000 {
+ 			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <1000000 980000 1010000>;
+ 			opp-microamp = <80000>;
+ 			clock-latency-ns = <310000>;
+ 		};
+-		opp@1200000000 {
++		opp-1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1025000>;
+ 			opp-microamp = <90000;
+@@ -341,20 +341,20 @@ DVFS state together.
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <975000 970000 985000>;
+ 			opp-microamp = <70000>;
+ 			clock-latency-ns = <300000>;
+ 			opp-suspend;
+ 		};
+-		opp@1100000000 {
++		opp-1100000000 {
+ 			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <1000000 980000 1010000>;
+ 			opp-microamp = <80000>;
+ 			clock-latency-ns = <310000>;
+ 		};
+-		opp@1200000000 {
++		opp-1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1025000>;
+ 			opp-microamp = <90000>;
+@@ -367,20 +367,20 @@ DVFS state together.
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@1300000000 {
++		opp-1300000000 {
+ 			opp-hz = /bits/ 64 <1300000000>;
+ 			opp-microvolt = <1050000 1045000 1055000>;
+ 			opp-microamp = <95000>;
+ 			clock-latency-ns = <400000>;
+ 			opp-suspend;
+ 		};
+-		opp@1400000000 {
++		opp-1400000000 {
+ 			opp-hz = /bits/ 64 <1400000000>;
+ 			opp-microvolt = <1075000>;
+ 			opp-microamp = <100000>;
+ 			clock-latency-ns = <400000>;
+ 		};
+-		opp@1500000000 {
++		opp-1500000000 {
+ 			opp-hz = /bits/ 64 <1500000000>;
+ 			opp-microvolt = <1100000 1010000 1110000>;
+ 			opp-microamp = <95000>;
+@@ -409,7 +409,7 @@ Example 4: Handling multiple regulators
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000>, /* Supply 0 */
+ 					<960000>, /* Supply 1 */
+@@ -422,7 +422,7 @@ Example 4: Handling multiple regulators
+ 
+ 		/* OR */
+ 
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <975000 970000 985000>, /* Supply 0 */
+ 					<965000 960000 975000>, /* Supply 1 */
+@@ -435,7 +435,7 @@ Example 4: Handling multiple regulators
+ 
+ 		/* OR */
+ 
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <975000 970000 985000>, /* Supply 0 */
+ 					<965000 960000 975000>, /* Supply 1 */
+@@ -467,7 +467,7 @@ Example 5: opp-supported-hw
+ 		status = "okay";
+ 		opp-shared;
+ 
+-		opp@600000000 {
++		opp-600000000 {
+ 			/*
+ 			 * Supports all substrate and process versions for 0xF
+ 			 * cuts, i.e. only first four cuts.
+@@ -478,7 +478,7 @@ Example 5: opp-supported-hw
+ 			...
+ 		};
+ 
+-		opp@800000000 {
++		opp-800000000 {
+ 			/*
+ 			 * Supports:
+ 			 * - cuts: only one, 6th cut (represented by 6th bit).
+@@ -510,7 +510,7 @@ Example 5: opp-supported-hw
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt-slow = <915000 900000 925000>;
+ 			opp-microvolt-fast = <975000 970000 985000>;
+@@ -518,7 +518,7 @@ Example 5: opp-supported-hw
+ 			opp-microamp-fast =  <71000>;
+ 		};
+ 
+-		opp@1200000000 {
++		opp-1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt-slow = <915000 900000 925000>, /* Supply vcc0 */
+ 					      <925000 910000 935000>; /* Supply vcc1 */
+diff --git a/arch/arm/boot/dts/am4372.dtsi b/arch/arm/boot/dts/am4372.dtsi
+index 97fcaf415de1..1532ffe1de63 100644
+--- a/arch/arm/boot/dts/am4372.dtsi
++++ b/arch/arm/boot/dts/am4372.dtsi
+@@ -60,32 +60,32 @@
+ 	cpu0_opp_table: opp_table0 {
+ 		compatible = "operating-points-v2";
+ 
+-		opp50@300000000 {
++		opp50-300000000 {
+ 			opp-hz = /bits/ 64 <300000000>;
+ 			opp-microvolt = <950000 931000 969000>;
+ 			opp-supported-hw = <0xFF 0x01>;
+ 			opp-suspend;
+ 		};
+ 
+-		opp100@600000000 {
++		opp100-600000000 {
+ 			opp-hz = /bits/ 64 <600000000>;
+ 			opp-microvolt = <1100000 1078000 1122000>;
+ 			opp-supported-hw = <0xFF 0x04>;
+ 		};
+ 
+-		opp120@720000000 {
++		opp120-720000000 {
+ 			opp-hz = /bits/ 64 <720000000>;
+ 			opp-microvolt = <1200000 1176000 1224000>;
+ 			opp-supported-hw = <0xFF 0x08>;
+ 		};
+ 
+-		oppturbo@800000000 {
++		oppturbo-800000000 {
+ 			opp-hz = /bits/ 64 <800000000>;
+ 			opp-microvolt = <1260000 1234800 1285200>;
+ 			opp-supported-hw = <0xFF 0x10>;
+ 		};
+ 
+-		oppnitro@1000000000 {
++		oppnitro-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <1325000 1298500 1351500>;
+ 			opp-supported-hw = <0xFF 0x20>;
+diff --git a/arch/arm/boot/dts/exynos3250.dtsi b/arch/arm/boot/dts/exynos3250.dtsi
+index 9c28ef4508e0..590ee442d0ae 100644
+--- a/arch/arm/boot/dts/exynos3250.dtsi
++++ b/arch/arm/boot/dts/exynos3250.dtsi
+@@ -745,23 +745,23 @@
+ 			compatible = "operating-points-v2";
+ 			opp-shared;
+ 
+-			opp@50000000 {
++			opp-50000000 {
+ 				opp-hz = /bits/ 64 <50000000>;
+ 				opp-microvolt = <800000>;
+ 			};
+-			opp@100000000 {
++			opp-100000000 {
+ 				opp-hz = /bits/ 64 <100000000>;
+ 				opp-microvolt = <800000>;
+ 			};
+-			opp@134000000 {
++			opp-134000000 {
+ 				opp-hz = /bits/ 64 <134000000>;
+ 				opp-microvolt = <800000>;
+ 			};
+-			opp@200000000 {
++			opp-200000000 {
+ 				opp-hz = /bits/ 64 <200000000>;
+ 				opp-microvolt = <825000>;
+ 			};
+-			opp@400000000 {
++			opp-400000000 {
+ 				opp-hz = /bits/ 64 <400000000>;
+ 				opp-microvolt = <875000>;
+ 			};
+@@ -835,23 +835,23 @@
+ 			compatible = "operating-points-v2";
+ 			opp-shared;
+ 
+-			opp@50000000 {
++			opp-50000000 {
+ 				opp-hz = /bits/ 64 <50000000>;
+ 				opp-microvolt = <900000>;
+ 			};
+-			opp@80000000 {
++			opp-80000000 {
+ 				opp-hz = /bits/ 64 <80000000>;
+ 				opp-microvolt = <900000>;
+ 			};
+-			opp@100000000 {
++			opp-100000000 {
+ 				opp-hz = /bits/ 64 <100000000>;
+ 				opp-microvolt = <1000000>;
+ 			};
+-			opp@134000000 {
++			opp-134000000 {
+ 				opp-hz = /bits/ 64 <134000000>;
+ 				opp-microvolt = <1000000>;
+ 			};
+-			opp@200000000 {
++			opp-200000000 {
+ 				opp-hz = /bits/ 64 <200000000>;
+ 				opp-microvolt = <1000000>;
+ 			};
+@@ -861,19 +861,19 @@
+ 			compatible = "operating-points-v2";
+ 			opp-shared;
+ 
+-			opp@50000000 {
++			opp-50000000 {
+ 				opp-hz = /bits/ 64 <50000000>;
+ 			};
+-			opp@80000000 {
++			opp-80000000 {
+ 				opp-hz = /bits/ 64 <80000000>;
+ 			};
+-			opp@100000000 {
++			opp-100000000 {
+ 				opp-hz = /bits/ 64 <100000000>;
+ 			};
+-			opp@200000000 {
++			opp-200000000 {
+ 				opp-hz = /bits/ 64 <200000000>;
+ 			};
+-			opp@400000000 {
++			opp-400000000 {
+ 				opp-hz = /bits/ 64 <400000000>;
+ 			};
+ 		};
+@@ -882,19 +882,19 @@
+ 			compatible = "operating-points-v2";
+ 			opp-shared;
+ 
+-			opp@50000000 {
++			opp-50000000 {
+ 				opp-hz = /bits/ 64 <50000000>;
+ 			};
+-			opp@80000000 {
++			opp-80000000 {
+ 				opp-hz = /bits/ 64 <80000000>;
+ 			};
+-			opp@100000000 {
++			opp-100000000 {
+ 				opp-hz = /bits/ 64 <100000000>;
+ 			};
+-			opp@200000000 {
++			opp-200000000 {
+ 				opp-hz = /bits/ 64 <200000000>;
+ 			};
+-			opp@300000000 {
++			opp-300000000 {
+ 				opp-hz = /bits/ 64 <300000000>;
+ 			};
+ 		};
+@@ -903,13 +903,13 @@
+ 			compatible = "operating-points-v2";
+ 			opp-shared;
+ 
+-			opp@50000000 {
++			opp-50000000 {
+ 				opp-hz = /bits/ 64 <50000000>;
+ 			};
+-			opp@80000000 {
++			opp-80000000 {
+ 				opp-hz = /bits/ 64 <80000000>;
+ 			};
+-			opp@100000000 {
++			opp-100000000 {
+ 				opp-hz = /bits/ 64 <100000000>;
+ 			};
+ 		};
+diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
+index f9408188f97f..3678d5b44d80 100644
+--- a/arch/arm/boot/dts/exynos4210.dtsi
++++ b/arch/arm/boot/dts/exynos4210.dtsi
+@@ -335,15 +335,15 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 			opp-microvolt = <1025000>;
+ 		};
+-		opp@267000000 {
++		opp-267000000 {
+ 			opp-hz = /bits/ 64 <267000000>;
+ 			opp-microvolt = <1050000>;
+ 		};
+-		opp@400000000 {
++		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 			opp-microvolt = <1150000>;
+ 		};
+@@ -353,13 +353,13 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 		};
+-		opp@160000000 {
++		opp-160000000 {
+ 			opp-hz = /bits/ 64 <160000000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 		};
+ 	};
+@@ -368,10 +368,10 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@5000000 {
++		opp-5000000 {
+ 			opp-hz = /bits/ 64 <5000000>;
+ 		};
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+ 	};
+@@ -380,10 +380,10 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@10000000 {
++		opp-10000000 {
+ 			opp-hz = /bits/ 64 <10000000>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 		};
+ 	};
+@@ -392,13 +392,13 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 		};
+-		opp@160000000 {
++		opp-160000000 {
+ 			opp-hz = /bits/ 64 <160000000>;
+ 		};
+ 	};
+@@ -407,13 +407,13 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+-		opp@160000000 {
++		opp-160000000 {
+ 			opp-hz = /bits/ 64 <160000000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 		};
+ 	};
+diff --git a/arch/arm/boot/dts/exynos4412-prime.dtsi b/arch/arm/boot/dts/exynos4412-prime.dtsi
+index e75bc170c89c..a67bd953d754 100644
+--- a/arch/arm/boot/dts/exynos4412-prime.dtsi
++++ b/arch/arm/boot/dts/exynos4412-prime.dtsi
+@@ -20,12 +20,12 @@
+ };
+ 
+ &cpu0_opp_table {
+-	opp@1600000000 {
++	opp-1600000000 {
+ 		opp-hz = /bits/ 64 <1600000000>;
+ 		opp-microvolt = <1350000>;
+ 		clock-latency-ns = <200000>;
+ 	};
+-	opp@1704000000 {
++	opp-1704000000 {
+ 		opp-hz = /bits/ 64 <1704000000>;
+ 		opp-microvolt = <1350000>;
+ 		clock-latency-ns = <200000>;
+diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos4412.dtsi
+index 235bbb69ad7c..ce240d0198b3 100644
+--- a/arch/arm/boot/dts/exynos4412.dtsi
++++ b/arch/arm/boot/dts/exynos4412.dtsi
+@@ -76,73 +76,73 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 			opp-microvolt = <900000>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		opp@300000000 {
++		opp-300000000 {
+ 			opp-hz = /bits/ 64 <300000000>;
+ 			opp-microvolt = <900000>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		opp@400000000 {
++		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 			opp-microvolt = <925000>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		opp@500000000 {
++		opp-500000000 {
+ 			opp-hz = /bits/ 64 <500000000>;
+ 			opp-microvolt = <950000>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		opp@600000000 {
++		opp-600000000 {
+ 			opp-hz = /bits/ 64 <600000000>;
+ 			opp-microvolt = <975000>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		opp@700000000 {
++		opp-700000000 {
+ 			opp-hz = /bits/ 64 <700000000>;
+ 			opp-microvolt = <987500>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		opp@800000000 {
++		opp-800000000 {
+ 			opp-hz = /bits/ 64 <800000000>;
+ 			opp-microvolt = <1000000>;
+ 			clock-latency-ns = <200000>;
+ 			opp-suspend;
+ 		};
+-		opp@900000000 {
++		opp-900000000 {
+ 			opp-hz = /bits/ 64 <900000000>;
+ 			opp-microvolt = <1037500>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <1087500>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		opp@1100000000 {
++		opp-1100000000 {
+ 			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <1137500>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		opp@1200000000 {
++		opp-1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1187500>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		opp@1300000000 {
++		opp-1300000000 {
+ 			opp-hz = /bits/ 64 <1300000000>;
+ 			opp-microvolt = <1250000>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		opp@1400000000 {
++		opp-1400000000 {
+ 			opp-hz = /bits/ 64 <1400000000>;
+ 			opp-microvolt = <1287500>;
+ 			clock-latency-ns = <200000>;
+ 		};
+-		cpu0_opp_1500: opp@1500000000 {
++		cpu0_opp_1500: opp-1500000000 {
+ 			opp-hz = /bits/ 64 <1500000000>;
+ 			opp-microvolt = <1350000>;
+ 			clock-latency-ns = <200000>;
+@@ -433,23 +433,23 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 			opp-microvolt = <900000>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 			opp-microvolt = <900000>;
+ 		};
+-		opp@160000000 {
++		opp-160000000 {
+ 			opp-hz = /bits/ 64 <160000000>;
+ 			opp-microvolt = <900000>;
+ 		};
+-		opp@267000000 {
++		opp-267000000 {
+ 			opp-hz = /bits/ 64 <267000000>;
+ 			opp-microvolt = <950000>;
+ 		};
+-		opp@400000000 {
++		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 			opp-microvolt = <1050000>;
+ 		};
+@@ -459,16 +459,16 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 		};
+-		opp@160000000 {
++		opp-160000000 {
+ 			opp-hz = /bits/ 64 <160000000>;
+ 		};
+-		opp@267000000 {
++		opp-267000000 {
+ 			opp-hz = /bits/ 64 <267000000>;
+ 		};
+ 	};
+@@ -525,19 +525,19 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 			opp-microvolt = <900000>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 			opp-microvolt = <925000>;
+ 		};
+-		opp@160000000 {
++		opp-160000000 {
+ 			opp-hz = /bits/ 64 <160000000>;
+ 			opp-microvolt = <950000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 			opp-microvolt = <1000000>;
+ 		};
+@@ -547,10 +547,10 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@160000000 {
++		opp-160000000 {
+ 			opp-hz = /bits/ 64 <160000000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 		};
+ 	};
+@@ -559,10 +559,10 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 		};
+ 	};
+@@ -571,10 +571,10 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@50000000 {
++		opp-50000000 {
+ 			opp-hz = /bits/ 64 <50000000>;
+ 		};
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+ 	};
+diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
+index 7dc9dc82afd8..5cd6c7389d51 100644
+--- a/arch/arm/boot/dts/exynos5420.dtsi
++++ b/arch/arm/boot/dts/exynos5420.dtsi
+@@ -49,62 +49,62 @@
+ 		cluster_a15_opp_table: opp_table0 {
+ 			compatible = "operating-points-v2";
+ 			opp-shared;
+-			opp@1800000000 {
++			opp-1800000000 {
+ 				opp-hz = /bits/ 64 <1800000000>;
+ 				opp-microvolt = <1250000>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@1700000000 {
++			opp-1700000000 {
+ 				opp-hz = /bits/ 64 <1700000000>;
+ 				opp-microvolt = <1212500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@1600000000 {
++			opp-1600000000 {
+ 				opp-hz = /bits/ 64 <1600000000>;
+ 				opp-microvolt = <1175000>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@1500000000 {
++			opp-1500000000 {
+ 				opp-hz = /bits/ 64 <1500000000>;
+ 				opp-microvolt = <1137500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@1400000000 {
++			opp-1400000000 {
+ 				opp-hz = /bits/ 64 <1400000000>;
+ 				opp-microvolt = <1112500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@1300000000 {
++			opp-1300000000 {
+ 				opp-hz = /bits/ 64 <1300000000>;
+ 				opp-microvolt = <1062500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@1200000000 {
++			opp-1200000000 {
+ 				opp-hz = /bits/ 64 <1200000000>;
+ 				opp-microvolt = <1037500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@1100000000 {
++			opp-1100000000 {
+ 				opp-hz = /bits/ 64 <1100000000>;
+ 				opp-microvolt = <1012500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@1000000000 {
++			opp-1000000000 {
+ 				opp-hz = /bits/ 64 <1000000000>;
+ 				opp-microvolt = < 987500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@900000000 {
++			opp-900000000 {
+ 				opp-hz = /bits/ 64 <900000000>;
+ 				opp-microvolt = < 962500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@800000000 {
++			opp-800000000 {
+ 				opp-hz = /bits/ 64 <800000000>;
+ 				opp-microvolt = < 937500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@700000000 {
++			opp-700000000 {
+ 				opp-hz = /bits/ 64 <700000000>;
+ 				opp-microvolt = < 912500>;
+ 				clock-latency-ns = <140000>;
+@@ -114,42 +114,42 @@
+ 		cluster_a7_opp_table: opp_table1 {
+ 			compatible = "operating-points-v2";
+ 			opp-shared;
+-			opp@1300000000 {
++			opp-1300000000 {
+ 				opp-hz = /bits/ 64 <1300000000>;
+ 				opp-microvolt = <1275000>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@1200000000 {
++			opp-1200000000 {
+ 				opp-hz = /bits/ 64 <1200000000>;
+ 				opp-microvolt = <1212500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@1100000000 {
++			opp-1100000000 {
+ 				opp-hz = /bits/ 64 <1100000000>;
+ 				opp-microvolt = <1162500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@1000000000 {
++			opp-1000000000 {
+ 				opp-hz = /bits/ 64 <1000000000>;
+ 				opp-microvolt = <1112500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@900000000 {
++			opp-900000000 {
+ 				opp-hz = /bits/ 64 <900000000>;
+ 				opp-microvolt = <1062500>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@800000000 {
++			opp-800000000 {
+ 				opp-hz = /bits/ 64 <800000000>;
+ 				opp-microvolt = <1025000>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@700000000 {
++			opp-700000000 {
+ 				opp-hz = /bits/ 64 <700000000>;
+ 				opp-microvolt = <975000>;
+ 				clock-latency-ns = <140000>;
+ 			};
+-			opp@600000000 {
++			opp-600000000 {
+ 				opp-hz = /bits/ 64 <600000000>;
+ 				opp-microvolt = <937500>;
+ 				clock-latency-ns = <140000>;
+diff --git a/arch/arm/boot/dts/exynos5800.dtsi b/arch/arm/boot/dts/exynos5800.dtsi
+index 8213016803e5..9ddb6bacac5a 100644
+--- a/arch/arm/boot/dts/exynos5800.dtsi
++++ b/arch/arm/boot/dts/exynos5800.dtsi
+@@ -24,60 +24,60 @@
+ };
+ 
+ &cluster_a15_opp_table {
+-	opp@1700000000 {
++	opp-1700000000 {
+ 		opp-microvolt = <1250000>;
+ 	};
+-	opp@1600000000 {
++	opp-1600000000 {
+ 		opp-microvolt = <1250000>;
+ 	};
+-	opp@1500000000 {
++	opp-1500000000 {
+ 		opp-microvolt = <1100000>;
+ 	};
+-	opp@1400000000 {
++	opp-1400000000 {
+ 		opp-microvolt = <1100000>;
+ 	};
+-	opp@1300000000 {
++	opp-1300000000 {
+ 		opp-microvolt = <1100000>;
+ 	};
+-	opp@1200000000 {
++	opp-1200000000 {
+ 		opp-microvolt = <1000000>;
+ 	};
+-	opp@1100000000 {
++	opp-1100000000 {
+ 		opp-microvolt = <1000000>;
+ 	};
+-	opp@1000000000 {
++	opp-1000000000 {
+ 		opp-microvolt = <1000000>;
+ 	};
+-	opp@900000000 {
++	opp-900000000 {
+ 		opp-microvolt = <1000000>;
+ 	};
+-	opp@800000000 {
++	opp-800000000 {
+ 		opp-microvolt = <900000>;
+ 	};
+-	opp@700000000 {
++	opp-700000000 {
+ 		opp-microvolt = <900000>;
+ 	};
+-	opp@600000000 {
++	opp-600000000 {
+ 		opp-hz = /bits/ 64 <600000000>;
+ 		opp-microvolt = <900000>;
+ 		clock-latency-ns = <140000>;
+ 	};
+-	opp@500000000 {
++	opp-500000000 {
+ 		opp-hz = /bits/ 64 <500000000>;
+ 		opp-microvolt = <900000>;
+ 		clock-latency-ns = <140000>;
+ 	};
+-	opp@400000000 {
++	opp-400000000 {
+ 		opp-hz = /bits/ 64 <400000000>;
+ 		opp-microvolt = <900000>;
+ 		clock-latency-ns = <140000>;
+ 	};
+-	opp@300000000 {
++	opp-300000000 {
+ 		opp-hz = /bits/ 64 <300000000>;
+ 		opp-microvolt = <900000>;
+ 		clock-latency-ns = <140000>;
+ 	};
+-	opp@200000000 {
++	opp-200000000 {
+ 		opp-hz = /bits/ 64 <200000000>;
+ 		opp-microvolt = <900000>;
+ 		clock-latency-ns = <140000>;
+@@ -85,46 +85,46 @@
+ };
+ 
+ &cluster_a7_opp_table {
+-	opp@1300000000 {
++	opp-1300000000 {
+ 		opp-microvolt = <1250000>;
+ 	};
+-	opp@1200000000 {
++	opp-1200000000 {
+ 		opp-microvolt = <1250000>;
+ 	};
+-	opp@1100000000 {
++	opp-1100000000 {
+ 		opp-microvolt = <1250000>;
+ 	};
+-	opp@1000000000 {
++	opp-1000000000 {
+ 		opp-microvolt = <1100000>;
+ 	};
+-	opp@900000000 {
++	opp-900000000 {
+ 		opp-microvolt = <1100000>;
+ 	};
+-	opp@800000000 {
++	opp-800000000 {
+ 		opp-microvolt = <1100000>;
+ 	};
+-	opp@700000000 {
++	opp-700000000 {
+ 		opp-microvolt = <1000000>;
+ 	};
+-	opp@600000000 {
++	opp-600000000 {
+ 		opp-microvolt = <1000000>;
+ 	};
+-	opp@500000000 {
++	opp-500000000 {
+ 		opp-hz = /bits/ 64 <500000000>;
+ 		opp-microvolt = <1000000>;
+ 		clock-latency-ns = <140000>;
+ 	};
+-	opp@400000000 {
++	opp-400000000 {
+ 		opp-hz = /bits/ 64 <400000000>;
+ 		opp-microvolt = <1000000>;
+ 		clock-latency-ns = <140000>;
+ 	};
+-	opp@300000000 {
++	opp-300000000 {
+ 		opp-hz = /bits/ 64 <300000000>;
+ 		opp-microvolt = <900000>;
+ 		clock-latency-ns = <140000>;
+ 	};
+-	opp@200000000 {
++	opp-200000000 {
+ 		opp-hz = /bits/ 64 <200000000>;
+ 		opp-microvolt = <900000>;
+ 		clock-latency-ns = <140000>;
+diff --git a/arch/arm/boot/dts/pxa25x.dtsi b/arch/arm/boot/dts/pxa25x.dtsi
+index f9f4726396a0..95d59be97213 100644
+--- a/arch/arm/boot/dts/pxa25x.dtsi
++++ b/arch/arm/boot/dts/pxa25x.dtsi
+@@ -93,22 +93,22 @@
+ 	pxa250_opp_table: opp_table0 {
+ 		compatible = "operating-points-v2";
+ 
+-		opp@99532800 {
++		opp-99532800 {
+ 			opp-hz = /bits/ 64 <99532800>;
+ 			opp-microvolt = <1000000 950000 1650000>;
+ 			clock-latency-ns = <20>;
+ 		};
+-		opp@199065600 {
++		opp-199065600 {
+ 			opp-hz = /bits/ 64 <199065600>;
+ 			opp-microvolt = <1000000 950000 1650000>;
+ 			clock-latency-ns = <20>;
+ 		};
+-		opp@298598400 {
++		opp-298598400 {
+ 			opp-hz = /bits/ 64 <298598400>;
+ 			opp-microvolt = <1100000 1045000 1650000>;
+ 			clock-latency-ns = <20>;
+ 		};
+-		opp@398131200 {
++		opp-398131200 {
+ 			opp-hz = /bits/ 64 <398131200>;
+ 			opp-microvolt = <1300000 1235000 1650000>;
+ 			clock-latency-ns = <20>;
+diff --git a/arch/arm/boot/dts/pxa27x.dtsi b/arch/arm/boot/dts/pxa27x.dtsi
+index e0fab48ba6fa..5f1d6da02a4c 100644
+--- a/arch/arm/boot/dts/pxa27x.dtsi
++++ b/arch/arm/boot/dts/pxa27x.dtsi
+@@ -141,37 +141,37 @@
+ 	pxa270_opp_table: opp_table0 {
+ 		compatible = "operating-points-v2";
+ 
+-		opp@104000000 {
++		opp-104000000 {
+ 			opp-hz = /bits/ 64 <104000000>;
+ 			opp-microvolt = <900000 900000 1705000>;
+ 			clock-latency-ns = <20>;
+ 		};
+-		opp@156000000 {
++		opp-156000000 {
+ 			opp-hz = /bits/ 64 <156000000>;
+ 			opp-microvolt = <1000000 1000000 1705000>;
+ 			clock-latency-ns = <20>;
+ 		};
+-		opp@208000000 {
++		opp-208000000 {
+ 			opp-hz = /bits/ 64 <208000000>;
+ 			opp-microvolt = <1180000 1180000 1705000>;
+ 			clock-latency-ns = <20>;
+ 		};
+-		opp@312000000 {
++		opp-312000000 {
+ 			opp-hz = /bits/ 64 <312000000>;
+ 			opp-microvolt = <1250000 1250000 1705000>;
+ 			clock-latency-ns = <20>;
+ 		};
+-		opp@416000000 {
++		opp-416000000 {
+ 			opp-hz = /bits/ 64 <416000000>;
+ 			opp-microvolt = <1350000 1350000 1705000>;
+ 			clock-latency-ns = <20>;
+ 		};
+-		opp@520000000 {
++		opp-520000000 {
+ 			opp-hz = /bits/ 64 <520000000>;
+ 			opp-microvolt = <1450000 1450000 1705000>;
+ 			clock-latency-ns = <20>;
+ 		};
+-		opp@624000000 {
++		opp-624000000 {
+ 			opp-hz = /bits/ 64 <624000000>;
+ 			opp-microvolt = <1550000 1550000 1705000>;
+ 			clock-latency-ns = <20>;
+diff --git a/arch/arm/boot/dts/sun8i-a33.dtsi b/arch/arm/boot/dts/sun8i-a33.dtsi
+index 0467fb365bfc..7c7f8d8abfa0 100644
+--- a/arch/arm/boot/dts/sun8i-a33.dtsi
++++ b/arch/arm/boot/dts/sun8i-a33.dtsi
+@@ -49,25 +49,25 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@648000000 {
++		opp-648000000 {
+ 			opp-hz = /bits/ 64 <648000000>;
+ 			opp-microvolt = <1040000>;
+ 			clock-latency-ns = <244144>; /* 8 32k periods */
+ 		};
+ 
+-		opp@816000000 {
++		opp-816000000 {
+ 			opp-hz = /bits/ 64 <816000000>;
+ 			opp-microvolt = <1100000>;
+ 			clock-latency-ns = <244144>; /* 8 32k periods */
+ 		};
+ 
+-		opp@1008000000 {
++		opp-1008000000 {
+ 			opp-hz = /bits/ 64 <1008000000>;
+ 			opp-microvolt = <1200000>;
+ 			clock-latency-ns = <244144>; /* 8 32k periods */
+ 		};
+ 
+-		opp@1200000000 {
++		opp-1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1320000>;
+ 			clock-latency-ns = <244144>; /* 8 32k periods */
+diff --git a/arch/arm/boot/dts/uniphier-pro5.dtsi b/arch/arm/boot/dts/uniphier-pro5.dtsi
+index dbc5e5333163..22ef2842be3a 100644
+--- a/arch/arm/boot/dts/uniphier-pro5.dtsi
++++ b/arch/arm/boot/dts/uniphier-pro5.dtsi
+@@ -77,67 +77,67 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@116667000 {
++		opp-116667000 {
+ 			opp-hz = /bits/ 64 <116667000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@150000000 {
++		opp-150000000 {
+ 			opp-hz = /bits/ 64 <150000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@175000000 {
++		opp-175000000 {
+ 			opp-hz = /bits/ 64 <175000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@233334000 {
++		opp-233334000 {
+ 			opp-hz = /bits/ 64 <233334000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@300000000 {
++		opp-300000000 {
+ 			opp-hz = /bits/ 64 <300000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@350000000 {
++		opp-350000000 {
+ 			opp-hz = /bits/ 64 <350000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@400000000 {
++		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@466667000 {
++		opp-466667000 {
+ 			opp-hz = /bits/ 64 <466667000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@600000000 {
++		opp-600000000 {
+ 			opp-hz = /bits/ 64 <600000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@700000000 {
++		opp-700000000 {
+ 			opp-hz = /bits/ 64 <700000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@800000000 {
++		opp-800000000 {
+ 			opp-hz = /bits/ 64 <800000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@933334000 {
++		opp-933334000 {
+ 			opp-hz = /bits/ 64 <933334000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@1200000000 {
++		opp-1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@1400000000 {
++		opp-1400000000 {
+ 			opp-hz = /bits/ 64 <1400000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+diff --git a/arch/arm/boot/dts/uniphier-pxs2.dtsi b/arch/arm/boot/dts/uniphier-pxs2.dtsi
+index e9e031d63c1a..acaaa2187843 100644
+--- a/arch/arm/boot/dts/uniphier-pxs2.dtsi
++++ b/arch/arm/boot/dts/uniphier-pxs2.dtsi
+@@ -97,35 +97,35 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@150000000 {
++		opp-150000000 {
+ 			opp-hz = /bits/ 64 <150000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@300000000 {
++		opp-300000000 {
+ 			opp-hz = /bits/ 64 <300000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@400000000 {
++		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@600000000 {
++		opp-600000000 {
+ 			opp-hz = /bits/ 64 <600000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@800000000 {
++		opp-800000000 {
+ 			opp-hz = /bits/ 64 <800000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@1200000000 {
++		opp-1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+diff --git a/arch/arm64/boot/dts/exynos/exynos5433-bus.dtsi b/arch/arm64/boot/dts/exynos/exynos5433-bus.dtsi
+index c42dc39c3223..ec11343dc528 100644
+--- a/arch/arm64/boot/dts/exynos/exynos5433-bus.dtsi
++++ b/arch/arm64/boot/dts/exynos/exynos5433-bus.dtsi
+@@ -94,27 +94,27 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@400000000 {
++		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 			opp-microvolt = <1075000>;
+ 		};
+-		opp@267000000 {
++		opp-267000000 {
+ 			opp-hz = /bits/ 64 <267000000>;
+ 			opp-microvolt = <1000000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 			opp-microvolt = <975000>;
+ 		};
+-		opp@160000000 {
++		opp-160000000 {
+ 			opp-hz = /bits/ 64 <160000000>;
+ 			opp-microvolt = <962500>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 			opp-microvolt = <950000>;
+ 		};
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 			opp-microvolt = <937500>;
+ 		};
+@@ -123,19 +123,19 @@
+ 	bus_g2d_266_opp_table: opp_table3 {
+ 		compatible = "operating-points-v2";
+ 
+-		opp@267000000 {
++		opp-267000000 {
+ 			opp-hz = /bits/ 64 <267000000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 		};
+-		opp@160000000 {
++		opp-160000000 {
+ 			opp-hz = /bits/ 64 <160000000>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 		};
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+ 	};
+@@ -143,13 +143,13 @@
+ 	bus_gscl_opp_table: opp_table4 {
+ 		compatible = "operating-points-v2";
+ 
+-		opp@333000000 {
++		opp-333000000 {
+ 			opp-hz = /bits/ 64 <333000000>;
+ 		};
+-		opp@222000000 {
++		opp-222000000 {
+ 			opp-hz = /bits/ 64 <222000000>;
+ 		};
+-		opp@166500000 {
++		opp-166500000 {
+ 			opp-hz = /bits/ 64 <166500000>;
+ 		};
+ 	};
+@@ -158,22 +158,22 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@400000000 {
++		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 		};
+-		opp@267000000 {
++		opp-267000000 {
+ 			opp-hz = /bits/ 64 <267000000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 		};
+-		opp@160000000 {
++		opp-160000000 {
+ 			opp-hz = /bits/ 64 <160000000>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 		};
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+ 	};
+@@ -181,16 +181,16 @@
+ 	bus_noc2_opp_table: opp_table6 {
+ 		compatible = "operating-points-v2";
+ 
+-		opp@400000000 {
++		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 		};
+-		opp@200000000 {
++		opp-200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 		};
+-		opp@134000000 {
++		opp-134000000 {
+ 			opp-hz = /bits/ 64 <134000000>;
+ 		};
+-		opp@100000000 {
++		opp-100000000 {
+ 			opp-hz = /bits/ 64 <100000000>;
+ 		};
+ 	};
+diff --git a/arch/arm64/boot/dts/exynos/exynos5433.dtsi b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
+index 16072c1c3ed3..727f36abf3d4 100644
+--- a/arch/arm64/boot/dts/exynos/exynos5433.dtsi
++++ b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
+@@ -119,43 +119,43 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@400000000 {
++		opp-400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 			opp-microvolt = <900000>;
+ 		};
+-		opp@500000000 {
++		opp-500000000 {
+ 			opp-hz = /bits/ 64 <500000000>;
+ 			opp-microvolt = <925000>;
+ 		};
+-		opp@600000000 {
++		opp-600000000 {
+ 			opp-hz = /bits/ 64 <600000000>;
+ 			opp-microvolt = <950000>;
+ 		};
+-		opp@700000000 {
++		opp-700000000 {
+ 			opp-hz = /bits/ 64 <700000000>;
+ 			opp-microvolt = <975000>;
+ 		};
+-		opp@800000000 {
++		opp-800000000 {
+ 			opp-hz = /bits/ 64 <800000000>;
+ 			opp-microvolt = <1000000>;
+ 		};
+-		opp@900000000 {
++		opp-900000000 {
+ 			opp-hz = /bits/ 64 <900000000>;
+ 			opp-microvolt = <1050000>;
+ 		};
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <1075000>;
+ 		};
+-		opp@1100000000 {
++		opp-1100000000 {
+ 			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <1112500>;
+ 		};
+-		opp@1200000000 {
++		opp-1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1112500>;
+ 		};
+-		opp@1300000000 {
++		opp-1300000000 {
+ 			opp-hz = /bits/ 64 <1300000000>;
+ 			opp-microvolt = <1150000>;
+ 		};
+@@ -165,63 +165,63 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@500000000 {
++		opp-500000000 {
+ 			opp-hz = /bits/ 64 <500000000>;
+ 			opp-microvolt = <900000>;
+ 		};
+-		opp@600000000 {
++		opp-600000000 {
+ 			opp-hz = /bits/ 64 <600000000>;
+ 			opp-microvolt = <900000>;
+ 		};
+-		opp@700000000 {
++		opp-700000000 {
+ 			opp-hz = /bits/ 64 <700000000>;
+ 			opp-microvolt = <912500>;
+ 		};
+-		opp@800000000 {
++		opp-800000000 {
+ 			opp-hz = /bits/ 64 <800000000>;
+ 			opp-microvolt = <912500>;
+ 		};
+-		opp@900000000 {
++		opp-900000000 {
+ 			opp-hz = /bits/ 64 <900000000>;
+ 			opp-microvolt = <937500>;
+ 		};
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <975000>;
+ 		};
+-		opp@1100000000 {
++		opp-1100000000 {
+ 			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <1012500>;
+ 		};
+-		opp@1200000000 {
++		opp-1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1037500>;
+ 		};
+-		opp@1300000000 {
++		opp-1300000000 {
+ 			opp-hz = /bits/ 64 <1300000000>;
+ 			opp-microvolt = <1062500>;
+ 		};
+-		opp@1400000000 {
++		opp-1400000000 {
+ 			opp-hz = /bits/ 64 <1400000000>;
+ 			opp-microvolt = <1087500>;
+ 		};
+-		opp@1500000000 {
++		opp-1500000000 {
+ 			opp-hz = /bits/ 64 <1500000000>;
+ 			opp-microvolt = <1125000>;
+ 		};
+-		opp@1600000000 {
++		opp-1600000000 {
+ 			opp-hz = /bits/ 64 <1600000000>;
+ 			opp-microvolt = <1137500>;
+ 		};
+-		opp@1700000000 {
++		opp-1700000000 {
+ 			opp-hz = /bits/ 64 <1700000000>;
+ 			opp-microvolt = <1175000>;
+ 		};
+-		opp@1800000000 {
++		opp-1800000000 {
+ 			opp-hz = /bits/ 64 <1800000000>;
+ 			opp-microvolt = <1212500>;
+ 		};
+-		opp@1900000000 {
++		opp-1900000000 {
+ 			opp-hz = /bits/ 64 <1900000000>;
+ 			opp-microvolt = <1262500>;
+ 		};
+diff --git a/arch/arm64/boot/dts/socionext/uniphier-ld11.dtsi b/arch/arm64/boot/dts/socionext/uniphier-ld11.dtsi
+index da881f5b6ed4..0f2bee028ab0 100644
+--- a/arch/arm64/boot/dts/socionext/uniphier-ld11.dtsi
++++ b/arch/arm64/boot/dts/socionext/uniphier-ld11.dtsi
+@@ -89,31 +89,31 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@245000000 {
++		opp-245000000 {
+ 			opp-hz = /bits/ 64 <245000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@250000000 {
++		opp-250000000 {
+ 			opp-hz = /bits/ 64 <250000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@490000000 {
++		opp-490000000 {
+ 			opp-hz = /bits/ 64 <490000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@500000000 {
++		opp-500000000 {
+ 			opp-hz = /bits/ 64 <500000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@653334000 {
++		opp-653334000 {
+ 			opp-hz = /bits/ 64 <653334000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@666667000 {
++		opp-666667000 {
+ 			opp-hz = /bits/ 64 <666667000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@980000000 {
++		opp-980000000 {
+ 			opp-hz = /bits/ 64 <980000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+diff --git a/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi b/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
+index a6b3a70dae83..19f782408d54 100644
+--- a/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
++++ b/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
+@@ -116,35 +116,35 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@250000000 {
++		opp-250000000 {
+ 			opp-hz = /bits/ 64 <250000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@275000000 {
++		opp-275000000 {
+ 			opp-hz = /bits/ 64 <275000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@500000000 {
++		opp-500000000 {
+ 			opp-hz = /bits/ 64 <500000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@550000000 {
++		opp-550000000 {
+ 			opp-hz = /bits/ 64 <550000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@666667000 {
++		opp-666667000 {
+ 			opp-hz = /bits/ 64 <666667000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@733334000 {
++		opp-733334000 {
+ 			opp-hz = /bits/ 64 <733334000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@1100000000 {
++		opp-1100000000 {
+ 			opp-hz = /bits/ 64 <1100000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+@@ -154,35 +154,35 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@250000000 {
++		opp-250000000 {
+ 			opp-hz = /bits/ 64 <250000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@275000000 {
++		opp-275000000 {
+ 			opp-hz = /bits/ 64 <275000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@500000000 {
++		opp-500000000 {
+ 			opp-hz = /bits/ 64 <500000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@550000000 {
++		opp-550000000 {
+ 			opp-hz = /bits/ 64 <550000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@666667000 {
++		opp-666667000 {
+ 			opp-hz = /bits/ 64 <666667000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@733334000 {
++		opp-733334000 {
+ 			opp-hz = /bits/ 64 <733334000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+-		opp@1100000000 {
++		opp-1100000000 {
+ 			opp-hz = /bits/ 64 <1100000000>;
+ 			clock-latency-ns = <300>;
+ 		};
+diff --git a/arch/arm64/boot/dts/zte/zx296718.dtsi b/arch/arm64/boot/dts/zte/zx296718.dtsi
+index b850b2cd0adc..2c7dc69987df 100644
+--- a/arch/arm64/boot/dts/zte/zx296718.dtsi
++++ b/arch/arm64/boot/dts/zte/zx296718.dtsi
+@@ -118,27 +118,27 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp@500000000 {
++		opp-500000000 {
+ 			opp-hz = /bits/ 64 <500000000>;
+ 			clock-latency-ns = <500000>;
+ 		};
+ 
+-		opp@648000000 {
++		opp-648000000 {
+ 			opp-hz = /bits/ 64 <648000000>;
+ 			clock-latency-ns = <500000>;
+ 		};
+ 
+-		opp@800000000 {
++		opp-800000000 {
+ 			opp-hz = /bits/ 64 <800000000>;
+ 			clock-latency-ns = <500000>;
+ 		};
+ 
+-		opp@1000000000 {
++		opp-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			clock-latency-ns = <500000>;
+ 		};
+ 
+-		opp@1188000000 {
++		opp-1188000000 {
+ 			opp-hz = /bits/ 64 <1188000000>;
+ 			clock-latency-ns = <500000>;
+ 		};
 -- 
-Quentin Schulz, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+2.12.0.432.g71c3a4f4ba37
