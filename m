@@ -1,65 +1,66 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [RFC PATCH 4/4] dt-bindings: Add support for devices with
- multiple PM domains
-Date: Mon, 10 Apr 2017 09:42:42 +0530
-Message-ID: <3f96256d-0de5-26a2-e656-7912e06806ea@codeaurora.org>
-References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
- <1490710443-27425-5-git-send-email-jonathanh@nvidia.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Recommended notation for OPP to avoid DTC warnings
+Date: Mon, 10 Apr 2017 10:28:21 +0530
+Message-ID: <20170410045821.GB4377@vireshk-i7>
+References: <CAK7LNAQyc9=3d07-1upywYDk-AaRUGK4mJwAVduCuEJgnY1uFA@mail.gmail.com>
+ <20170227104445.GE6795@leverpostej>
+ <20170227105533.GA19417@vireshk-i7>
+ <CAK7LNAQxyPChjjH4oL2HDhXXHxq6ujVR+S+4MocF-99rWDrwFQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:42144 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750711AbdDJEMu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 00:12:50 -0400
-In-Reply-To: <1490710443-27425-5-git-send-email-jonathanh@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAK7LNAQxyPChjjH4oL2HDhXXHxq6ujVR+S+4MocF-99rWDrwFQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, geert@linux-m68k.org
-Cc: stanimir.varbanov@linaro.org, sboyd@codeaurora.org, Marek Szyprowski <m.szyprowski@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
 
-
-
-On 03/28/2017 07:44 PM, Jon Hunter wrote:
-> Now that the generic PM domain framework supports consumers that can
-> control multiple PM domains, update the device-tree binding for generic
-> PM domains to state that one or more PM domain is permitted for a
-> device.
+On 31-03-17, 11:59, Masahiro Yamada wrote:
+> Hi.
 > 
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-> ---
->  Documentation/devicetree/bindings/power/power_domain.txt | 11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
+> 2017-02-27 19:55 GMT+09:00 Viresh Kumar <viresh.kumar@linaro.org>:
+> > On 27-02-17, 10:44, Mark Rutland wrote:
+> >> On Sun, Feb 26, 2017 at 02:18:03PM +0900, Masahiro Yamada wrote:
+> >> > Hi.
+> >> >
+> >> >
+> >> > Decumentation/devicetree/bindings/opp/opp.txt
+> >> > takes examples like this:
+> >> >
+> >> >         opp@1000000000 {
+> >> >                 opp-hz = /bits/ 64 <1000000000>;
+> >> >                 opp-microvolt = <970000 975000 985000>;
+> >> >                 opp-microamp = <70000>;
+> >> >                 clock-latency-ns = <300000>;
+> >> >                 opp-suspend;
+> >> >         };
+> >>
+> >> > If we follow this notation and the device-tree is built with W=1,
+> >> > DTC warns like follows:
+> >> >
+> >> > Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
+> >> > unit name, but no reg property
+> >> >
+> >> > Is there a recommended notation to avoid it?
+> >> >
+> >> > Maybe, simply omit the "@" ?
+> >>
+> >> I think just s/@/-/ should be fine, e.g. call the above opp-1000000000.
+> >
+> > That's fine with me. I can send a patch to fix all existing users if we all
+> > agree for it.
+> >
+> > --
+> > viresh
 > 
-> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-> index 723e1ad937da..fb28d37f9e1f 100644
-> --- a/Documentation/devicetree/bindings/power/power_domain.txt
-> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> @@ -20,8 +20,15 @@ Required properties:
->     as specified by device tree binding documentation of particular provider.
->  
->  Optional properties:
-> - - power-domains : A phandle and PM domain specifier as defined by bindings of
-> -                   the power controller specified by phandle.
-> + - power-domains : An array of one or more PM domain specifiers (defined by the
-> +		   bindings of the PM domain provider) for each PM domain that
-> +		   is required by the device.
-> + - power-domain-names: A list of strings of PM domain names. The list must have
-> +                       a name for each PM domain specifier in the
-> +		       'power-domains' property and these names must be unique
-> +		       within the context of this property. The names must be
-> +		       indexed so that the first name corresponds to the first
-> +		       PM domain specifier and so on.
-
-These bindings are for power-domain providers. We also need to update the bindings
-for the consumers (look further down in the same file)
-
->     Some power domains might be powered from another power domain (or have
->     other hardware specific dependencies). For representing such dependency
->     a standard PM domain consumer binding is used. When provided, all domains
 > 
+> Any progress on this?
+> 
+> Did we reach on agreement with s/@/-/  ?
+
+We can follow this as no one else objected. I will send a patch for existing
+entries and you can do it for the newer ones.
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+viresh
