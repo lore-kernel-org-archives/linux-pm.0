@@ -1,90 +1,63 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [RFC/RFT][PATCH 2/2] cpufreq: schedutil: Utilization aggregation
-Date: Sun, 9 Apr 2017 23:39:31 -0700
-Message-ID: <CAJWu+orhpeirhB1u-KTOBjWTQoTEJdStR3BP14WxkB=RZP49sg@mail.gmail.com>
-References: <3498238.liCqOyIkGA@aspire.rjw.lan> <2242635.g1ACnTm5vK@aspire.rjw.lan>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / OPP: Use - instead of @ for DT entries
+Date: Mon, 10 Apr 2017 15:42:05 +0900
+Message-ID: <58EB293D.7060603@samsung.com>
+References: <CGME20170410051733epcas1p1b54d228cf6a72062daf2f061d7b880f7@epcas1p1.samsung.com>
+        <5ce1fbbc7cd37a6cfe54e93eeca311a7a52093ff.1491801395.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2242635.g1ACnTm5vK@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:60723 "EHLO
+        epoutp01.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1751134AbdDJGmK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 02:42:10 -0400
+In-reply-to: <5ce1fbbc7cd37a6cfe54e93eeca311a7a52093ff.1491801395.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hi Rafael,
+Hi,
 
-On Sun, Apr 9, 2017 at 5:11 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Due to the limitation of the rate of frequency changes the schedutil
-> governor only estimates the CPU utilization entirely when it is about
-> to update the frequency for the corresponding cpufreq policy.  As a
-> result, the intermediate utilization values are discarded by it,
-> but that is not appropriate in general (like, for example, when
-> tasks migrate from one CPU to another or exit, in which cases the
-> utilization measured by PELT may change abruptly between frequency
-> updates).
->
-> For this reason, modify schedutil to estimate CPU utilization
-> completely whenever it is invoked for the given CPU and store the
-> maximum encountered value of it as input for subsequent new frequency
-> computations.  This way the new frequency is always based on the
-> maximum utilization value seen by the governor after the previous
-> frequency update which effectively prevents intermittent utilization
-> variations from causing it to be reduced unnecessarily.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 2017년 04월 10일 14:16, Viresh Kumar wrote:
+> Compiling the DT file with W=1, DTC warns like follows:
+> 
+> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
+> unit name, but no reg property
+> 
+> Fix this by replacing '@' with '-' as the OPP nodes will never have a
+> "reg" property.
+> 
+> Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  kernel/sched/cpufreq_schedutil.c |   90 +++++++++++++++++++++------------------
->  1 file changed, 50 insertions(+), 40 deletions(-)
->
-> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-> ===================================================================
-> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
-> @@ -57,7 +57,6 @@ struct sugov_cpu {
->         unsigned long iowait_boost_max;
->         u64 last_update;
->
-> -       /* The fields below are only needed when sharing a policy. */
->         unsigned long util;
->         unsigned long max;
->         unsigned int flags;
-> @@ -154,22 +153,30 @@ static unsigned int get_next_freq(struct
->         return cpufreq_driver_resolve_freq(policy, freq);
->  }
->
-> -static void sugov_get_util(unsigned long *util, unsigned long *max)
-> +static void sugov_get_util(struct sugov_cpu *sg_cpu, unsigned int flags)
->  {
-> +       unsigned long cfs_util, cfs_max;
->         struct rq *rq = this_rq();
-> -       unsigned long cfs_max;
->
-> -       cfs_max = arch_scale_cpu_capacity(NULL, smp_processor_id());
-> +       sg_cpu->flags |= flags & SCHED_CPUFREQ_RT_DL;
-> +       if (sg_cpu->flags & SCHED_CPUFREQ_RT_DL)
-> +               return;
->
-> -       *util = min(rq->cfs.avg.util_avg, cfs_max);
-> -       *max = cfs_max;
-> +       cfs_max = arch_scale_cpu_capacity(NULL, smp_processor_id());
-> +       cfs_util = min(rq->cfs.avg.util_avg, cfs_max);
-> +       if (sg_cpu->util * cfs_max < sg_cpu->max * cfs_util) {
+>  .../devicetree/bindings/devfreq/exynos-bus.txt     | 46 +++++++--------
+>  Documentation/devicetree/bindings/opp/opp.txt      | 38 ++++++-------
+>  arch/arm/boot/dts/exynos3250.dtsi                  | 46 +++++++--------
+>  arch/arm/boot/dts/exynos4210.dtsi                  | 32 +++++------
+>  arch/arm/boot/dts/exynos4412-prime.dtsi            |  4 +-
+>  arch/arm/boot/dts/exynos4412.dtsi                  | 66 +++++++++++-----------
+>  arch/arm/boot/dts/exynos5420.dtsi                  | 40 ++++++-------
+>  arch/arm/boot/dts/exynos5800.dtsi                  | 56 +++++++++---------
+>  arch/arm/boot/dts/pxa25x.dtsi                      |  8 +--
+>  arch/arm/boot/dts/pxa27x.dtsi                      | 14 ++---
+>  arch/arm/boot/dts/sun8i-a33.dtsi                   |  8 +--
+>  arch/arm/boot/dts/uniphier-pro5.dtsi               | 32 +++++------
+>  arch/arm/boot/dts/uniphier-pxs2.dtsi               | 16 +++---
+>  arch/arm64/boot/dts/exynos/exynos5433-bus.dtsi     | 48 ++++++++--------
+>  arch/arm64/boot/dts/exynos/exynos5433.dtsi         | 50 ++++++++--------
+>  arch/arm64/boot/dts/socionext/uniphier-ld11.dtsi   | 14 ++---
+>  arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi   | 32 +++++------
+>  arch/arm64/boot/dts/zte/zx296718.dtsi              | 10 ++--
+>  18 files changed, 280 insertions(+), 280 deletions(-)
+> 
 
-Assuming all CPUs have equal compute capacity, doesn't this mean that
-sg_cpu->util is updated only if cfs_util > sg_cpu->util?
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-Maybe I missed something, but wouldn't we want sg_cpu->util to be
-reduced as well when cfs_util reduces? Doesn't this condition
-basically discard all updates to sg_cpu->util that could have reduced
-it?
+[snip]
 
-> +               sg_cpu->util = cfs_util;
-> +               sg_cpu->max = cfs_max;
-> +       }
->  }
-
-Thanks,
-Joel
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
