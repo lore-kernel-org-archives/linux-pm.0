@@ -1,66 +1,121 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 07/38] Annotate hardware config module parameters in
- drivers/cpufreq/
-Date: Mon, 10 Apr 2017 16:03:16 +0530
-Message-ID: <20170410103316.GL24555@vireshk-i7>
-References: <149141141298.29162.5612793122429261720.stgit@warthog.procyon.org.uk>
- <149141146722.29162.13947802705058712127.stgit@warthog.procyon.org.uk>
+From: Brendan Jackman <brendan.jackman@arm.com>
+Subject: Re: [RFC/RFT][PATCH 1/2] cpufreq: schedutil: Use policy-dependent latency multupliers
+Date: Mon, 10 Apr 2017 11:38:55 +0100
+Message-ID: <87k26sv96o.fsf@arm.com>
+References: <3498238.liCqOyIkGA@aspire.rjw.lan> <2407280.n9qVSLCrF5@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <149141146722.29162.13947802705058712127.stgit@warthog.procyon.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: David Howells <dhowells@redhat.com>
-Cc: linux-kernel@vger.kernel.org, gnomes@lxorguk.ukuu.org.uk, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, gregkh@linuxfoundation.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:46074 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752144AbdDJKi7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 10 Apr 2017 06:38:59 -0400
+In-reply-to: <2407280.n9qVSLCrF5@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On 05-04-17, 17:57, David Howells wrote:
-> When the kernel is running in secure boot mode, we lock down the kernel to
-> prevent userspace from modifying the running kernel image.  Whilst this
-> includes prohibiting access to things like /dev/mem, it must also prevent
-> access by means of configuring driver modules in such a way as to cause a
-> device to access or modify the kernel image.
-> 
-> To this end, annotate module_param* statements that refer to hardware
-> configuration and indicate for future reference what type of parameter they
-> specify.  The parameter parser in the core sees this information and can
-> skip such parameters with an error message if the kernel is locked down.
-> The module initialisation then runs as normal, but just sees whatever the
-> default values for those parameters is.
-> 
-> Note that we do still need to do the module initialisation because some
-> drivers have viable defaults set in case parameters aren't specified and
-> some drivers support automatic configuration (e.g. PNP or PCI) in addition
-> to manually coded parameters.
-> 
-> This patch annotates drivers in drivers/cpufreq/.
-> 
-> Suggested-by: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> Acked-by: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> cc: Viresh Kumar <viresh.kumar@linaro.org>
-> cc: linux-pm@vger.kernel.org
+Hi Rafael,
+
+On Mon, Apr 10 2017 at 00:10, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Make the schedutil governor compute the initial (default) value of
+> the rate_limit_us sysfs attribute by multiplying the transition
+> latency by a multiplier depending on the policy and set by the
+> scaling driver (instead of using a constant for this purpose).
+>
+> That will allow scaling drivers to make schedutil use smaller default
+> values of rate_limit_us and reduce the default average time interval
+> between consecutive frequency changes.
+>
+
+I've been thinking about this over the last couple of days, and I'm
+thinking (in opposition to what I said at OSPM Pisa) that allowing
+drivers to specify a _multiplier_ isn't ideal, since you lose
+granularity when you want your rate limit to be close to your transition
+latency (i.e. if your multiplier would be 2.5 or something).
+
+Can we instead just have an independent field
+policy->default_rate_limit_us or similar? Drivers know the transition
+latency so intel_pstate can still use a multiplier if it wants.
+
+Cheers,
+Brendan
+
+> Make intel_pstate use the opportunity to reduce the rate limit
+> somewhat.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
-> 
->  drivers/cpufreq/speedstep-smi.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
-> index 770a9ae1999a..37b30071c220 100644
-> --- a/drivers/cpufreq/speedstep-smi.c
-> +++ b/drivers/cpufreq/speedstep-smi.c
-> @@ -378,7 +378,7 @@ static void __exit speedstep_exit(void)
->  	cpufreq_unregister_driver(&speedstep_driver);
->  }
->  
-> -module_param(smi_port, int, 0444);
-> +module_param_hw(smi_port, int, ioport, 0444);
->  module_param(smi_cmd,  int, 0444);
->  module_param(smi_sig, uint, 0444);
->  
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+>  drivers/cpufreq/cpufreq.c        |    1 +
+>  drivers/cpufreq/intel_pstate.c   |    2 ++
+>  include/linux/cpufreq.h          |    8 ++++++++
+>  kernel/sched/cpufreq_schedutil.c |    2 +-
+>  4 files changed, 12 insertions(+), 1 deletion(-)
+>
+> Index: linux-pm/drivers/cpufreq/cpufreq.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
+> +++ linux-pm/drivers/cpufreq/cpufreq.c
+> @@ -1072,6 +1072,7 @@ static struct cpufreq_policy *cpufreq_po
+>  	init_waitqueue_head(&policy->transition_wait);
+>  	init_completion(&policy->kobj_unregister);
+>  	INIT_WORK(&policy->update, handle_update);
+> +	policy->latency_multiplier = LATENCY_MULTIPLIER;
+>
+>  	policy->cpu = cpu;
+>  	return policy;
+> Index: linux-pm/include/linux/cpufreq.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/cpufreq.h
+> +++ linux-pm/include/linux/cpufreq.h
+> @@ -120,6 +120,14 @@ struct cpufreq_policy {
+>  	bool			fast_switch_possible;
+>  	bool			fast_switch_enabled;
+>
+> +	/*
+> +	 * Multiplier to apply to the transition latency to obtain the preferred
+> +	 * average time interval between consecutive invocations of the driver
+> +	 * to set the frequency for this policy.  Initialized by the core to the
+> +	 * LATENCY_MULTIPLIER value.
+> +	 */
+> +	unsigned int		latency_multiplier;
+> +
+>  	 /* Cached frequency lookup from cpufreq_driver_resolve_freq. */
+>  	unsigned int cached_target_freq;
+>  	int cached_resolved_idx;
+> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+> ===================================================================
+> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
+> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
+> @@ -530,7 +530,7 @@ static int sugov_init(struct cpufreq_pol
+>  		goto stop_kthread;
+>  	}
+>
+> -	tunables->rate_limit_us = LATENCY_MULTIPLIER;
+> +	tunables->rate_limit_us = policy->latency_multiplier;
+>  	lat = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
+>  	if (lat)
+>  		tunables->rate_limit_us *= lat;
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -41,6 +41,7 @@
+>  #define INTEL_PSTATE_HWP_SAMPLING_INTERVAL	(50 * NSEC_PER_MSEC)
+>
+>  #define INTEL_CPUFREQ_TRANSITION_LATENCY	20000
+> +#define INTEL_CPUFREQ_LATENCY_MULTIPLIER	250
+>
+>  #ifdef CONFIG_ACPI
+>  #include <acpi/processor.h>
+> @@ -2237,6 +2238,7 @@ static int intel_cpufreq_cpu_init(struct
+>  		return ret;
+>
+>  	policy->cpuinfo.transition_latency = INTEL_CPUFREQ_TRANSITION_LATENCY;
+> +	policy->latency_multiplier = INTEL_CPUFREQ_LATENCY_MULTIPLIER;
+>  	/* This reflects the intel_pstate_get_cpu_pstates() setting. */
+>  	policy->cur = policy->cpuinfo.min_freq;
+>
