@@ -1,15 +1,15 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v12.6 10/11] power: bq27xxx_battery: Remove duplicate register arrays
-Date: Sun,  9 Apr 2017 22:07:11 -0700
-Message-ID: <20170410050712.930-7-liam@networkimprov.net>
+Subject: [PATCH v12.6 11/11] power: bq27xxx_battery: Disable flash/NVM data memory update
+Date: Sun,  9 Apr 2017 22:07:12 -0700
+Message-ID: <20170410050712.930-8-liam@networkimprov.net>
 References: <20170410050712.930-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:34926 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751615AbdDJFHs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 01:07:48 -0400
-Received: by mail-pg0-f65.google.com with SMTP id g2so24239456pge.2
-        for <linux-pm@vger.kernel.org>; Sun, 09 Apr 2017 22:07:48 -0700 (PDT)
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:34930 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751198AbdDJFHt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 01:07:49 -0400
+Received: by mail-pg0-f66.google.com with SMTP id g2so24239496pge.2
+        for <linux-pm@vger.kernel.org>; Sun, 09 Apr 2017 22:07:49 -0700 (PDT)
 In-Reply-To: <20170410050712.930-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,236 +18,78 @@ Cc: Liam Breck <kernel@networkimprov.net>
 
 From: Liam Breck <kernel@networkimprov.net>
 
-BQ2751X & BQ27510G3 are identical.
-BQ27500 & BQ27510G1 & BQ27510G2 are identical.
-Make BQ2751X & BQ27510G1/2 aliases.
-Remove the duplicate arrays, etc.
+On chips with flash/NVM data memory, it's not clear whether battery
+characteristics from devicetree monitored-battery or data memory should
+take precedence. The gauge may be packaged in a smart battery or resident
+on the circuit board, and in either case, the battery type may have changed
+since the dtb was installed. However, it is safe to assume that a device
+vendor who includes battery characteristics in devicetree knows what
+they're doing.
+
+Drop module param use_monitored_battery. If devicetree monitored-battery
+values differ from data memory registers, emit a warning instead of
+updating flash/NVM.
+
+This is controversial; the patch author believes ignoring devicetree is
+the wrong decision, that its integrity should be trusted. But as the
+patch does not impact him directly, he suggests others lobby the
+maintainers to revert it :-)
 
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- drivers/power/supply/bq27xxx_battery.c | 134 +--------------------------------
- include/linux/power/bq27xxx_battery.h  |  12 +--
- 2 files changed, 10 insertions(+), 136 deletions(-)
+ drivers/power/supply/bq27xxx_battery.c | 13 ++++++-------
+ include/linux/power/bq27xxx_battery.h  |  1 +
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 9b0b6b2..b579304 100644
+index b579304..7234e6f 100644
 --- a/drivers/power/supply/bq27xxx_battery.c
 +++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -201,26 +201,6 @@ static u8 bq27xxx_regs[BQ27MAX][BQ27XXX_REG_MAX] = {
- 		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
- 		BQ27XXX_DM_REG_ROWS,
- 	},
--	[BQ2751X] = {
--		[BQ27XXX_REG_CTRL] = 0x00,
--		[BQ27XXX_REG_TEMP] = 0x06,
--		[BQ27XXX_REG_INT_TEMP] = 0x28,
--		[BQ27XXX_REG_VOLT] = 0x08,
--		[BQ27XXX_REG_AI] = 0x14,
--		[BQ27XXX_REG_FLAGS] = 0x0a,
--		[BQ27XXX_REG_TTE] = 0x16,
--		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
--		[BQ27XXX_REG_TTES] = 0x1a,
--		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
--		[BQ27XXX_REG_NAC] = 0x0c,
--		[BQ27XXX_REG_FCC] = 0x12,
--		[BQ27XXX_REG_CYCT] = 0x1e,
--		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
--		[BQ27XXX_REG_SOC] = 0x20,
--		[BQ27XXX_REG_DCAP] = 0x2e,
--		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
--		BQ27XXX_DM_REG_ROWS,
--	},
- 	[BQ27500] = {
- 		[BQ27XXX_REG_CTRL] = 0x00,
- 		[BQ27XXX_REG_TEMP] = 0x06,
-@@ -241,46 +221,6 @@ static u8 bq27xxx_regs[BQ27MAX][BQ27XXX_REG_MAX] = {
- 		[BQ27XXX_REG_AP] = 0x24,
- 		BQ27XXX_DM_REG_ROWS,
- 	},
--	[BQ27510G1] = {
--		[BQ27XXX_REG_CTRL] = 0x00,
--		[BQ27XXX_REG_TEMP] = 0x06,
--		[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
--		[BQ27XXX_REG_VOLT] = 0x08,
--		[BQ27XXX_REG_AI] = 0x14,
--		[BQ27XXX_REG_FLAGS] = 0x0a,
--		[BQ27XXX_REG_TTE] = 0x16,
--		[BQ27XXX_REG_TTF] = 0x18,
--		[BQ27XXX_REG_TTES] = 0x1c,
--		[BQ27XXX_REG_TTECP] = 0x26,
--		[BQ27XXX_REG_NAC] = 0x0c,
--		[BQ27XXX_REG_FCC] = 0x12,
--		[BQ27XXX_REG_CYCT] = 0x2a,
--		[BQ27XXX_REG_AE] = 0x22,
--		[BQ27XXX_REG_SOC] = 0x2c,
--		[BQ27XXX_REG_DCAP] = 0x3c,
--		[BQ27XXX_REG_AP] = 0x24,
--		BQ27XXX_DM_REG_ROWS,
--	},
--	[BQ27510G2] = {
--		[BQ27XXX_REG_CTRL] = 0x00,
--		[BQ27XXX_REG_TEMP] = 0x06,
--		[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
--		[BQ27XXX_REG_VOLT] = 0x08,
--		[BQ27XXX_REG_AI] = 0x14,
--		[BQ27XXX_REG_FLAGS] = 0x0a,
--		[BQ27XXX_REG_TTE] = 0x16,
--		[BQ27XXX_REG_TTF] = 0x18,
--		[BQ27XXX_REG_TTES] = 0x1c,
--		[BQ27XXX_REG_TTECP] = 0x26,
--		[BQ27XXX_REG_NAC] = 0x0c,
--		[BQ27XXX_REG_FCC] = 0x12,
--		[BQ27XXX_REG_CYCT] = 0x2a,
--		[BQ27XXX_REG_AE] = 0x22,
--		[BQ27XXX_REG_SOC] = 0x2c,
--		[BQ27XXX_REG_DCAP] = 0x3c,
--		[BQ27XXX_REG_AP] = 0x24,
--		BQ27XXX_DM_REG_ROWS,
--	},
- 	[BQ27510G3] = {
- 		[BQ27XXX_REG_CTRL] = 0x00,
- 		[BQ27XXX_REG_TEMP] = 0x06,
-@@ -523,24 +463,6 @@ static enum power_supply_property bq2750x_battery_props[] = {
- 	POWER_SUPPLY_PROP_MANUFACTURER,
+@@ -809,11 +809,6 @@ static u32 bq27xxx_unseal_keys[] = {
  };
  
--static enum power_supply_property bq2751x_battery_props[] = {
--	POWER_SUPPLY_PROP_STATUS,
--	POWER_SUPPLY_PROP_PRESENT,
--	POWER_SUPPLY_PROP_VOLTAGE_NOW,
--	POWER_SUPPLY_PROP_CURRENT_NOW,
--	POWER_SUPPLY_PROP_CAPACITY,
--	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
--	POWER_SUPPLY_PROP_TEMP,
--	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
--	POWER_SUPPLY_PROP_TECHNOLOGY,
--	POWER_SUPPLY_PROP_CHARGE_FULL,
--	POWER_SUPPLY_PROP_CHARGE_NOW,
--	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
--	POWER_SUPPLY_PROP_CYCLE_COUNT,
--	POWER_SUPPLY_PROP_HEALTH,
--	POWER_SUPPLY_PROP_MANUFACTURER,
--};
--
- static enum power_supply_property bq27500_battery_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_PRESENT,
-@@ -562,48 +484,6 @@ static enum power_supply_property bq27500_battery_props[] = {
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- };
  
--static enum power_supply_property bq27510g1_battery_props[] = {
--	POWER_SUPPLY_PROP_STATUS,
--	POWER_SUPPLY_PROP_PRESENT,
--	POWER_SUPPLY_PROP_VOLTAGE_NOW,
--	POWER_SUPPLY_PROP_CURRENT_NOW,
--	POWER_SUPPLY_PROP_CAPACITY,
--	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
--	POWER_SUPPLY_PROP_TEMP,
--	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
--	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
--	POWER_SUPPLY_PROP_TECHNOLOGY,
--	POWER_SUPPLY_PROP_CHARGE_FULL,
--	POWER_SUPPLY_PROP_CHARGE_NOW,
--	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
--	POWER_SUPPLY_PROP_CYCLE_COUNT,
--	POWER_SUPPLY_PROP_ENERGY_NOW,
--	POWER_SUPPLY_PROP_POWER_AVG,
--	POWER_SUPPLY_PROP_HEALTH,
--	POWER_SUPPLY_PROP_MANUFACTURER,
--};
+-static bool bq27xxx_dt_battery = true;
+-module_param_named(use_monitored_battery, bq27xxx_dt_battery, bool, S_IRUGO);
+-MODULE_PARM_DESC(use_monitored_battery,
+- "Use devicetree monitored-battery config if present. Default is 1/y.");
 -
--static enum power_supply_property bq27510g2_battery_props[] = {
--	POWER_SUPPLY_PROP_STATUS,
--	POWER_SUPPLY_PROP_PRESENT,
--	POWER_SUPPLY_PROP_VOLTAGE_NOW,
--	POWER_SUPPLY_PROP_CURRENT_NOW,
--	POWER_SUPPLY_PROP_CAPACITY,
--	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
--	POWER_SUPPLY_PROP_TEMP,
--	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
--	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
--	POWER_SUPPLY_PROP_TECHNOLOGY,
--	POWER_SUPPLY_PROP_CHARGE_FULL,
--	POWER_SUPPLY_PROP_CHARGE_NOW,
--	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
--	POWER_SUPPLY_PROP_CYCLE_COUNT,
--	POWER_SUPPLY_PROP_ENERGY_NOW,
--	POWER_SUPPLY_PROP_POWER_AVG,
--	POWER_SUPPLY_PROP_HEALTH,
--	POWER_SUPPLY_PROP_MANUFACTURER,
--};
--
- static enum power_supply_property bq27510g3_battery_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_PRESENT,
-@@ -783,10 +663,7 @@ static struct {
- 	BQ27XXX_PROP(BQ27000, bq27000_battery_props),
- 	BQ27XXX_PROP(BQ27010, bq27010_battery_props),
- 	BQ27XXX_PROP(BQ2750X, bq2750x_battery_props),
--	BQ27XXX_PROP(BQ2751X, bq2751x_battery_props),
- 	BQ27XXX_PROP(BQ27500, bq27500_battery_props),
--	BQ27XXX_PROP(BQ27510G1, bq27510g1_battery_props),
--	BQ27XXX_PROP(BQ27510G2, bq27510g2_battery_props),
- 	BQ27XXX_PROP(BQ27510G3, bq27510g3_battery_props),
- 	BQ27XXX_PROP(BQ27520G1, bq27520g1_battery_props),
- 	BQ27XXX_PROP(BQ27520G2, bq27520g2_battery_props),
-@@ -802,11 +679,11 @@ static enum bq27xxx_chip bq27xxx_chips[] = {
- 	[BQ27000]   = BQ27000,
- 	[BQ27010]   = BQ27010,
- 	[BQ2750X]   = BQ2750X,
--	[BQ2751X]   = BQ2751X,
--	[BQ2752X]   = BQ2751X,
-+	[BQ2751X]   = BQ27510G3,
-+	[BQ2752X]   = BQ27510G3,
- 	[BQ27500]   = BQ27500,
--	[BQ27510G1] = BQ27510G1,
--	[BQ27510G2] = BQ27510G2,
-+	[BQ27510G1] = BQ27500,
-+	[BQ27510G2] = BQ27500,
- 	[BQ27510G3] = BQ27510G3,
- 	[BQ27520G1] = BQ27520G1,
- 	[BQ27520G2] = BQ27520G2,
-@@ -1565,10 +1442,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+ static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
  {
- 	switch (di->chip) {
- 	case BQ2750X:
--	case BQ2751X:
- 	case BQ27500:
--	case BQ27510G1:
--	case BQ27510G2:
- 	case BQ27510G3:
- 	case BQ27520G1:
- 	case BQ27520G2:
+ 	struct bq27xxx_device_info *di;
+@@ -1035,8 +1030,10 @@ static void bq27xxx_battery_update_dm_block(struct bq27xxx_device_info *di,
+ 		return;
+ 	}
+ 
+-	if (!bq27xxx_dt_battery) {
+-		dev_warn(di->dev, "%s has %u; update to %u disallowed by use_monitored_battery=0\n",
++	if (!di->ram_chip) {
++		/* devicetree and NVM differ; defer to NVM. this may be wrong.   */
++		/* revert this or allow override via DT property or module param */
++		dev_warn(di->dev, "%s has %u; update to %u disallowed for flash/NVM\n",
+ 		         str, be16_to_cpup(prev), val);
+ 		return;
+ 	}
+@@ -1822,6 +1819,8 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+ 
+ 	bq27xxx_battery_dbg_regs_dupes(di);
+ 
++	di->ram_chip = di->chip == BQ27421 || di->chip == BQ27441 || di->chip == BQ27621;
++
+ 	di->unseal_key = bq27xxx_unseal_keys[di->chip];
+ 	di->dm_regs = bq27xxx_dm_regs[di->chip];
+ 	di->chip = bq27xxx_chips[di->chip];
 diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index 09e1656..7c0f3d3 100644
+index 7c0f3d3..4702b86 100644
 --- a/include/linux/power/bq27xxx_battery.h
 +++ b/include/linux/power/bq27xxx_battery.h
-@@ -7,11 +7,8 @@ enum bq27xxx_chip {
- 	BQ27000 = 1, /* bq27000, bq27200 */
- 	BQ27010, /* bq27010, bq27210 */
- 	BQ2750X, /* bq27500 deprecated alias */
--	BQ2751X, /* bq27510, bq27520 deprecated alias */
--	BQ27500, /* bq27500/1 */
--	BQ27510G1, /* bq27510G1 */
--	BQ27510G2, /* bq27510G2 */
--	BQ27510G3, /* bq27510G3 */
-+	BQ27500, /* bq27500/1, bq27510G1, bq27510G2 */
-+	BQ27510G3, /* bq27510G3, bq27510, bq27520 */
- 	BQ27520G1, /* bq27520G1 */
- 	BQ27520G2, /* bq27520G2 */
- 	BQ27520G3, /* bq27520G3 */
-@@ -23,7 +20,10 @@ enum bq27xxx_chip {
- 	BQ27MAX,
- 
- 	/* these map to above in bq27xxx_chips[] */
--	BQ2752X, /* deprecated alias */
-+	BQ2751X, /* bq27510 deprecated alias */
-+	BQ2752X, /* bq27520 deprecated alias */
-+	BQ27510G1,
-+	BQ27510G2,
- 	BQ27531,
- 	BQ27542,
- 	BQ27546,
+@@ -76,6 +76,7 @@ struct bq27xxx_device_info {
+ 	struct device *dev;
+ 	int id;
+ 	enum bq27xxx_chip chip;
++	bool ram_chip;
+ 	const char *name;
+ 	struct bq27xxx_dm_reg *dm_regs;
+ 	u32 unseal_key;
 -- 
 2.9.3
