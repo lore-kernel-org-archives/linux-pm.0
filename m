@@ -1,81 +1,51 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH v3 6/9] drivers: remove useless comment from
- base/arch_topology.c
-Date: Mon, 10 Apr 2017 15:02:14 +0100
-Message-ID: <20170410140214.GE30804@e106622-lin>
-References: <20170327131825.32134-1-juri.lelli@arm.com>
- <20170327131825.32134-7-juri.lelli@arm.com>
- <20170410135103.GR17774@n2100.armlinux.org.uk>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v12.6 0/11] bq27xxx_battery partial series
+Date: Mon, 10 Apr 2017 09:46:47 -0500
+Message-ID: <21b8db86-358f-f3ed-0e4c-e98fb8bed164@ti.com>
+References: <20170410050712.930-1-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170410135103.GR17774@n2100.armlinux.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:9435 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753749AbdDJOqu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 10:46:50 -0400
+In-Reply-To: <20170410050712.930-1-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org
 
-Hi,
-
-On 10/04/17 14:51, Russell King - ARM Linux wrote:
-> On Mon, Mar 27, 2017 at 02:18:22PM +0100, Juri Lelli wrote:
-> > Printing out an error message when we failed to get the cpu device is
-> > not helping anyone. Remove it.
+On 04/10/2017 12:07 AM, Liam Breck wrote:
+> Latest changes:
 > 
-> (1) the subject line talks about removing a "comment" but you're
->     actually removing an error printk
-> (2) I don't think it's "not helping anyone", although the description
->     above doesn't say _why_ - it's reporting the lack of a missing CPU
->     device that we expect to be present.  If it's not present, then
->     we're not going to end up with the cpu capacity attribute, and the
->     error message answers the "why is that sysfs file missing" question.
-
-That's the same I was thinking when I put the error message there in the
-first place. But, then Greg didn't seem to like it.
-
+> New patch to disable updates to flash/NVM. The purpose of this series has always
+> been to update NVM or RAM via DT. It was Sebastian's idea to site the properties
+> in a fixed/simple-battery node representing the battery to the fuel gauge (i.e.
+> your characterization that I "misused" the battery node is mistaken). I relent
+> only because I've switched from a NVM to RAM gauge. I expect others will succeed
+> in reverting this. Also, I have no need for a knob which lets userspace trigger
+> NVM update, so I leave that to others.
 > 
-> I think a better commit message is needed for this change.
+> Add module param use_monitored_battery to the power_supply_battery_info patch;
+> it is dropped in the above patch. Allowing users to ignore the DT properties
+> is the correct solution IMO.
+> 
+> Add Copyright notice
+> 
+> unseal() returns error on key==0
+> 
+> Skip reset on non-cfgupdate chips if not updated
+> 
+> Emit warning if no dm_regs table
+> 
+> Map orig ID to chip ID via bq27xxx_chips[]
+> 
+> Drop "prototypes" in enum comments
+> 
+> Rename dupes detector bq27xxx_battery_dbg_regs_dupes()
+> 
+> ^.^ ^.^ - We can has test?
 > 
 
-We could just skip this patch entirely. Or, of course, I can easily
-update the commit message.
-
-Which way is to be preferred?
-
-Thanks,
-
-- Juri
-
-> > 
-> > Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> > ---
-> >  drivers/base/arch_topology.c | 6 ++----
-> >  1 file changed, 2 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-> > index c33482121b7d..b24d9a2af2c5 100644
-> > --- a/drivers/base/arch_topology.c
-> > +++ b/drivers/base/arch_topology.c
-> > @@ -81,11 +81,9 @@ static int register_cpu_capacity_sysctl(void)
-> >  
-> >  	for_each_possible_cpu(i) {
-> >  		cpu = get_cpu_device(i);
-> > -		if (!cpu) {
-> > -			pr_err("%s: too early to get CPU%d device!\n",
-> > -			       __func__, i);
-> > +		if (!cpu)
-> >  			continue;
-> > -		}
-> > +
-> >  		device_create_file(cpu, &dev_attr_cpu_capacity);
-> >  	}
-> >  
-> > -- 
-> > 2.10.0
-> > 
-> 
-> -- 
-> RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-> FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-> according to speedtest.net.
+Can you post the whole series against v4.11-rc6?
