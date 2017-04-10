@@ -1,68 +1,64 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] CPUFREQ: Loongson2: drop set_cpus_allowed_ptr()
-Date: Mon, 10 Apr 2017 16:01:53 +0530
-Message-ID: <20170410103153.GK24555@vireshk-i7>
-References: <20170404154957.19678-1-bigeasy@linutronix.de>
+Subject: Re: [PATCH 07/38] Annotate hardware config module parameters in
+ drivers/cpufreq/
+Date: Mon, 10 Apr 2017 16:03:16 +0530
+Message-ID: <20170410103316.GL24555@vireshk-i7>
+References: <149141141298.29162.5612793122429261720.stgit@warthog.procyon.org.uk>
+ <149141146722.29162.13947802705058712127.stgit@warthog.procyon.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f54.google.com ([74.125.83.54]:33747 "EHLO
-        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752475AbdDJKc2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 06:32:28 -0400
-Received: by mail-pg0-f54.google.com with SMTP id x125so103825901pgb.0
-        for <linux-pm@vger.kernel.org>; Mon, 10 Apr 2017 03:32:28 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170404154957.19678-1-bigeasy@linutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <149141146722.29162.13947802705058712127.stgit@warthog.procyon.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: David Howells <dhowells@redhat.com>
+Cc: linux-kernel@vger.kernel.org, gnomes@lxorguk.ukuu.org.uk, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, gregkh@linuxfoundation.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>, wuzhangjin@gmail.com
-Cc: linux-mips@linux-mips.org, tglx@linutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On 04-04-17, 17:49, Sebastian Andrzej Siewior wrote:
-> It is pure mystery to me why we need to be on a specific CPU while
-> looking up a value in an array.
-> My best shot at this is that before commit d4019f0a92ab ("cpufreq: move
-> freq change notifications to cpufreq core") it was required to invoke
-> cpufreq_notify_transition() on a special CPU.
+On 05-04-17, 17:57, David Howells wrote:
+> When the kernel is running in secure boot mode, we lock down the kernel to
+> prevent userspace from modifying the running kernel image.  Whilst this
+> includes prohibiting access to things like /dev/mem, it must also prevent
+> access by means of configuring driver modules in such a way as to cause a
+> device to access or modify the kernel image.
 > 
-> Since it looks like a waste, remove it.
+> To this end, annotate module_param* statements that refer to hardware
+> configuration and indicate for future reference what type of parameter they
+> specify.  The parameter parser in the core sees this information and can
+> skip such parameters with an error message if the kernel is locked down.
+> The module initialisation then runs as normal, but just sees whatever the
+> default values for those parameters is.
 > 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Note that we do still need to do the module initialisation because some
+> drivers have viable defaults set in case parameters aren't specified and
+> some drivers support automatic configuration (e.g. PNP or PCI) in addition
+> to manually coded parameters.
+> 
+> This patch annotates drivers in drivers/cpufreq/.
+> 
+> Suggested-by: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Acked-by: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> cc: Viresh Kumar <viresh.kumar@linaro.org>
+> cc: linux-pm@vger.kernel.org
 > ---
->  drivers/cpufreq/loongson2_cpufreq.c | 7 -------
->  1 file changed, 7 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
-> index 6bbdac1065ff..9ac27b22476c 100644
-> --- a/drivers/cpufreq/loongson2_cpufreq.c
-> +++ b/drivers/cpufreq/loongson2_cpufreq.c
-> @@ -51,19 +51,12 @@ static int loongson2_cpu_freq_notifier(struct notifier_block *nb,
->  static int loongson2_cpufreq_target(struct cpufreq_policy *policy,
->  				     unsigned int index)
->  {
-> -	unsigned int cpu = policy->cpu;
-> -	cpumask_t cpus_allowed;
->  	unsigned int freq;
+>  drivers/cpufreq/speedstep-smi.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
+> index 770a9ae1999a..37b30071c220 100644
+> --- a/drivers/cpufreq/speedstep-smi.c
+> +++ b/drivers/cpufreq/speedstep-smi.c
+> @@ -378,7 +378,7 @@ static void __exit speedstep_exit(void)
+>  	cpufreq_unregister_driver(&speedstep_driver);
+>  }
 >  
-> -	cpus_allowed = current->cpus_allowed;
-> -	set_cpus_allowed_ptr(current, cpumask_of(cpu));
-> -
->  	freq =
->  	    ((cpu_clock_freq / 1000) *
->  	     loongson2_clockmod_table[index].driver_data) / 8;
+> -module_param(smi_port, int, 0444);
+> +module_param_hw(smi_port, int, ioport, 0444);
+>  module_param(smi_cmd,  int, 0444);
+>  module_param(smi_sig, uint, 0444);
 >  
-> -	set_cpus_allowed_ptr(current, &cpus_allowed);
-> -
->  	/* setting the cpu frequency */
->  	clk_set_rate(policy->clk, freq * 1000);
-
-It was Zhangjin who wrote the first version and he may be able to
-answer the questions we have. Anyway, it is safe to apply this patch
-right now.
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
