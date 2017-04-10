@@ -1,113 +1,73 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC/RFT][PATCH 1/2] cpufreq: schedutil: Use policy-dependent transition delays
-Date: Tue, 11 Apr 2017 00:20:41 +0200
-Message-ID: <71055380.gdY33coAtF@aspire.rjw.lan>
-References: <3498238.liCqOyIkGA@aspire.rjw.lan> <2407280.n9qVSLCrF5@aspire.rjw.lan>
+From: Ben Hutchings <ben@decadent.org.uk>
+Subject: [PATCH] cpupower: Fix turbo frequency reporting for pre-Sandy Bridge
+ cores
+Date: Tue, 11 Apr 2017 00:29:44 +0100
+Message-ID: <20170410232944.GA4152@decadent.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="L977DYpOHGH1NqKf"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50541 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751275AbdDJW0h (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 18:26:37 -0400
-In-Reply-To: <2407280.n9qVSLCrF5@aspire.rjw.lan>
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:49651 "EHLO
+        shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751738AbdDJX3q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 19:29:46 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Brendan Jackman <brendan.jackman@arm.com>
+To: Thomas Renninger <trenn@suse.com>
+Cc: linux-pm@vger.kernel.org, GSR <gsr.bugs@infernal-iceberg.com>, 859978@bugs.debian.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Make the schedutil governor take the initial (default) value of the
-rate_limit_us sysfs attribute from the (new) transition_delay_us
-policy parameter (to be set by the scaling driver).
+--L977DYpOHGH1NqKf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-That will allow scaling drivers to make schedutil use smaller default
-values of rate_limit_us and reduce the default average time interval
-between consecutive frequency changes.
+The switch that conditionally sets CPUPOWER_CAP_HAS_TURBO_RATIO and
+CPUPOWER_CAP_IS_SNB flags is missing a break, so all cores get both
+flags set and an assumed base clock of 100 MHz for turbo values.
 
-Make intel_pstate set transition_delay_us to 500.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reported-by: GSR <gsr.bugs@infernal-iceberg.com>
+Tested-by: GSR <gsr.bugs@infernal-iceberg.com>
+References: https://bugs.debian.org/859978
+Fixes: 8fb2e440b223 ("cpupower: Show Intel turbo ratio support via ...")
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
+ tools/power/cpupower/utils/helpers/cpuid.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-This is a replacement for https://patchwork.kernel.org/patch/9671831/
+diff --git a/tools/power/cpupower/utils/helpers/cpuid.c b/tools/power/cpupower/utils/helpers/cpuid.c
+index 93b0aa74ca03..39c2c7d067bb 100644
+--- a/tools/power/cpupower/utils/helpers/cpuid.c
++++ b/tools/power/cpupower/utils/helpers/cpuid.c
+@@ -156,6 +156,7 @@ int get_cpu_info(unsigned int cpu, struct cpupower_cpu_info *cpu_info)
+ 					 */
+ 			case 0x2C:	/* Westmere EP - Gulftown */
+ 				cpu_info->caps |= CPUPOWER_CAP_HAS_TURBO_RATIO;
++				break;
+ 			case 0x2A:	/* SNB */
+ 			case 0x2D:	/* SNB Xeon */
+ 			case 0x3A:	/* IVB */
 
----
- drivers/cpufreq/intel_pstate.c   |    2 ++
- include/linux/cpufreq.h          |    7 +++++++
- kernel/sched/cpufreq_schedutil.c |   15 ++++++++++-----
- 3 files changed, 19 insertions(+), 5 deletions(-)
+--L977DYpOHGH1NqKf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Index: linux-pm/include/linux/cpufreq.h
-===================================================================
---- linux-pm.orig/include/linux/cpufreq.h
-+++ linux-pm/include/linux/cpufreq.h
-@@ -120,6 +120,13 @@ struct cpufreq_policy {
- 	bool			fast_switch_possible;
- 	bool			fast_switch_enabled;
- 
-+	/*
-+	 * Preferred average time interval between consecutive invocations of
-+	 * the driver to set the frequency for this policy.  To be set by the
-+	 * scaling driver (0, which is the default, means no preference).
-+	 */
-+	unsigned int		transition_delay_us;
-+
- 	 /* Cached frequency lookup from cpufreq_driver_resolve_freq. */
- 	unsigned int cached_target_freq;
- 	int cached_resolved_idx;
-Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-===================================================================
---- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-+++ linux-pm/kernel/sched/cpufreq_schedutil.c
-@@ -491,7 +491,6 @@ static int sugov_init(struct cpufreq_pol
- {
- 	struct sugov_policy *sg_policy;
- 	struct sugov_tunables *tunables;
--	unsigned int lat;
- 	int ret = 0;
- 
- 	/* State should be equivalent to EXIT */
-@@ -530,10 +529,16 @@ static int sugov_init(struct cpufreq_pol
- 		goto stop_kthread;
- 	}
- 
--	tunables->rate_limit_us = LATENCY_MULTIPLIER;
--	lat = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
--	if (lat)
--		tunables->rate_limit_us *= lat;
-+	if (policy->transition_delay_us) {
-+		tunables->rate_limit_us = policy->transition_delay_us;
-+	} else {
-+		unsigned int lat;
-+
-+		tunables->rate_limit_us = LATENCY_MULTIPLIER;
-+		lat = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
-+		if (lat)
-+			tunables->rate_limit_us *= lat;
-+	}
- 
- 	policy->governor_data = sg_policy;
- 	sg_policy->tunables = tunables;
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -41,6 +41,7 @@
- #define INTEL_PSTATE_HWP_SAMPLING_INTERVAL	(50 * NSEC_PER_MSEC)
- 
- #define INTEL_CPUFREQ_TRANSITION_LATENCY	20000
-+#define INTEL_CPUFREQ_TRANSITION_DELAY		500
- 
- #ifdef CONFIG_ACPI
- #include <acpi/processor.h>
-@@ -2237,6 +2238,7 @@ static int intel_cpufreq_cpu_init(struct
- 		return ret;
- 
- 	policy->cpuinfo.transition_latency = INTEL_CPUFREQ_TRANSITION_LATENCY;
-+	policy->transition_delay_us = INTEL_CPUFREQ_TRANSITION_DELAY;
- 	/* This reflects the intel_pstate_get_cpu_pstates() setting. */
- 	policy->cur = policy->cpuinfo.min_freq;
- 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIVAwUBWOwVaOe/yOyVhhEJAQr2dxAAkN0P5xBktyoTkkcItHkVsF0KqQCpfHpT
+xUMOE9fkdRrooyqq9Up8uqag/g7pgyniCfY+qs2wRLR3yS40o7mU1Wo0xrBXQFZO
+6ftnqJlGqOG4F8SV0ZfQGt/0FlbWSEjwqlf1FBlmRC2JT9Y5HQyEUwzGtot5Y0dU
+sf0O1RfzDJ8kocN0RnCRiEL0Uobh5FhKNOWmL9I3QrjlbfEscO/RmTDh/7iN4JVz
+f8cmCkk+/Uy6LseJRRKJ6Pw9GJagTioNsTh1uPkBiSq8RU2oEE6mCr9zi6tVwpn7
+dc9MSxwIZZSZC+b50CzlgjVBpEqQY18fpMngP5mkjdFN0rjP0e1eJURldZW0uP0S
+OrwxRRcD4BukO2gaoeWEiwO0SHgtA0SF4oM2atXUKBiqvFhaq5TVsxN1GH51cby3
+8bN8hF7sXvFvI8ZjX+0Ihw0ZHEIRnzHc6Rpw0gQ6jA7C4RV/juQB7f1ZFTxlQdl2
+y39QW4CDg1vv1bCU5uhPSpV8fXCMtdQD1Zxhkeuj6mMO4yxGZjr4OboxP1SUENW/
+/j6b/vJKA2yGjf5Hvv1cl7VFu/rPHRE6DCSYI3EdJUvaV2Giur15yZ3ZuC5ODc67
+JOQul3DgXTIIGbD7zP4riyKpXalJUixc/376UYDZIIgEROw6/KuviBmgtrnVhmSS
+GTjq/GW5Ftg=
+=YmIB
+-----END PGP SIGNATURE-----
+
+--L977DYpOHGH1NqKf--
