@@ -1,82 +1,193 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC PATCH 2/4] PM / Domains: Add support for explicit control of
- PM domains
-Date: Mon, 10 Apr 2017 20:48:38 +0100
-Message-ID: <578a6dfc-226f-adf0-5405-279e116a821d@nvidia.com>
-References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
- <1490710443-27425-3-git-send-email-jonathanh@nvidia.com>
- <edbd9d3a-d978-6f64-b1aa-3b1ea226a8bd@codeaurora.org>
- <3135e238-48a3-3693-bb59-63bf2a6d8d0e@nvidia.com>
- <673fbd2f-3fcb-453b-be84-668ce659abb4@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister
+ duplicate ACPI battery supply
+Date: Mon, 10 Apr 2017 22:01:19 +0200
+Message-ID: <CAJZ5v0i0pZwBvd1WFYxGh9grbDyRkYWoLY7VSn3+mbLZdmQnxw@mail.gmail.com>
+References: <20170316161601.32267-1-hdegoede@redhat.com> <20170316161601.32267-4-hdegoede@redhat.com>
+ <6382698.NuYXpb6L7h@aspire.rjw.lan> <0ed23626-b6b2-a42e-2a1d-762c8c833f7b@redhat.com>
+ <CAJZ5v0h466y6hBy_-12AEgcpAUXEA7cZkNwXZwvsHnjWtoqFeg@mail.gmail.com>
+ <eb52c4b4-fc3c-b11b-edef-a35c6bb0d82d@redhat.com> <CAJZ5v0i7TN+iJLR_SeaCrpKJ13g1_bQ-G54cugAF9Dm4=pifAg@mail.gmail.com>
+ <0c1cc4fc-d127-54d1-334b-9a569354d2a3@redhat.com> <c62e0707-7415-9473-98cb-3741c4f258ff@redhat.com>
+ <cb6ff75e-3ee8-fa34-82c2-ff1338c0048e@redhat.com> <c937143c-f112-7d49-dc11-1577d987b309@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <673fbd2f-3fcb-453b-be84-668ce659abb4@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, geert@linux-m68k.org
-Cc: stanimir.varbanov@linaro.org, sboyd@codeaurora.org, Marek Szyprowski <m.szyprowski@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <c937143c-f112-7d49-dc11-1577d987b309@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-On 10/04/17 11:02, Rajendra Nayak wrote:
-> 
-> 
-> On 04/10/2017 01:54 PM, Jon Hunter wrote:
+On Mon, Apr 10, 2017 at 8:13 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
+>
+>
+> On 10-04-17 09:31, Hans de Goede wrote:
 >>
->> On 10/04/17 05:09, Rajendra Nayak wrote:
->>> Hey Jon,
+>> Hi,
+>>
+>> On 07-04-17 09:18, Hans de Goede wrote:
 >>>
->>> On 03/28/2017 07:44 PM, Jon Hunter wrote:
->>>> The current generic PM domain framework (GenDP) only allows a single
->>>> PM domain to be associated with a given device. There are several
->>>> use-cases for various system-on-chip devices where it is necessary for
->>>> a PM domain consumer to control more than one PM domain where the PM
->>>> domains:
->>>> i).  Do not conform to a parent-child relationship so are not nested
->>>> ii). May not be powered on and off at the same time so need independent
->>>>      control.
+>>> Hi,
+>>>
+>>> On 31-03-17 11:57, Hans de Goede wrote:
 >>>>
->>>> To support the above, add new APIs for GenPD to allow consumers to get,
->>>> power-on, power-off and put PM domains so that they can be explicitly
->>>> controlled by the consumer.
+>>>> Hi,
+>>>>
+>>>> On 31-03-17 11:11, Rafael J. Wysocki wrote:
+>>>>>
+>>>>> On Fri, Mar 31, 2017 at 11:08 AM, Hans de Goede <hdegoede@redhat.com>
+>>>>> wrote:
+>>>>>>
+>>>>>> Hi,
+>>>>>>
+>>>>>> On 31-03-17 11:05, Rafael J. Wysocki wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>> On Fri, Mar 31, 2017 at 11:01 AM, Hans de Goede <hdegoede@redhat.com>
+>>>>>>> wrote:
+>>>>>>>
+>>>>>>> [cut]
+>>>>>>>
+>>>>>>>>>> --- a/drivers/power/supply/axp288_fuel_gauge.c
+>>>>>>>>>> +++ b/drivers/power/supply/axp288_fuel_gauge.c
+>>>>>>>>>> @@ -26,6 +26,7 @@
+>>>>>>>>>>  #include <linux/mfd/axp20x.h>
+>>>>>>>>>>  #include <linux/platform_device.h>
+>>>>>>>>>>  #include <linux/power_supply.h>
+>>>>>>>>>> +#include <linux/power/acpi.h>
+>>>>>>>>>>  #include <linux/iio/consumer.h>
+>>>>>>>>>>  #include <linux/debugfs.h>
+>>>>>>>>>>  #include <linux/seq_file.h>
+>>>>>>>>>> @@ -754,6 +755,8 @@ static int axp288_fuel_gauge_probe(struct
+>>>>>>>>>> platform_device *pdev)
+>>>>>>>>>>                 return ret;
+>>>>>>>>>>         }
+>>>>>>>>>>
+>>>>>>>>>> +       acpi_battery_unregister();
+>>>>>>>>>> +
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> What if the ACPI battery driver is loaded after this has been
+>>>>>>>>> called
+>>>>>>>>> already?
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> The module exports that symbol so it must be loaded already.
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> But then it may be unloaded manually and loaded again, may it not?
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> Only if you first unload axp288_fuel_gauge.ko otherwise it will
+>>>>>> have a refcount > 0.
+>>>>>
+>>>>>
+>>>>> OK
+>>>>>
+>>>>> Anyway, I'd prefer blacklists in the battery and ac drivers to be
+>>>>> honest.
+>>>>
+>>>>
+>>>> As I explained in my reply to the discussion around the first patch that
+>>>> is somewhat hard to do and requires encoding knowledge in those drivers
+>>>> which really does not belong there:
+>>>>
+>>>> "The problem is that Intel re-uses HIDs between generations and
+>>>> for the Whiskey Cove PMIC we want to not use the ACPI battery
+>>>> and ac drivers on Cherry Trail (where they are known to be
+>>>> broken) but things are different on Apollo Lake. Yet both
+>>>> use the same HID for their companion Whiskey Cove PMIC even
+>>>> though they are 2 completely different revisions of the PMIC
+>>>> (e.g. one uses i2c the other does not).
+>>>>
+>>>> The 2 native drivers have code to detect which revision they
+>>>> are dealing with and exit with -ENODEV if it is not the
+>>>> revision they were written for, but this means that simple
+>>>> HID blacklisting will not work. So IMHO the decision to
+>>>> unregister the  ACPI battery / ac interface really belongs
+>>>> in the native driver as that has all the nitty gritty detail
+>>>> needed to make that decision."
 >>>
->>> thanks for working on this RFC.
 >>>
->>> []..
->>>   
->>>> +/**
->>>> + * pm_genpd_get - Get a generic I/O PM domain by name
->>>> + * @name: Name of the PM domain.
->>>> + *
->>>> + * Look-ups a PM domain by name. If found, increment the device
->>>> + * count for PM domain to ensure that the PM domain cannot be
->>>> + * removed, increment the suspended count so that it can still
->>>> + * be turned off (when not in-use) and return a pointer to its
->>>> + * generic_pm_domain structure. If not found return ERR_PTR().
->>>> + */
->>>> +struct generic_pm_domain *pm_genpd_get(const char *name)
->>>> +{
->>>> +	struct generic_pm_domain *gpd, *genpd = ERR_PTR(-EEXIST);
->>>> +
->>>> +	if (!name)
->>>> +		return ERR_PTR(-EINVAL);
->>>> +
->>>> +	mutex_lock(&gpd_list_lock);
->>>> +	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
->>>> +		if (!strcmp(gpd->name, name)) {
-> 
-> Also looking up the powerdomain this way means the consumers need
-> to know the _exact_ name with which the providers have registered
-> the powerdomains?
+>>> So thinking more about this, esp. after receiving a bug report
+>>> from a user getting ACPI errors because of Linux not implementing
+>>> the proprietary undocumented BMOP opregion before the ACPI battery
+>>> driver gets unregistered by the native one, I thing we do indeed
+>>> need to go with a blacklist.
+>>>
+>>> This means also being able to match by _HRV, as Some HIDs are
+>>> re-used for different hardware between Bay Trail / Cherry Trail /
+>>> Broxton with just a bump of _HRV.
+>>>
+>>> I'm currently working on respinning my
+>>> "acpi: utils: Add new acpi_dev_present helper" to address the
+>>> review comments on it. I'm going to give it an optional hrv
+>>> function argument for this use, so as to not having to implement
+>>> hrv checking code in both ac.c and battery.c .
+>>
+>>
+>> So a quick copy paste from another thread, the black-list approach
+>> causes regressions even before hitting -next and seeing any
+>> substantial testing, so we're back to adding unregister functions
+>> and calling those from native PMIC power_supply drivers when the
+>> native power_supply has been successfully registered.
+>>
+>> Some Bay Trail / Cherry Trail users are running kernels build
+>> from my personal tree to get early access to various fixes
+>> in there and I got a regression report on the DELL 5855, where
+>> the blacklisting of the ACPI battery driver if INT33F4 is
+>> present caused the battery monitoring to stop working, that
+>> devices has an INT33F4 node with _STA returning 15 yet it
+>> is not using an axp288 PMIC at all, I'm still gathering more
+>> info, but I believe atm that Dell simply disabled the i2c
+>> controller to which the axp288 would be connected if present
+>> and left the other bits of the DTSD unmodified.
+>>
+>> One option which comes to mind would be to only count devices
+>> as present if all their deps are met, but that will only
+>> work if the blacklist check is done after all other drivers
+>> have loaded which is not how things work.
+>>
+>> So I believe that my earlier attempts at fixing the double
+>> power_supply registration by unregistering the ACPI one when
+>> the native one has successfully loaded is better. That guarantees
+>> regressions like this one will not happen, because the ACPI
+>> power_supply does not get unregistered until the native one
+>> has loaded.
+>
+>
+> Ok scrap that, I've some more info and the INT33F4 node on
+> the Dell 5855 is returning 0 from _STA and the blacklist is
+> causing problems on that machine for other reason, it could
+> be the user was using an older version with the uninitialized
+> .cls match info problem, I've asked the user to test the latest
+> version.
+>
+> So assuming that does work, we are good to go with the blacklist
+> approach (which seems to be the solution everyone prefers),
+> sorry about the noise.
 
-Yes, this provides a means for someone not using DT to lookup a PM
-domain. How else would you do it?
+OK, but there's one more possibility to consider.
 
-Patch 3/4 allows you to use DT instead, which I imagine anyone using DT
-would use.
+Instead of unregistering the ACPI battery (or AC) driver from the
+platform device driver superseding it, you could clear the
+match_driver flag for the ACPI companion device and call
+device_release_driver() on it, like acpi_bus_trim().  Then (because
+the match_driver flag is unset) the driver core will not try to attach
+the driver to the thing again - until the next invocation of
+acpi_bus_attach() on it, which I think is a bug, because there seems
+to be a flags.visited check missing in there (I need to go back and
+recall why it is not there).
 
-Jon
+Arguably, that would be a more lightweight way of getting what you
+want without using a blacklist.
 
--- 
-nvpublic
+Thanks,
+Rafael
