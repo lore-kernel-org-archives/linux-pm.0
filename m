@@ -1,49 +1,213 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] PM / OPP: Use - instead of @ for DT entries
-Date: Mon, 10 Apr 2017 12:18:51 +0530
-Message-ID: <20170410064851.GC24555@vireshk-i7>
-References: <5ce1fbbc7cd37a6cfe54e93eeca311a7a52093ff.1491801395.git.viresh.kumar@linaro.org>
- <20170410062258.GA24555@vireshk-i7>
- <CAK7LNAR=+k6iuqUPUNLW=EHUuOw4fBr4SbEtP-jnSyrsiEydgg@mail.gmail.com>
- <20170410063239.GB24555@vireshk-i7>
- <CAJKOXPe_+Y+9ZLE7Jymqc5nULzo+qM4cCMFg2-cV_YnpCFkRCA@mail.gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v4 1/4] ACPI: utils: Add new acpi_dev_present helper
+Date: Mon, 10 Apr 2017 09:23:34 +0200
+Message-ID: <2f0397ec-1092-5805-8515-dac350ea6ae4@redhat.com>
+References: <20170408214830.17650-1-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAJKOXPe_+Y+9ZLE7Jymqc5nULzo+qM4cCMFg2-cV_YnpCFkRCA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel@vger.>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170408214830.17650-1-hdegoede@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 10-04-17, 08:45, Krzysztof Kozlowski wrote:
-> Yes, keeping both make most sense, I think.
-> 
-> Anyway, I found now the original report thread of Masahiro and I see
-> Mark's response about using '-'. In that case I am fine with this. I
-> would prefer to take only the exynos part (separated to ARMv7 and
-> ARMv8) through my tree but I already sent a pull request so I am fine
-> with this going directly to arm-soc.
+Hi All,
 
-This may end up going via the PM tree.
+Self-nack for patches 3-4 in this series, it turns out that
+doing the global blacklist for the ACPI ac / battery is not a
+good idea.
 
-> I think you need to update also:
-> Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+Some Bay Trail / Cherry Trail users are running kernels build
+from my personal tree to get early access to various fixes
+in there and I got a regression report on the DELL 5855, where
+the blacklisting of the ACPI battery driver if INT33F4 is
+present caused the battery monitoring to stop working, that
+devices has an INT33F4 node with _STA returning 15 yet it
+is not using an axp288 PMIC at all, I'm still gathering more
+info, but I believe atm that Dell simply disabled the i2c
+controller to which the axp288 would be connected if present
+and left the other bits of the DTSD unmodified.
 
-Oops. I searched for opp@ and missed the complex ones. There are some
-DT files as well for TI which I missed. Will send a V2 with all that
-fixed.
+One option which comes to mind would be to only count devices
+as present if all their deps are met, but that will only
+work if the blacklist check is done after all other drivers
+have loaded which is not how things work.
 
-> With that change:
-> Reviewed-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> (and implied acked-by)
+So I believe that my earlier attempts at fixing the double
+power_supply registration by unregistering the ACPI one when
+the native one has successfully loaded is better. That guarantees
+regressions like this one will not happen, because the ACPI
+power_supply does not get unregistered until the native one
+has loaded.
 
-Thanks.
+Regards,
 
--- 
-viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Hans
+
+
+
+On Sat, Apr 08, 2017 at 11:48:27PM +0200, Hans de Goede wrote:
+> acpi_dev_found just iterates over all ACPI-ids and sees if one matches.
+> This means that it will return true for devices which are in the dsdt
+> but disabled (their _STA method returns 0).
+>
+> For some drivers it is useful to be able to check if a certain HID
+> is not only present in the namespace, but also actually present as in
+> acpi_device_is_present() will return true for the device. For example
+> because if a certain device is present then the driver will want to use
+> an extcon or IIO adc channel provided by that device.
+>
+> This commit adds a new acpi_dev_present helper which drivers can use
+> to this end.
+>
+> Like acpi_dev_found, acpi_dev_present take a HID as argument, but
+> it also has 2 extra optional arguments to only check for an ACPI
+> device with a specific UID and/or HRV value. This makes it more
+> generic and allows it to replace custom code doing similar checks
+> in several places.
+>
+> Arguably acpi_dev_present is what acpi_dev_found should have been, but
+> there are too many users to just change acpi_dev_found without the risk
+> of breaking something.
+>
+> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Cc: Lukas Wunner <lukas@wunner.de>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+> Changes in v2:
+> -Switch to using bus_find_device() to avoid "Traversing the namespace
+>  over and over"
+> -Add optional (may be NULL / -1) uid and hrv arguments, this will
+>  allow this new function to replace the custom code for this in
+>  drivers/firmware/efi/dev-path-parser.c as well as in
+>  sound/soc/intel/common/sst-match-acpi.c and will allow it to be
+>  used to implement blacklists to avoid loading the ACPI ac / battery
+>  driver on systems which have a PMIC / charger acpi device with a
+>  native driver which offers a better (often working vs not working)
+>  user experience
+> -Dropped Mika's reviewd by as this is almost a total rewrite
+> Changes in v3:
+> -memset the entire acpi_dev_present_info struct, this fixes
+>  acpi_device_id.cls not getting cleared
+> Changes in v4:
+> -Use empty initializer to zero the acpi_dev_present_info struct
+> ---
+>  drivers/acpi/utils.c    | 71 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/acpi/acpi_bus.h |  1 +
+>  include/linux/acpi.h    |  5 ++++
+>  3 files changed, 77 insertions(+)
+>
+> diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
+> index 22c0995..ecd86a9 100644
+> --- a/drivers/acpi/utils.c
+> +++ b/drivers/acpi/utils.c
+> @@ -736,6 +736,77 @@ bool acpi_dev_found(const char *hid)
+>  }
+>  EXPORT_SYMBOL(acpi_dev_found);
+>
+> +struct acpi_dev_present_info {
+> +	struct acpi_device_id hid[2];
+> +	const char *uid;
+> +	int hrv;
+> +};
+> +
+> +static int acpi_dev_present_cb(struct device *dev, void *data)
+> +{
+> +	struct acpi_device *adev = to_acpi_device(dev);
+> +	struct acpi_dev_present_info *match = data;
+> +	unsigned long long hrv;
+> +	acpi_status status;
+> +
+> +	if (acpi_match_device_ids(adev, match->hid))
+> +		return 0;
+> +
+> +	if (match->uid && adev->pnp.unique_id &&
+> +	    strcmp(adev->pnp.unique_id, match->uid))
+> +		return 0;
+> +
+> +	if (match->uid && !adev->pnp.unique_id &&
+> +	    strcmp("0", match->uid))
+> +		return 0;
+> +
+> +	if (match->hrv == -1)
+> +		return 1;
+> +
+> +	status = acpi_evaluate_integer(adev->handle, "_HRV", NULL, &hrv);
+> +	if (ACPI_FAILURE(status))
+> +		return 0;
+> +
+> +	return hrv == match->hrv;
+> +}
+> +
+> +/**
+> + * acpi_dev_present - Detect that a given ACPI device is present
+> + * @hid: Hardware ID of the device.
+> + * @uid: Unique ID of the device, pass "0" for devices without a _UID,
+> + *       pass NULL to not check _UID
+> + * @hrv: Hardware Revision of the device, pass -1 to not check _HRV
+> + *
+> + * Return %true if a matching device was present at the moment of invocation.
+> + * Note that if the device is pluggable, it may since have disappeared.
+> + *
+> + * Note that unlike acpi_dev_found() this function checks the status
+> + * of the device so for devices which are present in the dsdt, but
+> + * which are disabled (their _STA callback returns 0) this function
+> + * will return false.
+> + *
+> + * For this function to work, acpi_bus_scan() must have been executed
+> + * which happens in the subsys_initcall() subsection. Hence, do not
+> + * call from a subsys_initcall() or earlier (use acpi_get_devices()
+> + * instead). Calling from module_init() is fine (which is synonymous
+> + * with device_initcall()).
+> + */
+> +bool acpi_dev_present(const char *hid, const char *uid, int hrv)
+> +{
+> +	struct acpi_dev_present_info match = {};
+> +	struct device *dev;
+> +
+> +	strlcpy(match.hid[0].id, hid, sizeof(match.hid[0].id));
+> +	match.uid = uid;
+> +	match.hrv = hrv;
+> +
+> +	dev = bus_find_device(&acpi_bus_type, NULL, &match,
+> +			      acpi_dev_present_cb);
+> +
+> +	return dev ? true : false;
+> +}
+> +EXPORT_SYMBOL(acpi_dev_present);
+> +
+>  /*
+>   * acpi_backlight= handling, this is done here rather then in video_detect.c
+>   * because __setup cannot be used in modules.
+> diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+> index ef0ae8a..64498d5 100644
+> --- a/include/acpi/acpi_bus.h
+> +++ b/include/acpi/acpi_bus.h
+> @@ -88,6 +88,7 @@ acpi_evaluate_dsm_typed(acpi_handle handle, const u8 *uuid, u64 rev, u64 func,
+>  	}
+>
+>  bool acpi_dev_found(const char *hid);
+> +bool acpi_dev_present(const char *hid, const char *uid, int hrv);
+>
+>  #ifdef CONFIG_ACPI
+>
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> index 9b05886..e5dd0f1 100644
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -611,6 +611,11 @@ static inline bool acpi_dev_found(const char *hid)
+>  	return false;
+>  }
+>
+> +static inline bool acpi_dev_present(const char *hid, const char *uid, int hrv)
+> +{
+> +	return false;
+> +}
+> +
+>  static inline bool is_acpi_node(struct fwnode_handle *fwnode)
+>  {
+>  	return false;
+> --
+> 2.9.3
