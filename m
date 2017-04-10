@@ -1,66 +1,55 @@
-From: sathyanarayanan.kuppuswamy@linux.intel.com
-Subject: [PATCH v1 4/7] mfd: intel_soc_pmic_bxtwc: remove second level irq for gpio device
-Date: Mon, 10 Apr 2017 11:52:26 -0700
-Message-ID: <50fd2e28a661a0b62f7d270a511a354d56d19bda.1491848776.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-References: <b8e952de94ed1902b922224de11f0814371b08b0.1491848776.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b8e952de94ed1902b922224de11f0814371b08b0.1491848776.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, lee.jones@linaro.org, andy@infradead.org, hdegoede@redhat.com
-Cc: linux-gpio@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sathyaosid@gmail.com, Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+Subject: Re: [PATCH v2 03/10] x86: assembly, use SYM_FUNC_END for functions
+Date: Mon, 10 Apr 2017 14:35:12 -0500
+Message-ID: <20170410193512.d67vefxedoockybg@treble>
+References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
+ <20170320123222.15453-1-jslaby@suse.cz>
+ <20170320123222.15453-3-jslaby@suse.cz>
+ <20170322142610.bo5c6wzlbqnxrgt3@treble>
+ <e4f7197c-559e-0dc2-c4e4-e369bf503cbb@suse.cz>
+ <b7800998-2a60-b967-10fc-482ebd6fadf0@suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:53874 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751656AbdDJTfQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 10 Apr 2017 15:35:16 -0400
+Content-Disposition: inline
+In-Reply-To: <b7800998-2a60-b967-10fc-482ebd6fadf0@suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org
 
-From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+On Mon, Apr 10, 2017 at 01:23:46PM +0200, Jiri Slaby wrote:
+> On 03/22/2017, 04:44 PM, Jiri Slaby wrote:
+> > On 03/22/2017, 03:26 PM, Josh Poimboeuf wrote:
+> >> On Mon, Mar 20, 2017 at 01:32:15PM +0100, Jiri Slaby wrote:
+> >>> Somewhere END was used to end a function, elsewhere, nothing was used.
+> >>> So unify it and mark them all by SYM_FUNC_END.
+> >>>
+> >>> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> >>
+> >> For me these patches would be easier to review if the SYM_FUNC_START and
+> >> SYM_FUNC_END pairs for a given function are done in the same patch.
+> > 
+> > This patchset was intended to make everything paired with minimum
+> > changes. I certainly can change also counter-elements of each
+> > added/changed one if you prefer.
+> 
+> So do really you want me to use the new macros while I am
+> adding/changing the counter-macro? Is there anything else blocking the
+> merge of the patches?
 
-Currently all PMIC GPIO domain irqs are consumed by the same
-device(bxt_wcove_gpio), so there is no need to export them as
-separate interrupts. We can just export only the first level
-GPIO irq(BXTWC_GPIO_LVL1_IRQ) as an irq resource and let the
-GPIO device driver(bxt_wcove_gpio) handle the GPIO sub domain
-irqs based on status value of GPIO level2 interrupt status
-register. Also, just using only the first level irq will eliminate
-the bug involved in requesting only the second level irq and not
-explicitly enable the first level irq. For more info on this
-issue please read the details at,
+The code should be in a mergeable state after each patch.  If only
+patches 1-3 were merged, the code would be in an inconsistent state,
+with some functions having confusing ENTRY/SYM_FUNC_END pairs.  That
+complicates git history and also makes it harder to review each patch.
 
-https://lkml.org/lkml/2017/2/27/148
+It would be cleaner to separate things out.  First, convert ENTRY/END
+functions to use ENDPROC, which is a minor bug fix.  Then they can be
+converted to the new SYM_FUNC_START/END macros in a separate patch.
 
-Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
----
- drivers/mfd/intel_soc_pmic_bxtwc.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
-
-diff --git a/drivers/mfd/intel_soc_pmic_bxtwc.c b/drivers/mfd/intel_soc_pmic_bxtwc.c
-index c08d514..dc8af1d 100644
---- a/drivers/mfd/intel_soc_pmic_bxtwc.c
-+++ b/drivers/mfd/intel_soc_pmic_bxtwc.c
-@@ -88,8 +88,6 @@ enum bxtwc_irqs_level2 {
- 	BXTWC_USBC_IRQ,
- 	BXTWC_CHGR0_IRQ,
- 	BXTWC_CHGR1_IRQ,
--	BXTWC_GPIO0_IRQ,
--	BXTWC_GPIO1_IRQ,
- 	BXTWC_CRIT_IRQ,
- };
- 
-@@ -115,8 +113,6 @@ static const struct regmap_irq bxtwc_regmap_irqs_level2[] = {
- 	REGMAP_IRQ_REG(BXTWC_USBC_IRQ, 2, BIT(5)),
- 	REGMAP_IRQ_REG(BXTWC_CHGR0_IRQ, 2, 0x1f),
- 	REGMAP_IRQ_REG(BXTWC_CHGR1_IRQ, 3, 0x1f),
--	REGMAP_IRQ_REG(BXTWC_GPIO0_IRQ, 4, 0xff),
--	REGMAP_IRQ_REG(BXTWC_GPIO1_IRQ, 5, 0x3f),
- 	REGMAP_IRQ_REG(BXTWC_CRIT_IRQ, 6, 0x03),
- };
- 
-@@ -152,8 +148,7 @@ static struct regmap_irq_chip bxtwc_regmap_irq_chip_tmu = {
- };
- 
- static struct resource gpio_resources[] = {
--	DEFINE_RES_IRQ_NAMED(BXTWC_GPIO0_IRQ, "GPIO0"),
--	DEFINE_RES_IRQ_NAMED(BXTWC_GPIO1_IRQ, "GPIO1"),
-+	DEFINE_RES_IRQ_NAMED(BXTWC_GPIO_LVL1_IRQ, "GPIO"),
- };
- 
- static struct resource adc_resources[] = {
 -- 
-2.7.4
+Josh
