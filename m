@@ -1,23 +1,125 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v4 1/4] ACPI: utils: Add new acpi_dev_present helper
-Date: Mon, 10 Apr 2017 09:23:34 +0200
-Message-ID: <2f0397ec-1092-5805-8515-dac350ea6ae4@redhat.com>
-References: <20170408214830.17650-1-hdegoede@redhat.com>
+Subject: Re: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister
+ duplicate ACPI battery supply
+Date: Mon, 10 Apr 2017 09:31:32 +0200
+Message-ID: <cb6ff75e-3ee8-fa34-82c2-ff1338c0048e@redhat.com>
+References: <20170316161601.32267-1-hdegoede@redhat.com>
+ <20170316161601.32267-4-hdegoede@redhat.com>
+ <6382698.NuYXpb6L7h@aspire.rjw.lan>
+ <0ed23626-b6b2-a42e-2a1d-762c8c833f7b@redhat.com>
+ <CAJZ5v0h466y6hBy_-12AEgcpAUXEA7cZkNwXZwvsHnjWtoqFeg@mail.gmail.com>
+ <eb52c4b4-fc3c-b11b-edef-a35c6bb0d82d@redhat.com>
+ <CAJZ5v0i7TN+iJLR_SeaCrpKJ13g1_bQ-G54cugAF9Dm4=pifAg@mail.gmail.com>
+ <0c1cc4fc-d127-54d1-334b-9a569354d2a3@redhat.com>
+ <c62e0707-7415-9473-98cb-3741c4f258ff@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170408214830.17650-1-hdegoede@redhat.com>
+In-Reply-To: <c62e0707-7415-9473-98cb-3741c4f258ff@redhat.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi All,
+Hi,
 
-Self-nack for patches 3-4 in this series, it turns out that
-doing the global blacklist for the ACPI ac / battery is not a
-good idea.
+On 07-04-17 09:18, Hans de Goede wrote:
+> Hi,
+>
+> On 31-03-17 11:57, Hans de Goede wrote:
+>> Hi,
+>>
+>> On 31-03-17 11:11, Rafael J. Wysocki wrote:
+>>> On Fri, Mar 31, 2017 at 11:08 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>>>> Hi,
+>>>>
+>>>> On 31-03-17 11:05, Rafael J. Wysocki wrote:
+>>>>>
+>>>>> On Fri, Mar 31, 2017 at 11:01 AM, Hans de Goede <hdegoede@redhat.com>
+>>>>> wrote:
+>>>>>
+>>>>> [cut]
+>>>>>
+>>>>>>>> --- a/drivers/power/supply/axp288_fuel_gauge.c
+>>>>>>>> +++ b/drivers/power/supply/axp288_fuel_gauge.c
+>>>>>>>> @@ -26,6 +26,7 @@
+>>>>>>>>  #include <linux/mfd/axp20x.h>
+>>>>>>>>  #include <linux/platform_device.h>
+>>>>>>>>  #include <linux/power_supply.h>
+>>>>>>>> +#include <linux/power/acpi.h>
+>>>>>>>>  #include <linux/iio/consumer.h>
+>>>>>>>>  #include <linux/debugfs.h>
+>>>>>>>>  #include <linux/seq_file.h>
+>>>>>>>> @@ -754,6 +755,8 @@ static int axp288_fuel_gauge_probe(struct
+>>>>>>>> platform_device *pdev)
+>>>>>>>>                 return ret;
+>>>>>>>>         }
+>>>>>>>>
+>>>>>>>> +       acpi_battery_unregister();
+>>>>>>>> +
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> What if the ACPI battery driver is loaded after this has been called
+>>>>>>> already?
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> The module exports that symbol so it must be loaded already.
+>>>>>
+>>>>>
+>>>>> But then it may be unloaded manually and loaded again, may it not?
+>>>>
+>>>>
+>>>> Only if you first unload axp288_fuel_gauge.ko otherwise it will
+>>>> have a refcount > 0.
+>>>
+>>> OK
+>>>
+>>> Anyway, I'd prefer blacklists in the battery and ac drivers to be honest.
+>>
+>> As I explained in my reply to the discussion around the first patch that
+>> is somewhat hard to do and requires encoding knowledge in those drivers
+>> which really does not belong there:
+>>
+>> "The problem is that Intel re-uses HIDs between generations and
+>> for the Whiskey Cove PMIC we want to not use the ACPI battery
+>> and ac drivers on Cherry Trail (where they are known to be
+>> broken) but things are different on Apollo Lake. Yet both
+>> use the same HID for their companion Whiskey Cove PMIC even
+>> though they are 2 completely different revisions of the PMIC
+>> (e.g. one uses i2c the other does not).
+>>
+>> The 2 native drivers have code to detect which revision they
+>> are dealing with and exit with -ENODEV if it is not the
+>> revision they were written for, but this means that simple
+>> HID blacklisting will not work. So IMHO the decision to
+>> unregister the  ACPI battery / ac interface really belongs
+>> in the native driver as that has all the nitty gritty detail
+>> needed to make that decision."
+>
+> So thinking more about this, esp. after receiving a bug report
+> from a user getting ACPI errors because of Linux not implementing
+> the proprietary undocumented BMOP opregion before the ACPI battery
+> driver gets unregistered by the native one, I thing we do indeed
+> need to go with a blacklist.
+>
+> This means also being able to match by _HRV, as Some HIDs are
+> re-used for different hardware between Bay Trail / Cherry Trail /
+> Broxton with just a bump of _HRV.
+>
+> I'm currently working on respinning my
+> "acpi: utils: Add new acpi_dev_present helper" to address the
+> review comments on it. I'm going to give it an optional hrv
+> function argument for this use, so as to not having to implement
+> hrv checking code in both ac.c and battery.c .
+
+So a quick copy paste from another thread, the black-list approach
+causes regressions even before hitting -next and seeing any
+substantial testing, so we're back to adding unregister functions
+and calling those from native PMIC power_supply drivers when the
+native power_supply has been successfully registered.
 
 Some Bay Trail / Cherry Trail users are running kernels build
 from my personal tree to get early access to various fixes
@@ -45,169 +147,3 @@ has loaded.
 Regards,
 
 Hans
-
-
-
-On Sat, Apr 08, 2017 at 11:48:27PM +0200, Hans de Goede wrote:
-> acpi_dev_found just iterates over all ACPI-ids and sees if one matches.
-> This means that it will return true for devices which are in the dsdt
-> but disabled (their _STA method returns 0).
->
-> For some drivers it is useful to be able to check if a certain HID
-> is not only present in the namespace, but also actually present as in
-> acpi_device_is_present() will return true for the device. For example
-> because if a certain device is present then the driver will want to use
-> an extcon or IIO adc channel provided by that device.
->
-> This commit adds a new acpi_dev_present helper which drivers can use
-> to this end.
->
-> Like acpi_dev_found, acpi_dev_present take a HID as argument, but
-> it also has 2 extra optional arguments to only check for an ACPI
-> device with a specific UID and/or HRV value. This makes it more
-> generic and allows it to replace custom code doing similar checks
-> in several places.
->
-> Arguably acpi_dev_present is what acpi_dev_found should have been, but
-> there are too many users to just change acpi_dev_found without the risk
-> of breaking something.
->
-> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Cc: Lukas Wunner <lukas@wunner.de>
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
-> Changes in v2:
-> -Switch to using bus_find_device() to avoid "Traversing the namespace
->  over and over"
-> -Add optional (may be NULL / -1) uid and hrv arguments, this will
->  allow this new function to replace the custom code for this in
->  drivers/firmware/efi/dev-path-parser.c as well as in
->  sound/soc/intel/common/sst-match-acpi.c and will allow it to be
->  used to implement blacklists to avoid loading the ACPI ac / battery
->  driver on systems which have a PMIC / charger acpi device with a
->  native driver which offers a better (often working vs not working)
->  user experience
-> -Dropped Mika's reviewd by as this is almost a total rewrite
-> Changes in v3:
-> -memset the entire acpi_dev_present_info struct, this fixes
->  acpi_device_id.cls not getting cleared
-> Changes in v4:
-> -Use empty initializer to zero the acpi_dev_present_info struct
-> ---
->  drivers/acpi/utils.c    | 71 +++++++++++++++++++++++++++++++++++++++++++++++++
->  include/acpi/acpi_bus.h |  1 +
->  include/linux/acpi.h    |  5 ++++
->  3 files changed, 77 insertions(+)
->
-> diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
-> index 22c0995..ecd86a9 100644
-> --- a/drivers/acpi/utils.c
-> +++ b/drivers/acpi/utils.c
-> @@ -736,6 +736,77 @@ bool acpi_dev_found(const char *hid)
->  }
->  EXPORT_SYMBOL(acpi_dev_found);
->
-> +struct acpi_dev_present_info {
-> +	struct acpi_device_id hid[2];
-> +	const char *uid;
-> +	int hrv;
-> +};
-> +
-> +static int acpi_dev_present_cb(struct device *dev, void *data)
-> +{
-> +	struct acpi_device *adev = to_acpi_device(dev);
-> +	struct acpi_dev_present_info *match = data;
-> +	unsigned long long hrv;
-> +	acpi_status status;
-> +
-> +	if (acpi_match_device_ids(adev, match->hid))
-> +		return 0;
-> +
-> +	if (match->uid && adev->pnp.unique_id &&
-> +	    strcmp(adev->pnp.unique_id, match->uid))
-> +		return 0;
-> +
-> +	if (match->uid && !adev->pnp.unique_id &&
-> +	    strcmp("0", match->uid))
-> +		return 0;
-> +
-> +	if (match->hrv == -1)
-> +		return 1;
-> +
-> +	status = acpi_evaluate_integer(adev->handle, "_HRV", NULL, &hrv);
-> +	if (ACPI_FAILURE(status))
-> +		return 0;
-> +
-> +	return hrv == match->hrv;
-> +}
-> +
-> +/**
-> + * acpi_dev_present - Detect that a given ACPI device is present
-> + * @hid: Hardware ID of the device.
-> + * @uid: Unique ID of the device, pass "0" for devices without a _UID,
-> + *       pass NULL to not check _UID
-> + * @hrv: Hardware Revision of the device, pass -1 to not check _HRV
-> + *
-> + * Return %true if a matching device was present at the moment of invocation.
-> + * Note that if the device is pluggable, it may since have disappeared.
-> + *
-> + * Note that unlike acpi_dev_found() this function checks the status
-> + * of the device so for devices which are present in the dsdt, but
-> + * which are disabled (their _STA callback returns 0) this function
-> + * will return false.
-> + *
-> + * For this function to work, acpi_bus_scan() must have been executed
-> + * which happens in the subsys_initcall() subsection. Hence, do not
-> + * call from a subsys_initcall() or earlier (use acpi_get_devices()
-> + * instead). Calling from module_init() is fine (which is synonymous
-> + * with device_initcall()).
-> + */
-> +bool acpi_dev_present(const char *hid, const char *uid, int hrv)
-> +{
-> +	struct acpi_dev_present_info match = {};
-> +	struct device *dev;
-> +
-> +	strlcpy(match.hid[0].id, hid, sizeof(match.hid[0].id));
-> +	match.uid = uid;
-> +	match.hrv = hrv;
-> +
-> +	dev = bus_find_device(&acpi_bus_type, NULL, &match,
-> +			      acpi_dev_present_cb);
-> +
-> +	return dev ? true : false;
-> +}
-> +EXPORT_SYMBOL(acpi_dev_present);
-> +
->  /*
->   * acpi_backlight= handling, this is done here rather then in video_detect.c
->   * because __setup cannot be used in modules.
-> diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-> index ef0ae8a..64498d5 100644
-> --- a/include/acpi/acpi_bus.h
-> +++ b/include/acpi/acpi_bus.h
-> @@ -88,6 +88,7 @@ acpi_evaluate_dsm_typed(acpi_handle handle, const u8 *uuid, u64 rev, u64 func,
->  	}
->
->  bool acpi_dev_found(const char *hid);
-> +bool acpi_dev_present(const char *hid, const char *uid, int hrv);
->
->  #ifdef CONFIG_ACPI
->
-> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-> index 9b05886..e5dd0f1 100644
-> --- a/include/linux/acpi.h
-> +++ b/include/linux/acpi.h
-> @@ -611,6 +611,11 @@ static inline bool acpi_dev_found(const char *hid)
->  	return false;
->  }
->
-> +static inline bool acpi_dev_present(const char *hid, const char *uid, int hrv)
-> +{
-> +	return false;
-> +}
-> +
->  static inline bool is_acpi_node(struct fwnode_handle *fwnode)
->  {
->  	return false;
-> --
-> 2.9.3
