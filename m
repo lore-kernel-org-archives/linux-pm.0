@@ -1,49 +1,83 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: imx6q: Fix error handling code
-Date: Mon, 10 Apr 2017 10:59:12 +0530
-Message-ID: <20170410052912.GD4377@vireshk-i7>
-References: <20170409073352.8227-1-christophe.jaillet@wanadoo.fr>
+From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH] PM / OPP: Use - instead of @ for DT entries
+Date: Mon, 10 Apr 2017 08:10:45 +0200
+Message-ID: <20170410061045.2jjk5aw75s6am7xv@lukather>
+References: <5ce1fbbc7cd37a6cfe54e93eeca311a7a52093ff.1491801395.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f41.google.com ([74.125.83.41]:34837 "EHLO
-        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751249AbdDJF3P (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 01:29:15 -0400
-Received: by mail-pg0-f41.google.com with SMTP id 81so100016860pgh.2
-        for <linux-pm@vger.kernel.org>; Sun, 09 Apr 2017 22:29:15 -0700 (PDT)
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="dvwcogjz63nwnatx"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170409073352.8227-1-christophe.jaillet@wanadoo.fr>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <5ce1fbbc7cd37a6cfe54e93eeca311a7a52093ff.1491801395.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.orgVincent Guittot <v>
 List-Id: linux-pm@vger.kernel.org
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-On 09-04-17, 09:33, Christophe JAILLET wrote:
-> According to the previous error handling code, it is likely that
-> 'goto out_free_opp' is expected here in order to avoid a memory leak in
-> error handling path.
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+
+--dvwcogjz63nwnatx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Apr 10, 2017 at 10:46:37AM +0530, Viresh Kumar wrote:
+> Compiling the DT file with W=3D1, DTC warns like follows:
+>=20
+> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
+> unit name, but no reg property
+>=20
+> Fix this by replacing '@' with '-' as the OPP nodes will never have a
+> "reg" property.
+>=20
+> Reported-by: Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 > ---
->  drivers/cpufreq/imx6q-cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index 7719b02e04f5..b14117dcfff5 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -255,7 +255,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
->  	if (ret) {
->  		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
-> -		goto put_reg;
-> +		goto out_free_opp;
->  	}
->  
->  	/* Make imx6_soc_volt array's size same as arm opp number */
+>  .../devicetree/bindings/devfreq/exynos-bus.txt     | 46 +++++++--------
+>  Documentation/devicetree/bindings/opp/opp.txt      | 38 ++++++-------
+>  arch/arm/boot/dts/exynos3250.dtsi                  | 46 +++++++--------
+>  arch/arm/boot/dts/exynos4210.dtsi                  | 32 +++++------
+>  arch/arm/boot/dts/exynos4412-prime.dtsi            |  4 +-
+>  arch/arm/boot/dts/exynos4412.dtsi                  | 66 +++++++++++-----=
+------
+>  arch/arm/boot/dts/exynos5420.dtsi                  | 40 ++++++-------
+>  arch/arm/boot/dts/exynos5800.dtsi                  | 56 +++++++++-------=
+--
+>  arch/arm/boot/dts/pxa25x.dtsi                      |  8 +--
+>  arch/arm/boot/dts/pxa27x.dtsi                      | 14 ++---
+>  arch/arm/boot/dts/sun8i-a33.dtsi                   |  8 +--
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+For sunxi,
+Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 
--- 
-viresh
+Maxime
+
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
+
+--dvwcogjz63nwnatx
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJY6yHhAAoJEBx+YmzsjxAgQyAP/2E0WtvSilSrUz9Jj+gapYhN
+Htvn9T0ibs7adniSriv3V5sCAQuCCUgS2wTx1B6Yv+wOQIE3TmO1UGJtpYfXcQ70
+WGHpZ02tYg6uaEBnW84zYnvAoR2Z8drbTYDj4Jd5Hhdqo4y0GXVlHr581EkUieAw
+mmZ9TlGzD4linhqtn6tMMgcLHNRLm8QdcM9aUjWWC5rB8Cymhmkautu8w49yai/d
++njJQWojDkkjU/1ESjJ5VVQWizT+cyOpKo5YS3HRHJJVEhBuJFE+WzipTMJVdZ2P
+FGNimu1mYS4g+m+onFJoqySLwC4i3Sx4aMAo1rzbmjcKFXL2tT8S6sspZtdoOh/P
+CHPsMMKveI70erQEqp+lYzOCNa2EawWrUy2qasObSE/8PX2B2Gef3n7Qk3THDZO+
+Ui6ExnkNXc/nE2kd3QR42atjxANRi3tuFTWjnfTAAQIjKOWCbGVmyTrflS2gFt2b
+ortp7Uu6g1AUR5u+kxvg/hrwg8oJkkRZYREIKWPxA5jzsxMo3iVxS75Vx0hu8++w
+/8IkyqzGPZMu57SgKEL0fMwcRNtFraUhuUMvxhOPgEyBqTCOrKKeEuPRTXltiwjk
+hXP2iCij/IEHTomXzRSdvPaHbfef5RJxOOfuFKcsvctLYq4muIpNTnWv8GtPkhr8
+a5jcCeQIyn+hGX2vtLg6
+=fllD
+-----END PGP SIGNATURE-----
+
+--dvwcogjz63nwnatx--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
