@@ -1,51 +1,90 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] PM / OPP: Use - instead of @ for DT entries
-Date: Mon, 10 Apr 2017 12:02:39 +0530
-Message-ID: <20170410063239.GB24555@vireshk-i7>
-References: <5ce1fbbc7cd37a6cfe54e93eeca311a7a52093ff.1491801395.git.viresh.kumar@linaro.org>
- <20170410062258.GA24555@vireshk-i7>
- <CAK7LNAR=+k6iuqUPUNLW=EHUuOw4fBr4SbEtP-jnSyrsiEydgg@mail.gmail.com>
+From: Joel Fernandes <joelaf@google.com>
+Subject: Re: [RFC/RFT][PATCH 2/2] cpufreq: schedutil: Utilization aggregation
+Date: Sun, 9 Apr 2017 23:39:31 -0700
+Message-ID: <CAJWu+orhpeirhB1u-KTOBjWTQoTEJdStR3BP14WxkB=RZP49sg@mail.gmail.com>
+References: <3498238.liCqOyIkGA@aspire.rjw.lan> <2242635.g1ACnTm5vK@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAK7LNAR=+k6iuqUPUNLW=EHUuOw4fBr4SbEtP-jnSyrsiEydgg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2242635.g1ACnTm5vK@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 10-04-17, 15:30, Masahiro Yamada wrote:
-> 2017-04-10 15:22 GMT+09:00 Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>:
-> > On 10-04-17, 10:46, Viresh Kumar wrote:
-> >> Compiling the DT file with W=1, DTC warns like follows:
-> >>
-> >> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
-> >> unit name, but no reg property
-> >>
-> >> Fix this by replacing '@' with '-' as the OPP nodes will never have a
-> >> "reg" property.
-> >>
-> >> Reported-by: Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
-> >> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> >
-> > + Reported-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> >
-> > --
-> > viresh
-> 
-> 
-> Given that this had already been reported one year before,
-> the reported-by credit should be given to Krzysztof.
-> 
-> Please drop my Reported-by.
+Hi Rafael,
 
-I don't think we need to drop any of you. We can very well keep both
-:)
+On Sun, Apr 9, 2017 at 5:11 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Due to the limitation of the rate of frequency changes the schedutil
+> governor only estimates the CPU utilization entirely when it is about
+> to update the frequency for the corresponding cpufreq policy.  As a
+> result, the intermediate utilization values are discarded by it,
+> but that is not appropriate in general (like, for example, when
+> tasks migrate from one CPU to another or exit, in which cases the
+> utilization measured by PELT may change abruptly between frequency
+> updates).
+>
+> For this reason, modify schedutil to estimate CPU utilization
+> completely whenever it is invoked for the given CPU and store the
+> maximum encountered value of it as input for subsequent new frequency
+> computations.  This way the new frequency is always based on the
+> maximum utilization value seen by the governor after the previous
+> frequency update which effectively prevents intermittent utilization
+> variations from causing it to be reduced unnecessarily.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  kernel/sched/cpufreq_schedutil.c |   90 +++++++++++++++++++++------------------
+>  1 file changed, 50 insertions(+), 40 deletions(-)
+>
+> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+> ===================================================================
+> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
+> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
+> @@ -57,7 +57,6 @@ struct sugov_cpu {
+>         unsigned long iowait_boost_max;
+>         u64 last_update;
+>
+> -       /* The fields below are only needed when sharing a policy. */
+>         unsigned long util;
+>         unsigned long max;
+>         unsigned int flags;
+> @@ -154,22 +153,30 @@ static unsigned int get_next_freq(struct
+>         return cpufreq_driver_resolve_freq(policy, freq);
+>  }
+>
+> -static void sugov_get_util(unsigned long *util, unsigned long *max)
+> +static void sugov_get_util(struct sugov_cpu *sg_cpu, unsigned int flags)
+>  {
+> +       unsigned long cfs_util, cfs_max;
+>         struct rq *rq = this_rq();
+> -       unsigned long cfs_max;
+>
+> -       cfs_max = arch_scale_cpu_capacity(NULL, smp_processor_id());
+> +       sg_cpu->flags |= flags & SCHED_CPUFREQ_RT_DL;
+> +       if (sg_cpu->flags & SCHED_CPUFREQ_RT_DL)
+> +               return;
+>
+> -       *util = min(rq->cfs.avg.util_avg, cfs_max);
+> -       *max = cfs_max;
+> +       cfs_max = arch_scale_cpu_capacity(NULL, smp_processor_id());
+> +       cfs_util = min(rq->cfs.avg.util_avg, cfs_max);
+> +       if (sg_cpu->util * cfs_max < sg_cpu->max * cfs_util) {
 
--- 
-viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Assuming all CPUs have equal compute capacity, doesn't this mean that
+sg_cpu->util is updated only if cfs_util > sg_cpu->util?
+
+Maybe I missed something, but wouldn't we want sg_cpu->util to be
+reduced as well when cfs_util reduces? Doesn't this condition
+basically discard all updates to sg_cpu->util that could have reduced
+it?
+
+> +               sg_cpu->util = cfs_util;
+> +               sg_cpu->max = cfs_max;
+> +       }
+>  }
+
+Thanks,
+Joel
