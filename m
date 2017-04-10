@@ -1,66 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Recommended notation for OPP to avoid DTC warnings
-Date: Mon, 10 Apr 2017 10:28:21 +0530
-Message-ID: <20170410045821.GB4377@vireshk-i7>
-References: <CAK7LNAQyc9=3d07-1upywYDk-AaRUGK4mJwAVduCuEJgnY1uFA@mail.gmail.com>
- <20170227104445.GE6795@leverpostej>
- <20170227105533.GA19417@vireshk-i7>
- <CAK7LNAQxyPChjjH4oL2HDhXXHxq6ujVR+S+4MocF-99rWDrwFQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAK7LNAQxyPChjjH4oL2HDhXXHxq6ujVR+S+4MocF-99rWDrwFQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v12.6 0/11] bq27xxx_battery partial series
+Date: Sun,  9 Apr 2017 22:07:05 -0700
+Message-ID: <20170410050712.930-1-liam@networkimprov.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:35772 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750885AbdDJFHF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 01:07:05 -0400
+Received: by mail-pg0-f65.google.com with SMTP id g2so24237501pge.2
+        for <linux-pm@vger.kernel.org>; Sun, 09 Apr 2017 22:07:05 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
 
-On 31-03-17, 11:59, Masahiro Yamada wrote:
-> Hi.
-> 
-> 2017-02-27 19:55 GMT+09:00 Viresh Kumar <viresh.kumar@linaro.org>:
-> > On 27-02-17, 10:44, Mark Rutland wrote:
-> >> On Sun, Feb 26, 2017 at 02:18:03PM +0900, Masahiro Yamada wrote:
-> >> > Hi.
-> >> >
-> >> >
-> >> > Decumentation/devicetree/bindings/opp/opp.txt
-> >> > takes examples like this:
-> >> >
-> >> >         opp@1000000000 {
-> >> >                 opp-hz = /bits/ 64 <1000000000>;
-> >> >                 opp-microvolt = <970000 975000 985000>;
-> >> >                 opp-microamp = <70000>;
-> >> >                 clock-latency-ns = <300000>;
-> >> >                 opp-suspend;
-> >> >         };
-> >>
-> >> > If we follow this notation and the device-tree is built with W=1,
-> >> > DTC warns like follows:
-> >> >
-> >> > Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
-> >> > unit name, but no reg property
-> >> >
-> >> > Is there a recommended notation to avoid it?
-> >> >
-> >> > Maybe, simply omit the "@" ?
-> >>
-> >> I think just s/@/-/ should be fine, e.g. call the above opp-1000000000.
-> >
-> > That's fine with me. I can send a patch to fix all existing users if we all
-> > agree for it.
-> >
-> > --
-> > viresh
-> 
-> 
-> Any progress on this?
-> 
-> Did we reach on agreement with s/@/-/  ?
+Latest changes:
 
-We can follow this as no one else objected. I will send a patch for existing
-entries and you can do it for the newer ones.
+New patch to disable updates to flash/NVM. The purpose of this series has always
+been to update NVM or RAM via DT. It was Sebastian's idea to site the properties
+in a fixed/simple-battery node representing the battery to the fuel gauge (i.e.
+your characterization that I "misused" the battery node is mistaken). I relent
+only because I've switched from a NVM to RAM gauge. I expect others will succeed
+in reverting this. Also, I have no need for a knob which lets userspace trigger
+NVM update, so I leave that to others.
 
--- 
-viresh
+Add module param use_monitored_battery to the power_supply_battery_info patch;
+it is dropped in the above patch. Allowing users to ignore the DT properties
+is the correct solution IMO.
+
+Add Copyright notice
+
+unseal() returns error on key==0
+
+Skip reset on non-cfgupdate chips if not updated
+
+Emit warning if no dm_regs table
+
+Map orig ID to chip ID via bq27xxx_chips[]
+
+Drop "prototypes" in enum comments
+
+Rename dupes detector bq27xxx_battery_dbg_regs_dupes()
+
+^.^ ^.^ - We can has test?
