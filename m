@@ -1,226 +1,60 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v4 1/4] ACPI: utils: Add new acpi_dev_present helper
-Date: Mon, 10 Apr 2017 20:24:50 +0200
-Message-ID: <a25d3ef0-2951-4b5e-112e-abec3ce75d75@redhat.com>
-References: <20170408214830.17650-1-hdegoede@redhat.com>
- <20170409081643.GB3911@wunner.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170409081643.GB3911@wunner.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
+From: sathyanarayanan.kuppuswamy@linux.intel.com
+Subject: [PATCH v1 1/7] mfd: intel_soc_pmic_bxtwc: fix TMU interrupt index
+Date: Mon, 10 Apr 2017 11:52:23 -0700
+Message-ID: <b8e952de94ed1902b922224de11f0814371b08b0.1491848776.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Return-path: <linux-gpio-owner@vger.kernel.org>
+Sender: linux-gpio-owner@vger.kernel.org
+To: gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, lee.jones@linaro.org, andy@infradead.org, hdegoede@redhat.com
+Cc: linux-gpio@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sathyaosid@gmail.com, Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 
-On 09-04-17 10:16, Lukas Wunner wrote:
-> On Sat, Apr 08, 2017 at 11:48:27PM +0200, Hans de Goede wrote:
->> acpi_dev_found just iterates over all ACPI-ids and sees if one matches.
->> This means that it will return true for devices which are in the dsdt
->> but disabled (their _STA method returns 0).
->>
->> For some drivers it is useful to be able to check if a certain HID
->> is not only present in the namespace, but also actually present as in
->> acpi_device_is_present() will return true for the device. For example
->> because if a certain device is present then the driver will want to use
->> an extcon or IIO adc channel provided by that device.
->>
->> This commit adds a new acpi_dev_present helper which drivers can use
->> to this end.
->>
->> Like acpi_dev_found, acpi_dev_present take a HID as argument, but
->> it also has 2 extra optional arguments to only check for an ACPI
->> device with a specific UID and/or HRV value. This makes it more
->> generic and allows it to replace custom code doing similar checks
->> in several places.
->>
->> Arguably acpi_dev_present is what acpi_dev_found should have been, but
->> there are too many users to just change acpi_dev_found without the risk
->> of breaking something.
->>
->> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
->> Cc: Lukas Wunner <lukas@wunner.de>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> ---
->> Changes in v2:
->> -Switch to using bus_find_device() to avoid "Traversing the namespace
->>  over and over"
->> -Add optional (may be NULL / -1) uid and hrv arguments, this will
->>  allow this new function to replace the custom code for this in
->>  drivers/firmware/efi/dev-path-parser.c as well as in
->>  sound/soc/intel/common/sst-match-acpi.c and will allow it to be
->>  used to implement blacklists to avoid loading the ACPI ac / battery
->>  driver on systems which have a PMIC / charger acpi device with a
->>  native driver which offers a better (often working vs not working)
->>  user experience
->> -Dropped Mika's reviewd by as this is almost a total rewrite
->> Changes in v3:
->> -memset the entire acpi_dev_present_info struct, this fixes
->>  acpi_device_id.cls not getting cleared
->> Changes in v4:
->> -Use empty initializer to zero the acpi_dev_present_info struct
->> ---
->>  drivers/acpi/utils.c    | 71 +++++++++++++++++++++++++++++++++++++++++++++++++
->>  include/acpi/acpi_bus.h |  1 +
->>  include/linux/acpi.h    |  5 ++++
->>  3 files changed, 77 insertions(+)
->>
->> diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
->> index 22c0995..ecd86a9 100644
->> --- a/drivers/acpi/utils.c
->> +++ b/drivers/acpi/utils.c
->> @@ -736,6 +736,77 @@ bool acpi_dev_found(const char *hid)
->>  }
->>  EXPORT_SYMBOL(acpi_dev_found);
->>
->> +struct acpi_dev_present_info {
->> +	struct acpi_device_id hid[2];
->> +	const char *uid;
->> +	int hrv;
->> +};
->
-> There's a (somewhat theoretical) issue on 32 bit arches with your choice
-> of int for hrv:  _HRV returns an "Integer (DWORD)" per the spec.  That's
-> 32 bit and clashes with your use of -1 to signify "don't care" if the
-> arch uses 32 bit to represent an int.
->
-> So you need to use a "signed long long" or "s64" here.
+TMU interrupts are registered as a separate interrupt chip, and
+hence it should start its interrupt index(BXTWC_TMU_IRQ) number
+from 0. But currently, BXTWC_TMU_IRQ is defined as part of enum
+bxtwc_irqs_level2 and its index value is 11. Since this index
+value is used when calculating .num_irqs of regmap_irq_chip_tmu,
+it incorrectly reports number of irqs as 12 instead of actual
+value of 1.
 
-Switched to s64 for v5.
+static const struct regmap_irq bxtwc_regmap_irqs_tmu[] = {
+	REGMAP_IRQ_REG(BXTWC_TMU_IRQ, 0, 0x06),
+};
 
->> +
->> +static int acpi_dev_present_cb(struct device *dev, void *data)
->> +{
->> +	struct acpi_device *adev = to_acpi_device(dev);
->> +	struct acpi_dev_present_info *match = data;
->> +	unsigned long long hrv;
->> +	acpi_status status;
->> +
->> +	if (acpi_match_device_ids(adev, match->hid))
->> +		return 0;
->> +
->> +	if (match->uid && adev->pnp.unique_id &&
->> +	    strcmp(adev->pnp.unique_id, match->uid))
->> +		return 0;
->> +
->> +	if (match->uid && !adev->pnp.unique_id &&
->> +	    strcmp("0", match->uid))
->> +		return 0;
->> +
->> +	if (match->hrv == -1)
->> +		return 1;
->> +
->> +	status = acpi_evaluate_integer(adev->handle, "_HRV", NULL, &hrv);
->> +	if (ACPI_FAILURE(status))
->> +		return 0;
->> +
->> +	return hrv == match->hrv;
->> +}
->> +
->> +/**
->> + * acpi_dev_present - Detect that a given ACPI device is present
->> + * @hid: Hardware ID of the device.
->> + * @uid: Unique ID of the device, pass "0" for devices without a _UID,
->> + *       pass NULL to not check _UID
->> + * @hrv: Hardware Revision of the device, pass -1 to not check _HRV
->> + *
->> + * Return %true if a matching device was present at the moment of invocation.
->> + * Note that if the device is pluggable, it may since have disappeared.
->> + *
->> + * Note that unlike acpi_dev_found() this function checks the status
->> + * of the device so for devices which are present in the dsdt, but
->                    ^
-> Minor nit:  I think readability improves if you start a new sentence or
-> insert a comma here.  Sorry, just my grammar OCD.
+static struct regmap_irq_chip bxtwc_regmap_irq_chip_tmu = {
+	.name = "bxtwc_irq_chip_tmu",
+	.status_base = BXTWC_TMUIRQ,
+	.mask_base = BXTWC_MTMUIRQ,
+	.irqs = bxtwc_regmap_irqs_tmu,
+	.num_irqs = ARRAY_SIZE(bxtwc_regmap_irqs_tmu),
+	.num_regs = 1,
+};
 
-Started a new sentence at "So for" for v5.
+This patch fixes this issue by creating new enum of tmu irqs and
+resetting its starting index to 0.
 
->
-> Otherwise,
-> Reviewed-by: Lukas Wunner <lukas@wunner.de>
+Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+---
+ drivers/mfd/intel_soc_pmic_bxtwc.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Thank you.
+diff --git a/drivers/mfd/intel_soc_pmic_bxtwc.c b/drivers/mfd/intel_soc_pmic_bxtwc.c
+index 699c8c7..bb18e20 100644
+--- a/drivers/mfd/intel_soc_pmic_bxtwc.c
++++ b/drivers/mfd/intel_soc_pmic_bxtwc.c
+@@ -94,7 +94,10 @@ enum bxtwc_irqs_level2 {
+ 	BXTWC_GPIO0_IRQ,
+ 	BXTWC_GPIO1_IRQ,
+ 	BXTWC_CRIT_IRQ,
+-	BXTWC_TMU_IRQ,
++};
++
++enum bxtwc_irqs_tmu {
++	BXTWC_TMU_IRQ = 0,
+ };
+ 
+ static const struct regmap_irq bxtwc_regmap_irqs[] = {
+-- 
+2.7.4
 
-> I'm clueless about ACPI battery or charging, so can't say anything about
-> the remainder of the series.
->
-> Note that the code in drivers/firmware/efi/dev-path-parser.c deliberately
-> increments the refcount of the device found and returns a pointer to it,
-> whereas acpi_dev_present() as introduced by this patch merely checks
-> presence and returns a bool.  So you won't be able to replace the code
-> in dev-path-parser.c with acpi_dev_present(), but I think that's
-> perfectly fine.
-
-Ah, bummer, would have been nice to be able to re-use the code.
-
-Regards,
-
-Hans
-
-
->
-> Thanks,
->
-> Lukas
->
->> + * which are disabled (their _STA callback returns 0) this function
->> + * will return false.
->> + *
->> + * For this function to work, acpi_bus_scan() must have been executed
->> + * which happens in the subsys_initcall() subsection. Hence, do not
->> + * call from a subsys_initcall() or earlier (use acpi_get_devices()
->> + * instead). Calling from module_init() is fine (which is synonymous
->> + * with device_initcall()).
->> + */
->> +bool acpi_dev_present(const char *hid, const char *uid, int hrv)
->> +{
->> +	struct acpi_dev_present_info match = {};
->> +	struct device *dev;
->> +
->> +	strlcpy(match.hid[0].id, hid, sizeof(match.hid[0].id));
->> +	match.uid = uid;
->> +	match.hrv = hrv;
->> +
->> +	dev = bus_find_device(&acpi_bus_type, NULL, &match,
->> +			      acpi_dev_present_cb);
->> +
->> +	return dev ? true : false;
->> +}
->> +EXPORT_SYMBOL(acpi_dev_present);
->> +
->>  /*
->>   * acpi_backlight= handling, this is done here rather then in video_detect.c
->>   * because __setup cannot be used in modules.
->> diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
->> index ef0ae8a..64498d5 100644
->> --- a/include/acpi/acpi_bus.h
->> +++ b/include/acpi/acpi_bus.h
->> @@ -88,6 +88,7 @@ acpi_evaluate_dsm_typed(acpi_handle handle, const u8 *uuid, u64 rev, u64 func,
->>  	}
->>
->>  bool acpi_dev_found(const char *hid);
->> +bool acpi_dev_present(const char *hid, const char *uid, int hrv);
->>
->>  #ifdef CONFIG_ACPI
->>
->> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
->> index 9b05886..e5dd0f1 100644
->> --- a/include/linux/acpi.h
->> +++ b/include/linux/acpi.h
->> @@ -611,6 +611,11 @@ static inline bool acpi_dev_found(const char *hid)
->>  	return false;
->>  }
->>
->> +static inline bool acpi_dev_present(const char *hid, const char *uid, int hrv)
->> +{
->> +	return false;
->> +}
->> +
->>  static inline bool is_acpi_node(struct fwnode_handle *fwnode)
->>  {
->>  	return false;
->> --
->> 2.9.3
