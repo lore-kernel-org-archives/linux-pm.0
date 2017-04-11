@@ -1,169 +1,35 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v5 2/4] power: bq24190_charger: Clean up extcon code
-Date: Tue, 11 Apr 2017 04:59:55 -0700
-Message-ID: <20170411115957.14253-3-liam@networkimprov.net>
-References: <20170411115957.14253-1-liam@networkimprov.net>
+Subject: [PATCH v5 0/4] BQ24190 charger fixes
+Date: Tue, 11 Apr 2017 04:59:53 -0700
+Message-ID: <20170411115957.14253-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:32966 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752134AbdDKMAC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Apr 2017 08:00:02 -0400
-Received: by mail-pg0-f66.google.com with SMTP id 79so29625887pgf.0
-        for <linux-pm@vger.kernel.org>; Tue, 11 Apr 2017 05:00:02 -0700 (PDT)
-In-Reply-To: <20170411115957.14253-1-liam@networkimprov.net>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:36227 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752134AbdDKMAA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Apr 2017 08:00:00 -0400
+Received: by mail-pf0-f194.google.com with SMTP id i5so10186411pfc.3
+        for <linux-pm@vger.kernel.org>; Tue, 11 Apr 2017 05:00:00 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>
+Cc: Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>
 
-From: Liam Breck <kernel@networkimprov.net>
+Hi Sebastian,
 
-Polishing and fixes for initial extcon patch.
+Here in one patchset are two patches I posted recently, and two more:
 
-Fixes: 4db249b6f3b4 ("power: supply: bq24190_charger: Use extcon to determine ilimit, 5v boost")
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Liam Breck <kernel@networkimprov.net>
----
- drivers/power/supply/bq24190_charger.c | 84 +++++++++++++++++++---------------
- 1 file changed, 46 insertions(+), 38 deletions(-)
+Patch 1 is a replacement (as agreed) for
+  "power: supply: bq24190_charger: Don't spam the logs on charger plug / unplug"
+Patch 2 fixes up Hans' extcon patch. If you would like me to squash it with his
+  original patch, let me know.
+Patch 3 (repost) fixes some issues with PM runtime error handling.
+Patch 4 fixes a nit in register_reset().
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index 64a48b9..69cd344 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -38,8 +38,9 @@
- #define BQ24190_REG_POC_WDT_RESET_SHIFT		6
- #define BQ24190_REG_POC_CHG_CONFIG_MASK		(BIT(5) | BIT(4))
- #define BQ24190_REG_POC_CHG_CONFIG_SHIFT	4
--#define BQ24190_REG_POC_CHG_CONFIG_CHARGE	1
--#define BQ24190_REG_POC_CHG_CONFIG_OTG		2
-+#define BQ24190_REG_POC_CHG_CONFIG_DISABLE		0x0
-+#define BQ24190_REG_POC_CHG_CONFIG_CHARGE		0x1
-+#define BQ24190_REG_POC_CHG_CONFIG_OTG			0x2
- #define BQ24190_REG_POC_SYS_MIN_MASK		(BIT(3) | BIT(2) | BIT(1))
- #define BQ24190_REG_POC_SYS_MIN_SHIFT		1
- #define BQ24190_REG_POC_BOOST_LIM_MASK		BIT(0)
-@@ -173,8 +174,9 @@ struct bq24190_dev_info {
-  */
- 
- /* REG00[2:0] (IINLIM) in uAh */
--static const int bq24190_iinlim_values[] = {
--	100000, 150000, 500000, 900000, 1200000, 1500000, 2000000, 3000000 };
-+static const int bq24190_isc_iinlim_values[] = {
-+	 100000,  150000,  500000,  900000, 1200000, 1500000, 2000000, 3000000
-+};
- 
- /* REG02[7:2] (ICHG) in uAh */
- static const int bq24190_ccc_ichg_values[] = {
-@@ -1298,16 +1300,18 @@ static void bq24190_extcon_work(struct work_struct *work)
- {
- 	struct bq24190_dev_info *bdi =
- 		container_of(work, struct bq24190_dev_info, extcon_work.work);
--	int ret, iinlim = 0;
-+	int error, iinlim = 0;
-+	u8 v;
- 
--	ret = pm_runtime_get_sync(bdi->dev);
--	if (ret < 0) {
--		dev_err(bdi->dev, "Error getting runtime-pm ref: %d\n", ret);
-+	error = pm_runtime_get_sync(bdi->dev);
-+	if (error < 0) {
-+		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-+		pm_runtime_put_noidle(bdi->dev);
- 		return;
- 	}
- 
--	if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_SDP) == 1)
--		iinlim = 500000;
-+	if      (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_SDP) == 1)
-+		iinlim =  500000;
- 	else if (extcon_get_state(bdi->extcon, EXTCON_CHG_USB_CDP) == 1 ||
- 		 extcon_get_state(bdi->extcon, EXTCON_CHG_USB_ACA) == 1)
- 		iinlim = 1500000;
-@@ -1315,33 +1319,28 @@ static void bq24190_extcon_work(struct work_struct *work)
- 		iinlim = 2000000;
- 
- 	if (iinlim) {
--		ret = bq24190_set_field_val(bdi, BQ24190_REG_ISC,
--				BQ24190_REG_ISC_IINLIM_MASK,
--				BQ24190_REG_ISC_IINLIM_SHIFT,
--				bq24190_iinlim_values,
--				ARRAY_SIZE(bq24190_iinlim_values),
--				iinlim);
--		if (ret)
--			dev_err(bdi->dev, "Can't set IINLIM: %d\n", ret);
-+		error = bq24190_set_field_val(bdi, BQ24190_REG_ISC,
-+					      BQ24190_REG_ISC_IINLIM_MASK,
-+					      BQ24190_REG_ISC_IINLIM_SHIFT,
-+					      bq24190_isc_iinlim_values,
-+					      ARRAY_SIZE(bq24190_isc_iinlim_values),
-+					      iinlim);
-+		if (error < 0)
-+			dev_err(bdi->dev, "Can't set IINLIM: %d\n", error);
- 	}
- 
--	/*
--	 * If no charger has been detected and host mode is requested, activate
--	 * the 5V boost converter, otherwise deactivate it.
--	 */
--	if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) == 1) {
--		ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
--					 BQ24190_REG_POC_CHG_CONFIG_MASK,
--					 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
--					 BQ24190_REG_POC_CHG_CONFIG_OTG);
--	} else {
--		ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
--					 BQ24190_REG_POC_CHG_CONFIG_MASK,
--					 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
--					 BQ24190_REG_POC_CHG_CONFIG_CHARGE);
--	}
--	if (ret)
--		dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", ret);
-+	/* if no charger found and in USB host mode, set OTG 5V boost, else normal */
-+	if (!iinlim && extcon_get_state(bdi->extcon, EXTCON_USB_HOST) == 1)
-+		v = BQ24190_REG_POC_CHG_CONFIG_OTG;
-+	else
-+		v = BQ24190_REG_POC_CHG_CONFIG_CHARGE;
-+
-+	error = bq24190_write_mask(bdi, BQ24190_REG_POC,
-+				   BQ24190_REG_POC_CHG_CONFIG_MASK,
-+				   BQ24190_REG_POC_CHG_CONFIG_SHIFT,
-+				   v);
-+	if (error < 0)
-+		dev_err(bdi->dev, "Can't set CHG_CONFIG: %d\n", error);
- 
- 	pm_runtime_mark_last_busy(bdi->dev);
- 	pm_runtime_put_autosuspend(bdi->dev);
-@@ -1432,8 +1431,15 @@ static int bq24190_probe(struct i2c_client *client,
- 	}
- 
- 	/*
--	 * The extcon-name property is purely an in kernel interface for
--	 * x86/ACPI use, DT platforms should get extcon via phandle.
-+	 * Devicetree platforms should get extcon via phandle (not yet supported).
-+	 * On ACPI platforms, extcon clients may invoke us with:
-+	 * struct property_entry pe[] =
-+	 *   { PROPERTY_ENTRY_STRING("extcon-name", client_name), ... };
-+	 * struct i2c_board_info bi =
-+	 *   { .type = "bq24190", .addr = 0x6b, .properties = pe, .irq = irq };
-+	 * struct i2c_adapter ad = { ... };
-+	 * i2c_add_adapter(&ad);
-+	 * i2c_new_device(&ad, &bi);
- 	 */
- 	if (device_property_read_string(dev, "extcon-name", &name) == 0) {
- 		bdi->extcon = extcon_get_extcon_dev(name);
-@@ -1498,8 +1504,10 @@ static int bq24190_probe(struct i2c_client *client,
- 		bdi->extcon_nb.notifier_call = bq24190_extcon_event;
- 		ret = devm_extcon_register_notifier(dev, bdi->extcon, -1,
- 						    &bdi->extcon_nb);
--		if (ret)
-+		if (ret) {
-+			dev_err(dev, "Can't register extcon\n");
- 			goto out5;
-+		}
- 
- 		/* Sync initial cable state */
- 		queue_delayed_work(system_wq, &bdi->extcon_work, 0);
--- 
-2.9.3
+Changed in v5:
+* move condition in extcon OTG boost code
+* document extcon client invocation of charger driver
+* udelay -> usleep_range in register_reset()
+
+Changes in v4:
+* fix definition of bq24190_reg_poc_chg_config_*
+* revert to if (device_property_read... == 0)
