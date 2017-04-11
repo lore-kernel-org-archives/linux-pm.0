@@ -1,50 +1,56 @@
-From: David Lechner <david@lechnology.com>
-Subject: Re: [PATCH] power: supply: sysfs: parse string as enum when writing
- property
-Date: Tue, 11 Apr 2017 11:38:40 -0500
-Message-ID: <f695eb57-d6b9-a1a6-a47f-347a5663478a@lechnology.com>
-References: <1491249177-8945-1-git-send-email-david@lechnology.com>
- <20170411161222.t23gsn4pvxofhnrh@earth>
+From: Mel Gorman <mgorman@techsingularity.net>
+Subject: Re: Performance of low-cpu utilisation benchmark regressed severely
+ since 4.6
+Date: Tue, 11 Apr 2017 17:42:15 +0100
+Message-ID: <20170411164214.tqcvxkqm6exd6ilw@techsingularity.net>
+References: <20170410084117.rjh3mtdx7hd2i5ze@techsingularity.net>
+ <CAJZ5v0jXGtZwx5m72fkFwjU6PTnv8uak+G4j1T9LK-kUgzr28Q@mail.gmail.com>
+ <004801d2b2da$0c65d2a0$253177e0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vern.gendns.com ([206.190.152.46]:53890 "EHLO vern.gendns.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751101AbdDKQil (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Apr 2017 12:38:41 -0400
-In-Reply-To: <20170411161222.t23gsn4pvxofhnrh@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-15
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <004801d2b2da$0c65d2a0$253177e0$@net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: 'Rafael Wysocki' <rafael.j.wysocki@intel.com>, =?iso-8859-15?Q?'J=F6rg?= Otte' <jrg.otte@gmail.com>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Rafael J. Wysocki'" <rafael@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 04/11/2017 11:12 AM, Sebastian Reichel wrote:
-> Hi,
->
-> On Mon, Apr 03, 2017 at 02:52:57PM -0500, David Lechner wrote:
->> This fixes the TODO to parse strings and convert them to enum values
->> when writing to a power_supply class property sysfs attribute.
->>
->> There is at least one driver that has a writable enum property that
->> previously could only be written as an integer, so a fallback to writing
->> enums as integers instead of strings is provided so we don't break existing
->> userspace programs.
->>
->> Signed-off-by: David Lechner <david@lechnology.com>
->>
->> ---
->>  drivers/power/supply/power_supply_sysfs.c | 124 ++++++++++++++++++++----------
->>  1 file changed, 85 insertions(+), 39 deletions(-)
->
-> drivers/power/supply/power_supply_sysfs.c: In function ‘power_supply_store_property’:
-> drivers/power/supply/power_supply_sysfs.c:138:9: error: implicit declaration of function ‘sysfs_match_string’ [-Werror=implicit-function-declaration]
+On Tue, Apr 11, 2017 at 08:41:09AM -0700, Doug Smythies wrote:
+> On 2017.04.11 03:03 Mel Gorman wrote:
+> >On Mon, Apr 10, 2017 at 10:51:38PM +0200, Rafael J. Wysocki wrote:
+> >> On Mon, Apr 10, 2017 at 10:41 AM, Mel Gorman wrote:
+> >>>
+> >>> It's far more obvious when looking at the git test suite and the length
+> >>> of time it takes to run. This is a shellscript and git intensive workload
+> >>> whose CPU utilisatiion is very low but is less sensitive to multiple
+> >>> factors than netperf and sockperf.
+> >> 
+> 
+> I would like to repeat your tests on my test computer (i7-2600K).
+> I am not familiar with, and have not been able to find,
+> "the git test suite" shellscript. Could you point me to it?
+> 
 
-This is something I found in linux-next. I did not realize it was new. 
-It looks like it is part of a patch series for USB-C connectors.[1]
+If you want to use git source directly do a checkout from
+https://github.com/git/git and build it. The core "benchmark" is make
+test and timing it.
 
-It greatly simplifies things, so I think we should wait for that patch 
-to land.
+The way I'm doing it is via mmtests so
 
+git clone https://github.com/gormanm/mmtests
+cd mmtests
+./run-mmtests --no-monitor --config configs/config-global-dhp__workload_shellscripts test-run-1
+cd work/log
+../../compare-kernels.sh | less
 
-[1]: https://patchwork.kernel.org/patch/9636485/
+and it'll generate a similar report to what I posted in this email
+thread. If you do multiple tests with different kernels then change the
+name of "test-run-1" to preserve the old data. compare-kernel.sh will
+compare whatever results you have.
+
+Thanks for taking a look.
+
+-- 
+Mel Gorman
+SUSE Labs
