@@ -1,81 +1,68 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: supply: lp8788: prevent out of bounds array access
-Date: Tue, 11 Apr 2017 16:18:57 +0200
-Message-ID: <20170411141857.ozxtxyftatg5i7ma@earth>
-References: <20170325160049.18943-1-giedrius.statkevicius@gmail.com>
+Subject: Re: [PATCH] power: supply: charger manager: refactor return
+ statements
+Date: Tue, 11 Apr 2017 16:28:29 +0200
+Message-ID: <20170411142829.ymplbmjbqswqxin5@earth>
+References: <20170329151357.1841-1-andi@etezian.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="oymh5lalbvi2qc6r"
+        protocol="application/pgp-signature"; boundary="ktahkoelamnsavcv"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:39612 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:42038 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751816AbdDKOTD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Apr 2017 10:19:03 -0400
+        id S1753304AbdDKO2e (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 11 Apr 2017 10:28:34 -0400
 Content-Disposition: inline
-In-Reply-To: <20170325160049.18943-1-giedrius.statkevicius@gmail.com>
+In-Reply-To: <20170329151357.1841-1-andi@etezian.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Giedrius =?utf-8?Q?Statkevi=C4=8Dius?= <giedrius.statkevicius@gmail.com>
-Cc: milo.kim@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andi Shyti <andi.shyti@gmail.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Jiri Kosina <trivial@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andi Shyti <andi@etezian.org>, Andi Shyti <andi.shyti@samsung.com>
 
 
---oymh5lalbvi2qc6r
-Content-Type: text/plain; charset=utf-8
+--ktahkoelamnsavcv
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sat, Mar 25, 2017 at 06:00:49PM +0200, Giedrius Statkevi=C4=8Dius wrote:
-> val might become 7 in which case stime[7] (array of length 7) would be
-> accessed during the scnprintf call later and that will cause issues.
-> Obviously, string concatenation is not intended here so just a comma needs
-> to be added to fix the issue.
+On Thu, Mar 30, 2017 at 12:13:57AM +0900, Andi Shyti wrote:
+> Some trivial improvements on the returning value of the
+> functions:
 >=20
-> Signed-off-by: Giedrius Statkevi=C4=8Dius <giedrius.statkevicius@gmail.co=
-m>
-> ---
->  drivers/power/supply/lp8788-charger.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  - remove unnecessary goto labels that just return, return
+>    immediately, instead.
 >=20
-> diff --git a/drivers/power/supply/lp8788-charger.c b/drivers/power/supply=
-/lp8788-charger.c
-> index 509e2b341bd6..677f7c40b25a 100644
-> --- a/drivers/power/supply/lp8788-charger.c
-> +++ b/drivers/power/supply/lp8788-charger.c
-> @@ -651,7 +651,7 @@ static ssize_t lp8788_show_eoc_time(struct device *de=
-v,
->  {
->  	struct lp8788_charger *pchg =3D dev_get_drvdata(dev);
->  	char *stime[] =3D { "400ms", "5min", "10min", "15min",
-> -			"20min", "25min", "30min" "No timeout" };
-> +			"20min", "25min", "30min", "No timeout" };
->  	u8 val;
-> =20
->  	lp8788_read_byte(pchg->lp, LP8788_CHG_EOC, &val);
+>  - do not initialize when not needed.
+>=20
+>  - return the value from the calling function that fails instead
+>    of politically choosing -EINVAL.
+>=20
+> Signed-off-by: Andi Shyti <andi@etezian.org>
 
-Thanks, queued with Fixes Tag.
+Thanks, queued.
 
 -- Sebastian
 
---oymh5lalbvi2qc6r
+--ktahkoelamnsavcv
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljs5cwACgkQ2O7X88g7
-+pr97hAAmP8xtj7lgo4WvqI2ObKv+m9TIw967VAnZFEoqCzAjVKPpbAOp+0zWhMA
-j/0NMJPzlw41rguWcCahIp7ME/74ObIozJBuFxZVmB6tRP+i3haWKS+QPgmyp3At
-Ar4DMosumcQ+DAhjtJD5RRYrHvV+C2nGctXMfZ7hh5KzXrai+t/klXynSlIYBya/
-kETm/S8ay/4gUB4KEBrx4koCyfLY53KUe2v6kVUBITGLtw6g1WNZeSkdOd9Tnaup
-loexIOvYU5l5WVbv2YvwFjZM795IYccV8hTl/jc3bQRkX1V88w2KtHxP9ntZWq0j
-QPwXa1GH30JZpQ+cvr08dKrp3M/Tq6EhFEmtxodBr6mLiRDjW1uz90ZIIJyVGNiM
-V2VitcNJIDBbzKCJNx3aYFQOZtb3jASIeBznYbQd3vBaFb87JJfoqMf3zJIIEx6Q
-n8KO7mJb/huGacfYAYXDQzqNf/Smi2GBfUGHUBCwAoaz0QuVP5zUhu2SBKcqG/SW
-yCJbve0FlscBsW82reBrLUez4acqSSIgMA94HDWmzajPKlxsah848l313FMVT2ac
-cfKgph+juFu91sFVHvnC8T5crDg/fQbO+kxm0Ak1iBFoVI1kvHcz5AQHjgmOt7tw
-QfDswO/e9cRmmh2q/sbthVX5iZmj/ko6Y/neSdCV95uBaolazNw=
-=bAij
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljs6A0ACgkQ2O7X88g7
++pqFbA//XsGV+GlMJpIutCpQfYfLpmKuKqFnKcboRTMmtbzdScnCDIh40gf5mx38
+JomomwibjsCrn3HYr5bZexZmqpOsAmaiMwnydkCzgYFOO0ZBiLimGl0O1oQrbB8Z
+G/sY6b5K+rhF6d6kaf2PhPwfmpa+loqPxRmjKd0AIvvQ8FO/8nurA3dtq/8ensRT
++0qHZUuc1hPYS88+Khm998uR3ua14FpgjkBya+KkwqMDLScEp2EG5S9Twi9h8XOp
+uIFfq8ZqC4RCLONp8x3lNCJqwfg+2UnsiVz6/skP27c5jbbxKVn2f9PFlcW4XCXv
+op/f3Q0z/g7Il+cXBP6g+d6W53Cz3GtBQeB7Y14WDxvZsscoLtnjL+8kV+IP48t5
+2fJIgvT09Ne78Y1ZivsAQBDPa5aymxEHLkb29Yb2GTxIptd2YTQL64iDGcJT88mI
+xDE9/hV+i8RVo47/dNAxYjzFnl6pXL1+3cbN6ZtUY0FZT8sarTjCsP67yiEzepgi
+bjwFVF34kRWDwVqSYtC4MjD04RhGNsrasnngT2iKr01kugFwpeocZCDG/2l+wc04
+DdFTNqLbJt/E9ZgFfYMSE+w7h5jMTP4Psrhc13n9rmO2smqEdCFB6A7qZ2Ql+f/r
+WtPUwDhLtTa8L3Ums5HK3x/dqDTZn6KmROFc9nLsnzqvt7xmwsk=
+=cXIZ
 -----END PGP SIGNATURE-----
 
---oymh5lalbvi2qc6r--
+--ktahkoelamnsavcv--
