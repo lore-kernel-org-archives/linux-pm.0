@@ -1,56 +1,66 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister
- duplicate ACPI battery supply
-Date: Tue, 11 Apr 2017 15:51:03 +0200
-Message-ID: <CAJZ5v0ih8UfsJH1uUjjeRPqo7-vrBR8ayc2q84qWcJ9y5QF-nw@mail.gmail.com>
-References: <20170316161601.32267-1-hdegoede@redhat.com> <20170316161601.32267-4-hdegoede@redhat.com>
- <6382698.NuYXpb6L7h@aspire.rjw.lan> <0ed23626-b6b2-a42e-2a1d-762c8c833f7b@redhat.com>
- <CAJZ5v0h466y6hBy_-12AEgcpAUXEA7cZkNwXZwvsHnjWtoqFeg@mail.gmail.com>
- <eb52c4b4-fc3c-b11b-edef-a35c6bb0d82d@redhat.com> <CAJZ5v0i7TN+iJLR_SeaCrpKJ13g1_bQ-G54cugAF9Dm4=pifAg@mail.gmail.com>
- <0c1cc4fc-d127-54d1-334b-9a569354d2a3@redhat.com> <c62e0707-7415-9473-98cb-3741c4f258ff@redhat.com>
- <cb6ff75e-3ee8-fa34-82c2-ff1338c0048e@redhat.com> <c937143c-f112-7d49-dc11-1577d987b309@redhat.com>
- <CAJZ5v0i0pZwBvd1WFYxGh9grbDyRkYWoLY7VSn3+mbLZdmQnxw@mail.gmail.com> <2796ccd7-333c-848c-1409-2a76fb498d94@redhat.com>
+Subject: Re: [RFC 5/9] sched: cpufreq: remove smp_processor_id() in remote paths
+Date: Tue, 11 Apr 2017 16:00:28 +0200
+Message-ID: <CAJZ5v0iQ4X=Vt54EvJce9R9rPhtVqvznte8=HoQ_UOAZ1fQj2g@mail.gmail.com>
+References: <cover.1489058244.git.viresh.kumar@linaro.org> <834d098efe029ee687bac7690bb482e9263a766b.1489058244.git.viresh.kumar@linaro.org>
+ <1836427.bpauTYz19k@aspire.rjw.lan> <20170411103556.GC13627@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2796ccd7-333c-848c-1409-2a76fb498d94@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:35198 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751350AbdDKOA3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Apr 2017 10:00:29 -0400
+In-Reply-To: <20170411103556.GC13627@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Steve Muckle <smuckle.linux@gmail.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, eas-dev@lists.linaro.org
 
-On Tue, Apr 11, 2017 at 11:18 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> Hi,
->
-> On 10-04-17 22:01, Rafael J. Wysocki wrote:
+On Tue, Apr 11, 2017 at 12:35 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 29-03-17, 23:28, Rafael J. Wysocki wrote:
+>> On Thursday, March 09, 2017 05:15:15 PM Viresh Kumar wrote:
+>> > @@ -216,7 +216,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>> >     if (flags & SCHED_CPUFREQ_RT_DL) {
+>> >             next_f = policy->cpuinfo.max_freq;
+>> >     } else {
+>> > -           sugov_get_util(&util, &max);
+>> > +           sugov_get_util(&util, &max, hook->cpu);
 >>
->> On Mon, Apr 10, 2017 at 8:13 PM, Hans de Goede <hdegoede@redhat.com>
->> wrote:
+>> Why is this not racy?
 >
-
-[cut]
-
+> Why would reading the utilization values be racy? The only dynamic value here is
+> "util_avg" and I am not sure if reading it is racy.
 >
-> The reason I changed my mind on the blacklist approach and went
-> from unregistering on native-power-supply register to the blacklist
-> is because some users where seeing a ton of ACPI errors from the
-> ACPI battery driver trying to use the broken ACPI battery dev in
-> the DTSD before the native PMIC driver loaded and unregistered
-> the battery dev. So I really believe the blacklist is the right
-> approach.
+> But, this whole routine has races which I ignored as we may end up updating
+> frequency simultaneously from two threads.
 
-Fair enough.
+Those races aren't there if we don't update cross-CPU, which is my point. :-)
 
-> I just got confirmation from the user that the regression on the
-> Dell 5855 was indeed a false positive.
+>> >             sugov_iowait_boost(sg_cpu, &util, &max);
+>> >             next_f = get_next_freq(sg_policy, util, max);
+>> >     }
+>> > @@ -272,7 +272,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>> >     unsigned long util, max;
+>> >     unsigned int next_f;
+>> >
+>> > -   sugov_get_util(&util, &max);
+>> > +   sugov_get_util(&util, &max, hook->cpu);
+>> >
+>>
+>> And here?
+>>
+>> >     raw_spin_lock(&sg_policy->update_lock);
 >
-> So from my pov we are good to go with v5 of patch 1 of this
-> set and v2 (also send as v3 and v4 but unchanged) of patches
-> 2-4 of this set.
+> The lock prevents the same here though.
+>
+> So, if we are going to use this series, then we can use the same update-lock in
+> case of single cpu per policies as well.
 
-OK, but please resend the patches you're happy with afresh and let me
-know what is superseded by them, so that I don't have to carry out any
-research on that.
+No, we can't.
+
+The lock is unavoidable in the mulit-CPU policies case, but there's no
+way I will agree on using a lock in the single-CPU case.
 
 Thanks,
 Rafael
