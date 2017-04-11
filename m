@@ -1,66 +1,32 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v5 4/4] power: bq24190_charger: Longer delay while
- polling reset flag
-Date: Tue, 11 Apr 2017 08:33:03 -0700
-Message-ID: <20170411153303.GE3583@atomide.com>
-References: <20170411115957.14253-1-liam@networkimprov.net>
- <20170411115957.14253-5-liam@networkimprov.net>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: Performance of low-cpu utilisation benchmark regressed severely since 4.6
+Date: Tue, 11 Apr 2017 08:41:09 -0700
+Message-ID: <004801d2b2da$0c65d2a0$253177e0$@net>
+References: <20170410084117.rjh3mtdx7hd2i5ze@techsingularity.net> <CAJZ5v0jXGtZwx5m72fkFwjU6PTnv8uak+G4j1T9LK-kUgzr28Q@mail.gmail.com> xsd9cM4EBnsYHxsdFcKt0R
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:44104 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752485AbdDKPdJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Apr 2017 11:33:09 -0400
-Content-Disposition: inline
-In-Reply-To: <20170411115957.14253-5-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain;
+        charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: xsd9cM4EBnsYHxsdFcKt0R
+Content-Language: en-ca
+Sender: linux-kernel-owner@vger.kernel.org
+To: 'Mel Gorman' <mgorman@techsingularity.net>
+Cc: 'Rafael Wysocki' <rafael.j.wysocki@intel.com>, =?iso-8859-1?Q?'J=F6rg_Otte'?= <jrg.otte@gmail.com>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Rafael J. Wysocki'" <rafael@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>
 
-* Liam Breck <liam@networkimprov.net> [170411 05:02]:
-> From: Liam Breck <kernel@networkimprov.net>
-> 
-> On chip reset, polling loop used udelay(10) which is too short
-> to be useful. Instead, use usleep_range(100, 200).
+On 2017.04.11 03:03 Mel Gorman wrote:
+>On Mon, Apr 10, 2017 at 10:51:38PM +0200, Rafael J. Wysocki wrote:
+>> On Mon, Apr 10, 2017 at 10:41 AM, Mel Gorman wrote:
+>>>
+>>> It's far more obvious when looking at the git test suite and the length
+>>> of time it takes to run. This is a shellscript and git intensive workload
+>>> whose CPU utilisatiion is very low but is less sensitive to multiple
+>>> factors than netperf and sockperf.
+>> 
 
-Good to see this get rid of udelay in favor of usleep:
+I would like to repeat your tests on my test computer (i7-2600K).
+I am not familiar with, and have not been able to find,
+"the git test suite" shellscript. Could you point me to it?
 
-Acked-by: Tony Lindgren <tony@atomide.com>
-
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: Hans de Goede <hdegoede@redhat.com>
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> ---
->  drivers/power/supply/bq24190_charger.c | 12 ++++--------
->  1 file changed, 4 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index a904abb..f581042 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -550,16 +550,13 @@ static int bq24190_register_reset(struct bq24190_dev_info *bdi)
->  		if (ret < 0)
->  			return ret;
->  
-> +		if (v == 0)
-> +			return 0;
-> -		if (!v)
-> -			break;
->  
-> -		udelay(10);
-> +		usleep_range(100, 200);
->  	} while (--limit);
->  
-> -	if (!limit)
-> -		return -EIO;
-> -
-> -	return 0;
-> +	return -EIO;
->  }
->  
->  /* Charger power supply property routines */
-> -- 
-> 2.9.3
-> 
+... Doug
