@@ -1,104 +1,152 @@
-From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH 4/5] ARM: sun8i: h3: add operating-points-v2
- table for CPU
-Date: Tue, 11 Apr 2017 11:13:46 +0200
-Message-ID: <20170411091346.mcwyskezadabsobn@lukather>
-References: <20170408185025.53841-1-icenowy@aosc.io>
- <20170408185025.53841-5-icenowy@aosc.io>
-Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister
+ duplicate ACPI battery supply
+Date: Tue, 11 Apr 2017 11:18:33 +0200
+Message-ID: <2796ccd7-333c-848c-1409-2a76fb498d94@redhat.com>
+References: <20170316161601.32267-1-hdegoede@redhat.com>
+ <20170316161601.32267-4-hdegoede@redhat.com>
+ <6382698.NuYXpb6L7h@aspire.rjw.lan>
+ <0ed23626-b6b2-a42e-2a1d-762c8c833f7b@redhat.com>
+ <CAJZ5v0h466y6hBy_-12AEgcpAUXEA7cZkNwXZwvsHnjWtoqFeg@mail.gmail.com>
+ <eb52c4b4-fc3c-b11b-edef-a35c6bb0d82d@redhat.com>
+ <CAJZ5v0i7TN+iJLR_SeaCrpKJ13g1_bQ-G54cugAF9Dm4=pifAg@mail.gmail.com>
+ <0c1cc4fc-d127-54d1-334b-9a569354d2a3@redhat.com>
+ <c62e0707-7415-9473-98cb-3741c4f258ff@redhat.com>
+ <cb6ff75e-3ee8-fa34-82c2-ff1338c0048e@redhat.com>
+ <c937143c-f112-7d49-dc11-1577d987b309@redhat.com>
+ <CAJZ5v0i0pZwBvd1WFYxGh9grbDyRkYWoLY7VSn3+mbLZdmQnxw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="ugizphasj3wc7vbe"
-Return-path: <linux-sunxi+bncBDSJBYGBRIMBBVN4WLDQKGQETKAHQNY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <20170408185025.53841-5-icenowy-h8G6r0blFSE@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Cc: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0i0pZwBvd1WFYxGh9grbDyRkYWoLY7VSn3+mbLZdmQnxw@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
---ugizphasj3wc7vbe
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+On 10-04-17 22:01, Rafael J. Wysocki wrote:
+> On Mon, Apr 10, 2017 at 8:13 PM, Hans de Goede <hdegoede@redhat.com> wrote:
 
-On Sun, Apr 09, 2017 at 02:50:24AM +0800, Icenowy Zheng wrote:
-> The CPU on Allwinner H3 can do dynamic frequency scaling.
-> 
-> Add a DVFS table based on the one tweaked by Armbian developers, which
-> are proven to work stably on BSP kernels.
-> 
-> Frequencies higher than 1008MHz are temporarily dropped in the table, as
-> they may lead to over voltage on boards without proper regulator
-> settings or over temperature on boards with proper regulator settings.
-> They will be added back once regulator settings are ready and thermal
-> sensor driver is merged.
-> 
-> In order to satisfy all different regulators (SY8106A which is 50mV per
-> level, SY8113B which have two states: 1.1V and 1.3V, and some board with
-> non-tweakable regulators), all the OPPs are defined with a range which has
-> the target value as the minimum allowed value, and 1.3V (the highest
-> VDD-CPUX voltage suggested by the datasheet) as the maximum allowed value.
-> It's proven to work well with a board with SY8113B.
-> 
-> Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-> ---
->  arch/arm/boot/dts/sun8i-h3.dtsi | 38 +++++++++++++++++++++++++++++++++++++-
->  1 file changed, 37 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
-> index b36f9f423c39..a0cee17fe44b 100644
-> --- a/arch/arm/boot/dts/sun8i-h3.dtsi
-> +++ b/arch/arm/boot/dts/sun8i-h3.dtsi
-> @@ -43,32 +43,68 @@
->  #include "sunxi-h3-h5.dtsi"
->  
->  / {
-> +	cpu0_opp_table: opp_table0 {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp@480000000 {
-> +			opp-hz = /bits/ 64 <480000000>;
-> +			opp-microvolt = <980000 980000 1300000>;
-> +			clock-latency-ns = <244144>; /* 8 32k periods */
-> +		};
-> +
-> +		opp@648000000 {
-> +			opp-hz = /bits/ 64 <816000000>;
-> +			opp-microvolt = <1020000 1020000 1300000>;
-> +			clock-latency-ns = <244144>; /* 8 32k periods */
-> +		};
-> +
-> +		opp@912000000 {
-> +			opp-hz = /bits/ 64 <960000000>;
-> +			opp-microvolt = <1080000 1080000 1300000>;
-> +			clock-latency-ns = <244144>; /* 8 32k periods */
-> +		};
-> +
-> +		opp@1008000000 {
-> +			opp-hz = /bits/ 64 <1008000000>;
-> +			opp-microvolt = <1140000 1140000 1300000>;
-> +			clock-latency-ns = <244144>; /* 8 32k periods */
-> +		};
-> +	};
-> +
+<snip>
 
->From your serie, I guess you never actually tested those OPPs on any
-board without SY8113B, right?
+>>>>>> OK
+>>>>>>
+>>>>>> Anyway, I'd prefer blacklists in the battery and ac drivers to be
+>>>>>> honest.
+>>>>>
+>>>>>
+>>>>> As I explained in my reply to the discussion around the first patch that
+>>>>> is somewhat hard to do and requires encoding knowledge in those drivers
+>>>>> which really does not belong there:
+>>>>>
+>>>>> "The problem is that Intel re-uses HIDs between generations and
+>>>>> for the Whiskey Cove PMIC we want to not use the ACPI battery
+>>>>> and ac drivers on Cherry Trail (where they are known to be
+>>>>> broken) but things are different on Apollo Lake. Yet both
+>>>>> use the same HID for their companion Whiskey Cove PMIC even
+>>>>> though they are 2 completely different revisions of the PMIC
+>>>>> (e.g. one uses i2c the other does not).
+>>>>>
+>>>>> The 2 native drivers have code to detect which revision they
+>>>>> are dealing with and exit with -ENODEV if it is not the
+>>>>> revision they were written for, but this means that simple
+>>>>> HID blacklisting will not work. So IMHO the decision to
+>>>>> unregister the  ACPI battery / ac interface really belongs
+>>>>> in the native driver as that has all the nitty gritty detail
+>>>>> needed to make that decision."
+>>>>
+>>>>
+>>>> So thinking more about this, esp. after receiving a bug report
+>>>> from a user getting ACPI errors because of Linux not implementing
+>>>> the proprietary undocumented BMOP opregion before the ACPI battery
+>>>> driver gets unregistered by the native one, I thing we do indeed
+>>>> need to go with a blacklist.
+>>>>
+>>>> This means also being able to match by _HRV, as Some HIDs are
+>>>> re-used for different hardware between Bay Trail / Cherry Trail /
+>>>> Broxton with just a bump of _HRV.
+>>>>
+>>>> I'm currently working on respinning my
+>>>> "acpi: utils: Add new acpi_dev_present helper" to address the
+>>>> review comments on it. I'm going to give it an optional hrv
+>>>> function argument for this use, so as to not having to implement
+>>>> hrv checking code in both ac.c and battery.c .
+>>>
+>>>
+>>> So a quick copy paste from another thread, the black-list approach
+>>> causes regressions even before hitting -next and seeing any
+>>> substantial testing, so we're back to adding unregister functions
+>>> and calling those from native PMIC power_supply drivers when the
+>>> native power_supply has been successfully registered.
+>>>
+>>> Some Bay Trail / Cherry Trail users are running kernels build
+>>> from my personal tree to get early access to various fixes
+>>> in there and I got a regression report on the DELL 5855, where
+>>> the blacklisting of the ACPI battery driver if INT33F4 is
+>>> present caused the battery monitoring to stop working, that
+>>> devices has an INT33F4 node with _STA returning 15 yet it
+>>> is not using an axp288 PMIC at all, I'm still gathering more
+>>> info, but I believe atm that Dell simply disabled the i2c
+>>> controller to which the axp288 would be connected if present
+>>> and left the other bits of the DTSD unmodified.
+>>>
+>>> One option which comes to mind would be to only count devices
+>>> as present if all their deps are met, but that will only
+>>> work if the blacklist check is done after all other drivers
+>>> have loaded which is not how things work.
+>>>
+>>> So I believe that my earlier attempts at fixing the double
+>>> power_supply registration by unregistering the ACPI one when
+>>> the native one has successfully loaded is better. That guarantees
+>>> regressions like this one will not happen, because the ACPI
+>>> power_supply does not get unregistered until the native one
+>>> has loaded.
+>>
+>>
+>> Ok scrap that, I've some more info and the INT33F4 node on
+>> the Dell 5855 is returning 0 from _STA and the blacklist is
+>> causing problems on that machine for other reason, it could
+>> be the user was using an older version with the uninitialized
+>> .cls match info problem, I've asked the user to test the latest
+>> version.
+>>
+>> So assuming that does work, we are good to go with the blacklist
+>> approach (which seems to be the solution everyone prefers),
+>> sorry about the noise.
+>
+> OK, but there's one more possibility to consider.
+>
+> Instead of unregistering the ACPI battery (or AC) driver from the
+> platform device driver superseding it, you could clear the
+> match_driver flag for the ACPI companion device and call
+> device_release_driver() on it, like acpi_bus_trim().  Then (because
+> the match_driver flag is unset) the driver core will not try to attach
+> the driver to the thing again - until the next invocation of
+> acpi_bus_attach() on it, which I think is a bug, because there seems
+> to be a flags.visited check missing in there (I need to go back and
+> recall why it is not there).
+>
+> Arguably, that would be a more lightweight way of getting what you
+> want without using a blacklist.
 
-(and therefore, without operating at the voltages listed here).
+The reason I changed my mind on the blacklist approach and went
+from unregistering on native-power-supply register to the blacklist
+is because some users where seeing a ton of ACPI errors from the
+ACPI battery driver trying to use the broken ACPI battery dev in
+the DTSD before the native PMIC driver loaded and unregistered
+the battery dev. So I really believe the blacklist is the right
+approach.
 
-Maxime
+I just got confirmation from the user that the regression on the
+Dell 5855 was indeed a false positive.
 
--- 
-Maxime Ripard, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
---ugizphasj3wc7vbe--
+So from my pov we are good to go with v5 of patch 1 of this
+set and v2 (also send as v3 and v4 but unchanged) of patches
+2-4 of this set.
+
+Regards,
+
+Hans
