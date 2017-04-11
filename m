@@ -1,73 +1,51 @@
-From: Ben Hutchings <ben@decadent.org.uk>
-Subject: [PATCH] cpupower: Fix turbo frequency reporting for pre-Sandy Bridge
- cores
-Date: Tue, 11 Apr 2017 00:29:44 +0100
-Message-ID: <20170410232944.GA4152@decadent.org.uk>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: Re: [PATCH V2] PM / OPP: Use - instead of @ for DT entries
+Date: Tue, 11 Apr 2017 10:13:58 +0900
+Message-ID: <CAK7LNATAW4jHbKZU6xWD_nU=ccFo73rBSX_UDpQEMo9OC_u=cw@mail.gmail.com>
+References: <70e7c7ee13722ab9c73cb073f88502eaf1ada5f5.1491816050.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="L977DYpOHGH1NqKf"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:49651 "EHLO
-        shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751738AbdDJX3q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 19:29:46 -0400
-Content-Disposition: inline
+Received: from conssluserg-06.nifty.com ([210.131.2.91]:35559 "EHLO
+        conssluserg-06.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751932AbdDKBOG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Apr 2017 21:14:06 -0400
+In-Reply-To: <70e7c7ee13722ab9c73cb073f88502eaf1ada5f5.1491816050.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.com>
-Cc: linux-pm@vger.kernel.org, GSR <gsr.bugs@infernal-iceberg.com>, 859978@bugs.debian.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, =?UTF-8?Q?Beno=C3=AEt_Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linaro-kernel@lists.li
+
+Hi Viresh,
 
 
---L977DYpOHGH1NqKf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+2017-04-10 18:21 GMT+09:00 Viresh Kumar <viresh.kumar@linaro.org>:
+> Compiling the DT file with W=1, DTC warns like follows:
+>
+> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
+> unit name, but no reg property
+>
+> Fix this by replacing '@' with '-' as the OPP nodes will never have a
+> "reg" property.
+>
+> Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> Suggested-by: Mark Rutland <mark.rutland@arm.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com> (sunxi)
+> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+> ---
 
-The switch that conditionally sets CPUPOWER_CAP_HAS_TURBO_RATIO and
-CPUPOWER_CAP_IS_SNB flags is missing a break, so all cores get both
-flags set and an assumed base clock of 100 MHz for turbo values.
 
-Reported-by: GSR <gsr.bugs@infernal-iceberg.com>
-Tested-by: GSR <gsr.bugs@infernal-iceberg.com>
-References: https://bugs.debian.org/859978
-Fixes: 8fb2e440b223 ("cpupower: Show Intel turbo ratio support via ...")
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
- tools/power/cpupower/utils/helpers/cpuid.c | 1 +
- 1 file changed, 1 insertion(+)
+Acked-by: Masahiro Yamada <yamada.masahiro@socionext.com> (uniphier)
 
-diff --git a/tools/power/cpupower/utils/helpers/cpuid.c b/tools/power/cpupower/utils/helpers/cpuid.c
-index 93b0aa74ca03..39c2c7d067bb 100644
---- a/tools/power/cpupower/utils/helpers/cpuid.c
-+++ b/tools/power/cpupower/utils/helpers/cpuid.c
-@@ -156,6 +156,7 @@ int get_cpu_info(unsigned int cpu, struct cpupower_cpu_info *cpu_info)
- 					 */
- 			case 0x2C:	/* Westmere EP - Gulftown */
- 				cpu_info->caps |= CPUPOWER_CAP_HAS_TURBO_RATIO;
-+				break;
- 			case 0x2A:	/* SNB */
- 			case 0x2D:	/* SNB Xeon */
- 			case 0x3A:	/* IVB */
 
---L977DYpOHGH1NqKf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Thank you!
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
 
-iQIVAwUBWOwVaOe/yOyVhhEJAQr2dxAAkN0P5xBktyoTkkcItHkVsF0KqQCpfHpT
-xUMOE9fkdRrooyqq9Up8uqag/g7pgyniCfY+qs2wRLR3yS40o7mU1Wo0xrBXQFZO
-6ftnqJlGqOG4F8SV0ZfQGt/0FlbWSEjwqlf1FBlmRC2JT9Y5HQyEUwzGtot5Y0dU
-sf0O1RfzDJ8kocN0RnCRiEL0Uobh5FhKNOWmL9I3QrjlbfEscO/RmTDh/7iN4JVz
-f8cmCkk+/Uy6LseJRRKJ6Pw9GJagTioNsTh1uPkBiSq8RU2oEE6mCr9zi6tVwpn7
-dc9MSxwIZZSZC+b50CzlgjVBpEqQY18fpMngP5mkjdFN0rjP0e1eJURldZW0uP0S
-OrwxRRcD4BukO2gaoeWEiwO0SHgtA0SF4oM2atXUKBiqvFhaq5TVsxN1GH51cby3
-8bN8hF7sXvFvI8ZjX+0Ihw0ZHEIRnzHc6Rpw0gQ6jA7C4RV/juQB7f1ZFTxlQdl2
-y39QW4CDg1vv1bCU5uhPSpV8fXCMtdQD1Zxhkeuj6mMO4yxGZjr4OboxP1SUENW/
-/j6b/vJKA2yGjf5Hvv1cl7VFu/rPHRE6DCSYI3EdJUvaV2Giur15yZ3ZuC5ODc67
-JOQul3DgXTIIGbD7zP4riyKpXalJUixc/376UYDZIIgEROw6/KuviBmgtrnVhmSS
-GTjq/GW5Ftg=
-=YmIB
------END PGP SIGNATURE-----
 
---L977DYpOHGH1NqKf--
+
+-- 
+Best Regards
+Masahiro Yamada
