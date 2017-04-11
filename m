@@ -1,67 +1,57 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [GIT PULL] Immutable branch between MFD and IIO due for
- the v4.12 merge window
-Date: Tue, 11 Apr 2017 11:05:28 +0100
-Message-ID: <20170411100528.2zif3fyi7uoyw33n@dell>
-References: <20170404063441.7656-1-quentin.schulz@free-electrons.com>
-Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC 5/9] sched: cpufreq: remove smp_processor_id() in remote
+ paths
+Date: Tue, 11 Apr 2017 16:05:56 +0530
+Message-ID: <20170411103556.GC13627@vireshk-i7>
+References: <cover.1489058244.git.viresh.kumar@linaro.org>
+ <834d098efe029ee687bac7690bb482e9263a766b.1489058244.git.viresh.kumar@linaro.org>
+ <1836427.bpauTYz19k@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDA7X7F2WUEBB26UWLDQKGQE6Z2LHQA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170404063441.7656-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <1836427.bpauTYz19k@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Enjoy!
+On 29-03-17, 23:28, Rafael J. Wysocki wrote:
+> On Thursday, March 09, 2017 05:15:15 PM Viresh Kumar wrote:
+> > @@ -216,7 +216,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+> >  	if (flags & SCHED_CPUFREQ_RT_DL) {
+> >  		next_f = policy->cpuinfo.max_freq;
+> >  	} else {
+> > -		sugov_get_util(&util, &max);
+> > +		sugov_get_util(&util, &max, hook->cpu);
+> 
+> Why is this not racy?
 
-The following changes since commit c1ae3cfa0e89fa1a7ecc4c99031f5e9ae99d9201=
-:
+Why would reading the utilization values be racy? The only dynamic value here is
+"util_avg" and I am not sure if reading it is racy.
 
-  Linux 4.11-rc1 (2017-03-05 12:59:56 -0800)
+But, this whole routine has races which I ignored as we may end up updating
+frequency simultaneously from two threads.
 
-are available in the git repository at:
+> >  		sugov_iowait_boost(sg_cpu, &util, &max);
+> >  		next_f = get_next_freq(sg_policy, util, max);
+> >  	}
+> > @@ -272,7 +272,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+> >  	unsigned long util, max;
+> >  	unsigned int next_f;
+> >  
+> > -	sugov_get_util(&util, &max);
+> > +	sugov_get_util(&util, &max, hook->cpu);
+> >  
+> 
+> And here?
+> 
+> >  	raw_spin_lock(&sg_policy->update_lock);
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git ib-mfd-iio-v4.1=
-2
+The lock prevents the same here though.
 
-for you to fetch changes up to f2499ab450d3052097ba53a7d763f767935c0c59:
+So, if we are going to use this series, then we can use the same update-lock in
+case of single cpu per policies as well.
 
-  iio: adc: add support for X-Powers AXP20X and AXP22X PMICs ADCs (2017-04-=
-11 11:02:33 +0100)
-
-----------------------------------------------------------------
-Immutable branch between MFD and IIO due for the v4.12 merge window
-
-----------------------------------------------------------------
-Quentin Schulz (1):
-      iio: adc: add support for X-Powers AXP20X and AXP22X PMICs ADCs
-
- drivers/iio/adc/Kconfig      |  10 +
- drivers/iio/adc/Makefile     |   1 +
- drivers/iio/adc/axp20x_adc.c | 617 +++++++++++++++++++++++++++++++++++++++=
-++++
- 3 files changed, 628 insertions(+)
- create mode 100644 drivers/iio/adc/axp20x_adc.c
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+-- 
+viresh
