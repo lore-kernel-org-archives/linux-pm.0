@@ -1,831 +1,348 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RESEND PATCH v4] iio: adc: add support for
- X-Powers AXP20X and AXP22X PMICs ADCs
-Date: Tue, 11 Apr 2017 09:01:22 +0100
-Message-ID: <20170411080122.v4gm3cogtrynm7nv@dell>
-References: <20170404063441.7656-1-quentin.schulz@free-electrons.com>
- <cf07853a-4382-5172-b24f-5324fb4308d3@free-electrons.com>
- <20170410145445.ngfjau2dtjvquspg@dell>
- <1800d928-d804-71db-cd0b-ec79cc504ee6@free-electrons.com>
-Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+From: Mikko Perttunen <mperttunen@nvidia.com>
+Subject: [PATCH v3 1/3] cpufreq: Add Tegra186 cpufreq driver
+Date: Tue, 11 Apr 2017 11:09:15 +0300
+Message-ID: <1491898155-13596-1-git-send-email-mperttunen@nvidia.com>
+References: <1491313417-25085-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDA7X7F2WUEBBVU2WLDQKGQEISNWCAI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <1800d928-d804-71db-cd0b-ec79cc504ee6-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1491313417-25085-1-git-send-email-mperttunen@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: thierry.reding@gmail.com, jonathanh@nvidia.com
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, Mikko Perttunen <mperttunen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 11 Apr 2017, Quentin Schulz wrote:
-> On 10/04/2017 16:54, Lee Jones wrote:
-> > On Mon, 10 Apr 2017, Quentin Schulz wrote:
-> >=20
-> >> Hi Lee,
-> >>
-> >> Just to make sure you didn't miss that patch (can't find it in
-> >> for-mfd-next and for-mfd-next-next).
-> >=20
-> > It has not been missed, but is yet to be reviewed.
-> >=20
->=20
-> Hum.. What do you mean exactly? The maintainer of the AXP PMICs has
-> given its Acked-by and the maintainer of the IIO subsystem has given its
-> Reviewed-by. Is there something I'm missing (in your workflow maybe)?
+Add a new cpufreq driver for Tegra186 (and likely later).
+The CPUs are organized into two clusters, Denver and A57,
+with two and four cores respectively. CPU frequency can be
+adjusted by writing the desired rate divisor and a voltage
+hint to a special per-core register.
 
-I mean I haven't reviewed and picked it up yet.
+The frequency of each core can be set individually; however,
+this is just a hint as all CPUs in a cluster will run at
+the maximum rate of non-idle CPUs in the cluster.
 
-I will get around to it shortly.
+Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+v3:
+- Fixed size parameter of dma_free_coherent
 
-> >> On 04/04/2017 08:34, Quentin Schulz wrote:
-> >>> The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose =
-the
-> >>> battery voltage, battery charge and discharge currents, AC-in and VBU=
-S
-> >>> voltages and currents, 2 GPIOs muxable in ADC mode and PMIC temperatu=
-re.
-> >>>
-> >>> This adds support for most of AXP20X and AXP22X ADCs.
-> >>>
-> >>> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> >>> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> >>> Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-> >>> Reviewed-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> >>> ---
-> >>>
-> >>> Lee, could you merge this through the mfd tree please?
-> >>>  =3D> https://lkml.org/lkml/2017/3/22/47
-> >>>
-> >>> v4:
-> >>>  - added missing space at the beginning of a comment,
-> >>>  - tidied axp20x_adc_offset_voltage and axp20x_write_raw to use switc=
-h case
-> >>>  instead of if conditions,
-> >>>  - added MODULE_DEVICE_TABLE for axp20x_adc_id_match for module autol=
-oading,
-> >>>  - merged two lines in axp20x_remove,
-> >>>
-> >>> v3:
-> >>>  - moved from switch to if condition in axp20x_adc_raw and
-> >>>  axp22x_adc_raw,
-> >>>  - removed DT support as DT node has been dropped,
-> >>>    - use of platform_device_id
-> >>>  - correctly defined the name of the iio device (name used to probe t=
-he
-> >>>  driver),
-> >>>  - added goto for errors in probe,
-> >>>  - added iio_map_array_unregister to the remove function,
-> >>>
-> >>> v2:
-> >>>  - removed unused defines,
-> >>>  - changed BIT(x) to 1 << x when describing bits purpose for which 2 =
-<<
-> >>>  x or 3 << x exists, to be consistent,
-> >>>  - changed ADC rate defines to macro formulas,
-> >>>  - reordered IIO channels, now different measures (current/voltage) o=
-f
-> >>>  the same part of the PMIC (e.g. battery), have the same IIO channel =
-in
-> >>>  their respective IIO type. When a part of the PMIC have only one
-> >>>  measure, a number is jumped,
-> >>>  - left IIO channel mapping in DT to use iio_map structure,
-> >>>  - removed indexing of ADC internal temperature,
-> >>>  - removed unused iio_dev structure in axp20x_adc_iio,
-> >>>  - added a structure for data specific to AXP20X or AXP22X PMICs inst=
-ead
-> >>>  of using an ID and an if condition when needing to separate the
-> >>>  behaviour of both,
-> >>>  - added a comment on batt_chrg_i really being on 12bits rather than
-> >>>  what the Chinese datasheets say (13 bits),
-> >>>  - corrected the offset for AXP22X PMIC temperature,
-> >>>  - set the ADC rate to a value (100Hz) shared by the AXP20X and AXP22=
-X,
-> >>>  - created macro formulas to compute the ADC rate for each,
-> >>>  - added a condition on presence of ADC_EN2 reg before setting/resett=
-ing
-> >>>  it,
-> >>>  - switched from devm_iio_device_unregister to the non-devm function
-> >>>  because of the need for a remove function,
-> >>>  - removed some dead code,
-> >>>
-> >>>  drivers/iio/adc/Kconfig      |  10 +
-> >>>  drivers/iio/adc/Makefile     |   1 +
-> >>>  drivers/iio/adc/axp20x_adc.c | 617 +++++++++++++++++++++++++++++++++=
-++++++++++
-> >>>  3 files changed, 628 insertions(+)
-> >>>  create mode 100644 drivers/iio/adc/axp20x_adc.c
-> >>>
-> >>> diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
-> >>> index d777a97..d15e1bd 100644
-> >>> --- a/drivers/iio/adc/Kconfig
-> >>> +++ b/drivers/iio/adc/Kconfig
-> >>> @@ -154,6 +154,16 @@ config AT91_SAMA5D2_ADC
-> >>>  	  To compile this driver as a module, choose M here: the module wil=
-l be
-> >>>  	  called at91-sama5d2_adc.
-> >>> =20
-> >>> +config AXP20X_ADC
-> >>> +	tristate "X-Powers AXP20X and AXP22X ADC driver"
-> >>> +	depends on MFD_AXP20X
-> >>> +	help
-> >>> +	  Say yes here to have support for X-Powers power management IC (PM=
-IC)
-> >>> +	  AXP20X and AXP22X ADC devices.
-> >>> +
-> >>> +	  To compile this driver as a module, choose M here: the module wil=
-l be
-> >>> +	  called axp20x_adc.
-> >>> +
-> >>>  config AXP288_ADC
-> >>>  	tristate "X-Powers AXP288 ADC driver"
-> >>>  	depends on MFD_AXP20X
-> >>> diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
-> >>> index b11bb57..17899b5 100644
-> >>> --- a/drivers/iio/adc/Makefile
-> >>> +++ b/drivers/iio/adc/Makefile
-> >>> @@ -16,6 +16,7 @@ obj-$(CONFIG_AD7887) +=3D ad7887.o
-> >>>  obj-$(CONFIG_AD799X) +=3D ad799x.o
-> >>>  obj-$(CONFIG_AT91_ADC) +=3D at91_adc.o
-> >>>  obj-$(CONFIG_AT91_SAMA5D2_ADC) +=3D at91-sama5d2_adc.o
-> >>> +obj-$(CONFIG_AXP20X_ADC) +=3D axp20x_adc.o
-> >>>  obj-$(CONFIG_AXP288_ADC) +=3D axp288_adc.o
-> >>>  obj-$(CONFIG_BCM_IPROC_ADC) +=3D bcm_iproc_adc.o
-> >>>  obj-$(CONFIG_BERLIN2_ADC) +=3D berlin2-adc.o
-> >>> diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_ad=
-c.c
-> >>> new file mode 100644
-> >>> index 0000000..11e1771
-> >>> --- /dev/null
-> >>> +++ b/drivers/iio/adc/axp20x_adc.c
-> >>> @@ -0,0 +1,617 @@
-> >>> +/* ADC driver for AXP20X and AXP22X PMICs
-> >>> + *
-> >>> + * Copyright (c) 2016 Free Electrons NextThing Co.
-> >>> + *	Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> >>> + *
-> >>> + * This program is free software; you can redistribute it and/or mod=
-ify it under
-> >>> + * the terms of the GNU General Public License version 2 as publishe=
-d by the
-> >>> + * Free Software Foundation.
-> >>> + */
-> >>> +
-> >>> +#include <linux/completion.h>
-> >>> +#include <linux/interrupt.h>
-> >>> +#include <linux/io.h>
-> >>> +#include <linux/module.h>
-> >>> +#include <linux/of.h>
-> >>> +#include <linux/of_device.h>
-> >>> +#include <linux/platform_device.h>
-> >>> +#include <linux/pm_runtime.h>
-> >>> +#include <linux/regmap.h>
-> >>> +#include <linux/thermal.h>
-> >>> +
-> >>> +#include <linux/iio/iio.h>
-> >>> +#include <linux/iio/driver.h>
-> >>> +#include <linux/iio/machine.h>
-> >>> +#include <linux/mfd/axp20x.h>
-> >>> +
-> >>> +#define AXP20X_ADC_EN1_MASK			GENMASK(7, 0)
-> >>> +
-> >>> +#define AXP20X_ADC_EN2_MASK			(GENMASK(3, 2) | BIT(7))
-> >>> +#define AXP22X_ADC_EN1_MASK			(GENMASK(7, 5) | BIT(0))
-> >>> +
-> >>> +#define AXP20X_GPIO10_IN_RANGE_GPIO0		BIT(0)
-> >>> +#define AXP20X_GPIO10_IN_RANGE_GPIO1		BIT(1)
-> >>> +#define AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(x)	((x) & BIT(0))
-> >>> +#define AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(x)	(((x) & BIT(0)) << 1)
-> >>> +
-> >>> +#define AXP20X_ADC_RATE_MASK			GENMASK(7, 6)
-> >>> +#define AXP20X_ADC_RATE_HZ(x)			((ilog2((x) / 25) << 6) & AXP20X_ADC=
-_RATE_MASK)
-> >>> +#define AXP22X_ADC_RATE_HZ(x)			((ilog2((x) / 100) << 6) & AXP20X_AD=
-C_RATE_MASK)
-> >>> +
-> >>> +#define AXP20X_ADC_CHANNEL(_channel, _name, _type, _reg)	\
-> >>> +	{							\
-> >>> +		.type =3D _type,					\
-> >>> +		.indexed =3D 1,					\
-> >>> +		.channel =3D _channel,				\
-> >>> +		.address =3D _reg,				\
-> >>> +		.info_mask_separate =3D BIT(IIO_CHAN_INFO_RAW) |	\
-> >>> +				      BIT(IIO_CHAN_INFO_SCALE),	\
-> >>> +		.datasheet_name =3D _name,			\
-> >>> +	}
-> >>> +
-> >>> +#define AXP20X_ADC_CHANNEL_OFFSET(_channel, _name, _type, _reg) \
-> >>> +	{							\
-> >>> +		.type =3D _type,					\
-> >>> +		.indexed =3D 1,					\
-> >>> +		.channel =3D _channel,				\
-> >>> +		.address =3D _reg,				\
-> >>> +		.info_mask_separate =3D BIT(IIO_CHAN_INFO_RAW) |	\
-> >>> +				      BIT(IIO_CHAN_INFO_SCALE) |\
-> >>> +				      BIT(IIO_CHAN_INFO_OFFSET),\
-> >>> +		.datasheet_name =3D _name,			\
-> >>> +	}
-> >>> +
-> >>> +struct axp_data;
-> >>> +
-> >>> +struct axp20x_adc_iio {
-> >>> +	struct regmap		*regmap;
-> >>> +	struct axp_data		*data;
-> >>> +};
-> >>> +
-> >>> +enum axp20x_adc_channel_v {
-> >>> +	AXP20X_ACIN_V =3D 0,
-> >>> +	AXP20X_VBUS_V,
-> >>> +	AXP20X_TS_IN,
-> >>> +	AXP20X_GPIO0_V,
-> >>> +	AXP20X_GPIO1_V,
-> >>> +	AXP20X_IPSOUT_V,
-> >>> +	AXP20X_BATT_V,
-> >>> +};
-> >>> +
-> >>> +enum axp20x_adc_channel_i {
-> >>> +	AXP20X_ACIN_I =3D 0,
-> >>> +	AXP20X_VBUS_I,
-> >>> +	AXP20X_BATT_CHRG_I,
-> >>> +	AXP20X_BATT_DISCHRG_I,
-> >>> +};
-> >>> +
-> >>> +enum axp22x_adc_channel_v {
-> >>> +	AXP22X_TS_IN =3D 0,
-> >>> +	AXP22X_BATT_V,
-> >>> +};
-> >>> +
-> >>> +enum axp22x_adc_channel_i {
-> >>> +	AXP22X_BATT_CHRG_I =3D 1,
-> >>> +	AXP22X_BATT_DISCHRG_I,
-> >>> +};
-> >>> +
-> >>> +static struct iio_map axp20x_maps[] =3D {
-> >>> +	{
-> >>> +		.consumer_dev_name =3D "axp20x-usb-power-supply",
-> >>> +		.consumer_channel =3D "vbus_v",
-> >>> +		.adc_channel_label =3D "vbus_v",
-> >>> +	}, {
-> >>> +		.consumer_dev_name =3D "axp20x-usb-power-supply",
-> >>> +		.consumer_channel =3D "vbus_i",
-> >>> +		.adc_channel_label =3D "vbus_i",
-> >>> +	}, {
-> >>> +		.consumer_dev_name =3D "axp20x-ac-power-supply",
-> >>> +		.consumer_channel =3D "acin_v",
-> >>> +		.adc_channel_label =3D "acin_v",
-> >>> +	}, {
-> >>> +		.consumer_dev_name =3D "axp20x-ac-power-supply",
-> >>> +		.consumer_channel =3D "acin_i",
-> >>> +		.adc_channel_label =3D "acin_i",
-> >>> +	}, {
-> >>> +		.consumer_dev_name =3D "axp20x-battery-power-supply",
-> >>> +		.consumer_channel =3D "batt_v",
-> >>> +		.adc_channel_label =3D "batt_v",
-> >>> +	}, {
-> >>> +		.consumer_dev_name =3D "axp20x-battery-power-supply",
-> >>> +		.consumer_channel =3D "batt_chrg_i",
-> >>> +		.adc_channel_label =3D "batt_chrg_i",
-> >>> +	}, {
-> >>> +		.consumer_dev_name =3D "axp20x-battery-power-supply",
-> >>> +		.consumer_channel =3D "batt_dischrg_i",
-> >>> +		.adc_channel_label =3D "batt_dischrg_i",
-> >>> +	}, { /* sentinel */ }
-> >>> +};
-> >>> +
-> >>> +static struct iio_map axp22x_maps[] =3D {
-> >>> +	{
-> >>> +		.consumer_dev_name =3D "axp20x-battery-power-supply",
-> >>> +		.consumer_channel =3D "batt_v",
-> >>> +		.adc_channel_label =3D "batt_v",
-> >>> +	}, {
-> >>> +		.consumer_dev_name =3D "axp20x-battery-power-supply",
-> >>> +		.consumer_channel =3D "batt_chrg_i",
-> >>> +		.adc_channel_label =3D "batt_chrg_i",
-> >>> +	}, {
-> >>> +		.consumer_dev_name =3D "axp20x-battery-power-supply",
-> >>> +		.consumer_channel =3D "batt_dischrg_i",
-> >>> +		.adc_channel_label =3D "batt_dischrg_i",
-> >>> +	}, { /* sentinel */ }
-> >>> +};
-> >>> +
-> >>> +/*
-> >>> + * Channels are mapped by physical system. Their channels share the =
-same index.
-> >>> + * i.e. acin_i is in_current0_raw and acin_v is in_voltage0_raw.
-> >>> + * The only exception is for the battery. batt_v will be in_voltage6=
-_raw and
-> >>> + * charge current in_current6_raw and discharge current will be in_c=
-urrent7_raw.
-> >>> + */
-> >>> +static const struct iio_chan_spec axp20x_adc_channels[] =3D {
-> >>> +	AXP20X_ADC_CHANNEL(AXP20X_ACIN_V, "acin_v", IIO_VOLTAGE,
-> >>> +			   AXP20X_ACIN_V_ADC_H),
-> >>> +	AXP20X_ADC_CHANNEL(AXP20X_ACIN_I, "acin_i", IIO_CURRENT,
-> >>> +			   AXP20X_ACIN_I_ADC_H),
-> >>> +	AXP20X_ADC_CHANNEL(AXP20X_VBUS_V, "vbus_v", IIO_VOLTAGE,
-> >>> +			   AXP20X_VBUS_V_ADC_H),
-> >>> +	AXP20X_ADC_CHANNEL(AXP20X_VBUS_I, "vbus_i", IIO_CURRENT,
-> >>> +			   AXP20X_VBUS_I_ADC_H),
-> >>> +	{
-> >>> +		.type =3D IIO_TEMP,
-> >>> +		.address =3D AXP20X_TEMP_ADC_H,
-> >>> +		.info_mask_separate =3D BIT(IIO_CHAN_INFO_RAW) |
-> >>> +				      BIT(IIO_CHAN_INFO_SCALE) |
-> >>> +				      BIT(IIO_CHAN_INFO_OFFSET),
-> >>> +		.datasheet_name =3D "pmic_temp",
-> >>> +	},
-> >>> +	AXP20X_ADC_CHANNEL_OFFSET(AXP20X_GPIO0_V, "gpio0_v", IIO_VOLTAGE,
-> >>> +				  AXP20X_GPIO0_V_ADC_H),
-> >>> +	AXP20X_ADC_CHANNEL_OFFSET(AXP20X_GPIO1_V, "gpio1_v", IIO_VOLTAGE,
-> >>> +				  AXP20X_GPIO1_V_ADC_H),
-> >>> +	AXP20X_ADC_CHANNEL(AXP20X_IPSOUT_V, "ipsout_v", IIO_VOLTAGE,
-> >>> +			   AXP20X_IPSOUT_V_HIGH_H),
-> >>> +	AXP20X_ADC_CHANNEL(AXP20X_BATT_V, "batt_v", IIO_VOLTAGE,
-> >>> +			   AXP20X_BATT_V_H),
-> >>> +	AXP20X_ADC_CHANNEL(AXP20X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
-> >>> +			   AXP20X_BATT_CHRG_I_H),
-> >>> +	AXP20X_ADC_CHANNEL(AXP20X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CUR=
-RENT,
-> >>> +			   AXP20X_BATT_DISCHRG_I_H),
-> >>> +};
-> >>> +
-> >>> +static const struct iio_chan_spec axp22x_adc_channels[] =3D {
-> >>> +	{
-> >>> +		.type =3D IIO_TEMP,
-> >>> +		.address =3D AXP22X_PMIC_TEMP_H,
-> >>> +		.info_mask_separate =3D BIT(IIO_CHAN_INFO_RAW) |
-> >>> +				      BIT(IIO_CHAN_INFO_SCALE) |
-> >>> +				      BIT(IIO_CHAN_INFO_OFFSET),
-> >>> +		.datasheet_name =3D "pmic_temp",
-> >>> +	},
-> >>> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_V, "batt_v", IIO_VOLTAGE,
-> >>> +			   AXP20X_BATT_V_H),
-> >>> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
-> >>> +			   AXP20X_BATT_CHRG_I_H),
-> >>> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CUR=
-RENT,
-> >>> +			   AXP20X_BATT_DISCHRG_I_H),
-> >>> +};
-> >>> +
-> >>> +static int axp20x_adc_raw(struct iio_dev *indio_dev,
-> >>> +			  struct iio_chan_spec const *chan, int *val)
-> >>> +{
-> >>> +	struct axp20x_adc_iio *info =3D iio_priv(indio_dev);
-> >>> +	int size =3D 12;
-> >>> +
-> >>> +	/*
-> >>> +	 * N.B.:  Unlike the Chinese datasheets tell, the charging current =
-is
-> >>> +	 * stored on 12 bits, not 13 bits. Only discharging current is on 1=
-3
-> >>> +	 * bits.
-> >>> +	 */
-> >>> +	if (chan->type =3D=3D IIO_CURRENT && chan->channel =3D=3D AXP20X_BA=
-TT_DISCHRG_I)
-> >>> +		size =3D 13;
-> >>> +	else
-> >>> +		size =3D 12;
-> >>> +
-> >>> +	*val =3D axp20x_read_variable_width(info->regmap, chan->address, si=
-ze);
-> >>> +	if (*val < 0)
-> >>> +		return *val;
-> >>> +
-> >>> +	return IIO_VAL_INT;
-> >>> +}
-> >>> +
-> >>> +static int axp22x_adc_raw(struct iio_dev *indio_dev,
-> >>> +			  struct iio_chan_spec const *chan, int *val)
-> >>> +{
-> >>> +	struct axp20x_adc_iio *info =3D iio_priv(indio_dev);
-> >>> +	int size;
-> >>> +
-> >>> +	/*
-> >>> +	 * N.B.: Unlike the Chinese datasheets tell, the charging current i=
-s
-> >>> +	 * stored on 12 bits, not 13 bits. Only discharging current is on 1=
-3
-> >>> +	 * bits.
-> >>> +	 */
-> >>> +	if (chan->type =3D=3D IIO_CURRENT && chan->channel =3D=3D AXP22X_BA=
-TT_DISCHRG_I)
-> >>> +		size =3D 13;
-> >>> +	else
-> >>> +		size =3D 12;
-> >>> +
-> >>> +	*val =3D axp20x_read_variable_width(info->regmap, chan->address, si=
-ze);
-> >>> +	if (*val < 0)
-> >>> +		return *val;
-> >>> +
-> >>> +	return IIO_VAL_INT;
-> >>> +}
-> >>> +
-> >>> +static int axp20x_adc_scale_voltage(int channel, int *val, int *val2=
-)
-> >>> +{
-> >>> +	switch (channel) {
-> >>> +	case AXP20X_ACIN_V:
-> >>> +	case AXP20X_VBUS_V:
-> >>> +		*val =3D 1;
-> >>> +		*val2 =3D 700000;
-> >>> +		return IIO_VAL_INT_PLUS_MICRO;
-> >>> +
-> >>> +	case AXP20X_GPIO0_V:
-> >>> +	case AXP20X_GPIO1_V:
-> >>> +		*val =3D 0;
-> >>> +		*val2 =3D 500000;
-> >>> +		return IIO_VAL_INT_PLUS_MICRO;
-> >>> +
-> >>> +	case AXP20X_BATT_V:
-> >>> +		*val =3D 1;
-> >>> +		*val2 =3D 100000;
-> >>> +		return IIO_VAL_INT_PLUS_MICRO;
-> >>> +
-> >>> +	case AXP20X_IPSOUT_V:
-> >>> +		*val =3D 1;
-> >>> +		*val2 =3D 400000;
-> >>> +		return IIO_VAL_INT_PLUS_MICRO;
-> >>> +
-> >>> +	default:
-> >>> +		return -EINVAL;
-> >>> +	}
-> >>> +}
-> >>> +
-> >>> +static int axp20x_adc_scale_current(int channel, int *val, int *val2=
-)
-> >>> +{
-> >>> +	switch (channel) {
-> >>> +	case AXP20X_ACIN_I:
-> >>> +		*val =3D 0;
-> >>> +		*val2 =3D 625000;
-> >>> +		return IIO_VAL_INT_PLUS_MICRO;
-> >>> +
-> >>> +	case AXP20X_VBUS_I:
-> >>> +		*val =3D 0;
-> >>> +		*val2 =3D 375000;
-> >>> +		return IIO_VAL_INT_PLUS_MICRO;
-> >>> +
-> >>> +	case AXP20X_BATT_DISCHRG_I:
-> >>> +	case AXP20X_BATT_CHRG_I:
-> >>> +		*val =3D 0;
-> >>> +		*val2 =3D 500000;
-> >>> +		return IIO_VAL_INT_PLUS_MICRO;
-> >>> +
-> >>> +	default:
-> >>> +		return -EINVAL;
-> >>> +	}
-> >>> +}
-> >>> +
-> >>> +static int axp20x_adc_scale(struct iio_chan_spec const *chan, int *v=
-al,
-> >>> +			    int *val2)
-> >>> +{
-> >>> +	switch (chan->type) {
-> >>> +	case IIO_VOLTAGE:
-> >>> +		return axp20x_adc_scale_voltage(chan->channel, val, val2);
-> >>> +
-> >>> +	case IIO_CURRENT:
-> >>> +		return axp20x_adc_scale_current(chan->channel, val, val2);
-> >>> +
-> >>> +	case IIO_TEMP:
-> >>> +		*val =3D 100;
-> >>> +		return IIO_VAL_INT;
-> >>> +
-> >>> +	default:
-> >>> +		return -EINVAL;
-> >>> +	}
-> >>> +}
-> >>> +
-> >>> +static int axp22x_adc_scale(struct iio_chan_spec const *chan, int *v=
-al,
-> >>> +			    int *val2)
-> >>> +{
-> >>> +	switch (chan->type) {
-> >>> +	case IIO_VOLTAGE:
-> >>> +		if (chan->channel !=3D AXP22X_BATT_V)
-> >>> +			return -EINVAL;
-> >>> +
-> >>> +		*val =3D 1;
-> >>> +		*val2 =3D 100000;
-> >>> +		return IIO_VAL_INT_PLUS_MICRO;
-> >>> +
-> >>> +	case IIO_CURRENT:
-> >>> +		*val =3D 0;
-> >>> +		*val2 =3D 500000;
-> >>> +		return IIO_VAL_INT_PLUS_MICRO;
-> >>> +
-> >>> +	case IIO_TEMP:
-> >>> +		*val =3D 100;
-> >>> +		return IIO_VAL_INT;
-> >>> +
-> >>> +	default:
-> >>> +		return -EINVAL;
-> >>> +	}
-> >>> +}
-> >>> +
-> >>> +static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int =
-channel,
-> >>> +				     int *val)
-> >>> +{
-> >>> +	struct axp20x_adc_iio *info =3D iio_priv(indio_dev);
-> >>> +	int ret;
-> >>> +
-> >>> +	ret =3D regmap_read(info->regmap, AXP20X_GPIO10_IN_RANGE, val);
-> >>> +	if (ret < 0)
-> >>> +		return ret;
-> >>> +
-> >>> +	switch (channel) {
-> >>> +	case AXP20X_GPIO0_V:
-> >>> +		*val &=3D AXP20X_GPIO10_IN_RANGE_GPIO0;
-> >>> +		break;
-> >>> +
-> >>> +	case AXP20X_GPIO1_V:
-> >>> +		*val &=3D AXP20X_GPIO10_IN_RANGE_GPIO1;
-> >>> +		break;
-> >>> +
-> >>> +	default:
-> >>> +		return -EINVAL;
-> >>> +	}
-> >>> +
-> >>> +	*val =3D !!(*val) * 700000;
-> >>> +
-> >>> +	return IIO_VAL_INT;
-> >>> +}
-> >>> +
-> >>> +static int axp20x_adc_offset(struct iio_dev *indio_dev,
-> >>> +			     struct iio_chan_spec const *chan, int *val)
-> >>> +{
-> >>> +	switch (chan->type) {
-> >>> +	case IIO_VOLTAGE:
-> >>> +		return axp20x_adc_offset_voltage(indio_dev, chan->channel, val);
-> >>> +
-> >>> +	case IIO_TEMP:
-> >>> +		*val =3D -1447;
-> >>> +		return IIO_VAL_INT;
-> >>> +
-> >>> +	default:
-> >>> +		return -EINVAL;
-> >>> +	}
-> >>> +}
-> >>> +
-> >>> +static int axp20x_read_raw(struct iio_dev *indio_dev,
-> >>> +			   struct iio_chan_spec const *chan, int *val,
-> >>> +			   int *val2, long mask)
-> >>> +{
-> >>> +	switch (mask) {
-> >>> +	case IIO_CHAN_INFO_OFFSET:
-> >>> +		return axp20x_adc_offset(indio_dev, chan, val);
-> >>> +
-> >>> +	case IIO_CHAN_INFO_SCALE:
-> >>> +		return axp20x_adc_scale(chan, val, val2);
-> >>> +
-> >>> +	case IIO_CHAN_INFO_RAW:
-> >>> +		return axp20x_adc_raw(indio_dev, chan, val);
-> >>> +
-> >>> +	default:
-> >>> +		return -EINVAL;
-> >>> +	}
-> >>> +}
-> >>> +
-> >>> +static int axp22x_read_raw(struct iio_dev *indio_dev,
-> >>> +			   struct iio_chan_spec const *chan, int *val,
-> >>> +			   int *val2, long mask)
-> >>> +{
-> >>> +	switch (mask) {
-> >>> +	case IIO_CHAN_INFO_OFFSET:
-> >>> +		*val =3D -2677;
-> >>> +		return IIO_VAL_INT;
-> >>> +
-> >>> +	case IIO_CHAN_INFO_SCALE:
-> >>> +		return axp22x_adc_scale(chan, val, val2);
-> >>> +
-> >>> +	case IIO_CHAN_INFO_RAW:
-> >>> +		return axp22x_adc_raw(indio_dev, chan, val);
-> >>> +
-> >>> +	default:
-> >>> +		return -EINVAL;
-> >>> +	}
-> >>> +}
-> >>> +
-> >>> +static int axp20x_write_raw(struct iio_dev *indio_dev,
-> >>> +			    struct iio_chan_spec const *chan, int val, int val2,
-> >>> +			    long mask)
-> >>> +{
-> >>> +	struct axp20x_adc_iio *info =3D iio_priv(indio_dev);
-> >>> +	unsigned int reg, regval;
-> >>> +
-> >>> +	/*
-> >>> +	 * The AXP20X PMIC allows the user to choose between 0V and 0.7V of=
-fsets
-> >>> +	 * for (independently) GPIO0 and GPIO1 when in ADC mode.
-> >>> +	 */
-> >>> +	if (mask !=3D IIO_CHAN_INFO_OFFSET)
-> >>> +		return -EINVAL;
-> >>> +
-> >>> +	if (val !=3D 0 && val !=3D 700000)
-> >>> +		return -EINVAL;
-> >>> +
-> >>> +	switch (chan->channel) {
-> >>> +	case AXP20X_GPIO0_V:
-> >>> +		reg =3D AXP20X_GPIO10_IN_RANGE_GPIO0;
-> >>> +		regval =3D AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(!!val);
-> >>> +		break;
-> >>> +
-> >>> +	case AXP20X_GPIO1_V:
-> >>> +		reg =3D AXP20X_GPIO10_IN_RANGE_GPIO1;
-> >>> +		regval =3D AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(!!val);
-> >>> +		break;
-> >>> +
-> >>> +	default:
-> >>> +		return -EINVAL;
-> >>> +	}
-> >>> +
-> >>> +	return regmap_update_bits(info->regmap, AXP20X_GPIO10_IN_RANGE, reg=
-,
-> >>> +				  regval);
-> >>> +}
-> >>> +
-> >>> +static const struct iio_info axp20x_adc_iio_info =3D {
-> >>> +	.read_raw =3D axp20x_read_raw,
-> >>> +	.write_raw =3D axp20x_write_raw,
-> >>> +	.driver_module =3D THIS_MODULE,
-> >>> +};
-> >>> +
-> >>> +static const struct iio_info axp22x_adc_iio_info =3D {
-> >>> +	.read_raw =3D axp22x_read_raw,
-> >>> +	.driver_module =3D THIS_MODULE,
-> >>> +};
-> >>> +
-> >>> +static int axp20x_adc_rate(int rate)
-> >>> +{
-> >>> +	return AXP20X_ADC_RATE_HZ(rate);
-> >>> +}
-> >>> +
-> >>> +static int axp22x_adc_rate(int rate)
-> >>> +{
-> >>> +	return AXP22X_ADC_RATE_HZ(rate);
-> >>> +}
-> >>> +
-> >>> +struct axp_data {
-> >>> +	const struct iio_info		*iio_info;
-> >>> +	int				num_channels;
-> >>> +	struct iio_chan_spec const	*channels;
-> >>> +	unsigned long			adc_en1_mask;
-> >>> +	int				(*adc_rate)(int rate);
-> >>> +	bool				adc_en2;
-> >>> +	struct iio_map			*maps;
-> >>> +};
-> >>> +
-> >>> +static const struct axp_data axp20x_data =3D {
-> >>> +	.iio_info =3D &axp20x_adc_iio_info,
-> >>> +	.num_channels =3D ARRAY_SIZE(axp20x_adc_channels),
-> >>> +	.channels =3D axp20x_adc_channels,
-> >>> +	.adc_en1_mask =3D AXP20X_ADC_EN1_MASK,
-> >>> +	.adc_rate =3D axp20x_adc_rate,
-> >>> +	.adc_en2 =3D true,
-> >>> +	.maps =3D axp20x_maps,
-> >>> +};
-> >>> +
-> >>> +static const struct axp_data axp22x_data =3D {
-> >>> +	.iio_info =3D &axp22x_adc_iio_info,
-> >>> +	.num_channels =3D ARRAY_SIZE(axp22x_adc_channels),
-> >>> +	.channels =3D axp22x_adc_channels,
-> >>> +	.adc_en1_mask =3D AXP22X_ADC_EN1_MASK,
-> >>> +	.adc_rate =3D axp22x_adc_rate,
-> >>> +	.adc_en2 =3D false,
-> >>> +	.maps =3D axp22x_maps,
-> >>> +};
-> >>> +
-> >>> +static const struct platform_device_id axp20x_adc_id_match[] =3D {
-> >>> +	{ .name =3D "axp20x-adc", .driver_data =3D (kernel_ulong_t)&axp20x_=
-data, },
-> >>> +	{ .name =3D "axp22x-adc", .driver_data =3D (kernel_ulong_t)&axp22x_=
-data, },
-> >>> +	{ /* sentinel */ },
-> >>> +};
-> >>> +MODULE_DEVICE_TABLE(platform, axp20x_adc_id_match);
-> >>> +
-> >>> +static int axp20x_probe(struct platform_device *pdev)
-> >>> +{
-> >>> +	struct axp20x_adc_iio *info;
-> >>> +	struct iio_dev *indio_dev;
-> >>> +	struct axp20x_dev *axp20x_dev;
-> >>> +	int ret;
-> >>> +
-> >>> +	axp20x_dev =3D dev_get_drvdata(pdev->dev.parent);
-> >>> +
-> >>> +	indio_dev =3D devm_iio_device_alloc(&pdev->dev, sizeof(*info));
-> >>> +	if (!indio_dev)
-> >>> +		return -ENOMEM;
-> >>> +
-> >>> +	info =3D iio_priv(indio_dev);
-> >>> +	platform_set_drvdata(pdev, indio_dev);
-> >>> +
-> >>> +	info->regmap =3D axp20x_dev->regmap;
-> >>> +	indio_dev->dev.parent =3D &pdev->dev;
-> >>> +	indio_dev->dev.of_node =3D pdev->dev.of_node;
-> >>> +	indio_dev->modes =3D INDIO_DIRECT_MODE;
-> >>> +
-> >>> +	info->data =3D (struct axp_data *)platform_get_device_id(pdev)->dri=
-ver_data;
-> >>> +
-> >>> +	indio_dev->name =3D platform_get_device_id(pdev)->name;
-> >>> +	indio_dev->info =3D info->data->iio_info;
-> >>> +	indio_dev->num_channels =3D info->data->num_channels;
-> >>> +	indio_dev->channels =3D info->data->channels;
-> >>> +
-> >>> +	/* Enable the ADCs on IP */
-> >>> +	regmap_write(info->regmap, AXP20X_ADC_EN1, info->data->adc_en1_mask=
-);
-> >>> +
-> >>> +	if (info->data->adc_en2)
-> >>> +		/* Enable GPIO0/1 and internal temperature ADCs */
-> >>> +		regmap_update_bits(info->regmap, AXP20X_ADC_EN2,
-> >>> +				   AXP20X_ADC_EN2_MASK, AXP20X_ADC_EN2_MASK);
-> >>> +
-> >>> +	/* Configure ADCs rate */
-> >>> +	regmap_update_bits(info->regmap, AXP20X_ADC_RATE, AXP20X_ADC_RATE_M=
-ASK,
-> >>> +			   info->data->adc_rate(100));
-> >>> +
-> >>> +	ret =3D iio_map_array_register(indio_dev, info->data->maps);
-> >>> +	if (ret < 0) {
-> >>> +		dev_err(&pdev->dev, "failed to register IIO maps: %d\n", ret);
-> >>> +		goto fail_map;
-> >>> +	}
-> >>> +
-> >>> +	ret =3D iio_device_register(indio_dev);
-> >>> +	if (ret < 0) {
-> >>> +		dev_err(&pdev->dev, "could not register the device\n");
-> >>> +		goto fail_register;
-> >>> +	}
-> >>> +
-> >>> +	return 0;
-> >>> +
-> >>> +fail_register:
-> >>> +	iio_map_array_unregister(indio_dev);
-> >>> +
-> >>> +fail_map:
-> >>> +	regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
-> >>> +
-> >>> +	if (info->data->adc_en2)
-> >>> +		regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
-> >>> +
-> >>> +	return ret;
-> >>> +}
-> >>> +
-> >>> +static int axp20x_remove(struct platform_device *pdev)
-> >>> +{
-> >>> +	struct iio_dev *indio_dev =3D platform_get_drvdata(pdev);
-> >>> +	struct axp20x_adc_iio *info =3D iio_priv(indio_dev);
-> >>> +
-> >>> +	iio_device_unregister(indio_dev);
-> >>> +	iio_map_array_unregister(indio_dev);
-> >>> +
-> >>> +	regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
-> >>> +
-> >>> +	if (info->data->adc_en2)
-> >>> +		regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
-> >>> +
-> >>> +	return 0;
-> >>> +}
-> >>> +
-> >>> +static struct platform_driver axp20x_adc_driver =3D {
-> >>> +	.driver =3D {
-> >>> +		.name =3D "axp20x-adc",
-> >>> +	},
-> >>> +	.id_table =3D axp20x_adc_id_match,
-> >>> +	.probe =3D axp20x_probe,
-> >>> +	.remove =3D axp20x_remove,
-> >>> +};
-> >>> +
-> >>> +module_platform_driver(axp20x_adc_driver);
-> >>> +
-> >>> +MODULE_DESCRIPTION("ADC driver for AXP20X and AXP22X PMICs");
-> >>> +MODULE_AUTHOR("Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>");
-> >>> +MODULE_LICENSE("GPL");
-> >>>
-> >>
-> >=20
->=20
+ drivers/cpufreq/Kconfig.arm        |   6 +
+ drivers/cpufreq/Makefile           |   1 +
+ drivers/cpufreq/tegra186-cpufreq.c | 275 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 282 insertions(+)
+ create mode 100644 drivers/cpufreq/tegra186-cpufreq.c
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 74fa5c5904d3..74ed7e9a7f27 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -247,6 +247,12 @@ config ARM_TEGRA124_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver support for Tegra124 SOCs.
+ 
++config ARM_TEGRA186_CPUFREQ
++	tristate "Tegra186 CPUFreq support"
++	depends on ARCH_TEGRA && TEGRA_BPMP
++	help
++	  This adds the CPUFreq driver support for Tegra186 SOCs.
++
+ config ARM_TI_CPUFREQ
+ 	bool "Texas Instruments CPUFreq support"
+ 	depends on ARCH_OMAP2PLUS
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 9f5a8045f36d..b7e78f063c4f 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -77,6 +77,7 @@ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+ obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
++obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
+ obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
+ obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+ obj-$(CONFIG_ACPI_CPPC_CPUFREQ) += cppc_cpufreq.o
+diff --git a/drivers/cpufreq/tegra186-cpufreq.c b/drivers/cpufreq/tegra186-cpufreq.c
+new file mode 100644
+index 000000000000..fe7875311d62
+--- /dev/null
++++ b/drivers/cpufreq/tegra186-cpufreq.c
+@@ -0,0 +1,275 @@
++/*
++ * Copyright (c) 2017, NVIDIA CORPORATION. All rights reserved
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++#include <linux/cpufreq.h>
++#include <linux/dma-mapping.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++
++#include <soc/tegra/bpmp.h>
++#include <soc/tegra/bpmp-abi.h>
++
++#define EDVD_CORE_VOLT_FREQ(core)		(0x20 + (core) * 0x4)
++#define EDVD_CORE_VOLT_FREQ_F_SHIFT		0
++#define EDVD_CORE_VOLT_FREQ_V_SHIFT		16
++
++struct tegra186_cpufreq_cluster_info {
++	unsigned long offset;
++	int cpus[4];
++	unsigned int bpmp_cluster_id;
++};
++
++#define NO_CPU -1
++static const struct tegra186_cpufreq_cluster_info tegra186_clusters[] = {
++	/* Denver cluster */
++	{
++		.offset = SZ_64K * 7,
++		.cpus = { 1, 2, NO_CPU, NO_CPU },
++		.bpmp_cluster_id = 0,
++	},
++	/* A57 cluster */
++	{
++		.offset = SZ_64K * 6,
++		.cpus = { 0, 3, 4, 5 },
++		.bpmp_cluster_id = 1,
++	},
++};
++
++struct tegra186_cpufreq_cluster {
++	const struct tegra186_cpufreq_cluster_info *info;
++	struct cpufreq_frequency_table *table;
++};
++
++struct tegra186_cpufreq_data {
++	void __iomem *regs;
++
++	size_t num_clusters;
++	struct tegra186_cpufreq_cluster *clusters;
++};
++
++static int tegra186_cpufreq_init(struct cpufreq_policy *policy)
++{
++	struct tegra186_cpufreq_data *data = cpufreq_get_driver_data();
++	unsigned int i;
++
++	for (i = 0; i < data->num_clusters; i++) {
++		struct tegra186_cpufreq_cluster *cluster = &data->clusters[i];
++		const struct tegra186_cpufreq_cluster_info *info =
++			cluster->info;
++		int core;
++
++		for (core = 0; core < ARRAY_SIZE(info->cpus); core++) {
++			if (info->cpus[core] == policy->cpu)
++				break;
++		}
++		if (core == ARRAY_SIZE(info->cpus))
++			continue;
++
++		policy->driver_data =
++			data->regs + info->offset + EDVD_CORE_VOLT_FREQ(core);
++		cpufreq_table_validate_and_show(policy, cluster->table);
++	}
++
++	policy->cpuinfo.transition_latency = 300 * 1000;
++
++	return 0;
++}
++
++static int tegra186_cpufreq_set_target(struct cpufreq_policy *policy,
++				       unsigned int index)
++{
++	struct cpufreq_frequency_table *tbl = policy->freq_table + index;
++	void __iomem *edvd_reg = policy->driver_data;
++	u32 edvd_val = tbl->driver_data;
++
++	writel(edvd_val, edvd_reg);
++
++	return 0;
++}
++
++static struct cpufreq_driver tegra186_cpufreq_driver = {
++	.name = "tegra186",
++	.flags = CPUFREQ_STICKY | CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
++	.verify = cpufreq_generic_frequency_table_verify,
++	.target_index = tegra186_cpufreq_set_target,
++	.init = tegra186_cpufreq_init,
++	.attr = cpufreq_generic_attr,
++};
++
++static struct cpufreq_frequency_table *init_vhint_table(
++	struct platform_device *pdev, struct tegra_bpmp *bpmp,
++	unsigned int cluster_id)
++{
++	struct cpufreq_frequency_table *table;
++	struct mrq_cpu_vhint_request req;
++	struct tegra_bpmp_message msg;
++	struct cpu_vhint_data *data;
++	int err, i, j, num_rates = 0;
++	dma_addr_t phys;
++	void *virt;
++
++	virt = dma_alloc_coherent(bpmp->dev, sizeof(*data), &phys,
++				  GFP_KERNEL | GFP_DMA32);
++	if (!virt)
++		return ERR_PTR(-ENOMEM);
++
++	data = (struct cpu_vhint_data *)virt;
++
++	memset(&req, 0, sizeof(req));
++	req.addr = phys;
++	req.cluster_id = cluster_id;
++
++	memset(&msg, 0, sizeof(msg));
++	msg.mrq = MRQ_CPU_VHINT;
++	msg.tx.data = &req;
++	msg.tx.size = sizeof(req);
++
++	err = tegra_bpmp_transfer(bpmp, &msg);
++	if (err) {
++		table = ERR_PTR(err);
++		goto free;
++	}
++
++	for (i = data->vfloor; i <= data->vceil; i++) {
++		u16 ndiv = data->ndiv[i];
++
++		if (ndiv < data->ndiv_min || ndiv > data->ndiv_max)
++			continue;
++
++		/* Only store lowest voltage index for each rate */
++		if (i > 0 && ndiv == data->ndiv[i - 1])
++			continue;
++
++		num_rates++;
++	}
++
++	table = devm_kcalloc(&pdev->dev, num_rates + 1, sizeof(*table),
++			     GFP_KERNEL);
++	if (!table) {
++		table = ERR_PTR(-ENOMEM);
++		goto free;
++	}
++
++	for (i = data->vfloor, j = 0; i <= data->vceil; i++) {
++		struct cpufreq_frequency_table *point;
++		u16 ndiv = data->ndiv[i];
++		u32 edvd_val = 0;
++
++		if (ndiv < data->ndiv_min || ndiv > data->ndiv_max)
++			continue;
++
++		/* Only store lowest voltage index for each rate */
++		if (i > 0 && ndiv == data->ndiv[i - 1])
++			continue;
++
++		edvd_val |= i << EDVD_CORE_VOLT_FREQ_V_SHIFT;
++		edvd_val |= ndiv << EDVD_CORE_VOLT_FREQ_F_SHIFT;
++
++		point = &table[j++];
++		point->driver_data = edvd_val;
++		point->frequency = data->ref_clk_hz * ndiv / data->pdiv /
++			data->mdiv / 1000;
++	}
++
++	table[j].frequency = CPUFREQ_TABLE_END;
++
++free:
++	dma_free_coherent(bpmp->dev, sizeof(*data), virt, phys);
++
++	return table;
++}
++
++static int tegra186_cpufreq_probe(struct platform_device *pdev)
++{
++	struct tegra186_cpufreq_data *data;
++	struct tegra_bpmp *bpmp;
++	struct resource *res;
++	unsigned int i = 0, err;
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->clusters = devm_kcalloc(&pdev->dev, ARRAY_SIZE(tegra186_clusters),
++				      sizeof(*data->clusters), GFP_KERNEL);
++	if (!data->clusters)
++		return -ENOMEM;
++
++	data->num_clusters = ARRAY_SIZE(tegra186_clusters);
++
++	bpmp = tegra_bpmp_get(&pdev->dev);
++	if (IS_ERR(bpmp))
++		return PTR_ERR(bpmp);
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	data->regs = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(data->regs)) {
++		err = PTR_ERR(data->regs);
++		goto put_bpmp;
++	}
++
++	for (i = 0; i < data->num_clusters; i++) {
++		struct tegra186_cpufreq_cluster *cluster = &data->clusters[i];
++
++		cluster->info = &tegra186_clusters[i];
++		cluster->table = init_vhint_table(
++			pdev, bpmp, cluster->info->bpmp_cluster_id);
++		if (IS_ERR(cluster->table)) {
++			err = PTR_ERR(cluster->table);
++			goto put_bpmp;
++		}
++	}
++
++	tegra_bpmp_put(bpmp);
++
++	tegra186_cpufreq_driver.driver_data = data;
++
++	err = cpufreq_register_driver(&tegra186_cpufreq_driver);
++	if (err)
++		return err;
++
++	return 0;
++
++put_bpmp:
++	tegra_bpmp_put(bpmp);
++
++	return err;
++}
++
++static int tegra186_cpufreq_remove(struct platform_device *pdev)
++{
++	cpufreq_unregister_driver(&tegra186_cpufreq_driver);
++
++	return 0;
++}
++
++static const struct of_device_id tegra186_cpufreq_of_match[] = {
++	{ .compatible = "nvidia,tegra186-ccplex-cluster", },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, tegra186_cpufreq_of_match);
++
++static struct platform_driver tegra186_cpufreq_platform_driver = {
++	.driver = {
++		.name = "tegra186-cpufreq",
++		.of_match_table = tegra186_cpufreq_of_match,
++	},
++	.probe = tegra186_cpufreq_probe,
++	.remove = tegra186_cpufreq_remove,
++};
++module_platform_driver(tegra186_cpufreq_platform_driver);
++
++MODULE_AUTHOR("Mikko Perttunen <mperttunen@nvidia.com>");
++MODULE_DESCRIPTION("NVIDIA Tegra186 cpufreq driver");
++MODULE_LICENSE("GPL v2");
+-- 
+2.1.4
