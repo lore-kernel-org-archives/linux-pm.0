@@ -1,111 +1,85 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCHv3] power: supply: cpcap-charger: Add minimal CPCAP PMIC
- battery charger
-Date: Tue, 11 Apr 2017 17:28:29 +0200
-Message-ID: <20170411152829.padtau2mqtn6gxdg@earth>
-References: <20170327032513.22890-1-tony@atomide.com>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 0/3] soc/tegra: bpmp: Generic PM domains for Tegra186
+Date: Tue, 11 Apr 2017 17:28:38 +0200
+Message-ID: <20170411152838.GA13819@ulmo.ba.sec>
+References: <20170329163452.10761-1-thierry.reding@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="czdz5yzc36xntb76"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="BXVAT5kNtrzKuDFl"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170327032513.22890-1-tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>, Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <20170329163452.10761-1-thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stefan Kristiansson <stefank-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 
---czdz5yzc36xntb76
+--BXVAT5kNtrzKuDFl
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Tony,
+On Wed, Mar 29, 2017 at 06:34:49PM +0200, Thierry Reding wrote:
+> From: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>=20
+> Hi Rafael, Kevin, Ulf,
+>=20
+> This series implement generic power domains for Tegra186. Since the
+> power partitions on Tegra186 have a non-contiguous ID range, the PM
+> domain core is enhanced with a way to allow PM domain providers to
+> override the default ->xlate() implementation. This is used to look
+> up the correct PM domain given the ID read from device tree.
+>=20
+> The second patch updates the BPMP ABI header to a version that has
+> support for the MRQ_PG request which is used to enumerate available
+> power partitions and control them.
+>=20
+> An implementation of the generic PM domains using the MRQ_PG request
+> is provided in patch 3.
+>=20
+> Given the dependency of patch 3 on patch 1 I think it'd be easiest
+> to get an Acked-by on patch 1 and take all of these through the Tegra
+> tree. If that's okay with you, I can provide a stable branch with the
+> first patch that could be pulled into the PM tree to resolve potential
+> conflicts.
+>=20
+> Thanks,
+> Thierry
+>=20
+> Changes in v2:
+> - take into account PG_STATE_RUNNING in tegra_bpmp_powergate_is_powered()
+> - check return value of pm_genpd_init() and clean up on failure
+> - simplify error unwinding in tegra_bpmp_init_powergates()
+>=20
+> Thierry Reding (3):
+>   PM / Domains: Allow overriding the ->xlate() callback
+>   soc/tegra: bpmp: Update ABI header
+>   soc/tegra: bpmp: Implement generic PM domains
 
-On Sun, Mar 26, 2017 at 08:25:13PM -0700, Tony Lindgren wrote:
-> The custom CPCAP PMIC used on Motorola phones such as Droid 4 has a
-> USB battery charger. It can optionally also have a companion chip that
-> is used for wireless charging.
->=20
-> The charger on CPCAP also can feed VBUS for the USB host mode. This
-> can be handled by the existing kernel phy_companion interface.
->=20
-> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Cc: Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>
-> Cc: Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Signed-off-by: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-> ---
->=20
-> Changes since v2:
->=20
-> - Update binding based on comments by Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->=20
-> - Drop "motorola,cpcap-charger" compatible for now as this seems specific
->   to the motorola-mapphone
->=20
-> - Update Kconfig for "depends on IIO" and "default MFD_CPCAP"
->=20
-> Changes since v1:
->=20
-> - Fix scaling of IIO values as pointed out by Sebastian Reichel
->   <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->=20
-> - Use iio_read_channel_processed() instead of iio_read_channel_scaled()
->   as changed in the v2 of the ADC driver
->=20
-> - Add GPL v2 license header
->=20
-> ---
->  .../bindings/power/supply/cpcap-charger.txt        |  38 ++
->  drivers/power/supply/Kconfig                       |   8 +
->  drivers/power/supply/Makefile                      |   1 +
->  drivers/power/supply/cpcap-charger.c               | 681 +++++++++++++++=
-++++++
->  4 files changed, 728 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/cpcap-=
-charger.txt
->  create mode 100644 drivers/power/supply/cpcap-charger.c
->=20
-> diff --git a/Documentation/devicetree/bindings/power/supply/cpcap-charger=
-=2Etxt b/Documentation/devicetree/bindings/power/supply/cpcap-charger.txt
-> new file mode 100644
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/cpcap-charger.txt
-> @@ -0,0 +1,38 @@
-> +Motorola CPCAP PMIC battery charger binding
-> +
-> +Required properties:
-> +- compatible: Shall be "motorola,cpcap-charger" or
-> +	      "motorola,mapphone-cpcap-charger"
+Any comments on this? If not, can we get this into v4.12?
 
-I queued this with "motorola,cpcap-charger" also dropped from the
-binding document.
+Thanks,
+Thierry
 
--- Sebastian
-
---czdz5yzc36xntb76
+--BXVAT5kNtrzKuDFl
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljs9hoACgkQ2O7X88g7
-+prncg/+J1uTOD41TSyZrpnSHfcNQ2vXRUxmWRGSPDnN/l0xNOPp/xlKyCSnlV1Y
-QoNar6M3IQABCnDbAWPNGOfo9NfKZbQTj36NuFNKaeFhZupa9RsnYROXn/sdsTNj
-F/biJpdDmfqlcgOZvJjdhxxvLdRv3wCZFq5VlvC3ftcT1jgZ/IpCMZ6kILU5jfua
-MdyszGbWvV3W1L/d72EV5EBzYjsR84wKDJLT+nvuT02mILPSJFPgkQHZllWATv4X
-Lsbm1CauCXbULi1mi55bH+Wz8mMfLOPZkjXo7roYnvLGZhuisDIXxZt0plIi8exp
-me3VJRZSAoSjUXwr1PlXMdx5890+qsX2o1Nl7W97NTf+bpxR2akQcBtlQuuGHRSl
-7mHfrx9GbaJwooW07GAGUzbrNCCvq45B6cwXx+Zs/oQWuWNacaEjAHGydnRUCotv
-8Qno8dvvArobPHHkheJCeWDdTNEzv2bG5nv7GtkIA2TfuuVe5RH3GKGIm6r9XCTn
-ev05CqqICMzwoAlAscwOG0FjvYoBHWboWh0pET8RaJPyJ0GCB66L46zU4IcSSBQS
-xTL5kP/kdtQnQ8GVjk51I0+d+QOw3dknRFVmwVZm95SIH5f0l1XKoFnK8RbfC9iM
-wcxefxCBYl9WZ/eBQZA+5njzuWmIQWg2whg7WyDIVHDIahCfMlw=
-=/7E8
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAljs9iMACgkQ3SOs138+
+s6E+ZxAAuzb92nhuYroYs9PzTcP8wRj0ykSFhH+2rfxTHULhPg9kTlYv/iyBM/II
+/vCaVOeODBpHyCc2WpAZ/23OYkSFxA2VmMNNnGymj4IqxqROl7d/qws2oahwHrMe
+zmuelQzPe6AQEbvQBskJeYRor+OTOpceOvNIJ71UxZiAju6hruqua3zmY7BYJKy8
+PNHJ4tR+8JpRTZOeW1CXKRBH7I5K75rqEvpw1CViIAjQq+3BSVOnn7KGkZ0tig1B
++8/6AWsRQITD/QnvKZGJyHXTQclreAwcvdDfvF5gCUzHqXeOmAqGJSpehZqjxRCZ
+ySiOg/qU7GhY4MR0CpxNcSoEH+uIQxbx2WK9YxKNb3yt6fiubbEC4BIgGqEYu/jI
+qN896hljhpFIhJD01hA0cL11XW3QIdnrXXcoS1RnYVTkjTybBkxZ8OsWR0Or+p//
+fPoaD4dOLNGz+jyiz81xDrrkKOMEenb+KQDFOUkixmWc26yel/mEzPq3xacF2yWh
+1gZUwwX4sY6jQPceywHVmBlr4TmXoOb815r34jeYfcQzwg8IFajhz4ULVabewsWO
+6Xn154Isj6plECupJM02mbzj0PGNlH+ekTulrfzZpcLAFcqD3lxZkKDsrPGFybWe
+RsWGX0TI1DcdEJ+j91TgVZwFsvar8dHcticKAp19bFdy188EQyw=
+=IJkg
 -----END PGP SIGNATURE-----
 
---czdz5yzc36xntb76--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--BXVAT5kNtrzKuDFl--
