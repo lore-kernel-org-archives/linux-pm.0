@@ -1,62 +1,53 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 0/3] soc/tegra: bpmp: Generic PM domains for Tegra186
-Date: Tue, 11 Apr 2017 21:37:30 +0200
-Message-ID: <CAPDyKFqD+_sShdbo4uGisPO-6DvdcnZnx_bb_ubC9ZKHyTuPyA@mail.gmail.com>
-References: <20170329163452.10761-1-thierry.reding@gmail.com> <20170411152838.GA13819@ulmo.ba.sec>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC/RFT][PATCH 2/2] cpufreq: schedutil: Utilization aggregation
+Date: Tue, 11 Apr 2017 22:53:06 +0200
+Message-ID: <CAJZ5v0gvtcU2NjYmn-oOia6=_q+cZfA7EMCQyOSmyPFhObQWKA@mail.gmail.com>
+References: <3498238.liCqOyIkGA@aspire.rjw.lan> <2242635.g1ACnTm5vK@aspire.rjw.lan>
+ <CAJWu+orhpeirhB1u-KTOBjWTQoTEJdStR3BP14WxkB=RZP49sg@mail.gmail.com>
+ <CAJZ5v0gePrW+hnR4UdGnxuibhcUvcfHSfULFok3tYEsOvD7eLA@mail.gmail.com> <CAJWu+ookm9iEupdS+ZLU_1KwcqFMyqV5HAC4mpyCgdkcBy-_Mg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170411152838.GA13819-EkSeR96xj6Pcmrwk2tT4+A@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stefan Kristiansson <stefank-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJWu+ookm9iEupdS+ZLU_1KwcqFMyqV5HAC4mpyCgdkcBy-_Mg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Joel Fernandes <joelaf@google.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 11 April 2017 at 17:28, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+On Tue, Apr 11, 2017 at 3:57 AM, Joel Fernandes <joelaf@google.com> wrote:
+> On Mon, Apr 10, 2017 at 1:59 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> [..]
+>>>> +               sg_cpu->util = cfs_util;
+>>>> +               sg_cpu->max = cfs_max;
+>>>> +       }
+>>>>  }
+>>
+>>
+>> Well, that's the idea. :-)
+>>
+>> During the discussion at the OSPM-summit we concluded that discarding
+>> all of the utilization changes between the points at which frequency
+>> updates actually happened was not a good idea, so they needed to be
+>> aggregated somehow.
+>>
+>> There are a few ways to aggregate them, but the most straightforward
+>> one (and one which actually makes sense) is to take the maximum as the
+>> aggregate value.
+>>
+>> Of course, this means that we skew things towards performance here,
+>> but I'm not worried that much. :-)
 >
-> On Wed, Mar 29, 2017 at 06:34:49PM +0200, Thierry Reding wrote:
-> > From: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> >
-> > Hi Rafael, Kevin, Ulf,
-> >
-> > This series implement generic power domains for Tegra186. Since the
-> > power partitions on Tegra186 have a non-contiguous ID range, the PM
-> > domain core is enhanced with a way to allow PM domain providers to
-> > override the default ->xlate() implementation. This is used to look
-> > up the correct PM domain given the ID read from device tree.
-> >
-> > The second patch updates the BPMP ABI header to a version that has
-> > support for the MRQ_PG request which is used to enumerate available
-> > power partitions and control them.
-> >
-> > An implementation of the generic PM domains using the MRQ_PG request
-> > is provided in patch 3.
-> >
-> > Given the dependency of patch 3 on patch 1 I think it'd be easiest
-> > to get an Acked-by on patch 1 and take all of these through the Tegra
-> > tree. If that's okay with you, I can provide a stable branch with the
-> > first patch that could be pulled into the PM tree to resolve potential
-> > conflicts.
-> >
-> > Thanks,
-> > Thierry
-> >
-> > Changes in v2:
-> > - take into account PG_STATE_RUNNING in tegra_bpmp_powergate_is_powered()
-> > - check return value of pm_genpd_init() and clean up on failure
-> > - simplify error unwinding in tegra_bpmp_init_powergates()
-> >
-> > Thierry Reding (3):
-> >   PM / Domains: Allow overriding the ->xlate() callback
-> >   soc/tegra: bpmp: Update ABI header
-> >   soc/tegra: bpmp: Implement generic PM domains
->
-> Any comments on this? If not, can we get this into v4.12?
+> Does this increase the chance of going to idle at higher frequency?
+> Say in the last rate limit window, we have a high request followed by
+> a low request. After the window closes, by this algorithm we ignore
+> the low request and take the higher valued request, and then enter
+> idle. Then, wouldn't we be idling at higher frequency? I guess if you
+> enter "cluster-idle" then probably this isn't a big deal (like on the
+> ARM64 platforms I am working on). But I wasn't sure how expensive is
+> entering C-states at higher frequency on Intel platforms is or if it
+> is even a concern. :-D
 
-Thanks for the reminder!
+It isn't a concern at all AFAICS.
 
-Allow me to get a couple of more days for this, I have just catched up
-on mmc, due to travel and sickness.
-
-Kind regards
-Uffe
+Thanks,
+Rafael
