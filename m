@@ -1,73 +1,81 @@
-From: Ben Hutchings <ben@decadent.org.uk>
-Subject: Re: [PATCH] cpupower: Fix turbo frequency reporting for pre-Sandy
- Bridge cores
-Date: Tue, 11 Apr 2017 15:17:34 +0100
-Message-ID: <1491920254.2409.70.camel@decadent.org.uk>
-References: <20170410232944.GA4152@decadent.org.uk>
-         <22617475.I35FT52FBz@skinner>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: supply: lp8788: prevent out of bounds array access
+Date: Tue, 11 Apr 2017 16:18:57 +0200
+Message-ID: <20170411141857.ozxtxyftatg5i7ma@earth>
+References: <20170325160049.18943-1-giedrius.statkevicius@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha512";
-        protocol="application/pgp-signature"; boundary="=-1WhfsZYgKuh/cCzd+wjj"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="oymh5lalbvi2qc6r"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:53868 "EHLO
-        shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751396AbdDKORn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Apr 2017 10:17:43 -0400
-In-Reply-To: <22617475.I35FT52FBz@skinner>
+Received: from mail.kernel.org ([198.145.29.136]:39612 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751816AbdDKOTD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 11 Apr 2017 10:19:03 -0400
+Content-Disposition: inline
+In-Reply-To: <20170325160049.18943-1-giedrius.statkevicius@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: 859978@bugs.debian.org, GSR <gsr.bugs@infernal-iceberg.com>, linux-pm@vger.kernel.org, Rafael Wysocki <rafael@kernel.org>
+To: Giedrius =?utf-8?Q?Statkevi=C4=8Dius?= <giedrius.statkevicius@gmail.com>
+Cc: milo.kim@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---=-1WhfsZYgKuh/cCzd+wjj
-Content-Type: text/plain; charset="UTF-8"
+--oymh5lalbvi2qc6r
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2017-04-11 at 14:36 +0200, Thomas Renninger wrote:
-> Hi Ben,
+Hi,
+
+On Sat, Mar 25, 2017 at 06:00:49PM +0200, Giedrius Statkevi=C4=8Dius wrote:
+> val might become 7 in which case stime[7] (array of length 7) would be
+> accessed during the scnprintf call later and that will cause issues.
+> Obviously, string concatenation is not intended here so just a comma needs
+> to be added to fix the issue.
 >=20
-> good catch, thanks!
-> Could you resubmit adding my Signed-off-by, please.
-> Rafael could directly pick it up then?
-
-That doesn't make sense.  You should add a Signed-off-by if *you* send
-it on.  Otherwise Rafael or I can add an Acked-by.
-
-> > Reported-by: GSR <gsr.bugs@infernal-iceberg.com>
-> > Tested-by: GSR <gsr.bugs@infernal-iceberg.com>
+> Signed-off-by: Giedrius Statkevi=C4=8Dius <giedrius.statkevicius@gmail.co=
+m>
+> ---
+>  drivers/power/supply/lp8788-charger.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> These seem not to make much sense, at least not in the kernel
-> changelog?
+> diff --git a/drivers/power/supply/lp8788-charger.c b/drivers/power/supply=
+/lp8788-charger.c
+> index 509e2b341bd6..677f7c40b25a 100644
+> --- a/drivers/power/supply/lp8788-charger.c
+> +++ b/drivers/power/supply/lp8788-charger.c
+> @@ -651,7 +651,7 @@ static ssize_t lp8788_show_eoc_time(struct device *de=
+v,
+>  {
+>  	struct lp8788_charger *pchg =3D dev_get_drvdata(dev);
+>  	char *stime[] =3D { "400ms", "5min", "10min", "15min",
+> -			"20min", "25min", "30min" "No timeout" };
+> +			"20min", "25min", "30min", "No timeout" };
+>  	u8 val;
+> =20
+>  	lp8788_read_byte(pchg->lp, LP8788_CHG_EOC, &val);
 
-I don't see why not.
+Thanks, queued with Fixes Tag.
 
-Ben.
+-- Sebastian
 
---=20
-Ben Hutchings
-73.46% of all statistics are made up.
-
-
---=-1WhfsZYgKuh/cCzd+wjj
+--oymh5lalbvi2qc6r
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEErCspvTSmr92z9o8157/I7JWGEQkFAljs5X4ACgkQ57/I7JWG
-EQkJyRAAzTDnsyS954+4q1Khr76JlIC8pQhTC0WvUJ57B2EDPHsiOElKRK3OWy1C
-PLWe2/2zvZ4cZKMsYC+uoSTr/urrdyb2QsUSCVYKsxTDl0mjHNnZGNUiccGnYSYi
-lqacn2xNQGU9uJRT1GaUWdhbeQbdc/B5S4eKuaF1kttUzp/CBtJm4Sio1mKTjcJq
-uAabdj9TCMBJzrrsf9v6RnMYbM83jDuF4t50zHhKH6D0LbHvgjlBVzLMRXjloTLC
-cdulpE4Bs2zb7cZthVEoX7yTcaKNTWVqrrCO9RIMPx5sTvG9R7sCh/qowQZA59Ug
-m6NfPTJo94gjSoUbBYD9UgxWNI75wIE+n6Awl+j/dzG15jJ9kdvOPZ/8HFFj+nJD
-P9EoLDSrCnD0nFFGqpdT2yFwlvcCTvkcy29/1LLTG/mUesAZhIOt8o55+c6B6tC6
-bpMSC2p84Opl64/XYwOAB2PNko6murP3eiZP9co2pHkh3qwT9A4QR2oW7kWJxcUa
-R18Kdv95mIE4Y0jaegDUALIjdy/kbWlx2FN9X/hT2+nnlWad/kaqgSwdkDced4V0
-QgJGuAVDSBUEoRgpPszf/SXn2tSKcnpQ3R0sKEyF9yvqBCYUgzFgR9kA03nriEfQ
-25Ibjtn7eYvr2+gZz+WPNt1iWfiupYi6zILhUhT557CaBaugtOE=
-=SDuC
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljs5cwACgkQ2O7X88g7
++pr97hAAmP8xtj7lgo4WvqI2ObKv+m9TIw967VAnZFEoqCzAjVKPpbAOp+0zWhMA
+j/0NMJPzlw41rguWcCahIp7ME/74ObIozJBuFxZVmB6tRP+i3haWKS+QPgmyp3At
+Ar4DMosumcQ+DAhjtJD5RRYrHvV+C2nGctXMfZ7hh5KzXrai+t/klXynSlIYBya/
+kETm/S8ay/4gUB4KEBrx4koCyfLY53KUe2v6kVUBITGLtw6g1WNZeSkdOd9Tnaup
+loexIOvYU5l5WVbv2YvwFjZM795IYccV8hTl/jc3bQRkX1V88w2KtHxP9ntZWq0j
+QPwXa1GH30JZpQ+cvr08dKrp3M/Tq6EhFEmtxodBr6mLiRDjW1uz90ZIIJyVGNiM
+V2VitcNJIDBbzKCJNx3aYFQOZtb3jASIeBznYbQd3vBaFb87JJfoqMf3zJIIEx6Q
+n8KO7mJb/huGacfYAYXDQzqNf/Smi2GBfUGHUBCwAoaz0QuVP5zUhu2SBKcqG/SW
+yCJbve0FlscBsW82reBrLUez4acqSSIgMA94HDWmzajPKlxsah848l313FMVT2ac
+cfKgph+juFu91sFVHvnC8T5crDg/fQbO+kxm0Ak1iBFoVI1kvHcz5AQHjgmOt7tw
+QfDswO/e9cRmmh2q/sbthVX5iZmj/ko6Y/neSdCV95uBaolazNw=
+=bAij
 -----END PGP SIGNATURE-----
 
---=-1WhfsZYgKuh/cCzd+wjj--
+--oymh5lalbvi2qc6r--
