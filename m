@@ -1,120 +1,56 @@
-From: icenowy@aosc.io
-Subject: Re: [PATCH 4/5] ARM: sun8i: h3: add operating-points-v2 table for CPU
-Date: Tue, 11 Apr 2017 21:28:55 +0800
-Message-ID: <b37490ed1282f45542168701dea332bb@aosc.io>
-References: <20170408185025.53841-1-icenowy@aosc.io>
- <20170408185025.53841-5-icenowy@aosc.io>
- <20170411091346.mcwyskezadabsobn@lukather>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/4] power: supply: axp288_fuel_gauge: Unregister
+ duplicate ACPI battery supply
+Date: Tue, 11 Apr 2017 15:51:03 +0200
+Message-ID: <CAJZ5v0ih8UfsJH1uUjjeRPqo7-vrBR8ayc2q84qWcJ9y5QF-nw@mail.gmail.com>
+References: <20170316161601.32267-1-hdegoede@redhat.com> <20170316161601.32267-4-hdegoede@redhat.com>
+ <6382698.NuYXpb6L7h@aspire.rjw.lan> <0ed23626-b6b2-a42e-2a1d-762c8c833f7b@redhat.com>
+ <CAJZ5v0h466y6hBy_-12AEgcpAUXEA7cZkNwXZwvsHnjWtoqFeg@mail.gmail.com>
+ <eb52c4b4-fc3c-b11b-edef-a35c6bb0d82d@redhat.com> <CAJZ5v0i7TN+iJLR_SeaCrpKJ13g1_bQ-G54cugAF9Dm4=pifAg@mail.gmail.com>
+ <0c1cc4fc-d127-54d1-334b-9a569354d2a3@redhat.com> <c62e0707-7415-9473-98cb-3741c4f258ff@redhat.com>
+ <cb6ff75e-3ee8-fa34-82c2-ff1338c0048e@redhat.com> <c937143c-f112-7d49-dc11-1577d987b309@redhat.com>
+ <CAJZ5v0i0pZwBvd1WFYxGh9grbDyRkYWoLY7VSn3+mbLZdmQnxw@mail.gmail.com> <2796ccd7-333c-848c-1409-2a76fb498d94@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hermes.aosc.io ([199.195.250.187]:49965 "EHLO hermes.aosc.io"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751797AbdDKN27 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Apr 2017 09:28:59 -0400
-In-Reply-To: <20170411091346.mcwyskezadabsobn@lukather>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2796ccd7-333c-848c-1409-2a76fb498d94@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: linux-pm@vger.kernel.org, linux-sunxi@googlegroups.com, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-在 2017-04-11 17:13，Maxime Ripard 写道：
-> On Sun, Apr 09, 2017 at 02:50:24AM +0800, Icenowy Zheng wrote:
->> The CPU on Allwinner H3 can do dynamic frequency scaling.
->> 
->> Add a DVFS table based on the one tweaked by Armbian developers, which
->> are proven to work stably on BSP kernels.
->> 
->> Frequencies higher than 1008MHz are temporarily dropped in the table, 
->> as
->> they may lead to over voltage on boards without proper regulator
->> settings or over temperature on boards with proper regulator settings.
->> They will be added back once regulator settings are ready and thermal
->> sensor driver is merged.
->> 
->> In order to satisfy all different regulators (SY8106A which is 50mV 
->> per
->> level, SY8113B which have two states: 1.1V and 1.3V, and some board 
->> with
->> non-tweakable regulators), all the OPPs are defined with a range which 
->> has
->> the target value as the minimum allowed value, and 1.3V (the highest
->> VDD-CPUX voltage suggested by the datasheet) as the maximum allowed 
->> value.
->> It's proven to work well with a board with SY8113B.
->> 
->> Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
->> ---
->>  arch/arm/boot/dts/sun8i-h3.dtsi | 38 
->> +++++++++++++++++++++++++++++++++++++-
->>  1 file changed, 37 insertions(+), 1 deletion(-)
->> 
->> diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi 
->> b/arch/arm/boot/dts/sun8i-h3.dtsi
->> index b36f9f423c39..a0cee17fe44b 100644
->> --- a/arch/arm/boot/dts/sun8i-h3.dtsi
->> +++ b/arch/arm/boot/dts/sun8i-h3.dtsi
->> @@ -43,32 +43,68 @@
->>  #include "sunxi-h3-h5.dtsi"
->> 
->>  / {
->> +	cpu0_opp_table: opp_table0 {
->> +		compatible = "operating-points-v2";
->> +		opp-shared;
->> +
->> +		opp@480000000 {
->> +			opp-hz = /bits/ 64 <480000000>;
->> +			opp-microvolt = <980000 980000 1300000>;
->> +			clock-latency-ns = <244144>; /* 8 32k periods */
->> +		};
->> +
->> +		opp@648000000 {
->> +			opp-hz = /bits/ 64 <816000000>;
->> +			opp-microvolt = <1020000 1020000 1300000>;
->> +			clock-latency-ns = <244144>; /* 8 32k periods */
->> +		};
->> +
->> +		opp@912000000 {
->> +			opp-hz = /bits/ 64 <960000000>;
->> +			opp-microvolt = <1080000 1080000 1300000>;
->> +			clock-latency-ns = <244144>; /* 8 32k periods */
->> +		};
->> +
->> +		opp@1008000000 {
->> +			opp-hz = /bits/ 64 <1008000000>;
->> +			opp-microvolt = <1140000 1140000 1300000>;
->> +			clock-latency-ns = <244144>; /* 8 32k periods */
->> +		};
->> +	};
->> +
-> 
-> From your serie, I guess you never actually tested those OPPs on any
-> board without SY8113B, right?
+On Tue, Apr 11, 2017 at 11:18 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
+>
+> On 10-04-17 22:01, Rafael J. Wysocki wrote:
+>>
+>> On Mon, Apr 10, 2017 at 8:13 PM, Hans de Goede <hdegoede@redhat.com>
+>> wrote:
+>
 
-Yes. But I will test them on an Orange Pi PC (newly got) soon.
-(After all PLL_CPUX-related things are well fixed)
+[cut]
 
-P.S. how to implement such a thing:
+>
+> The reason I changed my mind on the blacklist approach and went
+> from unregistering on native-power-supply register to the blacklist
+> is because some users where seeing a ton of ACPI errors from the
+> ACPI battery driver trying to use the broken ACPI battery dev in
+> the DTSD before the native PMIC driver loaded and unregistered
+> the battery dev. So I really believe the blacklist is the right
+> approach.
 
-- Before tweaking CPUX clock, first switch it to osc24M
-   (implemented yet)
-- Before tweaking PLL_CPUX clock (triggered by tweaking CPUX
-   clock), first gate it
-- After tweaking PLL_CPUX clock, ungate it and wait it to be stable
-- After tweaking PLL_CPUX clock, change CPUX mux back to PLL_CPUX
-   (implemented yet)
+Fair enough.
 
-I think notifiers on PLL_CPUX can be used to implement the second
-and third part?
+> I just got confirmation from the user that the regression on the
+> Dell 5855 was indeed a false positive.
+>
+> So from my pov we are good to go with v5 of patch 1 of this
+> set and v2 (also send as v3 and v4 but unchanged) of patches
+> 2-4 of this set.
 
-> 
-> (and therefore, without operating at the voltages listed here).
-> 
-> Maxime
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+OK, but please resend the patches you're happy with afresh and let me
+know what is superseded by them, so that I don't have to carry out any
+research on that.
+
+Thanks,
+Rafael
