@@ -1,50 +1,103 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] thermal: cpu_cooling: Use kmalloc_array() in
- __cpufreq_cooling_register()
-Date: Tue, 11 Apr 2017 11:40:27 +0530
-Message-ID: <20170411061027.GB3670@vireshk-i7>
-References: <d45b0bbb-0893-906d-edfc-44b712e55b14@users.sourceforge.net>
+Subject: Re: [PATCH][v2] cpufreq: Bring CPUs up even if cpufreq_online failed
+Date: Tue, 11 Apr 2017 11:41:00 +0530
+Message-ID: <20170411061100.GC3670@vireshk-i7>
+References: <1491716716-22222-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <kernel-janitors-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:36061 "EHLO
+        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752224AbdDKGLD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Apr 2017 02:11:03 -0400
+Received: by mail-pf0-f175.google.com with SMTP id o126so43941747pfb.3
+        for <linux-pm@vger.kernel.org>; Mon, 10 Apr 2017 23:11:03 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <d45b0bbb-0893-906d-edfc-44b712e55b14@users.sourceforge.net>
-Sender: kernel-janitors-owner@vger.kernel.org
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+In-Reply-To: <1491716716-22222-1-git-send-email-yu.c.chen@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Stable # 4 . 9+" <stable@vger.kernel.org>
 
-On 10-04-17, 17:12, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Mon, 10 Apr 2017 17:00:13 +0200
+On 09-04-17, 13:45, Chen Yu wrote:
+> There is a report that after
+> commit 27622b061eb4 ("cpufreq: Convert to hotplug state machine"),
+> the normal CPU offline/online cycle failed on some platforms.
+> According to the ftrace result, this problem was triggered on
+> platforms using acpi-freq as the default cpufreq driver,
+> and due to the lack of some ACPI freq method(_PCT eg), the
+> cpufreq_online failed and returned a negative value, thus the CPU
+> hotplug statemachine rollbacked the CPU online process. Actually
+> from the user's perspective the failure of cpufreq_online should
+> not prevent that CPU from being brought up, although cpufreq might
+> not work on that CPU. BTW, during system bootup the cpufreq_online
+> is not invoked via cpuhotplug statemachine but by the cpufreq device
+> creation process, thus the APs can be brought up although cpufreq_online
+> failed in that stage.
 > 
-> A multiplication for the size determination of a memory allocation
-> indicated that an array data structure should be processed.
-> Thus use the corresponding function "kmalloc_array".
+> This patch ignores the return value of cpufreq_online/offline and
+> let the cpufreq framework to deal with the failure that, cpufreq_online()
+> will do a proper rollback in that case. And if the _PCT is missing,
+> the acpi cpufreq driver will print a warning if the corresponding
+> debug options have been enabled.
 > 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=194581
+> Fixes: 27622b061eb4 ("cpufreq: Convert to hotplug state machine")
+> Reported-and-tested-by: Tomasz Maciej Nowak <tmn505@gmail.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: Stable <stable@vger.kernel.org> # 4.9+
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 > ---
->  drivers/thermal/cpu_cooling.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+> v2:
+>  - According to Rafael and Sebastian's suggestion, remove
+>    the error log in cpuhp_cpufreq_online/offline, and let
+>    the cpufreq_online and cpufreq_offline to print the warning
+>    and do the necessary rollback if they failed.
+> ---
+>  drivers/cpufreq/cpufreq.c | 18 ++++++++++++++++--
+>  1 file changed, 16 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 69d0f430b2d1..273d9d5dbe0f 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -823,8 +823,9 @@ __cpufreq_cooling_register(struct device_node *np,
->  	cpufreq_for_each_valid_entry(pos, table)
->  		cpufreq_dev->max_level++;
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index bc96d42..0e3f649 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2398,6 +2398,20 @@ EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
+>   *********************************************************************/
+>  static enum cpuhp_state hp_online;
 >  
-> -	cpufreq_dev->freq_table = kmalloc(sizeof(*cpufreq_dev->freq_table) *
-> -					  cpufreq_dev->max_level, GFP_KERNEL);
-> +	cpufreq_dev->freq_table = kmalloc_array(cpufreq_dev->max_level,
-> +						sizeof(*cpufreq_dev->freq_table),
-> +						GFP_KERNEL);
->  	if (!cpufreq_dev->freq_table) {
->  		cool_dev = ERR_PTR(-ENOMEM);
->  		goto free_time_in_idle_timestamp;
+> +static int cpuhp_cpufreq_online(unsigned int cpu)
+> +{
+> +	cpufreq_online(cpu);
+> +
+> +	return 0;
+> +}
+> +
+> +static int cpuhp_cpufreq_offline(unsigned int cpu)
+> +{
+> +	cpufreq_offline(cpu);
+> +
+> +	return 0;
+> +}
+> +
+>  /**
+>   * cpufreq_register_driver - register a CPU Frequency driver
+>   * @driver_data: A struct cpufreq_driver containing the values#
+> @@ -2460,8 +2474,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+>  	}
+>  
+>  	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "cpufreq:online",
+> -					cpufreq_online,
+> -					cpufreq_offline);
+> +					cpuhp_cpufreq_online,
+> +					cpuhp_cpufreq_offline);
+>  	if (ret < 0)
+>  		goto err_if_unreg;
+>  	hp_online = ret;
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
