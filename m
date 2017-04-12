@@ -1,88 +1,112 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/2] power: supply: tps65217: remove debug messages for
- function calls
-Date: Wed, 12 Apr 2017 17:01:14 +0200
-Message-ID: <20170412150113.v3opwtovza2d3qvk@earth>
-References: <20170403164446.28076-1-enric.balletbo@collabora.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC v3 0/5] Add capacity capping support to the CPU controller
+Date: Wed, 12 Apr 2017 17:37:12 +0200
+Message-ID: <20170412153712.albkjck27ewzmbjr@hirez.programming.kicks-ass.net>
+References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+ <20170320145131.GA3623@htj.duckdns.org>
+ <20170320172233.GA28391@e110439-lin>
+ <20170410073622.2y6tnpcd2ssuoztz@hirez.programming.kicks-ass.net>
+ <20170411175833.GI29455@e110439-lin>
+ <20170412121009.GD3093@worktop>
+ <20170412135538.GM29455@e110439-lin>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="gotcspk7xqgieite"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170403164446.28076-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-List-Id: linux-pm@vger.kernel.org
-
-
---gotcspk7xqgieite
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([65.50.211.133]:59054 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751696AbdDLPhU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 11:37:20 -0400
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20170412135538.GM29455@e110439-lin>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@arm.com>, Chris Redpath <chris.redpath@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-Hi,
+On Wed, Apr 12, 2017 at 02:55:38PM +0100, Patrick Bellasi wrote:
+> On 12-Apr 14:10, Peter Zijlstra wrote:
 
-On Mon, Apr 03, 2017 at 06:44:45PM +0200, Enric Balletbo i Serra wrote:
-> Equivalent information can be nowadays obtained using function tracer.
->=20
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-> ---
->  drivers/power/supply/tps65217_charger.c | 4 ----
->  1 file changed, 4 deletions(-)
->=20
-> diff --git a/drivers/power/supply/tps65217_charger.c b/drivers/power/supp=
-ly/tps65217_charger.c
-> index 29b61e8..1f52340 100644
-> --- a/drivers/power/supply/tps65217_charger.c
-> +++ b/drivers/power/supply/tps65217_charger.c
-> @@ -58,8 +58,6 @@ static int tps65217_config_charger(struct tps65217_char=
-ger *charger)
->  {
->  	int ret;
-> =20
-> -	dev_dbg(charger->dev, "%s\n", __func__);
-> -
->  	/*
->  	 * tps65217 rev. G, p. 31 (see p. 32 for NTC schematic)
->  	 *
-> @@ -205,8 +203,6 @@ static int tps65217_charger_probe(struct platform_dev=
-ice *pdev)
->  	int ret;
->  	int i;
-> =20
-> -	dev_dbg(&pdev->dev, "%s\n", __func__);
-> -
->  	charger =3D devm_kzalloc(&pdev->dev, sizeof(*charger), GFP_KERNEL);
->  	if (!charger)
->  		return -ENOMEM;
+> > Even for the cgroup interface, I think they should set a per-task
+> > property, not a group property.
+> 
+> Ok, right now using CGroups ans primary (and unique) interface, these
+> values are tracked as attributes of the CPU controller. Tasks gets
+> them by reading these attributes once they are binded to a CGroup.
+> 
+> Are you proposing to move these attributes within the task_struct?
 
-Thanks, queued.
+/me goes look at your patches again, because I thought you already set
+per task_struct values.
 
--- Sebastian
+@@ -1531,6 +1531,9 @@ struct task_struct {
+        struct sched_rt_entity rt;
+ #ifdef CONFIG_CGROUP_SCHED
+        struct task_group *sched_task_group;
++#ifdef CONFIG_CAPACITY_CLAMPING
++       struct rb_node cap_clamp_node[2];
++#endif
 
---gotcspk7xqgieite
-Content-Type: application/pgp-signature; name="signature.asc"
+Yeah, see...
 
------BEGIN PGP SIGNATURE-----
+> In that case we should also defined a primary interface to set them,
+> any preferred proposal? sched_setattr(), prctl?
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljuQTkACgkQ2O7X88g7
-+pr/0g/9F8bj9QghqwMkxZpyt6ef6PEK5WdrWjuJovrpdcgE2vg64G9s2s5sGMaB
-UB5lvYVYCUa4CeWGL2UP9q+ViJvOElpg5O13Gxcj9MM9FIR8SIUnlR3qqU+nE5YP
-bHhawatq22RhvnJx6hKt60RSfRo6/vqOsUjAHLwQ8lVStbV3mT87S2P8ReAbPHSS
-F65K7safRS5bhsyPeNU9Ae20DRlY62HfZ3SI58mIoXQalXqdY1vyDwo7ZPMtmmdG
-W52bIk/7bIM0VFCgNzxsZke6Ms8aYp3shhOQFraSyg465GQkegajFUXwgVuEhfnz
-kL5Ju73gyYsqF38OrFytin1cKgUUOD3KLrgSefc8LD4yqm7KuJP7809LSGvMqird
-iV0szMeVvE5ispTLkWjp+WURj24P88R6bQyYkf5j+nCxrCtsKGS3HIqJ5WhXIWq7
-AVRkmGcfkre67QBL2OhmW8nxg6q4BNTr0D8JVqNXW65FlJS+FGtHQiYvis28wSYq
-qw/ytXGM+C2RvKOshkUnA8LvcaxXr8FOmGkoX9KuWx1NbVoFrMzrKze/66WYJe8s
-Y+XnSuQ+PLgB7qwJIUFlTs+4z0zIv66v4gsMd1dN/u9PPBie/424Gb8oYFNt4ri/
-T9KmTgtxc3iCkNnfyM0fwoihI0caAApng2VWMl6mYhkX6JTUOz8=
-=erk5
------END PGP SIGNATURE-----
+We could, which I think is the important point.
 
---gotcspk7xqgieite--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> By regular rb-tree do you mean the cfs_rq->tasks_timeline?
+
+Yep.
+
+> Because in that case this would apply only to the FAIR class, while
+> the rb-tree we are using here are across classes.
+> Supporting both FAIR and RT I think is a worth having feature.
+
+*groan* I don't want to even start thinking what this feature means in
+the context of RT, head hurts enough.
+
+> > So the bigger point is that if the min/max is a per-task property (even
+> > if set through a cgroup interface), the min(max) / max(min) thing is
+> > wrong.
+> 
+> Perhaps I'm not following you here but, being per-task does not mean
+> that we need to aggregate these constraints by summing them (look
+> below)...
+>
+> > If the min/max were to apply to each individual task's util, you'd end
+> > up with something like: Dom(\Sum util) = [min(1, \Sum min), min(1, \Sum max)].
+> 
+> ... as you do here.
+> 
+> Let's use the usual simple example, where these per-tasks constraints
+> are configured:
+>
+> - TaskA: capacity_min: 20% capacity_max: 80%
+> - TaskB: capacity_min: 40% capacity_max: 60%
+> 
+> This means that, at CPU level, we want to enforce the following
+> clamping depending on the tasks status:
+> 
+>  RUNNABLE tasks    capacity_min    capacity_max
+> A) TaskA                      20%             80%
+> B) TaskA,TaskB                40%             80%
+> C) TaskB                      40%             60%
+>  
+> In case C, TaskA gets a bigger boost while is co-scheduled with TaskB.
+
+(bit unfortunate you gave your cases and tasks the same enumeration)
+
+But this I quite strongly feel is wrong. If you've given your tasks a
+minimum OPP, you've in fact given them a minimum bandwidth, for at a
+given frequency you can say how long they'll run, right?
+
+So if you want to maintain that case B should be 60%. Once one of the
+tasks completes it will drop again. That is, the increased value
+represents the additional runnable 'load' over the min from the
+currently running task. Combined they will still complete in reduced
+time.
+
+> Notice that this CPU-level aggregation is used just for OPP selection
+> on that CPU, while for TaskA we still use capacity_min=20% when we are
+> looking for a CPU.
+
+And you don't find that inconsistent?
