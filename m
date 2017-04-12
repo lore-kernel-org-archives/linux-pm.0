@@ -1,89 +1,66 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC/RFT][PATCH] cpufreq: schedutil: Reduce frequencies slower
-Date: Wed, 12 Apr 2017 14:33:34 +0530
-Message-ID: <20170412090334.GE5910@vireshk-i7>
-References: <1514608.eWxQqcMBcc@aspire.rjw.lan>
+From: Keerthy <j-keerthy@ti.com>
+Subject: [PATCH] thermal: core: Allow orderly_poweroff to be called only once
+Date: Wed, 12 Apr 2017 14:42:12 +0530
+Message-ID: <1491988332-13398-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:33698 "EHLO
-        mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753448AbdDLJDi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 05:03:38 -0400
-Received: by mail-pf0-f178.google.com with SMTP id s16so11085496pfs.0
-        for <linux-pm@vger.kernel.org>; Wed, 12 Apr 2017 02:03:38 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1514608.eWxQqcMBcc@aspire.rjw.lan>
+Received: from fllnx210.ext.ti.com ([198.47.19.17]:34844 "EHLO
+        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752805AbdDLJNj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 05:13:39 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, John <john.ettedgui@gmail.com>
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: j-keerthy@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
-On 30-03-17, 23:36, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The schedutil governor reduces frequencies too fast in some
-> situations which cases undesirable performance drops to
-> appear.
-> 
-> To address that issue, make schedutil reduce the frequency slower by
-> setting it to the average of the value chosen during the previous
-> iteration of governor computations and the new one coming from its
-> frequency selection formula.
-> 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=194963
-> Reported-by: John <john.ettedgui@gmail.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> This addresses a practical issue, but one in the "responsiveness" or
-> "interactivity" category which is quite hard to represent quantitatively.
-> 
-> As reported by John in BZ194963, schedutil does not ramp up P-states quickly
-> enough which causes audio issues to appear in his gaming setup.  At least it
-> evidently is worse than ondemand in this respect and the patch below helps.
-> 
-> The patch essentially repeats the trick added some time ago to the load-based
-> P-state selection algorithm in intel_pstate, which allowed us to make it viable
-> for performance-oriented users, and which is to reduce frequencies at a slower
-> pace.
-> 
-> The reason why I chose the average is because it is computationally cheap
-> and pretty much the max reasonable slowdown and the idea is that in case
-> there's something about to run that we don't know about yet, it is better to
-> stay at a higher level for a while more to avoid having to get up from the floor
-> every time.
-> 
-> But technically speaking it is a filter. :-)
-> 
-> So among other things I'm wondering if that leads to substantial increases in
-> energy consumption anywhere.
-> 
-> Thanks,
-> Rafael
-> 
-> ---
->  kernel/sched/cpufreq_schedutil.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-> ===================================================================
-> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
-> @@ -101,6 +101,9 @@ static void sugov_update_commit(struct s
->  	if (sg_policy->next_freq == next_freq)
->  		return;
->  
+thermal_zone_device_check --> thermal_zone_device_update -->
+handle_thermal_trip --> handle_critical_trips --> orderly_poweroff
 
-Maybe add a comment over here on why we are adding this workaround .
+The above sequence happens every 250/500 mS based on the configuration.
+The orderly_poweroff function is getting called every 250/500 mS.
+With a full fledged file system it takes at least 5-10 Seconds to
+power off gracefully.
 
-> +	if (sg_policy->next_freq > next_freq)
-> +		next_freq = (sg_policy->next_freq + next_freq) >> 1;
-> +
->  	sg_policy->next_freq = next_freq;
->  	sg_policy->last_freq_update_time = time;
+In that period due to the thermal_zone_device_check triggering
+periodically the thermal work queues bombard with
+orderly_poweroff calls multiple times eventually leading to
+failures in gracefully powering off the system.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Make sure that orderly_poweroff is called only once.
 
+Fixes: 0c01ebbfd3caf1d ("Thermal: Remove throttling logic out of thermal_sys.c")
+Reported-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Keerthy <j-keerthy@ti.com>
+---
+ drivers/thermal/thermal_core.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 11f0675..4e68ce0 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -326,6 +326,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 				  int trip, enum thermal_trip_type trip_type)
+ {
+ 	int trip_temp;
++	static bool power_off_triggered;
+ 
+ 	tz->ops->get_trip_temp(tz, trip, &trip_temp);
+ 
+@@ -338,11 +339,12 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 	if (tz->ops->notify)
+ 		tz->ops->notify(tz, trip, trip_type);
+ 
+-	if (trip_type == THERMAL_TRIP_CRITICAL) {
++	if (trip_type == THERMAL_TRIP_CRITICAL && !power_off_triggered) {
+ 		dev_emerg(&tz->device,
+ 			  "critical temperature reached(%d C),shutting down\n",
+ 			  tz->temperature / 1000);
+ 		orderly_poweroff(true);
++		power_off_triggered = true;
+ 	}
+ }
+ 
 -- 
-viresh
+1.9.1
