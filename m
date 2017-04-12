@@ -1,23 +1,23 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 10/13] cpufreq/sh: Replace racy task affinity logic
-Date: Wed, 12 Apr 2017 22:07:36 +0200
-Message-ID: <20170412201042.958216363@linutronix.de>
+Subject: [patch 09/13] cpufreq/ia64: Replace racy task affinity logic
+Date: Wed, 12 Apr 2017 22:07:35 +0200
+Message-ID: <20170412201042.865458445@linutronix.de>
 References: <20170412200726.941336635@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline; filename=cpufreq-sh--Use-work_on_cpu--.patch
+Content-Disposition: inline; filename=cpufreq-ia64--Use-work_on_cpu--.patch
 Sender: linux-kernel-owner@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Sebastian Siewior <bigeasy@linutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "David S. Miller" <davem@davemloft.net>, Fenghua Yu <fenghua.yu@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <lenb@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tejun Heo <tj@kernel.org>, Tony Luck <tony.luck@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The target() callback must run on the affected cpu. This is achieved by
-temporarily setting the affinity of the calling thread to the requested CPU
-and reset it to the original affinity afterwards.
+The get() and target() callbacks must run on the affected cpu. This is
+achieved by temporarily setting the affinity of the calling thread to the
+requested CPU and reset it to the original affinity afterwards.
 
 That's racy vs. concurrent affinity settings for that thread resulting in
-code executing on the wrong CPU.
+code executing on the wrong CPU and overwriting the new affinity setting.
 
 Replace it by work_on_cpu(). All call pathes which invoke the callbacks are
 already protected against CPU hotplug.
@@ -25,92 +25,182 @@ already protected against CPU hotplug.
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
 Cc: linux-pm@vger.kernel.org
 ---
- drivers/cpufreq/sh-cpufreq.c |   45 +++++++++++++++++++++++++------------------
- 1 file changed, 27 insertions(+), 18 deletions(-)
+ drivers/cpufreq/ia64-acpi-cpufreq.c |   91 +++++++++++++++---------------------
+ 1 file changed, 38 insertions(+), 53 deletions(-)
 
---- a/drivers/cpufreq/sh-cpufreq.c
-+++ b/drivers/cpufreq/sh-cpufreq.c
-@@ -30,54 +30,63 @@
+--- a/drivers/cpufreq/ia64-acpi-cpufreq.c
++++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
+@@ -34,6 +34,11 @@ struct cpufreq_acpi_io {
+ 	unsigned int				resume;
+ };
  
- static DEFINE_PER_CPU(struct clk, sh_cpuclk);
- 
-+struct cpufreq_target {
-+	struct cpufreq_policy	*policy;
-+	unsigned int		freq;
++struct cpufreq_acpi_req {
++	unsigned int		cpu;
++	unsigned int		state;
 +};
 +
- static unsigned int sh_cpufreq_get(unsigned int cpu)
+ static struct cpufreq_acpi_io	*acpi_io_data[NR_CPUS];
+ 
+ static struct cpufreq_driver acpi_cpufreq_driver;
+@@ -83,8 +88,7 @@ processor_get_pstate (
+ static unsigned
+ extract_clock (
+ 	struct cpufreq_acpi_io *data,
+-	unsigned value,
+-	unsigned int cpu)
++	unsigned value)
  {
- 	return (clk_get_rate(&per_cpu(sh_cpuclk, cpu)) + 500) / 1000;
+ 	unsigned long i;
+ 
+@@ -98,60 +102,42 @@ extract_clock (
  }
  
--/*
-- * Here we notify other drivers of the proposed change and the final change.
-- */
--static int sh_cpufreq_target(struct cpufreq_policy *policy,
--			     unsigned int target_freq,
--			     unsigned int relation)
-+static long __sh_cpufreq_target(void *arg)
- {
--	unsigned int cpu = policy->cpu;
-+	struct cpufreq_target *target = arg;
-+	struct cpufreq_policy *policy = target->policy;
-+	int cpu = policy->cpu;
- 	struct clk *cpuclk = &per_cpu(sh_cpuclk, cpu);
--	cpumask_t cpus_allowed;
- 	struct cpufreq_freqs freqs;
- 	struct device *dev;
- 	long freq;
  
--	cpus_allowed = current->cpus_allowed;
+-static unsigned int
++static long
+ processor_get_freq (
+-	struct cpufreq_acpi_io	*data,
+-	unsigned int		cpu)
++	void *arg)
+ {
+-	int			ret = 0;
+-	u32			value = 0;
+-	cpumask_t		saved_mask;
+-	unsigned long 		clock_freq;
++	struct cpufreq_acpi_req *req = arg;
++	struct cpufreq_acpi_io	*data = acpi_io_data[req->cpu];
++	u32			value;
++	int			ret;
+ 
+ 	pr_debug("processor_get_freq\n");
+-
+-	saved_mask = current->cpus_allowed;
 -	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+ 	if (smp_processor_id() != cpu)
+-		goto migrate_end;
++		return -EAGAIN;
+ 
+ 	/* processor_get_pstate gets the instantaneous frequency */
+ 	ret = processor_get_pstate(&value);
 -
--	BUG_ON(smp_processor_id() != cpu);
-+	if (smp_processor_id() != cpu)
-+		return -ENODEV;
- 
- 	dev = get_cpu_device(cpu);
- 
- 	/* Convert target_freq from kHz to Hz */
--	freq = clk_round_rate(cpuclk, target_freq * 1000);
-+	freq = clk_round_rate(cpuclk, target->freq * 1000);
- 
- 	if (freq < (policy->min * 1000) || freq > (policy->max * 1000))
- 		return -EINVAL;
- 
--	dev_dbg(dev, "requested frequency %u Hz\n", target_freq * 1000);
-+	dev_dbg(dev, "requested frequency %u Hz\n", target->freq * 1000);
- 
- 	freqs.old	= sh_cpufreq_get(cpu);
- 	freqs.new	= (freq + 500) / 1000;
- 	freqs.flags	= 0;
- 
--	cpufreq_freq_transition_begin(policy, &freqs);
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	cpufreq_freq_transition_begin(target->policy, &freqs);
- 	clk_set_rate(cpuclk, freq);
--	cpufreq_freq_transition_end(policy, &freqs, 0);
-+	cpufreq_freq_transition_end(target->policy, &freqs, 0);
- 
- 	dev_dbg(dev, "set frequency %lu Hz\n", freq);
+ 	if (ret) {
+-		set_cpus_allowed_ptr(current, &saved_mask);
+ 		pr_warn("get performance failed with error %d\n", ret);
+-		ret = 0;
+-		goto migrate_end;
++		return ret;
+ 	}
+-	clock_freq = extract_clock(data, value, cpu);
+-	ret = (clock_freq*1000);
 -
- 	return 0;
+-migrate_end:
+-	set_cpus_allowed_ptr(current, &saved_mask);
+-	return ret;
++	return 1000 * extract_clock(data, value);
  }
  
-+/*
-+ * Here we notify other drivers of the proposed change and the final change.
-+ */
-+static int sh_cpufreq_target(struct cpufreq_policy *policy,
-+			     unsigned int target_freq,
-+			     unsigned int relation)
-+{
-+	struct cpufreq_target data = { .policy = policy, .freq = target_freq };
-+
-+	return work_on_cpu(policy->cpu, __sh_cpufreq_target, &data);
-+}
-+
- static int sh_cpufreq_verify(struct cpufreq_policy *policy)
+ 
+-static int
++static long
+ processor_set_freq (
+-	struct cpufreq_acpi_io	*data,
+-	struct cpufreq_policy   *policy,
+-	int			state)
++	void *arg)
  {
- 	struct clk *cpuclk = &per_cpu(sh_cpuclk, policy->cpu);
+-	int			ret = 0;
+-	u32			value = 0;
+-	cpumask_t		saved_mask;
+-	int			retval;
++	struct cpufreq_acpi_req *req = arg;
++	unsigned int		cpu = req->cpu;
++	struct cpufreq_acpi_io	*data = acpi_io_data[cpu];
++	int			ret, state = req->state;
++	u32			value;
+ 
+ 	pr_debug("processor_set_freq\n");
+-
+-	saved_mask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, cpumask_of(policy->cpu));
+-	if (smp_processor_id() != policy->cpu) {
+-		retval = -EAGAIN;
+-		goto migrate_end;
+-	}
++	if (smp_processor_id() != cpu)
++		return -EAGAIN;
+ 
+ 	if (state == data->acpi_data.state) {
+ 		if (unlikely(data->resume)) {
+@@ -159,8 +145,7 @@ processor_set_freq (
+ 			data->resume = 0;
+ 		} else {
+ 			pr_debug("Already at target state (P%d)\n", state);
+-			retval = 0;
+-			goto migrate_end;
++			return 0;
+ 		}
+ 	}
+ 
+@@ -171,7 +156,6 @@ processor_set_freq (
+ 	 * First we write the target state's 'control' value to the
+ 	 * control_register.
+ 	 */
+-
+ 	value = (u32) data->acpi_data.states[state].control;
+ 
+ 	pr_debug("Transitioning to state: 0x%08x\n", value);
+@@ -179,17 +163,11 @@ processor_set_freq (
+ 	ret = processor_set_pstate(value);
+ 	if (ret) {
+ 		pr_warn("Transition failed with error %d\n", ret);
+-		retval = -ENODEV;
+-		goto migrate_end;
++		return -ENODEV;
+ 	}
+ 
+ 	data->acpi_data.state = state;
+-
+-	retval = 0;
+-
+-migrate_end:
+-	set_cpus_allowed_ptr(current, &saved_mask);
+-	return (retval);
++	return 0;
+ }
+ 
+ 
+@@ -197,11 +175,13 @@ static unsigned int
+ acpi_cpufreq_get (
+ 	unsigned int		cpu)
+ {
+-	struct cpufreq_acpi_io *data = acpi_io_data[cpu];
++	struct cpufreq_acpi_req req;
++	long ret;
+ 
+-	pr_debug("acpi_cpufreq_get\n");
++	req.cpu = cpu;
++	ret = work_on_cpu(cpu, processor_get_freq, &req);
+ 
+-	return processor_get_freq(data, cpu);
++	return ret > 0 ? (unsigned int) ret : 0;
+ }
+ 
+ 
+@@ -210,7 +190,12 @@ acpi_cpufreq_target (
+ 	struct cpufreq_policy   *policy,
+ 	unsigned int index)
+ {
+-	return processor_set_freq(acpi_io_data[policy->cpu], policy, index);
++	struct cpufreq_acpi_req req;
++
++	req.cpu = policy->cpu;
++	req.state = index;
++
++	return work_on_cpu(cpu, processor_set_freq, &req);
+ }
+ 
+ static int
