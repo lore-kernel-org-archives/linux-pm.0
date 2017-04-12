@@ -1,49 +1,50 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v5 0/4] BQ24190 charger fixes
-Date: Wed, 12 Apr 2017 08:50:18 +0200
-Message-ID: <20494385-9c06-1e3b-4e3a-5a1328cd3632@redhat.com>
-References: <20170411115957.14253-1-liam@networkimprov.net>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v2 03/10] x86: assembly, use SYM_FUNC_END for functions
+Date: Wed, 12 Apr 2017 08:52:11 +0200
+Message-ID: <20170412065211.GA16544@gmail.com>
+References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
+ <20170320123222.15453-1-jslaby@suse.cz>
+ <20170320123222.15453-3-jslaby@suse.cz>
+ <20170322142610.bo5c6wzlbqnxrgt3@treble>
+ <e4f7197c-559e-0dc2-c4e4-e369bf503cbb@suse.cz>
+ <b7800998-2a60-b967-10fc-482ebd6fadf0@suse.cz>
+ <20170410193512.d67vefxedoockybg@treble>
+ <e79c90da-6785-e888-2f77-a5f2083698e0@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:41062 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753216AbdDLGuU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 12 Apr 2017 02:50:20 -0400
-In-Reply-To: <20170411115957.14253-1-liam@networkimprov.net>
+Received: from mail-wr0-f194.google.com ([209.85.128.194]:35678 "EHLO
+        mail-wr0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751079AbdDLGwP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 02:52:15 -0400
+Content-Disposition: inline
+In-Reply-To: <e79c90da-6785-e888-2f77-a5f2083698e0@suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Josh Poimboeuf <jpoimboe@redhat.com>, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org
 
-Hi,
 
-On 11-04-17 13:59, Liam Breck wrote:
-> Hi Sebastian,
->
-> Here in one patchset are two patches I posted recently, and two more:
->
-> Patch 1 is a replacement (as agreed) for
->   "power: supply: bq24190_charger: Don't spam the logs on charger plug / unplug"
-> Patch 2 fixes up Hans' extcon patch. If you would like me to squash it with his
->   original patch, let me know.
-> Patch 3 (repost) fixes some issues with PM runtime error handling.
-> Patch 4 fixes a nit in register_reset().
->
-> Changed in v5:
-> * move condition in extcon OTG boost code
-> * document extcon client invocation of charger driver
-> * udelay -> usleep_range in register_reset()
->
-> Changes in v4:
-> * fix definition of bq24190_reg_poc_chg_config_*
-> * revert to if (device_property_read... == 0)
+* Jiri Slaby <jslaby@suse.cz> wrote:
 
-The entire series looks good to me and is:
+> On 04/10/2017, 09:35 PM, Josh Poimboeuf wrote:
+> > The code should be in a mergeable state after each patch.  If only
+> > patches 1-3 were merged, the code would be in an inconsistent state,
+> > with some functions having confusing ENTRY/SYM_FUNC_END pairs.  That
+> > complicates git history and also makes it harder to review each patch.
+> > 
+> > It would be cleaner to separate things out.  First, convert ENTRY/END
+> > functions to use ENDPROC, which is a minor bug fix.  Then they can be
+> > converted to the new SYM_FUNC_START/END macros in a separate patch.
+> 
+> OTOH I don't think touching and reviewing the same place twice is what
+> actually maintainers would want to see. But as I wrote earlier, I can do
+> whatever is preferred -- therefore I am asking before I start reworking
+> the patches: maintainers, what do you prefer?
 
-Acked-by: Hans de Goede <hdegoede@redhat.com>
+I'd lean towards Josh's suggestion of a more granular series. Having to review 
+more is sometimes less, if the patches are more focused.
 
-Regards,
+Thanks,
 
-Hans
+	Ingo
