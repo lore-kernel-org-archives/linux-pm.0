@@ -1,79 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC 5/9] sched: cpufreq: remove smp_processor_id() in remote
- paths
-Date: Wed, 12 Apr 2017 19:56:28 +0530
-Message-ID: <20170412142628.GH5910@vireshk-i7>
-References: <cover.1489058244.git.viresh.kumar@linaro.org>
- <834d098efe029ee687bac7690bb482e9263a766b.1489058244.git.viresh.kumar@linaro.org>
- <1836427.bpauTYz19k@aspire.rjw.lan>
- <20170411103556.GC13627@vireshk-i7>
- <CAJZ5v0iQ4X=Vt54EvJce9R9rPhtVqvznte8=HoQ_UOAZ1fQj2g@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC v3 0/5] Add capacity capping support to the CPU controller
+Date: Wed, 12 Apr 2017 16:34:14 +0200
+Message-ID: <20170412143414.2c27dakhrydl2pqb@hirez.programming.kicks-ass.net>
+References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+ <20170320145131.GA3623@htj.duckdns.org>
+ <20170320172233.GA28391@e110439-lin>
+ <20170410073622.2y6tnpcd2ssuoztz@hirez.programming.kicks-ass.net>
+ <20170411175833.GI29455@e110439-lin>
+ <20170412124822.GG3093@worktop>
+ <20170412132741.GK29455@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:35074 "EHLO
-        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752224AbdDLO0f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 10:26:35 -0400
-Received: by mail-pf0-f174.google.com with SMTP id i5so14657244pfc.2
-        for <linux-pm@vger.kernel.org>; Wed, 12 Apr 2017 07:26:34 -0700 (PDT)
+Received: from bombadil.infradead.org ([65.50.211.133]:54762 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752731AbdDLOeV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 10:34:21 -0400
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iQ4X=Vt54EvJce9R9rPhtVqvznte8=HoQ_UOAZ1fQj2g@mail.gmail.com>
+In-Reply-To: <20170412132741.GK29455@e110439-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Steve Muckle <smuckle.linux@gmail.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, eas-dev@lists.linaro.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@arm.com>, Chris Redpath <chris.redpath@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-On 11-04-17, 16:00, Rafael J. Wysocki wrote:
-> On Tue, Apr 11, 2017 at 12:35 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 29-03-17, 23:28, Rafael J. Wysocki wrote:
-> >> On Thursday, March 09, 2017 05:15:15 PM Viresh Kumar wrote:
-> >> > @@ -216,7 +216,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
-> >> >     if (flags & SCHED_CPUFREQ_RT_DL) {
-> >> >             next_f = policy->cpuinfo.max_freq;
-> >> >     } else {
-> >> > -           sugov_get_util(&util, &max);
-> >> > +           sugov_get_util(&util, &max, hook->cpu);
-> >>
-> >> Why is this not racy?
-> >
-> > Why would reading the utilization values be racy? The only dynamic value here is
-> > "util_avg" and I am not sure if reading it is racy.
-> >
-> > But, this whole routine has races which I ignored as we may end up updating
-> > frequency simultaneously from two threads.
+On Wed, Apr 12, 2017 at 02:27:41PM +0100, Patrick Bellasi wrote:
+> On 12-Apr 14:48, Peter Zijlstra wrote:
+> > On Tue, Apr 11, 2017 at 06:58:33PM +0100, Patrick Bellasi wrote:
+> > > >     illustrated per your above points in that it affects both, while in
+> > > >     fact it actually modifies another metric, namely util_avg.
+> > > 
+> > > I don't see it modifying in any direct way util_avg.
+> > 
+> > The point is that clamps called 'capacity' are applied to util. So while
+> > you don't modify util directly, you do modify the util signal (for one
+> > consumer).
 > 
-> Those races aren't there if we don't update cross-CPU, which is my point. :-)
-
-Of course. There are no races without this series.
-
-> >> >             sugov_iowait_boost(sg_cpu, &util, &max);
-> >> >             next_f = get_next_freq(sg_policy, util, max);
-> >> >     }
-> >> > @@ -272,7 +272,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
-> >> >     unsigned long util, max;
-> >> >     unsigned int next_f;
-> >> >
-> >> > -   sugov_get_util(&util, &max);
-> >> > +   sugov_get_util(&util, &max, hook->cpu);
-> >> >
-> >>
-> >> And here?
-> >>
-> >> >     raw_spin_lock(&sg_policy->update_lock);
-> >
-> > The lock prevents the same here though.
-> >
-> > So, if we are going to use this series, then we can use the same update-lock in
-> > case of single cpu per policies as well.
+> Right, but this consumer (i.e. schedutil) it's already translating
+> the util_avg into a next_freq (which ultimately it's a capacity).
 > 
-> No, we can't.
-> 
-> The lock is unavoidable in the mulit-CPU policies case, but there's no
-> way I will agree on using a lock in the single-CPU case.
+> Thus, I don't see a big misfit in that code path to "filter" this
+> translation with a capacity clamp.
 
-How do you suggest to avoid the locking here then ? Some atomic
-variable read/write as done in cpufreq_governor.c ?
-
--- 
-viresh
+Still strikes me as odd though.
