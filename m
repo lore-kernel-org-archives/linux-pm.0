@@ -1,127 +1,116 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 12/13] cpufreq/sparc-us2e: Replace racy task affinity logic
-Date: Wed, 12 Apr 2017 22:07:38 +0200
-Message-ID: <20170412201043.129216383@linutronix.de>
+Subject: [patch 10/13] cpufreq/sh: Replace racy task affinity logic
+Date: Wed, 12 Apr 2017 22:07:36 +0200
+Message-ID: <20170412201042.958216363@linutronix.de>
 References: <20170412200726.941336635@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline;
- filename=cpufreq-sparc-us2e--Remove-affinity-games.patch
+Content-Disposition: inline; filename=cpufreq-sh--Use-work_on_cpu--.patch
 Sender: linux-kernel-owner@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Sebastian Siewior <bigeasy@linutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "David S. Miller" <davem@davemloft.net>, Fenghua Yu <fenghua.yu@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <lenb@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tejun Heo <tj@kernel.org>, Tony Luck <tony.luck@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The access to the HBIRD_ESTAR_MODE register in the cpu frequency control
-functions must happen on the target CPU. This is achieved by temporarily
-setting the affinity of the calling user space thread to the requested CPU
+The target() callback must run on the affected cpu. This is achieved by
+temporarily setting the affinity of the calling thread to the requested CPU
 and reset it to the original affinity afterwards.
 
-That's racy vs. CPU hotplug and concurrent affinity settings for that
-thread resulting in code executing on the wrong CPU and overwriting the
-new affinity setting.
+That's racy vs. concurrent affinity settings for that thread resulting in
+code executing on the wrong CPU.
 
-Replace it by a straight forward smp function call. 
+Replace it by work_on_cpu(). All call pathes which invoke the callbacks are
+already protected against CPU hotplug.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: "David S. Miller" <davem@davemloft.net>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linux-pm@vger.kernel.org
 ---
- drivers/cpufreq/sparc-us2e-cpufreq.c |   45 ++++++++++++++++-------------------
- 1 file changed, 21 insertions(+), 24 deletions(-)
+ drivers/cpufreq/sh-cpufreq.c |   45 +++++++++++++++++++++++++------------------
+ 1 file changed, 27 insertions(+), 18 deletions(-)
 
---- a/drivers/cpufreq/sparc-us2e-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us2e-cpufreq.c
-@@ -118,10 +118,6 @@ static void us2e_transition(unsigned lon
- 			    unsigned long clock_tick,
- 			    unsigned long old_divisor, unsigned long divisor)
- {
--	unsigned long flags;
--
--	local_irq_save(flags);
--
- 	estar &= ~ESTAR_MODE_DIV_MASK;
+--- a/drivers/cpufreq/sh-cpufreq.c
++++ b/drivers/cpufreq/sh-cpufreq.c
+@@ -30,54 +30,63 @@
  
- 	/* This is based upon the state transition diagram in the IIe manual.  */
-@@ -152,8 +148,6 @@ static void us2e_transition(unsigned lon
- 	} else {
- 		BUG();
- 	}
--
--	local_irq_restore(flags);
- }
+ static DEFINE_PER_CPU(struct clk, sh_cpuclk);
  
- static unsigned long index_to_estar_mode(unsigned int index)
-@@ -229,48 +223,51 @@ static unsigned long estar_to_divisor(un
- 	return ret;
- }
- 
-+static void __us2e_freq_get(void *arg)
-+{
-+	unsigned long *estar = arg;
++struct cpufreq_target {
++	struct cpufreq_policy	*policy;
++	unsigned int		freq;
++};
 +
-+	*estar = read_hbreg(HBIRD_ESTAR_MODE_ADDR);
-+}
-+
- static unsigned int us2e_freq_get(unsigned int cpu)
+ static unsigned int sh_cpufreq_get(unsigned int cpu)
  {
--	cpumask_t cpus_allowed;
- 	unsigned long clock_tick, estar;
- 
--	cpumask_copy(&cpus_allowed, &current->cpus_allowed);
--	set_cpus_allowed_ptr(current, cpumask_of(cpu));
--
- 	clock_tick = sparc64_get_clock_tick(cpu) / 1000;
--	estar = read_hbreg(HBIRD_ESTAR_MODE_ADDR);
--
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	if (smp_call_function_single(cpu, __us2e_freq_get, &estar, 1))
-+		return 0;
- 
- 	return clock_tick / estar_to_divisor(estar);
+ 	return (clk_get_rate(&per_cpu(sh_cpuclk, cpu)) + 500) / 1000;
  }
  
--static int us2e_freq_target(struct cpufreq_policy *policy, unsigned int index)
-+static void __us2e_freq_target(void *arg)
+-/*
+- * Here we notify other drivers of the proposed change and the final change.
+- */
+-static int sh_cpufreq_target(struct cpufreq_policy *policy,
+-			     unsigned int target_freq,
+-			     unsigned int relation)
++static long __sh_cpufreq_target(void *arg)
  {
 -	unsigned int cpu = policy->cpu;
-+	unsigned int cpu = smp_processor_id();
-+	unsigned int *index = arg;
- 	unsigned long new_bits, new_freq;
- 	unsigned long clock_tick, divisor, old_divisor, estar;
++	struct cpufreq_target *target = arg;
++	struct cpufreq_policy *policy = target->policy;
++	int cpu = policy->cpu;
+ 	struct clk *cpuclk = &per_cpu(sh_cpuclk, cpu);
 -	cpumask_t cpus_allowed;
--
--	cpumask_copy(&cpus_allowed, &current->cpus_allowed);
+ 	struct cpufreq_freqs freqs;
+ 	struct device *dev;
+ 	long freq;
+ 
+-	cpus_allowed = current->cpus_allowed;
 -	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+-
+-	BUG_ON(smp_processor_id() != cpu);
++	if (smp_processor_id() != cpu)
++		return -ENODEV;
  
- 	new_freq = clock_tick = sparc64_get_clock_tick(cpu) / 1000;
--	new_bits = index_to_estar_mode(index);
--	divisor = index_to_divisor(index);
-+	new_bits = index_to_estar_mode(*index);
-+	divisor = index_to_divisor(*index);
- 	new_freq /= divisor;
+ 	dev = get_cpu_device(cpu);
  
- 	estar = read_hbreg(HBIRD_ESTAR_MODE_ADDR);
+ 	/* Convert target_freq from kHz to Hz */
+-	freq = clk_round_rate(cpuclk, target_freq * 1000);
++	freq = clk_round_rate(cpuclk, target->freq * 1000);
  
- 	old_divisor = estar_to_divisor(estar);
+ 	if (freq < (policy->min * 1000) || freq > (policy->max * 1000))
+ 		return -EINVAL;
  
--	if (old_divisor != divisor)
-+	if (old_divisor != divisor) {
- 		us2e_transition(estar, new_bits, clock_tick * 1000,
- 				old_divisor, divisor);
-+	}
-+}
+-	dev_dbg(dev, "requested frequency %u Hz\n", target_freq * 1000);
++	dev_dbg(dev, "requested frequency %u Hz\n", target->freq * 1000);
  
+ 	freqs.old	= sh_cpufreq_get(cpu);
+ 	freqs.new	= (freq + 500) / 1000;
+ 	freqs.flags	= 0;
+ 
+-	cpufreq_freq_transition_begin(policy, &freqs);
 -	set_cpus_allowed_ptr(current, &cpus_allowed);
-+static int us2e_freq_target(struct cpufreq_policy *policy, unsigned int index)
-+{
-+	unsigned int cpu = policy->cpu;
++	cpufreq_freq_transition_begin(target->policy, &freqs);
+ 	clk_set_rate(cpuclk, freq);
+-	cpufreq_freq_transition_end(policy, &freqs, 0);
++	cpufreq_freq_transition_end(target->policy, &freqs, 0);
  
--	return 0;
-+	return smp_call_function_single(cpu, __us2e_freq_target, &index, 1))
+ 	dev_dbg(dev, "set frequency %lu Hz\n", freq);
+-
+ 	return 0;
  }
  
- static int __init us2e_freq_cpu_init(struct cpufreq_policy *policy)
++/*
++ * Here we notify other drivers of the proposed change and the final change.
++ */
++static int sh_cpufreq_target(struct cpufreq_policy *policy,
++			     unsigned int target_freq,
++			     unsigned int relation)
++{
++	struct cpufreq_target data = { .policy = policy, .freq = target_freq };
++
++	return work_on_cpu(policy->cpu, __sh_cpufreq_target, &data);
++}
++
+ static int sh_cpufreq_verify(struct cpufreq_policy *policy)
+ {
+ 	struct clk *cpuclk = &per_cpu(sh_cpuclk, policy->cpu);
