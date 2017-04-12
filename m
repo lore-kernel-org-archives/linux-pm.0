@@ -1,136 +1,168 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: Re: [PATCH] thermal: core: Add a back up thermal shutdown mechanism
-Date: Wed, 12 Apr 2017 22:14:36 +0530
-Message-ID: <b0830fa9-9a3b-6862-6cab-274c17810227@ti.com>
-References: <1490941820-13511-1-git-send-email-j-keerthy@ti.com>
- <20170411172918.GA5193@localhost.localdomain>
- <f64632d5-c780-e5fe-cff7-8ed1459348a0@ti.com>
- <1491967248.2357.25.camel@intel.com>
- <492e72af-ff33-d193-071e-5bc00df9a8b0@ti.com>
- <20170412040542.GA11305@localhost.localdomain>
- <abf93eec-890f-4c3e-68fa-58c10678dde9@ti.com>
- <1491985580.2357.39.camel@intel.com>
- <db07d448-0fa9-f582-a323-5edcb9a0b509@ti.com>
- <1491986744.2357.42.camel@intel.com>
- <20170412154358.GA12881@localhost.localdomain>
- <b565f2c9-fdd7-7525-da91-695f113e631b@ti.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
+ power-domains
+Date: Wed, 12 Apr 2017 17:49:44 +0100
+Message-ID: <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
+References: <cover.1490001099.git.viresh.kumar@linaro.org>
+ <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx209.ext.ti.com ([198.47.19.16]:32816 "EHLO
-        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752731AbdDLQpW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 12:45:22 -0400
-In-Reply-To: <b565f2c9-fdd7-7525-da91-695f113e631b@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
 
 
-On Wednesday 12 April 2017 10:01 PM, Grygorii Strashko wrote:
+On 20/03/17 09:32, Viresh Kumar wrote:
+> Power-domains need to express their active states in DT and what's
+> better than OPP table for that.
 > 
+> This patch allows power-domains to reuse OPP tables to express their
+> active states. The "opp-hz" property isn't a required property anymore
+> as power-domains may not always use them.
 > 
-> On 04/12/2017 10:44 AM, Eduardo Valentin wrote:
->> Hello,
->>
-> ...
+> Add a new property "domain-performance-state", which will contain
+> positive integer values to represent performance levels of the
+> power-domains as described in this patch.
 > 
->>
->> I agree. But there it nothing that says it is not reenterable. If you
->> saw something in this line, can you please share?
->>
->>>>> will you generate a patch to do this?
->>>> Sure. I will generate a patch to take care of 1) To make sure that
->>>> orderly_poweroff is called only once right away. I have already
->>>> tested.
->>>>
->>>> for 2) Cancel all the scheduled work queues to monitor the
->>>> temperature.
->>>> I will take some more time to make it and test.
->>>>
->>>> Is that okay? Or you want me to send both together?
->>>>
->>> I think you can send patch for step 1 first.
->>
->> I am happy to see that Keerthy found the problem with his setup and a
->> possible solution. But I have a few concerns here.
->>
->> 1. If regular shutdown process takes 10seconds, that is a ballpark that
->> thermal should never wait. orderly_poweroff() calls run_cmd() with wait
->> flag set. That means, if regular userland shutdown takes 10s, we are
->> waiting for it. Obviously this not acceptable. Specially if you setup
->> critical trip to be 125C. Now, if you properly size the critical trip to
->> fire before hotspot really reach 125C, for 10s (or the time it takes to
->> shutdown), then fine. But based on what was described in this thread,
->> his system is waiting 10s on regular shutdown, and his silicon is on
->> out-of-spec temperature for 10s, which is wrong.
->>
->> 2. The above scenario is not acceptable in a long run, specially from a
->> reliability perspective. If orderly_poweroff() has a possibility to
->> simply never return (or take too long), I would say the thermal
->> subsystem is using the wrong API.
->>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/opp/opp.txt | 73 ++++++++++++++++++++++++++-
+>  1 file changed, 71 insertions(+), 2 deletions(-)
 > 
-> 
-> Hh, I do not see that orderly_poweroff() will wait for anything now:
-> void orderly_poweroff(bool force)
-> {
-> 	if (force) /* do not override the pending "true" */
-> 		poweroff_force = true;
-> 	schedule_work(&poweroff_work); 
-> ^^^^^^^ async call. even here can be pretty big delay if system is under pressure
-> }
-> 
-> 
-> static int __orderly_poweroff(bool force)
-> {
-> 	int ret;
-> 
-> 	ret = run_cmd(poweroff_cmd);
+> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> index 63725498bd20..d0b95c9e1011 100644
+> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> @@ -76,10 +76,9 @@ This describes the OPPs belonging to a device. This node can have following
+>  This defines voltage-current-frequency combinations along with other related
+>  properties.
+>  
+> -Required properties:
+> +Optional properties:
+>  - opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer.
+>  
+> -Optional properties:
+>  - opp-microvolt: voltage in micro Volts.
+>  
+>    A single regulator's voltage is specified with an array of size one or three.
+> @@ -154,6 +153,19 @@ properties.
+>  
+>  - status: Marks the node enabled/disabled.
+>  
+> +- domain-performance-state: A positive integer value representing the minimum
+> +  power-domain performance level required by the device for the OPP node. The
 
-When i tried with multiple orderly_poweroff calls ret was always 0.
-So every 250mS i see this ret = 0.
+So the above definition is when this field in in the device node rather
+than the OPP table entry, right ? For simplicity why not have the
+properties named slightly different or just use phandle to an entry in
+the device node for this purpose.
 
-> ^^^^ no wait for the process - only for exec. flags == UMH_WAIT_EXEC
-> 
-> 	if (ret && force) {
+> +  The integer value '0' represents the lowest performance level and the higher
+> +  values represent higher performance levels. 
 
-So it never entered this path. ret = 0 so if is not executed.
+needs to be changed as OPP table entry.
 
-> 		pr_warn("Failed to start orderly shutdown: forcing the issue\n");
+>  When present in the OPP table of a
+> + power-domain, it represents the performance level of the domain. When present
+
+again "performance level of the domain corresponding to that OPP entry"
+on something similar
+
+> +  in the OPP table of a normal device, it represents the performance level of
+
+what do you mean by normal device ? needs description as that's
+something new introduced here.
+
+> +  the parent power-domain. The OPP table can contain the
+> +  "domain-performance-state" property, only if the device node contains the
+> +  "power-domains" or "#power-domain-cells" property. 
+
+Why such a restriction ?
+
+> The OPP nodes aren't
+> +  allowed to contain the "domain-performance-state" property partially, i.e.
+> +  Either all OPP nodes in the OPP table have the "domain-performance-state"
+> +  property or none of them have it.
+> +
+>  Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+>  
+>  / {
+> @@ -528,3 +540,60 @@ Example 5: opp-supported-hw
+>  		};
+>  	};
+>  };
+> +
+> +Example 7: domain-Performance-state:
+> +(example: For 1GHz require domain state 1 and for 1.1 & 1.2 GHz require state 2)
+> +
+> +/ {
+> +	domain_opp_table: opp_table0 {
+> +		compatible = "operating-points-v2";
+> +
+> +		opp@1 {
+> +			domain-performance-state = <1>;
+> +			opp-microvolt = <975000 970000 985000>;
+> +		};
+> +		opp@2 {
+> +			domain-performance-state = <2>;
+> +			opp-microvolt = <1075000 1000000 1085000>;
+> +		};
+> +	};
+> +
+> +	foo_domain: power-controller@12340000 {
+> +		compatible = "foo,power-controller";
+> +		reg = <0x12340000 0x1000>;
+> +		#power-domain-cells = <0>;
+> +		operating-points-v2 = <&domain_opp_table>;
+
+How does it scale with power domain providers with multiple power domain ?
+
+> +	}
+> +
+> +	cpu0_opp_table: opp_table1 {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp@1000000000 {
+> +			opp-hz = /bits/ 64 <1000000000>;
+> +			domain-performance-state = <1>;
+> +		};
+> +		opp@1100000000 {
+> +			opp-hz = /bits/ 64 <1100000000>;
+> +			domain-performance-state = <2>;
+> +		};
+> +		opp@1200000000 {
+> +			opp-hz = /bits/ 64 <1200000000>;
+> +			domain-performance-state = <2>;
+> +		};
+> +	};
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		cpu@0 {
+> +			compatible = "arm,cortex-a9";
+> +			reg = <0>;
+> +			clocks = <&clk_controller 0>;
+> +			clock-names = "cpu";
+> +			operating-points-v2 = <&cpu0_opp_table>;
+
+Do we ignore operating-points-v2 above as this device/cpu node contains
+power domain which has operating-points-v2 property ? In other words
+how do they correlate ?
+
+> +			power-domains = <&foo_domain>;
+> +		};
+> +	};
+> +};
 > 
-> 		/*
-> 		 * I guess this should try to kick off some daemon to sync and
-> 		 * poweroff asap.  Or not even bother syncing if we're doing an
-> 		 * emergency shutdown?
-> 		 */
-> 		emergency_sync();
-> 		kernel_power_off();
-> ^^^ force power off, but only if run_cmd() failed - for example /sbin/poweroff doesn't exist
-> 	}
-> 
-> 	return ret;
-> }
-> 
-> static bool poweroff_force;
-> 
-> static void poweroff_work_func(struct work_struct *work)
-> {
-> 	__orderly_poweroff(poweroff_force);
-> }
-> 
-> As result thermal has no control of power off any more after calling orderly_poweroff() and can get the result
-> of US poweroff binary execution.
-> 
->>
->> If you are going to implement the above two patches, keep in mind:
->> i. At least within the thermal subsystem, you need to take care of all
->> zones that could trigger a shutdown.
->> ii. serializing the calls to orderly_poweroff() seams to be more
->> concerning than cancelling all monitoring.
->>
->>
-> 
+
+-- 
+Regards,
+Sudeep
