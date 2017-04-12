@@ -1,62 +1,72 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [RFC v3 0/5] Add capacity capping support to the CPU controller
-Date: Wed, 12 Apr 2017 14:34:48 +0100
-Message-ID: <20170412133448.GL29455@e110439-lin>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <20170320145131.GA3623@htj.duckdns.org>
- <20170320172233.GA28391@e110439-lin>
- <20170410073622.2y6tnpcd2ssuoztz@hirez.programming.kicks-ass.net>
- <20170411175833.GI29455@e110439-lin>
- <20170412121514.GE3093@worktop>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 11/24] uswsusp: Disable when the kernel is locked down
+Date: Wed, 12 Apr 2017 21:44:57 +0800
+Message-ID: <20170412134457.GE18270@linux-l9pv.suse>
+References: <149142326734.5101.4596394505987813763.stgit@warthog.procyon.org.uk>
+ <149142336965.5101.2946578135980499557.stgit@warthog.procyon.org.uk>
+ <CAJZ5v0hp=GJtQ+YnNdaMw6rtbBzNyueY+iqjPkHLKp57t822ZQ@mail.gmail.com>
+ <1491460792.1645.1.camel@suse.com>
+ <14980.1491468060@warthog.procyon.org.uk>
+ <CAJZ5v0gFeF3hdr0QzUeaT2dS+HhG7KUdVPPWHKeqHVkX78s+Tw@mail.gmail.com>
+ <CAJZ5v0jwQPd3HfwE1Yi6bmyULFVegkU4fNvt0uXGvzAdecLEZA@mail.gmail.com>
+ <alpine.LSU.2.20.1704062224220.28004@cbobk.fhfr.pm>
+ <83e2dff5-c46b-25b4-253e-cd2650b7db7d@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:44348 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752644AbdDLNey (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 12 Apr 2017 09:34:54 -0400
+Received: from smtp.nue.novell.com ([195.135.221.5]:34265 "EHLO
+        smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753239AbdDLNpQ (ORCPT
+        <rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+        Wed, 12 Apr 2017 09:45:16 -0400
 Content-Disposition: inline
-In-Reply-To: <20170412121514.GE3093@worktop>
+In-Reply-To: <83e2dff5-c46b-25b4-253e-cd2650b7db7d@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@arm.com>, Chris Redpath <chris.redpath@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+To: poma <pomidorabelisima@gmail.com>
+Cc: Jiri Kosina <jikos@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, David Howells <dhowells@redhat.com>, Oliver Neukum <oneukum@suse.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, linux-efi@vger.kernel.org, gnomes@lxorguk.ukuu.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, matthew.garrett@nebula.com
 
-On 12-Apr 14:15, Peter Zijlstra wrote:
-> On Tue, Apr 11, 2017 at 06:58:33PM +0100, Patrick Bellasi wrote:
-> > We should consider also that at the CPUFreq side we already expose
-> > knobs like scaling_{min,max}_freq which are much more platform
-> > dependant than capacity.
+On Sat, Apr 08, 2017 at 05:28:15AM +0200, poma wrote:
+> On 06.04.2017 22:25, Jiri Kosina wrote:
+> > On Thu, 6 Apr 2017, Rafael J. Wysocki wrote:
+> > 
+> >>>>> Your swap partition may be located on an NVDIMM or be encrypted.
+> >>>>
+> >>>> An NVDIMM should be considered the same as any other persistent storage.
+> >>>>
+> >>>> It may be encrypted, but where's the key stored, how easy is it to retrieve
+> >>>> and does the swapout code know this?
+> >>>>
+> >>>>> Isn't this a bit overly drastic?
+> >>>>
+> >>>> Perhaps, but if it's on disk and it's not encrypted, then maybe not.
+> >>>
+> >>> Right.
+> >>>
+> >>> Swap encryption is not mandatory and I'm not sure how the hibernate
+> >>> code can verify whether or not it is in use.
+> >>
+> >> BTW, SUSE has patches adding secure boot support to the hibernate code
+> >> and Jiri promised me to post them last year even. :-)
+> > 
+> > Oh, thanks for a friendly ping :) Adding Joey Lee to CC.
+> > 
 > 
-> So I've always objected to these knobs.
+> Rafael J., are you talking about HIBERNATE_VERIFICATION ?
 > 
-> That said; they are a pre-existing user interface so changing them isn't
-> really feasible much.
-> 
-> But at the very least we should integrate them properly. Which for
-> schedutil would mean they have to directly modify the relevant CPU
-> capacity values. Is this currently done? (I think not.)
+> Ref.
+> https://github.com/joeyli/linux-s4sign/commits/s4sign-hmac-v2-v4.2-rc8
+> https://lkml.org/lkml/2015/8/11/47
+> https://bugzilla.redhat.com/show_bug.cgi?id=1330335
+>
 
-AFAICS they are clamping the policy decisions, thus the frequency
-domain... which can be more then one CPU on ARM platforms.
+I am working on switch to HMAC-SHA512. 
 
-When you say you would like them to "directly modify the relevant CPU
-capacity values" I really see this as exactly what we do with
-capacity_{min,max}.
+On the other hand, some mechanisms keep signing/encryption key in memory.
+e.g. dm-crypt or hibernation verification. Kees Cook suggested that we
+should add kernel memory reads as a thread model of securelevel to
+prevent leaking those keys by /dev/kmem, bpf, kdump or hibernation...
+We still need time to implement it.
 
-These two capacity clamping values are per task, and thus (by
-definition) per CPU. Moreover, they have the interesting property to
-be "aggregated" in such a way that, in this configuration:
-
-  TaskA: capacity_max:  20%
-  TaskB: capacity_max: 100%
-
-when both tasks are RUNNABLE on the same CPU, that CPU is not capped
-until TaskB leave the CPU.
-
-Do you think such a kind of feature can be useful?
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Thanks a lot!
+Joey Lee 
