@@ -1,59 +1,240 @@
-From: <brian@oakcrestfuneralservices.com>
-Subject: 27266 linux-pm
-Date: Wed, 12 Apr 2017 03:04:16 -0000
-Message-ID: <149196625690.14253.15942217587849085329@chello.pl>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: core: Add a back up thermal shutdown mechanism
+Date: Wed, 12 Apr 2017 11:20:48 +0800
+Message-ID: <1491967248.2357.25.camel@intel.com>
+References: <1490941820-13511-1-git-send-email-j-keerthy@ti.com>
+         <20170411172918.GA5193@localhost.localdomain>
+         <f64632d5-c780-e5fe-cff7-8ed1459348a0@ti.com>
 Mime-Version: 1.0
-Content-Type: application/zip; name="466.zip"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 84-10-25-154.static.chello.pl ([84.10.25.154]:33068 "HELO
-        chello.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-        id S1751686AbdDLDEV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Apr 2017 23:04:21 -0400
-Content-Disposition: attachment
+Received: from mga04.intel.com ([192.55.52.120]:18189 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751992AbdDLDUp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 11 Apr 2017 23:20:45 -0400
+In-Reply-To: <f64632d5-c780-e5fe-cff7-8ed1459348a0@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Keerthy <j-keerthy@ti.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
-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
+On Wed, 2017-04-12 at 08:19 +0530, Keerthy wrote:
+> 
+> On Tuesday 11 April 2017 10:59 PM, Eduardo Valentin wrote:
+> > 
+> > Hey,
+> > 
+> > On Fri, Mar 31, 2017 at 12:00:20PM +0530, Keerthy wrote:
+> > > 
+> > > orderly_poweroff is triggered when a graceful shutdown
+> > > of system is desired. This may be used in many critical states of
+> > > the
+> > > kernel such as when subsystems detects conditions such as
+> > > critical
+> > > temperature conditions. However, in certain conditions in system
+> > > boot up sequences like those in the middle of driver probes being
+> > > initiated, userspace will be unable to power off the system in a
+> > > clean
+> > > manner and leaves the system in a critical state. In cases like
+> > > these,
+> > > the /sbin/poweroff will return success (having forked off to
+> > > attempt
+> > > powering off the system. However, the system overall will fail to
+> > > completely poweroff (since other modules will be probed) and the
+> > > system
+> > > is still functional with no userspace (since that would have shut
+> > > itself
+> > > off).
+> > OK... This seams to me, still a corner case supposed to be fixed at
+> > orderly_power_off, not at thermal. But..
+> > 
+> > > 
+> > > 
+> > > However, there is no clean way of detecting such failure of
+> > > userspace
+> > > powering off the system. In such scenarios, it is necessary for a
+> > > backup
+> > > workqueue to be able to force a shutdown of the system when
+> > > orderly
+> > > shutdown is not successful after a configurable time period.
+> > > 
+> > Given that system running hot is a thermal issue, I guess we care
+> > more
+> > on this matter then..
+> Yes!
+> 
+I just read this thread again https://patchwork.kernel.org/patch/802458
+1/ to recall the previous discussion.
+
+https://patchwork.kernel.org/patch/8149891/
+https://patchwork.kernel.org/patch/8149861/
+should be the solution made based on Ingo' suggestion, right?
+
+And to me, this sounds like the right direction to go, thermal does not
+need a back up shutdown solution, it just needs a kernel function call
+which guarantees the system can be shutdown/reboot immediately.
+
+is there any reason that patch 1/2 is not accepted?
+
+thanks,
+rui
+> > 
+> > 
+> > > 
+> > > Reported-by: Nishanth Menon <nm@ti.com>
+> > > Signed-off-by: Keerthy <j-keerthy@ti.com>
+> > > ---
+> > >  drivers/thermal/Kconfig        | 13 +++++++++++++
+> > >  drivers/thermal/thermal_core.c | 42
+> > > ++++++++++++++++++++++++++++++++++++++++++
+> > >  2 files changed, 55 insertions(+)
+> > > 
+> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > > index 0a16cf4..4cc55f9 100644
+> > > --- a/drivers/thermal/Kconfig
+> > > +++ b/drivers/thermal/Kconfig
+> > > @@ -15,6 +15,19 @@ menuconfig THERMAL
+> > >  
+> > >  if THERMAL
+> > >  
+> > > +config THERMAL_EMERGENCY_POWEROFF_DELAY_MS
+> > > +	int "Emergency poweroff delay in milli-seconds"
+> > > +	depends on THERMAL
+> > > +	default 0
+> > > +	help
+> > > +	  The number of milliseconds to delay before emergency
+> > > +	  poweroff kicks in. The delay should be carefully
+> > > profiled
+> > > +	  so as to give adequate time for orderly_poweroff. In
+> > > case
+> > > +	  of failure of an orderly_poweroff the emergency
+> > > poweroff
+> > > +	  kicks in after the delay has elapsed and shuts down
+> > > the system.
+> > > +
+> > > +	  If set to 0 poweroff will happen immediately.
+> > > +
+> > >  config THERMAL_HWMON
+> > >  	bool
+> > >  	prompt "Expose thermal sensors as hwmon device"
+> > > diff --git a/drivers/thermal/thermal_core.c
+> > > b/drivers/thermal/thermal_core.c
+> > > index 11f0675..dc7fdd4 100644
+> > > --- a/drivers/thermal/thermal_core.c
+> > > +++ b/drivers/thermal/thermal_core.c
+> > > @@ -322,6 +322,47 @@ static void handle_non_critical_trips(struct
+> > > thermal_zone_device *tz,
+> > >  		       def_governor->throttle(tz, trip);
+> > >  }
+> > >  
+> > > +/**
+> > > + * emergency_poweroff_func - emergency poweroff work after a
+> > > known delay
+> > > + * @work: work_struct associated with the emergency poweroff
+> > > function
+> > > + *
+> > > + * This function is called in very critical situations to force
+> > > + * a kernel poweroff after a configurable timeout value.
+> > > + */
+> > > +static void emergency_poweroff_func(struct work_struct *work)
+> > > +{
+> > > +	/**
+> > > +	 * We have reached here after the emergency thermal
+> > > shutdown
+> > > +	 * Waiting period has expired. This means
+> > > orderly_poweroff has
+> > > +	 * not been able to shut off the system for some reason.
+> > > +	 * Try to shut down the system immediately using
+> > > pm_power_off
+> > > +	 * if populated
+> > > +	 */
+> > The above is not a kernel doc entry...
+> I will fix that.
+> 
+> > 
+> > 
+> > > 
+> > > +	pr_warn("Attempting kernel_power_off\n");
+> > > +	if (pm_power_off)
+> > > +		pm_power_off();
+> > Why not calling kernel_power_off() directly instead? That is what
+> > is called by orderly
+> > power off in case it fails, which seams to be  the missing part
+> > when
+> > user land returns success, and therefore we don't call
+> > kernel_power_off(). That path goes through the machine_power_off(),
+> > which seams to be the default for pm_power_off() anyway.
+> > 
+> > kernel_power_off() handles the power off system call too.
+> Yes. This is after orderly_poweroff fails so i felt why go through
+> kernel_power_off and directly call pm_power_off which directly pulls
+> out
+> the power plug. This is in dire straits situation. Hence preferred to
+> call the last piece directly.
+> 
+> > 
+> > 
+> > > 
+> > > +
+> > > +	/**
+> > not a kernel doc entry...
+> Okay.
+> 
+> > 
+> > 
+> > > 
+> > > +	 * Worst of the worst case trigger emergency restart
+> > > +	 */
+> > > +	pr_warn("kernel_power_off has failed! Attempting
+> > > emergency_restart\n");
+> > > +	emergency_restart();
+> > > +}
+> > > +
+> > > +static DECLARE_DELAYED_WORK(emergency_poweroff_work,
+> > > emergency_poweroff_func);
+> > > +
+> > > +/**
+> > > + * emergency_poweroff - Trigger an emergency system poweroff
+> > > + *
+> > > + * This may be called from any critical situation to trigger a
+> > > system shutdown
+> > > + * after a known period of time. By default the delay is 0
+> > > millisecond
+> > > + */
+> > > +void thermal_emergency_poweroff(void)
+> > > +{
+> > > +	schedule_delayed_work(&emergency_poweroff_work,
+> > > +			      msecs_to_jiffies(CONFIG_THERMAL_EM
+> > > ERGENCY_POWEROFF_DELAY_MS));
+> > > +}
+> > > +
+> > >  static void handle_critical_trips(struct thermal_zone_device
+> > > *tz,
+> > >  				  int trip, enum
+> > > thermal_trip_type trip_type)
+> > >  {
+> > > @@ -343,6 +384,7 @@ static void handle_critical_trips(struct
+> > > thermal_zone_device *tz,
+> > >  			  "critical temperature reached(%d
+> > > C),shutting down\n",
+> > >  			  tz->temperature / 1000);
+> > >  		orderly_poweroff(true);
+> > > +		thermal_emergency_poweroff();
+> > Shouldn't we start count the timeout before calling
+> > orderly_poweroff?
+> Okay yes. That makes more sense. Queue the emergency function, start
+> the
+> countdown and immediately call the orderly_poweroff. I will fix the
+> above comments and send a v2. I still want to go with pm_power_off
+> over
+> kernel_poweroff as we have already elapsed the time out and the first
+> thing we want is to shut off the SoC! Let me know.
+> 
+> 
+> > 
+> > 
+> > > 
+> > >  	}
+> > >  }
+> > >  
