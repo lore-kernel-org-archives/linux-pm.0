@@ -1,97 +1,29 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v5 5/5] power: supply: axp288_charger: Only wait for INT3496 device if present
-Date: Wed, 12 Apr 2017 20:07:33 +0200
-Message-ID: <20170412180733.27897-6-hdegoede@redhat.com>
-References: <20170412180733.27897-1-hdegoede@redhat.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170412180733.27897-1-hdegoede@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
+Subject: [PATCH v4 0/3] power: supply: bq24190_charger: Pending patches
+Date: Wed, 12 Apr 2017 20:18:05 +0200
+Message-ID: <20170412181808.31768-1-hdegoede@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:44618 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752095AbdDLSSM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 12 Apr 2017 14:18:12 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
-On some devices with an axp288 pmic setting vbus path based on the
-id-pin is handled by an ACPI _AIE interrupt on the gpio and the
-INT3496 device is disabled.
+Hi Sebastian,
 
-Instead of returning -EPROBE_DEFER on these devices waiting for the
-never to show up INT3496 device, check for its presence and only
-request and monitor the matching extcon if the device is there,
-otherwise let the firmware handle the vbus path control.
+Here is a resend of my pending patches rebased on top of the fixes
+from Liam you merged earlier today.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Sebastian Reichel <sre@kernel.org>
----
-Changes in v2:
--Do not schedule otg.work to sync the id-pin state when we don't have
- the extcon, this avoids turning off charging as soon as the driver loads
- on devices without the extcon
----
- drivers/power/supply/axp288_charger.c | 28 ++++++++++++++++++----------
- 1 file changed, 18 insertions(+), 10 deletions(-)
+The first patch is new and is a bug-fix for the extcon support, this
+relies on an extcon-core patch. The extcon maintainer has created
+an inmutable branch for this which you can merge before merging
+this patch:
 
-diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 6be2fe2..d51ebd1 100644
---- a/drivers/power/supply/axp288_charger.c
-+++ b/drivers/power/supply/axp288_charger.c
-@@ -14,6 +14,7 @@
-  * GNU General Public License for more details.
-  */
- 
-+#include <linux/acpi.h>
- #include <linux/module.h>
- #include <linux/device.h>
- #include <linux/regmap.h>
-@@ -113,7 +114,8 @@
- #define ILIM_3000MA			3000	/* 3000mA */
- 
- #define AXP288_EXTCON_DEV_NAME		"axp288_extcon"
--#define USB_HOST_EXTCON_DEV_NAME	"INT3496:00"
-+#define USB_HOST_EXTCON_HID		"INT3496"
-+#define USB_HOST_EXTCON_NAME		"INT3496:00"
- 
- static const unsigned int cable_ids[] =
- 	{ EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP, EXTCON_CHG_USB_DCP };
-@@ -807,10 +809,14 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		return -EPROBE_DEFER;
- 	}
- 
--	info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_DEV_NAME);
--	if (info->otg.cable == NULL) {
--		dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
--		return -EPROBE_DEFER;
-+	if (acpi_dev_present(USB_HOST_EXTCON_HID, NULL, -1)) {
-+		info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_NAME);
-+		if (info->otg.cable == NULL) {
-+			dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
-+			return -EPROBE_DEFER;
-+		}
-+		dev_info(&pdev->dev,
-+			 "Using " USB_HOST_EXTCON_HID " extcon for usb-id\n");
- 	}
- 
- 	platform_set_drvdata(pdev, info);
-@@ -849,13 +855,15 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	/* Register for OTG notification */
- 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
- 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
--	ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
-+	if (info->otg.cable) {
-+		ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
- 					EXTCON_USB_HOST, &info->otg.id_nb);
--	if (ret) {
--		dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
--		return ret;
-+		if (ret) {
-+			dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
-+			return ret;
-+		}
-+		schedule_work(&info->otg.work);
- 	}
--	schedule_work(&info->otg.work);
- 
- 	/* Register charger interrupts */
- 	for (i = 0; i < CHRG_INTR_END; i++) {
--- 
-2.9.3
+git://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/extcon.git ib-extcon-4.12
 
+Regards,
+
+Hans
