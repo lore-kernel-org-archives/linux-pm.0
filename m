@@ -1,50 +1,51 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH v2 03/10] x86: assembly, use SYM_FUNC_END for functions
-Date: Wed, 12 Apr 2017 08:52:11 +0200
-Message-ID: <20170412065211.GA16544@gmail.com>
-References: <9ea5e137-61f9-dccc-bb9d-ac3ff86e5867@suse.cz>
- <20170320123222.15453-1-jslaby@suse.cz>
- <20170320123222.15453-3-jslaby@suse.cz>
- <20170322142610.bo5c6wzlbqnxrgt3@treble>
- <e4f7197c-559e-0dc2-c4e4-e369bf503cbb@suse.cz>
- <b7800998-2a60-b967-10fc-482ebd6fadf0@suse.cz>
- <20170410193512.d67vefxedoockybg@treble>
- <e79c90da-6785-e888-2f77-a5f2083698e0@suse.cz>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH] power: supply: max17047: Add Maxim MAX17047 Fuel Gauge
+ battery driver
+Date: Wed, 12 Apr 2017 09:11:54 +0200
+Message-ID: <a66cd721-2e44-ac3e-d9a3-174fa3d2b442@redhat.com>
+References: <20170403111647.30500-1-hdegoede@redhat.com>
+ <20170411144204.5xk3jq24zmkytcn5@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f194.google.com ([209.85.128.194]:35678 "EHLO
-        mail-wr0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751079AbdDLGwP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 02:52:15 -0400
-Content-Disposition: inline
-In-Reply-To: <e79c90da-6785-e888-2f77-a5f2083698e0@suse.cz>
+Received: from mx1.redhat.com ([209.132.183.28]:51050 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752693AbdDLHL4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 12 Apr 2017 03:11:56 -0400
+In-Reply-To: <20170411144204.5xk3jq24zmkytcn5@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-pm@vger.kernel.org
 
+Hi,
 
-* Jiri Slaby <jslaby@suse.cz> wrote:
+On 11-04-17 16:42, Sebastian Reichel wrote:
+> Hi,
+>
+> On Mon, Apr 03, 2017 at 01:16:47PM +0200, Hans de Goede wrote:
+>> This commit adds support for the Maxim MAX17047 Fuel Gauge chip.
+>>
+>> This was tested on a GPDwin x86 Cherry Trail machine which uses the
+>> Maxim MAX17047 Fuel Gauge in combination with a TI bq24292i charger.
+>>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>>
+>> ---
+>>  drivers/power/supply/Kconfig            |   7 +
+>>  drivers/power/supply/Makefile           |   1 +
+>>  drivers/power/supply/max17047_battery.c | 286 ++++++++++++++++++++++++++++++++
+>>  3 files changed, 294 insertions(+)
+>>  create mode 100644 drivers/power/supply/max17047_battery.c
+>
+> max17047 is already supported by drivers/power/supply/max17042_battery.c
 
-> On 04/10/2017, 09:35 PM, Josh Poimboeuf wrote:
-> > The code should be in a mergeable state after each patch.  If only
-> > patches 1-3 were merged, the code would be in an inconsistent state,
-> > with some functions having confusing ENTRY/SYM_FUNC_END pairs.  That
-> > complicates git history and also makes it harder to review each patch.
-> > 
-> > It would be cleaner to separate things out.  First, convert ENTRY/END
-> > functions to use ENDPROC, which is a minor bug fix.  Then they can be
-> > converted to the new SYM_FUNC_START/END macros in a separate patch.
-> 
-> OTOH I don't think touching and reviewing the same place twice is what
-> actually maintainers would want to see. But as I wrote earlier, I can do
-> whatever is preferred -- therefore I am asking before I start reworking
-> the patches: maintainers, what do you prefer?
+Ah I checked but somehow missed that. The existing driver is not going
+to work for the ACPI/X86 system I'm working with due to lack of platform_data
+but that can be fixed by providing some minimal default pdata for that
+case, I will write a patch for this.
 
-I'd lean towards Josh's suggestion of a more granular series. Having to review 
-more is sometimes less, if the patches are more focused.
+Regsrds,
 
-Thanks,
-
-	Ingo
+Hans
