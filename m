@@ -1,66 +1,79 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH] thermal: core: Allow orderly_poweroff to be called only once
-Date: Wed, 12 Apr 2017 14:42:12 +0530
-Message-ID: <1491988332-13398-1-git-send-email-j-keerthy@ti.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v1 1/7] mfd: intel_soc_pmic_bxtwc: fix TMU interrupt index
+Date: Wed, 12 Apr 2017 11:45:51 +0100
+Message-ID: <20170412104551.g2xkpihz2n2hju4m@dell>
+References: <b8e952de94ed1902b922224de11f0814371b08b0.1491848776.git.sathyanarayanan.kuppuswamy@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx210.ext.ti.com ([198.47.19.17]:34844 "EHLO
-        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752805AbdDLJNj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 05:13:39 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <b8e952de94ed1902b922224de11f0814371b08b0.1491848776.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: sathyanarayanan.kuppuswamy@linux.intel.com
+Cc: gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, andy@infradead.org, hdegoede@redhat.com, linux-gpio@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sathyaosid@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: j-keerthy@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
-thermal_zone_device_check --> thermal_zone_device_update -->
-handle_thermal_trip --> handle_critical_trips --> orderly_poweroff
+On Mon, 10 Apr 2017, sathyanarayanan.kuppuswamy@linux.intel.com wrote:
 
-The above sequence happens every 250/500 mS based on the configuration.
-The orderly_poweroff function is getting called every 250/500 mS.
-With a full fledged file system it takes at least 5-10 Seconds to
-power off gracefully.
+> From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> 
+> TMU interrupts are registered as a separate interrupt chip, and
+> hence it should start its interrupt index(BXTWC_TMU_IRQ) number
+> from 0. But currently, BXTWC_TMU_IRQ is defined as part of enum
+> bxtwc_irqs_level2 and its index value is 11. Since this index
+> value is used when calculating .num_irqs of regmap_irq_chip_tmu,
+> it incorrectly reports number of irqs as 12 instead of actual
+> value of 1.
+> 
+> static const struct regmap_irq bxtwc_regmap_irqs_tmu[] = {
+> 	REGMAP_IRQ_REG(BXTWC_TMU_IRQ, 0, 0x06),
+> };
+> 
+> static struct regmap_irq_chip bxtwc_regmap_irq_chip_tmu = {
+> 	.name = "bxtwc_irq_chip_tmu",
+> 	.status_base = BXTWC_TMUIRQ,
+> 	.mask_base = BXTWC_MTMUIRQ,
+> 	.irqs = bxtwc_regmap_irqs_tmu,
+> 	.num_irqs = ARRAY_SIZE(bxtwc_regmap_irqs_tmu),
+> 	.num_regs = 1,
+> };
+> 
+> This patch fixes this issue by creating new enum of tmu irqs and
+> resetting its starting index to 0.
+> 
+> Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> ---
+>  drivers/mfd/intel_soc_pmic_bxtwc.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 
-In that period due to the thermal_zone_device_check triggering
-periodically the thermal work queues bombard with
-orderly_poweroff calls multiple times eventually leading to
-failures in gracefully powering off the system.
+Patch looks fine, but please remove the code segment from the commit
+log.
 
-Make sure that orderly_poweroff is called only once.
+For the code:
 
-Fixes: 0c01ebbfd3caf1d ("Thermal: Remove throttling logic out of thermal_sys.c")
-Reported-by: Nishanth Menon <nm@ti.com>
-Signed-off-by: Keerthy <j-keerthy@ti.com>
----
- drivers/thermal/thermal_core.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+For my own reference:
+  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+  
+> diff --git a/drivers/mfd/intel_soc_pmic_bxtwc.c b/drivers/mfd/intel_soc_pmic_bxtwc.c
+> index 699c8c7..bb18e20 100644
+> --- a/drivers/mfd/intel_soc_pmic_bxtwc.c
+> +++ b/drivers/mfd/intel_soc_pmic_bxtwc.c
+> @@ -94,7 +94,10 @@ enum bxtwc_irqs_level2 {
+>  	BXTWC_GPIO0_IRQ,
+>  	BXTWC_GPIO1_IRQ,
+>  	BXTWC_CRIT_IRQ,
+> -	BXTWC_TMU_IRQ,
+> +};
+> +
+> +enum bxtwc_irqs_tmu {
+> +	BXTWC_TMU_IRQ = 0,
+>  };
+>  
+>  static const struct regmap_irq bxtwc_regmap_irqs[] = {
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 11f0675..4e68ce0 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -326,6 +326,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
- 				  int trip, enum thermal_trip_type trip_type)
- {
- 	int trip_temp;
-+	static bool power_off_triggered;
- 
- 	tz->ops->get_trip_temp(tz, trip, &trip_temp);
- 
-@@ -338,11 +339,12 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
- 	if (tz->ops->notify)
- 		tz->ops->notify(tz, trip, trip_type);
- 
--	if (trip_type == THERMAL_TRIP_CRITICAL) {
-+	if (trip_type == THERMAL_TRIP_CRITICAL && !power_off_triggered) {
- 		dev_emerg(&tz->device,
- 			  "critical temperature reached(%d C),shutting down\n",
- 			  tz->temperature / 1000);
- 		orderly_poweroff(true);
-+		power_off_triggered = true;
- 	}
- }
- 
 -- 
-1.9.1
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
