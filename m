@@ -1,7 +1,7 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v5 4/5] ACPI: ac: Add a blacklist with PMIC ACPI HIDs with a native charger driver
-Date: Wed, 12 Apr 2017 20:07:32 +0200
-Message-ID: <20170412180733.27897-5-hdegoede@redhat.com>
+Subject: [PATCH v5 5/5] power: supply: axp288_charger: Only wait for INT3496 device if present
+Date: Wed, 12 Apr 2017 20:07:33 +0200
+Message-ID: <20170412180733.27897-6-hdegoede@redhat.com>
 References: <20170412180733.27897-1-hdegoede@redhat.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <20170412180733.27897-1-hdegoede@redhat.com>
@@ -10,80 +10,88 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebas
 Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On some systems we have a native PMIC driver which provides Mains
-monitoring, while the ACPI ac driver is broken on these systems
-due to bad DSTDs or because we do not support the proprietary and
-undocumented ACPI opregions these ACPI battery devices rely on
-(e.g. BMOP opregion).
+On some devices with an axp288 pmic setting vbus path based on the
+id-pin is handled by an ACPI _AIE interrupt on the gpio and the
+INT3496 device is disabled.
 
-This leads for example to a ADP1 power_supply which reports
-itself as always online even if no mains are connected.
-
-This commit adds a blacklist with PMIC ACPI HIDs for which we've a
-native charger or extcon driver and makes the ACPI ac driver not
-register itself when a PMIC on this list is present.
+Instead of returning -EPROBE_DEFER on these devices waiting for the
+never to show up INT3496 device, check for its presence and only
+request and monitor the matching extcon if the device is there,
+otherwise let the firmware handle the vbus path control.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Sebastian Reichel <sre@kernel.org>
 ---
 Changes in v2:
--This is a new patch in v2 of this patch-set replacing:
- "ACPI: ac: Add acpi_ac_unregister() function"
- "power: supply: axp288_charger: Unregister duplicate ACPI ac supply"
- And also this patch from my local patch-queue (not submitted yet):
- "i2c-cht-wc: remove broken ACPI AC power-supply"
+-Do not schedule otg.work to sync the id-pin state when we don't have
+ the extcon, this avoids turning off charging as soon as the driver loads
+ on devices without the extcon
 ---
- drivers/acpi/ac.c | 21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+ drivers/power/supply/axp288_charger.c | 28 ++++++++++++++++++----------
+ 1 file changed, 18 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
-index f71b756..8df95a1 100644
---- a/drivers/acpi/ac.c
-+++ b/drivers/acpi/ac.c
-@@ -57,12 +57,23 @@ static int acpi_ac_add(struct acpi_device *device);
- static int acpi_ac_remove(struct acpi_device *device);
- static void acpi_ac_notify(struct acpi_device *device, u32 event);
+diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
+index 6be2fe2..d51ebd1 100644
+--- a/drivers/power/supply/axp288_charger.c
++++ b/drivers/power/supply/axp288_charger.c
+@@ -14,6 +14,7 @@
+  * GNU General Public License for more details.
+  */
  
-+struct acpi_ac_bl {
-+	const char *hid;
-+	int hrv;
-+};
-+
- static const struct acpi_device_id ac_device_ids[] = {
- 	{"ACPI0003", 0},
- 	{"", 0},
- };
- MODULE_DEVICE_TABLE(acpi, ac_device_ids);
++#include <linux/acpi.h>
+ #include <linux/module.h>
+ #include <linux/device.h>
+ #include <linux/regmap.h>
+@@ -113,7 +114,8 @@
+ #define ILIM_3000MA			3000	/* 3000mA */
  
-+/* Lists of PMIC ACPI HIDs with an (often better) native charger driver */
-+static const struct acpi_ac_bl acpi_ac_blacklist[] = {
-+	{ "INT33F4", -1 }, /* X-Powers AXP288 PMIC */
-+	{ "INT34D3",  3 }, /* Intel Cherrytrail Whiskey Cove PMIC */
-+};
-+
- #ifdef CONFIG_PM_SLEEP
- static int acpi_ac_resume(struct device *dev);
- #endif
-@@ -424,11 +435,19 @@ static int acpi_ac_remove(struct acpi_device *device)
+ #define AXP288_EXTCON_DEV_NAME		"axp288_extcon"
+-#define USB_HOST_EXTCON_DEV_NAME	"INT3496:00"
++#define USB_HOST_EXTCON_HID		"INT3496"
++#define USB_HOST_EXTCON_NAME		"INT3496:00"
  
- static int __init acpi_ac_init(void)
- {
--	int result;
-+	int i, result;
+ static const unsigned int cable_ids[] =
+ 	{ EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP, EXTCON_CHG_USB_DCP };
+@@ -807,10 +809,14 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 		return -EPROBE_DEFER;
+ 	}
  
- 	if (acpi_disabled)
- 		return -ENODEV;
- 
-+	for (i = 0; i < ARRAY_SIZE(acpi_ac_blacklist); i++)
-+		if (acpi_dev_present(acpi_ac_blacklist[i].hid, "1",
-+				     acpi_ac_blacklist[i].hrv)) {
-+			pr_info("ACPI: AC: found native %s PMIC, not loading\n",
-+				acpi_ac_blacklist[i].hid);
-+			return -ENODEV;
+-	info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_DEV_NAME);
+-	if (info->otg.cable == NULL) {
+-		dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
+-		return -EPROBE_DEFER;
++	if (acpi_dev_present(USB_HOST_EXTCON_HID, NULL, -1)) {
++		info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_NAME);
++		if (info->otg.cable == NULL) {
++			dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
++			return -EPROBE_DEFER;
 +		}
-+
- #ifdef CONFIG_ACPI_PROCFS_POWER
- 	acpi_ac_dir = acpi_lock_ac_dir();
- 	if (!acpi_ac_dir)
++		dev_info(&pdev->dev,
++			 "Using " USB_HOST_EXTCON_HID " extcon for usb-id\n");
+ 	}
+ 
+ 	platform_set_drvdata(pdev, info);
+@@ -849,13 +855,15 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 	/* Register for OTG notification */
+ 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
+ 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
+-	ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
++	if (info->otg.cable) {
++		ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
+ 					EXTCON_USB_HOST, &info->otg.id_nb);
+-	if (ret) {
+-		dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
+-		return ret;
++		if (ret) {
++			dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
++			return ret;
++		}
++		schedule_work(&info->otg.work);
+ 	}
+-	schedule_work(&info->otg.work);
+ 
+ 	/* Register charger interrupts */
+ 	for (i = 0; i < CHRG_INTR_END; i++) {
 -- 
 2.9.3
 
