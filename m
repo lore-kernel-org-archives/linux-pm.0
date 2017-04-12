@@ -1,216 +1,94 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch V2 09/13] cpufreq/ia64: Replace racy task affinity logic
-Date: Wed, 12 Apr 2017 22:55:03 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1704122231100.2548@nanos>
-References: <20170412200726.941336635@linutronix.de> <20170412201042.865458445@linutronix.de>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v1 1/7] mfd: intel_soc_pmic_bxtwc: fix TMU interrupt index
+Date: Wed, 12 Apr 2017 21:59:54 +0100
+Message-ID: <20170412205954.yl2dsgpbev7ovyfs@dell>
+References: <b8e952de94ed1902b922224de11f0814371b08b0.1491848776.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <20170412104551.g2xkpihz2n2hju4m@dell>
+ <CAENHMvO7KYFcEvGeCnA9bBYC3qTn7o8f1B6-maS5Z6n_d1Z=DQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:35593 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755379AbdDLUzX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 16:55:23 -0400
-In-Reply-To: <20170412201042.865458445@linutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAENHMvO7KYFcEvGeCnA9bBYC3qTn7o8f1B6-maS5Z6n_d1Z=DQ@mail.gmail.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Sathyanarayanan Kuppuswamy Natarajan <sathyaosid@gmail.com>
+Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, Andy Shevchenko <andy@infradead.org>, Hans de Goede <hdegoede@redhat.com>, linux-gpio@vger.kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Sebastian Siewior <bigeasy@linutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "David S. Miller" <davem@davemloft.net>, Fenghua Yu <fenghua.yu@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <lenb@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tejun Heo <tj@kernel.org>, Tony Luck <tony.luck@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-The get() and target() callbacks must run on the affected cpu. This is
-achieved by temporarily setting the affinity of the calling thread to the
-requested CPU and reset it to the original affinity afterwards.
+On Wed, 12 Apr 2017, Sathyanarayanan Kuppuswamy Natarajan wrote:
 
-That's racy vs. concurrent affinity settings for that thread resulting in
-code executing on the wrong CPU and overwriting the new affinity setting.
+> Hi Lee,
+> 
+> Thanks. Will remove the code segment in next version.
 
-Replace it by work_on_cpu(). All call pathes which invoke the callbacks are
-already protected against CPU hotplug.
+Please always reply inline.  Top posting is frowned upon.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: linux-pm@vger.kernel.org
----
+> On Wed, Apr 12, 2017 at 3:45 AM, Lee Jones <lee.jones@linaro.org> wrote:
+> > On Mon, 10 Apr 2017, sathyanarayanan.kuppuswamy@linux.intel.com wrote:
+> >
+> >> From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> >>
+> >> TMU interrupts are registered as a separate interrupt chip, and
+> >> hence it should start its interrupt index(BXTWC_TMU_IRQ) number
+> >> from 0. But currently, BXTWC_TMU_IRQ is defined as part of enum
+> >> bxtwc_irqs_level2 and its index value is 11. Since this index
+> >> value is used when calculating .num_irqs of regmap_irq_chip_tmu,
+> >> it incorrectly reports number of irqs as 12 instead of actual
+> >> value of 1.
+> >>
+> >> static const struct regmap_irq bxtwc_regmap_irqs_tmu[] = {
+> >>       REGMAP_IRQ_REG(BXTWC_TMU_IRQ, 0, 0x06),
+> >> };
+> >>
+> >> static struct regmap_irq_chip bxtwc_regmap_irq_chip_tmu = {
+> >>       .name = "bxtwc_irq_chip_tmu",
+> >>       .status_base = BXTWC_TMUIRQ,
+> >>       .mask_base = BXTWC_MTMUIRQ,
+> >>       .irqs = bxtwc_regmap_irqs_tmu,
+> >>       .num_irqs = ARRAY_SIZE(bxtwc_regmap_irqs_tmu),
+> >>       .num_regs = 1,
+> >> };
+> >>
+> >> This patch fixes this issue by creating new enum of tmu irqs and
+> >> resetting its starting index to 0.
+> >>
+> >> Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> >> ---
+> >>  drivers/mfd/intel_soc_pmic_bxtwc.c | 5 ++++-
+> >>  1 file changed, 4 insertions(+), 1 deletion(-)
+> >
+> > Patch looks fine, but please remove the code segment from the commit
+> > log.
+> >
+> > For the code:
+> >
+> > For my own reference:
+> >   Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+> >
+> >> diff --git a/drivers/mfd/intel_soc_pmic_bxtwc.c b/drivers/mfd/intel_soc_pmic_bxtwc.c
+> >> index 699c8c7..bb18e20 100644
+> >> --- a/drivers/mfd/intel_soc_pmic_bxtwc.c
+> >> +++ b/drivers/mfd/intel_soc_pmic_bxtwc.c
+> >> @@ -94,7 +94,10 @@ enum bxtwc_irqs_level2 {
+> >>       BXTWC_GPIO0_IRQ,
+> >>       BXTWC_GPIO1_IRQ,
+> >>       BXTWC_CRIT_IRQ,
+> >> -     BXTWC_TMU_IRQ,
+> >> +};
+> >> +
+> >> +enum bxtwc_irqs_tmu {
+> >> +     BXTWC_TMU_IRQ = 0,
+> >>  };
+> >>
+> >>  static const struct regmap_irq bxtwc_regmap_irqs[] = {
+> >
+> 
+> 
+> 
 
-V2: Fixup kbuild-robot complaints
-
- drivers/cpufreq/ia64-acpi-cpufreq.c |   92 +++++++++++++++---------------------
- 1 file changed, 39 insertions(+), 53 deletions(-)
-
-Index: b/drivers/cpufreq/ia64-acpi-cpufreq.c
-===================================================================
---- a/drivers/cpufreq/ia64-acpi-cpufreq.c
-+++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
-@@ -34,6 +34,11 @@ struct cpufreq_acpi_io {
- 	unsigned int				resume;
- };
- 
-+struct cpufreq_acpi_req {
-+	unsigned int		cpu;
-+	unsigned int		state;
-+};
-+
- static struct cpufreq_acpi_io	*acpi_io_data[NR_CPUS];
- 
- static struct cpufreq_driver acpi_cpufreq_driver;
-@@ -83,8 +88,7 @@ processor_get_pstate (
- static unsigned
- extract_clock (
- 	struct cpufreq_acpi_io *data,
--	unsigned value,
--	unsigned int cpu)
-+	unsigned value)
- {
- 	unsigned long i;
- 
-@@ -98,60 +102,43 @@ extract_clock (
- }
- 
- 
--static unsigned int
-+static long
- processor_get_freq (
--	struct cpufreq_acpi_io	*data,
--	unsigned int		cpu)
-+	void *arg)
- {
--	int			ret = 0;
--	u32			value = 0;
--	cpumask_t		saved_mask;
--	unsigned long 		clock_freq;
-+	struct cpufreq_acpi_req *req = arg;
-+	unsigned int		cpu = req->cpu;
-+	struct cpufreq_acpi_io	*data = acpi_io_data[cpu];
-+	u32			value;
-+	int			ret;
- 
- 	pr_debug("processor_get_freq\n");
--
--	saved_mask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of(cpu));
- 	if (smp_processor_id() != cpu)
--		goto migrate_end;
-+		return -EAGAIN;
- 
- 	/* processor_get_pstate gets the instantaneous frequency */
- 	ret = processor_get_pstate(&value);
--
- 	if (ret) {
--		set_cpus_allowed_ptr(current, &saved_mask);
- 		pr_warn("get performance failed with error %d\n", ret);
--		ret = 0;
--		goto migrate_end;
-+		return ret;
- 	}
--	clock_freq = extract_clock(data, value, cpu);
--	ret = (clock_freq*1000);
--
--migrate_end:
--	set_cpus_allowed_ptr(current, &saved_mask);
--	return ret;
-+	return 1000 * extract_clock(data, value);
- }
- 
- 
--static int
-+static long
- processor_set_freq (
--	struct cpufreq_acpi_io	*data,
--	struct cpufreq_policy   *policy,
--	int			state)
-+	void *arg)
- {
--	int			ret = 0;
--	u32			value = 0;
--	cpumask_t		saved_mask;
--	int			retval;
-+	struct cpufreq_acpi_req *req = arg;
-+	unsigned int		cpu = req->cpu;
-+	struct cpufreq_acpi_io	*data = acpi_io_data[cpu];
-+	int			ret, state = req->state;
-+	u32			value;
- 
- 	pr_debug("processor_set_freq\n");
--
--	saved_mask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpumask_of(policy->cpu));
--	if (smp_processor_id() != policy->cpu) {
--		retval = -EAGAIN;
--		goto migrate_end;
--	}
-+	if (smp_processor_id() != cpu)
-+		return -EAGAIN;
- 
- 	if (state == data->acpi_data.state) {
- 		if (unlikely(data->resume)) {
-@@ -159,8 +146,7 @@ processor_set_freq (
- 			data->resume = 0;
- 		} else {
- 			pr_debug("Already at target state (P%d)\n", state);
--			retval = 0;
--			goto migrate_end;
-+			return 0;
- 		}
- 	}
- 
-@@ -171,7 +157,6 @@ processor_set_freq (
- 	 * First we write the target state's 'control' value to the
- 	 * control_register.
- 	 */
--
- 	value = (u32) data->acpi_data.states[state].control;
- 
- 	pr_debug("Transitioning to state: 0x%08x\n", value);
-@@ -179,17 +164,11 @@ processor_set_freq (
- 	ret = processor_set_pstate(value);
- 	if (ret) {
- 		pr_warn("Transition failed with error %d\n", ret);
--		retval = -ENODEV;
--		goto migrate_end;
-+		return -ENODEV;
- 	}
- 
- 	data->acpi_data.state = state;
--
--	retval = 0;
--
--migrate_end:
--	set_cpus_allowed_ptr(current, &saved_mask);
--	return (retval);
-+	return 0;
- }
- 
- 
-@@ -197,11 +176,13 @@ static unsigned int
- acpi_cpufreq_get (
- 	unsigned int		cpu)
- {
--	struct cpufreq_acpi_io *data = acpi_io_data[cpu];
-+	struct cpufreq_acpi_req req;
-+	long ret;
- 
--	pr_debug("acpi_cpufreq_get\n");
-+	req.cpu = cpu;
-+	ret = work_on_cpu(cpu, processor_get_freq, &req);
- 
--	return processor_get_freq(data, cpu);
-+	return ret > 0 ? (unsigned int) ret : 0;
- }
- 
- 
-@@ -210,7 +191,12 @@ acpi_cpufreq_target (
- 	struct cpufreq_policy   *policy,
- 	unsigned int index)
- {
--	return processor_set_freq(acpi_io_data[policy->cpu], policy, index);
-+	struct cpufreq_acpi_req req;
-+
-+	req.cpu = policy->cpu;
-+	req.state = index;
-+
-+	return work_on_cpu(req.cpu, processor_set_freq, &req);
- }
- 
- static int
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
