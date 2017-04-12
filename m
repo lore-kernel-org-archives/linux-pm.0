@@ -1,16 +1,20 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 09/13] cpufreq/ia64: Replace racy task affinity logic
-Date: Wed, 12 Apr 2017 22:07:35 +0200
-Message-ID: <20170412201042.865458445@linutronix.de>
-References: <20170412200726.941336635@linutronix.de>
+Subject: [patch V2 09/13] cpufreq/ia64: Replace racy task affinity logic
+Date: Wed, 12 Apr 2017 22:55:03 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1704122231100.2548@nanos>
+References: <20170412200726.941336635@linutronix.de> <20170412201042.865458445@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline; filename=cpufreq-ia64--Use-work_on_cpu--.patch
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from Galois.linutronix.de ([146.0.238.70]:35593 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755379AbdDLUzX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 16:55:23 -0400
+In-Reply-To: <20170412201042.865458445@linutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Sebastian Siewior <bigeasy@linutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "David S. Miller" <davem@davemloft.net>, Fenghua Yu <fenghua.yu@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <lenb@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tejun Heo <tj@kernel.org>, Tony Luck <tony.luck@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 The get() and target() callbacks must run on the affected cpu. This is
 achieved by temporarily setting the affinity of the calling thread to the
@@ -29,9 +33,14 @@ Cc: Tony Luck <tony.luck@intel.com>
 Cc: Fenghua Yu <fenghua.yu@intel.com>
 Cc: linux-pm@vger.kernel.org
 ---
- drivers/cpufreq/ia64-acpi-cpufreq.c |   91 +++++++++++++++---------------------
- 1 file changed, 38 insertions(+), 53 deletions(-)
 
+V2: Fixup kbuild-robot complaints
+
+ drivers/cpufreq/ia64-acpi-cpufreq.c |   92 +++++++++++++++---------------------
+ 1 file changed, 39 insertions(+), 53 deletions(-)
+
+Index: b/drivers/cpufreq/ia64-acpi-cpufreq.c
+===================================================================
 --- a/drivers/cpufreq/ia64-acpi-cpufreq.c
 +++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
 @@ -34,6 +34,11 @@ struct cpufreq_acpi_io {
@@ -56,7 +65,7 @@ Cc: linux-pm@vger.kernel.org
  {
  	unsigned long i;
  
-@@ -98,60 +102,42 @@ extract_clock (
+@@ -98,60 +102,43 @@ extract_clock (
  }
  
  
@@ -72,7 +81,8 @@ Cc: linux-pm@vger.kernel.org
 -	cpumask_t		saved_mask;
 -	unsigned long 		clock_freq;
 +	struct cpufreq_acpi_req *req = arg;
-+	struct cpufreq_acpi_io	*data = acpi_io_data[req->cpu];
++	unsigned int		cpu = req->cpu;
++	struct cpufreq_acpi_io	*data = acpi_io_data[cpu];
 +	u32			value;
 +	int			ret;
  
@@ -135,7 +145,7 @@ Cc: linux-pm@vger.kernel.org
  
  	if (state == data->acpi_data.state) {
  		if (unlikely(data->resume)) {
-@@ -159,8 +145,7 @@ processor_set_freq (
+@@ -159,8 +146,7 @@ processor_set_freq (
  			data->resume = 0;
  		} else {
  			pr_debug("Already at target state (P%d)\n", state);
@@ -145,7 +155,7 @@ Cc: linux-pm@vger.kernel.org
  		}
  	}
  
-@@ -171,7 +156,6 @@ processor_set_freq (
+@@ -171,7 +157,6 @@ processor_set_freq (
  	 * First we write the target state's 'control' value to the
  	 * control_register.
  	 */
@@ -153,7 +163,7 @@ Cc: linux-pm@vger.kernel.org
  	value = (u32) data->acpi_data.states[state].control;
  
  	pr_debug("Transitioning to state: 0x%08x\n", value);
-@@ -179,17 +163,11 @@ processor_set_freq (
+@@ -179,17 +164,11 @@ processor_set_freq (
  	ret = processor_set_pstate(value);
  	if (ret) {
  		pr_warn("Transition failed with error %d\n", ret);
@@ -173,7 +183,7 @@ Cc: linux-pm@vger.kernel.org
  }
  
  
-@@ -197,11 +175,13 @@ static unsigned int
+@@ -197,11 +176,13 @@ static unsigned int
  acpi_cpufreq_get (
  	unsigned int		cpu)
  {
@@ -190,7 +200,7 @@ Cc: linux-pm@vger.kernel.org
  }
  
  
-@@ -210,7 +190,12 @@ acpi_cpufreq_target (
+@@ -210,7 +191,12 @@ acpi_cpufreq_target (
  	struct cpufreq_policy   *policy,
  	unsigned int index)
  {
@@ -200,7 +210,7 @@ Cc: linux-pm@vger.kernel.org
 +	req.cpu = policy->cpu;
 +	req.state = index;
 +
-+	return work_on_cpu(cpu, processor_set_freq, &req);
++	return work_on_cpu(req.cpu, processor_set_freq, &req);
  }
  
  static int
