@@ -1,77 +1,145 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC 5/9] sched: cpufreq: remove smp_processor_id() in remote paths
-Date: Thu, 13 Apr 2017 00:53:13 +0200
-Message-ID: <CAJZ5v0j4DYHRoYax+BS-QM8wspdh1bhod7qFe_A3Ak3Ow6swWg@mail.gmail.com>
-References: <cover.1489058244.git.viresh.kumar@linaro.org> <834d098efe029ee687bac7690bb482e9263a766b.1489058244.git.viresh.kumar@linaro.org>
- <1836427.bpauTYz19k@aspire.rjw.lan> <20170411103556.GC13627@vireshk-i7>
- <CAJZ5v0iQ4X=Vt54EvJce9R9rPhtVqvznte8=HoQ_UOAZ1fQj2g@mail.gmail.com> <20170412142628.GH5910@vireshk-i7>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v4 2/3] power: supply: bq24190_charger: Do not reset the
+ charger on probe by default
+Date: Wed, 12 Apr 2017 16:06:09 -0700
+Message-ID: <CAKvHMgTxYa7U+u0W5On9+xgViWuGX5PFMi865f_2HojrnLM-aQ@mail.gmail.com>
+References: <20170412181808.31768-1-hdegoede@redhat.com> <20170412181808.31768-3-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:34306 "EHLO
-        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754864AbdDLWxO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 18:53:14 -0400
-In-Reply-To: <20170412142628.GH5910@vireshk-i7>
+Received: from mail-io0-f194.google.com ([209.85.223.194]:34896 "EHLO
+        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752870AbdDLXGL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 19:06:11 -0400
+Received: by mail-io0-f194.google.com with SMTP id d203so7496147iof.2
+        for <linux-pm@vger.kernel.org>; Wed, 12 Apr 2017 16:06:11 -0700 (PDT)
+In-Reply-To: <20170412181808.31768-3-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Steve Muckle <smuckle.linux@gmail.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, eas-dev@lists.linaro.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On Wed, Apr 12, 2017 at 4:26 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 11-04-17, 16:00, Rafael J. Wysocki wrote:
->> On Tue, Apr 11, 2017 at 12:35 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > On 29-03-17, 23:28, Rafael J. Wysocki wrote:
->> >> On Thursday, March 09, 2017 05:15:15 PM Viresh Kumar wrote:
->> >> > @@ -216,7 +216,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
->> >> >     if (flags & SCHED_CPUFREQ_RT_DL) {
->> >> >             next_f = policy->cpuinfo.max_freq;
->> >> >     } else {
->> >> > -           sugov_get_util(&util, &max);
->> >> > +           sugov_get_util(&util, &max, hook->cpu);
->> >>
->> >> Why is this not racy?
->> >
->> > Why would reading the utilization values be racy? The only dynamic value here is
->> > "util_avg" and I am not sure if reading it is racy.
->> >
->> > But, this whole routine has races which I ignored as we may end up updating
->> > frequency simultaneously from two threads.
->>
->> Those races aren't there if we don't update cross-CPU, which is my point. :-)
->
-> Of course. There are no races without this series.
->
->> >> >             sugov_iowait_boost(sg_cpu, &util, &max);
->> >> >             next_f = get_next_freq(sg_policy, util, max);
->> >> >     }
->> >> > @@ -272,7 +272,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
->> >> >     unsigned long util, max;
->> >> >     unsigned int next_f;
->> >> >
->> >> > -   sugov_get_util(&util, &max);
->> >> > +   sugov_get_util(&util, &max, hook->cpu);
->> >> >
->> >>
->> >> And here?
->> >>
->> >> >     raw_spin_lock(&sg_policy->update_lock);
->> >
->> > The lock prevents the same here though.
->> >
->> > So, if we are going to use this series, then we can use the same update-lock in
->> > case of single cpu per policies as well.
->>
->> No, we can't.
->>
->> The lock is unavoidable in the mulit-CPU policies case, but there's no
->> way I will agree on using a lock in the single-CPU case.
->
-> How do you suggest to avoid the locking here then ? Some atomic
-> variable read/write as done in cpufreq_governor.c ?
+Hallo Hans,
 
-That is a very good question. :-)
+On Wed, Apr 12, 2017 at 11:18 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Resetting the charger should never be necessary it should always have
+> sane values programmed. If it is running with invalid values while we
+> are not running (system turned off or suspended) there is a big problem
+> as that may lead to overcharging the battery.
+>
+> The reset in suspend() is meant to put the charger back into default
+> mode, but this is not necessary and not a good idea. If the charger has
+> been programmed with a higher max charge_current / charge_voltage then
+> putting it back in default-mode will reset those to the safe power-on
+> defaults, leading to slower charging, or charging to a lower voltage
+> (and thus not using the full capacity) while suspended which is
+> undesirable. Reprogramming the max charge_current / charge_voltage
+> after the reset will not help here as that will put the charger back
+> in host mode and start the i2c watchdog if the host then does not do
+> anything for 40s (iow if we're suspended for more then 40s) the watchdog
+> expires resetting the device to default-mode, including resetting all
+> the registers to there safe power-on defaults. So the only way to keep
+> using custom charge settings while suspending is to keep the charger in
+> its normal running state with the i2c watchdog disabled. This is fine
+> as the charger will still automatically switch from constant current
+> to constant voltage and stop charging when the battery is full.
+>
+> Besides never being necessary resetting the charger also causes problems
+> on systems where the charge voltage limit is set higher then the reset
+> value, if this is the case and the charger is reset while charging and
+> the battery voltage is between the 2 voltages, then about half the time
+> the charger gets confused and claims to be charging (REG08 contains 0x64)
+> but in reality the charger has decoupled itself from VBUS (Q1 off) and
+> is drawing 0A from VBUS, leaving the system running from the battery.
 
-I need to look at the scheduler code that invokes those things and see
-what happens in there.  Chances are there already is some sufficient
-mutual exclusion in place.
+Could you also mention which charger chip, board/host, and any known
+hw config for the chip by the host?
+
+Also mention whether or not there is a TI errata doc for the issue?
+
+> For all the above reasons this commit disables reset on probe and on
+> suspend / resume. If a specific setup really needs / wants to do a rest
+> in these cases, this can be requested by setting a reset-on-probe device
+> property on the device.
+>
+> Cc: Liam Breck <kernel@networkimprov.net>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+> Changes in v2:
+> -This is a new patch in v2 of this patch-set
+> Changes in v3:
+> -Disable the reset code by default, but leave it around guarded by
+>  a check for a reset-on-probe device-property
+> Changes in v4:
+> -Rebase on top of current power-supply/next
+> ---
+>  drivers/power/supply/bq24190_charger.c | 20 +++++++++++++-------
+>  1 file changed, 13 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> index bd9e5c3..ad429b7 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -1382,9 +1382,11 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+>                 return -ENODEV;
+>         }
+>
+> -       ret = bq24190_register_reset(bdi);
+> -       if (ret < 0)
+> -               return ret;
+> +       if (device_property_read_bool(bdi->dev, "reset-on-probe")) {
+> +               ret = bq24190_register_reset(bdi);
+> +               if (ret < 0)
+> +                       return ret;
+> +       }
+
+Maybe check property and return if true in register_reset(), instead
+of adjusting all the calls. There would be a set_mode_host() in
+resume() which is unnecessary, but it's a no-op to set host mode when
+we're already in it.
+
+Perhaps device_property_present() since _read_bool() implies we expect
+it to be set T or F?
+
+Let's keep the original reset behavior as the default, since we only
+get device props for an ACPI platform.
+
+>         ret = bq24190_set_mode_host(bdi);
+>         if (ret < 0)
+> @@ -1547,7 +1549,8 @@ static int bq24190_remove(struct i2c_client *client)
+>                 pm_runtime_put_noidle(bdi->dev);
+>         }
+>
+> -       bq24190_register_reset(bdi);
+> +       if (device_property_read_bool(bdi->dev, "reset-on-probe"))
+> +               bq24190_register_reset(bdi);
+>         bq24190_sysfs_remove_group(bdi);
+>         power_supply_unregister(bdi->battery);
+>         power_supply_unregister(bdi->charger);
+> @@ -1600,7 +1603,8 @@ static __maybe_unused int bq24190_pm_suspend(struct device *dev)
+>                 pm_runtime_put_noidle(bdi->dev);
+>         }
+>
+> -       bq24190_register_reset(bdi);
+> +       if (device_property_read_bool(bdi->dev, "reset-on-probe"))
+> +               bq24190_register_reset(bdi);
+>
+>         if (error >= 0) {
+>                 pm_runtime_mark_last_busy(bdi->dev);
+> @@ -1625,8 +1629,10 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
+>                 pm_runtime_put_noidle(bdi->dev);
+>         }
+>
+> -       bq24190_register_reset(bdi);
+> -       bq24190_set_mode_host(bdi);
+> +       if (device_property_read_bool(bdi->dev, "reset-on-probe")) {
+> +               bq24190_register_reset(bdi);
+> +               bq24190_set_mode_host(bdi);
+> +       }
+>         bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+>
+>         if (error >= 0) {
+> --
+> 2.9.3
+>
