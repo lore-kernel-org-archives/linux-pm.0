@@ -1,167 +1,96 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: core: Add a back up thermal shutdown mechanism
-Date: Wed, 12 Apr 2017 10:24:36 -0700
-Message-ID: <20170412172434.GA14619@localhost.localdomain>
-References: <20170412040542.GA11305@localhost.localdomain>
- <abf93eec-890f-4c3e-68fa-58c10678dde9@ti.com>
- <1491985580.2357.39.camel@intel.com>
- <db07d448-0fa9-f582-a323-5edcb9a0b509@ti.com>
- <1491986744.2357.42.camel@intel.com>
- <20170412154358.GA12881@localhost.localdomain>
- <b565f2c9-fdd7-7525-da91-695f113e631b@ti.com>
- <b0830fa9-9a3b-6862-6cab-274c17810227@ti.com>
- <798128ac-1d0b-7eb8-2ea3-8bc0bd0b9d6f@ti.com>
- <d79065b6-99b4-34e6-ebd7-556d5ae64ed3@ti.com>
+From: Sathyanarayanan Kuppuswamy Natarajan <sathyaosid@gmail.com>
+Subject: Re: [PATCH v1 1/7] mfd: intel_soc_pmic_bxtwc: fix TMU interrupt index
+Date: Wed, 12 Apr 2017 10:59:19 -0700
+Message-ID: <CAENHMvO7KYFcEvGeCnA9bBYC3qTn7o8f1B6-maS5Z6n_d1Z=DQ@mail.gmail.com>
+References: <b8e952de94ed1902b922224de11f0814371b08b0.1491848776.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <20170412104551.g2xkpihz2n2hju4m@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <d79065b6-99b4-34e6-ebd7-556d5ae64ed3@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yb0-f193.google.com ([209.85.213.193]:35963 "EHLO
+        mail-yb0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752057AbdDLR7U (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 13:59:20 -0400
+In-Reply-To: <20170412104551.g2xkpihz2n2hju4m@dell>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, Andy Shevchenko <andy@infradead.org>, Hans de Goede <hdegoede@redhat.com>, linux-gpio@vger.kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, Apr 12, 2017 at 10:41:00PM +0530, Keerthy wrote:
-> 
-> 
-> On Wednesday 12 April 2017 10:38 PM, Grygorii Strashko wrote:
-> > 
-> > 
-> > On 04/12/2017 11:44 AM, Keerthy wrote:
-> >>
-> >>
-> >> On Wednesday 12 April 2017 10:01 PM, Grygorii Strashko wrote:
-> >>>
-> >>>
-> >>> On 04/12/2017 10:44 AM, Eduardo Valentin wrote:
-> >>>> Hello,
-> >>>>
-> >>> ...
-> >>>
-> >>>>
-> >>>> I agree. But there it nothing that says it is not reenterable. If you
-> >>>> saw something in this line, can you please share?
-> >>>>
-> >>>>>>> will you generate a patch to do this?
-> >>>>>> Sure. I will generate a patch to take care of 1) To make sure that
-> >>>>>> orderly_poweroff is called only once right away. I have already
-> >>>>>> tested.
-> >>>>>>
-> >>>>>> for 2) Cancel all the scheduled work queues to monitor the
-> >>>>>> temperature.
-> >>>>>> I will take some more time to make it and test.
-> >>>>>>
-> >>>>>> Is that okay? Or you want me to send both together?
-> >>>>>>
-> >>>>> I think you can send patch for step 1 first.
-> >>>>
-> >>>> I am happy to see that Keerthy found the problem with his setup and a
-> >>>> possible solution. But I have a few concerns here.
-> >>>>
-> >>>> 1. If regular shutdown process takes 10seconds, that is a ballpark that
-> >>>> thermal should never wait. orderly_poweroff() calls run_cmd() with wait
-> >>>> flag set. That means, if regular userland shutdown takes 10s, we are
-> >>>> waiting for it. Obviously this not acceptable. Specially if you setup
-> >>>> critical trip to be 125C. Now, if you properly size the critical trip to
-> >>>> fire before hotspot really reach 125C, for 10s (or the time it takes to
-> >>>> shutdown), then fine. But based on what was described in this thread,
-> >>>> his system is waiting 10s on regular shutdown, and his silicon is on
-> >>>> out-of-spec temperature for 10s, which is wrong.
-> >>>>
-> >>>> 2. The above scenario is not acceptable in a long run, specially from a
-> >>>> reliability perspective. If orderly_poweroff() has a possibility to
-> >>>> simply never return (or take too long), I would say the thermal
-> >>>> subsystem is using the wrong API.
-> > 
-> > ^ this question just repeat everything which was already discussed in
-> > previous versions of this patch - orderly_poweroff() is not good for critical shutdown/poweroff,
-> > but what to use instead?
+Hi Lee,
 
-It is still useful on a properly sized system. The point is the thermal
-subsystem still wants to give one opportunity to gracefully shutdown the
-running system on a thermal scenario, as I explained in the other email.
-But, you have to do this accounting the down time, and your reliability
-concerns.
+Thanks. Will remove the code segment in next version.
 
-> > 
-> > 
-> >>>>
-> >>>
-> >>>
-> >>> Hh, I do not see that orderly_poweroff() will wait for anything now:
-> >>> void orderly_poweroff(bool force)
-> >>> {
-> >>> 	if (force) /* do not override the pending "true" */
-> >>> 		poweroff_force = true;
-> >>> 	schedule_work(&poweroff_work); 
-> >>> ^^^^^^^ async call. even here can be pretty big delay if system is under pressure
-> >>> }
-> >>>
-> >>>
-> >>> static int __orderly_poweroff(bool force)
-> >>> {
-> >>> 	int ret;
-> >>>
-> >>> 	ret = run_cmd(poweroff_cmd);
-> >>
-> >> When i tried with multiple orderly_poweroff calls ret was always 0.
-> >> So every 250mS i see this ret = 0.
-> >>
-> >>> ^^^^ no wait for the process - only for exec. flags == UMH_WAIT_EXEC
-> >>>
-> >>> 	if (ret && force) {
-> >>
-> >> So it never entered this path. ret = 0 so if is not executed.
-> > 
-> > correct, because exec can find poweroff tool and start it, so you,
-> > most probably, have bunch of this tool instance running in parallel (some of them can fail or block)
-> > Issue 1 - you've sent fix for is actual :).
-> 
-> Precisely yes!
-> 
+On Wed, Apr 12, 2017 at 3:45 AM, Lee Jones <lee.jones@linaro.org> wrote:
+> On Mon, 10 Apr 2017, sathyanarayanan.kuppuswamy@linux.intel.com wrote:
+>
+>> From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel=
+.com>
+>>
+>> TMU interrupts are registered as a separate interrupt chip, and
+>> hence it should start its interrupt index(BXTWC_TMU_IRQ) number
+>> from 0. But currently, BXTWC_TMU_IRQ is defined as part of enum
+>> bxtwc_irqs_level2 and its index value is 11. Since this index
+>> value is used when calculating .num_irqs of regmap_irq_chip_tmu,
+>> it incorrectly reports number of irqs as 12 instead of actual
+>> value of 1.
+>>
+>> static const struct regmap_irq bxtwc_regmap_irqs_tmu[] =3D {
+>>       REGMAP_IRQ_REG(BXTWC_TMU_IRQ, 0, 0x06),
+>> };
+>>
+>> static struct regmap_irq_chip bxtwc_regmap_irq_chip_tmu =3D {
+>>       .name =3D "bxtwc_irq_chip_tmu",
+>>       .status_base =3D BXTWC_TMUIRQ,
+>>       .mask_base =3D BXTWC_MTMUIRQ,
+>>       .irqs =3D bxtwc_regmap_irqs_tmu,
+>>       .num_irqs =3D ARRAY_SIZE(bxtwc_regmap_irqs_tmu),
+>>       .num_regs =3D 1,
+>> };
+>>
+>> This patch fixes this issue by creating new enum of tmu irqs and
+>> resetting its starting index to 0.
+>>
+>> Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@li=
+nux.intel.com>
+>> ---
+>>  drivers/mfd/intel_soc_pmic_bxtwc.c | 5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>
+> Patch looks fine, but please remove the code segment from the commit
+> log.
+>
+> For the code:
+>
+> For my own reference:
+>   Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+>
+>> diff --git a/drivers/mfd/intel_soc_pmic_bxtwc.c b/drivers/mfd/intel_soc_=
+pmic_bxtwc.c
+>> index 699c8c7..bb18e20 100644
+>> --- a/drivers/mfd/intel_soc_pmic_bxtwc.c
+>> +++ b/drivers/mfd/intel_soc_pmic_bxtwc.c
+>> @@ -94,7 +94,10 @@ enum bxtwc_irqs_level2 {
+>>       BXTWC_GPIO0_IRQ,
+>>       BXTWC_GPIO1_IRQ,
+>>       BXTWC_CRIT_IRQ,
+>> -     BXTWC_TMU_IRQ,
+>> +};
+>> +
+>> +enum bxtwc_irqs_tmu {
+>> +     BXTWC_TMU_IRQ =3D 0,
+>>  };
+>>
+>>  static const struct regmap_irq bxtwc_regmap_irqs[] =3D {
+>
+> --
+> Lee Jones
+> Linaro STMicroelectronics Landing Team Lead
+> Linaro.org =E2=94=82 Open source software for ARM SoCs
+> Follow Linaro: Facebook | Twitter | Blog
 
-As I mentioned, the fix is a two fold, a. avoid spam of
-orderly_poweroff(), but make sure eventually we shutdown.
 
-> > 
-> > Again, thermal has no control of power off process once  run_cmd() is returned,
-> > and it do not know what US poweroff binary is doing and how much time can it take
-> > (which include disks maintenance - loooong delay).
-> > 
-> >>
-> >>> 		pr_warn("Failed to start orderly shutdown: forcing the issue\n");
-> >>>
-> >>> 		/*
-> >>> 		 * I guess this should try to kick off some daemon to sync and
-> >>> 		 * poweroff asap.  Or not even bother syncing if we're doing an
-> >>> 		 * emergency shutdown?
-> >>> 		 */
-> >>> 		emergency_sync();
-> >>> 		kernel_power_off();
-> >>> ^^^ force power off, but only if run_cmd() failed - for example /sbin/poweroff doesn't exist
-> >>> 	}
-> >>>
-> >>> 	return ret;
-> >>> }
-> >>>
-> >>> static bool poweroff_force;
-> >>>
-> >>> static void poweroff_work_func(struct work_struct *work)
-> >>> {
-> >>> 	__orderly_poweroff(poweroff_force);
-> >>> }
-> >>>
-> >>> As result thermal has no control of power off any more after calling orderly_poweroff() and can get the result
-> >>> of US poweroff binary execution.
-> >>>
-> >>>>
-> >>>> If you are going to implement the above two patches, keep in mind:
-> >>>> i. At least within the thermal subsystem, you need to take care of all
-> >>>> zones that could trigger a shutdown.
-> >>>> ii. serializing the calls to orderly_poweroff() seams to be more
-> >>>> concerning than cancelling all monitoring.
-> >>>>
-> >>>>
-> >>>
-> > 
+
+--=20
+Sathya
