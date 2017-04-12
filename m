@@ -1,120 +1,187 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v4 2/3] power: supply: bq24190_charger: Do not reset the charger on probe by default
-Date: Wed, 12 Apr 2017 20:18:07 +0200
-Message-ID: <20170412181808.31768-3-hdegoede@redhat.com>
-References: <20170412181808.31768-1-hdegoede@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:51867 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752286AbdDLSSP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 12 Apr 2017 14:18:15 -0400
-In-Reply-To: <20170412181808.31768-1-hdegoede@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tero Kristo <t-kristo@ti.com>
+Subject: Re: [PATCH] thermal: core: Add a back up thermal shutdown mechanism
+Date: Wed, 12 Apr 2017 21:43:00 +0300
+Message-ID: <e993c02c-e391-a9b7-9737-cb4a87ebcb57@ti.com>
+References: <20170412040542.GA11305@localhost.localdomain>
+ <abf93eec-890f-4c3e-68fa-58c10678dde9@ti.com>
+ <1491985580.2357.39.camel@intel.com>
+ <db07d448-0fa9-f582-a323-5edcb9a0b509@ti.com>
+ <1491986744.2357.42.camel@intel.com>
+ <20170412154358.GA12881@localhost.localdomain>
+ <b565f2c9-fdd7-7525-da91-695f113e631b@ti.com>
+ <b0830fa9-9a3b-6862-6cab-274c17810227@ti.com>
+ <798128ac-1d0b-7eb8-2ea3-8bc0bd0b9d6f@ti.com>
+ <d79065b6-99b4-34e6-ebd7-556d5ae64ed3@ti.com>
+ <20170412172434.GA14619@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170412172434.GA14619@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-Resetting the charger should never be necessary it should always have
-sane values programmed. If it is running with invalid values while we
-are not running (system turned off or suspended) there is a big problem
-as that may lead to overcharging the battery.
+On 12/04/17 20:24, Eduardo Valentin wrote:
+> On Wed, Apr 12, 2017 at 10:41:00PM +0530, Keerthy wrote:
+>>
+>>
+>> On Wednesday 12 April 2017 10:38 PM, Grygorii Strashko wrote:
+>>>
+>>>
+>>> On 04/12/2017 11:44 AM, Keerthy wrote:
+>>>>
+>>>>
+>>>> On Wednesday 12 April 2017 10:01 PM, Grygorii Strashko wrote:
+>>>>>
+>>>>>
+>>>>> On 04/12/2017 10:44 AM, Eduardo Valentin wrote:
+>>>>>> Hello,
+>>>>>>
+>>>>> ...
+>>>>>
+>>>>>>
+>>>>>> I agree. But there it nothing that says it is not reenterable. If you
+>>>>>> saw something in this line, can you please share?
+>>>>>>
+>>>>>>>>> will you generate a patch to do this?
+>>>>>>>> Sure. I will generate a patch to take care of 1) To make sure that
+>>>>>>>> orderly_poweroff is called only once right away. I have already
+>>>>>>>> tested.
+>>>>>>>>
+>>>>>>>> for 2) Cancel all the scheduled work queues to monitor the
+>>>>>>>> temperature.
+>>>>>>>> I will take some more time to make it and test.
+>>>>>>>>
+>>>>>>>> Is that okay? Or you want me to send both together?
+>>>>>>>>
+>>>>>>> I think you can send patch for step 1 first.
+>>>>>>
+>>>>>> I am happy to see that Keerthy found the problem with his setup and a
+>>>>>> possible solution. But I have a few concerns here.
+>>>>>>
+>>>>>> 1. If regular shutdown process takes 10seconds, that is a ballpark that
+>>>>>> thermal should never wait. orderly_poweroff() calls run_cmd() with wait
+>>>>>> flag set. That means, if regular userland shutdown takes 10s, we are
+>>>>>> waiting for it. Obviously this not acceptable. Specially if you setup
+>>>>>> critical trip to be 125C. Now, if you properly size the critical trip to
+>>>>>> fire before hotspot really reach 125C, for 10s (or the time it takes to
+>>>>>> shutdown), then fine. But based on what was described in this thread,
+>>>>>> his system is waiting 10s on regular shutdown, and his silicon is on
+>>>>>> out-of-spec temperature for 10s, which is wrong.
+>>>>>>
+>>>>>> 2. The above scenario is not acceptable in a long run, specially from a
+>>>>>> reliability perspective. If orderly_poweroff() has a possibility to
+>>>>>> simply never return (or take too long), I would say the thermal
+>>>>>> subsystem is using the wrong API.
+>>>
+>>> ^ this question just repeat everything which was already discussed in
+>>> previous versions of this patch - orderly_poweroff() is not good for critical shutdown/poweroff,
+>>> but what to use instead?
+>
+> It is still useful on a properly sized system. The point is the thermal
+> subsystem still wants to give one opportunity to gracefully shutdown the
+> running system on a thermal scenario, as I explained in the other email.
+> But, you have to do this accounting the down time, and your reliability
+> concerns.
+>
+>>>
+>>>
+>>>>>>
+>>>>>
+>>>>>
+>>>>> Hh, I do not see that orderly_poweroff() will wait for anything now:
+>>>>> void orderly_poweroff(bool force)
+>>>>> {
+>>>>> 	if (force) /* do not override the pending "true" */
+>>>>> 		poweroff_force = true;
+>>>>> 	schedule_work(&poweroff_work);
+>>>>> ^^^^^^^ async call. even here can be pretty big delay if system is under pressure
+>>>>> }
+>>>>>
+>>>>>
+>>>>> static int __orderly_poweroff(bool force)
+>>>>> {
+>>>>> 	int ret;
+>>>>>
+>>>>> 	ret = run_cmd(poweroff_cmd);
+>>>>
+>>>> When i tried with multiple orderly_poweroff calls ret was always 0.
+>>>> So every 250mS i see this ret = 0.
+>>>>
+>>>>> ^^^^ no wait for the process - only for exec. flags == UMH_WAIT_EXEC
+>>>>>
+>>>>> 	if (ret && force) {
+>>>>
+>>>> So it never entered this path. ret = 0 so if is not executed.
+>>>
+>>> correct, because exec can find poweroff tool and start it, so you,
+>>> most probably, have bunch of this tool instance running in parallel (some of them can fail or block)
+>>> Issue 1 - you've sent fix for is actual :).
+>>
+>> Precisely yes!
+>>
+>
+> As I mentioned, the fix is a two fold, a. avoid spam of
+> orderly_poweroff(), but make sure eventually we shutdown.
 
-The reset in suspend() is meant to put the charger back into default
-mode, but this is not necessary and not a good idea. If the charger has
-been programmed with a higher max charge_current / charge_voltage then
-putting it back in default-mode will reset those to the safe power-on
-defaults, leading to slower charging, or charging to a lower voltage
-(and thus not using the full capacity) while suspended which is
-undesirable. Reprogramming the max charge_current / charge_voltage
-after the reset will not help here as that will put the charger back
-in host mode and start the i2c watchdog if the host then does not do
-anything for 40s (iow if we're suspended for more then 40s) the watchdog
-expires resetting the device to default-mode, including resetting all
-the registers to there safe power-on defaults. So the only way to keep
-using custom charge settings while suspending is to keep the charger in
-its normal running state with the i2c watchdog disabled. This is fine
-as the charger will still automatically switch from constant current
-to constant voltage and stop charging when the battery is full.
+Just chirping in here a bit myself also, the long latencies in the 
+poweroff executing are basically because in our case it will do all of 
+the following:
 
-Besides never being necessary resetting the charger also causes problems
-on systems where the charge voltage limit is set higher then the reset
-value, if this is the case and the charger is reset while charging and
-the battery voltage is between the 2 voltages, then about half the time
-the charger gets confused and claims to be charging (REG08 contains 0x64)
-but in reality the charger has decoupled itself from VBUS (Q1 off) and
-is drawing 0A from VBUS, leaving the system running from the battery.
+- stop all running daemons
+- kill all remaining processes
+- unload all modules
+- sync / unmount all filesystems
+- etc.
+- poweroff the system when everything else has been gracefully done
 
-For all the above reasons this commit disables reset on probe and on
-suspend / resume. If a specific setup really needs / wants to do a rest
-in these cases, this can be requested by setting a reset-on-probe device
-property on the device.
+The order of these things are not necessarily what I listed above, but 
+overall it takes quite a bit of time. It doesn't matter if you execute 
+all of this over NFS or SD card or ramdisk, it is a long procedure.
 
-Cc: Liam Breck <kernel@networkimprov.net>
-Cc: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
-Changes in v2:
--This is a new patch in v2 of this patch-set
-Changes in v3:
--Disable the reset code by default, but leave it around guarded by
- a check for a reset-on-probe device-property
-Changes in v4:
--Rebase on top of current power-supply/next
----
- drivers/power/supply/bq24190_charger.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+-Tero
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index bd9e5c3..ad429b7 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -1382,9 +1382,11 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
- 		return -ENODEV;
- 	}
- 
--	ret = bq24190_register_reset(bdi);
--	if (ret < 0)
--		return ret;
-+	if (device_property_read_bool(bdi->dev, "reset-on-probe")) {
-+		ret = bq24190_register_reset(bdi);
-+		if (ret < 0)
-+			return ret;
-+	}
- 
- 	ret = bq24190_set_mode_host(bdi);
- 	if (ret < 0)
-@@ -1547,7 +1549,8 @@ static int bq24190_remove(struct i2c_client *client)
- 		pm_runtime_put_noidle(bdi->dev);
- 	}
- 
--	bq24190_register_reset(bdi);
-+	if (device_property_read_bool(bdi->dev, "reset-on-probe"))
-+		bq24190_register_reset(bdi);
- 	bq24190_sysfs_remove_group(bdi);
- 	power_supply_unregister(bdi->battery);
- 	power_supply_unregister(bdi->charger);
-@@ -1600,7 +1603,8 @@ static __maybe_unused int bq24190_pm_suspend(struct device *dev)
- 		pm_runtime_put_noidle(bdi->dev);
- 	}
- 
--	bq24190_register_reset(bdi);
-+	if (device_property_read_bool(bdi->dev, "reset-on-probe"))
-+		bq24190_register_reset(bdi);
- 
- 	if (error >= 0) {
- 		pm_runtime_mark_last_busy(bdi->dev);
-@@ -1625,8 +1629,10 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
- 		pm_runtime_put_noidle(bdi->dev);
- 	}
- 
--	bq24190_register_reset(bdi);
--	bq24190_set_mode_host(bdi);
-+	if (device_property_read_bool(bdi->dev, "reset-on-probe")) {
-+		bq24190_register_reset(bdi);
-+		bq24190_set_mode_host(bdi);
-+	}
- 	bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
- 
- 	if (error >= 0) {
--- 
-2.9.3
+>
+>>>
+>>> Again, thermal has no control of power off process once  run_cmd() is returned,
+>>> and it do not know what US poweroff binary is doing and how much time can it take
+>>> (which include disks maintenance - loooong delay).
+>>>
+>>>>
+>>>>> 		pr_warn("Failed to start orderly shutdown: forcing the issue\n");
+>>>>>
+>>>>> 		/*
+>>>>> 		 * I guess this should try to kick off some daemon to sync and
+>>>>> 		 * poweroff asap.  Or not even bother syncing if we're doing an
+>>>>> 		 * emergency shutdown?
+>>>>> 		 */
+>>>>> 		emergency_sync();
+>>>>> 		kernel_power_off();
+>>>>> ^^^ force power off, but only if run_cmd() failed - for example /sbin/poweroff doesn't exist
+>>>>> 	}
+>>>>>
+>>>>> 	return ret;
+>>>>> }
+>>>>>
+>>>>> static bool poweroff_force;
+>>>>>
+>>>>> static void poweroff_work_func(struct work_struct *work)
+>>>>> {
+>>>>> 	__orderly_poweroff(poweroff_force);
+>>>>> }
+>>>>>
+>>>>> As result thermal has no control of power off any more after calling orderly_poweroff() and can get the result
+>>>>> of US poweroff binary execution.
+>>>>>
+>>>>>>
+>>>>>> If you are going to implement the above two patches, keep in mind:
+>>>>>> i. At least within the thermal subsystem, you need to take care of all
+>>>>>> zones that could trigger a shutdown.
+>>>>>> ii. serializing the calls to orderly_poweroff() seams to be more
+>>>>>> concerning than cancelling all monitoring.
+>>>>>>
+>>>>>>
+>>>>>
+>>>
