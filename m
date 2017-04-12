@@ -1,168 +1,293 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
- power-domains
-Date: Wed, 12 Apr 2017 17:49:44 +0100
-Message-ID: <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
-References: <cover.1490001099.git.viresh.kumar@linaro.org>
- <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: core: Add a back up thermal shutdown mechanism
+Date: Wed, 12 Apr 2017 09:50:57 -0700
+Message-ID: <20170412165055.GB13484@localhost.localdomain>
+References: <f64632d5-c780-e5fe-cff7-8ed1459348a0@ti.com>
+ <1491967248.2357.25.camel@intel.com>
+ <492e72af-ff33-d193-071e-5bc00df9a8b0@ti.com>
+ <20170412040542.GA11305@localhost.localdomain>
+ <abf93eec-890f-4c3e-68fa-58c10678dde9@ti.com>
+ <1491985580.2357.39.camel@intel.com>
+ <db07d448-0fa9-f582-a323-5edcb9a0b509@ti.com>
+ <1491986744.2357.42.camel@intel.com>
+ <20170412154358.GA12881@localhost.localdomain>
+ <3d21afca-2e86-3c66-e36a-2a30ad973194@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="JYK4vJDZwFMowpUq"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:33806 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754959AbdDLQvE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 12:51:04 -0400
+Content-Disposition: inline
+In-Reply-To: <3d21afca-2e86-3c66-e36a-2a30ad973194@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Keerthy <j-keerthy@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
 
+--JYK4vJDZwFMowpUq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 20/03/17 09:32, Viresh Kumar wrote:
-> Power-domains need to express their active states in DT and what's
-> better than OPP table for that.
-> 
-> This patch allows power-domains to reuse OPP tables to express their
-> active states. The "opp-hz" property isn't a required property anymore
-> as power-domains may not always use them.
-> 
-> Add a new property "domain-performance-state", which will contain
-> positive integer values to represent performance levels of the
-> power-domains as described in this patch.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  Documentation/devicetree/bindings/opp/opp.txt | 73 ++++++++++++++++++++++++++-
->  1 file changed, 71 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-> index 63725498bd20..d0b95c9e1011 100644
-> --- a/Documentation/devicetree/bindings/opp/opp.txt
-> +++ b/Documentation/devicetree/bindings/opp/opp.txt
-> @@ -76,10 +76,9 @@ This describes the OPPs belonging to a device. This node can have following
->  This defines voltage-current-frequency combinations along with other related
->  properties.
->  
-> -Required properties:
-> +Optional properties:
->  - opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer.
->  
-> -Optional properties:
->  - opp-microvolt: voltage in micro Volts.
->  
->    A single regulator's voltage is specified with an array of size one or three.
-> @@ -154,6 +153,19 @@ properties.
->  
->  - status: Marks the node enabled/disabled.
->  
-> +- domain-performance-state: A positive integer value representing the minimum
-> +  power-domain performance level required by the device for the OPP node. The
+Hey
 
-So the above definition is when this field in in the device node rather
-than the OPP table entry, right ? For simplicity why not have the
-properties named slightly different or just use phandle to an entry in
-the device node for this purpose.
+On Wed, Apr 12, 2017 at 09:46:47PM +0530, Keerthy wrote:
+>=20
+>=20
+> On Wednesday 12 April 2017 09:14 PM, Eduardo Valentin wrote:
+> > Hello,
+> >=20
+> > On Wed, Apr 12, 2017 at 04:45:44PM +0800, Zhang Rui wrote:
+> >=20
+> > <cut>
+> >=20
+> >>>>> Zhang/Eduardo,
+> >>>>>
+> >>>>> OMAP5/DRA7 is one case.
+> >>>>>
+> >>>>> I believe i this is the root cause of this failure.
+> >>>>>
+> >>>>> thermal_zone_device_check --> thermal_zone_device_update -->
+> >>>>> handle_thermal_trip --> handle_critical_trips -->
+> >>>>> orderly_poweroff
+> >>>>>
+> >>>>> The above sequence happens every 250/500 mS based on the
+> >>>>> configuration.
+> >>>>> The orderly_poweroff function is getting called every 250/500 mS
+> >>>>> and
+> >>>>> i
+> >>>>> see with a full fledged nfs file system it takes at least 5-10
+> >>>>> Seconds
+> >>>>> to shutdown and during that time we bombard with orderly_poweroff
+> >>>>> calls
+> >>>>> multiple times due to the thermal_zone_device_check triggering
+> >>>>> periodically.
+> >=20
+> > I see. A couple of questions here:
+> > a. A regular shutdown command on your setup takes 5 to 10 s? What is the
+> > PHY underneath your NFS? 56K modem?
+>=20
+> Its not 56K modem but also i am not running on busybox!
 
-> +  The integer value '0' represents the lowest performance level and the higher
-> +  values represent higher performance levels. 
+OK. :-)
 
-needs to be changed as OPP table entry.
+> Its a full fledged arago file system. Yes i have run a basic poweroff
+> and it takes about 5S. I will share the logs with timings the first
+> thing tomorrow.
+>=20
 
->  When present in the OPP table of a
-> + power-domain, it represents the performance level of the domain. When present
+I see.=20
 
-again "performance level of the domain corresponding to that OPP entry"
-on something similar
+> > b. Or did you mean it takes 5 to 10 s because you keep calling
+> > orderly_poweroff?
+>=20
+> If we keep calling orderly_poweroff it would never shutdown. Hence the
+> issue.
 
-> +  in the OPP table of a normal device, it represents the performance level of
+Yeah, if you could share the logs would be great to understand where the
+wait sits.
 
-what do you mean by normal device ? needs description as that's
-something new introduced here.
+>=20
+> >=20
+> >>>>>
+> >>>>> To confirm that i made sure that handle_critical_trips calls
+> >>>>> orderly_poweroff only once and i no longer see the failure on
+> >>>>> DRA72-
+> >>>>> EVM
+> >>>>> board.
+> >>>>>
+> >=20
+> >=20
+> >>>> Nice catch!
+> >=20
+> > Ok. Nice. But how long does it take?
+>=20
+> About 5-10S as i mentioned.
+>=20
+> First and foremost there is an issue here where in we keep calling
+> orderly_poweroff which needs to be addressed.
+>=20
 
-> +  the parent power-domain. The OPP table can contain the
-> +  "domain-performance-state" property, only if the device node contains the
-> +  "power-domains" or "#power-domain-cells" property. 
+I agree here. Apparently, the expectations of the API were wrong. I
+agree on refraining from calling it multiple times before it finishes.
 
-Why such a restriction ?
+But, I said this before, and I will repeat myself. I believe thermal is
+not the only user of this API, maybe the problem is more apparent for
+thermal because we call it multiple times, and we want it to finishes,
+but even after fixing the serialization on thermal side, we can still
+collide with other parts of the kernel and userland.
 
-> The OPP nodes aren't
-> +  allowed to contain the "domain-performance-state" property partially, i.e.
-> +  Either all OPP nodes in the OPP table have the "domain-performance-state"
-> +  property or none of them have it.
-> +
->  Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
->  
->  / {
-> @@ -528,3 +540,60 @@ Example 5: opp-supported-hw
->  		};
->  	};
->  };
-> +
-> +Example 7: domain-Performance-state:
-> +(example: For 1GHz require domain state 1 and for 1.1 & 1.2 GHz require state 2)
-> +
-> +/ {
-> +	domain_opp_table: opp_table0 {
-> +		compatible = "operating-points-v2";
-> +
-> +		opp@1 {
-> +			domain-performance-state = <1>;
-> +			opp-microvolt = <975000 970000 985000>;
-> +		};
-> +		opp@2 {
-> +			domain-performance-state = <2>;
-> +			opp-microvolt = <1075000 1000000 1085000>;
-> +		};
-> +	};
-> +
-> +	foo_domain: power-controller@12340000 {
-> +		compatible = "foo,power-controller";
-> +		reg = <0x12340000 0x1000>;
-> +		#power-domain-cells = <0>;
-> +		operating-points-v2 = <&domain_opp_table>;
+> >=20
+> >>> Thanks.
+> >>>
+> >>>>
+> >>>>
+> >>>>>
+> >>>>> So IMHO once we get to handle_critical_trips case where we do
+> >>>>> orderly_poweroff we need to do the following:
+> >>>>>
+> >>>>> 1) Make sure that orderly_poweroff is called only once.
+> >>>> agreed.
+> >>>>
+> >>>>>
+> >>>>> 2) Cancel all the scheduled work queues to monitor the
+> >>>>> temperature as
+> >>>>> we have already reached a point of shutting down the system.
+> >>>>>
+> >>>> agreed.
+> >>>>
+> >>>> now I think we've found the root cause of the problem.
+> >>>> orderly_poweroff() is not reenterable and it does not have to be.
+> >=20
+> >=20
+> > Well, why not? Because we assume that all sources of shutdown within
+> > kernel are all gonna happen in different time? What if thermal calls and
+> > another subsystem/driver calls it too. Does work if user space also
+> > calls shutdown in the middle of a thermal shutdown? I think we need to
+> > think this through a bit more..
+>=20
+> Definitely we need to think a lot more but point agreed. Why is thermal
+> framework calling orderly_poweroff multiple times? Say even if you
+> manage to shut off in 2 seconds you still end up calling 4 to 8 times
+> depending on 500mS or 250mS delay.
 
-How does it scale with power domain providers with multiple power domain ?
+I agree here. Also, a graceful thermal shutdown may also mean displaying
+a message, etc. In this case, you have to size properly the trip,
+accounting shutdown down time, and your reliability expectation.
 
-> +	}
-> +
-> +	cpu0_opp_table: opp_table1 {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp@1000000000 {
-> +			opp-hz = /bits/ 64 <1000000000>;
-> +			domain-performance-state = <1>;
-> +		};
-> +		opp@1100000000 {
-> +			opp-hz = /bits/ 64 <1100000000>;
-> +			domain-performance-state = <2>;
-> +		};
-> +		opp@1200000000 {
-> +			opp-hz = /bits/ 64 <1200000000>;
-> +			domain-performance-state = <2>;
-> +		};
-> +	};
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		cpu@0 {
-> +			compatible = "arm,cortex-a9";
-> +			reg = <0>;
-> +			clocks = <&clk_controller 0>;
-> +			clock-names = "cpu";
-> +			operating-points-v2 = <&cpu0_opp_table>;
 
-Do we ignore operating-points-v2 above as this device/cpu node contains
-power domain which has operating-points-v2 property ? In other words
-how do they correlate ?
+>=20
+> >=20
+> >>>> If we're using orderly_poweroff() for emergency power off, we have
+> >>>> to
+> >>>> use it correctly.
+> >>>>
+> >=20
+> > I agree. But there it nothing that says it is not reenterable. If you
+> > saw something in this line, can you please share?
+> >=20
+> >>>> will you generate a patch to do this?
+> >>> Sure. I will generate a patch to take care of 1) To make sure that
+> >>> orderly_poweroff is called only once right away. I have already
+> >>> tested.
+> >>>
+> >>> for 2) Cancel all the scheduled work queues to monitor the
+> >>> temperature.
+> >>> I will take some more time to make it and test.
+> >>>
+> >>> Is that okay? Or you want me to send both together?
+> >>>
+> >> I think you can send patch for step 1 first.
+> >=20
+> > I am happy to see that Keerthy found the problem with his setup and a
+> > possible solution. But I have a few concerns here.
+> >=20
+> > 1. If regular shutdown process takes 10seconds, that is a ballpark that
+> > thermal should never wait. orderly_poweroff() calls run_cmd() with wait
+> > flag set. That means, if regular userland shutdown takes 10s, we are
+> > waiting for it. Obviously this not acceptable. Specially if you setup
+> > critical trip to be 125C. Now, if you properly size the critical trip to
+> > fire before hotspot really reach 125C, for 10s (or the time it takes to
+> > shutdown), then fine. But based on what was described in this thread,
+> > his system is waiting 10s on regular shutdown, and his silicon is on
+> > out-of-spec temperature for 10s, which is wrong.
+>=20
+> 2 approaches can be taken here:
+>=20
+> 1) Reduce the critical temperature to something lesser than the hardware
+> critical point.
+>=20
+> Or
+>=20
+> 2) Call kernel_power_off directly as you are in a pretty critical
+> situation! That only takes less than a second and powers off the PMIC at
+> least on OMAP5/DRA7.
 
-> +			power-domains = <&foo_domain>;
-> +		};
-> +	};
-> +};
-> 
 
--- 
-Regards,
-Sudeep
+I think the code needs to allow doing both, actually. Considering both,
+the silicon and system reliability, and userland (and end user)
+interaction, the thermal shutdown typically needs to:
+1. Make sure it avoids reliability problems, i.e., one shall not allow
+device to run on out-of-spec temperature.
+2. Give the opportunity for the system to gracefully shutdown, so you
+have the time to keep system state sane (save your data, notify user,
+etc), even if you are on a 56K modem :-)
+
+>=20
+> >=20
+> > 2. The above scenario is not acceptable in a long run, specially from a
+> > reliability perspective. If orderly_poweroff() has a possibility to
+> > simply never return (or take too long), I would say the thermal
+> > subsystem is using the wrong API.
+>=20
+> As mentioned above kernel_power_off?
+>=20
+> >=20
+> >=20
+> > If you are going to implement the above two patches, keep in mind:
+> > i. At least within the thermal subsystem, you need to take care of all
+> > zones that could trigger a shutdown.
+>=20
+> Do you think it makes sense for all the 'n' sensors to trigger
+> orderly_poweroff one by one? Or we should worry about the first source
+> and ensure that it shuts off the system?
+>=20
+> Is it not enough to catch the first critical alert and poweroff
+
+I think it is enough if we make sure the first one goes through
+properly. For accountability purposes, some people would like to also
+know if other sensors are too hot too, and could be also firing the
+shutdown.
+
+Only making sure that the first shutdown goes all the way through,
+and block any other thermal shutdowns, it is enough. Then again, I do
+not think you need to cancel all the monitoring in the system.
+
+Given the above points, my suggestion is to:
+1. still call orderly_poweroff(), therefore, you still give the
+opportunity for userland to gracefully power off.
+2. but still make sure, once one of the zones hits critical, no other
+will call orderly_poweroff()
+3. Also, when in the critical path, make sure there is no way back, or
+long delays, allowing system engineer to size the shutdown wait.
+Shutdown wait is a system property, not a zone property. That is, we
+eventually call kernel_power_off().
+
+All in all, 1. and 2. above are part of what you found and what has been
+proposed to make sure we call orderly_poweroff() only once, system wide
+(or at least thermal subsystem wide). And 3. is pretty much the proposed
+patch in this series, I think this still needs to go, and I am convinced
+that thermal core is best place to write the backup mechanism, given the
+expected variability of orderly_poweroff().
+
+BR,
+
+Eduardo Valentin
+
+--JYK4vJDZwFMowpUq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJY7lrpAAoJEA6VkvSQfF5TYAYP/jyYmU9HlC1MtGbXS8kLGXIR
+dzNHO3xG/rvg5hnmz5Xtx7joW3yCWvQhv4bxUa8FU7gzWex4yKpScytdPQPTUKsI
+HM3TX1Q5BmtShzDwSEpJYuTPIRX+rsCEV7Jj3xW7OCWX3GfD/tbbCOcqdUHkR87Y
+MqtIaG7nMvdpEcrqKWS+kDIHv/ZkWPg6kzu1JUX19DMlTdCVMbyf7yCooUfuIq44
+wqnZE6EeKaKi9tmH4BF9F0OSouxDrqjGcZ0ltYSPLoN0+Wwlpf1gbVXM9w0QaETr
+F0Kv74z2Iyw+P6suZnxCnZY8TykjRh0Zm75Dh+AJ/eKKCugOzzx0vl9zk+pVw2Jh
+r3DJsECo7Fc79QbCgEGk+/ODE++rPbeRMAcBLiDXtO/QNORDHq2R46pP9SdPAKpz
+rmvK2JUF0rc1veG44FPcM8aZ6jC8JrGs98nYMnmRLDE75YkFTLYg2a5Zpp3Etkvw
+WmyLoMmnsMtXBAKBtjdI43lvKk4TQCeZY6F36JQ6keNPQZ+bQKQyX+XdAkWvDf3s
+3rOO4TGgs63hGsBWZ3Fcyp5U4LtTtDIdDlZru/h2BBKDG3T/yqD3SSHSKyPM9/uB
+8O9F7cneS5BCw/WATKwurNzsaWOPH1+R70kvpzNB6TGYLHYojvq93SVF/J11d7pi
+TKvhqnmY9PWHX+7mYyxN
+=fP6b
+-----END PGP SIGNATURE-----
+
+--JYK4vJDZwFMowpUq--
