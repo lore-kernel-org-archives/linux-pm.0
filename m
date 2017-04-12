@@ -1,22 +1,22 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 11/13] cpufreq/sparc-us3: Replace racy task affinity logic
-Date: Wed, 12 Apr 2017 22:07:37 +0200
-Message-ID: <20170412201043.047558840@linutronix.de>
+Subject: [patch 12/13] cpufreq/sparc-us2e: Replace racy task affinity logic
+Date: Wed, 12 Apr 2017 22:07:38 +0200
+Message-ID: <20170412201043.129216383@linutronix.de>
 References: <20170412200726.941336635@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline;
- filename=cpufreq-sparc-us3--Remove-affinity-games.patch
+ filename=cpufreq-sparc-us2e--Remove-affinity-games.patch
 Sender: linux-kernel-owner@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Sebastian Siewior <bigeasy@linutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "David S. Miller" <davem@davemloft.net>, Fenghua Yu <fenghua.yu@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <lenb@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tejun Heo <tj@kernel.org>, Tony Luck <tony.luck@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The access to the safari config register in the CPU frequency functions
-must be executed on the target CPU. This is achieved by temporarily setting
-the affinity of the calling user space thread to the requested CPU and
-reset it to the original affinity afterwards.
+The access to the HBIRD_ESTAR_MODE register in the cpu frequency control
+functions must happen on the target CPU. This is achieved by temporarily
+setting the affinity of the calling user space thread to the requested CPU
+and reset it to the original affinity afterwards.
 
 That's racy vs. CPU hotplug and concurrent affinity settings for that
 thread resulting in code executing on the wrong CPU and overwriting the
@@ -25,98 +25,103 @@ new affinity setting.
 Replace it by a straight forward smp function call. 
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: "David S. Miller" <davem@davemloft.net>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "David S. Miller" <davem@davemloft.net>
 Cc: linux-pm@vger.kernel.org
 ---
- drivers/cpufreq/sparc-us3-cpufreq.c |   46 ++++++++++++------------------------
- 1 file changed, 16 insertions(+), 30 deletions(-)
+ drivers/cpufreq/sparc-us2e-cpufreq.c |   45 ++++++++++++++++-------------------
+ 1 file changed, 21 insertions(+), 24 deletions(-)
 
---- a/drivers/cpufreq/sparc-us3-cpufreq.c
-+++ b/drivers/cpufreq/sparc-us3-cpufreq.c
-@@ -35,22 +35,28 @@ static struct us3_freq_percpu_info *us3_
- #define SAFARI_CFG_DIV_32	0x0000000080000000UL
- #define SAFARI_CFG_DIV_MASK	0x00000000C0000000UL
- 
--static unsigned long read_safari_cfg(void)
-+static void read_safari_cfg(void *arg)
+--- a/drivers/cpufreq/sparc-us2e-cpufreq.c
++++ b/drivers/cpufreq/sparc-us2e-cpufreq.c
+@@ -118,10 +118,6 @@ static void us2e_transition(unsigned lon
+ 			    unsigned long clock_tick,
+ 			    unsigned long old_divisor, unsigned long divisor)
  {
--	unsigned long ret;
-+	unsigned long ret, *val = arg;
- 
- 	__asm__ __volatile__("ldxa	[%%g0] %1, %0"
- 			     : "=&r" (ret)
- 			     : "i" (ASI_SAFARI_CONFIG));
--	return ret;
-+	*val = ret;
- }
- 
--static void write_safari_cfg(unsigned long val)
-+static void update_safari_cfg(void *arg)
- {
-+	unsigned long reg, *new_bits = arg;
-+
-+	read_safari_cfg(&reg);
-+	reg &= ~SAFARI_CFG_DIV_MASK;
-+	reg |= *new_bits;
-+
- 	__asm__ __volatile__("stxa	%0, [%%g0] %1\n\t"
- 			     "membar	#Sync"
- 			     : /* no outputs */
--			     : "r" (val), "i" (ASI_SAFARI_CONFIG)
-+			     : "r" (reg), "i" (ASI_SAFARI_CONFIG)
- 			     : "memory");
- }
- 
-@@ -78,29 +84,17 @@ static unsigned long get_current_freq(un
- 
- static unsigned int us3_freq_get(unsigned int cpu)
- {
--	cpumask_t cpus_allowed;
- 	unsigned long reg;
--	unsigned int ret;
+-	unsigned long flags;
 -
--	cpumask_copy(&cpus_allowed, &current->cpus_allowed);
--	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+-	local_irq_save(flags);
 -
--	reg = read_safari_cfg();
--	ret = get_current_freq(cpu, reg);
+ 	estar &= ~ESTAR_MODE_DIV_MASK;
  
--	set_cpus_allowed_ptr(current, &cpus_allowed);
--
--	return ret;
-+	if (smp_call_function_single(cpu, read_safari_cfg, &reg, 1))
-+		return 0;
-+	return get_current_freq(cpu, reg);
- }
- 
- static int us3_freq_target(struct cpufreq_policy *policy, unsigned int index)
- {
- 	unsigned int cpu = policy->cpu;
--	unsigned long new_bits, new_freq, reg;
--	cpumask_t cpus_allowed;
--
--	cpumask_copy(&cpus_allowed, &current->cpus_allowed);
--	set_cpus_allowed_ptr(current, cpumask_of(cpu));
-+	unsigned long new_bits, new_freq;
- 
- 	new_freq = sparc64_get_clock_tick(cpu) / 1000;
- 	switch (index) {
-@@ -121,15 +115,7 @@ static int us3_freq_target(struct cpufre
+ 	/* This is based upon the state transition diagram in the IIe manual.  */
+@@ -152,8 +148,6 @@ static void us2e_transition(unsigned lon
+ 	} else {
  		BUG();
  	}
- 
--	reg = read_safari_cfg();
 -
--	reg &= ~SAFARI_CFG_DIV_MASK;
--	reg |= new_bits;
--	write_safari_cfg(reg);
--
--	set_cpus_allowed_ptr(current, &cpus_allowed);
--
--	return 0;
-+	return smp_call_function_single(cpu, update_safari_cfg, &new_bits, 1);
+-	local_irq_restore(flags);
  }
  
- static int __init us3_freq_cpu_init(struct cpufreq_policy *policy)
+ static unsigned long index_to_estar_mode(unsigned int index)
+@@ -229,48 +223,51 @@ static unsigned long estar_to_divisor(un
+ 	return ret;
+ }
+ 
++static void __us2e_freq_get(void *arg)
++{
++	unsigned long *estar = arg;
++
++	*estar = read_hbreg(HBIRD_ESTAR_MODE_ADDR);
++}
++
+ static unsigned int us2e_freq_get(unsigned int cpu)
+ {
+-	cpumask_t cpus_allowed;
+ 	unsigned long clock_tick, estar;
+ 
+-	cpumask_copy(&cpus_allowed, &current->cpus_allowed);
+-	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+-
+ 	clock_tick = sparc64_get_clock_tick(cpu) / 1000;
+-	estar = read_hbreg(HBIRD_ESTAR_MODE_ADDR);
+-
+-	set_cpus_allowed_ptr(current, &cpus_allowed);
++	if (smp_call_function_single(cpu, __us2e_freq_get, &estar, 1))
++		return 0;
+ 
+ 	return clock_tick / estar_to_divisor(estar);
+ }
+ 
+-static int us2e_freq_target(struct cpufreq_policy *policy, unsigned int index)
++static void __us2e_freq_target(void *arg)
+ {
+-	unsigned int cpu = policy->cpu;
++	unsigned int cpu = smp_processor_id();
++	unsigned int *index = arg;
+ 	unsigned long new_bits, new_freq;
+ 	unsigned long clock_tick, divisor, old_divisor, estar;
+-	cpumask_t cpus_allowed;
+-
+-	cpumask_copy(&cpus_allowed, &current->cpus_allowed);
+-	set_cpus_allowed_ptr(current, cpumask_of(cpu));
+ 
+ 	new_freq = clock_tick = sparc64_get_clock_tick(cpu) / 1000;
+-	new_bits = index_to_estar_mode(index);
+-	divisor = index_to_divisor(index);
++	new_bits = index_to_estar_mode(*index);
++	divisor = index_to_divisor(*index);
+ 	new_freq /= divisor;
+ 
+ 	estar = read_hbreg(HBIRD_ESTAR_MODE_ADDR);
+ 
+ 	old_divisor = estar_to_divisor(estar);
+ 
+-	if (old_divisor != divisor)
++	if (old_divisor != divisor) {
+ 		us2e_transition(estar, new_bits, clock_tick * 1000,
+ 				old_divisor, divisor);
++	}
++}
+ 
+-	set_cpus_allowed_ptr(current, &cpus_allowed);
++static int us2e_freq_target(struct cpufreq_policy *policy, unsigned int index)
++{
++	unsigned int cpu = policy->cpu;
+ 
+-	return 0;
++	return smp_call_function_single(cpu, __us2e_freq_target, &index, 1))
+ }
+ 
+ static int __init us2e_freq_cpu_init(struct cpufreq_policy *policy)
