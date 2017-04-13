@@ -1,209 +1,206 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [RFC v3 0/5] Add capacity capping support to the CPU controller
-Date: Thu, 13 Apr 2017 12:33:31 +0100
-Message-ID: <20170413113331.GB18854@e110439-lin>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
- <20170320145131.GA3623@htj.duckdns.org>
- <20170320172233.GA28391@e110439-lin>
- <20170410073622.2y6tnpcd2ssuoztz@hirez.programming.kicks-ass.net>
- <20170411175833.GI29455@e110439-lin>
- <20170412121009.GD3093@worktop>
- <20170412135538.GM29455@e110439-lin>
- <20170412153712.albkjck27ewzmbjr@hirez.programming.kicks-ass.net>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v4 2/3] power: supply: bq24190_charger: Do not reset the
+ charger on probe by default
+Date: Thu, 13 Apr 2017 13:54:04 +0200
+Message-ID: <72abeafe-1378-50a3-69a5-28f9ab837dcc@redhat.com>
+References: <20170412181808.31768-1-hdegoede@redhat.com>
+ <20170412181808.31768-3-hdegoede@redhat.com>
+ <CAKvHMgTxYa7U+u0W5On9+xgViWuGX5PFMi865f_2HojrnLM-aQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:53814 "EHLO foss.arm.com"
+Received: from mx1.redhat.com ([209.132.183.28]:38422 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751308AbdDMLdh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Apr 2017 07:33:37 -0400
-Content-Disposition: inline
-In-Reply-To: <20170412153712.albkjck27ewzmbjr@hirez.programming.kicks-ass.net>
+        id S1751349AbdDMLyI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Apr 2017 07:54:08 -0400
+In-Reply-To: <CAKvHMgTxYa7U+u0W5On9+xgViWuGX5PFMi865f_2HojrnLM-aQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@arm.com>, Chris Redpath <chris.redpath@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On 12-Apr 17:37, Peter Zijlstra wrote:
-> On Wed, Apr 12, 2017 at 02:55:38PM +0100, Patrick Bellasi wrote:
-> > On 12-Apr 14:10, Peter Zijlstra wrote:
-> 
-> > > Even for the cgroup interface, I think they should set a per-task
-> > > property, not a group property.
-> > 
-> > Ok, right now using CGroups ans primary (and unique) interface, these
-> > values are tracked as attributes of the CPU controller. Tasks gets
-> > them by reading these attributes once they are binded to a CGroup.
-> > 
-> > Are you proposing to move these attributes within the task_struct?
-> 
-> /me goes look at your patches again, because I thought you already set
-> per task_struct values.
-> 
-> @@ -1531,6 +1531,9 @@ struct task_struct {
->         struct sched_rt_entity rt;
->  #ifdef CONFIG_CGROUP_SCHED
->         struct task_group *sched_task_group;
-> +#ifdef CONFIG_CAPACITY_CLAMPING
-> +       struct rb_node cap_clamp_node[2];
-> +#endif
-> 
-> Yeah, see...
+Hi,
 
-Well, these are not the actual attributes.
+On 13-04-17 01:06, Liam Breck wrote:
+> Hallo Hans,
+>
+> On Wed, Apr 12, 2017 at 11:18 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> Resetting the charger should never be necessary it should always have
+>> sane values programmed. If it is running with invalid values while we
+>> are not running (system turned off or suspended) there is a big problem
+>> as that may lead to overcharging the battery.
+>>
+>> The reset in suspend() is meant to put the charger back into default
+>> mode, but this is not necessary and not a good idea. If the charger has
+>> been programmed with a higher max charge_current / charge_voltage then
+>> putting it back in default-mode will reset those to the safe power-on
+>> defaults, leading to slower charging, or charging to a lower voltage
+>> (and thus not using the full capacity) while suspended which is
+>> undesirable. Reprogramming the max charge_current / charge_voltage
+>> after the reset will not help here as that will put the charger back
+>> in host mode and start the i2c watchdog if the host then does not do
+>> anything for 40s (iow if we're suspended for more then 40s) the watchdog
+>> expires resetting the device to default-mode, including resetting all
+>> the registers to there safe power-on defaults. So the only way to keep
+>> using custom charge settings while suspending is to keep the charger in
+>> its normal running state with the i2c watchdog disabled. This is fine
+>> as the charger will still automatically switch from constant current
+>> to constant voltage and stop charging when the battery is full.
+>>
+>> Besides never being necessary resetting the charger also causes problems
+>> on systems where the charge voltage limit is set higher then the reset
+>> value, if this is the case and the charger is reset while charging and
+>> the battery voltage is between the 2 voltages, then about half the time
+>> the charger gets confused and claims to be charging (REG08 contains 0x64)
+>> but in reality the charger has decoupled itself from VBUS (Q1 off) and
+>> is drawing 0A from VBUS, leaving the system running from the battery.
+>
+> Could you also mention which charger chip, board/host, and any known
+> hw config for the chip by the host?
+> Also mention whether or not there is a TI errata doc for the issue?
 
-These rb_nodes are used to sort the tasks based on their constraints, but the
-actual attributes values are stored in:
+I will send a v5 with this both added to the commit msg.
 
-@@ -273,6 +273,14 @@ struct task_group {
- #endif
- #endif
- 
-+#ifdef CONFIG_CAPACITY_CLAMPING
-+#define CAP_CLAMP_MIN 0
-+#define CAP_CLAMP_MAX 1
-+
-+       /* Min and Max capacity constraints for tasks in this group */
-+       unsigned int cap_clamp[2];
-+#endif
-+
+>> For all the above reasons this commit disables reset on probe and on
+>> suspend / resume. If a specific setup really needs / wants to do a rest
+>> in these cases, this can be requested by setting a reset-on-probe device
+>> property on the device.
+>>
+>> Cc: Liam Breck <kernel@networkimprov.net>
+>> Cc: Tony Lindgren <tony@atomide.com>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> ---
+>> Changes in v2:
+>> -This is a new patch in v2 of this patch-set
+>> Changes in v3:
+>> -Disable the reset code by default, but leave it around guarded by
+>>  a check for a reset-on-probe device-property
+>> Changes in v4:
+>> -Rebase on top of current power-supply/next
+>> ---
+>>  drivers/power/supply/bq24190_charger.c | 20 +++++++++++++-------
+>>  1 file changed, 13 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+>> index bd9e5c3..ad429b7 100644
+>> --- a/drivers/power/supply/bq24190_charger.c
+>> +++ b/drivers/power/supply/bq24190_charger.c
+>> @@ -1382,9 +1382,11 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+>>                 return -ENODEV;
+>>         }
+>>
+>> -       ret = bq24190_register_reset(bdi);
+>> -       if (ret < 0)
+>> -               return ret;
+>> +       if (device_property_read_bool(bdi->dev, "reset-on-probe")) {
+>> +               ret = bq24190_register_reset(bdi);
+>> +               if (ret < 0)
+>> +                       return ret;
+>> +       }
+>
+> Maybe check property and return if true in register_reset(), instead
+> of adjusting all the calls. There would be a set_mode_host() in
+> resume() which is unnecessary, but it's a no-op to set host mode when
+> we're already in it.
 
-This is done to avoid replicated information in each tasks structure.
+i2c transfers are quite slow, so it is better to avoid doing unnecessary
+i2c transfers.
 
-> > In that case we should also defined a primary interface to set them,
-> > any preferred proposal? sched_setattr(), prctl?
-> 
-> We could, which I think is the important point.
-> 
-> > By regular rb-tree do you mean the cfs_rq->tasks_timeline?
-> 
-> Yep.
-> 
-> > Because in that case this would apply only to the FAIR class, while
-> > the rb-tree we are using here are across classes.
-> > Supporting both FAIR and RT I think is a worth having feature.
-> 
-> *groan* I don't want to even start thinking what this feature means in
-> the context of RT, head hurts enough.
+> Perhaps device_property_present() since _read_bool() implies we expect
+> it to be set T or F?
 
-:-)
+ From include/linux/property.h:
 
-Still, mobile people *groan* when we go to max OPP every time a RT task runs.
-Here you can find some energy numbers I've got recently on Pixel phones:
-   https://lkml.org/lkml/2017/3/17/214
-7%-54% (useless) more energy is a big deal.
+static inline bool device_property_read_bool(struct device *dev,
+                                              const char *propname)
+{
+         return device_property_present(dev, propname);
+}
 
-Of course, there can be many different solution to this problem, but
-capacity_max allows to easily clamp the frequency used when certain RT
-while still keeping them within expected latency performance.
+So nope _read_bool() does not expect true or false, it works
+just like devicetree properties
 
-> > > So the bigger point is that if the min/max is a per-task property (even
-> > > if set through a cgroup interface), the min(max) / max(min) thing is
-> > > wrong.
-> > 
-> > Perhaps I'm not following you here but, being per-task does not mean
-> > that we need to aggregate these constraints by summing them (look
-> > below)...
-> >
-> > > If the min/max were to apply to each individual task's util, you'd end
-> > > up with something like: Dom(\Sum util) = [min(1, \Sum min), min(1, \Sum max)].
-> > 
-> > ... as you do here.
-> > 
-> > Let's use the usual simple example, where these per-tasks constraints
-> > are configured:
-> >
-> > - TaskA: capacity_min: 20% capacity_max: 80%
-> > - TaskB: capacity_min: 40% capacity_max: 60%
-> > 
-> > This means that, at CPU level, we want to enforce the following
-> > clamping depending on the tasks status:
-> > 
-> >  RUNNABLE tasks    capacity_min    capacity_max
-> > A) TaskA                      20%             80%
-> > B) TaskA,TaskB                40%             80%
-> > C) TaskB                      40%             60%
-> >  
-> > In case C, TaskA gets a bigger boost while is co-scheduled with TaskB.
-> 
-> (bit unfortunate you gave your cases and tasks the same enumeration)
-> 
-> But this I quite strongly feel is wrong. If you've given your tasks a
-> minimum OPP, you've in fact given them a minimum bandwidth, for at a
-> given frequency you can say how long they'll run, right?
+> Let's keep the original reset behavior as the default,
 
-Not really, we are still in the domain of a best-effort solution, and
-I think we should stick with that.
+Tony Lindgren suggested to do disable reset by default:
 
-The overall idea is not about allocating bandwidth at all, but instead
-on expressing preferences, and there are two main reasons:
+On 04-04-17 02:56, Tony Lindgren wrote:
 
-1) in principle we don't know how long a CFS task will run.
-   we just know that if it completes faster than it's better
+ > My guess is that the reset is left over from missing handling of
+ > clearing of the EN_HIZ on errors. I recall that EN_HIZ error can
+ > happen when plugging the cable a little bit sideways to a USB hub
+ > with loose tolerance USB connectors.
+ >
+ > So it should be safe to limit the reset to only happen if something
+ > like "reset-on-probe" is specified. Not sure we want to remove it
+ > completely, maybe just add notes that reset may misbehave in
+ > some conditions.
 
-   Think about a task which is relatively small but functional to
-   trigger further processing on an external device (e.g. a GPU).
-   In this case the task is part of a critical-path and the sooner it
-   finished the better it is.
-   It can be the case that allocating bandwidth for such a task is not
-   easy, e.g. because the amout of processing the task does can
-   sensible change between each activation.
+And I agree that that is the best way, as it simply does not seem
+necessary to reset the charger.
 
-   In this case you have two options:
-   a) meaure/estimate the WCET and go for over-budgeting
-      likely using DEADLINE
-   b) find the minimum capacity which allows your task to complete
-      reasonably fast most of the time
+> since we only get device props for an ACPI platform.
 
-   The second is of course a best-effort approach, still I find it
-   could be useful to have and it can be easily adapted at run-time to
-   express a sort-of power-vs-performance trade-off.
+device_props is a firmware independent method of getting hardware
+properties from the firmware, so you can just add "reset-on-probe;"
+to the dt node describing the bq24190 in your dts if it turns out
+you do need the reset for some reason and it will work as
+expected.
 
-2) if you really want a granted bandwidth, you quite likely want also
-   a granted deadline... and you should go for DEADLINE.
+Regards,
 
-> So if you want to maintain that case B should be 60%. Once one of the
-> tasks completes it will drop again. That is, the increased value
-> represents the additional runnable 'load' over the min from the
-> currently running task. Combined they will still complete in reduced
-> time.
-
-We already experimented with this approach in the past, actually the
-first version of SchedTune was based on the idea to aggregate by
-adding the boosted utilizations.
-
-It's true that in that way we are more likely to speed-up tasks
-completion also in case of co-scheduling but the downside is that we
-are entering the domain of "granted bandwidth allocation" which is
-likely overkilling for the scope of a best-effort solution.
-
-Moreover, since bandwidth is a limited resource, we also found such an
-approach not fitting well for systems where you have a certain number
-of tasks running concurrently. While, a simple threshold based
-boosting, where max() is used as the aggregation function, seems to be
-still useful.
+Hans
 
 
-> > Notice that this CPU-level aggregation is used just for OPP selection
-> > on that CPU, while for TaskA we still use capacity_min=20% when we are
-> > looking for a CPU.
-> 
-> And you don't find that inconsistent?
+p.s.
 
-In the previous example, TaskB seems to prefer a CPU which has between
-40% and 60% capacity.
-Let's assume these numbers comes from a use-case where:
- a) your system provides 60% capacity in a LITTLE CPU
- b) your are after "sustained performances" for TaskA, which on that
-    platform can be easily achieved by running at 40% of a LITTLE CPU
+I thought you were using device_properties for the new battery_properties
+stuff too ? If not you really should, that way those properties can be
+used on x86 too and it will work just as well for ARM + devicetree.
 
-Don't you think that this can be a valuable information for the
-scheduler to just (possibly) prefer a LITTLE CPU?
+Hmm, wait I think you were doing a separate node for the battery and
+putting them in the charger node, right ? Then device-props won't
+work because there is no device to tie them too, so nevermind I guess :)
 
-With a max() aggregation we can place both TaskA and TaskB on the
-LITTLE CPU and try to run them at least at 40% capacity.
 
--- 
-#include <best/regards.h>
 
-Patrick Bellasi
+>
+>>         ret = bq24190_set_mode_host(bdi);
+>>         if (ret < 0)
+>> @@ -1547,7 +1549,8 @@ static int bq24190_remove(struct i2c_client *client)
+>>                 pm_runtime_put_noidle(bdi->dev);
+>>         }
+>>
+>> -       bq24190_register_reset(bdi);
+>> +       if (device_property_read_bool(bdi->dev, "reset-on-probe"))
+>> +               bq24190_register_reset(bdi);
+>>         bq24190_sysfs_remove_group(bdi);
+>>         power_supply_unregister(bdi->battery);
+>>         power_supply_unregister(bdi->charger);
+>> @@ -1600,7 +1603,8 @@ static __maybe_unused int bq24190_pm_suspend(struct device *dev)
+>>                 pm_runtime_put_noidle(bdi->dev);
+>>         }
+>>
+>> -       bq24190_register_reset(bdi);
+>> +       if (device_property_read_bool(bdi->dev, "reset-on-probe"))
+>> +               bq24190_register_reset(bdi);
+>>
+>>         if (error >= 0) {
+>>                 pm_runtime_mark_last_busy(bdi->dev);
+>> @@ -1625,8 +1629,10 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
+>>                 pm_runtime_put_noidle(bdi->dev);
+>>         }
+>>
+>> -       bq24190_register_reset(bdi);
+>> -       bq24190_set_mode_host(bdi);
+>> +       if (device_property_read_bool(bdi->dev, "reset-on-probe")) {
+>> +               bq24190_register_reset(bdi);
+>> +               bq24190_set_mode_host(bdi);
+>> +       }
+>>         bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+>>
+>>         if (error >= 0) {
+>> --
+>> 2.9.3
+>>
