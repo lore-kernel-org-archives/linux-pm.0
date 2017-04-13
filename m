@@ -1,112 +1,105 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: RFC: WMI Enhancements
-Date: Thu, 13 Apr 2017 15:55:01 +0000
-Message-ID: <dffeb42986e84887b2556987925dbf31@ausx13mpc120.AMER.DELL.COM>
-References: <20170412230854.GA11963@fury>
- <20170413073228.GB1462@ozzy.nask.waw.pl>
- <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com>
+From: Andy Lutomirski <luto@kernel.org>
+Subject: Re: RFC: WMI Enhancements
+Date: Thu, 13 Apr 2017 08:57:54 -0700
+Message-ID: <CALCETrX8W7Zi2NTAm4kJFbW14HVSYanYQ5sGo78FTgitcWfwAw@mail.gmail.com>
+References: <20170412230854.GA11963@fury> <20170413073228.GB1462@ozzy.nask.waw.pl>
+ <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com> <dffeb42986e84887b2556987925dbf31@ausx13mpc120.AMER.DELL.COM>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from esa3.dell-outbound.iphmx.com ([68.232.153.94]:44937 "EHLO
-        esa3.dell-outbound.iphmx.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751554AbdDMPzL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 11:55:11 -0400
-In-Reply-To: <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <dffeb42986e84887b2556987925dbf31@ausx13mpc120.AMER.DELL.COM>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Mario.Limonciello@dell.com
+Cc: Andrew Lutomirski <luto@kernel.org>, =?UTF-8?B?TWljaGHFgiBLxJlwaWXFhA==?= <kernel@kempniu.pl>, Darren Hart <dvhart@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Corentin Chary <corentin.chary@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: luto@kernel.org, kernel@kempniu.pl
-Cc: dvhart@infradead.org, rjw@rjwysocki.net, len.brown@intel.com, pali.rohar@gmail.com, corentin.chary@gmail.com, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQW5keSBMdXRvbWlyc2tp
-IFttYWlsdG86bHV0b0BrZXJuZWwub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwgQXByaWwgMTMsIDIw
-MTcgMTA6MzMgQU0NCj4gVG86IE1pY2hhxYIgS8SZcGllxYQgPGtlcm5lbEBrZW1wbml1LnBsPg0K
-PiBDYzogRGFycmVuIEhhcnQgPGR2aGFydEBpbmZyYWRlYWQub3JnPjsgUmFmYWVsIFd5c29ja2kg
-PHJqd0Byand5c29ja2kubmV0PjsNCj4gTGVuIEJyb3duIDxsZW4uYnJvd25AaW50ZWwuY29tPjsg
-UGFsaSBSb2jDoXIgPHBhbGkucm9oYXJAZ21haWwuY29tPjsgQ29yZW50aW4NCj4gQ2hhcnkgPGNv
-cmVudGluLmNoYXJ5QGdtYWlsLmNvbT47IExpbW9uY2llbGxvLCBNYXJpbw0KPiA8TWFyaW9fTGlt
-b25jaWVsbG9ARGVsbC5jb20+OyBBbmR5IEx1dG9taXJza2kgPGx1dG9Aa2VybmVsLm9yZz47IEFu
-ZHkNCj4gU2hldmNoZW5rbyA8YW5kcml5LnNoZXZjaGVua29AbGludXguaW50ZWwuY29tPjsgTEtN
-TCA8bGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBwbGF0Zm9ybS1kcml2ZXIteDg2
-QHZnZXIua2VybmVsLm9yZzsgbGludXgtDQo+IHBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0
-OiBSZTogUkZDOiBXTUkgRW5oYW5jZW1lbnRzDQo+IA0KPiBPbiBUaHUsIEFwciAxMywgMjAxNyBh
-dCAxMjozMiBBTSwgTWljaGHFgiBLxJlwaWXFhCA8a2VybmVsQGtlbXBuaXUucGw+IHdyb3RlOg0K
-PiA+PiBIaSBBbGwsDQo+ID4+DQo+ID4+IFRoZXJlIGFyZSBhIGZldyBwYXJhbGxlbCBlZmZvcnRz
-IGludm9sdmluZyB0aGUgV2luZG93cyBNYW5hZ2VtZW50DQo+ID4+IEluc3RydW1lbnRhdGlvbiAo
-V01JKVsxXSBhbmQgZGVwZW5kZW50L3JlbGF0ZWQgZHJpdmVycy4gSSdkIGxpa2UgdG8NCj4gPj4g
-aGF2ZSBhIHJvdW5kIG9mIGRpc2N1c3Npb24gYW1vbmcgdGhvc2Ugb2YgeW91IHRoYXQgaGF2ZSBi
-ZWVuIGludm9sdmVkDQo+ID4+IGluIHRoaXMgc3BhY2UgYmVmb3JlIHdlIGRlY2lkZSBvbiBhIGRp
-cmVjdGlvbi4NCj4gPj4NCj4gPj4gVGhlIFdNSSBzdXBwb3J0IGluIHRoZSBrZXJuZWwgdG9kYXkg
-ZmFpcmx5IG5hcnJvd2x5IHN1cHBvcnRzIGENCj4gPj4gaGFuZGZ1bCBvZiBzeXN0ZW1zLiBBbmR5
-IEwuIGhhcyBhIHdvcmstaW4tcHJvZ3Jlc3Mgc2VyaWVzIFsyXSB3aGljaA0KPiA+PiBjb252ZXJ0
-cyB3bWkgaW50byBhIHBsYXRmb3JtIGRldmljZSBhbmQgYSBwcm9wZXIgYnVzLCBwcm92aWRpbmcN
-Cj4gPj4gZGV2aWNlcyBmb3IgZGVwZW5kZW50IGRyaXZlcnMgdG8gYmluZCB0bywgYW5kIGEgbWVj
-aGFuaXNtIGZvciBzaWJsaW5nIGRldmljZXMgdG8NCj4gY29tbXVuaWNhdGUgd2l0aCBlYWNoIG90
-aGVyLg0KPiA+PiBJJ3ZlIHJldmlld2VkIHRoZSBzZXJpZXMgYW5kIGZlZWwgbGlrZSB0aGUgYXBw
-cm9hY2ggaXMgc291bmQsIEkgcGxhbg0KPiA+PiB0byBjYXJyeSB0aGlzIHNlcmllcyBmb3J3YXJk
-IGFuZCBtZXJnZSBpdCAod2l0aCBBbmR5IEwncyBwZXJtaXNzaW9uKS4NCj4gPj4NCj4gPj4gQXJl
-IHRoZXJlIGFueSBvYmplY3Rpb25zIHRvIHRoaXM/DQo+ID4NCj4gPiBCYWNrIGluIEphbnVhcnkg
-MjAxNiwgSSBzZW50IEFuZHkgYSBmZXcgbWlub3IgY29tbWVudHMgYWJvdXQgdGhpcw0KPiA+IHNl
-cmllcy4gIEEgeWVhciBsYXRlciwgSSBvZmZlcmVkIHRvIGlyb24gb3V0IHRoZSByZW1haW5pbmcg
-aXNzdWVzIGFuZA0KPiA+IHJlc3VibWl0IHRoZSBzZXJpZXMgaW4gQW5keSdzIG5hbWUgd2hlbiBJ
-IGZpbmQgdGhlIHRpbWUuICBTYWRseSwNCj4gPiB0aGluZ3MgaGF2ZSBjaGFuZ2VkIGEgYml0IGZv
-ciBtZSBzaW5jZSB0aGF0IHRpbWUgYW5kIGl0IGlzIHVubGlrZWx5DQo+ID4gdGhhdCBJIHdpbGwg
-YmUgYWJsZSB0byBkZWxpdmVyLCBmb3Igd2hpY2ggSSBhbSBzb3JyeS4NCj4gPg0KPiA+IEhvd2V2
-ZXIsIGJyb3dzaW5nIEFuZHkncyBicmFuY2ggSSBzZWUgdGhhdCBtb3N0IGlzc3VlcyBoYXZlIGJl
-ZW4NCj4gPiByZXNvbHZlZCwgdGhvdWdoIEkgdGhpbmsgc29tZSBvZiBteSByZW1hcmtzIFsxXSBo
-YXZlIGVpdGhlciBiZWVuDQo+ID4gbWlzc2VkIG9yIHNpbGVudGx5IHJlZnV0ZWQgOikNCj4gPg0K
-PiA+IEFueXdheSwgSSBhbHNvIGxpa2UgdGhpcyBhcHByb2FjaCBhbmQgSSB0aGluayB0aGlzIHNl
-cmllcyBpcyBhDQo+ID4gdmFsdWFibGUgY2xlYW51cC4NCj4gDQo+IE1lIHRvbyA6KQ0KPiANCj4g
-Pj4gSW4gV2luZG93cywgYXBwbGljYXRpb25zIGludGVyYWN0IHdpdGggV01JIG1vcmUgb3IgbGVz
-cyBkaXJlY3RseS4gV2UNCj4gPj4gZG9uJ3QgZG8gdGhpcyBpbiBMaW51eCBjdXJyZW50bHksIGFs
-dGhvdWdoIGl0IGhhcyBiZWVuIGRpc2N1c3NlZCBpbg0KPiA+PiB0aGUgcGFzdCBbM10uIFNvbWUg
-dmVuZG9ycyB3aWxsIHdvcmsgYXJvdW5kIHRoaXMgYnkgcGVyZm9ybWluZw0KPiA+PiBTTUkvU01N
-LCB3aGljaCBpcyBpbmVmZmljaWVudCBhdCBiZXN0LiBFeHBvc2luZyBXTUkgbWV0aG9kcyB0bw0K
-PiA+PiB1c2Vyc3BhY2Ugd291bGQgYnJpbmcgcGFyaXR5IHRvIFdNSSBmb3IgTGludXggYW5kIFdp
-bmRvd3MuDQo+ID4+DQo+ID4+IFRoZXJlIGFyZSB0d28gcHJpbmNpcGFsIGNvbmNlcm5zIEknZCBh
-cHByZWNpYXRlIHlvdXIgdGhvdWdodHMgb246DQo+ID4+DQo+ID4+IGEpIEFzIGFuIHVuZGlzY292
-ZXJhYmxlIGludGVyZmFjZSAoeW91IG5lZWQgdG8ga25vdyB0aGUgbWV0aG9kDQo+ID4+IHNpZ25h
-dHVyZXMgYWhlYWQgb2YgdGltZSksIHVuaXZlcnNhbGx5IGV4cG9zaW5nIGV2ZXJ5IFdNSSAiZGV2
-aWNlIiB0bw0KPiA+PiB1c2Vyc3BhY2Ugc2VlbXMgbGlrZSAiYSBiYWQgaWRlYSIgZnJvbSBhIHNl
-Y3VyaXR5IGFuZCBzdGFiaWxpdHkNCj4gPj4gcGVyc3BlY3RpdmUuIFdoaWxlIGFjY2VzcyB3b3Vs
-ZCBjZXJ0YWlubHkgYmUgcHJpdmlsZWdlZCwgaXQgc2VlbXMNCj4gPj4gbW9yZSBwcnVkZW50IHRv
-IG1ha2UgdGhpcyBleHBvc3VyZSBvcHQtaW4uIFdlIGFsc28gaGFuZGxlIHNvbWUgb2YNCj4gPj4g
-dGhpcyB3aXRoIGtlcm5lbCBkcml2ZXJzIGFuZCBleHBvc2luZyB0aG9zZSAiZGV2aWNlcyIgdG8g
-dXNlcnNwYWNlDQo+ID4+IHdvdWxkIGVuYWJsZSB1c2Vyc3BhY2UgYW5kIHRoZSBrZXJuZWwgdG8g
-ZmlnaHQgb3ZlciBjb250cm9sLiBTbyAtIGlmDQo+ID4+IHdlIGV4cG9zZSBXTUkgZGV2aWNlcyB0
-byB1c2Vyc3BhY2UsIEkgYmVsaWV2ZSB0aGlzIHNob3VsZCBiZSBkb25lIG9uDQo+ID4+IGEgY2Fz
-ZSBieSBjYXNlIGJhc2lzLCBvcHRpbmcgaW4sIGFuZCBub3QgYnkgZGVmYXVsdCBhcyBwYXJ0IG9m
-IHRoZQ0KPiA+PiBXTUkgZHJpdmVyIChhbHRob3VnaCBpdCBjYW4gcHJvdmlkZSB0aGUgbWVjaGFu
-aXNtIGZvciBhIHN1Yi1kcml2ZXIgdG8gdXNlKSwgYW5kDQo+IHBvc3NpYmx5IGEgZGV2bW9kZSB0
-byBkbyBzbyBieSBkZWZhdWx0Lg0KPiANCj4gSSBhZ3JlZS4gIEkgZG9uJ3Qgd2FudCB0b28gc2Vl
-IGdub21lLXdoYXRldmVyLXdpZGdldCB0YWxraW5nIGRpcmVjdGx5IHRvIFdNSSBhbmQNCj4gY29u
-ZnVzaW5nIHRoZSBrZXJuZWwgZHJpdmVyIGZvciB0aGUgc2FtZSB0aGluZy4NCg0KU28gdGhlcmUg
-YXJlIHBsZW50eSBvZiBvdGhlciB0aGluZ3MgdGhhdCBjYW4gYmUgZG9uZSBieSBXTUkgdGhhdCBk
-b24ndA0KcmVhbGx5IG1ha2Ugc2Vuc2UgdG8gbGl2ZSBpbiB0aGUga2VybmVsLCBwYXJ0aWN1bGFy
-bHkgb24gd2hhdCBEZWxsIGV4cG9zZXMgdmlhDQpXTUkuDQoNCklmIHRoZSBkZXNpcmUgb2YgdGhp
-cyBncm91cCBlbmRzIHVwIGJlaW5nIHRvIG5vdCBleHBvc2UgV01JIGJ5IGRlZmF1bHQsDQpJJ2Qg
-bGlrZSB0byBhdCBsZWFzdCBwcm9wb3NlIGl0IGJlIGV4cG9zZWQgZm9yIHRoZSBHVUlEJ3MgRGVs
-bCBpcyB1c2luZy4NCg0KUGVyaGFwcyBhcyBwYXJ0IG9mIGNoYW5naW5nIGRlbGwtc21iaW9zIHRv
-IHVzZSBXTUksIGFsc28gZXh0ZW5kIGl0J3MNCmZ1bmN0aW9uYWxpdHkgdG8gdXNlcnNwYWNlLg0K
-DQo+IA0KPiA+PiBTZWNvbmRhcmlseSwgQW5keSBMIGNyZWF0ZWQgYSBzaW1wbGUgZHJpdmVyIHRv
-IGV4cG9zZSB0aGUgTU9GIGJ1ZmZlcg0KPiA+PiBbMl0gdG8gdXNlcnNwYWNlIHdoaWNoIGNvdWxk
-IGJlIGNvbnN1bWVkIGJ5IGEgdXNlcnNwYWNlIHRvb2wgdG8NCj4gPj4gY3JlYXRlIHNvdXJjZXMg
-Zm9yIGFuIGludGVyZmFjZSB0byB0aGUgZXhwb3NlZCBXTUkgbWV0aG9kcy4NCj4gPg0KPiA+ICsx
-IGZvciB0aGUgaWRlYSwgaXQgbWFrZXMgZmlndXJpbmcgb3V0IHdoYXQgdGhlIGZpcm13YXJlIGFj
-dHVhbGx5DQo+ID4gZXhwb3NlcyB0aHJvdWdoIFdNSSBhIGJpdCBlYXNpZXIuICBBZnRlciBza2lt
-bWluZyB0aHJvdWdoIHRoZSBkcml2ZXIncw0KPiA+IGNvZGUsIEkgd291bGQgb25seSByZWNvbW1l
-bmQgdG8gcmV2aWV3IHRoZSBpbmNsdWRlZCBoZWFkZXJzDQo+ID4gKGxpbnV4L2lucHV0L3NwYXJz
-ZS1rZXltYXAuaCwgbGludXgvZG1pLmggYW5kIGFjcGkvdmlkZW8uaCBhbGwgc2VlbQ0KPiA+IHJl
-ZHVuZGFudCB0byBtZSkuDQo+ID4NCj4gPiBXaGF0IHdlIHN0aWxsIG5lZWQsIHRob3VnaCwgaXMg
-YW4gb3BlbiBzb3VyY2UgdmVyc2lvbiBvZiB3bWlvZmNrLmV4ZS4NCj4gPiBJIGFtIHVuYXdhcmUg
-b2YgYW55dGhpbmcgbGlrZSB0aGF0IGV4aXN0aW5nIGFuZCBpbnN0YWxsaW5nIHRoZSBXaW5kb3dz
-DQo+ID4gRHJpdmVyIEtpdCBqdXN0IHRvIHJ1biBvbmUgY29tbWFuZCB3aGljaCBzcGl0cyBvdXQg
-YSBzaW5nbGUgKi5oIGZpbGUNCj4gPiBpcyBub3Qgc29tZXRoaW5nIEkgd291bGQgZGVzY3JpYmUg
-YXMgY29udmVuaWVudCAoYmVlbiB0aGVyZSkuDQo+IA0KPiBJIGhhdmVuJ3QgdHJpZWQgdG8gc2Vl
-IHdoZXRoZXIgdGhleSBkbyB3aGF0J3MgbmVlZGVkLCBidXQgdGhlcmUncyBPcGVuV0JFTSBhbmQN
-Cj4gT3BlblBlZ2FzdXMuDQo+IA0KPiBBbnl3YXksIGlmIHN1Y2ggYSB0b29sIGV4aXN0cywgaXQg
-d291bGQgYmUgaGFuZHkgdG8gZXhwb3NlIHRoZSBiaW5hcnkgTU9GIGRhdGEgdG8NCj4gdXNlcnNw
-YWNlIHNvIHRoZSB0b29sIGNvdWxkIGJlIHVzZWQgdG8gaGVscCBnZXQgV01JIHdvcmtpbmcgb24g
-bmV3IHBsYXRmb3Jtcy4NCg==
+On Thu, Apr 13, 2017 at 8:55 AM,  <Mario.Limonciello@dell.com> wrote:
+>
+>
+>> -----Original Message-----
+>> From: Andy Lutomirski [mailto:luto@kernel.org]
+>> Sent: Thursday, April 13, 2017 10:33 AM
+>> To: Michał Kępień <kernel@kempniu.pl>
+>> Cc: Darren Hart <dvhart@infradead.org>; Rafael Wysocki <rjw@rjwysocki.net>;
+>> Len Brown <len.brown@intel.com>; Pali Rohár <pali.rohar@gmail.com>; Corentin
+>> Chary <corentin.chary@gmail.com>; Limonciello, Mario
+>> <Mario_Limonciello@Dell.com>; Andy Lutomirski <luto@kernel.org>; Andy
+>> Shevchenko <andriy.shevchenko@linux.intel.com>; LKML <linux-
+>> kernel@vger.kernel.org>; platform-driver-x86@vger.kernel.org; linux-
+>> pm@vger.kernel.org
+>> Subject: Re: RFC: WMI Enhancements
+>>
+>> On Thu, Apr 13, 2017 at 12:32 AM, Michał Kępień <kernel@kempniu.pl> wrote:
+>> >> Hi All,
+>> >>
+>> >> There are a few parallel efforts involving the Windows Management
+>> >> Instrumentation (WMI)[1] and dependent/related drivers. I'd like to
+>> >> have a round of discussion among those of you that have been involved
+>> >> in this space before we decide on a direction.
+>> >>
+>> >> The WMI support in the kernel today fairly narrowly supports a
+>> >> handful of systems. Andy L. has a work-in-progress series [2] which
+>> >> converts wmi into a platform device and a proper bus, providing
+>> >> devices for dependent drivers to bind to, and a mechanism for sibling devices to
+>> communicate with each other.
+>> >> I've reviewed the series and feel like the approach is sound, I plan
+>> >> to carry this series forward and merge it (with Andy L's permission).
+>> >>
+>> >> Are there any objections to this?
+>> >
+>> > Back in January 2016, I sent Andy a few minor comments about this
+>> > series.  A year later, I offered to iron out the remaining issues and
+>> > resubmit the series in Andy's name when I find the time.  Sadly,
+>> > things have changed a bit for me since that time and it is unlikely
+>> > that I will be able to deliver, for which I am sorry.
+>> >
+>> > However, browsing Andy's branch I see that most issues have been
+>> > resolved, though I think some of my remarks [1] have either been
+>> > missed or silently refuted :)
+>> >
+>> > Anyway, I also like this approach and I think this series is a
+>> > valuable cleanup.
+>>
+>> Me too :)
+>>
+>> >> In Windows, applications interact with WMI more or less directly. We
+>> >> don't do this in Linux currently, although it has been discussed in
+>> >> the past [3]. Some vendors will work around this by performing
+>> >> SMI/SMM, which is inefficient at best. Exposing WMI methods to
+>> >> userspace would bring parity to WMI for Linux and Windows.
+>> >>
+>> >> There are two principal concerns I'd appreciate your thoughts on:
+>> >>
+>> >> a) As an undiscoverable interface (you need to know the method
+>> >> signatures ahead of time), universally exposing every WMI "device" to
+>> >> userspace seems like "a bad idea" from a security and stability
+>> >> perspective. While access would certainly be privileged, it seems
+>> >> more prudent to make this exposure opt-in. We also handle some of
+>> >> this with kernel drivers and exposing those "devices" to userspace
+>> >> would enable userspace and the kernel to fight over control. So - if
+>> >> we expose WMI devices to userspace, I believe this should be done on
+>> >> a case by case basis, opting in, and not by default as part of the
+>> >> WMI driver (although it can provide the mechanism for a sub-driver to use), and
+>> possibly a devmode to do so by default.
+>>
+>> I agree.  I don't want too see gnome-whatever-widget talking directly to WMI and
+>> confusing the kernel driver for the same thing.
+>
+> So there are plenty of other things that can be done by WMI that don't
+> really make sense to live in the kernel, particularly on what Dell exposes via
+> WMI.
+>
+> If the desire of this group ends up being to not expose WMI by default,
+> I'd like to at least propose it be exposed for the GUID's Dell is using.
+
+Is it just the "call SMBIOS" GUID or are there other things?
+
+>
+> Perhaps as part of changing dell-smbios to use WMI, also extend it's
+> functionality to userspace.
+>
+
+Could this still result in userspace and the kernel fighting over
+control of various bits of the system?  If so, that's a bit less than
+ideal.
