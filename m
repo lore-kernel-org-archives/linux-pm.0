@@ -1,207 +1,104 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2 2/2] thermal: core: Add a back up thermal shutdown
- mechanism
-Date: Thu, 13 Apr 2017 08:25:27 -0700
-Message-ID: <20170413152525.GA8683@localhost.localdomain>
-References: <1492070556-24660-1-git-send-email-j-keerthy@ti.com>
- <1492070556-24660-2-git-send-email-j-keerthy@ti.com>
+From: Andy Lutomirski <luto@kernel.org>
+Subject: Re: RFC: WMI Enhancements
+Date: Thu, 13 Apr 2017 08:32:48 -0700
+Message-ID: <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com>
+References: <20170412230854.GA11963@fury> <20170413073228.GB1462@ozzy.nask.waw.pl>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1492070556-24660-2-git-send-email-j-keerthy@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:47444 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751657AbdDMPdO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Apr 2017 11:33:14 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id 1865E203DA
+        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2017 15:33:13 +0000 (UTC)
+Received: from mail-vk0-f42.google.com (mail-vk0-f42.google.com [209.85.213.42])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 0F8E0203B5
+        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2017 15:33:10 +0000 (UTC)
+Received: by mail-vk0-f42.google.com with SMTP id r69so29657172vke.2
+        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2017 08:33:10 -0700 (PDT)
+In-Reply-To: <20170413073228.GB1462@ozzy.nask.waw.pl>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?B?TWljaGHFgiBLxJlwaWXFhA==?= <kernel@kempniu.pl>
+Cc: Darren Hart <dvhart@infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Corentin Chary <corentin.chary@gmail.com>, Mario Limonciello <Mario_Limonciello@dell.com>, Andy Lutomirski <luto@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+On Thu, Apr 13, 2017 at 12:32 AM, Michał Kępień <kernel@kempniu.pl> wrote:
+>> Hi All,
+>>
+>> There are a few parallel efforts involving the Windows Management
+>> Instrumentation (WMI)[1] and dependent/related drivers. I'd like to have a round of
+>> discussion among those of you that have been involved in this space before we
+>> decide on a direction.
+>>
+>> The WMI support in the kernel today fairly narrowly supports a handful of
+>> systems. Andy L. has a work-in-progress series [2] which converts wmi into a
+>> platform device and a proper bus, providing devices for dependent drivers to
+>> bind to, and a mechanism for sibling devices to communicate with each other.
+>> I've reviewed the series and feel like the approach is sound, I plan to carry
+>> this series forward and merge it (with Andy L's permission).
+>>
+>> Are there any objections to this?
+>
+> Back in January 2016, I sent Andy a few minor comments about this
+> series.  A year later, I offered to iron out the remaining issues and
+> resubmit the series in Andy's name when I find the time.  Sadly, things
+> have changed a bit for me since that time and it is unlikely that I will
+> be able to deliver, for which I am sorry.
+>
+> However, browsing Andy's branch I see that most issues have been
+> resolved, though I think some of my remarks [1] have either been missed
+> or silently refuted :)
+>
+> Anyway, I also like this approach and I think this series is a valuable
+> cleanup.
 
---PEIAKu/WMn1b1Hv9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Me too :)
 
+>> In Windows, applications interact with WMI more or less directly. We don't do
+>> this in Linux currently, although it has been discussed in the past [3]. Some
+>> vendors will work around this by performing SMI/SMM, which is inefficient at
+>> best. Exposing WMI methods to userspace would bring parity to WMI for Linux and
+>> Windows.
+>>
+>> There are two principal concerns I'd appreciate your thoughts on:
+>>
+>> a) As an undiscoverable interface (you need to know the method signatures ahead
+>> of time), universally exposing every WMI "device" to userspace seems like "a bad
+>> idea" from a security and stability perspective. While access would certainly be
+>> privileged, it seems more prudent to make this exposure opt-in. We also handle
+>> some of this with kernel drivers and exposing those "devices" to userspace would
+>> enable userspace and the kernel to fight over control. So - if we expose WMI
+>> devices to userspace, I believe this should be done on a case by case basis,
+>> opting in, and not by default as part of the WMI driver (although it can provide
+>> the mechanism for a sub-driver to use), and possibly a devmode to do so by
+>> default.
 
-Hey,
+I agree.  I don't want too see gnome-whatever-widget talking directly
+to WMI and confusing the kernel driver for the same thing.
 
-On Thu, Apr 13, 2017 at 01:32:36PM +0530, Keerthy wrote:
-> orderly_poweroff is triggered when a graceful shutdown
-> of system is desired. This may be used in many critical states of the
-> kernel such as when subsystems detects conditions such as critical
-> temperature conditions. However, in certain conditions in system
-> boot up sequences like those in the middle of driver probes being
-> initiated, userspace will be unable to power off the system in a clean
-> manner and leaves the system in a critical state. In cases like these,
-> the /sbin/poweroff will return success (having forked off to attempt
-> powering off the system. However, the system overall will fail to
-> completely poweroff (since other modules will be probed) and the system
-> is still functional with no userspace (since that would have shut itself
-> off).
->=20
-> However, there is no clean way of detecting such failure of userspace
-> powering off the system. In such scenarios, it is necessary for a backup
-> workqueue to be able to force a shutdown of the system when orderly
-> shutdown is not successful after a configurable time period.
+>> Secondarily, Andy L created a simple driver to expose the MOF buffer [2] to
+>> userspace which could be consumed by a userspace tool to create sources for an
+>> interface to the exposed WMI methods.
+>
+> +1 for the idea, it makes figuring out what the firmware actually
+> exposes through WMI a bit easier.  After skimming through the driver's
+> code, I would only recommend to review the included headers
+> (linux/input/sparse-keymap.h, linux/dmi.h and acpi/video.h all seem
+> redundant to me).
+>
+> What we still need, though, is an open source version of wmiofck.exe.  I
+> am unaware of anything like that existing and installing the Windows
+> Driver Kit just to run one command which spits out a single *.h file is
+> not something I would describe as convenient (been there).
 
-Thanks for keeping this thread up and fixing it. Some requests to this
-patch too as follows.
+I haven't tried to see whether they do what's needed, but there's
+OpenWBEM and OpenPegasus.
 
->=20
-> Reported-by: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Keerthy <j-keerthy@ti.com>
-> ---
->=20
->   * Changed the comment style
->   * Added backup shutdown call before orderly_poweroff
->=20
->  drivers/thermal/Kconfig        | 13 ++++++++++++
->  drivers/thermal/thermal_core.c | 47 ++++++++++++++++++++++++++++++++++++=
-++++++
-
-I think this change in expectation should probably be documented under
-Documentation/ directory. Can you please patch thermal documentation
-too?
-
->  2 files changed, 60 insertions(+)
->=20
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 9347401..971fd54 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -15,6 +15,19 @@ menuconfig THERMAL
-> =20
->  if THERMAL
-> =20
-> +config THERMAL_EMERGENCY_POWEROFF_DELAY_MS
-> +	int "Emergency poweroff delay in milli-seconds"
-> +	depends on THERMAL
-> +	default 0
-> +	help
-> +	  The number of milliseconds to delay before emergency
-> +	  poweroff kicks in. The delay should be carefully profiled
-> +	  so as to give adequate time for orderly_poweroff. In case
-> +	  of failure of an orderly_poweroff the emergency poweroff
-> +	  kicks in after the delay has elapsed and shuts down the system.
-> +
-> +	  If set to 0 poweroff will happen immediately.
-> +
->  config THERMAL_HWMON
->  	bool
->  	prompt "Expose thermal sensors as hwmon device"
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
-e.c
-> index 7462ae5..d60fa9e 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -323,12 +323,54 @@ static void handle_non_critical_trips(struct therma=
-l_zone_device *tz,
->  		       def_governor->throttle(tz, trip);
->  }
-> =20
-> +/**
-> + * emergency_poweroff_func - emergency poweroff work after a known delay
-> + * @work: work_struct associated with the emergency poweroff function
-> + *
-> + * This function is called in very critical situations to force
-> + * a kernel poweroff after a configurable timeout value.
-> + */
-> +static void emergency_poweroff_func(struct work_struct *work)
-> +{
-> +	/*
-> +	 * We have reached here after the emergency thermal shutdown
-> +	 * Waiting period has expired. This means orderly_poweroff has
-> +	 * not been able to shut off the system for some reason.
-> +	 * Try to shut down the system immediately using kernel_power_off
-> +	 * if populated
-> +	 */
-> +	pr_warn("Attempting kernel_power_off\n");
-
-This message needs to be specific to thermal (forced) shutdown.
-
-> +	kernel_power_off();
-> +
-> +	/*
-> +	 * Worst of the worst case trigger emergency restart
-> +	 */
-> +	pr_warn("kernel_power_off has failed! Attempting emergency_restart\n");
-
-Same here..
-
-also, I think if your system reached this point, we should probably be more
-dramatic at the kernel log a scream louder, I would say a big farty WARN
-to say the least. Or a crash.
-
-> +	emergency_restart();
-> +}
-> +
-> +static DECLARE_DELAYED_WORK(emergency_poweroff_work, emergency_poweroff_=
-func);
-> +
-> +/**
-> + * emergency_poweroff - Trigger an emergency system poweroff
-> + *
-> + * This may be called from any critical situation to trigger a system sh=
-utdown
-> + * after a known period of time. By default the delay is 0 millisecond
-> + */
-> +void thermal_emergency_poweroff(void)
-> +{
-> +	schedule_delayed_work(&emergency_poweroff_work,
-> +			      msecs_to_jiffies(CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS));
-> +}
-> +
->  static void handle_critical_trips(struct thermal_zone_device *tz,
->  				  int trip, enum thermal_trip_type trip_type)
->  {
->  	int trip_temp;
->  	static bool power_off_triggered;
-> +	static struct mutex poweroff_lock;
-> =20
-> +	mutex_init(&poweroff_lock);
->  	tz->ops->get_trip_temp(tz, trip, &trip_temp);
-> =20
-
-the above is probably a quirk?
-
->  	/* If we have not crossed the trip_temp, we do not care. */
-> @@ -345,6 +387,11 @@ static void handle_critical_trips(struct thermal_zon=
-e_device *tz,
->  			  "critical temperature reached(%d C),shutting down\n",
->  			  tz->temperature / 1000);
->  		mutex_lock(&poweroff_lock);
-> +		/*
-> +		 * Queue a backup emergency shutdown in the event of
-> +		 * orderly_poweroff failure.
-> +		 */
-> +		thermal_emergency_poweroff();
->  		orderly_poweroff(true);
->  		power_off_triggered =3D true;
->  		mutex_unlock(&poweroff_lock);
-> --=20
-> 1.9.1
->=20
-
---PEIAKu/WMn1b1Hv9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJY75hfAAoJEA6VkvSQfF5TwysQAMPwLu4Enn9MCYtC+5lUC0KL
-AKmhyRfWbudPCfTN6EuOmPrPWSwvhKuhMfG3QU9OltI9sEFuuTqplDA/OD+VZoh2
-cQIwqNMEsCXhCvlPjkpuiuA18JlPhLf3q0DPB54F2I9Y2Wu6cR4sIeSy+rJTujvZ
-jkvSNaW6H3oiI4QstuVawkUU8IG4C9z7AmCAKyNOggEE4L/SZX4/5iKy8R2SMaGw
-Wr61oXbwpk9LMOUldaSYjmVoLzHxXNyPfwWoRCNGClsJOwN/LxKJNScu6NXLp8EK
-wfXBAjIk5Rp0GBbk1VOG3fJYV7ICNJdna1LZSaJqWgvp2JDa6VGblQdrohYaEIbJ
-4h+PB+JPvSv/AZs8tSMG3OpL83vmlVg7EJ73DE+DXp8ONTBKuQSP54X5RjrxN8+Y
-5iluAPeGTjWzFuKezCFsZNzjEuomF19K04C3C6sScYTBb43MLvKU58pdG0e7JrNp
-A7X2A/UNSgeNACtbg3zsXIbwH/pif3zcJReUUI5QLFduxk/YWMExK3IRSbz99Owc
-9GIJT93K/9y5vJSrdQXgm4c1itHc1Q6SciZnDzPX2VEsUDg421PYegBq4gUKHNRa
-Cws8yfgxN8KsxisHDkQzPzMn9q0cYDusmP7voKfYSiRkIGo4amWfOUXjo87/tTre
-jhANiBZ9j1qJ3R1xb3uw
-=xXMh
------END PGP SIGNATURE-----
-
---PEIAKu/WMn1b1Hv9--
+Anyway, if such a tool exists, it would be handy to expose the binary
+MOF data to userspace so the tool could be used to help get WMI
+working on new platforms.
