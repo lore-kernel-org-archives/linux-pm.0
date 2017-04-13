@@ -1,181 +1,207 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
 Subject: Re: [RFC v3 0/5] Add capacity capping support to the CPU controller
-Date: Thu, 13 Apr 2017 11:34:27 +0100
-Message-ID: <20170413103427.GA18854@e110439-lin>
+Date: Thu, 13 Apr 2017 12:33:31 +0100
+Message-ID: <20170413113331.GB18854@e110439-lin>
 References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
  <20170320145131.GA3623@htj.duckdns.org>
  <20170320172233.GA28391@e110439-lin>
  <20170410073622.2y6tnpcd2ssuoztz@hirez.programming.kicks-ass.net>
  <20170411175833.GI29455@e110439-lin>
- <20170412124822.GG3093@worktop>
- <20170412132741.GK29455@e110439-lin>
- <20170412143414.2c27dakhrydl2pqb@hirez.programming.kicks-ass.net>
- <20170412144310.GB7572@e110439-lin>
- <20170412161423.jktdg6tacp7wwpno@hirez.programming.kicks-ass.net>
+ <20170412121009.GD3093@worktop>
+ <20170412135538.GM29455@e110439-lin>
+ <20170412153712.albkjck27ewzmbjr@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:53314 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:53814 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750735AbdDMKeg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Apr 2017 06:34:36 -0400
+        id S1751308AbdDMLdh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Apr 2017 07:33:37 -0400
 Content-Disposition: inline
-In-Reply-To: <20170412161423.jktdg6tacp7wwpno@hirez.programming.kicks-ass.net>
+In-Reply-To: <20170412153712.albkjck27ewzmbjr@hirez.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@arm.com>, Chris Redpath <chris.redpath@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-On 12-Apr 18:14, Peter Zijlstra wrote:
-> On Wed, Apr 12, 2017 at 03:43:10PM +0100, Patrick Bellasi wrote:
-> > On 12-Apr 16:34, Peter Zijlstra wrote:
-> > > On Wed, Apr 12, 2017 at 02:27:41PM +0100, Patrick Bellasi wrote:
-> > > > On 12-Apr 14:48, Peter Zijlstra wrote:
-> > > > > On Tue, Apr 11, 2017 at 06:58:33PM +0100, Patrick Bellasi wrote:
-> > > > > > >     illustrated per your above points in that it affects both, while in
-> > > > > > >     fact it actually modifies another metric, namely util_avg.
-> > > > > > 
-> > > > > > I don't see it modifying in any direct way util_avg.
-> > > > > 
-> > > > > The point is that clamps called 'capacity' are applied to util. So while
-> > > > > you don't modify util directly, you do modify the util signal (for one
-> > > > > consumer).
-> > > > 
-> > > > Right, but this consumer (i.e. schedutil) it's already translating
-> > > > the util_avg into a next_freq (which ultimately it's a capacity).
-
-                                                               ^^^^^^^^
-                                                                [REF1]
-
-> > > > 
-> > > > Thus, I don't see a big misfit in that code path to "filter" this
-> > > > translation with a capacity clamp.
-> > > 
-> > > Still strikes me as odd though.
+On 12-Apr 17:37, Peter Zijlstra wrote:
+> On Wed, Apr 12, 2017 at 02:55:38PM +0100, Patrick Bellasi wrote:
+> > On 12-Apr 14:10, Peter Zijlstra wrote:
+> 
+> > > Even for the cgroup interface, I think they should set a per-task
+> > > property, not a group property.
 > > 
-> > Can you better elaborate on they why?
+> > Ok, right now using CGroups ans primary (and unique) interface, these
+> > values are tracked as attributes of the CPU controller. Tasks gets
+> > them by reading these attributes once they are binded to a CGroup.
+> > 
+> > Are you proposing to move these attributes within the task_struct?
 > 
-> Because capacity is, as you pointed out earlier, a relative measure of
-> inter CPU performance (which isn't otherwise exposed to userspace
-> afaik).
-
-Perhaps, since I'm biased by EAS concepts which are still not
-mainline, I was not clear on specifying what I meant by "capacity" in
-[REF1].
-
-My fault, sorry, perhaps it's worth if I start by reviewing some
-concepts and see if we can establish a common language.
-
-
-.:: Mainline
-
-If we look at mainline, "capacity" is actually a concept used to
-represent the computational bandwidth available in a CPU, when running
-at the highest OPP (let's consider SMP systems to keep it simple).
-
-But things are already a bit more complicated. Specifically, looking
-at update_cpu_capacity(), we distinguish between:
-
-- cpu_rq(cpu)->cpu_capacity_orig
-  which is the bandwidth available at the max OPP.
-
-- cpu_rq(cpu)->cpu_capacity
-  which discounts from the previous metrics the "average" bandwidth used
-  by RT tasks, but not (yet) DEADLINE tasks afaics.
-
-Thus, "capacity" is already a polymorphic concept:
-  we use cpu_capacity_orig to cap the cpu utilization of CFS tasks
-  in cpu_util()
-but
-  this cpu utilization is a signal which converge to "current capacity"
-  in  ___update_load_avg()
-
-The "current capacity" (capacity_curr, but just in some comments) is actually
-the computational bandwidth available at a certain OPP.
-
-Thus, we already have in mainline a concepts of capacity which refers to the
-bandwidth available in a certain OPP. The "current capacity" is what we
-ultimately use to scale PELT depending on the current OPP.
-
-
-.:: EAS
-
-Looking at EAS, and specifically the energy model, we describe each
-OPP using a:
-
-  struct capacity_state {
-          unsigned long cap;      /* compute capacity */
-          unsigned long power;    /* power consumption at this compute capacity */
-  };
-
-Where again we find a usage of the "current capacity", i.e. the
-computational bandwidth available at each OPP.
-
-
-.:: Current Capacity
-
-In [REF1] I was referring to the concept of "current capacity", which is what
-schedutil is after. There we need translate cfs.avg.util_avg into an OPP, which
-ultimately is a suitable level of "current capacity" to satisfy the
-CPU bandwidth requested by CFS tasks.
-
-> While the utilization thing is a per task running signal.
-
-Which still is converging to the "current capacity", at least before
-Vincent's patches.
-
-> There is no direct relation between the two.
-
-Give the previous definitions, can we say that there is a relation between task
-utilization and "current capacity"?
-
-     Sum(task_utilization) = cpu_utilization
-            <= "current capacity" (cpufreq_schedutil::get_next_freq())    [1]
-            <= cpu_capacity_orig
-
-> The two main uses for the util signal are:
+> /me goes look at your patches again, because I thought you already set
+> per task_struct values.
 > 
->   OPP selection: the aggregate util of all runnable tasks for a
->     particular CPU is used to select an OPP for said CPU [*], against
->     whatever max-freq that CPU has. Capacity doesn't really come into play
->     here.
+> @@ -1531,6 +1531,9 @@ struct task_struct {
+>         struct sched_rt_entity rt;
+>  #ifdef CONFIG_CGROUP_SCHED
+>         struct task_group *sched_task_group;
+> +#ifdef CONFIG_CAPACITY_CLAMPING
+> +       struct rb_node cap_clamp_node[2];
+> +#endif
+> 
+> Yeah, see...
 
-The OPP selected has to provide a suitable amount of "current capacity" to
-accommodate the required utilization.
+Well, these are not the actual attributes.
 
->   Task placement: capacity comes into play in so far that we want to
->     make sure our task fits.
+These rb_nodes are used to sort the tasks based on their constraints, but the
+actual attributes values are stored in:
 
-This two usages are not completely independent, at least when EAS is
-in use. In EAS we can evaluate/compare scenarios like:
+@@ -273,6 +273,14 @@ struct task_group {
+ #endif
+ #endif
+ 
++#ifdef CONFIG_CAPACITY_CLAMPING
++#define CAP_CLAMP_MIN 0
++#define CAP_CLAMP_MAX 1
++
++       /* Min and Max capacity constraints for tasks in this group */
++       unsigned int cap_clamp[2];
++#endif
++
 
-  "should I increase the capacity of CPUx or wakeup CPUy"
+This is done to avoid replicated information in each tasks structure.
 
-Thus, we use capacity indexes to estimate energy deltas by
-moving a task and, by consequence, changing a CPU's OPP.
+> > In that case we should also defined a primary interface to set them,
+> > any preferred proposal? sched_setattr(), prctl?
+> 
+> We could, which I think is the important point.
+> 
+> > By regular rb-tree do you mean the cfs_rq->tasks_timeline?
+> 
+> Yep.
+> 
+> > Because in that case this would apply only to the FAIR class, while
+> > the rb-tree we are using here are across classes.
+> > Supporting both FAIR and RT I think is a worth having feature.
+> 
+> *groan* I don't want to even start thinking what this feature means in
+> the context of RT, head hurts enough.
 
-Which means: expected "capacity" variations are affecting OPP selections.
+:-)
 
-> And I'm not at all sure we want to have both uses of our utilization
-> controlled by the one knob. They're quite distinct.
+Still, mobile people *groan* when we go to max OPP every time a RT task runs.
+Here you can find some energy numbers I've got recently on Pixel phones:
+   https://lkml.org/lkml/2017/3/17/214
+7%-54% (useless) more energy is a big deal.
 
-The proposed knobs, for example capacity_min, are used to clamp the
-scheduler/schedutil view on what is the required "current capacity" by
-modifying the previous relation [1] to be:
+Of course, there can be many different solution to this problem, but
+capacity_max allows to easily clamp the frequency used when certain RT
+while still keeping them within expected latency performance.
 
-                 Sum(task_utilization) = cpu_utilization
-            clamp(cpu_utilization, capacity_min, capacity_max)
-                        <= "current capacity"
-                        <= cpu_capacity_orig
+> > > So the bigger point is that if the min/max is a per-task property (even
+> > > if set through a cgroup interface), the min(max) / max(min) thing is
+> > > wrong.
+> > 
+> > Perhaps I'm not following you here but, being per-task does not mean
+> > that we need to aggregate these constraints by summing them (look
+> > below)...
+> >
+> > > If the min/max were to apply to each individual task's util, you'd end
+> > > up with something like: Dom(\Sum util) = [min(1, \Sum min), min(1, \Sum max)].
+> > 
+> > ... as you do here.
+> > 
+> > Let's use the usual simple example, where these per-tasks constraints
+> > are configured:
+> >
+> > - TaskA: capacity_min: 20% capacity_max: 80%
+> > - TaskB: capacity_min: 40% capacity_max: 60%
+> > 
+> > This means that, at CPU level, we want to enforce the following
+> > clamping depending on the tasks status:
+> > 
+> >  RUNNABLE tasks    capacity_min    capacity_max
+> > A) TaskA                      20%             80%
+> > B) TaskA,TaskB                40%             80%
+> > C) TaskB                      40%             60%
+> >  
+> > In case C, TaskA gets a bigger boost while is co-scheduled with TaskB.
+> 
+> (bit unfortunate you gave your cases and tasks the same enumeration)
+> 
+> But this I quite strongly feel is wrong. If you've given your tasks a
+> minimum OPP, you've in fact given them a minimum bandwidth, for at a
+> given frequency you can say how long they'll run, right?
 
-In [1] we already have a transformation from the cpu_utilization
-domain to the "current capacity" domain. Here we are just adding a
-clamping filter around that transformation.
+Not really, we are still in the domain of a best-effort solution, and
+I think we should stick with that.
 
-I hope this is useful to find some common ground, perhaps the naming
-capacity_{min,max} is unfortunate and we can find a better one.
-However, we should first agree on the utility of the proposed
-clamping concept... ;-)
+The overall idea is not about allocating bandwidth at all, but instead
+on expressing preferences, and there are two main reasons:
+
+1) in principle we don't know how long a CFS task will run.
+   we just know that if it completes faster than it's better
+
+   Think about a task which is relatively small but functional to
+   trigger further processing on an external device (e.g. a GPU).
+   In this case the task is part of a critical-path and the sooner it
+   finished the better it is.
+   It can be the case that allocating bandwidth for such a task is not
+   easy, e.g. because the amout of processing the task does can
+   sensible change between each activation.
+
+   In this case you have two options:
+   a) meaure/estimate the WCET and go for over-budgeting
+      likely using DEADLINE
+   b) find the minimum capacity which allows your task to complete
+      reasonably fast most of the time
+
+   The second is of course a best-effort approach, still I find it
+   could be useful to have and it can be easily adapted at run-time to
+   express a sort-of power-vs-performance trade-off.
+
+2) if you really want a granted bandwidth, you quite likely want also
+   a granted deadline... and you should go for DEADLINE.
+
+> So if you want to maintain that case B should be 60%. Once one of the
+> tasks completes it will drop again. That is, the increased value
+> represents the additional runnable 'load' over the min from the
+> currently running task. Combined they will still complete in reduced
+> time.
+
+We already experimented with this approach in the past, actually the
+first version of SchedTune was based on the idea to aggregate by
+adding the boosted utilizations.
+
+It's true that in that way we are more likely to speed-up tasks
+completion also in case of co-scheduling but the downside is that we
+are entering the domain of "granted bandwidth allocation" which is
+likely overkilling for the scope of a best-effort solution.
+
+Moreover, since bandwidth is a limited resource, we also found such an
+approach not fitting well for systems where you have a certain number
+of tasks running concurrently. While, a simple threshold based
+boosting, where max() is used as the aggregation function, seems to be
+still useful.
+
+
+> > Notice that this CPU-level aggregation is used just for OPP selection
+> > on that CPU, while for TaskA we still use capacity_min=20% when we are
+> > looking for a CPU.
+> 
+> And you don't find that inconsistent?
+
+In the previous example, TaskB seems to prefer a CPU which has between
+40% and 60% capacity.
+Let's assume these numbers comes from a use-case where:
+ a) your system provides 60% capacity in a LITTLE CPU
+ b) your are after "sustained performances" for TaskA, which on that
+    platform can be easily achieved by running at 40% of a LITTLE CPU
+
+Don't you think that this can be a valuable information for the
+scheduler to just (possibly) prefer a LITTLE CPU?
+
+With a max() aggregation we can place both TaskA and TaskB on the
+LITTLE CPU and try to run them at least at 40% capacity.
 
 -- 
 #include <best/regards.h>
