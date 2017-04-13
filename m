@@ -1,72 +1,119 @@
-From: Pedro Ribeiro <pedrib@gmail.com>
-Subject: Hibernating / resuming with ExpressCard
-Date: Thu, 13 Apr 2017 13:13:02 +0100
-Message-ID: <bf574006-8113-caab-78f5-231afdbb3bdf@gmail.com>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: RFC: WMI Enhancements
+Date: Thu, 13 Apr 2017 13:29:41 +0000
+Message-ID: <3370431810bd4bc09fd9eb16eb9abea5@ausx13mpc120.AMER.DELL.COM>
+References: <20170412230854.GA11963@fury>
+ <20170413073228.GB1462@ozzy.nask.waw.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f49.google.com ([74.125.82.49]:34559 "EHLO
-        mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751473AbdDMMNG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 08:13:06 -0400
-Received: by mail-wm0-f49.google.com with SMTP id w204so3494088wmd.1
-        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2017 05:13:05 -0700 (PDT)
-Received: from [192.168.1.185] (129.82.54.77.rev.vodafone.pt. [77.54.82.129])
-        by smtp.gmail.com with ESMTPSA id 186sm10399253wml.2.2017.04.13.05.13.03
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 13 Apr 2017 05:13:03 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <20170413073228.GB1462@ozzy.nask.waw.pl>
+Content-Language: en-US
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: kernel@kempniu.pl, dvhart@infradead.org
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pali.rohar@gmail.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-Hi,
-
-I have a Lenovo X230 with an ExpressCard/54 slot. I dual boot this
-laptop with Windows 10, and I have an external NVIDIA GTX970 connected
-to the ExpressCard slot using a EXP GDC external GPU adapter.
-
-Because I only use the NVIDIA card in Windows, I have blacklisted the
-nouveau module to prevent it from loading. I also only have the
-ExpressCard adapter connected when the computer is docked, otherwise I
-keep it disconnected. With the blacklisted nouveau the graphics card is
-powered on, but nothing appears in dmesg.
-
-Hibernating and resuming with the ExpressCard adapter connected is not a
-problem. However, if I hibernate with it connected and remove the
-adapter while the laptop is hibernating, resuming will fail with error
--14 and the following message:
-
-[    3.168680] PM: Starting manual resume from disk
-[    3.168754] PM: Hibernation image partition 8:2 present
-[    3.168755] PM: Looking for hibernation image.
-[    3.168919] PM: Image signature found, resuming
-[    3.170330] PM: Preparing processes for restore.
-[    3.170333] Freezing user space processes ...
-[    3.241365] (elapsed 0.070 seconds) done.
-[    3.241510] PM: Loading hibernation image.
-[    3.241635] PM: Marking nosave pages: [mem 0x00000000-0x00000fff]
-[    3.241637] PM: Marking nosave pages: [mem 0x0009d000-0x000fffff]
-[    3.241642] PM: Marking nosave pages: [mem 0x20000000-0x201fffff]
-[    3.241658] PM: Marking nosave pages: [mem 0x40004000-0x40004fff]
-[    3.241659] PM: Marking nosave pages: [mem 0xada2d000-0xffffffff]
-[    3.243319] PM: Basic memory bitmaps created
-[    3.270538] PM: Using 3 thread(s) for decompression.
-               PM: Loading and decompressing image data (349081 pages)...
-[    3.334831] PM: Image loading progress:   0%
-[    3.335378] PM: Read 1396324 kbytes in 0.06 seconds (23272.06 MB/s)
-[    3.342367] PM: Error -14 resuming
-[    3.342434] PM: Failed to load hibernation image, recovering.
-[    3.343322] PM: Basic memory bitmaps freed
-[    3.343324] Restarting tasks ... done.
-[    3.345406] PM: Hibernation image not present or could not be loaded.
-
-The same thing occurs if I hibernate with the adapter disconnected, plug
-it in while the computer is hibernated, and then try to resume.
-
-I assume this is because the hibernation process detects a hardware
-change and doesn't like it - is there a way around it?
-
-Regards,
-Pedro
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBNaWNoYcWCIEvEmXBpZcWEIFtt
+YWlsdG86a2VybmVsQGtlbXBuaXUucGxdDQo+IFNlbnQ6IFRodXJzZGF5LCBBcHJpbCAxMywgMjAx
+NyAyOjMyIEFNDQo+IFRvOiBEYXJyZW4gSGFydCA8ZHZoYXJ0QGluZnJhZGVhZC5vcmc+DQo+IENj
+OiBSYWZhZWwgV3lzb2NraSA8cmp3QHJqd3lzb2NraS5uZXQ+OyBMZW4gQnJvd24gPGxlbi5icm93
+bkBpbnRlbC5jb20+Ow0KPiBQYWxpIFJvaMOhciA8cGFsaS5yb2hhckBnbWFpbC5jb20+OyBDb3Jl
+bnRpbiBDaGFyeQ0KPiA8Y29yZW50aW4uY2hhcnlAZ21haWwuY29tPjsgTGltb25jaWVsbG8sIE1h
+cmlvDQo+IDxNYXJpb19MaW1vbmNpZWxsb0BEZWxsLmNvbT47IEFuZHkgTHV0b21pcnNraSA8bHV0
+b0BrZXJuZWwub3JnPjsgQW5keQ0KPiBTaGV2Y2hlbmtvIDxhbmRyaXkuc2hldmNoZW5rb0BsaW51
+eC5pbnRlbC5jb20+OyBMS01MIDxsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZz47IHBs
+YXRmb3JtLWRyaXZlci14ODZAdmdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4gcG1Admdlci5rZXJu
+ZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBSRkM6IFdNSSBFbmhhbmNlbWVudHMNCj4gDQo+ID4gSGkg
+QWxsLA0KPiA+DQo+ID4gVGhlcmUgYXJlIGEgZmV3IHBhcmFsbGVsIGVmZm9ydHMgaW52b2x2aW5n
+IHRoZSBXaW5kb3dzIE1hbmFnZW1lbnQNCj4gPiBJbnN0cnVtZW50YXRpb24gKFdNSSlbMV0gYW5k
+IGRlcGVuZGVudC9yZWxhdGVkIGRyaXZlcnMuIEknZCBsaWtlIHRvDQo+ID4gaGF2ZSBhIHJvdW5k
+IG9mIGRpc2N1c3Npb24gYW1vbmcgdGhvc2Ugb2YgeW91IHRoYXQgaGF2ZSBiZWVuIGludm9sdmVk
+DQo+ID4gaW4gdGhpcyBzcGFjZSBiZWZvcmUgd2UgZGVjaWRlIG9uIGEgZGlyZWN0aW9uLg0KPiA+
+DQo+ID4gVGhlIFdNSSBzdXBwb3J0IGluIHRoZSBrZXJuZWwgdG9kYXkgZmFpcmx5IG5hcnJvd2x5
+IHN1cHBvcnRzIGEgaGFuZGZ1bA0KPiA+IG9mIHN5c3RlbXMuIEFuZHkgTC4gaGFzIGEgd29yay1p
+bi1wcm9ncmVzcyBzZXJpZXMgWzJdIHdoaWNoIGNvbnZlcnRzDQo+ID4gd21pIGludG8gYSBwbGF0
+Zm9ybSBkZXZpY2UgYW5kIGEgcHJvcGVyIGJ1cywgcHJvdmlkaW5nIGRldmljZXMgZm9yDQo+ID4g
+ZGVwZW5kZW50IGRyaXZlcnMgdG8gYmluZCB0bywgYW5kIGEgbWVjaGFuaXNtIGZvciBzaWJsaW5n
+IGRldmljZXMgdG8NCj4gY29tbXVuaWNhdGUgd2l0aCBlYWNoIG90aGVyLg0KPiA+IEkndmUgcmV2
+aWV3ZWQgdGhlIHNlcmllcyBhbmQgZmVlbCBsaWtlIHRoZSBhcHByb2FjaCBpcyBzb3VuZCwgSSBw
+bGFuDQo+ID4gdG8gY2FycnkgdGhpcyBzZXJpZXMgZm9yd2FyZCBhbmQgbWVyZ2UgaXQgKHdpdGgg
+QW5keSBMJ3MgcGVybWlzc2lvbikuDQo+ID4NCj4gPiBBcmUgdGhlcmUgYW55IG9iamVjdGlvbnMg
+dG8gdGhpcz8NCj4gDQo+IEJhY2sgaW4gSmFudWFyeSAyMDE2LCBJIHNlbnQgQW5keSBhIGZldyBt
+aW5vciBjb21tZW50cyBhYm91dCB0aGlzIHNlcmllcy4gIEENCj4geWVhciBsYXRlciwgSSBvZmZl
+cmVkIHRvIGlyb24gb3V0IHRoZSByZW1haW5pbmcgaXNzdWVzIGFuZCByZXN1Ym1pdCB0aGUgc2Vy
+aWVzIGluDQo+IEFuZHkncyBuYW1lIHdoZW4gSSBmaW5kIHRoZSB0aW1lLiAgU2FkbHksIHRoaW5n
+cyBoYXZlIGNoYW5nZWQgYSBiaXQgZm9yIG1lDQo+IHNpbmNlIHRoYXQgdGltZSBhbmQgaXQgaXMg
+dW5saWtlbHkgdGhhdCBJIHdpbGwgYmUgYWJsZSB0byBkZWxpdmVyLCBmb3Igd2hpY2ggSSBhbQ0K
+PiBzb3JyeS4NCj4gDQo+IEhvd2V2ZXIsIGJyb3dzaW5nIEFuZHkncyBicmFuY2ggSSBzZWUgdGhh
+dCBtb3N0IGlzc3VlcyBoYXZlIGJlZW4gcmVzb2x2ZWQsDQo+IHRob3VnaCBJIHRoaW5rIHNvbWUg
+b2YgbXkgcmVtYXJrcyBbMV0gaGF2ZSBlaXRoZXIgYmVlbiBtaXNzZWQgb3Igc2lsZW50bHkNCj4g
+cmVmdXRlZCA6KQ0KPiANCj4gQW55d2F5LCBJIGFsc28gbGlrZSB0aGlzIGFwcHJvYWNoIGFuZCBJ
+IHRoaW5rIHRoaXMgc2VyaWVzIGlzIGEgdmFsdWFibGUgY2xlYW51cC4NCj4gDQo+ID4gSW4gV2lu
+ZG93cywgYXBwbGljYXRpb25zIGludGVyYWN0IHdpdGggV01JIG1vcmUgb3IgbGVzcyBkaXJlY3Rs
+eS4gV2UNCj4gPiBkb24ndCBkbyB0aGlzIGluIExpbnV4IGN1cnJlbnRseSwgYWx0aG91Z2ggaXQg
+aGFzIGJlZW4gZGlzY3Vzc2VkIGluDQo+ID4gdGhlIHBhc3QgWzNdLiBTb21lIHZlbmRvcnMgd2ls
+bCB3b3JrIGFyb3VuZCB0aGlzIGJ5IHBlcmZvcm1pbmcNCj4gPiBTTUkvU01NLCB3aGljaCBpcyBp
+bmVmZmljaWVudCBhdCBiZXN0LiBFeHBvc2luZyBXTUkgbWV0aG9kcyB0bw0KPiA+IHVzZXJzcGFj
+ZSB3b3VsZCBicmluZyBwYXJpdHkgdG8gV01JIGZvciBMaW51eCBhbmQgV2luZG93cy4NCj4gPg0K
+PiA+IFRoZXJlIGFyZSB0d28gcHJpbmNpcGFsIGNvbmNlcm5zIEknZCBhcHByZWNpYXRlIHlvdXIg
+dGhvdWdodHMgb246DQo+ID4NCj4gPiBhKSBBcyBhbiB1bmRpc2NvdmVyYWJsZSBpbnRlcmZhY2Ug
+KHlvdSBuZWVkIHRvIGtub3cgdGhlIG1ldGhvZA0KPiA+IHNpZ25hdHVyZXMgYWhlYWQgb2YgdGlt
+ZSksIHVuaXZlcnNhbGx5IGV4cG9zaW5nIGV2ZXJ5IFdNSSAiZGV2aWNlIiB0bw0KPiA+IHVzZXJz
+cGFjZSBzZWVtcyBsaWtlICJhIGJhZCBpZGVhIiBmcm9tIGEgc2VjdXJpdHkgYW5kIHN0YWJpbGl0
+eQ0KPiA+IHBlcnNwZWN0aXZlLiBXaGlsZSBhY2Nlc3Mgd291bGQgY2VydGFpbmx5IGJlIHByaXZp
+bGVnZWQsIGl0IHNlZW1zIG1vcmUNCj4gPiBwcnVkZW50IHRvIG1ha2UgdGhpcyBleHBvc3VyZSBv
+cHQtaW4uIFdlIGFsc28gaGFuZGxlIHNvbWUgb2YgdGhpcyB3aXRoDQo+ID4ga2VybmVsIGRyaXZl
+cnMgYW5kIGV4cG9zaW5nIHRob3NlICJkZXZpY2VzIiB0byB1c2Vyc3BhY2Ugd291bGQgZW5hYmxl
+DQo+ID4gdXNlcnNwYWNlIGFuZCB0aGUga2VybmVsIHRvIGZpZ2h0IG92ZXIgY29udHJvbC4gU28g
+LSBpZiB3ZSBleHBvc2UgV01JDQo+ID4gZGV2aWNlcyB0byB1c2Vyc3BhY2UsIEkgYmVsaWV2ZSB0
+aGlzIHNob3VsZCBiZSBkb25lIG9uIGEgY2FzZSBieSBjYXNlDQo+ID4gYmFzaXMsIG9wdGluZyBp
+biwgYW5kIG5vdCBieSBkZWZhdWx0IGFzIHBhcnQgb2YgdGhlIFdNSSBkcml2ZXINCj4gPiAoYWx0
+aG91Z2ggaXQgY2FuIHByb3ZpZGUgdGhlIG1lY2hhbmlzbSBmb3IgYSBzdWItZHJpdmVyIHRvIHVz
+ZSksIGFuZCBwb3NzaWJseQ0KPiBhIGRldm1vZGUgdG8gZG8gc28gYnkgZGVmYXVsdC4NCj4gPg0K
+PiA+IGIpIFRoZSBtZWNoYW5pc20gdG8gZXhwb3NlIFdNSSBkZXZpY2VzIHRvIHVzZXJzcGFjZSBt
+dXN0IGFsbG93IGZvcg0KPiA+IGF0b21pYyBvcGVyYXRpb24sIHdoaWNoIHdvdWxkIGV4Y2x1ZGUg
+YSBzeXNmcyBpbnRlcmZhY2UgaW52b2x2aW5nIG11bHRpcGxlDQo+IGZpbGVzLg0KPiA+IFNvbWV0
+aGluZyBsaWtlIGFuIGlvY3RsIG9yIGEgY2hhciBkZXYgd291bGQgYmUgbW9yZSBhcHByb3ByaWF0
+ZS4NCj4gPg0KPiA+IERvZXMgYW55b25lIHRoaW5rIGRpZmZlcmVudGx5IHJlZ2FyZGluZyBhKSBv
+ciBiKSA/DQo+IA0KPiBQbGVhc2UgcGFyZG9uIG15IGlnbm9yYW5jZSwgYnV0IHdoYXQgZG8gd2Ug
+YWN0dWFsbHkgZ2FpbiBieSBleHBvc2luZyBXTUkgdG8NCj4gdXNlcnNwYWNlPyAgRW5hYmxpbmcg
+YXBwbGljYXRpb25zIHRvIGZldGNoIFNNQklPUyBkYXRhPyAgV2UgYWxyZWFkeSBoYXZlIGFuDQo+
+IGludGVyZmFjZSBmb3IgdGhhdC4gIEVuYWJsaW5nIGFwcGxpY2F0aW9ucyB0byByZWNlaXZlIGlu
+cHV0IGV2ZW50cz8gIExpa2V3aXNlLg0KDQpJbnB1dCBub3RpZmljYXRpb25zIGFyZSBqdXN0IG9u
+ZSBhc3BlY3QgdGhhdCByZWNlaXZlZCBvdmVyIFdNSS4gIEkgZG9uJ3Qgc2VlIGFueQ0KcmVhc29u
+IHRvIG1vdmUgdGhlIG5vdGlmaWNhdGlvbnMgb3V0IG9mIHRoZSBrZXJuZWwuDQoNCkluIHRlcm1z
+IG9mIHVzZXJzcGFjZSBhcHBsaWNhdGlvbnMsIG9uY2UgYSBXTUkgaW50ZXJmYWNlIHRvIHVzZXJz
+cGFjZSBpcyBhdmFpbGFibGUNCmxpYnNtYmlvcyB3b3VsZCBjaGFuZ2Ugb3ZlciB0byB0aGF0LiAg
+QXBwbGljYXRpb25zIHVzaW5nIGxpYnNtYmlvcyB3b3VsZCBiZW5lZml0Lg0KDQo+IFlvdSBtZW50
+aW9uZWQgV01JJ3MgZWZmaWNpZW5jeSBjb21wYXJlZCB0byBTTUkvU01NLCBidXQgaXMgaXQgYSBk
+aWZmZXJlbmNlDQo+IHNpZ25pZmljYW50IGVub3VnaCBmb3IgYW55b25lIHRvIG5vdGljZT8NCg0K
+QXQgbGVhc3QgZm9yIERlbGwgdGhlcmUgYXJlIG9wdGltaXphdGlvbnMgYmVpbmcgbWFkZSB3aGVu
+IGRhdGEgaXMgcmVxdWVzdGVkIG92ZXIgDQp0aGUgV01JLUFDUEkgd3JhcHBlciBpbnN0ZWFkIG9m
+IGRpcmVjdGx5IHZpYSBTTUkvU01NLg0KDQpGb3IgZXhhbXBsZSBpZiB0aGUgZGF0YSBpcyBhICJz
+dGF0aWMiIHRhYmxlIG9yIHRoZSByZXF1ZXN0IGlzIHRvIHNvbWV0aGluZyB0aGF0IGlzDQpwYXNz
+ZWQgdGhydSB0byB0aGUgRUMgaXQncyBhIGJpZyB3YXN0ZSBvZiBlZmZvcnQgdG8gcHV0IHRoZSBD
+UFUgaW4gU01NLg0KDQpUaGUgc2F2aW5ncyB0aGVyZSBpcyBzaWduaWZpY2FudC4NCg0KPiANCj4g
+SSBhbSBiaWFzZWQgaGVyZSBhcyBJIGhhdmUgaGFkIG15IG93biBzdHJ1Z2dsZXMgd2l0aCBXTUkg
+aW4gdGhlIHBhc3QsIGJ1dCBpdA0KPiBsb29rcyBsaWtlIGEgbGF5ZXIgb2YgaW5kaXJlY3Rpb24g
+d2hpY2ggYnJpbmdzIGxpdHRsZSB2YWx1ZSwgeWV0IGlzIHRyaWNreSB0byBleHBvc2UNCj4gcHJv
+cGVybHkuICBJZiB0aGVyZSBpcyBhIHJlYWwtbGlmZSB1c2UgY2FzZSB0aGF0IG1ha2VzIHRoaXMg
+aWRlYSB3b3J0aHdoaWxlLCBJDQo+IHdvdWxkIGxvdmUgdG8gYmUgZW5saWdodGVuZWQuDQo+IA0K
+PiA+IFNlY29uZGFyaWx5LCBBbmR5IEwgY3JlYXRlZCBhIHNpbXBsZSBkcml2ZXIgdG8gZXhwb3Nl
+IHRoZSBNT0YgYnVmZmVyDQo+ID4gWzJdIHRvIHVzZXJzcGFjZSB3aGljaCBjb3VsZCBiZSBjb25z
+dW1lZCBieSBhIHVzZXJzcGFjZSB0b29sIHRvIGNyZWF0ZQ0KPiA+IHNvdXJjZXMgZm9yIGFuIGlu
+dGVyZmFjZSB0byB0aGUgZXhwb3NlZCBXTUkgbWV0aG9kcy4NCj4gDQo+ICsxIGZvciB0aGUgaWRl
+YSwgaXQgbWFrZXMgZmlndXJpbmcgb3V0IHdoYXQgdGhlIGZpcm13YXJlIGFjdHVhbGx5DQo+IGV4
+cG9zZXMgdGhyb3VnaCBXTUkgYSBiaXQgZWFzaWVyLiAgQWZ0ZXIgc2tpbW1pbmcgdGhyb3VnaCB0
+aGUgZHJpdmVyJ3MgY29kZSwgSQ0KPiB3b3VsZCBvbmx5IHJlY29tbWVuZCB0byByZXZpZXcgdGhl
+IGluY2x1ZGVkIGhlYWRlcnMgKGxpbnV4L2lucHV0L3NwYXJzZS0NCj4ga2V5bWFwLmgsIGxpbnV4
+L2RtaS5oIGFuZCBhY3BpL3ZpZGVvLmggYWxsIHNlZW0gcmVkdW5kYW50IHRvIG1lKS4NCj4gDQo+
+IFdoYXQgd2Ugc3RpbGwgbmVlZCwgdGhvdWdoLCBpcyBhbiBvcGVuIHNvdXJjZSB2ZXJzaW9uIG9m
+IHdtaW9mY2suZXhlLiAgSSBhbQ0KPiB1bmF3YXJlIG9mIGFueXRoaW5nIGxpa2UgdGhhdCBleGlz
+dGluZyBhbmQgaW5zdGFsbGluZyB0aGUgV2luZG93cyBEcml2ZXIgS2l0DQo+IGp1c3QgdG8gcnVu
+IG9uZSBjb21tYW5kIHdoaWNoIHNwaXRzIG91dCBhIHNpbmdsZSAqLmggZmlsZSBpcyBub3Qgc29t
+ZXRoaW5nIEkNCj4gd291bGQgZGVzY3JpYmUgYXMgY29udmVuaWVudCAoYmVlbiB0aGVyZSkuDQo+
+IA0KPiBbMV0gaHR0cHM6Ly93d3cuc3Bpbmljcy5uZXQvbGlzdHMvcGxhdGZvcm0tZHJpdmVyLXg4
+Ni9tc2cwODIwMS5odG1sDQo+IA0KPiAtLQ0KPiBCZXN0IHJlZ2FyZHMsDQo+IE1pY2hhxYIgS8SZ
+cGllxYQNCg==
