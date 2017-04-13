@@ -1,107 +1,59 @@
-From: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH V4 2/9] PM / Domains: Use OPP tables for power-domains
-Date: Thu, 13 Apr 2017 14:45:16 +0100
-Message-ID: <153166dc-d010-fe63-c99e-b2efac5432db@arm.com>
-References: <cover.1490001099.git.viresh.kumar@linaro.org>
- <5619ac7777689f282f8aafabbde22d71b46a979b.1490001099.git.viresh.kumar@linaro.org>
- <6f72cb6e-2d8c-4e68-59cd-67f40e8c3118@arm.com>
- <20170413060342.GO5910@vireshk-i7>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: RFC: WMI Enhancements
+Date: Thu, 13 Apr 2017 15:51:02 +0200
+Message-ID: <20170413135102.GL3090@pali>
+References: <20170412230854.GA11963@fury>
+ <20170413073228.GB1462@ozzy.nask.waw.pl>
+ <3370431810bd4bc09fd9eb16eb9abea5@ausx13mpc120.AMER.DELL.COM>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170413060342.GO5910@vireshk-i7>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:32780 "EHLO
+        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751427AbdDMNvF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 09:51:05 -0400
+Content-Disposition: inline
+In-Reply-To: <3370431810bd4bc09fd9eb16eb9abea5@ausx13mpc120.AMER.DELL.COM>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mario.Limonciello@dell.com, Hans de Goede <hdegoede@redhat.com>
+Cc: kernel@kempniu.pl, dvhart@infradead.org, rjw@rjwysocki.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 
-
-
-On 13/04/17 07:03, Viresh Kumar wrote:
-> On 12-04-17, 17:58, Sudeep Holla wrote:
->>
->>
->> On 20/03/17 09:32, Viresh Kumar wrote:
->>> The OPP table bindings contains all the necessary fields to support
->>> power-domains now. Update the power-domain bindings to allow
->>> "operating-points-v2" to be present within the power-domain node.
->>>
->>> Also allow consumer devices, that don't use OPP tables, to specify the
->>> parent power-domain's performance level using the
->>> "domain-performance-state" property.
->>>
->>> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->>> ---
->>>  .../devicetree/bindings/power/power_domain.txt     | 42 ++++++++++++++++++++++
->>>  1 file changed, 42 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
->>> index 723e1ad937da..5db112fa5d7c 100644
->>> --- a/Documentation/devicetree/bindings/power/power_domain.txt
->>> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
->>> @@ -38,6 +38,9 @@ phandle arguments (so called PM domain specifiers) of length specified by the
->>>    domain's idle states. In the absence of this property, the domain would be
->>>    considered as capable of being powered-on or powered-off.
->>>  
->>> +- operating-points-v2 : This describes the performance states of a PM domain.
->>> +  Refer to ../opp/opp.txt for more information.
->>> +
->>>  Example:
->>>  
->>>  	power: power-controller@12340000 {
->>> @@ -118,4 +121,43 @@ The node above defines a typical PM domain consumer device, which is located
->>>  inside a PM domain with index 0 of a power controller represented by a node
->>>  with the label "power".
->>>  
->>> +Optional properties:
->>> +- domain-performance-state: A positive integer value representing the minimum
->>> +  power-domain performance level required by the consumer device. The integer
->>> +  value '0' represents the lowest performance level and the higher values
->>> +  represent higher performance levels. The value of "domain-performance-state"
->>> +  field should match the "domain-performance-state" field of one of the OPP
->>> +  nodes in the parent power-domain's OPP table.
->>> +
->>> +
->>> +
->>> +Example:
->>> +
->>> +	domain_opp_table: opp_table {
->>> +		compatible = "operating-points-v2";
->>> +
->>> +		opp@1 {
->>> +			domain-performance-state = <1>;
->>> +			opp-microvolt = <975000 970000 985000>;
->>> +		};
->>> +		opp@2 {
->>> +			domain-performance-state = <2>;
->>> +			opp-microvolt = <1075000 1000000 1085000>;
->>> +		};
->>> +	};
->>> +
->>> +	parent: power-controller@12340000 {
->>> +		compatible = "foo,power-controller";
->>> +		reg = <0x12340000 0x1000>;
->>> +		#power-domain-cells = <0>;
->>> +		operating-points-v2 = <&domain_opp_table>;
->>
->> As mentioned in the other email, it would be good to consider
->> scalability with multiple power domains in a PM domain provider.
->> i.e case of #power-domain-cells = <1> or more
+On Thursday 13 April 2017 13:29:41 Mario.Limonciello@dell.com wrote:
+> > Please pardon my ignorance, but what do we actually gain by exposing WMI to
+> > userspace?  Enabling applications to fetch SMBIOS data?  We already have an
+> > interface for that.  Enabling applications to receive input events?  Likewise.
 > 
-> Yeah, but that isn't supported for devices today. So no point
-> considering that today.
+> Input notifications are just one aspect that received over WMI.  I don't see any
+> reason to move the notifications out of the kernel.
 > 
+> In terms of userspace applications, once a WMI interface to userspace is available
+> libsmbios would change over to that.  Applications using libsmbios would benefit.
 
-Do you mean we don't support power controllers with multiple power
-domains ? If yes, we do support #power-domain-cells=<1 or more> clearly
-from the binding and this change simple doesn't scale with such power
-controllers/power-domain providers.
+Really libsmbios matters here? Hans (added to thread) wrote that
+libsmbios is a relic, something of ages long gone by and a normal user
+should never use it.
+
+If this is truth and libsmbios should not be used, then we probably do
+not need to care about it in changes for WMI.
+
+Hans, Mario, any comment/clarification about it?
+
+> > You mentioned WMI's efficiency compared to SMI/SMM, but is it a difference
+> > significant enough for anyone to notice?
+> 
+> At least for Dell there are optimizations being made when data is requested over 
+> the WMI-ACPI wrapper instead of directly via SMI/SMM.
+> 
+> For example if the data is a "static" table or the request is to something that is
+> passed thru to the EC it's a big waste of effort to put the CPU in SMM.
+> 
+> The savings there is significant.
+
+Maybe we can use this Dell WMI-ACPI wrapper for kernel drivers instead
+of current SMI/SMM direct access?
 
 -- 
-Regards,
-Sudeep
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Pali Rohár
+pali.rohar@gmail.com
