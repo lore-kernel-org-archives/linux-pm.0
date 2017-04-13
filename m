@@ -1,75 +1,66 @@
-From: Andy Lutomirski <luto@kernel.org>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
 Subject: Re: RFC: WMI Enhancements
-Date: Thu, 13 Apr 2017 08:34:48 -0700
-Message-ID: <CALCETrWOY2Jzj4ht37GUVEisqotPXucEHaaym=HU97CwYh3n8A@mail.gmail.com>
-References: <20170412230854.GA11963@fury> <20170413073228.GB1462@ozzy.nask.waw.pl>
- <3370431810bd4bc09fd9eb16eb9abea5@ausx13mpc120.AMER.DELL.COM> <20170413135102.GL3090@pali>
+Date: Thu, 13 Apr 2017 17:39:57 +0200
+Message-ID: <201704131739.57956@pali>
+References: <20170412230854.GA11963@fury> <20170413073228.GB1462@ozzy.nask.waw.pl> <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed;
+  boundary="nextPart2985883.uJ7eagEnOa";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:47884 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750979AbdDMPfN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Apr 2017 11:35:13 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id 6FC06203C1
-        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2017 15:35:12 +0000 (UTC)
-Received: from mail-ua0-f180.google.com (mail-ua0-f180.google.com [209.85.217.180])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 51F9C203AA
-        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2017 15:35:10 +0000 (UTC)
-Received: by mail-ua0-f180.google.com with SMTP id a1so35440052uaf.3
-        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2017 08:35:10 -0700 (PDT)
-In-Reply-To: <20170413135102.GL3090@pali>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:34604 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750773AbdDMPkB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 11:40:01 -0400
+In-Reply-To: <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>
-Cc: Mario.Limonciello@dell.com, Hans de Goede <hdegoede@redhat.com>, =?UTF-8?B?TWljaGHFgiBLxJlwaWXFhA==?= <kernel@kempniu.pl>, Darren Hart <dvhart@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, corentin.chary@gmail.com, Andrew Lutomirski <luto@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Andy Lutomirski <luto@kernel.org>
+Cc: =?utf-8?q?Micha=C5=82_K=C4=99pie=C5=84?= <kernel@kempniu.pl>, Darren Hart <dvhart@infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Corentin Chary <corentin.chary@gmail.com>, Mario Limonciello <Mario_Limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu, Apr 13, 2017 at 6:51 AM, Pali Rohár <pali.rohar@gmail.com> wrote:
-> On Thursday 13 April 2017 13:29:41 Mario.Limonciello@dell.com wrote:
->> > Please pardon my ignorance, but what do we actually gain by exposing WMI to
->> > userspace?  Enabling applications to fetch SMBIOS data?  We already have an
->> > interface for that.  Enabling applications to receive input events?  Likewise.
->>
->> Input notifications are just one aspect that received over WMI.  I don't see any
->> reason to move the notifications out of the kernel.
->>
->> In terms of userspace applications, once a WMI interface to userspace is available
->> libsmbios would change over to that.  Applications using libsmbios would benefit.
->
-> Really libsmbios matters here? Hans (added to thread) wrote that
-> libsmbios is a relic, something of ages long gone by and a normal user
-> should never use it.
->
-> If this is truth and libsmbios should not be used, then we probably do
-> not need to care about it in changes for WMI.
->
-> Hans, Mario, any comment/clarification about it?
->
->> > You mentioned WMI's efficiency compared to SMI/SMM, but is it a difference
->> > significant enough for anyone to notice?
->>
->> At least for Dell there are optimizations being made when data is requested over
->> the WMI-ACPI wrapper instead of directly via SMI/SMM.
->>
->> For example if the data is a "static" table or the request is to something that is
->> passed thru to the EC it's a big waste of effort to put the CPU in SMM.
->>
->> The savings there is significant.
->
-> Maybe we can use this Dell WMI-ACPI wrapper for kernel drivers instead
-> of current SMI/SMM direct access?
->
+--nextPart2985883.uJ7eagEnOa
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-This would make sense to me.  IIRC the only functional difference is
-the way that pointers are handled.  It shouldn't be that hard to make
-it work for both variants, though.  It could look like:
+On Thursday 13 April 2017 17:32:48 Andy Lutomirski wrote:
+> On Thu, Apr 13, 2017 at 12:32 AM, Micha=C5=82 K=C4=99pie=C5=84 <kernel@ke=
+mpniu.pl>
+> wrote:
+> > What we still need, though, is an open source version of
+> > wmiofck.exe.  I am unaware of anything like that existing and
+> > installing the Windows Driver Kit just to run one command which
+> > spits out a single *.h file is not something I would describe as
+> > convenient (been there).
+>=20
+> I haven't tried to see whether they do what's needed, but there's
+> OpenWBEM and OpenPegasus.
+>=20
+> Anyway, if such a tool exists, it would be handy to expose the binary
+> MOF data to userspace so the tool could be used to help get WMI
+> working on new platforms.
 
-buf = dell_smbios_alloc(...);
-dell_smbios_put_pointer(buf, offset of pointer, offset of pointee);
-dell_smbios_call(buf);
+In this case, when WMI stay in kernel, MOF data could be exported via=20
+debugfs? I think there is no need to have them in sysfs stable ABI. As=20
+above usage (get WMI working on new platforms) looks like for debugging=20
+purpose.
 
-or similar.
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
+
+--nextPart2985883.uJ7eagEnOa
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEABECAAYFAljvm80ACgkQi/DJPQPkQ1Ji+wCdFUc+ec7gIavOZ+jOb16sdk2N
+tJQAn39/V1XeBAeaByvM5FixlX34Sq3N
+=f40N
+-----END PGP SIGNATURE-----
+
+--nextPart2985883.uJ7eagEnOa--
