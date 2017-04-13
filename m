@@ -1,66 +1,65 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: RFC: WMI Enhancements
-Date: Thu, 13 Apr 2017 17:39:57 +0200
-Message-ID: <201704131739.57956@pali>
-References: <20170412230854.GA11963@fury> <20170413073228.GB1462@ozzy.nask.waw.pl> <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: RFC: WMI Enhancements
+Date: Thu, 13 Apr 2017 15:40:41 +0000
+Message-ID: <faffff39232f4734859a360cb666856f@ausx13mpc120.AMER.DELL.COM>
+References: <20170412230854.GA11963@fury>
+ <20170413073228.GB1462@ozzy.nask.waw.pl>
+ <3370431810bd4bc09fd9eb16eb9abea5@ausx13mpc120.AMER.DELL.COM>
+ <20170413135102.GL3090@pali>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2985883.uJ7eagEnOa";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:34604 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750773AbdDMPkB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 11:40:01 -0400
-In-Reply-To: <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com>
+Received: from esa3.dell-outbound.iphmx.com ([68.232.153.94]:59431 "EHLO
+        esa3.dell-outbound.iphmx.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751598AbdDMPkp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 11:40:45 -0400
+In-Reply-To: <20170413135102.GL3090@pali>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Lutomirski <luto@kernel.org>
-Cc: =?utf-8?q?Micha=C5=82_K=C4=99pie=C5=84?= <kernel@kempniu.pl>, Darren Hart <dvhart@infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Corentin Chary <corentin.chary@gmail.com>, Mario Limonciello <Mario_Limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: pali.rohar@gmail.com, hdegoede@redhat.com
+Cc: kernel@kempniu.pl, dvhart@infradead.org, rjw@rjwysocki.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 
---nextPart2985883.uJ7eagEnOa
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Thursday 13 April 2017 17:32:48 Andy Lutomirski wrote:
-> On Thu, Apr 13, 2017 at 12:32 AM, Micha=C5=82 K=C4=99pie=C5=84 <kernel@ke=
-mpniu.pl>
-> wrote:
-> > What we still need, though, is an open source version of
-> > wmiofck.exe.  I am unaware of anything like that existing and
-> > installing the Windows Driver Kit just to run one command which
-> > spits out a single *.h file is not something I would describe as
-> > convenient (been there).
->=20
-> I haven't tried to see whether they do what's needed, but there's
-> OpenWBEM and OpenPegasus.
->=20
-> Anyway, if such a tool exists, it would be handy to expose the binary
-> MOF data to userspace so the tool could be used to help get WMI
-> working on new platforms.
-
-In this case, when WMI stay in kernel, MOF data could be exported via=20
-debugfs? I think there is no need to have them in sysfs stable ABI. As=20
-above usage (get WMI working on new platforms) looks like for debugging=20
-purpose.
-
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart2985883.uJ7eagEnOa
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAljvm80ACgkQi/DJPQPkQ1Ji+wCdFUc+ec7gIavOZ+jOb16sdk2N
-tJQAn39/V1XeBAeaByvM5FixlX34Sq3N
-=f40N
------END PGP SIGNATURE-----
-
---nextPart2985883.uJ7eagEnOa--
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUGFsaSBSb2jDoXIgW21h
+aWx0bzpwYWxpLnJvaGFyQGdtYWlsLmNvbV0NCj4gU2VudDogVGh1cnNkYXksIEFwcmlsIDEzLCAy
+MDE3IDg6NTEgQU0NCj4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9fTGltb25jaWVsbG9A
+RGVsbC5jb20+OyBIYW5zIGRlIEdvZWRlDQo+IDxoZGVnb2VkZUByZWRoYXQuY29tPg0KPiBDYzog
+a2VybmVsQGtlbXBuaXUucGw7IGR2aGFydEBpbmZyYWRlYWQub3JnOyByandAcmp3eXNvY2tpLm5l
+dDsNCj4gbGVuLmJyb3duQGludGVsLmNvbTsgY29yZW50aW4uY2hhcnlAZ21haWwuY29tOyBsdXRv
+QGtlcm5lbC5vcmc7DQo+IGFuZHJpeS5zaGV2Y2hlbmtvQGxpbnV4LmludGVsLmNvbTsgbGludXgt
+a2VybmVsQHZnZXIua2VybmVsLm9yZzsgcGxhdGZvcm0tDQo+IGRyaXZlci14ODZAdmdlci5rZXJu
+ZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFJGQzogV01J
+IEVuaGFuY2VtZW50cw0KPiANCj4gT24gVGh1cnNkYXkgMTMgQXByaWwgMjAxNyAxMzoyOTo0MSBN
+YXJpby5MaW1vbmNpZWxsb0BkZWxsLmNvbSB3cm90ZToNCj4gPiA+IFBsZWFzZSBwYXJkb24gbXkg
+aWdub3JhbmNlLCBidXQgd2hhdCBkbyB3ZSBhY3R1YWxseSBnYWluIGJ5IGV4cG9zaW5nDQo+ID4g
+PiBXTUkgdG8gdXNlcnNwYWNlPyAgRW5hYmxpbmcgYXBwbGljYXRpb25zIHRvIGZldGNoIFNNQklP
+UyBkYXRhPyAgV2UNCj4gPiA+IGFscmVhZHkgaGF2ZSBhbiBpbnRlcmZhY2UgZm9yIHRoYXQuICBF
+bmFibGluZyBhcHBsaWNhdGlvbnMgdG8gcmVjZWl2ZSBpbnB1dA0KPiBldmVudHM/ICBMaWtld2lz
+ZS4NCj4gPg0KPiA+IElucHV0IG5vdGlmaWNhdGlvbnMgYXJlIGp1c3Qgb25lIGFzcGVjdCB0aGF0
+IHJlY2VpdmVkIG92ZXIgV01JLiAgSQ0KPiA+IGRvbid0IHNlZSBhbnkgcmVhc29uIHRvIG1vdmUg
+dGhlIG5vdGlmaWNhdGlvbnMgb3V0IG9mIHRoZSBrZXJuZWwuDQo+ID4NCj4gPiBJbiB0ZXJtcyBv
+ZiB1c2Vyc3BhY2UgYXBwbGljYXRpb25zLCBvbmNlIGEgV01JIGludGVyZmFjZSB0byB1c2Vyc3Bh
+Y2UNCj4gPiBpcyBhdmFpbGFibGUgbGlic21iaW9zIHdvdWxkIGNoYW5nZSBvdmVyIHRvIHRoYXQu
+ICBBcHBsaWNhdGlvbnMgdXNpbmcNCj4gbGlic21iaW9zIHdvdWxkIGJlbmVmaXQuDQo+IA0KPiBS
+ZWFsbHkgbGlic21iaW9zIG1hdHRlcnMgaGVyZT8gSGFucyAoYWRkZWQgdG8gdGhyZWFkKSB3cm90
+ZSB0aGF0IGxpYnNtYmlvcyBpcw0KPiBhIHJlbGljLCBzb21ldGhpbmcgb2YgYWdlcyBsb25nIGdv
+bmUgYnkgYW5kIGEgbm9ybWFsIHVzZXIgc2hvdWxkIG5ldmVyIHVzZSBpdC4NCj4gCQ0KDQpBIG5v
+cm1hbCB1c2VyIHNob3VsZG4ndCBiZSB1c2luZyBpdCBkaXJlY3RseSwgYnV0IGxpYnNtYmlvcyBp
+cyB1c2VkIGJ5IGEgZmV3IG9wZW4gDQpzb3VyY2UgdG9vbHMgYXMgYSBkZXBlbmRlbmN5LiAgSXQn
+cyBhbHNvIHVzZWQgaW4gbWFueSBEZWxsIG1hbmFnZWFiaWxpdHkgdG9vbHMuDQoNCj4gSWYgdGhp
+cyBpcyB0cnV0aCBhbmQgbGlic21iaW9zIHNob3VsZCBub3QgYmUgdXNlZCwgdGhlbiB3ZSBwcm9i
+YWJseSBkbyBub3QgbmVlZA0KPiB0byBjYXJlIGFib3V0IGl0IGluIGNoYW5nZXMgZm9yIFdNSS4N
+Cj4gDQo+IEhhbnMsIE1hcmlvLCBhbnkgY29tbWVudC9jbGFyaWZpY2F0aW9uIGFib3V0IGl0Pw0K
+PiANCj4gPiA+IFlvdSBtZW50aW9uZWQgV01JJ3MgZWZmaWNpZW5jeSBjb21wYXJlZCB0byBTTUkv
+U01NLCBidXQgaXMgaXQgYQ0KPiA+ID4gZGlmZmVyZW5jZSBzaWduaWZpY2FudCBlbm91Z2ggZm9y
+IGFueW9uZSB0byBub3RpY2U/DQo+ID4NCj4gPiBBdCBsZWFzdCBmb3IgRGVsbCB0aGVyZSBhcmUg
+b3B0aW1pemF0aW9ucyBiZWluZyBtYWRlIHdoZW4gZGF0YSBpcw0KPiA+IHJlcXVlc3RlZCBvdmVy
+IHRoZSBXTUktQUNQSSB3cmFwcGVyIGluc3RlYWQgb2YgZGlyZWN0bHkgdmlhIFNNSS9TTU0uDQo+
+ID4NCj4gPiBGb3IgZXhhbXBsZSBpZiB0aGUgZGF0YSBpcyBhICJzdGF0aWMiIHRhYmxlIG9yIHRo
+ZSByZXF1ZXN0IGlzIHRvDQo+ID4gc29tZXRoaW5nIHRoYXQgaXMgcGFzc2VkIHRocnUgdG8gdGhl
+IEVDIGl0J3MgYSBiaWcgd2FzdGUgb2YgZWZmb3J0IHRvIHB1dCB0aGUNCj4gQ1BVIGluIFNNTS4N
+Cj4gPg0KPiA+IFRoZSBzYXZpbmdzIHRoZXJlIGlzIHNpZ25pZmljYW50Lg0KPiANCj4gTWF5YmUg
+d2UgY2FuIHVzZSB0aGlzIERlbGwgV01JLUFDUEkgd3JhcHBlciBmb3Iga2VybmVsIGRyaXZlcnMg
+aW5zdGVhZCBvZg0KPiBjdXJyZW50IFNNSS9TTU0gZGlyZWN0IGFjY2Vzcz8NCj4gDQo+IC0tDQo+
+IFBhbGkgUm9ow6FyDQo+IHBhbGkucm9oYXJAZ21haWwuY29tDQo=
