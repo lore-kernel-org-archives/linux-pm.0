@@ -1,69 +1,35 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: RFC: WMI Enhancements
-Date: Thu, 13 Apr 2017 17:49:49 +0000
-Message-ID: <aa3f1a45fa424c96a387082a8c79042b@ausx13mpc120.AMER.DELL.COM>
-References: <20170412230854.GA11963@fury>
- <20170413073228.GB1462@ozzy.nask.waw.pl>
- <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com>
- <dffeb42986e84887b2556987925dbf31@ausx13mpc120.AMER.DELL.COM>
- <CALCETrX8W7Zi2NTAm4kJFbW14HVSYanYQ5sGo78FTgitcWfwAw@mail.gmail.com>
- <0d4e6c4562fb4b85ad4c368ae73dbe06@ausx13mpc120.AMER.DELL.COM>
- <20170413170619.GF2064@fury>
- <b729acdb12d046d3a27c754ff02482d6@ausx13mpc120.AMER.DELL.COM>
- <CALCETrXDzGvRe2t4jfz8ZjYsduHmK94Ks3N5qwwRcY_qXE30jQ@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v12.6 08/11] devicetree: power: bq27xxx: Add
+ monitored-battery documentation
+Date: Thu, 13 Apr 2017 15:15:14 -0500
+Message-ID: <20170413201514.seugnuncc43e6jyv@rob-hp-laptop>
+References: <20170410050712.930-1-liam@networkimprov.net>
+ <20170410050712.930-5-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <CALCETrXDzGvRe2t4jfz8ZjYsduHmK94Ks3N5qwwRcY_qXE30jQ@mail.gmail.com>
-Content-Language: en-US
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: luto@kernel.org
-Cc: dvhart@infradead.org, kernel@kempniu.pl, rjw@rjwysocki.net, len.brown@intel.com, pali.rohar@gmail.com, corentin.chary@gmail.com, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:33648 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752148AbdDMUPR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 16:15:17 -0400
+Content-Disposition: inline
+In-Reply-To: <20170410050712.930-5-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBBbmR5IEx1dG9taXJza2kgW21h
-aWx0bzpsdXRvQGtlcm5lbC5vcmddDQo+IFNlbnQ6IFRodXJzZGF5LCBBcHJpbCAxMywgMjAxNyAx
-Mjo0NCBQTQ0KPiBUbzogTGltb25jaWVsbG8sIE1hcmlvIDxNYXJpb19MaW1vbmNpZWxsb0BEZWxs
-LmNvbT4NCj4gQ2M6IERhcnJlbiBIYXJ0IDxkdmhhcnRAaW5mcmFkZWFkLm9yZz47IEFuZHJldyBM
-dXRvbWlyc2tpIDxsdXRvQGtlcm5lbC5vcmc+Ow0KPiBNaWNoYcWCIEvEmXBpZcWEIDxrZXJuZWxA
-a2VtcG5pdS5wbD47IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD47IExlbg0K
-PiBCcm93biA8bGVuLmJyb3duQGludGVsLmNvbT47IFBhbGkgUm9ow6FyIDxwYWxpLnJvaGFyQGdt
-YWlsLmNvbT47IENvcmVudGluDQo+IENoYXJ5IDxjb3JlbnRpbi5jaGFyeUBnbWFpbC5jb20+OyBB
-bmR5IFNoZXZjaGVua28NCj4gPGFuZHJpeS5zaGV2Y2hlbmtvQGxpbnV4LmludGVsLmNvbT47IGxp
-bnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IHBsYXRmb3JtLQ0KPiBkcml2ZXIteDg2QHZnZXIu
-a2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBSRkM6
-IFdNSSBFbmhhbmNlbWVudHMNCj4gDQo+IE9uIFRodSwgQXByIDEzLCAyMDE3IGF0IDEwOjM5IEFN
-LCAgPE1hcmlvLkxpbW9uY2llbGxvQGRlbGwuY29tPiB3cm90ZToNCj4gPj4gLS0tLS1PcmlnaW5h
-bCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogRGFycmVuIEhhcnQgW21haWx0bzpkdmhhcnRAaW5m
-cmFkZWFkLm9yZ10NCj4gPj4gU2VudDogVGh1cnNkYXksIEFwcmlsIDEzLCAyMDE3IDEyOjA2IFBN
-DQo+ID4+IFRvOiBMaW1vbmNpZWxsbywgTWFyaW8gPE1hcmlvX0xpbW9uY2llbGxvQERlbGwuY29t
-Pg0KPiA+PiBDYzogbHV0b0BrZXJuZWwub3JnOyBrZXJuZWxAa2VtcG5pdS5wbDsgcmp3QHJqd3lz
-b2NraS5uZXQ7DQo+ID4+IGxlbi5icm93bkBpbnRlbC5jb207IHBhbGkucm9oYXJAZ21haWwuY29t
-OyBjb3JlbnRpbi5jaGFyeUBnbWFpbC5jb207DQo+ID4+IGFuZHJpeS5zaGV2Y2hlbmtvQGxpbnV4
-LmludGVsLmNvbTsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgcGxhdGZvcm0tDQo+ID4+
-IGRyaXZlci14ODZAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4g
-Pj4gU3ViamVjdDogUmU6IFJGQzogV01JIEVuaGFuY2VtZW50cw0KPiA+Pg0KPiANCj4gPiBXZWxs
-IHRoZSAibW9zdCIgaW50ZXJlc3RpbmcgdG8gbWUgaXMgdGhlIFNNQklPUyBjYWxsaW5nIGludGVy
-ZmFjZSBvbiB0aGUNCj4gPiByZWd1bGFyIERlbGwgR1VJRCAoV01CQSBJSVJDKS4gIFRoYXQncyB3
-aGF0IGlzIHVzZWQgdG8gbWFuaXB1bGF0ZSBrZXlib2FyZA0KPiA+IExFRCB0aW1lb3V0cyBpbiBk
-ZWxsLWxhcHRvcCAoYWx0aG91Z2ggdGhyb3VnaCBkaXJlY3QgU01JIHRvZGF5KS4NCj4gPg0KPiA+
-IEl0J3MgYWxzbyB3aGF0IGlzIHVzZWQgZm9yIG90aGVyIFNNQklPUyBjYWxscyBsaWtlIGNoYW5n
-aW5nIHJhbmRvbSBCSU9TIHNldHRpbmdzDQo+ID4gdGhhdCBzaG91bGRuJ3QgYmUgZ2VuZXJpY2Fs
-bHkgZXhwb3NlZCBpbiBzeXNmcyBidXQgc2hvdWxkIGJlIGNvbnRyb2xsZWQgYnkNCj4gPiBtYW5h
-Z2VhYmlsaXR5IHRvb2xzLg0KPiA+DQo+ID4gRXhhbXBsZTogdHVybmluZyBvbi9vZmYgbGVnYWN5
-IG9wdGlvbiBST00gb3IgY2hhbmdpbmcgbGVnYWN5IGJvb3Qgb3JkZXIuDQo+ID4NCj4gDQo+IElJ
-VUMgd2UgYmFzaWNhbGx5IGNhbid0IGV4cG9zZSB0aGUgU01JLS1iYXNlZCBpbnRlcmZhY2UgdG8g
-dGhpcyBlbnRyeQ0KPiBwb2ludCB0byB1c2Vyc3BhY2UgYmVjYXVzZSBvZiBpdHMgdXNlIG9mIHBo
-eXNpY2FsIGFkZHJlc3NpbmcuICBJdCBpcw0KPiByZWFzb25hYmx5IHNhZmUgdG8gZXhwb3NlIHRo
-ZSBXTUkgdmVyc2lvbj8gIChJT1cgc2hvdWxkIGJlIGV4cGVjdCB0aGF0DQo+IGl0IGRvZXNuJ3Qg
-ZW5hYmxlIGtlcm5lbC1tb2RlIG9yIFNNTSBjb2RlIGV4ZWN1dGlvbj8pDQoNClRoZSBTTUkgYmFz
-ZWQgZW50cnkgaXMgYWxyZWFkeSBleHBvc2VkIHVzaW5nIGRjZGJhcy4NCg0KVGhlIFdNSSB2ZXJz
-aW9uIHdoZW4gZXhlY3V0aW5nIGEgY2FsbCB0aGF0IHdvdWxkIGJlIHJ1biBhcyBhIFNNSSANCndp
-bGwgY29weSB0aGUgYnVmZmVyIHRvIGFuIGFyZWEgb2YgbWVtb3J5IHRoYXQgdGhlIEJJT1MgaGFz
-IGFscmVhZHkgDQpiZWVuIG1hcmtlZCByZXNlcnZlZCB0byBleGVjdXRlIHRoZSBTTUkgYW5kIGNv
-cHkgdGhlIHJlc3VsdCBvdXQuDQoNCj4gDQo+IFRCSCwgSSd2ZSBvY2Nhc2lvbmFsbHkgY29uc2lk
-ZXJlZCB3cml0aW5nIGEgZHJpdmVyIHRvIGV4cG9zZSBTTU0gY29kZQ0KPiBleGVjdXRpb24gb24g
-c3lzdGVtcyB3aXRoIGEga25vd24gcmVsaWFibGUgZXhwbG9pdCA6KQ0KDQpPbiBEZWxsIEhXPyAg
-SSdtIHN1cmUgb3VyIHNlY3VyaXR5IGZvbGtzIHdvdWxkIGJlIHZlcnkgaW50ZXJlc3RlZCBpbiB0
-aGlzLg0K
+On Sun, Apr 09, 2017 at 10:07:09PM -0700, Liam Breck wrote:
+> From: Liam Breck <kernel@networkimprov.net>
+> 
+> Document monitored-battery = <&battery_node>
+> 
+> Cc: Rob Herring <robh@kernel.org>
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> ---
+>  .../devicetree/bindings/power/supply/bq27xxx.txt   | 31 +++++++++++++++++-----
+>  1 file changed, 24 insertions(+), 7 deletions(-)
+
+Acked-by: Rob Herring <robh@kernel.org>
