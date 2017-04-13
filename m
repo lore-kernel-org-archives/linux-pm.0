@@ -1,149 +1,148 @@
-From: Darren Hart <dvhart@infradead.org>
-Subject: Re: RFC: WMI Enhancements
-Date: Thu, 13 Apr 2017 10:06:19 -0700
-Message-ID: <20170413170619.GF2064@fury>
-References: <20170412230854.GA11963@fury>
- <20170413073228.GB1462@ozzy.nask.waw.pl>
- <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com>
- <dffeb42986e84887b2556987925dbf31@ausx13mpc120.AMER.DELL.COM>
- <CALCETrX8W7Zi2NTAm4kJFbW14HVSYanYQ5sGo78FTgitcWfwAw@mail.gmail.com>
- <0d4e6c4562fb4b85ad4c368ae73dbe06@ausx13mpc120.AMER.DELL.COM>
+From: Keerthy <j-keerthy@ti.com>
+Subject: Re: [PATCH v2 1/2] thermal: core: Allow orderly_poweroff to be called
+ only once
+Date: Thu, 13 Apr 2017 23:00:42 +0530
+Message-ID: <d5610630-689e-88cd-191d-710e628908d9@ti.com>
+References: <1492070556-24660-1-git-send-email-j-keerthy@ti.com>
+ <20170413151558.GA8412@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <0d4e6c4562fb4b85ad4c368ae73dbe06@ausx13mpc120.AMER.DELL.COM>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Mario.Limonciello@dell.com
-Cc: luto@kernel.org, kernel@kempniu.pl, rjw@rjwysocki.net, len.brown@intel.com, pali.rohar@gmail.com, corentin.chary@gmail.com, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170413151558.GA8412@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 13, 2017 at 04:54:25PM +0000, Mario.Limonciello@dell.com wrote:
-> > -----Original Message-----
-> > From: Andy Lutomirski [mailto:luto@kernel.org]
-> > Sent: Thursday, April 13, 2017 10:58 AM
-> > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> > Cc: Andrew Lutomirski <luto@kernel.org>; Michał Kępień <kernel@kempniu.pl>;
-> > Darren Hart <dvhart@infradead.org>; Rafael J. Wysocki <rjw@rjwysocki.net>; Len
-> > Brown <len.brown@intel.com>; Pali Rohár <pali.rohar@gmail.com>; Corentin
-> > Chary <corentin.chary@gmail.com>; Andy Shevchenko
-> > <andriy.shevchenko@linux.intel.com>; linux-kernel@vger.kernel.org; platform-
-> > driver-x86@vger.kernel.org; linux-pm@vger.kernel.org
-> > Subject: Re: RFC: WMI Enhancements
-> > 
-> > On Thu, Apr 13, 2017 at 8:55 AM,  <Mario.Limonciello@dell.com> wrote:
-> > >
-> > >
-> > >> -----Original Message-----
-> > >> From: Andy Lutomirski [mailto:luto@kernel.org]
-> > >> Sent: Thursday, April 13, 2017 10:33 AM
-> > >> To: Michał Kępień <kernel@kempniu.pl>
-> > >> Cc: Darren Hart <dvhart@infradead.org>; Rafael Wysocki <rjw@rjwysocki.net>;
-> > >> Len Brown <len.brown@intel.com>; Pali Rohár <pali.rohar@gmail.com>;
-> > Corentin
-> > >> Chary <corentin.chary@gmail.com>; Limonciello, Mario
-> > >> <Mario_Limonciello@Dell.com>; Andy Lutomirski <luto@kernel.org>; Andy
-> > >> Shevchenko <andriy.shevchenko@linux.intel.com>; LKML <linux-
-> > >> kernel@vger.kernel.org>; platform-driver-x86@vger.kernel.org; linux-
-> > >> pm@vger.kernel.org
-> > >> Subject: Re: RFC: WMI Enhancements
-> > >>
-> > >> On Thu, Apr 13, 2017 at 12:32 AM, Michał Kępień <kernel@kempniu.pl> wrote:
-> > >> >> Hi All,
-> > >> >>
-> > >> >> There are a few parallel efforts involving the Windows Management
-> > >> >> Instrumentation (WMI)[1] and dependent/related drivers. I'd like to
-> > >> >> have a round of discussion among those of you that have been involved
-> > >> >> in this space before we decide on a direction.
-> > >> >>
-> > >> >> The WMI support in the kernel today fairly narrowly supports a
-> > >> >> handful of systems. Andy L. has a work-in-progress series [2] which
-> > >> >> converts wmi into a platform device and a proper bus, providing
-> > >> >> devices for dependent drivers to bind to, and a mechanism for sibling devices
-> > to
-> > >> communicate with each other.
-> > >> >> I've reviewed the series and feel like the approach is sound, I plan
-> > >> >> to carry this series forward and merge it (with Andy L's permission).
-> > >> >>
-> > >> >> Are there any objections to this?
-> > >> >
-> > >> > Back in January 2016, I sent Andy a few minor comments about this
-> > >> > series.  A year later, I offered to iron out the remaining issues and
-> > >> > resubmit the series in Andy's name when I find the time.  Sadly,
-> > >> > things have changed a bit for me since that time and it is unlikely
-> > >> > that I will be able to deliver, for which I am sorry.
-> > >> >
-> > >> > However, browsing Andy's branch I see that most issues have been
-> > >> > resolved, though I think some of my remarks [1] have either been
-> > >> > missed or silently refuted :)
-> > >> >
-> > >> > Anyway, I also like this approach and I think this series is a
-> > >> > valuable cleanup.
-> > >>
-> > >> Me too :)
-> > >>
-> > >> >> In Windows, applications interact with WMI more or less directly. We
-> > >> >> don't do this in Linux currently, although it has been discussed in
-> > >> >> the past [3]. Some vendors will work around this by performing
-> > >> >> SMI/SMM, which is inefficient at best. Exposing WMI methods to
-> > >> >> userspace would bring parity to WMI for Linux and Windows.
-> > >> >>
-> > >> >> There are two principal concerns I'd appreciate your thoughts on:
-> > >> >>
-> > >> >> a) As an undiscoverable interface (you need to know the method
-> > >> >> signatures ahead of time), universally exposing every WMI "device" to
-> > >> >> userspace seems like "a bad idea" from a security and stability
-> > >> >> perspective. While access would certainly be privileged, it seems
-> > >> >> more prudent to make this exposure opt-in. We also handle some of
-> > >> >> this with kernel drivers and exposing those "devices" to userspace
-> > >> >> would enable userspace and the kernel to fight over control. So - if
-> > >> >> we expose WMI devices to userspace, I believe this should be done on
-> > >> >> a case by case basis, opting in, and not by default as part of the
-> > >> >> WMI driver (although it can provide the mechanism for a sub-driver to use),
-> > and
-> > >> possibly a devmode to do so by default.
-> > >>
-> > >> I agree.  I don't want too see gnome-whatever-widget talking directly to WMI
-> > and
-> > >> confusing the kernel driver for the same thing.
-> > >
-> > > So there are plenty of other things that can be done by WMI that don't
-> > > really make sense to live in the kernel, particularly on what Dell exposes via
-> > > WMI.
-> > >
-> > > If the desire of this group ends up being to not expose WMI by default,
-> > > I'd like to at least propose it be exposed for the GUID's Dell is using.
-> > 
-> > Is it just the "call SMBIOS" GUID or are there other things?
-> 
-> There are some other things too, but I'll need to discuss with an internal
-> team first  to clarify.
-> 
-> > 
-> > >
-> > > Perhaps as part of changing dell-smbios to use WMI, also extend it's
-> > > functionality to userspace.
-> > >
-> > 
-> > Could this still result in userspace and the kernel fighting over
-> > control of various bits of the system?  If so, that's a bit less than
-> > ideal.
-> 
-> No more than exists today with the dcdbas SMI interface (which
-> only if you manually run userspace tools that manipulate the same
-> data you can do that technically).
-> 
-> We're all reasonable folks, if there is an instance of this that comes
-> up we can make changes to userspace to fix it.
 
-Right. As Pali pointed out previously, if there is an existing class driver /
-subsystem which supports this functionality we should use that.
 
-I suppose one risk will be one GUID exposing both types of methods. Those which
-are used by kernel drivers, and those which have no kernel support. Or worse,
-methods which have multiple behaviors depending on their input arguments.
+On Thursday 13 April 2017 08:46 PM, Eduardo Valentin wrote:
+> Hey,
+> 
+> On Thu, Apr 13, 2017 at 01:32:35PM +0530, Keerthy wrote:
+>> thermal_zone_device_check --> thermal_zone_device_update -->
+>> handle_thermal_trip --> handle_critical_trips --> orderly_poweroff
+>>
+>> The above sequence happens every 250/500 mS based on the configuration.
+>> The orderly_poweroff function is getting called every 250/500 mS.
+>> With a full fledged file system it takes at least 5-10 Seconds to
+>> power off gracefully.
+>>
+>> In that period due to the thermal_zone_device_check triggering
+>> periodically the thermal work queues bombard with
+>> orderly_poweroff calls multiple times eventually leading to
+>> failures in gracefully powering off the system.
+>>
+>> Make sure that orderly_poweroff is called only once.
+>>
+>> Reported-by: Nishanth Menon <nm@ti.com>
+> 
+> Was this reported by nm or found by you?
 
--- 
-Darren Hart
-VMware Open Source Technology Center
+Okay i found it when i was debugging the problem reported by nm :-).
+I will fix that.
+
+> 
+>> Signed-off-by: Keerthy <j-keerthy@ti.com>
+>> ---
+>>
+>> Changes in v2:
+>>
+>>   * Added a global mutex to serialize poweroff code sequence.
+>>
+>>  drivers/thermal/thermal_core.c | 9 ++++++++-
+>>  1 file changed, 8 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+>> index 11f0675..7462ae5 100644
+>> --- a/drivers/thermal/thermal_core.c
+>> +++ b/drivers/thermal/thermal_core.c
+>> @@ -45,6 +45,7 @@
+>>  
+>>  static DEFINE_MUTEX(thermal_list_lock);
+>>  static DEFINE_MUTEX(thermal_governor_lock);
+>> +static DEFINE_MUTEX(poweroff_lock);
+>>  
+>>  static atomic_t in_suspend;
+>>  
+>> @@ -326,6 +327,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+>>  				  int trip, enum thermal_trip_type trip_type)
+>>  {
+>>  	int trip_temp;
+>> +	static bool power_off_triggered;
+>>  
+>>  	tz->ops->get_trip_temp(tz, trip, &trip_temp);
+>>  
+>> @@ -338,11 +340,14 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+>>  	if (tz->ops->notify)
+>>  		tz->ops->notify(tz, trip, trip_type);
+>>  
+>> -	if (trip_type == THERMAL_TRIP_CRITICAL) {
+>> +	if (trip_type == THERMAL_TRIP_CRITICAL && !power_off_triggered) {
+>>  		dev_emerg(&tz->device,
+>>  			  "critical temperature reached(%d C),shutting down\n",
+>>  			  tz->temperature / 1000);
+>> +		mutex_lock(&poweroff_lock);
+>>  		orderly_poweroff(true);
+>> +		power_off_triggered = true;
+>> +		mutex_unlock(&poweroff_lock);
+> 
+> The above code does not fully prevent orderly_poweroff() to be called
+> only once, does it?
+> 
+> - thermal zone 0 goes all the way in the critical path, but gets
+>   preempted between orderly_poweroff(true)l and power_off_triggered =
+>   true;, i.e., preempted right before setting to true, therefore,
+>   power_off_triggered still 0.
+> - thermal zone 1 also enters critical path, but will sleep at the
+>   power_off_lock, right?
+> - then thermal zone 0 gets the CPU again, finishes the critical path,
+>   unlocks poweroff_lock.
+> - thermal zone 1 is unblocked, and call again orderly_poweroff(true);
+
+Oh yes! I will fix that
+
+if (trip_type == THERMAL_TRIP_CRITICAL) {
+
+dev_emerg(&tz->device,
+  			  "critical temperature reached(%d C),shutting
+down\n",tz->temperature / 1000);
+
+mutex_lock(&poweroff_lock);
+if (!power_off_triggered) {
+	orderly_poweroff(true);
+	power_off_triggered = true;
+}
+mutex_unlock(&poweroff_lock);
+
+}
+
+The above should take care.
+	
+> 
+> 
+> 
+> BR,
+>>  	}
+>>  }
+>>  
+>> @@ -1463,6 +1468,7 @@ static int __init thermal_init(void)
+>>  {
+>>  	int result;
+>>  
+>> +	mutex_init(&poweroff_lock);
+>>  	result = thermal_register_governors();
+>>  	if (result)
+>>  		goto error;
+>> @@ -1497,6 +1503,7 @@ static int __init thermal_init(void)
+>>  	ida_destroy(&thermal_cdev_ida);
+>>  	mutex_destroy(&thermal_list_lock);
+>>  	mutex_destroy(&thermal_governor_lock);
+>> +	mutex_destroy(&poweroff_lock);
+>>  	return result;
+>>  }
+>>  
+>> -- 
+>> 1.9.1
+>>
