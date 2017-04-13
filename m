@@ -1,98 +1,101 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 2/9] PM / Domains: Use OPP tables for power-domains
-Date: Thu, 13 Apr 2017 11:33:42 +0530
-Message-ID: <20170413060342.GO5910@vireshk-i7>
-References: <cover.1490001099.git.viresh.kumar@linaro.org>
- <5619ac7777689f282f8aafabbde22d71b46a979b.1490001099.git.viresh.kumar@linaro.org>
- <6f72cb6e-2d8c-4e68-59cd-67f40e8c3118@arm.com>
+From: =?utf-8?B?TWljaGHFgiBLxJlwaWXFhA==?= <kernel@kempniu.pl>
+Subject: Re: RFC: WMI Enhancements
+Date: Thu, 13 Apr 2017 09:32:28 +0200
+Message-ID: <20170413073228.GB1462@ozzy.nask.waw.pl>
+References: <20170412230854.GA11963@fury>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f171.google.com ([209.85.192.171]:36573 "EHLO
-        mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756032AbdDMGDq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 02:03:46 -0400
-Received: by mail-pf0-f171.google.com with SMTP id o126so24012124pfb.3
-        for <linux-pm@vger.kernel.org>; Wed, 12 Apr 2017 23:03:46 -0700 (PDT)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <6f72cb6e-2d8c-4e68-59cd-67f40e8c3118@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170412230854.GA11963@fury>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Darren Hart <dvhart@infradead.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>, Corentin Chary <corentin.chary@gmail.com>, Mario Limonciello <Mario_Limonciello@Dell.com>, Andy Lutomirski <luto@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
 
-On 12-04-17, 17:58, Sudeep Holla wrote:
+> Hi All,
 > 
+> There are a few parallel efforts involving the Windows Management
+> Instrumentation (WMI)[1] and dependent/related drivers. I'd like to have a round of
+> discussion among those of you that have been involved in this space before we
+> decide on a direction.
 > 
-> On 20/03/17 09:32, Viresh Kumar wrote:
-> > The OPP table bindings contains all the necessary fields to support
-> > power-domains now. Update the power-domain bindings to allow
-> > "operating-points-v2" to be present within the power-domain node.
-> > 
-> > Also allow consumer devices, that don't use OPP tables, to specify the
-> > parent power-domain's performance level using the
-> > "domain-performance-state" property.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  .../devicetree/bindings/power/power_domain.txt     | 42 ++++++++++++++++++++++
-> >  1 file changed, 42 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-> > index 723e1ad937da..5db112fa5d7c 100644
-> > --- a/Documentation/devicetree/bindings/power/power_domain.txt
-> > +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> > @@ -38,6 +38,9 @@ phandle arguments (so called PM domain specifiers) of length specified by the
-> >    domain's idle states. In the absence of this property, the domain would be
-> >    considered as capable of being powered-on or powered-off.
-> >  
-> > +- operating-points-v2 : This describes the performance states of a PM domain.
-> > +  Refer to ../opp/opp.txt for more information.
-> > +
-> >  Example:
-> >  
-> >  	power: power-controller@12340000 {
-> > @@ -118,4 +121,43 @@ The node above defines a typical PM domain consumer device, which is located
-> >  inside a PM domain with index 0 of a power controller represented by a node
-> >  with the label "power".
-> >  
-> > +Optional properties:
-> > +- domain-performance-state: A positive integer value representing the minimum
-> > +  power-domain performance level required by the consumer device. The integer
-> > +  value '0' represents the lowest performance level and the higher values
-> > +  represent higher performance levels. The value of "domain-performance-state"
-> > +  field should match the "domain-performance-state" field of one of the OPP
-> > +  nodes in the parent power-domain's OPP table.
-> > +
-> > +
-> > +
-> > +Example:
-> > +
-> > +	domain_opp_table: opp_table {
-> > +		compatible = "operating-points-v2";
-> > +
-> > +		opp@1 {
-> > +			domain-performance-state = <1>;
-> > +			opp-microvolt = <975000 970000 985000>;
-> > +		};
-> > +		opp@2 {
-> > +			domain-performance-state = <2>;
-> > +			opp-microvolt = <1075000 1000000 1085000>;
-> > +		};
-> > +	};
-> > +
-> > +	parent: power-controller@12340000 {
-> > +		compatible = "foo,power-controller";
-> > +		reg = <0x12340000 0x1000>;
-> > +		#power-domain-cells = <0>;
-> > +		operating-points-v2 = <&domain_opp_table>;
+> The WMI support in the kernel today fairly narrowly supports a handful of
+> systems. Andy L. has a work-in-progress series [2] which converts wmi into a
+> platform device and a proper bus, providing devices for dependent drivers to
+> bind to, and a mechanism for sibling devices to communicate with each other.
+> I've reviewed the series and feel like the approach is sound, I plan to carry
+> this series forward and merge it (with Andy L's permission).
 > 
-> As mentioned in the other email, it would be good to consider
-> scalability with multiple power domains in a PM domain provider.
-> i.e case of #power-domain-cells = <1> or more
+> Are there any objections to this?
 
-Yeah, but that isn't supported for devices today. So no point
-considering that today.
+Back in January 2016, I sent Andy a few minor comments about this
+series.  A year later, I offered to iron out the remaining issues and
+resubmit the series in Andy's name when I find the time.  Sadly, things
+have changed a bit for me since that time and it is unlikely that I will
+be able to deliver, for which I am sorry.
+
+However, browsing Andy's branch I see that most issues have been
+resolved, though I think some of my remarks [1] have either been missed
+or silently refuted :)
+
+Anyway, I also like this approach and I think this series is a valuable
+cleanup.
+
+> In Windows, applications interact with WMI more or less directly. We don't do
+> this in Linux currently, although it has been discussed in the past [3]. Some
+> vendors will work around this by performing SMI/SMM, which is inefficient at
+> best. Exposing WMI methods to userspace would bring parity to WMI for Linux and
+> Windows.
+> 
+> There are two principal concerns I'd appreciate your thoughts on:
+> 
+> a) As an undiscoverable interface (you need to know the method signatures ahead
+> of time), universally exposing every WMI "device" to userspace seems like "a bad
+> idea" from a security and stability perspective. While access would certainly be
+> privileged, it seems more prudent to make this exposure opt-in. We also handle
+> some of this with kernel drivers and exposing those "devices" to userspace would
+> enable userspace and the kernel to fight over control. So - if we expose WMI
+> devices to userspace, I believe this should be done on a case by case basis,
+> opting in, and not by default as part of the WMI driver (although it can provide
+> the mechanism for a sub-driver to use), and possibly a devmode to do so by
+> default.
+> 
+> b) The mechanism to expose WMI devices to userspace must allow for atomic
+> operation, which would exclude a sysfs interface involving multiple files.
+> Something like an ioctl or a char dev would be more appropriate.
+> 
+> Does anyone think differently regarding a) or b) ?
+
+Please pardon my ignorance, but what do we actually gain by exposing WMI
+to userspace?  Enabling applications to fetch SMBIOS data?  We already
+have an interface for that.  Enabling applications to receive input
+events?  Likewise.  You mentioned WMI's efficiency compared to SMI/SMM,
+but is it a difference significant enough for anyone to notice?
+
+I am biased here as I have had my own struggles with WMI in the past,
+but it looks like a layer of indirection which brings little value, yet
+is tricky to expose properly.  If there is a real-life use case that
+makes this idea worthwhile, I would love to be enlightened.  
+
+> Secondarily, Andy L created a simple driver to expose the MOF buffer [2] to
+> userspace which could be consumed by a userspace tool to create sources for an
+> interface to the exposed WMI methods.
+
++1 for the idea, it makes figuring out what the firmware actually
+exposes through WMI a bit easier.  After skimming through the driver's
+code, I would only recommend to review the included headers
+(linux/input/sparse-keymap.h, linux/dmi.h and acpi/video.h all seem
+redundant to me).
+
+What we still need, though, is an open source version of wmiofck.exe.  I
+am unaware of anything like that existing and installing the Windows
+Driver Kit just to run one command which spits out a single *.h file is
+not something I would describe as convenient (been there).
+
+[1] https://www.spinics.net/lists/platform-driver-x86/msg08201.html
 
 -- 
-viresh
+Best regards,
+Michał Kępień
