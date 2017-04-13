@@ -1,87 +1,76 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v5 1/2] power: supply: bq24190_charger: Use new
- extcon_register_notifier_all()
-Date: Fri, 14 Apr 2017 01:44:48 +0200
-Message-ID: <20170413234448.stxmxvnemldzjyq3@earth>
-References: <20170413120412.12773-1-hdegoede@redhat.com>
- <20170413120412.12773-2-hdegoede@redhat.com>
- <20170413233526.ebtytz54d3ux2oze@earth>
+From: Darren Hart <dvhart@infradead.org>
+Subject: Re: RFC: WMI Enhancements
+Date: Thu, 13 Apr 2017 16:51:03 -0700
+Message-ID: <20170413235103.GB11189@fury>
+References: <20170412230854.GA11963@fury>
+ <20170413073339.GH3090@pali>
+ <20170413165646.GD2064@fury>
+ <e50750499ea246d78b336caae95d36b8@ausx13mpc120.AMER.DELL.COM>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="snsx3ck2qaekxveb"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:46316 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752822AbdDMXox (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Apr 2017 19:44:53 -0400
-Content-Disposition: inline
-In-Reply-To: <20170413233526.ebtytz54d3ux2oze@earth>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Takashi Iwai <tiwai@suse.de>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
-
-
---snsx3ck2qaekxveb
 Content-Type: text/plain; charset=us-ascii
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <e50750499ea246d78b336caae95d36b8@ausx13mpc120.AMER.DELL.COM>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Mario.Limonciello@dell.com
+Cc: pali.rohar@gmail.com, rjw@rjwysocki.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, Apr 13, 2017 at 08:38:28PM +0000, Mario.Limonciello@dell.com wrote:
+> Earlier question from Andy.  I had some discussion with the right people about this.
+> 
+> > Is it just the "call SMBIOS" GUID or are there other things?
+> 
+> Today - it's just the SMBIOS calling GUID.  There are plans (not yet concrete) for
+> splitting up data access and organization of that data access classes across multiple 
+>  other GUID/method pairs in the future.
+> 
+> Ideally this could be done without needing kernel patches every time a new GUID
+> would (essentially) need to be whitelisted.
+> 
+> > I am a strong supporter of the following philosophy with respect to supporting
+> > innovation:
+> > "Enable them to enable themselves and get out of their way"
+> > 
+> > I've followed this approach over the years to encourage upstream first software
+> > development, open-first policy toward specifications and documentation, proper
+> > license selection, and development of new mechanisms in existing standards, like
+> > ACPI _DSD. All of these serve to support innovation by removing bottlenecks and
+> > enabling developers to be independent.
+> > 
+> > What I don't want to see is the Linux kernel becoming a bottleneck to feature
+> > parity with Windows (or to becoming the lead vehicle for new features). When a
+> > vendor has a feature they want to expose which they determine to be a value
+> > proposition for their product, I don't want the lack of a class driver to get in
+> > the way. Exposing specific GUIDs is a minimal and easy to upstream change which
+> > would enable rapid feature enabling.
+> > 
+> > Perhaps I should have led with this :-)
+> > 
+> 
+> So considering future plans, I'd really like if it's possible to expose all the GUID's the
+> GUID's the same as Windows does today.
 
-On Fri, Apr 14, 2017 at 01:35:26AM +0200, Sebastian Reichel wrote:
-> Hi,
->=20
-> On Thu, Apr 13, 2017 at 02:04:11PM +0200, Hans de Goede wrote:
-> > When I submitted the extcon handling I had a patch pending for the
-> > extcon sub-system for extcon_register_notifier to take -1 as cable id
-> > for listening for all type cable events on an extcon with a single
-> > notifier.
-> >=20
-> > In the end it was decided to instead add a new
-> > extcon_register_notifier_all function for this, switch to using this.
-> >=20
-> > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> > Acked-by: Liam Breck <kernel@networkimprov.net>
->=20
-> With extcon_register_notifier_all() being new and not available
-> in my tree I can't simply queue this patch. Also it can't simply
-> go through the extcon subsystem, since it depends on changes in
-> the power-supply subsystem and results in non-trivial merge conflict.
-> I see three merge solutions:
->=20
->  1. Defer to 4.13 (since we are already quite near the merge window)
->  2. I need a immutable branch with extcon_register_notifier_all()
->     from the extcon subsystem
->  3. It may count as Fix and could be queued during the 4.12-rc
->     phase based von 4.12-rc1
+A bit of trouble parsing... to be clear, your preference would be that for the
+PNP0C14 on whitelisted platforms (either DMI matches, or possibly via the ACPI
+Device UID?) we expose every GUID (Method, Event, and Data) for that device to
+userspace?
 
-Sorry for the noise, I just saw the immutable branch in the cover
-mail. I will queue this now. Unfortunately it means rebasing the
-power-supply tree to 4.11-rc4 (or ugly merge, which is annoying
-in the pull-request). Chanwoo, please try to use -rc1 as base for
-immutable branches in the future.
+The concern raised here is that for systems using dell-wmi, the two GUIDs used
+by the kernel would also be exposed to userspace. Is this correct?
 
--- Sebastian
+> 
+> As example is we have some diagnostic testing tools.  Having to whitelist interfaces
+> for them to operate would be sub-optimal.
+> 
 
---snsx3ck2qaekxveb
-Content-Type: application/pgp-signature; name="signature.asc"
+Is this a problem because there are a lot of them, or because they routinely
+change?
 
------BEGIN PGP SIGNATURE-----
+Also, are these something that could be part of a debug feature, or do they need
+to be in production so you can work with customers to diagnose running systems
+for example?
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljwDXAACgkQ2O7X88g7
-+prBjA/+IHqjRTqrfCBxRAiQ+skMpEia34ClAK2++P29t+jIlIMSoAHTmfhUj9xX
-H9iW1ckm0TJTb6Qcayn9lmyIJPF/RO+J69kGdIY6lbCPXhSOrsXSwXuv+8ItxCd+
-r4QjuuXM46UalNoGJa7V/cT5GGgLpPHHYkbZ8Pjck8LpXjDdnsWFEleHO5ZKtt+/
-pBKh2089CSefcXZnjWMK7sODE6peQxOgIMJb37Fh8y/tCd91JQpftl/XHWaBMBIt
-3xZTQSdiFJ2yHQPQSLYhH97NSTgjwu+XF8vja1PFqqdlLnaIEty7zguWD8beMamX
-GVvsrgVSeIJC3fcOdcP2+3O1OWqX/AqrIm/yGPZBf2x5LCvESocA7HMhBpeM5dvM
-pkMH5wzDQmWIX5hVMMqlwGX4npu+sGM4+E6+gcIW5dCeVouXlraxPvyQfsW9SAzt
-62UflNKdMhjqYrymPGrqIjDIEku5sZl5nm2x4tBR+OEm3y8/yzpVWDoztdBDscHX
-P/DPOqy6QBeHEjolmEfm9aRqteiGj61wbP2/++Kdniuz7aIyl0AYn8OcJmx2+uwG
-H90J0f0ZHuZdRf8VhItcjW/HSHo/NKVceYmkduBDH6lUMtSW3solTPybX2nqH4EX
-P5gG1mwXhD92DBP3AW0zA2aIFhBgCU07MVlSNnG/9weXdMY3t+4=
-=Ai/Y
------END PGP SIGNATURE-----
-
---snsx3ck2qaekxveb--
+-- 
+Darren Hart
+VMware Open Source Technology Center
