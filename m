@@ -1,71 +1,54 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: RFC: WMI Enhancements
-Date: Thu, 13 Apr 2017 15:40:08 +0000
-Message-ID: <5bdfff4f72a941d086eeebba71557f19@ausx13mpc120.AMER.DELL.COM>
-References: <20170412230854.GA11963@fury>
- <20170413073228.GB1462@ozzy.nask.waw.pl>
- <3370431810bd4bc09fd9eb16eb9abea5@ausx13mpc120.AMER.DELL.COM>
- <20170413135102.GL3090@pali>
- <CALCETrWOY2Jzj4ht37GUVEisqotPXucEHaaym=HU97CwYh3n8A@mail.gmail.com>
+From: Andy Lutomirski <luto@kernel.org>
+Subject: Re: RFC: WMI Enhancements
+Date: Thu, 13 Apr 2017 08:44:28 -0700
+Message-ID: <CALCETrWQY28h87_4oPGP=TMj8BEOrtC-+2rr2Q6qKb1H3W07tw@mail.gmail.com>
+References: <20170412230854.GA11963@fury> <20170413073228.GB1462@ozzy.nask.waw.pl>
+ <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com> <201704131739.57956@pali>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <CALCETrWOY2Jzj4ht37GUVEisqotPXucEHaaym=HU97CwYh3n8A@mail.gmail.com>
-Content-Language: en-US
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: luto@kernel.org, pali.rohar@gmail.com
-Cc: hdegoede@redhat.com, kernel@kempniu.pl, dvhart@infradead.org, rjw@rjwysocki.net, len.brown@intel.com, corentin.chary@gmail.com, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:49254 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750765AbdDMPox (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Apr 2017 11:44:53 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id A922B203C1
+        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2017 15:44:51 +0000 (UTC)
+Received: from mail-ua0-f177.google.com (mail-ua0-f177.google.com [209.85.217.177])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id B42F2203AD
+        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2017 15:44:49 +0000 (UTC)
+Received: by mail-ua0-f177.google.com with SMTP id h2so8493559uaa.1
+        for <linux-pm@vger.kernel.org>; Thu, 13 Apr 2017 08:44:49 -0700 (PDT)
+In-Reply-To: <201704131739.57956@pali>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>
+Cc: Andy Lutomirski <luto@kernel.org>, =?UTF-8?B?TWljaGHFgiBLxJlwaWXFhA==?= <kernel@kempniu.pl>, Darren Hart <dvhart@infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Corentin Chary <corentin.chary@gmail.com>, Mario Limonciello <Mario_Limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBBbmR5IEx1dG9taXJza2kgW21h
-aWx0bzpsdXRvQGtlcm5lbC5vcmddDQo+IFNlbnQ6IFRodXJzZGF5LCBBcHJpbCAxMywgMjAxNyAx
-MDozNSBBTQ0KPiBUbzogUGFsaSBSb2jDoXIgPHBhbGkucm9oYXJAZ21haWwuY29tPg0KPiBDYzog
-TGltb25jaWVsbG8sIE1hcmlvIDxNYXJpb19MaW1vbmNpZWxsb0BEZWxsLmNvbT47IEhhbnMgZGUg
-R29lZGUNCj4gPGhkZWdvZWRlQHJlZGhhdC5jb20+OyBNaWNoYcWCIEvEmXBpZcWEIDxrZXJuZWxA
-a2VtcG5pdS5wbD47IERhcnJlbiBIYXJ0DQo+IDxkdmhhcnRAaW5mcmFkZWFkLm9yZz47IFJhZmFl
-bCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD47IExlbiBCcm93bg0KPiA8bGVuLmJyb3du
-QGludGVsLmNvbT47IGNvcmVudGluLmNoYXJ5QGdtYWlsLmNvbTsgQW5kcmV3IEx1dG9taXJza2kN
-Cj4gPGx1dG9Aa2VybmVsLm9yZz47IEFuZHkgU2hldmNoZW5rbyA8YW5kcml5LnNoZXZjaGVua29A
-bGludXguaW50ZWwuY29tPjsNCj4gbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgcGxhdGZv
-cm0tZHJpdmVyLXg4NkB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0KPiBwbUB2Z2VyLmtlcm5lbC5v
-cmcNCj4gU3ViamVjdDogUmU6IFJGQzogV01JIEVuaGFuY2VtZW50cw0KPiANCj4gT24gVGh1LCBB
-cHIgMTMsIDIwMTcgYXQgNjo1MSBBTSwgUGFsaSBSb2jDoXIgPHBhbGkucm9oYXJAZ21haWwuY29t
-PiB3cm90ZToNCj4gPiBPbiBUaHVyc2RheSAxMyBBcHJpbCAyMDE3IDEzOjI5OjQxIE1hcmlvLkxp
-bW9uY2llbGxvQGRlbGwuY29tIHdyb3RlOg0KPiA+PiA+IFBsZWFzZSBwYXJkb24gbXkgaWdub3Jh
-bmNlLCBidXQgd2hhdCBkbyB3ZSBhY3R1YWxseSBnYWluIGJ5DQo+ID4+ID4gZXhwb3NpbmcgV01J
-IHRvIHVzZXJzcGFjZT8gIEVuYWJsaW5nIGFwcGxpY2F0aW9ucyB0byBmZXRjaCBTTUJJT1MNCj4g
-Pj4gPiBkYXRhPyAgV2UgYWxyZWFkeSBoYXZlIGFuIGludGVyZmFjZSBmb3IgdGhhdC4gIEVuYWJs
-aW5nIGFwcGxpY2F0aW9ucyB0bw0KPiByZWNlaXZlIGlucHV0IGV2ZW50cz8gIExpa2V3aXNlLg0K
-PiA+Pg0KPiA+PiBJbnB1dCBub3RpZmljYXRpb25zIGFyZSBqdXN0IG9uZSBhc3BlY3QgdGhhdCBy
-ZWNlaXZlZCBvdmVyIFdNSS4gIEkNCj4gPj4gZG9uJ3Qgc2VlIGFueSByZWFzb24gdG8gbW92ZSB0
-aGUgbm90aWZpY2F0aW9ucyBvdXQgb2YgdGhlIGtlcm5lbC4NCj4gPj4NCj4gPj4gSW4gdGVybXMg
-b2YgdXNlcnNwYWNlIGFwcGxpY2F0aW9ucywgb25jZSBhIFdNSSBpbnRlcmZhY2UgdG8gdXNlcnNw
-YWNlDQo+ID4+IGlzIGF2YWlsYWJsZSBsaWJzbWJpb3Mgd291bGQgY2hhbmdlIG92ZXIgdG8gdGhh
-dC4gIEFwcGxpY2F0aW9ucyB1c2luZw0KPiBsaWJzbWJpb3Mgd291bGQgYmVuZWZpdC4NCj4gPg0K
-PiA+IFJlYWxseSBsaWJzbWJpb3MgbWF0dGVycyBoZXJlPyBIYW5zIChhZGRlZCB0byB0aHJlYWQp
-IHdyb3RlIHRoYXQNCj4gPiBsaWJzbWJpb3MgaXMgYSByZWxpYywgc29tZXRoaW5nIG9mIGFnZXMg
-bG9uZyBnb25lIGJ5IGFuZCBhIG5vcm1hbCB1c2VyDQo+ID4gc2hvdWxkIG5ldmVyIHVzZSBpdC4N
-Cj4gPg0KPiA+IElmIHRoaXMgaXMgdHJ1dGggYW5kIGxpYnNtYmlvcyBzaG91bGQgbm90IGJlIHVz
-ZWQsIHRoZW4gd2UgcHJvYmFibHkgZG8NCj4gPiBub3QgbmVlZCB0byBjYXJlIGFib3V0IGl0IGlu
-IGNoYW5nZXMgZm9yIFdNSS4NCj4gPg0KPiA+IEhhbnMsIE1hcmlvLCBhbnkgY29tbWVudC9jbGFy
-aWZpY2F0aW9uIGFib3V0IGl0Pw0KPiA+DQo+ID4+ID4gWW91IG1lbnRpb25lZCBXTUkncyBlZmZp
-Y2llbmN5IGNvbXBhcmVkIHRvIFNNSS9TTU0sIGJ1dCBpcyBpdCBhDQo+ID4+ID4gZGlmZmVyZW5j
-ZSBzaWduaWZpY2FudCBlbm91Z2ggZm9yIGFueW9uZSB0byBub3RpY2U/DQo+ID4+DQo+ID4+IEF0
-IGxlYXN0IGZvciBEZWxsIHRoZXJlIGFyZSBvcHRpbWl6YXRpb25zIGJlaW5nIG1hZGUgd2hlbiBk
-YXRhIGlzDQo+ID4+IHJlcXVlc3RlZCBvdmVyIHRoZSBXTUktQUNQSSB3cmFwcGVyIGluc3RlYWQg
-b2YgZGlyZWN0bHkgdmlhIFNNSS9TTU0uDQo+ID4+DQo+ID4+IEZvciBleGFtcGxlIGlmIHRoZSBk
-YXRhIGlzIGEgInN0YXRpYyIgdGFibGUgb3IgdGhlIHJlcXVlc3QgaXMgdG8NCj4gPj4gc29tZXRo
-aW5nIHRoYXQgaXMgcGFzc2VkIHRocnUgdG8gdGhlIEVDIGl0J3MgYSBiaWcgd2FzdGUgb2YgZWZm
-b3J0IHRvIHB1dCB0aGUNCj4gQ1BVIGluIFNNTS4NCj4gPj4NCj4gPj4gVGhlIHNhdmluZ3MgdGhl
-cmUgaXMgc2lnbmlmaWNhbnQuDQo+ID4NCj4gPiBNYXliZSB3ZSBjYW4gdXNlIHRoaXMgRGVsbCBX
-TUktQUNQSSB3cmFwcGVyIGZvciBrZXJuZWwgZHJpdmVycyBpbnN0ZWFkDQo+ID4gb2YgY3VycmVu
-dCBTTUkvU01NIGRpcmVjdCBhY2Nlc3M/DQo+ID4NCj4gDQo+IFRoaXMgd291bGQgbWFrZSBzZW5z
-ZSB0byBtZS4gIElJUkMgdGhlIG9ubHkgZnVuY3Rpb25hbCBkaWZmZXJlbmNlIGlzIHRoZSB3YXkN
-Cj4gdGhhdCBwb2ludGVycyBhcmUgaGFuZGxlZC4gIEl0IHNob3VsZG4ndCBiZSB0aGF0IGhhcmQg
-dG8gbWFrZSBpdCB3b3JrIGZvciBib3RoDQo+IHZhcmlhbnRzLCB0aG91Z2guICBJdCBjb3VsZCBs
-b29rIGxpa2U6DQo+IA0KPiBidWYgPSBkZWxsX3NtYmlvc19hbGxvYyguLi4pOw0KPiBkZWxsX3Nt
-Ymlvc19wdXRfcG9pbnRlcihidWYsIG9mZnNldCBvZiBwb2ludGVyLCBvZmZzZXQgb2YgcG9pbnRl
-ZSk7DQo+IGRlbGxfc21iaW9zX2NhbGwoYnVmKTsNCj4gDQo+IG9yIHNpbWlsYXIuDQoNClllcywg
-SSB3YXMgZ29pbmcgdG8gZW5jb3VyYWdlIHRoYXQga2VybmVsIGNoYW5nZSBhZnRlciB0aGlzIFdN
-SSBkaXNjdXNzaW9uIA0KaGFkIHNvbWUgY29uY2x1c2lvbnMuDQo=
+On Thu, Apr 13, 2017 at 8:39 AM, Pali Rohár <pali.rohar@gmail.com> wrote:
+> On Thursday 13 April 2017 17:32:48 Andy Lutomirski wrote:
+>> On Thu, Apr 13, 2017 at 12:32 AM, Michał Kępień <kernel@kempniu.pl>
+>> wrote:
+>> > What we still need, though, is an open source version of
+>> > wmiofck.exe.  I am unaware of anything like that existing and
+>> > installing the Windows Driver Kit just to run one command which
+>> > spits out a single *.h file is not something I would describe as
+>> > convenient (been there).
+>>
+>> I haven't tried to see whether they do what's needed, but there's
+>> OpenWBEM and OpenPegasus.
+>>
+>> Anyway, if such a tool exists, it would be handy to expose the binary
+>> MOF data to userspace so the tool could be used to help get WMI
+>> working on new platforms.
+>
+> In this case, when WMI stay in kernel, MOF data could be exported via
+> debugfs? I think there is no need to have them in sysfs stable ABI. As
+> above usage (get WMI working on new platforms) looks like for debugging
+> purpose.
+>
+
+That's a reasonable point.
