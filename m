@@ -1,73 +1,49 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: RFC: WMI Enhancements
-Date: Thu, 13 Apr 2017 20:38:28 +0000
-Message-ID: <e50750499ea246d78b336caae95d36b8@ausx13mpc120.AMER.DELL.COM>
-References: <20170412230854.GA11963@fury> <20170413073339.GH3090@pali>
- <20170413165646.GD2064@fury>
+From: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+Subject: Re: [RFC 4/8] regulator: core: Check enabling bypass respects
+ constraints
+Date: Thu, 13 Apr 2017 23:46:15 +0300
+Message-ID: <1492116375.17723.15.camel@nxp.com>
+References: <cover.1490199005.git.leonard.crestez@nxp.com>
+         <1edff9bc610969b0c53fa1080d5db021c8e00b2d.1490199005.git.leonard.crestez@nxp.com>
+         <20170324125212.vikgekqxsnu7htzl@sirena.org.uk>
+         <1490704781.3546.57.camel@nxp.com>
+         <20170328164754.z2c2ttovs3sxbcos@sirena.org.uk>
+         <1490730595.15830.1.camel@nxp.com>
+         <20170406185202.uixxcv3dgucrddgc@sirena.org.uk>
+         <1491562312.9365.41.camel@nxp.com>
+         <20170407112212.gzv3p7ldkh62657m@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from esa7.dell-outbound.iphmx.com ([68.232.153.96]:4957 "EHLO
-        esa7.dell-outbound.iphmx.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751492AbdDMUib (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 16:38:31 -0400
-In-Reply-To: <20170413165646.GD2064@fury>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170407112212.gzv3p7ldkh62657m-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Robin Gong <yibin.gong-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Irina Tirdea <irina.tirdea-3arQi8VN3Tc@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: dvhart@infradead.org, pali.rohar@gmail.com
-Cc: rjw@rjwysocki.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 
-Earlier question from Andy.  I had some discussion with the right people ab=
-out this.
+On Fri, 2017-04-07 at 12:22 +0100, Mark Brown wrote:
+> On Fri, Apr 07, 2017 at 01:51:52PM +0300, Leonard Crestez wrote:
 
-> Is it just the "call SMBIOS" GUID or are there other things?
+> > It currently seems to work how I expect but from your statement it's
+> > not clear if it's entirely intentional.
 
-Today - it's just the SMBIOS calling GUID.  There are plans (not yet concre=
-te) for
-splitting up data access and organization of that data access classes acros=
-s multiple=20
- other GUID/method pairs in the future.
+> The current behaviour of bypassed regulators is intentional.
 
-Ideally this could be done without needing kernel patches every time a new =
-GUID
-would (essentially) need to be whitelisted.
+I did not mean to imply that there is something wrong with bypassed
+regulators. I just wanted more information about how regulators (non-
+bypassed) pick their voltage when consumers allow a range.
 
-> I am a strong supporter of the following philosophy with respect to suppo=
-rting
-> innovation:
-> "Enable them to enable themselves and get out of their way"
->=20
-> I've followed this approach over the years to encourage upstream first so=
-ftware
-> development, open-first policy toward specifications and documentation, p=
-roper
-> license selection, and development of new mechanisms in existing standard=
-s, like
-> ACPI _DSD. All of these serve to support innovation by removing bottlenec=
-ks and
-> enabling developers to be independent.
->=20
-> What I don't want to see is the Linux kernel becoming a bottleneck to fea=
-ture
-> parity with Windows (or to becoming the lead vehicle for new features). W=
-hen a
-> vendor has a feature they want to expose which they determine to be a val=
-ue
-> proposition for their product, I don't want the lack of a class driver to=
- get in
-> the way. Exposing specific GUIDs is a minimal and easy to upstream change=
- which
-> would enable rapid feature enabling.
->=20
-> Perhaps I should have led with this :-)
->=20
+After some more reading through the code it seems that the driver
+itself receives the range (either through set_voltage or map_voltage)
+and gets to make the choice.
 
-So considering future plans, I'd really like if it's possible to expose all=
- the GUID's the
-GUID's the same as Windows does today.
+So it seems fine for my concerns, sorry to bother you.
 
-As example is we have some diagnostic testing tools.  Having to whitelist i=
-nterfaces
-for them to operate would be sub-optimal.
+--
+Regards,
+Leonard
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
