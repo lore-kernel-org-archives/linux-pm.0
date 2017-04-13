@@ -1,144 +1,95 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH v2 2/2] thermal: core: Add a back up thermal shutdown mechanism
-Date: Thu, 13 Apr 2017 13:32:36 +0530
-Message-ID: <1492070556-24660-2-git-send-email-j-keerthy@ti.com>
-References: <1492070556-24660-1-git-send-email-j-keerthy@ti.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch V2 12/13] cpufreq/sparc-us2e: Replace racy task affinity
+ logic
+Date: Thu, 13 Apr 2017 10:19:07 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1704131017590.2408@nanos>
+References: <20170412200726.941336635@linutronix.de> <20170412201043.129216383@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:11802 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750762AbdDMIFU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 04:05:20 -0400
-In-Reply-To: <1492070556-24660-1-git-send-email-j-keerthy@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170412201043.129216383@linutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Sebastian Siewior <bigeasy@linutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "David S. Miller" <davem@davemloft.net>, Fenghua Yu <fenghua.yu@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <lenb@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tejun Heo <tj@kernel.org>, Tony Luck <tony.luck@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: j-keerthy@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
-orderly_poweroff is triggered when a graceful shutdown
-of system is desired. This may be used in many critical states of the
-kernel such as when subsystems detects conditions such as critical
-temperature conditions. However, in certain conditions in system
-boot up sequences like those in the middle of driver probes being
-initiated, userspace will be unable to power off the system in a clean
-manner and leaves the system in a critical state. In cases like these,
-the /sbin/poweroff will return success (having forked off to attempt
-powering off the system. However, the system overall will fail to
-completely poweroff (since other modules will be probed) and the system
-is still functional with no userspace (since that would have shut itself
-off).
+spu_queue_register() needs to invoke setup functions on a particular
+CPU. This is achieved by temporarily setting the affinity of the
+calling user space thread to the requested CPU and reset it to the original
+affinity afterwards.
 
-However, there is no clean way of detecting such failure of userspace
-powering off the system. In such scenarios, it is necessary for a backup
-workqueue to be able to force a shutdown of the system when orderly
-shutdown is not successful after a configurable time period.
+That's racy vs. CPU hotplug and concurrent affinity settings for that
+thread resulting in code executing on the wrong CPU and overwriting the
+new affinity setting.
 
-Reported-by: Nishanth Menon <nm@ti.com>
-Signed-off-by: Keerthy <j-keerthy@ti.com>
+Replace it by using work_on_cpu_safe() which guarantees to run the code on
+the requested CPU or to fail in case the CPU is offline.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: linux-crypto@vger.kernel.org
 ---
 
-  * Changed the comment style
-  * Added backup shutdown call before orderly_poweroff
+V2: Fixup build-bot complaint
 
- drivers/thermal/Kconfig        | 13 ++++++++++++
- drivers/thermal/thermal_core.c | 47 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 60 insertions(+)
+ drivers/crypto/n2_core.c |   31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 9347401..971fd54 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -15,6 +15,19 @@ menuconfig THERMAL
+--- a/drivers/crypto/n2_core.c
++++ b/drivers/crypto/n2_core.c
+@@ -65,6 +65,11 @@ struct spu_queue {
+ 	struct list_head	list;
+ };
  
- if THERMAL
++struct spu_qreg {
++	struct spu_queue	*queue;
++	unsigned long		type;
++};
++
+ static struct spu_queue **cpu_to_cwq;
+ static struct spu_queue **cpu_to_mau;
  
-+config THERMAL_EMERGENCY_POWEROFF_DELAY_MS
-+	int "Emergency poweroff delay in milli-seconds"
-+	depends on THERMAL
-+	default 0
-+	help
-+	  The number of milliseconds to delay before emergency
-+	  poweroff kicks in. The delay should be carefully profiled
-+	  so as to give adequate time for orderly_poweroff. In case
-+	  of failure of an orderly_poweroff the emergency poweroff
-+	  kicks in after the delay has elapsed and shuts down the system.
-+
-+	  If set to 0 poweroff will happen immediately.
-+
- config THERMAL_HWMON
- 	bool
- 	prompt "Expose thermal sensors as hwmon device"
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 7462ae5..d60fa9e 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -323,12 +323,54 @@ static void handle_non_critical_trips(struct thermal_zone_device *tz,
- 		       def_governor->throttle(tz, trip);
+@@ -1631,31 +1636,27 @@ static void queue_cache_destroy(void)
+ 	kmem_cache_destroy(queue_cache[HV_NCS_QTYPE_CWQ - 1]);
  }
  
-+/**
-+ * emergency_poweroff_func - emergency poweroff work after a known delay
-+ * @work: work_struct associated with the emergency poweroff function
-+ *
-+ * This function is called in very critical situations to force
-+ * a kernel poweroff after a configurable timeout value.
-+ */
-+static void emergency_poweroff_func(struct work_struct *work)
-+{
-+	/*
-+	 * We have reached here after the emergency thermal shutdown
-+	 * Waiting period has expired. This means orderly_poweroff has
-+	 * not been able to shut off the system for some reason.
-+	 * Try to shut down the system immediately using kernel_power_off
-+	 * if populated
-+	 */
-+	pr_warn("Attempting kernel_power_off\n");
-+	kernel_power_off();
-+
-+	/*
-+	 * Worst of the worst case trigger emergency restart
-+	 */
-+	pr_warn("kernel_power_off has failed! Attempting emergency_restart\n");
-+	emergency_restart();
-+}
-+
-+static DECLARE_DELAYED_WORK(emergency_poweroff_work, emergency_poweroff_func);
-+
-+/**
-+ * emergency_poweroff - Trigger an emergency system poweroff
-+ *
-+ * This may be called from any critical situation to trigger a system shutdown
-+ * after a known period of time. By default the delay is 0 millisecond
-+ */
-+void thermal_emergency_poweroff(void)
-+{
-+	schedule_delayed_work(&emergency_poweroff_work,
-+			      msecs_to_jiffies(CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS));
-+}
-+
- static void handle_critical_trips(struct thermal_zone_device *tz,
- 				  int trip, enum thermal_trip_type trip_type)
+-static int spu_queue_register(struct spu_queue *p, unsigned long q_type)
++static long spu_queue_register_workfn(void *arg)
  {
- 	int trip_temp;
- 	static bool power_off_triggered;
-+	static struct mutex poweroff_lock;
+-	cpumask_var_t old_allowed;
++	struct spu_qreg *qr = arg;
++	struct spu_queue *p = qr->queue;
++	unsigned long q_type = qr->type;
+ 	unsigned long hv_ret;
  
-+	mutex_init(&poweroff_lock);
- 	tz->ops->get_trip_temp(tz, trip, &trip_temp);
+-	if (cpumask_empty(&p->sharing))
+-		return -EINVAL;
+-
+-	if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL))
+-		return -ENOMEM;
+-
+-	cpumask_copy(old_allowed, &current->cpus_allowed);
+-
+-	set_cpus_allowed_ptr(current, &p->sharing);
+-
+ 	hv_ret = sun4v_ncs_qconf(q_type, __pa(p->q),
+ 				 CWQ_NUM_ENTRIES, &p->qhandle);
+ 	if (!hv_ret)
+ 		sun4v_ncs_sethead_marker(p->qhandle, 0);
  
- 	/* If we have not crossed the trip_temp, we do not care. */
-@@ -345,6 +387,11 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
- 			  "critical temperature reached(%d C),shutting down\n",
- 			  tz->temperature / 1000);
- 		mutex_lock(&poweroff_lock);
-+		/*
-+		 * Queue a backup emergency shutdown in the event of
-+		 * orderly_poweroff failure.
-+		 */
-+		thermal_emergency_poweroff();
- 		orderly_poweroff(true);
- 		power_off_triggered = true;
- 		mutex_unlock(&poweroff_lock);
--- 
-1.9.1
+-	set_cpus_allowed_ptr(current, old_allowed);
++	return hv_ret ? -EINVAL : 0;
++}
+ 
+-	free_cpumask_var(old_allowed);
++static int spu_queue_register(struct spu_queue *p, unsigned long q_type)
++{
++	int cpu = cpumask_any_and(&p->sharing, cpu_online_mask);
++	struct spu_qreg qr = { .queue = p, .type = q_type };
+ 
+-	return (hv_ret ? -EINVAL : 0);
++	return work_on_cpu_safe(cpu, spu_queue_register_workfn, &qr);
+ }
+ 
+ static int spu_queue_setup(struct spu_queue *p)
