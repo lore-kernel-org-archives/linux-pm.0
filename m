@@ -1,193 +1,135 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: Re: [PATCH v2 2/2] thermal: core: Add a back up thermal shutdown
- mechanism
-Date: Thu, 13 Apr 2017 23:02:43 +0530
-Message-ID: <bf9ed9a7-b332-d1e5-1194-72ca9b948cc6@ti.com>
-References: <1492070556-24660-1-git-send-email-j-keerthy@ti.com>
- <1492070556-24660-2-git-send-email-j-keerthy@ti.com>
- <20170413152525.GA8683@localhost.localdomain>
+From: Andy Lutomirski <luto@kernel.org>
+Subject: Re: RFC: WMI Enhancements
+Date: Thu, 13 Apr 2017 10:32:49 -0700
+Message-ID: <CALCETrUh000Qw4Y2-V9TVfy+6-my3W9xWCUgRin_=Boqf2j8hw@mail.gmail.com>
+References: <20170412230854.GA11963@fury> <20170413073228.GB1462@ozzy.nask.waw.pl>
+ <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com>
+ <dffeb42986e84887b2556987925dbf31@ausx13mpc120.AMER.DELL.COM> <20170413170245.GE2064@fury>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx193.ext.ti.com ([198.47.27.77]:56562 "EHLO
-        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752537AbdDMRc5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 13:32:57 -0400
-In-Reply-To: <20170413152525.GA8683@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170413170245.GE2064@fury>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Darren Hart <dvhart@infradead.org>
+Cc: Mario.Limonciello@dell.com, Andrew Lutomirski <luto@kernel.org>, =?UTF-8?B?TWljaGHFgiBLxJlwaWXFhA==?= <kernel@kempniu.pl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Corentin Chary <corentin.chary@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
-
-
-On Thursday 13 April 2017 08:55 PM, Eduardo Valentin wrote:
-> 
-> Hey,
-> 
-> On Thu, Apr 13, 2017 at 01:32:36PM +0530, Keerthy wrote:
->> orderly_poweroff is triggered when a graceful shutdown
->> of system is desired. This may be used in many critical states of the
->> kernel such as when subsystems detects conditions such as critical
->> temperature conditions. However, in certain conditions in system
->> boot up sequences like those in the middle of driver probes being
->> initiated, userspace will be unable to power off the system in a clean
->> manner and leaves the system in a critical state. In cases like these,
->> the /sbin/poweroff will return success (having forked off to attempt
->> powering off the system. However, the system overall will fail to
->> completely poweroff (since other modules will be probed) and the system
->> is still functional with no userspace (since that would have shut itself
->> off).
+On Thu, Apr 13, 2017 at 10:02 AM, Darren Hart <dvhart@infradead.org> wrote:
+> On Thu, Apr 13, 2017 at 03:55:01PM +0000, Mario.Limonciello@dell.com wrote:
 >>
->> However, there is no clean way of detecting such failure of userspace
->> powering off the system. In such scenarios, it is necessary for a backup
->> workqueue to be able to force a shutdown of the system when orderly
->> shutdown is not successful after a configurable time period.
-> 
-> Thanks for keeping this thread up and fixing it. Some requests to this
-> patch too as follows.
-> 
 >>
->> Reported-by: Nishanth Menon <nm@ti.com>
->> Signed-off-by: Keerthy <j-keerthy@ti.com>
->> ---
+>> > -----Original Message-----
+>> > From: Andy Lutomirski [mailto:luto@kernel.org]
+>> > Sent: Thursday, April 13, 2017 10:33 AM
+>> > To: Michał Kępień <kernel@kempniu.pl>
+>> > Cc: Darren Hart <dvhart@infradead.org>; Rafael Wysocki <rjw@rjwysocki.net>;
+>> > Len Brown <len.brown@intel.com>; Pali Rohár <pali.rohar@gmail.com>; Corentin
+>> > Chary <corentin.chary@gmail.com>; Limonciello, Mario
+>> > <Mario_Limonciello@Dell.com>; Andy Lutomirski <luto@kernel.org>; Andy
+>> > Shevchenko <andriy.shevchenko@linux.intel.com>; LKML <linux-
+>> > kernel@vger.kernel.org>; platform-driver-x86@vger.kernel.org; linux-
+>> > pm@vger.kernel.org
+>> > Subject: Re: RFC: WMI Enhancements
+>> >
+>> > On Thu, Apr 13, 2017 at 12:32 AM, Michał Kępień <kernel@kempniu.pl> wrote:
+>> > >> Hi All,
+>> > >>
+>> > >> There are a few parallel efforts involving the Windows Management
+>> > >> Instrumentation (WMI)[1] and dependent/related drivers. I'd like to
+>> > >> have a round of discussion among those of you that have been involved
+>> > >> in this space before we decide on a direction.
+>> > >>
+>> > >> The WMI support in the kernel today fairly narrowly supports a
+>> > >> handful of systems. Andy L. has a work-in-progress series [2] which
+>> > >> converts wmi into a platform device and a proper bus, providing
+>> > >> devices for dependent drivers to bind to, and a mechanism for sibling devices to
+>> > communicate with each other.
+>> > >> I've reviewed the series and feel like the approach is sound, I plan
+>> > >> to carry this series forward and merge it (with Andy L's permission).
+>> > >>
+>> > >> Are there any objections to this?
+>> > >
+>> > > Back in January 2016, I sent Andy a few minor comments about this
+>> > > series.  A year later, I offered to iron out the remaining issues and
+>> > > resubmit the series in Andy's name when I find the time.  Sadly,
+>> > > things have changed a bit for me since that time and it is unlikely
+>> > > that I will be able to deliver, for which I am sorry.
+>> > >
+>> > > However, browsing Andy's branch I see that most issues have been
+>> > > resolved, though I think some of my remarks [1] have either been
+>> > > missed or silently refuted :)
+>> > >
+>> > > Anyway, I also like this approach and I think this series is a
+>> > > valuable cleanup.
+>> >
+>> > Me too :)
+>> >
+>> > >> In Windows, applications interact with WMI more or less directly. We
+>> > >> don't do this in Linux currently, although it has been discussed in
+>> > >> the past [3]. Some vendors will work around this by performing
+>> > >> SMI/SMM, which is inefficient at best. Exposing WMI methods to
+>> > >> userspace would bring parity to WMI for Linux and Windows.
+>> > >>
+>> > >> There are two principal concerns I'd appreciate your thoughts on:
+>> > >>
+>> > >> a) As an undiscoverable interface (you need to know the method
+>> > >> signatures ahead of time), universally exposing every WMI "device" to
+>> > >> userspace seems like "a bad idea" from a security and stability
+>> > >> perspective. While access would certainly be privileged, it seems
+>> > >> more prudent to make this exposure opt-in. We also handle some of
+>> > >> this with kernel drivers and exposing those "devices" to userspace
+>> > >> would enable userspace and the kernel to fight over control. So - if
+>> > >> we expose WMI devices to userspace, I believe this should be done on
+>> > >> a case by case basis, opting in, and not by default as part of the
+>> > >> WMI driver (although it can provide the mechanism for a sub-driver to use), and
+>> > possibly a devmode to do so by default.
+>> >
+>> > I agree.  I don't want too see gnome-whatever-widget talking directly to WMI and
+>> > confusing the kernel driver for the same thing.
 >>
->>   * Changed the comment style
->>   * Added backup shutdown call before orderly_poweroff
+>> So there are plenty of other things that can be done by WMI that don't
+>> really make sense to live in the kernel, particularly on what Dell exposes via
+>> WMI.
 >>
->>  drivers/thermal/Kconfig        | 13 ++++++++++++
->>  drivers/thermal/thermal_core.c | 47 ++++++++++++++++++++++++++++++++++++++++++
-> 
-> I think this change in expectation should probably be documented under
-> Documentation/ directory. Can you please patch thermal documentation
-> too?
-
-Okay.
-
-> 
->>  2 files changed, 60 insertions(+)
+>> If the desire of this group ends up being to not expose WMI by default,
+>> I'd like to at least propose it be exposed for the GUID's Dell is using.
 >>
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index 9347401..971fd54 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -15,6 +15,19 @@ menuconfig THERMAL
->>  
->>  if THERMAL
->>  
->> +config THERMAL_EMERGENCY_POWEROFF_DELAY_MS
->> +	int "Emergency poweroff delay in milli-seconds"
->> +	depends on THERMAL
->> +	default 0
->> +	help
->> +	  The number of milliseconds to delay before emergency
->> +	  poweroff kicks in. The delay should be carefully profiled
->> +	  so as to give adequate time for orderly_poweroff. In case
->> +	  of failure of an orderly_poweroff the emergency poweroff
->> +	  kicks in after the delay has elapsed and shuts down the system.
->> +
->> +	  If set to 0 poweroff will happen immediately.
->> +
->>  config THERMAL_HWMON
->>  	bool
->>  	prompt "Expose thermal sensors as hwmon device"
->> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
->> index 7462ae5..d60fa9e 100644
->> --- a/drivers/thermal/thermal_core.c
->> +++ b/drivers/thermal/thermal_core.c
->> @@ -323,12 +323,54 @@ static void handle_non_critical_trips(struct thermal_zone_device *tz,
->>  		       def_governor->throttle(tz, trip);
->>  }
->>  
->> +/**
->> + * emergency_poweroff_func - emergency poweroff work after a known delay
->> + * @work: work_struct associated with the emergency poweroff function
->> + *
->> + * This function is called in very critical situations to force
->> + * a kernel poweroff after a configurable timeout value.
->> + */
->> +static void emergency_poweroff_func(struct work_struct *work)
->> +{
->> +	/*
->> +	 * We have reached here after the emergency thermal shutdown
->> +	 * Waiting period has expired. This means orderly_poweroff has
->> +	 * not been able to shut off the system for some reason.
->> +	 * Try to shut down the system immediately using kernel_power_off
->> +	 * if populated
->> +	 */
->> +	pr_warn("Attempting kernel_power_off\n");
-> 
-> This message needs to be specific to thermal (forced) shutdown.
+>
+> What I'm thinking is an explicit list of GUIDs within the drivers which are to
+> be exposed to user space. The rationale being:
+>
+> * GUIDs which are managed by kernel drivers (LEDs, hotkeys, etc.) should not be
+>   exposed to userspace.
+>
+> * Management GUIDs should not change frequently
+>
+> * Management GUIDs are a trivial add, equivalent to adding a DEVICE ID to an
+>   existing driver. This means minimal review time to get upstream, and the
+>   ability to include in stable backports as needed. I haven't confirmed
+>   this with Greg KH, but I think I can make the case, especially after
+>   Andy L's WMI-as-a-bus patches.
 
-Sure.
+Would this be a class driver that would expose a chardev for each
+bound GUID?  I agree that this makes a lot more sense than trying to
+shoehorn it into sysfs.  Especially since we'd want closing the
+chardev to disable any "expensive" collections that have been enabled
+by ioctl on that chardev.  Exposing Dell's smbios entry point through
+this type of device seems reasonable to me.
 
-> 
->> +	kernel_power_off();
->> +
->> +	/*
->> +	 * Worst of the worst case trigger emergency restart
->> +	 */
->> +	pr_warn("kernel_power_off has failed! Attempting emergency_restart\n");
-> 
-> Same here..
+If we go this route, then I think that exposing the MOF through sysfs
+would make sense -- after all, someone might actually want to parse
+the thing for production purposes.
 
-okay.
+On a sort-of-on-topic note, there's one platform feature that we
+complete fail to handle in the kernel that might be nice to add before
+it gets kludged into lots of userspace code: battery charge controls.
+Thinkpads expose charge thresholds using abominable interfaces, but I
+think they've all been reverse-engineered.  Dell probably has them,
+and I bet that Mario would consider telling us how to use them if we
+asked nicely.  It might be nice to expose these generically through
+sysfs somewhere.
 
-> 
-> also, I think if your system reached this point, we should probably be more
-> dramatic at the kernel log a scream louder, I would say a big farty WARN
-> to say the least. Or a crash.
+I'm guilty myself:
 
-warning should do.
-
-> 
->> +	emergency_restart();
->> +}
->> +
->> +static DECLARE_DELAYED_WORK(emergency_poweroff_work, emergency_poweroff_func);
->> +
->> +/**
->> + * emergency_poweroff - Trigger an emergency system poweroff
->> + *
->> + * This may be called from any critical situation to trigger a system shutdown
->> + * after a known period of time. By default the delay is 0 millisecond
->> + */
->> +void thermal_emergency_poweroff(void)
->> +{
->> +	schedule_delayed_work(&emergency_poweroff_work,
->> +			      msecs_to_jiffies(CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS));
->> +}
->> +
->>  static void handle_critical_trips(struct thermal_zone_device *tz,
->>  				  int trip, enum thermal_trip_type trip_type)
->>  {
->>  	int trip_temp;
->>  	static bool power_off_triggered;
->> +	static struct mutex poweroff_lock;
->>  
->> +	mutex_init(&poweroff_lock);
->>  	tz->ops->get_trip_temp(tz, trip, &trip_temp);
->>  
-> 
-> the above is probably a quirk?
-
-Ya unnecessary. Thanks for catching this.
-
-> 
->>  	/* If we have not crossed the trip_temp, we do not care. */
->> @@ -345,6 +387,11 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
->>  			  "critical temperature reached(%d C),shutting down\n",
->>  			  tz->temperature / 1000);
->>  		mutex_lock(&poweroff_lock);
->> +		/*
->> +		 * Queue a backup emergency shutdown in the event of
->> +		 * orderly_poweroff failure.
->> +		 */
->> +		thermal_emergency_poweroff();
->>  		orderly_poweroff(true);
->>  		power_off_triggered = true;
->>  		mutex_unlock(&poweroff_lock);
->> -- 
->> 1.9.1
->>
+https://github.com/amluto/tp_charge
