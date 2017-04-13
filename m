@@ -1,59 +1,41 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: RFC: WMI Enhancements
-Date: Thu, 13 Apr 2017 15:51:02 +0200
-Message-ID: <20170413135102.GL3090@pali>
-References: <20170412230854.GA11963@fury>
- <20170413073228.GB1462@ozzy.nask.waw.pl>
- <3370431810bd4bc09fd9eb16eb9abea5@ausx13mpc120.AMER.DELL.COM>
+From: David Miller <davem@davemloft.net>
+Subject: Re: [patch V2 12/13] cpufreq/sparc-us2e: Replace racy task
+ affinity logic
+Date: Thu, 13 Apr 2017 10:50:54 -0400 (EDT)
+Message-ID: <20170413.105054.2051423251306433003.davem@davemloft.net>
+References: <20170412200726.941336635@linutronix.de>
+        <20170412201043.129216383@linutronix.de>
+        <alpine.DEB.2.20.1704131017590.2408@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:32780 "EHLO
-        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751427AbdDMNvF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 09:51:05 -0400
-Content-Disposition: inline
-In-Reply-To: <3370431810bd4bc09fd9eb16eb9abea5@ausx13mpc120.AMER.DELL.COM>
+Received: from shards.monkeyblade.net ([184.105.139.130]:59998 "EHLO
+        shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754486AbdDMOu5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 10:50:57 -0400
+In-Reply-To: <alpine.DEB.2.20.1704131017590.2408@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mario.Limonciello@dell.com, Hans de Goede <hdegoede@redhat.com>
-Cc: kernel@kempniu.pl, dvhart@infradead.org, rjw@rjwysocki.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+To: tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, mingo@kernel.org, bigeasy@linutronix.de, benh@kernel.crashing.org, fenghua.yu@intel.com, herbert@gondor.apana.org.au, jiangshanlai@gmail.com, lenb@kernel.org, mpe@ellerman.id.au, rjw@rjwysocki.net, tj@kernel.org, tony.luck@intel.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
 
-On Thursday 13 April 2017 13:29:41 Mario.Limonciello@dell.com wrote:
-> > Please pardon my ignorance, but what do we actually gain by exposing WMI to
-> > userspace?  Enabling applications to fetch SMBIOS data?  We already have an
-> > interface for that.  Enabling applications to receive input events?  Likewise.
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Thu, 13 Apr 2017 10:19:07 +0200 (CEST)
+
+> spu_queue_register() needs to invoke setup functions on a particular
+> CPU. This is achieved by temporarily setting the affinity of the
+> calling user space thread to the requested CPU and reset it to the original
+> affinity afterwards.
 > 
-> Input notifications are just one aspect that received over WMI.  I don't see any
-> reason to move the notifications out of the kernel.
+> That's racy vs. CPU hotplug and concurrent affinity settings for that
+> thread resulting in code executing on the wrong CPU and overwriting the
+> new affinity setting.
 > 
-> In terms of userspace applications, once a WMI interface to userspace is available
-> libsmbios would change over to that.  Applications using libsmbios would benefit.
-
-Really libsmbios matters here? Hans (added to thread) wrote that
-libsmbios is a relic, something of ages long gone by and a normal user
-should never use it.
-
-If this is truth and libsmbios should not be used, then we probably do
-not need to care about it in changes for WMI.
-
-Hans, Mario, any comment/clarification about it?
-
-> > You mentioned WMI's efficiency compared to SMI/SMM, but is it a difference
-> > significant enough for anyone to notice?
+> Replace it by using work_on_cpu_safe() which guarantees to run the code on
+> the requested CPU or to fail in case the CPU is offline.
 > 
-> At least for Dell there are optimizations being made when data is requested over 
-> the WMI-ACPI wrapper instead of directly via SMI/SMM.
-> 
-> For example if the data is a "static" table or the request is to something that is
-> passed thru to the EC it's a big waste of effort to put the CPU in SMM.
-> 
-> The savings there is significant.
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-Maybe we can use this Dell WMI-ACPI wrapper for kernel drivers instead
-of current SMI/SMM direct access?
-
--- 
-Pali Rohár
-pali.rohar@gmail.com
+Acked-by: David S. Miller <davem@davemloft.net>
