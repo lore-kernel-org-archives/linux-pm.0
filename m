@@ -1,59 +1,41 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 6/7] tools/power turbostat: fix impossibly large CPU%c1 value
-Date: Wed, 12 Apr 2017 20:08:52 -0400
-Message-ID: <95149369c1c28b10f7318dfde54018ab107277d0.1492041840.git.len.brown@intel.com>
+Subject: [PATCH 5/7] tools/power turbostat: turbostat.8 add missing column definitions
+Date: Wed, 12 Apr 2017 20:08:51 -0400
+Message-ID: <ab23d1146a8e7bd045507fe8a380827dc03e056d.1492041840.git.len.brown@intel.com>
 References: <20170413000853.21648-1-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f195.google.com ([209.85.216.195]:34176 "EHLO
-        mail-qt0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755875AbdDMAJe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Apr 2017 20:09:34 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170413000853.21648-1-lenb@kernel.org>
 In-Reply-To: <22048c5485503749754b3b5daf9d99ef89fcacdc.1492041840.git.len.brown@intel.com>
 References: <22048c5485503749754b3b5daf9d99ef89fcacdc.1492041840.git.len.brown@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, Doug Smythies <doug.smythies@gmail.com>, Doug Smythies <dsmythies@telus.net>, Len Brown <len.brown@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+From: Doug Smythies <doug.smythies@gmail.com>
 
-Most CPUs do not have a hardware c1 counter,
-and so turbostat derives c1 residency:
+Add GFX%rc6 and GFXMHz to the column descriptions section
+of the turbostat man page.
 
-c1 = TSC - MPERF - other_core_cstate_counters
-
-As it is not possible to atomically read these coutners,
-measurement jitter can case this calcuation to "go negative"
-when very close to 0.  Turbostat detect that case and
-simply prints c1 = 0.00%
-
-But that check neglected to account for systems where the TSC
-crystal clock domain and the MPERF BCLK domain are differ by
-a small amount.  That allowed very small negative c1 numbers
-to escape this check and be printed as huge positve numbers.
-
-This code begs for a bit of cleanup, but this patch
-is the minimal change to fix the issue.
-
+Signed-off-by: Doug Smythies <dsmythies@telus.net>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/power/x86/turbostat/turbostat.8 | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index b0591d0da801..0ad966114e58 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1142,7 +1142,7 @@ delta_thread(struct thread_data *new, struct thread_data *old,
- 		 * it is possible for mperf's non-halted cycles + idle states
- 		 * to exceed TSC's all cycles: show c1 = 0% in that case.
- 		 */
--		if ((old->mperf + core_delta->c3 + core_delta->c6 + core_delta->c7) > old->tsc)
-+		if ((old->mperf + core_delta->c3 + core_delta->c6 + core_delta->c7) > (old->tsc * tsc_tweak))
- 			old->c1 = 0;
- 		else {
- 			/* normal case, derive c1 */
+diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
+index fedca3285326..ccf2a69365cc 100644
+--- a/tools/power/x86/turbostat/turbostat.8
++++ b/tools/power/x86/turbostat/turbostat.8
+@@ -100,6 +100,8 @@ The system configuration dump (if --quiet is not used) is followed by statistics
+ \fBCPU%c1, CPU%c3, CPU%c6, CPU%c7\fP show the percentage residency in hardware core idle states.  These numbers are from hardware residency counters.
+ \fBCoreTmp\fP Degrees Celsius reported by the per-core Digital Thermal Sensor.
+ \fBPkgTtmp\fP Degrees Celsius reported by the per-package Package Thermal Monitor.
++\fBGFX%rc6\fP The percentage of time the GPU is in the "render C6" state, rc6, during the measurement interval. From /sys/class/drm/card0/power/rc6_residency_ms.
++\fBGFXMHz\fP Instantaneous snapshot of what sysfs presents at the end of the measurement interval. From /sys/class/graphics/fb0/device/drm/card0/gt_cur_freq_mhz.
+ \fBPkg%pc2, Pkg%pc3, Pkg%pc6, Pkg%pc7\fP percentage residency in hardware package idle states.  These numbers are from hardware residency counters.
+ \fBPkgWatt\fP Watts consumed by the whole package.
+ \fBCorWatt\fP Watts consumed by the core part of the package.
 -- 
 2.11.0.161.g6610af872
