@@ -1,32 +1,96 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: RFC: WMI Enhancements
-Date: Thu, 13 Apr 2017 09:33:39 +0200
-Message-ID: <20170413073339.GH3090@pali>
-References: <20170412230854.GA11963@fury>
+From: Keerthy <j-keerthy@ti.com>
+Subject: [PATCH v2 1/2] thermal: core: Allow orderly_poweroff to be called only once
+Date: Thu, 13 Apr 2017 13:32:35 +0530
+Message-ID: <1492070556-24660-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170412230854.GA11963@fury>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Darren Hart <dvhart@infradead.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Corentin Chary <corentin.chary@gmail.com>, Mario Limonciello <Mario_Limonciello@Dell.com>, Andy Lutomirski <luto@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx194.ext.ti.com ([198.47.27.80]:11795 "EHLO
+        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750746AbdDMIFS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 04:05:18 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: j-keerthy@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
-On Wednesday 12 April 2017 16:08:54 Darren Hart wrote:
-> In Windows, applications interact with WMI more or less directly. We don't do
-> this in Linux currently, although it has been discussed in the past [3]. Some
-> vendors will work around this by performing SMI/SMM, which is inefficient at
-> best. Exposing WMI methods to userspace would bring parity to WMI for Linux and
-> Windows.
+thermal_zone_device_check --> thermal_zone_device_update -->
+handle_thermal_trip --> handle_critical_trips --> orderly_poweroff
 
-Maybe we should first ask, why linux userspace applications need direct
-access to WMI? If we look at current WMI linux drivers, basically every
-one translate WMI interface to some standard linux class driver (with
-some extensions). This is something which should stay in kernel. E.g.
-rfkill, backlight, led, input keyboard, ...
+The above sequence happens every 250/500 mS based on the configuration.
+The orderly_poweroff function is getting called every 250/500 mS.
+With a full fledged file system it takes at least 5-10 Seconds to
+power off gracefully.
 
+In that period due to the thermal_zone_device_check triggering
+periodically the thermal work queues bombard with
+orderly_poweroff calls multiple times eventually leading to
+failures in gracefully powering off the system.
+
+Make sure that orderly_poweroff is called only once.
+
+Reported-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Keerthy <j-keerthy@ti.com>
+---
+
+Changes in v2:
+
+  * Added a global mutex to serialize poweroff code sequence.
+
+ drivers/thermal/thermal_core.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 11f0675..7462ae5 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -45,6 +45,7 @@
+ 
+ static DEFINE_MUTEX(thermal_list_lock);
+ static DEFINE_MUTEX(thermal_governor_lock);
++static DEFINE_MUTEX(poweroff_lock);
+ 
+ static atomic_t in_suspend;
+ 
+@@ -326,6 +327,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 				  int trip, enum thermal_trip_type trip_type)
+ {
+ 	int trip_temp;
++	static bool power_off_triggered;
+ 
+ 	tz->ops->get_trip_temp(tz, trip, &trip_temp);
+ 
+@@ -338,11 +340,14 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 	if (tz->ops->notify)
+ 		tz->ops->notify(tz, trip, trip_type);
+ 
+-	if (trip_type == THERMAL_TRIP_CRITICAL) {
++	if (trip_type == THERMAL_TRIP_CRITICAL && !power_off_triggered) {
+ 		dev_emerg(&tz->device,
+ 			  "critical temperature reached(%d C),shutting down\n",
+ 			  tz->temperature / 1000);
++		mutex_lock(&poweroff_lock);
+ 		orderly_poweroff(true);
++		power_off_triggered = true;
++		mutex_unlock(&poweroff_lock);
+ 	}
+ }
+ 
+@@ -1463,6 +1468,7 @@ static int __init thermal_init(void)
+ {
+ 	int result;
+ 
++	mutex_init(&poweroff_lock);
+ 	result = thermal_register_governors();
+ 	if (result)
+ 		goto error;
+@@ -1497,6 +1503,7 @@ static int __init thermal_init(void)
+ 	ida_destroy(&thermal_cdev_ida);
+ 	mutex_destroy(&thermal_list_lock);
+ 	mutex_destroy(&thermal_governor_lock);
++	mutex_destroy(&poweroff_lock);
+ 	return result;
+ }
+ 
 -- 
-Pali Rohár
-pali.rohar@gmail.com
+1.9.1
