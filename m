@@ -1,92 +1,173 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v6] power: supply: bq24190_charger: Add disable-reset device-property
-Date: Fri, 14 Apr 2017 18:52:33 +0200
-Message-ID: <20170414165233.4532-1-hdegoede@redhat.com>
+Subject: Re: [PATCH 04/13] power: max17042_battery: Add default platform_data
+ for x86 use
+Date: Fri, 14 Apr 2017 19:11:51 +0200
+Message-ID: <f872ad19-397d-3c69-f00e-63a1ff33932e@redhat.com>
+References: <20170414125919.25771-1-hdegoede@redhat.com>
+ <20170414125919.25771-4-hdegoede@redhat.com>
+ <20170414160727.bcpoven53zay42is@kozik-lap>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:36426 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:38884 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751271AbdDNQwh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Apr 2017 12:52:37 -0400
+        id S1751390AbdDNRLx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Apr 2017 13:11:53 -0400
+In-Reply-To: <20170414160727.bcpoven53zay42is@kozik-lap>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
 
-Allow platform-code to disable the reset on probe and suspend/resume
-by setting a "disable-reset" boolean device property on the device.
+Hi,
 
-There are several reasons why the platform-code may want to disable
-the reset on probe and suspend/resume:
+On 14-04-17 17:54, Krzysztof Kozlowski wrote:
+ > On Fri, Apr 14, 2017 at 05:43:37PM +0200, Hans de Goede wrote:
+ >> Hi,
+ >>
+ >> On 14-04-17 17:35, Krzysztof Kozlowski wrote:
+ >>> On Fri, Apr 14, 2017 at 02:59:10PM +0200, Hans de Goede wrote:
+ >>>> Some x86 machines use a max17047 fuel-gauge. X86 does not have board
+ >>>> files / dt to provide platform data, so add default platform_data
+ >>>> as fallback option so that the driver can work on x86.
+ >>>
+ >>> I am not convinced by this explanation. AFAIR, the x86 boards which use
+ >>> max17042-family are providing the platform data. See commit edd4ab055931
+ >>> ("power: max17042_battery: add HEALTH and TEMP_* properties support").
+ >>
+ >> Yes that commits adds the members to the struct max17042_platform_data,
+ >> but if you grep through the mainline kernel there is no code what so
+ >> ever ever filling such a struct.
+ >
+ > Yes, my assumption was they are coming out of tree - through Simple
+ > Firmware Interface. At least that was how I understood Ramakrishna's
+ > reply:
+ > https://patchwork.kernel.org/patch/6326981/
+ >
+ > I think the commit message is a little bit non-precise here. How about
+ > changing the initial sentence adding "might" ("86 might be missing platform_data if
+ > not provided by SFI" or something similar).
 
-1) Resetting the charger should never be necessary it should always have
-sane values programmed. If it is running with invalid values while we
-are not running (system turned off or suspended) there is a big problem
-as that may lead to overcharging the battery.
+Ok, will do for v2.
 
-2) The reset in suspend() is meant to put the charger back into default
-mode, but this is not necessary and not a good idea. If the charger has
-been programmed with a higher max charge_current / charge_voltage then
-putting it back in default-mode will reset those to the safe power-on
-defaults, leading to slower charging, or charging to a lower voltage
-(and thus not using the full capacity) while suspended which is
-undesirable. Reprogramming the max charge_current / charge_voltage
-after the reset will not help here as that will put the charger back
-in host mode and start the i2c watchdog if the host then does not do
-anything for 40s (iow if we're suspended for more then 40s) the watchdog
-expires resetting the device to default-mode, including resetting all
-the registers to there safe power-on defaults. So the only way to keep
-using custom charge settings while suspending is to keep the charger in
-its normal running state with the i2c watchdog disabled. This is fine
-as the charger will still automatically switch from constant current
-to constant voltage and stop charging when the battery is full.
+>> Since not all boards have a thermistor hooked up, set temp_min to 0 and
+>> change the health checks from temp <= temp_min to temp < temp_min to
+>> not trigger on such boards (where temp reads 0).
+>>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> ---
+>>  drivers/power/supply/max17042_battery.c | 60 +++++++++++++++++++++++++++++----
+>>  1 file changed, 53 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
+>> index a51b296..85a6bf3 100644
+>> --- a/drivers/power/supply/max17042_battery.c
+>> +++ b/drivers/power/supply/max17042_battery.c
+>> @@ -150,12 +150,12 @@ static int max17042_get_battery_health(struct max17042_chip *chip, int *health)
+>>  	if (ret < 0)
+>>  		goto health_error;
+>>
+>> -	if (temp <= chip->pdata->temp_min) {
+>> +	if (temp < chip->pdata->temp_min) {
+>>  		*health = POWER_SUPPLY_HEALTH_COLD;
+>>  		goto out;
+>>  	}
+>>
+>> -	if (temp >= chip->pdata->temp_max) {
+>> +	if (temp > chip->pdata->temp_max) {
+>>  		*health = POWER_SUPPLY_HEALTH_OVERHEAT;
+>>  		goto out;
+>>  	}
+>> @@ -772,8 +772,9 @@ static void max17042_init_worker(struct work_struct *work)
+>>
+>>  #ifdef CONFIG_OF
+>>  static struct max17042_platform_data *
+>> -max17042_get_pdata(struct device *dev)
+>> +max17042_get_pdata(struct max17042_chip *chip)
+>>  {
+>> +	struct device *dev = &chip->client->dev;
+>>  	struct device_node *np = dev->of_node;
+>>  	u32 prop;
+>>  	struct max17042_platform_data *pdata;
+>> @@ -806,10 +807,55 @@ max17042_get_pdata(struct device *dev)
+>>  	return pdata;
+>>  }
+>>  #else
+>> +static struct max17042_reg_data max17047_default_pdata_init_regs[] = {
+>> +	/*
+>> +	 * Some firmwares do not set FullSOCThr, Enable End-of-Charge Detection
+>> +	 * when the voltage FG reports 95%, as recommend in the datasheet.
+>> +	 */
+>> +	{ MAX17047_FullSOCThr, 95 << 8 },
+>
+> Maybe use MAX17042_BATTERY_FULL (and replace it to 95?). If not the
+> MAX17042_BATTERY_FULL can be removed in separate patch.
 
-3) Besides never being necessary resetting the charger also causes
-problems on systems where the charge voltage limit is set higher then the
-reset value, if this is the case and the charger is reset while charging
-and the battery voltage is between the 2 voltages, then about half the
-time the charger gets confused and claims to be charging (REG08 contains
-0x64) but in reality the charger has decoupled itself from VBUS (Q1 off)
-and is drawing 0A from VBUS, leaving the system running from the battery.
+Ok, will do for v2.
 
-This last problem is happening on a GPD-win mini PC with a bq24292i
-charger chip combined with a max17047 fuel-gauge and a LiHV battery.
-I've checked and TI does not list any errata for the bq24292i which
-could explain this (there are no errata at all).
+>> +};
+>> +
+>>  static struct max17042_platform_data *
+>> -max17042_get_pdata(struct device *dev)
+>> +max17042_get_pdata(struct max17042_chip *chip)
+>>  {
+>> -	return dev->platform_data;
+>> +	struct device *dev = &chip->client->dev;
+>> +	struct max17042_platform_data *pdata;
+>> +	int ret, misc_cfg;
+>> +
+>> +	if (dev->platform_data)
+>> +		return dev->platform_data;
+>> +
+>> +	/*
+>> +	 * The MAX17047 gets used on x86 where we've no platform data, assume
+>> +	 * the firmware will already have initialized the fuel-gauge and provide
+>> +	 * default values for the non init bits to make things work.
+>> +	 */
+>> +	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
+>> +	if (!pdata)
+>> +		return pdata;
+>> +
+>> +	if (chip->chip_type != MAXIM_DEVICE_TYPE_MAX17042) {
+>> +		pdata->init_data = max17047_default_pdata_init_regs;
+>> +		pdata->num_init_data =
+>> +			ARRAY_SIZE(max17047_default_pdata_init_regs);
+>> +	}
+>> +
+>> +	ret = regmap_read(chip->regmap, MAX17042_MiscCFG, &misc_cfg);
+>> +	if (ret < 0)
+>> +		return NULL;
+>> +
+>> +	/* If bits 0-1 are set to 3 then only Voltage readings are used */
+>> +	if ((misc_cfg & 0x3) == 3)
+>
+> Mixing 0x3 and 3 looks suspicious. How about " == 0x3"?
 
-Cc: Liam Breck <kernel@networkimprov.net>
-Cc: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
-Changes in v2:
--This is a new patch in v2 of this patch-set
-Changes in v3:
--Disable the reset code by default, but leave it around guarded by
- a check for a reset-on-probe device-property
-Changes in v4:
--Rebase on top of current power-supply/next
-Changes in v5:
--Updated commit msg to describe the hw on which I'm seeing the charger getting
- stuck while reset during charging and Vbat is above the reset charge volt limit
-Changes in v6:
--Keep the reset enabled by default, allow disabling it by setting a
- "disable-reset" boolean device property on the device
----
- drivers/power/supply/bq24190_charger.c | 3 +++
- 1 file changed, 3 insertions(+)
+Ok, will do for v2.
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index bd9e5c3..2d379a2 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -533,6 +533,9 @@ static int bq24190_register_reset(struct bq24190_dev_info *bdi)
- 	int ret, limit = 100;
- 	u8 v;
- 
-+	if (device_property_read_bool(bdi->dev, "disable-reset"))
-+		return 0;
-+
- 	/* Reset the registers */
- 	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
- 			BQ24190_REG_POC_RESET_MASK,
--- 
-2.9.3
+>> +		pdata->enable_current_sense = false;
+>> +	else
+>> +		pdata->enable_current_sense = true;
+>
+> In that case you need to set the r_sns (unless
+> MAX17042_DEFAULT_SNS_RESISTOR is okay for you).
+
+The default value is ok for me / my board.
+
+>> +
+>> +	pdata->vmin = 3000;
+>> +	pdata->vmax = 4500;	/* Some devices use a LiHV cell */
+>> +	pdata->temp_min = 0;	/* Some devices do not have a temp sensor */
+>> +	pdata->temp_max = 700;	/* 70 degrees Celcius */
+>
+> How about putting all of these hard-coded numbers next to
+> MAX17042_DEFAULT_SNS_RESISTOR?
+
+Ok, will also do for v2 :)
+
+Thank you for all the reviews.
+
+Regards,
+
+Hans
