@@ -1,66 +1,73 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH] Doc/PM: Sync with intel_powerclamp code behavior
-Date: Fri, 14 Apr 2017 11:19:24 -0700
-Message-ID: <1492193964-49735-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 08/13] power: max17042_battery: Add support for the
+ TECHNOLOGY attribute
+Date: Fri, 14 Apr 2017 20:20:41 +0200
+Message-ID: <20170414182041.zhw7xmflzsarhesx@kozik-lap>
+References: <20170414125919.25771-1-hdegoede@redhat.com>
+ <20170414125919.25771-8-hdegoede@redhat.com>
+ <20170414162632.7r3id7lkzbcjp3wj@kozik-lap>
+ <db9a63d9-fd36-a19c-c24d-8c69027929c4@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:64418 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753957AbdDNSSe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Apr 2017 14:18:34 -0400
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:33113 "EHLO
+        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752042AbdDNSUp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 14:20:45 -0400
+Received: by mail-wm0-f66.google.com with SMTP id o81so18895104wmb.0
+        for <linux-pm@vger.kernel.org>; Fri, 14 Apr 2017 11:20:45 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <db9a63d9-fd36-a19c-c24d-8c69027929c4@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jonathan Corbet <corbet@lwn.net>, LKML <linux-kernel@vger.kernel.org>
-Cc: Masanari Iida <standby24x7@gmail.com>, Wang Xiaolong <xiaolong.wang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Zhang Rui <rui.zhang@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
 
-Commit feb6cd6a0f9f ("thermal/intel_powerclamp: stop sched tick in forced
-idle") changed how idle injection accouting, so we need to update
-the documentation accordingly.
+On Fri, Apr 14, 2017 at 08:06:56PM +0200, Hans de Goede wrote:
+> Hi,
+> 
+> On 14-04-17 18:26, Krzysztof Kozlowski wrote:
+> > On Fri, Apr 14, 2017 at 02:59:14PM +0200, Hans de Goede wrote:
+> > > The max17042 is intended for LiOn or LiPo batteries, add a TECHNOLOGY
+> > > attribute to reflect this. Note this is hardcoded to LiOn as there is
+> > > no way to tell the difference, this is done by many drivers and is
+> > > better then not providing any technology info at all.
+> > 
+> > Same as Wolfgang's try:
+> > https://patchwork.kernel.org/patch/9349945/
+> > but with better explanation. :)
+> 
+> Hehe.
+> 
+> > Yet still I am not convinced that providing a wrong information (Li-Ion
+> > in case of LiPo battery) is better than not providing any info at all.
+> 
+> Well lithium-ion polymer batteries to use their full name are a subset
+> of the Li-Ion battery family so returning TECHNOLOGY_LION for them is
+> technically correct. The technology attribute gets read by for example
+> upower and then shown by for example mate-power-manager to the user:
+> 
+> https://github.com/mate-desktop/mate-power-manager/tree/master/src#L390
 
-This patch also expands more details on the behavior of cur_state.
+...which differentiates between Li-Ion and LiPo.
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Reported-by: Wang, Xiaolong <xiaolong.wang@intel.com>
----
- Documentation/thermal/intel_powerclamp.txt | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+The same with kernel's power supply API - we have the
+POWER_SUPPLY_TECHNOLOGY_LIPO for some reason.
 
-diff --git a/Documentation/thermal/intel_powerclamp.txt b/Documentation/thermal/intel_powerclamp.txt
-index 60073dc..b5df211 100644
---- a/Documentation/thermal/intel_powerclamp.txt
-+++ b/Documentation/thermal/intel_powerclamp.txt
-@@ -268,6 +268,15 @@ cur_state:0
- max_state:50
- type:intel_powerclamp
- 
-+cur_state allows user to set the desired idle percentage. Writing 0 to
-+cur_state will stop idle injection. Writing a value between 1 and
-+max_state will start the idle injection. Reading cur_state returns the
-+actual and current idle percentage. This may not be the same value
-+set by the user in that current idle percentage depends on workload
-+and includes natural idle. When idle injection is disabled, reading
-+cur_state returns value -1 instead of 0 which is to avoid confusing
-+100% busy state with the disabled state.
-+
- Example usage:
- - To inject 25% idle time
- $ sudo sh -c "echo 25 > /sys/class/thermal/cooling_device80/cur_state
-@@ -278,11 +287,12 @@ then the powerclamp driver will not start idle injection. Using Top
- will not show idle injection kernel threads.
- 
- If the system is busy (spin test below) and has less than 25% natural
--idle time, powerclamp kernel threads will do idle injection, which
--appear running to the scheduler. But the overall system idle is still
--reflected. In this example, 24.1% idle is shown. This helps the
--system admin or user determine the cause of slowdown, when a
--powerclamp driver is in action.
-+idle time, powerclamp kernel threads will do idle injection. Forced
-+idle time is accounted as normal idle in that common code path is
-+taken as the idle task.
-+
-+In this example, 24.1% idle is shown. This helps the system admin or
-+user determine the cause of slowdown, when a powerclamp driver is in action.
- 
- 
- Tasks: 197 total,   1 running, 196 sleeping,   0 stopped,   0 zombie
--- 
-2.7.4
+> It would be nice to actually show something there, even if we're not
+> correctly identifying what sub-family of lithium-ion battery we are
+> actually dealing with.
+
+You're right that it is a subfamily. I do not know what it is expected
+from this interface, e.g. if stating LIPO as LION is okay or not. I see
+some benefit of providing a fixed LION (especially that in mobile use
+cases of max17042 these are Li-Ion). On the other hand, it might be
+inaccurate. Probably harmless but inaccurate.
+
+I do not oppose the patch.
+
+You might consider giving some credits to Wolfgang's try with
+Suggested-by.
+
+Best regards,
+Krzysztof
