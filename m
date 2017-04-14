@@ -1,62 +1,69 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [RFC] power: power_supply: Add
- power_supply_prop_precharge/endcharge
-Date: Fri, 14 Apr 2017 02:38:34 +0200
-Message-ID: <20170414003834.wxzozclg43nl6s4d@earth>
-References: <20170329063055.4517-1-liam@networkimprov.net>
- <CAKvHMgQzJogAzcL9dLDCE6Hz3FshcnmengpbvfCMJkH0DmzcDw@mail.gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v5 1/2] power: supply: bq24190_charger: Use new
+ extcon_register_notifier_all()
+Date: Fri, 14 Apr 2017 10:15:06 +0900
+Message-ID: <58F0229A.1090200@samsung.com>
+References: <20170413120412.12773-1-hdegoede@redhat.com>
+        <20170413120412.12773-2-hdegoede@redhat.com>
+        <20170413233526.ebtytz54d3ux2oze@earth>
+        <CGME20170413234503epcas1p1c91946cb5246310ae53016399f21ac1c@epcas1p1.samsung.com>
+        <20170413234448.stxmxvnemldzjyq3@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="yunxtamfz7f7jn66"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:49430 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753288AbdDNAii (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Apr 2017 20:38:38 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKvHMgQzJogAzcL9dLDCE6Hz3FshcnmengpbvfCMJkH0DmzcDw@mail.gmail.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:49201 "EHLO
+        epoutp01.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1751083AbdDNBPK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 21:15:10 -0400
+In-reply-to: <20170413234448.stxmxvnemldzjyq3@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+To: Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Takashi Iwai <tiwai@suse.de>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
 
+Hi Sebastian,
 
---yunxtamfz7f7jn66
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 2017년 04월 14일 08:44, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Fri, Apr 14, 2017 at 01:35:26AM +0200, Sebastian Reichel wrote:
+>> Hi,
+>>
+>> On Thu, Apr 13, 2017 at 02:04:11PM +0200, Hans de Goede wrote:
+>>> When I submitted the extcon handling I had a patch pending for the
+>>> extcon sub-system for extcon_register_notifier to take -1 as cable id
+>>> for listening for all type cable events on an extcon with a single
+>>> notifier.
+>>>
+>>> In the end it was decided to instead add a new
+>>> extcon_register_notifier_all function for this, switch to using this.
+>>>
+>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>>> Acked-by: Liam Breck <kernel@networkimprov.net>
+>>
+>> With extcon_register_notifier_all() being new and not available
+>> in my tree I can't simply queue this patch. Also it can't simply
+>> go through the extcon subsystem, since it depends on changes in
+>> the power-supply subsystem and results in non-trivial merge conflict.
+>> I see three merge solutions:
+>>
+>>  1. Defer to 4.13 (since we are already quite near the merge window)
+>>  2. I need a immutable branch with extcon_register_notifier_all()
+>>     from the extcon subsystem
+>>  3. It may count as Fix and could be queued during the 4.12-rc
+>>     phase based von 4.12-rc1
+> 
+> Sorry for the noise, I just saw the immutable branch in the cover
+> mail. I will queue this now. Unfortunately it means rebasing the
+> power-supply tree to 4.11-rc4 (or ugly merge, which is annoying
+> in the pull-request). Chanwoo, please try to use -rc1 as base for
+> immutable branches in the future.
 
-Hi Liam,
+I'm really sorry about this. It is my fault. In the future,
+I'll use the -rc1 for the immutable branch. Thanks.
 
-On Sat, Apr 01, 2017 at 06:07:34AM -0700, Liam Breck wrote:
-> I'm blocked on this question...
->=20
-> This is a draft of the power_supply_prop_precharge/endcharge_current
-> patch for my charger patchset. It highlights charge_term_current with
-> a cosmetic change. Is that the same as the proposed endcharge_current?
-
-Yes, it is.
-
--- Sebastian
-
---yunxtamfz7f7jn66
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAljwGgkACgkQ2O7X88g7
-+pqa/Q/8CQQCTka4fvLw4QAc3YTVfQfLkAkjDobV98bgW1IiumCWQUMXH6wF8Vyf
-DHiK54iZ/zOWukx0ksB5nV80M3yiJ/VSwX1GBz8oE2Yhq7Fo7rLuwxZawQukQpxB
-Vyb9T2TLl2AdkYplnV1Odnt+tS/jLFvQm9YDCZ+Wgvheyrsy9uhzExtqwMCxPwo/
-3F9zBcOSK6DQGOtt4LIUohDhg+W5MlQPInt8bN5Zb6czTB+u0toeZOStC1oV67Zj
-7tkjvM27OYwMKNTzzF+mLQQfw6/IfxoL8WhXzR0OoXKw5Fioup8Nfu6r3dDI0Hv0
-/ghv4eb9CnzDVhNdKaMqkWpHz8rFbdGvJcCBkS/OV8lLru97SJgVih6mxA1k7CMA
-BYjft/9Gb9ycW37LpIpWYh71nLYuANRSO4IRNWp3MX1pvb0Nb45Cfo2+WsoeqieZ
-V8dwWCHjlyLcwcBfVIvM8dmyKtSQK1RPETcfQIbi+7hvxKrvec4ysR5KGKGAht+G
-y8xMdfBCuVf0agXPbYl62z/lyODra0zAuqC90OKBZ8aYIKNu0PhOicWlGUdxHEFN
-UiHjK2pl9dzPGndWJY/w37UsJ5kgsSKczmzcQTGUOXQLfPRAo/EUEDaH1ZDPUaFV
-LEp5sHN2vVMSetEs6kw3fQ6vPCdq6W7zaTkvNHTei/HpcwSiAFg=
-=0+FW
------END PGP SIGNATURE-----
-
---yunxtamfz7f7jn66--
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
