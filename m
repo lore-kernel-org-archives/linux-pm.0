@@ -1,50 +1,57 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 13/14] power: max17042_battery: Add support for the SCOPE property
-Date: Fri, 14 Apr 2017 20:32:58 +0200
-Message-ID: <20170414183259.24382-13-hdegoede@redhat.com>
+Subject: [PATCH v2 12/14] power: max17042_battery: Add support for the CHARGE_NOW property
+Date: Fri, 14 Apr 2017 20:32:57 +0200
+Message-ID: <20170414183259.24382-12-hdegoede@redhat.com>
 References: <20170414183259.24382-1-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:38530 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:33340 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753329AbdDNSdT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Apr 2017 14:33:19 -0400
+        id S1753329AbdDNSdR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Apr 2017 14:33:17 -0400
 In-Reply-To: <20170414183259.24382-1-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
 
-Add support for the SCOPE property, always return SCOPE_SYSTEM,
-as the max170xx is used for the main battery on all known systems
-with a max170xx.
+Atleast upower prefers the more precise charge_now sysfs value over
+capacity and the max17042 has the info, so lets export it.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- drivers/power/supply/max17042_battery.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Changes in v2:
+-Take r_sns value into account when converting the register value to uAh
+---
+ drivers/power/supply/max17042_battery.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
 diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index e80ff90..575a822 100644
+index 39b0f86..e80ff90 100644
 --- a/drivers/power/supply/max17042_battery.c
 +++ b/drivers/power/supply/max17042_battery.c
-@@ -97,6 +97,7 @@ static enum power_supply_property max17042_battery_props[] = {
- 	POWER_SUPPLY_PROP_TEMP_MIN,
- 	POWER_SUPPLY_PROP_TEMP_MAX,
- 	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_SCOPE,
- 	POWER_SUPPLY_PROP_CURRENT_NOW,
- 	POWER_SUPPLY_PROP_CURRENT_AVG,
- };
-@@ -371,6 +372,9 @@ static int max17042_get_property(struct power_supply *psy,
- 		if (ret < 0)
- 			return ret;
+@@ -89,6 +89,7 @@ static enum power_supply_property max17042_battery_props[] = {
+ 	POWER_SUPPLY_PROP_CAPACITY,
+ 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+ 	POWER_SUPPLY_PROP_CHARGE_FULL,
++	POWER_SUPPLY_PROP_CHARGE_NOW,
+ 	POWER_SUPPLY_PROP_CHARGE_COUNTER,
+ 	POWER_SUPPLY_PROP_TEMP,
+ 	POWER_SUPPLY_PROP_TEMP_ALERT_MIN,
+@@ -324,6 +325,15 @@ static int max17042_get_property(struct power_supply *psy,
+ 		do_div(data64, chip->pdata->r_sns);
+ 		val->intval = data64;
  		break;
-+	case POWER_SUPPLY_PROP_SCOPE:
-+		val->intval = POWER_SUPPLY_SCOPE_SYSTEM;
++	case POWER_SUPPLY_PROP_CHARGE_NOW:
++		ret = regmap_read(map, MAX17042_RepCap, &data);
++		if (ret < 0)
++			return ret;
++
++		data64 = data * 5000000ll;
++		do_div(data64, chip->pdata->r_sns);
++		val->intval = data64;
 +		break;
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
- 		if (chip->pdata->enable_current_sense) {
- 			ret = regmap_read(map, MAX17042_Current, &data);
+ 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+ 		ret = regmap_read(map, MAX17042_QH, &data);
+ 		if (ret < 0)
 -- 
 2.9.3
