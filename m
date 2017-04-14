@@ -1,129 +1,114 @@
 From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: [PATCH v3 2/3] drivers:power:twl4030-charger: add INPUT_CURRENT_LIMIT property and make it writeable
-Date: Fri, 14 Apr 2017 20:25:56 +0200
-Message-ID: <ed229ae8e6a4a9bd040e389d101b5257296d54ff.1492194356.git.hns@goldelico.com>
+Subject: [PATCH v3 3/3] drivers:power:twl4030-charger: remove nonstandard max_current sysfs attribute
+Date: Fri, 14 Apr 2017 20:25:57 +0200
+Message-ID: <38afc4e7faaeabb32f153a0956899fa8e97c1b3a.1492194356.git.hns@goldelico.com>
 References: <cover.1492194356.git.hns@goldelico.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.217]:29909 "EHLO
-        mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753957AbdDNS0K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 14:26:10 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1492194356.git.hns@goldelico.com>
 In-Reply-To: <cover.1492194356.git.hns@goldelico.com>
 References: <cover.1492194356.git.hns@goldelico.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: Grazvydas Ignotas <notasas@gmail.com>, Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, linux-kernel@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
-
-Currently, the twl4030 charger defines its own max_current by directly
-creating sysfs nodes. It should use the input_current_limit property
-which is e.g. used by the bq24257 driver.
-
-This patch adds the input_current_property with the same semantics as
-the max_current property. The code to manage the max_current property
-is removed by a separate patch.
+List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
 ---
- drivers/power/supply/twl4030_charger.c | 59 ++++++++++++++++++++++++++++++++++
- 1 file changed, 59 insertions(+)
+ drivers/power/supply/twl4030_charger.c | 63 ----------------------------------
+ 1 file changed, 63 deletions(-)
 
 diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
-index 34e389d..e70c4ed 100644
+index e70c4ed..e02e150 100644
 --- a/drivers/power/supply/twl4030_charger.c
 +++ b/drivers/power/supply/twl4030_charger.c
-@@ -893,6 +893,28 @@ static int twl4030_bci_get_property(struct power_supply *psy,
- 			twl4030_bci_state_to_status(state) !=
- 				POWER_SUPPLY_STATUS_NOT_CHARGING;
- 		break;
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		val->intval = -1;
-+		if (psy->desc->type != POWER_SUPPLY_TYPE_USB) {
-+			if (!bci->ac_is_active)
-+				val->intval = bci->ac_cur;
-+		} else {
-+			if (bci->ac_is_active)
-+				val->intval = bci->usb_cur_target;
-+		}
-+		if (val->intval < 0) {
-+			u8 bcictl1;
-+
-+			val->intval = twl4030bci_read_adc_val(TWL4030_BCIIREF1);
-+			if (val->intval < 0)
-+				return val->intval;
-+			ret = twl4030_bci_read(TWL4030_BCICTL1, &bcictl1);
-+			if (ret < 0)
-+				return ret;
-+			val->intval = regval2ua(val->intval, bcictl1 &
-+							TWL4030_CGAIN);
-+		}
-+		break;
- 	default:
- 		return -EINVAL;
- 	}
-@@ -900,11 +922,44 @@ static int twl4030_bci_get_property(struct power_supply *psy,
- 	return 0;
+@@ -624,63 +624,6 @@ static irqreturn_t twl4030_bci_interrupt(int irq, void *arg)
+ 	return IRQ_HANDLED;
  }
  
-+static int twl4030_bci_set_property(struct power_supply *psy,
-+				    enum power_supply_property psp,
-+				    const union power_supply_propval *val)
-+{
-+	struct twl4030_bci *bci = dev_get_drvdata(psy->dev.parent);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		if (psy->desc->type == POWER_SUPPLY_TYPE_USB)
-+			bci->usb_cur_target = val->intval;
-+		else
-+			bci->ac_cur = val->intval;
-+		twl4030_charger_update_current(bci);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+int twl4030_bci_property_is_writeable(struct power_supply *psy,
-+				      enum power_supply_property psp)
-+{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
- static enum power_supply_property twl4030_charger_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_ONLINE,
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- 	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
- };
+-/*
+- * Provide "max_current" attribute in sysfs.
+- */
+-static ssize_t
+-twl4030_bci_max_current_store(struct device *dev, struct device_attribute *attr,
+-	const char *buf, size_t n)
+-{
+-	struct twl4030_bci *bci = dev_get_drvdata(dev->parent);
+-	int cur = 0;
+-	int status = 0;
+-	status = kstrtoint(buf, 10, &cur);
+-	if (status)
+-		return status;
+-	if (cur < 0)
+-		return -EINVAL;
+-	if (dev == &bci->ac->dev)
+-		bci->ac_cur = cur;
+-	else
+-		bci->usb_cur_target = cur;
+-
+-	twl4030_charger_update_current(bci);
+-	return n;
+-}
+-
+-/*
+- * sysfs max_current show
+- */
+-static ssize_t twl4030_bci_max_current_show(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	int status = 0;
+-	int cur = -1;
+-	u8 bcictl1;
+-	struct twl4030_bci *bci = dev_get_drvdata(dev->parent);
+-
+-	if (dev == &bci->ac->dev) {
+-		if (!bci->ac_is_active)
+-			cur = bci->ac_cur;
+-	} else {
+-		if (bci->ac_is_active)
+-			cur = bci->usb_cur_target;
+-	}
+-	if (cur < 0) {
+-		cur = twl4030bci_read_adc_val(TWL4030_BCIIREF1);
+-		if (cur < 0)
+-			return cur;
+-		status = twl4030_bci_read(TWL4030_BCICTL1, &bcictl1);
+-		if (status < 0)
+-			return status;
+-		cur = regval2ua(cur, bcictl1 & TWL4030_CGAIN);
+-	}
+-	return scnprintf(buf, PAGE_SIZE, "%u\n", cur);
+-}
+-
+-static DEVICE_ATTR(max_current, 0644, twl4030_bci_max_current_show,
+-			twl4030_bci_max_current_store);
+-
+ static void twl4030_bci_usb_work(struct work_struct *data)
+ {
+ 	struct twl4030_bci *bci = container_of(data, struct twl4030_bci, work);
+@@ -1118,14 +1061,10 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+ 		dev_warn(&pdev->dev, "failed to unmask interrupts: %d\n", ret);
  
- #ifdef CONFIG_OF
-@@ -941,6 +996,8 @@ static const struct power_supply_desc twl4030_bci_ac_desc = {
- 	.properties	= twl4030_charger_props,
- 	.num_properties	= ARRAY_SIZE(twl4030_charger_props),
- 	.get_property	= twl4030_bci_get_property,
-+	.set_property	= twl4030_bci_set_property,
-+	.property_is_writeable	= twl4030_bci_property_is_writeable,
- };
+ 	twl4030_charger_update_current(bci);
+-	if (device_create_file(&bci->usb->dev, &dev_attr_max_current))
+-		dev_warn(&pdev->dev, "could not create sysfs file\n");
+ 	if (device_create_file(&bci->usb->dev, &dev_attr_mode))
+ 		dev_warn(&pdev->dev, "could not create sysfs file\n");
+ 	if (device_create_file(&bci->ac->dev, &dev_attr_mode))
+ 		dev_warn(&pdev->dev, "could not create sysfs file\n");
+-	if (device_create_file(&bci->ac->dev, &dev_attr_max_current))
+-		dev_warn(&pdev->dev, "could not create sysfs file\n");
  
- static const struct power_supply_desc twl4030_bci_usb_desc = {
-@@ -949,6 +1006,8 @@ static const struct power_supply_desc twl4030_bci_usb_desc = {
- 	.properties	= twl4030_charger_props,
- 	.num_properties	= ARRAY_SIZE(twl4030_charger_props),
- 	.get_property	= twl4030_bci_get_property,
-+	.set_property	= twl4030_bci_set_property,
-+	.property_is_writeable	= twl4030_bci_property_is_writeable,
- };
+ 	twl4030_charger_enable_ac(bci, true);
+ 	if (!IS_ERR_OR_NULL(bci->transceiver))
+@@ -1157,9 +1096,7 @@ static int __exit twl4030_bci_remove(struct platform_device *pdev)
  
- static int twl4030_bci_probe(struct platform_device *pdev)
+ 	iio_channel_release(bci->channel_vac);
+ 
+-	device_remove_file(&bci->usb->dev, &dev_attr_max_current);
+ 	device_remove_file(&bci->usb->dev, &dev_attr_mode);
+-	device_remove_file(&bci->ac->dev, &dev_attr_max_current);
+ 	device_remove_file(&bci->ac->dev, &dev_attr_mode);
+ 	/* mask interrupts */
+ 	twl_i2c_write_u8(TWL4030_MODULE_INTERRUPTS, 0xff,
 -- 
 2.7.3
