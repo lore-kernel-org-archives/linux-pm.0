@@ -1,124 +1,46 @@
 From: sathyanarayanan.kuppuswamy@linux.intel.com
-Subject: [PATCH v2 6/8] mfd: intel_soc_pmic_bxtwc: utilize devm_* functions in driver probe
-Date: Fri, 14 Apr 2017 16:25:58 -0700
-Message-ID: <53d9242cd4b81d4dd6cfeb4f1995a405d0ca48ae.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: [PATCH v2 3/8] thermal: intel_bxt_pmic_thermal: use first level PMIC thermal irq
+Date: Fri, 14 Apr 2017 16:25:55 -0700
+Message-ID: <fda73b083e5e67e8fcc9fc2d01a590f689a06c91.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
 References: <0e4d82ca9cdc41c9d2a8b45258cd72659b4c2063.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:29855 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755822AbdDNX3j (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Apr 2017 19:29:39 -0400
 In-Reply-To: <0e4d82ca9cdc41c9d2a8b45258cd72659b4c2063.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-Sender: platform-driver-x86-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, lee.jones@linaro.org, andy@infradead.org
 Cc: linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com, Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-List-Id: linux-pm@vger.kernel.org
 
 From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 
-Cleanup the resource allocation/free code in probe function by using
-devm_* calls.
+PMIC mfd driver only exports first level irq for thermal device.
+But currently we are reading the irqs from the second level irq
+chip, So this patch fixes this issue by adding support to use
+first level PMIC thermal irq.
 
 Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 ---
- drivers/mfd/intel_soc_pmic_bxtwc.c | 54 +++++++++++++-------------------------
- 1 file changed, 18 insertions(+), 36 deletions(-)
+ drivers/thermal/intel_bxt_pmic_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 Changes since v1:
  * None
 
-diff --git a/drivers/mfd/intel_soc_pmic_bxtwc.c b/drivers/mfd/intel_soc_pmic_bxtwc.c
-index dc8af1d..442dc29 100644
---- a/drivers/mfd/intel_soc_pmic_bxtwc.c
-+++ b/drivers/mfd/intel_soc_pmic_bxtwc.c
-@@ -400,45 +400,44 @@ static int bxtwc_probe(struct platform_device *pdev)
- 		return ret;
+diff --git a/drivers/thermal/intel_bxt_pmic_thermal.c b/drivers/thermal/intel_bxt_pmic_thermal.c
+index 0f19a39..ef6b322 100644
+--- a/drivers/thermal/intel_bxt_pmic_thermal.c
++++ b/drivers/thermal/intel_bxt_pmic_thermal.c
+@@ -241,7 +241,7 @@ static int pmic_thermal_probe(struct platform_device *pdev)
  	}
  
--	ret = regmap_add_irq_chip(pmic->regmap, pmic->irq,
--				  IRQF_ONESHOT | IRQF_SHARED,
--				  0, &bxtwc_regmap_irq_chip,
--				  &pmic->irq_chip_data);
-+	ret = devm_regmap_add_irq_chip(&pdev->dev, pmic->regmap, pmic->irq,
-+				       IRQF_ONESHOT | IRQF_SHARED,
-+				       0, &bxtwc_regmap_irq_chip,
-+				       &pmic->irq_chip_data);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to add IRQ chip\n");
- 		return ret;
- 	}
+ 	regmap = pmic->regmap;
+-	regmap_irq_chip = pmic->irq_chip_data_level2;
++	regmap_irq_chip = pmic->irq_chip_data;
  
--	ret = regmap_add_irq_chip(pmic->regmap, pmic->irq,
--				  IRQF_ONESHOT | IRQF_SHARED,
--				  0, &bxtwc_regmap_irq_chip_level2,
--				  &pmic->irq_chip_data_level2);
-+	ret = devm_regmap_add_irq_chip(&pdev->dev, pmic->regmap, pmic->irq,
-+				       IRQF_ONESHOT | IRQF_SHARED,
-+				       0, &bxtwc_regmap_irq_chip_level2,
-+				       &pmic->irq_chip_data_level2);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to add secondary IRQ chip\n");
--		goto err_irq_chip_level2;
-+		return ret;
- 	}
- 
--	ret = regmap_add_irq_chip(pmic->regmap, pmic->irq,
--				  IRQF_ONESHOT | IRQF_SHARED,
--				  0, &bxtwc_regmap_irq_chip_tmu,
--				  &pmic->irq_chip_data_tmu);
-+	ret = devm_regmap_add_irq_chip(&pdev->dev, pmic->regmap, pmic->irq,
-+				       IRQF_ONESHOT | IRQF_SHARED,
-+				       0, &bxtwc_regmap_irq_chip_tmu,
-+				       &pmic->irq_chip_data_tmu);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to add TMU IRQ chip\n");
--		goto err_irq_chip_tmu;
-+		return ret;
- 	}
- 
--	ret = mfd_add_devices(&pdev->dev, PLATFORM_DEVID_NONE, bxt_wc_dev,
--			      ARRAY_SIZE(bxt_wc_dev), NULL, 0,
--			      NULL);
-+	ret = devm_mfd_add_devices(&pdev->dev, PLATFORM_DEVID_NONE, bxt_wc_dev,
-+				   ARRAY_SIZE(bxt_wc_dev), NULL, 0, NULL);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to add devices\n");
--		goto err_mfd;
-+		return ret;
- 	}
- 
- 	ret = sysfs_create_group(&pdev->dev.kobj, &bxtwc_group);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to create sysfs group %d\n", ret);
--		goto err_sysfs;
-+		return ret;
- 	}
- 
- 	/*
-@@ -452,28 +451,11 @@ static int bxtwc_probe(struct platform_device *pdev)
- 				BXTWC_MIRQLVL1_MCHGR, 0);
- 
- 	return 0;
--
--err_sysfs:
--	mfd_remove_devices(&pdev->dev);
--err_mfd:
--	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data_tmu);
--err_irq_chip_tmu:
--	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data_level2);
--err_irq_chip_level2:
--	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data);
--
--	return ret;
- }
- 
- static int bxtwc_remove(struct platform_device *pdev)
- {
--	struct intel_soc_pmic *pmic = dev_get_drvdata(&pdev->dev);
--
- 	sysfs_remove_group(&pdev->dev.kobj, &bxtwc_group);
--	mfd_remove_devices(&pdev->dev);
--	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data);
--	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data_level2);
--	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data_tmu);
- 
- 	return 0;
- }
+ 	pmic_irq_count = 0;
+ 	while ((irq = platform_get_irq(pdev, pmic_irq_count)) != -ENXIO) {
 -- 
 2.7.4
