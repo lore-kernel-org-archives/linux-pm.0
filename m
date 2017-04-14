@@ -1,74 +1,66 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v1 7/7] power: bq24190_charger: Set bq24190-battery device .type=unknown
-Date: Fri, 14 Apr 2017 15:43:38 -0700
-Message-ID: <CAKvHMgQ0bqQsGdiXb7V1XZe+P+DqBDVE1z=f0w-7b2_1NC=+ZQ@mail.gmail.com>
-References: <20170321220921.5834-1-liam@networkimprov.net> <20170321220921.5834-8-liam@networkimprov.net>
- <20170323105221.qnyw2m4cgjcb24cl@earth>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: RFC: WMI Enhancements
+Date: Sat, 15 Apr 2017 00:45:30 +0200
+Message-ID: <2216131.lxtCY30Ovb@aspire.rjw.lan>
+References: <20170412230854.GA11963@fury>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f193.google.com ([209.85.223.193]:36637 "EHLO
-        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752629AbdDNWnk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 18:43:40 -0400
-Received: by mail-io0-f193.google.com with SMTP id x86so20148219ioe.3
-        for <linux-pm@vger.kernel.org>; Fri, 14 Apr 2017 15:43:40 -0700 (PDT)
-In-Reply-To: <20170323105221.qnyw2m4cgjcb24cl@earth>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58112 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752277AbdDNWvg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 18:51:36 -0400
+In-Reply-To: <20170412230854.GA11963@fury>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
+To: Darren Hart <dvhart@infradead.org>
+Cc: Len Brown <len.brown@intel.com>, Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Corentin Chary <corentin.chary@gmail.com>, Mario Limonciello <Mario_Limonciello@dell.com>, Andy Lutomirski <luto@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Sebastian,
+On Wednesday, April 12, 2017 04:08:54 PM Darren Hart wrote:
+> Hi All,
+> 
+> There are a few parallel efforts involving the Windows Management
+> Instrumentation (WMI)[1] and dependent/related drivers. I'd like to have a round of
+> discussion among those of you that have been involved in this space before we
+> decide on a direction.
+> 
+> The WMI support in the kernel today fairly narrowly supports a handful of
+> systems. Andy L. has a work-in-progress series [2] which converts wmi into a
+> platform device and a proper bus, providing devices for dependent drivers to
+> bind to, and a mechanism for sibling devices to communicate with each other.
+> I've reviewed the series and feel like the approach is sound, I plan to carry
+> this series forward and merge it (with Andy L's permission).
+> 
+> Are there any objections to this?
+> 
+> In Windows, applications interact with WMI more or less directly. We don't do
+> this in Linux currently, although it has been discussed in the past [3]. Some
+> vendors will work around this by performing SMI/SMM, which is inefficient at
+> best. Exposing WMI methods to userspace would bring parity to WMI for Linux and
+> Windows.
+> 
+> There are two principal concerns I'd appreciate your thoughts on:
+> 
+> a) As an undiscoverable interface (you need to know the method signatures ahead
+> of time), universally exposing every WMI "device" to userspace seems like "a bad
+> idea" from a security and stability perspective. While access would certainly be
+> privileged, it seems more prudent to make this exposure opt-in. We also handle
+> some of this with kernel drivers and exposing those "devices" to userspace would
+> enable userspace and the kernel to fight over control. So - if we expose WMI
+> devices to userspace, I believe this should be done on a case by case basis,
+> opting in, and not by default as part of the WMI driver (although it can provide
+> the mechanism for a sub-driver to use), and possibly a devmode to do so by
+> default.
 
-Re surfacing the batfet state as a regulator...
+A couple of loose thoughts here.
 
-On Thu, Mar 23, 2017 at 3:52 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
->
-> On Tue, Mar 21, 2017 at 03:09:21PM -0700, Liam Breck wrote:
->> From: Liam Breck <kernel@networkimprov.net>
->>
->> Not for upstream.
->
-> Obviously.
->
->> Temporary workaround to prevent bq24190-battery device
->> from interfering with a fuel gauge that has .type=power_supply_type_battery
->>
->> I'll move properties from -battery device to -charger in a subsequent version.
->
-> I thought about the transistor, which can take the battery
-> offline and IMHO it should be exposed as regulator.
+In principle there could be a "generic default WMI driver" or similar that would
+"claim" all WMI "devices" that have not been "claimed" by anyone else and would
+simply expose them to user space somehow (e.g. using a chardev interface).
 
-Note we cannot get the batfet voltage level from a register, just
-batfet_disable == {0,1}. Should we alternatively consider doing this?
-/sys/class...bq24190-charger/online = vbus_up && !batfet_disable
+Then, depending on how that thing is implemented, opt-in etc should be possible
+too.
 
-Otherwise, what are your thoughts on values for these attributes?
-from https://kernel.org/doc/Documentation/ABI/testing/sysfs-class-regulator
-
-/sys/class/regulator/.../state
-/sys/class/regulator/.../status
-/sys/class/regulator/.../type
-/sys/class/regulator/.../name
-/sys/class/regulator/.../num_users
-/sys/class/regulator/.../parent
-
-I assume the volts, amps, and suspend attributes aren't relevant.
-
-I don't think we can broadcast batfet_disable changes via
-regulator_notifier_call_chain(), since we don't see an interrupt on
-batfet changes. From
-https://kernel.org/doc/Documentation/power/regulator/regulator.txt
-
-Any pointers to example code appreciated...
-
-
-
-
-> That still leaves the health status reading, though. From
-> userspace's point-of-view this should be merged into the
-> battery device, if fuel-gauge can't provide that information.
->
-> -- Sebastian
+Thanks,
+Rafael
