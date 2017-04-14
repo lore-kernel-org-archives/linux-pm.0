@@ -1,49 +1,53 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 12/13] power: max17042_battery: Add support for SCOPE property
-Date: Fri, 14 Apr 2017 14:59:18 +0200
-Message-ID: <20170414125919.25771-12-hdegoede@redhat.com>
+Subject: [PATCH 13/13] power: max77693_charger: Add supplied_to info to power_supply_config
+Date: Fri, 14 Apr 2017 14:59:19 +0200
+Message-ID: <20170414125919.25771-13-hdegoede@redhat.com>
 References: <20170414125919.25771-1-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:33714 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:60806 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751739AbdDNM7i (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Apr 2017 08:59:38 -0400
+        id S1752808AbdDNM7k (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Apr 2017 08:59:40 -0400
 In-Reply-To: <20170414125919.25771-1-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
 
-Add support for the SCOPE property, always return SCOPE_SYSTEM,
-as the max170xx is used for the main battery on all known systems
-with a max170xx.
+On the exynos4412-trats2 the max77693 is used together with a
+max17047 fuel-gauge. Add supplied_to info containing "main-battery",
+so that the get_status code in the max17042_battery driver can use
+power_supply_am_i_supplied and can properly let userspace know
+if the battery is being charged or not.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/max17042_battery.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/power/supply/max77693_charger.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index fab4b95..ce6f38c 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -100,6 +100,7 @@ static enum power_supply_property max17042_battery_props[] = {
- 	POWER_SUPPLY_PROP_TEMP_MIN,
- 	POWER_SUPPLY_PROP_TEMP_MAX,
- 	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_SCOPE,
- 	POWER_SUPPLY_PROP_CURRENT_NOW,
- 	POWER_SUPPLY_PROP_CURRENT_AVG,
- };
-@@ -367,6 +368,9 @@ static int max17042_get_property(struct power_supply *psy,
- 		if (ret < 0)
- 			return ret;
- 		break;
-+	case POWER_SUPPLY_PROP_SCOPE:
-+		val->intval = POWER_SUPPLY_SCOPE_SYSTEM;
-+		break;
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
- 		if (chip->pdata->enable_current_sense) {
- 			ret = regmap_read(map, MAX17042_Current, &data);
+diff --git a/drivers/power/supply/max77693_charger.c b/drivers/power/supply/max77693_charger.c
+index 6c78884..1eeed26 100644
+--- a/drivers/power/supply/max77693_charger.c
++++ b/drivers/power/supply/max77693_charger.c
+@@ -254,6 +254,10 @@ static int max77693_charger_get_property(struct power_supply *psy,
+ 	return ret;
+ }
+ 
++static char *max77693_charger_supplied_to[] = {
++	"main-battery",
++};
++
+ static const struct power_supply_desc max77693_charger_desc = {
+ 	.name		= MAX77693_CHARGER_NAME,
+ 	.type		= POWER_SUPPLY_TYPE_BATTERY,
+@@ -697,6 +701,8 @@ static int max77693_charger_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
++	psy_cfg.supplied_to = max77693_charger_supplied_to;
++	psy_cfg.num_supplicants = ARRAY_SIZE(max77693_charger_supplied_to),
+ 	psy_cfg.drv_data = chg;
+ 
+ 	ret = device_create_file(&pdev->dev, &dev_attr_fast_charge_timer);
 -- 
 2.9.3
