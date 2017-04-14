@@ -1,64 +1,166 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PULL-Request] for Rafael's Linux-PM from PM/Devfreq
-Date: Fri, 14 Apr 2017 02:02:07 +0000
-Message-ID: <20170414020207epcms1p13700dff0d91567e03a706297c7fd3876@epcms1p1>
-References: <CGME20170414020207epcms1p13700dff0d91567e03a706297c7fd3876@epcms1p1>
-Reply-To: myungjoo.ham@samsung.com
+From: Keerthy <j-keerthy@ti.com>
+Subject: [PATCH v3 2/2] thermal: core: Add a back up thermal shutdown mechanism
+Date: Fri, 14 Apr 2017 10:48:25 +0530
+Message-ID: <1492147105-26692-2-git-send-email-j-keerthy@ti.com>
+References: <1492147105-26692-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_76767_933434846.1492135327595"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:37503 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751260AbdDNCCJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 22:02:09 -0400
-Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
- by mailout3.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OOD031UZMZK6K70@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Fri, 14 Apr 2017 11:02:08 +0900 (KST)
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:22489 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751895AbdDNFSh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 01:18:37 -0400
+In-Reply-To: <1492147105-26692-1-git-send-email-j-keerthy@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: j-keerthy@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
-------=_Part_76767_933434846.1492135327595
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
+orderly_poweroff is triggered when a graceful shutdown
+of system is desired. This may be used in many critical states of the
+kernel such as when subsystems detects conditions such as critical
+temperature conditions. However, in certain conditions in system
+boot up sequences like those in the middle of driver probes being
+initiated, userspace will be unable to power off the system in a clean
+manner and leaves the system in a critical state. In cases like these,
+the /sbin/poweroff will return success (having forked off to attempt
+powering off the system. However, the system overall will fail to
+completely poweroff (since other modules will be probed) and the system
+is still functional with no userspace (since that would have shut itself
+off).
 
-RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBhIHB1bGwgcmVxdWVzdCBmcm9tIFBNL2RldmZyZXEg
-d2l0aCBhIGNvbW1pdCB0aGF0IHJlZmFjdG9ycyBpdHMgaGVhZGVycy4NCihtb3ZpbmcgYSBzdHJ1
-Y3Qgbm90IGJlaW5nIHVzZWQgYnkgb3V0c2lkZSBjb2RlcyB0byBhIHByaXZhdGUgaGVhZGVyKQ0K
-DQoNCkNoZWVycywNCk15dW5nSm9vDQoNCi0tLS0tQkVHSU4gUEdQIFNJR05FRCBNRVNTQUdFLS0t
-LS0NCkhhc2g6IFNIQTENCg0KVGhlIGZvbGxvd2luZyBjaGFuZ2VzIHNpbmNlIGNvbW1pdCAzOWRh
-N2M1MDlhY2ZmMTNmYzhjYjEyZWMxYmIyMDMzN2M5ODhlZDM2Og0KDQogIExpbnV4IDQuMTEtcmM2
-ICgyMDE3LTA0LTA5IDA5OjQ5OjQ0IC0wNzAwKQ0KDQphcmUgYXZhaWxhYmxlIGluIHRoZSBnaXQg
-cmVwb3NpdG9yeSBhdDoNCg0KICBodHRwczovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgv
-a2VybmVsL2dpdC9tengvZGV2ZnJlcS5naXQgZm9yLW5leHQNCg0KZm9yIHlvdSB0byBmZXRjaCBj
-aGFuZ2VzIHVwIHRvIDNlYTZiNzAwMWVmNWRhOWY5ODE2ZWUzYzRmZTczMWY0ZmUwOGI4NjU6DQoN
-CiAgUE0gLyBkZXZmcmVxOiBNb3ZlIHN0cnVjdCBkZXZmcmVxX2dvdmVybm9yIHRvIGRldmZyZXEg
-ZGlyZWN0b3J5ICgyMDE3LTA0LTEyIDEyOjQyOjE0ICswOTAwKQ0KDQotIC0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NClB1bGwg
-UmVxdWVzdCBmb3IgTGludXgtUE0gZnJvbSBEZXZmcmVxLiAoY29kZSByZWZhY3RvcmluZykNCg0K
-LSAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tDQpDaGFud29vIENob2kgKDEpOg0KICAgICAgUE0gLyBkZXZmcmVxOiBNb3ZlIHN0
-cnVjdCBkZXZmcmVxX2dvdmVybm9yIHRvIGRldmZyZXEgZGlyZWN0b3J5DQoNCiBkcml2ZXJzL2Rl
-dmZyZXEvZ292ZXJub3IuaCB8IDI5ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQogaW5j
-bHVkZS9saW51eC9kZXZmcmVxLmggICAgfCAzMCArLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0NCiAyIGZpbGVzIGNoYW5nZWQsIDMwIGluc2VydGlvbnMoKyksIDI5IGRlbGV0aW9ucygtKQ0K
-LS0tLS1CRUdJTiBQR1AgU0lHTkFUVVJFLS0tLS0NClZlcnNpb246IEdudVBHIHYxDQoNCmlRSWNC
-QUVCQWdBR0JRSlk4Q3plQUFvSkVCT2h1cnZXQm9DS0VmQVFBSjlmNlNxU1Nzc1c3YWZXYUROdmNL
-bzYNCldGWThManBSMkVRWk82UTlxKy84R3FXaSswSEJzZjJDZE9jQ01LS2creThMK2twcnFQb21M
-UUtmeDNDTkk4WlkNCldmTTdiRjFoeGZDWXhlMGFiSDhJQ3FaclRYWXRXeWFETjI3TzlhOFZrdUM0
-aXhoMTl2K1dlUGZkTzd1RGpqNTQNCitLNzdpMjZsanJoQ0F6KzYrZ05UMVBsUnRuckJVeVJvTlFP
-bFNtT2dRbmFON0RpWUkrYlZvR3FBYVpWYjE1RFkNCmF3VElnejBPQnBqM0xJZWFnVk1vOG1UQ3lE
-cFZKTnhvWnNpdEYyalUzWUlBdWc4TE9GaGVrQWdTV0N1RWlWMGgNCjNqTHRGVkpqN3lueHpXaW80
-d0RvRWwrd2Z6RWdlVGRtaVZPNEl3YzNJQkliYlg1SGdFaWUwT3ZZODlKM1E0RnQNCjRYRFB1TEc2
-NExSUkdLdUgvS1lmL0FWM1RtdDJqYUxSbVZEektHQXF5RHdBblJ6NDZBSzE4M042cVFYdzQ4L2gN
-CmdDUVVYUVIvcy9OTW9ZRjMvdVFvblhMbXpVclQrWW9JN0wyb3NJZ3BML2tBUjZOY0hmMjFtK21y
-YldWeE04TXUNCmdodi9pMUVLcTN5VktRdndPakdMNExELzdldmZoRXI4VWdIcU83KzNZQlB5c2ZJ
-aVp1SjJLOE1qZHdoV0pPM24NClNYaTlURG81VjdpUVltNDhLeUg1QnMyZW5zem9ETVJ0STZtT3l5
-MW9RRFZ0MGNGQlN4Yklud2xJdGZ5dDcxU0YNCmhnT0N1Q29CRzJBQ3UwUHU0UWRtRmJ5MHdRaW03
-NC9scytqR2Rva3BPN2RRdW5TRzFiMnZvdlcwOGZUKzBib28NCnA5VXN5bEs0TUo4dEZiVmp6dWFN
-DQo9Vk5JRQ0KLS0tLS1FTkQgUEdQIFNJR05BVFVSRS0tLS0tDQo=
-------=_Part_76767_933434846.1492135327595--
+However, there is no clean way of detecting such failure of userspace
+powering off the system. In such scenarios, it is necessary for a backup
+workqueue to be able to force a shutdown of the system when orderly
+shutdown is not successful after a configurable time period.
+
+Reported-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Keerthy <j-keerthy@ti.com>
+---
+
+Changes in v3:
+
+  * Removed unnecessary mutex init.
+  * Added WARN messages instead of a simple warning message.
+  * Added Documentation.
+
+ Documentation/thermal/sysfs-api.txt | 18 +++++++++++++++
+ drivers/thermal/Kconfig             | 13 +++++++++++
+ drivers/thermal/thermal_core.c      | 45 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 76 insertions(+)
+
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index ef473dc..94b707c 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -582,3 +582,21 @@ platform data is provided, this uses the step_wise throttling policy.
+ This function serves as an arbitrator to set the state of a cooling
+ device. It sets the cooling device to the deepest cooling state if
+ possible.
++
++6. thermal_emergency_poweroff:
++
++On an event of critical trip temperature crossing. Thermal framework
++allows the system to shutdown gracefully by calling orderly_poweroff.
++In the event of a failure of orderly_poweroff to shut down the system
++we are in danger of keeping the system alive at undesirably high
++temperatures. To mitigate this high risk scenario we program a work
++queue to fire after a pre-determined number of seconds to start
++an emergency shutdown of the device using the kernel_power_off
++function.
++
++The delay should be carefully profiled so as to give adequate time for
++orderly_poweroff. In case of failure of an orderly_poweroff the
++emergency poweroff kicks in after the delay has elapsed and shuts down
++the system.
++
++If set to 0 emergency poweroff will happen immediately.
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 9347401..971fd54 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -15,6 +15,19 @@ menuconfig THERMAL
+ 
+ if THERMAL
+ 
++config THERMAL_EMERGENCY_POWEROFF_DELAY_MS
++	int "Emergency poweroff delay in milli-seconds"
++	depends on THERMAL
++	default 0
++	help
++	  The number of milliseconds to delay before emergency
++	  poweroff kicks in. The delay should be carefully profiled
++	  so as to give adequate time for orderly_poweroff. In case
++	  of failure of an orderly_poweroff the emergency poweroff
++	  kicks in after the delay has elapsed and shuts down the system.
++
++	  If set to 0 poweroff will happen immediately.
++
+ config THERMAL_HWMON
+ 	bool
+ 	prompt "Expose thermal sensors as hwmon device"
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 9cad1ba..30098cd 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -323,6 +323,46 @@ static void handle_non_critical_trips(struct thermal_zone_device *tz,
+ 		       def_governor->throttle(tz, trip);
+ }
+ 
++/**
++ * emergency_poweroff_func - emergency poweroff work after a known delay
++ * @work: work_struct associated with the emergency poweroff function
++ *
++ * This function is called in very critical situations to force
++ * a kernel poweroff after a configurable timeout value.
++ */
++static void emergency_poweroff_func(struct work_struct *work)
++{
++	/*
++	 * We have reached here after the emergency thermal shutdown
++	 * Waiting period has expired. This means orderly_poweroff has
++	 * not been able to shut off the system for some reason.
++	 * Try to shut down the system immediately using kernel_power_off
++	 * if populated
++	 */
++	WARN(1, "Attempting kernel_power_off: Temperature too high\n");
++	kernel_power_off();
++
++	/*
++	 * Worst of the worst case trigger emergency restart
++	 */
++	WARN(1, "Attempting emergency_restart: Temperature too high\n");
++	emergency_restart();
++}
++
++static DECLARE_DELAYED_WORK(emergency_poweroff_work, emergency_poweroff_func);
++
++/**
++ * emergency_poweroff - Trigger an emergency system poweroff
++ *
++ * This may be called from any critical situation to trigger a system shutdown
++ * after a known period of time. By default the delay is 0 millisecond
++ */
++void thermal_emergency_poweroff(void)
++{
++	schedule_delayed_work(&emergency_poweroff_work,
++			      msecs_to_jiffies(CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS));
++}
++
+ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 				  int trip, enum thermal_trip_type trip_type)
+ {
+@@ -346,6 +386,11 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 			  tz->temperature / 1000);
+ 		mutex_lock(&poweroff_lock);
+ 		if (!power_off_triggered) {
++			/*
++			 * Queue a backup emergency shutdown in the event of
++			 * orderly_poweroff failure
++			 */
++			thermal_emergency_poweroff();
+ 			orderly_poweroff(true);
+ 			power_off_triggered = true;
+ 		}
+-- 
+1.9.1
