@@ -1,228 +1,92 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 2/2] thermal: core: Add a back up thermal shutdown
- mechanism
-Date: Thu, 13 Apr 2017 23:03:55 -0700
-Message-ID: <20170414060353.GB19715@localhost.localdomain>
-References: <1492147105-26692-1-git-send-email-j-keerthy@ti.com>
- <1492147105-26692-2-git-send-email-j-keerthy@ti.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: PCI / PM: Crashes in PME scan during system suspend
+Date: Fri, 14 Apr 2017 10:22:49 +0200
+Message-ID: <20170414082249.GA5417@wunner.de>
+References: <CAMuHMdVf-NT_6oGQVba_QgFuW-fZMBDF1CtidfxSxnCr8+BGHg@mail.gmail.com>
+ <2661070.8D7d40DjM3@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="yNb1oOkm5a9FJOVX"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:36093 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751314AbdDNGEA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 02:04:00 -0400
-Content-Disposition: inline
-In-Reply-To: <1492147105-26692-2-git-send-email-j-keerthy@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
-
-
---yNb1oOkm5a9FJOVX
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <2661070.8D7d40DjM3@aspire.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Bjorn Helgaas <bhelgaas@google.com>, Yinghai Lu <yinghai@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms@verge.net.au>, linux-pci <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hey,
+On Tue, Feb 14, 2017 at 12:26:01PM +0100, Rafael J. Wysocki wrote:
+> On Tuesday, February 14, 2017 10:31:38 AM Geert Uytterhoeven wrote:
+> > Laurent Pinchart reported that r8a7790/Lager crashes during suspend tests.
+> > 
+> > I managed to reproduce the issue on r8a7791/koelsch:
+> >   - It only happens during suspend tests, after writing either "platform"
+> >     or "processors" to /sys/power/pm_test,
+> >   - It does not (or is less likely) to happen during full system suspend
+> >     ("core" or "none").
+> > 
+> > More investigation shows this happens when the PME scan runs, once per
+> > second.  During PME scan, the PCI host bridge (rcar-pci) registers are
+> > accessed while the host bridge's module clock has already been disabled,
+> > leading to a crash.
+> 
+> OK, so clearly PME scans should be suspended before the host bridge
+> registers become inaccessible.
+> 
+> Another question, though, is whether or not PME scans are actually necessary
+> on the affected platforms at all.
 
-On Fri, Apr 14, 2017 at 10:48:25AM +0530, Keerthy wrote:
-> orderly_poweroff is triggered when a graceful shutdown
-> of system is desired. This may be used in many critical states of the
-> kernel such as when subsystems detects conditions such as critical
-> temperature conditions. However, in certain conditions in system
-> boot up sequences like those in the middle of driver probes being
-> initiated, userspace will be unable to power off the system in a clean
-> manner and leaves the system in a critical state. In cases like these,
-> the /sbin/poweroff will return success (having forked off to attempt
-> powering off the system. However, the system overall will fail to
-> completely poweroff (since other modules will be probed) and the system
-> is still functional with no userspace (since that would have shut itself
-> off).
->=20
-> However, there is no clean way of detecting such failure of userspace
-> powering off the system. In such scenarios, it is necessary for a backup
-> workqueue to be able to force a shutdown of the system when orderly
-> shutdown is not successful after a configurable time period.
->=20
-> Reported-by: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Keerthy <j-keerthy@ti.com>
-> ---
->=20
-> Changes in v3:
->=20
->   * Removed unnecessary mutex init.
->   * Added WARN messages instead of a simple warning message.
->   * Added Documentation.
->=20
->  Documentation/thermal/sysfs-api.txt | 18 +++++++++++++++
->  drivers/thermal/Kconfig             | 13 +++++++++++
->  drivers/thermal/thermal_core.c      | 45 +++++++++++++++++++++++++++++++=
-++++++
->  3 files changed, 76 insertions(+)
+I'm not seeing a fix for this in linux-next, am I missing something?
+Has anyone looked into it or is the issue still open?
 
-Cool!
+Below is a tentative patch which moves PME polling to a freezable
+workqueue, so it is frozen before the host bridge is suspended.
+Geert, Laurent, could you test this?
 
-Just minor comments..
+The patch may be problematic in that pci_pme_list_scan() acquires
+pci_pme_list_mutex, which is also acquired by pci_pme_active(),
+which gets called when devices are suspended -- *after* the worker
+has been frozen.  I'm not really familiar with the freezer, can it
+happen that the worker is frozen while holding the mutex?  If so
+this would deadlock.  Rafael?
 
->=20
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/=
-sysfs-api.txt
-> index ef473dc..94b707c 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -582,3 +582,21 @@ platform data is provided, this uses the step_wise t=
-hrottling policy.
->  This function serves as an arbitrator to set the state of a cooling
->  device. It sets the cooling device to the deepest cooling state if
->  possible.
-> +
-> +6. thermal_emergency_poweroff:
-> +
-> +On an event of critical trip temperature crossing. Thermal framework
-> +allows the system to shutdown gracefully by calling orderly_poweroff.
-> +In the event of a failure of orderly_poweroff to shut down the system
-> +we are in danger of keeping the system alive at undesirably high
-> +temperatures. To mitigate this high risk scenario we program a work
-> +queue to fire after a pre-determined number of seconds to start
-> +an emergency shutdown of the device using the kernel_power_off
-> +function.
-> +
-> +The delay should be carefully profiled so as to give adequate time for
-> +orderly_poweroff. In case of failure of an orderly_poweroff the
-> +emergency poweroff kicks in after the delay has elapsed and shuts down
-> +the system.
+Alternative approaches would be to
+(a) skip devices in pci_pme_list_scan() if their is_prepared or
+    is_suspended flags are set, or
+(b) disable PME polling via a PM notifier.
 
-Can you mark functions with () in the above, e.g., orderly_poweroff().
+The latter seems preferable performance-wise.  (To avoid checking
+these flags once per second.)
 
-Also, you did not mention about the call to emergency_reset();
+Best regards,
 
-> +
-> +If set to 0 emergency poweroff will happen immediately.
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 9347401..971fd54 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -15,6 +15,19 @@ menuconfig THERMAL
-> =20
->  if THERMAL
-> =20
-> +config THERMAL_EMERGENCY_POWEROFF_DELAY_MS
-> +	int "Emergency poweroff delay in milli-seconds"
-> +	depends on THERMAL
-> +	default 0
-> +	help
-> +	  The number of milliseconds to delay before emergency
-> +	  poweroff kicks in. The delay should be carefully profiled
-> +	  so as to give adequate time for orderly_poweroff. In case
-> +	  of failure of an orderly_poweroff the emergency poweroff
-> +	  kicks in after the delay has elapsed and shuts down the system.
-> +
-> +	  If set to 0 poweroff will happen immediately.
-> +
->  config THERMAL_HWMON
->  	bool
->  	prompt "Expose thermal sensors as hwmon device"
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
-e.c
-> index 9cad1ba..30098cd 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -323,6 +323,46 @@ static void handle_non_critical_trips(struct thermal=
-_zone_device *tz,
->  		       def_governor->throttle(tz, trip);
->  }
-> =20
-> +/**
-> + * emergency_poweroff_func - emergency poweroff work after a known delay
+Lukas
 
-s/emergency_poweroff_func/thermal_emergency_poweroff_func/g
+-- >8 --
 
-> + * @work: work_struct associated with the emergency poweroff function
-> + *
-> + * This function is called in very critical situations to force
-> + * a kernel poweroff after a configurable timeout value.
-> + */
-> +static void emergency_poweroff_func(struct work_struct *work)
-> +{
-> +	/*
-> +	 * We have reached here after the emergency thermal shutdown
-> +	 * Waiting period has expired. This means orderly_poweroff has
-> +	 * not been able to shut off the system for some reason.
-> +	 * Try to shut down the system immediately using kernel_power_off
-> +	 * if populated
-> +	 */
-> +	WARN(1, "Attempting kernel_power_off: Temperature too high\n");
-> +	kernel_power_off();
-> +
-> +	/*
-> +	 * Worst of the worst case trigger emergency restart
-> +	 */
-> +	WARN(1, "Attempting emergency_restart: Temperature too high\n");
-> +	emergency_restart();
-> +}
-> +
-> +static DECLARE_DELAYED_WORK(emergency_poweroff_work, emergency_poweroff_=
-func);
-> +
-> +/**
-> + * emergency_poweroff - Trigger an emergency system poweroff
-
-s/emergency_poweroff/thermal_emergency_poweroff/g
-
-> + *
-> + * This may be called from any critical situation to trigger a system sh=
-utdown
-> + * after a known period of time. By default the delay is 0 millisecond
-> + */
-> +void thermal_emergency_poweroff(void)
-> +{
-> +	schedule_delayed_work(&emergency_poweroff_work,
-> +			      msecs_to_jiffies(CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS));
-> +}
-> +
->  static void handle_critical_trips(struct thermal_zone_device *tz,
->  				  int trip, enum thermal_trip_type trip_type)
->  {
-> @@ -346,6 +386,11 @@ static void handle_critical_trips(struct thermal_zon=
-e_device *tz,
->  			  tz->temperature / 1000);
->  		mutex_lock(&poweroff_lock);
->  		if (!power_off_triggered) {
-> +			/*
-> +			 * Queue a backup emergency shutdown in the event of
-> +			 * orderly_poweroff failure
-> +			 */
-> +			thermal_emergency_poweroff();
->  			orderly_poweroff(true);
->  			power_off_triggered =3D true;
->  		}
-> --=20
-> 1.9.1
->=20
-
---yNb1oOkm5a9FJOVX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJY8GZBAAoJEA6VkvSQfF5T5EwP/je1oL6wq9cq4IO9Sz+V+D7y
-pN9/Hni+vwGJFWEdOGH3MBkjhhbAdgzkKZrDZgtbwz13ILfOQIjim+dRtVltDRKl
-a+3DHzA1fL6lYKINst7hnMTPFm0lgMVxNFadPdqXWXCyfye/tr7lIHhygrmyvnNq
-EtLgyAmMFF06Fr4oE+RneWvpWZrdB9sM4d5ebATp1GsRCbuw47jVKIFntRGIT71e
-X9EdmYjyaW0peahhYJDk8gLnmi0XbAssvg6wy/vvqyKcxiPGFtXgeD/85fYIKqCG
-iSyBbpFa8zloI1N0C5v3DwoMUVzb0Sh4VdfY+juEyN6meDpIuY/LdWlopuYjv7P6
-bdb/0jRlIztHcc26eCVp0fU0nbv/Pd6t9vASixssrX48F32bgUQ63aB9LoK5Japc
-oD74vNUv1euo9k4XK6Kuk8Yqu1cdCnA/HXQwfvFSXSZukGkKFAG/9rIFA849ZRGv
-mJgWw/wY9RMYIx3ZYEwuhlBZD8oij+UO/rtuhePFTf/I0rjlcBJmEG2b0KStt298
-VjQ3Vq3+Jmmd/xgU5bKnWetYb35RsFbtWy6zaXbOePoe74jooFGEsVxdpOgRxYHY
-ajeZDYWvhe8O4NLOLoSxraUAicTkCub1IFHwTUz94kcYmP2o1V23RzTHYgS1xElW
-0GGW45vr8e+2avjJyarn
-=hGQS
------END PGP SIGNATURE-----
-
---yNb1oOkm5a9FJOVX--
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 7904d02..d35c016 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1782,8 +1782,8 @@ static void pci_pme_list_scan(struct work_struct *work)
+ 		}
+ 	}
+ 	if (!list_empty(&pci_pme_list))
+-		schedule_delayed_work(&pci_pme_work,
+-				      msecs_to_jiffies(PME_TIMEOUT));
++		queue_delayed_work(system_freezable_wq, &pci_pme_work,
++				   msecs_to_jiffies(PME_TIMEOUT));
+ 	mutex_unlock(&pci_pme_list_mutex);
+ }
+ 
+@@ -1848,8 +1848,9 @@ void pci_pme_active(struct pci_dev *dev, bool enable)
+ 			mutex_lock(&pci_pme_list_mutex);
+ 			list_add(&pme_dev->list, &pci_pme_list);
+ 			if (list_is_singular(&pci_pme_list))
+-				schedule_delayed_work(&pci_pme_work,
+-						      msecs_to_jiffies(PME_TIMEOUT));
++				queue_delayed_work(system_freezable_wq,
++						   &pci_pme_work,
++						   msecs_to_jiffies(PME_TIMEOUT));
+ 			mutex_unlock(&pci_pme_list_mutex);
+ 		} else {
+ 			mutex_lock(&pci_pme_list_mutex);
