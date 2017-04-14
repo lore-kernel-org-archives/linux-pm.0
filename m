@@ -1,69 +1,64 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v5 1/2] power: supply: bq24190_charger: Use new
- extcon_register_notifier_all()
-Date: Fri, 14 Apr 2017 10:15:06 +0900
-Message-ID: <58F0229A.1090200@samsung.com>
-References: <20170413120412.12773-1-hdegoede@redhat.com>
-        <20170413120412.12773-2-hdegoede@redhat.com>
-        <20170413233526.ebtytz54d3ux2oze@earth>
-        <CGME20170413234503epcas1p1c91946cb5246310ae53016399f21ac1c@epcas1p1.samsung.com>
-        <20170413234448.stxmxvnemldzjyq3@earth>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PULL-Request] for Rafael's Linux-PM from PM/Devfreq
+Date: Fri, 14 Apr 2017 02:02:07 +0000
+Message-ID: <20170414020207epcms1p13700dff0d91567e03a706297c7fd3876@epcms1p1>
+References: <CGME20170414020207epcms1p13700dff0d91567e03a706297c7fd3876@epcms1p1>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/related;
+ boundary="----=_Part_76767_933434846.1492135327595"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:49201 "EHLO
-        epoutp01.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751083AbdDNBPK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 21:15:10 -0400
-In-reply-to: <20170413234448.stxmxvnemldzjyq3@earth>
+Received: from mailout3.samsung.com ([203.254.224.33]:37503 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751260AbdDNCCJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Apr 2017 22:02:09 -0400
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+ by mailout3.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OOD031UZMZK6K70@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Fri, 14 Apr 2017 11:02:08 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Takashi Iwai <tiwai@suse.de>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org
+To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>
 
-Hi Sebastian,
+------=_Part_76767_933434846.1492135327595
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-On 2017년 04월 14일 08:44, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Fri, Apr 14, 2017 at 01:35:26AM +0200, Sebastian Reichel wrote:
->> Hi,
->>
->> On Thu, Apr 13, 2017 at 02:04:11PM +0200, Hans de Goede wrote:
->>> When I submitted the extcon handling I had a patch pending for the
->>> extcon sub-system for extcon_register_notifier to take -1 as cable id
->>> for listening for all type cable events on an extcon with a single
->>> notifier.
->>>
->>> In the end it was decided to instead add a new
->>> extcon_register_notifier_all function for this, switch to using this.
->>>
->>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->>> Acked-by: Liam Breck <kernel@networkimprov.net>
->>
->> With extcon_register_notifier_all() being new and not available
->> in my tree I can't simply queue this patch. Also it can't simply
->> go through the extcon subsystem, since it depends on changes in
->> the power-supply subsystem and results in non-trivial merge conflict.
->> I see three merge solutions:
->>
->>  1. Defer to 4.13 (since we are already quite near the merge window)
->>  2. I need a immutable branch with extcon_register_notifier_all()
->>     from the extcon subsystem
->>  3. It may count as Fix and could be queued during the 4.12-rc
->>     phase based von 4.12-rc1
-> 
-> Sorry for the noise, I just saw the immutable branch in the cover
-> mail. I will queue this now. Unfortunately it means rebasing the
-> power-supply tree to 4.11-rc4 (or ugly merge, which is annoying
-> in the pull-request). Chanwoo, please try to use -rc1 as base for
-> immutable branches in the future.
-
-I'm really sorry about this. It is my fault. In the future,
-I'll use the -rc1 for the immutable branch. Thanks.
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBhIHB1bGwgcmVxdWVzdCBmcm9tIFBNL2RldmZyZXEg
+d2l0aCBhIGNvbW1pdCB0aGF0IHJlZmFjdG9ycyBpdHMgaGVhZGVycy4NCihtb3ZpbmcgYSBzdHJ1
+Y3Qgbm90IGJlaW5nIHVzZWQgYnkgb3V0c2lkZSBjb2RlcyB0byBhIHByaXZhdGUgaGVhZGVyKQ0K
+DQoNCkNoZWVycywNCk15dW5nSm9vDQoNCi0tLS0tQkVHSU4gUEdQIFNJR05FRCBNRVNTQUdFLS0t
+LS0NCkhhc2g6IFNIQTENCg0KVGhlIGZvbGxvd2luZyBjaGFuZ2VzIHNpbmNlIGNvbW1pdCAzOWRh
+N2M1MDlhY2ZmMTNmYzhjYjEyZWMxYmIyMDMzN2M5ODhlZDM2Og0KDQogIExpbnV4IDQuMTEtcmM2
+ICgyMDE3LTA0LTA5IDA5OjQ5OjQ0IC0wNzAwKQ0KDQphcmUgYXZhaWxhYmxlIGluIHRoZSBnaXQg
+cmVwb3NpdG9yeSBhdDoNCg0KICBodHRwczovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgv
+a2VybmVsL2dpdC9tengvZGV2ZnJlcS5naXQgZm9yLW5leHQNCg0KZm9yIHlvdSB0byBmZXRjaCBj
+aGFuZ2VzIHVwIHRvIDNlYTZiNzAwMWVmNWRhOWY5ODE2ZWUzYzRmZTczMWY0ZmUwOGI4NjU6DQoN
+CiAgUE0gLyBkZXZmcmVxOiBNb3ZlIHN0cnVjdCBkZXZmcmVxX2dvdmVybm9yIHRvIGRldmZyZXEg
+ZGlyZWN0b3J5ICgyMDE3LTA0LTEyIDEyOjQyOjE0ICswOTAwKQ0KDQotIC0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NClB1bGwg
+UmVxdWVzdCBmb3IgTGludXgtUE0gZnJvbSBEZXZmcmVxLiAoY29kZSByZWZhY3RvcmluZykNCg0K
+LSAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tDQpDaGFud29vIENob2kgKDEpOg0KICAgICAgUE0gLyBkZXZmcmVxOiBNb3ZlIHN0
+cnVjdCBkZXZmcmVxX2dvdmVybm9yIHRvIGRldmZyZXEgZGlyZWN0b3J5DQoNCiBkcml2ZXJzL2Rl
+dmZyZXEvZ292ZXJub3IuaCB8IDI5ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQogaW5j
+bHVkZS9saW51eC9kZXZmcmVxLmggICAgfCAzMCArLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0NCiAyIGZpbGVzIGNoYW5nZWQsIDMwIGluc2VydGlvbnMoKyksIDI5IGRlbGV0aW9ucygtKQ0K
+LS0tLS1CRUdJTiBQR1AgU0lHTkFUVVJFLS0tLS0NClZlcnNpb246IEdudVBHIHYxDQoNCmlRSWNC
+QUVCQWdBR0JRSlk4Q3plQUFvSkVCT2h1cnZXQm9DS0VmQVFBSjlmNlNxU1Nzc1c3YWZXYUROdmNL
+bzYNCldGWThManBSMkVRWk82UTlxKy84R3FXaSswSEJzZjJDZE9jQ01LS2creThMK2twcnFQb21M
+UUtmeDNDTkk4WlkNCldmTTdiRjFoeGZDWXhlMGFiSDhJQ3FaclRYWXRXeWFETjI3TzlhOFZrdUM0
+aXhoMTl2K1dlUGZkTzd1RGpqNTQNCitLNzdpMjZsanJoQ0F6KzYrZ05UMVBsUnRuckJVeVJvTlFP
+bFNtT2dRbmFON0RpWUkrYlZvR3FBYVpWYjE1RFkNCmF3VElnejBPQnBqM0xJZWFnVk1vOG1UQ3lE
+cFZKTnhvWnNpdEYyalUzWUlBdWc4TE9GaGVrQWdTV0N1RWlWMGgNCjNqTHRGVkpqN3lueHpXaW80
+d0RvRWwrd2Z6RWdlVGRtaVZPNEl3YzNJQkliYlg1SGdFaWUwT3ZZODlKM1E0RnQNCjRYRFB1TEc2
+NExSUkdLdUgvS1lmL0FWM1RtdDJqYUxSbVZEektHQXF5RHdBblJ6NDZBSzE4M042cVFYdzQ4L2gN
+CmdDUVVYUVIvcy9OTW9ZRjMvdVFvblhMbXpVclQrWW9JN0wyb3NJZ3BML2tBUjZOY0hmMjFtK21y
+YldWeE04TXUNCmdodi9pMUVLcTN5VktRdndPakdMNExELzdldmZoRXI4VWdIcU83KzNZQlB5c2ZJ
+aVp1SjJLOE1qZHdoV0pPM24NClNYaTlURG81VjdpUVltNDhLeUg1QnMyZW5zem9ETVJ0STZtT3l5
+MW9RRFZ0MGNGQlN4Yklud2xJdGZ5dDcxU0YNCmhnT0N1Q29CRzJBQ3UwUHU0UWRtRmJ5MHdRaW03
+NC9scytqR2Rva3BPN2RRdW5TRzFiMnZvdlcwOGZUKzBib28NCnA5VXN5bEs0TUo4dEZiVmp6dWFN
+DQo9Vk5JRQ0KLS0tLS1FTkQgUEdQIFNJR05BVFVSRS0tLS0tDQo=
+------=_Part_76767_933434846.1492135327595--
