@@ -1,49 +1,150 @@
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>
-Subject: Re: [PATCH V5 2/2] thermal: broadcom: add Northstar thermal driver
-Date: Fri, 14 Apr 2017 14:16:36 +0200
-Message-ID: <6dd2617d-a8a8-d7a4-53a4-7ebcb274573c@milecki.pl>
-References: <20170331201124.656-1-zajec5@gmail.com>
- <20170403154829.29780-1-zajec5@gmail.com>
- <20170403154829.29780-2-zajec5@gmail.com>
- <20170407044218.GA12447@localhost.localdomain>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v4 2/3] power: supply: bq24190_charger: Do not reset the
+ charger on probe by default
+Date: Fri, 14 Apr 2017 14:44:08 +0200
+Message-ID: <0b4d4397-50e1-7dfa-6a00-82a2b3323e12@redhat.com>
+References: <20170412181808.31768-1-hdegoede@redhat.com>
+ <20170412181808.31768-3-hdegoede@redhat.com>
+ <CAKvHMgTxYa7U+u0W5On9+xgViWuGX5PFMi865f_2HojrnLM-aQ@mail.gmail.com>
+ <72abeafe-1378-50a3-69a5-28f9ab837dcc@redhat.com>
+ <CAKvHMgT-uX4oAhtieYQ+XVNLVWVnhy3-NE5FUuq7RaNSbZDURA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170407044218.GA12447@localhost.localdomain>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Scott Branden <sbranden@broadcom.com>, Stephen Warren <swarren@wwwdotorg.org>, Ray Jui <rjui@broadcom.com>, linux-pm@vger.kernel.org, Lee Jones <lee@kernel.org>, Jon Mason <jon.mason@broadcom.com>, Eric Anholt <eric@anholt.net>, Rob Herring <robh+dt@kernel.org>, bcm-kernel-feedback-list@broadcom.com, linux-rpi-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:43556 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751242AbdDNMoM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Apr 2017 08:44:12 -0400
+In-Reply-To: <CAKvHMgT-uX4oAhtieYQ+XVNLVWVnhy3-NE5FUuq7RaNSbZDURA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-T24gMDQvMDcvMjAxNyAwNjo0MiBBTSwgRWR1YXJkbyBWYWxlbnRpbiB3cm90ZToKPiBPbiBNb24s
-IEFwciAwMywgMjAxNyBhdCAwNTo0ODoyOVBNICswMjAwLCBSYWZhxYIgTWnFgmVja2kgd3JvdGU6
-Cj4+IEZyb206IFJhZmHFgiBNacWCZWNraSA8cmFmYWxAbWlsZWNraS5wbD4KPj4KPj4gTm9ydGhz
-dGFyIGlzIGEgU29DIGZhbWlseSBjb21tb25seSB1c2VkIGluIGhvbWUgcm91dGVycy4gVGhpcyBj
-b21taXQKPj4gYWRkcyBhIGRyaXZlciBmb3IgY2hlY2tpbmcgQ1BVIHRlbXBlcmF0dXJlLiBBcyBO
-b3J0aHN0YXIgUGx1cyBzZWVtcyB0bwo+PiBhbHNvIGhhdmUgdGhpcyBJUCBibG9jayB0aGlzIG5l
-dyBzeW1ib2wgZ2V0cyBBUkNIX0JDTV9JUFJPQyBkZXBlbmRlbmN5Lgo+Pgo+PiBTaWduZWQtb2Zm
-LWJ5OiBSYWZhxYIgTWnFgmVja2kgPHJhZmFsQG1pbGVja2kucGw+Cj4+IFNpZ25lZC1vZmYtYnk6
-IEpvbiBNYXNvbiA8am9uLm1hc29uQGJyb2FkY29tLmNvbT4KPgo+IElmIG5vIG9iamVjdGlvbiwg
-SSBhbSBhcHBseWluZyB0aGlzIHNlcmllcy4KCkNvb2wsIGhvcGVmdWxseSB0aGVyZSBhcmVuJ3Qg
-YW55IG1vcmUgb2JqZWN0aW9ucyA6KSBPbmNlIGFwcGxpZWQgc2hvdWxkIEkKZXhwZWN0IHRoaXMg
-aW4KaHR0cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvZXZhbGVu
-dGkvbGludXgtc29jLXRoZXJtYWwuZ2l0L2xvZy8/aD1uZXh0Cj8KClRoYXQgd291bGQgYWxsb3cg
-bWUgdG8gbW92ZSBiY20yODM1X3RoZXJtYWwuYyB0byB0aGUgYnJvYWRjb20gc3ViZGlyLgoKCj4+
-ICtjb25zdCBzdHJ1Y3QgdGhlcm1hbF96b25lX29mX2RldmljZV9vcHMgbnNfdGhlcm1hbF9vcHMg
-PSB7Cj4KPiBtaW5vciBjb3JyZWN0aW9uIGhlcmU6Cj4KPiAtY29uc3Qgc3RydWN0IHRoZXJtYWxf
-em9uZV9vZl9kZXZpY2Vfb3BzIG5zX3RoZXJtYWxfb3BzID0gewo+ICtzdGF0aWMgY29uc3Qgc3Ry
-dWN0IHRoZXJtYWxfem9uZV9vZl9kZXZpY2Vfb3BzIG5zX3RoZXJtYWxfb3BzID0gewo+Cj4gYnV0
-IEkgYW0gYXBwbHlpbmcgdGhpcyBhbHJlYWR5IGluIG15IHRyZWUuCj4KPj4gKwkuZ2V0X3RlbXAg
-PSBuc190aGVybWFsX2dldF90ZW1wLAo+PiArfTsKClRoYW5rIHlvdSEKCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGlu
-ZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMu
-aW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+Hi,
+
+On 14-04-17 12:34, Liam Breck wrote:
+> G'day Hans,
+>
+> On Thu, Apr 13, 2017 at 4:54 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> Hi,
+>>
+>>
+>> On 13-04-17 01:06, Liam Breck wrote:
+
+<snip>
+
+>>>> diff --git a/drivers/power/supply/bq24190_charger.c
+>>>> b/drivers/power/supply/bq24190_charger.c
+>>>> index bd9e5c3..ad429b7 100644
+>>>> --- a/drivers/power/supply/bq24190_charger.c
+>>>> +++ b/drivers/power/supply/bq24190_charger.c
+>>>> @@ -1382,9 +1382,11 @@ static int bq24190_hw_init(struct bq24190_dev_info
+>>>> *bdi)
+>>>>                 return -ENODEV;
+>>>>         }
+>>>>
+>>>> -       ret = bq24190_register_reset(bdi);
+>>>> -       if (ret < 0)
+>>>> -               return ret;
+>>>> +       if (device_property_read_bool(bdi->dev, "reset-on-probe")) {
+>>>> +               ret = bq24190_register_reset(bdi);
+>>>> +               if (ret < 0)
+>>>> +                       return ret;
+>>>> +       }
+>>>
+>>>
+>>> Maybe check property and return if true in register_reset(), instead
+>>> of adjusting all the calls. There would be a set_mode_host() in
+>>> resume() which is unnecessary, but it's a no-op to set host mode when
+>>> we're already in it.
+>
+> Please check the property in register_reset() instead of at the
+> callers. It's much cleaner.
+>
+>> i2c transfers are quite slow, so it is better to avoid doing unnecessary
+>> i2c transfers.
+>
+> It's only a few bytes, and only on resume,
+
+Ok, I can send a v5 with the condition moved to bq24190_register_reset()
+
+> but an extra condition
+> there would be OK.
+>
+>>> Perhaps device_property_present() since _read_bool() implies we expect
+>>> it to be set T or F?
+>>
+>>
+>> From include/linux/property.h:
+>>
+>> static inline bool device_property_read_bool(struct device *dev,
+>>                                              const char *propname)
+>> {
+>>         return device_property_present(dev, propname);
+>> }
+>>
+>> So nope _read_bool() does not expect true or false, it works
+>> just like devicetree properties
+>
+> I did examine the source before suggesting _present(). It's a
+> semantics question: _read_bool() suggests that a property is expected,
+> whereas _present() doesn't.
+
+_read_bool suggests that we are checking a boolean value, which
+is exactly what we're doing, _present() could be used to see
+if any value integer / string / whatever is present which is
+not what we want. That under the hood bool's are implement
+by being present == true and not present == false is an
+implementation detail which the _read_bool is abstracting
+away.
+
+
+>
+>>> Let's keep the original reset behavior as the default,
+>>
+>>
+>> Tony Lindgren suggested to do disable reset by default:
+>>
+>> On 04-04-17 02:56, Tony Lindgren wrote:
+>>
+>>> My guess is that the reset is left over from missing handling of
+>>> clearing of the EN_HIZ on errors. I recall that EN_HIZ error can
+>>> happen when plugging the cable a little bit sideways to a USB hub
+>>> with loose tolerance USB connectors.
+>>>
+>>> So it should be safe to limit the reset to only happen if something
+>>> like "reset-on-probe" is specified. Not sure we want to remove it
+>>> completely, maybe just add notes that reset may misbehave in
+>>> some conditions.
+>>
+>> And I agree that that is the best way, as it simply does not seem
+>> necessary to reset the charger.
+>
+> However, I don't think it's kosher to change a default behavior that's
+> four years old without a deprecation warning which persists for
+> several kernel releases, including at least one LTS.
+
+That is a fair argument.
+
+> The absence of evidence for other users of this driver is not evidence
+> of their absence.
+>
+> And we have yet to confirm that the confused-charger issue you see is
+> a flaw in the charger, vs that board. If it's not a charger bug, I
+> suspect that reset may be a valid default for probe/remove(), tho
+> perhaps not suspend/resume(). But that is a debate for another day.
+>
+> So how about a property preset-registers = <reg id list>; which would
+> enable us to save/restore them if nec later. For the purpose of
+> skipping reset, just use _present(). A different term than "preset"
+> could work, e.g. programmed, configured...
+
+That sounds like something for a different patch. You've convinced
+me that keeping the default behavior the same is the best, so I will
+submit a v6 which adds a "disable-reset" property.
+
+Regards,
+
+Hans
