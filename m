@@ -1,66 +1,91 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Subject: Re: [GIT PULL] Immutable branch between MFD and IIO due for the v4.12
- merge window
-Date: Fri, 14 Apr 2017 15:30:31 +0100
-Message-ID: <0f30afec-ff42-e125-96d6-35893324f7ef@kernel.org>
-References: <20170404063441.7656-1-quentin.schulz@free-electrons.com>
- <20170411100528.2zif3fyi7uoyw33n@dell>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 01/13] power: Make power_supply_am_i_supplied return
+ -ENODEV if there are no suppliers
+Date: Fri, 14 Apr 2017 16:31:04 +0200
+Message-ID: <20170414143104.afao53fxo5hbwqgu@kozik-lap>
+References: <20170414125919.25771-1-hdegoede@redhat.com>
+ <20170414135638.pbcjxvvf6a7gfizw@kozik-lap>
+ <67216acf-89da-033c-8214-7166e858a306@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170411100528.2zif3fyi7uoyw33n@dell>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: mark.rutland@arm.com, thomas.petazzoni@free-electrons.com, lars@metafoo.de, linux-pm@vger.kernel.org, liam@networkimprov.net, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, sre@kernel.org, linux@armlinux.org.uk, linux-iio@vger.kernel.org, wens@csie.org, robh+dt@kernel.org, icenowy@aosc.xyz, pmeerw@pmeerw.net, knaack.h@gmx.de, maxime.ripard@free-electrons.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f194.google.com ([209.85.128.194]:35317 "EHLO
+        mail-wr0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752688AbdDNObJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 10:31:09 -0400
+Received: by mail-wr0-f194.google.com with SMTP id l44so12644404wrc.2
+        for <linux-pm@vger.kernel.org>; Fri, 14 Apr 2017 07:31:08 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <67216acf-89da-033c-8214-7166e858a306@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
 
-On 11/04/17 11:05, Lee Jones wrote:
-> Enjoy!
+On Fri, Apr 14, 2017 at 04:07:22PM +0200, Hans de Goede wrote:
+> Hi,
 > 
-> The following changes since commit c1ae3cfa0e89fa1a7ecc4c99031f5e9ae99d9201:
+> On 14-04-17 15:56, Krzysztof Kozlowski wrote:
+> > On Fri, Apr 14, 2017 at 02:59:07PM +0200, Hans de Goede wrote:
+> > > Allow a caller of power_supply_am_i_supplied to differentiate between
+> > > there not being any suppliers, vs no suppliers being online by returning
+> > > -ENODEV if there are no suppliers matching supplied_to / supplied_from.
+> > > 
+> > 
+> > This is missing important piece of information - why you need to
+> > differentiate that? What is the difference for you between no supplies
+> > at all and not-being-supplied?
 > 
->   Linux 4.11-rc1 (2017-03-05 12:59:56 -0800)
+> Thank you for the quick response.
 > 
-> are available in the git repository at:
+> I think it is sensible to assume that the hardware actually always has a
+> way of charging the battery so where you say "no supplies at all" in
+> reality what would be the case is : "no power_supply-drivers
+> registered / bound for any supplies at all". At which point we can not
+> determine in many fuel-gauge drivers (which are the only user of
+> power_supply_am_i_supplied) if we're charging or discharging.
 > 
->   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git ib-mfd-iio-v4.12
+> Here is the code for the STATUS property I'm adding to the max17042
+> driver in a later commit in the set:
 > 
-> for you to fetch changes up to f2499ab450d3052097ba53a7d763f767935c0c59:
+> static int max17042_get_status(struct max17042_chip *chip, int *status)
+> {
+>         int ret, charge_full, charge_now;
 > 
->   iio: adc: add support for X-Powers AXP20X and AXP22X PMICs ADCs (2017-04-11 11:02:33 +0100)
+>         ret = power_supply_am_i_supplied(chip->battery);
+>         if (ret < 0) {
+>                 *status = POWER_SUPPLY_STATUS_UNKNOWN;
+>                 return 0;
+>         }
+>         if (ret == 0) {
+>                 *status = POWER_SUPPLY_STATUS_DISCHARGING;
+>                 return 0;
+>         }
 > 
-> ----------------------------------------------------------------
-> Immutable branch between MFD and IIO due for the v4.12 merge window
-> 
-> ----------------------------------------------------------------
-> Quentin Schulz (1):
->       iio: adc: add support for X-Powers AXP20X and AXP22X PMICs ADCs
-> 
->  drivers/iio/adc/Kconfig      |  10 +
->  drivers/iio/adc/Makefile     |   1 +
->  drivers/iio/adc/axp20x_adc.c | 617 +++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 628 insertions(+)
->  create mode 100644 drivers/iio/adc/axp20x_adc.c
-> 
-Hi Lee, 
+> 	...
+> }
 
-Thanks for doing this, but the reason it was going to go through your
-tree in the first place was a dependency on
-commit 4707274714ef ("mfd: axp20x: Correct name of temperature data ADC registers")
+The explanation makes sense. It should be put in the commit msg as
+rationale for this patch.
 
-Not present in the immutable branch.
 
-There isn't much time for anything else going on around this driver though
-so other than a possible merge conflict on the Kconfig and Makefile shouldn't
-matter if this just goes through mfd. (famous last words ;)
+Best regards,
+Krzysztof
 
-Jonathan
+> 
+> This is where the -ENODEV comes in to make it properly return
+> POWER_SUPPLY_STATUS_UNKNOWN instead of always returning
+> POWER_SUPPLY_STATUS_DISCHARGING even if that may be untrue.
+> 
+> Note that I've since found out that the only in tree user of the
+> max17042 driver is arch/arm/boot/dts/exynos4412-trats2.dts and
+> the last patch in my makes the max77693 charger driver properly
+> set supplied_to so that power_supply_am_i_supplied() will work
+> correctly for the max17047 / max77693 combo on that board, which
+> sort of renders this patch unnecessary. I still think this patch
+> is a good idea, but it can be dropped if other people disagree.
+> 
+> Regards,
+> 
+> Hans
+> 
