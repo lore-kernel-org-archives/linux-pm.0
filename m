@@ -1,79 +1,58 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 03/13] power: max17047_battery: The temp alert values are
- 8-bit 2's complement
-Date: Fri, 14 Apr 2017 17:36:57 +0200
-Message-ID: <4e27bcd0-8989-d92d-e938-15833ba6ef36@redhat.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 05/13] power: max17042_battery: Change name in
+ power_supply_desc to "main-battery"
+Date: Fri, 14 Apr 2017 17:37:38 +0200
+Message-ID: <20170414153738.7ceyzxmcu4ondops@kozik-lap>
 References: <20170414125919.25771-1-hdegoede@redhat.com>
- <20170414125919.25771-3-hdegoede@redhat.com>
- <20170414150927.eo5n2derv26dskcd@kozik-lap>
- <cd0d961a-6ad0-6298-5319-d8dc96da7059@redhat.com>
- <20170414152601.waxqjuu5z6tde7b4@kozik-lap>
+ <20170414125919.25771-5-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:37386 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751720AbdDNPhF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Apr 2017 11:37:05 -0400
-In-Reply-To: <20170414152601.waxqjuu5z6tde7b4@kozik-lap>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:34189 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754161AbdDNPhm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 11:37:42 -0400
+Received: by mail-wm0-f68.google.com with SMTP id x75so18323292wma.1
+        for <linux-pm@vger.kernel.org>; Fri, 14 Apr 2017 08:37:42 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20170414125919.25771-5-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
+To: Hans de Goede <hdegoede@redhat.com>
 Cc: Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
 
-Hi,
+On Fri, Apr 14, 2017 at 02:59:11PM +0200, Hans de Goede wrote:
+> The max17042 will typically be couple with some charger IC, almost all
 
-On 14-04-17 17:26, Krzysztof Kozlowski wrote:
-> On Fri, Apr 14, 2017 at 05:16:32PM +0200, Hans de Goede wrote:
->> Hi,
->>
->> On 14-04-17 17:09, Krzysztof Kozlowski wrote:
->>> On Fri, Apr 14, 2017 at 02:59:09PM +0200, Hans de Goede wrote:
->>>> The temp alert values are 8-bit 2's complement, so sign-extend them
->>>> before reporting them back to the caller.
->>>
->>> Are you sure that these are reported with sign bit? I couldn't find
->>> confirmation of this in datasheet.
->>
->> From: MAX17047-MAX17050.pdf
->>
->> "T ALRT Threshold Register (02h)
->> The T ALRT Threshold register sets upper and lower limits
->> that generate an ALRT pin interrupt if exceeded by the
->> Temperature register value. The upper 8 bits set the maxi-
->> mum value and the lower 8 bits set the minimum value.
->> Interrupt threshold limits are stored in two’s-complement
->> format"
->
-> That does not say it is signed. It might be still from 0 to 255.
+s/couple/coupled/
 
-Two's complement format is always signed that is its whole
-purpose, from: https://en.wikipedia.org/wiki/Two's_complement
 
-"Two's complement is a ... binary signed number representation"
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 
->> And the reset default of 7F80h also hints at this,
->> as it is +127 for max -128 for min (aka temp based
->> alerts disabled).
->
-> In this case looks correct... but max77693 fuel gauge datasheet says
-> about TALRT_Th (0x02):
-> Reset value: 0x00FF
-> "...At power up, the thresholds default to their maximum settings- 7F80h
-> (disabled)."
-> which as you see contains to different reset values...
+Best regards,
+Krzysztof
 
-Notice that that datasheet is contradicting itself, it says:
-"Reset value: 0x00FF" but also "at power up, the thresholds default
-to their maximum settings- 7F80h" I can confirm on my max17047 that
-the latter is correct.
-
-> Ehhh... Max17047max17050 datasheet looks a little bit more
-> chaotic/organized so I guess it should be used as a source.
-
-Ack.
-
-Regards,
-
-Hans
+> charger drivers contain:
+> 
+> static char *xxx_charger_supplied_to[] = {
+>         "main-battery",
+> };
+> 
+> probe()
+> {
+> 	struct power_supply_config cfg;
+> 
+> 	cfg.supplied_to = xxx_charger_supplied_to;
+> 	cfg.num_supplicants = ARRAY_SIZE(xxx_charger_supplied_to);
+> 	xxx->charger = power_supply_register(dev, &x_charger_desc, &_cfg);
+> }
+> 
+> Change the name in max17042's power_supply_desc to "main-battery" to
+> match, so that power_supply_am_i_supplied() can be used to implement
+> POWER_SUPPLY_PROP_STATUS.
+> 
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+>  drivers/power/supply/max17042_battery.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
