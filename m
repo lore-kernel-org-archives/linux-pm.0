@@ -1,39 +1,66 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH V2] PM / OPP: Use - instead of @ for DT entries
-Date: Fri, 14 Apr 2017 07:20:10 -0700
-Message-ID: <20170414142010.GS5339@atomide.com>
-References: <70e7c7ee13722ab9c73cb073f88502eaf1ada5f5.1491816050.git.viresh.kumar@linaro.org>
+From: Jonathan Cameron <jic23@kernel.org>
+Subject: Re: [GIT PULL] Immutable branch between MFD and IIO due for the v4.12
+ merge window
+Date: Fri, 14 Apr 2017 15:30:31 +0100
+Message-ID: <0f30afec-ff42-e125-96d6-35893324f7ef@kernel.org>
+References: <20170404063441.7656-1-quentin.schulz@free-electrons.com>
+ <20170411100528.2zif3fyi7uoyw33n@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:44452 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752122AbdDNOUQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Apr 2017 10:20:16 -0400
-Content-Disposition: inline
-In-Reply-To: <70e7c7ee13722ab9c73cb073f88502eaf1ada5f5.1491816050.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170411100528.2zif3fyi7uoyw33n@dell>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: mark.rutland@arm.com, thomas.petazzoni@free-electrons.com, lars@metafoo.de, linux-pm@vger.kernel.org, liam@networkimprov.net, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, sre@kernel.org, linux@armlinux.org.uk, linux-iio@vger.kernel.org, wens@csie.org, robh+dt@kernel.org, icenowy@aosc.xyz, pmeerw@pmeerw.net, knaack.h@gmx.de, maxime.ripard@free-electrons.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson@baylibre.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Masahiro Yamada <yamada.masahiro@socionext.com>
 
-* Viresh Kumar <viresh.kumar@linaro.org> [170410 02:24]:
-> Compiling the DT file with W=1, DTC warns like follows:
+On 11/04/17 11:05, Lee Jones wrote:
+> Enjoy!
 > 
-> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
-> unit name, but no reg property
+> The following changes since commit c1ae3cfa0e89fa1a7ecc4c99031f5e9ae99d9201:
 > 
-> Fix this by replacing '@' with '-' as the OPP nodes will never have a
-> "reg" property.
+>   Linux 4.11-rc1 (2017-03-05 12:59:56 -0800)
 > 
-> Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
-> Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Suggested-by: Mark Rutland <mark.rutland@arm.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com> (sunxi)
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git ib-mfd-iio-v4.12
+> 
+> for you to fetch changes up to f2499ab450d3052097ba53a7d763f767935c0c59:
+> 
+>   iio: adc: add support for X-Powers AXP20X and AXP22X PMICs ADCs (2017-04-11 11:02:33 +0100)
+> 
+> ----------------------------------------------------------------
+> Immutable branch between MFD and IIO due for the v4.12 merge window
+> 
+> ----------------------------------------------------------------
+> Quentin Schulz (1):
+>       iio: adc: add support for X-Powers AXP20X and AXP22X PMICs ADCs
+> 
+>  drivers/iio/adc/Kconfig      |  10 +
+>  drivers/iio/adc/Makefile     |   1 +
+>  drivers/iio/adc/axp20x_adc.c | 617 +++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 628 insertions(+)
+>  create mode 100644 drivers/iio/adc/axp20x_adc.c
+> 
+Hi Lee, 
 
-Looks good to me too:
+Thanks for doing this, but the reason it was going to go through your
+tree in the first place was a dependency on
+commit 4707274714ef ("mfd: axp20x: Correct name of temperature data ADC registers")
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+Not present in the immutable branch.
+
+There isn't much time for anything else going on around this driver though
+so other than a possible merge conflict on the Kconfig and Makefile shouldn't
+matter if this just goes through mfd. (famous last words ;)
+
+Jonathan
