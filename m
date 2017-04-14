@@ -1,192 +1,90 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: RFC: WMI Enhancements
-Date: Fri, 14 Apr 2017 19:04:12 +0000
-Message-ID: <6be8765f968a47b79f6408cc8ddef7f1@ausx13mpc120.AMER.DELL.COM>
-References: <20170412230854.GA11963@fury> <20170413073339.GH3090@pali>
- <20170413165646.GD2064@fury>
- <e50750499ea246d78b336caae95d36b8@ausx13mpc120.AMER.DELL.COM>
- <20170413235103.GB11189@fury>
- <cdb41f03934e4dfd997f91c1bbb436c7@ausx13mpc120.AMER.DELL.COM>
- <20170414182739.GA25356@fury>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: [PATCH RESEND 1/3 v4] drivers:power:twl4030-charger: don't check if battery is present
+Date: Fri, 14 Apr 2017 21:29:38 +0200
+Message-ID: <cd36deb10a769825620828a43d2bab4f949f3370.1492198177.git.hns@goldelico.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from esa4.dell-outbound.iphmx.com ([68.232.149.214]:24525 "EHLO
-        esa4.dell-outbound.iphmx.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751687AbdDNTEU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 15:04:20 -0400
-In-Reply-To: <20170414182739.GA25356@fury>
-Content-Language: en-US
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.217]:22595 "EHLO
+        mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752052AbdDNT3n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 15:29:43 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: dvhart@infradead.org
-Cc: pali.rohar@gmail.com, rjw@rjwysocki.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Grazvydas Ignotas <notasas@gmail.com>, Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, linux-kernel@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
 
-> -----Original Message-----
-> From: Darren Hart [mailto:dvhart@infradead.org]
-> Sent: Friday, April 14, 2017 1:28 PM
-> To: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> Cc: pali.rohar@gmail.com; rjw@rjwysocki.net; len.brown@intel.com;
-> corentin.chary@gmail.com; luto@kernel.org; andriy.shevchenko@linux.intel.=
-com;
-> linux-kernel@vger.kernel.org; platform-driver-x86@vger.kernel.org; linux-
-> pm@vger.kernel.org
-> Subject: Re: RFC: WMI Enhancements
->=20
-> On Fri, Apr 14, 2017 at 05:42:03PM +0000, Mario.Limonciello@dell.com wrot=
-e:
-> >
-> >
-> > > -----Original Message-----
-> > > From: Darren Hart [mailto:dvhart@infradead.org]
-> > > Sent: Thursday, April 13, 2017 6:51 PM
-> > > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> > > Cc: pali.rohar@gmail.com; rjw@rjwysocki.net; len.brown@intel.com;
-> > > corentin.chary@gmail.com; luto@kernel.org;
-> andriy.shevchenko@linux.intel.com;
-> > > linux-kernel@vger.kernel.org; platform-driver-x86@vger.kernel.org; li=
-nux-
-> > > pm@vger.kernel.org
-> > > Subject: Re: RFC: WMI Enhancements
-> > >
-> > > On Thu, Apr 13, 2017 at 08:38:28PM +0000, Mario.Limonciello@dell.com
-> wrote:
-> > > > Earlier question from Andy.  I had some discussion with the right p=
-eople about
-> > > this.
-> > > >
-> > > > > Is it just the "call SMBIOS" GUID or are there other things?
-> > > >
-> > > > Today - it's just the SMBIOS calling GUID.  There are plans (not ye=
-t concrete)
-> for
-> > > > splitting up data access and organization of that data access class=
-es across
-> > > multiple
-> > > >  other GUID/method pairs in the future.
-> > > >
-> > > > Ideally this could be done without needing kernel patches every tim=
-e a new
-> GUID
-> > > > would (essentially) need to be whitelisted.
-> > > >
-> > > > > I am a strong supporter of the following philosophy with respect =
-to
-> supporting
-> > > > > innovation:
-> > > > > "Enable them to enable themselves and get out of their way"
-> > > > >
-> > > > > I've followed this approach over the years to encourage upstream =
-first
-> software
-> > > > > development, open-first policy toward specifications and document=
-ation,
-> > > proper
-> > > > > license selection, and development of new mechanisms in existing
-> standards,
-> > > like
-> > > > > ACPI _DSD. All of these serve to support innovation by removing b=
-ottlenecks
-> > > and
-> > > > > enabling developers to be independent.
-> > > > >
-> > > > > What I don't want to see is the Linux kernel becoming a bottlenec=
-k to feature
-> > > > > parity with Windows (or to becoming the lead vehicle for new feat=
-ures).
-> When a
-> > > > > vendor has a feature they want to expose which they determine to =
-be a
-> value
-> > > > > proposition for their product, I don't want the lack of a class d=
-river to get in
-> > > > > the way. Exposing specific GUIDs is a minimal and easy to upstrea=
-m change
-> > > which
-> > > > > would enable rapid feature enabling.
-> > > > >
-> > > > > Perhaps I should have led with this :-)
-> > > > >
-> > > >
-> > > > So considering future plans, I'd really like if it's possible to ex=
-pose all the
-> GUID's
-> > > the
-> > > > GUID's the same as Windows does today.
-> > >
-> > > A bit of trouble parsing... to be clear, your preference would be tha=
-t for the
-> > > PNP0C14 on whitelisted platforms (either DMI matches, or possibly via=
- the ACPI
-> > > Device UID?) we expose every GUID (Method, Event, and Data) for that =
-device to
-> > > userspace?
-> >
-> > My preference would be to expose everything found in _WDG across platfo=
-rms so
-> it
-> > doesn't have to be a whitelist.  DMI matching could work if it was done
-> specifically
-> > on the manufacturer rather than individual system.
-> >
-> > If you compare to how it's done with the other OS, everything mentioned=
- in the
-> MOF
-> > is accessible from userspace.  The only reason the MOF exists is to mat=
-ch up
-> > what's in _WDG.  Linux can make this actually easier in that you just d=
-on't use the
-> > MOF at all.
-> >
-> > >
-> > > The concern raised here is that for systems using dell-wmi, the two G=
-UIDs used
-> > > by the kernel would also be exposed to userspace. Is this correct?
->=20
-> OK, rather than whitelisting specific GUIDs to be exported, what if we ma=
-tched
-> on a vendor and exported all of them except for the ones that any kernel =
-drivers
-> have already bound to? For example, dell-wmi currently binds to:
->=20
-> #define DELL_EVENT_GUID "9DBB5994-A997-11DA-B012-B622A1EF5492"
-> #define DELL_DESCRIPTOR_GUID "8D9DDCBC-A997-11DA-B012-B622A1EF5492"
->=20
-> Perhaps a set of mof and $vendor-mof drivers could be created which would=
- do
-> what
-> Andy L's patch does, but match on DMI Vendor or WMI PNP UID and export al=
-l
-> interfaces. When another kernel driver binds to a WMI GUID, that GUID wil=
-l
-> either not be exported, or it will be "locked" from a userspace perspecti=
-ve.
->=20
-> This of course is dependent on whether or not the WMI GUIDs are granular =
-enough
-> or if the same GUID is needed by the userpsace application AND by the ker=
-nel
-> driver to perform different functions - this would be really unfortunate.
->=20
-> That said, from what I've learned about WMI, it was designed to provide a=
-ccess
-> to firmware from userspace. The approach we take in Linux currently was
-> expedient, but not consistent with the intent of the mechanism.
->=20
+We can't assume that the battery is or stays present after probing
+on devices with replaceable battery.
 
-For $FUTURE GUIDs that approach could potentially work depending upon how
-the different GUID's are segmented.  There's a few different approaches bei=
-ng
-discussed.
+On some devices (e.g. GTA04 or OpenPanodra) it can be removed
+and even be hot swapped by the user while device continues to operate
+through external AC or USB power (as long as system power consumption
+remains below ca. 500mA as provided by USB). Under certain conditions
+it is possible to boot without battery.
 
-It unfortunately wouldn't work with the "current" stuff though if we go for=
-ward
-with the proposal to adjust dell-smbios to use the WMI calls too.
-The SMBIOS GUID(A80593CE-A997-11DA-B012-B622A1EF5492) would get=20
-taken by dell-smbios and hence not available to userspace.
+So it makes no sense to check for this situation during probe and make
+the charger driver (and its status reports) completely non-operational if
+the battery can be inserted later.
 
-It would be fine to restrict the event one (9DBB5994-A997-11DA-B012-B622A1E=
-F5492).
-The one the kernel sees as DESCRIPTOR_GUID can be used to provide static
-Info, I don't think that's needed by userspace either.
+Tested on: GTA04 and OpenPandora.
+
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+---
+ drivers/power/supply/twl4030_charger.c | 36 ----------------------------------
+ 1 file changed, 36 deletions(-)
+
+diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
+index bcd4dc3..e7fc9b0 100644
+--- a/drivers/power/supply/twl4030_charger.c
++++ b/drivers/power/supply/twl4030_charger.c
+@@ -206,35 +206,6 @@ static int twl4030bci_read_adc_val(u8 reg)
+ }
+ 
+ /*
+- * Check if Battery Pack was present
+- */
+-static int twl4030_is_battery_present(struct twl4030_bci *bci)
+-{
+-	int ret;
+-	u8 val = 0;
+-
+-	/* Battery presence in Main charge? */
+-	ret = twl_i2c_read_u8(TWL_MODULE_MAIN_CHARGE, &val, TWL4030_BCIMFSTS3);
+-	if (ret)
+-		return ret;
+-	if (val & TWL4030_BATSTSMCHG)
+-		return 0;
+-
+-	/*
+-	 * OK, It could be that bootloader did not enable main charger,
+-	 * pre-charge is h/w auto. So, Battery presence in Pre-charge?
+-	 */
+-	ret = twl_i2c_read_u8(TWL4030_MODULE_PRECHARGE, &val,
+-			      TWL4030_BCIMFSTS1);
+-	if (ret)
+-		return ret;
+-	if (val & TWL4030_BATSTSPCHG)
+-		return 0;
+-
+-	return -ENODEV;
+-}
+-
+-/*
+  * TI provided formulas:
+  * CGAIN == 0: ICHG = (BCIICHG * 1.7) / (2^10 - 1) - 0.85
+  * CGAIN == 1: ICHG = (BCIICHG * 3.4) / (2^10 - 1) - 1.7
+@@ -1009,13 +980,6 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+ 	bci->irq_chg = platform_get_irq(pdev, 0);
+ 	bci->irq_bci = platform_get_irq(pdev, 1);
+ 
+-	/* Only proceed further *IF* battery is physically present */
+-	ret = twl4030_is_battery_present(bci);
+-	if  (ret) {
+-		dev_crit(&pdev->dev, "Battery was not detected:%d\n", ret);
+-		return ret;
+-	}
+-
+ 	platform_set_drvdata(pdev, bci);
+ 
+ 	bci->ac = devm_power_supply_register(&pdev->dev, &twl4030_bci_ac_desc,
+-- 
+2.7.3
