@@ -1,75 +1,142 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 02/13] power: max17042_battery: Use sign_extend32 instead of DIY code
-Date: Fri, 14 Apr 2017 14:59:08 +0200
-Message-ID: <20170414125919.25771-2-hdegoede@redhat.com>
+Subject: [PATCH 04/13] power: max17042_battery: Add default platform_data for x86 use
+Date: Fri, 14 Apr 2017 14:59:10 +0200
+Message-ID: <20170414125919.25771-4-hdegoede@redhat.com>
 References: <20170414125919.25771-1-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:51754 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:35778 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751473AbdDNM7Y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Apr 2017 08:59:24 -0400
+        id S1751949AbdDNM70 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Apr 2017 08:59:26 -0400
 In-Reply-To: <20170414125919.25771-1-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
 
-Use sign_extend32 to sign-extend variables where necessary instead of
-DIY code.
+Some x86 machines use a max17047 fuel-gauge. X86 does not have board
+files / dt to provide platform data, so add default platform_data
+as fallback option so that the driver can work on x86.
+
+Since not all boards have a thermistor hooked up, set temp_min to 0 and
+change the health checks from temp <= temp_min to temp < temp_min to
+not trigger on such boards (where temp reads 0).
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/max17042_battery.c | 24 +++---------------------
- 1 file changed, 3 insertions(+), 21 deletions(-)
+ drivers/power/supply/max17042_battery.c | 60 +++++++++++++++++++++++++++++----
+ 1 file changed, 53 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index da7a75f..790dfa9 100644
+index a51b296..85a6bf3 100644
 --- a/drivers/power/supply/max17042_battery.c
 +++ b/drivers/power/supply/max17042_battery.c
-@@ -106,13 +106,7 @@ static int max17042_get_temperature(struct max17042_chip *chip, int *temp)
+@@ -150,12 +150,12 @@ static int max17042_get_battery_health(struct max17042_chip *chip, int *health)
  	if (ret < 0)
- 		return ret;
+ 		goto health_error;
  
--	*temp = data;
--	/* The value is signed. */
--	if (*temp & 0x8000) {
--		*temp = (0x7fff & ~*temp) + 1;
--		*temp *= -1;
--	}
--
-+	*temp = sign_extend32(data, 15);
- 	/* The value is converted into deci-centigrade scale */
- 	/* Units of LSB = 1 / 256 degree Celsius */
- 	*temp = *temp * 10 / 256;
-@@ -302,13 +296,7 @@ static int max17042_get_property(struct power_supply *psy,
- 			if (ret < 0)
- 				return ret;
+-	if (temp <= chip->pdata->temp_min) {
++	if (temp < chip->pdata->temp_min) {
+ 		*health = POWER_SUPPLY_HEALTH_COLD;
+ 		goto out;
+ 	}
  
--			val->intval = data;
--			if (val->intval & 0x8000) {
--				/* Negative */
--				val->intval = ~val->intval & 0x7fff;
--				val->intval++;
--				val->intval *= -1;
--			}
-+			val->intval = sign_extend32(data, 15);
- 			val->intval *= 1562500 / chip->pdata->r_sns;
- 		} else {
- 			return -EINVAL;
-@@ -320,13 +308,7 @@ static int max17042_get_property(struct power_supply *psy,
- 			if (ret < 0)
- 				return ret;
+-	if (temp >= chip->pdata->temp_max) {
++	if (temp > chip->pdata->temp_max) {
+ 		*health = POWER_SUPPLY_HEALTH_OVERHEAT;
+ 		goto out;
+ 	}
+@@ -772,8 +772,9 @@ static void max17042_init_worker(struct work_struct *work)
  
--			val->intval = data;
--			if (val->intval & 0x8000) {
--				/* Negative */
--				val->intval = ~val->intval & 0x7fff;
--				val->intval++;
--				val->intval *= -1;
--			}
-+			val->intval = sign_extend32(data, 15);
- 			val->intval *= 1562500 / chip->pdata->r_sns;
- 		} else {
- 			return -EINVAL;
+ #ifdef CONFIG_OF
+ static struct max17042_platform_data *
+-max17042_get_pdata(struct device *dev)
++max17042_get_pdata(struct max17042_chip *chip)
+ {
++	struct device *dev = &chip->client->dev;
+ 	struct device_node *np = dev->of_node;
+ 	u32 prop;
+ 	struct max17042_platform_data *pdata;
+@@ -806,10 +807,55 @@ max17042_get_pdata(struct device *dev)
+ 	return pdata;
+ }
+ #else
++static struct max17042_reg_data max17047_default_pdata_init_regs[] = {
++	/*
++	 * Some firmwares do not set FullSOCThr, Enable End-of-Charge Detection
++	 * when the voltage FG reports 95%, as recommend in the datasheet.
++	 */
++	{ MAX17047_FullSOCThr, 95 << 8 },
++};
++
+ static struct max17042_platform_data *
+-max17042_get_pdata(struct device *dev)
++max17042_get_pdata(struct max17042_chip *chip)
+ {
+-	return dev->platform_data;
++	struct device *dev = &chip->client->dev;
++	struct max17042_platform_data *pdata;
++	int ret, misc_cfg;
++
++	if (dev->platform_data)
++		return dev->platform_data;
++
++	/*
++	 * The MAX17047 gets used on x86 where we've no platform data, assume
++	 * the firmware will already have initialized the fuel-gauge and provide
++	 * default values for the non init bits to make things work.
++	 */
++	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
++	if (!pdata)
++		return pdata;
++
++	if (chip->chip_type != MAXIM_DEVICE_TYPE_MAX17042) {
++		pdata->init_data = max17047_default_pdata_init_regs;
++		pdata->num_init_data =
++			ARRAY_SIZE(max17047_default_pdata_init_regs);
++	}
++
++	ret = regmap_read(chip->regmap, MAX17042_MiscCFG, &misc_cfg);
++	if (ret < 0)
++		return NULL;
++
++	/* If bits 0-1 are set to 3 then only Voltage readings are used */
++	if ((misc_cfg & 0x3) == 3)
++		pdata->enable_current_sense = false;
++	else
++		pdata->enable_current_sense = true;
++
++	pdata->vmin = 3000;
++	pdata->vmax = 4500;	/* Some devices use a LiHV cell */
++	pdata->temp_min = 0;	/* Some devices do not have a temp sensor */
++	pdata->temp_max = 700;	/* 70 degrees Celcius */
++
++	return pdata;
+ }
+ #endif
+ 
+@@ -858,20 +904,20 @@ static int max17042_probe(struct i2c_client *client,
+ 		return -ENOMEM;
+ 
+ 	chip->client = client;
++	chip->chip_type = id->driver_data;
+ 	chip->regmap = devm_regmap_init_i2c(client, &max17042_regmap_config);
+ 	if (IS_ERR(chip->regmap)) {
+ 		dev_err(&client->dev, "Failed to initialize regmap\n");
+ 		return -EINVAL;
+ 	}
+ 
+-	chip->pdata = max17042_get_pdata(&client->dev);
++	chip->pdata = max17042_get_pdata(chip);
+ 	if (!chip->pdata) {
+ 		dev_err(&client->dev, "no platform data provided\n");
+ 		return -EINVAL;
+ 	}
+ 
+ 	i2c_set_clientdata(client, chip);
+-	chip->chip_type = id->driver_data;
+ 	psy_cfg.drv_data = chip;
+ 
+ 	/* When current is not measured,
 -- 
 2.9.3
