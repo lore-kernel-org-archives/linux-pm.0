@@ -1,104 +1,47 @@
-From: sathyanarayanan.kuppuswamy@linux.intel.com
-Subject: [PATCH v2 2/8] mfd: intel_soc_pmic_bxtwc: remove thermal second level irqs
-Date: Fri, 14 Apr 2017 16:25:54 -0700
-Message-ID: <87427056a02054ebd6d2100db5c3d5f3827316e2.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-References: <0e4d82ca9cdc41c9d2a8b45258cd72659b4c2063.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+From: Joel Fernandes <joelaf@google.com>
+Subject: Re: [RFC/RFT][PATCH 1/2] cpufreq: schedutil: Use policy-dependent
+ transition delays
+Date: Fri, 14 Apr 2017 19:23:46 -0700
+Message-ID: <CAJWu+opFKUS4WSqZu0iG_0W5ou8sry-9YYx6L1sSuvzvH2s-ag@mail.gmail.com>
+References: <3498238.liCqOyIkGA@aspire.rjw.lan> <2407280.n9qVSLCrF5@aspire.rjw.lan>
+ <71055380.gdY33coAtF@aspire.rjw.lan> <2817661.LjrBZf7NNr@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:25760 "EHLO mga09.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755796AbdDNX3i (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Apr 2017 19:29:38 -0400
-In-Reply-To: <0e4d82ca9cdc41c9d2a8b45258cd72659b4c2063.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Received: from mail-vk0-f43.google.com ([209.85.213.43]:34271 "EHLO
+        mail-vk0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752618AbdDOCXr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 22:23:47 -0400
+Received: by mail-vk0-f43.google.com with SMTP id n73so208929vke.1
+        for <linux-pm@vger.kernel.org>; Fri, 14 Apr 2017 19:23:47 -0700 (PDT)
+In-Reply-To: <2817661.LjrBZf7NNr@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, lee.jones@linaro.org, andy@infradead.org
-Cc: linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com, Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Brendan Jackman <brendan.jackman@arm.com>
 
-From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+On Fri, Apr 14, 2017 at 3:51 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, April 11, 2017 12:20:41 AM Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> Make the schedutil governor take the initial (default) value of the
+>> rate_limit_us sysfs attribute from the (new) transition_delay_us
+>> policy parameter (to be set by the scaling driver).
+>>
+>> That will allow scaling drivers to make schedutil use smaller default
+>> values of rate_limit_us and reduce the default average time interval
+>> between consecutive frequency changes.
+>>
+>> Make intel_pstate set transition_delay_us to 500.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>
+>> This is a replacement for https://patchwork.kernel.org/patch/9671831/
+>
+> Any concerns about this one?
 
-Since all second level thermal irqs are consumed by the same
-device(bxt_wcove_thermal), there is no need to expose them as separate
-interrupts. We can just export only the first level irqs for thermal and
-let the device(bxt_wcove_thermal) driver handle the second level irqs
-based on thermal interrupt status register. Also, just using only the
-first level irq will eliminate the bug involved in requesting only the
-second level irq and not explicitly enable the first level irq. For
-more info on this issue please read the details at,
+Looks good to me.
 
-https://lkml.org/lkml/2017/2/27/148
-
-Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/mfd/intel_soc_pmic_bxtwc.c | 32 ++++++++++++--------------------
- 1 file changed, 12 insertions(+), 20 deletions(-)
-
-Changes since v1:
- * None
-
-diff --git a/drivers/mfd/intel_soc_pmic_bxtwc.c b/drivers/mfd/intel_soc_pmic_bxtwc.c
-index bb18e20..c08d514 100644
---- a/drivers/mfd/intel_soc_pmic_bxtwc.c
-+++ b/drivers/mfd/intel_soc_pmic_bxtwc.c
-@@ -83,10 +83,7 @@ enum bxtwc_irqs {
- 
- enum bxtwc_irqs_level2 {
- 	/* Level 2 */
--	BXTWC_THRM0_IRQ = 0,
--	BXTWC_THRM1_IRQ,
--	BXTWC_THRM2_IRQ,
--	BXTWC_BCU_IRQ,
-+	BXTWC_BCU_IRQ = 0,
- 	BXTWC_ADC_IRQ,
- 	BXTWC_USBC_IRQ,
- 	BXTWC_CHGR0_IRQ,
-@@ -113,17 +110,14 @@ static const struct regmap_irq bxtwc_regmap_irqs[] = {
- };
- 
- static const struct regmap_irq bxtwc_regmap_irqs_level2[] = {
--	REGMAP_IRQ_REG(BXTWC_THRM0_IRQ, 0, 0xff),
--	REGMAP_IRQ_REG(BXTWC_THRM1_IRQ, 1, 0xbf),
--	REGMAP_IRQ_REG(BXTWC_THRM2_IRQ, 2, 0xff),
--	REGMAP_IRQ_REG(BXTWC_BCU_IRQ, 3, 0x1f),
--	REGMAP_IRQ_REG(BXTWC_ADC_IRQ, 4, 0xff),
--	REGMAP_IRQ_REG(BXTWC_USBC_IRQ, 5, BIT(5)),
--	REGMAP_IRQ_REG(BXTWC_CHGR0_IRQ, 5, 0x1f),
--	REGMAP_IRQ_REG(BXTWC_CHGR1_IRQ, 6, 0x1f),
--	REGMAP_IRQ_REG(BXTWC_GPIO0_IRQ, 7, 0xff),
--	REGMAP_IRQ_REG(BXTWC_GPIO1_IRQ, 8, 0x3f),
--	REGMAP_IRQ_REG(BXTWC_CRIT_IRQ, 9, 0x03),
-+	REGMAP_IRQ_REG(BXTWC_BCU_IRQ, 0, 0x1f),
-+	REGMAP_IRQ_REG(BXTWC_ADC_IRQ, 1, 0xff),
-+	REGMAP_IRQ_REG(BXTWC_USBC_IRQ, 2, BIT(5)),
-+	REGMAP_IRQ_REG(BXTWC_CHGR0_IRQ, 2, 0x1f),
-+	REGMAP_IRQ_REG(BXTWC_CHGR1_IRQ, 3, 0x1f),
-+	REGMAP_IRQ_REG(BXTWC_GPIO0_IRQ, 4, 0xff),
-+	REGMAP_IRQ_REG(BXTWC_GPIO1_IRQ, 5, 0x3f),
-+	REGMAP_IRQ_REG(BXTWC_CRIT_IRQ, 6, 0x03),
- };
- 
- static const struct regmap_irq bxtwc_regmap_irqs_tmu[] = {
-@@ -141,8 +135,8 @@ static struct regmap_irq_chip bxtwc_regmap_irq_chip = {
- 
- static struct regmap_irq_chip bxtwc_regmap_irq_chip_level2 = {
- 	.name = "bxtwc_irq_chip_level2",
--	.status_base = BXTWC_THRM0IRQ,
--	.mask_base = BXTWC_MTHRM0IRQ,
-+	.status_base = BXTWC_BCUIRQ,
-+	.mask_base = BXTWC_MBCUIRQ,
- 	.irqs = bxtwc_regmap_irqs_level2,
- 	.num_irqs = ARRAY_SIZE(bxtwc_regmap_irqs_level2),
- 	.num_regs = 10,
-@@ -176,9 +170,7 @@ static struct resource charger_resources[] = {
- };
- 
- static struct resource thermal_resources[] = {
--	DEFINE_RES_IRQ(BXTWC_THRM0_IRQ),
--	DEFINE_RES_IRQ(BXTWC_THRM1_IRQ),
--	DEFINE_RES_IRQ(BXTWC_THRM2_IRQ),
-+	DEFINE_RES_IRQ(BXTWC_THRM_LVL1_IRQ),
- };
- 
- static struct resource bcu_resources[] = {
--- 
-2.7.4
+Thanks,
+Joel
