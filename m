@@ -1,44 +1,38 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2 08/14] power: max17042_battery: Add support for the
- TECHNOLOGY attribute
-Date: Sat, 15 Apr 2017 12:33:07 +0200
-Message-ID: <20170415103307.2hvb6gd25gzjg5wn@kozik-lap>
+Subject: Re: [PATCH v2 10/14] power: max17042_battery: mAh readings depend on
+ r_sns value
+Date: Sat, 15 Apr 2017 12:38:28 +0200
+Message-ID: <20170415103828.itueccwnq2drm3xh@kozik-lap>
 References: <20170414183259.24382-1-hdegoede@redhat.com>
- <20170414183259.24382-8-hdegoede@redhat.com>
+ <20170414183259.24382-10-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f196.google.com ([209.85.128.196]:35019 "EHLO
-        mail-wr0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752136AbdDOKdL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Apr 2017 06:33:11 -0400
-Received: by mail-wr0-f196.google.com with SMTP id l44so14904102wrc.2
-        for <linux-pm@vger.kernel.org>; Sat, 15 Apr 2017 03:33:10 -0700 (PDT)
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:36133 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752091AbdDOKic (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Apr 2017 06:38:32 -0400
+Received: by mail-wm0-f67.google.com with SMTP id q125so1995821wmd.3
+        for <linux-pm@vger.kernel.org>; Sat, 15 Apr 2017 03:38:31 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20170414183259.24382-8-hdegoede@redhat.com>
+In-Reply-To: <20170414183259.24382-10-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
 Cc: Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
 
-On Fri, Apr 14, 2017 at 08:32:53PM +0200, Hans de Goede wrote:
-> The max17042 is intended for Li-Ion or Li-Po batteries, add a TECHNOLOGY
-> attribute to reflect this. Note this is hardcoded to Li-Ion as there is
-> no way to tell the difference, and Lithium-Ion Polymer batteries are
-> a sub-family of Lithium-Ion so Li-Ion technically is correct for both.
+On Fri, Apr 14, 2017 at 08:32:55PM +0200, Hans de Goede wrote:
+> The PROP_CHARGE_FULL code was hardcoded for the default sense
+> resistor of 0.010 Ohm, make it use r_sns which contains the
+> actual sense resistor value in micro-Ohms instead.
 > 
-> Using Li-Ion for both is already done by many drivers and is much
-> better then not providing any technology info at all.
-> 
-> Suggested-by: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
 > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 > ---
-> Changes for v2:
-> -Improved commit msg
-> -Added Suggested-by: Wolfgang Wiedmeyer
+> Changes in v2:
+> -This is a new patch in v2 of this patch-set
 > ---
->  drivers/power/supply/max17042_battery.c | 4 ++++
->  1 file changed, 4 insertions(+)
+>  drivers/power/supply/max17042_battery.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 > 
 
 Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
