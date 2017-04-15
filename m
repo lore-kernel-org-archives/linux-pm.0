@@ -1,43 +1,66 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2 12/14] power: max17042_battery: Add support for the
- CHARGE_NOW property
-Date: Sat, 15 Apr 2017 12:39:41 +0200
-Message-ID: <20170415103941.mgn7naa2cyi262wi@kozik-lap>
-References: <20170414183259.24382-1-hdegoede@redhat.com>
- <20170414183259.24382-12-hdegoede@redhat.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 06/20] cpufreq: Use cpuhp_setup_state_nocalls_locked()
+Date: Sat, 15 Apr 2017 19:01:13 +0200
+Message-ID: <20170415171651.746595672@linutronix.de>
+References: <20170415170107.643253702@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-15
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:32909 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753834AbdDOKjp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Apr 2017 06:39:45 -0400
-Received: by mail-wm0-f67.google.com with SMTP id o81so2009679wmb.0
-        for <linux-pm@vger.kernel.org>; Sat, 15 Apr 2017 03:39:44 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20170414183259.24382-12-hdegoede@redhat.com>
+Received: from Galois.linutronix.de ([146.0.238.70]:44470 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754641AbdDORbO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Apr 2017 13:31:14 -0400
+Content-Disposition: inline;
+ filename=cpufreq-Use-cpuhp_setup_state_nocalls_locked.patch
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Siewior <bigeasy@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-On Fri, Apr 14, 2017 at 08:32:57PM +0200, Hans de Goede wrote:
-> Atleast upower prefers the more precise charge_now sysfs value over
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-s/Atleast/At least/ ?
+cpufreq holds get_online_cpus() while invoking cpuhp_setup_state_nocalls()
+to make subsys_interface_register() and the registration of hotplug calls
+atomic versus cpu hotplug.
 
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+cpuhp_setup_state_nocalls() invokes get_online_cpus() as well. This is
+correct, but prevents the conversion of the hotplug locking to a percpu
+rwsem.
 
-Best regards,
-Krzysztof
+Use cpuhp_setup_state_nocalls_locked() to avoid the nested call.
 
-> capacity and the max17042 has the info, so lets export it.
-> 
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
-> Changes in v2:
-> -Take r_sns value into account when converting the register value to uAh
-> ---
->  drivers/power/supply/max17042_battery.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+
+---
+ drivers/cpufreq/cpufreq.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2473,9 +2473,10 @@ int cpufreq_register_driver(struct cpufr
+ 		goto err_if_unreg;
+ 	}
+ 
+-	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "cpufreq:online",
+-					cpuhp_cpufreq_online,
+-					cpuhp_cpufreq_offline);
++	ret = cpuhp_setup_state_nocalls_locked(CPUHP_AP_ONLINE_DYN,
++					       "cpufreq:online",
++					       cpuhp_cpufreq_online,
++					       cpuhp_cpufreq_offline);
+ 	if (ret < 0)
+ 		goto err_if_unreg;
+ 	hp_online = ret;
+@@ -2519,7 +2520,7 @@ int cpufreq_unregister_driver(struct cpu
+ 	get_online_cpus();
+ 	subsys_interface_unregister(&cpufreq_interface);
+ 	remove_boost_sysfs_file();
+-	cpuhp_remove_state_nocalls(hp_online);
++	cpuhp_remove_state_nocalls_locked(hp_online);
+ 
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+ 
