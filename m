@@ -1,47 +1,101 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [RFC/RFT][PATCH 1/2] cpufreq: schedutil: Use policy-dependent
- transition delays
-Date: Fri, 14 Apr 2017 19:23:46 -0700
-Message-ID: <CAJWu+opFKUS4WSqZu0iG_0W5ou8sry-9YYx6L1sSuvzvH2s-ag@mail.gmail.com>
-References: <3498238.liCqOyIkGA@aspire.rjw.lan> <2407280.n9qVSLCrF5@aspire.rjw.lan>
- <71055380.gdY33coAtF@aspire.rjw.lan> <2817661.LjrBZf7NNr@aspire.rjw.lan>
+From: Keerthy <j-keerthy@ti.com>
+Subject: [PATCH v5 1/2] thermal: core: Allow orderly_poweroff to be called only once
+Date: Sat, 15 Apr 2017 08:38:28 +0530
+Message-ID: <1492225709-30932-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f43.google.com ([209.85.213.43]:34271 "EHLO
-        mail-vk0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752618AbdDOCXr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 22:23:47 -0400
-Received: by mail-vk0-f43.google.com with SMTP id n73so208929vke.1
-        for <linux-pm@vger.kernel.org>; Fri, 14 Apr 2017 19:23:47 -0700 (PDT)
-In-Reply-To: <2817661.LjrBZf7NNr@aspire.rjw.lan>
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:58061 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751010AbdDODIu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Apr 2017 23:08:50 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Brendan Jackman <brendan.jackman@arm.com>
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: j-keerthy@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
-On Fri, Apr 14, 2017 at 3:51 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, April 11, 2017 12:20:41 AM Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Make the schedutil governor take the initial (default) value of the
->> rate_limit_us sysfs attribute from the (new) transition_delay_us
->> policy parameter (to be set by the scaling driver).
->>
->> That will allow scaling drivers to make schedutil use smaller default
->> values of rate_limit_us and reduce the default average time interval
->> between consecutive frequency changes.
->>
->> Make intel_pstate set transition_delay_us to 500.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>
->> This is a replacement for https://patchwork.kernel.org/patch/9671831/
->
-> Any concerns about this one?
+thermal_zone_device_check --> thermal_zone_device_update -->
+handle_thermal_trip --> handle_critical_trips --> orderly_poweroff
 
-Looks good to me.
+The above sequence happens every 250/500 mS based on the configuration.
+The orderly_poweroff function is getting called every 250/500 mS.
+With a full fledged file system it takes at least 5-10 Seconds to
+power off gracefully.
 
-Thanks,
-Joel
+In that period due to the thermal_zone_device_check triggering
+periodically the thermal work queues bombard with
+orderly_poweroff calls multiple times eventually leading to
+failures in gracefully powering off the system.
+
+Make sure that orderly_poweroff is called only once.
+
+Signed-off-by: Keerthy <j-keerthy@ti.com>
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
+---
+
+Changes in v5:
+
+  * Added Eduardo's Ack.
+
+Changes in v4:
+
+  * power_off_triggered declaration together with mutex definition.
+
+Changes in v3:
+
+  * Changed the place where mutex was locked and unlocked.
+
+Changes in v2:
+
+  * Added a global mutex to serialize poweroff code sequence.
+
+ drivers/thermal/thermal_core.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 11f0675..8337c27 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -45,8 +45,10 @@
+ 
+ static DEFINE_MUTEX(thermal_list_lock);
+ static DEFINE_MUTEX(thermal_governor_lock);
++static DEFINE_MUTEX(poweroff_lock);
+ 
+ static atomic_t in_suspend;
++static bool power_off_triggered;
+ 
+ static struct thermal_governor *def_governor;
+ 
+@@ -342,7 +344,12 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 		dev_emerg(&tz->device,
+ 			  "critical temperature reached(%d C),shutting down\n",
+ 			  tz->temperature / 1000);
+-		orderly_poweroff(true);
++		mutex_lock(&poweroff_lock);
++		if (!power_off_triggered) {
++			orderly_poweroff(true);
++			power_off_triggered = true;
++		}
++		mutex_unlock(&poweroff_lock);
+ 	}
+ }
+ 
+@@ -1463,6 +1470,7 @@ static int __init thermal_init(void)
+ {
+ 	int result;
+ 
++	mutex_init(&poweroff_lock);
+ 	result = thermal_register_governors();
+ 	if (result)
+ 		goto error;
+@@ -1497,6 +1505,7 @@ static int __init thermal_init(void)
+ 	ida_destroy(&thermal_cdev_ida);
+ 	mutex_destroy(&thermal_list_lock);
+ 	mutex_destroy(&thermal_governor_lock);
++	mutex_destroy(&poweroff_lock);
+ 	return result;
+ }
+ 
+-- 
+1.9.1
