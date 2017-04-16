@@ -1,56 +1,87 @@
-From: Doug Smythies <doug.smythies@gmail.com>
-Subject: [RESEND PATCH] tools/power/x86/intel_pstate_tracer: Adjust directory permissions
-Date: Sun, 16 Apr 2017 08:17:14 -0700
-Message-ID: <1492355834-7793-1-git-send-email-dsmythies@telus.net>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: [PATCH v3] power: Make power_supply_am_i_supplied return -ENODEV if there are no suppliers
+Date: Sun, 16 Apr 2017 17:30:31 +0200
+Message-ID: <20170416153031.11531-1-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:34842 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755830AbdDPPR2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Apr 2017 11:17:28 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:39632 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755352AbdDPPae (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 16 Apr 2017 11:30:34 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: srinivas.pandruvada@linux.intel.com, rjw@rjwysocki.net, len.brown@intel.com
-Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
 
-Depending on what is being done, the intel_pstate_tracer.py script
-needs to be run as root, or can be run as a regular user.
-If run the first time as root the results directory will be
-incorrect for any subsequent run as a regular user. For any run
-as root the specific testname subdirectory will not allow any
-subsequent file saves by a regular user. Typically, and for example,
-the regular user might be attempting to save a .csv file converted to
-a spreadsheet with added calculations or graphs.
+It is sensible to assume that the hardware actually always has a
+way of charging the battery so when power_supply_am_i_supplied does not
+find any suppliers, that does not mean that there are none, but simply
+that no power_supply-drivers are registered / bound for any suppliers for
+the supply calling power_supply_am_i_supplied.
 
-Override the default folder permissions.
+At which point a fuel-gauge driver calling power_supply_am_i_supplied()
+cannot determine whether the battery is being charged or not.
 
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
+Allow a caller of power_supply_am_i_supplied to differentiate between
+there not being any suppliers, vs no suppliers being online by returning
+-ENODEV if there are no suppliers matching supplied_to / supplied_from,
+which allows fuel-gauge drivers to return POWER_SUPPLY_STATUS_UNKNOWN
+rather then POWER_SUPPLY_STATUS_DISCHARGING if there are no suppliers.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py | 6 ++++++
- 1 file changed, 6 insertions(+)
+Changes in v2:
+-Improve commit message
+Changes in v3:
+-s/am_i_supplied_data/psy_am_i_supplied_data/
+---
+ drivers/power/supply/power_supply_core.c | 20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-index fd706ac..7c855508 100755
---- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-+++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-@@ -517,13 +517,19 @@ else:
-         cpu_mask[i] = 1
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 1e0960b..7ec7c7c 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -280,13 +280,19 @@ static inline int power_supply_check_supplies(struct power_supply *psy)
+ }
+ #endif
  
- if not os.path.exists('results'):
-+    # Setting permissions with the mode option doesn't work on all platforms
-     os.mkdir('results')
-+    # so use chmod to set them. Needed because user may or may not be root.
-+    os.chmod('results', 0777)
+-static int __power_supply_am_i_supplied(struct device *dev, void *data)
++struct psy_am_i_supplied_data {
++	struct power_supply *psy;
++	unsigned int count;
++};
++
++static int __power_supply_am_i_supplied(struct device *dev, void *_data)
+ {
+ 	union power_supply_propval ret = {0,};
+-	struct power_supply *psy = data;
+ 	struct power_supply *epsy = dev_get_drvdata(dev);
++	struct psy_am_i_supplied_data *data = _data;
  
- os.chdir('results')
- if os.path.exists(testname):
-     print('The test name directory already exists. Please provide a unique test name. Test re-run not supported, yet.')
-     sys.exit()
-+# Setting permissions with the mode option doesn't work on all platforms
- os.mkdir(testname)
-+os.chmod(testname, 0777)
-+# so use chmod to set them. Needed because user may or may not be root.
- os.chdir(testname)
+-	if (__power_supply_is_supplied_by(epsy, psy))
++	data->count++;
++	if (__power_supply_is_supplied_by(epsy, data->psy))
+ 		if (!epsy->desc->get_property(epsy, POWER_SUPPLY_PROP_ONLINE,
+ 					&ret))
+ 			return ret.intval;
+@@ -296,12 +302,16 @@ static int __power_supply_am_i_supplied(struct device *dev, void *data)
  
- # Temporary (or perhaps not)
+ int power_supply_am_i_supplied(struct power_supply *psy)
+ {
++	struct psy_am_i_supplied_data data = { psy, 0 };
+ 	int error;
+ 
+-	error = class_for_each_device(power_supply_class, NULL, psy,
++	error = class_for_each_device(power_supply_class, NULL, &data,
+ 				      __power_supply_am_i_supplied);
+ 
+-	dev_dbg(&psy->dev, "%s %d\n", __func__, error);
++	dev_dbg(&psy->dev, "%s count %u err %d\n", __func__, data.count, error);
++
++	if (data.count == 0)
++		return -ENODEV;
+ 
+ 	return error;
+ }
 -- 
-2.7.4
+2.9.3
