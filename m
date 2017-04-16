@@ -1,54 +1,303 @@
-From: <brian@oakcrestfuneralservices.com>
-Subject: (unknown)
-Date: Sun, 16 Apr 2017 23:02:59 -0000
-Message-ID: <149238377993.21738.1130541838383172627@iconpln.net.id>
-Mime-Version: 1.0
-Content-Type: application/zip; name="BALLANCE-27309006728165-linux-pm.zip"
-Content-Transfer-Encoding: base64
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v1 1/1] power: bq24190_charger: Deprecate battery class and replicate its features in charger
+Date: Sun, 16 Apr 2017 16:06:26 -0700
+Message-ID: <20170416230626.30022-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 171.96.25.223.iconpln.net.id ([223.25.96.171]:46742 "HELO
-        iconpln.net.id" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with SMTP id S932220AbdDPXDH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Apr 2017 19:03:07 -0400
-Subject: 
-Content-Disposition: attachment
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:35945 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932220AbdDPXGg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Apr 2017 19:06:36 -0400
+Received: by mail-pf0-f196.google.com with SMTP id i5so21963135pfc.3
+        for <linux-pm@vger.kernel.org>; Sun, 16 Apr 2017 16:06:35 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>
 
-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
-AVBLBQYAAAAAAQABAFsAAABxBwAAAAA=
+From: Liam Breck <kernel@networkimprov.net>
+
+The driver was registering two classes, bq24190-battery & -charger.
+Because the power supply framework cannot surface features from multiple
+drivers in a single class, a fuel gauge driver would create a third class,
+which some power management utilities cannot see.
+
+Deprecate the -battery class for future removal and replicate its features
+in -charger. Set /sys/class...-charger/online = pg_stat && !batfet_disable.
+If device_property "omit-battery-class" is set, don't register -battery.
+
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Liam Breck <kernel@networkimprov.net>
+---
+ drivers/power/supply/bq24190_charger.c | 146 +++++++++++++++++++++++++--------
+ 1 file changed, 111 insertions(+), 35 deletions(-)
+
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index f581042..4197fdb 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -658,22 +658,25 @@ static int bq24190_charger_get_health(struct bq24190_dev_info *bdi,
+ 	v = bdi->f_reg;
+ 	mutex_unlock(&bdi->f_reg_lock);
+ 
+-	if (v & BQ24190_REG_F_BOOST_FAULT_MASK) {
+-		/*
+-		 * This could be over-current or over-voltage but there's
+-		 * no way to tell which.  Return 'OVERVOLTAGE' since there
+-		 * isn't an 'OVERCURRENT' value defined that we can return
+-		 * even if it was over-current.
+-		 */
+-		health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+-	} else {
+-		v &= BQ24190_REG_F_CHRG_FAULT_MASK;
+-		v >>= BQ24190_REG_F_CHRG_FAULT_SHIFT;
+-
+-		switch (v) {
+-		case 0x0: /* Normal */
+-			health = POWER_SUPPLY_HEALTH_GOOD;
++	if (v & BQ24190_REG_F_NTC_FAULT_MASK) {
++		switch (v >> BQ24190_REG_F_NTC_FAULT_SHIFT & 0x7) {
++		case 0x1: /* TS1  Cold */
++		case 0x3: /* TS2  Cold */
++		case 0x5: /* Both Cold */
++			health = POWER_SUPPLY_HEALTH_COLD;
+ 			break;
++		case 0x2: /* TS1  Hot */
++		case 0x4: /* TS2  Hot */
++		case 0x6: /* Both Hot */
++			health = POWER_SUPPLY_HEALTH_OVERHEAT;
++			break;
++		default:
++			health = POWER_SUPPLY_HEALTH_UNKNOWN;
++		}
++	} else if (v & BQ24190_REG_F_BAT_FAULT_MASK) {
++		health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
++	} else if (v & BQ24190_REG_F_CHRG_FAULT_MASK) {
++		switch (v >> BQ24190_REG_F_CHRG_FAULT_SHIFT & 0x3) {
+ 		case 0x1: /* Input Fault (VBUS OVP or VBAT<VBUS<3.8V) */
+ 			/*
+ 			 * This could be over-voltage or under-voltage
+@@ -690,9 +693,19 @@ static int bq24190_charger_get_health(struct bq24190_dev_info *bdi,
+ 		case 0x3: /* Charge Safety Timer Expiration */
+ 			health = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
+ 			break;
+-		default:
+-			health = POWER_SUPPLY_HEALTH_UNKNOWN;
++		default:  /* prevent compiler warning */
++			health = -1;
+ 		}
++	} else if (v & BQ24190_REG_F_BOOST_FAULT_MASK) {
++		/*
++		 * This could be over-current or over-voltage but there's
++		 * no way to tell which.  Return 'OVERVOLTAGE' since there
++		 * isn't an 'OVERCURRENT' value defined that we can return
++		 * even if it was over-current.
++		 */
++		health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
++	} else {
++		health = POWER_SUPPLY_HEALTH_GOOD;
+ 	}
+ 
+ 	val->intval = health;
+@@ -703,19 +716,59 @@ static int bq24190_charger_get_health(struct bq24190_dev_info *bdi,
+ static int bq24190_charger_get_online(struct bq24190_dev_info *bdi,
+ 		union power_supply_propval *val)
+ {
+-	u8 v;
++	u8 pg_stat, batfet_disable;
+ 	int ret;
+ 
+ 	ret = bq24190_read_mask(bdi, BQ24190_REG_SS,
+ 			BQ24190_REG_SS_PG_STAT_MASK,
+-			BQ24190_REG_SS_PG_STAT_SHIFT, &v);
++			BQ24190_REG_SS_PG_STAT_SHIFT, &pg_stat);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	val->intval = v;
++	ret = bq24190_read_mask(bdi, BQ24190_REG_MOC,
++			BQ24190_REG_MOC_BATFET_DISABLE_MASK,
++			BQ24190_REG_MOC_BATFET_DISABLE_SHIFT, &batfet_disable);
++	if (ret < 0)
++		return ret;
++
++	val->intval = pg_stat && !batfet_disable;
++
+ 	return 0;
+ }
+ 
++static int bq24190_battery_set_online(struct bq24190_dev_info *bdi,
++				      const union power_supply_propval *val);
++static int bq24190_battery_get_status(struct bq24190_dev_info *bdi,
++				      union power_supply_propval *val);
++static int bq24190_battery_get_temp_alert_max(struct bq24190_dev_info *bdi,
++					      union power_supply_propval *val);
++static int bq24190_battery_set_temp_alert_max(struct bq24190_dev_info *bdi,
++					      const union power_supply_propval *val);
++
++static int bq24190_charger_set_online(struct bq24190_dev_info *bdi,
++				      const union power_supply_propval *val)
++{
++	return bq24190_battery_set_online(bdi, val);
++}
++
++static int bq24190_charger_get_status(struct bq24190_dev_info *bdi,
++				      union power_supply_propval *val)
++{
++	return bq24190_battery_get_status(bdi, val);
++}
++
++static int bq24190_charger_get_temp_alert_max(struct bq24190_dev_info *bdi,
++					      union power_supply_propval *val)
++{
++	return bq24190_battery_get_temp_alert_max(bdi, val);
++}
++
++static int bq24190_charger_set_temp_alert_max(struct bq24190_dev_info *bdi,
++					      const union power_supply_propval *val)
++{
++	return bq24190_battery_set_temp_alert_max(bdi, val);
++}
++
+ static int bq24190_charger_get_current(struct bq24190_dev_info *bdi,
+ 		union power_supply_propval *val)
+ {
+@@ -830,6 +883,12 @@ static int bq24190_charger_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_ONLINE:
+ 		ret = bq24190_charger_get_online(bdi, val);
+ 		break;
++	case POWER_SUPPLY_PROP_STATUS:
++		ret = bq24190_charger_get_status(bdi, val);
++		break;
++	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
++		ret =  bq24190_charger_get_temp_alert_max(bdi, val);
++		break;
+ 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+ 		ret = bq24190_charger_get_current(bdi, val);
+ 		break;
+@@ -878,6 +937,12 @@ static int bq24190_charger_set_property(struct power_supply *psy,
+ 		return ret;
+ 
+ 	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++		ret = bq24190_charger_set_online(bdi, val);
++		break;
++	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
++		ret = bq24190_charger_set_temp_alert_max(bdi, val);
++		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_TYPE:
+ 		ret = bq24190_charger_set_charge_type(bdi, val);
+ 		break;
+@@ -903,6 +968,8 @@ static int bq24190_charger_property_is_writeable(struct power_supply *psy,
+ 	int ret;
+ 
+ 	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+ 	case POWER_SUPPLY_PROP_CHARGE_TYPE:
+ 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+ 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+@@ -919,6 +986,8 @@ static enum power_supply_property bq24190_charger_properties[] = {
+ 	POWER_SUPPLY_PROP_CHARGE_TYPE,
+ 	POWER_SUPPLY_PROP_HEALTH,
+ 	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
+@@ -1092,6 +1161,7 @@ static int bq24190_battery_get_property(struct power_supply *psy,
+ 	struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
+ 	int ret;
+ 
++	dev_warn(bdi->dev, "warning: /sys/class/power_supply/bq24190-battery is deprecated\n");
+ 	dev_dbg(bdi->dev, "prop: %d\n", psp);
+ 
+ 	ret = pm_runtime_get_sync(bdi->dev);
+@@ -1137,6 +1207,7 @@ static int bq24190_battery_set_property(struct power_supply *psy,
+ 	struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
+ 	int ret;
+ 
++	dev_warn(bdi->dev, "warning: /sys/class/power_supply/bq24190-battery is deprecated\n");
+ 	dev_dbg(bdi->dev, "prop: %d\n", psp);
+ 
+ 	ret = pm_runtime_get_sync(bdi->dev);
+@@ -1265,9 +1336,9 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
+ 		bdi->ss_reg = ss_reg;
+ 	}
+ 
+-	if (alert_charger)
++	if (alert_charger || alert_battery)
+ 		power_supply_changed(bdi->charger);
+-	if (alert_battery)
++	if (alert_battery && bdi->battery)
+ 		power_supply_changed(bdi->battery);
+ 
+ 	dev_dbg(bdi->dev, "ss_reg: 0x%02x, f_reg: 0x%02x\n", ss_reg, f_reg);
+@@ -1472,19 +1543,23 @@ static int bq24190_probe(struct i2c_client *client,
+ 		goto out_pmrt;
+ 	}
+ 
+-	battery_cfg.drv_data = bdi;
+-	bdi->battery = power_supply_register(dev, &bq24190_battery_desc,
+-						&battery_cfg);
+-	if (IS_ERR(bdi->battery)) {
+-		dev_err(dev, "Can't register battery\n");
+-		ret = PTR_ERR(bdi->battery);
+-		goto out_charger;
++	/* the battery class is deprecated and will be removed. */
++	/* in the interim, this property hides it.              */
++	if (!device_property_read_bool(dev, "omit-battery-class")) {
++		battery_cfg.drv_data = bdi;
++		bdi->battery = power_supply_register(dev, &bq24190_battery_desc,
++						     &battery_cfg);
++		if (IS_ERR(bdi->battery)) {
++			dev_err(dev, "Can't register battery\n");
++			ret = PTR_ERR(bdi->battery);
++			goto out_charger;
++		}
+ 	}
+ 
+ 	ret = bq24190_sysfs_create_group(bdi);
+ 	if (ret) {
+ 		dev_err(dev, "Can't create sysfs entries\n");
+-		goto out_battery;
++		goto out_charger;
+ 	}
+ 
+ 	bdi->initialized = true;
+@@ -1522,10 +1597,9 @@ static int bq24190_probe(struct i2c_client *client,
+ out_sysfs:
+ 	bq24190_sysfs_remove_group(bdi);
+ 
+-out_battery:
+-	power_supply_unregister(bdi->battery);
+-
+ out_charger:
++	if (!IS_ERR_OR_NULL(bdi->battery))
++		power_supply_unregister(bdi->battery);
+ 	power_supply_unregister(bdi->charger);
+ 
+ out_pmrt:
+@@ -1548,7 +1622,8 @@ static int bq24190_remove(struct i2c_client *client)
+ 
+ 	bq24190_register_reset(bdi);
+ 	bq24190_sysfs_remove_group(bdi);
+-	power_supply_unregister(bdi->battery);
++	if (bdi->battery)
++		power_supply_unregister(bdi->battery);
+ 	power_supply_unregister(bdi->charger);
+ 	if (error >= 0)
+ 		pm_runtime_put_sync(bdi->dev);
+@@ -1635,7 +1710,8 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
+ 
+ 	/* Things may have changed while suspended so alert upper layer */
+ 	power_supply_changed(bdi->charger);
+-	power_supply_changed(bdi->battery);
++	if (bdi->battery)
++		power_supply_changed(bdi->battery);
+ 
+ 	return 0;
+ }
+-- 
+2.9.3
