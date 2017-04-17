@@ -1,54 +1,74 @@
-From: <kgbok.kezyhumh@murad.com>
-Subject: (unknown)
-Date: Mon, 17 Apr 2017 03:38:46 -0000
-Message-ID: <149240032603.20711.9586781522881016860@jupiter.com.br>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [patch 06/20] cpufreq: Use cpuhp_setup_state_nocalls_locked()
+Date: Mon, 17 Apr 2017 09:44:38 +0530
+Message-ID: <20170417041438.GD28191@vireshk-i7>
+References: <20170415170107.643253702@linutronix.de>
+ <20170415171651.746595672@linutronix.de>
 Mime-Version: 1.0
-Content-Type: application/zip; name="$MONEY-840640779540345-linux-pm.zip"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 186.193.179.92.jupiter.com.br ([186.193.179.92]:4490 "HELO
-        jupiter.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with SMTP id S932455AbdDQDiv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Apr 2017 23:38:51 -0400
-Content-Disposition: attachment
-Subject: 
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:36534 "EHLO
+        mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750994AbdDQEOm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2017 00:14:42 -0400
+Received: by mail-pf0-f172.google.com with SMTP id 194so21255196pfv.3
+        for <linux-pm@vger.kernel.org>; Sun, 16 Apr 2017 21:14:41 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20170415171651.746595672@linutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Siewior <bigeasy@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-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
-BQYAAAAAAQABAFsAAABuBwAAAAA=
+On 15-04-17, 19:01, Thomas Gleixner wrote:
+> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> 
+> cpufreq holds get_online_cpus() while invoking cpuhp_setup_state_nocalls()
+> to make subsys_interface_register() and the registration of hotplug calls
+> atomic versus cpu hotplug.
+> 
+> cpuhp_setup_state_nocalls() invokes get_online_cpus() as well. This is
+> correct, but prevents the conversion of the hotplug locking to a percpu
+> rwsem.
+> 
+> Use cpuhp_setup_state_nocalls_locked() to avoid the nested call.
+> 
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> 
+> ---
+>  drivers/cpufreq/cpufreq.c |    9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2473,9 +2473,10 @@ int cpufreq_register_driver(struct cpufr
+>  		goto err_if_unreg;
+>  	}
+>  
+> -	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "cpufreq:online",
+> -					cpuhp_cpufreq_online,
+> -					cpuhp_cpufreq_offline);
+> +	ret = cpuhp_setup_state_nocalls_locked(CPUHP_AP_ONLINE_DYN,
+> +					       "cpufreq:online",
+> +					       cpuhp_cpufreq_online,
+> +					       cpuhp_cpufreq_offline);
+>  	if (ret < 0)
+>  		goto err_if_unreg;
+>  	hp_online = ret;
+> @@ -2519,7 +2520,7 @@ int cpufreq_unregister_driver(struct cpu
+>  	get_online_cpus();
+>  	subsys_interface_unregister(&cpufreq_interface);
+>  	remove_boost_sysfs_file();
+> -	cpuhp_remove_state_nocalls(hp_online);
+> +	cpuhp_remove_state_nocalls_locked(hp_online);
+>  
+>  	write_lock_irqsave(&cpufreq_driver_lock, flags);
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
