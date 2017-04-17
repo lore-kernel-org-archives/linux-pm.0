@@ -1,149 +1,96 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 05/10] timer: Retrieve next expiry of pinned/non-pinned timers
- seperately
-Date: Mon, 17 Apr 2017 20:32:46 +0200
-Message-ID: <20170417184356.378418394@linutronix.de>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [patch 09/10] timer/migration: Add tracepoints
+Date: Mon, 17 Apr 2017 15:09:32 -0400
+Message-ID: <20170417150932.7e149f5d@gandalf.local.home>
 References: <20170417183241.244217993@linutronix.de>
+        <20170417184356.697789890@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:48354 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755066AbdDQSx0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2017 14:53:26 -0400
-Content-Disposition: inline;
- filename=timer_Provide_both_pinned_and_movable_expiration_times.patch
+Received: from mail.kernel.org ([198.145.29.136]:56940 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753418AbdDQTJl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 17 Apr 2017 15:09:41 -0400
+In-Reply-To: <20170417184356.697789890@linutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>, Richard Cochran <rcochran@linutronix.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>
 
-To prepare for the conversion of the NOHZ timer placement to a pull at
-expiry time model it's required to have seperate expiry times for the
-pinned and the non-pinned (movable) timers.
+On Mon, 17 Apr 2017 20:32:50 +0200
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-No functional change
+> The timer pull logic needs proper debuging aids. Add tracepoints so the
+> hierarchical idle machinery can be diagnosed.
+> 
+> Signed-off-by: Anna-Maria Gleixner <anna-maria@linutronix.de>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  include/trace/events/timer_migration.h |  173 +++++++++++++++++++++++++++++++++
+>  kernel/time/timer_migration.c          |   17 +++
+>  2 files changed, 190 insertions(+)
+> 
+> --- /dev/null
+> +++ b/include/trace/events/timer_migration.h
+> @@ -0,0 +1,173 @@
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM timer_migration
+> +
+> +#if !defined(_TRACE_TIMER_MIGRATION_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_TIMER_MIGRATION_H
+> +
+> +#include <linux/tracepoint.h>
+> +
+> +/* Group events */
+> +DECLARE_EVENT_CLASS(tmigr_group,
+> +
+> +	TP_PROTO(struct tmigr_group *group),
+> +
+> +	TP_ARGS(group),
+> +
+> +	TP_STRUCT__entry(
+> +		__field( void *,	group	)
+> +		__field( unsigned int,	lvl	)
+> +		__field( unsigned int,	numa_node )
+> +		__field( unsigned int,	active )
+> +		__field( unsigned int,	migrator )
+> +		__field( unsigned int,	num_childs )
+> +		__field( void *,	parent	)
+> +		__field( u64,		nextevt	)
+> +		__field( unsigned int,	evtcpu	)
 
-Signed-off-by: Richard Cochran <rcochran@linutronix.de>
-Signed-off-by: Anna-Maria Gleixner <anna-maria@linutronix.de>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+On 64 bit boxes, with long and pointers as 8 bytes and int is only 4
+bytes, the above can be laid out better, as the above structure will
+most likely create holes. Like a 4 byte one after num_childs. Perhaps
+move num_childs down to above evtcpu. In other words, please pair ints
+together when possible, between pointers and longs.
 
----
- kernel/time/tick-internal.h |    3 ++-
- kernel/time/tick-sched.c    |   10 ++++++----
- kernel/time/timer.c         |   41 +++++++++++++++++++++++++++++++++++------
- 3 files changed, 43 insertions(+), 11 deletions(-)
+The order of the struct does not need to be the same as the order of
+the output.
 
---- a/kernel/time/tick-internal.h
-+++ b/kernel/time/tick-internal.h
-@@ -163,5 +163,6 @@ static inline void timers_update_migrati
- 
- DECLARE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases);
- 
--extern u64 get_next_timer_interrupt(unsigned long basej, u64 basem);
-+extern u64 get_next_timer_interrupt(unsigned long basej, u64 basem,
-+				    u64 *global_evt);
- void timer_clear_idle(void);
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -666,7 +666,7 @@ static ktime_t tick_nohz_stop_sched_tick
- 					 ktime_t now, int cpu)
- {
- 	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
--	u64 basemono, next_tick, next_tmr, next_rcu, delta, expires;
-+	u64 basemono, next_tick, next_local, next_global, next_rcu, delta, expires;
- 	unsigned long seq, basejiff;
- 	ktime_t	tick;
- 
-@@ -689,10 +689,12 @@ static ktime_t tick_nohz_stop_sched_tick
- 		 * disabled this also looks at the next expiring
- 		 * hrtimer.
- 		 */
--		next_tmr = get_next_timer_interrupt(basejiff, basemono);
--		ts->next_timer = next_tmr;
-+		next_local = get_next_timer_interrupt(basejiff, basemono,
-+						      &next_global);
-+		next_local = min(next_local, next_global);
-+		ts->next_timer = next_local;
- 		/* Take the next rcu event into account */
--		next_tick = next_rcu < next_tmr ? next_rcu : next_tmr;
-+		next_tick = next_rcu < next_local ? next_rcu : next_local;
- 	}
- 
- 	/*
---- a/kernel/time/timer.c
-+++ b/kernel/time/timer.c
-@@ -1472,23 +1472,27 @@ static u64 cmp_next_hrtimer_event(u64 ba
-  * get_next_timer_interrupt - return the time (clock mono) of the next timer
-  * @basej:	base time jiffies
-  * @basem:	base time clock monotonic
-+ * @global_evt:	Pointer to store the expiry time of the next global timer
-  *
-  * Returns the tick aligned clock monotonic time of the next pending
-  * timer or KTIME_MAX if no timer is pending.
-  */
--u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
-+u64 get_next_timer_interrupt(unsigned long basej, u64 basem, u64 *global_evt)
- {
- 	unsigned long nextevt, nextevt_local, nextevt_global;
- 	bool local_empty, global_empty, local_first, is_idle;
- 	struct timer_base *base_local, *base_global;
--	u64 expires = KTIME_MAX;
-+	u64 local_evt = KTIME_MAX;
-+
-+	/* Preset global event */
-+	*global_evt = KTIME_MAX;
- 
- 	/*
- 	 * Pretend that there is no timer pending if the cpu is offline.
- 	 * Possible pending timers will be migrated later to an active cpu.
- 	 */
- 	if (cpu_is_offline(smp_processor_id()))
--		return expires;
-+		return local_evt;
- 
- 	base_local = this_cpu_ptr(&timer_bases[BASE_LOCAL]);
- 	base_global = this_cpu_ptr(&timer_bases[BASE_GLOBAL]);
-@@ -1532,14 +1536,39 @@ u64 get_next_timer_interrupt(unsigned lo
- 	spin_unlock(&base_local->lock);
- 	spin_unlock(&base_global->lock);
- 
--	if (!local_empty || !global_empty) {
-+	/*
-+	 * If the bases are not marked idle, i.e one of the events is at
-+	 * max. one tick away, use the next event for calculating next
-+	 * local expiry value. The next global event is left as KTIME_MAX,
-+	 * so this CPU will not queue itself in the global expiry
-+	 * mechanism.
-+	 */
-+	if (!is_idle) {
- 		/* If we missed a tick already, force 0 delta */
- 		if (time_before_eq(nextevt, basej))
- 			nextevt = basej;
--		expires = basem + (nextevt - basej) * TICK_NSEC;
-+		local_evt = basem + (nextevt - basej) * TICK_NSEC;
-+		return cmp_next_hrtimer_event(basem, local_evt);
- 	}
- 
--	return cmp_next_hrtimer_event(basem, expires);
-+	/*
-+	 * If the bases are marked idle, i.e. the next event on both the
-+	 * local and the global queue are farther away than a tick,
-+	 * evaluate both bases. No need to check whether one of the bases
-+	 * has an already expired timer as this is caught by the !is_idle
-+	 * condition above.
-+	 */
-+	if (!local_empty)
-+		local_evt = basem + (nextevt_local - basej) * TICK_NSEC;
-+
-+	/*
-+	 * If the local queue expires first, there is no requirement for
-+	 * queuing the CPU in the global expiry mechanism.
-+	 */
-+	if (!local_first && !global_empty)
-+		*global_evt = basem + (nextevt_global - basej) * TICK_NSEC;
-+
-+	return cmp_next_hrtimer_event(basem, local_evt);
- }
- 
- /**
+Thanks,
+
+-- Steve
+
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->group		= group;
+> +		__entry->lvl		= group->level;
+> +		__entry->numa_node	= group->numa_node;
+> +		__entry->active		= group->active;
+> +		__entry->migrator	= group->migrator;
+> +		__entry->num_childs	= group->num_childs;
+> +		__entry->parent		= group->parent;
+> +		__entry->nextevt	= group->groupevt.nextevt.expires;
+> +		__entry->evtcpu		= group->groupevt.cpu;
+> +	),
+> +
+> +	TP_printk("group=%p lvl=%d numa=%d active=%d migrator=%d num_childs=%d "
+> +		  "parent=%p nextevt=%llu evtcpu=%d",
+> +		  __entry->group, __entry->lvl, __entry->numa_node,
+> +		  __entry->active, __entry->migrator, __entry->num_childs,
+> +		  __entry->parent, __entry->nextevt, __entry->evtcpu)
+> +);
+> +
