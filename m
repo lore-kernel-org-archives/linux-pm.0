@@ -1,105 +1,120 @@
 From: Eduardo Valentin <edubezval@gmail.com>
 Subject: Re: [PATCH V2 00/17] thermal: cpu_cooling: improve interaction with
  cpufreq core
-Date: Mon, 17 Apr 2017 10:34:34 -0700
-Message-ID: <20170417173431.GA10447@localhost.localdomain>
+Date: Mon, 17 Apr 2017 10:51:52 -0700
+Message-ID: <20170417175150.GB10447@localhost.localdomain>
 References: <cover.1492408342.git.viresh.kumar@linaro.org>
+ <20170417173431.GA10447@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="ZPt4rx8FFjLCG7dd"
+        protocol="application/pgp-signature"; boundary="uQr8t48UFsdbeI+V"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:33774 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752807AbdDQRej (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2017 13:34:39 -0400
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:35074 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755119AbdDQRv5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2017 13:51:57 -0400
 Content-Disposition: inline
-In-Reply-To: <cover.1492408342.git.viresh.kumar@linaro.org>
+In-Reply-To: <20170417173431.GA10447@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Luba <lukasz.luba@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
 Cc: Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linaro-kernel@lists.linaro.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
 
---ZPt4rx8FFjLCG7dd
+--uQr8t48UFsdbeI+V
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hey,
 
-On Mon, Apr 17, 2017 at 11:31:45AM +0530, Viresh Kumar wrote:
-> Hi Guys,
+On Mon, Apr 17, 2017 at 10:34:34AM -0700, Eduardo Valentin wrote:
+> Hey,
 >=20
-> The cpu_cooling driver is designed to use CPU frequency scaling to avoid
-> high thermal states for a platform. But it wasn't glued really well with
-> cpufreq core.
+> On Mon, Apr 17, 2017 at 11:31:45AM +0530, Viresh Kumar wrote:
+> > Hi Guys,
+> >=20
+> > The cpu_cooling driver is designed to use CPU frequency scaling to avoid
+> > high thermal states for a platform. But it wasn't glued really well with
+> > cpufreq core.
+> >=20
+> > This series tries to improve interactions between cpufreq core and
+> > cpu_cooling driver and does some fixes/cleanups to the cpu_cooling
+> > driver.
 >=20
-> This series tries to improve interactions between cpufreq core and
-> cpu_cooling driver and does some fixes/cleanups to the cpu_cooling
-> driver.
+>=20
+> Can you please be more specific of what exactly is not gluing
+> properly/really well? I like refactoring, as long as well justified.
+>=20
+> Do you see anything broken currently?
+>=20
+> Or is it more of a optimization in terms of data structures and how
+> things are computed?
+>=20
+>=20
+> >=20
+> > I have tested it on ARM 32 (exynos) and 64 bit (hikey) boards and have
+> > pushed them for 0-day build bot and kernel CI testing as well. We should
+> > know if something is broken with these.
+>=20
+> Nice. What governors did you try? Have you checked "power_allocator" by
+> any chance?
+>=20
+> >=20
+> > @Javi: It would be good if you can give them a test, specially because
+> > of your work on the "power" specific bits in the driver.
+> >=20
+>=20
+>=20
+> @Javi, are you still around? This needs to be validated in terms of how
+> the cdev states and power models are computed. Just to make sure we are
+> in one piece. Copying the ARM folks too, Punit?.
+>=20
+> I will see if I have some time later this week to check if IPA is in one
+> piece after this series.
 
+Now adding the ARM folks for real.
 
-Can you please be more specific of what exactly is not gluing
-properly/really well? I like refactoring, as long as well justified.
-
-Do you see anything broken currently?
-
-Or is it more of a optimization in terms of data structures and how
-things are computed?
-
+Lukasz, can you please give it a shot on this series to check if IPA is
+in one piece?
 
 >=20
-> I have tested it on ARM 32 (exynos) and 64 bit (hikey) boards and have
-> pushed them for 0-day build bot and kernel CI testing as well. We should
-> know if something is broken with these.
-
-Nice. What governors did you try? Have you checked "power_allocator" by
-any chance?
-
+> > Pushed here as well:
+> >=20
+> > git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git thermal/co=
+oling
+> >=20
+> > V1->V2:
+> > - Name cpufreq cooling dev as cpufreq_cdev everywhere (Eduardo).
 >=20
-> @Javi: It would be good if you can give them a test, specially because
-> of your work on the "power" specific bits in the driver.
->=20
+> That was just very minor stuff. Overall, I do not see major issues, but
+> I want to spend some more time on this before acking on my side.=20
 
 
-@Javi, are you still around? This needs to be validated in terms of how
-the cdev states and power models are computed. Just to make sure we are
-in one piece. Copying the ARM folks too, Punit?.
+BR,
 
-I will see if I have some time later this week to check if IPA is in one
-piece after this series.
+Eduardo
 
-> Pushed here as well:
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git thermal/cool=
-ing
->=20
-> V1->V2:
-> - Name cpufreq cooling dev as cpufreq_cdev everywhere (Eduardo).
-
-That was just very minor stuff. Overall, I do not see major issues, but
-I want to spend some more time on this before acking on my side.=20
-
---ZPt4rx8FFjLCG7dd
+--uQr8t48UFsdbeI+V
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJY9PyiAAoJEA6VkvSQfF5TJpMQAKYdkxMAVn6zzz0N/AX+fP+z
-96W4aDBWJ77u506xqEZ9/Bna61KkAaRIMVAQSRcFfusexjN7qoI/voYvlBRvv1Gw
-8s0moLqMdRb6JKYM8Cj00jubuAjADiX08AYGJi3DrSqrL4dLvmmP3dSrq17HPuzy
-VEyVz1iCB3Ec6uak6VDahNmO/BJ7S4Q7VeOkKMN9YAilutE49jpP4FYuitSTXtZD
-P4IUDea4qqXqvOid5HVUHWyPaq7M3LCAE3RFCV4TQGHY1puCUvpE4dBPUvd9Ns2z
-fVSA8Gq1oXN3AQ76tqYlXqu+WRP4unYQq7bGU9uN5BIpj77tMiV2CFIInOiwg9mn
-UJTBSY1aX7yhvc/e+81CFh9NlUYCm/6HYurr9T5B2XgAJwzu59nuSxpEf8JZ5p/c
-smFlS+doPY1EXQSQQwrrrwnoVtvf6P6ernALJehX5M9hGPfAqJ7ZJtBFkDkItY28
-layc5qeiUUYl6zgbkVruWdOm2O1qkNo/3ktfXuui6CQ8bWXXfCgMZ7N4iBE1jQbV
-zssTxK9RPvcva1ykSySjqurUdP5bUrzb3c+2qat12CDpqfqFE67fLSUpm13pVf4Z
-eYDOyhg2ID6UAUu2148qCH2MGm+u3FI/EyRiRi7nWf0judC/+KhJGpYGRBc9xA14
-iOmnZLTdXyqOvCEpfPkc
-=z9g9
+iQIcBAEBCAAGBQJY9QCvAAoJEA6VkvSQfF5T0dcQAKmwJgY8mm90a/F4X3wGA9XY
+M3z54/sS5D+NmtSqaboReTdkvQAN2OTNrOA+4Ceu8a0gsz34eTPNCmlu3CRoRXxi
+UP4kozIRNNYxojqHLmutC/ZrPZVcJrzR0ISx/pQHARPpyp/1OrtEg6slu8odZ7CI
+FWLE2NgAAoS0hyn2MApAMkFyRVD5wIgKhAWw5op5fAVxZQ5sJ8MYuqbxS0OXyxBf
+kfdidV9uae1LGKGy9oSC+F09dWrXwQBsYL5oI7X3z+6wFWzkplVYJrt5QiNT+4Fl
+Kf6NHZNGekf8Gi491VQAtVoYbXS7Hthd8NrQmCYVfJeF6AvxVtj/xuAIrcvwcUkc
+XWZHgGw3tycAWtz+h187/oEu/O/CIISFV/TPtBGpIzKOVfDEwZJqko6JRlDvnkGi
+6ZAbmDB0rxX0yJrO8fXc4EUfn0TaIxuIRojOVo03Y2I4hMoC446uxT80zfQriGcz
+KDNqT+Uq1IXEh6UiUx9XRXy5IZZVsy48Jh9feIDvL3jcCQ4eQZxiKshq/SGGkfYE
+R8uec1UhheN8weID6zVGWaoQXKRQkjQ89HRbX7Pxs/n5yTc2daf8nwWybHCyW9lq
+jH8ZCcht6x6d1VyUL+93gtOGYaaLt73zv2XWtnKOmoVRvE9uPvRGpTXNyRcLNa5D
+5lTkgw3eA9HKSHoRkq4F
+=5h4k
 -----END PGP SIGNATURE-----
 
---ZPt4rx8FFjLCG7dd--
+--uQr8t48UFsdbeI+V--
