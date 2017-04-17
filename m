@@ -1,76 +1,54 @@
-From: Michael Trimarchi <michael@amarulasolutions.com>
-Subject: Re: [RFC PATCH] pda_power: move from timer to delayed_work
-Date: Mon, 17 Apr 2017 18:22:13 +0200
-Message-ID: <20170417162206.GA31411@panicking>
-References: <1492420261-25635-1-git-send-email-michael@amarulasolutions.com>
- <20170417155157.GA12497@kroah.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH V2] PM / OPP: Use - instead of @ for DT entries
+Date: Mon, 17 Apr 2017 18:35:25 +0200
+Message-ID: <22966574.2zMrIUgKz4@aspire.rjw.lan>
+References: <70e7c7ee13722ab9c73cb073f88502eaf1ada5f5.1491816050.git.viresh.kumar@linaro.org> <2765521.jPoRkFTblf@aspire.rjw.lan> <CAK7LNAQ7Uf1Jkj64-Ykdk5TSeWvkq7=BaqUMJo6KqrN7BhYvsQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170417155157.GA12497@kroah.com>
-Sender: stable-owner@vger.kernel.org
-To: Greg KH <greg@kroah.com>
-Cc: sre@kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAK7LNAQ7Uf1Jkj64-Ykdk5TSeWvkq7=BaqUMJo6KqrN7BhYvsQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, =?ISO-8859-1?Q?Beno=EEt?= Cousson <bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linaro-kernel@li
 List-Id: linux-pm@vger.kernel.org
 
-Hi
-
-On Mon, Apr 17, 2017 at 05:51:57PM +0200, Greg KH wrote:
-> On Mon, Apr 17, 2017 at 11:11:01AM +0200, Michael Trimarchi wrote:
-> > This changed is needed to avoid locking problem during
-> > boot as shown:
-> > 
-> > <5>[    8.824096] Registering SWP/SWPB emulation handler
-> > <6>[    8.977294] clock: disabling unused clocks to save power
-> > <3>[    9.108154] BUG: sleeping function called from invalid context at kernel_albert/kernel/mutex.c:269
-> > <3>[    9.122894] in_atomic(): 1, irqs_disabled(): 0, pid: 1, name: swapper/0
-> > <4>[    9.130249] 3 locks held by swapper/0/1:
-> > <4>[    9.134613]  #0:  (&__lockdep_no_validate__){......}, at: [<c0342430>] __driver_attach+0x58/0xa8
-> > <4>[    9.144500]  #1:  (&__lockdep_no_validate__){......}, at: [<c0342440>] __driver_attach+0x68/0xa8
-> > <4>[    9.154357]  #2:  (&polling_timer){......}, at: [<c0053770>] run_timer_softirq+0x108/0x3ec
-> > <4>[    9.163726] Backtrace:
-> > <4>[    9.166473] [<c001269c>] (dump_backtrace+0x0/0x114) from [<c067e5f0>] (dump_stack+0x20/0x24)
-> > <4>[    9.175811]  r6:00203230 r5:0000010d r4:d782e000 r3:60000113
-> > <4>[    9.182250] [<c067e5d0>] (dump_stack+0x0/0x24) from [<c007441c>] (__might_sleep+0x10c/0x128)
-> > <4>[    9.191650] [<c0074310>] (__might_sleep+0x0/0x128) from [<c0688f60>] (mutex_lock_nested+0x34/0x36c)
-> > <4>[    9.201660]  r5:c02d5350 r4:d79a0c64
-> > <4>[    9.205688] [<c0688f2c>] (mutex_lock_nested+0x0/0x36c) from [<c02d5350>] (regulator_set_current_limit+0x30/0x118)
-> > <4>[    9.217071] [<c02d5320>] (regulator_set_current_limit+0x0/0x118) from [<c0435ce0>] (update_charger+0x84/0xc4)
-> > <4>[    9.228027]  r7:d782fb20 r6:00000101 r5:c1767e94 r4:00000000
-> > <4>[    9.234436] [<c0435c5c>] (update_charger+0x0/0xc4) from [<c0435d40>] (psy_changed+0x20/0x48)
-> > <4>[    9.243804]  r5:d782e000 r4:c1767e94
-> > <4>[    9.247802] [<c0435d20>] (psy_changed+0x0/0x48) from [<c0435dec>] (polling_timer_func+0x84/0xb8)
-> > <4>[    9.257537]  r4:c1767e94 r3:00000002
-> > <4>[    9.261566] [<c0435d68>] (polling_timer_func+0x0/0xb8) from [<c00537e4>] (run_timer_softirq+0x17c/0x3ec)
-> > <4>[    9.272033]  r4:c1767eb0 r3:00000000
-> > <4>[    9.276062] [<c0053668>] (run_timer_softirq+0x0/0x3ec) from [<c004b000>] (__do_softirq+0xf0/0x298)
-> > <4>[    9.286010] [<c004af10>] (__do_softirq+0x0/0x298) from [<c004b650>] (irq_exit+0x98/0xa0)
-> > <4>[    9.295013] [<c004b5b8>] (irq_exit+0x0/0xa0) from [<c000edbc>] (handle_IRQ+0x60/0xc0)
-> > <4>[    9.303680]  r4:c1194e98 r3:c00bc778
-> > <4>[    9.307708] [<c000ed5c>] (handle_IRQ+0x0/0xc0) from [<c0008504>] (gic_handle_irq+0x34/0x68)
-> > <4>[    9.316955]  r8:000ac383 r7:d782fc3c r6:d782fc08 r5:c11936c4 r4:e0802100
-> > <4>[    9.324310] r3:c026ba48
-> > <4>[    9.327301] [<c00084d0>] (gic_handle_irq+0x0/0x68) from [<c068c2c0>] (__irq_svc+0x40/0x74)
-> > <4>[    9.336456] Exception stack(0xd782fc08 to 0xd782fc50)
-> > <4>[    9.342041] fc00:                   d6e30e6c ac383627 00000000 ac383417 ea19c000 ea200000
-> > <4>[    9.351104] fc20: beffffff 00000667 000ac383 d6e30670 d6e3066c d782fc94 d782fbe8 d782fc50
-> > <4>[    9.360168] fc40: c026ba48 c001d1f0 00000113 ffffffff
-> > 
-> > Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
-> > ---
-> >  drivers/power/supply/pda_power.c | 48 ++++++++++++++++++++++------------------
-> >  1 file changed, 26 insertions(+), 22 deletions(-)
+On Monday, April 17, 2017 11:07:51 AM Masahiro Yamada wrote:
+> 2017-04-15 7:47 GMT+09:00 Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>:
+> > On Monday, April 10, 2017 02:51:35 PM Viresh Kumar wrote:
+> >> Compiling the DT file with W=1, DTC warns like follows:
+> >>
+> >> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
+> >> unit name, but no reg property
+> >>
+> >> Fix this by replacing '@' with '-' as the OPP nodes will never have a
+> >> "reg" property.
+> >>
+> >> Reported-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> >> Reported-by: Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
+> >> Suggested-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+> >> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> >> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> (sunxi)
+> >> Reviewed-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> >> Reviewed-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> >
+> > OK, so any ACKs from the DT side?  Rob?
+> >
+> > Thanks,
+> > Rafael
 > 
-> <formletter>
 > 
-> This is not the correct way to submit patches for inclusion in the
-> stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
-> for how to do this properly.
 > 
-> </formletter>
+> I see Rob's Acked-by.
+> 
+> https://lkml.org/lkml/2017/4/13/648
 
-Ok, clear enough and I will read the documentation and proper re-submit it.
-Is it clear enough to have some brief review process on linux-pm?
+Indeed.  Thanks!
 
-Michael
+Regards,
+Rafael
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
