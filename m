@@ -1,96 +1,48 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [patch 09/10] timer/migration: Add tracepoints
-Date: Mon, 17 Apr 2017 15:09:32 -0400
-Message-ID: <20170417150932.7e149f5d@gandalf.local.home>
-References: <20170417183241.244217993@linutronix.de>
-        <20170417184356.697789890@linutronix.de>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH V5 2/2] thermal: broadcom: add Northstar thermal driver
+Date: Mon, 17 Apr 2017 22:09:56 +0200 (CEST)
+Message-ID: <1653958941.84030.1492459796937@email.1und1.de>
+References: <20170331201124.656-1-zajec5@gmail.com>
+ <20170403154829.29780-1-zajec5@gmail.com>
+ <20170403154829.29780-2-zajec5@gmail.com>
+ <20170407044218.GA12447@localhost.localdomain>
+ <6dd2617d-a8a8-d7a4-53a4-7ebcb274573c@milecki.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:56940 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753418AbdDQTJl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 17 Apr 2017 15:09:41 -0400
-In-Reply-To: <20170417184356.697789890@linutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <6dd2617d-a8a8-d7a4-53a4-7ebcb274573c@milecki.pl>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>, =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Scott Branden <sbranden@broadcom.com>, linux-pm@vger.kernel.org, Ray Jui <rjui@broadcom.com>, Lee Jones <lee@kernel.org>, Jon Mason <jon.mason@broadcom.com>, Rob Herring <robh+dt@kernel.org>, bcm-kernel-feedback-list@broadcom.com, linux-rpi-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>
 
-On Mon, 17 Apr 2017 20:32:50 +0200
-Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> The timer pull logic needs proper debuging aids. Add tracepoints so the
-> hierarchical idle machinery can be diagnosed.
-> 
-> Signed-off-by: Anna-Maria Gleixner <anna-maria@linutronix.de>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
->  include/trace/events/timer_migration.h |  173 +++++++++++++++++++++++++++++++++
->  kernel/time/timer_migration.c          |   17 +++
->  2 files changed, 190 insertions(+)
-> 
-> --- /dev/null
-> +++ b/include/trace/events/timer_migration.h
-> @@ -0,0 +1,173 @@
-> +#undef TRACE_SYSTEM
-> +#define TRACE_SYSTEM timer_migration
-> +
-> +#if !defined(_TRACE_TIMER_MIGRATION_H) || defined(TRACE_HEADER_MULTI_READ)
-> +#define _TRACE_TIMER_MIGRATION_H
-> +
-> +#include <linux/tracepoint.h>
-> +
-> +/* Group events */
-> +DECLARE_EVENT_CLASS(tmigr_group,
-> +
-> +	TP_PROTO(struct tmigr_group *group),
-> +
-> +	TP_ARGS(group),
-> +
-> +	TP_STRUCT__entry(
-> +		__field( void *,	group	)
-> +		__field( unsigned int,	lvl	)
-> +		__field( unsigned int,	numa_node )
-> +		__field( unsigned int,	active )
-> +		__field( unsigned int,	migrator )
-> +		__field( unsigned int,	num_childs )
-> +		__field( void *,	parent	)
-> +		__field( u64,		nextevt	)
-> +		__field( unsigned int,	evtcpu	)
-
-On 64 bit boxes, with long and pointers as 8 bytes and int is only 4
-bytes, the above can be laid out better, as the above structure will
-most likely create holes. Like a 4 byte one after num_childs. Perhaps
-move num_childs down to above evtcpu. In other words, please pair ints
-together when possible, between pointers and longs.
-
-The order of the struct does not need to be the same as the order of
-the output.
-
-Thanks,
-
--- Steve
-
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->group		= group;
-> +		__entry->lvl		= group->level;
-> +		__entry->numa_node	= group->numa_node;
-> +		__entry->active		= group->active;
-> +		__entry->migrator	= group->migrator;
-> +		__entry->num_childs	= group->num_childs;
-> +		__entry->parent		= group->parent;
-> +		__entry->nextevt	= group->groupevt.nextevt.expires;
-> +		__entry->evtcpu		= group->groupevt.cpu;
-> +	),
-> +
-> +	TP_printk("group=%p lvl=%d numa=%d active=%d migrator=%d num_childs=%d "
-> +		  "parent=%p nextevt=%llu evtcpu=%d",
-> +		  __entry->group, __entry->lvl, __entry->numa_node,
-> +		  __entry->active, __entry->migrator, __entry->num_childs,
-> +		  __entry->parent, __entry->nextevt, __entry->evtcpu)
-> +);
-> +
+PiBSYWZhxYIgTWnFgmVja2kgPHJhZmFsQG1pbGVja2kucGw+IGhhdCBhbSAxNC4gQXByaWwgMjAx
+NyB1bSAxNDoxNiBnZXNjaHJpZWJlbjoKPiAKPiAKPiBPbiAwNC8wNy8yMDE3IDA2OjQyIEFNLCBF
+ZHVhcmRvIFZhbGVudGluIHdyb3RlOgo+ID4gT24gTW9uLCBBcHIgMDMsIDIwMTcgYXQgMDU6NDg6
+MjlQTSArMDIwMCwgUmFmYcWCIE1pxYJlY2tpIHdyb3RlOgo+ID4+IEZyb206IFJhZmHFgiBNacWC
+ZWNraSA8cmFmYWxAbWlsZWNraS5wbD4KPiA+Pgo+ID4+IE5vcnRoc3RhciBpcyBhIFNvQyBmYW1p
+bHkgY29tbW9ubHkgdXNlZCBpbiBob21lIHJvdXRlcnMuIFRoaXMgY29tbWl0Cj4gPj4gYWRkcyBh
+IGRyaXZlciBmb3IgY2hlY2tpbmcgQ1BVIHRlbXBlcmF0dXJlLiBBcyBOb3J0aHN0YXIgUGx1cyBz
+ZWVtcyB0bwo+ID4+IGFsc28gaGF2ZSB0aGlzIElQIGJsb2NrIHRoaXMgbmV3IHN5bWJvbCBnZXRz
+IEFSQ0hfQkNNX0lQUk9DIGRlcGVuZGVuY3kuCj4gPj4KPiA+PiBTaWduZWQtb2ZmLWJ5OiBSYWZh
+xYIgTWnFgmVja2kgPHJhZmFsQG1pbGVja2kucGw+Cj4gPj4gU2lnbmVkLW9mZi1ieTogSm9uIE1h
+c29uIDxqb24ubWFzb25AYnJvYWRjb20uY29tPgo+ID4KPiA+IElmIG5vIG9iamVjdGlvbiwgSSBh
+bSBhcHBseWluZyB0aGlzIHNlcmllcy4KPiAKPiBDb29sLCBob3BlZnVsbHkgdGhlcmUgYXJlbid0
+IGFueSBtb3JlIG9iamVjdGlvbnMgOikgT25jZSBhcHBsaWVkIHNob3VsZCBJCj4gZXhwZWN0IHRo
+aXMgaW4KPiBodHRwczovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9l
+dmFsZW50aS9saW51eC1zb2MtdGhlcm1hbC5naXQvbG9nLz9oPW5leHQKPiA/Cj4gCj4gVGhhdCB3
+b3VsZCBhbGxvdyBtZSB0byBtb3ZlIGJjbTI4MzVfdGhlcm1hbC5jIHRvIHRoZSBicm9hZGNvbSBz
+dWJkaXIuCgpUaGFua3MgZm9yIGRvaW5nIHRoaXMuIEJ0dyBOb3J0aHN0YXIgdGhlcm1hbCBkcml2
+ZXIgbWlzc2VzIGEgTU9EVUxFX0FVVEhPUi4KClJlZ2FyZHMKU3RlZmFuCgpfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxp
+bmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
+LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
