@@ -1,206 +1,67 @@
-From: Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>
-Subject: [PATCH] cpupower:Read available CPU frequency
-Date: Mon, 17 Apr 2017 14:55:07 +0530
-Message-ID: <149242094296.13908.11081644341712841929.stgit@localhost.localdomain>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [RFC PATCH] pda_power: move from timer to delayed_work
+Date: Mon, 17 Apr 2017 17:51:57 +0200
+Message-ID: <20170417155157.GA12497@kroah.com>
+References: <1492420261-25635-1-git-send-email-michael@amarulasolutions.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:49159 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751738AbdDQJZO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2017 05:25:14 -0400
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id v3H9ORZD139196
-        for <linux-pm@vger.kernel.org>; Mon, 17 Apr 2017 05:25:14 -0400
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 29ucdjgmym-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Mon, 17 Apr 2017 05:25:13 -0400
-Received: from localhost
-        by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <mamatha4@linux.vnet.ibm.com>;
-        Mon, 17 Apr 2017 14:55:10 +0530
-Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
-        by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id v3H9P7tM20578456
-        for <linux-pm@vger.kernel.org>; Mon, 17 Apr 2017 14:55:07 +0530
-Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
-        by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id v3H9P7wq006383
-        for <linux-pm@vger.kernel.org>; Mon, 17 Apr 2017 14:55:07 +0530
-Received: from localhost.localdomain ([9.124.158.109])
-        by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id v3H9P71r006380
-        for <linux-pm@vger.kernel.org>; Mon, 17 Apr 2017 14:55:07 +0530
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <stable-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1492420261-25635-1-git-send-email-michael@amarulasolutions.com>
+Sender: stable-owner@vger.kernel.org
+To: Michael Trimarchi <michael@amarulasolutions.com>
+Cc: sre@kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-Problem:On power systems "cpupower frequency-info" and
-"cpupower idle-info" commands were always reading CPU0
-frequencies. If CPU0 is guarded or offline then it used
-to display frequency as NULL.
+On Mon, Apr 17, 2017 at 11:11:01AM +0200, Michael Trimarchi wrote:
+> This changed is needed to avoid locking problem during
+> boot as shown:
+> 
+> <5>[    8.824096] Registering SWP/SWPB emulation handler
+> <6>[    8.977294] clock: disabling unused clocks to save power
+> <3>[    9.108154] BUG: sleeping function called from invalid context at kernel_albert/kernel/mutex.c:269
+> <3>[    9.122894] in_atomic(): 1, irqs_disabled(): 0, pid: 1, name: swapper/0
+> <4>[    9.130249] 3 locks held by swapper/0/1:
+> <4>[    9.134613]  #0:  (&__lockdep_no_validate__){......}, at: [<c0342430>] __driver_attach+0x58/0xa8
+> <4>[    9.144500]  #1:  (&__lockdep_no_validate__){......}, at: [<c0342440>] __driver_attach+0x68/0xa8
+> <4>[    9.154357]  #2:  (&polling_timer){......}, at: [<c0053770>] run_timer_softirq+0x108/0x3ec
+> <4>[    9.163726] Backtrace:
+> <4>[    9.166473] [<c001269c>] (dump_backtrace+0x0/0x114) from [<c067e5f0>] (dump_stack+0x20/0x24)
+> <4>[    9.175811]  r6:00203230 r5:0000010d r4:d782e000 r3:60000113
+> <4>[    9.182250] [<c067e5d0>] (dump_stack+0x0/0x24) from [<c007441c>] (__might_sleep+0x10c/0x128)
+> <4>[    9.191650] [<c0074310>] (__might_sleep+0x0/0x128) from [<c0688f60>] (mutex_lock_nested+0x34/0x36c)
+> <4>[    9.201660]  r5:c02d5350 r4:d79a0c64
+> <4>[    9.205688] [<c0688f2c>] (mutex_lock_nested+0x0/0x36c) from [<c02d5350>] (regulator_set_current_limit+0x30/0x118)
+> <4>[    9.217071] [<c02d5320>] (regulator_set_current_limit+0x0/0x118) from [<c0435ce0>] (update_charger+0x84/0xc4)
+> <4>[    9.228027]  r7:d782fb20 r6:00000101 r5:c1767e94 r4:00000000
+> <4>[    9.234436] [<c0435c5c>] (update_charger+0x0/0xc4) from [<c0435d40>] (psy_changed+0x20/0x48)
+> <4>[    9.243804]  r5:d782e000 r4:c1767e94
+> <4>[    9.247802] [<c0435d20>] (psy_changed+0x0/0x48) from [<c0435dec>] (polling_timer_func+0x84/0xb8)
+> <4>[    9.257537]  r4:c1767e94 r3:00000002
+> <4>[    9.261566] [<c0435d68>] (polling_timer_func+0x0/0xb8) from [<c00537e4>] (run_timer_softirq+0x17c/0x3ec)
+> <4>[    9.272033]  r4:c1767eb0 r3:00000000
+> <4>[    9.276062] [<c0053668>] (run_timer_softirq+0x0/0x3ec) from [<c004b000>] (__do_softirq+0xf0/0x298)
+> <4>[    9.286010] [<c004af10>] (__do_softirq+0x0/0x298) from [<c004b650>] (irq_exit+0x98/0xa0)
+> <4>[    9.295013] [<c004b5b8>] (irq_exit+0x0/0xa0) from [<c000edbc>] (handle_IRQ+0x60/0xc0)
+> <4>[    9.303680]  r4:c1194e98 r3:c00bc778
+> <4>[    9.307708] [<c000ed5c>] (handle_IRQ+0x0/0xc0) from [<c0008504>] (gic_handle_irq+0x34/0x68)
+> <4>[    9.316955]  r8:000ac383 r7:d782fc3c r6:d782fc08 r5:c11936c4 r4:e0802100
+> <4>[    9.324310] r3:c026ba48
+> <4>[    9.327301] [<c00084d0>] (gic_handle_irq+0x0/0x68) from [<c068c2c0>] (__irq_svc+0x40/0x74)
+> <4>[    9.336456] Exception stack(0xd782fc08 to 0xd782fc50)
+> <4>[    9.342041] fc00:                   d6e30e6c ac383627 00000000 ac383417 ea19c000 ea200000
+> <4>[    9.351104] fc20: beffffff 00000667 000ac383 d6e30670 d6e3066c d782fc94 d782fbe8 d782fc50
+> <4>[    9.360168] fc40: c026ba48 c001d1f0 00000113 ffffffff
+> 
+> Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
+> ---
+>  drivers/power/supply/pda_power.c | 48 ++++++++++++++++++++++------------------
+>  1 file changed, 26 insertions(+), 22 deletions(-)
 
-Solution: This patch will check for the available/online CPUs
-and read the frequency and idle state info of that CPU
+<formletter>
 
-Test Results:
+This is not the correct way to submit patches for inclusion in the
+stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
+for how to do this properly.
 
-Before Patch:
-********************************
-#cpupower frequency-info
-analyzing CPU 0:
- *is offline
-
-# cpupower idle-info
-    CPUidle driver: powernv_idle
-    CPUidle governor: menu
-    analyzing CPU 0:
-     *is offline
-
-With Patch:
-*************************************
-#./cpupower frequency-info
-analyzing CPU 8:
-  driver: powernv-cpufreq
-  CPUs which run at the same hardware frequency: 8 9 10 11 12 13 14 15
-  CPUs which need to have their frequency coordinated by software: 8 9 10 11 12 13 14 15
-  maximum transition latency:  Cannot determine or is not supported.
-  hardware limits: 2.06 GHz - 4.32 GHz
-  available frequency steps:  4.32 GHz, 4.29 GHz, 4.26 GHz, 4.22 GHz, 4.19 GHz, 4.16 GHz, 4.12 GHz, 4.09 GHz, 4.06 GHz, 4.02 GHz, 3.99 GHz, 3.96 GHz, 3.92 GHz, 3.89 GHz, 3.86 GHz, 3.82 GHz, 3.79 GHz, 3.76 GHz, 3.72 GHz, 3.69 GHz, 3.66 GHz, 3.62 GHz, 3.59 GHz, 3.56 GHz, 3.52 GHz, 3.49 GHz, 3.46 GHz, 3.42 GHz, 3.39 GHz, 3.36 GHz, 3.33 GHz, 3.29 GHz, 3.26 GHz, 3.23 GHz, 3.19 GHz, 3.16 GHz, 3.13 GHz, 3.09 GHz, 3.06 GHz, 3.03 GHz, 2.99 GHz, 2.96 GHz, 2.93 GHz, 2.89 GHz, 2.86 GHz, 2.83 GHz, 2.79 GHz, 2.76 GHz, 2.73 GHz, 2.69 GHz, 2.66 GHz, 2.63 GHz, 2.59 GHz, 2.56 GHz, 2.53 GHz, 2.49 GHz, 2.46 GHz, 2.43 GHz, 2.39 GHz, 2.36 GHz, 2.33 GHz, 2.29 GHz, 2.26 GHz, 2.23 GHz, 2.19 GHz, 2.16 GHz, 2.13 GHz, 2.09 GHz, 2.06 GHz
-  available cpufreq governors: conservative ondemand userspace powersave performance
-  current policy: frequency should be within 2.06 GHz and 4.32 GHz.
-                  The governor "performance" may decide which speed to use
-                  within this range.
-  current CPU frequency: 4.32 GHz (asserted by call to hardware)
-#
-
-# ./cpupower idle-info
-    CPUidle driver: powernv_idle
-    CPUidle governor: menu
-    analyzing CPU 8:
-
-    Number of idle states: 3
-    Available idle states: snooze Nap FastSleep
-    snooze:
-    Flags/Description: snooze
-    Latency: 0
-    Usage: 8650
-    Duration: 780105
-    Nap:
-    Flags/Description: Nap
-    Latency: 4
-    Usage: 7065
-    Duration: 82588288
-    FastSleep:
-    Flags/Description: FastSleep
-    Latency: 40
-    Usage: 503
-    Duration: 709565392
-
-Signed-off-by: Mamatha Inamdar <mamatha4@linux.vnet.ibm.com>
----
- tools/power/cpupower/man/cpupower-frequency-info.1 |    2 +-
- tools/power/cpupower/man/cpupower-idle-info.1      |    2 +-
- tools/power/cpupower/utils/cpufreq-info.c          |   11 +++++++++--
- tools/power/cpupower/utils/cpuidle-info.c          |   11 +++++++++--
- 4 files changed, 20 insertions(+), 6 deletions(-)
-
-diff --git a/tools/power/cpupower/man/cpupower-frequency-info.1 b/tools/power/cpupower/man/cpupower-frequency-info.1
-index 6aa8d23..2dcaedb 100644
---- a/tools/power/cpupower/man/cpupower-frequency-info.1
-+++ b/tools/power/cpupower/man/cpupower-frequency-info.1
-@@ -55,7 +55,7 @@ Output frequencies and latencies without rounding off values.
- .TP  
- .SH "REMARKS"
- .LP 
--By default only values of core zero are displayed. How to display settings of
-+By default only online core values are displayed. How to display settings of
- other cores is described in the cpupower(1) manpage in the \-\-cpu option section.
- .LP 
- You can't specify more than one of the output specific options \-o \-e \-a \-g \-p \-d \-l \-w \-f \-y.
-diff --git a/tools/power/cpupower/man/cpupower-idle-info.1 b/tools/power/cpupower/man/cpupower-idle-info.1
-index 80a1311..65c3e36 100644
---- a/tools/power/cpupower/man/cpupower-idle-info.1
-+++ b/tools/power/cpupower/man/cpupower-idle-info.1
-@@ -71,7 +71,7 @@ ignores ACPI BIOS exported processor sleep states tables.
- 
- .SH "REMARKS"
- .LP
--By default only values of core zero are displayed. How to display settings of
-+By default only online core values are displayed. How to display settings of
- other cores is described in the cpupower(1) manpage in the \-\-cpu option
- section.
- .SH REFERENCES
-diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
-index 3e701f0..3085b42 100644
---- a/tools/power/cpupower/utils/cpufreq-info.c
-+++ b/tools/power/cpupower/utils/cpufreq-info.c
-@@ -20,6 +20,7 @@
- #include "helpers/bitmask.h"
- 
- #define LINE_LEN 10
-+static struct cpupower_topology cpu_top;
- 
- static unsigned int count_cpus(void)
- {
-@@ -509,6 +510,7 @@ int cmd_freq_info(int argc, char **argv)
- 	unsigned int cpu = 0;
- 	unsigned int human = 0;
- 	int output_param = 0;
-+	unsigned int nr_cpus = 0;
- 
- 	do {
- 		ret = getopt_long(argc, argv, "oefwldpgrasmybn", info_opts,
-@@ -572,9 +574,14 @@ int cmd_freq_info(int argc, char **argv)
- 
- 	ret = 0;
- 
--	/* Default is: show output of CPU 0 only */
-+	/* Show output of available online CPU */
-+	nr_cpus = get_cpu_topology(&cpu_top);
-+	for (cpu = 0; cpu < nr_cpus; cpu++) {
-+		if (sysfs_is_cpu_online(cpu) == 1)
-+			break;
-+	}
- 	if (bitmask_isallclear(cpus_chosen))
--		bitmask_setbit(cpus_chosen, 0);
-+		bitmask_setbit(cpus_chosen, cpu);
- 
- 	switch (output_param) {
- 	case -1:
-diff --git a/tools/power/cpupower/utils/cpuidle-info.c b/tools/power/cpupower/utils/cpuidle-info.c
-index b59c85d..b23b382 100644
---- a/tools/power/cpupower/utils/cpuidle-info.c
-+++ b/tools/power/cpupower/utils/cpuidle-info.c
-@@ -20,6 +20,7 @@
- #include "helpers/bitmask.h"
- 
- #define LINE_LEN 10
-+static struct cpupower_topology cpu_top;
- 
- static void cpuidle_cpu_output(unsigned int cpu, int verbose)
- {
-@@ -140,6 +141,7 @@ int cmd_idle_info(int argc, char **argv)
- 	extern int optind, opterr, optopt;
- 	int ret = 0, cont = 1, output_param = 0, verbose = 1;
- 	unsigned int cpu = 0;
-+	unsigned int nr_cpus = 0;
- 
- 	do {
- 		ret = getopt_long(argc, argv, "os", info_opts, NULL);
-@@ -177,9 +179,14 @@ int cmd_idle_info(int argc, char **argv)
- 		cpuidle_exit(EXIT_FAILURE);
- 	}
- 
--	/* Default is: show output of CPU 0 only */
-+	/* Show output of available online CPU */
-+	nr_cpus = get_cpu_topology(&cpu_top);
-+	for (cpu = 0; cpu < nr_cpus; cpu++) {
-+		if (sysfs_is_cpu_online(cpu) == 1)
-+			break;
-+	}
- 	if (bitmask_isallclear(cpus_chosen))
--		bitmask_setbit(cpus_chosen, 0);
-+		bitmask_setbit(cpus_chosen, cpu);
- 
- 	if (output_param == 0)
- 		cpuidle_general_output();
+</formletter>
