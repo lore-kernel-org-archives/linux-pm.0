@@ -1,169 +1,183 @@
-From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH 4/5] ARM: sun8i: h3: add operating-points-v2
- table for CPU
-Date: Mon, 17 Apr 2017 09:46:19 +0200
-Message-ID: <20170417074619.ilxkrdavmcoeno2v@lukather>
-References: <20170408185025.53841-1-icenowy@aosc.io>
- <20170408185025.53841-5-icenowy@aosc.io>
- <20170411091346.mcwyskezadabsobn@lukather>
- <b37490ed1282f45542168701dea332bb@aosc.io>
- <20170416205740.b5pk3kcxwaegij6g@lukather>
- <40F4D1F2-EA59-4BD1-9A00-4C0AA7FED9D3@aosc.io>
-Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="phl23oyx6qgx6gfm"
-Return-path: <linux-sunxi+bncBDSJBYGBRIMBBV7F2HDQKGQEL7VJORI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <40F4D1F2-EA59-4BD1-9A00-4C0AA7FED9D3-h8G6r0blFSE@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+From: Michael Trimarchi <michael@amarulasolutions.com>
+Subject: [RFC PATCH] pda_power: move from timer to delayed_work
+Date: Mon, 17 Apr 2017 11:11:01 +0200
+Message-ID: <1492420261-25635-1-git-send-email-michael@amarulasolutions.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f171.google.com ([209.85.192.171]:34977 "EHLO
+        mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753502AbdDQJLX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2017 05:11:23 -0400
+Received: by mail-pf0-f171.google.com with SMTP id i5so63446646pfc.2
+        for <linux-pm@vger.kernel.org>; Mon, 17 Apr 2017 02:11:22 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org
+Cc: linux-pm@vger.kernel.org, stable@vger.kernel.org
 
+This changed is needed to avoid locking problem during
+boot as shown:
 
---phl23oyx6qgx6gfm
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+<5>[    8.824096] Registering SWP/SWPB emulation handler
+<6>[    8.977294] clock: disabling unused clocks to save power
+<3>[    9.108154] BUG: sleeping function called from invalid context at kernel_albert/kernel/mutex.c:269
+<3>[    9.122894] in_atomic(): 1, irqs_disabled(): 0, pid: 1, name: swapper/0
+<4>[    9.130249] 3 locks held by swapper/0/1:
+<4>[    9.134613]  #0:  (&__lockdep_no_validate__){......}, at: [<c0342430>] __driver_attach+0x58/0xa8
+<4>[    9.144500]  #1:  (&__lockdep_no_validate__){......}, at: [<c0342440>] __driver_attach+0x68/0xa8
+<4>[    9.154357]  #2:  (&polling_timer){......}, at: [<c0053770>] run_timer_softirq+0x108/0x3ec
+<4>[    9.163726] Backtrace:
+<4>[    9.166473] [<c001269c>] (dump_backtrace+0x0/0x114) from [<c067e5f0>] (dump_stack+0x20/0x24)
+<4>[    9.175811]  r6:00203230 r5:0000010d r4:d782e000 r3:60000113
+<4>[    9.182250] [<c067e5d0>] (dump_stack+0x0/0x24) from [<c007441c>] (__might_sleep+0x10c/0x128)
+<4>[    9.191650] [<c0074310>] (__might_sleep+0x0/0x128) from [<c0688f60>] (mutex_lock_nested+0x34/0x36c)
+<4>[    9.201660]  r5:c02d5350 r4:d79a0c64
+<4>[    9.205688] [<c0688f2c>] (mutex_lock_nested+0x0/0x36c) from [<c02d5350>] (regulator_set_current_limit+0x30/0x118)
+<4>[    9.217071] [<c02d5320>] (regulator_set_current_limit+0x0/0x118) from [<c0435ce0>] (update_charger+0x84/0xc4)
+<4>[    9.228027]  r7:d782fb20 r6:00000101 r5:c1767e94 r4:00000000
+<4>[    9.234436] [<c0435c5c>] (update_charger+0x0/0xc4) from [<c0435d40>] (psy_changed+0x20/0x48)
+<4>[    9.243804]  r5:d782e000 r4:c1767e94
+<4>[    9.247802] [<c0435d20>] (psy_changed+0x0/0x48) from [<c0435dec>] (polling_timer_func+0x84/0xb8)
+<4>[    9.257537]  r4:c1767e94 r3:00000002
+<4>[    9.261566] [<c0435d68>] (polling_timer_func+0x0/0xb8) from [<c00537e4>] (run_timer_softirq+0x17c/0x3ec)
+<4>[    9.272033]  r4:c1767eb0 r3:00000000
+<4>[    9.276062] [<c0053668>] (run_timer_softirq+0x0/0x3ec) from [<c004b000>] (__do_softirq+0xf0/0x298)
+<4>[    9.286010] [<c004af10>] (__do_softirq+0x0/0x298) from [<c004b650>] (irq_exit+0x98/0xa0)
+<4>[    9.295013] [<c004b5b8>] (irq_exit+0x0/0xa0) from [<c000edbc>] (handle_IRQ+0x60/0xc0)
+<4>[    9.303680]  r4:c1194e98 r3:c00bc778
+<4>[    9.307708] [<c000ed5c>] (handle_IRQ+0x0/0xc0) from [<c0008504>] (gic_handle_irq+0x34/0x68)
+<4>[    9.316955]  r8:000ac383 r7:d782fc3c r6:d782fc08 r5:c11936c4 r4:e0802100
+<4>[    9.324310] r3:c026ba48
+<4>[    9.327301] [<c00084d0>] (gic_handle_irq+0x0/0x68) from [<c068c2c0>] (__irq_svc+0x40/0x74)
+<4>[    9.336456] Exception stack(0xd782fc08 to 0xd782fc50)
+<4>[    9.342041] fc00:                   d6e30e6c ac383627 00000000 ac383417 ea19c000 ea200000
+<4>[    9.351104] fc20: beffffff 00000667 000ac383 d6e30670 d6e3066c d782fc94 d782fbe8 d782fc50
+<4>[    9.360168] fc40: c026ba48 c001d1f0 00000113 ffffffff
 
-On Mon, Apr 17, 2017 at 05:00:00AM +0800, Icenowy Zheng wrote:
->=20
->=20
-> =E4=BA=8E 2017=E5=B9=B44=E6=9C=8817=E6=97=A5 GMT+08:00 =E4=B8=8A=E5=8D=88=
-4:57:40, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> =E5=86=99=E5=88=
-=B0:
-> >On Tue, Apr 11, 2017 at 09:28:55PM +0800, icenowy-h8G6r0blFSE@public.gmane.org wrote:
-> >> =E5=9C=A8 2017-04-11 17:13=EF=BC=8CMaxime Ripard =E5=86=99=E9=81=93=EF=
-=BC=9A
-> >> > On Sun, Apr 09, 2017 at 02:50:24AM +0800, Icenowy Zheng wrote:
-> >> > > The CPU on Allwinner H3 can do dynamic frequency scaling.
-> >> > >=20
-> >> > > Add a DVFS table based on the one tweaked by Armbian developers,
-> >which
-> >> > > are proven to work stably on BSP kernels.
-> >> > >=20
-> >> > > Frequencies higher than 1008MHz are temporarily dropped in the
-> >> > > table, as
-> >> > > they may lead to over voltage on boards without proper regulator
-> >> > > settings or over temperature on boards with proper regulator
-> >settings.
-> >> > > They will be added back once regulator settings are ready and
-> >thermal
-> >> > > sensor driver is merged.
-> >> > >=20
-> >> > > In order to satisfy all different regulators (SY8106A which is
-> >50mV
-> >> > > per
-> >> > > level, SY8113B which have two states: 1.1V and 1.3V, and some
-> >board
-> >> > > with
-> >> > > non-tweakable regulators), all the OPPs are defined with a range
-> >> > > which has
-> >> > > the target value as the minimum allowed value, and 1.3V (the
-> >highest
-> >> > > VDD-CPUX voltage suggested by the datasheet) as the maximum
-> >allowed
-> >> > > value.
-> >> > > It's proven to work well with a board with SY8113B.
-> >> > >=20
-> >> > > Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-> >> > > ---
-> >> > >  arch/arm/boot/dts/sun8i-h3.dtsi | 38
-> >> > > +++++++++++++++++++++++++++++++++++++-
-> >> > >  1 file changed, 37 insertions(+), 1 deletion(-)
-> >> > >=20
-> >> > > diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi
-> >> > > b/arch/arm/boot/dts/sun8i-h3.dtsi
-> >> > > index b36f9f423c39..a0cee17fe44b 100644
-> >> > > --- a/arch/arm/boot/dts/sun8i-h3.dtsi
-> >> > > +++ b/arch/arm/boot/dts/sun8i-h3.dtsi
-> >> > > @@ -43,32 +43,68 @@
-> >> > >  #include "sunxi-h3-h5.dtsi"
-> >> > >=20
-> >> > >  / {
-> >> > > +	cpu0_opp_table: opp_table0 {
-> >> > > +		compatible =3D "operating-points-v2";
-> >> > > +		opp-shared;
-> >> > > +
-> >> > > +		opp@480000000 {
-> >> > > +			opp-hz =3D /bits/ 64 <480000000>;
-> >> > > +			opp-microvolt =3D <980000 980000 1300000>;
-> >> > > +			clock-latency-ns =3D <244144>; /* 8 32k periods */
-> >> > > +		};
-> >> > > +
-> >> > > +		opp@648000000 {
-> >> > > +			opp-hz =3D /bits/ 64 <816000000>;
-> >> > > +			opp-microvolt =3D <1020000 1020000 1300000>;
-> >> > > +			clock-latency-ns =3D <244144>; /* 8 32k periods */
-> >> > > +		};
-> >> > > +
-> >> > > +		opp@912000000 {
-> >> > > +			opp-hz =3D /bits/ 64 <960000000>;
-> >> > > +			opp-microvolt =3D <1080000 1080000 1300000>;
-> >> > > +			clock-latency-ns =3D <244144>; /* 8 32k periods */
-> >> > > +		};
-> >> > > +
-> >> > > +		opp@1008000000 {
-> >> > > +			opp-hz =3D /bits/ 64 <1008000000>;
-> >> > > +			opp-microvolt =3D <1140000 1140000 1300000>;
-> >> > > +			clock-latency-ns =3D <244144>; /* 8 32k periods */
-> >> > > +		};
-> >> > > +	};
-> >> > > +
-> >> >=20
-> >> > From your serie, I guess you never actually tested those OPPs on
-> >any
-> >> > board without SY8113B, right?
-> >>=20
-> >> Yes. But I will test them on an Orange Pi PC (newly got) soon.
-> >
-> >The orange pi pc also uses the SY8113B.
->=20
-> I remember in H3 Orange Pi's only One, Lite and Zero uses SY8113B,
-> and PC is SY8106A.
+Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
+---
+ drivers/power/supply/pda_power.c | 48 ++++++++++++++++++++++------------------
+ 1 file changed, 26 insertions(+), 22 deletions(-)
 
-Ah, my bad, I confused the two.
-
-Thanks!
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
-
---phl23oyx6qgx6gfm
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABCAAGBQJY9HLCAAoJEBx+YmzsjxAgYtIP/Rp7dPyP/m/vyHRDEtrshat5
-yXWViAyZIFC4q2l+fu0Ybu61ol4XEG/wfcX9z9uMy4daIhBJbUa8Boxlj3AvfWpM
-tQR0Hejxpkstmk9LOVRxn1hrXM4hIm0d9WR9uKS34/uuD87MP/Y2o1yeG1PTVJcI
-EDggUH1gmCfvSfLsB7iXo+SjjboLxfRk8YKPxwyOoJM7L6Z5v/FBftkiT8XZbYB7
-MERKfFKLAfStI4VuTPAnoh7RDOQC08FUTiPDnNXPra+t22dPI2Dm/4mPWZJ86i1P
-Vbk7jep1Gbda8v4qrxBC5IKrRSVNiSaD5xQjKVjtiOwstpoV5zBUJt9gLk6LRB8t
-FrlX0/Aq7ktpGtGRvSuDqHGTh7u65rzgY7aKdnkV90SrTKWTO7uvDWAorP+emIg4
-ZGXdqHSscKeEb6QgAwybxc7FEgPTqbM7WG1o9SvHM/LLANJT9ws8UEiOvpVXU14t
-H3TptJu9xkA1QoE5kKZ/kMPVRlVAGDbITPKiFwL7saWgJ3muWpbIDHB02bMDcU6Y
-ZToNNnz/PU8ad38kDf2m4DQT/dEoI8gH7y2gmSCmd/SuDg5TdiRP7m4AB58h3/uQ
-o2TwAFs7WzKqeTx7x7jKazb0CrpdhH2Evst2ID2pLyPm0EC1NtLC3OuxI8j7n4HM
-11vFsv1AUbTEevWNfyic
-=S1Ax
------END PGP SIGNATURE-----
-
---phl23oyx6qgx6gfm--
+diff --git a/drivers/power/supply/pda_power.c b/drivers/power/supply/pda_power.c
+index dfe1ee8..8d6f8eb 100644
+--- a/drivers/power/supply/pda_power.c
++++ b/drivers/power/supply/pda_power.c
+@@ -30,9 +30,9 @@ static inline unsigned int get_irq_flags(struct resource *res)
+ static struct device *dev;
+ static struct pda_power_pdata *pdata;
+ static struct resource *ac_irq, *usb_irq;
+-static struct timer_list charger_timer;
+-static struct timer_list supply_timer;
+-static struct timer_list polling_timer;
++static struct delayed_work charger_work;
++static struct delayed_work polling_work;
++static struct delayed_work supply_work;
+ static int polling;
+ static struct power_supply *pda_psy_ac, *pda_psy_usb;
+ 
+@@ -140,7 +140,7 @@ static void update_charger(void)
+ 	}
+ }
+ 
+-static void supply_timer_func(unsigned long unused)
++static void supply_work_func(struct work_struct *work)
+ {
+ 	if (ac_status == PDA_PSY_TO_CHANGE) {
+ 		ac_status = new_ac_status;
+@@ -161,11 +161,12 @@ static void psy_changed(void)
+ 	 * Okay, charger set. Now wait a bit before notifying supplicants,
+ 	 * charge power should stabilize.
+ 	 */
+-	mod_timer(&supply_timer,
+-		  jiffies + msecs_to_jiffies(pdata->wait_for_charger));
++	cancel_delayed_work(&supply_work);
++	schedule_delayed_work(&supply_work,
++			      msecs_to_jiffies(pdata->wait_for_charger));
+ }
+ 
+-static void charger_timer_func(unsigned long unused)
++static void charger_work_func(struct work_struct *work)
+ {
+ 	update_status();
+ 	psy_changed();
+@@ -184,13 +185,14 @@ static irqreturn_t power_changed_isr(int irq, void *power_supply)
+ 	 * Wait a bit before reading ac/usb line status and setting charger,
+ 	 * because ac/usb status readings may lag from irq.
+ 	 */
+-	mod_timer(&charger_timer,
+-		  jiffies + msecs_to_jiffies(pdata->wait_for_status));
++	cancel_delayed_work(&charger_work);
++	schedule_delayed_work(&charger_work,
++			      msecs_to_jiffies(pdata->wait_for_status));
+ 
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void polling_timer_func(unsigned long unused)
++static void polling_work_func(struct work_struct *work)
+ {
+ 	int changed = 0;
+ 
+@@ -211,8 +213,9 @@ static void polling_timer_func(unsigned long unused)
+ 	if (changed)
+ 		psy_changed();
+ 
+-	mod_timer(&polling_timer,
+-		  jiffies + msecs_to_jiffies(pdata->polling_interval));
++	cancel_delayed_work(&polling_work);
++	schedule_delayed_work(&polling_work,
++			      msecs_to_jiffies(pdata->polling_interval));
+ }
+ 
+ #if IS_ENABLED(CONFIG_USB_PHY)
+@@ -250,8 +253,9 @@ static int otg_handle_notification(struct notifier_block *nb,
+ 	 * Wait a bit before reading ac/usb line status and setting charger,
+ 	 * because ac/usb status readings may lag from irq.
+ 	 */
+-	mod_timer(&charger_timer,
+-		  jiffies + msecs_to_jiffies(pdata->wait_for_status));
++	cancel_delayed_work(&charger_work);
++	schedule_delayed_work(&charger_work,
++			      msecs_to_jiffies(pdata->wait_for_status));
+ 
+ 	return NOTIFY_OK;
+ }
+@@ -300,8 +304,8 @@ static int pda_power_probe(struct platform_device *pdev)
+ 	if (!pdata->ac_max_uA)
+ 		pdata->ac_max_uA = 500000;
+ 
+-	setup_timer(&charger_timer, charger_timer_func, 0);
+-	setup_timer(&supply_timer, supply_timer_func, 0);
++	INIT_DELAYED_WORK(&charger_work, charger_work_func);
++	INIT_DELAYED_WORK(&supply_work, supply_work_func);
+ 
+ 	ac_irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ, "ac");
+ 	usb_irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ, "usb");
+@@ -385,9 +389,9 @@ static int pda_power_probe(struct platform_device *pdev)
+ 
+ 	if (polling) {
+ 		dev_dbg(dev, "will poll for status\n");
+-		setup_timer(&polling_timer, polling_timer_func, 0);
+-		mod_timer(&polling_timer,
+-			  jiffies + msecs_to_jiffies(pdata->polling_interval));
++		INIT_DELAYED_WORK(&polling_work, polling_work_func);
++		schedule_delayed_work(&polling_work,
++				msecs_to_jiffies(pdata->polling_interval));
+ 	}
+ 
+ 	if (ac_irq || usb_irq)
+@@ -433,9 +437,9 @@ static int pda_power_remove(struct platform_device *pdev)
+ 		free_irq(ac_irq->start, pda_psy_ac);
+ 
+ 	if (polling)
+-		del_timer_sync(&polling_timer);
+-	del_timer_sync(&charger_timer);
+-	del_timer_sync(&supply_timer);
++		cancel_delayed_work_sync(&polling_work);
++	cancel_delayed_work_sync(&charger_work);
++	cancel_delayed_work_sync(&supply_work);
+ 
+ 	if (pdata->is_usb_online)
+ 		power_supply_unregister(pda_psy_usb);
+-- 
+2.7.4
