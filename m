@@ -1,86 +1,114 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 07/10] tick/sched: Split out jiffies update helper function
-Date: Mon, 17 Apr 2017 20:32:48 +0200
-Message-ID: <20170417184356.539611148@linutronix.de>
+Subject: [patch 03/10] timers: Rework idle logic
+Date: Mon, 17 Apr 2017 20:32:44 +0200
+Message-ID: <20170417184356.210595106@linutronix.de>
 References: <20170417183241.244217993@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline;
- filename=tick-sched_Split-out-jiffies-update-helper.patch
+Content-Disposition: inline; filename=timers--Rework-idle-logic.patch
 Sender: linux-kernel-owner@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>, Richard Cochran <rcochran@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-The logic to get the time of the last jiffies update will be needed by
-the timer pull model as well.
+Storing next event and determining whether the base is idle can be done in
+__next_timer_interrupt(). 
 
-Move the code into a global funtion in anticipation of the new caller.
+Preparatory patch for new call sites which need this information as well.
 
-No functional change.
-
-Signed-off-by: Richard Cochran <rcochran@linutronix.de>
-Signed-off-by: Anna-Maria Gleixner <anna-maria@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
 ---
- kernel/time/tick-internal.h |    1 +
- kernel/time/tick-sched.c    |   27 ++++++++++++++++++++-------
- 2 files changed, 21 insertions(+), 7 deletions(-)
+ kernel/time/timer.c |   43 ++++++++++++++++++++++++-------------------
+ 1 file changed, 24 insertions(+), 19 deletions(-)
 
---- a/kernel/time/tick-internal.h
-+++ b/kernel/time/tick-internal.h
-@@ -151,6 +151,7 @@ static inline void tick_nohz_init(void)
- 
- #ifdef CONFIG_NO_HZ_COMMON
- extern unsigned long tick_nohz_active;
-+extern u64 get_jiffies_update(unsigned long *basej);
- #else
- #define tick_nohz_active (0)
- #endif
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -112,6 +112,24 @@ static ktime_t tick_init_jiffy_update(vo
- 	return period;
+--- a/kernel/time/timer.c
++++ b/kernel/time/timer.c
+@@ -1358,8 +1358,11 @@ static int next_pending_bucket(struct ti
+ /*
+  * Search the first expiring timer in the various clock levels. Caller must
+  * hold base->lock.
++ *
++ * Stores the next expiry time in base. The return value indicates whether
++ * the base is empty or not.
+  */
+-static unsigned long __next_timer_interrupt(struct timer_base *base)
++static bool __next_timer_interrupt(struct timer_base *base)
+ {
+ 	unsigned long clk, next, adj;
+ 	unsigned lvl, offset = 0;
+@@ -1416,7 +1419,10 @@ static unsigned long __next_timer_interr
+ 		clk >>= LVL_CLK_SHIFT;
+ 		clk += adj;
+ 	}
+-	return next;
++	/* Store the next event in the base */
++	base->next_expiry = next;
++	/* Return whether the base is empty or not */
++	return next == base->clk + NEXT_TIMER_MAX_DELTA;
  }
  
-+#ifdef CONFIG_NO_HZ_COMMON
-+/*
-+ * Read jiffies and the time when jiffies were updated last
-+ */
-+u64 get_jiffies_update(unsigned long *basej)
-+{
-+	unsigned long seq, basejiff;
-+	u64 basemono;
+ /*
+@@ -1465,7 +1471,7 @@ u64 get_next_timer_interrupt(unsigned lo
+ 	struct timer_base *base = this_cpu_ptr(&timer_bases[BASE_STD]);
+ 	u64 expires = KTIME_MAX;
+ 	unsigned long nextevt;
+-	bool is_max_delta;
++	bool is_empty;
+ 
+ 	/*
+ 	 * Pretend that there is no timer pending if the cpu is offline.
+@@ -1475,9 +1481,8 @@ u64 get_next_timer_interrupt(unsigned lo
+ 		return expires;
+ 
+ 	spin_lock(&base->lock);
+-	nextevt = __next_timer_interrupt(base);
+-	is_max_delta = (nextevt == base->clk + NEXT_TIMER_MAX_DELTA);
+-	base->next_expiry = nextevt;
++	is_empty = __next_timer_interrupt(base);
++	nextevt = base->next_expiry;
+ 	/*
+ 	 * We have a fresh next event. Check whether we can forward the
+ 	 * base. We can only do that when @basej is past base->clk
+@@ -1490,20 +1495,17 @@ u64 get_next_timer_interrupt(unsigned lo
+ 			base->clk = nextevt;
+ 	}
+ 
+-	if (time_before_eq(nextevt, basej)) {
+-		expires = basem;
+-		base->is_idle = false;
+-	} else {
+-		if (!is_max_delta)
+-			expires = basem + (nextevt - basej) * TICK_NSEC;
+-		/*
+-		 * If we expect to sleep more than a tick, mark the base idle:
+-		 */
+-		if ((expires - basem) > TICK_NSEC)
+-			base->is_idle = true;
+-	}
++	/* Base is idle if the next event is more than a tick away. */
++	base->is_idle = time_after(nextevt, basej + 1);
+ 	spin_unlock(&base->lock);
+ 
++	if (!is_empty) {
++		/* If we missed a tick already, force 0 delta */
++		if (time_before_eq(nextevt, basej))
++			nextevt = basej;
++		expires = basem + (nextevt - basej) * TICK_NSEC;
++	}
 +
-+	do {
-+		seq = read_seqbegin(&jiffies_lock);
-+		basemono = last_jiffies_update;
-+		basejiff = jiffies;
-+	} while (read_seqretry(&jiffies_lock, seq));
-+	*basej = basejiff;
-+	return basemono;
-+}
-+#endif
+ 	return cmp_next_hrtimer_event(basem, expires);
+ }
  
- static void tick_sched_do_timer(ktime_t now)
- {
-@@ -667,15 +685,10 @@ static ktime_t tick_nohz_stop_sched_tick
- {
- 	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
- 	u64 basemono, next_tick, next_local, next_global, next_rcu, delta, expires;
--	unsigned long seq, basejiff;
-+	unsigned long basejiff;
- 	ktime_t	tick;
+@@ -1534,7 +1536,10 @@ static int collect_expired_timers(struct
+ 	 * the next expiring timer.
+ 	 */
+ 	if ((long)(jiffies - base->clk) > 2) {
+-		unsigned long next = __next_timer_interrupt(base);
++		unsigned long next;
++
++		__next_timer_interrupt(base);
++		next = base->next_expiry;
  
--	/* Read jiffies and the time when jiffies were updated last */
--	do {
--		seq = read_seqbegin(&jiffies_lock);
--		basemono = last_jiffies_update;
--		basejiff = jiffies;
--	} while (read_seqretry(&jiffies_lock, seq));
-+	basemono = get_jiffies_update(&basejiff);
- 	ts->last_jiffies = basejiff;
- 
- 	if (rcu_needs_cpu(basemono, &next_rcu) ||
+ 		/*
+ 		 * If the next timer is ahead of time forward to current
