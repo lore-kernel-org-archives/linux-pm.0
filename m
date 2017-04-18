@@ -1,71 +1,112 @@
-From: Alex Hung <alex.hung@canonical.com>
-Subject: Re: [PATCH] platform: x86: intel-hid: Add missing ->thaw callback
-Date: Tue, 18 Apr 2017 10:30:47 -0700
-Message-ID: <CAJ=jquYrnT5LtpbY29KZyv7ME9n43UUp5wxpqNFa48dbyXcMMQ@mail.gmail.com>
-References: <3369188.n8HfSBcO3V@aspire.rjw.lan> <20170418160735.GB25405@fury>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v2] tools/power/x86/intel_pstate_tracer: Adjust
+ directory ownership
+Date: Tue, 18 Apr 2017 11:38:13 -0700
+Message-ID: <1492540693.69096.200.camel@linux.intel.com>
+References: <1492474333-8356-1-git-send-email-dsmythies@telus.net>
+         <2212263.ev98xHHkdz@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f180.google.com ([209.85.216.180]:36203 "EHLO
-        mail-qt0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751312AbdDRRat (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Apr 2017 13:30:49 -0400
-Received: by mail-qt0-f180.google.com with SMTP id g60so65373125qtd.3
-        for <linux-pm@vger.kernel.org>; Tue, 18 Apr 2017 10:30:48 -0700 (PDT)
-In-Reply-To: <20170418160735.GB25405@fury>
+Received: from mga05.intel.com ([192.55.52.43]:40064 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752255AbdDRSiO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 18 Apr 2017 14:38:14 -0400
+In-Reply-To: <2212263.ev98xHHkdz@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Darren Hart <dvhart@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <doug.smythies@gmail.com>
+Cc: len.brown@intel.com, dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Apr 18, 2017 at 9:07 AM, Darren Hart <dvhart@infradead.org> wrote:
-> On Tue, Apr 18, 2017 at 03:49:06PM +0200, Rafael Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> The intel-hid driver is missing a PM ->thaw callback allowing the
->> device to go back to the operational state after creating a
->> hibernation image or when there is an image restoration error during
->> resume.
->>
->> The lack of the ->thaw callback basically means that all events
->> signaled by the device are discarded after a hibernation image has
->> been created which may be problematic, for example, if the image
->> cannot be saved (eg. due to an I/O issue with storage).
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> + Alex Hung <alex.hung@canonical.com>
->
-> Queued to testing, thank you Rafael.
+On Tue, 2017-04-18 at 15:58 +0200, Rafael J. Wysocki wrote:
+> On Monday, April 17, 2017 05:12:13 PM Doug Smythies wrote:
+> > 
+> > The intel_pstate_tracer.py script only needs to be run as root
+> > when it is also used to actually acquire the trace data that
+> > it will post process. Otherwise it is generally preferable
+> > that it be run as a regular user.
+> > If run the first time as root the results directory will be
+> > incorrect for any subsequent run as a regular user. For any run
+> > as root the specific testname subdirectory will not allow any
+> > subsequent file saves by a regular user. Typically, and for
+> > example,
+> > the regular user might be attempting to save a .csv file converted
+> > to
+> > a spreadsheet with added calculations or graphs.
+> > 
+> > Set the directories and files owner and groups IDs to be the
+> > regular
+> > user, if required.
+> > 
+> > Signed-off-by: Doug Smythies <dsmythies@telus.net>
+ Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Thank you Rafael for catching this.
+> 
+> Srinivas, any concerns?
+No, I am fine with the change.
 
->
->> ---
->>  drivers/platform/x86/intel-hid.c |    1 +
->>  1 file changed, 1 insertion(+)
->>
->> Index: linux-pm/drivers/platform/x86/intel-hid.c
->> ===================================================================
->> --- linux-pm.orig/drivers/platform/x86/intel-hid.c
->> +++ linux-pm/drivers/platform/x86/intel-hid.c
->> @@ -136,6 +136,7 @@ static int intel_hid_pl_resume_handler(s
->>
->>  static const struct dev_pm_ops intel_hid_pl_pm_ops = {
->>       .freeze  = intel_hid_pl_suspend_handler,
->> +     .thaw  = intel_hid_pl_resume_handler,
->>       .restore  = intel_hid_pl_resume_handler,
->>       .suspend  = intel_hid_pl_suspend_handler,
->>       .resume  = intel_hid_pl_resume_handler,
->>
->>
->
-> --
-> Darren Hart
-> VMware Open Source Technology Center
+Thanks,
+Srinivas
 
-
-
--- 
-Cheers,
-Alex Hung
+> 
+> > 
+> > ---
+> >  .../x86/intel_pstate_tracer/intel_pstate_tracer.py      | 17
+> > +++++++++++++++++
+> >  1 file changed, 17 insertions(+)
+> > 
+> > diff --git
+> > a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > index fd706ac..0b24dd9 100755
+> > --- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > +++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > @@ -353,6 +353,14 @@ def split_csv():
+> >                  os.system('grep -m 1 common_cpu cpu.csv >
+> > cpu{:0>3}.csv'.format(index))
+> >                  os.system('grep CPU_{:0>3} cpu.csv >>
+> > cpu{:0>3}.csv'.format(index, index))
+> >  
+> > +def fix_ownership(path):
+> > +    """Change the owner of the file to SUDO_UID, if required"""
+> > +
+> > +    uid = os.environ.get('SUDO_UID')
+> > +    gid = os.environ.get('SUDO_GID')
+> > +    if uid is not None:
+> > +        os.chown(path, int(uid), int(gid))
+> > +
+> >  def cleanup_data_files():
+> >      """ clean up existing data files """
+> >  
+> > @@ -518,12 +526,16 @@ else:
+> >  
+> >  if not os.path.exists('results'):
+> >      os.mkdir('results')
+> > +    # The regular user needs to own the directory, not root.
+> > +    fix_ownership('results')
+> >  
+> >  os.chdir('results')
+> >  if os.path.exists(testname):
+> >      print('The test name directory already exists. Please provide
+> > a unique test name. Test re-run not supported, yet.')
+> >      sys.exit()
+> >  os.mkdir(testname)
+> > +# The regular user needs to own the directory, not root.
+> > +fix_ownership(testname)
+> >  os.chdir(testname)
+> >  
+> >  # Temporary (or perhaps not)
+> > @@ -566,4 +578,9 @@ plot_scaled_cpu()
+> >  plot_boost_cpu()
+> >  plot_ghz_cpu()
+> >  
+> > +# It is preferrable, but not necessary, that the regular user owns
+> > the files, not root.
+> > +for root, dirs, files in os.walk('.'):
+> > +    for f in files:
+> > +        fix_ownership(f)
+> > +
+> >  os.chdir('../../')
+> > 
+> 
