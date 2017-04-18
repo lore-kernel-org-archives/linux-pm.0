@@ -1,163 +1,269 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH] PCI: Freeze PME scan before suspending devices
-Date: Tue, 18 Apr 2017 15:11:48 -0500
-Message-ID: <20170418201148.GJ25295@bhelgaas-glaptop.roam.corp.google.com>
-References: <03aaf3220cccbabb7db86aa4eb10d1147add5c34.1492536769.git.lukas@wunner.de>
+From: Michal Hocko <mhocko@kernel.org>
+Subject: Re: "mm: move pcp and lru-pcp draining into single wq" broke resume
+ from s2ram
+Date: Tue, 18 Apr 2017 22:19:07 +0200
+Message-ID: <20170418201907.GC20671@dhcp22.suse.cz>
+References: <CAMuHMdUJSfrZ=2zy88_zojDek3CHEWKhv_qoJAVgDpPWz8V=Ew@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <03aaf3220cccbabb7db86aa4eb10d1147add5c34.1492536769.git.lukas@wunner.de>
+In-Reply-To: <CAMuHMdUJSfrZ=2zy88_zojDek3CHEWKhv_qoJAVgDpPWz8V=Ew@mail.gmail.com>
 Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Simon Horman <horms+renesas@verge.net.au>, Yinghai Lu <yinghai@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>, Linux PM list <linux-pm@vger.kernel.org>, Vlastimil Babka <vbabka@suse.cz>, Mel Gorman <mgorman@suse.de>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 18, 2017 at 08:44:30PM +0200, Lukas Wunner wrote:
-> Laurent Pinchart reported that the Renesas R-Car H2 Lager board
-> (r8a7790) crashes during suspend tests.  Geert Uytterhoeven managed to
-> reproduce the issue on an M2-W Koelsch board (r8a7791):
+On Tue 18-04-17 21:56:56, Geert Uytterhoeven wrote:
+> Hi all,
 > 
-> It occurs when the PME scan runs, once per second.  During PME scan, the
-> PCI host bridge (rcar-pci) registers are accessed while its module clock
-> has already been disabled, leading to the crash.
+> On Sat, Apr 8, 2017 at 10:48 AM, Linux Kernel Mailing List
+> <linux-kernel@vger.kernel.org> wrote:
+> > Web:        https://git.kernel.org/torvalds/c/ce612879ddc78ea7e4de4be80cba4ebf9caa07ee
+> > Commit:     ce612879ddc78ea7e4de4be80cba4ebf9caa07ee
+> > Parent:     cdcf4330d5660998d06fcd899b443693ab3d652f
+> > Refname:    refs/heads/master
+> > Author:     Michal Hocko <mhocko@suse.com>
+> > AuthorDate: Fri Apr 7 16:05:05 2017 -0700
+> > Committer:  Linus Torvalds <torvalds@linux-foundation.org>
+> > CommitDate: Sat Apr 8 00:47:49 2017 -0700
+> >
+> >     mm: move pcp and lru-pcp draining into single wq
+> >
+> >     We currently have 2 specific WQ_RECLAIM workqueues in the mm code.
+> >     vmstat_wq for updating pcp stats and lru_add_drain_wq dedicated to drain
+> >     per cpu lru caches.  This seems more than necessary because both can run
+> >     on a single WQ.  Both do not block on locks requiring a memory
+> >     allocation nor perform any allocations themselves.  We will save one
+> >     rescuer thread this way.
+> >
+> >     On the other hand drain_all_pages() queues work on the system wq which
+> >     doesn't have rescuer and so this depend on memory allocation (when all
+> >     workers are stuck allocating and new ones cannot be created).
+> >
+> >     Initially we thought this would be more of a theoretical problem but
+> >     Hugh Dickins has reported:
+> >
+> >     : 4.11-rc has been giving me hangs after hours of swapping load.  At
+> >     : first they looked like memory leaks ("fork: Cannot allocate memory");
+> >     : but for no good reason I happened to do "cat /proc/sys/vm/stat_refresh"
+> >     : before looking at /proc/meminfo one time, and the stat_refresh stuck
+> >     : in D state, waiting for completion of flush_work like many kworkers.
+> >     : kthreadd waiting for completion of flush_work in drain_all_pages().
+> >
+> >     This worker should be using WQ_RECLAIM as well in order to guarantee a
+> >     forward progress.  We can reuse the same one as for lru draining and
+> >     vmstat.
+> >
+> >     Link: http://lkml.kernel.org/r/20170307131751.24936-1-mhocko@kernel.org
+> >     Signed-off-by: Michal Hocko <mhocko@suse.com>
+> >     Suggested-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> >     Acked-by: Vlastimil Babka <vbabka@suse.cz>
+> >     Acked-by: Mel Gorman <mgorman@suse.de>
+> >     Tested-by: Yang Li <pku.leo@gmail.com>
+> >     Tested-by: Hugh Dickins <hughd@google.com>
+> >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 > 
-> One reproducer is to configure s2ram to use "s2idle" instead of "deep"
-> suspend:
-> 
-> # echo 0 > /sys/module/printk/parameters/console_suspend
-> # echo s2idle > /sys/power/mem_sleep
-> # echo mem > /sys/power/state
-> 
-> Another reproducer is to write either "platform" or "processors" to
-> /sys/power/pm_test.  It does not (or is less likely) to happen during
-> full system suspend ("core" or "none") because system suspend also
-> disables timers, and thus the workqueue handling PME scans no longer
-> runs.  Geert believes the issue may still happen in the small window
-> between disabling module clocks and disabling timers:
-> 
-> # echo 0 > /sys/module/printk/parameters/console_suspend
-> # echo platform > /sys/power/pm_test    # Or "processors"
-> # echo mem > /sys/power/state
-> 
-> (Make sure CONFIG_PCI_RCAR_GEN2 and CONFIG_USB_OHCI_HCD_PCI are
-> enabled.)
-> 
-> Rafael Wysocki agrees that PME scans should be suspended before the host
-> bridge registers become inaccessible.  To that end, queue the task on a
-> workqueue that gets frozen before devices suspend.
-> 
-> Rafael notes however that as a result, some wakeup events may be missed
-> if they are delivered via PME from a device without working IRQ (which
-> hence must be polled) and occur after the workqueue has been frozen.
-> If that turns out to be an issue in practice, it may be possible to
-> solve it by calling pci_pme_list_scan() once directly from one of the
-> host bridge's pm_ops callbacks.
-> 
-> Stacktrace for posterity:
-> 
-> PM: Syncing filesystems ... [   38.566237] done.
-> PM: Preparing system for sleep (mem)
-> Freezing user space processes ... [   38.579813] (elapsed 0.001 seconds) done.
-> Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
-> PM: Suspending system (mem)
-> PM: suspend of devices complete after 152.456 msecs
-> PM: late suspend of devices complete after 2.809 msecs
-> PM: noirq suspend of devices complete after 29.863 msecs
-> suspend debug: Waiting for 5 second(s).
-> Unhandled fault: asynchronous external abort (0x1211) at 0x00000000
-> pgd = c0003000
-> [00000000] *pgd=80000040004003, *pmd=00000000
-> Internal error: : 1211 [#1] SMP ARM
-> Modules linked in:
-> CPU: 1 PID: 20 Comm: kworker/1:1 Not tainted
-> 4.9.0-rc1-koelsch-00011-g68db9bc814362e7f #3383
-> Hardware name: Generic R8A7791 (Flattened Device Tree)
-> Workqueue: events pci_pme_list_scan
-> task: eb56e140 task.stack: eb58e000
-> PC is at pci_generic_config_read+0x64/0x6c
-> LR is at rcar_pci_cfg_base+0x64/0x84
-> pc : [<c041d7b4>]    lr : [<c04309a0>]    psr: 600d0093
-> sp : eb58fe98  ip : c041d750  fp : 00000008
-> r10: c0e2283c  r9 : 00000000  r8 : 600d0013
-> r7 : 00000008  r6 : eb58fed6  r5 : 00000002  r4 : eb58feb4
-> r3 : 00000000  r2 : 00000044  r1 : 00000008  r0 : 00000000
-> Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment user
-> Control: 30c5387d  Table: 6a9f6c80  DAC: 55555555
-> Process kworker/1:1 (pid: 20, stack limit = 0xeb58e210)
-> Stack: (0xeb58fe98 to 0xeb590000)
-> fe80:                                                       00000002 00000044
-> fea0: eb6f5800 c041d9b0 eb58feb4 00000008 00000044 00000000 eb78a000 eb78a000
-> fec0: 00000044 00000000 eb9aff00 c0424bf0 eb78a000 00000000 eb78a000 c0e22830
-> fee0: ea8a6fc0 c0424c5c eaae79c0 c0424ce0 eb55f380 c0e22838 eb9a9800 c0235fbc
-> ff00: eb55f380 c0e22838 eb55f380 eb9a9800 eb9a9800 eb58e000 eb9a9824 c0e02100
-> ff20: eb55f398 c02366c4 eb56e140 eb5631c0 00000000 eb55f380 c023641c 00000000
-> ff40: 00000000 00000000 00000000 c023a928 cd105598 00000000 40506a34 eb55f380
-> ff60: 00000000 00000000 dead4ead ffffffff ffffffff eb58ff74 eb58ff74 00000000
-> ff80: 00000000 dead4ead ffffffff ffffffff eb58ff90 eb58ff90 eb58ffac eb5631c0
-> ffa0: c023a844 00000000 00000000 c0206d68 00000000 00000000 00000000 00000000
-> ffc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> ffe0: 00000000 00000000 00000000 00000000 00000013 00000000 3a81336c 10ccd1dd
-> [<c041d7b4>] (pci_generic_config_read) from [<c041d9b0>]
-> (pci_bus_read_config_word+0x58/0x80)
-> [<c041d9b0>] (pci_bus_read_config_word) from [<c0424bf0>]
-> (pci_check_pme_status+0x34/0x78)
-> [<c0424bf0>] (pci_check_pme_status) from [<c0424c5c>] (pci_pme_wakeup+0x28/0x54)
-> [<c0424c5c>] (pci_pme_wakeup) from [<c0424ce0>] (pci_pme_list_scan+0x58/0xb4)
-> [<c0424ce0>] (pci_pme_list_scan) from [<c0235fbc>]
-> (process_one_work+0x1bc/0x308)
-> [<c0235fbc>] (process_one_work) from [<c02366c4>] (worker_thread+0x2a8/0x3e0)
-> [<c02366c4>] (worker_thread) from [<c023a928>] (kthread+0xe4/0xfc)
-> [<c023a928>] (kthread) from [<c0206d68>] (ret_from_fork+0x14/0x2c)
-> Code: ea000000 e5903000 f57ff04f e3a00000 (e5843000)
-> ---[ end trace 667d43ba3aa9e589 ]---
-> 
-> Reported-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
-> Reported-and-tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Cc: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-> Cc: Simon Horman <horms+renesas@verge.net.au>
-> Cc: Yinghai Lu <yinghai@kernel.org>
-> Cc: Matthew Garrett <mjg59@srcf.ucam.org>
-> Cc: stable@vger.kernel.org # 2.6.37+
-> Fixes: df17e62e5bff ("PCI: Add support for polling PME state on suspended legacy PCI devices")
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> This commit broke resume from s2ram on some of my Renesas ARM boards.
+> On some boards the hang is 100% reproducible, on others it's intermittent
+> (which was a PITA, as I had to bisect another independent s2ram bug as well).
 
-Applied to pci/pm for v4.12, thanks, Lukas!
+Hmm, I am rather confused, how the above commit could change anything
+here. Your lockup detector is hitting
+dpm_wait_for_superior
+        dpm_wait(dev->parent, async);
+	dpm_wait_for_suppliers(dev, async);
 
-> ---
->  drivers/pci/pci.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
+which in turn waits wait_for_completion(&dev->power.completion)
+
+the above commit has reduced the load on the system WQ. It also removed
+one WQ and reused the existing one. The work done on the mm_percpu_wq
+doesn't block so I suspect that what you are seeing is just showing a
+real bug somewhere else. I will have a look tomorrow. Let's add Tejun,
+maybe I have introduced some subtle dependency, which is not clear to
+me.
+
 > 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index aa55501d2179..c561a9e4916a 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -1784,8 +1784,8 @@ static void pci_pme_list_scan(struct work_struct *work)
->  		}
->  	}
->  	if (!list_empty(&pci_pme_list))
-> -		schedule_delayed_work(&pci_pme_work,
-> -				      msecs_to_jiffies(PME_TIMEOUT));
-> +		queue_delayed_work(system_freezable_wq, &pci_pme_work,
-> +				   msecs_to_jiffies(PME_TIMEOUT));
->  	mutex_unlock(&pci_pme_list_mutex);
->  }
->  
-> @@ -1850,8 +1850,9 @@ void pci_pme_active(struct pci_dev *dev, bool enable)
->  			mutex_lock(&pci_pme_list_mutex);
->  			list_add(&pme_dev->list, &pci_pme_list);
->  			if (list_is_singular(&pci_pme_list))
-> -				schedule_delayed_work(&pci_pme_work,
-> -						      msecs_to_jiffies(PME_TIMEOUT));
-> +				queue_delayed_work(system_freezable_wq,
-> +						   &pci_pme_work,
-> +						   msecs_to_jiffies(PME_TIMEOUT));
->  			mutex_unlock(&pci_pme_list_mutex);
->  		} else {
->  			mutex_lock(&pci_pme_list_mutex);
-> -- 
-> 2.11.0
+> On r8a7791/koelsch:
 > 
+> --- /tmp/good   2017-04-18 21:47:04.457156167 +0200
+> +++ /tmp/bad    2017-04-18 21:43:26.215240325 +0200
+> @@ -13,11 +13,178 @@ Enabling non-boot CPUs ...
+>  CPU1 is up
+>  PM: noirq resume of devices complete after N.N msecs
+>  PM: early resume of devices complete after N.N msecs
+> -Micrel KSZ8041RNLI ee700000.ethernet-ffffffff:01: attached PHY driver
+> [Micrel KSZ8041RNLI] (mii_bus:phy_addr=ee700000.ethernet-ffffffff:01,
+> irq=-1)
+> -PM: resume of devices complete after N.N msecs
+> -PM: resume devices took N.N seconds
+> -PM: Finishing wakeup.
+> -Restarting tasks ... done.
+> -ata1: link resume succeeded after 1 retries
+> -ata1: SATA link down (SStatus 0 SControl 300)
+> -sh-eth ee700000.ethernet eth0: Link is Up - 100Mbps/Full - flow control rx/tx
+> +INFO: task kworker/u4:0:5 blocked for more than 120 seconds.
+> +      Not tainted 4.11.0-rc7-koelsch-00426-g70412b99f7936b37 #3470
+> +"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> +kworker/u4:0    D    0     5      2 0x00000000
+> +Workqueue: events_unbound async_run_entry_fn
+> +[<c0712c58>] (__schedule) from [<c0712f7c>] (schedule+0xb0/0xcc)
+> +[<c0712f7c>] (schedule) from [<c0717140>] (schedule_timeout+0x18/0x1f4)
+> +[<c0717140>] (schedule_timeout) from [<c07139f8>] (wait_for_common+0x100/0x19c)
+> +[<c07139f8>] (wait_for_common) from [<c04d8488>]
+> (dpm_wait_for_superior+0x14/0x5c)
+> +[<c04d8488>] (dpm_wait_for_superior) from [<c04d8aa4>]
+> (device_resume+0x40/0x1a0)
+> +[<c04d8aa4>] (device_resume) from [<c04d8c1c>] (async_resume+0x18/0x44)
+> +[<c04d8c1c>] (async_resume) from [<c023db34>] (async_run_entry_fn+0x44/0x114)
+> +[<c023db34>] (async_run_entry_fn) from [<c0236544>]
+> (process_one_work+0x1cc/0x31c)
+> +[<c0236544>] (process_one_work) from [<c0236ca0>] (worker_thread+0x2b8/0x3f0)
+> +[<c0236ca0>] (worker_thread) from [<c023b240>] (kthread+0x120/0x140)
+> +[<c023b240>] (kthread) from [<c0206d68>] (ret_from_fork+0x14/0x2c)
+> +INFO: task kworker/u4:1:125 blocked for more than 120 seconds.
+> +      Not tainted 4.11.0-rc7-koelsch-00426-g70412b99f7936b37 #3470
+> +"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> +kworker/u4:1    D    0   125      2 0x00000000
+> +Workqueue: events_unbound async_run_entry_fn
+> +[<c0712c58>] (__schedule) from [<c0712f7c>] (schedule+0xb0/0xcc)
+> +[<c0712f7c>] (schedule) from [<c0717140>] (schedule_timeout+0x18/0x1f4)
+> +[<c0717140>] (schedule_timeout) from [<c07139f8>] (wait_for_common+0x100/0x19c)
+> +[<c07139f8>] (wait_for_common) from [<c04d8488>]
+> (dpm_wait_for_superior+0x14/0x5c)
+> +[<c04d8488>] (dpm_wait_for_superior) from [<c04d8aa4>]
+> (device_resume+0x40/0x1a0)
+> +[<c04d8aa4>] (device_resume) from [<c04d8c1c>] (async_resume+0x18/0x44)
+> +[<c04d8c1c>] (async_resume) from [<c023db34>] (async_run_entry_fn+0x44/0x114)
+> +[<c023db34>] (async_run_entry_fn) from [<c0236544>]
+> (process_one_work+0x1cc/0x31c)
+> +[<c0236544>] (process_one_work) from [<c0236ca0>] (worker_thread+0x2b8/0x3f0)
+> +[<c0236ca0>] (worker_thread) from [<c023b240>] (kthread+0x120/0x140)
+> +[<c023b240>] (kthread) from [<c0206d68>] (ret_from_fork+0x14/0x2c)
+> ...
+> 
+> On r8a7795/salvator-x, where I have working lockdep:
+> 
+> PM: noirq resume of devices complete after 131.415 msecs
+> PM: early resume of devices complete after 8.894 msecs
+> INFO: task kworker/u16:2:276 blocked for more than 120 seconds.
+>       Not tainted 4.11.0-rc7-salvator-x-06706-g70412b99f7936b37 #1220
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> kworker/u16:2   D    0   276      2 0x00000000
+> Workqueue: events_unbound async_run_entry_fn
+> Call trace:
+> [<ffffff800808612c>] __switch_to+0xa0/0xac
+> [<ffffff800866df14>] __schedule+0x70c/0xb88
+> [<ffffff800866e414>] schedule+0x84/0xa4
+> [<ffffff800867287c>] schedule_timeout+0x30/0x400
+> [<ffffff800866ee94>] wait_for_common+0x164/0x1a8
+> [<ffffff800866eeec>] wait_for_completion+0x14/0x1c
+> [<ffffff80083d3f84>] dpm_wait+0x30/0x38
+> [<ffffff80083d3ff8>] dpm_wait_for_superior+0x28/0x7c
+> [<ffffff80083d490c>] device_resume+0x44/0x190
+> [<ffffff80083d4a7c>] async_resume+0x24/0x54
+> [<ffffff80080d5360>] async_run_entry_fn+0x4c/0x12c
+> [<ffffff80080cb59c>] process_one_work+0x340/0x66c
+> [<ffffff80080cc9ec>] worker_thread+0x274/0x39c
+> [<ffffff80080d2004>] kthread+0x120/0x128
+> [<ffffff8008083090>] ret_from_fork+0x10/0x40
+> 
+> Showing all locks held in the system:
+> 2 locks held by khungtaskd/52:
+>  #0:  (rcu_read_lock){......}, at: [<ffffff80081436cc>] watchdog+0xc0/0x618
+>  #1:  (tasklist_lock){.+.+..}, at: [<ffffff80080fb5f0>]
+> debug_show_all_locks+0x68/0x18c
+> 2 locks held by kworker/u16:2/276:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 2 locks held by kworker/u16:3/291:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 8 locks held by s2ram/1899:
+>  #0:  (sb_writers#7){.+.+.+}, at: [<ffffff80081ca1a4>] vfs_write+0xa8/0x15c
+>  #1:  (&of->mutex){+.+.+.}, at: [<ffffff8008245964>] kernfs_fop_write+0xf0/0x194
+>  #2:  (s_active#48){.+.+.+}, at: [<ffffff800824596c>]
+> kernfs_fop_write+0xf8/0x194
+>  #3:  (pm_mutex){+.+.+.}, at: [<ffffff80081059a4>] pm_suspend+0x16c/0xabc
+>  #4:  (&dev->mutex){......}, at: [<ffffff80083d4920>] device_resume+0x58/0x190
+>  #5:  (cma_mutex){+.+...}, at: [<ffffff80081c516c>] cma_alloc+0x150/0x374
+>  #6:  (lock){+.+...}, at: [<ffffff800818b8ec>] lru_add_drain_all+0x4c/0x1b4
+>  #7:  (cpu_hotplug.dep_map){++++++}, at: [<ffffff80080ab8f4>]
+> get_online_cpus+0x3c/0x9c
+> 2 locks held by kworker/u16:1/1918:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 2 locks held by kworker/u16:4/1919:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 2 locks held by kworker/u16:5/1920:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 2 locks held by kworker/u16:7/1922:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 2 locks held by kworker/u16:9/1924:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 2 locks held by kworker/u16:10/1925:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 2 locks held by kworker/u16:11/1926:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 2 locks held by kworker/u16:12/1927:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 2 locks held by kworker/u16:13/1928:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 2 locks held by kworker/u16:14/1929:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 2 locks held by kworker/u16:16/1931:
+>  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+>  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
+> process_one_work+0x1c8/0x66c
+> 
+> Thanks for your comments!
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+
+-- 
+Michal Hocko
+SUSE Labs
