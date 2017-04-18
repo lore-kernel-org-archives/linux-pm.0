@@ -1,112 +1,64 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v2] tools/power/x86/intel_pstate_tracer: Adjust
- directory ownership
-Date: Tue, 18 Apr 2017 11:38:13 -0700
-Message-ID: <1492540693.69096.200.camel@linux.intel.com>
-References: <1492474333-8356-1-git-send-email-dsmythies@telus.net>
-         <2212263.ev98xHHkdz@aspire.rjw.lan>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: PCI / PM: Crashes in PME scan during system suspend
+Date: Tue, 18 Apr 2017 20:39:38 +0200
+Message-ID: <20170418183938.GA7757@wunner.de>
+References: <CAMuHMdVf-NT_6oGQVba_QgFuW-fZMBDF1CtidfxSxnCr8+BGHg@mail.gmail.com>
+ <20170416075535.GA6620@wunner.de>
+ <CAMuHMdUzYUGZT3gWzZ97rmbPXG3RqYLdvYx_ZdLdmCvxbrt4Hw@mail.gmail.com>
+ <1776042.AWT4z5IEIn@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:40064 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752255AbdDRSiO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 18 Apr 2017 14:38:14 -0400
-In-Reply-To: <2212263.ev98xHHkdz@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1776042.AWT4z5IEIn@aspire.rjw.lan>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Bjorn Helgaas <bhelgaas@google.com>, Yinghai Lu <yinghai@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms@verge.net.au>, linux-pci <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ragnatech.se>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <doug.smythies@gmail.com>
-Cc: len.brown@intel.com, dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, 2017-04-18 at 15:58 +0200, Rafael J. Wysocki wrote:
-> On Monday, April 17, 2017 05:12:13 PM Doug Smythies wrote:
+On Tue, Apr 18, 2017 at 04:06:27PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, April 18, 2017 08:49:39 AM Geert Uytterhoeven wrote:
+> > On Sun, Apr 16, 2017 at 9:55 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> > > Subject: [PATCH] PCI: Freeze PME scan before suspending devices
+> > >
+> > > Laurent Pinchart reported that the Renesas R-Car H2 Lager board
+> > > (r8a7790) crashes during suspend tests.  Geert Uytterhoeven managed to
+> > > reproduce the issue on an M2-W Koelsch board (r8a7791):
+> > >
+> > > It occurs when the PME scan runs, once per second.  During PME scan, the
+> > > PCI host bridge (rcar-pci) registers are accessed while its module clock
+> > > has already been disabled, leading to the crash.
+> > >
+> > > The issue only occurs during suspend tests, after writing either
+> > > "platform" or "processors" to /sys/power/pm_test.  It does not (or is
+> > > less likely) to happen during full system suspend ("core" or "none")
+> > > because system suspend also disables timers, and thus the workqueue
+> > > handling PME scans no longer runs.  Geert believes the issue may still
+> > > happen in the small window between disabling module clocks and disabling
+> > > timers.
 > > 
-> > The intel_pstate_tracer.py script only needs to be run as root
-> > when it is also used to actually acquire the trace data that
-> > it will post process. Otherwise it is generally preferable
-> > that it be run as a regular user.
-> > If run the first time as root the results directory will be
-> > incorrect for any subsequent run as a regular user. For any run
-> > as root the specific testname subdirectory will not allow any
-> > subsequent file saves by a regular user. Typically, and for
-> > example,
-> > the regular user might be attempting to save a .csv file converted
-> > to
-> > a spreadsheet with added calculations or graphs.
+> > It can also be reproduced easily by configuring s2ram to use s2idle instead
+> > of deep suspend, which is a real usecase:
 > > 
-> > Set the directories and files owner and groups IDs to be the
-> > regular
-> > user, if required.
+> > # echo 0 > /sys/module/printk/parameters/console_suspend
+> > # echo s2idle > /sys/power/mem_sleep
+> > # echo mem > /sys/power/state
 > > 
-> > Signed-off-by: Doug Smythies <dsmythies@telus.net>
- Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-
+> > Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > 
-> Srinivas, any concerns?
-No, I am fine with the change.
+> There is a small concern here that some wakeup events may be missed if they
+> are delivered via PME without a working IRQ, but that's fairly minor and it
+> cannot be avoided entirely, so
+
+Well, that's a conundrum.  I don't know which devices depend on PME polling
+and whether they may signal PME between freezing the workqueue and suspending
+the host bridge.  If this unexpectedly turns out to be a problem in practice,
+it might be possible to solve it by calling pci_pme_list_scan() once directly
+from one of the host bridge's pm_ops callbacks.
+
+I've amended the commit message with the tags and additional information
+provided by you and Geert and will resend the patch to the list shortly.
 
 Thanks,
-Srinivas
 
-> 
-> > 
-> > ---
-> >  .../x86/intel_pstate_tracer/intel_pstate_tracer.py      | 17
-> > +++++++++++++++++
-> >  1 file changed, 17 insertions(+)
-> > 
-> > diff --git
-> > a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> > b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> > index fd706ac..0b24dd9 100755
-> > --- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> > +++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> > @@ -353,6 +353,14 @@ def split_csv():
-> >                  os.system('grep -m 1 common_cpu cpu.csv >
-> > cpu{:0>3}.csv'.format(index))
-> >                  os.system('grep CPU_{:0>3} cpu.csv >>
-> > cpu{:0>3}.csv'.format(index, index))
-> >  
-> > +def fix_ownership(path):
-> > +    """Change the owner of the file to SUDO_UID, if required"""
-> > +
-> > +    uid = os.environ.get('SUDO_UID')
-> > +    gid = os.environ.get('SUDO_GID')
-> > +    if uid is not None:
-> > +        os.chown(path, int(uid), int(gid))
-> > +
-> >  def cleanup_data_files():
-> >      """ clean up existing data files """
-> >  
-> > @@ -518,12 +526,16 @@ else:
-> >  
-> >  if not os.path.exists('results'):
-> >      os.mkdir('results')
-> > +    # The regular user needs to own the directory, not root.
-> > +    fix_ownership('results')
-> >  
-> >  os.chdir('results')
-> >  if os.path.exists(testname):
-> >      print('The test name directory already exists. Please provide
-> > a unique test name. Test re-run not supported, yet.')
-> >      sys.exit()
-> >  os.mkdir(testname)
-> > +# The regular user needs to own the directory, not root.
-> > +fix_ownership(testname)
-> >  os.chdir(testname)
-> >  
-> >  # Temporary (or perhaps not)
-> > @@ -566,4 +578,9 @@ plot_scaled_cpu()
-> >  plot_boost_cpu()
-> >  plot_ghz_cpu()
-> >  
-> > +# It is preferrable, but not necessary, that the regular user owns
-> > the files, not root.
-> > +for root, dirs, files in os.walk('.'):
-> > +    for f in files:
-> > +        fix_ownership(f)
-> > +
-> >  os.chdir('../../')
-> > 
-> 
+Lukas
