@@ -1,149 +1,96 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch V2 05/10] timer: Retrieve next expiry of pinned/non-pinned
- timers seperately
-Date: Tue, 18 Apr 2017 13:11:07 +0200
-Message-ID: <20170418111400.778021491@linutronix.de>
+Subject: [patch V2 06/10] timer: Restructure internal locking
+Date: Tue, 18 Apr 2017 13:11:08 +0200
+Message-ID: <20170418111400.856441536@linutronix.de>
 References: <20170418111102.490432548@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:52284 "EHLO
+Received: from Galois.linutronix.de ([146.0.238.70]:52294 "EHLO
         Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751012AbdDRQnY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Apr 2017 12:43:24 -0400
-Content-Disposition: inline;
- filename=timer_Provide_both_pinned_and_movable_expiration_times.patch
+        with ESMTP id S932565AbdDRQoB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Apr 2017 12:44:01 -0400
+Content-Disposition: inline; filename=timer_Restructure_internal_locking.patch
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Peter Zijlstra <peterz@infradead.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>, Richard Cochran <rcochran@linutronix.de>
 
-To prepare for the conversion of the NOHZ timer placement to a pull at
-expiry time model it's required to have seperate expiry times for the
-pinned and the non-pinned (movable) timers.
+Move the locking out from __run_timers() to the call sites, so the
+protected section can be extended at the call site. Preparatory patch for
+changing the NOHZ timer placement to a pull at expiry time model.
 
-No functional change
+No functional change.
 
 Signed-off-by: Richard Cochran <rcochran@linutronix.de>
 Signed-off-by: Anna-Maria Gleixner <anna-maria@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 ---
- kernel/time/tick-internal.h |    3 ++-
- kernel/time/tick-sched.c    |   10 ++++++----
- kernel/time/timer.c         |   41 +++++++++++++++++++++++++++++++++++------
- 3 files changed, 43 insertions(+), 11 deletions(-)
+ kernel/time/timer.c |   33 +++++++++++++++++++--------------
+ 1 file changed, 19 insertions(+), 14 deletions(-)
 
---- a/kernel/time/tick-internal.h
-+++ b/kernel/time/tick-internal.h
-@@ -163,5 +163,6 @@ static inline void timers_update_migrati
- 
- DECLARE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases);
- 
--extern u64 get_next_timer_interrupt(unsigned long basej, u64 basem);
-+extern u64 get_next_timer_interrupt(unsigned long basej, u64 basem,
-+				    u64 *global_evt);
- void timer_clear_idle(void);
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -666,7 +666,7 @@ static ktime_t tick_nohz_stop_sched_tick
- 					 ktime_t now, int cpu)
- {
- 	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
--	u64 basemono, next_tick, next_tmr, next_rcu, delta, expires;
-+	u64 basemono, next_tick, next_local, next_global, next_rcu, delta, expires;
- 	unsigned long seq, basejiff;
- 	ktime_t	tick;
- 
-@@ -689,10 +689,12 @@ static ktime_t tick_nohz_stop_sched_tick
- 		 * disabled this also looks at the next expiring
- 		 * hrtimer.
- 		 */
--		next_tmr = get_next_timer_interrupt(basejiff, basemono);
--		ts->next_timer = next_tmr;
-+		next_local = get_next_timer_interrupt(basejiff, basemono,
-+						      &next_global);
-+		next_local = min(next_local, next_global);
-+		ts->next_timer = next_local;
- 		/* Take the next rcu event into account */
--		next_tick = next_rcu < next_tmr ? next_rcu : next_tmr;
-+		next_tick = next_rcu < next_local ? next_rcu : next_local;
- 	}
- 
- 	/*
 --- a/kernel/time/timer.c
 +++ b/kernel/time/timer.c
-@@ -1472,23 +1472,27 @@ static u64 cmp_next_hrtimer_event(u64 ba
-  * get_next_timer_interrupt - return the time (clock mono) of the next timer
-  * @basej:	base time jiffies
-  * @basem:	base time clock monotonic
-+ * @global_evt:	Pointer to store the expiry time of the next global timer
-  *
-  * Returns the tick aligned clock monotonic time of the next pending
-  * timer or KTIME_MAX if no timer is pending.
+@@ -1651,17 +1651,14 @@ void update_process_times(int user_tick)
+ /**
+  * __run_timers - run all expired timers (if any) on this CPU.
+  * @base: the timer vector to be processed.
++ *
++ * Caller must hold the base lock.
   */
--u64 get_next_timer_interrupt(unsigned long basej, u64 basem)
-+u64 get_next_timer_interrupt(unsigned long basej, u64 basem, u64 *global_evt)
+ static inline void __run_timers(struct timer_base *base)
  {
- 	unsigned long nextevt, nextevt_local, nextevt_global;
- 	bool local_empty, global_empty, local_first, is_idle;
- 	struct timer_base *base_local, *base_global;
--	u64 expires = KTIME_MAX;
-+	u64 local_evt = KTIME_MAX;
-+
-+	/* Preset global event */
-+	*global_evt = KTIME_MAX;
+ 	struct hlist_head heads[LVL_DEPTH];
+ 	int levels;
  
- 	/*
- 	 * Pretend that there is no timer pending if the cpu is offline.
- 	 * Possible pending timers will be migrated later to an active cpu.
- 	 */
- 	if (cpu_is_offline(smp_processor_id()))
--		return expires;
-+		return local_evt;
+-	if (!time_after_eq(jiffies, base->clk))
+-		return;
+-
+-	spin_lock_irq(&base->lock);
+-
+ 	while (time_after_eq(jiffies, base->clk)) {
  
- 	base_local = this_cpu_ptr(&timer_bases[BASE_LOCAL]);
- 	base_global = this_cpu_ptr(&timer_bases[BASE_GLOBAL]);
-@@ -1532,14 +1536,39 @@ u64 get_next_timer_interrupt(unsigned lo
- 	spin_unlock(&base_local->lock);
- 	spin_unlock(&base_global->lock);
- 
--	if (!local_empty || !global_empty) {
-+	/*
-+	 * If the bases are not marked idle, i.e one of the events is at
-+	 * max. one tick away, use the next event for calculating next
-+	 * local expiry value. The next global event is left as KTIME_MAX,
-+	 * so this CPU will not queue itself in the global expiry
-+	 * mechanism.
-+	 */
-+	if (!is_idle) {
- 		/* If we missed a tick already, force 0 delta */
- 		if (time_before_eq(nextevt, basej))
- 			nextevt = basej;
--		expires = basem + (nextevt - basej) * TICK_NSEC;
-+		local_evt = basem + (nextevt - basej) * TICK_NSEC;
-+		return cmp_next_hrtimer_event(basem, local_evt);
+ 		levels = collect_expired_timers(base, heads);
+@@ -1671,7 +1668,20 @@ static inline void __run_timers(struct t
+ 			expire_timers(base, heads + levels);
  	}
- 
--	return cmp_next_hrtimer_event(basem, expires);
-+	/*
-+	 * If the bases are marked idle, i.e. the next event on both the
-+	 * local and the global queue are farther away than a tick,
-+	 * evaluate both bases. No need to check whether one of the bases
-+	 * has an already expired timer as this is caught by the !is_idle
-+	 * condition above.
-+	 */
-+	if (!local_empty)
-+		local_evt = basem + (nextevt_local - basej) * TICK_NSEC;
+ 	base->running_timer = NULL;
+-	spin_unlock_irq(&base->lock);
++}
 +
-+	/*
-+	 * If the local queue expires first, there is no requirement for
-+	 * queuing the CPU in the global expiry mechanism.
-+	 */
-+	if (!local_first && !global_empty)
-+		*global_evt = basem + (nextevt_global - basej) * TICK_NSEC;
++static void run_timer_base(int index, bool check_nohz)
++{
++	struct timer_base *base = this_cpu_ptr(&timer_bases[index]);
 +
-+	return cmp_next_hrtimer_event(basem, local_evt);
++	if (check_nohz && !base->nohz_active)
++		return;
++
++	if (time_after_eq(jiffies, base->clk)) {
++		spin_lock_irq(&base->lock);
++		__run_timers(base);
++		spin_unlock_irq(&base->lock);
++	}
  }
  
- /**
+ /*
+@@ -1679,16 +1689,11 @@ static inline void __run_timers(struct t
+  */
+ static __latent_entropy void run_timer_softirq(struct softirq_action *h)
+ {
+-	struct timer_base *base = this_cpu_ptr(&timer_bases[BASE_LOCAL]);
++	run_timer_base(BASE_LOCAL, false);
+ 
+-	__run_timers(base);
+ 	if (IS_ENABLED(CONFIG_NO_HZ_COMMON)) {
+-		base = this_cpu_ptr(&timer_bases[BASE_GLOBAL]);
+-		__run_timers(base);
+-
+-		base = this_cpu_ptr(&timer_bases[BASE_DEF]);
+-		if (base->nohz_active)
+-			__run_timers(base);
++		run_timer_base(BASE_GLOBAL, false);
++		run_timer_base(BASE_DEF, true);
+ 	}
+ }
+ 
