@@ -1,72 +1,163 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [Query] Enabling parent device clock from resume_noirq
-Date: Tue, 18 Apr 2017 15:05:48 -0500
-Message-ID: <4c6e91e4-35fa-2fde-7915-fb922ec22567@ti.com>
-References: <62cd5ee0-3f0c-5e65-5f64-0c91a2a6f1e6@ti.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] PCI: Freeze PME scan before suspending devices
+Date: Tue, 18 Apr 2017 15:11:48 -0500
+Message-ID: <20170418201148.GJ25295@bhelgaas-glaptop.roam.corp.google.com>
+References: <03aaf3220cccbabb7db86aa4eb10d1147add5c34.1492536769.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <62cd5ee0-3f0c-5e65-5f64-0c91a2a6f1e6@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Kishon Vijay Abraham I <kishon@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, khilman@kernel.org, rnayak@codeaurora.org, Paul Walmsley <paul@pwsan.com>, Bjorn Helgaas <helgaas@kernel.org>, "Nori, Sekhar" <nsekhar@ti.com>, "Kristo, Tero" <t-kristo@ti.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <03aaf3220cccbabb7db86aa4eb10d1147add5c34.1492536769.git.lukas@wunner.de>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Simon Horman <horms+renesas@verge.net.au>, Yinghai Lu <yinghai@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-+ linux-pm
-
-On 04/18/2017 01:07 AM, Kishon Vijay Abraham I wrote:
-> Hi,
+On Tue, Apr 18, 2017 at 08:44:30PM +0200, Lukas Wunner wrote:
+> Laurent Pinchart reported that the Renesas R-Car H2 Lager board
+> (r8a7790) crashes during suspend tests.  Geert Uytterhoeven managed to
+> reproduce the issue on an M2-W Koelsch board (r8a7791):
 > 
-> resume_noirq callbacks are used in PCIe core to restore PCI state (this
-> accesses PCI module). So the clocks of PCI module has to be enabled before
-> resume_noirq.
+> It occurs when the PME scan runs, once per second.  During PME scan, the
+> PCI host bridge (rcar-pci) registers are accessed while its module clock
+> has already been disabled, leading to the crash.
 > 
-> The clocks for the PCI module in DRA7xx is provided by PIPE3 PHY device which
-> in turn gets it's clock from OCP2SCP device. During resume_noirq callbacks,
-> pm_runtime is disabled, so pm_runtime_get_sync is ineffective. However
-> pm_runtime can be enabled using pm_runtime_force_resume. Now the problem is
-> adding pm_runtime_force_resume() in resume_noirq callback of pci-dra7xx driver
-> will enable only the pm_runtime of PCI device but not PIPE3 PHY or OCP2SCP.
-> Adding pm_runtime_force_resume() in resume_noirq callback of PIPE3 PHY driver
-> or OCP2SCP driver will not help if the resume_noirq callbacks in PIP3PHY driver
-> and OCP2SCP driver are invoked after the resume_noirq of pci-dra7xx driver.
+> One reproducer is to configure s2ram to use "s2idle" instead of "deep"
+> suspend:
 > 
-> How to enable the pm_runtime of parent devices in resume_noirq callback? Does
-> existing pm_runtime framework has support for that?
+> # echo 0 > /sys/module/printk/parameters/console_suspend
+> # echo s2idle > /sys/power/mem_sleep
+> # echo mem > /sys/power/state
 > 
+> Another reproducer is to write either "platform" or "processors" to
+> /sys/power/pm_test.  It does not (or is less likely) to happen during
+> full system suspend ("core" or "none") because system suspend also
+> disables timers, and thus the workqueue handling PME scans no longer
+> runs.  Geert believes the issue may still happen in the small window
+> between disabling module clocks and disabling timers:
+> 
+> # echo 0 > /sys/module/printk/parameters/console_suspend
+> # echo platform > /sys/power/pm_test    # Or "processors"
+> # echo mem > /sys/power/state
+> 
+> (Make sure CONFIG_PCI_RCAR_GEN2 and CONFIG_USB_OHCI_HCD_PCI are
+> enabled.)
+> 
+> Rafael Wysocki agrees that PME scans should be suspended before the host
+> bridge registers become inaccessible.  To that end, queue the task on a
+> workqueue that gets frozen before devices suspend.
+> 
+> Rafael notes however that as a result, some wakeup events may be missed
+> if they are delivered via PME from a device without working IRQ (which
+> hence must be polled) and occur after the workqueue has been frozen.
+> If that turns out to be an issue in practice, it may be possible to
+> solve it by calling pci_pme_list_scan() once directly from one of the
+> host bridge's pm_ops callbacks.
+> 
+> Stacktrace for posterity:
+> 
+> PM: Syncing filesystems ... [   38.566237] done.
+> PM: Preparing system for sleep (mem)
+> Freezing user space processes ... [   38.579813] (elapsed 0.001 seconds) done.
+> Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
+> PM: Suspending system (mem)
+> PM: suspend of devices complete after 152.456 msecs
+> PM: late suspend of devices complete after 2.809 msecs
+> PM: noirq suspend of devices complete after 29.863 msecs
+> suspend debug: Waiting for 5 second(s).
+> Unhandled fault: asynchronous external abort (0x1211) at 0x00000000
+> pgd = c0003000
+> [00000000] *pgd=80000040004003, *pmd=00000000
+> Internal error: : 1211 [#1] SMP ARM
+> Modules linked in:
+> CPU: 1 PID: 20 Comm: kworker/1:1 Not tainted
+> 4.9.0-rc1-koelsch-00011-g68db9bc814362e7f #3383
+> Hardware name: Generic R8A7791 (Flattened Device Tree)
+> Workqueue: events pci_pme_list_scan
+> task: eb56e140 task.stack: eb58e000
+> PC is at pci_generic_config_read+0x64/0x6c
+> LR is at rcar_pci_cfg_base+0x64/0x84
+> pc : [<c041d7b4>]    lr : [<c04309a0>]    psr: 600d0093
+> sp : eb58fe98  ip : c041d750  fp : 00000008
+> r10: c0e2283c  r9 : 00000000  r8 : 600d0013
+> r7 : 00000008  r6 : eb58fed6  r5 : 00000002  r4 : eb58feb4
+> r3 : 00000000  r2 : 00000044  r1 : 00000008  r0 : 00000000
+> Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment user
+> Control: 30c5387d  Table: 6a9f6c80  DAC: 55555555
+> Process kworker/1:1 (pid: 20, stack limit = 0xeb58e210)
+> Stack: (0xeb58fe98 to 0xeb590000)
+> fe80:                                                       00000002 00000044
+> fea0: eb6f5800 c041d9b0 eb58feb4 00000008 00000044 00000000 eb78a000 eb78a000
+> fec0: 00000044 00000000 eb9aff00 c0424bf0 eb78a000 00000000 eb78a000 c0e22830
+> fee0: ea8a6fc0 c0424c5c eaae79c0 c0424ce0 eb55f380 c0e22838 eb9a9800 c0235fbc
+> ff00: eb55f380 c0e22838 eb55f380 eb9a9800 eb9a9800 eb58e000 eb9a9824 c0e02100
+> ff20: eb55f398 c02366c4 eb56e140 eb5631c0 00000000 eb55f380 c023641c 00000000
+> ff40: 00000000 00000000 00000000 c023a928 cd105598 00000000 40506a34 eb55f380
+> ff60: 00000000 00000000 dead4ead ffffffff ffffffff eb58ff74 eb58ff74 00000000
+> ff80: 00000000 dead4ead ffffffff ffffffff eb58ff90 eb58ff90 eb58ffac eb5631c0
+> ffa0: c023a844 00000000 00000000 c0206d68 00000000 00000000 00000000 00000000
+> ffc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+> ffe0: 00000000 00000000 00000000 00000000 00000013 00000000 3a81336c 10ccd1dd
+> [<c041d7b4>] (pci_generic_config_read) from [<c041d9b0>]
+> (pci_bus_read_config_word+0x58/0x80)
+> [<c041d9b0>] (pci_bus_read_config_word) from [<c0424bf0>]
+> (pci_check_pme_status+0x34/0x78)
+> [<c0424bf0>] (pci_check_pme_status) from [<c0424c5c>] (pci_pme_wakeup+0x28/0x54)
+> [<c0424c5c>] (pci_pme_wakeup) from [<c0424ce0>] (pci_pme_list_scan+0x58/0xb4)
+> [<c0424ce0>] (pci_pme_list_scan) from [<c0235fbc>]
+> (process_one_work+0x1bc/0x308)
+> [<c0235fbc>] (process_one_work) from [<c02366c4>] (worker_thread+0x2a8/0x3e0)
+> [<c02366c4>] (worker_thread) from [<c023a928>] (kthread+0xe4/0xfc)
+> [<c023a928>] (kthread) from [<c0206d68>] (ret_from_fork+0x14/0x2c)
+> Code: ea000000 e5903000 f57ff04f e3a00000 (e5843000)
+> ---[ end trace 667d43ba3aa9e589 ]---
+> 
+> Reported-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+> Reported-and-tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Cc: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+> Cc: Simon Horman <horms+renesas@verge.net.au>
+> Cc: Yinghai Lu <yinghai@kernel.org>
+> Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+> Cc: stable@vger.kernel.org # 2.6.37+
+> Fixes: df17e62e5bff ("PCI: Add support for polling PME state on suspended legacy PCI devices")
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
 
-Most probably you've hit the issue described in [1].
-In general, if pci-dra7xx is consumer of  PIPE3 PHY device and 
-PIPE3 PHY device is child of OCP2SCP then suspend/resume order should be
-- pci-dra7xx
-- PIPE3 PHY
-- OCP2SCP
- and resume
-- OCP2SCP
-- PIPE3 PHY
-- pci-dra7xx
-and in this case  pm_runtime_force_x() might work.
+Applied to pci/pm for v4.12, thanks, Lukas!
 
-Hence, approach [1] was not accepted (personally I still like it) and
-"Functional dependencies tracking support" was introduced instead by commit 9ed9895 [2]
-you can try it.
-
-But, as per code, I'm not sure that Functional dependencies properly tracked in 
-pm_runtime_force_x() functions.
-
-PS: you can try to reorder device's nodes in DT and place PCI node after "ocp2scp" :P
-
-[1] "driver core: Ensure proper suspend/resume ordering"
- https://patchwork.kernel.org/patch/7153201/
-[2] https://patchwork.kernel.org/patch/9404547/
--- 
-regards,
--grygorii
+> ---
+>  drivers/pci/pci.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index aa55501d2179..c561a9e4916a 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -1784,8 +1784,8 @@ static void pci_pme_list_scan(struct work_struct *work)
+>  		}
+>  	}
+>  	if (!list_empty(&pci_pme_list))
+> -		schedule_delayed_work(&pci_pme_work,
+> -				      msecs_to_jiffies(PME_TIMEOUT));
+> +		queue_delayed_work(system_freezable_wq, &pci_pme_work,
+> +				   msecs_to_jiffies(PME_TIMEOUT));
+>  	mutex_unlock(&pci_pme_list_mutex);
+>  }
+>  
+> @@ -1850,8 +1850,9 @@ void pci_pme_active(struct pci_dev *dev, bool enable)
+>  			mutex_lock(&pci_pme_list_mutex);
+>  			list_add(&pme_dev->list, &pci_pme_list);
+>  			if (list_is_singular(&pci_pme_list))
+> -				schedule_delayed_work(&pci_pme_work,
+> -						      msecs_to_jiffies(PME_TIMEOUT));
+> +				queue_delayed_work(system_freezable_wq,
+> +						   &pci_pme_work,
+> +						   msecs_to_jiffies(PME_TIMEOUT));
+>  			mutex_unlock(&pci_pme_list_mutex);
+>  		} else {
+>  			mutex_lock(&pci_pme_list_mutex);
+> -- 
+> 2.11.0
+> 
