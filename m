@@ -1,89 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] tools/power/x86/intel_pstate_tracer: Adjust directory ownership
-Date: Tue, 18 Apr 2017 15:58:56 +0200
-Message-ID: <2212263.ev98xHHkdz@aspire.rjw.lan>
-References: <1492474333-8356-1-git-send-email-dsmythies@telus.net>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: RFC: WMI Enhancements
+Date: Tue, 18 Apr 2017 14:08:51 +0000
+Message-ID: <21d6718a327e4ebcb0174c573f27df68@ausx13mpc120.AMER.DELL.COM>
+References: <20170412230854.GA11963@fury>
+         <20170413073228.GB1462@ozzy.nask.waw.pl>
+         <3370431810bd4bc09fd9eb16eb9abea5@ausx13mpc120.AMER.DELL.COM>
+         <20170413135102.GL3090@pali>
+         <faffff39232f4734859a360cb666856f@ausx13mpc120.AMER.DELL.COM>
+ <1492501019.24567.45.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59728 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753466AbdDROFA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Apr 2017 10:05:00 -0400
-In-Reply-To: <1492474333-8356-1-git-send-email-dsmythies@telus.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <1492501019.24567.45.camel@linux.intel.com>
+Content-Language: en-US
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: andriy.shevchenko@linux.intel.com, pali.rohar@gmail.com, hdegoede@redhat.com
+Cc: kernel@kempniu.pl, dvhart@infradead.org, rjw@rjwysocki.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <doug.smythies@gmail.com>, srinivas.pandruvada@linux.intel.com
-Cc: len.brown@intel.com, dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Monday, April 17, 2017 05:12:13 PM Doug Smythies wrote:
-> The intel_pstate_tracer.py script only needs to be run as root
-> when it is also used to actually acquire the trace data that
-> it will post process. Otherwise it is generally preferable
-> that it be run as a regular user.
-> If run the first time as root the results directory will be
-> incorrect for any subsequent run as a regular user. For any run
-> as root the specific testname subdirectory will not allow any
-> subsequent file saves by a regular user. Typically, and for example,
-> the regular user might be attempting to save a .csv file converted to
-> a spreadsheet with added calculations or graphs.
-> 
-> Set the directories and files owner and groups IDs to be the regular
-> user, if required.
-> 
-> Signed-off-by: Doug Smythies <dsmythies@telus.net>
-
-Srinivas, any concerns?
-
-> ---
->  .../x86/intel_pstate_tracer/intel_pstate_tracer.py      | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
-> 
-> diff --git a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> index fd706ac..0b24dd9 100755
-> --- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> +++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> @@ -353,6 +353,14 @@ def split_csv():
->                  os.system('grep -m 1 common_cpu cpu.csv > cpu{:0>3}.csv'.format(index))
->                  os.system('grep CPU_{:0>3} cpu.csv >> cpu{:0>3}.csv'.format(index, index))
->  
-> +def fix_ownership(path):
-> +    """Change the owner of the file to SUDO_UID, if required"""
-> +
-> +    uid = os.environ.get('SUDO_UID')
-> +    gid = os.environ.get('SUDO_GID')
-> +    if uid is not None:
-> +        os.chown(path, int(uid), int(gid))
-> +
->  def cleanup_data_files():
->      """ clean up existing data files """
->  
-> @@ -518,12 +526,16 @@ else:
->  
->  if not os.path.exists('results'):
->      os.mkdir('results')
-> +    # The regular user needs to own the directory, not root.
-> +    fix_ownership('results')
->  
->  os.chdir('results')
->  if os.path.exists(testname):
->      print('The test name directory already exists. Please provide a unique test name. Test re-run not supported, yet.')
->      sys.exit()
->  os.mkdir(testname)
-> +# The regular user needs to own the directory, not root.
-> +fix_ownership(testname)
->  os.chdir(testname)
->  
->  # Temporary (or perhaps not)
-> @@ -566,4 +578,9 @@ plot_scaled_cpu()
->  plot_boost_cpu()
->  plot_ghz_cpu()
->  
-> +# It is preferrable, but not necessary, that the regular user owns the files, not root.
-> +for root, dirs, files in os.walk('.'):
-> +    for f in files:
-> +        fix_ownership(f)
-> +
->  os.chdir('../../')
-> 
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBBbmR5IFNoZXZjaGVua28gW21h
+aWx0bzphbmRyaXkuc2hldmNoZW5rb0BsaW51eC5pbnRlbC5jb21dDQo+IFNlbnQ6IFR1ZXNkYXks
+IEFwcmlsIDE4LCAyMDE3IDI6MzcgQU0NCj4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9f
+TGltb25jaWVsbG9ARGVsbC5jb20+OyBwYWxpLnJvaGFyQGdtYWlsLmNvbTsNCj4gaGRlZ29lZGVA
+cmVkaGF0LmNvbQ0KPiBDYzoga2VybmVsQGtlbXBuaXUucGw7IGR2aGFydEBpbmZyYWRlYWQub3Jn
+OyByandAcmp3eXNvY2tpLm5ldDsNCj4gbGVuLmJyb3duQGludGVsLmNvbTsgY29yZW50aW4uY2hh
+cnlAZ21haWwuY29tOyBsdXRvQGtlcm5lbC5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJu
+ZWwub3JnOyBwbGF0Zm9ybS1kcml2ZXIteDg2QHZnZXIua2VybmVsLm9yZzsgbGludXgtDQo+IHBt
+QHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogUkZDOiBXTUkgRW5oYW5jZW1lbnRzDQo+
+IA0KPiBPbiBUaHUsIDIwMTctMDQtMTMgYXQgMTU6NDAgKzAwMDAsIE1hcmlvLkxpbW9uY2llbGxv
+QGRlbGwuY29tIHdyb3RlOg0KPiA+ID4gbGlic21iaW9zIHdvdWxkIGJlbmVmaXQuDQo+ID4gPg0K
+PiA+ID4gUmVhbGx5IGxpYnNtYmlvcyBtYXR0ZXJzIGhlcmU/IEhhbnMgKGFkZGVkIHRvIHRocmVh
+ZCkgd3JvdGUgdGhhdA0KPiA+ID4gbGlic21iaW9zIGlzDQo+ID4gPiBhIHJlbGljLCBzb21ldGhp
+bmcgb2YgYWdlcyBsb25nIGdvbmUgYnkgYW5kIGEgbm9ybWFsIHVzZXIgc2hvdWxkDQo+ID4gPiBu
+ZXZlciB1c2UgaXQuDQo+ID4gPg0KPiA+DQo+ID4gQSBub3JtYWwgdXNlciBzaG91bGRuJ3QgYmUg
+dXNpbmcgaXQgZGlyZWN0bHksIGJ1dCBsaWJzbWJpb3MgaXMgdXNlZCBieQ0KPiA+IGEgZmV3IG9w
+ZW4NCj4gPiBzb3VyY2UgdG9vbHMgYXMgYSBkZXBlbmRlbmN5LsKgwqBJdCdzIGFsc28gdXNlZCBp
+biBtYW55IERlbGwNCj4gPiBtYW5hZ2VhYmlsaXR5IHRvb2xzLg0KPiA+DQo+IA0KPiBTaG91bGRu
+J3QgdG9vbHMgZXZvbHZlIHRvIHVzZSBuZXdlciBpbnRlcmZhY2VzICh3aGlsZSBrZWVwaW5nDQo+
+IGNvbXBhdGliaWxpdHkgd2l0aCBvbGQga2VybmVscyk/DQoNClllcy4gIElmIGEgV01JIHVzZXJz
+cGFjZSBpbnRlcmZhY2UgZG9lcyBlbmQgdXAgYmVpbmcgdGhlIG91dGNvbWUgb2YNCnRoaXMgdGhy
+ZWFkLCBJJ2xsIHB1c2ggdGhlIHJlbGV2YW50IGZvbGtzIG1haW50YWluaW5nIHRob3NlIHRvb2xz
+IHRvIHN3aXRjaA0Kb3ZlciBzbyB0aGF0IGRjZGJhcyBjYW4gYmUgbWFya2VkIGRlcHJlY2F0ZWQg
+YW5kIG9ubHkgaW4gdXNlIGZvciBvbGRlcg0Ka2VybmVscy4NCg==
