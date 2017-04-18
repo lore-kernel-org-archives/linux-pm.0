@@ -1,199 +1,288 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH] PCI: Freeze PME scan before suspending devices
-Date: Wed, 19 Apr 2017 01:05:20 +0300
-Message-ID: <4107359.5uIJCz7KyJ@avalon>
-References: <03aaf3220cccbabb7db86aa4eb10d1147add5c34.1492536769.git.lukas@wunner.de>
+From: Darren Hart <dvhart@infradead.org>
+Subject: Re: RFC: WMI Enhancements
+Date: Tue, 18 Apr 2017 15:49:31 -0700
+Message-ID: <20170418224931.GA21569@fury>
+References: <20170412230854.GA11963@fury>
+ <3317007.TCiWpp4m4U@aspire.rjw.lan>
+ <20170418163325.GC25405@fury>
+ <201704182128.36169@pali>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <03aaf3220cccbabb7db86aa4eb10d1147add5c34.1492536769.git.lukas@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Simon Horman <horms+renesas@verge.net.au>, Yinghai Lu <yinghai@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <201704182128.36169@pali>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@amacapital.net>, Len Brown <len.brown@intel.com>, Corentin Chary <corentin.chary@gmail.com>, Mario Limonciello <Mario_Limonciello@dell.com>, Andy Lutomirski <luto@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukas,
+On Tue, Apr 18, 2017 at 09:28:36PM +0200, Pali Rohár wrote:
+> On Tuesday 18 April 2017 18:33:25 Darren Hart wrote:
+> > On Tue, Apr 18, 2017 at 03:07:06PM +0200, Rafael Wysocki wrote:
+> > > On Monday, April 17, 2017 04:10:51 PM Darren Hart wrote:
+> > > > On Mon, Apr 17, 2017 at 03:03:29PM -0700, Andy Lutomirski wrote:
+> > > > > On Fri, Apr 14, 2017 at 4:05 PM, Darren Hart
+> > > > > <dvhart@infradead.org> wrote:
+> > > > > > On Sat, Apr 15, 2017 at 12:45:30AM +0200, Rafael Wysocki
+> > > > > > wrote:
+> > > > > >> On Wednesday, April 12, 2017 04:08:54 PM Darren Hart wrote:
+> > > > > >> > Hi All,
+> > > > > >> > 
+> > > > > >> > There are a few parallel efforts involving the Windows
+> > > > > >> > Management Instrumentation (WMI)[1] and dependent/related
+> > > > > >> > drivers. I'd like to have a round of discussion among
+> > > > > >> > those of you that have been involved in this space before
+> > > > > >> > we decide on a direction.
+> > > > > >> > 
+> > > > > >> > The WMI support in the kernel today fairly narrowly
+> > > > > >> > supports a handful of systems. Andy L. has a
+> > > > > >> > work-in-progress series [2] which converts wmi into a
+> > > > > >> > platform device and a proper bus, providing devices for
+> > > > > >> > dependent drivers to bind to, and a mechanism for sibling
+> > > > > >> > devices to communicate with each other. I've reviewed the
+> > > > > >> > series and feel like the approach is sound, I plan to
+> > > > > >> > carry this series forward and merge it (with Andy L's
+> > > > > >> > permission).
+> > > > > >> > 
+> > > > > >> > Are there any objections to this?
+> > > > > >> > 
+> > > > > >> > In Windows, applications interact with WMI more or less
+> > > > > >> > directly. We don't do this in Linux currently, although
+> > > > > >> > it has been discussed in the past [3]. Some vendors will
+> > > > > >> > work around this by performing SMI/SMM, which is
+> > > > > >> > inefficient at best. Exposing WMI methods to userspace
+> > > > > >> > would bring parity to WMI for Linux and Windows.
+> > > > > >> > 
+> > > > > >> > There are two principal concerns I'd appreciate your
+> > > > > >> > thoughts on:
+> > > > > >> > 
+> > > > > >> > a) As an undiscoverable interface (you need to know the
+> > > > > >> > method signatures ahead of time), universally exposing
+> > > > > >> > every WMI "device" to userspace seems like "a bad idea"
+> > > > > >> > from a security and stability perspective. While access
+> > > > > >> > would certainly be privileged, it seems more prudent to
+> > > > > >> > make this exposure opt-in. We also handle some of this
+> > > > > >> > with kernel drivers and exposing those "devices" to
+> > > > > >> > userspace would enable userspace and the kernel to fight
+> > > > > >> > over control. So - if we expose WMI devices to userspace,
+> > > > > >> > I believe this should be done on a case by case basis,
+> > > > > >> > opting in, and not by default as part of the WMI driver
+> > > > > >> > (although it can provide the mechanism for a sub-driver
+> > > > > >> > to use), and possibly a devmode to do so by default.
+> > > > > >> 
+> > > > > >> A couple of loose thoughts here.
+> > > > > >> 
+> > > > > >> In principle there could be a "generic default WMI driver"
+> > > > > >> or similar that would "claim" all WMI "devices" that have
+> > > > > >> not been "claimed" by anyone else and would simply expose
+> > > > > >> them to user space somehow (e.g. using a chardev
+> > > > > >> interface).
+> > > > > >> 
+> > > > > >> Then, depending on how that thing is implemented, opt-in etc
+> > > > > >> should be possible too.
+> > > > > > 
+> > > > > > I think we agree this would be an ideal approach.
+> > > > > > 
+> > > > > > As we look into this more, it is becoming clear that the
+> > > > > > necessary functionality is not nicely divided into GUIDs for
+> > > > > > what is necessary in userspace and what is handled in the
+> > > > > > kernel. A single WMI METHOD GUID may be needed by userspace
+> > > > > > for certain functionality, while the kernel drivers may use
+> > > > > > it for something else.
+> > > > > > 
+> > > > > > :-(
+> > > > > > 
+> > > > > > The input to a WMI method is just a buffer, so it is very
+> > > > > > free form. One approach Mario has mentioned was to audit the
+> > > > > > user space WMI METHOD calls in the kernel platform drivers
+> > > > > > and reject those calls with arguments matching those issued
+> > > > > > by the kernel driver. This is likely to be complex and error
+> > > > > > prone in my opinion. However, I have not yet thought of
+> > > > > > another means to meet the requirement of having disjoint
+> > > > > > feature sets for userspace and kernel space via a mechanism
+> > > > > > that was effectively designed to be used solely from user
+> > > > > > space with vendor defined method signatures.
+> > > > > > 
+> > > > > > Next step is to look at just how complex it would be to audit
+> > > > > > the method calls the kernel currently uses.
+> > > > > 
+> > > > > I'm wondering whether it's really worth it.  We already allow
+> > > > > doing darned near anything using dcdbas.  Maybe the world
+> > > > > won't end if we expose a complete-ish ioctl interface to WMI.
+> > > 
+> > > I guess the world wouldn't end then (it has not ended for far more
+> > > serious reasons so far after all), but this also doesn't feel
+> > > entirely right.
+> > > 
+> > > For one, if something is used inside of the kernel (by drivers
+> > > etc), then allowing user space to use the same thing directly is a
+> > > recipe for unsupportable mess IMO.
+> > 
+> > I don't disagree. Unforuntately, the mechanism wasn't designed for
+> > this kind of mixed usage from what I can determine, so it doesn't
+> > lend itself to separation.
+> 
+> Yes, and this is reason why abstract generic interface has problems and 
+> cannot be really generic.
+> 
+> > We could kick out all the WMI drivers and
+> > encourage vendor/platform specific system daemons which read WMI and
+> > injected events and configured LEDs through sysfs, thus eliminating
+> > the user/kernel conflict - but it would only leave us with the
+> > problem of multiple userspace daemons competing for the same WMI
+> > METHODs -- and yeah, nobody's going for that :-D
+> 
+> IMO, this will only results in more problems as we already have and does 
+> not bring any value. Just anarchy, like in windows world.
+> 
+> > > > > Also, dcdbas is, to put it mildly, a bit ridiculous.  It seems
+> > > > > to be a seriously awkward sysfs interface that allows you to,
+> > > > > drumroll please, issue outb and inb instructions.  It doesn't
+> > > > > even check that it's running on a Dell system.  It might be
+> > > > > nice to deprecate it some day in favor of a real interface. 
+> > > > > I'd consider a low-level WMI ioctl interface to be a vast
+> > > > > improvement.
+> > > > 
+> > > > I've been reluctantly arriving here as well. Given that every WMI
+> > > > interface will be vendor specific, and non-discoverable, it
+> > > > seems unlikely developers will eagerly duplicate kernel
+> > > > functionality in user-space. And if they do, it will affect very
+> > > > few platforms.
+> > > > 
+> > > > I still think it makes sense to only expose a WMI interface by
+> > > > default on some matching criteria. It could be DMI related, but
+> > > > I'd like to know if the UID is possible as well (it depends on
+> > > > how vendors use the UID, if consistently, not at all, etc.)
+> > > > Otherwise, the interface would not be enabled unless the user
+> > > > explicitly requests it via a module parameter or similar.
+> > > 
+> > > To me, that should be the bare minimum, but I really think that
+> > > mutual exclusion between user space and the kernel needs to be
+> > > ensured somehow when the interface is enabled too.
+> > > 
+> > > This looks similar to exposing _DSM functionality for certain
+> > > device to user space where some functions of the _DSM in question
+> > > are already in use by kernel code.  In that case I would think
+> > > about an interface with a function granularity (so it would check
+> > > the GUID and the function and possibly the ordering with respect
+> > > to the other functions too before invoking the _DSM on behalf of
+> > > user space).
+> > 
+> > This is also what I would consider to be ideal, but the mechanism
+> > doesn't lend itself to that level of granularity. WMI methods are
+> > not guaranteed to be broken up into sufficiently granular
+> > functionality that we can filter based on method ID. We would most
+> > likely end up in the position of having to audit the input buffer of
+> > every WMI call.
+> 
+> And still, if write audit filters for every one existing wmi driver in 
+> kernel, there still audit filter can say to userspace that current 
+> request cannot be accepted and sent to firmware.
 
-Thank you for the patch.
+For the vast majority of platforms, the WMI interface would not be exported, and
+we would not attempt to write audit filters. As a rule, I would expect this
+effort to be triggered by a request from the vendor, and done only with their
+explicit involvement after providing complete documentation of the WMI
+interface.
 
-On Tuesday 18 Apr 2017 20:44:30 Lukas Wunner wrote:
-> Laurent Pinchart reported that the Renesas R-Car H2 Lager board
-> (r8a7790) crashes during suspend tests.  Geert Uytterhoeven managed t=
-o
-> reproduce the issue on an M2-W Koelsch board (r8a7791):
->=20
-> It occurs when the PME scan runs, once per second.  During PME scan, =
-the
-> PCI host bridge (rcar-pci) registers are accessed while its module cl=
-ock
-> has already been disabled, leading to the crash.
->=20
-> One reproducer is to configure s2ram to use "s2idle" instead of "deep=
-"
-> suspend:
->=20
-> # echo 0 > /sys/module/printk/parameters/console_suspend
-> # echo s2idle > /sys/power/mem_sleep
-> # echo mem > /sys/power/state
->=20
-> Another reproducer is to write either "platform" or "processors" to
-> /sys/power/pm_test.  It does not (or is less likely) to happen during=
+However, we would expect those filters to deny as few calls as possible for the
+platforms that choose to export the WMI interface to userspace.
 
-> full system suspend ("core" or "none") because system suspend also
-> disables timers, and thus the workqueue handling PME scans no longer
-> runs.  Geert believes the issue may still happen in the small window
-> between disabling module clocks and disabling timers:
->=20
-> # echo 0 > /sys/module/printk/parameters/console_suspend
-> # echo platform > /sys/power/pm_test    # Or "processors"
-> # echo mem > /sys/power/state
->=20
-> (Make sure CONFIG_PCI_RCAR_GEN2 and CONFIG_USB_OHCI_HCD_PCI are
-> enabled.)
->=20
-> Rafael Wysocki agrees that PME scans should be suspended before the h=
-ost
-> bridge registers become inaccessible.  To that end, queue the task on=
- a
-> workqueue that gets frozen before devices suspend.
->=20
-> Rafael notes however that as a result, some wakeup events may be miss=
-ed
-> if they are delivered via PME from a device without working IRQ (whic=
-h
-> hence must be polled) and occur after the workqueue has been frozen.
-> If that turns out to be an issue in practice, it may be possible to
-> solve it by calling pci_pme_list_scan() once directly from one of the=
+For example, dell-wmi.c would be largely unaffected as the EVENT_GUID is not
+interesting for userspace (per Mario) and would not be exported. The Descriptor
+GUID should be safe to share with userspace, at least for the way we use it in
+the kernel. Similar for dell-wmi-aio.c
 
-> host bridge's pm_ops callbacks.
->=20
-> Stacktrace for posterity:
->=20
-> PM: Syncing filesystems ... [   38.566237] done.
-> PM: Preparing system for sleep (mem)
-> Freezing user space processes ... [   38.579813] (elapsed 0.001 secon=
-ds)
-> done. Freezing remaining freezable tasks ... (elapsed 0.001 seconds) =
-done.
-> PM: Suspending system (mem)
-> PM: suspend of devices complete after 152.456 msecs
-> PM: late suspend of devices complete after 2.809 msecs
-> PM: noirq suspend of devices complete after 29.863 msecs
-> suspend debug: Waiting for 5 second(s).
-> Unhandled fault: asynchronous external abort (0x1211) at 0x00000000
-> pgd =3D c0003000
-> [00000000] *pgd=3D80000040004003, *pmd=3D00000000
-> Internal error: : 1211 [#1] SMP ARM
-> Modules linked in:
-> CPU: 1 PID: 20 Comm: kworker/1:1 Not tainted
-> 4.9.0-rc1-koelsch-00011-g68db9bc814362e7f #3383
-> Hardware name: Generic R8A7791 (Flattened Device Tree)
-> Workqueue: events pci_pme_list_scan
-> task: eb56e140 task.stack: eb58e000
-> PC is at pci_generic_config_read+0x64/0x6c
-> LR is at rcar_pci_cfg_base+0x64/0x84
-> pc : [<c041d7b4>]    lr : [<c04309a0>]    psr: 600d0093
-> sp : eb58fe98  ip : c041d750  fp : 00000008
-> r10: c0e2283c  r9 : 00000000  r8 : 600d0013
-> r7 : 00000008  r6 : eb58fed6  r5 : 00000002  r4 : eb58feb4
-> r3 : 00000000  r2 : 00000044  r1 : 00000008  r0 : 00000000
-> Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment user
-> Control: 30c5387d  Table: 6a9f6c80  DAC: 55555555
-> Process kworker/1:1 (pid: 20, stack limit =3D 0xeb58e210)
-> Stack: (0xeb58fe98 to 0xeb590000)
-> fe80:                                                       00000002
-> 00000044 fea0: eb6f5800 c041d9b0 eb58feb4 00000008 00000044 00000000
-> eb78a000 eb78a000 fec0: 00000044 00000000 eb9aff00 c0424bf0 eb78a000
-> 00000000 eb78a000 c0e22830 fee0: ea8a6fc0 c0424c5c eaae79c0 c0424ce0
-> eb55f380 c0e22838 eb9a9800 c0235fbc ff00: eb55f380 c0e22838 eb55f380
-> eb9a9800 eb9a9800 eb58e000 eb9a9824 c0e02100 ff20: eb55f398 c02366c4
-> eb56e140 eb5631c0 00000000 eb55f380 c023641c 00000000 ff40: 00000000
-> 00000000 00000000 c023a928 cd105598 00000000 40506a34 eb55f380 ff60:
-> 00000000 00000000 dead4ead ffffffff ffffffff eb58ff74 eb58ff74 000000=
-00
-> ff80: 00000000 dead4ead ffffffff ffffffff eb58ff90 eb58ff90 eb58ffac
-> eb5631c0 ffa0: c023a844 00000000 00000000 c0206d68 00000000 00000000
-> 00000000 00000000 ffc0: 00000000 00000000 00000000 00000000 00000000
-> 00000000 00000000 00000000 ffe0: 00000000 00000000 00000000 00000000
-> 00000013 00000000 3a81336c 10ccd1dd [<c041d7b4>] (pci_generic_config_=
-read)
-> from [<c041d9b0>]
-> (pci_bus_read_config_word+0x58/0x80)
-> [<c041d9b0>] (pci_bus_read_config_word) from [<c0424bf0>]
-> (pci_check_pme_status+0x34/0x78)
-> [<c0424bf0>] (pci_check_pme_status) from [<c0424c5c>]
-> (pci_pme_wakeup+0x28/0x54) [<c0424c5c>] (pci_pme_wakeup) from [<c0424=
-ce0>]
-> (pci_pme_list_scan+0x58/0xb4) [<c0424ce0>] (pci_pme_list_scan) from
-> [<c0235fbc>]
-> (process_one_work+0x1bc/0x308)
-> [<c0235fbc>] (process_one_work) from [<c02366c4>]
-> (worker_thread+0x2a8/0x3e0) [<c02366c4>] (worker_thread) from [<c023a=
-928>]
-> (kthread+0xe4/0xfc) [<c023a928>] (kthread) from [<c0206d68>]
-> (ret_from_fork+0x14/0x2c) Code: ea000000 e5903000 f57ff04f e3a00000
-> (e5843000)
-> ---[ end trace 667d43ba3aa9e589 ]---
->=20
-> Reported-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.=
-com>
+For dell-wmi-led.c, we could most likely not export the GUID at all, but if we
+did, we could choose to filter on device_id or command from the bios_args used
+in the input buffer.
 
-My Lager board now fails to resume (but that's also the case without th=
-is=20
-patch, I'll have to investigate that separately) but the PCI crash is g=
-one, so
+I don't think I've seen exactly what the WMI interface for the existing SMBIOS
+stuff will look like, but we seem to have a fairly structured way of accessing it
+today, which should allow us to filter out those specific usages (such as
+rfkill). Additionally, the concern that userspace can make use of the same
+mechanism as the kernel is where we are today with libsmbios.
 
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+With WMI filters, we could, for example, deny all DELL_SMBIOS_WMI GUID calls
+equivalent to "class 17, select 11" (Wireless control), since that is handled
+internally. Similarly for "4,11" (KBD ALS).
 
-> Reported-and-tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Cc: Niklas S=F6derlund <niklas.soderlund+renesas@ragnatech.se>
-> Cc: Simon Horman <horms+renesas@verge.net.au>
-> Cc: Yinghai Lu <yinghai@kernel.org>
-> Cc: Matthew Garrett <mjg59@srcf.ucam.org>
-> Cc: stable@vger.kernel.org # 2.6.37+
-> Fixes: df17e62e5bff ("PCI: Add support for polling PME state on suspe=
-nded
-> legacy PCI devices") Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> ---
->  drivers/pci/pci.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index aa55501d2179..c561a9e4916a 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -1784,8 +1784,8 @@ static void pci_pme_list_scan(struct work_struc=
-t
-> *work) }
->  =09}
->  =09if (!list_empty(&pci_pme_list))
-> -=09=09schedule_delayed_work(&pci_pme_work,
-> -=09=09=09=09      msecs_to_jiffies(PME_TIMEOUT));
-> +=09=09queue_delayed_work(system_freezable_wq, &pci_pme_work,
-> +=09=09=09=09   msecs_to_jiffies(PME_TIMEOUT));
->  =09mutex_unlock(&pci_pme_list_mutex);
->  }
->=20
-> @@ -1850,8 +1850,9 @@ void pci_pme_active(struct pci_dev *dev, bool e=
-nable)
->  =09=09=09mutex_lock(&pci_pme_list_mutex);
->  =09=09=09list_add(&pme_dev->list, &pci_pme_list);
->  =09=09=09if (list_is_singular(&pci_pme_list))
-> -=09=09=09=09schedule_delayed_work(&pci_pme_work,
-> -=09=09=09=09=09=09     =20
-msecs_to_jiffies(PME_TIMEOUT));
-> +=09=09=09=09queue_delayed_work(system_freezable_wq,
-> +=09=09=09=09=09=09   &pci_pme_work,
-> +=09=09=09=09=09=09  =20
-msecs_to_jiffies(PME_TIMEOUT));
->  =09=09=09mutex_unlock(&pci_pme_list_mutex);
->  =09=09} else {
->  =09=09=09mutex_lock(&pci_pme_list_mutex);
+> 
+> This would mean that userspace application would not be able to do ANY 
+> WMI method call (as e.g. on windows) and so for some vendors it can be 
+> useless.
 
---=20
-Regards,
+We address this with more granular filters.
 
-Laurent Pinchart
+> And here I'm not sure, how hard would be to write those audit filters 
+> for all wmi kernel drivers and if it would be possible without wmi 
+> documentation of those vendor apis (which we do not have).
+
+As above, we won't write them for every wmi kernel driver. Only for those
+vendors which engage with us to do so.
+
+> Potential vendors can decide based on above fact, that their userspace 
+> application rather rmmod wmi kernel driver for particular GUID (which 
+> release occupation of wmi device) and their userspace application starts 
+> working. And this is I think situation which is bad for kernel and we 
+> should prevent it.
+
+I agree we would want to avoid this. As this is off by default and only enabled
+/ implemented with the cooperation of the vendor in the first place, I suspect
+this kind of antagonistic interaction is unlikely.
+
+You previously mentioned doing a vendor specific interface. This was my initial
+response as well, but it doesn't meet the intent of the WMI interface, nor the
+needs of vendors like Dell. That is, it requires a priori knowledge of all
+current and future interfaces, and/or the continued gating on the Linux kernel
+in order to allow a new method/interface. Further, by creating these interfaces,
+we become more tied to them, and they will grow over time, until they are a very
+large set of mostly deprecated interfaces which we can't remove for legacy
+reasons.
+
+All that said, I appreciate the concerns you've raised and they mirror many of
+my own. I don't think we can just say "no, Windows Management Instrumentation is
+only accessible in Linux within the kernel" as that is ultimately contrary to
+the purpose of the mechanism. With those concerns in mind, I proposed the
+general approach below which affords considerable freedom for vendors to manage
+their systems while retaining the right to deny access to the existing Linux
+kernel drivers. At the same time, it provides a general purpose interface to
+userspace which won't collect legacy code we have to maintain forever.
+
+Thanks,
+
+> 
+> > For example, we can filter things the ASUS WMI Keyboard Filter
+> > method, but others are less specific, like Device Set, Bios Status,
+> > Device Status, Device Policy, etc.
+> > 
+> > What we could do is make that the vendor's problem instead of the
+> > kernel's problem. Consider:
+> > 
+> > * wmi.c adds method evaluation wrappers
+> > * add a wmi evaluation mutex
+> > * update *wmi.c drivers to use the new wrappers
+> > * platform drivers (dell-wmi.c, asus-wmi.c, etc.) must explicitly
+> > request wmi.c to export the wmi chardev
+> > * platform drivers must explicitly whitelist each method ID to be
+> > exported - they can automate this in a loop evaluating the wmi block
+> > if they wish * platform drivers *may* register a wmi evaluation
+> > filter which allows them to audit the method id and input buffer to
+> > ensure it doesn't conflict with in-kernel usage (their usage).
+> > 
+> > I believe this is a reasonable compromise, and it places the burden
+> > on the platform drivers, and therefor on the vendors (in the best
+> > case) or the individual platform driver maintainers for less
+> > cooperative vendors. This contains any resulting exposure to the
+> > platforms which explicitly request it.
+> 
+> -- 
+> Pali Rohár
+> pali.rohar@gmail.com
+
+
+
+-- 
+Darren Hart
+VMware Open Source Technology Center
