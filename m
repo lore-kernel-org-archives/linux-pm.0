@@ -1,97 +1,181 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v6 5/5] power: supply: axp288_charger: Only wait for INT3496 device if present
-Date: Tue, 18 Apr 2017 13:58:42 +0200
-Message-ID: <20170418115842.16214-6-hdegoede@redhat.com>
+Subject: [PATCH v6 1/5] ACPI: utils: Add new acpi_dev_present helper
+Date: Tue, 18 Apr 2017 13:58:38 +0200
+Message-ID: <20170418115842.16214-2-hdegoede@redhat.com>
 References: <20170418115842.16214-1-hdegoede@redhat.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <20170418115842.16214-1-hdegoede@redhat.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On some devices with an axp288 pmic setting vbus path based on the
-id-pin is handled by an ACPI _AIE interrupt on the gpio and the
-INT3496 device is disabled.
+acpi_dev_found just iterates over all ACPI-ids and sees if one matches.
+This means that it will return true for devices which are in the DSDT
+but disabled (their _STA method returns 0).
 
-Instead of returning -EPROBE_DEFER on these devices waiting for the
-never to show up INT3496 device, check for its presence and only
-request and monitor the matching extcon if the device is there,
-otherwise let the firmware handle the vbus path control.
+For some drivers it is useful to be able to check if a certain HID
+is not only present in the namespace, but also actually present as in
+acpi_device_is_present() will return true for the device. For example
+because if a certain device is present then the driver will want to use
+an extcon or IIO ADC channel provided by that device.
 
+This commit adds a new acpi_dev_present helper which drivers can use
+to this end.
+
+Like acpi_dev_found, acpi_dev_present take a HID as argument, but
+it also has 2 extra optional arguments to only check for an ACPI
+device with a specific UID and/or HRV value. This makes it more
+generic and allows it to replace custom code doing similar checks
+in several places.
+
+Arguably acpi_dev_present is what acpi_dev_found should have been, but
+there are too many users to just change acpi_dev_found without the risk
+of breaking something.
+
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Lukas Wunner <lukas@wunner.de>
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Acked-by: Sebastian Reichel <sre@kernel.org>
+Reviewed-by: Lukas Wunner <lukas@wunner.de>
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 ---
 Changes in v2:
--Do not schedule otg.work to sync the id-pin state when we don't have
- the extcon, this avoids turning off charging as soon as the driver loads
- on devices without the extcon
+-Switch to using bus_find_device() to avoid "Traversing the namespace
+ over and over"
+-Add optional (may be NULL / -1) uid and hrv arguments, this will
+ allow this new function to replace the custom code for this in
+ drivers/firmware/efi/dev-path-parser.c as well as in
+ sound/soc/intel/common/sst-match-acpi.c and will allow it to be
+ used to implement blacklists to avoid loading the ACPI ac / battery
+ driver on systems which have a PMIC / charger acpi device with a
+ native driver which offers a better (often working vs not working)
+ user experience
+-Dropped Mika's reviewed-by as this is almost a total rewrite
+Changes in v3:
+-memset the entire acpi_dev_present_info struct, this fixes
+ acpi_device_id.cls not getting cleared
+Changes in v4:
+-Use empty initializer to zero the acpi_dev_present_info struct
+Changes in v5:
+-Use s64 for hrv
+-Fix grammar in comment
+Changes in v6:
+-Drop special handling of "0" uid argument, this was intended for
+ compatiblity with the code in drivers/firmware/efi/dev-path-parser.c
+ so that acpi_dev_present could replace that code, but it turns out that
+ acpi_dev_present is not going to be suitable to replace this, so drop this
+-Some minor style fixes to the code and commit msg
 ---
- drivers/power/supply/axp288_charger.c | 28 ++++++++++++++++++----------
- 1 file changed, 18 insertions(+), 10 deletions(-)
+ drivers/acpi/utils.c    | 66 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/acpi/acpi_bus.h |  1 +
+ include/linux/acpi.h    |  5 ++++
+ 3 files changed, 72 insertions(+)
 
-diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 6be2fe2..d51ebd1 100644
---- a/drivers/power/supply/axp288_charger.c
-+++ b/drivers/power/supply/axp288_charger.c
-@@ -14,6 +14,7 @@
-  * GNU General Public License for more details.
-  */
+diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
+index 22c0995..27d0dcf 100644
+--- a/drivers/acpi/utils.c
++++ b/drivers/acpi/utils.c
+@@ -736,6 +736,72 @@ bool acpi_dev_found(const char *hid)
+ }
+ EXPORT_SYMBOL(acpi_dev_found);
  
-+#include <linux/acpi.h>
- #include <linux/module.h>
- #include <linux/device.h>
- #include <linux/regmap.h>
-@@ -113,7 +114,8 @@
- #define ILIM_3000MA			3000	/* 3000mA */
- 
- #define AXP288_EXTCON_DEV_NAME		"axp288_extcon"
--#define USB_HOST_EXTCON_DEV_NAME	"INT3496:00"
-+#define USB_HOST_EXTCON_HID		"INT3496"
-+#define USB_HOST_EXTCON_NAME		"INT3496:00"
- 
- static const unsigned int cable_ids[] =
- 	{ EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP, EXTCON_CHG_USB_DCP };
-@@ -807,10 +809,14 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		return -EPROBE_DEFER;
++struct acpi_dev_present_info {
++	struct acpi_device_id hid[2];
++	const char *uid;
++	s64 hrv;
++};
++
++static int acpi_dev_present_cb(struct device *dev, void *data)
++{
++	struct acpi_device *adev = to_acpi_device(dev);
++	struct acpi_dev_present_info *match = data;
++	unsigned long long hrv;
++	acpi_status status;
++
++	if (acpi_match_device_ids(adev, match->hid))
++		return 0;
++
++	if (match->uid && (!adev->pnp.unique_id ||
++	    strcmp(adev->pnp.unique_id, match->uid)))
++		return 0;
++
++	if (match->hrv == -1)
++		return 1;
++
++	status = acpi_evaluate_integer(adev->handle, "_HRV", NULL, &hrv);
++	if (ACPI_FAILURE(status))
++		return 0;
++
++	return hrv == match->hrv;
++}
++
++/**
++ * acpi_dev_present - Detect that a given ACPI device is present
++ * @hid: Hardware ID of the device.
++ * @uid: Unique ID of the device, pass NULL to not check _UID
++ * @hrv: Hardware Revision of the device, pass -1 to not check _HRV
++ *
++ * Return %true if a matching device was present at the moment of invocation.
++ * Note that if the device is pluggable, it may since have disappeared.
++ *
++ * Note that unlike acpi_dev_found() this function checks the status
++ * of the device. So for devices which are present in the dsdt, but
++ * which are disabled (their _STA callback returns 0) this function
++ * will return false.
++ *
++ * For this function to work, acpi_bus_scan() must have been executed
++ * which happens in the subsys_initcall() subsection. Hence, do not
++ * call from a subsys_initcall() or earlier (use acpi_get_devices()
++ * instead). Calling from module_init() is fine (which is synonymous
++ * with device_initcall()).
++ */
++bool acpi_dev_present(const char *hid, const char *uid, s64 hrv)
++{
++	struct acpi_dev_present_info match = {};
++	struct device *dev;
++
++	strlcpy(match.hid[0].id, hid, sizeof(match.hid[0].id));
++	match.uid = uid;
++	match.hrv = hrv;
++
++	dev = bus_find_device(&acpi_bus_type, NULL, &match,
++			      acpi_dev_present_cb);
++
++	return !!dev;
++}
++EXPORT_SYMBOL(acpi_dev_present);
++
+ /*
+  * acpi_backlight= handling, this is done here rather then in video_detect.c
+  * because __setup cannot be used in modules.
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index ef0ae8a..b53c058 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -88,6 +88,7 @@ acpi_evaluate_dsm_typed(acpi_handle handle, const u8 *uuid, u64 rev, u64 func,
  	}
  
--	info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_DEV_NAME);
--	if (info->otg.cable == NULL) {
--		dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
--		return -EPROBE_DEFER;
-+	if (acpi_dev_present(USB_HOST_EXTCON_HID, NULL, -1)) {
-+		info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_NAME);
-+		if (info->otg.cable == NULL) {
-+			dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
-+			return -EPROBE_DEFER;
-+		}
-+		dev_info(&pdev->dev,
-+			 "Using " USB_HOST_EXTCON_HID " extcon for usb-id\n");
- 	}
+ bool acpi_dev_found(const char *hid);
++bool acpi_dev_present(const char *hid, const char *uid, s64 hrv);
  
- 	platform_set_drvdata(pdev, info);
-@@ -849,13 +855,15 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	/* Register for OTG notification */
- 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
- 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
--	ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
-+	if (info->otg.cable) {
-+		ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
- 					EXTCON_USB_HOST, &info->otg.id_nb);
--	if (ret) {
--		dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
--		return ret;
-+		if (ret) {
-+			dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
-+			return ret;
-+		}
-+		schedule_work(&info->otg.work);
- 	}
--	schedule_work(&info->otg.work);
+ #ifdef CONFIG_ACPI
  
- 	/* Register charger interrupts */
- 	for (i = 0; i < CHRG_INTR_END; i++) {
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 9b05886..841a8dc 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -611,6 +611,11 @@ static inline bool acpi_dev_found(const char *hid)
+ 	return false;
+ }
+ 
++static inline bool acpi_dev_present(const char *hid, const char *uid, s64 hrv)
++{
++	return false;
++}
++
+ static inline bool is_acpi_node(struct fwnode_handle *fwnode)
+ {
+ 	return false;
 -- 
 2.9.3
 
