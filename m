@@ -1,127 +1,71 @@
-From: Darren Hart <dvhart@infradead.org>
-Subject: Re: RFC: WMI Enhancements
-Date: Tue, 18 Apr 2017 09:56:31 -0700
-Message-ID: <20170418165631.GD25405@fury>
-References: <20170412230854.GA11963@fury>
- <20170413073228.GB1462@ozzy.nask.waw.pl>
- <CALCETrXkx2QqDtKmajywpvtxqCXzrQ3nuW0aOeY6+Uxa-LOXiQ@mail.gmail.com>
- <dffeb42986e84887b2556987925dbf31@ausx13mpc120.AMER.DELL.COM>
- <CALCETrX8W7Zi2NTAm4kJFbW14HVSYanYQ5sGo78FTgitcWfwAw@mail.gmail.com>
- <0d4e6c4562fb4b85ad4c368ae73dbe06@ausx13mpc120.AMER.DELL.COM>
- <20170413170619.GF2064@fury>
- <b729acdb12d046d3a27c754ff02482d6@ausx13mpc120.AMER.DELL.COM>
- <20170418075401.GC18887@pali>
+From: Alex Hung <alex.hung@canonical.com>
+Subject: Re: [PATCH] platform: x86: intel-hid: Add missing ->thaw callback
+Date: Tue, 18 Apr 2017 10:30:47 -0700
+Message-ID: <CAJ=jquYrnT5LtpbY29KZyv7ME9n43UUp5wxpqNFa48dbyXcMMQ@mail.gmail.com>
+References: <3369188.n8HfSBcO3V@aspire.rjw.lan> <20170418160735.GB25405@fury>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:42080 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753561AbdDRQ4g (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Apr 2017 12:56:36 -0400
-Content-Disposition: inline
-In-Reply-To: <20170418075401.GC18887@pali>
+Received: from mail-qt0-f180.google.com ([209.85.216.180]:36203 "EHLO
+        mail-qt0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751312AbdDRRat (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Apr 2017 13:30:49 -0400
+Received: by mail-qt0-f180.google.com with SMTP id g60so65373125qtd.3
+        for <linux-pm@vger.kernel.org>; Tue, 18 Apr 2017 10:30:48 -0700 (PDT)
+In-Reply-To: <20170418160735.GB25405@fury>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
-Cc: Mario.Limonciello@dell.com, luto@kernel.org, kernel@kempniu.pl, rjw@rjwysocki.net, len.brown@intel.com, corentin.chary@gmail.com, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+To: Darren Hart <dvhart@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-On Tue, Apr 18, 2017 at 09:54:01AM +0200, Pali Rohár wrote:
-> On Thursday 13 April 2017 17:39:56 Mario.Limonciello@dell.com wrote:
-> > > > No more than exists today with the dcdbas SMI interface (which
-> > > > only if you manually run userspace tools that manipulate the same
-> > > > data you can do that technically).
-> > > >
-> > > > We're all reasonable folks, if there is an instance of this that comes
-> > > > up we can make changes to userspace to fix it.
-> > > 
-> > > Right. As Pali pointed out previously, if there is an existing class driver /
-> > > subsystem which supports this functionality we should use that.
-> > > 
-> > > I suppose one risk will be one GUID exposing both types of methods. Those which
-> > > are used by kernel drivers, and those which have no kernel support. Or worse,
-> > > methods which have multiple behaviors depending on their input arguments.
-> > > 
-> > > --
-> > 
-> > Well the "most" interesting to me is the SMBIOS calling interface on the
-> > regular Dell GUID (WMBA IIRC).  That's what is used to manipulate keyboard
-> > LED timeouts in dell-laptop (although through direct SMI today).
-> > 
-> > It's also what is used for other SMBIOS calls like changing random BIOS settings
-> > that shouldn't be generically exposed in sysfs but should be controlled by
-> > manageability tools.
-> > 
-> > Example: turning on/off legacy option ROM or changing legacy boot order.
-> 
-> Which basically means that new WMI /dev/ files does not help for Dell.
-> 
-> Kernel needs to manipulate with SMBIOS for implementing rfkill, keyboard
-> backlight, display brightness and also needs to receive WMI events for
-> hotkeys. So kernel modules would lock WMI interface for receiving events
-> & sending SMBIOS calls, and userspace would be blocked from usage of
-> this WMI GUID.
+On Tue, Apr 18, 2017 at 9:07 AM, Darren Hart <dvhart@infradead.org> wrote:
+> On Tue, Apr 18, 2017 at 03:49:06PM +0200, Rafael Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> The intel-hid driver is missing a PM ->thaw callback allowing the
+>> device to go back to the operational state after creating a
+>> hibernation image or when there is an image restoration error during
+>> resume.
+>>
+>> The lack of the ->thaw callback basically means that all events
+>> signaled by the device are discarded after a hibernation image has
+>> been created which may be problematic, for example, if the image
+>> cannot be saved (eg. due to an I/O issue with storage).
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> + Alex Hung <alex.hung@canonical.com>
+>
+> Queued to testing, thank you Rafael.
 
-This is why we can't rely on a method ID granular filter for which methods are
-exported to userspace. In my previous reply to Rafael, I suggested platform
-drivers decide which method IDs are exported, and for platforms with
-insufficient WMI method ID granularity, we will end up exposing methods we also
-use in the kernel. The WMI evaluation will need to be centralized and placed
-under mutual exclusion. The optional wmi evaluation filter would allow for
-drivers to audit incoming calls from userspace to ensure no conflict.
+Thank you Rafael for catching this.
 
-It's not ideal - but I believe it addresses our reality.
+>
+>> ---
+>>  drivers/platform/x86/intel-hid.c |    1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> Index: linux-pm/drivers/platform/x86/intel-hid.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/platform/x86/intel-hid.c
+>> +++ linux-pm/drivers/platform/x86/intel-hid.c
+>> @@ -136,6 +136,7 @@ static int intel_hid_pl_resume_handler(s
+>>
+>>  static const struct dev_pm_ops intel_hid_pl_pm_ops = {
+>>       .freeze  = intel_hid_pl_suspend_handler,
+>> +     .thaw  = intel_hid_pl_resume_handler,
+>>       .restore  = intel_hid_pl_resume_handler,
+>>       .suspend  = intel_hid_pl_suspend_handler,
+>>       .resume  = intel_hid_pl_resume_handler,
+>>
+>>
+>
+> --
+> Darren Hart
+> VMware Open Source Technology Center
 
-> 
-> I do not think that we can solve this problem easily in vendor-neutral
-> interface. There was argument that WMI API was designed to allow
-> userspace applications call firmware functions directly... But we are
-> using WMI in kernel and we should not allow both kernel and userspace to
-> fight on some WMI API.
 
-We could drop all the in kernel wmi drivers and rely on userspace daemons per
-platform.... but I think we all agree that is not where we want this to go. So
-we'll need to find a compromise. Even then, we'd need to avoid competition for
-common method IDs across multiple userspace applications.
-
-> 
-> So for Dell we need for sure some Dell specific interface which covers
-> all needed functionality. I'm not sure what everything Dell software
-> needs, so what about specifying current usage of Dell SMBIOS/WMI
-> functions from existing userspace applications and also planned usage in
-> future? Then from this information we can design kernel and userspace
-> API which can fit for Dell usage.
-
-This was my initial response as well. The biggest problem with it is it places
-Linux imposed restrictions on the WMI mechanism, which will ultimately stifle
-innovation and/or leave Linux as a second class citizen for systems which rely
-on WMI for userspace firmware management.
-
-> 
-> About other vendor WMI's functions... I'm not sure, but there is again
-> possibility that rfkill, leds or hotkeys would exists on same WMI GUID
-> as other maintenance functions (which userspace wants), so export would
-> be again blocked by kernel module for rfkill/leds/hotkeys.
-> 
-> Therefore I'm not really sure if some /dev/wmi* API would be usefull,
-> and not always blocked by kernel module which implements rfkill support.
-
-I'd like to also point out that the Linux kernel has a minimal and targeted set
-of WMI drivers generally aimed at making laptops work as expected through the
-only mechanism we had access to. To my knowledge, we never sat down to discuss
-how WMI should be implemented in the Linux ecosystem. That leaves us in the
-situation we are in today, in which Linux essentially took the most expedient
-route to making laptops work - which happened to be WMI, but we didn't consider
-the broader implications of that mechanism or how what we implemented would
-interact with full set of functionality provided by WMI.
-
-So our challenge now is to look at WMI as a whole. How should it be implemented
-to achieve feature parity. And then consider how the existing drivers fit into
-that. Please see my proposal in response to Rafael's latest reply. I believe it
-outlines a reasonable compromise.
-
-Thanks,
 
 -- 
-Darren Hart
-VMware Open Source Technology Center
+Cheers,
+Alex Hung
