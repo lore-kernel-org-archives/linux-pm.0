@@ -1,137 +1,212 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [RFC PATCH] pda_power: move from timer to delayed_work
-Date: Tue, 18 Apr 2017 04:41:20 +0200
-Message-ID: <20170418024120.eca2jk2tiehdvxg7@earth>
-References: <1492420261-25635-1-git-send-email-michael@amarulasolutions.com>
- <20170417155157.GA12497@kroah.com>
- <20170417162206.GA31411@panicking>
+From: Keerthy <j-keerthy@ti.com>
+Subject: Re: [PATCH v5 2/2] thermal: core: Add a back up thermal shutdown
+ mechanism
+Date: Tue, 18 Apr 2017 09:43:23 +0530
+Message-ID: <b3b62178-d84d-2407-e447-83f0d9375ad8@ti.com>
+References: <1492225709-30932-1-git-send-email-j-keerthy@ti.com>
+ <1492225709-30932-2-git-send-email-j-keerthy@ti.com>
+ <20170417171616.GA9889@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="p76fasbo33zwibpp"
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:33630 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754378AbdDRCl1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 17 Apr 2017 22:41:27 -0400
-Content-Disposition: inline
-In-Reply-To: <20170417162206.GA31411@panicking>
+Received: from lelnx194.ext.ti.com ([198.47.27.80]:48315 "EHLO
+        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750723AbdDREN3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Apr 2017 00:13:29 -0400
+In-Reply-To: <20170417171616.GA9889@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Trimarchi <michael@amarulasolutions.com>
-Cc: Greg KH <greg@kroah.com>, linux-pm@vger.kernel.org, stable@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
 
---p76fasbo33zwibpp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Monday 17 April 2017 10:46 PM, Eduardo Valentin wrote:
+> On Sat, Apr 15, 2017 at 08:38:29AM +0530, Keerthy wrote:
+>> orderly_poweroff is triggered when a graceful shutdown
+>> of system is desired. This may be used in many critical states of the
+>> kernel such as when subsystems detects conditions such as critical
+>> temperature conditions. However, in certain conditions in system
+>> boot up sequences like those in the middle of driver probes being
+>> initiated, userspace will be unable to power off the system in a clean
+>> manner and leaves the system in a critical state. In cases like these,
+>> the /sbin/poweroff will return success (having forked off to attempt
+>> powering off the system. However, the system overall will fail to
+>> completely poweroff (since other modules will be probed) and the system
+>> is still functional with no userspace (since that would have shut itself
+>> off).
+>>
+>> However, there is no clean way of detecting such failure of userspace
+>> powering off the system. In such scenarios, it is necessary for a backup
+>> workqueue to be able to force a shutdown of the system when orderly
+>> shutdown is not successful after a configurable time period.
+>>
+>> Reported-by: Nishanth Menon <nm@ti.com>
+>> Signed-off-by: Keerthy <j-keerthy@ti.com>
+>> ---
+>>
+>> Changes in v5:
+>>
+>>   * Mandated delay for thermal emergency poweroff to be a non-zero value.
+>>
+>> Changes in v4:
+>>
+>>   * Updated documentation
+>>   * changed emergency_poweroff_func to thermal_emergency_poweroff_func
+>>
+>> Changes in v3:
+>>
+>>   * Removed unnecessary mutex init.
+>>   * Added WARN messages instead of a simple warning message.
+>>   * Added Documentation.
+>>
+>>  Documentation/thermal/sysfs-api.txt | 21 +++++++++++++++
+>>  drivers/thermal/Kconfig             | 15 +++++++++++
+>>  drivers/thermal/thermal_core.c      | 53 +++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 89 insertions(+)
+>>
+>> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+>> index ef473dc..98dc04f 100644
+>> --- a/Documentation/thermal/sysfs-api.txt
+>> +++ b/Documentation/thermal/sysfs-api.txt
+>> @@ -582,3 +582,24 @@ platform data is provided, this uses the step_wise throttling policy.
+>>  This function serves as an arbitrator to set the state of a cooling
+>>  device. It sets the cooling device to the deepest cooling state if
+>>  possible.
+>> +
+>> +6. thermal_emergency_poweroff:
+>> +
+>> +On an event of critical trip temperature crossing. Thermal framework
+>> +allows the system to shutdown gracefully by calling orderly_poweroff().
+>> +In the event of a failure of orderly_poweroff() to shut down the system
+>> +we are in danger of keeping the system alive at undesirably high
+>> +temperatures. To mitigate this high risk scenario we program a work
+>> +queue to fire after a pre-determined number of seconds to start
+>> +an emergency shutdown of the device using the kernel_power_off()
+>> +function. In case kernel_power_off() fails then finally
+>> +emergency_restart() is called in the worst case.
+>> +
+>> +The delay should be carefully profiled so as to give adequate time for
+>> +orderly_poweroff(). In case of failure of an orderly_poweroff() the
+>> +emergency poweroff kicks in after the delay has elapsed and shuts down
+>> +the system.
+>> +
+>> +If set to 0 emergency poweroff will not be supported. So a carefully
+>> +profiled non-zero positive value is a must for emergerncy poweroff to be
+>> +triggered.
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index 9347401..2a748a6 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -15,6 +15,21 @@ menuconfig THERMAL
+>>  
+>>  if THERMAL
+>>  
+>> +config THERMAL_EMERGENCY_POWEROFF_DELAY_MS
+>> +	int "Emergency poweroff delay in milli-seconds"
+>> +	depends on THERMAL
+>> +	default 0
+>> +	help
+>> +	  The number of milliseconds to delay before emergency
+>> +	  poweroff kicks in. The delay should be carefully profiled
+>> +	  so as to give adequate time for orderly_poweroff(). In case
+>> +	  of failure of an orderly_poweroff() the emergency poweroff
+>> +	  kicks in after the delay has elapsed and shuts down the system.
+>> +
+>> +	  If set to 0 emergency poweroff will not be supported. So a carefully
+>> +	  profiled non-zero positive value is a must for emergerncy poweroff to be
+>> +	  triggered.
+> 
+> Here is a suggestion for rephrase the above:
+> 
+>  +	help
+>  +	  Thermal subsystem will issue a graceful shutdown when
+>  +	  critical temperatures are reached using orderly_poweroff(). In
+>  +	  case of failure of an orderly_poweroff(), the thermal emergency poweroff
+>  +	  kicks in after a delay has elapsed and shuts down the system.
+>  +	  This config is number of milliseconds to delay before emergency
+>  +	  poweroff kicks in. Similarly to the critical trip point,
+>  +	  the delay should be carefully profiled so as to give adequate
+>  +	  time for orderly_poweroff() to finish on regular execution.
+>  +	  If set to 0 emergency poweroff will not be supported.
+>  +
+>  +	  In doubt, leave as 0.
+> 
 
-On Mon, Apr 17, 2017 at 06:22:13PM +0200, Michael Trimarchi wrote:
-> On Mon, Apr 17, 2017 at 05:51:57PM +0200, Greg KH wrote:
-> > On Mon, Apr 17, 2017 at 11:11:01AM +0200, Michael Trimarchi wrote:
-> > > This changed is needed to avoid locking problem during
-> > > boot as shown:
-> > >=20
-> > > <5>[    8.824096] Registering SWP/SWPB emulation handler
-> > > <6>[    8.977294] clock: disabling unused clocks to save power
-> > > <3>[    9.108154] BUG: sleeping function called from invalid context =
-at kernel_albert/kernel/mutex.c:269
-> > > <3>[    9.122894] in_atomic(): 1, irqs_disabled(): 0, pid: 1, name: s=
-wapper/0
-> > > <4>[    9.130249] 3 locks held by swapper/0/1:
-> > > <4>[    9.134613]  #0:  (&__lockdep_no_validate__){......}, at: [<c03=
-42430>] __driver_attach+0x58/0xa8
-> > > <4>[    9.144500]  #1:  (&__lockdep_no_validate__){......}, at: [<c03=
-42440>] __driver_attach+0x68/0xa8
-> > > <4>[    9.154357]  #2:  (&polling_timer){......}, at: [<c0053770>] ru=
-n_timer_softirq+0x108/0x3ec
-> > > <4>[    9.163726] Backtrace:
-> > > <4>[    9.166473] [<c001269c>] (dump_backtrace+0x0/0x114) from [<c067=
-e5f0>] (dump_stack+0x20/0x24)
-> > > <4>[    9.175811]  r6:00203230 r5:0000010d r4:d782e000 r3:60000113
-> > > <4>[    9.182250] [<c067e5d0>] (dump_stack+0x0/0x24) from [<c007441c>=
-] (__might_sleep+0x10c/0x128)
-> > > <4>[    9.191650] [<c0074310>] (__might_sleep+0x0/0x128) from [<c0688=
-f60>] (mutex_lock_nested+0x34/0x36c)
-> > > <4>[    9.201660]  r5:c02d5350 r4:d79a0c64
-> > > <4>[    9.205688] [<c0688f2c>] (mutex_lock_nested+0x0/0x36c) from [<c=
-02d5350>] (regulator_set_current_limit+0x30/0x118)
-> > > <4>[    9.217071] [<c02d5320>] (regulator_set_current_limit+0x0/0x118=
-) from [<c0435ce0>] (update_charger+0x84/0xc4)
-> > > <4>[    9.228027]  r7:d782fb20 r6:00000101 r5:c1767e94 r4:00000000
-> > > <4>[    9.234436] [<c0435c5c>] (update_charger+0x0/0xc4) from [<c0435=
-d40>] (psy_changed+0x20/0x48)
-> > > <4>[    9.243804]  r5:d782e000 r4:c1767e94
-> > > <4>[    9.247802] [<c0435d20>] (psy_changed+0x0/0x48) from [<c0435dec=
->] (polling_timer_func+0x84/0xb8)
-> > > <4>[    9.257537]  r4:c1767e94 r3:00000002
-> > > <4>[    9.261566] [<c0435d68>] (polling_timer_func+0x0/0xb8) from [<c=
-00537e4>] (run_timer_softirq+0x17c/0x3ec)
-> > > <4>[    9.272033]  r4:c1767eb0 r3:00000000
-> > > <4>[    9.276062] [<c0053668>] (run_timer_softirq+0x0/0x3ec) from [<c=
-004b000>] (__do_softirq+0xf0/0x298)
-> > > <4>[    9.286010] [<c004af10>] (__do_softirq+0x0/0x298) from [<c004b6=
-50>] (irq_exit+0x98/0xa0)
-> > > <4>[    9.295013] [<c004b5b8>] (irq_exit+0x0/0xa0) from [<c000edbc>] =
-(handle_IRQ+0x60/0xc0)
-> > > <4>[    9.303680]  r4:c1194e98 r3:c00bc778
-> > > <4>[    9.307708] [<c000ed5c>] (handle_IRQ+0x0/0xc0) from [<c0008504>=
-] (gic_handle_irq+0x34/0x68)
-> > > <4>[    9.316955]  r8:000ac383 r7:d782fc3c r6:d782fc08 r5:c11936c4 r4=
-:e0802100
-> > > <4>[    9.324310] r3:c026ba48
-> > > <4>[    9.327301] [<c00084d0>] (gic_handle_irq+0x0/0x68) from [<c068c=
-2c0>] (__irq_svc+0x40/0x74)
-> > > <4>[    9.336456] Exception stack(0xd782fc08 to 0xd782fc50)
-> > > <4>[    9.342041] fc00:                   d6e30e6c ac383627 00000000 =
-ac383417 ea19c000 ea200000
-> > > <4>[    9.351104] fc20: beffffff 00000667 000ac383 d6e30670 d6e3066c =
-d782fc94 d782fbe8 d782fc50
-> > > <4>[    9.360168] fc40: c026ba48 c001d1f0 00000113 ffffffff
-> > >=20
-> > > Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
-> > > ---
-> > >  drivers/power/supply/pda_power.c | 48 ++++++++++++++++++++++--------=
-----------
-> > >  1 file changed, 26 insertions(+), 22 deletions(-)
-> >=20
-> > <formletter>
-> >=20
-> > This is not the correct way to submit patches for inclusion in the
-> > stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
-> > for how to do this properly.
-> >=20
-> > </formletter>
->=20
-> Ok, clear enough and I will read the documentation and proper re-submit i=
-t.
-> Is it clear enough to have some brief review process on linux-pm?
+Okay.
 
-The patch looks ok to me. Please add a "Fixes:" line as described in
-Documentation/process/submitting-patches.rst
+>> +
+>>  config THERMAL_HWMON
+>>  	bool
+>>  	prompt "Expose thermal sensors as hwmon device"
+>> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+>> index 8337c27..de1f7be 100644
+>> --- a/drivers/thermal/thermal_core.c
+>> +++ b/drivers/thermal/thermal_core.c
+>> @@ -324,6 +324,54 @@ static void handle_non_critical_trips(struct thermal_zone_device *tz,
+>>  		       def_governor->throttle(tz, trip);
+>>  }
+>>  
+>> +/**
+>> + * thermal_emergency_poweroff_func - emergency poweroff work after a known delay
+>> + * @work: work_struct associated with the emergency poweroff function
+>> + *
+>> + * This function is called in very critical situations to force
+>> + * a kernel poweroff after a configurable timeout value.
+>> + */
+>> +static void thermal_emergency_poweroff_func(struct work_struct *work)
+>> +{
+>> +	/*
+>> +	 * We have reached here after the emergency thermal shutdown
+>> +	 * Waiting period has expired. This means orderly_poweroff has
+>> +	 * not been able to shut off the system for some reason.
+>> +	 * Try to shut down the system immediately using kernel_power_off
+>> +	 * if populated
+>> +	 */
+>> +	WARN(1, "Attempting kernel_power_off: Temperature too high\n");
+>> +	kernel_power_off();
+>> +
+>> +	/*
+>> +	 * Worst of the worst case trigger emergency restart
+>> +	 */
+>> +	WARN(1, "Attempting emergency_restart: Temperature too high\n");
+>> +	emergency_restart();
+>> +}
+>> +
+>> +static DECLARE_DELAYED_WORK(thermal_emergency_poweroff_work,
+>> +			    thermal_emergency_poweroff_func);
+>> +
+>> +/**
+>> + * thermal_emergency_poweroff - Trigger an emergency system poweroff
+>> + *
+>> + * This may be called from any critical situation to trigger a system shutdown
+>> + * after a known period of time. By default the delay is 0 millisecond
+>> + */
+>> +void thermal_emergency_poweroff(void)
+>> +{
+>> +	int poweroff_delay_ms = CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS;
+>> +	/*
+>> +	 * poweroff_delay_ms must be a carefully profiled non-zero value.
+>> +	 * Its a must for thermal_emergency_poweroff_work to be scheduled
+>> +	 */
+>> +	if (!poweroff_delay_ms)
+> 
+> This cannot be negative. I think it better suits here:
+>  +	if (poweroff_delay_ms <= 0)
 
--- Sebastian
+Sure. I will fix this.
 
---p76fasbo33zwibpp
-Content-Type: application/pgp-signature; name="signature.asc"
+> 
+> Let's avoid hidden unsigned round up issues here.
+> 
+> Despite the above, you can add my
+> Acked-by: Eduardo Valentin <edubezval@gmail.com>
 
------BEGIN PGP SIGNATURE-----
+Thanks. I will change this and post it in the v6.
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlj1fMwACgkQ2O7X88g7
-+prXEg//Zv+CIsAtbfa6x3SO0uTi6f40ctO7UjDxyMbs3sJPuzRO2QeaRDujyJLe
-eU2tDS2X4NUvoJG/IWAKh+kXRiFnG/Oeih6lG1fajRciylpEKQIMKbHAOmZM3zkK
-vTgyRS2xb9b4nhsWJjFnnuzjNu+ZcDnQaanh1i4bF4JrONMp6LLkzB1T666iaz12
-EXmHntsPE4ZfphO/levXXCj8eyfuBfu5XPR1WuIRRU9u4W+2hHnDwhNW3H9aWVKW
-p1WPUZJqWsRKQVzxJ7tdEpcZKFB7RzFwRRFxLpRWpXyClPD2uLZ2ixjxbl5gn2QX
-la2iTTkZrWC3Y43ialaexng5RFYZh2pVlLB0Bvb0ZUwAnuL5Kg4fD2bK0i+L3BBM
-eouONPBdxfRGxqUOtO2g034Anb/7BlCaxFMrc7Hc6zYfoHPOBon/jjYh31R3hwdi
-RTG7OcbwueD6m33jQBIkRbxLLESyTvVl6byjaU4ps+waoCihyE8EUMH+iXOt9dwp
-UM9Y7r2sZlgkkeCnAAQqO6ys1VCwq4+V3KFVhAIy38W2vafzNFEGkC0fFkBwCPvR
-zrnEXAcef7Nmr7lYHU7BtjXnPGWS0+mz2gRFC7KNhdkScdsIWK1J4O4ftbv3V8cC
-3CWRZywtoRJG6+cmYNLJI77pLVVnK/fgtwn5lkdb+wAOPD7S3Fk=
-=LEcX
------END PGP SIGNATURE-----
-
---p76fasbo33zwibpp--
+> 
+> BR,
+> 
+> Eduardo Valentin
+> 
