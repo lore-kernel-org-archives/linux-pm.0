@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v6 5/6] ARM: dts: sun8i: sina33: enable battery
- power supply subnode
-Date: Tue, 18 Apr 2017 09:34:20 +0200
-Message-ID: <20170418073421.31351-6-quentin.schulz@free-electrons.com>
+Subject: [PATCH v6 6/6] ARM: sun5i: chip: enable battery power
+ supply subnode
+Date: Tue, 18 Apr 2017 09:34:21 +0200
+Message-ID: <20170418073421.31351-7-quentin.schulz@free-electrons.com>
 References: <20170418073421.31351-1-quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
@@ -20,21 +20,22 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@
 Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The Sinlinx SinA33 has an AXP223 PMIC and a battery connector, thus, we
-enable the battery power supply subnode in its Device Tree.
+The NextThing Co. CHIP has an AXP209 PMIC with battery connector.
+
+This enables the battery power supply subnode.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 ---
- arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts | 4 ++++
+ arch/arm/boot/dts/sun5i-r8-chip.dts | 4 ++++
  1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts b/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
-index 9b620cc1d5f1..edc68984fbc8 100644
---- a/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
-+++ b/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
-@@ -196,6 +196,10 @@
+diff --git a/arch/arm/boot/dts/sun5i-r8-chip.dts b/arch/arm/boot/dts/sun5i-r8-chip.dts
+index d0785602663b..879a4b0f3bd5 100644
+--- a/arch/arm/boot/dts/sun5i-r8-chip.dts
++++ b/arch/arm/boot/dts/sun5i-r8-chip.dts
+@@ -132,6 +132,10 @@
  	status = "okay";
  };
  
@@ -42,8 +43,8 @@ index 9b620cc1d5f1..edc68984fbc8 100644
 +	status = "okay";
 +};
 +
- &reg_aldo1 {
- 	regulator-always-on;
- 	regulator-min-microvolt = <3000000>;
+ &i2c1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&i2c1_pins_a>;
 -- 
 2.11.0
