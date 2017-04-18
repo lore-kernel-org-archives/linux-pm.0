@@ -1,108 +1,378 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v6] power: supply: bq24190_charger: Add disable-reset device-property
-Date: Tue, 18 Apr 2017 02:34:39 -0700
-Message-ID: <CAKvHMgT81wy7MGYucazcyOiL=zoHeo=Tn==iSE8iC9kiPsPjrQ@mail.gmail.com>
-References: <20170414165233.4532-1-hdegoede@redhat.com>
+Subject: Re: [PATCH v1 1/1] power: bq24190_charger: Deprecate battery class
+ and replicate its features in charger
+Date: Tue, 18 Apr 2017 02:42:39 -0700
+Message-ID: <CAKvHMgQGWur8JgYjJ1uh12_JHPTSRAPo8EcwBPgvygWBFjceNw@mail.gmail.com>
+References: <20170416230626.30022-1-liam@networkimprov.net> <aaf8c54b-aac8-9ccd-cd17-4b318f4520c2@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f195.google.com ([209.85.223.195]:34757 "EHLO
-        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755461AbdDRJek (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Apr 2017 05:34:40 -0400
-Received: by mail-io0-f195.google.com with SMTP id h41so31877867ioi.1
-        for <linux-pm@vger.kernel.org>; Tue, 18 Apr 2017 02:34:40 -0700 (PDT)
-In-Reply-To: <20170414165233.4532-1-hdegoede@redhat.com>
+Received: from mail-io0-f193.google.com ([209.85.223.193]:33011 "EHLO
+        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932473AbdDRJml (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Apr 2017 05:42:41 -0400
+Received: by mail-io0-f193.google.com with SMTP id k87so31665650ioi.0
+        for <linux-pm@vger.kernel.org>; Tue, 18 Apr 2017 02:42:40 -0700 (PDT)
+In-Reply-To: <aaf8c54b-aac8-9ccd-cd17-4b318f4520c2@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
 Hi Hans,
 
+On Tue, Apr 18, 2017 at 1:05 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi Liam,
+>
+> On 17-04-17 01:06, Liam Breck wrote:
+>>
+>> From: Liam Breck <kernel@networkimprov.net>
+>>
+>> The driver was registering two classes, bq24190-battery & -charger.
+>> Because the power supply framework cannot surface features from multiple
+>> drivers in a single class, a fuel gauge driver would create a third class,
+>> which some power management utilities cannot see.
+>>
+>> Deprecate the -battery class for future removal and replicate its features
+>> in -charger. Set /sys/class...-charger/online = pg_stat &&
+>> !batfet_disable.
+>> If device_property "omit-battery-class" is set, don't register -battery.
+>>
+>> Cc: Tony Lindgren <tony@atomide.com>
+>> Cc: Hans de Goede <hdegoede@redhat.com>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>
+>
+> Thank you for writing this patch.
 
-On Fri, Apr 14, 2017 at 9:52 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> Allow platform-code to disable the reset on probe and suspend/resume
-> by setting a "disable-reset" boolean device property on the device.
->
-> There are several reasons why the platform-code may want to disable
-> the reset on probe and suspend/resume:
->
-> 1) Resetting the charger should never be necessary it should always have
-> sane values programmed. If it is running with invalid values while we
-> are not running (system turned off or suspended) there is a big problem
-> as that may lead to overcharging the battery.
->
-> 2) The reset in suspend() is meant to put the charger back into default
-> mode, but this is not necessary and not a good idea. If the charger has
-> been programmed with a higher max charge_current / charge_voltage then
-> putting it back in default-mode will reset those to the safe power-on
-> defaults, leading to slower charging, or charging to a lower voltage
-> (and thus not using the full capacity) while suspended which is
-> undesirable. Reprogramming the max charge_current / charge_voltage
-> after the reset will not help here as that will put the charger back
-> in host mode and start the i2c watchdog if the host then does not do
-> anything for 40s (iow if we're suspended for more then 40s) the watchdog
-> expires resetting the device to default-mode, including resetting all
-> the registers to there safe power-on defaults. So the only way to keep
-> using custom charge settings while suspending is to keep the charger in
-> its normal running state with the i2c watchdog disabled. This is fine
-> as the charger will still automatically switch from constant current
-> to constant voltage and stop charging when the battery is full.
->
-> 3) Besides never being necessary resetting the charger also causes
-> problems on systems where the charge voltage limit is set higher then the
-> reset value, if this is the case and the charger is reset while charging
-> and the battery voltage is between the 2 voltages, then about half the
-> time the charger gets confused and claims to be charging (REG08 contains
-> 0x64) but in reality the charger has decoupled itself from VBUS (Q1 off)
-> and is drawing 0A from VBUS, leaving the system running from the battery.
->
-> This last problem is happening on a GPD-win mini PC with a bq24292i
-> charger chip combined with a max17047 fuel-gauge and a LiHV battery.
-> I've checked and TI does not list any errata for the bq24292i which
-> could explain this (there are no errata at all).
->
-> Cc: Liam Breck <kernel@networkimprov.net>
-> Cc: Tony Lindgren <tony@atomide.com>
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
-> Changes in v2:
-> -This is a new patch in v2 of this patch-set
-> Changes in v3:
-> -Disable the reset code by default, but leave it around guarded by
->  a check for a reset-on-probe device-property
-> Changes in v4:
-> -Rebase on top of current power-supply/next
-> Changes in v5:
-> -Updated commit msg to describe the hw on which I'm seeing the charger getting
->  stuck while reset during charging and Vbat is above the reset charge volt limit
-> Changes in v6:
-> -Keep the reset enabled by default, allow disabling it by setting a
->  "disable-reset" boolean device property on the device
-> ---
->  drivers/power/supply/bq24190_charger.c | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index bd9e5c3..2d379a2 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -533,6 +533,9 @@ static int bq24190_register_reset(struct bq24190_dev_info *bdi)
->         int ret, limit = 100;
->         u8 v;
->
-> +       if (device_property_read_bool(bdi->dev, "disable-reset"))
-> +               return 0;
-> +
->         /* Reset the registers */
->         ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->                         BQ24190_REG_POC_RESET_MASK,
+Glad to help!
 
-This is one of those patches with a 1:10 code:comment ratio :-)
+> The patch looks good to me:
 
-I've been seeking a rationale for a property with more context than
-disable-reset, without much luck. If you have any ideas, please
-advise, but otherwise...
+Darn, I was hoping you'd see *something* amiss in all that clutter :-)
 
-Acked-by: Liam Breck <kernel@networkimprov.net>
+Do you think charger-powered and battery-connected is the right
+definition of power_supply_prop_online?
+
+Sebastian had suggested surfacing the batfet as a regulator, but altho
+user settable, it's a binary widget.
+
+> Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+>
+> Regards,
+>
+> Hans
+>
+> p.s.
+>
+> Any chance you can find some time to review:
+>
+> "[PATCH v6] power: supply: bq24190_charger: Add disable-reset
+> device-property" ?
+>
+>
+>
+>
+>
+>> ---
+>>  drivers/power/supply/bq24190_charger.c | 146
+>> +++++++++++++++++++++++++--------
+>>  1 file changed, 111 insertions(+), 35 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/bq24190_charger.c
+>> b/drivers/power/supply/bq24190_charger.c
+>> index f581042..4197fdb 100644
+>> --- a/drivers/power/supply/bq24190_charger.c
+>> +++ b/drivers/power/supply/bq24190_charger.c
+>> @@ -658,22 +658,25 @@ static int bq24190_charger_get_health(struct
+>> bq24190_dev_info *bdi,
+>>         v = bdi->f_reg;
+>>         mutex_unlock(&bdi->f_reg_lock);
+>>
+>> -       if (v & BQ24190_REG_F_BOOST_FAULT_MASK) {
+>> -               /*
+>> -                * This could be over-current or over-voltage but there's
+>> -                * no way to tell which.  Return 'OVERVOLTAGE' since there
+>> -                * isn't an 'OVERCURRENT' value defined that we can return
+>> -                * even if it was over-current.
+>> -                */
+>> -               health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+>> -       } else {
+>> -               v &= BQ24190_REG_F_CHRG_FAULT_MASK;
+>> -               v >>= BQ24190_REG_F_CHRG_FAULT_SHIFT;
+>> -
+>> -               switch (v) {
+>> -               case 0x0: /* Normal */
+>> -                       health = POWER_SUPPLY_HEALTH_GOOD;
+>> +       if (v & BQ24190_REG_F_NTC_FAULT_MASK) {
+>> +               switch (v >> BQ24190_REG_F_NTC_FAULT_SHIFT & 0x7) {
+>> +               case 0x1: /* TS1  Cold */
+>> +               case 0x3: /* TS2  Cold */
+>> +               case 0x5: /* Both Cold */
+>> +                       health = POWER_SUPPLY_HEALTH_COLD;
+>>                         break;
+>> +               case 0x2: /* TS1  Hot */
+>> +               case 0x4: /* TS2  Hot */
+>> +               case 0x6: /* Both Hot */
+>> +                       health = POWER_SUPPLY_HEALTH_OVERHEAT;
+>> +                       break;
+>> +               default:
+>> +                       health = POWER_SUPPLY_HEALTH_UNKNOWN;
+>> +               }
+>> +       } else if (v & BQ24190_REG_F_BAT_FAULT_MASK) {
+>> +               health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+>> +       } else if (v & BQ24190_REG_F_CHRG_FAULT_MASK) {
+>> +               switch (v >> BQ24190_REG_F_CHRG_FAULT_SHIFT & 0x3) {
+>>                 case 0x1: /* Input Fault (VBUS OVP or VBAT<VBUS<3.8V) */
+>>                         /*
+>>                          * This could be over-voltage or under-voltage
+>> @@ -690,9 +693,19 @@ static int bq24190_charger_get_health(struct
+>> bq24190_dev_info *bdi,
+>>                 case 0x3: /* Charge Safety Timer Expiration */
+>>                         health = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
+>>                         break;
+>> -               default:
+>> -                       health = POWER_SUPPLY_HEALTH_UNKNOWN;
+>> +               default:  /* prevent compiler warning */
+>> +                       health = -1;
+>>                 }
+>> +       } else if (v & BQ24190_REG_F_BOOST_FAULT_MASK) {
+>> +               /*
+>> +                * This could be over-current or over-voltage but there's
+>> +                * no way to tell which.  Return 'OVERVOLTAGE' since there
+>> +                * isn't an 'OVERCURRENT' value defined that we can return
+>> +                * even if it was over-current.
+>> +                */
+>> +               health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+>> +       } else {
+>> +               health = POWER_SUPPLY_HEALTH_GOOD;
+>>         }
+>>
+>>         val->intval = health;
+>> @@ -703,19 +716,59 @@ static int bq24190_charger_get_health(struct
+>> bq24190_dev_info *bdi,
+>>  static int bq24190_charger_get_online(struct bq24190_dev_info *bdi,
+>>                 union power_supply_propval *val)
+>>  {
+>> -       u8 v;
+>> +       u8 pg_stat, batfet_disable;
+>>         int ret;
+>>
+>>         ret = bq24190_read_mask(bdi, BQ24190_REG_SS,
+>>                         BQ24190_REG_SS_PG_STAT_MASK,
+>> -                       BQ24190_REG_SS_PG_STAT_SHIFT, &v);
+>> +                       BQ24190_REG_SS_PG_STAT_SHIFT, &pg_stat);
+>>         if (ret < 0)
+>>                 return ret;
+>>
+>> -       val->intval = v;
+>> +       ret = bq24190_read_mask(bdi, BQ24190_REG_MOC,
+>> +                       BQ24190_REG_MOC_BATFET_DISABLE_MASK,
+>> +                       BQ24190_REG_MOC_BATFET_DISABLE_SHIFT,
+>> &batfet_disable);
+>> +       if (ret < 0)
+>> +               return ret;
+>> +
+>> +       val->intval = pg_stat && !batfet_disable;
+>> +
+>>         return 0;
+>>  }
+>>
+>> +static int bq24190_battery_set_online(struct bq24190_dev_info *bdi,
+>> +                                     const union power_supply_propval
+>> *val);
+>> +static int bq24190_battery_get_status(struct bq24190_dev_info *bdi,
+>> +                                     union power_supply_propval *val);
+>> +static int bq24190_battery_get_temp_alert_max(struct bq24190_dev_info
+>> *bdi,
+>> +                                             union power_supply_propval
+>> *val);
+>> +static int bq24190_battery_set_temp_alert_max(struct bq24190_dev_info
+>> *bdi,
+>> +                                             const union
+>> power_supply_propval *val);
+>> +
+>> +static int bq24190_charger_set_online(struct bq24190_dev_info *bdi,
+>> +                                     const union power_supply_propval
+>> *val)
+>> +{
+>> +       return bq24190_battery_set_online(bdi, val);
+>> +}
+>> +
+>> +static int bq24190_charger_get_status(struct bq24190_dev_info *bdi,
+>> +                                     union power_supply_propval *val)
+>> +{
+>> +       return bq24190_battery_get_status(bdi, val);
+>> +}
+>> +
+>> +static int bq24190_charger_get_temp_alert_max(struct bq24190_dev_info
+>> *bdi,
+>> +                                             union power_supply_propval
+>> *val)
+>> +{
+>> +       return bq24190_battery_get_temp_alert_max(bdi, val);
+>> +}
+>> +
+>> +static int bq24190_charger_set_temp_alert_max(struct bq24190_dev_info
+>> *bdi,
+>> +                                             const union
+>> power_supply_propval *val)
+>> +{
+>> +       return bq24190_battery_set_temp_alert_max(bdi, val);
+>> +}
+>> +
+>>  static int bq24190_charger_get_current(struct bq24190_dev_info *bdi,
+>>                 union power_supply_propval *val)
+>>  {
+>> @@ -830,6 +883,12 @@ static int bq24190_charger_get_property(struct
+>> power_supply *psy,
+>>         case POWER_SUPPLY_PROP_ONLINE:
+>>                 ret = bq24190_charger_get_online(bdi, val);
+>>                 break;
+>> +       case POWER_SUPPLY_PROP_STATUS:
+>> +               ret = bq24190_charger_get_status(bdi, val);
+>> +               break;
+>> +       case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+>> +               ret =  bq24190_charger_get_temp_alert_max(bdi, val);
+>> +               break;
+>>         case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+>>                 ret = bq24190_charger_get_current(bdi, val);
+>>                 break;
+>> @@ -878,6 +937,12 @@ static int bq24190_charger_set_property(struct
+>> power_supply *psy,
+>>                 return ret;
+>>
+>>         switch (psp) {
+>> +       case POWER_SUPPLY_PROP_ONLINE:
+>> +               ret = bq24190_charger_set_online(bdi, val);
+>> +               break;
+>> +       case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+>> +               ret = bq24190_charger_set_temp_alert_max(bdi, val);
+>> +               break;
+>>         case POWER_SUPPLY_PROP_CHARGE_TYPE:
+>>                 ret = bq24190_charger_set_charge_type(bdi, val);
+>>                 break;
+>> @@ -903,6 +968,8 @@ static int
+>> bq24190_charger_property_is_writeable(struct power_supply *psy,
+>>         int ret;
+>>
+>>         switch (psp) {
+>> +       case POWER_SUPPLY_PROP_ONLINE:
+>> +       case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+>>         case POWER_SUPPLY_PROP_CHARGE_TYPE:
+>>         case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+>>         case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+>> @@ -919,6 +986,8 @@ static enum power_supply_property
+>> bq24190_charger_properties[] = {
+>>         POWER_SUPPLY_PROP_CHARGE_TYPE,
+>>         POWER_SUPPLY_PROP_HEALTH,
+>>         POWER_SUPPLY_PROP_ONLINE,
+>> +       POWER_SUPPLY_PROP_STATUS,
+>> +       POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
+>>         POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+>>         POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
+>>         POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
+>> @@ -1092,6 +1161,7 @@ static int bq24190_battery_get_property(struct
+>> power_supply *psy,
+>>         struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
+>>         int ret;
+>>
+>> +       dev_warn(bdi->dev, "warning:
+>> /sys/class/power_supply/bq24190-battery is deprecated\n");
+>>         dev_dbg(bdi->dev, "prop: %d\n", psp);
+>>
+>>         ret = pm_runtime_get_sync(bdi->dev);
+>> @@ -1137,6 +1207,7 @@ static int bq24190_battery_set_property(struct
+>> power_supply *psy,
+>>         struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
+>>         int ret;
+>>
+>> +       dev_warn(bdi->dev, "warning:
+>> /sys/class/power_supply/bq24190-battery is deprecated\n");
+>>         dev_dbg(bdi->dev, "prop: %d\n", psp);
+>>
+>>         ret = pm_runtime_get_sync(bdi->dev);
+>> @@ -1265,9 +1336,9 @@ static void bq24190_check_status(struct
+>> bq24190_dev_info *bdi)
+>>                 bdi->ss_reg = ss_reg;
+>>         }
+>>
+>> -       if (alert_charger)
+>> +       if (alert_charger || alert_battery)
+>>                 power_supply_changed(bdi->charger);
+>> -       if (alert_battery)
+>> +       if (alert_battery && bdi->battery)
+>>                 power_supply_changed(bdi->battery);
+>>
+>>         dev_dbg(bdi->dev, "ss_reg: 0x%02x, f_reg: 0x%02x\n", ss_reg,
+>> f_reg);
+>> @@ -1472,19 +1543,23 @@ static int bq24190_probe(struct i2c_client
+>> *client,
+>>                 goto out_pmrt;
+>>         }
+>>
+>> -       battery_cfg.drv_data = bdi;
+>> -       bdi->battery = power_supply_register(dev, &bq24190_battery_desc,
+>> -                                               &battery_cfg);
+>> -       if (IS_ERR(bdi->battery)) {
+>> -               dev_err(dev, "Can't register battery\n");
+>> -               ret = PTR_ERR(bdi->battery);
+>> -               goto out_charger;
+>> +       /* the battery class is deprecated and will be removed. */
+>> +       /* in the interim, this property hides it.              */
+>> +       if (!device_property_read_bool(dev, "omit-battery-class")) {
+>> +               battery_cfg.drv_data = bdi;
+>> +               bdi->battery = power_supply_register(dev,
+>> &bq24190_battery_desc,
+>> +                                                    &battery_cfg);
+>> +               if (IS_ERR(bdi->battery)) {
+>> +                       dev_err(dev, "Can't register battery\n");
+>> +                       ret = PTR_ERR(bdi->battery);
+>> +                       goto out_charger;
+>> +               }
+>>         }
+>>
+>>         ret = bq24190_sysfs_create_group(bdi);
+>>         if (ret) {
+>>                 dev_err(dev, "Can't create sysfs entries\n");
+>> -               goto out_battery;
+>> +               goto out_charger;
+>>         }
+>>
+>>         bdi->initialized = true;
+>> @@ -1522,10 +1597,9 @@ static int bq24190_probe(struct i2c_client *client,
+>>  out_sysfs:
+>>         bq24190_sysfs_remove_group(bdi);
+>>
+>> -out_battery:
+>> -       power_supply_unregister(bdi->battery);
+>> -
+>>  out_charger:
+>> +       if (!IS_ERR_OR_NULL(bdi->battery))
+>> +               power_supply_unregister(bdi->battery);
+>>         power_supply_unregister(bdi->charger);
+>>
+>>  out_pmrt:
+>> @@ -1548,7 +1622,8 @@ static int bq24190_remove(struct i2c_client *client)
+>>
+>>         bq24190_register_reset(bdi);
+>>         bq24190_sysfs_remove_group(bdi);
+>> -       power_supply_unregister(bdi->battery);
+>> +       if (bdi->battery)
+>> +               power_supply_unregister(bdi->battery);
+>>         power_supply_unregister(bdi->charger);
+>>         if (error >= 0)
+>>                 pm_runtime_put_sync(bdi->dev);
+>> @@ -1635,7 +1710,8 @@ static __maybe_unused int bq24190_pm_resume(struct
+>> device *dev)
+>>
+>>         /* Things may have changed while suspended so alert upper layer */
+>>         power_supply_changed(bdi->charger);
+>> -       power_supply_changed(bdi->battery);
+>> +       if (bdi->battery)
+>> +               power_supply_changed(bdi->battery);
+>>
+>>         return 0;
+>>  }
+>>
+>
