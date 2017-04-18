@@ -1,269 +1,173 @@
-From: Michal Hocko <mhocko@kernel.org>
-Subject: Re: "mm: move pcp and lru-pcp draining into single wq" broke resume
- from s2ram
-Date: Tue, 18 Apr 2017 22:19:07 +0200
-Message-ID: <20170418201907.GC20671@dhcp22.suse.cz>
-References: <CAMuHMdUJSfrZ=2zy88_zojDek3CHEWKhv_qoJAVgDpPWz8V=Ew@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: RFC: WMI Enhancements
+Date: Tue, 18 Apr 2017 23:14:29 +0200
+Message-ID: <CAJZ5v0iZGb6hJZ8WFQn=zryS2Ww7YQYWzwQnXEF2--sfGqjLWw@mail.gmail.com>
+References: <20170412230854.GA11963@fury> <CALCETrXAb1=ae8XuNRcajNLJw3b45Z=Qz7GDYXRzFk7CQrd5kQ@mail.gmail.com>
+ <20170417231051.GB7183@fury> <3317007.TCiWpp4m4U@aspire.rjw.lan> <20170418163325.GC25405@fury>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdUJSfrZ=2zy88_zojDek3CHEWKhv_qoJAVgDpPWz8V=Ew@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>, Linux PM list <linux-pm@vger.kernel.org>, Vlastimil Babka <vbabka@suse.cz>, Mel Gorman <mgorman@suse.de>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Tejun Heo <tj@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170418163325.GC25405@fury>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Darren Hart <dvhart@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@amacapital.net>, Len Brown <len.brown@intel.com>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Corentin Chary <corentin.chary@gmail.com>, Mario Limonciello <Mario_Limonciello@dell.com>, Andy Lutomirski <luto@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 18-04-17 21:56:56, Geert Uytterhoeven wrote:
-> Hi all,
-> 
-> On Sat, Apr 8, 2017 at 10:48 AM, Linux Kernel Mailing List
-> <linux-kernel@vger.kernel.org> wrote:
-> > Web:        https://git.kernel.org/torvalds/c/ce612879ddc78ea7e4de4be80cba4ebf9caa07ee
-> > Commit:     ce612879ddc78ea7e4de4be80cba4ebf9caa07ee
-> > Parent:     cdcf4330d5660998d06fcd899b443693ab3d652f
-> > Refname:    refs/heads/master
-> > Author:     Michal Hocko <mhocko@suse.com>
-> > AuthorDate: Fri Apr 7 16:05:05 2017 -0700
-> > Committer:  Linus Torvalds <torvalds@linux-foundation.org>
-> > CommitDate: Sat Apr 8 00:47:49 2017 -0700
-> >
-> >     mm: move pcp and lru-pcp draining into single wq
-> >
-> >     We currently have 2 specific WQ_RECLAIM workqueues in the mm code.
-> >     vmstat_wq for updating pcp stats and lru_add_drain_wq dedicated to drain
-> >     per cpu lru caches.  This seems more than necessary because both can run
-> >     on a single WQ.  Both do not block on locks requiring a memory
-> >     allocation nor perform any allocations themselves.  We will save one
-> >     rescuer thread this way.
-> >
-> >     On the other hand drain_all_pages() queues work on the system wq which
-> >     doesn't have rescuer and so this depend on memory allocation (when all
-> >     workers are stuck allocating and new ones cannot be created).
-> >
-> >     Initially we thought this would be more of a theoretical problem but
-> >     Hugh Dickins has reported:
-> >
-> >     : 4.11-rc has been giving me hangs after hours of swapping load.  At
-> >     : first they looked like memory leaks ("fork: Cannot allocate memory");
-> >     : but for no good reason I happened to do "cat /proc/sys/vm/stat_refresh"
-> >     : before looking at /proc/meminfo one time, and the stat_refresh stuck
-> >     : in D state, waiting for completion of flush_work like many kworkers.
-> >     : kthreadd waiting for completion of flush_work in drain_all_pages().
-> >
-> >     This worker should be using WQ_RECLAIM as well in order to guarantee a
-> >     forward progress.  We can reuse the same one as for lru draining and
-> >     vmstat.
-> >
-> >     Link: http://lkml.kernel.org/r/20170307131751.24936-1-mhocko@kernel.org
-> >     Signed-off-by: Michal Hocko <mhocko@suse.com>
-> >     Suggested-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> >     Acked-by: Vlastimil Babka <vbabka@suse.cz>
-> >     Acked-by: Mel Gorman <mgorman@suse.de>
-> >     Tested-by: Yang Li <pku.leo@gmail.com>
-> >     Tested-by: Hugh Dickins <hughd@google.com>
-> >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> 
-> This commit broke resume from s2ram on some of my Renesas ARM boards.
-> On some boards the hang is 100% reproducible, on others it's intermittent
-> (which was a PITA, as I had to bisect another independent s2ram bug as well).
+On Tue, Apr 18, 2017 at 6:33 PM, Darren Hart <dvhart@infradead.org> wrote:
+> On Tue, Apr 18, 2017 at 03:07:06PM +0200, Rafael Wysocki wrote:
+>> On Monday, April 17, 2017 04:10:51 PM Darren Hart wrote:
+>> > On Mon, Apr 17, 2017 at 03:03:29PM -0700, Andy Lutomirski wrote:
+>> > > On Fri, Apr 14, 2017 at 4:05 PM, Darren Hart <dvhart@infradead.org> wrote:
+>> > > > On Sat, Apr 15, 2017 at 12:45:30AM +0200, Rafael Wysocki wrote:
+>> > > >> On Wednesday, April 12, 2017 04:08:54 PM Darren Hart wrote:
+>> > > >> > Hi All,
+>> > > >> >
+>> > > >> > There are a few parallel efforts involving the Windows Management
+>> > > >> > Instrumentation (WMI)[1] and dependent/related drivers. I'd like to have a round of
+>> > > >> > discussion among those of you that have been involved in this space before we
+>> > > >> > decide on a direction.
+>> > > >> >
+>> > > >> > The WMI support in the kernel today fairly narrowly supports a handful of
+>> > > >> > systems. Andy L. has a work-in-progress series [2] which converts wmi into a
+>> > > >> > platform device and a proper bus, providing devices for dependent drivers to
+>> > > >> > bind to, and a mechanism for sibling devices to communicate with each other.
+>> > > >> > I've reviewed the series and feel like the approach is sound, I plan to carry
+>> > > >> > this series forward and merge it (with Andy L's permission).
+>> > > >> >
+>> > > >> > Are there any objections to this?
+>> > > >> >
+>> > > >> > In Windows, applications interact with WMI more or less directly. We don't do
+>> > > >> > this in Linux currently, although it has been discussed in the past [3]. Some
+>> > > >> > vendors will work around this by performing SMI/SMM, which is inefficient at
+>> > > >> > best. Exposing WMI methods to userspace would bring parity to WMI for Linux and
+>> > > >> > Windows.
+>> > > >> >
+>> > > >> > There are two principal concerns I'd appreciate your thoughts on:
+>> > > >> >
+>> > > >> > a) As an undiscoverable interface (you need to know the method signatures ahead
+>> > > >> > of time), universally exposing every WMI "device" to userspace seems like "a bad
+>> > > >> > idea" from a security and stability perspective. While access would certainly be
+>> > > >> > privileged, it seems more prudent to make this exposure opt-in. We also handle
+>> > > >> > some of this with kernel drivers and exposing those "devices" to userspace would
+>> > > >> > enable userspace and the kernel to fight over control. So - if we expose WMI
+>> > > >> > devices to userspace, I believe this should be done on a case by case basis,
+>> > > >> > opting in, and not by default as part of the WMI driver (although it can provide
+>> > > >> > the mechanism for a sub-driver to use), and possibly a devmode to do so by
+>> > > >> > default.
+>> > > >>
+>> > > >> A couple of loose thoughts here.
+>> > > >>
+>> > > >> In principle there could be a "generic default WMI driver" or similar that would
+>> > > >> "claim" all WMI "devices" that have not been "claimed" by anyone else and would
+>> > > >> simply expose them to user space somehow (e.g. using a chardev interface).
+>> > > >>
+>> > > >> Then, depending on how that thing is implemented, opt-in etc should be possible
+>> > > >> too.
+>> > > >>
+>> > > >
+>> > > > I think we agree this would be an ideal approach.
+>> > > >
+>> > > > As we look into this more, it is becoming clear that the necessary functionality
+>> > > > is not nicely divided into GUIDs for what is necessary in userspace and what is
+>> > > > handled in the kernel. A single WMI METHOD GUID may be needed by userspace for
+>> > > > certain functionality, while the kernel drivers may use it for something else.
+>> > > >
+>> > > > :-(
+>> > > >
+>> > > > The input to a WMI method is just a buffer, so it is very free form. One
+>> > > > approach Mario has mentioned was to audit the user space WMI METHOD calls in the
+>> > > > kernel platform drivers and reject those calls with arguments matching those
+>> > > > issued by the kernel driver. This is likely to be complex and error prone in my
+>> > > > opinion. However, I have not yet thought of another means to meet the
+>> > > > requirement of having disjoint feature sets for userspace and kernel space via a
+>> > > > mechanism that was effectively designed to be used solely from user space with
+>> > > > vendor defined method signatures.
+>> > > >
+>> > > > Next step is to look at just how complex it would be to audit the method calls
+>> > > > the kernel currently uses.
+>> > >
+>> > > I'm wondering whether it's really worth it.  We already allow doing
+>> > > darned near anything using dcdbas.  Maybe the world won't end if we
+>> > > expose a complete-ish ioctl interface to WMI.
+>>
+>> I guess the world wouldn't end then (it has not ended for far more serious
+>> reasons so far after all), but this also doesn't feel entirely right.
+>>
+>> For one, if something is used inside of the kernel (by drivers etc), then
+>> allowing user space to use the same thing directly is a recipe for unsupportable
+>> mess IMO.
+>
+> I don't disagree. Unforuntately, the mechanism wasn't designed for this kind of
+> mixed usage from what I can determine, so it doesn't lend itself to separation.
+> We could kick out all the WMI drivers and encourage vendor/platform specific
+> system daemons which read WMI and injected events and configured LEDs through
+> sysfs, thus eliminating the user/kernel conflict - but it would only leave us
+> with the problem of multiple userspace daemons competing for the same WMI
+> METHODs -- and yeah, nobody's going for that :-D
 
-Hmm, I am rather confused, how the above commit could change anything
-here. Your lockup detector is hitting
-dpm_wait_for_superior
-        dpm_wait(dev->parent, async);
-	dpm_wait_for_suppliers(dev, async);
+Yeah, surely no one. :-)
 
-which in turn waits wait_for_completion(&dev->power.completion)
+>>
+>> > > Also, dcdbas is, to put it mildly, a bit ridiculous.  It seems to be a
+>> > > seriously awkward sysfs interface that allows you to, drumroll please,
+>> > > issue outb and inb instructions.  It doesn't even check that it's
+>> > > running on a Dell system.  It might be nice to deprecate it some day
+>> > > in favor of a real interface.  I'd consider a low-level WMI ioctl
+>> > > interface to be a vast improvement.
+>> > >
+>> >
+>> > I've been reluctantly arriving here as well. Given that every WMI interface will
+>> > be vendor specific, and non-discoverable, it seems unlikely developers will
+>> > eagerly duplicate kernel functionality in user-space. And if they do, it will
+>> > affect very few platforms.
+>> >
+>> > I still think it makes sense to only expose a WMI interface by default on some
+>> > matching criteria. It could be DMI related, but I'd like to know if the UID is
+>> > possible as well (it depends on how vendors use the UID, if consistently, not at
+>> > all, etc.) Otherwise, the interface would not be enabled unless the user
+>> > explicitly requests it via a module parameter or similar.
+>>
+>> To me, that should be the bare minimum, but I really think that mutual exclusion
+>> between user space and the kernel needs to be ensured somehow when the
+>> interface is enabled too.
+>>
+>> This looks similar to exposing _DSM functionality for certain device to user
+>> space where some functions of the _DSM in question are already in use by
+>> kernel code.  In that case I would think about an interface with a function
+>> granularity (so it would check the GUID and the function and possibly the
+>> ordering with respect to the other functions too before invoking the _DSM
+>> on behalf of user space).
+>
+> This is also what I would consider to be ideal, but the mechanism doesn't lend
+> itself to that level of granularity. WMI methods are not guaranteed to be broken
+> up into sufficiently granular functionality that we can filter based on method
+> ID. We would most likely end up in the position of having to audit the input
+> buffer of every WMI call.
+>
+> For example, we can filter things the ASUS WMI Keyboard Filter method, but
+> others are less specific, like Device Set, Bios Status, Device Status, Device
+> Policy, etc.
+>
+> What we could do is make that the vendor's problem instead of the kernel's
+> problem. Consider:
+>
+> * wmi.c adds method evaluation wrappers
+> * add a wmi evaluation mutex
+> * update *wmi.c drivers to use the new wrappers
+> * platform drivers (dell-wmi.c, asus-wmi.c, etc.) must explicitly request
+>   wmi.c to export the wmi chardev
+> * platform drivers must explicitly whitelist each method ID to be exported
+>   - they can automate this in a loop evaluating the wmi block if they wish
+> * platform drivers *may* register a wmi evaluation filter which allows them
+>   to audit the method id and input buffer to ensure it doesn't conflict with
+>   in-kernel usage (their usage).
+>
+> I believe this is a reasonable compromise, and it places the burden on the
+> platform drivers, and therefor on the vendors (in the best case) or the
+> individual platform driver maintainers for less cooperative vendors. This
+> contains any resulting exposure to the platforms which explicitly request it.
 
-the above commit has reduced the load on the system WQ. It also removed
-one WQ and reused the existing one. The work done on the mm_percpu_wq
-doesn't block so I suspect that what you are seeing is just showing a
-real bug somewhere else. I will have a look tomorrow. Let's add Tejun,
-maybe I have introduced some subtle dependency, which is not clear to
-me.
+That would work for me.
 
-> 
-> On r8a7791/koelsch:
-> 
-> --- /tmp/good   2017-04-18 21:47:04.457156167 +0200
-> +++ /tmp/bad    2017-04-18 21:43:26.215240325 +0200
-> @@ -13,11 +13,178 @@ Enabling non-boot CPUs ...
->  CPU1 is up
->  PM: noirq resume of devices complete after N.N msecs
->  PM: early resume of devices complete after N.N msecs
-> -Micrel KSZ8041RNLI ee700000.ethernet-ffffffff:01: attached PHY driver
-> [Micrel KSZ8041RNLI] (mii_bus:phy_addr=ee700000.ethernet-ffffffff:01,
-> irq=-1)
-> -PM: resume of devices complete after N.N msecs
-> -PM: resume devices took N.N seconds
-> -PM: Finishing wakeup.
-> -Restarting tasks ... done.
-> -ata1: link resume succeeded after 1 retries
-> -ata1: SATA link down (SStatus 0 SControl 300)
-> -sh-eth ee700000.ethernet eth0: Link is Up - 100Mbps/Full - flow control rx/tx
-> +INFO: task kworker/u4:0:5 blocked for more than 120 seconds.
-> +      Not tainted 4.11.0-rc7-koelsch-00426-g70412b99f7936b37 #3470
-> +"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> +kworker/u4:0    D    0     5      2 0x00000000
-> +Workqueue: events_unbound async_run_entry_fn
-> +[<c0712c58>] (__schedule) from [<c0712f7c>] (schedule+0xb0/0xcc)
-> +[<c0712f7c>] (schedule) from [<c0717140>] (schedule_timeout+0x18/0x1f4)
-> +[<c0717140>] (schedule_timeout) from [<c07139f8>] (wait_for_common+0x100/0x19c)
-> +[<c07139f8>] (wait_for_common) from [<c04d8488>]
-> (dpm_wait_for_superior+0x14/0x5c)
-> +[<c04d8488>] (dpm_wait_for_superior) from [<c04d8aa4>]
-> (device_resume+0x40/0x1a0)
-> +[<c04d8aa4>] (device_resume) from [<c04d8c1c>] (async_resume+0x18/0x44)
-> +[<c04d8c1c>] (async_resume) from [<c023db34>] (async_run_entry_fn+0x44/0x114)
-> +[<c023db34>] (async_run_entry_fn) from [<c0236544>]
-> (process_one_work+0x1cc/0x31c)
-> +[<c0236544>] (process_one_work) from [<c0236ca0>] (worker_thread+0x2b8/0x3f0)
-> +[<c0236ca0>] (worker_thread) from [<c023b240>] (kthread+0x120/0x140)
-> +[<c023b240>] (kthread) from [<c0206d68>] (ret_from_fork+0x14/0x2c)
-> +INFO: task kworker/u4:1:125 blocked for more than 120 seconds.
-> +      Not tainted 4.11.0-rc7-koelsch-00426-g70412b99f7936b37 #3470
-> +"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> +kworker/u4:1    D    0   125      2 0x00000000
-> +Workqueue: events_unbound async_run_entry_fn
-> +[<c0712c58>] (__schedule) from [<c0712f7c>] (schedule+0xb0/0xcc)
-> +[<c0712f7c>] (schedule) from [<c0717140>] (schedule_timeout+0x18/0x1f4)
-> +[<c0717140>] (schedule_timeout) from [<c07139f8>] (wait_for_common+0x100/0x19c)
-> +[<c07139f8>] (wait_for_common) from [<c04d8488>]
-> (dpm_wait_for_superior+0x14/0x5c)
-> +[<c04d8488>] (dpm_wait_for_superior) from [<c04d8aa4>]
-> (device_resume+0x40/0x1a0)
-> +[<c04d8aa4>] (device_resume) from [<c04d8c1c>] (async_resume+0x18/0x44)
-> +[<c04d8c1c>] (async_resume) from [<c023db34>] (async_run_entry_fn+0x44/0x114)
-> +[<c023db34>] (async_run_entry_fn) from [<c0236544>]
-> (process_one_work+0x1cc/0x31c)
-> +[<c0236544>] (process_one_work) from [<c0236ca0>] (worker_thread+0x2b8/0x3f0)
-> +[<c0236ca0>] (worker_thread) from [<c023b240>] (kthread+0x120/0x140)
-> +[<c023b240>] (kthread) from [<c0206d68>] (ret_from_fork+0x14/0x2c)
-> ...
-> 
-> On r8a7795/salvator-x, where I have working lockdep:
-> 
-> PM: noirq resume of devices complete after 131.415 msecs
-> PM: early resume of devices complete after 8.894 msecs
-> INFO: task kworker/u16:2:276 blocked for more than 120 seconds.
->       Not tainted 4.11.0-rc7-salvator-x-06706-g70412b99f7936b37 #1220
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> kworker/u16:2   D    0   276      2 0x00000000
-> Workqueue: events_unbound async_run_entry_fn
-> Call trace:
-> [<ffffff800808612c>] __switch_to+0xa0/0xac
-> [<ffffff800866df14>] __schedule+0x70c/0xb88
-> [<ffffff800866e414>] schedule+0x84/0xa4
-> [<ffffff800867287c>] schedule_timeout+0x30/0x400
-> [<ffffff800866ee94>] wait_for_common+0x164/0x1a8
-> [<ffffff800866eeec>] wait_for_completion+0x14/0x1c
-> [<ffffff80083d3f84>] dpm_wait+0x30/0x38
-> [<ffffff80083d3ff8>] dpm_wait_for_superior+0x28/0x7c
-> [<ffffff80083d490c>] device_resume+0x44/0x190
-> [<ffffff80083d4a7c>] async_resume+0x24/0x54
-> [<ffffff80080d5360>] async_run_entry_fn+0x4c/0x12c
-> [<ffffff80080cb59c>] process_one_work+0x340/0x66c
-> [<ffffff80080cc9ec>] worker_thread+0x274/0x39c
-> [<ffffff80080d2004>] kthread+0x120/0x128
-> [<ffffff8008083090>] ret_from_fork+0x10/0x40
-> 
-> Showing all locks held in the system:
-> 2 locks held by khungtaskd/52:
->  #0:  (rcu_read_lock){......}, at: [<ffffff80081436cc>] watchdog+0xc0/0x618
->  #1:  (tasklist_lock){.+.+..}, at: [<ffffff80080fb5f0>]
-> debug_show_all_locks+0x68/0x18c
-> 2 locks held by kworker/u16:2/276:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 2 locks held by kworker/u16:3/291:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 8 locks held by s2ram/1899:
->  #0:  (sb_writers#7){.+.+.+}, at: [<ffffff80081ca1a4>] vfs_write+0xa8/0x15c
->  #1:  (&of->mutex){+.+.+.}, at: [<ffffff8008245964>] kernfs_fop_write+0xf0/0x194
->  #2:  (s_active#48){.+.+.+}, at: [<ffffff800824596c>]
-> kernfs_fop_write+0xf8/0x194
->  #3:  (pm_mutex){+.+.+.}, at: [<ffffff80081059a4>] pm_suspend+0x16c/0xabc
->  #4:  (&dev->mutex){......}, at: [<ffffff80083d4920>] device_resume+0x58/0x190
->  #5:  (cma_mutex){+.+...}, at: [<ffffff80081c516c>] cma_alloc+0x150/0x374
->  #6:  (lock){+.+...}, at: [<ffffff800818b8ec>] lru_add_drain_all+0x4c/0x1b4
->  #7:  (cpu_hotplug.dep_map){++++++}, at: [<ffffff80080ab8f4>]
-> get_online_cpus+0x3c/0x9c
-> 2 locks held by kworker/u16:1/1918:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 2 locks held by kworker/u16:4/1919:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 2 locks held by kworker/u16:5/1920:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 2 locks held by kworker/u16:7/1922:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 2 locks held by kworker/u16:9/1924:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 2 locks held by kworker/u16:10/1925:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 2 locks held by kworker/u16:11/1926:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 2 locks held by kworker/u16:12/1927:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 2 locks held by kworker/u16:13/1928:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 2 locks held by kworker/u16:14/1929:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 2 locks held by kworker/u16:16/1931:
->  #0:  ("events_unbound"){.+.+.+}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
->  #1:  ((&entry->work)){+.+...}, at: [<ffffff80080cb424>]
-> process_one_work+0x1c8/0x66c
-> 
-> Thanks for your comments!
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
-
--- 
-Michal Hocko
-SUSE Labs
+Thanks,
+Rafael
