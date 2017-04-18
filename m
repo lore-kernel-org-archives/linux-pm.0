@@ -1,92 +1,86 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v6 4/5] ACPI: ac: Add a blacklist with PMIC ACPI HIDs with a native charger driver
-Date: Tue, 18 Apr 2017 13:58:41 +0200
-Message-ID: <20170418115842.16214-5-hdegoede@redhat.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v6 3/5] ACPI: battery: Add a blacklist with PMIC ACPI
+ HIDs with a native battery driver
+Date: Tue, 18 Apr 2017 16:13:06 +0300
+Message-ID: <1492521186.24567.61.camel@linux.intel.com>
 References: <20170418115842.16214-1-hdegoede@redhat.com>
+         <20170418115842.16214-4-hdegoede@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:57904 "EHLO mx1.redhat.com"
+Received: from mga11.intel.com ([192.55.52.93]:16769 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755671AbdDRL7B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 18 Apr 2017 07:59:01 -0400
-In-Reply-To: <20170418115842.16214-1-hdegoede@redhat.com>
+        id S1750952AbdDRNNK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 18 Apr 2017 09:13:10 -0400
+In-Reply-To: <20170418115842.16214-4-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
+Cc: Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 
-On some systems we have a native PMIC driver which provides Mains
-monitoring, while the ACPI ac driver is broken on these systems
-due to bad DSTDs or because we do not support the proprietary and
-undocumented ACPI opregions these ACPI battery devices rely on
-(e.g. BMOP opregion).
+On Tue, 2017-04-18 at 13:58 +0200, Hans de Goede wrote:
+> On some systems we have a native PMIC driver which provides battery
+> monitoring, while the ACPI battery driver is broken on these systems
+> due to bad DSDTs or because we do not support the proprietary and
+> undocumented ACPI opregions these ACPI battery devices rely on
+> (e.g. BMOP opregion).
+> 
+> This leads to there being 2 battery power_supply-s registed like this:
+> 
+> ~$ acpi
+> Battery 0: Charging, 84%, 00:49:39 until charged
+> Battery 1: Unknown, 0%, rate information unavailable
+> 
+> Even if the ACPI battery where to function fine (which on systems
+> where we have a native PMIC driver it often doesn't) we still do not
+> want to export the same battery to userspace twice.
+> 
+> This commit adds a blacklist with PMIC ACPI HIDs for which we've a
+> native battery driver and makes the ACPI battery driver not register
+> itself when a PMIC on this list is present.
+> 
 
-This leads for example to a ADP1 power_supply which reports
-itself as always online even if no mains are connected.
+Some minor comments, sorry, didn't sent earlier.
 
-This commit adds a blacklist with PMIC ACPI HIDs for which we've a
-native charger or extcon driver and makes the ACPI ac driver not
-register itself when a PMIC on this list is present.
+Since they are minor, consider to change if some more serious stuff
+comes up.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
-Changes in v2:
--This is a new patch in v2 of this patch-set replacing:
- "ACPI: ac: Add acpi_ac_unregister() function"
- "power: supply: axp288_charger: Unregister duplicate ACPI ac supply"
- And also this patch from my local patch-queue (not submitted yet):
- "i2c-cht-wc: remove broken ACPI AC power-supply"
----
- drivers/acpi/ac.c | 21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
-index f71b756..8df95a1 100644
---- a/drivers/acpi/ac.c
-+++ b/drivers/acpi/ac.c
-@@ -57,12 +57,23 @@ static int acpi_ac_add(struct acpi_device *device);
- static int acpi_ac_remove(struct acpi_device *device);
- static void acpi_ac_notify(struct acpi_device *device, u32 event);
- 
-+struct acpi_ac_bl {
-+	const char *hid;
-+	int hrv;
-+};
-+
- static const struct acpi_device_id ac_device_ids[] = {
- 	{"ACPI0003", 0},
- 	{"", 0},
- };
- MODULE_DEVICE_TABLE(acpi, ac_device_ids);
- 
-+/* Lists of PMIC ACPI HIDs with an (often better) native charger driver */
-+static const struct acpi_ac_bl acpi_ac_blacklist[] = {
-+	{ "INT33F4", -1 }, /* X-Powers AXP288 PMIC */
-+	{ "INT34D3",  3 }, /* Intel Cherrytrail Whiskey Cove PMIC */
-+};
-+
- #ifdef CONFIG_PM_SLEEP
- static int acpi_ac_resume(struct device *dev);
- #endif
-@@ -424,11 +435,19 @@ static int acpi_ac_remove(struct acpi_device *device)
- 
- static int __init acpi_ac_init(void)
- {
--	int result;
-+	int i, result;
- 
- 	if (acpi_disabled)
- 		return -ENODEV;
- 
-+	for (i = 0; i < ARRAY_SIZE(acpi_ac_blacklist); i++)
-+		if (acpi_dev_present(acpi_ac_blacklist[i].hid, "1",
-+				     acpi_ac_blacklist[i].hrv)) {
-+			pr_info("ACPI: AC: found native %s PMIC, not loading\n",
-+				acpi_ac_blacklist[i].hid);
-+			return -ENODEV;
-+		}
-+
- #ifdef CONFIG_ACPI_PROCFS_POWER
- 	acpi_ac_dir = acpi_lock_ac_dir();
- 	if (!acpi_ac_dir)
+> +/* Lists of PMIC ACPI HIDs with an (often better) native battery
+> driver */
+> +static const char * const acpi_battery_blacklist[] = {
+> +	"INT33F4", /* X-Powers AXP288 PMIC */
+
+> +	NULL
+
+Can we use ARRAY_SIZE() instead?
+
+> +};
+> +
+>  enum {
+>  	ACPI_BATTERY_ALARM_PRESENT,
+>  	ACPI_BATTERY_XINFO_PRESENT,
+> @@ -1316,7 +1322,15 @@ static struct acpi_driver acpi_battery_driver =
+> {
+>  
+>  static void __init acpi_battery_init_async(void *unused,
+> async_cookie_t cookie)
+>  {
+> -	int result;
+> +	int i, result;
+> +
+
+> +	for (i = 0; acpi_battery_blacklist[i]; i++)
+
+
+> +		if (acpi_dev_present(acpi_battery_blacklist[i], "1",
+> -1)) {
+> +			pr_info("ACPI: %s: found native %s PMIC, not
+> loading\n",
+
+pr_info(PREFIX "%s: ...
+
 -- 
-2.9.3
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
