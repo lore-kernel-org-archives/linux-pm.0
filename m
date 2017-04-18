@@ -1,81 +1,88 @@
-From: Doug Smythies <doug.smythies@gmail.com>
-Subject: [PATCH v2] tools/power/x86/intel_pstate_tracer: Adjust directory ownership
-Date: Mon, 17 Apr 2017 17:12:13 -0700
-Message-ID: <1492474333-8356-1-git-send-email-dsmythies@telus.net>
+From: Ben Hutchings <ben@decadent.org.uk>
+Subject: [PATCH] cpupower: Fix checks for CPU existence
+Date: Tue, 18 Apr 2017 03:31:18 +0100
+Message-ID: <20170418023118.GD4152@decadent.org.uk>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="1DcFzFXxI6Ykdyz3"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:33539 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753649AbdDRAM0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2017 20:12:26 -0400
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:45131 "EHLO
+        shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1754831AbdDRCbU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Apr 2017 22:31:20 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: srinivas.pandruvada@linux.intel.com, rjw@rjwysocki.net, len.brown@intel.com
-Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Thomas Renninger <trenn@suse.com>
+Cc: linux-pm@vger.kernel.org
 
-The intel_pstate_tracer.py script only needs to be run as root
-when it is also used to actually acquire the trace data that
-it will post process. Otherwise it is generally preferable
-that it be run as a regular user.
-If run the first time as root the results directory will be
-incorrect for any subsequent run as a regular user. For any run
-as root the specific testname subdirectory will not allow any
-subsequent file saves by a regular user. Typically, and for example,
-the regular user might be attempting to save a .csv file converted to
-a spreadsheet with added calculations or graphs.
 
-Set the directories and files owner and groups IDs to be the regular
-user, if required.
+--1DcFzFXxI6Ykdyz3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
+Calls to cpufreq_cpu_exists(cpu) were converted to
+cpupower_is_cpu_online(cpu) when libcpupower was introduced and the
+former function was deleted.  However, cpupower_is_cpu_online()
+returns 1 on success whereas cpufreq_cpu_exists() returned 0 on
+success.  It also does not distinguish physically absent and offline
+CPUs, and does not set errno.
+
+cpufreq-set has already been fixed (commit c25badc9ceb6).
+
+In cpufreq-bench, which prints an error message for offline CPUs,
+properly distinguish and report the zero and negative cases.
+
+Fixes: ac5a181d065d ("cpupower: Add cpuidle parts into library")
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
- .../x86/intel_pstate_tracer/intel_pstate_tracer.py      | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+--- a/tools/power/cpupower/bench/system.c
++++ b/tools/power/cpupower/bench/system.c
+@@ -58,12 +58,19 @@ long long int get_time()
+=20
+ int set_cpufreq_governor(char *governor, unsigned int cpu)
+ {
++	int rc;
+=20
+ 	dprintf("set %s as cpufreq governor\n", governor);
+=20
+-	if (cpupower_is_cpu_online(cpu) !=3D 0) {
+-		perror("cpufreq_cpu_exists");
+-		fprintf(stderr, "error: cpu %u does not exist\n", cpu);
++	rc =3D cpupower_is_cpu_online(cpu);
++	if (rc !=3D 1) {
++		if (rc < 0)
++			fprintf(stderr, "cpupower_is_cpu_online: %s\n",
++				strerror(-rc));
++		else
++			fprintf(stderr,
++				"error: cpu %u is offline or does not exist\n",
++				cpu);
+ 		return -1;
+ 	}
+=20
 
-diff --git a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-index fd706ac..0b24dd9 100755
---- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-+++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-@@ -353,6 +353,14 @@ def split_csv():
-                 os.system('grep -m 1 common_cpu cpu.csv > cpu{:0>3}.csv'.format(index))
-                 os.system('grep CPU_{:0>3} cpu.csv >> cpu{:0>3}.csv'.format(index, index))
- 
-+def fix_ownership(path):
-+    """Change the owner of the file to SUDO_UID, if required"""
-+
-+    uid = os.environ.get('SUDO_UID')
-+    gid = os.environ.get('SUDO_GID')
-+    if uid is not None:
-+        os.chown(path, int(uid), int(gid))
-+
- def cleanup_data_files():
-     """ clean up existing data files """
- 
-@@ -518,12 +526,16 @@ else:
- 
- if not os.path.exists('results'):
-     os.mkdir('results')
-+    # The regular user needs to own the directory, not root.
-+    fix_ownership('results')
- 
- os.chdir('results')
- if os.path.exists(testname):
-     print('The test name directory already exists. Please provide a unique test name. Test re-run not supported, yet.')
-     sys.exit()
- os.mkdir(testname)
-+# The regular user needs to own the directory, not root.
-+fix_ownership(testname)
- os.chdir(testname)
- 
- # Temporary (or perhaps not)
-@@ -566,4 +578,9 @@ plot_scaled_cpu()
- plot_boost_cpu()
- plot_ghz_cpu()
- 
-+# It is preferrable, but not necessary, that the regular user owns the files, not root.
-+for root, dirs, files in os.walk('.'):
-+    for f in files:
-+        fix_ownership(f)
-+
- os.chdir('../../')
--- 
-2.7.4
+--1DcFzFXxI6Ykdyz3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIVAwUBWPV6due/yOyVhhEJAQrSsw//T+7Ab7XX4De6EIDSDTS658DLBgLFGXs0
+NfouUH66vF8vPMECfu6adUGAOUkHI49KrtCftzwcf32uOUMH3tD4ibtH5navwmT9
+uM5KkKzhcU5UY3T7ALlayLCPy69Glvn9kDkjL7e54vvAXtA+qKiTvFXZOkbvL46T
+i+ZaaJ2u+kcn77QDwDPQwWYOTdgsKzgFLL++ItbO/s7F8GlpOGnbHbqldnJFmC+j
+cl5Z+B4AkKjB3ja3lBsHJSp3t20rxlSqnc99PCaJI6j1VKnY62Z3HOVVCpMB04NQ
+horFezNNsvFUI1rD65UjIk1oe11Woj1al3h3RG2XJm3WIs0ClLPm5wqwY92WoFZV
+6oWJ75nPJRz4CXvldmOAvLWpa7eWn5a44gtDbK26yx6rycD+g+M4/lHTiRpO6dOb
+L/fqH5weVRr0hD4iRwnYe8blbn1B3rUHn6HhsxYYbIw3KO9+7zwDFXRlbg44+l15
+NfV1KfjpwEGRdRoZNSbg1eM3U4CBkBGiCeN4EFoRdhcXbu78doHt3RvpFGAZn10n
+M32E3KOym8S5bt7yZF6nYX6EfOEfC2buGpVtm46s4PHO3vrkUzn+miA8V6OQiGvf
+PisRnFX981nWYm38PgMMdw/b80S7GmW/m3NXIDJx3davZgaUEcCPV8ksYruYZoK/
+aNubV6776Zw=
+=/XUs
+-----END PGP SIGNATURE-----
+
+--1DcFzFXxI6Ykdyz3--
