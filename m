@@ -1,36 +1,38 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
  power-domains
-Date: Wed, 19 Apr 2017 15:41:41 +0530
-Message-ID: <20170419101141.GB5436@vireshk-i7>
+Date: Wed, 19 Apr 2017 15:42:16 +0530
+Message-ID: <20170419101216.GC5436@vireshk-i7>
 References: <cover.1490001099.git.viresh.kumar@linaro.org>
  <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
- <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
- <20170413053736.GM5910@vireshk-i7>
- <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
- <20170417052758.GF28191@vireshk-i7>
- <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
+ <468e756b-7112-4006-b31d-9fcf1c32673d@arm.com>
+ <20170413055049.GN5910@vireshk-i7>
+ <854e3f66-6f93-2b90-14a9-7eaea6a0b74c@arm.com>
+ <20170417053303.GG28191@vireshk-i7>
+ <2128c09a-0656-0878-c4e7-c327007021c7@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f50.google.com ([74.125.83.50]:33147 "EHLO
+        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1761737AbdDSKMT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 06:12:19 -0400
+Received: by mail-pg0-f50.google.com with SMTP id 63so10850246pgh.0
+        for <linux-pm@vger.kernel.org>; Wed, 19 Apr 2017 03:12:19 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <95aa4b97-4e1a-13bb-f4d8-982b778012ba-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <2128c09a-0656-0878-c4e7-c327007021c7@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
 
-On 18-04-17, 17:01, Sudeep Holla wrote:
-> No, may be I was not so clear. I am just referring a power controller
-> that provides say 3 different power domains and are indexed 0 - 2.
-> The consumer just passes the index along with the phandle for the power
-> domain info.
+On 18-04-17, 17:03, Sudeep Holla wrote:
+> Was it posted externally ? Was there any objections for that approach ?
+> IMO that's better approach but if I am late to the party, I would like
+> to read through the discussions that happened on it(if any)
 
-Ahh, I got you now. Will take care of it in next version.
+Maybe Stephen can tell more about it. AFAIK, there were some offline
+discussions around it.
 
 -- 
 viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
