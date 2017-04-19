@@ -1,242 +1,110 @@
-From: Mel Gorman <mgorman@techsingularity.net>
-Subject: Re: Performance of low-cpu utilisation benchmark regressed severely
- since 4.6
-Date: Wed, 19 Apr 2017 09:15:37 +0100
-Message-ID: <20170419081537.byeqli7qrnqqvyue@techsingularity.net>
-References: <20170410084117.rjh3mtdx7hd2i5ze@techsingularity.net>
- <CAJZ5v0jXGtZwx5m72fkFwjU6PTnv8uak+G4j1T9LK-kUgzr28Q@mail.gmail.com>
- <004801d2b2da$0c65d2a0$253177e0$@net>
- <003101d2b573$16b28370$44178a50$@net>
+From: Michal Hocko <mhocko@kernel.org>
+Subject: Re: Re: Re: "mm: move pcp and lru-pcp draining into single wq" broke
+ resume from s2ram
+Date: Wed, 19 Apr 2017 10:17:01 +0200
+Message-ID: <20170419081701.GC29789@dhcp22.suse.cz>
+References: <201704190541.v3J5fUE3054131@www262.sakura.ne.jp>
+ <20170419071039.GB28263@dhcp22.suse.cz>
+ <201704190726.v3J7QAiC076509@www262.sakura.ne.jp>
+ <20170419075712.GB29789@dhcp22.suse.cz>
+ <CAMuHMdVmJrr6_sGeU4oxH5fn10BRdLC5nOEePN05p3kJ1x3YBQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
 Content-Disposition: inline
-In-Reply-To: <003101d2b573$16b28370$44178a50$@net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Rafael Wysocki' <rafael.j.wysocki@intel.com>, =?iso-8859-15?Q?'J=F6rg?= Otte' <jrg.otte@gmail.com>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Rafael J. Wysocki'" <rafael@kernel.org>
+In-Reply-To: <CAMuHMdVmJrr6_sGeU4oxH5fn10BRdLC5nOEePN05p3kJ1x3YBQ@mail.gmail.com>
+Sender: owner-linux-mm@kvack.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>, Linux PM list <linux-pm@vger.kernel.org>, Vlastimil Babka <vbabka@suse.cz>, Mel Gorman <mgorman@suse.de>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 14, 2017 at 04:01:40PM -0700, Doug Smythies wrote:
-> Hi Mel,
+On Wed 19-04-17 10:09:12, Geert Uytterhoeven wrote:
+> Hi Michal, Tetsuo,
 > 
-> Thanks for the "how to" information.
-> This is a very interesting use case.
-> From trace data, I see a lot of minimal durations with
-> virtually no load on the CPU, typically more consistent
-> with some type of light duty periodic (~~100 Hz) work flow
-> (where we would prefer to not ramp up frequencies, or more
-> accurately keep them ramped up).
-
-This broadly matches my expectations in terms of behaviour. It is a
-low duty workload but while I accept that a laptop may not want the
-frequencies to ramp up, it's not universally true. Long periods at low
-frequency to complete a workload is not necessarily better than using a
-high frequency to race to idle. Effectively, a low utilisation test suite
-could be considered as a "foreground task of high priority" and not a
-"background task of little interest".
-
-> My results (further below) are different than yours, sometimes
-> dramatically, but the trends are similar.
-
-It's inevitable there would be some hardware based differences. The
-machine I have appears to show an extreme case.
-
-> I have nothing to add about the control algorithm over what
-> Rafael already said.
-> 
-> On 2017.04.11 09:42 Mel Gorman wrote:
-> > On Tue, Apr 11, 2017 at 08:41:09AM -0700, Doug Smythies wrote:
-> >> On 2017.04.11 03:03 Mel Gorman wrote:
-> >>>On Mon, Apr 10, 2017 at 10:51:38PM +0200, Rafael J. Wysocki wrote:
-> >>>> On Mon, Apr 10, 2017 at 10:41 AM, Mel Gorman wrote:
-> >>>>>
-> >>>>> It's far more obvious when looking at the git test suite and the length
-> >>>>> of time it takes to run. This is a shellscript and git intensive workload
-> >>>>> whose CPU utilisatiion is very low but is less sensitive to multiple
-> >>>>> factors than netperf and sockperf.
-> >>>> 
-> >> 
-> >> I would like to repeat your tests on my test computer (i7-2600K).
-> >> I am not familiar with, and have not been able to find,
-> >> "the git test suite" shellscript. Could you point me to it?
-> >>
+> On Wed, Apr 19, 2017 at 9:57 AM, Michal Hocko <mhocko@kernel.org> wrote:
+> > From f3c6e287042259d6ae9916f1ff66392c46ce2a3c Mon Sep 17 00:00:00 2001
+> > From: Michal Hocko <mhocko@suse.com>
+> > Date: Wed, 19 Apr 2017 09:52:46 +0200
+> > Subject: [PATCH] mm: make mm_percpu_wq non freezable
 > >
-> > If you want to use git source directly do a checkout from
-> > https://github.com/git/git and build it. The core "benchmark" is make
-> > test and timing it.
-> 
-> Because I had troubles with your method further below, I also did
-> this method. I did 5 runs, after a throw away run, similar to what
-> you do (and I could see the need for a throw away pass).
-> 
-
-Yeah, at the very least IO effects should be eliminated.
-
-> Results (there is something wrong with user and system times and CPU%
-> in kernel 4.5, so I only calculated Elapsed differences):
-> 
-
-In case it matters, the User and System CPU times are reported as standard
-for these classes of workload by mmtests even though it's not necessarily
-universally interesting. Generally, I consider the elapsed time to
-be the most important but often, a major change in system CPU time is
-interesting. That's not universally true as there have been changes in how
-system CPU is calculated in the past and it's sensitive to Kconfig options
-with VIRT_CPU_ACCOUNTING_GEN being a notable source of confusion in the past.
-
-> Linux s15 4.5.0-stock #232 SMP Tue Apr 11 23:54:49 PDT 2017 x86_64 x86_64 x86_64 GNU/Linux
-> ... test_run: start 5 runs ...
-> 327.04user 122.08system 33:57.81elapsed (2037.81 : reference) 22%CPU
-> ... test_run: done ...
-> 
-> Linux s15 4.11.0-rc6-stock #231 SMP Mon Apr 10 08:29:29 PDT 2017 x86_64 x86_64 x86_64 GNU/Linux
-> 
-> intel_pstate - powersave
-> ... test_run: start 5 runs ...
-> 1518.71user 552.87system 39:24.45elapsed (2364.45 : -16.03%) 87%CPU
-> ... test_run: done ...
-> 
-> intel_pstate - performance (fast reference)
-> ... test_run: start 5 runs ...
-> 1160.52user 291.33system 29:36.05elapsed (1776.05 : 12.85%) 81%CPU
-> ... test_run: done ...
-> 
-> intel_cpufreq - powersave (slow reference)
-> ... test_run: start 5 runs ...
-> 2165.72user 1049.18system 57:12.77elapsed (3432.77 : -68.45%) 93%CPU
-> ... test_run: done ...
-> 
-> intel_cpufreq - ondemand
-> ... test_run: start 5 runs ...
-> 1776.79user 808.65system 47:14.74elapsed (2834.74 : -39.11%) 91%CPU
-> 
-
-Nothing overly surprising there. It's been my observation that pstate is
-generally better than acpi_cpufreq which somewhat amuses me when I still
-see suggestions of disabling intel_pstate entirely being used despite the
-advice being based on much older kernels.
-
-> intel_cpufreq - schedutil
-> ... test_run: start 5 runs ...
-> 2049.28user 1028.70system 54:57.82elapsed (3297.82 : -61.83%) 93%CPU
-> ... test_run: done ...
-> 
-
-I'm mildly surprised at this. I had observed that schedutil is not great
-but I don't recall seeing a result this bad.
-
-> Linux s15 4.11.0-rc6-revert #233 SMP Wed Apr 12 15:30:19 PDT 2017 x86_64 x86_64 x86_64 GNU/Linux
-> ... test_run: start 5 runs ...
-> 1295.30user 365.98system 32:50.15elapsed (1970.15 : 3.32%) 84%CPU
-> ... test_run: done ...
-> 
-
-And the revert does help albeit not being an option for reasons Rafael
-covered.
-
-> > The way I'm doing it is via mmtests so
+> > Geert has reported a freeze during PM resume and some additional
+> > debugging has shown that the device_resume worker cannot make a forward
+> > progress because it waits for an event which is stuck waiting in
+> > drain_all_pages:
+> > [  243.691979] INFO: task kworker/u4:0:5 blocked for more than 120 seconds.
+> > [  243.698684]       Not tainted 4.11.0-rc7-koelsch-00029-g005882e53d62f25d-dirty #3476
+> > [  243.706439] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> > [  243.714276] kworker/u4:0    D    0     5      2 0x00000000
+> > [  243.719780] Workqueue: events_unbound async_run_entry_fn
+> > [  243.725118] [<c0700c20>] (__schedule) from [<c0700f44>] (schedule+0xb0/0xcc)
+> > [  243.732181] [<c0700f44>] (schedule) from [<c0705108>] (schedule_timeout+0x18/0x1f4)
+> > [  243.739840] [<c0705108>] (schedule_timeout) from [<c07019c0>] (wait_for_common+0x100/0x19c)
+> > [  243.748207] [<c07019c0>] (wait_for_common) from [<c04d2008>] (dpm_wait_for_superior+0x14/0x5c)
+> > [  243.756836] [<c04d2008>] (dpm_wait_for_superior) from [<c04d2624>] (device_resume+0x40/0x1a0)
+> > [  243.765380] [<c04d2624>] (device_resume) from [<c04d279c>] (async_resume+0x18/0x44)
+> > [  243.773055] [<c04d279c>] (async_resume) from [<c023db24>] (async_run_entry_fn+0x44/0x114)
+> > [  243.781245] [<c023db24>] (async_run_entry_fn) from [<c0236534>] (process_one_work+0x1cc/0x31c)
+> > [  243.789876] [<c0236534>] (process_one_work) from [<c0236c90>] (worker_thread+0x2b8/0x3f0)
+> > [  243.798080] [<c0236c90>] (worker_thread) from [<c023b230>] (kthread+0x120/0x140)
+> > [  243.805500] [<c023b230>] (kthread) from [<c0206d68>] (ret_from_fork+0x14/0x2c)
+> > [...]
+> > [  249.441198] bash            D    0  1703   1694 0x00000000
+> > [  249.446702] [<c0700c20>] (__schedule) from [<c0700f44>] (schedule+0xb0/0xcc)
+> > [  249.453764] [<c0700f44>] (schedule) from [<c0705108>] (schedule_timeout+0x18/0x1f4)
+> > [  249.461427] [<c0705108>] (schedule_timeout) from [<c07019c0>] (wait_for_common+0x100/0x19c)
+> > [  249.469797] [<c07019c0>] (wait_for_common) from [<c0234e44>] (flush_work+0x128/0x158)
+> > [  249.477650] [<c0234e44>] (flush_work) from [<c02ab488>] (drain_all_pages+0x198/0x1f0)
+> > [  249.485503] [<c02ab488>] (drain_all_pages) from [<c02e1a1c>] (start_isolate_page_range+0xd8/0x1ac)
+> > [  249.494484] [<c02e1a1c>] (start_isolate_page_range) from [<c02ae464>] (alloc_contig_range+0xc4/0x304)
+> > [  249.503724] [<c02ae464>] (alloc_contig_range) from [<c02e1e78>] (cma_alloc+0x134/0x1bc)
+> > [  249.511739] [<c02e1e78>] (cma_alloc) from [<c021308c>] (__alloc_from_contiguous+0x30/0xa0)
+> > [  249.520023] [<c021308c>] (__alloc_from_contiguous) from [<c021313c>] (cma_allocator_alloc+0x40/0x48)
+> > [  249.529173] [<c021313c>] (cma_allocator_alloc) from [<c0213318>] (__dma_alloc+0x1d4/0x2e8)
+> > [  249.537455] [<c0213318>] (__dma_alloc) from [<c02134a8>] (arm_dma_alloc+0x40/0x4c)
+> > [  249.545047] [<c02134a8>] (arm_dma_alloc) from [<c0534548>] (sh_eth_ring_init+0xec/0x1b8)
+> > [  249.553160] [<c0534548>] (sh_eth_ring_init) from [<c0536df0>] (sh_eth_open+0x88/0x1e0)
+> > [  249.561086] [<c0536df0>] (sh_eth_open) from [<c0536fc4>] (sh_eth_resume+0x7c/0xc0)
+> > [  249.568678] [<c0536fc4>] (sh_eth_resume) from [<c04d2240>] (dpm_run_callback+0x48/0xc8)
+> > [  249.576702] [<c04d2240>] (dpm_run_callback) from [<c04d2740>] (device_resume+0x15c/0x1a0)
+> > [  249.584898] [<c04d2740>] (device_resume) from [<c04d3644>] (dpm_resume+0xe4/0x244)
+> > [  249.592485] [<c04d3644>] (dpm_resume) from [<c04d3968>] (dpm_resume_end+0xc/0x18)
+> > [  249.599977] [<c04d3968>] (dpm_resume_end) from [<c0261010>] (suspend_devices_and_enter+0x3c8/0x490)
+> > [  249.609042] [<c0261010>] (suspend_devices_and_enter) from [<c0261300>] (pm_suspend+0x228/0x280)
+> > [  249.617759] [<c0261300>] (pm_suspend) from [<c025fecc>] (state_store+0xac/0xcc)
+> > [  249.625089] [<c025fecc>] (state_store) from [<c0343b04>] (kernfs_fop_write+0x164/0x1a0)
+> > [  249.633116] [<c0343b04>] (kernfs_fop_write) from [<c02e5838>] (__vfs_write+0x20/0x108)
+> > [  249.641043] [<c02e5838>] (__vfs_write) from [<c02e6c08>] (vfs_write+0xb8/0x144)
+> > [  249.648373] [<c02e6c08>] (vfs_write) from [<c02e788c>] (SyS_write+0x40/0x80)
+> > [  249.655437] [<c02e788c>] (SyS_write) from [<c0206cc0>] (ret_fast_syscall+0x0/0x34)
+> > [...]
+> > [  254.753928] Showing busy workqueues and worker pools:
+> > [...]
+> > [  254.854225] workqueue mm_percpu_wq: flags=0xc
+> > [  254.858583]   pwq 2: cpus=1 node=0 flags=0x0 nice=0 active=0/0
+> > [  254.864428]     delayed: drain_local_pages_wq, vmstat_update
+> > [  254.870111]   pwq 0: cpus=0 node=0 flags=0x0 nice=0 active=0/0
+> > [  254.875957]     delayed: drain_local_pages_wq BAR(1703), vmstat_update
 > >
-> > git clone https://github.com/gormanm/mmtests
-> > cd mmtests
-> > ./run-mmtests --no-monitor --config configs/config-global-dhp__workload_shellscripts test-run-1
-> > cd work/log
-> > ../../compare-kernels.sh | less
+> > Tetsuo has properly noted that mm_percpu_wq is created as WQ_FREEZABLE
+> > so it is frozen this early during resume so we are effectively deadlocked.
+> > Fix this by dropping WQ_FREEZABLE when creating mm_percpu_wq. We really want to
+> > have it operational all the time.
 > >
-> > and it'll generate a similar report to what I posted in this email
-> > thread. If you do multiple tests with different kernels then change the
-> > name of "test-run-1" to preserve the old data. compare-kernel.sh will
-> > compare whatever results you have.
+> > Fixes: ce612879ddc7 ("mm: move pcp and lru-pcp draining into single wq")
+> > Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> > Debugged-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+> > Signed-off-by: Michal Hocko <mhocko@suse.com>
 > 
->          k4.5    k4.11-rc6         k4.11-rc6         k4.11-rc6          k4.11-rc6         k4.11-rc6         k4.11-rc6
->                                    performance       pass-ps            pass-od           pass-su           revert
-> E min    388.71  456.51 (-17.44%)  342.81 ( 11.81%)  668.79 (-72.05%)   552.85 (-42.23%)  646.96 (-66.44%)  375.08 (  3.51%)
-> E mean   389.74  458.52 (-17.65%)  343.81 ( 11.78%)  669.42 (-71.76%)   553.45 (-42.01%)  647.95 (-66.25%)  375.98 (  3.53%)
-> E stddev   0.85    1.64 (-92.78%)    0.67 ( 20.83%)    0.41 ( 52.25%)     0.31 ( 64.00%)    0.68 ( 20.35%)    0.46 ( 46.00%)
-> E coeffvar 0.22    0.36 (-63.86%)    0.20 ( 10.25%)    0.06 ( 72.20%)     0.06 ( 74.65%)    0.10 ( 52.09%)    0.12 ( 44.03%)
-> E max    390.90  461.47 (-18.05%)  344.83 ( 11.79%)  669.91 (-71.38%)   553.68 (-41.64%)  648.75 (-65.96%)  376.37 (  3.72%)
-> 
-> E = Elapsed (squished in an attempt to prevent line length wrapping when I send)
-> 
->            k4.5   k4.11-rc6   k4.11-rc6   k4.11-rc6   k4.11-rc6   k4.11-rc6   k4.11-rc6
->                             performance     pass-ps     pass-od     pass-su      revert
-> User     347.26     1801.56     1398.76     2540.67     2106.30     2434.06     1536.80
-> System   139.01      701.87      366.59     1346.75     1026.67     1322.39      449.81
-> Elapsed 2346.77     2761.20     2062.12     4017.47     3321.10     3887.19     2268.90
-> 
-> Legend:
-> blank  = active mode: intel_pstate - powersave
-> performance = active mode: intel_pstate - performance (fast reference)
-> pass-ps = passive mode: intel_cpufreq - powersave (slow reference)
-> pass-od = passive mode: intel_cpufreq - ondemand
-> pass-su = passive mode: intel_cpufreq - schedutil
-> revert = active mode: intel_pstate - powersave with commit ffb810563c0c reverted.
-> 
-> I deleted the user, system, and CPU rows, because they don't make any sense.
-> 
+> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-User is particularly misleading. System can be very misleading between
-kernel versions due to accounting differences so I'm ok with that.
-
-> I do not know why the tests run overall so much faster on my computer,
-
-Differences in CPU I imagine. I know the machine I'm reporting on is a
-particularly bad example. I've seen other machines where the effect is
-less severe.
-
-> I can only assume I have something wrong in my installation of your mmtests.
-
-No, I've seen results broadly similar to yours on other machines so I
-don't think you have a methodology error.
-
-> I do see mmtests looking for some packages which it can not find.
-> 
-
-That's not too unusual. The package names are based on opensuse naming
-and that doesn't translate to other distributions. If you open
-bin/install-depends, you'll see a hashmap near the top that maps some of
-the names for redhat-based distributions and debian. It's not actively
-maintained. You can either install the packages manaually before the
-test or update the mappings.
-
-> Mel wrote:
-> > The results show that it's not the only source as a revert (last column)
-> > doesn't fix the damage although it goes from 3750 seconds (4.11-rc5 vanilla)
-> > to 2919 seconds (with a revert).
-> 
-> In my case, the reverted code ran faster than the kernel 4.5 code.
-> 
-> The other big difference is between Kernel 4.5 and 4.11-rc5 you got
-> -102.28% elapsed time, whereas I got -16.03% with method 1 and
-> -17.65% with method 2 (well, between 4.5 and 4.11-rc6 in my case).
-> I only get -93.28% and -94.82% difference between my fast and slow reference
-> tests (albeit on the same kernel).
-> 
-
-I have no reason to believe this is a methodology error and is due to a
-difference in CPU. Consider the following reports
-
-http://beta.suse.com/private/mgorman/results/home/marvin/openSUSE-LEAP-42.2/global-dhp__workload_shellscripts-xfs/delboy/#gitsource
-http://beta.suse.com/private/mgorman/results/home/marvin/openSUSE-LEAP-42.2/global-dhp__workload_shellscripts-xfs/ivy/#gitsource
-
-The first one (delboy) shows a gain of 1.35% and it's only for 4.11
-(kernel shown is 4.11-rc1 with vmscan-related patches on top that do not
-affect this test case) of -17.51% which is very similar to yours. The
-CPU there is a Xeon E3-1230 v5.
-
-The second report (ivy) is the machine I'm based the original complain
-on and shows the large regression in elapsed time.
-
-So, different CPUs have different behaviours which is no surprise at all
-considering that at the very least, exit latencies will be different.
-While there may not be a universally correct answer to how to do this
-automatically, is it possible to tune intel_pstate such that it ramps up
-quickly regardless of recent utilisation and reduces relatively slowly?
-That would be better from a power consumption perspective than setting the
-"performance" governor.
-
-Thanks.
-
+Thanks for the testing. Linus will you take the patch from this thread
+or you prefer a resend?
 -- 
-Mel Gorman
+Michal Hocko
 SUSE Labs
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
