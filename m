@@ -1,85 +1,97 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v7 3/5] ACPI: battery: Add a blacklist with PMIC ACPI HIDs with a native battery driver
-Date: Wed, 19 Apr 2017 14:02:10 +0200
-Message-ID: <20170419120212.24949-4-hdegoede@redhat.com>
+Subject: [PATCH v7 5/5] power: supply: axp288_charger: Only wait for INT3496 device if present
+Date: Wed, 19 Apr 2017 14:02:12 +0200
+Message-ID: <20170419120212.24949-6-hdegoede@redhat.com>
 References: <20170419120212.24949-1-hdegoede@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:47420 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1762821AbdDSMDS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 19 Apr 2017 08:03:18 -0400
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <20170419120212.24949-1-hdegoede@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
 Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On some systems we have a native PMIC driver which provides battery
-monitoring, while the ACPI battery driver is broken on these systems
-due to bad DSDTs or because we do not support the proprietary and
-undocumented ACPI opregions these ACPI battery devices rely on
-(e.g. BMOP opregion).
+On some devices with an axp288 pmic setting vbus path based on the
+id-pin is handled by an ACPI _AIE interrupt on the gpio and the
+INT3496 device is disabled.
 
-This leads to there being 2 battery power_supply-s registed like this:
+Instead of returning -EPROBE_DEFER on these devices waiting for the
+never to show up INT3496 device, check for its presence and only
+request and monitor the matching extcon if the device is there,
+otherwise let the firmware handle the vbus path control.
 
-~$ acpi
-Battery 0: Charging, 84%, 00:49:39 until charged
-Battery 1: Unknown, 0%, rate information unavailable
-
-Even if the ACPI battery where to function fine (which on systems
-where we have a native PMIC driver it often doesn't) we still do not
-want to export the same battery to userspace twice.
-
-This commit adds a blacklist with PMIC ACPI HIDs for which we've a
-native battery driver and makes the ACPI battery driver not register
-itself when a PMIC on this list is present.
-
-BugLink: https://bugzilla.kernel.org/show_bug.cgi?id=194811
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Sebastian Reichel <sre@kernel.org>
 ---
 Changes in v2:
--This is a new patch in v2 of this patch-set replacing:
- "ACPI: battery: Add acpi_battery_unregister() function"
- "power: supply: axp288_fuel_gauge: Unregister duplicate ACPI battery supply"
-Changes in v7:
--Some minor code style tweaks based on review from Andy Shevchenko
+-Do not schedule otg.work to sync the id-pin state when we don't have
+ the extcon, this avoids turning off charging as soon as the driver loads
+ on devices without the extcon
 ---
- drivers/acpi/battery.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/power/supply/axp288_charger.c | 28 ++++++++++++++++++----------
+ 1 file changed, 18 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-index b35fca4..d42eeef 100644
---- a/drivers/acpi/battery.c
-+++ b/drivers/acpi/battery.c
-@@ -94,6 +94,11 @@ static const struct acpi_device_id battery_device_ids[] = {
+diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
+index 6be2fe2..d51ebd1 100644
+--- a/drivers/power/supply/axp288_charger.c
++++ b/drivers/power/supply/axp288_charger.c
+@@ -14,6 +14,7 @@
+  * GNU General Public License for more details.
+  */
  
- MODULE_DEVICE_TABLE(acpi, battery_device_ids);
++#include <linux/acpi.h>
+ #include <linux/module.h>
+ #include <linux/device.h>
+ #include <linux/regmap.h>
+@@ -113,7 +114,8 @@
+ #define ILIM_3000MA			3000	/* 3000mA */
  
-+/* Lists of PMIC ACPI HIDs with an (often better) native battery driver */
-+static const char * const acpi_battery_blacklist[] = {
-+	"INT33F4", /* X-Powers AXP288 PMIC */
-+};
-+
- enum {
- 	ACPI_BATTERY_ALARM_PRESENT,
- 	ACPI_BATTERY_XINFO_PRESENT,
-@@ -1316,8 +1321,17 @@ static struct acpi_driver acpi_battery_driver = {
+ #define AXP288_EXTCON_DEV_NAME		"axp288_extcon"
+-#define USB_HOST_EXTCON_DEV_NAME	"INT3496:00"
++#define USB_HOST_EXTCON_HID		"INT3496"
++#define USB_HOST_EXTCON_NAME		"INT3496:00"
  
- static void __init acpi_battery_init_async(void *unused, async_cookie_t cookie)
- {
-+	unsigned int i;
- 	int result;
+ static const unsigned int cable_ids[] =
+ 	{ EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP, EXTCON_CHG_USB_DCP };
+@@ -807,10 +809,14 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 		return -EPROBE_DEFER;
+ 	}
  
-+	for (i = 0; i < ARRAY_SIZE(acpi_battery_blacklist); i++)
-+		if (acpi_dev_present(acpi_battery_blacklist[i], "1", -1)) {
-+			pr_info(PREFIX ACPI_BATTERY_DEVICE_NAME
-+				": found native %s PMIC, not loading\n",
-+				acpi_battery_blacklist[i]);
-+			return;
+-	info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_DEV_NAME);
+-	if (info->otg.cable == NULL) {
+-		dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
+-		return -EPROBE_DEFER;
++	if (acpi_dev_present(USB_HOST_EXTCON_HID, NULL, -1)) {
++		info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_NAME);
++		if (info->otg.cable == NULL) {
++			dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
++			return -EPROBE_DEFER;
 +		}
-+
- 	dmi_check_system(bat_dmi_table);
++		dev_info(&pdev->dev,
++			 "Using " USB_HOST_EXTCON_HID " extcon for usb-id\n");
+ 	}
  
- #ifdef CONFIG_ACPI_PROCFS_POWER
+ 	platform_set_drvdata(pdev, info);
+@@ -849,13 +855,15 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 	/* Register for OTG notification */
+ 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
+ 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
+-	ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
++	if (info->otg.cable) {
++		ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
+ 					EXTCON_USB_HOST, &info->otg.id_nb);
+-	if (ret) {
+-		dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
+-		return ret;
++		if (ret) {
++			dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
++			return ret;
++		}
++		schedule_work(&info->otg.work);
+ 	}
+-	schedule_work(&info->otg.work);
+ 
+ 	/* Register charger interrupts */
+ 	for (i = 0; i < CHRG_INTR_END; i++) {
 -- 
 2.9.3
+
