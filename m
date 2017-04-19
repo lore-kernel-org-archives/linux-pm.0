@@ -1,82 +1,126 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH] drm/etnaviv: add thermal dependency
-Date: Wed, 19 Apr 2017 21:58:54 +0300
-Message-ID: <CAHp75VeL0CV2=YNgMfbt4upWnq0=yg2aYwEjK8dg+Tuq0YAx4g@mail.gmail.com>
-References: <20170419181209.537907-1-arnd@arndb.de>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH] i2c: designware: Do nothing in system suspend/resume
+ when RT suspended
+Date: Wed, 19 Apr 2017 20:59:10 +0200
+Message-ID: <20170419185909.dl5h6xhkd6f72na3@ninjato>
+References: <20170330120444.12499-1-jarkko.nikula@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <20170419181209.537907-1-arnd@arndb.de>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Platform Driver <platform-driver-x86@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sujith Thomas <sujith.thomas@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, etnaviv@lists.freedesktop.org, Eduardo Valentin <edubezval@gmail.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Russell King <linux+etnaviv@armlinux.org.uk>, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, Andy Shevchenko <andy@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="c5wxliccl7662yww"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from sauhun.de ([88.99.104.3]:44515 "EHLO pokefinder.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S967081AbdDSS70 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 19 Apr 2017 14:59:26 -0400
+Content-Disposition: inline
+In-Reply-To: <20170330120444.12499-1-jarkko.nikula@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc: linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-T24gV2VkLCBBcHIgMTksIDIwMTcgYXQgOToxMSBQTSwgQXJuZCBCZXJnbWFubiA8YXJuZEBhcm5k
-Yi5kZT4gd3JvdGU6Cj4gV2hlbiBDT05GSUdfVEhFUk1BTCBpcyBlbmFibGVkIGFzIGEgbG9hZGFi
-bGUgbW9kdWxlLCBhbmQgZXRuYXZpdiBpcwo+IGJ1aWx0LWluLCB3ZSBnZXQgYSBsaW5rIGVycm9y
-Ogo+Cj4gZHJpdmVycy9ncHUvZHJtL2V0bmF2aXYvZXRuYXZpdl9ncHUubzogSW4gZnVuY3Rpb24g
-YGV0bmF2aXZfZ3B1X2JpbmQnOgo+IGV0bmF2aXZfZ3B1LmM6KC50ZXh0LmV0bmF2aXZfZ3B1X2Jp
-bmQrMHgzNCk6IHVuZGVmaW5lZCByZWZlcmVuY2UgdG8gYHRoZXJtYWxfb2ZfY29vbGluZ19kZXZp
-Y2VfcmVnaXN0ZXInCj4gZXRuYXZpdl9ncHUuYzooLnRleHQuZXRuYXZpdl9ncHVfYmluZCsweGUw
-KTogdW5kZWZpbmVkIHJlZmVyZW5jZSB0byBgdGhlcm1hbF9jb29saW5nX2RldmljZV91bnJlZ2lz
-dGVyJwo+IGRyaXZlcnMvZ3B1L2RybS9ldG5hdml2L2V0bmF2aXZfZ3B1Lm86IEluIGZ1bmN0aW9u
-IGBldG5hdml2X2dwdV91bmJpbmQnOgo+IGV0bmF2aXZfZ3B1LmM6KC50ZXh0LmV0bmF2aXZfZ3B1
-X3VuYmluZCsweGYwKTogdW5kZWZpbmVkIHJlZmVyZW5jZSB0byBgdGhlcm1hbF9jb29saW5nX2Rl
-dmljZV91bnJlZ2lzdGVyJwo+Cj4gVGhpcyBhZGRzIGEgS2NvbmZpZyBkZXBlbmRlbmN5IHRvIHBy
-ZXZlbnQgZXRuYXZpdiBmcm9tIGJlaW5nIGJ1aWx0LWluCj4gd2l0aCBDT05GSUdfVEhFUk1BTD1t
-LCB3aGlsZSBzdGlsbCBhbGxvd2luZyB0aGUgdmFsaWQgY29uZmlndXJhdGlvbnMuCj4gVW5mb3J0
-dW5hdGVseSwgc2ltcGx5IGFkZGluZyB0aGUgZGVwZW5kZW5jeSBoZXJlIGJyZWFrcyBLY29uZmln
-IHRocm91Z2gKPiBhIGRlcGVuZGVuY3kgbG9vcCBpbnZvbHZpbmcgbG90cyBvZiBzeW1ib2xzIGFs
-bCB0aGUgd2F5IHVudGlsIEFDUElfVklERU8sCj4gd2hpY2ggaXMgdGhlIG9ubHkgdmlkZW8gZHJp
-dmVyIHRoYXQgZXhwbGljaXRseSBzZWxlY3RzICdUSEVSTUFMJy4gVHVybmluZwo+IHRoaXMgaW50
-byBhICdkZXBlbmRzIG9uJyBhZGRyZXNzZXMgdGhlIHByb2JsZW0uCj4gRm9yIGNvbXBsZXRlbmVz
-cywgSSdtIGFsc28gcmVtb3ZpbmcgdGhlIHJlZHVuZGFudCAnc2VsZWN0IFRIRVJNQUwnCj4gZnJv
-bSBJTlRFTF9NRU5MT1csIHNvIG5vIG90aGVyIGRyaXZlciB1c2VzIHRoYXQgc3RhdGVtZW50Lgo+
-CgpGb3IgUER4ODYgcGFydDoKCkFja2VkLWJ5OiBBbmR5IFNoZXZjaGVua28gPGFuZHkuc2hldmNo
-ZW5rb0BnbWFpbC5jb20+Cgo+IEZpeGVzOiBiY2RmYjVlNTZkYzUgKCJkcm0vZXRuYXZpdjogYWRk
-IGV0bmF2aXYgY29vbGluZyBkZXZpY2UiKQo+IFNpZ25lZC1vZmYtYnk6IEFybmQgQmVyZ21hbm4g
-PGFybmRAYXJuZGIuZGU+Cj4gLS0tCj4gIGRyaXZlcnMvYWNwaS9LY29uZmlnICAgICAgICAgICAg
-fCAyICstCj4gIGRyaXZlcnMvZ3B1L2RybS9ldG5hdml2L0tjb25maWcgfCAxICsKPiAgZHJpdmVy
-cy9wbGF0Zm9ybS94ODYvS2NvbmZpZyAgICB8IDEgLQo+ICAzIGZpbGVzIGNoYW5nZWQsIDIgaW5z
-ZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKPgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2FjcGkv
-S2NvbmZpZyBiL2RyaXZlcnMvYWNwaS9LY29uZmlnCj4gaW5kZXggMDNjYzRlNzQwOTZiLi4yNTIz
-OTllZmE4YjMgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9hY3BpL0tjb25maWcKPiArKysgYi9kcml2
-ZXJzL2FjcGkvS2NvbmZpZwo+IEBAIC0xODQsNyArMTg0LDcgQEAgY29uZmlnIEFDUElfVklERU8K
-PiAgICAgICAgIHRyaXN0YXRlICJWaWRlbyIKPiAgICAgICAgIGRlcGVuZHMgb24gWDg2ICYmIEJB
-Q0tMSUdIVF9DTEFTU19ERVZJQ0UKPiAgICAgICAgIGRlcGVuZHMgb24gSU5QVVQKPiAtICAgICAg
-IHNlbGVjdCBUSEVSTUFMCj4gKyAgICAgICBkZXBlbmRzIG9uIFRIRVJNQUwKPiAgICAgICAgIGhl
-bHAKPiAgICAgICAgICAgVGhpcyBkcml2ZXIgaW1wbGVtZW50cyB0aGUgQUNQSSBFeHRlbnNpb25z
-IEZvciBEaXNwbGF5IEFkYXB0ZXJzCj4gICAgICAgICAgIGZvciBpbnRlZ3JhdGVkIGdyYXBoaWNz
-IGRldmljZXMgb24gbW90aGVyYm9hcmQsIGFzIHNwZWNpZmllZCBpbgo+IGRpZmYgLS1naXQgYS9k
-cml2ZXJzL2dwdS9kcm0vZXRuYXZpdi9LY29uZmlnIGIvZHJpdmVycy9ncHUvZHJtL2V0bmF2aXYv
-S2NvbmZpZwo+IGluZGV4IDcxY2VlNGU5ZmVmYi4uMWQ2Yzc0NGU3OTI0IDEwMDY0NAo+IC0tLSBh
-L2RyaXZlcnMvZ3B1L2RybS9ldG5hdml2L0tjb25maWcKPiArKysgYi9kcml2ZXJzL2dwdS9kcm0v
-ZXRuYXZpdi9LY29uZmlnCj4gQEAgLTMsNiArMyw3IEBAIGNvbmZpZyBEUk1fRVROQVZJVgo+ICAg
-ICAgICAgdHJpc3RhdGUgIkVUTkFWSVYgKERSTSBzdXBwb3J0IGZvciBWaXZhbnRlIEdQVSBJUCBj
-b3JlcykiCj4gICAgICAgICBkZXBlbmRzIG9uIERSTQo+ICAgICAgICAgZGVwZW5kcyBvbiBBUkNI
-X01YQyB8fCBBUkNIX0RPVkUgfHwgKEFSTSAmJiBDT01QSUxFX1RFU1QpCj4gKyAgICAgICBkZXBl
-bmRzIG9uIFRIRVJNQUwgfHwgVEhFUk1BTD1uCj4gICAgICAgICBkZXBlbmRzIG9uIE1NVQo+ICAg
-ICAgICAgc2VsZWN0IFNITUVNCj4gICAgICAgICBzZWxlY3QgU1lOQ19GSUxFCj4gZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvcGxhdGZvcm0veDg2L0tjb25maWcgYi9kcml2ZXJzL3BsYXRmb3JtL3g4Ni9L
-Y29uZmlnCj4gaW5kZXggZTIyOWVhMzE3YjljLi43NmNlZDg3ZWZkZTUgMTAwNjQ0Cj4gLS0tIGEv
-ZHJpdmVycy9wbGF0Zm9ybS94ODYvS2NvbmZpZwo+ICsrKyBiL2RyaXZlcnMvcGxhdGZvcm0veDg2
-L0tjb25maWcKPiBAQCAtNTQ0LDcgKzU0NCw2IEBAIGNvbmZpZyBTRU5TT1JTX0hEQVBTCj4gIGNv
-bmZpZyBJTlRFTF9NRU5MT1cKPiAgICAgICAgIHRyaXN0YXRlICJUaGVybWFsIE1hbmFnZW1lbnQg
-ZHJpdmVyIGZvciBJbnRlbCBtZW5sb3cgcGxhdGZvcm0iCj4gICAgICAgICBkZXBlbmRzIG9uIEFD
-UElfVEhFUk1BTAo+IC0gICAgICAgc2VsZWN0IFRIRVJNQUwKPiAgICAgICAgIC0tLWhlbHAtLS0K
-PiAgICAgICAgICAgQUNQSSB0aGVybWFsIG1hbmFnZW1lbnQgZW5oYW5jZW1lbnQgZHJpdmVyIG9u
-Cj4gICAgICAgICAgIEludGVsIE1lbmxvdyBwbGF0Zm9ybS4KPiAtLQo+IDIuOS4wCj4KCgoKLS0g
-CldpdGggQmVzdCBSZWdhcmRzLApBbmR5IFNoZXZjaGVua28KX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2
-ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21h
-aWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+
+--c5wxliccl7662yww
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, Mar 30, 2017 at 03:04:44PM +0300, Jarkko Nikula wrote:
+> There is possibility to enter dw_i2c_plat_suspend() callback twice
+> during system suspend under certain cases which is causing here warnings
+> from clk_core_disable() and clk_core_unprepare() as well as accessing the
+> registers that can be power gated.
+>=20
+> Commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming during
+> system suspend") implemented a prepare callback that checks for runtime
+> suspended device which allow PM core to set direct_complete flag and
+> skip system suspend and resume callbacks.
+>=20
+> However it can still happen if nothing resumes the device prior system
+> syspend (e.g. acpi_subsys_suspend()) and there is a slave device which
+> unsets the direct_complete flag of the parent in __device_suspend() thus
+> causing PM code to not skip the system suspend/resume callbacks.
+>=20
+> Avoid this by checking runtime status in suspend and resume callbacks
+> and return directly if device is runtime suspended. This affects only
+> system suspend/resume since during runtime suspend/resume runtime status
+> is suspending (not suspended) or resuming.
+>=20
+> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+> ---
+> I'm able to trigger system suspend callback while device is runtime
+> suspended by removing the pm_runtime_resume() call from
+> drivers/mfd/intel-lpss.c: resume_lpss_device() and having unbound I2C
+> slave (ACPI enumerated but doesn't bind due an error in probe function).
+> In that case __device_suspend() for that unbound device has NULL suspend
+> callback, and thus doesn't cause any runtime resume chain but still unsets
+> the parent's direct_complete flag.
+> John Stult <john.stultz@linaro.org> has reported he can trigger this on
+> HiKey board too.
+>=20
+> I'm not sure is this the right thing to do. It feels something the PM core
+> should do but I'm not sure that either. One alternative could be to resume
+> runtime suspended parent in in __device_suspend() right after where
+> parent's direct_complete flag is unset.
+
+Because of the last paragraph, I'd like a positive comment or tag from
+one of the PM people before I apply this one.
+
+> ---
+>  drivers/i2c/busses/i2c-designware-platdrv.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>=20
+> diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/bu=
+sses/i2c-designware-platdrv.c
+> index a597ba32de7e..42a9cd09aa64 100644
+> --- a/drivers/i2c/busses/i2c-designware-platdrv.c
+> +++ b/drivers/i2c/busses/i2c-designware-platdrv.c
+> @@ -377,6 +377,9 @@ static int dw_i2c_plat_suspend(struct device *dev)
+>  	struct platform_device *pdev =3D to_platform_device(dev);
+>  	struct dw_i2c_dev *i_dev =3D platform_get_drvdata(pdev);
+> =20
+> +	if (pm_runtime_suspended(dev))
+> +		return 0;
+> +
+>  	i2c_dw_disable(i_dev);
+>  	i2c_dw_plat_prepare_clk(i_dev, false);
+> =20
+> @@ -388,6 +391,9 @@ static int dw_i2c_plat_resume(struct device *dev)
+>  	struct platform_device *pdev =3D to_platform_device(dev);
+>  	struct dw_i2c_dev *i_dev =3D platform_get_drvdata(pdev);
+> =20
+> +	if (pm_runtime_suspended(dev))
+> +		return 0;
+> +
+>  	i2c_dw_plat_prepare_clk(i_dev, true);
+>  	i2c_dw_init(i_dev);
+> =20
+> --=20
+> 2.11.0
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-i2c" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+--c5wxliccl7662yww
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlj3s30ACgkQFA3kzBSg
+KbZP7w//QOFIsFyMdLgXxe/SjuffKpyFFIyQprjCjtKvc7zjTliTzO0qqfDxinlI
+zUennoxYK2ilSWFfUkNfyy/OvGI2dd5CsKhYu0iyzGOygDz8jGCds91IIyGb4mOv
+KiDdnzm+6jjNx6PmGSP26dn0jWyp7Bc84epmLAey7ZuqYZuLwOZxmtzHhh3afYtz
+n6gXthV3YlA/KRJAsgj/LtPZXIQySSRyQPDmM7hWfCBeRC8Xy0zCQ0uRKwZxP33c
+KIeFlbOq66REozlcQ2bh5ot8jyxXAKPX259CEQPKrZDdFgHmsMCsycvVZ+HaiVcd
+8e0gqdLRud6jvQVW4wYN45qSgonU/t4c8dcEbtjVKsfZvfyaoffcv57GQ7kBRhyW
+cUjQoIdGcqQP7lPWDhezJ0+SMppXk+tkzDzjod7USm87EAmd11OVtZOIjkVvPl7e
+70mpGt9ZOJa76JCe2r8k5pIVOCaT+bKBuHDlCLzLWbyolkpy0kmCAYmakuOFqJn3
+XQY2OFXN/StwzI6uxpeKfdaTYGMjZV+yyyIhhq94W8K++MxuTxqLblFqxM5o/PVW
+IXzMejlZu5oeiflQvH9H0VsXcXGw3VTHYXfV3n5aeW9ADCVCFXbnx8nupuXKnRu2
+7cnHeMwTKj+NN7cMbnptgkJZ1AYMrNTTufMvyF/XBjxsT1dhLMw=
+=APeh
+-----END PGP SIGNATURE-----
+
+--c5wxliccl7662yww--
