@@ -1,62 +1,43 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch V2 08/10] timer: Implement the hierarchical pull model
-Date: Wed, 19 Apr 2017 11:20:51 +0200
-Message-ID: <20170419092051.rumeh5t7gnd5itap@hirez.programming.kicks-ass.net>
-References: <20170418111102.490432548@linutronix.de>
- <20170418111401.016420305@linutronix.de>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH v2 0/4] ARM: imx: Set LDO regulator supply
+Date: Wed, 19 Apr 2017 12:28:01 +0300
+Message-ID: <1492594081.15137.0.camel@nxp.com>
+References: <cover.1491324640.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:60880 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1761446AbdDSJU6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 05:20:58 -0400
-Content-Disposition: inline
-In-Reply-To: <20170418111401.016420305@linutronix.de>
+Received: from mail-cys01nam02on0085.outbound.protection.outlook.com ([104.47.37.85]:55264
+        "EHLO NAM02-CY1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1761616AbdDSJ2K (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 19 Apr 2017 05:28:10 -0400
+In-Reply-To: <cover.1491324640.git.leonard.crestez@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>, Robin Gong <yibin.gong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On Tue, Apr 18, 2017 at 01:11:10PM +0200, Thomas Gleixner wrote:
-> +#ifdef CONFIG_SMP
-> +static u64
-> +tick_tmigr_idle(struct tick_sched *ts, u64 next_global, u64 next_local)
-> +{
-> +	ts->tmigr_idle = 1;
-> +
-> +	/*
-> +	 * If next_global is after next_local, event does not have to
-> +	 * be queued in the timer migration hierarchy, but cpu needs
-> +	 * to be marked as idle.
-> +	 */
-> +	if (next_global >= next_local)
-> +		next_global = KTIME_MAX;
-> +
-> +	next_global = tmigr_cpu_idle(next_global);
-> +
-> +	return min_t(u64, next_local, next_global);
-> +}
-> +
-> +static void tick_tmigr_stop_idle(struct tick_sched *ts)
-> +{
-> +	if (ts->tmigr_idle) {
-> +		ts->tmigr_idle = 0;
-> +		tmigr_cpu_activate();
-> +	}
-> +}
-> +#else
-> +static u64
-> +tick_tmigr_idle(struct tick_sched *ts, u64 next_global, u64 next_local)
-> +{
-> +	return min_t(u64, next_global, next_local);
-> +}
-> +static inline void tick_tmigr_stop_idle(struct tick_sched *ts) { }
-> +#endif /*CONFIG_SMP*/
+On Tue, 2017-04-04 at 20:04 +0300, Leonard Crestez wrote:
+> Setting the LDO regulator parent is optional but beneficial. It will cause
+> the PMIC output voltage to be dynamically set to the minimum input for the
+> LDOs, this should be more efficient.
+> 
+> This propagation was introduced by:
+> commit fc42112c0eaa ("regulator: core: Propagate voltage changes to supply
+> regulators")
+> 
+> Changes since v1:
+>  * Drop patch 1 since it only avoids logging a warning and the gpc driver
+> is going through more changes.
+>  * Initialize cpufreq->suspend_freq based on policy->max instead.
+>  * Remove reference to ldo-bypass from suspend_freq patch message.
 
-Naming seems inconsistent with the rest of the file;
+Hello,
 
-  s/tick_tmigr_idle/tick_tmigr_idle_enter/
-  s/tick_tmigr_stop_idle/tick_tmigr_idle_exit/
+This is a gentle reminder that this was sent ~2 weeks ago and patches 1
+and 2 are still waiting (with no objections). Patches 3/4 were applied.
 
-Or something would fit better.
+--
+Regards,
+Leonard
