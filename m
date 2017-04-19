@@ -1,76 +1,50 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Subject: Re: [Query] Enabling parent device clock from resume_noirq
-Date: Wed, 19 Apr 2017 16:40:20 +0530
-Message-ID: <23a79524-0445-e9cb-2e51-2dd2e37e4f5b@ti.com>
-References: <62cd5ee0-3f0c-5e65-5f64-0c91a2a6f1e6@ti.com>
- <4c6e91e4-35fa-2fde-7915-fb922ec22567@ti.com>
+From: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
+Subject: [PATCH RESEND] cpuidle: cpuidle-cps: remove unused variable
+Date: Wed, 19 Apr 2017 13:20:54 +0200
+Message-ID: <1492600854-23810-1-git-send-email-marcin.nowakowski@imgtec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <4c6e91e4-35fa-2fde-7915-fb922ec22567@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, khilman@kernel.org, rnayak@codeaurora.org, Paul Walmsley <paul@pwsan.com>, Bjorn Helgaas <helgaas@kernel.org>, "Nori, Sekhar" <nsekhar@ti.com>, "Kristo, Tero" <t-kristo@ti.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailapp01.imgtec.com ([195.59.15.196]:29394 "EHLO
+        mailapp01.imgtec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934010AbdDSLU7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 07:20:59 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "^Cfael J . Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, Marcin Nowakowski <marcin.nowakowski@imgtec.com>, trivial@kernel.org
 
-Hi,
+'core' in cps_cpuidle_init has never been used and is unnecessary, so
+remove the dead code.
 
-On Wednesday 19 April 2017 01:35 AM, Grygorii Strashko wrote:
-> + linux-pm
-> 
-> On 04/18/2017 01:07 AM, Kishon Vijay Abraham I wrote:
->> Hi,
->>
->> resume_noirq callbacks are used in PCIe core to restore PCI state (this
->> accesses PCI module). So the clocks of PCI module has to be enabled before
->> resume_noirq.
->>
->> The clocks for the PCI module in DRA7xx is provided by PIPE3 PHY device which
->> in turn gets it's clock from OCP2SCP device. During resume_noirq callbacks,
->> pm_runtime is disabled, so pm_runtime_get_sync is ineffective. However
->> pm_runtime can be enabled using pm_runtime_force_resume. Now the problem is
->> adding pm_runtime_force_resume() in resume_noirq callback of pci-dra7xx driver
->> will enable only the pm_runtime of PCI device but not PIPE3 PHY or OCP2SCP.
->> Adding pm_runtime_force_resume() in resume_noirq callback of PIPE3 PHY driver
->> or OCP2SCP driver will not help if the resume_noirq callbacks in PIP3PHY driver
->> and OCP2SCP driver are invoked after the resume_noirq of pci-dra7xx driver.
->>
->> How to enable the pm_runtime of parent devices in resume_noirq callback? Does
->> existing pm_runtime framework has support for that?
->>
-> 
-> Most probably you've hit the issue described in [1].
-> In general, if pci-dra7xx is consumer of  PIPE3 PHY device and 
-> PIPE3 PHY device is child of OCP2SCP then suspend/resume order should be
-> - pci-dra7xx
-> - PIPE3 PHY
-> - OCP2SCP
->  and resume
-> - OCP2SCP
-> - PIPE3 PHY
-> - pci-dra7xx
-> and in this case  pm_runtime_force_x() might work.
-> 
-> Hence, approach [1] was not accepted (personally I still like it) and
-> "Functional dependencies tracking support" was introduced instead by commit 9ed9895 [2]
-> you can try it.
-> 
-> But, as per code, I'm not sure that Functional dependencies properly tracked in 
-> pm_runtime_force_x() functions.
-> 
-> PS: you can try to reorder device's nodes in DT and place PCI node after "ocp2scp" :P
+Signed-off-by: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
+Cc: trivial@kernel.org
+---
+ Re-sending to the linux-pm mailing list, as I missed it earlier
 
-reordering helps ;-) I'll try the functional dependencies.
+ drivers/cpuidle/cpuidle-cps.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Thanks for the hint :-)
-
-Cheers
-Kishon
+diff --git a/drivers/cpuidle/cpuidle-cps.c b/drivers/cpuidle/cpuidle-cps.c
+index 926ba98..12b9145 100644
+--- a/drivers/cpuidle/cpuidle-cps.c
++++ b/drivers/cpuidle/cpuidle-cps.c
+@@ -118,7 +118,7 @@ static void __init cps_cpuidle_unregister(void)
+ 
+ static int __init cps_cpuidle_init(void)
+ {
+-	int err, cpu, core, i;
++	int err, cpu, i;
+ 	struct cpuidle_device *device;
+ 
+ 	/* Detect supported states */
+@@ -160,7 +160,6 @@ static int __init cps_cpuidle_init(void)
+ 	}
+ 
+ 	for_each_possible_cpu(cpu) {
+-		core = cpu_data[cpu].core;
+ 		device = &per_cpu(cpuidle_dev, cpu);
+ 		device->cpu = cpu;
+ #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
+-- 
+2.7.4
