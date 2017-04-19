@@ -1,49 +1,47 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PCI: Freeze PME scan before suspending devices
-Date: Wed, 19 Apr 2017 08:07:24 +0200
-Message-ID: <CAMuHMdUCqcQndMJuyxuYZdXKrzDUwXCnagR_3gtV7Ay2sv5d1A@mail.gmail.com>
-References: <03aaf3220cccbabb7db86aa4eb10d1147add5c34.1492536769.git.lukas@wunner.de>
- <4107359.5uIJCz7KyJ@avalon>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch V2 03/10] timers: Rework idle logic
+Date: Wed, 19 Apr 2017 08:50:39 +0200
+Message-ID: <20170419065039.nhmi5vrhydqy5ftw@hirez.programming.kicks-ass.net>
+References: <20170418111102.490432548@linutronix.de>
+ <20170418111400.589271247@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <4107359.5uIJCz7KyJ@avalon>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <bhelgaas@google.com>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Simon Horman <horms+renesas@verge.net.au>, Yinghai Lu <yinghai@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, linux-pci <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from merlin.infradead.org ([205.233.59.134]:51878 "EHLO
+        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933239AbdDSGu4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 02:50:56 -0400
+Content-Disposition: inline
+In-Reply-To: <20170418111400.589271247@linutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>
 
-Hi Laurent,
+On Tue, Apr 18, 2017 at 01:11:05PM +0200, Thomas Gleixner wrote:
+> Storing next event and determining whether the base is idle can be done in
+> __next_timer_interrupt(). 
+> 
+> Preparatory patch for new call sites which need this information as well.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  kernel/time/timer.c |   43 ++++++++++++++++++++++++-------------------
+>  1 file changed, 24 insertions(+), 19 deletions(-)
+> 
+> --- a/kernel/time/timer.c
+> +++ b/kernel/time/timer.c
+> @@ -1358,8 +1358,11 @@ static int next_pending_bucket(struct ti
+>  /*
+>   * Search the first expiring timer in the various clock levels. Caller must
+>   * hold base->lock.
+> + *
+> + * Stores the next expiry time in base. The return value indicates whether
+> + * the base is empty or not.
+>   */
+> -static unsigned long __next_timer_interrupt(struct timer_base *base)
+> +static bool __next_timer_interrupt(struct timer_base *base)
 
-On Wed, Apr 19, 2017 at 12:05 AM, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
->
-> On Tuesday 18 Apr 2017 20:44:30 Lukas Wunner wrote:
->> Laurent Pinchart reported that the Renesas R-Car H2 Lager board
->> (r8a7790) crashes during suspend tests.  Geert Uytterhoeven managed to
->> reproduce the issue on an M2-W Koelsch board (r8a7791):
-
-[...]
-
->> Reported-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
->
-> My Lager board now fails to resume (but that's also the case without this
-> patch, I'll have to investigate that separately) but the PCI crash is gone, so
-
-"mm: move pcp and lru-pcp draining into single wq" broke resume from s2ram
-(https://lkml.org/lkml/2017/4/18/614)
-
-> Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
-Thanks for double checking!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Can't say I'm a fan of this.. I sort of see where this is going, but the
+fact remains that __next_timer_interrupt(), as a function, makes me
+expect a return value of time/timer quantity.
