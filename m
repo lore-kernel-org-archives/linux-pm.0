@@ -1,41 +1,124 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH v7 0/5] ACPI: new acpi_dev_present helper + ac and
- battery blacklist patches
-Date: Wed, 19 Apr 2017 23:33:40 +0300
-Message-ID: <20170419203340.GI2619@lahna.fi.intel.com>
-References: <20170419120212.24949-1-hdegoede@redhat.com>
- <CAJZ5v0i1oFMaqRF85TzvEM_ZHAe+rUUXqRruy7aHY_PwGcCw0w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0i1oFMaqRF85TzvEM_ZHAe+rUUXqRruy7aHY_PwGcCw0w@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+From: Doug Smythies <doug.smythies@gmail.com>
+Subject: [PATCH] cpufreq: intel_pstate: allow trace in passive mode
+Date: Wed, 19 Apr 2017 14:16:17 -0700
+Message-ID: <1492636577-8507-1-git-send-email-dsmythies@telus.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f196.google.com ([209.85.223.196]:35552 "EHLO
+        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S966699AbdDSVQn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 17:16:43 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: srinivas.pandruvada@linux.intel.com, rjw@rjwysocki.net
+Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, Apr 19, 2017 at 09:37:50PM +0200, Rafael J. Wysocki wrote:
-> On Wed, Apr 19, 2017 at 2:02 PM, Hans de Goede <hdegoede@redhat.com> wrote:
-> > Hi Rafael,
-> >
-> > This is a new version of my acpi_dev_present helper + ac and battery
-> > blacklist patches, new compared to the v5 resend of the latest
-> > version of all these patches are some changes to the first,
-> > third and fourth patch as requested by Andy Shevchenko.
-> >
-> > This set also includes a power-supply patch, which depends on the
-> > new acpi_dev_present helper and has an Ack from Sebastian Reichel
-> > (the power-supply maintainer) for being merged through the ACPI
-> > tree because of that dependency.
-> >
-> > These patches obsolete:
-> > -earlier versions of patches with the same title
-> > -"ACPI: battery: Add acpi_battery_unregister() function"
-> > -"ACPI: ac: Add acpi_ac_unregister() function"
-> > -"power: supply: axp288_fuel_gauge: Unregister duplicate ACPI battery supply"
-> > -"power: supply: axp288_charger: Unregister duplicate ACPI ac supply"
-> 
-> Andy, Mika, any concerns about anything this series?
+Allow use of the trace_pstate_sample trace function
+when the intel_pstate driver is in passive mode.
+Since the core_busy and scaled_busy fields are not
+used, and it might be desirable to know which path
+through the driver was used, either intel_cpufreq_target
+or intel_cpufreq_fast_switch, re-task the core_busy
+field as a flag indicator.
 
-No concerns from my side.
+The user can then use the intel_pstate_tracer.py utility
+to summarize and plot the trace.
+
+In Passive mode the driver is only called if there is
+a need to change the target frequency, so durations
+(time gaps between calls) can be very very long. The user
+needs to understand, and not be confused by, this limitation.
+
+Signed-off-by: Doug Smythies <dsmythies@telus.net>
+---
+ drivers/cpufreq/intel_pstate.c | 50 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 48 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 283491f..04e91ed 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2271,7 +2271,10 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
+ {
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+ 	struct cpufreq_freqs freqs;
+-	int target_pstate;
++	struct sample *sample;
++	int target_pstate, from;
++	u64 time;
++	bool sample_taken;
+ 
+ 	update_turbo_state();
+ 
+@@ -2291,12 +2294,32 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
+ 		break;
+ 	}
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
++
++	from = cpu->pstate.current_pstate;
++	time = ktime_get();
++	sample_taken = intel_pstate_sample(cpu, time);
++
+ 	if (target_pstate != cpu->pstate.current_pstate) {
+ 		cpu->pstate.current_pstate = target_pstate;
+ 		wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
+ 			      pstate_funcs.get_val(cpu, target_pstate));
+ 	}
+ 	freqs.new = target_pstate * cpu->pstate.scaling;
++
++	if (sample_taken) {
++		intel_pstate_calc_avg_perf(cpu);
++		sample = &cpu->sample;
++		trace_pstate_sample(0,
++		0,
++		from,
++		cpu->pstate.current_pstate,
++		sample->mperf,
++		sample->aperf,
++		sample->tsc,
++		get_avg_frequency(cpu),
++		fp_toint(cpu->iowait_boost * 100));
++	}
++
+ 	cpufreq_freq_transition_end(policy, &freqs, false);
+ 
+ 	return 0;
+@@ -2306,13 +2329,36 @@ static unsigned int intel_cpufreq_fast_switch(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+-	int target_pstate;
++	struct sample *sample;
++	int target_pstate, from;
++	u64 time;
++	bool sample_taken;
+ 
+ 	update_turbo_state();
+ 
+ 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
++
++	from = cpu->pstate.current_pstate;
++	time = ktime_get();
++	sample_taken = intel_pstate_sample(cpu, time);
++
+ 	intel_pstate_update_pstate(cpu, target_pstate);
++
++	if (sample_taken) {
++		intel_pstate_calc_avg_perf(cpu);
++		sample = &cpu->sample;
++		trace_pstate_sample(100,
++		0,
++		from,
++		cpu->pstate.current_pstate,
++		sample->mperf,
++		sample->aperf,
++		sample->tsc,
++		get_avg_frequency(cpu),
++		fp_toint(cpu->iowait_boost * 100));
++	}
++
+ 	return target_pstate * cpu->pstate.scaling;
+ }
+ 
+-- 
+2.7.4
