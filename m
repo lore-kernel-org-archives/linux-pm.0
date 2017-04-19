@@ -1,124 +1,53 @@
-From: Doug Smythies <doug.smythies@gmail.com>
-Subject: [PATCH] cpufreq: intel_pstate: allow trace in passive mode
-Date: Wed, 19 Apr 2017 14:16:17 -0700
-Message-ID: <1492636577-8507-1-git-send-email-dsmythies@telus.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3] PM / OPP: Use - instead of @ for DT entries
+Date: Thu, 20 Apr 2017 00:06:03 +0200
+Message-ID: <3142028.bncGUUQ4qB@aspire.rjw.lan>
+References: <734c5d5a66ef8a5505f368fc68a8ab9c02d710f9.1492492253.git.viresh.kumar@linaro.org> <20170419142215.GA12105@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f196.google.com ([209.85.223.196]:35552 "EHLO
-        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S966699AbdDSVQn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 17:16:43 -0400
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49075 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S936481AbdDSWMP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 18:12:15 -0400
+In-Reply-To: <20170419142215.GA12105@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: srinivas.pandruvada@linux.intel.com, rjw@rjwysocki.net
-Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Olof Johansson <olof@lixom.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, arm@kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Beno??t Cousson <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Masahiro
 
-Allow use of the trace_pstate_sample trace function
-when the intel_pstate driver is in passive mode.
-Since the core_busy and scaled_busy fields are not
-used, and it might be desirable to know which path
-through the driver was used, either intel_cpufreq_target
-or intel_cpufreq_fast_switch, re-task the core_busy
-field as a flag indicator.
+On Wednesday, April 19, 2017 07:22:15 AM Olof Johansson wrote:
+> Hi Viresh,
+> 
+> On Tue, Apr 18, 2017 at 10:44:50AM +0530, Viresh Kumar wrote:
+> > Compiling the DT file with W=1, DTC warns like follows:
+> > 
+> > Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
+> > unit name, but no reg property
+> > 
+> > Fix this by replacing '@' with '-' as the OPP nodes will never have a
+> > "reg" property.
+> > 
+> > Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
+> > Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> > Suggested-by: Mark Rutland <mark.rutland@arm.com>
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com> (sunxi)
+> > Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+> > Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+> > Acked-by: Masahiro Yamada <yamada.masahiro@socionext.com> (uniphier)
+> > Acked-by: Rob Herring <robh@kernel.org>
+> > Acked-by: Tony Lindgren <tony@atomide.com>
+> 
+> We've already turned down other patches that does this in a sweeping manner
+> like this, since they tend to be conflict prone with other DT changes.
+> 
+> Please split per platform and merge with each maintainer.
 
-The user can then use the intel_pstate_tracer.py utility
-to summarize and plot the trace.
+OK
 
-In Passive mode the driver is only called if there is
-a need to change the target frequency, so durations
-(time gaps between calls) can be very very long. The user
-needs to understand, and not be confused by, this limitation.
+So I'm assuming that you guys will take care of this going forward.
 
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
----
- drivers/cpufreq/intel_pstate.c | 50 ++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 48 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 283491f..04e91ed 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2271,7 +2271,10 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
- {
- 	struct cpudata *cpu = all_cpu_data[policy->cpu];
- 	struct cpufreq_freqs freqs;
--	int target_pstate;
-+	struct sample *sample;
-+	int target_pstate, from;
-+	u64 time;
-+	bool sample_taken;
- 
- 	update_turbo_state();
- 
-@@ -2291,12 +2294,32 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
- 		break;
- 	}
- 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-+
-+	from = cpu->pstate.current_pstate;
-+	time = ktime_get();
-+	sample_taken = intel_pstate_sample(cpu, time);
-+
- 	if (target_pstate != cpu->pstate.current_pstate) {
- 		cpu->pstate.current_pstate = target_pstate;
- 		wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
- 			      pstate_funcs.get_val(cpu, target_pstate));
- 	}
- 	freqs.new = target_pstate * cpu->pstate.scaling;
-+
-+	if (sample_taken) {
-+		intel_pstate_calc_avg_perf(cpu);
-+		sample = &cpu->sample;
-+		trace_pstate_sample(0,
-+		0,
-+		from,
-+		cpu->pstate.current_pstate,
-+		sample->mperf,
-+		sample->aperf,
-+		sample->tsc,
-+		get_avg_frequency(cpu),
-+		fp_toint(cpu->iowait_boost * 100));
-+	}
-+
- 	cpufreq_freq_transition_end(policy, &freqs, false);
- 
- 	return 0;
-@@ -2306,13 +2329,36 @@ static unsigned int intel_cpufreq_fast_switch(struct cpufreq_policy *policy,
- 					      unsigned int target_freq)
- {
- 	struct cpudata *cpu = all_cpu_data[policy->cpu];
--	int target_pstate;
-+	struct sample *sample;
-+	int target_pstate, from;
-+	u64 time;
-+	bool sample_taken;
- 
- 	update_turbo_state();
- 
- 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
- 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-+
-+	from = cpu->pstate.current_pstate;
-+	time = ktime_get();
-+	sample_taken = intel_pstate_sample(cpu, time);
-+
- 	intel_pstate_update_pstate(cpu, target_pstate);
-+
-+	if (sample_taken) {
-+		intel_pstate_calc_avg_perf(cpu);
-+		sample = &cpu->sample;
-+		trace_pstate_sample(100,
-+		0,
-+		from,
-+		cpu->pstate.current_pstate,
-+		sample->mperf,
-+		sample->aperf,
-+		sample->tsc,
-+		get_avg_frequency(cpu),
-+		fp_toint(cpu->iowait_boost * 100));
-+	}
-+
- 	return target_pstate * cpu->pstate.scaling;
- }
- 
--- 
-2.7.4
+Thanks,
+Rafael
