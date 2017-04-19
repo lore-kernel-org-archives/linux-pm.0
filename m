@@ -1,49 +1,30 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch V2 06/10] timer: Restructure internal locking
-Date: Wed, 19 Apr 2017 09:07:04 +0200
-Message-ID: <20170419070704.b6f7cdej4uxxhd5w@hirez.programming.kicks-ass.net>
-References: <20170418111102.490432548@linutronix.de>
- <20170418111400.856441536@linutronix.de>
+From: Michal Hocko <mhocko@kernel.org>
+Subject: Re: Re: "mm: move pcp and lru-pcp draining into single wq" broke
+ resume from s2ram
+Date: Wed, 19 Apr 2017 09:10:39 +0200
+Message-ID: <20170419071039.GB28263@dhcp22.suse.cz>
+References: <CAMuHMdUJSfrZ=2zy88_zojDek3CHEWKhv_qoJAVgDpPWz8V=Ew@mail.gmail.com>
+ <20170418201907.GC20671@dhcp22.suse.cz>
+ <201704190541.v3J5fUE3054131@www262.sakura.ne.jp>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:51954 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933339AbdDSHHM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 03:07:12 -0400
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170418111400.856441536@linutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <201704190541.v3J5fUE3054131@www262.sakura.ne.jp>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>, Linux PM list <linux-pm@vger.kernel.org>, Vlastimil Babka <vbabka@suse.cz>, Mel Gorman <mgorman@suse.de>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>, Richard Cochran <rcochran@linutronix.de>
 
-On Tue, Apr 18, 2017 at 01:11:08PM +0200, Thomas Gleixner wrote:
+On Wed 19-04-17 14:41:30, Tetsuo Handa wrote:
+[...]
+> Somebody is waiting forever with cpu_hotplug.lock held?
 
-> +++ b/kernel/time/timer.c
-> @@ -1651,17 +1651,14 @@ void update_process_times(int user_tick)
->  /**
->   * __run_timers - run all expired timers (if any) on this CPU.
->   * @base: the timer vector to be processed.
-> + *
-> + * Caller must hold the base lock.
->   */
->  static inline void __run_timers(struct timer_base *base)
->  {
->  	struct hlist_head heads[LVL_DEPTH];
->  	int levels;
->  
-> -	if (!time_after_eq(jiffies, base->clk))
-> -		return;
-> -
-> -	spin_lock_irq(&base->lock);
-> -
+Why would that matter for drain_all_pages? It doesn't use
+get_online_cpus since a459eeb7b852 ("mm, page_alloc: do not depend on
+cpu hotplug locks inside the allocator") while ce612879ddc7 ("mm: move
+pcp and lru-pcp draining into single wq") was merged later.
 
-	lockdep_assert_held(&base->lock);
-
-
-Is so ever much more useful than a comment.
-
->  	while (time_after_eq(jiffies, base->clk)) {
->  
->  		levels = collect_expired_timers(base, heads);
+-- 
+Michal Hocko
+SUSE Labs
