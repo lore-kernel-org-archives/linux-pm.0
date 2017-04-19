@@ -1,32 +1,58 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v7 0/5] ACPI: new acpi_dev_present helper + ac and battery blacklist patches
-Date: Wed, 19 Apr 2017 14:02:07 +0200
-Message-ID: <20170419120212.24949-1-hdegoede@redhat.com>
+Subject: [PATCH v7 2/5] ACPI: battery: Fix acpi_battery_exit on acpi_battery_init_async errors
+Date: Wed, 19 Apr 2017 14:02:09 +0200
+Message-ID: <20170419120212.24949-3-hdegoede@redhat.com>
+References: <20170419120212.24949-1-hdegoede@redhat.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170419120212.24949-1-hdegoede@redhat.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
 Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+The acpi_lock_battery_dir() / acpi_bus_register_driver() calls in
+acpi_battery_init_async() may fail. Check that they succeeded before
+undoing them.
 
-This is a new version of my acpi_dev_present helper + ac and battery
-blacklist patches, new compared to the v5 resend of the latest
-version of all these patches are some changes to the first,
-third and fourth patch as requested by Andy Shevchenko.
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/acpi/battery.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-This set also includes a power-supply patch, which depends on the
-new acpi_dev_present helper and has an Ack from Sebastian Reichel
-(the power-supply maintainer) for being merged through the ACPI
-tree because of that dependency.
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index 4ef1e46..b35fca4 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -67,6 +67,7 @@ MODULE_DESCRIPTION("ACPI Battery Driver");
+ MODULE_LICENSE("GPL");
+ 
+ static async_cookie_t async_cookie;
++static bool battery_driver_registered;
+ static int battery_bix_broken_package;
+ static int battery_notification_delay_ms;
+ static unsigned int cache_time = 1000;
+@@ -1329,6 +1330,7 @@ static void __init acpi_battery_init_async(void *unused, async_cookie_t cookie)
+ 	if (result < 0)
+ 		acpi_unlock_battery_dir(acpi_battery_dir);
+ #endif
++	battery_driver_registered = (result == 0);
+ }
+ 
+ static int __init acpi_battery_init(void)
+@@ -1343,9 +1345,11 @@ static int __init acpi_battery_init(void)
+ static void __exit acpi_battery_exit(void)
+ {
+ 	async_synchronize_cookie(async_cookie + 1);
+-	acpi_bus_unregister_driver(&acpi_battery_driver);
++	if (battery_driver_registered)
++		acpi_bus_unregister_driver(&acpi_battery_driver);
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+-	acpi_unlock_battery_dir(acpi_battery_dir);
++	if (acpi_battery_dir)
++		acpi_unlock_battery_dir(acpi_battery_dir);
+ #endif
+ }
+ 
+-- 
+2.9.3
 
-These patches obsolete:
--earlier versions of patches with the same title
--"ACPI: battery: Add acpi_battery_unregister() function"
--"ACPI: ac: Add acpi_ac_unregister() function"
--"power: supply: axp288_fuel_gauge: Unregister duplicate ACPI battery supply"
--"power: supply: axp288_charger: Unregister duplicate ACPI ac supply"
-
-Thanks & Regards,
-
-Hans
