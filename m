@@ -1,43 +1,37 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH v2 0/4] ARM: imx: Set LDO regulator supply
-Date: Wed, 19 Apr 2017 12:28:01 +0300
-Message-ID: <1492594081.15137.0.camel@nxp.com>
-References: <cover.1491324640.git.leonard.crestez@nxp.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch V2 08/10] timer: Implement the hierarchical pull model
+Date: Wed, 19 Apr 2017 11:43:01 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1704191136220.1829@nanos>
+References: <20170418111102.490432548@linutronix.de> <20170418111401.016420305@linutronix.de> <20170419090914.qdiamqwzro34b53d@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-cys01nam02on0085.outbound.protection.outlook.com ([104.47.37.85]:55264
-        "EHLO NAM02-CY1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1761616AbdDSJ2K (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 19 Apr 2017 05:28:10 -0400
-In-Reply-To: <cover.1491324640.git.leonard.crestez@nxp.com>
+Received: from Galois.linutronix.de ([146.0.238.70]:55785 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1761859AbdDSJnG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 05:43:06 -0400
+In-Reply-To: <20170419090914.qdiamqwzro34b53d@hirez.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>, Robin Gong <yibin.gong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Irina Tirdea <irina.tirdea@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>
 
-On Tue, 2017-04-04 at 20:04 +0300, Leonard Crestez wrote:
-> Setting the LDO regulator parent is optional but beneficial. It will cause
-> the PMIC output voltage to be dynamically set to the minimum input for the
-> LDOs, this should be more efficient.
+On Wed, 19 Apr 2017, Peter Zijlstra wrote:
+> > +done:
+> > +	raw_spin_unlock(&group->lock);
+> > +	return nextevt;
+> > +}
 > 
-> This propagation was introduced by:
-> commit fc42112c0eaa ("regulator: core: Propagate voltage changes to supply
-> regulators")
-> 
-> Changes since v1:
->  * Drop patch 1 since it only avoids logging a warning and the gpc driver
-> is going through more changes.
->  * Initialize cpufreq->suspend_freq based on policy->max instead.
->  * Remove reference to ldo-bypass from suspend_freq patch message.
+> Would it be very onerous to rewrite that into regular loops? That avoids
+> us having to think (and worry) about blowing our stack.
 
-Hello,
+The issue is that this is walking a hierarchy tree (limited depth) and not
+a list of groups at a particular level.
 
-This is a gentle reminder that this was sent ~2 weeks ago and patches 1
-and 2 are still waiting (with no objections). Patches 3/4 were applied.
+In an earlier version we checked the stack usage and it was ~128 bytes per
+nest level. With 32k CPUs this ends up with maximum 5 recursions, i.e. 640
+bytes. I recheck with the current implementation.
 
---
-Regards,
-Leonard
+Thanks,
+
+	tglx
