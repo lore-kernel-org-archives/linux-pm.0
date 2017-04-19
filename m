@@ -1,487 +1,152 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 3/3] soc/tegra: bpmp: Implement generic PM domains
-Date: Wed, 19 Apr 2017 16:32:54 +0200
-Message-ID: <CAPDyKFq0mpF8b6n+nY51nHGRdWStJ_4UoKGgSYxN92ED8qN8mA@mail.gmail.com>
-References: <20170329163452.10761-1-thierry.reding@gmail.com> <20170329163452.10761-4-thierry.reding@gmail.com>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: RFC: WMI Enhancements
+Date: Wed, 19 Apr 2017 16:29:53 +0000
+Message-ID: <f3684c95b91349d3b4e512370ac1faf4@ausx13mpc120.AMER.DELL.COM>
+References: <20170412230854.GA11963@fury> <3317007.TCiWpp4m4U@aspire.rjw.lan>
+ <20170418163325.GC25405@fury> <201704182128.36169@pali>
+ <20170418224931.GA21569@fury> <20170419075248.GD18887@pali>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170329163452.10761-4-thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stefan Kristiansson <stefank-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from esa2.dell-outbound.iphmx.com ([68.232.149.220]:37121 "EHLO
+        esa2.dell-outbound.iphmx.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S938032AbdDSQaL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 12:30:11 -0400
+In-Reply-To: <20170419075248.GD18887@pali>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: pali.rohar@gmail.com, dvhart@infradead.org
+Cc: rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 29 March 2017 at 18:34, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
-> From: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->
-> The BPMP firmware, found on Tegra186 and later, provides an ABI that can
-> be used to enable and disable power to several power partitions in Tegra
-> SoCs. The ABI allows for enumeration of the available power partitions,
-> so the driver can be reused on future generations, provided the BPMP ABI
-> remains stable.
->
-> Based on work by Stefan Kristiansson <stefank-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> and Mikko
-> Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>.
->
-> Signed-off-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-
-Reviewed-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-
-Kind regards
-Uffe
-
-> ---
-> Changes in v2:
-> - take into account PG_STATE_RUNNING in tegra_bpmp_powergate_is_powered()
-> - check return value of pm_genpd_init() and clean up on failure
-> - simplify error unwinding in tegra_bpmp_init_powergates()
->
->  drivers/firmware/tegra/bpmp.c      |   4 +
->  drivers/soc/tegra/Kconfig          |   5 +
->  drivers/soc/tegra/Makefile         |   1 +
->  drivers/soc/tegra/powergate-bpmp.c | 359 +++++++++++++++++++++++++++++++++++++
->  include/soc/tegra/bpmp.h           |  12 ++
->  5 files changed, 381 insertions(+)
->  create mode 100644 drivers/soc/tegra/powergate-bpmp.c
->
-> diff --git a/drivers/firmware/tegra/bpmp.c b/drivers/firmware/tegra/bpmp.c
-> index 84e4c9a58a0c..f11c7025b4a1 100644
-> --- a/drivers/firmware/tegra/bpmp.c
-> +++ b/drivers/firmware/tegra/bpmp.c
-> @@ -810,6 +810,10 @@ static int tegra_bpmp_probe(struct platform_device *pdev)
->         if (err < 0)
->                 goto free_mrq;
->
-> +       err = tegra_bpmp_init_powergates(bpmp);
-> +       if (err < 0)
-> +               goto free_mrq;
-> +
->         platform_set_drvdata(pdev, bpmp);
->
->         return 0;
-> diff --git a/drivers/soc/tegra/Kconfig b/drivers/soc/tegra/Kconfig
-> index 208d6edb3fdb..e052664439a1 100644
-> --- a/drivers/soc/tegra/Kconfig
-> +++ b/drivers/soc/tegra/Kconfig
-> @@ -106,3 +106,8 @@ config SOC_TEGRA_PMC
->
->  config SOC_TEGRA_PMC_TEGRA186
->         bool
-> +
-> +config SOC_TEGRA_POWERGATE_BPMP
-> +       def_bool y
-> +       depends on PM_GENERIC_DOMAINS
-> +       depends on TEGRA_BPMP
-> diff --git a/drivers/soc/tegra/Makefile b/drivers/soc/tegra/Makefile
-> index b4425e4319ff..17f2e25e7954 100644
-> --- a/drivers/soc/tegra/Makefile
-> +++ b/drivers/soc/tegra/Makefile
-> @@ -3,3 +3,4 @@ obj-y += fuse/
->  obj-y += common.o
->  obj-$(CONFIG_SOC_TEGRA_PMC) += pmc.o
->  obj-$(CONFIG_SOC_TEGRA_PMC_TEGRA186) += pmc-tegra186.o
-> +obj-$(CONFIG_SOC_TEGRA_POWERGATE_BPMP) += powergate-bpmp.o
-> diff --git a/drivers/soc/tegra/powergate-bpmp.c b/drivers/soc/tegra/powergate-bpmp.c
-> new file mode 100644
-> index 000000000000..8fc356039401
-> --- /dev/null
-> +++ b/drivers/soc/tegra/powergate-bpmp.c
-> @@ -0,0 +1,359 @@
-> +/*
-> + * Copyright (c) 2016-2017, NVIDIA CORPORATION. All rights reserved
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms and conditions of the GNU General Public License,
-> + * version 2, as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + */
-> +
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_domain.h>
-> +#include <linux/slab.h>
-> +#include <linux/version.h>
-> +
-> +#include <soc/tegra/bpmp.h>
-> +#include <soc/tegra/bpmp-abi.h>
-> +
-> +struct tegra_powergate_info {
-> +       unsigned int id;
-> +       char *name;
-> +};
-> +
-> +struct tegra_powergate {
-> +       struct generic_pm_domain genpd;
-> +       struct tegra_bpmp *bpmp;
-> +       unsigned int id;
-> +};
-> +
-> +static inline struct tegra_powergate *
-> +to_tegra_powergate(struct generic_pm_domain *genpd)
-> +{
-> +       return container_of(genpd, struct tegra_powergate, genpd);
-> +}
-> +
-> +static int tegra_bpmp_powergate_set_state(struct tegra_bpmp *bpmp,
-> +                                         unsigned int id, u32 state)
-> +{
-> +       struct mrq_pg_request request;
-> +       struct tegra_bpmp_message msg;
-> +
-> +       memset(&request, 0, sizeof(request));
-> +       request.cmd = CMD_PG_SET_STATE;
-> +       request.id = id;
-> +       request.set_state.state = state;
-> +
-> +       memset(&msg, 0, sizeof(msg));
-> +       msg.mrq = MRQ_PG;
-> +       msg.tx.data = &request;
-> +       msg.tx.size = sizeof(request);
-> +
-> +       return tegra_bpmp_transfer(bpmp, &msg);
-> +}
-> +
-> +static int tegra_bpmp_powergate_get_state(struct tegra_bpmp *bpmp,
-> +                                         unsigned int id)
-> +{
-> +       struct mrq_pg_response response;
-> +       struct mrq_pg_request request;
-> +       struct tegra_bpmp_message msg;
-> +       int err;
-> +
-> +       memset(&request, 0, sizeof(request));
-> +       request.cmd = CMD_PG_GET_STATE;
-> +       request.id = id;
-> +
-> +       memset(&response, 0, sizeof(response));
-> +
-> +       memset(&msg, 0, sizeof(msg));
-> +       msg.mrq = MRQ_PG;
-> +       msg.tx.data = &request;
-> +       msg.tx.size = sizeof(request);
-> +       msg.rx.data = &response;
-> +       msg.rx.size = sizeof(response);
-> +
-> +       err = tegra_bpmp_transfer(bpmp, &msg);
-> +       if (err < 0)
-> +               return PG_STATE_OFF;
-> +
-> +       return response.get_state.state;
-> +}
-> +
-> +static int tegra_bpmp_powergate_get_max_id(struct tegra_bpmp *bpmp)
-> +{
-> +       struct mrq_pg_response response;
-> +       struct mrq_pg_request request;
-> +       struct tegra_bpmp_message msg;
-> +       int err;
-> +
-> +       memset(&request, 0, sizeof(request));
-> +       request.cmd = CMD_PG_GET_MAX_ID;
-> +
-> +       memset(&response, 0, sizeof(response));
-> +
-> +       memset(&msg, 0, sizeof(msg));
-> +       msg.mrq = MRQ_PG;
-> +       msg.tx.data = &request;
-> +       msg.tx.size = sizeof(request);
-> +       msg.rx.data = &response;
-> +       msg.rx.size = sizeof(response);
-> +
-> +       err = tegra_bpmp_transfer(bpmp, &msg);
-> +       if (err < 0)
-> +               return err;
-> +
-> +       return response.get_max_id.max_id;
-> +}
-> +
-> +static char *tegra_bpmp_powergate_get_name(struct tegra_bpmp *bpmp,
-> +                                          unsigned int id)
-> +{
-> +       struct mrq_pg_response response;
-> +       struct mrq_pg_request request;
-> +       struct tegra_bpmp_message msg;
-> +       int err;
-> +
-> +       memset(&request, 0, sizeof(request));
-> +       request.cmd = CMD_PG_GET_NAME;
-> +       request.id = id;
-> +
-> +       memset(&response, 0, sizeof(response));
-> +
-> +       memset(&msg, 0, sizeof(msg));
-> +       msg.mrq = MRQ_PG;
-> +       msg.tx.data = &request;
-> +       msg.tx.size = sizeof(request);
-> +       msg.rx.data = &response;
-> +       msg.rx.size = sizeof(response);
-> +
-> +       err = tegra_bpmp_transfer(bpmp, &msg);
-> +       if (err < 0)
-> +               return NULL;
-> +
-> +       return kstrdup(response.get_name.name, GFP_KERNEL);
-> +}
-> +
-> +static inline bool tegra_bpmp_powergate_is_powered(struct tegra_bpmp *bpmp,
-> +                                                  unsigned int id)
-> +{
-> +       return tegra_bpmp_powergate_get_state(bpmp, id) != PG_STATE_OFF;
-> +}
-> +
-> +static int tegra_powergate_power_on(struct generic_pm_domain *domain)
-> +{
-> +       struct tegra_powergate *powergate = to_tegra_powergate(domain);
-> +       struct tegra_bpmp *bpmp = powergate->bpmp;
-> +
-> +       return tegra_bpmp_powergate_set_state(bpmp, powergate->id,
-> +                                             PG_STATE_ON);
-> +}
-> +
-> +static int tegra_powergate_power_off(struct generic_pm_domain *domain)
-> +{
-> +       struct tegra_powergate *powergate = to_tegra_powergate(domain);
-> +       struct tegra_bpmp *bpmp = powergate->bpmp;
-> +
-> +       return tegra_bpmp_powergate_set_state(bpmp, powergate->id,
-> +                                             PG_STATE_OFF);
-> +}
-> +
-> +static struct tegra_powergate *
-> +tegra_powergate_add(struct tegra_bpmp *bpmp,
-> +                   const struct tegra_powergate_info *info)
-> +{
-> +       struct tegra_powergate *powergate;
-> +       bool off;
-> +       int err;
-> +
-> +       off = !tegra_bpmp_powergate_is_powered(bpmp, info->id);
-> +
-> +       powergate = devm_kzalloc(bpmp->dev, sizeof(*powergate), GFP_KERNEL);
-> +       if (!powergate)
-> +               return ERR_PTR(-ENOMEM);
-> +
-> +       powergate->id = info->id;
-> +       powergate->bpmp = bpmp;
-> +
-> +       powergate->genpd.name = kstrdup(info->name, GFP_KERNEL);
-> +       powergate->genpd.power_on = tegra_powergate_power_on;
-> +       powergate->genpd.power_off = tegra_powergate_power_off;
-> +
-> +       err = pm_genpd_init(&powergate->genpd, NULL, off);
-> +       if (err < 0) {
-> +               kfree(powergate->genpd.name);
-> +               return ERR_PTR(err);
-> +       }
-> +
-> +       return powergate;
-> +}
-> +
-> +static void tegra_powergate_remove(struct tegra_powergate *powergate)
-> +{
-> +       struct generic_pm_domain *genpd = &powergate->genpd;
-> +       struct tegra_bpmp *bpmp = powergate->bpmp;
-> +       int err;
-> +
-> +       err = pm_genpd_remove(genpd);
-> +       if (err < 0)
-> +               dev_err(bpmp->dev, "failed to remove power domain %s: %d\n",
-> +                       genpd->name, err);
-> +
-> +       kfree(genpd->name);
-> +}
-> +
-> +static int
-> +tegra_bpmp_probe_powergates(struct tegra_bpmp *bpmp,
-> +                           struct tegra_powergate_info **powergatesp)
-> +{
-> +       struct tegra_powergate_info *powergates;
-> +       unsigned int max_id, id, count = 0;
-> +       unsigned int num_holes = 0;
-> +       int err;
-> +
-> +       err = tegra_bpmp_powergate_get_max_id(bpmp);
-> +       if (err < 0)
-> +               return err;
-> +
-> +       max_id = err;
-> +
-> +       dev_dbg(bpmp->dev, "maximum powergate ID: %u\n", max_id);
-> +
-> +       powergates = kcalloc(max_id + 1, sizeof(*powergates), GFP_KERNEL);
-> +       if (!powergates)
-> +               return -ENOMEM;
-> +
-> +       for (id = 0; id <= max_id; id++) {
-> +               struct tegra_powergate_info *info = &powergates[count];
-> +
-> +               info->name = tegra_bpmp_powergate_get_name(bpmp, id);
-> +               if (!info->name || info->name[0] == '\0') {
-> +                       num_holes++;
-> +                       continue;
-> +               }
-> +
-> +               info->id = id;
-> +               count++;
-> +       }
-> +
-> +       dev_dbg(bpmp->dev, "holes: %u\n", num_holes);
-> +
-> +       *powergatesp = powergates;
-> +
-> +       return count;
-> +}
-> +
-> +static int tegra_bpmp_add_powergates(struct tegra_bpmp *bpmp,
-> +                                    struct tegra_powergate_info *powergates,
-> +                                    unsigned int count)
-> +{
-> +       struct genpd_onecell_data *genpd = &bpmp->genpd;
-> +       struct generic_pm_domain **domains;
-> +       struct tegra_powergate *powergate;
-> +       unsigned int i;
-> +       int err;
-> +
-> +       domains = kcalloc(count, sizeof(*domains), GFP_KERNEL);
-> +       if (!domains)
-> +               return -ENOMEM;
-> +
-> +       for (i = 0; i < count; i++) {
-> +               powergate = tegra_powergate_add(bpmp, &powergates[i]);
-> +               if (IS_ERR(powergate)) {
-> +                       err = PTR_ERR(powergate);
-> +                       goto remove;
-> +               }
-> +
-> +               dev_dbg(bpmp->dev, "added power domain %s\n",
-> +                       powergate->genpd.name);
-> +               domains[i] = &powergate->genpd;
-> +       }
-> +
-> +       genpd->num_domains = count;
-> +       genpd->domains = domains;
-> +
-> +       return 0;
-> +
-> +remove:
-> +       while (i--) {
-> +               powergate = to_tegra_powergate(domains[i]);
-> +               tegra_powergate_remove(powergate);
-> +       }
-> +
-> +       kfree(genpd->domains);
-> +       return err;
-> +}
-> +
-> +static void tegra_bpmp_remove_powergates(struct tegra_bpmp *bpmp)
-> +{
-> +       struct genpd_onecell_data *genpd = &bpmp->genpd;
-> +       unsigned int i = genpd->num_domains;
-> +       struct tegra_powergate *powergate;
-> +
-> +       while (i--) {
-> +               dev_dbg(bpmp->dev, "removing power domain %s\n",
-> +                       genpd->domains[i]->name);
-> +               powergate = to_tegra_powergate(genpd->domains[i]);
-> +               tegra_powergate_remove(powergate);
-> +       }
-> +}
-> +
-> +static struct generic_pm_domain *
-> +tegra_powergate_xlate(struct of_phandle_args *spec, void *data)
-> +{
-> +       struct generic_pm_domain *domain = ERR_PTR(-ENOENT);
-> +       struct genpd_onecell_data *genpd = data;
-> +       unsigned int i;
-> +
-> +       for (i = 0; i < genpd->num_domains; i++) {
-> +               struct tegra_powergate *powergate;
-> +
-> +               powergate = to_tegra_powergate(genpd->domains[i]);
-> +               if (powergate->id == spec->args[0]) {
-> +                       domain = &powergate->genpd;
-> +                       break;
-> +               }
-> +       }
-> +
-> +       return domain;
-> +}
-> +
-> +int tegra_bpmp_init_powergates(struct tegra_bpmp *bpmp)
-> +{
-> +       struct device_node *np = bpmp->dev->of_node;
-> +       struct tegra_powergate_info *powergates;
-> +       struct device *dev = bpmp->dev;
-> +       unsigned int count, i;
-> +       int err;
-> +
-> +       err = tegra_bpmp_probe_powergates(bpmp, &powergates);
-> +       if (err < 0)
-> +               return err;
-> +
-> +       count = err;
-> +
-> +       dev_dbg(dev, "%u power domains probed\n", count);
-> +
-> +       err = tegra_bpmp_add_powergates(bpmp, powergates, count);
-> +       if (err < 0)
-> +               goto free;
-> +
-> +       bpmp->genpd.xlate = tegra_powergate_xlate;
-> +
-> +       err = of_genpd_add_provider_onecell(np, &bpmp->genpd);
-> +       if (err < 0) {
-> +               dev_err(dev, "failed to add power domain provider: %d\n", err);
-> +               tegra_bpmp_remove_powergates(bpmp);
-> +       }
-> +
-> +free:
-> +       for (i = 0; i < count; i++)
-> +               kfree(powergates[i].name);
-> +
-> +       kfree(powergates);
-> +       return err;
-> +}
-> diff --git a/include/soc/tegra/bpmp.h b/include/soc/tegra/bpmp.h
-> index 13dcd44e91bb..9ba65222bd3f 100644
-> --- a/include/soc/tegra/bpmp.h
-> +++ b/include/soc/tegra/bpmp.h
-> @@ -15,6 +15,7 @@
->  #define __SOC_TEGRA_BPMP_H
->
->  #include <linux/mailbox_client.h>
-> +#include <linux/pm_domain.h>
->  #include <linux/reset-controller.h>
->  #include <linux/semaphore.h>
->  #include <linux/types.h>
-> @@ -91,6 +92,8 @@ struct tegra_bpmp {
->         unsigned int num_clocks;
->
->         struct reset_controller_dev rstc;
-> +
-> +       struct genpd_onecell_data genpd;
->  };
->
->  struct tegra_bpmp *tegra_bpmp_get(struct device *dev);
-> @@ -138,4 +141,13 @@ static inline int tegra_bpmp_init_resets(struct tegra_bpmp *bpmp)
->  }
->  #endif
->
-> +#if IS_ENABLED(CONFIG_SOC_TEGRA_POWERGATE_BPMP)
-> +int tegra_bpmp_init_powergates(struct tegra_bpmp *bpmp);
-> +#else
-> +static inline int tegra_bpmp_init_powergates(struct tegra_bpmp *bpmp)
-> +{
-> +       return 0;
-> +}
-> +#endif
-> +
->  #endif /* __SOC_TEGRA_BPMP_H */
-> --
-> 2.12.0
->
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBQYWxpIFJvaMOhciBbbWFpbHRv
+OnBhbGkucm9oYXJAZ21haWwuY29tXQ0KPiBTZW50OiBXZWRuZXNkYXksIEFwcmlsIDE5LCAyMDE3
+IDI6NTMgQU0NCj4gVG86IERhcnJlbiBIYXJ0IDxkdmhhcnRAaW5mcmFkZWFkLm9yZz4NCj4gQ2M6
+IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD47IEFuZHkgTHV0b21pcnNraQ0K
+PiA8bHV0b0BhbWFjYXBpdGFsLm5ldD47IExlbiBCcm93biA8bGVuLmJyb3duQGludGVsLmNvbT47
+IENvcmVudGluIENoYXJ5DQo+IDxjb3JlbnRpbi5jaGFyeUBnbWFpbC5jb20+OyBMaW1vbmNpZWxs
+bywgTWFyaW8gPE1hcmlvX0xpbW9uY2llbGxvQERlbGwuY29tPjsNCj4gQW5keSBMdXRvbWlyc2tp
+IDxsdXRvQGtlcm5lbC5vcmc+OyBBbmR5IFNoZXZjaGVua28NCj4gPGFuZHJpeS5zaGV2Y2hlbmtv
+QGxpbnV4LmludGVsLmNvbT47IExLTUwgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+Ow0K
+PiBwbGF0Zm9ybS1kcml2ZXIteDg2QHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJu
+ZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBSRkM6IFdNSSBFbmhhbmNlbWVudHMNCj4gDQo+IE9uIFR1
+ZXNkYXkgMTggQXByaWwgMjAxNyAxNTo0OTozMSBEYXJyZW4gSGFydCB3cm90ZToNCj4gPiBPbiBU
+dWUsIEFwciAxOCwgMjAxNyBhdCAwOToyODozNlBNICswMjAwLCBQYWxpIFJvaMOhciB3cm90ZToN
+Cj4gPiA+IEFuZCBzdGlsbCwgaWYgd3JpdGUgYXVkaXQgZmlsdGVycyBmb3IgZXZlcnkgb25lIGV4
+aXN0aW5nIHdtaSBkcml2ZXIgaW4NCj4gPiA+IGtlcm5lbCwgdGhlcmUgc3RpbGwgYXVkaXQgZmls
+dGVyIGNhbiBzYXkgdG8gdXNlcnNwYWNlIHRoYXQgY3VycmVudA0KPiA+ID4gcmVxdWVzdCBjYW5u
+b3QgYmUgYWNjZXB0ZWQgYW5kIHNlbnQgdG8gZmlybXdhcmUuDQo+ID4NCj4gPiBGb3IgdGhlIHZh
+c3QgbWFqb3JpdHkgb2YgcGxhdGZvcm1zLCB0aGUgV01JIGludGVyZmFjZSB3b3VsZCBub3QgYmUg
+ZXhwb3J0ZWQsIGFuZA0KPiA+IHdlIHdvdWxkIG5vdCBhdHRlbXB0IHRvIHdyaXRlIGF1ZGl0IGZp
+bHRlcnMuIEFzIGEgcnVsZSwgSSB3b3VsZCBleHBlY3QgdGhpcw0KPiA+IGVmZm9ydCB0byBiZSB0
+cmlnZ2VyZWQgYnkgYSByZXF1ZXN0IGZyb20gdGhlIHZlbmRvciwgYW5kIGRvbmUgb25seSB3aXRo
+IHRoZWlyDQo+ID4gZXhwbGljaXQgaW52b2x2ZW1lbnQgYWZ0ZXIgcHJvdmlkaW5nIGNvbXBsZXRl
+IGRvY3VtZW50YXRpb24gb2YgdGhlIFdNSQ0KPiA+IGludGVyZmFjZS4NCj4gDQo+IE9rLCBpZiBX
+TUkgaW50ZXJmYWNlIHdvdWxkIGJlIGV4cG9ydGVkIHRvIHVzZXJzcGFjZSBvbmx5IGFmdGVyIHBy
+ZXZpb3VzDQo+IGNvbW11bmljYXRpb24gd2l0aCB2ZW5kb3IsIHRoZW4gdGhpcyBzaG91bGQgYmUg
+T0suIEl0IGFsc28gbWVhbnMgdGhhdCB3ZQ0KPiBuZWVkIHRvIG1haW50YWluIGxpc3Qgb2YgV01J
+IEdVSURzLi4uDQo+IA0KPiA+IEhvd2V2ZXIsIHdlIHdvdWxkIGV4cGVjdCB0aG9zZSBmaWx0ZXJz
+IHRvIGRlbnkgYXMgZmV3IGNhbGxzIGFzIHBvc3NpYmxlIGZvciB0aGUNCj4gPiBwbGF0Zm9ybXMg
+dGhhdCBjaG9vc2UgdG8gZXhwb3J0IHRoZSBXTUkgaW50ZXJmYWNlIHRvIHVzZXJzcGFjZS4NCj4g
+DQo+IEkgZXhwZWN0IHRoYXQgdmVuZG9yIHdvdWxkIGJlIGNvbW11bmljYXRlIHdpdGgga2VybmVs
+IGRldmVsb3BlcnMgYW5kDQo+IGZpbHRlcnMgd291bGQgYmUgd3JpdHRlbiB3aXRoIGFncmVlbWVu
+dCB3aXRoIHZlbmRvci4gVGhpcyBzZWVtcyBPSy4NCj4gDQo+ID4gRm9yIGV4YW1wbGUsIGRlbGwt
+d21pLmMgd291bGQgYmUgbGFyZ2VseSB1bmFmZmVjdGVkIGFzIHRoZSBFVkVOVF9HVUlEIGlzIG5v
+dA0KPiA+IGludGVyZXN0aW5nIGZvciB1c2Vyc3BhY2UgKHBlciBNYXJpbykgYW5kIHdvdWxkIG5v
+dCBiZSBleHBvcnRlZC4gVGhlIERlc2NyaXB0b3INCj4gPiBHVUlEIHNob3VsZCBiZSBzYWZlIHRv
+IHNoYXJlIHdpdGggdXNlcnNwYWNlLCBhdCBsZWFzdCBmb3IgdGhlIHdheSB3ZSB1c2UgaXQgaW4N
+Cj4gPiB0aGUga2VybmVsLiBTaW1pbGFyIGZvciBkZWxsLXdtaS1haW8uYw0KPiA+DQo+ID4gRm9y
+IGRlbGwtd21pLWxlZC5jLCB3ZSBjb3VsZCBtb3N0IGxpa2VseSBub3QgZXhwb3J0IHRoZSBHVUlE
+IGF0IGFsbCwgYnV0IGlmIHdlDQo+ID4gZGlkLCB3ZSBjb3VsZCBjaG9vc2UgdG8gZmlsdGVyIG9u
+IGRldmljZV9pZCBvciBjb21tYW5kIGZyb20gdGhlIGJpb3NfYXJncyB1c2VkDQo+ID4gaW4gdGhl
+IGlucHV0IGJ1ZmZlci4NCj4gPg0KPiA+IEkgZG9uJ3QgdGhpbmsgSSd2ZSBzZWVuIGV4YWN0bHkg
+d2hhdCB0aGUgV01JIGludGVyZmFjZSBmb3IgdGhlIGV4aXN0aW5nIFNNQklPUw0KPiA+IHN0dWZm
+IHdpbGwgbG9vayBsaWtlLCBidXQgd2Ugc2VlbSB0byBoYXZlIGEgZmFpcmx5IHN0cnVjdHVyZWQg
+d2F5IG9mIGFjY2Vzc2luZyBpdA0KPiA+IHRvZGF5LCB3aGljaCBzaG91bGQgYWxsb3cgdXMgdG8g
+ZmlsdGVyIG91dCB0aG9zZSBzcGVjaWZpYyB1c2FnZXMgKHN1Y2ggYXMNCj4gPiByZmtpbGwpLiBB
+ZGRpdGlvbmFsbHksIHRoZSBjb25jZXJuIHRoYXQgdXNlcnNwYWNlIGNhbiBtYWtlIHVzZSBvZiB0
+aGUgc2FtZQ0KPiA+IG1lY2hhbmlzbSBhcyB0aGUga2VybmVsIGlzIHdoZXJlIHdlIGFyZSB0b2Rh
+eSB3aXRoIGxpYnNtYmlvcy4NCj4gPg0KPiA+IFdpdGggV01JIGZpbHRlcnMsIHdlIGNvdWxkLCBm
+b3IgZXhhbXBsZSwgZGVueSBhbGwgREVMTF9TTUJJT1NfV01JIEdVSUQgY2FsbHMNCj4gPiBlcXVp
+dmFsZW50IHRvICJjbGFzcyAxNywgc2VsZWN0IDExIiAoV2lyZWxlc3MgY29udHJvbCksIHNpbmNl
+IHRoYXQgaXMgaGFuZGxlZA0KPiA+IGludGVybmFsbHkuIFNpbWlsYXJseSBmb3IgIjQsMTEiIChL
+QkQgQUxTKS4NCj4gPg0KPiA+ID4NCj4gPiA+IFRoaXMgd291bGQgbWVhbiB0aGF0IHVzZXJzcGFj
+ZSBhcHBsaWNhdGlvbiB3b3VsZCBub3QgYmUgYWJsZSB0byBkbyBBTlkNCj4gPiA+IFdNSSBtZXRo
+b2QgY2FsbCAoYXMgZS5nLiBvbiB3aW5kb3dzKSBhbmQgc28gZm9yIHNvbWUgdmVuZG9ycyBpdCBj
+YW4gYmUNCj4gPiA+IHVzZWxlc3MuDQo+ID4NCj4gPiBXZSBhZGRyZXNzIHRoaXMgd2l0aCBtb3Jl
+IGdyYW51bGFyIGZpbHRlcnMuDQo+ID4NCj4gPiA+IEFuZCBoZXJlIEknbSBub3Qgc3VyZSwgaG93
+IGhhcmQgd291bGQgYmUgdG8gd3JpdGUgdGhvc2UgYXVkaXQgZmlsdGVycw0KPiA+ID4gZm9yIGFs
+bCB3bWkga2VybmVsIGRyaXZlcnMgYW5kIGlmIGl0IHdvdWxkIGJlIHBvc3NpYmxlIHdpdGhvdXQg
+d21pDQo+ID4gPiBkb2N1bWVudGF0aW9uIG9mIHRob3NlIHZlbmRvciBhcGlzICh3aGljaCB3ZSBk
+byBub3QgaGF2ZSkuDQo+ID4NCj4gPiBBcyBhYm92ZSwgd2Ugd29uJ3Qgd3JpdGUgdGhlbSBmb3Ig
+ZXZlcnkgd21pIGtlcm5lbCBkcml2ZXIuIE9ubHkgZm9yIHRob3NlDQo+ID4gdmVuZG9ycyB3aGlj
+aCBlbmdhZ2Ugd2l0aCB1cyB0byBkbyBzby4NCj4gPg0KPiA+ID4gUG90ZW50aWFsIHZlbmRvcnMg
+Y2FuIGRlY2lkZSBiYXNlZCBvbiBhYm92ZSBmYWN0LCB0aGF0IHRoZWlyIHVzZXJzcGFjZQ0KPiA+
+ID4gYXBwbGljYXRpb24gcmF0aGVyIHJtbW9kIHdtaSBrZXJuZWwgZHJpdmVyIGZvciBwYXJ0aWN1
+bGFyIEdVSUQgKHdoaWNoDQo+ID4gPiByZWxlYXNlIG9jY3VwYXRpb24gb2Ygd21pIGRldmljZSkg
+YW5kIHRoZWlyIHVzZXJzcGFjZSBhcHBsaWNhdGlvbiBzdGFydHMNCj4gPiA+IHdvcmtpbmcuIEFu
+ZCB0aGlzIGlzIEkgdGhpbmsgc2l0dWF0aW9uIHdoaWNoIGlzIGJhZCBmb3Iga2VybmVsIGFuZCB3
+ZQ0KPiA+ID4gc2hvdWxkIHByZXZlbnQgaXQuDQo+ID4NCj4gPiBJIGFncmVlIHdlIHdvdWxkIHdh
+bnQgdG8gYXZvaWQgdGhpcy4gQXMgdGhpcyBpcyBvZmYgYnkgZGVmYXVsdCBhbmQgb25seSBlbmFi
+bGVkDQo+ID4gLyBpbXBsZW1lbnRlZCB3aXRoIHRoZSBjb29wZXJhdGlvbiBvZiB0aGUgdmVuZG9y
+IGluIHRoZSBmaXJzdCBwbGFjZSwgSSBzdXNwZWN0DQo+ID4gdGhpcyBraW5kIG9mIGFudGFnb25p
+c3RpYyBpbnRlcmFjdGlvbiBpcyB1bmxpa2VseS4NCj4gPg0KPiA+IFlvdSBwcmV2aW91c2x5IG1l
+bnRpb25lZCBkb2luZyBhIHZlbmRvciBzcGVjaWZpYyBpbnRlcmZhY2UuIFRoaXMgd2FzIG15IGlu
+aXRpYWwNCj4gPiByZXNwb25zZSBhcyB3ZWxsLCBidXQgaXQgZG9lc24ndCBtZWV0IHRoZSBpbnRl
+bnQgb2YgdGhlIFdNSSBpbnRlcmZhY2UsIG5vciB0aGUNCj4gPiBuZWVkcyBvZiB2ZW5kb3JzIGxp
+a2UgRGVsbC4gVGhhdCBpcywgaXQgcmVxdWlyZXMgYSBwcmlvcmkga25vd2xlZGdlIG9mIGFsbA0K
+PiA+IGN1cnJlbnQgYW5kIGZ1dHVyZSBpbnRlcmZhY2VzLCBhbmQvb3IgdGhlIGNvbnRpbnVlZCBn
+YXRpbmcgb24gdGhlIExpbnV4IGtlcm5lbA0KPiA+IGluIG9yZGVyIHRvIGFsbG93IGEgbmV3IG1l
+dGhvZC9pbnRlcmZhY2UuIEZ1cnRoZXIsIGJ5IGNyZWF0aW5nIHRoZXNlIGludGVyZmFjZXMsDQo+
+ID4gd2UgYmVjb21lIG1vcmUgdGllZCB0byB0aGVtLCBhbmQgdGhleSB3aWxsIGdyb3cgb3ZlciB0
+aW1lLCB1bnRpbCB0aGV5IGFyZSBhIHZlcnkNCj4gPiBsYXJnZSBzZXQgb2YgbW9zdGx5IGRlcHJl
+Y2F0ZWQgaW50ZXJmYWNlcyB3aGljaCB3ZSBjYW4ndCByZW1vdmUgZm9yIGxlZ2FjeQ0KPiA+IHJl
+YXNvbnMuDQo+IA0KPiBCZW5lZml0IG9mIHZlbmRvciBzcGVjaWZpYyBBUEkgaXMgY29kZSBkZS1k
+dXBsaWNhdGlvbiBhbmQgaGF2aW5nIGNvbW1vbg0KPiBmdW5jdGlvbnMgaW4gb25lIHBsYWNlLiBF
+LmcuIGNvZGUgZm9yIGNoYW5naW5nIFNNQklPUyB0b2tlbiBkb2VzIG5vdA0KPiBoYXZlIHRvIGJl
+IGltcGxlbWVudGVkIGluIGJvdGggdXNlcnNwYWNlIGFuZCBrZXJuZWwsIGp1c3QgaW4ga2VybmVs
+Lg0KPiANCj4gQWxzbyBoYW5kbGluZyBnZW5lcmljIEFQSSByZXF1ZXN0cyBmcm9tIHVzZXJzcGFj
+ZSBpbiBrZXJuZWwgYW5kIHRoZW4NCj4gcGFzcyB0aGVtIHRvIGZpcm13YXJlIGlzIGEgYml0IGhh
+cmRlciBhbmQgbGVzcyBlcnJvciBwcm9uZS4gQWxzbyBhdWRpdA0KPiBmaWx0ZXJzIHdvdWxkIGJl
+IGxlc3MgZWFzaWVyLi4uDQo+IA0KPiBJIHN0aWxsIHRoaW5rIHRoYXQgd2UgZG8gbm90IGhhdmUg
+dG8gZXhwb3J0IFdNSSBhcyBpcyB0byB1c2Vyc3BhY2UgYW5kDQo+IHBlcnNvbmFsbHkgSSBkbyBu
+b3QgdGhpbmsgaXQgaXMgdGhlIGJlc3Qgc29sdXRpb24gZXZlbiBpZiBNaWNyb3NvZnQgaXMNCj4g
+ZG9pbmcgaXQuLi4NCj4gDQo+IEJ1dCBpZiB3ZSBhcmUgdW5hYmxlIHRvIGRlc2lnbiBzdWNoIEFQ
+SSBhbmQgdmVuZG9yIChlLmcuIERlbGwpIGFscmVhZHkNCj4gd2FudHMgV01JIEFQSSBpbiB1c2Vy
+c3BhY2UsIHRoZW4gd2UgcHJvYmFibHkgc2hvdWxkIGV4cG9ydCBpdCBmcm9tIHRoZW0uDQo+IA0K
+PiA+IEFsbCB0aGF0IHNhaWQsIEkgYXBwcmVjaWF0ZSB0aGUgY29uY2VybnMgeW91J3ZlIHJhaXNl
+ZCBhbmQgdGhleSBtaXJyb3IgbWFueSBvZg0KPiA+IG15IG93bi4gSSBkb24ndCB0aGluayB3ZSBj
+YW4ganVzdCBzYXkgIm5vLCBXaW5kb3dzIE1hbmFnZW1lbnQgSW5zdHJ1bWVudGF0aW9uDQo+IGlz
+DQo+ID4gb25seSBhY2Nlc3NpYmxlIGluIExpbnV4IHdpdGhpbiB0aGUga2VybmVsIiBhcyB0aGF0
+IGlzIHVsdGltYXRlbHkgY29udHJhcnkgdG8NCj4gPiB0aGUgcHVycG9zZSBvZiB0aGUgbWVjaGFu
+aXNtLiBXaXRoIHRob3NlIGNvbmNlcm5zIGluIG1pbmQsIEkgcHJvcG9zZWQgdGhlDQo+ID4gZ2Vu
+ZXJhbCBhcHByb2FjaCBiZWxvdyB3aGljaCBhZmZvcmRzIGNvbnNpZGVyYWJsZSBmcmVlZG9tIGZv
+ciB2ZW5kb3JzIHRvDQo+IG1hbmFnZQ0KPiA+IHRoZWlyIHN5c3RlbXMgd2hpbGUgcmV0YWluaW5n
+IHRoZSByaWdodCB0byBkZW55IGFjY2VzcyB0byB0aGUgZXhpc3RpbmcgTGludXgNCj4gPiBrZXJu
+ZWwgZHJpdmVycy4gQXQgdGhlIHNhbWUgdGltZSwgaXQgcHJvdmlkZXMgYSBnZW5lcmFsIHB1cnBv
+c2UgaW50ZXJmYWNlIHRvDQo+ID4gdXNlcnNwYWNlIHdoaWNoIHdvbid0IGNvbGxlY3QgbGVnYWN5
+IGNvZGUgd2UgaGF2ZSB0byBtYWludGFpbiBmb3JldmVyLg0KPiANCj4gVGhlIG1haW4gY29uY2Vy
+biBpcyB0aGF0IFdNSSBpcyBzb21ldGhpbmcgbGlrZSBtZXRhLUFQSSBvciBSUEMuIEluIG1vc3QN
+Cj4gY2FzZXMgaXQgd291bGQgYmUgbmVlZGVkIHRvIHdyaXRlICJ3cmFwcGVyIiBjb2RlIGFyb3Vu
+ZCB0byBkbyBjYWxsDQo+IG5lZWRlZCBmdW5jdGlvbnMgb3IgZG8gc29tZXRoaW5nLiBJdCBpcyBu
+ZWVkZWQgdG8gd3JpdHRlbiBpbiBrZXJuZWwNCj4gKGUuZy4gZm9yIGNsYXNzIGRyaXZlcnMgb3Ig
+Zm9yIGZpbHRlcnMpLCBidXQgYWxzbyB2ZW5kb3IgbmVlZHMgdG8NCj4gZHVwbGljYXRlIGZ1bmN0
+aW9uYWxpdHkgaW4gdXNlcnNwYWNlLiBBbmQgdGhpcyBkb2VzIG5vdCBzZWVtcyB0byBiZQ0KPiBp
+ZGVhbCwgcHJvYmFibHkgaXQgY2FuIGJlIGRlc2lnbi1hbnRpcGF0dGVybi4NCj4gDQo+IEFzIHdy
+b3RlIGFib3ZlLCBJJ20gZmluZSB3aXRoIGV4cGxpY2l0IHdoaXRlbGlzdCBvZiBXTUkgR1VJRHMg
+d2hpY2ggd2lsbA0KPiBiZSBleHBvcnRlZCB0byB1c2Vyc3BhY2UgYWZ0ZXIgY29tbXVuaWNhdGlv
+biB3aXRoIHZlbmRvci4NCj4gDQoNCldoYXQgYWJvdXQgR1VJRCdzIG5vdCB5ZXQgdXNlZCBieSBr
+ZXJuZWwgZHJpdmVycz8gIFdvdWxkIHRob3NlIGRlZmF1bHQgdG8NCndoaXRlbGlzdCBkZWZhdWx0
+IHRvIGJsYWNrbGlzdD8gIE15IHByZWZlcmVuY2Ugd291bGQgYmUgdG8gZGVmYXVsdCB0byB3aGl0
+ZWxpc3QuDQpUaGlzIGFsbG93cyBuZXcgR1VJRCdzIHRvIGJlIGFkZGVkIGxhdGVyIHdpdGhvdXQg
+bmVlZGluZyB0byBtb2RpZnkga2VybmVsDQpmb3Igc29tZXRoaW5nIHRoYXQga2VybmVsIHdvbid0
+IG5lZWQgdG8gZG8gYW55dGhpbmcgaW1tZWRpYXRlbHkuDQoNCj4gT25lIG1vcmUgdGhpbmc6IFdl
+IHNob3VsZCBub3QgcHJvdmlkZSBuZXcgaW50ZXJmYWNlIEFQSS9BQkkgYmV0d2Vlbg0KPiBrZXJu
+ZWwgYW5kIHVzZXJzcGFjZSB3aXRob3V0IHNvbWUgb3BlbiBzb3VyY2UgaW1wbGVtZW50YXRpb24g
+b2YNCj4gdXNlcnNwYWNlLiBUaGlzIGlzIElJUkMgc29tZSBMaW51cydzIHJ1bGUuIEFuZCBJJ20g
+bm90IHN1cmUgaWYgdmVuZG9ycw0KPiBhcmUgZ29pbmcgdG8gcHJvdmlkZSBzb21lIHVzZXJzcGFj
+ZSBXTUkgaW1wbGVtZW50YXRpb25zIGFzIG9wZW4NCj4gc291cmNlLi4uDQo+IA0KDQpBdCBsZWFz
+dCBmb3IgREVMTCBTTUJJT1MgY2FsbGluZyBpbnRlcmZhY2UgR1VJRC9tZXRob2QgSSBwbGFuIHRv
+IHB1c2gNCmxpYnNtYmlvcyBhbmQgYXBwbGljYXRpb25zIHVzaW5nIGl0IHdvdWxkIHRoZW4gc3dp
+dGNoIHRvIG5ldyBXTUkgaW50ZXJmYWNlLg0KDQo=
