@@ -1,55 +1,83 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch V2 08/10] timer: Implement the hierarchical pull model
-Date: Wed, 19 Apr 2017 10:36:40 +0200
-Message-ID: <20170419083640.hpybu2lard6qnj5s@hirez.programming.kicks-ass.net>
-References: <20170418111102.490432548@linutronix.de>
- <20170418111401.016420305@linutronix.de>
- <20170419081116.GA3029@worktop.programming.kicks-ass.net>
- <alpine.DEB.2.20.1704191028230.1829@nanos>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v6 2/5] ACPI: battery: Fix acpi_battery_exit on
+ acpi_battery_init_async errors
+Date: Wed, 19 Apr 2017 10:43:17 +0200
+Message-ID: <aaaabcb5-421b-aa22-f5b5-a28fbbc2d5c6@redhat.com>
+References: <20170418115842.16214-1-hdegoede@redhat.com>
+ <20170418115842.16214-3-hdegoede@redhat.com>
+ <CAJZ5v0g4h6zWg8FxoUhyshyVGpzbyi+4w7H95HHt9b9quv7anw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:53260 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1760952AbdDSIgr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 04:36:47 -0400
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.20.1704191028230.1829@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0g4h6zWg8FxoUhyshyVGpzbyi+4w7H95HHt9b9quv7anw@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>
 
-On Wed, Apr 19, 2017 at 10:31:08AM +0200, Thomas Gleixner wrote:
-> On Wed, 19 Apr 2017, Peter Zijlstra wrote:
-> > On Tue, Apr 18, 2017 at 01:11:10PM +0200, Thomas Gleixner wrote:
+Hi,
 
-> > > +	}
-> > > +	/* Allocate and set up a new group */
-> > > +	group = kzalloc_node(sizeof(*group), GFP_KERNEL, node);
-> > > +	if (!group)
-> > > +		return ERR_PTR(-ENOMEM);
-> > > +
-> > > +	if (!zalloc_cpumask_var_node(&group->cpus, GFP_KERNEL, node)) {
-> > > +		kfree(group);
-> > > +		return ERR_PTR(-ENOMEM);
-> > > +	}
-> > 
-> > So if you place that cpumask last, you can do:
-> > 
-> > 	group = kzalloc_node(sizeof(*group) + cpumask_size(),
-> > 	                     GFP_KERNEL, node);
-> 
-> Hrm, that would allocate extra space for CPUMASK_OFF_STACK=n. I'll have a
-> look.
-> 
+On 18-04-17 15:36, Rafael J. Wysocki wrote:
+> On Tue, Apr 18, 2017 at 1:58 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> The acpi_lock_battery_dir() / acpi_bus_register_driver() calls in
+>> acpi_battery_init_async() may fail. Check that they succeeded before
+>> undoing them.
+>>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> ---
+>>  drivers/acpi/battery.c | 8 ++++++--
+>>  1 file changed, 6 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+>> index 4ef1e46..b35fca4 100644
+>> --- a/drivers/acpi/battery.c
+>> +++ b/drivers/acpi/battery.c
+>> @@ -67,6 +67,7 @@ MODULE_DESCRIPTION("ACPI Battery Driver");
+>>  MODULE_LICENSE("GPL");
+>>
+>>  static async_cookie_t async_cookie;
+>> +static bool battery_driver_registered;
+>>  static int battery_bix_broken_package;
+>>  static int battery_notification_delay_ms;
+>>  static unsigned int cache_time = 1000;
+>> @@ -1329,6 +1330,7 @@ static void __init acpi_battery_init_async(void *unused, async_cookie_t cookie)
+>>         if (result < 0)
+>>                 acpi_unlock_battery_dir(acpi_battery_dir);
+>>  #endif
+>> +       battery_driver_registered = (result == 0);
+>
+> Maybe
+>
+>       battery_driver_registered = !result;
 
-How so? Remember your structure will look like:
+I prefer == 0 here because we are checking for success (which is 0)
+not for "not true".
 
-struct group {
-	/* ... */
-	unsigned long cpumask[0];
-};
+Regards,
 
-Which, even for the CPUMASK_OFF_STACK=n case, is exactly 0 bytes of
-total storage.
+Hans
+
+
+
+>
+>>  }
+>>
+>>  static int __init acpi_battery_init(void)
+>> @@ -1343,9 +1345,11 @@ static int __init acpi_battery_init(void)
+>>  static void __exit acpi_battery_exit(void)
+>>  {
+>>         async_synchronize_cookie(async_cookie + 1);
+>> -       acpi_bus_unregister_driver(&acpi_battery_driver);
+>> +       if (battery_driver_registered)
+>> +               acpi_bus_unregister_driver(&acpi_battery_driver);
+>>  #ifdef CONFIG_ACPI_PROCFS_POWER
+>> -       acpi_unlock_battery_dir(acpi_battery_dir);
+>> +       if (acpi_battery_dir)
+>> +               acpi_unlock_battery_dir(acpi_battery_dir);
+>>  #endif
+>>  }
+>
+> Thanks,
+> Rafael
+>
