@@ -1,170 +1,107 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 04/17] thermal: cpu_cooling: replace cool_dev with cdev
-Date: Wed, 19 Apr 2017 10:58:59 +0530
-Message-ID: <0f1d7f8ebc3915c46b8fa7656a972bee75c79ba4.1492579345.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 05/17] thermal: cpu_cooling: remove cpufreq_cooling_get_level()
+Date: Wed, 19 Apr 2017 10:59:00 +0530
+Message-ID: <04010983e89a99ad35fd754d3ca0577139ab8759.1492579345.git.viresh.kumar@linaro.org>
 References: <cover.1492579345.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f178.google.com ([209.85.192.178]:36604 "EHLO
+        mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1759885AbdDSFbC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 01:31:02 -0400
+Received: by mail-pf0-f178.google.com with SMTP id 194so6972922pfv.3
+        for <linux-pm@vger.kernel.org>; Tue, 18 Apr 2017 22:30:56 -0700 (PDT)
 In-Reply-To: <cover.1492579345.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1492579345.git.viresh.kumar@linaro.org>
 References: <cover.1492579345.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
-List-Id: linux-pm@vger.kernel.org
 
-Objects of "struct thermal_cooling_device" are named a bit
-inconsistently. Lets use cdev everywhere.
+There is only one user of cpufreq_cooling_get_level() and that already
+has pointer to the cpufreq_cdev structure. It can directly call
+get_level() instead and we can get rid of cpufreq_cooling_get_level().
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/thermal/cpu_cooling.c | 37 ++++++++++++++++++-------------------
- 1 file changed, 18 insertions(+), 19 deletions(-)
+ drivers/thermal/cpu_cooling.c | 33 +--------------------------------
+ include/linux/cpu_cooling.h   |  6 ------
+ 2 files changed, 1 insertion(+), 38 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 80a46a80817b..f1e784c22c5a 100644
+index f1e784c22c5a..1f4b6a719d05 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -65,7 +65,7 @@ struct power_table {
-  * struct cpufreq_cooling_device - data for cooling device with cpufreq
-  * @id: unique integer value corresponding to each cpufreq_cooling_device
-  *	registered.
-- * @cool_dev: thermal_cooling_device pointer to keep track of the
-+ * @cdev: thermal_cooling_device pointer to keep track of the
-  *	registered cooling device.
-  * @cpufreq_state: integer value representing the current state of cpufreq
-  *	cooling	devices.
-@@ -90,7 +90,7 @@ struct power_table {
-  */
- struct cpufreq_cooling_device {
- 	int id;
--	struct thermal_cooling_device *cool_dev;
-+	struct thermal_cooling_device *cdev;
- 	unsigned int cpufreq_state;
- 	unsigned int clipped_freq;
- 	unsigned int max_level;
-@@ -242,7 +242,7 @@ static int build_dyn_power_table(struct cpufreq_cooling_device *cpufreq_cdev,
- 	for_each_cpu(cpu, &cpufreq_cdev->allowed_cpus) {
- 		dev = get_cpu_device(cpu);
- 		if (!dev) {
--			dev_warn(&cpufreq_cdev->cool_dev->device,
-+			dev_warn(&cpufreq_cdev->cdev->device,
- 				 "No cpu device for cpu %d\n", cpu);
- 			continue;
- 		}
-@@ -769,7 +769,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 			get_static_t plat_static_func)
- {
- 	struct cpufreq_policy *policy;
--	struct thermal_cooling_device *cool_dev;
-+	struct thermal_cooling_device *cdev;
- 	struct cpufreq_cooling_device *cpufreq_cdev;
- 	char dev_name[THERMAL_NAME_LENGTH];
- 	struct cpufreq_frequency_table *pos, *table;
-@@ -786,20 +786,20 @@ __cpufreq_cooling_register(struct device_node *np,
- 	policy = cpufreq_cpu_get(cpumask_first(temp_mask));
- 	if (!policy) {
- 		pr_debug("%s: CPUFreq policy not found\n", __func__);
--		cool_dev = ERR_PTR(-EPROBE_DEFER);
-+		cdev = ERR_PTR(-EPROBE_DEFER);
- 		goto free_cpumask;
- 	}
- 
- 	table = policy->freq_table;
- 	if (!table) {
- 		pr_debug("%s: CPUFreq table not found\n", __func__);
--		cool_dev = ERR_PTR(-ENODEV);
-+		cdev = ERR_PTR(-ENODEV);
- 		goto put_policy;
- 	}
- 
- 	cpufreq_cdev = kzalloc(sizeof(*cpufreq_cdev), GFP_KERNEL);
- 	if (!cpufreq_cdev) {
--		cool_dev = ERR_PTR(-ENOMEM);
-+		cdev = ERR_PTR(-ENOMEM);
- 		goto put_policy;
- 	}
- 
-@@ -808,7 +808,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 					    sizeof(*cpufreq_cdev->time_in_idle),
- 					    GFP_KERNEL);
- 	if (!cpufreq_cdev->time_in_idle) {
--		cool_dev = ERR_PTR(-ENOMEM);
-+		cdev = ERR_PTR(-ENOMEM);
- 		goto free_cdev;
- 	}
- 
-@@ -816,7 +816,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 		kcalloc(num_cpus, sizeof(*cpufreq_cdev->time_in_idle_timestamp),
- 			GFP_KERNEL);
- 	if (!cpufreq_cdev->time_in_idle_timestamp) {
--		cool_dev = ERR_PTR(-ENOMEM);
-+		cdev = ERR_PTR(-ENOMEM);
- 		goto free_time_in_idle;
- 	}
- 
-@@ -827,7 +827,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 	cpufreq_cdev->freq_table = kmalloc(sizeof(*cpufreq_cdev->freq_table) *
- 					  cpufreq_cdev->max_level, GFP_KERNEL);
- 	if (!cpufreq_cdev->freq_table) {
--		cool_dev = ERR_PTR(-ENOMEM);
-+		cdev = ERR_PTR(-ENOMEM);
- 		goto free_time_in_idle_timestamp;
- 	}
- 
-@@ -841,7 +841,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 
- 		ret = build_dyn_power_table(cpufreq_cdev, capacitance);
- 		if (ret) {
--			cool_dev = ERR_PTR(ret);
-+			cdev = ERR_PTR(ret);
- 			goto free_table;
- 		}
- 
-@@ -852,7 +852,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 
- 	ret = ida_simple_get(&cpufreq_ida, 0, 0, GFP_KERNEL);
- 	if (ret < 0) {
--		cool_dev = ERR_PTR(ret);
-+		cdev = ERR_PTR(ret);
- 		goto free_power_table;
- 	}
- 	cpufreq_cdev->id = ret;
-@@ -872,14 +872,13 @@ __cpufreq_cooling_register(struct device_node *np,
- 	snprintf(dev_name, sizeof(dev_name), "thermal-cpufreq-%d",
- 		 cpufreq_cdev->id);
- 
--	cool_dev = thermal_of_cooling_device_register(np, dev_name,
--						      cpufreq_cdev,
--						      cooling_ops);
--	if (IS_ERR(cool_dev))
-+	cdev = thermal_of_cooling_device_register(np, dev_name, cpufreq_cdev,
-+						  cooling_ops);
-+	if (IS_ERR(cdev))
- 		goto remove_ida;
- 
- 	cpufreq_cdev->clipped_freq = cpufreq_cdev->freq_table[0];
--	cpufreq_cdev->cool_dev = cool_dev;
-+	cpufreq_cdev->cdev = cdev;
- 
- 	mutex_lock(&cooling_list_lock);
- 	/* Register the notifier for first cpufreq cooling device */
-@@ -909,7 +908,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 	cpufreq_cpu_put(policy);
- free_cpumask:
- 	free_cpumask_var(temp_mask);
--	return cool_dev;
-+	return cdev;
+@@ -136,37 +136,6 @@ static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_cdev,
  }
  
  /**
-@@ -1047,7 +1046,7 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- 		cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
- 					    CPUFREQ_POLICY_NOTIFIER);
+- * cpufreq_cooling_get_level - for a given cpu, return the cooling level.
+- * @cpu: cpu for which the level is required
+- * @freq: the frequency of interest
+- *
+- * This function will match the cooling level corresponding to the
+- * requested @freq and return it.
+- *
+- * Return: The matched cooling level on success or THERMAL_CSTATE_INVALID
+- * otherwise.
+- */
+-unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq)
+-{
+-	struct cpufreq_cooling_device *cpufreq_cdev;
+-
+-	mutex_lock(&cooling_list_lock);
+-	list_for_each_entry(cpufreq_cdev, &cpufreq_cdev_list, node) {
+-		if (cpumask_test_cpu(cpu, &cpufreq_cdev->allowed_cpus)) {
+-			unsigned long level = get_level(cpufreq_cdev, freq);
+-
+-			mutex_unlock(&cooling_list_lock);
+-			return level;
+-		}
+-	}
+-	mutex_unlock(&cooling_list_lock);
+-
+-	pr_err("%s: cpu:%d not part of any cooling device\n", __func__, cpu);
+-	return THERMAL_CSTATE_INVALID;
+-}
+-EXPORT_SYMBOL_GPL(cpufreq_cooling_get_level);
+-
+-/**
+  * cpufreq_thermal_notifier - notifier callback for cpufreq policy change.
+  * @nb:	struct notifier_block * with callback info.
+  * @event: value showing cpufreq event for which this function invoked.
+@@ -697,7 +666,7 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
+ 	normalised_power = (dyn_power * 100) / last_load;
+ 	target_freq = cpu_power_to_freq(cpufreq_cdev, normalised_power);
  
--	thermal_cooling_device_unregister(cpufreq_cdev->cool_dev);
-+	thermal_cooling_device_unregister(cpufreq_cdev->cdev);
- 	ida_simple_remove(&cpufreq_ida, cpufreq_cdev->id);
- 	kfree(cpufreq_cdev->dyn_power_table);
- 	kfree(cpufreq_cdev->time_in_idle_timestamp);
+-	*state = cpufreq_cooling_get_level(cpu, target_freq);
++	*state = get_level(cpufreq_cdev, target_freq);
+ 	if (*state == THERMAL_CSTATE_INVALID) {
+ 		dev_err_ratelimited(&cdev->device,
+ 				    "Failed to convert %dKHz for cpu %d into a cdev state\n",
+diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+index c156f5082758..96c5e4c2f9c8 100644
+--- a/include/linux/cpu_cooling.h
++++ b/include/linux/cpu_cooling.h
+@@ -82,7 +82,6 @@ of_cpufreq_power_cooling_register(struct device_node *np,
+  */
+ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev);
+ 
+-unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq);
+ #else /* !CONFIG_CPU_THERMAL */
+ static inline struct thermal_cooling_device *
+ cpufreq_cooling_register(const struct cpumask *clip_cpus)
+@@ -117,11 +116,6 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ {
+ 	return;
+ }
+-static inline
+-unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq)
+-{
+-	return THERMAL_CSTATE_INVALID;
+-}
+ #endif	/* CONFIG_CPU_THERMAL */
+ 
+ #endif /* __CPU_COOLING_H__ */
 -- 
 2.12.0.432.g71c3a4f4ba37
