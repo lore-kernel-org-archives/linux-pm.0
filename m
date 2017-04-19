@@ -1,50 +1,48 @@
-From: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
-Subject: [PATCH RESEND] cpuidle: cpuidle-cps: remove unused variable
-Date: Wed, 19 Apr 2017 13:20:54 +0200
-Message-ID: <1492600854-23810-1-git-send-email-marcin.nowakowski@imgtec.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
+ power-domains
+Date: Wed, 19 Apr 2017 17:17:40 +0530
+Message-ID: <20170419114740.GD5436@vireshk-i7>
+References: <cover.1490001099.git.viresh.kumar@linaro.org>
+ <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
+ <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
+ <20170413053736.GM5910@vireshk-i7>
+ <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
+ <20170417052758.GF28191@vireshk-i7>
+ <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailapp01.imgtec.com ([195.59.15.196]:29394 "EHLO
-        mailapp01.imgtec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934010AbdDSLU7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 07:20:59 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "^Cfael J . Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, Marcin Nowakowski <marcin.nowakowski@imgtec.com>, trivial@kernel.org
 
-'core' in cps_cpuidle_init has never been used and is unnecessary, so
-remove the dead code.
+On 18-04-17, 17:01, Sudeep Holla wrote:
+> Understood. I would incline towards reusing regulators we that's what is
 
-Signed-off-by: Marcin Nowakowski <marcin.nowakowski@imgtec.com>
-Cc: trivial@kernel.org
----
- Re-sending to the linux-pm mailing list, as I missed it earlier
+It can be just a regulator, but it can be anything else as well. That
+entity may have its own clock/volt/current tunables, etc.
 
- drivers/cpuidle/cpuidle-cps.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+> changed behind the scene. Calling this operating performance point
+> is misleading and doesn't align well with existing specs/features.
 
-diff --git a/drivers/cpuidle/cpuidle-cps.c b/drivers/cpuidle/cpuidle-cps.c
-index 926ba98..12b9145 100644
---- a/drivers/cpuidle/cpuidle-cps.c
-+++ b/drivers/cpuidle/cpuidle-cps.c
-@@ -118,7 +118,7 @@ static void __init cps_cpuidle_unregister(void)
- 
- static int __init cps_cpuidle_init(void)
- {
--	int err, cpu, core, i;
-+	int err, cpu, i;
- 	struct cpuidle_device *device;
- 
- 	/* Detect supported states */
-@@ -160,7 +160,6 @@ static int __init cps_cpuidle_init(void)
- 	}
- 
- 	for_each_possible_cpu(cpu) {
--		core = cpu_data[cpu].core;
- 		device = &per_cpu(cpuidle_dev, cpu);
- 		device->cpu = cpu;
- #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
+Yeah, but there are no voltage levels available here and that doesn't
+fit as a regulator then.
+
+> Understood. We have exactly same thing with SCPI but it controls both
+> frequency and voltage referred as operating points. In general, this OPP
+> terminology is used in SCPI/ACPI/SCMI specifications as both frequency
+> and voltage control. I am bit worried that this binding might introduce
+> confusions on the definitions. But it can be reworded/renamed easily if
+> required.
+
+Yeah, so far we have been looking at OPPs as freq-voltage pairs ONLY
+and that is changing. I am not sure if it going in the wrong
+direction really. Without frequency also it is an operating point for
+the domain. Isn't it?
+
 -- 
-2.7.4
+viresh
