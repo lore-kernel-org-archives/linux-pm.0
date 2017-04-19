@@ -1,93 +1,76 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch V2 08/10] timer: Implement the hierarchical pull model
-Date: Wed, 19 Apr 2017 12:22:59 +0200
-Message-ID: <20170419102259.lkmvpcbd3mpkoi4r@hirez.programming.kicks-ass.net>
-References: <20170418111102.490432548@linutronix.de>
- <20170418111401.016420305@linutronix.de>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Subject: Re: [Query] Enabling parent device clock from resume_noirq
+Date: Wed, 19 Apr 2017 16:40:20 +0530
+Message-ID: <23a79524-0445-e9cb-2e51-2dd2e37e4f5b@ti.com>
+References: <62cd5ee0-3f0c-5e65-5f64-0c91a2a6f1e6@ti.com>
+ <4c6e91e4-35fa-2fde-7915-fb922ec22567@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:47050 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1762148AbdDSKXI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 06:23:08 -0400
-Content-Disposition: inline
-In-Reply-To: <20170418111401.016420305@linutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <4c6e91e4-35fa-2fde-7915-fb922ec22567@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, khilman@kernel.org, rnayak@codeaurora.org, Paul Walmsley <paul@pwsan.com>, Bjorn Helgaas <helgaas@kernel.org>, "Nori, Sekhar" <nsekhar@ti.com>, "Kristo, Tero" <t-kristo@ti.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>
 
-On Tue, Apr 18, 2017 at 01:11:10PM +0200, Thomas Gleixner wrote:
-> +static u64 tmigr_set_cpu_inactive(struct tmigr_group *group,
-> +				  struct tmigr_group *child,
-> +				  struct tmigr_event *evt,
-> +				  unsigned int cpu)
-> +{
-> +	struct tmigr_group *parent;
-> +	u64 nextevt = KTIME_MAX;
-> +
-> +	raw_spin_lock_nested(&group->lock, group->level);
-> +
-> +	DBG_BUG_ON(!group->active);
-> +
-> +	cpumask_clear_cpu(cpu, group->cpus);
-> +	group->active--;
-> +
-> +	/*
-> +	 * If @child is not NULL, then this is a recursive invocation to
-> +	 * propagate the deactivation of @cpu. If @child has a new migrator
-> +	 * set it active in @group.
-> +	 */
-> +	if (child && child->migrator != TMIGR_NONE) {
-> +		cpumask_set_cpu(child->migrator, group->cpus);
-> +		group->active++;
+Hi,
 
-And I'm confused...
+On Wednesday 19 April 2017 01:35 AM, Grygorii Strashko wrote:
+> + linux-pm
+> 
+> On 04/18/2017 01:07 AM, Kishon Vijay Abraham I wrote:
+>> Hi,
+>>
+>> resume_noirq callbacks are used in PCIe core to restore PCI state (this
+>> accesses PCI module). So the clocks of PCI module has to be enabled before
+>> resume_noirq.
+>>
+>> The clocks for the PCI module in DRA7xx is provided by PIPE3 PHY device which
+>> in turn gets it's clock from OCP2SCP device. During resume_noirq callbacks,
+>> pm_runtime is disabled, so pm_runtime_get_sync is ineffective. However
+>> pm_runtime can be enabled using pm_runtime_force_resume. Now the problem is
+>> adding pm_runtime_force_resume() in resume_noirq callback of pci-dra7xx driver
+>> will enable only the pm_runtime of PCI device but not PIPE3 PHY or OCP2SCP.
+>> Adding pm_runtime_force_resume() in resume_noirq callback of PIPE3 PHY driver
+>> or OCP2SCP driver will not help if the resume_noirq callbacks in PIP3PHY driver
+>> and OCP2SCP driver are invoked after the resume_noirq of pci-dra7xx driver.
+>>
+>> How to enable the pm_runtime of parent devices in resume_noirq callback? Does
+>> existing pm_runtime framework has support for that?
+>>
+> 
+> Most probably you've hit the issue described in [1].
+> In general, if pci-dra7xx is consumer of  PIPE3 PHY device and 
+> PIPE3 PHY device is child of OCP2SCP then suspend/resume order should be
+> - pci-dra7xx
+> - PIPE3 PHY
+> - OCP2SCP
+>  and resume
+> - OCP2SCP
+> - PIPE3 PHY
+> - pci-dra7xx
+> and in this case  pm_runtime_force_x() might work.
+> 
+> Hence, approach [1] was not accepted (personally I still like it) and
+> "Functional dependencies tracking support" was introduced instead by commit 9ed9895 [2]
+> you can try it.
+> 
+> But, as per code, I'm not sure that Functional dependencies properly tracked in 
+> pm_runtime_force_x() functions.
+> 
+> PS: you can try to reorder device's nodes in DT and place PCI node after "ocp2scp" :P
 
-If we retain child->migrator as 'active', should we then not also re-set
-our own bit for that child group?
+reordering helps ;-) I'll try the functional dependencies.
 
-> +	}
-> +
-> +	/* Add @evt to @group */
-> +	tmigr_add_evt(group, evt);
-> +
-> +	/* If @cpu is not the active migrator, everything is up to date */
-> +	if (group->migrator != cpu)
-> +		goto done;
+Thanks for the hint :-)
 
-At this point we have already cleared @cpu's bit in our group->cpus. Is
-that right?
-
-> +	/* Update the migrator. */
-> +	if (!group->active)
-> +		group->migrator = TMIGR_NONE;
-> +	else
-> +		group->migrator = cpumask_first(group->cpus);
-
-So here we could have changed ->migrator away from @cpu, no?
-
-> +
-> +	parent = group->parent;
-> +	if (parent) {
-> +		/*
-> +		 * @cpu was the migrator in @group, so it is marked as
-> +		 * active in its parent group(s) as well. Propagate the
-> +		 * migrator change.
-> +		 */
-
-So how is that then still valid? Because this seems to hinge on the
-assumption that @cpu is the migrator.
-
-> +		evt = group->active ? NULL : &group->groupevt;
-> +		nextevt = tmigr_set_cpu_inactive(parent, group, evt, cpu);
-
-
-
-In general I'm a wee bit confused on how this works. Do we at all times
-retain a migrator per group, or only one per group that has activity,
-which then reduces to 1 per system when the whole system idles.
-
-I'll stare at this a bit more, but I feel a comment explaining things
-wouldn't go amiss.
+Cheers
+Kishon
