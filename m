@@ -1,82 +1,191 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
- power-domains
-Date: Wed, 19 Apr 2017 14:58:00 +0100
-Message-ID: <9dee7c0d-e5f4-9fcd-3c92-bf7ec9d43a3b@arm.com>
-References: <cover.1490001099.git.viresh.kumar@linaro.org>
- <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
- <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
- <20170413053736.GM5910@vireshk-i7>
- <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
- <20170417052758.GF28191@vireshk-i7>
- <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
- <20170419114740.GD5436@vireshk-i7>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V4 3/9] PM / QOS: Keep common notifier list for genpd constraints
+Date: Wed, 19 Apr 2017 16:06:49 +0200
+Message-ID: <CAPDyKFp+xYh0SDgnQLh_cqDzzU3UwxDcObZUR8UNaa91_ESjGg@mail.gmail.com>
+References: <cover.1490001099.git.viresh.kumar@linaro.org> <d87cf1bc22f1756a70ce21cbd853c89c2b90f9fb.1490001099.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:40432 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934582AbdDSN6H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 19 Apr 2017 09:58:07 -0400
-In-Reply-To: <20170419114740.GD5436@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <d87cf1bc22f1756a70ce21cbd853c89c2b90f9fb.1490001099.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>
+List-Id: linux-pm@vger.kernel.org
 
+On 20 March 2017 at 10:32, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Only the resume_latency constraint uses the notifiers right now. In
+> order to prepare for adding new constraint types with notifiers, move to
+> a common notifier list.
+>
+> Update pm_qos_update_target() to pass a pointer to the constraint
+> structure to the notifier callbacks. Also update the notifier callbacks
+> as well to error out for unexpected constraints.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/base/power/domain.c | 26 +++++++++++++++++++-------
+>  drivers/base/power/qos.c    | 15 ++++-----------
+>  include/linux/pm_qos.h      |  7 +++++++
+>  kernel/power/qos.c          |  2 +-
+>  4 files changed, 31 insertions(+), 19 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 1a0549f1944a..6e4e22aa14a2 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -416,14 +416,10 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
+>         return ret;
+>  }
+>
+> -static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+> -                                    unsigned long val, void *ptr)
+> +static int __resume_latency_notifier(struct generic_pm_domain_data *gpd_data,
+> +                                    unsigned long val)
 
+Could you perhaps rename this to genpd_latency_notifier(), as I think
+it better follows the naming conventions in genpd.
 
-On 19/04/17 12:47, Viresh Kumar wrote:
-> On 18-04-17, 17:01, Sudeep Holla wrote:
->> Understood. I would incline towards reusing regulators we that's what is
-> 
-> It can be just a regulator, but it can be anything else as well. That
-> entity may have its own clock/volt/current tunables, etc.
-> 
+>  {
+> -       struct generic_pm_domain_data *gpd_data;
+> -       struct device *dev;
+> -
+> -       gpd_data = container_of(nb, struct generic_pm_domain_data, nb);
+> -       dev = gpd_data->base.dev;
+> +       struct device *dev = gpd_data->base.dev;
+>
+>         for (;;) {
+>                 struct generic_pm_domain *genpd;
+> @@ -456,6 +452,22 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+>         return NOTIFY_DONE;
+>  }
+>
+> +static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+> +                                    unsigned long val, void *ptr)
+> +{
+> +       struct generic_pm_domain_data *gpd_data;
+> +       struct device *dev;
+> +
+> +       gpd_data = container_of(nb, struct generic_pm_domain_data, nb);
+> +       dev = gpd_data->base.dev;
+> +
+> +       if (dev_pm_qos_notifier_is_resume_latency(dev, ptr))
+> +               return __resume_latency_notifier(gpd_data, val);
+> +
+> +       dev_err(dev, "%s: Unexpected notifier call\n", __func__);
+> +       return NOTIFY_BAD;
+> +}
+> +
+>  /**
+>   * genpd_power_off_work_fn - Power off PM domain whose subdomain count is 0.
+>   * @work: Work structure used for scheduling the execution of this function.
+> diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+> index f850daeffba4..654d8a12c2e7 100644
+> --- a/drivers/base/power/qos.c
+> +++ b/drivers/base/power/qos.c
+> @@ -172,18 +172,12 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
+>  {
+>         struct dev_pm_qos *qos;
+>         struct pm_qos_constraints *c;
+> -       struct blocking_notifier_head *n;
+>
+>         qos = kzalloc(sizeof(*qos), GFP_KERNEL);
+>         if (!qos)
+>                 return -ENOMEM;
+>
+> -       n = kzalloc(sizeof(*n), GFP_KERNEL);
+> -       if (!n) {
+> -               kfree(qos);
+> -               return -ENOMEM;
+> -       }
+> -       BLOCKING_INIT_NOTIFIER_HEAD(n);
+> +       BLOCKING_INIT_NOTIFIER_HEAD(&qos->notifiers);
+>
+>         c = &qos->resume_latency;
+>         plist_head_init(&c->list);
+> @@ -191,7 +185,7 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
+>         c->default_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
+>         c->no_constraint_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
+>         c->type = PM_QOS_MIN;
+> -       c->notifiers = n;
+> +       c->notifiers = &qos->notifiers;
+>
+>         c = &qos->latency_tolerance;
+>         plist_head_init(&c->list);
+> @@ -268,7 +262,6 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
+>         dev->power.qos = ERR_PTR(-ENODEV);
+>         spin_unlock_irq(&dev->power.lock);
+>
+> -       kfree(qos->resume_latency.notifiers);
+>         kfree(qos);
+>
+>   out:
+> @@ -487,7 +480,7 @@ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier)
+>                 ret = dev_pm_qos_constraints_allocate(dev);
+>
+>         if (!ret)
+> -               ret = blocking_notifier_chain_register(dev->power.qos->resume_latency.notifiers,
+> +               ret = blocking_notifier_chain_register(&dev->power.qos->notifiers,
+>                                                        notifier);
+>
+>         mutex_unlock(&dev_pm_qos_mtx);
+> @@ -514,7 +507,7 @@ int dev_pm_qos_remove_notifier(struct device *dev,
+>
+>         /* Silently return if the constraints object is not present. */
+>         if (!IS_ERR_OR_NULL(dev->power.qos))
+> -               retval = blocking_notifier_chain_unregister(dev->power.qos->resume_latency.notifiers,
+> +               retval = blocking_notifier_chain_unregister(&dev->power.qos->notifiers,
+>                                                             notifier);
+>
+>         mutex_unlock(&dev_pm_qos_mtx);
+> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> index 032b55909145..bcae6abb3f21 100644
+> --- a/include/linux/pm_qos.h
+> +++ b/include/linux/pm_qos.h
+> @@ -100,6 +100,7 @@ struct dev_pm_qos {
+>         struct dev_pm_qos_request *resume_latency_req;
+>         struct dev_pm_qos_request *latency_tolerance_req;
+>         struct dev_pm_qos_request *flags_req;
+> +       struct blocking_notifier_head notifiers; /* common for all constraints */
+>  };
+>
+>  /* Action requested to pm_qos_update_target */
+> @@ -114,6 +115,12 @@ static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
+>         return req->dev != NULL;
+>  }
+>
+> +static inline bool dev_pm_qos_notifier_is_resume_latency(struct device *dev,
 
-Agreed.
+A quite long name... Maybe we can remove "notifier", such as
+:dev_pm_qos_is_resume_latency()?
 
->> changed behind the scene. Calling this operating performance point
->> is misleading and doesn't align well with existing specs/features.
-> 
-> Yeah, but there are no voltage levels available here and that doesn't
-> fit as a regulator then.
-> 
+> +               struct pm_qos_constraints *c)
+> +{
+> +       return &dev->power.qos->resume_latency == c;
+> +}
+> +
+>  int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+>                          enum pm_qos_req_action action, int value);
+>  bool pm_qos_update_flags(struct pm_qos_flags *pqf,
+> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> index 97b0df71303e..073324e0c3c8 100644
+> --- a/kernel/power/qos.c
+> +++ b/kernel/power/qos.c
+> @@ -315,7 +315,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+>                 if (c->notifiers)
+>                         blocking_notifier_call_chain(c->notifiers,
+>                                                      (unsigned long)curr_value,
+> -                                                    NULL);
+> +                                                    c);
+>         } else {
+>                 ret = 0;
+>         }
+> --
+> 2.12.0.432.g71c3a4f4ba37
+>
 
-We can't dismiss just based on that. We do have systems where
-performance index is mapped to clocks though it may not be 1:1 mapping.
-I am not disagreeing here, just trying to understand it better.
+Besides the nitpicks above, feel free to add:
 
->> Understood. We have exactly same thing with SCPI but it controls both
->> frequency and voltage referred as operating points. In general, this OPP
->> terminology is used in SCPI/ACPI/SCMI specifications as both frequency
->> and voltage control. I am bit worried that this binding might introduce
->> confusions on the definitions. But it can be reworded/renamed easily if
->> required.
-> 
-> Yeah, so far we have been looking at OPPs as freq-voltage pairs ONLY
-> and that is changing. I am not sure if it going in the wrong
-> direction really. Without frequency also it is an operating point for
-> the domain. Isn't it?
-> 
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Yes, I completely agree. I am not saying the direction is wrong. I am
-saying it's confusing and binding needs to be more clear.
-
-On the contrary(playing devil's advocate here), we can treat all
-existing regulators alone as OPP then if you strip the voltages and
-treat it as abstract number. So if the firmware handles more than just
-regulators, I agree. At the same time, I would have preferred firmware
-to even abstract the frequency like ACPI CPPC. It would be good to get
-more information on what exactly that firmware handles.
-
-I am just more cautious here since we are designing generic bindings and
-changing generic code, we need to understand what that firmware supports
-and how it may evolve(so that we can maintain DT compatibility)
-
-I did a brief check and wanted to check if this is SMD/RPM regulators ?
-
--- 
-Regards,
-Sudeep
+Kind regards
+Uffe
