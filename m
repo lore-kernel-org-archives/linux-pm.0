@@ -1,46 +1,96 @@
-From: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH V3] PM / OPP: Use - instead of @ for DT entries
-Date: Wed, 19 Apr 2017 07:22:15 -0700
-Message-ID: <20170419142215.GA12105@localhost>
-References: <734c5d5a66ef8a5505f368fc68a8ab9c02d710f9.1492492253.git.viresh.kumar@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/3] PM / Domains: Allow overriding the ->xlate() callback
+Date: Wed, 19 Apr 2017 16:32:14 +0200
+Message-ID: <CAPDyKFqvfAe78Lir+jT-KQ8awDvsXp9TyVK60bzVhh+7s=xSEw@mail.gmail.com>
+References: <20170329163452.10761-1-thierry.reding@gmail.com> <20170329163452.10761-2-thierry.reding@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <734c5d5a66ef8a5505f368fc68a8ab9c02d710f9.1492492253.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, arm@kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Beno??t Cousson <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Masahiro
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ua0-f170.google.com ([209.85.217.170]:33602 "EHLO
+        mail-ua0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1764055AbdDSOcP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 10:32:15 -0400
+Received: by mail-ua0-f170.google.com with SMTP id q26so18566758uaa.0
+        for <linux-pm@vger.kernel.org>; Wed, 19 Apr 2017 07:32:15 -0700 (PDT)
+In-Reply-To: <20170329163452.10761-2-thierry.reding@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>, Stefan Kristiansson <stefank@nvidia.com>, Mikko Perttunen <mperttunen@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-Hi Viresh,
+On 29 March 2017 at 18:34, Thierry Reding <thierry.reding@gmail.com> wrote:
+> From: Thierry Reding <treding@nvidia.com>
+>
+> Allow generic power domain providers to override the ->xlate() callback
+> in case the default genpd_xlate_onecell() translation callback is not
+> good enough.
+>
+> One potential use-case for this is to allow generic power domains to be
+> specified by an ID rather than an index.
+>
+> Signed-off-by: Thierry Reding <treding@nvidia.com>
 
-On Tue, Apr 18, 2017 at 10:44:50AM +0530, Viresh Kumar wrote:
-> Compiling the DT file with W=1, DTC warns like follows:
-> 
-> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
-> unit name, but no reg property
-> 
-> Fix this by replacing '@' with '-' as the OPP nodes will never have a
-> "reg" property.
-> 
-> Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
-> Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Suggested-by: Mark Rutland <mark.rutland@arm.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com> (sunxi)
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
-> Acked-by: Masahiro Yamada <yamada.masahiro@socionext.com> (uniphier)
-> Acked-by: Rob Herring <robh@kernel.org>
-> Acked-by: Tony Lindgren <tony@atomide.com>
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-We've already turned down other patches that does this in a sweeping manner
-like this, since they tend to be conflict prone with other DT changes.
+Kind regards
+Uffe
 
-Please split per platform and merge with each maintainer.
-
-
-Thanks,
-
--Olof
+> ---
+>  drivers/base/power/domain.c | 8 ++++----
+>  include/linux/pm_domain.h   | 4 ++++
+>  2 files changed, 8 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index e697dec9d25b..c102557f6c7e 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1570,9 +1570,6 @@ EXPORT_SYMBOL_GPL(pm_genpd_remove);
+>
+>  #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+>
+> -typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
+> -                                                  void *data);
+> -
+>  /*
+>   * Device Tree based PM domain providers.
+>   *
+> @@ -1730,6 +1727,9 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+>
+>         mutex_lock(&gpd_list_lock);
+>
+> +       if (!data->xlate)
+> +               data->xlate = genpd_xlate_onecell;
+> +
+>         for (i = 0; i < data->num_domains; i++) {
+>                 if (!data->domains[i])
+>                         continue;
+> @@ -1740,7 +1740,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+>                 data->domains[i]->has_provider = true;
+>         }
+>
+> -       ret = genpd_add_provider(np, genpd_xlate_onecell, data);
+> +       ret = genpd_add_provider(np, data->xlate, data);
+>         if (ret < 0)
+>                 goto error;
+>
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 5339ed5bd6f9..5163f371a308 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -204,9 +204,13 @@ static inline void pm_genpd_syscore_poweron(struct device *dev) {}
+>  /* OF PM domain providers */
+>  struct of_device_id;
+>
+> +typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
+> +                                                  void *data);
+> +
+>  struct genpd_onecell_data {
+>         struct generic_pm_domain **domains;
+>         unsigned int num_domains;
+> +       genpd_xlate_t xlate;
+>  };
+>
+>  #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+> --
+> 2.12.0
+>
