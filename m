@@ -1,37 +1,56 @@
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [patch V2 08/10] timer: Implement the hierarchical pull model
-Date: Wed, 19 Apr 2017 11:43:01 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1704191136220.1829@nanos>
-References: <20170418111102.490432548@linutronix.de> <20170418111401.016420305@linutronix.de> <20170419090914.qdiamqwzro34b53d@hirez.programming.kicks-ass.net>
+Date: Wed, 19 Apr 2017 11:44:45 +0200
+Message-ID: <20170419094445.oj5zc624zanv2hfp@hirez.programming.kicks-ass.net>
+References: <20170418111102.490432548@linutronix.de>
+ <20170418111401.016420305@linutronix.de>
+ <20170419090914.qdiamqwzro34b53d@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:55785 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1761859AbdDSJnG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 05:43:06 -0400
+Received: from merlin.infradead.org ([205.233.59.134]:53652 "EHLO
+        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1761478AbdDSJox (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 05:44:53 -0400
+Content-Disposition: inline
 In-Reply-To: <20170419090914.qdiamqwzro34b53d@hirez.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
 Cc: LKML <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Rik van Riel <riel@redhat.com>
 
-On Wed, 19 Apr 2017, Peter Zijlstra wrote:
-> > +done:
-> > +	raw_spin_unlock(&group->lock);
-> > +	return nextevt;
-> > +}
-> 
+On Wed, Apr 19, 2017 at 11:09:14AM +0200, Peter Zijlstra wrote:
+
 > Would it be very onerous to rewrite that into regular loops? That avoids
 > us having to think (and worry) about blowing our stack.
 
-The issue is that this is walking a hierarchy tree (limited depth) and not
-a list of groups at a particular level.
+void walk_groups(bool (*up)(void *), void (*down)(void *), void *data)
+{
+	struct tmigr_cpu *tmc = this_cpu_ptr(&tmigr_cpu);
+	struct group *stack[tmigr_hierarchy_levels];
+	struct group *group = tmc->group;
+	int i = 0;
 
-In an earlier version we checked the stack usage and it was ~128 bytes per
-nest level. With 32k CPUs this ends up with maximum 5 recursions, i.e. 640
-bytes. I recheck with the current implementation.
+	raw_spin_lock(&tmc->lock);
 
-Thanks,
+	do {
+		stack[i++] = group;
 
-	tglx
+		if (up(data))
+			break;
+
+	} while ((group = group->parent));
+
+	do {
+		group = stack[--i];
+
+		down(data);
+
+	} while (group != tmc->group);
+
+	raw_spin_unlock(&tmc->lock);
+}
+
+Something like so, iterates the hierarchy for the current CPU and calls
+@up and @down at each level in the proper order. And has obvious stack
+usage.
