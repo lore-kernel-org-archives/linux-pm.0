@@ -1,64 +1,69 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: RFC: WMI Enhancements
-Date: Wed, 19 Apr 2017 18:54:51 +0200
-Message-ID: <201704191854.51783@pali>
-References: <20170412230854.GA11963@fury> <20170419075248.GD18887@pali> <f3684c95b91349d3b4e512370ac1faf4@ausx13mpc120.AMER.DELL.COM>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: RFC: WMI Enhancements
+Date: Wed, 19 Apr 2017 17:24:00 +0000
+Message-ID: <4e3e507b116443298427002c5aafed7f@ausx13mpc120.AMER.DELL.COM>
+References: <20170412230854.GA11963@fury> <20170419075248.GD18887@pali>
+ <f3684c95b91349d3b4e512370ac1faf4@ausx13mpc120.AMER.DELL.COM>
+ <201704191854.51783@pali>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart5263741.Zo3SffanVJ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <f3684c95b91349d3b4e512370ac1faf4@ausx13mpc120.AMER.DELL.COM>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Mario.Limonciello@dell.com
-Cc: dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from esa4.dell-outbound.iphmx.com ([68.232.149.214]:28385 "EHLO
+        esa4.dell-outbound.iphmx.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S968338AbdDSRYN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 13:24:13 -0400
+In-Reply-To: <201704191854.51783@pali>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: pali.rohar@gmail.com
+Cc: dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 
---nextPart5263741.Zo3SffanVJ
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Wednesday 19 April 2017 18:29:53 Mario.Limonciello@dell.com wrote:
-> > As wrote above, I'm fine with explicit whitelist of WMI GUIDs which
-> > will be exported to userspace after communication with vendor.
->=20
-> What about GUID's not yet used by kernel drivers?  Would those
-> default to whitelist default to blacklist?  My preference would be
-> to default to whitelist. This allows new GUID's to be added later
-> without needing to modify kernel for something that kernel won't
-> need to do anything immediately.
-
-I understood it as there would be explicit whitelist in kernel and new=20
-GUIDs would be needed to add into whitelist, even those which do not=20
-have kernel wmi driver.
-
-Exporting all GUIDs (to userspace) which are not bind to kernel driver=20
-has one big problem. If kernel introduce new wmi driver for such GUID=20
-then it block userspace to access it or at least would need to provide=20
-audit filter and something would be probably filtered. It means that=20
-some userspace applications which would use that GUIDs stops working=20
-after upgrading to new kernel. And we can be in situation where *user*=20
-need to decide: either use 3rd party userspace application from vendor=20
-which provide some special settings for your laptop, or use kernel=20
-module which provides standard rfkill/led/input class driver.
-
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart5263741.Zo3SffanVJ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEUEABECAAYFAlj3llsACgkQi/DJPQPkQ1LmHgCgzDdTV6PM+RPMEIG7Bwlvvk6s
-IZIAljfiV353bldcMi21g04PlsuHF70=
-=ZpEx
------END PGP SIGNATURE-----
-
---nextPart5263741.Zo3SffanVJ--
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBQYWxpIFJvaMOhciBbbWFpbHRv
+OnBhbGkucm9oYXJAZ21haWwuY29tXQ0KPiBTZW50OiBXZWRuZXNkYXksIEFwcmlsIDE5LCAyMDE3
+IDExOjU1IEFNDQo+IFRvOiBMaW1vbmNpZWxsbywgTWFyaW8gPE1hcmlvX0xpbW9uY2llbGxvQERl
+bGwuY29tPg0KPiBDYzogZHZoYXJ0QGluZnJhZGVhZC5vcmc7IHJqd0Byand5c29ja2kubmV0OyBs
+dXRvQGFtYWNhcGl0YWwubmV0Ow0KPiBsZW4uYnJvd25AaW50ZWwuY29tOyBjb3JlbnRpbi5jaGFy
+eUBnbWFpbC5jb207IGx1dG9Aa2VybmVsLm9yZzsNCj4gYW5kcml5LnNoZXZjaGVua29AbGludXgu
+aW50ZWwuY29tOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBwbGF0Zm9ybS0NCj4gZHJp
+dmVyLXg4NkB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJq
+ZWN0OiBSZTogUkZDOiBXTUkgRW5oYW5jZW1lbnRzDQo+IA0KPiBPbiBXZWRuZXNkYXkgMTkgQXBy
+aWwgMjAxNyAxODoyOTo1MyBNYXJpby5MaW1vbmNpZWxsb0BkZWxsLmNvbSB3cm90ZToNCj4gPiA+
+IEFzIHdyb3RlIGFib3ZlLCBJJ20gZmluZSB3aXRoIGV4cGxpY2l0IHdoaXRlbGlzdCBvZiBXTUkg
+R1VJRHMgd2hpY2gNCj4gPiA+IHdpbGwgYmUgZXhwb3J0ZWQgdG8gdXNlcnNwYWNlIGFmdGVyIGNv
+bW11bmljYXRpb24gd2l0aCB2ZW5kb3IuDQo+ID4NCj4gPiBXaGF0IGFib3V0IEdVSUQncyBub3Qg
+eWV0IHVzZWQgYnkga2VybmVsIGRyaXZlcnM/ICBXb3VsZCB0aG9zZQ0KPiA+IGRlZmF1bHQgdG8g
+d2hpdGVsaXN0IGRlZmF1bHQgdG8gYmxhY2tsaXN0PyAgTXkgcHJlZmVyZW5jZSB3b3VsZCBiZQ0K
+PiA+IHRvIGRlZmF1bHQgdG8gd2hpdGVsaXN0LiBUaGlzIGFsbG93cyBuZXcgR1VJRCdzIHRvIGJl
+IGFkZGVkIGxhdGVyDQo+ID4gd2l0aG91dCBuZWVkaW5nIHRvIG1vZGlmeSBrZXJuZWwgZm9yIHNv
+bWV0aGluZyB0aGF0IGtlcm5lbCB3b24ndA0KPiA+IG5lZWQgdG8gZG8gYW55dGhpbmcgaW1tZWRp
+YXRlbHkuDQo+IA0KPiBJIHVuZGVyc3Rvb2QgaXQgYXMgdGhlcmUgd291bGQgYmUgZXhwbGljaXQg
+d2hpdGVsaXN0IGluIGtlcm5lbCBhbmQgbmV3DQo+IEdVSURzIHdvdWxkIGJlIG5lZWRlZCB0byBh
+ZGQgaW50byB3aGl0ZWxpc3QsIGV2ZW4gdGhvc2Ugd2hpY2ggZG8gbm90DQo+IGhhdmUga2VybmVs
+IHdtaSBkcml2ZXIuDQo+IA0KPiBFeHBvcnRpbmcgYWxsIEdVSURzICh0byB1c2Vyc3BhY2UpIHdo
+aWNoIGFyZSBub3QgYmluZCB0byBrZXJuZWwgZHJpdmVyDQo+IGhhcyBvbmUgYmlnIHByb2JsZW0u
+IElmIGtlcm5lbCBpbnRyb2R1Y2UgbmV3IHdtaSBkcml2ZXIgZm9yIHN1Y2ggR1VJRA0KPiB0aGVu
+IGl0IGJsb2NrIHVzZXJzcGFjZSB0byBhY2Nlc3MgaXQgb3IgYXQgbGVhc3Qgd291bGQgbmVlZCB0
+byBwcm92aWRlDQo+IGF1ZGl0IGZpbHRlciBhbmQgc29tZXRoaW5nIHdvdWxkIGJlIHByb2JhYmx5
+IGZpbHRlcmVkLiBJdCBtZWFucyB0aGF0DQo+IHNvbWUgdXNlcnNwYWNlIGFwcGxpY2F0aW9ucyB3
+aGljaCB3b3VsZCB1c2UgdGhhdCBHVUlEcyBzdG9wcyB3b3JraW5nDQo+IGFmdGVyIHVwZ3JhZGlu
+ZyB0byBuZXcga2VybmVsLiBBbmQgd2UgY2FuIGJlIGluIHNpdHVhdGlvbiB3aGVyZSAqdXNlcioN
+Cj4gbmVlZCB0byBkZWNpZGU6IGVpdGhlciB1c2UgM3JkIHBhcnR5IHVzZXJzcGFjZSBhcHBsaWNh
+dGlvbiBmcm9tIHZlbmRvcg0KPiB3aGljaCBwcm92aWRlIHNvbWUgc3BlY2lhbCBzZXR0aW5ncyBm
+b3IgeW91ciBsYXB0b3AsIG9yIHVzZSBrZXJuZWwNCj4gbW9kdWxlIHdoaWNoIHByb3ZpZGVzIHN0
+YW5kYXJkIHJma2lsbC9sZWQvaW5wdXQgY2xhc3MgZHJpdmVyLg0KPiANCg0KSWYgdGhpcyBwcm9w
+b3NhbCBnb2VzIGZvcndhcmQgaXQgd291bGQgc291bmQgbGlrZSB0byBtZSBhbiBhdWRpdCBmaWx0
+ZXINCndvdWxkIGJlY29tZSBhIHByZXJlcXVpc2l0ZSBmb3IgYW55IG5ldyBXTUkga2VybmVsIGRy
+aXZlci4gIFRoaXMgaXMgbm90DQphIHByb2JsZW0gdG8gbWUuDQoNClRoaXMgYXVkaWVuY2UgcmVj
+b21tZW5kcyB0aGUgd2F5IGZvciB1c2VycyB0byBjb25maWd1cmUgdGhlIHN5c3RlbSBidXQgDQpv
+ZiBjb3Vyc2UgY2Fubm90IHN0b3AgdXNlcnMgZnJvbSBkb2luZyB3aGF0IHRoZXkgZGVjaWRlIHRv
+IGRvLiAgDQpXZSdyZSBhbGwgaW4gYWdyZWVtZW50IHRoYXQgdGhlIGtlcm5lbCBzaG91bGQga2Vl
+cCByZXNwb25zaWJpbGl0eSBmb3Igc29tZQ0Kb2YgdGhlc2UgZnVuY3Rpb25hbGl0aWVzLg0KSWYg
+YSBuZXcga2VybmVsIFdNSSBkcml2ZXIgZHVwbGljYXRlcyBmdW5jdGlvbmFsaXR5IHRoYXQgaGFw
+cGVucyB0byBmaW5kIGl0cyANCndheSBpbiB1c2Vyc3BhY2UgYW5kIHRoZSBrZXJuZWwgYXVkaXRz
+IHRoYXQgb3V0IHllcyB0aGUgdXNlcnNwYWNlIA0KYXBwbGljYXRpb24gbWF5IHN0YXJ0IHRvICBo
+YXZlIGxlc3MgZnVuY3Rpb25hbGl0eSwgYnV0IGJldHRlciBzdXBwb3J0IA0Kd291bGQgbGl2ZSBp
+biB0aGUga2VybmVsIGFuZCB0aGUgdXNlciB3b3VsZCBiZSBiZXR0ZXIgc3VwcG9ydGVkIGJ5IA0K
+dGhlIHN0YWNrIChmb3IgZXhhbXBsZSBjb3VsZCB1c2Ugc3RhbmRhcmQgcmZraWxsIHVzZXJzcGFj
+ZSB1dGlsaXRpZXMpLg0KDQoNCg==
