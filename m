@@ -1,91 +1,82 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v7 4/5] ACPI: ac: Add a blacklist with PMIC ACPI HIDs with a native charger driver
-Date: Wed, 19 Apr 2017 14:02:11 +0200
-Message-ID: <20170419120212.24949-5-hdegoede@redhat.com>
-References: <20170419120212.24949-1-hdegoede@redhat.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170419120212.24949-1-hdegoede@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
+ power-domains
+Date: Wed, 19 Apr 2017 14:58:00 +0100
+Message-ID: <9dee7c0d-e5f4-9fcd-3c92-bf7ec9d43a3b@arm.com>
+References: <cover.1490001099.git.viresh.kumar@linaro.org>
+ <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
+ <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
+ <20170413053736.GM5910@vireshk-i7>
+ <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
+ <20170417052758.GF28191@vireshk-i7>
+ <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
+ <20170419114740.GD5436@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:40432 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934582AbdDSN6H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 19 Apr 2017 09:58:07 -0400
+In-Reply-To: <20170419114740.GD5436@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
 
-On some systems we have a native PMIC driver which provides Mains
-monitoring, while the ACPI ac driver is broken on these systems
-due to bad DSTDs or because we do not support the proprietary and
-undocumented ACPI opregions these ACPI battery devices rely on
-(e.g. BMOP opregion).
 
-This leads for example to a ADP1 power_supply which reports
-itself as always online even if no mains are connected.
 
-This commit adds a blacklist with PMIC ACPI HIDs for which we've a
-native charger or extcon driver and makes the ACPI ac driver not
-register itself when a PMIC on this list is present.
+On 19/04/17 12:47, Viresh Kumar wrote:
+> On 18-04-17, 17:01, Sudeep Holla wrote:
+>> Understood. I would incline towards reusing regulators we that's what is
+> 
+> It can be just a regulator, but it can be anything else as well. That
+> entity may have its own clock/volt/current tunables, etc.
+> 
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
-Changes in v2:
--This is a new patch in v2 of this patch-set replacing:
- "ACPI: ac: Add acpi_ac_unregister() function"
- "power: supply: axp288_charger: Unregister duplicate ACPI ac supply"
- And also this patch from my local patch-queue (not submitted yet):
- "i2c-cht-wc: remove broken ACPI AC power-supply"
-Changes in v7:
--Some minor code style tweaks based on review from Andy Shevchenko
----
- drivers/acpi/ac.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+Agreed.
 
-diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
-index f71b756..8f52483 100644
---- a/drivers/acpi/ac.c
-+++ b/drivers/acpi/ac.c
-@@ -57,12 +57,23 @@ static int acpi_ac_add(struct acpi_device *device);
- static int acpi_ac_remove(struct acpi_device *device);
- static void acpi_ac_notify(struct acpi_device *device, u32 event);
- 
-+struct acpi_ac_bl {
-+	const char *hid;
-+	int hrv;
-+};
-+
- static const struct acpi_device_id ac_device_ids[] = {
- 	{"ACPI0003", 0},
- 	{"", 0},
- };
- MODULE_DEVICE_TABLE(acpi, ac_device_ids);
- 
-+/* Lists of PMIC ACPI HIDs with an (often better) native charger driver */
-+static const struct acpi_ac_bl acpi_ac_blacklist[] = {
-+	{ "INT33F4", -1 }, /* X-Powers AXP288 PMIC */
-+	{ "INT34D3",  3 }, /* Intel Cherrytrail Whiskey Cove PMIC */
-+};
-+
- #ifdef CONFIG_PM_SLEEP
- static int acpi_ac_resume(struct device *dev);
- #endif
-@@ -424,11 +435,20 @@ static int acpi_ac_remove(struct acpi_device *device)
- 
- static int __init acpi_ac_init(void)
- {
-+	unsigned int i;
- 	int result;
- 
- 	if (acpi_disabled)
- 		return -ENODEV;
- 
-+	for (i = 0; i < ARRAY_SIZE(acpi_ac_blacklist); i++)
-+		if (acpi_dev_present(acpi_ac_blacklist[i].hid, "1",
-+				     acpi_ac_blacklist[i].hrv)) {
-+			pr_info(PREFIX "AC: found native %s PMIC, not loading\n",
-+				acpi_ac_blacklist[i].hid);
-+			return -ENODEV;
-+		}
-+
- #ifdef CONFIG_ACPI_PROCFS_POWER
- 	acpi_ac_dir = acpi_lock_ac_dir();
- 	if (!acpi_ac_dir)
+>> changed behind the scene. Calling this operating performance point
+>> is misleading and doesn't align well with existing specs/features.
+> 
+> Yeah, but there are no voltage levels available here and that doesn't
+> fit as a regulator then.
+> 
+
+We can't dismiss just based on that. We do have systems where
+performance index is mapped to clocks though it may not be 1:1 mapping.
+I am not disagreeing here, just trying to understand it better.
+
+>> Understood. We have exactly same thing with SCPI but it controls both
+>> frequency and voltage referred as operating points. In general, this OPP
+>> terminology is used in SCPI/ACPI/SCMI specifications as both frequency
+>> and voltage control. I am bit worried that this binding might introduce
+>> confusions on the definitions. But it can be reworded/renamed easily if
+>> required.
+> 
+> Yeah, so far we have been looking at OPPs as freq-voltage pairs ONLY
+> and that is changing. I am not sure if it going in the wrong
+> direction really. Without frequency also it is an operating point for
+> the domain. Isn't it?
+> 
+
+Yes, I completely agree. I am not saying the direction is wrong. I am
+saying it's confusing and binding needs to be more clear.
+
+On the contrary(playing devil's advocate here), we can treat all
+existing regulators alone as OPP then if you strip the voltages and
+treat it as abstract number. So if the firmware handles more than just
+regulators, I agree. At the same time, I would have preferred firmware
+to even abstract the frequency like ACPI CPPC. It would be good to get
+more information on what exactly that firmware handles.
+
+I am just more cautious here since we are designing generic bindings and
+changing generic code, we need to understand what that firmware supports
+and how it may evolve(so that we can maintain DT compatibility)
+
+I did a brief check and wanted to check if this is SMD/RPM regulators ?
+
 -- 
-2.9.3
-
+Regards,
+Sudeep
