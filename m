@@ -1,26 +1,15 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 6/7] ARM: uniphier: Use - instead of @ for DT OPP entries
-Date: Thu, 20 Apr 2017 11:14:17 +0530
-Message-ID: <7e6663fcf7b7c8707e78216326fe622ceb64f196.1492666725.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH V4 5/7] ARM: sun8i: Use - instead of @ for DT OPP entries
+Date: Thu, 20 Apr 2017 11:14:16 +0530
+Message-ID: <d13e447e9cc080d81c4f2db3bd5433506d3ef739.1492666725.git.viresh.kumar@linaro.org>
 References: <cover.1492666725.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <cover.1492666725.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1492666725.git.viresh.kumar@linaro.org>
-References: <cover.1492666725.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: arm@kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Rob Herring <robh@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1492666725.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1492666725.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1492666725.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: arm-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 Compiling the DT file with W=1, DTC warns like follows:
@@ -31,289 +20,47 @@ unit name, but no reg property
 Fix this by replacing '@' with '-' as the OPP nodes will never have a
 "reg" property.
 
-Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
-Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-Suggested-by: Mark Rutland <mark.rutland@arm.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-Acked-by: Rob Herring <robh@kernel.org>
+Reported-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Reported-by: Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
+Suggested-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 ---
- arch/arm/boot/dts/uniphier-pro5.dtsi             | 32 ++++++++++++------------
- arch/arm/boot/dts/uniphier-pxs2.dtsi             | 16 ++++++------
- arch/arm64/boot/dts/socionext/uniphier-ld11.dtsi | 14 +++++------
- arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi | 32 ++++++++++++------------
- 4 files changed, 47 insertions(+), 47 deletions(-)
+ arch/arm/boot/dts/sun8i-a33.dtsi | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/uniphier-pro5.dtsi b/arch/arm/boot/dts/uniphier-pro5.dtsi
-index dbc5e5333163..22ef2842be3a 100644
---- a/arch/arm/boot/dts/uniphier-pro5.dtsi
-+++ b/arch/arm/boot/dts/uniphier-pro5.dtsi
-@@ -77,67 +77,67 @@
+diff --git a/arch/arm/boot/dts/sun8i-a33.dtsi b/arch/arm/boot/dts/sun8i-a33.dtsi
+index 306af6cadf26..a2c555d6475c 100644
+--- a/arch/arm/boot/dts/sun8i-a33.dtsi
++++ b/arch/arm/boot/dts/sun8i-a33.dtsi
+@@ -49,19 +49,19 @@
  		compatible = "operating-points-v2";
  		opp-shared;
  
--		opp@100000000 {
-+		opp-100000000 {
- 			opp-hz = /bits/ 64 <100000000>;
- 			clock-latency-ns = <300>;
+-		opp@648000000 {
++		opp-648000000 {
+ 			opp-hz = /bits/ 64 <648000000>;
+ 			opp-microvolt = <1040000>;
+ 			clock-latency-ns = <244144>; /* 8 32k periods */
  		};
--		opp@116667000 {
-+		opp-116667000 {
- 			opp-hz = /bits/ 64 <116667000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@150000000 {
-+		opp-150000000 {
- 			opp-hz = /bits/ 64 <150000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@175000000 {
-+		opp-175000000 {
- 			opp-hz = /bits/ 64 <175000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@200000000 {
-+		opp-200000000 {
- 			opp-hz = /bits/ 64 <200000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@233334000 {
-+		opp-233334000 {
- 			opp-hz = /bits/ 64 <233334000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@300000000 {
-+		opp-300000000 {
- 			opp-hz = /bits/ 64 <300000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@350000000 {
-+		opp-350000000 {
- 			opp-hz = /bits/ 64 <350000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@400000000 {
-+		opp-400000000 {
- 			opp-hz = /bits/ 64 <400000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@466667000 {
-+		opp-466667000 {
- 			opp-hz = /bits/ 64 <466667000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@600000000 {
-+		opp-600000000 {
- 			opp-hz = /bits/ 64 <600000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@700000000 {
-+		opp-700000000 {
- 			opp-hz = /bits/ 64 <700000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@800000000 {
-+		opp-800000000 {
- 			opp-hz = /bits/ 64 <800000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@933334000 {
-+		opp-933334000 {
- 			opp-hz = /bits/ 64 <933334000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@1200000000 {
-+		opp-1200000000 {
- 			opp-hz = /bits/ 64 <1200000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@1400000000 {
-+		opp-1400000000 {
- 			opp-hz = /bits/ 64 <1400000000>;
- 			clock-latency-ns = <300>;
- 		};
-diff --git a/arch/arm/boot/dts/uniphier-pxs2.dtsi b/arch/arm/boot/dts/uniphier-pxs2.dtsi
-index e9e031d63c1a..acaaa2187843 100644
---- a/arch/arm/boot/dts/uniphier-pxs2.dtsi
-+++ b/arch/arm/boot/dts/uniphier-pxs2.dtsi
-@@ -97,35 +97,35 @@
- 		compatible = "operating-points-v2";
- 		opp-shared;
  
--		opp@100000000 {
-+		opp-100000000 {
- 			opp-hz = /bits/ 64 <100000000>;
- 			clock-latency-ns = <300>;
+-		opp@816000000 {
++		opp-816000000 {
+ 			opp-hz = /bits/ 64 <816000000>;
+ 			opp-microvolt = <1100000>;
+ 			clock-latency-ns = <244144>; /* 8 32k periods */
  		};
--		opp@150000000 {
-+		opp-150000000 {
- 			opp-hz = /bits/ 64 <150000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@200000000 {
-+		opp-200000000 {
- 			opp-hz = /bits/ 64 <200000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@300000000 {
-+		opp-300000000 {
- 			opp-hz = /bits/ 64 <300000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@400000000 {
-+		opp-400000000 {
- 			opp-hz = /bits/ 64 <400000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@600000000 {
-+		opp-600000000 {
- 			opp-hz = /bits/ 64 <600000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@800000000 {
-+		opp-800000000 {
- 			opp-hz = /bits/ 64 <800000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@1200000000 {
-+		opp-1200000000 {
- 			opp-hz = /bits/ 64 <1200000000>;
- 			clock-latency-ns = <300>;
- 		};
-diff --git a/arch/arm64/boot/dts/socionext/uniphier-ld11.dtsi b/arch/arm64/boot/dts/socionext/uniphier-ld11.dtsi
-index da881f5b6ed4..0f2bee028ab0 100644
---- a/arch/arm64/boot/dts/socionext/uniphier-ld11.dtsi
-+++ b/arch/arm64/boot/dts/socionext/uniphier-ld11.dtsi
-@@ -89,31 +89,31 @@
- 		compatible = "operating-points-v2";
- 		opp-shared;
  
--		opp@245000000 {
-+		opp-245000000 {
- 			opp-hz = /bits/ 64 <245000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@250000000 {
-+		opp-250000000 {
- 			opp-hz = /bits/ 64 <250000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@490000000 {
-+		opp-490000000 {
- 			opp-hz = /bits/ 64 <490000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@500000000 {
-+		opp-500000000 {
- 			opp-hz = /bits/ 64 <500000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@653334000 {
-+		opp-653334000 {
- 			opp-hz = /bits/ 64 <653334000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@666667000 {
-+		opp-666667000 {
- 			opp-hz = /bits/ 64 <666667000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@980000000 {
-+		opp-980000000 {
- 			opp-hz = /bits/ 64 <980000000>;
- 			clock-latency-ns = <300>;
- 		};
-diff --git a/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi b/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
-index a6b3a70dae83..19f782408d54 100644
---- a/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
-+++ b/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
-@@ -116,35 +116,35 @@
- 		compatible = "operating-points-v2";
- 		opp-shared;
- 
--		opp@250000000 {
-+		opp-250000000 {
- 			opp-hz = /bits/ 64 <250000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@275000000 {
-+		opp-275000000 {
- 			opp-hz = /bits/ 64 <275000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@500000000 {
-+		opp-500000000 {
- 			opp-hz = /bits/ 64 <500000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@550000000 {
-+		opp-550000000 {
- 			opp-hz = /bits/ 64 <550000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@666667000 {
-+		opp-666667000 {
- 			opp-hz = /bits/ 64 <666667000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@733334000 {
-+		opp-733334000 {
- 			opp-hz = /bits/ 64 <733334000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@1000000000 {
-+		opp-1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@1100000000 {
-+		opp-1100000000 {
- 			opp-hz = /bits/ 64 <1100000000>;
- 			clock-latency-ns = <300>;
- 		};
-@@ -154,35 +154,35 @@
- 		compatible = "operating-points-v2";
- 		opp-shared;
- 
--		opp@250000000 {
-+		opp-250000000 {
- 			opp-hz = /bits/ 64 <250000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@275000000 {
-+		opp-275000000 {
- 			opp-hz = /bits/ 64 <275000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@500000000 {
-+		opp-500000000 {
- 			opp-hz = /bits/ 64 <500000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@550000000 {
-+		opp-550000000 {
- 			opp-hz = /bits/ 64 <550000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@666667000 {
-+		opp-666667000 {
- 			opp-hz = /bits/ 64 <666667000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@733334000 {
-+		opp-733334000 {
- 			opp-hz = /bits/ 64 <733334000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@1000000000 {
-+		opp-1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
- 			clock-latency-ns = <300>;
- 		};
--		opp@1100000000 {
-+		opp-1100000000 {
- 			opp-hz = /bits/ 64 <1100000000>;
- 			clock-latency-ns = <300>;
- 		};
+-		opp@1008000000 {
++		opp-1008000000 {
+ 			opp-hz = /bits/ 64 <1008000000>;
+ 			opp-microvolt = <1200000>;
+ 			clock-latency-ns = <244144>; /* 8 32k periods */
 -- 
 2.12.0.432.g71c3a4f4ba37
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
