@@ -1,107 +1,190 @@
-From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Subject: [PATCH v4 6/8] arm,arm64,drivers: reduce scope of cap_parsing_failed
-Date: Thu, 20 Apr 2017 15:43:14 +0100
-Message-ID: <20170420144316.15632-7-juri.lelli@arm.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: [PATCH v4 8/8] arm,arm64,drivers: add a prefix to drivers arch_topology interfaces
+Date: Thu, 20 Apr 2017 15:43:16 +0100
+Message-ID: <20170420144316.15632-9-juri.lelli@arm.com>
 References: <20170420144316.15632-1-juri.lelli@arm.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170420144316.15632-1-juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, juri.lelli-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170420144316.15632-1-juri.lelli@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Reduce the scope of cap_parsing_failed (making it static in
-drivers/base/arch_topology.c) by slightly changing {arm,arm64} DT
-parsing code.
+Now that some functions that deal with arch topology information live
+under drivers, there is a clash of naming that might create confusion.
 
-For arm checking for !cap_parsing_failed before calling normalize_
-cpu_capacity() is superfluous, as returning an error from parse_
-cpu_capacity() (above) means cap_from _dt is set to false.
+Tidy things up by creating a drivers namespace for interfaces used by
+arch code; achieve this by prepending a 'atd_' (arch topology driver)
+prefix to driver interfaces.
 
-For arm64 we can simply check if raw_capacity points to something,
-which is not if capacity parsing has failed.
-
-Suggested-by: Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>
-Signed-off-by: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Acked-by: Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>
-Acked-by: Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>
+Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+Acked-by: Russell King <rmk+kernel@armlinux.org.uk>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- arch/arm/kernel/topology.c   | 3 +--
- arch/arm64/kernel/topology.c | 5 +----
- drivers/base/arch_topology.c | 4 ++--
- 3 files changed, 4 insertions(+), 8 deletions(-)
+ arch/arm/kernel/topology.c    |  8 ++++----
+ arch/arm64/kernel/topology.c  |  4 ++--
+ drivers/base/arch_topology.c  | 20 ++++++++++----------
+ include/linux/arch_topology.h |  8 ++++----
+ 4 files changed, 20 insertions(+), 20 deletions(-)
 
 diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 49ef025ffaa0..1e35a3265ddf 100644
+index 557be4f1d2d7..e53391026c1b 100644
 --- a/arch/arm/kernel/topology.c
 +++ b/arch/arm/kernel/topology.c
-@@ -76,7 +76,6 @@ static unsigned long *__cpu_capacity;
+@@ -111,7 +111,7 @@ static void __init parse_dt_topology(void)
+ 			continue;
+ 		}
  
- static unsigned long middle_capacity = 1;
- static bool cap_from_dt = true;
--extern bool cap_parsing_failed;
- extern void normalize_cpu_capacity(void);
- extern int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu);
- 
-@@ -165,7 +164,7 @@ static void __init parse_dt_topology(void)
- 		middle_capacity = ((max_capacity / 3)
+-		if (parse_cpu_capacity(cn, cpu)) {
++		if (atd_parse_cpu_capacity(cn, cpu)) {
+ 			of_node_put(cn);
+ 			continue;
+ 		}
+@@ -160,7 +160,7 @@ static void __init parse_dt_topology(void)
  				>> (SCHED_CAPACITY_SHIFT-1)) + 1;
  
--	if (cap_from_dt && !cap_parsing_failed)
-+	if (cap_from_dt)
- 		normalize_cpu_capacity();
+ 	if (cap_from_dt)
+-		normalize_cpu_capacity();
++		atd_normalize_cpu_capacity();
  }
  
+ /*
+@@ -173,10 +173,10 @@ static void update_cpu_capacity(unsigned int cpu)
+ 	if (!cpu_capacity(cpu) || cap_from_dt)
+ 		return;
+ 
+-	set_capacity_scale(cpu, cpu_capacity(cpu) / middle_capacity);
++	atd_set_capacity_scale(cpu, cpu_capacity(cpu) / middle_capacity);
+ 
+ 	pr_info("CPU%u: update cpu_capacity %lu\n",
+-		cpu, arch_scale_cpu_capacity(NULL, cpu));
++		cpu, atd_scale_cpu_capacity(NULL, cpu));
+ }
+ 
+ #else
 diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index c5bc31eb97e8..7e1f6f75185b 100644
+index 255230c3e835..5f24faa09c05 100644
 --- a/arch/arm64/kernel/topology.c
 +++ b/arch/arm64/kernel/topology.c
-@@ -27,7 +27,6 @@
- #include <asm/cputype.h>
- #include <asm/topology.h>
+@@ -39,7 +39,7 @@ static int __init get_cpu_for_node(struct device_node *node)
  
--extern bool cap_parsing_failed;
- extern void normalize_cpu_capacity(void);
- extern int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu);
- 
-@@ -187,10 +186,8 @@ static int __init parse_dt_topology(void)
- 	 * cluster with restricted subnodes.
- 	 */
- 	map = of_get_child_by_name(cn, "cpu-map");
--	if (!map) {
--		cap_parsing_failed = true;
-+	if (!map)
- 		goto out;
--	}
- 
- 	ret = parse_cluster(map, 0);
+ 	for_each_possible_cpu(cpu) {
+ 		if (of_get_cpu_node(cpu, NULL) == cpu_node) {
+-			parse_cpu_capacity(cpu_node, cpu);
++			atd_parse_cpu_capacity(cpu_node, cpu);
+ 			of_node_put(cpu_node);
+ 			return cpu;
+ 		}
+@@ -191,7 +191,7 @@ static int __init parse_dt_topology(void)
  	if (ret != 0)
+ 		goto out_map;
+ 
+-	normalize_cpu_capacity();
++	atd_normalize_cpu_capacity();
+ 
+ 	/*
+ 	 * Check that all cores are in the topology; the SMP code will
 diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index 097834f0fcd7..acf99372c5cf 100644
+index 76c19aa0d82f..f04999e3ff75 100644
 --- a/drivers/base/arch_topology.c
 +++ b/drivers/base/arch_topology.c
-@@ -95,7 +95,7 @@ subsys_initcall(register_cpu_capacity_sysctl);
+@@ -25,12 +25,12 @@
+ static DEFINE_MUTEX(cpu_scale_mutex);
+ static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
  
- static u32 capacity_scale;
- static u32 *raw_capacity;
--bool cap_parsing_failed;
-+static bool cap_parsing_failed;
- 
- void normalize_cpu_capacity(void)
+-unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
++unsigned long atd_scale_cpu_capacity(struct sched_domain *sd, int cpu)
  {
-@@ -210,7 +210,7 @@ static int __init register_cpufreq_notifier(void)
- 	 * until we have the necessary code to parse the cpu capacity, so
- 	 * skip registering cpufreq notifier.
- 	 */
--	if (!acpi_disabled || cap_parsing_failed)
-+	if (!acpi_disabled || !raw_capacity)
- 		return -EINVAL;
+ 	return per_cpu(cpu_scale, cpu);
+ }
  
- 	if (!alloc_cpumask_var(&cpus_to_visit, GFP_KERNEL)) {
+-void set_capacity_scale(unsigned int cpu, unsigned long capacity)
++void atd_set_capacity_scale(unsigned int cpu, unsigned long capacity)
+ {
+ 	per_cpu(cpu_scale, cpu) = capacity;
+ }
+@@ -42,7 +42,7 @@ static ssize_t cpu_capacity_show(struct device *dev,
+ 	struct cpu *cpu = container_of(dev, struct cpu, dev);
+ 
+ 	return sprintf(buf, "%lu\n",
+-			arch_scale_cpu_capacity(NULL, cpu->dev.id));
++			atd_scale_cpu_capacity(NULL, cpu->dev.id));
+ }
+ 
+ static ssize_t cpu_capacity_store(struct device *dev,
+@@ -67,7 +67,7 @@ static ssize_t cpu_capacity_store(struct device *dev,
+ 
+ 	mutex_lock(&cpu_scale_mutex);
+ 	for_each_cpu(i, &cpu_topology[this_cpu].core_sibling)
+-		set_capacity_scale(i, new_capacity);
++		atd_set_capacity_scale(i, new_capacity);
+ 	mutex_unlock(&cpu_scale_mutex);
+ 
+ 	return count;
+@@ -98,7 +98,7 @@ static u32 capacity_scale;
+ static u32 *raw_capacity;
+ static bool cap_parsing_failed;
+ 
+-void normalize_cpu_capacity(void)
++void atd_normalize_cpu_capacity(void)
+ {
+ 	u64 capacity;
+ 	int cpu;
+@@ -113,14 +113,14 @@ void normalize_cpu_capacity(void)
+ 			 cpu, raw_capacity[cpu]);
+ 		capacity = (raw_capacity[cpu] << SCHED_CAPACITY_SHIFT)
+ 			/ capacity_scale;
+-		set_capacity_scale(cpu, capacity);
++		atd_set_capacity_scale(cpu, capacity);
+ 		pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
+-			cpu, arch_scale_cpu_capacity(NULL, cpu));
++			cpu, atd_scale_cpu_capacity(NULL, cpu));
+ 	}
+ 	mutex_unlock(&cpu_scale_mutex);
+ }
+ 
+-int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
++int __init atd_parse_cpu_capacity(struct device_node *cpu_node, int cpu)
+ {
+ 	int ret = 1;
+ 	u32 cpu_capacity;
+@@ -185,12 +185,12 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+ 			       cpus_to_visit,
+ 			       policy->related_cpus);
+ 		for_each_cpu(cpu, policy->related_cpus) {
+-			raw_capacity[cpu] = arch_scale_cpu_capacity(NULL, cpu) *
++			raw_capacity[cpu] = atd_scale_cpu_capacity(NULL, cpu) *
+ 					    policy->cpuinfo.max_freq / 1000UL;
+ 			capacity_scale = max(raw_capacity[cpu], capacity_scale);
+ 		}
+ 		if (cpumask_empty(cpus_to_visit)) {
+-			normalize_cpu_capacity();
++			atd_normalize_cpu_capacity();
+ 			kfree(raw_capacity);
+ 			pr_debug("cpu_capacity: parsing done\n");
+ 			cap_parsing_done = true;
+diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
+index 4edae9fe8cdd..e25458d7ee9a 100644
+--- a/include/linux/arch_topology.h
++++ b/include/linux/arch_topology.h
+@@ -4,14 +4,14 @@
+ #ifndef _LINUX_ARCH_TOPOLOGY_H_
+ #define _LINUX_ARCH_TOPOLOGY_H_
+ 
+-void normalize_cpu_capacity(void);
++void atd_normalize_cpu_capacity(void);
+ 
+ struct device_node;
+-int parse_cpu_capacity(struct device_node *cpu_node, int cpu);
++int atd_parse_cpu_capacity(struct device_node *cpu_node, int cpu);
+ 
+ struct sched_domain;
+-unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu);
++unsigned long atd_scale_cpu_capacity(struct sched_domain *sd, int cpu);
+ 
+-void set_capacity_scale(unsigned int cpu, unsigned long capacity);
++void atd_set_capacity_scale(unsigned int cpu, unsigned long capacity);
+ 
+ #endif /* _LINUX_ARCH_TOPOLOGY_H_ */
 -- 
 2.10.0
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
