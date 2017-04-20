@@ -1,93 +1,100 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: RFC: WMI Enhancements
-Date: Thu, 20 Apr 2017 15:14:31 +0200
-Message-ID: <20170420131431.GM18887@pali>
-References: <20170412230854.GA11963@fury>
- <20170419075248.GD18887@pali>
- <f3684c95b91349d3b4e512370ac1faf4@ausx13mpc120.AMER.DELL.COM>
- <201704191854.51783@pali>
- <4e3e507b116443298427002c5aafed7f@ausx13mpc120.AMER.DELL.COM>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+Subject: Re: [PATCH] Revert "cpuidle: Replace ktime_get() with local_clock()"
+Date: Thu, 20 Apr 2017 16:43:45 +0300
+Message-ID: <20170420134345.GD30290@intel.com>
+References: <20170420124447.13716-1-ville.syrjala@linux.intel.com>
+ <20170420130813.h7dycr5cptbrvdkz@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <4e3e507b116443298427002c5aafed7f@ausx13mpc120.AMER.DELL.COM>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mario.Limonciello@dell.com
-Cc: dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20170420130813.h7dycr5cptbrvdkz@hirez.programming.kicks-ass.net>
+Sender: stable-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 19 April 2017 17:24:00 Mario.Limonciello@dell.com wrote:
-> > -----Original Message-----
-> > From: Pali Roh√°r [mailto:pali.rohar@gmail.com]
-> > Sent: Wednesday, April 19, 2017 11:55 AM
-> > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> > Cc: dvhart@infradead.org; rjw@rjwysocki.net; luto@amacapital.net;
-> > len.brown@intel.com; corentin.chary@gmail.com; luto@kernel.org;
-> > andriy.shevchenko@linux.intel.com; linux-kernel@vger.kernel.org; platform-
-> > driver-x86@vger.kernel.org; linux-pm@vger.kernel.org
-> > Subject: Re: RFC: WMI Enhancements
+On Thu, Apr 20, 2017 at 03:08:13PM +0200, Peter Zijlstra wrote:
+> On Thu, Apr 20, 2017 at 03:44:47PM +0300, ville.syrjala@linux.intel.com wrote:
+> > From: Ville Syrj‰l‰ <ville.syrjala@linux.intel.com>
 > > 
-> > On Wednesday 19 April 2017 18:29:53 Mario.Limonciello@dell.com wrote:
-> > > > As wrote above, I'm fine with explicit whitelist of WMI GUIDs which
-> > > > will be exported to userspace after communication with vendor.
-> > >
-> > > What about GUID's not yet used by kernel drivers?  Would those
-> > > default to whitelist default to blacklist?  My preference would be
-> > > to default to whitelist. This allows new GUID's to be added later
-> > > without needing to modify kernel for something that kernel won't
-> > > need to do anything immediately.
+> > This reverts commit e93e59ce5b85e6c2b444f09fd1f707274ec066dc.
 > > 
-> > I understood it as there would be explicit whitelist in kernel and new
-> > GUIDs would be needed to add into whitelist, even those which do not
-> > have kernel wmi driver.
-> > 
-> > Exporting all GUIDs (to userspace) which are not bind to kernel driver
-> > has one big problem. If kernel introduce new wmi driver for such GUID
-> > then it block userspace to access it or at least would need to provide
-> > audit filter and something would be probably filtered. It means that
-> > some userspace applications which would use that GUIDs stops working
-> > after upgrading to new kernel. And we can be in situation where *user*
-> > need to decide: either use 3rd party userspace application from vendor
-> > which provide some special settings for your laptop, or use kernel
-> > module which provides standard rfkill/led/input class driver.
-> > 
+> > The TSC stops in deeper C states, 
 > 
-> If this proposal goes forward it would sound like to me an audit filter
-> would become a prerequisite for any new WMI kernel driver.  This is not
-> a problem to me.
+> On some old hardware (Core2 era and before) only. You've forgotten to
+> mention what hardware you've observed problems with.
 
-Not for any wmi driver, only for those which would like to export wmi
-device to userspace.
+Yeah, Core2 is what I used when I finally decided to bisect this. I've
+been plagued by the bogus powertop numbers on many machines, most
+likely all of them were of some older vintage.
 
-> This audience recommends the way for users to configure the system but 
-> of course cannot stop users from doing what they decide to do.  
+> 
+> > so using local_clock() in cpuidle
+> 
+> But on said hardware, local_clock() isn't an immediate TSC user.
+> 
+> > to track the C state residency seems like a bad idea. With local_clock()
+> > powertop is reporting mostly 0% residency for C states here. Presumably
+> > the core is still spending most of its time in some deep C-state since
+> > the totals typically add up to only 5% or so, so perhaps the governor
+> > isn't getting totally confused by these bogus numbers. But let's go
+> > back to using ktime_get() as that at least works correctly across the
+> > board.
+> 
+> Does this cure it?
 
-Of course, but in above hypothetical example, user is in situation where
-is unable to use both 3rd vendor application and together kernel
-rfkill/led/input driver. User must decide (by e.g. modprobe blacklist or
-manual module loading) what want to use.
+It does indeed.
 
-But ideal solution is that both 3rd vendor application for firmware
-settings and also rfkill kernel driver would work together without need
-to rmmod/modprobe modules and without restarting 3rd vendor application.
+Tested-by: Ville Syrj‰l‰ <ville.syrjala@linux.intel.com>
 
-> We're all in agreement that the kernel should keep responsibility for some
-> of these functionalities.
-> If a new kernel WMI driver duplicates functionality that happens to find its 
-> way in userspace and the kernel audits that out yes the userspace 
-> application may start to  have less functionality, but better support 
-> would live in the kernel and the user would be better supported by 
-> the stack (for example could use standard rfkill userspace utilities).
-
-Ok. So it is acceptable solution/API/ABI for you & other Dell people?
-Or is something more or different needed?
-
-Darren, I hope that I understood your proposal with explicit whitelist
-correctly. And is there already another vendor which want to use wmi
-userspace on linux?
+> 
+> ---
+>  drivers/cpuidle/cpuidle.c | 2 ++
+>  kernel/sched/clock.c      | 7 +++----
+>  2 files changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 548b90be7685..e0d4ad108887 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -219,6 +219,8 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>  	entered_state = target_state->enter(dev, drv, index);
+>  	start_critical_timings();
+>  
+> +	sched_clock_idle_wakeup_event(0);
+> +
+>  	time_end = ns_to_ktime(local_clock());
+>  	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+>  
+> diff --git a/kernel/sched/clock.c b/kernel/sched/clock.c
+> index 00a45c45beca..15e848706be4 100644
+> --- a/kernel/sched/clock.c
+> +++ b/kernel/sched/clock.c
+> @@ -347,6 +347,9 @@ void sched_clock_tick(void)
+>  {
+>  	struct sched_clock_data *scd;
+>  
+> +	if (timekeeping_suspended)
+> +		return;
+> +
+>  	WARN_ON_ONCE(!irqs_disabled());
+>  
+>  	/*
+> @@ -378,11 +381,7 @@ EXPORT_SYMBOL_GPL(sched_clock_idle_sleep_event);
+>   */
+>  void sched_clock_idle_wakeup_event(u64 delta_ns)
+>  {
+> -	if (timekeeping_suspended)
+> -		return;
+> -
+>  	sched_clock_tick();
+> -	touch_softlockup_watchdog_sched();
+>  }
+>  EXPORT_SYMBOL_GPL(sched_clock_idle_wakeup_event);
+>  
 
 -- 
-Pali Roh√°r
-pali.rohar@gmail.com
+Ville Syrj‰l‰
+Intel OTC
