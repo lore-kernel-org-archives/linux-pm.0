@@ -1,50 +1,51 @@
-From: James Tan <tan.james197@gmail.com>
-Subject: (From: Mr. James Tan (Urgent & Confidential)
-Date: Thu, 20 Apr 2017 07:43:51 +0100
-Message-ID: <CAGUbhp2ZzBCqJ0LfQ-h3VeBQZVd21og-fS1wWz0QcM3nYJ7xBw@mail.gmail.com>
-Reply-To: tanjames009@gmail.com
+From: Mikko Perttunen <cyndis-/1wQRMveznE@public.gmane.org>
+Subject: Re: [PATCH v2 3/3] arm64: tegra: Add CCPLEX_CLUSTER area in Tegra186
+Date: Thu, 20 Apr 2017 09:44:36 +0300
+Message-ID: <ff583f3a-5289-f34a-114b-5bc0220c7237@kapsi.fi>
+References: <1491313417-25085-1-git-send-email-mperttunen@nvidia.com>
+ <1491313417-25085-3-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:34362 "EHLO
-        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S942400AbdDTGny (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Apr 2017 02:43:54 -0400
-Received: by mail-wm0-f66.google.com with SMTP id z129so8849111wmb.1
-        for <linux-pm@vger.kernel.org>; Wed, 19 Apr 2017 23:43:53 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1491313417-25085-3-git-send-email-mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org
+Cc: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
--- 
-(From: Mr.James Tan  (Urgent & Confidential)
-
-Good Day, Please Read.
-
-My name is Mr.James Tan , I am the Bill and Exchange manager here in
-Bank of Africa (BOA) Lome-Togo.West-Africa. I have a business proposal
-in the tune of $9.7m, (Nine Million Seven Hundred Thousand Dollars
-Only) after the successful transfer, we shall share in ratio of 40%
-for you and 60% for me.
-
-Should you be interested, please contact me through my private email
-(tanjames009@gmail.com) so we can commence all arrangements and i will
-give you more information on how we would handle this project.
-
-
-Please treat this business with utmost confidentiality and send me the
-Following:
-
-1. Your Full Name:............
-2. Your Phone Number:..........
-3. Your Age:....................
-4. Your Sex:...................
-5. Your Occupations:............
-6. Your Country and City:....
-
-Kind Regards,
-
-Mr.James Tan .
-Bill & Exchange manager
-(BOA) Bank of Africa.
-Lome-Togo.
-Email: tanjames009@gmail.com
+On 04.04.2017 16:43, Mikko Perttunen wrote:
+> The Tegra186 CCPLEX_CLUSTER area contains memory-mapped
+> registers that initiate CPU frequency/voltage transitions.
+>
+> Signed-off-by: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+> v2:
+> - Only one regs entry
+>
+>  arch/arm64/boot/dts/nvidia/tegra186.dtsi | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>
+> diff --git a/arch/arm64/boot/dts/nvidia/tegra186.dtsi b/arch/arm64/boot/dts/nvidia/tegra186.dtsi
+> index 3ea5e6369bc3..c023af0be43d 100644
+> --- a/arch/arm64/boot/dts/nvidia/tegra186.dtsi
+> +++ b/arch/arm64/boot/dts/nvidia/tegra186.dtsi
+> @@ -347,6 +347,13 @@
+>  		reg-names = "pmc", "wake", "aotag", "scratch";
+>  	};
+>
+> +	ccplex@e000000 {
+> +		compatible = "nvidia,tegra186-ccplex-cluster";
+> +		reg = <0x0 0x0e000000 0x0 0x3fffff>;
+> +
+> +		nvidia,bpmp = <&bpmp>;
+> +	};
+> +
+>  	sysram@30000000 {
+>  		compatible = "nvidia,tegra186-sysram", "mmio-sram";
+>  		reg = <0x0 0x30000000 0x0 0x50000>;
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
