@@ -1,44 +1,99 @@
-From: Michal Hocko <mhocko@kernel.org>
-Subject: Re: Re: Re: "mm: move pcp and lru-pcp draining into single wq" broke
- resume from s2ram
-Date: Thu, 20 Apr 2017 08:53:27 +0200
-Message-ID: <20170420065327.GA15781@dhcp22.suse.cz>
-References: <201704190541.v3J5fUE3054131@www262.sakura.ne.jp>
- <20170419071039.GB28263@dhcp22.suse.cz>
- <201704190726.v3J7QAiC076509@www262.sakura.ne.jp>
- <20170419075712.GB29789@dhcp22.suse.cz>
- <CAMuHMdVmJrr6_sGeU4oxH5fn10BRdLC5nOEePN05p3kJ1x3YBQ@mail.gmail.com>
- <20170419081701.GC29789@dhcp22.suse.cz>
- <CA+55aFxQOJp0jq4Z9pFQzZtyc7KHapVT=ZbYyUufyGQhY=DvkQ@mail.gmail.com>
+From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Subject: Re: [PATCH] i2c: designware: Do nothing in system suspend/resume when
+ RT suspended
+Date: Thu, 20 Apr 2017 10:25:12 +0300
+Message-ID: <2a548d9c-fb05-977d-c063-3b481a191a41@linux.intel.com>
+References: <20170330120444.12499-1-jarkko.nikula@linux.intel.com>
+ <CAJZ5v0hiGSS+bZWwzz7XgjFr8ckARn9ehaO9q1-76qo4d-76tg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <CA+55aFxQOJp0jq4Z9pFQzZtyc7KHapVT=ZbYyUufyGQhY=DvkQ@mail.gmail.com>
-Sender: owner-linux-mm@kvack.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>, Linux PM list <linux-pm@vger.kernel.org>, Vlastimil Babka <vbabka@suse.cz>, Mel Gorman <mgorman@suse.de>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Tejun Heo <tj@kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hiGSS+bZWwzz7XgjFr8ckARn9ehaO9q1-76qo4d-76tg@mail.gmail.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-i2c <linux-i2c@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 19-04-17 15:50:01, Linus Torvalds wrote:
-> On Wed, Apr 19, 2017 at 1:17 AM, Michal Hocko <mhocko@kernel.org> wrote:
-> >
-> > Thanks for the testing. Linus will you take the patch from this thread
-> > or you prefer a resend?
-> 
-> I'll take it from this branch since I'm looking at it now, but in
-> general I prefer resends just because finding patches deep in some
-> discussion is very iffy.
+Hi
 
-Yeah, I perfectly understand this and that's why I've asked. Thanks for
-taking the patch!
+On 04/19/2017 11:24 PM, Rafael J. Wysocki wrote:
+> On Thu, Mar 30, 2017 at 2:04 PM, Jarkko Nikula
+> <jarkko.nikula@linux.intel.com> wrote:
+>> There is possibility to enter dw_i2c_plat_suspend() callback twice
+>> during system suspend under certain cases which is causing here warnings
+>> from clk_core_disable() and clk_core_unprepare() as well as accessing the
+>> registers that can be power gated.
+>>
+>> Commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming during
+>> system suspend") implemented a prepare callback that checks for runtime
+>> suspended device which allow PM core to set direct_complete flag and
+>> skip system suspend and resume callbacks.
+>>
+>> However it can still happen if nothing resumes the device prior system
+>> syspend (e.g. acpi_subsys_suspend()) and there is a slave device which
+>> unsets the direct_complete flag of the parent in __device_suspend() thus
+>> causing PM code to not skip the system suspend/resume callbacks.
+>>
+>> Avoid this by checking runtime status in suspend and resume callbacks
+>> and return directly if device is runtime suspended. This affects only
+>> system suspend/resume since during runtime suspend/resume runtime status
+>> is suspending (not suspended) or resuming.
+>>
+>> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+>> ---
+>> I'm able to trigger system suspend callback while device is runtime
+>> suspended by removing the pm_runtime_resume() call from
+>> drivers/mfd/intel-lpss.c: resume_lpss_device() and having unbound I2C
+>> slave (ACPI enumerated but doesn't bind due an error in probe function).
+>> In that case __device_suspend() for that unbound device has NULL suspend
+>> callback, and thus doesn't cause any runtime resume chain but still unsets
+>> the parent's direct_complete flag.
+>> John Stult <john.stultz@linaro.org> has reported he can trigger this on
+>> HiKey board too.
+>>
+>> I'm not sure is this the right thing to do. It feels something the PM core
+>> should do but I'm not sure that either. One alternative could be to resume
+>> runtime suspended parent in in __device_suspend() right after where
+>> parent's direct_complete flag is unset.
+>
+> In that case the core expects that the ->prepare callback for the
+> slave will also return 1 (or a positive number in general).
+>
+> If that doesn't happen, then from the core's perspective it is not
+> safe to allow the master's system PM callbacks to be skipped and
+> that's why direct_complete is unset for it.
+>
+So it's then right thing to check runtime PM status in driver as patch 
+does below?
+
+>> ---
+>>  drivers/i2c/busses/i2c-designware-platdrv.c | 6 ++++++
+>>  1 file changed, 6 insertions(+)
+>>
+>> diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/busses/i2c-designware-platdrv.c
+>> index a597ba32de7e..42a9cd09aa64 100644
+>> --- a/drivers/i2c/busses/i2c-designware-platdrv.c
+>> +++ b/drivers/i2c/busses/i2c-designware-platdrv.c
+>> @@ -377,6 +377,9 @@ static int dw_i2c_plat_suspend(struct device *dev)
+>>         struct platform_device *pdev = to_platform_device(dev);
+>>         struct dw_i2c_dev *i_dev = platform_get_drvdata(pdev);
+>>
+>> +       if (pm_runtime_suspended(dev))
+>> +               return 0;
+>> +
+>>         i2c_dw_disable(i_dev);
+>>         i2c_dw_plat_prepare_clk(i_dev, false);
+>>
+>> @@ -388,6 +391,9 @@ static int dw_i2c_plat_resume(struct device *dev)
+>>         struct platform_device *pdev = to_platform_device(dev);
+>>         struct dw_i2c_dev *i_dev = platform_get_drvdata(pdev);
+>>
+>> +       if (pm_runtime_suspended(dev))
+>> +               return 0;
+>> +
+>>         i2c_dw_plat_prepare_clk(i_dev, true);
+>>         i2c_dw_init(i_dev);
 
 -- 
-Michal Hocko
-SUSE Labs
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Jarkko
