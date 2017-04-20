@@ -1,51 +1,163 @@
-From: Mikko Perttunen <cyndis-/1wQRMveznE@public.gmane.org>
-Subject: Re: [PATCH v2 3/3] arm64: tegra: Add CCPLEX_CLUSTER area in Tegra186
-Date: Thu, 20 Apr 2017 09:44:36 +0300
-Message-ID: <ff583f3a-5289-f34a-114b-5bc0220c7237@kapsi.fi>
-References: <1491313417-25085-1-git-send-email-mperttunen@nvidia.com>
- <1491313417-25085-3-git-send-email-mperttunen@nvidia.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V5 4/9] PM / QOS: Add DEV_PM_QOS_PERFORMANCE request
+Date: Thu, 20 Apr 2017 08:53:08 +0200
+Message-ID: <CAPDyKFpDyNqeMvetM2vrvR78X=RhayWashwcHvfCahz3wkxWdg@mail.gmail.com>
+References: <1dbed263e2fcc42906daaf584d3257c01aa11e13.1490001099.git.viresh.kumar@linaro.org>
+ <3dc4d28c6d8d21f7a0d626db67b3a1a9691129fd.1492662982.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1491313417-25085-3-git-send-email-mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org
-Cc: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3dc4d28c6d8d21f7a0d626db67b3a1a9691129fd.1492662982.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04.04.2017 16:43, Mikko Perttunen wrote:
-> The Tegra186 CCPLEX_CLUSTER area contains memory-mapped
-> registers that initiate CPU frequency/voltage transitions.
+On 20 April 2017 at 06:46, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Some platforms have the capability to configure the performance state of
+> their Power Domains. The performance levels are identified by positive
+> integer values, a lower value represents lower performance state. The
+> power domain driver should be able to retrieve all information required
+> to configure the performance state of the power domain, with the help of
+> the performance constraint's target value.
 >
-> Signed-off-by: Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> This patch adds a new QOS request type: DEV_PM_QOS_PERFORMANCE to
+> support runtime performance constraints for the devices. Also allow
+> notifiers to be registered against it, which will be used by frameworks
+> like genpd.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
+
 > ---
-> v2:
-> - Only one regs entry
+> V4->V5:
+> - s/ only/
+> - drop performance_req field
+> - drop "notifier" from dev_pm_qos_notifier_is_performance
 >
->  arch/arm64/boot/dts/nvidia/tegra186.dtsi | 7 +++++++
->  1 file changed, 7 insertions(+)
+>  Documentation/power/pm_qos_interface.txt |  2 +-
+>  drivers/base/power/qos.c                 | 21 +++++++++++++++++++++
+>  include/linux/pm_qos.h                   |  9 +++++++++
+>  3 files changed, 31 insertions(+), 1 deletion(-)
 >
-> diff --git a/arch/arm64/boot/dts/nvidia/tegra186.dtsi b/arch/arm64/boot/dts/nvidia/tegra186.dtsi
-> index 3ea5e6369bc3..c023af0be43d 100644
-> --- a/arch/arm64/boot/dts/nvidia/tegra186.dtsi
-> +++ b/arch/arm64/boot/dts/nvidia/tegra186.dtsi
-> @@ -347,6 +347,13 @@
->  		reg-names = "pmc", "wake", "aotag", "scratch";
->  	};
+> diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
+> index 21d2d48f87a2..42870d28fc3c 100644
+> --- a/Documentation/power/pm_qos_interface.txt
+> +++ b/Documentation/power/pm_qos_interface.txt
+> @@ -168,7 +168,7 @@ The per-device PM QoS framework has a per-device notification tree.
+>  int dev_pm_qos_add_notifier(device, notifier):
+>  Adds a notification callback function for the device.
+>  The callback is called when the aggregated value of the device constraints list
+> -is changed (for resume latency device PM QoS only).
+> +is changed (for resume latency and performance device PM QoS).
 >
-> +	ccplex@e000000 {
-> +		compatible = "nvidia,tegra186-ccplex-cluster";
-> +		reg = <0x0 0x0e000000 0x0 0x3fffff>;
+>  int dev_pm_qos_remove_notifier(device, notifier):
+>  Removes the notification callback function for the device.
+> diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+> index 654d8a12c2e7..084d26960dae 100644
+> --- a/drivers/base/power/qos.c
+> +++ b/drivers/base/power/qos.c
+> @@ -150,6 +150,10 @@ static int apply_constraint(struct dev_pm_qos_request *req,
+>                         req->dev->power.set_latency_tolerance(req->dev, value);
+>                 }
+>                 break;
+> +       case DEV_PM_QOS_PERFORMANCE:
+> +               ret = pm_qos_update_target(&qos->performance, &req->data.pnode,
+> +                                          action, value);
+> +               break;
+>         case DEV_PM_QOS_FLAGS:
+>                 ret = pm_qos_update_flags(&qos->flags, &req->data.flr,
+>                                           action, value);
+> @@ -194,6 +198,14 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
+>         c->no_constraint_value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
+>         c->type = PM_QOS_MIN;
+>
+> +       c = &qos->performance;
+> +       plist_head_init(&c->list);
+> +       c->target_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
+> +       c->default_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
+> +       c->no_constraint_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
+> +       c->type = PM_QOS_MAX;
+> +       c->notifiers = &qos->notifiers;
 > +
-> +		nvidia,bpmp = <&bpmp>;
-> +	};
-> +
->  	sysram@30000000 {
->  		compatible = "nvidia,tegra186-sysram", "mmio-sram";
->  		reg = <0x0 0x30000000 0x0 0x50000>;
+>         INIT_LIST_HEAD(&qos->flags.list);
 >
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>         spin_lock_irq(&dev->power.lock);
+> @@ -252,6 +264,11 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
+>                 apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
+>                 memset(req, 0, sizeof(*req));
+>         }
+> +       c = &qos->performance;
+> +       plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
+> +               apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
+> +               memset(req, 0, sizeof(*req));
+> +       }
+>         f = &qos->flags;
+>         list_for_each_entry_safe(req, tmp, &f->list, data.flr.node) {
+>                 apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
+> @@ -362,6 +379,7 @@ static int __dev_pm_qos_update_request(struct dev_pm_qos_request *req,
+>         switch(req->type) {
+>         case DEV_PM_QOS_RESUME_LATENCY:
+>         case DEV_PM_QOS_LATENCY_TOLERANCE:
+> +       case DEV_PM_QOS_PERFORMANCE:
+>                 curr_value = req->data.pnode.prio;
+>                 break;
+>         case DEV_PM_QOS_FLAGS:
+> @@ -571,6 +589,9 @@ static void __dev_pm_qos_drop_user_request(struct device *dev,
+>                 req = dev->power.qos->flags_req;
+>                 dev->power.qos->flags_req = NULL;
+>                 break;
+> +       case DEV_PM_QOS_PERFORMANCE:
+> +               dev_err(dev, "Invalid user request (performance)\n");
+> +               return;
+>         }
+>         __dev_pm_qos_remove_request(req);
+>         kfree(req);
+> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> index e546d1a2f237..665f90face40 100644
+> --- a/include/linux/pm_qos.h
+> +++ b/include/linux/pm_qos.h
+> @@ -36,6 +36,7 @@ enum pm_qos_flags_status {
+>  #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE    0
+>  #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE 0
+>  #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT (-1)
+> +#define PM_QOS_PERFORMANCE_DEFAULT_VALUE       0
+>  #define PM_QOS_LATENCY_ANY                     ((s32)(~(__u32)0 >> 1))
+>
+>  #define PM_QOS_FLAG_NO_POWER_OFF       (1 << 0)
+> @@ -55,6 +56,7 @@ struct pm_qos_flags_request {
+>  enum dev_pm_qos_req_type {
+>         DEV_PM_QOS_RESUME_LATENCY = 1,
+>         DEV_PM_QOS_LATENCY_TOLERANCE,
+> +       DEV_PM_QOS_PERFORMANCE,
+>         DEV_PM_QOS_FLAGS,
+>  };
+>
+> @@ -96,6 +98,7 @@ struct pm_qos_flags {
+>  struct dev_pm_qos {
+>         struct pm_qos_constraints resume_latency;
+>         struct pm_qos_constraints latency_tolerance;
+> +       struct pm_qos_constraints performance;
+>         struct pm_qos_flags flags;
+>         struct dev_pm_qos_request *resume_latency_req;
+>         struct dev_pm_qos_request *latency_tolerance_req;
+> @@ -121,6 +124,12 @@ static inline bool dev_pm_qos_is_resume_latency(struct device *dev,
+>         return &dev->power.qos->resume_latency == c;
+>  }
+>
+> +static inline bool dev_pm_qos_is_performance(struct device *dev,
+> +                                            struct pm_qos_constraints *c)
+> +{
+> +       return &dev->power.qos->performance == c;
+> +}
+> +
+>  int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+>                          enum pm_qos_req_action action, int value);
+>  bool pm_qos_update_flags(struct pm_qos_flags *pqf,
+> --
+> 2.12.0.432.g71c3a4f4ba37
+>
