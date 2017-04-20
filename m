@@ -1,66 +1,63 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH V4 5/7] ARM: sun8i: Use - instead of @ for DT OPP entries
-Date: Thu, 20 Apr 2017 11:14:16 +0530
-Message-ID: <d13e447e9cc080d81c4f2db3bd5433506d3ef739.1492666725.git.viresh.kumar@linaro.org>
-References: <cover.1492666725.git.viresh.kumar@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1492666725.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-In-Reply-To: <cover.1492666725.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-References: <cover.1492666725.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: arm-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Mikko Perttunen <cyndis@kapsi.fi>
+Subject: Re: [PATCH v2 2/3] dt-bindings: Add bindings for
+ nvidia,tegra186-ccplex-cluster
+Date: Thu, 20 Apr 2017 09:43:16 +0300
+Message-ID: <4241780b-b239-374c-4cc5-3518f115911b@kapsi.fi>
+References: <1491313417-25085-1-git-send-email-mperttunen@nvidia.com>
+ <1491313417-25085-2-git-send-email-mperttunen@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1491313417-25085-2-git-send-email-mperttunen@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: robh+dt@kernel.org, Mark Rutland <mark.rutland@arm.com>
+Cc: Mikko Perttunen <mperttunen@nvidia.com>, rjw@rjwysocki.net, viresh.kumar@linaro.org, thierry.reding@gmail.com, jonathanh@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Compiling the DT file with W=1, DTC warns like follows:
+Rob, Mark,
 
-Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
-unit name, but no reg property
+could you review this and the 3/3 in the series (which I'm sending to 
+you momentarily)?
 
-Fix this by replacing '@' with '-' as the OPP nodes will never have a
-"reg" property.
+Thanks,
+Mikko.
 
-Reported-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Reported-by: Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
-Suggested-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
----
- arch/arm/boot/dts/sun8i-a33.dtsi | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/arm/boot/dts/sun8i-a33.dtsi b/arch/arm/boot/dts/sun8i-a33.dtsi
-index 306af6cadf26..a2c555d6475c 100644
---- a/arch/arm/boot/dts/sun8i-a33.dtsi
-+++ b/arch/arm/boot/dts/sun8i-a33.dtsi
-@@ -49,19 +49,19 @@
- 		compatible = "operating-points-v2";
- 		opp-shared;
- 
--		opp@648000000 {
-+		opp-648000000 {
- 			opp-hz = /bits/ 64 <648000000>;
- 			opp-microvolt = <1040000>;
- 			clock-latency-ns = <244144>; /* 8 32k periods */
- 		};
- 
--		opp@816000000 {
-+		opp-816000000 {
- 			opp-hz = /bits/ 64 <816000000>;
- 			opp-microvolt = <1100000>;
- 			clock-latency-ns = <244144>; /* 8 32k periods */
- 		};
- 
--		opp@1008000000 {
-+		opp-1008000000 {
- 			opp-hz = /bits/ 64 <1008000000>;
- 			opp-microvolt = <1200000>;
- 			clock-latency-ns = <244144>; /* 8 32k periods */
--- 
-2.12.0.432.g71c3a4f4ba37
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On 04.04.2017 16:43, Mikko Perttunen wrote:
+> The Tegra186 CCPLEX_CLUSTER area contains memory-mapped
+> registers that initiate CPU frequency/voltage transitions.
+>
+> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+> ---
+> v2:
+> - Only one regs entry.
+> - s/Phandle/phandle/
+>
+>  .../arm/tegra/nvidia,tegra186-ccplex-cluster.txt        | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt
+>
+> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt
+> new file mode 100644
+> index 000000000000..e8fb416c892b
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra186-ccplex-cluster.txt
+> @@ -0,0 +1,17 @@
+> +NVIDIA Tegra CCPLEX_CLUSTER area
+> +
+> +Required properties:
+> +- compatible: Should contain one of the following:
+> +  - "nvidia,tegra186-ccplex-cluster": for Tegra186
+> +- reg: Must contain an (offset, length) pair of the device's MMIO
+> +  register area
+> +- nvidia,bpmp: phandle to BPMP device that can be queried for OPP tables
+> +
+> +Example:
+> +
+> +	ccplex@e000000 {
+> +		compatible = "nvidia,tegra186-ccplex-cluster";
+> +		reg = <0x0 0x0e000000 0x0 0x3fffff>,
+> +
+> +		nvidia,bpmp = <&bpmp>;
+> +	};
+>
