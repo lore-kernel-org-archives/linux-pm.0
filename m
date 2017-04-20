@@ -1,30 +1,84 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] Revert "cpuidle: Replace ktime_get() with local_clock()"
-Date: Thu, 20 Apr 2017 16:41:46 +0200
-Message-ID: <20170420144146.fuoqagm6xxrpxfoo@hirez.programming.kicks-ass.net>
-References: <20170420124447.13716-1-ville.syrjala@linux.intel.com>
- <20170420130813.h7dycr5cptbrvdkz@hirez.programming.kicks-ass.net>
- <20170420143751.GE2523@mai>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170420143751.GE2523@mai>
-Sender: stable-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: ville.syrjala@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH v4 0/8] Fix issues and factorize arm/arm64 capacity information code
+Date: Thu, 20 Apr 2017 15:43:08 +0100
+Message-ID: <20170420144316.15632-1-juri.lelli@arm.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, juri.lelli-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 20, 2017 at 04:37:51PM +0200, Daniel Lezcano wrote:
+Hi,
 
-> >  
-> > +	sched_clock_idle_wakeup_event(0);
-> > +
-> 
-> Is it planned to skip this if the tsc is reliable?
+arm and arm64 topology.c share a lot of code related to parsing of capacity
+information. This is v4 of a solution [1] (based on Will's, Catalin's and
+Mark's off-line suggestions) to move such common code in a single place:
+drivers/base/arch_topology.c (by creating such file and conditionally compiling
+it for arm and arm64 only).
 
-Yes. Current code doesn't quite do that, but if you follow that link I
-send earlier, I'm about to fix that (again).
+First 4 patches are actually fixes for the current code.
 
-Now, if only this Core2 piece of crap would actually boot a recent
-kernel, I could go figure out wth is wrong.. :/
+Patch 5 is the actual refactoring.
+
+Patch 6 removes one of the extern symbols by changing a bit the now common
+code.
+
+Patch 7 removes the remaining externs (as required by Russell during v1 review)
+by creating a new header file include/linux/arch_topology.h and including that
+from arm, arm64 and drivers.
+
+Last patch addresses Dietmar's comments to v1 and adds a 'atd_' prefix to
+interfaces exported by drivers code and used by arch (and potentially others in
+the future).
+
+Changes from v3:
+
+ - rebase on top of 4.11-rc7
+ - addressed Vincent's comment on patch 3/8
+ - removed v3 6/9 as discussed with Russell
+ - added Russell and Catalin's Acked-by
+
+The set is based on top of linux/master (4.11-rc7 f61143c45077) and it is also
+available from:
+
+ git://linux-arm.org/linux-jl.git upstream/default_caps_factorize-v4
+
+Best,
+
+- Juri
+
+[1] v1 - https://marc.info/?l=linux-kernel&m=148483680119355&w=2
+    v2 - https://marc.info/?l=linux-kernel&m=148663344018205&w=2
+    v3 - http://marc.info/?l=linux-kernel&m=149062080701399&w=2
+
+Juri Lelli (8):
+  Documentation: arm: fix wrong reference number in DT definition
+  Documentation/ABI: add information about cpu_capacity
+  arm: fix return value of parse_cpu_capacity
+  arm: remove wrong CONFIG_PROC_SYSCTL ifdef
+  arm, arm64: factorize common cpu capacity default code
+  arm,arm64,drivers: reduce scope of cap_parsing_failed
+  arm,arm64,drivers: move externs in a new header file
+  arm,arm64,drivers: add a prefix to drivers arch_topology interfaces
+
+ Documentation/ABI/testing/sysfs-devices-system-cpu |   7 +
+ Documentation/devicetree/bindings/arm/cpus.txt     |   4 +-
+ arch/arm/Kconfig                                   |   1 +
+ arch/arm/kernel/topology.c                         | 221 +------------------
+ arch/arm64/Kconfig                                 |   1 +
+ arch/arm64/kernel/topology.c                       | 226 +------------------
+ drivers/base/Kconfig                               |   8 +
+ drivers/base/Makefile                              |   1 +
+ drivers/base/arch_topology.c                       | 243 +++++++++++++++++++++
+ include/linux/arch_topology.h                      |  17 ++
+ 10 files changed, 290 insertions(+), 439 deletions(-)
+ create mode 100644 drivers/base/arch_topology.c
+ create mode 100644 include/linux/arch_topology.h
+
+-- 
+2.10.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
