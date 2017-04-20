@@ -1,49 +1,90 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
- power-domains
-Date: Thu, 20 Apr 2017 15:22:48 +0530
-Message-ID: <20170420095248.GJ5436@vireshk-i7>
-References: <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
- <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
- <20170413053736.GM5910@vireshk-i7>
- <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
- <20170417052758.GF28191@vireshk-i7>
- <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
- <20170419114740.GD5436@vireshk-i7>
- <9dee7c0d-e5f4-9fcd-3c92-bf7ec9d43a3b@arm.com>
- <20170420052533.GF5436@vireshk-i7>
- <34c7fb69-0324-ad06-678d-8726064e9a18@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] i2c: designware: Do nothing in system suspend/resume when
+ RT suspended
+Date: Thu, 20 Apr 2017 12:33:16 +0200
+Message-ID: <CAJZ5v0jwZeTy=fNdfBOjLCcGec=vQWVs+1sBktecmfG40vaGjA@mail.gmail.com>
+References: <20170330120444.12499-1-jarkko.nikula@linux.intel.com>
+ <CAJZ5v0hiGSS+bZWwzz7XgjFr8ckARn9ehaO9q1-76qo4d-76tg@mail.gmail.com> <2a548d9c-fb05-977d-c063-3b481a191a41@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <34c7fb69-0324-ad06-678d-8726064e9a18@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f66.google.com ([209.85.218.66]:34107 "EHLO
+        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S942595AbdDTKdS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Apr 2017 06:33:18 -0400
+In-Reply-To: <2a548d9c-fb05-977d-c063-3b481a191a41@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-i2c <linux-i2c@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On 20-04-17, 10:43, Sudeep Holla wrote:
-> Just that the term performance is closely related to frequency, it needs
-> to be explicit on what *exactly* it means. As it stands now,
-> it can be used for OPP as I explain which controls both but as you
-> clarify that's not what it's designed for.
+On Thu, Apr 20, 2017 at 9:25 AM, Jarkko Nikula
+<jarkko.nikula@linux.intel.com> wrote:
+> Hi
+>
+>
+> On 04/19/2017 11:24 PM, Rafael J. Wysocki wrote:
+>>
+>> On Thu, Mar 30, 2017 at 2:04 PM, Jarkko Nikula
+>> <jarkko.nikula@linux.intel.com> wrote:
+>>>
+>>> There is possibility to enter dw_i2c_plat_suspend() callback twice
+>>> during system suspend under certain cases which is causing here warnings
+>>> from clk_core_disable() and clk_core_unprepare() as well as accessing the
+>>> registers that can be power gated.
+>>>
+>>> Commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming during
+>>> system suspend") implemented a prepare callback that checks for runtime
+>>> suspended device which allow PM core to set direct_complete flag and
+>>> skip system suspend and resume callbacks.
+>>>
+>>> However it can still happen if nothing resumes the device prior system
+>>> syspend (e.g. acpi_subsys_suspend()) and there is a slave device which
+>>> unsets the direct_complete flag of the parent in __device_suspend() thus
+>>> causing PM code to not skip the system suspend/resume callbacks.
+>>>
+>>> Avoid this by checking runtime status in suspend and resume callbacks
+>>> and return directly if device is runtime suspended. This affects only
+>>> system suspend/resume since during runtime suspend/resume runtime status
+>>> is suspending (not suspended) or resuming.
+>>>
+>>> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+>>> ---
+>>> I'm able to trigger system suspend callback while device is runtime
+>>> suspended by removing the pm_runtime_resume() call from
+>>> drivers/mfd/intel-lpss.c: resume_lpss_device() and having unbound I2C
+>>> slave (ACPI enumerated but doesn't bind due an error in probe function).
+>>> In that case __device_suspend() for that unbound device has NULL suspend
+>>> callback, and thus doesn't cause any runtime resume chain but still
+>>> unsets
+>>> the parent's direct_complete flag.
+>>> John Stult <john.stultz@linaro.org> has reported he can trigger this on
+>>> HiKey board too.
+>>>
+>>> I'm not sure is this the right thing to do. It feels something the PM
+>>> core
+>>> should do but I'm not sure that either. One alternative could be to
+>>> resume
+>>> runtime suspended parent in in __device_suspend() right after where
+>>> parent's direct_complete flag is unset.
+>>
+>>
+>> In that case the core expects that the ->prepare callback for the
+>> slave will also return 1 (or a positive number in general).
+>>
+>> If that doesn't happen, then from the core's perspective it is not
+>> safe to allow the master's system PM callbacks to be skipped and
+>> that's why direct_complete is unset for it.
+>>
+> So it's then right thing to check runtime PM status in driver as patch does
+> below?
 
-We are talking about active states of a power domain here and
-*performance* is the best word I got. And yes we can still have
-frequency as a configurable here, just that current platforms don't
-have it.
+If you know for a fact that none of the device's children and none of
+the children thereof and so on and nothing that may depend on the
+device via a device_link, either directly or indirectly, will ever
+need to be resumed during system suspend, then yes, it is.
 
-> I am not sure if choosing highest performance point makes it difficult
-> to fit it in regulator framework. It could be some configuration.
+Otherwise, no, it isn't.
 
-I was just pointing out a difference :)
-
-> Also IIUC the actual programming is done in the firmware in this case
-> and I fail to see how that adds lot of platform code.
-
-Oh I meant that for converting general regulator only cases to OPP. No
-firmware was involved there.
-
--- 
-viresh
+Thanks,
+Rafael
