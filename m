@@ -1,42 +1,23 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] Revert "cpuidle: Replace ktime_get() with local_clock()"
-Date: Thu, 20 Apr 2017 15:49:22 +0200
-Message-ID: <20170420134922.kultontleite34sg@hirez.programming.kicks-ass.net>
-References: <20170420124447.13716-1-ville.syrjala@linux.intel.com>
- <20170420130813.h7dycr5cptbrvdkz@hirez.programming.kicks-ass.net>
- <20170420134345.GD30290@intel.com>
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: RFC: WMI Enhancements
+Date: Thu, 20 Apr 2017 07:17:07 -0700
+Message-ID: <20170420141707.GA22057@infradead.org>
+References: <20170412230854.GA11963@fury>
+ <20170419075248.GD18887@pali>
+ <f3684c95b91349d3b4e512370ac1faf4@ausx13mpc120.AMER.DELL.COM>
+ <201704191854.51783@pali>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170420134345.GD30290@intel.com>
-Sender: stable-owner@vger.kernel.org
-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+In-Reply-To: <201704191854.51783@pali>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
+Cc: Mario.Limonciello@dell.com, dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 20, 2017 at 04:43:45PM +0300, Ville Syrjälä wrote:
-> On Thu, Apr 20, 2017 at 03:08:13PM +0200, Peter Zijlstra wrote:
-> > On Thu, Apr 20, 2017 at 03:44:47PM +0300, ville.syrjala@linux.intel.com wrote:
-> > > From: Ville Syrjälä <ville.syrjala@linux.intel.com>
-> > > 
-> > > This reverts commit e93e59ce5b85e6c2b444f09fd1f707274ec066dc.
-> > > 
-> > > The TSC stops in deeper C states, 
-> > 
-> > On some old hardware (Core2 era and before) only. You've forgotten to
-> > mention what hardware you've observed problems with.
-> 
-> Yeah, Core2 is what I used when I finally decided to bisect this. I've
-> been plagued by the bogus powertop numbers on many machines, most
-> likely all of them were of some older vintage.
-
-> Tested-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
-
-OK, thanks. I'm currently chasing some other Core2 issue that is
-somewhat related. See:
-
-  http://lkml.kernel.org/r/20170413132349.thxkwptdymsfsyxb@hirez.programming.kicks-ass.net
-
-Once I have that sorted I'll post both patches.
+With Andy's conversion of WMI to the driver model the GUIDs should
+be our device ids.  Which means WMI can support the dynamic device
+ID model, where you can echo a id to sysfs to bind an id - that way
+people could add the GUIDs on demand to the pass through driver if
+they need them even with the whitelist approach.
