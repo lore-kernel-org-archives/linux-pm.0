@@ -1,71 +1,53 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [PATCH V4 5/7] ARM: sun8i: Use - instead of @ for DT OPP entries
-Date: Thu, 20 Apr 2017 10:02:02 +0200
-Message-ID: <20170420080202.olu2mhel6xtmnnjt@lukather>
-References: <cover.1492666725.git.viresh.kumar@linaro.org>
- <d13e447e9cc080d81c4f2db3bd5433506d3ef739.1492666725.git.viresh.kumar@linaro.org>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v7 0/5] ACPI: new acpi_dev_present helper + ac and
+ battery blacklist patches
+Date: Thu, 20 Apr 2017 11:20:09 +0300
+Message-ID: <1492676409.24567.92.camel@linux.intel.com>
+References: <20170419120212.24949-1-hdegoede@redhat.com>
+         <CAJZ5v0i1oFMaqRF85TzvEM_ZHAe+rUUXqRruy7aHY_PwGcCw0w@mail.gmail.com>
+         <20170419203340.GI2619@lahna.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="mndni4cticg6cqm6"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <d13e447e9cc080d81c4f2db3bd5433506d3ef739.1492666725.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: arm@kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170419203340.GI2619@lahna.fi.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Lukas Wunner <lukas@wunner.de>, Robert Moore <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 2017-04-19 at 23:33 +0300, Mika Westerberg wrote:
+> On Wed, Apr 19, 2017 at 09:37:50PM +0200, Rafael J. Wysocki wrote:
+> > On Wed, Apr 19, 2017 at 2:02 PM, Hans de Goede <hdegoede@redhat.com>
+> > wrote:
+> > > Hi Rafael,
+> > > 
+> > > This is a new version of my acpi_dev_present helper + ac and
+> > > battery
+> > > blacklist patches, new compared to the v5 resend of the latest
+> > > version of all these patches are some changes to the first,
+> > > third and fourth patch as requested by Andy Shevchenko.
+> > > 
+> > > This set also includes a power-supply patch, which depends on the
+> > > new acpi_dev_present helper and has an Ack from Sebastian Reichel
+> > > (the power-supply maintainer) for being merged through the ACPI
+> > > tree because of that dependency.
+> > > 
+> > > These patches obsolete:
+> > > -earlier versions of patches with the same title
+> > > -"ACPI: battery: Add acpi_battery_unregister() function"
+> > > -"ACPI: ac: Add acpi_ac_unregister() function"
+> > > -"power: supply: axp288_fuel_gauge: Unregister duplicate ACPI
+> > > battery supply"
+> > > -"power: supply: axp288_charger: Unregister duplicate ACPI ac
+> > > supply"
+> > 
+> > Andy, Mika, any concerns about anything this series?
+> 
+> No concerns from my side.
 
---mndni4cticg6cqm6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Neither from mine.
 
-Hi,
-
-On Thu, Apr 20, 2017 at 11:14:16AM +0530, Viresh Kumar wrote:
-> Compiling the DT file with W=3D1, DTC warns like follows:
->=20
-> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
-> unit name, but no reg property
->=20
-> Fix this by replacing '@' with '-' as the OPP nodes will never have a
-> "reg" property.
->=20
-> Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
-> Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Suggested-by: Mark Rutland <mark.rutland@arm.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Acked-by: Rob Herring <robh@kernel.org>
-
-This patch doesn't apply, please make sure to base them on linux-next
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
-
---mndni4cticg6cqm6
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABCAAGBQJY+Gr3AAoJEBx+YmzsjxAgzn8QAImLiepFAPjtY1bir1+hXIjW
-mJUYDkTPz/gFh8NI7k6kjT3J7zXE2cn1ptx3INdZ4jYnah1MiqNzG/LU6I6A2GH+
-cwOtoV/ASkPTvO5ewoCeKCEJQjfxBLMPZFjiL7IWu/gaLMT5V/Yaf3wPkSjXtjAT
-5unOc4oWbo8XxFscdLg0NAbX5axaCrfe8kQZDo6aWr0erO7z8BCiQ8AXWGmDREUa
-9C0d0XnqpPzjbHssT8PDu5nYABLZsjpQIR4QP1wXmf6XSn/SL3HS9LvOZflBVpRn
-JT41nG99jueHhi9i+EomqDyGfGT9JIMrfPJDBY3yEj2n3Trmken+ACHBw6sX6L2I
-ygoHEf42d0kFXpkHRcRdLR0U0QXtHZu9Onq37CeVJiZqETZh9vwwYyqGcr/g1IBJ
-epijGVFquNU8OhDi8fEA+3Jta+kBj7MVLPpiqC0NglHemEmFzJj9a+7xFeopYOWI
-ToHgWu4s5DvPmnCba0v9QEfjqRJVrWzDhWW91dbZuPq4bpCHbqGyQBmkoezcuoJs
-yX8kDaVQJMEQOdcJAqksi2hB2iEueGibvpPtLY12T+T0SQm2GmdYpeJ3umkK+nUp
-4JgsoP3S1t8jJosRE1P0sW4nfyElqoLoBFE7xTWLi2OFsXkW3CSUhFSX3wabyofh
-aX4xQhUNGqe70//+NUej
-=VxCM
------END PGP SIGNATURE-----
-
---mndni4cticg6cqm6--
+-- 
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
