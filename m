@@ -1,15 +1,15 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH V5 1/7] PM / OPP: Use - instead of @ for DT entries
-Date: Thu, 20 Apr 2017 16:25:05 +0530
-Message-ID: <3c211d59b9d8752a1d874b6141b4c40cad786902.1492685450.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V5 2/7] ARM: TI: Use - instead of @ for DT OPP entries
+Date: Thu, 20 Apr 2017 16:25:06 +0530
+Message-ID: <5f0656140309d53a45058c048ca059c4ba294756.1492685450.git.viresh.kumar@linaro.org>
 References: <cover.1492685450.git.viresh.kumar@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1492685450.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-In-Reply-To: <cover.1492685450.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-References: <cover.1492685450.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: arm-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1492685450.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1492685450.git.viresh.kumar@linaro.org>
+References: <cover.1492685450.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: arm@kernel.org, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Compiling the DT file with W=1, DTC warns like follows:
@@ -20,182 +20,253 @@ unit name, but no reg property
 Fix this by replacing '@' with '-' as the OPP nodes will never have a
 "reg" property.
 
-Reported-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Reported-by: Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
-Suggested-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
+Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+Suggested-by: Mark Rutland <mark.rutland@arm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Rob Herring <robh@kernel.org>
+Acked-by: Tony Lindgren <tony@atomide.com>
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 38 +++++++++++++--------------
- 1 file changed, 19 insertions(+), 19 deletions(-)
+ .../devicetree/bindings/cpufreq/ti-cpufreq.txt       | 20 ++++++++++----------
+ arch/arm/boot/dts/am335x-boneblack.dts               |  2 +-
+ arch/arm/boot/dts/am33xx.dtsi                        | 20 ++++++++++----------
+ arch/arm/boot/dts/am4372.dtsi                        | 10 +++++-----
+ arch/arm/boot/dts/dra7.dtsi                          |  4 ++--
+ 5 files changed, 28 insertions(+), 28 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index 63725498bd20..e36d261b9ba6 100644
---- a/Documentation/devicetree/bindings/opp/opp.txt
-+++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -186,20 +186,20 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
- 		compatible = "operating-points-v2";
- 		opp-shared;
+diff --git a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+index ba0e15ad5bd9..0c38e4b8fc51 100644
+--- a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
++++ b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+@@ -63,64 +63,64 @@ cpu0_opp_table: opp-table {
+ 	 * because they can not be enabled simultaneously on a
+ 	 * single SoC.
+ 	 */
+-	opp50@300000000 {
++	opp50-300000000 {
+ 		opp-hz = /bits/ 64 <300000000>;
+ 		opp-microvolt = <950000 931000 969000>;
+ 		opp-supported-hw = <0x06 0x0010>;
+ 		opp-suspend;
+ 	};
  
--		opp@1000000000 {
-+		opp-1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
- 			opp-microvolt = <975000 970000 985000>;
- 			opp-microamp = <70000>;
- 			clock-latency-ns = <300000>;
- 			opp-suspend;
- 		};
--		opp@1100000000 {
-+		opp-1100000000 {
- 			opp-hz = /bits/ 64 <1100000000>;
- 			opp-microvolt = <1000000 980000 1010000>;
- 			opp-microamp = <80000>;
- 			clock-latency-ns = <310000>;
- 		};
--		opp@1200000000 {
-+		opp-1200000000 {
- 			opp-hz = /bits/ 64 <1200000000>;
- 			opp-microvolt = <1025000>;
- 			clock-latency-ns = <290000>;
-@@ -265,20 +265,20 @@ independently.
- 		 * independently.
+-	opp100@275000000 {
++	opp100-275000000 {
+ 		opp-hz = /bits/ 64 <275000000>;
+ 		opp-microvolt = <1100000 1078000 1122000>;
+ 		opp-supported-hw = <0x01 0x00FF>;
+ 		opp-suspend;
+ 	};
+ 
+-	opp100@300000000 {
++	opp100-300000000 {
+ 		opp-hz = /bits/ 64 <300000000>;
+ 		opp-microvolt = <1100000 1078000 1122000>;
+ 		opp-supported-hw = <0x06 0x0020>;
+ 		opp-suspend;
+ 	};
+ 
+-	opp100@500000000 {
++	opp100-500000000 {
+ 		opp-hz = /bits/ 64 <500000000>;
+ 		opp-microvolt = <1100000 1078000 1122000>;
+ 		opp-supported-hw = <0x01 0xFFFF>;
+ 	};
+ 
+-	opp100@600000000 {
++	opp100-600000000 {
+ 		opp-hz = /bits/ 64 <600000000>;
+ 		opp-microvolt = <1100000 1078000 1122000>;
+ 		opp-supported-hw = <0x06 0x0040>;
+ 	};
+ 
+-	opp120@600000000 {
++	opp120-600000000 {
+ 		opp-hz = /bits/ 64 <600000000>;
+ 		opp-microvolt = <1200000 1176000 1224000>;
+ 		opp-supported-hw = <0x01 0xFFFF>;
+ 	};
+ 
+-	opp120@720000000 {
++	opp120-720000000 {
+ 		opp-hz = /bits/ 64 <720000000>;
+ 		opp-microvolt = <1200000 1176000 1224000>;
+ 		opp-supported-hw = <0x06 0x0080>;
+ 	};
+ 
+-	oppturbo@720000000 {
++	oppturbo-720000000 {
+ 		opp-hz = /bits/ 64 <720000000>;
+ 		opp-microvolt = <1260000 1234800 1285200>;
+ 		opp-supported-hw = <0x01 0xFFFF>;
+ 	};
+ 
+-	oppturbo@800000000 {
++	oppturbo-800000000 {
+ 		opp-hz = /bits/ 64 <800000000>;
+ 		opp-microvolt = <1260000 1234800 1285200>;
+ 		opp-supported-hw = <0x06 0x0100>;
+ 	};
+ 
+-	oppnitro@1000000000 {
++	oppnitro-1000000000 {
+ 		opp-hz = /bits/ 64 <1000000000>;
+ 		opp-microvolt = <1325000 1298500 1351500>;
+ 		opp-supported-hw = <0x04 0x0200>;
+diff --git a/arch/arm/boot/dts/am335x-boneblack.dts b/arch/arm/boot/dts/am335x-boneblack.dts
+index 935ed17d22e4..d154d3133c16 100644
+--- a/arch/arm/boot/dts/am335x-boneblack.dts
++++ b/arch/arm/boot/dts/am335x-boneblack.dts
+@@ -22,7 +22,7 @@
+ 	 * BeagleBone Blacks have PG 2.0 silicon which is guaranteed
+ 	 * to support 1GHz OPP so enable it for PG 2.0 on this board.
+ 	 */
+-	oppnitro@1000000000 {
++	oppnitro-1000000000 {
+ 		opp-supported-hw = <0x06 0x0100>;
+ 	};
+ };
+diff --git a/arch/arm/boot/dts/am33xx.dtsi b/arch/arm/boot/dts/am33xx.dtsi
+index 9e242943dcec..bdacb3dd689c 100644
+--- a/arch/arm/boot/dts/am33xx.dtsi
++++ b/arch/arm/boot/dts/am33xx.dtsi
+@@ -64,64 +64,64 @@
+ 		 * because the can not be enabled simultaneously on a
+ 		 * single SoC.
  		 */
- 
--		opp@1000000000 {
-+		opp-1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
- 			opp-microvolt = <975000 970000 985000>;
- 			opp-microamp = <70000>;
- 			clock-latency-ns = <300000>;
+-		opp50@300000000 {
++		opp50-300000000 {
+ 			opp-hz = /bits/ 64 <300000000>;
+ 			opp-microvolt = <950000 931000 969000>;
+ 			opp-supported-hw = <0x06 0x0010>;
  			opp-suspend;
  		};
--		opp@1100000000 {
-+		opp-1100000000 {
- 			opp-hz = /bits/ 64 <1100000000>;
- 			opp-microvolt = <1000000 980000 1010000>;
- 			opp-microamp = <80000>;
- 			clock-latency-ns = <310000>;
- 		};
--		opp@1200000000 {
-+		opp-1200000000 {
- 			opp-hz = /bits/ 64 <1200000000>;
- 			opp-microvolt = <1025000>;
- 			opp-microamp = <90000;
-@@ -341,20 +341,20 @@ DVFS state together.
- 		compatible = "operating-points-v2";
- 		opp-shared;
  
--		opp@1000000000 {
-+		opp-1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
- 			opp-microvolt = <975000 970000 985000>;
- 			opp-microamp = <70000>;
- 			clock-latency-ns = <300000>;
+-		opp100@275000000 {
++		opp100-275000000 {
+ 			opp-hz = /bits/ 64 <275000000>;
+ 			opp-microvolt = <1100000 1078000 1122000>;
+ 			opp-supported-hw = <0x01 0x00FF>;
  			opp-suspend;
  		};
--		opp@1100000000 {
-+		opp-1100000000 {
- 			opp-hz = /bits/ 64 <1100000000>;
- 			opp-microvolt = <1000000 980000 1010000>;
- 			opp-microamp = <80000>;
- 			clock-latency-ns = <310000>;
- 		};
--		opp@1200000000 {
-+		opp-1200000000 {
- 			opp-hz = /bits/ 64 <1200000000>;
- 			opp-microvolt = <1025000>;
- 			opp-microamp = <90000>;
-@@ -367,20 +367,20 @@ DVFS state together.
- 		compatible = "operating-points-v2";
- 		opp-shared;
  
--		opp@1300000000 {
-+		opp-1300000000 {
- 			opp-hz = /bits/ 64 <1300000000>;
- 			opp-microvolt = <1050000 1045000 1055000>;
- 			opp-microamp = <95000>;
- 			clock-latency-ns = <400000>;
+-		opp100@300000000 {
++		opp100-300000000 {
+ 			opp-hz = /bits/ 64 <300000000>;
+ 			opp-microvolt = <1100000 1078000 1122000>;
+ 			opp-supported-hw = <0x06 0x0020>;
  			opp-suspend;
  		};
--		opp@1400000000 {
-+		opp-1400000000 {
- 			opp-hz = /bits/ 64 <1400000000>;
- 			opp-microvolt = <1075000>;
- 			opp-microamp = <100000>;
- 			clock-latency-ns = <400000>;
- 		};
--		opp@1500000000 {
-+		opp-1500000000 {
- 			opp-hz = /bits/ 64 <1500000000>;
- 			opp-microvolt = <1100000 1010000 1110000>;
- 			opp-microamp = <95000>;
-@@ -409,7 +409,7 @@ Example 4: Handling multiple regulators
- 		compatible = "operating-points-v2";
- 		opp-shared;
  
--		opp@1000000000 {
-+		opp-1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
- 			opp-microvolt = <970000>, /* Supply 0 */
- 					<960000>, /* Supply 1 */
-@@ -422,7 +422,7 @@ Example 4: Handling multiple regulators
- 
- 		/* OR */
- 
--		opp@1000000000 {
-+		opp-1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
- 			opp-microvolt = <975000 970000 985000>, /* Supply 0 */
- 					<965000 960000 975000>, /* Supply 1 */
-@@ -435,7 +435,7 @@ Example 4: Handling multiple regulators
- 
- 		/* OR */
- 
--		opp@1000000000 {
-+		opp-1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
- 			opp-microvolt = <975000 970000 985000>, /* Supply 0 */
- 					<965000 960000 975000>, /* Supply 1 */
-@@ -467,7 +467,7 @@ Example 5: opp-supported-hw
- 		status = "okay";
- 		opp-shared;
- 
--		opp@600000000 {
-+		opp-600000000 {
- 			/*
- 			 * Supports all substrate and process versions for 0xF
- 			 * cuts, i.e. only first four cuts.
-@@ -478,7 +478,7 @@ Example 5: opp-supported-hw
- 			...
+-		opp100@500000000 {
++		opp100-500000000 {
+ 			opp-hz = /bits/ 64 <500000000>;
+ 			opp-microvolt = <1100000 1078000 1122000>;
+ 			opp-supported-hw = <0x01 0xFFFF>;
  		};
  
--		opp@800000000 {
-+		opp-800000000 {
- 			/*
- 			 * Supports:
- 			 * - cuts: only one, 6th cut (represented by 6th bit).
-@@ -510,7 +510,7 @@ Example 5: opp-supported-hw
- 		compatible = "operating-points-v2";
- 		opp-shared;
- 
--		opp@1000000000 {
-+		opp-1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
- 			opp-microvolt-slow = <915000 900000 925000>;
- 			opp-microvolt-fast = <975000 970000 985000>;
-@@ -518,7 +518,7 @@ Example 5: opp-supported-hw
- 			opp-microamp-fast =  <71000>;
+-		opp100@600000000 {
++		opp100-600000000 {
+ 			opp-hz = /bits/ 64 <600000000>;
+ 			opp-microvolt = <1100000 1078000 1122000>;
+ 			opp-supported-hw = <0x06 0x0040>;
  		};
  
--		opp@1200000000 {
-+		opp-1200000000 {
- 			opp-hz = /bits/ 64 <1200000000>;
- 			opp-microvolt-slow = <915000 900000 925000>, /* Supply vcc0 */
- 					      <925000 910000 935000>; /* Supply vcc1 */
+-		opp120@600000000 {
++		opp120-600000000 {
+ 			opp-hz = /bits/ 64 <600000000>;
+ 			opp-microvolt = <1200000 1176000 1224000>;
+ 			opp-supported-hw = <0x01 0xFFFF>;
+ 		};
+ 
+-		opp120@720000000 {
++		opp120-720000000 {
+ 			opp-hz = /bits/ 64 <720000000>;
+ 			opp-microvolt = <1200000 1176000 1224000>;
+ 			opp-supported-hw = <0x06 0x0080>;
+ 		};
+ 
+-		oppturbo@720000000 {
++		oppturbo-720000000 {
+ 			opp-hz = /bits/ 64 <720000000>;
+ 			opp-microvolt = <1260000 1234800 1285200>;
+ 			opp-supported-hw = <0x01 0xFFFF>;
+ 		};
+ 
+-		oppturbo@800000000 {
++		oppturbo-800000000 {
+ 			opp-hz = /bits/ 64 <800000000>;
+ 			opp-microvolt = <1260000 1234800 1285200>;
+ 			opp-supported-hw = <0x06 0x0100>;
+ 		};
+ 
+-		oppnitro@1000000000 {
++		oppnitro-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <1325000 1298500 1351500>;
+ 			opp-supported-hw = <0x04 0x0200>;
+diff --git a/arch/arm/boot/dts/am4372.dtsi b/arch/arm/boot/dts/am4372.dtsi
+index 176e09e9a45e..e5b061469bf8 100644
+--- a/arch/arm/boot/dts/am4372.dtsi
++++ b/arch/arm/boot/dts/am4372.dtsi
+@@ -59,32 +59,32 @@
+ 		compatible = "operating-points-v2-ti-cpu";
+ 		syscon = <&scm_conf>;
+ 
+-		opp50@300000000 {
++		opp50-300000000 {
+ 			opp-hz = /bits/ 64 <300000000>;
+ 			opp-microvolt = <950000 931000 969000>;
+ 			opp-supported-hw = <0xFF 0x01>;
+ 			opp-suspend;
+ 		};
+ 
+-		opp100@600000000 {
++		opp100-600000000 {
+ 			opp-hz = /bits/ 64 <600000000>;
+ 			opp-microvolt = <1100000 1078000 1122000>;
+ 			opp-supported-hw = <0xFF 0x04>;
+ 		};
+ 
+-		opp120@720000000 {
++		opp120-720000000 {
+ 			opp-hz = /bits/ 64 <720000000>;
+ 			opp-microvolt = <1200000 1176000 1224000>;
+ 			opp-supported-hw = <0xFF 0x08>;
+ 		};
+ 
+-		oppturbo@800000000 {
++		oppturbo-800000000 {
+ 			opp-hz = /bits/ 64 <800000000>;
+ 			opp-microvolt = <1260000 1234800 1285200>;
+ 			opp-supported-hw = <0xFF 0x10>;
+ 		};
+ 
+-		oppnitro@1000000000 {
++		oppnitro-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <1325000 1298500 1351500>;
+ 			opp-supported-hw = <0xFF 0x20>;
+diff --git a/arch/arm/boot/dts/dra7.dtsi b/arch/arm/boot/dts/dra7.dtsi
+index 57892f264cea..25908dd338ee 100644
+--- a/arch/arm/boot/dts/dra7.dtsi
++++ b/arch/arm/boot/dts/dra7.dtsi
+@@ -99,14 +99,14 @@
+ 		compatible = "operating-points-v2-ti-cpu";
+ 		syscon = <&scm_wkup>;
+ 
+-		opp_nom@1000000000 {
++		opp_nom-1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <1060000 850000 1150000>;
+ 			opp-supported-hw = <0xFF 0x01>;
+ 			opp-suspend;
+ 		};
+ 
+-		opp_od@1176000000 {
++		opp_od-1176000000 {
+ 			opp-hz = /bits/ 64 <1176000000>;
+ 			opp-microvolt = <1160000 885000 1160000>;
+ 			opp-supported-hw = <0xFF 0x02>;
 -- 
 2.12.0.432.g71c3a4f4ba37
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
