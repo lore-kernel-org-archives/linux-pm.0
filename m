@@ -1,31 +1,42 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Re: Re: "mm: move pcp and lru-pcp draining into single wq" broke
- resume from s2ram
-Date: Wed, 19 Apr 2017 15:50:01 -0700
-Message-ID: <CA+55aFxQOJp0jq4Z9pFQzZtyc7KHapVT=ZbYyUufyGQhY=DvkQ@mail.gmail.com>
-References: <201704190541.v3J5fUE3054131@www262.sakura.ne.jp>
- <20170419071039.GB28263@dhcp22.suse.cz> <201704190726.v3J7QAiC076509@www262.sakura.ne.jp>
- <20170419075712.GB29789@dhcp22.suse.cz> <CAMuHMdVmJrr6_sGeU4oxH5fn10BRdLC5nOEePN05p3kJ1x3YBQ@mail.gmail.com>
- <20170419081701.GC29789@dhcp22.suse.cz>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 2/3] soc/tegra: bpmp: Update ABI header
+Date: Thu, 20 Apr 2017 02:44:48 +0200
+Message-ID: <10169152.Khpl4fl1AK@aspire.rjw.lan>
+References: <20170329163452.10761-1-thierry.reding@gmail.com> <20170329163452.10761-3-thierry.reding@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20170419081701.GC29789@dhcp22.suse.cz>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>, Linux PM list <linux-pm@vger.kernel.org>, Vlastimil Babka <vbabka@suse.cz>, Mel Gorman <mgorman@suse.de>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Tejun Heo <tj@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42228 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S968483AbdDTAuz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Apr 2017 20:50:55 -0400
+In-Reply-To: <20170329163452.10761-3-thierry.reding@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Jonathan Hunter <jonathanh@nvidia.com>, Stefan Kristiansson <stefank@nvidia.com>, Mikko Perttunen <mperttunen@nvidia.com>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
 
-On Wed, Apr 19, 2017 at 1:17 AM, Michal Hocko <mhocko@kernel.org> wrote:
->
-> Thanks for the testing. Linus will you take the patch from this thread
-> or you prefer a resend?
+On Wednesday, March 29, 2017 06:34:51 PM Thierry Reding wrote:
+> From: Thierry Reding <treding@nvidia.com>
+> 
+> Update the BPMP ABI header to a more recent version. The new version
+> adds support for a new powergating ABI as well as access to the ring
+> buffer console, which allows debug messages to be output to the BPMP
+> debug console.
+> 
+> Some of the previously undocumented fields have been documented and
+> missing bitmasks have been added. Furthermore the MRQ_RESET request
+> now has a sub-command that allows to determine the maximum ID which
+> in turn allows the resets to be enumerated, thereby allowing drivers
+> to become agnostic of the Tegra generation.
+> 
+> Signed-off-by: Thierry Reding <treding@nvidia.com>
 
-I'll take it from this branch since I'm looking at it now, but in
-general I prefer resends just because finding patches deep in some
-discussion is very iffy.
+I could queue up the [1,3/3] with the Ulf's ACKs, but I can't really say
+whether or not this one makes sense. :-)
 
-I get too much email, so it really helps to make the patches more
-explicit than this...
+Any chance to ask the ARM/soc people for an ACK?
 
-              Linus
+Thanks,
+Rafael
