@@ -1,180 +1,57 @@
-From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v6 0/6] add support for AXP20X and AXP22X
- battery power supply driver
-Date: Fri, 21 Apr 2017 09:43:17 +0200
-Message-ID: <20170421074317.rqk253sblxjaayzz@lukather>
-References: <20170418073421.31351-1-quentin.schulz@free-electrons.com>
-Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: <joseph.x.hronec@espn.com>
+Subject: (unknown)
+Date: Fri, 21 Apr 2017 08:36:11 -0000
+Message-ID: <149276377192.15559.15500433851738345597@asianet.co.th>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="xjq4nn73ddpedtbk"
-Return-path: <linux-sunxi+bncBDSJBYGBRIMBBH7Q43DQKGQEMEP64ZY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <20170418073421.31351-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: application/zip; name="EMAIL_7493740125_linux-pm.zip"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cm-58-10-104-158.revip7.asianet.co.th ([58.10.104.158]:56541
+        "HELO asianet.co.th" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with SMTP id S1036088AbdDUIgQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Apr 2017 04:36:16 -0400
+Content-Disposition: attachment
+Subject: 
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm <linux-pm@vger.kernel.org>
 
-
---xjq4nn73ddpedtbk
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Apr 18, 2017 at 09:34:15AM +0200, Quentin Schulz wrote:
-> This is a series for AXP20X and AXP22X battery power supply without the
-> support for changing constant charge current from the DT. The patches for
-> supporting the constant charge current from DT are ready and will be sent
-> once the battery framework required to make this work has been merged.
->=20
-> v6:
->   - removed mention to fixed battery in DT-binding documentation,
->=20
-> Quote from v4 cover letter:
->=20
-> The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose
-> information and data of the various power supplies they support such as
-> ACIN, battery and VBUS. For example, they expose the current battery
-> voltage, charge or discharge, as well as ACIN and VBUS current voltages
-> and currents, internal PMIC temperature and ADC on 2 different GPIOs
-> when in the right mode (for the AXP209 only).
->=20
-> The ACIN power supply driver is added by this patch. The AXP20X and
-> AXP22X can both read the status and the "usability" of the power supply
-> but only the AXP209 will be able to tell the current current and voltage
-> of the power supply by reading ADC channels. It is simply not supported
-> by the AXP22X PMICs.
->=20
-> The battery power supply driver is also added by this patch. The AXP20X
-> and AXP22X share most of their behaviour but have slight variations. The
-> allowed target voltages for battery charging are not the same, the
-> AXP22X PMIC are able to tell if the battery percentage computed by the
-> PMIC is trustworthy and they have different formulas for computing max
-> current for battery power supply. The driver is able to give the current
-> voltage and current of the battery (be it charging or discharging), the
-> maximal and minimal voltage and maximal current allowed for the battery,
-> whether the battery is present and usable and its capacity. It will get
-> the battery current current and voltage by reading the ADC channels. The
-> PMIC allows maximal voltages (4.36V for AXP20X and 4.22V and 4.24V for
-> AXP22X) that should not be used with Lithium-based batteries and since
-> this PMIC is supposed to be used with Lithium-based batteries, they have
-> been disabled. The values returned by the ADC driver are multipled by
-> 1000 to scale from the mV returned by the ADC to the uV expected by the
-> power supply framework.
->=20
-> This series of patch adds DT bindings for ACIN power supply, ADC and
-> battery power supply drivers for AXP20X and AXP22X PMICs and their
-> documentation. It also enables the supported power supplies for the
-> Nextthing Co. CHIP and Sinlinx SinA33 boards.
->=20
-> The different drivers are also added to the MFD cells of the AXP20X and
-> AXP22X cells and the writeable and volatile regs updated to work with
-> the newly added drivers.
->=20
-> This series of patch is based on a previous upstreaming attempt done by
-> Bruno Pr=C3=A9mont few months ago. It differs in three points: the ADC
-> driver does not tell the battery temperature (TS_IN) as I do not have a
-> board to test it with, it does not tell the instantaneous battery power
-> as it returns crazy values for me and finally no support for OCV curves
-> for the battery.
->=20
-> You can test these patches from this repo and branch:
-> https://github.com/QSchulz/linux/tree/axp2xx_adc_batt_ac_v4
->=20
-> v4:
->  - added the ability to set maximum constant charge current from sysfs,
->  - added a warning when setting a higher than current maximum constant ch=
-arge
->  current,
->  - set default to minimum possible value for current and maximum constant=
- charge
->  current when no battery DT is present or invalid battery DT,
->  - fixed a forgotten custom formula to compute maximum constant charge cu=
-rrent
->  for AXP22X,
->  - automatically lower the current constant charge current when it is hig=
-her
->  than the maximum constant charge current about to be set,
->=20
-> v3:
->  - Removed DT property for constant charge current in favor of the WIP
->  battery framework as requested by Sebastian Reichel,
->  - Using a simple if condition instead of a switch in the ADC driver,
->  - Fixed error handling in ADC driver's probe,
->  - Fixed missing call to iio_map_array_unregister in the ADC driver's
->  remove,
->  - Removed ADC driver's DT node and documentation,
->  - Merged IIO channel mapping patches into the original ADC driver
->  patch,
->  - Removed `adding V-OFF to writeable reg' patch as it's already in
->  writeable reg range,
->=20
-> v2:
->  - Some registers' name have been changed to better reflect their
->  purpose,
->  - Make VBUS power supply driver use IIO channels when AXP ADC driver is
->  enabled, but fall back on previous behavior when disabled. This is made
->  to avoid the ADC driver overwritting registers for VBUS power supply
->  ADC when removed,
->  - Removed useless adding of data registers to volatile registers,
->  - Reordered IIO channels, now grouped by same part of the PMIC (e.g.
->  voltage and current of the battery have the same index in different
->  IIO types),
->  - Added structures for specific data instead of matching on IDs,
->  - Switched from DT IIO channels mapping to iio_map structures IIO
->  channels mapping,
->=20
-> Quentin
->=20
-> Quentin Schulz (6):
->   dt-bindings: power: supply: add AXP20X/AXP22X battery DT binding
->   power: supply: add battery driver for AXP20X and AXP22X PMICs
->   ARM: dtsi: axp209: add battery power supply subnode
->   ARM: dtsi: axp22x: add battery power supply subnode
->   ARM: dts: sun8i: sina33: enable battery power supply subnode
->   ARM: sun5i: chip: enable battery power supply subnode
-
-Applied the last 4 patches.
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
-
---xjq4nn73ddpedtbk
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABCAAGBQJY+bgUAAoJEBx+YmzsjxAgnmAQALYEqWtiPNKBGNjLL4HOtKZt
-xAVTCl6qIRq850NN08DDPOJu2hoXyxi5o+yjab9KJhx0cEW7ui26IQ2abgLtt1cM
-e+uqJL4XtqbW0LzTVAjnKvuNS+gukAlDeH2FMJXp0dbpzlEpDjswyLdubHHMueOn
-LxNT7Ocpm2EvXqFR7Im+jQDkm4JUD6BtChyGpZ9MfWmrLYz1v6X5AAeVNnbm1SDT
-UswgmO43ZSNv68/mVQoaMXoaOKnkiutXaCU1A96hIbwnjB2+szC5jSxEBCs8ro0Z
-uPytWnJFOirx8V/aekjgMw5VTKugSR9ZJlR0J1EHI5n6VdLCyAxc9q1sGRnMJE8+
-HxZNFa+E+B8lvvi5H2XgakGiZKML+gX0DS6DIWYXfc7PkAzN4ib3h3ofVHhXTyEH
-HvxkR5Klx07hZoIkzzsTkK68kfkPWVyS+DisUTTrNlr/bHwOyUspVbAk/By43G//
-CHNMtVe4UMwx4FtgfS2MDf2yX9cA4EZNM3mjNzpswehSpB1cfQtANdbXS1eCKhxz
-LXxrTMxRZ+yP0a+llzmoLED++YzgZthUMsi/PcAV6jNolSBgjPg024lIPWix66jH
-N1lji7dh8OrpL99e7dc06T8+Z/hdHL6fuQtlR0ekB/1DsJyTBhJzfQh/ACUIOhMZ
-ma8bIvo/VVpsJfikw81X
-=Ea2Z
------END PGP SIGNATURE-----
-
---xjq4nn73ddpedtbk--
+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
+WwAAAA8IAAAAAA==
