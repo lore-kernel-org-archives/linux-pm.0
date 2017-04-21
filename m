@@ -1,57 +1,41 @@
-From: <joseph.x.hronec@espn.com>
-Subject: (unknown)
-Date: Fri, 21 Apr 2017 08:36:11 -0000
-Message-ID: <149276377192.15559.15500433851738345597@asianet.co.th>
-Mime-Version: 1.0
-Content-Type: application/zip; name="EMAIL_7493740125_linux-pm.zip"
-Content-Transfer-Encoding: base64
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v12.7 0/10] bq27xxx_battery partial series
+Date: Fri, 21 Apr 2017 02:59:52 -0700
+Message-ID: <20170421095959.14151-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cm-58-10-104-158.revip7.asianet.co.th ([58.10.104.158]:56541
-        "HELO asianet.co.th" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with SMTP id S1036088AbdDUIgQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Apr 2017 04:36:16 -0400
-Content-Disposition: attachment
-Subject: 
+Received: from mail-oi0-f45.google.com ([209.85.218.45]:35445 "EHLO
+        mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1037544AbdDUJ7x (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Apr 2017 05:59:53 -0400
+Received: by mail-oi0-f45.google.com with SMTP id j201so87676646oih.2
+        for <linux-pm@vger.kernel.org>; Fri, 21 Apr 2017 02:59:53 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
+To: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
 
-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
-WwAAAA8IAAAAAA==
+Latest changes (including 12.6):
+
+Only DM update RAM chips by default
+
+Add config_battery_bq27xxx_dt_updates_nvm. If defined, update NVM chips
+ and add module param dt_monitored_battery_updates_nvm
+
+Fixed checkpatch errors and most warnings
+
+Switched from -ENOSYS to -PERM, due to checkpatch warning
+
+Add Copyright notice
+
+unseal() returns error on key==0
+
+Skip reset on non-cfgupdate chips if not updated
+
+Emit warning if no dm_regs table
+
+Map orig ID to chip ID via bq27xxx_chips[]
+
+Drop "prototypes" in enum comments
+
+Rename dupes detector bq27xxx_battery_dbg_regs_dupes()
+
+^.^ ^.^ ^.^ - We has hungry for test!
