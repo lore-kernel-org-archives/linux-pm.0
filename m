@@ -1,84 +1,69 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: [PATCH RFC 4/4] mmc: sdhci-pci: Set MMC_CAP2_NO_SDIO_RESET if child has wake from S4 (hibernate)
-Date: Fri, 21 Apr 2017 13:08:08 +0300
-Message-ID: <1492769288-7474-5-git-send-email-adrian.hunter@intel.com>
-References: <1492769288-7474-1-git-send-email-adrian.hunter@intel.com>
+From: Rahul Bedarkar <rahulbedarkar89@gmail.com>
+Subject: [PATCH] power: supply: generic-adc-battery: use SIMPLE_DEV_PM_OPS helper macro
+Date: Fri, 21 Apr 2017 16:37:57 +0530
+Message-ID: <1492772877-11983-1-git-send-email-rahulbedarkar89@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:46651 "EHLO mga02.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1037763AbdDUKN6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Apr 2017 06:13:58 -0400
-In-Reply-To: <1492769288-7474-1-git-send-email-adrian.hunter@intel.com>
+Received: from mail-io0-f193.google.com ([209.85.223.193]:32960 "EHLO
+        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1037895AbdDULIk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Apr 2017 07:08:40 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rahul Bedarkar <rahulbedarkar89@gmail.com>
 
-SDIO reset interferes with a SDIO function driver's restore from
-hibernation. Set MMC_CAP2_NO_SDIO_RESET if a child node has _S4W method
-which indicates a capability to wake from S4 (hibernate).
+Replace ifdefs with SIMPLE_DEV_PM_OPS helper macro.
 
-Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+Signed-off-by: Rahul Bedarkar <rahulbedarkar89@gmail.com>
 ---
- drivers/mmc/host/sdhci-pci-core.c | 34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ drivers/power/supply/generic-adc-battery.c | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci-pci-core.c b/drivers/mmc/host/sdhci-pci-core.c
-index 57d6f50b73dc..cc9fc7d54570 100644
---- a/drivers/mmc/host/sdhci-pci-core.c
-+++ b/drivers/mmc/host/sdhci-pci-core.c
-@@ -597,11 +597,42 @@ static int ni_set_max_freq(struct sdhci_pci_slot *slot)
- 
+diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/supply/generic-adc-battery.c
+index edb36bf..37e5233 100644
+--- a/drivers/power/supply/generic-adc-battery.c
++++ b/drivers/power/supply/generic-adc-battery.c
+@@ -383,8 +383,7 @@ static int gab_remove(struct platform_device *pdev)
  	return 0;
  }
-+
-+static bool __sdhci_pci_child_has_s4w(struct acpi_device *child)
-+{
-+	acpi_handle handle = child->handle;
-+	unsigned long long ret;
-+
-+	return ACPI_SUCCESS(acpi_evaluate_integer(handle, "_S4W", NULL, &ret));
-+}
-+
-+static bool sdhci_pci_child_has_s4w(struct sdhci_pci_slot *slot)
-+{
-+	struct acpi_device *adev = ACPI_COMPANION(&slot->chip->pdev->dev);
-+	struct acpi_device *child;
-+	bool child_has_s4w = false;
-+
-+	if (!adev)
-+		return false;
-+
-+	list_for_each_entry(child, &adev->children, node)
-+		if (child->status.present && child->status.enabled) {
-+			if (__sdhci_pci_child_has_s4w(child))
-+				child_has_s4w = true;
-+		}
-+
-+	return child_has_s4w;
-+}
- #else
- static inline int ni_set_max_freq(struct sdhci_pci_slot *slot)
+ 
+-#ifdef CONFIG_PM
+-static int gab_suspend(struct device *dev)
++static int __maybe_unused gab_suspend(struct device *dev)
  {
+ 	struct gab *adc_bat = dev_get_drvdata(dev);
+ 
+@@ -393,7 +392,7 @@ static int gab_suspend(struct device *dev)
  	return 0;
  }
-+
-+static bool sdhci_pci_child_has_s4w(struct sdhci_pci_slot *slot)
-+{
-+	return false;
-+}
- #endif
  
- static int ni_byt_sdio_probe_slot(struct sdhci_pci_slot *slot)
-@@ -1960,6 +1991,9 @@ static struct sdhci_pci_slot *sdhci_pci_probe_slot(
+-static int gab_resume(struct device *dev)
++static int __maybe_unused gab_resume(struct device *dev)
+ {
+ 	struct gab *adc_bat = dev_get_drvdata(dev);
+ 	struct gab_platform_data *pdata = adc_bat->pdata;
+@@ -407,20 +406,12 @@ static int gab_resume(struct device *dev)
+ 	return 0;
+ }
  
- 	host->ioaddr = pcim_iomap_table(pdev)[bar];
+-static const struct dev_pm_ops gab_pm_ops = {
+-	.suspend        = gab_suspend,
+-	.resume         = gab_resume,
+-};
+-
+-#define GAB_PM_OPS       (&gab_pm_ops)
+-#else
+-#define GAB_PM_OPS       (NULL)
+-#endif
++static SIMPLE_DEV_PM_OPS(gab_pm_ops, gab_suspend, gab_resume);
  
-+	if (sdhci_pci_child_has_s4w(slot))
-+		host->mmc->caps2 |= MMC_CAP2_NO_SDIO_RESET;
-+
- 	if (chip->fixes && chip->fixes->probe_slot) {
- 		ret = chip->fixes->probe_slot(slot);
- 		if (ret)
+ static struct platform_driver gab_driver = {
+ 	.driver		= {
+ 		.name	= "generic-adc-battery",
+-		.pm	= GAB_PM_OPS
++		.pm	= &gab_pm_ops,
+ 	},
+ 	.probe		= gab_probe,
+ 	.remove		= gab_remove,
 -- 
-1.9.1
+2.7.4
