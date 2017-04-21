@@ -1,43 +1,66 @@
-From: raitosyo@gmail.com
-Subject: [PATCH] power: supply: sbs-battery: fix the sbs interrupt request
-Date: Fri, 21 Apr 2017 12:13:17 +0900
-Message-ID: <1492744397-7105-1-git-send-email-raitosyo@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f193.google.com ([209.85.223.193]:33572 "EHLO
-        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1034901AbdDUDN5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Apr 2017 23:13:57 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: Re: [PATCH v6 1/6] dt-bindings: power: supply: add
+ AXP20X/AXP22X battery DT binding
+Date: Fri, 21 Apr 2017 11:51:04 +0800
+Message-ID: <CAGb2v64mWWv-_Svi1WB3u0RB8hpGh369iFBYa-SjudW0E_y2qQ@mail.gmail.com>
+References: <20170418073421.31351-1-quentin.schulz@free-electrons.com>
+ <20170418073421.31351-2-quentin.schulz@free-electrons.com> <20170420155820.tzvvwqnl2ze63jel@rob-hp-laptop>
+Reply-To: wens-jdAy2FN1RRM@public.gmane.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sunxi+bncBCMILY6JWQBBBQ4D43DQKGQEGZMVS7Q-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20170420155820.tzvvwqnl2ze63jel@rob-hp-laptop>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Icenowy Zheng <icenowy-ymACFijhrKM@public.gmane.org>, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Ryosuke Saito <raitosyo@gmail.com>
+On Thu, Apr 20, 2017 at 11:58 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Tue, Apr 18, 2017 at 09:34:16AM +0200, Quentin Schulz wrote:
+>> The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
+>>
+>> This patch adds the DT binding documentation for the battery power
+>> supply which gets various data from the PMIC, such as the battery status
+>> (charging, discharging, full, dead), current max limit, current current,
+>> battery capacity (in percentage), voltage max and min limits, current
+>> voltage and battery capacity (in Ah).
+>>
+>> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+>> Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+>> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+>> ---
+>> v6:
+>>   - removed mention to monitored-battery, will be sent when the battery
+>>   framework has been merged,
+>>
+>> v5:
+>>   - removed DT property example from monitored-battery,
+>>
+>> v4:
+>>  - added monitored-battery optional property,
+>>  - added example with battery,
+>>
+>> v3:
+>>  - removed constant charge current property, now should use the WIP
+>>  battery framework,
+>>
+>> v2:
+>>  - changed DT node name from ac_power_supply to ac-power-supply,
+>>  - removed io-channels and io-channel-names from DT (the IIO mapping is
+>>  done in the IIO ADC driver now),
+>>  - added x-powers,constant-charge-current property to set the maximal
+>>  default constant current charge of the battery,
+>>
+>>  .../bindings/power/supply/axp20x_battery.txt         | 20 ++++++++++++++++++++
+>>  1 file changed, 20 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+>
+> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
-Since we use the default primary handler for the irq, IRQF_ONESHOT must
-be set. Otherwise the request fails and the following errors are
-displayed:
-
-genirq: Threaded irq requested with handler=NULL and !ONESHOT for irq 129
-sbs-battery 0-000b: Failed to request irq: -22
-
-Signed-off-by: Ryosuke Saito <raitosyo@gmail.com>
----
- drivers/power/supply/sbs-battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index 8bb2eb3..e07d570 100644
---- a/drivers/power/supply/sbs-battery.c
-+++ b/drivers/power/supply/sbs-battery.c
-@@ -820,7 +820,7 @@ static int sbs_probe(struct i2c_client *client,
- 	}
- 
- 	rc = devm_request_threaded_irq(&client->dev, irq, NULL, sbs_irq,
--		IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
-+		IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
- 		dev_name(&client->dev), chip);
- 	if (rc) {
- 		dev_warn(&client->dev, "Failed to request irq: %d\n", rc);
--- 
-2.7.4
+Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
