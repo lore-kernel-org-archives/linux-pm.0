@@ -1,485 +1,326 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH 1/2] power: Add support for the Toby Churchill SBS battery
- monitor driver.
-Date: Fri, 21 Apr 2017 18:53:58 +0200
-Message-ID: <f2e82119-e0ee-108c-ca90-6fb6cb24eb77@collabora.com>
-References: <20170223173812.10740-1-enric.balletbo@collabora.com>
- <20170315215215.6t7mterd2ujutnlv@earth>
+From: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Subject: [PATCH v2] power: tps65217_charger: Add properties like voltage and current charge
+Date: Fri, 21 Apr 2017 17:50:32 +0200
+Message-ID: <20170421155032.22784-1-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:36838 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1423382AbdDUSIT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Apr 2017 14:08:19 -0400
-In-Reply-To: <20170315215215.6t7mterd2ujutnlv@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi,
+Allow the possibility to configure the charge and the current voltage of
+the charger and also the NTC type for battery temperature measurement.
 
-On 15/03/17 22:52, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Thu, Feb 23, 2017 at 06:38:11PM +0100, Enric Balletbo i Serra wrote:
->> Some of the Toby Churchill devices come with a smart battery and one
->> AVR XMEGA Microcontroller monitor its state. This patch adds the driver
->> for this battery monitor.
-> 
-> Sorry for the delay. I'm mostly fine with the driver. You can find a
-> few notes below.
-> 
->> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->> ---
->>  drivers/power/supply/Kconfig             |  10 +
->>  drivers/power/supply/Makefile            |   2 +
->>  drivers/power/supply/xmega16d4_battery.c | 353 +++++++++++++++++++++++++++++++
->>  3 files changed, 365 insertions(+)
->>  create mode 100644 drivers/power/supply/xmega16d4_battery.c
->>
->> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
->> index 76806a0..f95f8d5 100644
->> --- a/drivers/power/supply/Kconfig
->> +++ b/drivers/power/supply/Kconfig
->> @@ -511,4 +511,14 @@ config AXP20X_POWER
->>  	  This driver provides support for the power supply features of
->>  	  AXP20x PMIC.
->>  
->> +config BATTERY_XMEGA16D4
->> +	tristate "XMEGA16D4 Battery Gauge Driver"
->> +	depends on SPI
->> +	help
->> +	  Say Y here to include support for XMEGA16D4 Battery Gauge. The
->> +	  driver reports the charge count, and measures the voltage and
->> +	  the current.
->> +
->> +	  This adds support for XMEGA16D4 battery.
->> +
->>  endif # POWER_SUPPLY
->> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
->> index 36c599d..abae887 100644
->> --- a/drivers/power/supply/Makefile
->> +++ b/drivers/power/supply/Makefile
->> @@ -72,3 +72,5 @@ obj-$(CONFIG_CHARGER_TPS65090)	+= tps65090-charger.o
->>  obj-$(CONFIG_CHARGER_TPS65217)	+= tps65217_charger.o
->>  obj-$(CONFIG_AXP288_FUEL_GAUGE) += axp288_fuel_gauge.o
->>  obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
->> +obj-$(CONFIG_BATTERY_XMEGA16D4)	+= xmega16d4_battery.o
->> +
->> diff --git a/drivers/power/supply/xmega16d4_battery.c b/drivers/power/supply/xmega16d4_battery.c
->> new file mode 100644
->> index 0000000..8c6b11a
->> --- /dev/null
->> +++ b/drivers/power/supply/xmega16d4_battery.c
->> @@ -0,0 +1,353 @@
->> +/*
->> + * Battery monitor driver for SL50 Toby Churchill SBS Batteries
->> + *
->> + * Copyright (c) 2017, Collabora Ltd.
->> + *
->> + * This program is free software; you can redistribute it and/or modify it
->> + * under the terms and conditions of the GNU General Public License,
->> + * version 2, as published by the Free Software Foundation.
->> + *
->> + * This program is distributed in the hope it will be useful, but WITHOUT
->> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
->> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
->> + * more details.
->> + *
->> + * You should have received a copy of the GNU General Public License
->> + * along with this program.  If not, see <http://www.gnu.org/licenses/>.
->> + */
->> +#include <linux/module.h>
->> +#include <linux/of.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/power_supply.h>
->> +#include <linux/spi/spi.h>
->> +#include <linux/workqueue.h>
->> +
->> +#define SBS_MEMORY_MAP_SIZE		128
->> +/* Charging voltage, 2 bytes */
->> +#define SBS_CHARGING_VOLTAGE		0x0a
->> +/* Design voltage, 2 bytes */
->> +#define SBS_DESIGN_VOLTAGE		0x0c
->> +/* Fast charging current, 2 bytes */
->> +#define SBS_FAST_CHARGING_CURRENT	0x0e
->> +/* Max T, Low T, 2 bytes */
->> +#define SBS_MAX_LOW_TEMPERATURE		0x10
->> +/* Pack capacity, 2 bytes */
->> +#define SBS_PACK_CAPACITY		0x12
->> +/* Serial number, 2 bytes */
->> +#define SBS_SERIAL_NUMBER		0x18
->> +/* Manufacturer name, 16 bytes */
->> +#define SBS_MANUFACTURER_NAME		0x20
->> +/* Model name, 16 bytes */
->> +#define SBS_MODEL_NAME			0x30
->> +/* Device chemistry, 5 bytes */
->> +#define SBS_DEVICE_CHEMISTRY		0x40
->> +/* Cycle count, 2 bytes */
->> +#define SBS_CYCLE_COUNT			0x50
->> +/* Voltage now, 2 bytes */
->> +#define SBS_VOLTAGE_NOW			0x70
->> +/* Current now, 2 bytes */
->> +#define SBS_CURRENT_NOW			0x72
->> +/* Battery Status, 2 bytes */
->> +#define SBS_BATTERY_STATUS		0x74
->> +# define BATTERY_STATUS_CHARGING	0
->> +# define BATTERY_STATUS_DISCHARGING	BIT(6)
->> +# define BATTERY_STATUS_FULLY_CHARGED	BIT(5)
->> +/* State of charge in percentage, 1 byte */
->> +#define SBS_STATE_OF_CHARGE		0x76
->> +
->> +/* MM SIZE + START(u16) + CHECKSUM(u16) */
->> +#define SPI_MSG_LENGTH		(SBS_MEMORY_MAP_SIZE + 4)
->> +#define SPI_MSG_DATA_BP		2
->> +/* MSB checksum byte position */
->> +#define SPI_MSG_CSUM_BP		(2 + SBS_MEMORY_MAP_SIZE)
->> +#define SPI_MSG_START_TOKEN	0xb00b
->> +
->> +struct xmega16d4_battery_data {
->> +	struct spi_device *spi;
->> +	struct power_supply *bat;
->> +
->> +	struct mutex		work_lock; /* protect work data */
->> +	struct delayed_work	bat_work;
->> +
->> +	u8 map[SBS_MEMORY_MAP_SIZE];
->> +
->> +	char model_name[16];
->> +	char manufacturer_name[16];
->> +	char serial_number[5];
->> +
->> +	int technology;
->> +	int voltage_uV;			/* units of uV */
->> +	int current_uA;			/* units of uA */
->> +	int rated_capacity;		/* units of �Ah */
->> +	int cycle_count;
->> +	int rem_capacity;		/* percentage */
->> +	int life_sec;			/* units of seconds */
->> +	int status;			/* state of charge */
->> +};
->> +
->> +#define MAX_KEYLENGTH 256
->> +struct battery_property_map {
->> +	int value;
->> +	char const *key;
->> +};
->> +
->> +static struct battery_property_map map_technology[] = {
->> +	{ POWER_SUPPLY_TECHNOLOGY_NiMH, "NiMH" },
->> +	{ POWER_SUPPLY_TECHNOLOGY_LION, "LION" },
->> +	{ POWER_SUPPLY_TECHNOLOGY_LIPO, "LIPO" },
->> +	{ POWER_SUPPLY_TECHNOLOGY_LiFe, "LiFe" },
->> +	{ POWER_SUPPLY_TECHNOLOGY_NiCd, "NiCd" },
->> +	{ POWER_SUPPLY_TECHNOLOGY_LiMn, "LiMn" },
->> +	{ -1,				NULL   },
->> +};
->> +
->> +static int map_get_value(struct battery_property_map *map, const char *key,
->> +			 int def_val)
->> +{
->> +	char buf[MAX_KEYLENGTH];
->> +	int cr;
->> +
->> +	strncpy(buf, key, MAX_KEYLENGTH);
->> +	buf[MAX_KEYLENGTH - 1] = '\0';
->> +
->> +	cr = strnlen(buf, MAX_KEYLENGTH) - 1;
->> +	if (buf[cr] == '\n')
->> +		buf[cr] = '\0';
->> +
->> +	while (map->key) {
->> +		if (strncasecmp(map->key, buf, MAX_KEYLENGTH) == 0)
->> +			return map->value;
->> +		map++;
->> +	}
->> +
->> +	return def_val;
->> +}
->> +
->> +static int xmega16d4_battery_read_status(struct xmega16d4_battery_data *data)
->> +{
->> +	int i;
->> +	int csum = 0;
->> +	u8 buf[SBS_MEMORY_MAP_SIZE], technology[5];
->> +	unsigned int uval;
->> +	int sval;
->> +	struct spi_device *spi = data->spi;
->> +
->> +	for (i = 0; i < SBS_MEMORY_MAP_SIZE; i++) {
->> +		spi_write(spi, &i, 1);
->> +		spi_read(spi, &buf[i], 1);
-> 
-> spi_write_then_read(spi, &i, 1, &buf[i], 1)
-> if (err)
->     complain
-> 
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+---
+Changes since v1:
+ - Requested by Rob Herring
+   - Rename ti,charge-* to charge-* to be standard properties.
+   - Use unit suffixes as per bindings/property-units.txt
+---
+ .../bindings/power/supply/tps65217_charger.txt     |  15 ++
+ drivers/power/supply/tps65217_charger.c            | 187 +++++++++++++++++++--
+ include/linux/mfd/tps65217.h                       |   2 +
+ 3 files changed, 192 insertions(+), 12 deletions(-)
 
-Hmm, how odd, it works with
+diff --git a/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt b/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
+index a11072c..4415618 100644
+--- a/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
++++ b/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
+@@ -6,6 +6,18 @@ Required Properties:
+              Should be <0> for the USB charger and <1> for the AC adapter.
+ -interrupt-names: Should be "USB" and "AC"
+ 
++Optional properties:
++-charge-voltage-microvolt: set the charge voltage. The value can be: 4100000,
++	4150000, 4200000, 4250000; default: 4100000
++
++-charge-current-microamp: set the charging current. The value can be: 300000,
++	400000, 500000, 700000; default: 500000
++
++-ti,ntc-type: set the NTC type for battery temperature measurement. The value
++	must be 0 or 1, where:
++	  0 – 100k (curve 1, B = 3960)
++	  1 – 10k  (curve 2, B = 3480) (default)
++
+ This node is a subnode of the tps65217 PMIC.
+ 
+ Example:
+@@ -14,4 +26,7 @@ Example:
+ 		compatible = "ti,tps65217-charger";
+ 		interrupts = <0>, <1>;
+ 		interrupt-names = "USB", "AC";
++		charge-voltage-microvolt = <4100000>;
++		charge-current-microamp = <500000>;
++		ti,ntc-type = <1>;
+ 	};
+diff --git a/drivers/power/supply/tps65217_charger.c b/drivers/power/supply/tps65217_charger.c
+index 1f52340..087f29c 100644
+--- a/drivers/power/supply/tps65217_charger.c
++++ b/drivers/power/supply/tps65217_charger.c
+@@ -39,6 +39,12 @@
+ #define NUM_CHARGER_IRQS	2
+ #define POLL_INTERVAL		(HZ * 2)
+ 
++struct tps65217_charger_platform_data {
++	u32	charge_current_uamp;
++	u32	charge_voltage_uvolt;
++	int	ntc_type;
++};
++
+ struct tps65217_charger {
+ 	struct tps65217 *tps;
+ 	struct device *dev;
+@@ -48,16 +54,82 @@ struct tps65217_charger {
+ 	int	prev_online;
+ 
+ 	struct task_struct	*poll_task;
++	struct tps65217_charger_platform_data *pdata;
+ };
+ 
+ static enum power_supply_property tps65217_charger_props[] = {
+ 	POWER_SUPPLY_PROP_ONLINE,
+ };
+ 
+-static int tps65217_config_charger(struct tps65217_charger *charger)
++static int tps65217_set_charge_current(struct tps65217_charger *charger,
++				       unsigned int uamp)
++{
++	int ret, val;
++
++	dev_dbg(charger->dev, "setting charge current to %d uA\n", uamp);
++
++	if (uamp == 300000)
++		val = 0x00;
++	else if (uamp == 400000)
++		val = 0x01;
++	else if (uamp == 500000)
++		val = 0x02;
++	else if (uamp == 700000)
++		val = 0x03;
++	else
++		return -EINVAL;
++
++	ret = tps65217_set_bits(charger->tps, TPS65217_REG_CHGCONFIG3,
++				TPS65217_CHGCONFIG3_ICHRG_MASK,
++				val << TPS65217_CHGCONFIG3_ICHRG_SHIFT,
++				TPS65217_PROTECT_NONE);
++	if (ret) {
++		dev_err(charger->dev,
++			"failed to set ICHRG setting to 0x%02x (err: %d)\n",
++			val, ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static int tps65217_set_charge_voltage(struct tps65217_charger *charger,
++				       unsigned int uvolt)
++{
++	int ret, val;
++
++	dev_dbg(charger->dev, "setting charge voltage to %d uV\n", uvolt);
++
++	if (uvolt != 4100000 && uvolt != 4150000 &&
++	    uvolt != 4200000 && uvolt != 4250000)
++		return -EINVAL;
++
++	val = (uvolt - 4100000) / 50000;
++
++	ret = tps65217_set_bits(charger->tps, TPS65217_REG_CHGCONFIG2,
++				TPS65217_CHGCONFIG2_VOREG_MASK,
++				val << TPS65217_CHGCONFIG2_VOREG_SHIFT,
++				TPS65217_PROTECT_NONE);
++	if (ret) {
++		dev_err(charger->dev,
++			"failed to set VOCHG setting to 0x%02x (err: %d)\n",
++			val, ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static int tps65217_set_ntc_type(struct tps65217_charger *charger,
++				 unsigned int ntc)
+ {
+ 	int ret;
+ 
++	dev_dbg(charger->dev, "setting NTC type to %d\n", ntc);
++
++	if (ntc != 0 && ntc != 1)
++		return -EINVAL;
++
+ 	/*
+ 	 * tps65217 rev. G, p. 31 (see p. 32 for NTC schematic)
+ 	 *
+@@ -74,14 +146,57 @@ static int tps65217_config_charger(struct tps65217_charger *charger)
+ 	 * NTC TYPE (for battery temperature measurement)
+ 	 *   0 – 100k (curve 1, B = 3960)
+ 	 *   1 – 10k  (curve 2, B = 3480) (default on reset)
+-	 *
+ 	 */
+-	ret = tps65217_clear_bits(charger->tps, TPS65217_REG_CHGCONFIG1,
+-				  TPS65217_CHGCONFIG1_NTC_TYPE,
+-				  TPS65217_PROTECT_NONE);
++	if (ntc) {
++		ret = tps65217_set_bits(charger->tps, TPS65217_REG_CHGCONFIG1,
++					TPS65217_CHGCONFIG1_NTC_TYPE,
++					TPS65217_CHGCONFIG1_NTC_TYPE,
++					TPS65217_PROTECT_NONE);
++		if (ret) {
++			dev_err(charger->dev,
++				"failed to set NTC type to 10K: %d\n", ret);
++			return ret;
++		}
++	} else {
++		ret = tps65217_clear_bits(charger->tps, TPS65217_REG_CHGCONFIG1,
++					  TPS65217_CHGCONFIG1_NTC_TYPE,
++					  TPS65217_PROTECT_NONE);
++		if (ret) {
++			dev_err(charger->dev,
++				"failed to set NTC type to 100K: %d\n", ret);
++			return ret;
++		}
++	}
++
++	return 0;
++}
++
++static int tps65217_config_charger(struct tps65217_charger *charger)
++{
++	int ret;
++	struct tps65217_charger_platform_data *pdata = charger->pdata;
++
++	if (!charger->pdata)
++		return -EINVAL;
++
++	ret = tps65217_set_charge_voltage(charger, pdata->charge_voltage_uvolt);
+ 	if (ret) {
+ 		dev_err(charger->dev,
+-			"failed to set 100k NTC setting: %d\n", ret);
++			"failed to set charge voltage setting: %d\n", ret);
++		return ret;
++	}
++
++	ret = tps65217_set_charge_current(charger, pdata->charge_current_uamp);
++	if (ret) {
++		dev_err(charger->dev,
++			"failed to set charge current setting: %d\n", ret);
++		return ret;
++	}
++
++	ret = tps65217_set_ntc_type(charger, pdata->ntc_type);
++	if (ret) {
++		dev_err(charger->dev,
++			"failed to set NTC type setting: %d\n", ret);
+ 		return ret;
+ 	}
+ 
+@@ -185,6 +300,48 @@ static int tps65217_charger_poll_task(void *data)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_OF
++static struct tps65217_charger_platform_data *tps65217_charger_pdata_init(
++		struct platform_device *pdev)
++{
++	struct tps65217_charger_platform_data *pdata;
++	struct device_node *np = pdev->dev.of_node;
++	int ret;
++
++	if (!np) {
++		dev_err(&pdev->dev, "No charger OF node\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
++	if (!pdata)
++		return ERR_PTR(-ENOMEM);
++
++	ret = of_property_read_u32(np, "charge-voltage-microvolt",
++				   &pdata->charge_voltage_uvolt);
++	if (ret)
++		pdata->charge_voltage_uvolt = 4100000;
++
++	ret = of_property_read_u32(np, "charge-current-microamp",
++				   &pdata->charge_current_uamp);
++	if (ret)
++		pdata->charge_current_uamp = 500000;
++
++	ret = of_property_read_u32(np, "ti,ntc-type",
++				   &pdata->ntc_type);
++	if (ret)
++		pdata->ntc_type = 1;	/* 10k  (curve 2, B = 3480) */
++
++	return pdata;
++}
++#else /* CONFIG_OF */
++static struct tps65217_charger_platform_data *tps65217_charger_pdata_init(
++		struct platform_device *pdev)
++{
++	return NULL;
++}
++#endif /* CONFIG_OF */
++
+ static const struct power_supply_desc tps65217_charger_desc = {
+ 	.name			= "tps65217-charger",
+ 	.type			= POWER_SUPPLY_TYPE_MAINS,
+@@ -214,6 +371,18 @@ static int tps65217_charger_probe(struct platform_device *pdev)
+ 	cfg.of_node = pdev->dev.of_node;
+ 	cfg.drv_data = charger;
+ 
++	charger->pdata = tps65217_charger_pdata_init(pdev);
++	if (IS_ERR(charger->pdata)) {
++		dev_err(charger->dev, "failed: getting platform data\n");
++		return PTR_ERR(charger->pdata);
++	}
++
++	ret = tps65217_config_charger(charger);
++	if (ret < 0) {
++		dev_err(charger->dev, "charger config failed, err %d\n", ret);
++		return ret;
++	}
++
+ 	charger->psy = devm_power_supply_register(&pdev->dev,
+ 						  &tps65217_charger_desc,
+ 						  &cfg);
+@@ -225,12 +394,6 @@ static int tps65217_charger_probe(struct platform_device *pdev)
+ 	irq[0] = platform_get_irq_byname(pdev, "USB");
+ 	irq[1] = platform_get_irq_byname(pdev, "AC");
+ 
+-	ret = tps65217_config_charger(charger);
+-	if (ret < 0) {
+-		dev_err(charger->dev, "charger config failed, err %d\n", ret);
+-		return ret;
+-	}
+-
+ 	/* Create a polling thread if an interrupt is invalid */
+ 	if (irq[0] < 0 || irq[1] < 0) {
+ 		poll_task = kthread_run(tps65217_charger_poll_task,
+diff --git a/include/linux/mfd/tps65217.h b/include/linux/mfd/tps65217.h
+index eac2857..d040062 100644
+--- a/include/linux/mfd/tps65217.h
++++ b/include/linux/mfd/tps65217.h
+@@ -103,8 +103,10 @@
+ #define TPS65217_CHGCONFIG2_DYNTMR	BIT(7)
+ #define TPS65217_CHGCONFIG2_VPREGHG	BIT(6)
+ #define TPS65217_CHGCONFIG2_VOREG_MASK	0x30
++#define TPS65217_CHGCONFIG2_VOREG_SHIFT	4
+ 
+ #define TPS65217_CHGCONFIG3_ICHRG_MASK	0xC0
++#define TPS65217_CHGCONFIG3_ICHRG_SHIFT	6
+ #define TPS65217_CHGCONFIG3_DPPMTH_MASK	0x30
+ #define TPS65217_CHGCONFIG2_PCHRGT	BIT(3)
+ #define TPS65217_CHGCONFIG2_TERMIF	0x06
+-- 
+2.9.3
 
-  err = spi_write(
-  if (err)
-    complain
-  err = spi_read(
-  if (err)
-    complain
-
-But not with
-  err = spi_write_then_read(
-  if (err)
-     complain
-
-I'm wondering what's the difference. I need to debug a bit this thing before
-send v2.
-
-
->> +	}
->> +
->> +	print_hex_dump(KERN_DEBUG, ": ", DUMP_PREFIX_OFFSET, 16, 1,
->> +		       buf, SBS_MEMORY_MAP_SIZE, false);
->> +
->> +	/* Calculate the data checksum */
->> +	for (i = 0; i < SBS_MEMORY_MAP_SIZE - 2; i++)
->> +		csum += buf[i];
->> +
->> +	/* Verify the checksum */
->> +	uval = (buf[SBS_MEMORY_MAP_SIZE - 2] << 8) |
->> +		buf[SBS_MEMORY_MAP_SIZE - 1];
->> +	if (csum != uval) {
->> +		dev_dbg(&spi->dev,
->> +			"message received with invalid checksum (%d != %d)\n",
->> +			csum, uval);
->> +		return -ENOMSG;
-> 
-> dev_dbg? So it happens regularly?
-> 
-
-Right, should be dev_err, also I think I'll move the print_hex_dump here and
-just print the dump if it fails (and replace for print_hex_dump_debug)
-
->> +	}
->> +
->> +	/* Update memory map with the new data */
->> +	memcpy(data->map, buf, SBS_MEMORY_MAP_SIZE);
->> +
->> +	strncpy(data->model_name, &data->map[SBS_MODEL_NAME], 16);
->> +
->> +	strncpy(data->manufacturer_name, &data->map[SBS_MANUFACTURER_NAME],
->> +		16);
->> +
->> +	strncpy(technology, &data->map[SBS_DEVICE_CHEMISTRY], 5);
->> +
->> +	uval = (u16)((data->map[SBS_SERIAL_NUMBER + 1] << 8) |
->> +		data->map[SBS_SERIAL_NUMBER]);
->> +	snprintf(data->serial_number, ARRAY_SIZE(data->serial_number), "%04d",
->> +		 uval);
->> +
->> +	data->technology = map_get_value(map_technology, technology,
->> +					 POWER_SUPPLY_TECHNOLOGY_UNKNOWN);
->> +
->> +	data->voltage_uV = (u16)((data->map[SBS_VOLTAGE_NOW + 1] << 8) |
->> +			    data->map[SBS_VOLTAGE_NOW]);
->> +	data->voltage_uV *= 1000;	/* convert from mV to uV */
->> +
->> +	sval = (s16)((data->map[SBS_CURRENT_NOW + 1] << 8) |
->> +		data->map[SBS_CURRENT_NOW]);
->> +	data->current_uA = sval;
->> +	data->current_uA *= 1000;	/* convert from mA to uA */
->> +
->> +	data->rated_capacity = (u16)((data->map[SBS_PACK_CAPACITY + 1] << 8) |
->> +				data->map[SBS_PACK_CAPACITY]);
->> +	data->rated_capacity *= 1000;	/* convert from mAh to uAh */
->> +
->> +	uval = (u16)((data->map[SBS_BATTERY_STATUS + 1] << 8) |
->> +		data->map[SBS_BATTERY_STATUS]);
->> +	if (uval == BATTERY_STATUS_CHARGING)
->> +		data->status = POWER_SUPPLY_STATUS_CHARGING;
->> +	else if (uval == BATTERY_STATUS_DISCHARGING)
->> +		data->status = POWER_SUPPLY_STATUS_DISCHARGING;
->> +	else if (uval == BATTERY_STATUS_FULLY_CHARGED)
->> +		data->status = POWER_SUPPLY_STATUS_FULL;
->> +	else
->> +		data->status = POWER_SUPPLY_STATUS_UNKNOWN;
->> +
->> +	data->cycle_count = (u16)((data->map[SBS_CYCLE_COUNT + 1] << 8) |
->> +			     data->map[SBS_CYCLE_COUNT]);
->> +
->> +	data->rem_capacity = data->map[SBS_STATE_OF_CHARGE];
->> +
->> +	uval = (data->rem_capacity * (data->rated_capacity / 1000)) / 100;
->> +	if (data->current_uA)
->> +		data->life_sec = (3600l * uval) / (data->current_uA / 1000);
-> 
-> looks like the driver would benefit from regmap.
-> 
->> +	return 0;
->> +}
->> +
->> +static void xmega16d4_battery_work(struct work_struct *work)
->> +{
->> +	struct xmega16d4_battery_data *data = container_of(work,
->> +		struct xmega16d4_battery_data, bat_work.work);
->> +
->> +	/* Update values */
->> +	mutex_lock(&data->work_lock);
->> +	xmega16d4_battery_read_status(data);
->> +	mutex_unlock(&data->work_lock);
->> +
->> +	schedule_delayed_work(&data->bat_work, HZ * 60);
->> +}
->> +
->> +static int xmega16d4_battery_get_property(struct power_supply *psy,
->> +					  enum power_supply_property psp,
->> +					  union power_supply_propval *val)
->> +{
->> +	struct xmega16d4_battery_data *data = power_supply_get_drvdata(psy);
->> +
->> +	switch (psp) {
->> +	case POWER_SUPPLY_PROP_STATUS:
->> +		val->intval = data->status;
->> +		break;
->> +	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
->> +		val->intval = data->voltage_uV;
->> +		break;
->> +	case POWER_SUPPLY_PROP_CURRENT_NOW:
->> +		val->intval = data->current_uA;
->> +		break;
->> +	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
->> +		val->intval = data->rated_capacity;
->> +		break;
->> +	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW:
->> +		val->intval = data->life_sec;
->> +		break;
->> +	case POWER_SUPPLY_PROP_CAPACITY:
->> +		val->intval = data->rem_capacity;
->> +		break;
->> +	case POWER_SUPPLY_PROP_TECHNOLOGY:
->> +		val->intval = data->technology;
->> +		break;
->> +	case POWER_SUPPLY_PROP_MODEL_NAME:
->> +		val->strval = data->model_name;
->> +		break;
->> +	case POWER_SUPPLY_PROP_MANUFACTURER:
->> +		val->strval = data->manufacturer_name;
->> +		break;
->> +	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
->> +		val->strval = data->serial_number;
->> +		break;
->> +	default:
->> +		return -EINVAL;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +static enum power_supply_property xmega16d4_battery_props[] = {
->> +	POWER_SUPPLY_PROP_STATUS,
->> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
->> +	POWER_SUPPLY_PROP_CURRENT_NOW,
->> +	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
->> +	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
->> +	POWER_SUPPLY_PROP_CAPACITY,
->> +	POWER_SUPPLY_PROP_TECHNOLOGY,
->> +	/* Properties of type `const char *' */
->> +	POWER_SUPPLY_PROP_MODEL_NAME,
->> +	POWER_SUPPLY_PROP_MANUFACTURER,
->> +	POWER_SUPPLY_PROP_SERIAL_NUMBER,
->> +};
->> +
->> +static const struct power_supply_desc xmega16d4_battery_desc = {
->> +	.name			= "battery-monitor",
->> +	.type			= POWER_SUPPLY_TYPE_BATTERY,
->> +	.properties		= xmega16d4_battery_props,
->> +	.num_properties		= ARRAY_SIZE(xmega16d4_battery_props),
->> +	.get_property		= xmega16d4_battery_get_property,
->> +};
->> +
->> +static int xmega16d4_battery_probe(struct spi_device *spi)
->> +{
->> +	struct xmega16d4_battery_data *data;
->> +	struct power_supply_config psy_cfg = {};
->> +
->> +	data = devm_kzalloc(&spi->dev, sizeof(*data), GFP_KERNEL);
->> +	if (!data)
->> +		return -ENOMEM;
->> +
->> +	data->spi = spi;
->> +	psy_cfg.of_node = spi->dev.of_node;
->> +	psy_cfg.drv_data = data;
->> +
->> +	mutex_init(&data->work_lock);
->> +
->> +	INIT_DELAYED_WORK(&data->bat_work, xmega16d4_battery_work);
->> +
->> +	spi_set_drvdata(spi, data);
->> +
->> +	/* Get initial status */
->> +	if (xmega16d4_battery_read_status(data))
->> +		return -ENODEV;
->> +
->> +	data->bat = devm_power_supply_register(&spi->dev,
->> +					       &xmega16d4_battery_desc,
->> +					       &psy_cfg);
->> +	if (IS_ERR(data->bat))
->> +		return PTR_ERR(data->bat);
->> +
->> +	schedule_delayed_work(&data->bat_work, 0);
->> +
->> +	return 0;
->> +}
->> +
->> +static int xmega16d4_battery_remove(struct spi_device *spi)
->> +{
->> +	struct xmega16d4_battery_data *data = spi_get_drvdata(spi);
->> +
->> +	cancel_delayed_work_sync(&data->bat_work);
->> +
->> +	return 0;
->> +}
->> +
->> +static const struct of_device_id xmega16d4_battery_of_match[] = {
->> +	{ .compatible = "tcl,xmega16d4-battery", },
->> +	{ /* sentinel */ },
->> +};
->> +
->> +static struct spi_driver xmega16d4_battery_driver = {
->> +	.driver = {
->> +		.name		= "xmega16d4-battery",
->> +		.owner		= THIS_MODULE,
->> +		.of_match_table = of_match_ptr(xmega16d4_battery_of_match),
-> 
-> Either put xmega16d4_battery_of_match inside of #ifdef CONFIG_OF
-> or drop of_match_ptr. Otherwise there will be an unused warning
-> for the CONFIG_OF=n case.
-> 
-
-Ok
-
->> +	},
->> +	.probe	= xmega16d4_battery_probe,
->> +	.remove	= xmega16d4_battery_remove,
->> +};
->> +module_spi_driver(xmega16d4_battery_driver);
->> +
->> +MODULE_ALIAS("spi:xmega16d4-battery");
->> +
->> +MODULE_LICENSE("GPL v2");
->> +MODULE_AUTHOR("Enric Balletbo Serra <enric.balletbo@collabora.com>");
->> +MODULE_DESCRIPTION("xmega16d4 battery monitor driver");
-> 
-> Otherwise the driver looks fine. I'm a bit worried about the name,
-> though. xmega16d4 is just a microcontroller. This driver is more
-> about its firmware. I think something like "toby-churchill-battery-monitor"
-> would be better.
-> 
-
-It's not a problem rename the driver, I'm thinking in tcl-sbs-battery if it's
-fine, a bit shorted that the one you proposed.
-
-> -- Sebastian
-> 
-Thanks,
- Enric
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
