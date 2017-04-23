@@ -1,46 +1,39 @@
-From: "David E. Box" <david.e.box@linux.intel.com>
-Subject: [PATCH] x86/intel_idle: add GLK support
-Date: Sat, 22 Apr 2017 23:06:25 -0700
-Message-ID: <20170423060625.4593-1-david.e.box@linux.intel.com>
+From: Pan Bian <bianpan2016@163.com>
+Subject: [PATCH 1/1] power: check return value of devm_kzalloc
+Date: Sun, 23 Apr 2017 17:03:56 +0800
+Message-ID: <1492938236-9928-1-git-send-email-bianpan2016@163.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:14997 "EHLO mga07.intel.com"
+Received: from m50-134.163.com ([123.125.50.134]:58927 "EHLO m50-134.163.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1427568AbdDWGG2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 23 Apr 2017 02:06:28 -0400
+        id S1756237AbdDWJEN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 23 Apr 2017 05:04:13 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: lenb@kernel.org, jacob.jun.pan@linux.intel.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pan Bian <bianpan2016@163.com>
 
-From: "Box, David E" <david.e.box@intel.com>
+Function devm_kzalloc() will return a NULL pointer if there is no enough
+memory. However, in function isp1704_charger_probe(), the return value
+of devm_kzalloc() is used without validation. This may result in a bad
+memory access bug. This patch fixes the bug.
 
-Gemini Lake uses the same C-states as Broxton and also uses the
-IRTL MSR's to determine maximum C-state latency.
-
-Signed-off-by: David E. Box <david.e.box@linux.intel.com>
+Signed-off-by: Pan Bian <bianpan2016@163.com>
 ---
- drivers/idle/intel_idle.c | 2 ++
+ drivers/power/supply/isp1704_charger.c | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index e045a5c..778af71 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -1097,6 +1097,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
- 	ICPU(INTEL_FAM6_XEON_PHI_KNL,		idle_cpu_knl),
- 	ICPU(INTEL_FAM6_XEON_PHI_KNM,		idle_cpu_knl),
- 	ICPU(INTEL_FAM6_ATOM_GOLDMONT,		idle_cpu_bxt),
-+	ICPU(INTEL_FAM6_ATOM_GEMINI_LAKE,	idle_cpu_bxt),
- 	ICPU(INTEL_FAM6_ATOM_DENVERTON,		idle_cpu_dnv),
- 	{}
- };
-@@ -1309,6 +1310,7 @@ static void intel_idle_state_table_update(void)
- 		ivt_idle_state_table_update();
- 		break;
- 	case INTEL_FAM6_ATOM_GOLDMONT:
-+	case INTEL_FAM6_ATOM_GEMINI_LAKE:
- 		bxt_idle_state_table_update();
- 		break;
- 	case INTEL_FAM6_SKYLAKE_DESKTOP:
+diff --git a/drivers/power/supply/isp1704_charger.c b/drivers/power/supply/isp1704_charger.c
+index 4cd6899..4dd2482 100644
+--- a/drivers/power/supply/isp1704_charger.c
++++ b/drivers/power/supply/isp1704_charger.c
+@@ -418,6 +418,8 @@ static int isp1704_charger_probe(struct platform_device *pdev)
+ 
+ 		pdata = devm_kzalloc(&pdev->dev,
+ 			sizeof(struct isp1704_charger_data), GFP_KERNEL);
++		if (!pdata)
++			return -ENOMEM;
+ 		pdata->enable_gpio = gpio;
+ 
+ 		dev_info(&pdev->dev, "init gpio %d\n", pdata->enable_gpio);
 -- 
-2.9.3
+1.9.1
