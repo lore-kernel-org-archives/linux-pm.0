@@ -1,83 +1,37 @@
-From: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for power-domains
-Date: Sun, 23 Apr 2017 15:07:10 -0700
-Message-ID: <m2r30i4w35.fsf@baylibre.com>
-References: <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
-        <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
-        <20170413053736.GM5910@vireshk-i7>
-        <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
-        <20170417052758.GF28191@vireshk-i7>
-        <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
-        <20170419114740.GD5436@vireshk-i7>
-        <9dee7c0d-e5f4-9fcd-3c92-bf7ec9d43a3b@arm.com>
-        <20170420052533.GF5436@vireshk-i7>
-        <34c7fb69-0324-ad06-678d-8726064e9a18@arm.com>
-        <20170420095248.GJ5436@vireshk-i7>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH 0/4] PM / Domains: Add support for always on PM domains in genpd
+Date: Sun, 23 Apr 2017 15:12:53 -0700
+Message-ID: <m2mvb64vtm.fsf@baylibre.com>
+References: <1490005163-28633-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170420095248.GJ5436@vireshk-i7> (Viresh Kumar's message of
-        "Thu, 20 Apr 2017 15:22:48 +0530")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f172.google.com ([209.85.128.172]:34528 "EHLO
+        mail-wr0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S972960AbdDXTII (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Apr 2017 15:08:08 -0400
+Received: by mail-wr0-f172.google.com with SMTP id z109so97188294wrb.1
+        for <linux-pm@vger.kernel.org>; Mon, 24 Apr 2017 12:08:07 -0700 (PDT)
+In-Reply-To: <1490005163-28633-1-git-send-email-ulf.hansson@linaro.org> (Ulf
+        Hansson's message of "Mon, 20 Mar 2017 11:19:19 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-> On 20-04-17, 10:43, Sudeep Holla wrote:
->> Just that the term performance is closely related to frequency, it needs
->> to be explicit on what *exactly* it means. As it stands now,
->> it can be used for OPP as I explain which controls both but as you
->> clarify that's not what it's designed for.
+> The current method to implement an always on PM domain by users of genpd,
+> consists of returning -EBUSY from their ->power_off() callback. This approach is
+> suboptimal as genpd is required to follow the regular execution path of its
+> power off sequence, which ends by invoking the ->power_off() callback.
 >
-> We are talking about active states of a power domain here and
-> *performance* is the best word I got.
+> To enable genpd to early abort the power off sequence for always on PM domains,
+> it needs static information about these configurations. Therefore this series
+> invents add new genpd configuration flag, GENPD_FLAG_ALWAYS_ON, which allow
+> users to explicity tell genpd about these kind of PM domains.
 >
-> And yes we can still have
-> frequency as a configurable here, just that current platforms don't
-> have it.
+> Some additonal changes, which are related this context, are also folded in as a
+> part of the series.
 
-It's not that your platforms don't have frequency, it's just that it's
-hidden by firmware on an M3 in your particular case.
-
-DT is meant to model hardware, and surely what the M3 is managing is
-frequency and/or voltage (IOW, an OPP).
-
-The way I see it, the problem you're trying to solve is complicated just
-because you don't know the exat freq and/or voltage because they are
-hiddent behind the firware, and all you have control over is an index.  
-
-What if you drop the introduction of the new domain-performance-state
-and just stick with OPPs (and phandles to them), and for cases where you
-don't know the exact freq/volage pairs, just use indexes and comment
-what they refer to:
-
-operating-points = <
-	/*
-         * NOTE: actual frequency and voltages are managed by
-         * firmware and are hidden from HLOS, so we simply use index
-         * here to select the OPP
-         */
-        1 1
-	2 2
-	3 3
->;
-
-Since selecting the OPP is up to the power-domain driver implementation,
-this should be fine, IMO.
-
-This would mean just updating the doc to reflect the "relaxing" of these
-fields to reflect indexes in cases where the exact freq/voltages are not
-known.
-
-IMO, this would be much simpler, as it avoids adding a new property and
-continues to use teriminology that people are already familiar with
-around OPPs.
-
-Kevin
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Reviewed-by: Kevin Hilman <khilman@baylibre.com>
