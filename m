@@ -1,113 +1,120 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: Performance of low-cpu utilisation benchmark regressed severely since 4.6
-Date: Sun, 23 Apr 2017 08:31:25 -0700
-Message-ID: <000501d2bc46$ad4b1fc0$07e15f40$@net>
-References: <20170410084117.rjh3mtdx7hd2i5ze@techsingularity.net> <000a01d2b9e6$393afef0$abb0fcd0$@net> <000301d2bb31$c0037790$400a66b0$@net> 22LpdqAXDopZn22LudrJa9
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] drm/etnaviv: add thermal dependency
+Date: Sun, 23 Apr 2017 08:36:57 -0700
+Message-ID: <20170423153654.GA6355@localhost.localdomain>
+References: <20170419181209.537907-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: 22LpdqAXDopZn22LudrJa9
-Content-Language: en-ca
-Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Mel Gorman' <mgorman@techsingularity.net>, 'Rafael Wysocki' <rafael.j.wysocki@intel.com>, =?iso-8859-1?Q?'J=F6rg_Otte'?= <jrg.otte@gmail.com>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, Doug Smythies <dsmythies@telus.net>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170419181209.537907-1-arnd@arndb.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Lucas Stach <l.stach@pengutronix.de>, David Airlie <airlied@linux.ie>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Sujith Thomas <sujith.thomas@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Russell King <linux+etnaviv@armlinux.org.uk>, Christian Gmeiner <christian.gmeiner@gmail.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, etnaviv@lists.freedesktop.org, dri-devel@lists.freedesktop.org, platform-driver-x86@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2017.04.22 14:08 Rafael wrote:
-> On Friday, April 21, 2017 11:29:06 PM Doug Smythies wrote:
->> On 2017.04.20 18:18 Rafael wrote:
->>> On Thursday, April 20, 2017 07:55:57 AM Doug Smythies wrote:
->>>> On 2017.04.19 01:16 Mel Gorman wrote:
->>>>> On Fri, Apr 14, 2017 at 04:01:40PM -0700, Doug Smythies wrote:
->>>>>> Hi Mel,
->>>
->>> [cut]
->>>
->>>>> And the revert does help albeit not being an option for reasons Rafael
->>>>> covered.
->>>> 
->>>> New data point: Kernel 4.11-rc7  intel_pstate, powersave forcing the
->>>> load based algorithm: Elapsed 3178 seconds.
->>>> 
->>>> If I understand your data correctly, my load based results are the opposite of yours.
->>>> 
->>>> Mel: 4.11-rc5 vanilla: Elapsed mean: 3750.20 Seconds
->>>> Mel: 4.11-rc5 load based: Elapsed mean: 2503.27 Seconds
->>>> Or: 33.25%
->>>> 
->>>> Doug: 4.11-rc6 stock: Elapsed total (5 runs): 2364.45 Seconds
->>>> Doug: 4.11-rc7 force load based: Elapsed total (5 runs): 3178 Seconds
->>>> Or: -34.4%
->>>
->>> I wonder if you can do the same thing I've just advised Mel to do.  That is,
->>> take my linux-next branch:
->>>
->>> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
->>>
->>> (which is new material for 4.12 on top of 4.11-rc7) and reduce
->>> INTEL_PSTATE_DEFAULT_SAMPLING_INTERVAL (in intel_pstate.c) in it by 1/2
->>> (force load-based if need be, I'm not sure what PM profile of your test system
->>> is).
->> 
->> I did not need to force load-based. I do not know how to figure it out from
->> an acpidump the way Srinivas does. I did a trace and figured out what algorithm
->> it was using from the data.
->> 
->> Reference test, before changing INTEL_PSTATE_DEFAULT_SAMPLING_INTERVAL:
->> 3239.4 seconds.
->> 
->> Test after changing INTEL_PSTATE_DEFAULT_SAMPLING_INTERVAL:
->> 3195.5 seconds.
->
-> So it does have an effect, but relatively small.
 
-I don't know how repeatable the tests results are.
-i.e. I don't know if the 1.36% change is within experimental
-error or not. That being said, the trend does seem consistent.
+--d6Gm4EdcadzBjdND
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> I wonder if further reducing INTEL_PSTATE_DEFAULT_SAMPLING_INTERVAL to 2 ms
-> will make any difference.
+On Wed, Apr 19, 2017 at 08:11:16PM +0200, Arnd Bergmann wrote:
+> When CONFIG_THERMAL is enabled as a loadable module, and etnaviv is
+> built-in, we get a link error:
+>=20
+> drivers/gpu/drm/etnaviv/etnaviv_gpu.o: In function `etnaviv_gpu_bind':
+> etnaviv_gpu.c:(.text.etnaviv_gpu_bind+0x34): undefined reference to `ther=
+mal_of_cooling_device_register'
+> etnaviv_gpu.c:(.text.etnaviv_gpu_bind+0xe0): undefined reference to `ther=
+mal_cooling_device_unregister'
+> drivers/gpu/drm/etnaviv/etnaviv_gpu.o: In function `etnaviv_gpu_unbind':
+> etnaviv_gpu.c:(.text.etnaviv_gpu_unbind+0xf0): undefined reference to `th=
+ermal_cooling_device_unregister'
+>=20
+> This adds a Kconfig dependency to prevent etnaviv from being built-in
+> with CONFIG_THERMAL=3Dm, while still allowing the valid configurations.
+> Unfortunately, simply adding the dependency here breaks Kconfig through
+> a dependency loop involving lots of symbols all the way until ACPI_VIDEO,
+> which is the only video driver that explicitly selects 'THERMAL'. Turning
+> this into a 'depends on' addresses the problem.
+> For completeness, I'm also removing the redundant 'select THERMAL'
+> from INTEL_MENLOW, so no other driver uses that statement.
+>=20
+> Fixes: bcdfb5e56dc5 ("drm/etnaviv: add etnaviv cooling device")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-I went all the way to 1 ms, just for the test:
-3123.9 Seconds
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
 
->> By far, and with any code, I get the fastest elapsed time, of course next
->> to performance mode, but not by much, by limiting the test to only use
->> just 1 cpu: 1814.2 Seconds.
->
-> Interesting.
->
-> It looks like the cost is mostly related to moving the load from one CPU to
-> another and waiting for the new one to ramp up then.
->
-> I guess the workload consists of many small tasks that each start on new CPUs
-> and cause that ping-pong to happen.
+> ---
+>  drivers/acpi/Kconfig            | 2 +-
+>  drivers/gpu/drm/etnaviv/Kconfig | 1 +
+>  drivers/platform/x86/Kconfig    | 1 -
+>  3 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index 03cc4e74096b..252399efa8b3 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -184,7 +184,7 @@ config ACPI_VIDEO
+>  	tristate "Video"
+>  	depends on X86 && BACKLIGHT_CLASS_DEVICE
+>  	depends on INPUT
+> -	select THERMAL
+> +	depends on THERMAL
+>  	help
+>  	  This driver implements the ACPI Extensions For Display Adapters
+>  	  for integrated graphics devices on motherboard, as specified in
+> diff --git a/drivers/gpu/drm/etnaviv/Kconfig b/drivers/gpu/drm/etnaviv/Kc=
+onfig
+> index 71cee4e9fefb..1d6c744e7924 100644
+> --- a/drivers/gpu/drm/etnaviv/Kconfig
+> +++ b/drivers/gpu/drm/etnaviv/Kconfig
+> @@ -3,6 +3,7 @@ config DRM_ETNAVIV
+>  	tristate "ETNAVIV (DRM support for Vivante GPU IP cores)"
+>  	depends on DRM
+>  	depends on ARCH_MXC || ARCH_DOVE || (ARM && COMPILE_TEST)
+> +	depends on THERMAL || THERMAL=3Dn
+>  	depends on MMU
+>  	select SHMEM
+>  	select SYNC_FILE
+> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+> index e229ea317b9c..76ced87efde5 100644
+> --- a/drivers/platform/x86/Kconfig
+> +++ b/drivers/platform/x86/Kconfig
+> @@ -544,7 +544,6 @@ config SENSORS_HDAPS
+>  config INTEL_MENLOW
+>  	tristate "Thermal Management driver for Intel menlow platform"
+>  	depends on ACPI_THERMAL
+> -	select THERMAL
+>  	---help---
+>  	  ACPI thermal management enhancement driver on
+>  	  Intel Menlow platform.
+> --=20
+> 2.9.0
+>=20
 
-Yes, and (from trace data) many tasks are very very very small. Also the test
-appears to take a few holidays, of up to 1 second, during execution.
+--d6Gm4EdcadzBjdND
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
->> (performance governor, restated from a previous e-mail: 1776.05 seconds)
->
-> But that causes the processor to stay in the maximum sustainable P-state all
-> the time, which on Sandy Bridge is quite costly energetically.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Agreed. I only provide these data points as a reference and so that we know
-what the boundary conditions (limits) are.
+iQIcBAEBCAAGBQJY/MoQAAoJEA6VkvSQfF5T6rMQAJPOQKsSwD8s2vG7z25QZWO+
+yjT+w+1MAf000ap2nHyy2kuTjkKtGbPy3TIHfcUqug3hyaW2PGlIMB+vcWMFaEim
+3QX3fYihw7oGHz5YJJydwRrooRXQw3a3CwoxPkFckB4s2SloMROv2kVkf/mO7z4w
++YYyx9DkBisffFQ5YMbWlsxH7WvcYwm7VuHPzVLfbVR/JUyC3hr+ZQtejH6k/M2B
+o7grbNBpPNw0jxWkzNdw1IzQ3rVG4xAfn9JBg2WxkMmIavyCvyCn7UprIjYH87Y7
+Mtsm7NAbNjntVUNLrKtQV+17GzY6u1T9D1p32TRwga9HCVi/e8OMSUtTp9eRzty1
+1PK+0pFQjYuQ1ApVkInoqmfbjKA/NKoNV1IGk0PW+3vvWra3Y3zkxGoDwQT94d1B
+OHeip/2ZuzbyoannidIXauP++ytQHxQc2QDxNNJgOv74m5FswOeMICmgGfsXm8HQ
+mJLNXmVEtrmReQfGDvyUrru0vf5vP9i6wVoOS6E2VboHktQWEWyyqqcDsAzBcK7a
+gQIE88uh7+/n8hoFnk6KHawpq7fO1xxI/qibL0nZOElzXmVbHx7prNuFABpqV/Yw
+6X0DjeUj3bYorD4XlM+SvRds9lXSFN/hutuHF1ED0qeLdRH7d/T3vETsxPAOLieq
+B1eaGYwHcLdr6qLIaZEN
+=LWPG
+-----END PGP SIGNATURE-----
 
-> We can do one more trick I forgot about.  Namely, if we are about to increase
-> the P-state, we can jump to the average between the target and the max
-> instead of just the target, like in the appended patch (on top of linux-next).
->
-> That will make the P-state selection really aggressive, so costly energetically,
-> but it shoud small jumps of the average load above 0 to case big jumps of
-> the target P-state.
-
-I'm already seeing the energy costs of some of this stuff.
-3050.2 Seconds.
-Idle power 4.06 Watts.
-
-Idle power for kernel 4.11-rc7 (performance-based): 3.89 Watts.
-Idle power for kernel 4.11-rc7, using load-based: 4.01 watts
-Idle power for kernel 4.11-rc7 next linux-pm: 3.91 watts 
+--d6Gm4EdcadzBjdND--
