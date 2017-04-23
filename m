@@ -1,39 +1,37 @@
-From: Pan Bian <bianpan2016@163.com>
-Subject: [PATCH 1/1] power: check return value of devm_kzalloc
-Date: Sun, 23 Apr 2017 17:03:56 +0800
-Message-ID: <1492938236-9928-1-git-send-email-bianpan2016@163.com>
+From: "David E. Box" <david.e.box@linux.intel.com>
+Subject: [PATCH] powercap/intel_rapl: Add support for Gemini Lake
+Date: Sun, 23 Apr 2017 07:15:20 -0700
+Message-ID: <20170423141520.7517-1-david.e.box@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from m50-134.163.com ([123.125.50.134]:58927 "EHLO m50-134.163.com"
+Received: from mga01.intel.com ([192.55.52.88]:33389 "EHLO mga01.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756237AbdDWJEN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 23 Apr 2017 05:04:13 -0400
+        id S1045525AbdDWOPV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 23 Apr 2017 10:15:21 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pan Bian <bianpan2016@163.com>
+To: rjw@rjwysocki.net, jacob.jun.pan@linux.intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Function devm_kzalloc() will return a NULL pointer if there is no enough
-memory. However, in function isp1704_charger_probe(), the return value
-of devm_kzalloc() is used without validation. This may result in a bad
-memory access bug. This patch fixes the bug.
+From: "Box, David E" <david.e.box@intel.com>
 
-Signed-off-by: Pan Bian <bianpan2016@163.com>
+Gemini Lake RAPL support is similar to Goldmont.
+
+Signed-off-by: David E. Box <david.e.box@linux.intel.com>
 ---
- drivers/power/supply/isp1704_charger.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/powercap/intel_rapl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/power/supply/isp1704_charger.c b/drivers/power/supply/isp1704_charger.c
-index 4cd6899..4dd2482 100644
---- a/drivers/power/supply/isp1704_charger.c
-+++ b/drivers/power/supply/isp1704_charger.c
-@@ -418,6 +418,8 @@ static int isp1704_charger_probe(struct platform_device *pdev)
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 9a25110..9ddad08 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -1164,6 +1164,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+ 	RAPL_CPU(INTEL_FAM6_ATOM_MERRIFIELD,	rapl_defaults_tng),
+ 	RAPL_CPU(INTEL_FAM6_ATOM_MOOREFIELD,	rapl_defaults_ann),
+ 	RAPL_CPU(INTEL_FAM6_ATOM_GOLDMONT,	rapl_defaults_core),
++	RAPL_CPU(INTEL_FAM6_ATOM_GEMINI_LAKE,	rapl_defaults_core),
+ 	RAPL_CPU(INTEL_FAM6_ATOM_DENVERTON,	rapl_defaults_core),
  
- 		pdata = devm_kzalloc(&pdev->dev,
- 			sizeof(struct isp1704_charger_data), GFP_KERNEL);
-+		if (!pdata)
-+			return -ENOMEM;
- 		pdata->enable_gpio = gpio;
- 
- 		dev_info(&pdev->dev, "init gpio %d\n", pdata->enable_gpio);
+ 	RAPL_CPU(INTEL_FAM6_XEON_PHI_KNL,	rapl_defaults_hsw_server),
 -- 
-1.9.1
+2.9.3
