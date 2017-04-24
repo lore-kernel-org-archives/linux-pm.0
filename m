@@ -1,58 +1,76 @@
-From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Subject: RE: [PATCH V7 4/7] mfd: da9061: MFD core support
-Date: Mon, 24 Apr 2017 10:37:18 +0000
-Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CD71434@SW-EX-MBX02.diasemi.com>
-References: <cover.1491230802.git.stwiss.opensource@diasemi.com>
- <b39c8c3f42a01a00f93292c569e8d30ce69ff3ab.1491230802.git.stwiss.opensource@diasemi.com>
- <20170404083902.ywo3pdxptgfcqvga@dell>
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH V2 00/17] thermal: cpu_cooling: improve interaction with
+ cpufreq core
+Date: Mon, 24 Apr 2017 11:43:11 +0100
+Message-ID: <21699d92-64f1-1819-0a30-4f38cb786bf6@arm.com>
+References: <cover.1492408342.git.viresh.kumar@linaro.org>
+ <20170417173431.GA10447@localhost.localdomain>
+ <20170418103818.GQ28191@vireshk-i7>
+ <3925c07c-1442-9e00-6f50-c4ae900ed834@arm.com>
+ <20170419052206.GA5436@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170404083902.ywo3pdxptgfcqvga@dell>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:55176 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1168737AbdDXKnQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 24 Apr 2017 06:43:16 -0400
+In-Reply-To: <20170419052206.GA5436@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linaro-kernel@lists.linaro.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-T24gMDQgQXByaWwgMjAxNyAwOTozOSwgTGVlIEpvbmVzIHdyb3RlOg0KPiBTdWJqZWN0OiBSZTog
-W1BBVENIIFY3IDQvN10gbWZkOiBkYTkwNjE6IE1GRCBjb3JlIHN1cHBvcnQNCj4gDQo+IE9uIE1v
-biwgMDMgQXByIDIwMTcsIFN0ZXZlIFR3aXNzIHdyb3RlOg0KPiA+IEZyb206IFN0ZXZlIFR3aXNz
-IDxzdHdpc3Mub3BlbnNvdXJjZUBkaWFzZW1pLmNvbT4NCj4gPiBNRkQgc3VwcG9ydCBmb3IgREE5
-MDYxIGlzIHByb3ZpZGVkIGFzIHBhcnQgb2YgdGhlIERBOTA2MiBkZXZpY2UgZHJpdmVyLg0KPiA+
-DQo+ID4gVGhlIHJlZ2lzdGVycyBoZWFkZXIgZmlsZSBhZGRzIHR3byBuZXcgY2hpcCB2YXJpYW50
-IElEcyBkZWZpbmVkIGluIERBOTA2MQ0KPiA+IGFuZCBEQTkwNjIgaGFyZHdhcmUuIFRoZSBjb3Jl
-IGhlYWRlciBmaWxlIGFkZHMgbmV3IHNvZnR3YXJlIGVudW1lcmF0aW9ucw0KPiA+IGZvciBsaXN0
-aW5nIHRoZSB2YWxpZCBEQTkwNjEgSVJRcyBhbmQgYSBkYTkwNjJfY29tcGF0aWJsZV90eXBlcyBl
-bnVtZXJhdGlvbg0KPiA+IGZvciBkaXN0aW5ndWlzaGluZyBiZXR3ZWVuIERBOTA2MS82MiBkZXZp
-Y2VzIGluIHNvZnR3YXJlLg0KPiA+DQo+ID4gVGhlIGNvcmUgc291cmNlIGNvZGUgYWRkcyBhIG5l
-dyAuY29tcGF0aWJsZSBvZl9kZXZpY2VfaWQgZW50cnkuIFRoaXMgaXMNCj4gPiBleHRlbmRlZCBm
-cm9tIERBOTA2MiB0byBzdXBwb3J0IGJvdGggImRsZyxkYTkwNjEiIGFuZCAiZGxnLGRhOTA2MiIu
-IFRoZQ0KPiA+IC5kYXRhIGVudHJ5IG5vdyBob2xkcyBhIHJlZmVyZW5jZSB0byB0aGUgZW51bWVy
-YXRlZCBkZXZpY2UgdHlwZS4NCj4gPg0KPiA+IEEgbmV3IHJlZ21hcF9pcnFfY2hpcCBtb2RlbCBp
-cyBhZGRlZCBmb3IgREE5MDYxIGFuZCB0aGlzIHN1cHBvcnRzIHRoZSBuZXcNCj4gPiBsaXN0IG9m
-IHJlZ21hcF9pcnEgZW50cmllcy4gQSBuZXcgbWZkX2NlbGwgZGE5MDYxX2RldnNbXSBhcnJheSBs
-aXN0cyB0aGUNCj4gPiBuZXcgc3ViIHN5c3RlbSBjb21wb25lbnRzIGZvciBEQTkwNjEuIFN1cHBv
-cnQgaXMgYWRkZWQgZm9yIGEgbmV3IERBOTA2MQ0KPiA+IHJlZ21hcF9jb25maWcgd2hpY2ggbGlz
-dHMgdGhlIGNvcnJlY3QgcmVhZGFibGUsIHdyaXRhYmxlIGFuZCB2b2xhdGlsZQ0KPiA+IHJhbmdl
-cyBmb3IgdGhpcyBjaGlwLg0KPiA+DQo+ID4gVGhlIHByb2JlIGZ1bmN0aW9uIHVzZXMgdGhlIGRl
-dmljZSB0cmVlIGNvbXBhdGlibGUgc3RyaW5nIHRvIHN3aXRjaCBvbiB0aGUNCj4gPiBkYTkwNjJf
-Y29tcGF0aWJsZV90eXBlcyBhbmQgY29uZmlndXJlIHRoZSBjb3JyZWN0IG1mZCBjZWxscywgaXJx
-IGNoaXAgYW5kDQo+ID4gcmVnbWFwIGNvbmZpZy4NCj4gPg0KPiA+IEtjb25maWcgaXMgdXBkYXRl
-ZCB0byByZWZsZWN0IHN1cHBvcnQgZm9yIERBOTA2MSBhbmQgREE5MDYyIFBNSUNzLg0KPiA+DQo+
-ID4gU2lnbmVkLW9mZi1ieTogU3RldmUgVHdpc3MgPHN0d2lzcy5vcGVuc291cmNlQGRpYXNlbWku
-Y29tPg0KPiANCj4gQWgsIGhlcmUgaXQgaXMuDQo+IA0KPiBBcHBsaWVkLCB0aGFua3MuDQoNCkhp
-IExlZSwNCg0KSSBub3RpY2VkIHRoZSBEQTkwNjEgY29yZSBzdXBwb3J0IGhhcyBiZWVuIGFkZGVk
-IGludG8gbGludXgtbmV4dCwgaG93ZXZlcg0KdGhlIGNvbW1pdCBtZXNzYWdlIHdhcyBjaGFuZ2Vk
-IGZyb20gdGhlIG9yaWdpbmFsIHRpdGxlOg0KDQoibWZkOiBkYTkwNjE6IE1GRCBjb3JlIHN1cHBv
-cnQiDQoNCnRvIGFkZCB0aGUgbWlzdGFrZToNCg0KIm1mZDogQWRkIHN1cHBmb3IgZm9yIERBOTA2
-MSINCg0KaHR0cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbmV4
-dC9saW51eC1uZXh0LmdpdC9jb21taXQvP2lkPWQzZmUwODA2MDI1Y2FjZGFiMTQ2MmQ1NzA0ZTFj
-OThhYjlkYjQ1NjQNCg0KQ2FuIHRoaXMgYmUgZml4ZWQgcGxlYXNlPw0KVGhpcyBwYXRjaCBoYXMg
-bm90IGJlZW4gdXBzdHJlYW1lZCBpbnRvIGxpbnV4LW1haW5saW5lIGFuZCBpcyBzdGlsbCBpbiBs
-aW51eC1uZXh0Lg0KDQpSZWdhcmRzLA0KU3RldmUNCg==
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Hi Viresh,
+
+I was out of office.
+I run your v3 (from git) with some basic tests.
+IPA does not work, at least v3 does not crash the kernel.
+I didn't have time to go through the patches to narrow down
+the problem.
+
+If you would like to run some basic test,
+you can find it here [1].
+
+I am happy to check v4 when it is ready.
+
+Best regards,
+Lukasz
+
+[1] 
+https://github.com/ARM-software/lisa/blob/master/ipynb/thermal/ThermalSensorCharacterisation.ipynb
+
+On 19/04/17 06:22, Viresh Kumar wrote:
+> On 18-04-17, 15:40, Lukasz Luba wrote:
+>> Hi Viresh,
+>>
+>> I have checkout your branch at newest commit:
+>> 908063832c268f8add94
+>> I have built it and run it on my Juno r2.
+>> I have some python tests for IPA and I run one of them.
+>>
+>> I seen a few issues so I have created a patch just
+>> to be able to run IPA.
+>> My next email will have the patch so you can see the changes.
+>>
+>> IPA does not work with this patch set.
+>> I have tested two source codes from your repo:
+>> 1. your change 908063832c268f8add94
+>> 2. your base 8f506e0faf4e2a4a0bde9f9b1
+>>
+>> In case 1. IPA does not work - temperature rises to 83degC
+>> in case 2. works - temperature is limited to 65degC.
+>
+> Yeah, there were some cases power specific cases that weren't covered in my
+> tests and thanks a lot for testing it out. I have pushed my branch again and it
+> has all your fixes (a bit refined) in it.
+>
+>> On Monday I can allocate more time for it.
+>
+> My branch should just work now. Please see if you can allocate 10-15 min today
+> to give it a try, so that we can get it in earlier. I will send a V3 today and
+> your Tested-by would be very much appreciated.
+>
+> Thanks Lukasz.
+>
