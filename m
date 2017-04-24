@@ -1,45 +1,61 @@
-From: <joseph.x.hronec@espn.com>
-Subject: 26566 linux-pm
-Date: Mon, 24 Apr 2017 01:25:19 -0000
-Message-ID: <149299711908.15559.18244290964013574485@mytrinity.com.ua>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: Touchscreen failure with CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
+Date: Mon, 24 Apr 2017 09:37:09 +0530
+Message-ID: <20170424040709.GG26900@vireshk-i7>
+References: <CAOMZO5BZ8Z8dfwsfuiunNQ_q39_k4QJg7jLPQfaxn+YBsmz2jw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: application/zip; name="893500715.zip"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 5-105-109-151.mytrinity.com.ua ([5.105.109.151]:49202 "HELO
-        mytrinity.com.ua" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with SMTP id S1163953AbdDXBZX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Apr 2017 21:25:23 -0400
-Content-Disposition: attachment
+Received: from mail-it0-f48.google.com ([209.85.214.48]:34866 "EHLO
+        mail-it0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932608AbdDXEHN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Apr 2017 00:07:13 -0400
+Received: by mail-it0-f48.google.com with SMTP id 70so42727225ita.0
+        for <linux-pm@vger.kernel.org>; Sun, 23 Apr 2017 21:07:13 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAOMZO5BZ8Z8dfwsfuiunNQ_q39_k4QJg7jLPQfaxn+YBsmz2jw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-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
-BgAAAAABAAEAWwAAAKUFAAAAAA==
+On 21-04-17, 13:11, Fabio Estevam wrote:
+> Hi,
+> 
+> Running 4.11-rc7 on a imx6q-sabresd board I notice that egalax
+> touchscreen stops generating evtest events after a random period of
+> time.
+> 
+> This problem can be avoided if I unselect CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND:
+> 
+> --- a/arch/arm/configs/imx_v6_v7_defconfig
+> +++ b/arch/arm/configs/imx_v6_v7_defconfig
+> @@ -54,7 +54,6 @@ CONFIG_CMA=y
+>  CONFIG_CMDLINE="noinitrd console=ttymxc0,115200"
+>  CONFIG_KEXEC=y
+>  CONFIG_CPU_FREQ=y
+> -CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+>  CONFIG_ARM_IMX6Q_CPUFREQ=y
+>  CONFIG_CPU_IDLE=y
+>  CONFIG_VFP=y
+> 
+> With this change evtest always capture all touchscreen events. No
+> single failure is seen.
+> 
+> I could see the same behavior with all mainline kernels I tested (4.9 and 4.10).
+> 
+> Any ideas as to how fix this bug when CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y?
+
+So as Rafael pointed out the problem doesn't happen if you stay at the max
+frequencies, but otherwise.
+
+You need to investigate on why that is the case. You can go to the cpufreq sysfs
+directory and see what frequencies are getting selected, etc..
+
+Give me output of this for now:
+
+grep . /sys/devices/system/cpu/cpufreq/policy0/*
+grep . /sys/devices/system/cpu/cpufreq/policy0/stats/*
+
+-- 
+viresh
