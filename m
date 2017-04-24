@@ -1,100 +1,53 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RFC 1/4] mmc: sdio: Keep card runtime resumed while adding
- function devices
-Date: Mon, 24 Apr 2017 23:03:15 +0200
-Message-ID: <CAPDyKFqkj_Tb6zA2e8RZ_pGsLErqvDdSYyC-mKfVanZimfkmFA@mail.gmail.com>
-References: <1492769288-7474-1-git-send-email-adrian.hunter@intel.com> <1492769288-7474-2-git-send-email-adrian.hunter@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH RFC 3/4] mmc: sdhci-acpi: Set MMC_CAP2_NO_SDIO_RESET if
+ child has wake from S4 (hibernate)
+Date: Mon, 24 Apr 2017 23:52:00 +0200
+Message-ID: <CAJZ5v0hcfsbfy=KhgTDvg7zj-egKODDJAF0-gqWdxuxKfyBFPQ@mail.gmail.com>
+References: <1492769288-7474-1-git-send-email-adrian.hunter@intel.com> <1492769288-7474-4-git-send-email-adrian.hunter@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1492769288-7474-2-git-send-email-adrian.hunter@intel.com>
+In-Reply-To: <1492769288-7474-4-git-send-email-adrian.hunter@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: Adrian Hunter <adrian.hunter@intel.com>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 21 April 2017 at 12:08, Adrian Hunter <adrian.hunter@intel.com> wrote:
-> Drivers core will runtime suspend a device with no driver. That means the
-> SDIO card will be runtime suspended as soon as it is added. It is then
-> runtime resumed to add each function. That is entirely pointless, so add
-
-I totally agree! You are touching the part of the PM code for SDIO
-that is severely broken in my view.
-
-The mmc core shouldn't mess with runtime PM for func device at all,
-except setting up the parent-child relationship. Instead runtime PM
-for the func device should be solely handled by the func driver.
-
-> pm runtime get/put to keep the SDIO card runtime resumed until the function
-> devices have been added.
->
-> This also benefits the hibernation use-case whereby we want to avoid the
-> SDIO reset that is done as part of runtime resume. In that case, the SDIO
-> card state is preserved at boot time by avoiding loading any function
-> drivers before restoring the hibernation image.
-
-This seems like a different issue. I guess this is because the func
-driver don't implement the PM callbacks, which makes the mmc core to
-remove the sdio card at mmc_pm_notify().
-
-The proper solution here is to make the sdio func driver to implement
-the PM callbacks.
-
+On Fri, Apr 21, 2017 at 12:08 PM, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> SDIO reset interferes with a SDIO function driver's restore from
+> hibernation. Set MMC_CAP2_NO_SDIO_RESET if a child node has _S4W method
+> which indicates a capability to wake from S4 (hibernate).
 >
 > Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
 > ---
->  drivers/mmc/core/sdio.c | 11 ++++++++++-
->  1 file changed, 10 insertions(+), 1 deletion(-)
+>  drivers/mmc/host/sdhci-acpi.c | 17 ++++++++++++++++-
+>  1 file changed, 16 insertions(+), 1 deletion(-)
 >
-> diff --git a/drivers/mmc/core/sdio.c b/drivers/mmc/core/sdio.c
-> index fae732c870a9..97bedde0610c 100644
-> --- a/drivers/mmc/core/sdio.c
-> +++ b/drivers/mmc/core/sdio.c
-> @@ -1110,6 +1110,8 @@ int mmc_attach_sdio(struct mmc_host *host)
->                 if (err)
->                         goto remove;
+> diff --git a/drivers/mmc/host/sdhci-acpi.c b/drivers/mmc/host/sdhci-acpi.c
+> index c6a9a1bfaa22..e053a45db6b1 100644
+> --- a/drivers/mmc/host/sdhci-acpi.c
+> +++ b/drivers/mmc/host/sdhci-acpi.c
+> @@ -374,6 +374,14 @@ static const struct sdhci_acpi_slot *sdhci_acpi_get_slot(const char *hid,
+>         return NULL;
+>  }
 >
-> +               pm_runtime_get_noresume(&card->dev);
+> +static bool sdhci_acpi_child_has_s4w(struct acpi_device *child)
+> +{
+> +       acpi_handle handle = child->handle;
+> +       unsigned long long ret;
 > +
->                 /*
->                  * Enable runtime PM for this card
->                  */
-> @@ -1129,7 +1131,7 @@ int mmc_attach_sdio(struct mmc_host *host)
->         for (i = 0; i < funcs; i++, card->sdio_funcs++) {
->                 err = sdio_init_func(host->card, i + 1);
->                 if (err)
-> -                       goto remove;
-> +                       goto remove_get;
->
->                 /*
->                  * Enable Runtime PM for this func (if supported)
-> @@ -1156,6 +1158,10 @@ int mmc_attach_sdio(struct mmc_host *host)
->         }
->
->         mmc_claim_host(host);
-> +
-> +       if (host->caps & MMC_CAP_POWER_OFF_CARD)
-> +               pm_runtime_put(&card->dev);
-> +
->         return 0;
->
->
-> @@ -1163,6 +1169,9 @@ int mmc_attach_sdio(struct mmc_host *host)
->         /* Remove without lock if the device has been added. */
->         mmc_sdio_remove(host);
->         mmc_claim_host(host);
-> +remove_get:
-> +       if (host->caps & MMC_CAP_POWER_OFF_CARD)
-> +               pm_runtime_put(&card->dev);
->  remove:
->         /* And with lock if it hasn't been added. */
->         mmc_release_host(host);
-> --
-> 1.9.1
->
+> +       return ACPI_SUCCESS(acpi_evaluate_integer(handle, "_S4W", NULL, &ret));
 
-Overall this looks okay to me. Except for the changelog that is a bit
-miss-leading.
+First off, there is acpi_has_method().
 
-Kind regards
-Uffe
+Second, checking child->wakeup.sleep_state is a better indicator of S4
+wakeup support.
+
+> +}
+> +
+>  static int sdhci_acpi_probe(struct platform_device *pdev)
+>  {
+>         struct device *dev = &pdev->dev;
+
+Thanks,
+Rafael
