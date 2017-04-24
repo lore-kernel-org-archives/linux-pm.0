@@ -1,35 +1,75 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v2 5/8] gpio: gpio-wcove: use first level PMIC GPIO irq
-Date: Mon, 24 Apr 2017 15:17:34 +0200
-Message-ID: <CACRpkdYD8SiTDL1Bc4ordyi4E2fPSRpgbKY_DPd76oQYhXe11A@mail.gmail.com>
-References: <0e4d82ca9cdc41c9d2a8b45258cd72659b4c2063.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
- <cd9ddab845e471758b5553fcdc060d6eecd24e93.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: Performance of low-cpu utilisation benchmark regressed severely since 4.6
+Date: Mon, 24 Apr 2017 07:24:31 -0700
+Message-ID: <000001d2bd06$7f29b960$7d7d2c20$@net>
+References: <20170410084117.rjh3mtdx7hd2i5ze@techsingularity.net>        <000a01d2b9e6$393afef0$abb0fcd0$@net> <000301d2bb31$c0037790$400a66b0$@net>     <000501d2bc46$ad4b1fc0$07e15f40$@net>   <CAJZ5v0gBhVOYJ5a7YWpRHSH20qx3Cjx_Lg0qk52st-p+fQS9bQ@mail.gmail.com> 2Sh4dt8AXIBJV2Sh6dNtdh
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <cd9ddab845e471758b5553fcdc060d6eecd24e93.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Cc: Alexandre Courbot <gnurou@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, Lee Jones <lee.jones@linaro.org>, andy@infradead.org, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, platform-driver-x86 <platform-driver-x86@vger.kernel.org>, sathyaosid@gmail.com
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta18.telus.net ([209.171.16.91]:57709 "EHLO cmta18.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1171939AbdDXOYj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 24 Apr 2017 10:24:39 -0400
+In-Reply-To: 2Sh4dt8AXIBJV2Sh6dNtdh
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Rafael J. Wysocki'" <rafael@kernel.org>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Mel Gorman' <mgorman@techsingularity.net>, 'Rafael Wysocki' <rafael.j.wysocki@intel.com>, =?utf-8?Q?'J=C3=B6rg_Otte'?= <jrg.otte@gmail.com>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-On Sat, Apr 15, 2017 at 1:25 AM,
-<sathyanarayanan.kuppuswamy@linux.intel.com> wrote:
+On 2017.04.23 18:23 Srinivas Pandruvada wrote:
+> On Mon, 2017-04-24 at 02:59 +0200, Rafael J. Wysocki wrote:
+>> On Sun, Apr 23, 2017 at 5:31 PM, Doug Smythies <dsmythies@telus.net> wrote:
 
-> From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
->
-> PMIC mfd driver only exports first level irq for GPIO device.
-> But currently we are reading the irqs from the second level irq
-> chip, So this patch fixes this issue by adding support to use
-> first level PMIC GPIO irq.
->
-> Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+>>> It looks like the cost is mostly related to moving the load from
+>>> one CPU to
+>>> another and waiting for the new one to ramp up then.
+> Last time when we analyzed Mel's result last year this was the
+> conclusion. The problem was more apparent on systems with per core P-
+> state.
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+?? I have never seen this particular use case before.
+Unless I have looked the wrong thing, Mel's issue last year was a
+different use case.
 
-I guess this gets merged into MFD because of dependencies?
-If it compiles on its own and doesn't cause regressions I can
-merged it into the GPIO tree.
+...[cut]...
+ 
+>>>> We can do one more trick I forgot about.  Namely, if we are about
+>>>> to increase
+>>>> the P-state, we can jump to the average between the target and
+>>>> the max
+>>>> instead of just the target, like in the appended patch (on top of
+>>>> linux-next).
+>>>> 
+>>>> That will make the P-state selection really aggressive, so costly
+>>>> energetically,
+>>>> but it shoud small jumps of the average load above 0 to case big
+>>>> jumps of
+>>>> the target P-state.
+>>> I'm already seeing the energy costs of some of this stuff.
+>>> 3050.2 Seconds.
+>> Is this with or without reducing the sampling interval?
 
-Yours,
-Linus Walleij
+It was without reducing the sample interval.
+
+So, it was the branch you referred us to the other day:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+
+with your patch (now deleted from this thread) applied.
+
+
+...[cut]...
+
+>> Anyway, your results are somewhat counter-intuitive.
+
+>> Would it be possible to run this workload with the linux-next branch
+>> and the schedutil governor and see if the patch at
+>> https://patchwork.kernel.org/patch/9671829/ makes any difference?
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+Plus that patch is in progress.
+
+... Doug
