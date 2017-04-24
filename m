@@ -1,34 +1,139 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: Touchscreen failure with CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-Date: Mon, 24 Apr 2017 08:51:41 -0300
-Message-ID: <CAOMZO5AkTKjU5kw0gszLVdVOc_Sb_sWhr65heE==kyw=5rcN-g@mail.gmail.com>
-References: <CAOMZO5BZ8Z8dfwsfuiunNQ_q39_k4QJg7jLPQfaxn+YBsmz2jw@mail.gmail.com>
- <20170424040709.GG26900@vireshk-i7> <CAOMZO5B4_xrLcWQGF=yRfj-14XQKudzjyr2roGRkzofkHCfuHg@mail.gmail.com>
- <20170424112906.GR26900@vireshk-i7> <CAOMZO5BpAsJAKv-p=WPevUnx71fxbLtunJe-0ijVT7T9m7AMSQ@mail.gmail.com>
- <20170424114343.GS26900@vireshk-i7>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v2 6/8] mfd: intel_soc_pmic_bxtwc: utilize devm_*
+ functions in driver probe
+Date: Mon, 24 Apr 2017 13:03:17 +0100
+Message-ID: <20170424120317.xjl456aqzv5kyoqo@dell>
+References: <0e4d82ca9cdc41c9d2a8b45258cd72659b4c2063.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <53d9242cd4b81d4dd6cfeb4f1995a405d0ca48ae.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f50.google.com ([209.85.214.50]:37860 "EHLO
-        mail-it0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1168807AbdDXLvm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Apr 2017 07:51:42 -0400
-Received: by mail-it0-f50.google.com with SMTP id x188so51752846itb.0
-        for <linux-pm@vger.kernel.org>; Mon, 24 Apr 2017 04:51:42 -0700 (PDT)
-In-Reply-To: <20170424114343.GS26900@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-gpio-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <53d9242cd4b81d4dd6cfeb4f1995a405d0ca48ae.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: sathyanarayanan.kuppuswamy@linux.intel.com
+Cc: gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, andy@infradead.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Mon, Apr 24, 2017 at 8:43 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Fri, 14 Apr 2017, sathyanarayanan.kuppuswamy@linux.intel.com wrote:
 
-> 110 ms is your sampling rate right now. Looks too high.
->
-> Try doing this:
->
-> echo 10000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
->
-> and retry your tests.
+> From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> 
+> Cleanup the resource allocation/free code in probe function by using
+> devm_* calls.
+> 
+> Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> ---
+>  drivers/mfd/intel_soc_pmic_bxtwc.c | 54 +++++++++++++-------------------------
+>  1 file changed, 18 insertions(+), 36 deletions(-)
 
-Tried 10ms and also 1ms, but touchscreen also failed in both cases.
+For my own reference:
+  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+
+> Changes since v1:
+>  * None
+> 
+> diff --git a/drivers/mfd/intel_soc_pmic_bxtwc.c b/drivers/mfd/intel_soc_pmic_bxtwc.c
+> index dc8af1d..442dc29 100644
+> --- a/drivers/mfd/intel_soc_pmic_bxtwc.c
+> +++ b/drivers/mfd/intel_soc_pmic_bxtwc.c
+> @@ -400,45 +400,44 @@ static int bxtwc_probe(struct platform_device *pdev)
+>  		return ret;
+>  	}
+>  
+> -	ret = regmap_add_irq_chip(pmic->regmap, pmic->irq,
+> -				  IRQF_ONESHOT | IRQF_SHARED,
+> -				  0, &bxtwc_regmap_irq_chip,
+> -				  &pmic->irq_chip_data);
+> +	ret = devm_regmap_add_irq_chip(&pdev->dev, pmic->regmap, pmic->irq,
+> +				       IRQF_ONESHOT | IRQF_SHARED,
+> +				       0, &bxtwc_regmap_irq_chip,
+> +				       &pmic->irq_chip_data);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "Failed to add IRQ chip\n");
+>  		return ret;
+>  	}
+>  
+> -	ret = regmap_add_irq_chip(pmic->regmap, pmic->irq,
+> -				  IRQF_ONESHOT | IRQF_SHARED,
+> -				  0, &bxtwc_regmap_irq_chip_level2,
+> -				  &pmic->irq_chip_data_level2);
+> +	ret = devm_regmap_add_irq_chip(&pdev->dev, pmic->regmap, pmic->irq,
+> +				       IRQF_ONESHOT | IRQF_SHARED,
+> +				       0, &bxtwc_regmap_irq_chip_level2,
+> +				       &pmic->irq_chip_data_level2);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "Failed to add secondary IRQ chip\n");
+> -		goto err_irq_chip_level2;
+> +		return ret;
+>  	}
+>  
+> -	ret = regmap_add_irq_chip(pmic->regmap, pmic->irq,
+> -				  IRQF_ONESHOT | IRQF_SHARED,
+> -				  0, &bxtwc_regmap_irq_chip_tmu,
+> -				  &pmic->irq_chip_data_tmu);
+> +	ret = devm_regmap_add_irq_chip(&pdev->dev, pmic->regmap, pmic->irq,
+> +				       IRQF_ONESHOT | IRQF_SHARED,
+> +				       0, &bxtwc_regmap_irq_chip_tmu,
+> +				       &pmic->irq_chip_data_tmu);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "Failed to add TMU IRQ chip\n");
+> -		goto err_irq_chip_tmu;
+> +		return ret;
+>  	}
+>  
+> -	ret = mfd_add_devices(&pdev->dev, PLATFORM_DEVID_NONE, bxt_wc_dev,
+> -			      ARRAY_SIZE(bxt_wc_dev), NULL, 0,
+> -			      NULL);
+> +	ret = devm_mfd_add_devices(&pdev->dev, PLATFORM_DEVID_NONE, bxt_wc_dev,
+> +				   ARRAY_SIZE(bxt_wc_dev), NULL, 0, NULL);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "Failed to add devices\n");
+> -		goto err_mfd;
+> +		return ret;
+>  	}
+>  
+>  	ret = sysfs_create_group(&pdev->dev.kobj, &bxtwc_group);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "Failed to create sysfs group %d\n", ret);
+> -		goto err_sysfs;
+> +		return ret;
+>  	}
+>  
+>  	/*
+> @@ -452,28 +451,11 @@ static int bxtwc_probe(struct platform_device *pdev)
+>  				BXTWC_MIRQLVL1_MCHGR, 0);
+>  
+>  	return 0;
+> -
+> -err_sysfs:
+> -	mfd_remove_devices(&pdev->dev);
+> -err_mfd:
+> -	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data_tmu);
+> -err_irq_chip_tmu:
+> -	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data_level2);
+> -err_irq_chip_level2:
+> -	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data);
+> -
+> -	return ret;
+>  }
+>  
+>  static int bxtwc_remove(struct platform_device *pdev)
+>  {
+> -	struct intel_soc_pmic *pmic = dev_get_drvdata(&pdev->dev);
+> -
+>  	sysfs_remove_group(&pdev->dev.kobj, &bxtwc_group);
+> -	mfd_remove_devices(&pdev->dev);
+> -	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data);
+> -	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data_level2);
+> -	regmap_del_irq_chip(pmic->irq, pmic->irq_chip_data_tmu);
+>  
+>  	return 0;
+>  }
+
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
