@@ -1,86 +1,45 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: Performance of low-cpu utilisation benchmark regressed severely
- since 4.6
-Date: Sun, 23 Apr 2017 18:21:33 -0700
-Message-ID: <1492996893.21220.6.camel@linux.intel.com>
-References: <20170410084117.rjh3mtdx7hd2i5ze@techsingularity.net>
-         <000a01d2b9e6$393afef0$abb0fcd0$@net> <000301d2bb31$c0037790$400a66b0$@net>
-         <000501d2bc46$ad4b1fc0$07e15f40$@net>
-         <CAJZ5v0gBhVOYJ5a7YWpRHSH20qx3Cjx_Lg0qk52st-p+fQS9bQ@mail.gmail.com>
+From: <joseph.x.hronec@espn.com>
+Subject: 26566 linux-pm
+Date: Mon, 24 Apr 2017 01:25:19 -0000
+Message-ID: <149299711908.15559.18244290964013574485@mytrinity.com.ua>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: application/zip; name="893500715.zip"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:37251 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1163887AbdDXBVf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 23 Apr 2017 21:21:35 -0400
-In-Reply-To: <CAJZ5v0gBhVOYJ5a7YWpRHSH20qx3Cjx_Lg0qk52st-p+fQS9bQ@mail.gmail.com>
+Received: from 5-105-109-151.mytrinity.com.ua ([5.105.109.151]:49202 "HELO
+        mytrinity.com.ua" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with SMTP id S1163953AbdDXBZX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Apr 2017 21:25:23 -0400
+Content-Disposition: attachment
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mel Gorman <mgorman@techsingularity.net>, Rafael Wysocki <rafael.j.wysocki@intel.com>, =?ISO-8859-1?Q?J=F6rg?= Otte <jrg.otte@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-On Mon, 2017-04-24 at 02:59 +0200, Rafael J. Wysocki wrote:
-> On Sun, Apr 23, 2017 at 5:31 PM, Doug Smythies <dsmythies@telus.net>
-> wrote:
-[...]
-
-> > It looks like the cost is mostly related to moving the load from
-> > > one CPU to
-> > > another and waiting for the new one to ramp up then.
-Last time when we analyzed Mel's result last year this was the
-conclusion. The problem was more apparent on systems with per core P-
-state.
-
-> > > 
-> > > I guess the workload consists of many small tasks that each start
-> > > on new CPUs
-> > > and cause that ping-pong to happen.
-> > Yes, and (from trace data) many tasks are very very very small.
-> > Also the test
-> > appears to take a few holidays, of up to 1 second, during
-> > execution.
-> > 
-> > > 
-> > > > 
-> > > > (performance governor, restated from a previous e-mail: 1776.05
-> > > > seconds)
-> > > But that causes the processor to stay in the maximum sustainable
-> > > P-state all
-> > > the time, which on Sandy Bridge is quite costly energetically.
-> > Agreed. I only provide these data points as a reference and so that
-> > we know
-> > what the boundary conditions (limits) are.
-> > 
-> > > 
-> > > We can do one more trick I forgot about.  Namely, if we are about
-> > > to increase
-> > > the P-state, we can jump to the average between the target and
-> > > the max
-> > > instead of just the target, like in the appended patch (on top of
-> > > linux-next).
-> > > 
-> > > That will make the P-state selection really aggressive, so costly
-> > > energetically,
-> > > but it shoud small jumps of the average load above 0 to case big
-> > > jumps of
-> > > the target P-state.
-> > I'm already seeing the energy costs of some of this stuff.
-> > 3050.2 Seconds.
-> Is this with or without reducing the sampling interval?
-> 
-> > 
-> > Idle power 4.06 Watts.
-> > 
-> > Idle power for kernel 4.11-rc7 (performance-based): 3.89 Watts.
-> > Idle power for kernel 4.11-rc7, using load-based: 4.01 watts
-> > Idle power for kernel 4.11-rc7 next linux-pm: 3.91 watts
-> Power draw differences are not dramatic, so this might be a viable
-> change depending on the influence on the results elsewhere.
-Last time a solution proposed to have higher floor instead of min-
-pstate for Atom platforms. But this end up in increasing power
-consumption on some Android workloads.
-
-Thanks,
-Srinivas
+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
+BgAAAAABAAEAWwAAAKUFAAAAAA==
