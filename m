@@ -1,37 +1,36 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH 0/4] PM / Domains: Add support for always on PM domains in genpd
-Date: Sun, 23 Apr 2017 15:12:53 -0700
-Message-ID: <m2mvb64vtm.fsf@baylibre.com>
-References: <1490005163-28633-1-git-send-email-ulf.hansson@linaro.org>
+From: "Ms. Katherine" <ulia@distral.ro>
+Subject: EXTREMELY IMPORTANT
+Date: Mon, 24 Apr 2017 19:52:13 +0100
+Message-ID: <20170424185220.509A651B3352__25282.5718177066$1493062867$gmane$org@mail.distral.ro>
+Reply-To: kathrynnmison@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f172.google.com ([209.85.128.172]:34528 "EHLO
-        mail-wr0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S972960AbdDXTII (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Apr 2017 15:08:08 -0400
-Received: by mail-wr0-f172.google.com with SMTP id z109so97188294wrb.1
-        for <linux-pm@vger.kernel.org>; Mon, 24 Apr 2017 12:08:07 -0700 (PDT)
-In-Reply-To: <1490005163-28633-1-git-send-email-ulf.hansson@linaro.org> (Ulf
-        Hansson's message of "Mon, 20 Mar 2017 11:19:19 +0100")
+Received: from mail.distral.ro ([5.2.192.160]:51742 "EHLO mail.distral.ro"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S972945AbdDXTlA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 24 Apr 2017 15:41:00 -0400
+Content-Description: Mail message body
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Recipients <ulia@distral.ro>
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+Dear Beloved, Sorry for the inconvenience, I am getting in touch with you regarding an extremely important and urgent matter, Please I need your urgent assistance and idea to finish up a project (Orphanage Home) Due to my health condition, Everything is available to finish up the project, All I need is your idea and trust.
 
-> The current method to implement an always on PM domain by users of genpd,
-> consists of returning -EBUSY from their ->power_off() callback. This approach is
-> suboptimal as genpd is required to follow the regular execution path of its
-> power off sequence, which ends by invoking the ->power_off() callback.
->
-> To enable genpd to early abort the power off sequence for always on PM domains,
-> it needs static information about these configurations. Therefore this series
-> invents add new genpd configuration flag, GENPD_FLAG_ALWAYS_ON, which allow
-> users to explicity tell genpd about these kind of PM domains.
->
-> Some additonal changes, which are related this context, are also folded in as a
-> part of the series.
+Sehr geehrte Geliebte, traurig für die Unannehmlichkeiten, ich bin in Kontakt mit Ihnen über eine äußerst wichtige und dringende Angelegenheit, Bitte brauche ich Ihre dringende Hilfe und Idee, um ein Projekt zu beenden (Orphanage Home) Wegen meines Gesundheitszustandes ist alles verfügbar Beenden Sie das Projekt, Alles was ich brauche ist Ihre Idee und Vertrauen.
 
-Reviewed-by: Kevin Hilman <khilman@baylibre.com>
+Please contact me for more details.
+Contact Email: kathrynnmison@gmail.com
+
+Thanks
+
+---
+This email has been checked for viruses by Avast antivirus software.
+https://www.avast.com/antivirus
+
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
