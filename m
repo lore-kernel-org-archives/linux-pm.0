@@ -1,91 +1,75 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [GIT PULL] Immutable branch between MFD and IIO due
- for the v4.12 merge window
-Date: Mon, 24 Apr 2017 12:02:39 +0100
-Message-ID: <20170424110239.cv5nylgvymhwvg4w@dell>
-References: <20170404063441.7656-1-quentin.schulz@free-electrons.com>
- <20170411100528.2zif3fyi7uoyw33n@dell>
- <0f30afec-ff42-e125-96d6-35893324f7ef@kernel.org>
-Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: Touchscreen failure with CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
+Date: Mon, 24 Apr 2017 08:20:28 -0300
+Message-ID: <CAOMZO5B4_xrLcWQGF=yRfj-14XQKudzjyr2roGRkzofkHCfuHg@mail.gmail.com>
+References: <CAOMZO5BZ8Z8dfwsfuiunNQ_q39_k4QJg7jLPQfaxn+YBsmz2jw@mail.gmail.com>
+ <20170424040709.GG26900@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDA7X7F2WUEBBU5W67DQKGQEFN5TPOA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <0f30afec-ff42-e125-96d6-35893324f7ef-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f174.google.com ([209.85.223.174]:34434 "EHLO
+        mail-io0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1168977AbdDXLU3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Apr 2017 07:20:29 -0400
+Received: by mail-io0-f174.google.com with SMTP id a103so187751818ioj.1
+        for <linux-pm@vger.kernel.org>; Mon, 24 Apr 2017 04:20:29 -0700 (PDT)
+In-Reply-To: <20170424040709.GG26900@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Fri, 14 Apr 2017, Jonathan Cameron wrote:
+Hi Viresh,
 
-> On 11/04/17 11:05, Lee Jones wrote:
-> > Enjoy!
-> >=20
-> > The following changes since commit c1ae3cfa0e89fa1a7ecc4c99031f5e9ae99d=
-9201:
-> >=20
-> >   Linux 4.11-rc1 (2017-03-05 12:59:56 -0800)
-> >=20
-> > are available in the git repository at:
-> >=20
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git ib-mfd-iio-=
-v4.12
-> >=20
-> > for you to fetch changes up to f2499ab450d3052097ba53a7d763f767935c0c59=
-:
-> >=20
-> >   iio: adc: add support for X-Powers AXP20X and AXP22X PMICs ADCs (2017=
--04-11 11:02:33 +0100)
-> >=20
-> > ----------------------------------------------------------------
-> > Immutable branch between MFD and IIO due for the v4.12 merge window
-> >=20
-> > ----------------------------------------------------------------
-> > Quentin Schulz (1):
-> >       iio: adc: add support for X-Powers AXP20X and AXP22X PMICs ADCs
-> >=20
-> >  drivers/iio/adc/Kconfig      |  10 +
-> >  drivers/iio/adc/Makefile     |   1 +
-> >  drivers/iio/adc/axp20x_adc.c | 617 +++++++++++++++++++++++++++++++++++=
-++++++++
-> >  3 files changed, 628 insertions(+)
-> >  create mode 100644 drivers/iio/adc/axp20x_adc.c
-> >=20
-> Hi Lee,=20
->=20
-> Thanks for doing this, but the reason it was going to go through your
-> tree in the first place was a dependency on
-> commit 4707274714ef ("mfd: axp20x: Correct name of temperature data ADC r=
-egisters")
->=20
-> Not present in the immutable branch.
->=20
-> There isn't much time for anything else going on around this driver thoug=
-h
-> so other than a possible merge conflict on the Kconfig and Makefile shoul=
-dn't
-> matter if this just goes through mfd. (famous last words ;)
+On Mon, Apr 24, 2017 at 1:07 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-It's not as though you committed it to text and sent it out to a
-public mailing list for us all to reference though is it?  Doh!
+> So as Rafael pointed out the problem doesn't happen if you stay at the max
+> frequencies, but otherwise.
+>
+> You need to investigate on why that is the case. You can go to the cpufreq sysfs
+> directory and see what frequencies are getting selected, etc..
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Yes, when the CPU frequency stays at 996 MHz I do not see the
+touchscreen failure. When it goes to 396MHz I do see see touchscreeen
+events getting lost.
 
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+> Give me output of this for now:
+>
+> grep . /sys/devices/system/cpu/cpufreq/policy0/*
+> grep . /sys/devices/system/cpu/cpufreq/policy0/stats/*
+
+Here it goes, thanks.
+
+# grep . /sys/devices/system/cpu/cpufreq/policy0/*
+/sys/devices/system/cpu/cpufreq/policy0/affected_cpus:0 1 2 3
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_cur_freq:396000
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq:996000
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq:396000
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_transition_latency:109036
+/sys/devices/system/cpu/cpufreq/policy0/related_cpus:0 1 2 3
+/sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies:396000
+792000 996000
+/sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors:ondemand
+performance
+/sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq:396000
+/sys/devices/system/cpu/cpufreq/policy0/scaling_driver:imx6q-cpufreq
+/sys/devices/system/cpu/cpufreq/policy0/scaling_governor:ondemand
+/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq:996000
+/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq:396000
+/sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed:<unsupported>
+
+# grep . /sys/devices/system/cpu/cpufreq/policy0/stats/*
+grep: /sys/devices/system/cpu/cpufreq/policy0/stats/reset: Permission denied
+/sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state:396000 2869
+/sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state:792000 76
+/sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state:996000 33
+/sys/devices/system/cpu/cpufreq/policy0/stats/total_trans:8
+/sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:   From  :    To
+/sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:         :
+ 396000    792000    996000
+/sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:   396000:
+      0         2         0
+/sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:   792000:
+      2         0         2
+/sys/devices/system/cpu/cpufreq/policy0/stats/trans_table:   996000:
+      1         1         0
