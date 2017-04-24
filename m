@@ -1,82 +1,58 @@
-From: Mel Gorman <mgorman@techsingularity.net>
-Subject: Re: Performance of low-cpu utilisation benchmark regressed severely
- since 4.6
-Date: Mon, 24 Apr 2017 11:01:06 +0100
-Message-ID: <20170424100106.tihasxnvnaotp6rw@techsingularity.net>
-References: <20170410084117.rjh3mtdx7hd2i5ze@techsingularity.net>
- <000a01d2b9e6$393afef0$abb0fcd0$@net>
- <000301d2bb31$c0037790$400a66b0$@net>
- <8915951.Nmj3GAYbcQ@aspire.rjw.lan>
+From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Subject: RE: [PATCH V7 4/7] mfd: da9061: MFD core support
+Date: Mon, 24 Apr 2017 10:37:18 +0000
+Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CD71434@SW-EX-MBX02.diasemi.com>
+References: <cover.1491230802.git.stwiss.opensource@diasemi.com>
+ <b39c8c3f42a01a00f93292c569e8d30ce69ff3ab.1491230802.git.stwiss.opensource@diasemi.com>
+ <20170404083902.ywo3pdxptgfcqvga@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from outbound-smtp07.blacknight.com ([46.22.139.12]:39792 "EHLO
-        outbound-smtp07.blacknight.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1166653AbdDXKBJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Apr 2017 06:01:09 -0400
-Received: from mail.blacknight.com (pemlinmail04.blacknight.ie [81.17.254.17])
-        by outbound-smtp07.blacknight.com (Postfix) with ESMTPS id 6FFD91C17C8
-        for <linux-pm@vger.kernel.org>; Mon, 24 Apr 2017 11:01:07 +0100 (IST)
-Content-Disposition: inline
-In-Reply-To: <8915951.Nmj3GAYbcQ@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170404083902.ywo3pdxptgfcqvga@dell>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Doug Smythies <dsmythies@telus.net>, 'Rafael Wysocki' <rafael.j.wysocki@intel.com>, =?iso-8859-15?Q?'J=F6rg?= Otte' <jrg.otte@gmail.com>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>
 
-On Sat, Apr 22, 2017 at 11:07:44PM +0200, Rafael J. Wysocki wrote:
-> > By far, and with any code, I get the fastest elapsed time, of course next
-> > to performance mode, but not by much, by limiting the test to only use
-> > just 1 cpu: 1814.2 Seconds.
-> 
-> Interesting.
-> 
-> It looks like the cost is mostly related to moving the load from one CPU to
-> another and waiting for the new one to ramp up then.
-> 
-
-We've had that before although arguably it means this will generally be a
-problem on older CPUs or CPUs with high exit latencies. It goes back to the
-notion that it should be possible to tune such platforms to optionally ramp
-up fast and ramp down slowly withour resorting to the performance governor.
-
-> I guess the workload consists of many small tasks that each start on new CPUs
-> and cause that ping-pong to happen.
-> 
-
-Yes, not unusual in itself.
-
-> > (performance governor, restated from a previous e-mail: 1776.05 seconds)
-> 
-> But that causes the processor to stay in the maximum sustainable P-state all
-> the time, which on Sandy Bridge is quite costly energetically.
-> 
-> We can do one more trick I forgot about.  Namely, if we are about to increase
-> the P-state, we can jump to the average between the target and the max
-> instead of just the target, like in the appended patch (on top of linux-next).
-> 
-> That will make the P-state selection really aggressive, so costly energetically,
-> but it shoud small jumps of the average load above 0 to case big jumps of
-> the target P-state.
-> 
-
-So I took a look where we currently stand and it's not too bad if you
-accept that decisions made for newer CPUs do not always suit old CPUs.
-That's inevitable unfortunately.
-
-gitsource
-                                 4.5.0            4.11.0-rc7            4.11.0-rc7            4.11.0-rc7            4.11.0-rc7            4.11.0-rc7
-                               vanilla               vanilla      pm-next-20170421           revert-v1r1        loadbased-v1r1          bigjump-v1r1
-Elapsed min          1827.70 (  0.00%)     3747.00 (-105.01%)     2501.39 (-36.86%)     2908.72 (-59.15%)     2501.01 (-36.84%)     2452.83 (-34.20%)
-Elapsed mean         1830.72 (  0.00%)     3748.80 (-104.77%)     2504.02 (-36.78%)     2917.28 (-59.35%)     2503.74 (-36.76%)     2454.15 (-34.05%)
-Elapsed stddev          2.18 (  0.00%)        1.33 ( 39.22%)        1.84 ( 15.88%)        5.16 (-136.32%)        1.84 ( 15.69%)        0.91 ( 58.48%)
-Elapsed coeffvar        0.12 (  0.00%)        0.04 ( 70.32%)        0.07 ( 38.50%)        0.18 (-48.30%)        0.07 ( 38.36%)        0.04 ( 69.03%)
-Elapsed max          1833.91 (  0.00%)     3751.00 (-104.54%)     2506.46 (-36.67%)     2924.93 (-59.49%)     2506.78 (-36.69%)     2455.44 (-33.89%)
-
-At this point, pm-next is better than a plain revert of the patch so
-that's great. It's still not as good as 4.5.0 but it's perfectly possible
-something else is now at play. Your patch that "jump to the average between
-the target and the max" helps a little bit before but given that it
-doesn't bring things in like with 4.5.0, I wouldn't worry too much about
-it making the merge window. I'll see how things look on a range of
-machines after the next merge window.
+T24gMDQgQXByaWwgMjAxNyAwOTozOSwgTGVlIEpvbmVzIHdyb3RlOg0KPiBTdWJqZWN0OiBSZTog
+W1BBVENIIFY3IDQvN10gbWZkOiBkYTkwNjE6IE1GRCBjb3JlIHN1cHBvcnQNCj4gDQo+IE9uIE1v
+biwgMDMgQXByIDIwMTcsIFN0ZXZlIFR3aXNzIHdyb3RlOg0KPiA+IEZyb206IFN0ZXZlIFR3aXNz
+IDxzdHdpc3Mub3BlbnNvdXJjZUBkaWFzZW1pLmNvbT4NCj4gPiBNRkQgc3VwcG9ydCBmb3IgREE5
+MDYxIGlzIHByb3ZpZGVkIGFzIHBhcnQgb2YgdGhlIERBOTA2MiBkZXZpY2UgZHJpdmVyLg0KPiA+
+DQo+ID4gVGhlIHJlZ2lzdGVycyBoZWFkZXIgZmlsZSBhZGRzIHR3byBuZXcgY2hpcCB2YXJpYW50
+IElEcyBkZWZpbmVkIGluIERBOTA2MQ0KPiA+IGFuZCBEQTkwNjIgaGFyZHdhcmUuIFRoZSBjb3Jl
+IGhlYWRlciBmaWxlIGFkZHMgbmV3IHNvZnR3YXJlIGVudW1lcmF0aW9ucw0KPiA+IGZvciBsaXN0
+aW5nIHRoZSB2YWxpZCBEQTkwNjEgSVJRcyBhbmQgYSBkYTkwNjJfY29tcGF0aWJsZV90eXBlcyBl
+bnVtZXJhdGlvbg0KPiA+IGZvciBkaXN0aW5ndWlzaGluZyBiZXR3ZWVuIERBOTA2MS82MiBkZXZp
+Y2VzIGluIHNvZnR3YXJlLg0KPiA+DQo+ID4gVGhlIGNvcmUgc291cmNlIGNvZGUgYWRkcyBhIG5l
+dyAuY29tcGF0aWJsZSBvZl9kZXZpY2VfaWQgZW50cnkuIFRoaXMgaXMNCj4gPiBleHRlbmRlZCBm
+cm9tIERBOTA2MiB0byBzdXBwb3J0IGJvdGggImRsZyxkYTkwNjEiIGFuZCAiZGxnLGRhOTA2MiIu
+IFRoZQ0KPiA+IC5kYXRhIGVudHJ5IG5vdyBob2xkcyBhIHJlZmVyZW5jZSB0byB0aGUgZW51bWVy
+YXRlZCBkZXZpY2UgdHlwZS4NCj4gPg0KPiA+IEEgbmV3IHJlZ21hcF9pcnFfY2hpcCBtb2RlbCBp
+cyBhZGRlZCBmb3IgREE5MDYxIGFuZCB0aGlzIHN1cHBvcnRzIHRoZSBuZXcNCj4gPiBsaXN0IG9m
+IHJlZ21hcF9pcnEgZW50cmllcy4gQSBuZXcgbWZkX2NlbGwgZGE5MDYxX2RldnNbXSBhcnJheSBs
+aXN0cyB0aGUNCj4gPiBuZXcgc3ViIHN5c3RlbSBjb21wb25lbnRzIGZvciBEQTkwNjEuIFN1cHBv
+cnQgaXMgYWRkZWQgZm9yIGEgbmV3IERBOTA2MQ0KPiA+IHJlZ21hcF9jb25maWcgd2hpY2ggbGlz
+dHMgdGhlIGNvcnJlY3QgcmVhZGFibGUsIHdyaXRhYmxlIGFuZCB2b2xhdGlsZQ0KPiA+IHJhbmdl
+cyBmb3IgdGhpcyBjaGlwLg0KPiA+DQo+ID4gVGhlIHByb2JlIGZ1bmN0aW9uIHVzZXMgdGhlIGRl
+dmljZSB0cmVlIGNvbXBhdGlibGUgc3RyaW5nIHRvIHN3aXRjaCBvbiB0aGUNCj4gPiBkYTkwNjJf
+Y29tcGF0aWJsZV90eXBlcyBhbmQgY29uZmlndXJlIHRoZSBjb3JyZWN0IG1mZCBjZWxscywgaXJx
+IGNoaXAgYW5kDQo+ID4gcmVnbWFwIGNvbmZpZy4NCj4gPg0KPiA+IEtjb25maWcgaXMgdXBkYXRl
+ZCB0byByZWZsZWN0IHN1cHBvcnQgZm9yIERBOTA2MSBhbmQgREE5MDYyIFBNSUNzLg0KPiA+DQo+
+ID4gU2lnbmVkLW9mZi1ieTogU3RldmUgVHdpc3MgPHN0d2lzcy5vcGVuc291cmNlQGRpYXNlbWku
+Y29tPg0KPiANCj4gQWgsIGhlcmUgaXQgaXMuDQo+IA0KPiBBcHBsaWVkLCB0aGFua3MuDQoNCkhp
+IExlZSwNCg0KSSBub3RpY2VkIHRoZSBEQTkwNjEgY29yZSBzdXBwb3J0IGhhcyBiZWVuIGFkZGVk
+IGludG8gbGludXgtbmV4dCwgaG93ZXZlcg0KdGhlIGNvbW1pdCBtZXNzYWdlIHdhcyBjaGFuZ2Vk
+IGZyb20gdGhlIG9yaWdpbmFsIHRpdGxlOg0KDQoibWZkOiBkYTkwNjE6IE1GRCBjb3JlIHN1cHBv
+cnQiDQoNCnRvIGFkZCB0aGUgbWlzdGFrZToNCg0KIm1mZDogQWRkIHN1cHBmb3IgZm9yIERBOTA2
+MSINCg0KaHR0cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbmV4
+dC9saW51eC1uZXh0LmdpdC9jb21taXQvP2lkPWQzZmUwODA2MDI1Y2FjZGFiMTQ2MmQ1NzA0ZTFj
+OThhYjlkYjQ1NjQNCg0KQ2FuIHRoaXMgYmUgZml4ZWQgcGxlYXNlPw0KVGhpcyBwYXRjaCBoYXMg
+bm90IGJlZW4gdXBzdHJlYW1lZCBpbnRvIGxpbnV4LW1haW5saW5lIGFuZCBpcyBzdGlsbCBpbiBs
+aW51eC1uZXh0Lg0KDQpSZWdhcmRzLA0KU3RldmUNCg==
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
