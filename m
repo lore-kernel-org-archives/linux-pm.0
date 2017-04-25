@@ -1,39 +1,69 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] PM / Domains: Add DT file to MAINTAINERS
-Date: Tue, 25 Apr 2017 12:52:10 +0530
-Message-ID: <464469671a1b407737ee28aa41447178366ddb7c.1493104829.git.viresh.kumar@linaro.org>
+From: Adrian Hunter <adrian.hunter@intel.com>
+Subject: Re: [PATCH RFC 3/4] mmc: sdhci-acpi: Set MMC_CAP2_NO_SDIO_RESET if
+ child has wake from S4 (hibernate)
+Date: Tue, 25 Apr 2017 10:28:07 +0300
+Message-ID: <a28facd9-9d81-2be0-280b-ac4267e334d0@intel.com>
+References: <1492769288-7474-1-git-send-email-adrian.hunter@intel.com>
+ <1492769288-7474-4-git-send-email-adrian.hunter@intel.com>
+ <CAJZ5v0hcfsbfy=KhgTDvg7zj-egKODDJAF0-gqWdxuxKfyBFPQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f46.google.com ([74.125.83.46]:34906 "EHLO
-        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933793AbdDYHWW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 03:22:22 -0400
-Received: by mail-pg0-f46.google.com with SMTP id 72so24171179pge.2
-        for <linux-pm@vger.kernel.org>; Tue, 25 Apr 2017 00:22:22 -0700 (PDT)
+Received: from mga04.intel.com ([192.55.52.120]:4723 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S980412AbdDYHdw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 25 Apr 2017 03:33:52 -0400
+In-Reply-To: <CAJZ5v0hcfsbfy=KhgTDvg7zj-egKODDJAF0-gqWdxuxKfyBFPQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-Add the power_domain.txt DT file to MAINTAINERS, otherwise
-get_maintainers.pl doesn't pick the right set of maintainers for changes
-to the DT file.
+On 25/04/17 00:52, Rafael J. Wysocki wrote:
+> On Fri, Apr 21, 2017 at 12:08 PM, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>> SDIO reset interferes with a SDIO function driver's restore from
+>> hibernation. Set MMC_CAP2_NO_SDIO_RESET if a child node has _S4W method
+>> which indicates a capability to wake from S4 (hibernate).
+>>
+>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+>> ---
+>>  drivers/mmc/host/sdhci-acpi.c | 17 ++++++++++++++++-
+>>  1 file changed, 16 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/mmc/host/sdhci-acpi.c b/drivers/mmc/host/sdhci-acpi.c
+>> index c6a9a1bfaa22..e053a45db6b1 100644
+>> --- a/drivers/mmc/host/sdhci-acpi.c
+>> +++ b/drivers/mmc/host/sdhci-acpi.c
+>> @@ -374,6 +374,14 @@ static const struct sdhci_acpi_slot *sdhci_acpi_get_slot(const char *hid,
+>>         return NULL;
+>>  }
+>>
+>> +static bool sdhci_acpi_child_has_s4w(struct acpi_device *child)
+>> +{
+>> +       acpi_handle handle = child->handle;
+>> +       unsigned long long ret;
+>> +
+>> +       return ACPI_SUCCESS(acpi_evaluate_integer(handle, "_S4W", NULL, &ret));
+> 
+> First off, there is acpi_has_method().
+> 
+> Second, checking child->wakeup.sleep_state is a better indicator of S4
+> wakeup support.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
+So, like this?
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 67280051e30a..55b9ca2d5b98 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5610,6 +5610,7 @@ L:	linux-pm@vger.kernel.org
- S:	Supported
- F:	drivers/base/power/domain*.c
- F:	include/linux/pm_domain.h
-+F:	Documentation/devicetree/bindings/power/power_domain.txt
- 
- GENERIC UIO DRIVER FOR PCI DEVICES
- M:	"Michael S. Tsirkin" <mst@redhat.com>
--- 
-2.12.0.432.g71c3a4f4ba37
+	child->wakeup.sleep_state >= ACPI_STATE_S4
+
+That comes just from _PRW right?
+
+> 
+>> +}
+>> +
+>>  static int sdhci_acpi_probe(struct platform_device *pdev)
+>>  {
+>>         struct device *dev = &pdev->dev;
+> 
+> Thanks,
+> Rafael
+> 
