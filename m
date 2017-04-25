@@ -1,177 +1,79 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 04/17] thermal: cpu_cooling: replace cool_dev with cdev
-Date: Tue, 25 Apr 2017 15:57:11 +0530
-Message-ID: <0f1d7f8ebc3915c46b8fa7656a972bee75c79ba4.1493115651.git.viresh.kumar@linaro.org>
-References: <cover.1493115651.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f42.google.com ([74.125.83.42]:33373 "EHLO
-        mail-pg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1429521AbdDYK1n (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 06:27:43 -0400
-Received: by mail-pg0-f42.google.com with SMTP id 63so26529843pgh.0
-        for <linux-pm@vger.kernel.org>; Tue, 25 Apr 2017 03:27:42 -0700 (PDT)
-In-Reply-To: <cover.1493115651.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1493115651.git.viresh.kumar@linaro.org>
-References: <cover.1493115651.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH RFC 2/4] mmc: sdio: Add capability to skip SDIO reset at scan
+Date: Tue, 25 Apr 2017 12:46:01 +0200
+Message-ID: <CAPDyKFqorfJTVeS+r-qWYTFcAuJ67kmpk1WWQpkeMeQKsVfEcg@mail.gmail.com>
+References: <1492769288-7474-1-git-send-email-adrian.hunter@intel.com>
+ <1492769288-7474-3-git-send-email-adrian.hunter@intel.com>
+ <CAPDyKFq7qWGgyXStJU3XZnGRcqMXZs_z21nJ2vUnCe0Pn-q19Q@mail.gmail.com>
+ <ff496ea4-ba9b-387b-2d3b-3bf59b878973@intel.com> <CAPDyKFpDjx9EWLFCR5yejJg5bu3x--ksuOAE33+a_L0FNUW9dw@mail.gmail.com>
+ <9ed30be6-9a42-9cd1-f260-9b57da369b05@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <9ed30be6-9a42-9cd1-f260-9b57da369b05@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Adrian Hunter <adrian.hunter@intel.com>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Grygorii Strashko <grygorii.strashko@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
 
-Objects of "struct thermal_cooling_device" are named a bit
-inconsistently. Lets use cdev everywhere.
+On 25 April 2017 at 09:57, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> On 25/04/17 10:52, Ulf Hansson wrote:
+>> +Grygorii Strashko
+>>
+>> On 25 April 2017 at 08:21, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>>> On 24/04/17 23:33, Ulf Hansson wrote:
+>>>> On 21 April 2017 at 12:08, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>>>>> The SDIO card state might be being preserved during hibernation, for
+>>>>> example a SDIO wifi card supporting WOWLAN. That state will be lost if an
+>>>>> SDIO reset is done. One way to avoid that would be to build mmc core as a
+>>>>> module and simply not load it until after attempting to restore the
+>>>>> hibernation image. However that won't work if the hibernation image is
+>>>>> stored on eMMC which, of course, requires mmc core.
+>>>>
+>>>> I don't follow here. Are you saying the SDIO card is kept powered in
+>>>> hibernation, as to be able to support WOWLAN, right?
+>>>
+>>> Yes
+>>
+>> Okay, makes sense!
+>>
+>>>
+>>>>
+>>>> Then, it feels plain wrong the mmc_rescan() tries to re-initialize it.
+>>>> That should never happen, unless something is broken of course.
+>>>
+>>> The thing to note about hibernation is that there is a regular boot in
+>>> between saving the hibernation image and restoring it again.  At boot time,
+>>> the kernel knows almost nothing about whether there is a hibernation image
+>>> and whether or not it will be restored.  Consequently it becomes difficult
+>>> to avoid mmc_rescan().  As mentioned above, we need mmc_rescan() to
+>>> initialize the eMMC so that the hibernation image can be read.
+>>
+>> What's wrong with using the hibernation callbacks in the struct
+>> dev_pm_ops? We already do this.
+>
+> Here is the scenario.  The kernel has just booted.  User space wants to try
+> to restore a hibernation image, if there is one.  So user space loads the
+> mmc core because the hibernation image is on eMMC.  Mmc core does an SDIO
+> reset on the SDIO card and the state is lost.  It has little to do with pm
+> callbacks AFAICS.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Tested-by: Lukasz Luba <lukasz.luba@arm.com>
----
- drivers/thermal/cpu_cooling.c | 37 ++++++++++++++++++-------------------
- 1 file changed, 18 insertions(+), 19 deletions(-)
+Ah, now I see what you mean. I thought the problem was during the
+actual restoring of the hibernation image.
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 80a46a80817b..f1e784c22c5a 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -65,7 +65,7 @@ struct power_table {
-  * struct cpufreq_cooling_device - data for cooling device with cpufreq
-  * @id: unique integer value corresponding to each cpufreq_cooling_device
-  *	registered.
-- * @cool_dev: thermal_cooling_device pointer to keep track of the
-+ * @cdev: thermal_cooling_device pointer to keep track of the
-  *	registered cooling device.
-  * @cpufreq_state: integer value representing the current state of cpufreq
-  *	cooling	devices.
-@@ -90,7 +90,7 @@ struct power_table {
-  */
- struct cpufreq_cooling_device {
- 	int id;
--	struct thermal_cooling_device *cool_dev;
-+	struct thermal_cooling_device *cdev;
- 	unsigned int cpufreq_state;
- 	unsigned int clipped_freq;
- 	unsigned int max_level;
-@@ -242,7 +242,7 @@ static int build_dyn_power_table(struct cpufreq_cooling_device *cpufreq_cdev,
- 	for_each_cpu(cpu, &cpufreq_cdev->allowed_cpus) {
- 		dev = get_cpu_device(cpu);
- 		if (!dev) {
--			dev_warn(&cpufreq_cdev->cool_dev->device,
-+			dev_warn(&cpufreq_cdev->cdev->device,
- 				 "No cpu device for cpu %d\n", cpu);
- 			continue;
- 		}
-@@ -769,7 +769,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 			get_static_t plat_static_func)
- {
- 	struct cpufreq_policy *policy;
--	struct thermal_cooling_device *cool_dev;
-+	struct thermal_cooling_device *cdev;
- 	struct cpufreq_cooling_device *cpufreq_cdev;
- 	char dev_name[THERMAL_NAME_LENGTH];
- 	struct cpufreq_frequency_table *pos, *table;
-@@ -786,20 +786,20 @@ __cpufreq_cooling_register(struct device_node *np,
- 	policy = cpufreq_cpu_get(cpumask_first(temp_mask));
- 	if (!policy) {
- 		pr_debug("%s: CPUFreq policy not found\n", __func__);
--		cool_dev = ERR_PTR(-EPROBE_DEFER);
-+		cdev = ERR_PTR(-EPROBE_DEFER);
- 		goto free_cpumask;
- 	}
- 
- 	table = policy->freq_table;
- 	if (!table) {
- 		pr_debug("%s: CPUFreq table not found\n", __func__);
--		cool_dev = ERR_PTR(-ENODEV);
-+		cdev = ERR_PTR(-ENODEV);
- 		goto put_policy;
- 	}
- 
- 	cpufreq_cdev = kzalloc(sizeof(*cpufreq_cdev), GFP_KERNEL);
- 	if (!cpufreq_cdev) {
--		cool_dev = ERR_PTR(-ENOMEM);
-+		cdev = ERR_PTR(-ENOMEM);
- 		goto put_policy;
- 	}
- 
-@@ -808,7 +808,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 					    sizeof(*cpufreq_cdev->time_in_idle),
- 					    GFP_KERNEL);
- 	if (!cpufreq_cdev->time_in_idle) {
--		cool_dev = ERR_PTR(-ENOMEM);
-+		cdev = ERR_PTR(-ENOMEM);
- 		goto free_cdev;
- 	}
- 
-@@ -816,7 +816,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 		kcalloc(num_cpus, sizeof(*cpufreq_cdev->time_in_idle_timestamp),
- 			GFP_KERNEL);
- 	if (!cpufreq_cdev->time_in_idle_timestamp) {
--		cool_dev = ERR_PTR(-ENOMEM);
-+		cdev = ERR_PTR(-ENOMEM);
- 		goto free_time_in_idle;
- 	}
- 
-@@ -827,7 +827,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 	cpufreq_cdev->freq_table = kmalloc(sizeof(*cpufreq_cdev->freq_table) *
- 					  cpufreq_cdev->max_level, GFP_KERNEL);
- 	if (!cpufreq_cdev->freq_table) {
--		cool_dev = ERR_PTR(-ENOMEM);
-+		cdev = ERR_PTR(-ENOMEM);
- 		goto free_time_in_idle_timestamp;
- 	}
- 
-@@ -841,7 +841,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 
- 		ret = build_dyn_power_table(cpufreq_cdev, capacitance);
- 		if (ret) {
--			cool_dev = ERR_PTR(ret);
-+			cdev = ERR_PTR(ret);
- 			goto free_table;
- 		}
- 
-@@ -852,7 +852,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 
- 	ret = ida_simple_get(&cpufreq_ida, 0, 0, GFP_KERNEL);
- 	if (ret < 0) {
--		cool_dev = ERR_PTR(ret);
-+		cdev = ERR_PTR(ret);
- 		goto free_power_table;
- 	}
- 	cpufreq_cdev->id = ret;
-@@ -872,14 +872,13 @@ __cpufreq_cooling_register(struct device_node *np,
- 	snprintf(dev_name, sizeof(dev_name), "thermal-cpufreq-%d",
- 		 cpufreq_cdev->id);
- 
--	cool_dev = thermal_of_cooling_device_register(np, dev_name,
--						      cpufreq_cdev,
--						      cooling_ops);
--	if (IS_ERR(cool_dev))
-+	cdev = thermal_of_cooling_device_register(np, dev_name, cpufreq_cdev,
-+						  cooling_ops);
-+	if (IS_ERR(cdev))
- 		goto remove_ida;
- 
- 	cpufreq_cdev->clipped_freq = cpufreq_cdev->freq_table[0];
--	cpufreq_cdev->cool_dev = cool_dev;
-+	cpufreq_cdev->cdev = cdev;
- 
- 	mutex_lock(&cooling_list_lock);
- 	/* Register the notifier for first cpufreq cooling device */
-@@ -909,7 +908,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 	cpufreq_cpu_put(policy);
- free_cpumask:
- 	free_cpumask_var(temp_mask);
--	return cool_dev;
-+	return cdev;
- }
- 
- /**
-@@ -1047,7 +1046,7 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- 		cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
- 					    CPUFREQ_POLICY_NOTIFIER);
- 
--	thermal_cooling_device_unregister(cpufreq_cdev->cool_dev);
-+	thermal_cooling_device_unregister(cpufreq_cdev->cdev);
- 	ida_simple_remove(&cpufreq_ida, cpufreq_cdev->id);
- 	kfree(cpufreq_cdev->dyn_power_table);
- 	kfree(cpufreq_cdev->time_in_idle_timestamp);
--- 
-2.12.0.432.g71c3a4f4ba37
+Alright, when a boot is triggered by WOWLAN , you want to avoid
+sending the reset command for the SDIO card before the
+re-initialization of the SDIO card starts.
+
+The problem with this approach is that you can't differentiate between
+a cold boot and a boot triggered by WOWLAN, right!? In other words, in
+some cases the reset command may be needed while in other it won't.
+
+Maybe you can elaborate more on what exactly what the problem is with
+sending the reset command when the boot is triggered from WOWLAN? Yes,
+the SDIO card loses its context, but how is that a problem?
+
+[...]
+
+Kind regards
+Uffe
