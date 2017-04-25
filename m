@@ -1,156 +1,80 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 08/17] cpufreq: create cpufreq_table_count_valid_entries()
-Date: Tue, 25 Apr 2017 15:57:15 +0530
-Message-ID: <6bc9dc0dec11fae92122da51b8e4ecde4aca8cf0.1493115651.git.viresh.kumar@linaro.org>
+Subject: [PATCH V4 10/17] thermal: cpu_cooling: OPPs are registered for all CPUs
+Date: Tue, 25 Apr 2017 15:57:17 +0530
+Message-ID: <ab4b99ee37d789f445ef488e3eb1b6bcddd98c61.1493115651.git.viresh.kumar@linaro.org>
 References: <cover.1493115651.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:33339 "EHLO
-        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1429551AbdDYK15 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 06:27:57 -0400
-Received: by mail-pf0-f173.google.com with SMTP id a188so25115165pfa.0
-        for <linux-pm@vger.kernel.org>; Tue, 25 Apr 2017 03:27:57 -0700 (PDT)
+Received: from mail-pf0-f177.google.com ([209.85.192.177]:35628 "EHLO
+        mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1429564AbdDYK2E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 06:28:04 -0400
+Received: by mail-pf0-f177.google.com with SMTP id v14so21410948pfd.2
+        for <linux-pm@vger.kernel.org>; Tue, 25 Apr 2017 03:28:04 -0700 (PDT)
 In-Reply-To: <cover.1493115651.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1493115651.git.viresh.kumar@linaro.org>
 References: <cover.1493115651.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
+To: Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
 
-We need such a routine at two places already, lets create one.
+The OPPs are registered for all CPUs of a cpufreq policy now and we
+don't need to run the loop in build_dyn_power_table(). Just check for
+the policy->cpu and we should be fine.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Tested-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/cpufreq/cpufreq_stats.c | 13 ++++---------
- drivers/thermal/cpu_cooling.c   | 22 +++++++++-------------
- include/linux/cpufreq.h         | 14 ++++++++++++++
- 3 files changed, 27 insertions(+), 22 deletions(-)
+ drivers/thermal/cpu_cooling.c | 26 +++++++++++---------------
+ 1 file changed, 11 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index f570ead62454..9c3d319dc129 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -170,11 +170,10 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy)
- 	unsigned int i = 0, count = 0, ret = -ENOMEM;
- 	struct cpufreq_stats *stats;
- 	unsigned int alloc_size;
--	struct cpufreq_frequency_table *pos, *table;
-+	struct cpufreq_frequency_table *pos;
- 
--	/* We need cpufreq table for creating stats table */
--	table = policy->freq_table;
--	if (unlikely(!table))
-+	count = cpufreq_table_count_valid_entries(policy);
-+	if (!count)
- 		return;
- 
- 	/* stats already initialized */
-@@ -185,10 +184,6 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy)
- 	if (!stats)
- 		return;
- 
--	/* Find total allocation size */
--	cpufreq_for_each_valid_entry(pos, table)
--		count++;
--
- 	alloc_size = count * sizeof(int) + count * sizeof(u64);
- 
- 	alloc_size += count * count * sizeof(int);
-@@ -205,7 +200,7 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy)
- 	stats->max_state = count;
- 
- 	/* Find valid-unique entries */
--	cpufreq_for_each_valid_entry(pos, table)
-+	cpufreq_for_each_valid_entry(pos, policy->freq_table)
- 		if (freq_table_get_index(stats, pos->frequency) == -1)
- 			stats->freq_table[i++] = pos->frequency;
- 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 58e58065b650..55ff45c1e917 100644
+index 7dddc7443f5d..ce387f62c93e 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -739,7 +739,6 @@ __cpufreq_cooling_register(struct device_node *np,
- 	struct thermal_cooling_device *cdev;
- 	struct cpufreq_cooling_device *cpufreq_cdev;
- 	char dev_name[THERMAL_NAME_LENGTH];
--	struct cpufreq_frequency_table *pos, *table;
- 	unsigned int freq, i, num_cpus;
- 	int ret;
- 	struct thermal_cooling_device_ops *cooling_ops;
-@@ -750,9 +749,10 @@ __cpufreq_cooling_register(struct device_node *np,
- 		return ERR_PTR(-EINVAL);
- 	}
+@@ -83,7 +83,7 @@ struct power_table {
+  * @dyn_power_table: array of struct power_table for frequency to power
+  *	conversion, sorted in ascending order.
+  * @dyn_power_table_entries: number of entries in the @dyn_power_table array
+- * @cpu_dev: the first cpu_device from @allowed_cpus that has OPPs registered
++ * @cpu_dev: the cpu_device of policy->cpu.
+  * @plat_get_static_power: callback to calculate the static power
+  *
+  * This structure is required for keeping information of each registered
+@@ -207,24 +207,20 @@ static int build_dyn_power_table(struct cpufreq_cooling_device *cpufreq_cdev,
+ 	struct power_table *power_table;
+ 	struct dev_pm_opp *opp;
+ 	struct device *dev = NULL;
+-	int num_opps = 0, cpu, i, ret = 0;
++	int num_opps = 0, cpu = cpufreq_cdev->policy->cpu, i, ret = 0;
+ 	unsigned long freq;
  
--	table = policy->freq_table;
--	if (!table) {
--		pr_debug("%s: CPUFreq table not found\n", __func__);
-+	i = cpufreq_table_count_valid_entries(policy);
-+	if (!i) {
-+		pr_debug("%s: CPUFreq table not found or has no valid entries\n",
-+			 __func__);
- 		return ERR_PTR(-ENODEV);
- 	}
- 
-@@ -777,20 +777,16 @@ __cpufreq_cooling_register(struct device_node *np,
- 		goto free_time_in_idle;
- 	}
- 
--	/* Find max levels */
--	cpufreq_for_each_valid_entry(pos, table)
--		cpufreq_cdev->max_level++;
-+	/* max_level is an index, not a counter */
-+	cpufreq_cdev->max_level = i - 1;
- 
--	cpufreq_cdev->freq_table = kmalloc(sizeof(*cpufreq_cdev->freq_table) *
--					  cpufreq_cdev->max_level, GFP_KERNEL);
-+	cpufreq_cdev->freq_table = kmalloc(sizeof(*cpufreq_cdev->freq_table) * i,
-+					  GFP_KERNEL);
- 	if (!cpufreq_cdev->freq_table) {
- 		cdev = ERR_PTR(-ENOMEM);
- 		goto free_time_in_idle_timestamp;
- 	}
- 
--	/* max_level is an index, not a counter */
--	cpufreq_cdev->max_level--;
+-	for_each_cpu(cpu, &cpufreq_cdev->allowed_cpus) {
+-		dev = get_cpu_device(cpu);
+-		if (!dev) {
+-			dev_warn(&cpufreq_cdev->cdev->device,
+-				 "No cpu device for cpu %d\n", cpu);
+-			continue;
+-		}
 -
- 	cpumask_copy(&cpufreq_cdev->allowed_cpus, policy->related_cpus);
- 
- 	if (capacitance) {
-@@ -816,7 +812,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 
- 	/* Fill freq-table in descending order of frequencies */
- 	for (i = 0, freq = -1; i <= cpufreq_cdev->max_level; i++) {
--		freq = find_next_max(table, freq);
-+		freq = find_next_max(policy->freq_table, freq);
- 		cpufreq_cdev->freq_table[i] = freq;
- 
- 		/* Warn for duplicate entries */
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 87165f06a307..affc13568af6 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -855,6 +855,20 @@ static inline int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 		return -EINVAL;
+-		num_opps = dev_pm_opp_get_opp_count(dev);
+-		if (num_opps > 0)
+-			break;
+-		else if (num_opps < 0)
+-			return num_opps;
++	dev = get_cpu_device(cpu);
++	if (unlikely(!dev)) {
++		dev_warn(&cpufreq_cdev->cdev->device,
++			 "No cpu device for cpu %d\n", cpu);
++		return -ENODEV;
  	}
- }
+ 
++	num_opps = dev_pm_opp_get_opp_count(dev);
++	if (num_opps < 0)
++		return num_opps;
 +
-+static inline int cpufreq_table_count_valid_entries(const struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_frequency_table *pos;
-+	int count = 0;
-+
-+	if (unlikely(!policy->freq_table))
-+		return 0;
-+
-+	cpufreq_for_each_valid_entry(pos, policy->freq_table)
-+		count++;
-+
-+	return count;
-+}
- #else
- static inline int cpufreq_boost_trigger_state(int state)
- {
+ 	if (num_opps == 0)
+ 		return -EINVAL;
+ 
 -- 
 2.12.0.432.g71c3a4f4ba37
