@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 05/17] thermal: cpu_cooling: remove cpufreq_cooling_get_level()
-Date: Tue, 25 Apr 2017 15:57:12 +0530
-Message-ID: <04010983e89a99ad35fd754d3ca0577139ab8759.1493115651.git.viresh.kumar@linaro.org>
+Subject: [PATCH V4 13/17] thermal: cpu_cooling: create structure for idle time stats
+Date: Tue, 25 Apr 2017 15:57:20 +0530
+Message-ID: <d3b0f053baf9f64a4e14e6e1eae150ffc7d4b107.1493115651.git.viresh.kumar@linaro.org>
 References: <cover.1493115651.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1493115651.git.viresh.kumar@linaro.org>
@@ -12,91 +12,140 @@ To: Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduar
 Cc: linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-There is only one user of cpufreq_cooling_get_level() and that already
-has pointer to the cpufreq_cdev structure. It can directly call
-get_level() instead and we can get rid of cpufreq_cooling_get_level().
+We keep two arrays for idle time stats and allocate memory for them
+separately. It would be much easier to follow if we create an array of
+idle stats structure instead and allocate it once.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Tested-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/thermal/cpu_cooling.c | 33 +--------------------------------
- include/linux/cpu_cooling.h   |  6 ------
- 2 files changed, 1 insertion(+), 38 deletions(-)
+ drivers/thermal/cpu_cooling.c | 53 ++++++++++++++++++++-----------------------
+ 1 file changed, 25 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index f1e784c22c5a..1f4b6a719d05 100644
+index 67ec52d5f7fc..11735dba1456 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -136,37 +136,6 @@ static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_cdev,
- }
+@@ -62,6 +62,16 @@ struct freq_table {
+ };
  
  /**
-- * cpufreq_cooling_get_level - for a given cpu, return the cooling level.
-- * @cpu: cpu for which the level is required
-- * @freq: the frequency of interest
-- *
-- * This function will match the cooling level corresponding to the
-- * requested @freq and return it.
-- *
-- * Return: The matched cooling level on success or THERMAL_CSTATE_INVALID
-- * otherwise.
-- */
--unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq)
--{
--	struct cpufreq_cooling_device *cpufreq_cdev;
--
--	mutex_lock(&cooling_list_lock);
--	list_for_each_entry(cpufreq_cdev, &cpufreq_cdev_list, node) {
--		if (cpumask_test_cpu(cpu, &cpufreq_cdev->allowed_cpus)) {
--			unsigned long level = get_level(cpufreq_cdev, freq);
--
--			mutex_unlock(&cooling_list_lock);
--			return level;
--		}
--	}
--	mutex_unlock(&cooling_list_lock);
--
--	pr_err("%s: cpu:%d not part of any cooling device\n", __func__, cpu);
--	return THERMAL_CSTATE_INVALID;
--}
--EXPORT_SYMBOL_GPL(cpufreq_cooling_get_level);
--
--/**
-  * cpufreq_thermal_notifier - notifier callback for cpufreq policy change.
-  * @nb:	struct notifier_block * with callback info.
-  * @event: value showing cpufreq event for which this function invoked.
-@@ -697,7 +666,7 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
- 	normalised_power = (dyn_power * 100) / last_load;
- 	target_freq = cpu_power_to_freq(cpufreq_cdev, normalised_power);
- 
--	*state = cpufreq_cooling_get_level(cpu, target_freq);
-+	*state = get_level(cpufreq_cdev, target_freq);
- 	if (*state == THERMAL_CSTATE_INVALID) {
- 		dev_err_ratelimited(&cdev->device,
- 				    "Failed to convert %dKHz for cpu %d into a cdev state\n",
-diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
-index c156f5082758..96c5e4c2f9c8 100644
---- a/include/linux/cpu_cooling.h
-+++ b/include/linux/cpu_cooling.h
-@@ -82,7 +82,6 @@ of_cpufreq_power_cooling_register(struct device_node *np,
-  */
- void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev);
- 
--unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq);
- #else /* !CONFIG_CPU_THERMAL */
- static inline struct thermal_cooling_device *
- cpufreq_cooling_register(const struct cpumask *clip_cpus)
-@@ -117,11 +116,6 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
++ * struct time_in_idle - Idle time stats
++ * @time: previous reading of the absolute time that this cpu was idle
++ * @timestamp: wall time of the last invocation of get_cpu_idle_time_us()
++ */
++struct time_in_idle {
++	u64 time;
++	u64 timestamp;
++};
++
++/**
+  * struct cpufreq_cooling_device - data for cooling device with cpufreq
+  * @id: unique integer value corresponding to each cpufreq_cooling_device
+  *	registered.
+@@ -76,9 +86,7 @@ struct freq_table {
+  *	cpufreq frequencies.
+  * @node: list_head to link all cpufreq_cooling_device together.
+  * @last_load: load measured by the latest call to cpufreq_get_requested_power()
+- * @time_in_idle: previous reading of the absolute time that this cpu was idle
+- * @time_in_idle_timestamp: wall time of the last invocation of
+- *	get_cpu_idle_time_us()
++ * @idle_time: idle time stats
+  * @cpu_dev: the cpu_device of policy->cpu.
+  * @plat_get_static_power: callback to calculate the static power
+  *
+@@ -95,8 +103,7 @@ struct cpufreq_cooling_device {
+ 	struct freq_table *freq_table;	/* In descending order */
+ 	struct list_head node;
+ 	u32 last_load;
+-	u64 *time_in_idle;
+-	u64 *time_in_idle_timestamp;
++	struct time_in_idle *idle_time;
+ 	struct device *cpu_dev;
+ 	get_static_t plat_get_static_power;
+ };
+@@ -300,18 +307,19 @@ static u32 get_load(struct cpufreq_cooling_device *cpufreq_cdev, int cpu,
  {
- 	return;
- }
--static inline
--unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq)
--{
--	return THERMAL_CSTATE_INVALID;
--}
- #endif	/* CONFIG_CPU_THERMAL */
+ 	u32 load;
+ 	u64 now, now_idle, delta_time, delta_idle;
++	struct time_in_idle *idle_time = &cpufreq_cdev->idle_time[cpu_idx];
  
- #endif /* __CPU_COOLING_H__ */
+ 	now_idle = get_cpu_idle_time(cpu, &now, 0);
+-	delta_idle = now_idle - cpufreq_cdev->time_in_idle[cpu_idx];
+-	delta_time = now - cpufreq_cdev->time_in_idle_timestamp[cpu_idx];
++	delta_idle = now_idle - idle_time->time;
++	delta_time = now - idle_time->timestamp;
+ 
+ 	if (delta_time <= delta_idle)
+ 		load = 0;
+ 	else
+ 		load = div64_u64(100 * (delta_time - delta_idle), delta_time);
+ 
+-	cpufreq_cdev->time_in_idle[cpu_idx] = now_idle;
+-	cpufreq_cdev->time_in_idle_timestamp[cpu_idx] = now;
++	idle_time->time = now_idle;
++	idle_time->timestamp = now;
+ 
+ 	return load;
+ }
+@@ -715,22 +723,14 @@ __cpufreq_cooling_register(struct device_node *np,
+ 
+ 	cpufreq_cdev->policy = policy;
+ 	num_cpus = cpumask_weight(policy->related_cpus);
+-	cpufreq_cdev->time_in_idle = kcalloc(num_cpus,
+-					    sizeof(*cpufreq_cdev->time_in_idle),
+-					    GFP_KERNEL);
+-	if (!cpufreq_cdev->time_in_idle) {
++	cpufreq_cdev->idle_time = kcalloc(num_cpus,
++					 sizeof(*cpufreq_cdev->idle_time),
++					 GFP_KERNEL);
++	if (!cpufreq_cdev->idle_time) {
+ 		cdev = ERR_PTR(-ENOMEM);
+ 		goto free_cdev;
+ 	}
+ 
+-	cpufreq_cdev->time_in_idle_timestamp =
+-		kcalloc(num_cpus, sizeof(*cpufreq_cdev->time_in_idle_timestamp),
+-			GFP_KERNEL);
+-	if (!cpufreq_cdev->time_in_idle_timestamp) {
+-		cdev = ERR_PTR(-ENOMEM);
+-		goto free_time_in_idle;
+-	}
+-
+ 	/* max_level is an index, not a counter */
+ 	cpufreq_cdev->max_level = i - 1;
+ 
+@@ -738,7 +738,7 @@ __cpufreq_cooling_register(struct device_node *np,
+ 					  GFP_KERNEL);
+ 	if (!cpufreq_cdev->freq_table) {
+ 		cdev = ERR_PTR(-ENOMEM);
+-		goto free_time_in_idle_timestamp;
++		goto free_idle_time;
+ 	}
+ 
+ 	ret = ida_simple_get(&cpufreq_ida, 0, 0, GFP_KERNEL);
+@@ -801,10 +801,8 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	ida_simple_remove(&cpufreq_ida, cpufreq_cdev->id);
+ free_table:
+ 	kfree(cpufreq_cdev->freq_table);
+-free_time_in_idle_timestamp:
+-	kfree(cpufreq_cdev->time_in_idle_timestamp);
+-free_time_in_idle:
+-	kfree(cpufreq_cdev->time_in_idle);
++free_idle_time:
++	kfree(cpufreq_cdev->idle_time);
+ free_cdev:
+ 	kfree(cpufreq_cdev);
+ 	return cdev;
+@@ -947,8 +945,7 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 
+ 	thermal_cooling_device_unregister(cpufreq_cdev->cdev);
+ 	ida_simple_remove(&cpufreq_ida, cpufreq_cdev->id);
+-	kfree(cpufreq_cdev->time_in_idle_timestamp);
+-	kfree(cpufreq_cdev->time_in_idle);
++	kfree(cpufreq_cdev->idle_time);
+ 	kfree(cpufreq_cdev->freq_table);
+ 	kfree(cpufreq_cdev);
+ }
 -- 
 2.12.0.432.g71c3a4f4ba37
