@@ -1,69 +1,103 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] i2c: designware: Do nothing in system suspend/resume when
- RT suspended
-Date: Tue, 25 Apr 2017 14:04:43 +0200
-Message-ID: <CAPDyKFoLFCfeX-Cwa4ACZ_yYeXh=0ryw4-iPXaO_Vxi9cq-8aQ@mail.gmail.com>
-References: <20170330120444.12499-1-jarkko.nikula@linux.intel.com>
- <CAPDyKFqfDYg1ZzcJ2Z7md5CD6tYWRMwi4N8M82DesG_ybVKHMw@mail.gmail.com>
- <da36d4c0-7bcb-be18-6c8c-9fd714e2f1e0@linux.intel.com> <CAPDyKFqg3TDMwBO7a-1zuKYeLjE-BQ4RPmtXFKzA0s2a50jQqg@mail.gmail.com>
- <1493120164.24567.194.camel@linux.intel.com>
+Subject: Re: [PATCH RFC 2/4] mmc: sdio: Add capability to skip SDIO reset at scan
+Date: Tue, 25 Apr 2017 14:24:38 +0200
+Message-ID: <CAPDyKFr-y5uAZMhGuiL8o7syTpDqFcQp5ibnO80ZWCFUNcQetQ@mail.gmail.com>
+References: <1492769288-7474-1-git-send-email-adrian.hunter@intel.com>
+ <1492769288-7474-3-git-send-email-adrian.hunter@intel.com>
+ <CAPDyKFq7qWGgyXStJU3XZnGRcqMXZs_z21nJ2vUnCe0Pn-q19Q@mail.gmail.com>
+ <ff496ea4-ba9b-387b-2d3b-3bf59b878973@intel.com> <CAPDyKFpDjx9EWLFCR5yejJg5bu3x--ksuOAE33+a_L0FNUW9dw@mail.gmail.com>
+ <9ed30be6-9a42-9cd1-f260-9b57da369b05@intel.com> <CAPDyKFqorfJTVeS+r-qWYTFcAuJ67kmpk1WWQpkeMeQKsVfEcg@mail.gmail.com>
+ <15332477-f37b-21d0-f85b-132d7bc0cdb4@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f171.google.com ([209.85.220.171]:36789 "EHLO
-        mail-qk0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1428953AbdDYMEp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 08:04:45 -0400
-Received: by mail-qk0-f171.google.com with SMTP id u75so44772910qka.3
-        for <linux-pm@vger.kernel.org>; Tue, 25 Apr 2017 05:04:45 -0700 (PDT)
-In-Reply-To: <1493120164.24567.194.camel@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <15332477-f37b-21d0-f85b-132d7bc0cdb4@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Adrian Hunter <adrian.hunter@intel.com>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Grygorii Strashko <grygorii.strashko@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Jarkko Nikula <jarkko.nikula@linux.intel.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On 25 April 2017 at 13:36, Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
-> On Tue, 2017-04-25 at 13:12 +0200, Ulf Hansson wrote:
->> On 25 April 2017 at 13:08, Jarkko Nikula <jarkko.nikula@linux.intel.co
->> m> wrote:
->> > On 04/25/2017 12:24 PM, Ulf Hansson wrote:
->
->> > > To me, the proper solution is to use the
->> > > pm_runtime_force_suspend|resume() helpers to deal with system
->> > > suspend/resume. However I understand that the behavior of the ACPI
->> > > PM
->> > > domain currently prevents us from doing this. That said, perhaps
->> > > we
->> > > should instead try to make the ACPI PM domain to better
->> > > collaborate
->> > > with drivers using pm_runtime_force_suspend|resume()? I have been
->> > > investigating that and started to cook some patches, although I
->> > > have
->> > > not yet been able to post something. If you think it could make
->> > > sense,
->> > > I can pick it up.
->> > >
->> >
->> > That's a good idea. I didn't think about it at all.
+On 25 April 2017 at 13:20, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> On 25/04/17 13:46, Ulf Hansson wrote:
+>> On 25 April 2017 at 09:57, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>>> On 25/04/17 10:52, Ulf Hansson wrote:
+>>>> +Grygorii Strashko
+>>>>
+>>>> On 25 April 2017 at 08:21, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>>>>> On 24/04/17 23:33, Ulf Hansson wrote:
+>>>>>> On 21 April 2017 at 12:08, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>>>>>>> The SDIO card state might be being preserved during hibernation, for
+>>>>>>> example a SDIO wifi card supporting WOWLAN. That state will be lost if an
+>>>>>>> SDIO reset is done. One way to avoid that would be to build mmc core as a
+>>>>>>> module and simply not load it until after attempting to restore the
+>>>>>>> hibernation image. However that won't work if the hibernation image is
+>>>>>>> stored on eMMC which, of course, requires mmc core.
+>>>>>>
+>>>>>> I don't follow here. Are you saying the SDIO card is kept powered in
+>>>>>> hibernation, as to be able to support WOWLAN, right?
+>>>>>
+>>>>> Yes
+>>>>
+>>>> Okay, makes sense!
+>>>>
+>>>>>
+>>>>>>
+>>>>>> Then, it feels plain wrong the mmc_rescan() tries to re-initialize it.
+>>>>>> That should never happen, unless something is broken of course.
+>>>>>
+>>>>> The thing to note about hibernation is that there is a regular boot in
+>>>>> between saving the hibernation image and restoring it again.  At boot time,
+>>>>> the kernel knows almost nothing about whether there is a hibernation image
+>>>>> and whether or not it will be restored.  Consequently it becomes difficult
+>>>>> to avoid mmc_rescan().  As mentioned above, we need mmc_rescan() to
+>>>>> initialize the eMMC so that the hibernation image can be read.
+>>>>
+>>>> What's wrong with using the hibernation callbacks in the struct
+>>>> dev_pm_ops? We already do this.
+>>>
+>>> Here is the scenario.  The kernel has just booted.  User space wants to try
+>>> to restore a hibernation image, if there is one.  So user space loads the
+>>> mmc core because the hibernation image is on eMMC.  Mmc core does an SDIO
+>>> reset on the SDIO card and the state is lost.  It has little to do with pm
+>>> callbacks AFAICS.
 >>
->> Okay, thanks! I will continue to look into this and try to submit
->> something within a reasonable time frame, keep you posted.
+>> Ah, now I see what you mean. I thought the problem was during the
+>> actual restoring of the hibernation image.
+>>
+>> Alright, when a boot is triggered by WOWLAN , you want to avoid
+>> sending the reset command for the SDIO card before the
+>> re-initialization of the SDIO card starts.
+>>
+>> The problem with this approach is that you can't differentiate between
+>> a cold boot and a boot triggered by WOWLAN, right!? In other words, in
+>> some cases the reset command may be needed while in other it won't.
 >
-> But please keep in mind that ACPI PM domain for BayTrail / CherryTrail
-> is used by several IPs including most nasty GPDMA case. If something
-> breaks that it would be show stopper.
+> SDIO reset is only needed if the card has not been power-cycled.  The
+> assumption is that the platform takes care of that when needed. e.g. when
+> rebooting instead of going to S4.
+>
+>>
+>> Maybe you can elaborate more on what exactly what the problem is with
+>> sending the reset command when the boot is triggered from WOWLAN? Yes,
+>> the SDIO card loses its context, but how is that a problem?
+>
+> The wifi driver expects to find the function in an initialized state.
 
-Thanks for pointing this out. I think I have an overall understanding
-of the complexity.
+So how does the the wifi driver distinguish this a boot caused by
+WOWLAN - and not a cold boot?
 
-This driver is a cross SoC driver and not only should we expect the
-ACPI PM domain to be used but also the generic PM domain for ARM SoCs.
-To me, this makes it even more interesting and a very good candidate
-to explore the usage of pm_runtime_force_suspend|resume(). :-)
+> Otherwise it would have to re-enable the function and re-do the
+> function-specific initialization.  I don't know if there are other
 
-Nevertheless, I will rely and appreciate help in testing and of course
-also reviewing.
+At boot the SDIO func driver becomes probed, when the mmc core finds
+and SDIO card and then registers a func device for it. Are you saying
+that the SDIO func driver can take shortcuts when enabling the func
+device, when the boot is trigger from WOWLAN?
+
+> consequences.  Presumably it will have lost any information about the nature
+> of the wake-up trigger.
+
+How does that matter?
 
 Kind regards
 Uffe
