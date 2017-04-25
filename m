@@ -1,61 +1,66 @@
-From: Adam Ford <aford173@gmail.com>
-Subject: Re: Touchscreen failure with CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-Date: Tue, 25 Apr 2017 09:35:21 -0500
-Message-ID: <CAHCN7x+6KwOZdC1MaNQGdXWFjJ18hYp3kc73JADDMC4DOFn+yQ@mail.gmail.com>
-References: <CAOMZO5BZ8Z8dfwsfuiunNQ_q39_k4QJg7jLPQfaxn+YBsmz2jw@mail.gmail.com>
- <20170424040709.GG26900@vireshk-i7> <CAOMZO5B4_xrLcWQGF=yRfj-14XQKudzjyr2roGRkzofkHCfuHg@mail.gmail.com>
- <20170424112906.GR26900@vireshk-i7> <CAOMZO5BpAsJAKv-p=WPevUnx71fxbLtunJe-0ijVT7T9m7AMSQ@mail.gmail.com>
- <20170424114343.GS26900@vireshk-i7> <CAOMZO5AkTKjU5kw0gszLVdVOc_Sb_sWhr65heE==kyw=5rcN-g@mail.gmail.com>
- <20170425050633.GV26900@vireshk-i7> <CAOMZO5BgjgxGhJ7zGV-gjs0QHmJMgkNryFqTYA=vGPz8KWDijg@mail.gmail.com>
- <20170425111301.GC1928@vireshk-i7> <CAHCN7xJVicKuAc0dDbzBg4h2d1UUP66iKkSsWN_f=rPd4mOZSw@mail.gmail.com>
- <CAOMZO5CPtKAh6wMJ06BO4YFLPmOTvrpv5Q_3RJoj9dup46ukTQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Paul Kocialkowski <contact@paulk.fr>
+Subject: [PATCH 1/2] power: supply: sbs-battery: Don't ignore the first external power change
+Date: Tue, 25 Apr 2017 17:09:04 +0200
+Message-ID: <20170425150905.4185-1-contact@paulk.fr>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f54.google.com ([74.125.83.54]:35522 "EHLO
-        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1948062AbdDYOfW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 10:35:22 -0400
-Received: by mail-pg0-f54.google.com with SMTP id 72so29517675pge.2
-        for <linux-pm@vger.kernel.org>; Tue, 25 Apr 2017 07:35:22 -0700 (PDT)
-In-Reply-To: <CAOMZO5CPtKAh6wMJ06BO4YFLPmOTvrpv5Q_3RJoj9dup46ukTQ@mail.gmail.com>
+Received: from gagarine.paulk.fr ([109.190.93.129]:51599 "EHLO
+        gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1949263AbdDYPPv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 11:15:51 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>, Jon Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>
 
-On Tue, Apr 25, 2017 at 8:43 AM, Fabio Estevam <festevam@gmail.com> wrote:
-> Hi Adam,
->
-> On Tue, Apr 25, 2017 at 9:41 AM, Adam Ford <aford173@gmail.com> wrote:
->
->> I don't have that board, so I can't test, but I have seen other issues on my
->> imx6 board where operating at 'performance' instead of on-demand worked
->> better for me as well in different areas.   I was assuming it was something
->
-> What are the issues you observed with 'on-demand' on your mx6 board?
->
+A mechanism to ignore the first external power change notification was
+put in place years ago to ignore the power_supply_register notification.
 
-My board does not always wake from sleep, and I was having some issues
-on reboot unless I ran at 'performance' and that is what made me think
-my board was having voltage dips too low.
+However, this doesn't apply to the current situation anymore, as the
+first notification is always the result of a legitimate power change.
 
->> regarding the voltage levels of various regulators for my board, and I am
->> going to run tests on my board by playing with regulators on my device tree
->> to make sure they are properly regulating to the right voltages.  Since
->> 'performance' runs the processor at both a higher speed and higher voltage,
->> it's conceivable to me that something is just below some limit/level and
->> needs some minor adjustment. At least that is my theory with my board
->> issues.  Have you looked considered that possibility?
->
-> One test I have already tried was to run all other cpufreq operating
-> points with the same ARM and SOC-PU voltages as the 996MHz.
->
-> Still in this case I do see touchscreen failure.
+This removes this deprecated mechanism, which puts back the driver's
+state machine to a sane state (an ignored first notification previously
+caused a charging/discharging status inversion).
 
-I have a touch screen (using tsc2004 touch controller) on my board.  I
-can run some tests if you tell me how you're able to reproduce your
-issue.  I can at least confirm whether or not I see it too.  I won't
-be able to do it until later tonight or tomorrow however.
+Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
+---
+ drivers/power/supply/sbs-battery.c | 10 ----------
+ 1 file changed, 10 deletions(-)
 
-adam
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index 8bb2eb38eb1c..3e7125c8e4d1 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -171,7 +171,6 @@ struct sbs_info {
+ 	u32				i2c_retry_count;
+ 	u32				poll_retry_count;
+ 	struct delayed_work		work;
+-	int				ignore_changes;
+ };
+ 
+ static char model_name[I2C_SMBUS_BLOCK_MAX + 1];
+@@ -694,11 +693,6 @@ static void sbs_external_power_changed(struct power_supply *psy)
+ {
+ 	struct sbs_info *chip = power_supply_get_drvdata(psy);
+ 
+-	if (chip->ignore_changes > 0) {
+-		chip->ignore_changes--;
+-		return;
+-	}
+-
+ 	/* cancel outstanding work */
+ 	cancel_delayed_work_sync(&chip->work);
+ 
+@@ -775,10 +769,6 @@ static int sbs_probe(struct i2c_client *client,
+ 	chip->enable_detection = false;
+ 	psy_cfg.of_node = client->dev.of_node;
+ 	psy_cfg.drv_data = chip;
+-	/* ignore first notification of external change, it is generated
+-	 * from the power_supply_register call back
+-	 */
+-	chip->ignore_changes = 1;
+ 	chip->last_state = POWER_SUPPLY_STATUS_UNKNOWN;
+ 
+ 	/* use pdata if available, fall back to DT properties,
+-- 
+2.12.2
