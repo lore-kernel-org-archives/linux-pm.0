@@ -1,51 +1,62 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH 1/1] power: Fix unchecked return value of devm_kzalloc
-Date: Tue, 25 Apr 2017 12:50:00 +0200
-Message-ID: <20170425105000.GF30553@pali>
-References: <1493022128-3918-1-git-send-email-bianpan2016@163.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH RFC 3/4] mmc: sdhci-acpi: Set MMC_CAP2_NO_SDIO_RESET if
+ child has wake from S4 (hibernate)
+Date: Tue, 25 Apr 2017 13:05:42 +0200
+Message-ID: <CAJZ5v0irctEBjpXFLW9nuevx4L0HNigNMQv1qgCuGp7tOiE8Jg@mail.gmail.com>
+References: <1492769288-7474-1-git-send-email-adrian.hunter@intel.com>
+ <1492769288-7474-4-git-send-email-adrian.hunter@intel.com>
+ <CAJZ5v0hcfsbfy=KhgTDvg7zj-egKODDJAF0-gqWdxuxKfyBFPQ@mail.gmail.com> <a28facd9-9d81-2be0-280b-ac4267e334d0@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:33441 "EHLO
-        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1171065AbdDYKuE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 06:50:04 -0400
-Content-Disposition: inline
-In-Reply-To: <1493022128-3918-1-git-send-email-bianpan2016@163.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <a28facd9-9d81-2be0-280b-ac4267e334d0@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Adrian Hunter <adrian.hunter@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Pan Bian <bianpan2016@163.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday 24 April 2017 16:22:08 Pan Bian wrote:
-> Function devm_kzalloc() will return a NULL pointer. However, in function
-> isp1704_charger_probe(), the return value of devm_kzalloc() is directly
-> used without validation. This may result in a bad memory access bug.
-> 
-> Signed-off-by: Pan Bian <bianpan2016@163.com>
-> ---
->  drivers/power/supply/isp1704_charger.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/power/supply/isp1704_charger.c b/drivers/power/supply/isp1704_charger.c
-> index 4cd6899..95af5f3 100644
-> --- a/drivers/power/supply/isp1704_charger.c
-> +++ b/drivers/power/supply/isp1704_charger.c
-> @@ -418,6 +418,10 @@ static int isp1704_charger_probe(struct platform_device *pdev)
->  
->  		pdata = devm_kzalloc(&pdev->dev,
->  			sizeof(struct isp1704_charger_data), GFP_KERNEL);
-> +		if (!pdata) {
-> +			ret = -ENOMEM;
-> +			goto fail0;
-> +		}
->  		pdata->enable_gpio = gpio;
->  
->  		dev_info(&pdev->dev, "init gpio %d\n", pdata->enable_gpio);
+On Tue, Apr 25, 2017 at 9:28 AM, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> On 25/04/17 00:52, Rafael J. Wysocki wrote:
+>> On Fri, Apr 21, 2017 at 12:08 PM, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>>> SDIO reset interferes with a SDIO function driver's restore from
+>>> hibernation. Set MMC_CAP2_NO_SDIO_RESET if a child node has _S4W method
+>>> which indicates a capability to wake from S4 (hibernate).
+>>>
+>>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+>>> ---
+>>>  drivers/mmc/host/sdhci-acpi.c | 17 ++++++++++++++++-
+>>>  1 file changed, 16 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/mmc/host/sdhci-acpi.c b/drivers/mmc/host/sdhci-acpi.c
+>>> index c6a9a1bfaa22..e053a45db6b1 100644
+>>> --- a/drivers/mmc/host/sdhci-acpi.c
+>>> +++ b/drivers/mmc/host/sdhci-acpi.c
+>>> @@ -374,6 +374,14 @@ static const struct sdhci_acpi_slot *sdhci_acpi_get_slot(const char *hid,
+>>>         return NULL;
+>>>  }
+>>>
+>>> +static bool sdhci_acpi_child_has_s4w(struct acpi_device *child)
+>>> +{
+>>> +       acpi_handle handle = child->handle;
+>>> +       unsigned long long ret;
+>>> +
+>>> +       return ACPI_SUCCESS(acpi_evaluate_integer(handle, "_S4W", NULL, &ret));
+>>
+>> First off, there is acpi_has_method().
+>>
+>> Second, checking child->wakeup.sleep_state is a better indicator of S4
+>> wakeup support.
+>
+> So, like this?
+>
+>         child->wakeup.sleep_state >= ACPI_STATE_S4
+>
+> That comes just from _PRW right?
 
-Looks good now. Reviewed-by: Pali Rohár <pali.rohar@gmail.com>
+It may be fixed up if the power resources in there don't match what
+_PRW itself returns, but generally yes.
 
--- 
-Pali Rohár
-pali.rohar@gmail.com
+In any case _S4W is optional even for devices that can wake up from S4 IIRC.
+
+Thanks,
+Rafael
