@@ -1,91 +1,63 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: Re: [PATCH RFC 2/4] mmc: sdio: Add capability to skip SDIO reset at
- scan
-Date: Tue, 25 Apr 2017 14:20:31 +0300
-Message-ID: <15332477-f37b-21d0-f85b-132d7bc0cdb4@intel.com>
-References: <1492769288-7474-1-git-send-email-adrian.hunter@intel.com>
- <1492769288-7474-3-git-send-email-adrian.hunter@intel.com>
- <CAPDyKFq7qWGgyXStJU3XZnGRcqMXZs_z21nJ2vUnCe0Pn-q19Q@mail.gmail.com>
- <ff496ea4-ba9b-387b-2d3b-3bf59b878973@intel.com>
- <CAPDyKFpDjx9EWLFCR5yejJg5bu3x--ksuOAE33+a_L0FNUW9dw@mail.gmail.com>
- <9ed30be6-9a42-9cd1-f260-9b57da369b05@intel.com>
- <CAPDyKFqorfJTVeS+r-qWYTFcAuJ67kmpk1WWQpkeMeQKsVfEcg@mail.gmail.com>
+From: <piwet_sokolow@wp.pl>
+Subject: 12990 linux-pm
+Date: Tue, 25 Apr 2017 11:33:44 -0000
+Message-ID: <149312002450.16693.16393489905885470435@hinet.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqorfJTVeS+r-qWYTFcAuJ67kmpk1WWQpkeMeQKsVfEcg@mail.gmail.com>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Grygorii Strashko <grygorii.strashko@ti.com>
+Content-Type: application/zip; name="62401.zip"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 1-161-121-106.dynamic-ip.hinet.net ([1.161.121.106]:42350 "HELO
+        hinet.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+        id S944961AbdDYLdw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 25 Apr 2017 07:33:52 -0400
+Content-Disposition: attachment
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On 25/04/17 13:46, Ulf Hansson wrote:
-> On 25 April 2017 at 09:57, Adrian Hunter <adrian.hunter@intel.com> wrote:
->> On 25/04/17 10:52, Ulf Hansson wrote:
->>> +Grygorii Strashko
->>>
->>> On 25 April 2017 at 08:21, Adrian Hunter <adrian.hunter@intel.com> wrote:
->>>> On 24/04/17 23:33, Ulf Hansson wrote:
->>>>> On 21 April 2017 at 12:08, Adrian Hunter <adrian.hunter@intel.com> wrote:
->>>>>> The SDIO card state might be being preserved during hibernation, for
->>>>>> example a SDIO wifi card supporting WOWLAN. That state will be lost if an
->>>>>> SDIO reset is done. One way to avoid that would be to build mmc core as a
->>>>>> module and simply not load it until after attempting to restore the
->>>>>> hibernation image. However that won't work if the hibernation image is
->>>>>> stored on eMMC which, of course, requires mmc core.
->>>>>
->>>>> I don't follow here. Are you saying the SDIO card is kept powered in
->>>>> hibernation, as to be able to support WOWLAN, right?
->>>>
->>>> Yes
->>>
->>> Okay, makes sense!
->>>
->>>>
->>>>>
->>>>> Then, it feels plain wrong the mmc_rescan() tries to re-initialize it.
->>>>> That should never happen, unless something is broken of course.
->>>>
->>>> The thing to note about hibernation is that there is a regular boot in
->>>> between saving the hibernation image and restoring it again.  At boot time,
->>>> the kernel knows almost nothing about whether there is a hibernation image
->>>> and whether or not it will be restored.  Consequently it becomes difficult
->>>> to avoid mmc_rescan().  As mentioned above, we need mmc_rescan() to
->>>> initialize the eMMC so that the hibernation image can be read.
->>>
->>> What's wrong with using the hibernation callbacks in the struct
->>> dev_pm_ops? We already do this.
->>
->> Here is the scenario.  The kernel has just booted.  User space wants to try
->> to restore a hibernation image, if there is one.  So user space loads the
->> mmc core because the hibernation image is on eMMC.  Mmc core does an SDIO
->> reset on the SDIO card and the state is lost.  It has little to do with pm
->> callbacks AFAICS.
-> 
-> Ah, now I see what you mean. I thought the problem was during the
-> actual restoring of the hibernation image.
-> 
-> Alright, when a boot is triggered by WOWLAN , you want to avoid
-> sending the reset command for the SDIO card before the
-> re-initialization of the SDIO card starts.
-> 
-> The problem with this approach is that you can't differentiate between
-> a cold boot and a boot triggered by WOWLAN, right!? In other words, in
-> some cases the reset command may be needed while in other it won't.
-
-SDIO reset is only needed if the card has not been power-cycled.  The
-assumption is that the platform takes care of that when needed. e.g. when
-rebooting instead of going to S4.
-
-> 
-> Maybe you can elaborate more on what exactly what the problem is with
-> sending the reset command when the boot is triggered from WOWLAN? Yes,
-> the SDIO card loses its context, but how is that a problem?
-
-The wifi driver expects to find the function in an initialized state.
-Otherwise it would have to re-enable the function and re-do the
-function-specific initialization.  I don't know if there are other
-consequences.  Presumably it will have lost any information about the nature
-of the wake-up trigger.
-
+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
