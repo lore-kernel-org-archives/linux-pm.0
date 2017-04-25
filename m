@@ -1,128 +1,130 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of
- PM domains
-Date: Tue, 25 Apr 2017 23:17:51 +0200
-Message-ID: <CAJZ5v0gMzN_zfC_2nnRtYFyFon3-_mnioQhNbDP0wsr91RnagA@mail.gmail.com>
-References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
- <d2e3ceaa-57e2-033d-ecd1-a3b2bd8ffa26@nvidia.com> <CAPDyKFoJ58pwGz2U90ob8a8cY=hEbE-wLBHZ0BBzqPoLW_wgGA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: Performance of low-cpu utilisation benchmark regressed severely
+ since 4.6
+Date: Tue, 25 Apr 2017 23:26:00 +0200
+Message-ID: <CAJZ5v0h35YMzJowbTmVQiOLg7fqUiSHbp5C++DnU_=33HDaCpQ@mail.gmail.com>
+References: <20170410084117.rjh3mtdx7hd2i5ze@techsingularity.net>
+ <000a01d2b9e6$393afef0$abb0fcd0$@net> <000301d2bb31$c0037790$400a66b0$@net>
+ <000501d2bc46$ad4b1fc0$07e15f40$@net> <CAJZ5v0gBhVOYJ5a7YWpRHSH20qx3Cjx_Lg0qk52st-p+fQS9bQ@mail.gmail.com>
+ <002e01d2bd93$7307d120$59177360$@net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFoJ58pwGz2U90ob8a8cY=hEbE-wLBHZ0BBzqPoLW_wgGA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:35287 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1033456AbdDYV0B (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 17:26:01 -0400
+In-Reply-To: <002e01d2bd93$7307d120$59177360$@net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mel Gorman <mgorman@techsingularity.net>, Rafael Wysocki <rafael.j.wysocki@intel.com>, =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Tue, Apr 25, 2017 at 9:34 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> On 25 April 2017 at 13:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+On Tue, Apr 25, 2017 at 9:13 AM, Doug Smythies <dsmythies@telus.net> wrote:
+> On 2017.04.24 07:25 Doug wrote:
+>> On 2017.04.23 18:23 Srinivas Pandruvada wrote:
+>>> On Mon, 2017-04-24 at 02:59 +0200, Rafael J. Wysocki wrote:
+>>>> On Sun, Apr 23, 2017 at 5:31 PM, Doug Smythies <dsmythies@telus.net> wrote:
 >>
->> On 28/03/17 15:13, Jon Hunter wrote:
->>> The current generic PM domain framework (GenDP) only allows a single
->>> PM domain to be associated with a given device. There are several
->>> use-cases for various system-on-chip devices where it is necessary for
->>> a PM domain consumer to control more than one PM domain where the PM
->>> domains:
->>> i).  Do not conform to a parent-child relationship so are not nested
->>> ii). May not be powered on and off at the same time so need independent
->>>      control.
->>>
->>> The solution proposed in this RFC is to allow consumers to explictly
->>> control PM domains, by getting a handle to a PM domain and explicitly
->>> making calls to power on and off the PM domain. Note that referencing
->>> counting is used to ensure that a PM domain shared between consumers
->>> is not powered off incorrectly.
->>>
->>> The Tegra124/210 XUSB subsystem (that consists of both host and device
->>> controllers) is an example of a consumer that needs to control more than
->>> one PM domain because the logic is partitioned across 3 PM domains which
->>> are:
->>> - XUSBA: Superspeed logic (for USB 3.0)
->>> - XUSBB: Device controller
->>> - XUSBC: Host controller
->>>
->>> These power domains are not nested and can be powered-up and down
->>> independently of one another. In practice different scenarios require
->>> different combinations of the power domains, for example:
->>> - Superspeed host: XUSBA and XUSBC
->>> - Superspeed device: XUSBA and XUSBB
->>>
->>> Although it could be possible to logically nest both the XUSBB and XUSBC
->>> domains under the XUSBA, superspeed may not always be used/required and
->>> so this would keep it on unnecessarily.
->>>
->>> Given that Tegra uses device-tree for describing the hardware, it would
->>> be ideal that the device-tree 'power-domains' property for generic PM
->>> domains could be extended to allow more than one PM domain to be
->>> specified. For example, define the following the Tegra210 xHCI device ...
->>>
->>>       usb@70090000 {
->>>               compatible = "nvidia,tegra210-xusb";
->>>               ...
->>>               power-domains = <&pd_xusbhost>, <&pd_xusbss>;
->>>               power-domain-names = "host", "superspeed";
->>>       };
->>>
->>> This RFC extends the generic PM domain framework to allow a device to
->>> define more than one PM domain in the device-tree 'power-domains'
->>> property. If there is more than one then the assumption is that these
->>> PM domains will be controlled explicitly by the consumer and the device
->>> will not be automatically bound to any PM domain.
+>>>>> It looks like the cost is mostly related to moving the load from
+>>>>> one CPU to
+>>>>> another and waiting for the new one to ramp up then.
+>>> Last time when we analyzed Mel's result last year this was the
+>>> conclusion. The problem was more apparent on systems with per core P-
+>>> state.
 >>
->> Any more comments/inputs on this? I can address Rajendra's feedback, but
->> before I did I wanted to see if this is along the right lines or not?
+>> ?? I have never seen this particular use case before.
+>> Unless I have looked the wrong thing, Mel's issue last year was a
+>> different use case.
+>>
+>> ...[cut]...
+>>
+>>>>>> We can do one more trick I forgot about.  Namely, if we are about
+>>>>>> to increase
+>>>>>> the P-state, we can jump to the average between the target and
+>>>>>> the max
+>>>>>> instead of just the target, like in the appended patch (on top of
+>>>>>> linux-next).
+>>>>>>
+>>>>>> That will make the P-state selection really aggressive, so costly
+>>>>>> energetically,
+>>>>>> but it shoud small jumps of the average load above 0 to case big
+>>>>>> jumps of
+>>>>>> the target P-state.
+>>>>> I'm already seeing the energy costs of some of this stuff.
+>>>>> 3050.2 Seconds.
+>>>> Is this with or without reducing the sampling interval?
+>>
+>> It was without reducing the sample interval.
+>>
+>> So, it was the branch you referred us to the other day:
+>>
+>> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+>>
+>> with your patch (now deleted from this thread) applied.
+>>
+>>
+>> ...[cut]...
+>>
+>>>> Anyway, your results are somewhat counter-intuitive.
+>>
+>>>> Would it be possible to run this workload with the linux-next branch
+>>>> and the schedutil governor and see if the patch at
+>>>> https://patchwork.kernel.org/patch/9671829/ makes any difference?
+>>
+>> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+>> Plus that patch is in progress.
 >
-> I discussed this with Rafael at the OSPM summit in Pisa a couple of
-> weeks ago. Apologize for the delay in providing additional feedback.
+> 3387.76 Seconds.
+> Idle power 3.85 watts.
 >
-> First, whether the problem is really rare, perhaps adding a new
-> API/framework can't be justified - then it may be better to add some
-> kind of aggregation layer on top of the current PM domain
-> infrastructure (something along the first attempt you made for genpd).
-> That was kind of Rafael's thoughts (Rafael, please correct me if I am
-> wrong).
-
-We were talking about the original idea behind the pm_domain pointer
-concept, which was about adding a set of PM operations above the bus
-type/class layer, which could be used for intercepting bus-type PM
-operations and providing some common handling above them.  This is
-still relevant IMO.
-
-The basic observation here is that the PM core takes only one set of
-PM operation per device into account and therefore, in every stage of
-system suspend, for example, the callback invoked by it has to take
-care of all actions that need to be carried out for the given device,
-possibly by invoking callbacks from other code layers.  That
-limitation cannot be removed easily, because it is built into the PM
-core design quite fundamentally.
-
-However, this series seems to be about controlling power resources
-represented by power domain objects rather than about PM operations.
-In ACPI there is a power resource concept which seems to be quite
-similar to this, so it is not entirely new. :-)
-
-Of course, question is whether or not to extend genpd this way and I'm
-not really sure.  I actually probably wouldn't do that, because
-poweron/poweroff operations used by genpd can be implemeted in terms
-of lower-level power resource control and I don't see the reason for
-mixing the two in one framework.
-
-> However, we currently know about at least two different SoCs that need
-> this. Perhaps we can extend the below list to justify adding a new
-> framework/APIs. Something along the lines what you propose in $subject
-> patchset.
+> Other potentially interesting information for 2 hour idle test:
+> Driver called 21209 times. Maximum duration 2396 Seconds. Minimum duration 20 mSec.
+> Histogram of target pstates:
+> 16 8
+> 17 3149
+> 18 1436
+> 19 1479
+> 20 196
+> 21 2
+> 22 3087
+> 23 375
+> 24 22
+> 25 4
+> 26 2
+> 27 3736
+> 28 2177
+> 29 13
+> 30 0
+> 31 0
+> 32 2
+> 33 0
+> 34 1533
+> 35 246
+> 36 0
+> 37 4
+> 38 3738
 >
-> 1) Nvidia; to solve the USB super-speed host/device problem.
-> 2) QCOM, which has pointed to several cases where the PM topology is
-> laid out like devices having two PM domains..
-> 3?) I don't fully remember - but I think Geert also pointed to some
-> examples where a device could reside in a clock domain but also in
-> power domain for a Renesas SoC!?
-> 4) ?
->
-> Moreover, perhaps this could also be useful for SoCs using ACPI?
+> Compared to kernel 4.11-rc7 (passive mode, schedutil governor)
+> 3297.82 (re-stated from a previous e-mail)
+> Idle power 3.81 watts
 
-No, it couldn't.  At least not in general.
+All right, so it looks like the patch makes the workload run longer
+and also use more energy.
 
-Thanks,
+Using more energy is quite as expected, but slowing thing down isn't,
+as the patch aggregates the updates that would have been discarded by
+taking the maximum utilization over them, which should result in
+higher frequencies being used too.  It may be due to the increased
+governor overhead, however.
+
+> Other potentially interesting information for 2 hour idle test:
+> Driver called 1631 times. Maximum duration 2510 Seconds. Minimum duration 0.587 mSec.
+> Histogram of target pstates (missing lines mean 0 occurrences):
+> 16 813
+> 24 2
+> 38 816
+
+Thanks for the data!
+
 Rafael
