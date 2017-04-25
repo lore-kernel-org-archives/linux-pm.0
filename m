@@ -1,63 +1,56 @@
-From: <piwet_sokolow@wp.pl>
-Subject: 12990 linux-pm
-Date: Tue, 25 Apr 2017 11:33:44 -0000
-Message-ID: <149312002450.16693.16393489905885470435@hinet.net>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH] i2c: designware: Do nothing in system suspend/resume
+ when RT suspended
+Date: Tue, 25 Apr 2017 14:36:04 +0300
+Message-ID: <1493120164.24567.194.camel@linux.intel.com>
+References: <20170330120444.12499-1-jarkko.nikula@linux.intel.com>
+         <CAPDyKFqfDYg1ZzcJ2Z7md5CD6tYWRMwi4N8M82DesG_ybVKHMw@mail.gmail.com>
+         <da36d4c0-7bcb-be18-6c8c-9fd714e2f1e0@linux.intel.com>
+         <CAPDyKFqg3TDMwBO7a-1zuKYeLjE-BQ4RPmtXFKzA0s2a50jQqg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: application/zip; name="62401.zip"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 1-161-121-106.dynamic-ip.hinet.net ([1.161.121.106]:42350 "HELO
-        hinet.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-        id S944961AbdDYLdw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 25 Apr 2017 07:33:52 -0400
-Content-Disposition: attachment
+Received: from mga02.intel.com ([134.134.136.20]:25191 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1946957AbdDYLgJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 25 Apr 2017 07:36:09 -0400
+In-Reply-To: <CAPDyKFqg3TDMwBO7a-1zuKYeLjE-BQ4RPmtXFKzA0s2a50jQqg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc: "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-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
+On Tue, 2017-04-25 at 13:12 +0200, Ulf Hansson wrote:
+> On 25 April 2017 at 13:08, Jarkko Nikula <jarkko.nikula@linux.intel.co
+> m> wrote:
+> > On 04/25/2017 12:24 PM, Ulf Hansson wrote:
+
+> > > To me, the proper solution is to use the
+> > > pm_runtime_force_suspend|resume() helpers to deal with system
+> > > suspend/resume. However I understand that the behavior of the ACPI
+> > > PM
+> > > domain currently prevents us from doing this. That said, perhaps
+> > > we
+> > > should instead try to make the ACPI PM domain to better
+> > > collaborate
+> > > with drivers using pm_runtime_force_suspend|resume()? I have been
+> > > investigating that and started to cook some patches, although I
+> > > have
+> > > not yet been able to post something. If you think it could make
+> > > sense,
+> > > I can pick it up.
+> > > 
+> > 
+> > That's a good idea. I didn't think about it at all.
+> 
+> Okay, thanks! I will continue to look into this and try to submit
+> something within a reasonable time frame, keep you posted.
+
+But please keep in mind that ACPI PM domain for BayTrail / CherryTrail
+is used by several IPs including most nasty GPDMA case. If something
+breaks that it would be show stopper.
+
+-- 
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
