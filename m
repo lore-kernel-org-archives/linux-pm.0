@@ -1,56 +1,77 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Touchscreen failure with CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-Date: Tue, 25 Apr 2017 16:43:01 +0530
-Message-ID: <20170425111301.GC1928@vireshk-i7>
-References: <CAOMZO5BZ8Z8dfwsfuiunNQ_q39_k4QJg7jLPQfaxn+YBsmz2jw@mail.gmail.com>
- <20170424040709.GG26900@vireshk-i7>
- <CAOMZO5B4_xrLcWQGF=yRfj-14XQKudzjyr2roGRkzofkHCfuHg@mail.gmail.com>
- <20170424112906.GR26900@vireshk-i7>
- <CAOMZO5BpAsJAKv-p=WPevUnx71fxbLtunJe-0ijVT7T9m7AMSQ@mail.gmail.com>
- <20170424114343.GS26900@vireshk-i7>
- <CAOMZO5AkTKjU5kw0gszLVdVOc_Sb_sWhr65heE==kyw=5rcN-g@mail.gmail.com>
- <20170425050633.GV26900@vireshk-i7>
- <CAOMZO5BgjgxGhJ7zGV-gjs0QHmJMgkNryFqTYA=vGPz8KWDijg@mail.gmail.com>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of
+ PM domains
+Date: Tue, 25 Apr 2017 12:13:27 +0100
+Message-ID: <d2e3ceaa-57e2-033d-ecd1-a3b2bd8ffa26@nvidia.com>
+References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f42.google.com ([74.125.83.42]:34976 "EHLO
-        mail-pg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1946615AbdDYLNK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 07:13:10 -0400
-Received: by mail-pg0-f42.google.com with SMTP id 72so26965224pge.2
-        for <linux-pm@vger.kernel.org>; Tue, 25 Apr 2017 04:13:09 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAOMZO5BgjgxGhJ7zGV-gjs0QHmJMgkNryFqTYA=vGPz8KWDijg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1490710443-27425-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+Cc: stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 25-04-17, 08:09, Fabio Estevam wrote:
-> Hi Viresh,
-> 
-> On Tue, Apr 25, 2017 at 2:06 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> 
-> > Honestly, I don't have a clue on how can we fix it for you now :)
-> >
-> > @Rafael: Any idea apart from running at max all the time?
-> >
-> > what touchscreen driver are you using btw? Just curious to see if there is any
-> > bug in there. Handling touchscreen events shouldn't require us to run at max
-> > freq.
-> 
-> imx6q-sabresd board uses a drivers/input/touchscreen/egalax_ts.c touchscreen.
-> 
-> >
-> > @shawn: Saw something similar ever ?
-> 
-> I do not see the problem with the NXP kernel, but was not able to
-> identify what makes the touchscreen not to fail at 396MHz in their
-> kernel.
 
-@Shawn/Sascha: Can you guys help here? This looks to be some imx
-specific stuff now.
+On 28/03/17 15:13, Jon Hunter wrote:
+> The current generic PM domain framework (GenDP) only allows a single
+> PM domain to be associated with a given device. There are several
+> use-cases for various system-on-chip devices where it is necessary for
+> a PM domain consumer to control more than one PM domain where the PM
+> domains:
+> i).  Do not conform to a parent-child relationship so are not nested
+> ii). May not be powered on and off at the same time so need independent
+>      control.
+> 
+> The solution proposed in this RFC is to allow consumers to explictly
+> control PM domains, by getting a handle to a PM domain and explicitly
+> making calls to power on and off the PM domain. Note that referencing
+> counting is used to ensure that a PM domain shared between consumers
+> is not powered off incorrectly.
+> 
+> The Tegra124/210 XUSB subsystem (that consists of both host and device
+> controllers) is an example of a consumer that needs to control more than
+> one PM domain because the logic is partitioned across 3 PM domains which
+> are:
+> - XUSBA: Superspeed logic (for USB 3.0)
+> - XUSBB: Device controller
+> - XUSBC: Host controller
+> 
+> These power domains are not nested and can be powered-up and down
+> independently of one another. In practice different scenarios require
+> different combinations of the power domains, for example:
+> - Superspeed host: XUSBA and XUSBC
+> - Superspeed device: XUSBA and XUSBB
+> 
+> Although it could be possible to logically nest both the XUSBB and XUSBC
+> domains under the XUSBA, superspeed may not always be used/required and
+> so this would keep it on unnecessarily.
+> 
+> Given that Tegra uses device-tree for describing the hardware, it would
+> be ideal that the device-tree 'power-domains' property for generic PM
+> domains could be extended to allow more than one PM domain to be
+> specified. For example, define the following the Tegra210 xHCI device ...
+> 
+> 	usb@70090000 {
+> 		compatible = "nvidia,tegra210-xusb";
+> 		...
+> 		power-domains = <&pd_xusbhost>, <&pd_xusbss>;
+> 		power-domain-names = "host", "superspeed";
+> 	};
+> 
+> This RFC extends the generic PM domain framework to allow a device to
+> define more than one PM domain in the device-tree 'power-domains'
+> property. If there is more than one then the assumption is that these
+> PM domains will be controlled explicitly by the consumer and the device
+> will not be automatically bound to any PM domain.
+
+Any more comments/inputs on this? I can address Rajendra's feedback, but
+before I did I wanted to see if this is along the right lines or not?
+
+Cheers
+Jon
 
 -- 
-viresh
+nvpublic
