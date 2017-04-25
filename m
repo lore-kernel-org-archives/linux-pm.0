@@ -1,52 +1,94 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Touchscreen failure with CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-Date: Tue, 25 Apr 2017 10:36:33 +0530
-Message-ID: <20170425050633.GV26900@vireshk-i7>
-References: <CAOMZO5BZ8Z8dfwsfuiunNQ_q39_k4QJg7jLPQfaxn+YBsmz2jw@mail.gmail.com>
- <20170424040709.GG26900@vireshk-i7>
- <CAOMZO5B4_xrLcWQGF=yRfj-14XQKudzjyr2roGRkzofkHCfuHg@mail.gmail.com>
- <20170424112906.GR26900@vireshk-i7>
- <CAOMZO5BpAsJAKv-p=WPevUnx71fxbLtunJe-0ijVT7T9m7AMSQ@mail.gmail.com>
- <20170424114343.GS26900@vireshk-i7>
- <CAOMZO5AkTKjU5kw0gszLVdVOc_Sb_sWhr65heE==kyw=5rcN-g@mail.gmail.com>
+From: Adrian Hunter <adrian.hunter@intel.com>
+Subject: Re: [PATCH RFC 2/4] mmc: sdio: Add capability to skip SDIO reset at
+ scan
+Date: Tue, 25 Apr 2017 09:21:49 +0300
+Message-ID: <ff496ea4-ba9b-387b-2d3b-3bf59b878973@intel.com>
+References: <1492769288-7474-1-git-send-email-adrian.hunter@intel.com>
+ <1492769288-7474-3-git-send-email-adrian.hunter@intel.com>
+ <CAPDyKFq7qWGgyXStJU3XZnGRcqMXZs_z21nJ2vUnCe0Pn-q19Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:33170 "EHLO
-        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S975080AbdDYFGh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 01:06:37 -0400
-Received: by mail-pf0-f169.google.com with SMTP id a188so21467544pfa.0
-        for <linux-pm@vger.kernel.org>; Mon, 24 Apr 2017 22:06:36 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAOMZO5AkTKjU5kw0gszLVdVOc_Sb_sWhr65heE==kyw=5rcN-g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFq7qWGgyXStJU3XZnGRcqMXZs_z21nJ2vUnCe0Pn-q19Q@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 24-04-17, 08:51, Fabio Estevam wrote:
-> On Mon, Apr 24, 2017 at 8:43 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On 24/04/17 23:33, Ulf Hansson wrote:
+> On 21 April 2017 at 12:08, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>> The SDIO card state might be being preserved during hibernation, for
+>> example a SDIO wifi card supporting WOWLAN. That state will be lost if an
+>> SDIO reset is done. One way to avoid that would be to build mmc core as a
+>> module and simply not load it until after attempting to restore the
+>> hibernation image. However that won't work if the hibernation image is
+>> stored on eMMC which, of course, requires mmc core.
 > 
-> > 110 ms is your sampling rate right now. Looks too high.
-> >
-> > Try doing this:
-> >
-> > echo 10000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-> >
-> > and retry your tests.
+> I don't follow here. Are you saying the SDIO card is kept powered in
+> hibernation, as to be able to support WOWLAN, right?
+
+Yes
+
 > 
-> Tried 10ms and also 1ms, but touchscreen also failed in both cases.
+> Then, it feels plain wrong the mmc_rescan() tries to re-initialize it.
+> That should never happen, unless something is broken of course.
 
-Honestly, I don't have a clue on how can we fix it for you now :)
+The thing to note about hibernation is that there is a regular boot in
+between saving the hibernation image and restoring it again.  At boot time,
+the kernel knows almost nothing about whether there is a hibernation image
+and whether or not it will be restored.  Consequently it becomes difficult
+to avoid mmc_rescan().  As mentioned above, we need mmc_rescan() to
+initialize the eMMC so that the hibernation image can be read.
 
-@Rafael: Any idea apart from running at max all the time?
+> 
+> Kind regards
+> Uffe
+> 
+>>
+>> It is assumed on such systems that the platform will power cycle the SDIO
+>> card or not as necessary so that the SDIO reset is not needed. Add a
+>> capability flag to reflect that and use it to skip the SDIO reset at scan
+>> time.
+>>
+>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+>> ---
+>>  drivers/mmc/core/core.c  | 6 +++++-
+>>  include/linux/mmc/host.h | 1 +
+>>  2 files changed, 6 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+>> index 6987976252ad..178e23bf0c30 100644
+>> --- a/drivers/mmc/core/core.c
+>> +++ b/drivers/mmc/core/core.c
+>> @@ -2639,8 +2639,12 @@ static int mmc_rescan_try_freq(struct mmc_host *host, unsigned freq)
+>>          * if the card is being re-initialized, just send it.  CMD52
+>>          * should be ignored by SD/eMMC cards.
+>>          * Skip it if we already know that we do not support SDIO commands
+>> +        * Also skip it if we know this host controller has a SDIO card that
+>> +        * needs to be able to restore from hibernation without losing the card
+>> +        * state e.g. an SDIO wifi card supporting WOWLAN.
+>>          */
+>> -       if (!(host->caps2 & MMC_CAP2_NO_SDIO))
+>> +       if (!(host->caps2 & MMC_CAP2_NO_SDIO) &&
+>> +           !(host->caps2 & MMC_CAP2_NO_SDIO_RESET))
+>>                 sdio_reset(host);
+>>
+>>         mmc_go_idle(host);
+>> diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+>> index 78c544e296cd..187a7ba41364 100644
+>> --- a/include/linux/mmc/host.h
+>> +++ b/include/linux/mmc/host.h
+>> @@ -281,6 +281,7 @@ struct mmc_host {
+>>         u32                     caps2;          /* More host capabilities */
+>>
+>>  #define MMC_CAP2_BOOTPART_NOACC        (1 << 0)        /* Boot partition no access */
+>> +#define MMC_CAP2_NO_SDIO_RESET (1 << 1)        /* Do not SDIO reset at scan */
+>>  #define MMC_CAP2_FULL_PWR_CYCLE        (1 << 2)        /* Can do full power cycle */
+>>  #define MMC_CAP2_HS200_1_8V_SDR        (1 << 5)        /* can support */
+>>  #define MMC_CAP2_HS200_1_2V_SDR        (1 << 6)        /* can support */
+>> --
+>> 1.9.1
+>>
+> 
 
-what touchscreen driver are you using btw? Just curious to see if there is any
-bug in there. Handling touchscreen events shouldn't require us to run at max
-freq.
-
-@shawn: Saw something similar ever ?
-
--- 
-viresh
