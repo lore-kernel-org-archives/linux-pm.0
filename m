@@ -1,41 +1,75 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: Touchscreen failure with CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-Date: Tue, 25 Apr 2017 12:24:05 -0300
-Message-ID: <CAOMZO5AJQ2TJvyuiBLLeS9zZMufMxyuNw+MA+NtZPCzzWJ0NXA@mail.gmail.com>
-References: <CAOMZO5BZ8Z8dfwsfuiunNQ_q39_k4QJg7jLPQfaxn+YBsmz2jw@mail.gmail.com>
- <20170424040709.GG26900@vireshk-i7> <CAOMZO5B4_xrLcWQGF=yRfj-14XQKudzjyr2roGRkzofkHCfuHg@mail.gmail.com>
- <20170424112906.GR26900@vireshk-i7> <CAOMZO5BpAsJAKv-p=WPevUnx71fxbLtunJe-0ijVT7T9m7AMSQ@mail.gmail.com>
- <20170424114343.GS26900@vireshk-i7> <CAOMZO5AkTKjU5kw0gszLVdVOc_Sb_sWhr65heE==kyw=5rcN-g@mail.gmail.com>
- <20170425050633.GV26900@vireshk-i7> <CAOMZO5BgjgxGhJ7zGV-gjs0QHmJMgkNryFqTYA=vGPz8KWDijg@mail.gmail.com>
- <20170425111301.GC1928@vireshk-i7> <CAHCN7xJVicKuAc0dDbzBg4h2d1UUP66iKkSsWN_f=rPd4mOZSw@mail.gmail.com>
- <CAOMZO5CPtKAh6wMJ06BO4YFLPmOTvrpv5Q_3RJoj9dup46ukTQ@mail.gmail.com> <CAHCN7x+6KwOZdC1MaNQGdXWFjJ18hYp3kc73JADDMC4DOFn+yQ@mail.gmail.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: [PATCH] ARM: dts: imx6sx-sdb: Remove cpufreq OPP override
+Date: Tue, 25 Apr 2017 19:57:59 +0300
+Message-ID: <89cc7192100bdc9ce546bf6000446e629457ebc1.1493138693.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f52.google.com ([209.85.218.52]:32782 "EHLO
-        mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1949343AbdDYPYM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 11:24:12 -0400
-Received: by mail-oi0-f52.google.com with SMTP id y11so143376762oie.0
-        for <linux-pm@vger.kernel.org>; Tue, 25 Apr 2017 08:24:12 -0700 (PDT)
-In-Reply-To: <CAHCN7x+6KwOZdC1MaNQGdXWFjJ18hYp3kc73JADDMC4DOFn+yQ@mail.gmail.com>
+Received: from mail-sn1nam01on0055.outbound.protection.outlook.com ([104.47.32.55]:19404
+        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1432352AbdDYQ6Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 25 Apr 2017 12:58:16 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Adam Ford <aford173@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>
+Cc: Leonard Crestez <leonard.crestez@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Peter Chen <Peter.Chen@nxp.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
 
-On Tue, Apr 25, 2017 at 11:35 AM, Adam Ford <aford173@gmail.com> wrote:
+The board file for imx6sx-dbg overrides cpufreq operating points to use
+higher voltages. This is done because the board has a shared rail for
+VDD_ARM_IN and VDD_SOC_IN and when using LDO bypass the shared voltage
+needs to be a value suitable for both ARM and SOC.
 
-> I have a touch screen (using tsc2004 touch controller) on my board.  I
-> can run some tests if you tell me how you're able to reproduce your
-> issue.  I can at least confirm whether or not I see it too.  I won't
-> be able to do it until later tonight or tomorrow however.
+This was introduced in:
 
-Just run:
+commit 54183bd7f766 ("ARM: imx6sx-sdb: add revb board and make it default")
 
-evtest /dev/input/eventX to capture the touchscreen events and keep
-touching the screen.
+This only only applies to LDO bypass mode, a feature not present in
+upstream. When LDOs are enabled the effect is to use higher voltages than
+necesarry for no good reason.
 
-After some random time (1-2 minutes) evtest will stop capturing the events.
+Setting these higher voltages can make some boards fail to boot with ugly
+semi-random crashes, reminiscent of memory corruption. These failures
+happen the first time the lowest idle state is used. Remove the OPP
+override in order to fix those crashes.
 
-Thanks
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+
+---
+It's not clear exactly why the crashes happen. Perhaps waking up from idle
+draws more power than is available? Removing this override is a correct
+change anyway so maybe there is no need to investigate deeper.
+
+ arch/arm/boot/dts/imx6sx-sdb.dts | 17 -----------------
+ 1 file changed, 17 deletions(-)
+
+diff --git a/arch/arm/boot/dts/imx6sx-sdb.dts b/arch/arm/boot/dts/imx6sx-sdb.dts
+index 5bb8fd5..d71da30 100644
+--- a/arch/arm/boot/dts/imx6sx-sdb.dts
++++ b/arch/arm/boot/dts/imx6sx-sdb.dts
+@@ -12,23 +12,6 @@
+ 	model = "Freescale i.MX6 SoloX SDB RevB Board";
+ };
+ 
+-&cpu0 {
+-	operating-points = <
+-		/* kHz    uV */
+-		996000  1250000
+-		792000  1175000
+-		396000  1175000
+-		198000  1175000
+-		>;
+-	fsl,soc-operating-points = <
+-		/* ARM kHz      SOC uV */
+-		996000	1250000
+-		792000	1175000
+-		396000	1175000
+-		198000  1175000
+-	>;
+-};
+-
+ &i2c1 {
+ 	clock-frequency = <100000>;
+ 	pinctrl-names = "default";
+-- 
+2.7.4
