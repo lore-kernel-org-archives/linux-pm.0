@@ -1,66 +1,83 @@
 From: Paul Kocialkowski <contact@paulk.fr>
-Subject: [PATCH 1/2] power: supply: sbs-battery: Don't ignore the first external power change
-Date: Tue, 25 Apr 2017 17:09:04 +0200
-Message-ID: <20170425150905.4185-1-contact@paulk.fr>
+Subject: [PATCH 2/2] power: supply: sbs-battery: Correct supply status with current draw
+Date: Tue, 25 Apr 2017 17:09:05 +0200
+Message-ID: <20170425150905.4185-2-contact@paulk.fr>
+References: <20170425150905.4185-1-contact@paulk.fr>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gagarine.paulk.fr ([109.190.93.129]:51599 "EHLO
+Received: from gagarine.paulk.fr ([109.190.93.129]:59510 "EHLO
         gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1949263AbdDYPPv (ORCPT
+        with ESMTP id S1949276AbdDYPPv (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 11:15:51 -0400
+In-Reply-To: <20170425150905.4185-1-contact@paulk.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Sebastian Reichel <sre@kernel.org>, Jon Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>
 
-A mechanism to ignore the first external power change notification was
-put in place years ago to ignore the power_supply_register notification.
+The status reported directly by the battery controller is not always
+reliable and should be corrected based on the current draw information.
 
-However, this doesn't apply to the current situation anymore, as the
-first notification is always the result of a legitimate power change.
-
-This removes this deprecated mechanism, which puts back the driver's
-state machine to a sane state (an ignored first notification previously
-caused a charging/discharging status inversion).
+This implements such a correction with a dedicated function, called
+where the supply status is retrieved.
 
 Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
 ---
- drivers/power/supply/sbs-battery.c | 10 ----------
- 1 file changed, 10 deletions(-)
+ drivers/power/supply/sbs-battery.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
 diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index 8bb2eb38eb1c..3e7125c8e4d1 100644
+index 3e7125c8e4d1..29c4e277abf1 100644
 --- a/drivers/power/supply/sbs-battery.c
 +++ b/drivers/power/supply/sbs-battery.c
-@@ -171,7 +171,6 @@ struct sbs_info {
- 	u32				i2c_retry_count;
- 	u32				poll_retry_count;
- 	struct delayed_work		work;
--	int				ignore_changes;
- };
+@@ -295,6 +295,31 @@ static int sbs_write_word_data(struct i2c_client *client, u8 address,
+ 	return 0;
+ }
  
- static char model_name[I2C_SMBUS_BLOCK_MAX + 1];
-@@ -694,11 +693,6 @@ static void sbs_external_power_changed(struct power_supply *psy)
- {
- 	struct sbs_info *chip = power_supply_get_drvdata(psy);
++static int sbs_status_correct(struct i2c_client *client, int *intval)
++{
++	int ret;
++
++	ret = sbs_read_word_data(client, sbs_data[REG_CURRENT].addr);
++	if (ret < 0)
++		return ret;
++
++	ret = (s16)ret;
++
++	/* Not drawing current means full (cannot be not charging) */
++	if (ret == 0)
++		*intval = POWER_SUPPLY_STATUS_FULL;
++
++	if (*intval == POWER_SUPPLY_STATUS_FULL) {
++		/* Drawing or providing current when full */
++		if (ret > 0)
++			*intval = POWER_SUPPLY_STATUS_CHARGING;
++		else if (ret < 0)
++			*intval = POWER_SUPPLY_STATUS_DISCHARGING;
++	}
++
++	return 0;
++}
++
+ static int sbs_get_battery_presence_and_health(
+ 	struct i2c_client *client, enum power_supply_property psp,
+ 	union power_supply_propval *val)
+@@ -401,6 +426,8 @@ static int sbs_get_battery_property(struct i2c_client *client,
+ 		else
+ 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
  
--	if (chip->ignore_changes > 0) {
--		chip->ignore_changes--;
--		return;
--	}
--
- 	/* cancel outstanding work */
- 	cancel_delayed_work_sync(&chip->work);
++		sbs_status_correct(client, &val->intval);
++
+ 		if (chip->poll_time == 0)
+ 			chip->last_state = val->intval;
+ 		else if (chip->last_state != val->intval) {
+@@ -721,6 +748,8 @@ static void sbs_delayed_work(struct work_struct *work)
+ 	else
+ 		ret = POWER_SUPPLY_STATUS_CHARGING;
  
-@@ -775,10 +769,6 @@ static int sbs_probe(struct i2c_client *client,
- 	chip->enable_detection = false;
- 	psy_cfg.of_node = client->dev.of_node;
- 	psy_cfg.drv_data = chip;
--	/* ignore first notification of external change, it is generated
--	 * from the power_supply_register call back
--	 */
--	chip->ignore_changes = 1;
- 	chip->last_state = POWER_SUPPLY_STATUS_UNKNOWN;
- 
- 	/* use pdata if available, fall back to DT properties,
++	sbs_status_correct(chip->client, &ret);
++
+ 	if (chip->last_state != ret) {
+ 		chip->poll_time = 0;
+ 		power_supply_changed(chip->power_supply);
 -- 
 2.12.2
