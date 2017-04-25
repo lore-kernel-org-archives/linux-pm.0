@@ -1,155 +1,103 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: Re: [PATCH RFC 2/4] mmc: sdio: Add capability to skip SDIO reset at
- scan
-Date: Tue, 25 Apr 2017 22:11:08 +0300
-Message-ID: <27425ada-cd91-12a7-1c25-6588ed2ac500@intel.com>
-References: <1492769288-7474-1-git-send-email-adrian.hunter@intel.com>
- <1492769288-7474-3-git-send-email-adrian.hunter@intel.com>
- <CAPDyKFq7qWGgyXStJU3XZnGRcqMXZs_z21nJ2vUnCe0Pn-q19Q@mail.gmail.com>
- <ff496ea4-ba9b-387b-2d3b-3bf59b878973@intel.com>
- <CAPDyKFpDjx9EWLFCR5yejJg5bu3x--ksuOAE33+a_L0FNUW9dw@mail.gmail.com>
- <9ed30be6-9a42-9cd1-f260-9b57da369b05@intel.com>
- <CAPDyKFqorfJTVeS+r-qWYTFcAuJ67kmpk1WWQpkeMeQKsVfEcg@mail.gmail.com>
- <15332477-f37b-21d0-f85b-132d7bc0cdb4@intel.com>
- <CAPDyKFr-y5uAZMhGuiL8o7syTpDqFcQp5ibnO80ZWCFUNcQetQ@mail.gmail.com>
- <e9dabea2-76bc-8112-93de-c2ad7f2668f3@intel.com>
- <a873b92c-e290-2e9b-d473-e28e9aeb4c0c@ti.com>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of
+ PM domains
+Date: Tue, 25 Apr 2017 21:34:44 +0200
+Message-ID: <CAPDyKFoJ58pwGz2U90ob8a8cY=hEbE-wLBHZ0BBzqPoLW_wgGA@mail.gmail.com>
+References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com> <d2e3ceaa-57e2-033d-ecd1-a3b2bd8ffa26@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <a873b92c-e290-2e9b-d473-e28e9aeb4c0c@ti.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <d2e3ceaa-57e2-033d-ecd1-a3b2bd8ffa26-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/25/2017 09:51 PM, Grygorii Strashko wrote:
-> 
-> 
-> On 04/25/2017 07:45 AM, Adrian Hunter wrote:
->> On 25/04/17 15:24, Ulf Hansson wrote:
->>> On 25 April 2017 at 13:20, Adrian Hunter <adrian.hunter@intel.com> wrote:
->>>> On 25/04/17 13:46, Ulf Hansson wrote:
->>>>> On 25 April 2017 at 09:57, Adrian Hunter <adrian.hunter@intel.com> wrote:
->>>>>> On 25/04/17 10:52, Ulf Hansson wrote:
->>>>>>> +Grygorii Strashko
->>>>>>>
->>>>>>> On 25 April 2017 at 08:21, Adrian Hunter <adrian.hunter@intel.com> wrote:
->>>>>>>> On 24/04/17 23:33, Ulf Hansson wrote:
->>>>>>>>> On 21 April 2017 at 12:08, Adrian Hunter <adrian.hunter@intel.com> wrote:
->>>>>>>>>> The SDIO card state might be being preserved during hibernation, for
->>>>>>>>>> example a SDIO wifi card supporting WOWLAN. That state will be lost if an
->>>>>>>>>> SDIO reset is done. One way to avoid that would be to build mmc core as a
->>>>>>>>>> module and simply not load it until after attempting to restore the
->>>>>>>>>> hibernation image. However that won't work if the hibernation image is
->>>>>>>>>> stored on eMMC which, of course, requires mmc core.
->>>>>>>>>
->>>>>>>>> I don't follow here. Are you saying the SDIO card is kept powered in
->>>>>>>>> hibernation, as to be able to support WOWLAN, right?
->>>>>>>>
->>>>>>>> Yes
->>>>>>>
->>>>>>> Okay, makes sense!
->>>>>>>
->>>>>>>>
->>>>>>>>>
->>>>>>>>> Then, it feels plain wrong the mmc_rescan() tries to re-initialize it.
->>>>>>>>> That should never happen, unless something is broken of course.
->>>>>>>>
->>>>>>>> The thing to note about hibernation is that there is a regular boot in
->>>>>>>> between saving the hibernation image and restoring it again.  At boot time,
->>>>>>>> the kernel knows almost nothing about whether there is a hibernation image
->>>>>>>> and whether or not it will be restored.  Consequently it becomes difficult
->>>>>>>> to avoid mmc_rescan().  As mentioned above, we need mmc_rescan() to
->>>>>>>> initialize the eMMC so that the hibernation image can be read.
->>>>>>>
->>>>>>> What's wrong with using the hibernation callbacks in the struct
->>>>>>> dev_pm_ops? We already do this.
->>>>>>
->>>>>> Here is the scenario.  The kernel has just booted.  User space wants to try
->>>>>> to restore a hibernation image, if there is one.  So user space loads the
->>>>>> mmc core because the hibernation image is on eMMC.  Mmc core does an SDIO
->>>>>> reset on the SDIO card and the state is lost.  It has little to do with pm
->>>>>> callbacks AFAICS.
->>>>>
->>>>> Ah, now I see what you mean. I thought the problem was during the
->>>>> actual restoring of the hibernation image.
->>>>>
->>>>> Alright, when a boot is triggered by WOWLAN , you want to avoid
->>>>> sending the reset command for the SDIO card before the
->>>>> re-initialization of the SDIO card starts.
->>>>>
->>>>> The problem with this approach is that you can't differentiate between
->>>>> a cold boot and a boot triggered by WOWLAN, right!? In other words, in
->>>>> some cases the reset command may be needed while in other it won't.
->>>>
->>>> SDIO reset is only needed if the card has not been power-cycled.  The
->>>> assumption is that the platform takes care of that when needed. e.g. when
->>>> rebooting instead of going to S4.
->>>>
->>>>>
->>>>> Maybe you can elaborate more on what exactly what the problem is with
->>>>> sending the reset command when the boot is triggered from WOWLAN? Yes,
->>>>> the SDIO card loses its context, but how is that a problem?
->>>>
->>>> The wifi driver expects to find the function in an initialized state.
->>>
->>> So how does the the wifi driver distinguish this a boot caused by
->>> WOWLAN - and not a cold boot?
+On 25 April 2017 at 13:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>
+> On 28/03/17 15:13, Jon Hunter wrote:
+>> The current generic PM domain framework (GenDP) only allows a single
+>> PM domain to be associated with a given device. There are several
+>> use-cases for various system-on-chip devices where it is necessary for
+>> a PM domain consumer to control more than one PM domain where the PM
+>> domains:
+>> i).  Do not conform to a parent-child relationship so are not nested
+>> ii). May not be powered on and off at the same time so need independent
+>>      control.
 >>
->> It doesn't have to.  It doesn't get loaded until after the attempt to
->> restore the hibernation image.  So in the hibernation case it has its
->> ->restore() callback.  
-> 
-> For this case is a good question of how Kernel wifi card driver state will be
-> synchronized HW state after restore from Hibernation (first of all wireless state -
-> scan results, connection state and parameters)? Most probably wifi driver will
-> need to perform mostly full re-initialization on restore, so...
-> 
->> If there is no hibernation image, it gets loaded and
->> probed.
-> 
-> But in this case, as per you patch, there are will be no SDIO reset so
-> do you expect that wifi driver will still work? 
+>> The solution proposed in this RFC is to allow consumers to explictly
+>> control PM domains, by getting a handle to a PM domain and explicitly
+>> making calls to power on and off the PM domain. Note that referencing
+>> counting is used to ensure that a PM domain shared between consumers
+>> is not powered off incorrectly.
+>>
+>> The Tegra124/210 XUSB subsystem (that consists of both host and device
+>> controllers) is an example of a consumer that needs to control more than
+>> one PM domain because the logic is partitioned across 3 PM domains which
+>> are:
+>> - XUSBA: Superspeed logic (for USB 3.0)
+>> - XUSBB: Device controller
+>> - XUSBC: Host controller
+>>
+>> These power domains are not nested and can be powered-up and down
+>> independently of one another. In practice different scenarios require
+>> different combinations of the power domains, for example:
+>> - Superspeed host: XUSBA and XUSBC
+>> - Superspeed device: XUSBA and XUSBB
+>>
+>> Although it could be possible to logically nest both the XUSBB and XUSBC
+>> domains under the XUSBA, superspeed may not always be used/required and
+>> so this would keep it on unnecessarily.
+>>
+>> Given that Tegra uses device-tree for describing the hardware, it would
+>> be ideal that the device-tree 'power-domains' property for generic PM
+>> domains could be extended to allow more than one PM domain to be
+>> specified. For example, define the following the Tegra210 xHCI device ...
+>>
+>>       usb@70090000 {
+>>               compatible = "nvidia,tegra210-xusb";
+>>               ...
+>>               power-domains = <&pd_xusbhost>, <&pd_xusbss>;
+>>               power-domain-names = "host", "superspeed";
+>>       };
+>>
+>> This RFC extends the generic PM domain framework to allow a device to
+>> define more than one PM domain in the device-tree 'power-domains'
+>> property. If there is more than one then the assumption is that these
+>> PM domains will be controlled explicitly by the consumer and the device
+>> will not be automatically bound to any PM domain.
+>
+> Any more comments/inputs on this? I can address Rajendra's feedback, but
+> before I did I wanted to see if this is along the right lines or not?
 
-It does still work yes.
+I discussed this with Rafael at the OSPM summit in Pisa a couple of
+weeks ago. Apologize for the delay in providing additional feedback.
 
-> 
->>
->> AFAICT that is the normal way to stop drivers interfering with hibernation
->> i.e. don't load them until after the attempt is made to restore the
->> hibernation image.  We could do that with mmc core too, but for the fact
->> that the hibernation image is on eMMC.
-> 
->>From my experience, it pretty hard to restore HW state which runs by FW, so as
-> W/A we just unloaded remoteproc, wireless and graphic drivers before hibernation and
-> reloaded them right after. As I know the same approach often used in x86 world also.
+First, whether the problem is really rare, perhaps adding a new
+API/framework can't be justified - then it may be better to add some
+kind of aggregation layer on top of the current PM domain
+infrastructure (something along the first attempt you made for genpd).
+That was kind of Rafael's thoughts (Rafael, please correct me if I am
+wrong).
 
-Not sure it would make sense to try and configure WOWLAN and then remove the
-driver?
+However, we currently know about at least two different SoCs that need
+this. Perhaps we can extend the below list to justify adding a new
+framework/APIs. Something along the lines what you propose in $subject
+patchset.
 
-> 
-> 
->>
->>>
->>>> Otherwise it would have to re-enable the function and re-do the
->>>> function-specific initialization.  I don't know if there are other
->>>
->>> At boot the SDIO func driver becomes probed, when the mmc core finds
->>> and SDIO card and then registers a func device for it. Are you saying
->>> that the SDIO func driver can take shortcuts when enabling the func
->>> device, when the boot is trigger from WOWLAN?
->>
->> No.
->>
->>>
->>>> consequences.  Presumably it will have lost any information about the nature
->>>> of the wake-up trigger.
->>>
->>> How does that matter?
->>
->> I don't know if it matters.
->>
-> 
+1) Nvidia; to solve the USB super-speed host/device problem.
+2) QCOM, which has pointed to several cases where the PM topology is
+laid out like devices having two PM domains..
+3?) I don't fully remember - but I think Geert also pointed to some
+examples where a device could reside in a clock domain but also in
+power domain for a Renesas SoC!?
+4) ?
 
+Moreover, perhaps this could also be useful for SoCs using ACPI? If
+so, we shouldn't tie this immediately to genpd, but in the layer above
+genpd/ACPI PM domain. Something like dev_pm_domain_get(), which would
+be implemented similar as the dev_pm_domain_attach() (which calls both
+the ACPI PM domain and genpd to find a match).
+
+Kind regards
+Uffe
