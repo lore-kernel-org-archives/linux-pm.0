@@ -1,47 +1,78 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 16/17] thermal: cpu_cooling: 'freq' can't be zero in cpufreq_state2power()
-Date: Tue, 25 Apr 2017 15:57:23 +0530
-Message-ID: <98df049ab5f1d13ebb497e922229f0e8b8160606.1493115651.git.viresh.kumar@linaro.org>
+Subject: [PATCH V4 17/17] thermal: cpu_cooling: Rearrange struct cpufreq_cooling_device
+Date: Tue, 25 Apr 2017 15:57:24 +0530
+Message-ID: <6a883ddf73cd5ed8bc929e8b688f1e61e020508f.1493115651.git.viresh.kumar@linaro.org>
 References: <cover.1493115651.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f41.google.com ([74.125.83.41]:36213 "EHLO
+        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1429613AbdDYK2c (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 06:28:32 -0400
+Received: by mail-pg0-f41.google.com with SMTP id g2so26443748pge.3
+        for <linux-pm@vger.kernel.org>; Tue, 25 Apr 2017 03:28:26 -0700 (PDT)
 In-Reply-To: <cover.1493115651.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1493115651.git.viresh.kumar@linaro.org>
 References: <cover.1493115651.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
-List-Id: linux-pm@vger.kernel.org
 
-The frequency table shouldn't have any zero frequency entries and so
-such a check isn't required. Though it would be better to make sure
-'state' is within limits.
+This shrinks the size of the structure on arm64 by 8 bytes by avoiding
+padding of 4 bytes at two places.
+
+Also add missing doc comment for freq_table
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Tested-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/thermal/cpu_cooling.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/thermal/cpu_cooling.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index bfa9731e7cdb..9cbf7bdbeb7a 100644
+index 9cbf7bdbeb7a..1305020790b2 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -564,12 +564,13 @@ static int cpufreq_state2power(struct thermal_cooling_device *cdev,
- 	int ret;
- 	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
- 
-+	/* Request state should be less than max_level */
-+	if (WARN_ON(state > cpufreq_cdev->max_level))
-+		return -EINVAL;
-+
- 	num_cpus = cpumask_weight(cpufreq_cdev->policy->cpus);
- 
- 	freq = cpufreq_cdev->freq_table[state].frequency;
--	if (!freq)
--		return -EINVAL;
--
- 	dynamic_power = cpu_freq_to_power(cpufreq_cdev, freq) * num_cpus;
- 	ret = get_static_power(cpufreq_cdev, tz, freq, &static_power);
- 	if (ret)
+@@ -75,17 +75,18 @@ struct time_in_idle {
+  * struct cpufreq_cooling_device - data for cooling device with cpufreq
+  * @id: unique integer value corresponding to each cpufreq_cooling_device
+  *	registered.
+- * @cdev: thermal_cooling_device pointer to keep track of the
+- *	registered cooling device.
+- * @policy: cpufreq policy.
++ * @last_load: load measured by the latest call to cpufreq_get_requested_power()
+  * @cpufreq_state: integer value representing the current state of cpufreq
+  *	cooling	devices.
+  * @clipped_freq: integer value representing the absolute value of the clipped
+  *	frequency.
+  * @max_level: maximum cooling level. One less than total number of valid
+  *	cpufreq frequencies.
++ * @freq_table: Freq table in descending order of frequencies
++ * @cdev: thermal_cooling_device pointer to keep track of the
++ *	registered cooling device.
++ * @policy: cpufreq policy.
+  * @node: list_head to link all cpufreq_cooling_device together.
+- * @last_load: load measured by the latest call to cpufreq_get_requested_power()
+  * @idle_time: idle time stats
+  * @plat_get_static_power: callback to calculate the static power
+  *
+@@ -94,14 +95,14 @@ struct time_in_idle {
+  */
+ struct cpufreq_cooling_device {
+ 	int id;
+-	struct thermal_cooling_device *cdev;
+-	struct cpufreq_policy *policy;
++	u32 last_load;
+ 	unsigned int cpufreq_state;
+ 	unsigned int clipped_freq;
+ 	unsigned int max_level;
+ 	struct freq_table *freq_table;	/* In descending order */
++	struct thermal_cooling_device *cdev;
++	struct cpufreq_policy *policy;
+ 	struct list_head node;
+-	u32 last_load;
+ 	struct time_in_idle *idle_time;
+ 	get_static_t plat_get_static_power;
+ };
 -- 
 2.12.0.432.g71c3a4f4ba37
