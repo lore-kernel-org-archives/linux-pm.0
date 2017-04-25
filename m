@@ -1,151 +1,79 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 13/17] thermal: cpu_cooling: create structure for idle time stats
-Date: Tue, 25 Apr 2017 15:57:20 +0530
-Message-ID: <d3b0f053baf9f64a4e14e6e1eae150ffc7d4b107.1493115651.git.viresh.kumar@linaro.org>
+Subject: [PATCH V4 14/17] thermal: cpu_cooling: get_level() can't fail
+Date: Tue, 25 Apr 2017 15:57:21 +0530
+Message-ID: <312061b66700517ab58889f5f781ccd4e1e8a5d7.1493115651.git.viresh.kumar@linaro.org>
 References: <cover.1493115651.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:36375 "EHLO
+        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1429598AbdDYK2W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Apr 2017 06:28:22 -0400
+Received: by mail-pf0-f174.google.com with SMTP id 194so25043785pfv.3
+        for <linux-pm@vger.kernel.org>; Tue, 25 Apr 2017 03:28:16 -0700 (PDT)
 In-Reply-To: <cover.1493115651.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1493115651.git.viresh.kumar@linaro.org>
 References: <cover.1493115651.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
-List-Id: linux-pm@vger.kernel.org
 
-We keep two arrays for idle time stats and allocate memory for them
-separately. It would be much easier to follow if we create an array of
-idle stats structure instead and allocate it once.
+The frequency passed to get_level() is returned by cpu_power_to_freq()
+and it is guaranteed that get_level() can't fail.
+
+Get rid of error code.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Tested-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/thermal/cpu_cooling.c | 53 ++++++++++++++++++++-----------------------
- 1 file changed, 25 insertions(+), 28 deletions(-)
+ drivers/thermal/cpu_cooling.c | 20 +++++---------------
+ 1 file changed, 5 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 67ec52d5f7fc..11735dba1456 100644
+index 11735dba1456..2c2d76ac04c3 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -62,6 +62,16 @@ struct freq_table {
- };
+@@ -119,22 +119,19 @@ static LIST_HEAD(cpufreq_cdev_list);
+  * @cpufreq_cdev: cpufreq_cdev for which the property is required
+  * @freq: Frequency
+  *
+- * Return: level on success, THERMAL_CSTATE_INVALID on error.
++ * Return: level corresponding to the frequency.
+  */
+ static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_cdev,
+ 			       unsigned int freq)
+ {
++	struct freq_table *freq_table = cpufreq_cdev->freq_table;
+ 	unsigned long level;
+ 
+-	for (level = 0; level <= cpufreq_cdev->max_level; level++) {
+-		if (freq == cpufreq_cdev->freq_table[level].frequency)
+-			return level;
+-
+-		if (freq > cpufreq_cdev->freq_table[level].frequency)
++	for (level = 1; level <= cpufreq_cdev->max_level; level++)
++		if (freq > freq_table[level].frequency)
+ 			break;
+-	}
+ 
+-	return THERMAL_CSTATE_INVALID;
++	return level - 1;
+ }
  
  /**
-+ * struct time_in_idle - Idle time stats
-+ * @time: previous reading of the absolute time that this cpu was idle
-+ * @timestamp: wall time of the last invocation of get_cpu_idle_time_us()
-+ */
-+struct time_in_idle {
-+	u64 time;
-+	u64 timestamp;
-+};
-+
-+/**
-  * struct cpufreq_cooling_device - data for cooling device with cpufreq
-  * @id: unique integer value corresponding to each cpufreq_cooling_device
-  *	registered.
-@@ -76,9 +86,7 @@ struct freq_table {
-  *	cpufreq frequencies.
-  * @node: list_head to link all cpufreq_cooling_device together.
-  * @last_load: load measured by the latest call to cpufreq_get_requested_power()
-- * @time_in_idle: previous reading of the absolute time that this cpu was idle
-- * @time_in_idle_timestamp: wall time of the last invocation of
-- *	get_cpu_idle_time_us()
-+ * @idle_time: idle time stats
-  * @cpu_dev: the cpu_device of policy->cpu.
-  * @plat_get_static_power: callback to calculate the static power
-  *
-@@ -95,8 +103,7 @@ struct cpufreq_cooling_device {
- 	struct freq_table *freq_table;	/* In descending order */
- 	struct list_head node;
- 	u32 last_load;
--	u64 *time_in_idle;
--	u64 *time_in_idle_timestamp;
-+	struct time_in_idle *idle_time;
- 	struct device *cpu_dev;
- 	get_static_t plat_get_static_power;
- };
-@@ -300,18 +307,19 @@ static u32 get_load(struct cpufreq_cooling_device *cpufreq_cdev, int cpu,
- {
- 	u32 load;
- 	u64 now, now_idle, delta_time, delta_idle;
-+	struct time_in_idle *idle_time = &cpufreq_cdev->idle_time[cpu_idx];
+@@ -627,13 +624,6 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
+ 	target_freq = cpu_power_to_freq(cpufreq_cdev, normalised_power);
  
- 	now_idle = get_cpu_idle_time(cpu, &now, 0);
--	delta_idle = now_idle - cpufreq_cdev->time_in_idle[cpu_idx];
--	delta_time = now - cpufreq_cdev->time_in_idle_timestamp[cpu_idx];
-+	delta_idle = now_idle - idle_time->time;
-+	delta_time = now - idle_time->timestamp;
- 
- 	if (delta_time <= delta_idle)
- 		load = 0;
- 	else
- 		load = div64_u64(100 * (delta_time - delta_idle), delta_time);
- 
--	cpufreq_cdev->time_in_idle[cpu_idx] = now_idle;
--	cpufreq_cdev->time_in_idle_timestamp[cpu_idx] = now;
-+	idle_time->time = now_idle;
-+	idle_time->timestamp = now;
- 
- 	return load;
- }
-@@ -715,22 +723,14 @@ __cpufreq_cooling_register(struct device_node *np,
- 
- 	cpufreq_cdev->policy = policy;
- 	num_cpus = cpumask_weight(policy->related_cpus);
--	cpufreq_cdev->time_in_idle = kcalloc(num_cpus,
--					    sizeof(*cpufreq_cdev->time_in_idle),
--					    GFP_KERNEL);
--	if (!cpufreq_cdev->time_in_idle) {
-+	cpufreq_cdev->idle_time = kcalloc(num_cpus,
-+					 sizeof(*cpufreq_cdev->idle_time),
-+					 GFP_KERNEL);
-+	if (!cpufreq_cdev->idle_time) {
- 		cdev = ERR_PTR(-ENOMEM);
- 		goto free_cdev;
- 	}
- 
--	cpufreq_cdev->time_in_idle_timestamp =
--		kcalloc(num_cpus, sizeof(*cpufreq_cdev->time_in_idle_timestamp),
--			GFP_KERNEL);
--	if (!cpufreq_cdev->time_in_idle_timestamp) {
--		cdev = ERR_PTR(-ENOMEM);
--		goto free_time_in_idle;
+ 	*state = get_level(cpufreq_cdev, target_freq);
+-	if (*state == THERMAL_CSTATE_INVALID) {
+-		dev_err_ratelimited(&cdev->device,
+-				    "Failed to convert %dKHz for cpu %d into a cdev state\n",
+-				    target_freq, policy->cpu);
+-		return -EINVAL;
 -	}
 -
- 	/* max_level is an index, not a counter */
- 	cpufreq_cdev->max_level = i - 1;
- 
-@@ -738,7 +738,7 @@ __cpufreq_cooling_register(struct device_node *np,
- 					  GFP_KERNEL);
- 	if (!cpufreq_cdev->freq_table) {
- 		cdev = ERR_PTR(-ENOMEM);
--		goto free_time_in_idle_timestamp;
-+		goto free_idle_time;
- 	}
- 
- 	ret = ida_simple_get(&cpufreq_ida, 0, 0, GFP_KERNEL);
-@@ -801,10 +801,8 @@ __cpufreq_cooling_register(struct device_node *np,
- 	ida_simple_remove(&cpufreq_ida, cpufreq_cdev->id);
- free_table:
- 	kfree(cpufreq_cdev->freq_table);
--free_time_in_idle_timestamp:
--	kfree(cpufreq_cdev->time_in_idle_timestamp);
--free_time_in_idle:
--	kfree(cpufreq_cdev->time_in_idle);
-+free_idle_time:
-+	kfree(cpufreq_cdev->idle_time);
- free_cdev:
- 	kfree(cpufreq_cdev);
- 	return cdev;
-@@ -947,8 +945,7 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- 
- 	thermal_cooling_device_unregister(cpufreq_cdev->cdev);
- 	ida_simple_remove(&cpufreq_ida, cpufreq_cdev->id);
--	kfree(cpufreq_cdev->time_in_idle_timestamp);
--	kfree(cpufreq_cdev->time_in_idle);
-+	kfree(cpufreq_cdev->idle_time);
- 	kfree(cpufreq_cdev->freq_table);
- 	kfree(cpufreq_cdev);
- }
+ 	trace_thermal_power_cpu_limit(policy->related_cpus, target_freq, *state,
+ 				      power);
+ 	return 0;
 -- 
 2.12.0.432.g71c3a4f4ba37
