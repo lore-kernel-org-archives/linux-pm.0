@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 5/5]  platform: x86: intel-hid: Wake up the system from suspend-to-idle
-Date: Wed, 26 Apr 2017 23:27:06 +0200
-Message-ID: <7255712.4ssjnT3GDQ@aspire.rjw.lan>
+Subject: [PATCH 4/5] platform: x86: intel-vbtn: Wake up the system from suspend-to-idle
+Date: Wed, 26 Apr 2017 23:24:54 +0200
+Message-ID: <2369689.4LNdffUpJi@aspire.rjw.lan>
 References: <1979543.KIEJ8uyRaT@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,24 +15,20 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Allow the intel-hid driver to wake up the system from suspend-to-idle
+Allow the intel-vbtn driver to wake up the system from suspend-to-idle
 by configuring its platform device as a wakeup one by default and
 switching it over to a system wakeup events triggering mode during
 system suspend transitions.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ drivers/platform/x86/intel-vbtn.c |   38 +++++++++++++++++++++++++++++++++++---
+ 1 file changed, 35 insertions(+), 3 deletions(-)
 
-This depends on https://patchwork.kernel.org/patch/9685529/
-
----
- drivers/platform/x86/intel-hid.c |   49 ++++++++++++++++++++++++++++++++++-----
- 1 file changed, 43 insertions(+), 6 deletions(-)
-
-Index: linux-pm/drivers/platform/x86/intel-hid.c
+Index: linux-pm/drivers/platform/x86/intel-vbtn.c
 ===================================================================
---- linux-pm.orig/drivers/platform/x86/intel-hid.c
-+++ linux-pm/drivers/platform/x86/intel-hid.c
+--- linux-pm.orig/drivers/platform/x86/intel-vbtn.c
++++ linux-pm/drivers/platform/x86/intel-vbtn.c
 @@ -23,6 +23,7 @@
  #include <linux/platform_device.h>
  #include <linux/input/sparse-keymap.h>
@@ -41,91 +37,73 @@ Index: linux-pm/drivers/platform/x86/intel-hid.c
  #include <acpi/acpi_bus.h>
  
  MODULE_LICENSE("GPL");
-@@ -75,6 +76,7 @@ static const struct key_entry intel_arra
- struct intel_hid_priv {
+@@ -42,6 +43,7 @@ static const struct key_entry intel_vbtn
+ 
+ struct intel_vbtn_priv {
  	struct input_dev *input_dev;
- 	struct input_dev *array;
 +	bool wakeup_mode;
  };
  
- static int intel_hid_set_enable(struct device *device, int enable)
-@@ -118,23 +120,44 @@ static void intel_button_array_enable(st
- 		dev_warn(device, "failed to set button capability\n");
+ static int intel_vbtn_input_setup(struct platform_device *device)
+@@ -69,9 +71,15 @@ static void notify_handler(acpi_handle h
+ 	struct platform_device *device = context;
+ 	struct intel_vbtn_priv *priv = dev_get_drvdata(&device->dev);
+ 
+-	if (!sparse_keymap_report_event(priv->input_dev, event, 1, true))
+-		dev_info(&device->dev, "unknown event index 0x%x\n",
+-			 event);
++	if (priv->wakeup_mode) {
++		if (sparse_keymap_entry_from_scancode(priv->input_dev, event)) {
++			pm_wakeup_hard_event(&device->dev);
++			return;
++		}
++	} else if (sparse_keymap_report_event(priv->input_dev, event, 1, true)) {
++		return;
++	}
++	dev_info(&device->dev, "unknown event index 0x%x\n", event);
  }
  
--static int intel_hid_pl_suspend_handler(struct device *device)
-+static int intel_hid_pm_prepare(struct device *dev)
- {
--	intel_hid_set_enable(device, 0);
--	intel_button_array_enable(device, false);
-+	struct platform_device *device = to_platform_device(dev);
-+	struct intel_hid_priv *priv = dev_get_drvdata(&device->dev);
+ static int intel_vbtn_probe(struct platform_device *device)
+@@ -105,6 +113,7 @@ static int intel_vbtn_probe(struct platf
+ 	if (ACPI_FAILURE(status))
+ 		return -EBUSY;
  
-+	priv->wakeup_mode = true;
++	device_init_wakeup(&device->dev, true);
  	return 0;
  }
  
--static int intel_hid_pl_resume_handler(struct device *device)
-+static void intel_hid_pm_complete(struct device *dev)
+@@ -121,10 +130,33 @@ static int intel_vbtn_remove(struct plat
+ 	return 0;
+ }
+ 
++static int intel_vbtn_pm_prepare(struct device *dev)
 +{
 +	struct platform_device *device = to_platform_device(dev);
-+	struct intel_hid_priv *priv = dev_get_drvdata(&device->dev);
++	struct intel_vbtn_priv *priv = dev_get_drvdata(&device->dev);
++
++	priv->wakeup_mode = true;
++	return 0;
++}
++
++static void intel_vbtn_pm_complete(struct device *dev)
++{
++	struct platform_device *device = to_platform_device(dev);
++	struct intel_vbtn_priv *priv = dev_get_drvdata(&device->dev);
 +
 +	priv->wakeup_mode = false;
 +}
 +
-+static int intel_hid_pl_suspend_handler(struct device *device)
- {
--	intel_hid_set_enable(device, 1);
--	intel_button_array_enable(device, true);
-+	if (pm_suspend_via_firmware()) {
-+		intel_hid_set_enable(device, 0);
-+		intel_button_array_enable(device, false);
-+	}
-+	return 0;
-+}
- 
-+static int intel_hid_pl_resume_handler(struct device *device)
-+{
-+	if (pm_resume_via_firmware()) {
-+		intel_hid_set_enable(device, 1);
-+		intel_button_array_enable(device, true);
-+	}
- 	return 0;
- }
- 
- static const struct dev_pm_ops intel_hid_pl_pm_ops = {
-+	.prepare = intel_hid_pm_prepare,
-+	.complete = intel_hid_pm_complete,
- 	.freeze  = intel_hid_pl_suspend_handler,
- 	.thaw  = intel_hid_pl_resume_handler,
- 	.restore  = intel_hid_pl_resume_handler,
-@@ -206,6 +229,19 @@ static void notify_handler(acpi_handle h
- 	unsigned long long ev_index;
- 	acpi_status status;
- 
-+	if (priv->wakeup_mode) {
-+		/* Wake up on 5-button array events only. */
-+		if (event == 0xc0 || !priv->array)
-+			return;
++static const struct dev_pm_ops intel_vbtn_pm_ops = {
++	.prepare = intel_vbtn_pm_prepare,
++	.complete = intel_vbtn_pm_complete,
++};
 +
-+		if (sparse_keymap_entry_from_scancode(priv->array, event))
-+			pm_wakeup_hard_event(&device->dev);
-+		else
-+			dev_info(&device->dev, "unknown event 0x%x\n", event);
-+
-+		return;
-+	}
-+
- 	/* 0xC0 is for HID events, other values are for 5 button array */
- 	if (event != 0xc0) {
- 		if (!priv->array ||
-@@ -292,6 +328,7 @@ static int intel_hid_probe(struct platfo
- 				 "failed to enable HID power button\n");
- 	}
- 
-+	device_init_wakeup(&device->dev, true);
- 	return 0;
- 
- err_remove_notify:
+ static struct platform_driver intel_vbtn_pl_driver = {
+ 	.driver = {
+ 		.name = "intel-vbtn",
+ 		.acpi_match_table = intel_vbtn_ids,
++		.pm = &intel_vbtn_pm_ops,
+ 	},
+ 	.probe = intel_vbtn_probe,
+ 	.remove = intel_vbtn_remove,
 
