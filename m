@@ -1,181 +1,157 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V6 3/9] PM / QOS: Keep common notifier list for genpd constraints
-Date: Wed, 26 Apr 2017 16:27:07 +0530
-Message-ID: <e028c12a121f46a88da03f5f9fcaecabe5b42894.1493203884.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH V6 2/9] PM / Domains: Allow OPP table to be used for power-domains
+Date: Wed, 26 Apr 2017 16:27:06 +0530
+Message-ID: <d725cb8c286506efbb3672d9c9e3f656233d4ce2.1493203884.git.viresh.kumar@linaro.org>
 References: <cover.1493203884.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:35545 "EHLO
-        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2998893AbdDZK5f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Apr 2017 06:57:35 -0400
-Received: by mail-pf0-f170.google.com with SMTP id v14so36980239pfd.2
-        for <linux-pm@vger.kernel.org>; Wed, 26 Apr 2017 03:57:35 -0700 (PDT)
-In-Reply-To: <cover.1493203884.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1493203884.git.viresh.kumar@linaro.org>
-References: <cover.1493203884.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1493203884.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1493203884.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1493203884.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Only the resume_latency constraint uses the notifiers right now. In
-order to prepare for adding new constraint types with notifiers, move to
-a common notifier list.
+Update the power-domain bindings to allow "operating-points-v2" to be
+present within the power-domain's provider node.
 
-Update pm_qos_update_target() to pass a pointer to the constraint
-structure to the notifier callbacks. Also update the notifier callbacks
-as well to error out for unexpected constraints.
+Also allow consumer devices that don't use OPP tables, to specify the
+parent power-domain's OPP node in their "power-domain-opp" property.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+Also note that the "operating-points-v2" property is extended to support
+an array for the power domain providers.
+
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- drivers/base/power/domain.c | 26 +++++++++++++++++++-------
- drivers/base/power/qos.c    | 15 ++++-----------
- include/linux/pm_qos.h      |  7 +++++++
- kernel/power/qos.c          |  2 +-
- 4 files changed, 31 insertions(+), 19 deletions(-)
+ .../devicetree/bindings/power/power_domain.txt     | 106 +++++++++++++++++++++
+ 1 file changed, 106 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index da49a8383dc3..f6f616ac5cc2 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -426,14 +426,10 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
- 	return ret;
- }
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 14bd9e945ff6..730af0afc09a 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -40,6 +40,10 @@ phandle arguments (so called PM domain specifiers) of length specified by the
+   domain's idle states. In the absence of this property, the domain would be
+   considered as capable of being powered-on or powered-off.
  
--static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
--				     unsigned long val, void *ptr)
-+static int genpd_latency_notifier(struct generic_pm_domain_data *gpd_data,
-+				  unsigned long val)
- {
--	struct generic_pm_domain_data *gpd_data;
--	struct device *dev;
--
--	gpd_data = container_of(nb, struct generic_pm_domain_data, nb);
--	dev = gpd_data->base.dev;
-+	struct device *dev = gpd_data->base.dev;
- 
- 	for (;;) {
- 		struct generic_pm_domain *genpd;
-@@ -466,6 +462,22 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
- 	return NOTIFY_DONE;
- }
- 
-+static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
-+				     unsigned long val, void *ptr)
-+{
-+	struct generic_pm_domain_data *gpd_data;
-+	struct device *dev;
++- operating-points-v2 : Phandles to the OPP tables for a power domain provider.
++  If the provider provides a single power domain, then this shall contain a
++  single phandle. Refer to ../opp/opp.txt for more information.
 +
-+	gpd_data = container_of(nb, struct generic_pm_domain_data, nb);
-+	dev = gpd_data->base.dev;
+ Example:
+ 
+ 	power: power-controller@12340000 {
+@@ -120,4 +124,106 @@ The node above defines a typical PM domain consumer device, which is located
+ inside a PM domain with index 0 of a power controller represented by a node
+ with the label "power".
+ 
++Optional properties:
++- power-domain-opp: Phandle to the OPP node of the parent power-domain. The
++  parent power-domain should be configured to the OPP whose node is pointed by
++  the phandle, in order to use the device that contains this property.
 +
-+	if (dev_pm_qos_is_resume_latency(dev, ptr))
-+		return genpd_latency_notifier(gpd_data, val);
 +
-+	dev_err(dev, "%s: Unexpected notifier call\n", __func__);
-+	return NOTIFY_BAD;
-+}
++Example:
++- Device with parent power domain with two active states represented by OPP
++  table.
 +
- /**
-  * genpd_power_off_work_fn - Power off PM domain whose subdomain count is 0.
-  * @work: Work structure used for scheduling the execution of this function.
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index f850daeffba4..654d8a12c2e7 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -172,18 +172,12 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- {
- 	struct dev_pm_qos *qos;
- 	struct pm_qos_constraints *c;
--	struct blocking_notifier_head *n;
- 
- 	qos = kzalloc(sizeof(*qos), GFP_KERNEL);
- 	if (!qos)
- 		return -ENOMEM;
- 
--	n = kzalloc(sizeof(*n), GFP_KERNEL);
--	if (!n) {
--		kfree(qos);
--		return -ENOMEM;
--	}
--	BLOCKING_INIT_NOTIFIER_HEAD(n);
-+	BLOCKING_INIT_NOTIFIER_HEAD(&qos->notifiers);
- 
- 	c = &qos->resume_latency;
- 	plist_head_init(&c->list);
-@@ -191,7 +185,7 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- 	c->default_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
- 	c->no_constraint_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
- 	c->type = PM_QOS_MIN;
--	c->notifiers = n;
-+	c->notifiers = &qos->notifiers;
- 
- 	c = &qos->latency_tolerance;
- 	plist_head_init(&c->list);
-@@ -268,7 +262,6 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
- 	dev->power.qos = ERR_PTR(-ENODEV);
- 	spin_unlock_irq(&dev->power.lock);
- 
--	kfree(qos->resume_latency.notifiers);
- 	kfree(qos);
- 
-  out:
-@@ -487,7 +480,7 @@ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier)
- 		ret = dev_pm_qos_constraints_allocate(dev);
- 
- 	if (!ret)
--		ret = blocking_notifier_chain_register(dev->power.qos->resume_latency.notifiers,
-+		ret = blocking_notifier_chain_register(&dev->power.qos->notifiers,
- 						       notifier);
- 
- 	mutex_unlock(&dev_pm_qos_mtx);
-@@ -514,7 +507,7 @@ int dev_pm_qos_remove_notifier(struct device *dev,
- 
- 	/* Silently return if the constraints object is not present. */
- 	if (!IS_ERR_OR_NULL(dev->power.qos))
--		retval = blocking_notifier_chain_unregister(dev->power.qos->resume_latency.notifiers,
-+		retval = blocking_notifier_chain_unregister(&dev->power.qos->notifiers,
- 							    notifier);
- 
- 	mutex_unlock(&dev_pm_qos_mtx);
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 032b55909145..e546d1a2f237 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -100,6 +100,7 @@ struct dev_pm_qos {
- 	struct dev_pm_qos_request *resume_latency_req;
- 	struct dev_pm_qos_request *latency_tolerance_req;
- 	struct dev_pm_qos_request *flags_req;
-+	struct blocking_notifier_head notifiers; /* common for all constraints */
- };
- 
- /* Action requested to pm_qos_update_target */
-@@ -114,6 +115,12 @@ static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
- 	return req->dev != NULL;
- }
- 
-+static inline bool dev_pm_qos_is_resume_latency(struct device *dev,
-+						struct pm_qos_constraints *c)
-+{
-+	return &dev->power.qos->resume_latency == c;
-+}
++	domain_opp_table: opp_table {
++		compatible = "operating-points-v2";
 +
- int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
- 			 enum pm_qos_req_action action, int value);
- bool pm_qos_update_flags(struct pm_qos_flags *pqf,
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 97b0df71303e..073324e0c3c8 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -315,7 +315,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
- 		if (c->notifiers)
- 			blocking_notifier_call_chain(c->notifiers,
- 						     (unsigned long)curr_value,
--						     NULL);
-+						     c);
- 	} else {
- 		ret = 0;
- 	}
++		/*
++		 * NOTE: Actual frequency is managed by firmware and is hidden
++		 * from HLOS, so we simply use index in the opp-hz field to
++		 * select the OPP.
++		 */
++		domain_opp_1: opp-1 {
++			opp-hz = /bits/ 64 <1>;
++			opp-microvolt = <975000 970000 985000>;
++		};
++		domain_opp_2: opp-2 {
++			opp-hz = /bits/ 64 <2>;
++			opp-microvolt = <1075000 1000000 1085000>;
++		};
++	};
++
++
++	parent: power-controller@12340000 {
++		compatible = "foo,power-controller";
++		reg = <0x12340000 0x1000>;
++		#power-domain-cells = <0>;
++		operating-points-v2 = <&domain_opp_table>;
++	};
++
++	leaky-device@12350000 {
++		compatible = "foo,i-leak-current";
++		reg = <0x12350000 0x1000>;
++		power-domains = <&parent>;
++		power-domain-opp = <&domain_opp_2>;
++	};
++
++- OPP table for domain provider that provides two domains.
++
++	domain0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++
++		/*
++		 * NOTE: Actual frequency is managed by firmware and is hidden
++		 * from HLOS, so we simply use index in the opp-hz field to
++		 * select the OPP.
++		 */
++		domain0_opp_1: opp-1 {
++			opp-hz = /bits/ 64 <1>;
++			opp-microvolt = <975000 970000 985000>;
++		};
++		domain0_opp_2: opp-2 {
++			opp-hz = /bits/ 64 <2>;
++			opp-microvolt = <1075000 1000000 1085000>;
++		};
++	};
++
++	domain1_opp_table: opp_table1 {
++		compatible = "operating-points-v2";
++
++		/*
++		 * NOTE: Actual frequency is managed by firmware and is hidden
++		 * from HLOS, so we simply use index in the opp-hz field to
++		 * select the OPP.
++		 */
++		domain1_opp_1: opp-1 {
++			opp-hz = /bits/ 64 <1>;
++			opp-microvolt = <975000 970000 985000>;
++		};
++		domain1_opp_2: opp-2 {
++			opp-hz = /bits/ 64 <2>;
++			opp-microvolt = <1075000 1000000 1085000>;
++		};
++	};
++
++	parent: power-controller@12340000 {
++		compatible = "foo,power-controller";
++		reg = <0x12340000 0x1000>;
++		#power-domain-cells = <1>;
++		operating-points-v2 = <&domain0_opp_table>, <&domain1_opp_table>;
++	};
++
++	leaky-device0@12350000 {
++		compatible = "foo,i-leak-current";
++		reg = <0x12350000 0x1000>;
++		power-domains = <&parent 0>;
++		power-domain-opp = <&domain0_opp_2>;
++	};
++
++	leaky-device1@12350000 {
++		compatible = "foo,i-leak-current";
++		reg = <0x12350000 0x1000>;
++		power-domains = <&parent 1>;
++		power-domain-opp = <&domain1_opp_2>;
++	};
++
+ [1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
 -- 
 2.12.0.432.g71c3a4f4ba37
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
