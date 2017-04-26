@@ -1,56 +1,43 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH 2/3] ti-soc-thermal: Delete error messages for failed memory
- allocations in ti_bandgap_build()
-Date: Wed, 26 Apr 2017 17:37:58 +0200
-Message-ID: <65329026-ad0d-df20-1ff6-4befab001b3c@users.sourceforge.net>
-References: <cd524803-b771-c3d2-8906-ee78576c86d4@users.sourceforge.net>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v2 5/8] gpio: gpio-wcove: use first level PMIC GPIO irq
+Date: Wed, 26 Apr 2017 18:40:55 +0300
+Message-ID: <CAHp75Vd486wZ=bmBL4e41r5VufhWqz_O_4g=P9dgR69EOTtxZQ@mail.gmail.com>
+References: <0e4d82ca9cdc41c9d2a8b45258cd72659b4c2063.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <cd9ddab845e471758b5553fcdc060d6eecd24e93.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <CACRpkdYD8SiTDL1Bc4ordyi4E2fPSRpgbKY_DPd76oQYhXe11A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cd524803-b771-c3d2-8906-ee78576c86d4@users.sourceforge.net>
-Content-Language: en-GB
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <CACRpkdYD8SiTDL1Bc4ordyi4E2fPSRpgbKY_DPd76oQYhXe11A@mail.gmail.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, Alexandre Courbot <gnurou@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, Lee Jones <lee.jones@linaro.org>, Andy Shevchenko <andy@infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, platform-driver-x86 <platform-driver-x86@vger.kernel.org>, Sathyanarayanan Kuppuswamy Natarajan <sathyaosid@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Wed, 26 Apr 2017 17:03:07 +0200
+On Mon, Apr 24, 2017 at 4:17 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
+> On Sat, Apr 15, 2017 at 1:25 AM,
+> <sathyanarayanan.kuppuswamy@linux.intel.com> wrote:
+>
+>> From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+>>
+>> PMIC mfd driver only exports first level irq for GPIO device.
+>> But currently we are reading the irqs from the second level irq
+>> chip, So this patch fixes this issue by adding support to use
+>> first level PMIC GPIO irq.
+>>
+>> Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+>
+> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+>
+> I guess this gets merged into MFD because of dependencies?
 
-The script "checkpatch.pl" pointed information out like the following.
+Yes.
 
-WARNING: Possible unnecessary 'out of memory' message
+> If it compiles on its own and doesn't cause regressions I can
+> merged it into the GPIO tree.
 
-Thus remove such statements here.
+I guess it will break something if put it separately.
 
-Link: http://events.linuxfoundation.org/sites/events/files/slides/LCJ16-Refactor_Strings-WSang_0.pdf
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index f19cb7612a65..109fb0a5f19f 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -1217,7 +1217,5 @@ static struct ti_bandgap *ti_bandgap_build(struct platform_device *pdev)
--	if (!bgp) {
--		dev_err(&pdev->dev, "Unable to allocate mem for driver ref\n");
-+	if (!bgp)
- 		return ERR_PTR(-ENOMEM);
--	}
- 
- 	of_id = of_match_device(of_ti_bandgap_match, &pdev->dev);
- 	if (of_id)
-@@ -1229,7 +1227,5 @@ static struct ti_bandgap *ti_bandgap_build(struct platform_device *pdev)
--	if (!bgp->regval) {
--		dev_err(&pdev->dev, "Unable to allocate mem for driver ref\n");
-+	if (!bgp->regval)
- 		return ERR_PTR(-ENOMEM);
--	}
- 
- 	i = 0;
- 	do {
 -- 
-2.12.2
+With Best Regards,
+Andy Shevchenko
