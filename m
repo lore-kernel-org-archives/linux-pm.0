@@ -1,236 +1,131 @@
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
-        <u.kleine-koenig-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Subject: [PATCH v1] spi: mxs: implement runtime pm
-Date: Wed, 26 Apr 2017 22:10:28 +0200
-Message-ID: <20170426201028.19217-1-u.kleine-koenig@pengutronix.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 5/5]  platform: x86: intel-hid: Wake up the system from suspend-to-idle
+Date: Wed, 26 Apr 2017 23:27:06 +0200
+Message-ID: <7255712.4ssjnT3GDQ@aspire.rjw.lan>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1979543.KIEJ8uyRaT@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>
 List-Id: linux-pm@vger.kernel.org
 
-This is a straight forward addition of runtime and system sleep pm operations
-that handle clk and pinctrl (for runtime pm) and spi_master_{suspend,resume}
-(for system sleep).
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Allow the intel-hid driver to wake up the system from suspend-to-idle
+by configuring its platform device as a wakeup one by default and
+switching it over to a system wakeup events triggering mode during
+system suspend transitions.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/spi/spi-mxs.c | 129 ++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 119 insertions(+), 10 deletions(-)
 
-Hello,
+This depends on https://patchwork.kernel.org/patch/9685529/
 
-this is my first patch since several years that has to do with PM stuff.
-So I'm sure you can find something I got wrong ;-)
+---
+ drivers/platform/x86/intel-hid.c |   49 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 43 insertions(+), 6 deletions(-)
 
-Best regards
-Uwe
-
-diff --git a/drivers/spi/spi-mxs.c b/drivers/spi/spi-mxs.c
-index 5b0e9a3e83f6..b516844e9e55 100644
---- a/drivers/spi/spi-mxs.c
-+++ b/drivers/spi/spi-mxs.c
-@@ -44,6 +44,7 @@
- #include <linux/completion.h>
- #include <linux/gpio.h>
- #include <linux/regulator/consumer.h>
-+#include <linux/pm_runtime.h>
- #include <linux/module.h>
- #include <linux/stmp_device.h>
- #include <linux/spi/spi.h>
-@@ -374,6 +375,13 @@ static int mxs_spi_transfer_one(struct spi_master *master,
- 	struct spi_transfer *t;
- 	unsigned int flag;
- 	int status = 0;
-+	int ret;
-+
-+	ret = pm_runtime_get_sync(ssp->dev);
-+	if (ret < 0) {
-+		dev_err(ssp->dev, "Failed to runtime resume for transfer\n");
-+		return ret;
-+	}
+Index: linux-pm/drivers/platform/x86/intel-hid.c
+===================================================================
+--- linux-pm.orig/drivers/platform/x86/intel-hid.c
++++ linux-pm/drivers/platform/x86/intel-hid.c
+@@ -23,6 +23,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/input/sparse-keymap.h>
+ #include <linux/acpi.h>
++#include <linux/suspend.h>
+ #include <acpi/acpi_bus.h>
  
- 	/* Program CS register bits here, it will be used for all transfers. */
- 	writel(BM_SSP_CTRL0_WAIT_FOR_CMD | BM_SSP_CTRL0_WAIT_FOR_IRQ,
-@@ -439,9 +447,90 @@ static int mxs_spi_transfer_one(struct spi_master *master,
- 	m->status = status;
- 	spi_finalize_current_message(master);
- 
-+	pm_runtime_put(ssp->dev);
-+
- 	return status;
- }
- 
-+static int mxs_spi_runtime_suspend(struct device *dev)
-+{
-+	struct spi_master *master = dev_get_drvdata(dev);
-+	struct mxs_spi *spi = spi_master_get_devdata(master);
-+	struct mxs_ssp *ssp = &spi->ssp;
-+	int ret;
-+
-+	clk_disable_unprepare(ssp->clk);
-+
-+	ret = pinctrl_pm_select_idle_state(dev);
-+	if (ret) {
-+		int ret2 = clk_prepare_enable(ssp->clk);
-+
-+		if (ret2)
-+			dev_warn(dev, "Failed to reenable clock after failing pinctrl request (pinctrl: %d, clk: %d)\n",
-+				 ret, ret2);
-+	}
-+
-+	return ret;
-+}
-+
-+static int mxs_spi_runtime_resume(struct device *dev)
-+{
-+	struct spi_master *master = dev_get_drvdata(dev);
-+	struct mxs_spi *spi = spi_master_get_devdata(master);
-+	struct mxs_ssp *ssp = &spi->ssp;
-+	int ret;
-+
-+	ret = pinctrl_pm_select_default_state(dev);
-+	if (ret)
-+		return ret;
-+
-+	ret = clk_prepare_enable(ssp->clk);
-+	if (ret)
-+		pinctrl_pm_select_idle_state(dev);
-+
-+	return ret;
-+}
-+
-+static int __maybe_unused mxs_spi_suspend(struct device *dev)
-+{
-+	struct spi_master *master = dev_get_drvdata(dev);
-+	int ret;
-+
-+	ret = spi_master_suspend(master);
-+	if (ret)
-+		return ret;
-+
-+	if (!pm_runtime_suspended(dev))
-+		return mxs_spi_runtime_suspend(dev);
-+	else
-+		return 0;
-+}
-+
-+static int __maybe_unused mxs_spi_resume(struct device *dev)
-+{
-+	struct spi_master *master = dev_get_drvdata(dev);
-+	int ret;
-+
-+	if (!pm_runtime_suspended(dev))
-+		ret = mxs_spi_runtime_resume(dev);
-+	else
-+		ret = 0;
-+	if (ret)
-+		return ret;
-+
-+	ret = spi_master_resume(master);
-+	if (ret < 0 && !pm_runtime_suspended(dev))
-+		mxs_spi_runtime_suspend(dev);
-+
-+	return ret;
-+}
-+
-+static const struct dev_pm_ops mxs_spi_pm = {
-+	SET_RUNTIME_PM_OPS(mxs_spi_runtime_suspend,
-+			   mxs_spi_runtime_resume, NULL)
-+	SET_SYSTEM_SLEEP_PM_OPS(mxs_spi_suspend, mxs_spi_resume)
-+};
-+
- static const struct of_device_id mxs_spi_dt_ids[] = {
- 	{ .compatible = "fsl,imx23-spi", .data = (void *) IMX23_SSP, },
- 	{ .compatible = "fsl,imx28-spi", .data = (void *) IMX28_SSP, },
-@@ -493,6 +582,8 @@ static int mxs_spi_probe(struct platform_device *pdev)
- 	if (!master)
- 		return -ENOMEM;
- 
-+	platform_set_drvdata(pdev, master);
-+
- 	master->transfer_one_message = mxs_spi_transfer_one;
- 	master->bits_per_word_mask = SPI_BPW_MASK(8);
- 	master->mode_bits = SPI_CPOL | SPI_CPHA;
-@@ -521,28 +612,42 @@ static int mxs_spi_probe(struct platform_device *pdev)
- 		goto out_master_free;
- 	}
- 
--	ret = clk_prepare_enable(ssp->clk);
--	if (ret)
--		goto out_dma_release;
-+	pm_runtime_enable(ssp->dev);
-+	if (!pm_runtime_enabled(ssp->dev)) {
-+		dev_info(ssp->dev, "pm_runtime not enabled\n");
-+		ret = mxs_spi_runtime_resume(ssp->dev);
-+		if (ret < 0) {
-+			dev_err(ssp->dev, "runtime resume failed\n");
-+			goto out_dma_release;
-+		}
-+	}
-+
-+	ret = pm_runtime_get_sync(ssp->dev);
-+	if (ret < 0) {
-+		dev_err(ssp->dev, "runtime_get_sync failed\n");
-+		goto out_pm_runtime_disable;
-+	}
- 
- 	clk_set_rate(ssp->clk, clk_freq);
- 
- 	ret = stmp_reset_block(ssp->base);
- 	if (ret)
--		goto out_disable_clk;
--
--	platform_set_drvdata(pdev, master);
-+		goto out_pm_runtime_put;
- 
- 	ret = devm_spi_register_master(&pdev->dev, master);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Cannot register SPI master, %d\n", ret);
--		goto out_disable_clk;
-+		goto out_pm_runtime_put;
- 	}
- 
-+	pm_runtime_put(ssp->dev);
-+
- 	return 0;
- 
--out_disable_clk:
--	clk_disable_unprepare(ssp->clk);
-+out_pm_runtime_put:
-+	pm_runtime_put(ssp->dev);
-+out_pm_runtime_disable:
-+	pm_runtime_disable(ssp->dev);
- out_dma_release:
- 	dma_release_channel(ssp->dmach);
- out_master_free:
-@@ -560,7 +665,10 @@ static int mxs_spi_remove(struct platform_device *pdev)
- 	spi = spi_master_get_devdata(master);
- 	ssp = &spi->ssp;
- 
--	clk_disable_unprepare(ssp->clk);
-+	pm_runtime_disable(&pdev->dev);
-+	if (!pm_runtime_status_suspended(&pdev->dev))
-+		mxs_spi_runtime_suspend(&pdev->dev);
-+
- 	dma_release_channel(ssp->dmach);
- 
- 	return 0;
-@@ -572,6 +680,7 @@ static struct platform_driver mxs_spi_driver = {
- 	.driver	= {
- 		.name	= DRIVER_NAME,
- 		.of_match_table = mxs_spi_dt_ids,
-+		.pm = &mxs_spi_pm,
- 	},
+ MODULE_LICENSE("GPL");
+@@ -75,6 +76,7 @@ static const struct key_entry intel_arra
+ struct intel_hid_priv {
+ 	struct input_dev *input_dev;
+ 	struct input_dev *array;
++	bool wakeup_mode;
  };
  
--- 
-2.11.0
+ static int intel_hid_set_enable(struct device *device, int enable)
+@@ -118,23 +120,44 @@ static void intel_button_array_enable(st
+ 		dev_warn(device, "failed to set button capability\n");
+ }
+ 
+-static int intel_hid_pl_suspend_handler(struct device *device)
++static int intel_hid_pm_prepare(struct device *dev)
+ {
+-	intel_hid_set_enable(device, 0);
+-	intel_button_array_enable(device, false);
++	struct platform_device *device = to_platform_device(dev);
++	struct intel_hid_priv *priv = dev_get_drvdata(&device->dev);
+ 
++	priv->wakeup_mode = true;
+ 	return 0;
+ }
+ 
+-static int intel_hid_pl_resume_handler(struct device *device)
++static void intel_hid_pm_complete(struct device *dev)
++{
++	struct platform_device *device = to_platform_device(dev);
++	struct intel_hid_priv *priv = dev_get_drvdata(&device->dev);
++
++	priv->wakeup_mode = false;
++}
++
++static int intel_hid_pl_suspend_handler(struct device *device)
+ {
+-	intel_hid_set_enable(device, 1);
+-	intel_button_array_enable(device, true);
++	if (pm_suspend_via_firmware()) {
++		intel_hid_set_enable(device, 0);
++		intel_button_array_enable(device, false);
++	}
++	return 0;
++}
+ 
++static int intel_hid_pl_resume_handler(struct device *device)
++{
++	if (pm_resume_via_firmware()) {
++		intel_hid_set_enable(device, 1);
++		intel_button_array_enable(device, true);
++	}
+ 	return 0;
+ }
+ 
+ static const struct dev_pm_ops intel_hid_pl_pm_ops = {
++	.prepare = intel_hid_pm_prepare,
++	.complete = intel_hid_pm_complete,
+ 	.freeze  = intel_hid_pl_suspend_handler,
+ 	.thaw  = intel_hid_pl_resume_handler,
+ 	.restore  = intel_hid_pl_resume_handler,
+@@ -206,6 +229,19 @@ static void notify_handler(acpi_handle h
+ 	unsigned long long ev_index;
+ 	acpi_status status;
+ 
++	if (priv->wakeup_mode) {
++		/* Wake up on 5-button array events only. */
++		if (event == 0xc0 || !priv->array)
++			return;
++
++		if (sparse_keymap_entry_from_scancode(priv->array, event))
++			pm_wakeup_hard_event(&device->dev);
++		else
++			dev_info(&device->dev, "unknown event 0x%x\n", event);
++
++		return;
++	}
++
+ 	/* 0xC0 is for HID events, other values are for 5 button array */
+ 	if (event != 0xc0) {
+ 		if (!priv->array ||
+@@ -292,6 +328,7 @@ static int intel_hid_probe(struct platfo
+ 				 "failed to enable HID power button\n");
+ 	}
+ 
++	device_init_wakeup(&device->dev, true);
+ 	return 0;
+ 
+ err_remove_notify:
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-spi" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
