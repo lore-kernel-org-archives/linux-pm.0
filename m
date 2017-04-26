@@ -1,98 +1,83 @@
-From: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
- power-domains
-Date: Wed, 26 Apr 2017 10:02:39 +0530
-Message-ID: <9cd9287c-392b-d3ca-db7d-75c49287448e@codeaurora.org>
-References: <cover.1490001099.git.viresh.kumar@linaro.org>
- <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
- <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
- <20170413053736.GM5910@vireshk-i7>
- <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
- <20170417052758.GF28191@vireshk-i7>
- <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
+From: Jonathan Cameron <jic23@kernel.org>
+Subject: Re: [GIT PULL] Immutable branch between MFD and IIO due for the v4.12
+ merge window
+Date: Wed, 26 Apr 2017 06:51:53 +0100
+Message-ID: <64e7d5f8-0134-9a1c-6e2c-3e67cbafb01d@kernel.org>
+References: <20170404063441.7656-1-quentin.schulz@free-electrons.com>
+ <20170411100528.2zif3fyi7uoyw33n@dell>
+ <0f30afec-ff42-e125-96d6-35893324f7ef@kernel.org>
+ <20170424110239.cv5nylgvymhwvg4w@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <95aa4b97-4e1a-13bb-f4d8-982b778012ba-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170424110239.cv5nylgvymhwvg4w@dell>
+Content-Language: en-GH
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: mark.rutland@arm.com, thomas.petazzoni@free-electrons.com, lars@metafoo.de, linux-pm@vger.kernel.org, liam@networkimprov.net, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, sre@kernel.org, linux-iio@vger.kernel.org, linux@armlinux.org.uk, Quentin Schulz <quentin.schulz@free-electrons.com>, wens@csie.org, robh+dt@kernel.org, icenowy@aosc.xyz, pmeerw@pmeerw.net, knaack.h@gmx.de, maxime.ripard@free-electrons.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-
-> On 17/04/17 06:27, Viresh Kumar wrote:
->> On 13-04-17, 14:42, Sudeep Holla wrote:
->>> What I was referring is about power domain provider with multiple power
->>> domains(simply #power-domain-cells=<1> case as explained in the
->>> power-domain specification.
->>
->> I am not sure if we should be looking to target such a situation for now, as
->> that would be like this:
->>
->> Device controlled by Domain A. Domain A itself is controlled by Domain B and
->> Domain C.
->>
+On 24/04/17 12:02, Lee Jones wrote:
+> On Fri, 14 Apr 2017, Jonathan Cameron wrote:
 > 
-> No, may be I was not so clear. I am just referring a power controller
-> that provides say 3 different power domains and are indexed 0 - 2.
-> The consumer just passes the index along with the phandle for the power
-> domain info.
+>> On 11/04/17 11:05, Lee Jones wrote:
+>>> Enjoy!
+>>>
+>>> The following changes since commit c1ae3cfa0e89fa1a7ecc4c99031f5e9ae99d9201:
+>>>
+>>>   Linux 4.11-rc1 (2017-03-05 12:59:56 -0800)
+>>>
+>>> are available in the git repository at:
+>>>
+>>>   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git ib-mfd-iio-v4.12
+>>>
+>>> for you to fetch changes up to f2499ab450d3052097ba53a7d763f767935c0c59:
+>>>
+>>>   iio: adc: add support for X-Powers AXP20X and AXP22X PMICs ADCs (2017-04-11 11:02:33 +0100)
+>>>
+>>> ----------------------------------------------------------------
+>>> Immutable branch between MFD and IIO due for the v4.12 merge window
+>>>
+>>> ----------------------------------------------------------------
+>>> Quentin Schulz (1):
+>>>       iio: adc: add support for X-Powers AXP20X and AXP22X PMICs ADCs
+>>>
+>>>  drivers/iio/adc/Kconfig      |  10 +
+>>>  drivers/iio/adc/Makefile     |   1 +
+>>>  drivers/iio/adc/axp20x_adc.c | 617 +++++++++++++++++++++++++++++++++++++++++++
+>>>  3 files changed, 628 insertions(+)
+>>>  create mode 100644 drivers/iio/adc/axp20x_adc.c
+>>>
+>> Hi Lee, 
+>>
+>> Thanks for doing this, but the reason it was going to go through your
+>> tree in the first place was a dependency on
+>> commit 4707274714ef ("mfd: axp20x: Correct name of temperature data ADC registers")
+>>
+>> Not present in the immutable branch.
+>>
+>> There isn't much time for anything else going on around this driver though
+>> so other than a possible merge conflict on the Kconfig and Makefile shouldn't
+>> matter if this just goes through mfd. (famous last words ;)
 > 
->> Though we will end up converting the domain-performance-state property to an
->> array if that is required in near future.
->>
+> It's not as though you committed it to text and sent it out to a
+> public mailing list for us all to reference though is it?  Doh!
 > 
-> OK, better to document that so that we know how to extend it. We have
-> #power-domain-cells=<1> on Juno with SCPI.
-> 
->>> Yes. To simplify what not we just have power-domain for a device and
->>> change state of that domain to change the performance of that device.
->>
->> Consider this case to understand what I have in Mind.
->>
->> The power domain have its states as A, B, C, D. There can be multiple devices
->> regulated by that domain and one of the devices have its power states as: A1,
->> A2, A3, B1, B2, B3, C1, C2, C3, D1, D2, D3 and all these states have different
->> frequency/voltages.
->>
->> IOW, the devices can have regulators as well and may want to fine tune within
->> the domain performance-state.
->>
-> 
-> Understood. I would incline towards reusing regulators we that's what is
-> changed behind the scene. Calling this operating performance point
-> is misleading and doesn't align well with existing specs/features.
+It came up in the original discussions (which was the only reason I knew).
+Chen-Yu Tsai in email:
 
-[]...
- 
->>> If we are looking this power-domains with performance as just some
->>> *advanced regulators*, I don't like the complexity added.
+http://lists.infradead.org/pipermail/linux-arm-kernel/2017-March/495789.html
 
-+ Mark
+Quentin did put a link in his request that you take it, but removing the
+need to click would have been better!
 
-I don;t see any public discussions on why we ruled out using regulators to
-support this but maybe there were some offline discussions on this.
-
-Mark, this is a long thread, so just summarizing here to give you the context.
-
-At qualcomm, we have an external M3 core (running its own firmware) which controls
-a few voltage rails (including AVS on those). The devices vote for the voltage levels
-(or performance levels) they need by passing an integer value to the M3 (not actual
-voltage values). Since that didn't fit well with the existing regulator apis it was
-proposed we look at modeling these as powerdomain performance levels (and reuse genpd
-framework) which is what this series from Viresh is about.
-
-Since the discussion now is moving towards 'why not use regulator framework for this
-instead of adding all the complexity with powerdomain performance levels since
-these are regulators underneath', I looped you in so you can provide some feedback
-on can these really be modeled as some *advanced regulators* with some apis to set some
-regulator performance levels (instead of voltage levels).
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Jonathan
