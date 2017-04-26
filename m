@@ -1,98 +1,110 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of
- PM domains
-Date: Wed, 26 Apr 2017 11:55:50 +0200
-Message-ID: <CAPDyKFrg+L_U6ztzpUdQMuemXyPWvtWVt06GumXa1MoTjJesWg@mail.gmail.com>
-References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
- <d2e3ceaa-57e2-033d-ecd1-a3b2bd8ffa26@nvidia.com> <CAPDyKFoJ58pwGz2U90ob8a8cY=hEbE-wLBHZ0BBzqPoLW_wgGA@mail.gmail.com>
- <CAMuHMdWvS6_Zf1nn1=zVLb1qNChyk+B6BDZsK9P9oKRBEpPKMg@mail.gmail.com>
- <CAPDyKFqqZPXpxCTDy079QeiAorLVrXZssQ5SvXLWa3oab21b5g@mail.gmail.com> <CAMuHMdWNnWdYop_U4BGznxDND3WK-V7hnCBbnPoUDzUHBBpgHA@mail.gmail.com>
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH V4 00/17] thermal: cpu_cooling: improve interaction with
+ cpufreq core
+Date: Wed, 26 Apr 2017 11:41:35 +0100
+Message-ID: <ead65416-4833-6f36-81bd-c1673bb71514@arm.com>
+References: <cover.1493115651.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAMuHMdWNnWdYop_U4BGznxDND3WK-V7hnCBbnPoUDzUHBBpgHA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:53382 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2998400AbdDZKlj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 26 Apr 2017 06:41:39 -0400
+In-Reply-To: <cover.1493115651.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linaro-kernel@lists.linaro.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
 
-On 26 April 2017 at 11:17, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
-> Hi Ulf,
->
-> On Wed, Apr 26, 2017 at 11:04 AM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->> On 26 April 2017 at 10:06, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
->>> On Tue, Apr 25, 2017 at 9:34 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->>>> However, we currently know about at least two different SoCs that need
->>>> this. Perhaps we can extend the below list to justify adding a new
->>>> framework/APIs. Something along the lines what you propose in $subject
->>>> patchset.
->>>>
->>>> 1) Nvidia; to solve the USB super-speed host/device problem.
->>>> 2) QCOM, which has pointed to several cases where the PM topology is
->>>> laid out like devices having two PM domains..
->>>> 3?) I don't fully remember - but I think Geert also pointed to some
->>>> examples where a device could reside in a clock domain but also in
->>>> power domain for a Renesas SoC!?
->>>> 4) ?
->>>
->>> Most Renesas SoCs have module clocks, which we model as a clock domain.
->>> Some Renesas SoCs have power domains for CPUs, others have them for
->>> devices as well.
->>> As we always provide a virtual "always-on" power domain in the power domain
->>> controller, all devices can refer to it using "power-domains" properties,
->>> and the driver for the power domain controller can just forward the clock
->>> domain operations to the clock driver.
->>
->> Okay, thanks for clarifying this.
->>
->> Thinking about this as bit more, when I realized that *if* we would
->> add a new PM domain framework for explicit control of PM domains, that
->> would mean you need to deploy support for that in the drivers.
->
-> Correct.  And we have to update DT bindings and DTS.
->
->> On the other hand, as you anyway would need to change the drivers, you
->> could instead deploy clock support in the drivers, which would avoid
->> using the clock domain. In that way, you could still stay with one PM
->> domain pointer per device, used to control the power domains instead.
->> Right? Or would that have other implications?
->
-> That's exactly what we're doing already.
+Hi Viresh,
 
-No really, but perhaps I was not clear enough.
+I went through the v4 code and it looks good to me.
+Feel free to add for the v4 series
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 
-Currently you deploy only runtime PM support in the driver and don't
-do any clk_get() etc. Then you have a PM domain (genpd) attached to
-the device and makes use of genpd's device specific callbacks, in
-struct gpd_dev_ops ->start|stop(), which allows you to control clocks
-for each device. Of course this is perfectly okay.
+Thank you Viresh!
 
-So then my question is/was; does there exist cases when these devices
-(already attached to a PM domain) would needed to be attach to yet
-another separate PM domain? From the nicely detailed description
-below, I find the answer to be *no*!?
+Regards,
+Lukasz
 
-> Which means that if you allow multiple entries in power-domains, we
-> have to change drivers, DT bindings, and DTS again (which we may
-> decide not to do ;-)
+
+On 25/04/17 11:27, Viresh Kumar wrote:
+> Hi Guys,
 >
-> On SH/R-Mobile, we always did it that way, as the user manual had an
-> explicit "always-on" power domain.
+> The cpu_cooling driver is designed to use CPU frequency scaling to avoid
+> high thermal states for a platform. But it wasn't glued really well with
+> cpufreq core. For example clipped-cpus is copied from the policy
+> structure and its much better to use the policy->cpus (or related_cpus)
+> fields directly as they may have got updated. Not that things were
+> broken before this series, but they can be optimized a bit more.
 >
-> On R-Car Gen2, the power domains contain CPU and L2 and GPU only,
-> so devices had their power-domains pointing to the clock controller.
+> This series tries to improve interactions between cpufreq core and
+> cpu_cooling driver and does some fixes/cleanups to the cpu_cooling
+> driver.
 >
-> On R-Car Gen3, some devices were moved into power domains, so we
-> generalized this by creating a virtual "always-on" power domain, and
-> letting all devices point their power-domains properties to the power
-> domain controller, which forwards clock handling to the clock controller.
-> For consistency, this was applied to R-Car Gen2 as well.
+> I have tested it on ARM 32 (exynos) and 64 bit (hikey) boards (haven't
+> tested the power specific bits).
 >
-> Cfr. some late relics fixed in e.g. commit 24b2d930a50662c1
-> ('ARM: dts: r8a7794: Use SYSC "always-on" PM Domain for sound'),
-> but technically the fix was not needed, as it worked fine without.
-
-Thanks for the detailed summary!
-
-Kind regards
-Uffe
+> Lukasz from ARM has been very generous in testing and finding out few
+> bugs in the earlier versions and getting those fixed.  He has
+> successfully tested the new version on his ARM big LITTLE Juno board.
+>
+> Pushed here as well:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git thermal/cooling
+>
+> V3->V4:
+> - The pointer to policy in the cpufreq notifier will have a different
+>   address and so that address can't be used for comparison. Compare
+>   policy->cpu instead.
+> - max_level field was used for the newly created power-freq table, but
+>   few places I have used < max_level instead of <= max_level and that
+>   caused the trouble.
+> - Added Tested-by from Lukasz.
+>
+> V2->V3:
+> - Additional check to guarantee that policy is valid.
+> - Initialize freq-table and cpufreq_cdev->policy fields before they are
+>   used by the power-cooling functionality.
+> - Thanks Lukasz for testing out and suggesting these changes.
+>
+> V1->V2:
+> - Name cpufreq cooling dev as cpufreq_cdev everywhere (Eduardo).
+>
+> --
+> viresh
+>
+> Viresh Kumar (17):
+>   thermal: cpu_cooling: Avoid accessing potentially freed structures
+>   thermal: cpu_cooling: rearrange globals
+>   thermal: cpu_cooling: Name cpufreq cooling devices as cpufreq_cdev
+>   thermal: cpu_cooling: replace cool_dev with cdev
+>   thermal: cpu_cooling: remove cpufreq_cooling_get_level()
+>   thermal: cpu_cooling: get rid of a variable in cpufreq_set_cur_state()
+>   thermal: cpu_cooling: use cpufreq_policy to register cooling device
+>   cpufreq: create cpufreq_table_count_valid_entries()
+>   thermal: cpu_cooling: store cpufreq policy
+>   thermal: cpu_cooling: OPPs are registered for all CPUs
+>   thermal: cpu_cooling: get rid of 'allowed_cpus'
+>   thermal: cpu_cooling: merge frequency and power tables
+>   thermal: cpu_cooling: create structure for idle time stats
+>   thermal: cpu_cooling: get_level() can't fail
+>   thermal: cpu_cooling: don't store cpu_dev in cpufreq_cdev
+>   thermal: cpu_cooling: 'freq' can't be zero in cpufreq_state2power()
+>   thermal: cpu_cooling: Rearrange struct cpufreq_cooling_device
+>
+>  drivers/cpufreq/arm_big_little.c                   |   2 +-
+>  drivers/cpufreq/cpufreq-dt.c                       |   2 +-
+>  drivers/cpufreq/cpufreq_stats.c                    |  13 +-
+>  drivers/cpufreq/dbx500-cpufreq.c                   |   2 +-
+>  drivers/cpufreq/mt8173-cpufreq.c                   |   4 +-
+>  drivers/cpufreq/qoriq-cpufreq.c                    |   3 +-
+>  drivers/thermal/cpu_cooling.c                      | 606 +++++++++------------
+>  drivers/thermal/imx_thermal.c                      |  22 +-
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  22 +-
+>  include/linux/cpu_cooling.h                        |  32 +-
+>  include/linux/cpufreq.h                            |  14 +
+>  11 files changed, 315 insertions(+), 407 deletions(-)
+>
