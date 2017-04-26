@@ -1,184 +1,150 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V6 9/9] PM / Domain: Add support to parse domain's OPP table
-Date: Wed, 26 Apr 2017 16:27:13 +0530
-Message-ID: <c4bd28f77cd1b5d1447431bc139afea2e05ea60d.1493203884.git.viresh.kumar@linaro.org>
+Subject: [PATCH V6 4/9] PM / QOS: Add DEV_PM_QOS_PERFORMANCE request
+Date: Wed, 26 Apr 2017 16:27:08 +0530
+Message-ID: <166953ca65e499dfb42927c6c13734b513a2d29b.1493203884.git.viresh.kumar@linaro.org>
 References: <cover.1493203884.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f44.google.com ([74.125.83.44]:36357 "EHLO
-        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2998906AbdDZK5z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Apr 2017 06:57:55 -0400
-Received: by mail-pg0-f44.google.com with SMTP id t7so3631790pgt.3
-        for <linux-pm@vger.kernel.org>; Wed, 26 Apr 2017 03:57:54 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1493203884.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1493203884.git.viresh.kumar@linaro.org>
 References: <cover.1493203884.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Parse the OPP table for power domains if they have their
-set_performance_state() callback set.
+Some platforms have the capability to configure the performance state of
+their Power Domains. The performance levels are identified by positive
+integer values, a lower value represents lower performance state. The
+power domain driver should be able to retrieve all information required
+to configure the performance state of the power domain, with the help of
+the performance constraint's target value.
+
+This patch adds a new QOS request type: DEV_PM_QOS_PERFORMANCE to
+support runtime performance constraints for the devices. Also allow
+notifiers to be registered against it, which will be used by frameworks
+like genpd.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/domain.c | 86 ++++++++++++++++++++++++++++++++++++---------
- include/linux/pm_domain.h   |  1 +
- 2 files changed, 71 insertions(+), 16 deletions(-)
+ Documentation/power/pm_qos_interface.txt |  2 +-
+ drivers/base/power/qos.c                 | 21 +++++++++++++++++++++
+ include/linux/pm_qos.h                   |  9 +++++++++
+ 3 files changed, 31 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 85365611b258..17ba541ec3c8 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -10,6 +10,7 @@
- #include <linux/kernel.h>
- #include <linux/io.h>
- #include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
- #include <linux/pm_runtime.h>
- #include <linux/pm_domain.h>
- #include <linux/pm_qos.h>
-@@ -1818,15 +1819,37 @@ int of_genpd_add_provider_simple(struct device_node *np,
+diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
+index 21d2d48f87a2..42870d28fc3c 100644
+--- a/Documentation/power/pm_qos_interface.txt
++++ b/Documentation/power/pm_qos_interface.txt
+@@ -168,7 +168,7 @@ The per-device PM QoS framework has a per-device notification tree.
+ int dev_pm_qos_add_notifier(device, notifier):
+ Adds a notification callback function for the device.
+ The callback is called when the aggregated value of the device constraints list
+-is changed (for resume latency device PM QoS only).
++is changed (for resume latency and performance device PM QoS).
  
- 	mutex_lock(&gpd_list_lock);
- 
--	if (pm_genpd_present(genpd)) {
--		ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
--		if (!ret) {
--			genpd->provider = &np->fwnode;
--			genpd->has_provider = true;
--			genpd->dev.of_node = np;
-+	if (!pm_genpd_present(genpd))
-+		goto unlock;
-+
-+	genpd->dev.of_node = np;
-+
-+	/* Parse genpd OPP table */
-+	if (genpd->set_performance_state) {
-+		ret = dev_pm_opp_of_add_table(&genpd->dev);
-+		if (ret) {
-+			dev_err(&genpd->dev, "Failed to add OPP table: %d\n",
-+				ret);
-+			goto unlock;
-+		}
-+
-+		genpd->has_opp_table = true;
-+	}
-+
-+	ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
-+	if (ret) {
-+		if (genpd->has_opp_table) {
-+			genpd->has_opp_table = false;
-+			dev_pm_opp_of_remove_table(&genpd->dev);
+ int dev_pm_qos_remove_notifier(device, notifier):
+ Removes the notification callback function for the device.
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index 654d8a12c2e7..084d26960dae 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -150,6 +150,10 @@ static int apply_constraint(struct dev_pm_qos_request *req,
+ 			req->dev->power.set_latency_tolerance(req->dev, value);
  		}
+ 		break;
++	case DEV_PM_QOS_PERFORMANCE:
++		ret = pm_qos_update_target(&qos->performance, &req->data.pnode,
++					   action, value);
++		break;
+ 	case DEV_PM_QOS_FLAGS:
+ 		ret = pm_qos_update_flags(&qos->flags, &req->data.flr,
+ 					  action, value);
+@@ -194,6 +198,14 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
+ 	c->no_constraint_value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
+ 	c->type = PM_QOS_MIN;
+ 
++	c = &qos->performance;
++	plist_head_init(&c->list);
++	c->target_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
++	c->default_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
++	c->no_constraint_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
++	c->type = PM_QOS_MAX;
++	c->notifiers = &qos->notifiers;
 +
-+		goto unlock;
+ 	INIT_LIST_HEAD(&qos->flags.list);
+ 
+ 	spin_lock_irq(&dev->power.lock);
+@@ -252,6 +264,11 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
+ 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
+ 		memset(req, 0, sizeof(*req));
  	}
- 
-+	genpd->provider = &np->fwnode;
-+	genpd->has_provider = true;
-+
-+unlock:
- 	mutex_unlock(&gpd_list_lock);
- 
- 	return ret;
-@@ -1841,6 +1864,7 @@ EXPORT_SYMBOL_GPL(of_genpd_add_provider_simple);
- int of_genpd_add_provider_onecell(struct device_node *np,
- 				  struct genpd_onecell_data *data)
- {
-+	struct generic_pm_domain *genpd;
- 	unsigned int i;
- 	int ret = -EINVAL;
- 
-@@ -1850,14 +1874,29 @@ int of_genpd_add_provider_onecell(struct device_node *np,
- 	mutex_lock(&gpd_list_lock);
- 
- 	for (i = 0; i < data->num_domains; i++) {
--		if (!data->domains[i])
-+		genpd = data->domains[i];
-+
-+		if (!genpd)
- 			continue;
--		if (!pm_genpd_present(data->domains[i]))
-+		if (!pm_genpd_present(genpd))
- 			goto error;
- 
--		data->domains[i]->provider = &np->fwnode;
--		data->domains[i]->has_provider = true;
--		data->domains[i]->dev.of_node = np;
-+		genpd->dev.of_node = np;
-+
-+		/* Parse genpd OPP table */
-+		if (genpd->set_performance_state) {
-+			ret = dev_pm_opp_of_add_table_indexed(&genpd->dev, i);
-+			if (ret) {
-+				dev_err(&genpd->dev, "Failed to add OPP table for index %d: %d\n",
-+					i, ret);
-+				goto error;
-+			}
-+
-+			genpd->has_opp_table = true;
-+		}
-+
-+		genpd->provider = &np->fwnode;
-+		genpd->has_provider = true;
++	c = &qos->performance;
++	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
++		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
++		memset(req, 0, sizeof(*req));
++	}
+ 	f = &qos->flags;
+ 	list_for_each_entry_safe(req, tmp, &f->list, data.flr.node) {
+ 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
+@@ -362,6 +379,7 @@ static int __dev_pm_qos_update_request(struct dev_pm_qos_request *req,
+ 	switch(req->type) {
+ 	case DEV_PM_QOS_RESUME_LATENCY:
+ 	case DEV_PM_QOS_LATENCY_TOLERANCE:
++	case DEV_PM_QOS_PERFORMANCE:
+ 		curr_value = req->data.pnode.prio;
+ 		break;
+ 	case DEV_PM_QOS_FLAGS:
+@@ -571,6 +589,9 @@ static void __dev_pm_qos_drop_user_request(struct device *dev,
+ 		req = dev->power.qos->flags_req;
+ 		dev->power.qos->flags_req = NULL;
+ 		break;
++	case DEV_PM_QOS_PERFORMANCE:
++		dev_err(dev, "Invalid user request (performance)\n");
++		return;
  	}
+ 	__dev_pm_qos_remove_request(req);
+ 	kfree(req);
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index e546d1a2f237..665f90face40 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -36,6 +36,7 @@ enum pm_qos_flags_status {
+ #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	0
+ #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
+ #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
++#define PM_QOS_PERFORMANCE_DEFAULT_VALUE	0
+ #define PM_QOS_LATENCY_ANY			((s32)(~(__u32)0 >> 1))
  
- 	ret = genpd_add_provider(np, genpd_xlate_onecell, data);
-@@ -1870,10 +1909,18 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+ #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
+@@ -55,6 +56,7 @@ struct pm_qos_flags_request {
+ enum dev_pm_qos_req_type {
+ 	DEV_PM_QOS_RESUME_LATENCY = 1,
+ 	DEV_PM_QOS_LATENCY_TOLERANCE,
++	DEV_PM_QOS_PERFORMANCE,
+ 	DEV_PM_QOS_FLAGS,
+ };
  
- error:
- 	while (i--) {
--		if (!data->domains[i])
-+		genpd = data->domains[i];
-+
-+		if (!genpd)
- 			continue;
--		data->domains[i]->provider = NULL;
--		data->domains[i]->has_provider = false;
-+
-+		genpd->provider = NULL;
-+		genpd->has_provider = false;
-+
-+		if (genpd->has_opp_table) {
-+			genpd->has_opp_table = false;
-+			dev_pm_opp_of_remove_table(&genpd->dev);
-+		}
- 	}
+@@ -96,6 +98,7 @@ struct pm_qos_flags {
+ struct dev_pm_qos {
+ 	struct pm_qos_constraints resume_latency;
+ 	struct pm_qos_constraints latency_tolerance;
++	struct pm_qos_constraints performance;
+ 	struct pm_qos_flags flags;
+ 	struct dev_pm_qos_request *resume_latency_req;
+ 	struct dev_pm_qos_request *latency_tolerance_req;
+@@ -121,6 +124,12 @@ static inline bool dev_pm_qos_is_resume_latency(struct device *dev,
+ 	return &dev->power.qos->resume_latency == c;
+ }
  
- 	mutex_unlock(&gpd_list_lock);
-@@ -1900,10 +1947,17 @@ void of_genpd_del_provider(struct device_node *np)
- 			 * provider, set the 'has_provider' to false
- 			 * so that the PM domain can be safely removed.
- 			 */
--			list_for_each_entry(gpd, &gpd_list, gpd_list_node)
--				if (gpd->provider == &np->fwnode)
-+			list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
-+				if (gpd->provider == &np->fwnode) {
- 					gpd->has_provider = false;
- 
-+					if (!gpd->has_opp_table)
-+						continue;
++static inline bool dev_pm_qos_is_performance(struct device *dev,
++					     struct pm_qos_constraints *c)
++{
++	return &dev->power.qos->performance == c;
++}
 +
-+					dev_pm_opp_of_remove_table(&gpd->dev);
-+				}
-+			}
-+
- 			list_del(&cp->link);
- 			of_node_put(cp->node);
- 			kfree(cp);
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index c01f12b370d2..60fc5b165b91 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -58,6 +58,7 @@ struct generic_pm_domain {
- 	struct work_struct power_off_work;
- 	struct fwnode_handle *provider;	/* Identity of the domain provider */
- 	bool has_provider;
-+	bool has_opp_table;
- 	const char *name;
- 	atomic_t sd_count;	/* Number of subdomains with power "on" */
- 	enum gpd_status status;	/* Current state of the domain */
+ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+ 			 enum pm_qos_req_action action, int value);
+ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
 -- 
 2.12.0.432.g71c3a4f4ba37
