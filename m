@@ -1,289 +1,342 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 3/5] ACPI / sleep: EC-based wakeup from suspend-to-idle on Dell systems
-Date: Wed, 26 Apr 2017 23:24:12 +0200
-Message-ID: <3060629.nj3VExRueE@aspire.rjw.lan>
+Subject: [PATCH 2/5] ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle
+Date: Wed, 26 Apr 2017 23:23:03 +0200
+Message-ID: <2095415.MaUKCj6gyx@aspire.rjw.lan>
 References: <1979543.KIEJ8uyRaT@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1979543.KIEJ8uyRaT@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Some recent Dell laptops, including the XPS13 model numbers 9360 and
-9365, cannot be woken up from suspend-to-idle by pressing the power
-button which is unexpected and makes that feature hardly usable on
-those systems.  However, on the 9365 ACPI S3 (suspend-to-RAM) is not
-expected to be used at all (these systems ship with Windows 10 using
-Modern Standby which never exercises the ACPI S3 path) and
-suspend-to-idle is the only viable system suspend mechanism in there.
+The ACPI SCI (System Control Interrupt) is set up as a wakeup IRQ
+during suspend-to-idle transitions and, consequently, any events
+signaled through it wake up the system from that state.  However,
+on some systems some of the events signaled via the ACPI SCI while
+suspended to idle should not cause the system to wake up.  In fact,
+quite often they should just be discarded.
 
-The reason why the power button wakeup from suspend-to-idle doesn't
-work on those systems is because their power button events are
-signaled by the EC (Embedded Controller), whose GPE (General Purpose
-Event) line is disabled during suspend-to-idle transitions in Linux.
-That is done on purpose, because in general the EC tends to generate
-tons of events for various reasons (battery and thermal updates and
-similar, for example) and all of them would kick the CPUs out of deep
-idle states while in suspend-to-idle, which would not be desirable.
+Arguably, systems should not resume entirely on such events, but in
+order to decide which events really should cause the system to resume
+and which are spurious, it is necessary to resume up to the point
+when ACPI SCIs are actually handled and processed, which is after
+executing dpm_resume_noirq() in the system resume path.
 
-Of course, on the Dell systems in question the EC GPE must be enabled
-during suspend-to-idle transitions for the button press events to
-be signaled while suspended at all.  Fortunately, there is a way to
-tell the EC to stop generating the non-wakeup events, which is by
-using the _DSM object under the so called micro-PEP (uPEP) device
-provided to support Modern Standby in Windows 10.
+For this reasons, add a loop around freeze_enter() in which the
+platforms can process events signaled via multiplexed IRQ lines
+like the ACPI SCI and add suspend-to-idle hooks that can be
+used for this purpose to struct platform_freeze_ops.
 
-The expected way to use it is to invoke function 0 from it on system
-initialization, functions 3 and 5 during suspend transitions and
-functions 4 and 6 during resume transitions (to reverse the actions
-carried out by the former).  In particular, function 5 from the uPEP
-device _DSM causes the EC to become less verbose (so to speak) on the
-affected systems and then its GPE can be enabled as a wakeup source
-(then, on resume, function 6 switches it back to the "working state"
-mode).
+In the ACPI case, the ->wake hook is used for checking if the SCI
+has triggered while suspended and deferring the interrupt-induced
+system wakeup until the events signaled through it are actually
+processed sufficiently to decide whether or not the system should
+resume.  In turn, the ->sync hook allows all of the relevant event
+queues to be flushed so as to prevent events from being missed due
+to race conditions.
 
-In support of the affected Dell systems, implement the uPEP device
-handling as described and allow the EC to generate system wakeup
-events if that device is present and behaves as expected.  Enable
-that for Dell only, as there are other systems out there in which
-the uPEP device is exposed in the ACPI tables and its _DSM appears
-to be functional, but it actually isn't, whereas Dell is committed
-to supporting it.
+In addition to that, some ACPI code processing wakeup events needs
+to be modified to use the "hard" version of wakeup triggers, so that
+it will cause a system resume to happen on device-induced wakeup
+events even if the "soft" mechanism to prevent the system from
+suspending is not enabled (that also helps to catch device-induced
+wakeup events occurring during suspend transitions in progress).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/ec.c       |   19 +++++++-
- drivers/acpi/internal.h |    2 
- drivers/acpi/sleep.c    |  110 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 130 insertions(+), 1 deletion(-)
+ drivers/acpi/battery.c      |    2 +-
+ drivers/acpi/button.c       |    5 +++--
+ drivers/acpi/device_pm.c    |    3 ++-
+ drivers/acpi/sleep.c        |   28 ++++++++++++++++++++++++++++
+ drivers/base/power/main.c   |    5 -----
+ drivers/base/power/wakeup.c |   18 ++++++++++++------
+ include/linux/suspend.h     |    7 +++++--
+ kernel/power/process.c      |    2 +-
+ kernel/power/suspend.c      |   29 +++++++++++++++++++++++++----
+ 9 files changed, 77 insertions(+), 22 deletions(-)
 
-Index: linux-pm/drivers/acpi/ec.c
+Index: linux-pm/include/linux/suspend.h
 ===================================================================
---- linux-pm.orig/drivers/acpi/ec.c
-+++ linux-pm/drivers/acpi/ec.c
-@@ -40,6 +40,7 @@
- #include <linux/slab.h>
- #include <linux/acpi.h>
- #include <linux/dmi.h>
-+#include <linux/suspend.h>
- #include <asm/io.h>
+--- linux-pm.orig/include/linux/suspend.h
++++ linux-pm/include/linux/suspend.h
+@@ -189,6 +189,8 @@ struct platform_suspend_ops {
+ struct platform_freeze_ops {
+ 	int (*begin)(void);
+ 	int (*prepare)(void);
++	void (*wake)(void);
++	void (*sync)(void);
+ 	void (*restore)(void);
+ 	void (*end)(void);
+ };
+@@ -428,7 +430,8 @@ extern unsigned int pm_wakeup_irq;
  
- #include "internal.h"
-@@ -1493,6 +1494,16 @@ static int acpi_ec_setup(struct acpi_ec
- 	acpi_handle_info(ec->handle,
- 			 "GPE=0x%lx, EC_CMD/EC_SC=0x%lx, EC_DATA=0x%lx\n",
- 			 ec->gpe, ec->command_addr, ec->data_addr);
-+
-+	/*
-+	 * On some platforms the EC GPE is used for waking up the system from
-+	 * suspend-to-idle, so mark it as a wakeup one.
-+	 *
-+	 * This can be done unconditionally, as the setting does not matter
-+	 * until acpi_set_gpe_wake_mask() is called for the GPE.
-+	 */
-+	acpi_mark_gpe_for_wake(NULL, ec->gpe);
-+
- 	return ret;
- }
+ extern bool pm_wakeup_pending(void);
+ extern void pm_system_wakeup(void);
+-extern void pm_wakeup_clear(void);
++extern void pm_system_cancel_wakeup(void);
++extern void pm_wakeup_clear(bool reset);
+ extern void pm_system_irq_wakeup(unsigned int irq_number);
+ extern bool pm_get_wakeup_count(unsigned int *count, bool block);
+ extern bool pm_save_wakeup_count(unsigned int count);
+@@ -478,7 +481,7 @@ static inline int unregister_pm_notifier
  
-@@ -1835,8 +1846,11 @@ static int acpi_ec_suspend(struct device
- 	struct acpi_ec *ec =
- 		acpi_driver_data(to_acpi_device(dev));
+ static inline bool pm_wakeup_pending(void) { return false; }
+ static inline void pm_system_wakeup(void) {}
+-static inline void pm_wakeup_clear(void) {}
++static inline void pm_wakeup_clear(bool reset) {}
+ static inline void pm_system_irq_wakeup(unsigned int irq_number) {}
  
--	if (ec_freeze_events)
-+	if (!pm_suspend_via_firmware() && acpi_sleep_ec_gpe_may_wakeup())
-+		acpi_set_gpe_wake_mask(NULL, ec->gpe, ACPI_GPE_ENABLE);
-+	else if (ec_freeze_events)
- 		acpi_ec_disable_event(ec);
-+
- 	return 0;
- }
- 
-@@ -1846,6 +1860,9 @@ static int acpi_ec_resume(struct device
- 		acpi_driver_data(to_acpi_device(dev));
- 
- 	acpi_ec_enable_event(ec);
-+	if (!pm_resume_via_firmware() && acpi_sleep_ec_gpe_may_wakeup())
-+		acpi_set_gpe_wake_mask(NULL, ec->gpe, ACPI_GPE_DISABLE);
-+
- 	return 0;
- }
- #endif
-Index: linux-pm/drivers/acpi/internal.h
+ static inline void lock_system_sleep(void) {}
+Index: linux-pm/kernel/power/suspend.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/internal.h
-+++ linux-pm/drivers/acpi/internal.h
-@@ -199,8 +199,10 @@ void acpi_ec_remove_query_handler(struct
-   -------------------------------------------------------------------------- */
- #ifdef CONFIG_ACPI_SYSTEM_POWER_STATES_SUPPORT
- extern int acpi_sleep_init(void);
-+bool acpi_sleep_ec_gpe_may_wakeup(void);
- #else
- static inline int acpi_sleep_init(void) { return -ENXIO; }
-+static inline bool acpi_sleep_ec_gpe_may_wakeup(void) { return false; }
- #endif
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -72,6 +72,8 @@ static void freeze_begin(void)
  
- #ifdef CONFIG_ACPI_SLEEP
+ static void freeze_enter(void)
+ {
++	trace_suspend_resume(TPS("machine_suspend"), PM_SUSPEND_FREEZE, true);
++
+ 	spin_lock_irq(&suspend_freeze_lock);
+ 	if (pm_wakeup_pending())
+ 		goto out;
+@@ -98,6 +100,27 @@ static void freeze_enter(void)
+  out:
+ 	suspend_freeze_state = FREEZE_STATE_NONE;
+ 	spin_unlock_irq(&suspend_freeze_lock);
++
++	trace_suspend_resume(TPS("machine_suspend"), PM_SUSPEND_FREEZE, false);
++}
++
++static void s2idle_loop(void)
++{
++	do {
++		freeze_enter();
++
++		if (freeze_ops && freeze_ops->wake)
++			freeze_ops->wake();
++
++		dpm_resume_noirq(PMSG_RESUME);
++		if (freeze_ops && freeze_ops->sync)
++			freeze_ops->sync();
++
++		if (pm_wakeup_pending())
++			break;
++
++		pm_wakeup_clear(false);
++	} while (!dpm_suspend_noirq(PMSG_SUSPEND));
+ }
+ 
+ void freeze_wake(void)
+@@ -371,10 +394,8 @@ static int suspend_enter(suspend_state_t
+ 	 * all the devices are suspended.
+ 	 */
+ 	if (state == PM_SUSPEND_FREEZE) {
+-		trace_suspend_resume(TPS("machine_suspend"), state, true);
+-		freeze_enter();
+-		trace_suspend_resume(TPS("machine_suspend"), state, false);
+-		goto Platform_wake;
++		s2idle_loop();
++		goto Platform_early_resume;
+ 	}
+ 
+ 	error = disable_nonboot_cpus();
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -1091,11 +1091,6 @@ static int __device_suspend_noirq(struct
+ 	if (async_error)
+ 		goto Complete;
+ 
+-	if (pm_wakeup_pending()) {
+-		async_error = -EBUSY;
+-		goto Complete;
+-	}
+-
+ 	if (dev->power.syscore || dev->power.direct_complete)
+ 		goto Complete;
+ 
+Index: linux-pm/drivers/base/power/wakeup.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/wakeup.c
++++ linux-pm/drivers/base/power/wakeup.c
+@@ -28,8 +28,8 @@ bool events_check_enabled __read_mostly;
+ /* First wakeup IRQ seen by the kernel in the last cycle. */
+ unsigned int pm_wakeup_irq __read_mostly;
+ 
+-/* If set and the system is suspending, terminate the suspend. */
+-static bool pm_abort_suspend __read_mostly;
++/* If greater than 0 and the system is suspending, terminate the suspend. */
++static atomic_t pm_abort_suspend __read_mostly;
+ 
+ /*
+  * Combined counters of registered wakeup events and wakeup events in progress.
+@@ -856,20 +856,26 @@ bool pm_wakeup_pending(void)
+ 		pm_print_active_wakeup_sources();
+ 	}
+ 
+-	return ret || pm_abort_suspend;
++	return ret || atomic_read(&pm_abort_suspend) > 0;
+ }
+ 
+ void pm_system_wakeup(void)
+ {
+-	pm_abort_suspend = true;
++	atomic_inc(&pm_abort_suspend);
+ 	freeze_wake();
+ }
+ EXPORT_SYMBOL_GPL(pm_system_wakeup);
+ 
+-void pm_wakeup_clear(void)
++void pm_system_cancel_wakeup(void)
++{
++	atomic_dec(&pm_abort_suspend);
++}
++
++void pm_wakeup_clear(bool reset)
+ {
+-	pm_abort_suspend = false;
+ 	pm_wakeup_irq = 0;
++	if (reset)
++		atomic_set(&pm_abort_suspend, 0);
+ }
+ 
+ void pm_system_irq_wakeup(unsigned int irq_number)
+Index: linux-pm/kernel/power/process.c
+===================================================================
+--- linux-pm.orig/kernel/power/process.c
++++ linux-pm/kernel/power/process.c
+@@ -132,7 +132,7 @@ int freeze_processes(void)
+ 	if (!pm_freezing)
+ 		atomic_inc(&system_freezing_cnt);
+ 
+-	pm_wakeup_clear();
++	pm_wakeup_clear(true);
+ 	pr_info("Freezing user space processes ... ");
+ 	pm_freezing = true;
+ 	error = try_to_freeze_tasks(true);
 Index: linux-pm/drivers/acpi/sleep.c
 ===================================================================
 --- linux-pm.orig/drivers/acpi/sleep.c
 +++ linux-pm/drivers/acpi/sleep.c
-@@ -160,6 +160,10 @@ static int __init init_nvs_nosave(const
+@@ -662,14 +662,40 @@ static int acpi_freeze_prepare(void)
+ 	acpi_os_wait_events_complete();
+ 	if (acpi_sci_irq_valid())
+ 		enable_irq_wake(acpi_sci_irq);
++
  	return 0;
  }
  
-+#ifdef CONFIG_SUSPEND
-+static int __init init_upep_device(const struct dmi_system_id *d);
-+#endif
-+
- static struct dmi_system_id acpisleep_dmi_table[] __initdata = {
- 	{
- 	.callback = init_old_suspend_ordering,
-@@ -343,6 +347,15 @@ static struct dmi_system_id acpisleep_dm
- 		DMI_MATCH(DMI_PRODUCT_NAME, "80E3"),
- 		},
- 	},
-+#ifdef CONFIG_SUSPEND
-+	{
-+	 .callback = init_upep_device,
-+	 .ident = "All Dell systems",
-+	 .matches = {
-+		      DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+		},
-+	},
-+#endif
- 	{},
- };
- 
-@@ -649,6 +662,94 @@ static const struct platform_suspend_ops
- 	.recover = acpi_pm_finish,
- };
- 
-+/*
-+ * The micro-PEP (uPEP) device object is exposed in ACPI tables on systems
-+ * supporting Windows 10 with Modern Standby.  The _DSM object under it, if
-+ * present, can be used to indicate to the platform that the OS is transitioning
-+ * into a low-power state in which certain types of activity are not desirable.
-+ */
-+static acpi_handle upep_device_handle;
-+
-+#define ACPI_S2IDLE_SCREEN_OFF	3
-+#define ACPI_S2IDLE_SCREEN_ON	4
-+#define ACPI_S2IDLE_IR_ENTRY	5
-+#define ACPI_S2IDLE_IR_EXIT	6
-+
-+#define ACPI_S2IDLE_DSM_MASK	((1 << ACPI_S2IDLE_IR_ENTRY) | (1 << ACPI_S2IDLE_IR_EXIT))
-+
-+static char upep_dsm_func_mask;
-+
-+/* uPEP device _DSM UUID: c4eb40a0-6cd2-11e2-bcfd-0800200c9a66 */
-+static const u8 upep_dsm_uuid[16] = {
-+	0xa0, 0x40, 0xeb, 0xc4, 0xd2, 0x6c, 0xe2, 0x11,
-+	0xbc, 0xfd, 0x08, 0x00, 0x20, 0x0c, 0x9a, 0x66
-+};
-+
-+static void acpi_sleep_call_upep_dsm(unsigned int func)
++static void acpi_freeze_wake(void)
 +{
-+	union acpi_object *out_obj;
-+
-+	if (!(upep_dsm_func_mask & (1 << func)))
-+		return;
-+
-+	out_obj = acpi_evaluate_dsm(upep_device_handle, upep_dsm_uuid, 1, func,
-+				    NULL);
-+	ACPI_FREE(out_obj);
-+
-+	acpi_handle_debug(upep_device_handle, "_DSM function %u evaluation %s\n",
-+			  func, out_obj ? "successful" : "failed");
++	/*
++	 * If IRQD_WAKEUP_ARMED is not set for the SCI at this point, it means
++	 * that the SCI has triggered while suspended, so cancel the wakeup in
++	 * case it has not been a wakeup event (the GPEs will be checked later).
++	 */
++	if (acpi_sci_irq_valid() &&
++	    !irqd_is_wakeup_armed(irq_get_irq_data(acpi_sci_irq)))
++		pm_system_cancel_wakeup();
 +}
 +
-+static int upep_device_attach(struct acpi_device *adev,
-+			      const struct acpi_device_id *not_used)
++static void acpi_freeze_sync(void)
 +{
-+	union acpi_object *out_obj;
-+
-+	if (upep_device_handle)
-+		return 0;
-+
-+	/* Check if the _DSM is present and as expected. */
-+	out_obj = acpi_evaluate_dsm(adev->handle, upep_dsm_uuid, 1, 0, NULL);
-+	if (out_obj && out_obj->type == ACPI_TYPE_BUFFER) {
-+		char bitmask = *(char *)out_obj->buffer.pointer;
-+
-+		if (bitmask & ACPI_S2IDLE_DSM_MASK) {
-+			upep_dsm_func_mask = bitmask;
-+			upep_device_handle = adev->handle;
-+		}
-+
-+		acpi_handle_debug(adev->handle, "_DSM function mask: 0x%x\n",
-+				  bitmask);
-+	} else {
-+		acpi_handle_debug(adev->handle,
-+				  "_DSM function 0 evaluation failed\n");
-+	}
-+	ACPI_FREE(out_obj);
-+	return 0;
++	/*
++	 * Process all pending events in case there are any wakeup ones.
++	 *
++	 * The EC driver uses the system workqueue, so that one needs to be
++	 * flushed too.
++	 */
++	acpi_os_wait_events_complete();
++	flush_scheduled_work();
 +}
 +
-+static const struct acpi_device_id upep_device_ids[] = {
-+	{"INT33A1", },
-+	{"PNP0D80", },
-+	{"", },
-+};
-+
-+static struct acpi_scan_handler upep_handler = {
-+	.ids = upep_device_ids,
-+	.attach = upep_device_attach,
-+};
-+
-+static int __init init_upep_device(const struct dmi_system_id *d)
-+{
-+	acpi_scan_add_handler(&upep_handler);
-+	return 0;
-+}
-+
-+bool acpi_sleep_ec_gpe_may_wakeup(void)
-+{
-+	return !!upep_device_handle;
-+}
-+
- static int acpi_freeze_begin(void)
+ static void acpi_freeze_restore(void)
  {
- 	acpi_scan_lock_acquire();
-@@ -657,6 +758,8 @@ static int acpi_freeze_begin(void)
- 
- static int acpi_freeze_prepare(void)
- {
-+	acpi_sleep_call_upep_dsm(ACPI_S2IDLE_SCREEN_OFF);
-+	acpi_sleep_call_upep_dsm(ACPI_S2IDLE_IR_ENTRY);
- 	acpi_enable_wakeup_devices(ACPI_STATE_S0);
- 	acpi_enable_all_wakeup_gpes();
- 	acpi_enable_all_runtime_gpes();
-@@ -698,6 +801,8 @@ static void acpi_freeze_restore(void)
+ 	acpi_disable_wakeup_devices(ACPI_STATE_S0);
+ 	if (acpi_sci_irq_valid())
  		disable_irq_wake(acpi_sci_irq);
- 
++
  	acpi_enable_all_runtime_gpes();
-+	acpi_sleep_call_upep_dsm(ACPI_S2IDLE_IR_EXIT);
-+	acpi_sleep_call_upep_dsm(ACPI_S2IDLE_SCREEN_ON);
  }
  
- static void acpi_freeze_end(void)
-@@ -729,6 +834,11 @@ static void acpi_sleep_suspend_setup(voi
+@@ -681,6 +707,8 @@ static void acpi_freeze_end(void)
+ static const struct platform_freeze_ops acpi_freeze_ops = {
+ 	.begin = acpi_freeze_begin,
+ 	.prepare = acpi_freeze_prepare,
++	.wake = acpi_freeze_wake,
++	.sync = acpi_freeze_sync,
+ 	.restore = acpi_freeze_restore,
+ 	.end = acpi_freeze_end,
+ };
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -24,6 +24,7 @@
+ #include <linux/pm_qos.h>
+ #include <linux/pm_domain.h>
+ #include <linux/pm_runtime.h>
++#include <linux/suspend.h>
  
- #else /* !CONFIG_SUSPEND */
- static inline void acpi_sleep_suspend_setup(void) {}
-+
-+bool acpi_sleep_ec_gpe_may_wakeup(void)
-+{
-+	return false;
-+}
- #endif /* !CONFIG_SUSPEND */
+ #include "internal.h"
  
- #ifdef CONFIG_PM_SLEEP
-
+@@ -399,7 +400,7 @@ static void acpi_pm_notify_handler(acpi_
+ 	mutex_lock(&acpi_pm_notifier_lock);
+ 
+ 	if (adev->wakeup.flags.notifier_present) {
+-		__pm_wakeup_event(adev->wakeup.ws, 0);
++		pm_wakeup_ws_event(adev->wakeup.ws, 0, true);
+ 		if (adev->wakeup.context.work.func)
+ 			queue_pm_work(&adev->wakeup.context.work);
+ 	}
+Index: linux-pm/drivers/acpi/button.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/button.c
++++ linux-pm/drivers/acpi/button.c
+@@ -216,7 +216,7 @@ static int acpi_lid_notify_state(struct
+ 	}
+ 
+ 	if (state)
+-		pm_wakeup_event(&device->dev, 0);
++		pm_wakeup_hard_event(&device->dev);
+ 
+ 	ret = blocking_notifier_call_chain(&acpi_lid_notifier, state, device);
+ 	if (ret == NOTIFY_DONE)
+@@ -398,7 +398,7 @@ static void acpi_button_notify(struct ac
+ 		} else {
+ 			int keycode;
+ 
+-			pm_wakeup_event(&device->dev, 0);
++			pm_wakeup_hard_event(&device->dev);
+ 			if (button->suspended)
+ 				break;
+ 
+@@ -530,6 +530,7 @@ static int acpi_button_add(struct acpi_d
+ 		lid_device = device;
+ 	}
+ 
++	device_init_wakeup(&device->dev, true);
+ 	printk(KERN_INFO PREFIX "%s [%s]\n", name, acpi_device_bid(device));
+ 	return 0;
+ 
+Index: linux-pm/drivers/acpi/battery.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/battery.c
++++ linux-pm/drivers/acpi/battery.c
+@@ -782,7 +782,7 @@ static int acpi_battery_update(struct ac
+ 	if ((battery->state & ACPI_BATTERY_STATE_CRITICAL) ||
+ 	    (test_bit(ACPI_BATTERY_ALARM_PRESENT, &battery->flags) &&
+             (battery->capacity_now <= battery->alarm)))
+-		pm_wakeup_event(&battery->device->dev, 0);
++		pm_wakeup_hard_event(&battery->device->dev);
+ 
+ 	return result;
+ }
