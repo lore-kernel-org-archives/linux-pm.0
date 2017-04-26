@@ -1,50 +1,98 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Touchscreen failure with CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-Date: Wed, 26 Apr 2017 09:48:33 +0530
-Message-ID: <20170426041833.GD1928@vireshk-i7>
-References: <CAOMZO5BpAsJAKv-p=WPevUnx71fxbLtunJe-0ijVT7T9m7AMSQ@mail.gmail.com>
- <20170424114343.GS26900@vireshk-i7>
- <CAOMZO5AkTKjU5kw0gszLVdVOc_Sb_sWhr65heE==kyw=5rcN-g@mail.gmail.com>
- <20170425050633.GV26900@vireshk-i7>
- <CAOMZO5BgjgxGhJ7zGV-gjs0QHmJMgkNryFqTYA=vGPz8KWDijg@mail.gmail.com>
- <20170425111301.GC1928@vireshk-i7>
- <CAHCN7xJVicKuAc0dDbzBg4h2d1UUP66iKkSsWN_f=rPd4mOZSw@mail.gmail.com>
- <CAOMZO5CPtKAh6wMJ06BO4YFLPmOTvrpv5Q_3RJoj9dup46ukTQ@mail.gmail.com>
- <CAHCN7x+6KwOZdC1MaNQGdXWFjJ18hYp3kc73JADDMC4DOFn+yQ@mail.gmail.com>
- <CAOMZO5AJQ2TJvyuiBLLeS9zZMufMxyuNw+MA+NtZPCzzWJ0NXA@mail.gmail.com>
+From: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
+ power-domains
+Date: Wed, 26 Apr 2017 10:02:39 +0530
+Message-ID: <9cd9287c-392b-d3ca-db7d-75c49287448e@codeaurora.org>
+References: <cover.1490001099.git.viresh.kumar@linaro.org>
+ <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
+ <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
+ <20170413053736.GM5910@vireshk-i7>
+ <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
+ <20170417052758.GF28191@vireshk-i7>
+ <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:35621 "EHLO
-        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1949689AbdDZESh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Apr 2017 00:18:37 -0400
-Received: by mail-pf0-f181.google.com with SMTP id v14so32254597pfd.2
-        for <linux-pm@vger.kernel.org>; Tue, 25 Apr 2017 21:18:37 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAOMZO5AJQ2TJvyuiBLLeS9zZMufMxyuNw+MA+NtZPCzzWJ0NXA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <95aa4b97-4e1a-13bb-f4d8-982b778012ba-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: Adam Ford <aford173@gmail.com>, Shawn Guo <shawnguo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 25-04-17, 12:24, Fabio Estevam wrote:
-> On Tue, Apr 25, 2017 at 11:35 AM, Adam Ford <aford173@gmail.com> wrote:
-> 
-> > I have a touch screen (using tsc2004 touch controller) on my board.  I
-> > can run some tests if you tell me how you're able to reproduce your
-> > issue.  I can at least confirm whether or not I see it too.  I won't
-> > be able to do it until later tonight or tomorrow however.
-> 
-> Just run:
-> 
-> evtest /dev/input/eventX to capture the touchscreen events and keep
-> touching the screen.
-> 
-> After some random time (1-2 minutes) evtest will stop capturing the events.
 
-And set the governor to Powersave to make sure we are running on
-lowest OPP.
+> On 17/04/17 06:27, Viresh Kumar wrote:
+>> On 13-04-17, 14:42, Sudeep Holla wrote:
+>>> What I was referring is about power domain provider with multiple power
+>>> domains(simply #power-domain-cells=<1> case as explained in the
+>>> power-domain specification.
+>>
+>> I am not sure if we should be looking to target such a situation for now, as
+>> that would be like this:
+>>
+>> Device controlled by Domain A. Domain A itself is controlled by Domain B and
+>> Domain C.
+>>
+> 
+> No, may be I was not so clear. I am just referring a power controller
+> that provides say 3 different power domains and are indexed 0 - 2.
+> The consumer just passes the index along with the phandle for the power
+> domain info.
+> 
+>> Though we will end up converting the domain-performance-state property to an
+>> array if that is required in near future.
+>>
+> 
+> OK, better to document that so that we know how to extend it. We have
+> #power-domain-cells=<1> on Juno with SCPI.
+> 
+>>> Yes. To simplify what not we just have power-domain for a device and
+>>> change state of that domain to change the performance of that device.
+>>
+>> Consider this case to understand what I have in Mind.
+>>
+>> The power domain have its states as A, B, C, D. There can be multiple devices
+>> regulated by that domain and one of the devices have its power states as: A1,
+>> A2, A3, B1, B2, B3, C1, C2, C3, D1, D2, D3 and all these states have different
+>> frequency/voltages.
+>>
+>> IOW, the devices can have regulators as well and may want to fine tune within
+>> the domain performance-state.
+>>
+> 
+> Understood. I would incline towards reusing regulators we that's what is
+> changed behind the scene. Calling this operating performance point
+> is misleading and doesn't align well with existing specs/features.
+
+[]...
+ 
+>>> If we are looking this power-domains with performance as just some
+>>> *advanced regulators*, I don't like the complexity added.
+
++ Mark
+
+I don;t see any public discussions on why we ruled out using regulators to
+support this but maybe there were some offline discussions on this.
+
+Mark, this is a long thread, so just summarizing here to give you the context.
+
+At qualcomm, we have an external M3 core (running its own firmware) which controls
+a few voltage rails (including AVS on those). The devices vote for the voltage levels
+(or performance levels) they need by passing an integer value to the M3 (not actual
+voltage values). Since that didn't fit well with the existing regulator apis it was
+proposed we look at modeling these as powerdomain performance levels (and reuse genpd
+framework) which is what this series from Viresh is about.
+
+Since the discussion now is moving towards 'why not use regulator framework for this
+instead of adding all the complexity with powerdomain performance levels since
+these are regulators underneath', I looped you in so you can provide some feedback
+on can these really be modeled as some *advanced regulators* with some apis to set some
+regulator performance levels (instead of voltage levels).
 
 -- 
-viresh
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
