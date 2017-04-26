@@ -1,45 +1,68 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH 3/3] ti-soc-thermal: Fix a typo in a comment line
-Date: Wed, 26 Apr 2017 17:39:19 +0200
-Message-ID: <f1b47bde-bd8a-2a5d-a6b3-4c721628b243@users.sourceforge.net>
-References: <cd524803-b771-c3d2-8906-ee78576c86d4@users.sourceforge.net>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v2 8/8] platform: x86: intel_bxtwc_tmu: remove first level
+ irq unmask
+Date: Wed, 26 Apr 2017 18:44:43 +0300
+Message-ID: <CAHp75VebW8Fi2Hzkk=9z_Ktq=xc7MjUWUE00p72OeyxcP9826w@mail.gmail.com>
+References: <0e4d82ca9cdc41c9d2a8b45258cd72659b4c2063.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <93377b77b9493d79de48741b030fa1b03f80094f.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <20170421220025.GC31650@fury> <d9ead97f-db7b-a0b0-4eb1-1c783ee1e841@linux.intel.com>
+ <CAHp75VeGQ=Zb=azNZCEfA25VdvuQcbMJoHuXkyQ24KOh4WQjRw@mail.gmail.com>
+ <20170424092401.uijlbkcxosoy4zmt@dell> <CAHp75Vd-V1jzPcEj1ZgA204gL_+ToeO7itbxjE_2e2ptki_PpQ@mail.gmail.com>
+ <20170424122439.nwrlincsvhjq4ljf@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.web.de ([217.72.192.78]:51159 "EHLO mout.web.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S935086AbdDZPjl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 26 Apr 2017 11:39:41 -0400
-In-Reply-To: <cd524803-b771-c3d2-8906-ee78576c86d4@users.sourceforge.net>
-Content-Language: en-GB
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <20170424122439.nwrlincsvhjq4ljf@dell>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Alexandre Courbot <gnurou@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>, Andy Shevchenko <andy@infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Sathyanarayanan Kuppuswamy Natarajan <sathyaosid@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Wed, 26 Apr 2017 17:11:28 +0200
+On Mon, Apr 24, 2017 at 3:24 PM, Lee Jones <lee.jones@linaro.org> wrote:
+> On Mon, 24 Apr 2017, Andy Shevchenko wrote:
+>
+>> On Mon, Apr 24, 2017 at 12:24 PM, Lee Jones <lee.jones@linaro.org> wrote:
+>> > On Sat, 22 Apr 2017, Andy Shevchenko wrote:
+>> >
+>> >> On Sat, Apr 22, 2017 at 1:34 AM, sathyanarayanan kuppuswamy
+>> >> <sathyanarayanan.kuppuswamy@linux.intel.com> wrote:
+>> >>
+>> >> > Thanks for brining it up. I was planning to ask either Andy or Lee regarding
+>> >> > this issue after all patches in the series are reviewed.
+>> >>
+>> >> Darren, I'm planning to review this soon.
+>> >>
+>> >> P.S. We have few series flying around regarding to Intel PMIC(s): my
+>> >> for Kconfig naming, Hans' for Crystal Cove (touches Kconfig as well),
+>> >> and Sathya's series. I hope Lee can collect them in proper order.
+>> >
+>> > That could be easier said than done.
+>>
+>> Some of them are already in your tree, then apply
+>> - my Kconfig patch which makes Broxton Whiskey Cove to be built
+>> independently of Crystal Cove (I didn't notice that patch in your
+>> tree, though some of your mail told it had been applied)
+>> - Hans' series regarding CherryTrail Whiskey Cove support (if it has all ACKs)
+>> - this series after my review.
+>>
+>> Does it sound doable?
+>
+> My Inbox is now empty, so all patches are now either applied or
+> waiting further Acks/Actions.
 
-Add a missing character in this description for a function.
+I reviewed the series and found it suitable to apply.
+The GPIO Whiskey Cove patch will do a conflict (in GPIO tree is
+another patch that adds GPIO IRQ masks in a way by using GENMASK(),
+so, we might avoid this doing the same in patch 5 here).
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/thermal/ti-soc-thermal/ti-bandgap.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index 109fb0a5f19f..696ab3046b87 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -1010,7 +1010,7 @@ ti_bandgap_force_single_read(struct ti_bandgap *bgp, int id)
- }
- 
- /**
-- * ti_bandgap_set_continous_mode() - One time enabling of continuous mode
-+ * ti_bandgap_set_continuous_mode() - One time enabling of continuous mode
-  * @bgp: pointer to struct ti_bandgap
-  *
-  * Call this function only if HAS(MODE_CONFIG) is set. As this driver may
+for entire series.
+
+> I'm pretty certain that this set is not going in before v4.13.
+
+It is now on your side :-)
+
 -- 
-2.12.2
+With Best Regards,
+Andy Shevchenko
