@@ -1,38 +1,98 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: Touchscreen failure with CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-Date: Wed, 26 Apr 2017 23:20:46 -0300
-Message-ID: <CAOMZO5DJTNG3jbwG1Q7eg45MyTjvUUZ8-iqiGB-_Y_82i+=Lhw@mail.gmail.com>
-References: <CAOMZO5BZ8Z8dfwsfuiunNQ_q39_k4QJg7jLPQfaxn+YBsmz2jw@mail.gmail.com>
- <20170424040709.GG26900@vireshk-i7> <CAOMZO5B4_xrLcWQGF=yRfj-14XQKudzjyr2roGRkzofkHCfuHg@mail.gmail.com>
- <20170424112906.GR26900@vireshk-i7> <CAOMZO5BpAsJAKv-p=WPevUnx71fxbLtunJe-0ijVT7T9m7AMSQ@mail.gmail.com>
- <20170424114343.GS26900@vireshk-i7> <CAOMZO5AkTKjU5kw0gszLVdVOc_Sb_sWhr65heE==kyw=5rcN-g@mail.gmail.com>
- <20170425050633.GV26900@vireshk-i7> <CAOMZO5BgjgxGhJ7zGV-gjs0QHmJMgkNryFqTYA=vGPz8KWDijg@mail.gmail.com>
- <20170425111301.GC1928@vireshk-i7> <CAHCN7xJVicKuAc0dDbzBg4h2d1UUP66iKkSsWN_f=rPd4mOZSw@mail.gmail.com>
- <CAOMZO5CPtKAh6wMJ06BO4YFLPmOTvrpv5Q_3RJoj9dup46ukTQ@mail.gmail.com>
- <CAHCN7x+6KwOZdC1MaNQGdXWFjJ18hYp3kc73JADDMC4DOFn+yQ@mail.gmail.com>
- <CAOMZO5AJQ2TJvyuiBLLeS9zZMufMxyuNw+MA+NtZPCzzWJ0NXA@mail.gmail.com>
- <CAHCN7xKNdTGArENnSJ0yHM2qLFMjuySTxHhjkaOK_T5AKJ761A@mail.gmail.com>
- <CAOMZO5B95OEhUgBtV+S3q5rMVJ89zDYB5wMJs=vUaZF28Wivjg@mail.gmail.com> <CAHCN7xJ70S49E9w+jEzBUhgiyakLvVyMkRzPaULxRLVwjN3+cg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: [PATCH] devfreq: do not ignore errors during store min, max frequency
+Date: Thu, 27 Apr 2017 09:23:47 +0100
+Message-ID: <1493281427-8671-1-git-send-email-lukasz.luba@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f41.google.com ([209.85.218.41]:36653 "EHLO
-        mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S938114AbdD0CUr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Apr 2017 22:20:47 -0400
-Received: by mail-oi0-f41.google.com with SMTP id w12so22473907oiw.3
-        for <linux-pm@vger.kernel.org>; Wed, 26 Apr 2017 19:20:47 -0700 (PDT)
-In-Reply-To: <CAHCN7xJ70S49E9w+jEzBUhgiyakLvVyMkRzPaULxRLVwjN3+cg@mail.gmail.com>
+Received: from foss.arm.com ([217.140.101.70]:34896 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S935983AbdD0IYP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 27 Apr 2017 04:24:15 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Adam Ford <aford173@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: cw00.choi@samsung.com, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <lukasz.luba@arm.com>
 
-On Wed, Apr 26, 2017 at 11:01 PM, Adam Ford <aford173@gmail.com> wrote:
+This patch adds functionality to make sure when a call to set a new
+max or min frequency is possible.
+If storing the new value was not possible, restore previous one
+and forward the error value.
 
-> I held it for nearly six minutes while checking out facebook (I am not
-> sure why I did that part).  After 6 minutes it was still operational.
->
-> I should note that I am running 4.9.23
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+It is based on v4.11-rc8.
 
-Thanks for testing. I will keep investigating.
+ drivers/devfreq/devfreq.c | 36 ++++++++++++++++++++++++++++++++----
+ 1 file changed, 32 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index dea0487..8586035 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -1059,6 +1059,7 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+ 	unsigned long value;
+ 	int ret;
+ 	unsigned long max;
++	unsigned long old_min;
+ 
+ 	ret = sscanf(buf, "%lu", &value);
+ 	if (ret != 1)
+@@ -1071,9 +1072,22 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+ 		goto unlock;
+ 	}
+ 
++	ret = devfreq_get_freq_level(df, value);
++	if (ret < 0) {
++		dev_warn(dev, "Storing min freq failed with (%d) error\n", ret);
++		goto unlock;
++	}
++
++	old_min = df->min_freq;
+ 	df->min_freq = value;
+-	update_devfreq(df);
+-	ret = count;
++	ret = update_devfreq(df);
++	if (ret) {
++		df->min_freq = old_min;
++		dev_warn(dev, "Storing min freq failed with (%d) error\n", ret);
++	} else {
++		ret = count;
++	}
++
+ unlock:
+ 	mutex_unlock(&df->lock);
+ 	return ret;
+@@ -1086,6 +1100,7 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ 	unsigned long value;
+ 	int ret;
+ 	unsigned long min;
++	unsigned long old_max;
+ 
+ 	ret = sscanf(buf, "%lu", &value);
+ 	if (ret != 1)
+@@ -1098,9 +1113,22 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ 		goto unlock;
+ 	}
+ 
++	ret = devfreq_get_freq_level(df, value);
++	if (ret < 0) {
++		dev_warn(dev, "Storing max freq failed with (%d) error\n", ret);
++		goto unlock;
++	}
++
++	old_max = df->max_freq;
+ 	df->max_freq = value;
+-	update_devfreq(df);
+-	ret = count;
++	ret = update_devfreq(df);
++	if (ret) {
++		df->max_freq = old_max;
++		dev_warn(dev, "Storing max freq failed with (%d) error\n", ret);
++	} else {
++		ret = count;
++	}
++
+ unlock:
+ 	mutex_unlock(&df->lock);
+ 	return ret;
+-- 
+1.9.1
