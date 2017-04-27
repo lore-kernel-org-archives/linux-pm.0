@@ -1,67 +1,75 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH V2] cpuidle: check dev before usage in
- cpuidle_use_deepest_state
-Date: Thu, 27 Apr 2017 12:39:24 +0300
-Message-ID: <1493285964.24567.225.camel@linux.intel.com>
-References: <BEC9F67575FA1E429CA7CF5AE9BE363432A457C3@SHSMSX104.ccr.corp.intel.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
+ power-domains
+Date: Thu, 27 Apr 2017 10:42:49 +0100
+Message-ID: <c66322f5-e2eb-5556-a5a5-14998a2f195d@arm.com>
+References: <cover.1490001099.git.viresh.kumar@linaro.org>
+ <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
+ <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
+ <20170413053736.GM5910@vireshk-i7>
+ <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
+ <20170417052758.GF28191@vireshk-i7>
+ <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
+ <9cd9287c-392b-d3ca-db7d-75c49287448e@codeaurora.org>
+ <20170426135532.ryrh276znet5yvks@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <BEC9F67575FA1E429CA7CF5AE9BE363432A457C3@SHSMSX104.ccr.corp.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Li, Fei" <fei.li@intel.com>, "Shi, FengX" <fengx.shi@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Koul, Vinod" <vinod.koul@intel.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:35608 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S938029AbdD0Jmz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 27 Apr 2017 05:42:55 -0400
+In-Reply-To: <20170426135532.ryrh276znet5yvks@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, devicetree@vger.kernel.org
 
-On Thu, 2017-04-27 at 01:47 +0000, Li, Fei wrote:
-> In case of there is no cpuidle devices registered, dev will be null,
-> and
-> panic will be triggered like below;
-> In this patch, add checking of dev before usage, like that done in
-> cpuidle_idle_call.
+
+
+On 26/04/17 14:55, Mark Brown wrote:
+> On Wed, Apr 26, 2017 at 10:02:39AM +0530, Rajendra Nayak wrote:
+>>> On 17/04/17 06:27, Viresh Kumar wrote:
 > 
-> Panic without fix:
-> [  184.961328] BUG: unable to handle kernel NULL pointer dereference
-> at
->   (null)
-> [  184.961328] IP: cpuidle_use_deepest_state+0x30/0x60
-> ...
-> [  184.961328]  play_idle+0x8d/0x210
-> [  184.961328]  ? __schedule+0x359/0x8e0
-> [  184.961328]  ? _raw_spin_unlock_irqrestore+0x28/0x50
-> [  184.961328]  ? kthread_queue_delayed_work+0x41/0x80
-> [  184.961328]  clamp_idle_injection_func+0x64/0x1e0
-
-FWIW:
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-
-P.S. V2 is mistakenly left from internal review AFAIU.
-
+>>>>> If we are looking this power-domains with performance as just some
+>>>>> *advanced regulators*, I don't like the complexity added.
 > 
-> Fixes: bb8313b603eb8 ("cpuidle: Allow enforcing deepest idle state
-> selection")
-> Signed-off-by: Li, Fei <fei.li@intel.com>
-> Tested-by: Shi, Feng <fengx.shi@intel.com>
-> ---
->  drivers/cpuidle/cpuidle.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>> + Mark
 > 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 548b90b..2706be7 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -111,7 +111,8 @@ void cpuidle_use_deepest_state(bool enable)
->  
->  	preempt_disable();
->  	dev = cpuidle_get_device();
-> -	dev->use_deepest_state = enable;
-> +	if (dev)
-> +		dev->use_deepest_state = enable;
->  	preempt_enable();
->  }
->  
+>> I don;t see any public discussions on why we ruled out using regulators to
+>> support this but maybe there were some offline discussions on this.
+> 
+>> Mark, this is a long thread, so just summarizing here to give you the context.
+> 
+>> At qualcomm, we have an external M3 core (running its own firmware) which controls
+>> a few voltage rails (including AVS on those). The devices vote for the voltage levels
+
+Thanks for explicitly mentioning this, but ...
+
+>> (or performance levels) they need by passing an integer value to the M3 (not actual
+
+you contradict here, is it just voltage or performance(i.e. frequency)
+or both ? We need clarity there to choose the right representation.
+
+>> voltage values). Since that didn't fit well with the existing regulator apis it was
+> 
+> As I'm getting fed up of saying: if the values you are setting are not
+> voltages and do not behave like voltages then the hardware should not be
+> represented as a voltage regulator since if they are represented as
+> voltage regulators things will expect to be able to control them as
+> voltage regulators.  This hardware is quite clearly providing OPPs
+> directly, I would expect this to be handled in the OPP code somehow.
+
+I agree with you that we need to be absolutely sure on what it actually
+represents.
+
+But as more and more platform are pushing such power controls to
+dedicated M3 or similar processors, we need abstraction. Though we are
+controlling hardware, we do so indirectly. Since there were discussions
+around device tree representing hardware vs platform, I tend to think,
+we are moving towards platform(something similar to ACPI).
 
 -- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+Regards,
+Sudeep
