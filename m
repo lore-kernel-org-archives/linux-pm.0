@@ -1,80 +1,120 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V4 00/17] thermal: cpu_cooling: improve interaction with
- cpufreq core
-Date: Thu, 27 Apr 2017 09:26:08 -0700
-Message-ID: <20170427162604.GB18276@localhost.localdomain>
-References: <cover.1493115651.git.viresh.kumar@linaro.org>
- <ead65416-4833-6f36-81bd-c1673bb71514@arm.com>
- <20170426104752.GE1928@vireshk-i7>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 1/2] thermal: broadcom: Allow for NSP to use ns-thermal
+ driver
+Date: Thu, 27 Apr 2017 09:37:00 -0700
+Message-ID: <20170427163658.GC18276@localhost.localdomain>
+References: <1493153351-12698-1-git-send-email-jon.mason@broadcom.com>
+ <1493153351-12698-2-git-send-email-jon.mason@broadcom.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="5I6of5zJg18YgZEa"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:34175 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932146AbdD0Q0K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Apr 2017 12:26:10 -0400
+        protocol="application/pgp-signature"; boundary="RIYY1s2vRbPFwWeW"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170426104752.GE1928@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1493153351-12698-2-git-send-email-jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Mason <jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Cc: Florian Fainelli <florian.fainelli-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lukasz Luba <lukasz.luba@arm.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linaro-kernel@lists.linaro.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
 
 
---5I6of5zJg18YgZEa
+--RIYY1s2vRbPFwWeW
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Apr 26, 2017 at 04:17:52PM +0530, Viresh Kumar wrote:
-> On 26-04-17, 11:41, Lukasz Luba wrote:
-> > Hi Viresh,
-> >=20
-> > I went through the v4 code and it looks good to me.
-> > Feel free to add for the v4 series
-> > Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
->=20
-> Thanks a lot for testing and reviewing the series.
->=20
-> @Eduardo: Will you be able to pick it for 4.12 ?
+Hey Jason,
 
-I feel like this is late for 4.12 given that we are already -rc8.=20
-Besides, it has gone through a couple of cycles of broken interactions
-with IPA (now fixed).
+On Tue, Apr 25, 2017 at 04:49:10PM -0400, Jon Mason wrote:
+> Change the iProc Kconfig to select THERMAL and THERMAL_OF, which allows
+> the ns-thermal driver to be selected via menuconfig.  Also, change the
+> ns-thermal driver to work on any iProc based SoC.  Finally, tweak the
+> Kconfig description to mention support for NSP and make the default on
+> for iProc based platforms.
 
-So, I would prefer we give this series a bit more of testing time on
-linux-next. I can pull it and put into linux-next after the coming
-merge window is closed.
 
+Thanks for the patch, but..
 >=20
+> Signed-off-by: Jon Mason <jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+> ---
+>  arch/arm/mach-bcm/Kconfig        | 2 ++
+>  drivers/thermal/broadcom/Kconfig | 9 +++++----
+>  2 files changed, 7 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
+> index a0e66d8..da2bfeb 100644
+> --- a/arch/arm/mach-bcm/Kconfig
+> +++ b/arch/arm/mach-bcm/Kconfig
+> @@ -19,6 +19,8 @@ config ARCH_BCM_IPROC
+>  	select GPIOLIB
+>  	select ARM_AMBA
+>  	select PINCTRL
+> +	select THERMAL
+> +	select THERMAL_OF
+>  	help
+>  	  This enables support for systems based on Broadcom IPROC architected =
+SoCs.
+>  	  The IPROC complex contains one or more ARM CPUs along with common
+
+It would be better if this is split and sent through your arch tree, to
+avoid conflicts. I could also pick it if you get an ack from one of your
+maintainers. Still, first option is preferable.
+
+> diff --git a/drivers/thermal/broadcom/Kconfig b/drivers/thermal/broadcom/=
+Kconfig
+> index f0dea8a..26d706c 100644
+> --- a/drivers/thermal/broadcom/Kconfig
+> +++ b/drivers/thermal/broadcom/Kconfig
+> @@ -1,8 +1,9 @@
+>  config BCM_NS_THERMAL
+>  	tristate "Northstar thermal driver"
+>  	depends on ARCH_BCM_IPROC || COMPILE_TEST
+> +	default ARCH_BCM_IPROC
+
+Not sure if this is really what you wanted. Based on your commit log
+message, you meant the following, perhaps?
+
+ +	default y if ARCH_BCM_IPROC
+
+>  	help
+> -	  Northstar is a family of SoCs that includes e.g. BCM4708, BCM47081,
+> -	  BCM4709 and BCM47094. It contains DMU (Device Management Unit) block
+> -	  with a thermal sensor that allows checking CPU temperature. This
+> -	  driver provides support for it.
+> +	  Support for the Northstar and Northstar Plus family of SoCs (e.g.
+> +	  BCM4708, BCM4709, BCM5301x, BCM95852X, etc). It contains DMU (Device
+
+Did we look BCM47094 somehow on this patch?
+
+> +	  Management Unit) block with a thermal sensor that allows checking CPU
+> +	  temperature.
 > --=20
-> viresh
+> 2.7.4
+>=20
 
-Thanks,
-
-Eduardo=20
-
---5I6of5zJg18YgZEa
+--RIYY1s2vRbPFwWeW
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJZAhuWAAoJEA6VkvSQfF5T4HcQAI6lxvM98Mhtt57iWviTPzBX
-6E4g5sQvdWMyKWPLbqBPSN3+wd+zBQWEdzL6UfeM5a/hutc4xvhqXXTrHvTwpQh3
-81jmZKSsxod+A4K4RvQT2al4glSHni60wrEjLlj/xHeysIVPkvr/0MTqq9udmqQN
-s/Gk+H0pAaNhrbvhxtBDXm4aghsrBc861c4AxVvW1rkeFgEm+EJUDjuJsGJXHJUA
-+Wy1w8NvvXAnKNWxOI/Q8IxAH35uRWcAvckrp1ahaGgD6nabkESd3s1Fvo/35Xv+
-HDeRi0XOHrCkkmJl5c/rDJObUzTzCQamP2z45SMcuIlL9dv+vNQibLazKHrCoCfg
-ulrqAARatPikB+cN9LnlghpV/xQMDm1NixcYu+MhRp+SkRjlQkq5RIiBloTw2M05
-t3JzdrD63ylWXZETX3MX6TLXIR4O+R37yl4IXknHctuz8XGlC/5FlQpKyHDVWiA8
-j71/1wtCY/pm7LLsWS9pmyBOOwPCDt9quq+drpkPfanV7Y5rXDbzd2qDvyDIt5pR
-+Mkt7nA2kT8cYmb8M+VsnOtbXpvvEL3sH6ih9XS+aj48GDCiXnivFiOuFIoQRp3t
-3Cvz/JkkLhxDDtFf7jyqLOr5HAS2ZZ5wJkLVzAFBdBQGQt4T6wGSYgb30y8YuAoq
-l85l/h1eT1GITvt3e1Wc
-=BDNl
+iQIcBAEBCAAGBQJZAh4jAAoJEA6VkvSQfF5TyfUP/1P/wLzUACSkH7IqUTHentkY
+jU+NRu2AhZs9Gu7ePDFn3cdnc+dhKru+4+wDR2ntMABiYH4SHmhDpZScztCTLL6d
+UDueqE/S4nZ2YEf8CSO47DLPuxiAcENRKj0/QZIeepFrDuH4xviMIyC3IEeD4OBo
+wtO4E1CuBcsgEkk3uxnx8nF9cSlSOm8rcLvFPuWWp2PzYcSXyOgQ2fa4zyv6mGSg
+4nxjtdxGpgJebJz0TbWNORqO519clE8frk13vftambaQnEo1iiXTWzktxzGsZ2jr
+EvY+viAM4ZtDXxWtJKRbXHUPDFlkDRgCeXJOPIk+D7Us5sFzhw7rJNKKfhyoP/Nl
+kU+BksdyLuIFpn7uMN+XYoT/3oAS8MXDFlS9qXI2IZuHT2aAZeqqYohYq48/fpAS
+6R633qXSmfredqagwy8Q2agccqcyLx9CIBtdQCDgfxlcGowKaDcOlkYPllnXEfNP
+0kD0logTUjxOeOogej0xih4xhyIErlzzzCayDfuaWladiPSktQZRLklyMJJ7VDMS
+c7KKphaq7Bk1HJd2FpEnxaUhIGZQiQn+p5YEkSJdKxsfT5/5tZmjZCi9afn59I7m
+UuxAQRhBMeB1te4PZlEYs+ET0DnPnDFAgKVwxgUze6gHEcIverR6ifGDOm6FSmIt
+QsBZpKA+OB7qxRzw0Ipp
+=yNF2
 -----END PGP SIGNATURE-----
 
---5I6of5zJg18YgZEa--
+--RIYY1s2vRbPFwWeW--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
