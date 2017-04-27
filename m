@@ -1,99 +1,77 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH v3 09/29] x86: assembly, use DATA_SIMPLE for data
-Date: Thu, 27 Apr 2017 14:30:05 +0200
-Message-ID: <84fc78c7-3a70-bf74-aa2c-c8b59e2adb3e@suse.cz>
-References: <20170421141305.25180-1-jslaby@suse.cz>
- <20170421141305.25180-9-jslaby@suse.cz> <20170427115358.GB23352@amd>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 2/3] soc/tegra: bpmp: Update ABI header
+Date: Thu, 27 Apr 2017 16:19:49 +0200
+Message-ID: <20170427141949.GB21118@ulmo.ba.sec>
+References: <20170329163452.10761-1-thierry.reding@gmail.com>
+ <20170329163452.10761-3-thierry.reding@gmail.com>
+ <10169152.Khpl4fl1AK@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="tEgN2to0Id5UTltsC96D9h9GJ0Umk06Be"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:36232 "EHLO
-        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965424AbdD0MaM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Apr 2017 08:30:12 -0400
-In-Reply-To: <20170427115358.GB23352@amd>
-Sender: linux-pm-owner@vger.kernel.org
+        protocol="application/pgp-signature"; boundary="JP+T4n/bALQSJXh8"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <10169152.Khpl4fl1AK-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stefan Kristiansson <stefank-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, jpoimboe@redhat.com, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---tEgN2to0Id5UTltsC96D9h9GJ0Umk06Be
-Content-Type: multipart/mixed; boundary="oCoKR29dNAN1ad892RxwdB4vWe6pwNSlL";
- protected-headers="v1"
-From: Jiri Slaby <jslaby@suse.cz>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org,
- jpoimboe@redhat.com, linux-kernel@vger.kernel.org,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>,
- linux-pm@vger.kernel.org
-Message-ID: <84fc78c7-3a70-bf74-aa2c-c8b59e2adb3e@suse.cz>
-Subject: Re: [PATCH v3 09/29] x86: assembly, use DATA_SIMPLE for data
-References: <20170421141305.25180-1-jslaby@suse.cz>
- <20170421141305.25180-9-jslaby@suse.cz> <20170427115358.GB23352@amd>
-In-Reply-To: <20170427115358.GB23352@amd>
 
---oCoKR29dNAN1ad892RxwdB4vWe6pwNSlL
-Content-Type: text/plain; charset=windows-1252
+--JP+T4n/bALQSJXh8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On 04/27/2017, 01:53 PM, Pavel Machek wrote:
->> @@ -91,11 +91,11 @@ ENDPROC(do_suspend_lowlevel)
->> =20
->>  .data
->>  ALIGN
->> -ENTRY(saved_magic)	.long	0
->> -ENTRY(saved_eip)	.long	0
->> +SYM_DATA_SIMPLE(saved_magic, .long 0)
->> +SYM_DATA_SIMPLE_LOCAL(saved_eip, .long 0)
->> =20
->>  # saved registers
->> -saved_idt:	.long	0,0
->> -saved_ldt:	.long	0
->> -saved_tss:	.long	0
->> +SYM_DATA_SIMPLE_LOCAL(saved_idt, .long 0,0)
->> +SYM_DATA_SIMPLE_LOCAL(saved_ldt, .long 0)
->> +SYM_DATA_SIMPLE_LOCAL(saved_tss, .long 0)
+On Thu, Apr 20, 2017 at 02:44:48AM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, March 29, 2017 06:34:51 PM Thierry Reding wrote:
+> > From: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> >=20
+> > Update the BPMP ABI header to a more recent version. The new version
+> > adds support for a new powergating ABI as well as access to the ring
+> > buffer console, which allows debug messages to be output to the BPMP
+> > debug console.
+> >=20
+> > Some of the previously undocumented fields have been documented and
+> > missing bitmasks have been added. Furthermore the MRQ_RESET request
+> > now has a sub-command that allows to determine the maximum ID which
+> > in turn allows the resets to be enumerated, thereby allowing drivers
+> > to become agnostic of the Tegra generation.
+> >=20
+> > Signed-off-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 >=20
-> Do we really need to mark local data like that? It complicates the
-> source code a bit...
+> I could queue up the [1,3/3] with the Ulf's ACKs, but I can't really say
+> whether or not this one makes sense. :-)
+>=20
+> Any chance to ask the ARM/soc people for an ACK?
 
-Not really -- if the preferred way is not to annotate local symbols, I
-can indeed remove that.
+Sorry for the late reply. I think at this point it might make the most
+sense if you queued up 1/3 for 4.12 and I can take 2/3 and 3/3 into
+linux-next shortly after v4.12-rc1, then merge this through ARM SoC
+along with any other patches for v4.13.
 
-thanks,
---=20
-js
-suse labs
+Does that sound reasonable?
 
+Thanks,
+Thierry
 
---oCoKR29dNAN1ad892RxwdB4vWe6pwNSlL--
-
---tEgN2to0Id5UTltsC96D9h9GJ0Umk06Be
+--JP+T4n/bALQSJXh8
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQJDBAEBCAAtFiEE1pWBVg1LlveO4uo2vSWxBAa0cEkFAlkB5E0PHGpzbGFieUBz
-dXNlLmN6AAoJEL0lsQQGtHBJHMQP/R/R4pfB1E2Jkqdi/81SFvm/fpl12lEoevtM
-DW6cVtL3yX3FMAWoEXwN3HjwWVAyiAa+4lzfHb8AygdGg8EAttVmUwzbcxwdAgk8
-yvW3HKlNkriEKwggIA5rFNhPXKeK4kSe49hNFqILS+DAuzM+M2mkZENKznWcHlpR
-7jSoT9z6cplZSq4G5OoXl4YTMZOI9BzRNcSfcU6GeVPqA1ePFivdqg9MY1soQp0f
-Aijl6JTfWBCLOZRYD8JLr6FtiF877wlmTybftXjsW/R8d5hECN8YU5m8C4Ddphqv
-I4gfImxvfkuyqyAkwMWoA1wE9hPWHCFVni7+0pkQAEC96MfAeAy64ZWqyCiDBvmY
-BpUgpiSX7ml7SeN0xABD0N8Os89P6p+oR49ch3hrmsU1DufGereuFxZigiR9iJim
-7pf+EXgMp6EMsfgIvEHnGWsh04ukWU8DyAH49orH104a4RYU3bRkm5dzYZENnsa7
-hu0UNB+ImgA6pCXNo0wLernZ51D7CIGk/LkQMp5EXNh2lBzFVpyURz7q21uQO4rw
-ZxPpkHVnhsBaqDCDc2FWI8x3irqzUfgPsihU9C5A73R4hzp7Wz42Rx5Mv62U8vTN
-xB5VnzI1bcgwgseu3MuOptro0vBMSgcoMMYjtrKBC0k+WDPduamgcS2u1Emi6ZDO
-ZUxAfr0y
-=oD+I
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlkB/gQACgkQ3SOs138+
+s6G0jg//ar5KECrPF9Cp3xgwX3btwIzannnZXZ5rbo9H+zBuJyZ92u4S7w3xbiSK
+nCL6QG7Jm70HhpDdkzbr82MvAZg8lRmCSIM+rMUk9wIUbjS6u04T/gS58exqkbrB
+lrTRp266AtuUdEZ8uWQxL0SW0svWhMfZpQJI4AIRnEUgTYEVrwSh2P+UF1p4ohRA
+DXrSX+KzhfKa1DbJGZxG3sQq9SasJKstOcqtPkcjxrgXU3ugTHGGUB/cdkvEqKHz
+vbXduv4Q6tBlbSb7dteXKnCkf9r3/23SlRI6WRoOHpNQeTfa5zAPZJj3WkyRzrNb
+v0k3+momc2uf3pOc9f74ViLuR8zxY9+imviO9W6Bnsmm6oTLuGc39jV7i8TmBq2Y
+IRGtkpSVxlop+aE0gm4mDIxKDaoOLVMiVuo7qEbxXxSw2cLTVISNlPN3MMF7zxur
+1KQjwEBxoMCO3w2C2tyWDTxgXlxYzaQ3QU+qM1smQeIJFja3302jyGLwDCKS1t3Q
+AgASJOntItE8bpoZimFv8y+92jB976u0uO8LuZ+qM5T21Aoxn8boFxRwjqhuDikh
+tt5zc+B19SyzHzf2lA2gOImGwP2NnHwB7/WwFWyjABAW8NP0jGZ24ziTk9p3G00/
+fwcXM4NR2+XkAfJrJSdjLF1rL9I57Fnpf6d2TX1ZJTUaRnbxNOE=
+=Dca6
 -----END PGP SIGNATURE-----
 
---tEgN2to0Id5UTltsC96D9h9GJ0Umk06Be--
+--JP+T4n/bALQSJXh8--
