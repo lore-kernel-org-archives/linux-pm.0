@@ -1,48 +1,72 @@
-From: Scott Branden <scott.branden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH v2 1/3] ARM: BCM: Enable thermal support for iProc SoCs
-Date: Thu, 27 Apr 2017 16:10:02 -0700
-Message-ID: <bceb9b66-c769-faf3-9288-26581b5d5dc6@broadcom.com>
-References: <1493328194-1766-1-git-send-email-jon.mason@broadcom.com>
- <1493328194-1766-2-git-send-email-jon.mason@broadcom.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: Re: [PATCH] devfreq: do not ignore errors during store min, max
+ frequency
+Date: Thu, 27 Apr 2017 23:41:23 +0000
+Message-ID: <20170427234123epcms1p42e47c19e54fbcc3e766ebd2594da6709@epcms1p4>
+References: <f02c5605-be71-79da-a33d-75e2d041029b@arm.com>
+        <1493281427-8671-1-git-send-email-lukasz.luba@arm.com>
+        <20170427083057epcms1p5f916dda5e9fe0275a915963b96dc28d5@epcms1p5>
+        <CGME20170427082416epcas3p3b9aeb23978707b164b4d4a46156d1216@epcms1p4>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1493328194-1766-2-git-send-email-jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Mason <jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Florian Fainelli <florian.fainelli-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:32151 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S965022AbdD0Xl0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Apr 2017 19:41:26 -0400
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20170427234124epoutp0164e95f120a0c3914816fbddcd1008d7c~5ZZ7OVqZ12763527635epoutp01E
+        for <linux-pm@vger.kernel.org>; Thu, 27 Apr 2017 23:41:24 +0000 (GMT)
+In-Reply-To: <f02c5605-be71-79da-a33d-75e2d041029b@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Luba <lukasz.luba@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+
+> >
+> > ...
+> >
+> >> +	ret = devfreq_get_freq_level(df, value);
+> >> +	if (ret < 0) {
+> >> +		dev_warn(dev, "Storing min freq failed with (%d) error\n", ret);
+> >> +		goto unlock;
+> >> +	}
+> >> +
+> >
+> > This is not good.
+> >
+> > For a device that supports [ 100, 400, 800, 1000 ] MHz,
+> > saying "min = 200 Mhz" or "max = 600 MHz" shouldn't be prohibited.
+> >
+> > Those functions are to express lower bound and upper bound, not to
+> > designate the exact operating frequencies.
+> 
+> Would it be possible to convince you to store a
+> 'posible/valid frequency' (from OPP) in that value?
+> Governors (like simpleondemand) and drivers use it with the flags.
+> It would be useful for thermal subsystem. It could have the max/min for 
+> the devfreq device.
+> 
+> I could prepare a patch which sets the freq from OPP respecting
+> rounding up/down based on 'devfreq_recommended_opp()'.
+> 
+> Regards,
+> Lukasz
+
+Before talking about implementation detail,
+what's the benefit of what you are suggesting?
+
+What's the scenario that you cannot do with the current system
+while you can do with what you suggest?
+
+Why do you need rounded (OPP-enabled) max/min values?
+Why unrounded (lower/upper limits) max/min values cannot do what you want?
 
 
+Cheers,
+MyungJoo
 
-On 17-04-27 02:23 PM, Jon Mason wrote:
-> Change the iProc Kconfig to select THERMAL and THERMAL_OF, which allows
-> the ns-thermal driver to be selected via menuconfig.
->
-> Signed-off-by: Jon Mason <jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-> ---
->  arch/arm/mach-bcm/Kconfig | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
-> index a0e66d8..da2bfeb 100644
-> --- a/arch/arm/mach-bcm/Kconfig
-> +++ b/arch/arm/mach-bcm/Kconfig
-> @@ -19,6 +19,8 @@ config ARCH_BCM_IPROC
->  	select GPIOLIB
->  	select ARM_AMBA
->  	select PINCTRL
-> +	select THERMAL
-> +	select THERMAL_OF
-This is NSP specific at this point.  Also, If it increases code size in 
-any way it shouldn't be selected for all IPROC SoCS.  I'd rather this 
-was just selected via defconfig
->  	help
->  	  This enables support for systems based on Broadcom IPROC architected SoCs.
->  	  The IPROC complex contains one or more ARM CPUs along with common
->
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+ps. I'll be away from the network for about 10 days after few hours.
