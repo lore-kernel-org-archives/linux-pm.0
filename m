@@ -1,78 +1,80 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 0/3] TI-SoC-thermal: Fine-tuning for two functions
-Date: Thu, 27 Apr 2017 09:20:49 -0700
-Message-ID: <20170427162047.GA18276@localhost.localdomain>
-References: <cd524803-b771-c3d2-8906-ee78576c86d4@users.sourceforge.net>
+Subject: Re: [PATCH V4 00/17] thermal: cpu_cooling: improve interaction with
+ cpufreq core
+Date: Thu, 27 Apr 2017 09:26:08 -0700
+Message-ID: <20170427162604.GB18276@localhost.localdomain>
+References: <cover.1493115651.git.viresh.kumar@linaro.org>
+ <ead65416-4833-6f36-81bd-c1673bb71514@arm.com>
+ <20170426104752.GE1928@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="DocE+STaALJfprDB"
+        protocol="application/pgp-signature"; boundary="5I6of5zJg18YgZEa"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:33487 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755062AbdD0QUw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Apr 2017 12:20:52 -0400
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:34175 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932146AbdD0Q0K (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Apr 2017 12:26:10 -0400
 Content-Disposition: inline
-In-Reply-To: <cd524803-b771-c3d2-8906-ee78576c86d4@users.sourceforge.net>
+In-Reply-To: <20170426104752.GE1928@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: SF Markus Elfring <elfring@users.sourceforge.net>, Keerthy <j-keerthy@ti.com>
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lukasz Luba <lukasz.luba@arm.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linaro-kernel@lists.linaro.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
 
 
---DocE+STaALJfprDB
+--5I6of5zJg18YgZEa
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Apr 26, 2017 at 05:33:10PM +0200, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Wed, 26 Apr 2017 17:24:56 +0200
+On Wed, Apr 26, 2017 at 04:17:52PM +0530, Viresh Kumar wrote:
+> On 26-04-17, 11:41, Lukasz Luba wrote:
+> > Hi Viresh,
+> >=20
+> > I went through the v4 code and it looks good to me.
+> > Feel free to add for the v4 series
+> > Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 >=20
-> Three update suggestions were taken into account
-> from static source code analysis.
+> Thanks a lot for testing and reviewing the series.
 >=20
-> Markus Elfring (3):
->   Use devm_kcalloc() in ti_bandgap_build()
->   Delete error messages for failed memory allocations in ti_bandgap_build=
-()
->   Fix a typo in a comment line
->=20
+> @Eduardo: Will you be able to pick it for 4.12 ?
 
-Keerthy,
+I feel like this is late for 4.12 given that we are already -rc8.=20
+Besides, it has gone through a couple of cycles of broken interactions
+with IPA (now fixed).
 
-Can you please give it a shot of this series on all supported OMAP chip
-boards? I do not see any major issue with the series at all, but would
-like to get it tested by you.
+So, I would prefer we give this series a bit more of testing time on
+linux-next. I can pull it and put into linux-next after the coming
+merge window is closed.
 
-BR,
-
->  drivers/thermal/ti-soc-thermal/ti-bandgap.c | 14 +++++---------
->  1 file changed, 5 insertions(+), 9 deletions(-)
 >=20
 > --=20
-> 2.12.2
->=20
+> viresh
 
---DocE+STaALJfprDB
+Thanks,
+
+Eduardo=20
+
+--5I6of5zJg18YgZEa
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJZAhpYAAoJEA6VkvSQfF5TJqEP/RX/B4hM6Xuh9eEmF/6MFVPK
-UGYLpYUxQ8ZklU5eUzeeGcwOXNvxqUdlyFMRUrK18QQYU9gPRdgmDjarl2npY3pD
-a7n7Zx87rNB7o7gbfeBkU2Dh+EnFuLBMJW4KHmsSt0ff/KRibdPfUoUT2r6f7WIf
-OclSp8oFMei5n5WBHrPzPOyG/SHiEcmiTsdNrghxcjhRUvPKkNJZ4fhChxJXh/xg
-42J6xWOrkpKkC1T+jl+16AeVUyrMyhGuMiwvwS4qImp/CB2AgSdvcN8aRGkr627F
-z5H0L/8cbYpNxFYqqtN2IIwyHCmaAv6kBhsuDMGLSc09fZ8CStSu0vZIhi/hv6ke
-Qw6n7QVbNO80dLOkdEHIyMul1vTVztTV51bOnNZ0rd7z5jpOAl/bv64Ev3nn2ttZ
-kUrGgL+JmO2n7ZSYQFXlgWgC3uLghl22JgH7FanLcIlwCeofkJ6slh97RnZxbynU
-/dr1iA+/WOUkm7hBKkfuBXZqet6DhKZanWgaQgsMfU8Wc1LK6qEtZuUq1nr+BnQD
-C3iEEt8tTpdL9igDyJeJHeQkQl2kdflDEFaWKPh8XQ+w5T+ah0dnFezmvR4F3dtk
-yqYk6nXgj1FBZpo5huYvHfuOhfCZOI9ZkrTvnaCAfpSFd4DWp1PVbmgkWiwQXUF8
-yDT5Mo8u4kaWQWzGHy/A
-=3Luv
+iQIcBAEBCAAGBQJZAhuWAAoJEA6VkvSQfF5T4HcQAI6lxvM98Mhtt57iWviTPzBX
+6E4g5sQvdWMyKWPLbqBPSN3+wd+zBQWEdzL6UfeM5a/hutc4xvhqXXTrHvTwpQh3
+81jmZKSsxod+A4K4RvQT2al4glSHni60wrEjLlj/xHeysIVPkvr/0MTqq9udmqQN
+s/Gk+H0pAaNhrbvhxtBDXm4aghsrBc861c4AxVvW1rkeFgEm+EJUDjuJsGJXHJUA
++Wy1w8NvvXAnKNWxOI/Q8IxAH35uRWcAvckrp1ahaGgD6nabkESd3s1Fvo/35Xv+
+HDeRi0XOHrCkkmJl5c/rDJObUzTzCQamP2z45SMcuIlL9dv+vNQibLazKHrCoCfg
+ulrqAARatPikB+cN9LnlghpV/xQMDm1NixcYu+MhRp+SkRjlQkq5RIiBloTw2M05
+t3JzdrD63ylWXZETX3MX6TLXIR4O+R37yl4IXknHctuz8XGlC/5FlQpKyHDVWiA8
+j71/1wtCY/pm7LLsWS9pmyBOOwPCDt9quq+drpkPfanV7Y5rXDbzd2qDvyDIt5pR
++Mkt7nA2kT8cYmb8M+VsnOtbXpvvEL3sH6ih9XS+aj48GDCiXnivFiOuFIoQRp3t
+3Cvz/JkkLhxDDtFf7jyqLOr5HAS2ZZ5wJkLVzAFBdBQGQt4T6wGSYgb30y8YuAoq
+l85l/h1eT1GITvt3e1Wc
+=BDNl
 -----END PGP SIGNATURE-----
 
---DocE+STaALJfprDB--
+--5I6of5zJg18YgZEa--
