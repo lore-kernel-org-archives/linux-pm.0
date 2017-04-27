@@ -1,105 +1,61 @@
-From: Peter Chen <peter.chen@nxp.com>
-Subject: RE: [PATCH] ARM: dts: imx6sx-sdb: Remove cpufreq OPP override
-Date: Thu, 27 Apr 2017 01:17:12 +0000
-Message-ID: <HE1PR04MB1450DA079FC35180FBE305388B100@HE1PR04MB1450.eurprd04.prod.outlook.com>
-References: <89cc7192100bdc9ce546bf6000446e629457ebc1.1493138693.git.leonard.crestez@nxp.com>
+From: "Li, Fei" <fei.li@intel.com>
+Subject: [PATCH V2] cpuidle: check dev before usage in
+ cpuidle_use_deepest_state
+Date: Thu, 27 Apr 2017 01:47:25 +0000
+Message-ID: <BEC9F67575FA1E429CA7CF5AE9BE363432A457C3@SHSMSX104.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-eopbgr00073.outbound.protection.outlook.com ([40.107.0.73]:39616
-        "EHLO EUR02-AM5-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1754695AbdD0BRT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 26 Apr 2017 21:17:19 -0400
-In-Reply-To: <89cc7192100bdc9ce546bf6000446e629457ebc1.1493138693.git.leonard.crestez@nxp.com>
+Received: from mga14.intel.com ([192.55.52.115]:9971 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751654AbdD0Brf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 26 Apr 2017 21:47:35 -0400
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Robin Gong <yibin.gong@nxp.com>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Anson Huang <anson.huang@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Shi, FengX" <fengx.shi@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Koul, Vinod" <vinod.koul@intel.com>, "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
 
-=20
->
->The board file for imx6sx-dbg overrides cpufreq operating points to use hi=
-gher
->voltages. This is done because the board has a shared rail for VDD_ARM_IN =
-and
->VDD_SOC_IN and when using LDO bypass the shared voltage needs to be a valu=
-e
->suitable for both ARM and SOC.
->
->This was introduced in:
->
->commit 54183bd7f766 ("ARM: imx6sx-sdb: add revb board and make it default"=
-)
->
->This only only applies to LDO bypass mode, a feature not present in upstre=
-am. When
->LDOs are enabled the effect is to use higher voltages than necesarry for n=
-o good
->reason.
->
->Setting these higher voltages can make some boards fail to boot with ugly =
-semi-
->random crashes, reminiscent of memory corruption. These failures happen th=
-e first
->time the lowest idle state is used. Remove the OPP override in order to fi=
-x those
->crashes.
->
+In case of there is no cpuidle devices registered, dev will be null, and
+panic will be triggered like below;
+In this patch, add checking of dev before usage, like that done in
+cpuidle_idle_call.
 
-Add Anson and Robin
+Panic without fix:
+[  184.961328] BUG: unable to handle kernel NULL pointer dereference at
+  (null)
+[  184.961328] IP: cpuidle_use_deepest_state+0x30/0x60
+...
+[  184.961328]  play_idle+0x8d/0x210
+[  184.961328]  ? __schedule+0x359/0x8e0
+[  184.961328]  ? _raw_spin_unlock_irqrestore+0x28/0x50
+[  184.961328]  ? kthread_queue_delayed_work+0x41/0x80
+[  184.961328]  clamp_idle_injection_func+0x64/0x1e0
 
-This code has existed more than 2 years, it is strange why the bug has not =
-reported both
-for internal user and external user. I run upstream kernel using imx6sx-sdb=
- revB very often
-at recent years, but not meet this issue. How to trigger this unstable issu=
-e, anything needs
-to change at u-boot?
+Fixes: bb8313b603eb8 ("cpuidle: Allow enforcing deepest idle state selection")
+Signed-off-by: Li, Fei <fei.li@intel.com>
+Tested-by: Shi, Feng <fengx.shi@intel.com>
+---
+ drivers/cpuidle/cpuidle.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Peter=20
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 548b90b..2706be7 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -111,7 +111,8 @@ void cpuidle_use_deepest_state(bool enable)
+ 
+ 	preempt_disable();
+ 	dev = cpuidle_get_device();
+-	dev->use_deepest_state = enable;
++	if (dev)
++		dev->use_deepest_state = enable;
+ 	preempt_enable();
+ }
+ 
+-- 
+1.9.1
 
->Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
->
->---
->It's not clear exactly why the crashes happen. Perhaps waking up from idle=
- draws
->more power than is available? Removing this override is a correct change a=
-nyway so
->maybe there is no need to investigate deeper.
->
-> arch/arm/boot/dts/imx6sx-sdb.dts | 17 -----------------
-> 1 file changed, 17 deletions(-)
->
->diff --git a/arch/arm/boot/dts/imx6sx-sdb.dts b/arch/arm/boot/dts/imx6sx-s=
-db.dts
->index 5bb8fd5..d71da30 100644
->--- a/arch/arm/boot/dts/imx6sx-sdb.dts
->+++ b/arch/arm/boot/dts/imx6sx-sdb.dts
->@@ -12,23 +12,6 @@
-> 	model =3D "Freescale i.MX6 SoloX SDB RevB Board";  };
->
->-&cpu0 {
->-	operating-points =3D <
->-		/* kHz    uV */
->-		996000  1250000
->-		792000  1175000
->-		396000  1175000
->-		198000  1175000
->-		>;
->-	fsl,soc-operating-points =3D <
->-		/* ARM kHz      SOC uV */
->-		996000	1250000
->-		792000	1175000
->-		396000	1175000
->-		198000  1175000
->-	>;
->-};
->-
-> &i2c1 {
-> 	clock-frequency =3D <100000>;
-> 	pinctrl-names =3D "default";
->--
->2.7.4
+Best Regards,
+Fei
