@@ -1,56 +1,69 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] x86/intel_idle: add GLK support
-Date: Thu, 27 Apr 2017 00:36:42 +0200
-Message-ID: <5173906.Kty4Ih4RO9@aspire.rjw.lan>
-References: <20170423060625.4593-1-david.e.box@linux.intel.com>
+From: Adam Ford <aford173@gmail.com>
+Subject: Re: Touchscreen failure with CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
+Date: Wed, 26 Apr 2017 19:57:46 -0500
+Message-ID: <CAHCN7xKNdTGArENnSJ0yHM2qLFMjuySTxHhjkaOK_T5AKJ761A@mail.gmail.com>
+References: <CAOMZO5BZ8Z8dfwsfuiunNQ_q39_k4QJg7jLPQfaxn+YBsmz2jw@mail.gmail.com>
+ <20170424040709.GG26900@vireshk-i7> <CAOMZO5B4_xrLcWQGF=yRfj-14XQKudzjyr2roGRkzofkHCfuHg@mail.gmail.com>
+ <20170424112906.GR26900@vireshk-i7> <CAOMZO5BpAsJAKv-p=WPevUnx71fxbLtunJe-0ijVT7T9m7AMSQ@mail.gmail.com>
+ <20170424114343.GS26900@vireshk-i7> <CAOMZO5AkTKjU5kw0gszLVdVOc_Sb_sWhr65heE==kyw=5rcN-g@mail.gmail.com>
+ <20170425050633.GV26900@vireshk-i7> <CAOMZO5BgjgxGhJ7zGV-gjs0QHmJMgkNryFqTYA=vGPz8KWDijg@mail.gmail.com>
+ <20170425111301.GC1928@vireshk-i7> <CAHCN7xJVicKuAc0dDbzBg4h2d1UUP66iKkSsWN_f=rPd4mOZSw@mail.gmail.com>
+ <CAOMZO5CPtKAh6wMJ06BO4YFLPmOTvrpv5Q_3RJoj9dup46ukTQ@mail.gmail.com>
+ <CAHCN7x+6KwOZdC1MaNQGdXWFjJ18hYp3kc73JADDMC4DOFn+yQ@mail.gmail.com> <CAOMZO5AJQ2TJvyuiBLLeS9zZMufMxyuNw+MA+NtZPCzzWJ0NXA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53187 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1031941AbdDZWm4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Apr 2017 18:42:56 -0400
-In-Reply-To: <20170423060625.4593-1-david.e.box@linux.intel.com>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:33345 "EHLO
+        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S967853AbdD0A5s (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Apr 2017 20:57:48 -0400
+Received: by mail-pf0-f175.google.com with SMTP id a188so9828155pfa.0
+        for <linux-pm@vger.kernel.org>; Wed, 26 Apr 2017 17:57:47 -0700 (PDT)
+In-Reply-To: <CAOMZO5AJQ2TJvyuiBLLeS9zZMufMxyuNw+MA+NtZPCzzWJ0NXA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "David E. Box" <david.e.box@linux.intel.com>, jacob.jun.pan@linux.intel.com
-Cc: lenb@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Saturday, April 22, 2017 11:06:25 PM David E. Box wrote:
-> From: "Box, David E" <david.e.box@intel.com>
-> 
-> Gemini Lake uses the same C-states as Broxton and also uses the
-> IRTL MSR's to determine maximum C-state latency.
-> 
-> Signed-off-by: David E. Box <david.e.box@linux.intel.com>
+On Tue, Apr 25, 2017 at 10:24 AM, Fabio Estevam <festevam@gmail.com> wrote:
+> On Tue, Apr 25, 2017 at 11:35 AM, Adam Ford <aford173@gmail.com> wrote:
+>
+>> I have a touch screen (using tsc2004 touch controller) on my board.  I
+>> can run some tests if you tell me how you're able to reproduce your
+>> issue.  I can at least confirm whether or not I see it too.  I won't
+>> be able to do it until later tonight or tomorrow however.
+>
+> Just run:
+>
+> evtest /dev/input/eventX to capture the touchscreen events and keep
+> touching the screen.
+>
 
-You could use the code names consistently in your subjects (but I can fix this up).
+Using my board set to ondemand (and I verified frequency)
+# cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq
+396000
 
-Jacob, any concerns?
+I ran it for 3 hours and it and continued to show results.
 
-> ---
->  drivers/idle/intel_idle.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index e045a5c..778af71 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -1097,6 +1097,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
->  	ICPU(INTEL_FAM6_XEON_PHI_KNL,		idle_cpu_knl),
->  	ICPU(INTEL_FAM6_XEON_PHI_KNM,		idle_cpu_knl),
->  	ICPU(INTEL_FAM6_ATOM_GOLDMONT,		idle_cpu_bxt),
-> +	ICPU(INTEL_FAM6_ATOM_GEMINI_LAKE,	idle_cpu_bxt),
->  	ICPU(INTEL_FAM6_ATOM_DENVERTON,		idle_cpu_dnv),
->  	{}
->  };
-> @@ -1309,6 +1310,7 @@ static void intel_idle_state_table_update(void)
->  		ivt_idle_state_table_update();
->  		break;
->  	case INTEL_FAM6_ATOM_GOLDMONT:
-> +	case INTEL_FAM6_ATOM_GEMINI_LAKE:
->  		bxt_idle_state_table_update();
->  		break;
->  	case INTEL_FAM6_SKYLAKE_DESKTOP:
-> 
+Event: time 71379.065289, type 1 (EV_KEY), code 330 (BTN_TOUCH), value
+1
+Event: time 71379.065289, -------------- SYN_REPORT ------------
+Event: time 71379.117399, type 3 (EV_ABS), code 24 (ABS_PRESSURE),
+value 0
+Event: time 71379.117399, type 1 (EV_KEY), code 330 (BTN_TOUCH), value
+0
+Event: time 71379.117399, -------------- SYN_REPORT ------------
+Event: time 83122.438637, type 3 (EV_ABS), code 0 (ABS_X), value 2144
+Event: time 83122.438637, type 3 (EV_ABS), code 1 (ABS_Y), value 1186
+Event: time 83122.438637, type 3 (EV_ABS), code 24 (ABS_PRESSURE),
+value 567
+Event: time 83122.438637, type 1 (EV_KEY), code 330 (BTN_TOUCH), value
+1
+Event: time 83122.438637, -------------- SYN_REPORT ------------
+
+
+adam
+
+> After some random time (1-2 minutes) evtest will stop capturing the events.
+>
+> Thanks
