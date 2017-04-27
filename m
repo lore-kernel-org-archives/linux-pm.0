@@ -1,49 +1,65 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
- power-domains
-Date: Thu, 27 Apr 2017 16:20:34 +0530
-Message-ID: <9019aebe-95ba-b1b8-65a9-5be927934218@codeaurora.org>
-References: <cover.1490001099.git.viresh.kumar@linaro.org>
- <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
- <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
- <20170413053736.GM5910@vireshk-i7>
- <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
- <20170417052758.GF28191@vireshk-i7>
- <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
- <9cd9287c-392b-d3ca-db7d-75c49287448e@codeaurora.org>
- <20170426135532.ryrh276znet5yvks@sirena.org.uk>
- <c66322f5-e2eb-5556-a5a5-14998a2f195d@arm.com>
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH] devfreq: do not ignore errors during store min, max
+ frequency
+Date: Thu, 27 Apr 2017 12:04:15 +0100
+Message-ID: <f02c5605-be71-79da-a33d-75e2d041029b@arm.com>
+References: <1493281427-8671-1-git-send-email-lukasz.luba@arm.com>
+ <CGME20170427082416epcas3p3b9aeb23978707b164b4d4a46156d1216@epcms1p5>
+ <20170427083057epcms1p5f916dda5e9fe0275a915963b96dc28d5@epcms1p5>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:58486 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S964858AbdD0Kun (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Apr 2017 06:50:43 -0400
-In-Reply-To: <c66322f5-e2eb-5556-a5a5-14998a2f195d@arm.com>
+Received: from foss.arm.com ([217.140.101.70]:36374 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S968407AbdD0LES (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 27 Apr 2017 07:04:18 -0400
+In-Reply-To: <20170427083057epcms1p5f916dda5e9fe0275a915963b96dc28d5@epcms1p5>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, Mark Brown <broonie@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, devicetree@vger.kernel.org
+To: myungjoo.ham@samsung.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
+Hi MyungJoo,
 
-On 04/27/2017 03:12 PM, Sudeep Holla wrote:
-[]..
-
+On 27/04/17 09:30, MyungJoo Ham wrote:
+>> This patch adds functionality to make sure when a call to set a new
+>> max or min frequency is possible.
+>> If storing the new value was not possible, restore previous one
+>> and forward the error value.
 >>
->>> At qualcomm, we have an external M3 core (running its own firmware) which controls
->>> a few voltage rails (including AVS on those). The devices vote for the voltage levels
-> 
-> Thanks for explicitly mentioning this, but ...
-> 
->>> (or performance levels) they need by passing an integer value to the M3 (not actual
-> 
-> you contradict here, is it just voltage or performance(i.e. frequency)
-> or both ? We need clarity there to choose the right representation.
+>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+>> ---
+>> It is based on v4.11-rc8.
+>>
+>>  drivers/devfreq/devfreq.c | 36 ++++++++++++++++++++++++++++++++----
+>>  1 file changed, 32 insertions(+), 4 deletions(-)
+>
+> ...
+>
+>> +	ret = devfreq_get_freq_level(df, value);
+>> +	if (ret < 0) {
+>> +		dev_warn(dev, "Storing min freq failed with (%d) error\n", ret);
+>> +		goto unlock;
+>> +	}
+>> +
+>
+> This is not good.
+>
+> For a device that supports [ 100, 400, 800, 1000 ] MHz,
+> saying "min = 200 Mhz" or "max = 600 MHz" shouldn't be prohibited.
+>
+> Those functions are to express lower bound and upper bound, not to
+> designate the exact operating frequencies.
 
-Its just voltage.
+Would it be possible to convince you to store a
+'posible/valid frequency' (from OPP) in that value?
+Governors (like simpleondemand) and drivers use it with the flags.
+It would be useful for thermal subsystem. It could have the max/min for 
+the devfreq device.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+I could prepare a patch which sets the freq from OPP respecting
+rounding up/down based on 'devfreq_recommended_opp()'.
+
+Regards,
+Lukasz
