@@ -1,61 +1,40 @@
-From: "Li, Fei" <fei.li@intel.com>
-Subject: [PATCH V2] cpuidle: check dev before usage in
- cpuidle_use_deepest_state
-Date: Thu, 27 Apr 2017 01:47:25 +0000
-Message-ID: <BEC9F67575FA1E429CA7CF5AE9BE363432A457C3@SHSMSX104.ccr.corp.intel.com>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: Touchscreen failure with CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
+Date: Wed, 26 Apr 2017 22:50:10 -0300
+Message-ID: <CAOMZO5B95OEhUgBtV+S3q5rMVJ89zDYB5wMJs=vUaZF28Wivjg@mail.gmail.com>
+References: <CAOMZO5BZ8Z8dfwsfuiunNQ_q39_k4QJg7jLPQfaxn+YBsmz2jw@mail.gmail.com>
+ <20170424040709.GG26900@vireshk-i7> <CAOMZO5B4_xrLcWQGF=yRfj-14XQKudzjyr2roGRkzofkHCfuHg@mail.gmail.com>
+ <20170424112906.GR26900@vireshk-i7> <CAOMZO5BpAsJAKv-p=WPevUnx71fxbLtunJe-0ijVT7T9m7AMSQ@mail.gmail.com>
+ <20170424114343.GS26900@vireshk-i7> <CAOMZO5AkTKjU5kw0gszLVdVOc_Sb_sWhr65heE==kyw=5rcN-g@mail.gmail.com>
+ <20170425050633.GV26900@vireshk-i7> <CAOMZO5BgjgxGhJ7zGV-gjs0QHmJMgkNryFqTYA=vGPz8KWDijg@mail.gmail.com>
+ <20170425111301.GC1928@vireshk-i7> <CAHCN7xJVicKuAc0dDbzBg4h2d1UUP66iKkSsWN_f=rPd4mOZSw@mail.gmail.com>
+ <CAOMZO5CPtKAh6wMJ06BO4YFLPmOTvrpv5Q_3RJoj9dup46ukTQ@mail.gmail.com>
+ <CAHCN7x+6KwOZdC1MaNQGdXWFjJ18hYp3kc73JADDMC4DOFn+yQ@mail.gmail.com>
+ <CAOMZO5AJQ2TJvyuiBLLeS9zZMufMxyuNw+MA+NtZPCzzWJ0NXA@mail.gmail.com> <CAHCN7xKNdTGArENnSJ0yHM2qLFMjuySTxHhjkaOK_T5AKJ761A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:9971 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751654AbdD0Brf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 26 Apr 2017 21:47:35 -0400
-Content-Language: en-US
+Received: from mail-oi0-f46.google.com ([209.85.218.46]:35108 "EHLO
+        mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S935160AbdD0BuM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Apr 2017 21:50:12 -0400
+Received: by mail-oi0-f46.google.com with SMTP id j201so22018508oih.2
+        for <linux-pm@vger.kernel.org>; Wed, 26 Apr 2017 18:50:11 -0700 (PDT)
+In-Reply-To: <CAHCN7xKNdTGArENnSJ0yHM2qLFMjuySTxHhjkaOK_T5AKJ761A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Shi, FengX" <fengx.shi@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Koul, Vinod" <vinod.koul@intel.com>, "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
+To: Adam Ford <aford173@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-In case of there is no cpuidle devices registered, dev will be null, and
-panic will be triggered like below;
-In this patch, add checking of dev before usage, like that done in
-cpuidle_idle_call.
+On Wed, Apr 26, 2017 at 9:57 PM, Adam Ford <aford173@gmail.com> wrote:
 
-Panic without fix:
-[  184.961328] BUG: unable to handle kernel NULL pointer dereference at
-  (null)
-[  184.961328] IP: cpuidle_use_deepest_state+0x30/0x60
-...
-[  184.961328]  play_idle+0x8d/0x210
-[  184.961328]  ? __schedule+0x359/0x8e0
-[  184.961328]  ? _raw_spin_unlock_irqrestore+0x28/0x50
-[  184.961328]  ? kthread_queue_delayed_work+0x41/0x80
-[  184.961328]  clamp_idle_injection_func+0x64/0x1e0
+> Using my board set to ondemand (and I verified frequency)
+> # cat /sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq
+> 396000
+>
+> I ran it for 3 hours and it and continued to show results.
 
-Fixes: bb8313b603eb8 ("cpuidle: Allow enforcing deepest idle state selection")
-Signed-off-by: Li, Fei <fei.li@intel.com>
-Tested-by: Shi, Feng <fengx.shi@intel.com>
----
- drivers/cpuidle/cpuidle.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Thanks for testing.
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 548b90b..2706be7 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -111,7 +111,8 @@ void cpuidle_use_deepest_state(bool enable)
- 
- 	preempt_disable();
- 	dev = cpuidle_get_device();
--	dev->use_deepest_state = enable;
-+	if (dev)
-+		dev->use_deepest_state = enable;
- 	preempt_enable();
- }
- 
--- 
-1.9.1
-
-Best Regards,
-Fei
+Does evtest still work if you keep constantly touching the screen
+after one or two minutes?
