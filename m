@@ -1,77 +1,96 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v2 2/3] soc/tegra: bpmp: Update ABI header
-Date: Thu, 27 Apr 2017 16:19:49 +0200
-Message-ID: <20170427141949.GB21118@ulmo.ba.sec>
-References: <20170329163452.10761-1-thierry.reding@gmail.com>
- <20170329163452.10761-3-thierry.reding@gmail.com>
- <10169152.Khpl4fl1AK@aspire.rjw.lan>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: [PATCH 3/5] ACPI / sleep: EC-based wakeup from suspend-to-idle on
+ Dell systems
+Date: Thu, 27 Apr 2017 14:47:59 +0000
+Message-ID: <fbb003d3c4fb465b9c17b4698431c96c@ausx13mpc120.AMER.DELL.COM>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan>
+ <3060629.nj3VExRueE@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="JP+T4n/bALQSJXh8"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <10169152.Khpl4fl1AK-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stefan Kristiansson <stefank-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mikko Perttunen <mperttunen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-List-Id: linux-pm@vger.kernel.org
-
-
---JP+T4n/bALQSJXh8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from esa7.dell-outbound.iphmx.com ([68.232.153.96]:52981 "EHLO
+        esa7.dell-outbound.iphmx.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S933187AbdD0OsC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Apr 2017 10:48:02 -0400
+In-Reply-To: <3060629.nj3VExRueE@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, linux-pm@vger.kernel.org
+Cc: andriy.shevchenko@linux.intel.com, dvhart@infradead.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, srinivas.pandruvada@linux.intel.com, tglx@linutronix.de, mika.westerberg@linux.intel.com
 
-On Thu, Apr 20, 2017 at 02:44:48AM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, March 29, 2017 06:34:51 PM Thierry Reding wrote:
-> > From: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> >=20
-> > Update the BPMP ABI header to a more recent version. The new version
-> > adds support for a new powergating ABI as well as access to the ring
-> > buffer console, which allows debug messages to be output to the BPMP
-> > debug console.
-> >=20
-> > Some of the previously undocumented fields have been documented and
-> > missing bitmasks have been added. Furthermore the MRQ_RESET request
-> > now has a sub-command that allows to determine the maximum ID which
-> > in turn allows the resets to be enumerated, thereby allowing drivers
-> > to become agnostic of the Tegra generation.
-> >=20
-> > Signed-off-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> -----Original Message-----
+> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> Sent: Wednesday, April 26, 2017 4:24 PM
+> To: Linux PM <linux-pm@vger.kernel.org>
+> Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>; Darren Hart
+> <dvhart@infradead.org>; LKML <linux-kernel@vger.kernel.org>; Linux ACPI <=
+linux-
+> acpi@vger.kernel.org>; Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com>; Thomas Gleixner <tglx@linutronix.d=
+e>;
+> Mika Westerberg <mika.westerberg@linux.intel.com>; Limonciello, Mario
+> <Mario_Limonciello@Dell.com>
+> Subject: [PATCH 3/5] ACPI / sleep: EC-based wakeup from suspend-to-idle o=
+n Dell
+> systems
 >=20
-> I could queue up the [1,3/3] with the Ulf's ACKs, but I can't really say
-> whether or not this one makes sense. :-)
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >=20
-> Any chance to ask the ARM/soc people for an ACK?
+> Some recent Dell laptops, including the XPS13 model numbers 9360 and
+> 9365, cannot be woken up from suspend-to-idle by pressing the power
+> button which is unexpected and makes that feature hardly usable on
+> those systems.  However, on the 9365 ACPI S3 (suspend-to-RAM) is not
+> expected to be used at all (these systems ship with Windows 10 using
+> Modern Standby which never exercises the ACPI S3 path) and
+> suspend-to-idle is the only viable system suspend mechanism in there.
+>=20
+> The reason why the power button wakeup from suspend-to-idle doesn't
+> work on those systems is because their power button events are
+> signaled by the EC (Embedded Controller), whose GPE (General Purpose
+> Event) line is disabled during suspend-to-idle transitions in Linux.
+> That is done on purpose, because in general the EC tends to generate
+> tons of events for various reasons (battery and thermal updates and
+> similar, for example) and all of them would kick the CPUs out of deep
+> idle states while in suspend-to-idle, which would not be desirable.
+>=20
+> Of course, on the Dell systems in question the EC GPE must be enabled
+> during suspend-to-idle transitions for the button press events to
+> be signaled while suspended at all.  Fortunately, there is a way to
+> tell the EC to stop generating the non-wakeup events, which is by
+> using the _DSM object under the so called micro-PEP (uPEP) device
+> provided to support Modern Standby in Windows 10.
+>=20
+> The expected way to use it is to invoke function 0 from it on system
+> initialization, functions 3 and 5 during suspend transitions and
+> functions 4 and 6 during resume transitions (to reverse the actions
+> carried out by the former).  In particular, function 5 from the uPEP
+> device _DSM causes the EC to become less verbose (so to speak) on the
+> affected systems and then its GPE can be enabled as a wakeup source
+> (then, on resume, function 6 switches it back to the "working state"
+> mode).
+>=20
+> In support of the affected Dell systems, implement the uPEP device
+> handling as described and allow the EC to generate system wakeup
+> events if that device is present and behaves as expected.  Enable
+> that for Dell only, as there are other systems out there in which
+> the uPEP device is exposed in the ACPI tables and its _DSM appears
+> to be functional, but it actually isn't, whereas Dell is committed
+> to supporting it.
+>=20
 
-Sorry for the late reply. I think at this point it might make the most
-sense if you queued up 1/3 for 4.12 and I can take 2/3 and 3/3 into
-linux-next shortly after v4.12-rc1, then merge this through ARM SoC
-along with any other patches for v4.13.
+I am of course biased in that my priority is for this to work for Dell.
+Dell is definitely committed to supporting this on any system with
+the low power idle bit in the FADT set.
 
-Does that sound reasonable?
+So I'm fine with the current proposed solution, but have you
+dug into what actually breaks on this other system?  Does it actually
+work with Modern Standby + the uPEP device on Windows 10?
 
-Thanks,
-Thierry
+To my understanding I would think any OEM that is enabling this
+uPEP device it should be getting called by the Windows kernel
+identically when entering resiliency phases.
 
---JP+T4n/bALQSJXh8
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlkB/gQACgkQ3SOs138+
-s6G0jg//ar5KECrPF9Cp3xgwX3btwIzannnZXZ5rbo9H+zBuJyZ92u4S7w3xbiSK
-nCL6QG7Jm70HhpDdkzbr82MvAZg8lRmCSIM+rMUk9wIUbjS6u04T/gS58exqkbrB
-lrTRp266AtuUdEZ8uWQxL0SW0svWhMfZpQJI4AIRnEUgTYEVrwSh2P+UF1p4ohRA
-DXrSX+KzhfKa1DbJGZxG3sQq9SasJKstOcqtPkcjxrgXU3ugTHGGUB/cdkvEqKHz
-vbXduv4Q6tBlbSb7dteXKnCkf9r3/23SlRI6WRoOHpNQeTfa5zAPZJj3WkyRzrNb
-v0k3+momc2uf3pOc9f74ViLuR8zxY9+imviO9W6Bnsmm6oTLuGc39jV7i8TmBq2Y
-IRGtkpSVxlop+aE0gm4mDIxKDaoOLVMiVuo7qEbxXxSw2cLTVISNlPN3MMF7zxur
-1KQjwEBxoMCO3w2C2tyWDTxgXlxYzaQ3QU+qM1smQeIJFja3302jyGLwDCKS1t3Q
-AgASJOntItE8bpoZimFv8y+92jB976u0uO8LuZ+qM5T21Aoxn8boFxRwjqhuDikh
-tt5zc+B19SyzHzf2lA2gOImGwP2NnHwB7/WwFWyjABAW8NP0jGZ24ziTk9p3G00/
-fwcXM4NR2+XkAfJrJSdjLF1rL9I57Fnpf6d2TX1ZJTUaRnbxNOE=
-=Dca6
------END PGP SIGNATURE-----
-
---JP+T4n/bALQSJXh8--
+This makes me wonder if it should be inverted and a blacklist
+of platforms that the uPEP device doesn't work.
