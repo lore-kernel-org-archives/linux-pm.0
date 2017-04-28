@@ -1,65 +1,31 @@
-From: Jon Mason <jon.mason@broadcom.com>
-Subject: Re: [PATCH v2 1/3] ARM: BCM: Enable thermal support for iProc SoCs
-Date: Fri, 28 Apr 2017 14:05:48 -0400
-Message-ID: <CAC3K-4omn1A5ddPhkhhROLmtcEDJjHg7boa0B=c9OUuAHV6NyQ@mail.gmail.com>
-References: <1493328194-1766-1-git-send-email-jon.mason@broadcom.com>
- <1493328194-1766-2-git-send-email-jon.mason@broadcom.com> <bceb9b66-c769-faf3-9288-26581b5d5dc6@broadcom.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] PM / Domains: Fix DT example
+Date: Fri, 28 Apr 2017 13:37:55 -0500
+Message-ID: <20170428183755.gvn5wfgp67ekwovv@rob-hp-laptop>
+References: <533b52e0ea175bf6bb893370c7f8c0309aae235a.1493104411.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f41.google.com ([209.85.214.41]:36727 "EHLO
-        mail-it0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S642241AbdD1SFt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 14:05:49 -0400
-Received: by mail-it0-f41.google.com with SMTP id g66so48230726ite.1
-        for <linux-pm@vger.kernel.org>; Fri, 28 Apr 2017 11:05:49 -0700 (PDT)
-In-Reply-To: <bceb9b66-c769-faf3-9288-26581b5d5dc6@broadcom.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <533b52e0ea175bf6bb893370c7f8c0309aae235a.1493104411.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Scott Branden <scott.branden@broadcom.com>
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
 
-On Thu, Apr 27, 2017 at 7:10 PM, Scott Branden
-<scott.branden@broadcom.com> wrote:
->
->
-> On 17-04-27 02:23 PM, Jon Mason wrote:
->>
->> Change the iProc Kconfig to select THERMAL and THERMAL_OF, which allows
->> the ns-thermal driver to be selected via menuconfig.
->>
->> Signed-off-by: Jon Mason <jon.mason@broadcom.com>
->> ---
->>  arch/arm/mach-bcm/Kconfig | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
->> index a0e66d8..da2bfeb 100644
->> --- a/arch/arm/mach-bcm/Kconfig
->> +++ b/arch/arm/mach-bcm/Kconfig
->> @@ -19,6 +19,8 @@ config ARCH_BCM_IPROC
->>         select GPIOLIB
->>         select ARM_AMBA
->>         select PINCTRL
->> +       select THERMAL
->> +       select THERMAL_OF
->
-> This is NSP specific at this point.  Also, If it increases code size in any
-> way it shouldn't be selected for all IPROC SoCS.  I'd rather this was just
-> selected via defconfig
+On Tue, Apr 25, 2017 at 12:48:21PM +0530, Viresh Kumar wrote:
+> The power-domain provider's #power-domain-cells field is set to 0 and
+> yet the children is using an index to point the power domain. Fix it by
+> removing the index field.
+> 
+> Fixes: 70bb510e4279 ("dt/bindings / PM/Domains: Update binding for PM domain idle states")
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  Documentation/devicetree/bindings/power/power_domain.txt | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-This isn't selectable via menuconfig without being in the kconfig.
-I'll move it to the NSP portion of the kconfig, as to not increase the
-size of other's kernels.
-
-Thanks,
-Jon
-
->
->>         help
->>           This enables support for systems based on Broadcom IPROC
->> architected SoCs.
->>           The IPROC complex contains one or more ARM CPUs along with
->> common
->>
->
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
