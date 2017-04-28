@@ -1,61 +1,68 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
- power-domains
-Date: Fri, 28 Apr 2017 10:30:29 +0530
-Message-ID: <20170428050029.GD21517@vireshk-i7>
-References: <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
- <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
- <20170413053736.GM5910@vireshk-i7>
- <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
- <20170417052758.GF28191@vireshk-i7>
- <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
- <9cd9287c-392b-d3ca-db7d-75c49287448e@codeaurora.org>
- <20170426135532.ryrh276znet5yvks@sirena.org.uk>
- <c66322f5-e2eb-5556-a5a5-14998a2f195d@arm.com>
- <9019aebe-95ba-b1b8-65a9-5be927934218@codeaurora.org>
+From: <joseph.x.hronec@espn.com>
+Subject: 57362 linux-pm
+Date: Fri, 28 Apr 2017 07:30:10 -0000
+Message-ID: <149336461001.22262.11906897621167595504@americatelecom.net.br>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: application/zip; name="6300229470.zip"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:36123 "EHLO
-        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1162846AbdD1FAd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 01:00:33 -0400
-Received: by mail-pf0-f169.google.com with SMTP id 194so43372465pfv.3
-        for <linux-pm@vger.kernel.org>; Thu, 27 Apr 2017 22:00:33 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <9019aebe-95ba-b1b8-65a9-5be927934218@codeaurora.org>
+Received: from 3.51.255.132.isp.americatelecom.net.br ([132.255.51.3]:3526
+        "HELO americatelecom.net.br" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with SMTP id S1424344AbdD1HaX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 03:30:23 -0400
+Content-Disposition: attachment
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, Rajendra Nayak <rnayak@codeaurora.org>
-Cc: Mark Brown <broonie@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, devicetree@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On 27-04-17, 16:20, Rajendra Nayak wrote:
-> 
-> On 04/27/2017 03:12 PM, Sudeep Holla wrote:
-> []..
-> 
-> >>
-> >>> At qualcomm, we have an external M3 core (running its own firmware) which controls
-> >>> a few voltage rails (including AVS on those). The devices vote for the voltage levels
-> > 
-> > Thanks for explicitly mentioning this, but ...
-> > 
-> >>> (or performance levels) they need by passing an integer value to the M3 (not actual
-> > 
-> > you contradict here, is it just voltage or performance(i.e. frequency)
-> > or both ? We need clarity there to choose the right representation.
-> 
-> Its just voltage.
-
-Right. Its just voltage in this case, but we can't speak of future
-platforms here and we have to consider this thing as an operating
-performance point only. I still think that this thread is moving in
-the right direction, specially after V6 which looks much better.
-
-If we have anything strong against the way V6 is trying to solve it, I
-want to talk about it right now and get inputs from all the parties
-involved. Scrapping all this work is fine, but I would like to do it
-ASAP in that case :)
-
--- 
-viresh
+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
+BQYAAAAAAQABAFsAAADFCgAAAAA=
