@@ -1,68 +1,144 @@
-From: <joseph.x.hronec@espn.com>
-Subject: 57362 linux-pm
-Date: Fri, 28 Apr 2017 07:30:10 -0000
-Message-ID: <149336461001.22262.11906897621167595504@americatelecom.net.br>
-Mime-Version: 1.0
-Content-Type: application/zip; name="6300229470.zip"
-Content-Transfer-Encoding: base64
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH 1/2] firmware: arm_scpi: add support to populate OPPs and get transition latency
+Date: Fri, 28 Apr 2017 10:21:35 +0100
+Message-ID: <1493371296-12465-1-git-send-email-sudeep.holla@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 3.51.255.132.isp.americatelecom.net.br ([132.255.51.3]:3526
-        "HELO americatelecom.net.br" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with SMTP id S1424344AbdD1HaX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 03:30:23 -0400
-Content-Disposition: attachment
+Received: from foss.arm.com ([217.140.101.70]:46194 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755113AbdD1JVv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 28 Apr 2017 05:21:51 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: linux-amlogic@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>
 
-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
-BQYAAAAAAQABAFsAAADFCgAAAAA=
+Currently only CPU devices use the transition latency and the OPPs
+populated in the SCPI driver. scpi-cpufreq has logic to handle these.
+However, even GPU and other users of SCPI DVFS will need the same logic.
+
+In order to avoid duplication, this patch adds support to get DVFS
+transition latency and add all the OPPs to the device using OPP library
+helper functions. The helper functions added here can be used for any
+device whose DVFS are managed by SCPI.
+
+Also, we also have incorrect dependency on the cluster identifier for
+the CPUs. It's fundamentally wrong as the domain id need not match the
+cluster id. This patch gets rid of that dependency by making use of the
+clock bindings which are already in place.
+
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/firmware/arm_scpi.c   | 62 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/scpi_protocol.h |  2 ++
+ 2 files changed, 64 insertions(+)
+
+Hi,
+
+It would be good to have this tested on AmLogic platforms that use
+SCPI.
+
+Regards,
+Sudeep
+
+diff --git a/drivers/firmware/arm_scpi.c b/drivers/firmware/arm_scpi.c
+index 9ad0b1934be9..3677d13cdcac 100644
+--- a/drivers/firmware/arm_scpi.c
++++ b/drivers/firmware/arm_scpi.c
+@@ -39,6 +39,7 @@
+ #include <linux/of_address.h>
+ #include <linux/of_platform.h>
+ #include <linux/printk.h>
++#include <linux/pm_opp.h>
+ #include <linux/scpi_protocol.h>
+ #include <linux/slab.h>
+ #include <linux/sort.h>
+@@ -684,6 +685,65 @@ static struct scpi_dvfs_info *scpi_dvfs_get_info(u8 domain)
+ 	return info;
+ }
+ 
++static int scpi_dev_domain_id(struct device *dev)
++{
++	struct of_phandle_args clkspec;
++
++	if (of_parse_phandle_with_args(dev->of_node, "clocks", "#clock-cells",
++				       0, &clkspec))
++		return -EINVAL;
++
++	return clkspec.args[0];
++}
++
++static struct scpi_dvfs_info *scpi_dvfs_info(struct device *dev)
++{
++	int domain = scpi_dev_domain_id(dev);
++
++	if (domain < 0)
++		return ERR_PTR(domain);
++
++	return scpi_dvfs_get_info(domain);
++}
++
++static int scpi_dvfs_get_transition_latency(struct device *dev)
++{
++	struct scpi_dvfs_info *info = scpi_dvfs_info(dev);
++
++	if (IS_ERR(info))
++		return PTR_ERR(info);
++
++	if (!info->latency)
++		return 0;
++
++	return info->latency;
++}
++
++static int scpi_dvfs_add_opps_to_device(struct device *dev)
++{
++	int idx, ret;
++	struct scpi_opp *opp;
++	struct scpi_dvfs_info *info = scpi_dvfs_info(dev);
++
++	if (IS_ERR(info))
++		return PTR_ERR(info);
++
++	if (!info->opps)
++		return -EIO;
++
++	for (opp = info->opps, idx = 0; idx < info->count; idx++, opp++) {
++		ret = dev_pm_opp_add(dev, opp->freq, opp->m_volt * 1000);
++		if (ret) {
++			dev_warn(dev, "failed to add opp %uHz %umV\n",
++				 opp->freq, opp->m_volt);
++			while (idx-- > 0)
++				dev_pm_opp_remove(dev, (--opp)->freq);
++			return ret;
++		}
++	}
++	return 0;
++}
++
+ static int scpi_sensor_get_capability(u16 *sensors)
+ {
+ 	struct sensor_capabilities cap_buf;
+@@ -765,6 +825,8 @@ static struct scpi_ops scpi_ops = {
+ 	.dvfs_get_idx = scpi_dvfs_get_idx,
+ 	.dvfs_set_idx = scpi_dvfs_set_idx,
+ 	.dvfs_get_info = scpi_dvfs_get_info,
++	.get_transition_latency = scpi_dvfs_get_transition_latency,
++	.add_opps_to_device = scpi_dvfs_add_opps_to_device,
+ 	.sensor_get_capability = scpi_sensor_get_capability,
+ 	.sensor_get_info = scpi_sensor_get_info,
+ 	.sensor_get_value = scpi_sensor_get_value,
+diff --git a/include/linux/scpi_protocol.h b/include/linux/scpi_protocol.h
+index dc5f989be226..7043f2259604 100644
+--- a/include/linux/scpi_protocol.h
++++ b/include/linux/scpi_protocol.h
+@@ -67,6 +67,8 @@ struct scpi_ops {
+ 	int (*dvfs_get_idx)(u8);
+ 	int (*dvfs_set_idx)(u8, u8);
+ 	struct scpi_dvfs_info *(*dvfs_get_info)(u8);
++	int (*get_transition_latency)(struct device *);
++	int (*add_opps_to_device)(struct device *);
+ 	int (*sensor_get_capability)(u16 *sensors);
+ 	int (*sensor_get_info)(u16 sensor_id, struct scpi_sensor_info *);
+ 	int (*sensor_get_value)(u16, u64 *);
+-- 
+2.7.4
