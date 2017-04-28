@@ -1,72 +1,50 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: Re: [PATCH] devfreq: do not ignore errors during store min, max
- frequency
-Date: Thu, 27 Apr 2017 23:41:23 +0000
-Message-ID: <20170427234123epcms1p42e47c19e54fbcc3e766ebd2594da6709@epcms1p4>
-References: <f02c5605-be71-79da-a33d-75e2d041029b@arm.com>
-        <1493281427-8671-1-git-send-email-lukasz.luba@arm.com>
-        <20170427083057epcms1p5f916dda5e9fe0275a915963b96dc28d5@epcms1p5>
-        <CGME20170427082416epcas3p3b9aeb23978707b164b4d4a46156d1216@epcms1p4>
-Reply-To: myungjoo.ham@samsung.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 00/17] thermal: cpu_cooling: improve interaction with
+ cpufreq core
+Date: Fri, 28 Apr 2017 09:54:11 +0530
+Message-ID: <20170428042411.GC21517@vireshk-i7>
+References: <cover.1493115651.git.viresh.kumar@linaro.org>
+ <ead65416-4833-6f36-81bd-c1673bb71514@arm.com>
+ <20170426104752.GE1928@vireshk-i7>
+ <20170427162604.GB18276@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:32151 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965022AbdD0Xl0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Apr 2017 19:41:26 -0400
-Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
-        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20170427234124epoutp0164e95f120a0c3914816fbddcd1008d7c~5ZZ7OVqZ12763527635epoutp01E
-        for <linux-pm@vger.kernel.org>; Thu, 27 Apr 2017 23:41:24 +0000 (GMT)
-In-Reply-To: <f02c5605-be71-79da-a33d-75e2d041029b@arm.com>
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:32969 "EHLO
+        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753157AbdD1EYP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 00:24:15 -0400
+Received: by mail-pf0-f169.google.com with SMTP id i4so6326037pfc.0
+        for <linux-pm@vger.kernel.org>; Thu, 27 Apr 2017 21:24:15 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20170427162604.GB18276@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Luba <lukasz.luba@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Lukasz Luba <lukasz.luba@arm.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linaro-kernel@lists.linaro.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
 
-> >
-> > ...
-> >
-> >> +	ret = devfreq_get_freq_level(df, value);
-> >> +	if (ret < 0) {
-> >> +		dev_warn(dev, "Storing min freq failed with (%d) error\n", ret);
-> >> +		goto unlock;
-> >> +	}
-> >> +
-> >
-> > This is not good.
-> >
-> > For a device that supports [ 100, 400, 800, 1000 ] MHz,
-> > saying "min = 200 Mhz" or "max = 600 MHz" shouldn't be prohibited.
-> >
-> > Those functions are to express lower bound and upper bound, not to
-> > designate the exact operating frequencies.
+On 27-04-17, 09:26, Eduardo Valentin wrote:
+> On Wed, Apr 26, 2017 at 04:17:52PM +0530, Viresh Kumar wrote:
+> > On 26-04-17, 11:41, Lukasz Luba wrote:
+> > > Hi Viresh,
+> > > 
+> > > I went through the v4 code and it looks good to me.
+> > > Feel free to add for the v4 series
+> > > Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+> > 
+> > Thanks a lot for testing and reviewing the series.
+> > 
+> > @Eduardo: Will you be able to pick it for 4.12 ?
 > 
-> Would it be possible to convince you to store a
-> 'posible/valid frequency' (from OPP) in that value?
-> Governors (like simpleondemand) and drivers use it with the flags.
-> It would be useful for thermal subsystem. It could have the max/min for 
-> the devfreq device.
+> I feel like this is late for 4.12 given that we are already -rc8. 
+> Besides, it has gone through a couple of cycles of broken interactions
+> with IPA (now fixed).
 > 
-> I could prepare a patch which sets the freq from OPP respecting
-> rounding up/down based on 'devfreq_recommended_opp()'.
-> 
-> Regards,
-> Lukasz
+> So, I would prefer we give this series a bit more of testing time on
+> linux-next. I can pull it and put into linux-next after the coming
+> merge window is closed.
 
-Before talking about implementation detail,
-what's the benefit of what you are suggesting?
+Ok, sure. No hurry.
 
-What's the scenario that you cannot do with the current system
-while you can do with what you suggest?
-
-Why do you need rounded (OPP-enabled) max/min values?
-Why unrounded (lower/upper limits) max/min values cannot do what you want?
-
-
-Cheers,
-MyungJoo
-
-
-ps. I'll be away from the network for about 10 days after few hours.
+-- 
+viresh
