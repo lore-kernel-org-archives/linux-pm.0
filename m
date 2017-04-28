@@ -1,42 +1,40 @@
-From: Jon Mason <jon.mason@broadcom.com>
-Subject: [PATCH v3 0/3] thermal: broadcom: Add NSP Thermal Support
-Date: Fri, 28 Apr 2017 16:11:28 -0400
-Message-ID: <1493410291-16679-1-git-send-email-jon.mason@broadcom.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f174.google.com ([209.85.223.174]:32963 "EHLO
-        mail-io0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1035538AbdD1ULj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 16:11:39 -0400
-Received: by mail-io0-f174.google.com with SMTP id k87so76834991ioi.0
-        for <linux-pm@vger.kernel.org>; Fri, 28 Apr 2017 13:11:38 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Jon Mason <jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH v3 1/3] ARM: BCM: Enable thermal support for NSP SoCs
+Date: Fri, 28 Apr 2017 16:11:29 -0400
+Message-ID: <1493410291-16679-2-git-send-email-jon.mason@broadcom.com>
+References: <1493410291-16679-1-git-send-email-jon.mason@broadcom.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1493410291-16679-1-git-send-email-jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Florian Fainelli <florian.fainelli-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Florian Fainelli <florian.fainelli@broadcom.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Changes in v3:
-* Enable THERMAL on NSP, not all iProc Chips (per Scott Branden)
-* Correct the Kconfig syntax in patch 2 (per Eduardo Valentin)
+Change the Northstar Plus Kconfig to select THERMAL and THERMAL_OF,
+which allows the ns-thermal driver to be selected via menuconfig.
 
-Changes in v2:
-* Split SoC enablement into a separate patch (per Eduardo Valentin)
-* Added Eduardo Valentin's Acked-by to the DTS patch
+Signed-off-by: Jon Mason <jon.mason-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+---
+ arch/arm/mach-bcm/Kconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-
-This adds support for NSP to the existing Northstar thermal driver.
-This code is based on patches currently in the Linux SoC Thermal git
-tree.  Specfically,
-https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git/commit/?h=linus&id=a94cb7eeecc4104a6874339f90c5d0647359c102
-
-Jon Mason (3):
-  ARM: BCM: Enable thermal support for NSP SoCs
-  thermal: broadcom: ns-thermal: default on iProc SoCs
-  ARM: dts: NSP: Add Thermal Support
-
- arch/arm/boot/dts/bcm-nsp.dtsi   | 26 ++++++++++++++++++++++++++
- arch/arm/mach-bcm/Kconfig        |  2 ++
- drivers/thermal/broadcom/Kconfig |  9 +++++----
- 3 files changed, 33 insertions(+), 4 deletions(-)
-
+diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
+index a0e66d8..93a61d0 100644
+--- a/arch/arm/mach-bcm/Kconfig
++++ b/arch/arm/mach-bcm/Kconfig
+@@ -44,6 +44,8 @@ config ARCH_BCM_NSP
+ 	select ARM_ERRATA_775420
+ 	select ARM_ERRATA_764369 if SMP
+ 	select HAVE_SMP
++	select THERMAL
++	select THERMAL_OF
+ 	help
+ 	  Support for Broadcom Northstar Plus SoC.
+ 	  Broadcom Northstar Plus family of SoCs are used for switching control
 -- 
 2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
