@@ -1,131 +1,65 @@
 From: Jon Mason <jon.mason@broadcom.com>
-Subject: Re: [PATCH 1/2] thermal: broadcom: Allow for NSP to use ns-thermal driver
-Date: Fri, 28 Apr 2017 14:04:08 -0400
-Message-ID: <CAC3K-4pnewSS4WkE28jscEAQWeENz6Fsbvs25ADr21O=k0O+jA@mail.gmail.com>
-References: <1493153351-12698-1-git-send-email-jon.mason@broadcom.com>
- <1493153351-12698-2-git-send-email-jon.mason@broadcom.com>
- <20170427163658.GC18276@localhost.localdomain> <CAC3K-4pr4LY-9unHNxMDN9YmCYHKekUo66813OUdiKkQH4QzVw@mail.gmail.com>
- <20170428130659.GA28546@localhost.localdomain>
+Subject: Re: [PATCH v2 1/3] ARM: BCM: Enable thermal support for iProc SoCs
+Date: Fri, 28 Apr 2017 14:05:48 -0400
+Message-ID: <CAC3K-4omn1A5ddPhkhhROLmtcEDJjHg7boa0B=c9OUuAHV6NyQ@mail.gmail.com>
+References: <1493328194-1766-1-git-send-email-jon.mason@broadcom.com>
+ <1493328194-1766-2-git-send-email-jon.mason@broadcom.com> <bceb9b66-c769-faf3-9288-26581b5d5dc6@broadcom.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170428130659.GA28546@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Florian Fainelli <florian.fainelli@broadcom.com>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f41.google.com ([209.85.214.41]:36727 "EHLO
+        mail-it0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S642241AbdD1SFt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 14:05:49 -0400
+Received: by mail-it0-f41.google.com with SMTP id g66so48230726ite.1
+        for <linux-pm@vger.kernel.org>; Fri, 28 Apr 2017 11:05:49 -0700 (PDT)
+In-Reply-To: <bceb9b66-c769-faf3-9288-26581b5d5dc6@broadcom.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Scott Branden <scott.branden@broadcom.com>
+Cc: Florian Fainelli <florian.fainelli@broadcom.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
 
-On Fri, Apr 28, 2017 at 9:07 AM, Eduardo Valentin <edubezval@gmail.com> wrote:
-> On Thu, Apr 27, 2017 at 01:42:25PM -0400, Jon Mason wrote:
->> On Thu, Apr 27, 2017 at 12:37 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
->> > Hey Jason,
->>
->> It's Jon :)
+On Thu, Apr 27, 2017 at 7:10 PM, Scott Branden
+<scott.branden@broadcom.com> wrote:
 >
-> Apologies. I think I either read too fast, or my fingers were faster
-> than my brain. Sorry.
+>
+> On 17-04-27 02:23 PM, Jon Mason wrote:
+>>
+>> Change the iProc Kconfig to select THERMAL and THERMAL_OF, which allows
+>> the ns-thermal driver to be selected via menuconfig.
+>>
+>> Signed-off-by: Jon Mason <jon.mason@broadcom.com>
+>> ---
+>>  arch/arm/mach-bcm/Kconfig | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
+>> index a0e66d8..da2bfeb 100644
+>> --- a/arch/arm/mach-bcm/Kconfig
+>> +++ b/arch/arm/mach-bcm/Kconfig
+>> @@ -19,6 +19,8 @@ config ARCH_BCM_IPROC
+>>         select GPIOLIB
+>>         select ARM_AMBA
+>>         select PINCTRL
+>> +       select THERMAL
+>> +       select THERMAL_OF
+>
+> This is NSP specific at this point.  Also, If it increases code size in any
+> way it shouldn't be selected for all IPROC SoCS.  I'd rather this was just
+> selected via defconfig
 
-NP,  That exact error happens more frequently that you would think :)
+This isn't selectable via menuconfig without being in the kconfig.
+I'll move it to the NSP portion of the kconfig, as to not increase the
+size of other's kernels.
 
->>
->> >
->> > On Tue, Apr 25, 2017 at 04:49:10PM -0400, Jon Mason wrote:
->> >> Change the iProc Kconfig to select THERMAL and THERMAL_OF, which allows
->> >> the ns-thermal driver to be selected via menuconfig.  Also, change the
->> >> ns-thermal driver to work on any iProc based SoC.  Finally, tweak the
->> >> Kconfig description to mention support for NSP and make the default on
->> >> for iProc based platforms.
->> >
->> >
->> > Thanks for the patch, but..
->> >>
->> >> Signed-off-by: Jon Mason <jon.mason@broadcom.com>
->> >> ---
->> >>  arch/arm/mach-bcm/Kconfig        | 2 ++
->> >>  drivers/thermal/broadcom/Kconfig | 9 +++++----
->> >>  2 files changed, 7 insertions(+), 4 deletions(-)
->> >>
->> >> diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
->> >> index a0e66d8..da2bfeb 100644
->> >> --- a/arch/arm/mach-bcm/Kconfig
->> >> +++ b/arch/arm/mach-bcm/Kconfig
->> >> @@ -19,6 +19,8 @@ config ARCH_BCM_IPROC
->> >>       select GPIOLIB
->> >>       select ARM_AMBA
->> >>       select PINCTRL
->> >> +     select THERMAL
->> >> +     select THERMAL_OF
->> >>       help
->> >>         This enables support for systems based on Broadcom IPROC architected SoCs.
->> >>         The IPROC complex contains one or more ARM CPUs along with common
->> >
->> > It would be better if this is split and sent through your arch tree, to
->> > avoid conflicts. I could also pick it if you get an ack from one of your
->> > maintainers. Still, first option is preferable.
->>
->> Sure, I'll be happy to split this off.  I should've thought to split
->> it up before sending.  Thanks for the suggestion.
->
-> Cool!
->
->>
->> >
->> >> diff --git a/drivers/thermal/broadcom/Kconfig b/drivers/thermal/broadcom/Kconfig
->> >> index f0dea8a..26d706c 100644
->> >> --- a/drivers/thermal/broadcom/Kconfig
->> >> +++ b/drivers/thermal/broadcom/Kconfig
->> >> @@ -1,8 +1,9 @@
->> >>  config BCM_NS_THERMAL
->> >>       tristate "Northstar thermal driver"
->> >>       depends on ARCH_BCM_IPROC || COMPILE_TEST
->> >> +     default ARCH_BCM_IPROC
->> >
->> > Not sure if this is really what you wanted. Based on your commit log
->> > message, you meant the following, perhaps?
->> >
->> >  +      default y if ARCH_BCM_IPROC
->>
->> IIUC, my original default works, as we have used it frequently in
->> other places in the kernel.
->> grep -rI "default ARCH_BCM_IPROC" * | wc -l
->> 15
->
-> Yeah... Are you sure they are all correct?
->
->>
->> However, if the above is preferred (or the other 15 massively broken),
->> I'll be happy to do it that way.
->
-> Your construction is syntactically correct. Maybe might still work (did
-> not check myself) for the purpose you describe, but the construction
-> mentioned in Documentation/kbuild/kconfig-language.txt is:
->  +      default y if BAR
->
-> So, please fix it.
-
-Oh, thanks for the info.  I was unaware of this, and we should
-definitely follow the documentation..  I'll make the relevant changes
-and do follow-on patches to correct the other places.
+Thanks,
+Jon
 
 >
+>>         help
+>>           This enables support for systems based on Broadcom IPROC
+>> architected SoCs.
+>>           The IPROC complex contains one or more ARM CPUs along with
+>> common
 >>
->>
->> >>       help
->> >> -       Northstar is a family of SoCs that includes e.g. BCM4708, BCM47081,
->> >> -       BCM4709 and BCM47094. It contains DMU (Device Management Unit) block
->> >> -       with a thermal sensor that allows checking CPU temperature. This
->> >> -       driver provides support for it.
->> >> +       Support for the Northstar and Northstar Plus family of SoCs (e.g.
->> >> +       BCM4708, BCM4709, BCM5301x, BCM95852X, etc). It contains DMU (Device
->> >
->> > Did we look BCM47094 somehow on this patch?
->>
->> Naa, just trying to be more concise, while adding the NSP products to
->> the list..  BCM47094 is a type of BCM4709.  So, it is still there :)
->>
->> >
->> >> +       Management Unit) block with a thermal sensor that allows checking CPU
->> >> +       temperature.
->> >> --
->> >> 2.7.4
->> >>
+>
