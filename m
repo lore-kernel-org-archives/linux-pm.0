@@ -1,50 +1,61 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 00/17] thermal: cpu_cooling: improve interaction with
- cpufreq core
-Date: Fri, 28 Apr 2017 09:54:11 +0530
-Message-ID: <20170428042411.GC21517@vireshk-i7>
-References: <cover.1493115651.git.viresh.kumar@linaro.org>
- <ead65416-4833-6f36-81bd-c1673bb71514@arm.com>
- <20170426104752.GE1928@vireshk-i7>
- <20170427162604.GB18276@localhost.localdomain>
+Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
+ power-domains
+Date: Fri, 28 Apr 2017 10:30:29 +0530
+Message-ID: <20170428050029.GD21517@vireshk-i7>
+References: <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
+ <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
+ <20170413053736.GM5910@vireshk-i7>
+ <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
+ <20170417052758.GF28191@vireshk-i7>
+ <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
+ <9cd9287c-392b-d3ca-db7d-75c49287448e@codeaurora.org>
+ <20170426135532.ryrh276znet5yvks@sirena.org.uk>
+ <c66322f5-e2eb-5556-a5a5-14998a2f195d@arm.com>
+ <9019aebe-95ba-b1b8-65a9-5be927934218@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:32969 "EHLO
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:36123 "EHLO
         mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753157AbdD1EYP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 00:24:15 -0400
-Received: by mail-pf0-f169.google.com with SMTP id i4so6326037pfc.0
-        for <linux-pm@vger.kernel.org>; Thu, 27 Apr 2017 21:24:15 -0700 (PDT)
+        with ESMTP id S1162846AbdD1FAd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 01:00:33 -0400
+Received: by mail-pf0-f169.google.com with SMTP id 194so43372465pfv.3
+        for <linux-pm@vger.kernel.org>; Thu, 27 Apr 2017 22:00:33 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20170427162604.GB18276@localhost.localdomain>
+In-Reply-To: <9019aebe-95ba-b1b8-65a9-5be927934218@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Lukasz Luba <lukasz.luba@arm.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linaro-kernel@lists.linaro.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
+To: Sudeep Holla <sudeep.holla@arm.com>, Rajendra Nayak <rnayak@codeaurora.org>
+Cc: Mark Brown <broonie@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, devicetree@vger.kernel.org
 
-On 27-04-17, 09:26, Eduardo Valentin wrote:
-> On Wed, Apr 26, 2017 at 04:17:52PM +0530, Viresh Kumar wrote:
-> > On 26-04-17, 11:41, Lukasz Luba wrote:
-> > > Hi Viresh,
-> > > 
-> > > I went through the v4 code and it looks good to me.
-> > > Feel free to add for the v4 series
-> > > Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-> > 
-> > Thanks a lot for testing and reviewing the series.
-> > 
-> > @Eduardo: Will you be able to pick it for 4.12 ?
+On 27-04-17, 16:20, Rajendra Nayak wrote:
 > 
-> I feel like this is late for 4.12 given that we are already -rc8. 
-> Besides, it has gone through a couple of cycles of broken interactions
-> with IPA (now fixed).
+> On 04/27/2017 03:12 PM, Sudeep Holla wrote:
+> []..
 > 
-> So, I would prefer we give this series a bit more of testing time on
-> linux-next. I can pull it and put into linux-next after the coming
-> merge window is closed.
+> >>
+> >>> At qualcomm, we have an external M3 core (running its own firmware) which controls
+> >>> a few voltage rails (including AVS on those). The devices vote for the voltage levels
+> > 
+> > Thanks for explicitly mentioning this, but ...
+> > 
+> >>> (or performance levels) they need by passing an integer value to the M3 (not actual
+> > 
+> > you contradict here, is it just voltage or performance(i.e. frequency)
+> > or both ? We need clarity there to choose the right representation.
+> 
+> Its just voltage.
 
-Ok, sure. No hurry.
+Right. Its just voltage in this case, but we can't speak of future
+platforms here and we have to consider this thing as an operating
+performance point only. I still think that this thread is moving in
+the right direction, specially after V6 which looks much better.
+
+If we have anything strong against the way V6 is trying to solve it, I
+want to talk about it right now and get inputs from all the parties
+involved. Scrapping all this work is fine, but I would like to do it
+ASAP in that case :)
 
 -- 
 viresh
