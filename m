@@ -1,60 +1,67 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] x86/intel_idle: add GLK support
-Date: Fri, 28 Apr 2017 23:56:14 -0400
-Message-ID: <CAJvTdKnt5vJP5=OnzOsm1k+w07E+f-PPWK0fwx=jr4KOQM+aRg@mail.gmail.com>
-References: <20170423060625.4593-1-david.e.box@linux.intel.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 1/2] Add support for OneWire (W1) devices family 0x26
+ (MAX17211/MAX17215)
+Date: Sat, 29 Apr 2017 17:59:11 +0200
+Message-ID: <20170429155911.7li5torcliaoerxh@earth>
+References: <20170429143429.5685-1-minimumlaw@rambler.ru>
+ <20170429143429.5685-2-minimumlaw@rambler.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f194.google.com ([209.85.216.194]:35373 "EHLO
-        mail-qt0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933136AbdD2D4Q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 23:56:16 -0400
-In-Reply-To: <20170423060625.4593-1-david.e.box@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="pkjpwo5oqpkdddhl"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170429143429.5685-2-minimumlaw@rambler.ru>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, zbr@ioremap.net
 List-Id: linux-pm@vger.kernel.org
-To: "David E. Box" <david.e.box@linux.intel.com>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
-
-Acked-by: Len Brown <len.brown@intel.com>
-
-On Sun, Apr 23, 2017 at 2:06 AM, David E. Box
-<david.e.box@linux.intel.com> wrote:
-> From: "Box, David E" <david.e.box@intel.com>
->
-> Gemini Lake uses the same C-states as Broxton and also uses the
-> IRTL MSR's to determine maximum C-state latency.
->
-> Signed-off-by: David E. Box <david.e.box@linux.intel.com>
-> ---
->  drivers/idle/intel_idle.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index e045a5c..778af71 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -1097,6 +1097,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
->         ICPU(INTEL_FAM6_XEON_PHI_KNL,           idle_cpu_knl),
->         ICPU(INTEL_FAM6_XEON_PHI_KNM,           idle_cpu_knl),
->         ICPU(INTEL_FAM6_ATOM_GOLDMONT,          idle_cpu_bxt),
-> +       ICPU(INTEL_FAM6_ATOM_GEMINI_LAKE,       idle_cpu_bxt),
->         ICPU(INTEL_FAM6_ATOM_DENVERTON,         idle_cpu_dnv),
->         {}
->  };
-> @@ -1309,6 +1310,7 @@ static void intel_idle_state_table_update(void)
->                 ivt_idle_state_table_update();
->                 break;
->         case INTEL_FAM6_ATOM_GOLDMONT:
-> +       case INTEL_FAM6_ATOM_GEMINI_LAKE:
->                 bxt_idle_state_table_update();
->                 break;
->         case INTEL_FAM6_SKYLAKE_DESKTOP:
-> --
-> 2.9.3
->
 
 
+--pkjpwo5oqpkdddhl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Len Brown, Intel Open Source Technology Center
+Hi,
+
+On Sat, Apr 29, 2017 at 05:34:28PM +0300, Alex A. Mihaylov wrote:
+> Maxim Semiconductor MAX17211/MAX17215 single/multi-cell fuel gauge
+> monitor with M5 Fuel Gauge algorithm
+>=20
+> Slave device provide software layer for access to internal registers
+> MAX17211/MAX17215 chip.
+
+Please convert this to regmap. There should be lots of docs and
+examples around, for example:
+
+http://elinux.org/images/a/a3/Regmap-_The_Power_of_Subsystems_and_Abstracti=
+ons.pdf
+
+There is no generic w1 handler, but you can provide custom
+read/write functions. Also it would be nice to have this
+based on https://lkml.org/lkml/2017/3/16/604. Then everything
+could go into the power-supply driver.
+
+-- Sebastian
+
+--pkjpwo5oqpkdddhl
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkEuEwACgkQ2O7X88g7
++pq2og//Qwbok9TDmQzL0HJ1VPin7hQiCSQMwDvNtuuEXzbmIZANJSHLpdhuo0ts
+30O8MR/kRdTtVgFFlKMJAggEnJaL7rfFESgd80Ohbr45MQCGvSrXAO3QVnl4bhl1
+yXBQy4jxYwBvRFnQ56btG6v+QvM6k7JCtBohENTOLsLHdYMIExT+xuVHq/dD4wN2
+v/zAFgd2M2igVDIB1egbu2US3wN/tEZfbqATJ9M68bbesDG1UKyAiulRnCs8vzkz
+zWutM07/EFv4sqZPcM6n9bLDnE8UeOrGcNMt3815sGDS/hrC4YEYvGfjz9h69QNS
+2spIeNdh+pulcmeX5jyuPTHGGLR9v9kGdFmcTOEDEKh6yHbGQR+brujVrEasCtzC
+Ac+GO3ZfvAaN0OxH+cm4Pz3ce3A8QCU9s/F8XbJ+0pkMu0OoFMnmaESGVxnLUY+u
+F7E7VibM+QnJ1jrtMCIeRRaFyjDNhKJlormacnkgXofsRtBcy4rPy6FgEh+s3E8/
+qcdGIjkiPW+CzNfCgJ+ykrkxLVEfFBh/sS7DtbaCoygXfymZ3UpNuMPIQtfDAk3n
+YkqHwKGqyzirSL69GDnL7NwyMiDx67dWCO/0RewyEhVk5xebxktJ/f+agIiIMC96
+9fhQyHhcEqdhcIKVJhIVZUb7mgZfl6F3+yfBrNeVDG/irmYF6GA=
+=DoK5
+-----END PGP SIGNATURE-----
+
+--pkjpwo5oqpkdddhl--
