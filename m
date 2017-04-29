@@ -1,44 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] cpufreq: scpi: use new scpi_ops functions to remove duplicate code
-Date: Fri, 28 Apr 2017 23:34:31 +0200
-Message-ID: <1644626.pZFp7GD5Yb@aspire.rjw.lan>
-References: <1493371296-12465-1-git-send-email-sudeep.holla@arm.com> <1493371296-12465-2-git-send-email-sudeep.holla@arm.com> <20170428092456.GF21517@vireshk-i7>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] x86/intel_idle: add GLK support
+Date: Fri, 28 Apr 2017 23:56:14 -0400
+Message-ID: <CAJvTdKnt5vJP5=OnzOsm1k+w07E+f-PPWK0fwx=jr4KOQM+aRg@mail.gmail.com>
+References: <20170423060625.4593-1-david.e.box@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54152 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1422932AbdD1Vks (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 17:40:48 -0400
-In-Reply-To: <20170428092456.GF21517@vireshk-i7>
+Received: from mail-qt0-f194.google.com ([209.85.216.194]:35373 "EHLO
+        mail-qt0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933136AbdD2D4Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Apr 2017 23:56:16 -0400
+In-Reply-To: <20170423060625.4593-1-david.e.box@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-amlogic@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "David E. Box" <david.e.box@linux.intel.com>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Friday, April 28, 2017 02:54:56 PM Viresh Kumar wrote:
-> On 28-04-17, 10:21, Sudeep Holla wrote:
-> > scpi_ops now provide APIs to get the transition_latency and to add
-> > OPPs to the devices making those logic redundant here.
-> > 
-> > This patch makes use of those APIs and removes the redunant code in
-> > this driver.
-> > 
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> > ---
-> >  drivers/cpufreq/scpi-cpufreq.c | 38 ++++++--------------------------------
-> >  1 file changed, 6 insertions(+), 32 deletions(-)
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> 
+Acked-by: Len Brown <len.brown@intel.com>
 
-OK
+On Sun, Apr 23, 2017 at 2:06 AM, David E. Box
+<david.e.box@linux.intel.com> wrote:
+> From: "Box, David E" <david.e.box@intel.com>
+>
+> Gemini Lake uses the same C-states as Broxton and also uses the
+> IRTL MSR's to determine maximum C-state latency.
+>
+> Signed-off-by: David E. Box <david.e.box@linux.intel.com>
+> ---
+>  drivers/idle/intel_idle.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index e045a5c..778af71 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -1097,6 +1097,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+>         ICPU(INTEL_FAM6_XEON_PHI_KNL,           idle_cpu_knl),
+>         ICPU(INTEL_FAM6_XEON_PHI_KNM,           idle_cpu_knl),
+>         ICPU(INTEL_FAM6_ATOM_GOLDMONT,          idle_cpu_bxt),
+> +       ICPU(INTEL_FAM6_ATOM_GEMINI_LAKE,       idle_cpu_bxt),
+>         ICPU(INTEL_FAM6_ATOM_DENVERTON,         idle_cpu_dnv),
+>         {}
+>  };
+> @@ -1309,6 +1310,7 @@ static void intel_idle_state_table_update(void)
+>                 ivt_idle_state_table_update();
+>                 break;
+>         case INTEL_FAM6_ATOM_GOLDMONT:
+> +       case INTEL_FAM6_ATOM_GEMINI_LAKE:
+>                 bxt_idle_state_table_update();
+>                 break;
+>         case INTEL_FAM6_SKYLAKE_DESKTOP:
+> --
+> 2.9.3
+>
 
-Sudeep, please route this through ARM.
 
-Thanks,
-Rafael
+
+-- 
+Len Brown, Intel Open Source Technology Center
