@@ -1,75 +1,59 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
- power-domains
-Date: Sun, 30 Apr 2017 21:49:17 +0900
-Message-ID: <20170430124917.4m3d237pik7q47f3@sirena.org.uk>
-References: <cover.1490001099.git.viresh.kumar@linaro.org>
- <e772e67a5445319bb8e0f312846ace666adc097f.1490001099.git.viresh.kumar@linaro.org>
- <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
- <20170413053736.GM5910@vireshk-i7>
- <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
- <20170417052758.GF28191@vireshk-i7>
- <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
- <9cd9287c-392b-d3ca-db7d-75c49287448e@codeaurora.org>
- <20170426135532.ryrh276znet5yvks@sirena.org.uk>
- <c66322f5-e2eb-5556-a5a5-14998a2f195d@arm.com>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v1] spi: mxs: implement runtime pm
+Date: Sun, 30 Apr 2017 21:55:38 +0900
+Message-ID: <20170430125538.cps4dsud47tvlcal@sirena.org.uk>
+References: <20170426201028.19217-1-u.kleine-koenig@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="5s2qhlmcbzxkspgo"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:59148 "EHLO
-        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S968631AbdD3Mtb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Apr 2017 08:49:31 -0400
+        protocol="application/pgp-signature"; boundary="j5uwz677cwed62xx"
+Return-path: <linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <c66322f5-e2eb-5556-a5a5-14998a2f195d@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170426201028.19217-1-u.kleine-koenig-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Sender: linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, devicetree@vger.kernel.org
 
 
---5s2qhlmcbzxkspgo
-Content-Type: text/plain; charset=us-ascii
+--j5uwz677cwed62xx
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Apr 27, 2017 at 10:42:49AM +0100, Sudeep Holla wrote:
-> On 26/04/17 14:55, Mark Brown wrote:
+On Wed, Apr 26, 2017 at 10:10:28PM +0200, Uwe Kleine-K=F6nig wrote:
 
-> > As I'm getting fed up of saying: if the values you are setting are not
-> > voltages and do not behave like voltages then the hardware should not be
-> > represented as a voltage regulator since if they are represented as
-> > voltage regulators things will expect to be able to control them as
-> > voltage regulators.  This hardware is quite clearly providing OPPs
-> > directly, I would expect this to be handled in the OPP code somehow.
+> +	int ret;
+> +
+> +	ret =3D pm_runtime_get_sync(ssp->dev);
+> +	if (ret < 0) {
+> +		dev_err(ssp->dev, "Failed to runtime resume for transfer\n");
+> +		return ret;
+> +	}
 
-> I agree with you that we need to be absolutely sure on what it actually
-> represents.
+There's a flag auto_runtime_pm the driver can set which should do what
+you're doing here in the core (with the very slight advantage that it'll
+hold the device on while the queue is busy so we don't bounce the power
+in the event that there's transactions queued up).
 
-> But as more and more platform are pushing such power controls to
-> dedicated M3 or similar processors, we need abstraction. Though we are
-> controlling hardware, we do so indirectly. Since there were discussions
-> around device tree representing hardware vs platform, I tend to think,
-> we are moving towards platform(something similar to ACPI).
+Otherwise this looks good to me.
 
-I don't think there's a meaningful hardware/platform distinction here -
-in terms of what DT is describing the platform bit is just what the
-hardware (the microcontrollers) happen to do, DT doesn't much care about
-that though.
-
---5s2qhlmcbzxkspgo
+--j5uwz677cwed62xx
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlkF3UwACgkQJNaLcl1U
-h9A9Twf/d7T9kMvGk9pgxGFwCY5EKoRJj0SXzXCOkPPSpnRA5S+mbYeiZjVQKnKv
-n0RwnqXwcUAg73N2ip0w5U/0rnKWjXcHqZFz82sWMzBKYnAkCtmRzktdcw9Aq8PA
-pXAVtW7ODoU9n77lONm5d0mSrzr/hcg36sNkgF/OTkrI/yklqpL4Al5vYbPXJZRu
-OT4PlBHHe2qqKg7jmJAAnWGfNlg4Vk13Kq0WtGCfPrqidOhMDEDN2x1iVguivSQN
-cABjEqVRST9SqMvppthhwOxYU83SO+ZSvTnkcuswIpcCKJ9oJbvNnho9Or3dPT7S
-IRBH0Z7lUZHASeqfYkvcxitjy4rf5Q==
-=H0Iz
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlkF3soACgkQJNaLcl1U
+h9C3NggAgDv6H/wHNoogMxFVPyUxeAeQNWCx5X7qdTIdtFE7h3eiL91VJj22eqsm
+X4XpQ/YoZkMWkcxM8mLP+atnJGYLq4USNvPjPXtAKU4P9sbVFXP07aRlcsi073Uc
+MC+RoJpvUQmeSdBRCd29DOdTFdOfxw+KM3VlDsia3vxWcsh8GqvZ8kYa8VWj9dB6
+zLmfUGc7Z2i2GeHvsIYEFg9K2Sb5LvOM3EKuECsPl6stM0iVlgEPnFYO7Mn7EqS6
+GBSR2lhgwtySQ/+u1HIM7lr+3gqUbuGTkFtbP4wbh+eldC4BuIlBq3Z9HX4pFgW1
+Y0eZfFnEoX+GfftrKnCgjoIoMq5V6Q==
+=4Y9d
 -----END PGP SIGNATURE-----
 
---5s2qhlmcbzxkspgo--
+--j5uwz677cwed62xx--
+--
+To unsubscribe from this list: send the line "unsubscribe linux-spi" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
