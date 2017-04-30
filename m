@@ -1,59 +1,55 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v1] spi: mxs: implement runtime pm
-Date: Sun, 30 Apr 2017 21:55:38 +0900
-Message-ID: <20170430125538.cps4dsud47tvlcal@sirena.org.uk>
-References: <20170426201028.19217-1-u.kleine-koenig@pengutronix.de>
+From: =?UTF-8?B?0JzQuNGF0LDQudC70L7QsiDQkNC70LXQutGB0LXQuSDQkNC90LDRgtC+0Ls=?=
+         =?UTF-8?B?0YzQtdCy0LjRhw==?= <minimumlaw@rambler.ru>
+Subject: Re: [PATCH 2/2] Add driver for MAX17211/MAX17215 fuel gauge
+Date: Sun, 30 Apr 2017 20:32:10 +0300
+Message-ID: <77d557e3-3ff3-de60-826c-b98937360d8c@rambler.ru>
+References: <20170429143429.5685-1-minimumlaw@rambler.ru>
+ <20170429143429.5685-3-minimumlaw@rambler.ru>
+ <20170429164053.olynja4kyqpwhfpk@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="j5uwz677cwed62xx"
-Return-path: <linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170426201028.19217-1-u.kleine-koenig-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Sender: linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from huan3.mail.rambler.ru ([81.19.78.109]:18910 "EHLO
+        huan3.mail.rambler.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1427431AbdD3RcN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Apr 2017 13:32:13 -0400
+In-Reply-To: <20170429164053.olynja4kyqpwhfpk@earth>
+Content-Language: en-GB
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, zbr@ioremap.net
+
+Hi!
 
 
---j5uwz677cwed62xx
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Apr 26, 2017 at 10:10:28PM +0200, Uwe Kleine-K=F6nig wrote:
-
-> +	int ret;
-> +
-> +	ret =3D pm_runtime_get_sync(ssp->dev);
-> +	if (ret < 0) {
-> +		dev_err(ssp->dev, "Failed to runtime resume for transfer\n");
-> +		return ret;
-> +	}
-
-There's a flag auto_runtime_pm the driver can set which should do what
-you're doing here in the core (with the very slight advantage that it'll
-hold the device on while the queue is busy so we don't bounce the power
-in the event that there's transactions queued up).
-
-Otherwise this looks good to me.
-
---j5uwz677cwed62xx
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlkF3soACgkQJNaLcl1U
-h9C3NggAgDv6H/wHNoogMxFVPyUxeAeQNWCx5X7qdTIdtFE7h3eiL91VJj22eqsm
-X4XpQ/YoZkMWkcxM8mLP+atnJGYLq4USNvPjPXtAKU4P9sbVFXP07aRlcsi073Uc
-MC+RoJpvUQmeSdBRCd29DOdTFdOfxw+KM3VlDsia3vxWcsh8GqvZ8kYa8VWj9dB6
-zLmfUGc7Z2i2GeHvsIYEFg9K2Sb5LvOM3EKuECsPl6stM0iVlgEPnFYO7Mn7EqS6
-GBSR2lhgwtySQ/+u1HIM7lr+3gqUbuGTkFtbP4wbh+eldC4BuIlBq3Z9HX4pFgW1
-Y0eZfFnEoX+GfftrKnCgjoIoMq5V6Q==
-=4Y9d
------END PGP SIGNATURE-----
-
---j5uwz677cwed62xx--
---
-To unsubscribe from this list: send the line "unsubscribe linux-spi" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> [...]
+>>
+>> +	 * FixMe:
+>> +	 * Device without no_thermal = true not register (err -22)
+>> +	 * Len of platform device name "max17211-battery.X.auto"
+>> +	 * more than 20 chars limit in THERMAL_NAME_LENGTH from
+>> +	 * include/uapi/linux/thermal.h
+>> +	 */
+> IIRC we already had problems with small THERMAL_NAME_LENGTH before.
+> I suggest to add another patch, that increases THERMAL_NAME_LENGTH
+> (don't forget to Cc/To the thermal subsystem people).
+May be rename "max17211-battery" to "max17211" and remove no_thermal = 
+true? This case thermal zone will work again. In current (mainline) 
+kernel all drivers "xxxxxx-battery" (like ds2780-battery or 
+ds2760-battery) compiled, but not working (not registered). They can 
+start working again without thermal zone by adding no_thermal = true or 
+by remove "-battery" from platform device name. Alternative limit on 
+THERMAL_NAME_LENGTH may be extended.
+>> +	info->bat = power_supply_register(&pdev->dev, &info->bat_desc,
+>> +						&psy_cfg);
+>> +	if (IS_ERR(info->bat)) {
+>> +		dev_err(info->dev, "failed to register battery\n");
+>> +		return PTR_ERR(info->bat);
+>> +	}
+> Please use devm_power_supply_register() and drop the remove
+> function.
+Khm... probe/remove paired functions. I can use 
+devm_power_supply_register in my code. But all other fuel gauge drivers 
+use classic probe/remove pair. Which decision will be more correct?
