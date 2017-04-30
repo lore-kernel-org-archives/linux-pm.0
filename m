@@ -1,55 +1,67 @@
-From: =?UTF-8?B?0JzQuNGF0LDQudC70L7QsiDQkNC70LXQutGB0LXQuSDQkNC90LDRgtC+0Ls=?=
-         =?UTF-8?B?0YzQtdCy0LjRhw==?= <minimumlaw@rambler.ru>
-Subject: Re: [PATCH 2/2] Add driver for MAX17211/MAX17215 fuel gauge
-Date: Sun, 30 Apr 2017 20:32:10 +0300
-Message-ID: <77d557e3-3ff3-de60-826c-b98937360d8c@rambler.ru>
-References: <20170429143429.5685-1-minimumlaw@rambler.ru>
- <20170429143429.5685-3-minimumlaw@rambler.ru>
- <20170429164053.olynja4kyqpwhfpk@earth>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Paul Kocialkowski <contact@paulk.fr>
+Subject: [PATCH 1/5] power: supply: bq27xxx: Pass of_node along to allow device-tree supply
+Date: Sun, 30 Apr 2017 20:27:23 +0200
+Message-ID: <20170430182727.24412-1-contact@paulk.fr>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from huan3.mail.rambler.ru ([81.19.78.109]:18910 "EHLO
-        huan3.mail.rambler.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1427431AbdD3RcN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Apr 2017 13:32:13 -0400
-In-Reply-To: <20170429164053.olynja4kyqpwhfpk@earth>
-Content-Language: en-GB
+Received: from gagarine.paulk.fr ([109.190.93.129]:49302 "EHLO
+        gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S969105AbdD3S2l (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Apr 2017 14:28:41 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, zbr@ioremap.net
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Chris Lapa <chris@lapa.com.au>, Matt Ranostay <mranostay@gmail.com>, Paul Kocialkowski <contact@paulk.fr>
 
-Hi!
+This passes the of_node from the bq27xxx i2c battery driver to the
+common code, so that it can be registered and provide external supplies
+linked with device-tree.
 
+Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
+---
+ drivers/power/supply/bq27xxx_battery.c     | 5 ++++-
+ drivers/power/supply/bq27xxx_battery_i2c.c | 1 +
+ include/linux/power/bq27xxx_battery.h      | 1 +
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
->> [...]
->>
->> +	 * FixMe:
->> +	 * Device without no_thermal = true not register (err -22)
->> +	 * Len of platform device name "max17211-battery.X.auto"
->> +	 * more than 20 chars limit in THERMAL_NAME_LENGTH from
->> +	 * include/uapi/linux/thermal.h
->> +	 */
-> IIRC we already had problems with small THERMAL_NAME_LENGTH before.
-> I suggest to add another patch, that increases THERMAL_NAME_LENGTH
-> (don't forget to Cc/To the thermal subsystem people).
-May be rename "max17211-battery" to "max17211" and remove no_thermal = 
-true? This case thermal zone will work again. In current (mainline) 
-kernel all drivers "xxxxxx-battery" (like ds2780-battery or 
-ds2760-battery) compiled, but not working (not registered). They can 
-start working again without thermal zone by adding no_thermal = true or 
-by remove "-battery" from platform device name. Alternative limit on 
-THERMAL_NAME_LENGTH may be extended.
->> +	info->bat = power_supply_register(&pdev->dev, &info->bat_desc,
->> +						&psy_cfg);
->> +	if (IS_ERR(info->bat)) {
->> +		dev_err(info->dev, "failed to register battery\n");
->> +		return PTR_ERR(info->bat);
->> +	}
-> Please use devm_power_supply_register() and drop the remove
-> function.
-Khm... probe/remove paired functions. I can use 
-devm_power_supply_register in my code. But all other fuel gauge drivers 
-use classic probe/remove pair. Which decision will be more correct?
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 398801a21b86..6ef95442a918 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -1351,7 +1351,10 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+ {
+ 	struct power_supply_desc *psy_desc;
+-	struct power_supply_config psy_cfg = { .drv_data = di, };
++	struct power_supply_config psy_cfg = {};
++
++	psy_cfg.drv_data = di;
++	psy_cfg.of_node = di->of_node;
+ 
+ 	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+ 	mutex_init(&di->lock);
+diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+index c68fbc3fe50a..38a0422a4192 100644
+--- a/drivers/power/supply/bq27xxx_battery_i2c.c
++++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+@@ -96,6 +96,7 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+ 	di->chip = id->driver_data;
+ 	di->name = name;
+ 	di->bus.read = bq27xxx_battery_i2c_read;
++	di->of_node = client->dev.of_node;
+ 
+ 	ret = bq27xxx_battery_setup(di);
+ 	if (ret)
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index b312bcef53da..94637b77ecbf 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -63,6 +63,7 @@ struct bq27xxx_device_info {
+ 	const char *name;
+ 	struct bq27xxx_access_methods bus;
+ 	struct bq27xxx_reg_cache cache;
++	struct device_node *of_node;
+ 	int charge_design_full;
+ 	unsigned long last_update;
+ 	struct delayed_work work;
+-- 
+2.12.2
