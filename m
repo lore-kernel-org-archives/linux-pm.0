@@ -1,55 +1,68 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH] power: supply: generic-adc-battery: use
- SIMPLE_DEV_PM_OPS helper macro
-Date: Mon, 1 May 2017 13:31:33 +0200
-Message-ID: <20170501113133.r3iwrvgefkgoxrek@earth>
-References: <1492772877-11983-1-git-send-email-rahulbedarkar89@gmail.com>
+Subject: Re: [PATCH v2 06/14] power: max17042_battery: Add support for the
+ STATUS property
+Date: Mon, 1 May 2017 13:38:05 +0200
+Message-ID: <20170501113805.tcdiaq2qamie2g7d@earth>
+References: <20170414183259.24382-1-hdegoede@redhat.com>
+ <20170414183259.24382-6-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="fj7t5ehpkm45ro2o"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="vwqrbnefgec4qwuz"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:57717 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756725AbdEALiJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 07:38:09 -0400
 Content-Disposition: inline
-In-Reply-To: <1492772877-11983-1-git-send-email-rahulbedarkar89@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rahul Bedarkar <rahulbedarkar89@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20170414183259.24382-6-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
 
 
---fj7t5ehpkm45ro2o
+--vwqrbnefgec4qwuz
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Apr 21, 2017 at 04:37:57PM +0530, Rahul Bedarkar wrote:
-> Replace ifdefs with SIMPLE_DEV_PM_OPS helper macro.
+On Fri, Apr 14, 2017 at 08:32:51PM +0200, Hans de Goede wrote:
+> Userspace prefers the driver having a status property over having to guess
+> itself. Specifically this will properly make the GNOME3 UI (and likely
+> others) properly show discharging / charging / full status, instead
+> of always showing discharging as status.
 >=20
-> Signed-off-by: Rahul Bedarkar <rahulbedarkar89@gmail.com>
+> Note that in the case there is no charger driver supplying the max17042,
+> then a status of unknown will get returned. At least upower treats
+> this the same as not having a status attribute, so in this case nothing
+> changes from a userspace pov.
+>=20
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
 Thanks, queued.
 
 -- Sebastian
 
---fj7t5ehpkm45ro2o
+--vwqrbnefgec4qwuz
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHHJUACgkQ2O7X88g7
-+ppLzg/+IeMm0XNMQOxXGZPyVTa9OgTwrhyGpbzag+GCAYtdT/5C7RHc+G7ZqhXc
-7d0UEBxe9q9crP/sTiihkqRqZa36Ec9P+y8SK6DDuGrZnZn+O//pukH8bxK7t5h3
-Zsho/NPWrxXr1PLl8e7IsTyVNVVeEZEA0ITDav6sTzmkFJc73GRuR4iaDxpFVA+q
-m+Spt8ZECMJllEsXVw4DQF2IxUtZyHtNPCoEiSTT5m1kqYiA9Hycelrw5Tw/rN+7
-qBTTQEjqiN5Jqwsi93wnz1O1NFli05usc3X4/7370iT/YPgrNffF4N2+vFB5+vnz
-EN3ySa3h8IugwPGqv55okV4PgJdAtuNW6SnwQVMuO2WYvTIEYwminiF36hMIpcCX
-pgOspdCr78rt9Bq3kA/u/VB60/zQ13dw73Jlurn9nMudQG/ffF5tvEvpqEMJvK3U
-AuT9mymLv84MqfTr0Jo5oTKoXQQgNU0fvcVyNIPbhCN0TRMnq2s1kyXoE4pB75MD
-sJ5aCmN6m4TilbsPA98P65iVFkKFNWmc68Jkct/vBv47FtRSuY6QVv/jhqWyopIi
-8stld/eWfhmzWcgWGmDJUqpyN+4E241D7zN6Hot3mL21hBb9aWcvXO0eHwDOIXiY
-X/hl/ZJXJyzkIpM1LES2JU1Mup4jsD6xfqevrhgwO+jRscYHess=
-=OeCu
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHHh0ACgkQ2O7X88g7
++prKoBAAkKLrHHDu1+lOcVNs4O1vHRkzv3JKY8JVw/CWmqCFaSfn6B8R4sW+XK10
+uXowdodiQjDLP8aEtavWcUTcvFXIKNhG8Z4NS+95srpbnSImGrEcYvDfOpP+z0IC
+0ih2Y/8PQ7u+RM3ieDU0224uAgDSTx30B8nXIqQLqqworue+g+SBtEKugJMkPODz
+w0vnhw3QxgDW5h2dcTa998ZSE83hEMsslCFDrTxrOGGab5hOiHqRzBlmgbNNXcc1
+t1J0CzzVX16c3/4sbPW+nAd9JemKYyhFYBAooylhltT4bmSFR/atFJDDye0ot4QC
+6RBKJ5Oc7S9CVYJgGEMECcLvW3eedmeR0VagmvWPktZsyjqiUdN8HMF234SL+zIt
+5fRgQBkBpr80EgblOeYx1TUtttEh/Gpx63odauhlLXBufIyhxvT/youqLfhyHrip
++baBmJsgmh7e80dzrlIl7QaO7lOY7c7fNZ0qCaeYsLmBt6+UUGRWzNEwkByXxAHX
+Zl6vswZgc352h+Mr+iK1e28awa8AHRd4hbmJxs9b92zeBTb7GiVwA4mwBUdzEAHJ
+Ll2RqkjGNQ0brqNFkW0ky5JLKpHgYOaduuqkMMVEJdOY6hoEKvN+d1w7Vt/YEKQj
+v6jH+3gnll6mR2zbPcdJhIFacASgWjorui6dnlfm9zpcpGGnV4c=
+=4tnx
 -----END PGP SIGNATURE-----
 
---fj7t5ehpkm45ro2o--
+--vwqrbnefgec4qwuz--
