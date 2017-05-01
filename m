@@ -1,66 +1,67 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v3 2/3] drivers:power:twl4030-charger: add
- INPUT_CURRENT_LIMIT property and make it writeable
-Date: Mon, 1 May 2017 13:15:46 +0200
-Message-ID: <20170501111546.hmc7evtz2juyg5ur@earth>
+Subject: Re: [PATCH v3 3/3] drivers:power:twl4030-charger: remove nonstandard
+ max_current sysfs attribute
+Date: Mon, 1 May 2017 13:26:01 +0200
+Message-ID: <20170501112601.lfh42un6dgohofbu@earth>
 References: <cover.1492194356.git.hns@goldelico.com>
- <ed229ae8e6a4a9bd040e389d101b5257296d54ff.1492194356.git.hns@goldelico.com>
+ <38afc4e7faaeabb32f153a0956899fa8e97c1b3a.1492194356.git.hns@goldelico.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="syq3w3bwqbrrfhwn"
+        protocol="application/pgp-signature"; boundary="ovpxv7sr34nmh6v5"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:57606 "EHLO
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:57626 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753930AbdEALPu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 07:15:50 -0400
+        with ESMTP id S1754680AbdEAL0G (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 07:26:06 -0400
 Content-Disposition: inline
-In-Reply-To: <ed229ae8e6a4a9bd040e389d101b5257296d54ff.1492194356.git.hns@goldelico.com>
+In-Reply-To: <38afc4e7faaeabb32f153a0956899fa8e97c1b3a.1492194356.git.hns@goldelico.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "H. Nikolaus Schaller" <hns@goldelico.com>
 Cc: Grazvydas Ignotas <notasas@gmail.com>, Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, linux-kernel@vger.kernel.org
 
 
---syq3w3bwqbrrfhwn
+--ovpxv7sr34nmh6v5
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Apr 14, 2017 at 08:25:56PM +0200, H. Nikolaus Schaller wrote:
-> Currently, the twl4030 charger defines its own max_current by directly
-> creating sysfs nodes. It should use the input_current_limit property
-> which is e.g. used by the bq24257 driver.
->=20
-> This patch adds the input_current_property with the same semantics as
-> the max_current property. The code to manage the max_current property
-> is removed by a separate patch.
->=20
+On Fri, Apr 14, 2017 at 08:25:57PM +0200, H. Nikolaus Schaller wrote:
 > Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
 
-Thanks, queued.
+I'm not queuing this. Please change the following things for the
+v4 of this patch:
+
+ - Kernel patches should always have a long description
+ - Patch needs to update Documentation/ABI/testing/sysfs-class-power-twl4030
+ - Make sure to use recent MAINTAINERS file for getting patch
+   destination (Dmitry and David are no longer listed).
+ - And for this case: please also Cc NeilBrown <neil@brown.name>. If
+   the ABI is in use we cannot simply remove it. If its unlikely,
+   that its used I will queue the patch and revert if any problems
+   are reported.
 
 -- Sebastian
 
---syq3w3bwqbrrfhwn
+--ovpxv7sr34nmh6v5
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHGOIACgkQ2O7X88g7
-+pofoRAAoLRTxI4e4ad4XQPR+FbF782NhrLI97EJVtbs7GwXrd95bp9XYRkkPXMg
-zVp0cu1QvbsyMZewCvUwXs8eWamISd2rYCvzlF43AFjqyi4b2mos0OGyCBfa6Wd7
-ELUKgH26vS4jMPl0teNH9QTrZSmyd+MDm865pm6uC5A9HDWMqXlkzjnI8XvHpWIg
-tdrkZjh3iUjAKd8QhkGnPp8pROj+O8sadzcxuowHAke1w0ck379IqEaLYSVxFL3w
-5MrFGb+LUNjn1D5RgGv6GZXcuNpYhYQM757YR33UzuOhmhkXxuoiXlY1uCl7ZvOj
-p6r+31Z7UtG+Yo3tq1irReLfJ7fQl0F6WiWARTUkmb4IDK2Baum7dQJ6lbMT2QHm
-7WFcdQ8vgHuf5HaWomIp941Ywa0sQgJzie6eIhbacS03PP+T4i18euErDBtUdI7U
-UKGbiz5MHTVNyThQOQQcuehWJxEskEvtJM9KUO0WJWKlNoqpHC+DzS8X9qjO9FKF
-sIxNj7L4MXcwignIbutDK9juUZGLp0jrGIZsCNGKIi6pEOw9n74CQuEz8aYTR32c
-LRf9R7grsuL91+Tr5bccr5jTdW6Oz4Grhy6FwCcrHkI/Ffdr13oQZztv4QoFArsg
-AcQUu4pnQoQKx6/yeCymSv2iTiIA9hi3tB2AUux/24hahtnPv0M=
-=eOdN
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHG0YACgkQ2O7X88g7
++pqJqg/+Mf8zFoe7ty6oNxhC4hNONSEUenF+vFtifpB/8flFevKQuJeYU6JWhDv1
+WUmUg+3SiecXJNwIrWy591ndMDOmxMjATAiplhhh68JXccIjAFW69feC9qn1WgML
+L++D0/JH7kc7Ri0IU7Ovs1o2FtDgt/R4xVbWbvLScidSH3ANshn0xPCWvxnWTd1c
+QR5wEhiEXYv0mYv+GEDbkHco0Y81bM7K/knL1NJDI97/f/gC20VoBzCuctyMWdVX
+qfECj9YRvFxfn4axAwQPF4reAmHUQ57Hr86hTNRNmk8bcHmWLCxCPsA6HiQ0mPzr
+/JuJjaxDRec7kGJDYgK7raPUsTpMvyra9K63TMtlihV5RqwbSVEgEb1HU2V6H0Cg
+fDPAWWR5hXgjEciIp6DuFZ0RaPZdU6s+07GMXRG8XM5WVnojPT7RWI8XHI9wuWuC
+0+LCEtroPE3iSd6V0VwXVd9oQn10AS8TaDza2a6ZRrvgbgFjCGM92ORt45cpJ9hd
+h7wIIBXy8lma7nIxFQIGcJ9p0H62QECE/kecKjsjh+kty4JdMls+h2+VZYP5ebyp
+stWMS6pnOqCqrSO59OjciniL/ogeHpJYx54CviA9KEmyLL+Nfw7bgWflcXW3x5op
+u99yj13JaK5qX6hzrcAsXA8ESKFd45DNM71j8GP/QsmOrmbgS60=
+=2rrb
 -----END PGP SIGNATURE-----
 
---syq3w3bwqbrrfhwn--
+--ovpxv7sr34nmh6v5--
