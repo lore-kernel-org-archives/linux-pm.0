@@ -1,291 +1,175 @@
 From: Paul Kocialkowski <contact@paulk.fr>
-Subject: Re: [PATCH 4/5] power: supply: bq27xxx: Look for status change on
- external power change
-Date: Mon, 01 May 2017 20:34:23 +0200
-Message-ID: <1493663663.4951.1.camel@paulk.fr>
+Subject: Re: [PATCH 5/5] power: supply: bq27xxx: Correct supply status with
+ current draw
+Date: Mon, 01 May 2017 20:37:27 +0200
+Message-ID: <1493663847.4951.3.camel@paulk.fr>
 References: <20170430203801.32357-1-contact@paulk.fr>
-         <20170430203801.32357-4-contact@paulk.fr>
-         <CAKvHMgRxC7VuU=_w10D4iu0zUC26gM=VgbA+6N-4abPskCEOww@mail.gmail.com>
-         <1493635513.6493.9.camel@paulk.fr>
-         <CAKvHMgTLi1bkhOPuzErp_JmvA23uGB_N4N3_Te_MxY=+asm7zw@mail.gmail.com>
+         <20170430203801.32357-5-contact@paulk.fr>
+         <CAKvHMgQ+uS=xw+TD_raPECG1psVWF_=M-35cpbDtNUChQYWhnw@mail.gmail.com>
+         <1493635153.6493.7.camel@paulk.fr>
+         <CAKvHMgTqxvBEKRREPTZtkWVCPC+UoTFyXBNOMwdy=aNiv5L3BQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg="pgp-sha256";
-        protocol="application/pgp-signature"; boundary="=-zxJBahf7rPwt0wb4pV2y"
+        protocol="application/pgp-signature"; boundary="=-OJykzdjLbu6QOGcMUMbi"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gagarine.paulk.fr ([109.190.93.129]:52584 "EHLO
+Received: from gagarine.paulk.fr ([109.190.93.129]:64764 "EHLO
         gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750983AbdEASf3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 14:35:29 -0400
-In-Reply-To: <CAKvHMgTLi1bkhOPuzErp_JmvA23uGB_N4N3_Te_MxY=+asm7zw@mail.gmail.com>
+        with ESMTP id S1751716AbdEASiS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 14:38:18 -0400
+In-Reply-To: <CAKvHMgTqxvBEKRREPTZtkWVCPC+UoTFyXBNOMwdy=aNiv5L3BQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
 Cc: linux-pm@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>
 
 
---=-zxJBahf7rPwt0wb4pV2y
+--=-OJykzdjLbu6QOGcMUMbi
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 
-Hi,
+TGUgbHVuZGkgMDEgbWFpIDIwMTcgw6AgMTE6MTggLTA3MDAsIExpYW0gQnJlY2sgYSDDqWNyaXTC
+oDoKPiBIaSBQYXVsLAo+IAo+IE9uIE1vbiwgTWF5IDEsIDIwMTcgYXQgMzozOSBBTSwgUGF1bCBL
+b2NpYWxrb3dza2kgPGNvbnRhY3RAcGF1bGsuZnI+IHdyb3RlOgo+ID4gSGksCj4gPiAKPiA+IExl
+IGRpbWFuY2hlIDMwIGF2cmlsIDIwMTcgw6AgMTU6MzUgLTA3MDAsIExpYW0gQnJlY2sgYSDDqWNy
+aXQgOgo+ID4gPiBIaSBQYXVsLAo+ID4gPiAKPiA+ID4gT24gU3VuLCBBcHIgMzAsIDIwMTcgYXQg
+MTozOCBQTSwgUGF1bCBLb2NpYWxrb3dza2kgPGNvbnRhY3RAcGF1bGsuZnI+Cj4gPiA+IHdyb3Rl
+Ogo+ID4gPiA+IFRoZSBzdGF0dXMgcmVwb3J0ZWQgZGlyZWN0bHkgYnkgdGhlIGJhdHRlcnkgY29u
+dHJvbGxlciBpcyBub3QgYWx3YXlzCj4gPiA+ID4gcmVsaWFibGUgYW5kIHNob3VsZCBiZSBjb3Jy
+ZWN0ZWQgYmFzZWQgb24gdGhlIGN1cnJlbnQgZHJhdyBpbmZvcm1hdGlvbi4KPiA+ID4gCj4gPiA+
+IEkgaGF2ZSBub3RpY2VkIGluY29ycmVjdCBzdGF0dXMgb24gYnEyNzQyNS4gT24gd2hpY2ggY2hp
+cC9zIGRpZCB5b3UKPiA+ID4gZmluZCB0aGlzPyBJdCBtaWdodCBub3QgYmUgYSBmbGF3IGFjcm9z
+cyB0aGUgd2hvbGUgZmFtaWx5Li4uCj4gPiAKPiA+IEkgZ290IHRoaXMgd2l0aCBhIEJRMjc1NDEg
+b24gYSB2ZXlyb25fbWlubmllIChDaHJvbWVib29rIEZsaXAgQzEwMFBBKS4KPiA+IAo+ID4gRnJv
+bSBteSBleHBlcmllbmNlIHdpdGggYmF0dGVyaWVzIGluIGdlbmVyYWwsIGl0IHNlZW1zIHRoYXQg
+ZmxhZ3MgYXJlIG5vdAo+ID4gdXBkYXRlZCBhcyBvZnRlbiBhbmQgYXJlIG9mdGVuIG5vdCBhcyBh
+Y2N1cmF0ZSBhcyB3aGF0IHRoZSBjdXJyZW50IGluZm8KPiA+IHRlbGxzLgo+ID4gU28gSSB0aGlu
+ayBpdCdzIGJlc3QgdG8gcmVseSBvbiB0aGUgY3VycmVudCBpbmZvIHJhdGhlciB0aGFuIHRoZSBj
+aGlwLQo+ID4gcHJvdmlkZWQKPiA+IGZsYWdzLgo+ID4gCj4gPiBUaGlzIG1ha2VzIGEgYmlnIGRp
+ZmZlcmVuY2UgZHVyaW5nIGFjdHVhbCB1c2U6IGN1cnJlbnQgY2FuIHRlbGwgYWxtb3N0Cj4gPiBp
+bnN0YW50bHkKPiA+IMKgdGhhdCBhIHN1cHBseSB3YXMgcGx1Z2dlZC1pbi91bnBsdWdnZWQgd2hp
+bGUgdGhlIGNoYXJnaW5nL2Z1bGwgZmxhZ3MgdGFrZSBhCj4gPiBsb3QKPiA+IGxvbmdlciB0byBi
+ZSB1cGRhdGVkLiBBbHNvLCB0aGUgZnVsbCBmbGFnIGlzIG5ldmVyIHNldCBpbiBteSBjYXNlIChw
+ZXJoYXBzCj4gPiBpdAo+ID4gc3RpbGwgZXhwZWN0cyB0aGUgaW5pdGlhbCBmdWxsIGNoYXJnZSB2
+YWx1ZSkgZXZlbiB0aG91Z2ggaXQgc2hvdWxkIGJlLgo+ID4gCj4gPiBJIGRvbid0IHRoaW5rIHRo
+YXQgd2lsbCBjYXVzZSBhIHByb2JsZW0gZm9yIG90aGVyIGNoaXBzIG9mIHRoZSBmYW1pbHkKPiA+
+IGFueXdheToKPiA+IHRoZXkgc2hvdWxkIG9ubHkgYmVuZWZpdCBmcm9tIHRoaXMhCj4gPiAKPiA+
+ID4gPiBUaGlzIGltcGxlbWVudHMgc3VjaCBhIGNvcnJlY3Rpb24gd2l0aCBhIGRlZGljYXRlZCBm
+dW5jdGlvbiwgY2FsbGVkCj4gPiA+ID4gd2hlbiByZXRyaWV2aW5nIHRoZSBzdXBwbHkgc3RhdHVz
+Lgo+ID4gPiA+IAo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFBhdWwgS29jaWFsa293c2tpIDxjb250
+YWN0QHBhdWxrLmZyPgo+ID4gPiA+IC0tLQo+ID4gPiA+IMKgZHJpdmVycy9wb3dlci9zdXBwbHkv
+YnEyN3h4eF9iYXR0ZXJ5LmMgfCAyOAo+ID4gPiA+ICsrKysrKysrKysrKysrKysrKysrKysrKysr
+KysKPiA+ID4gPiDCoDEgZmlsZSBjaGFuZ2VkLCAyOCBpbnNlcnRpb25zKCspCj4gPiA+ID4gCj4g
+PiA+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvcG93ZXIvc3VwcGx5L2JxMjd4eHhfYmF0dGVyeS5j
+Cj4gPiA+ID4gYi9kcml2ZXJzL3Bvd2VyL3N1cHBseS9icTI3eHh4X2JhdHRlcnkuYwo+ID4gPiA+
+IGluZGV4IGNhZGUwMGRmNjE2Mi4uZjc2OTRlNzc1ZTY4IDEwMDY0NAo+ID4gPiA+IC0tLSBhL2Ry
+aXZlcnMvcG93ZXIvc3VwcGx5L2JxMjd4eHhfYmF0dGVyeS5jCj4gPiA+ID4gKysrIGIvZHJpdmVy
+cy9wb3dlci9zdXBwbHkvYnEyN3h4eF9iYXR0ZXJ5LmMKPiA+ID4gPiBAQCAtMTE3MSw4ICsxMTcx
+LDIyIEBAIHN0YXRpYyBpbnQgYnEyN3h4eF9iYXR0ZXJ5X3N0YXR1cyhzdHJ1Y3QKPiA+ID4gPiBi
+cTI3eHh4X2RldmljZV9pbmZvICpkaSwKPiA+ID4gPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHVuaW9uIHBvd2VyX3N1
+cHBseV9wcm9wdmFsICp2YWwpCj4gPiA+ID4gwqB7Cj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoGlu
+dCBzdGF0dXM7Cj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgaW50IGN1cnI7Cj4gPiA+ID4gK8KgwqDC
+oMKgwqDCoMKgaW50IGZsYWdzOwo+ID4gPiA+ICsKPiA+ID4gPiArwqDCoMKgwqDCoMKgwqBjdXJy
+ID0gYnEyN3h4eF9yZWFkKGRpLCBCUTI3WFhYX1JFR19BSSwgZmFsc2UpOwo+ID4gPiA+ICvCoMKg
+wqDCoMKgwqDCoGlmIChjdXJyIDwgMCkgewo+ID4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqBkZXZfZXJyKGRpLT5kZXYsICJlcnJvciByZWFkaW5nIGN1cnJlbnRcbiIpOwo+ID4g
+PiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZXR1cm4gY3VycjsKPiA+ID4gPiAr
+wqDCoMKgwqDCoMKgwqB9Cj4gPiA+IAo+ID4gPiBNYXliZSByZWFkIGN1cnJlbnQgKHRoZW4gc2ln
+bi1mbGlwLCAqPSAxMDAwKSBhYm92ZSB0aGUgc3RhdHVzIGZpeD8KPiA+IAo+ID4gRnJvbSB3aGF0
+IEkgdW5kZXJzdG9vZCBvZiB0aGUgcmVzdCBvZiB0aGUgZHJpdmVyIChzZWUKPiA+IGJxMjd4eHhf
+YmF0dGVyeV9jdXJyZW50KSwKPiA+IHNpZ24gZmxpcCBpcyBkb25lIGRpZmZlcmVudGx5IGluIGJx
+MjcwMDAvYnEyNzAxMCBhbmQgb3RoZXJzLCBzbyBzaW5jZSB3ZQo+ID4gYWxyZWFkeQo+ID4gaGF2
+ZSBzcGVjaWZpYyBpbnN0cnVjdGlvbiBibG9ja3MsIEkgdGhpbmsgaXQncyBiZXN0IHRvIHB1dCB0
+aGUgY3VycmVudAo+ID4gY2FsY3VsYXRpb24gaW4gZWFjaC4KPiAKPiBJdCdzIEFuZHJldydzIGNh
+bGwsIGJ1dCB0byBteSBleWUgYSBzaW5nbGUgYmxvY2sgb2YgY29kZSBmb3IgY3VycmVudAo+IGNh
+bGMgaXMgbW9yZSByZWFkYWJsZS4KPiAKPiA+IEFsc28sIHNpbmNlIHdlIG9ubHkgdGVzdCB0aGUg
+Y3VycmVudCBhZ2FpbnN0IDAgSSB0aG91Z2h0IGl0IGRpZG4ndCBtYXR0ZXIKPiA+IHRoYXQKPiA+
+IHRoZSBzY2FsZSBpcyBub3QgdGhlIHNhbWUgZm9yIGJvdGggdmFsdWVzLiBJIGNvdWxkIGFkZCB0
+aGUgZm9sbG93aW5nIGZvciB0aGUKPiA+IGJxMjcwMDAvYnEyNzAxMDogKiBCUTI3WFhYX0NVUlJF
+TlRfQ09OU1RBTlQgLyBCUTI3WFhYX1JTCj4gPiBidXQgaXQgd29uJ3QgY2hhbmdlIGEgdGhpbmcu
+Cj4gPiAKPiA+ID4gPiDCoMKgwqDCoMKgwqDCoMKgaWYgKGRpLT5jaGlwID09IEJRMjcwMDAgfHwg
+ZGktPmNoaXAgPT0gQlEyNzAxMCkgewo+ID4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqBmbGFncyA9IGJxMjd4eHhfcmVhZChkaSwgQlEyN1hYWF9SRUdfRkxBR1MsIHRydWUpOwo+
+ID4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBpZiAoZmxhZ3MgJiBCUTI3MDAw
+X0ZMQUdfQ0hHUykgewo+ID4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgZGV2X2RiZyhkaS0+ZGV2LCAibmVnYXRpdmUgY3VycmVudCFcbiIpOwo+ID4g
+PiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgY3VyciA9
+IC1jdXJyOwo+ID4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB9Cj4gPiA+ID4g
+Kwo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgaWYgKGRpLT5jYWNoZS5m
+bGFncyAmIEJRMjcwMDBfRkxBR19GQykKPiA+ID4gPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzdGF0dXMgPSBQT1dFUl9TVVBQTFlfU1RBVFVTX0ZVTEw7
+Cj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBlbHNlIGlmIChkaS0+Y2Fj
+aGUuZmxhZ3MgJiBCUTI3MDAwX0ZMQUdfQ0hHUykKPiA+ID4gPiBAQCAtMTE4Miw2ICsxMTk2LDgg
+QEAgc3RhdGljIGludCBicTI3eHh4X2JhdHRlcnlfc3RhdHVzKHN0cnVjdAo+ID4gPiA+IGJxMjd4
+eHhfZGV2aWNlX2luZm8gKmRpLAo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgZWxzZQo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoHN0YXR1cyA9IFBPV0VSX1NVUFBMWV9TVEFUVVNfRElTQ0hBUkdJTkc7Cj4gPiA+ID4g
+wqDCoMKgwqDCoMKgwqDCoH0gZWxzZSB7Cj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoGN1cnIgPSAoaW50KSgoczE2KWN1cnIpICogMTAwMDsKPiA+ID4gPiArCj4gCj4gV2h5
+IHRydW5jYXRlIHRvIHMxNj8KClByZWNpc2VseSB0byBnZXQgdGhlIHNpZ24gcmlnaHQuIEJhc2lj
+YWxseSwgd2UgZ2V0IGN1cnIgYXMgYW4gaW50LCBmb3Igd2hpY2gKbmVnYXRpdmUgdmFsdWVzIGlu
+ZGljYXRlIGFuIGVycm9yLCAqbm90KiBhIG5lZ2F0aXZlIGN1cnJlbnQuCgpUaGUgY3VycmVudCBp
+bmZvcm1hdGlvbiBpcyBvbmx5IGluIHRoZSBmaXJzdCAxNiBiaXRzLCBzbyBhbiBleHBsaWNpdCBj
+YXN0IHRvIHMxNgphbGxvd3MgcmV0cmlldmluZyB0aGUgc2lnbiBpbmZvcm1hdGlvbiBhbmQgZXh0
+ZW5kaW5nIGl0IHRvIDMyIGJpdHMuIFRoaXMgd2F5LCB3ZQpjYW4gdXNlIHRoZSBzaWduIGluZm9y
+bWF0aW9uIGxhdGVyIG9uLgoKVGhlIHNhbWUgdGhpbmcgaXMgZG9uZSBpbiB0aGUgcmVndWxhciBj
+dXJyZW50IGNhbGN1bGF0aW9uIGZ1bmN0aW9uLCBzbyBpdCdzCm5vdGhpbmcgbmV3IGludHJvZHVj
+ZWQgYnkgdGhpcyBjaGFuZ2UuCgo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgaWYgKGRpLT5jYWNoZS5mbGFncyAmIEJRMjdYWFhfRkxBR19GQykKPiA+ID4gPiDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzdGF0dXMgPSBQT1dFUl9T
+VVBQTFlfU1RBVFVTX0ZVTEw7Cj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqBlbHNlIGlmIChkaS0+Y2FjaGUuZmxhZ3MgJiBCUTI3WFhYX0ZMQUdfRFNDKQo+ID4gPiA+IEBA
+IC0xMTkwLDYgKzEyMDYsMTggQEAgc3RhdGljIGludCBicTI3eHh4X2JhdHRlcnlfc3RhdHVzKHN0
+cnVjdAo+ID4gPiA+IGJxMjd4eHhfZGV2aWNlX2luZm8gKmRpLAo+ID4gPiA+IMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHN0YXR1cyA9IFBPV0VSX1NVUFBM
+WV9TVEFUVVNfQ0hBUkdJTkc7Cj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoH0KPiA+ID4gPiAKPiA+
+ID4gPiArCj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgaWYgKGN1cnIgPT0gMCAmJiBzdGF0dXMgIT0g
+UE9XRVJfU1VQUExZX1NUQVRVU19OT1RfQ0hBUkdJTkcpCj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoHN0YXR1cyA9IFBPV0VSX1NVUFBMWV9TVEFUVVNfRlVMTDsKPiA+ID4g
+PiArCj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgaWYgKHN0YXR1cyA9PSBQT1dFUl9TVVBQTFlfU1RB
+VFVTX0ZVTEwpIHsKPiA+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgLyogRHJh
+d2luZyBvciBwcm92aWRpbmcgY3VycmVudCB3aGVuIGZ1bGwgKi8KPiA+ID4gPiArwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgaWYgKGN1cnIgPiAwKQo+ID4gPiA+ICvCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgc3RhdHVzID0gUE9XRVJfU1VQUExZX1NU
+QVRVU19DSEFSR0lORzsKPiA+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgZWxz
+ZSBpZiAoY3VyciA8IDApCj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqBzdGF0dXMgPSBQT1dFUl9TVVBQTFlfU1RBVFVTX0RJU0NIQVJHSU5HOwo+
+ID4gPiA+ICvCoMKgwqDCoMKgwqDCoH0KPiA+ID4gPiArCj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDC
+oGlmIChkaS0+c3RhdHVzX3JldHJ5ID09IDAgJiYgZGktPnN0YXR1c19jaGFuZ2VfcmVmZXJlbmNl
+ICE9Cj4gPiA+ID4gc3RhdHVzKQo+ID4gPiA+IHsKPiA+ID4gPiDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoGRpLT5zdGF0dXNfY2hhbmdlX3JlZmVyZW5jZSA9IHN0YXR1czsKPiA+ID4g
+PiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHBvd2VyX3N1cHBseV9jaGFuZ2VkKGRp
+LT5iYXQpOwo+ID4gPiA+IC0tCj4gPiA+ID4gMi4xMi4yCj4gPiA+ID4gCj4gPiAKPiA+IC0tCj4g
+PiBQYXVsIEtvY2lhbGtvd3NraSwgZGV2ZWxvcGVyIG9mIGZyZWUgZGlnaXRhbCB0ZWNobm9sb2d5
+IGFuZCBoYXJkd2FyZSBzdXBwb3J0Cj4gPiAKPiA+IFdlYnNpdGU6IGh0dHBzOi8vd3d3LnBhdWxr
+LmZyLwo+ID4gQ29kaW5nIGJsb2c6IGh0dHBzOi8vY29kZS5wYXVsay5mci8KPiA+IEdpdCByZXBv
+c2l0b3JpZXM6IGh0dHBzOi8vZ2l0LnBhdWxrLmZyLyBodHRwczovL2dpdC5jb2RlLnBhdWxrLmZy
+LwotLSAKUGF1bCBLb2NpYWxrb3dza2ksIGRldmVsb3BlciBvZiBmcmVlIGRpZ2l0YWwgdGVjaG5v
+bG9neSBhbmQgaGFyZHdhcmUgc3VwcG9ydAoKV2Vic2l0ZTogaHR0cHM6Ly93d3cucGF1bGsuZnIv
+CkNvZGluZyBibG9nOiBodHRwczovL2NvZGUucGF1bGsuZnIvCkdpdCByZXBvc2l0b3JpZXM6IGh0
+dHBzOi8vZ2l0LnBhdWxrLmZyLyBodHRwczovL2dpdC5jb2RlLnBhdWxrLmZyLw==
 
-Le lundi 01 mai 2017 =C3=A0 11:22 -0700, Liam Breck a =C3=A9crit=C2=A0:
-> On Mon, May 1, 2017 at 3:45 AM, Paul Kocialkowski <contact@paulk.fr> wrot=
-e:
-> > Hi,
-> >=20
-> > Le dimanche 30 avril 2017 =C3=A0 15:13 -0700, Liam Breck a =C3=A9crit :
-> > > Hi Paul,
-> > >=20
-> > > On Sun, Apr 30, 2017 at 1:38 PM, Paul Kocialkowski <contact@paulk.fr>
-> > > wrote:
-> > > > This introduces a dedicated status change work to look for power
-> > > > status change. It is triggered by external power change notificatio=
-ns
-> > > > and periodically retries detecting a power status change for 5 seco=
-nds.
-> > > >=20
-> > > > This is largely inspired by a similar mechanism from the sbs-batter=
-y
-> > > > driver.
-> > >=20
-> > > Maybe give an example which needs this? What can issue a notification=
-,
-> > > under what circumstances?
-> >=20
-> > The external_power_change function is called when a supplier to the bat=
-tery
-> > (in
-> > most cases, an external charger) detected a status change (e.g. plug/un=
-plug)
-> > which will affect the battery (the state should change from charging/fu=
-ll to
-> > discharging).
-> >=20
-> > For the best user experience, we need to detect that change ASAP. Retri=
-eving
-> > the
-> > status in the function directly is a bit too early, so a dedicated work=
- is
-> > called a second after the change and it tries to detect a status change
-> > ASAP.
-> >=20
-> > With that mechanism, battery status changes due to plug/unplug take a f=
-ew
-> > seconds to be reflected.
-> >=20
-> > > Also why should poll_work no longer be rescheduled on notify?
-> >=20
-> > poll_work only updates the current charge, it's not in charge of detect=
-ing
-> > status changes. The important point here is that the status change dete=
-ction
-> > work must be called seconds after the external power change (and actual=
-ly,
-> > it
-> > must keep running for a few seconds to detect quick charging->full
-> > transitions).
-> >=20
-> > Is that a bit more clear?
->=20
-> Yes, can you add that to patch description?
 
-Sure thing, will do that in v2.
-
-Thanks!
-
-> > > > Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
-> > > > ---
-> > > > =C2=A0drivers/power/supply/bq27xxx_battery.c | 38
-> > > > ++++++++++++++++++++++++++++++++--
-> > > > =C2=A0include/linux/power/bq27xxx_battery.h=C2=A0=C2=A0|=C2=A0=C2=
-=A03 +++
-> > > > =C2=A02 files changed, 39 insertions(+), 2 deletions(-)
-> > > >=20
-> > > > diff --git a/drivers/power/supply/bq27xxx_battery.c
-> > > > b/drivers/power/supply/bq27xxx_battery.c
-> > > > index 926bd58344d9..cade00df6162 100644
-> > > > --- a/drivers/power/supply/bq27xxx_battery.c
-> > > > +++ b/drivers/power/supply/bq27xxx_battery.c
-> > > > @@ -1190,6 +1190,11 @@ static int bq27xxx_battery_status(struct
-> > > > bq27xxx_device_info *di,
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0status =3D POWER_SUPPLY_STATUS_CHARGING;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> > > >=20
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (di->status_retry =3D=
-=3D 0 && di->status_change_reference !=3D
-> > > > status)
-> > > > {
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0di->status_change_reference =3D status;
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0power_supply_changed(di->bat);
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> > > > +
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0val->intval =3D sta=
-tus;
-> > > >=20
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return 0;
-> > > > @@ -1340,12 +1345,38 @@ static int bq27xxx_battery_get_property(str=
-uct
-> > > > power_supply *psy,
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return ret;
-> > > > =C2=A0}
-> > > >=20
-> > > > +static void bq27xxx_status_change(struct work_struct *work)
-> > > > +{
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct bq27xxx_device_in=
-fo *di =3D
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0con=
-tainer_of(work, struct bq27xxx_device_info,
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-status_work.work);
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0union power_supply_propv=
-al val;
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int ret;
-> > > > +
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0bq27xxx_battery_update(d=
-i);
-> > > > +
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0ret =3D bq27xxx_battery_=
-status(di, &val);
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (ret < 0)
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0return;
-> > > > +
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (di->status_change_re=
-ference !=3D val.intval) {
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0di->status_change_reference =3D val.intval;
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0power_supply_changed(di->bat);
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> > > > +
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (di->status_retry > 0=
-) {
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0di->status_retry--;
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0schedule_delayed_work(&di->status_work, HZ);
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> > > > +}
-> > > > +
-> > > > =C2=A0static void bq27xxx_external_power_changed(struct power_suppl=
-y *psy)
-> > > > =C2=A0{
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct bq27xxx_devi=
-ce_info *di =3D power_supply_get_drvdata(psy);
-> > > >=20
-> > > > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cancel_delayed_work_sync=
-(&di->poll_work);
-> > > > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0schedule_delayed_work(&d=
-i->poll_work, 0);
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cancel_delayed_work_sync=
-(&di->status_work);
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0schedule_delayed_work(&d=
-i->status_work, HZ);
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->status_retry =3D 5;
-> > > > =C2=A0}
-> > > >=20
-> > > > =C2=A0int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
-> > > > @@ -1357,8 +1388,10 @@ int bq27xxx_battery_setup(struct
-> > > > bq27xxx_device_info
-> > > > *di)
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0psy_cfg.of_node =3D=
- di->of_node;
-> > > >=20
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0INIT_DELAYED_WORK(&=
-di->poll_work, bq27xxx_battery_poll);
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0INIT_DELAYED_WORK(&di->s=
-tatus_work, bq27xxx_status_change);
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0mutex_init(&di->loc=
-k);
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->regs =3D bq27xx=
-x_regs[di->chip];
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->status_change_refere=
-nce =3D POWER_SUPPLY_STATUS_UNKNOWN;
-> > > >=20
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0psy_desc =3D devm_k=
-zalloc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (!psy_desc)
-> > > > @@ -1400,6 +1433,7 @@ void bq27xxx_battery_teardown(struct
-> > > > bq27xxx_device_info *di)
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0poll_interval =3D 0=
-;
-> > > >=20
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cancel_delayed_work=
-_sync(&di->poll_work);
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cancel_delayed_work_sync=
-(&di->status_work);
-> > > >=20
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0power_supply_unregi=
-ster(di->bat);
-> > > >=20
-> > > > diff --git a/include/linux/power/bq27xxx_battery.h
-> > > > b/include/linux/power/bq27xxx_battery.h
-> > > > index 0a9af513165a..16d604681ace 100644
-> > > > --- a/include/linux/power/bq27xxx_battery.h
-> > > > +++ b/include/linux/power/bq27xxx_battery.h
-> > > > @@ -67,6 +67,9 @@ struct bq27xxx_device_info {
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int charge_design_f=
-ull;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0unsigned long last_=
-update;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct delayed_work=
- poll_work;
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct delayed_work stat=
-us_work;
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int status_retry;
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int status_change_refere=
-nce;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct power_supply=
- *bat;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct list_head li=
-st;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct mutex lock;
-> > > > --
-> > > > 2.12.2
-> > > >=20
-> >=20
-> > --
-> > Paul Kocialkowski, developer of free digital technology and hardware su=
-pport
-> >=20
-> > Website: https://www.paulk.fr/
-> > Coding blog: https://code.paulk.fr/
-> > Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
---=20
-Paul Kocialkowski, developer of free digital technology and hardware suppor=
-t
-
-Website: https://www.paulk.fr/
-Coding blog: https://code.paulk.fr/
-Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
---=-zxJBahf7rPwt0wb4pV2y
+--=-OJykzdjLbu6QOGcMUMbi
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlkHf68ACgkQhP3B6o/u
-lQyofw//Q27tbQf8pfkujyoC/ap134yF1yLfp0yNTBxLC2HLaJKG+g/29LEhsc1+
-kFOFujSrnGsKq8JbzuJuhZ8ConMHCfucXD8WXj+fac+DzYXy1RU4cdAIAf87hLkd
-Uz935yRLc/ZzfEtwdIGvdt591cTdzKyrG43l/cB0RqgvvMpWIYK9SBhxo62VutNz
-uDmFon86n34lcHd6cOdN8/2KX+n+LDJoDFAM4rE/YwTOCf8GPA6Y8XP2u9Z3k1DW
-U9h9ThO2gfP3Bu8H6cBovF0QjEkqODUNGXlv4IAnsY23SdH7M9jbyYZrZ4zgFXKn
-RbFzIydq1qpYR7bce227tnhIVykgewFh1uKtHuhfZFlw1Tpsu+uuEyFhREodTS+5
-Ctr3URI/dqrPjDunIZA+hBSesFsgfoSCXZ1AMCkDZq9I+G7H4zCOcwMh+0kjrxYn
-WCuEGRwwywml8sLv+jTuU6hbrZWvpB40joEBLUEHz7HjPI/qzXUE+gTsYTWG5JsU
-274v9B3nKypv5yOU7nga5i2fJLAQKg+ANeE/TgAUFE+Tvv7OCMLKa9dcEJR4DZbE
-/quMQQ3ZzGdkyVWPI63uvI23z3TBjD/TQQ6Yl3XYjBo9ik50qdUS0s6SPJOS/BGT
-TGSUv+vX1cswTSTsAdoWru0VbEs3f5mbrNwgUHQd2vQ5GlyPiKg=
-=DZ+a
+iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlkHgGcACgkQhP3B6o/u
+lQzOQg//QIV0Yo8MVclaBZx0JGrab+2MWdz1iGjLtzSzfafkaHYUcZ68NJVY3JUm
+XZl36utbRoc6tv+IBI2OaayoP+m5ei6HvWgxWSJqxIYpb3xWgT++mg22RaONNwnO
+jBAKnTb6T0mvOryyrb+Z8YJxKcKrQlMBWN6ONlcXxi71Yq9GjX4089CejnZ9gGc1
+xQME+yjL0/x3Nyj5MpDpl86Qpg3og3Fu8GZ9wziCutUQ/iFtlm+6HGv9XdmIidsR
+sEhbu0FcZjWzFxKyYtWK6YiYFWJEW4x2xP1WqbBAwT2wmO6M+l6nsClHlFNKTwnD
+oTvLRACKR8Hl94yyoozpFSFICJXQt78+sPMRN/IcVIlPlbZzVl+c5/yA2Wt5kySV
+u9G2czJAR0C8xDk8i523NWe5Ka+OXVUH+ArPc5iHtUrg6WLvxVCzhzb5YpQuRJfC
+eBu713rXzNYXEu628+8ALeWQCBApaEUUyEexPx3pilvhdwZDBC7L7qEVKiAY6YGk
+rwx+ureICW6pIpO2Zbo5IOlxaADAhau4zLX0x3HdBEIfl6GEdAznFJeRROOUZ99o
+Gt43Myw6gVeyYu65Thx0Ao3AnVFFABrJ+nTpXWyhWM5SqbAC7Kq2utNX9p/zlMbQ
+D3VENhwuDqPwV9AlmFgHH8XZgk7z5RqosR/GuLrlLZlpYhCAE+M=
+=u8gW
 -----END PGP SIGNATURE-----
 
---=-zxJBahf7rPwt0wb4pV2y--
+--=-OJykzdjLbu6QOGcMUMbi--
