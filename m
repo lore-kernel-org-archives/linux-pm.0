@@ -1,7 +1,7 @@
 From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH v5 5/9] i2c: mux: pca954x: Call request irq after adding mux segments
-Date: Mon,  1 May 2017 16:49:55 +0800
-Message-ID: <1493628599-30552-6-git-send-email-preid@electromag.com.au>
+Subject: [PATCH v5 8/9] power: supply: sbs-battery: Add alert callback
+Date: Mon,  1 May 2017 16:49:58 +0800
+Message-ID: <1493628599-30552-9-git-send-email-preid@electromag.com.au>
 References: <1493628599-30552-1-git-send-email-preid@electromag.com.au>
 Return-path: <linux-i2c-owner@vger.kernel.org>
 In-Reply-To: <1493628599-30552-1-git-send-email-preid@electromag.com.au>
@@ -9,112 +9,60 @@ Sender: linux-i2c-owner@vger.kernel.org
 To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, peda@axentia.se, preid@electromag.com.au, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The pca954x device do not have the ability to mask interrupts. For
-i2c slave devices that also don't have masking ability (eg ltc1760
-smbalert output) delay registering the irq until after the mux
-segments have been configured. During the mux add_adaptor call the
-core i2c system can register an smbalert handler which would then
-be called immediately when the irq is registered. This smbalert
-handler will then clear the pending irq.
+To simplify the sbs-manager code and notification of battery removal
+use the i2c alert callback to notify the sbs-battery driver that an
+event has occurred.
 
 Signed-off-by: Phil Reid <preid@electromag.com.au>
 ---
- drivers/i2c/muxes/i2c-mux-pca954x.c | 52 +++++++++++++++++--------------------
- 1 file changed, 24 insertions(+), 28 deletions(-)
+ drivers/power/supply/sbs-battery.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/i2c/muxes/i2c-mux-pca954x.c b/drivers/i2c/muxes/i2c-mux-pca954x.c
-index ad31d21..4299738 100644
---- a/drivers/i2c/muxes/i2c-mux-pca954x.c
-+++ b/drivers/i2c/muxes/i2c-mux-pca954x.c
-@@ -294,7 +294,7 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index 8bb2eb3..a719892 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -675,21 +675,30 @@ static int sbs_get_property(struct power_supply *psy,
+ 	return 0;
+ }
+ 
+-static irqreturn_t sbs_irq(int irq, void *devid)
++static void sbs_supply_changed(struct sbs_info *chip)
  {
- 	struct pca954x *data = i2c_mux_priv(muxc);
- 	struct i2c_client *client = data->client;
--	int c, err, irq;
-+	int c, irq;
+-	struct sbs_info *chip = devid;
+ 	struct power_supply *battery = chip->power_supply;
+ 	int ret;
  
- 	if (!data->chip->has_irq || client->irq <= 0)
- 		return 0;
-@@ -314,24 +314,22 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
- 			handle_simple_irq);
- 	}
- 
--	err = devm_request_threaded_irq(&client->dev, data->client->irq, NULL,
--					pca954x_irq_handler,
--					IRQF_ONESHOT | IRQF_SHARED,
--					"pca954x", data);
--	if (err)
--		goto err_req_irq;
-+	return 0;
+ 	ret = gpiod_get_value_cansleep(chip->gpio_detect);
+ 	if (ret < 0)
+-		return ret;
++		return;
+ 	chip->is_present = ret;
+ 	power_supply_changed(battery);
 +}
  
--	disable_irq(data->client->irq);
-+static void pca954x_cleanup(struct i2c_mux_core *muxc)
++static irqreturn_t sbs_irq(int irq, void *devid)
 +{
-+	struct pca954x *data = i2c_mux_priv(muxc);
-+	int c, irq;
- 
--	return 0;
--err_req_irq:
--	for (c = 0; c < data->chip->nchans; c++) {
--		irq = irq_find_mapping(data->irq, c);
--		irq_dispose_mapping(irq);
-+	if (data->irq) {
-+		for (c = 0; c < data->chip->nchans; c++) {
-+			irq = irq_find_mapping(data->irq, c);
-+			irq_dispose_mapping(irq);
-+		}
-+		irq_domain_remove(data->irq);
- 	}
--	irq_domain_remove(data->irq);
--
--	return err;
-+	i2c_mux_del_adapters(muxc);
++	sbs_supply_changed(devid);
+ 	return IRQ_HANDLED;
  }
  
- /*
-@@ -422,6 +420,14 @@ static int pca954x_probe(struct i2c_client *client,
- 		}
- 	}
- 
-+	if (data->chip->has_irq || client->irq > 0) {
-+		ret = devm_request_threaded_irq(&client->dev, data->client->irq,
-+		NULL, pca954x_irq_handler, IRQF_ONESHOT | IRQF_SHARED,
-+		"pca954x", data);
-+		if (ret)
-+			goto fail_del_adapters;
-+	}
++static void sbs_alert(struct i2c_client *client, enum i2c_alert_protocol prot,
++	unsigned int data)
++{
++	sbs_supply_changed(i2c_get_clientdata(client));
++}
 +
- 	dev_info(&client->dev,
- 		 "registered %d multiplexed busses for I2C %s %s\n",
- 		 num, data->chip->muxtype == pca954x_ismux
-@@ -430,25 +436,15 @@ static int pca954x_probe(struct i2c_client *client,
- 	return 0;
- 
- fail_del_adapters:
--	i2c_mux_del_adapters(muxc);
-+	pca954x_cleanup(muxc);
- 	return ret;
- }
- 
- static int pca954x_remove(struct i2c_client *client)
+ static void sbs_external_power_changed(struct power_supply *psy)
  {
- 	struct i2c_mux_core *muxc = i2c_get_clientdata(client);
--	struct pca954x *data = i2c_mux_priv(muxc);
--	int c, irq;
- 
--	if (data->irq) {
--		for (c = 0; c < data->chip->nchans; c++) {
--			irq = irq_find_mapping(data->irq, c);
--			irq_dispose_mapping(irq);
--		}
--		irq_domain_remove(data->irq);
--	}
--
--	i2c_mux_del_adapters(muxc);
-+	pca954x_cleanup(muxc);
- 	return 0;
- }
- 
+ 	struct sbs_info *chip = power_supply_get_drvdata(psy);
+@@ -917,6 +926,7 @@ static int sbs_suspend(struct device *dev)
+ static struct i2c_driver sbs_battery_driver = {
+ 	.probe		= sbs_probe,
+ 	.remove		= sbs_remove,
++	.alert		= sbs_alert,
+ 	.id_table	= sbs_id,
+ 	.driver = {
+ 		.name	= "sbs-battery",
 -- 
 1.8.3.1
