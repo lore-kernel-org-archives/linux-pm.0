@@ -1,105 +1,147 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v5 0/9] Add sbs-manager with smbalert support
-Date: Mon, 1 May 2017 11:08:26 +0200
-Message-ID: <20170501090826.3wci2vzilp6ogalt@ninjato>
-References: <1493628599-30552-1-git-send-email-preid@electromag.com.au>
+From: Paul Kocialkowski <contact@paulk.fr>
+Subject: Re: [PATCH 5/5] power: supply: bq27xxx: Correct supply status with
+ current draw
+Date: Mon, 01 May 2017 12:39:13 +0200
+Message-ID: <1493635153.6493.7.camel@paulk.fr>
+References: <20170430203801.32357-1-contact@paulk.fr>
+         <20170430203801.32357-5-contact@paulk.fr>
+         <CAKvHMgQ+uS=xw+TD_raPECG1psVWF_=M-35cpbDtNUChQYWhnw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="wodp3e2766qt6zyv"
+Content-Type: multipart/signed; micalg="pgp-sha256";
+        protocol="application/pgp-signature"; boundary="=-OO4rXL83hJSP9El7jBWD"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sauhun.de ([88.99.104.3]:48131 "EHLO pokefinder.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1035255AbdEAJId (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 1 May 2017 05:08:33 -0400
-Content-Disposition: inline
-In-Reply-To: <1493628599-30552-1-git-send-email-preid@electromag.com.au>
+Received: from gagarine.paulk.fr ([109.190.93.129]:63647 "EHLO
+        gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1166413AbdEAKkH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 06:40:07 -0400
+In-Reply-To: <CAKvHMgQ+uS=xw+TD_raPECG1psVWF_=M-35cpbDtNUChQYWhnw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>, Benjamin Tissoires <benjamin.tissoires@redhat.com>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: linux-pm@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>
 
 
---wodp3e2766qt6zyv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--=-OO4rXL83hJSP9El7jBWD
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: base64
 
-On Mon, May 01, 2017 at 04:49:50PM +0800, Phil Reid wrote:
-> This is another go of the sbs-manager driver using smbalert for
-> irq support from a while ago.=20
+SGksCgpMZSBkaW1hbmNoZSAzMCBhdnJpbCAyMDE3IMOgIDE1OjM1IC0wNzAwLCBMaWFtIEJyZWNr
+IGEgw6ljcml0wqA6Cj4gSGkgUGF1bCwKPiAKPiBPbiBTdW4sIEFwciAzMCwgMjAxNyBhdCAxOjM4
+IFBNLCBQYXVsIEtvY2lhbGtvd3NraSA8Y29udGFjdEBwYXVsay5mcj4gd3JvdGU6Cj4gPiBUaGUg
+c3RhdHVzIHJlcG9ydGVkIGRpcmVjdGx5IGJ5IHRoZSBiYXR0ZXJ5IGNvbnRyb2xsZXIgaXMgbm90
+IGFsd2F5cwo+ID4gcmVsaWFibGUgYW5kIHNob3VsZCBiZSBjb3JyZWN0ZWQgYmFzZWQgb24gdGhl
+IGN1cnJlbnQgZHJhdyBpbmZvcm1hdGlvbi4KPiAKPiBJIGhhdmUgbm90aWNlZCBpbmNvcnJlY3Qg
+c3RhdHVzIG9uIGJxMjc0MjUuIE9uIHdoaWNoIGNoaXAvcyBkaWQgeW91Cj4gZmluZCB0aGlzPyBJ
+dCBtaWdodCBub3QgYmUgYSBmbGF3IGFjcm9zcyB0aGUgd2hvbGUgZmFtaWx5Li4uCgpJIGdvdCB0
+aGlzIHdpdGggYSBCUTI3NTQxIG9uIGEgdmV5cm9uX21pbm5pZSAoQ2hyb21lYm9vayBGbGlwIEMx
+MDBQQSkuCgpGcm9tIG15IGV4cGVyaWVuY2Ugd2l0aCBiYXR0ZXJpZXMgaW4gZ2VuZXJhbCwgaXQg
+c2VlbXMgdGhhdCBmbGFncyBhcmUgbm90CnVwZGF0ZWQgYXMgb2Z0ZW4gYW5kIGFyZSBvZnRlbiBu
+b3QgYXMgYWNjdXJhdGUgYXMgd2hhdCB0aGUgY3VycmVudCBpbmZvIHRlbGxzLgpTbyBJIHRoaW5r
+IGl0J3MgYmVzdCB0byByZWx5IG9uIHRoZSBjdXJyZW50IGluZm8gcmF0aGVyIHRoYW4gdGhlIGNo
+aXAtcHJvdmlkZWQKZmxhZ3MuCgpUaGlzIG1ha2VzIGEgYmlnIGRpZmZlcmVuY2UgZHVyaW5nIGFj
+dHVhbCB1c2U6IGN1cnJlbnQgY2FuIHRlbGwgYWxtb3N0IGluc3RhbnRseQogdGhhdCBhIHN1cHBs
+eSB3YXMgcGx1Z2dlZC1pbi91bnBsdWdnZWQgd2hpbGUgdGhlIGNoYXJnaW5nL2Z1bGwgZmxhZ3Mg
+dGFrZSBhIGxvdApsb25nZXIgdG8gYmUgdXBkYXRlZC4gQWxzbywgdGhlIGZ1bGwgZmxhZyBpcyBu
+ZXZlciBzZXQgaW4gbXkgY2FzZSAocGVyaGFwcyBpdApzdGlsbCBleHBlY3RzIHRoZSBpbml0aWFs
+IGZ1bGwgY2hhcmdlIHZhbHVlKSBldmVuIHRob3VnaCBpdCBzaG91bGQgYmUuCgpJIGRvbid0IHRo
+aW5rIHRoYXQgd2lsbCBjYXVzZSBhIHByb2JsZW0gZm9yIG90aGVyIGNoaXBzIG9mIHRoZSBmYW1p
+bHkgYW55d2F5Ogp0aGV5IHNob3VsZCBvbmx5IGJlbmVmaXQgZnJvbSB0aGlzIQoKPiA+IFRoaXMg
+aW1wbGVtZW50cyBzdWNoIGEgY29ycmVjdGlvbiB3aXRoIGEgZGVkaWNhdGVkIGZ1bmN0aW9uLCBj
+YWxsZWQKPiA+IHdoZW4gcmV0cmlldmluZyB0aGUgc3VwcGx5IHN0YXR1cy4KPiA+IAo+ID4gU2ln
+bmVkLW9mZi1ieTogUGF1bCBLb2NpYWxrb3dza2kgPGNvbnRhY3RAcGF1bGsuZnI+Cj4gPiAtLS0K
+PiA+IMKgZHJpdmVycy9wb3dlci9zdXBwbHkvYnEyN3h4eF9iYXR0ZXJ5LmMgfCAyOCArKysrKysr
+KysrKysrKysrKysrKysrKysrKysrCj4gPiDCoDEgZmlsZSBjaGFuZ2VkLCAyOCBpbnNlcnRpb25z
+KCspCj4gPiAKPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3Bvd2VyL3N1cHBseS9icTI3eHh4X2Jh
+dHRlcnkuYwo+ID4gYi9kcml2ZXJzL3Bvd2VyL3N1cHBseS9icTI3eHh4X2JhdHRlcnkuYwo+ID4g
+aW5kZXggY2FkZTAwZGY2MTYyLi5mNzY5NGU3NzVlNjggMTAwNjQ0Cj4gPiAtLS0gYS9kcml2ZXJz
+L3Bvd2VyL3N1cHBseS9icTI3eHh4X2JhdHRlcnkuYwo+ID4gKysrIGIvZHJpdmVycy9wb3dlci9z
+dXBwbHkvYnEyN3h4eF9iYXR0ZXJ5LmMKPiA+IEBAIC0xMTcxLDggKzExNzEsMjIgQEAgc3RhdGlj
+IGludCBicTI3eHh4X2JhdHRlcnlfc3RhdHVzKHN0cnVjdAo+ID4gYnEyN3h4eF9kZXZpY2VfaW5m
+byAqZGksCj4gPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoHVuaW9uIHBvd2VyX3N1cHBseV9wcm9wdmFsICp2YWwpCj4g
+PiDCoHsKPiA+IMKgwqDCoMKgwqDCoMKgwqBpbnQgc3RhdHVzOwo+ID4gK8KgwqDCoMKgwqDCoMKg
+aW50IGN1cnI7Cj4gPiArwqDCoMKgwqDCoMKgwqBpbnQgZmxhZ3M7Cj4gPiArCj4gPiArwqDCoMKg
+wqDCoMKgwqBjdXJyID0gYnEyN3h4eF9yZWFkKGRpLCBCUTI3WFhYX1JFR19BSSwgZmFsc2UpOwo+
+ID4gK8KgwqDCoMKgwqDCoMKgaWYgKGN1cnIgPCAwKSB7Cj4gPiArwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgZGV2X2VycihkaS0+ZGV2LCAiZXJyb3IgcmVhZGluZyBjdXJyZW50XG4iKTsK
+PiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZXR1cm4gY3VycjsKPiA+ICvCoMKg
+wqDCoMKgwqDCoH0KPiAKPiBNYXliZSByZWFkIGN1cnJlbnQgKHRoZW4gc2lnbi1mbGlwLCAqPSAx
+MDAwKSBhYm92ZSB0aGUgc3RhdHVzIGZpeD8KCkZyb20gd2hhdCBJIHVuZGVyc3Rvb2Qgb2YgdGhl
+IHJlc3Qgb2YgdGhlIGRyaXZlciAoc2VlIGJxMjd4eHhfYmF0dGVyeV9jdXJyZW50KSwKc2lnbiBm
+bGlwIGlzIGRvbmUgZGlmZmVyZW50bHkgaW4gYnEyNzAwMC9icTI3MDEwIGFuZCBvdGhlcnMsIHNv
+IHNpbmNlIHdlIGFscmVhZHkKaGF2ZSBzcGVjaWZpYyBpbnN0cnVjdGlvbiBibG9ja3MsIEkgdGhp
+bmsgaXQncyBiZXN0IHRvIHB1dCB0aGUgY3VycmVudApjYWxjdWxhdGlvbiBpbiBlYWNoLgoKQWxz
+bywgc2luY2Ugd2Ugb25seSB0ZXN0IHRoZSBjdXJyZW50IGFnYWluc3QgMCBJIHRob3VnaHQgaXQg
+ZGlkbid0IG1hdHRlciB0aGF0CnRoZSBzY2FsZSBpcyBub3QgdGhlIHNhbWUgZm9yIGJvdGggdmFs
+dWVzLiBJIGNvdWxkIGFkZCB0aGUgZm9sbG93aW5nIGZvciB0aGUKYnEyNzAwMC9icTI3MDEwOiAq
+IEJRMjdYWFhfQ1VSUkVOVF9DT05TVEFOVCAvIEJRMjdYWFhfUlMKYnV0IGl0IHdvbid0IGNoYW5n
+ZSBhIHRoaW5nLgoKPiA+IMKgwqDCoMKgwqDCoMKgwqBpZiAoZGktPmNoaXAgPT0gQlEyNzAwMCB8
+fCBkaS0+Y2hpcCA9PSBCUTI3MDEwKSB7Cj4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgZmxhZ3MgPSBicTI3eHh4X3JlYWQoZGksIEJRMjdYWFhfUkVHX0ZMQUdTLCB0cnVlKTsKPiA+
+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBpZiAoZmxhZ3MgJiBCUTI3MDAwX0ZMQUdf
+Q0hHUykgewo+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqBkZXZfZGJnKGRpLT5kZXYsICJuZWdhdGl2ZSBjdXJyZW50IVxuIik7Cj4gPiArwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGN1cnIgPSAtY3VycjsKPiA+ICvC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB9Cj4gPiArCj4gPiDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoGlmIChkaS0+Y2FjaGUuZmxhZ3MgJiBCUTI3MDAwX0ZMQUdfRkMpCj4g
+PiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzdGF0dXMg
+PSBQT1dFUl9TVVBQTFlfU1RBVFVTX0ZVTEw7Cj4gPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoGVsc2UgaWYgKGRpLT5jYWNoZS5mbGFncyAmIEJRMjcwMDBfRkxBR19DSEdTKQo+ID4g
+QEAgLTExODIsNiArMTE5Niw4IEBAIHN0YXRpYyBpbnQgYnEyN3h4eF9iYXR0ZXJ5X3N0YXR1cyhz
+dHJ1Y3QKPiA+IGJxMjd4eHhfZGV2aWNlX2luZm8gKmRpLAo+ID4gwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqBlbHNlCj4gPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqBzdGF0dXMgPSBQT1dFUl9TVVBQTFlfU1RBVFVTX0RJU0NIQVJHSU5HOwo+
+ID4gwqDCoMKgwqDCoMKgwqDCoH0gZWxzZSB7Cj4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgY3VyciA9IChpbnQpKChzMTYpY3VycikgKiAxMDAwOwo+ID4gKwo+ID4gwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBpZiAoZGktPmNhY2hlLmZsYWdzICYgQlEyN1hYWF9GTEFH
+X0ZDKQo+ID4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+c3RhdHVzID0gUE9XRVJfU1VQUExZX1NUQVRVU19GVUxMOwo+ID4gwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqBlbHNlIGlmIChkaS0+Y2FjaGUuZmxhZ3MgJiBCUTI3WFhYX0ZMQUdfRFND
+KQo+ID4gQEAgLTExOTAsNiArMTIwNiwxOCBAQCBzdGF0aWMgaW50IGJxMjd4eHhfYmF0dGVyeV9z
+dGF0dXMoc3RydWN0Cj4gPiBicTI3eHh4X2RldmljZV9pbmZvICpkaSwKPiA+IMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHN0YXR1cyA9IFBPV0VSX1NVUFBM
+WV9TVEFUVVNfQ0hBUkdJTkc7Cj4gPiDCoMKgwqDCoMKgwqDCoMKgfQo+ID4gCj4gPiArCj4gPiAr
+wqDCoMKgwqDCoMKgwqBpZiAoY3VyciA9PSAwICYmIHN0YXR1cyAhPSBQT1dFUl9TVVBQTFlfU1RB
+VFVTX05PVF9DSEFSR0lORykKPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzdGF0
+dXMgPSBQT1dFUl9TVVBQTFlfU1RBVFVTX0ZVTEw7Cj4gPiArCj4gPiArwqDCoMKgwqDCoMKgwqBp
+ZiAoc3RhdHVzID09IFBPV0VSX1NVUFBMWV9TVEFUVVNfRlVMTCkgewo+ID4gK8KgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoC8qIERyYXdpbmcgb3IgcHJvdmlkaW5nIGN1cnJlbnQgd2hlbiBm
+dWxsICovCj4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgaWYgKGN1cnIgPiAwKQo+
+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzdGF0dXMg
+PSBQT1dFUl9TVVBQTFlfU1RBVFVTX0NIQVJHSU5HOwo+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoGVsc2UgaWYgKGN1cnIgPCAwKQo+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzdGF0dXMgPSBQT1dFUl9TVVBQTFlfU1RBVFVTX0RJU0NI
+QVJHSU5HOwo+ID4gK8KgwqDCoMKgwqDCoMKgfQo+ID4gKwo+ID4gwqDCoMKgwqDCoMKgwqDCoGlm
+IChkaS0+c3RhdHVzX3JldHJ5ID09IDAgJiYgZGktPnN0YXR1c19jaGFuZ2VfcmVmZXJlbmNlICE9
+IHN0YXR1cykKPiA+IHsKPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgZGktPnN0
+YXR1c19jaGFuZ2VfcmVmZXJlbmNlID0gc3RhdHVzOwo+ID4gwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqBwb3dlcl9zdXBwbHlfY2hhbmdlZChkaS0+YmF0KTsKPiA+IC0tCj4gPiAyLjEy
+LjIKPiA+IAotLSAKUGF1bCBLb2NpYWxrb3dza2ksIGRldmVsb3BlciBvZiBmcmVlIGRpZ2l0YWwg
+dGVjaG5vbG9neSBhbmQgaGFyZHdhcmUgc3VwcG9ydAoKV2Vic2l0ZTogaHR0cHM6Ly93d3cucGF1
+bGsuZnIvCkNvZGluZyBibG9nOiBodHRwczovL2NvZGUucGF1bGsuZnIvCkdpdCByZXBvc2l0b3Jp
+ZXM6IGh0dHBzOi8vZ2l0LnBhdWxrLmZyLyBodHRwczovL2dpdC5jb2RlLnBhdWxrLmZyLw==
 
-Thanks for keeping at it!
 
-Adding Benjamin Tissoires to CC, he worked lately on I2C device IRQs...
-@Benjamin: do you need the patches, too, or do you read the I2C list?
-
-> Enables the existing smbalert driver to be loaded via the device tree.
-> Only need to add smbus_alert interrupt to the i2c bus segement in the
-> devicetree and the core will then enable the alert driver.
->=20
-> Reorders the rquest irq call in the pca954x driver to ensure each
-> muxed i2c segment can handle service smbalerts on that segment before
-> irq's are enabled. The pca954x can't mask individual irq's routed thru
-> them.
->=20
-> Add the sbs-manager from Karl-Heinz.
-> Add the alert call back and gpio interface to allow the battery detect
-> logic in the existing sbs-battery driver to work.
->=20
->=20
->=20
-> Karl-Heinz Schneider (2):
->   Documentation: Add sbs-manager device tree node documentation
->   power: Adds support for Smart Battery System Manager
->=20
-> Phil Reid (7):
->   i2c: i2c-smbus: Support threaded irqs.
->   i2c: i2c-smbus: Add null ptr guard in smb_alert_probe
->   i2c: i2c-smbus: add of_i2c_setup_smbus_alert
->   i2c: core: call of_i2c_setup_smbus_alert in i2c_register_adapter
->   i2c: mux: pca954x: Call request irq after adding mux segments
->   power: supply: sbs-battery: Add alert callback
->   power: supply: sbs-manager: Add alert callback and battery change
->     notification
->=20
->  Documentation/devicetree/bindings/i2c/i2c.txt      |   4 +-
->  .../bindings/power/supply/sbs,sbs-manager.txt      |  64 +++
->  drivers/i2c/i2c-core.c                             |   4 +
->  drivers/i2c/i2c-smbus.c                            |  64 ++-
->  drivers/i2c/muxes/i2c-mux-pca954x.c                |  52 ++-
->  drivers/power/supply/Kconfig                       |  14 +
->  drivers/power/supply/Makefile                      |   1 +
->  drivers/power/supply/sbs-battery.c                 |  16 +-
->  drivers/power/supply/sbs-manager.c                 | 448 +++++++++++++++=
-++++++
->  include/linux/i2c-smbus.h                          |   9 +
->  10 files changed, 637 insertions(+), 39 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sb=
-s-manager.txt
->  create mode 100644 drivers/power/supply/sbs-manager.c
->=20
-> --=20
-> 1.8.3.1
->=20
-
---wodp3e2766qt6zyv
+--=-OO4rXL83hJSP9El7jBWD
 Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlkG+wYACgkQFA3kzBSg
-KbbT3g//UIFZyKp5VnJ1Ecd7bBJCj+c/yRaIZTAGzRXAYVy3G6AUdhEVeotcMg1b
-g5UMAFvhm359CeHnRB2j8I9ThTK8tazPdU4c9IIjfX0FyYy1rD3DeB059IulwoWO
-7cA0G7+uFTKrvwhU5JwWUVLKE/I09etKbYnmRe9inSW/fMmpdmZVqWJXrInctwxP
-u887TmJoJqASU3b21GFIBmVuf5+ckAmBvUZM1pTYkymyFhfqciBcW/xgG3ufPA4F
-9EFv94DYR9X9gnBPC6PR1gpteaNhO6UGIoiVtbNIgZZBu3YpsKw9Obc0NPOm+z1p
-Q8J3sQKJidUaig8PdPYmYTPi2RDTXHiJVGZUbrK6qblF8Chm2jWXlI86WbFETjCH
-PgvUYReC1J7aJcYQmnyMvA6a4LVFcmlpqVyJiaRfFntptEKJeynUYOKaj3Jokkm0
-PtPbFGSR6VwTv/3mxiunY8CDdL5IqAM9/bit4pjxeptSzTntqg8mgMEvJdNthlPt
-3s14l3bcHhxpcYF8hfQLlxuoT1VOJyOUFIT5+pB2ryBKH2/ntLxKRTbUg0b+57lT
-jXrrhUaspFlvCGzyNcZ3ksRgkWkXGn3SHzWgsVAp2xjvPEZ9vSA0OOgXUcke6eK0
-o/x01+Bm5mZDib1wZaosTrotNvT+a3BypheUQ0EceaJgSO/8q80=
-=M5mc
+iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlkHEFIACgkQhP3B6o/u
+lQxaPw/7BQo+yOqVtcGzSzpwuOrK/tNIP8qlQac2BDW3dtS8fi3Hc4ewh2V3WLQs
+4iXeeG0lppSp6H2PHtsT24IHmLW9fhHcPWB2pKsytsn+q/IGYp1MPH3L0cTY10ui
+4b5yiG/aWr5eUS5dCMBE4Vb+QhNLx5cB/uv2O9hnAw47xeLc1HL4BuK4Wv1tI5y4
+6LIYmR2vfrWa8vzIHGfOfBf/M4fGWnAZFnVMRyzDEVI8MoeWeNNST6tDehUMU1rV
+/f+PnS0aXcqEo7B3Jv6qa3ieB5rJuHm9yIxxmH32c8gJN+nDj/9BeiDZFX1bStMR
+tUvznSNvMy/KN1AmIpTx7s57bfz5bQ7K+fcyXKlsxQniz9fU/1NNVTxEVWZWKOky
+sn9+VhEJYwYRQoBKD30MoNDoIvZVB2MmMtZGUtjT3xZnt9HmwFt4ZRbPsEurt+6r
+OedDmbnX8ocEdt+cGvMh9KgiIybi2P/s5oGQEgmulXlOIXWkBoaDcw9iYhgEMvah
+yaLwNRTEkCaBBq3l085B1XmIbaypI7DpvYyVJDtQLURViCkQMUHnYPk7695JnClH
+mIclHNbJ18WelNQP39sVSYclrns5RTPu8UEBqne2Sm2FZHguvV1qPHM8whsgkRiB
+cHe9C1IYiPZCOS259cxqScRgK8KpQNTwCINyAM0/h6gAeb6lFWA=
+=8rLD
 -----END PGP SIGNATURE-----
 
---wodp3e2766qt6zyv--
+--=-OO4rXL83hJSP9El7jBWD--
