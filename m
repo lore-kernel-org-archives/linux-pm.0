@@ -1,121 +1,117 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v2 05/14] power: max17042_battery: Change name in
- power_supply_desc to "main-battery"
-Date: Mon, 1 May 2017 14:22:53 +0200
-Message-ID: <20170501122253.e3nrr4dql2nt3cba@earth>
-References: <20170414183259.24382-1-hdegoede@redhat.com>
- <20170414183259.24382-5-hdegoede@redhat.com>
+From: Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
+Subject: Re: [PATCH v5 8/9] power: supply: sbs-battery: Add alert callback
+Date: Mon, 1 May 2017 14:32:30 +0200
+Message-ID: <20170501123230.zwcrojjmzqjsgdqu@earth>
+References: <1493628599-30552-1-git-send-email-preid@electromag.com.au>
+ <1493628599-30552-9-git-send-email-preid@electromag.com.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="uyicbl5f2kwnzrzj"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:57820 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S968841AbdEAMW5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 08:22:57 -0400
+        protocol="application/pgp-signature"; boundary="whe5g3z4phz4bruj"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170414183259.24382-5-hdegoede@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1493628599-30552-9-git-send-email-preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Cc: wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
 
 
---uyicbl5f2kwnzrzj
+--whe5g3z4phz4bruj
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Apr 14, 2017 at 08:32:50PM +0200, Hans de Goede wrote:
-> The max17042 will typically be coupled with some charger IC, almost all
-> charger drivers contain:
+On Mon, May 01, 2017 at 04:49:58PM +0800, Phil Reid wrote:
+> To simplify the sbs-manager code and notification of battery removal
+> use the i2c alert callback to notify the sbs-battery driver that an
+> event has occurred.
 >=20
-> static char *xxx_charger_supplied_to[] =3D {
->         "main-battery",
-> };
->=20
-> probe()
-> {
-> 	struct power_supply_config cfg;
->=20
-> 	cfg.supplied_to =3D xxx_charger_supplied_to;
-> 	cfg.num_supplicants =3D ARRAY_SIZE(xxx_charger_supplied_to);
-> 	xxx->charger =3D power_supply_register(dev, &x_charger_desc, &_cfg);
-> }
->=20
-> Change the name in max17042's power_supply_desc to "main-battery" to
-> match, so that power_supply_am_i_supplied() can be used to implement
-> POWER_SUPPLY_PROP_STATUS.
->=20
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Signed-off-by: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
 
-I did not queue this patch and patch 14. First of all: Currently 4/30
-chargers have this, which I wouldn't call "almost all". I think this
-is not the right solution, especially as it will break once a system
-has more than one "main" battery (like some of the newer thinkpads).
-
-For DT based systems we have generic support to specify the
-dependency as phandle. This obviously won't work for you.
-I suggest to use a device property for supplying the correct name
-to the charger instead.
+Thanks, queued.
 
 -- Sebastian
 
-> ---
->  drivers/power/supply/max17042_battery.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/power/supply/sbs-battery.c | 16 +++++++++++++---
+>  1 file changed, 13 insertions(+), 3 deletions(-)
 >=20
-> diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supp=
-ly/max17042_battery.c
-> index f0ff6e8..3249eb0 100644
-> --- a/drivers/power/supply/max17042_battery.c
-> +++ b/drivers/power/supply/max17042_battery.c
-> @@ -866,7 +866,7 @@ static const struct regmap_config max17042_regmap_con=
-fig =3D {
->  };
+> diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sb=
+s-battery.c
+> index 8bb2eb3..a719892 100644
+> --- a/drivers/power/supply/sbs-battery.c
+> +++ b/drivers/power/supply/sbs-battery.c
+> @@ -675,21 +675,30 @@ static int sbs_get_property(struct power_supply *ps=
+y,
+>  	return 0;
+>  }
 > =20
->  static const struct power_supply_desc max17042_psy_desc =3D {
-> -	.name		=3D "max170xx_battery",
-> +	.name		=3D "main-battery",
->  	.type		=3D POWER_SUPPLY_TYPE_BATTERY,
->  	.get_property	=3D max17042_get_property,
->  	.set_property	=3D max17042_set_property,
-> @@ -876,7 +876,7 @@ static const struct power_supply_desc max17042_psy_de=
-sc =3D {
->  };
+> -static irqreturn_t sbs_irq(int irq, void *devid)
+> +static void sbs_supply_changed(struct sbs_info *chip)
+>  {
+> -	struct sbs_info *chip =3D devid;
+>  	struct power_supply *battery =3D chip->power_supply;
+>  	int ret;
 > =20
->  static const struct power_supply_desc max17042_no_current_sense_psy_desc=
- =3D {
-> -	.name		=3D "max170xx_battery",
-> +	.name		=3D "main-battery",
->  	.type		=3D POWER_SUPPLY_TYPE_BATTERY,
->  	.get_property	=3D max17042_get_property,
->  	.set_property	=3D max17042_set_property,
+>  	ret =3D gpiod_get_value_cansleep(chip->gpio_detect);
+>  	if (ret < 0)
+> -		return ret;
+> +		return;
+>  	chip->is_present =3D ret;
+>  	power_supply_changed(battery);
+> +}
+> =20
+> +static irqreturn_t sbs_irq(int irq, void *devid)
+> +{
+> +	sbs_supply_changed(devid);
+>  	return IRQ_HANDLED;
+>  }
+> =20
+> +static void sbs_alert(struct i2c_client *client, enum i2c_alert_protocol=
+ prot,
+> +	unsigned int data)
+> +{
+> +	sbs_supply_changed(i2c_get_clientdata(client));
+> +}
+> +
+>  static void sbs_external_power_changed(struct power_supply *psy)
+>  {
+>  	struct sbs_info *chip =3D power_supply_get_drvdata(psy);
+> @@ -917,6 +926,7 @@ static int sbs_suspend(struct device *dev)
+>  static struct i2c_driver sbs_battery_driver =3D {
+>  	.probe		=3D sbs_probe,
+>  	.remove		=3D sbs_remove,
+> +	.alert		=3D sbs_alert,
+>  	.id_table	=3D sbs_id,
+>  	.driver =3D {
+>  		.name	=3D "sbs-battery",
 > --=20
-> 2.9.3
+> 1.8.3.1
 >=20
 
---uyicbl5f2kwnzrzj
+--whe5g3z4phz4bruj
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHKJ0ACgkQ2O7X88g7
-+prviA/9F9he/xjavpdJ7UO0aTUv/MoJD9+YNJ/PTrfEN0CEoPilQSJ+DDLP5v9m
-bA4LG350KMGYESl2rQeMS57W1AJKEJW6B3QylhwDnkvdb2/50/6RQyauSaWODwg7
-wAQ44dKwd/7VFTLFBmmi7R2C70PnslIvT1FTb6/dNrG+ttdTuU4CeyDHi5QbNUzY
-pS6nWw+tHOphUEwFy7iFjnlnM2NsRlj4PU7TP0grbHITguf7CkZ9cntYIWmiOB+G
-lCCIHkuPXSFyRiehHzWGpmyUPw2vGuIEtfkZZ+DWNR/9m4a09838j5lznqvZ3A4o
-Es+pBbckmFsTcp/hDSb7O7PJGzrfPiNwZ5H0coIDLIdczRg4K6AJ7HIrFUqPpBd4
-AvsFN/9cd76mzft8ofBa9umQpMNPPfseGwuM0X0Hl6FHHdcP67xFfkEImzHcfWGZ
-4ESnyLFM232sE8U7YNCXCZTT5nhS6mb8Nst9bC5uO10vjSvoENtNMrGo9kf0q+zW
-MAXb51X1OyUfGN7jRNheRPJfOtxXZvAzaaFTaO5bJGnTqMgrbhYjYrHGVaiG6XGU
-YfyiPwQIGH/5w+bcMO0VlEXl2id1p/xxYS64wWlngjpDZzuQAdumtYB3mV5925w9
-TuNAyMjB2z/M/Y/JhZViFDWWe2z8yE/Iomf4C3fE6ivsp2Ugk5I=
-=Z4cj
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHKt4ACgkQ2O7X88g7
++prDag/+I80dX+8rJU8//FzMbpJl11hWPBeRfu3g5aASRA7iQm8pKKfKb2KujGW5
+V6RRB1In5GOioySgfXNqEvrySP6Iqa795HFXnL9xsI/bKuNlBCXQ7SYqKXYoUDIK
+Nem15080qN3b+kS1axjXUgWq84q85Ba3AgN5TyFm51l7swdQ3QQJCq0Z2PUIQEbv
+ypfedpoFcnnry8JdaXTO8xmj07QaAW0tZNL107NvzP9/WYenJToSTl836pa/BT0R
+KNHY2dUl/aC59TngmGT+sFD3IT3/ERxI9ysp9AX8YyPQXKwTgwUIi+fyDrKwauB4
+v5IYse0ZzEt8A+5Rjix+ltUXLaa2h9CRrCB3CdQHtSgu6AGqWJqaCOw7cnyMBceE
+wFAh8HzAe4pn0ZcYNZQ5hr82E7rNh/+i/dbWK14qgdinu2X/cszdPpLg7VZLCZs1
+DoG0VwtPGfDL76oxiSOKh6YGxrsjn7PN4KTohg5XNt0+qunmLxEwh+t8m7Tv+q3r
+taVo2nZe8ECdeeIXrv8dGddq0/NKmg4q6QlVIltVKDmycoElvT3+257UqhvLEvai
+2WKDugS79h9x3C8BJFoFDqRCcMQdXXSnORS6llnN7c+j/LPA53tu+EhnOX/wW1w4
+rp4B8EJhlUt4WbyjaxsgZh1MorxtEmwnXWZirk9sDRMVHGuv9l8=
+=hhVO
 -----END PGP SIGNATURE-----
 
---uyicbl5f2kwnzrzj--
+--whe5g3z4phz4bruj--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
