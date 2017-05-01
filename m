@@ -1,101 +1,131 @@
-From: Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
-Subject: Re: [PATCH v11 01/10] devicetree: power: Add battery.txt
-Date: Mon, 1 May 2017 17:09:34 +0200
-Message-ID: <20170501150934.qx2nrw3r4zjgjvb7@earth>
-References: <20170320094335.19224-1-liam@networkimprov.net>
- <20170320094335.19224-2-liam@networkimprov.net>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v2 05/14] power: max17042_battery: Change name in
+ power_supply_desc to "main-battery"
+Date: Mon, 1 May 2017 17:11:13 +0200
+Message-ID: <caf9b434-29bb-e03a-0287-c12de9beec0d@redhat.com>
+References: <20170414183259.24382-1-hdegoede@redhat.com>
+ <20170414183259.24382-5-hdegoede@redhat.com>
+ <20170501122253.e3nrr4dql2nt3cba@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="rsqx7tuzf3lhgm2s"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170320094335.19224-2-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Cc: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:60410 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752112AbdEAPqd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 1 May 2017 11:46:33 -0400
+In-Reply-To: <20170501122253.e3nrr4dql2nt3cba@earth>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
+
+Hi Sebastian,
+
+Thank you for merging all my recent patches.
+
+On 01-05-17 14:22, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Fri, Apr 14, 2017 at 08:32:50PM +0200, Hans de Goede wrote:
+>> The max17042 will typically be coupled with some charger IC, almost all
+>> charger drivers contain:
+>>
+>> static char *xxx_charger_supplied_to[] = {
+>>          "main-battery",
+>> };
+>>
+>> probe()
+>> {
+>> 	struct power_supply_config cfg;
+>>
+>> 	cfg.supplied_to = xxx_charger_supplied_to;
+>> 	cfg.num_supplicants = ARRAY_SIZE(xxx_charger_supplied_to);
+>> 	xxx->charger = power_supply_register(dev, &x_charger_desc, &_cfg);
+>> }
+>>
+>> Change the name in max17042's power_supply_desc to "main-battery" to
+>> match, so that power_supply_am_i_supplied() can be used to implement
+>> POWER_SUPPLY_PROP_STATUS.
+>>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+> 
+> I did not queue this patch and patch 14. First of all: Currently 4/30
+> chargers have this, which I wouldn't call "almost all". I think this
+> is not the right solution, especially as it will break once a system
+> has more than one "main" battery (like some of the newer thinkpads).
+> 
+> For DT based systems we have generic support to specify the
+> dependency as phandle. This obviously won't work for you.
+> I suggest to use a device property for supplying the correct name
+> to the charger instead.
+
+Ok, fair enough.
+
+So to be clear you are suggesting that we modify the charger driver
+(or the power-supply-core) to check for a "supplied-to"
+string-array device property which then overrides the power_supply_config.supplied_to
+array's default value in the driver?
+
+Or do you want to modify the fuel-gauge driver (or the power-supply-core)
+to check for a "supplied-from" string-array device property which then
+is used to fill in the power_supply.supplied_from array ?
+
+Looking at how currently the power-supply-core fills in power_supply.supplied_from
+from devicetree when #ifdef CONFIG_OF is true, I think the best (and
+most consistent) solution would be to change the :
+
+#else
+static inline int power_supply_check_supplies(struct power_supply *psy)
+{
+         return 0;
+}
+#endif
+
+Code block to check for a "supplied-from" string-array device property
+and populate the power_supply.supplied_from string array with its
+contents if found.
+
+If you can let me know how exactly you want to solve this I can whip
+up (and test) patch for this.
+
+Regards,
+
+Hans
 
 
---rsqx7tuzf3lhgm2s
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Mon, Mar 20, 2017 at 02:43:26AM -0700, Liam Breck wrote:
-> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->=20
-> Documentation of static battery characteristics that can be defined
-> for batteries which cannot self-identify. This information is required
-> by fuel-gauge and charger chips for proper handling of the battery.
->=20
-> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-> ---
->  .../devicetree/bindings/power/supply/battery.txt   | 43 ++++++++++++++++=
-++++++
->  1 file changed, 43 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/batter=
-y.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b=
-/Documentation/devicetree/bindings/power/supply/battery.txt
-> new file mode 100644
-> index 0000000..53a68c0
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-> @@ -0,0 +1,43 @@
-> +Battery Characteristics
-> +
-> +The devicetree battery node provides static battery characteristics.=20
-> +In smart batteries, these are typically stored in non-volatile memory=20
-> +on a fuel gauge chip. The battery node should be used where there is=20
-> +no appropriate non-volatile memory, or it is unprogrammed/incorrect.
-> +
-> +Required Properties:
-> + - compatible: Must be "simple-battery"
-> +
-> +Optional Properties:
-> + - voltage-min-design-microvolt: drained battery voltage
-> + - energy-full-design-microwatt-hours: battery design energy
-> + - charge-full-design-microamp-hours: battery design capacity
-> +
-> +Battery properties are named, where possible, for the corresponding=20
-> +elements in enum power_supply_property, defined in
-> +https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/=
-include/linux/power_supply.h#n86
-
-Since Rob did not reply, I queued this with this paragraph removed
-and whitespace errors fixed to speed up things. You can always try
-persuading Rob in an incremental patch ;)
-
--- Sebastian
-
---rsqx7tuzf3lhgm2s
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHT64ACgkQ2O7X88g7
-+prQqA//TLm0jamH7O6/T2Q6TJB9N+MsScmbLk/Txee+LqIi+zWH9YI/8DvqGKbi
-t2ziY/RbueKDOtX7ZxLfY96zOxJ28dyBcNQ1nYLjVnIC0LvPRQrwRVi7PIQEe2Sk
-FdiZ/FRoCStUwkLCfnh1KaeSePTKXVcBUXftbmPLZ1IQcY75jtZpHJplYITdAYrP
-4EvNJ2qDg+LgOCwOjLwy+LAFt5FEpmXo85k7bS5Y9f80IrdoQ5BeyvhC0b1yVoed
-JN2bYJpHCS/zZ72YvzEyvyWQ1MW5t6h/Djb0cswt2YZbjy6BI0vM8HI57GQpLFnj
-OeGx37Pjmqw9Dab5YZ7v7oNysYyAYq6eb6I8z2mReprNa/SYBLYDps6Mqe93jj8A
-qACemMd6HwVD7avYkbP7ZMWa/g9BDnQJl9t3T73okzwvjpy5w96krsCfRliiVAbj
-ilKutKKCyaqQ9EfhK21LSu7yBTcLIG9YYMykjjb2D9QIz4xiUTXjGdZfkqF1mehM
-njGNBPlsLLltKfF+DRO/ku2EgCMuXNlirGl99TOF/goDH8PBgpm0ORz0jNA9DhjZ
-BTAxwxPDFtz+D8b8mnz6T8H72UD512cJ7YqkzBn+OQyGg9R4MMl5BLI5bf69wCr1
-ItF5IRjjG3DaL1IfgG2BQHGTQ/hURPYCxir7sI2XJRyaYCtilfU=
-=yGj+
------END PGP SIGNATURE-----
-
---rsqx7tuzf3lhgm2s--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> -- Sebastian
+> 
+>> ---
+>>   drivers/power/supply/max17042_battery.c | 4 ++--
+>>   1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
+>> index f0ff6e8..3249eb0 100644
+>> --- a/drivers/power/supply/max17042_battery.c
+>> +++ b/drivers/power/supply/max17042_battery.c
+>> @@ -866,7 +866,7 @@ static const struct regmap_config max17042_regmap_config = {
+>>   };
+>>   
+>>   static const struct power_supply_desc max17042_psy_desc = {
+>> -	.name		= "max170xx_battery",
+>> +	.name		= "main-battery",
+>>   	.type		= POWER_SUPPLY_TYPE_BATTERY,
+>>   	.get_property	= max17042_get_property,
+>>   	.set_property	= max17042_set_property,
+>> @@ -876,7 +876,7 @@ static const struct power_supply_desc max17042_psy_desc = {
+>>   };
+>>   
+>>   static const struct power_supply_desc max17042_no_current_sense_psy_desc = {
+>> -	.name		= "max170xx_battery",
+>> +	.name		= "main-battery",
+>>   	.type		= POWER_SUPPLY_TYPE_BATTERY,
+>>   	.get_property	= max17042_get_property,
+>>   	.set_property	= max17042_set_property,
+>> -- 
+>> 2.9.3
+>>
