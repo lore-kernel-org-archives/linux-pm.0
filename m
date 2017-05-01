@@ -1,53 +1,62 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: Re: [PATCH 0/3] TI-SoC-thermal: Fine-tuning for two functions
-Date: Mon, 1 May 2017 10:50:06 +0530
-Message-ID: <5fa2705e-3082-29b0-b174-cc478cd66e75@ti.com>
-References: <cd524803-b771-c3d2-8906-ee78576c86d4@users.sourceforge.net>
- <20170427162047.GA18276@localhost.localdomain>
+From: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
+Subject: Re: [PATCH 1/2] Add support for OneWire (W1) devices family 0x26
+ (MAX17211/MAX17215)
+Date: Mon, 1 May 2017 09:13:54 +0300
+Message-ID: <f103ca48-1535-20ab-9384-f8dd34b7b57b@rambler.ru>
+References: <20170429143429.5685-1-minimumlaw@rambler.ru>
+ <20170429143429.5685-2-minimumlaw@rambler.ru>
+ <20170429155911.7li5torcliaoerxh@earth>
+ <ee2edb43-2353-6655-a95d-ea3f3fb853eb@rambler.ru>
+ <20170430205337.kwuwcyesofvqjddl@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:53155 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S969074AbdEAFUY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 01:20:24 -0400
-In-Reply-To: <20170427162047.GA18276@localhost.localdomain>
+Received: from huan2.mail.rambler.ru ([81.19.78.108]:41468 "EHLO
+        huan2.mail.rambler.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2999578AbdEAGN5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 02:13:57 -0400
+In-Reply-To: <20170430205337.kwuwcyesofvqjddl@earth>
+Content-Language: en-GB
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, zbr@ioremap.net
+
+Hi!
 
 
+30.04.17 23:53, Sebastian Reichel wrote::
+>>>> Slave device provide software layer for access to internal registers
+>>>> MAX17211/MAX17215 chip.
+>>> Please convert this to regmap.There is no generic w1 handler, but you can provide custom
+>>> read/write functions.
+>> I think regmap be overkill for this driver. the perception.
+> I did not ask for full usage of all regmap features. Just register
+> the read/write handler as regmap handler and use regmap_read/write
+> to get values.
+>
+OK, I think about this. But max17211-battery use ONLY 
+w1_max12711x_reg_get(). This is very simple function.
 
-On Thursday 27 April 2017 09:50 PM, Eduardo Valentin wrote:
-> On Wed, Apr 26, 2017 at 05:33:10PM +0200, SF Markus Elfring wrote:
->> From: Markus Elfring <elfring@users.sourceforge.net>
->> Date: Wed, 26 Apr 2017 17:24:56 +0200
->>
->> Three update suggestions were taken into account
->> from static source code analysis.
->>
->> Markus Elfring (3):
->>   Use devm_kcalloc() in ti_bandgap_build()
->>   Delete error messages for failed memory allocations in ti_bandgap_build()
->>   Fix a typo in a comment line
->>
-> 
-> Keerthy,
-> 
-> Can you please give it a shot of this series on all supported OMAP chip
-> boards? I do not see any major issue with the series at all, but would
-> like to get it tested by you.
+Second function w1_max1721x_reg_set() writen for extend feature list 
+(factory calibrating and init battery).  I think, this code must _NOT_ 
+be writen, and must _NOT_ be accessible for end user. Change calibration 
+values potentially can damage battery or device. Theory, I can unexport 
+this function and remove them from drivers code.
 
-Sure Eduardo. I will test and review this series.
+So output registers of Maxim M5 Fuel Gauge algorithm very simple: one 
+register - one value. In driver I have two points with bitfield. First - 
+battery connected from power supply props. Second: very optional device 
+type from probe. This value _NOT_ used from driver - just write device 
+type, if manufacturer not fill this data in chip nvram.
 
-> 
-> BR,
-> 
->>  drivers/thermal/ti-soc-thermal/ti-bandgap.c | 14 +++++---------
->>  1 file changed, 5 insertions(+), 9 deletions(-)
->>
->> -- 
->> 2.12.2
->>
+This moment driver use 14 registers. Ok, let's some time above will be 
+14*3=42 registers accessible with w1_max1721x_reg_get(). This value is 
+greatly overestimated - so many properties are not in the class 
+POWER_SUPPLY. But register range in MAX1721X is 0x1F0 (496 words or 992 
+bytes) of RAM for cache registers. As embedded system developer I 
+dislike so ram management.
+
+As result I repeat: regmap will be overkill for this driver. But OK, I 
+try to write this code. Just for fun.
