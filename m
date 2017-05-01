@@ -1,175 +1,194 @@
 From: Paul Kocialkowski <contact@paulk.fr>
-Subject: Re: [PATCH 5/5] power: supply: bq27xxx: Correct supply status with
- current draw
-Date: Mon, 01 May 2017 20:37:27 +0200
-Message-ID: <1493663847.4951.3.camel@paulk.fr>
+Subject: Re: [PATCH 1/5] power: supply: bq27xxx: Pass of_node along to allow
+ device-tree supply
+Date: Mon, 01 May 2017 20:40:00 +0200
+Message-ID: <1493664000.4951.5.camel@paulk.fr>
 References: <20170430203801.32357-1-contact@paulk.fr>
-         <20170430203801.32357-5-contact@paulk.fr>
-         <CAKvHMgQ+uS=xw+TD_raPECG1psVWF_=M-35cpbDtNUChQYWhnw@mail.gmail.com>
-         <1493635153.6493.7.camel@paulk.fr>
-         <CAKvHMgTqxvBEKRREPTZtkWVCPC+UoTFyXBNOMwdy=aNiv5L3BQ@mail.gmail.com>
+         <CAKvHMgSijN8vQUePoTKRC5nqaW-Shh4_9ZKiKq0Uae3ZLkiDSA@mail.gmail.com>
+         <1493635591.6493.10.camel@paulk.fr>
+         <CAKvHMgQKBSbzbS3sG3A+Yi3X5J=iMxLYDvK1YJjCPXmq_GimZQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg="pgp-sha256";
-        protocol="application/pgp-signature"; boundary="=-OJykzdjLbu6QOGcMUMbi"
+        protocol="application/pgp-signature"; boundary="=-bUl0ijswPrll+msSJAFm"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gagarine.paulk.fr ([109.190.93.129]:64764 "EHLO
+Received: from gagarine.paulk.fr ([109.190.93.129]:54243 "EHLO
         gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751716AbdEASiS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 14:38:18 -0400
-In-Reply-To: <CAKvHMgTqxvBEKRREPTZtkWVCPC+UoTFyXBNOMwdy=aNiv5L3BQ@mail.gmail.com>
+        with ESMTP id S1751123AbdEASku (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 14:40:50 -0400
+In-Reply-To: <CAKvHMgQKBSbzbS3sG3A+Yi3X5J=iMxLYDvK1YJjCPXmq_GimZQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
-Cc: linux-pm@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
 
 
---=-OJykzdjLbu6QOGcMUMbi
+--=-bUl0ijswPrll+msSJAFm
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 
-TGUgbHVuZGkgMDEgbWFpIDIwMTcgw6AgMTE6MTggLTA3MDAsIExpYW0gQnJlY2sgYSDDqWNyaXTC
-oDoKPiBIaSBQYXVsLAo+IAo+IE9uIE1vbiwgTWF5IDEsIDIwMTcgYXQgMzozOSBBTSwgUGF1bCBL
-b2NpYWxrb3dza2kgPGNvbnRhY3RAcGF1bGsuZnI+IHdyb3RlOgo+ID4gSGksCj4gPiAKPiA+IExl
-IGRpbWFuY2hlIDMwIGF2cmlsIDIwMTcgw6AgMTU6MzUgLTA3MDAsIExpYW0gQnJlY2sgYSDDqWNy
-aXQgOgo+ID4gPiBIaSBQYXVsLAo+ID4gPiAKPiA+ID4gT24gU3VuLCBBcHIgMzAsIDIwMTcgYXQg
-MTozOCBQTSwgUGF1bCBLb2NpYWxrb3dza2kgPGNvbnRhY3RAcGF1bGsuZnI+Cj4gPiA+IHdyb3Rl
-Ogo+ID4gPiA+IFRoZSBzdGF0dXMgcmVwb3J0ZWQgZGlyZWN0bHkgYnkgdGhlIGJhdHRlcnkgY29u
-dHJvbGxlciBpcyBub3QgYWx3YXlzCj4gPiA+ID4gcmVsaWFibGUgYW5kIHNob3VsZCBiZSBjb3Jy
-ZWN0ZWQgYmFzZWQgb24gdGhlIGN1cnJlbnQgZHJhdyBpbmZvcm1hdGlvbi4KPiA+ID4gCj4gPiA+
-IEkgaGF2ZSBub3RpY2VkIGluY29ycmVjdCBzdGF0dXMgb24gYnEyNzQyNS4gT24gd2hpY2ggY2hp
-cC9zIGRpZCB5b3UKPiA+ID4gZmluZCB0aGlzPyBJdCBtaWdodCBub3QgYmUgYSBmbGF3IGFjcm9z
-cyB0aGUgd2hvbGUgZmFtaWx5Li4uCj4gPiAKPiA+IEkgZ290IHRoaXMgd2l0aCBhIEJRMjc1NDEg
-b24gYSB2ZXlyb25fbWlubmllIChDaHJvbWVib29rIEZsaXAgQzEwMFBBKS4KPiA+IAo+ID4gRnJv
-bSBteSBleHBlcmllbmNlIHdpdGggYmF0dGVyaWVzIGluIGdlbmVyYWwsIGl0IHNlZW1zIHRoYXQg
-ZmxhZ3MgYXJlIG5vdAo+ID4gdXBkYXRlZCBhcyBvZnRlbiBhbmQgYXJlIG9mdGVuIG5vdCBhcyBh
-Y2N1cmF0ZSBhcyB3aGF0IHRoZSBjdXJyZW50IGluZm8KPiA+IHRlbGxzLgo+ID4gU28gSSB0aGlu
-ayBpdCdzIGJlc3QgdG8gcmVseSBvbiB0aGUgY3VycmVudCBpbmZvIHJhdGhlciB0aGFuIHRoZSBj
-aGlwLQo+ID4gcHJvdmlkZWQKPiA+IGZsYWdzLgo+ID4gCj4gPiBUaGlzIG1ha2VzIGEgYmlnIGRp
-ZmZlcmVuY2UgZHVyaW5nIGFjdHVhbCB1c2U6IGN1cnJlbnQgY2FuIHRlbGwgYWxtb3N0Cj4gPiBp
-bnN0YW50bHkKPiA+IMKgdGhhdCBhIHN1cHBseSB3YXMgcGx1Z2dlZC1pbi91bnBsdWdnZWQgd2hp
-bGUgdGhlIGNoYXJnaW5nL2Z1bGwgZmxhZ3MgdGFrZSBhCj4gPiBsb3QKPiA+IGxvbmdlciB0byBi
-ZSB1cGRhdGVkLiBBbHNvLCB0aGUgZnVsbCBmbGFnIGlzIG5ldmVyIHNldCBpbiBteSBjYXNlIChw
-ZXJoYXBzCj4gPiBpdAo+ID4gc3RpbGwgZXhwZWN0cyB0aGUgaW5pdGlhbCBmdWxsIGNoYXJnZSB2
-YWx1ZSkgZXZlbiB0aG91Z2ggaXQgc2hvdWxkIGJlLgo+ID4gCj4gPiBJIGRvbid0IHRoaW5rIHRo
-YXQgd2lsbCBjYXVzZSBhIHByb2JsZW0gZm9yIG90aGVyIGNoaXBzIG9mIHRoZSBmYW1pbHkKPiA+
-IGFueXdheToKPiA+IHRoZXkgc2hvdWxkIG9ubHkgYmVuZWZpdCBmcm9tIHRoaXMhCj4gPiAKPiA+
-ID4gPiBUaGlzIGltcGxlbWVudHMgc3VjaCBhIGNvcnJlY3Rpb24gd2l0aCBhIGRlZGljYXRlZCBm
-dW5jdGlvbiwgY2FsbGVkCj4gPiA+ID4gd2hlbiByZXRyaWV2aW5nIHRoZSBzdXBwbHkgc3RhdHVz
-Lgo+ID4gPiA+IAo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFBhdWwgS29jaWFsa293c2tpIDxjb250
-YWN0QHBhdWxrLmZyPgo+ID4gPiA+IC0tLQo+ID4gPiA+IMKgZHJpdmVycy9wb3dlci9zdXBwbHkv
-YnEyN3h4eF9iYXR0ZXJ5LmMgfCAyOAo+ID4gPiA+ICsrKysrKysrKysrKysrKysrKysrKysrKysr
-KysKPiA+ID4gPiDCoDEgZmlsZSBjaGFuZ2VkLCAyOCBpbnNlcnRpb25zKCspCj4gPiA+ID4gCj4g
-PiA+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvcG93ZXIvc3VwcGx5L2JxMjd4eHhfYmF0dGVyeS5j
-Cj4gPiA+ID4gYi9kcml2ZXJzL3Bvd2VyL3N1cHBseS9icTI3eHh4X2JhdHRlcnkuYwo+ID4gPiA+
-IGluZGV4IGNhZGUwMGRmNjE2Mi4uZjc2OTRlNzc1ZTY4IDEwMDY0NAo+ID4gPiA+IC0tLSBhL2Ry
-aXZlcnMvcG93ZXIvc3VwcGx5L2JxMjd4eHhfYmF0dGVyeS5jCj4gPiA+ID4gKysrIGIvZHJpdmVy
-cy9wb3dlci9zdXBwbHkvYnEyN3h4eF9iYXR0ZXJ5LmMKPiA+ID4gPiBAQCAtMTE3MSw4ICsxMTcx
-LDIyIEBAIHN0YXRpYyBpbnQgYnEyN3h4eF9iYXR0ZXJ5X3N0YXR1cyhzdHJ1Y3QKPiA+ID4gPiBi
-cTI3eHh4X2RldmljZV9pbmZvICpkaSwKPiA+ID4gPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHVuaW9uIHBvd2VyX3N1
-cHBseV9wcm9wdmFsICp2YWwpCj4gPiA+ID4gwqB7Cj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoGlu
-dCBzdGF0dXM7Cj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgaW50IGN1cnI7Cj4gPiA+ID4gK8KgwqDC
-oMKgwqDCoMKgaW50IGZsYWdzOwo+ID4gPiA+ICsKPiA+ID4gPiArwqDCoMKgwqDCoMKgwqBjdXJy
-ID0gYnEyN3h4eF9yZWFkKGRpLCBCUTI3WFhYX1JFR19BSSwgZmFsc2UpOwo+ID4gPiA+ICvCoMKg
-wqDCoMKgwqDCoGlmIChjdXJyIDwgMCkgewo+ID4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqBkZXZfZXJyKGRpLT5kZXYsICJlcnJvciByZWFkaW5nIGN1cnJlbnRcbiIpOwo+ID4g
-PiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZXR1cm4gY3VycjsKPiA+ID4gPiAr
-wqDCoMKgwqDCoMKgwqB9Cj4gPiA+IAo+ID4gPiBNYXliZSByZWFkIGN1cnJlbnQgKHRoZW4gc2ln
-bi1mbGlwLCAqPSAxMDAwKSBhYm92ZSB0aGUgc3RhdHVzIGZpeD8KPiA+IAo+ID4gRnJvbSB3aGF0
-IEkgdW5kZXJzdG9vZCBvZiB0aGUgcmVzdCBvZiB0aGUgZHJpdmVyIChzZWUKPiA+IGJxMjd4eHhf
-YmF0dGVyeV9jdXJyZW50KSwKPiA+IHNpZ24gZmxpcCBpcyBkb25lIGRpZmZlcmVudGx5IGluIGJx
-MjcwMDAvYnEyNzAxMCBhbmQgb3RoZXJzLCBzbyBzaW5jZSB3ZQo+ID4gYWxyZWFkeQo+ID4gaGF2
-ZSBzcGVjaWZpYyBpbnN0cnVjdGlvbiBibG9ja3MsIEkgdGhpbmsgaXQncyBiZXN0IHRvIHB1dCB0
-aGUgY3VycmVudAo+ID4gY2FsY3VsYXRpb24gaW4gZWFjaC4KPiAKPiBJdCdzIEFuZHJldydzIGNh
-bGwsIGJ1dCB0byBteSBleWUgYSBzaW5nbGUgYmxvY2sgb2YgY29kZSBmb3IgY3VycmVudAo+IGNh
-bGMgaXMgbW9yZSByZWFkYWJsZS4KPiAKPiA+IEFsc28sIHNpbmNlIHdlIG9ubHkgdGVzdCB0aGUg
-Y3VycmVudCBhZ2FpbnN0IDAgSSB0aG91Z2h0IGl0IGRpZG4ndCBtYXR0ZXIKPiA+IHRoYXQKPiA+
-IHRoZSBzY2FsZSBpcyBub3QgdGhlIHNhbWUgZm9yIGJvdGggdmFsdWVzLiBJIGNvdWxkIGFkZCB0
-aGUgZm9sbG93aW5nIGZvciB0aGUKPiA+IGJxMjcwMDAvYnEyNzAxMDogKiBCUTI3WFhYX0NVUlJF
-TlRfQ09OU1RBTlQgLyBCUTI3WFhYX1JTCj4gPiBidXQgaXQgd29uJ3QgY2hhbmdlIGEgdGhpbmcu
-Cj4gPiAKPiA+ID4gPiDCoMKgwqDCoMKgwqDCoMKgaWYgKGRpLT5jaGlwID09IEJRMjcwMDAgfHwg
-ZGktPmNoaXAgPT0gQlEyNzAxMCkgewo+ID4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqBmbGFncyA9IGJxMjd4eHhfcmVhZChkaSwgQlEyN1hYWF9SRUdfRkxBR1MsIHRydWUpOwo+
-ID4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBpZiAoZmxhZ3MgJiBCUTI3MDAw
-X0ZMQUdfQ0hHUykgewo+ID4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgZGV2X2RiZyhkaS0+ZGV2LCAibmVnYXRpdmUgY3VycmVudCFcbiIpOwo+ID4g
-PiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgY3VyciA9
-IC1jdXJyOwo+ID4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB9Cj4gPiA+ID4g
-Kwo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgaWYgKGRpLT5jYWNoZS5m
-bGFncyAmIEJRMjcwMDBfRkxBR19GQykKPiA+ID4gPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzdGF0dXMgPSBQT1dFUl9TVVBQTFlfU1RBVFVTX0ZVTEw7
-Cj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBlbHNlIGlmIChkaS0+Y2Fj
-aGUuZmxhZ3MgJiBCUTI3MDAwX0ZMQUdfQ0hHUykKPiA+ID4gPiBAQCAtMTE4Miw2ICsxMTk2LDgg
-QEAgc3RhdGljIGludCBicTI3eHh4X2JhdHRlcnlfc3RhdHVzKHN0cnVjdAo+ID4gPiA+IGJxMjd4
-eHhfZGV2aWNlX2luZm8gKmRpLAo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgZWxzZQo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoHN0YXR1cyA9IFBPV0VSX1NVUFBMWV9TVEFUVVNfRElTQ0hBUkdJTkc7Cj4gPiA+ID4g
-wqDCoMKgwqDCoMKgwqDCoH0gZWxzZSB7Cj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoGN1cnIgPSAoaW50KSgoczE2KWN1cnIpICogMTAwMDsKPiA+ID4gPiArCj4gCj4gV2h5
-IHRydW5jYXRlIHRvIHMxNj8KClByZWNpc2VseSB0byBnZXQgdGhlIHNpZ24gcmlnaHQuIEJhc2lj
-YWxseSwgd2UgZ2V0IGN1cnIgYXMgYW4gaW50LCBmb3Igd2hpY2gKbmVnYXRpdmUgdmFsdWVzIGlu
-ZGljYXRlIGFuIGVycm9yLCAqbm90KiBhIG5lZ2F0aXZlIGN1cnJlbnQuCgpUaGUgY3VycmVudCBp
-bmZvcm1hdGlvbiBpcyBvbmx5IGluIHRoZSBmaXJzdCAxNiBiaXRzLCBzbyBhbiBleHBsaWNpdCBj
-YXN0IHRvIHMxNgphbGxvd3MgcmV0cmlldmluZyB0aGUgc2lnbiBpbmZvcm1hdGlvbiBhbmQgZXh0
-ZW5kaW5nIGl0IHRvIDMyIGJpdHMuIFRoaXMgd2F5LCB3ZQpjYW4gdXNlIHRoZSBzaWduIGluZm9y
-bWF0aW9uIGxhdGVyIG9uLgoKVGhlIHNhbWUgdGhpbmcgaXMgZG9uZSBpbiB0aGUgcmVndWxhciBj
-dXJyZW50IGNhbGN1bGF0aW9uIGZ1bmN0aW9uLCBzbyBpdCdzCm5vdGhpbmcgbmV3IGludHJvZHVj
-ZWQgYnkgdGhpcyBjaGFuZ2UuCgo+ID4gPiA+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgaWYgKGRpLT5jYWNoZS5mbGFncyAmIEJRMjdYWFhfRkxBR19GQykKPiA+ID4gPiDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzdGF0dXMgPSBQT1dFUl9T
-VVBQTFlfU1RBVFVTX0ZVTEw7Cj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqBlbHNlIGlmIChkaS0+Y2FjaGUuZmxhZ3MgJiBCUTI3WFhYX0ZMQUdfRFNDKQo+ID4gPiA+IEBA
-IC0xMTkwLDYgKzEyMDYsMTggQEAgc3RhdGljIGludCBicTI3eHh4X2JhdHRlcnlfc3RhdHVzKHN0
-cnVjdAo+ID4gPiA+IGJxMjd4eHhfZGV2aWNlX2luZm8gKmRpLAo+ID4gPiA+IMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHN0YXR1cyA9IFBPV0VSX1NVUFBM
-WV9TVEFUVVNfQ0hBUkdJTkc7Cj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoH0KPiA+ID4gPiAKPiA+
-ID4gPiArCj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgaWYgKGN1cnIgPT0gMCAmJiBzdGF0dXMgIT0g
-UE9XRVJfU1VQUExZX1NUQVRVU19OT1RfQ0hBUkdJTkcpCj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoHN0YXR1cyA9IFBPV0VSX1NVUFBMWV9TVEFUVVNfRlVMTDsKPiA+ID4g
-PiArCj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgaWYgKHN0YXR1cyA9PSBQT1dFUl9TVVBQTFlfU1RB
-VFVTX0ZVTEwpIHsKPiA+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgLyogRHJh
-d2luZyBvciBwcm92aWRpbmcgY3VycmVudCB3aGVuIGZ1bGwgKi8KPiA+ID4gPiArwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgaWYgKGN1cnIgPiAwKQo+ID4gPiA+ICvCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgc3RhdHVzID0gUE9XRVJfU1VQUExZX1NU
-QVRVU19DSEFSR0lORzsKPiA+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgZWxz
-ZSBpZiAoY3VyciA8IDApCj4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqBzdGF0dXMgPSBQT1dFUl9TVVBQTFlfU1RBVFVTX0RJU0NIQVJHSU5HOwo+
-ID4gPiA+ICvCoMKgwqDCoMKgwqDCoH0KPiA+ID4gPiArCj4gPiA+ID4gwqDCoMKgwqDCoMKgwqDC
-oGlmIChkaS0+c3RhdHVzX3JldHJ5ID09IDAgJiYgZGktPnN0YXR1c19jaGFuZ2VfcmVmZXJlbmNl
-ICE9Cj4gPiA+ID4gc3RhdHVzKQo+ID4gPiA+IHsKPiA+ID4gPiDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoGRpLT5zdGF0dXNfY2hhbmdlX3JlZmVyZW5jZSA9IHN0YXR1czsKPiA+ID4g
-PiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHBvd2VyX3N1cHBseV9jaGFuZ2VkKGRp
-LT5iYXQpOwo+ID4gPiA+IC0tCj4gPiA+ID4gMi4xMi4yCj4gPiA+ID4gCj4gPiAKPiA+IC0tCj4g
-PiBQYXVsIEtvY2lhbGtvd3NraSwgZGV2ZWxvcGVyIG9mIGZyZWUgZGlnaXRhbCB0ZWNobm9sb2d5
-IGFuZCBoYXJkd2FyZSBzdXBwb3J0Cj4gPiAKPiA+IFdlYnNpdGU6IGh0dHBzOi8vd3d3LnBhdWxr
-LmZyLwo+ID4gQ29kaW5nIGJsb2c6IGh0dHBzOi8vY29kZS5wYXVsay5mci8KPiA+IEdpdCByZXBv
-c2l0b3JpZXM6IGh0dHBzOi8vZ2l0LnBhdWxrLmZyLyBodHRwczovL2dpdC5jb2RlLnBhdWxrLmZy
-LwotLSAKUGF1bCBLb2NpYWxrb3dza2ksIGRldmVsb3BlciBvZiBmcmVlIGRpZ2l0YWwgdGVjaG5v
-bG9neSBhbmQgaGFyZHdhcmUgc3VwcG9ydAoKV2Vic2l0ZTogaHR0cHM6Ly93d3cucGF1bGsuZnIv
-CkNvZGluZyBibG9nOiBodHRwczovL2NvZGUucGF1bGsuZnIvCkdpdCByZXBvc2l0b3JpZXM6IGh0
-dHBzOi8vZ2l0LnBhdWxrLmZyLyBodHRwczovL2dpdC5jb2RlLnBhdWxrLmZyLw==
+Hi,
 
+Le lundi 01 mai 2017 =C3=A0 11:30 -0700, Liam Breck a =C3=A9crit=C2=A0:
+> On Mon, May 1, 2017 at 3:46 AM, Paul Kocialkowski <contact@paulk.fr> wrot=
+e:
+> > Le dimanche 30 avril 2017 =C3=A0 15:03 -0700, Liam Breck a =C3=A9crit :
+> > > [dropped some CCs]
+> > >=20
+> > >=20
+> > > On Sun, Apr 30, 2017 at 1:37 PM, Paul Kocialkowski <contact@paulk.fr>
+> > > wrote:
+> > > > This passes the of_node from the bq27xxx i2c battery driver to the
+> > > > common code, so that it can be registered and provide external supp=
+lies
+> > > > linked with device-tree.
+> > > >=20
+> > > > Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
+> > > > ---
+> > > > =C2=A0drivers/power/supply/bq27xxx_battery.c=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0| 5 ++++-
+> > > > =C2=A0drivers/power/supply/bq27xxx_battery_i2c.c | 1 +
+> > > > =C2=A0include/linux/power/bq27xxx_battery.h=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0| 1 +
+> > > > =C2=A03 files changed, 6 insertions(+), 1 deletion(-)
+> > > >=20
+> > > > diff --git a/drivers/power/supply/bq27xxx_battery.c
+> > > > b/drivers/power/supply/bq27xxx_battery.c
+> > > > index 398801a21b86..6ef95442a918 100644
+> > > > --- a/drivers/power/supply/bq27xxx_battery.c
+> > > > +++ b/drivers/power/supply/bq27xxx_battery.c
+> > > > @@ -1351,7 +1351,10 @@ static void bq27xxx_external_power_changed(s=
+truct
+> > > > power_supply *psy)
+> > > > =C2=A0int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+> > > > =C2=A0{
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct power_supply=
+_desc *psy_desc;
+> > > > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct power_supply_conf=
+ig psy_cfg =3D { .drv_data =3D di, };
+> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct power_supply_conf=
+ig psy_cfg =3D {};
+> > > > +
+> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0psy_cfg.drv_data =3D di;
+> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0psy_cfg.of_node =3D di->=
+of_node;
+> > >=20
+> > > I don't think you need di->of_node, just the following -- we do this
+> > > to obtain data from devicetree via power_supply_get_battery_info()
+> > > https://patchwork.kernel.org/patch/9692335/
+> > >=20
+> > > struct power_supply_config psy_cfg =3D {
+> > > =C2=A0 .drv_data =3D di,
+> > > =C2=A0 .of_node =3D di->dev->of_node,
+> > > };
+> >=20
+> > That's a good point, thanks! Should I prepare v2 with this or rebase on=
+ top
+> > of
+> > the series you mentioned previously?
+>=20
+> Looks like Sebastian will queue my series this week (actually he just
+> did, but there's a later rev coming, so wait for that).
 
---=-OJykzdjLbu6QOGcMUMbi
+Good to know!
+
+> Also it would be nice to have docs in the DT binding on linking an
+> external power supply to fuel gauge. If you write up an example, I can
+> incorporate it into the docs patch in my series. Or you can file it as
+> a separate patch...
+
+Hooking up external suppliers is handled by the supply core code and is alr=
+eady
+described at: Documentation/devicetree/bindings/power/supply/power_supply.t=
+xt
+
+I don't think there's a need to add this in every supply's dt documentation=
+.
+
+> > > There is some (gcc?) bug on armv7 or omap which causes separate
+> > > assignments to corrupt the stack.
+> >=20
+> > That's weird, but definitely good to know.
+> >=20
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0INIT_DELAYED_WORK(&=
+di->work, bq27xxx_battery_poll);
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0mutex_init(&di->loc=
+k);
+> > > > diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c
+> > > > b/drivers/power/supply/bq27xxx_battery_i2c.c
+> > > > index c68fbc3fe50a..38a0422a4192 100644
+> > > > --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+> > > > +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+> > > > @@ -96,6 +96,7 @@ static int bq27xxx_battery_i2c_probe(struct i2c_c=
+lient
+> > > > *client,
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->chip =3D id->dr=
+iver_data;
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->name =3D name;
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->bus.read =3D bq=
+27xxx_battery_i2c_read;
+> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->of_node =3D client->=
+dev.of_node;
+> > > >=20
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0ret =3D bq27xxx_bat=
+tery_setup(di);
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (ret)
+> > > > diff --git a/include/linux/power/bq27xxx_battery.h
+> > > > b/include/linux/power/bq27xxx_battery.h
+> > > > index b312bcef53da..94637b77ecbf 100644
+> > > > --- a/include/linux/power/bq27xxx_battery.h
+> > > > +++ b/include/linux/power/bq27xxx_battery.h
+> > > > @@ -63,6 +63,7 @@ struct bq27xxx_device_info {
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0const char *name;
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct bq27xxx_acce=
+ss_methods bus;
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct bq27xxx_reg_=
+cache cache;
+> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct device_node *of_n=
+ode;
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int charge_design_f=
+ull;
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0unsigned long last_=
+update;
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct delayed_work=
+ work;
+> > > > --
+> > > > 2.12.2
+> > > >=20
+> >=20
+> > --
+> > Paul Kocialkowski, developer of free digital technology and hardware su=
+pport
+> >=20
+> > Website: https://www.paulk.fr/
+> > Coding blog: https://code.paulk.fr/
+> > Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
+--=20
+Paul Kocialkowski, developer of free digital technology and hardware suppor=
+t
+
+Website: https://www.paulk.fr/
+Coding blog: https://code.paulk.fr/
+Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
+--=-bUl0ijswPrll+msSJAFm
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlkHgGcACgkQhP3B6o/u
-lQzOQg//QIV0Yo8MVclaBZx0JGrab+2MWdz1iGjLtzSzfafkaHYUcZ68NJVY3JUm
-XZl36utbRoc6tv+IBI2OaayoP+m5ei6HvWgxWSJqxIYpb3xWgT++mg22RaONNwnO
-jBAKnTb6T0mvOryyrb+Z8YJxKcKrQlMBWN6ONlcXxi71Yq9GjX4089CejnZ9gGc1
-xQME+yjL0/x3Nyj5MpDpl86Qpg3og3Fu8GZ9wziCutUQ/iFtlm+6HGv9XdmIidsR
-sEhbu0FcZjWzFxKyYtWK6YiYFWJEW4x2xP1WqbBAwT2wmO6M+l6nsClHlFNKTwnD
-oTvLRACKR8Hl94yyoozpFSFICJXQt78+sPMRN/IcVIlPlbZzVl+c5/yA2Wt5kySV
-u9G2czJAR0C8xDk8i523NWe5Ka+OXVUH+ArPc5iHtUrg6WLvxVCzhzb5YpQuRJfC
-eBu713rXzNYXEu628+8ALeWQCBApaEUUyEexPx3pilvhdwZDBC7L7qEVKiAY6YGk
-rwx+ureICW6pIpO2Zbo5IOlxaADAhau4zLX0x3HdBEIfl6GEdAznFJeRROOUZ99o
-Gt43Myw6gVeyYu65Thx0Ao3AnVFFABrJ+nTpXWyhWM5SqbAC7Kq2utNX9p/zlMbQ
-D3VENhwuDqPwV9AlmFgHH8XZgk7z5RqosR/GuLrlLZlpYhCAE+M=
-=u8gW
+iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlkHgQAACgkQhP3B6o/u
+lQy0ow/+PxYhlISlabyz231JoiLnry983BOdA2S7Eyj/5DCPEou1iObK+03q3z5r
++JHFqtSmC7GSP+3beYF9ucDOIbRhdmR4j+auPE3C3sWFPlvvvV6Ia0KgyPYPEdQk
+HBMIIbfdAq+lALgtSLtG2dFCtRfChfLNwpN4fK9/KavAIyBTOMTqQyWp8UhY5C6k
+8Fnp1NhYHMnKPGIXJ14Fe6lBX3X1hbUTG/b33XSXjkmgujA9qJwEAcohl5wSc2av
+3z13doA7ezLayuSmaoYpGcQB9H8KK1yguViYvaKZ//Or0JXGEyO2MurEb1aEvp4x
+IWbIP35D8x4rlyQPpn0iqquhlLzhexd6UMBz2fdadVsRsB2rUPXui2RNjSIeSRGw
+lnzNy2FKlvZcYbKqHwUtXOVqVbP9McnEY79bcAOTRw3w9Ufnyh01Gmjid2UaG1Jb
+ceQHZrvbepCRFcZXqSViMwaxL2Kh61fsGqDM/AC62o/a2vTnMG0zHl5cU83LhHXn
+Oov7OSV1VIhXnc38Y3fo6Sw7DEQvI8+nztUEF1w0FYFwK4txh2htHsRRIaDTP9aJ
+qq179WdDbtfm5cSJMTxSgkuy3S8IEJ/Et/iWPWeq9qTpKgJQ2uaIW2vRtQzuz1Pr
+oMUki600YY3YDTQRPVvHtHXZVu8jWEX+FnEeCet6RrcGaEq1YQg=
+=ox3P
 -----END PGP SIGNATURE-----
 
---=-OJykzdjLbu6QOGcMUMbi--
+--=-bUl0ijswPrll+msSJAFm--
