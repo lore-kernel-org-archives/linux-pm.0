@@ -1,63 +1,61 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v2 13/14] power: max17042_battery: Add support for the
- SCOPE property
-Date: Mon, 1 May 2017 13:41:17 +0200
-Message-ID: <20170501114117.ccff6ajwohxlnkqt@earth>
+Subject: Re: [PATCH v2 12/14] power: max17042_battery: Add support for the
+ CHARGE_NOW property
+Date: Mon, 1 May 2017 13:40:53 +0200
+Message-ID: <20170501114053.mqd6hqw4gnfumjnd@earth>
 References: <20170414183259.24382-1-hdegoede@redhat.com>
- <20170414183259.24382-13-hdegoede@redhat.com>
+ <20170414183259.24382-12-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="qf7pr6ahlv6nodkb"
+        protocol="application/pgp-signature"; boundary="uzc2ctgxx4vn5dym"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:57746 "EHLO
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:57743 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754223AbdEALlU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 07:41:20 -0400
+        with ESMTP id S932951AbdEALk4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 07:40:56 -0400
 Content-Disposition: inline
-In-Reply-To: <20170414183259.24382-13-hdegoede@redhat.com>
+In-Reply-To: <20170414183259.24382-12-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
 Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
 
 
---qf7pr6ahlv6nodkb
+--uzc2ctgxx4vn5dym
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Apr 14, 2017 at 08:32:58PM +0200, Hans de Goede wrote:
-> Add support for the SCOPE property, always return SCOPE_SYSTEM,
-> as the max170xx is used for the main battery on all known systems
-> with a max170xx.
+On Fri, Apr 14, 2017 at 08:32:57PM +0200, Hans de Goede wrote:
+> Atleast upower prefers the more precise charge_now sysfs value over
+> capacity and the max17042 has the info, so lets export it.
 >=20
 > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 
 Thanks, queued.
 
 -- Sebastian
 
---qf7pr6ahlv6nodkb
+--uzc2ctgxx4vn5dym
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHHt0ACgkQ2O7X88g7
-+prrFg/5AdE1EA5js8/26OD6A7od40uDQcZ4QgUFTQ/ZZ01BvEfo74LKaZFovjEb
-FQlFRXmhKKdtDLrxCTG8q4nONKtoGPUQ1/dp5/36sdlF4GCo0au17k9LiSirzu0j
-FzlsUR2/KEWE+31Rugv+ueSEFJ1gpjeA2HsbLHCesLQMZP3feZ+H0gIWcLKBN78t
-yCT7B7hxFwUCyUK53CebMPMwsSkV3MiKLEhR+xM8TPZr+Sa3NBtfMD508wWCKSWn
-ibtkKxw8JMXPEE/rhokO6uUkkjxfYt8O4vERu8esmOj4CZ4b8rQbmH/+wruyNsUa
-m164FT0Vu+o4/vdLn5KR8Ie6sN5c7Hy5pCAWcul+wiQJ4Z/2ZzP374f0k+JcqUk2
-/12tbIabMLtINxKNkFTxkkwoDpH9KQQcuOxfIen9nW3Y0p89LzwXBK39Zp6Rcm8k
-dlgXs7fbdCKkuO1bIsyT5QmQDCvfRrIgPEQ26YwIhyb5OJg30HaI+DJvJ0HyHiU2
-kYkzUWd0ylmGgAvWRGPY2AYyp3Nw3xfCFhRGtLJF1oAEtYqVMuTAqby4CDEnM+An
-8xcR3w8xnXYqpWOQJgxkFhKt5eTT+wFbgVnVDh8UxmQnBdnbCZmhZxu6nZLOckhf
-iQtxMq6BICl+EvEssSKB8jcjN5bRVMPOxHHfgJfgkP8m/8wqnsk=
-=2AKM
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHHsQACgkQ2O7X88g7
++ppfPxAAmujXG4qSz9F1cHXDcyYwcV+uZQcnmohpSlxH/RjCGUAhGyPht9W5oBHc
+P2ASKP2h9VYGbqOoh2yl9dGOtjOxnsc82KJis2z8zjJqFe04xaGouadza6Mrysc6
+osfsY3OraH8BTVVR/YpjDLhpCH0uiP40+/mgkkaFqEdvsG0kq2bXp6azHPBdSZBL
+oalTOX4+qfp4kciqSyF6J2ERuBT8wwH9l56avzCjThPl9vt31XRI0p7Wl61Bp76A
+Jx2tkBZg+LptC7dGVxiTCz2uHUzRn+yI+XDzkaRLtsJVPLkEx1L8HYOC9q0QBv+m
+zXtFivb7zFiZzn/vRRmMbTcGYp/+5meSYvfEo00RZX7zRE7qh3MyXzpTi/ot2tlW
+79V1OfGCj9fZ3vP3kak3sbxikmSV8uPMhBr7fSiNwTsj14+fQUHgEeiqZ2NprKg+
+QJk5rKUtmfkdv/f5QS/ZGNQ5FDS8Cdupb6ddZ0DFzn07n5HGLz2ceywCJjWZUH59
+31KmMNTW9xPNeb3nr3FeX3TDASs7583MMlmlMGJfpdqvNp8VOVkhY1vSV3pGJPlm
+dGuKwVtlqH/zOtGVF0UARhWmDewbt6iFVjskuvqrX8l2v6TFQFz1Zkea2qmkMk2O
+RR41Pvb4kRjzQGcNJ4xJJEDFCqula7mVaO2Rrk5JLz5pRDEo6ac=
+=FY+x
 -----END PGP SIGNATURE-----
 
---qf7pr6ahlv6nodkb--
+--uzc2ctgxx4vn5dym--
