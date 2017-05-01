@@ -1,221 +1,127 @@
 From: Paul Kocialkowski <contact@paulk.fr>
-Subject: Re: [PATCH 4/5] power: supply: bq27xxx: Look for status change on
- external power change
-Date: Mon, 01 May 2017 12:45:13 +0200
-Message-ID: <1493635513.6493.9.camel@paulk.fr>
+Subject: Re: [PATCH 1/5] power: supply: bq27xxx: Pass of_node along to allow
+ device-tree supply
+Date: Mon, 01 May 2017 12:46:31 +0200
+Message-ID: <1493635591.6493.10.camel@paulk.fr>
 References: <20170430203801.32357-1-contact@paulk.fr>
-         <20170430203801.32357-4-contact@paulk.fr>
-         <CAKvHMgRxC7VuU=_w10D4iu0zUC26gM=VgbA+6N-4abPskCEOww@mail.gmail.com>
+         <CAKvHMgSijN8vQUePoTKRC5nqaW-Shh4_9ZKiKq0Uae3ZLkiDSA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg="pgp-sha256";
-        protocol="application/pgp-signature"; boundary="=-MfoFQnOI93qh0Bx9Mfn1"
+        protocol="application/pgp-signature"; boundary="=-2d20kZQ/BomxZLkm8mYL"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gagarine.paulk.fr ([109.190.93.129]:53586 "EHLO
+Received: from gagarine.paulk.fr ([109.190.93.129]:60459 "EHLO
         gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S378802AbdEAKqF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 06:46:05 -0400
-In-Reply-To: <CAKvHMgRxC7VuU=_w10D4iu0zUC26gM=VgbA+6N-4abPskCEOww@mail.gmail.com>
+        with ESMTP id S2996970AbdEAKrV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 06:47:21 -0400
+In-Reply-To: <CAKvHMgSijN8vQUePoTKRC5nqaW-Shh4_9ZKiKq0Uae3ZLkiDSA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
-Cc: linux-pm@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
 
 
---=-MfoFQnOI93qh0Bx9Mfn1
+--=-2d20kZQ/BomxZLkm8mYL
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-Le dimanche 30 avril 2017 =C3=A0 15:13 -0700, Liam Breck a =C3=A9crit=C2=A0=
+Le dimanche 30 avril 2017 =C3=A0 15:03 -0700, Liam Breck a =C3=A9crit=C2=A0=
 :
-> Hi Paul,
+> [dropped some CCs]
 >=20
-> On Sun, Apr 30, 2017 at 1:38 PM, Paul Kocialkowski <contact@paulk.fr> wro=
+>=20
+> On Sun, Apr 30, 2017 at 1:37 PM, Paul Kocialkowski <contact@paulk.fr> wro=
 te:
-> > This introduces a dedicated status change work to look for power
-> > status change. It is triggered by external power change notifications
-> > and periodically retries detecting a power status change for 5 seconds.
+> > This passes the of_node from the bq27xxx i2c battery driver to the
+> > common code, so that it can be registered and provide external supplies
+> > linked with device-tree.
 > >=20
-> > This is largely inspired by a similar mechanism from the sbs-battery
-> > driver.
->=20
-> Maybe give an example which needs this? What can issue a notification,
-> under what circumstances?
-
-The external_power_change function is called when a supplier to the battery=
- (in
-most cases, an external charger) detected a status change (e.g. plug/unplug=
-)
-which will affect the battery (the state should change from charging/full t=
-o
-discharging).
-
-For the best user experience, we need to detect that change ASAP. Retrievin=
-g the
-status in the function directly is a bit too early, so a dedicated work is
-called a second after the change and it tries to detect a status change ASA=
-P.
-
-With that mechanism, battery status changes due to plug/unplug take a few
-seconds to be reflected.
-
-> Also why should poll_work no longer be rescheduled on notify?
-
-poll_work only updates the current charge, it's not in charge of detecting
-status changes. The important point here is that the status change detectio=
-n
-work must be called seconds after the external power change (and actually, =
-it
-must keep running for a few seconds to detect quick charging->full transiti=
-ons).
-
-Is that a bit more clear?
-
 > > Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
 > > ---
-> > =C2=A0drivers/power/supply/bq27xxx_battery.c | 38
-> > ++++++++++++++++++++++++++++++++--
-> > =C2=A0include/linux/power/bq27xxx_battery.h=C2=A0=C2=A0|=C2=A0=C2=A03 +=
-++
-> > =C2=A02 files changed, 39 insertions(+), 2 deletions(-)
+> > =C2=A0drivers/power/supply/bq27xxx_battery.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0| 5 ++++-
+> > =C2=A0drivers/power/supply/bq27xxx_battery_i2c.c | 1 +
+> > =C2=A0include/linux/power/bq27xxx_battery.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0| 1 +
+> > =C2=A03 files changed, 6 insertions(+), 1 deletion(-)
 > >=20
 > > diff --git a/drivers/power/supply/bq27xxx_battery.c
 > > b/drivers/power/supply/bq27xxx_battery.c
-> > index 926bd58344d9..cade00df6162 100644
+> > index 398801a21b86..6ef95442a918 100644
 > > --- a/drivers/power/supply/bq27xxx_battery.c
 > > +++ b/drivers/power/supply/bq27xxx_battery.c
-> > @@ -1190,6 +1190,11 @@ static int bq27xxx_battery_status(struct
-> > bq27xxx_device_info *di,
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-status =3D POWER_SUPPLY_STATUS_CHARGING;
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> >=20
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (di->status_retry =3D=3D =
-0 && di->status_change_reference !=3D status)
-> > {
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0di->status_change_reference =3D status;
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0power_supply_changed(di->bat);
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> > +
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0val->intval =3D status;
-> >=20
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return 0;
-> > @@ -1340,12 +1345,38 @@ static int bq27xxx_battery_get_property(struct
-> > power_supply *psy,
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return ret;
-> > =C2=A0}
-> >=20
-> > +static void bq27xxx_status_change(struct work_struct *work)
-> > +{
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct bq27xxx_device_info *=
-di =3D
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0contai=
-ner_of(work, struct bq27xxx_device_info,
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0sta=
-tus_work.work);
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0union power_supply_propval v=
-al;
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int ret;
-> > +
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0bq27xxx_battery_update(di);
-> > +
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0ret =3D bq27xxx_battery_stat=
-us(di, &val);
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (ret < 0)
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0return;
-> > +
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (di->status_change_refere=
-nce !=3D val.intval) {
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0di->status_change_reference =3D val.intval;
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0power_supply_changed(di->bat);
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> > +
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (di->status_retry > 0) {
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0di->status_retry--;
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0schedule_delayed_work(&di->status_work, HZ);
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
-> > +}
-> > +
-> > =C2=A0static void bq27xxx_external_power_changed(struct power_supply *p=
-sy)
-> > =C2=A0{
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct bq27xxx_device_i=
-nfo *di =3D power_supply_get_drvdata(psy);
-> >=20
-> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cancel_delayed_work_sync(&di=
-->poll_work);
-> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0schedule_delayed_work(&di->p=
-oll_work, 0);
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cancel_delayed_work_sync(&di=
-->status_work);
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0schedule_delayed_work(&di->s=
-tatus_work, HZ);
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->status_retry =3D 5;
-> > =C2=A0}
-> >=20
+> > @@ -1351,7 +1351,10 @@ static void bq27xxx_external_power_changed(struc=
+t
+> > power_supply *psy)
 > > =C2=A0int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
-> > @@ -1357,8 +1388,10 @@ int bq27xxx_battery_setup(struct bq27xxx_device_=
-info
-> > *di)
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0psy_cfg.of_node =3D di-=
->of_node;
-> >=20
+> > =C2=A0{
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct power_supply_des=
+c *psy_desc;
+> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct power_supply_config p=
+sy_cfg =3D { .drv_data =3D di, };
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct power_supply_config p=
+sy_cfg =3D {};
+> > +
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0psy_cfg.drv_data =3D di;
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0psy_cfg.of_node =3D di->of_n=
+ode;
+>=20
+> I don't think you need di->of_node, just the following -- we do this
+> to obtain data from devicetree via power_supply_get_battery_info()
+> https://patchwork.kernel.org/patch/9692335/
+>=20
+> struct power_supply_config psy_cfg =3D {
+> =C2=A0 .drv_data =3D di,
+> =C2=A0 .of_node =3D di->dev->of_node,
+> };
+
+That's a good point, thanks! Should I prepare v2 with this or rebase on top=
+ of
+the series you mentioned previously?
+
+> There is some (gcc?) bug on armv7 or omap which causes separate
+> assignments to corrupt the stack.
+
+That's weird, but definitely good to know.
+
 > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0INIT_DELAYED_WORK(&di->=
-poll_work, bq27xxx_battery_poll);
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0INIT_DELAYED_WORK(&di->statu=
-s_work, bq27xxx_status_change);
+work, bq27xxx_battery_poll);
 > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0mutex_init(&di->lock);
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->regs =3D bq27xxx_re=
-gs[di->chip];
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->status_change_reference =
-=3D POWER_SUPPLY_STATUS_UNKNOWN;
+> > diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c
+> > b/drivers/power/supply/bq27xxx_battery_i2c.c
+> > index c68fbc3fe50a..38a0422a4192 100644
+> > --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+> > +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+> > @@ -96,6 +96,7 @@ static int bq27xxx_battery_i2c_probe(struct i2c_clien=
+t
+> > *client,
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->chip =3D id->driver=
+_data;
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->name =3D name;
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->bus.read =3D bq27xx=
+x_battery_i2c_read;
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->of_node =3D client->dev.=
+of_node;
 > >=20
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0psy_desc =3D devm_kzall=
-oc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (!psy_desc)
-> > @@ -1400,6 +1433,7 @@ void bq27xxx_battery_teardown(struct
-> > bq27xxx_device_info *di)
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0poll_interval =3D 0;
-> >=20
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cancel_delayed_work_syn=
-c(&di->poll_work);
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0cancel_delayed_work_sync(&di=
-->status_work);
-> >=20
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0power_supply_unregister=
-(di->bat);
-> >=20
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0ret =3D bq27xxx_battery=
+_setup(di);
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (ret)
 > > diff --git a/include/linux/power/bq27xxx_battery.h
 > > b/include/linux/power/bq27xxx_battery.h
-> > index 0a9af513165a..16d604681ace 100644
+> > index b312bcef53da..94637b77ecbf 100644
 > > --- a/include/linux/power/bq27xxx_battery.h
 > > +++ b/include/linux/power/bq27xxx_battery.h
-> > @@ -67,6 +67,9 @@ struct bq27xxx_device_info {
+> > @@ -63,6 +63,7 @@ struct bq27xxx_device_info {
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0const char *name;
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct bq27xxx_access_m=
+ethods bus;
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct bq27xxx_reg_cach=
+e cache;
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct device_node *of_node;
 > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int charge_design_full;
 > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0unsigned long last_upda=
 te;
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct delayed_work pol=
-l_work;
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct delayed_work status_w=
-ork;
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int status_retry;
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int status_change_reference;
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct power_supply *ba=
-t;
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct list_head list;
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct mutex lock;
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct delayed_work wor=
+k;
 > > --
 > > 2.12.2
 > >=20
@@ -226,26 +132,26 @@ t
 Website: https://www.paulk.fr/
 Coding blog: https://code.paulk.fr/
 Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
---=-MfoFQnOI93qh0Bx9Mfn1
+--=-2d20kZQ/BomxZLkm8mYL
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlkHEbkACgkQhP3B6o/u
-lQwNGRAAnCtbAf1zu+vIRJmL/BwRO9wsfnkjXsr3rtLZ5zCDMVUr6K9y1tDpJ8M7
-lMJLqA0iydAZkl1dZQFX29ZPpmxppkfVUFYEoXWZHQSy7M/sMpe/LldCGIoxso+Y
-4Mur6sMSFX8zubZeIW4Ef8g1epI90KOWUMK5oAv+NQvmEG3fUMQ1BTRz3icELWeP
-ZS5pCqvGA0Hn2MQPvc4svrhcdM/pVIhHulAnJCirlH+CW+rWVQ9aGN2vJgDSjPh8
-VAwQ5dD7BhMzxJ7C7T7G98H4eG364SQAJxpr9UTg7aOGrpsjqzHCdZxJsqNQWlYI
-y+KfaUYHCOZrMNTmvjji1FuCbMGb0r8HST8njhbY4T29EO21OhDbrq7e9WN9qspS
-4aOU3m0fsdA77Ptub59GPZjclBhvCLNEoj0158gQf8+nipY8/UtI4n03TCeujU+N
-V/MDsQbznJUh1drlupDBFXnzryfn6qTANv9ij6QFE9/Qj0v+WWGZJ8c8QqhU3Aa8
-CIgxGcjvDJX3tUNTE037rx6S8IS7eU5AecdEEcbpzGIqOFTl1Mky2haaBraCXGIA
-1SmQ20irZbHm5Zu5JR0QGmaxHzTSLA3FUrS5qWTJkTkxBwnA0JwYqPjL+RXifRIo
-cJegZXmFoi9rGUzJXAH3WiZXY+uUwOakTSdJbKqGqmOA6mUDtPg=
-=5eWx
+iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlkHEgcACgkQhP3B6o/u
+lQze0w/8Cqr2mkKA2tH71KPvThH9+aQlHva+iFzbFYZ0gik2+CGl4ITbCadg5rVQ
+IqnhbFTk8VTVm+sV+lAZXao32PsPvbmP1MPdYkddJkU7YDm1tc7j+GcVooOmE4jj
+rKWqsSJFzyQpXQTbNWrhHmk0EpWNUmZDeSexG5i3jRZ0IY2+/jXXeYDsl6o4tree
+/HZ2ErbS6N9KgvoKVDRK947VgyQ99VnqOXv5WCClIPqqPQbnJT4U38FBf2LhqtuJ
+SJcNtgrEJfxwr0HdLqkiARZKl67Bpd3gapFtVsfn0S9B2fvlJF/yJArBXGxKf0QV
+Jxeo6vg1DfSuq59Ny5/tXWqurE88fLT1F+AZ5KrgpI4yPTUc+AYwQXYLHi5yCfTL
+hG5IqGeyCBPmBBaam5P9tomAe118tVIhcgv7qXB862dI4MbzDyhfooqYIP45wHeY
+OxH+v4K5r5q5yJBY6YkttxFT5hhki+ehywLH/gs+JZB0d+D4P/xPMASIr3XugBt/
+BDTh5Ny4xm/p5GvH0wiT8MP5p0KOdNC5R5ZH9lhSfQdmtL/Bnwyloyf0wAkEedwk
+6tDafI59OUJVxs3fkKg/Szwr/3cBR2sy8Oxalvvb4ha9ksY7kLJtdv5gycxKk92Q
+C1V/z9ZnzJj3yRl9WbB6OZGePmv5ZLSU+2YD/khD83HLDKnunIQ=
+=W3C6
 -----END PGP SIGNATURE-----
 
---=-MfoFQnOI93qh0Bx9Mfn1--
+--=-2d20kZQ/BomxZLkm8mYL--
