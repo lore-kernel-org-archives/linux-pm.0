@@ -1,101 +1,190 @@
-From: <eumann@t-online.de>
-Subject: 12323 linux-pm
-Date: Mon, 01 May 2017 07:14:47 -0000
-Message-ID: <149362288752.20800.5961251380537747534@hinet.net>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: [GIT PULL] power-supply changes for 4.12
+Date: Mon, 1 May 2017 10:33:15 +0200
+Message-ID: <20170501083315.itn2hhuvunh45d3d@earth>
 Mime-Version: 1.0
-Content-Type: application/zip; name="6440919537155.zip"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="ankmolxglvr6tx2f"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [37.114.165.129] ([37.114.165.129]:46117 "HELO hinet.net"
-        rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with SMTP
-        id S376899AbdEAHPO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 1 May 2017 03:15:14 -0400
-Content-Disposition: attachment
+Received: from mail.kernel.org ([198.145.29.136]:56154 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1952059AbdEAIdV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 1 May 2017 04:33:21 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-UEsDBBQAAAAIALE4oUqowILsBRIAAAYSAAAIAAAAOTI4Mi56aXB1WIVSFAgAXWLJE6RkCcndpVmR
-hpWQDkklFySU7l6QpTw4WBrpA5EQKelQ+naXFJCOpTtEWhouZ27mZu69mffmvXlf8PS0iIjpAQAA
-GaBa6p0mhwKQ0IsGABjVBwBI/2ilH0o9FHbyTkUYu3NL3kVRJ95ykJFxcUehbYsRL2YjwP3Pvnsl
-LTGmPjvoTW5x+gE831tCCSp59aQSEa96tGK2fkZYGO3W6VVYUHXHrURgCq89Ar3GHefo2+6hrpY2
-bq42nmOPm7A+iJC3woBWSwS1kz+gG3baeEchZel83Jt6cVoj5lONk60OpVfb9vFGgta3FNcw+3pZ
-lyUbYwDC6ptt3QEhL0gXXN0XgchppXDCyoT+xB7a3Jup/AzhvxC3SEiTyPWTlBKxB3o4bZ4sV0Gv
-wzc2Rm4LJujPv19VVYgzc2Qp6MIQKgvc+TpaGPtGE8f20C6I1Dg43QZGOzuaISAKhQSsqUgNYE3Q
-zbH9Xyjfa9POAEOd0dhDENxTLIonbWYSWMOa+eubzU3dz4VplmR6W7Qi8NqB16S5XWLTP+czq3b1
-fbOiY/1khLni9JWNKS3/CSmvbBGC7Cq1XxZANm3C8SLh0xMzOXTzGanVdHiNABPapI8Q7tE79yh+
-HqvhpTEE3WESZlYd4E4SvvB8DXSUyEtmUX2z6TkdiXLDKm8DFrM6JhensBQ0L6wJlUMj62aH/Z9x
-s6AF2aAgedsxGyufK1K6BYaUJNyghWt9ejHOY9tneel1sg421W6kg/v+OxEGosMVMOUurieAWNf1
-HSt6eEmR9gVqyJsSMNQMxVU8eukeK2LM/Q6RzrnC0EKvJafQ8nrW7ucixjhlWHtiI0T/cTwTv1DG
-g5jsaMt2lCW+V6Bc74smq3EZdYNGTy4yB7dyiA14LNgM+IogftyYU6ypfc4lpaLmNPFSY/Kjye6q
-TfCkph5vi491XVBkcGVtTHNCiViGTtzNg8idIoFVMCINyde9eT4vCUtXoxQ44GN3fUq+I2WefX7M
-TWSrWLsZFbVHsHr+vDPH2eG9yiSe8hP5RDWzcS/YtJtLNEOYIvW7DZarfzSvVyhaX+EBu/WxMte4
-PDGrfkETk0nb5iclt2d7+0Zs3PI9xA9vvLnMMxIlrX9apVBA/ZYoZX199EJFVeDAlvg0xClw3+rR
-kO/yomdRtuaWVyO7xWfC/TpsEQ/twNCInxIt3xvfXxBckvcZi4YLpNm8OTZcDmrtpFoJOFpaCTmG
-n3ZT0YQdMSp4JtvxGIUi5VqdXHWKUfmYb/XeeywlNnaeN/m9KVXa1q9jo/3yQB8PflCsRBY4YLyx
-/DtqBK/Fl9Fc48sndOUifioiPbTZiRHI8bjtj4HZxTcOFPLW4tHt6ku3IHIpbq1VDygdGntMmC25
-qKO1yBvGIyBLwiXUgn+CwwTlfw8/Wy9/e1q6aFxJtF6sJ0hk8Qv85KPIOYMsvSgop5+tfZf/afhj
-25lyt4Ww/CiIAT58xJ5DEicK76JpFASq6/BbaOA06jdIHM5+HQjqIQ2CCelh40GYeNRw9YyqL6TT
-DEadCrlys2z9Kdui7Tgsy5Q/cmgrSYmbc5DBEhyf8SCT1eB0yS0zKHl8VuXyh2ld5ZoQ99zPyO8q
-sbZ2pwkx92XNr6n9k+Fn/pIgU+n+T3dZVi1FV9xR074wPTkPKY1x04THUjM3RH2tyPLYLsGwQ8N8
-Rpjv7Q8u43pvWfWjuD6GGRtUXskDHuqFuA0xlgGw1xJzy9YPXGBmVyXSQiZnAzx13zpe3GdOkFAC
-+FabcvaJ8033z4ln5kHVExKbC/OTcYSwkF+jFZwnnst8X+SO3F3/fFvYvG8bWaO5WpqEJAB2+PxW
-v2mZfzSPkVW/tN90yBakHKDp70v6Kk01z0C4qEplpN7If04eLtq3k0LlN5G6Ou89AqFudyYLmI1E
-WULfeuL8c+IY7W4gpadx23rv6xVYzxra/C1jSWFGnaFJZq1xdGIyx/K/TP9IaIoNiVkp1oHqOwok
-SngHOnhdhlx0lqXEBTt1Gqgt3/VvZh7cscnUoZDemuCs9apcCCcXmSJpi3K6M1GNAjVEszWZHk9+
-eBFyHJPKb10/VGmychr9qF/1gCVQOwnVMPII2UL1UHvMNqps7WYN7MdLTlLMmH4fpcTolfTr8o/p
-vq1sgeOwdBsRtXYVnW6WhPsAIvKs0+et4DU3xkGSwoXAHsycN3Rvt95rIdzio7FlC756qnFB/wvf
-XCC6l25OLFKw+HB/6BwbKm3gCjHq1RBnl6L9pa0UArzT4Mo5bkVzcWVVh2rue8RMrNXloO032N4E
-qX267DjS7Gdw9Vr3oHpqgtS9IjMh0aCkplNnIoxoJ25y2npQgA5e0rz+fP36FU/AiHXm3aOXnuiQ
-lheTt+8wl2yXVzRbzLzKlLc3Lacr1NdFmz4qQWYBO3Vs8YEp2xZr9cjqG4nKnLTBdvYnstfWzcgm
-dV3Ssq6D4t8w19auJyZIN2roik+T/MXTgCdUAhEb6534tenSkPng9gX+K25UYir0Q7ELeuhoOqCO
-9/zSJRiVGw+FtE1bLi2wh/SgznxDLFmESLoH8LVr+B1b6vYLfsu3E+mpiqdNMsy5s5XmuOfY2jKc
-s8wu60l105w7AryynhRA43wiYZX3S2M1oG9XziosHDmL9XH6YKXRAxDT1w5/aPdtHBAQpr//VSoo
-8HOnTWDVV3MboabuV+E02p9Yth49EJ90jY5LTb5fpQyeFtEEInh0dWEm+CxAHnYEPjsqrIksiGW9
-2eRPsKzj863Ureai0lDn6ngCrlhkOqbQxeEN3Bsk6qKF12Py1mm4GzhYLM7NHSz6oq7XR0cvQHUH
-CiJuYtx3MMAusu88Zo2qFYW8yUQFBeafcGOM2T+Fttu7a9Lh07o30Uw/Vj4pNowTfVWBDlJsoIuL
-s0Ra925ZmUIr19YrWOBytQAl1ufF0Z1g0tOICqKOu7L+GE2Wweinul9w4rleGE/yTydGr7WViRyB
-eS/7wTnsukNvc9f3OsfCk2ah0F14Hsehj3zbPRntALbYTwrL56L6nAezxOOvknizlaIEc9btREPT
-dA03LfXyO12OHDeXkvSJOXUZcY9Mjbd3jiauvv/4MIzcfXSqhinbUTpHL3c2nvp4CvUf95MdtQne
-xGXrrL2Avylqv4lBjstk9TGjxIPkEAQuaBG82r1D+pRpmlEH9mzTjWQR1XrJrouyekmoIkeqBdDk
-W+sUnqwrjYninpphFVHTYoHJdaxQYqFaoczekLtcaSeh+HSeeqZ5MngRc8+HTAojuo2Z7QTpFdp8
-zooq523PahzC4c/QDZlDPBykLyU4KV6v6ANcPEl4MW1aqyWL6wzNd9GalfeGWWU1BcTvHIF6C8GQ
-GyvTI20DiPzyU2lF1/TP+x7LM5MlAhsntXY6bYN852Zcli/7kU1sWHh3nom7vBVV9lGkOc6zGaO2
-VgJSpNdT1ywXq80N1z7TP+u6iinfabrptVKqc4jHb6vA/caceYgnKR8wGaTuPZTO0XkVeb9oqYSl
-DOQ6F8ISsKXIfbms8X6V5O39iCRB0C7WkT4sOsOmK3QB0saH1OuRXAtShJ0kl+m38wzU07DscKRi
-g6OQNeaAmVYDuBBgRL1NfK9erMT35WeRQYKab16W3vWEX13C+BLPgPmvRHlU9hEwppOc6STG2rfr
-pBJsz1TwGsuZhqykGo+1W1oOFbwMu6ZHhMUy8rOWp0xaou//dk5QO/EAfW3MY0ROXfBc/urh/hR3
-W0G1tc2ofsIelhU2PtxNONS44PJNXCqXSpoL2oxJDE4WGIg824YWOZtvwZeVUkWZXki1dC1rFLqW
-erd3fcBkqdQJTbOIelgOZKTOTg2VWSLQuBZs5+6dDvHPa5zF775PpqVKumI15s4G7ez11jkhggI6
-M+QbxYqMCRL2krGR9vdCuwuF5wnWxcae7dglNLohzFsqmO8gq9fVCDE1UcFeupoUT8etFC3wci3V
-t6SC5Fnf83yLpnzB8aplUa1VCP60j5aGAjNnJQJQVsCa/Gj8LsPBV336BEKEKbu0a3g8EHAsyWkb
-A77FXwMaInq8oZCOyF0A6p21YvC7Bbuicbf8lQodMKWWRLZlSUcfJybbeNIOp7sE78W81zumRcST
-nCm+2D+Q4Nb6kBb8qxgzLNIcTGpXoJR7jjy6joZwxybp8UmdE3FHp43eJovSreWX3zeP8OgjSRz1
-GFH1yh6aezfTC0uVvrY1v+WFbZeCg7YaFXYinsGpbrhga2YUG5G7ruU32LPu9LnnIZfO5nfnM05n
-DUcawF/Qn4N4l9U8JFVvfBo9L8Ydtg8IZ9XtgwXG318q7eRISlTL/gJDhSZq2h4092epRJ06EOJn
-Lk3nJi3it40vtwKCL+aRLBNmcyu/TX5tFLi5JT97yrt+ixnIDyhoKurxMe+39Dp3lQhATA4NurMT
-p74YZ0sHIeO+ZvukHKGjnEKq4JnxRoeXYw41m2PubrpByzwGC+YMSJVXxk9Ynig4xxrvueoPk466
-BCGn5Tjh5cGr9QqdFAFHbkFpnD34ryzayodUO04xJWHVJZs2xJ4KEY5bJbzKfHsulRtKImn+axau
-TKODDbi0Fv1U4tJQBoLWU1noMm2Hj8U8QZVFJ7gN/vFLbsCyiFBDhF8Vfb7dLQUrWYCHN1ojmmKq
-ylYPaOSvP39uMD9tqvW+ecsBmju2YUIV8Zjgobk0hWF2fLeNGpx378piviKt8bQfn0xagtH+2SSF
-7d3jjj4zJgtAbr3L90mDa3bDX4ckq39SwBOsYIDQIv0KbQx5xv7uL6aOTw/qRdnN2GFvAkCZZgSs
-zcIub0zdh+wOUzo+4AflNPBeeyCILd+t8raR35SckwSM4ZtjjpTXLLCg0re8x/4kkrZAAPhm5GMP
-03hXaI4DUGH9VYfZeTVjhQlxjoL+M/7zfJMZ6WaklDOvov9rClyfQWf8WmZmmg/rgqCBxmyBVrTG
-5R3VXsVLoMzAWIkXPRTv+8CMT2vXwV46VJDJwR/q+xUKgPsfi/dWUBLDfQzJIESOF9fo61IDNIX6
-p2fb9sCFKp3H45rcNKLBGgJTN5SJvwaYv4wxDeIcrXj18cj92m5dnaQn2o9uM0P9kVFe/GrKQafP
-7JFoZBIfffIWYhvY52TW9UOL0v8gfbqpNS9GGYStKhJRcAtMjp0+f/Z4/Evx7YeXt9Y5yIDUqSsv
-KH2J3nayXtBISu93lSsmlmd9zSFlt/uk/qmt+r43sTQ77U5rc7s1r7gLEJIXq55D6LtsLUlsBIki
-AbvVSaKBs0E1eowuiJ46vqZz9UAibWk3GX2Ky/xHJ1XzrwPEl6IIQcKFlIN9zamHg2GBl4vZ/C8i
-9gwepti0/kqScR7DmELEibORocM3qMhLDU9k3wEOR6DSfPxCGD8z2nZlvqh9b1tUCX/lBo+/lKp8
-NJbSA3bkJwOUTLHIXgGkcBJ104U8Ynz+9NlxFzI46Wi85jDXQh0kbg2xZlyeaM/QRDTcOG4UYh9y
-VlYaGCdYqxUMM0DjPRQ7N4llVDVN+Q0evETh/MDehx/ekvXuosh87Wxr73mQ9eU9lh/w725mkjmR
-QiVwjUcfSO5HbMTwdVS3pUD4SkNPLp/WFDAD+M0smfdXTtEUEzv7SaEnbKPnLjLRTXXT8mnyRfSj
-880HTNoPYr6R5AHhxJJLI3GpI+HmgZCz/IbK5zobBeW2onJlx8I3hluZb9j5HoOevPFqZqbk9a3b
-jeyk1mljyczny5QHxbUasRbgq2x+uJYoIVVx70kcn9T/Vs4MG19y6JSfgSQXPhyK+zmSoGkGA+qp
-yZAaepMJJnWrbmGiJbesnc5NrvS8FireVzaMXymZg6ChqrknPC8dCYreZ3139WWo1cwg0rVPnjNB
-eh1Ox89bSLaa8nNefu69rrwuXp6YyL2xGD5wrj/MiNVh2Z252L1CvofdJfRnCHvLEdwnLHMkF9jf
-H/Pt0HoM9kZGrXvuYmvc5Mq24LIWn346YrRUdta4kc8LXd5oSn7Xi7s2v0iMpWK+3g70ZdrgOe5p
-njt72oNiGCvNHYL6R5+Rf9E/KhcGXZQ0QVTNO+EMdrE8yd4H/fO3AD0tAkJ5wP8dM2DA3+D4U/69
-aSj+KQgAIIAbMfltxG8jBP91PS0gyV+bP2j6h6fT/Jl+B1BLAQI/ABQAAAAIALE4oUqowILsBRIA
-AAYSAAAIACQAAAAAAAAAIAAAAAAAAAA5MjgyLnppcAoAIAAAAAAAAQAYACRPF/+DwtIBJE8X/4PC
-0gEkTxf/g8LSAVBLBQYAAAAAAQABAFoAAAArEgAAAAA=
+
+--ankmolxglvr6tx2f
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Linus,
+
+The following changes since commit c02ed2e75ef4c74e41e421acb4ef1494671585e8:
+
+  Linux 4.11-rc4 (2017-03-26 14:15:16 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git =
+tags/for-v4.12
+
+for you to fetch changes up to 6c381663bb3b4febc15b2fb33f046f0b986ce5c5:
+
+  power: supply: bq24190_charger: Use new extcon_register_notifier_all() (2=
+017-04-14 01:45:06 +0200)
+
+----------------------------------------------------------------
+power supply and reset changes for the v4.12 series
+
+* New drivers
+ - gemini-poweroff
+ - cpcap-charger (for Motorola Droid 4)
+ - battery-lego-ev3 (for LEGO Mindstorms EV3)
+* New chip/feature support
+ - bq24190-charger: add runtime PM support
+ - bq24190-charger: add bq24192i support
+ - register masking for syscon-poweroff
+* Misc. small fixes & cleanups
+
+----------------------------------------------------------------
+Andi Shyti (1):
+      power: supply: charger-manager: simplify return statements
+
+Andy Shevchenko (1):
+      power: supply: bq25890: Use gpiod_get()
+
+Arnd Bergmann (1):
+      power: bq24190_charger: mark PM functions as __maybe_unused
+
+Chanwoo Choi (1):
+      extcon: Add new extcon_register_notifier_all() to monitor all externa=
+l connectors
+
+Daniel Perez (1):
+      power: supply: sbs-charger: simplified bool function
+
+David Lechner (2):
+      dt-bindings: power: supply: New bindings for LEGO MINDSTORMS EV3 batt=
+ery
+      power: supply: New driver for LEGO MINDSTORMS EV3 battery
+
+Dmitry Torokhov (1):
+      power: supply: twl4030_charger: remove incorrect __exit markups
+
+Enric Balletbo i Serra (2):
+      dt-bindings: power/supply: rename max8925_batter.txt to max8925_batte=
+ry.txt
+      power: supply: tps65217: remove debug messages for function calls
+
+Giedrius Statkevi=C4=8Dius (1):
+      power: supply: lp8788: prevent out of bounds array access
+
+Guy Shapiro (1):
+      power: reset: syscon-poweroff: add a mask property
+
+Hans de Goede (4):
+      power: supply: bq24190_charger: Use i2c-core irq-mapping code
+      power: supply: bq24190_charger: Add support for bq24192i
+      power: supply: bq24190_charger: Use extcon to determine ilimit, 5v bo=
+ost
+      power: supply: bq24190_charger: Use new extcon_register_notifier_all()
+
+Javier Martinez Canillas (3):
+      power: supply: max17040: Add OF device ID table
+      power: supply: ltc2941-battery-gauge: Add vendor to compatibles in bi=
+nding
+      power: supply: ltc2941-battery-gauge: Add OF device ID table
+
+Liam Breck (4):
+      power: supply: bq24190_charger: Limit over/under voltage fault logging
+      power: supply: bq24190_charger: Clean up extcon code
+      power: supply: bq24190_charger: Uniform pm_runtime_get() failure hand=
+ling
+      power: supply: bq24190_charger: Longer delay while polling reset flag
+
+Linus Walleij (2):
+      power: reset: Add Gemini poweroff DT bindings
+      power: reset: Add a driver for the Gemini poweroff
+
+Munir Contractor (1):
+      power: supply: ab8500: Replaced spaces with tabs in indent
+
+Sebastian Reichel (1):
+      Merge remote-tracking branch 'chanwoo-extcon/ib-extcon-4.12' into psy=
+-next
+
+Tony Lindgren (3):
+      power: bq24190_charger: Check the interrupt status on resume
+      power: bq24190_charger: Use PM runtime autosuspend
+      power: supply: cpcap-charger: Add minimal CPCAP PMIC battery charger
+
+ .../bindings/power/reset/gemini-poweroff.txt       |  17 +
+ .../bindings/power/reset/syscon-poweroff.txt       |  11 +-
+ .../bindings/power/supply/cpcap-charger.txt        |  37 ++
+ .../bindings/power/supply/lego_ev3_battery.txt     |  21 +
+ .../devicetree/bindings/power/supply/ltc2941.txt   |   6 +-
+ .../{max8925_batter.txt =3D> max8925_battery.txt}    |   0
+ drivers/extcon/devres.c                            |  61 ++
+ drivers/extcon/extcon.c                            |  66 ++
+ drivers/extcon/extcon.h                            |   3 +
+ drivers/power/reset/Kconfig                        |   9 +
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/gemini-poweroff.c              | 160 +++++
+ drivers/power/reset/syscon-poweroff.c              |  19 +-
+ drivers/power/supply/Kconfig                       |  15 +
+ drivers/power/supply/Makefile                      |   2 +
+ drivers/power/supply/ab8500_bmdata.c               |   8 +-
+ drivers/power/supply/bq24190_charger.c             | 427 +++++++++----
+ drivers/power/supply/bq25890_charger.c             |   2 +-
+ drivers/power/supply/charger-manager.c             |  35 +-
+ drivers/power/supply/cpcap-charger.c               | 681 +++++++++++++++++=
+++++
+ drivers/power/supply/lego_ev3_battery.c            | 228 +++++++
+ drivers/power/supply/lp8788-charger.c              |   2 +-
+ drivers/power/supply/ltc2941-battery-gauge.c       |  19 +-
+ drivers/power/supply/max17040_battery.c            |   8 +
+ drivers/power/supply/sbs-charger.c                 |   5 +-
+ drivers/power/supply/tps65217_charger.c            |   4 -
+ drivers/power/supply/twl4030_charger.c             |   4 +-
+ include/linux/extcon.h                             |  21 +-
+ include/linux/power/bq24190_charger.h              |  16 -
+ 29 files changed, 1691 insertions(+), 197 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/gemini-po=
+weroff.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/cpcap-ch=
+arger.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/lego_ev3=
+_battery.txt
+ rename Documentation/devicetree/bindings/power/supply/{max8925_batter.txt =
+=3D> max8925_battery.txt} (100%)
+ create mode 100644 drivers/power/reset/gemini-poweroff.c
+ create mode 100644 drivers/power/supply/cpcap-charger.c
+ create mode 100644 drivers/power/supply/lego_ev3_battery.c
+ delete mode 100644 include/linux/power/bq24190_charger.h
+
+--ankmolxglvr6tx2f
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkG8ssACgkQ2O7X88g7
++pomRw//WjHURaCRMezRb7hGEffORFZsCZTJ6a8sQNyBcMro+RG6wY8ehuroJ8Og
+XXnz/u94xC7VgBeJ7pNOyFix21uWhORTTBvo6fWr9w/F7Qm9XIvgJURN2lOQujwE
+3mMEgVkPB/zb1cyRljUhCUG+Cq2nPL71zOMaFTE9/BTP9UFLuyo8XJyPmMtt642B
+8LFhuJI3vi1gP4qoFMSkddOHZpAWniXoC/oGOwFLw4SNTG9Y6UtJl4yLtc9ewQhK
+PkDPlf1HStiNxqN6Qap+oDRqc2tx73a/3YWK17KgmZeZ8XiKSbsfpk7vajgSsadh
+50fh50/YcuezpwEC62YXbL7akSmm9Bwce9u3LRrEC+gvp47sad0Sy7RmCwG/7/SU
+8LNsizaEQxj7orgxBLUZbbSyi2kjUI5bLwSpeljvciRE8S57LVYAMNEnps7CeYIX
+Wp3ZmmLlX2MOkaxTpwdIBZCiwXono/WfkQ/Ko0cK+OzLVL8HfxKGd0GjuBEWecCa
+AauvrUyPFvitAw8oiPcJOPG3MQwsPyyCiyw6O6LlaLgXiA9fMF5D9ObOua2FXGAY
+6clL+6dl4YZBtZWA2cqxsUCeycJ0HYH4Zqr2II2Gm0kgEK53Ok04SyPgtqZufsRH
+OmLrRI+B/XXJ5qkJ8b07o9juT3loPuqn1uuI+WI1iopPDhWKVMo=
+=qEBg
+-----END PGP SIGNATURE-----
+
+--ankmolxglvr6tx2f--
