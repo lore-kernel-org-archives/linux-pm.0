@@ -1,72 +1,72 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH RESEND 1/3 v4] drivers:power:twl4030-charger: don't check
- if battery is present
-Date: Mon, 1 May 2017 13:26:31 +0200
-Message-ID: <20170501112631.2kz4bbga4hfznhsz@earth>
-References: <cd36deb10a769825620828a43d2bab4f949f3370.1492198177.git.hns@goldelico.com>
+Subject: Re: [PATCH v3] power: Make power_supply_am_i_supplied return -ENODEV
+ if there are no suppliers
+Date: Mon, 1 May 2017 13:28:34 +0200
+Message-ID: <20170501112834.n3k7jyp4imnrb6wa@earth>
+References: <20170416153031.11531-1-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="mpxbloa37urlshgl"
+        protocol="application/pgp-signature"; boundary="ipzz3ffnu2hwsodx"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:57633 "EHLO
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:57638 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754599AbdEAL0f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 07:26:35 -0400
+        with ESMTP id S1754284AbdEAL2h (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 07:28:37 -0400
 Content-Disposition: inline
-In-Reply-To: <cd36deb10a769825620828a43d2bab4f949f3370.1492198177.git.hns@goldelico.com>
+In-Reply-To: <20170416153031.11531-1-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grazvydas Ignotas <notasas@gmail.com>, Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, linux-kernel@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
 
 
---mpxbloa37urlshgl
+--ipzz3ffnu2hwsodx
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Apr 14, 2017 at 09:29:38PM +0200, H. Nikolaus Schaller wrote:
-> We can't assume that the battery is or stays present after probing
-> on devices with replaceable battery.
+On Sun, Apr 16, 2017 at 05:30:31PM +0200, Hans de Goede wrote:
+> It is sensible to assume that the hardware actually always has a
+> way of charging the battery so when power_supply_am_i_supplied does not
+> find any suppliers, that does not mean that there are none, but simply
+> that no power_supply-drivers are registered / bound for any suppliers for
+> the supply calling power_supply_am_i_supplied.
 >=20
-> On some devices (e.g. GTA04 or OpenPanodra) it can be removed
-> and even be hot swapped by the user while device continues to operate
-> through external AC or USB power (as long as system power consumption
-> remains below ca. 500mA as provided by USB). Under certain conditions
-> it is possible to boot without battery.
+> At which point a fuel-gauge driver calling power_supply_am_i_supplied()
+> cannot determine whether the battery is being charged or not.
 >=20
-> So it makes no sense to check for this situation during probe and make
-> the charger driver (and its status reports) completely non-operational if
-> the battery can be inserted later.
+> Allow a caller of power_supply_am_i_supplied to differentiate between
+> there not being any suppliers, vs no suppliers being online by returning
+> -ENODEV if there are no suppliers matching supplied_to / supplied_from,
+> which allows fuel-gauge drivers to return POWER_SUPPLY_STATUS_UNKNOWN
+> rather then POWER_SUPPLY_STATUS_DISCHARGING if there are no suppliers.
 >=20
-> Tested on: GTA04 and OpenPandora.
->=20
-> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
 Thanks, queued.
 
 -- Sebastian
 
---mpxbloa37urlshgl
+--ipzz3ffnu2hwsodx
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHG2cACgkQ2O7X88g7
-+pr5iQ//UkmtzEoPKOtIwxpngnVydvyj+RtBdKp4f0Z53JbPAlx0w69+x6mei+Np
-dRoS7XShzWFjLtH7blAqXOxnfThhDGqkxQdM1cXBZV37MkxA1y6NxWbbxhFbhmW5
-5IjohiZvOueiabMhrMSDfzoeiKutS+RqDgzzaPGNGgVPbBuAEvKhDJvcqyT2xkLp
-S4lqZXqmS0AZdZ9lTGo/sLV275oPsZzGEf2dAaNCdCVf5kSt5eiAWQyJBpHIXg1n
-E2XES7k6EVHGy+A13+9zqaoraFVb5mVxFSEhQsr13LOe9m/OKAvU4p42roZXYNBV
-siiV0rJdF1m8aqStTyxu3d6ZgvxbtIWDtaLT0ODVLOn+Qq0sqLvmeKsF8X8UFrKb
-3aw+tlME8nzMvdSEMiByonk3vG/jouTSBpONEjjE9ea8V3XVAcVAYmrT13dWYvNj
-E7kYruBMHS2Mp9OHjYGLulaFKSCTz6Qsvvwi8HqpcSwWMN0PkfMSa7W2QmJGlhey
-FFS63m9jqYal5Qb5iMeifmPPIVqOVTuR+oBk6KEPWhMfVIHj7/BVg5SpDi09fvbA
-x4mw/PuXC+fZCGro6vzymyKnwG0BMtsV+Yl2RZVvifocHh3niXJTz6tGgo2fzstH
-r0XbMTH4R94zt8bpYtr9Pi71ebhOhM/qGQg+PBeEEW6Z1JpIyzQ=
-=RLGT
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHG+EACgkQ2O7X88g7
++pqOZBAAqTu5eTEFT1wNb3SlrNLolNsQb987/Y/0WnaVz6LfeFrWHi7wtq2h/Tlc
+HIrkaubGKQFcEXP0zOybNR/VFxbjR6YaAkvwXNHInxTBzNuyuVlsCSLHuVRoHJol
+7KUlRC4Cu5ews74pmo50jUyzATlcatVXY3ajWemP6zQmvBGeVEWBgZkDWoTm/YPs
+ESp5EG4nNV/LoDDRMq2DcNlDxcyxwuTzQ+FRwG92rZToEygnYLhWaKseZIiILvX5
+aZejra5ul7UzWa/ZKk8W0HdXeHYdbqkOKHgBPwt7RWxzadj13LmiIOx+kZKvXr1j
+WORLReyQlXoWRoRfUqEMP644fcfA3yyJS8HriHtU/8qKuGGAEnx6Fy4s9VHq2GV0
+S5Jnmvx3jNeX6aC+l0i3rYKaa2zKEoRNEmUZbfcWAeyDJYZ50ZMG7PTKh/M2Wy21
+1W/QmFpspfQvjQOtmOKnDH9mIfL1LG1NLxWCSluwnQure1Em0fGv2SIEF5gV79uJ
+Rx5h5AwNfcy+D5Yj2HX+rdMYY8P+MR1eUQMf0pii9PnPjGQuBC5EWrpPqQeZyb+r
+2gPHEHK6nua4ngDfL2Eo/NFkfcFVDBrA6/dIs6KVJ/ForW5G9tTSOu/zp6co1r1e
+ig6QC+IMrmxkSjCFd/RTFhI9kyEZZ1oxcdkY1Vuqmja0wnT2JnY=
+=FX0/
 -----END PGP SIGNATURE-----
 
---mpxbloa37urlshgl--
+--ipzz3ffnu2hwsodx--
