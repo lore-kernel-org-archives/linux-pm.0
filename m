@@ -1,14 +1,14 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v6 1/6] dt-bindings: power: supply: add AXP20X/AXP22X
- battery DT binding
-Date: Mon, 1 May 2017 13:29:48 +0200
-Message-ID: <20170501112948.vbri3rbjoyyqvcbg@earth>
+Subject: Re: [PATCH v6 2/6] power: supply: add battery driver for AXP20X and
+ AXP22X PMICs
+Date: Mon, 1 May 2017 13:30:19 +0200
+Message-ID: <20170501113019.gc4mblrwvyd7qgv3@earth>
 References: <20170418073421.31351-1-quentin.schulz@free-electrons.com>
- <20170418073421.31351-2-quentin.schulz@free-electrons.com>
+ <20170418073421.31351-3-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2571046341349469091=="
+Content-Type: multipart/mixed; boundary="===============1654141401824196722=="
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170418073421.31351-2-quentin.schulz@free-electrons.com>
+In-Reply-To: <20170418073421.31351-3-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -23,60 +23,65 @@ Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, 
 List-Id: linux-pm@vger.kernel.org
 
 
---===============2571046341349469091==
+--===============1654141401824196722==
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="3bysmusjtmclsulp"
+	protocol="application/pgp-signature"; boundary="nvha4q7cvppd2htm"
 Content-Disposition: inline
 
 
---3bysmusjtmclsulp
+--nvha4q7cvppd2htm
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Apr 18, 2017 at 09:34:16AM +0200, Quentin Schulz wrote:
+On Tue, Apr 18, 2017 at 09:34:17AM +0200, Quentin Schulz wrote:
 > The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
 >=20
-> This patch adds the DT binding documentation for the battery power
-> supply which gets various data from the PMIC, such as the battery status
-> (charging, discharging, full, dead), current max limit, current current,
-> battery capacity (in percentage), voltage max and min limits, current
-> voltage and battery capacity (in Ah).
+> This patch adds the battery power supply driver to get various data from
+> the PMIC, such as the battery status (charging, discharging, full,
+> dead), current max limit, current current, battery capacity (in
+> percentage), voltage max and min limits, current voltage and battery
+> capacity (in Ah).
+>=20
+> This battery driver uses the AXP20X/AXP22X ADC driver as PMIC data
+> provider.
 >=20
 > Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-> Acked-by: Chen-Yu Tsai <wens@csie.org>
+> Acked-by: Jonathan Cameron <jic23@kernel.org>
 > Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+> Acked-by: Chen-Yu Tsai <wens@csie.org>
+> Acked-by: Sebastian Reichel <sre@kernel.org>
 
 Thanks, queued.
 
 -- Sebastian
 
---3bysmusjtmclsulp
+--nvha4q7cvppd2htm
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHHCwACgkQ2O7X88g7
-+pqIDw//WLuEEXxOJpjzWIm5p7j86mZeDuL7sOrvHVCj6CS0vVBn0wdIsRCMw2qI
-tF9yKAVTb8BP64ygggoriTENl2jHo9fkozfFg24umMkH0ODzOU5aSj42hEjeQmp9
-lDP+Nu8fu8WBYFUc4W4HNDvOoBBi4Li78paqVf3+98q5c2Lorn++15p+hgF6lVq0
-YC8tBAExxN44zMMRWNiHYrrVsLHnavByv0HEMyNvIvBQvA0GvYlzyDpIMNXTdEtO
-+S3C293QqOEJGLtTPDy+fTS2vxLPBSo2OPvqdEi6GNiDJpbPZMxXNICKXPo6ZczR
-bJMn3Kp5qArCplpZvFbbxLinjAoCdYxLCPFLjDr5JMrsTMdCckLy53C4PxgqI1gj
-tCD9qWTxUpyZIO7izVGOtCuFPEm5hrEuoC/4/TeJYjRNhdXg3JCj7iA1Cwy4iXFC
-1mXeqjdq6XTsiJWeWXl/P+1FuJlTFYVOL0dJl2CGDSnB52VqH71++SRh/1lxYfcJ
-BYWmVmCPfr933AIQuID259xoAlhajiOvWbV4567bJgsXWequDV41Q8NHqNcvp82S
-Px7SltnhbLgc0WZ49IyfuhFOIZ02xSPnXH6v3Bk5oxEIfc7pZUNPE/+Z2UOAJtNs
-ygeqnXXsueiivyTOJ9/E+AMJCU9I/S/fbYxvQx2HgzgKj+V4454=
-=3Q8N
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHHEoACgkQ2O7X88g7
++pqeOxAAjFTdUYEQSYAyhz/w78B3VDU58cZAXCtrCjiP4myZWTGrmCGkYR3Fze/K
+fhs1iZwIuOZu6BQ0LLjT6BJlLCFgBtxwLXwEUdm8wb6q/+/3s5rVHIwrcc9DL779
+Gh+T5JTGtN1uWwZ6k5rRzz/9c1InKksTYpwdJvM7cHyeFKNk2dBY3MKI6YYTNyww
+vDjf2Yklie8ayxW/0nvZW7nKb0HxE/LDhHIBxGRmHwTvTyYdnzeecK6zufFl7Oti
+hXqXPK09XUl9yoHYTb56sZVP0NTQIk0d7iZpzgvFWEiEQnWvLuOuBsMo4Mzp8r2R
+LATXjqOQSLRURkPCz/8jujhO16iaBcq4hOxc1qGCaRS0lNnCh86OfAVN4CZnFys4
+SdQUsbcRKUiYTYMz5h1AkKLAv5fq+ZMH3tIsHR9s9ZvoyhVdZz4PrtuBoFeRqTem
+6g5UBKhkqGSw89fVePxeGgJymqFwnCe99nH6Wek/cp5DDUvkGCOykKFMooceVbOi
+WL4elMd8DnmXVeoQfrkxs6vvWtRhD3shgNYNY7F83/pMRUsfkRwSzGfvtD1tP+U9
+Y8hvvWc0++gtlna1PmmLrTfMW0eHSp/NGQp+o/GErgyyeBzLU5nS065FNzGluYJf
+TLXNnN3v//QUte3qxotgbM5uGVz9dHtsB9QMJAyDAEz5/llHfzA=
+=27d6
 -----END PGP SIGNATURE-----
 
---3bysmusjtmclsulp--
+--nvha4q7cvppd2htm--
 
 
---===============2571046341349469091==
+--===============1654141401824196722==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -87,4 +92,4 @@ linux-arm-kernel mailing list
 linux-arm-kernel@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
---===============2571046341349469091==--
+--===============1654141401824196722==--
