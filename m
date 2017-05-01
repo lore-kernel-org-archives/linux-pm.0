@@ -1,109 +1,83 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v2 05/14] power: max17042_battery: Change name in
- power_supply_desc to "main-battery"
-Date: Mon, 1 May 2017 17:50:50 +0200
-Message-ID: <20170501155050.o5226rcfzxtrzvju@earth>
-References: <20170414183259.24382-1-hdegoede@redhat.com>
- <20170414183259.24382-5-hdegoede@redhat.com>
- <20170501122253.e3nrr4dql2nt3cba@earth>
- <caf9b434-29bb-e03a-0287-c12de9beec0d@redhat.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v12.7 0/10] bq27xxx_battery partial series
+Date: Mon, 1 May 2017 10:46:26 -0700
+Message-ID: <CAKvHMgTxejVH6eY_Xo0PXTzjVbnQPA6snxBM_1L5+pgzv=6r0w@mail.gmail.com>
+References: <20170421095959.14151-1-liam@networkimprov.net> <20170501152251.ca6mpnf7hot44jey@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="wpkx4opzo6bjcm7h"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:58178 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753784AbdEAPux (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 11:50:53 -0400
-Content-Disposition: inline
-In-Reply-To: <caf9b434-29bb-e03a-0287-c12de9beec0d@redhat.com>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:33639 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750743AbdEARq1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 13:46:27 -0400
+Received: by mail-it0-f65.google.com with SMTP id z67so12869391itb.0
+        for <linux-pm@vger.kernel.org>; Mon, 01 May 2017 10:46:27 -0700 (PDT)
+In-Reply-To: <20170501152251.ca6mpnf7hot44jey@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
+
+[resend as plain-text]
+
+Hi Sebastian,
 
 
---wpkx4opzo6bjcm7h
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, May 1, 2017 at 8:22 AM, Sebastian Reichel
+<sebastian.reichel@collabora.co.uk> wrote:
+> Hi Liam,
+>
+> On Fri, Apr 21, 2017 at 02:59:52AM -0700, Liam Breck wrote:
+>> Latest changes (including 12.6):
+>>
+>> Only DM update RAM chips by default
+>>
+>> Add config_battery_bq27xxx_dt_updates_nvm. If defined, update NVM chips
+>>  and add module param dt_monitored_battery_updates_nvm
+>>
+>> Fixed checkpatch errors and most warnings
+>>
+>> Switched from -ENOSYS to -PERM, due to checkpatch warning
+>>
+>> Add Copyright notice
+>>
+>> unseal() returns error on key==0
+>>
+>> Skip reset on non-cfgupdate chips if not updated
+>>
+>> Emit warning if no dm_regs table
+>>
+>> Map orig ID to chip ID via bq27xxx_chips[]
+>>
+>> Drop "prototypes" in enum comments
+>>
+>> Rename dupes detector bq27xxx_battery_dbg_regs_dupes()
+>>
+>> ^.^ ^.^ ^.^ - We has hungry for test!
+>
+> I queued everything up to patch 7 (including). That way any rebasing
+> should be less problematic. With the unseal keys not yet applied all
+> new features are not yet be used, but its much easier to follow
+> development. Also your work on using the new interface in charger
+> driver is unblocked.
+>
+> I plan to send this for 4.12 towards the end of next week and would
+> like to queue the remaining patches early during 4.13 period (i.e.
+> sometime mid-end of May), so that they get much time in linux-next.
+> This will also give Andrew some time to test this.
 
-Hi Hans,
+I have pending changes in v13 for patches 1-4, and I think we should
+let Andrew ack the others. Can you drop 1-7 for now?
 
-On Mon, May 01, 2017 at 05:11:13PM +0200, Hans de Goede wrote:
-> Thank you for merging all my recent patches.
+I can post v13 this week, as I believe I've cleared all his comments.
+I'll rev the patch titles as you did.
 
-You are welcome!
+I don't think this series will have spent enough/any time in -next to
+qualify for 4.12? There's no known effects without patches 8+, but
+even so :-)
 
-> On 01-05-17 14:22, Sebastian Reichel wrote:
-> > > Change the name in max17042's power_supply_desc to "main-battery" to
-> > > match, so that power_supply_am_i_supplied() can be used to implement
-> > > POWER_SUPPLY_PROP_STATUS.
-> >=20
-> > I did not queue this patch and patch 14. First of all: Currently 4/30
-> > chargers have this, which I wouldn't call "almost all". I think this
-> > is not the right solution, especially as it will break once a system
-> > has more than one "main" battery (like some of the newer thinkpads).
-> >=20
-> > For DT based systems we have generic support to specify the
-> > dependency as phandle. This obviously won't work for you.
-> > I suggest to use a device property for supplying the correct name
-> > to the charger instead.
->=20
-> Ok, fair enough.
->=20
-> So to be clear you are suggesting that we modify the charger driver
-> (or the power-supply-core) to check for a "supplied-to"
-> string-array device property which then overrides the power_supply_config=
-=2Esupplied_to
-> array's default value in the driver?
->=20
-> Or do you want to modify the fuel-gauge driver (or the power-supply-core)
-> to check for a "supplied-from" string-array device property which then
-> is used to fill in the power_supply.supplied_from array ?
->=20
-> Looking at how currently the power-supply-core fills in power_supply.supp=
-lied_from
-> from devicetree when #ifdef CONFIG_OF is true, I think the best (and
-> most consistent) solution would be to change the :
->=20
-> #else
-> static inline int power_supply_check_supplies(struct power_supply *psy)
-> {
->         return 0;
-> }
-> #endif
->=20
-> Code block to check for a "supplied-from" string-array device property
-> and populate the power_supply.supplied_from string array with its
-> contents if found.
->=20
-> If you can let me know how exactly you want to solve this I can whip
-> up (and test) patch for this.
+Re patch 7, do you have any thoughts on the naming of:
+  config option: config_battery_bq27xxx_dt_updates_nvm
+  module param: dt_monitored_battery_updates_nvm
 
-Adding this to non-DT power_supply_check_supplies() and naming the
-property "supplied-from" sounds good.
-
--- Sebastian
-
---wpkx4opzo6bjcm7h
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHWVoACgkQ2O7X88g7
-+prwBA//W531tIkwJnZwj/1FXya8zTkmPiEcuuM1JrTaEZNkofqeahmQhVDlJ8aR
-/jeOoo+G4CmtPi5+8IvRRRS6iBgMaA+RjfatF46LsYEoJ3u9QQ//VwPcxF+vOw5h
-jJHo+ZTP9kXPJncR4sVSDoM7PC3+tIlc05MoqrmTqiHNkVQoaCq5OLS6q3GrFTzR
-Ve22bKD6nnZq2ZpErfPzGB08cqL0QPBl78cRHRq2+9bNsiOIRaLwHylt6OZ5a76A
-0McrdKjmW5tOhuXvCepGhd1Z5fPRdXpPG/A1w9Yd+8rFBou5VdtHMGukOVlhiC0i
-/kO6f2CXdO8YP/5D7PvxOY8hm+AQbWQVgay5QC6F79Zu1pELhhX9inU95dE5+yG7
-iQtIJauFUcYidfizTHqBejQ1KxU2EZ/oGQp5bWMcLohDa0ymqVKAtgo46KwQcFJD
-1lyBaob5tgAoJexn8Hf2MPIpa0DE42gH5lK+vKmUzuxYyCunV5Ts18oN+cX5vAA8
-7emIKzzhgQuuWGqclknisOWoXyIiIqx1O59Nh8qxqM0My7PIBcrU21OK0us7yfkg
-k7JODsxPAMmzZ3Hf88kIkOFxaLXNFOb/0J2RFePsPtZrzSxE4UWm6grZA4SYwn1w
-7deD7oNBC4Ln86l9mEa/hv+Bk6szmmLb91QNgtA5fF//mHHc1hY=
-=JCj0
------END PGP SIGNATURE-----
-
---wpkx4opzo6bjcm7h--
+Thanks
