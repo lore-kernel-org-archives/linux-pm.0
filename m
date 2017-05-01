@@ -1,100 +1,121 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v2 14/14] power: max77693_charger: Add supplied_to info
- to power_supply_config
-Date: Mon, 1 May 2017 14:19:56 +0200
-Message-ID: <20170501121956.2hs25fogp5eeuubh@earth>
+Subject: Re: [PATCH v2 05/14] power: max17042_battery: Change name in
+ power_supply_desc to "main-battery"
+Date: Mon, 1 May 2017 14:22:53 +0200
+Message-ID: <20170501122253.e3nrr4dql2nt3cba@earth>
 References: <20170414183259.24382-1-hdegoede@redhat.com>
- <20170414183259.24382-14-hdegoede@redhat.com>
+ <20170414183259.24382-5-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="6tv32s3yagqaazi6"
+        protocol="application/pgp-signature"; boundary="uyicbl5f2kwnzrzj"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:57811 "EHLO
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:57820 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S968802AbdEAMUA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 08:20:00 -0400
+        with ESMTP id S968841AbdEAMW5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 08:22:57 -0400
 Content-Disposition: inline
-In-Reply-To: <20170414183259.24382-14-hdegoede@redhat.com>
+In-Reply-To: <20170414183259.24382-5-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
 Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org
 
 
---6tv32s3yagqaazi6
+--uyicbl5f2kwnzrzj
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Apr 14, 2017 at 08:32:59PM +0200, Hans de Goede wrote:
-> On the exynos4412-trats2 the max77693 is used together with a
-> max17047 fuel-gauge.
-
-exynos4412-trats2 is DT based, so it should use the method
-described in Documentation/devicetree/bindings/power/supply/power_supply.txt
-to describe the supply chain.
-
--- Sebastian
-
-> Add supplied_to info containing "main-battery",
-> so that the get_status code in the max17042_battery driver can use
-> power_supply_am_i_supplied and can properly let userspace know
-> if the battery is being charged or not.
+On Fri, Apr 14, 2017 at 08:32:50PM +0200, Hans de Goede wrote:
+> The max17042 will typically be coupled with some charger IC, almost all
+> charger drivers contain:
+>=20
+> static char *xxx_charger_supplied_to[] =3D {
+>         "main-battery",
+> };
+>=20
+> probe()
+> {
+> 	struct power_supply_config cfg;
+>=20
+> 	cfg.supplied_to =3D xxx_charger_supplied_to;
+> 	cfg.num_supplicants =3D ARRAY_SIZE(xxx_charger_supplied_to);
+> 	xxx->charger =3D power_supply_register(dev, &x_charger_desc, &_cfg);
+> }
+>=20
+> Change the name in max17042's power_supply_desc to "main-battery" to
+> match, so that power_supply_am_i_supplied() can be used to implement
+> POWER_SUPPLY_PROP_STATUS.
 >=20
 > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 > Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
-> ---
->  drivers/power/supply/max77693_charger.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->=20
-> diff --git a/drivers/power/supply/max77693_charger.c b/drivers/power/supp=
-ly/max77693_charger.c
-> index 6c78884..1eeed26 100644
-> --- a/drivers/power/supply/max77693_charger.c
-> +++ b/drivers/power/supply/max77693_charger.c
-> @@ -254,6 +254,10 @@ static int max77693_charger_get_property(struct powe=
-r_supply *psy,
->  	return ret;
->  }
-> =20
-> +static char *max77693_charger_supplied_to[] =3D {
-> +	"main-battery",
-> +};
-> +
->  static const struct power_supply_desc max77693_charger_desc =3D {
->  	.name		=3D MAX77693_CHARGER_NAME,
->  	.type		=3D POWER_SUPPLY_TYPE_BATTERY,
-> @@ -697,6 +701,8 @@ static int max77693_charger_probe(struct platform_dev=
-ice *pdev)
->  	if (ret)
->  		return ret;
-> =20
-> +	psy_cfg.supplied_to =3D max77693_charger_supplied_to;
-> +	psy_cfg.num_supplicants =3D ARRAY_SIZE(max77693_charger_supplied_to),
->  	psy_cfg.drv_data =3D chg;
-> =20
->  	ret =3D device_create_file(&pdev->dev, &dev_attr_fast_charge_timer);
 
---6tv32s3yagqaazi6
+I did not queue this patch and patch 14. First of all: Currently 4/30
+chargers have this, which I wouldn't call "almost all". I think this
+is not the right solution, especially as it will break once a system
+has more than one "main" battery (like some of the newer thinkpads).
+
+For DT based systems we have generic support to specify the
+dependency as phandle. This obviously won't work for you.
+I suggest to use a device property for supplying the correct name
+to the charger instead.
+
+-- Sebastian
+
+> ---
+>  drivers/power/supply/max17042_battery.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supp=
+ly/max17042_battery.c
+> index f0ff6e8..3249eb0 100644
+> --- a/drivers/power/supply/max17042_battery.c
+> +++ b/drivers/power/supply/max17042_battery.c
+> @@ -866,7 +866,7 @@ static const struct regmap_config max17042_regmap_con=
+fig =3D {
+>  };
+> =20
+>  static const struct power_supply_desc max17042_psy_desc =3D {
+> -	.name		=3D "max170xx_battery",
+> +	.name		=3D "main-battery",
+>  	.type		=3D POWER_SUPPLY_TYPE_BATTERY,
+>  	.get_property	=3D max17042_get_property,
+>  	.set_property	=3D max17042_set_property,
+> @@ -876,7 +876,7 @@ static const struct power_supply_desc max17042_psy_de=
+sc =3D {
+>  };
+> =20
+>  static const struct power_supply_desc max17042_no_current_sense_psy_desc=
+ =3D {
+> -	.name		=3D "max170xx_battery",
+> +	.name		=3D "main-battery",
+>  	.type		=3D POWER_SUPPLY_TYPE_BATTERY,
+>  	.get_property	=3D max17042_get_property,
+>  	.set_property	=3D max17042_set_property,
+> --=20
+> 2.9.3
+>=20
+
+--uyicbl5f2kwnzrzj
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHJ+kACgkQ2O7X88g7
-+pq8rBAAjHci8zNA8m/hWbz9o7giYrNhspx9CXIskuSo6526k/+8YLLxcxcAwPaq
-4YimsbuG2DX7U+a8hyNltWsZRsomSBPXIsWzUzJ9bptscAPrNmrdP7BSz1TV2PWY
-jTEvn4TbR7IhL2c1oV3YB7JB5WmrhUrt5HPA57TCCc3kfZQAQuNcFe7EpMJePRjr
-BPObRYc2McQGqHr2JwTT23ALr4kbZUNrrQMxyujQAgdAz9KDVhmfSLb++fCp+uEa
-PPh4bhCXb5hgoXWkjT+eSTkslWlw0GdS4FVxMn3MnnFsJK1is6Hk+3SCduy3aLbG
-kii22vPtskLjts7CrlY81dxFPnP5hNUhKoxVhGJjwL2X00oo+eV6VNbjxDFCvZC+
-qjA84u6Af4aFe0L6IlDHSZaoQCWJlSsh9sBWoBNwCldUzqWjm2m2USX0yu4ypO7i
-GKexWjego+zkYXQKNYOOdnLNp4wm1H0NNzCSen/IKxiT1S9dooYQd0JfLB903pUC
-xs0vhd0x0Mu+JR6iSG3KUgJ8ajOpvQ4zB9WfTmpLddZ9V5WBxmqdimLCI8ybjk9m
-u+MSjjUJKG4Ph3h6o9gbuWvxvdpwBtFT4pvMwZgZsNiyZeSMV4FAtncxEQFJ1pHO
-ITl7kqp3HWjjgzTn1SxPV9W9H/yv+ChZfJ4UtPBOdFXuwmHi48Y=
-=R9wu
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHKJ0ACgkQ2O7X88g7
++prviA/9F9he/xjavpdJ7UO0aTUv/MoJD9+YNJ/PTrfEN0CEoPilQSJ+DDLP5v9m
+bA4LG350KMGYESl2rQeMS57W1AJKEJW6B3QylhwDnkvdb2/50/6RQyauSaWODwg7
+wAQ44dKwd/7VFTLFBmmi7R2C70PnslIvT1FTb6/dNrG+ttdTuU4CeyDHi5QbNUzY
+pS6nWw+tHOphUEwFy7iFjnlnM2NsRlj4PU7TP0grbHITguf7CkZ9cntYIWmiOB+G
+lCCIHkuPXSFyRiehHzWGpmyUPw2vGuIEtfkZZ+DWNR/9m4a09838j5lznqvZ3A4o
+Es+pBbckmFsTcp/hDSb7O7PJGzrfPiNwZ5H0coIDLIdczRg4K6AJ7HIrFUqPpBd4
+AvsFN/9cd76mzft8ofBa9umQpMNPPfseGwuM0X0Hl6FHHdcP67xFfkEImzHcfWGZ
+4ESnyLFM232sE8U7YNCXCZTT5nhS6mb8Nst9bC5uO10vjSvoENtNMrGo9kf0q+zW
+MAXb51X1OyUfGN7jRNheRPJfOtxXZvAzaaFTaO5bJGnTqMgrbhYjYrHGVaiG6XGU
+YfyiPwQIGH/5w+bcMO0VlEXl2id1p/xxYS64wWlngjpDZzuQAdumtYB3mV5925w9
+TuNAyMjB2z/M/Y/JhZViFDWWe2z8yE/Iomf4C3fE6ivsp2Ugk5I=
+=Z4cj
 -----END PGP SIGNATURE-----
 
---6tv32s3yagqaazi6--
+--uyicbl5f2kwnzrzj--
