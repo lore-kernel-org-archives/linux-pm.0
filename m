@@ -1,194 +1,235 @@
-From: Paul Kocialkowski <contact@paulk.fr>
-Subject: Re: [PATCH 1/5] power: supply: bq27xxx: Pass of_node along to allow
- device-tree supply
-Date: Mon, 01 May 2017 20:40:00 +0200
-Message-ID: <1493664000.4951.5.camel@paulk.fr>
-References: <20170430203801.32357-1-contact@paulk.fr>
-         <CAKvHMgSijN8vQUePoTKRC5nqaW-Shh4_9ZKiKq0Uae3ZLkiDSA@mail.gmail.com>
-         <1493635591.6493.10.camel@paulk.fr>
-         <CAKvHMgQKBSbzbS3sG3A+Yi3X5J=iMxLYDvK1YJjCPXmq_GimZQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management updates for v4.12-rc1, part 1
+Date: Mon, 1 May 2017 22:49:09 +0200
+Message-ID: <CAJZ5v0iTBfHJjzrsYkjSwkdPc3R=Nohj9vsLeX8Kz+JP7=B56g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha256";
-        protocol="application/pgp-signature"; boundary="=-bUl0ijswPrll+msSJAFm"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gagarine.paulk.fr ([109.190.93.129]:54243 "EHLO
-        gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751123AbdEASku (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 14:40:50 -0400
-In-Reply-To: <CAKvHMgQKBSbzbS3sG3A+Yi3X5J=iMxLYDvK1YJjCPXmq_GimZQ@mail.gmail.com>
+Received: from mail-io0-f193.google.com ([209.85.223.193]:34685 "EHLO
+        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750807AbdEAUtL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 16:49:11 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+Hi Linus,
 
---=-bUl0ijswPrll+msSJAFm
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Please pull from the tag
 
-Hi,
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.12-rc1
 
-Le lundi 01 mai 2017 =C3=A0 11:30 -0700, Liam Breck a =C3=A9crit=C2=A0:
-> On Mon, May 1, 2017 at 3:46 AM, Paul Kocialkowski <contact@paulk.fr> wrot=
-e:
-> > Le dimanche 30 avril 2017 =C3=A0 15:03 -0700, Liam Breck a =C3=A9crit :
-> > > [dropped some CCs]
-> > >=20
-> > >=20
-> > > On Sun, Apr 30, 2017 at 1:37 PM, Paul Kocialkowski <contact@paulk.fr>
-> > > wrote:
-> > > > This passes the of_node from the bq27xxx i2c battery driver to the
-> > > > common code, so that it can be registered and provide external supp=
-lies
-> > > > linked with device-tree.
-> > > >=20
-> > > > Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
-> > > > ---
-> > > > =C2=A0drivers/power/supply/bq27xxx_battery.c=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0| 5 ++++-
-> > > > =C2=A0drivers/power/supply/bq27xxx_battery_i2c.c | 1 +
-> > > > =C2=A0include/linux/power/bq27xxx_battery.h=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0| 1 +
-> > > > =C2=A03 files changed, 6 insertions(+), 1 deletion(-)
-> > > >=20
-> > > > diff --git a/drivers/power/supply/bq27xxx_battery.c
-> > > > b/drivers/power/supply/bq27xxx_battery.c
-> > > > index 398801a21b86..6ef95442a918 100644
-> > > > --- a/drivers/power/supply/bq27xxx_battery.c
-> > > > +++ b/drivers/power/supply/bq27xxx_battery.c
-> > > > @@ -1351,7 +1351,10 @@ static void bq27xxx_external_power_changed(s=
-truct
-> > > > power_supply *psy)
-> > > > =C2=A0int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
-> > > > =C2=A0{
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct power_supply=
-_desc *psy_desc;
-> > > > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct power_supply_conf=
-ig psy_cfg =3D { .drv_data =3D di, };
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct power_supply_conf=
-ig psy_cfg =3D {};
-> > > > +
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0psy_cfg.drv_data =3D di;
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0psy_cfg.of_node =3D di->=
-of_node;
-> > >=20
-> > > I don't think you need di->of_node, just the following -- we do this
-> > > to obtain data from devicetree via power_supply_get_battery_info()
-> > > https://patchwork.kernel.org/patch/9692335/
-> > >=20
-> > > struct power_supply_config psy_cfg =3D {
-> > > =C2=A0 .drv_data =3D di,
-> > > =C2=A0 .of_node =3D di->dev->of_node,
-> > > };
-> >=20
-> > That's a good point, thanks! Should I prepare v2 with this or rebase on=
- top
-> > of
-> > the series you mentioned previously?
->=20
-> Looks like Sebastian will queue my series this week (actually he just
-> did, but there's a later rev coming, so wait for that).
+with top-most commit a1d2fcfd80bef6cdc5675dcabe25587010720bdb
 
-Good to know!
+ Merge branch 'pm-tools'
 
-> Also it would be nice to have docs in the DT binding on linking an
-> external power supply to fuel gauge. If you write up an example, I can
-> incorporate it into the docs patch in my series. Or you can file it as
-> a separate patch...
+on top of commit 5a7ad1146caa895ad718a534399e38bd2ba721b7
 
-Hooking up external suppliers is handled by the supply core code and is alr=
-eady
-described at: Documentation/devicetree/bindings/power/supply/power_supply.t=
-xt
+ Linux 4.11-rc8
 
-I don't think there's a need to add this in every supply's dt documentation=
-.
+to receive the first batch of power management updates for v4.12-rc1.
 
-> > > There is some (gcc?) bug on armv7 or omap which causes separate
-> > > assignments to corrupt the stack.
-> >=20
-> > That's weird, but definitely good to know.
-> >=20
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0INIT_DELAYED_WORK(&=
-di->work, bq27xxx_battery_poll);
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0mutex_init(&di->loc=
-k);
-> > > > diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c
-> > > > b/drivers/power/supply/bq27xxx_battery_i2c.c
-> > > > index c68fbc3fe50a..38a0422a4192 100644
-> > > > --- a/drivers/power/supply/bq27xxx_battery_i2c.c
-> > > > +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-> > > > @@ -96,6 +96,7 @@ static int bq27xxx_battery_i2c_probe(struct i2c_c=
-lient
-> > > > *client,
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->chip =3D id->dr=
-iver_data;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->name =3D name;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->bus.read =3D bq=
-27xxx_battery_i2c_read;
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0di->of_node =3D client->=
-dev.of_node;
-> > > >=20
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0ret =3D bq27xxx_bat=
-tery_setup(di);
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (ret)
-> > > > diff --git a/include/linux/power/bq27xxx_battery.h
-> > > > b/include/linux/power/bq27xxx_battery.h
-> > > > index b312bcef53da..94637b77ecbf 100644
-> > > > --- a/include/linux/power/bq27xxx_battery.h
-> > > > +++ b/include/linux/power/bq27xxx_battery.h
-> > > > @@ -63,6 +63,7 @@ struct bq27xxx_device_info {
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0const char *name;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct bq27xxx_acce=
-ss_methods bus;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct bq27xxx_reg_=
-cache cache;
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct device_node *of_n=
-ode;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int charge_design_f=
-ull;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0unsigned long last_=
-update;
-> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct delayed_work=
- work;
-> > > > --
-> > > > 2.12.2
-> > > >=20
-> >=20
-> > --
-> > Paul Kocialkowski, developer of free digital technology and hardware su=
-pport
-> >=20
-> > Website: https://www.paulk.fr/
-> > Coding blog: https://code.paulk.fr/
-> > Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
---=20
-Paul Kocialkowski, developer of free digital technology and hardware suppor=
-t
+This time the majority of changes go to the cpufreq subsystem (and
+to the intel_pstate driver in particular) and there are some updates
+in the generic power domains framework, cpuidle, tools and a couple
+of other places.
 
-Website: https://www.paulk.fr/
-Coding blog: https://code.paulk.fr/
-Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
---=-bUl0ijswPrll+msSJAFm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+One thing worth mentioning is that the intel_pstate's sysfs interface
+has been reworked to be more consistent with the general expectations
+of the cpufreq core and less confusing, hopefully for the better.
+Also, we have a new cpufreq driver for Tegra186 and new hardware
+support in intel_pstata and the Mediatek cpufreq driver.
 
------BEGIN PGP SIGNATURE-----
+Apart from that, the AnalyzeSuspend utility for system suspend
+profiling gets a companion called AnalyzeBoot for the analogous
+profiling of system boot and they both go into one place under
+tools/power/pm-graph/.
 
-iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlkHgQAACgkQhP3B6o/u
-lQy0ow/+PxYhlISlabyz231JoiLnry983BOdA2S7Eyj/5DCPEou1iObK+03q3z5r
-+JHFqtSmC7GSP+3beYF9ucDOIbRhdmR4j+auPE3C3sWFPlvvvV6Ia0KgyPYPEdQk
-HBMIIbfdAq+lALgtSLtG2dFCtRfChfLNwpN4fK9/KavAIyBTOMTqQyWp8UhY5C6k
-8Fnp1NhYHMnKPGIXJ14Fe6lBX3X1hbUTG/b33XSXjkmgujA9qJwEAcohl5wSc2av
-3z13doA7ezLayuSmaoYpGcQB9H8KK1yguViYvaKZ//Or0JXGEyO2MurEb1aEvp4x
-IWbIP35D8x4rlyQPpn0iqquhlLzhexd6UMBz2fdadVsRsB2rUPXui2RNjSIeSRGw
-lnzNy2FKlvZcYbKqHwUtXOVqVbP9McnEY79bcAOTRw3w9Ufnyh01Gmjid2UaG1Jb
-ceQHZrvbepCRFcZXqSViMwaxL2Kh61fsGqDM/AC62o/a2vTnMG0zHl5cU83LhHXn
-Oov7OSV1VIhXnc38Y3fo6Sw7DEQvI8+nztUEF1w0FYFwK4txh2htHsRRIaDTP9aJ
-qq179WdDbtfm5cSJMTxSgkuy3S8IEJ/Et/iWPWeq9qTpKgJQ2uaIW2vRtQzuz1Pr
-oMUki600YY3YDTQRPVvHtHXZVu8jWEX+FnEeCet6RrcGaEq1YQg=
-=ox3P
------END PGP SIGNATURE-----
+The rest is mostly fixes, cleanups and code reorganization.
 
---=-bUl0ijswPrll+msSJAFm--
+Specifics:
+
+ - Rework the intel_pstate driver's sysfs interface to make it
+   more straightforward and more intuitive (Rafael Wysocki).
+
+ - Make intel_pstate support all processors which advertise HWP
+   (hardware-managed P-states) to the kernel in all operation modes
+   and make it use the load-based P-state selection algorithm on a
+   wider range of systems in the active mode (Rafael Wysocki).
+
+ - Add cpufreq driver for Tegra186 (Mikko Perttunen).
+
+ - Add support for Gemini Lake SoCs to intel_pstate (David Box).
+
+ - Add support for MT8176 and MT817x to the Mediatek cpufreq driver
+   and clean up that driver a bit (Daniel Kurtz).
+
+ - Clean up intel_pstate and optimize it slightly (Rafael Wysocki).
+
+ - Update the schedutil cpufreq governor, mostly to fix a couple of
+   issues with it related to specific workloads, and rework its sysfs
+   tunable and initialization a bit (Rafael Wysocki, Viresh Kumar).
+
+ - Fix minor issues in the imx6q, dbx500 and qoriq cpufreq drivers
+   (Christophe Jaillet, Irina Tirdea, Leonard Crestez, Viresh Kumar,
+   YuanTian Tang).
+
+ - Add file patterns for cpufreq DT bindings to MAINTAINERS (Geert
+   Uytterhoeven).
+
+ - Add support for "always on" power domains to the genpd (generic
+   power domains) framework and clean up that code somewhat (Ulf
+   Hansson, Lina Iyer, Viresh Kumar).
+
+ - Fix minor issues in the powernv cpuidle driver and clean it up
+   (Anton Blanchard, Gautham Shenoy).
+
+ - Move the AnalyzeSuspend utility under tools/power/pm-graph/ and
+   add an analogous boot-profiling utility called AnalyzeBoot to it
+   (Todd Brandt).
+
+ - Add rk3328 support to the rockchip-io AVS (Adaptive Voltage
+   Scaling) driver (David Wu).
+
+ - Fix minor issues in the cpuidle core, the intel_pstate_tracer
+   utility, the devfreq framework and the PM core documentation
+   (Chanwoo Choi, Doug Smythies, Johan Hovold, Marcin Nowakowski).
+
+Thanks!
+
+---------------
+
+Anton Blanchard (3):
+      cpuidle: powernv: Don't bounce between low and very low thread priority
+      cpuidle: powernv: Don't continually set thread priority in snooze_loop()
+      cpuidle: powernv: Avoid a branch in the core snooze_loop() loop
+
+Chanwoo Choi (1):
+      PM / devfreq: Move struct devfreq_governor to devfreq directory
+
+Christophe Jaillet (1):
+      cpufreq: imx6q: Fix error handling code
+
+Daniel Kurtz (2):
+      cpufreq: mt8173: Mark mt8173_cpufreq_driver_init as __init
+      cpufreq: mediatek: Add support for MT8176 and MT817x
+
+David E. Box (1):
+      cpufreq: intel_pstate: Add support for Gemini Lake
+
+David Wu (1):
+      PM / AVS: rockchip-io: add io selectors and supplies for rk3328
+
+Doug Smythies (1):
+      tools/power/x86/intel_pstate_tracer: Adjust directory ownership
+
+Gautham R. Shenoy (1):
+      powernv-cpuidle: Validate DT property array size
+
+Geert Uytterhoeven (1):
+      MAINTAINERS: Add file patterns for cpufreq device tree bindings
+
+Irina Tirdea (1):
+      cpufreq: imx6q: Fix handling EPROBE_DEFER from regulator
+
+Johan Hovold (2):
+      PM / runtime: Fix autosuspend documentation
+      PM / runtime: Document autosuspend-helper side effects
+
+Leonard Crestez (1):
+      cpufreq: imx6q: Set max suspend_freq to avoid changes during suspend
+
+Lina Iyer (1):
+      PM / Domains: Ignore domain-idle-states that are not compatible
+
+Marcin Nowakowski (1):
+      cpuidle: cpuidle-cps: remove unused variable
+
+Mikko Perttunen (1):
+      cpufreq: Add Tegra186 cpufreq driver
+
+Rafael J. Wysocki (25):
+      cpufreq: intel_pstate: Drop redundant wrapper function
+      cpufreq: schedutil: Avoid reducing frequency of busy CPUs prematurely
+      cpufreq: schedutil: Trace frequency only if it has changed
+      cpufreq: intel_pstate: Support HWP processors in all operation modes
+      cpufreq: intel_pstate: Use load-based P-state selection more widely
+      cpufreq: intel_pstate: Active mode P-state limits rework
+      cpufreq: intel_pstate: Avoid transient updates of cpuinfo.max_freq
+      cpufreq: intel_pstate: Eliminate struct perf_limits
+      cpufreq: intel_pstate: Drop pointless initialization of PID parameters
+      cpufreq: intel_pstate: Initialize pid_params statically
+      cpufreq: intel_pstate: Fold intel_pstate_reset_all_pid() into the caller
+      cpufreq: intel_pstate: Clean up intel_pstate_busy_pid_reset()
+      cpufreq: intel_pstate: Set HWP sampling interval once
+      cpufreq: intel_pstate: Skip unnecessary PID resets on init
+      cpufreq: intel_pstate: Drop driver_registered variable
+      cpufreq: intel_pstate: Modify check in intel_pstate_update_status()
+      cpufreq: intel_pstate: Use different utilization update callbacks
+      cpufreq: intel_pstate: Add update_util callback to pstate_funcs
+      cpufreq: intel_pstate: Move cpu_defaults definitions
+      cpufreq: intel_pstate: Drop struct cpu_defaults
+      cpufreq: intel_pstate: Introduce pid_in_use()
+      cpufreq: intel_pstate: Do not walk policy->cpus
+      cpufreq: intel_pstate: Eliminate intel_pstate_get_min_max()
+      cpufreq: schedutil: Reduce frequencies slower
+      cpufreq: schedutil: Use policy-dependent transition delays
+
+Todd E Brandt (3):
+      tools: power: pm-graph: AnalyzeSuspend v4.6
+      tools: power: pm-graph: AnalyzeBoot v2.0
+      tools: power: pm-graph: Package makefile and man pages
+
+Ulf Hansson (4):
+      PM / Domains: Clean up code validating genpd's status
+      PM / Domains: Enable users of genpd to specify always on PM domains
+      PM / Domains: Respect errors from genpd's ->power_off() callback
+      PM / Domains: Don't warn about IRQ safe device for an always on PM domain
+
+Viresh Kumar (4):
+      cpufreq: schedutil: Redefine the rate_limit_us tunable
+      cpufreq: schedutil: Refactor sugov_next_freq_shared()
+      cpufreq: dbx500: Manage cooling device from cpufreq driver
+      PM / Domain: remove conditional from error case
+
+YuanTian Tang (1):
+      cpufreq: qoriq: enhance bus frequency calculation
+
+---------------
+
+ .../devicetree/bindings/power/power_domain.txt     |   4 +-
+ .../bindings/power/rockchip-io-domain.txt          |   1 +
+ Documentation/power/runtime_pm.txt                 |  19 +-
+ MAINTAINERS                                        |   1 +
+ arch/arm/boot/dts/ste-dbx5x0.dtsi                  |   5 -
+ drivers/base/power/domain.c                        |  68 +-
+ drivers/cpufreq/Kconfig.arm                        |   6 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/dbx500-cpufreq.c                   |  20 +
+ drivers/cpufreq/imx6q-cpufreq.c                    |  17 +-
+ drivers/cpufreq/intel_pstate.c                     | 910 +++++++++-----------
+ drivers/cpufreq/mt8173-cpufreq.c                   |  23 +-
+ drivers/cpufreq/qoriq-cpufreq.c                    |  24 +-
+ drivers/cpufreq/tegra186-cpufreq.c                 | 275 +++++++
+ drivers/cpuidle/cpuidle-cps.c                      |   3 +-
+ drivers/cpuidle/cpuidle-powernv.c                  |  69 +-
+ drivers/devfreq/governor.h                         |  29 +
+ drivers/power/avs/rockchip-io-domain.c             |  41 +
+ drivers/thermal/Kconfig                            |  12 -
+ drivers/thermal/Makefile                           |   1 -
+ drivers/thermal/db8500_cpufreq_cooling.c           | 105 ---
+ include/linux/cpufreq.h                            |   7 +
+ include/linux/devfreq.h                            |  30 +-
+ include/linux/pm_domain.h                          |   1 +
+ include/linux/tick.h                               |   1 +
+ kernel/sched/cpufreq_schedutil.c                   |  82 +-
+ kernel/time/tick-sched.c                           |  12 +
+ tools/power/pm-graph/Makefile                      |  28 +
+ tools/power/pm-graph/analyze_boot.py               | 824 ++++++++++++++++++
+ .../power/pm-graph}/analyze_suspend.py             | 916 +++++++++++----------
+ tools/power/pm-graph/bootgraph.8                   | 132 +++
+ tools/power/pm-graph/sleepgraph.8                  | 243 ++++++
+ .../x86/intel_pstate_tracer/intel_pstate_tracer.py |  17 +
+ 33 files changed, 2774 insertions(+), 1153 deletions(-)
