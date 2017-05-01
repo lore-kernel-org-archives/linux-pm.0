@@ -1,66 +1,61 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v2] pda_power: move from timer to delayed_work
-Date: Mon, 1 May 2017 13:33:12 +0200
-Message-ID: <20170501113312.mhm4rliuxoiqtkwu@earth>
-References: <1493126285-24695-1-git-send-email-anthony@amarulasolutions.com>
+Subject: Re: [PATCH] power: ab8500_charger: fix spelling mistake: "prechage"
+ -> "precharge"
+Date: Mon, 1 May 2017 13:34:49 +0200
+Message-ID: <20170501113449.bxifdqjshgupsf2o@earth>
+References: <20170429215649.11845-1-colin.king@canonical.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="kszgu56h6f4aebxe"
+        protocol="application/pgp-signature"; boundary="fxdx2cfzai532xsh"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:57687 "EHLO
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:57699 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S3000375AbdEALdQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 07:33:16 -0400
+        with ESMTP id S378888AbdEALey (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 May 2017 07:34:54 -0400
 Content-Disposition: inline
-In-Reply-To: <1493126285-24695-1-git-send-email-anthony@amarulasolutions.com>
+In-Reply-To: <20170429215649.11845-1-colin.king@canonical.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anthony Brandon <anthony@amarulasolutions.com>
-Cc: linux-pm@vger.kernel.org, Michael Trimarchi <michael@amarulasolutions.com>
+To: Colin King <colin.king@canonical.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---kszgu56h6f4aebxe
+--fxdx2cfzai532xsh
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Apr 25, 2017 at 03:18:05PM +0200, Anthony Brandon wrote:
-> From: Michael Trimarchi <michael@amarulasolutions.com>
+On Sat, Apr 29, 2017 at 10:56:49PM +0100, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
 >=20
-> This changed is needed to avoid locking problem during
-> boot as shown:
+> trivial fix to spelling mistake in dev_error message.
 >=20
-> BUG: sleeping function called from invalid context
-> [...]
->=20
-> Fixes: b2998049cfae ("[BATTERY] pda_power platform driver")
-> Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
-> Signed-off-by: Anthony Brandon <anthony@amarulasolutions.com>
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
 Thanks, queued.
 
 -- Sebastian
 
---kszgu56h6f4aebxe
+--fxdx2cfzai532xsh
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHHPgACgkQ2O7X88g7
-+ppwKhAAgOELVQ8u4fXqhaRPewpxY80IXl8hLV9yYDHYq/HLOkp/UU1fTRF/wxtR
-cTrlewhQejw73M4Ujo/8chZ3iZJa6la00gpoXVXXz0AeSWTnGtzxfzrQiqAjEwQS
-BTMa2/hd+5WsYz/OU+cjIyvkIPetxsxAGGdrTn9fcqMc5NtXsb5qL7T8Ddl0S3KO
-vHYOfG09VfTvIEBZ0CL/cxm5fNlNc0DNqIDcZVwkI8rL2u2sJGRZ/M+PJ0QquQJv
-zWFMmZ4ovgN2MAMd6Y1PAlOGN/BHTrzafRPBb1shIR81ogFQC2nLcMkVVNrkKT2u
-9JzLrHWl3wIBvFNmc0HImqHII1wg7k3PFnbQfjprNIJHX3Vzal99zDikg4N6wYaN
-gRDLA7p6jGwX1CJGu2BQOZuWbyoD9QHFrtOFogDRxzoWVEjtUmnnc6FbG2pV4gaQ
-QJmTuEzkR8uvDtMQ11up6XA7gm3MGrhVuyjn2LmnM4BaShUc9x3a/hKj8oEPA91q
-964nv0mdt6ICUP5a4N3IPpN3THTme2gEkFd9x2EGOAbARHfQFxXxmFFDe7vTLlew
-AiQZWoi1BTbuZpbK7t3T5AMSC13HmmhB+7ArvDDWg7+C8bVcYGLHbUy9t2jLbftm
-OYohmngbRRigmJiIinDTDE3sioJzrOcXfe1j7QMiI5Dy9LtQ6Qg=
-=DDOC
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHHVkACgkQ2O7X88g7
++pqQCA/+LINh5j29lm7Aj1rL/Yg6/mbsU9VJnNEDVnuvItx6G7d3JVpvyBd7BVEL
+W4ZOOvAa6awAk1DlVbUpfulktqXwCwHW6oG9wuEkZDu9S4ZTv0ZOfACtIFEJbwpe
+n1fDPjOwLxvJgVK1Ptmj2B2YjabqPJMOfsGm+rjFiZaTAbb5qp6SllmqenY+yYgW
+3pe2Rcg11ky+kgcuBnx3i/5BlBfcNbV2FLnV/Ha49BchzawwBkSVPe6ZwdZOJemf
+/ph4K21eWqowjufOs7R1zGl5sQ8ho3krQ+YfJ0goWdsv6oAKDFi4MDLv8dDl4O+C
++ih9UGRan7OylaYJrBDWV7Wjx2MK5a/IYcMuPVCuHzoqlPxEIEiQFI6n6Gm68KCi
+r/jKIZI46jJjFrJ9TdhTfhc/v9jfbPD/2PgMQUjNyKZUrnqG+n03AYdp2S/8ptxZ
+B609k369N7dg4n2PZLdR2tRW644fp6DUM1agoNaxuaINnjVKiEqt44r0eCB4dZiM
+PRO8nDhIuhbwLx7XA5+XbOIZQ604k7KUmVMQ3hsg0NJxxlVdWrWZ99LKqbmR9zrk
+8/16KBg7CTFrp8tl+1gIXTz+wO0J4fl3mCr7coyLwQKii6+CyG9TZK12o3afk7op
+N1J025Kn00lEQRck3M0Z+/EXtfxIkJuiSDUkpFO2yk6ZKeMmS70=
+=+l4M
 -----END PGP SIGNATURE-----
 
---kszgu56h6f4aebxe--
+--fxdx2cfzai532xsh--
