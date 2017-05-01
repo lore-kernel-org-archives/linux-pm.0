@@ -1,95 +1,60 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v6 2/6] power: supply: add battery driver for AXP20X and
- AXP22X PMICs
-Date: Mon, 1 May 2017 13:30:19 +0200
-Message-ID: <20170501113019.gc4mblrwvyd7qgv3@earth>
-References: <20170418073421.31351-1-quentin.schulz@free-electrons.com>
- <20170418073421.31351-3-quentin.schulz@free-electrons.com>
+From: Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
+Subject: Re: [PATCH 2/2] power: supply: sbs-battery: Correct supply status
+ with current draw
+Date: Mon, 1 May 2017 13:33:58 +0200
+Message-ID: <20170501113358.qo5xzojemjh46e3w@earth>
+References: <20170425150905.4185-1-contact@paulk.fr>
+ <20170425150905.4185-2-contact@paulk.fr>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1654141401824196722=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170418073421.31351-3-quentin.schulz@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, liam@networkimprov.net, linux-sunxi@googlegroups.com, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, wens@csie.org, robh+dt@kernel.org, icenowy@aosc.xyz, maxime.ripard@free-electrons.com, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="bhfoqsnd35u4mqcr"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170425150905.4185-2-contact-W9ppeneeCTY@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============1654141401824196722==
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="nvha4q7cvppd2htm"
-Content-Disposition: inline
-
-
---nvha4q7cvppd2htm
+--bhfoqsnd35u4mqcr
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Apr 18, 2017 at 09:34:17AM +0200, Quentin Schulz wrote:
-> The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
+On Tue, Apr 25, 2017 at 05:09:05PM +0200, Paul Kocialkowski wrote:
+> The status reported directly by the battery controller is not always
+> reliable and should be corrected based on the current draw information.
 >=20
-> This patch adds the battery power supply driver to get various data from
-> the PMIC, such as the battery status (charging, discharging, full,
-> dead), current max limit, current current, battery capacity (in
-> percentage), voltage max and min limits, current voltage and battery
-> capacity (in Ah).
+> This implements such a correction with a dedicated function, called
+> where the supply status is retrieved.
 >=20
-> This battery driver uses the AXP20X/AXP22X ADC driver as PMIC data
-> provider.
->=20
-> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-> Acked-by: Jonathan Cameron <jic23@kernel.org>
-> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Acked-by: Chen-Yu Tsai <wens@csie.org>
-> Acked-by: Sebastian Reichel <sre@kernel.org>
+> Signed-off-by: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
 
 Thanks, queued.
 
 -- Sebastian
 
---nvha4q7cvppd2htm
+--bhfoqsnd35u4mqcr
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHHEoACgkQ2O7X88g7
-+pqeOxAAjFTdUYEQSYAyhz/w78B3VDU58cZAXCtrCjiP4myZWTGrmCGkYR3Fze/K
-fhs1iZwIuOZu6BQ0LLjT6BJlLCFgBtxwLXwEUdm8wb6q/+/3s5rVHIwrcc9DL779
-Gh+T5JTGtN1uWwZ6k5rRzz/9c1InKksTYpwdJvM7cHyeFKNk2dBY3MKI6YYTNyww
-vDjf2Yklie8ayxW/0nvZW7nKb0HxE/LDhHIBxGRmHwTvTyYdnzeecK6zufFl7Oti
-hXqXPK09XUl9yoHYTb56sZVP0NTQIk0d7iZpzgvFWEiEQnWvLuOuBsMo4Mzp8r2R
-LATXjqOQSLRURkPCz/8jujhO16iaBcq4hOxc1qGCaRS0lNnCh86OfAVN4CZnFys4
-SdQUsbcRKUiYTYMz5h1AkKLAv5fq+ZMH3tIsHR9s9ZvoyhVdZz4PrtuBoFeRqTem
-6g5UBKhkqGSw89fVePxeGgJymqFwnCe99nH6Wek/cp5DDUvkGCOykKFMooceVbOi
-WL4elMd8DnmXVeoQfrkxs6vvWtRhD3shgNYNY7F83/pMRUsfkRwSzGfvtD1tP+U9
-Y8hvvWc0++gtlna1PmmLrTfMW0eHSp/NGQp+o/GErgyyeBzLU5nS065FNzGluYJf
-TLXNnN3v//QUte3qxotgbM5uGVz9dHtsB9QMJAyDAEz5/llHfzA=
-=27d6
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkHHSYACgkQ2O7X88g7
++ppVnRAAkn5ZCSQ/EJtK0Z+mqz8flVlk2X4rxcbvTBSmAuu0hCO1kvdMgiDYNacu
+0onLqDlcgFVDL/wEAfBFYTfGhrUx+P0WrRMMzhE3y17LeQcWyeofUQaqETklM61U
+QD246ESS0ftJcXJ5uZIL6JDfXn0LcactuVOc+ihTcYwMP/4jORRe4YLLXk/Kq1XC
+HgRDxX0sEhfvDrT5eF1Zj8OiXCVkTS6Sogq5xs+puQ5o85hSQFyg4BhH+qnyx5Zg
+LhEoBnb7RJq87pCTZhnZ+0WTjQ5ySScIcV6BedWg2W+gAXDZIJGUGxwh5+kWfhys
+b4AdYO3nN86lt8O4q+VuFhuIwyVwPxxw9kImIik4bSVyOhMPVEgJhhkI1Wd5b+BQ
+tqJZTJtaDGlwKZOoXXVWAlNZ+rpYX+9ACrh7Q24ZdxJ3cpKsg6lNBsutDsvJ6ALU
+hj6BsHsFpcH9qtqA/J99uYGJSozUvKzAWeFBmH5OxBpceYOaS8sQanIWAlMzpkQ+
+2Bv/sUrV+Je7r7n79ozlO/oyp76flekVOeTreCHk51M0pvfecV3vbmQaAMYzhWiU
+oWujOL+xRvVHL01/QZn1JRx9yf0gF8YlK2CySxlfRv+4MNhKGHxn0uACY9Pn/Tg2
+ZuwRb+4nrBpsO6ctAQCQDonv2VYz6vHVNGQkugGYaRJP5rVyuH0=
+=F9Vy
 -----END PGP SIGNATURE-----
 
---nvha4q7cvppd2htm--
-
-
---===============1654141401824196722==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============1654141401824196722==--
+--bhfoqsnd35u4mqcr--
