@@ -1,56 +1,286 @@
-From: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-Subject: Re: [PATCH v5 0/9] Add sbs-manager with smbalert support
-Date: Tue, 2 May 2017 12:29:59 +0200
-Message-ID: <20170502102959.GA4430@katana>
-References: <1493628599-30552-1-git-send-email-preid@electromag.com.au>
- <20170501090826.3wci2vzilp6ogalt@ninjato>
- <20170502102440.GC2382@mail.corp.redhat.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170502102440.GC2382-/m+UfqrgI5QNLKR9yMNcA1aTQe2KTcn/@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Benjamin Tissoires <benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Mike Looijmans <mike.looijmans@topic.nl>
+Subject: [PATCH] power: Add ltc3651-charger driver
+Date: Tue,  2 May 2017 15:48:33 +0200
+Message-ID: <1493732913-19025-1-git-send-email-mike.looijmans@topic.nl>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: sre@kernel.org, linux-kernel@vger.kernel.org, Mike Looijmans <mike.looijmans@topic.nl>
 List-Id: linux-pm@vger.kernel.org
 
+The LTC3651 reports its status via GPIO lines. This driver translates
+the GPIO levels to battery charger status information via sysfs.
+It relies on devicetree to supply the IO configuration.
 
---yrj/dFKFPuw6o+aM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
+---
+I'll send the devicetree binding documentation in a separate patch.
 
+ drivers/power/supply/Kconfig           |   7 ++
+ drivers/power/supply/Makefile          |   1 +
+ drivers/power/supply/ltc3651-charger.c | 224 +++++++++++++++++++++++++++++++++
+ 3 files changed, 232 insertions(+)
+ create mode 100644 drivers/power/supply/ltc3651-charger.c
 
-> I have already been cc-ed in the v6 of the series, so I am able to
-> review it properly (I do not read the I2C list, but I can work around
-> this through patchwork).
-
-Good. Thanks for the review, much appreciated!
-
-
---yrj/dFKFPuw6o+aM
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlkIX6IACgkQFA3kzBSg
-KbacexAAiTMbm63Djz5oplzX3c+YQGM0GyPdK834H0dMXYhrlDEo5YmD/2LHRwou
-5oAoCyQ5ZXN3+J9ye644TdcGK5f9QSQ9OTwbm+Ph39E1RC25ofr4yUbzMtN4lPXU
-I6B5jKjnyC5qoujlCYM1X9tH/YWSgWT4Hfv8F1updB/0c59MfTUc1S+e2daLhaIU
-koF3Lv6zCKHU68mi5C2TC8T4kDEt2/GOGz6DIGwfh6tY+uv+XoNPekXNlVo9YRcl
-mocGzBor47b54+hc6E7wbiViL8hbpPmYqrG3eKLyty6XW7fiZ2p3fXL9TaOr2sj8
-ahz4hhPN/KQl7gzPiC9nqOh427zRh7FM27jNgsnuG4Cm4QsWQXV+9uqjRBiae9gK
-4tqhEGoawf9QTu5x2vkM9vSW+qo4noTjFIUWhyLOCxhZgKMJptzvdvJlllDa04J0
-va9W2rzpNDZVbEm2Aas6qnvi7HkUyydrXv9UbVkVeKZAIiQXHthdY55sImJBmtm4
-eyzAkzNFbX/cE8FNNLj7dxM3Gk6JULyEumNRtS3+7hGH4k4KxleaMbEQ6PhnhY9o
-Kv5dNDqDluArrFTFxVnlyzYpF13NDsdEFpfMlyoMyTNIUawBGCYaWebeuwaFs0Qc
-dW25X/4k1w/3oY/YzVIL2hNtGOsZywKw+E/sZwMdgPlqjVPUdfw=
-=PD1c
------END PGP SIGNATURE-----
-
---yrj/dFKFPuw6o+aM--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index da92275..77b34e7 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -388,6 +388,13 @@ config CHARGER_MANAGER
+           runtime and in suspend-to-RAM by waking up the system periodically
+           with help of suspend_again support.
+ 
++config CHARGER_LTC3651
++	tristate "LTC3651 charger"
++	depends on GPIOLIB
++	help
++	  Say Y to include support for the LTC3651 battery charger which reports
++	  its status via GPIO lines.
++
+ config CHARGER_MAX14577
+ 	tristate "Maxim MAX14577/77836 battery charger driver"
+ 	depends on MFD_MAX14577
+diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+index 39fc733..973c386 100644
+--- a/drivers/power/supply/Makefile
++++ b/drivers/power/supply/Makefile
+@@ -60,6 +60,7 @@ obj-$(CONFIG_CHARGER_LP8727)	+= lp8727_charger.o
+ obj-$(CONFIG_CHARGER_LP8788)	+= lp8788-charger.o
+ obj-$(CONFIG_CHARGER_GPIO)	+= gpio-charger.o
+ obj-$(CONFIG_CHARGER_MANAGER)	+= charger-manager.o
++obj-$(CONFIG_CHARGER_LTC3651)	+= ltc3651-charger.o
+ obj-$(CONFIG_CHARGER_MAX14577)	+= max14577_charger.o
+ obj-$(CONFIG_CHARGER_DETECTOR_MAX14656)	+= max14656_charger_detector.o
+ obj-$(CONFIG_CHARGER_MAX77693)	+= max77693_charger.o
+diff --git a/drivers/power/supply/ltc3651-charger.c b/drivers/power/supply/ltc3651-charger.c
+new file mode 100644
+index 0000000..cf73640
+--- /dev/null
++++ b/drivers/power/supply/ltc3651-charger.c
+@@ -0,0 +1,224 @@
++/*
++ *  Copyright (C) 2017, Topic Embedded Products
++ *  Driver for LTC3651 charger IC.
++ *
++ *  This program is free software; you can redistribute it and/or modify it
++ *  under  the terms of the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the License, or (at your
++ *  option) any later version.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ */
++
++#include <linux/device.h>
++#include <linux/gpio/consumer.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/power_supply.h>
++#include <linux/slab.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
++
++struct ltc3651_charger {
++	struct power_supply *charger;
++	struct power_supply_desc charger_desc;
++	struct gpio_desc *acpr_gpio;
++	struct gpio_desc *fault_gpio;
++	struct gpio_desc *chrg_gpio;
++};
++
++static irqreturn_t ltc3651_charger_irq(int irq, void *devid)
++{
++	struct power_supply *charger = devid;
++
++	power_supply_changed(charger);
++
++	return IRQ_HANDLED;
++}
++
++static inline struct ltc3651_charger *psy_to_ltc3651_charger(
++	struct power_supply *psy)
++{
++	return power_supply_get_drvdata(psy);
++}
++
++static int ltc3651_charger_get_property(struct power_supply *psy,
++		enum power_supply_property psp, union power_supply_propval *val)
++{
++	struct ltc3651_charger *ltc3651_charger = psy_to_ltc3651_charger(psy);
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_STATUS:
++		if (!ltc3651_charger->chrg_gpio) {
++			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
++			break;
++		}
++		if (gpiod_get_value(ltc3651_charger->chrg_gpio))
++			val->intval = POWER_SUPPLY_STATUS_CHARGING;
++		else
++			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
++		break;
++	case POWER_SUPPLY_PROP_ONLINE:
++		val->intval = gpiod_get_value(ltc3651_charger->acpr_gpio);
++		break;
++	case POWER_SUPPLY_PROP_HEALTH:
++		if (!ltc3651_charger->fault_gpio) {
++			val->intval = POWER_SUPPLY_HEALTH_UNKNOWN;
++			break;
++		}
++		if (!gpiod_get_value(ltc3651_charger->fault_gpio)) {
++			val->intval = POWER_SUPPLY_HEALTH_GOOD;
++			break;
++		}
++		/*
++		 * If the fault pin is active, the chrg pin explains the type
++		 * of failure.
++		 */
++		if (!ltc3651_charger->chrg_gpio) {
++			val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
++			break;
++		}
++		val->intval = gpiod_get_value(ltc3651_charger->chrg_gpio) ?
++				POWER_SUPPLY_HEALTH_OVERHEAT :
++				POWER_SUPPLY_HEALTH_DEAD;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static enum power_supply_property ltc3651_charger_properties[] = {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_HEALTH,
++};
++
++static int ltc3651_charger_probe(struct platform_device *pdev)
++{
++	struct power_supply_config psy_cfg = {};
++	struct ltc3651_charger *ltc3651_charger;
++	struct power_supply_desc *charger_desc;
++	int ret;
++
++	ltc3651_charger = devm_kzalloc(&pdev->dev, sizeof(*ltc3651_charger),
++					GFP_KERNEL);
++	if (!ltc3651_charger) {
++		dev_err(&pdev->dev, "Failed to alloc driver structure\n");
++		return -ENOMEM;
++	}
++
++	ltc3651_charger->acpr_gpio = devm_gpiod_get(&pdev->dev,
++					"acpr", GPIOD_IN);
++	if (IS_ERR(ltc3651_charger->acpr_gpio)) {
++		ret = PTR_ERR(ltc3651_charger->charger);
++		dev_err(&pdev->dev, "Failed to acquire acpr GPIO: %d\n", ret);
++		return ret;
++	}
++	ltc3651_charger->fault_gpio = devm_gpiod_get_optional(&pdev->dev,
++					"fault", GPIOD_IN);
++	if (IS_ERR(ltc3651_charger->fault_gpio)) {
++		ret = PTR_ERR(ltc3651_charger->charger);
++		dev_err(&pdev->dev, "Failed to acquire fault GPIO: %d\n", ret);
++		return ret;
++	}
++	ltc3651_charger->chrg_gpio = devm_gpiod_get_optional(&pdev->dev,
++					"chrg", GPIOD_IN);
++	if (IS_ERR(ltc3651_charger->chrg_gpio)) {
++		ret = PTR_ERR(ltc3651_charger->charger);
++		dev_err(&pdev->dev, "Failed to acquire chrg GPIO: %d\n", ret);
++		return ret;
++	}
++
++	charger_desc = &ltc3651_charger->charger_desc;
++	charger_desc->name = pdev->dev.of_node->name;
++	charger_desc->type = POWER_SUPPLY_TYPE_MAINS;
++	charger_desc->properties = ltc3651_charger_properties;
++	charger_desc->num_properties = ARRAY_SIZE(ltc3651_charger_properties);
++	charger_desc->get_property = ltc3651_charger_get_property;
++	psy_cfg.of_node = pdev->dev.of_node;
++	psy_cfg.drv_data = ltc3651_charger;
++
++	ltc3651_charger->charger = power_supply_register(&pdev->dev,
++						      charger_desc, &psy_cfg);
++	if (IS_ERR(ltc3651_charger->charger)) {
++		ret = PTR_ERR(ltc3651_charger->charger);
++		dev_err(&pdev->dev, "Failed to register power supply: %d\n",
++			ret);
++		return ret;
++	}
++
++	/* Acquire IRQs for the GPIO pins if possible */
++	if (ltc3651_charger->acpr_gpio) {
++		ret = gpiod_to_irq(ltc3651_charger->acpr_gpio);
++		if (ret >= 0)
++			ret = devm_request_any_context_irq(&pdev->dev, ret,
++				ltc3651_charger_irq,
++				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
++				dev_name(&pdev->dev), ltc3651_charger->charger);
++		if (ret < 0)
++			dev_warn(&pdev->dev, "Failed to request acpr irq\n");
++	}
++	if (ltc3651_charger->fault_gpio) {
++		ret = gpiod_to_irq(ltc3651_charger->fault_gpio);
++		if (ret >= 0)
++			ret = devm_request_any_context_irq(&pdev->dev, ret,
++				ltc3651_charger_irq,
++				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
++				dev_name(&pdev->dev), ltc3651_charger->charger);
++		if (ret < 0)
++			dev_warn(&pdev->dev, "Failed to request fault irq\n");
++	}
++	if (ltc3651_charger->chrg_gpio) {
++		ret = gpiod_to_irq(ltc3651_charger->chrg_gpio);
++		if (ret >= 0)
++			ret = devm_request_any_context_irq(&pdev->dev, ret,
++				ltc3651_charger_irq,
++				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
++				dev_name(&pdev->dev), ltc3651_charger->charger);
++		if (ret < 0)
++			dev_warn(&pdev->dev, "Failed to request chrg irq\n");
++	}
++
++	platform_set_drvdata(pdev, ltc3651_charger);
++
++	return 0;
++}
++
++static int ltc3651_charger_remove(struct platform_device *pdev)
++{
++	struct ltc3651_charger *ltc3651_charger = platform_get_drvdata(pdev);
++
++	power_supply_unregister(ltc3651_charger->charger);
++
++	return 0;
++}
++
++static const struct of_device_id ltc3651_charger_match[] = {
++	{ .compatible = "ltc3651-charger" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, ltc3651_charger_match);
++
++static struct platform_driver ltc3651_charger_driver = {
++	.probe = ltc3651_charger_probe,
++	.remove = ltc3651_charger_remove,
++	.driver = {
++		.name = "ltc3651-charger",
++		.of_match_table = ltc3651_charger_match,
++	},
++};
++
++module_platform_driver(ltc3651_charger_driver);
++
++MODULE_AUTHOR("Mike Looijmans <mike.looijmans@topic.nl>");
++MODULE_DESCRIPTION("Driver for LTC3651 charger");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:ltc3651-charger");
+-- 
+1.9.1
