@@ -1,137 +1,132 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of
- PM domains
-Date: Tue, 2 May 2017 11:10:29 +0100
-Message-ID: <ffe13074-9113-0a20-0fa6-76d0209dadfc@nvidia.com>
-References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
- <d2e3ceaa-57e2-033d-ecd1-a3b2bd8ffa26@nvidia.com>
- <CAPDyKFoJ58pwGz2U90ob8a8cY=hEbE-wLBHZ0BBzqPoLW_wgGA@mail.gmail.com>
- <CAJZ5v0gMzN_zfC_2nnRtYFyFon3-_mnioQhNbDP0wsr91RnagA@mail.gmail.com>
+From: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Subject: Re: [PATCH v6 3/8] i2c: i2c-smbus: add of_i2c_setup_smbus_alert
+Date: Tue, 2 May 2017 12:20:13 +0200
+Message-ID: <20170502102013.GB2382@mail.corp.redhat.com>
+References: <1493716346-58517-1-git-send-email-preid@electromag.com.au>
+ <1493716346-58517-4-git-send-email-preid@electromag.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAJZ5v0gMzN_zfC_2nnRtYFyFon3-_mnioQhNbDP0wsr91RnagA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-i2c-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1493716346-58517-4-git-send-email-preid@electromag.com.au>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Phil Reid <preid@electromag.com.au>
+Cc: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Phil,
 
-On 25/04/17 22:17, Rafael J. Wysocki wrote:
-> On Tue, Apr 25, 2017 at 9:34 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->> On 25 April 2017 at 13:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>>
->>> On 28/03/17 15:13, Jon Hunter wrote:
->>>> The current generic PM domain framework (GenDP) only allows a single
->>>> PM domain to be associated with a given device. There are several
->>>> use-cases for various system-on-chip devices where it is necessary for
->>>> a PM domain consumer to control more than one PM domain where the PM
->>>> domains:
->>>> i).  Do not conform to a parent-child relationship so are not nested
->>>> ii). May not be powered on and off at the same time so need independent
->>>>      control.
->>>>
->>>> The solution proposed in this RFC is to allow consumers to explictly
->>>> control PM domains, by getting a handle to a PM domain and explicitly
->>>> making calls to power on and off the PM domain. Note that referencing
->>>> counting is used to ensure that a PM domain shared between consumers
->>>> is not powered off incorrectly.
->>>>
->>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
->>>> controllers) is an example of a consumer that needs to control more than
->>>> one PM domain because the logic is partitioned across 3 PM domains which
->>>> are:
->>>> - XUSBA: Superspeed logic (for USB 3.0)
->>>> - XUSBB: Device controller
->>>> - XUSBC: Host controller
->>>>
->>>> These power domains are not nested and can be powered-up and down
->>>> independently of one another. In practice different scenarios require
->>>> different combinations of the power domains, for example:
->>>> - Superspeed host: XUSBA and XUSBC
->>>> - Superspeed device: XUSBA and XUSBB
->>>>
->>>> Although it could be possible to logically nest both the XUSBB and XUSBC
->>>> domains under the XUSBA, superspeed may not always be used/required and
->>>> so this would keep it on unnecessarily.
->>>>
->>>> Given that Tegra uses device-tree for describing the hardware, it would
->>>> be ideal that the device-tree 'power-domains' property for generic PM
->>>> domains could be extended to allow more than one PM domain to be
->>>> specified. For example, define the following the Tegra210 xHCI device ...
->>>>
->>>>       usb@70090000 {
->>>>               compatible = "nvidia,tegra210-xusb";
->>>>               ...
->>>>               power-domains = <&pd_xusbhost>, <&pd_xusbss>;
->>>>               power-domain-names = "host", "superspeed";
->>>>       };
->>>>
->>>> This RFC extends the generic PM domain framework to allow a device to
->>>> define more than one PM domain in the device-tree 'power-domains'
->>>> property. If there is more than one then the assumption is that these
->>>> PM domains will be controlled explicitly by the consumer and the device
->>>> will not be automatically bound to any PM domain.
->>>
->>> Any more comments/inputs on this? I can address Rajendra's feedback, but
->>> before I did I wanted to see if this is along the right lines or not?
->>
->> I discussed this with Rafael at the OSPM summit in Pisa a couple of
->> weeks ago. Apologize for the delay in providing additional feedback.
->>
->> First, whether the problem is really rare, perhaps adding a new
->> API/framework can't be justified - then it may be better to add some
->> kind of aggregation layer on top of the current PM domain
->> infrastructure (something along the first attempt you made for genpd).
->> That was kind of Rafael's thoughts (Rafael, please correct me if I am
->> wrong).
+On May 02 2017 or thereabouts, Phil Reid wrote:
+> This commit adds of_i2c_setup_smbus_alert which allows the smbalert
+> driver to be attached to an i2c adapter via the device tree.
 > 
-> We were talking about the original idea behind the pm_domain pointer
-> concept, which was about adding a set of PM operations above the bus
-> type/class layer, which could be used for intercepting bus-type PM
-> operations and providing some common handling above them.  This is
-> still relevant IMO.
+> Signed-off-by: Phil Reid <preid@electromag.com.au>
+> ---
+>  Documentation/devicetree/bindings/i2c/i2c.txt |  4 +--
+>  drivers/i2c/i2c-smbus.c                       | 35 +++++++++++++++++++++++++++
+>  include/linux/i2c-smbus.h                     |  9 +++++++
+>  3 files changed, 46 insertions(+), 2 deletions(-)
 > 
-> The basic observation here is that the PM core takes only one set of
-> PM operation per device into account and therefore, in every stage of
-> system suspend, for example, the callback invoked by it has to take
-> care of all actions that need to be carried out for the given device,
-> possibly by invoking callbacks from other code layers.  That
-> limitation cannot be removed easily, because it is built into the PM
-> core design quite fundamentally.
-> 
-> However, this series seems to be about controlling power resources
-> represented by power domain objects rather than about PM operations.
-> In ACPI there is a power resource concept which seems to be quite
-> similar to this, so it is not entirely new. :-)
-> 
-> Of course, question is whether or not to extend genpd this way and I'm
-> not really sure.  I actually probably wouldn't do that, because
-> poweron/poweroff operations used by genpd can be implemeted in terms
-> of lower-level power resource control and I don't see the reason for
-> mixing the two in one framework.
+> diff --git a/Documentation/devicetree/bindings/i2c/i2c.txt b/Documentation/devicetree/bindings/i2c/i2c.txt
+> index cee9d50..1126398 100644
+> --- a/Documentation/devicetree/bindings/i2c/i2c.txt
+> +++ b/Documentation/devicetree/bindings/i2c/i2c.txt
+> @@ -59,8 +59,8 @@ wants to support one of the below features, it should adapt the bindings below.
+>  	interrupts used by the device.
+>  
+>  - interrupt-names
+> -	"irq" and "wakeup" names are recognized by I2C core, other names are
+> -	left to individual drivers.
+> +	"irq", "wakeup" and "smbus_alert" names are recognized by I2C core,
+> +	other names are	left to individual drivers.
+>  
+>  - host-notify
+>  	device uses SMBus host notify protocol instead of interrupt line.
+> diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
+> index df0e2fa..a8f8439 100644
+> --- a/drivers/i2c/i2c-smbus.c
+> +++ b/drivers/i2c/i2c-smbus.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+> +#include <linux/of_irq.h>
+>  #include <linux/slab.h>
+>  #include <linux/workqueue.h>
+>  
+> @@ -238,6 +239,40 @@ struct i2c_client *i2c_setup_smbus_alert(struct i2c_adapter *adapter,
+>  }
+>  EXPORT_SYMBOL_GPL(i2c_setup_smbus_alert);
+>  
+> +int of_i2c_setup_smbus_alert(struct i2c_adapter *adap)
+> +{
+> +	struct i2c_client *client;
+> +	struct i2c_smbus_alert_setup *setup;
+> +	struct i2c_board_info info = {
+> +		I2C_BOARD_INFO("smbus_alert", 0x0c),
+> +	};
 
-That seems fine to me. However, it seems that genpd itself should also
-be a client of this 'low-level power resource control' so that
-power-domains are registered once and can be used by either method. So
-unless I am misunderstanding you here, it seems that what we need to do
-is split the current genpd framework into a couple layers:
+Shouldn't you use i2c_setup_smbus_alert() instead of manually recreating
+the board_info?
+Also i2c_setup_smbus_alert() mentions that the level trigger has to be
+explicitely mentioned, and I can't find if this is the case in your
+patch.
 
-1. Low-level power resource control which has:
-- Power resource registration (ie. pm_genpd_init/remove())
-- Power resource provider registration (ie. of_genpd_add_xxx())
-- Power resource control (on/off etc)
-- Power resource lookup (what this series is adding)
+> +	int irq;
+> +
+> +	if (!adap->dev.of_node)
+> +		return 0;
+> +
+> +	irq = of_irq_get_byname(adap->dev.of_node, "smbus_alert");
+> +	if (irq == -EINVAL || irq == -ENODATA)
+> +		return 0;
+> +	else if (irq < 0)
+> +		return irq;
+> +
+> +	setup = devm_kzalloc(&adap->dev, sizeof(struct i2c_smbus_alert_setup),
+> +		GFP_KERNEL);
 
-2. Generic power-domain infrastructure which is a client of the
-low-level power resource control that can automatically bind a device to
-a singular power resource entity (ie. power-domain).
+Problem is i2c-core doesn't use devres at all for now. So the code is
+correct here as it won't segfault but mixing both devres and non-devres
+is error prone.
 
-Is this along the right lines?
+> +	if (!setup)
+> +		return -ENOMEM;
+> +
+> +	setup->irq = irq;
+> +	info.platform_data = setup;
+> +
+> +	client = i2c_new_device(adap, &info);
+> +	if (!client)
+> +		return -ENODEV;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(of_i2c_setup_smbus_alert);
+> +
+>  /**
+>   * i2c_handle_smbus_alert - Handle an SMBus alert
+>   * @ara: the ARA client on the relevant adapter
+> diff --git a/include/linux/i2c-smbus.h b/include/linux/i2c-smbus.h
+> index a138502..4732d09 100644
+> --- a/include/linux/i2c-smbus.h
+> +++ b/include/linux/i2c-smbus.h
+> @@ -50,4 +50,13 @@ struct i2c_client *i2c_setup_smbus_alert(struct i2c_adapter *adapter,
+>  					 struct i2c_smbus_alert_setup *setup);
+>  int i2c_handle_smbus_alert(struct i2c_client *ara);
+>  
+> +#if IS_ENABLED(CONFIG_I2C_SMBUS)
+> +int of_i2c_setup_smbus_alert(struct i2c_adapter *adap);
+> +#else
+> +static inline int of_i2c_setup_smbus_alert(struct i2c_adapter *adap)
+> +{
+> +	return 0;
+> +}
+> +#endif
+> +
+>  #endif /* _LINUX_I2C_SMBUS_H */
+> -- 
+> 1.8.3.1
 
-Cheers
-Jon
-
--- 
-nvpublic
+Cheers,
+Benjamin
