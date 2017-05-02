@@ -1,53 +1,98 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 2/2] cpufreq: scpi: use new scpi_ops functions to remove
- duplicate code
-Date: Tue, 2 May 2017 09:57:18 +0100
-Message-ID: <0587f9f7-0813-2348-3717-687ed1df3e0e@arm.com>
-References: <1493371296-12465-1-git-send-email-sudeep.holla@arm.com>
- <1493371296-12465-2-git-send-email-sudeep.holla@arm.com>
- <20170428092456.GF21517@vireshk-i7> <1644626.pZFp7GD5Yb@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:41772 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750767AbdEBI5V (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 2 May 2017 04:57:21 -0400
-In-Reply-To: <1644626.pZFp7GD5Yb@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Phil Reid <preid@electromag.com.au>
+Subject: [PATCH v6 6/8] Documentation: Add sbs-manager device tree node documentation
+Date: Tue,  2 May 2017 17:12:24 +0800
+Message-ID: <1493716346-58517-7-git-send-email-preid@electromag.com.au>
+References: <1493716346-58517-1-git-send-email-preid@electromag.com.au>
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1493716346-58517-1-git-send-email-preid@electromag.com.au>
+Sender: linux-i2c-owner@vger.kernel.org
+To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, peda@axentia.se, preid@electromag.com.au, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, benjamin.tissoires@redhat.com
+Cc: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-amlogic@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
+From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
 
+This patch adds device tree documentation for the sbs-manager
 
-On 28/04/17 22:34, Rafael J. Wysocki wrote:
-> On Friday, April 28, 2017 02:54:56 PM Viresh Kumar wrote:
->> On 28-04-17, 10:21, Sudeep Holla wrote:
->>> scpi_ops now provide APIs to get the transition_latency and to add
->>> OPPs to the devices making those logic redundant here.
->>>
->>> This patch makes use of those APIs and removes the redunant code in
->>> this driver.
->>>
->>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->>> ---
->>>  drivers/cpufreq/scpi-cpufreq.c | 38 ++++++--------------------------------
->>>  1 file changed, 6 insertions(+), 32 deletions(-)
->>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>
->>
-> 
-> OK
-> 
-> Sudeep, please route this through ARM.
+Reviewed-by: Phil Reid <preid@electromag.com.au>
+Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Signed-off-by: Phil Reid <preid@electromag.com.au>
+---
+ .../bindings/power/supply/sbs,sbs-manager.txt      | 66 ++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
 
-Sure, thanks.
-
+diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
+new file mode 100644
+index 0000000..389016c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
+@@ -0,0 +1,66 @@
++Binding for sbs-manager
++
++Required properties:
++- compatible: "<vendor>,<part-number>", "sbs,sbs-charger" as fallback. The part
++  number compatible string might be used in order to take care of vendor
++  specific registers.
++- reg: integer, i2c address of the device. Should be <0xa>.
++Optional properties:
++- gpio-controller: Marks the port as GPIO controller.
++  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
++- #gpio-cells: Should be <2>. The first cell is the pin number, the second cell
++  is used to specify optional parameters:
++  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
++
++From OS view the device is basically an i2c-mux used to communicate with up to
++four smart battery devices at address 0xb. The driver actually implements this
++behaviour. So standard i2c-mux nodes can be used to register up to four slave
++batteries. Channels will be numerated starting from 1 to 4.
++
++Example:
++
++batman@0a {
++    compatible = "lltc,ltc1760", "sbs,sbs-manager";
++    reg = <0x0a>;
++    #address-cells = <1>;
++    #size-cells = <0>;
++
++    gpio-controller;
++    #gpio-cells = <2>;
++
++    i2c@1 {
++        #address-cells = <1>;
++        #size-cells = <0>;
++        reg = <1>;
++
++        battery@0b {
++            compatible = "ti,bq2060", "sbs,sbs-battery";
++            reg = <0x0b>;
++            sbs,battery-detect-gpios = <&batman 1 1>;
++        };
++    };
++
++    i2c@2 {
++        #address-cells = <1>;
++        #size-cells = <0>;
++        reg = <2>;
++
++        battery@0b {
++            compatible = "ti,bq2060", "sbs,sbs-battery";
++            reg = <0x0b>;
++            sbs,battery-detect-gpios = <&batman 2 1>;
++        };
++    };
++
++    i2c@3 {
++        #address-cells = <1>;
++        #size-cells = <0>;
++        reg = <3>;
++
++        battery@0b {
++            compatible = "ti,bq2060", "sbs,sbs-battery";
++            reg = <0x0b>;
++            sbs,battery-detect-gpios = <&batman 3 1>;
++        };
++    };
++};
 -- 
-Regards,
-Sudeep
+1.8.3.1
