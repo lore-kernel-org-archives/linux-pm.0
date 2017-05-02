@@ -1,65 +1,67 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: Re: [PATCH 0/3] TI-SoC-thermal: Fine-tuning for two functions
-Date: Tue, 2 May 2017 10:25:41 +0530
-Message-ID: <d87115f9-db8f-d2af-c03e-019004d9b9ac@ti.com>
-References: <cd524803-b771-c3d2-8906-ee78576c86d4@users.sourceforge.net>
- <20170427162047.GA18276@localhost.localdomain>
- <5fa2705e-3082-29b0-b174-cc478cd66e75@ti.com>
+From: Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
+Subject: Re: [PATCH v5 7/9] power: Adds support for Smart Battery System
+ Manager
+Date: Tue, 2 May 2017 09:12:39 +0200
+Message-ID: <20170502071239.jsiorsvyzw65f3p7@earth>
+References: <1493628599-30552-1-git-send-email-preid@electromag.com.au>
+ <1493628599-30552-8-git-send-email-preid@electromag.com.au>
+ <20170501134136.u2tebw77xcirvaqx@earth>
+ <bf4cf813-609c-1d92-2329-35e9176d0d28@electromag.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <kernel-janitors-owner@vger.kernel.org>
-In-Reply-To: <5fa2705e-3082-29b0-b174-cc478cd66e75@ti.com>
-Sender: kernel-janitors-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="7dblfcvgetpmf3fc"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <bf4cf813-609c-1d92-2329-35e9176d0d28-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Cc: wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Karl-Heinz Schneider <karl-heinz-X5L7DgJ4l23oE99TX8zNy7NAH6kLmebB@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 
+--7dblfcvgetpmf3fc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Monday 01 May 2017 10:50 AM, Keerthy wrote:
-> 
-> 
-> On Thursday 27 April 2017 09:50 PM, Eduardo Valentin wrote:
->> On Wed, Apr 26, 2017 at 05:33:10PM +0200, SF Markus Elfring wrote:
->>> From: Markus Elfring <elfring@users.sourceforge.net>
->>> Date: Wed, 26 Apr 2017 17:24:56 +0200
->>>
->>> Three update suggestions were taken into account
->>> from static source code analysis.
->>>
->>> Markus Elfring (3):
->>>   Use devm_kcalloc() in ti_bandgap_build()
->>>   Delete error messages for failed memory allocations in ti_bandgap_build()
->>>   Fix a typo in a comment line
->>>
->>
->> Keerthy,
->>
->> Can you please give it a shot of this series on all supported OMAP chip
->> boards? I do not see any major issue with the series at all, but would
->> like to get it tested by you.
-> 
-> Sure Eduardo. I will test and review this series.
+Hi Phil,
 
-Tested for Temperatures of all the sensors and thermal shutdown
-triggering using emul_temp on DRA7/DRA72 AM57xx-evm boards.
+On Tue, May 02, 2017 at 10:20:22AM +0800, Phil Reid wrote:
+> In regards the le to cpu conversion. grepping the supply folder
+> finds a couple of other suspicious cases.
+>=20
+> sbs-battery & the bq24735-cahrger do similar things.
+>=20
+> thoughts on if they need to be corrected?
 
+Yes, those drivers look incorrect. I guess nobody noticed, since
+most people use little endian machines nowadays (so le16_to_cpu and
+cpu_to_le16 do nothing).
 
-For the series:
+-- Sebastian
 
-Acked-by: Keerthy <j-keerthy@ti.com>
-Tested-by: Keerthy <j-keerthy@ti.com>
+--7dblfcvgetpmf3fc
+Content-Type: application/pgp-signature; name="signature.asc"
 
-- Keerthy
+-----BEGIN PGP SIGNATURE-----
 
-> 
->>
->> BR,
->>
->>>  drivers/thermal/ti-soc-thermal/ti-bandgap.c | 14 +++++---------
->>>  1 file changed, 5 insertions(+), 9 deletions(-)
->>>
->>> -- 
->>> 2.12.2
->>>
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkIMWUACgkQ2O7X88g7
++prlXw//TyRPzCOkwzk9i2R/xX9FNJRTiNuqZSjb/nOy3r/zS0ZCJUxTE364Z4Zt
+s+6516y0wtas4PT6AWaBDU6k0AuUeQMZtJwZ+ze/MCgm5CIm4bDvcFVTkJxRmBQB
+zbySnVGoHdTeMBeWbh5P7GDyz0V8h2xYLzfE+tLy+Q5lkZV/w8DPVoURpZXC+J4c
+1PG3/M/Y35rWDT597P0HKtHOedBs9W0mikF2VUV5Z8SBhrMqdoHLew2v3IZu0XUe
+6wDAko/AhUZ7YF+HjX3QPgYLnwfj32ihvaZ3MieHbCwTkjdW1129mg9dRuyLuk9q
+v55wLqpeOEj4ngrpbI4c1VZXeGCQiAF3yACYmdbCl2EZNQZU+ld4kuyE7EbvaxmV
+9bS/GYPsbaQmzIqBK8MJPY0GCzXCSBloQ3yqKTwUpDDWKXCfJwuMjUGsR3BnVU5e
+xSh6bOLU6niWuPqtPeEA79vbosB3fDRKQzwlo5+c+vLrJDNwxZ/7w0l/gr9Ajhzp
+pFBbXTIKKJV3IunhV2Ew7Gea4vxlJ1pZhVELW/4HDtT8n01LzS7h9+SFNJjlGqIT
+K2Hf7NWhAlUUeZQkRXixP9bq0kx7bzJenmofJsmGS60ZL5yoFff35HpuUCMX/zK6
+XvGiVN3mpZOaUM82IWItVVIv4T7NSQCJi68pfyFkW6i6Jl3as9I=
+=gT7i
+-----END PGP SIGNATURE-----
+
+--7dblfcvgetpmf3fc--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
