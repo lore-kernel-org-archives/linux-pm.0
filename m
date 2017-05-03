@@ -1,220 +1,174 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of
- PM domains
-Date: Wed, 3 May 2017 09:32:00 +0100
-Message-ID: <b4e8fd34-e2f0-165d-aa22-32ba43a8dbed@nvidia.com>
-References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
- <CAJZ5v0gMzN_zfC_2nnRtYFyFon3-_mnioQhNbDP0wsr91RnagA@mail.gmail.com>
- <ffe13074-9113-0a20-0fa6-76d0209dadfc@nvidia.com>
- <1832647.f77WMLkdQb@aspire.rjw.lan>
- <CAPDyKFokVKZfRAsEAB6ihx1FxW4JjarionyOwCATr3s+QW4aMg@mail.gmail.com>
+From: Phil Reid <preid@electromag.com.au>
+Subject: Re: [PATCH v6 5/8] i2c: mux: pca954x: Call request irq after adding
+ mux segments
+Date: Wed, 3 May 2017 16:36:37 +0800
+Message-ID: <8587aabe-ca4a-8424-d24f-cd228e01957f@electromag.com.au>
+References: <1493716346-58517-1-git-send-email-preid@electromag.com.au>
+ <1493716346-58517-6-git-send-email-preid@electromag.com.au>
+ <28f3ce1d-ad4b-3082-7499-b30245a256c1@axentia.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFokVKZfRAsEAB6ihx1FxW4JjarionyOwCATr3s+QW4aMg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from anchovy3.45ru.net.au ([203.30.46.155]:43726 "EHLO
+        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1752203AbdECIgo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 May 2017 04:36:44 -0400
+In-Reply-To: <28f3ce1d-ad4b-3082-7499-b30245a256c1@axentia.se>
+Content-Language: en-AU
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Rosin <peda@axentia.se>, wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, benjamin.tissoires@redhat.com
 
+On 2/05/2017 17:57, Peter Rosin wrote:
+> On 2017-05-02 11:12, Phil Reid wrote:
+>> The pca954x device do not have the ability to mask interrupts. For
+>> i2c slave devices that also don't have masking ability (eg ltc1760
+>> smbalert output) delay registering the irq until after the mux
+>> segments have been configured. During the mux add_adaptor call the
+>> core i2c system can register an smbalert handler which would then
+>> be called immediately when the irq is registered. This smbalert
+>> handler will then clear the pending irq.
+>>
+>> Signed-off-by: Phil Reid <preid@electromag.com.au>
+>> ---
+>>   drivers/i2c/muxes/i2c-mux-pca954x.c | 52 +++++++++++++++++--------------------
+>>   1 file changed, 24 insertions(+), 28 deletions(-)
+>>
+>> diff --git a/drivers/i2c/muxes/i2c-mux-pca954x.c b/drivers/i2c/muxes/i2c-mux-pca954x.c
+>> index ad31d21..4299738 100644
+>> --- a/drivers/i2c/muxes/i2c-mux-pca954x.c
+>> +++ b/drivers/i2c/muxes/i2c-mux-pca954x.c
+>> @@ -294,7 +294,7 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
+>>   {
+>>   	struct pca954x *data = i2c_mux_priv(muxc);
+>>   	struct i2c_client *client = data->client;
+>> -	int c, err, irq;
+>> +	int c, irq;
+>>   
+>>   	if (!data->chip->has_irq || client->irq <= 0)
+>>   		return 0;
+>> @@ -314,24 +314,22 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
+>>   			handle_simple_irq);
+>>   	}
+>>   
+>> -	err = devm_request_threaded_irq(&client->dev, data->client->irq, NULL,
+>> -					pca954x_irq_handler,
+>> -					IRQF_ONESHOT | IRQF_SHARED,
+>> -					"pca954x", data);
+>> -	if (err)
+>> -		goto err_req_irq;
+>> +	return 0;
+>> +}
+>>   
+>> -	disable_irq(data->client->irq);
+>> +static void pca954x_cleanup(struct i2c_mux_core *muxc)
+>> +{
+>> +	struct pca954x *data = i2c_mux_priv(muxc);
+>> +	int c, irq;
+>>   
+>> -	return 0;
+>> -err_req_irq:
+>> -	for (c = 0; c < data->chip->nchans; c++) {
+>> -		irq = irq_find_mapping(data->irq, c);
+>> -		irq_dispose_mapping(irq);
+>> +	if (data->irq) {
+>> +		for (c = 0; c < data->chip->nchans; c++) {
+>> +			irq = irq_find_mapping(data->irq, c);
+>> +			irq_dispose_mapping(irq);
+>> +		}
+>> +		irq_domain_remove(data->irq);
+>>   	}
+>> -	irq_domain_remove(data->irq);
+>> -
+>> -	return err;
+>> +	i2c_mux_del_adapters(muxc);
+>>   }
+>>   
+>>   /*
+>> @@ -422,6 +420,14 @@ static int pca954x_probe(struct i2c_client *client,
+>>   		}
+>>   	}
+>>   
+>> +	if (data->chip->has_irq || client->irq > 0) {
+> 
+> This should be && instead of ||. However, I think it's better to not
+> try to replicate the inverse of the test in pca954x_irq_setup and
+> instead just check if the irq domain is there with "if (data->irq)".
+> Assuming that is the intent...
+Yeah, that's better.
 
-On 03/05/17 09:12, Ulf Hansson wrote:
-> Rafael, Jon,
 > 
-> On 2 May 2017 at 23:51, Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> wrote:
->> On Tuesday, May 02, 2017 11:10:29 AM Jon Hunter wrote:
->>>
->>> On 25/04/17 22:17, Rafael J. Wysocki wrote:
->>>> On Tue, Apr 25, 2017 at 9:34 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->>>>> On 25 April 2017 at 13:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>>>>>
->>>>>> On 28/03/17 15:13, Jon Hunter wrote:
->>>>>>> The current generic PM domain framework (GenDP) only allows a single
->>>>>>> PM domain to be associated with a given device. There are several
->>>>>>> use-cases for various system-on-chip devices where it is necessary for
->>>>>>> a PM domain consumer to control more than one PM domain where the PM
->>>>>>> domains:
->>>>>>> i).  Do not conform to a parent-child relationship so are not nested
->>>>>>> ii). May not be powered on and off at the same time so need independent
->>>>>>>      control.
->>>>>>>
->>>>>>> The solution proposed in this RFC is to allow consumers to explictly
->>>>>>> control PM domains, by getting a handle to a PM domain and explicitly
->>>>>>> making calls to power on and off the PM domain. Note that referencing
->>>>>>> counting is used to ensure that a PM domain shared between consumers
->>>>>>> is not powered off incorrectly.
->>>>>>>
->>>>>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
->>>>>>> controllers) is an example of a consumer that needs to control more than
->>>>>>> one PM domain because the logic is partitioned across 3 PM domains which
->>>>>>> are:
->>>>>>> - XUSBA: Superspeed logic (for USB 3.0)
->>>>>>> - XUSBB: Device controller
->>>>>>> - XUSBC: Host controller
->>>>>>>
->>>>>>> These power domains are not nested and can be powered-up and down
->>>>>>> independently of one another. In practice different scenarios require
->>>>>>> different combinations of the power domains, for example:
->>>>>>> - Superspeed host: XUSBA and XUSBC
->>>>>>> - Superspeed device: XUSBA and XUSBB
->>>>>>>
->>>>>>> Although it could be possible to logically nest both the XUSBB and XUSBC
->>>>>>> domains under the XUSBA, superspeed may not always be used/required and
->>>>>>> so this would keep it on unnecessarily.
->>>>>>>
->>>>>>> Given that Tegra uses device-tree for describing the hardware, it would
->>>>>>> be ideal that the device-tree 'power-domains' property for generic PM
->>>>>>> domains could be extended to allow more than one PM domain to be
->>>>>>> specified. For example, define the following the Tegra210 xHCI device ...
->>>>>>>
->>>>>>>       usb@70090000 {
->>>>>>>               compatible = "nvidia,tegra210-xusb";
->>>>>>>               ...
->>>>>>>               power-domains = <&pd_xusbhost>, <&pd_xusbss>;
->>>>>>>               power-domain-names = "host", "superspeed";
->>>>>>>       };
->>>>>>>
->>>>>>> This RFC extends the generic PM domain framework to allow a device to
->>>>>>> define more than one PM domain in the device-tree 'power-domains'
->>>>>>> property. If there is more than one then the assumption is that these
->>>>>>> PM domains will be controlled explicitly by the consumer and the device
->>>>>>> will not be automatically bound to any PM domain.
->>>>>>
->>>>>> Any more comments/inputs on this? I can address Rajendra's feedback, but
->>>>>> before I did I wanted to see if this is along the right lines or not?
->>>>>
->>>>> I discussed this with Rafael at the OSPM summit in Pisa a couple of
->>>>> weeks ago. Apologize for the delay in providing additional feedback.
->>>>>
->>>>> First, whether the problem is really rare, perhaps adding a new
->>>>> API/framework can't be justified - then it may be better to add some
->>>>> kind of aggregation layer on top of the current PM domain
->>>>> infrastructure (something along the first attempt you made for genpd).
->>>>> That was kind of Rafael's thoughts (Rafael, please correct me if I am
->>>>> wrong).
->>>>
->>>> We were talking about the original idea behind the pm_domain pointer
->>>> concept, which was about adding a set of PM operations above the bus
->>>> type/class layer, which could be used for intercepting bus-type PM
->>>> operations and providing some common handling above them.  This is
->>>> still relevant IMO.
->>>>
->>>> The basic observation here is that the PM core takes only one set of
->>>> PM operation per device into account and therefore, in every stage of
->>>> system suspend, for example, the callback invoked by it has to take
->>>> care of all actions that need to be carried out for the given device,
->>>> possibly by invoking callbacks from other code layers.  That
->>>> limitation cannot be removed easily, because it is built into the PM
->>>> core design quite fundamentally.
->>>>
->>>> However, this series seems to be about controlling power resources
->>>> represented by power domain objects rather than about PM operations.
->>>> In ACPI there is a power resource concept which seems to be quite
->>>> similar to this, so it is not entirely new. :-)
->>>>
->>>> Of course, question is whether or not to extend genpd this way and I'm
->>>> not really sure.  I actually probably wouldn't do that, because
->>>> poweron/poweroff operations used by genpd can be implemeted in terms
->>>> of lower-level power resource control and I don't see the reason for
->>>> mixing the two in one framework.
->>>
->>> That seems fine to me. However, it seems that genpd itself should also
->>> be a client of this 'low-level power resource control' so that
->>> power-domains are registered once and can be used by either method.
->>
->> Right.
->>
->>> So unless I am misunderstanding you here, it seems that what we need to do
->>> is split the current genpd framework into a couple layers:
->>>
->>> 1. Low-level power resource control which has:
->>> - Power resource registration (ie. pm_genpd_init/remove())
->>> - Power resource provider registration (ie. of_genpd_add_xxx())
->>> - Power resource control (on/off etc)
->>
->> And reference counting.
->>
->>> - Power resource lookup (what this series is adding)
->>>
->>> 2. Generic power-domain infrastructure which is a client of the
->>> low-level power resource control that can automatically bind a device to
->>> a singular power resource entity (ie. power-domain).
->>
->> Something like that, but I would not require an additional complex framework
->> to be present below genpd.  I would make it *possible* for genpd to use that
->> framework if available, but if something simpler is sufficient, it should be
->> fine to use that instead.
->>
->> That is, I would allow genpd to use either a list of power resources or the on/off
->> callbacks provided by itself to cover different use cases.  That should be
->> flexible enough.
->>
->>> Is this along the right lines?
->>
->> It is, at least for the very narrow definition of "right" as being done along
->> the lines I would do that. :-)
+>> +		ret = devm_request_threaded_irq(&client->dev, data->client->irq,
+>> +		NULL, pca954x_irq_handler, IRQF_ONESHOT | IRQF_SHARED,
+>> +		"pca954x", data);
 > 
-> Let me first give some more background to how it looks like today.
-> 
-> We have the following device callbacks being used by genpd:
-> 
-> struct gpd_dev_ops {
->         int (*start)(struct device *dev);
->         int (*stop)(struct device *dev);
->         bool (*active_wakeup)(struct device *dev);
-> };
-> 
-> The ->stop|start() callback is invoked from genpd's
-> ->runtime_suspend|resume() callbacks and may be assigned by a genpd
-> client before it registers a genpd though pm_genpd_init(). Typically
-> these callbacks can control any "power resources" that the genpd
-> client finds suitable.
-> 
-> To allow clients to instantiate "power resources" per device, we have
-> the following callbacks, part of the struct generic_pm_domain.
-> 
-> int (*attach_dev)(struct generic_pm_domain *domain, struct device *dev);
-> void (*detach_dev)(struct generic_pm_domain *domain, struct device *dev);
-> 
-> These callbacks are invoked when the device gets attached/detached
-> from its PM domain (genpd).
-> 
-> Moreover, the struct dev_pm_get_subsys_data is being used from within
-> genpd (via struct pm_domain_data *domain_data), as it allows genpd and
-> its client, to allocate and associate device specific data, which may
-> be needed to store information about the "power resources".
-> 
-> Currently Renesas SoCs are a good example of how to deploy this, as it
-> implements its clock PM domain on top of this. In this regards I
-> assume that we could consider the pm_clk_*() APIs as in control of the
-> "power resources".
-> 
-> So my conclusion is; unless I am totally misunderstanding the ideas
-> here; I think we already have the infrastructure in place and we also
-> have some good references of how to use it.
+> The indentation is horrific. Please fix.
+oops
 
-So how do you represent more than one power-domain in device-tree for a
-device which requires more than one? That is the fundamental problem IMO.
+> 
+> Acked with those two fixed.
+> 
+> I also noticed that there is no check for failure of the call to
+> irq_create_mapping in pca954x_irq_setup. For bonus points, can you
+> fix that error path too, please? Or should failure to create those
+> irq mappings not be fatal for some reason?
+Seems reasonable to fail. I'll fix that as well.
 
->From what Geert has described (and what I understand), it appears that
-for the Renesas SoCs, the current infrastructure works because a device
-has either a clock-domain or a power-domain and clock-domain. For
-devices with both a power-domain and clock-domain, the clock-domain can
-be handled via the clock callbacks (pm_clk_suspend/resume I assume).
-However, this does not scale or work for devices that truly need more
-than one power-domain which XUSB on Tegra does.
+> 
+> Cheers,
+> peda
+> 
+>> +		if (ret)
+>> +			goto fail_del_adapters;
+>> +	}
+>> +
+>>   	dev_info(&client->dev,
+>>   		 "registered %d multiplexed busses for I2C %s %s\n",
+>>   		 num, data->chip->muxtype == pca954x_ismux
+>> @@ -430,25 +436,15 @@ static int pca954x_probe(struct i2c_client *client,
+>>   	return 0;
+>>   
+>>   fail_del_adapters:
+>> -	i2c_mux_del_adapters(muxc);
+>> +	pca954x_cleanup(muxc);
+>>   	return ret;
+>>   }
+>>   
+>>   static int pca954x_remove(struct i2c_client *client)
+>>   {
+>>   	struct i2c_mux_core *muxc = i2c_get_clientdata(client);
+>> -	struct pca954x *data = i2c_mux_priv(muxc);
+>> -	int c, irq;
+>>   
+>> -	if (data->irq) {
+>> -		for (c = 0; c < data->chip->nchans; c++) {
+>> -			irq = irq_find_mapping(data->irq, c);
+>> -			irq_dispose_mapping(irq);
+>> -		}
+>> -		irq_domain_remove(data->irq);
+>> -	}
+>> -
+>> -	i2c_mux_del_adapters(muxc);
+>> +	pca954x_cleanup(muxc);
+>>   	return 0;
+>>   }
+>>   
+>>
+> 
+> 
+> 
 
-> What is missing, is how a call to pm_runtime_get_sync() by a driver,
-> can inform the ->start() callback about what exact power resource(s)
-> it shall turn on, because it may not always be all of them. Similar
-> problem exists for pm_runtime_put().
-
-Yes that is missing too, but I still don't see how you bind a device to
-more than one power-domain :-(
-
-Cheers
-Jon
 
 -- 
-nvpublic
+Regards
+Phil Reid
+
+ElectroMagnetic Imaging Technology Pty Ltd
+Development of Geophysical Instrumentation & Software
+www.electromag.com.au
+
+3 The Avenue, Midland WA 6056, AUSTRALIA
+Ph: +61 8 9250 8100
+Fax: +61 8 9250 7100
+Email: preid@electromag.com.au
