@@ -1,39 +1,239 @@
-From: Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V5 7/7] ARM: ZTE: Use - instead of @ for DT OPP entries
-Date: Wed, 3 May 2017 21:42:54 +0800
-Message-ID: <20170503134252.GA24745@dragon>
-References: <cover.1492685450.git.viresh.kumar@linaro.org>
- <5534c08d8b452c8ce623d3e465603d94afd82ed4.1492685450.git.viresh.kumar@linaro.org>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of
+ PM domains
+Date: Wed, 3 May 2017 15:43:55 +0200
+Message-ID: <CAPDyKFo-hfwbrY+AEMt0=fMshiT-BWvYDvGkKGqquTdowUvWHw@mail.gmail.com>
+References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
+ <CAJZ5v0gMzN_zfC_2nnRtYFyFon3-_mnioQhNbDP0wsr91RnagA@mail.gmail.com>
+ <ffe13074-9113-0a20-0fa6-76d0209dadfc@nvidia.com> <1832647.f77WMLkdQb@aspire.rjw.lan>
+ <CAPDyKFokVKZfRAsEAB6ihx1FxW4JjarionyOwCATr3s+QW4aMg@mail.gmail.com> <b4e8fd34-e2f0-165d-aa22-32ba43a8dbed@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <5534c08d8b452c8ce623d3e465603d94afd82ed4.1492685450.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: arm-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <b4e8fd34-e2f0-165d-aa22-32ba43a8dbed-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 20, 2017 at 04:25:11PM +0530, Viresh Kumar wrote:
-> Compiling the DT file with W=1, DTC warns like follows:
-> 
-> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
-> unit name, but no reg property
-> 
-> Fix this by replacing '@' with '-' as the OPP nodes will never have a
-> "reg" property.
-> 
-> Reported-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Reported-by: Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
-> Suggested-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+On 3 May 2017 at 10:32, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>
+> On 03/05/17 09:12, Ulf Hansson wrote:
+>> Rafael, Jon,
+>>
+>> On 2 May 2017 at 23:51, Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> wrote:
+>>> On Tuesday, May 02, 2017 11:10:29 AM Jon Hunter wrote:
+>>>>
+>>>> On 25/04/17 22:17, Rafael J. Wysocki wrote:
+>>>>> On Tue, Apr 25, 2017 at 9:34 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>>>>>> On 25 April 2017 at 13:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>>>>>>>
+>>>>>>> On 28/03/17 15:13, Jon Hunter wrote:
+>>>>>>>> The current generic PM domain framework (GenDP) only allows a single
+>>>>>>>> PM domain to be associated with a given device. There are several
+>>>>>>>> use-cases for various system-on-chip devices where it is necessary for
+>>>>>>>> a PM domain consumer to control more than one PM domain where the PM
+>>>>>>>> domains:
+>>>>>>>> i).  Do not conform to a parent-child relationship so are not nested
+>>>>>>>> ii). May not be powered on and off at the same time so need independent
+>>>>>>>>      control.
+>>>>>>>>
+>>>>>>>> The solution proposed in this RFC is to allow consumers to explictly
+>>>>>>>> control PM domains, by getting a handle to a PM domain and explicitly
+>>>>>>>> making calls to power on and off the PM domain. Note that referencing
+>>>>>>>> counting is used to ensure that a PM domain shared between consumers
+>>>>>>>> is not powered off incorrectly.
+>>>>>>>>
+>>>>>>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
+>>>>>>>> controllers) is an example of a consumer that needs to control more than
+>>>>>>>> one PM domain because the logic is partitioned across 3 PM domains which
+>>>>>>>> are:
+>>>>>>>> - XUSBA: Superspeed logic (for USB 3.0)
+>>>>>>>> - XUSBB: Device controller
+>>>>>>>> - XUSBC: Host controller
+>>>>>>>>
+>>>>>>>> These power domains are not nested and can be powered-up and down
+>>>>>>>> independently of one another. In practice different scenarios require
+>>>>>>>> different combinations of the power domains, for example:
+>>>>>>>> - Superspeed host: XUSBA and XUSBC
+>>>>>>>> - Superspeed device: XUSBA and XUSBB
+>>>>>>>>
+>>>>>>>> Although it could be possible to logically nest both the XUSBB and XUSBC
+>>>>>>>> domains under the XUSBA, superspeed may not always be used/required and
+>>>>>>>> so this would keep it on unnecessarily.
+>>>>>>>>
+>>>>>>>> Given that Tegra uses device-tree for describing the hardware, it would
+>>>>>>>> be ideal that the device-tree 'power-domains' property for generic PM
+>>>>>>>> domains could be extended to allow more than one PM domain to be
+>>>>>>>> specified. For example, define the following the Tegra210 xHCI device ...
+>>>>>>>>
+>>>>>>>>       usb@70090000 {
+>>>>>>>>               compatible = "nvidia,tegra210-xusb";
+>>>>>>>>               ...
+>>>>>>>>               power-domains = <&pd_xusbhost>, <&pd_xusbss>;
+>>>>>>>>               power-domain-names = "host", "superspeed";
+>>>>>>>>       };
+>>>>>>>>
+>>>>>>>> This RFC extends the generic PM domain framework to allow a device to
+>>>>>>>> define more than one PM domain in the device-tree 'power-domains'
+>>>>>>>> property. If there is more than one then the assumption is that these
+>>>>>>>> PM domains will be controlled explicitly by the consumer and the device
+>>>>>>>> will not be automatically bound to any PM domain.
+>>>>>>>
+>>>>>>> Any more comments/inputs on this? I can address Rajendra's feedback, but
+>>>>>>> before I did I wanted to see if this is along the right lines or not?
+>>>>>>
+>>>>>> I discussed this with Rafael at the OSPM summit in Pisa a couple of
+>>>>>> weeks ago. Apologize for the delay in providing additional feedback.
+>>>>>>
+>>>>>> First, whether the problem is really rare, perhaps adding a new
+>>>>>> API/framework can't be justified - then it may be better to add some
+>>>>>> kind of aggregation layer on top of the current PM domain
+>>>>>> infrastructure (something along the first attempt you made for genpd).
+>>>>>> That was kind of Rafael's thoughts (Rafael, please correct me if I am
+>>>>>> wrong).
+>>>>>
+>>>>> We were talking about the original idea behind the pm_domain pointer
+>>>>> concept, which was about adding a set of PM operations above the bus
+>>>>> type/class layer, which could be used for intercepting bus-type PM
+>>>>> operations and providing some common handling above them.  This is
+>>>>> still relevant IMO.
+>>>>>
+>>>>> The basic observation here is that the PM core takes only one set of
+>>>>> PM operation per device into account and therefore, in every stage of
+>>>>> system suspend, for example, the callback invoked by it has to take
+>>>>> care of all actions that need to be carried out for the given device,
+>>>>> possibly by invoking callbacks from other code layers.  That
+>>>>> limitation cannot be removed easily, because it is built into the PM
+>>>>> core design quite fundamentally.
+>>>>>
+>>>>> However, this series seems to be about controlling power resources
+>>>>> represented by power domain objects rather than about PM operations.
+>>>>> In ACPI there is a power resource concept which seems to be quite
+>>>>> similar to this, so it is not entirely new. :-)
+>>>>>
+>>>>> Of course, question is whether or not to extend genpd this way and I'm
+>>>>> not really sure.  I actually probably wouldn't do that, because
+>>>>> poweron/poweroff operations used by genpd can be implemeted in terms
+>>>>> of lower-level power resource control and I don't see the reason for
+>>>>> mixing the two in one framework.
+>>>>
+>>>> That seems fine to me. However, it seems that genpd itself should also
+>>>> be a client of this 'low-level power resource control' so that
+>>>> power-domains are registered once and can be used by either method.
+>>>
+>>> Right.
+>>>
+>>>> So unless I am misunderstanding you here, it seems that what we need to do
+>>>> is split the current genpd framework into a couple layers:
+>>>>
+>>>> 1. Low-level power resource control which has:
+>>>> - Power resource registration (ie. pm_genpd_init/remove())
+>>>> - Power resource provider registration (ie. of_genpd_add_xxx())
+>>>> - Power resource control (on/off etc)
+>>>
+>>> And reference counting.
+>>>
+>>>> - Power resource lookup (what this series is adding)
+>>>>
+>>>> 2. Generic power-domain infrastructure which is a client of the
+>>>> low-level power resource control that can automatically bind a device to
+>>>> a singular power resource entity (ie. power-domain).
+>>>
+>>> Something like that, but I would not require an additional complex framework
+>>> to be present below genpd.  I would make it *possible* for genpd to use that
+>>> framework if available, but if something simpler is sufficient, it should be
+>>> fine to use that instead.
+>>>
+>>> That is, I would allow genpd to use either a list of power resources or the on/off
+>>> callbacks provided by itself to cover different use cases.  That should be
+>>> flexible enough.
+>>>
+>>>> Is this along the right lines?
+>>>
+>>> It is, at least for the very narrow definition of "right" as being done along
+>>> the lines I would do that. :-)
+>>
+>> Let me first give some more background to how it looks like today.
+>>
+>> We have the following device callbacks being used by genpd:
+>>
+>> struct gpd_dev_ops {
+>>         int (*start)(struct device *dev);
+>>         int (*stop)(struct device *dev);
+>>         bool (*active_wakeup)(struct device *dev);
+>> };
+>>
+>> The ->stop|start() callback is invoked from genpd's
+>> ->runtime_suspend|resume() callbacks and may be assigned by a genpd
+>> client before it registers a genpd though pm_genpd_init(). Typically
+>> these callbacks can control any "power resources" that the genpd
+>> client finds suitable.
+>>
+>> To allow clients to instantiate "power resources" per device, we have
+>> the following callbacks, part of the struct generic_pm_domain.
+>>
+>> int (*attach_dev)(struct generic_pm_domain *domain, struct device *dev);
+>> void (*detach_dev)(struct generic_pm_domain *domain, struct device *dev);
+>>
+>> These callbacks are invoked when the device gets attached/detached
+>> from its PM domain (genpd).
+>>
+>> Moreover, the struct dev_pm_get_subsys_data is being used from within
+>> genpd (via struct pm_domain_data *domain_data), as it allows genpd and
+>> its client, to allocate and associate device specific data, which may
+>> be needed to store information about the "power resources".
+>>
+>> Currently Renesas SoCs are a good example of how to deploy this, as it
+>> implements its clock PM domain on top of this. In this regards I
+>> assume that we could consider the pm_clk_*() APIs as in control of the
+>> "power resources".
+>>
+>> So my conclusion is; unless I am totally misunderstanding the ideas
+>> here; I think we already have the infrastructure in place and we also
+>> have some good references of how to use it.
+>
+> So how do you represent more than one power-domain in device-tree for a
+> device which requires more than one? That is the fundamental problem IMO.
 
-Changed the subject prefix to 'arm64: dts: zte: ', and applied the
-patch.
+Describing this in DT is a separate, but related question. However can
+we first focus on how to manage this in software. :-)
 
-Shawn
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+> From what Geert has described (and what I understand), it appears that
+> for the Renesas SoCs, the current infrastructure works because a device
+> has either a clock-domain or a power-domain and clock-domain. For
+> devices with both a power-domain and clock-domain, the clock-domain can
+> be handled via the clock callbacks (pm_clk_suspend/resume I assume).
+> However, this does not scale or work for devices that truly need more
+> than one power-domain which XUSB on Tegra does.
+
+Exactly.
+
+>
+>> What is missing, is how a call to pm_runtime_get_sync() by a driver,
+>> can inform the ->start() callback about what exact power resource(s)
+>> it shall turn on, because it may not always be all of them. Similar
+>> problem exists for pm_runtime_put().
+>
+> Yes that is missing too, but I still don't see how you bind a device to
+> more than one power-domain :-(
+
+I think this is what Rafael wanted us avoid (because of the complexity
+involved). Instead the suggestion is to deal with this on top of the
+existing PM domain structure, as "power resources" instead. Unless I
+missed his point. :-)
+
+Then *my* point is: To be able to implement that, still only allowing
+one PM domain per device, we would anyway need a new layer in-between
+the PM domain (genpd) and the driver controlling the device. Simply
+because these two entities, needs to be able to exchange information
+about which "power resources" that shall be turned off/on, when the
+driver do pm_runtime_get|put().
+
+That approach should be compared with adding/extending the PM domain
+framework, something along the lines what you started with in $subject
+series.
+
+Kind regards
+Uffe
