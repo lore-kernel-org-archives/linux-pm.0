@@ -1,82 +1,111 @@
-From: "A.S. Dong" <aisheng.dong@nxp.com>
-Subject: RE: [PATCH] ARM: imx_v6_v7_defconfig: Enable cpufreq governors
-Date: Wed, 3 May 2017 03:48:03 +0000
-Message-ID: <AM3PR04MB306B60CED1751FA382AFBB980160@AM3PR04MB306.eurprd04.prod.outlook.com>
-References: <c401883fec8db20878c7593d879e9e128cacc495.1493736306.git.leonard.crestez@nxp.com>
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of
+ PM domains
+Date: Wed, 3 May 2017 08:43:46 +0200
+Message-ID: <CAMuHMdXr6-pKb0wRfs0_HhNp75ikGOtd-n2mEY-fvVJhaU5idg@mail.gmail.com>
+References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
+ <d2e3ceaa-57e2-033d-ecd1-a3b2bd8ffa26@nvidia.com> <CAPDyKFoJ58pwGz2U90ob8a8cY=hEbE-wLBHZ0BBzqPoLW_wgGA@mail.gmail.com>
+ <CAMuHMdWvS6_Zf1nn1=zVLb1qNChyk+B6BDZsK9P9oKRBEpPKMg@mail.gmail.com>
+ <CAPDyKFqqZPXpxCTDy079QeiAorLVrXZssQ5SvXLWa3oab21b5g@mail.gmail.com>
+ <CAMuHMdWNnWdYop_U4BGznxDND3WK-V7hnCBbnPoUDzUHBBpgHA@mail.gmail.com> <CAPDyKFrg+L_U6ztzpUdQMuemXyPWvtWVt06GumXa1MoTjJesWg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve1eur01on0073.outbound.protection.outlook.com ([104.47.1.73]:5760
-        "EHLO EUR01-VE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1751272AbdECDsH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 2 May 2017 23:48:07 -0400
-In-Reply-To: <c401883fec8db20878c7593d879e9e128cacc495.1493736306.git.leonard.crestez@nxp.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFrg+L_U6ztzpUdQMuemXyPWvtWVt06GumXa1MoTjJesWg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawnguo@kernel.org>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, Sascha Hauer <kernel@pengutronix.de>, Jagan Teki <jagan@amarulasolutions.com>, Fabio Estevam <fabio.estevam@nxp.com>, Dong Aisheng <aisheng.dong@freescale.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-> -----Original Message-----
-> From: Leonard Crestez [mailto:leonard.crestez@nxp.com]
-> Sent: Tuesday, May 02, 2017 10:46 PM
-> To: Shawn Guo
-> Cc: Leonard Crestez; Sascha Hauer; Jagan Teki; Fabio Estevam; Dong Aishen=
-g;
-> linux-arm-kernel@lists.infradead.org; linux-pm@vger.kernel.org; linux-
-> kernel@vger.kernel.org
-> Subject: [PATCH] ARM: imx_v6_v7_defconfig: Enable cpufreq governors
->=20
-> Enable more common cpufreq governors in imx defconfig because this is ver=
-y
-> useful for testing. In particular you can't use cpufreq-set -f $FREQ
-> without explicitly defining CONFIG_CPU_FREQ_GOV_USERSPACE=3Dy.
->=20
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Hi Ulf,
 
-Well, I think we do need this.
-So:
-Acked-by: Dong Aisheng <aisheng.dong@nxp.com>
+On Wed, Apr 26, 2017 at 11:55 AM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> On 26 April 2017 at 11:17, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
+>> On Wed, Apr 26, 2017 at 11:04 AM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>>> On 26 April 2017 at 10:06, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
+>>>> On Tue, Apr 25, 2017 at 9:34 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>>>>> However, we currently know about at least two different SoCs that need
+>>>>> this. Perhaps we can extend the below list to justify adding a new
+>>>>> framework/APIs. Something along the lines what you propose in $subject
+>>>>> patchset.
+>>>>>
+>>>>> 1) Nvidia; to solve the USB super-speed host/device problem.
+>>>>> 2) QCOM, which has pointed to several cases where the PM topology is
+>>>>> laid out like devices having two PM domains..
+>>>>> 3?) I don't fully remember - but I think Geert also pointed to some
+>>>>> examples where a device could reside in a clock domain but also in
+>>>>> power domain for a Renesas SoC!?
+>>>>> 4) ?
+>>>>
+>>>> Most Renesas SoCs have module clocks, which we model as a clock domain.
+>>>> Some Renesas SoCs have power domains for CPUs, others have them for
+>>>> devices as well.
+>>>> As we always provide a virtual "always-on" power domain in the power domain
+>>>> controller, all devices can refer to it using "power-domains" properties,
+>>>> and the driver for the power domain controller can just forward the clock
+>>>> domain operations to the clock driver.
+>>>
+>>> Okay, thanks for clarifying this.
+>>>
+>>> Thinking about this as bit more, when I realized that *if* we would
+>>> add a new PM domain framework for explicit control of PM domains, that
+>>> would mean you need to deploy support for that in the drivers.
+>>
+>> Correct.  And we have to update DT bindings and DTS.
+>>
+>>> On the other hand, as you anyway would need to change the drivers, you
+>>> could instead deploy clock support in the drivers, which would avoid
+>>> using the clock domain. In that way, you could still stay with one PM
+>>> domain pointer per device, used to control the power domains instead.
+>>> Right? Or would that have other implications?
+>>
+>> That's exactly what we're doing already.
+>
+> No really, but perhaps I was not clear enough.
+>
+> Currently you deploy only runtime PM support in the driver and don't
+> do any clk_get() etc. Then you have a PM domain (genpd) attached to
+> the device and makes use of genpd's device specific callbacks, in
+> struct gpd_dev_ops ->start|stop(), which allows you to control clocks
+> for each device. Of course this is perfectly okay.
 
-Regards
-Dong Aisheng
+OK.
 
->=20
-> ---
->=20
-> It might make sense for all governors to be enabled by default from
-> drivers/cpufreq/Kconfig and allow defconfigs to be shorter.
-> Right now the descriptions for some of them includes a line that says "If
-> in doubt, say Y" but the config options don't have actually have a defaul=
-t
-> value defined and they effectively default to N.
->=20
-> Cycling via savedefconfig on shawnguo/for-next also generates some
-> reordering for some newly added options CONFIG_TOUCHSCREEN_MAX11801=3Dy a=
-nd
-> CONFIG_HID_MULTITOUCH=3Dy. Those were not included but it's strange that
-> this happens. Maybe those options were inserted manually, or otherwise
-> there is an annoying bug in kconfig?
->=20
->  arch/arm/configs/imx_v6_v7_defconfig | 3 +++
->  1 file changed, 3 insertions(+)
->=20
-> diff --git a/arch/arm/configs/imx_v6_v7_defconfig
-> b/arch/arm/configs/imx_v6_v7_defconfig
-> index bb6fa56..bf1e7e3 100644
-> --- a/arch/arm/configs/imx_v6_v7_defconfig
-> +++ b/arch/arm/configs/imx_v6_v7_defconfig
-> @@ -55,6 +55,9 @@ CONFIG_CMDLINE=3D"noinitrd console=3Dttymxc0,115200"
->  CONFIG_KEXEC=3Dy
->  CONFIG_CPU_FREQ=3Dy
->  CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=3Dy
-> +CONFIG_CPU_FREQ_GOV_POWERSAVE=3Dy
-> +CONFIG_CPU_FREQ_GOV_USERSPACE=3Dy
-> +CONFIG_CPU_FREQ_GOV_CONSERVATIVE=3Dy
->  CONFIG_ARM_IMX6Q_CPUFREQ=3Dy
->  CONFIG_CPU_IDLE=3Dy
->  CONFIG_VFP=3Dy
-> --
-> 2.7.4
+> So then my question is/was; does there exist cases when these devices
+> (already attached to a PM domain) would needed to be attach to yet
+> another separate PM domain? From the nicely detailed description
+> below, I find the answer to be *no*!?
+
+Apart from the SYSC power areas and the CPG/MSSR clock domain
+we don't have a use case for multiple power domains.
+
+>> Which means that if you allow multiple entries in power-domains, we
+>> have to change drivers, DT bindings, and DTS again (which we may
+>> decide not to do ;-)
+>>
+>> On SH/R-Mobile, we always did it that way, as the user manual had an
+>> explicit "always-on" power domain.
+>>
+>> On R-Car Gen2, the power domains contain CPU and L2 and GPU only,
+>> so devices had their power-domains pointing to the clock controller.
+>>
+>> On R-Car Gen3, some devices were moved into power domains, so we
+>> generalized this by creating a virtual "always-on" power domain, and
+>> letting all devices point their power-domains properties to the power
+>> domain controller, which forwards clock handling to the clock controller.
+>> For consistency, this was applied to R-Car Gen2 as well.
+>>
+>> Cfr. some late relics fixed in e.g. commit 24b2d930a50662c1
+>> ('ARM: dts: r8a7794: Use SYSC "always-on" PM Domain for sound'),
+>> but technically the fix was not needed, as it worked fine without.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
