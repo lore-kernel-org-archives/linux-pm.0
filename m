@@ -1,174 +1,90 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: [PATCH v6 5/8] i2c: mux: pca954x: Call request irq after adding
- mux segments
-Date: Wed, 3 May 2017 16:36:37 +0800
-Message-ID: <8587aabe-ca4a-8424-d24f-cd228e01957f@electromag.com.au>
-References: <1493716346-58517-1-git-send-email-preid@electromag.com.au>
- <1493716346-58517-6-git-send-email-preid@electromag.com.au>
- <28f3ce1d-ad4b-3082-7499-b30245a256c1@axentia.se>
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of
+ PM domains
+Date: Wed, 3 May 2017 10:54:33 +0200
+Message-ID: <CAMuHMdV74WvP0UcXWKEjnmkzC8f9WV+8wmwZK56jU88NY76qQQ@mail.gmail.com>
+References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
+ <d2e3ceaa-57e2-033d-ecd1-a3b2bd8ffa26@nvidia.com> <CAPDyKFoJ58pwGz2U90ob8a8cY=hEbE-wLBHZ0BBzqPoLW_wgGA@mail.gmail.com>
+ <CAMuHMdWvS6_Zf1nn1=zVLb1qNChyk+B6BDZsK9P9oKRBEpPKMg@mail.gmail.com>
+ <CAPDyKFqqZPXpxCTDy079QeiAorLVrXZssQ5SvXLWa3oab21b5g@mail.gmail.com>
+ <CAMuHMdWNnWdYop_U4BGznxDND3WK-V7hnCBbnPoUDzUHBBpgHA@mail.gmail.com>
+ <CAPDyKFrg+L_U6ztzpUdQMuemXyPWvtWVt06GumXa1MoTjJesWg@mail.gmail.com> <CAMuHMdXr6-pKb0wRfs0_HhNp75ikGOtd-n2mEY-fvVJhaU5idg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy3.45ru.net.au ([203.30.46.155]:43726 "EHLO
-        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1752203AbdECIgo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 May 2017 04:36:44 -0400
-In-Reply-To: <28f3ce1d-ad4b-3082-7499-b30245a256c1@axentia.se>
-Content-Language: en-AU
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAMuHMdXr6-pKb0wRfs0_HhNp75ikGOtd-n2mEY-fvVJhaU5idg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Rosin <peda@axentia.se>, wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, benjamin.tissoires@redhat.com
 
-On 2/05/2017 17:57, Peter Rosin wrote:
-> On 2017-05-02 11:12, Phil Reid wrote:
->> The pca954x device do not have the ability to mask interrupts. For
->> i2c slave devices that also don't have masking ability (eg ltc1760
->> smbalert output) delay registering the irq until after the mux
->> segments have been configured. During the mux add_adaptor call the
->> core i2c system can register an smbalert handler which would then
->> be called immediately when the irq is registered. This smbalert
->> handler will then clear the pending irq.
+Hi Ulf,
+
+On Wed, May 3, 2017 at 8:43 AM, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
+> On Wed, Apr 26, 2017 at 11:55 AM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>> On 26 April 2017 at 11:17, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
+>>> On Wed, Apr 26, 2017 at 11:04 AM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>>>> On 26 April 2017 at 10:06, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
+>>>>> On Tue, Apr 25, 2017 at 9:34 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>>>>>> However, we currently know about at least two different SoCs that need
+>>>>>> this. Perhaps we can extend the below list to justify adding a new
+>>>>>> framework/APIs. Something along the lines what you propose in $subject
+>>>>>> patchset.
+>>>>>>
+>>>>>> 1) Nvidia; to solve the USB super-speed host/device problem.
+>>>>>> 2) QCOM, which has pointed to several cases where the PM topology is
+>>>>>> laid out like devices having two PM domains..
+>>>>>> 3?) I don't fully remember - but I think Geert also pointed to some
+>>>>>> examples where a device could reside in a clock domain but also in
+>>>>>> power domain for a Renesas SoC!?
+>>>>>> 4) ?
+>>>>>
+>>>>> Most Renesas SoCs have module clocks, which we model as a clock domain.
+>>>>> Some Renesas SoCs have power domains for CPUs, others have them for
+>>>>> devices as well.
+>>>>> As we always provide a virtual "always-on" power domain in the power domain
+>>>>> controller, all devices can refer to it using "power-domains" properties,
+>>>>> and the driver for the power domain controller can just forward the clock
+>>>>> domain operations to the clock driver.
+>>>>
+>>>> Okay, thanks for clarifying this.
+>>>>
+>>>> Thinking about this as bit more, when I realized that *if* we would
+>>>> add a new PM domain framework for explicit control of PM domains, that
+>>>> would mean you need to deploy support for that in the drivers.
+>>>
+>>> Correct.  And we have to update DT bindings and DTS.
+>>>
+>>>> On the other hand, as you anyway would need to change the drivers, you
+>>>> could instead deploy clock support in the drivers, which would avoid
+>>>> using the clock domain. In that way, you could still stay with one PM
+>>>> domain pointer per device, used to control the power domains instead.
+>>>> Right? Or would that have other implications?
+>>>
+>>> That's exactly what we're doing already.
 >>
->> Signed-off-by: Phil Reid <preid@electromag.com.au>
->> ---
->>   drivers/i2c/muxes/i2c-mux-pca954x.c | 52 +++++++++++++++++--------------------
->>   1 file changed, 24 insertions(+), 28 deletions(-)
+>> No really, but perhaps I was not clear enough.
 >>
->> diff --git a/drivers/i2c/muxes/i2c-mux-pca954x.c b/drivers/i2c/muxes/i2c-mux-pca954x.c
->> index ad31d21..4299738 100644
->> --- a/drivers/i2c/muxes/i2c-mux-pca954x.c
->> +++ b/drivers/i2c/muxes/i2c-mux-pca954x.c
->> @@ -294,7 +294,7 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
->>   {
->>   	struct pca954x *data = i2c_mux_priv(muxc);
->>   	struct i2c_client *client = data->client;
->> -	int c, err, irq;
->> +	int c, irq;
->>   
->>   	if (!data->chip->has_irq || client->irq <= 0)
->>   		return 0;
->> @@ -314,24 +314,22 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
->>   			handle_simple_irq);
->>   	}
->>   
->> -	err = devm_request_threaded_irq(&client->dev, data->client->irq, NULL,
->> -					pca954x_irq_handler,
->> -					IRQF_ONESHOT | IRQF_SHARED,
->> -					"pca954x", data);
->> -	if (err)
->> -		goto err_req_irq;
->> +	return 0;
->> +}
->>   
->> -	disable_irq(data->client->irq);
->> +static void pca954x_cleanup(struct i2c_mux_core *muxc)
->> +{
->> +	struct pca954x *data = i2c_mux_priv(muxc);
->> +	int c, irq;
->>   
->> -	return 0;
->> -err_req_irq:
->> -	for (c = 0; c < data->chip->nchans; c++) {
->> -		irq = irq_find_mapping(data->irq, c);
->> -		irq_dispose_mapping(irq);
->> +	if (data->irq) {
->> +		for (c = 0; c < data->chip->nchans; c++) {
->> +			irq = irq_find_mapping(data->irq, c);
->> +			irq_dispose_mapping(irq);
->> +		}
->> +		irq_domain_remove(data->irq);
->>   	}
->> -	irq_domain_remove(data->irq);
->> -
->> -	return err;
->> +	i2c_mux_del_adapters(muxc);
->>   }
->>   
->>   /*
->> @@ -422,6 +420,14 @@ static int pca954x_probe(struct i2c_client *client,
->>   		}
->>   	}
->>   
->> +	if (data->chip->has_irq || client->irq > 0) {
-> 
-> This should be && instead of ||. However, I think it's better to not
-> try to replicate the inverse of the test in pca954x_irq_setup and
-> instead just check if the irq domain is there with "if (data->irq)".
-> Assuming that is the intent...
-Yeah, that's better.
+>> Currently you deploy only runtime PM support in the driver and don't
+>> do any clk_get() etc. Then you have a PM domain (genpd) attached to
 
-> 
->> +		ret = devm_request_threaded_irq(&client->dev, data->client->irq,
->> +		NULL, pca954x_irq_handler, IRQF_ONESHOT | IRQF_SHARED,
->> +		"pca954x", data);
-> 
-> The indentation is horrific. Please fix.
-oops
+Note that drivers that care about clock properties do use clk_get().
+E.g. an SPI controller driver needs to know the clock rate to program
+its internal divider to drive external SPI slaves.
 
-> 
-> Acked with those two fixed.
-> 
-> I also noticed that there is no check for failure of the call to
-> irq_create_mapping in pca954x_irq_setup. For bonus points, can you
-> fix that error path too, please? Or should failure to create those
-> irq mappings not be fatal for some reason?
-Seems reasonable to fail. I'll fix that as well.
+>> the device and makes use of genpd's device specific callbacks, in
+>> struct gpd_dev_ops ->start|stop(), which allows you to control clocks
+>> for each device. Of course this is perfectly okay.
+>
+> OK.
 
-> 
-> Cheers,
-> peda
-> 
->> +		if (ret)
->> +			goto fail_del_adapters;
->> +	}
->> +
->>   	dev_info(&client->dev,
->>   		 "registered %d multiplexed busses for I2C %s %s\n",
->>   		 num, data->chip->muxtype == pca954x_ismux
->> @@ -430,25 +436,15 @@ static int pca954x_probe(struct i2c_client *client,
->>   	return 0;
->>   
->>   fail_del_adapters:
->> -	i2c_mux_del_adapters(muxc);
->> +	pca954x_cleanup(muxc);
->>   	return ret;
->>   }
->>   
->>   static int pca954x_remove(struct i2c_client *client)
->>   {
->>   	struct i2c_mux_core *muxc = i2c_get_clientdata(client);
->> -	struct pca954x *data = i2c_mux_priv(muxc);
->> -	int c, irq;
->>   
->> -	if (data->irq) {
->> -		for (c = 0; c < data->chip->nchans; c++) {
->> -			irq = irq_find_mapping(data->irq, c);
->> -			irq_dispose_mapping(irq);
->> -		}
->> -		irq_domain_remove(data->irq);
->> -	}
->> -
->> -	i2c_mux_del_adapters(muxc);
->> +	pca954x_cleanup(muxc);
->>   	return 0;
->>   }
->>   
->>
-> 
-> 
-> 
+Gr{oetje,eeting}s,
 
+                        Geert
 
--- 
-Regards
-Phil Reid
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
 
-ElectroMagnetic Imaging Technology Pty Ltd
-Development of Geophysical Instrumentation & Software
-www.electromag.com.au
-
-3 The Avenue, Midland WA 6056, AUSTRALIA
-Ph: +61 8 9250 8100
-Fax: +61 8 9250 7100
-Email: preid@electromag.com.au
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
