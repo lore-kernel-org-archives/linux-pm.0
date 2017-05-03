@@ -1,90 +1,83 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of
- PM domains
-Date: Wed, 3 May 2017 10:54:33 +0200
-Message-ID: <CAMuHMdV74WvP0UcXWKEjnmkzC8f9WV+8wmwZK56jU88NY76qQQ@mail.gmail.com>
-References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
- <d2e3ceaa-57e2-033d-ecd1-a3b2bd8ffa26@nvidia.com> <CAPDyKFoJ58pwGz2U90ob8a8cY=hEbE-wLBHZ0BBzqPoLW_wgGA@mail.gmail.com>
- <CAMuHMdWvS6_Zf1nn1=zVLb1qNChyk+B6BDZsK9P9oKRBEpPKMg@mail.gmail.com>
- <CAPDyKFqqZPXpxCTDy079QeiAorLVrXZssQ5SvXLWa3oab21b5g@mail.gmail.com>
- <CAMuHMdWNnWdYop_U4BGznxDND3WK-V7hnCBbnPoUDzUHBBpgHA@mail.gmail.com>
- <CAPDyKFrg+L_U6ztzpUdQMuemXyPWvtWVt06GumXa1MoTjJesWg@mail.gmail.com> <CAMuHMdXr6-pKb0wRfs0_HhNp75ikGOtd-n2mEY-fvVJhaU5idg@mail.gmail.com>
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH] devfreq: do not ignore errors during store min, max
+ frequency
+Date: Wed, 3 May 2017 10:24:53 +0100
+Message-ID: <a9a7a1b0-d110-f844-3daa-2e85b5cbc5f2@arm.com>
+References: <f02c5605-be71-79da-a33d-75e2d041029b@arm.com>
+ <1493281427-8671-1-git-send-email-lukasz.luba@arm.com>
+ <20170427083057epcms1p5f916dda5e9fe0275a915963b96dc28d5@epcms1p5>
+ <CGME20170427082416epcas3p3b9aeb23978707b164b4d4a46156d1216@epcms1p4>
+ <20170427234123epcms1p42e47c19e54fbcc3e766ebd2594da6709@epcms1p4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAMuHMdXr6-pKb0wRfs0_HhNp75ikGOtd-n2mEY-fvVJhaU5idg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:52196 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751661AbdECJY4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 May 2017 05:24:56 -0400
+In-Reply-To: <20170427234123epcms1p42e47c19e54fbcc3e766ebd2594da6709@epcms1p4>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-Hi Ulf,
 
-On Wed, May 3, 2017 at 8:43 AM, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
-> On Wed, Apr 26, 2017 at 11:55 AM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->> On 26 April 2017 at 11:17, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
->>> On Wed, Apr 26, 2017 at 11:04 AM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->>>> On 26 April 2017 at 10:06, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
->>>>> On Tue, Apr 25, 2017 at 9:34 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->>>>>> However, we currently know about at least two different SoCs that need
->>>>>> this. Perhaps we can extend the below list to justify adding a new
->>>>>> framework/APIs. Something along the lines what you propose in $subject
->>>>>> patchset.
->>>>>>
->>>>>> 1) Nvidia; to solve the USB super-speed host/device problem.
->>>>>> 2) QCOM, which has pointed to several cases where the PM topology is
->>>>>> laid out like devices having two PM domains..
->>>>>> 3?) I don't fully remember - but I think Geert also pointed to some
->>>>>> examples where a device could reside in a clock domain but also in
->>>>>> power domain for a Renesas SoC!?
->>>>>> 4) ?
->>>>>
->>>>> Most Renesas SoCs have module clocks, which we model as a clock domain.
->>>>> Some Renesas SoCs have power domains for CPUs, others have them for
->>>>> devices as well.
->>>>> As we always provide a virtual "always-on" power domain in the power domain
->>>>> controller, all devices can refer to it using "power-domains" properties,
->>>>> and the driver for the power domain controller can just forward the clock
->>>>> domain operations to the clock driver.
->>>>
->>>> Okay, thanks for clarifying this.
->>>>
->>>> Thinking about this as bit more, when I realized that *if* we would
->>>> add a new PM domain framework for explicit control of PM domains, that
->>>> would mean you need to deploy support for that in the drivers.
+On 28/04/17 00:41, MyungJoo Ham wrote:
 >>>
->>> Correct.  And we have to update DT bindings and DTS.
+>>> ...
 >>>
->>>> On the other hand, as you anyway would need to change the drivers, you
->>>> could instead deploy clock support in the drivers, which would avoid
->>>> using the clock domain. In that way, you could still stay with one PM
->>>> domain pointer per device, used to control the power domains instead.
->>>> Right? Or would that have other implications?
+>>>> +	ret = devfreq_get_freq_level(df, value);
+>>>> +	if (ret < 0) {
+>>>> +		dev_warn(dev, "Storing min freq failed with (%d) error\n", ret);
+>>>> +		goto unlock;
+>>>> +	}
+>>>> +
 >>>
->>> That's exactly what we're doing already.
+>>> This is not good.
+>>>
+>>> For a device that supports [ 100, 400, 800, 1000 ] MHz,
+>>> saying "min = 200 Mhz" or "max = 600 MHz" shouldn't be prohibited.
+>>>
+>>> Those functions are to express lower bound and upper bound, not to
+>>> designate the exact operating frequencies.
 >>
->> No really, but perhaps I was not clear enough.
+>> Would it be possible to convince you to store a
+>> 'posible/valid frequency' (from OPP) in that value?
+>> Governors (like simpleondemand) and drivers use it with the flags.
+>> It would be useful for thermal subsystem. It could have the max/min for
+>> the devfreq device.
 >>
->> Currently you deploy only runtime PM support in the driver and don't
->> do any clk_get() etc. Then you have a PM domain (genpd) attached to
-
-Note that drivers that care about clock properties do use clk_get().
-E.g. an SPI controller driver needs to know the clock rate to program
-its internal divider to drive external SPI slaves.
-
->> the device and makes use of genpd's device specific callbacks, in
->> struct gpd_dev_ops ->start|stop(), which allows you to control clocks
->> for each device. Of course this is perfectly okay.
+>> I could prepare a patch which sets the freq from OPP respecting
+>> rounding up/down based on 'devfreq_recommended_opp()'.
+>>
+>> Regards,
+>> Lukasz
 >
-> OK.
+> Before talking about implementation detail,
+> what's the benefit of what you are suggesting?
+>
+> What's the scenario that you cannot do with the current system
+> while you can do with what you suggest?
+>
+> Why do you need rounded (OPP-enabled) max/min values?
+> Why unrounded (lower/upper limits) max/min values cannot do what you want?
+>
+>
+> Cheers,
+> MyungJoo
+>
+>
+> ps. I'll be away from the network for about 10 days after few hours.
+>
+i.e. when you look at the function:
+devfreq_cooling_get_max_state() in drivers/thermal/devfreq_cooling
+you will see that it is not aware of any changes
+(there are some other issues as well).
+I am going to modify devfreq_cooling a bit.
 
-Gr{oetje,eeting}s,
+I thought it would be good to reuse the df->max_freq
+as much as possible.
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Regards,
+Lukasz Luba
