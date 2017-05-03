@@ -1,77 +1,68 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH] ARM: dts: imx6sx-sdb: Remove cpufreq OPP override
-Date: Wed, 3 May 2017 17:58:53 +0300
-Message-ID: <1493823533.11226.28.camel@nxp.com>
-References: <89cc7192100bdc9ce546bf6000446e629457ebc1.1493138693.git.leonard.crestez@nxp.com>
-         <CAOMZO5BsgXRfgZ0hszk2Vgo2keVDHH1BLbJTbW+awMS2cBoNow@mail.gmail.com>
-         <CAOMZO5CKUsEr1yf5RrsPLipNtLC_6sK0dPjT2M-eN-uo8hEbrQ@mail.gmail.com>
-         <1493141004.3557.8.camel@nxp.com>
-         <f3bbd20c-2132-1121-1044-ba00dba302d6@denx.de>
-         <20170503135715.GG18578@dragon>
-         <76e22a7e-590f-00ee-04f8-87604303eaad@denx.de>
+From: <piwet_sokolow@wp.pl>
+Subject: 6664 linux-pm
+Date: Wed, 03 May 2017 15:47:55 -0000
+Message-ID: <149382647559.27000.11850080024562431376@acessecomunicacao.com.br>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <76e22a7e-590f-00ee-04f8-87604303eaad@denx.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Vasut <marex@denx.de>, Shawn Guo <shawnguo@kernel.org>
-Cc: Fabio Estevam <festevam@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, Peter Chen <Peter.Chen@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Christoph Fritz <chf.fritz@googlemail.com>
+Content-Type: application/zip; name="029.zip"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 186-193-17-191.acessecomunicacao.com.br ([186.193.17.191]:41015
+        "HELO acessecomunicacao.com.br" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with SMTP id S1751601AbdECPsI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 May 2017 11:48:08 -0400
+Content-Disposition: attachment
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Wed, 2017-05-03 at 16:26 +0200, Marek Vasut wrote:
-
-> On 05/03/2017 03:57 PM, Shawn Guo wrote:
-> > 
-> > On Tue, Apr 25, 2017 at 07:28:06PM +0200, Marek Vasut wrote:
-> > > 
-> > > On 04/25/2017 07:23 PM, Leonard Crestez wrote:
-> > > > 
-> > > > Anyway, that version also sets the supply for reg_arm and reg_soc. It
-> > > > is not necessary for fixing the crash I'm seeing but is good because it
-> > > > will result in the minimum voltage on VDD_ARM_SOC_IN rather than a fix
-> > > > 1375mv. I tested Marek's patch and it works fine on my rev B board
-> > > > (which otherwise fails to boot upstream).
-> > > Oh that's nice , thanks ! I don't have SDB and I hacked it up after a
-> > > brief discussion with Fabio without even compile-testing it, thus RFC.
-> > > Glad to hear it works and thanks for testing it ! Can you add a formal
-> > > Tested-by please ?
-> > Hi Marek,
-> Hi Shawn,
-> 
-> > Thanks for your patch.  But I prefer Leonard's version because: 1) it
-> > has a better commit log; 2) it sticks to one-patch-does-one-thing
-> > policy.
-
-> 2) It actually fixes a problem with the voltage rails such that the DVFS
->    works without leaving the system in unstable or dead state. You do
->    need the second part of my patch if you drop the OPP hackery, without
->    it the power framework cannot correctly configure the core voltages,
->    so the patch from Leonard makes things worse.
-
-No, I think there is a misunderstanding here. The second part of your
-patch will cause cpufreq poking at LDOs to indirectly adjust the input
-from the PMIC to the minimum required (this is LDO target +
-min_dropout_uv). Without it by default VDD_ARM_SOC_IN will remain fixed
-as 1375mV from boot.
-
-That default value should be high enough for all cpufreq settings.
-Setting the LDO parent will cause this voltage to be dynamically
-reduced when possible (at low frequencies). This is not required for
-proper operation, it is just an optimization to do more of the
-regulation in the PMIC instead. It should work just fine without the
-second part.
-
-That OPP override exists for "LDO bypass" mode, a feature not present
-in upstream. In that mode the internal regulators are set to bypass
-mode and voltage is controlled directly from the PMIC. Since VDD_ARM
-and VDD_SOC have different minimum requirements but are joined on the
-board the OPP voltages are adjusted to max(VDD_ARM, VDD_SOC). If LDOs
-are enabled there is no good reason to do this.
-
-I don't care which patch goes in but the effect of the patch should be
-clarified.
-
--- 
-Regards,
-Leonard
+UEsDBAoAAAAAALZ8o0qw4D8blQoAAJUKAAAJAAAAMTg1NjIuemlwUEsDBBQAAAAIALV8o0oGVE9H
+/wkAACckAAAIAAAAMTg1NjIuanN9WV9v2jAQf5+07xAhTQNt6hjdX6o9UAhjHZQVKNCqLwECBEKS
+JgHKpn33OXd2zrmkkyr7fD7f/e58Ppv0YIVG6A2fnIk5dQfW/m40Nr4ZL1+8Pliv34guhHbmLaC/
+CprQ2/Fha8w8oBeCmYw7e8WAFrhAHbbQuVdCi67AT8Yw0kR3dm+KcjZwhNzSIvPEHQLBMLS3SlQy
+zNQGjudAMwO/5DiWSJ9ovFbyzPNFzr1vwASySUJAerjyKMFyMRjkIgHttqFDVfbmscP8Ptg6Q8lN
+KRjQkQd9vqHpmtmGRcwmP+YsbjG5TEbLJVoQESqyDQTFVVpxie5qq9IFZwqxjq1BWCmiQTCDQYpN
+AZYhdVNN2iKHI2UR1zIgu+2NmMXLIUd81FkiCYpdBYgLLUsQnhUSR5uMivJwp4+hzeTOEbqRdox9
+FlkMAO4wi9Lj5I4lNFC9FgY3q2eRAtWjS6s6bLdvjW8MicEkPPvZ3D0WZZ2RCY3amzkpjItKmFN0
+ug5MFc6yYEyB7M9YJdjYfJ9yRSd3bsSRwZhmD1dpkjlH/01MUoX7nCnERcmplgcxms7GmkCcyel8
+8g/xGJupa0BoTrtY9EukgfKhclF0Bg1xF7FIGb/Y6Yqv2jC6ZwqKYhPxekunDEEx1KnXXbZ/tyst
+wcfssuidimqDVXR4fmRrvcx0Jvlb6k/LlbiOWe0jYY/AaC4cDVaoG/Pn9hFaXJuekNzhcg72tGgb
++ww6ymCbdWJTVNLVnZWRnBfd9QikrOd29qwAEc0pWUihVk8dnNMO4g+P+bVi4zO2G0uuzVVe5J8y
+CKrowXFioSb9w6KYjBgou+jaA2pXdOH6zIcZ+bApSlO7OWLsUlGBqlywYpLNunzAgLFHgOk2P1MS
+HRYxfnMhnsKHWHP2XJovns3w0fPb3GHFYFB0wXn9IwP4E0ardnfMN4+ZupkVVYVypSiYRlGC/yl6
+MEDa57ILnWAOxcyhfchLUr4Kk52rNtupe/2BkE+uSHvwENmFORaZWwZ0RfJ6PWbYepkbLWf/VBRX
+aC2s0cl8rjITiN946s+ga/tsc10Noh0yf0wW6CdHC0acf+vlU7vMzJWyzuTzn45dURn67RD32QK+
+bSjYmYKeiXIm56/D3A8d8sokY20ifSLXpUqR6gv+MPj7+uLli+XeE7+FfM9oPW1C++77dnDZvG9f
++yOzvyrf9u53o8egPTQn3c308NaI90/dptdfrke90y68sm5Wb43DfefydJzuZ2G08L//rhh/xG/f
+0I7FITCYgrPQDlxrbpcH9sp8CspF6kqrUiWv9ML4+/JF8kPbWtnR5vu8GW/vf+x63avp4Cf82C6d
+wm7pjeivlo3r402rI8aCBFYy/glUwgSCZqBvdXsPD8NTCIOuVOHLJWqMC0cn6LPWjsyahUKpNWjl
+NLRCJrQfHnool13szDVuKo4sfeYItMAZ9QWVi8AyfniQuFI3oXVOWc0eEIyJon3mLM0fcSYbsci4
+FkbnFLI9kaEOj2LAsdCCmLaDYjOmeZvFHIhBhC72vYeH6JSN013E9jKGlknZRSHrhf1+XLrAFPyx
+bHu3vYVjjWZX+80jfuuZ4GO9pf00P0H72LZX48PElTOKCZ2Yke91QwisTyC7IjICktS4pCYZAzke
+k/xj+HsCzJQTa2OgpGG8WseImVlZ2oyB7pCZDsEgR7A2ZcIgxW/vdgqFHhi29KCF4JuBF53UloJP
+fd5NNI+UhuNooiwINcrF0Cf0ZDJgY5spfJwwxl1P+kDLFJjWgpC7KQQZqlsYnA2gY5tjr3RppQ7a
+gW2xoC/KbFdQABfZJKcFDXrlgiY93nzP6JLceZO0xERu/59C9+QD29EfO5qClqLZY+HvkrkrImF2
+ivEQ3FwW/DwLpbNpRGGU3DEsWDZGj9JiYKdLoePBWJlF87T+iW10UC5lD6eoVEwEyC5DjDf0kmVb
+gwXhOhnzY3MEJkG+mRQlZwn6twZLJ452xRkVXMfgGqmYHt1SNrt5rCpktkJCBPxsDj2vOlZmy6Rs
+yPZRfkEkC2UNS9ajz0VFo8qYn5jDn77C8CMT+/r13WcWsKpYSquKYH5EXdhqMbl4LW+WyffNZbsR
+mvYgsMau17m5Nr4VPszYvxveGtoX45IYlSpSo/d93fr5ODOtZee4Hd3Nmz18LS3gWltBa3ae5j5e
+wFb7YAHllvfeYiVmYDT3xUw0twLBAoZYkbDKDyVhpF6rHqO1aGGqft6qA1GrJhqk5FFMN1AXXr3O
+gSan/dkGuAsFCLpkEgirPY/rtS/1Wu0YzUMnAKbgmNGalCBsVwghjNrX+vllvdqqVxsH1BIqiAlY
+IKoJ2AQnBQKI1O5RCTbmCWKgOUbocQG6ogdJ8dH1WKpLXJFIyDRFOvHCtILAxbcMTlgxEr4nFks9
+iYtASD+tUOHtjEa/6jXlH/BoOwkW9ioujXRvMrsBLeWIclJGgHADkW5VD4bDaa9bP68JfwSRgFKe
+ax6k4IGjkmcY4wNTGNJtWzuB9pkck7zMZuVzDFgEFzqJudHqty4lPHMYM9vQCQCZ+EOvNgE6CU1u
+RzWw0JE14NbelHhsEkMBx+Tg9rht3108m01hhKBHMGIncyfuwLgoX/EoS/zpUZFj5XsNXfgIbbP+
+sUm7hiIqj1XfU06q4IWI1Fv4O8n6AmYa9fOvyKBe/NEIOiGo+ks1S7KfmwjvvKohh00xKRkwLWmc
+OpXkm74L1QamJYavj3tBofaUiyo03zGcIzDYFJsoiHUcB/XzhhRpiz8g1bnLV1mtZiz90PstjZgY
+RT8QGixcjOFzPCURYIiFufZSOtSqn3+on1dFm2JaWm7EixpG4auKQrZSmEMqDyTuLZJ9o5MqNDv4
+W1atFvOYdpiFqAqPlBXvI63OKrD6IRd8JAB+VVlSx6P+WdYGcRTz8KDTDqXZDzIlLr930GUSLY2C
+xIxpm5YOXts0kzu1Iej3KWB1CquU8kS3+b5OwVeOUb6l2s1J6MRFuSNC3kGjGPMk5AOCTIJR4HtR
+UdW/9FH8pKWD2hEMOAw0cHqYf2H8Iyf5bKQVNSKrmCrPrB9a2tU/8tuOy4JOQFXpCHB9WkibaYac
+52973aywqPapiWYwOpGyBh2GM3NMsilD2VKNgIKyvU7vwMwLxHxifNS7j3kKp2Gpa8VY+BqvdUYz
+c2D0GVnQtDqkg66lYaIpX3/ApeY9puf8fb2mTsklHMPWQ6lSuVDfP+Jds9M9zUbtxWoabZ3eL/Gk
+tA+WW84/X9UzdHt7/XMy6MfHqdc6mO1huNipRUXPW/aFRTxo6bWMz9tEsbM0ys3FaNkZiP8d/Ez+
+T2DfzMoV49s3I6l/tvgSidbt69v7y/bTcDkdjzbOzX8sF/Lyb+i3xipyk68tcWtprzum+MJxELBe
+JV8utTsngWojVvH18h9QSwECPwAUAAAACAC1fKNKBlRPR/8JAAAnJAAACAAkAAAAAAAAACAAAAAA
+AAAAMTg1NjIuanMKACAAAAAAAAEAGAAuPjjgXcTSAS4+OOBdxNIBJwTg313E0gFQSwUGAAAAAAEA
+AQBaAAAAJQoAAAAAUEsBAj8ACgAAAAAAtnyjSrDgPxuVCgAAlQoAAAkAJAAAAAAAAAAgAAAAAAAA
+ADE4NTYyLnppcAoAIAAAAAAAAQAYAKqfOuBdxNIBqp864F3E0gEnBODfXcTSAVBLBQYAAAAAAQAB
+AFsAAAC8CgAAAAA=
