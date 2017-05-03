@@ -1,46 +1,42 @@
 From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: Re: [PATCH RESEND 1/3 v4] drivers:power:twl4030-charger: don't check if battery is present
-Date: Wed, 3 May 2017 14:20:29 +0200
-Message-ID: <E634AF27-5FD1-4729-AB06-3DAFE63A5FC2@goldelico.com>
-References: <cd36deb10a769825620828a43d2bab4f949f3370.1492198177.git.hns@goldelico.com> <20170501112631.2kz4bbga4hfznhsz@earth>
+Subject: Re: [PATCH v3 2/3] drivers:power:twl4030-charger: add INPUT_CURRENT_LIMIT property and make it writeable
+Date: Wed, 3 May 2017 14:18:11 +0200
+Message-ID: <957290C0-85B4-4077-9D68-B08FE3232353@goldelico.com>
+References: <cover.1492194356.git.hns@goldelico.com> <ed229ae8e6a4a9bd040e389d101b5257296d54ff.1492194356.git.hns@goldelico.com> <20170501111546.hmc7evtz2juyg5ur@earth>
 Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Content-Type: multipart/signed; boundary="Apple-Mail=_30D5D9E0-243B-4800-8099-929C207BA7FE"; protocol="application/pgp-signature"; micalg=pgp-sha256
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170501112631.2kz4bbga4hfznhsz@earth>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grazvydas Ignotas <notasas@gmail.com>, Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; boundary="Apple-Mail=_19E49008-3B25-44B9-AEC0-0E039AD60BFB"; protocol="application/pgp-signature"; micalg=pgp-sha256
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.219]:18531 "EHLO
+        mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751354AbdECMVc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 May 2017 08:21:32 -0400
+In-Reply-To: <20170501111546.hmc7evtz2juyg5ur@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Grazvydas Ignotas <notasas@gmail.com>, Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, linux-kernel@vger.kernel.org
 
 
---Apple-Mail=_30D5D9E0-243B-4800-8099-929C207BA7FE
+--Apple-Mail=_19E49008-3B25-44B9-AEC0-0E039AD60BFB
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain;
 	charset=us-ascii
 
 
-> Am 01.05.2017 um 13:26 schrieb Sebastian Reichel =
+> Am 01.05.2017 um 13:15 schrieb Sebastian Reichel =
 <sebastian.reichel@collabora.co.uk>:
 >=20
 > Hi,
 >=20
-> On Fri, Apr 14, 2017 at 09:29:38PM +0200, H. Nikolaus Schaller wrote:
->> We can't assume that the battery is or stays present after probing
->> on devices with replaceable battery.
+> On Fri, Apr 14, 2017 at 08:25:56PM +0200, H. Nikolaus Schaller wrote:
+>> Currently, the twl4030 charger defines its own max_current by =
+directly
+>> creating sysfs nodes. It should use the input_current_limit property
+>> which is e.g. used by the bq24257 driver.
 >>=20
->> On some devices (e.g. GTA04 or OpenPanodra) it can be removed
->> and even be hot swapped by the user while device continues to operate
->> through external AC or USB power (as long as system power consumption
->> remains below ca. 500mA as provided by USB). Under certain conditions
->> it is possible to boot without battery.
->>=20
->> So it makes no sense to check for this situation during probe and =
-make
->> the charger driver (and its status reports) completely =
-non-operational if
->> the battery can be inserted later.
->>=20
->> Tested on: GTA04 and OpenPandora.
+>> This patch adds the input_current_property with the same semantics as
+>> the max_current property. The code to manage the max_current property
+>> is removed by a separate patch.
 >>=20
 >> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
 >=20
@@ -50,7 +46,7 @@ TNX,
 Nikolaus
 
 
---Apple-Mail=_30D5D9E0-243B-4800-8099-929C207BA7FE
+--Apple-Mail=_19E49008-3B25-44B9-AEC0-0E039AD60BFB
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
 	filename=signature.asc
@@ -60,19 +56,19 @@ Content-Description: Message signed with OpenPGP using GPGMail
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAEBCAAGBQJZCcsNAAoJEIl79TGLgAm6eBEP/3Rd3gH7JnP0lO5s0D2GJ6fF
-9oprbm2xH8DWa5ubgQqi2K8HtgIaT0S+KU7D0nBAcE2/SgeHELLIYV1by6dKwuXl
-pjnI9UfJ0gvHR9VhPaAFUKfPgvPhWhYqiSgCwZs4il3Ula05Y3s2501RhEVCedHR
-HzFj0r9hNIDMOpC8gNK6JAiWdbQo/+XAgdEwoyDE6CSclb8vUDJyq7bNfo+jSCiv
-X2n0xY8Wg1BJ+1K4U7NzEIBupJEwJixRBL8RFWG7vyP0K2U841clu+DJeMeZ+w4B
-ft5FDBtQmqRTvPw/oRyOz2hPHQ3gjf1Su2wid8Rud3VQPWSyun4Ble5PRy4IrZZp
-xgY6uz7gNh4lkUU6N2abcD8+QQm01k/9qofB1i68GodFDPHJ0XDFIkPtcJU14ZkY
-nN8sC0acK7pnrlGLZDjDFCRtzxdZucW9sBJP11UFLj0MmYJ3j5WMdsC/8a0FGIQh
-Oa1jLUGeKcH+OdnHcUGJNvzRK6XNaQMc7xCdMrGShR2vAJ3qo+Q33QOAZtSUC30V
-buGSFuRnYL5l8opRuKaqOMp8+DHkdaOI/6Z2H0t0kG46xwmA7S1sEm0SA0QALiMi
-PZ3uWXLur2IBS3WYkbYkz2DcPHYojWKbklbkGQukOQa0bdnOQBvOiU+rkuF50b3D
-EDK6xS5XfjxBhm4M7fFV
-=nbwF
+iQIcBAEBCAAGBQJZCcqEAAoJEIl79TGLgAm60B4QAJI+cQ/nebeuDvzJi2Spf6/+
+O02KdGoay2RAqRJohGPxpZpoaCfZN92aGeh0j0yEG/5Xsn+bq6vgiUpNQP+wZLFV
+v9dvs51+Ksgmu4QMxN2lZUkCblz6ttFg223qiGm9wC07f1K3oXMc/ZJRfTFv89YN
+tK+DZZXskp1eZUDogU1eGw2NUsOHEggp9qiuHDaAFW+wrubDLntneV7h6kV6BU3b
+Cg6VU2erowH6vaGaGLwgz/N8VBgxTs3Gz+PIrrwt2QWc5J6GfHOD+rpJk33TFUO4
+tI6MQrciMH9z93Bk85PRxowLANt9NQN2wqepq1Fw1ZCre5JRQYMPka9EC5F94Wvt
+KsQuF64YREa9qby9Zs51yYnJRSiMu4AR16oEwmEsShnHHlcGWQUBecKZk+jUdCc+
+fELzhHcUtVC0s/BJu54TdeaE/iDjnshU+xRhiHgWDW7nEHHKH2gbWMG7MJfVvDGL
+0h0CLyhDueZ1HrdqirurjUOhqGEt7lKuMN4OIgLOigkKJlz94Ff1EBF9pGr6MSwm
+l6RRcpGDTkGeQiDnV5Bw/Ydk4WNJhsYH7E2ykUKYJsR6RSKf4PG0Fro3i9VTxFxh
+hB/jsrlRjdQm5K9Und9euiONyZFu3IPPgH1+gXnDYkgdg+GqPqj27lMdo9fBZl8m
+3gLdDH+jm/EPgp5kmyh9
+=FlW1
 -----END PGP SIGNATURE-----
 
---Apple-Mail=_30D5D9E0-243B-4800-8099-929C207BA7FE--
+--Apple-Mail=_19E49008-3B25-44B9-AEC0-0E039AD60BFB--
