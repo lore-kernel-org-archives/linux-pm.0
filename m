@@ -1,74 +1,78 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH V6 1/9] PM / OPP: Introduce "power-domain-opp" property
-Date: Wed, 3 May 2017 12:29:21 +0100
-Message-ID: <a307c76d-72c3-eb84-e7d4-d5e47e2af727@arm.com>
-References: <cover.1493203884.git.viresh.kumar@linaro.org>
- <025acedb263eaa6089d354d9630214ada8013990.1493203884.git.viresh.kumar@linaro.org>
- <20170428204803.plu467okibtxga4d@rob-hp-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:54776 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751061AbdECL30 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 May 2017 07:29:26 -0400
-In-Reply-To: <20170428204803.plu467okibtxga4d@rob-hp-laptop>
-Sender: linux-pm-owner@vger.kernel.org
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: Re: [PATCH RESEND 1/3 v4] drivers:power:twl4030-charger: don't check if battery is present
+Date: Wed, 3 May 2017 14:20:29 +0200
+Message-ID: <E634AF27-5FD1-4729-AB06-3DAFE63A5FC2@goldelico.com>
+References: <cd36deb10a769825620828a43d2bab4f949f3370.1492198177.git.hns@goldelico.com> <20170501112631.2kz4bbga4hfznhsz@earth>
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
+Content-Type: multipart/signed; boundary="Apple-Mail=_30D5D9E0-243B-4800-8099-929C207BA7FE"; protocol="application/pgp-signature"; micalg=pgp-sha256
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170501112631.2kz4bbga4hfznhsz@earth>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grazvydas Ignotas <notasas@gmail.com>, Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
 
 
+--Apple-Mail=_30D5D9E0-243B-4800-8099-929C207BA7FE
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=us-ascii
 
-On 28/04/17 21:48, Rob Herring wrote:
-> On Wed, Apr 26, 2017 at 04:27:05PM +0530, Viresh Kumar wrote:
->> Power-domains need to express their active states in DT and the devices
->> within the power-domain need to express their dependency on those active
->> states. The power-domains can use the OPP tables without any
->> modifications to the bindings.
->>
->> Add a new property "power-domain-opp", which will contain phandle to the
->> OPP node of the parent power domain. This is required for devices which
->> have dependency on the configured active state of the power domain for
->> their working.
->>
->> For some platforms the actual frequency and voltages of the power
->> domains are managed by the firmware and are so hidden from the high
->> level operating system. The "opp-hz" property is relaxed a bit to
->> contain indexes instead of actual frequency values to support such
->> platforms.
->>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>  Documentation/devicetree/bindings/opp/opp.txt | 74 ++++++++++++++++++++++++++-
->>  1 file changed, 73 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
->> index 63725498bd20..6e30cae2a936 100644
->> --- a/Documentation/devicetree/bindings/opp/opp.txt
->> +++ b/Documentation/devicetree/bindings/opp/opp.txt
->> @@ -77,7 +77,10 @@ This defines voltage-current-frequency combinations along with other related
->>  properties.
->>  
->>  Required properties:
->> -- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer.
->> +- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer. In some
->> +  cases the exact frequency in Hz may be hidden from the OS by the firmware and
->> +  this field may contain values that represent the frequency in a firmware
->> +  dependent way, for example an index of an array in the firmware.
-> 
-> Not really sure OPP binding makes sense here. What about all the other 
-> properties. We expose voltage, but not freq?
-> 
 
-I completely agree with that and I have been pushing this to be
-represented as just regulators[0]. Mark B seem to dislike that
-idea [1]
+> Am 01.05.2017 um 13:26 schrieb Sebastian Reichel =
+<sebastian.reichel@collabora.co.uk>:
+>=20
+> Hi,
+>=20
+> On Fri, Apr 14, 2017 at 09:29:38PM +0200, H. Nikolaus Schaller wrote:
+>> We can't assume that the battery is or stays present after probing
+>> on devices with replaceable battery.
+>>=20
+>> On some devices (e.g. GTA04 or OpenPanodra) it can be removed
+>> and even be hot swapped by the user while device continues to operate
+>> through external AC or USB power (as long as system power consumption
+>> remains below ca. 500mA as provided by USB). Under certain conditions
+>> it is possible to boot without battery.
+>>=20
+>> So it makes no sense to check for this situation during probe and =
+make
+>> the charger driver (and its status reports) completely =
+non-operational if
+>> the battery can be inserted later.
+>>=20
+>> Tested on: GTA04 and OpenPandora.
+>>=20
+>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+>=20
+> Thanks, queued.
 
--- 
-Regards,
-Sudeep
+TNX,
+Nikolaus
 
-[0] http://www.spinics.net/lists/devicetree/msg174725.html
-[1] http://www.spinics.net/lists/devicetree/msg175113.html
+
+--Apple-Mail=_30D5D9E0-243B-4800-8099-929C207BA7FE
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename=signature.asc
+Content-Type: application/pgp-signature;
+	name=signature.asc
+Content-Description: Message signed with OpenPGP using GPGMail
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJZCcsNAAoJEIl79TGLgAm6eBEP/3Rd3gH7JnP0lO5s0D2GJ6fF
+9oprbm2xH8DWa5ubgQqi2K8HtgIaT0S+KU7D0nBAcE2/SgeHELLIYV1by6dKwuXl
+pjnI9UfJ0gvHR9VhPaAFUKfPgvPhWhYqiSgCwZs4il3Ula05Y3s2501RhEVCedHR
+HzFj0r9hNIDMOpC8gNK6JAiWdbQo/+XAgdEwoyDE6CSclb8vUDJyq7bNfo+jSCiv
+X2n0xY8Wg1BJ+1K4U7NzEIBupJEwJixRBL8RFWG7vyP0K2U841clu+DJeMeZ+w4B
+ft5FDBtQmqRTvPw/oRyOz2hPHQ3gjf1Su2wid8Rud3VQPWSyun4Ble5PRy4IrZZp
+xgY6uz7gNh4lkUU6N2abcD8+QQm01k/9qofB1i68GodFDPHJ0XDFIkPtcJU14ZkY
+nN8sC0acK7pnrlGLZDjDFCRtzxdZucW9sBJP11UFLj0MmYJ3j5WMdsC/8a0FGIQh
+Oa1jLUGeKcH+OdnHcUGJNvzRK6XNaQMc7xCdMrGShR2vAJ3qo+Q33QOAZtSUC30V
+buGSFuRnYL5l8opRuKaqOMp8+DHkdaOI/6Z2H0t0kG46xwmA7S1sEm0SA0QALiMi
+PZ3uWXLur2IBS3WYkbYkz2DcPHYojWKbklbkGQukOQa0bdnOQBvOiU+rkuF50b3D
+EDK6xS5XfjxBhm4M7fFV
+=nbwF
+-----END PGP SIGNATURE-----
+
+--Apple-Mail=_30D5D9E0-243B-4800-8099-929C207BA7FE--
