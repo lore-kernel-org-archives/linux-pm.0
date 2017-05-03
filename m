@@ -1,96 +1,76 @@
-From: Marek Vasut <marex@denx.de>
-Subject: Re: [PATCH] ARM: dts: imx6sx-sdb: Remove cpufreq OPP override
-Date: Wed, 3 May 2017 17:59:29 +0200
-Message-ID: <e46a57c2-4a28-a8b6-445e-299dd9d8659c@denx.de>
-References: <89cc7192100bdc9ce546bf6000446e629457ebc1.1493138693.git.leonard.crestez@nxp.com>
- <CAOMZO5BsgXRfgZ0hszk2Vgo2keVDHH1BLbJTbW+awMS2cBoNow@mail.gmail.com>
- <CAOMZO5CKUsEr1yf5RrsPLipNtLC_6sK0dPjT2M-eN-uo8hEbrQ@mail.gmail.com>
- <1493141004.3557.8.camel@nxp.com>
- <f3bbd20c-2132-1121-1044-ba00dba302d6@denx.de>
- <20170503135715.GG18578@dragon>
- <76e22a7e-590f-00ee-04f8-87604303eaad@denx.de>
- <1493823533.11226.28.camel@nxp.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of
+ PM domains
+Date: Wed, 3 May 2017 19:12:05 +0200
+Message-ID: <CAPDyKFqeAWoy-vfN89j8Yv1HTMpNqwcVk3XrTQoXH5JNrQ9Maw@mail.gmail.com>
+References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
+ <CAJZ5v0gMzN_zfC_2nnRtYFyFon3-_mnioQhNbDP0wsr91RnagA@mail.gmail.com>
+ <ffe13074-9113-0a20-0fa6-76d0209dadfc@nvidia.com> <1832647.f77WMLkdQb@aspire.rjw.lan>
+ <CAPDyKFokVKZfRAsEAB6ihx1FxW4JjarionyOwCATr3s+QW4aMg@mail.gmail.com>
+ <b4e8fd34-e2f0-165d-aa22-32ba43a8dbed@nvidia.com> <CAPDyKFo-hfwbrY+AEMt0=fMshiT-BWvYDvGkKGqquTdowUvWHw@mail.gmail.com>
+ <107242f1-de90-b8bb-bc2c-feaf014485aa@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-out.m-online.net ([212.18.0.10]:42733 "EHLO
-        mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751993AbdECP7f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 May 2017 11:59:35 -0400
-In-Reply-To: <1493823533.11226.28.camel@nxp.com>
+Received: from mail-qt0-f171.google.com ([209.85.216.171]:35397 "EHLO
+        mail-qt0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753802AbdECRMH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 May 2017 13:12:07 -0400
+Received: by mail-qt0-f171.google.com with SMTP id n4so44727106qte.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 May 2017 10:12:06 -0700 (PDT)
+In-Reply-To: <107242f1-de90-b8bb-bc2c-feaf014485aa@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>, Shawn Guo <shawnguo@kernel.org>
-Cc: Fabio Estevam <festevam@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, Peter Chen <Peter.Chen@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Christoph Fritz <chf.fritz@googlemail.com>
+To: Jon Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Rajendra Nayak <rnayak@codeaurora.org>, Stanimir Varbanov <stanimir.varbanov@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Marek Szyprowski <m.szyprowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On 05/03/2017 04:58 PM, Leonard Crestez wrote:
-> On Wed, 2017-05-03 at 16:26 +0200, Marek Vasut wrote:
-> 
->> On 05/03/2017 03:57 PM, Shawn Guo wrote:
+[...]
+
 >>>
->>> On Tue, Apr 25, 2017 at 07:28:06PM +0200, Marek Vasut wrote:
->>>>
->>>> On 04/25/2017 07:23 PM, Leonard Crestez wrote:
->>>>>
->>>>> Anyway, that version also sets the supply for reg_arm and reg_soc. It
->>>>> is not necessary for fixing the crash I'm seeing but is good because it
->>>>> will result in the minimum voltage on VDD_ARM_SOC_IN rather than a fix
->>>>> 1375mv. I tested Marek's patch and it works fine on my rev B board
->>>>> (which otherwise fails to boot upstream).
->>>> Oh that's nice , thanks ! I don't have SDB and I hacked it up after a
->>>> brief discussion with Fabio without even compile-testing it, thus RFC.
->>>> Glad to hear it works and thanks for testing it ! Can you add a formal
->>>> Tested-by please ?
->>> Hi Marek,
->> Hi Shawn,
+>>>> What is missing, is how a call to pm_runtime_get_sync() by a driver,
+>>>> can inform the ->start() callback about what exact power resource(s)
+>>>> it shall turn on, because it may not always be all of them. Similar
+>>>> problem exists for pm_runtime_put().
+>>>
+>>> Yes that is missing too, but I still don't see how you bind a device to
+>>> more than one power-domain :-(
 >>
->>> Thanks for your patch.  But I prefer Leonard's version because: 1) it
->>> has a better commit log; 2) it sticks to one-patch-does-one-thing
->>> policy.
-> 
->> 2) It actually fixes a problem with the voltage rails such that the DVFS
->>    works without leaving the system in unstable or dead state. You do
->>    need the second part of my patch if you drop the OPP hackery, without
->>    it the power framework cannot correctly configure the core voltages,
->>    so the patch from Leonard makes things worse.
-> 
-> No, I think there is a misunderstanding here. The second part of your
-> patch will cause cpufreq poking at LDOs to indirectly adjust the input
-> from the PMIC to the minimum required (this is LDO target +
-> min_dropout_uv). Without it by default VDD_ARM_SOC_IN will remain fixed
-> as 1375mV from boot.
+>> I think this is what Rafael wanted us avoid (because of the complexity
+>> involved). Instead the suggestion is to deal with this on top of the
+>> existing PM domain structure, as "power resources" instead. Unless I
+>> missed his point. :-)
+>>
+>> Then *my* point is: To be able to implement that, still only allowing
+>> one PM domain per device, we would anyway need a new layer in-between
+>> the PM domain (genpd) and the driver controlling the device. Simply
+>> because these two entities, needs to be able to exchange information
+>> about which "power resources" that shall be turned off/on, when the
+>> driver do pm_runtime_get|put().
+>
+> Right, but isn't this similar to what I was suggesting above in my
+> previous email?
 
-Who sets / guarantees that default value for ARM and SOC rails ?
+Perhaps it was, apologize for my ignorance in that case.
 
-With the OPP override in place, there's at least the guarantee that both
-rails will have the same voltage requirement. If you remove the OPP
-override without modeling the actual regulator wiring, the guarantee is
-gone.
+Then, isn't that quite what you already started hacking on in $subject
+series? What's the new thing in your previous reply?
 
-> That default value should be high enough for all cpufreq settings.
-> Setting the LDO parent will cause this voltage to be dynamically
-> reduced when possible (at low frequencies). This is not required for
-> proper operation, it is just an optimization to do more of the
-> regulation in the PMIC instead. It should work just fine without the
-> second part.
-> 
-> That OPP override exists for "LDO bypass" mode, a feature not present
-> in upstream. In that mode the internal regulators are set to bypass
-> mode and voltage is controlled directly from the PMIC. Since VDD_ARM
-> and VDD_SOC have different minimum requirements but are joined on the
-> board the OPP voltages are adjusted to max(VDD_ARM, VDD_SOC). If LDOs
-> are enabled there is no good reason to do this.
-> 
-> I don't care which patch goes in but the effect of the patch should be
-> clarified.
-> 
-> -- 
-> Regards,
-> Leonard
-> 
+However, I was under the impression that Rafael preferred another way
+- but again I might have missed his point.
 
+>
+> I was proposing to have such a lower-layer by splitting the existing
+> genpd framework so the drivers would have the option of calling the
+> lower-level power control functions to look-up pm-domains and control
+> them directly from their rpm callbacks (if they need to). Same as we do
+> for clocks. This way you would not need to mess with the genpd ->start()
+> callback and leave it to the driver to handle itself as it knows what
+> needs to be done. This assumes that the device is never bound to the
+> pm-domain by the genpd core.
 
--- 
-Best regards,
-Marek Vasut
+Yes, agree! To me this is the only solution what would really work.
+
+Perhaps Rafael can confirm that he is fine with a solution like this?
+
+Kind regards
+Uffe
