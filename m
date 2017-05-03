@@ -1,149 +1,82 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit control of PM domains
-Date: Tue, 02 May 2017 23:51:05 +0200
-Message-ID: <1832647.f77WMLkdQb@aspire.rjw.lan>
-References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com> <CAJZ5v0gMzN_zfC_2nnRtYFyFon3-_mnioQhNbDP0wsr91RnagA@mail.gmail.com> <ffe13074-9113-0a20-0fa6-76d0209dadfc@nvidia.com>
+From: "A.S. Dong" <aisheng.dong@nxp.com>
+Subject: RE: [PATCH] ARM: imx_v6_v7_defconfig: Enable cpufreq governors
+Date: Wed, 3 May 2017 03:48:03 +0000
+Message-ID: <AM3PR04MB306B60CED1751FA382AFBB980160@AM3PR04MB306.eurprd04.prod.outlook.com>
+References: <c401883fec8db20878c7593d879e9e128cacc495.1493736306.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <ffe13074-9113-0a20-0fa6-76d0209dadfc-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve1eur01on0073.outbound.protection.outlook.com ([104.47.1.73]:5760
+        "EHLO EUR01-VE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751272AbdECDsH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 2 May 2017 23:48:07 -0400
+In-Reply-To: <c401883fec8db20878c7593d879e9e128cacc495.1493736306.git.leonard.crestez@nxp.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shawn Guo <shawnguo@kernel.org>
+Cc: Leonard Crestez <leonard.crestez@nxp.com>, Sascha Hauer <kernel@pengutronix.de>, Jagan Teki <jagan@amarulasolutions.com>, Fabio Estevam <fabio.estevam@nxp.com>, Dong Aisheng <aisheng.dong@freescale.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Tuesday, May 02, 2017 11:10:29 AM Jon Hunter wrote:
-> 
-> On 25/04/17 22:17, Rafael J. Wysocki wrote:
-> > On Tue, Apr 25, 2017 at 9:34 PM, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> >> On 25 April 2017 at 13:13, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> >>>
-> >>> On 28/03/17 15:13, Jon Hunter wrote:
-> >>>> The current generic PM domain framework (GenDP) only allows a single
-> >>>> PM domain to be associated with a given device. There are several
-> >>>> use-cases for various system-on-chip devices where it is necessary for
-> >>>> a PM domain consumer to control more than one PM domain where the PM
-> >>>> domains:
-> >>>> i).  Do not conform to a parent-child relationship so are not nested
-> >>>> ii). May not be powered on and off at the same time so need independent
-> >>>>      control.
-> >>>>
-> >>>> The solution proposed in this RFC is to allow consumers to explictly
-> >>>> control PM domains, by getting a handle to a PM domain and explicitly
-> >>>> making calls to power on and off the PM domain. Note that referencing
-> >>>> counting is used to ensure that a PM domain shared between consumers
-> >>>> is not powered off incorrectly.
-> >>>>
-> >>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
-> >>>> controllers) is an example of a consumer that needs to control more than
-> >>>> one PM domain because the logic is partitioned across 3 PM domains which
-> >>>> are:
-> >>>> - XUSBA: Superspeed logic (for USB 3.0)
-> >>>> - XUSBB: Device controller
-> >>>> - XUSBC: Host controller
-> >>>>
-> >>>> These power domains are not nested and can be powered-up and down
-> >>>> independently of one another. In practice different scenarios require
-> >>>> different combinations of the power domains, for example:
-> >>>> - Superspeed host: XUSBA and XUSBC
-> >>>> - Superspeed device: XUSBA and XUSBB
-> >>>>
-> >>>> Although it could be possible to logically nest both the XUSBB and XUSBC
-> >>>> domains under the XUSBA, superspeed may not always be used/required and
-> >>>> so this would keep it on unnecessarily.
-> >>>>
-> >>>> Given that Tegra uses device-tree for describing the hardware, it would
-> >>>> be ideal that the device-tree 'power-domains' property for generic PM
-> >>>> domains could be extended to allow more than one PM domain to be
-> >>>> specified. For example, define the following the Tegra210 xHCI device ...
-> >>>>
-> >>>>       usb@70090000 {
-> >>>>               compatible = "nvidia,tegra210-xusb";
-> >>>>               ...
-> >>>>               power-domains = <&pd_xusbhost>, <&pd_xusbss>;
-> >>>>               power-domain-names = "host", "superspeed";
-> >>>>       };
-> >>>>
-> >>>> This RFC extends the generic PM domain framework to allow a device to
-> >>>> define more than one PM domain in the device-tree 'power-domains'
-> >>>> property. If there is more than one then the assumption is that these
-> >>>> PM domains will be controlled explicitly by the consumer and the device
-> >>>> will not be automatically bound to any PM domain.
-> >>>
-> >>> Any more comments/inputs on this? I can address Rajendra's feedback, but
-> >>> before I did I wanted to see if this is along the right lines or not?
-> >>
-> >> I discussed this with Rafael at the OSPM summit in Pisa a couple of
-> >> weeks ago. Apologize for the delay in providing additional feedback.
-> >>
-> >> First, whether the problem is really rare, perhaps adding a new
-> >> API/framework can't be justified - then it may be better to add some
-> >> kind of aggregation layer on top of the current PM domain
-> >> infrastructure (something along the first attempt you made for genpd).
-> >> That was kind of Rafael's thoughts (Rafael, please correct me if I am
-> >> wrong).
-> > 
-> > We were talking about the original idea behind the pm_domain pointer
-> > concept, which was about adding a set of PM operations above the bus
-> > type/class layer, which could be used for intercepting bus-type PM
-> > operations and providing some common handling above them.  This is
-> > still relevant IMO.
-> > 
-> > The basic observation here is that the PM core takes only one set of
-> > PM operation per device into account and therefore, in every stage of
-> > system suspend, for example, the callback invoked by it has to take
-> > care of all actions that need to be carried out for the given device,
-> > possibly by invoking callbacks from other code layers.  That
-> > limitation cannot be removed easily, because it is built into the PM
-> > core design quite fundamentally.
-> > 
-> > However, this series seems to be about controlling power resources
-> > represented by power domain objects rather than about PM operations.
-> > In ACPI there is a power resource concept which seems to be quite
-> > similar to this, so it is not entirely new. :-)
-> > 
-> > Of course, question is whether or not to extend genpd this way and I'm
-> > not really sure.  I actually probably wouldn't do that, because
-> > poweron/poweroff operations used by genpd can be implemeted in terms
-> > of lower-level power resource control and I don't see the reason for
-> > mixing the two in one framework.
-> 
-> That seems fine to me. However, it seems that genpd itself should also
-> be a client of this 'low-level power resource control' so that
-> power-domains are registered once and can be used by either method.
+> -----Original Message-----
+> From: Leonard Crestez [mailto:leonard.crestez@nxp.com]
+> Sent: Tuesday, May 02, 2017 10:46 PM
+> To: Shawn Guo
+> Cc: Leonard Crestez; Sascha Hauer; Jagan Teki; Fabio Estevam; Dong Aishen=
+g;
+> linux-arm-kernel@lists.infradead.org; linux-pm@vger.kernel.org; linux-
+> kernel@vger.kernel.org
+> Subject: [PATCH] ARM: imx_v6_v7_defconfig: Enable cpufreq governors
+>=20
+> Enable more common cpufreq governors in imx defconfig because this is ver=
+y
+> useful for testing. In particular you can't use cpufreq-set -f $FREQ
+> without explicitly defining CONFIG_CPU_FREQ_GOV_USERSPACE=3Dy.
+>=20
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 
-Right.
+Well, I think we do need this.
+So:
+Acked-by: Dong Aisheng <aisheng.dong@nxp.com>
 
-> So unless I am misunderstanding you here, it seems that what we need to do
-> is split the current genpd framework into a couple layers:
-> 
-> 1. Low-level power resource control which has:
-> - Power resource registration (ie. pm_genpd_init/remove())
-> - Power resource provider registration (ie. of_genpd_add_xxx())
-> - Power resource control (on/off etc)
+Regards
+Dong Aisheng
 
-And reference counting.
-
-> - Power resource lookup (what this series is adding)
-> 
-> 2. Generic power-domain infrastructure which is a client of the
-> low-level power resource control that can automatically bind a device to
-> a singular power resource entity (ie. power-domain).
-
-Something like that, but I would not require an additional complex framework
-to be present below genpd.  I would make it *possible* for genpd to use that
-framework if available, but if something simpler is sufficient, it should be
-fine to use that instead.
-
-That is, I would allow genpd to use either a list of power resources or the on/off
-callbacks provided by itself to cover different use cases.  That should be
-flexible enough.
-
-> Is this along the right lines?
-
-It is, at least for the very narrow definition of "right" as being done along
-the lines I would do that. :-)
-
-Thanks,
-Rafael
+>=20
+> ---
+>=20
+> It might make sense for all governors to be enabled by default from
+> drivers/cpufreq/Kconfig and allow defconfigs to be shorter.
+> Right now the descriptions for some of them includes a line that says "If
+> in doubt, say Y" but the config options don't have actually have a defaul=
+t
+> value defined and they effectively default to N.
+>=20
+> Cycling via savedefconfig on shawnguo/for-next also generates some
+> reordering for some newly added options CONFIG_TOUCHSCREEN_MAX11801=3Dy a=
+nd
+> CONFIG_HID_MULTITOUCH=3Dy. Those were not included but it's strange that
+> this happens. Maybe those options were inserted manually, or otherwise
+> there is an annoying bug in kconfig?
+>=20
+>  arch/arm/configs/imx_v6_v7_defconfig | 3 +++
+>  1 file changed, 3 insertions(+)
+>=20
+> diff --git a/arch/arm/configs/imx_v6_v7_defconfig
+> b/arch/arm/configs/imx_v6_v7_defconfig
+> index bb6fa56..bf1e7e3 100644
+> --- a/arch/arm/configs/imx_v6_v7_defconfig
+> +++ b/arch/arm/configs/imx_v6_v7_defconfig
+> @@ -55,6 +55,9 @@ CONFIG_CMDLINE=3D"noinitrd console=3Dttymxc0,115200"
+>  CONFIG_KEXEC=3Dy
+>  CONFIG_CPU_FREQ=3Dy
+>  CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=3Dy
+> +CONFIG_CPU_FREQ_GOV_POWERSAVE=3Dy
+> +CONFIG_CPU_FREQ_GOV_USERSPACE=3Dy
+> +CONFIG_CPU_FREQ_GOV_CONSERVATIVE=3Dy
+>  CONFIG_ARM_IMX6Q_CPUFREQ=3Dy
+>  CONFIG_CPU_IDLE=3Dy
+>  CONFIG_VFP=3Dy
+> --
+> 2.7.4
