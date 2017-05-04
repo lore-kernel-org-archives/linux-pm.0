@@ -1,113 +1,104 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v13 04/11] power: supply: core: Add power_supply_prop_precharge
-Date: Wed,  3 May 2017 23:18:04 -0700
-Message-ID: <20170504061811.18107-5-liam@networkimprov.net>
+Subject: [PATCH v13 02/11] dt-bindings: power: supply: Add battery.txt with simple-battery binding
+Date: Wed,  3 May 2017 23:18:02 -0700
+Message-ID: <20170504061811.18107-3-liam@networkimprov.net>
 References: <20170504061811.18107-1-liam@networkimprov.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:34292 "EHLO
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:35216 "EHLO
         mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752110AbdEDGTL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 May 2017 02:19:11 -0400
-Received: by mail-pf0-f196.google.com with SMTP id d1so801388pfe.1
-        for <linux-pm@vger.kernel.org>; Wed, 03 May 2017 23:19:11 -0700 (PDT)
+        with ESMTP id S1751362AbdEDGTJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 May 2017 02:19:09 -0400
 In-Reply-To: <20170504061811.18107-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
-Cc: Liam Breck <kernel@networkimprov.net>
+Cc: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
 From: Liam Breck <kernel@networkimprov.net>
 
-Battery chargers use POWER_SUPPLY_PROP_PRECHARGE_CURRENT
-Clarify related item POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT
+Documentation of static battery characteristics that can be defined
+for batteries that do not embed this data, which are required by
+fuel-gauge and charger chips for proper handling of the battery.
 
+The following properties are defined:
+  voltage-min-design-microvolt
+  charge-full-design-microamp-hours
+  energy-full-design-microwatt-hours
+  precharge-current-microamp
+  charge-term-current-microamp
+
+Property names are derived from corresponding elements in
+enum power_supply_property from include/linux/power_supply.h
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/power_supply.h
+
+Cc: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org
+Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
- Documentation/power/power_supply_class.txt | 19 ++++++++++++-------
- drivers/power/supply/power_supply_sysfs.c  |  1 +
- include/linux/power_supply.h               |  3 +++
- 3 files changed, 16 insertions(+), 7 deletions(-)
+ .../devicetree/bindings/power/supply/battery.txt   | 53 ++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
 
-diff --git a/Documentation/power/power_supply_class.txt b/Documentation/power/power_supply_class.txt
-index 01f0075..300d378 100644
---- a/Documentation/power/power_supply_class.txt
-+++ b/Documentation/power/power_supply_class.txt
-@@ -115,28 +115,33 @@ of charge when battery became full/empty". It also could mean "value of
- charge when battery considered full/empty at given conditions (temperature,
- age)". I.e. these attributes represents real thresholds, not design values.
- 
-+ENERGY_FULL, ENERGY_EMPTY - same as above but for energy.
+diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+new file mode 100644
+index 0000000..61d9153
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+@@ -0,0 +1,53 @@
++Battery Characteristics
 +
- CHARGE_COUNTER - the current charge counter (in µAh).  This could easily
- be negative; there is no empty or full value.  It is only useful for
- relative, time-based measurements.
- 
-+PRECHARGE_CURRENT - the maximum charge current during precharge phase
-+of charge cycle (typically 20% of battery capacity).
-+CHARGE_TERM_CURRENT - Charge termination current. The charge cycle
-+terminates when battery voltage is above recharge threshold, and charge
-+current is below this setting (typically 10% of battery capacity).
++The devicetree battery node provides static battery characteristics.
++In smart batteries, these are typically stored in non-volatile memory
++on a fuel gauge chip. The battery node should be used where there is
++no appropriate non-volatile memory, or it is unprogrammed/incorrect.
 +
- CONSTANT_CHARGE_CURRENT - constant charge current programmed by charger.
- CONSTANT_CHARGE_CURRENT_MAX - maximum charge current supported by the
- power supply object.
--INPUT_CURRENT_LIMIT - input current limit programmed by charger. Indicates
--the current drawn from a charging source.
--CHARGE_TERM_CURRENT - Charge termination current used to detect the end of charge
--condition.
--
--CALIBRATE - battery or coulomb counter calibration status
- 
- CONSTANT_CHARGE_VOLTAGE - constant charge voltage programmed by charger.
- CONSTANT_CHARGE_VOLTAGE_MAX - maximum charge voltage supported by the
- power supply object.
- 
-+INPUT_CURRENT_LIMIT - input current limit programmed by charger. Indicates
-+the current drawn from a charging source.
++Upstream dts files should not include battery nodes, unless the battery
++represented cannot easily be replaced in the system by one of a
++different type. This prevents unpredictable, potentially harmful,
++behavior should a replacement that changes the battery type occur
++without a corresponding update to the dtb.
 +
- CHARGE_CONTROL_LIMIT - current charge control limit setting
- CHARGE_CONTROL_LIMIT_MAX - maximum charge control limit setting
- 
--ENERGY_FULL, ENERGY_EMPTY - same as above but for energy.
-+CALIBRATE - battery or coulomb counter calibration status
- 
- CAPACITY - capacity in percents.
- CAPACITY_ALERT_MIN - minimum capacity alert value in percents.
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index bcde8d1..937b03c 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -196,6 +196,7 @@ static struct device_attribute power_supply_attrs[] = {
- 	POWER_SUPPLY_ATTR(time_to_full_avg),
- 	POWER_SUPPLY_ATTR(type),
- 	POWER_SUPPLY_ATTR(scope),
-+	POWER_SUPPLY_ATTR(precharge_current),
- 	POWER_SUPPLY_ATTR(charge_term_current),
- 	POWER_SUPPLY_ATTR(calibrate),
- 	/* Properties of type `const char *' */
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 67f363b..1a83f47 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -146,6 +146,7 @@ enum power_supply_property {
- 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
- 	POWER_SUPPLY_PROP_TYPE, /* use power_supply.type instead */
- 	POWER_SUPPLY_PROP_SCOPE,
-+	POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
- 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
- 	POWER_SUPPLY_PROP_CALIBRATE,
- 	/* Properties of type `const char *' */
-@@ -379,6 +380,8 @@ static inline bool power_supply_is_amp_property(enum power_supply_property psp)
- 	case POWER_SUPPLY_PROP_CHARGE_NOW:
- 	case POWER_SUPPLY_PROP_CHARGE_AVG:
- 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
-+	case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
-+	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
- 	case POWER_SUPPLY_PROP_CURRENT_MAX:
++Required Properties:
++ - compatible: Must be "simple-battery"
++
++Optional Properties:
++ - voltage-min-design-microvolt: drained battery voltage
++ - energy-full-design-microwatt-hours: battery design energy
++ - charge-full-design-microamp-hours: battery design capacity
++ - precharge-current-microamp: current for pre-charge phase
++ - charge-term-current-microamp: current for charge termination phase
++
++Battery properties are named, where possible, for the corresponding
++elements in enum power_supply_property, defined in
++https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/power_supply.h
++
++Batteries must be referenced by chargers and/or fuel-gauges
++using a phandle. The phandle's property should be named
++"monitored-battery".
++
++Example:
++
++	bat: battery {
++		compatible = "simple-battery";
++		voltage-min-design-microvolt = <3200000>;
++		energy-full-design-microwatt-hours = <5290000>;
++		charge-full-design-microamp-hours = <1430000>;
++		precharge-current-microamp = <256000>;
++		charge-term-current-microamp = <128000>;
++	};
++
++	charger: charger@11 {
++		....
++		monitored-battery = <&bat>;
++		...
++	};
++
++	fuel_gauge: fuel-gauge@22 {
++		....
++		monitored-battery = <&bat>;
++		...
++	};
 -- 
 2.9.3
