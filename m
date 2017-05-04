@@ -1,98 +1,52 @@
 From: Shawn Guo <shawnguo@kernel.org>
 Subject: Re: [PATCH] ARM: dts: imx6sx-sdb: Remove cpufreq OPP override
-Date: Thu, 4 May 2017 20:44:48 +0800
-Message-ID: <20170504124446.GO18578@dragon>
-References: <1493141004.3557.8.camel@nxp.com>
- <f3bbd20c-2132-1121-1044-ba00dba302d6@denx.de>
- <20170503135715.GG18578@dragon>
- <76e22a7e-590f-00ee-04f8-87604303eaad@denx.de>
- <1493823533.11226.28.camel@nxp.com>
- <e46a57c2-4a28-a8b6-445e-299dd9d8659c@denx.de>
- <1493834298.11226.40.camel@nxp.com>
- <51fb1bd0-028d-c431-acc8-3c4f1d25fdba@denx.de>
- <1493890943.11226.42.camel@nxp.com>
- <6dbf67a0-42ea-ee84-d144-41422a21c1c5@denx.de>
+Date: Thu, 4 May 2017 20:50:53 +0800
+Message-ID: <20170504125052.GP18578@dragon>
+References: <89cc7192100bdc9ce546bf6000446e629457ebc1.1493138693.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:34472 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:35892 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751023AbdEDMpQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 4 May 2017 08:45:16 -0400
+        id S1750934AbdEDMvU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 4 May 2017 08:51:20 -0400
 Content-Disposition: inline
-In-Reply-To: <6dbf67a0-42ea-ee84-d144-41422a21c1c5@denx.de>
+In-Reply-To: <89cc7192100bdc9ce546bf6000446e629457ebc1.1493138693.git.leonard.crestez@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marek Vasut <marex@denx.de>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, Peter Chen <Peter.Chen@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Fabio Estevam <festevam@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Peter Chen <Peter.Chen@nxp.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
 
-On Thu, May 04, 2017 at 12:06:11PM +0200, Marek Vasut wrote:
-> On 05/04/2017 11:42 AM, Leonard Crestez wrote:
-> > I think there is a further misunderstanding here. I have a problem
-> > where imx6sx-sdb rev C boards crash on boot with upstream (but are
-> > reported to work fine with rev B). Removing the OPP overrides fixes
-> > this specific issue.
-> > 
-> > I don't object to the second part of your patch, setting correct supply links is a good thing for various reasons. It is just not necessary for fixing the concrete crash mentioned above (and I tested this). It should probably go in a separate patch.
+On Tue, Apr 25, 2017 at 07:57:59PM +0300, Leonard Crestez wrote:
+> The board file for imx6sx-dbg overrides cpufreq operating points to use
+
+s/imx6sx-dbg/imx6sx-sdb
+
+> higher voltages. This is done because the board has a shared rail for
+> VDD_ARM_IN and VDD_SOC_IN and when using LDO bypass the shared voltage
+> needs to be a value suitable for both ARM and SOC.
 > 
-> Mind you, my patch is not fixing any crash, it's correcting the
-> regulator binding and removing the OPP override which is at that
-> point useless.
-
-Heh, that's the primary reason why I prefer Leonard's patch, as his
-patch is fixing a critical crash issue, while yours is just removing
-some useless stuff and correcting something that doesn't show any real
-problem.
-
-So Leonard's patch will need to be applied for v4.12-rc and copy stable
-kernel, while yours will only be applied for next merge window as a
-cleanup/improving thing.
-
-Patches are similar, but they can be handled very differently, because
-commit log tells completely different stories.  Do you see how commit
-log matters now?
-
-> > It might seem a pedantic difference but it's good to accurately describe the effect of patches in commit messages. For example it might help somebody looking to backport various fixes.
-
-@Leonard, no, it's not pedantic at all.  I really appreciate your commit
-message and all the comments you added in the discussion, which is
-extremely helpful for us to understand the changes.
-
-> Which part of the following commit message is unclear?
+> This was introduced in:
 > 
-> "
-> The imx6sx-sdb has one power supply that drives both VDDARM_IN
-> and VDDSOC_IN, which is the sw1a regulator on the PFUZE PMIC.
-> Connect both inputs to the sw1a regulator on the PMIC and drop
-> the OPP hackery which is no longer needed as the power framework
-> will take care of the regulator configuration as needed.
-> "
+> commit 54183bd7f766 ("ARM: imx6sx-sdb: add revb board and make it default")
+> 
+> This only only applies to LDO bypass mode, a feature not present in
 
-Something unclear in my opinion:
+s/only only/only
 
- - The OPP hackery was never needed, as it's only needed for LDO bypass
-   mode which hasn't been supported by mainline kernel.  It's not 'no
-   longer needed as the power framework ...'.
+> upstream. When LDOs are enabled the effect is to use higher voltages than
+> necesarry for no good reason.
+> 
+> Setting these higher voltages can make some boards fail to boot with ugly
 
- - What are the related changes in power framework?  It will be more
-   clear if we can have the particular commit mentioned here.
+Please make it clear it's RevC board.
 
-> btw if sending obvious bugfix upstream is met with this sort of
+> semi-random crashes, reminiscent of memory corruption. These failures
+> happen the first time the lowest idle state is used. Remove the OPP
+> override in order to fix those crashes.
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 
-Leonard's patch is an obvious bugfix, but yours is not.
-
-> resistance and pointless discussion, it is extremely demotivating.
-
-As I said to Leonard above, the discussion is extremely helpful, IMO.
-
-> Waiting for a maintainer reply for 2-4 weeks, only to get a kurt
-
-This is not a paid job for maintainer.  It's expected that he doesn't
-always reply in a timely manner, especially when the tree is kinda
-'frozen' for merge window.
-
-> reply like "I don't like the commit message" doesn't help either.
-
-What really annoys me is your attitude to commit message.
+Please add tags for Fixes and Cc stable.
 
 Shawn
