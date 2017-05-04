@@ -1,42 +1,43 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH 0/9] Drop unnecessary static
-Date: Thu,  4 May 2017 22:10:45 +0200
-Message-ID: <1493928654-18768-1-git-send-email-Julia.Lawall@lip6.fr>
+From: "HILL APEX" <hillapex@maliksaad.com>
+Subject: Re: Gym bag
+Date: Thu, 4 May 2017 13:44:32 +0500
+Message-ID: <30843742014002788531537@Dell>
+Reply-To: hill.apex.1@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mtd-bounces+gldm-linux-mtd-36=gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mtd>,
- <mailto:linux-mtd-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mtd/>
-List-Post: <mailto:linux-mtd@lists.infradead.org>
-List-Help: <mailto:linux-mtd-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mtd>,
- <mailto:linux-mtd-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-mtd" <linux-mtd-bounces@lists.infradead.org>
-Errors-To: linux-mtd-bounces+gldm-linux-mtd-36=gmane.org@lists.infradead.org
-To: linux-pm@vger.kernel.org
-Cc: Lars-Peter Clausen <lars@metafoo.de>, keescook@chromium.org, linux-iio@vger.kernel.org, linux-input@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Hartmut Knaack <knaack.h@gmx.de>, linux-omap@vger.kernel.org, drbd-dev@lists.linbit.com
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from server.maliksaad.com ([67.211.220.27]:55690 "EHLO server"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751119AbdEDVEs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 4 May 2017 17:04:48 -0400
+Received: from [182.181.76.220] (port=52558 helo=DellHome)
+        by server with esmtpsa (TLSv1:DHE-RSA-AES256-SHA:256)
+        (Exim 4.89)
+        (envelope-from <hillapex@maliksaad.com>)
+        id 1d6CNK-0000l4-CF
+        for linux-pm@vger.kernel.org; Thu, 04 May 2017 08:44:38 +0000
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-These patches fix cases where there is a static on a local variable, but
-the variable is either first initialized or never used, on every possible
-execution path through the function.  The static has no benefit, and
-dropping it reduces the code size.
+Hello,
 
----
+We are largest manufacture of sports bag, gym bag, drawstring bag, backpack=
+ making high quality from many years with technical experience.
 
- drivers/block/drbd/drbd_nl.c            |    2 +-
- drivers/clocksource/timer-fttmr010.c    |    2 +-
- drivers/iio/accel/hid-sensor-accel-3d.c |    2 +-
- drivers/mfd/max8925-i2c.c               |    2 +-
- drivers/mfd/twl4030-irq.c               |    2 +-
- drivers/mtd/chips/cfi_cmdset_0020.c     |    2 +-
- drivers/mtd/maps/physmap_of_gemini.c    |    2 +-
- drivers/power/supply/axp20x_usb_power.c |    2 +-
- drivers/regulator/palmas-regulator.c    |    2 +-
- 9 files changed, 9 insertions(+), 9 deletions(-)
+If you are interested to see catalogs then visit google drive link below, i=
+f you are feeling insecure to click on the link then email us we can send y=
+ou catalog in attachment just reply to this email.
+https://drive.google.com/open=3Fid=3D0B2Irq8jgFbzoVGFCUkdObXBmbEE
 
-______________________________________________________
-Linux MTD discussion mailing list
-http://lists.infradead.org/mailman/listinfo/linux-mtd/
+Awaiting your reply.
+
+Best Regards,
+Saad Afzal
+
+HILL APEX
+Contact:     0092-3007101027
+Whatsapp: 0092-3007101027
+Email:         hill.apex.1@gmail.com
+Skype:       hill.apex
