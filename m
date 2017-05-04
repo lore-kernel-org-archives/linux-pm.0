@@ -1,20 +1,23 @@
 From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 3/4] power: supply: cpcap-charger: Fix enable for 3.8V charge setting
-Date: Wed,  3 May 2017 17:15:31 -0700
-Message-ID: <20170504001532.10585-4-tony@atomide.com>
+Subject: [PATCH 4/4] power: supply: cpcap-charger: Keep trickle charger bits disabled
+Date: Wed,  3 May 2017 17:15:32 -0700
+Message-ID: <20170504001532.10585-5-tony@atomide.com>
 References: <20170504001532.10585-1-tony@atomide.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:46006 "EHLO muru.com"
+Received: from muru.com ([72.249.23.125]:46018 "EHLO muru.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753038AbdEDAPq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 May 2017 20:15:46 -0400
+        id S1753066AbdEDAPr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 May 2017 20:15:47 -0400
 In-Reply-To: <20170504001532.10585-1-tony@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
 
-Zero is a valid register value for for 3.8V charging.
+Android does not seem to set the trickle charger bits, and these
+seem to be only used by the bootloader when bringing up a
+completely discharged battery. So let's keep the trickle charging
+bits disabled and avoid misconfiguring the hardware.
 
 Fixes: 0c9888e3c192 ("power: supply: cpcap-charger: Add minimal
 CPCAP PMIC battery charger")
@@ -22,20 +25,21 @@ Cc: Marcel Partap <mpartap@gmx.net>
 Cc: Michael Scott <michael.scott@linaro.org>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- drivers/power/supply/cpcap-charger.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/supply/cpcap-charger.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/cpcap-charger.c
 --- a/drivers/power/supply/cpcap-charger.c
 +++ b/drivers/power/supply/cpcap-charger.c
-@@ -262,7 +262,7 @@ static int cpcap_charger_set_state(struct cpcap_charger_ddata *ddata,
- 	bool enable;
- 	int error;
+@@ -470,8 +470,7 @@ static void cpcap_usb_detect(struct work_struct *work)
  
--	enable = max_voltage && (charge_current || trickle_current);
-+	enable = (charge_current || trickle_current);
- 	dev_dbg(ddata->dev, "%s enable: %i\n", __func__, enable);
- 
- 	if (!enable) {
+ 		error = cpcap_charger_set_state(ddata,
+ 						CPCAP_REG_CRM_VCHRG_4V35,
+-						max_current,
+-						CPCAP_REG_CRM_TR_0A72);
++						max_current, 0);
+ 		if (error)
+ 			goto out_err;
+ 	} else {
 -- 
 2.12.2
