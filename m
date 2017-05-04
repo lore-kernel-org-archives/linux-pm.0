@@ -1,76 +1,97 @@
 From: Lukasz Luba <lukasz.luba@arm.com>
-Subject: [PATCH v3 0/3] devfreq_cooling: let the driver supply the
-Date: Thu,  4 May 2017 12:34:30 +0100
-Message-ID: <1493897673-1826-1-git-send-email-lukasz.luba@arm.com>
+Subject: [PATCH v3 1/3] thermal: devfreq_cooling: refactor code and add get_voltage function
+Date: Thu,  4 May 2017 12:34:31 +0100
+Message-ID: <1493897673-1826-2-git-send-email-lukasz.luba@arm.com>
+References: <1493897673-1826-1-git-send-email-lukasz.luba@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:38472 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:38490 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751272AbdEDLe7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 4 May 2017 07:34:59 -0400
+        id S1751272AbdEDLfC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 4 May 2017 07:35:02 -0400
+In-Reply-To: <1493897673-1826-1-git-send-email-lukasz.luba@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: rui.zhang@intel.com, edubezval@gmail.com, javi.merino@kernel.org, chris.diamand@arm.com, lukasz.luba@arm.com
 
-Hi,
+Move the code which gets the voltage for a given frequency.
+This code will be resused in few places.
 
-This patchset introduces a new interface for devfreq cooling in thermal
-framework. The first version of the patch can be seen here [1], second [2].
-I have simplified the implementation and introduced resource utilization
-scaling factor.
+Acked-by: Javi Merino <javi.merino@kernel.org>
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+ drivers/thermal/devfreq_cooling.c | 45 ++++++++++++++++++++++++---------------
+ 1 file changed, 28 insertions(+), 17 deletions(-)
 
-The current implementation in the thermal devfreq cooling subsystem uses
-pre-calculated power table for each device to make a decision about allowed
-running state. When the driver registers itself to the thermal devfreq cooling
-subsystem, the framework creates the power table.
-The power table is then used by the thermal subsystem to keep
-the device in the thermal envelope.
-In the previous implementation the pre-calculated device's power
-table was scaled by current 'utilization'
-('busy_time' and 'total_time' taken from devfreq 'last_status').
-
-This idea meets the expectations of the devices which know better the actual
-power that they consume (thanks to power counters). When some
-parts/features of the device are not used the power value might be lower,
-while the frequency and utilization are the same.
-
-The proposed implementation provides possibility to register a driver to
-thermal devfreq cooling subsystem and use the driver's code during the
-calculation of the power in runtime.
-
-The device driver can still use pre-calculated power table when these new
-functions are not provided (the new extension can co-exist with old
-implementation).
-
-The first patch contains some refactoring for getting the voltage,
-the second implements the new feature, the third one changes trace function.
-Patchset is based on v4.11-rc8.
-
-
-Changes
-v3:
-- refactor OPP code to fit into new dev_pm_opp API
-v2: 
-- removed 'flags' and power2state function,
-- split into a few patches,
-- simplified the logic of the new interface,
-- added resource utilization scaling factor,
-
-Regards,
-Lukasz Luba
-
-[1] https://marc.info/?l=linux-pm&m=147395070729989&w=2
-[2] http://marc.info/?l=linux-pm&m=148587920122854&w=2
-
-Lukasz Luba (3):
-  thermal: devfreq_cooling: refactor code and add get_voltage function
-  thermal: devfreq_cooling: add new interface for direct power read
-  trace: thermal: add another parameter 'power' to the tracing function
-
- drivers/thermal/devfreq_cooling.c | 152 ++++++++++++++++++++++++++++----------
- include/linux/devfreq_cooling.h   |  19 +++++
- include/trace/events/thermal.h    |  11 ++-
- 3 files changed, 137 insertions(+), 45 deletions(-)
-
+diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+index 4bf4ad5..af9d328 100644
+--- a/drivers/thermal/devfreq_cooling.c
++++ b/drivers/thermal/devfreq_cooling.c
+@@ -164,27 +164,12 @@ static int devfreq_cooling_set_cur_state(struct thermal_cooling_device *cdev,
+ 	return THERMAL_CSTATE_INVALID;
+ }
+ 
+-/**
+- * get_static_power() - calculate the static power
+- * @dfc:	Pointer to devfreq cooling device
+- * @freq:	Frequency in Hz
+- *
+- * Calculate the static power in milliwatts using the supplied
+- * get_static_power().  The current voltage is calculated using the
+- * OPP library.  If no get_static_power() was supplied, assume the
+- * static power is negligible.
+- */
+-static unsigned long
+-get_static_power(struct devfreq_cooling_device *dfc, unsigned long freq)
++static unsigned long get_voltage(struct devfreq *df, unsigned long freq)
+ {
+-	struct devfreq *df = dfc->devfreq;
+ 	struct device *dev = df->dev.parent;
+ 	unsigned long voltage;
+ 	struct dev_pm_opp *opp;
+ 
+-	if (!dfc->power_ops->get_static_power)
+-		return 0;
+-
+ 	opp = dev_pm_opp_find_freq_exact(dev, freq, true);
+ 	if (PTR_ERR(opp) == -ERANGE)
+ 		opp = dev_pm_opp_find_freq_exact(dev, freq, false);
+@@ -202,9 +187,35 @@ static int devfreq_cooling_set_cur_state(struct thermal_cooling_device *cdev,
+ 		dev_err_ratelimited(dev,
+ 				    "Failed to get voltage for frequency %lu\n",
+ 				    freq);
+-		return 0;
+ 	}
+ 
++	return voltage;
++}
++
++/**
++ * get_static_power() - calculate the static power
++ * @dfc:	Pointer to devfreq cooling device
++ * @freq:	Frequency in Hz
++ *
++ * Calculate the static power in milliwatts using the supplied
++ * get_static_power().  The current voltage is calculated using the
++ * OPP library.  If no get_static_power() was supplied, assume the
++ * static power is negligible.
++ */
++static unsigned long
++get_static_power(struct devfreq_cooling_device *dfc, unsigned long freq)
++{
++	struct devfreq *df = dfc->devfreq;
++	unsigned long voltage;
++
++	if (!dfc->power_ops->get_static_power)
++		return 0;
++
++	voltage = get_voltage(df, freq);
++
++	if (voltage == 0)
++		return 0;
++
+ 	return dfc->power_ops->get_static_power(df, voltage);
+ }
+ 
 -- 
 1.9.1
