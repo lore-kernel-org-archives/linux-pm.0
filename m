@@ -1,45 +1,40 @@
 From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 4/4] power: supply: cpcap-charger: Keep trickle charger bits disabled
-Date: Wed,  3 May 2017 17:15:32 -0700
-Message-ID: <20170504001532.10585-5-tony@atomide.com>
-References: <20170504001532.10585-1-tony@atomide.com>
+Subject: [PATCH 0/2] Two non-critical cpcap charger fixes
+Date: Wed,  3 May 2017 17:26:12 -0700
+Message-ID: <20170504002614.11198-1-tony@atomide.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:46018 "EHLO muru.com"
+Received: from muru.com ([72.249.23.125]:46042 "EHLO muru.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753066AbdEDAPr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 May 2017 20:15:47 -0400
-In-Reply-To: <20170504001532.10585-1-tony@atomide.com>
+        id S1751797AbdEDA0T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 May 2017 20:26:19 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-Android does not seem to set the trickle charger bits, and these
-seem to be only used by the bootloader when bringing up a
-completely discharged battery. So let's keep the trickle charging
-bits disabled and avoid misconfiguring the hardware.
+Hi,
 
-Fixes: 0c9888e3c192 ("power: supply: cpcap-charger: Add minimal
-CPCAP PMIC battery charger")
-Cc: Marcel Partap <mpartap@gmx.net>
-Cc: Michael Scott <michael.scott@linaro.org>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- drivers/power/supply/cpcap-charger.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Here's few more cpcap charger fixes based on newly discovered
+documentation for similar hardware for NXP MC13783 PMIC in
+MC13783UG.pdf. And with the ADC and charger values now making
+sense, let's fix the charge voltage table too based on the ADC
+values.
 
-diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/cpcap-charger.c
---- a/drivers/power/supply/cpcap-charger.c
-+++ b/drivers/power/supply/cpcap-charger.c
-@@ -470,8 +470,7 @@ static void cpcap_usb_detect(struct work_struct *work)
- 
- 		error = cpcap_charger_set_state(ddata,
- 						CPCAP_REG_CRM_VCHRG_4V35,
--						max_current,
--						CPCAP_REG_CRM_TR_0A72);
-+						max_current, 0);
- 		if (error)
- 			goto out_err;
- 	} else {
+This set depends on the "[PATCH 0/4] Few cpcap charger fixes for
+v4.12-rc cycle" set of patches.
+
+Regards,
+
+Tony
+
+
+Tony Lindgren (2):
+  power: supply: cpcap-charger: Update charge current table and add
+    comments
+  power: supply: cpcap-charger: Fix charger voltages based on ADC values
+
+ drivers/power/supply/cpcap-charger.c | 83 +++++++++++++++++++++---------------
+ 1 file changed, 49 insertions(+), 34 deletions(-)
+
 -- 
 2.12.2
