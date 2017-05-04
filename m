@@ -1,68 +1,161 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 2/2] power: supply: cpcap-charger: Fix charger voltages based on ADC values
-Date: Wed,  3 May 2017 17:26:14 -0700
-Message-ID: <20170504002614.11198-3-tony@atomide.com>
-References: <20170504002614.11198-1-tony@atomide.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v13 0/11] devicetree simple-battery and client in bq27xxx_battery
+Date: Wed,  3 May 2017 23:18:00 -0700
+Message-ID: <20170504061811.18107-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:46058 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752171AbdEDA0V (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 May 2017 20:26:21 -0400
-In-Reply-To: <20170504002614.11198-1-tony@atomide.com>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:33554 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751195AbdEDGSK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 May 2017 02:18:10 -0400
+Received: by mail-pf0-f194.google.com with SMTP id b23so804253pfc.0
+        for <linux-pm@vger.kernel.org>; Wed, 03 May 2017 23:18:09 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
+To: Sebastian Reichel <sre@kernel.org>, "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
 
-With the ADC driver working, we can now fix the voltage table based on
-the values read from the ADC.
+Overview:
+* new devicetree battery node specifies static battery data
+* fuel gauge and charger nodes shall use monitored-battery=<&battery_node>
+* new power_supply_get_battery_info() reads battery data from devicetree
+* new struct power_supply_battery_info provides battery data to drivers
+* drivers surface battery data in sysfs via related power_supply_prop_* fields
+* bq27xxx driver calls the above and writes battery data to RAM/NVM for params
+  essential to correct operation: energy-full-design-microwatt-hours,
+  charge-full-design-microamp-hours, voltage-min-design-microvolt
 
-Note that unlike the ICHRG registers, the VCHRG register bits don't
-match the MC13783UG.pdf.
+Changes in v13:
+  Doc...bindings/power/supply/*
+*   add fields in battery.txt, see below
+*   caution about changing battery type in battery.txt
+*   note: Rob acked v11 battery.txt containing URL to Linux header
+*   more detail in bq27xxx.txt
+  power_supply_core:
+*   add battery_info fields precharge-current-microamp & charge-term-current-microamp
+*   new patch for power_supply_prop_precharge_current
+  bq27xxx_battery:
+*   add copyright notice
+*   for flash/NVM chips, emit warning instead of doing update
+*   config_battery_bq27xxx_dt_updates_nvm enables update of flash/NVM
+*   module param dt_monitored_battery_updates_nvm lets user disallow update
+*   new patch to flag dupes in bq27xxx_regs[]
+*   drop patch to clean up error reporting
+*   polishing from Andrew's feedback
+*   resolve checkpatch errors
+*   refactor patchset
+*   fix missing static keyword flagged by Colin
 
-Cc: Marcel Partap <mpartap@gmx.net>
-Cc: Michael Scott <michael.scott@linaro.org>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- drivers/power/supply/cpcap-charger.c | 24 ++++++++++++++----------
- 1 file changed, 14 insertions(+), 10 deletions(-)
+Changes in v12: (several partial series posts; see above)
 
-diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/cpcap-charger.c
---- a/drivers/power/supply/cpcap-charger.c
-+++ b/drivers/power/supply/cpcap-charger.c
-@@ -70,19 +70,23 @@
- #define CPCAP_REG_CRM_TR_0A48		CPCAP_REG_CRM_TR(0x2)
- #define CPCAP_REG_CRM_TR_0A72		CPCAP_REG_CRM_TR(0x4)
- 
--/* CPCAP_REG_CRM charge voltages */
-+/*
-+ * CPCAP_REG_CRM charge voltages based on the ADC channel 1 values.
-+ * Note that these register bits don't match MC13783UG.pdf VCHRG
-+ * register bits.
-+ */
- #define CPCAP_REG_CRM_VCHRG(val)	(((val) & 0xf) << 4)
- #define CPCAP_REG_CRM_VCHRG_3V80	CPCAP_REG_CRM_VCHRG(0x0)
- #define CPCAP_REG_CRM_VCHRG_4V10	CPCAP_REG_CRM_VCHRG(0x1)
--#define CPCAP_REG_CRM_VCHRG_4V15	CPCAP_REG_CRM_VCHRG(0x2)
--#define CPCAP_REG_CRM_VCHRG_4V20	CPCAP_REG_CRM_VCHRG(0x3)
--#define CPCAP_REG_CRM_VCHRG_4V22	CPCAP_REG_CRM_VCHRG(0x4)
--#define CPCAP_REG_CRM_VCHRG_4V24	CPCAP_REG_CRM_VCHRG(0x5)
--#define CPCAP_REG_CRM_VCHRG_4V26	CPCAP_REG_CRM_VCHRG(0x6)
--#define CPCAP_REG_CRM_VCHRG_4V28	CPCAP_REG_CRM_VCHRG(0x7)
--#define CPCAP_REG_CRM_VCHRG_4V30	CPCAP_REG_CRM_VCHRG(0x8)
--#define CPCAP_REG_CRM_VCHRG_4V32	CPCAP_REG_CRM_VCHRG(0x9)
--#define CPCAP_REG_CRM_VCHRG_4V34	CPCAP_REG_CRM_VCHRG(0xa)
-+#define CPCAP_REG_CRM_VCHRG_4V12	CPCAP_REG_CRM_VCHRG(0x2)
-+#define CPCAP_REG_CRM_VCHRG_4V15	CPCAP_REG_CRM_VCHRG(0x3)
-+#define CPCAP_REG_CRM_VCHRG_4V17	CPCAP_REG_CRM_VCHRG(0x4)
-+#define CPCAP_REG_CRM_VCHRG_4V20	CPCAP_REG_CRM_VCHRG(0x5)
-+#define CPCAP_REG_CRM_VCHRG_4V23	CPCAP_REG_CRM_VCHRG(0x6)
-+#define CPCAP_REG_CRM_VCHRG_4V25	CPCAP_REG_CRM_VCHRG(0x7)
-+#define CPCAP_REG_CRM_VCHRG_4V27	CPCAP_REG_CRM_VCHRG(0x8)
-+#define CPCAP_REG_CRM_VCHRG_4V30	CPCAP_REG_CRM_VCHRG(0x9)
-+#define CPCAP_REG_CRM_VCHRG_4V33	CPCAP_REG_CRM_VCHRG(0xa)
- #define CPCAP_REG_CRM_VCHRG_4V35	CPCAP_REG_CRM_VCHRG(0xb)
- #define CPCAP_REG_CRM_VCHRG_4V38	CPCAP_REG_CRM_VCHRG(0xc)
- #define CPCAP_REG_CRM_VCHRG_4V40	CPCAP_REG_CRM_VCHRG(0xd)
+Changes in v11:
+  power_supply_core:
+*   switch to compatible = "simple-battery"
+*   add docs to power_supply_class.txt
+  Documentation/devicetree/.../battery.txt:
+*   add description, drop refs to Linux, "simple-battery"
+  bq27xxx_battery:
+*   reset flash chips after DM update
+*   add bq27xxx_write/xfer()
+*   polishing from Andrew's feedback
+*   new patch to clean up error reporting
+*   new patch to consolidate duplicate register/property arrays
+
+Changes in v10:
+  bq27xxx_battery:
+*   pass actual chip ID into _setup()
+*   add di->unseal_key & di->dm_regs; drop static arrays
+*   support bq27425, 441, 621
+
+Changes in v9:
+  bq27xxx_battery:
+*   fix set_cfgupdate()
+*   support bq27500, 545, 421; defer others
+*   drop print_dm_blocks() patch
+*   minor polishing
+  Documentation/devicetree/.../battery.txt:
+*   describe rationale for enum power_supply_property names
+
+Changes in v8:
+  bq27xxx_battery:
+*   wait on flag after set_cfgupdate & soft_reset
+*   drop print_config(), report status in update_dm_block()
+*   clarify error messages
+*   cleanup from Andrew's feedback; minor polishing
+
+Changes in v7:
+  bq27xxx_battery:
+*   support chips where terminate_voltage & design_* live in separate blocks
+*   draft support for 421, 441, 621 chips
+*   new patch to log chip memory fields
+*   report bus I/O errors; return error code in bq27xxx_battery_i2c
+*   verify checksum in read_dm_block()
+*   use set_cfgupdate only if chip provides it, soft_reset on I/O error
+*   block_data_control=0 only in write_dm_block()
+*   note toxic code from TI bqtool in write_dm_block()
+*   lots of functionally neutral polishing
+  Documentation/devicetree/.../battery.txt:
+*   mention power_supply_get_battery_info()
+
+Changes in v6:
+* Documentation/devictree/... fixes
+* bq27xxx_battery: clarify names
+* bq27xxx_battery: verify that selected registers are supported
+* bq27xxx_battery: allocate NVM buffer on stack
+* bq27xxx_battery_i2c: fix return code of bulk_read
+
+Changes in v5:
+* incorporate feedback into Documentation/devicetree/.../battery.txt
+* use power_supply_prop_* names in devicetree and power_supply_battery_info
+* default fields to -EINVAL in power_supply_battery_info
+* power_supply_get_battery_info() always looks for "monitored-battery"
+* power_supply_get_battery_info() emits a warning if !psy->of_node
+* squash patches for power_supply_battery_info
+* bq27xxx_battery: check power_supply_battery_info values
+* bq27xxx_battery: note missing power_supply_prop_* features
+* bq27xxx_battery: new patch for access methods
+
+Changes in v4:
+* add "fixed-battery" compatible field to be be more consistant with devicetree
+
+Changes in v3:
+* split i2c changes into respective patches
+* add documentation for battery information for fuel gauge
+* rebased documentation patches on change on the list
+* abstracted the battery configuration for the state machine
+  to an generic struct and platform data access function
+
+Changes in v2:
+* add documentation for uWh and uAh property units
+* change devicetree entries to match new property units
+
+
+Liam Breck (9):
+  dt-bindings: power: supply: Add battery.txt with simple-battery binding
+  power: supply: core: Add power_supply_battery_info and API
+  power: supply: core: Add power_supply_prop_precharge
+  dt-bindings: power: supply: bq27xxx: Add monitored-battery documentation
+  power: supply: bq27xxx_battery: Add chip data memory read/write support
+  power: supply: bq27xxx_battery: Add power_supply_battery_info support
+  power: supply: bq27xxx_battery: Enable data memory update for certain chips
+  power: supply: bq27xxx_battery: Flag identical register maps when in debug mode
+  power: supply: bq27xxx_battery: Remove duplicate register arrays
+
+Matt Ranostay (2):
+  devicetree: property-units: Add uWh and uAh units
+  power: supply: bq27xxx_battery: Add bulk transfer bus methods
+
+ .../devicetree/bindings/power/supply/battery.txt   |  53 ++
+ .../devicetree/bindings/power/supply/bq27xxx.txt   |  31 +-
+ .../devicetree/bindings/property-units.txt         |   2 +
+ Documentation/power/power_supply_class.txt         |  31 +-
+ drivers/power/supply/Kconfig                       |   9 +
+ drivers/power/supply/bq27xxx_battery.c             | 750 +++++++++++++++++----
+ drivers/power/supply/bq27xxx_battery_i2c.c         |  98 ++-
+ drivers/power/supply/power_supply_core.c           |  51 ++
+ drivers/power/supply/power_supply_sysfs.c          |   1 +
+ include/linux/power/bq27xxx_battery.h              |  29 +-
+ include/linux/power_supply.h                       |  23 +
+ 11 files changed, 920 insertions(+), 158 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+
 -- 
-2.12.2
+2.9.3
