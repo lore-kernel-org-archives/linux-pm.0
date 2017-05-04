@@ -1,92 +1,49 @@
-From: Lukasz Luba <lukasz.luba@arm.com>
-Subject: [PATCH v3 3/3] trace: thermal: add another parameter 'power' to the tracing function
-Date: Thu,  4 May 2017 12:34:33 +0100
-Message-ID: <1493897673-1826-4-git-send-email-lukasz.luba@arm.com>
-References: <1493897673-1826-1-git-send-email-lukasz.luba@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:38516 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752027AbdEDLfG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 4 May 2017 07:35:06 -0400
-In-Reply-To: <1493897673-1826-1-git-send-email-lukasz.luba@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH] ARM: dts: imx6sx-sdb: Remove cpufreq OPP override
+Date: Thu, 4 May 2017 19:43:45 +0800
+Message-ID: <20170504114343.GN18578@dragon>
+References: <89cc7192100bdc9ce546bf6000446e629457ebc1.1493138693.git.leonard.crestez@nxp.com>
+ <HE1PR04MB1450DA079FC35180FBE305388B100@HE1PR04MB1450.eurprd04.prod.outlook.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <HE1PR04MB1450DA079FC35180FBE305388B100@HE1PR04MB1450.eurprd04.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Chen <peter.chen@nxp.com>
+Cc: Leonard Crestez <leonard.crestez@nxp.com>, Sascha Hauer <kernel@pengutronix.de>, Anson Huang <anson.huang@nxp.com>, Robin Gong <yibin.gong@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rui.zhang@intel.com, edubezval@gmail.com, javi.merino@kernel.org, chris.diamand@arm.com, lukasz.luba@arm.com, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
 
-This patch adds another parameter to the trace function:
-trace_thermal_power_devfreq_get_power().
+On Thu, Apr 27, 2017 at 01:17:12AM +0000, Peter Chen wrote:
+>  
+> >
+> >The board file for imx6sx-dbg overrides cpufreq operating points to use higher
+> >voltages. This is done because the board has a shared rail for VDD_ARM_IN and
+> >VDD_SOC_IN and when using LDO bypass the shared voltage needs to be a value
+> >suitable for both ARM and SOC.
+> >
+> >This was introduced in:
+> >
+> >commit 54183bd7f766 ("ARM: imx6sx-sdb: add revb board and make it default")
+> >
+> >This only only applies to LDO bypass mode, a feature not present in upstream. When
+> >LDOs are enabled the effect is to use higher voltages than necesarry for no good
+> >reason.
+> >
+> >Setting these higher voltages can make some boards fail to boot with ugly semi-
+> >random crashes, reminiscent of memory corruption. These failures happen the first
+> >time the lowest idle state is used. Remove the OPP override in order to fix those
+> >crashes.
+> >
+> 
+> Add Anson and Robin
+> 
+> This code has existed more than 2 years, it is strange why the bug has not reported both
+> for internal user and external user. I run upstream kernel using imx6sx-sdb revB very often
+> at recent years, but not meet this issue. How to trigger this unstable issue, anything needs
+> to change at u-boot?
 
-In case when we call directly driver's code for the real power,
-we do not have static/dynamic_power values. Instead we get total
-power in the '*power' value. The 'static_power' and
-'dynamic_power' are set to 0.
+Per comments from Henri and Leonard, it sounds like the issue only
+happens on RevC board?
 
-Therefore, we have to trace that '*power' value in this scenario.
-
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: Zhang Rui <rui.zhang@intel.com>
-CC: Eduardo Valentin <edubezval@gmail.com>
-Acked-by: Javi Merino <javi.merino@kernel.org>
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
----
- drivers/thermal/devfreq_cooling.c |  2 +-
- include/trace/events/thermal.h    | 11 +++++++----
- 2 files changed, 8 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index 26c3157..ef59256 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -321,7 +321,7 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
- 	}
- 
- 	trace_thermal_power_devfreq_get_power(cdev, status, freq, dyn_power,
--					      static_power);
-+					      static_power, *power);
- 
- 	return 0;
- fail:
-diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
-index 2b4a8ff..6cde5b3 100644
---- a/include/trace/events/thermal.h
-+++ b/include/trace/events/thermal.h
-@@ -151,9 +151,9 @@
- TRACE_EVENT(thermal_power_devfreq_get_power,
- 	TP_PROTO(struct thermal_cooling_device *cdev,
- 		 struct devfreq_dev_status *status, unsigned long freq,
--		u32 dynamic_power, u32 static_power),
-+		u32 dynamic_power, u32 static_power, u32 power),
- 
--	TP_ARGS(cdev, status,  freq, dynamic_power, static_power),
-+	TP_ARGS(cdev, status,  freq, dynamic_power, static_power, power),
- 
- 	TP_STRUCT__entry(
- 		__string(type,         cdev->type    )
-@@ -161,6 +161,7 @@
- 		__field(u32,           load          )
- 		__field(u32,           dynamic_power )
- 		__field(u32,           static_power  )
-+		__field(u32,           power)
- 	),
- 
- 	TP_fast_assign(
-@@ -169,11 +170,13 @@
- 		__entry->load = (100 * status->busy_time) / status->total_time;
- 		__entry->dynamic_power = dynamic_power;
- 		__entry->static_power = static_power;
-+		__entry->power = power;
- 	),
- 
--	TP_printk("type=%s freq=%lu load=%u dynamic_power=%u static_power=%u",
-+	TP_printk("type=%s freq=%lu load=%u dynamic_power=%u static_power=%u power=%u",
- 		__get_str(type), __entry->freq,
--		__entry->load, __entry->dynamic_power, __entry->static_power)
-+		__entry->load, __entry->dynamic_power, __entry->static_power,
-+		__entry->power)
- );
- 
- TRACE_EVENT(thermal_power_devfreq_limit,
--- 
-1.9.1
+Shawn
