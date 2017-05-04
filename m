@@ -1,64 +1,62 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v6 8/8] power: supply: sbs-manager: Add alert callback
- and battery change notification
-Date: Thu, 4 May 2017 17:21:50 +0200
-Message-ID: <20170504152150.4rvnaeyspsstnxoy@earth>
-References: <1493716346-58517-1-git-send-email-preid@electromag.com.au>
- <1493716346-58517-9-git-send-email-preid@electromag.com.au>
+Subject: Re: [PATCH] power: supply: twl4030-charger: make
+ twl4030_bci_property_is_writeable static
+Date: Thu, 4 May 2017 17:22:48 +0200
+Message-ID: <20170504152248.opqdp4jcizlk2zn4@earth>
+References: <20170503103357.22598-1-colin.king@canonical.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ixpmlwhfzdps7eju"
+        protocol="application/pgp-signature"; boundary="vv7dv6b5v5dmyh5f"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:37164 "EHLO
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:37165 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754264AbdEDPWF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 May 2017 11:22:05 -0400
+        with ESMTP id S1751184AbdEDPWx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 May 2017 11:22:53 -0400
 Content-Disposition: inline
-In-Reply-To: <1493716346-58517-9-git-send-email-preid@electromag.com.au>
+In-Reply-To: <20170503103357.22598-1-colin.king@canonical.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, benjamin.tissoires@redhat.com
+To: Colin King <colin.king@canonical.com>
+Cc: "H . Nikolaus Schaller" <hns@goldelico.com>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---ixpmlwhfzdps7eju
+--vv7dv6b5v5dmyh5f
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, May 02, 2017 at 05:12:26PM +0800, Phil Reid wrote:
-> This adds smb alert support via the smbus_alert driver to generate
-> power_supply_changed notifications when either external power is
-> removed / applied or a battery inserted / removed.
-> Use the i2c alert callback to notify the attached battery driver that a
-> change has occurred.
+On Wed, May 03, 2017 at 11:33:57AM +0100, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
 >=20
-> Signed-off-by: Phil Reid <preid@electromag.com.au>
+> The function twl4030_bci_property_is_writeable can be made static
+> as it does not need to be in global scope.
+>=20
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Thanks, queued.
 
 -- Sebastian
 
---ixpmlwhfzdps7eju
+--vv7dv6b5v5dmyh5f
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkLRw4ACgkQ2O7X88g7
-+prt1g/7BcRw5CZlLwoucXEfQrMPFsCS3MMWppbI58FQodB3/IAr23McyRcADNkG
-FpFfflMQYw2WeJ3ZSCPBEVQXl4rEYC+XSJy8s132xY1U1RhSPwIye6wtoMGXLuxc
-vqdwMhduN7U032FLbI+F6EeJGrTtvdjjGskYfmLpWgidu/5OHEtW5CBk9Vgtx38N
-NR4bXPsazvUzoCLwWCwku+7aNHhIIuwlU4bJCvl0iyCZhMwqze9zfBZNaFM5Kzkg
-QpCI8oMoi5o9/DUGAcCRSA8jS2eZHhSTKAB/DJjEYuOAXTstcYEanjeBGsmNbqyv
-LKWfTitweTBABaguyVmjvQPsqExc/hljU3vPBIKZ0YMNsicQyMaGAlirQ4hywi0M
-h76rjOpLtqi0Wu2BqhnMO0DnUC5Sexjr0i8lFogYiRiubV2uwZoTyErp9qE69kn5
-HKQsgC1MpgN47Mtz/QRgB8cOoG5Yn7pBAvxJ1m9SSLiKW5/dbqwkyzK63VRjRuAU
-tC3f5XPIoD2bPoPYk3J9ExMb26WSXCv3YExyRcE2V1zXwgvYxuHxz8IF+T89uR9F
-/fxLJ53kRomeOZpb2kcY3X66e675rPxacvvjFKszYkrl4tigjTfEvxa8Rd9UZwbP
-CT+KV7Bjll9yKDs7qEExzMael0VjP6YA/lbEplDI35GgBRz0ZaU=
-=lbfN
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkLR0gACgkQ2O7X88g7
++prS1Q/9GHDVTANxz/5iLoEJJu2aHySNzID8J567niT6I1uQ4Bqbacqv30+lldMS
+TJweJyywJlB0eMZx9F+g9EJ8UnfLK/YWpZWBuwqKcXkIpcb/ydbJvXOQdrM8lM1S
+TiRjbzBL99FR37/f9wDWJtDsUDTpnv7QT0ukBz5FnChSo79gjX9msNxdeIN3ShvI
+M4zxWiiOKDafUEL+omT2ogiGAq5ad8bJc5U7Urn+7IUCkMGJYchNtLtXqqAC0vUi
+ZN0Ccj6BuHrV7KullDv3y/XmKa5fnpDPpkDEoQy9Iuc5UbirWBdz/RKBspsIyKeo
+GOjbZBgemmmI3BziZO9t8u86Dcme5Me3xq/GNTN38hEq7PAGQCUFvPJcRkpn8F3j
+ttpkEIKDV/0hVsUKFLxoXOFD6QUlU4xYqWNf19zPsVX5vHH9hTknBd/3IZm9g7c9
+OI4Wd6Z53CS4JD1Vo/4fx/B8uznKqUk4MK4SUdf8YgRxqt+1IOzFLv0DWGFvjGrp
+hnQF+6qeSvOjrI2gmgEJB9pp0pQlvUQWaQGKxMKMk3zNO0HXf1151Oi8dsag2JwO
+uEnwaeMzcnM1XucDc+IXF6GE/o77juHkA2i0dpafBFwk29+Ld1YfZCk8YJEOzX+W
++N50zNrkwaDGBKwVhhhZl8rluWwEk/C6lAQ4Osg/yu+zefWjaqo=
+=vwKw
 -----END PGP SIGNATURE-----
 
---ixpmlwhfzdps7eju--
+--vv7dv6b5v5dmyh5f--
