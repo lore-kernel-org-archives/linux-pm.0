@@ -1,104 +1,71 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v13 02/11] dt-bindings: power: supply: Add battery.txt with simple-battery binding
-Date: Wed,  3 May 2017 23:18:02 -0700
-Message-ID: <20170504061811.18107-3-liam@networkimprov.net>
+Subject: [PATCH v13 10/11] power: supply: bq27xxx_battery: Flag identical register maps when in debug mode
+Date: Wed,  3 May 2017 23:18:10 -0700
+Message-ID: <20170504061811.18107-11-liam@networkimprov.net>
 References: <20170504061811.18107-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:35216 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751362AbdEDGTJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 May 2017 02:19:09 -0400
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:32984 "EHLO
+        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754438AbdEDGTR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 May 2017 02:19:17 -0400
+Received: by mail-pf0-f193.google.com with SMTP id b23so807459pfc.0
+        for <linux-pm@vger.kernel.org>; Wed, 03 May 2017 23:19:17 -0700 (PDT)
 In-Reply-To: <20170504061811.18107-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
-Cc: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
+Cc: Liam Breck <kernel@networkimprov.net>
 
 From: Liam Breck <kernel@networkimprov.net>
 
-Documentation of static battery characteristics that can be defined
-for batteries that do not embed this data, which are required by
-fuel-gauge and charger chips for proper handling of the battery.
+We tie multiple chips to unique register maps. When supporting a new chip,
+it's easy to add a duplicate map by mistake.
 
-The following properties are defined:
-  voltage-min-design-microvolt
-  charge-full-design-microamp-hours
-  energy-full-design-microwatt-hours
-  precharge-current-microamp
-  charge-term-current-microamp
+In debug mode we now scan the register maps for duplicates.
 
-Property names are derived from corresponding elements in
-enum power_supply_property from include/linux/power_supply.h
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/power_supply.h
-
-Cc: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
-Acked-by: Rob Herring <robh@kernel.org>
 ---
- .../devicetree/bindings/power/supply/battery.txt   | 53 ++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+ drivers/power/supply/bq27xxx_battery.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
-new file mode 100644
-index 0000000..61d9153
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-@@ -0,0 +1,53 @@
-+Battery Characteristics
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 0aecd41..97c646c 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -1932,6 +1932,25 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+ 	schedule_delayed_work(&di->work, 0);
+ }
+ 
++#ifdef DEBUG
++static void bq27xxx_battery_dbg_regs_dupes(struct bq27xxx_device_info *di)
++{
++	const size_t max = ARRAY_SIZE(bq27xxx_regs);
++	int a, b;
 +
-+The devicetree battery node provides static battery characteristics.
-+In smart batteries, these are typically stored in non-volatile memory
-+on a fuel gauge chip. The battery node should be used where there is
-+no appropriate non-volatile memory, or it is unprogrammed/incorrect.
++	for (a = 1; a < max-1; a++) {
++		for (b = a+1; b < max; b++) {
++			if (!memcmp(bq27xxx_regs[a], bq27xxx_regs[b],
++				    sizeof(bq27xxx_regs[0])))
++				dev_warn(di->dev,
++					"bq27xxx_regs[%d] & [%d] are identical\n", a, b);
++		}
++	}
++}
++#else
++static inline void bq27xxx_battery_dbg_regs_dupes(struct bq27xxx_device_info *di) {}
++#endif
 +
-+Upstream dts files should not include battery nodes, unless the battery
-+represented cannot easily be replaced in the system by one of a
-+different type. This prevents unpredictable, potentially harmful,
-+behavior should a replacement that changes the battery type occur
-+without a corresponding update to the dtb.
+ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+ {
+ 	struct power_supply_desc *psy_desc;
+@@ -1940,6 +1959,8 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+ 		.drv_data = di,
+ 	};
+ 
++	bq27xxx_battery_dbg_regs_dupes(di);
 +
-+Required Properties:
-+ - compatible: Must be "simple-battery"
-+
-+Optional Properties:
-+ - voltage-min-design-microvolt: drained battery voltage
-+ - energy-full-design-microwatt-hours: battery design energy
-+ - charge-full-design-microamp-hours: battery design capacity
-+ - precharge-current-microamp: current for pre-charge phase
-+ - charge-term-current-microamp: current for charge termination phase
-+
-+Battery properties are named, where possible, for the corresponding
-+elements in enum power_supply_property, defined in
-+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/power_supply.h
-+
-+Batteries must be referenced by chargers and/or fuel-gauges
-+using a phandle. The phandle's property should be named
-+"monitored-battery".
-+
-+Example:
-+
-+	bat: battery {
-+		compatible = "simple-battery";
-+		voltage-min-design-microvolt = <3200000>;
-+		energy-full-design-microwatt-hours = <5290000>;
-+		charge-full-design-microamp-hours = <1430000>;
-+		precharge-current-microamp = <256000>;
-+		charge-term-current-microamp = <128000>;
-+	};
-+
-+	charger: charger@11 {
-+		....
-+		monitored-battery = <&bat>;
-+		...
-+	};
-+
-+	fuel_gauge: fuel-gauge@22 {
-+		....
-+		monitored-battery = <&bat>;
-+		...
-+	};
+ 	di->ram_chip = di->chip == BQ27421 || di->chip == BQ27441 || di->chip == BQ27621;
+ 
+ 	di->unseal_key = bq27xxx_unseal_keys[di->chip];
 -- 
 2.9.3
