@@ -1,161 +1,50 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v13 0/11] devicetree simple-battery and client in bq27xxx_battery
-Date: Wed,  3 May 2017 23:18:00 -0700
-Message-ID: <20170504061811.18107-1-liam@networkimprov.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:33554 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751195AbdEDGSK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 May 2017 02:18:10 -0400
-Received: by mail-pf0-f194.google.com with SMTP id b23so804253pfc.0
-        for <linux-pm@vger.kernel.org>; Wed, 03 May 2017 23:18:09 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: [PATCH v13 01/11] devicetree: property-units: Add uWh and uAh units
+Date: Wed,  3 May 2017 23:18:01 -0700
+Message-ID: <20170504061811.18107-2-liam@networkimprov.net>
+References: <20170504061811.18107-1-liam@networkimprov.net>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170504061811.18107-1-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
 
-Overview:
-* new devicetree battery node specifies static battery data
-* fuel gauge and charger nodes shall use monitored-battery=<&battery_node>
-* new power_supply_get_battery_info() reads battery data from devicetree
-* new struct power_supply_battery_info provides battery data to drivers
-* drivers surface battery data in sysfs via related power_supply_prop_* fields
-* bq27xxx driver calls the above and writes battery data to RAM/NVM for params
-  essential to correct operation: energy-full-design-microwatt-hours,
-  charge-full-design-microamp-hours, voltage-min-design-microvolt
+From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
 
-Changes in v13:
-  Doc...bindings/power/supply/*
-*   add fields in battery.txt, see below
-*   caution about changing battery type in battery.txt
-*   note: Rob acked v11 battery.txt containing URL to Linux header
-*   more detail in bq27xxx.txt
-  power_supply_core:
-*   add battery_info fields precharge-current-microamp & charge-term-current-microamp
-*   new patch for power_supply_prop_precharge_current
-  bq27xxx_battery:
-*   add copyright notice
-*   for flash/NVM chips, emit warning instead of doing update
-*   config_battery_bq27xxx_dt_updates_nvm enables update of flash/NVM
-*   module param dt_monitored_battery_updates_nvm lets user disallow update
-*   new patch to flag dupes in bq27xxx_regs[]
-*   drop patch to clean up error reporting
-*   polishing from Andrew's feedback
-*   resolve checkpatch errors
-*   refactor patchset
-*   fix missing static keyword flagged by Colin
+Add entries for microwatt-hours and microamp-hours.
 
-Changes in v12: (several partial series posts; see above)
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Acked-by: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+---
+ Documentation/devicetree/bindings/property-units.txt | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Changes in v11:
-  power_supply_core:
-*   switch to compatible = "simple-battery"
-*   add docs to power_supply_class.txt
-  Documentation/devicetree/.../battery.txt:
-*   add description, drop refs to Linux, "simple-battery"
-  bq27xxx_battery:
-*   reset flash chips after DM update
-*   add bq27xxx_write/xfer()
-*   polishing from Andrew's feedback
-*   new patch to clean up error reporting
-*   new patch to consolidate duplicate register/property arrays
-
-Changes in v10:
-  bq27xxx_battery:
-*   pass actual chip ID into _setup()
-*   add di->unseal_key & di->dm_regs; drop static arrays
-*   support bq27425, 441, 621
-
-Changes in v9:
-  bq27xxx_battery:
-*   fix set_cfgupdate()
-*   support bq27500, 545, 421; defer others
-*   drop print_dm_blocks() patch
-*   minor polishing
-  Documentation/devicetree/.../battery.txt:
-*   describe rationale for enum power_supply_property names
-
-Changes in v8:
-  bq27xxx_battery:
-*   wait on flag after set_cfgupdate & soft_reset
-*   drop print_config(), report status in update_dm_block()
-*   clarify error messages
-*   cleanup from Andrew's feedback; minor polishing
-
-Changes in v7:
-  bq27xxx_battery:
-*   support chips where terminate_voltage & design_* live in separate blocks
-*   draft support for 421, 441, 621 chips
-*   new patch to log chip memory fields
-*   report bus I/O errors; return error code in bq27xxx_battery_i2c
-*   verify checksum in read_dm_block()
-*   use set_cfgupdate only if chip provides it, soft_reset on I/O error
-*   block_data_control=0 only in write_dm_block()
-*   note toxic code from TI bqtool in write_dm_block()
-*   lots of functionally neutral polishing
-  Documentation/devicetree/.../battery.txt:
-*   mention power_supply_get_battery_info()
-
-Changes in v6:
-* Documentation/devictree/... fixes
-* bq27xxx_battery: clarify names
-* bq27xxx_battery: verify that selected registers are supported
-* bq27xxx_battery: allocate NVM buffer on stack
-* bq27xxx_battery_i2c: fix return code of bulk_read
-
-Changes in v5:
-* incorporate feedback into Documentation/devicetree/.../battery.txt
-* use power_supply_prop_* names in devicetree and power_supply_battery_info
-* default fields to -EINVAL in power_supply_battery_info
-* power_supply_get_battery_info() always looks for "monitored-battery"
-* power_supply_get_battery_info() emits a warning if !psy->of_node
-* squash patches for power_supply_battery_info
-* bq27xxx_battery: check power_supply_battery_info values
-* bq27xxx_battery: note missing power_supply_prop_* features
-* bq27xxx_battery: new patch for access methods
-
-Changes in v4:
-* add "fixed-battery" compatible field to be be more consistant with devicetree
-
-Changes in v3:
-* split i2c changes into respective patches
-* add documentation for battery information for fuel gauge
-* rebased documentation patches on change on the list
-* abstracted the battery configuration for the state machine
-  to an generic struct and platform data access function
-
-Changes in v2:
-* add documentation for uWh and uAh property units
-* change devicetree entries to match new property units
-
-
-Liam Breck (9):
-  dt-bindings: power: supply: Add battery.txt with simple-battery binding
-  power: supply: core: Add power_supply_battery_info and API
-  power: supply: core: Add power_supply_prop_precharge
-  dt-bindings: power: supply: bq27xxx: Add monitored-battery documentation
-  power: supply: bq27xxx_battery: Add chip data memory read/write support
-  power: supply: bq27xxx_battery: Add power_supply_battery_info support
-  power: supply: bq27xxx_battery: Enable data memory update for certain chips
-  power: supply: bq27xxx_battery: Flag identical register maps when in debug mode
-  power: supply: bq27xxx_battery: Remove duplicate register arrays
-
-Matt Ranostay (2):
-  devicetree: property-units: Add uWh and uAh units
-  power: supply: bq27xxx_battery: Add bulk transfer bus methods
-
- .../devicetree/bindings/power/supply/battery.txt   |  53 ++
- .../devicetree/bindings/power/supply/bq27xxx.txt   |  31 +-
- .../devicetree/bindings/property-units.txt         |   2 +
- Documentation/power/power_supply_class.txt         |  31 +-
- drivers/power/supply/Kconfig                       |   9 +
- drivers/power/supply/bq27xxx_battery.c             | 750 +++++++++++++++++----
- drivers/power/supply/bq27xxx_battery_i2c.c         |  98 ++-
- drivers/power/supply/power_supply_core.c           |  51 ++
- drivers/power/supply/power_supply_sysfs.c          |   1 +
- include/linux/power/bq27xxx_battery.h              |  29 +-
- include/linux/power_supply.h                       |  23 +
- 11 files changed, 920 insertions(+), 158 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
-
+diff --git a/Documentation/devicetree/bindings/property-units.txt b/Documentation/devicetree/bindings/property-units.txt
+index 12278d7..0849618 100644
+--- a/Documentation/devicetree/bindings/property-units.txt
++++ b/Documentation/devicetree/bindings/property-units.txt
+@@ -25,8 +25,10 @@ Distance
+ Electricity
+ ----------------------------------------
+ -microamp	: micro amps
++-microamp-hours : micro amp-hours
+ -ohms		: Ohms
+ -micro-ohms	: micro Ohms
++-microwatt-hours: micro Watt-hours
+ -microvolt	: micro volts
+ 
+ Temperature
 -- 
 2.9.3
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
