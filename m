@@ -1,7 +1,7 @@
 From: <sean.wang@mediatek.com>
-Subject: [PATCH 4/6] cpufreq: mediatek: Add support of cpufreq to MT2701/MT7623 SoC
-Date: Fri, 5 May 2017 23:26:12 +0800
-Message-ID: <1493997974-17699-5-git-send-email-sean.wang@mediatek.com>
+Subject: [PATCH 5/6] dt-bindings: cpufreq: move Mediatek cpufreq dt-bindings document to proper place
+Date: Fri, 5 May 2017 23:26:13 +0800
+Message-ID: <1493997974-17699-6-git-send-email-sean.wang@mediatek.com>
 References: <1493997974-17699-1-git-send-email-sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -14,47 +14,195 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang@mediatek.com>
 
-MT2701/MT7623 is an 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
-single cluster and this hardware is also compatible with the existing
-driver through enabling CPU frequency feature with operating-points-v2
-bindings.
+The old place is Documentation/devicetree/bindings/clock/ that would
+let people hard to find how to use Mediatek cpufreq driver, so moving
+it to the new place as other cpufreq dirvers are done would be better.
 
 Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 ---
- drivers/cpufreq/Kconfig.arm      | 4 ++--
- drivers/cpufreq/mt8173-cpufreq.c | 2 ++
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ .../devicetree/bindings/clock/mt8173-cpu-dvfs.txt  | 83 ----------------------
+ .../bindings/cpufreq/cpufreq-mediatek.txt          | 83 ++++++++++++++++++++++
+ 2 files changed, 83 insertions(+), 83 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 74ed7e9..68b387a 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -90,11 +90,11 @@ config ARM_KIRKWOOD_CPUFREQ
- config ARM_MT8173_CPUFREQ
- 	tristate "Mediatek MT8173 CPUFreq support"
- 	depends on ARCH_MEDIATEK && REGULATOR
--	depends on ARM64 || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
-+	depends on (ARM || ARM64) || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
- 	depends on !CPU_THERMAL || THERMAL
- 	select PM_OPP
- 	help
--	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
-+	  This adds the CPUFreq driver support for Mediatek SoCs.
- 
- config ARM_OMAP2PLUS_CPUFREQ
- 	bool "TI OMAP2+"
-diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
-index fd1886f..481ec77 100644
---- a/drivers/cpufreq/mt8173-cpufreq.c
-+++ b/drivers/cpufreq/mt8173-cpufreq.c
-@@ -575,6 +575,8 @@ static struct platform_driver mt8173_cpufreq_platdrv = {
- 
- /* List of machines supported by this driver */
- static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
-+	{ .compatible = "mediatek,mt2701", },
-+	{ .compatible = "mediatek,mt7623", },
- 	{ .compatible = "mediatek,mt817x", },
- 	{ .compatible = "mediatek,mt8173", },
- 	{ .compatible = "mediatek,mt8176", },
+diff --git a/Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt b/Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt
+deleted file mode 100644
+index 52b457c..0000000
+--- a/Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt
++++ /dev/null
+@@ -1,83 +0,0 @@
+-Device Tree Clock bindins for CPU DVFS of Mediatek MT8173 SoC
+-
+-Required properties:
+-- clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
+-- clock-names: Should contain the following:
+-	"cpu"		- The multiplexer for clock input of CPU cluster.
+-	"intermediate"	- A parent of "cpu" clock which is used as "intermediate" clock
+-			  source (usually MAINPLL) when the original CPU PLL is under
+-			  transition and not stable yet.
+-	Please refer to Documentation/devicetree/bindings/clk/clock-bindings.txt for
+-	generic clock consumer properties.
+-- proc-supply: Regulator for Vproc of CPU cluster.
+-
+-Optional properties:
+-- sram-supply: Regulator for Vsram of CPU cluster. When present, the cpufreq driver
+-	       needs to do "voltage tracking" to step by step scale up/down Vproc and
+-	       Vsram to fit SoC specific needs. When absent, the voltage scaling
+-	       flow is handled by hardware, hence no software "voltage tracking" is
+-	       needed.
+-
+-Example:
+---------
+-	cpu0: cpu@0 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a53";
+-		reg = <0x000>;
+-		enable-method = "psci";
+-		cpu-idle-states = <&CPU_SLEEP_0>;
+-		clocks = <&infracfg CLK_INFRA_CA53SEL>,
+-			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+-		clock-names = "cpu", "intermediate";
+-	};
+-
+-	cpu1: cpu@1 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a53";
+-		reg = <0x001>;
+-		enable-method = "psci";
+-		cpu-idle-states = <&CPU_SLEEP_0>;
+-		clocks = <&infracfg CLK_INFRA_CA53SEL>,
+-			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+-		clock-names = "cpu", "intermediate";
+-	};
+-
+-	cpu2: cpu@100 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x100>;
+-		enable-method = "psci";
+-		cpu-idle-states = <&CPU_SLEEP_0>;
+-		clocks = <&infracfg CLK_INFRA_CA57SEL>,
+-			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+-		clock-names = "cpu", "intermediate";
+-	};
+-
+-	cpu3: cpu@101 {
+-		device_type = "cpu";
+-		compatible = "arm,cortex-a57";
+-		reg = <0x101>;
+-		enable-method = "psci";
+-		cpu-idle-states = <&CPU_SLEEP_0>;
+-		clocks = <&infracfg CLK_INFRA_CA57SEL>,
+-			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+-		clock-names = "cpu", "intermediate";
+-	};
+-
+-	&cpu0 {
+-		proc-supply = <&mt6397_vpca15_reg>;
+-	};
+-
+-	&cpu1 {
+-		proc-supply = <&mt6397_vpca15_reg>;
+-	};
+-
+-	&cpu2 {
+-		proc-supply = <&da9211_vcpu_reg>;
+-		sram-supply = <&mt6397_vsramca7_reg>;
+-	};
+-
+-	&cpu3 {
+-		proc-supply = <&da9211_vcpu_reg>;
+-		sram-supply = <&mt6397_vsramca7_reg>;
+-	};
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+new file mode 100644
+index 0000000..52b457c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+@@ -0,0 +1,83 @@
++Device Tree Clock bindins for CPU DVFS of Mediatek MT8173 SoC
++
++Required properties:
++- clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
++- clock-names: Should contain the following:
++	"cpu"		- The multiplexer for clock input of CPU cluster.
++	"intermediate"	- A parent of "cpu" clock which is used as "intermediate" clock
++			  source (usually MAINPLL) when the original CPU PLL is under
++			  transition and not stable yet.
++	Please refer to Documentation/devicetree/bindings/clk/clock-bindings.txt for
++	generic clock consumer properties.
++- proc-supply: Regulator for Vproc of CPU cluster.
++
++Optional properties:
++- sram-supply: Regulator for Vsram of CPU cluster. When present, the cpufreq driver
++	       needs to do "voltage tracking" to step by step scale up/down Vproc and
++	       Vsram to fit SoC specific needs. When absent, the voltage scaling
++	       flow is handled by hardware, hence no software "voltage tracking" is
++	       needed.
++
++Example:
++--------
++	cpu0: cpu@0 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a53";
++		reg = <0x000>;
++		enable-method = "psci";
++		cpu-idle-states = <&CPU_SLEEP_0>;
++		clocks = <&infracfg CLK_INFRA_CA53SEL>,
++			 <&apmixedsys CLK_APMIXED_MAINPLL>;
++		clock-names = "cpu", "intermediate";
++	};
++
++	cpu1: cpu@1 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a53";
++		reg = <0x001>;
++		enable-method = "psci";
++		cpu-idle-states = <&CPU_SLEEP_0>;
++		clocks = <&infracfg CLK_INFRA_CA53SEL>,
++			 <&apmixedsys CLK_APMIXED_MAINPLL>;
++		clock-names = "cpu", "intermediate";
++	};
++
++	cpu2: cpu@100 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a57";
++		reg = <0x100>;
++		enable-method = "psci";
++		cpu-idle-states = <&CPU_SLEEP_0>;
++		clocks = <&infracfg CLK_INFRA_CA57SEL>,
++			 <&apmixedsys CLK_APMIXED_MAINPLL>;
++		clock-names = "cpu", "intermediate";
++	};
++
++	cpu3: cpu@101 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a57";
++		reg = <0x101>;
++		enable-method = "psci";
++		cpu-idle-states = <&CPU_SLEEP_0>;
++		clocks = <&infracfg CLK_INFRA_CA57SEL>,
++			 <&apmixedsys CLK_APMIXED_MAINPLL>;
++		clock-names = "cpu", "intermediate";
++	};
++
++	&cpu0 {
++		proc-supply = <&mt6397_vpca15_reg>;
++	};
++
++	&cpu1 {
++		proc-supply = <&mt6397_vpca15_reg>;
++	};
++
++	&cpu2 {
++		proc-supply = <&da9211_vcpu_reg>;
++		sram-supply = <&mt6397_vsramca7_reg>;
++	};
++
++	&cpu3 {
++		proc-supply = <&da9211_vcpu_reg>;
++		sram-supply = <&mt6397_vsramca7_reg>;
++	};
 -- 
 2.7.4
