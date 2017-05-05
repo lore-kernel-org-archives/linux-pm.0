@@ -1,7 +1,7 @@
 From: <sean.wang@mediatek.com>
-Subject: [PATCH 5/6] dt-bindings: cpufreq: move Mediatek cpufreq dt-bindings document to proper place
-Date: Fri, 5 May 2017 23:26:13 +0800
-Message-ID: <1493997974-17699-6-git-send-email-sean.wang@mediatek.com>
+Subject: [PATCH 6/6] dt-bindings: cpufreq: enhance Mediatek cpufreq dt-binding document
+Date: Fri, 5 May 2017 23:26:14 +0800
+Message-ID: <1493997974-17699-7-git-send-email-sean.wang@mediatek.com>
 References: <1493997974-17699-1-git-send-email-sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -14,195 +14,234 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang@mediatek.com>
 
-The old place is Documentation/devicetree/bindings/clock/ that would
-let people hard to find how to use Mediatek cpufreq driver, so moving
-it to the new place as other cpufreq dirvers are done would be better.
+Update binding document to reflect the lastest driver logic and
+add more examples guiding people how to use Mediatek cpufreq driver.
 
 Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 ---
- .../devicetree/bindings/clock/mt8173-cpu-dvfs.txt  | 83 ----------------------
- .../bindings/cpufreq/cpufreq-mediatek.txt          | 83 ++++++++++++++++++++++
- 2 files changed, 83 insertions(+), 83 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+ .../bindings/cpufreq/cpufreq-mediatek.txt          | 170 ++++++++++++++++++++-
+ 1 file changed, 167 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt b/Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt
-deleted file mode 100644
-index 52b457c..0000000
---- a/Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt
-+++ /dev/null
-@@ -1,83 +0,0 @@
--Device Tree Clock bindins for CPU DVFS of Mediatek MT8173 SoC
--
--Required properties:
--- clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
--- clock-names: Should contain the following:
--	"cpu"		- The multiplexer for clock input of CPU cluster.
--	"intermediate"	- A parent of "cpu" clock which is used as "intermediate" clock
--			  source (usually MAINPLL) when the original CPU PLL is under
--			  transition and not stable yet.
--	Please refer to Documentation/devicetree/bindings/clk/clock-bindings.txt for
--	generic clock consumer properties.
--- proc-supply: Regulator for Vproc of CPU cluster.
--
--Optional properties:
--- sram-supply: Regulator for Vsram of CPU cluster. When present, the cpufreq driver
--	       needs to do "voltage tracking" to step by step scale up/down Vproc and
--	       Vsram to fit SoC specific needs. When absent, the voltage scaling
--	       flow is handled by hardware, hence no software "voltage tracking" is
--	       needed.
--
--Example:
----------
--	cpu0: cpu@0 {
--		device_type = "cpu";
--		compatible = "arm,cortex-a53";
--		reg = <0x000>;
--		enable-method = "psci";
--		cpu-idle-states = <&CPU_SLEEP_0>;
--		clocks = <&infracfg CLK_INFRA_CA53SEL>,
--			 <&apmixedsys CLK_APMIXED_MAINPLL>;
--		clock-names = "cpu", "intermediate";
--	};
--
--	cpu1: cpu@1 {
--		device_type = "cpu";
--		compatible = "arm,cortex-a53";
--		reg = <0x001>;
--		enable-method = "psci";
--		cpu-idle-states = <&CPU_SLEEP_0>;
--		clocks = <&infracfg CLK_INFRA_CA53SEL>,
--			 <&apmixedsys CLK_APMIXED_MAINPLL>;
--		clock-names = "cpu", "intermediate";
--	};
--
--	cpu2: cpu@100 {
--		device_type = "cpu";
--		compatible = "arm,cortex-a57";
--		reg = <0x100>;
--		enable-method = "psci";
--		cpu-idle-states = <&CPU_SLEEP_0>;
--		clocks = <&infracfg CLK_INFRA_CA57SEL>,
--			 <&apmixedsys CLK_APMIXED_MAINPLL>;
--		clock-names = "cpu", "intermediate";
--	};
--
--	cpu3: cpu@101 {
--		device_type = "cpu";
--		compatible = "arm,cortex-a57";
--		reg = <0x101>;
--		enable-method = "psci";
--		cpu-idle-states = <&CPU_SLEEP_0>;
--		clocks = <&infracfg CLK_INFRA_CA57SEL>,
--			 <&apmixedsys CLK_APMIXED_MAINPLL>;
--		clock-names = "cpu", "intermediate";
--	};
--
--	&cpu0 {
--		proc-supply = <&mt6397_vpca15_reg>;
--	};
--
--	&cpu1 {
--		proc-supply = <&mt6397_vpca15_reg>;
--	};
--
--	&cpu2 {
--		proc-supply = <&da9211_vcpu_reg>;
--		sram-supply = <&mt6397_vsramca7_reg>;
--	};
--
--	&cpu3 {
--		proc-supply = <&da9211_vcpu_reg>;
--		sram-supply = <&mt6397_vsramca7_reg>;
--	};
 diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-new file mode 100644
-index 0000000..52b457c
---- /dev/null
+index 52b457c..0703927 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
 +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-@@ -0,0 +1,83 @@
-+Device Tree Clock bindins for CPU DVFS of Mediatek MT8173 SoC
+@@ -1,4 +1,5 @@
+-Device Tree Clock bindins for CPU DVFS of Mediatek MT8173 SoC
++Binding for Mediatek's CPUFreq driver
++=====================================
+ 
+ Required properties:
+ - clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
+@@ -9,6 +10,8 @@ Required properties:
+ 			  transition and not stable yet.
+ 	Please refer to Documentation/devicetree/bindings/clk/clock-bindings.txt for
+ 	generic clock consumer properties.
++- operating-points-v2: Pleaser refer to Documentation/devicetree/bindings/opp/opp.txt
++	for detail.
+ - proc-supply: Regulator for Vproc of CPU cluster.
+ 
+ Optional properties:
+@@ -17,9 +20,166 @@ Optional properties:
+ 	       Vsram to fit SoC specific needs. When absent, the voltage scaling
+ 	       flow is handled by hardware, hence no software "voltage tracking" is
+ 	       needed.
++- #cooling-cells:
++- cooling-min-level:
++- cooling-max-level:
++	Please refer to Documentation/devicetree/bindings/thermal/thermal.txt
++	for detail.
 +
-+Required properties:
-+- clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
-+- clock-names: Should contain the following:
-+	"cpu"		- The multiplexer for clock input of CPU cluster.
-+	"intermediate"	- A parent of "cpu" clock which is used as "intermediate" clock
-+			  source (usually MAINPLL) when the original CPU PLL is under
-+			  transition and not stable yet.
-+	Please refer to Documentation/devicetree/bindings/clk/clock-bindings.txt for
-+	generic clock consumer properties.
-+- proc-supply: Regulator for Vproc of CPU cluster.
++Example 1 (MT7623 SoC):
 +
-+Optional properties:
-+- sram-supply: Regulator for Vsram of CPU cluster. When present, the cpufreq driver
-+	       needs to do "voltage tracking" to step by step scale up/down Vproc and
-+	       Vsram to fit SoC specific needs. When absent, the voltage scaling
-+	       flow is handled by hardware, hence no software "voltage tracking" is
-+	       needed.
++	cpu_opp_table: opp_table {
++		compatible = "operating-points-v2";
++		opp-shared;
 +
-+Example:
-+--------
++		opp@598000000 {
++			opp-hz = /bits/ 64 <598000000>;
++			opp-microvolt = <1050000>;
++		};
++
++		opp@747500000 {
++			opp-hz = /bits/ 64 <747500000>;
++			opp-microvolt = <1050000>;
++		};
++
++		opp@1040000000 {
++			opp-hz = /bits/ 64 <1040000000>;
++			opp-microvolt = <1150000>;
++		};
++
++		opp@1196000000 {
++			opp-hz = /bits/ 64 <1196000000>;
++			opp-microvolt = <1200000>;
++		};
++
++		opp@1300000000 {
++			opp-hz = /bits/ 64 <1300000000>;
++			opp-microvolt = <1300000>;
++		};
++	};
++
 +	cpu0: cpu@0 {
 +		device_type = "cpu";
-+		compatible = "arm,cortex-a53";
-+		reg = <0x000>;
-+		enable-method = "psci";
-+		cpu-idle-states = <&CPU_SLEEP_0>;
-+		clocks = <&infracfg CLK_INFRA_CA53SEL>,
++		compatible = "arm,cortex-a7";
++		reg = <0x0>;
++		clocks = <&infracfg CLK_INFRA_CPUSEL>,
 +			 <&apmixedsys CLK_APMIXED_MAINPLL>;
 +		clock-names = "cpu", "intermediate";
++		operating-points-v2 = <&cpu_opp_table>;
++		#cooling-cells = <2>;
++		cooling-min-level = <0>;
++		cooling-max-level = <7>;
 +	};
-+
-+	cpu1: cpu@1 {
++	cpu@1 {
 +		device_type = "cpu";
-+		compatible = "arm,cortex-a53";
-+		reg = <0x001>;
-+		enable-method = "psci";
-+		cpu-idle-states = <&CPU_SLEEP_0>;
-+		clocks = <&infracfg CLK_INFRA_CA53SEL>,
-+			 <&apmixedsys CLK_APMIXED_MAINPLL>;
-+		clock-names = "cpu", "intermediate";
++		compatible = "arm,cortex-a7";
++		reg = <0x1>;
++		operating-points-v2 = <&cpu_opp_table>;
 +	};
-+
-+	cpu2: cpu@100 {
++	cpu@2 {
 +		device_type = "cpu";
-+		compatible = "arm,cortex-a57";
-+		reg = <0x100>;
-+		enable-method = "psci";
-+		cpu-idle-states = <&CPU_SLEEP_0>;
-+		clocks = <&infracfg CLK_INFRA_CA57SEL>,
-+			 <&apmixedsys CLK_APMIXED_MAINPLL>;
-+		clock-names = "cpu", "intermediate";
++		compatible = "arm,cortex-a7";
++		reg = <0x2>;
++		operating-points-v2 = <&cpu_opp_table>;
 +	};
-+
-+	cpu3: cpu@101 {
++	cpu@3 {
 +		device_type = "cpu";
-+		compatible = "arm,cortex-a57";
-+		reg = <0x101>;
-+		enable-method = "psci";
-+		cpu-idle-states = <&CPU_SLEEP_0>;
-+		clocks = <&infracfg CLK_INFRA_CA57SEL>,
-+			 <&apmixedsys CLK_APMIXED_MAINPLL>;
-+		clock-names = "cpu", "intermediate";
++		compatible = "arm,cortex-a7";
++		reg = <0x3>;
++		operating-points-v2 = <&cpu_opp_table>;
 +	};
 +
-+	&cpu0 {
-+		proc-supply = <&mt6397_vpca15_reg>;
++Example 2 (MT8173 SoC):
++	cpu_opp_table_a: opp_table_a {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@507000000 {
++			opp-hz = /bits/ 64 <507000000>;
++			opp-microvolt = <859000>;
++		};
++
++		opp@702000000 {
++			opp-hz = /bits/ 64 <702000000>;
++			opp-microvolt = <908000>;
++		};
++
++		opp@1001000000 {
++			opp-hz = /bits/ 64 <1001000000>;
++			opp-microvolt = <983000>;
++		};
++
++		opp@1105000000 {
++			opp-hz = /bits/ 64 <1105000000>;
++			opp-microvolt = <1009000>;
++		};
++
++		opp@1183000000 {
++			opp-hz = /bits/ 64 <1183000000>;
++			opp-microvolt = <1028000>;
++		};
++
++		opp@1404000000 {
++			opp-hz = /bits/ 64 <1404000000>;
++			opp-microvolt = <1083000>;
++		};
++
++		opp@1508000000 {
++			opp-hz = /bits/ 64 <1508000000>;
++			opp-microvolt = <1109000>;
++		};
++
++		opp@1573000000 {
++			opp-hz = /bits/ 64 <1573000000>;
++			opp-microvolt = <1125000>;
++		};
 +	};
 +
-+	&cpu1 {
-+		proc-supply = <&mt6397_vpca15_reg>;
-+	};
++	cpu_opp_table_b: opp_table_b {
++		compatible = "operating-points-v2";
++		opp-shared;
 +
-+	&cpu2 {
-+		proc-supply = <&da9211_vcpu_reg>;
-+		sram-supply = <&mt6397_vsramca7_reg>;
-+	};
++		opp@507000000 {
++			opp-hz = /bits/ 64 <507000000>;
++			opp-microvolt = <828000>;
++		};
 +
-+	&cpu3 {
-+		proc-supply = <&da9211_vcpu_reg>;
-+		sram-supply = <&mt6397_vsramca7_reg>;
++		opp@702000000 {
++			opp-hz = /bits/ 64 <702000000>;
++			opp-microvolt = <867000>;
++		};
++
++		opp@1001000000 {
++			opp-hz = /bits/ 64 <1001000000>;
++			opp-microvolt = <927000>;
++		};
++
++		opp@1209000000 {
++			opp-hz = /bits/ 64 <1209000000>;
++			opp-microvolt = <968000>;
++		};
++
++		opp@1404000000 {
++			opp-hz = /bits/ 64 <1007000000>;
++			opp-microvolt = <1028000>;
++		};
++
++		opp@1612000000 {
++			opp-hz = /bits/ 64 <1612000000>;
++			opp-microvolt = <1049000>;
++		};
++
++		opp@1807000000 {
++			opp-hz = /bits/ 64 <1807000000>;
++			opp-microvolt = <1089000>;
++		};
++
++		opp@1989000000 {
++			opp-hz = /bits/ 64 <1989000000>;
++			opp-microvolt = <1125000>;
++		};
 +	};
+ 
+-Example:
+---------
+ 	cpu0: cpu@0 {
+ 		device_type = "cpu";
+ 		compatible = "arm,cortex-a53";
+@@ -29,6 +189,7 @@ Example:
+ 		clocks = <&infracfg CLK_INFRA_CA53SEL>,
+ 			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+ 		clock-names = "cpu", "intermediate";
++		operating-points-v2 = <&cpu_opp_table_a>;
+ 	};
+ 
+ 	cpu1: cpu@1 {
+@@ -40,6 +201,7 @@ Example:
+ 		clocks = <&infracfg CLK_INFRA_CA53SEL>,
+ 			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+ 		clock-names = "cpu", "intermediate";
++		operating-points-v2 = <&cpu_opp_table_a>;
+ 	};
+ 
+ 	cpu2: cpu@100 {
+@@ -51,6 +213,7 @@ Example:
+ 		clocks = <&infracfg CLK_INFRA_CA57SEL>,
+ 			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+ 		clock-names = "cpu", "intermediate";
++		operating-points-v2 = <&cpu_opp_table_b>;
+ 	};
+ 
+ 	cpu3: cpu@101 {
+@@ -62,6 +225,7 @@ Example:
+ 		clocks = <&infracfg CLK_INFRA_CA57SEL>,
+ 			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+ 		clock-names = "cpu", "intermediate";
++		operating-points-v2 = <&cpu_opp_table_b>;
+ 	};
+ 
+ 	&cpu0 {
 -- 
 2.7.4
