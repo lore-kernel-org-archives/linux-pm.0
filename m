@@ -1,53 +1,80 @@
-From: Andy Lutomirski <luto@kernel.org>
-Subject: Re: RFC: WMI Enhancements
-Date: Fri, 5 May 2017 18:25:08 -0700
-Message-ID: <CALCETrUgPgk7uVdYx4zJzXQHpk5zALmzSp3Zcz9+FPAe6bA5LQ@mail.gmail.com>
-References: <20170412230854.GA11963@fury> <20170419075248.GD18887@pali>
- <f3684c95b91349d3b4e512370ac1faf4@ausx13mpc120.AMER.DELL.COM>
- <201704191854.51783@pali> <4e3e507b116443298427002c5aafed7f@ausx13mpc120.AMER.DELL.COM>
- <20170420131431.GM18887@pali> <20170420204436.GC3209@fury>
- <775ffd8f3327497cabd15ee7826cedaf@ausx13mpc120.AMER.DELL.COM>
- <20170505234436.GB25865@fury> <beb9a835eaf243fab151627e919eccf3@ausx13mpc120.AMER.DELL.COM>
+From: Jean Delvare <jdelvare@suse.de>
+Subject: Re: [PATCH 4/6] cpufreq: mediatek: Add support of cpufreq to
+ MT2701/MT7623 SoC
+Date: Sat, 6 May 2017 10:00:59 +0200
+Message-ID: <20170506100059.6003d9ef@endymion>
+References: <1493997974-17699-1-git-send-email-sean.wang@mediatek.com>
+        <1493997974-17699-5-git-send-email-sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <beb9a835eaf243fab151627e919eccf3@ausx13mpc120.AMER.DELL.COM>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mario.Limonciello@dell.com
-Cc: Darren Hart <dvhart@infradead.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Corentin Chary <corentin.chary@gmail.com>, Andrew Lutomirski <luto@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1493997974-17699-5-git-send-email-sean.wang@mediatek.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: sean.wang@mediatek.com
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, robh+dt@kernel.org, matthias.bgg@gmail.com, mark.rutland@arm.com, mturquette@baylibre.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 5, 2017 at 5:51 PM,  <Mario.Limonciello@dell.com> wrote:
->> -----Original Message-----
->> From: Darren Hart [mailto:dvhart@infradead.org]
->> Sent: Friday, May 5, 2017 6:45 PM
->> To: Limonciello, Mario <Mario_Limonciello@Dell.com>
->> Cc: pali.rohar@gmail.com; rjw@rjwysocki.net; luto@amacapital.net;
->> len.brown@intel.com; corentin.chary@gmail.com; luto@kernel.org;
->> andriy.shevchenko@linux.intel.com; linux-kernel@vger.kernel.org; platform-
->> driver-x86@vger.kernel.org; linux-pm@vger.kernel.org
->> Subject: Re: RFC: WMI Enhancements
+Hi Sean,
+
+On Fri, 5 May 2017 23:26:12 +0800, sean.wang@mediatek.com wrote:
+> From: Sean Wang <sean.wang@mediatek.com>
+> 
+> MT2701/MT7623 is an 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
+> single cluster and this hardware is also compatible with the existing
+> driver through enabling CPU frequency feature with operating-points-v2
+> bindings.
+> 
+> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+> ---
+>  drivers/cpufreq/Kconfig.arm      | 4 ++--
+>  drivers/cpufreq/mt8173-cpufreq.c | 2 ++
+>  2 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 74ed7e9..68b387a 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -90,11 +90,11 @@ config ARM_KIRKWOOD_CPUFREQ
+>  config ARM_MT8173_CPUFREQ
+>  	tristate "Mediatek MT8173 CPUFreq support"
+>  	depends on ARCH_MEDIATEK && REGULATOR
+> -	depends on ARM64 || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
+> +	depends on (ARM || ARM64) || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
+
+Parentheses not needed. I am also curious if ARM_CPU_TOPOLOGY can
+actually be set when neither ARM nor ARM64 is. I suspect not, and then
+the above can be simplified to just:
+
+	depends on ARM || ARM64
+
+>  	depends on !CPU_THERMAL || THERMAL
+>  	select PM_OPP
+>  	help
+> -	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
+> +	  This adds the CPUFreq driver support for Mediatek SoCs.
+
+If this driver actually support all Mediatek SoCs, the menu entry
+itself should be updated to drop "MT8173".
+
+>  
+>  config ARM_OMAP2PLUS_CPUFREQ
+>  	bool "TI OMAP2+"
+> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
+> index fd1886f..481ec77 100644
+> --- a/drivers/cpufreq/mt8173-cpufreq.c
+> +++ b/drivers/cpufreq/mt8173-cpufreq.c
+> @@ -575,6 +575,8 @@ static struct platform_driver mt8173_cpufreq_platdrv = {
+>  
+>  /* List of machines supported by this driver */
+>  static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
+> +	{ .compatible = "mediatek,mt2701", },
+> +	{ .compatible = "mediatek,mt7623", },
+>  	{ .compatible = "mediatek,mt817x", },
+>  	{ .compatible = "mediatek,mt8173", },
+>  	{ .compatible = "mediatek,mt8176", },
 
 
-> I meant that to say that at least for now Andy's wmi-mof driver should still be merged.
-> If something is going to build on top of this to do WBEM tools, they'll need that MOF
-> data once someone figures out how to nicely deconstruct it.
->
-
-The thing I don't like about my own driver is that, as a WMI device
-driver, it can be loaded before the rest of the bus finishes probing.
-So user programs that are notified asynchronously that the wmi-mof
-driver is loaded and try to use future functionality (ioctl to issue a
-MOF-based method call?) might end up doing so before the rest of the
-bus is probed.
-
-This could be addressed by always exposing the wmi-mof device last
-(sort of -- it can be a module) or perhaps by moving MOF functionality
-to the core driver.  Or maybe it's not really a problem.
-
-Also, isn't there a way to ask Microsoft to document this?  Are you
-supposed to "ask a question" on this forum, perhaps:
-
-https://msdn.microsoft.com/en-us/library/gg134029.aspx
-
-I'm guessing the Samba team knows how to do this, too.
+-- 
+Jean Delvare
+SUSE L3 Support
