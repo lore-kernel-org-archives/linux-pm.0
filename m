@@ -1,80 +1,76 @@
-From: Jean Delvare <jdelvare@suse.de>
-Subject: Re: [PATCH 4/6] cpufreq: mediatek: Add support of cpufreq to
- MT2701/MT7623 SoC
-Date: Sat, 6 May 2017 10:00:59 +0200
-Message-ID: <20170506100059.6003d9ef@endymion>
-References: <1493997974-17699-1-git-send-email-sean.wang@mediatek.com>
-        <1493997974-17699-5-git-send-email-sean.wang@mediatek.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH V6 1/9] PM / OPP: Introduce "power-domain-opp" property
+Date: Sat, 06 May 2017 11:39:08 +0200
+Message-ID: <m2mvaquxxf.fsf@baylibre.com>
+References: <cover.1493203884.git.viresh.kumar@linaro.org>
+        <025acedb263eaa6089d354d9630214ada8013990.1493203884.git.viresh.kumar@linaro.org>
+        <20170428204803.plu467okibtxga4d@rob-hp-laptop>
+        <a307c76d-72c3-eb84-e7d4-d5e47e2af727@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1493997974-17699-5-git-send-email-sean.wang@mediatek.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: sean.wang@mediatek.com
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, robh+dt@kernel.org, matthias.bgg@gmail.com, mark.rutland@arm.com, mturquette@baylibre.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f46.google.com ([74.125.83.46]:35735 "EHLO
+        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753276AbdEFVod (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 6 May 2017 17:44:33 -0400
+Received: by mail-pg0-f46.google.com with SMTP id o3so17830723pgn.2
+        for <linux-pm@vger.kernel.org>; Sat, 06 May 2017 14:44:33 -0700 (PDT)
+In-Reply-To: <a307c76d-72c3-eb84-e7d4-d5e47e2af727@arm.com> (Sudeep Holla's
+        message of "Wed, 3 May 2017 12:29:21 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Rob Herring <robh@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
 
-Hi Sean,
+Sudeep Holla <sudeep.holla@arm.com> writes:
 
-On Fri, 5 May 2017 23:26:12 +0800, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
-> 
-> MT2701/MT7623 is an 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
-> single cluster and this hardware is also compatible with the existing
-> driver through enabling CPU frequency feature with operating-points-v2
-> bindings.
-> 
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> ---
->  drivers/cpufreq/Kconfig.arm      | 4 ++--
->  drivers/cpufreq/mt8173-cpufreq.c | 2 ++
->  2 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 74ed7e9..68b387a 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -90,11 +90,11 @@ config ARM_KIRKWOOD_CPUFREQ
->  config ARM_MT8173_CPUFREQ
->  	tristate "Mediatek MT8173 CPUFreq support"
->  	depends on ARCH_MEDIATEK && REGULATOR
-> -	depends on ARM64 || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
-> +	depends on (ARM || ARM64) || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
+> On 28/04/17 21:48, Rob Herring wrote:
+>> On Wed, Apr 26, 2017 at 04:27:05PM +0530, Viresh Kumar wrote:
+>>> Power-domains need to express their active states in DT and the devices
+>>> within the power-domain need to express their dependency on those active
+>>> states. The power-domains can use the OPP tables without any
+>>> modifications to the bindings.
+>>>
+>>> Add a new property "power-domain-opp", which will contain phandle to the
+>>> OPP node of the parent power domain. This is required for devices which
+>>> have dependency on the configured active state of the power domain for
+>>> their working.
+>>>
+>>> For some platforms the actual frequency and voltages of the power
+>>> domains are managed by the firmware and are so hidden from the high
+>>> level operating system. The "opp-hz" property is relaxed a bit to
+>>> contain indexes instead of actual frequency values to support such
+>>> platforms.
+>>>
+>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>> ---
+>>>  Documentation/devicetree/bindings/opp/opp.txt | 74 ++++++++++++++++++++++++++-
+>>>  1 file changed, 73 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+>>> index 63725498bd20..6e30cae2a936 100644
+>>> --- a/Documentation/devicetree/bindings/opp/opp.txt
+>>> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+>>> @@ -77,7 +77,10 @@ This defines voltage-current-frequency combinations along with other related
+>>>  properties.
+>>>  
+>>>  Required properties:
+>>> -- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer.
+>>> +- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer. In some
+>>> +  cases the exact frequency in Hz may be hidden from the OS by the firmware and
+>>> +  this field may contain values that represent the frequency in a firmware
+>>> +  dependent way, for example an index of an array in the firmware.
+>> 
+>> Not really sure OPP binding makes sense here. What about all the other 
+>> properties. We expose voltage, but not freq?
+>> 
+>
+> I completely agree with that and I have been pushing this to be
+> represented as just regulators[0]. Mark B seem to dislike that
+> idea [1]
 
-Parentheses not needed. I am also curious if ARM_CPU_TOPOLOGY can
-actually be set when neither ARM nor ARM64 is. I suspect not, and then
-the above can be simplified to just:
+And Mark is right, because what's being described is not (simply) a
+voltage regultor.  While it might be "just" voltage on some SoCs (for
+now), it is clearly about performance (a.k.a. OPP) on others.
 
-	depends on ARM || ARM64
-
->  	depends on !CPU_THERMAL || THERMAL
->  	select PM_OPP
->  	help
-> -	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
-> +	  This adds the CPUFreq driver support for Mediatek SoCs.
-
-If this driver actually support all Mediatek SoCs, the menu entry
-itself should be updated to drop "MT8173".
-
->  
->  config ARM_OMAP2PLUS_CPUFREQ
->  	bool "TI OMAP2+"
-> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
-> index fd1886f..481ec77 100644
-> --- a/drivers/cpufreq/mt8173-cpufreq.c
-> +++ b/drivers/cpufreq/mt8173-cpufreq.c
-> @@ -575,6 +575,8 @@ static struct platform_driver mt8173_cpufreq_platdrv = {
->  
->  /* List of machines supported by this driver */
->  static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
-> +	{ .compatible = "mediatek,mt2701", },
-> +	{ .compatible = "mediatek,mt7623", },
->  	{ .compatible = "mediatek,mt817x", },
->  	{ .compatible = "mediatek,mt8173", },
->  	{ .compatible = "mediatek,mt8176", },
-
-
--- 
-Jean Delvare
-SUSE L3 Support
+Kevin
