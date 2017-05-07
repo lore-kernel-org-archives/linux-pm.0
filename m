@@ -1,68 +1,94 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: Question on 1d9174fbc55e (pm_runtime_force_suspend/resume)
-Date: Sun, 7 May 2017 11:33:59 +0200
-Message-ID: <20170507093359.GA20284@wunner.de>
-References: <20170507091327.GA20263@wunner.de>
+From: Paul Kocialkowski <contact@paulk.fr>
+Subject: Re: [PATCH 2/5] power: supply: bq27xxx: Register power supply with
+ devm
+Date: Sun, 07 May 2017 19:43:10 +0200
+Message-ID: <1494178990.13734.2.camel@paulk.fr>
+References: <20170430182727.24412-1-contact@paulk.fr>
+         <20170430182727.24412-2-contact@paulk.fr>
+         <20170501105537.3ghbjcxxychxm52n@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg="pgp-sha256";
+        protocol="application/pgp-signature"; boundary="=-5R9WGkaSMPyoC3UQKRmy"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:32795 "EHLO
-        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755325AbdEGWaB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 May 2017 18:30:01 -0400
-Content-Disposition: inline
-In-Reply-To: <20170507091327.GA20263@wunner.de>
+Received: from gagarine.paulk.fr ([109.190.93.129]:57734 "EHLO
+        gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751726AbdEGWbR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 May 2017 18:31:17 -0400
+In-Reply-To: <20170501105537.3ghbjcxxychxm52n@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@baylibre.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, "Andrew F . Davis" <afd@ti.com>, Chris Lapa <chris@lapa.com.au>, Matt Ranostay <mranostay@gmail.com>
 
-Hi Ulf,
 
-On Sun, May 07, 2017 at 11:13:27AM +0200, Lukas Wunner wrote:
-> I'm trying (and failing) to understand your commit 1d9174fbc55e ("PM /
-> Runtime: Defer resuming of the device in pm_runtime_force_resume()")
-> and was hoping that you could give me a clue:
-> 
-> You're acquiring a runtime PM ref on the parent when a device is force-
-> suspended and releasing it when it's force-resumed.  Moreover you're only
-> doing this if the device was runtime active upon force-suspend.
-> 
-> What is the purpose of this?
+--=-5R9WGkaSMPyoC3UQKRmy
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-After some more digging, it seems acquiring a runtime PM ref on the parent
-was added in v3 of your patch to try to fix an issue reported by Geert:
+Le lundi 01 mai 2017 =C3=A0 12:55 +0200, Sebastian Reichel a =C3=A9crit=C2=
+=A0:
+> Hi,
+>=20
+> On Sun, Apr 30, 2017 at 08:27:24PM +0200, Paul Kocialkowski wrote:
+> > This uses the managed devices resources version of the
+> > power_supply_register_no_ws function to register the power supply.
+> >=20
+> > Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
+> > ---
+> > =C2=A0drivers/power/supply/bq27xxx_battery.c | 2 +-
+> > =C2=A01 file changed, 1 insertion(+), 1 deletion(-)
+> >=20
+> > diff --git a/drivers/power/supply/bq27xxx_battery.c
+> > b/drivers/power/supply/bq27xxx_battery.c
+> > index 6ef95442a918..be476e0bc85d 100644
+> > --- a/drivers/power/supply/bq27xxx_battery.c
+> > +++ b/drivers/power/supply/bq27xxx_battery.c
+> > @@ -1371,7 +1371,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_i=
+nfo
+> > *di)
+> > =C2=A0	psy_desc->get_property =3D bq27xxx_battery_get_property;
+> > =C2=A0	psy_desc->external_power_changed =3D bq27xxx_external_power_chan=
+ged;
+> > =C2=A0
+> > -	di->bat =3D power_supply_register_no_ws(di->dev, psy_desc, &psy_cfg);
+> > +	di->bat =3D devm_power_supply_register_no_ws(di->dev, psy_desc,
+> > &psy_cfg);
+> > =C2=A0	if (IS_ERR(di->bat)) {
+> > =C2=A0		dev_err(di->dev, "failed to register battery\n");
+> > =C2=A0		return PTR_ERR(di->bat);
+>=20
+> That does not make sense if bq27xxx_battery_teardown() still calls
+> power_supply_unregister().
 
-https://patchwork.kernel.org/patch/9375061/
+That's a very good point, thanks! Will fix in v2.
 
-	Changes in v3:
-	- Updated to take care of parent-child relations.
-	  This patch has earlier been sent standalone, but also as a part
-	  of series. In the end it turned out the solution needed some
-	  improvement to take care of parent-child relations, as reported
-	  by Geert [1].
-	  Geert, I would really appreciate if you could help out testing
-	  to make sure the reported issue is fixed.
-	  [1] https://patches.linaro.org/patch/67940/
+--=20
+Paul Kocialkowski, developer of free digital technology and hardware suppor=
+t
 
-However Geert responded that the change in v3 does *not* fix the issue:
+Website: https://www.paulk.fr/
+Coding blog: https://code.paulk.fr/
+Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
+--=-5R9WGkaSMPyoC3UQKRmy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-	  Unfortunately it doesn't help. Still fails on both
-	  r8a73a4/ape6evm and sh73a0/kzm9g.
+-----BEGIN PGP SIGNATURE-----
 
-I then turned out that the issue reported by Geert required an entirely
-different fix to an Ethernet driver:
+iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlkPXK4ACgkQhP3B6o/u
+lQx02A//VnncNSAiinm1MkcPbQzLe/+YdpKfiyCTx8xdB0CSURHAhL+Iq6SwK4Sv
+pk/BtQEWfCZj0VN9JnNXfvZG56qQaTXOkdsP0uxGR1Odqaz78OL+OIrBJbmZaSCq
+Mge1wSKNGHp+/m3/1R0sQ9xYyw1+7dGpY2Urv/wX0AXaEKaHwN8DRNmvAKyI2Y5y
+QFXoP4tdFhSTzlJ7DwH7JU7K8sYL8ire6RNa31j/Bp+WO3D+jvSoBjfTslvWBOm9
+3JwlnlwGYG2uoPJ1TLAVDzgeoZLSKAnHhcPGZ/unn3KdXueXdoVM0+y9I/Zk111e
+O6cEtQ0p6tebyI1xcWs8oAveYyr3oxomIh8OvIxRPasrYLxmLtnFcvw0lvFf884q
+DHficH8y+BpngZq8THWaEwVvR2+ojD6aHhuLn414HFyT9Scd309UfgE8fg+LnRTv
+lFybbOtkCQ8JuBso0NFDtXHtoMkvFec6Ndqcc8SADPkWEu8DTn5pfIPLv7aaHVWE
+Rgis/tcs5ym1YmEjnGt9CavznnlL4aEh4nDQSsjVFBIdJ+U+fro3ggMRrKaPfGof
+EII7K19Z3xpOQLrAp+yn3HirVSuSYpzNdNPrhBBqf+Yadgs79KUld2VGiU9ih72V
+2Vj5Uc91klvbWZUr5nWvQA0F4n9cN6xsoszkHAUyG5RsX5iZS74=
+=iP8f
+-----END PGP SIGNATURE-----
 
-	  Rafael, this one is ready to be queued. Unless there are other
-	  objections.
-	  The problems that was reported by Geert for this change, has
-	  been taken care of. Those are fixed by the patch for the
-	  smsc911x ethernet driver [1], which you queued a while ago.
-	  [1] https://www.spinics.net/lists/netdev/msg401339.html
-
-Could it be that maybe, just maybe, the code to acquire a runtime PM ref
-on the parent is entirely unnecessary and ended up in mainline by mistake?
-
-Thanks,
-
-Lukas
+--=-5R9WGkaSMPyoC3UQKRmy--
