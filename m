@@ -1,97 +1,70 @@
-From: Sean Wang <sean.wang@mediatek.com>
-Subject: Re: [PATCH 4/6] cpufreq: mediatek: Add support of cpufreq to
- MT2701/MT7623 SoC
-Date: Mon, 8 May 2017 14:09:28 +0800
-Message-ID: <1494223768.9662.4.camel@mtkswgap22>
-References: <1493997974-17699-1-git-send-email-sean.wang@mediatek.com>
-         <1493997974-17699-5-git-send-email-sean.wang@mediatek.com>
-         <20170506100059.6003d9ef@endymion>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <20170506100059.6003d9ef@endymion>
-Sender: linux-clk-owner@vger.kernel.org
-To: Jean Delvare <jdelvare@suse.de>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, robh+dt@kernel.org, matthias.bgg@gmail.com, mark.rutland@arm.com, mturquette@baylibre.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+From: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
+Subject: [RFC 0/2] Again w1-regman and power_supply MAX1721x
+Date: Mon,  8 May 2017 09:13:26 +0300
+Message-ID: <20170508061328.17370-1-minimumlaw@rambler.ru>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>
+Cc: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jean,
+Hi!
+I wrote driver for Maxim MAX17211/MAX17215 standalone fuel gauge IC. 
 
-Appreciate your reviewing and suggestion. I added my comment inline.
+Earlier I post preliminary versions of this driver and got recommendations to
+translate it into the infrastructure of regmap. Accordingly, it was necessary
+to implement at least basic support of regmap for the OneWire bus. Which was 
+done. There was a criticism about the use of an intermediate platform_device.
+In this edition, this is also fixed.
 
-On Sat, 2017-05-06 at 10:00 +0200, Jean Delvare wrote:
-> Hi Sean,
-> 
-> On Fri, 5 May 2017 23:26:12 +0800, sean.wang@mediatek.com wrote:
-> > From: Sean Wang <sean.wang@mediatek.com>
-> > 
-> > MT2701/MT7623 is an 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
-> > single cluster and this hardware is also compatible with the existing
-> > driver through enabling CPU frequency feature with operating-points-v2
-> > bindings.
-> > 
-> > Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> > ---
-> >  drivers/cpufreq/Kconfig.arm      | 4 ++--
-> >  drivers/cpufreq/mt8173-cpufreq.c | 2 ++
-> >  2 files changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> > index 74ed7e9..68b387a 100644
-> > --- a/drivers/cpufreq/Kconfig.arm
-> > +++ b/drivers/cpufreq/Kconfig.arm
-> > @@ -90,11 +90,11 @@ config ARM_KIRKWOOD_CPUFREQ
-> >  config ARM_MT8173_CPUFREQ
-> >  	tristate "Mediatek MT8173 CPUFreq support"
-> >  	depends on ARCH_MEDIATEK && REGULATOR
-> > -	depends on ARM64 || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
-> > +	depends on (ARM || ARM64) || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
-> 
-> Parentheses not needed. I am also curious if ARM_CPU_TOPOLOGY can
-> actually be set when neither ARM nor ARM64 is. I suspect not, and then
-> the above can be simplified to just:
-> 
+I would like to hear not only criticism, but also constructive proposals
+for the implementation or correction of this code.
 
-I agree with you and I will look into more whether ARM_CPU_TOPOLOGY can
-be removed safely since I can't make fully sure here and then update
-those into the next version.
+Known issuie/troubles:
+~~~~~~~~~~~~~~~~~~~~~~
+1. Endian for W1-regmap
+Code writen for use nativ endian for host (master) device. But waiting for
+little-endian slave divice. I don't know W1 slave device with big-endian
+addrees or data format. May be regmap_bus or regmap_config will be checked
+for host/device endian requirements?
 
-> 	depends on ARM || ARM64
-> 
-> >  	depends on !CPU_THERMAL || THERMAL
-> >  	select PM_OPP
-> >  	help
-> > -	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
-> > +	  This adds the CPUFreq driver support for Mediatek SoCs.
-> 
-> If this driver actually support all Mediatek SoCs, the menu entry
-> itself should be updated to drop "MT8173".
-> 
+2. W1 Family/device infrastructure
+All present power_supply class drivers in vanilla kernel use w1-slave devices.
+All of them create platform_device with name "chip-battery.X.auto", and 
+power_supply class driver use this platform device. Why used this way? I
+write code, allocated power_supply at W1 slave (family) device register.
+This work as expected.
 
-I will drop MT8173 wording because the driver also works for those
-Mediatek SoCs not belonged to MT817x series.
+3. Device names
+All W1 device have unical 64 bit ID (8-bit family, 48-bit serial number,
+8 bit CRC). W1 infrastructure show 56 bits (family-serial_nimber) as w1
+slave device name. I use this (unical) device name as power_supply battery
+name. This work. But in /sys/class/power_supply is placed machine readabe 
+subdir "26-HexDigString", instead of human-readable "chip-battery.X.auto".
+But in /sys/class/power_supply/26-HexDigString/type file still content
+human-readable type "Battery".
+Thermal zone working, but in /sys/class/thermal/thermal_zoneX/type also
+placed "26-HexDigString", instead of "chip-battery.X.auto".
+I can rename "26-HexDigString" to "battery-26-HexDigString" or 
+"26-HexDigString-battery", but this exceeded 20 chars thermal zone device
+name. So, thermal zone will have to be disabled.
 
-In fact, the driver should also be extended and being more generic to
-support more Mediatek SoCs in the future.
+Alex A. Mihaylov (2):
+  Basic support for regmap ifrastucture over Maxim/Dalas OneWire Bus
+  MAX1721x Standalone Fuel Gauge IC power_supply class driver
 
-> >  
-> >  config ARM_OMAP2PLUS_CPUFREQ
-> >  	bool "TI OMAP2+"
-> > diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
-> > index fd1886f..481ec77 100644
-> > --- a/drivers/cpufreq/mt8173-cpufreq.c
-> > +++ b/drivers/cpufreq/mt8173-cpufreq.c
-> > @@ -575,6 +575,8 @@ static struct platform_driver mt8173_cpufreq_platdrv = {
-> >  
-> >  /* List of machines supported by this driver */
-> >  static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
-> > +	{ .compatible = "mediatek,mt2701", },
-> > +	{ .compatible = "mediatek,mt7623", },
-> >  	{ .compatible = "mediatek,mt817x", },
-> >  	{ .compatible = "mediatek,mt8173", },
-> >  	{ .compatible = "mediatek,mt8176", },
-> 
-> 
+ drivers/base/regmap/Kconfig             |   6 +-
+ drivers/base/regmap/Makefile            |   1 +
+ drivers/base/regmap/regmap-w1.c         | 241 +++++++++++++++++++++
+ drivers/power/supply/Kconfig            |  14 ++
+ drivers/power/supply/Makefile           |   1 +
+ drivers/power/supply/max1721x_battery.c | 361 ++++++++++++++++++++++++++++++++
+ include/linux/power/max172xx-battery.h  | 100 +++++++++
+ include/linux/regmap.h                  |  34 +++
+ 8 files changed, 757 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/base/regmap/regmap-w1.c
+ create mode 100644 drivers/power/supply/max1721x_battery.c
+ create mode 100644 include/linux/power/max172xx-battery.h
 
-
+-- 
+2.8.4 (Apple Git-73)
