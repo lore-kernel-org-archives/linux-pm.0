@@ -1,108 +1,79 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: RFC: WMI Enhancements
-Date: Mon, 8 May 2017 21:18:11 +0000
-Message-ID: <77e4e46f58354e10874ed0515f514fc2@ausx13mpc120.AMER.DELL.COM>
-References: <20170412230854.GA11963@fury> <201705081917.34242@pali>
- <c073b5f67d1e495481613711753356ba@ausx13mpc120.AMER.DELL.COM>
- <201705082259.51850@pali>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <201705082259.51850@pali>
-Content-Language: en-US
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: pali.rohar@gmail.com
-Cc: dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+From: Benson Leung <bleung@chromium.org>
+Subject: [PATCH] power_supply: Add Apple Brick ID power supply type
+Date: Mon,  8 May 2017 15:02:48 -0700
+Message-ID: <20170508220248.97372-1-bleung@chromium.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f54.google.com ([74.125.83.54]:32985 "EHLO
+        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751018AbdEHWC5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 18:02:57 -0400
+Received: by mail-pg0-f54.google.com with SMTP id u187so33568401pgb.0
+        for <linux-pm@vger.kernel.org>; Mon, 08 May 2017 15:02:57 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: ras@apple.com, tomeu.vizoso@collabora.com, bleung@chromium.org, bleung@google.com
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBQYWxpIFJvaMOhciBbbWFpbHRv
-OnBhbGkucm9oYXJAZ21haWwuY29tXQ0KPiBTZW50OiBNb25kYXksIE1heSA4LCAyMDE3IDQ6MDAg
-UE0NCj4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9fTGltb25jaWVsbG9ARGVsbC5jb20+
-DQo+IENjOiBkdmhhcnRAaW5mcmFkZWFkLm9yZzsgcmp3QHJqd3lzb2NraS5uZXQ7IGx1dG9AYW1h
-Y2FwaXRhbC5uZXQ7DQo+IGxlbi5icm93bkBpbnRlbC5jb207IGNvcmVudGluLmNoYXJ5QGdtYWls
-LmNvbTsgbHV0b0BrZXJuZWwub3JnOw0KPiBhbmRyaXkuc2hldmNoZW5rb0BsaW51eC5pbnRlbC5j
-b207IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IHBsYXRmb3JtLQ0KPiBkcml2ZXIteDg2
-QHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJl
-OiBSRkM6IFdNSSBFbmhhbmNlbWVudHMNCj4gDQo+IE9uIE1vbmRheSAwOCBNYXkgMjAxNyAyMToy
-MTo0NSBNYXJpby5MaW1vbmNpZWxsb0BkZWxsLmNvbSB3cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2lu
-YWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBQYWxpIFJvaMOhciBbbWFpbHRvOnBhbGkucm9o
-YXJAZ21haWwuY29tXQ0KPiA+ID4gU2VudDogTW9uZGF5LCBNYXkgOCwgMjAxNyAxMjoxOCBQTQ0K
-PiA+ID4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9fTGltb25jaWVsbG9ARGVsbC5jb20+
-DQo+ID4gPiBDYzogZHZoYXJ0QGluZnJhZGVhZC5vcmc7IHJqd0Byand5c29ja2kubmV0OyBsdXRv
-QGFtYWNhcGl0YWwubmV0Ow0KPiA+ID4gbGVuLmJyb3duQGludGVsLmNvbTsgY29yZW50aW4uY2hh
-cnlAZ21haWwuY29tOyBsdXRvQGtlcm5lbC5vcmc7DQo+ID4gPiBhbmRyaXkuc2hldmNoZW5rb0Bs
-aW51eC5pbnRlbC5jb207IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiBwbGF0
-Zm9ybS0gZHJpdmVyLXg4NkB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
-Zw0KPiA+ID4gU3ViamVjdDogUmU6IFJGQzogV01JIEVuaGFuY2VtZW50cw0KPiA+ID4NCj4gPiA+
-IE9uIEZyaWRheSAwNSBNYXkgMjAxNyAyMzo1NTo0NiBNYXJpby5MaW1vbmNpZWxsb0BkZWxsLmNv
-bSB3cm90ZToNCj4gPiA+ID4gVW5mb3J0dW5hdGVseSB0aGUgTU9GIGRhdGEgdGhhdCBjb21lcyBv
-dXQgb2Ygd21pLW1vZiBpcyBzbyBjYWxsZWQNCj4gPiA+ID4gIkJpbmFyeSBNT0YiIHdoaWNoIGhh
-cyBiZWVuIHByZS1jb21waWxlZCB0byBhbiBpbnRlcm1lZGlhdGUNCj4gPiA+ID4gZm9ybWF0IHdp
-dGggbW9mY29tcC5leGUgb24gV2luZG93cy4gVGhlIGZvcm1hdCBvZiBiaW5hcnkgTU9GIGlzDQo+
-ID4gPiA+IG5vdCBkb2N1bWVudGVkIGFuZCB0aGUgb25seSBrbm93biB3YXkgdG8gZ2V0IHRleHQg
-bW9mIGJhY2sgb3V0DQo+ID4gPiA+IGlzIGJ5IHVzaW5nIG1vZmNvbXAuZXhlIHdpdGggc29tZSBl
-c290ZXJpYyBhcmd1bWVudHMuDQo+ID4gPiA+DQo+ID4gPiA+IG1vZmNvbXAuZXhlIC1NT0Y6cmVj
-b3ZlcmVkLm1vZiAtTUZMOm1zXzQwOS5tb2YgLUFtZW5kbWVudDpNU180MDkNCj4gPiA+ID4gYmlu
-YXJ5X21vZl9maWxlDQo+ID4gPg0KPiA+ID4gTG9va3MgbGlrZSB0aGF0IGJpbmFyeSBNT0YgZmls
-ZSBoYXMgIndlbGwta25vd24iIGZpbGUgZXh0ZW5zaW9uDQo+ID4gPiAuYm1mLiBGaWxlIGl0c2Vs
-ZiBzdGFydHMgd2l0aCBtYWdpYyBoYWRlciAiRk9NQiIgd2hpY2ggaXMgaW4NCj4gPiA+IHJldmVy
-c2UgQk1PRiAoYmluYXJ5IG1vZikuIEJ1dCBJIHdhcyBub3QgYWJsZSB0byBmaW5kIGFueQ0KPiA+
-ID4gc3BlY2lmaWNhdGlvbiBub3IgYW55IG90aGVyIGRldGFpbHMuIEFzIHRoaXMgYmluYXJ5IGZv
-cm1hdCBpcw0KPiA+ID4gZGF0ZWQgYmFjayB0byBXaW45eCBJIGd1ZXNzIGRhdGEgd291bGQgY29t
-cHJlc3NlZCBieSBzb21lIG9sZCBNUw0KPiA+ID4gY29tcHJlc3Npb24gYWxnb3JpdGhtIChDQUI/
-KS4NCj4gPg0KPiA+IEFjdHVhbGx5IGNvbXBhcmluZyBhIGNvdXBsZSBvZiBiaW5hcnkgTU9GIGZp
-bGVzIHRoZSBmaXJzdCA4IGxvb2sgbGlrZQ0KPiA+IHRoZSBoZWFkZXIgdG8gbWUuDQo+ID4NCj4g
-PiAweDQ2LCAweDRmLCAweDRkLCAweDQyLCAweDAxLCAweDAwLCAweDAwLCAweDAwDQo+ID4NCj4g
-PiBPbiBhIGNvbXBpbGVkIERlbGwgYmluYXJ5IE1PRiB0aGUgbmV4dCBhcmU6DQo+ID4NCj4gPiAw
-eGVkLCAweDA0LCAweDAwLCAweDAwLA0KPiA+DQo+ID4gVGhpcyBsb29rcyBsaWtlIHRoZSBzaXpl
-IG9mIHRoZSByZW1haW5pbmcgZGF0YSBhZnRlciB0YWtpbmcgb3V0IDE2DQo+ID4gZm9yIHRoZSBo
-ZWFkZXJzIDRlZCA9IDEyNjENCj4gPiBUb3RhbCBzaXplIGlzIDEyNzcNCj4gPg0KPiA+IDB4ZDgs
-IDB4MTUsIDB4MDAsIDB4MDANCj4gPiBNYXliZSBhIGNoZWNrc3VtPw0KPiA+DQo+ID4gQnV0IHRo
-YXQgZmlyc3QgMTYgYnl0ZXMgZG9lcyBsb29rIGxpa2UgdGhlIGhlYWRlciBzdHJ1Y3R1cmUgdG8g
-bWUuDQo+IA0KPiBHb29kIGNhdGNoISBZb3VyIG9ic2VydmF0aW9uIGZvciBmaXJzdCAxMiBieXRl
-cyBwYXNzZXMgYWxzbyBmb3IgbXkNCj4gY2hlY2tzLg0KPiANCj4gTmV4dCA0IGJ5dGVzIChhZnRl
-ciBwb3NzaWJsZSBjaGVja3N1bSkgYXQgMHgxMCBhcmUgYWx3YXlzIHNhbWU6DQo+IDB4NDQgMHg1
-MyAweDAwIDB4MDEuDQo+IA0KPiBBbmQgSSBndWVzcyB0aGlzIHNob3VsZCBiZSBjb21wcmVzc2lv
-biBoZWFkZXIuIEluIHRpbWUgb2YgV2luOXgNCj4gTWljcm9zb2Z0IGhhZCBvd24gbm9uLXN0YW5k
-YXJkIGNvbXByZXNzaW9uIGZvciBkaXNrcyBjYWxsZWQgRG91YmxlU3BhY2UuDQo+IElJUkMgaXQg
-d2FzIHNvbWUgbW9kaWZpY2F0aW9uIG9mIExaNzcgYWxnb3JpdGhtLiBBbmQgMHg0NCAweDUzIDB4
-MDAgMHgwMQ0KPiBpcyBEUzAxLiBNYXliZSBpdCBpcyByZWFsbHkgRG91YmxlU3BhY2UgY29tcHJl
-c3Npb24gdXNlZCBmb3IgYmluYXJ5IE1PRj8NCj4gDQo+IEknbSBnb2luZyB0byBmaW5kIHNwZWNp
-ZmljYXRpb24gb2YgdGhhdCBvbGQgY29tcHJlc3Npb24gYWxnb3JpdGhtLi4uDQo+IA0KNDQgNTMg
-bG9va3MgcHJvbWlzaW5nIHRvIGJlIHF1YW50dW0gY29tcHJlc3Npb24uDQpodHRwczovL2VuLndp
-a2lwZWRpYS5vcmcvd2lraS9RdWFudHVtX2NvbXByZXNzaW9uDQoNClRoYXTigJlzIGFsc28gd2hh
-dCAnZmlsZScgbWFnaWMgZGV0ZWN0cyBmcm9tIGl0IHRvby4NCiQgZmlsZSBtb2Yuc3RyaXBwZWQg
-DQptb2Yuc3RyaXBwZWQ6IFF1YW50dW0gYXJjaGl2ZSBkYXRhDQoNCj4gPiA+IE1vcmVvdmVyIHZp
-YSB0b29sIHdtaW9mY2suZXhlIGl0IGlzIHBvc3NpYmxlIHRvIGdlbmVyYXRlIGhlYWRlcg0KPiA+
-ID4gZmlsZSBmb3INCj4gPiA+DQo+ID4gPiBXTUkgZHJpdmVyIGZyb20gYmluYXJ5IG1vZiBmaWxl
-Og0KPiA+ID4gICB3bWlvZmNrLmV4ZSAtaGZpbGUuaCAtbSAtdSBmaWxlLmJtZg0KPiA+ID4NCj4g
-PiA+IEFuZCB3aGF0IGlzIGludGVyZXN0aW5nIHRoYXQgaW4gdGhpcyBmaWxlIGFyZSBhbHNvIGNv
-bW1lbnRzIHdoaWNoDQo+ID4gPiBsb29rcyBsaWtlIGNvbWVzIGZyb20gdGhhdCBiaW5hcnkgbW9m
-IGZpbGUuDQo+ID4NCj4gPiBBaCBpbnRlcmVzdGluZy4gIFRoZSAiY29tbWVudHMiIHRoYXQgY29t
-ZSBvdXQgb2YgdGhhdCBhcmUgYWN0dWFsbHkNCj4gPiB3aGF0J3MgbWFwcGVkIHRvIHRoZSAiRGVz
-Y3JpcHRpb24iIGZpZWxkIGluIHRoZSBXTUkgcmVwb3NpdG9yeSB3aGVuDQo+ID4gdGhlIGJpbmFy
-eSBNT0YgaXMgbG9hZGVkLg0KPiA+DQo+ID4gVGhleSBhcmUgbm90IHRoZSBkZXZlbG9wZXIgY29t
-bWVudHMgdGhhdCB3ZXJlIHBsYWNlZCBpbiB0aGUgb3JpZ2luYWwNCj4gPiBNT0YgZGF0YS4gIEkg
-d291bGQgc3VwcG9zZSB0aG9zZSBhcmUgbG9zdCB3aGVuIGNvbXBpbGluZyB0byBiaW5hcnkNCj4g
-PiBNT0YuDQo+IA0KPiBIbS4uIHJpZ2h0IHRoZXkgYXJlIHByZXNlbnQgaW4gZGVjb21waWxlZCBN
-T0YgZmlsZSBpbiBEZXNjcmlwdGlvbiBmaWVsZC4NCj4gDQo+ID4gPiBXaGVuIEkgbG9va2VkIGlu
-dG8gb3V0cHV0IGZyb20gbW9mY29tcC5leGUgd2l0aCBhYm92ZSBhcmdzLCB0aGF0DQo+ID4gPiBN
-T0Ygb3V0cHV0IGRpZCBub3QgY29udGFpbiBjb21tZW50cywgc28gbG9va3MgbGlrZSB3ZSBzdGls
-bCBjYW4NCj4gPiA+IG1pc3Mgc29tZXRoaW5nLg0KPiA+ID4NCj4gPiA+IFNlZTogaHR0cDovL2Js
-b2cubmlldHJ6ZWJhLnBsLzIwMTEvMTIvbW9mLWRlY29tcGlsYXRpb24uaHRtbA0KPiA+DQo+ID4g
-QWN0dWFsbHkgSSBzZWUgd21pbW9mY2sgb3V0cHV0IHRvIGJlIG1pc3Npbmcgc29tZSBpbXBvcnRh
-bnQgYml0cy4NCj4gPiBGb3IgZXhhbXBsZSBvbiBhIERlbGwgc3lzdGVtIFlvdSdsbCBnZXQgYSBj
-bGFzcyBCRm4gZGVjbGFyZWQgZnJvbQ0KPiA+IG1vZmNvbXAgb3V0cHV0LCBidXQgbm90aGluZyBm
-cm9tIHdtaW1vZmNrIG91dHB1dC4NCj4gPg0KPiA+IFRoZSBtb3N0IGltcG9ydGFudCB0aGluZyB0
-aGF0IHlvdSdyZSByZWFsbHkgZ2V0dGluZyBvdXQgb2YgdGhpcyBNT0YNCj4gPiBpcyB0aGUgc2l6
-ZSwgc3RydWN0dXJlIGFuZCBmb3JtYXQgb2YgdGhlIGJ1ZmZlciB0aGF0IHlvdSB3b3VsZCBiZQ0K
-PiA+IHNlbmRpbmcgdG8gQVNMLg0KPiA+DQo+ID4gQmFjayB0byB0aGUgcG9pbnQgd2Ugd2VyZSBk
-aXNjdXNzaW5nIG9mIGEgcG90ZW50aWFsIGZpbHRlciwgdGhlDQo+ID4gaW5mb3JtYXRpb24gaW4g
-dGhlIE1PRiBjb3VsZCBwb3NzaWJseSBiZSB2ZXJ5IHVzZWZ1bCB0byBkZWNsYXJpbmcNCj4gPiB3
-aGF0IGlzIGdvaW5nIGludG8gdGhlIGZpbHRlci4NCj4gDQo+IEluIHRoYXQgaGVhZGVyIGZpbGUg
-Z2VuZXJhdGVkIGJ5IHdtaW9mY2suZXhlIEkgc2VlIGRlZmluaXRpb25zIGZvciBCRm4uDQpUaGVy
-ZSBpcyBhIGRlZmluaXRpb24gYnV0IGl0J3MgbWlzc2luZyB0aGUgZm9ybWF0IG9mIHRoZSBhcmd1
-bWVudCBmcm9tDQp3aGF0IEkgY2FuIHRlbGwuDQoNCkluIGFueSBjYXNlLCB0aGlzIHdpbGwgYmUg
-dGFuZ2VudGlhbCB0byB0aGlzIGRpc2N1c3Npb24sIGJ1dCB1c2VmdWwgZm9yDQpyZXZlcnNlIGVu
-Z2luZWVyaW5nIHRoZSBiaW5hcnkgbW9mIGZvcm1hdC4NCg==
+Apple currently supports three very common USB chargers:
+https://www.apple.com/power-adapters/
+
+These chargers implement a proprietary Apple method for advertising
+1A, 2.1A, and 2.4A at 5V called "Brick ID".
+In addition, 3rd parties implement the same charging method in many
+charging accessories that work with iOS devices.
+
+Devices that have charger detection chips such as the Pericom PI3USB9281,
+eg. Google Chromebook Pixel 2015, are capable of detecting
+these chargers, so let's add a type to facilicate passing that info
+up to userspace.
+
+This adds a separate power supply type for Apple's proprietary
+"Brick ID" charging method.
+
+Signed-off-by: Benson Leung <bleung@chromium.org>
+---
+ drivers/power/supply/power_supply_sysfs.c |  2 +-
+ include/linux/power_supply.h              | 15 ++++++++-------
+ 2 files changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index bcde8d13476a..07b484f995c1 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -46,7 +46,7 @@ static ssize_t power_supply_show_property(struct device *dev,
+ 	static char *type_text[] = {
+ 		"Unknown", "Battery", "UPS", "Mains", "USB",
+ 		"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
+-		"USB_PD", "USB_PD_DRP"
++		"USB_PD", "USB_PD_DRP", "BrickID"
+ 	};
+ 	static char *status_text[] = {
+ 		"Unknown", "Charging", "Discharging", "Not charging", "Full"
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 3965503315ef..4bd34051995e 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -159,13 +159,14 @@ enum power_supply_type {
+ 	POWER_SUPPLY_TYPE_BATTERY,
+ 	POWER_SUPPLY_TYPE_UPS,
+ 	POWER_SUPPLY_TYPE_MAINS,
+-	POWER_SUPPLY_TYPE_USB,		/* Standard Downstream Port */
+-	POWER_SUPPLY_TYPE_USB_DCP,	/* Dedicated Charging Port */
+-	POWER_SUPPLY_TYPE_USB_CDP,	/* Charging Downstream Port */
+-	POWER_SUPPLY_TYPE_USB_ACA,	/* Accessory Charger Adapters */
+-	POWER_SUPPLY_TYPE_USB_TYPE_C,	/* Type C Port */
+-	POWER_SUPPLY_TYPE_USB_PD,	/* Power Delivery Port */
+-	POWER_SUPPLY_TYPE_USB_PD_DRP,	/* PD Dual Role Port */
++	POWER_SUPPLY_TYPE_USB,			/* Standard Downstream Port */
++	POWER_SUPPLY_TYPE_USB_DCP,		/* Dedicated Charging Port */
++	POWER_SUPPLY_TYPE_USB_CDP,		/* Charging Downstream Port */
++	POWER_SUPPLY_TYPE_USB_ACA,		/* Accessory Charger Adapters */
++	POWER_SUPPLY_TYPE_USB_TYPE_C,		/* Type C Port */
++	POWER_SUPPLY_TYPE_USB_PD,		/* Power Delivery Port */
++	POWER_SUPPLY_TYPE_USB_PD_DRP,		/* PD Dual Role Port */
++	POWER_SUPPLY_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
+ };
+ 
+ enum power_supply_notifier_events {
+-- 
+2.13.0.rc1.294.g07d810a77f-goog
