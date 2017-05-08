@@ -1,98 +1,332 @@
-From: Lukasz Luba <lukasz.luba@arm.com>
-Subject: Re: [PATCH 2/2] trace: power allocator: add trace for divvyup
- algorithm
-Date: Mon, 8 May 2017 15:58:25 +0100
-Message-ID: <78de7691-32ee-3703-5e6b-0d0da12c55fd@arm.com>
-References: <1494250802-6663-1-git-send-email-lukasz.luba@arm.com>
- <1494250802-6663-3-git-send-email-lukasz.luba@arm.com>
- <20170508094432.1010ee75@gandalf.local.home>
- <cf2867c3-8a26-7b05-a209-dd82d7ca7292@arm.com>
- <20170508103714.1ad473b1@gandalf.local.home>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v13 09/11] power: supply: bq27xxx_battery: Enable data
+ memory update for certain chips
+Date: Mon, 8 May 2017 10:00:01 -0500
+Message-ID: <c6f0b1f8-9e62-995a-0175-f330abf7f6fb@ti.com>
+References: <20170504061811.18107-1-liam@networkimprov.net>
+ <20170504061811.18107-10-liam@networkimprov.net>
+ <e11bb744-ac01-8499-18a2-2e9fb3fb5c38@ti.com>
+ <CAKvHMgSmMGLXTdeDfu1wP7NxoJP8fJ+YyZvSs7rvOC8uQzk3ng@mail.gmail.com>
+ <73f5eb07-dda0-ec1c-2412-e186a42918ba@ti.com>
+ <CAKvHMgTa9rFAdV0QYAAPGskHZo+H58sa-6H0DL-7PosywzhFtw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:43526 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754152AbdEHO62 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 8 May 2017 10:58:28 -0400
-In-Reply-To: <20170508103714.1ad473b1@gandalf.local.home>
+Received: from fllnx210.ext.ti.com ([198.47.19.17]:15448 "EHLO
+        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752042AbdEHPAM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 11:00:12 -0400
+In-Reply-To: <CAKvHMgTa9rFAdV0QYAAPGskHZo+H58sa-6H0DL-7PosywzhFtw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-pm@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, Ingo Molnar <mingo@redhat.com>
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-
-On 08/05/17 15:37, Steven Rostedt wrote:
-> On Mon, 8 May 2017 15:21:53 +0100
-> Lukasz Luba <lukasz.luba@arm.com> wrote:
->
->> Hi Steven,
+On 05/08/2017 01:40 AM, Liam Breck wrote:
+> On Fri, May 5, 2017 at 12:45 PM, Andrew F. Davis <afd@ti.com> wrote:
+>> On 05/05/2017 02:31 PM, Liam Breck wrote:
+>>> On Thu, May 4, 2017 at 10:00 AM, Andrew F. Davis <afd@ti.com> wrote:
+>>>> On 05/04/2017 01:18 AM, Liam Breck wrote:
+>>>>> From: Liam Breck <kernel@networkimprov.net>
+>>>>>
+>>>>> Support data memory update on BQ27500, 545, 425, 421, 441, 621.
+>>>>>
+>>>>> Create IDs for for previously unID'd chips, to index arrays for unseal keys
+>>>>> and data memory register tables.
+>>>>>
+>>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>>>>> ---
+>>>>>  drivers/power/supply/bq27xxx_battery.c     | 90 ++++++++++++++++++++++++++++--
+>>>>>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 +++---
+>>>>>  include/linux/power/bq27xxx_battery.h      | 13 +++++
+>>>>>  3 files changed, 107 insertions(+), 12 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>>>>> index 06f15da..0aecd41 100644
+>>>>> --- a/drivers/power/supply/bq27xxx_battery.c
+>>>>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>>>>> @@ -58,7 +58,7 @@
+>>>>>
+>>>>>  #include <linux/power/bq27xxx_battery.h>
+>>>>>
+>>>>> -#define DRIVER_VERSION               "1.2.0"
+>>>>> +#define DRIVER_VERSION               "1.3.0"
+>>>>>
+>>>>>  #define BQ27XXX_MANUFACTURER "Texas Instruments"
+>>>>>
+>>>>> @@ -132,7 +132,7 @@ enum bq27xxx_reg_index {
+>>>>>       [BQ27XXX_DM_CKSUM] = 0x60
+>>>>>
+>>>>>  /* Register mappings */
+>>>>> -static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>>>>> +static u8 bq27xxx_regs[BQ27MAX][BQ27XXX_REG_MAX] = {
+>>>>>       [BQ27000] = {
+>>>>>               [BQ27XXX_REG_CTRL] = 0x00,
+>>>>>               [BQ27XXX_REG_TEMP] = 0x06,
+>>>>> @@ -779,7 +779,7 @@ static enum power_supply_property bq27421_battery_props[] = {
+>>>>>  static struct {
+>>>>>       enum power_supply_property *props;
+>>>>>       size_t size;
+>>>>> -} bq27xxx_battery_props[] = {
+>>>>> +} bq27xxx_battery_props[BQ27MAX] = {
+>>>>>       BQ27XXX_PROP(BQ27000, bq27000_battery_props),
+>>>>>       BQ27XXX_PROP(BQ27010, bq27010_battery_props),
+>>>>>       BQ27XXX_PROP(BQ2750X, bq2750x_battery_props),
+>>>>> @@ -798,6 +798,33 @@ static struct {
+>>>>>       BQ27XXX_PROP(BQ27421, bq27421_battery_props),
+>>>>>  };
+>>>>>
+>>>>> +static enum bq27xxx_chip bq27xxx_chips[] = {
+>>>>> +     [BQ27000]   = BQ27000,
+>>>>> +     [BQ27010]   = BQ27010,
+>>>>> +     [BQ2750X]   = BQ2750X,
+>>>>> +     [BQ2751X]   = BQ2751X,
+>>>>> +     [BQ2752X]   = BQ2751X,
+>>>>> +     [BQ27500]   = BQ27500,
+>>>>> +     [BQ27510G1] = BQ27510G1,
+>>>>> +     [BQ27510G2] = BQ27510G2,
+>>>>> +     [BQ27510G3] = BQ27510G3,
+>>>>> +     [BQ27520G1] = BQ27520G1,
+>>>>> +     [BQ27520G2] = BQ27520G2,
+>>>>> +     [BQ27520G3] = BQ27520G3,
+>>>>> +     [BQ27520G4] = BQ27520G4,
+>>>>> +     [BQ27530]   = BQ27530,
+>>>>> +     [BQ27531]   = BQ27530,
+>>>>> +     [BQ27541]   = BQ27541,
+>>>>> +     [BQ27542]   = BQ27541,
+>>>>> +     [BQ27546]   = BQ27541,
+>>>>> +     [BQ27742]   = BQ27541,
+>>>>> +     [BQ27545]   = BQ27545,
+>>>>> +     [BQ27421]   = BQ27421,
+>>>>> +     [BQ27425]   = BQ27421,
+>>>>> +     [BQ27441]   = BQ27421,
+>>>>> +     [BQ27621]   = BQ27421,
+>>>>> +};
+>>>>> +
+>>>>>  static DEFINE_MUTEX(bq27xxx_list_lock);
+>>>>>  static LIST_HEAD(bq27xxx_battery_devices);
+>>>>>
+>>>>> @@ -856,6 +883,54 @@ static const char * const bq27xxx_dm_reg_name[] = {
+>>>>>       [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>>>>>  };
+>>>>>
+>>>>> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
+>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
+>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
+>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
+>>>>> +};
+>>>>> +
+>>>>> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
+>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
+>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
+>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
+>>>>> +};
+>>>>> +
+>>>>> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
+>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
+>>>>> +};
+>>>>> +
+>>>>> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
+>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
+>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
+>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
+>>>>> +};
+>>>>> +
+>>>>> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
+>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
+>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
+>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
+>>>>> +};
+>>>>> +
+>>>>> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
+>>>>> +     [BQ27500] = bq27500_dm_regs,
+>>>>> +     [BQ27545] = bq27545_dm_regs,
+>>>>> +     [BQ27421] = bq27421_dm_regs,
+>>>>> +     [BQ27425] = bq27425_dm_regs,
+>>>>> +     [BQ27441] = bq27421_dm_regs,
+>>>>> +     [BQ27621] = bq27621_dm_regs,
+>>>>> +};
+>>>>> +
+>>>>> +static u32 bq27xxx_unseal_keys[] = {
+>>>>> +     [BQ27500] = 0x04143672,
+>>>>> +     [BQ27545] = 0x04143672,
+>>>>> +     [BQ27421] = 0x80008000,
+>>>>> +     [BQ27425] = 0x04143672,
+>>>>> +     [BQ27441] = 0x80008000,
+>>>>> +     [BQ27621] = 0x80008000,
+>>>>> +};
+>>>>> +
+>>>>>
+>>>>>  #ifdef CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM
+>>>>>  static bool bq27xxx_dt_to_nvm = true;
+>>>>> @@ -1865,9 +1940,16 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>>>>               .drv_data = di,
+>>>>>       };
+>>>>>
+>>>>> +     di->ram_chip = di->chip == BQ27421 || di->chip == BQ27441 || di->chip == BQ27621;
+>>>>> +
+>>>>> +     di->unseal_key = bq27xxx_unseal_keys[di->chip];
+>>>>> +     di->dm_regs = bq27xxx_dm_regs[di->chip];
+>>>>> +     di->chip = bq27xxx_chips[di->chip];
+>>>>
+>>>> NACK, this is a mess, you should not be using a table to change what
+>>>> chip was passed in, it may be needed later. The chip is still the same,
+>>>> it should have the same one correct ID, use a different index or array
+>>>> if you would like, but this is very hacky.
+>>>
+>>> The only way I see to make the I2C subsystem deliver multiple IDs for
+>>> a device is to treat i2c_device_id.driver_data as a u16[2] instead of
+>>> its normal u32. What do you think of that?
+>>>
 >>
->> On 08/05/17 14:44, Steven Rostedt wrote:
->>> On Mon,  8 May 2017 14:40:02 +0100
->>> Lukasz Luba <lukasz.luba@arm.com> wrote:
->>>
->>>> This trace function helps to figure out the divvyup algorithm
->>>> on some platforms.
->>>>
->>>> CC: Steven Rostedt <rostedt@goodmis.org>
->>>> CC: Ingo Molnar <mingo@redhat.com>
->>>> CC: Zhang Rui <rui.zhang@intel.com>
->>>> CC: Eduardo Valentin <edubezval@gmail.com>
->>>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
->>>> ---
->>>>  drivers/thermal/power_allocator.c              |  4 +++
->>>>  include/trace/events/thermal_power_allocator.h | 40 ++++++++++++++++++++++++++
->>>>  2 files changed, 44 insertions(+)
->>>>
->>>> diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
->>>> index db74e05..b71125a 100644
->>>> --- a/drivers/thermal/power_allocator.c
->>>> +++ b/drivers/thermal/power_allocator.c
->>>> @@ -331,6 +331,10 @@ static void siblings_grants(struct thermal_zone_device *tz,
->>>>  		total_avail_room += avail_room[i];
->>>>  	}
->>>>
->>>> +	trace_thermal_power_allocator_divvyup(tz, granted_power, avail_room,
->>>> +					      spare_power, max_power,
->>>> +					      num_actors);
->>>
->>> I'm curious, how big can "num_actors" be?
->> That's a good question.
->> Normally max is around 5 (2 CPU clusters + 3 devfreq devices).
->> However, when you have per-core DVFS for CPUs
->> and you have N cores (i.e. 32), then you can register N cooling
->> devices for them.
->
-> Hmm, is it cores per CPU, or just cores? If I boot up a box with 240
-> cores, can that N = 240?
-If you can change the voltage and frequency (or even only the frequency
-  - less efficient) independently for each core, then yes, you can
-register N cpu cooling devices and can control them independently.
->
-> An event has a max size of PAGE_SIZE - buffer_header, where
-> sizeof(buffer_header) is usually 16. That means an event can be 4080
-> bytes at most. An event has a 8 byte header (on large events), and
-> ftrace adds another 8 bytes. The pay load of TRACE_EVENT is a max of
-> 4064.
->
-> Each dynamic_array has a 4 byte header, to save the size and offset of
-> the array data. With two 4 byte fields, we have for this event, a
-> minimum of 24 bytes. This gives up 1010 bytes per array. That gives us
-> a max of num_actors = 252 before the event size is exhausted. The
-> output of events has some limits but I'm not going into that.
->
-> I'm guessing this wont be an issue anytime soon. If we do exhaust the
-> size, the trace event will fail to allocate, and you'll just lose
-> events. Nothing else will break.
-Well, I don't know if some vendor is going to implement ARM platform
-with more than 256 cores with per-core DVFS feature. In that case I 
-would be really delighted to change the approach and support them.
->
-> Just letting you know.
->
-Thank you for this detailed information.
+>> Why would it need multiple IDs for one device? Just pass in the one
+>> correct device ID that it is. No reason to make this so complicated.
+>> From the one ID you can then use tables to lookup any other info about
+>> that device, you don't have to have ever ID populated in every table,
+>> you can even have a table of tables if you would like:
+>>
+>> static const struct chip_lookup lookup_table = {
+>>         [bq27425] = {
+>>                 .regs = &bq27xxx_regs[bq27425],
+>>                 .dm_regs = &bq27xxx_dm_regs[bq274xx],
+>>                 .unseal_key = INVALID_FOR_THIS_DEVICE,
+>>         },
+>>         [bq27343] = {
+>> ...
+>>
+>> Not sure if that is valid C but I think you can get the idea.
+> 
+> I considered a master lookup_table, but its ref to
+> bq27xxx_regs[fake-ID] duplicates the mapping of real-ID to di->chip.
+> The latter is still necessary as di->chip is used to select
+> conditional behaviors; we can't change its value in this patch.
+> 
 
-Regards,
-Lukasz
+Sure we can, in fact you could add the conditional behavior flags to the
+master lookup_table and cleanup all the current switch-case checks we do
+now.
+
+> So instead lets amend the I2C table to carry both its original value
+> (fake-ID) and the real-ID. That looks like:
+> 
+> static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>     /* dest.    di->real_chip       di->chip      */
+>     { "bq27200",   (BQ27000   << 16) |  BQ27000   },
+>     { "bq27210",   (BQ27010   << 16) |  BQ27010   },
+>     ...
+>     { "bq27441",   (BQ27441   << 16) |  BQ27421   },
+>     { "bq27621",   (BQ27621   << 16) |  BQ27421   },
+>     {},
+> };
+> 
+> In probe, retrieve two values:
+> 
+>     di->real_chip = id->driver_data >> 16;
+>     di->chip = (u16) id->driver_data;
+> 
+
+NAK, I'm sure you can see how hacky this is right? This doesn't give us
+anything that the old table didn't. And it fails to correct the issue
+with the tables: We have two chip IDs still!
+
+Try the lookup_table again, send be what you have and I can help get
+everything else working if you have any problems with the conditional
+behavior cleanups.
+
+> In setup, use two values:
+> 
+>     di->unseal_key = bq27xxx_unseal_keys[di->real_chip];
+>     di->dm_regs = bq27xxx_dm_regs[di->real_chip];
+>     di->regs = bq27xxx_regs[di->chip]; // unchanged from orig src
+> 
+> That yields the most compact implementation of this patch, and you get
+> di->real_chip in the bargain :-)
+> 
+> 
+>>>> Just stop trying to hack around it, add the extra tables, even if they
+>>>> are clones, so we can be done with this series already. I'm sure you
+>>>> want that more than you want this "clever" work-around, right?
+>>>>
+>>>> Also fix all the checkpatch --strict warnings.
+>>>>
+>>>>> +
+>>>>> +     di->regs = bq27xxx_regs[di->chip];
+>>>>> +
+>>>>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>>>>>       mutex_init(&di->lock);
+>>>>> -     di->regs = bq27xxx_regs[di->chip];
+>>>>>
+>>>>>       psy_desc = devm_kzalloc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
+>>>>>       if (!psy_desc)
+>>>>> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+>>>>> index a597221..0b11ed4 100644
+>>>>> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+>>>>> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+>>>>> @@ -230,7 +230,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>>>>       { "bq27210", BQ27010 },
+>>>>>       { "bq27500", BQ2750X },
+>>>>>       { "bq27510", BQ2751X },
+>>>>> -     { "bq27520", BQ2751X },
+>>>>> +     { "bq27520", BQ2752X },
+>>>>>       { "bq27500-1", BQ27500 },
+>>>>>       { "bq27510g1", BQ27510G1 },
+>>>>>       { "bq27510g2", BQ27510G2 },
+>>>>> @@ -240,16 +240,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>>>>       { "bq27520g3", BQ27520G3 },
+>>>>>       { "bq27520g4", BQ27520G4 },
+>>>>>       { "bq27530", BQ27530 },
+>>>>> -     { "bq27531", BQ27530 },
+>>>>> +     { "bq27531", BQ27531 },
+>>>>>       { "bq27541", BQ27541 },
+>>>>> -     { "bq27542", BQ27541 },
+>>>>> -     { "bq27546", BQ27541 },
+>>>>> -     { "bq27742", BQ27541 },
+>>>>> +     { "bq27542", BQ27542 },
+>>>>> +     { "bq27546", BQ27546 },
+>>>>> +     { "bq27742", BQ27742 },
+>>>>>       { "bq27545", BQ27545 },
+>>>>>       { "bq27421", BQ27421 },
+>>>>> -     { "bq27425", BQ27421 },
+>>>>> -     { "bq27441", BQ27421 },
+>>>>> -     { "bq27621", BQ27421 },
+>>>>> +     { "bq27425", BQ27425 },
+>>>>> +     { "bq27441", BQ27441 },
+>>>>> +     { "bq27621", BQ27621 },
+>>>>>       {},
+>>>>>  };
+>>>>>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+>>>>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+>>>>> index 11e1168..543c10e 100644
+>>>>> --- a/include/linux/power/bq27xxx_battery.h
+>>>>> +++ b/include/linux/power/bq27xxx_battery.h
+>>>>> @@ -2,6 +2,8 @@
+>>>>>  #define __LINUX_BQ27X00_BATTERY_H__
+>>>>>
+>>>>>  enum bq27xxx_chip {
+>>>>> +     /* these index bq27xxx_regs[] & bq27xxx_battery_props[] */
+>>>>> +     /* and map to themselves in bq27xxx_chips[]             */
+>>>>>       BQ27000 = 1, /* bq27000, bq27200 */
+>>>>>       BQ27010, /* bq27010, bq27210 */
+>>>>>       BQ2750X, /* bq27500 deprecated alias */
+>>>>> @@ -18,6 +20,17 @@ enum bq27xxx_chip {
+>>>>>       BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+>>>>>       BQ27545, /* bq27545 */
+>>>>>       BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+>>>>> +     BQ27MAX,
+>>>>> +
+>>>>> +     /* these map to above in bq27xxx_chips[] */
+>>>>> +     BQ2752X, /* deprecated alias */
+>>>>> +     BQ27531,
+>>>>> +     BQ27542,
+>>>>> +     BQ27546,
+>>>>> +     BQ27742,
+>>>>> +     BQ27425,
+>>>>> +     BQ27441,
+>>>>> +     BQ27621,
+>>>>>  };
+>>>>>
+>>>>>  /**
+>>>>>
