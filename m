@@ -1,186 +1,72 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: RFC: WMI Enhancements
-Date: Tue, 9 May 2017 00:17:44 +0200
-Message-ID: <201705090017.44210@pali>
-References: <20170412230854.GA11963@fury> <201705082259.51850@pali> <77e4e46f58354e10874ed0515f514fc2@ausx13mpc120.AMER.DELL.COM>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH v3 2/2] cpufreq: schedutil: Avoid reducing frequency of busy CPUs prematurely
+Date: Tue, 09 May 2017 00:16:22 +0200
+Message-ID: <3079912.JRKiXHi0D3@aspire.rjw.lan>
+References: <4366682.tsferJN35u@aspire.rjw.lan> <CANRm+Cwem_C6geyWScZhr4A62ben9fKhyL2OPd+Vdhh3bRJqKw@mail.gmail.com> <20170508040119.GA17010@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart13844783.DTLmW68vB7";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <77e4e46f58354e10874ed0515f514fc2@ausx13mpc120.AMER.DELL.COM>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mario.Limonciello@dell.com
-Cc: dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46473 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751047AbdEHWWt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 18:22:49 -0400
+In-Reply-To: <20170508040119.GA17010@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Wanpeng Li <kernellwp@gmail.com>, Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
 
---nextPart13844783.DTLmW68vB7
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+On Monday, May 08, 2017 09:31:19 AM Viresh Kumar wrote:
+> On 08-05-17, 11:49, Wanpeng Li wrote:
+> > Hi Rafael,
+> > 2017-03-22 7:08 GMT+08:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > >
+> > > The way the schedutil governor uses the PELT metric causes it to
+> > > underestimate the CPU utilization in some cases.
+> > >
+> > > That can be easily demonstrated by running kernel compilation on
+> > > a Sandy Bridge Intel processor, running turbostat in parallel with
+> > > it and looking at the values written to the MSR_IA32_PERF_CTL
+> > > register.  Namely, the expected result would be that when all CPUs
+> > > were 100% busy, all of them would be requested to run in the maximum
+> > > P-state, but observation shows that this clearly isn't the case.
+> > > The CPUs run in the maximum P-state for a while and then are
+> > > requested to run slower and go back to the maximum P-state after
+> > > a while again.  That causes the actual frequency of the processor to
+> > > visibly oscillate below the sustainable maximum in a jittery fashion
+> > > which clearly is not desirable.
+> > >
+> > > That has been attributed to CPU utilization metric updates on task
+> > > migration that cause the total utilization value for the CPU to be
+> > > reduced by the utilization of the migrated task.  If that happens,
+> > > the schedutil governor may see a CPU utilization reduction and will
+> > > attempt to reduce the CPU frequency accordingly right away.  That
+> > > may be premature, though, for example if the system is generally
+> > > busy and there are other runnable tasks waiting to be run on that
+> > > CPU already.
+> > >
+> > > This is unlikely to be an issue on systems where cpufreq policies are
+> > > shared between multiple CPUs, because in those cases the policy
+> > > utilization is computed as the maximum of the CPU utilization values
+> > 
+> > Sorry for one question maybe not associated with this patch. If the
+> > cpufreq policy is shared between multiple CPUs, the function
+> > intel_cpufreq_target()  just updates IA32_PERF_CTL MSR of the cpu
+> > which is managing this policy, I wonder whether other cpus which are
+> > affected should also update their per-logical cpu's IA32_PERF_CTL MSR?
+> 
+> The CPUs share the policy when they share their freq/voltage rails and so
+> changing perf state of one CPU should result in that changing for all the CPUs
+> in that policy. Otherwise, they can't be considered to be part of the same
+> policy.
 
-On Monday 08 May 2017 23:18:11 Mario.Limonciello@dell.com wrote:
-> > -----Original Message-----
-> > From: Pali Roh=C3=A1r [mailto:pali.rohar@gmail.com]
-> > Sent: Monday, May 8, 2017 4:00 PM
-> > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> > Cc: dvhart@infradead.org; rjw@rjwysocki.net; luto@amacapital.net;
-> > len.brown@intel.com; corentin.chary@gmail.com; luto@kernel.org;
-> > andriy.shevchenko@linux.intel.com; linux-kernel@vger.kernel.org;
-> > platform- driver-x86@vger.kernel.org; linux-pm@vger.kernel.org
-> > Subject: Re: RFC: WMI Enhancements
-> >=20
-> > On Monday 08 May 2017 21:21:45 Mario.Limonciello@dell.com wrote:
-> > > > -----Original Message-----
-> > > > From: Pali Roh=C3=A1r [mailto:pali.rohar@gmail.com]
-> > > > Sent: Monday, May 8, 2017 12:18 PM
-> > > > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> > > > Cc: dvhart@infradead.org; rjw@rjwysocki.net;
-> > > > luto@amacapital.net; len.brown@intel.com;
-> > > > corentin.chary@gmail.com; luto@kernel.org;
-> > > > andriy.shevchenko@linux.intel.com;
-> > > > linux-kernel@vger.kernel.org; platform-
-> > > > driver-x86@vger.kernel.org; linux-pm@vger.kernel.org Subject:
-> > > > Re: RFC: WMI Enhancements
-> > > >=20
-> > > > On Friday 05 May 2017 23:55:46 Mario.Limonciello@dell.com wrote:
-> > > > > Unfortunately the MOF data that comes out of wmi-mof is so
-> > > > > called "Binary MOF" which has been pre-compiled to an
-> > > > > intermediate format with mofcomp.exe on Windows. The format
-> > > > > of binary MOF is not documented and the only known way to
-> > > > > get text mof back out is by using mofcomp.exe with some
-> > > > > esoteric arguments.
-> > > > >=20
-> > > > > mofcomp.exe -MOF:recovered.mof -MFL:ms_409.mof
-> > > > > -Amendment:MS_409 binary_mof_file
-> > > >=20
-> > > > Looks like that binary MOF file has "well-known" file extension
-> > > > .bmf. File itself starts with magic hader "FOMB" which is in
-> > > > reverse BMOF (binary mof). But I was not able to find any
-> > > > specification nor any other details. As this binary format is
-> > > > dated back to Win9x I guess data would compressed by some old
-> > > > MS compression algorithm (CAB?).
-> > >=20
-> > > Actually comparing a couple of binary MOF files the first 8 look
-> > > like the header to me.
-> > >=20
-> > > 0x46, 0x4f, 0x4d, 0x42, 0x01, 0x00, 0x00, 0x00
-> > >=20
-> > > On a compiled Dell binary MOF the next are:
-> > >=20
-> > > 0xed, 0x04, 0x00, 0x00,
-> > >=20
-> > > This looks like the size of the remaining data after taking out
-> > > 16 for the headers 4ed =3D 1261
-> > > Total size is 1277
-> > >=20
-> > > 0xd8, 0x15, 0x00, 0x00
-> > > Maybe a checksum?
-> > >=20
-> > > But that first 16 bytes does look like the header structure to
-> > > me.
-> >=20
-> > Good catch! Your observation for first 12 bytes passes also for my
-> > checks.
-> >=20
-> > Next 4 bytes (after possible checksum) at 0x10 are always same:
-> > 0x44 0x53 0x00 0x01.
-> >=20
-> > And I guess this should be compression header. In time of Win9x
-> > Microsoft had own non-standard compression for disks called
-> > DoubleSpace. IIRC it was some modification of LZ77 algorithm. And
-> > 0x44 0x53 0x00 0x01 is DS01. Maybe it is really DoubleSpace
-> > compression used for binary MOF?
-> >=20
-> > I'm going to find specification of that old compression
-> > algorithm...
+To be entirely precise, this depends on the granularity of the HW interface.
 
-I found dmsdos implementation of that DS compression at:
-http://cmp.felk.cvut.cz/~pisa/dmsdos
+If the interface is per-logical-CPU, we will use it this way for efficiency
+reasons and even if there is some coordination on the HW side, the information
+on how exactly it works usually is limited.
 
-Then took relevant decompression code and it really decompressed that=20
-binary MOF WMI buffer. But still decompressed format is binary, but I=20
-now see all WMI GUID encoded in UTF-16. Decompressed BMF file has again=20
-"FOMB" magic header.
-
-I pushed my decompression utility here:
-https://github.com/pali/bmfdec
-
-So next step is to decode that decompressed binary MOF file.
-
-> 44 53 looks promising to be quantum compression.
-> https://en.wikipedia.org/wiki/Quantum_compression
->=20
-> That=E2=80=99s also what 'file' magic detects from it too.
-> $ file mof.stripped
-> mof.stripped: Quantum archive data
-
-Hm... so that Quantum compression is also modification of LZ77. And=20
-probably it is same as DoubleSpace format (or use it).
-
-> > > > Moreover via tool wmiofck.exe it is possible to generate header
-> > > > file for
-> > > >=20
-> > > > WMI driver from binary mof file:
-> > > >   wmiofck.exe -hfile.h -m -u file.bmf
-> > > >=20
-> > > > And what is interesting that in this file are also comments
-> > > > which looks like comes from that binary mof file.
-> > >=20
-> > > Ah interesting.  The "comments" that come out of that are
-> > > actually what's mapped to the "Description" field in the WMI
-> > > repository when the binary MOF is loaded.
-> > >=20
-> > > They are not the developer comments that were placed in the
-> > > original MOF data.  I would suppose those are lost when
-> > > compiling to binary MOF.
-> >=20
-> > Hm.. right they are present in decompiled MOF file in Description
-> > field.
-> >=20
-> > > > When I looked into output from mofcomp.exe with above args,
-> > > > that MOF output did not contain comments, so looks like we
-> > > > still can miss something.
-> > > >=20
-> > > > See: http://blog.nietrzeba.pl/2011/12/mof-decompilation.html
-> > >=20
-> > > Actually I see wmimofck output to be missing some important bits.
-> > > For example on a Dell system You'll get a class BFn declared from
-> > > mofcomp output, but nothing from wmimofck output.
-> > >=20
-> > > The most important thing that you're really getting out of this
-> > > MOF is the size, structure and format of the buffer that you
-> > > would be sending to ASL.
-> > >=20
-> > > Back to the point we were discussing of a potential filter, the
-> > > information in the MOF could possibly be very useful to declaring
-> > > what is going into the filter.
-> >=20
-> > In that header file generated by wmiofck.exe I see definitions for
-> > BFn.
->=20
-> There is a definition but it's missing the format of the argument
-> from what I can tell.
->=20
-> In any case, this will be tangential to this discussion, but useful
-> for reverse engineering the binary mof format.
-
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart13844783.DTLmW68vB7
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlkQ7ogACgkQi/DJPQPkQ1J+IgCcDz0l9TBba43cM9bTNCmkqW1m
-n5EAmgPAtppO9mob0SU0X5/TYZA9Jpnw
-=Gvm8
------END PGP SIGNATURE-----
-
---nextPart13844783.DTLmW68vB7--
+Thanks,
+Rafael
