@@ -1,74 +1,171 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: RFC: WMI Enhancements
-Date: Mon, 8 May 2017 19:17:34 +0200
-Message-ID: <201705081917.34242@pali>
-References: <20170412230854.GA11963@fury> <20170420204436.GC3209@fury> <775ffd8f3327497cabd15ee7826cedaf@ausx13mpc120.AMER.DELL.COM>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v13 08/11] power: supply: bq27xxx_battery: Add
+ power_supply_battery_info support
+Date: Mon, 8 May 2017 11:39:54 -0700
+Message-ID: <CAKvHMgQ_1VL29u2Z1E63ekHdha22coaCBNSCccUgBLzVE6LvMw@mail.gmail.com>
+References: <20170504061811.18107-1-liam@networkimprov.net>
+ <20170504061811.18107-9-liam@networkimprov.net> <f0121e38-9159-2bb4-26ca-1a4a72ba6ace@ti.com>
+ <CAKvHMgSWCW5g3L2PtEa6Yg_LWRU_ByDDO_NVJqQqzvoHgXO=GQ@mail.gmail.com>
+ <CAKvHMgS6XtrJDWgq=J_dnOBYUXLWG-zwBOaa3FHybEfkCDicvA@mail.gmail.com> <d1d93ce1-5c6c-ada8-2917-a9d592a9e1cd@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4069339.OeqetiiWL2";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:33270 "EHLO
-        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751168AbdEHRRi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 13:17:38 -0400
-In-Reply-To: <775ffd8f3327497cabd15ee7826cedaf@ausx13mpc120.AMER.DELL.COM>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:35588 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751191AbdEHSj4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 14:39:56 -0400
+Received: by mail-io0-f195.google.com with SMTP id o12so2350176iod.2
+        for <linux-pm@vger.kernel.org>; Mon, 08 May 2017 11:39:55 -0700 (PDT)
+In-Reply-To: <d1d93ce1-5c6c-ada8-2917-a9d592a9e1cd@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mario.Limonciello@dell.com
-Cc: dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
---nextPart4069339.OeqetiiWL2
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+On Mon, May 8, 2017 at 7:54 AM, Andrew F. Davis <afd@ti.com> wrote:
+> On 05/08/2017 01:16 AM, Liam Breck wrote:
+>> On Thu, May 4, 2017 at 11:40 AM, Liam Breck <liam@networkimprov.net> wrote:
+>>> On Thu, May 4, 2017 at 9:52 AM, Andrew F. Davis <afd@ti.com> wrote:
+>>>> On 05/04/2017 01:18 AM, Liam Breck wrote:
+>>>>> From: Liam Breck <kernel@networkimprov.net>
+>>>>>
+>>>>> Previously there was no way to configure these chips in the event that the
+>>>>> defaults didn't match the battery in question.
+>>>>>
+>>>>> For chips with RAM data memory (and also those with flash/NVM data memory
+>>>>> if CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM is defined and the user has not
+>>>>> set module param dt_monitored_battery_updates_nvm=0) we now call
+>>>>> power_supply_get_battery_info(), check its values, and write battery
+>>>>> properties to chip data memory if there is a dm_regs table for the chip.
+>>>>>
+>>>>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>>>>> ---
+>>>>>  drivers/power/supply/Kconfig           |   9 ++
+>>>>>  drivers/power/supply/bq27xxx_battery.c | 199 ++++++++++++++++++++++++++++++++-
+>>>>>  include/linux/power/bq27xxx_battery.h  |   2 +
+>>>>>  3 files changed, 209 insertions(+), 1 deletion(-)
+>>>>>
+>>>>> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+>>>>> index 76806a0..85e2fb2 100644
+>>>>> --- a/drivers/power/supply/Kconfig
+>>>>> +++ b/drivers/power/supply/Kconfig
+>>>>> @@ -178,6 +178,15 @@ config BATTERY_BQ27XXX_I2C
+>>>>>         Say Y here to enable support for batteries with BQ27xxx chips
+>>>>>         connected over an I2C bus.
+>>>>>
+>>>>> +config BATTERY_BQ27XXX_DT_UPDATES_NVM
+>>>>> +     bool "BQ27xxx support for update of NVM/flash data memory"
+>>>>> +     depends on BATTERY_BQ27XXX_I2C
+>>>>> +     help
+>>>>> +       Say Y here to enable devicetree monitored-battery config to update
+>>>>> +       NVM/flash data memory. Only enable this option for devices with a
+>>>>> +       fuel gauge mounted on the circuit board, and a battery that cannot
+>>>>> +       be replaced with one of a different type.
+>>>>> +
+>>>>>  config BATTERY_DA9030
+>>>>>       tristate "DA9030 battery driver"
+>>>>>       depends on PMIC_DA903X
+>>>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>>>>> index 8ab184c..06f15da 100644
+>>>>> --- a/drivers/power/supply/bq27xxx_battery.c
+>>>>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>>>>> @@ -805,6 +805,13 @@ static LIST_HEAD(bq27xxx_battery_devices);
+>>>>>
+>>>>>  #define BQ27XXX_DM_SZ        32
+>>>>>
+>>>>> +struct bq27xxx_dm_reg {
+>>>>> +     u8 subclass_id;
+>>>>> +     u8 offset;
+>>>>> +     u8 bytes;
+>>>>> +     u16 min, max;
+>>>>> +};
+>>>>> +
+>>>>>  /**
+>>>>>   * struct bq27xxx_dm_buf - chip data memory buffer
+>>>>>   * @class: data memory subclass_id
+>>>>> @@ -822,6 +829,43 @@ struct bq27xxx_dm_buf {
+>>>>>       bool has_data, dirty;
+>>>>>  };
+>>>>>
+>>>>> +#define BQ27XXX_DM_BUF(di, i) { \
+>>>>> +     .class = (di)->dm_regs[i].subclass_id, \
+>>>>> +     .block = (di)->dm_regs[i].offset / BQ27XXX_DM_SZ, \
+>>>>> +}
+>>>>> +
+>>>>> +static inline u16 *bq27xxx_dm_reg_ptr(struct bq27xxx_dm_buf *buf,
+>>>>> +                                   struct bq27xxx_dm_reg *reg)
+>>>>> +{
+>>>>> +     if (buf->class == reg->subclass_id &&
+>>>>> +         buf->block == reg->offset / BQ27XXX_DM_SZ)
+>>>>> +             return (u16 *) (buf->data + reg->offset % BQ27XXX_DM_SZ);
+>>>>> +
+>>>>> +     return NULL;
+>>>>> +}
+>>>>> +
+>>>>> +enum bq27xxx_dm_reg_id {
+>>>>> +     BQ27XXX_DM_DESIGN_CAPACITY = 0,
+>>>>> +     BQ27XXX_DM_DESIGN_ENERGY,
+>>>>> +     BQ27XXX_DM_TERMINATE_VOLTAGE,
+>>>>> +};
+>>>>> +
+>>>>> +static const char * const bq27xxx_dm_reg_name[] = {
+>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY] = "design-capacity",
+>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY] = "design-energy",
+>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>>>>> +};
+>>>>> +
+>>>>> +
+>>>>> +#ifdef CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM
+>>>>> +static bool bq27xxx_dt_to_nvm = true;
+>>>>> +
+>>>>> +module_param_named(dt_monitored_battery_updates_nvm, bq27xxx_dt_to_nvm, bool, 0444);
+>>>>> +MODULE_PARM_DESC(dt_monitored_battery_updates_nvm,
+>>>>> +     "Devicetree monitored-battery config updates NVM/flash data memory, if present. Default is 1/y.");
+>>>>
+>>>> As before, the default should not be y, this is a rare case and I can't
+>>>> see it being useful or wanted by anyone but device manufacturers. I
+>>>> don't want everyones chip's factory programmed NVM overwritten by
+>>>> accident when someone compiles and ships a kernel with
+>>>> BATTERY_BQ27XXX_DT_UPDATES_NVM=y
+>>>
+>>> Right, the point of the config option is to let a device vendor ship a
+>>> kernel + dtb which can field-upgrade NVM. (Setting the option does
+>>> nothing absent the necessary dtb.)
+>>>
+>>> Module params are for end-user config; we can't require a device
+>>> vendor to ship /etc/modprobe.d/xyz. And we certainly don't want a
+>>> kernel package update to defeat the end-user config of
+>>> dt_monitored_battery_updates_nvm=0 !!
+>>>
+>>> I believe Sebastian agrees, given that he queued this patch :-)
+>>
+>> I clarified the rationale for module param default =1 above; could you ack?
+>>
+>> That prevents this scenario:
+>> 1) user changes battery type, sets dt_monitored_battery_updates_nvm=0
+>> 2) vendor ships kernel package with dtb update and
+>> dt_monitored_battery_updates_nvm=1
+>> 3) gauge stops working correctly
+>>
+>
+> Leaving it =1 will encourage this situation, not prevent it. Updating
+> NVM is a non-standard operation for these parts. It should only be done
+> once ideally. It is nice being able to update the NVM, and we have
+> user-space tools for this, but this is a dangerous operation, improperly
+> programming can brick the chip, as you have found out.
+>
+> If you want to add this function into the kernel driver that is fine,
+> but you *cannot* have this be the default, it needs to be a hidden away
+> option for people who know what they are doing, else you will end up
+> accidentally causing damage to countless users' hardware.
 
-On Friday 05 May 2017 23:55:46 Mario.Limonciello@dell.com wrote:
-> Unfortunately the MOF data that comes out of wmi-mof is so called
-> "Binary MOF" which has been pre-compiled to an intermediate format
-> with mofcomp.exe on Windows. The format of binary MOF is not
-> documented and the only known way to get text mof back out is by
-> using mofcomp.exe with some esoteric arguments.
->=20
-> mofcomp.exe -MOF:recovered.mof -MFL:ms_409.mof -Amendment:MS_409
-> binary_mof_file
+I don't think you followed my logic.... It *is* hidden behind a
+dedicated kernel config option which only device vendors (and
+tinkerers :-) would use. A kernel package with that option and
+suitable dtb has to perform the update without manipulation of the
+module param. The module param is to let the user prevent any future
+update by such a kernel package, since only he knows that he changed
+the battery type.
 
-Looks like that binary MOF file has "well-known" file extension .bmf.=20
-=46ile itself starts with magic hader "FOMB" which is in reverse BMOF=20
-(binary mof). But I was not able to find any specification nor any other=20
-details. As this binary format is dated back to Win9x I guess data would=20
-compressed by some old MS compression algorithm (CAB?).
-
-Moreover via tool wmiofck.exe it is possible to generate header file for=20
-WMI driver from binary mof file:
-
-  wmiofck.exe -hfile.h -m -u file.bmf
-
-And what is interesting that in this file are also comments which looks=20
-like comes from that binary mof file.
-
-When I looked into output from mofcomp.exe with above args, that MOF=20
-output did not contain comments, so looks like we still can miss=20
-something.
-
-See: http://blog.nietrzeba.pl/2011/12/mof-decompilation.html
-
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart4069339.OeqetiiWL2
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlkQqC4ACgkQi/DJPQPkQ1LN+ACfbct5S0mkwzCw/nD1v6hGHa2y
-zZ4An0UO6x9kfPY8l+47AOLRf/kQ/nAB
-=ohuJ
------END PGP SIGNATURE-----
-
---nextPart4069339.OeqetiiWL2--
+What is your evidence for the assertion of "encourage this situation"?
