@@ -1,537 +1,359 @@
-From: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
-Subject: [RFC 2/2] MAX1721x Standalone Fuel Gauge IC power_supply class driver
-Date: Mon,  8 May 2017 09:13:28 +0300
-Message-ID: <20170508061328.17370-3-minimumlaw@rambler.ru>
-References: <20170508061328.17370-1-minimumlaw@rambler.ru>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v13 08/11] power: supply: bq27xxx_battery: Add
+ power_supply_battery_info support
+Date: Sun, 7 May 2017 23:16:42 -0700
+Message-ID: <CAKvHMgS6XtrJDWgq=J_dnOBYUXLWG-zwBOaa3FHybEfkCDicvA@mail.gmail.com>
+References: <20170504061811.18107-1-liam@networkimprov.net>
+ <20170504061811.18107-9-liam@networkimprov.net> <f0121e38-9159-2bb4-26ca-1a4a72ba6ace@ti.com>
+ <CAKvHMgSWCW5g3L2PtEa6Yg_LWRU_ByDDO_NVJqQqzvoHgXO=GQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from huan2.mail.rambler.ru ([81.19.78.108]:12383 "EHLO
-        huan2.mail.rambler.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751401AbdEHGN6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 02:13:58 -0400
-In-Reply-To: <20170508061328.17370-1-minimumlaw@rambler.ru>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:33453 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751528AbdEHGQo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 02:16:44 -0400
+Received: by mail-io0-f195.google.com with SMTP id l196so8090854ioe.0
+        for <linux-pm@vger.kernel.org>; Sun, 07 May 2017 23:16:43 -0700 (PDT)
+In-Reply-To: <CAKvHMgSWCW5g3L2PtEa6Yg_LWRU_ByDDO_NVJqQqzvoHgXO=GQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>
-Cc: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
----
- drivers/power/supply/Kconfig            |  14 ++
- drivers/power/supply/Makefile           |   1 +
- drivers/power/supply/max1721x_battery.c | 361 ++++++++++++++++++++++++++++++++
- include/linux/power/max172xx-battery.h  | 100 +++++++++
- 4 files changed, 476 insertions(+)
- create mode 100644 drivers/power/supply/max1721x_battery.c
- create mode 100644 include/linux/power/max172xx-battery.h
+On Thu, May 4, 2017 at 11:40 AM, Liam Breck <liam@networkimprov.net> wrote:
+> On Thu, May 4, 2017 at 9:52 AM, Andrew F. Davis <afd@ti.com> wrote:
+>> On 05/04/2017 01:18 AM, Liam Breck wrote:
+>>> From: Liam Breck <kernel@networkimprov.net>
+>>>
+>>> Previously there was no way to configure these chips in the event that the
+>>> defaults didn't match the battery in question.
+>>>
+>>> For chips with RAM data memory (and also those with flash/NVM data memory
+>>> if CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM is defined and the user has not
+>>> set module param dt_monitored_battery_updates_nvm=0) we now call
+>>> power_supply_get_battery_info(), check its values, and write battery
+>>> properties to chip data memory if there is a dm_regs table for the chip.
+>>>
+>>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>>> ---
+>>>  drivers/power/supply/Kconfig           |   9 ++
+>>>  drivers/power/supply/bq27xxx_battery.c | 199 ++++++++++++++++++++++++++++++++-
+>>>  include/linux/power/bq27xxx_battery.h  |   2 +
+>>>  3 files changed, 209 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+>>> index 76806a0..85e2fb2 100644
+>>> --- a/drivers/power/supply/Kconfig
+>>> +++ b/drivers/power/supply/Kconfig
+>>> @@ -178,6 +178,15 @@ config BATTERY_BQ27XXX_I2C
+>>>         Say Y here to enable support for batteries with BQ27xxx chips
+>>>         connected over an I2C bus.
+>>>
+>>> +config BATTERY_BQ27XXX_DT_UPDATES_NVM
+>>> +     bool "BQ27xxx support for update of NVM/flash data memory"
+>>> +     depends on BATTERY_BQ27XXX_I2C
+>>> +     help
+>>> +       Say Y here to enable devicetree monitored-battery config to update
+>>> +       NVM/flash data memory. Only enable this option for devices with a
+>>> +       fuel gauge mounted on the circuit board, and a battery that cannot
+>>> +       be replaced with one of a different type.
+>>> +
+>>>  config BATTERY_DA9030
+>>>       tristate "DA9030 battery driver"
+>>>       depends on PMIC_DA903X
+>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>>> index 8ab184c..06f15da 100644
+>>> --- a/drivers/power/supply/bq27xxx_battery.c
+>>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>>> @@ -805,6 +805,13 @@ static LIST_HEAD(bq27xxx_battery_devices);
+>>>
+>>>  #define BQ27XXX_DM_SZ        32
+>>>
+>>> +struct bq27xxx_dm_reg {
+>>> +     u8 subclass_id;
+>>> +     u8 offset;
+>>> +     u8 bytes;
+>>> +     u16 min, max;
+>>> +};
+>>> +
+>>>  /**
+>>>   * struct bq27xxx_dm_buf - chip data memory buffer
+>>>   * @class: data memory subclass_id
+>>> @@ -822,6 +829,43 @@ struct bq27xxx_dm_buf {
+>>>       bool has_data, dirty;
+>>>  };
+>>>
+>>> +#define BQ27XXX_DM_BUF(di, i) { \
+>>> +     .class = (di)->dm_regs[i].subclass_id, \
+>>> +     .block = (di)->dm_regs[i].offset / BQ27XXX_DM_SZ, \
+>>> +}
+>>> +
+>>> +static inline u16 *bq27xxx_dm_reg_ptr(struct bq27xxx_dm_buf *buf,
+>>> +                                   struct bq27xxx_dm_reg *reg)
+>>> +{
+>>> +     if (buf->class == reg->subclass_id &&
+>>> +         buf->block == reg->offset / BQ27XXX_DM_SZ)
+>>> +             return (u16 *) (buf->data + reg->offset % BQ27XXX_DM_SZ);
+>>> +
+>>> +     return NULL;
+>>> +}
+>>> +
+>>> +enum bq27xxx_dm_reg_id {
+>>> +     BQ27XXX_DM_DESIGN_CAPACITY = 0,
+>>> +     BQ27XXX_DM_DESIGN_ENERGY,
+>>> +     BQ27XXX_DM_TERMINATE_VOLTAGE,
+>>> +};
+>>> +
+>>> +static const char * const bq27xxx_dm_reg_name[] = {
+>>> +     [BQ27XXX_DM_DESIGN_CAPACITY] = "design-capacity",
+>>> +     [BQ27XXX_DM_DESIGN_ENERGY] = "design-energy",
+>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>>> +};
+>>> +
+>>> +
+>>> +#ifdef CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM
+>>> +static bool bq27xxx_dt_to_nvm = true;
+>>> +
+>>> +module_param_named(dt_monitored_battery_updates_nvm, bq27xxx_dt_to_nvm, bool, 0444);
+>>> +MODULE_PARM_DESC(dt_monitored_battery_updates_nvm,
+>>> +     "Devicetree monitored-battery config updates NVM/flash data memory, if present. Default is 1/y.");
+>>
+>> As before, the default should not be y, this is a rare case and I can't
+>> see it being useful or wanted by anyone but device manufacturers. I
+>> don't want everyones chip's factory programmed NVM overwritten by
+>> accident when someone compiles and ships a kernel with
+>> BATTERY_BQ27XXX_DT_UPDATES_NVM=y
+>
+> Right, the point of the config option is to let a device vendor ship a
+> kernel + dtb which can field-upgrade NVM. (Setting the option does
+> nothing absent the necessary dtb.)
+>
+> Module params are for end-user config; we can't require a device
+> vendor to ship /etc/modprobe.d/xyz. And we certainly don't want a
+> kernel package update to defeat the end-user config of
+> dt_monitored_battery_updates_nvm=0 !!
+>
+> I believe Sebastian agrees, given that he queued this patch :-)
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index da54ac8..0df90ac 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -268,6 +268,20 @@ config BATTERY_MAX17042
- 	  with MAX17042. This driver also supports max17047/50 chips which are
- 	  improved version of max17042.
- 
-+config BATTERY_MAX1721X
-+	tristate "MAX17211/MAX17215 standalone gas-gauge"
-+	depends on W1
-+	select W1_SLAVE_MAX1721X
-+	select REGMAP_W1
-+	help
-+	  MAX1721x is fuel-gauge systems for lithium-ion (Li+) batteries
-+	  in handheld and portable equipment. MAX17211 used with single cell
-+	  battery. MAX17215 designed for muticell battery. Both them have
-+	  OneWire (W1) host interface.
-+
-+	  Say Y here to enable support for the MAX17211/MAX17215 standalone
-+	  battery gas-gauge.
-+
- config BATTERY_Z2
- 	tristate "Z2 battery driver"
- 	depends on I2C && MACH_ZIPIT2
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 3789a2c..c785d05 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -41,6 +41,7 @@ obj-$(CONFIG_CHARGER_DA9150)	+= da9150-charger.o
- obj-$(CONFIG_BATTERY_DA9150)	+= da9150-fg.o
- obj-$(CONFIG_BATTERY_MAX17040)	+= max17040_battery.o
- obj-$(CONFIG_BATTERY_MAX17042)	+= max17042_battery.o
-+obj-$(CONFIG_BATTERY_MAX1721X)	+= max1721x_battery.o
- obj-$(CONFIG_BATTERY_Z2)	+= z2_battery.o
- obj-$(CONFIG_BATTERY_RT5033)	+= rt5033_battery.o
- obj-$(CONFIG_CHARGER_RT9455)	+= rt9455_charger.o
-diff --git a/drivers/power/supply/max1721x_battery.c b/drivers/power/supply/max1721x_battery.c
-new file mode 100644
-index 0000000..5b0bbb0
---- /dev/null
-+++ b/drivers/power/supply/max1721x_battery.c
-@@ -0,0 +1,361 @@
-+/*
-+ * 1-wire client/driver for the Maxim Semicondactor
-+ * MAX17211/MAX17215 Standalone Fuel Gauge IC
-+ *
-+ * Copyright (C) 2017 OAO Radioavionica
-+ * Author: Alex A. Mihaylov <minimumlaw@rambler.ru>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/param.h>
-+#include <linux/pm.h>
-+#include <linux/regmap.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/idr.h>
-+
-+#include "../../w1/w1.h"
-+#include "linux/power/max172xx-battery.h"
-+
-+#define DEF_DEV_NAME_MAX17211	"MAX17211"
-+#define DEF_DEV_NAME_MAX17215	"MAX17215"
-+#define DEF_DEV_NAME_UNKNOWN	"UNKNOWN"
-+#define DEF_MFG_NAME		"MAXIM"
-+
-+struct max17211_device_info {
-+	struct power_supply *bat;
-+	struct power_supply_desc bat_desc;
-+	struct device *w1_dev;
-+	struct regmap *regmap;
-+	/* battery design format */
-+	unsigned int rsense; /* in tenths uOhm */
-+	char DeviceName[2 * MAX1721X_REG_DEV_NUMB + 1];
-+	char ManufacturerName[2 * MAX1721X_REG_MFG_NUMB + 1];
-+	char SerialNumber[13]; /* see get_sn_str() later for comment */
-+};
-+
-+static inline struct max17211_device_info *
-+to_device_info(struct power_supply *psy)
-+{
-+	return power_supply_get_drvdata(psy);
-+}
-+
-+static int max1721x_battery_get_property(struct power_supply *psy,
-+	enum power_supply_property psp,
-+	union power_supply_propval *val)
-+{
-+	struct max17211_device_info *info = to_device_info(psy);
-+	unsigned int reg = 0;
-+	int ret = 0;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		/*
-+		 * POWER_SUPPLY_PROP_PRESENT will always readable via
-+		 * sysfs interface. Value return 0 if battery not
-+		 * present or unaccesable via W1.
-+		 */
-+		val->intval =
-+			regmap_read(info->regmap, MAX172XX_REG_STATUS,
-+			&reg) ? 0 : !(reg & MAX172XX_BAT_PRESENT);
-+		break;
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_REPSOC, &reg);
-+		val->intval = max172xx_percent_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_BATT, &reg);
-+		val->intval = max172xx_voltage_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_DESIGNCAP, &reg);
-+		val->intval = max172xx_capacity_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_AVG:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_REPCAP, &reg);
-+		val->intval = max172xx_capacity_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_TTE, &reg);
-+		val->intval = max172xx_time_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_TIME_TO_FULL_AVG:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_TTF, &reg);
-+		val->intval = max172xx_time_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_TEMP:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_TEMP, &reg);
-+		val->intval = max172xx_temperature_to_ps(reg);
-+		break;
-+	/* We need signed current, so must cast info->rsense to signed type */
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_CURRENT, &reg);
-+		val->intval =
-+			max172xx_current_to_voltage(reg) / (int)info->rsense;
-+		break;
-+	case POWER_SUPPLY_PROP_CURRENT_AVG:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_AVGCURRENT, &reg);
-+		val->intval =
-+			max172xx_current_to_voltage(reg) / (int)info->rsense;
-+		break;
-+	/*
-+	 * Strings already received and inited by probe.
-+	 * We do dummy read for check battery still available.
-+	 */
-+	case POWER_SUPPLY_PROP_MODEL_NAME:
-+		ret = regmap_read(info->regmap, MAX1721X_REG_DEV_STR, &reg);
-+		val->strval = info->DeviceName;
-+		break;
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		ret = regmap_read(info->regmap, MAX1721X_REG_MFG_STR, &reg);
-+		val->strval = info->ManufacturerName;
-+		break;
-+	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
-+		ret = regmap_read(info->regmap, MAX1721X_REG_SER_HEX, &reg);
-+		val->strval = info->SerialNumber;
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+static enum power_supply_property max1721x_battery_props[] = {
-+	/* int */
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_CHARGE_AVG,
-+	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
-+	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
-+	POWER_SUPPLY_PROP_TEMP,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_AVG,
-+	/* strings */
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_SERIAL_NUMBER,
-+};
-+
-+static int get_string(struct max17211_device_info *info,
-+			uint16_t reg, uint8_t nr, char *str)
-+{
-+	unsigned int val;
-+
-+	if (!str || !(reg == MAX1721X_REG_MFG_STR ||
-+			reg == MAX1721X_REG_DEV_STR))
-+		return -EFAULT;
-+
-+	while (nr--) {
-+		if (regmap_read(info->regmap, reg++, &val))
-+			return -EFAULT;
-+		*str++ = val>>8 & 0x00FF;
-+		*str++ = val & 0x00FF;
-+	}
-+	return 0;
-+}
-+
-+/* Maxim say: Serial number is a hex string up to 12 hex characters */
-+static int get_sn_string(struct max17211_device_info *info, char *str)
-+{
-+	unsigned int val[3];
-+
-+	if (!str)
-+		return -EFAULT;
-+
-+	if (regmap_read(info->regmap, MAX1721X_REG_SER_HEX, &val[0]))
-+		return -EFAULT;
-+	if (regmap_read(info->regmap, MAX1721X_REG_SER_HEX + 1, &val[1]))
-+		return -EFAULT;
-+	if (regmap_read(info->regmap, MAX1721X_REG_SER_HEX + 2, &val[2]))
-+		return -EFAULT;
-+
-+	snprintf(str, 13, "%04X%04X%04X", val[0], val[1], val[2]);
-+	return 0;
-+}
-+
-+/* Model Gauge M5 Register Memory Map access */
-+static const struct regmap_range max1721x_regs_allow[] = {
-+	/* M5 Model Gauge Algorithm area */
-+	regmap_reg_range(0x00, 0x23),
-+	regmap_reg_range(0x27, 0x2F),
-+	regmap_reg_range(0x32, 0x32),
-+	regmap_reg_range(0x35, 0x36),
-+	regmap_reg_range(0x38, 0x3A),
-+	regmap_reg_range(0x3D, 0x3F),
-+	regmap_reg_range(0x42, 0x42),
-+	regmap_reg_range(0x45, 0x46),
-+	regmap_reg_range(0x4A, 0x4A),
-+	regmap_reg_range(0x4D, 0x4D),
-+	regmap_reg_range(0xB0, 0xB0),
-+	regmap_reg_range(0xB4, 0xB4),
-+	regmap_reg_range(0xB8, 0xBE),
-+	regmap_reg_range(0xD1, 0xDA),
-+	regmap_reg_range(0xDC, 0xDF),
-+	/* Factory settins area */
-+	regmap_reg_range(0x180, 0x1DF),
-+	{ }
-+};
-+
-+static const struct regmap_range max1721x_regs_deny[] = {
-+	regmap_reg_range(0x24, 0x26),
-+	regmap_reg_range(0x30, 0x31),
-+	regmap_reg_range(0x33, 0x34),
-+	regmap_reg_range(0x37, 0x37),
-+	regmap_reg_range(0x3B, 0x3C),
-+	regmap_reg_range(0x40, 0x41),
-+	regmap_reg_range(0x43, 0x44),
-+	regmap_reg_range(0x47, 0x49),
-+	regmap_reg_range(0x4B, 0x4C),
-+	regmap_reg_range(0x4E, 0xAF),
-+	regmap_reg_range(0xB1, 0xB3),
-+	regmap_reg_range(0xB5, 0xB7),
-+	regmap_reg_range(0xBF, 0xD0),
-+	regmap_reg_range(0xDB, 0xDB),
-+	regmap_reg_range(0xE0, 0x17F),
-+	{ }
-+};
-+
-+static const struct regmap_access_table max1721x_regs = {
-+	.yes_ranges	= max1721x_regs_allow,
-+	.n_yes_ranges	= ARRAY_SIZE(max1721x_regs_allow),
-+	.no_ranges	= max1721x_regs_deny,
-+	.n_no_ranges	= ARRAY_SIZE(max1721x_regs_deny),
-+};
-+
-+/* W1 regmap config */
-+static const struct regmap_config max1721x_regmap_w1_config = {
-+	.reg_bits = 16,
-+	.val_bits = 16,
-+	.volatile_table = &max1721x_regs,
-+	.max_register = MAX1721X_MAX_REG_NR,
-+};
-+
-+static int w1_max1721x_add_device(struct w1_slave *sl)
-+{
-+	struct power_supply_config psy_cfg = {};
-+	struct max17211_device_info *info;
-+
-+	info = devm_kzalloc(&sl->dev, sizeof(*info), GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	sl->family_data = (void *)info;
-+
-+	info->w1_dev = &sl->dev;
-+	info->bat_desc.name = dev_name(&sl->dev);
-+	info->bat_desc.type = POWER_SUPPLY_TYPE_BATTERY;
-+	info->bat_desc.properties = max1721x_battery_props;
-+	info->bat_desc.num_properties = ARRAY_SIZE(max1721x_battery_props);
-+	info->bat_desc.get_property = max1721x_battery_get_property;
-+	psy_cfg.drv_data = info;
-+
-+	/* regmap init */
-+	info->regmap = regmap_init_w1(info->w1_dev,
-+					&max1721x_regmap_w1_config);
-+	if (IS_ERR(info->regmap)) {
-+		int err = PTR_ERR(info->regmap);
-+
-+		dev_err(info->w1_dev, "Failed to allocate register map: %d\n",
-+			err);
-+		return err;
-+	}
-+
-+	/* rsense init */
-+	info->rsense = 0;
-+	if (regmap_read(info->regmap, MAX1721X_REG_NRSENSE, &info->rsense))
-+
-+	if (!info->rsense) {
-+		dev_warn(info->w1_dev, "RSenese not calibrated, set 10 mOhms!\n");
-+		info->rsense = 1000; /* in regs in 10^-5 */
-+	}
-+	dev_info(info->w1_dev, "RSense: %d mOhms.\n", info->rsense / 100);
-+
-+	if (get_string(info, MAX1721X_REG_MFG_STR,
-+			MAX1721X_REG_MFG_NUMB, info->ManufacturerName)) {
-+		dev_err(info->w1_dev, "Can't read manufacturer. Hardware error.\n");
-+		return -ENODEV;
-+	}
-+
-+	if (!info->ManufacturerName[0])
-+		strncpy(info->ManufacturerName, DEF_MFG_NAME,
-+			2 * MAX1721X_REG_MFG_NUMB);
-+
-+	if (get_string(info, MAX1721X_REG_DEV_STR,
-+			MAX1721X_REG_DEV_NUMB, info->DeviceName)) {
-+		dev_err(info->w1_dev, "Can't read device. Hardware error.\n");
-+		return -ENODEV;
-+	}
-+	if (!info->DeviceName[0]) {
-+		unsigned int dev_name;
-+
-+		if (regmap_read(info->regmap,
-+				MAX172XX_REG_DEVNAME, &dev_name)) {
-+			dev_err(info->w1_dev, "Can't read device name reg.\n");
-+			return -ENODEV;
-+		}
-+
-+		switch (dev_name & MAX172XX_DEV_MASK) {
-+		case MAX172X1_DEV:
-+			strncpy(info->DeviceName, DEF_DEV_NAME_MAX17211,
-+				2 * MAX1721X_REG_DEV_NUMB);
-+			break;
-+		case MAX172X5_DEV:
-+			strncpy(info->DeviceName, DEF_DEV_NAME_MAX17215,
-+				2 * MAX1721X_REG_DEV_NUMB);
-+			break;
-+		default:
-+			strncpy(info->DeviceName, DEF_DEV_NAME_UNKNOWN,
-+				2 * MAX1721X_REG_DEV_NUMB);
-+		}
-+	}
-+
-+	if (get_sn_string(info, info->SerialNumber)) {
-+		dev_err(info->w1_dev, "Can't read serial. Hardware error.\n");
-+		return -ENODEV;
-+	}
-+
-+	info->bat = power_supply_register(&sl->dev, &info->bat_desc,
-+						&psy_cfg);
-+	if (IS_ERR(info->bat)) {
-+		dev_err(info->w1_dev, "failed to register battery\n");
-+		return PTR_ERR(info->bat);
-+	}
-+
-+	return 0;
-+}
-+
-+static void w1_max1721x_remove_device(struct w1_slave *sl)
-+{
-+	struct max17211_device_info *info =
-+		(struct max17211_device_info *)sl->family_data;
-+
-+	power_supply_unregister(info->bat);
-+	regmap_exit(info->regmap);
-+	kfree(info);
-+}
-+
-+static struct w1_family_ops w1_max1721x_fops = {
-+	.add_slave = w1_max1721x_add_device,
-+	.remove_slave = w1_max1721x_remove_device,
-+};
-+
-+static struct w1_family w1_max1721x_family = {
-+	.fid = W1_MAX1721X_FAMILY_ID,
-+	.fops = &w1_max1721x_fops,
-+};
-+
-+module_w1_family(w1_max1721x_family);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Alex A. Mihaylov <minimumlaw@rambler.ru>");
-+MODULE_DESCRIPTION("Maxim MAX17211/MAX17215 Fuel Gauage IC driver");
-+MODULE_ALIAS("w1-family-" __stringify(W1_MAX1721X_FAMILY_ID));
-diff --git a/include/linux/power/max172xx-battery.h b/include/linux/power/max172xx-battery.h
-new file mode 100644
-index 0000000..c46ac56
---- /dev/null
-+++ b/include/linux/power/max172xx-battery.h
-@@ -0,0 +1,100 @@
-+/*
-+ * 1-Wire implementation for Maxim Semiconductor
-+ * MAX7211/MAX17215 stanalone fuel gauge chip
-+ *
-+ * Copyright (C) 2017 OAO Radioavionica
-+ * Author: Alex A. Mihaylov <minimumlaw@rambler.ru>
-+ *
-+ * Use consistent with the GNU GPL is permitted,
-+ * provided that this copyright notice is
-+ * preserved in its entirety in all copies and derived works.
-+ *
-+ */
-+
-+#ifndef __w1_max172xx_h__
-+#define __w1_max172xx_h__
-+
-+/* Known commands to the MAX1721X chip */
-+#define W1_MAX1721X_FAMILY_ID		0x26
-+
-+/* Factory settings (nonvilatile registers) (W1 specific) */
-+
-+#define MAX1721X_REG_NRSENSE	0x1CF	/* RSense in 10^-5 Ohm */
-+/* Strings */
-+#define MAX1721X_REG_MFG_STR	0x1CC
-+#define MAX1721X_REG_MFG_NUMB	3
-+#define MAX1721X_REG_DEV_STR	0x1DB
-+#define MAX1721X_REG_DEV_NUMB	5
-+/* HEX Strings */
-+#define MAX1721X_REG_SER_HEX	0x1D8
-+
-+/* MAX172XX Output Registers for W1 chips */
-+#define MAX172XX_REG_STATUS	0x000	/* status reg */
-+#define MAX172XX_BAT_PRESENT	(1<<4)	/* battery connected bit */
-+#define MAX172XX_REG_DEVNAME	0x021	/* chip config */
-+#define MAX172XX_DEV_MASK	0x000F	/* chip type mask */
-+#define MAX172X1_DEV		0x0001
-+#define MAX172X5_DEV		0x0005
-+#define MAX172XX_REG_TEMP	0x008	/* Temperature */
-+#define MAX172XX_REG_BATT	0x0DA	/* Battery voltage */
-+#define MAX172XX_REG_CURRENT	0x00A	/* Actual current */
-+#define MAX172XX_REG_AVGCURRENT	0x00B	/* Average current */
-+#define MAX172XX_REG_REPSOC	0x006	/* Percentage of charge */
-+#define MAX172XX_REG_DESIGNCAP	0x018	/* Design capacity */
-+#define MAX172XX_REG_REPCAP	0x005	/* Average capacity */
-+#define MAX172XX_REG_TTE	0x011	/* Time to empty */
-+#define MAX172XX_REG_TTF	0x020	/* Time to full */
-+
-+/* Number of valid register addresses in W1 mode */
-+#define MAX1721X_MAX_REG_NR	0x1EF
-+
-+/* Convert regs value to power_supply units */
-+
-+static inline int max172xx_time_to_ps(unsigned int reg)
-+{
-+	return reg * 5625 / 1000;	/* in sec. */
-+}
-+
-+static inline int max172xx_percent_to_ps(unsigned int reg)
-+{
-+	return reg / 256;	/* in percent from 0 to 100 */
-+}
-+
-+static inline int max172xx_voltage_to_ps(unsigned int reg)
-+{
-+	return reg * 1250;	/* in uV */
-+}
-+
-+static inline int max172xx_capacity_to_ps(unsigned int reg)
-+{
-+	return reg * 500;	/* in uAh */
-+}
-+
-+/*
-+ * Current and temperature is signed values, so unsigned regs
-+ * value must be converted to signed type
-+ */
-+
-+static inline int max172xx_temperature_to_ps(unsigned int reg)
-+{
-+	int val = (int16_t)(reg);
-+
-+	return val * 10 / 256; /* in tenths of deg. C */
-+}
-+
-+/*
-+ * Calculating current registers resolution:
-+ *
-+ * RSense stored in 10^-5 Ohm, so mesaurment voltage must be
-+ * in 10^-11 Volts for get current in uA.
-+ * 16 bit current reg fullscale +/-51.2mV is 102400 uV.
-+ * So: 102400 / 65535 * 10^5 = 156252
-+ */
-+static inline int max172xx_current_to_voltage(unsigned int reg)
-+{
-+	int val = (int16_t)(reg);
-+
-+	return val * 156252;
-+}
-+
-+#endif /* !__w1_max172xx_h__ */
--- 
-2.8.4 (Apple Git-73)
+I clarified the rationale for module param default =1 above; could you ack?
+
+That prevents this scenario:
+1) user changes battery type, sets dt_monitored_battery_updates_nvm=0
+2) vendor ships kernel package with dtb update and
+dt_monitored_battery_updates_nvm=1
+3) gauge stops working correctly
+
+
+>>> +#else
+>>> +static bool bq27xxx_dt_to_nvm = false;
+>>> +#endif
+>>>
+>>>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
+>>>  {
+>>> @@ -1019,6 +1063,51 @@ static int bq27xxx_battery_read_dm_block(struct bq27xxx_device_info *di,
+>>>       return ret;
+>>>  }
+>>>
+>>> +static void bq27xxx_battery_update_dm_block(struct bq27xxx_device_info *di,
+>>> +                                         struct bq27xxx_dm_buf *buf,
+>>> +                                         enum bq27xxx_dm_reg_id reg_id,
+>>> +                                         unsigned int val)
+>>> +{
+>>> +     struct bq27xxx_dm_reg *reg = &di->dm_regs[reg_id];
+>>> +     const char *str = bq27xxx_dm_reg_name[reg_id];
+>>> +     u16 *prev = bq27xxx_dm_reg_ptr(buf, reg);
+>>> +
+>>> +     if (prev == NULL) {
+>>> +             dev_warn(di->dev, "buffer does not match %s dm spec\n", str);
+>>> +             return;
+>>> +     }
+>>> +
+>>> +     if (reg->bytes != 2) {
+>>> +             dev_warn(di->dev, "%s dm spec has unsupported byte size\n", str);
+>>> +             return;
+>>> +     }
+>>> +
+>>> +     if (!buf->has_data)
+>>> +             return;
+>>> +
+>>> +     if (be16_to_cpup(prev) == val) {
+>>> +             dev_info(di->dev, "%s has %u\n", str, val);
+>>> +             return;
+>>> +     }
+>>> +
+>>> +     if (!di->ram_chip && !bq27xxx_dt_to_nvm) {
+>>> +             /* devicetree and NVM differ; defer to NVM */
+>>> +             dev_warn(di->dev, "%s has %u; update to %u disallowed "
+>>> +#ifdef CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM
+>>> +                      "by dt_monitored_battery_updates_nvm=0"
+>>> +#else
+>>> +                      "for flash/NVM data memory"
+>>> +#endif
+>>> +                      "\n", str, be16_to_cpup(prev), val);
+>>> +             return;
+>>> +     }
+>>> +
+>>> +     dev_info(di->dev, "update %s to %u\n", str, val);
+>>> +
+>>> +     *prev = cpu_to_be16(val);
+>>> +     buf->dirty = true;
+>>> +}
+>>> +
+>>>  static int bq27xxx_battery_set_cfgupdate(struct bq27xxx_device_info *di, u16 state)
+>>>  {
+>>>       const int limit = 100;
+>>> @@ -1117,6 +1206,103 @@ static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
+>>>       return ret;
+>>>  }
+>>>
+>>> +static void bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
+>>> +                                    struct power_supply_battery_info *info)
+>>> +{
+>>> +     struct bq27xxx_dm_buf bd = BQ27XXX_DM_BUF(di, BQ27XXX_DM_DESIGN_CAPACITY);
+>>> +     struct bq27xxx_dm_buf bt = BQ27XXX_DM_BUF(di, BQ27XXX_DM_TERMINATE_VOLTAGE);
+>>> +     bool updated;
+>>> +
+>>> +     if (bq27xxx_battery_unseal(di) < 0)
+>>> +             return;
+>>> +
+>>> +     if (info->charge_full_design_uah != -EINVAL &&
+>>> +         info->energy_full_design_uwh != -EINVAL) {
+>>> +             bq27xxx_battery_read_dm_block(di, &bd);
+>>> +             /* assume design energy & capacity are in same block */
+>>> +             bq27xxx_battery_update_dm_block(di, &bd,
+>>> +                                     BQ27XXX_DM_DESIGN_CAPACITY,
+>>> +                                     info->charge_full_design_uah / 1000);
+>>> +             bq27xxx_battery_update_dm_block(di, &bd,
+>>> +                                     BQ27XXX_DM_DESIGN_ENERGY,
+>>> +                                     info->energy_full_design_uwh / 1000);
+>>> +     }
+>>> +
+>>> +     if (info->voltage_min_design_uv != -EINVAL) {
+>>> +             bool same = bd.class == bt.class && bd.block == bt.block;
+>>> +             if (!same)
+>>> +                     bq27xxx_battery_read_dm_block(di, &bt);
+>>> +             bq27xxx_battery_update_dm_block(di, same ? &bd : &bt,
+>>> +                                     BQ27XXX_DM_TERMINATE_VOLTAGE,
+>>> +                                     info->voltage_min_design_uv / 1000);
+>>> +     }
+>>> +
+>>> +     updated = bd.dirty || bt.dirty;
+>>> +
+>>> +     bq27xxx_battery_write_dm_block(di, &bd);
+>>> +     bq27xxx_battery_write_dm_block(di, &bt);
+>>> +
+>>> +     bq27xxx_battery_seal(di);
+>>> +
+>>> +     if (updated && di->chip != BQ27421) { /* not a cfgupdate chip, so reset */
+>>> +             bq27xxx_write(di, BQ27XXX_REG_CTRL, BQ27XXX_RESET, false);
+>>> +             BQ27XXX_MSLEEP(300); /* reset time is not documented */
+>>> +     }
+>>> +     /* assume bq27xxx_battery_update() is called hereafter */
+>>> +}
+>>> +
+>>> +static void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
+>>> +{
+>>> +     struct power_supply_battery_info info = {};
+>>> +     unsigned int min, max;
+>>> +
+>>> +     if (power_supply_get_battery_info(di->bat, &info) < 0)
+>>> +             return;
+>>> +
+>>> +     if (!di->dm_regs) {
+>>> +             dev_warn(di->dev, "data memory update not supported for chip\n");
+>>> +             return;
+>>> +     }
+>>> +
+>>> +     if (info.energy_full_design_uwh != info.charge_full_design_uah) {
+>>> +             if (info.energy_full_design_uwh == -EINVAL)
+>>> +                     dev_warn(di->dev, "missing battery:energy-full-design-microwatt-hours\n");
+>>> +             else if (info.charge_full_design_uah == -EINVAL)
+>>> +                     dev_warn(di->dev, "missing battery:charge-full-design-microamp-hours\n");
+>>> +     }
+>>> +
+>>> +     /* assume min == 0 */
+>>> +     max = di->dm_regs[BQ27XXX_DM_DESIGN_ENERGY].max;
+>>> +     if (info.energy_full_design_uwh > max * 1000) {
+>>> +             dev_err(di->dev, "invalid battery:energy-full-design-microwatt-hours %d\n",
+>>> +                     info.energy_full_design_uwh);
+>>> +             info.energy_full_design_uwh = -EINVAL;
+>>> +     }
+>>> +
+>>> +     /* assume min == 0 */
+>>> +     max = di->dm_regs[BQ27XXX_DM_DESIGN_CAPACITY].max;
+>>> +     if (info.charge_full_design_uah > max * 1000) {
+>>> +             dev_err(di->dev, "invalid battery:charge-full-design-microamp-hours %d\n",
+>>> +                     info.charge_full_design_uah);
+>>> +             info.charge_full_design_uah = -EINVAL;
+>>> +     }
+>>> +
+>>> +     min = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].min;
+>>> +     max = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].max;
+>>> +     if ((info.voltage_min_design_uv < min * 1000 ||
+>>> +          info.voltage_min_design_uv > max * 1000) &&
+>>> +          info.voltage_min_design_uv != -EINVAL) {
+>>> +             dev_err(di->dev, "invalid battery:voltage-min-design-microvolt %d\n",
+>>> +                     info.voltage_min_design_uv);
+>>> +             info.voltage_min_design_uv = -EINVAL;
+>>> +     }
+>>> +
+>>> +     if ((info.energy_full_design_uwh != -EINVAL &&
+>>> +          info.charge_full_design_uah != -EINVAL) ||
+>>> +          info.voltage_min_design_uv  != -EINVAL)
+>>> +             bq27xxx_battery_set_config(di, &info);
+>>> +}
+>>> +
+>>>  /*
+>>>   * Return the battery State-of-Charge
+>>>   * Or < 0 if something fails.
+>>> @@ -1634,6 +1820,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+>>>       case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+>>>               ret = bq27xxx_simple_value(di->charge_design_full, val);
+>>>               break;
+>>> +     /*
+>>> +      * TODO: Implement these to make registers set from
+>>> +      * power_supply_battery_info visible in sysfs.
+>>> +      */
+>>> +     case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
+>>> +     case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+>>> +             return -EINVAL;
+>>>       case POWER_SUPPLY_PROP_CYCLE_COUNT:
+>>>               ret = bq27xxx_simple_value(di->cache.cycle_count, val);
+>>>               break;
+>>> @@ -1667,7 +1860,10 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+>>>  int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>>  {
+>>>       struct power_supply_desc *psy_desc;
+>>> -     struct power_supply_config psy_cfg = { .drv_data = di, };
+>>> +     struct power_supply_config psy_cfg = {
+>>> +             .of_node = di->dev->of_node,
+>>> +             .drv_data = di,
+>>> +     };
+>>>
+>>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>>>       mutex_init(&di->lock);
+>>> @@ -1692,6 +1888,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>>
+>>>       dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+>>>
+>>> +     bq27xxx_battery_settings(di);
+>>>       bq27xxx_battery_update(di);
+>>>
+>>>       mutex_lock(&bq27xxx_list_lock);
+>>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+>>> index b1defb8..11e1168 100644
+>>> --- a/include/linux/power/bq27xxx_battery.h
+>>> +++ b/include/linux/power/bq27xxx_battery.h
+>>> @@ -63,7 +63,9 @@ struct bq27xxx_device_info {
+>>>       struct device *dev;
+>>>       int id;
+>>>       enum bq27xxx_chip chip;
+>>> +     bool ram_chip;
+>>>       const char *name;
+>>> +     struct bq27xxx_dm_reg *dm_regs;
+>>>       u32 unseal_key;
+>>>       struct bq27xxx_access_methods bus;
+>>>       struct bq27xxx_reg_cache cache;
+>>>
