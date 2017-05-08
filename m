@@ -1,103 +1,73 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v13 10/11] power: supply: bq27xxx_battery: Flag identical
- register maps when in debug mode
-Date: Mon, 8 May 2017 14:12:46 -0500
-Message-ID: <a3139d5f-aa3c-7073-db4f-416c740184f7@ti.com>
-References: <20170504061811.18107-1-liam@networkimprov.net>
- <20170504061811.18107-11-liam@networkimprov.net>
- <5bf09742-fb6e-69cf-b4cd-3042656f5985@ti.com>
- <CAKvHMgRW4=uV2Fq-LLxht2wjZ=aKmZavfoi_-gW+dLAwrvgfqA@mail.gmail.com>
- <d7f71378-c667-e8a8-6b9e-d3cfd369d13e@ti.com>
- <CAKvHMgRF4r7e2F6DR-M5zNrOcEROZZDa1ihNQx+BtUfU8dxd_w@mail.gmail.com>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: RFC: WMI Enhancements
+Date: Mon, 8 May 2017 19:21:45 +0000
+Message-ID: <c073b5f67d1e495481613711753356ba@ausx13mpc120.AMER.DELL.COM>
+References: <20170412230854.GA11963@fury> <20170420204436.GC3209@fury>
+ <775ffd8f3327497cabd15ee7826cedaf@ausx13mpc120.AMER.DELL.COM>
+ <201705081917.34242@pali>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx193.ext.ti.com ([198.47.27.77]:17529 "EHLO
-        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752915AbdEHTNB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 15:13:01 -0400
-In-Reply-To: <CAKvHMgRF4r7e2F6DR-M5zNrOcEROZZDa1ihNQx+BtUfU8dxd_w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <201705081917.34242@pali>
+Content-Language: en-US
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: pali.rohar@gmail.com
+Cc: dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On 05/08/2017 02:07 PM, Liam Breck wrote:
-> On Mon, May 8, 2017 at 8:01 AM, Andrew F. Davis <afd@ti.com> wrote:
->> On 05/08/2017 01:18 AM, Liam Breck wrote:
->>> On Thu, May 4, 2017 at 9:38 AM, Andrew F. Davis <afd@ti.com> wrote:
->>>> On 05/04/2017 01:18 AM, Liam Breck wrote:
->>>>> From: Liam Breck <kernel@networkimprov.net>
->>>>>
->>>>> We tie multiple chips to unique register maps. When supporting a new chip,
->>>>> it's easy to add a duplicate map by mistake.
->>>>>
->>>>> In debug mode we now scan the register maps for duplicates.
->>>>>
->>>>
->>>> Debugging stuff doesn't need to go upstream.
->>>
->>> Since we're keeping a dupeless reg table, please ack this so folks
->>> adding chips avoid adding dupes as Chris did.
->>>
->>> I don't have to mention there's tons of debug code upstream :-)
->>>
->>
->> If you want it then make it into a tool that can go into scripts/ or
->> tools/, it doesn't need to be inline cluttering up the source.
-> 
-> This code needs to read module static data. How would it work in an
-> external file?
-> 
-
-If you are creating an external checking tool it can just ignore
-'static' scope definitions when it is parsing this file.
-
-> 
-> 
->>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->>>>> ---
->>>>>  drivers/power/supply/bq27xxx_battery.c | 21 +++++++++++++++++++++
->>>>>  1 file changed, 21 insertions(+)
->>>>>
->>>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->>>>> index 0aecd41..97c646c 100644
->>>>> --- a/drivers/power/supply/bq27xxx_battery.c
->>>>> +++ b/drivers/power/supply/bq27xxx_battery.c
->>>>> @@ -1932,6 +1932,25 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
->>>>>       schedule_delayed_work(&di->work, 0);
->>>>>  }
->>>>>
->>>>> +#ifdef DEBUG
->>>>> +static void bq27xxx_battery_dbg_regs_dupes(struct bq27xxx_device_info *di)
->>>>> +{
->>>>> +     const size_t max = ARRAY_SIZE(bq27xxx_regs);
->>>>> +     int a, b;
->>>>> +
->>>>> +     for (a = 1; a < max-1; a++) {
->>>>> +             for (b = a+1; b < max; b++) {
->>>>> +                     if (!memcmp(bq27xxx_regs[a], bq27xxx_regs[b],
->>>>> +                                 sizeof(bq27xxx_regs[0])))
->>>>> +                             dev_warn(di->dev,
->>>>> +                                     "bq27xxx_regs[%d] & [%d] are identical\n", a, b);
->>>>> +             }
->>>>> +     }
->>>>> +}
->>>>> +#else
->>>>> +static inline void bq27xxx_battery_dbg_regs_dupes(struct bq27xxx_device_info *di) {}
->>>>> +#endif
->>>>> +
->>>>>  int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>>>>  {
->>>>>       struct power_supply_desc *psy_desc;
->>>>> @@ -1940,6 +1959,8 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>>>>               .drv_data = di,
->>>>>       };
->>>>>
->>>>> +     bq27xxx_battery_dbg_regs_dupes(di);
->>>>> +
->>>>>       di->ram_chip = di->chip == BQ27421 || di->chip == BQ27441 || di->chip == BQ27621;
->>>>>
->>>>>       di->unseal_key = bq27xxx_unseal_keys[di->chip];
->>>>>
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUGFsaSBSb2jDoXIgW21h
+aWx0bzpwYWxpLnJvaGFyQGdtYWlsLmNvbV0NCj4gU2VudDogTW9uZGF5LCBNYXkgOCwgMjAxNyAx
+MjoxOCBQTQ0KPiBUbzogTGltb25jaWVsbG8sIE1hcmlvIDxNYXJpb19MaW1vbmNpZWxsb0BEZWxs
+LmNvbT4NCj4gQ2M6IGR2aGFydEBpbmZyYWRlYWQub3JnOyByandAcmp3eXNvY2tpLm5ldDsgbHV0
+b0BhbWFjYXBpdGFsLm5ldDsNCj4gbGVuLmJyb3duQGludGVsLmNvbTsgY29yZW50aW4uY2hhcnlA
+Z21haWwuY29tOyBsdXRvQGtlcm5lbC5vcmc7DQo+IGFuZHJpeS5zaGV2Y2hlbmtvQGxpbnV4Lmlu
+dGVsLmNvbTsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgcGxhdGZvcm0tDQo+IGRyaXZl
+ci14ODZAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVj
+dDogUmU6IFJGQzogV01JIEVuaGFuY2VtZW50cw0KPiANCj4gT24gRnJpZGF5IDA1IE1heSAyMDE3
+IDIzOjU1OjQ2IE1hcmlvLkxpbW9uY2llbGxvQGRlbGwuY29tIHdyb3RlOg0KPiA+IFVuZm9ydHVu
+YXRlbHkgdGhlIE1PRiBkYXRhIHRoYXQgY29tZXMgb3V0IG9mIHdtaS1tb2YgaXMgc28gY2FsbGVk
+DQo+ID4gIkJpbmFyeSBNT0YiIHdoaWNoIGhhcyBiZWVuIHByZS1jb21waWxlZCB0byBhbiBpbnRl
+cm1lZGlhdGUgZm9ybWF0DQo+ID4gd2l0aCBtb2Zjb21wLmV4ZSBvbiBXaW5kb3dzLiBUaGUgZm9y
+bWF0IG9mIGJpbmFyeSBNT0YgaXMgbm90DQo+ID4gZG9jdW1lbnRlZCBhbmQgdGhlIG9ubHkga25v
+d24gd2F5IHRvIGdldCB0ZXh0IG1vZiBiYWNrIG91dCBpcyBieQ0KPiA+IHVzaW5nIG1vZmNvbXAu
+ZXhlIHdpdGggc29tZSBlc290ZXJpYyBhcmd1bWVudHMuDQo+ID4NCj4gPiBtb2Zjb21wLmV4ZSAt
+TU9GOnJlY292ZXJlZC5tb2YgLU1GTDptc180MDkubW9mIC1BbWVuZG1lbnQ6TVNfNDA5DQo+ID4g
+YmluYXJ5X21vZl9maWxlDQo+IA0KPiBMb29rcyBsaWtlIHRoYXQgYmluYXJ5IE1PRiBmaWxlIGhh
+cyAid2VsbC1rbm93biIgZmlsZSBleHRlbnNpb24gLmJtZi4NCj4gRmlsZSBpdHNlbGYgc3RhcnRz
+IHdpdGggbWFnaWMgaGFkZXIgIkZPTUIiIHdoaWNoIGlzIGluIHJldmVyc2UgQk1PRg0KPiAoYmlu
+YXJ5IG1vZikuIEJ1dCBJIHdhcyBub3QgYWJsZSB0byBmaW5kIGFueSBzcGVjaWZpY2F0aW9uIG5v
+ciBhbnkgb3RoZXINCj4gZGV0YWlscy4gQXMgdGhpcyBiaW5hcnkgZm9ybWF0IGlzIGRhdGVkIGJh
+Y2sgdG8gV2luOXggSSBndWVzcyBkYXRhIHdvdWxkDQo+IGNvbXByZXNzZWQgYnkgc29tZSBvbGQg
+TVMgY29tcHJlc3Npb24gYWxnb3JpdGhtIChDQUI/KS4NCg0KQWN0dWFsbHkgY29tcGFyaW5nIGEg
+Y291cGxlIG9mIGJpbmFyeSBNT0YgZmlsZXMgdGhlIGZpcnN0IDggbG9vayBsaWtlIHRoZSANCmhl
+YWRlciB0byBtZS4NCg0KMHg0NiwgMHg0ZiwgMHg0ZCwgMHg0MiwgMHgwMSwgMHgwMCwgMHgwMCwg
+MHgwMA0KDQpPbiBhIGNvbXBpbGVkIERlbGwgYmluYXJ5IE1PRiB0aGUgbmV4dCBhcmU6DQoNCjB4
+ZWQsIDB4MDQsIDB4MDAsIDB4MDAsDQoNClRoaXMgbG9va3MgbGlrZSB0aGUgc2l6ZSBvZiB0aGUg
+cmVtYWluaW5nIGRhdGEgYWZ0ZXIgdGFraW5nIG91dCAxNiBmb3IgdGhlIGhlYWRlcnMNCjRlZCA9
+IDEyNjENClRvdGFsIHNpemUgaXMgMTI3Nw0KDQoweGQ4LCAweDE1LCAweDAwLCAweDAwDQpNYXli
+ZSBhIGNoZWNrc3VtPw0KDQpCdXQgdGhhdCBmaXJzdCAxNiBieXRlcyBkb2VzIGxvb2sgbGlrZSB0
+aGUgaGVhZGVyIHN0cnVjdHVyZSB0byBtZS4NCg0KPiANCj4gTW9yZW92ZXIgdmlhIHRvb2wgd21p
+b2Zjay5leGUgaXQgaXMgcG9zc2libGUgdG8gZ2VuZXJhdGUgaGVhZGVyIGZpbGUgZm9yDQo+IFdN
+SSBkcml2ZXIgZnJvbSBiaW5hcnkgbW9mIGZpbGU6DQo+IA0KPiAgIHdtaW9mY2suZXhlIC1oZmls
+ZS5oIC1tIC11IGZpbGUuYm1mDQo+IA0KPiBBbmQgd2hhdCBpcyBpbnRlcmVzdGluZyB0aGF0IGlu
+IHRoaXMgZmlsZSBhcmUgYWxzbyBjb21tZW50cyB3aGljaCBsb29rcw0KPiBsaWtlIGNvbWVzIGZy
+b20gdGhhdCBiaW5hcnkgbW9mIGZpbGUuDQoNCkFoIGludGVyZXN0aW5nLiAgVGhlICJjb21tZW50
+cyIgdGhhdCBjb21lIG91dCBvZiB0aGF0IGFyZSBhY3R1YWxseSB3aGF0J3MNCm1hcHBlZCB0byB0
+aGUgIkRlc2NyaXB0aW9uIiBmaWVsZCBpbiB0aGUgV01JIHJlcG9zaXRvcnkgd2hlbiB0aGUgYmlu
+YXJ5DQpNT0YgaXMgbG9hZGVkLiAgDQoNClRoZXkgYXJlIG5vdCB0aGUgZGV2ZWxvcGVyIGNvbW1l
+bnRzIHRoYXQgd2VyZSBwbGFjZWQgaW4gdGhlIG9yaWdpbmFsDQpNT0YgZGF0YS4gIEkgd291bGQg
+c3VwcG9zZSB0aG9zZSBhcmUgbG9zdCB3aGVuIGNvbXBpbGluZyB0byBiaW5hcnkgTU9GLg0KDQo+
+IA0KPiBXaGVuIEkgbG9va2VkIGludG8gb3V0cHV0IGZyb20gbW9mY29tcC5leGUgd2l0aCBhYm92
+ZSBhcmdzLCB0aGF0IE1PRg0KPiBvdXRwdXQgZGlkIG5vdCBjb250YWluIGNvbW1lbnRzLCBzbyBs
+b29rcyBsaWtlIHdlIHN0aWxsIGNhbiBtaXNzDQo+IHNvbWV0aGluZy4NCj4gDQo+IFNlZTogaHR0
+cDovL2Jsb2cubmlldHJ6ZWJhLnBsLzIwMTEvMTIvbW9mLWRlY29tcGlsYXRpb24uaHRtbA0KDQpB
+Y3R1YWxseSBJIHNlZSB3bWltb2ZjayBvdXRwdXQgdG8gYmUgbWlzc2luZyBzb21lIGltcG9ydGFu
+dCBiaXRzLg0KRm9yIGV4YW1wbGUgb24gYSBEZWxsIHN5c3RlbSBZb3UnbGwgZ2V0IGEgY2xhc3Mg
+QkZuIGRlY2xhcmVkIGZyb20NCm1vZmNvbXAgb3V0cHV0LCBidXQgbm90aGluZyBmcm9tIHdtaW1v
+ZmNrIG91dHB1dC4NCg0KVGhlIG1vc3QgaW1wb3J0YW50IHRoaW5nIHRoYXQgeW91J3JlIHJlYWxs
+eSBnZXR0aW5nIG91dCBvZiB0aGlzIE1PRiBpcw0KdGhlIHNpemUsIHN0cnVjdHVyZSBhbmQgZm9y
+bWF0IG9mIHRoZSBidWZmZXIgdGhhdCB5b3Ugd291bGQgYmUgc2VuZGluZyANCnRvIEFTTC4NCg0K
+QmFjayB0byB0aGUgcG9pbnQgd2Ugd2VyZSBkaXNjdXNzaW5nIG9mIGEgcG90ZW50aWFsIGZpbHRl
+ciwgdGhlIGluZm9ybWF0aW9uDQppbiB0aGUgTU9GIGNvdWxkIHBvc3NpYmx5IGJlIHZlcnkgdXNl
+ZnVsIHRvIGRlY2xhcmluZyB3aGF0IGlzIGdvaW5nIGludG8gdGhlIA0KZmlsdGVyLg0K
