@@ -1,55 +1,73 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH V6 1/9] PM / OPP: Introduce "power-domain-opp" property
-Date: Mon, 8 May 2017 12:41:46 +0530
-Message-ID: <20170508071146.GG17010@vireshk-i7>
+Date: Mon, 8 May 2017 12:43:50 +0530
+Message-ID: <20170508071350.GH17010@vireshk-i7>
 References: <cover.1493203884.git.viresh.kumar@linaro.org>
  <025acedb263eaa6089d354d9630214ada8013990.1493203884.git.viresh.kumar@linaro.org>
  <20170428204803.plu467okibtxga4d@rob-hp-laptop>
- <m2inleux0w.fsf@baylibre.com>
- <20170508041511.GB17010@vireshk-i7>
- <fd54a7b8-d88f-af70-61a2-f32befac21be@codeaurora.org>
+ <a307c76d-72c3-eb84-e7d4-d5e47e2af727@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <fd54a7b8-d88f-af70-61a2-f32befac21be-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <a307c76d-72c3-eb84-e7d4-d5e47e2af727@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-I had a long chat with Rajendra offline and clarified few things..
-
-On 08-05-17, 11:06, Rajendra Nayak wrote:
-> On 05/08/2017 09:45 AM, Viresh Kumar wrote:
-> > On 06-05-17, 11:58, Kevin Hilman wrote:
-
-> >> I had the same question.  Seems the same comment about an abstract
-> >> "index" is needed for voltage also.
-> > 
-> > Why should we do that? Here are the cases that I had in mind while writing this:
-> > 
-> > - DT only contains the performance-index and nothing else (i.e. voltages aren't
-> >   exposed).
-> > 
-> >   We wouldn't be required to fill the microvolt property as it is optional.
+On 03-05-17, 12:29, Sudeep Holla wrote:
 > 
-> So the performance-index is specified in opp-hz property?
+> 
+> On 28/04/17 21:48, Rob Herring wrote:
+> > On Wed, Apr 26, 2017 at 04:27:05PM +0530, Viresh Kumar wrote:
+> >> Power-domains need to express their active states in DT and the devices
+> >> within the power-domain need to express their dependency on those active
+> >> states. The power-domains can use the OPP tables without any
+> >> modifications to the bindings.
+> >>
+> >> Add a new property "power-domain-opp", which will contain phandle to the
+> >> OPP node of the parent power domain. This is required for devices which
+> >> have dependency on the configured active state of the power domain for
+> >> their working.
+> >>
+> >> For some platforms the actual frequency and voltages of the power
+> >> domains are managed by the firmware and are so hidden from the high
+> >> level operating system. The "opp-hz" property is relaxed a bit to
+> >> contain indexes instead of actual frequency values to support such
+> >> platforms.
+> >>
+> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >> ---
+> >>  Documentation/devicetree/bindings/opp/opp.txt | 74 ++++++++++++++++++++++++++-
+> >>  1 file changed, 73 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> >> index 63725498bd20..6e30cae2a936 100644
+> >> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> >> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> >> @@ -77,7 +77,10 @@ This defines voltage-current-frequency combinations along with other related
+> >>  properties.
+> >>  
+> >>  Required properties:
+> >> -- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer.
+> >> +- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer. In some
+> >> +  cases the exact frequency in Hz may be hidden from the OS by the firmware and
+> >> +  this field may contain values that represent the frequency in a firmware
+> >> +  dependent way, for example an index of an array in the firmware.
+> > 
+> > Not really sure OPP binding makes sense here. What about all the other 
+> > properties. We expose voltage, but not freq?
+> > 
+> 
+> I completely agree with that and I have been pushing this to be
+> represented as just regulators[0]. Mark B seem to dislike that
+> idea [1]
 
-Yes, but in the OPP table of the power-domain and not the device. The
-device can still have its own OPP table with normal freq/voltage
-values (for a separate regulator).
-
-> What if the microcontroller firmware maps the performance-index to voltage but
-> expects linux to scale the frequency?
-
-As you clarified on the chat, you were talking about the device here.
-It isn't a problem as we will have two separate tables here, one for
-the device and one for the domain.
+Just as an update, Rajendra confirmed (offline) that for some of the
+implementations, the microcontroller handles both frequency and
+voltages of a device. So it isn't just a regulator anymore and as me
+and Kevin were saying, we need a complete OPP here.
 
 -- 
 viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
