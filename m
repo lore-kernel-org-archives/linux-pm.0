@@ -1,80 +1,65 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 6/6] dt-bindings: cpufreq: enhance Mediatek cpufreq
- dt-binding document
-Date: Mon, 8 May 2017 09:50:10 +0530
-Message-ID: <20170508042010.GD17010@vireshk-i7>
-References: <1493997974-17699-1-git-send-email-sean.wang@mediatek.com>
- <1493997974-17699-7-git-send-email-sean.wang@mediatek.com>
+From: Keerthy <j-keerthy@ti.com>
+Subject: Re: [PATCH v3 1/2] thermal: core: Allow orderly_poweroff to be called
+ only once
+Date: Mon, 8 May 2017 09:50:05 +0530
+Message-ID: <dbe1dfc1-9774-ca92-cded-42b691e36db7@ti.com>
+References: <1492147105-26692-1-git-send-email-j-keerthy@ti.com>
+ <20170507210219.GB25628@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:34708 "EHLO
-        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751267AbdEHEUN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 00:20:13 -0400
-Received: by mail-pf0-f173.google.com with SMTP id e64so27010746pfd.1
-        for <linux-pm@vger.kernel.org>; Sun, 07 May 2017 21:20:13 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1493997974-17699-7-git-send-email-sean.wang@mediatek.com>
+Received: from fllnx209.ext.ti.com ([198.47.19.16]:46840 "EHLO
+        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750944AbdEHEVC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 00:21:02 -0400
+In-Reply-To: <20170507210219.GB25628@atrey.karlin.mff.cuni.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sean.wang@mediatek.com
-Cc: rjw@rjwysocki.net, robh+dt@kernel.org, matthias.bgg@gmail.com, mark.rutland@arm.com, mturquette@baylibre.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, jdelvare@suse.de, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, nm@ti.com, t-kristo@ti.com
 
-On 05-05-17, 23:26, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
+
+
+On Monday 08 May 2017 02:32 AM, Pavel Machek wrote:
+>> thermal_zone_device_check --> thermal_zone_device_update -->
+>> handle_thermal_trip --> handle_critical_trips --> orderly_poweroff
+>>
+>> The above sequence happens every 250/500 mS based on the configuration.
+>> The orderly_poweroff function is getting called every 250/500 mS.
+>> With a full fledged file system it takes at least 5-10 Seconds to
+>> power off gracefully.
+>>
+>> In that period due to the thermal_zone_device_check triggering
+>> periodically the thermal work queues bombard with
+>> orderly_poweroff calls multiple times eventually leading to
+>> failures in gracefully powering off the system.
+>>
+>> Make sure that orderly_poweroff is called only once.
 > 
-> Update binding document to reflect the lastest driver logic and
+> Pretty please, can we do it in the core code, not in thermal/? There
+> are other reasons kernel may want to shut the system down, like for
+> example critical battery, and if both thermal _and_ bad battery
+> happen, we want just one shutdown...
 
-The bindings don't follow the drivers but its the other way around. Don't
-mention anything about the drivers in the bindings patches.
+Pavel,
 
-> add more examples guiding people how to use Mediatek cpufreq driver.
+Thermal fix is still valid. As it is having multiple calls.
+I can work on fixing the core code as well.
+
+BTW the latest of this series is v6:
+
+https://patchwork.kernel.org/patch/9684929/
+
+
+- Keerthy
+
 > 
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> ---
->  .../bindings/cpufreq/cpufreq-mediatek.txt          | 170 ++++++++++++++++++++-
->  1 file changed, 167 insertions(+), 3 deletions(-)
+>> Reported-by: Keerthy <j-keerthy@ti.com>
+>> Signed-off-by: Keerthy <j-keerthy@ti.com>
 > 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-> index 52b457c..0703927 100644
-> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
-> @@ -1,4 +1,5 @@
-> -Device Tree Clock bindins for CPU DVFS of Mediatek MT8173 SoC
-> +Binding for Mediatek's CPUFreq driver
-> +=====================================
->  
->  Required properties:
->  - clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
-> @@ -9,6 +10,8 @@ Required properties:
->  			  transition and not stable yet.
->  	Please refer to Documentation/devicetree/bindings/clk/clock-bindings.txt for
->  	generic clock consumer properties.
-> +- operating-points-v2: Pleaser refer to Documentation/devicetree/bindings/opp/opp.txt
-> +	for detail.
->  - proc-supply: Regulator for Vproc of CPU cluster.
->  
->  Optional properties:
-> @@ -17,9 +20,166 @@ Optional properties:
->  	       Vsram to fit SoC specific needs. When absent, the voltage scaling
->  	       flow is handled by hardware, hence no software "voltage tracking" is
->  	       needed.
-> +- #cooling-cells:
-> +- cooling-min-level:
-> +- cooling-max-level:
-> +	Please refer to Documentation/devicetree/bindings/thermal/thermal.txt
-> +	for detail.
-> +
-> +Example 1 (MT7623 SoC):
-> +
-> +	cpu_opp_table: opp_table {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp@598000000 {
-
-s/opp@/opp-/
-
--- 
-viresh
+> And here probably we need your full name.
+> 
+> Thanks,
+> 								Pavel
+> 
