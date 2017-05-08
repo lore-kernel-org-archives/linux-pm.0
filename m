@@ -1,94 +1,121 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH V6 1/9] PM / OPP: Introduce "power-domain-opp" property
-Date: Mon, 8 May 2017 14:57:55 +0100
-Message-ID: <c2651a3c-befd-9288-37ce-2c60afb7a0e2@arm.com>
-References: <cover.1493203884.git.viresh.kumar@linaro.org>
- <025acedb263eaa6089d354d9630214ada8013990.1493203884.git.viresh.kumar@linaro.org>
- <20170428204803.plu467okibtxga4d@rob-hp-laptop>
- <a307c76d-72c3-eb84-e7d4-d5e47e2af727@arm.com>
- <20170508071350.GH17010@vireshk-i7>
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH 2/2] trace: power allocator: add trace for divvyup
+ algorithm
+Date: Mon, 8 May 2017 15:21:53 +0100
+Message-ID: <cf2867c3-8a26-7b05-a209-dd82d7ca7292@arm.com>
+References: <1494250802-6663-1-git-send-email-lukasz.luba@arm.com>
+ <1494250802-6663-3-git-send-email-lukasz.luba@arm.com>
+ <20170508094432.1010ee75@gandalf.local.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:42826 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:43084 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750925AbdEHN6A (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 8 May 2017 09:58:00 -0400
-In-Reply-To: <20170508071350.GH17010@vireshk-i7>
+        id S1751326AbdEHOV4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 8 May 2017 10:21:56 -0400
+In-Reply-To: <20170508094432.1010ee75@gandalf.local.home>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, lina.iyer@linaro.org, rnayak@codeaurora.org, devicetree@vger.kernel.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-pm@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, Ingo Molnar <mingo@redhat.com>
 
+Hi Steven,
 
-
-On 08/05/17 08:13, Viresh Kumar wrote:
-> On 03-05-17, 12:29, Sudeep Holla wrote:
+On 08/05/17 14:44, Steven Rostedt wrote:
+> On Mon,  8 May 2017 14:40:02 +0100
+> Lukasz Luba <lukasz.luba@arm.com> wrote:
+>
+>> This trace function helps to figure out the divvyup algorithm
+>> on some platforms.
 >>
+>> CC: Steven Rostedt <rostedt@goodmis.org>
+>> CC: Ingo Molnar <mingo@redhat.com>
+>> CC: Zhang Rui <rui.zhang@intel.com>
+>> CC: Eduardo Valentin <edubezval@gmail.com>
+>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+>> ---
+>>  drivers/thermal/power_allocator.c              |  4 +++
+>>  include/trace/events/thermal_power_allocator.h | 40 ++++++++++++++++++++++++++
+>>  2 files changed, 44 insertions(+)
 >>
->> On 28/04/17 21:48, Rob Herring wrote:
->>> On Wed, Apr 26, 2017 at 04:27:05PM +0530, Viresh Kumar wrote:
->>>> Power-domains need to express their active states in DT and the devices
->>>> within the power-domain need to express their dependency on those active
->>>> states. The power-domains can use the OPP tables without any
->>>> modifications to the bindings.
->>>>
->>>> Add a new property "power-domain-opp", which will contain phandle to the
->>>> OPP node of the parent power domain. This is required for devices which
->>>> have dependency on the configured active state of the power domain for
->>>> their working.
->>>>
->>>> For some platforms the actual frequency and voltages of the power
->>>> domains are managed by the firmware and are so hidden from the high
->>>> level operating system. The "opp-hz" property is relaxed a bit to
->>>> contain indexes instead of actual frequency values to support such
->>>> platforms.
->>>>
->>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>> ---
->>>>  Documentation/devicetree/bindings/opp/opp.txt | 74 ++++++++++++++++++++++++++-
->>>>  1 file changed, 73 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
->>>> index 63725498bd20..6e30cae2a936 100644
->>>> --- a/Documentation/devicetree/bindings/opp/opp.txt
->>>> +++ b/Documentation/devicetree/bindings/opp/opp.txt
->>>> @@ -77,7 +77,10 @@ This defines voltage-current-frequency combinations along with other related
->>>>  properties.
->>>>  
->>>>  Required properties:
->>>> -- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer.
->>>> +- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer. In some
->>>> +  cases the exact frequency in Hz may be hidden from the OS by the firmware and
->>>> +  this field may contain values that represent the frequency in a firmware
->>>> +  dependent way, for example an index of an array in the firmware.
->>>
->>> Not really sure OPP binding makes sense here. What about all the other 
->>> properties. We expose voltage, but not freq?
->>>
+>> diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+>> index db74e05..b71125a 100644
+>> --- a/drivers/thermal/power_allocator.c
+>> +++ b/drivers/thermal/power_allocator.c
+>> @@ -331,6 +331,10 @@ static void siblings_grants(struct thermal_zone_device *tz,
+>>  		total_avail_room += avail_room[i];
+>>  	}
 >>
->> I completely agree with that and I have been pushing this to be
->> represented as just regulators[0]. Mark B seem to dislike that
->> idea [1]
-> 
-> Just as an update, Rajendra confirmed (offline) that for some of the
-> implementations, the microcontroller handles both frequency and
-> voltages of a device. So it isn't just a regulator anymore and as me
-> and Kevin were saying, we need a complete OPP here.
-> 
+>> +	trace_thermal_power_allocator_divvyup(tz, granted_power, avail_room,
+>> +					      spare_power, max_power,
+>> +					      num_actors);
+>
+> I'm curious, how big can "num_actors" be?
+That's a good question.
+Normally max is around 5 (2 CPU clusters + 3 devfreq devices).
+However, when you have per-core DVFS for CPUs
+and you have N cores (i.e. 32), then you can register N cooling
+devices for them.
+>
+> -- Steve
+>
+>> +
+>>  	/* Share the extra power inside the same family. */
+>>  	for (i = 0; i < num_actors; i++) {
+>>  		u32 power;
+>> diff --git a/include/trace/events/thermal_power_allocator.h b/include/trace/events/thermal_power_allocator.h
+>> index 5afae8f..03f224b 100644
+>> --- a/include/trace/events/thermal_power_allocator.h
+>> +++ b/include/trace/events/thermal_power_allocator.h
+>> @@ -54,6 +54,46 @@
+>>  		__entry->delta_temp)
+>>  );
+>>
+>> +TRACE_EVENT(thermal_power_allocator_divvyup,
+>> +	TP_PROTO(struct thermal_zone_device *tz, u32 *granted_power,
+>> +		u32 *avail_room, u32 *spare_power, u32 *max_power,
+>> +		size_t num_actors),
+>> +	TP_ARGS(tz, granted_power, avail_room, spare_power, max_power,
+>> +		num_actors),
+>> +	TP_STRUCT__entry(
+>> +		__field(int, tz_id)
+>> +		__dynamic_array(u32, granted_power, num_actors)
+>> +		__dynamic_array(u32, avail_room, num_actors)
+>> +		__dynamic_array(u32, spare_power, num_actors)
+>> +		__dynamic_array(u32, max_power, num_actors)
+>> +		__field(size_t, num_actors)
+>> +	),
+>> +	TP_fast_assign(
+>> +		__entry->tz_id = tz->id;
+>> +		memcpy(__get_dynamic_array(granted_power), granted_power,
+>> +			num_actors * sizeof(*granted_power));
+>> +		memcpy(__get_dynamic_array(avail_room), avail_room,
+>> +			num_actors * sizeof(*avail_room));
+>> +		memcpy(__get_dynamic_array(spare_power), spare_power,
+>> +			num_actors * sizeof(*spare_power));
+>> +		memcpy(__get_dynamic_array(max_power), max_power,
+>> +			num_actors * sizeof(*max_power));
+>> +		__entry->num_actors = num_actors;
+>> +	),
+>> +
+>> +	TP_printk("thermal_zone_id=%d granted_power={%s} avail_room={%s} spare_power={%s} max_power={%s}",
+>> +		__entry->tz_id,
+>> +		__print_array(__get_dynamic_array(granted_power),
+>> +			      __entry->num_actors, 4),
+>> +		__print_array(__get_dynamic_array(avail_room),
+>> +			      __entry->num_actors, 4),
+>> +		__print_array(__get_dynamic_array(spare_power),
+>> +			      __entry->num_actors, 4),
+>> +		__print_array(__get_dynamic_array(max_power),
+>> +			      __entry->num_actors, 4)
+>> +		)
+>> +);
+>> +
+>>  TRACE_EVENT(thermal_power_allocator_pid,
+>>  	TP_PROTO(struct thermal_zone_device *tz, s32 err, s32 err_integral,
+>>  		 s64 p, s64 i, s64 d, s32 output),
+>
 
-Yes, I followed the thread and figured that out. But Rajendra also
-raised "What if the microcontroller firmware maps the performance-index
-to voltage but expects linux to scale the frequency? There is no way to
-specify a performance-index *and* a frequency for a OPP now I guess? So
-this needs to be addressd now IIUC.
-
-So as Kevin pointed out, we need to experiment and look at all
-possibilities before finalizing the bindings. Better to have examples
-for all these and describe how bindings are be used including how to
-distinguish between these use-case from the bindings if it's not implicit.
-
--- 
 Regards,
-Sudeep
+Lukasz
