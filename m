@@ -1,64 +1,29 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH] power: supply: core: Add support for supplied-from device-property
-Date: Mon,  8 May 2017 17:13:54 +0200
-Message-ID: <20170508151354.21711-1-hdegoede@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:40898 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755002AbdEHPN5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 8 May 2017 11:13:57 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v6 3/8] i2c: i2c-smbus: add of_i2c_setup_smbus_alert
+Date: Mon, 8 May 2017 10:24:10 -0500
+Message-ID: <20170508152410.rxm6hsoc4zbmvkqp@rob-hp-laptop>
+References: <1493716346-58517-1-git-send-email-preid@electromag.com.au>
+ <1493716346-58517-4-git-send-email-preid@electromag.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-i2c-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1493716346-58517-4-git-send-email-preid@electromag.com.au>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Phil Reid <preid@electromag.com.au>
+Cc: wsa@the-dreams.de, mark.rutland@arm.com, sre@kernel.org, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, benjamin.tissoires@redhat.com
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
 
-On devicetree using platforms the devicetree can provide info on which
-power-supplies supply another power-supply through phandles.
+On Tue, May 02, 2017 at 05:12:21PM +0800, Phil Reid wrote:
+> This commit adds of_i2c_setup_smbus_alert which allows the smbalert
+> driver to be attached to an i2c adapter via the device tree.
+> 
+> Signed-off-by: Phil Reid <preid@electromag.com.au>
+> ---
+>  Documentation/devicetree/bindings/i2c/i2c.txt |  4 +--
 
-This commit adds support for providing this info on non devicetree
-platforms through the platform code setting a supplied-from
-device-property on the power-supplies parent device.
+Acked-by: Rob Herring <robh@kernel.org>
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/power_supply_core.c | 24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 7ec7c7c202bd..0c09144193a6 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -274,8 +274,30 @@ static int power_supply_check_supplies(struct power_supply *psy)
- 	return power_supply_populate_supplied_from(psy);
- }
- #else
--static inline int power_supply_check_supplies(struct power_supply *psy)
-+static int power_supply_check_supplies(struct power_supply *psy)
- {
-+	int nval, ret;
-+
-+	if (!psy->dev.parent)
-+		return 0;
-+
-+	nval = device_property_read_string_array(psy->dev.parent,
-+						 "supplied-from", NULL, 0);
-+	if (nval <= 0)
-+		return 0;
-+
-+	psy->supplied_from = devm_kmalloc_array(&psy->dev, nval,
-+						sizeof(char *), GFP_KERNEL);
-+	if (!psy->supplied_from)
-+		return -ENOMEM;
-+
-+	ret = device_property_read_string_array(psy->dev.parent,
-+		"supplied-from", (const char **)psy->supplied_from, nval);
-+	if (ret < 0)
-+		return ret;
-+
-+	psy->num_supplies = nval;
-+
- 	return 0;
- }
- #endif
--- 
-2.12.2
+>  drivers/i2c/i2c-smbus.c                       | 35 +++++++++++++++++++++++++++
+>  include/linux/i2c-smbus.h                     |  9 +++++++
+>  3 files changed, 46 insertions(+), 2 deletions(-)
