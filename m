@@ -1,68 +1,136 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC][PATCH v3 2/2] cpufreq: schedutil: Avoid reducing frequency
- of busy CPUs prematurely
-Date: Mon, 8 May 2017 09:31:19 +0530
-Message-ID: <20170508040119.GA17010@vireshk-i7>
-References: <4366682.tsferJN35u@aspire.rjw.lan>
- <2185243.flNrap3qq1@aspire.rjw.lan>
- <3300960.HE4b3sK4dn@aspire.rjw.lan>
- <2997922.DidfPadJuT@aspire.rjw.lan>
- <CANRm+Cwem_C6geyWScZhr4A62ben9fKhyL2OPd+Vdhh3bRJqKw@mail.gmail.com>
+Subject: Re: [PATCH V6 1/9] PM / OPP: Introduce "power-domain-opp" property
+Date: Mon, 8 May 2017 09:45:11 +0530
+Message-ID: <20170508041511.GB17010@vireshk-i7>
+References: <cover.1493203884.git.viresh.kumar@linaro.org>
+ <025acedb263eaa6089d354d9630214ada8013990.1493203884.git.viresh.kumar@linaro.org>
+ <20170428204803.plu467okibtxga4d@rob-hp-laptop>
+ <m2inleux0w.fsf@baylibre.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f50.google.com ([74.125.83.50]:33572 "EHLO
+        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750848AbdEHEPP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 00:15:15 -0400
+Received: by mail-pg0-f50.google.com with SMTP id u187so20116671pgb.0
+        for <linux-pm@vger.kernel.org>; Sun, 07 May 2017 21:15:15 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <CANRm+Cwem_C6geyWScZhr4A62ben9fKhyL2OPd+Vdhh3bRJqKw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wanpeng Li <kernellwp@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <m2inleux0w.fsf@baylibre.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@baylibre.com>
+Cc: Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, devicetree@vger.kernel.org
 
-On 08-05-17, 11:49, Wanpeng Li wrote:
-> Hi Rafael,
-> 2017-03-22 7:08 GMT+08:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > The way the schedutil governor uses the PELT metric causes it to
-> > underestimate the CPU utilization in some cases.
-> >
-> > That can be easily demonstrated by running kernel compilation on
-> > a Sandy Bridge Intel processor, running turbostat in parallel with
-> > it and looking at the values written to the MSR_IA32_PERF_CTL
-> > register.  Namely, the expected result would be that when all CPUs
-> > were 100% busy, all of them would be requested to run in the maximum
-> > P-state, but observation shows that this clearly isn't the case.
-> > The CPUs run in the maximum P-state for a while and then are
-> > requested to run slower and go back to the maximum P-state after
-> > a while again.  That causes the actual frequency of the processor to
-> > visibly oscillate below the sustainable maximum in a jittery fashion
-> > which clearly is not desirable.
-> >
-> > That has been attributed to CPU utilization metric updates on task
-> > migration that cause the total utilization value for the CPU to be
-> > reduced by the utilization of the migrated task.  If that happens,
-> > the schedutil governor may see a CPU utilization reduction and will
-> > attempt to reduce the CPU frequency accordingly right away.  That
-> > may be premature, though, for example if the system is generally
-> > busy and there are other runnable tasks waiting to be run on that
-> > CPU already.
-> >
-> > This is unlikely to be an issue on systems where cpufreq policies are
-> > shared between multiple CPUs, because in those cases the policy
-> > utilization is computed as the maximum of the CPU utilization values
+On 06-05-17, 11:58, Kevin Hilman wrote:
+> Rob Herring <robh@kernel.org> writes:
 > 
-> Sorry for one question maybe not associated with this patch. If the
-> cpufreq policy is shared between multiple CPUs, the function
-> intel_cpufreq_target()  just updates IA32_PERF_CTL MSR of the cpu
-> which is managing this policy, I wonder whether other cpus which are
-> affected should also update their per-logical cpu's IA32_PERF_CTL MSR?
+> > On Wed, Apr 26, 2017 at 04:27:05PM +0530, Viresh Kumar wrote:
+> >> Power-domains need to express their active states in DT and the devices
+> >> within the power-domain need to express their dependency on those active
+> >> states. The power-domains can use the OPP tables without any
+> >> modifications to the bindings.
+> >> 
+> >> Add a new property "power-domain-opp", which will contain phandle to the
+> >> OPP node of the parent power domain. This is required for devices which
+> >> have dependency on the configured active state of the power domain for
+> >> their working.
+> >> 
+> >> For some platforms the actual frequency and voltages of the power
+> >> domains are managed by the firmware and are so hidden from the high
+> >> level operating system. The "opp-hz" property is relaxed a bit to
+> >> contain indexes instead of actual frequency values to support such
+> >> platforms.
+> >> 
+> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >> ---
+> >>  Documentation/devicetree/bindings/opp/opp.txt | 74 ++++++++++++++++++++++++++-
+> >>  1 file changed, 73 insertions(+), 1 deletion(-)
+> >> 
+> >> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> >> index 63725498bd20..6e30cae2a936 100644
+> >> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> >> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> >> @@ -77,7 +77,10 @@ This defines voltage-current-frequency combinations along with other related
+> >>  properties.
+> >>  
+> >>  Required properties:
+> >> -- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer.
+> >> +- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer. In some
+> >> +  cases the exact frequency in Hz may be hidden from the OS by the firmware and
+> >> +  this field may contain values that represent the frequency in a firmware
+> >> +  dependent way, for example an index of an array in the firmware.
+> >
+> > Not really sure OPP binding makes sense here.
+> 
+> I think OPP makes perfect sense here, because microcontroller firmware
+> is managaging OPPs in hardware.  We just may not know the exact voltage
+> and/or frequency (and the firmware/hardware may even be doing AVS for
+> micro-adjustments.)
 
-The CPUs share the policy when they share their freq/voltage rails and so
-changing perf state of one CPU should result in that changing for all the CPUs
-in that policy. Otherwise, they can't be considered to be part of the same
-policy.
+Yes, AVS is being done for the Qcom SoC as well.
 
-That's why this code is changing it only for policy->cpu alone.
+> > What about all the other properties. We expose voltage, but not freq?
+> 
+> I had the same question.  Seems the same comment about an abstract
+> "index" is needed for voltage also.
+
+Why should we do that? Here are the cases that I had in mind while writing this:
+
+- DT only contains the performance-index and nothing else (i.e. voltages aren't
+  exposed).
+
+  We wouldn't be required to fill the microvolt property as it is optional.
+
+- DT contains both performance-index and voltages.
+
+  The microvolts property will contain the actual voltages and opp-hz will
+  contain the index.
+
+I don't see why would we like to put some index value in the microvolts
+property. We are setting the index value in the opp-hz property to avoid adding
+extra fields and making sure opp-hz is still the unique property for the nodes.
+
+> >>  
+> >>  Optional properties:
+> >>  - opp-microvolt: voltage in micro Volts.
+> >> @@ -154,6 +157,13 @@ properties.
+> >>  
+> >>  - status: Marks the node enabled/disabled.
+> >>  
+> >> +- power-domain-opp: Phandle to the OPP node of the parent power-domain. The
+> >> +  parent power-domain should be configured to the OPP whose node is pointed by
+> >> +  the phandle, in order to configure the device for the OPP node that contains
+> >> +  this property. The order in which the device and power domain should be
+> >> +  configured is implementation defined. The OPP table of a device can set this
+> >> +  property only if the device node contains "power-domains" property.
+> >> +
+> 
+> I do understand the need to map a device OPP to a parent power-domain
+> OPP, but I really don't like another phandle.
+> 
+> First, just because a device OPP changes does not mean that a
+> power-domain OPP has to change.  What really needs to be specified is a
+> minimum requirement, not an exact OPP.  IOW, if a device changes OPP,
+> the power-domain OPP has to be *at least* an OPP that can guarantee that
+> level of performance, but could also be a more performant OPP, right?
+
+Right and that's how the code is interpreting it right now. Yes, the description
+above should have been more clear on that though.
+
+> Also, the parent power-domain driver will have a list of all its
+> devices, and be able to get OPPs from those devices.
+> 
+> IMO, we should do the first (few) implementations of this feature from
+> the power-domain driver itself, and not try to figure out how to define
+> this for everyone in DT until we have a better handle on it (pun
+> intended) ;)
+
+Hmm, I am not sure how things are going to work in that case. The opp-hz value
+read from the phandle is passed to the QoS framework in this series, which makes
+sure that we select the highest requested performance point for a particular
+power-domain. The index value is required to be present with the OPP framework
+to make it all work, at least based on the way I have designed it for now.
 
 -- 
 viresh
