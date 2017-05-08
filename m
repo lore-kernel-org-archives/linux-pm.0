@@ -1,66 +1,74 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH] dt-bindings: power: New bindings for ltc3651-charger
-Date: Mon, 8 May 2017 12:12:06 -0500
-Message-ID: <20170508171206.ajxjbw5mybvrpwss@rob-hp-laptop>
-References: <1493966315-15893-1-git-send-email-mike.looijmans@topic.nl>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+Subject: Re: RFC: WMI Enhancements
+Date: Mon, 8 May 2017 19:17:34 +0200
+Message-ID: <201705081917.34242@pali>
+References: <20170412230854.GA11963@fury> <20170420204436.GC3209@fury> <775ffd8f3327497cabd15ee7826cedaf@ausx13mpc120.AMER.DELL.COM>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1493966315-15893-1-git-send-email-mike.looijmans@topic.nl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mike Looijmans <mike.looijmans@topic.nl>
-Cc: devicetree@vger.kernel.org, sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mark.rutland@arm.com
+Content-Type: multipart/signed;
+  boundary="nextPart4069339.OeqetiiWL2";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:33270 "EHLO
+        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751168AbdEHRRi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 13:17:38 -0400
+In-Reply-To: <775ffd8f3327497cabd15ee7826cedaf@ausx13mpc120.AMER.DELL.COM>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mario.Limonciello@dell.com
+Cc: dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, May 05, 2017 at 08:38:35AM +0200, Mike Looijmans wrote:
-> This adds the devicetree bindings documentation for the LTC3651 battery charger.
-> 
-> Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
-> ---
->  .../bindings/power/supply/ltc3651-charger.txt      | 26 ++++++++++++++++++++++
->  1 file changed, 26 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/ltc3651-charger.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/ltc3651-charger.txt b/Documentation/devicetree/bindings/power/supply/ltc3651-charger.txt
-> new file mode 100644
-> index 0000000..a7dd80f
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/ltc3651-charger.txt
-> @@ -0,0 +1,26 @@
-> +ltc3651-charger
-> +
-> +Required properties:
-> + - compatible: "lltc,ltc3651-charger"
-> + - acpr-gpios: Connect to ACPR output. See remark below.
-> +
-> +Optional properties:
-> + - fault-gpios: Connect to FAULT output. See remark below.
-> + - chrg-gpios: Connect to CHRG output. See remark below.
+--nextPart4069339.OeqetiiWL2
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-All the gpios need vendor prefix.
+On Friday 05 May 2017 23:55:46 Mario.Limonciello@dell.com wrote:
+> Unfortunately the MOF data that comes out of wmi-mof is so called
+> "Binary MOF" which has been pre-compiled to an intermediate format
+> with mofcomp.exe on Windows. The format of binary MOF is not
+> documented and the only known way to get text mof back out is by
+> using mofcomp.exe with some esoteric arguments.
+>=20
+> mofcomp.exe -MOF:recovered.mof -MFL:ms_409.mof -Amendment:MS_409
+> binary_mof_file
 
-> +
-> +The ltc3651 outputs are open-drain type and active low. The driver assumes the
-> +GPIO reports "active" when the output is asserted, so if the pins have been
-> +connected directly, the GPIO flags should be set to active low also.
-> +
-> +The driver will attempt to aquire interrupts for all GPIOs. If the system is
-> +not capabale of providing that, the driver cannot report changes and userspace
-> +will need to periodically read the sysfs attributes to detect changes.
+Looks like that binary MOF file has "well-known" file extension .bmf.=20
+=46ile itself starts with magic hader "FOMB" which is in reverse BMOF=20
+(binary mof). But I was not able to find any specification nor any other=20
+details. As this binary format is dated back to Win9x I guess data would=20
+compressed by some old MS compression algorithm (CAB?).
 
-If these are interrupts, then you should use the interrupt binding 
-instead (most GPIO controllers are also interrupt controllers).
+Moreover via tool wmiofck.exe it is possible to generate header file for=20
+WMI driver from binary mof file:
 
-> +
-> +Example:
-> +
-> +	charger: battery-charger {
-> +		compatible = "lltc,ltc3651-charger";
-> +		acpr-gpios = <&gpio0 68 GPIO_ACTIVE_LOW>;
-> +		fault-gpios = <&gpio0 64 GPIO_ACTIVE_LOW>;
-> +		chrg-gpios = <&gpio0 63 GPIO_ACTIVE_LOW>;
-> +	};
-> -- 
-> 1.9.1
-> 
+  wmiofck.exe -hfile.h -m -u file.bmf
+
+And what is interesting that in this file are also comments which looks=20
+like comes from that binary mof file.
+
+When I looked into output from mofcomp.exe with above args, that MOF=20
+output did not contain comments, so looks like we still can miss=20
+something.
+
+See: http://blog.nietrzeba.pl/2011/12/mof-decompilation.html
+
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
+
+--nextPart4069339.OeqetiiWL2
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEABECAAYFAlkQqC4ACgkQi/DJPQPkQ1LN+ACfbct5S0mkwzCw/nD1v6hGHa2y
+zZ4An0UO6x9kfPY8l+47AOLRf/kQ/nAB
+=ohuJ
+-----END PGP SIGNATURE-----
+
+--nextPart4069339.OeqetiiWL2--
