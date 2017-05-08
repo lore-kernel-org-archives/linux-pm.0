@@ -1,143 +1,108 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: RFC: WMI Enhancements
-Date: Mon, 8 May 2017 22:59:51 +0200
-Message-ID: <201705082259.51850@pali>
-References: <20170412230854.GA11963@fury> <201705081917.34242@pali> <c073b5f67d1e495481613711753356ba@ausx13mpc120.AMER.DELL.COM>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: RFC: WMI Enhancements
+Date: Mon, 8 May 2017 21:18:11 +0000
+Message-ID: <77e4e46f58354e10874ed0515f514fc2@ausx13mpc120.AMER.DELL.COM>
+References: <20170412230854.GA11963@fury> <201705081917.34242@pali>
+ <c073b5f67d1e495481613711753356ba@ausx13mpc120.AMER.DELL.COM>
+ <201705082259.51850@pali>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3264345.fIZSCH1u9c";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f196.google.com ([209.85.128.196]:34415 "EHLO
-        mail-wr0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752402AbdEHU74 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 16:59:56 -0400
-In-Reply-To: <c073b5f67d1e495481613711753356ba@ausx13mpc120.AMER.DELL.COM>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Mario.Limonciello@dell.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <201705082259.51850@pali>
+Content-Language: en-US
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: pali.rohar@gmail.com
 Cc: dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
---nextPart3264345.fIZSCH1u9c
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Monday 08 May 2017 21:21:45 Mario.Limonciello@dell.com wrote:
-> > -----Original Message-----
-> > From: Pali Roh=C3=A1r [mailto:pali.rohar@gmail.com]
-> > Sent: Monday, May 8, 2017 12:18 PM
-> > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> > Cc: dvhart@infradead.org; rjw@rjwysocki.net; luto@amacapital.net;
-> > len.brown@intel.com; corentin.chary@gmail.com; luto@kernel.org;
-> > andriy.shevchenko@linux.intel.com; linux-kernel@vger.kernel.org;
-> > platform- driver-x86@vger.kernel.org; linux-pm@vger.kernel.org
-> > Subject: Re: RFC: WMI Enhancements
-> >=20
-> > On Friday 05 May 2017 23:55:46 Mario.Limonciello@dell.com wrote:
-> > > Unfortunately the MOF data that comes out of wmi-mof is so called
-> > > "Binary MOF" which has been pre-compiled to an intermediate
-> > > format with mofcomp.exe on Windows. The format of binary MOF is
-> > > not documented and the only known way to get text mof back out
-> > > is by using mofcomp.exe with some esoteric arguments.
-> > >=20
-> > > mofcomp.exe -MOF:recovered.mof -MFL:ms_409.mof -Amendment:MS_409
-> > > binary_mof_file
-> >=20
-> > Looks like that binary MOF file has "well-known" file extension
-> > .bmf. File itself starts with magic hader "FOMB" which is in
-> > reverse BMOF (binary mof). But I was not able to find any
-> > specification nor any other details. As this binary format is
-> > dated back to Win9x I guess data would compressed by some old MS
-> > compression algorithm (CAB?).
->=20
-> Actually comparing a couple of binary MOF files the first 8 look like
-> the header to me.
->=20
-> 0x46, 0x4f, 0x4d, 0x42, 0x01, 0x00, 0x00, 0x00
->=20
-> On a compiled Dell binary MOF the next are:
->=20
-> 0xed, 0x04, 0x00, 0x00,
->=20
-> This looks like the size of the remaining data after taking out 16
-> for the headers 4ed =3D 1261
-> Total size is 1277
->=20
-> 0xd8, 0x15, 0x00, 0x00
-> Maybe a checksum?
->=20
-> But that first 16 bytes does look like the header structure to me.
-
-Good catch! Your observation for first 12 bytes passes also for my=20
-checks.
-
-Next 4 bytes (after possible checksum) at 0x10 are always same:
-0x44 0x53 0x00 0x01.
-
-And I guess this should be compression header. In time of Win9x=20
-Microsoft had own non-standard compression for disks called DoubleSpace.=20
-IIRC it was some modification of LZ77 algorithm. And 0x44 0x53 0x00 0x01=20
-is DS01. Maybe it is really DoubleSpace compression used for binary MOF?
-
-I'm going to find specification of that old compression algorithm...
-
-> > Moreover via tool wmiofck.exe it is possible to generate header
-> > file for
-> >=20
-> > WMI driver from binary mof file:
-> >   wmiofck.exe -hfile.h -m -u file.bmf
-> >=20
-> > And what is interesting that in this file are also comments which
-> > looks like comes from that binary mof file.
->=20
-> Ah interesting.  The "comments" that come out of that are actually
-> what's mapped to the "Description" field in the WMI repository when
-> the binary MOF is loaded.
->=20
-> They are not the developer comments that were placed in the original
-> MOF data.  I would suppose those are lost when compiling to binary
-> MOF.
-
-Hm.. right they are present in decompiled MOF file in Description field.
-
-> > When I looked into output from mofcomp.exe with above args, that
-> > MOF output did not contain comments, so looks like we still can
-> > miss something.
-> >=20
-> > See: http://blog.nietrzeba.pl/2011/12/mof-decompilation.html
->=20
-> Actually I see wmimofck output to be missing some important bits.
-> For example on a Dell system You'll get a class BFn declared from
-> mofcomp output, but nothing from wmimofck output.
->=20
-> The most important thing that you're really getting out of this MOF
-> is the size, structure and format of the buffer that you would be
-> sending to ASL.
->=20
-> Back to the point we were discussing of a potential filter, the
-> information in the MOF could possibly be very useful to declaring
-> what is going into the filter.
-
-In that header file generated by wmiofck.exe I see definitions for BFn.=20
-And there are also sizes for BFn buffers, together with some types.
-
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart3264345.fIZSCH1u9c
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlkQ3EcACgkQi/DJPQPkQ1L4TQCgqWs0ngw/3AxBGBjxQFgcsRMX
-ZCsAoJbDq4RC5ifTAq2k9HWItEVTuTN6
-=3t8E
------END PGP SIGNATURE-----
-
---nextPart3264345.fIZSCH1u9c--
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBQYWxpIFJvaMOhciBbbWFpbHRv
+OnBhbGkucm9oYXJAZ21haWwuY29tXQ0KPiBTZW50OiBNb25kYXksIE1heSA4LCAyMDE3IDQ6MDAg
+UE0NCj4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9fTGltb25jaWVsbG9ARGVsbC5jb20+
+DQo+IENjOiBkdmhhcnRAaW5mcmFkZWFkLm9yZzsgcmp3QHJqd3lzb2NraS5uZXQ7IGx1dG9AYW1h
+Y2FwaXRhbC5uZXQ7DQo+IGxlbi5icm93bkBpbnRlbC5jb207IGNvcmVudGluLmNoYXJ5QGdtYWls
+LmNvbTsgbHV0b0BrZXJuZWwub3JnOw0KPiBhbmRyaXkuc2hldmNoZW5rb0BsaW51eC5pbnRlbC5j
+b207IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IHBsYXRmb3JtLQ0KPiBkcml2ZXIteDg2
+QHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJl
+OiBSRkM6IFdNSSBFbmhhbmNlbWVudHMNCj4gDQo+IE9uIE1vbmRheSAwOCBNYXkgMjAxNyAyMToy
+MTo0NSBNYXJpby5MaW1vbmNpZWxsb0BkZWxsLmNvbSB3cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBQYWxpIFJvaMOhciBbbWFpbHRvOnBhbGkucm9o
+YXJAZ21haWwuY29tXQ0KPiA+ID4gU2VudDogTW9uZGF5LCBNYXkgOCwgMjAxNyAxMjoxOCBQTQ0K
+PiA+ID4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9fTGltb25jaWVsbG9ARGVsbC5jb20+
+DQo+ID4gPiBDYzogZHZoYXJ0QGluZnJhZGVhZC5vcmc7IHJqd0Byand5c29ja2kubmV0OyBsdXRv
+QGFtYWNhcGl0YWwubmV0Ow0KPiA+ID4gbGVuLmJyb3duQGludGVsLmNvbTsgY29yZW50aW4uY2hh
+cnlAZ21haWwuY29tOyBsdXRvQGtlcm5lbC5vcmc7DQo+ID4gPiBhbmRyaXkuc2hldmNoZW5rb0Bs
+aW51eC5pbnRlbC5jb207IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiBwbGF0
+Zm9ybS0gZHJpdmVyLXg4NkB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
+Zw0KPiA+ID4gU3ViamVjdDogUmU6IFJGQzogV01JIEVuaGFuY2VtZW50cw0KPiA+ID4NCj4gPiA+
+IE9uIEZyaWRheSAwNSBNYXkgMjAxNyAyMzo1NTo0NiBNYXJpby5MaW1vbmNpZWxsb0BkZWxsLmNv
+bSB3cm90ZToNCj4gPiA+ID4gVW5mb3J0dW5hdGVseSB0aGUgTU9GIGRhdGEgdGhhdCBjb21lcyBv
+dXQgb2Ygd21pLW1vZiBpcyBzbyBjYWxsZWQNCj4gPiA+ID4gIkJpbmFyeSBNT0YiIHdoaWNoIGhh
+cyBiZWVuIHByZS1jb21waWxlZCB0byBhbiBpbnRlcm1lZGlhdGUNCj4gPiA+ID4gZm9ybWF0IHdp
+dGggbW9mY29tcC5leGUgb24gV2luZG93cy4gVGhlIGZvcm1hdCBvZiBiaW5hcnkgTU9GIGlzDQo+
+ID4gPiA+IG5vdCBkb2N1bWVudGVkIGFuZCB0aGUgb25seSBrbm93biB3YXkgdG8gZ2V0IHRleHQg
+bW9mIGJhY2sgb3V0DQo+ID4gPiA+IGlzIGJ5IHVzaW5nIG1vZmNvbXAuZXhlIHdpdGggc29tZSBl
+c290ZXJpYyBhcmd1bWVudHMuDQo+ID4gPiA+DQo+ID4gPiA+IG1vZmNvbXAuZXhlIC1NT0Y6cmVj
+b3ZlcmVkLm1vZiAtTUZMOm1zXzQwOS5tb2YgLUFtZW5kbWVudDpNU180MDkNCj4gPiA+ID4gYmlu
+YXJ5X21vZl9maWxlDQo+ID4gPg0KPiA+ID4gTG9va3MgbGlrZSB0aGF0IGJpbmFyeSBNT0YgZmls
+ZSBoYXMgIndlbGwta25vd24iIGZpbGUgZXh0ZW5zaW9uDQo+ID4gPiAuYm1mLiBGaWxlIGl0c2Vs
+ZiBzdGFydHMgd2l0aCBtYWdpYyBoYWRlciAiRk9NQiIgd2hpY2ggaXMgaW4NCj4gPiA+IHJldmVy
+c2UgQk1PRiAoYmluYXJ5IG1vZikuIEJ1dCBJIHdhcyBub3QgYWJsZSB0byBmaW5kIGFueQ0KPiA+
+ID4gc3BlY2lmaWNhdGlvbiBub3IgYW55IG90aGVyIGRldGFpbHMuIEFzIHRoaXMgYmluYXJ5IGZv
+cm1hdCBpcw0KPiA+ID4gZGF0ZWQgYmFjayB0byBXaW45eCBJIGd1ZXNzIGRhdGEgd291bGQgY29t
+cHJlc3NlZCBieSBzb21lIG9sZCBNUw0KPiA+ID4gY29tcHJlc3Npb24gYWxnb3JpdGhtIChDQUI/
+KS4NCj4gPg0KPiA+IEFjdHVhbGx5IGNvbXBhcmluZyBhIGNvdXBsZSBvZiBiaW5hcnkgTU9GIGZp
+bGVzIHRoZSBmaXJzdCA4IGxvb2sgbGlrZQ0KPiA+IHRoZSBoZWFkZXIgdG8gbWUuDQo+ID4NCj4g
+PiAweDQ2LCAweDRmLCAweDRkLCAweDQyLCAweDAxLCAweDAwLCAweDAwLCAweDAwDQo+ID4NCj4g
+PiBPbiBhIGNvbXBpbGVkIERlbGwgYmluYXJ5IE1PRiB0aGUgbmV4dCBhcmU6DQo+ID4NCj4gPiAw
+eGVkLCAweDA0LCAweDAwLCAweDAwLA0KPiA+DQo+ID4gVGhpcyBsb29rcyBsaWtlIHRoZSBzaXpl
+IG9mIHRoZSByZW1haW5pbmcgZGF0YSBhZnRlciB0YWtpbmcgb3V0IDE2DQo+ID4gZm9yIHRoZSBo
+ZWFkZXJzIDRlZCA9IDEyNjENCj4gPiBUb3RhbCBzaXplIGlzIDEyNzcNCj4gPg0KPiA+IDB4ZDgs
+IDB4MTUsIDB4MDAsIDB4MDANCj4gPiBNYXliZSBhIGNoZWNrc3VtPw0KPiA+DQo+ID4gQnV0IHRo
+YXQgZmlyc3QgMTYgYnl0ZXMgZG9lcyBsb29rIGxpa2UgdGhlIGhlYWRlciBzdHJ1Y3R1cmUgdG8g
+bWUuDQo+IA0KPiBHb29kIGNhdGNoISBZb3VyIG9ic2VydmF0aW9uIGZvciBmaXJzdCAxMiBieXRl
+cyBwYXNzZXMgYWxzbyBmb3IgbXkNCj4gY2hlY2tzLg0KPiANCj4gTmV4dCA0IGJ5dGVzIChhZnRl
+ciBwb3NzaWJsZSBjaGVja3N1bSkgYXQgMHgxMCBhcmUgYWx3YXlzIHNhbWU6DQo+IDB4NDQgMHg1
+MyAweDAwIDB4MDEuDQo+IA0KPiBBbmQgSSBndWVzcyB0aGlzIHNob3VsZCBiZSBjb21wcmVzc2lv
+biBoZWFkZXIuIEluIHRpbWUgb2YgV2luOXgNCj4gTWljcm9zb2Z0IGhhZCBvd24gbm9uLXN0YW5k
+YXJkIGNvbXByZXNzaW9uIGZvciBkaXNrcyBjYWxsZWQgRG91YmxlU3BhY2UuDQo+IElJUkMgaXQg
+d2FzIHNvbWUgbW9kaWZpY2F0aW9uIG9mIExaNzcgYWxnb3JpdGhtLiBBbmQgMHg0NCAweDUzIDB4
+MDAgMHgwMQ0KPiBpcyBEUzAxLiBNYXliZSBpdCBpcyByZWFsbHkgRG91YmxlU3BhY2UgY29tcHJl
+c3Npb24gdXNlZCBmb3IgYmluYXJ5IE1PRj8NCj4gDQo+IEknbSBnb2luZyB0byBmaW5kIHNwZWNp
+ZmljYXRpb24gb2YgdGhhdCBvbGQgY29tcHJlc3Npb24gYWxnb3JpdGhtLi4uDQo+IA0KNDQgNTMg
+bG9va3MgcHJvbWlzaW5nIHRvIGJlIHF1YW50dW0gY29tcHJlc3Npb24uDQpodHRwczovL2VuLndp
+a2lwZWRpYS5vcmcvd2lraS9RdWFudHVtX2NvbXByZXNzaW9uDQoNClRoYXTigJlzIGFsc28gd2hh
+dCAnZmlsZScgbWFnaWMgZGV0ZWN0cyBmcm9tIGl0IHRvby4NCiQgZmlsZSBtb2Yuc3RyaXBwZWQg
+DQptb2Yuc3RyaXBwZWQ6IFF1YW50dW0gYXJjaGl2ZSBkYXRhDQoNCj4gPiA+IE1vcmVvdmVyIHZp
+YSB0b29sIHdtaW9mY2suZXhlIGl0IGlzIHBvc3NpYmxlIHRvIGdlbmVyYXRlIGhlYWRlcg0KPiA+
+ID4gZmlsZSBmb3INCj4gPiA+DQo+ID4gPiBXTUkgZHJpdmVyIGZyb20gYmluYXJ5IG1vZiBmaWxl
+Og0KPiA+ID4gICB3bWlvZmNrLmV4ZSAtaGZpbGUuaCAtbSAtdSBmaWxlLmJtZg0KPiA+ID4NCj4g
+PiA+IEFuZCB3aGF0IGlzIGludGVyZXN0aW5nIHRoYXQgaW4gdGhpcyBmaWxlIGFyZSBhbHNvIGNv
+bW1lbnRzIHdoaWNoDQo+ID4gPiBsb29rcyBsaWtlIGNvbWVzIGZyb20gdGhhdCBiaW5hcnkgbW9m
+IGZpbGUuDQo+ID4NCj4gPiBBaCBpbnRlcmVzdGluZy4gIFRoZSAiY29tbWVudHMiIHRoYXQgY29t
+ZSBvdXQgb2YgdGhhdCBhcmUgYWN0dWFsbHkNCj4gPiB3aGF0J3MgbWFwcGVkIHRvIHRoZSAiRGVz
+Y3JpcHRpb24iIGZpZWxkIGluIHRoZSBXTUkgcmVwb3NpdG9yeSB3aGVuDQo+ID4gdGhlIGJpbmFy
+eSBNT0YgaXMgbG9hZGVkLg0KPiA+DQo+ID4gVGhleSBhcmUgbm90IHRoZSBkZXZlbG9wZXIgY29t
+bWVudHMgdGhhdCB3ZXJlIHBsYWNlZCBpbiB0aGUgb3JpZ2luYWwNCj4gPiBNT0YgZGF0YS4gIEkg
+d291bGQgc3VwcG9zZSB0aG9zZSBhcmUgbG9zdCB3aGVuIGNvbXBpbGluZyB0byBiaW5hcnkNCj4g
+PiBNT0YuDQo+IA0KPiBIbS4uIHJpZ2h0IHRoZXkgYXJlIHByZXNlbnQgaW4gZGVjb21waWxlZCBN
+T0YgZmlsZSBpbiBEZXNjcmlwdGlvbiBmaWVsZC4NCj4gDQo+ID4gPiBXaGVuIEkgbG9va2VkIGlu
+dG8gb3V0cHV0IGZyb20gbW9mY29tcC5leGUgd2l0aCBhYm92ZSBhcmdzLCB0aGF0DQo+ID4gPiBN
+T0Ygb3V0cHV0IGRpZCBub3QgY29udGFpbiBjb21tZW50cywgc28gbG9va3MgbGlrZSB3ZSBzdGls
+bCBjYW4NCj4gPiA+IG1pc3Mgc29tZXRoaW5nLg0KPiA+ID4NCj4gPiA+IFNlZTogaHR0cDovL2Js
+b2cubmlldHJ6ZWJhLnBsLzIwMTEvMTIvbW9mLWRlY29tcGlsYXRpb24uaHRtbA0KPiA+DQo+ID4g
+QWN0dWFsbHkgSSBzZWUgd21pbW9mY2sgb3V0cHV0IHRvIGJlIG1pc3Npbmcgc29tZSBpbXBvcnRh
+bnQgYml0cy4NCj4gPiBGb3IgZXhhbXBsZSBvbiBhIERlbGwgc3lzdGVtIFlvdSdsbCBnZXQgYSBj
+bGFzcyBCRm4gZGVjbGFyZWQgZnJvbQ0KPiA+IG1vZmNvbXAgb3V0cHV0LCBidXQgbm90aGluZyBm
+cm9tIHdtaW1vZmNrIG91dHB1dC4NCj4gPg0KPiA+IFRoZSBtb3N0IGltcG9ydGFudCB0aGluZyB0
+aGF0IHlvdSdyZSByZWFsbHkgZ2V0dGluZyBvdXQgb2YgdGhpcyBNT0YNCj4gPiBpcyB0aGUgc2l6
+ZSwgc3RydWN0dXJlIGFuZCBmb3JtYXQgb2YgdGhlIGJ1ZmZlciB0aGF0IHlvdSB3b3VsZCBiZQ0K
+PiA+IHNlbmRpbmcgdG8gQVNMLg0KPiA+DQo+ID4gQmFjayB0byB0aGUgcG9pbnQgd2Ugd2VyZSBk
+aXNjdXNzaW5nIG9mIGEgcG90ZW50aWFsIGZpbHRlciwgdGhlDQo+ID4gaW5mb3JtYXRpb24gaW4g
+dGhlIE1PRiBjb3VsZCBwb3NzaWJseSBiZSB2ZXJ5IHVzZWZ1bCB0byBkZWNsYXJpbmcNCj4gPiB3
+aGF0IGlzIGdvaW5nIGludG8gdGhlIGZpbHRlci4NCj4gDQo+IEluIHRoYXQgaGVhZGVyIGZpbGUg
+Z2VuZXJhdGVkIGJ5IHdtaW9mY2suZXhlIEkgc2VlIGRlZmluaXRpb25zIGZvciBCRm4uDQpUaGVy
+ZSBpcyBhIGRlZmluaXRpb24gYnV0IGl0J3MgbWlzc2luZyB0aGUgZm9ybWF0IG9mIHRoZSBhcmd1
+bWVudCBmcm9tDQp3aGF0IEkgY2FuIHRlbGwuDQoNCkluIGFueSBjYXNlLCB0aGlzIHdpbGwgYmUg
+dGFuZ2VudGlhbCB0byB0aGlzIGRpc2N1c3Npb24sIGJ1dCB1c2VmdWwgZm9yDQpyZXZlcnNlIGVu
+Z2luZWVyaW5nIHRoZSBiaW5hcnkgbW9mIGZvcm1hdC4NCg==
