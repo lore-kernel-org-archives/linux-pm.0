@@ -1,100 +1,79 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v6 6/8] Documentation: Add sbs-manager device tree node
- documentation
-Date: Mon, 8 May 2017 10:26:43 -0500
-Message-ID: <20170508152643.cv42nvkcsf3skmy2@rob-hp-laptop>
-References: <1493716346-58517-1-git-send-email-preid@electromag.com.au>
- <1493716346-58517-7-git-send-email-preid@electromag.com.au>
+From: Darren Hart <dvhart@infradead.org>
+Subject: Re: RFC: WMI Enhancements
+Date: Mon, 8 May 2017 08:29:07 -0700
+Message-ID: <20170508152907.GA17700@fury>
+References: <20170419075248.GD18887@pali>
+ <f3684c95b91349d3b4e512370ac1faf4@ausx13mpc120.AMER.DELL.COM>
+ <201704191854.51783@pali>
+ <4e3e507b116443298427002c5aafed7f@ausx13mpc120.AMER.DELL.COM>
+ <20170420131431.GM18887@pali>
+ <20170420204436.GC3209@fury>
+ <775ffd8f3327497cabd15ee7826cedaf@ausx13mpc120.AMER.DELL.COM>
+ <20170505234436.GB25865@fury>
+ <beb9a835eaf243fab151627e919eccf3@ausx13mpc120.AMER.DELL.COM>
+ <CALCETrUgPgk7uVdYx4zJzXQHpk5zALmzSp3Zcz9+FPAe6bA5LQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:34590 "EHLO
-        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755414AbdEHP0p (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 11:26:45 -0400
+Received: from bombadil.infradead.org ([65.50.211.133]:39512 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752367AbdEHP3N (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 11:29:13 -0400
 Content-Disposition: inline
-In-Reply-To: <1493716346-58517-7-git-send-email-preid@electromag.com.au>
+In-Reply-To: <CALCETrUgPgk7uVdYx4zJzXQHpk5zALmzSp3Zcz9+FPAe6bA5LQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: wsa@the-dreams.de, mark.rutland@arm.com, sre@kernel.org, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, benjamin.tissoires@redhat.com, Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+To: Andy Lutomirski <luto@kernel.org>
+Cc: Mario.Limonciello@dell.com, Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Corentin Chary <corentin.chary@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, May 02, 2017 at 05:12:24PM +0800, Phil Reid wrote:
-> From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+On Fri, May 05, 2017 at 06:25:08PM -0700, Andy Lutomirski wrote:
+> On Fri, May 5, 2017 at 5:51 PM,  <Mario.Limonciello@dell.com> wrote:
+> >> -----Original Message-----
+> >> From: Darren Hart [mailto:dvhart@infradead.org]
+> >> Sent: Friday, May 5, 2017 6:45 PM
+> >> To: Limonciello, Mario <Mario_Limonciello@Dell.com>
+> >> Cc: pali.rohar@gmail.com; rjw@rjwysocki.net; luto@amacapital.net;
+> >> len.brown@intel.com; corentin.chary@gmail.com; luto@kernel.org;
+> >> andriy.shevchenko@linux.intel.com; linux-kernel@vger.kernel.org; platform-
+> >> driver-x86@vger.kernel.org; linux-pm@vger.kernel.org
+> >> Subject: Re: RFC: WMI Enhancements
 > 
-> This patch adds device tree documentation for the sbs-manager
 > 
-> Reviewed-by: Phil Reid <preid@electromag.com.au>
-> Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-> Signed-off-by: Phil Reid <preid@electromag.com.au>
-> ---
->  .../bindings/power/supply/sbs,sbs-manager.txt      | 66 ++++++++++++++++++++++
->  1 file changed, 66 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
+> > I meant that to say that at least for now Andy's wmi-mof driver should still be merged.
+> > If something is going to build on top of this to do WBEM tools, they'll need that MOF
+> > data once someone figures out how to nicely deconstruct it.
+> >
 > 
-> diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
-> new file mode 100644
-> index 0000000..389016c
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
-> @@ -0,0 +1,66 @@
-> +Binding for sbs-manager
-> +
-> +Required properties:
-> +- compatible: "<vendor>,<part-number>", "sbs,sbs-charger" as fallback. The part
-> +  number compatible string might be used in order to take care of vendor
-> +  specific registers.
-> +- reg: integer, i2c address of the device. Should be <0xa>.
-> +Optional properties:
-> +- gpio-controller: Marks the port as GPIO controller.
-> +  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
-> +- #gpio-cells: Should be <2>. The first cell is the pin number, the second cell
-> +  is used to specify optional parameters:
-> +  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
-> +
-> +From OS view the device is basically an i2c-mux used to communicate with up to
-> +four smart battery devices at address 0xb. The driver actually implements this
-> +behaviour. So standard i2c-mux nodes can be used to register up to four slave
-> +batteries. Channels will be numerated starting from 1 to 4.
-> +
-> +Example:
-> +
-> +batman@0a {
+> The thing I don't like about my own driver is that, as a WMI device
+> driver, it can be loaded before the rest of the bus finishes probing.
+> So user programs that are notified asynchronously that the wmi-mof
+> driver is loaded and try to use future functionality (ioctl to issue a
+> MOF-based method call?) might end up doing so before the rest of the
+> bus is probed.
+> 
+> This could be addressed by always exposing the wmi-mof device last
+> (sort of -- it can be a module) or perhaps by moving MOF functionality
+> to the core driver.  Or maybe it's not really a problem.
 
-Drop the leading 0.
+Thanks Andy, I'll keep that in mind and see if I can come up with something to
+address it while working on WMI this week.
 
-> +    compatible = "lltc,ltc1760", "sbs,sbs-manager";
-> +    reg = <0x0a>;
-> +    #address-cells = <1>;
-> +    #size-cells = <0>;
-> +
-> +    gpio-controller;
-> +    #gpio-cells = <2>;
-> +
-> +    i2c@1 {
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +        reg = <1>;
-> +
-> +        battery@0b {
+The other problem with wmi-mof is that there will be no immediate open source
+consumers of the interface, and none on the horizon. We can't even test it to
+any meaningful degree on Linux. I suspect this will be met with stiff
+resistance.
 
-Drop the leading 0.
+> 
+> Also, isn't there a way to ask Microsoft to document this?  Are you
+> supposed to "ask a question" on this forum, perhaps:
+> 
+> https://msdn.microsoft.com/en-us/library/gg134029.aspx
+> 
+> I'm guessing the Samba team knows how to do this, too.
+> 
 
-> +            compatible = "ti,bq2060", "sbs,sbs-battery";
-> +            reg = <0x0b>;
-> +            sbs,battery-detect-gpios = <&batman 1 1>;
-> +        };
-> +    };
-> +
-> +    i2c@2 {
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +        reg = <2>;
-> +
-> +        battery@0b {
+It's a start.
 
-And here...
-
-With that,
-
-Acked-by: Rob Herring <robh@kernel.org>
+-- 
+Darren Hart
+VMware Open Source Technology Center
