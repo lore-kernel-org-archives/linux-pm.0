@@ -1,220 +1,291 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v13 08/11] power: supply: bq27xxx_battery: Add
- power_supply_battery_info support
-Date: Mon, 8 May 2017 14:50:44 -0500
-Message-ID: <e0df1cd5-8496-590d-90ff-dd95a3601b05@ti.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v13 09/11] power: supply: bq27xxx_battery: Enable data
+ memory update for certain chips
+Date: Mon, 8 May 2017 13:01:53 -0700
+Message-ID: <CAKvHMgSXoB0BAJKGkhDP81y7USdxce7a6HP5x+OQQJEyFfZA2A@mail.gmail.com>
 References: <20170504061811.18107-1-liam@networkimprov.net>
- <20170504061811.18107-9-liam@networkimprov.net>
- <f0121e38-9159-2bb4-26ca-1a4a72ba6ace@ti.com>
- <CAKvHMgSWCW5g3L2PtEa6Yg_LWRU_ByDDO_NVJqQqzvoHgXO=GQ@mail.gmail.com>
- <CAKvHMgS6XtrJDWgq=J_dnOBYUXLWG-zwBOaa3FHybEfkCDicvA@mail.gmail.com>
- <d1d93ce1-5c6c-ada8-2917-a9d592a9e1cd@ti.com>
- <CAKvHMgQ_1VL29u2Z1E63ekHdha22coaCBNSCccUgBLzVE6LvMw@mail.gmail.com>
- <f941faae-efa8-5e86-e7e6-8ab97755d238@ti.com>
- <CAKvHMgQHjXM_sY4s7SQbZYNxQFqQNMukgR4DG2zKn-1Szifc1A@mail.gmail.com>
+ <20170504061811.18107-10-liam@networkimprov.net> <e11bb744-ac01-8499-18a2-2e9fb3fb5c38@ti.com>
+ <CAKvHMgSmMGLXTdeDfu1wP7NxoJP8fJ+YyZvSs7rvOC8uQzk3ng@mail.gmail.com>
+ <73f5eb07-dda0-ec1c-2412-e186a42918ba@ti.com> <CAKvHMgTa9rFAdV0QYAAPGskHZo+H58sa-6H0DL-7PosywzhFtw@mail.gmail.com>
+ <c6f0b1f8-9e62-995a-0175-f330abf7f6fb@ti.com> <CAKvHMgRonN10XZAtFRLo7sxDcoBCiPhJib22YhzLpdMvjAr1TQ@mail.gmail.com>
+ <243a989e-0c95-48c7-7b80-7e4644cc47b6@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:35863 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754862AbdEHTuu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 15:50:50 -0400
-In-Reply-To: <CAKvHMgQHjXM_sY4s7SQbZYNxQFqQNMukgR4DG2zKn-1Szifc1A@mail.gmail.com>
+Received: from mail-io0-f193.google.com ([209.85.223.193]:35745 "EHLO
+        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754140AbdEHUCK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 16:02:10 -0400
+Received: by mail-io0-f193.google.com with SMTP id o12so2562473iod.2
+        for <linux-pm@vger.kernel.org>; Mon, 08 May 2017 13:02:05 -0700 (PDT)
+In-Reply-To: <243a989e-0c95-48c7-7b80-7e4644cc47b6@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
+To: "Andrew F. Davis" <afd@ti.com>
 Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On 05/08/2017 02:31 PM, Liam Breck wrote:
-> On Mon, May 8, 2017 at 11:42 AM, Andrew F. Davis <afd@ti.com> wrote:
->> On 05/08/2017 01:39 PM, Liam Breck wrote:
->>> On Mon, May 8, 2017 at 7:54 AM, Andrew F. Davis <afd@ti.com> wrote:
->>>> On 05/08/2017 01:16 AM, Liam Breck wrote:
->>>>> On Thu, May 4, 2017 at 11:40 AM, Liam Breck <liam@networkimprov.net> wrote:
->>>>>> On Thu, May 4, 2017 at 9:52 AM, Andrew F. Davis <afd@ti.com> wrote:
+On Mon, May 8, 2017 at 12:09 PM, Andrew F. Davis <afd@ti.com> wrote:
+> On 05/08/2017 02:02 PM, Liam Breck wrote:
+>> On Mon, May 8, 2017 at 8:00 AM, Andrew F. Davis <afd@ti.com> wrote:
+>>> On 05/08/2017 01:40 AM, Liam Breck wrote:
+>>>> On Fri, May 5, 2017 at 12:45 PM, Andrew F. Davis <afd@ti.com> wrote:
+>>>>> On 05/05/2017 02:31 PM, Liam Breck wrote:
+>>>>>> On Thu, May 4, 2017 at 10:00 AM, Andrew F. Davis <afd@ti.com> wrote:
 >>>>>>> On 05/04/2017 01:18 AM, Liam Breck wrote:
 >>>>>>>> From: Liam Breck <kernel@networkimprov.net>
 >>>>>>>>
->>>>>>>> Previously there was no way to configure these chips in the event that the
->>>>>>>> defaults didn't match the battery in question.
+>>>>>>>> Support data memory update on BQ27500, 545, 425, 421, 441, 621.
 >>>>>>>>
->>>>>>>> For chips with RAM data memory (and also those with flash/NVM data memory
->>>>>>>> if CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM is defined and the user has not
->>>>>>>> set module param dt_monitored_battery_updates_nvm=0) we now call
->>>>>>>> power_supply_get_battery_info(), check its values, and write battery
->>>>>>>> properties to chip data memory if there is a dm_regs table for the chip.
+>>>>>>>> Create IDs for for previously unID'd chips, to index arrays for unseal keys
+>>>>>>>> and data memory register tables.
 >>>>>>>>
->>>>>>>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 >>>>>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
 >>>>>>>> ---
->>>>>>>>  drivers/power/supply/Kconfig           |   9 ++
->>>>>>>>  drivers/power/supply/bq27xxx_battery.c | 199 ++++++++++++++++++++++++++++++++-
->>>>>>>>  include/linux/power/bq27xxx_battery.h  |   2 +
->>>>>>>>  3 files changed, 209 insertions(+), 1 deletion(-)
+>>>>>>>>  drivers/power/supply/bq27xxx_battery.c     | 90 ++++++++++++++++++++++++++++--
+>>>>>>>>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 +++---
+>>>>>>>>  include/linux/power/bq27xxx_battery.h      | 13 +++++
+>>>>>>>>  3 files changed, 107 insertions(+), 12 deletions(-)
 >>>>>>>>
->>>>>>>> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
->>>>>>>> index 76806a0..85e2fb2 100644
->>>>>>>> --- a/drivers/power/supply/Kconfig
->>>>>>>> +++ b/drivers/power/supply/Kconfig
->>>>>>>> @@ -178,6 +178,15 @@ config BATTERY_BQ27XXX_I2C
->>>>>>>>         Say Y here to enable support for batteries with BQ27xxx chips
->>>>>>>>         connected over an I2C bus.
->>>>>>>>
->>>>>>>> +config BATTERY_BQ27XXX_DT_UPDATES_NVM
->>>>>>>> +     bool "BQ27xxx support for update of NVM/flash data memory"
->>>>>>>> +     depends on BATTERY_BQ27XXX_I2C
->>>>>>>> +     help
->>>>>>>> +       Say Y here to enable devicetree monitored-battery config to update
->>>>>>>> +       NVM/flash data memory. Only enable this option for devices with a
->>>>>>>> +       fuel gauge mounted on the circuit board, and a battery that cannot
->>>>>>>> +       be replaced with one of a different type.
->>>>>>>> +
->>>>>>>>  config BATTERY_DA9030
->>>>>>>>       tristate "DA9030 battery driver"
->>>>>>>>       depends on PMIC_DA903X
 >>>>>>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->>>>>>>> index 8ab184c..06f15da 100644
+>>>>>>>> index 06f15da..0aecd41 100644
 >>>>>>>> --- a/drivers/power/supply/bq27xxx_battery.c
 >>>>>>>> +++ b/drivers/power/supply/bq27xxx_battery.c
->>>>>>>> @@ -805,6 +805,13 @@ static LIST_HEAD(bq27xxx_battery_devices);
+>>>>>>>> @@ -58,7 +58,7 @@
 >>>>>>>>
->>>>>>>>  #define BQ27XXX_DM_SZ        32
+>>>>>>>>  #include <linux/power/bq27xxx_battery.h>
 >>>>>>>>
->>>>>>>> +struct bq27xxx_dm_reg {
->>>>>>>> +     u8 subclass_id;
->>>>>>>> +     u8 offset;
->>>>>>>> +     u8 bytes;
->>>>>>>> +     u16 min, max;
->>>>>>>> +};
->>>>>>>> +
->>>>>>>>  /**
->>>>>>>>   * struct bq27xxx_dm_buf - chip data memory buffer
->>>>>>>>   * @class: data memory subclass_id
->>>>>>>> @@ -822,6 +829,43 @@ struct bq27xxx_dm_buf {
->>>>>>>>       bool has_data, dirty;
+>>>>>>>> -#define DRIVER_VERSION               "1.2.0"
+>>>>>>>> +#define DRIVER_VERSION               "1.3.0"
+>>>>>>>>
+>>>>>>>>  #define BQ27XXX_MANUFACTURER "Texas Instruments"
+>>>>>>>>
+>>>>>>>> @@ -132,7 +132,7 @@ enum bq27xxx_reg_index {
+>>>>>>>>       [BQ27XXX_DM_CKSUM] = 0x60
+>>>>>>>>
+>>>>>>>>  /* Register mappings */
+>>>>>>>> -static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>>>>>>>> +static u8 bq27xxx_regs[BQ27MAX][BQ27XXX_REG_MAX] = {
+>>>>>>>>       [BQ27000] = {
+>>>>>>>>               [BQ27XXX_REG_CTRL] = 0x00,
+>>>>>>>>               [BQ27XXX_REG_TEMP] = 0x06,
+>>>>>>>> @@ -779,7 +779,7 @@ static enum power_supply_property bq27421_battery_props[] = {
+>>>>>>>>  static struct {
+>>>>>>>>       enum power_supply_property *props;
+>>>>>>>>       size_t size;
+>>>>>>>> -} bq27xxx_battery_props[] = {
+>>>>>>>> +} bq27xxx_battery_props[BQ27MAX] = {
+>>>>>>>>       BQ27XXX_PROP(BQ27000, bq27000_battery_props),
+>>>>>>>>       BQ27XXX_PROP(BQ27010, bq27010_battery_props),
+>>>>>>>>       BQ27XXX_PROP(BQ2750X, bq2750x_battery_props),
+>>>>>>>> @@ -798,6 +798,33 @@ static struct {
+>>>>>>>>       BQ27XXX_PROP(BQ27421, bq27421_battery_props),
 >>>>>>>>  };
 >>>>>>>>
->>>>>>>> +#define BQ27XXX_DM_BUF(di, i) { \
->>>>>>>> +     .class = (di)->dm_regs[i].subclass_id, \
->>>>>>>> +     .block = (di)->dm_regs[i].offset / BQ27XXX_DM_SZ, \
->>>>>>>> +}
->>>>>>>> +
->>>>>>>> +static inline u16 *bq27xxx_dm_reg_ptr(struct bq27xxx_dm_buf *buf,
->>>>>>>> +                                   struct bq27xxx_dm_reg *reg)
->>>>>>>> +{
->>>>>>>> +     if (buf->class == reg->subclass_id &&
->>>>>>>> +         buf->block == reg->offset / BQ27XXX_DM_SZ)
->>>>>>>> +             return (u16 *) (buf->data + reg->offset % BQ27XXX_DM_SZ);
->>>>>>>> +
->>>>>>>> +     return NULL;
->>>>>>>> +}
->>>>>>>> +
->>>>>>>> +enum bq27xxx_dm_reg_id {
->>>>>>>> +     BQ27XXX_DM_DESIGN_CAPACITY = 0,
->>>>>>>> +     BQ27XXX_DM_DESIGN_ENERGY,
->>>>>>>> +     BQ27XXX_DM_TERMINATE_VOLTAGE,
+>>>>>>>> +static enum bq27xxx_chip bq27xxx_chips[] = {
+>>>>>>>> +     [BQ27000]   = BQ27000,
+>>>>>>>> +     [BQ27010]   = BQ27010,
+>>>>>>>> +     [BQ2750X]   = BQ2750X,
+>>>>>>>> +     [BQ2751X]   = BQ2751X,
+>>>>>>>> +     [BQ2752X]   = BQ2751X,
+>>>>>>>> +     [BQ27500]   = BQ27500,
+>>>>>>>> +     [BQ27510G1] = BQ27510G1,
+>>>>>>>> +     [BQ27510G2] = BQ27510G2,
+>>>>>>>> +     [BQ27510G3] = BQ27510G3,
+>>>>>>>> +     [BQ27520G1] = BQ27520G1,
+>>>>>>>> +     [BQ27520G2] = BQ27520G2,
+>>>>>>>> +     [BQ27520G3] = BQ27520G3,
+>>>>>>>> +     [BQ27520G4] = BQ27520G4,
+>>>>>>>> +     [BQ27530]   = BQ27530,
+>>>>>>>> +     [BQ27531]   = BQ27530,
+>>>>>>>> +     [BQ27541]   = BQ27541,
+>>>>>>>> +     [BQ27542]   = BQ27541,
+>>>>>>>> +     [BQ27546]   = BQ27541,
+>>>>>>>> +     [BQ27742]   = BQ27541,
+>>>>>>>> +     [BQ27545]   = BQ27545,
+>>>>>>>> +     [BQ27421]   = BQ27421,
+>>>>>>>> +     [BQ27425]   = BQ27421,
+>>>>>>>> +     [BQ27441]   = BQ27421,
+>>>>>>>> +     [BQ27621]   = BQ27421,
 >>>>>>>> +};
 >>>>>>>> +
->>>>>>>> +static const char * const bq27xxx_dm_reg_name[] = {
->>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY] = "design-capacity",
->>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY] = "design-energy",
->>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>>>>>>>>  static DEFINE_MUTEX(bq27xxx_list_lock);
+>>>>>>>>  static LIST_HEAD(bq27xxx_battery_devices);
+>>>>>>>>
+>>>>>>>> @@ -856,6 +883,54 @@ static const char * const bq27xxx_dm_reg_name[] = {
+>>>>>>>>       [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>>>>>>>>  };
+>>>>>>>>
+>>>>>>>> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
+>>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
+>>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
+>>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
 >>>>>>>> +};
 >>>>>>>> +
+>>>>>>>> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
+>>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
+>>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
+>>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
+>>>>>>>> +};
 >>>>>>>> +
->>>>>>>> +#ifdef CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM
->>>>>>>> +static bool bq27xxx_dt_to_nvm = true;
+>>>>>>>> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
+>>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+>>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+>>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
+>>>>>>>> +};
 >>>>>>>> +
->>>>>>>> +module_param_named(dt_monitored_battery_updates_nvm, bq27xxx_dt_to_nvm, bool, 0444);
->>>>>>>> +MODULE_PARM_DESC(dt_monitored_battery_updates_nvm,
->>>>>>>> +     "Devicetree monitored-battery config updates NVM/flash data memory, if present. Default is 1/y.");
+>>>>>>>> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
+>>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
+>>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
+>>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
+>>>>>>>> +};
+>>>>>>>> +
+>>>>>>>> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
+>>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
+>>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
+>>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
+>>>>>>>> +};
+>>>>>>>> +
+>>>>>>>> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
+>>>>>>>> +     [BQ27500] = bq27500_dm_regs,
+>>>>>>>> +     [BQ27545] = bq27545_dm_regs,
+>>>>>>>> +     [BQ27421] = bq27421_dm_regs,
+>>>>>>>> +     [BQ27425] = bq27425_dm_regs,
+>>>>>>>> +     [BQ27441] = bq27421_dm_regs,
+>>>>>>>> +     [BQ27621] = bq27621_dm_regs,
+>>>>>>>> +};
+>>>>>>>> +
+>>>>>>>> +static u32 bq27xxx_unseal_keys[] = {
+>>>>>>>> +     [BQ27500] = 0x04143672,
+>>>>>>>> +     [BQ27545] = 0x04143672,
+>>>>>>>> +     [BQ27421] = 0x80008000,
+>>>>>>>> +     [BQ27425] = 0x04143672,
+>>>>>>>> +     [BQ27441] = 0x80008000,
+>>>>>>>> +     [BQ27621] = 0x80008000,
+>>>>>>>> +};
+>>>>>>>> +
+>>>>>>>>
+>>>>>>>>  #ifdef CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM
+>>>>>>>>  static bool bq27xxx_dt_to_nvm = true;
+>>>>>>>> @@ -1865,9 +1940,16 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>>>>>>>               .drv_data = di,
+>>>>>>>>       };
+>>>>>>>>
+>>>>>>>> +     di->ram_chip = di->chip == BQ27421 || di->chip == BQ27441 || di->chip == BQ27621;
+>>>>>>>> +
+>>>>>>>> +     di->unseal_key = bq27xxx_unseal_keys[di->chip];
+>>>>>>>> +     di->dm_regs = bq27xxx_dm_regs[di->chip];
+>>>>>>>> +     di->chip = bq27xxx_chips[di->chip];
 >>>>>>>
->>>>>>> As before, the default should not be y, this is a rare case and I can't
->>>>>>> see it being useful or wanted by anyone but device manufacturers. I
->>>>>>> don't want everyones chip's factory programmed NVM overwritten by
->>>>>>> accident when someone compiles and ships a kernel with
->>>>>>> BATTERY_BQ27XXX_DT_UPDATES_NVM=y
+>>>>>>> NACK, this is a mess, you should not be using a table to change what
+>>>>>>> chip was passed in, it may be needed later. The chip is still the same,
+>>>>>>> it should have the same one correct ID, use a different index or array
+>>>>>>> if you would like, but this is very hacky.
 >>>>>>
->>>>>> Right, the point of the config option is to let a device vendor ship a
->>>>>> kernel + dtb which can field-upgrade NVM. (Setting the option does
->>>>>> nothing absent the necessary dtb.)
+>>>>>> The only way I see to make the I2C subsystem deliver multiple IDs for
+>>>>>> a device is to treat i2c_device_id.driver_data as a u16[2] instead of
+>>>>>> its normal u32. What do you think of that?
 >>>>>>
->>>>>> Module params are for end-user config; we can't require a device
->>>>>> vendor to ship /etc/modprobe.d/xyz. And we certainly don't want a
->>>>>> kernel package update to defeat the end-user config of
->>>>>> dt_monitored_battery_updates_nvm=0 !!
->>>>>>
->>>>>> I believe Sebastian agrees, given that he queued this patch :-)
 >>>>>
->>>>> I clarified the rationale for module param default =1 above; could you ack?
+>>>>> Why would it need multiple IDs for one device? Just pass in the one
+>>>>> correct device ID that it is. No reason to make this so complicated.
+>>>>> From the one ID you can then use tables to lookup any other info about
+>>>>> that device, you don't have to have ever ID populated in every table,
+>>>>> you can even have a table of tables if you would like:
 >>>>>
->>>>> That prevents this scenario:
->>>>> 1) user changes battery type, sets dt_monitored_battery_updates_nvm=0
->>>>> 2) vendor ships kernel package with dtb update and
->>>>> dt_monitored_battery_updates_nvm=1
->>>>> 3) gauge stops working correctly
+>>>>> static const struct chip_lookup lookup_table = {
+>>>>>         [bq27425] = {
+>>>>>                 .regs = &bq27xxx_regs[bq27425],
+>>>>>                 .dm_regs = &bq27xxx_dm_regs[bq274xx],
+>>>>>                 .unseal_key = INVALID_FOR_THIS_DEVICE,
+>>>>>         },
+>>>>>         [bq27343] = {
+>>>>> ...
 >>>>>
+>>>>> Not sure if that is valid C but I think you can get the idea.
 >>>>
->>>> Leaving it =1 will encourage this situation, not prevent it. Updating
->>>> NVM is a non-standard operation for these parts. It should only be done
->>>> once ideally. It is nice being able to update the NVM, and we have
->>>> user-space tools for this, but this is a dangerous operation, improperly
->>>> programming can brick the chip, as you have found out.
+>>>> I considered a master lookup_table, but its ref to
+>>>> bq27xxx_regs[fake-ID] duplicates the mapping of real-ID to di->chip.
+>>>> The latter is still necessary as di->chip is used to select
+>>>> conditional behaviors; we can't change its value in this patch.
 >>>>
->>>> If you want to add this function into the kernel driver that is fine,
->>>> but you *cannot* have this be the default, it needs to be a hidden away
->>>> option for people who know what they are doing, else you will end up
->>>> accidentally causing damage to countless users' hardware.
 >>>
->>> I don't think you followed my logic.... It *is* hidden behind a
->>> dedicated kernel config option which only device vendors (and
->>> tinkerers :-) would use. A kernel package with that option and
->>> suitable dtb has to perform the update without manipulation of the
->>> module param. The module param is to let the user prevent any future
->>> update by such a kernel package, since only he knows that he changed
->>> the battery type.
->>>
->>> What is your evidence for the assertion of "encourage this situation"?
->>>
+>>> Sure we can, in fact you could add the conditional behavior flags to the
+>>> master lookup_table and cleanup all the current switch-case checks we do
+>>> now.
 >>
->> It is the default value, what more evidence do you want? Someone should
->> have to enable the functionality in Kconfig *and* enable it as a
->> module_param. Leaving either on by default will cause it to be
->> accidentally left enabled.
-> 
-> We could add a second config option to eliminate the possibility of
-> the first one being set by mistake.
-> 
-> You can't trivially enable a config option. If you set it, you'd
-> obviously set the module param if that were necessary, so that's no
-> extra protection against "accidentally left enabled". (And the config
-> option does nothing without a suitable dtb.)
-> 
+>> You are proposing a significant change to the ID handling, which is
+>> fine, but I don't wish to code that. Accept this minimal patch to
+>> enable DM update, and then alter the ID logic when you have time in a
+>> future patch.
+>>
+>
+> Doesn't work like that, you can't just hack something together and hope
+> someone else will fix it later. If you want to change something you
+> should make it right the first time. We don't need DM update, but if you
+> would like it then you need to fix the problems it will create.
 
-Why would you "obviously set the module param"? If this config option is
-enabled then you still have to set the module param to make this write
-to your device's NVM, that is two things vs one. The people who use
-kernels often don't build them. Both should need to be set to update the
-devices NVM.
+You do indeed need DM update for the RAM-only chips; they expect to be
+configured on boot, as I documented previously.
 
-> My scenario is a clear and likely threat. You haven't described a
-> threat scenario.
-> 
+Adding real-ID to the I2C table and using it in *exactly two lines* of
+setup() is a minimal workaround for a pre-existing design flaw. You
+have a concept for fixing it, so you should code it. I gracefully
+decline.
 
-Easy, kernel is built with the config option enabled and their DT has
-invalid option for their battery. Now everyone bricks their hardware.
+I have labored on this patchset for some 19 revisions. Sebastian seems
+to think that's enough, as he queued most of the series last week even
+tho you hadn't acked it.
 
-Vs. your three step situation that the two people who will ever use this
-will never actually find themselves in, that results in a minor
-inconvenience as they have to turn a module param back off.
 
-Lets take the safe route and leave this default off.
 
-> The docs for the config option describe its correct use, and I will
-> mention the risk of overwriting a smart battery. No general purpose
-> distro will enable it.
-> 
-
-How can you know this, I'm pretty sure Ubuntu ships with a randconfig
-kernel :)
+>>>> So instead lets amend the I2C table to carry both its original value
+>>>> (fake-ID) and the real-ID. That looks like:
+>>>>
+>>>> static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>>>     /* dest.    di->real_chip       di->chip      */
+>>>>     { "bq27200",   (BQ27000   << 16) |  BQ27000   },
+>>>>     { "bq27210",   (BQ27010   << 16) |  BQ27010   },
+>>>>     ...
+>>>>     { "bq27441",   (BQ27441   << 16) |  BQ27421   },
+>>>>     { "bq27621",   (BQ27621   << 16) |  BQ27421   },
+>>>>     {},
+>>>> };
+>>>>
+>>>> In probe, retrieve two values:
+>>>>
+>>>>     di->real_chip = id->driver_data >> 16;
+>>>>     di->chip = (u16) id->driver_data;
+>>>>
+>>>
+>>> NAK, I'm sure you can see how hacky this is right? This doesn't give us
+>>> anything that the old table didn't. And it fails to correct the issue
+>>> with the tables: We have two chip IDs still!
+>>
+>> I'm sorry you don't like the extra ID, but you're the party
+>> responsible for (if not the author of) the fake-ID scheme :-)
+>>
+>
+> It has worked fine until now, your additions require a different scheme,
+> hacking around the old one is not a workable solution.
+>
+>>
+>>> Try the lookup_table again, send be what you have and I can help get
+>>> everything else working if you have any problems with the conditional
+>>> behavior cleanups.
+>>>
+>>>> In setup, use two values:
+>>>>
+>>>>     di->unseal_key = bq27xxx_unseal_keys[di->real_chip];
+>>>>     di->dm_regs = bq27xxx_dm_regs[di->real_chip];
+>>>>     di->regs = bq27xxx_regs[di->chip]; // unchanged from orig src
+>>>>
+>>>> That yields the most compact implementation of this patch, and you get
+>>>> di->real_chip in the bargain :-)
+>>>>
+>>>>
+>>>>>>> Just stop trying to hack around it, add the extra tables, even if they
+>>>>>>> are clones, so we can be done with this series already. I'm sure you
+>>>>>>> want that more than you want this "clever" work-around, right?
+>>>>>>>
+>>>>>>> Also fix all the checkpatch --strict warnings.
+>>>>>>>
