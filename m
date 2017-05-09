@@ -1,19 +1,19 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v13.2 09/11] power: supply: bq27xxx_battery: Enable data
- memory update for certain chips
-Date: Tue, 9 May 2017 04:09:20 -0700
-Message-ID: <CAKvHMgQDMhYYicHLckMZ1sRaWJmEQSquqX2tw5T-WvimMt-njQ@mail.gmail.com>
-References: <20170509082123.27592-1-liam@networkimprov.net> <20170509082123.27592-4-liam@networkimprov.net>
+Subject: Re: [PATCH v13.2 10/11] power: supply: bq27xxx_battery: Flag
+ identical register maps when in debug mode
+Date: Tue, 9 May 2017 04:27:18 -0700
+Message-ID: <CAKvHMgTmxOpr4cCesCPiXqaB1zap72rwqejmWfohGsd-z55QCA@mail.gmail.com>
+References: <20170509082123.27592-1-liam@networkimprov.net> <20170509082123.27592-5-liam@networkimprov.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f195.google.com ([209.85.223.195]:34436 "EHLO
-        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751306AbdEILJW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 May 2017 07:09:22 -0400
-Received: by mail-io0-f195.google.com with SMTP id 12so11531670iol.1
-        for <linux-pm@vger.kernel.org>; Tue, 09 May 2017 04:09:21 -0700 (PDT)
-In-Reply-To: <20170509082123.27592-4-liam@networkimprov.net>
+Received: from mail-io0-f193.google.com ([209.85.223.193]:35592 "EHLO
+        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751210AbdEIL1T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 May 2017 07:27:19 -0400
+Received: by mail-io0-f193.google.com with SMTP id o12so4136656iod.2
+        for <linux-pm@vger.kernel.org>; Tue, 09 May 2017 04:27:19 -0700 (PDT)
+In-Reply-To: <20170509082123.27592-5-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
@@ -21,270 +21,69 @@ Cc: Liam Breck <kernel@networkimprov.net>
 
 Hi Sebastian,
 
-This patch makes the minimum changes required to support certain fuel
-gauge chips.
+This patch checks for dupes in the large bq27xxx_regs[][] array of
+register tables. It's easy to mistakenly add a duplicate table when
+supporting a new chip; 3 such dupes were added recently.
 
-Andrew dislikes that it stores two IDs for each chip -- a new "real
-ID" which is unique and the original "chip ID" which is shared in some
-cases. So he asked me to change the ID logic throughout the driver, a
-significant effort. He has a concept for the change, but it's still
-developing.
+Andrew suggested that this code belongs in a separate tools directory
+program. That may be overkill for how short this is. Also the dupe
+checker needs access to static module data.
 
-Changing the ID scheme is worth considering, but I do not believe it
-belongs in this patch, and I do not wish to code and test it. I
-suggested he do that in a patch following this series.
-
-I point out things that Andrew took issue with inline below.
-
-Do you think the patch is OK as-is?
+What do you think?
 
 
 On Tue, May 9, 2017 at 1:21 AM, Liam Breck <liam@networkimprov.net> wrote:
 > From: Liam Breck <kernel@networkimprov.net>
 >
-> Support data memory update on BQ27500, 545, 425, 421, 441, 621.
+> We tie multiple chips to unique register maps. When supporting a new chip,
+> it's easy to add a duplicate map by mistake.
 >
-> Create IDs for for previously unID'd chips, to index arrays for unseal keys
-> and data memory register tables.
+> In debug mode we now scan the register maps for duplicates.
 >
 > Signed-off-by: Liam Breck <kernel@networkimprov.net>
 > ---
->  drivers/power/supply/bq27xxx_battery.c     | 64 +++++++++++++++++++++++++++---
->  drivers/power/supply/bq27xxx_battery_i2c.c | 52 ++++++++++++------------
->  include/linux/power/bq27xxx_battery.h      | 14 +++++++
->  3 files changed, 100 insertions(+), 30 deletions(-)
+>  drivers/power/supply/bq27xxx_battery.c | 21 +++++++++++++++++++++
+>  1 file changed, 21 insertions(+)
 >
 > diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-> index ed44439..76cb181 100644
+> index 76cb181..0492f33 100644
 > --- a/drivers/power/supply/bq27xxx_battery.c
 > +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -58,7 +58,7 @@
+> @@ -1922,6 +1922,25 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+>         schedule_delayed_work(&di->work, 0);
+>  }
 >
->  #include <linux/power/bq27xxx_battery.h>
->
-> -#define DRIVER_VERSION         "1.2.0"
-> +#define DRIVER_VERSION         "1.3.0"
->
->  #define BQ27XXX_MANUFACTURER   "Texas Instruments"
->
-> @@ -132,7 +132,7 @@ enum bq27xxx_reg_index {
->         [BQ27XXX_DM_CKSUM] = 0x60
->
->  /* Register mappings */
-> -static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
-> +static u8 bq27xxx_regs[BQ27MAX][BQ27XXX_REG_MAX] = {
->         [BQ27000] = {
->                 [BQ27XXX_REG_CTRL] = 0x00,
->                 [BQ27XXX_REG_TEMP] = 0x06,
-> @@ -779,7 +779,7 @@ static enum power_supply_property bq27421_battery_props[] = {
->  static struct {
->         enum power_supply_property *props;
->         size_t size;
-> -} bq27xxx_battery_props[] = {
-> +} bq27xxx_battery_props[BQ27MAX] = {
->         BQ27XXX_PROP(BQ27000, bq27000_battery_props),
->         BQ27XXX_PROP(BQ27010, bq27010_battery_props),
->         BQ27XXX_PROP(BQ2750X, bq2750x_battery_props),
-> @@ -856,6 +856,54 @@ static const char * const bq27xxx_dm_reg_name[] = {
->         [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
->  };
->
-> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
-> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
-> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
-> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
-> +};
+> +#ifdef DEBUG
+> +static void bq27xxx_battery_dbg_regs_dupes(struct bq27xxx_device_info *di)
+> +{
+> +       const size_t max = ARRAY_SIZE(bq27xxx_regs);
+> +       int a, b;
 > +
-> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
-> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
-> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
-> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
-> +};
+> +       for (a = 1; a < max-1; a++) {
+> +               for (b = a+1; b < max; b++) {
+> +                       if (!memcmp(bq27xxx_regs[a], bq27xxx_regs[b],
+> +                                   sizeof(bq27xxx_regs[0])))
+> +                               dev_warn(di->dev,
+> +                                       "bq27xxx_regs[%d] & [%d] are identical\n", a, b);
+> +               }
+> +       }
+> +}
+> +#else
+> +static inline void bq27xxx_battery_dbg_regs_dupes(struct bq27xxx_device_info *di) {}
+> +#endif
 > +
-> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
-> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
-> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
-> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
-> +};
-> +
-> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
-> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
-> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
-> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
-> +};
-> +
-> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
-> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
-> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
-> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
-> +};
-> +
-> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
-> +       [BQ27500] = bq27500_dm_regs,
-> +       [BQ27545] = bq27545_dm_regs,
-> +       [BQ27421] = bq27421_dm_regs,
-> +       [BQ27425] = bq27425_dm_regs,
-> +       [BQ27441] = bq27421_dm_regs,
-> +       [BQ27621] = bq27621_dm_regs,
-> +};
-> +
-> +static u32 bq27xxx_unseal_keys[] = {
-> +       [BQ27500] = 0x04143672,
-> +       [BQ27545] = 0x04143672,
-> +       [BQ27421] = 0x80008000,
-> +       [BQ27425] = 0x04143672,
-> +       [BQ27441] = 0x80008000,
-> +       [BQ27621] = 0x80008000,
-> +};
-> +
->
->  static bool bq27xxx_dt_to_nvm = true;
->  module_param_named(dt_monitored_battery_updates_nvm, bq27xxx_dt_to_nvm, bool, 0444);
-> @@ -1882,9 +1930,15 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>  int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>  {
+>         struct power_supply_desc *psy_desc;
+> @@ -1930,6 +1949,8 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
 >                 .drv_data = di,
 >         };
 >
-> +       di->ram_chip = di->chip == BQ27421 || di->chip == BQ27441 || di->chip == BQ27621;
+> +       bq27xxx_battery_dbg_regs_dupes(di);
 > +
-> +       di->unseal_key = bq27xxx_unseal_keys[di->real_chip];
-> +       di->dm_regs = bq27xxx_dm_regs[di->real_chip];
-
-Above are the only two uses of the new real_chip ID.
-
-> +
-> +       di->regs = bq27xxx_regs[di->chip];
-
-This is from the original source, just moved up.
-
-
->         INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
->         mutex_init(&di->lock);
-> -       di->regs = bq27xxx_regs[di->chip];
+>         di->ram_chip = di->chip == BQ27421 || di->chip == BQ27441 || di->chip == BQ27621;
 >
->         psy_desc = devm_kzalloc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
->         if (!psy_desc)
-> @@ -1999,7 +2053,7 @@ static int bq27xxx_battery_platform_probe(struct platform_device *pdev)
->         platform_set_drvdata(pdev, di);
->
->         di->dev = &pdev->dev;
-> -       di->chip = pdata->chip;
-> +       di->chip = di->real_chip = pdata->chip;
->         di->name = pdata->name ?: dev_name(&pdev->dev);
->         di->bus.read = bq27xxx_battery_platform_read;
->
-> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-> index a597221..a365650 100644
-> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
-> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-> @@ -169,7 +169,8 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
->
->         di->id = num;
->         di->dev = &client->dev;
-> -       di->chip = id->driver_data;
-> +       di->real_chip = id->driver_data >> 16;
-> +       di->chip = (u16) id->driver_data;
->         di->name = name;
->
->         di->bus.read = bq27xxx_battery_i2c_read;
-> @@ -226,30 +227,31 @@ static int bq27xxx_battery_i2c_remove(struct i2c_client *client)
->  }
->
->  static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
-> -       { "bq27200", BQ27000 },
-> -       { "bq27210", BQ27010 },
-> -       { "bq27500", BQ2750X },
-> -       { "bq27510", BQ2751X },
-> -       { "bq27520", BQ2751X },
-> -       { "bq27500-1", BQ27500 },
-> -       { "bq27510g1", BQ27510G1 },
-> -       { "bq27510g2", BQ27510G2 },
-> -       { "bq27510g3", BQ27510G3 },
-> -       { "bq27520g1", BQ27520G1 },
-> -       { "bq27520g2", BQ27520G2 },
-> -       { "bq27520g3", BQ27520G3 },
-> -       { "bq27520g4", BQ27520G4 },
-> -       { "bq27530", BQ27530 },
-> -       { "bq27531", BQ27530 },
-> -       { "bq27541", BQ27541 },
-> -       { "bq27542", BQ27541 },
-> -       { "bq27546", BQ27541 },
-> -       { "bq27742", BQ27541 },
-> -       { "bq27545", BQ27545 },
-> -       { "bq27421", BQ27421 },
-> -       { "bq27425", BQ27421 },
-> -       { "bq27441", BQ27421 },
-> -       { "bq27621", BQ27421 },
-> +       /* dest.    di->real_chip       di->chip      */
-> +       { "bq27200",   (BQ27000   << 16) |  BQ27000   },
-> +       { "bq27210",   (BQ27010   << 16) |  BQ27010   },
-> +       { "bq27500",   (BQ2750X   << 16) |  BQ2750X   },
-> +       { "bq27510",   (BQ2751X   << 16) |  BQ2751X   },
-> +       { "bq27520",   (BQ2752X   << 16) |  BQ2751X   },
-> +       { "bq27500-1", (BQ27500   << 16) |  BQ27500   },
-> +       { "bq27510g1", (BQ27510G1 << 16) |  BQ27510G1 },
-> +       { "bq27510g2", (BQ27510G2 << 16) |  BQ27510G2 },
-> +       { "bq27510g3", (BQ27510G3 << 16) |  BQ27510G3 },
-> +       { "bq27520g1", (BQ27520G1 << 16) |  BQ27520G1 },
-> +       { "bq27520g2", (BQ27520G2 << 16) |  BQ27520G2 },
-> +       { "bq27520g3", (BQ27520G3 << 16) |  BQ27520G3 },
-> +       { "bq27520g4", (BQ27520G4 << 16) |  BQ27520G4 },
-> +       { "bq27530",   (BQ27530   << 16) |  BQ27530   },
-> +       { "bq27531",   (BQ27531   << 16) |  BQ27530   },
-> +       { "bq27541",   (BQ27541   << 16) |  BQ27541   },
-> +       { "bq27542",   (BQ27542   << 16) |  BQ27541   },
-> +       { "bq27546",   (BQ27546   << 16) |  BQ27541   },
-> +       { "bq27742",   (BQ27742   << 16) |  BQ27541   },
-> +       { "bq27545",   (BQ27545   << 16) |  BQ27545   },
-> +       { "bq27421",   (BQ27421   << 16) |  BQ27421   },
-> +       { "bq27425",   (BQ27425   << 16) |  BQ27421   },
-> +       { "bq27441",   (BQ27441   << 16) |  BQ27421   },
-> +       { "bq27621",   (BQ27621   << 16) |  BQ27421   },
-
-I combine real ID and chip ID in the I2C table, which used to carry
-only the chip ID.
-
->         {},
->  };
->  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
-> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-> index 11e1168..bec13b7 100644
-> --- a/include/linux/power/bq27xxx_battery.h
-> +++ b/include/linux/power/bq27xxx_battery.h
-> @@ -2,6 +2,9 @@
->  #define __LINUX_BQ27X00_BATTERY_H__
->
->  enum bq27xxx_chip {
-> +       /* all index bq27xxx_unseal_keys[] & bq27xxx_dm_regs[] */
-> +
-> +       /* these index bq27xxx_regs[] & bq27xxx_battery_props[] */
->         BQ27000 = 1, /* bq27000, bq27200 */
->         BQ27010, /* bq27010, bq27210 */
->         BQ2750X, /* bq27500 deprecated alias */
-> @@ -18,6 +21,16 @@ enum bq27xxx_chip {
->         BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
->         BQ27545, /* bq27545 */
->         BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
-> +       BQ27MAX,
-> +
-> +       BQ2752X, /* deprecated alias */
-> +       BQ27531,
-> +       BQ27542,
-> +       BQ27546,
-> +       BQ27742,
-> +       BQ27425,
-> +       BQ27441,
-> +       BQ27621,
->  };
->
->  /**
-> @@ -62,6 +75,7 @@ struct bq27xxx_reg_cache {
->  struct bq27xxx_device_info {
->         struct device *dev;
->         int id;
-> +       enum bq27xxx_chip real_chip;
->         enum bq27xxx_chip chip;
->         bool ram_chip;
->         const char *name;
+>         di->unseal_key = bq27xxx_unseal_keys[di->real_chip];
 > --
 > 2.9.3
 >
