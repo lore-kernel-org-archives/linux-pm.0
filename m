@@ -1,55 +1,78 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: RFC: WMI Enhancements
-Date: Tue, 9 May 2017 19:16:01 +0000
-Message-ID: <738221cbaca94d10a0de7c03116df60e@ausx13mpc120.AMER.DELL.COM>
-References: <20170412230854.GA11963@fury> <201705082259.51850@pali>
- <77e4e46f58354e10874ed0515f514fc2@ausx13mpc120.AMER.DELL.COM>
- <201705090017.44210@pali>
- <3ceae37c323d43f8b1cf6c9aafe55d5e@ausx13mpc120.AMER.DELL.COM>
- <20170509072903.GA22559@pali>
- <46fe1658d33647559b46c3a390a581ed@ausx13mpc120.AMER.DELL.COM>
- <CAHp75VfxVeBvo5bXjusi-ANNDEdCG0KAWrr2udu_GueQkhcd+Q@mail.gmail.com>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+Subject: Re: RFC: WMI Enhancements
+Date: Tue, 9 May 2017 21:19:52 +0200
+Message-ID: <201705092119.52738@pali>
+References: <20170412230854.GA11963@fury> <46fe1658d33647559b46c3a390a581ed@ausx13mpc120.AMER.DELL.COM> <CAHp75VfxVeBvo5bXjusi-ANNDEdCG0KAWrr2udu_GueQkhcd+Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Content-Type: multipart/signed;
+  boundary="nextPart14377497.FOfpOojoKK";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <CAHp75VfxVeBvo5bXjusi-ANNDEdCG0KAWrr2udu_GueQkhcd+Q@mail.gmail.com>
-Content-Language: en-US
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: andy.shevchenko@gmail.com
-Cc: pali.rohar@gmail.com, dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Mario Limonciello <Mario.Limonciello@dell.com>, "dvhart@infradead.org" <dvhart@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@amacapital.net>, "Brown, Len" <len.brown@intel.com>, Corentin Chary <corentin.chary@gmail.com>, Andy Lutomirski <luto@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBBbmR5IFNoZXZjaGVua28gW21h
-aWx0bzphbmR5LnNoZXZjaGVua29AZ21haWwuY29tXQ0KPiBTZW50OiBUdWVzZGF5LCBNYXkgOSwg
-MjAxNyAyOjA0IFBNDQo+IFRvOiBMaW1vbmNpZWxsbywgTWFyaW8gPE1hcmlvX0xpbW9uY2llbGxv
-QERlbGwuY29tPg0KPiBDYzogUGFsaSBSb2jDoXIgPHBhbGkucm9oYXJAZ21haWwuY29tPjsgZHZo
-YXJ0QGluZnJhZGVhZC5vcmc7IFJhZmFlbCBKLiBXeXNvY2tpDQo+IDxyandAcmp3eXNvY2tpLm5l
-dD47IEFuZHkgTHV0b21pcnNraSA8bHV0b0BhbWFjYXBpdGFsLm5ldD47IEJyb3duLCBMZW4NCj4g
-PGxlbi5icm93bkBpbnRlbC5jb20+OyBDb3JlbnRpbiBDaGFyeSA8Y29yZW50aW4uY2hhcnlAZ21h
-aWwuY29tPjsgQW5keQ0KPiBMdXRvbWlyc2tpIDxsdXRvQGtlcm5lbC5vcmc+OyBBbmR5IFNoZXZj
-aGVua28NCj4gPGFuZHJpeS5zaGV2Y2hlbmtvQGxpbnV4LmludGVsLmNvbT47IGxpbnV4LWtlcm5l
-bEB2Z2VyLmtlcm5lbC5vcmc7IFBsYXRmb3JtDQo+IERyaXZlciA8cGxhdGZvcm0tZHJpdmVyLXg4
-NkB2Z2VyLmtlcm5lbC5vcmc+OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDog
-UmU6IFJGQzogV01JIEVuaGFuY2VtZW50cw0KPiANCj4gT24gVHVlLCBNYXkgOSwgMjAxNyBhdCA5
-OjEwIFBNLCAgPE1hcmlvLkxpbW9uY2llbGxvQGRlbGwuY29tPiB3cm90ZToNCj4gDQo+ID4+ID4g
-PiBUaGVuIHRvb2sgcmVsZXZhbnQgZGVjb21wcmVzc2lvbiBjb2RlIGFuZCBpdCByZWFsbHkgZGVj
-b21wcmVzc2VkIHRoYXQNCj4gPj4gPiA+IGJpbmFyeSBNT0YgV01JIGJ1ZmZlci4gQnV0IHN0aWxs
-IGRlY29tcHJlc3NlZCBmb3JtYXQgaXMgYmluYXJ5LCBidXQgSQ0KPiA+PiA+ID4gbm93IHNlZSBh
-bGwgV01JIEdVSUQgZW5jb2RlZCBpbiBVVEYtMTYuIERlY29tcHJlc3NlZCBCTUYgZmlsZSBoYXMg
-YWdhaW4NCj4gPj4gPiA+ICJGT01CIiBtYWdpYyBoZWFkZXIuDQo+ID4+ID4NCj4gPj4gPiBXZWxs
-IHRoYXQncyBncmVhdC4gIElzIGl0IHBvc3NpYmxlIHRoYXQgdGhpcyBjb21wcmVzc2lvbiBpcyB1
-c2VkIGZvciBldmVyeSB0aW1lDQo+ID4+ID4gYSBjbGFzcyB3YXMgZGVjbGFyZWQ/DQo+ID4+DQo+
-ID4+IExvb2tzIGxpa2Ugbm90LiBUaGF0IGRlY29tcHJlc3NlZCBvdXRwdXQgc2VlbXMgdG8gYmUg
-bm90IGNvbXByZXNzZWQNCj4gPj4gYW55bW9yZS4gSnVzdCB1c2Ugc2FtZSBtYWdpYyBoZWFkZXIu
-DQo+ID4gQWN0dWFsbHkgaXQgbG9va3MgbGlrZSBhIG5ldyBtYWdpYyBoZWFkZXIgdG8gbWUgYWZ0
-ZXIgZGVjb21wcmVzc2VkLg0KPiA+DQo+ID4gNDYgNGYgNGQgNDIgNTQgMTUgMDAgMDAgIDAxIDAw
-IDAwIDAwIDAxIDAwIDAwIDAwDQo+ID4gVGhhdCdzIG5vdyBGT01CVA0KPiANCj4gSSB0aGluayB5
-b3UganVzdCBtaXN0YWtlbmx5IHRha2UgMHg1NCBhcyBsZXR0ZXIgd2hlbiBpdCBsb29rcyBtb3Jl
-IGxpa2UNCj4gDQo+IDB4MDAwMDE1NTQNCj4gMHgwMDAwMDAwMQ0KPiAweDAwMDAwMDAxDQo+IA0K
-PiBmcm9tIHRoZSBhYm92ZSBkdW1wLg0KQWgsIHRoYXQncyB0cnVlLCBidXQgc2Vjb25kIHdvcmQg
-aXMgZGlmZmVyZW50IHRoYW4gb3JpZ2luYWwgd2FzIG1haW4gcG9pbnQuDQpXZSBkaWRuJ3Qga25v
-dyB3aGF0IHRoYXQgcmVwcmVzZW50ZWQgKG1heWJlIGl0J3MgcGFydCBvZiBtYWdpYyBoZWFkZXIp
-Lg0KDQo0NiA0ZiA0ZCA0MiAwMSAwMCAwMCAwMCAgZWQgMDQgMDAgMDAgZDggMTUgMDAgMDANCjB4
-MDAwMDAwMDENCg0KPiAtLQ0KPiBXaXRoIEJlc3QgUmVnYXJkcywNCj4gQW5keSBTaGV2Y2hlbmtv
-DQo=
+--nextPart14377497.FOfpOojoKK
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Tuesday 09 May 2017 21:04:15 Andy Shevchenko wrote:
+> On Tue, May 9, 2017 at 9:10 PM,  <Mario.Limonciello@dell.com> wrote:
+> >> > > Then took relevant decompression code and it really
+> >> > > decompressed that binary MOF WMI buffer. But still
+> >> > > decompressed format is binary, but I now see all WMI GUID
+> >> > > encoded in UTF-16. Decompressed BMF file has again "FOMB"
+> >> > > magic header.
+> >> >=20
+> >> > Well that's great.  Is it possible that this compression is used
+> >> > for every time a class was declared?
+> >>=20
+> >> Looks like not. That decompressed output seems to be not
+> >> compressed anymore. Just use same magic header.
+> >=20
+> > Actually it looks like a new magic header to me after decompressed.
+> >=20
+> > 46 4f 4d 42 54 15 00 00  01 00 00 00 01 00 00 00
+> > That's now FOMBT
+>=20
+> I think you just mistakenly take 0x54 as letter when it looks more
+> like
+>=20
+> 0x00001554
+> 0x00000001
+> 0x00000001
+>=20
+> from the above dump.
+
+I looked at more decompressed BMF dumps from ACPI WMI and they have=20
+different 5th and 6th bytes. So they are really not FOMBT.
+
+46 4f 4d 42 26 35 00 00 01 00 00 00 01 00 00 00
+46 4f 4d 42 fa 17 00 00 01 00 00 00 01 00 00 00
+46 4f 4d 42 8e 11 00 00 01 00 00 00 01 00 00 00
+46 4f 4d 42 ac 1b 00 00 01 00 00 00 01 00 00 00
+
+So magic is only FOMB.
+
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
+
+--nextPart14377497.FOfpOojoKK
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEABECAAYFAlkSFlgACgkQi/DJPQPkQ1L84gCfckzVeAl3XQvwSe6hEF3cfxe7
+S6UAnjM2/4/xx0iFnBd45B7rJ1BwYqnO
+=EKrN
+-----END PGP SIGNATURE-----
+
+--nextPart14377497.FOfpOojoKK--
