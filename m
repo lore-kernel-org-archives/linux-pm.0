@@ -1,52 +1,46 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: Re: [PATCH] thermal: core: make thermal_emergency_poweroff static
-Date: Tue, 9 May 2017 09:05:31 +0530
-Message-ID: <fa978f44-732b-c7bb-33d6-8d4df8e31155@ti.com>
-References: <20170508103643.10748-1-colin.king@canonical.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V6 1/9] PM / OPP: Introduce "power-domain-opp" property
+Date: Tue, 9 May 2017 10:59:21 +0530
+Message-ID: <20170509052921.GA15657@vireshk-i7>
+References: <cover.1493203884.git.viresh.kumar@linaro.org>
+ <025acedb263eaa6089d354d9630214ada8013990.1493203884.git.viresh.kumar@linaro.org>
+ <20170428204803.plu467okibtxga4d@rob-hp-laptop>
+ <a307c76d-72c3-eb84-e7d4-d5e47e2af727@arm.com>
+ <20170508071350.GH17010@vireshk-i7>
+ <c2651a3c-befd-9288-37ce-2c60afb7a0e2@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx210.ext.ti.com ([198.47.19.17]:38064 "EHLO
-        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751272AbdEIDfn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 May 2017 23:35:43 -0400
-In-Reply-To: <20170508103643.10748-1-colin.king@canonical.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <c2651a3c-befd-9288-37ce-2c60afb7a0e2-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Colin King <colin.king@canonical.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On 08-05-17, 14:57, Sudeep Holla wrote:
+> Yes, I followed the thread and figured that out. But Rajendra also
+> raised "What if the microcontroller firmware maps the performance-index
+> to voltage but expects linux to scale the frequency? There is no way to
+> specify a performance-index *and* a frequency for a OPP now I guess? So
+> this needs to be addressd now IIUC.
 
+No, he misunderstood it. He was saying that the domain needs a performance-index
+and the device needs freq-scaling, how do we do that? He thought that there will
+be just one OPP table for the device here, but we will actually have two and
+that would work.
 
-On Monday 08 May 2017 04:06 PM, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> Making thermal_emergency_poweroff static fixes sparse warning:
-> 
->   drivers/thermal/thermal_core.c:6: warning: symbol
->   'thermal_emergency_poweroff' was not declared. Should it be static?
+> So as Kevin pointed out, we need to experiment and look at all
+> possibilities before finalizing the bindings. Better to have examples
+> for all these and describe how bindings are be used including how to
+> distinguish between these use-case from the bindings if it's not implicit.
 
-Acked-by: Keerthy <j-keerthy@ti.com>
+Yeah, I have some doubts on how we are going to implement that and looking for
+more input from him.
 
-> 
-> Fixes: ef1d87e06ab4 ("thermal: core: Add a back up thermal shutdown mechanism")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/thermal/thermal_core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index b21b9cc2c8d6..5a51c740e372 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -359,7 +359,7 @@ static DECLARE_DELAYED_WORK(thermal_emergency_poweroff_work,
->   * This may be called from any critical situation to trigger a system shutdown
->   * after a known period of time. By default this is not scheduled.
->   */
-> -void thermal_emergency_poweroff(void)
-> +static void thermal_emergency_poweroff(void)
->  {
->  	int poweroff_delay_ms = CONFIG_THERMAL_EMERGENCY_POWEROFF_DELAY_MS;
->  	/*
-> 
+-- 
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
