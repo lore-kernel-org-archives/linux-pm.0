@@ -1,318 +1,59 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v13 09/11] power: supply: bq27xxx_battery: Enable data
- memory update for certain chips
-Date: Tue, 9 May 2017 11:20:02 -0500
-Message-ID: <14c1ae5a-5987-7951-c884-ae6c15044127@ti.com>
-References: <20170504061811.18107-1-liam@networkimprov.net>
- <20170504061811.18107-10-liam@networkimprov.net>
- <e11bb744-ac01-8499-18a2-2e9fb3fb5c38@ti.com>
- <CAKvHMgSmMGLXTdeDfu1wP7NxoJP8fJ+YyZvSs7rvOC8uQzk3ng@mail.gmail.com>
- <73f5eb07-dda0-ec1c-2412-e186a42918ba@ti.com>
- <CAKvHMgTa9rFAdV0QYAAPGskHZo+H58sa-6H0DL-7PosywzhFtw@mail.gmail.com>
- <c6f0b1f8-9e62-995a-0175-f330abf7f6fb@ti.com>
- <CAKvHMgRonN10XZAtFRLo7sxDcoBCiPhJib22YhzLpdMvjAr1TQ@mail.gmail.com>
- <243a989e-0c95-48c7-7b80-7e4644cc47b6@ti.com>
- <CAKvHMgSXoB0BAJKGkhDP81y7USdxce7a6HP5x+OQQJEyFfZA2A@mail.gmail.com>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: RFC: WMI Enhancements
+Date: Tue, 9 May 2017 18:10:19 +0000
+Message-ID: <46fe1658d33647559b46c3a390a581ed@ausx13mpc120.AMER.DELL.COM>
+References: <20170412230854.GA11963@fury> <201705082259.51850@pali>
+ <77e4e46f58354e10874ed0515f514fc2@ausx13mpc120.AMER.DELL.COM>
+ <201705090017.44210@pali>
+ <3ceae37c323d43f8b1cf6c9aafe55d5e@ausx13mpc120.AMER.DELL.COM>
+ <20170509072903.GA22559@pali>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx193.ext.ti.com ([198.47.27.77]:64185 "EHLO
-        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754675AbdEIQUO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 May 2017 12:20:14 -0400
-In-Reply-To: <CAKvHMgSXoB0BAJKGkhDP81y7USdxce7a6HP5x+OQQJEyFfZA2A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <20170509072903.GA22559@pali>
+Content-Language: en-US
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: pali.rohar@gmail.com
+Cc: dvhart@infradead.org, rjw@rjwysocki.net, luto@amacapital.net, len.brown@intel.com, corentin.chary@gmail.com, luto@kernel.org, andriy.shevchenko@linux.intel.com, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On 05/08/2017 03:01 PM, Liam Breck wrote:
-> On Mon, May 8, 2017 at 12:09 PM, Andrew F. Davis <afd@ti.com> wrote:
->> On 05/08/2017 02:02 PM, Liam Breck wrote:
->>> On Mon, May 8, 2017 at 8:00 AM, Andrew F. Davis <afd@ti.com> wrote:
->>>> On 05/08/2017 01:40 AM, Liam Breck wrote:
->>>>> On Fri, May 5, 2017 at 12:45 PM, Andrew F. Davis <afd@ti.com> wrote:
->>>>>> On 05/05/2017 02:31 PM, Liam Breck wrote:
->>>>>>> On Thu, May 4, 2017 at 10:00 AM, Andrew F. Davis <afd@ti.com> wrote:
->>>>>>>> On 05/04/2017 01:18 AM, Liam Breck wrote:
->>>>>>>>> From: Liam Breck <kernel@networkimprov.net>
->>>>>>>>>
->>>>>>>>> Support data memory update on BQ27500, 545, 425, 421, 441, 621.
->>>>>>>>>
->>>>>>>>> Create IDs for for previously unID'd chips, to index arrays for unseal keys
->>>>>>>>> and data memory register tables.
->>>>>>>>>
->>>>>>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->>>>>>>>> ---
->>>>>>>>>  drivers/power/supply/bq27xxx_battery.c     | 90 ++++++++++++++++++++++++++++--
->>>>>>>>>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 +++---
->>>>>>>>>  include/linux/power/bq27xxx_battery.h      | 13 +++++
->>>>>>>>>  3 files changed, 107 insertions(+), 12 deletions(-)
->>>>>>>>>
->>>>>>>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->>>>>>>>> index 06f15da..0aecd41 100644
->>>>>>>>> --- a/drivers/power/supply/bq27xxx_battery.c
->>>>>>>>> +++ b/drivers/power/supply/bq27xxx_battery.c
->>>>>>>>> @@ -58,7 +58,7 @@
->>>>>>>>>
->>>>>>>>>  #include <linux/power/bq27xxx_battery.h>
->>>>>>>>>
->>>>>>>>> -#define DRIVER_VERSION               "1.2.0"
->>>>>>>>> +#define DRIVER_VERSION               "1.3.0"
->>>>>>>>>
->>>>>>>>>  #define BQ27XXX_MANUFACTURER "Texas Instruments"
->>>>>>>>>
->>>>>>>>> @@ -132,7 +132,7 @@ enum bq27xxx_reg_index {
->>>>>>>>>       [BQ27XXX_DM_CKSUM] = 0x60
->>>>>>>>>
->>>>>>>>>  /* Register mappings */
->>>>>>>>> -static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
->>>>>>>>> +static u8 bq27xxx_regs[BQ27MAX][BQ27XXX_REG_MAX] = {
->>>>>>>>>       [BQ27000] = {
->>>>>>>>>               [BQ27XXX_REG_CTRL] = 0x00,
->>>>>>>>>               [BQ27XXX_REG_TEMP] = 0x06,
->>>>>>>>> @@ -779,7 +779,7 @@ static enum power_supply_property bq27421_battery_props[] = {
->>>>>>>>>  static struct {
->>>>>>>>>       enum power_supply_property *props;
->>>>>>>>>       size_t size;
->>>>>>>>> -} bq27xxx_battery_props[] = {
->>>>>>>>> +} bq27xxx_battery_props[BQ27MAX] = {
->>>>>>>>>       BQ27XXX_PROP(BQ27000, bq27000_battery_props),
->>>>>>>>>       BQ27XXX_PROP(BQ27010, bq27010_battery_props),
->>>>>>>>>       BQ27XXX_PROP(BQ2750X, bq2750x_battery_props),
->>>>>>>>> @@ -798,6 +798,33 @@ static struct {
->>>>>>>>>       BQ27XXX_PROP(BQ27421, bq27421_battery_props),
->>>>>>>>>  };
->>>>>>>>>
->>>>>>>>> +static enum bq27xxx_chip bq27xxx_chips[] = {
->>>>>>>>> +     [BQ27000]   = BQ27000,
->>>>>>>>> +     [BQ27010]   = BQ27010,
->>>>>>>>> +     [BQ2750X]   = BQ2750X,
->>>>>>>>> +     [BQ2751X]   = BQ2751X,
->>>>>>>>> +     [BQ2752X]   = BQ2751X,
->>>>>>>>> +     [BQ27500]   = BQ27500,
->>>>>>>>> +     [BQ27510G1] = BQ27510G1,
->>>>>>>>> +     [BQ27510G2] = BQ27510G2,
->>>>>>>>> +     [BQ27510G3] = BQ27510G3,
->>>>>>>>> +     [BQ27520G1] = BQ27520G1,
->>>>>>>>> +     [BQ27520G2] = BQ27520G2,
->>>>>>>>> +     [BQ27520G3] = BQ27520G3,
->>>>>>>>> +     [BQ27520G4] = BQ27520G4,
->>>>>>>>> +     [BQ27530]   = BQ27530,
->>>>>>>>> +     [BQ27531]   = BQ27530,
->>>>>>>>> +     [BQ27541]   = BQ27541,
->>>>>>>>> +     [BQ27542]   = BQ27541,
->>>>>>>>> +     [BQ27546]   = BQ27541,
->>>>>>>>> +     [BQ27742]   = BQ27541,
->>>>>>>>> +     [BQ27545]   = BQ27545,
->>>>>>>>> +     [BQ27421]   = BQ27421,
->>>>>>>>> +     [BQ27425]   = BQ27421,
->>>>>>>>> +     [BQ27441]   = BQ27421,
->>>>>>>>> +     [BQ27621]   = BQ27421,
->>>>>>>>> +};
->>>>>>>>> +
->>>>>>>>>  static DEFINE_MUTEX(bq27xxx_list_lock);
->>>>>>>>>  static LIST_HEAD(bq27xxx_battery_devices);
->>>>>>>>>
->>>>>>>>> @@ -856,6 +883,54 @@ static const char * const bq27xxx_dm_reg_name[] = {
->>>>>>>>>       [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
->>>>>>>>>  };
->>>>>>>>>
->>>>>>>>> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
->>>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
->>>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
->>>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
->>>>>>>>> +};
->>>>>>>>> +
->>>>>>>>> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
->>>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
->>>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
->>>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
->>>>>>>>> +};
->>>>>>>>> +
->>>>>>>>> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
->>>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
->>>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
->>>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
->>>>>>>>> +};
->>>>>>>>> +
->>>>>>>>> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
->>>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
->>>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
->>>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
->>>>>>>>> +};
->>>>>>>>> +
->>>>>>>>> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
->>>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
->>>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
->>>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
->>>>>>>>> +};
->>>>>>>>> +
->>>>>>>>> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
->>>>>>>>> +     [BQ27500] = bq27500_dm_regs,
->>>>>>>>> +     [BQ27545] = bq27545_dm_regs,
->>>>>>>>> +     [BQ27421] = bq27421_dm_regs,
->>>>>>>>> +     [BQ27425] = bq27425_dm_regs,
->>>>>>>>> +     [BQ27441] = bq27421_dm_regs,
->>>>>>>>> +     [BQ27621] = bq27621_dm_regs,
->>>>>>>>> +};
->>>>>>>>> +
->>>>>>>>> +static u32 bq27xxx_unseal_keys[] = {
->>>>>>>>> +     [BQ27500] = 0x04143672,
->>>>>>>>> +     [BQ27545] = 0x04143672,
->>>>>>>>> +     [BQ27421] = 0x80008000,
->>>>>>>>> +     [BQ27425] = 0x04143672,
->>>>>>>>> +     [BQ27441] = 0x80008000,
->>>>>>>>> +     [BQ27621] = 0x80008000,
->>>>>>>>> +};
->>>>>>>>> +
->>>>>>>>>
->>>>>>>>>  #ifdef CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM
->>>>>>>>>  static bool bq27xxx_dt_to_nvm = true;
->>>>>>>>> @@ -1865,9 +1940,16 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>>>>>>>>               .drv_data = di,
->>>>>>>>>       };
->>>>>>>>>
->>>>>>>>> +     di->ram_chip = di->chip == BQ27421 || di->chip == BQ27441 || di->chip == BQ27621;
->>>>>>>>> +
->>>>>>>>> +     di->unseal_key = bq27xxx_unseal_keys[di->chip];
->>>>>>>>> +     di->dm_regs = bq27xxx_dm_regs[di->chip];
->>>>>>>>> +     di->chip = bq27xxx_chips[di->chip];
->>>>>>>>
->>>>>>>> NACK, this is a mess, you should not be using a table to change what
->>>>>>>> chip was passed in, it may be needed later. The chip is still the same,
->>>>>>>> it should have the same one correct ID, use a different index or array
->>>>>>>> if you would like, but this is very hacky.
->>>>>>>
->>>>>>> The only way I see to make the I2C subsystem deliver multiple IDs for
->>>>>>> a device is to treat i2c_device_id.driver_data as a u16[2] instead of
->>>>>>> its normal u32. What do you think of that?
->>>>>>>
->>>>>>
->>>>>> Why would it need multiple IDs for one device? Just pass in the one
->>>>>> correct device ID that it is. No reason to make this so complicated.
->>>>>> From the one ID you can then use tables to lookup any other info about
->>>>>> that device, you don't have to have ever ID populated in every table,
->>>>>> you can even have a table of tables if you would like:
->>>>>>
->>>>>> static const struct chip_lookup lookup_table = {
->>>>>>         [bq27425] = {
->>>>>>                 .regs = &bq27xxx_regs[bq27425],
->>>>>>                 .dm_regs = &bq27xxx_dm_regs[bq274xx],
->>>>>>                 .unseal_key = INVALID_FOR_THIS_DEVICE,
->>>>>>         },
->>>>>>         [bq27343] = {
->>>>>> ...
->>>>>>
->>>>>> Not sure if that is valid C but I think you can get the idea.
->>>>>
->>>>> I considered a master lookup_table, but its ref to
->>>>> bq27xxx_regs[fake-ID] duplicates the mapping of real-ID to di->chip.
->>>>> The latter is still necessary as di->chip is used to select
->>>>> conditional behaviors; we can't change its value in this patch.
->>>>>
->>>>
->>>> Sure we can, in fact you could add the conditional behavior flags to the
->>>> master lookup_table and cleanup all the current switch-case checks we do
->>>> now.
->>>
->>> You are proposing a significant change to the ID handling, which is
->>> fine, but I don't wish to code that. Accept this minimal patch to
->>> enable DM update, and then alter the ID logic when you have time in a
->>> future patch.
->>>
->>
->> Doesn't work like that, you can't just hack something together and hope
->> someone else will fix it later. If you want to change something you
->> should make it right the first time. We don't need DM update, but if you
->> would like it then you need to fix the problems it will create.
-> 
-> You do indeed need DM update for the RAM-only chips; they expect to be
-> configured on boot, as I documented previously.
-> 
-> Adding real-ID to the I2C table and using it in *exactly two lines* of
-> setup() is a minimal workaround for a pre-existing design flaw. You
-> have a concept for fixing it, so you should code it. I gracefully
-> decline.
-> 
-
-Just because it was done wrong before doesn't mean it should continue to
-be done wrong.
-
-> I have labored on this patchset for some 19 revisions. Sebastian seems
-> to think that's enough, as he queued most of the series last week even
-> tho you hadn't acked it.
-> 
-
-I know you said v1 came out in Jan, but I've only been looking at this
-for one cycle, also you wouldn't be at v19 if you didn't push 2 series a
-week, let each version sit on the list for a while to build up multiple
-comments. Patch series version number is not a metric of quality or
-"readiness".
-
-+ queuing patches is not approval, it just sets it up for testing in
--next, nothing is final until Linus takes the pull request, and even
-then there is always revert patches.
-
-I've offered to work with you on this, if you would stop fighting every
-minor suggestion I give we could get all this in this cycle.
-
-I empathize with you, this is a very difficult driver with a lot of
-legacy attached and more by-name supported devices than almost any other
-driver I've seen, we have to get this right or it will negatively effect
-a lot of people down the road.
-
-> 
-> 
->>>>> So instead lets amend the I2C table to carry both its original value
->>>>> (fake-ID) and the real-ID. That looks like:
->>>>>
->>>>> static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>>>>     /* dest.    di->real_chip       di->chip      */
->>>>>     { "bq27200",   (BQ27000   << 16) |  BQ27000   },
->>>>>     { "bq27210",   (BQ27010   << 16) |  BQ27010   },
->>>>>     ...
->>>>>     { "bq27441",   (BQ27441   << 16) |  BQ27421   },
->>>>>     { "bq27621",   (BQ27621   << 16) |  BQ27421   },
->>>>>     {},
->>>>> };
->>>>>
->>>>> In probe, retrieve two values:
->>>>>
->>>>>     di->real_chip = id->driver_data >> 16;
->>>>>     di->chip = (u16) id->driver_data;
->>>>>
->>>>
->>>> NAK, I'm sure you can see how hacky this is right? This doesn't give us
->>>> anything that the old table didn't. And it fails to correct the issue
->>>> with the tables: We have two chip IDs still!
->>>
->>> I'm sorry you don't like the extra ID, but you're the party
->>> responsible for (if not the author of) the fake-ID scheme :-)
->>>
->>
->> It has worked fine until now, your additions require a different scheme,
->> hacking around the old one is not a workable solution.
->>
->>>
->>>> Try the lookup_table again, send be what you have and I can help get
->>>> everything else working if you have any problems with the conditional
->>>> behavior cleanups.
->>>>
->>>>> In setup, use two values:
->>>>>
->>>>>     di->unseal_key = bq27xxx_unseal_keys[di->real_chip];
->>>>>     di->dm_regs = bq27xxx_dm_regs[di->real_chip];
->>>>>     di->regs = bq27xxx_regs[di->chip]; // unchanged from orig src
->>>>>
->>>>> That yields the most compact implementation of this patch, and you get
->>>>> di->real_chip in the bargain :-)
->>>>>
->>>>>
->>>>>>>> Just stop trying to hack around it, add the extra tables, even if they
->>>>>>>> are clones, so we can be done with this series already. I'm sure you
->>>>>>>> want that more than you want this "clever" work-around, right?
->>>>>>>>
->>>>>>>> Also fix all the checkpatch --strict warnings.
->>>>>>>>
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBQYWxpIFJvaMOhciBbbWFpbHRv
+OnBhbGkucm9oYXJAZ21haWwuY29tXQ0KPiBTZW50OiBUdWVzZGF5LCBNYXkgOSwgMjAxNyAyOjI5
+IEFNDQo+IFRvOiBMaW1vbmNpZWxsbywgTWFyaW8gPE1hcmlvX0xpbW9uY2llbGxvQERlbGwuY29t
+Pg0KPiBDYzogZHZoYXJ0QGluZnJhZGVhZC5vcmc7IHJqd0Byand5c29ja2kubmV0OyBsdXRvQGFt
+YWNhcGl0YWwubmV0Ow0KPiBsZW4uYnJvd25AaW50ZWwuY29tOyBjb3JlbnRpbi5jaGFyeUBnbWFp
+bC5jb207IGx1dG9Aa2VybmVsLm9yZzsNCj4gYW5kcml5LnNoZXZjaGVua29AbGludXguaW50ZWwu
+Y29tOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBwbGF0Zm9ybS0NCj4gZHJpdmVyLXg4
+NkB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBS
+ZTogUkZDOiBXTUkgRW5oYW5jZW1lbnRzDQo+IA0KPiBPbiBUdWVzZGF5IDA5IE1heSAyMDE3IDAx
+OjEwOjU0IE1hcmlvLkxpbW9uY2llbGxvQGRlbGwuY29tIHdyb3RlOg0KPiA+ID4NCj4gPiA+IEkg
+Zm91bmQgZG1zZG9zIGltcGxlbWVudGF0aW9uIG9mIHRoYXQgRFMgY29tcHJlc3Npb24gYXQ6DQo+
+ID4gPiBodHRwOi8vY21wLmZlbGsuY3Z1dC5jei9+cGlzYS9kbXNkb3MNCj4gPiA+DQo+ID4gPiBU
+aGVuIHRvb2sgcmVsZXZhbnQgZGVjb21wcmVzc2lvbiBjb2RlIGFuZCBpdCByZWFsbHkgZGVjb21w
+cmVzc2VkIHRoYXQNCj4gPiA+IGJpbmFyeSBNT0YgV01JIGJ1ZmZlci4gQnV0IHN0aWxsIGRlY29t
+cHJlc3NlZCBmb3JtYXQgaXMgYmluYXJ5LCBidXQgSQ0KPiA+ID4gbm93IHNlZSBhbGwgV01JIEdV
+SUQgZW5jb2RlZCBpbiBVVEYtMTYuIERlY29tcHJlc3NlZCBCTUYgZmlsZSBoYXMgYWdhaW4NCj4g
+PiA+ICJGT01CIiBtYWdpYyBoZWFkZXIuDQo+ID4NCj4gPiBXZWxsIHRoYXQncyBncmVhdC4gIElz
+IGl0IHBvc3NpYmxlIHRoYXQgdGhpcyBjb21wcmVzc2lvbiBpcyB1c2VkIGZvciBldmVyeSB0aW1l
+DQo+ID4gYSBjbGFzcyB3YXMgZGVjbGFyZWQ/DQo+IA0KPiBMb29rcyBsaWtlIG5vdC4gVGhhdCBk
+ZWNvbXByZXNzZWQgb3V0cHV0IHNlZW1zIHRvIGJlIG5vdCBjb21wcmVzc2VkDQo+IGFueW1vcmUu
+IEp1c3QgdXNlIHNhbWUgbWFnaWMgaGVhZGVyLg0KQWN0dWFsbHkgaXQgbG9va3MgbGlrZSBhIG5l
+dyBtYWdpYyBoZWFkZXIgdG8gbWUgYWZ0ZXIgZGVjb21wcmVzc2VkLg0KDQo0NiA0ZiA0ZCA0MiA1
+NCAxNSAwMCAwMCAgMDEgMDAgMDAgMDAgMDEgMDAgMDAgMDANClRoYXQncyBub3cgRk9NQlQNCg0K
+PiANCj4gTm93IGl0IGxvb2tzIGxpa2UgYmluYXJ5IHJlcHJlc2VudGF0aW9uIG9mIE1PRi4gV2hl
+cmUgc3RydWN0dXJlcyBhbmQNCj4gdHlwZXMgYXJlIGVuY29kZWQgYnkgYmluYXJ5IHNlcXVlbmNl
+cy4NClllcywgYW5kIEkgbm90aWNlIGluIGhlcmUgZXZlbiBtZW50aW9ucyBvZiB0aGUgbG9jYWxl
+ICh3aGljaCB3YXMgcmVxdWlyZWQNCnRvIGRlY29tcHJlc3MgdXNpbmcgbW9mY29tcCB0b28pLg0K
+DQowMDAwMDE1MCAgMDggMDAgMDAgMDAgMDAgMDAgMDAgMDAgIDEwIDAwIDAwIDAwIDRjIDAwIDZm
+IDAwICB8Li4uLi4uLi4uLi4uTC5vLnwNCjAwMDAwMTYwICA2MyAwMCA2MSAwMCA2YyAwMCA2NSAw
+MCAgMDAgMDAgMDAgMDAgNGQgMDAgNTMgMDAgIHxjLmEubC5lLi4uLi5NLlMufA0KMDAwMDAxNzAg
+IDVjIDAwIDMwIDAwIDc4IDAwIDM0IDAwICAzMCAwMCAzOSAwMCAwMCAwMCAwMCAwMCAgfFwuMC54
+LjQuMC45Li4uLi58DQoNCj4gDQo+ID4gPg0KPiA+ID4gSSBwdXNoZWQgbXkgZGVjb21wcmVzc2lv
+biB1dGlsaXR5IGhlcmU6DQo+ID4gPiBodHRwczovL2dpdGh1Yi5jb20vcGFsaS9ibWZkZWMNCj4g
+Pg0KPiA+IERpZCB5b3UgZm9yZ2V0IGFub3RoZXIgY29tbWl0IGZvciBwdWxsaW5nIGluIGFyZ3Vt
+ZW50cyBhbmQgb3BlbmluZyBhIGZpbGUNCj4gPiBvciB3ZXJlIHlvdSBqdXN0IHB1dHRpbmcgdGhl
+IHdob2xlIGJ1ZmZlciBpbnRvIHBpbj8NCj4gDQo+IFdob2xlIEJNRiBmaWxlIHNob3VsZCBiZSBv
+biBzdGRpbiAod2l0aCB0aGF0IDE2IGJ5dGVzIGhlYWRlcikgYW5kIGlzDQo+IGRlY29tcHJlc3Nl
+ZCBvbiBzdGRvdXQuDQpPaCBteSBtaXN0YWtlLCB0aGF0IHdhc24ndCBjbGVhciB3aGVuIEkgZ2xh
+bmNlZCBhdCBpdC4NCg==
