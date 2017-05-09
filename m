@@ -1,76 +1,93 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: RFC: WMI Enhancements
-Date: Wed, 10 May 2017 00:38:47 +0200
-Message-ID: <201705100038.47998@pali>
-References: <20170412230854.GA11963@fury> <738221cbaca94d10a0de7c03116df60e@ausx13mpc120.AMER.DELL.COM> <CAHp75Vc0rXwYKega9nJMrMe0tua6hrM7GTKOOJNsTNYR7KfGOA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management updates for v4.12-rc1, part 2
+Date: Wed, 10 May 2017 00:58:05 +0200
+Message-ID: <CAJZ5v0i=Ge2YpepTNXERJQnLkj+VZFeYVmG77hLsO3L0cb=1YA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart38325841.DVDzrorDOI";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f193.google.com ([209.85.128.193]:32941 "EHLO
-        mail-wr0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750904AbdEIWiv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 May 2017 18:38:51 -0400
-In-Reply-To: <CAHp75Vc0rXwYKega9nJMrMe0tua6hrM7GTKOOJNsTNYR7KfGOA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Mario Limonciello <Mario.Limonciello@dell.com>, "dvhart@infradead.org" <dvhart@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@amacapital.net>, "Brown, Len" <len.brown@intel.com>, Corentin Chary <corentin.chary@gmail.com>, Andy Lutomirski <luto@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
---nextPart38325841.DVDzrorDOI
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Hi Linus,
 
-I updated my bmfdec.c (git://github.com/pali/bmfdec.git) and here is
-guessed header description:
+Please pull from the tag
 
-/*
- * BMF file is compressed by DS-01 algorithm with additional header:
- * 4 bytes: 46 4f 4d 42 - 'F' 'O' 'M' 'B'
- * 4 bytes: 01 00 00 00 - version 0x01
- * 4 bytes: size of compressed data (low endian) without this header
- * 4 bytes: size of decompressed data (low endian) without this header
- */
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-extra-4.12-rc1
 
-/*
- * Decompressed part of BMF file contains:
- * 4 bytes: 46 4f 4d 42 - 'F' 'O' 'M' 'B'
- * 4 bytes: N =3D size of first part (low endian) since beginning
- * N-8 bytes: first part data
- * 16 bytes: 42 4d 4f 46 51 55 41 4c 46 4c 41 56 4f 52 31 31 - "BMOFQUALFLA=
-VOR11"
- * M bytes: second part data of unknown length
- */
+with top-most commit 80449d89d4d6d0af4d6d310597e0f4a3fe0c08a9
 
-=46irst part of decompressed data contains UTF-16 strings terminated by
-two zero bytes and between two strings are some binary data. Those
-strings are just literals found in decompiled MOF file, so looks like
-binary parts just decodes types and MOF language keywords.
+ Merge branches 'pm-domains', 'pm-cpuidle', 'pm-sleep' and 'powercap'
 
-And it looks like second part is not required and sometimes missing.
-It contains only binary data, no idea what is there.
+on top of commit 08be881064da126b8df4b96b0b3e2e307969a4a1
 
-Now somebody with knowledge of MOF language should be able to describe
-what and how is stored in first part.
+ Merge tag 'acpi-4.12-rc1' of
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+to receive more power management updates for v4.12-rc1.
 
---nextPart38325841.DVDzrorDOI
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+These add new CPU IDs to a couple of drivers, fix a possible NULL
+pointer dereference in the cpuidle core, update DT-related things
+in the generic power domains framework and finally update the
+suspend/resume infrastructure to improve the handling of wakeups
+from suspend-to-idle.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Specifics:
 
-iEYEABECAAYFAlkSRPcACgkQi/DJPQPkQ1K3lwCdHWmW+L1kdx6iW0IliK4L0iwa
-JPQAn1H5WilA/ppCfq8asP5ty65Vi6xE
-=qXhu
------END PGP SIGNATURE-----
+ - Add Intel Gemini Lake CPU IDs to the intel_idle and intel_rapl
+   drivers (David Box).
 
---nextPart38325841.DVDzrorDOI--
+ - Add a NULL pointer check to the cpuidle core to prevent it from
+   crashing on platforms with incomplete cpuidle configuration (Fei
+   Li).
+
+ - Fix DT-related documentation in the generic power domains (genpd)
+   framework and add a MAINTAINERS entry for DT-related material in
+   genpd (Viresh Kumar).
+
+ - Update the system suspend/resume infrastructure to improve the
+   handling of aborts of suspend transitions in progress in the
+   wakeup framework and rework the suspend-to-idle core loop to make
+   it possible to filter out spurious wakeup events (specifically the
+   ones coming from ACPI) without resuming all the way up to user
+   space every time (Rafael Wysocki).
+
+Thanks!
+
+---------------
+
+David E. Box (2):
+      powercap: intel_rapl: Add support for Gemini Lake
+      x86/intel_idle: add Gemini Lake support
+
+Li, Fei (1):
+      cpuidle: check dev before usage in cpuidle_use_deepest_state()
+
+Rafael J. Wysocki (2):
+      PM / wakeup: Integrate mechanism to abort transitions in progress
+      ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle
+
+Viresh Kumar (2):
+      PM / Domains: Fix DT example
+      PM / Domains: Add DT file to MAINTAINERS
+
+---------------
+
+ .../devicetree/bindings/power/power_domain.txt     |  2 +-
+ MAINTAINERS                                        |  1 +
+ drivers/acpi/battery.c                             |  2 +-
+ drivers/acpi/button.c                              |  5 +-
+ drivers/acpi/device_pm.c                           |  3 +-
+ drivers/acpi/sleep.c                               | 28 +++++++++++
+ drivers/base/power/main.c                          |  5 --
+ drivers/base/power/wakeup.c                        | 54 ++++++++++++----------
+ drivers/cpuidle/cpuidle.c                          |  3 +-
+ drivers/idle/intel_idle.c                          |  2 +
+ drivers/powercap/intel_rapl.c                      |  1 +
+ include/linux/pm_wakeup.h                          | 25 ++++++++--
+ include/linux/suspend.h                            |  7 ++-
+ kernel/power/process.c                             |  2 +-
+ kernel/power/suspend.c                             | 29 ++++++++++--
+ 15 files changed, 123 insertions(+), 46 deletions(-)
