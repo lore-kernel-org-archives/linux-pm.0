@@ -1,95 +1,252 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH v2 2/2] trace: power allocator: add trace for divvyup
- algorithm
-Date: Tue, 9 May 2017 10:46:41 -0400
-Message-ID: <20170509104641.6946f4bc@gandalf.local.home>
-References: <1494339236-22666-1-git-send-email-lukasz.luba@arm.com>
-        <1494339236-22666-3-git-send-email-lukasz.luba@arm.com>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v13 08/11] power: supply: bq27xxx_battery: Add
+ power_supply_battery_info support
+Date: Tue, 9 May 2017 11:06:30 -0500
+Message-ID: <32d6245f-588f-d3b9-d3b5-6a0443c9fbe4@ti.com>
+References: <20170504061811.18107-1-liam@networkimprov.net>
+ <20170504061811.18107-9-liam@networkimprov.net>
+ <f0121e38-9159-2bb4-26ca-1a4a72ba6ace@ti.com>
+ <CAKvHMgSWCW5g3L2PtEa6Yg_LWRU_ByDDO_NVJqQqzvoHgXO=GQ@mail.gmail.com>
+ <CAKvHMgS6XtrJDWgq=J_dnOBYUXLWG-zwBOaa3FHybEfkCDicvA@mail.gmail.com>
+ <d1d93ce1-5c6c-ada8-2917-a9d592a9e1cd@ti.com>
+ <CAKvHMgQ_1VL29u2Z1E63ekHdha22coaCBNSCccUgBLzVE6LvMw@mail.gmail.com>
+ <f941faae-efa8-5e86-e7e6-8ab97755d238@ti.com>
+ <CAKvHMgQHjXM_sY4s7SQbZYNxQFqQNMukgR4DG2zKn-1Szifc1A@mail.gmail.com>
+ <e0df1cd5-8496-590d-90ff-dd95a3601b05@ti.com>
+ <CAKvHMgQvf2yR9SNqd9juaBVipOoLbZ0OSqefxYvyYHXytuzjjw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:55216 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751210AbdEIOqs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 May 2017 10:46:48 -0400
-In-Reply-To: <1494339236-22666-3-git-send-email-lukasz.luba@arm.com>
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:63614 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754609AbdEIQGh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 May 2017 12:06:37 -0400
+In-Reply-To: <CAKvHMgQvf2yR9SNqd9juaBVipOoLbZ0OSqefxYvyYHXytuzjjw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-pm@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, Ingo Molnar <mingo@redhat.com>
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On Tue,  9 May 2017 15:13:56 +0100
-Lukasz Luba <lukasz.luba@arm.com> wrote:
-
-> This trace function helps to figure out the divvyup algorithm
-> on some platforms.
+On 05/08/2017 03:34 PM, Liam Breck wrote:
+> On Mon, May 8, 2017 at 12:50 PM, Andrew F. Davis <afd@ti.com> wrote:
+>> On 05/08/2017 02:31 PM, Liam Breck wrote:
+>>> On Mon, May 8, 2017 at 11:42 AM, Andrew F. Davis <afd@ti.com> wrote:
+>>>> On 05/08/2017 01:39 PM, Liam Breck wrote:
+>>>>> On Mon, May 8, 2017 at 7:54 AM, Andrew F. Davis <afd@ti.com> wrote:
+>>>>>> On 05/08/2017 01:16 AM, Liam Breck wrote:
+>>>>>>> On Thu, May 4, 2017 at 11:40 AM, Liam Breck <liam@networkimprov.net> wrote:
+>>>>>>>> On Thu, May 4, 2017 at 9:52 AM, Andrew F. Davis <afd@ti.com> wrote:
+>>>>>>>>> On 05/04/2017 01:18 AM, Liam Breck wrote:
+>>>>>>>>>> From: Liam Breck <kernel@networkimprov.net>
+>>>>>>>>>>
+>>>>>>>>>> Previously there was no way to configure these chips in the event that the
+>>>>>>>>>> defaults didn't match the battery in question.
+>>>>>>>>>>
+>>>>>>>>>> For chips with RAM data memory (and also those with flash/NVM data memory
+>>>>>>>>>> if CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM is defined and the user has not
+>>>>>>>>>> set module param dt_monitored_battery_updates_nvm=0) we now call
+>>>>>>>>>> power_supply_get_battery_info(), check its values, and write battery
+>>>>>>>>>> properties to chip data memory if there is a dm_regs table for the chip.
+>>>>>>>>>>
+>>>>>>>>>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>>>>>>>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>>>>>>>>>> ---
+>>>>>>>>>>  drivers/power/supply/Kconfig           |   9 ++
+>>>>>>>>>>  drivers/power/supply/bq27xxx_battery.c | 199 ++++++++++++++++++++++++++++++++-
+>>>>>>>>>>  include/linux/power/bq27xxx_battery.h  |   2 +
+>>>>>>>>>>  3 files changed, 209 insertions(+), 1 deletion(-)
+>>>>>>>>>>
+>>>>>>>>>> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+>>>>>>>>>> index 76806a0..85e2fb2 100644
+>>>>>>>>>> --- a/drivers/power/supply/Kconfig
+>>>>>>>>>> +++ b/drivers/power/supply/Kconfig
+>>>>>>>>>> @@ -178,6 +178,15 @@ config BATTERY_BQ27XXX_I2C
+>>>>>>>>>>         Say Y here to enable support for batteries with BQ27xxx chips
+>>>>>>>>>>         connected over an I2C bus.
+>>>>>>>>>>
+>>>>>>>>>> +config BATTERY_BQ27XXX_DT_UPDATES_NVM
+>>>>>>>>>> +     bool "BQ27xxx support for update of NVM/flash data memory"
+>>>>>>>>>> +     depends on BATTERY_BQ27XXX_I2C
+>>>>>>>>>> +     help
+>>>>>>>>>> +       Say Y here to enable devicetree monitored-battery config to update
+>>>>>>>>>> +       NVM/flash data memory. Only enable this option for devices with a
+>>>>>>>>>> +       fuel gauge mounted on the circuit board, and a battery that cannot
+>>>>>>>>>> +       be replaced with one of a different type.
+>>>>>>>>>> +
+>>>>>>>>>>  config BATTERY_DA9030
+>>>>>>>>>>       tristate "DA9030 battery driver"
+>>>>>>>>>>       depends on PMIC_DA903X
+>>>>>>>>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>>>>>>>>>> index 8ab184c..06f15da 100644
+>>>>>>>>>> --- a/drivers/power/supply/bq27xxx_battery.c
+>>>>>>>>>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>>>>>>>>>> @@ -805,6 +805,13 @@ static LIST_HEAD(bq27xxx_battery_devices);
+>>>>>>>>>>
+>>>>>>>>>>  #define BQ27XXX_DM_SZ        32
+>>>>>>>>>>
+>>>>>>>>>> +struct bq27xxx_dm_reg {
+>>>>>>>>>> +     u8 subclass_id;
+>>>>>>>>>> +     u8 offset;
+>>>>>>>>>> +     u8 bytes;
+>>>>>>>>>> +     u16 min, max;
+>>>>>>>>>> +};
+>>>>>>>>>> +
+>>>>>>>>>>  /**
+>>>>>>>>>>   * struct bq27xxx_dm_buf - chip data memory buffer
+>>>>>>>>>>   * @class: data memory subclass_id
+>>>>>>>>>> @@ -822,6 +829,43 @@ struct bq27xxx_dm_buf {
+>>>>>>>>>>       bool has_data, dirty;
+>>>>>>>>>>  };
+>>>>>>>>>>
+>>>>>>>>>> +#define BQ27XXX_DM_BUF(di, i) { \
+>>>>>>>>>> +     .class = (di)->dm_regs[i].subclass_id, \
+>>>>>>>>>> +     .block = (di)->dm_regs[i].offset / BQ27XXX_DM_SZ, \
+>>>>>>>>>> +}
+>>>>>>>>>> +
+>>>>>>>>>> +static inline u16 *bq27xxx_dm_reg_ptr(struct bq27xxx_dm_buf *buf,
+>>>>>>>>>> +                                   struct bq27xxx_dm_reg *reg)
+>>>>>>>>>> +{
+>>>>>>>>>> +     if (buf->class == reg->subclass_id &&
+>>>>>>>>>> +         buf->block == reg->offset / BQ27XXX_DM_SZ)
+>>>>>>>>>> +             return (u16 *) (buf->data + reg->offset % BQ27XXX_DM_SZ);
+>>>>>>>>>> +
+>>>>>>>>>> +     return NULL;
+>>>>>>>>>> +}
+>>>>>>>>>> +
+>>>>>>>>>> +enum bq27xxx_dm_reg_id {
+>>>>>>>>>> +     BQ27XXX_DM_DESIGN_CAPACITY = 0,
+>>>>>>>>>> +     BQ27XXX_DM_DESIGN_ENERGY,
+>>>>>>>>>> +     BQ27XXX_DM_TERMINATE_VOLTAGE,
+>>>>>>>>>> +};
+>>>>>>>>>> +
+>>>>>>>>>> +static const char * const bq27xxx_dm_reg_name[] = {
+>>>>>>>>>> +     [BQ27XXX_DM_DESIGN_CAPACITY] = "design-capacity",
+>>>>>>>>>> +     [BQ27XXX_DM_DESIGN_ENERGY] = "design-energy",
+>>>>>>>>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>>>>>>>>>> +};
+>>>>>>>>>> +
+>>>>>>>>>> +
+>>>>>>>>>> +#ifdef CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM
+>>>>>>>>>> +static bool bq27xxx_dt_to_nvm = true;
+>>>>>>>>>> +
+>>>>>>>>>> +module_param_named(dt_monitored_battery_updates_nvm, bq27xxx_dt_to_nvm, bool, 0444);
+>>>>>>>>>> +MODULE_PARM_DESC(dt_monitored_battery_updates_nvm,
+>>>>>>>>>> +     "Devicetree monitored-battery config updates NVM/flash data memory, if present. Default is 1/y.");
+>>>>>>>>>
+>>>>>>>>> As before, the default should not be y, this is a rare case and I can't
+>>>>>>>>> see it being useful or wanted by anyone but device manufacturers. I
+>>>>>>>>> don't want everyones chip's factory programmed NVM overwritten by
+>>>>>>>>> accident when someone compiles and ships a kernel with
+>>>>>>>>> BATTERY_BQ27XXX_DT_UPDATES_NVM=y
+>>>>>>>>
+>>>>>>>> Right, the point of the config option is to let a device vendor ship a
+>>>>>>>> kernel + dtb which can field-upgrade NVM. (Setting the option does
+>>>>>>>> nothing absent the necessary dtb.)
+>>>>>>>>
+>>>>>>>> Module params are for end-user config; we can't require a device
+>>>>>>>> vendor to ship /etc/modprobe.d/xyz. And we certainly don't want a
+>>>>>>>> kernel package update to defeat the end-user config of
+>>>>>>>> dt_monitored_battery_updates_nvm=0 !!
+>>>>>>>>
+>>>>>>>> I believe Sebastian agrees, given that he queued this patch :-)
+>>>>>>>
+>>>>>>> I clarified the rationale for module param default =1 above; could you ack?
+>>>>>>>
+>>>>>>> That prevents this scenario:
+>>>>>>> 1) user changes battery type, sets dt_monitored_battery_updates_nvm=0
+>>>>>>> 2) vendor ships kernel package with dtb update and
+>>>>>>> dt_monitored_battery_updates_nvm=1
+>>>>>>> 3) gauge stops working correctly
+>>>>>>>
+>>>>>>
+>>>>>> Leaving it =1 will encourage this situation, not prevent it. Updating
+>>>>>> NVM is a non-standard operation for these parts. It should only be done
+>>>>>> once ideally. It is nice being able to update the NVM, and we have
+>>>>>> user-space tools for this, but this is a dangerous operation, improperly
+>>>>>> programming can brick the chip, as you have found out.
+>>>>>>
+>>>>>> If you want to add this function into the kernel driver that is fine,
+>>>>>> but you *cannot* have this be the default, it needs to be a hidden away
+>>>>>> option for people who know what they are doing, else you will end up
+>>>>>> accidentally causing damage to countless users' hardware.
+>>>>>
+>>>>> I don't think you followed my logic.... It *is* hidden behind a
+>>>>> dedicated kernel config option which only device vendors (and
+>>>>> tinkerers :-) would use. A kernel package with that option and
+>>>>> suitable dtb has to perform the update without manipulation of the
+>>>>> module param. The module param is to let the user prevent any future
+>>>>> update by such a kernel package, since only he knows that he changed
+>>>>> the battery type.
+>>>>>
+>>>>> What is your evidence for the assertion of "encourage this situation"?
+>>>>>
+>>>>
+>>>> It is the default value, what more evidence do you want? Someone should
+>>>> have to enable the functionality in Kconfig *and* enable it as a
+>>>> module_param. Leaving either on by default will cause it to be
+>>>> accidentally left enabled.
+>>>
+>>> We could add a second config option to eliminate the possibility of
+>>> the first one being set by mistake.
+>>>
+>>> You can't trivially enable a config option. If you set it, you'd
+>>> obviously set the module param if that were necessary, so that's no
+>>> extra protection against "accidentally left enabled". (And the config
+>>> option does nothing without a suitable dtb.)
+>>>
+>>
+>> Why would you "obviously set the module param"? If this config option is
+>> enabled then you still have to set the module param to make this write
+>> to your device's NVM, that is two things vs one. The people who use
+>> kernels often don't build them. Both should need to be set to update the
+>> devices NVM.
 > 
-> CC: Steven Rostedt <rostedt@goodmis.org>
-> CC: Ingo Molnar <mingo@redhat.com>
-> CC: Zhang Rui <rui.zhang@intel.com>
-> CC: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
-> ---
->  include/trace/events/thermal_power_allocator.h | 40 ++++++++++++++++++++++++++
->  1 file changed, 40 insertions(+)
+> The target of this config option is device vendors. They would
+> obviously set the module param when setting the config option to
+> field-upgrade NVM.
 > 
-> diff --git a/include/trace/events/thermal_power_allocator.h b/include/trace/events/thermal_power_allocator.h
-> index 5afae8f..03f224b 100644
-> --- a/include/trace/events/thermal_power_allocator.h
-> +++ b/include/trace/events/thermal_power_allocator.h
-> @@ -54,6 +54,46 @@
->  		__entry->delta_temp)
->  );
->  
-> +TRACE_EVENT(thermal_power_allocator_divvyup,
-> +	TP_PROTO(struct thermal_zone_device *tz, u32 *granted_power,
-> +		u32 *avail_room, u32 *spare_power, u32 *max_power,
-> +		size_t num_actors),
-> +	TP_ARGS(tz, granted_power, avail_room, spare_power, max_power,
-> +		num_actors),
-> +	TP_STRUCT__entry(
-> +		__field(int, tz_id)
-> +		__dynamic_array(u32, granted_power, num_actors)
-> +		__dynamic_array(u32, avail_room, num_actors)
-> +		__dynamic_array(u32, spare_power, num_actors)
-> +		__dynamic_array(u32, max_power, num_actors)
-> +		__field(size_t, num_actors)
-> +	),
-> +	TP_fast_assign(
-> +		__entry->tz_id = tz->id;
-> +		memcpy(__get_dynamic_array(granted_power), granted_power,
-> +			num_actors * sizeof(*granted_power));
-> +		memcpy(__get_dynamic_array(avail_room), avail_room,
-> +			num_actors * sizeof(*avail_room));
-> +		memcpy(__get_dynamic_array(spare_power), spare_power,
-> +			num_actors * sizeof(*spare_power));
-> +		memcpy(__get_dynamic_array(max_power), max_power,
-> +			num_actors * sizeof(*max_power));
-> +		__entry->num_actors = num_actors;
-> +	),
-> +
-> +	TP_printk("thermal_zone_id=%d granted_power={%s} avail_room={%s} spare_power={%s} max_power={%s}",
-> +		__entry->tz_id,
-> +		__print_array(__get_dynamic_array(granted_power),
-> +			      __entry->num_actors, 4),
-> +		__print_array(__get_dynamic_array(avail_room),
-> +			      __entry->num_actors, 4),
-> +		__print_array(__get_dynamic_array(spare_power),
-> +			      __entry->num_actors, 4),
-> +		__print_array(__get_dynamic_array(max_power),
-> +			      __entry->num_actors, 4)
-> +		)
-> +);
-> +
->  TRACE_EVENT(thermal_power_allocator_pid,
->  	TP_PROTO(struct thermal_zone_device *tz, s32 err, s32 err_integral,
->  		 s64 p, s64 i, s64 d, s32 output),
 
-Hmm, isn't there suppose to be a user of this? I see the event created,
-but no callers. And this is a patch 2 of 2, so either there isn't any
-in this series, or it was added in patch 1 which will cause the build
-to break during bisect (I'm not Cc'd on patch 1, so I don't know, and
-I'm too lazy to look at LKML for it).
+Great, they we don't need to have it default =1 if they will obviously
+set it, problem solved.
 
--- Steve
+>>> My scenario is a clear and likely threat. You haven't described a
+>>> threat scenario.
+>>>
+>>
+>> Easy, kernel is built with the config option enabled and their DT has
+>> invalid option for their battery. Now everyone bricks their hardware.
+> 
+> A device vendor could misconfigure their hw, sure. They would also fix
+> it in an update. That's not a threat. In what scenario does someone
+> other than the vendor or tinkering user misconfigure the gauge?
+> 
+>> Vs. your three step situation that the two people who will ever use this
+>> will never actually find themselves in, that results in a minor
+>> inconvenience as they have to turn a module param back off.
+> 
+> I don't think you followed the scenario. User resetting the param =0
+> after a vendor update sets =1 would not fix the NVM misconfig caused
+> by the update! The whole point of user setting =0 is to prevent that
+> update.
+> 
+
+Updates are optional, you shouldn't have to manually prevent an update.
+
+>> Lets take the safe route and leave this default off.
+> 
+> I offered you a safe route: two config options.
+> 
+
+How about a default off module param so we don't clutter the kconfig.
+
+>>> The docs for the config option describe its correct use, and I will
+>>> mention the risk of overwriting a smart battery. No general purpose
+>>> distro will enable it.
+>>>
+>>
+>> How can you know this, I'm pretty sure Ubuntu ships with a randconfig
+>> kernel :)
+> 
+> And that includes a rand dtb? :-p
+> 
