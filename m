@@ -1,81 +1,76 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] x86/power/64: Use char arrays for asm function names
-Date: Tue, 09 May 2017 23:18:56 +0200
-Message-ID: <4065405.RHJSHBFYFE@aspire.rjw.lan>
-References: <20170509210051.GA36504@beast>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+Subject: Re: RFC: WMI Enhancements
+Date: Wed, 10 May 2017 00:38:47 +0200
+Message-ID: <201705100038.47998@pali>
+References: <20170412230854.GA11963@fury> <738221cbaca94d10a0de7c03116df60e@ausx13mpc120.AMER.DELL.COM> <CAHp75Vc0rXwYKega9nJMrMe0tua6hrM7GTKOOJNsTNYR7KfGOA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed;
+  boundary="nextPart38325841.DVDzrorDOI";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45754 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750747AbdEIVZZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 May 2017 17:25:25 -0400
-In-Reply-To: <20170509210051.GA36504@beast>
+Received: from mail-wr0-f193.google.com ([209.85.128.193]:32941 "EHLO
+        mail-wr0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750904AbdEIWiv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 May 2017 18:38:51 -0400
+In-Reply-To: <CAHp75Vc0rXwYKega9nJMrMe0tua6hrM7GTKOOJNsTNYR7KfGOA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org, Daniel Micay <danielmicay@gmail.com>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Mario Limonciello <Mario.Limonciello@dell.com>, "dvhart@infradead.org" <dvhart@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@amacapital.net>, "Brown, Len" <len.brown@intel.com>, Corentin Chary <corentin.chary@gmail.com>, Andy Lutomirski <luto@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tuesday, May 09, 2017 02:00:51 PM Kees Cook wrote:
-> This switches the hibernate_64.S function names into character arrays
-> to match other areas of the kernel where this is done (e.g., linker
-> scripts). Specifically this fixes a compile-time error noticed by the
-> future CONFIG_FORTIFY_SOURCE routines that complained about PAGE_SIZE
-> being copied out of the "single byte" core_restore_code variable.
-> 
-> Additionally drops the "acpi_save_state_mem" exern which does not
-> appear to be used anywhere else in the kernel.
-> 
-> Cc: Daniel Micay <danielmicay@gmail.com>
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+--nextPart38325841.DVDzrorDOI
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+I updated my bmfdec.c (git://github.com/pali/bmfdec.git) and here is
+guessed header description:
 
-Or I can queue this up if that's preferred.
+/*
+ * BMF file is compressed by DS-01 algorithm with additional header:
+ * 4 bytes: 46 4f 4d 42 - 'F' 'O' 'M' 'B'
+ * 4 bytes: 01 00 00 00 - version 0x01
+ * 4 bytes: size of compressed data (low endian) without this header
+ * 4 bytes: size of decompressed data (low endian) without this header
+ */
 
-> ---
->  arch/x86/include/asm/suspend_64.h | 5 ++---
->  arch/x86/power/hibernate_64.c     | 6 +++---
->  2 files changed, 5 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/suspend_64.h b/arch/x86/include/asm/suspend_64.h
-> index 6136a18152af..2bd96b4df140 100644
-> --- a/arch/x86/include/asm/suspend_64.h
-> +++ b/arch/x86/include/asm/suspend_64.h
-> @@ -42,8 +42,7 @@ struct saved_context {
->  	set_debugreg((thread)->debugreg##register, register)
->  
->  /* routines for saving/restoring kernel state */
-> -extern int acpi_save_state_mem(void);
-> -extern char core_restore_code;
-> -extern char restore_registers;
-> +extern char core_restore_code[];
-> +extern char restore_registers[];
->  
->  #endif /* _ASM_X86_SUSPEND_64_H */
-> diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-> index 6a61194ffd58..2cc419990ab7 100644
-> --- a/arch/x86/power/hibernate_64.c
-> +++ b/arch/x86/power/hibernate_64.c
-> @@ -147,7 +147,7 @@ static int relocate_restore_code(void)
->  	if (!relocated_restore_code)
->  		return -ENOMEM;
->  
-> -	memcpy((void *)relocated_restore_code, &core_restore_code, PAGE_SIZE);
-> +	memcpy((void *)relocated_restore_code, core_restore_code, PAGE_SIZE);
->  
->  	/* Make the page containing the relocated code executable */
->  	pgd = (pgd_t *)__va(read_cr3()) + pgd_index(relocated_restore_code);
-> @@ -292,8 +292,8 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
->  
->  	if (max_size < sizeof(struct restore_data_record))
->  		return -EOVERFLOW;
-> -	rdr->jump_address = (unsigned long)&restore_registers;
-> -	rdr->jump_address_phys = __pa_symbol(&restore_registers);
-> +	rdr->jump_address = (unsigned long)restore_registers;
-> +	rdr->jump_address_phys = __pa_symbol(restore_registers);
->  	rdr->cr3 = restore_cr3;
->  	rdr->magic = RESTORE_MAGIC;
->  
-> 
+/*
+ * Decompressed part of BMF file contains:
+ * 4 bytes: 46 4f 4d 42 - 'F' 'O' 'M' 'B'
+ * 4 bytes: N =3D size of first part (low endian) since beginning
+ * N-8 bytes: first part data
+ * 16 bytes: 42 4d 4f 46 51 55 41 4c 46 4c 41 56 4f 52 31 31 - "BMOFQUALFLA=
+VOR11"
+ * M bytes: second part data of unknown length
+ */
+
+=46irst part of decompressed data contains UTF-16 strings terminated by
+two zero bytes and between two strings are some binary data. Those
+strings are just literals found in decompiled MOF file, so looks like
+binary parts just decodes types and MOF language keywords.
+
+And it looks like second part is not required and sometimes missing.
+It contains only binary data, no idea what is there.
+
+Now somebody with knowledge of MOF language should be able to describe
+what and how is stored in first part.
+
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
+
+--nextPart38325841.DVDzrorDOI
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEABECAAYFAlkSRPcACgkQi/DJPQPkQ1K3lwCdHWmW+L1kdx6iW0IliK4L0iwa
+JPQAn1H5WilA/ppCfq8asP5ty65Vi6xE
+=qXhu
+-----END PGP SIGNATURE-----
+
+--nextPart38325841.DVDzrorDOI--
