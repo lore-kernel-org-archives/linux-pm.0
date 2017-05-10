@@ -1,175 +1,109 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI updates for v4.12-rc1, part 2
-Date: Wed, 10 May 2017 00:59:16 +0200
-Message-ID: <CAJZ5v0iv4vAzz_FEkd90pr4mT9EWn-neKX_0rG6DhaJeHx37Bw@mail.gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v3 0/3] devfreq_cooling: let the driver supply the
+Date: Wed, 10 May 2017 09:14:12 +0800
+Message-ID: <1494378852.2129.12.camel@intel.com>
+References: <1493897673-1826-1-git-send-email-lukasz.luba@arm.com>
+         <9045ed39-02eb-726a-256e-ea578e9452d6@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:35039 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751221AbdEIW7R (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 May 2017 18:59:17 -0400
+Received: from mga04.intel.com ([192.55.52.120]:35814 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751043AbdEJBOP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 9 May 2017 21:14:15 -0400
+In-Reply-To: <9045ed39-02eb-726a-256e-ea578e9452d6@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, edubezval@gmail.com
+Cc: javi.merino@kernel.org, chris.diamand@arm.com
 
-Hi Linus,
+On Tue, 2017-05-09 at 10:48 +0100, Lukasz Luba wrote:
+> Hi Eduardo, Rui,
+> 
+> gentle ping. Any hope to merge it soon?
+> 
+yes, it's in my queue, and I will send out the pull request soon.
 
-Please pull from the tag
-
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-extra-4.12-rc1
-
-with top-most commit 46436eb2f9e6ab0770c14292296d133f8907f699
-
- Merge branches 'acpi-soc', 'acpi-bus', 'acpi-pmic' and 'acpi-power'
-
-on top of commit 08be881064da126b8df4b96b0b3e2e307969a4a1
-
- Merge tag 'acpi-4.12-rc1' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
-
-to receive more ACPI updates for v4.12-rc1.
-
-These update the ACPICA code in the kernel to upstream revision
-20170303 which adds a few minor fixes and improvements, update
-ACPI SoC drivers with new device IDs, platform-related information
-and similar, fix the register information in the xpower PMIC driver,
-introduce a concept of "always present" devices to the ACPI device
-enumeration code and use it to fix a problem with one platform, and
-fix a system resume issue related to power resources.
-
-Specifics:
-
- - Update the ACPICA code in the kernel to upstream revision
-   20170303 which includes:
-   * Minor fixes and improvements in the core code (Bob Moore,
-     Seunghun Han).
-   * Debugger fixes (Colin Ian King, Lv Zheng).
-   * Compiler/disassembler improvements (Bob Moore, David Box,
-     Lv Zheng).
-   * Build-related update (Lv Zheng).
-
- - Add new device IDs and platform-related information to the
-   ACPI drivers for Intel (LPSS) and AMD (APD) SoCs (Hanjun Guo,
-   Hans de Goede).
-
- - Make it possible to quirk ACPI-enumerated devices as "always
-   present" on platforms where they are incorrectly reported as not
-   present by the AML and add the INT0002 device ID to the list of
-   "always present" devices (Hans de Goede).
-
- - Fix the register information in the xpower PMIC driver and add
-   comments to map the registers to symbols used by AML to it
-   (Hans de Goede).
-
- - Move the code turning off unused ACPI power resources during
-   system resume to a point after all devices have been resumed
-   to avoid issues with power resources that do not behave as
-   expected (Hans de Goede).
-
-There is a small conflict between this material and the already
-merged changes in drivers/acpi/acpi_apd.c that went in through a
-different path, but the resolution of it should be straightforward.
-
-Thanks!
-
----------------
-
-Bob Moore (9):
-      ACPICA: Disassembler: Enhance resource descriptor detection
-      ACPICA: Update some function headers, no funtional change
-      ACPICA: Fix a module for excessive debug output
-      ACPICA: Fix several incorrect invocations of ACPICA return macro
-      ACPICA: Update for automatic repair code for objects returned by
-evaluate_object
-      ACPICA: Cleanup AML opcode definitions, no functional change
-      ACPICA: Local cache support: Allow small cache objects
-      ACPICA: iasl: add ASL conversion tool
-      ACPICA: Update version to 20170303
-
-Colin Ian King (1):
-      ACPICA: debugger: fix memory leak on Pathname
-
-David E. Box (1):
-      ACPICA: Disassembler: Do not unconditionally remove temporary names
-
-Hanjun Guo (2):
-      ACPI / APD: Add clock frequency for Hisilicon Hip07/08 I2C controller
-      i2c: designware: Add ACPI HID for Hisilicon Hip07/08 I2C controller
-
-Hans de Goede (5):
-      ACPI / bus: Introduce a list of ids for "always present" devices
-      ACPI / bus: Add INT0002 to list of always-present devices
-      ACPI / LPSS: Call pwm_add_table() for Bay Trail PWM device
-      ACPI / PMIC: xpower: Fix power_table addresses
-      ACPI / power: Delay turning off unused power resources after suspend
-
-Lv Zheng (3):
-      ACPICA: Add non-linux host build support
-      ACPICA: Debugger: Add interpreter blocking mark for single-step mode
-      ACPICA: iasl: Fix IORT SMMU GSI disassembling
-
-Seunghun Han (1):
-      ACPICA: Namespace: fix operand cache leak
-
----------------
-
- drivers/acpi/Makefile                       |   1 +
- drivers/acpi/acpi_apd.c                     |  12 +++
- drivers/acpi/acpi_lpss.c                    |  17 ++++
- drivers/acpi/acpica/Makefile                |   2 +-
- drivers/acpi/acpica/acconvert.h             | 144 ++++++++++++++++++++++++++++
- drivers/acpi/acpica/acglobal.h              |  53 ++++++++++
- drivers/acpi/acpica/aclocal.h               | 106 ++++++++++++++++----
- drivers/acpi/acpica/acmacros.h              |  35 +++++++
- drivers/acpi/acpica/acopcode.h              |   2 +
- drivers/acpi/acpica/amlcode.h               |  99 +++++++++----------
- drivers/acpi/acpica/dbmethod.c              |   1 +
- drivers/acpi/acpica/dbxface.c               |   5 +-
- drivers/acpi/acpica/dscontrol.c             |   2 +-
- drivers/acpi/acpica/dsmthdat.c              |   3 +-
- drivers/acpi/acpica/dsobject.c              |  15 +--
- drivers/acpi/acpica/dsopcode.c              |   4 +-
- drivers/acpi/acpica/dsutils.c               |   8 +-
- drivers/acpi/acpica/dswexec.c               |   2 +-
- drivers/acpi/acpica/dswload2.c              |   2 +-
- drivers/acpi/acpica/exmisc.c                |  16 ++--
- drivers/acpi/acpica/exnames.c               |   4 +-
- drivers/acpi/acpica/exoparg1.c              |  17 ++--
- drivers/acpi/acpica/exoparg2.c              |   4 +-
- drivers/acpi/acpica/exoparg6.c              |  16 ++--
- drivers/acpi/acpica/exresolv.c              |   3 +-
- drivers/acpi/acpica/exstore.c               |   5 +-
- drivers/acpi/acpica/exstoren.c              |   2 +-
- drivers/acpi/acpica/hwvalid.c               |  18 ++--
- drivers/acpi/acpica/nsaccess.c              |   2 +-
- drivers/acpi/acpica/nsrepair.c              |  16 +---
- drivers/acpi/acpica/nsrepair2.c             |   6 +-
- drivers/acpi/acpica/nsutils.c               |  29 +++---
- drivers/acpi/acpica/psargs.c                |  29 +++++-
- drivers/acpi/acpica/psloop.c                |  34 ++++++-
- drivers/acpi/acpica/psobject.c              |  38 ++++++++
- drivers/acpi/acpica/psopcode.c              |  15 +--
- drivers/acpi/acpica/psopinfo.c              |   2 +-
- drivers/acpi/acpica/psparse.c               |   6 +-
- drivers/acpi/acpica/pstree.c                |   9 +-
- drivers/acpi/acpica/psutils.c               |  11 +++
- drivers/acpi/acpica/utalloc.c               |  50 ++++++++++
- drivers/acpi/acpica/utcache.c               |   2 +-
- drivers/acpi/acpica/utdebug.c               |   1 +
- drivers/acpi/acpica/utresrc.c               |   9 ++
- drivers/acpi/acpica/utxferror.c             |  16 ++--
- drivers/acpi/bus.c                          |   5 +
- drivers/acpi/pmic/intel_pmic_xpower.c       |  50 +++++-----
- drivers/acpi/power.c                        |  10 ++
- drivers/acpi/sleep.c                        |   1 +
- drivers/acpi/sleep.h                        |   1 +
- drivers/acpi/x86/utils.c                    |  90 +++++++++++++++++
- drivers/i2c/busses/i2c-designware-platdrv.c |   2 +
- include/acpi/acconfig.h                     |   1 +
- include/acpi/acpi_bus.h                     |   9 ++
- include/acpi/acpixf.h                       |   2 +-
- include/acpi/actbl2.h                       |  10 ++
- 56 files changed, 833 insertions(+), 221 deletions(-)
+thanks,
+rui
+> Regards,
+> Lukasz
+> 
+> On 04/05/17 12:34, Lukasz Luba wrote:
+> > 
+> > Hi,
+> > 
+> > This patchset introduces a new interface for devfreq cooling in
+> > thermal
+> > framework. The first version of the patch can be seen here [1],
+> > second [2].
+> > I have simplified the implementation and introduced resource
+> > utilization
+> > scaling factor.
+> > 
+> > The current implementation in the thermal devfreq cooling subsystem
+> > uses
+> > pre-calculated power table for each device to make a decision about
+> > allowed
+> > running state. When the driver registers itself to the thermal
+> > devfreq cooling
+> > subsystem, the framework creates the power table.
+> > The power table is then used by the thermal subsystem to keep
+> > the device in the thermal envelope.
+> > In the previous implementation the pre-calculated device's power
+> > table was scaled by current 'utilization'
+> > ('busy_time' and 'total_time' taken from devfreq 'last_status').
+> > 
+> > This idea meets the expectations of the devices which know better
+> > the actual
+> > power that they consume (thanks to power counters). When some
+> > parts/features of the device are not used the power value might be
+> > lower,
+> > while the frequency and utilization are the same.
+> > 
+> > The proposed implementation provides possibility to register a
+> > driver to
+> > thermal devfreq cooling subsystem and use the driver's code during
+> > the
+> > calculation of the power in runtime.
+> > 
+> > The device driver can still use pre-calculated power table when
+> > these new
+> > functions are not provided (the new extension can co-exist with old
+> > implementation).
+> > 
+> > The first patch contains some refactoring for getting the voltage,
+> > the second implements the new feature, the third one changes trace
+> > function.
+> > Patchset is based on v4.11-rc8.
+> > 
+> > 
+> > Changes
+> > v3:
+> > - refactor OPP code to fit into new dev_pm_opp API
+> > v2:
+> > - removed 'flags' and power2state function,
+> > - split into a few patches,
+> > - simplified the logic of the new interface,
+> > - added resource utilization scaling factor,
+> > 
+> > Regards,
+> > Lukasz Luba
+> > 
+> > [1] https://marc.info/?l=linux-pm&m=147395070729989&w=2
+> > [2] http://marc.info/?l=linux-pm&m=148587920122854&w=2
+> > 
+> > Lukasz Luba (3):
+> >   thermal: devfreq_cooling: refactor code and add get_voltage
+> > function
+> >   thermal: devfreq_cooling: add new interface for direct power read
+> >   trace: thermal: add another parameter 'power' to the tracing
+> > function
+> > 
+> >  drivers/thermal/devfreq_cooling.c | 152
+> > ++++++++++++++++++++++++++++----------
+> >  include/linux/devfreq_cooling.h   |  19 +++++
+> >  include/trace/events/thermal.h    |  11 ++-
+> >  3 files changed, 137 insertions(+), 45 deletions(-)
+> > 
