@@ -1,45 +1,65 @@
-From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v4 0/8] Fix issues and factorize arm/arm64 capacity
- information code
-Date: Thu, 11 May 2017 11:27:18 +0100
-Message-ID: <20170511102718.qy54ajkzphasymhr@e106622-lin>
-References: <20170420144316.15632-1-juri.lelli@arm.com>
- <20170511084830.rn32pvi6weej2cna@e106622-lin>
- <20170511085952.GA6934@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170511085952.GA6934-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] cpufreq: dbx500: add a Kconfig symbol
+Date: Thu, 11 May 2017 14:12:29 +0200
+Message-ID: <20170511121258.3521041-1-arnd@arndb.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([217.72.192.74]:60616 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755137AbdEKMNC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 May 2017 08:13:02 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Linus Walleij <linus.walleij@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 11/05/17 10:59, Greg KH wrote:
-> On Thu, May 11, 2017 at 09:48:30AM +0100, Juri Lelli wrote:
-> > Hi Greg,
-> > 
-> > I'm not sure what your plans are with this set. Are we targeting 4.12?
-> > 
-> > IMHO, if possible, it would be good to have this refactoring in now, so
-> > that we can base further development on it for the next cycle.
-> 
-> It's way too late for new features that have not been in linux-next for
-> a few weeks, to get merged into 4.12-rc1, sorry.  I'll review this
-> patchset after -rc1 is out, and I get a chance to catch up on pending
-> patches.
-> 
+Moving the cooling code into the cpufreq driver caused a possible build failure
+when the cpu_thermal helper code is a loadable module or disabled:
 
-Thanks for your reply, I perfecly understand.
+drivers/cpufreq/dbx500-cpufreq.o: In function `dbx500_cpufreq_ready':
+dbx500-cpufreq.c:(.text.dbx500_cpufreq_ready+0x4): undefined reference to `cpufreq_cooling_register'
 
-OK, let's target 4.13 then. Looking forward to receive your comments
-after -rc1 is out.
+This adds the same dependency that we have in other cpufreq drivers,
+forcing the driver to be disabled when we can't possibly link it.
 
-Best,
+Fixes: 19678ffb9fd6 ("cpufreq: dbx500: Manage cooling device from cpufreq driver")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/cpufreq/Kconfig.arm | 9 +++++++++
+ drivers/cpufreq/Makefile    | 2 +-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
-- Juri
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 74ed7e9a7f27..2011fec2d6ad 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -71,6 +71,15 @@ config ARM_HIGHBANK_CPUFREQ
+ 
+ 	  If in doubt, say N.
+ 
++config ARM_DB8500_CPUFREQ
++	tristate "ST-Ericsson DB8500 cpufreq" if COMPILE_TEST && !ARCH_U8500
++	default ARCH_U8500
++	depends on HAS_IOMEM
++	depends on !CPU_THERMAL || THERMAL
++	help
++	  This adds the CPUFreq driver for ST-Ericsson Ux500 (DB8500) SoC
++	  series.
++
+ config ARM_IMX6Q_CPUFREQ
+ 	tristate "Freescale i.MX6 cpufreq support"
+ 	depends on ARCH_MXC
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index b7e78f063c4f..ab3a42cd29ef 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -53,7 +53,7 @@ obj-$(CONFIG_ARM_DT_BL_CPUFREQ)		+= arm_big_little_dt.o
+ 
+ obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
+ obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
+-obj-$(CONFIG_UX500_SOC_DB8500)		+= dbx500-cpufreq.o
++obj-$(CONFIG_ARM_DB8500_CPUFREQ)	+= dbx500-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
+ obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
+ obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+-- 
+2.9.0
