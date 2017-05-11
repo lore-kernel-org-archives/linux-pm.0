@@ -1,43 +1,45 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] clk: renesas: Use pm_clk_no_clocks() helper i.s.o. direct access
-Date: Thu, 11 May 2017 11:00:33 +0200
-Message-ID: <CAMuHMdW7ZrYd8tr0iHB5p1zO_cY=kro+HVc+jNEe1b1Bz0S-Fw@mail.gmail.com>
-References: <1493141638-28940-1-git-send-email-geert+renesas@glider.be> <20170426071120.GB25517@verge.net.au>
+From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v4 0/8] Fix issues and factorize arm/arm64 capacity
+ information code
+Date: Thu, 11 May 2017 11:27:18 +0100
+Message-ID: <20170511102718.qy54ajkzphasymhr@e106622-lin>
+References: <20170420144316.15632-1-juri.lelli@arm.com>
+ <20170511084830.rn32pvi6weej2cna@e106622-lin>
+ <20170511085952.GA6934@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f195.google.com ([209.85.223.195]:36227 "EHLO
-        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932245AbdEKJAf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 May 2017 05:00:35 -0400
-In-Reply-To: <20170426071120.GB25517@verge.net.au>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170511085952.GA6934-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-clk <linux-clk@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On Wed, Apr 26, 2017 at 9:11 AM, Simon Horman <horms@verge.net.au> wrote:
-> On Tue, Apr 25, 2017 at 07:33:58PM +0200, Geert Uytterhoeven wrote:
->> The pm_subsys_data.clock_list member exists only if CONFIG_PM_CLK=y.
->> Hence direct accesses to this field break compile-testing on platforms
->> where CONFIG_PM_CLK=n.
->>
->> To fix this, use the pm_clk_no_clocks() helper instead, for which a
->> dummy version is provided if CONFIG_PM_CLK=n.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->
-> Reviewed-by: Simon Horman <simon.horman@netronome.com>
+On 11/05/17 10:59, Greg KH wrote:
+> On Thu, May 11, 2017 at 09:48:30AM +0100, Juri Lelli wrote:
+> > Hi Greg,
+> > 
+> > I'm not sure what your plans are with this set. Are we targeting 4.12?
+> > 
+> > IMHO, if possible, it would be good to have this refactoring in now, so
+> > that we can base further development on it for the next cycle.
+> 
+> It's way too late for new features that have not been in linux-next for
+> a few weeks, to get merged into 4.12-rc1, sorry.  I'll review this
+> patchset after -rc1 is out, and I get a chance to catch up on pending
+> patches.
+> 
 
-Thanks, queued in clk-renesas-for-v4.13.
+Thanks for your reply, I perfecly understand.
 
-Gr{oetje,eeting}s,
+OK, let's target 4.13 then. Looking forward to receive your comments
+after -rc1 is out.
 
-                        Geert
+Best,
 
+- Juri
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
