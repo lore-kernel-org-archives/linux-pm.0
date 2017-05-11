@@ -1,159 +1,65 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 3/3] drivers:power:twl4030-charger: remove nonstandard
- max_current sysfs attribute
-Date: Fri, 12 May 2017 00:35:47 +0200
-Message-ID: <20170511223545.GB6780@amd>
-References: <cover.1492194356.git.hns@goldelico.com>
- <38afc4e7faaeabb32f153a0956899fa8e97c1b3a.1492194356.git.hns@goldelico.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="aM3YZ0Iwxop3KEKx"
+From: Prashanth Prakash <pprakash@codeaurora.org>
+Subject: [PATCH] cpufreq / CPPC: Initialize policy->min to lowest nonlinear performance
+Date: Thu, 11 May 2017 16:39:44 -0600
+Message-ID: <1494542384-7502-1-git-send-email-pprakash@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:32880 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755850AbdEKWfu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 May 2017 18:35:50 -0400
-Content-Disposition: inline
-In-Reply-To: <38afc4e7faaeabb32f153a0956899fa8e97c1b3a.1492194356.git.hns@goldelico.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:48050 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752049AbdEKWkL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 May 2017 18:40:11 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grazvydas Ignotas <notasas@gmail.com>, Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, linux-kernel@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, ahs3@redhat.com, hotran@apm.com, alexey.klimov@arm.com, Prashanth Prakash <pprakash@codeaurora.org>
 
+Description of Lowest Perfomance in ACPI 6.1 specification states:
+"Lowest Performance is the absolute lowest performance level of
+the platform. Selecting a performance level lower than the lowest
+nonlinear performance level may actually cause an efficiency penalty,
+but should reduce the instantaneous power consumption of the processor.
+In traditional terms, this represents the T-state range of performance
+levels."
 
---aM3YZ0Iwxop3KEKx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Set the default value of policy->min to Lowest Nonlinear Performance
+to avoid any potential efficiency penalty.
 
-On Fri 2017-04-14 20:25:57, H. Nikolaus Schaller wrote:
-> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
+---
+ drivers/cpufreq/cppc_cpufreq.c | 19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
-You should explain how to obtain equivalent functionality without that
-attribute.
-
-									Pavel
-
-> ---
->  drivers/power/supply/twl4030_charger.c | 63 ----------------------------=
-------
->  1 file changed, 63 deletions(-)
->=20
-> diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/suppl=
-y/twl4030_charger.c
-> index e70c4ed..e02e150 100644
-> --- a/drivers/power/supply/twl4030_charger.c
-> +++ b/drivers/power/supply/twl4030_charger.c
-> @@ -624,63 +624,6 @@ static irqreturn_t twl4030_bci_interrupt(int irq, vo=
-id *arg)
->  	return IRQ_HANDLED;
->  }
-> =20
-> -/*
-> - * Provide "max_current" attribute in sysfs.
-> - */
-> -static ssize_t
-> -twl4030_bci_max_current_store(struct device *dev, struct device_attribut=
-e *attr,
-> -	const char *buf, size_t n)
-> -{
-> -	struct twl4030_bci *bci =3D dev_get_drvdata(dev->parent);
-> -	int cur =3D 0;
-> -	int status =3D 0;
-> -	status =3D kstrtoint(buf, 10, &cur);
-> -	if (status)
-> -		return status;
-> -	if (cur < 0)
-> -		return -EINVAL;
-> -	if (dev =3D=3D &bci->ac->dev)
-> -		bci->ac_cur =3D cur;
-> -	else
-> -		bci->usb_cur_target =3D cur;
-> -
-> -	twl4030_charger_update_current(bci);
-> -	return n;
-> -}
-> -
-> -/*
-> - * sysfs max_current show
-> - */
-> -static ssize_t twl4030_bci_max_current_show(struct device *dev,
-> -	struct device_attribute *attr, char *buf)
-> -{
-> -	int status =3D 0;
-> -	int cur =3D -1;
-> -	u8 bcictl1;
-> -	struct twl4030_bci *bci =3D dev_get_drvdata(dev->parent);
-> -
-> -	if (dev =3D=3D &bci->ac->dev) {
-> -		if (!bci->ac_is_active)
-> -			cur =3D bci->ac_cur;
-> -	} else {
-> -		if (bci->ac_is_active)
-> -			cur =3D bci->usb_cur_target;
-> -	}
-> -	if (cur < 0) {
-> -		cur =3D twl4030bci_read_adc_val(TWL4030_BCIIREF1);
-> -		if (cur < 0)
-> -			return cur;
-> -		status =3D twl4030_bci_read(TWL4030_BCICTL1, &bcictl1);
-> -		if (status < 0)
-> -			return status;
-> -		cur =3D regval2ua(cur, bcictl1 & TWL4030_CGAIN);
-> -	}
-> -	return scnprintf(buf, PAGE_SIZE, "%u\n", cur);
-> -}
-> -
-> -static DEVICE_ATTR(max_current, 0644, twl4030_bci_max_current_show,
-> -			twl4030_bci_max_current_store);
-> -
->  static void twl4030_bci_usb_work(struct work_struct *data)
->  {
->  	struct twl4030_bci *bci =3D container_of(data, struct twl4030_bci, work=
-);
-> @@ -1118,14 +1061,10 @@ static int twl4030_bci_probe(struct platform_devi=
-ce *pdev)
->  		dev_warn(&pdev->dev, "failed to unmask interrupts: %d\n", ret);
-> =20
->  	twl4030_charger_update_current(bci);
-> -	if (device_create_file(&bci->usb->dev, &dev_attr_max_current))
-> -		dev_warn(&pdev->dev, "could not create sysfs file\n");
->  	if (device_create_file(&bci->usb->dev, &dev_attr_mode))
->  		dev_warn(&pdev->dev, "could not create sysfs file\n");
->  	if (device_create_file(&bci->ac->dev, &dev_attr_mode))
->  		dev_warn(&pdev->dev, "could not create sysfs file\n");
-> -	if (device_create_file(&bci->ac->dev, &dev_attr_max_current))
-> -		dev_warn(&pdev->dev, "could not create sysfs file\n");
-> =20
->  	twl4030_charger_enable_ac(bci, true);
->  	if (!IS_ERR_OR_NULL(bci->transceiver))
-> @@ -1157,9 +1096,7 @@ static int __exit twl4030_bci_remove(struct platfor=
-m_device *pdev)
-> =20
->  	iio_channel_release(bci->channel_vac);
-> =20
-> -	device_remove_file(&bci->usb->dev, &dev_attr_max_current);
->  	device_remove_file(&bci->usb->dev, &dev_attr_mode);
-> -	device_remove_file(&bci->ac->dev, &dev_attr_max_current);
->  	device_remove_file(&bci->ac->dev, &dev_attr_mode);
->  	/* mask interrupts */
->  	twl_i2c_write_u8(TWL4030_MODULE_INTERRUPTS, 0xff,
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---aM3YZ0Iwxop3KEKx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlkU50EACgkQMOfwapXb+vK4+ACfUgzrL/mWZVEMZWvOR2A+mH5o
-EEwAoICA+2YzfcD1MuGbWqy9CkcBvcs2
-=FlRo
------END PGP SIGNATURE-----
-
---aM3YZ0Iwxop3KEKx--
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index e82bb3c..10be285 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -144,10 +144,23 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	cppc_dmi_max_khz = cppc_get_dmi_max_khz();
+ 
+-	policy->min = cpu->perf_caps.lowest_perf * cppc_dmi_max_khz / cpu->perf_caps.highest_perf;
++	/*
++	 * Set min to lowest nonlinear perf to avoid any efficiency penalty (see
++	 * Section 8.4.7.1.1.5 of ACPI 6.1 spec)
++	 */
++	policy->min = cpu->perf_caps.lowest_nonlinear_perf * cppc_dmi_max_khz /
++		cpu->perf_caps.highest_perf;
+ 	policy->max = cppc_dmi_max_khz;
+-	policy->cpuinfo.min_freq = policy->min;
+-	policy->cpuinfo.max_freq = policy->max;
++
++	/*
++	 * Set cpuinfo.min_freq to Lowest to make the full range of performance
++	 * available if userspace wants to use any perf between lowest & lowest
++	 * nonlinear perf
++	 */
++	policy->cpuinfo.min_freq = cpu->perf_caps.lowest_perf * cppc_dmi_max_khz /
++		cpu->perf_caps.highest_perf;
++	policy->cpuinfo.max_freq = cppc_dmi_max_khz;
++
+ 	policy->cpuinfo.transition_latency = cppc_get_transition_latency(cpu_num);
+ 	policy->shared_type = cpu->shared_type;
+ 
+-- 
+Qualcomm Datacenter Technologies on behalf of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the
+Code Aurora Forum, a Linux Foundation Collaborative Project.
