@@ -1,63 +1,159 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: low capacity signalling
-Date: Thu, 11 May 2017 23:10:36 +0200
-Message-ID: <20170511211036.iyjgzld4aqxvtkvt@earth>
-References: <CANMsd00fsbaDwZkBVGcigPfdyOhP-F2Y3Q0ggCqS+pFy6+iy9Q@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 3/3] drivers:power:twl4030-charger: remove nonstandard
+ max_current sysfs attribute
+Date: Fri, 12 May 2017 00:35:47 +0200
+Message-ID: <20170511223545.GB6780@amd>
+References: <cover.1492194356.git.hns@goldelico.com>
+ <38afc4e7faaeabb32f153a0956899fa8e97c1b3a.1492194356.git.hns@goldelico.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="rh6lad4zsgiy5mxi"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="aM3YZ0Iwxop3KEKx"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:56544 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752657AbdEKVUX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 11 May 2017 17:20:23 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:32880 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755850AbdEKWfu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 May 2017 18:35:50 -0400
 Content-Disposition: inline
-In-Reply-To: <CANMsd00fsbaDwZkBVGcigPfdyOhP-F2Y3Q0ggCqS+pFy6+iy9Q@mail.gmail.com>
+In-Reply-To: <38afc4e7faaeabb32f153a0956899fa8e97c1b3a.1492194356.git.hns@goldelico.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ryan <ryanphilips19@googlemail.com>
-Cc: linux-pm@vger.kernel.org
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Grazvydas Ignotas <notasas@gmail.com>, Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, linux-kernel@vger.kernel.org
 
 
---rh6lad4zsgiy5mxi
+--aM3YZ0Iwxop3KEKx
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Ryan,
+On Fri 2017-04-14 20:25:57, H. Nikolaus Schaller wrote:
+> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
 
-On Thu, May 11, 2017 at 08:55:21PM +0530, Ryan wrote:
-> I want to write a Linux Application which shutdowns the system
-> using poweroff command when the battery capacity is around 10%.
+You should explain how to obtain equivalent functionality without that
+attribute.
+
+									Pavel
+
+> ---
+>  drivers/power/supply/twl4030_charger.c | 63 ----------------------------=
+------
+>  1 file changed, 63 deletions(-)
 >=20
-> How can the battery monitor chip signal to the application.
->=20
-> I want to avoid polling. How can a driver implement such a feature
-> in an optimised way.
+> diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/suppl=
+y/twl4030_charger.c
+> index e70c4ed..e02e150 100644
+> --- a/drivers/power/supply/twl4030_charger.c
+> +++ b/drivers/power/supply/twl4030_charger.c
+> @@ -624,63 +624,6 @@ static irqreturn_t twl4030_bci_interrupt(int irq, vo=
+id *arg)
+>  	return IRQ_HANDLED;
+>  }
+> =20
+> -/*
+> - * Provide "max_current" attribute in sysfs.
+> - */
+> -static ssize_t
+> -twl4030_bci_max_current_store(struct device *dev, struct device_attribut=
+e *attr,
+> -	const char *buf, size_t n)
+> -{
+> -	struct twl4030_bci *bci =3D dev_get_drvdata(dev->parent);
+> -	int cur =3D 0;
+> -	int status =3D 0;
+> -	status =3D kstrtoint(buf, 10, &cur);
+> -	if (status)
+> -		return status;
+> -	if (cur < 0)
+> -		return -EINVAL;
+> -	if (dev =3D=3D &bci->ac->dev)
+> -		bci->ac_cur =3D cur;
+> -	else
+> -		bci->usb_cur_target =3D cur;
+> -
+> -	twl4030_charger_update_current(bci);
+> -	return n;
+> -}
+> -
+> -/*
+> - * sysfs max_current show
+> - */
+> -static ssize_t twl4030_bci_max_current_show(struct device *dev,
+> -	struct device_attribute *attr, char *buf)
+> -{
+> -	int status =3D 0;
+> -	int cur =3D -1;
+> -	u8 bcictl1;
+> -	struct twl4030_bci *bci =3D dev_get_drvdata(dev->parent);
+> -
+> -	if (dev =3D=3D &bci->ac->dev) {
+> -		if (!bci->ac_is_active)
+> -			cur =3D bci->ac_cur;
+> -	} else {
+> -		if (bci->ac_is_active)
+> -			cur =3D bci->usb_cur_target;
+> -	}
+> -	if (cur < 0) {
+> -		cur =3D twl4030bci_read_adc_val(TWL4030_BCIIREF1);
+> -		if (cur < 0)
+> -			return cur;
+> -		status =3D twl4030_bci_read(TWL4030_BCICTL1, &bcictl1);
+> -		if (status < 0)
+> -			return status;
+> -		cur =3D regval2ua(cur, bcictl1 & TWL4030_CGAIN);
+> -	}
+> -	return scnprintf(buf, PAGE_SIZE, "%u\n", cur);
+> -}
+> -
+> -static DEVICE_ATTR(max_current, 0644, twl4030_bci_max_current_show,
+> -			twl4030_bci_max_current_store);
+> -
+>  static void twl4030_bci_usb_work(struct work_struct *data)
+>  {
+>  	struct twl4030_bci *bci =3D container_of(data, struct twl4030_bci, work=
+);
+> @@ -1118,14 +1061,10 @@ static int twl4030_bci_probe(struct platform_devi=
+ce *pdev)
+>  		dev_warn(&pdev->dev, "failed to unmask interrupts: %d\n", ret);
+> =20
+>  	twl4030_charger_update_current(bci);
+> -	if (device_create_file(&bci->usb->dev, &dev_attr_max_current))
+> -		dev_warn(&pdev->dev, "could not create sysfs file\n");
+>  	if (device_create_file(&bci->usb->dev, &dev_attr_mode))
+>  		dev_warn(&pdev->dev, "could not create sysfs file\n");
+>  	if (device_create_file(&bci->ac->dev, &dev_attr_mode))
+>  		dev_warn(&pdev->dev, "could not create sysfs file\n");
+> -	if (device_create_file(&bci->ac->dev, &dev_attr_max_current))
+> -		dev_warn(&pdev->dev, "could not create sysfs file\n");
+> =20
+>  	twl4030_charger_enable_ac(bci, true);
+>  	if (!IS_ERR_OR_NULL(bci->transceiver))
+> @@ -1157,9 +1096,7 @@ static int __exit twl4030_bci_remove(struct platfor=
+m_device *pdev)
+> =20
+>  	iio_channel_release(bci->channel_vac);
+> =20
+> -	device_remove_file(&bci->usb->dev, &dev_attr_max_current);
+>  	device_remove_file(&bci->usb->dev, &dev_attr_mode);
+> -	device_remove_file(&bci->ac->dev, &dev_attr_max_current);
+>  	device_remove_file(&bci->ac->dev, &dev_attr_mode);
+>  	/* mask interrupts */
+>  	twl_i2c_write_u8(TWL4030_MODULE_INTERRUPTS, 0xff,
 
-If you listen to uevent messages from the battery you can avoid
-polling. Events will be sent when the driver calls power_supply_changed().
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
--- Sebastian
-
---rh6lad4zsgiy5mxi
+--aM3YZ0Iwxop3KEKx
 Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkU00kACgkQ2O7X88g7
-+pq9AQ//SVlHL6xr3da/WU/OqB4IZCTpYajNWuHcBSk5Nr0TbLFhKRYvD4xN/zsC
-t2Ob7Kev9jkMM9deLu4GEFt1swdfpZH6ldqZW5XOl0R3tNj+TU++y3KAybq4umMN
-0sIS0pFZSKIFX+xzvvb2TtMBxOLjmygob9yse0UOHPOdJD9op1Qcs2nGBNwjW9lU
-BSyff/hEDIuedIvJkd2P+CDKkwMMnQ8qTHEI+iczmNfy/zfyd6Z3dipGonlLNwx8
-HeGKex3Cg0a7c4pUBghP5Tw3POx5woWOxdkmjW87e5E1axzXnTeaw+1k7HGOIZ3I
-bF+5ouSApfsW7RxGLu2LosSK3hR+Pik/G6EtQ7UmuaAYpEsSinTTRJqFBWuSv8vc
-cqXIMUSjb+LpESpa3FQqfm6XmQvSeXCBX2OWLpbqTzOIdli3dV5rdDAuvtsGHBXO
-CGBEOl2F5T0jkH3VL9dxyjRPKtZL/dc8O5DqXKCR8ZktU4TOPTiLeEboBWf78GDw
-brPWxuV217l4OmeNjPFGMT3n1FUjKnAqKCBal9E0NOhUeswbJQJMPywVhq8dmTJV
-4I0x4/WIUfe5s/oD5Wz0k3a6D/4QmW8YtjhoC5UK7ihznifwhm0tOjq9wkq5Meig
-vB0MZtXjatYXVosknwWR2jyo/33X4x3JeQSrioOJZK44DzAP6Do=
-=fsdT
+iEYEARECAAYFAlkU50EACgkQMOfwapXb+vK4+ACfUgzrL/mWZVEMZWvOR2A+mH5o
+EEwAoICA+2YzfcD1MuGbWqy9CkcBvcs2
+=FlRo
 -----END PGP SIGNATURE-----
 
---rh6lad4zsgiy5mxi--
+--aM3YZ0Iwxop3KEKx--
