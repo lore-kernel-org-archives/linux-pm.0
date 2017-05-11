@@ -1,64 +1,60 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH 1/4] power: supply: axp20x_battery: add support
- for DT battery
-Date: Thu, 11 May 2017 15:42:17 +0200
-Message-ID: <20170511134221.5569-2-quentin.schulz@free-electrons.com>
-References: <20170511134221.5569-1-quentin.schulz@free-electrons.com>
-Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBUGU2HEAKGQEVB4Y35Q-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20170511134221.5569-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
+Subject: [PATCH 0/4] set battery info on AXP20X and AXP22X from DT
+Date: Thu, 11 May 2017 15:42:16 +0200
+Message-ID: <20170511134221.5569-1-quentin.schulz@free-electrons.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org
 Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This adds support in X-Powers AXP20X and AXP22X battery driver for a
-fixed battery in DT.
+X-Powers AXP20X and AXP22X are capable of setting battery constant
+charge current to limit the current supplied to the battery. The battery
+driver already offers the ability to modify the constant charge current
+via sysfs but the driver will probe with the default value of 1500mA.
 
-It will take the minimum supported voltage by the battery as defined in
-the battery DT node and set the V_OFF register to this value, telling
-the system to shut down if the supplied power is below this value.
+They are also able to tell the system when to shut down due to the
+supplied power being too low. This patch series adds the ability to set
+this power threshold from the battery DT node.
 
-Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
----
- drivers/power/supply/axp20x_battery.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+The constant charge current is critical for batteries as if it is higher
+than the supported constant charge current, it might
+severly/irreversibly damages or kills the battery.
 
-diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
-index 5d29b2eab8fc..66f530541735 100644
---- a/drivers/power/supply/axp20x_battery.c
-+++ b/drivers/power/supply/axp20x_battery.c
-@@ -433,6 +433,7 @@ static int axp20x_power_probe(struct platform_device *pdev)
- {
- 	struct axp20x_batt_ps *axp20x_batt;
- 	struct power_supply_config psy_cfg = {};
-+	struct power_supply_battery_info info;
- 
- 	if (!of_device_is_available(pdev->dev.of_node))
- 		return -ENODEV;
-@@ -484,6 +485,15 @@ static int axp20x_power_probe(struct platform_device *pdev)
- 		return PTR_ERR(axp20x_batt->batt);
- 	}
- 
-+	if (!power_supply_get_battery_info(axp20x_batt->batt, &info)) {
-+		int vmin = info.voltage_min_design_uv;
-+
-+		if (vmin > 0 && axp20x_set_voltage_min_design(axp20x_batt,
-+							      vmin))
-+			dev_err(&pdev->dev,
-+				"couldn't set voltage_min_design\n");
-+	}
-+
- 	return 0;
- }
- 
+This patch series aims at offering the ability to set the maximal
+supported constant charge current from Device Tree which will be used at
+driver probing to set the default constant charge current, thus making
+sure we stay out of the unsupported range as little time as possible
+(the default constant current charge will still be 1500mA from powering
+up the board to the driver probing unless the bootloader takes care of
+it beforehand).
+
+We still offer the user the ability to change the maximal constant
+charge current from sysfs for those who would like to switch the battery
+attached to their board, so they can set an appropriate constant current
+charge and take advantage of higher constant current charge.
+
+Quentin
+
+Quentin Schulz (4):
+  power: supply: axp20x_battery: add support for DT battery
+  dt-bindings: power: battery: add constant-charge-current-max-microamp
+    property
+  power: supply: power_supply_core: add constant-charge-current optional
+    property
+  power: supply: axp20x_battery: add DT support for battery max constant
+    charge current
+
+ .../devicetree/bindings/power/supply/battery.txt   |  2 +
+ drivers/power/supply/axp20x_battery.c              | 88 ++++++++++++++++++++--
+ drivers/power/supply/power_supply_core.c           |  3 +
+ include/linux/power_supply.h                       |  1 +
+ 4 files changed, 86 insertions(+), 8 deletions(-)
+
 -- 
 2.11.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
