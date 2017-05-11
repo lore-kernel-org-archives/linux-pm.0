@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH 2/4] dt-bindings: power: battery: add
- constant-charge-current-max-microamp property
-Date: Thu, 11 May 2017 15:42:18 +0200
-Message-ID: <20170511134221.5569-3-quentin.schulz@free-electrons.com>
+Subject: [PATCH 3/4] power: supply: power_supply_core: add
+ constant-charge-current optional property
+Date: Thu, 11 May 2017 15:42:19 +0200
+Message-ID: <20170511134221.5569-4-quentin.schulz@free-electrons.com>
 References: <20170511134221.5569-1-quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
@@ -20,36 +20,50 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@
 Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This adds the constant-charge-current-max-microamp property to the list
-of optional properties of the battery.
+This adds the constant-charge-current property to the list of optional
+properties for the battery.
 
 The constant charge current is critical for batteries as they can't
 handle all charge currents.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/power/supply/power_supply_core.c | 3 +++
+ include/linux/power_supply.h             | 1 +
+ 2 files changed, 4 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
-index 63a7028d1434..12c1abc93a90 100644
---- a/Documentation/devicetree/bindings/power/supply/battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-@@ -12,6 +12,7 @@ Optional Properties:
-  - voltage-min-design-microvolt: drained battery voltage
-  - energy-full-design-microwatt-hours: battery design energy
-  - charge-full-design-microamp-hours: battery design capacity
-+ - constant-charge-current-max-microamp: battery maximum constant charge current
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 5019bdee0f0b..23887739c95c 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -508,6 +508,7 @@ int power_supply_get_battery_info(struct power_supply *psy,
+ 	info->energy_full_design_uwh = -EINVAL;
+ 	info->charge_full_design_uah = -EINVAL;
+ 	info->voltage_min_design_uv  = -EINVAL;
++	info->constant_charge_current_max_ua  = -EINVAL;
  
- Batteries must be referenced by chargers and/or fuel-gauges
- using a phandle. The phandle's property should be named
-@@ -24,6 +25,7 @@ Example:
- 		voltage-min-design-microvolt = <3200000>;
- 		energy-full-design-microwatt-hours = <5290000>;
- 		charge-full-design-microamp-hours = <1430000>;
-+		constant-charge-current-max-microamp = <300000>;
- 	};
+ 	if (!psy->of_node) {
+ 		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
+@@ -537,6 +538,8 @@ int power_supply_get_battery_info(struct power_supply *psy,
+ 			     &info->charge_full_design_uah);
+ 	of_property_read_u32(battery_np, "voltage-min-design-microvolt",
+ 			     &info->voltage_min_design_uv);
++	of_property_read_u32(battery_np, "constant-charge-current-max-microamp",
++			     &info->constant_charge_current_max_ua);
  
- 	charger: charger@11 {
+ 	return 0;
+ }
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index e84f1d31d987..6f9c28187caf 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -301,6 +301,7 @@ struct power_supply_battery_info {
+ 	int energy_full_design_uwh;	/* microWatt-hours */
+ 	int charge_full_design_uah;	/* microAmp-hours */
+ 	int voltage_min_design_uv;	/* microVolts */
++	int constant_charge_current_max_ua;		/* microAmps */
+ };
+ 
+ extern struct atomic_notifier_head power_supply_notifier;
 -- 
 2.11.0
