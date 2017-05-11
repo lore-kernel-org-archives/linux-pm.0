@@ -1,65 +1,64 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] cpufreq: dbx500: add a Kconfig symbol
-Date: Thu, 11 May 2017 14:12:29 +0200
-Message-ID: <20170511121258.3521041-1-arnd@arndb.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([217.72.192.74]:60616 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755137AbdEKMNC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 May 2017 08:13:02 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH 1/4] power: supply: axp20x_battery: add support
+ for DT battery
+Date: Thu, 11 May 2017 15:42:17 +0200
+Message-ID: <20170511134221.5569-2-quentin.schulz@free-electrons.com>
+References: <20170511134221.5569-1-quentin.schulz@free-electrons.com>
+Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBUGU2HEAKGQEVB4Y35Q-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20170511134221.5569-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org
+Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Linus Walleij <linus.walleij@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Moving the cooling code into the cpufreq driver caused a possible build failure
-when the cpu_thermal helper code is a loadable module or disabled:
+This adds support in X-Powers AXP20X and AXP22X battery driver for a
+fixed battery in DT.
 
-drivers/cpufreq/dbx500-cpufreq.o: In function `dbx500_cpufreq_ready':
-dbx500-cpufreq.c:(.text.dbx500_cpufreq_ready+0x4): undefined reference to `cpufreq_cooling_register'
+It will take the minimum supported voltage by the battery as defined in
+the battery DT node and set the V_OFF register to this value, telling
+the system to shut down if the supplied power is below this value.
 
-This adds the same dependency that we have in other cpufreq drivers,
-forcing the driver to be disabled when we can't possibly link it.
-
-Fixes: 19678ffb9fd6 ("cpufreq: dbx500: Manage cooling device from cpufreq driver")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- drivers/cpufreq/Kconfig.arm | 9 +++++++++
- drivers/cpufreq/Makefile    | 2 +-
- 2 files changed, 10 insertions(+), 1 deletion(-)
+ drivers/power/supply/axp20x_battery.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 74ed7e9a7f27..2011fec2d6ad 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -71,6 +71,15 @@ config ARM_HIGHBANK_CPUFREQ
+diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
+index 5d29b2eab8fc..66f530541735 100644
+--- a/drivers/power/supply/axp20x_battery.c
++++ b/drivers/power/supply/axp20x_battery.c
+@@ -433,6 +433,7 @@ static int axp20x_power_probe(struct platform_device *pdev)
+ {
+ 	struct axp20x_batt_ps *axp20x_batt;
+ 	struct power_supply_config psy_cfg = {};
++	struct power_supply_battery_info info;
  
- 	  If in doubt, say N.
+ 	if (!of_device_is_available(pdev->dev.of_node))
+ 		return -ENODEV;
+@@ -484,6 +485,15 @@ static int axp20x_power_probe(struct platform_device *pdev)
+ 		return PTR_ERR(axp20x_batt->batt);
+ 	}
  
-+config ARM_DB8500_CPUFREQ
-+	tristate "ST-Ericsson DB8500 cpufreq" if COMPILE_TEST && !ARCH_U8500
-+	default ARCH_U8500
-+	depends on HAS_IOMEM
-+	depends on !CPU_THERMAL || THERMAL
-+	help
-+	  This adds the CPUFreq driver for ST-Ericsson Ux500 (DB8500) SoC
-+	  series.
++	if (!power_supply_get_battery_info(axp20x_batt->batt, &info)) {
++		int vmin = info.voltage_min_design_uv;
 +
- config ARM_IMX6Q_CPUFREQ
- 	tristate "Freescale i.MX6 cpufreq support"
- 	depends on ARCH_MXC
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index b7e78f063c4f..ab3a42cd29ef 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -53,7 +53,7 @@ obj-$(CONFIG_ARM_DT_BL_CPUFREQ)		+= arm_big_little_dt.o
++		if (vmin > 0 && axp20x_set_voltage_min_design(axp20x_batt,
++							      vmin))
++			dev_err(&pdev->dev,
++				"couldn't set voltage_min_design\n");
++	}
++
+ 	return 0;
+ }
  
- obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
- obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
--obj-$(CONFIG_UX500_SOC_DB8500)		+= dbx500-cpufreq.o
-+obj-$(CONFIG_ARM_DB8500_CPUFREQ)	+= dbx500-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
- obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
- obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
 -- 
-2.9.0
+2.11.0
