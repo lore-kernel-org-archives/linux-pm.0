@@ -1,13 +1,11 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 5/5] intel_pstate: use updated msr-index.h HWP.EPP values
-Date: Thu, 11 May 2017 22:00:23 -0400
-Message-ID: <3cedbc5a6d7f7c5539e139f89ec9f6e1ed668418.1494552478.git.len.brown@intel.com>
+Subject: [PATCH 1/5] x86: msr-index.h: define EPB mid-points
+Date: Thu, 11 May 2017 22:00:19 -0400
+Message-ID: <d0117a0e2780f7803fe55d543ab119416d7582e6.1494552477.git.len.brown@intel.com>
 References: <20170512020023.23204-1-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170512020023.23204-1-lenb@kernel.org>
-In-Reply-To: <d0117a0e2780f7803fe55d543ab119416d7582e6.1494552477.git.len.brown@intel.com>
-References: <d0117a0e2780f7803fe55d543ab119416d7582e6.1494552477.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
@@ -15,90 +13,31 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-intel_pstate exports sysfs attributes for setting and observing HWP.EPP.
-These attributes use strings to describe 4 operating states, and
-inside the driver, these strings are mapped to numerical register
-values.
-
-The authorative mapping between the strings and numerical HWP.EPP values
-are now globally defined in msr-index.h, replacing the out-dated
-mapping that were open-coded into intel_pstate.c
-
-new old string
---- --- ------
-  0   0 performance
-128  64 balance_performance
-192 128 balance_power
-255 192 power
-
-Note that the HW and BIOS default value on most system is 128,
-which intel_pstate will now call "balance_performance"
-while it used to call it "balance_power".
+These are currently open-coded into intel_pstate.c
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 34 +++++++++++++++-------------------
- 1 file changed, 15 insertions(+), 19 deletions(-)
+ arch/x86/include/asm/msr-index.h | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 50bd6d987fc3..ab8ebaeb3621 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -716,6 +716,12 @@ static const char * const energy_perf_strings[] = {
- 	"power",
- 	NULL
- };
-+static const unsigned int epp_values[] = {
-+	HWP_EPP_PERFORMANCE,
-+	HWP_EPP_BALANCE_PERFORMANCE,
-+	HWP_EPP_BALANCE_POWERSAVE,
-+	HWP_EPP_POWERSAVE
-+};
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 710273c617b8..a92d9bd154f6 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -462,9 +462,11 @@
+ #define MSR_MISC_PWR_MGMT		0x000001aa
  
- static int intel_pstate_get_energy_pref_index(struct cpudata *cpu_data)
- {
-@@ -727,17 +733,14 @@ static int intel_pstate_get_energy_pref_index(struct cpudata *cpu_data)
- 		return epp;
+ #define MSR_IA32_ENERGY_PERF_BIAS	0x000001b0
+-#define ENERGY_PERF_BIAS_PERFORMANCE	0
+-#define ENERGY_PERF_BIAS_NORMAL		6
+-#define ENERGY_PERF_BIAS_POWERSAVE	15
++#define ENERGY_PERF_BIAS_PERFORMANCE		0
++#define ENERGY_PERF_BIAS_BALANCE_PERFORMANCE	4
++#define ENERGY_PERF_BIAS_NORMAL			6
++#define ENERGY_PERF_BIAS_BALANCE_POWERSAVE	8
++#define ENERGY_PERF_BIAS_POWERSAVE		15
  
- 	if (static_cpu_has(X86_FEATURE_HWP_EPP)) {
--		/*
--		 * Range:
--		 *	0x00-0x3F	:	Performance
--		 *	0x40-0x7F	:	Balance performance
--		 *	0x80-0xBF	:	Balance power
--		 *	0xC0-0xFF	:	Power
--		 * The EPP is a 8 bit value, but our ranges restrict the
--		 * value which can be set. Here only using top two bits
--		 * effectively.
--		 */
--		index = (epp >> 6) + 1;
-+		if (epp == HWP_EPP_PERFORMANCE)
-+			return 1;
-+		if (epp <= HWP_EPP_BALANCE_PERFORMANCE)
-+			return 2;
-+		if (epp <= HWP_EPP_BALANCE_POWERSAVE)
-+			return 3;
-+		else
-+			return 4;
- 	} else if (static_cpu_has(X86_FEATURE_EPB)) {
- 		/*
- 		 * Range:
-@@ -775,15 +778,8 @@ static int intel_pstate_set_energy_pref_index(struct cpudata *cpu_data,
+ #define MSR_IA32_PACKAGE_THERM_STATUS		0x000001b1
  
- 		value &= ~GENMASK_ULL(31, 24);
- 
--		/*
--		 * If epp is not default, convert from index into
--		 * energy_perf_strings to epp value, by shifting 6
--		 * bits left to use only top two bits in epp.
--		 * The resultant epp need to shifted by 24 bits to
--		 * epp position in MSR_HWP_REQUEST.
--		 */
- 		if (epp == -EINVAL)
--			epp = (pref_index - 1) << 6;
-+			epp = epp_values[pref_index - 1];
- 
- 		value |= (u64)epp << 24;
- 		ret = wrmsrl_on_cpu(cpu_data->cpu, MSR_HWP_REQUEST, value);
 -- 
 2.11.0.161.g6610af872
