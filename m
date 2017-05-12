@@ -1,46 +1,56 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/5] x86: msr-index.h: define HWP.EPP values
-Date: Thu, 11 May 2017 22:00:20 -0400
-Message-ID: <8d84e906f5db80540510e448226f2718a686eb2a.1494552477.git.len.brown@intel.com>
-References: <20170512020023.23204-1-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
+Subject: [GIT PULL] power utilities update
+Date: Thu, 11 May 2017 22:00:18 -0400
+Message-ID: <20170512020023.23204-1-lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170512020023.23204-1-lenb@kernel.org>
-In-Reply-To: <d0117a0e2780f7803fe55d543ab119416d7582e6.1494552477.git.len.brown@intel.com>
-References: <d0117a0e2780f7803fe55d543ab119416d7582e6.1494552477.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+Hi Rafael,
 
-The Hardware Performance State request MSR has a field
-to express the "Energy Performance Preference" (HWP.EPP).
+Please pull these power utilities patches.
 
-Decode that field so the definition may be shared by
-by the intel_pstate driver and any utilities that
-decode the same register.
+The x86_energy_perf_policy(8) utility grows the ability
+to manage HWP.EPP (and Hardware P-states, in-general),
+on top of its previous ability to manage EPB.
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/include/asm/msr-index.h | 4 ++++
- 1 file changed, 4 insertions(+)
+Linux-4.11 grew the ability to disable the cpufreq sub-system entirely
+with "cpufreq.off=1". On such a system, this utility
+is a convenient way to enable HWP with no kernel cpufreq overhead:
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index a92d9bd154f6..50c0c3204a92 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -239,6 +239,10 @@
- #define HWP_MAX_PERF(x) 		((x & 0xff) << 8)
- #define HWP_DESIRED_PERF(x)		((x & 0xff) << 16)
- #define HWP_ENERGY_PERF_PREFERENCE(x)	((x & 0xff) << 24)
-+#define HWP_EPP_PERFORMANCE		0x00
-+#define HWP_EPP_BALANCE_PERFORMANCE	0x80
-+#define HWP_EPP_BALANCE_POWERSAVE	0xC0
-+#define HWP_EPP_POWERSAVE		0xFF
- #define HWP_ACTIVITY_WINDOW(x)		((x & 0xff3) << 32)
- #define HWP_PACKAGE_CONTROL(x)		((x & 0x1) << 42)
- 
--- 
-2.11.0.161.g6610af872
+sudo x86_energy_perf_policy --cpu all normal
+
+During this effort, we noticed the EPP defaults hard-coded
+into the intel_state driver were not optimal, so those are updated too.
+
+thanks!
+Len Brown, Intel Open Source Technology Center
+
+The following changes since commit c470abd4fde40ea6a0846a2beab642a578c0b8cd:
+
+  Linux 4.10 (2017-02-19 14:34:00 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git utilities
+
+for you to fetch changes up to 3cedbc5a6d7f7c5539e139f89ec9f6e1ed668418:
+
+  intel_pstate: use updated msr-index.h HWP.EPP values (2017-05-11 21:27:53 -0400)
+
+----------------------------------------------------------------
+Len Brown (5):
+      x86: msr-index.h: define EPB mid-points
+      x86: msr-index.h: define HWP.EPP values
+      x86: msr-index.h: fix shifts to ULL results in HWP macros.
+      tools/power x86_energy_perf_policy: support HWP.EPP
+      intel_pstate: use updated msr-index.h HWP.EPP values
+
+ arch/x86/include/asm/msr-index.h                   |   18 +-
+ drivers/cpufreq/intel_pstate.c                     |   34 +-
+ tools/power/x86/x86_energy_perf_policy/Makefile    |   27 +-
+ .../x86_energy_perf_policy.8                       |  241 +++-
+ .../x86_energy_perf_policy.c                       | 1504 +++++++++++++++++---
+ 5 files changed, 1527 insertions(+), 297 deletions(-)
