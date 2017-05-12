@@ -1,65 +1,37 @@
-From: Prashanth Prakash <pprakash@codeaurora.org>
-Subject: [PATCH] cpufreq / CPPC: Initialize policy->min to lowest nonlinear performance
-Date: Thu, 11 May 2017 16:39:44 -0600
-Message-ID: <1494542384-7502-1-git-send-email-pprakash@codeaurora.org>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH v2] ARM: dts: imx6sx-sdb: Remove OPP override
+Date: Fri, 12 May 2017 08:33:55 +0800
+Message-ID: <20170512003354.GA8471@dragon>
+References: <7b929a65b4893e081c2c04bb0588801f37ac2cca.1493981825.git.leonard.crestez@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:48050 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752049AbdEKWkL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 May 2017 18:40:11 -0400
+Received: from mail.kernel.org ([198.145.29.99]:38224 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1757083AbdELAeM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 11 May 2017 20:34:12 -0400
+Content-Disposition: inline
+In-Reply-To: <7b929a65b4893e081c2c04bb0588801f37ac2cca.1493981825.git.leonard.crestez@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, ahs3@redhat.com, hotran@apm.com, alexey.klimov@arm.com, Prashanth Prakash <pprakash@codeaurora.org>
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: linux-arm-kernel@lists.infradead.org, Sascha Hauer <kernel@pengutronix.de>, Anson Huang <Anson.Huang@nxp.com>, Robin Gong <yibin.gong@nxp.com>, Peter Chen <peter.chen@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Henri Roosen <henri.roosen@ginzinger.com>, Marek Vasut <marex@denx.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
-Description of Lowest Perfomance in ACPI 6.1 specification states:
-"Lowest Performance is the absolute lowest performance level of
-the platform. Selecting a performance level lower than the lowest
-nonlinear performance level may actually cause an efficiency penalty,
-but should reduce the instantaneous power consumption of the processor.
-In traditional terms, this represents the T-state range of performance
-levels."
+On Fri, May 05, 2017 at 02:00:17PM +0300, Leonard Crestez wrote:
+> The board file for imx6sx-sdb overrides cpufreq operating points to use
+> higher voltages. This is done because the board has a shared rail for
+> VDD_ARM_IN and VDD_SOC_IN and when using LDO bypass the shared voltage
+> needs to be a value suitable for both ARM and SOC.
+> 
+> This only applies to LDO bypass mode, a feature not present in upstream.
+> When LDOs are enabled the effect is to use higher voltages than necessary
+> for no good reason.
+> 
+> Setting these higher voltages can make some boards fail to boot with ugly
+> semi-random crashes reminiscent of memory corruption. These failures only
+> happen on board rev. C, rev. B is reported to still work.
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> CC: stable@vger.kernel.org
 
-Set the default value of policy->min to Lowest Nonlinear Performance
-to avoid any potential efficiency penalty.
-
-Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
----
- drivers/cpufreq/cppc_cpufreq.c | 19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index e82bb3c..10be285 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -144,10 +144,23 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 	cppc_dmi_max_khz = cppc_get_dmi_max_khz();
- 
--	policy->min = cpu->perf_caps.lowest_perf * cppc_dmi_max_khz / cpu->perf_caps.highest_perf;
-+	/*
-+	 * Set min to lowest nonlinear perf to avoid any efficiency penalty (see
-+	 * Section 8.4.7.1.1.5 of ACPI 6.1 spec)
-+	 */
-+	policy->min = cpu->perf_caps.lowest_nonlinear_perf * cppc_dmi_max_khz /
-+		cpu->perf_caps.highest_perf;
- 	policy->max = cppc_dmi_max_khz;
--	policy->cpuinfo.min_freq = policy->min;
--	policy->cpuinfo.max_freq = policy->max;
-+
-+	/*
-+	 * Set cpuinfo.min_freq to Lowest to make the full range of performance
-+	 * available if userspace wants to use any perf between lowest & lowest
-+	 * nonlinear perf
-+	 */
-+	policy->cpuinfo.min_freq = cpu->perf_caps.lowest_perf * cppc_dmi_max_khz /
-+		cpu->perf_caps.highest_perf;
-+	policy->cpuinfo.max_freq = cppc_dmi_max_khz;
-+
- 	policy->cpuinfo.transition_latency = cppc_get_transition_latency(cpu_num);
- 	policy->shared_type = cpu->shared_type;
- 
--- 
-Qualcomm Datacenter Technologies on behalf of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the
-Code Aurora Forum, a Linux Foundation Collaborative Project.
+Applied, thanks.
