@@ -1,38 +1,32 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] cpufreq: dbx500: add a Kconfig symbol
-Date: Fri, 12 May 2017 11:18:55 +0200
-Message-ID: <CACRpkdbayePnJE1oWCiqfW3KhQXru7PS+qjRmxX7zdzz-qFWdg@mail.gmail.com>
-References: <20170511121258.3521041-1-arnd@arndb.de>
+From: "Thomas Credit Firm" <miorellana@salud.gob.sv>
+Subject: APPLY FOR YOUR URGENT LOAN AT 2%
+Date: Fri, 12 May 2017 11:53:56 +0100
+Message-ID: <20170512105410.0245F4807243__5927.9280751527$1494587160$gmane$org@mail.salud.gob.sv>
+Reply-To: thomascreditfirm@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f172.google.com ([209.85.223.172]:33910 "EHLO
-        mail-io0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932610AbdELJS5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 May 2017 05:18:57 -0400
-Received: by mail-io0-f172.google.com with SMTP id k91so36643990ioi.1
-        for <linux-pm@vger.kernel.org>; Fri, 12 May 2017 02:18:56 -0700 (PDT)
-In-Reply-To: <20170511121258.3521041-1-arnd@arndb.de>
+Received: from mail.salud.gob.sv ([190.5.143.2]:34356 "EHLO mail.salud.gob.sv"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932184AbdELLFv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 12 May 2017 07:05:51 -0400
+Content-Description: Mail message body
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: receipt <miorellana@salud.gob.sv>
 
-On Thu, May 11, 2017 at 2:12 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+* Do you need an urgent loan? We offer all kinds of loan
+* Very fast and urgent transfer to your bank account. 
+* Payment begins (6) months after you get the money in your bank account 
+* Low interest rates 2% 
+* Payment of long-term (1-30 years) duration 
+For more information and loan application form through the Contact now 
 
-> Moving the cooling code into the cpufreq driver caused a possible build failure
-> when the cpu_thermal helper code is a loadable module or disabled:
->
-> drivers/cpufreq/dbx500-cpufreq.o: In function `dbx500_cpufreq_ready':
-> dbx500-cpufreq.c:(.text.dbx500_cpufreq_ready+0x4): undefined reference to `cpufreq_cooling_register'
->
-> This adds the same dependency that we have in other cpufreq drivers,
-> forcing the driver to be disabled when we can't possibly link it.
->
-> Fixes: 19678ffb9fd6 ("cpufreq: dbx500: Manage cooling device from cpufreq driver")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+E-mail:  Thomascreditfirm@gmail.com 
+Thomas B. Dawson 
+THOMAS CREDIT FIRM
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-
-Yours,
-Linus Walleij
+---
+This email has been checked for viruses by Avast antivirus software.
+https://www.avast.com/antivirus
