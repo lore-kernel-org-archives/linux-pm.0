@@ -1,64 +1,74 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 3/5] x86: msr-index.h: fix shifts to ULL results in HWP macros.
-Date: Thu, 11 May 2017 22:00:21 -0400
-Message-ID: <2fc49cb0b508947bf048ecb0f5710169e62ce68e.1494552477.git.len.brown@intel.com>
-References: <20170512020023.23204-1-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq / CPPC: Initialize policy->min to lowest
+ nonlinear performance
+Date: Fri, 12 May 2017 10:55:03 +0530
+Message-ID: <20170512052503.GQ17481@vireshk-i7>
+References: <1494542384-7502-1-git-send-email-pprakash@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f195.google.com ([209.85.216.195]:36321 "EHLO
-        mail-qt0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757588AbdELCA7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 May 2017 22:00:59 -0400
-In-Reply-To: <20170512020023.23204-1-lenb@kernel.org>
-In-Reply-To: <d0117a0e2780f7803fe55d543ab119416d7582e6.1494552477.git.len.brown@intel.com>
-References: <d0117a0e2780f7803fe55d543ab119416d7582e6.1494552477.git.len.brown@intel.com>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:34897 "EHLO
+        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750720AbdELFZI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 May 2017 01:25:08 -0400
+Received: by mail-pf0-f173.google.com with SMTP id n23so19606441pfb.2
+        for <linux-pm@vger.kernel.org>; Thu, 11 May 2017 22:25:08 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1494542384-7502-1-git-send-email-pprakash@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: Prashanth Prakash <pprakash@codeaurora.org>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, ahs3@redhat.com, hotran@apm.com, alexey.klimov@arm.com
 
-From: Len Brown <len.brown@intel.com>
+On 11-05-17, 16:39, Prashanth Prakash wrote:
+> Description of Lowest Perfomance in ACPI 6.1 specification states:
+> "Lowest Performance is the absolute lowest performance level of
+> the platform. Selecting a performance level lower than the lowest
+> nonlinear performance level may actually cause an efficiency penalty,
+> but should reduce the instantaneous power consumption of the processor.
+> In traditional terms, this represents the T-state range of performance
+> levels."
+> 
+> Set the default value of policy->min to Lowest Nonlinear Performance
+> to avoid any potential efficiency penalty.
+> 
+> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
+> ---
+>  drivers/cpufreq/cppc_cpufreq.c | 19 ++++++++++++++++---
+>  1 file changed, 16 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> index e82bb3c..10be285 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -144,10 +144,23 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  
+>  	cppc_dmi_max_khz = cppc_get_dmi_max_khz();
+>  
+> -	policy->min = cpu->perf_caps.lowest_perf * cppc_dmi_max_khz / cpu->perf_caps.highest_perf;
+> +	/*
+> +	 * Set min to lowest nonlinear perf to avoid any efficiency penalty (see
+> +	 * Section 8.4.7.1.1.5 of ACPI 6.1 spec)
+> +	 */
+> +	policy->min = cpu->perf_caps.lowest_nonlinear_perf * cppc_dmi_max_khz /
+> +		cpu->perf_caps.highest_perf;
+>  	policy->max = cppc_dmi_max_khz;
+> -	policy->cpuinfo.min_freq = policy->min;
+> -	policy->cpuinfo.max_freq = policy->max;
+> +
+> +	/*
+> +	 * Set cpuinfo.min_freq to Lowest to make the full range of performance
+> +	 * available if userspace wants to use any perf between lowest & lowest
+> +	 * nonlinear perf
+> +	 */
+> +	policy->cpuinfo.min_freq = cpu->perf_caps.lowest_perf * cppc_dmi_max_khz /
+> +		cpu->perf_caps.highest_perf;
+> +	policy->cpuinfo.max_freq = cppc_dmi_max_khz;
+> +
+>  	policy->cpuinfo.transition_latency = cppc_get_transition_latency(cpu_num);
+>  	policy->shared_type = cpu->shared_type;
 
-x = 1
-ulong_long = x << 32;
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-results in:
-
-warning: left shift count >= width of type
-
-x = 8
-ulong_long = x << 24;
-
-results in a sign extended ulong_long
-
-Cast x to unsigned long long in these macros
-to prevent these errors.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/include/asm/msr-index.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 50c0c3204a92..6da2b30781ff 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -238,13 +238,13 @@
- #define HWP_MIN_PERF(x) 		(x & 0xff)
- #define HWP_MAX_PERF(x) 		((x & 0xff) << 8)
- #define HWP_DESIRED_PERF(x)		((x & 0xff) << 16)
--#define HWP_ENERGY_PERF_PREFERENCE(x)	((x & 0xff) << 24)
-+#define HWP_ENERGY_PERF_PREFERENCE(x)	(((unsigned long long) x & 0xff) << 24)
- #define HWP_EPP_PERFORMANCE		0x00
- #define HWP_EPP_BALANCE_PERFORMANCE	0x80
- #define HWP_EPP_BALANCE_POWERSAVE	0xC0
- #define HWP_EPP_POWERSAVE		0xFF
--#define HWP_ACTIVITY_WINDOW(x)		((x & 0xff3) << 32)
--#define HWP_PACKAGE_CONTROL(x)		((x & 0x1) << 42)
-+#define HWP_ACTIVITY_WINDOW(x)		((unsigned long long)(x & 0xff3) << 32)
-+#define HWP_PACKAGE_CONTROL(x)		((unsigned long long)(x & 0x1) << 42)
- 
- /* IA32_HWP_STATUS */
- #define HWP_GUARANTEED_CHANGE(x)	(x & 0x1)
 -- 
-2.11.0.161.g6610af872
+viresh
