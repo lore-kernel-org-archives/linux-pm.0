@@ -1,47 +1,30 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/3] RTC: rtc-cmos: Fix wakeup from suspend-to-idle
-Date: Sun, 14 May 2017 01:55:32 +0200
-Message-ID: <31830983.Z4sGoD3BOE@aspire.rjw.lan>
-References: <2169867.RZcCZmJK9B@aspire.rjw.lan>
+Subject: [PATCH 0/3] PM / wakeup / ACPI: Suspend-to-idle wakeup fixes and optimization
+Date: Sun, 14 May 2017 01:50:45 +0200
+Message-ID: <2169867.RZcCZmJK9B@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2169867.RZcCZmJK9B@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, David Box <david.e.box@linux.intel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Alessandro Zummo <a.zummo@towertech.it>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:56271 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1756319AbdENAEc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 13 May 2017 20:04:32 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, David Box <david.e.box@linux.intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
 
-Commit eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from
-suspend-to-idle) modified the core suspend-to-idle code to filter
-out spurious SCI interrupts received while suspended, which requires
-ACPI event source handlers to report wakeup events in a way that
-will trigger a wakeup from suspend to idle (or abort system suspends
-in progress, which is equivalent).
+Two recent commits related to suspend-to-idle introduced a couple of issues
+that need to be fixed.
 
-That needs to be done in the rtc-cmos driver too, which was overlooked
-by the above commit, so do that now.
+In addition to that, there turns out to be a way to avoid carrying out the
+"noirq" phase of device resume in order to check if wakeup triggered by an
+ACPI SCI is a real one, which patch [3/3] is about.
 
-Fixes: eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle)
-Reported-by: David E. Box <david.e.box@linux.intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/rtc/rtc-cmos.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Refer to patch changelogs for details.
 
-Index: linux-pm/drivers/rtc/rtc-cmos.c
-===================================================================
---- linux-pm.orig/drivers/rtc/rtc-cmos.c
-+++ linux-pm/drivers/rtc/rtc-cmos.c
-@@ -1085,7 +1085,7 @@ static u32 rtc_handler(void *context)
- 	}
- 	spin_unlock_irqrestore(&rtc_lock, flags);
- 
--	pm_wakeup_event(dev, 0);
-+	pm_wakeup_hard_event(dev);
- 	acpi_clear_event(ACPI_EVENT_RTC);
- 	acpi_disable_event(ACPI_EVENT_RTC, 0);
- 	return ACPI_INTERRUPT_HANDLED;
+Thanks,
+Rafael
