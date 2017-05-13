@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 3/3] ACPI / sleep: Simplify suspend-to-idle event processing loop
-Date: Sun, 14 May 2017 01:57:13 +0200
-Message-ID: <4299064.sJpOkfBeiA@aspire.rjw.lan>
+Subject: [PATCH 1/3] PM / wakeup: Fix up wakeup_source_report_event()
+Date: Sun, 14 May 2017 01:52:22 +0200
+Message-ID: <3528950.icdapGkanb@aspire.rjw.lan>
 References: <2169867.RZcCZmJK9B@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,167 +15,69 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Commit eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from
-suspend-to-idle) modified the core suspend-to-idle code to filter
-out spurious SCI interrupts received while suspended, but it
-implemented that by resuming the system partially every time an
-SCI triggers wakeup, so that the SCI handler can run (and possibly
-further event handlers invoked by it can run too), which requires the
-"noirq" phase of device resume to be carried out.  One drawback of
-that implementation is that PCI devices are put into the full-power
-state (D0) during the "noirq" resume phase and they need to be put
-into low-power states again in case the wakeup event turns out to be
-spurious, which may cause some unpleasant power fluctuations in the
-system to happen among other things.
+Commit 8a537ece3d94 (PM / wakeup: Integrate mechanism to abort
+transitions in progress) modified wakeup_source_report_event()
+and wakeup_source_activate() to make it possible to call
+pm_system_wakeup() from the latter if so indicated by the
+caller of the former (via a new function argument added by that
+commit), but it overlooked the fact that in some situations
+wakeup_source_report_event() is called to signal a "hard" event
+(ie. such that should abort a system suspend in progress) after
+pm_stay_awake() has been called for the same wakeup source object,
+in which case the pm_system_wakeup() will not trigger.
 
-However, that can be avoided by using the observation that it is
-generally possible to call the SCI handler directly from the ACPI
-suspend-to-idle ->wake callback and the processing initiated by it
-can be carried out before the "noirq" phase of device resume starts,
-so if the SCI interrupt turns out to be non-wakeup, the system can
-go back to sleep immediately.
+To work around this issue, modify wakeup_source_activate() and
+wakeup_source_report_event() again so that pm_system_wakeup() is
+called by the latter directly (if its last argument is true), in
+which case the additional argument does not need to be passed
+to wakeup_source_activate() any more, so drop it from there.
 
-Implement that idea, drop the suspend-to-idle ->sync callback added
-by commit eed4d47efe95 as it is not necessary any more and simplify
-the suspend-to-idle event processing loop in the core code.
-
+Fixes: 8a537ece3d94 (PM / wakeup: Integrate mechanism to abort transitions in progress)
+Reported-by: David E. Box <david.e.box@linux.intel.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/internal.h |    2 ++
- drivers/acpi/osl.c      |    9 +++++++++
- drivers/acpi/sleep.c    |   17 ++++++++---------
- include/linux/suspend.h |    1 -
- kernel/power/suspend.c  |   12 +++++-------
- 5 files changed, 24 insertions(+), 17 deletions(-)
+ drivers/base/power/wakeup.c |   11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-Index: linux-pm/drivers/acpi/internal.h
+Index: linux-pm/drivers/base/power/wakeup.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/internal.h
-+++ linux-pm/drivers/acpi/internal.h
-@@ -197,6 +197,8 @@ void acpi_ec_remove_query_handler(struct
- /*--------------------------------------------------------------------------
-                                   Suspend/Resume
-   -------------------------------------------------------------------------- */
-+void acpi_irq_run(void);
-+
- #ifdef CONFIG_ACPI_SYSTEM_POWER_STATES_SUPPORT
- extern int acpi_sleep_init(void);
- #else
-Index: linux-pm/drivers/acpi/osl.c
-===================================================================
---- linux-pm.orig/drivers/acpi/osl.c
-+++ linux-pm/drivers/acpi/osl.c
-@@ -589,6 +589,15 @@ acpi_status acpi_os_remove_interrupt_han
- 	return AE_OK;
- }
- 
-+void acpi_irq_run(void)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	acpi_irq(acpi_gbl_FADT.sci_interrupt, NULL);
-+	local_irq_restore(flags);
-+}
-+
- /*
-  * Running in interpreter thread context, safe to sleep
+--- linux-pm.orig/drivers/base/power/wakeup.c
++++ linux-pm/drivers/base/power/wakeup.c
+@@ -512,13 +512,12 @@ static bool wakeup_source_not_registered
+ /**
+  * wakup_source_activate - Mark given wakeup source as active.
+  * @ws: Wakeup source to handle.
+- * @hard: If set, abort suspends in progress and wake up from suspend-to-idle.
+  *
+  * Update the @ws' statistics and, if @ws has just been activated, notify the PM
+  * core of the event by incrementing the counter of of wakeup events being
+  * processed.
   */
-Index: linux-pm/drivers/acpi/sleep.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sleep.c
-+++ linux-pm/drivers/acpi/sleep.c
-@@ -669,18 +669,18 @@ static int acpi_freeze_prepare(void)
- 
- static void acpi_freeze_wake(void)
+-static void wakeup_source_activate(struct wakeup_source *ws, bool hard)
++static void wakeup_source_activate(struct wakeup_source *ws)
  {
-+	if (!acpi_sci_irq_valid() ||
-+	    irqd_is_wakeup_armed(irq_get_irq_data(acpi_sci_irq)))
-+		return;
+ 	unsigned int cec;
+ 
+@@ -526,9 +525,6 @@ static void wakeup_source_activate(struc
+ 			"unregistered wakeup source\n"))
+ 		return;
+ 
+-	if (hard)
+-		pm_system_wakeup();
+-
+ 	ws->active = true;
+ 	ws->active_count++;
+ 	ws->last_time = ktime_get();
+@@ -554,7 +550,10 @@ static void wakeup_source_report_event(s
+ 		ws->wakeup_count++;
+ 
+ 	if (!ws->active)
+-		wakeup_source_activate(ws, hard);
++		wakeup_source_activate(ws);
 +
- 	/*
- 	 * If IRQD_WAKEUP_ARMED is not set for the SCI at this point, it means
- 	 * that the SCI has triggered while suspended, so cancel the wakeup in
--	 * case it has not been a wakeup event (the GPEs will be checked later).
-+	 * case it has not been a wakeup event and call the SCI handler directly
-+	 * to allow it to check the event sources.
- 	 */
--	if (acpi_sci_irq_valid() &&
--	    !irqd_is_wakeup_armed(irq_get_irq_data(acpi_sci_irq)))
--		pm_system_cancel_wakeup();
--}
--
--static void acpi_freeze_sync(void)
--{
-+	pm_system_cancel_wakeup();
-+	acpi_irq_run();
- 	/*
- 	 * Process all pending events in case there are any wakeup ones.
- 	 *
-@@ -709,7 +709,6 @@ static const struct platform_freeze_ops
- 	.begin = acpi_freeze_begin,
- 	.prepare = acpi_freeze_prepare,
- 	.wake = acpi_freeze_wake,
--	.sync = acpi_freeze_sync,
- 	.restore = acpi_freeze_restore,
- 	.end = acpi_freeze_end,
- };
-Index: linux-pm/include/linux/suspend.h
-===================================================================
---- linux-pm.orig/include/linux/suspend.h
-+++ linux-pm/include/linux/suspend.h
-@@ -190,7 +190,6 @@ struct platform_freeze_ops {
- 	int (*begin)(void);
- 	int (*prepare)(void);
- 	void (*wake)(void);
--	void (*sync)(void);
- 	void (*restore)(void);
- 	void (*end)(void);
- };
-Index: linux-pm/kernel/power/suspend.c
-===================================================================
---- linux-pm.orig/kernel/power/suspend.c
-+++ linux-pm/kernel/power/suspend.c
-@@ -106,21 +106,17 @@ static void freeze_enter(void)
- 
- static void s2idle_loop(void)
- {
--	do {
-+	for (;;) {
- 		freeze_enter();
- 
- 		if (freeze_ops && freeze_ops->wake)
- 			freeze_ops->wake();
- 
--		dpm_resume_noirq(PMSG_RESUME);
--		if (freeze_ops && freeze_ops->sync)
--			freeze_ops->sync();
--
- 		if (pm_wakeup_pending())
- 			break;
- 
- 		pm_wakeup_clear(false);
--	} while (!dpm_suspend_noirq(PMSG_SUSPEND));
-+	}
++	if (hard)
++		pm_system_wakeup();
  }
  
- void freeze_wake(void)
-@@ -395,7 +391,7 @@ static int suspend_enter(suspend_state_t
- 	 */
- 	if (state == PM_SUSPEND_FREEZE) {
- 		s2idle_loop();
--		goto Platform_early_resume;
-+		goto Devices_resume_noirq;
- 	}
- 
- 	error = disable_nonboot_cpus();
-@@ -429,6 +425,8 @@ static int suspend_enter(suspend_state_t
- 
-  Platform_wake:
- 	platform_resume_noirq(state);
-+
-+ Devices_resume_noirq:
- 	dpm_resume_noirq(PMSG_RESUME);
- 
-  Platform_early_resume:
+ /**
 
