@@ -1,53 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/3] ACPI / sleep: Simplify suspend-to-idle event processing loop
-Date: Sun, 14 May 2017 13:17:51 +0200
-Message-ID: <9231606.5a3ByxjlJX@aspire.rjw.lan>
-References: <2169867.RZcCZmJK9B@aspire.rjw.lan> <4299064.sJpOkfBeiA@aspire.rjw.lan>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH V4 1/9] PM / OPP: Allow OPP table to be used for
+ power-domains
+Date: Sun, 14 May 2017 18:55:33 +0900
+Message-ID: <20170514095533.vawfbikwwgvjjf44@sirena.org.uk>
+References: <0a7146f9-72f1-317c-3aab-770a72462968@arm.com>
+ <20170413053736.GM5910@vireshk-i7>
+ <3adbef6a-7b43-528f-e88f-c2121d30a5d3@arm.com>
+ <20170417052758.GF28191@vireshk-i7>
+ <95aa4b97-4e1a-13bb-f4d8-982b778012ba@arm.com>
+ <9cd9287c-392b-d3ca-db7d-75c49287448e@codeaurora.org>
+ <20170426135532.ryrh276znet5yvks@sirena.org.uk>
+ <c66322f5-e2eb-5556-a5a5-14998a2f195d@arm.com>
+ <20170430124917.4m3d237pik7q47f3@sirena.org.uk>
+ <8aacc296-2549-f0b8-ac25-2f4000c084c1@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4299064.sJpOkfBeiA@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, David Box <david.e.box@linux.intel.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="66rvdfl7i43utfee"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <8aacc296-2549-f0b8-ac25-2f4000c084c1@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: robh+dt@kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, lina.iyer@linaro.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, May 14, 2017 01:57:13 AM Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Commit eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from
-> suspend-to-idle) modified the core suspend-to-idle code to filter
-> out spurious SCI interrupts received while suspended, but it
-> implemented that by resuming the system partially every time an
-> SCI triggers wakeup, so that the SCI handler can run (and possibly
-> further event handlers invoked by it can run too), which requires the
-> "noirq" phase of device resume to be carried out.  One drawback of
-> that implementation is that PCI devices are put into the full-power
-> state (D0) during the "noirq" resume phase and they need to be put
-> into low-power states again in case the wakeup event turns out to be
-> spurious, which may cause some unpleasant power fluctuations in the
-> system to happen among other things.
-> 
-> However, that can be avoided by using the observation that it is
-> generally possible to call the SCI handler directly from the ACPI
-> suspend-to-idle ->wake callback and the processing initiated by it
-> can be carried out before the "noirq" phase of device resume starts,
-> so if the SCI interrupt turns out to be non-wakeup, the system can
-> go back to sleep immediately.
-> 
-> Implement that idea, drop the suspend-to-idle ->sync callback added
-> by commit eed4d47efe95 as it is not necessary any more and simplify
-> the suspend-to-idle event processing loop in the core code.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Scratch this one.
+--66rvdfl7i43utfee
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-It is not sufficient to run the SCI handler alone, the SCI IRQ has to be
-re-armed properly for system wakeup too, so resume_device_irqs()
-and suspend_device_irqs() need to run for that.
+On Wed, May 03, 2017 at 12:21:54PM +0100, Sudeep Holla wrote:
+> On 30/04/17 13:49, Mark Brown wrote:
 
-Thanks,
-Rafael
+> > DT doesn't much care about that though.
 
+> No sure about that, may be doesn't care about the internals, but we need
+> to care about interface, no ?
+
+Well, we need to at least describe what's there - my point is that it's
+no different to describing a piece of hardware, the fact that it happens
+to be implemented as firmware doesn't really change the abstraction
+level DT is operating at.
+
+--66rvdfl7i43utfee
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlkYKZUACgkQJNaLcl1U
+h9By8gf/Sh80BxUSkeV9abxJi/jMn56arwXGytCk8/8FjaILT6At0opWYbYDjry5
+zH4rKqHQyBLsUqMuL8J+YTIw9EPWfCUI/pj7/+4TPb7OpthPbbT8877SdvzceXlv
+VP1a/lYHx6JL+zFXy3Nh8+q26bUaHBQ6okZgUV1pyQjG2rIgd3HBb3CAQJ6dvBg8
+wrAz6kW6mOpIyj3l5ZErZ5Y/06i9cG4SG+u5jBTviGfmuY/hL1uC5Ng7MFF/kWGe
+V5HMSGO2W2Eu+m5I9GmnVerIjSre4i8RL4IN1E+f/c2RuQJ5gQ+/KJ1G3O87+eoX
+ha2tp9QQ7Mcng8rtrFWeA9ZxkmIiwg==
+=JDXn
+-----END PGP SIGNATURE-----
+
+--66rvdfl7i43utfee--
