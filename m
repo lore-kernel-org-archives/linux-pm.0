@@ -1,96 +1,110 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH 4/9] power: supply: axp20x_usb_power: Drop unnecessary
- static
-Date: Mon, 15 May 2017 15:25:19 +0200
-Message-ID: <20170515132519.ebpj4f6it5uosokq@earth>
-References: <1493928654-18768-1-git-send-email-Julia.Lawall@lip6.fr>
- <1493928654-18768-5-git-send-email-Julia.Lawall@lip6.fr>
+Subject: Re: [PATCH] power: supply: core: Add support for supplied-from
+ device-property
+Date: Mon, 15 May 2017 15:33:42 +0200
+Message-ID: <20170515133342.b23cp5lh47g4co6a@earth>
+References: <20170508151354.21711-1-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="rrovo7hu6q2rue63"
+        protocol="application/pgp-signature"; boundary="5oezuuyjiydob6e2"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:60448 "EHLO
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:60489 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933582AbdEONZ0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 May 2017 09:25:26 -0400
+        with ESMTP id S933811AbdEONdv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 May 2017 09:33:51 -0400
 Content-Disposition: inline
-In-Reply-To: <1493928654-18768-5-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <20170508151354.21711-1-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: keescook@chromium.org, kernel-janitors@vger.kernel.org, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: linux-pm@vger.kernel.org
 
 
---rrovo7hu6q2rue63
+--5oezuuyjiydob6e2
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Julia,
+Hi,
 
-On Thu, May 04, 2017 at 10:10:49PM +0200, Julia Lawall wrote:
-> Drop static on a local variable, when the variable is either first
-> initialized or never used, on every possible execution path through the
-> function.  The static has no benefit, and dropping it reduces the code
-> size.
+On Mon, May 08, 2017 at 05:13:54PM +0200, Hans de Goede wrote:
+> On devicetree using platforms the devicetree can provide info on which
+> power-supplies supply another power-supply through phandles.
 >=20
-> [...]
->=20
-> before:
->    text    data     bss     dec     hex filename
->    2865     252       8    3125     c35 drivers/power/supply/axp20x_usb_p=
-ower.o
->=20
-> after:
->    text    data     bss     dec     hex filename
->    2822     252       0    3074     c02 drivers/power/supply/axp20x_usb_p=
-ower.o
+> This commit adds support for providing this info on non devicetree
+> platforms through the platform code setting a supplied-from
+> device-property on the power-supplies parent device.
+>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
 Thanks, queued.
 
 -- Sebastian
 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
->=20
 > ---
->  drivers/power/supply/axp20x_usb_power.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/power/supply/power_supply_core.c | 24 +++++++++++++++++++++++-
+>  1 file changed, 23 insertions(+), 1 deletion(-)
 >=20
-> diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supp=
-ly/axp20x_usb_power.c
-> index 2397c48..44f70dc 100644
-> --- a/drivers/power/supply/axp20x_usb_power.c
-> +++ b/drivers/power/supply/axp20x_usb_power.c
-> @@ -339,7 +339,7 @@ static int axp20x_usb_power_probe(struct platform_dev=
-ice *pdev)
->  		"VBUS_REMOVAL", "VBUS_VALID", "VBUS_NOT_VALID", NULL };
->  	static const char * const axp22x_irq_names[] =3D {
->  		"VBUS_PLUGIN", "VBUS_REMOVAL", NULL };
-> -	static const char * const *irq_names;
-> +	const char * const *irq_names;
->  	const struct power_supply_desc *usb_power_desc;
->  	int i, irq, ret;
-> =20
+> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
+ply/power_supply_core.c
+> index 7ec7c7c202bd..0c09144193a6 100644
+> --- a/drivers/power/supply/power_supply_core.c
+> +++ b/drivers/power/supply/power_supply_core.c
+> @@ -274,8 +274,30 @@ static int power_supply_check_supplies(struct power_=
+supply *psy)
+>  	return power_supply_populate_supplied_from(psy);
+>  }
+>  #else
+> -static inline int power_supply_check_supplies(struct power_supply *psy)
+> +static int power_supply_check_supplies(struct power_supply *psy)
+>  {
+> +	int nval, ret;
+> +
+> +	if (!psy->dev.parent)
+> +		return 0;
+> +
+> +	nval =3D device_property_read_string_array(psy->dev.parent,
+> +						 "supplied-from", NULL, 0);
+> +	if (nval <=3D 0)
+> +		return 0;
+> +
+> +	psy->supplied_from =3D devm_kmalloc_array(&psy->dev, nval,
+> +						sizeof(char *), GFP_KERNEL);
+> +	if (!psy->supplied_from)
+> +		return -ENOMEM;
+> +
+> +	ret =3D device_property_read_string_array(psy->dev.parent,
+> +		"supplied-from", (const char **)psy->supplied_from, nval);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	psy->num_supplies =3D nval;
+> +
+>  	return 0;
+>  }
+>  #endif
+> --=20
+> 2.12.2
 >=20
 
---rrovo7hu6q2rue63
+--5oezuuyjiydob6e2
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkZrD8ACgkQ2O7X88g7
-+po2eg/9FNbU+HJAl40byIlXC4D2Usq2YjzYoulSH11Qt4BJGRCRcH5Qh/M6kDpD
-n+nq/Df8hVGygZI0HxoHGxO/SYJGauncArTgihCnY5G7FKbFUAu9/KhmpWPu0nvP
-U2n/6bdQ7voVpNf1jDvaLXsWbB0jR5rNkUZqd9hCEUIDNmLZ6iUN61ZqOX8F691S
-Z32h+KnR2aTpcgz2lxrRQtxAoRxa1R4GsO8HBYiGgv+EWPp3gEhp5CbKdCJiATjJ
-JqKMR0HzeuCe9B2nNdUb3QLK5iJrvm3N68TjaSNLd5P1ueLT7orYzlnOMnnMp4N4
-ICw0V40yQzBiKDg4kH8EDWODMaLAmaa9gZtFXEqVRbNqQaqht4U2CCAIU71KbDdU
-jOR3miuqEdFWjE5g9rLckUjiLMUxGYqQ6wxB1a/OGthgV9t/LLxO2JOcGBwtsLDL
-643/Iz2fzpriVb/prMa7ktuKi4bLwC+Xo2d7kxzS6u0DdEvgqP7kuzyA+KshGet1
-9iP2C6Gyv4Vb3uLLWTgtRZLCl4QPv/4OI4dVaWOg5ghPhGVmHjuhCYjla7Ez450M
-Bj0J8F+2AQgeQYVujx4T2n556LZbzHhZF4JRhhiNJiNCnHB6Ks1+jzKF285rUxIK
-sabvzCMdGP9gdxsLOggVs8qaqyZ6gQumrU9rGVNQ+1wa4CCaRkc=
-=9/RA
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkZrjYACgkQ2O7X88g7
++prNURAApSzJDIQVSGeWMXXqia5cS6CrYXqkr94A1n/fRmuHDBzqCUDg8wSCziYQ
+8XCuQWllQddCmEKFplUJBxC5v0cqJf+GcGJy7kQh7myplvPbmN8DiImIlIMLKejy
+rMsD4JREJVp83CPGyw4ZCzKY6IV+k7YOeUy6u/oS4YGp3GtqLhIUPGRdabNSSFSR
+6Mr4rdVHsbsQxqKgO58x7TeYxihHErJiRc0ous6yX7xBnLYjiZ6xOVAG7wPGPfJf
+L03mMdPARk8s3E6LCkuc2ThxPd4kiT36YpAOjV5vXlJOPceGMOOaLQ+E9jSAlO+6
+MDURQza8/USKDHGV73oTwLn+1tOrUHu+oH1qIWVxPP6qCJGx47HDgRw5PGTNkbaE
+ZBmKen61GxClFB7iuOIAQhoBgXVzQpv2OjK5iW7vpdAh9R7KUsleMQKQ60qPsH2X
+ICciOqHOYKtZUCNjA4BtboFlG02itd5jhrSLbho1ZmDUqBcPVpv0lnXOVh4OxfMb
+0hUhH3DN9nZbb4HdRmVs5sb9M8Wen45Yz6R+iVOTPNf16IgwjpQciiPXZu5FTogS
+zzjuVGITUEbRpRyug00RVl1hNrDCiV/Fi0Jw4VPPMKAiS24eBB+aVZ/gG8IStvWz
+Q92ibmJtjFffEYGxlm77jL/UOrj9C/0C9b3Fhi83AztWpp2wQLk=
+=T5vc
 -----END PGP SIGNATURE-----
 
---rrovo7hu6q2rue63--
+--5oezuuyjiydob6e2--
