@@ -1,37 +1,192 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/4] dt-bindings: power: battery: add
- constant-charge-current-max-microamp property
-Date: Mon, 15 May 2017 15:14:20 -0500
-Message-ID: <20170515201420.o5lf55gbfd4pgawb@rob-hp-laptop>
-References: <20170511134221.5569-1-quentin.schulz@free-electrons.com>
- <20170511134221.5569-3-quentin.schulz@free-electrons.com>
-Reply-To: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBDJIP47K7MERBHMY5DEAKGQE5GM6FEI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <20170511134221.5569-3-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: David Lechner <david@lechnology.com>
+Subject: [RESEND PATCH] power: supply: sysfs: parse string as enum when writing property
+Date: Mon, 15 May 2017 16:21:15 -0500
+Message-ID: <1494883275-9867-1-git-send-email-david@lechnology.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from vern.gendns.com ([206.190.152.46]:57480 "EHLO vern.gendns.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1758294AbdEOVVF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 May 2017 17:21:05 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: David Lechner <david@lechnology.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
 
-On Thu, May 11, 2017 at 03:42:18PM +0200, Quentin Schulz wrote:
-> This adds the constant-charge-current-max-microamp property to the list
-> of optional properties of the battery.
-> 
-> The constant charge current is critical for batteries as they can't
-> handle all charge currents.
-> 
-> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> ---
->  Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
->  1 file changed, 2 insertions(+)
+This fixes the TODO to parse strings and convert them to enum values
+when writing to a power_supply class property sysfs attribute.
 
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+There is at least one driver that has a writable enum property that
+previously could only be written as an integer, so a fallback to writing
+enums as integers instead of strings is provided so we don't break existing
+userspace programs.
+
+Signed-off-by: David Lechner <david@lechnology.com>
+---
+
+Resend now that 4.12-rc1 has been tagged per https://patchwork.kernel.org/patch/9660499/
+
+ drivers/power/supply/power_supply_sysfs.c | 124 ++++++++++++++++++++----------
+ 1 file changed, 85 insertions(+), 39 deletions(-)
+
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index bcde8d1..b2002b4 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -40,35 +40,42 @@
+ 
+ static struct device_attribute power_supply_attrs[];
+ 
++static const char * const power_supply_type_text[] = {
++	"Unknown", "Battery", "UPS", "Mains", "USB",
++	"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
++	"USB_PD", "USB_PD_DRP"
++};
++
++static const char * const power_supply_status_text[] = {
++	"Unknown", "Charging", "Discharging", "Not charging", "Full"
++};
++
++static const char * const power_supply_charge_type_text[] = {
++	"Unknown", "N/A", "Trickle", "Fast"
++};
++
++static const char * const power_supply_health_text[] = {
++	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
++	"Unspecified failure", "Cold", "Watchdog timer expire",
++	"Safety timer expire"
++};
++
++static const char * const power_supply_technology_text[] = {
++	"Unknown", "NiMH", "Li-ion", "Li-poly", "LiFe", "NiCd",
++	"LiMn"
++};
++
++static const char * const power_supply_capacity_level_text[] = {
++	"Unknown", "Critical", "Low", "Normal", "High", "Full"
++};
++
++static const char * const power_supply_scope_text[] = {
++	"Unknown", "System", "Device"
++};
++
+ static ssize_t power_supply_show_property(struct device *dev,
+ 					  struct device_attribute *attr,
+ 					  char *buf) {
+-	static char *type_text[] = {
+-		"Unknown", "Battery", "UPS", "Mains", "USB",
+-		"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
+-		"USB_PD", "USB_PD_DRP"
+-	};
+-	static char *status_text[] = {
+-		"Unknown", "Charging", "Discharging", "Not charging", "Full"
+-	};
+-	static char *charge_type[] = {
+-		"Unknown", "N/A", "Trickle", "Fast"
+-	};
+-	static char *health_text[] = {
+-		"Unknown", "Good", "Overheat", "Dead", "Over voltage",
+-		"Unspecified failure", "Cold", "Watchdog timer expire",
+-		"Safety timer expire"
+-	};
+-	static char *technology_text[] = {
+-		"Unknown", "NiMH", "Li-ion", "Li-poly", "LiFe", "NiCd",
+-		"LiMn"
+-	};
+-	static char *capacity_level_text[] = {
+-		"Unknown", "Critical", "Low", "Normal", "High", "Full"
+-	};
+-	static char *scope_text[] = {
+-		"Unknown", "System", "Device"
+-	};
+ 	ssize_t ret = 0;
+ 	struct power_supply *psy = dev_get_drvdata(dev);
+ 	const ptrdiff_t off = attr - power_supply_attrs;
+@@ -91,19 +98,26 @@ static ssize_t power_supply_show_property(struct device *dev,
+ 	}
+ 
+ 	if (off == POWER_SUPPLY_PROP_STATUS)
+-		return sprintf(buf, "%s\n", status_text[value.intval]);
++		return sprintf(buf, "%s\n",
++			       power_supply_status_text[value.intval]);
+ 	else if (off == POWER_SUPPLY_PROP_CHARGE_TYPE)
+-		return sprintf(buf, "%s\n", charge_type[value.intval]);
++		return sprintf(buf, "%s\n",
++			       power_supply_charge_type_text[value.intval]);
+ 	else if (off == POWER_SUPPLY_PROP_HEALTH)
+-		return sprintf(buf, "%s\n", health_text[value.intval]);
++		return sprintf(buf, "%s\n",
++			       power_supply_health_text[value.intval]);
+ 	else if (off == POWER_SUPPLY_PROP_TECHNOLOGY)
+-		return sprintf(buf, "%s\n", technology_text[value.intval]);
++		return sprintf(buf, "%s\n",
++			       power_supply_technology_text[value.intval]);
+ 	else if (off == POWER_SUPPLY_PROP_CAPACITY_LEVEL)
+-		return sprintf(buf, "%s\n", capacity_level_text[value.intval]);
++		return sprintf(buf, "%s\n",
++			       power_supply_capacity_level_text[value.intval]);
+ 	else if (off == POWER_SUPPLY_PROP_TYPE)
+-		return sprintf(buf, "%s\n", type_text[value.intval]);
++		return sprintf(buf, "%s\n",
++			       power_supply_type_text[value.intval]);
+ 	else if (off == POWER_SUPPLY_PROP_SCOPE)
+-		return sprintf(buf, "%s\n", scope_text[value.intval]);
++		return sprintf(buf, "%s\n",
++			       power_supply_scope_text[value.intval]);
+ 	else if (off >= POWER_SUPPLY_PROP_MODEL_NAME)
+ 		return sprintf(buf, "%s\n", value.strval);
+ 
+@@ -117,14 +131,46 @@ static ssize_t power_supply_store_property(struct device *dev,
+ 	struct power_supply *psy = dev_get_drvdata(dev);
+ 	const ptrdiff_t off = attr - power_supply_attrs;
+ 	union power_supply_propval value;
+-	long long_val;
+ 
+-	/* TODO: support other types than int */
+-	ret = kstrtol(buf, 10, &long_val);
+-	if (ret < 0)
+-		return ret;
++	/* maybe it is a enum property? */
++	switch (off) {
++	case POWER_SUPPLY_PROP_STATUS:
++		ret = sysfs_match_string(power_supply_status_text, buf);
++		break;
++	case POWER_SUPPLY_PROP_CHARGE_TYPE:
++		ret = sysfs_match_string(power_supply_charge_type_text, buf);
++		break;
++	case POWER_SUPPLY_PROP_HEALTH:
++		ret = sysfs_match_string(power_supply_health_text, buf);
++		break;
++	case POWER_SUPPLY_PROP_TECHNOLOGY:
++		ret = sysfs_match_string(power_supply_technology_text, buf);
++		break;
++	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
++		ret = sysfs_match_string(power_supply_capacity_level_text, buf);
++		break;
++	case POWER_SUPPLY_PROP_SCOPE:
++		ret = sysfs_match_string(power_supply_scope_text, buf);
++		break;
++	default:
++		ret = -EINVAL;
++	}
++
++	/*
++	 * If no match was found, then check to see if it is an integer.
++	 * Integer values are valid for enums in addition to the text value.
++	 */
++	if (ret < 0) {
++		long long_val;
++
++		ret = kstrtol(buf, 10, &long_val);
++		if (ret < 0)
++			return ret;
++
++		ret = long_val;
++	}
+ 
+-	value.intval = long_val;
++	value.intval = ret;
+ 
+ 	ret = power_supply_set_property(psy, off, &value);
+ 	if (ret < 0)
+-- 
+2.7.4
