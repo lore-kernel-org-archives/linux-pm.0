@@ -1,122 +1,135 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH] power_supply: Add Apple Brick ID power supply type
-Date: Mon, 15 May 2017 16:13:38 +0200
-Message-ID: <20170515141338.pw4owhtou7z5ttem@earth>
-References: <20170508220248.97372-1-bleung@chromium.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="6552mc4kogrpcf3e"
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: [RFC v1 0/3] Introduce on-chip interconnect API
+Date: Mon, 15 May 2017 18:35:24 +0300
+Message-ID: <20170515153527.27649-1-georgi.djakov@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:60620 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965407AbdEOONr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 May 2017 10:13:47 -0400
-Content-Disposition: inline
-In-Reply-To: <20170508220248.97372-1-bleung@chromium.org>
+Received: from mail-qt0-f179.google.com ([209.85.216.179]:34297 "EHLO
+        mail-qt0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934575AbdEOPfb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 May 2017 11:35:31 -0400
+Received: by mail-qt0-f179.google.com with SMTP id c13so36972729qtc.1
+        for <linux-pm@vger.kernel.org>; Mon, 15 May 2017 08:35:30 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Benson Leung <bleung@chromium.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ras@apple.com, tomeu.vizoso@collabora.com, bleung@google.com
+To: linux-pm@vger.kernel.org, rjw@rjwysocki.net
+Cc: robh+dt@kernel.org, khilman@baylibre.com, mturquette@baylibre.com, gregkh@linuxfoundation.org, vincent.guittot@linaro.org, skannan@codeaurora.org, sboyd@codeaurora.org, andy.gross@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
 
+Modern SoCs have multiple processors and various dedicated cores (video, gpu,
+graphics, modem). These cores are talking to each other and can generate a lot
+of data flowing through the on-chip interconnects. These interconnect buses
+could form different topologies such as crossbar, point to point buses,
+hierarchical buses or use the network-on-chip concept.
 
---6552mc4kogrpcf3e
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+These buses have been sized usually to handle use cases with high data
+throughput but it is not necessary all the time and consume a lot of power.
+Furthermore, the priority between masters can vary depending on the running
+use case like video playback or cpu intensive tasks.
 
-Hi,
+Having an API to control the requirement of the system in term of bandwidth
+and QoS, so we can adapt the interconnect configuration to match those by
+scaling the frequencies, setting link priority and tuning QoS parameters.
+This configuration can be a static, one-time operation done at boot for some
+platforms or a dynamic set of operations that happen at run-time.
 
-On Mon, May 08, 2017 at 03:02:48PM -0700, Benson Leung wrote:
-> Apple currently supports three very common USB chargers:
-> https://www.apple.com/power-adapters/
->=20
-> These chargers implement a proprietary Apple method for advertising
-> 1A, 2.1A, and 2.4A at 5V called "Brick ID".
-> In addition, 3rd parties implement the same charging method in many
-> charging accessories that work with iOS devices.
->=20
-> Devices that have charger detection chips such as the Pericom PI3USB9281,
-> eg. Google Chromebook Pixel 2015, are capable of detecting
-> these chargers, so let's add a type to facilicate passing that info
-> up to userspace.
->=20
-> This adds a separate power supply type for Apple's proprietary
-> "Brick ID" charging method.
->=20
-> Signed-off-by: Benson Leung <bleung@chromium.org>
+This patchset introduce a new API to get the requirement and configure the
+interconnect buses across the entire chipset to fit with the current demand.
+The API is NOT for changing the performance of the endpoint devices, but only
+the interconnect path in between them.
 
-Thanks, queued.
+The API is using a consumer/provider-based model, where the providers are
+the interconnect controllers and the consumers could be various drivers.
+The consumers request interconnect resources (path) to an endpoint and set
+the desired constraints on this data flow path. The provider(s) receive
+requests from consumers and aggregate these requests for all master-slave
+pairs on that path. Then the providers configure each participating in the
+topology node according to the requested data flow path, physical links and
+constraints. The topology could be complicated and multi-tiered and is SoC
+specific.
 
--- Sebastian
+Below is a simplified diagram of a real-world SoC topology. The interconnect
+providers are the memory front-end and the NoCs.
 
-> ---
->  drivers/power/supply/power_supply_sysfs.c |  2 +-
->  include/linux/power_supply.h              | 15 ++++++++-------
->  2 files changed, 9 insertions(+), 8 deletions(-)
->=20
-> diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/su=
-pply/power_supply_sysfs.c
-> index bcde8d13476a..07b484f995c1 100644
-> --- a/drivers/power/supply/power_supply_sysfs.c
-> +++ b/drivers/power/supply/power_supply_sysfs.c
-> @@ -46,7 +46,7 @@ static ssize_t power_supply_show_property(struct device=
- *dev,
->  	static char *type_text[] =3D {
->  		"Unknown", "Battery", "UPS", "Mains", "USB",
->  		"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
-> -		"USB_PD", "USB_PD_DRP"
-> +		"USB_PD", "USB_PD_DRP", "BrickID"
->  	};
->  	static char *status_text[] =3D {
->  		"Unknown", "Charging", "Discharging", "Not charging", "Full"
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index 3965503315ef..4bd34051995e 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -159,13 +159,14 @@ enum power_supply_type {
->  	POWER_SUPPLY_TYPE_BATTERY,
->  	POWER_SUPPLY_TYPE_UPS,
->  	POWER_SUPPLY_TYPE_MAINS,
-> -	POWER_SUPPLY_TYPE_USB,		/* Standard Downstream Port */
-> -	POWER_SUPPLY_TYPE_USB_DCP,	/* Dedicated Charging Port */
-> -	POWER_SUPPLY_TYPE_USB_CDP,	/* Charging Downstream Port */
-> -	POWER_SUPPLY_TYPE_USB_ACA,	/* Accessory Charger Adapters */
-> -	POWER_SUPPLY_TYPE_USB_TYPE_C,	/* Type C Port */
-> -	POWER_SUPPLY_TYPE_USB_PD,	/* Power Delivery Port */
-> -	POWER_SUPPLY_TYPE_USB_PD_DRP,	/* PD Dual Role Port */
-> +	POWER_SUPPLY_TYPE_USB,			/* Standard Downstream Port */
-> +	POWER_SUPPLY_TYPE_USB_DCP,		/* Dedicated Charging Port */
-> +	POWER_SUPPLY_TYPE_USB_CDP,		/* Charging Downstream Port */
-> +	POWER_SUPPLY_TYPE_USB_ACA,		/* Accessory Charger Adapters */
-> +	POWER_SUPPLY_TYPE_USB_TYPE_C,		/* Type C Port */
-> +	POWER_SUPPLY_TYPE_USB_PD,		/* Power Delivery Port */
-> +	POWER_SUPPLY_TYPE_USB_PD_DRP,		/* PD Dual Role Port */
-> +	POWER_SUPPLY_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
->  };
-> =20
->  enum power_supply_notifier_events {
-> --=20
-> 2.13.0.rc1.294.g07d810a77f-goog
->=20
++----------------+    +----------------+
+| HW Accelerator |--->|      M NoC     |<---------------+
++----------------+    +----------------+                |
+                        |      |                    +------------+
+          +-------------+      V       +------+     |            |
+          |                +--------+  | PCIe |     |            |
+          |                | Slaves |  +------+     |            |
+          |                +--------+     |         |   C NoC    |
+          V                               V         |            |
++------------------+   +------------------------+   |            |   +-----+
+|                  |-->|                        |-->|            |-->| CPU |
+|                  |-->|                        |<--|            |   +-----+
+|      Memory      |   |         S NoC          |   +------------+
+|                  |<--|                        |---------+    |
+|                  |<--|                        |<------+ |    |   +--------+
++------------------+   +------------------------+       | |    +-->| Slaves |
+   ^     ^    ^           ^                             | |        +--------+
+   |     |    |           |                             | V
++-----+  |  +-----+    +-----+  +---------+   +----------------+   +--------+
+| CPU |  |  | GPU |    | DSP |  | Masters |-->|       P NoC    |-->| Slaves |
++-----+  |  +-----+    +-----+  +---------+   +----------------+   +--------+
+         |
+     +-------+
+     | Modem |
+     +-------+
 
---6552mc4kogrpcf3e
-Content-Type: application/pgp-signature; name="signature.asc"
+This RFC does not implement all features but only main skeleton to check the
+validity of the proposal.
 
------BEGIN PGP SIGNATURE-----
+TODO:
+ * Constraints are currently stored in internal data structure. Should PM QoS
+ be used instead?
+ * Currently the interconnect_set() use one bandwidth integer value as parameter
+ but this might be extended to support a list of parameters and other QoS values.
+ * Cache the path between the nodes instead of walking the graph on each get().
+ * Sync interconnect requests with the idle state of the device.
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlkZt48ACgkQ2O7X88g7
-+ppM9g//fSGcX1gICsr93ldrS95aPoxmuM2D6eew+wTjuto1G06MF8XXlQRowbM7
-+ZENICCmXZqQhi2i/56TlIer6PdBsqbsXcesbikhLu8SX+j2b3TfktSXOsq53Tyn
-qvwNaMZWMJ5l1yLqx3U4zFyN2TJcC3Q92Fako/MAyiwvwdPNVn2dSFmVEGHgUcx5
-K5wYf8fRYhFu4/TEV1Of7aKL2RJ1Hxw1gcWLgDDkfIMik1AwuCOJ1rYXqHrSms9R
-ggqQETvtidMJYq1mNOm1DtnB944KD6CuHXcaxV4e4+BGWUN4Wk/yf4pQiCWDnZLJ
-wXAFknP+4eg8VV4/sI2+7/PARunWE2LwSqBOTBm7RDUasjDpV1Iudb2FMyHqsh9r
-yCMl5rzSG++GMDXpXyjGgcA9v3JGIv7Osr8GWpltBAGh+QQaxfkwg9MNMA82gOv1
-OvWDLYOy+xJY46CpLQlbhYY2hyFv5ttX6B/pBLMnmMm5YCEv2qJjCFGAMwdN8QUJ
-lV4KynhrSZyRnmzw0AFmOuagwUN9gLasUnLBU3VtrsoMhQIuHvHe1AReszlcibt3
-cT63TGgSONXsBFpMW8BKGHscinUdqoKvVzcGCrRHr6z0sxqYQjjRjlWuJ6olDJwH
-VYUNmvcBTITUO0FNBMGbOUAYLRdl1uAWUiyFjv4xPz3I4v9WlNY=
-=F1aY
------END PGP SIGNATURE-----
+Summary of the patches:
+Patch 1 introduces the interconnect API.
+Patch 2 creates the first vendor specific interconnect controller driver.
+Patch 3 is a proposal for DT bindings
 
---6552mc4kogrpcf3e--
+Changes since RFC v0 (https://lkml.org/lkml/2017/3/1/599)
+* Removed DT support and added optional Patch 3 with new bindings proposal.
+* Converted the topology into internal driver data.
+* Made the framework modular.
+* interconnect_get() now takes (src and dst ports as arguments).
+* Removed public declarations of some structs.
+* Now passing prev/next nodes to the vendor driver.
+* Properly remove requests on _put().
+* Added refcounting.
+* Updated documentation.
+* Changed struct interconnect_path to use array instead of linked list.
+
+Georgi Djakov (3):
+  interconnect: Add generic interconnect controller API
+  interconnect: Add Qualcomm msm8916 interconnect provider driver
+  dt-binding: Interconnect device-tree bindings draft
+
+ .../bindings/interconnect/interconnect.txt         |  75 ++++
+ Documentation/interconnect/interconnect.txt        |  65 ++++
+ drivers/Kconfig                                    |   2 +
+ drivers/Makefile                                   |   1 +
+ drivers/interconnect/Kconfig                       |  15 +
+ drivers/interconnect/Makefile                      |   2 +
+ drivers/interconnect/interconnect.c                | 317 +++++++++++++++++
+ drivers/interconnect/qcom/Kconfig                  |  12 +
+ drivers/interconnect/qcom/Makefile                 |   2 +
+ drivers/interconnect/qcom/interconnect_msm8916.c   | 394 +++++++++++++++++++++
+ include/dt-bindings/interconnect/qcom,msm8916.h    |  87 +++++
+ include/linux/interconnect-consumer.h              |  84 +++++
+ include/linux/interconnect-provider.h              | 110 ++++++
+ 13 files changed, 1166 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/interconnect.txt
+ create mode 100644 Documentation/interconnect/interconnect.txt
+ create mode 100644 drivers/interconnect/Kconfig
+ create mode 100644 drivers/interconnect/Makefile
+ create mode 100644 drivers/interconnect/interconnect.c
+ create mode 100644 drivers/interconnect/qcom/Kconfig
+ create mode 100644 drivers/interconnect/qcom/Makefile
+ create mode 100644 drivers/interconnect/qcom/interconnect_msm8916.c
+ create mode 100644 include/dt-bindings/interconnect/qcom,msm8916.h
+ create mode 100644 include/linux/interconnect-consumer.h
+ create mode 100644 include/linux/interconnect-provider.h
