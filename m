@@ -1,55 +1,57 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH v1] cpufreq: kirkwood-cpufreq:- Handle return value of clk_prepare_enable
-Date: Tue, 16 May 2017 12:41:57 +0530
-Message-ID: <1494918717-16434-1-git-send-email-arvind.yadav.cs@gmail.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [RFC v1 2/3] interconnect: Add Qualcomm msm8916 interconnect
+ provider driver
+Date: Tue, 16 May 2017 17:59:02 +0300
+Message-ID: <5bd5fbd9-ee12-a414-88ce-32b286318616@linaro.org>
+References: <20170515153527.27649-1-georgi.djakov@linaro.org>
+ <20170515153527.27649-3-georgi.djakov@linaro.org>
+ <CAMuHMdXM3f+P8ZyydxnO5z2g3F2n2c3KzfDFbC6jYgZJt+1ULw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f68.google.com ([74.125.83.68]:36826 "EHLO
-        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751052AbdEPHNS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2017 03:13:18 -0400
+Received: from mail-wr0-f177.google.com ([209.85.128.177]:35138 "EHLO
+        mail-wr0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750934AbdEPO7G (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 May 2017 10:59:06 -0400
+Received: by mail-wr0-f177.google.com with SMTP id z52so78729415wrc.2
+        for <linux-pm@vger.kernel.org>; Tue, 16 May 2017 07:59:05 -0700 (PDT)
+In-Reply-To: <CAMuHMdXM3f+P8ZyydxnO5z2g3F2n2c3KzfDFbC6jYgZJt+1ULw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Greg KH <gregkh@linuxfoundation.org>, Vincent Guittot <vincent.guittot@linaro.org>, skannan@codeaurora.org, Stephen Boyd <sboyd@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, seansw@qti.qualcomm.com, davidai@quicinc.com, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>
 
-Here, Clock enable can failed. So adding an error check for
-clk_prepare_enable.
+On 05/15/2017 07:01 PM, Geert Uytterhoeven wrote:
+> Hi Georgi,
+> 
+> On Mon, May 15, 2017 at 5:35 PM, Georgi Djakov <georgi.djakov@linaro.org> wrote:
+>> --- /dev/null
+>> +++ b/drivers/interconnect/qcom/interconnect_msm8916.c
+> 
+>> +struct qcom_interconnect_node {
+>> +       struct interconnect_node node;
+>> +       unsigned int id;
+> 
+> 4 byte gap due to alignment rules on 64-bit.
+> 
+>> +       unsigned char *name;
+>> +       struct interconnect_node *links[8];
+>> +       int num_links;
+>> +       int port;
+>> +       int buswidth;
+> 
+> 4 byte gap due to alignment rules.
+> 
+>> +       u64 ib;
+>> +       u64 ab;
+>> +       u64 rate;
+>> +};
+> 
+> You can avoid the gaps by putting members of the same size and alignment
+> together.
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/cpufreq/kirkwood-cpufreq.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+Thanks Geert, i will rearrange this to reduce the padding bytes!
 
-diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
-index 1b9bcd7..4c30103 100644
---- a/drivers/cpufreq/kirkwood-cpufreq.c
-+++ b/drivers/cpufreq/kirkwood-cpufreq.c
-@@ -127,7 +127,12 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
- 		return PTR_ERR(priv.cpu_clk);
- 	}
- 
--	clk_prepare_enable(priv.cpu_clk);
-+	err = clk_prepare_enable(priv.cpu_clk);
-+	if (err) {
-+		dev_err(priv.dev, "Unable to prepare cpuclk\n");
-+		return err;
-+	}
-+
- 	kirkwood_freq_table[0].frequency = clk_get_rate(priv.cpu_clk) / 1000;
- 
- 	priv.ddr_clk = of_clk_get_by_name(np, "ddrclk");
-@@ -137,7 +142,11 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
- 		goto out_cpu;
- 	}
- 
--	clk_prepare_enable(priv.ddr_clk);
-+	err = clk_prepare_enable(priv.ddr_clk);
-+	if (err) {
-+		dev_err(priv.dev, "Unable to prepare ddrclk\n");
-+		goto out_cpu;
-+	}
- 	kirkwood_freq_table[1].frequency = clk_get_rate(priv.ddr_clk) / 1000;
- 
- 	priv.powersave_clk = of_clk_get_by_name(np, "powersave");
--- 
-1.9.1
+BR,
+Georgi
