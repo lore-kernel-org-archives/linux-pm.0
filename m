@@ -1,192 +1,68 @@
-From: David Lechner <david@lechnology.com>
-Subject: [RESEND PATCH] power: supply: sysfs: parse string as enum when writing property
-Date: Mon, 15 May 2017 16:21:15 -0500
-Message-ID: <1494883275-9867-1-git-send-email-david@lechnology.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vern.gendns.com ([206.190.152.46]:57480 "EHLO vern.gendns.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1758294AbdEOVVF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 15 May 2017 17:21:05 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: Re: [PATCH 1/4] power: supply: axp20x_battery: add support for DT battery
+Date: Tue, 16 May 2017 13:18:34 +0800
+Message-ID: <CAGb2v6598dSC278vVdQ_f54piLS0y4BnN3V4ZUhbGXKavx+ryQ@mail.gmail.com>
+References: <20170511134221.5569-1-quentin.schulz@free-electrons.com> <20170511134221.5569-2-quentin.schulz@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170511134221.5569-2-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: David Lechner <david@lechnology.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
 
-This fixes the TODO to parse strings and convert them to enum values
-when writing to a power_supply class property sysfs attribute.
+On Thu, May 11, 2017 at 9:42 PM, Quentin Schulz
+<quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+> This adds support in X-Powers AXP20X and AXP22X battery driver for a
+> fixed battery in DT.
+>
+> It will take the minimum supported voltage by the battery as defined in
+> the battery DT node and set the V_OFF register to this value, telling
+> the system to shut down if the supplied power is below this value.
+>
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> ---
+>  drivers/power/supply/axp20x_battery.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+>
+> diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
+> index 5d29b2eab8fc..66f530541735 100644
+> --- a/drivers/power/supply/axp20x_battery.c
+> +++ b/drivers/power/supply/axp20x_battery.c
+> @@ -433,6 +433,7 @@ static int axp20x_power_probe(struct platform_device *pdev)
+>  {
+>         struct axp20x_batt_ps *axp20x_batt;
+>         struct power_supply_config psy_cfg = {};
+> +       struct power_supply_battery_info info;
+>
+>         if (!of_device_is_available(pdev->dev.of_node))
+>                 return -ENODEV;
+> @@ -484,6 +485,15 @@ static int axp20x_power_probe(struct platform_device *pdev)
+>                 return PTR_ERR(axp20x_batt->batt);
+>         }
+>
+> +       if (!power_supply_get_battery_info(axp20x_batt->batt, &info)) {
 
-There is at least one driver that has a writable enum property that
-previously could only be written as an integer, so a fallback to writing
-enums as integers instead of strings is provided so we don't break existing
-userspace programs.
+This is not in -next. It would help if you mention any requisite patches.
 
-Signed-off-by: David Lechner <david@lechnology.com>
----
+ChenYu
 
-Resend now that 4.12-rc1 has been tagged per https://patchwork.kernel.org/patch/9660499/
-
- drivers/power/supply/power_supply_sysfs.c | 124 ++++++++++++++++++++----------
- 1 file changed, 85 insertions(+), 39 deletions(-)
-
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index bcde8d1..b2002b4 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -40,35 +40,42 @@
- 
- static struct device_attribute power_supply_attrs[];
- 
-+static const char * const power_supply_type_text[] = {
-+	"Unknown", "Battery", "UPS", "Mains", "USB",
-+	"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
-+	"USB_PD", "USB_PD_DRP"
-+};
-+
-+static const char * const power_supply_status_text[] = {
-+	"Unknown", "Charging", "Discharging", "Not charging", "Full"
-+};
-+
-+static const char * const power_supply_charge_type_text[] = {
-+	"Unknown", "N/A", "Trickle", "Fast"
-+};
-+
-+static const char * const power_supply_health_text[] = {
-+	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
-+	"Unspecified failure", "Cold", "Watchdog timer expire",
-+	"Safety timer expire"
-+};
-+
-+static const char * const power_supply_technology_text[] = {
-+	"Unknown", "NiMH", "Li-ion", "Li-poly", "LiFe", "NiCd",
-+	"LiMn"
-+};
-+
-+static const char * const power_supply_capacity_level_text[] = {
-+	"Unknown", "Critical", "Low", "Normal", "High", "Full"
-+};
-+
-+static const char * const power_supply_scope_text[] = {
-+	"Unknown", "System", "Device"
-+};
-+
- static ssize_t power_supply_show_property(struct device *dev,
- 					  struct device_attribute *attr,
- 					  char *buf) {
--	static char *type_text[] = {
--		"Unknown", "Battery", "UPS", "Mains", "USB",
--		"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
--		"USB_PD", "USB_PD_DRP"
--	};
--	static char *status_text[] = {
--		"Unknown", "Charging", "Discharging", "Not charging", "Full"
--	};
--	static char *charge_type[] = {
--		"Unknown", "N/A", "Trickle", "Fast"
--	};
--	static char *health_text[] = {
--		"Unknown", "Good", "Overheat", "Dead", "Over voltage",
--		"Unspecified failure", "Cold", "Watchdog timer expire",
--		"Safety timer expire"
--	};
--	static char *technology_text[] = {
--		"Unknown", "NiMH", "Li-ion", "Li-poly", "LiFe", "NiCd",
--		"LiMn"
--	};
--	static char *capacity_level_text[] = {
--		"Unknown", "Critical", "Low", "Normal", "High", "Full"
--	};
--	static char *scope_text[] = {
--		"Unknown", "System", "Device"
--	};
- 	ssize_t ret = 0;
- 	struct power_supply *psy = dev_get_drvdata(dev);
- 	const ptrdiff_t off = attr - power_supply_attrs;
-@@ -91,19 +98,26 @@ static ssize_t power_supply_show_property(struct device *dev,
- 	}
- 
- 	if (off == POWER_SUPPLY_PROP_STATUS)
--		return sprintf(buf, "%s\n", status_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_status_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_CHARGE_TYPE)
--		return sprintf(buf, "%s\n", charge_type[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_charge_type_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_HEALTH)
--		return sprintf(buf, "%s\n", health_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_health_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_TECHNOLOGY)
--		return sprintf(buf, "%s\n", technology_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_technology_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_CAPACITY_LEVEL)
--		return sprintf(buf, "%s\n", capacity_level_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_capacity_level_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_TYPE)
--		return sprintf(buf, "%s\n", type_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_type_text[value.intval]);
- 	else if (off == POWER_SUPPLY_PROP_SCOPE)
--		return sprintf(buf, "%s\n", scope_text[value.intval]);
-+		return sprintf(buf, "%s\n",
-+			       power_supply_scope_text[value.intval]);
- 	else if (off >= POWER_SUPPLY_PROP_MODEL_NAME)
- 		return sprintf(buf, "%s\n", value.strval);
- 
-@@ -117,14 +131,46 @@ static ssize_t power_supply_store_property(struct device *dev,
- 	struct power_supply *psy = dev_get_drvdata(dev);
- 	const ptrdiff_t off = attr - power_supply_attrs;
- 	union power_supply_propval value;
--	long long_val;
- 
--	/* TODO: support other types than int */
--	ret = kstrtol(buf, 10, &long_val);
--	if (ret < 0)
--		return ret;
-+	/* maybe it is a enum property? */
-+	switch (off) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		ret = sysfs_match_string(power_supply_status_text, buf);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		ret = sysfs_match_string(power_supply_charge_type_text, buf);
-+		break;
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		ret = sysfs_match_string(power_supply_health_text, buf);
-+		break;
-+	case POWER_SUPPLY_PROP_TECHNOLOGY:
-+		ret = sysfs_match_string(power_supply_technology_text, buf);
-+		break;
-+	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
-+		ret = sysfs_match_string(power_supply_capacity_level_text, buf);
-+		break;
-+	case POWER_SUPPLY_PROP_SCOPE:
-+		ret = sysfs_match_string(power_supply_scope_text, buf);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+	/*
-+	 * If no match was found, then check to see if it is an integer.
-+	 * Integer values are valid for enums in addition to the text value.
-+	 */
-+	if (ret < 0) {
-+		long long_val;
-+
-+		ret = kstrtol(buf, 10, &long_val);
-+		if (ret < 0)
-+			return ret;
-+
-+		ret = long_val;
-+	}
- 
--	value.intval = long_val;
-+	value.intval = ret;
- 
- 	ret = power_supply_set_property(psy, off, &value);
- 	if (ret < 0)
--- 
-2.7.4
+> +               int vmin = info.voltage_min_design_uv;
+> +
+> +               if (vmin > 0 && axp20x_set_voltage_min_design(axp20x_batt,
+> +                                                             vmin))
+> +                       dev_err(&pdev->dev,
+> +                               "couldn't set voltage_min_design\n");
+> +       }
+> +
+>         return 0;
+>  }
+>
+> --
+> 2.11.0
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
