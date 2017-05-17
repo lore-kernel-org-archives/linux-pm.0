@@ -1,38 +1,97 @@
-From: Frank Wang <frank.wang@rock-chips.com>
-Subject: [PATCH 0/4] amend some properties related clk and cpu for rk322x
-Date: Wed, 17 May 2017 12:45:19 +0800
-Message-ID: <1494996323-4678-1-git-send-email-frank.wang@rock-chips.com>
-Return-path: <linux-clk-owner@vger.kernel.org>
-Sender: linux-clk-owner@vger.kernel.org
-To: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, mturquette@baylibre.com, sboyd@codeaurora.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, charles.chen@rock-chips.com, cody.xie@rock-chips.com, kevan.lan@rock-chips.com, huangtao@rock-chips.com, rocky.hao@rock-chips.com, finley.xiao@rock-chips.com, zhangqing@rock-chips.com, wmc@rock-chips.com, Frank Wang <frank.wang@rock-chips.com>
+From: Frank Wang <frank.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [PATCH 2/4] arm: dts: rk322x: add operating-points-v2 property for cpu
+Date: Wed, 17 May 2017 12:45:21 +0800
+Message-ID: <1494996323-4678-3-git-send-email-frank.wang@rock-chips.com>
+References: <1494996323-4678-1-git-send-email-frank.wang@rock-chips.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1494996323-4678-1-git-send-email-frank.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, charles.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, cody.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, kevan.lan-TNX95d0MmH7DzftRWevZcw@public.gmane.org, huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, zhangqing-TNX95d0MmH7DzftRWevZcw@public.gmane.org, wmc-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Frank Wang <frank.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-These series of patches amend some assigned-clocks and add cpu opp table
-for rk322x SoCs.
+From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 
-the following patches on patchwork are required for this changes.
-https://patchwork.kernel.org/patch/9627639/
-https://patchwork.kernel.org/patch/9703945/
-https://patchwork.kernel.org/patch/9703939/
-https://patchwork.kernel.org/patch/9707517/
+This patch adds a new opp table for cpu on rk322x SoC.
 
-Elaine Zhang (1):
-  arm: dts: rk322x: add some assigned-clocks
+Signed-off-by: Frank Wang <frank.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+---
+ arch/arm/boot/dts/rk322x.dtsi | 36 ++++++++++++++++++++++++++++++++----
+ 1 file changed, 32 insertions(+), 4 deletions(-)
 
-Finley Xiao (2):
-  arm: dts: rk322x: add operating-points-v2 property for cpu
-  arm: dts: rk3229: add a new cpu opp table
-
-Rocky Hao (1):
-  arm: dts: rk322x: update tsadc's frequence setting
-
- arch/arm/boot/dts/rk3229-cpu-opp.dtsi | 85 +++++++++++++++++++++++++++++++++++
- arch/arm/boot/dts/rk322x.dtsi         | 52 ++++++++++++++++++---
- 2 files changed, 131 insertions(+), 6 deletions(-)
- create mode 100644 arch/arm/boot/dts/rk3229-cpu-opp.dtsi
-
+diff --git a/arch/arm/boot/dts/rk322x.dtsi b/arch/arm/boot/dts/rk322x.dtsi
+index 40044e8..7809e56 100644
+--- a/arch/arm/boot/dts/rk322x.dtsi
++++ b/arch/arm/boot/dts/rk322x.dtsi
+@@ -66,10 +66,7 @@
+ 			compatible = "arm,cortex-a7";
+ 			reg = <0xf00>;
+ 			resets = <&cru SRST_CORE0>;
+-			operating-points = <
+-				/* KHz    uV */
+-				 816000 1000000
+-			>;
++			operating-points-v2 = <&cpu0_opp_table>;
+ 			#cooling-cells = <2>; /* min followed by max */
+ 			clock-latency = <40000>;
+ 			clocks = <&cru ARMCLK>;
+@@ -80,6 +77,7 @@
+ 			compatible = "arm,cortex-a7";
+ 			reg = <0xf01>;
+ 			resets = <&cru SRST_CORE1>;
++			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 
+ 		cpu2: cpu@f02 {
+@@ -87,6 +85,7 @@
+ 			compatible = "arm,cortex-a7";
+ 			reg = <0xf02>;
+ 			resets = <&cru SRST_CORE2>;
++			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 
+ 		cpu3: cpu@f03 {
+@@ -94,6 +93,35 @@
+ 			compatible = "arm,cortex-a7";
+ 			reg = <0xf03>;
+ 			resets = <&cru SRST_CORE3>;
++			operating-points-v2 = <&cpu0_opp_table>;
++		};
++	};
++
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-408000000 {
++			opp-hz = /bits/ 64 <408000000>;
++			opp-microvolt = <950000>;
++			clock-latency-ns = <40000>;
++			opp-suspend;
++		};
++		opp-600000000 {
++			opp-hz = /bits/ 64 <600000000>;
++			opp-microvolt = <975000>;
++		};
++		opp-816000000 {
++			opp-hz = /bits/ 64 <816000000>;
++			opp-microvolt = <1000000>;
++		};
++		opp-1008000000 {
++			opp-hz = /bits/ 64 <1008000000>;
++			opp-microvolt = <1175000>;
++		};
++		opp-1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			opp-microvolt = <1275000>;
+ 		};
+ 	};
+ 
 -- 
 2.0.0
 
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
