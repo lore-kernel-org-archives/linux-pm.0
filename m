@@ -1,39 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/4] PM / OPP: Minor cleanups
-Date: Wed, 17 May 2017 10:10:31 +0530
-Message-ID: <cover.1494995911.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:36103 "EHLO
-        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750969AbdEQEkx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 May 2017 00:40:53 -0400
-Received: by mail-pf0-f179.google.com with SMTP id m17so1007507pfg.3
-        for <linux-pm@vger.kernel.org>; Tue, 16 May 2017 21:40:52 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH 3/4] PM / OPP: opp-microvolt is not optional if regulators are set
+Date: Wed, 17 May 2017 10:10:34 +0530
+Message-ID: <0e9ac75f0e94d7b0bff9a398b501e2fe4f409051.1494995911.git.viresh.kumar@linaro.org>
+References: <cover.1494995911.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1494995911.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1494995911.git.viresh.kumar@linaro.org>
+References: <cover.1494995911.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi,
+If dev_pm_opp_set_regulators() is called for a device and its regulators
+are set in the OPP core, the OPP nodes for the device must contain the
+"opp-microvolt" property, otherwise there is something wrong and we
+better error out.
 
-Here are few cleanup patches for the OPP core. The first two simplify
-the code that was written specifically due to the limitations that we
-had because of RCUs. We don't RCUs anymore and this can be simplified.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp/of.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-The last two take care of specific corner cases.
-
-Rebased over pm/linux-next and tested on Exynos dual core board.
-
-Viresh Kumar (4):
-  PM / OPP: Reorganize _generic_set_opp_regulator()
-  PM / OPP: Don't create copy of regulators unnecessarily
-  PM / OPP: opp-microvolt is not optional if regulators are set
-  PM / OPP: Don't create debugfs "supply-0" directory unnecessarily
-
- drivers/base/power/opp/core.c    | 87 +++++++++++++++++-----------------------
- drivers/base/power/opp/debugfs.c |  6 +--
- drivers/base/power/opp/of.c      | 11 ++++-
- 3 files changed, 49 insertions(+), 55 deletions(-)
-
+diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
+index 779428676f63..c6fc8cbad10d 100644
+--- a/drivers/base/power/opp/of.c
++++ b/drivers/base/power/opp/of.c
+@@ -131,8 +131,15 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
+ 		prop = of_find_property(opp->np, name, NULL);
+ 
+ 		/* Missing property isn't a problem, but an invalid entry is */
+-		if (!prop)
+-			return 0;
++		if (!prop) {
++			/* The regulator-count must be zero here */
++			if (!opp_table->regulator_count)
++				return 0;
++
++			dev_err(dev, "%s: opp-microvolt missing even if regulators are available\n",
++				__func__);
++			return -EINVAL;
++		}
+ 	}
+ 
+ 	vcount = of_property_count_u32_elems(opp->np, name);
 -- 
 2.13.0.303.g4ebf3021692d
