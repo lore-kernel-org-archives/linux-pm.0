@@ -1,58 +1,56 @@
-From: Wei Yongjun <weiyj.lk@gmail.com>
-Subject: [PATCH -next] power: supply: ltc3651-charger: Fix wrong pointer passed to PTR_ERR()
-Date: Wed, 17 May 2017 12:11:32 +0000
-Message-ID: <20170517121132.7052-1-weiyj.lk@gmail.com>
+From: Yazen Ghannam <Yazen.Ghannam@amd.com>
+Subject: [PATCH] x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on AMD systems
+Date: Wed, 17 May 2017 09:20:19 -0500
+Message-ID: <1495030819-4347-1-git-send-email-Yazen.Ghannam@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:33341 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753661AbdEQMLl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 May 2017 08:11:41 -0400
-Received: by mail-pf0-f196.google.com with SMTP id f27so1550089pfe.0
-        for <linux-pm@vger.kernel.org>; Wed, 17 May 2017 05:11:41 -0700 (PDT)
+Received: from mail-by2nam01on0077.outbound.protection.outlook.com ([104.47.34.77]:36259
+        "EHLO NAM01-BY2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751360AbdEQOVA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 17 May 2017 10:21:00 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Wei Yongjun <weiyongjun1@huawei.com>, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, Yazen Ghannam <yazen.ghannam@amd.com>
 
-From: Wei Yongjun <weiyongjun1@huawei.com>
+From: Yazen Ghannam <yazen.ghannam@amd.com>
 
-PTR_ERR should access the value just tested by IS_ERR, otherwise
-the wrong error code will be returned.
+AMD systems support the Monitor/Mwait instructions and these can be used
+for ACPI C1 in the same way as on Intel systems, with appropriate BIOS
+support.
 
-Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+Allow ffh_cstate_init() to succeed on AMD systems and make the Cstate
+description vendor-agnostic.
+
+Signed-off-by: Yazen Ghannam <yazen.ghannam@amd.com>
 ---
- drivers/power/supply/ltc3651-charger.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/kernel/acpi/cstate.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/supply/ltc3651-charger.c b/drivers/power/supply/ltc3651-charger.c
-index 5f8d5c0..eea63ff 100644
---- a/drivers/power/supply/ltc3651-charger.c
-+++ b/drivers/power/supply/ltc3651-charger.c
-@@ -110,21 +110,21 @@ static int ltc3651_charger_probe(struct platform_device *pdev)
- 	ltc3651_charger->acpr_gpio = devm_gpiod_get(&pdev->dev,
- 					"lltc,acpr", GPIOD_IN);
- 	if (IS_ERR(ltc3651_charger->acpr_gpio)) {
--		ret = PTR_ERR(ltc3651_charger->charger);
-+		ret = PTR_ERR(ltc3651_charger->acpr_gpio);
- 		dev_err(&pdev->dev, "Failed to acquire acpr GPIO: %d\n", ret);
- 		return ret;
+diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+index 8a908ae..4c5dd5d 100644
+--- a/arch/x86/kernel/acpi/cstate.c
++++ b/arch/x86/kernel/acpi/cstate.c
+@@ -109,7 +109,7 @@ static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
+ 			cx->type);
  	}
- 	ltc3651_charger->fault_gpio = devm_gpiod_get_optional(&pdev->dev,
- 					"lltc,fault", GPIOD_IN);
- 	if (IS_ERR(ltc3651_charger->fault_gpio)) {
--		ret = PTR_ERR(ltc3651_charger->charger);
-+		ret = PTR_ERR(ltc3651_charger->fault_gpio);
- 		dev_err(&pdev->dev, "Failed to acquire fault GPIO: %d\n", ret);
- 		return ret;
- 	}
- 	ltc3651_charger->chrg_gpio = devm_gpiod_get_optional(&pdev->dev,
- 					"lltc,chrg", GPIOD_IN);
- 	if (IS_ERR(ltc3651_charger->chrg_gpio)) {
--		ret = PTR_ERR(ltc3651_charger->charger);
-+		ret = PTR_ERR(ltc3651_charger->chrg_gpio);
- 		dev_err(&pdev->dev, "Failed to acquire chrg GPIO: %d\n", ret);
- 		return ret;
- 	}
+ 	snprintf(cx->desc,
+-			ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
++			ACPI_CX_DESC_LEN, "ACPI FFH X86 MWAIT 0x%x",
+ 			cx->address);
+ out:
+ 	return retval;
+@@ -169,7 +169,8 @@ static int __init ffh_cstate_init(void)
+ {
+ 	struct cpuinfo_x86 *c = &boot_cpu_data;
+ 
+-	if (c->x86_vendor != X86_VENDOR_INTEL)
++	if (c->x86_vendor != X86_VENDOR_INTEL &&
++	    c->x86_vendor != X86_VENDOR_AMD)
+ 		return -1;
+ 
+ 	cpu_cstate_entry = alloc_percpu(struct cstate_entry);
+-- 
+2.7.4
