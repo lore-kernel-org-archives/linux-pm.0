@@ -1,79 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: kirkwood-cpufreq:- Handle return value of
- clk_prepare_enable
-Date: Wed, 17 May 2017 12:44:03 +0530
-Message-ID: <20170517071403.GD17481@vireshk-i7>
-References: <1495003835-25828-1-git-send-email-arvind.yadav.cs@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Frank Wang <frank.wang@rock-chips.com>
+Subject: [PATCH v2 0/4] amend some properties related clk and cpu for rk322x
+Date: Wed, 17 May 2017 18:16:13 +0800
+Message-ID: <1495016177-2413-1-git-send-email-frank.wang@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:34578 "EHLO
-        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753465AbdEQHOG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 May 2017 03:14:06 -0400
-Received: by mail-pf0-f169.google.com with SMTP id 9so2913270pfj.1
-        for <linux-pm@vger.kernel.org>; Wed, 17 May 2017 00:14:06 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1495003835-25828-1-git-send-email-arvind.yadav.cs@gmail.com>
+Received: from regular1.263xmail.com ([211.150.99.133]:50719 "EHLO
+        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751498AbdEQKQ1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 May 2017 06:16:27 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, mturquette@baylibre.com, sboyd@codeaurora.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, charles.chen@rock-chips.com, cody.xie@rock-chips.com, kevan.lan@rock-chips.com, huangtao@rock-chips.com, rocky.hao@rock-chips.com, finley.xiao@rock-chips.com, zhangqing@rock-chips.com, wmc@rock-chips.com, Frank Wang <frank.wang@rock-chips.com>
 
-On 17-05-17, 12:20, Arvind Yadav wrote:
-> clk_prepare_enable() can fail here and we must check its return value.
-> 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
-> ---
->  drivers/cpufreq/kirkwood-cpufreq.c | 19 ++++++++++++++++---
->  1 file changed, 16 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
-> index 1b9bcd7..c2dd43f 100644
-> --- a/drivers/cpufreq/kirkwood-cpufreq.c
-> +++ b/drivers/cpufreq/kirkwood-cpufreq.c
-> @@ -127,7 +127,12 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
->  		return PTR_ERR(priv.cpu_clk);
->  	}
->  
-> -	clk_prepare_enable(priv.cpu_clk);
-> +	err = clk_prepare_enable(priv.cpu_clk);
-> +	if (err) {
-> +		dev_err(priv.dev, "Unable to prepare cpuclk\n");
-> +		return err;
-> +	}
-> +
->  	kirkwood_freq_table[0].frequency = clk_get_rate(priv.cpu_clk) / 1000;
->  
->  	priv.ddr_clk = of_clk_get_by_name(np, "ddrclk");
-> @@ -137,7 +142,11 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
->  		goto out_cpu;
->  	}
->  
-> -	clk_prepare_enable(priv.ddr_clk);
-> +	err = clk_prepare_enable(priv.ddr_clk);
-> +	if (err) {
-> +		dev_err(priv.dev, "Unable to prepare ddrclk\n");
-> +		goto out_cpu;
-> +	}
->  	kirkwood_freq_table[1].frequency = clk_get_rate(priv.ddr_clk) / 1000;
->  
->  	priv.powersave_clk = of_clk_get_by_name(np, "powersave");
-> @@ -146,7 +155,11 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
->  		err = PTR_ERR(priv.powersave_clk);
->  		goto out_ddr;
->  	}
-> -	clk_prepare_enable(priv.powersave_clk);
-> +	err = clk_prepare_enable(priv.powersave_clk);
-> +	if (err) {
-> +		dev_err(priv.dev, "Unable to prepare powersave clk\n");
-> +		goto out_ddr;
-> +	}
->  
->  	of_node_put(np);
->  	np = NULL;
+These series of patches amend some assigned-clocks and add cpu opp table
+for rk322x SoCs.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+the following patches on patchwork are required for this change.
+https://patchwork.kernel.org/patch/9627639/
+https://patchwork.kernel.org/patch/9703945/
+https://patchwork.kernel.org/patch/9703939/
+https://patchwork.kernel.org/patch/9707517/
+
+Changes from v1:
+ - Updated the 'Signed-off-by' tag with original authors' email id.
+ - Updated the 'Acked-by' tag from Viresh Kumar <viresh.kumar@linaro.org>.
+
+Elaine Zhang (1):
+  arm: dts: rk322x: add some assigned-clocks
+
+Finley Xiao (2):
+  arm: dts: rk322x: add operating-points-v2 property for cpu
+  arm: dts: rk3229: add a new cpu opp table
+
+Rocky Hao (1):
+  arm: dts: rk322x: update tsadc's frequence setting
+
+ arch/arm/boot/dts/rk3229-cpu-opp.dtsi | 85 +++++++++++++++++++++++++++++++++++
+ arch/arm/boot/dts/rk322x.dtsi         | 52 ++++++++++++++++++---
+ 2 files changed, 131 insertions(+), 6 deletions(-)
+ create mode 100644 arch/arm/boot/dts/rk3229-cpu-opp.dtsi
 
 -- 
-viresh
+2.0.0
