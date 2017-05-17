@@ -1,72 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v1] cpufreq: kirkwood-cpufreq:- Handle return value of
- clk_prepare_enable
-Date: Wed, 17 May 2017 10:04:45 +0530
-Message-ID: <20170517043445.GZ17481@vireshk-i7>
-References: <1494918717-16434-1-git-send-email-arvind.yadav.cs@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH 0/4] PM / OPP: Minor cleanups
+Date: Wed, 17 May 2017 10:10:31 +0530
+Message-ID: <cover.1494995911.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:35064 "EHLO
-        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751744AbdEQEet (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 May 2017 00:34:49 -0400
-Received: by mail-pf0-f176.google.com with SMTP id n23so957579pfb.2
-        for <linux-pm@vger.kernel.org>; Tue, 16 May 2017 21:34:49 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1494918717-16434-1-git-send-email-arvind.yadav.cs@gmail.com>
+Received: from mail-pf0-f179.google.com ([209.85.192.179]:36103 "EHLO
+        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750969AbdEQEkx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 May 2017 00:40:53 -0400
+Received: by mail-pf0-f179.google.com with SMTP id m17so1007507pfg.3
+        for <linux-pm@vger.kernel.org>; Tue, 16 May 2017 21:40:52 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 16-05-17, 12:41, Arvind Yadav wrote:
-> Here, Clock enable can failed. So adding an error check for
-> clk_prepare_enable.
+Hi,
 
-Rewrite it as:
+Here are few cleanup patches for the OPP core. The first two simplify
+the code that was written specifically due to the limitations that we
+had because of RCUs. We don't RCUs anymore and this can be simplified.
 
-clk_prepare_enable() can fail here and we must check its return value.
+The last two take care of specific corner cases.
 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
-> ---
->  drivers/cpufreq/kirkwood-cpufreq.c | 13 +++++++++++--
->  1 file changed, 11 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
-> index 1b9bcd7..4c30103 100644
-> --- a/drivers/cpufreq/kirkwood-cpufreq.c
-> +++ b/drivers/cpufreq/kirkwood-cpufreq.c
-> @@ -127,7 +127,12 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
->  		return PTR_ERR(priv.cpu_clk);
->  	}
->  
-> -	clk_prepare_enable(priv.cpu_clk);
-> +	err = clk_prepare_enable(priv.cpu_clk);
-> +	if (err) {
-> +		dev_err(priv.dev, "Unable to prepare cpuclk\n");
-> +		return err;
-> +	}
-> +
->  	kirkwood_freq_table[0].frequency = clk_get_rate(priv.cpu_clk) / 1000;
->  
->  	priv.ddr_clk = of_clk_get_by_name(np, "ddrclk");
-> @@ -137,7 +142,11 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
->  		goto out_cpu;
->  	}
->  
-> -	clk_prepare_enable(priv.ddr_clk);
-> +	err = clk_prepare_enable(priv.ddr_clk);
-> +	if (err) {
-> +		dev_err(priv.dev, "Unable to prepare ddrclk\n");
-> +		goto out_cpu;
-> +	}
->  	kirkwood_freq_table[1].frequency = clk_get_rate(priv.ddr_clk) / 1000;
->  
->  	priv.powersave_clk = of_clk_get_by_name(np, "powersave");
+Rebased over pm/linux-next and tested on Exynos dual core board.
 
-There is one more prepare-enable after this. Why not fix that as well
-?
+Viresh Kumar (4):
+  PM / OPP: Reorganize _generic_set_opp_regulator()
+  PM / OPP: Don't create copy of regulators unnecessarily
+  PM / OPP: opp-microvolt is not optional if regulators are set
+  PM / OPP: Don't create debugfs "supply-0" directory unnecessarily
+
+ drivers/base/power/opp/core.c    | 87 +++++++++++++++++-----------------------
+ drivers/base/power/opp/debugfs.c |  6 +--
+ drivers/base/power/opp/of.c      | 11 ++++-
+ 3 files changed, 49 insertions(+), 55 deletions(-)
 
 -- 
-viresh
+2.13.0.303.g4ebf3021692d
