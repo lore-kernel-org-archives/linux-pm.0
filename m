@@ -1,20 +1,21 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/4] arm: dts: rk3229: add a new cpu opp table
-Date: Wed, 17 May 2017 11:00:47 +0530
-Message-ID: <20170517053047.GA17481@vireshk-i7>
+Subject: Re: [PATCH 2/4] arm: dts: rk322x: add operating-points-v2 property
+ for cpu
+Date: Wed, 17 May 2017 11:01:22 +0530
+Message-ID: <20170517053122.GB17481@vireshk-i7>
 References: <1494996323-4678-1-git-send-email-frank.wang@rock-chips.com>
- <1494996323-4678-4-git-send-email-frank.wang@rock-chips.com>
+ <1494996323-4678-3-git-send-email-frank.wang@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f54.google.com ([74.125.83.54]:35284 "EHLO
-        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752150AbdEQFax (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 May 2017 01:30:53 -0400
-Received: by mail-pg0-f54.google.com with SMTP id q125so1538255pgq.2
-        for <linux-pm@vger.kernel.org>; Tue, 16 May 2017 22:30:52 -0700 (PDT)
+Received: from mail-pg0-f46.google.com ([74.125.83.46]:36377 "EHLO
+        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752669AbdEQFbZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 May 2017 01:31:25 -0400
+Received: by mail-pg0-f46.google.com with SMTP id x64so1521557pgd.3
+        for <linux-pm@vger.kernel.org>; Tue, 16 May 2017 22:31:25 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1494996323-4678-4-git-send-email-frank.wang@rock-chips.com>
+In-Reply-To: <1494996323-4678-3-git-send-email-frank.wang@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Frank Wang <frank.wang@rock-chips.com>
@@ -23,13 +24,12 @@ Cc: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.or
 On 17-05-17, 12:45, Frank Wang wrote:
 > From: Finley Xiao <finley.xiao@rock-chips.com>
 > 
-> This patch adds some new frequencies for rk3229 board.
+> This patch adds a new opp table for cpu on rk322x SoC.
 > 
 > Signed-off-by: Frank Wang <frank.wang@rock-chips.com>
 > ---
->  arch/arm/boot/dts/rk3229-cpu-opp.dtsi | 85 +++++++++++++++++++++++++++++++++++
->  1 file changed, 85 insertions(+)
->  create mode 100644 arch/arm/boot/dts/rk3229-cpu-opp.dtsi
+>  arch/arm/boot/dts/rk322x.dtsi | 36 ++++++++++++++++++++++++++++++++----
+>  1 file changed, 32 insertions(+), 4 deletions(-)
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
