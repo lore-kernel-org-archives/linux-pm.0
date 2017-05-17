@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 4/4] PM / OPP: Don't create debugfs "supply-0" directory unnecessarily
-Date: Wed, 17 May 2017 10:10:35 +0530
-Message-ID: <4365d55b97974c12a51e32b35c2832d664b928b6.1494995911.git.viresh.kumar@linaro.org>
+Subject: [PATCH 1/4] PM / OPP: Reorganize _generic_set_opp_regulator()
+Date: Wed, 17 May 2017 10:10:32 +0530
+Message-ID: <7b9df40efa69d646840c097c04c56c7f42f458c4.1494995911.git.viresh.kumar@linaro.org>
 References: <cover.1494995911.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1494995911.git.viresh.kumar@linaro.org>
@@ -12,43 +12,146 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nisha
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-We create "supply-0" debugfs directory even if the device doesn't do
-voltage scaling. That looks confusing, as if the regulator is found but
-we never managed to get voltage levels for it.
+The code was overly complicated here because of the limitations that we
+had with RCUs (Couldn't use opp-table and OPPs outside RCU protected
+section and can't call sleep-able routines from within that). But that
+is long gone now.
 
-Avoid creating such a directory unnecessarily.
+Reorganize _generic_set_opp_regulator() in order to avoid using "struct
+dev_pm_set_opp_data" and copying data into it for the case where
+opp_table->set_opp is not set.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/debugfs.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/base/power/opp/core.c | 73 ++++++++++++++++++++-----------------------
+ 1 file changed, 34 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/base/power/opp/debugfs.c b/drivers/base/power/opp/debugfs.c
-index 95f433db4ac7..ce6f4832946b 100644
---- a/drivers/base/power/opp/debugfs.c
-+++ b/drivers/base/power/opp/debugfs.c
-@@ -40,11 +40,11 @@ static bool opp_debug_create_supplies(struct dev_pm_opp *opp,
- 				      struct dentry *pdentry)
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index dae61720b314..402b9e86d77c 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -543,17 +543,18 @@ _generic_set_opp_clk_only(struct device *dev, struct clk *clk,
+ 	return ret;
+ }
+ 
+-static int _generic_set_opp(struct dev_pm_set_opp_data *data)
++static int _generic_set_opp_regulator(struct opp_table *opp_table,
++				      struct device *dev,
++				      unsigned long old_freq,
++				      unsigned long freq,
++				      struct dev_pm_opp_supply *old_supply,
++				      struct dev_pm_opp_supply *new_supply)
  {
- 	struct dentry *d;
--	int i = 0;
-+	int i = -1;
- 	char *name;
+-	struct dev_pm_opp_supply *old_supply = data->old_opp.supplies;
+-	struct dev_pm_opp_supply *new_supply = data->new_opp.supplies;
+-	unsigned long old_freq = data->old_opp.rate, freq = data->new_opp.rate;
+-	struct regulator *reg = data->regulators[0];
+-	struct device *dev= data->dev;
++	struct regulator *reg = opp_table->regulators[0];
+ 	int ret;
  
- 	/* Always create at least supply-0 directory */
--	do {
-+	while (++i < opp_table->regulator_count) {
- 		name = kasprintf(GFP_KERNEL, "supply-%d", i);
+ 	/* This function only supports single regulator per device */
+-	if (WARN_ON(data->regulator_count > 1)) {
++	if (WARN_ON(opp_table->regulator_count > 1)) {
+ 		dev_err(dev, "multiple regulators are not supported\n");
+ 		return -EINVAL;
+ 	}
+@@ -566,7 +567,7 @@ static int _generic_set_opp(struct dev_pm_set_opp_data *data)
+ 	}
  
- 		/* Create per-opp directory */
-@@ -70,7 +70,7 @@ static bool opp_debug_create_supplies(struct dev_pm_opp *opp,
- 		if (!debugfs_create_ulong("u_amp", S_IRUGO, d,
- 					  &opp->supplies[i].u_amp))
- 			return false;
--	} while (++i < opp_table->regulator_count);
+ 	/* Change frequency */
+-	ret = _generic_set_opp_clk_only(dev, data->clk, old_freq, freq);
++	ret = _generic_set_opp_clk_only(dev, opp_table->clk, old_freq, freq);
+ 	if (ret)
+ 		goto restore_voltage;
+ 
+@@ -580,12 +581,12 @@ static int _generic_set_opp(struct dev_pm_set_opp_data *data)
+ 	return 0;
+ 
+ restore_freq:
+-	if (_generic_set_opp_clk_only(dev, data->clk, freq, old_freq))
++	if (_generic_set_opp_clk_only(dev, opp_table->clk, freq, old_freq))
+ 		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
+ 			__func__, old_freq);
+ restore_voltage:
+ 	/* This shouldn't harm even if the voltages weren't updated earlier */
+-	if (old_supply->u_volt)
++	if (old_supply)
+ 		_set_opp_voltage(dev, reg, old_supply);
+ 
+ 	return ret;
+@@ -603,10 +604,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ {
+ 	struct opp_table *opp_table;
+ 	unsigned long freq, old_freq;
+-	int (*set_opp)(struct dev_pm_set_opp_data *data);
+ 	struct dev_pm_opp *old_opp, *opp;
+-	struct regulator **regulators;
+-	struct dev_pm_set_opp_data *data;
+ 	struct clk *clk;
+ 	int ret, size;
+ 
+@@ -661,38 +659,35 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	dev_dbg(dev, "%s: switching OPP: %lu Hz --> %lu Hz\n", __func__,
+ 		old_freq, freq);
+ 
+-	regulators = opp_table->regulators;
+-
+ 	/* Only frequency scaling */
+-	if (!regulators) {
++	if (!opp_table->regulators) {
+ 		ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
+-		goto put_opps;
+-	}
++	} else if (!opp_table->set_opp) {
++		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
++						 IS_ERR(old_opp) ? NULL : old_opp->supplies,
++						 opp->supplies);
++	} else {
++		struct dev_pm_set_opp_data *data;
+ 
+-	if (opp_table->set_opp)
+-		set_opp = opp_table->set_opp;
+-	else
+-		set_opp = _generic_set_opp;
+-
+-	data = opp_table->set_opp_data;
+-	data->regulators = regulators;
+-	data->regulator_count = opp_table->regulator_count;
+-	data->clk = clk;
+-	data->dev = dev;
+-
+-	data->old_opp.rate = old_freq;
+-	size = sizeof(*opp->supplies) * opp_table->regulator_count;
+-	if (IS_ERR(old_opp))
+-		memset(data->old_opp.supplies, 0, size);
+-	else
+-		memcpy(data->old_opp.supplies, old_opp->supplies, size);
++		data = opp_table->set_opp_data;
++		data->regulators = opp_table->regulators;
++		data->regulator_count = opp_table->regulator_count;
++		data->clk = clk;
++		data->dev = dev;
+ 
+-	data->new_opp.rate = freq;
+-	memcpy(data->new_opp.supplies, opp->supplies, size);
++		data->old_opp.rate = old_freq;
++		size = sizeof(*opp->supplies) * opp_table->regulator_count;
++		if (IS_ERR(old_opp))
++			memset(data->old_opp.supplies, 0, size);
++		else
++			memcpy(data->old_opp.supplies, old_opp->supplies, size);
+ 
+-	ret = set_opp(data);
++		data->new_opp.rate = freq;
++		memcpy(data->new_opp.supplies, opp->supplies, size);
++
++		ret = opp_table->set_opp(data);
 +	}
  
- 	return true;
- }
+-put_opps:
+ 	dev_pm_opp_put(opp);
+ put_old_opp:
+ 	if (!IS_ERR(old_opp))
 -- 
 2.13.0.303.g4ebf3021692d
