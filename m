@@ -1,45 +1,56 @@
 From: Joel Fernandes <joelaf@google.com>
-Subject: [PATCH v2 0/2] Make iowait_boost optional and default to policy
-Date: Thu, 18 May 2017 23:23:42 -0700
-Message-ID: <20170519062344.27692-1-joelaf@google.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:35867 "EHLO
-        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755107AbdESGX4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 02:23:56 -0400
-Received: by mail-pf0-f176.google.com with SMTP id m17so34986539pfg.3
-        for <linux-pm@vger.kernel.org>; Thu, 18 May 2017 23:23:56 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v2 1/2] cpufreq: Make iowait boost a policy option
+Date: Thu, 18 May 2017 23:23:43 -0700
+Message-ID: <20170519062344.27692-2-joelaf@google.com>
+References: <20170519062344.27692-1-joelaf@google.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170519062344.27692-1-joelaf@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Joel Fernandes <joelaf@google.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+List-Id: linux-pm@vger.kernel.org
 
-iowait_boost is causing power regression on our arm64 SoC. Really going to max
-frequency is bad for power on mobile devices and not wise.
-These patches make it optional and default to what the policy suggests coming
-from the cpufreq driver as input to the governor.
-
-Here are some power numbers collected on an arm64 based Qualcomm SoC on a mobile
-device running a YouTube video for 30 seconds:
-
-Before: 8.042533 mWh
-After: 7.948377 mWh
-Energy savings is ~1.2%
-
-Joel Fernandes (2):
-  cpufreq: Make iowait boost a policy option
-  sched: Use iowait boost policy option in schedutil
-
- drivers/cpufreq/intel_pstate.c   |  1 +
- include/linux/cpufreq.h          |  3 +++
- kernel/sched/cpufreq_schedutil.c | 32 ++++++++++++++++++++++++++++++++
- 3 files changed, 36 insertions(+)
+Make iowait boost a cpufreq policy option and enable it for intel_pstate
+cpufreq driver. Governors like schedutil can use it to determine if
+boosting for tasks that wake up with p->in_iowait set is needed.
 
 Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Cc: Len Brown <lenb@kernel.org>
 Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com> 
+Cc: Peter Zijlstra <peterz@infradead.org> 
+Signed-off-by: Joel Fernandes <joelaf@google.com>
+---
+ drivers/cpufreq/intel_pstate.c | 1 +
+ include/linux/cpufreq.h        | 3 +++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index b7de5bd76a31..5dddc21da4f6 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2239,6 +2239,7 @@ static int intel_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	policy->cpuinfo.transition_latency = INTEL_CPUFREQ_TRANSITION_LATENCY;
+ 	policy->transition_delay_us = INTEL_CPUFREQ_TRANSITION_DELAY;
++	policy->iowait_boost_enable = true;
+ 	/* This reflects the intel_pstate_get_cpu_pstates() setting. */
+ 	policy->cur = policy->cpuinfo.min_freq;
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index a5ce0bbeadb5..0783d8b52ec8 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -127,6 +127,9 @@ struct cpufreq_policy {
+ 	 */
+ 	unsigned int		transition_delay_us;
+ 
++	/* Boost switch for tasks with p->in_iowait set */
++	bool iowait_boost_enable;
++
+ 	 /* Cached frequency lookup from cpufreq_driver_resolve_freq. */
+ 	unsigned int cached_target_freq;
+ 	int cached_resolved_idx;
 -- 
 2.13.0.303.g4ebf302169-goog
