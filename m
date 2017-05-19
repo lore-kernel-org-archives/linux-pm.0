@@ -1,69 +1,69 @@
-From: <zumbalisa@yahoo.com>
-Subject: (unknown)
-Date: Fri, 19 May 2017 16:59:00 -0000
-Message-ID: <149521314072.1559.3640133523910639922@197.254.91.202.acesskenya.net>
+From: Joel Fernandes <joelaf@google.com>
+Subject: Re: [PATCH v2 1/2] cpufreq: Make iowait boost a policy option
+Date: Fri, 19 May 2017 10:04:28 -0700
+Message-ID: <CAJWu+opefgyzER6jKTa1ktrT4pGL=bKdhAP2+i40k5tYAR38wA@mail.gmail.com>
+References: <20170519062344.27692-1-joelaf@google.com> <20170519062344.27692-2-joelaf@google.com>
+ <20170519094245.ztm6tt2iwkaiwsya@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: application/zip; name="032259416649.zip"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 197.254.91.202.acesskenya.net ([197.254.91.202]:49293 "HELO
-        197.254.91.202.acesskenya.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with SMTP id S1751107AbdESQ7W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 12:59:22 -0400
-Subject: 
-Content-Disposition: attachment
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170519094245.ztm6tt2iwkaiwsya@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-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
+Hi Peter,
+
+On Fri, May 19, 2017 at 2:42 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Thu, May 18, 2017 at 11:23:43PM -0700, Joel Fernandes wrote:
+>> Make iowait boost a cpufreq policy option and enable it for intel_pstate
+>> cpufreq driver. Governors like schedutil can use it to determine if
+>> boosting for tasks that wake up with p->in_iowait set is needed.
+>
+> Rather than just flat out disabling the option, is there something
+> better we can do on ARM?
+>
+> The reason for the IO-wait boost is to ensure we feed our external
+> devices data ASAP, this reduces wait times, increases throughput and
+> decreases the duration the devices have to operate.
+
+Can you help understand how CPU frequency can affect I/O? The ASAP
+makes me think of it as a latency thing than a throughput in which
+case there should a scheduling priority increase? Also, to me it
+sounds more like memory instead of CPU frequency should be boosted
+instead so that DMA transfers happen quicker to feed devices data
+faster.
+
+Are you trying to boost the CPU frequency so that a process waiting on
+I/O does its next set of processing quickly enough after iowaiting on
+the previous I/O transaction, and is ready to feed I/O the next time
+sooner?
+
+The case I'm seeing a lot is a background thread does I/O request and
+blocks for short period, and wakes up. All this while the CPU
+frequency is low, but that wake up causes a spike in frequency. So
+over a period of time, you see these spikes that don't really help
+anything.
+
+>
+> I realize max freq/volt might not be the best option for you, but is
+> there another spot that would make sense? I can imagine you want to
+> return your MMC to low power state ASAP as well.
+>
+>
+> So rather than a disable flag, I would really rather see an IO-wait OPP
+> state selector or something.
+
+We never had this in older kernels and I don't think we ever had an
+issue where I/O was slow because of CPU frequency. If a task is busy a
+lot, then its load tracking signal should be high and take care of
+keeping CPU frequency high right? If PELT is decaying the load
+tracking of iowaiting tasks too much, then I think that it should be
+fixed there (probably decay an iowaiting task lesser?). Considering
+that it makes power worse on newer kernels, it'd probably be best to
+disable it in my opinion for those who don't need it.
+
+thanks,
+
+-Joel
