@@ -1,142 +1,75 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: Re: [PATCH v2 3/4] arm: dts: rk3229: add a new cpu opp table
-Date: Fri, 19 May 2017 23:46:13 +0200
-Message-ID: <3157044.sksXPZM55k@phil>
-References: <1495016177-2413-1-git-send-email-frank.wang@rock-chips.com> <1495016177-2413-4-git-send-email-frank.wang@rock-chips.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH -next] power: supply: ltc3651-charger: Fix wrong pointer
+ passed to PTR_ERR()
+Date: Fri, 19 May 2017 15:07:08 -0700
+Message-ID: <20170519220708.GG19281@dtor-ws>
+References: <20170517121132.7052-1-weiyj.lk@gmail.com>
+ <20170519005948.GA34310@dtor-ws>
+ <6AADFAC011213A4C87B956458587ADB47F6B4A@SZXEMI508-MBX.china.huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1495016177-2413-4-git-send-email-frank.wang@rock-chips.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Frank Wang <frank.wang@rock-chips.com>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, mturquette@baylibre.com, sboyd@codeaurora.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, rui.zhang@intel.com, edubezval@gmail.com, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, charles.chen@rock-chips.com, cody.xie@rock-chips.com, kevan.lan@rock-chips.com, huangtao@rock-chips.com, rocky.hao@rock-chips.com, finley.xiao@rock-chips.com, zhangqing@rock-chips.com, wmc@rock-chips.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f44.google.com ([74.125.83.44]:36437 "EHLO
+        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751704AbdESWHM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 18:07:12 -0400
+Received: by mail-pg0-f44.google.com with SMTP id x64so43644682pgd.3
+        for <linux-pm@vger.kernel.org>; Fri, 19 May 2017 15:07:11 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <6AADFAC011213A4C87B956458587ADB47F6B4A@SZXEMI508-MBX.china.huawei.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "weiyongjun (A)" <weiyongjun1@huawei.com>
+Cc: Wei Yongjun <weiyj.lk@gmail.com>, Sebastian Reichel <sre@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Frank,
+Hi Wei,
 
-Am Mittwoch, 17. Mai 2017, 18:16:16 CEST schrieb Frank Wang:
-> From: Finley Xiao <finley.xiao@rock-chips.com>
+On Fri, May 19, 2017 at 01:27:51AM +0000, weiyongjun (A) wrote:
+> Hi, Dmitry
 > 
-> This patch adds some new frequencies for rk3229 board.
+> > Subject: Re: [PATCH -next] power: supply: ltc3651-charger: Fix wrong pointer
+> > passed to PTR_ERR()
+> > 
+> > On Wed, May 17, 2017 at 12:11:32PM +0000, Wei Yongjun wrote:
+> > > From: Wei Yongjun <weiyongjun1@huawei.com>
+> > >
+> > > PTR_ERR should access the value just tested by IS_ERR, otherwise
+> > > the wrong error code will be returned.
+> > >
+> > > Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+> > 
+> > This does fix the issue, but maybe we want to use PTR_ERR_OR_ZERO()?
+> > 
+> > 	ltc3651_charger->acpr_gpio = devm_gpiod_get(&pdev->dev,
+> > 					"lltc,acpr", GPIOD_IN);
+> > 	ret = PTR_ERR_OR_ZERO(ltc3651_charger->acpr_gpio);
+> > 	if (ret)
+> > 		...
+> > 
+> > Or even
+> > 
+> > 	err = PTR_ERR_OR_ZERO((ltc3651_charger->acpr_gpio =
+> > 		devm_gpiod_get(&pdev->dev, "lltc,acpr", GPIOD_IN)));
+> > 	if (err)
+> > 		...
+> > 
+> > To make sure we never mix up pointer. Maybe we need
+> > ERR_OR_ASSIGN(ptr1,
+> > ptr2) to avoid the ugly assignment in argument above...
+> > 
 > 
-> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
-> Signed-off-by: Frank Wang <frank.wang@rock-chips.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  arch/arm/boot/dts/rk3229-cpu-opp.dtsi | 85 +++++++++++++++++++++++++++++++++++
+> I have checked devm_gpiod_get() and seems it never return NULL.  And the other
+> places call devm_gpiod_get() never check for NULL return. So I think PTR_ERR_OR_ZERO()
+> is not need here.
 
-I'm not yet sure if I like that approach. The other option I'm considering
-and also tend to prefer at the moment would be to have this in a
-rk3229.dtsi, creating a chain of
-	rk322x.dtsi
-		\- rk3228-evb.dts
-		\- rk3229.dtsi
-			\- rk3229-evb.dts
+The request to use PTR_ERR_OR_ZERO() had nothing to do with
+devm_gpiod_get() returning NULL and everything with reducing number of
+times one has to write "ltc3651_charger->acpr_gpio". The original
+problem was that we checked the wrong value, if we provide macro
+incorporating assignment and conversion to an error code in one step
+this will reduce number of times we screw up like that in the future.
 
-similar to what we do with the rk3xxx.dtsi -> rk3188.dtsi.
+Thanks.
 
-If I remember correctly, there are some other tiny differences between the
-rk3228 and rk3229, so having the rk3229.dtsi already would make it
-easier to place needed stuff into it later on.
-
-
-Heiko
-
->  1 file changed, 85 insertions(+)
->  create mode 100644 arch/arm/boot/dts/rk3229-cpu-opp.dtsi
-> 
-> diff --git a/arch/arm/boot/dts/rk3229-cpu-opp.dtsi b/arch/arm/boot/dts/rk3229-cpu-opp.dtsi
-> new file mode 100644
-> index 0000000..89e8413
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/rk3229-cpu-opp.dtsi
-> @@ -0,0 +1,85 @@
-> +/*
-> + * Copyright (c) 2017 Fuzhou Rockchip Electronics Co., Ltd
-> + *
-> + * This file is dual-licensed: you can use it either under the terms
-> + * of the GPL or the X11 license, at your option. Note that this dual
-> + * licensing only applies to this file, and not this project as a
-> + * whole.
-> + *
-> + *  a) This library is free software; you can redistribute it and/or
-> + *     modify it under the terms of the GNU General Public License as
-> + *     published by the Free Software Foundation; either version 2 of the
-> + *     License, or (at your option) any later version.
-> + *
-> + *     This library is distributed in the hope that it will be useful,
-> + *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + *     GNU General Public License for more details.
-> + *
-> + *  Or, alternatively,
-> + *
-> + *  b) Permission is hereby granted, free of charge, to any person
-> + *     obtaining a copy of this software and associated documentation
-> + *     files (the "Software"), to deal in the Software without
-> + *     restriction, including without limitation the rights to use,
-> + *     copy, modify, merge, publish, distribute, sublicense, and/or
-> + *     sell copies of the Software, and to permit persons to whom the
-> + *     Software is furnished to do so, subject to the following
-> + *     conditions:
-> + *
-> + *     The above copyright notice and this permission notice shall be
-> + *     included in all copies or substantial portions of the Software.
-> + *
-> + *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-> + *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-> + *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-> + *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-> + *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-> + *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-> + *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-> + *     OTHER DEALINGS IN THE SOFTWARE.
-> + */
-> +
-> +/ {
-> +	/delete-node/ opp-table0;
-> +
-> +	cpu0_opp_table: opp_table0 {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp-408000000 {
-> +			opp-hz = /bits/ 64 <408000000>;
-> +			opp-microvolt = <950000>;
-> +			clock-latency-ns = <40000>;
-> +			opp-suspend;
-> +		};
-> +		opp-600000000 {
-> +			opp-hz = /bits/ 64 <600000000>;
-> +			opp-microvolt = <975000>;
-> +		};
-> +		opp-816000000 {
-> +			opp-hz = /bits/ 64 <816000000>;
-> +			opp-microvolt = <1000000>;
-> +		};
-> +		opp-1008000000 {
-> +			opp-hz = /bits/ 64 <1008000000>;
-> +			opp-microvolt = <1175000>;
-> +		};
-> +		opp-1200000000 {
-> +			opp-hz = /bits/ 64 <1200000000>;
-> +			opp-microvolt = <1275000>;
-> +		};
-> +		opp-1296000000 {
-> +			opp-hz = /bits/ 64 <1296000000>;
-> +			opp-microvolt = <1325000>;
-> +		};
-> +		opp-1392000000 {
-> +			opp-hz = /bits/ 64 <1392000000>;
-> +			opp-microvolt = <1375000>;
-> +		};
-> +		opp-1464000000 {
-> +			opp-hz = /bits/ 64 <1464000000>;
-> +			opp-microvolt = <1400000>;
-> +		};
-> +	};
-> +};
-> 
-
-
+-- 
+Dmitry
