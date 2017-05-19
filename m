@@ -1,40 +1,40 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 1/2] cpufreq: Make iowait boost a policy option
-Date: Fri, 19 May 2017 12:21:16 +0200
-Message-ID: <20170519102116.qsj54vylxbt7gh3h@hirez.programming.kicks-ass.net>
-References: <20170519062344.27692-1-joelaf@google.com>
- <20170519062344.27692-2-joelaf@google.com>
- <20170519094245.ztm6tt2iwkaiwsya@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170519094245.ztm6tt2iwkaiwsya@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joelaf@google.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Juri Lelli <juri.lelli@gmail.com>, Morten Rasmussen <morten.rasmussen@arm.com>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [PATCH v1] PM / devfreq: exynos-nocp : Handle return value of clk_prepare_enable
+Date: Fri, 19 May 2017 16:20:35 +0530
+Message-ID: <1495191035-15882-1-git-send-email-arvind.yadav.cs@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:33025 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751260AbdESKv7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 06:51:59 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, krzk@kernel.org, kgene@kernel.org, javier@osg.samsung.com
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, May 19, 2017 at 11:42:45AM +0200, Peter Zijlstra wrote:
-> On Thu, May 18, 2017 at 11:23:43PM -0700, Joel Fernandes wrote:
-> > Make iowait boost a cpufreq policy option and enable it for intel_pstate
-> > cpufreq driver. Governors like schedutil can use it to determine if
-> > boosting for tasks that wake up with p->in_iowait set is needed.
-> 
-> Rather than just flat out disabling the option, is there something
-> better we can do on ARM?
-> 
-> The reason for the IO-wait boost is to ensure we feed our external
-> devices data ASAP, this reduces wait times, increases throughput and
-> decreases the duration the devices have to operate.
-> 
-> I realize max freq/volt might not be the best option for you, but is
-> there another spot that would make sense? I can imagine you want to
-> return your MMC to low power state ASAP as well.
-> 
-> 
-> So rather than a disable flag, I would really rather see an IO-wait OPP
-> state selector or something.
+clk_prepare_enable() can fail here and we must check its return value.
 
-It would be even better if we can determine that point from the power
-model data.
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/devfreq/event/exynos-nocp.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
+index 5c3e7b1..f6e7956 100644
+--- a/drivers/devfreq/event/exynos-nocp.c
++++ b/drivers/devfreq/event/exynos-nocp.c
+@@ -267,7 +267,11 @@ static int exynos_nocp_probe(struct platform_device *pdev)
+ 	}
+ 	platform_set_drvdata(pdev, nocp);
+ 
+-	clk_prepare_enable(nocp->clk);
++	ret = clk_prepare_enable(nocp->clk);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to prepare ppmu clock\n");
++		return ret;
++	}
+ 
+ 	pr_info("exynos-nocp: new NoC Probe device registered: %s\n",
+ 			dev_name(dev));
+-- 
+1.9.1
