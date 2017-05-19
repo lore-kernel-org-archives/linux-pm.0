@@ -1,132 +1,144 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [PATCH v2 2/2] sched: Make iowait_boost optional in schedutil
-Date: Fri, 19 May 2017 09:10:20 -0700
-Message-ID: <CAJWu+oqWtvSBfabBfVZM5LfGtrjmkQEGw=4LfNwqJgUKSmEiYA@mail.gmail.com>
-References: <20170519062344.27692-1-joelaf@google.com> <20170519062344.27692-3-joelaf@google.com>
- <20170519065021.GK17481@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH] ARM: cpuidle: Support asymmetric idle definition
+Date: Fri, 19 May 2017 18:45:43 +0200
+Message-ID: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ua0-f181.google.com ([209.85.217.181]:36514 "EHLO
-        mail-ua0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754533AbdESQKW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 12:10:22 -0400
-Received: by mail-ua0-f181.google.com with SMTP id j17so28589722uag.3
-        for <linux-pm@vger.kernel.org>; Fri, 19 May 2017 09:10:22 -0700 (PDT)
-In-Reply-To: <20170519065021.GK17481@vireshk-i7>
+Received: from mail-wr0-f174.google.com ([209.85.128.174]:34198 "EHLO
+        mail-wr0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751731AbdESQrA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 12:47:00 -0400
+Received: by mail-wr0-f174.google.com with SMTP id l9so20334162wre.1
+        for <linux-pm@vger.kernel.org>; Fri, 19 May 2017 09:46:38 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+To: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com
+Cc: leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-Hi Viresh,
+Some hardware have clusters with different idle states. The current code does
+not support this and fails as it expects all the idle states to be identical.
 
-On Thu, May 18, 2017 at 11:50 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 18-05-17, 23:23, Joel Fernandes wrote:
->> We should apply the iowait boost only if cpufreq policy has iowait boost
->> enabled. Also make it a schedutil configuration from sysfs so it can be turned
->> on/off if needed (by default initialize it to the policy value).
->>
->> For systems that don't need/want it enabled, such as those on arm64 based
->> mobile devices that are battery operated, it saves energy when the cpufreq
->> driver policy doesn't have it enabled (details below):
->>
->> Here are some results for energy measurements collected running a YouTube video
->> for 30 seconds:
->> Before: 8.042533 mWh
->> After: 7.948377 mWh
->> Energy savings is ~1.2%
->>
->> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
->> Cc: Len Brown <lenb@kernel.org>
->> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: Ingo Molnar <mingo@redhat.com>
->> Cc: Peter Zijlstra <peterz@infradead.org>
->> Signed-off-by: Joel Fernandes <joelaf@google.com>
->> ---
->>  kernel/sched/cpufreq_schedutil.c | 32 ++++++++++++++++++++++++++++++++
->>  1 file changed, 32 insertions(+)
->>
->> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
->> index 76877a62b5fa..0e392b58b9b3 100644
->> --- a/kernel/sched/cpufreq_schedutil.c
->> +++ b/kernel/sched/cpufreq_schedutil.c
->> @@ -24,6 +24,7 @@
->>  struct sugov_tunables {
->>       struct gov_attr_set attr_set;
->>       unsigned int rate_limit_us;
->> +     bool iowait_boost_enable;
->
-> I suggested s/iowait_boost_enable/iowait_boost/ and you said okay for
-> that change.
+Because of this, the Mediatek mtk8173 had to create the same idle state for a
+big.Little system and now the Hisilicon 960 is facing the same situation.
 
-Yes, I somehow only picked up 'bool' from your comment.  I'll drop the
-'_enable' in the next version. Sorry and thanks.
+Solve this by simply assuming the multiple driver will be needed for all the
+platforms using the ARM generic cpuidle driver which makes sense because of the
+different topologies we can support with a single kernel for ARM32 or ARM64.
 
->>  };
->>
->>  struct sugov_policy {
->> @@ -171,6 +172,11 @@ static void sugov_get_util(unsigned long *util, unsigned long *max)
->>  static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
->>                                  unsigned int flags)
->>  {
->> +     struct sugov_policy *sg_policy = sg_cpu->sg_policy;
->> +
->> +     if (!sg_policy->tunables->iowait_boost_enable)
->> +             return;
->> +
->>       if (flags & SCHED_CPUFREQ_IOWAIT) {
->>               sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
->>       } else if (sg_cpu->iowait_boost) {
->> @@ -386,10 +392,34 @@ static ssize_t rate_limit_us_store(struct gov_attr_set *attr_set, const char *bu
->>       return count;
->>  }
->>
->> +static ssize_t iowait_boost_enable_show(struct gov_attr_set *attr_set,
->> +                                     char *buf)
->> +{
->> +     struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
->> +
->> +     return sprintf(buf, "%u\n", tunables->iowait_boost_enable);
->> +}
->> +
->> +static ssize_t iowait_boost_enable_store(struct gov_attr_set *attr_set,
->> +                                      const char *buf, size_t count)
->> +{
->> +     struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
->> +     bool enable;
->> +
->> +     if (kstrtobool(buf, &enable))
->> +             return -EINVAL;
->> +
->> +     tunables->iowait_boost_enable = enable;
->> +
->> +     return count;
->> +}
->> +
->>  static struct governor_attr rate_limit_us = __ATTR_RW(rate_limit_us);
->> +static struct governor_attr iowait_boost_enable = __ATTR_RW(iowait_boost_enable);
->>
->>  static struct attribute *sugov_attributes[] = {
->>       &rate_limit_us.attr,
->> +     &iowait_boost_enable.attr,
->>       NULL
->>  };
->
-> Do we really need this right now? I mean, are you going to use it this
-> way? It may never get used eventually and may be better to leave the
-> sysfs option for now.
+Tested on:
+ - 96boards: Hikey 620
+ - 96boards: Hikey 960
+ - 96boards: dragonboard410c
+ - Mediatek 8173
 
-I felt it is good to leave it to the system designer and have the
-policy set a 'default' value, so incase it isn't touched by the
-designer from userspace, then the policy default is fine, and if the
-designer chooses to change it then he has the option to. This is also
-how we currently set the rate limits for schedutil in android. I don't
-feel strongly about one way or the other and if the general consensus
-is to drop this part then I'm fine. I'm curious to know what others
-think as well though.
+Tested-by: Leo Yan <leo.yan@linaro.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/cpuidle/Kconfig.arm   |  1 +
+ drivers/cpuidle/cpuidle-arm.c | 55 +++++++++++++++++++++++++++++--------------
+ 2 files changed, 38 insertions(+), 18 deletions(-)
 
-thanks,
-
--Joel
+diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+index 21340e0..f521448 100644
+--- a/drivers/cpuidle/Kconfig.arm
++++ b/drivers/cpuidle/Kconfig.arm
+@@ -4,6 +4,7 @@
+ config ARM_CPUIDLE
+         bool "Generic ARM/ARM64 CPU idle Driver"
+         select DT_IDLE_STATES
++	select CPU_IDLE_MULTIPLE_DRIVERS
+         help
+           Select this to enable generic cpuidle driver for ARM.
+           It provides a generic idle driver whose idle states are configured
+diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+index f440d38..bec31d5 100644
+--- a/drivers/cpuidle/cpuidle-arm.c
++++ b/drivers/cpuidle/cpuidle-arm.c
+@@ -18,6 +18,7 @@
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/slab.h>
++#include <linux/topology.h>
+ 
+ #include <asm/cpuidle.h>
+ 
+@@ -44,7 +45,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+ 	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, idx);
+ }
+ 
+-static struct cpuidle_driver arm_idle_driver = {
++static struct cpuidle_driver arm_idle_driver __initdata = {
+ 	.name = "arm_idle",
+ 	.owner = THIS_MODULE,
+ 	/*
+@@ -80,23 +81,40 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
+ static int __init arm_idle_init(void)
+ {
+ 	int cpu, ret;
+-	struct cpuidle_driver *drv = &arm_idle_driver;
++	struct cpuidle_driver *drv = NULL;
+ 	struct cpuidle_device *dev;
+ 
+-	/*
+-	 * Initialize idle states data, starting at index 1.
+-	 * This driver is DT only, if no DT idle states are detected (ret == 0)
+-	 * let the driver initialization fail accordingly since there is no
+-	 * reason to initialize the idle driver if only wfi is supported.
+-	 */
+-	ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
+-	if (ret <= 0)
+-		return ret ? : -ENODEV;
+-
+-	ret = cpuidle_register_driver(drv);
+-	if (ret) {
+-		pr_err("Failed to register cpuidle driver\n");
+-		return ret;
++	for_each_possible_cpu(cpu) {
++
++		if (drv && cpumask_test_cpu(cpu, drv->cpumask))
++			continue;
++
++		ret = -ENOMEM;
++
++		drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
++		if (!drv)
++			goto out_fail;
++
++		drv->cpumask = &cpu_topology[cpu].core_sibling;
++
++		/*
++		 * Initialize idle states data, starting at index 1.  This
++		 * driver is DT only, if no DT idle states are detected (ret
++		 * == 0) let the driver initialization fail accordingly since
++		 * there is no reason to initialize the idle driver if only
++		 * wfi is supported.
++		 */
++		ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
++		if (ret <= 0) {
++			ret = ret ? : -ENODEV;
++			goto out_fail;
++		}
++
++		ret = cpuidle_register_driver(drv);
++		if (ret) {
++			pr_err("Failed to register cpuidle driver\n");
++			goto out_fail;
++		}
+ 	}
+ 
+ 	/*
+@@ -141,10 +159,11 @@ static int __init arm_idle_init(void)
+ 		dev = per_cpu(cpuidle_devices, cpu);
+ 		cpuidle_unregister_device(dev);
+ 		kfree(dev);
++		drv = cpuidle_get_driver();
++		cpuidle_unregister_driver(drv);
++		kfree(drv);
+ 	}
+ 
+-	cpuidle_unregister_driver(drv);
+-
+ 	return ret;
+ }
+ device_initcall(arm_idle_init);
+-- 
+2.7.4
