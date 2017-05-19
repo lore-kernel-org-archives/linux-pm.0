@@ -1,51 +1,87 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] ti-thermal-common: Delete an error message for a failed
- memory allocation in ti_thermal_build_data()
-Date: Thu, 18 May 2017 22:30:07 +0200
-Message-ID: <d85aaf2b-0db5-1ad0-f57f-1000c96e1c38@users.sourceforge.net>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH -next] power: supply: ltc3651-charger: Fix wrong pointer
+ passed to PTR_ERR()
+Date: Thu, 18 May 2017 17:59:48 -0700
+Message-ID: <20170519005948.GA34310@dtor-ws>
+References: <20170517121132.7052-1-weiyj.lk@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.web.de ([212.227.15.3]:52395 "EHLO mout.web.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752483AbdERUaU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 18 May 2017 16:30:20 -0400
-Content-Language: en-GB
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:34137 "EHLO
+        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752741AbdESA7v (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 May 2017 20:59:51 -0400
+Received: by mail-pf0-f193.google.com with SMTP id w69so7536360pfk.1
+        for <linux-pm@vger.kernel.org>; Thu, 18 May 2017 17:59:51 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20170517121132.7052-1-weiyj.lk@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>
+To: Wei Yongjun <weiyj.lk@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Wei Yongjun <weiyongjun1@huawei.com>, linux-pm@vger.kernel.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Thu, 18 May 2017 22:20:12 +0200
+On Wed, May 17, 2017 at 12:11:32PM +0000, Wei Yongjun wrote:
+> From: Wei Yongjun <weiyongjun1@huawei.com>
+> 
+> PTR_ERR should access the value just tested by IS_ERR, otherwise
+> the wrong error code will be returned.
+> 
+> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
 
-Omit an extra message for a memory allocation failure in this function.
+This does fix the issue, but maybe we want to use PTR_ERR_OR_ZERO()?
 
-This issue was detected by using the Coccinelle software.
+	ltc3651_charger->acpr_gpio = devm_gpiod_get(&pdev->dev,
+					"lltc,acpr", GPIOD_IN);
+	ret = PTR_ERR_OR_ZERO(ltc3651_charger->acpr_gpio);
+	if (ret)
+		...
 
-Link: http://events.linuxfoundation.org/sites/events/files/slides/LCJ16-Refactor_Strings-WSang_0.pdf
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+Or even
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index 02790f69e26c..5d29aa35cc34 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -160,10 +160,9 @@ static struct ti_thermal_data
- 	struct ti_thermal_data *data;
- 
- 	data = devm_kzalloc(bgp->dev, sizeof(*data), GFP_KERNEL);
--	if (!data) {
--		dev_err(bgp->dev, "kzalloc fail\n");
-+	if (!data)
- 		return NULL;
--	}
-+
- 	data->sensor_id = id;
- 	data->bgp = bgp;
- 	data->mode = THERMAL_DEVICE_ENABLED;
+	err = PTR_ERR_OR_ZERO((ltc3651_charger->acpr_gpio =
+		devm_gpiod_get(&pdev->dev, "lltc,acpr", GPIOD_IN)));
+	if (err)
+		...
+
+To make sure we never mix up pointer. Maybe we need ERR_OR_ASSIGN(ptr1,
+ptr2) to avoid the ugly assignment in argument above...
+
+Thanks.
+
+> ---
+>  drivers/power/supply/ltc3651-charger.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/power/supply/ltc3651-charger.c b/drivers/power/supply/ltc3651-charger.c
+> index 5f8d5c0..eea63ff 100644
+> --- a/drivers/power/supply/ltc3651-charger.c
+> +++ b/drivers/power/supply/ltc3651-charger.c
+> @@ -110,21 +110,21 @@ static int ltc3651_charger_probe(struct platform_device *pdev)
+>  	ltc3651_charger->acpr_gpio = devm_gpiod_get(&pdev->dev,
+>  					"lltc,acpr", GPIOD_IN);
+>  	if (IS_ERR(ltc3651_charger->acpr_gpio)) {
+> -		ret = PTR_ERR(ltc3651_charger->charger);
+> +		ret = PTR_ERR(ltc3651_charger->acpr_gpio);
+>  		dev_err(&pdev->dev, "Failed to acquire acpr GPIO: %d\n", ret);
+>  		return ret;
+>  	}
+>  	ltc3651_charger->fault_gpio = devm_gpiod_get_optional(&pdev->dev,
+>  					"lltc,fault", GPIOD_IN);
+>  	if (IS_ERR(ltc3651_charger->fault_gpio)) {
+> -		ret = PTR_ERR(ltc3651_charger->charger);
+> +		ret = PTR_ERR(ltc3651_charger->fault_gpio);
+>  		dev_err(&pdev->dev, "Failed to acquire fault GPIO: %d\n", ret);
+>  		return ret;
+>  	}
+>  	ltc3651_charger->chrg_gpio = devm_gpiod_get_optional(&pdev->dev,
+>  					"lltc,chrg", GPIOD_IN);
+>  	if (IS_ERR(ltc3651_charger->chrg_gpio)) {
+> -		ret = PTR_ERR(ltc3651_charger->charger);
+> +		ret = PTR_ERR(ltc3651_charger->chrg_gpio);
+>  		dev_err(&pdev->dev, "Failed to acquire chrg GPIO: %d\n", ret);
+>  		return ret;
+>  	}
+> 
+
 -- 
-2.13.0
+Dmitry
