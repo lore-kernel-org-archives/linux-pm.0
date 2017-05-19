@@ -1,126 +1,100 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/2] sched: Make iowait_boost optional in schedutil
-Date: Fri, 19 May 2017 12:20:21 +0530
-Message-ID: <20170519065021.GK17481@vireshk-i7>
-References: <20170519062344.27692-1-joelaf@google.com>
- <20170519062344.27692-3-joelaf@google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Mian Yousaf Kaukab <yousaf.kaukab@suse.com>
+Subject: [PATCH] ACPI: processor: fix LPI when built as module
+Date: Fri, 19 May 2017 11:28:37 +0200
+Message-ID: <20170519092837.30991-1-yousaf.kaukab@suse.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f46.google.com ([74.125.83.46]:33108 "EHLO
-        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750761AbdESGua (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 02:50:30 -0400
-Received: by mail-pg0-f46.google.com with SMTP id u187so33877183pgb.0
-        for <linux-pm@vger.kernel.org>; Thu, 18 May 2017 23:50:30 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20170519062344.27692-3-joelaf@google.com>
+Received: from mx2.suse.de ([195.135.220.15]:48034 "EHLO mx1.suse.de"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1752816AbdESJ3Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 May 2017 05:29:16 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joel Fernandes <joelaf@google.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com
+Cc: sudeep.holla@arm.com, catalin.marinas@arm.com, lorenzo.pieralisi@arm.com, Mian Yousaf Kaukab <yousaf.kaukab@suse.com>
 
-On 18-05-17, 23:23, Joel Fernandes wrote:
-> We should apply the iowait boost only if cpufreq policy has iowait boost
-> enabled. Also make it a schedutil configuration from sysfs so it can be turned
-> on/off if needed (by default initialize it to the policy value).
-> 
-> For systems that don't need/want it enabled, such as those on arm64 based
-> mobile devices that are battery operated, it saves energy when the cpufreq
-> driver policy doesn't have it enabled (details below):
-> 
-> Here are some results for energy measurements collected running a YouTube video
-> for 30 seconds:
-> Before: 8.042533 mWh
-> After: 7.948377 mWh
-> Energy savings is ~1.2%
-> 
-> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Ingo Molnar <mingo@redhat.com> 
-> Cc: Peter Zijlstra <peterz@infradead.org> 
-> Signed-off-by: Joel Fernandes <joelaf@google.com>
-> ---
->  kernel/sched/cpufreq_schedutil.c | 32 ++++++++++++++++++++++++++++++++
->  1 file changed, 32 insertions(+)
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 76877a62b5fa..0e392b58b9b3 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -24,6 +24,7 @@
->  struct sugov_tunables {
->  	struct gov_attr_set attr_set;
->  	unsigned int rate_limit_us;
-> +	bool iowait_boost_enable;
+Low Power Idle(LPI) support added acpi_processor_ffh_lpi_probe() and
+acpi_processor_ffh_lpi_enter() as __weak functions and arch code is
+supposed to provide the actual callbacks. This breaks if
+ACPI_PROCESSOR is configured as a module.
 
-I suggested s/iowait_boost_enable/iowait_boost/ and you said okay for
-that change.
+Add CONFIG_ARCH_HAS_ACPI_LPI configuration option to fix this.
 
->  };
->  
->  struct sugov_policy {
-> @@ -171,6 +172,11 @@ static void sugov_get_util(unsigned long *util, unsigned long *max)
->  static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
->  				   unsigned int flags)
->  {
-> +	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
-> +
-> +	if (!sg_policy->tunables->iowait_boost_enable)
-> +		return;
-> +
->  	if (flags & SCHED_CPUFREQ_IOWAIT) {
->  		sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
->  	} else if (sg_cpu->iowait_boost) {
-> @@ -386,10 +392,34 @@ static ssize_t rate_limit_us_store(struct gov_attr_set *attr_set, const char *bu
->  	return count;
->  }
->  
-> +static ssize_t iowait_boost_enable_show(struct gov_attr_set *attr_set,
-> +					char *buf)
-> +{
-> +	struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
-> +
-> +	return sprintf(buf, "%u\n", tunables->iowait_boost_enable);
-> +}
-> +
-> +static ssize_t iowait_boost_enable_store(struct gov_attr_set *attr_set,
-> +					 const char *buf, size_t count)
-> +{
-> +	struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
-> +	bool enable;
-> +
-> +	if (kstrtobool(buf, &enable))
-> +		return -EINVAL;
-> +
-> +	tunables->iowait_boost_enable = enable;
-> +
-> +	return count;
-> +}
-> +
->  static struct governor_attr rate_limit_us = __ATTR_RW(rate_limit_us);
-> +static struct governor_attr iowait_boost_enable = __ATTR_RW(iowait_boost_enable);
->  
->  static struct attribute *sugov_attributes[] = {
->  	&rate_limit_us.attr,
-> +	&iowait_boost_enable.attr,
->  	NULL
->  };
+Signed-off-by: Mian Yousaf Kaukab <yousaf.kaukab@suse.com>
+---
+ arch/arm64/Kconfig            | 1 +
+ arch/arm64/kernel/cpuidle.c   | 2 ++
+ drivers/acpi/Kconfig          | 3 +++
+ drivers/acpi/processor_idle.c | 9 +++++++--
+ 4 files changed, 13 insertions(+), 2 deletions(-)
 
-Do we really need this right now? I mean, are you going to use it this
-way? It may never get used eventually and may be better to leave the
-sysfs option for now.
-
-> @@ -543,6 +573,8 @@ static int sugov_init(struct cpufreq_policy *policy)
->  			tunables->rate_limit_us *= lat;
->  	}
->  
-> +	tunables->iowait_boost_enable = policy->iowait_boost_enable;
-> +
->  	policy->governor_data = sg_policy;
->  	sg_policy->tunables = tunables;
-
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 848a34116c67..de2f2779cdf5 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -10,6 +10,7 @@ config ARM64
+ 	select ARCH_HAS_DEBUG_VIRTUAL
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+ 	select ARCH_HAS_ACPI_TABLE_UPGRADE if ACPI
++	select ARCH_HAS_ACPI_LPI if ACPI
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+ 	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
+index fd691087dc9a..002d9cb890bd 100644
+--- a/arch/arm64/kernel/cpuidle.c
++++ b/arch/arm64/kernel/cpuidle.c
+@@ -51,9 +51,11 @@ int acpi_processor_ffh_lpi_probe(unsigned int cpu)
+ {
+ 	return arm_cpuidle_init(cpu);
+ }
++EXPORT_SYMBOL(acpi_processor_ffh_lpi_probe);
+ 
+ int acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi)
+ {
+ 	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, lpi->index);
+ }
++EXPORT_SYMBOL(acpi_processor_ffh_lpi_enter);
+ #endif
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index 1ce52f84dc23..7e5a7bce9d72 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -224,6 +224,9 @@ config ACPI_PROCESSOR_IDLE
+ 	bool
+ 	select CPU_IDLE
+ 
++config ARCH_HAS_ACPI_LPI
++	def_bool n
++
+ config ACPI_MCFG
+ 	bool
+ 
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 5c8aa9cf62d7..321fe9acd8e8 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1211,15 +1211,20 @@ static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
+ 	return 0;
+ }
+ 
+-int __weak acpi_processor_ffh_lpi_probe(unsigned int cpu)
++#ifdef CONFIG_ARCH_HAS_ACPI_LPI
++int acpi_processor_ffh_lpi_probe(unsigned int cpu);
++int acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi);
++#else
++static int acpi_processor_ffh_lpi_probe(unsigned int cpu)
+ {
+ 	return -ENODEV;
+ }
+ 
+-int __weak acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi)
++static int acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi)
+ {
+ 	return -ENODEV;
+ }
++#endif /* CONFIG_ARCH_HAS_ACPI_LPI */
+ 
+ /**
+  * acpi_idle_lpi_enter - enters an ACPI any LPI state
 -- 
-viresh
+2.11.0
