@@ -1,40 +1,28 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH v1] PM / devfreq: exynos-ppmu : Handle return value of clk_prepare_enable
-Date: Fri, 19 May 2017 16:26:04 +0530
-Message-ID: <1495191364-16015-1-git-send-email-arvind.yadav.cs@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:35093 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752320AbdESK5b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 06:57:31 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: Re: [PATCH v2 1/4] arm: dts: rk322x: add some assigned-clocks
+Date: Fri, 19 May 2017 13:18:59 +0200
+Message-ID: <4506142.lmyXEeDPFG@phil>
+References: <1495016177-2413-1-git-send-email-frank.wang@rock-chips.com> <1495016177-2413-2-git-send-email-frank.wang@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1495016177-2413-2-git-send-email-frank.wang@rock-chips.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Frank Wang <frank.wang@rock-chips.com>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, mturquette@baylibre.com, sboyd@codeaurora.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, rui.zhang@intel.com, edubezval@gmail.com, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, charles.chen@rock-chips.com, cody.xie@rock-chips.com, kevan.lan@rock-chips.com, huangtao@rock-chips.com, rocky.hao@rock-chips.com, finley.xiao@rock-chips.com, zhangqing@rock-chips.com, wmc@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, krzk@kernel.org, kgene@kernel.org, javier@osg.samsung.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-clk_prepare_enable() can fail here and we must check its return value.
+Am Mittwoch, 17. Mai 2017, 18:16:14 CEST schrieb Frank Wang:
+> From: Elaine Zhang <zhangqing@rock-chips.com>
+> 
+> Add CPLL, GPLL and some other assigned-clocks for rk322x SoC.
+> 
+> Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
+> Signed-off-by: Frank Wang <frank.wang@rock-chips.com>
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/devfreq/event/exynos-ppmu.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+applied for 4.13 after adapting subject and commit message a bit
 
-diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
-index 9b73509..8f6537a 100644
---- a/drivers/devfreq/event/exynos-ppmu.c
-+++ b/drivers/devfreq/event/exynos-ppmu.c
-@@ -648,7 +648,11 @@ static int exynos_ppmu_probe(struct platform_device *pdev)
- 			dev_name(&pdev->dev), desc[i].name);
- 	}
- 
--	clk_prepare_enable(info->ppmu.clk);
-+	ret = clk_prepare_enable(info->ppmu.clk);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to prepare ppmu clock\n");
-+		return ret;
-+	}
- 
- 	return 0;
- }
--- 
-1.9.1
+
+Thanks
+Heiko
