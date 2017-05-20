@@ -1,70 +1,104 @@
-From: <brian@oakcrestfuneralservices.com>
-Subject: (unknown)
-Date: Sat, 20 May 2017 00:26:32 -0000
-Message-ID: <149523999278.19077.125217862245481764@brasiltelecom.net.br>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH] power: supply: cpcap-battery: Add a battery driver
+Date: Sat, 20 May 2017 10:05:33 -0700
+Message-ID: <20170520170533.GN10472@atomide.com>
+References: <20170519055146.2038-1-tony@atomide.com>
 Mime-Version: 1.0
-Content-Type: application/zip; name="843245271.zip"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 189-73-108-12.fnsce702.dsl.brasiltelecom.net.br ([189.73.108.12]:37784
-        "HELO brasiltelecom.net.br" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with SMTP id S1753708AbdETA0j (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 20:26:39 -0400
-Subject: 
-Content-Disposition: attachment
+Received: from muru.com ([72.249.23.125]:48566 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751813AbdETRFi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 20 May 2017 13:05:38 -0400
+Content-Disposition: inline
+In-Reply-To: <20170519055146.2038-1-tony@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>, Rob Herring <robh@kernel.org>
 
-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
+* Tony Lindgren <tony@atomide.com> [170518 22:55]:
+> Note that I left out the battery interrupt handling for now as I need
+> to spend more time on it for the battery empty interrupts. The driver
+> works just fine without the interrupts too.
+...
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
+> @@ -0,0 +1,27 @@
+> +Motorola CPCAP PMIC battery driver binding
+> +
+> +Required properties:
+> +- compatible: Shall be "motorola,cpcap-battery"
+> +- interrupts: Interrupt specifier for each name in interrupt-names
+> +- interrupt-names: Should contain the following entries:
+> +		   "lowbph", "lowbpl", "chrgcurr1", "battdetb"
+> +- io-channels: IIO ADC channel specifier for each name in io-channel-names
+> +- io-channel-names: Should contain the following entries:
+> +		    "battdetb", "battp"
+> +
+> +Example:
+> +
+> +cpcap_battery: battery {
+> +	compatible = "motorola,cpcap-battery";
+> +	interrupts-extended = <
+> +		&cpcap 5 0 &cpcap 3 0
+> +		&cpcap 20 0 &cpcap 54 0
+> +	>;
+> +	interrupt-names =
+> +		"lowbph", "lowbpl",
+> +		"chrgcurr1", "battdetb";
+> +	io-channels = <&cpcap_adc 0 &cpcap_adc 1
+> +		       &cpcap_adc 5 &cpcap_adc 6>;
+> +	io-channel-names = "battdetb", "battp",
+> +			   "chg_isense", "batti";
+> +};
+
+I guess we should leave out the interrupts in the binding for now
+too. Or at least move them to optional properties.
+
+Anyways, below is the related dts patch I've been using.
+
+Regards,
+
+Tony
+
+8< -------------------------
+>From tony Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Fri, 19 May 2017 14:23:25 -0700
+Subject: [PATCH] ARM: dts: omap4-droid4: Configure CPCAP battery driver
+
+Configure CPCAP battery driver.
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi b/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
+--- a/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
++++ b/arch/arm/boot/dts/motorola-cpcap-mapphone.dtsi
+@@ -26,6 +26,21 @@
+ 			#io-channel-cells = <1>;
+ 		};
+ 
++		cpcap_battery: battery {
++			compatible = "motorola,cpcap-battery";
++			interrupts-extended = <
++				&cpcap 5 0 &cpcap 3 0
++				&cpcap 20 0 &cpcap 54 0
++			>;
++			interrupt-names =
++				"lowbph", "lowbpl",
++				"chrgcurr1", "battdetb";
++			io-channels = <&cpcap_adc 0 &cpcap_adc 1
++				       &cpcap_adc 5 &cpcap_adc 6>;
++			io-channel-names = "battdetb", "battp",
++					   "chg_isense", "batti";
++		};
++
+ 		cpcap_charger: charger {
+ 			compatible = "motorola,mapphone-cpcap-charger";
+ 			interrupts-extended = <
+-- 
+2.13.0
