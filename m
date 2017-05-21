@@ -1,101 +1,101 @@
-From: "H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
-Subject: [PATCH v5 3/3] drivers:power:twl4030-charger: add deferred probing for phy and iio
-Date: Sun, 21 May 2017 12:38:18 +0200
-Message-ID: <6ed105f6c9c21c24184913a7be9e665453549d79.1495363097.git.hns@goldelico.com>
-References: <cover.1495363097.git.hns@goldelico.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1495363097.git.hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
-In-Reply-To: <cover.1495363097.git.hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
-References: <cover.1495363097.git.hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: NeilBrown <neil-+NVA1uvv1dVBDLzU/O5InQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Marek Belisko <marek-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>, "H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, letux-kernel-S0jZdbWzriLCfDggNXIi3w@public.gmane.org, notasas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+Subject: [PATCH 0/3] mfd: move include files out of include/linux/i2c
+Date: Mon, 22 May 2017 00:02:07 +0200
+Message-ID: <20170521220212.1404-1-wsa@the-dreams.de>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <rtc-linux+bncBDP47C6LHEIOXHEIZECRUBCBU26K4-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This fixes an issue if both this twl4030_charger driver and
-phy-twl4030-usb are compiled as modules and loaded in random order.
-It has been observed on GTA04 and OpenPandora devices that in worst
-case the boot process hangs and in best case the AC detection fails
-with a warning.
+It doesn't make sense to use include/linux/i2c for client drivers which may in
+fact rather be hwmon or input or whatever devices. As a result, I want to
+deprecate include/linux/i2c for good. This series moves the include files to a
+better location, for the mfd subsystem to include/linux/mfd. Because of twl.h,
+this touches quite some subsystems, but I still think it is worth it.
 
-Therefore we add deferred probing checks for the usb_phy and the
-iio channel for AC detection.
+I prefer the series to go upstream via the subsystem tree; if you prefer that I
+take it via I2C, just let me know.
 
-For implementing this we must reorder code because we can't safely
-return -EPROBE_DEFER after allocating any devm managed interrupt
-(it might already/still be enabled without working interrupt handler).
+No runtime testing because of no HW, but buildbot is happy with this series at
+least. A branch can be found here:
 
-So the check for required resources that may abort probing by
-returning -EPROBE_DEFER, must come first.
+git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/platform_data
 
-Signed-off-by: H. Nikolaus Schaller <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
----
- drivers/power/supply/twl4030_charger.c | 37 ++++++++++++++++++++--------------
- 1 file changed, 22 insertions(+), 15 deletions(-)
+Thanks and kind regards,
 
-diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
-index 785a07bc4f39..945eabdbbc89 100644
---- a/drivers/power/supply/twl4030_charger.c
-+++ b/drivers/power/supply/twl4030_charger.c
-@@ -984,6 +984,28 @@ static int twl4030_bci_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, bci);
- 
-+	if (bci->dev->of_node) {
-+		struct device_node *phynode;
-+
-+		phynode = of_find_compatible_node(bci->dev->of_node->parent,
-+						  NULL, "ti,twl4030-usb");
-+		if (phynode) {
-+			bci->transceiver = devm_usb_get_phy_by_node(
-+				bci->dev, phynode, &bci->usb_nb);
-+			if (IS_ERR(bci->transceiver) &&
-+			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER)
-+				return -EPROBE_DEFER;	/* PHY not ready */
-+		}
-+	}
-+
-+	bci->channel_vac = iio_channel_get(&pdev->dev, "vac");
-+	if (IS_ERR(bci->channel_vac)) {
-+		if (PTR_ERR(bci->channel_vac) == -EPROBE_DEFER)
-+			return -EPROBE_DEFER;	/* iio not ready */
-+		dev_warn(&pdev->dev, "could not request vac iio channel");
-+		bci->channel_vac = NULL;
-+	}
-+
- 	bci->ac = devm_power_supply_register(&pdev->dev, &twl4030_bci_ac_desc,
- 					     NULL);
- 	if (IS_ERR(bci->ac)) {
-@@ -1017,25 +1039,10 @@ static int twl4030_bci_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	bci->channel_vac = iio_channel_get(&pdev->dev, "vac");
--	if (IS_ERR(bci->channel_vac)) {
--		bci->channel_vac = NULL;
--		dev_warn(&pdev->dev, "could not request vac iio channel");
--	}
--
- 	INIT_WORK(&bci->work, twl4030_bci_usb_work);
- 	INIT_DELAYED_WORK(&bci->current_worker, twl4030_current_worker);
- 
- 	bci->usb_nb.notifier_call = twl4030_bci_usb_ncb;
--	if (bci->dev->of_node) {
--		struct device_node *phynode;
--
--		phynode = of_find_compatible_node(bci->dev->of_node->parent,
--						  NULL, "ti,twl4030-usb");
--		if (phynode)
--			bci->transceiver = devm_usb_get_phy_by_node(
--				bci->dev, phynode, &bci->usb_nb);
--	}
- 
- 	/* Enable interrupts now. */
- 	reg = ~(u32)(TWL4030_ICHGLOW | TWL4030_ICHGEOC | TWL4030_TBATOR2 |
+   Wolfram
+
+
+Wolfram Sang (3):
+  mfd: dm355evm_msp: move header file out of I2C realm
+  mfd: tps65010: move header file out of I2C realm
+  mfd: twl: move header file out of I2C realm
+
+ arch/arm/mach-omap1/board-h2-mmc.c        | 2 +-
+ arch/arm/mach-omap1/board-h2.c            | 2 +-
+ arch/arm/mach-omap1/board-h3-mmc.c        | 2 +-
+ arch/arm/mach-omap1/board-h3.c            | 2 +-
+ arch/arm/mach-omap1/board-osk.c           | 2 +-
+ arch/arm/mach-omap2/common.h              | 2 +-
+ arch/arm/mach-omap2/omap_twl.c            | 2 +-
+ arch/arm/mach-s3c24xx/mach-osiris-dvs.c   | 2 +-
+ arch/arm/mach-s3c24xx/mach-osiris.c       | 2 +-
+ drivers/gpio/gpio-twl4030.c               | 2 +-
+ drivers/iio/adc/twl4030-madc.c            | 2 +-
+ drivers/iio/adc/twl6030-gpadc.c           | 2 +-
+ drivers/input/keyboard/twl4030_keypad.c   | 2 +-
+ drivers/input/misc/dm355evm_keys.c        | 2 +-
+ drivers/input/misc/twl4030-pwrbutton.c    | 2 +-
+ drivers/input/misc/twl4030-vibra.c        | 2 +-
+ drivers/mfd/dm355evm_msp.c                | 2 +-
+ drivers/mfd/tps65010.c                    | 2 +-
+ drivers/mfd/twl-core.c                    | 6 +++---
+ drivers/mfd/twl4030-audio.c               | 2 +-
+ drivers/mfd/twl4030-irq.c                 | 2 +-
+ drivers/mfd/twl4030-power.c               | 2 +-
+ drivers/mfd/twl6030-irq.c                 | 2 +-
+ drivers/phy/phy-twl4030-usb.c             | 2 +-
+ drivers/power/supply/twl4030_charger.c    | 2 +-
+ drivers/pwm/pwm-twl-led.c                 | 2 +-
+ drivers/pwm/pwm-twl.c                     | 2 +-
+ drivers/regulator/twl-regulator.c         | 2 +-
+ drivers/regulator/twl6030-regulator.c     | 2 +-
+ drivers/rtc/rtc-dm355evm.c                | 2 +-
+ drivers/rtc/rtc-twl.c                     | 2 +-
+ drivers/usb/host/ohci-omap.c              | 2 +-
+ drivers/usb/phy/phy-isp1301-omap.c        | 2 +-
+ drivers/usb/phy/phy-twl6030-usb.c         | 2 +-
+ drivers/video/backlight/pandora_bl.c      | 2 +-
+ drivers/video/fbdev/omap/lcd_h3.c         | 2 +-
+ drivers/watchdog/twl4030_wdt.c            | 2 +-
+ include/linux/{i2c => mfd}/dm355evm_msp.h | 0
+ include/linux/{i2c => mfd}/tps65010.h     | 2 +-
+ include/linux/{i2c => mfd}/twl.h          | 0
+ sound/soc/codecs/twl4030.c                | 2 +-
+ 41 files changed, 41 insertions(+), 41 deletions(-)
+ rename include/linux/{i2c => mfd}/dm355evm_msp.h (100%)
+ rename include/linux/{i2c => mfd}/tps65010.h (99%)
+ rename include/linux/{i2c => mfd}/twl.h (100%)
+
 -- 
-2.12.2
+2.11.0
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
