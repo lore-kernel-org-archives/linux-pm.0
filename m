@@ -1,126 +1,106 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v6 1/4] clk: Add support for runtime PM
-Date: Mon, 22 May 2017 14:34:30 +0200
-Message-ID: <4049980f-1837-93cc-49e0-e9dee2760cf1@samsung.com>
-References: <1490182543-28550-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170322113554eucas1p27471f0de278c55d5dce7fdf120395e09@eucas1p2.samsung.com>
- <1490182543-28550-2-git-send-email-m.szyprowski@samsung.com>
- <149081897388.31513.7062843004022908296@resonance>
- <75509e0f-26cd-52e7-8c71-b004ab6abc81@samsung.com>
- <149089387341.31513.7531874072502656432@resonance>
- <5b4b2f3e-dc4b-0866-c4b8-4c7e4dba2be0@samsung.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] ARM: cpuidle: Support asymmetric idle definition
+Date: Mon, 22 May 2017 14:41:45 +0200
+Message-ID: <ce4ee3e6-baeb-5f99-a8d1-f2f3855fde35@linaro.org>
+References: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
+ <850fab54-d6e6-7b4c-631a-f4ee658c96fa@arm.com>
+ <ca383c4a-9eeb-bd35-fa7b-1098bd0a5dc1@linaro.org>
+ <45754d0a-6a98-2987-74ed-429926d89cbc@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-reply-to: <5b4b2f3e-dc4b-0866-c4b8-4c7e4dba2be0@samsung.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f50.google.com ([74.125.82.50]:33933 "EHLO
+        mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751042AbdEVMls (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 May 2017 08:41:48 -0400
+Received: by mail-wm0-f50.google.com with SMTP id 123so11719123wmg.1
+        for <linux-pm@vger.kernel.org>; Mon, 22 May 2017 05:41:47 -0700 (PDT)
+In-Reply-To: <45754d0a-6a98-2987-74ed-429926d89cbc@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-Hi All,
-
-On 2017-04-06 14:46, Marek Szyprowski wrote:
-> Hi Michael,
->
-> On 2017-03-30 19:11, Michael Turquette wrote:
->> Quoting Marek Szyprowski (2017-03-30 00:24:15)
->>> On 2017-03-29 22:22, Michael Turquette wrote:
->>>> Quoting Marek Szyprowski (2017-03-22 04:35:40)
->>>>> Registers for some clocks might be located in the SOC area, which 
->>>>> are under the
->>>>> power domain. To enable access to those registers respective 
->>>>> domain has to be
->>>>> turned on. Additionally, registers for such clocks will usually 
->>>>> loose its
->>>>> contents when power domain is turned off, so additional saving and 
->>>>> restoring of
->>>>> them might be needed in the clock controller driver.
->>>>>
->>>>> This patch adds basic infrastructure in the clocks core to allow 
->>>>> implementing
->>>>> driver for such clocks under power domains. Clock provider can 
->>>>> supply a
->>>>> struct device pointer, which is the used by clock core for 
->>>>> tracking and managing
->>>>> clock's controller runtime pm state. Each clk_prepare() operation
->>>>> will first call pm_runtime_get_sync() on the supplied device, while
->>>>> clk_unprepare() will do pm_runtime_put_sync() at the end.
->>>>>
->>>>> Additional calls to pm_runtime_get/put functions are required to 
->>>>> ensure that any
->>>>> register access (like calculating/changing clock rates and 
->>>>> unpreparing/disabling
->>>>> unused clocks on boot) will be done with clock controller in 
->>>>> runtime resumend
->>>>> state.
->>>> The above is a bit confusing. Is clk_prepare really special? It 
->>>> seems to
->>>> me that every single clk_ops callback will need this?
->>> clk_prepare/unprepare are special, because they allow sleeping, so they
->>> are natural
->>> candidates for the place for calling runtime PM operations.
->>> clk_enable()/disable()
->>> is called under a spinlock, so runtime pm cannot be called efficiently
->>> there, but
->>> core guarantees that they are called after clk_prepare(), so accessing
->>> hw registers
->>> is safe. The only remaining calls are not guaranteed to be called 
->>> always
->>> after
->>> clk_prepare(), so those additional calls and checks in runtime pm are
->>> needed there.
->> Right, so any call that holds prepare_lock and might touch the hardware
->> needs to first call pm_runtime_get_sync.
+On 22/05/2017 12:32, Sudeep Holla wrote:
+> 
+> 
+> On 22/05/17 11:20, Daniel Lezcano wrote:
 >>
->>>> That leads to my second question: why put this in the clk core? Can 
->>>> the
->>>> clk provider driver simply add pm_runtime_{get,put} calls into its
->>>> clk_ops callbacks instead? The clk core does not directly touch 
->>>> hardware
->>>> (e.g. reading registers) so putting the pm runtime calls into the
->>>> provider callbacks should be sufficient.
->>> In theory is should be possible to duplicate all kind of clock build 
->>> blocks
->>> (gates, muxes, dividers, ...) with additional runtime pm calls. This
->>> would however
->>> end in much more code and a bit more complicated locking. Implementing
->>> it in clk
->>> core made the code simpler. It also turned out that runtime pm
->>> integration is
->>> needed for more that a single clock provider: besides Samsung SoCs
->>> (Exynos 5433
->>> and newer, Exynos 4412 ISP, Exynos Audio Subsystem, hacks in Exynos 
->>> 542x
->>> can be
->>> also replaced by runtime PM calls), Ulf mentioned that exactly similar
->>> pattern
->>> is used for some UX500 SoCs (STE). More will probably come once the
->>> feature is
->>> in, because for now such drivers simply forces runtime active state 
->>> as a
->>> workaround or don't instantiate related power domains at all.
->> I agree with the above, but I'm also wondering about the folks that use
->> regmap internally to their own clock provider drivers. I guess they will
->> have the option to either do their own thing or use this framework-level
->> solution.
+>> Hi Sudeep,
 >>
->> I've started reviewing the code itself and will respond to those mails
->> separately.
->
-> Is there a chance to get your comments soon? I would really like to give
-> this patchset a try in linux-next for a few days, but for now Sylwester
-> waits for you.
->
-> Stephen: what is your opinion on this patchset? Would you like to give it
-> a try in -next?
->
+>>
+>> On 22/05/2017 12:11, Sudeep Holla wrote:
+>>>
+>>>
+>>> On 19/05/17 17:45, Daniel Lezcano wrote:
+>>>> Some hardware have clusters with different idle states. The current code does
+>>>> not support this and fails as it expects all the idle states to be identical.
+>>>>
+>>>> Because of this, the Mediatek mtk8173 had to create the same idle state for a
+>>>> big.Little system and now the Hisilicon 960 is facing the same situation.
+>>>>
+>>>
+>>> While I agree the we don't support them today, it's better to benchmark
+>>> and record/compare the gain we get with the support for cluster based
+>>> idle states.
+>>
+>> Sorry, I don't get what you are talking about. What do you want to
+>> benchmark ? Cluster idling ?
+>>
+> 
+> OK, I was not so clear. I had a brief chat with Lorenzo, we have few
+> reason to have this support:
+> 1. Different number of states between clusters
+> 2. Different latencies(this is the one I was referring above, generally
+>    we keep worst case timings here and wanted to see if any platform
+>    measured improvements with different latencies in the idle states)
 
-Mike, Stephen: any comments? We already missed v4.12 merge window...
+I don't see the point. Are you putting into question the big little design?
 
-Best regards
+[ ... ]
+
+>>>> +	for_each_possible_cpu(cpu) {
+>>>> +
+>>>> +		if (drv && cpumask_test_cpu(cpu, drv->cpumask))
+>>>> +			continue;
+>>>> +
+>>>> +		ret = -ENOMEM;
+>>>> +
+>>>> +		drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
+>>>> +		if (!drv)
+>>>> +			goto out_fail;
+>>>> +
+>>>> +		drv->cpumask = &cpu_topology[cpu].core_sibling;
+>>>> +
+>>>
+>>> This is not always true and not architecturally guaranteed. So instead
+>>> of introducing this broken dependency, better to extract information
+>>> from the device tree.
+>>
+>> Can you give an example of a broken dependency ?
+>>
+>> The cpu topology information is extracted from the device tree. So
+>> if the topology is broken, the DT is broken also. Otherwise, the
+>> topology code must fix the broken dependency from the DT.
+>>
+> 
+> No, I meant there's no guarantee that all designs must follow this rule.
+> I don't mean CPU topology code or binding is broken. What I meant is
+> linking CPU topology to CPU power domains is wrong. We should make use
+> of DT you infer this information as it's already there. Topology bindings
+> makes no reference to power and hence you simply can't infer that
+> information from it.
+
+Ok, I will have a look how power domains can fit in this.
+
+However I'm curious to know a platform with a cluster idle state
+powering down only a subset of CPUs belonging to the cluster.
+
+
 -- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
