@@ -1,52 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: dt: Set default policy->transition_delay_ns
-Date: Mon, 22 May 2017 16:25:22 +0530
-Message-ID: <20170522105522.GG6510@vireshk-i7>
-References: <16157eb75bb26cca73a0da930e49f2549b96fd65.1495429745.git.viresh.kumar@linaro.org>
- <87h90d2mqm.fsf@arm.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
+Date: Mon, 22 May 2017 12:12:02 +0100
+Message-ID: <20170522111202.ho52rve7kwloytef@sirena.org.uk>
+References: <20170521220212.1404-1-wsa@the-dreams.de>
+ <20170521220212.1404-4-wsa@the-dreams.de>
+ <20170522095243.ff5uygzzrvo57jkd@sirena.org.uk>
+ <20170522102812.GA1459@katana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:33999 "EHLO
-        mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933002AbdEVKzZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 May 2017 06:55:25 -0400
-Received: by mail-pf0-f172.google.com with SMTP id 9so78950318pfj.1
-        for <linux-pm@vger.kernel.org>; Mon, 22 May 2017 03:55:25 -0700 (PDT)
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="3cgcyz2pgijsvimy"
+Return-path: <linux-input-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <87h90d2mqm.fsf@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170522102812.GA1459@katana>
+Sender: linux-input-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-i2c@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dani
 List-Id: linux-pm@vger.kernel.org
-To: Brendan Jackman <brendan.jackman@arm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 22-05-17, 11:45, Brendan Jackman wrote:
-> Hi Viresh,
-> 
-> On Mon, May 22 2017 at 05:10, Viresh Kumar wrote:
-> > The rate_limit_us for the schedutil governor is getting set to 500 ms by
-> > default for the ARM64 hikey board. And its way too much, even for the
-> > default value. Lets set the default transition_delay_ns to something
-> > more realistic (10 ms), while the userspace always have a chance to set
-> > something it wants.
-> 
-> Just a thought - do you think we can treat the reported transition
-> latency as a proxy for the "cost" of freq transitions?  I.e. assume that
-> on platforms with very fast frequency switching it's probably cheap to
-> switch frequency and we want schedutil to respond quickly, whereas on
-> platforms with big latencies, frequency switches might be expensive and
-> we probably want hysteresis.
-> 
-> If that makes sense then maybe we could use 10 * transition_latency /
-> NSEC_PER_USEC, when transition_latency is reported? Otherwise 10ms seems
-> sensible to me..
 
-So my platform (hikey) does provide transition-latency as 500 us. But
-schedutil multiplies that with LATENCY_MULTIPLIER (1000) and that
-makes it 500000 rate_limit_us, which is unacceptable.
+--3cgcyz2pgijsvimy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-@Rafael: Why does the LATENCY_MULTIPLIER has such a high value? I am
-not sure I understood completely on why we have this multiplier :(
+On Mon, May 22, 2017 at 12:28:12PM +0200, Wolfram Sang wrote:
 
--- 
-viresh
+> If you were not CCed on the other patches, then you are likely not
+> listed as a maintainer for them?
+
+Right, but it does mean that the people who only get a subset of patches
+are missing context for how things are expected to be handled.
+Sometimes it's clear but often it isn't.
+
+--3cgcyz2pgijsvimy
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlkix4EACgkQJNaLcl1U
+h9AoyggAgaMjiKp5VVkDMDXvnk7mjJn0zZJkLTo8eRqXQezPfYpmF9xgddizz6aP
+amhuCFkOGq/szuZvUiqRuuZVR927HUTth5jHEI5oXJlpSzkD9GFYWKFb5DEGk7z8
++PxlTwkovPNwkvLLRkPeYL1u3NxZoBQLflM5wU7L0F3xjIWeObAptv8O+LyUvt/A
+v6SKbNM3qYATkx0KYyJk/MoQQRJqW8D7dfzPqZ/0qNucWnI+XpQHW3zD7f1YujYn
+njy7ZP+ATutTod2ziOBAXUREZuMZCnY4xtyJvbMrUdcxlYYzqfvc5VswGE1V5Shq
+R0sjq6K15NBdpTXTAv89glr1IEeaRA==
+=Ko/9
+-----END PGP SIGNATURE-----
+
+--3cgcyz2pgijsvimy--
