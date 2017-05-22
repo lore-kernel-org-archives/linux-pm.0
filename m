@@ -1,63 +1,134 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
-Date: Mon, 22 May 2017 10:52:43 +0100
-Message-ID: <20170522095243.ff5uygzzrvo57jkd@sirena.org.uk>
-References: <20170521220212.1404-1-wsa@the-dreams.de>
- <20170521220212.1404-4-wsa@the-dreams.de>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] ARM: cpuidle: Support asymmetric idle definition
+Date: Mon, 22 May 2017 11:11:37 +0100
+Message-ID: <850fab54-d6e6-7b4c-631a-f4ee658c96fa@arm.com>
+References: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="tvcs7s5pzwvwzc4b"
-Return-path: <rtc-linux+bncBDQ2L75W5QGBBBPLRLEQKGQETT35RPA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <20170521220212.1404-4-wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:34402 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751616AbdEVKLl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 22 May 2017 06:11:41 -0400
+In-Reply-To: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, Sudeep Holla <sudeep.holla@arm.com>, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
 
---tvcs7s5pzwvwzc4b
-Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
 
-On Mon, May 22, 2017 at 12:02:10AM +0200, Wolfram Sang wrote:
-> include/linux/i2c is not for client devices. Move the header file to a
-> more appropriate location.
+On 19/05/17 17:45, Daniel Lezcano wrote:
+> Some hardware have clusters with different idle states. The current code does
+> not support this and fails as it expects all the idle states to be identical.
+> 
+> Because of this, the Mediatek mtk8173 had to create the same idle state for a
+> big.Little system and now the Hisilicon 960 is facing the same situation.
+> 
 
-Acked-by: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+While I agree the we don't support them today, it's better to benchmark
+and record/compare the gain we get with the support for cluster based
+idle states.
 
-I'm missing the rest of the series and/or the cover letter...
+> Solve this by simply assuming the multiple driver will be needed for all the
+> platforms using the ARM generic cpuidle driver which makes sense because of the
+> different topologies we can support with a single kernel for ARM32 or ARM64.
+> 
+
+Unfortunately, it's not true always and for sure will break with the new
+ARM DynamIQ [1]
+
+> Tested on:
+>  - 96boards: Hikey 620
+>  - 96boards: Hikey 960
+>  - 96boards: dragonboard410c
+>  - Mediatek 8173
+> 
+> Tested-by: Leo Yan <leo.yan@linaro.org>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/cpuidle/Kconfig.arm   |  1 +
+>  drivers/cpuidle/cpuidle-arm.c | 55 +++++++++++++++++++++++++++++--------------
+>  2 files changed, 38 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+> index 21340e0..f521448 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -4,6 +4,7 @@
+>  config ARM_CPUIDLE
+>          bool "Generic ARM/ARM64 CPU idle Driver"
+>          select DT_IDLE_STATES
+> +	select CPU_IDLE_MULTIPLE_DRIVERS
+>          help
+>            Select this to enable generic cpuidle driver for ARM.
+>            It provides a generic idle driver whose idle states are configured
+> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+> index f440d38..bec31d5 100644
+> --- a/drivers/cpuidle/cpuidle-arm.c
+> +++ b/drivers/cpuidle/cpuidle-arm.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+>  #include <linux/slab.h>
+> +#include <linux/topology.h>
+>  
+>  #include <asm/cpuidle.h>
+>  
+> @@ -44,7 +45,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>  	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, idx);
+>  }
+>  
+> -static struct cpuidle_driver arm_idle_driver = {
+> +static struct cpuidle_driver arm_idle_driver __initdata = {
+>  	.name = "arm_idle",
+>  	.owner = THIS_MODULE,
+>  	/*
+> @@ -80,23 +81,40 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
+>  static int __init arm_idle_init(void)
+>  {
+>  	int cpu, ret;
+> -	struct cpuidle_driver *drv = &arm_idle_driver;
+> +	struct cpuidle_driver *drv = NULL;
+>  	struct cpuidle_device *dev;
+>  
+> -	/*
+> -	 * Initialize idle states data, starting at index 1.
+> -	 * This driver is DT only, if no DT idle states are detected (ret == 0)
+> -	 * let the driver initialization fail accordingly since there is no
+> -	 * reason to initialize the idle driver if only wfi is supported.
+> -	 */
+> -	ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
+> -	if (ret <= 0)
+> -		return ret ? : -ENODEV;
+> -
+> -	ret = cpuidle_register_driver(drv);
+> -	if (ret) {
+> -		pr_err("Failed to register cpuidle driver\n");
+> -		return ret;
+> +	for_each_possible_cpu(cpu) {
+> +
+> +		if (drv && cpumask_test_cpu(cpu, drv->cpumask))
+> +			continue;
+> +
+> +		ret = -ENOMEM;
+> +
+> +		drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
+> +		if (!drv)
+> +			goto out_fail;
+> +
+> +		drv->cpumask = &cpu_topology[cpu].core_sibling;
+> +
+
+This is not always true and not architecturally guaranteed. So instead
+of introducing this broken dependency, better to extract information
+from the device tree.
 
 -- 
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
---- 
-You received this message because you are subscribed to the Google Groups "rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+Regards,
+Sudeep
 
---tvcs7s5pzwvwzc4b
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlkitOoACgkQJNaLcl1U
-h9DNBQf/W6MueE4T2MQLhzjv1GsoGBNNokoFrcJbPchpAPhw/DczZsF29IdybRFZ
-VacP62GRSx1hZcxR8/ydv0S6rRUXv9jTVnL04MI6lRCMEI+PisoVGYTW+M3TmvUF
-hfX/HTza1pis1bd5u5qpRJcV2MSK+cJ/tAHKgTIaZvt5u3LeF7JodmA1zYq03M8n
-xdpgRf00NHikCcSgfyuf1chUpvBz4/HBA3QCNC3UpTieY16B67ZQAr17TZLuUD1G
-eT9Jgt2hQHnRwzUQ6IlnO58hyFI4Q3DHJGgPCWqEp4FKTZjx1HSdXKjbDIZJeBR5
-SJ58jl2BjAjeGhP2am4Xcd+Vfqr1IQ==
-=pkjm
------END PGP SIGNATURE-----
-
---tvcs7s5pzwvwzc4b--
+[1]
+https://community.arm.com/processors/b/blog/posts/arm-dynamiq-technology-for-the-next-era-of-compute
