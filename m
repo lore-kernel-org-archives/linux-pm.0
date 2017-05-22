@@ -1,65 +1,172 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
-Date: Mon, 22 May 2017 12:28:12 +0200
-Message-ID: <20170522102812.GA1459@katana>
-References: <20170521220212.1404-1-wsa@the-dreams.de>
- <20170521220212.1404-4-wsa@the-dreams.de>
- <20170522095243.ff5uygzzrvo57jkd@sirena.org.uk>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] ARM: cpuidle: Support asymmetric idle definition
+Date: Mon, 22 May 2017 11:32:24 +0100
+Message-ID: <45754d0a-6a98-2987-74ed-429926d89cbc@arm.com>
+References: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
+ <850fab54-d6e6-7b4c-631a-f4ee658c96fa@arm.com>
+ <ca383c4a-9eeb-bd35-fa7b-1098bd0a5dc1@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170522095243.ff5uygzzrvo57jkd@sirena.org.uk>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: linux-i2c@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dani
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:34574 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752118AbdEVKc2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 22 May 2017 06:32:28 -0400
+In-Reply-To: <ca383c4a-9eeb-bd35-fa7b-1098bd0a5dc1@linaro.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
 
---cWoXeonUoKmBZSoM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, May 22, 2017 at 10:52:43AM +0100, Mark Brown wrote:
-> On Mon, May 22, 2017 at 12:02:10AM +0200, Wolfram Sang wrote:
-> > include/linux/i2c is not for client devices. Move the header file to a
-> > more appropriate location.
->=20
-> Acked-by: Mark Brown <broonie@kernel.org>
+On 22/05/17 11:20, Daniel Lezcano wrote:
+> 
+> Hi Sudeep,
+> 
+> 
+> On 22/05/2017 12:11, Sudeep Holla wrote:
+>>
+>>
+>> On 19/05/17 17:45, Daniel Lezcano wrote:
+>>> Some hardware have clusters with different idle states. The current code does
+>>> not support this and fails as it expects all the idle states to be identical.
+>>>
+>>> Because of this, the Mediatek mtk8173 had to create the same idle state for a
+>>> big.Little system and now the Hisilicon 960 is facing the same situation.
+>>>
+>>
+>> While I agree the we don't support them today, it's better to benchmark
+>> and record/compare the gain we get with the support for cluster based
+>> idle states.
+> 
+> Sorry, I don't get what you are talking about. What do you want to
+> benchmark ? Cluster idling ?
+> 
 
-Thanks!
+OK, I was not so clear. I had a brief chat with Lorenzo, we have few
+reason to have this support:
+1. Different number of states between clusters
+2. Different latencies(this is the one I was referring above, generally
+   we keep worst case timings here and wanted to see if any platform
+   measured improvements with different latencies in the idle states)
 
-> I'm missing the rest of the series and/or the cover letter...
+>>> Solve this by simply assuming the multiple driver will be needed for all the
+>>> platforms using the ARM generic cpuidle driver which makes sense because of the
+>>> different topologies we can support with a single kernel for ARM32 or ARM64.
+>>>
+>>
+>> Unfortunately, it's not true always and for sure will break with the new
+>> ARM DynamIQ [1]
+> 
+> We will see when a platform will be available for testing :)
+> 
 
-I meanwhile send cover letters only to all mailing lists involved. I
-used to CC the individuals, too, until those messages were rejected
-because the CC list grew too large :( And I really only CCed maintainers
-then, no git history used.
+May not be too late ;), though I have no clue yet.
 
-If you were not CCed on the other patches, then you are likely not
-listed as a maintainer for them?
+>>> Tested on:
+>>>  - 96boards: Hikey 620
+>>>  - 96boards: Hikey 960
+>>>  - 96boards: dragonboard410c
+>>>  - Mediatek 8173
+>>>
+>>> Tested-by: Leo Yan <leo.yan@linaro.org>
+>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>> ---
+>>>  drivers/cpuidle/Kconfig.arm   |  1 +
+>>>  drivers/cpuidle/cpuidle-arm.c | 55 +++++++++++++++++++++++++++++--------------
+>>>  2 files changed, 38 insertions(+), 18 deletions(-)
+>>>
+>>> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+>>> index 21340e0..f521448 100644
+>>> --- a/drivers/cpuidle/Kconfig.arm
+>>> +++ b/drivers/cpuidle/Kconfig.arm
+>>> @@ -4,6 +4,7 @@
+>>>  config ARM_CPUIDLE
+>>>          bool "Generic ARM/ARM64 CPU idle Driver"
+>>>          select DT_IDLE_STATES
+>>> +	select CPU_IDLE_MULTIPLE_DRIVERS
+>>>          help
+>>>            Select this to enable generic cpuidle driver for ARM.
+>>>            It provides a generic idle driver whose idle states are configured
+>>> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+>>> index f440d38..bec31d5 100644
+>>> --- a/drivers/cpuidle/cpuidle-arm.c
+>>> +++ b/drivers/cpuidle/cpuidle-arm.c
+>>> @@ -18,6 +18,7 @@
+>>>  #include <linux/module.h>
+>>>  #include <linux/of.h>
+>>>  #include <linux/slab.h>
+>>> +#include <linux/topology.h>
+>>>  
+>>>  #include <asm/cpuidle.h>
+>>>  
+>>> @@ -44,7 +45,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>>>  	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, idx);
+>>>  }
+>>>  
+>>> -static struct cpuidle_driver arm_idle_driver = {
+>>> +static struct cpuidle_driver arm_idle_driver __initdata = {
+>>>  	.name = "arm_idle",
+>>>  	.owner = THIS_MODULE,
+>>>  	/*
+>>> @@ -80,23 +81,40 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
+>>>  static int __init arm_idle_init(void)
+>>>  {
+>>>  	int cpu, ret;
+>>> -	struct cpuidle_driver *drv = &arm_idle_driver;
+>>> +	struct cpuidle_driver *drv = NULL;
+>>>  	struct cpuidle_device *dev;
+>>>  
+>>> -	/*
+>>> -	 * Initialize idle states data, starting at index 1.
+>>> -	 * This driver is DT only, if no DT idle states are detected (ret == 0)
+>>> -	 * let the driver initialization fail accordingly since there is no
+>>> -	 * reason to initialize the idle driver if only wfi is supported.
+>>> -	 */
+>>> -	ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
+>>> -	if (ret <= 0)
+>>> -		return ret ? : -ENODEV;
+>>> -
+>>> -	ret = cpuidle_register_driver(drv);
+>>> -	if (ret) {
+>>> -		pr_err("Failed to register cpuidle driver\n");
+>>> -		return ret;
+>>> +	for_each_possible_cpu(cpu) {
+>>> +
+>>> +		if (drv && cpumask_test_cpu(cpu, drv->cpumask))
+>>> +			continue;
+>>> +
+>>> +		ret = -ENOMEM;
+>>> +
+>>> +		drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
+>>> +		if (!drv)
+>>> +			goto out_fail;
+>>> +
+>>> +		drv->cpumask = &cpu_topology[cpu].core_sibling;
+>>> +
+>>
+>> This is not always true and not architecturally guaranteed. So instead
+>> of introducing this broken dependency, better to extract information
+>> from the device tree.
+> 
+> Can you give an example of a broken dependency ?
+> 
+> The cpu topology information is extracted from the device tree. So
+> if the topology is broken, the DT is broken also. Otherwise, the
+> topology code must fix the broken dependency from the DT.
+> 
+
+No, I meant there's no guarantee that all designs must follow this rule.
+I don't mean CPU topology code or binding is broken. What I meant is
+linking CPU topology to CPU power domains is wrong. We should make use
+of DT you infer this information as it's already there. Topology bindings
+makes no reference to power and hence you simply can't infer that
+information from it.
 
 
---cWoXeonUoKmBZSoM
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlkivTgACgkQFA3kzBSg
-KbaTdQ//X6Cza46bguYF00U+Vf7lEyTuUUuhl7rujtuXRrZTTNNJmQryjeAWa4ws
-3tM5vJrZjpsdz8K1dAtyZC+Og/SsnkieakqAEPCyym0aE1Wyr3ynjL4DAgQB0nHG
-AbBfLsgI2dTwBwkOJ8JwEFM9a6C7knsPdW/XyM9VfQNuC84stCSPqmzYJzxjkUjF
-LtN1Wo9IRigyV9WpJXZeLUKanm5lsPvtHArK0cwWLfA3sdVo/xKYiznOJ91CkUxf
-WUXe2jOihnra1lOm+HiMKtu1KlOPJ65Te5bACMtArVKIhP7bFqk8COcgh8YFzAeM
-kei6j3pX8+jqoy/EELwdCGp0l9FiQSR7aeQmP2Vuc1l4l0iuafDQkjCwGqekdMjS
-SUCE6GpmLTPL8x8H2PBX/YzUouHBpp5VlftFGe0t+T/KfIy6o+6KIc41qvrgfp4S
-yyNF+Q85aMGI0NMlVmh6JENL4+XI17EgYfREWfL2IoeVl5URQbbN0XHxVnCZF5wY
-IHMsbhUSnWb4OOakZnf9dEAKpuX9fHVhjY9dSWX1A3xrNY7SliAUPjei3sKXEiPw
-20zSkk4F7qqyQd/Y5WzIOVlmmteoVlEQaCF0sqAxFILeHFX8yyl8BvDq+HPVu2Wo
-7IX601Djf7wwU4+Ix1So9alvmVrM0mfW7O4eZHIEeblp18rs22Y=
-=A/8Y
------END PGP SIGNATURE-----
-
---cWoXeonUoKmBZSoM--
+-- 
+Regards,
+Sudeep
