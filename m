@@ -1,172 +1,61 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] ARM: cpuidle: Support asymmetric idle definition
-Date: Mon, 22 May 2017 11:32:24 +0100
-Message-ID: <45754d0a-6a98-2987-74ed-429926d89cbc@arm.com>
-References: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
- <850fab54-d6e6-7b4c-631a-f4ee658c96fa@arm.com>
- <ca383c4a-9eeb-bd35-fa7b-1098bd0a5dc1@linaro.org>
+From: Brendan Jackman <brendan.jackman@arm.com>
+Subject: Re: [PATCH] cpufreq: dt: Set default policy->transition_delay_ns
+Date: Mon, 22 May 2017 11:45:53 +0100
+Message-ID: <87h90d2mqm.fsf@arm.com>
+References: <16157eb75bb26cca73a0da930e49f2549b96fd65.1495429745.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:34574 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:34740 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752118AbdEVKc2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 22 May 2017 06:32:28 -0400
-In-Reply-To: <ca383c4a-9eeb-bd35-fa7b-1098bd0a5dc1@linaro.org>
-Content-Language: en-US
+        id S1757403AbdEVKp4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 22 May 2017 06:45:56 -0400
+In-reply-to: <16157eb75bb26cca73a0da930e49f2549b96fd65.1495429745.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
+Hi Viresh,
 
+On Mon, May 22 2017 at 05:10, Viresh Kumar wrote:
+> The rate_limit_us for the schedutil governor is getting set to 500 ms by
+> default for the ARM64 hikey board. And its way too much, even for the
+> default value. Lets set the default transition_delay_ns to something
+> more realistic (10 ms), while the userspace always have a chance to set
+> something it wants.
 
-On 22/05/17 11:20, Daniel Lezcano wrote:
-> 
-> Hi Sudeep,
-> 
-> 
-> On 22/05/2017 12:11, Sudeep Holla wrote:
->>
->>
->> On 19/05/17 17:45, Daniel Lezcano wrote:
->>> Some hardware have clusters with different idle states. The current code does
->>> not support this and fails as it expects all the idle states to be identical.
->>>
->>> Because of this, the Mediatek mtk8173 had to create the same idle state for a
->>> big.Little system and now the Hisilicon 960 is facing the same situation.
->>>
->>
->> While I agree the we don't support them today, it's better to benchmark
->> and record/compare the gain we get with the support for cluster based
->> idle states.
-> 
-> Sorry, I don't get what you are talking about. What do you want to
-> benchmark ? Cluster idling ?
-> 
+Just a thought - do you think we can treat the reported transition
+latency as a proxy for the "cost" of freq transitions?  I.e. assume that
+on platforms with very fast frequency switching it's probably cheap to
+switch frequency and we want schedutil to respond quickly, whereas on
+platforms with big latencies, frequency switches might be expensive and
+we probably want hysteresis.
 
-OK, I was not so clear. I had a brief chat with Lorenzo, we have few
-reason to have this support:
-1. Different number of states between clusters
-2. Different latencies(this is the one I was referring above, generally
-   we keep worst case timings here and wanted to see if any platform
-   measured improvements with different latencies in the idle states)
+If that makes sense then maybe we could use 10 * transition_latency /
+NSEC_PER_USEC, when transition_latency is reported? Otherwise 10ms seems
+sensible to me..
 
->>> Solve this by simply assuming the multiple driver will be needed for all the
->>> platforms using the ARM generic cpuidle driver which makes sense because of the
->>> different topologies we can support with a single kernel for ARM32 or ARM64.
->>>
->>
->> Unfortunately, it's not true always and for sure will break with the new
->> ARM DynamIQ [1]
-> 
-> We will see when a platform will be available for testing :)
-> 
+Cheers,
+Brendan
 
-May not be too late ;), though I have no clue yet.
-
->>> Tested on:
->>>  - 96boards: Hikey 620
->>>  - 96boards: Hikey 960
->>>  - 96boards: dragonboard410c
->>>  - Mediatek 8173
->>>
->>> Tested-by: Leo Yan <leo.yan@linaro.org>
->>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> ---
->>>  drivers/cpuidle/Kconfig.arm   |  1 +
->>>  drivers/cpuidle/cpuidle-arm.c | 55 +++++++++++++++++++++++++++++--------------
->>>  2 files changed, 38 insertions(+), 18 deletions(-)
->>>
->>> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
->>> index 21340e0..f521448 100644
->>> --- a/drivers/cpuidle/Kconfig.arm
->>> +++ b/drivers/cpuidle/Kconfig.arm
->>> @@ -4,6 +4,7 @@
->>>  config ARM_CPUIDLE
->>>          bool "Generic ARM/ARM64 CPU idle Driver"
->>>          select DT_IDLE_STATES
->>> +	select CPU_IDLE_MULTIPLE_DRIVERS
->>>          help
->>>            Select this to enable generic cpuidle driver for ARM.
->>>            It provides a generic idle driver whose idle states are configured
->>> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
->>> index f440d38..bec31d5 100644
->>> --- a/drivers/cpuidle/cpuidle-arm.c
->>> +++ b/drivers/cpuidle/cpuidle-arm.c
->>> @@ -18,6 +18,7 @@
->>>  #include <linux/module.h>
->>>  #include <linux/of.h>
->>>  #include <linux/slab.h>
->>> +#include <linux/topology.h>
->>>  
->>>  #include <asm/cpuidle.h>
->>>  
->>> @@ -44,7 +45,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
->>>  	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, idx);
->>>  }
->>>  
->>> -static struct cpuidle_driver arm_idle_driver = {
->>> +static struct cpuidle_driver arm_idle_driver __initdata = {
->>>  	.name = "arm_idle",
->>>  	.owner = THIS_MODULE,
->>>  	/*
->>> @@ -80,23 +81,40 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
->>>  static int __init arm_idle_init(void)
->>>  {
->>>  	int cpu, ret;
->>> -	struct cpuidle_driver *drv = &arm_idle_driver;
->>> +	struct cpuidle_driver *drv = NULL;
->>>  	struct cpuidle_device *dev;
->>>  
->>> -	/*
->>> -	 * Initialize idle states data, starting at index 1.
->>> -	 * This driver is DT only, if no DT idle states are detected (ret == 0)
->>> -	 * let the driver initialization fail accordingly since there is no
->>> -	 * reason to initialize the idle driver if only wfi is supported.
->>> -	 */
->>> -	ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
->>> -	if (ret <= 0)
->>> -		return ret ? : -ENODEV;
->>> -
->>> -	ret = cpuidle_register_driver(drv);
->>> -	if (ret) {
->>> -		pr_err("Failed to register cpuidle driver\n");
->>> -		return ret;
->>> +	for_each_possible_cpu(cpu) {
->>> +
->>> +		if (drv && cpumask_test_cpu(cpu, drv->cpumask))
->>> +			continue;
->>> +
->>> +		ret = -ENOMEM;
->>> +
->>> +		drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
->>> +		if (!drv)
->>> +			goto out_fail;
->>> +
->>> +		drv->cpumask = &cpu_topology[cpu].core_sibling;
->>> +
->>
->> This is not always true and not architecturally guaranteed. So instead
->> of introducing this broken dependency, better to extract information
->> from the device tree.
-> 
-> Can you give an example of a broken dependency ?
-> 
-> The cpu topology information is extracted from the device tree. So
-> if the topology is broken, the DT is broken also. Otherwise, the
-> topology code must fix the broken dependency from the DT.
-> 
-
-No, I meant there's no guarantee that all designs must follow this rule.
-I don't mean CPU topology code or binding is broken. What I meant is
-linking CPU topology to CPU power domains is wrong. We should make use
-of DT you infer this information as it's already there. Topology bindings
-makes no reference to power and hence you simply can't infer that
-information from it.
-
-
--- 
-Regards,
-Sudeep
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq-dt.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index c943787d761e..70eac3fd89ac 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -275,6 +275,9 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>
+>  	policy->cpuinfo.transition_latency = transition_latency;
+>
+> +	/* Set the default transition delay to 10ms */
+> +	policy->transition_delay_us = 10 * USEC_PER_MSEC;
+> +
+>  	return 0;
+>
+>  out_free_cpufreq_table:
