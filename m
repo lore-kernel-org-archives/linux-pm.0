@@ -1,155 +1,43 @@
-From: Frank Wang <frank.wang@rock-chips.com>
-Subject: Re: [PATCH v2 3/4] arm: dts: rk3229: add a new cpu opp table
-Date: Mon, 22 May 2017 10:29:57 +0800
-Message-ID: <8d8af44c-353a-5415-ed15-ccc68db81159@rock-chips.com>
-References: <1495016177-2413-1-git-send-email-frank.wang@rock-chips.com>
- <1495016177-2413-4-git-send-email-frank.wang@rock-chips.com>
- <3157044.sksXPZM55k@phil>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <3157044.sksXPZM55k@phil>
-Content-Language: en-US
-Sender: linux-clk-owner@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, mturquette@baylibre.com, sboyd@codeaurora.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, rui.zhang@intel.com, edubezval@gmail.com, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, charles.chen@rock-chips.com, cody.xie@rock-chips.com, kevan.lan@rock-chips.com, huangtao@rock-chips.com, rocky.hao@rock-chips.com, finley.xiao@rock-chips.com, zhangqing@rock-chips.com, wmc@rock-chips.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: dt: Set default policy->transition_delay_ns
+Date: Mon, 22 May 2017 10:40:14 +0530
+Message-ID: <16157eb75bb26cca73a0da930e49f2549b96fd65.1495429745.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:34163 "EHLO
+        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751011AbdEVFKZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 May 2017 01:10:25 -0400
+Received: by mail-pf0-f170.google.com with SMTP id 9so70538521pfj.1
+        for <linux-pm@vger.kernel.org>; Sun, 21 May 2017 22:10:25 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-Hi Heiko,
+The rate_limit_us for the schedutil governor is getting set to 500 ms by
+default for the ARM64 hikey board. And its way too much, even for the
+default value. Lets set the default transition_delay_ns to something
+more realistic (10 ms), while the userspace always have a chance to set
+something it wants.
 
-On 2017/5/20 5:46, Heiko Stuebner wrote:
-> Hi Frank,
->
-> Am Mittwoch, 17. Mai 2017, 18:16:16 CEST schrieb Frank Wang:
->> From: Finley Xiao<finley.xiao@rock-chips.com>
->>
->> This patch adds some new frequencies for rk3229 board.
->>
->> Signed-off-by: Finley Xiao<finley.xiao@rock-chips.com>
->> Signed-off-by: Frank Wang<frank.wang@rock-chips.com>
->> Acked-by: Viresh Kumar<viresh.kumar@linaro.org>
->> ---
->>   arch/arm/boot/dts/rk3229-cpu-opp.dtsi | 85 +++++++++++++++++++++++++++++++++++
-> I'm not yet sure if I like that approach. The other option I'm considering
-> and also tend to prefer at the moment would be to have this in a
-> rk3229.dtsi, creating a chain of
-> 	rk322x.dtsi
-> 		\- rk3228-evb.dts
-> 		\- rk3229.dtsi
-> 			\- rk3229-evb.dts
->
-> similar to what we do with the rk3xxx.dtsi -> rk3188.dtsi.
->
-> If I remember correctly, there are some other tiny differences between the
-> rk3228 and rk3229, so having the rk3229.dtsi already would make it
-> easier to place needed stuff into it later on.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq-dt.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-That makes sense, I will amend that based on your comments.
-
-
-BR.
-Frank
-
-> Heiko
->
->>   1 file changed, 85 insertions(+)
->>   create mode 100644 arch/arm/boot/dts/rk3229-cpu-opp.dtsi
->>
->> diff --git a/arch/arm/boot/dts/rk3229-cpu-opp.dtsi b/arch/arm/boot/dts/rk3229-cpu-opp.dtsi
->> new file mode 100644
->> index 0000000..89e8413
->> --- /dev/null
->> +++ b/arch/arm/boot/dts/rk3229-cpu-opp.dtsi
->> @@ -0,0 +1,85 @@
->> +/*
->> + * Copyright (c) 2017 Fuzhou Rockchip Electronics Co., Ltd
->> + *
->> + * This file is dual-licensed: you can use it either under the terms
->> + * of the GPL or the X11 license, at your option. Note that this dual
->> + * licensing only applies to this file, and not this project as a
->> + * whole.
->> + *
->> + *  a) This library is free software; you can redistribute it and/or
->> + *     modify it under the terms of the GNU General Public License as
->> + *     published by the Free Software Foundation; either version 2 of the
->> + *     License, or (at your option) any later version.
->> + *
->> + *     This library is distributed in the hope that it will be useful,
->> + *     but WITHOUT ANY WARRANTY; without even the implied warranty of
->> + *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->> + *     GNU General Public License for more details.
->> + *
->> + *  Or, alternatively,
->> + *
->> + *  b) Permission is hereby granted, free of charge, to any person
->> + *     obtaining a copy of this software and associated documentation
->> + *     files (the "Software"), to deal in the Software without
->> + *     restriction, including without limitation the rights to use,
->> + *     copy, modify, merge, publish, distribute, sublicense, and/or
->> + *     sell copies of the Software, and to permit persons to whom the
->> + *     Software is furnished to do so, subject to the following
->> + *     conditions:
->> + *
->> + *     The above copyright notice and this permission notice shall be
->> + *     included in all copies or substantial portions of the Software.
->> + *
->> + *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
->> + *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
->> + *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
->> + *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
->> + *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
->> + *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
->> + *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
->> + *     OTHER DEALINGS IN THE SOFTWARE.
->> + */
->> +
->> +/ {
->> +	/delete-node/ opp-table0;
->> +
->> +	cpu0_opp_table: opp_table0 {
->> +		compatible = "operating-points-v2";
->> +		opp-shared;
->> +
->> +		opp-408000000 {
->> +			opp-hz = /bits/ 64 <408000000>;
->> +			opp-microvolt = <950000>;
->> +			clock-latency-ns = <40000>;
->> +			opp-suspend;
->> +		};
->> +		opp-600000000 {
->> +			opp-hz = /bits/ 64 <600000000>;
->> +			opp-microvolt = <975000>;
->> +		};
->> +		opp-816000000 {
->> +			opp-hz = /bits/ 64 <816000000>;
->> +			opp-microvolt = <1000000>;
->> +		};
->> +		opp-1008000000 {
->> +			opp-hz = /bits/ 64 <1008000000>;
->> +			opp-microvolt = <1175000>;
->> +		};
->> +		opp-1200000000 {
->> +			opp-hz = /bits/ 64 <1200000000>;
->> +			opp-microvolt = <1275000>;
->> +		};
->> +		opp-1296000000 {
->> +			opp-hz = /bits/ 64 <1296000000>;
->> +			opp-microvolt = <1325000>;
->> +		};
->> +		opp-1392000000 {
->> +			opp-hz = /bits/ 64 <1392000000>;
->> +			opp-microvolt = <1375000>;
->> +		};
->> +		opp-1464000000 {
->> +			opp-hz = /bits/ 64 <1464000000>;
->> +			opp-microvolt = <1400000>;
->> +		};
->> +	};
->> +};
->>
->
->
->
-
-
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index c943787d761e..70eac3fd89ac 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -275,6 +275,9 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 
+ 	policy->cpuinfo.transition_latency = transition_latency;
+ 
++	/* Set the default transition delay to 10ms */
++	policy->transition_delay_us = 10 * USEC_PER_MSEC;
++
+ 	return 0;
+ 
+ out_free_cpufreq_table:
+-- 
+2.7.4
