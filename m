@@ -1,61 +1,40 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI updates for v4.12-rc3
-Date: Mon, 22 May 2017 21:50:10 +0200
-Message-ID: <CAJZ5v0gqGiwK9XDn7HNyxwgyM28xXES+x4GASF9HCk=ZeL4d5A@mail.gmail.com>
+From: "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
+Subject: RE: [PATCH] x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on AMD
+ systems
+Date: Mon, 22 May 2017 20:20:56 +0000
+Message-ID: <BN6PR1201MB01312A2AB93708B9115D4865F8F80@BN6PR1201MB0131.namprd12.prod.outlook.com>
+References: <1495030819-4347-1-git-send-email-Yazen.Ghannam@amd.com>
+ <20170522162143.GA19781@nazgul.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f68.google.com ([209.85.214.68]:34063 "EHLO
-        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753123AbdEVTuL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 May 2017 15:50:11 -0400
+Received: from mail-by2nam03on0084.outbound.protection.outlook.com ([104.47.42.84]:53320
+        "EHLO NAM03-BY2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1757604AbdEVUVA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 22 May 2017 16:21:00 -0400
+In-Reply-To: <20170522162143.GA19781@nazgul.tnic>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Borislav Petkov <bp@alien8.de>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>
 
-Hi Linus,
-
-Please pull from the tag
-
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-4.12-rc3
-
-with top-most commit e3170cc04d7ccf0e644ee3e3263e2df7a7685936
-
- Merge branches 'acpi-button' and 'acpi-tools'
-
-on top of commit 08332893e37af6ae779367e78e444f8f9571511d
-
- Linux 4.12-rc2
-
-to receive ACPI fixes for v4.12-rc3.
-
-These revert a 4.11 change that turned out to be problematic and
-add a .gitignore file.
-
-Specifics:
-
- - Revert a 4.11 commit related to the ACPI-based handling of laptop
-   lids that made changes incompatible with existing user space
-   stacks and broke things there (Lv Zheng).
-
- - Add .gitignore to the ACPI tools directory (Prarit Bhargava).
-
-Thanks!
-
-
----------------
-
-Lv Zheng (1):
-      Revert "ACPI / button: Remove lid_init_state=method mode"
-
-Prarit Bhargava (1):
-      tools/power/acpi: Add .gitignore file
-
----------------
-
- Documentation/acpi/acpi-lid.txt | 16 ++++++++++++----
- drivers/acpi/button.c           |  9 +++++++++
- tools/power/acpi/.gitignore     |  4 ++++
- 3 files changed, 25 insertions(+), 4 deletions(-)
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCb3Jpc2xhdiBQZXRrb3YgW21h
+aWx0bzpicEBhbGllbjguZGVdDQo+IFNlbnQ6IE1vbmRheSwgTWF5IDIyLCAyMDE3IDEyOjIyIFBN
+DQo+DQoNCi4uLg0KIA0KPiBXaGF0IGFib3V0IHg4Nl9pZGxlPw0KPiANCj4gVGhhdCB3aG9sZSBz
+ZWxlY3RfaWRsZV9yb3V0aW5lKCkganVtcGluZyB0aHJvdWdoIGhvb3BzLiBUaGF0J3Mgc3RpbGwg
+ZG9pbmcNCj4gZGVmYXVsdF9pZGxlKCkgb24gWmVuLCBBRkFJQ1QuDQo+IA0KPiBPciBhbSBJIG1p
+c3Npbmcgc29tZXRoaW5nPw0KPiANCj4gQmVjYXVzZSB0aGF0IHN0aWxsIGFza3MgcHJlZmVyX213
+YWl0X2MxX292ZXJfaGFsdCgpIGFuZCB0aGF0IG5lZWRzIGEgZmFtaWx5DQo+IGNoZWNrIG9yIHdo
+YXRldmVyLi4uDQo+IA0KDQpJIHRoaW5rIHdlIGxlYXZlIEhBTFQgYXMgdGhlIGRlZmF1bHQgaWRs
+ZSBtZWNoYW5pc20gYW5kIGFsbG93IEJJT1MgdG8gc2VsZWN0DQpvdGhlciBtZWNoYW5pc21zIHRo
+cm91Z2ggQUNQSS4gDQoNCk9uIEFNRCwgSEFMVCBhbGxvd3MgdGhlIGhhcmR3YXJlIHRvIGF1dG9t
+YXRpY2FsbHkgbWFuYWdlIGl0cyBDc3RhdGVzLiBUaGlzDQppcyB1c2VmdWwgaWYgdGhlIE9TIGRv
+ZXNuJ3QgZGVmaW5lIG11bHRpcGxlIHN0YXRlcyBsaWtlIHdoZW4gd2UgdXNlDQpkZWZhdWx0X2lk
+bGVfY2FsbCgpLg0KDQpPbiB0aGUgb3RoZXIgaGFuZCwgTVdBSVQgb24gQU1EIGxpbWl0cyB0aGUg
+aGFyZHdhcmUgdG8gdXNpbmcgb25seSBjZXJ0YWluLA0Kc2hhbGxvd2VyIENzdGF0ZXMuIFRoaXMg
+aXMgb2theSBpZiB3ZSBkZWZpbmUgaW5kaXZpZHVhbCBzdGF0ZXMgYW5kIHVzZSBNV0FJVA0KZm9y
+IHNvbWUgb2YgdGhlbS4gQnV0IGl0IHdvdWxkIGNvbnN1bWUgbW9yZSBwb3dlciBpZiB1c2VkIGFs
+d2F5cy4NCg0KVGhhbmtzLA0KWWF6ZW4NCg==
