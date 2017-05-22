@@ -1,106 +1,75 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] ARM: cpuidle: Support asymmetric idle definition
-Date: Mon, 22 May 2017 16:02:23 +0100
-Message-ID: <8c5b46d1-8b34-2ced-e27d-4d76f80953c6@arm.com>
-References: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
- <850fab54-d6e6-7b4c-631a-f4ee658c96fa@arm.com>
- <ca383c4a-9eeb-bd35-fa7b-1098bd0a5dc1@linaro.org>
- <45754d0a-6a98-2987-74ed-429926d89cbc@arm.com>
- <ce4ee3e6-baeb-5f99-a8d1-f2f3855fde35@linaro.org>
- <3ce7048e-6d9d-9e46-a6fb-4d3263231536@arm.com>
- <abfc0a2d-04bc-6714-f772-5f5ae23a1680@linaro.org>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH] x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on AMD
+ systems
+Date: Mon, 22 May 2017 18:21:43 +0200
+Message-ID: <20170522162143.GA19781@nazgul.tnic>
+References: <1495030819-4347-1-git-send-email-Yazen.Ghannam@amd.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:39704 "EHLO foss.arm.com"
+Received: from mail.skyhub.de ([5.9.137.197]:57254 "EHLO mail.skyhub.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934539AbdEVPC0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 22 May 2017 11:02:26 -0400
-In-Reply-To: <abfc0a2d-04bc-6714-f772-5f5ae23a1680@linaro.org>
-Content-Language: en-US
+        id S1758238AbdEVQVv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 22 May 2017 12:21:51 -0400
+Content-Disposition: inline
+In-Reply-To: <1495030819-4347-1-git-send-email-Yazen.Ghannam@amd.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Yazen Ghannam <Yazen.Ghannam@amd.com>
+Cc: linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz
 
-
-
-On 22/05/17 15:48, Daniel Lezcano wrote:
-> On 22/05/2017 15:02, Sudeep Holla wrote:
+On Wed, May 17, 2017 at 09:20:19AM -0500, Yazen Ghannam wrote:
+> From: Yazen Ghannam <yazen.ghannam@amd.com>
 > 
-> [ ... ]
+> AMD systems support the Monitor/Mwait instructions and these can be used
+> for ACPI C1 in the same way as on Intel systems, with appropriate BIOS
+> support.
 > 
->>>>>>> +		drv->cpumask = &cpu_topology[cpu].core_sibling;
->>>>>>> +
->>>>>>
->>>>>> This is not always true and not architecturally guaranteed. So instead
->>>>>> of introducing this broken dependency, better to extract information
->>>>>> from the device tree.
->>>>>
->>>>> Can you give an example of a broken dependency ?
->>>>>
->>>>> The cpu topology information is extracted from the device tree. So
->>>>> if the topology is broken, the DT is broken also. Otherwise, the
->>>>> topology code must fix the broken dependency from the DT.
->>>>>
->>>>
->>>> No, I meant there's no guarantee that all designs must follow this rule.
->>>> I don't mean CPU topology code or binding is broken. What I meant is
->>>> linking CPU topology to CPU power domains is wrong. We should make use
->>>> of DT you infer this information as it's already there. Topology bindings
->>>> makes no reference to power and hence you simply can't infer that
->>>> information from it.
->>>
->>> Ok, I will have a look how power domains can fit in this.
->>>
->>> However I'm curious to know a platform with a cluster idle state
->>> powering down only a subset of CPUs belonging to the cluster.
->>>
->>
->> We can't reuse CPU topology for power domains:
->> 1. As I mentioned earlier for sure, it won't be same with ARM DynamIQ.
->> 2. Topology bindings strictly restrict themselves with topology and not
->> connected with power-domains. We also have separate power domain
->> bindings.
+> Allow ffh_cstate_init() to succeed on AMD systems and make the Cstate
+> description vendor-agnostic.
 > 
-> Yes, the theory is valid, but practically nowadays I don't see where we
-> have a cluster defined by a topology with a different cluster power domain.
+> Signed-off-by: Yazen Ghannam <yazen.ghannam@amd.com>
+> ---
+>  arch/x86/kernel/acpi/cstate.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 > 
+> diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+> index 8a908ae..4c5dd5d 100644
+> --- a/arch/x86/kernel/acpi/cstate.c
+> +++ b/arch/x86/kernel/acpi/cstate.c
+> @@ -109,7 +109,7 @@ static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
+>  			cx->type);
+>  	}
+>  	snprintf(cx->desc,
+> -			ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
+> +			ACPI_CX_DESC_LEN, "ACPI FFH X86 MWAIT 0x%x",
+>  			cx->address);
+>  out:
+>  	return retval;
+> @@ -169,7 +169,8 @@ static int __init ffh_cstate_init(void)
+>  {
+>  	struct cpuinfo_x86 *c = &boot_cpu_data;
+>  
+> -	if (c->x86_vendor != X86_VENDOR_INTEL)
+> +	if (c->x86_vendor != X86_VENDOR_INTEL &&
+> +	    c->x86_vendor != X86_VENDOR_AMD)
+>  		return -1;
+>  
+>  	cpu_cstate_entry = alloc_percpu(struct cstate_entry);
 
-While I agree that it's true in current practice, but in past we have
-seen "innovative designs". We initially had 2 clusters(big and little)
-then we saw 3 cluster(big little and tiny or whatever you what to call)
-So as it's not architecturally guaranteed, it's not nice to make this
-assumption in a generic driver.
+What about x86_idle?
 
-> By the way, if you have any pointer to documentation for DynamIQ PM and
-> design? I would be interested to have a look.
-> 
+That whole select_idle_routine() jumping through hoops. That's still
+doing default_idle() on Zen, AFAICT.
 
-I don't have anything in detail. Excerpts from the link I sent earlier
-indicate that it's possible and highly likely.
+Or am I missing something?
 
-"DynamIQ supports multiple, configurable, performance domains within a
-single cluster. These domains, consisting of single or multiple ARM
-CPUs, can scale in performance and power with finer granularity than
-previous quad-core clusters."
-
->> We need to separate topology and power domains. We have some dependency
->> like this in big little drivers(both CPUfreq and CPUIdle) but that
->> dependencies must be removed as they are not architecturally guaranteed.
->> Lorenzo had a patch[1] to solve this issue, I can post the latest
->> version of it again and continue the discussion after some basic
->> rebase/testing.
-> 
-> Actually, I am not convinced by the approach proposed in this patch.
-> 
-> Let me have a look at the idle power domain before, I do believe we can
-> do something much more simple.
-> 
-
-OK, if you think so.
+Because that still asks prefer_mwait_c1_over_halt() and that needs a
+family check or whatever...
 
 -- 
-Regards,
-Sudeep
+Regards/Gruss,
+    Boris.
+
+ECO tip #101: Trim your mails when you reply.
+--
