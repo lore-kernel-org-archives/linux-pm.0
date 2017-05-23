@@ -1,58 +1,31 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH RFC 0/8] SCHED_DEADLINE freq/cpu invariance and OPP
- selection
-Date: Tue, 23 May 2017 22:29:56 +0200
-Message-ID: <20170523202956.7a2q4ysbqbnaik3n@hirez.programming.kicks-ass.net>
-References: <20170523085351.18586-1-juri.lelli@arm.com>
- <20170523202321.3bygt6ydyiy5xief@hirez.programming.kicks-ass.net>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2 3/4] PM / OPP: opp-microvolt is not optional if
+ regulators are set
+Date: Tue, 23 May 2017 14:01:35 -0700
+Message-ID: <20170523210135.GO20170@codeaurora.org>
+References: <cover.1495511998.git.viresh.kumar@linaro.org>
+ <dcb9872771568fec4c7d8d11ba4939cd8da279c0.1495511998.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:44716 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1763670AbdEWUaP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 16:30:15 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170523202321.3bygt6ydyiy5xief@hirez.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <dcb9872771568fec4c7d8d11ba4939cd8da279c0.1495511998.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com
 
-On Tue, May 23, 2017 at 10:23:21PM +0200, Peter Zijlstra wrote:
-> On Tue, May 23, 2017 at 09:53:43AM +0100, Juri Lelli wrote:
+On 05/23, Viresh Kumar wrote:
+> If dev_pm_opp_set_regulators() is called for a device and its regulators
+> are set in the OPP core, the OPP nodes for the device must contain the
+> "opp-microvolt" property, otherwise there is something wrong and we
+> better error out.
 > 
-> > A point that is still very much up for discussion (more that the others :) is
-> > how we implement frequency/cpu scaling. SCHED_FLAG_RECLAIM tasks only need
-> > grub_reclaim(), as the function already scales their reservation runtime
-> > considering other reservations and maximum bandwidth a CPU has to offer.
-> > However, for normal !RECLAIM tasks multiple things can be implemented which
-> > seem to make sense:
-> > 
-> >  - don't scale at all: normal tasks will only get a % of CPU _time_ as granted
-> >    by AC
-> >  - go to max as soon as a normal task in enqueued: this because dimensioning of
-> >    parameters is usually done at max OPP/biggest CPU and normal task assume
-> >    that this is always the condition when they run
-> >  - scale runtime acconding to current frequency and max CPU capacity: this is
-> >    what this set is currently implementing
-> > 
-> > Opinions?
-> 
-> 
-> So I'm terribly confused...
-> 
-> By using the active bandwidth to select frequency we effectively
-> reduce idle time (to 0 if we had infinite granular frequency steps and
-> no margins).
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
-When all DL tasks consume their full reservation.
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
-> So !RECLAIM works as expected. They get the time they reserved, since
-> that was taken into account by active bandwidth.
-> 
-> And RECLAIM works, since that only promises to (re)distribute idle time,
-> and if there is none that is an easy task.
-
-And if they don't, there will thus be some idle time to redistribute and
-that, again, still works as expected.
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
