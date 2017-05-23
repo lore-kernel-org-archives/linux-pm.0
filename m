@@ -1,46 +1,72 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH] x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on AMD
- systems
-Date: Tue, 23 May 2017 15:06:16 +0200
-Message-ID: <20170523130616.GC25383@nazgul.tnic>
-References: <1495030819-4347-1-git-send-email-Yazen.Ghannam@amd.com>
- <20170522162143.GA19781@nazgul.tnic>
- <BN6PR1201MB01312A2AB93708B9115D4865F8F80@BN6PR1201MB0131.namprd12.prod.outlook.com>
- <20170523075911.GA25383@nazgul.tnic>
- <BN6PR1201MB0131B6E13B6E782494751054F8F90@BN6PR1201MB0131.namprd12.prod.outlook.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] ACPI: processor: fix LPI when built as module
+Date: Tue, 23 May 2017 14:08:06 +0100
+Message-ID: <314aff9d-6c24-e533-ef08-c16bc0816474@arm.com>
+References: <20170519092837.30991-1-yousaf.kaukab@suse.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([5.9.137.197]:43666 "EHLO mail.skyhub.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750987AbdEWNGU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 23 May 2017 09:06:20 -0400
-Content-Disposition: inline
-In-Reply-To: <BN6PR1201MB0131B6E13B6E782494751054F8F90@BN6PR1201MB0131.namprd12.prod.outlook.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170519092837.30991-1-yousaf.kaukab@suse.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Mian Yousaf Kaukab <yousaf.kaukab@suse.com>, linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, Sudeep Holla <sudeep.holla@arm.com>, catalin.marinas@arm.com, lorenzo.pieralisi@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>
 
-On Tue, May 23, 2017 at 12:50:15PM +0000, Ghannam, Yazen wrote:
-> No, AMD systems will continue to use HLT unless the BIOS specifies the
-> use of MWAIT using a FFH entry in the ACPI _CST.
+
+
+On 19/05/17 10:28, Mian Yousaf Kaukab wrote:
+> Low Power Idle(LPI) support added acpi_processor_ffh_lpi_probe() and
+> acpi_processor_ffh_lpi_enter() as __weak functions and arch code is
+> supposed to provide the actual callbacks. This breaks if
+> ACPI_PROCESSOR is configured as a module.
 > 
-> All this change does is *allow* us to use MWAIT through the FFH
-> implementation if the BIOS defines it. It doesn't *force* a change.
+> Add CONFIG_ARCH_HAS_ACPI_LPI configuration option to fix this.
+> 
 
-So that could very well be part of the commit message as it explains
-what exactly you're changing.
+Rafael didn't like the extra Kconfig option when I first posted
+LPI patches.
 
-> If the BIOS doesn't define the appropriate _CST entry or it defines it
-> wrong, then we'll fallback to using HLT.
+> Signed-off-by: Mian Yousaf Kaukab <yousaf.kaukab@suse.com>
+> ---
+>  arch/arm64/Kconfig            | 1 +
+>  arch/arm64/kernel/cpuidle.c   | 2 ++
+>  drivers/acpi/Kconfig          | 3 +++
+>  drivers/acpi/processor_idle.c | 9 +++++++--
+>  4 files changed, 13 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index 848a34116c67..de2f2779cdf5 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -10,6 +10,7 @@ config ARM64
+>  	select ARCH_HAS_DEBUG_VIRTUAL
+>  	select ARCH_HAS_DEVMEM_IS_ALLOWED
+>  	select ARCH_HAS_ACPI_TABLE_UPGRADE if ACPI
+> +	select ARCH_HAS_ACPI_LPI if ACPI
+>  	select ARCH_HAS_ELF_RANDOMIZE
+>  	select ARCH_HAS_GCOV_PROFILE_ALL
+>  	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+> diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
+> index fd691087dc9a..002d9cb890bd 100644
+> --- a/arch/arm64/kernel/cpuidle.c
+> +++ b/arch/arm64/kernel/cpuidle.c
+> @@ -51,9 +51,11 @@ int acpi_processor_ffh_lpi_probe(unsigned int cpu)
+>  {
+>  	return arm_cpuidle_init(cpu);
+>  }
+> +EXPORT_SYMBOL(acpi_processor_ffh_lpi_probe);
+>  
+>  int acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi)
+>  {
+>  	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, lpi->index);
+>  }
+> +EXPORT_SYMBOL(acpi_processor_ffh_lpi_enter);
 
-I'm assuming you've tested it on older families to make sure they still
-work as expected? I wouldn't trust the BIOS...
+Won't these 2 export suffice ? I am just curious why that won't work.
+Will weak function definitions be still picked when built as modules ?
 
 -- 
-Regards/Gruss,
-    Boris.
-
-ECO tip #101: Trim your mails when you reply.
---
+Regards,
+Sudeep
