@@ -1,58 +1,79 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v1] PM / devfreq: exynos-nocp : Handle return value of
- clk_prepare_enable
-Date: Tue, 23 May 2017 18:43:29 +0900
-Message-ID: <59240441.9090208@samsung.com>
-References: <CGME20170519105215epcas5p26e75138ae5815f288ac6ca57a64c1087@epcas5p2.samsung.com>
-        <1495191035-15882-1-git-send-email-arvind.yadav.cs@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on AMD
+ systems
+Date: Tue, 23 May 2017 14:24:39 +0200
+Message-ID: <20170523122439.GA7483@amd>
+References: <1495030819-4347-1-git-send-email-Yazen.Ghannam@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:34314 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932938AbdEWJnc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 05:43:32 -0400
-In-reply-to: <1495191035-15882-1-git-send-email-arvind.yadav.cs@gmail.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52663 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1763841AbdEWMYl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 08:24:41 -0400
+Content-Disposition: inline
+In-Reply-To: <1495030819-4347-1-git-send-email-Yazen.Ghannam@amd.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, krzk@kernel.org, kgene@kernel.org, javier@osg.samsung.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Yazen Ghannam <Yazen.Ghannam@amd.com>
+Cc: linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com
 
-Hi Arvind,
 
-On 2017년 05월 19일 19:50, Arvind Yadav wrote:
-> clk_prepare_enable() can fail here and we must check its return value.
-> 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+--OXfL5xGRrasGEqWY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed 2017-05-17 09:20:19, Yazen Ghannam wrote:
+> From: Yazen Ghannam <yazen.ghannam@amd.com>
+>=20
+> AMD systems support the Monitor/Mwait instructions and these can be used
+> for ACPI C1 in the same way as on Intel systems, with appropriate BIOS
+> support.
+>=20
+> Allow ffh_cstate_init() to succeed on AMD systems and make the Cstate
+> description vendor-agnostic.
+>=20
+> Signed-off-by: Yazen Ghannam <yazen.ghannam@amd.com>
 > ---
->  drivers/devfreq/event/exynos-nocp.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
-> index 5c3e7b1..f6e7956 100644
-> --- a/drivers/devfreq/event/exynos-nocp.c
-> +++ b/drivers/devfreq/event/exynos-nocp.c
-> @@ -267,7 +267,11 @@ static int exynos_nocp_probe(struct platform_device *pdev)
+>  arch/x86/kernel/acpi/cstate.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+> index 8a908ae..4c5dd5d 100644
+> --- a/arch/x86/kernel/acpi/cstate.c
+> +++ b/arch/x86/kernel/acpi/cstate.c
+> @@ -109,7 +109,7 @@ static long acpi_processor_ffh_cstate_probe_cpu(void =
+*_cx)
+>  			cx->type);
 >  	}
->  	platform_set_drvdata(pdev, nocp);
->  
-> -	clk_prepare_enable(nocp->clk);
-> +	ret = clk_prepare_enable(nocp->clk);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "failed to prepare ppmu clock\n");
-> +		return ret;
-> +	}
+>  	snprintf(cx->desc,
+> -			ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
+> +			ACPI_CX_DESC_LEN, "ACPI FFH X86 MWAIT 0x%x",
+>  			cx->address);
+>  out:
+>  	return retval;
 
-I already replied from the similar patch. Thanks.
+Are you sure no userspace depends on word "INTEL" there?
 
->  
->  	pr_info("exynos-nocp: new NoC Probe device registered: %s\n",
->  			dev_name(dev));
-> 
+Does it make sense to include "X86" there?
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
+--OXfL5xGRrasGEqWY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlkkKgYACgkQMOfwapXb+vIzUACfagQdVoS3+2ROCibAPakhgUsM
+DZMAn1zX6mMR5R0NkuXj+VSswm3w8ko+
+=iuFb
+-----END PGP SIGNATURE-----
+
+--OXfL5xGRrasGEqWY--
