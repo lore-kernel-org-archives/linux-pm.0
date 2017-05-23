@@ -1,69 +1,69 @@
-From: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
-Date: Tue, 23 May 2017 09:21:43 +0200
-Message-ID: <20170523072143.njhh7mkbm2tt277l@ninjato>
-References: <20170521220212.1404-1-wsa@the-dreams.de>
- <20170521220212.1404-4-wsa@the-dreams.de>
- <20170523071636.hiws54msfxpg6qkb@dell>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v2 3/8] thermal: intel_bxt_pmic_thermal: use first level
+ PMIC thermal irq
+Date: Tue, 23 May 2017 08:26:15 +0100
+Message-ID: <20170523072615.r4widzjc6apwxpwb@dell>
+References: <0e4d82ca9cdc41c9d2a8b45258cd72659b4c2063.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <fda73b083e5e67e8fcc9fc2d01a590f689a06c91.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <1495520652.2303.0.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="7yzzt65nmxassi3y"
-Return-path: <rtc-linux+bncBDP47C6LHEIIRRUPZECRUBH3JEKCG-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170523071636.hiws54msfxpg6qkb@dell>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.>
+In-Reply-To: <1495520652.2303.0.camel@intel.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: sathyanarayanan.kuppuswamy@linux.intel.com, gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, andy@infradead.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 23 May 2017, Zhang Rui wrote:
 
---7yzzt65nmxassi3y
-Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-
-
-> For my own reference:
->   Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> On Fri, 2017-04-14 at 16:25 -0700,
+> sathyanarayanan.kuppuswamy@linux.intel.com wrote:
+> > From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.in
+> > tel.com>
+> > 
+> > PMIC mfd driver only exports first level irq for thermal device.
+> > But currently we are reading the irqs from the second level irq
+> > chip, So this patch fixes this issue by adding support to use
+> > first level PMIC thermal irq.
+> > 
+> > Signed-off-by: Kuppuswamy Sathyanarayanan
+> > <sathyanarayanan.kuppuswamy@linux.intel.com>
 > 
-> I guess this will be going through the MFD tree?
+> Acked-by: Zhang Rui <rui.zhang@intel.com>
 
-I'd prefer that, yes. Thanks!
+I think this is the last Ack.
+
+Please collect them all and re-submit the set so I can pick it up.
+
+> > ---
+> >  drivers/thermal/intel_bxt_pmic_thermal.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > Changes since v1:
+> >  * None
+> > 
+> > diff --git a/drivers/thermal/intel_bxt_pmic_thermal.c
+> > b/drivers/thermal/intel_bxt_pmic_thermal.c
+> > index 0f19a39..ef6b322 100644
+> > --- a/drivers/thermal/intel_bxt_pmic_thermal.c
+> > +++ b/drivers/thermal/intel_bxt_pmic_thermal.c
+> > @@ -241,7 +241,7 @@ static int pmic_thermal_probe(struct
+> > platform_device *pdev)
+> >  	}
+> >  
+> >  	regmap = pmic->regmap;
+> > -	regmap_irq_chip = pmic->irq_chip_data_level2;
+> > +	regmap_irq_chip = pmic->irq_chip_data;
+> >  
+> >  	pmic_irq_count = 0;
+> >  	while ((irq = platform_get_irq(pdev, pmic_irq_count)) !=
+> > -ENXIO) {
 
 -- 
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
---- 
-You received this message because you are subscribed to the Google Groups "rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
-
---7yzzt65nmxassi3y
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlkj4wMACgkQFA3kzBSg
-KbboAA/7BYWjzye3Zd9b4l7Uvdy3BTUglIU4h8PBWztw8snSPIIMd5ShjYZotX7x
-qXKUqi92du010bqAANjftdAl2ej4Dl1OdMm2NuaBlfGIV3bf1s+f+mx6iubHg+gC
-h3KYEBU3fUMc+dypGCd6xsM84DCtOLPcYmu/uaKKmvZLfyNvvsDaTFUOyUp15nup
-y8I9DNOmbirzmQj7sFF+38//j3SWfMO4EWGDBDUuQgT/CNf6DyclYITi1TVuh5Z6
-X4mJqOpMCE+GzPZvDe60b7oMDAJrVyrsyj3SjkgUNMegQwGW0ZFGdmyJf3I43FLx
-RUKeN4o48TPW4LS1rX9hzDIOvTlL6ZUc814/9q84zHly0RP5y4uzyJ8bOuZA2BJa
-O0Yu4Y+QL3OC1qGzktwbsBUHPVLUZZH7oRMY2haS+o+4rzOhiZbH9tZE4v2ALyfX
-8oGKWd2RYn76zG0Su6C5QCA/4ck1t2Wr4CwastYmdKuhyBEAF85uTvwmBoaXJxbp
-bea5aO2y2xBdvgTvSd0XkbMiJpqMFb9gFfoA7SMkIPVmgPHcX9ZqI7QT5nXi5ugy
-ZUfn/VYQUh8TyXZiRrOwJ595KjykkGIyxq2xgGFZR5eJ60N9t7ZEDqv6FBfhoj5V
-elD1t7D2bkdQm0hfSxal45Zedg/OquhGI+ktNbjMKWLBN70owfs=
-=bddv
------END PGP SIGNATURE-----
-
---7yzzt65nmxassi3y--
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
