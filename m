@@ -1,58 +1,52 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
- driver
-Date: Tue, 23 May 2017 18:17:21 +0100
-Message-ID: <20170523171721.lpqjhakaawnz4prz@sirena.org.uk>
-References: <cover.1495546845.git.stwiss.opensource@diasemi.com>
- <ac0c9c0edf9a3a48d8de7a5c07b16b771871796e.1495546845.git.stwiss.opensource@diasemi.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="w5ixrwk7fifrgbqj"
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <ac0c9c0edf9a3a48d8de7a5c07b16b771871796e.1495546845.git.stwiss.opensource@diasemi.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Steve Twiss <stwiss.opensource@diasemi.com>
-Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
+From: sathyanarayanan.kuppuswamy@linux.intel.com
+Subject: [PATCH v3 3/8] thermal: intel_bxt_pmic_thermal: use first level PMIC thermal irq
+Date: Tue, 23 May 2017 10:30:01 -0700
+Message-ID: <040f4eb6192c0e591de2c8a5c31f0a219f473a9b.1495559980.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+References: <20170523072615.r4widzjc6apwxpwb@dell>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:59189 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S966155AbdEWReR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 May 2017 13:34:17 -0400
+In-Reply-To: <20170523072615.r4widzjc6apwxpwb@dell>
+In-Reply-To: <75e12563a835dc4f8e8dab26ecea46822262604b.1495559980.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+References: <75e12563a835dc4f8e8dab26ecea46822262604b.1495559980.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, lee.jones@linaro.org, andy@infradead.org
+Cc: linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com, Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 
+From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 
---w5ixrwk7fifrgbqj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+PMIC mfd driver only exports first level irq for thermal device.
+But currently we are reading the irqs from the second level irq
+chip, So this patch fixes this issue by adding support to use
+first level PMIC thermal irq.
 
-On Tue, May 23, 2017 at 02:40:45PM +0100, Steve Twiss wrote:
+Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Acked-by: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/thermal/intel_bxt_pmic_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> This patch was Acked by Mark Brown, a long time ago, way back in Oct 2016
-> (https://patchwork.kernel.org/patch/9397787/).
-> I have kept Mark Brown's Ack attached because there have been no real
-> code changes since then, but I have recently updated the copyright header
-> slightly, rebased the code (no changes necessary) and compile tested it
-> against x86_64.
+Changes since v1:
+ * None
 
-> The MFD files which this patch depended on were accepted into linux-next
-> by Lee Jones last week. If there is anything in the way of this patch
-> acceptance, could you please let me know?
+Changes since v2: 
+ * Rebased on top of latest release.
 
-Given that I've acked this and it depends on the MFD changes I'd have
-expected Lee to apply it.  If nothing else happens I can apply it after
-the next merge window, otherwise either Lee needs to send me a pull
-request for the MFD change so I've got the dependency or he needs to
-apply this.
-
---w5ixrwk7fifrgbqj
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlkkbqAACgkQJNaLcl1U
-h9CBowgAgzyAaejHDzDDrmYGX5ZusFRiVhSCk9YjtEl7zyX7RZC5AK5RqWrO7N9C
-VYmQVj+hK3T/JV/I/wHfABIhmq2dfOSRjKAFvJmGyetIwvDyOjSnmXpnNw3feyrc
-URrCDUjtqCPGYPcex5vSjC9ahSsvoot9qit3sU1dU6SbpvhBefEwGpTW5EeS+Cub
-6FdGgQcNr1kaAZAWrc+Q9Z0nCtk4+Y3DQT2bwveUYxI3Fj+u9oCVrTeDpnZJfG1o
-jaYNOQQfWS6DDutsT+p1bwncj8NCDDGsHNk7hsxSEXYXpFqQWY7sda/pMjjR86T1
-fLuqTh+F5bphR70n8mfwtq7c1Hcwyw==
-=wnhk
------END PGP SIGNATURE-----
-
---w5ixrwk7fifrgbqj--
+diff --git a/drivers/thermal/intel_bxt_pmic_thermal.c b/drivers/thermal/intel_bxt_pmic_thermal.c
+index 0f19a39..ef6b322 100644
+--- a/drivers/thermal/intel_bxt_pmic_thermal.c
++++ b/drivers/thermal/intel_bxt_pmic_thermal.c
+@@ -241,7 +241,7 @@ static int pmic_thermal_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	regmap = pmic->regmap;
+-	regmap_irq_chip = pmic->irq_chip_data_level2;
++	regmap_irq_chip = pmic->irq_chip_data;
+ 
+ 	pmic_irq_count = 0;
+ 	while ((irq = platform_get_irq(pdev, pmic_irq_count)) != -ENXIO) {
+-- 
+2.7.4
