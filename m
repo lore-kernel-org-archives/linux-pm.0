@@ -1,107 +1,63 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH RFC 0/8] SCHED_DEADLINE freq/cpu invariance and OPP selection
-Date: Tue, 23 May 2017 09:53:43 +0100
-Message-ID: <20170523085351.18586-1-juri.lelli@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, juri.lelli@arm.com
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v1] PM / devfreq: exynos-ppmu : Handle return value of
+ clk_prepare_enable
+Date: Tue, 23 May 2017 18:41:59 +0900
+Message-ID: <592403E7.8060906@samsung.com>
+References: <CGME20170519105745epcas5p29a5cbb259cd15138d7220f34e130e00a@epcas5p2.samsung.com>
+        <1495191364-16015-1-git-send-email-arvind.yadav.cs@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:41741 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932938AbdEWJmL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 05:42:11 -0400
+In-reply-to: <1495191364-16015-1-git-send-email-arvind.yadav.cs@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arvind Yadav <arvind.yadav.cs@gmail.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, krzk@kernel.org, kgene@kernel.org, javier@osg.samsung.com
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+On 2017년 05월 19일 19:56, Arvind Yadav wrote:
+> clk_prepare_enable() can fail here and we must check its return value.
+> 
+> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+> ---
+>  drivers/devfreq/event/exynos-ppmu.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+> index 9b73509..8f6537a 100644
+> --- a/drivers/devfreq/event/exynos-ppmu.c
+> +++ b/drivers/devfreq/event/exynos-ppmu.c
+> @@ -648,7 +648,11 @@ static int exynos_ppmu_probe(struct platform_device *pdev)
+>  			dev_name(&pdev->dev), desc[i].name);
+>  	}
+>  
+> -	clk_prepare_enable(info->ppmu.clk);
+> +	ret = clk_prepare_enable(info->ppmu.clk);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "failed to prepare ppmu clock\n");
+> +		return ret;
+> +	}
 
-this RFC set implements frequency/cpu invariance and OPP selection for
-SCHED_DEADLINE. The set has been slightly tested on a Juno platform. The
-current incarnation of the patches stems both from previous RFD[1] review
-comments and discussion at OSPM-summit[2], during which we seemed to agree
-that:
+You're right. But, actually, some ppmu device-tree node doesn't include
+the clock information because exynos clk driver don't support the
+clock for some ppmu devices. Until now, the clock of ppmu devices
+are default on state.
 
- - we probably want to use running_bw (instead of this_bw), as it is less
-   pessimistic (we should save more energy)
- - special kworker hack seems acceptable as a mid term solution to foster
-   further SCHED_DEADLINE/schedutil development/adoption
+Before applying this patch, exynos clock driver have to support
+the ppmu's clock and then add the clock information to the device tree
+of ppmu devices.
 
-A point that is still very much up for discussion (more that the others :) is
-how we implement frequency/cpu scaling. SCHED_FLAG_RECLAIM tasks only need
-grub_reclaim(), as the function already scales their reservation runtime
-considering other reservations and maximum bandwidth a CPU has to offer.
-However, for normal !RECLAIM tasks multiple things can be implemented which
-seem to make sense:
+>  
+>  	return 0;
+>  }
+> 
 
- - don't scale at all: normal tasks will only get a % of CPU _time_ as granted
-   by AC
- - go to max as soon as a normal task in enqueued: this because dimensioning of
-   parameters is usually done at max OPP/biggest CPU and normal task assume
-   that this is always the condition when they run
- - scale runtime acconding to current frequency and max CPU capacity: this is
-   what this set is currently implementing
-
-Opinions?
-
-The set is based on tip/sched/core as of today (a9e7f6544b9c) plus some
-schedutil fixes coming from linux-pm/linux-next and Luca's "CPU reclaiming for
-SCHED_DEADLINE" [3].
-
-Patches high level description:
-
- o [01-02]/08 add the necessary links to start accounting DEADLINE contribution
-              to OPP selection 
- o 03/08      it's a temporary solution to make possible (on ARM) to change
-              frequency for DEADLINE tasks (that would possibly delay the SCHED_FIFO
-              worker kthread); proper solution would be to be able to issue frequency
-              transition from an atomic ctx
- o [04-05]/08 it's a schedutil change that copes with the fact that DEADLINE
-              doesn't require periodic OPP selection triggering point
- o [06-07]/08 make arch_scale_{freq,cpu}_capacity() function available on !CONFIG_SMP
-              configurations too
- o 08/08      implements frequency/cpu invariance for tasks' reservation
-              parameters; which basically means that we implement GRUB-PA [4]
-
-Changes w.r.t. RFD:
-
- - use grub_reclaim for RECLAIM and scale freq/cpu for !RECLAIM
- - discard CFS contribution only, after TICK_NSEC
- - added patches 06 and 07 to fix !CONFIG_SMP builds
-
-Please have a look. Feedback and comments are, as usual, more than welcome.
-
-In case you would like to test this out:
-
- git://linux-arm.org/linux-jl.git upstream/deadline/freq-rfc
-
-Best,
-
-- Juri
-
-[1] http://marc.info/?l=linux-kernel&m=149036457909119&w=2
-[2] http://retis.sssup.it/ospm-summit/program.html
-    https://lwn.net/Articles/721573/
-[3] http://marc.info/?l=linux-kernel&m=149513848804404
-[4] C. Scordino, G. Lipari, A Resource Reservation Algorithm for Power-Aware
-    Scheduling of Periodic and Aperiodic Real-Time Tasks, IEEE Transactions
-    on Computers, December 2006.
-
-Juri Lelli (8):
-  sched/cpufreq_schedutil: make use of DEADLINE utilization signal
-  sched/deadline: move cpu frequency selection triggering points
-  sched/cpufreq_schedutil: make worker kthread be SCHED_DEADLINE
-  sched/cpufreq_schedutil: split utilization signals
-  sched/cpufreq_schedutil: always consider all CPUs when deciding next
-    freq
-  sched/sched.h: remove sd arch_scale_freq_capacity parameter
-  sched/sched.h: move arch_scale_{freq,cpu}_capacity outside CONFIG_SMP
-  sched/deadline: make bandwidth enforcement scale-invariant
-
- include/linux/sched.h            |  1 +
- include/linux/sched/cpufreq.h    |  2 --
- include/linux/sched/topology.h   | 12 ++++----
- include/uapi/linux/sched.h       |  1 +
- kernel/sched/core.c              | 19 ++++++++++--
- kernel/sched/cpufreq_schedutil.c | 62 ++++++++++++++++++++++++----------------
- kernel/sched/deadline.c          | 39 ++++++++++++++++++++-----
- kernel/sched/fair.c              |  4 +--
- kernel/sched/sched.h             | 27 +++++++++++++----
- 9 files changed, 116 insertions(+), 51 deletions(-)
 
 -- 
-2.11.0
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
