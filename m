@@ -1,40 +1,45 @@
-From: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH V5 resend] PM / OPP: Use - instead of @ for DT entries
-Date: Mon, 22 May 2017 18:36:17 -0700
-Message-ID: <20170523013617.GM20170@codeaurora.org>
-References: <f8323bb507a97755c7c164f1d2aff45d2f0be3f0.1494217312.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <f8323bb507a97755c7c164f1d2aff45d2f0be3f0.1494217312.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 0/4] PM / OPP: Minor cleanups
+Date: Tue, 23 May 2017 09:31:41 +0530
+Message-ID: <cover.1495511998.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:35987 "EHLO
+        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750712AbdEWEBv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 00:01:51 -0400
+Received: by mail-pf0-f169.google.com with SMTP id m17so101250751pfg.3
+        for <linux-pm@vger.kernel.org>; Mon, 22 May 2017 21:01:51 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 05/08, Viresh Kumar wrote:
-> Compiling the DT file with W=1, DTC warns like follows:
-> 
-> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
-> unit name, but no reg property
-> 
-> Fix this by replacing '@' with '-' as the OPP nodes will never have a
-> "reg" property.
-> 
-> Reported-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Reported-by: Masahiro Yamada <yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
-> Suggested-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> ---
+Hi,
 
-Reviewed-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Here are few cleanup patches for the OPP core. The first two simplify
+the code that was written specifically due to the limitations that we
+had because of RCUs. We don't RCUs anymore and this can be simplified.
+
+The last two take care of specific corner cases.
+
+Rebased over pm/linux-next and tested on Exynos dual core board.
+
+V1->V2:
+- Some RBY from Stephen
+- s/while/for/ for one of the loops
+- Dropped a comment and fixed an error message
+- opp-table marked as const in one of the place.
+
+Viresh Kumar (4):
+  PM / OPP: Reorganize _generic_set_opp_regulator()
+  PM / OPP: Don't create copy of regulators unnecessarily
+  PM / OPP: opp-microvolt is not optional if regulators are set
+  PM / OPP: Don't create debugfs "supply-0" directory unnecessarily
+
+ drivers/base/power/opp/core.c    | 87 +++++++++++++++++-----------------------
+ drivers/base/power/opp/debugfs.c |  7 ++--
+ drivers/base/power/opp/of.c      | 10 ++++-
+ 3 files changed, 48 insertions(+), 56 deletions(-)
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+2.13.0.70.g6367777092d9
