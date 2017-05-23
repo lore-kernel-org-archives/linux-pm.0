@@ -1,51 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Patch v2] cpufreq: dt: Add support for hi3660
-Date: Tue, 23 May 2017 14:00:43 +0530
-Message-ID: <20170523083043.GM6510@vireshk-i7>
-References: <20170523070517.GL6510@vireshk-i7>
- <1495527198-125891-1-git-send-email-kevin.wangtao@hisilicon.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: [PATCH RFC 2/8] sched/deadline: move cpu frequency selection triggering points
+Date: Tue, 23 May 2017 09:53:45 +0100
+Message-ID: <20170523085351.18586-3-juri.lelli@arm.com>
+References: <20170523085351.18586-1-juri.lelli@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:36826 "EHLO
-        mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S966688AbdEWIas (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 04:30:48 -0400
-Received: by mail-pf0-f178.google.com with SMTP id m17so107665536pfg.3
-        for <linux-pm@vger.kernel.org>; Tue, 23 May 2017 01:30:47 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1495527198-125891-1-git-send-email-kevin.wangtao@hisilicon.com>
+Received: from foss.arm.com ([217.140.101.70]:48094 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S936682AbdEWIyf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 May 2017 04:54:35 -0400
+In-Reply-To: <20170523085351.18586-1-juri.lelli@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tao Wang <kevin.wangtao@hisilicon.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, sunzhaosheng@hisilicon.com
+To: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, juri.lelli@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
-On 23-05-17, 16:13, Tao Wang wrote:
-> Add the compatible string for supporting the generic device tree cpufreq-dt
-> driver on Hisilicon's 3660 SoC.
-> 
-> Signed-off-by: Tao Wang <kevin.wangtao@hisilicon.com>
-> ---
-> Changes in v2:
-> - changed order according to Viresh's suggestion
-> 
->  drivers/cpufreq/cpufreq-dt-platdev.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 921b4a6..1c26292 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -31,6 +31,7 @@
->  	{ .compatible = "arm,integrator-ap", },
->  	{ .compatible = "arm,integrator-cp", },
->  
-> +	{ .compatible = "hisilicon,hi3660", },
->  	{ .compatible = "hisilicon,hi6220", },
->  
->  	{ .compatible = "fsl,imx27", },
+Since SCHED_DEADLINE doesn't track utilization signal (but reserves a
+fraction of CPU bandwidth to tasks admitted to the system), there is no
+point in evaluating frequency changes during each tick event.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Move frequency selection triggering points to where running_bw changes.
 
+Co-authored-by: Claudio Scordino <claudio@evidence.eu.com>
+Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Luca Abeni <luca.abeni@santannapisa.it>
+---
+ kernel/sched/deadline.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
+index 1da44b36fae0..fed54b078240 100644
+--- a/kernel/sched/deadline.c
++++ b/kernel/sched/deadline.c
+@@ -52,6 +52,8 @@ void add_running_bw(u64 dl_bw, struct dl_rq *dl_rq)
+ 	dl_rq->running_bw += dl_bw;
+ 	SCHED_WARN_ON(dl_rq->running_bw < old); /* overflow */
+ 	SCHED_WARN_ON(dl_rq->running_bw > dl_rq->this_bw);
++	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
++	cpufreq_update_this_cpu(rq_of_dl_rq(dl_rq), SCHED_CPUFREQ_DL);
+ }
+ 
+ static inline
+@@ -64,6 +66,8 @@ void sub_running_bw(u64 dl_bw, struct dl_rq *dl_rq)
+ 	SCHED_WARN_ON(dl_rq->running_bw > old); /* underflow */
+ 	if (dl_rq->running_bw > old)
+ 		dl_rq->running_bw = 0;
++	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
++	cpufreq_update_this_cpu(rq_of_dl_rq(dl_rq), SCHED_CPUFREQ_DL);
+ }
+ 
+ static inline
+@@ -1021,9 +1025,6 @@ static void update_curr_dl(struct rq *rq)
+ 		return;
+ 	}
+ 
+-	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
+-	cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_DL);
+-
+ 	schedstat_set(curr->se.statistics.exec_max,
+ 		      max(curr->se.statistics.exec_max, delta_exec));
+ 
 -- 
-viresh
+2.11.0
