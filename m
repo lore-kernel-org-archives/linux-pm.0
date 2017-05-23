@@ -1,54 +1,38 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH RFC 0/8] SCHED_DEADLINE freq/cpu invariance and OPP
- selection
-Date: Tue, 23 May 2017 22:23:21 +0200
-Message-ID: <20170523202321.3bygt6ydyiy5xief@hirez.programming.kicks-ass.net>
-References: <20170523085351.18586-1-juri.lelli@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH RFC 4/8] sched/cpufreq_schedutil: split utilization signals
+Date: Wed, 24 May 2017 01:30:36 +0200
+Message-ID: <1941953.5pVr1esCdP@aspire.rjw.lan>
+References: <20170523085351.18586-1-juri.lelli@arm.com> <20170523085351.18586-5-juri.lelli@arm.com> <20170523192927.ri2n72hrobghlros@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:36029 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1031857AbdEWUXe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 16:23:34 -0400
-Content-Disposition: inline
-In-Reply-To: <20170523085351.18586-1-juri.lelli@arm.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45083 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751670AbdEWXhW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 19:37:22 -0400
+In-Reply-To: <20170523192927.ri2n72hrobghlros@hirez.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, mingo@redhat.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>
 
-On Tue, May 23, 2017 at 09:53:43AM +0100, Juri Lelli wrote:
-
-> A point that is still very much up for discussion (more that the others :) is
-> how we implement frequency/cpu scaling. SCHED_FLAG_RECLAIM tasks only need
-> grub_reclaim(), as the function already scales their reservation runtime
-> considering other reservations and maximum bandwidth a CPU has to offer.
-> However, for normal !RECLAIM tasks multiple things can be implemented which
-> seem to make sense:
+On Tuesday, May 23, 2017 09:29:27 PM Peter Zijlstra wrote:
+> On Tue, May 23, 2017 at 09:53:47AM +0100, Juri Lelli wrote:
+> > To be able to treat utilization signals of different scheduling classes
+> > in different ways (e.g., CFS signal might be stale while DEADLINE signal
+> > is never stale by design) we need to split sugov_cpu::util signal in two:
+> > util_cfs and util_dl.
+> > 
+> > This patch does that by also changing sugov_get_util() parameter list.
+> > After this change aggregation of the different signals has to be performed
+> > by sugov_get_util() users (so that they can decide what to do with the
+> > different signals).
 > 
->  - don't scale at all: normal tasks will only get a % of CPU _time_ as granted
->    by AC
->  - go to max as soon as a normal task in enqueued: this because dimensioning of
->    parameters is usually done at max OPP/biggest CPU and normal task assume
->    that this is always the condition when they run
->  - scale runtime acconding to current frequency and max CPU capacity: this is
->    what this set is currently implementing
-> 
-> Opinions?
+> So what I don't see this patch doing; and I don't remember if cpufreq is
+> ready for this at all, is set the util_dl as min/guaranteed freq and
+> util_cfs+util_dl as requested freq.
 
+I'm totally unsure what you mean here.
 
-So I'm terribly confused...
-
-By using the active bandwidth to select frequency we effectively
-reduce idle time (to 0 if we had infinite granular frequency steps and
-no margins).
-
-So !RECLAIM works as expected. They get the time they reserved, since
-that was taken into account by active bandwidth.
-
-And RECLAIM works, since that only promises to (re)distribute idle time,
-and if there is none that is an easy task.
-
-
-Where is the problem?
+cpufreq doesn't have a "guaranteed frequency" concept of any sort right now.
