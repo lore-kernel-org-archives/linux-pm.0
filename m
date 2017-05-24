@@ -1,52 +1,80 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH v4 0/8] Fix issues and factorize arm/arm64 capacity
- information code
-Date: Wed, 24 May 2017 15:45:15 +0100
-Message-ID: <20170524144515.nuccflbdashlqmcs@e106622-lin>
-References: <20170420144316.15632-1-juri.lelli@arm.com>
- <20170511084830.rn32pvi6weej2cna@e106622-lin>
- <20170511085952.GA6934@kroah.com>
- <20170511102718.qy54ajkzphasymhr@e106622-lin>
+From: "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
+Subject: RE: [PATCH] x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on AMD
+ systems
+Date: Wed, 24 May 2017 18:16:05 +0000
+Message-ID: <BN6PR1201MB0131CA87635E77604CE1FDE1F8FE0@BN6PR1201MB0131.namprd12.prod.outlook.com>
+References: <1495030819-4347-1-git-send-email-Yazen.Ghannam@amd.com>
+ <20170523122439.GA7483@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:39384 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934250AbdEXOpV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 24 May 2017 10:45:21 -0400
-Content-Disposition: inline
-In-Reply-To: <20170511102718.qy54ajkzphasymhr@e106622-lin>
+Received: from mail-sn1nam01on0069.outbound.protection.outlook.com ([104.47.32.69]:4443
+        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S933130AbdEXSQI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 24 May 2017 14:16:08 -0400
+In-Reply-To: <20170523122439.GA7483@amd>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>
 
-Hi,
+> -----Original Message-----
+> From: Pavel Machek [mailto:pavel@ucw.cz]
+> Sent: Tuesday, May 23, 2017 8:25 AM
+> To: Ghannam, Yazen <Yazen.Ghannam@amd.com>
+> Cc: linux-pm@vger.kernel.org; x86@kernel.org; linux-
+> kernel@vger.kernel.org; rjw@rjwysocki.net; len.brown@intel.com
+> Subject: Re: [PATCH] x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on
+> AMD systems
+>=20
+> On Wed 2017-05-17 09:20:19, Yazen Ghannam wrote:
+> > From: Yazen Ghannam <yazen.ghannam@amd.com>
+> >
+> > AMD systems support the Monitor/Mwait instructions and these can be
+> > used for ACPI C1 in the same way as on Intel systems, with appropriate
+> > BIOS support.
+> >
+> > Allow ffh_cstate_init() to succeed on AMD systems and make the Cstate
+> > description vendor-agnostic.
+> >
+> > Signed-off-by: Yazen Ghannam <yazen.ghannam@amd.com>
+> > ---
+> >  arch/x86/kernel/acpi/cstate.c | 5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/arch/x86/kernel/acpi/cstate.c
+> > b/arch/x86/kernel/acpi/cstate.c index 8a908ae..4c5dd5d 100644
+> > --- a/arch/x86/kernel/acpi/cstate.c
+> > +++ b/arch/x86/kernel/acpi/cstate.c
+> > @@ -109,7 +109,7 @@ static long
+> acpi_processor_ffh_cstate_probe_cpu(void *_cx)
+> >  			cx->type);
+> >  	}
+> >  	snprintf(cx->desc,
+> > -			ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
+> > +			ACPI_CX_DESC_LEN, "ACPI FFH X86 MWAIT 0x%x",
+> >  			cx->address);
+> >  out:
+> >  	return retval;
+>=20
+> Are you sure no userspace depends on word "INTEL" there?
+>=20
 
-On 11/05/17 11:27, Juri Lelli wrote:
-> On 11/05/17 10:59, Greg KH wrote:
-> > On Thu, May 11, 2017 at 09:48:30AM +0100, Juri Lelli wrote:
-> > > Hi Greg,
-> > > 
-> > > I'm not sure what your plans are with this set. Are we targeting 4.12?
-> > > 
-> > > IMHO, if possible, it would be good to have this refactoring in now, so
-> > > that we can base further development on it for the next cycle.
-> > 
-> > It's way too late for new features that have not been in linux-next for
-> > a few weeks, to get merged into 4.12-rc1, sorry.  I'll review this
-> > patchset after -rc1 is out, and I get a chance to catch up on pending
-> > patches.
-> > 
-> 
-> Thanks for your reply, I perfecly understand.
-> 
-> OK, let's target 4.13 then. Looking forward to receive your comments
-> after -rc1 is out.
-> 
+So far I've only seen this description printed by cpupower, and it's just f=
+or
+information.
 
-Did you have any chance to have a look at this set?
+> Does it make sense to include "X86" there?
+
+I think so, since MWAIT is available on systems from both Intel and AMD.
+Also, this FFH implementation can be shared by both vendors.
+
+Though, as I said above, this description seems to be purely informational,
+so it's probably not significant either way. I can remove this if preferred=
+.
 
 Thanks,
-
-- Juri
+Yazen
