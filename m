@@ -1,49 +1,58 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH RFC 4/8] sched/cpufreq_schedutil: split utilization
- signals
-Date: Wed, 24 May 2017 09:01:07 +0200
-Message-ID: <20170524070107.xq7tmjxqg6afsrss@hirez.programming.kicks-ass.net>
-References: <20170523085351.18586-1-juri.lelli@arm.com>
- <20170523085351.18586-5-juri.lelli@arm.com>
- <20170523192927.ri2n72hrobghlros@hirez.programming.kicks-ass.net>
- <1941953.5pVr1esCdP@aspire.rjw.lan>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
+Subject: RE: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
+ driver
+Date: Wed, 24 May 2017 08:12:46 +0000
+Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CD8D651@SW-EX-MBX02.diasemi.com>
+References: <cover.1495546845.git.stwiss.opensource@diasemi.com>
+ <ac0c9c0edf9a3a48d8de7a5c07b16b771871796e.1495546845.git.stwiss.opensource@diasemi.com>
+ <20170523171721.lpqjhakaawnz4prz@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1941953.5pVr1esCdP@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Juri Lelli <juri.lelli@arm.com>, mingo@redhat.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail1.bemta6.messagelabs.com ([193.109.254.111]:62499 "EHLO
+        mail1.bemta6.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S933663AbdEXIMx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2017 04:12:53 -0400
+In-Reply-To: <20170523171721.lpqjhakaawnz4prz@sirena.org.uk>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>, Lee Jones <lee.jones@linaro.org>
+Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
 
-On Wed, May 24, 2017 at 01:30:36AM +0200, Rafael J. Wysocki wrote:
-> On Tuesday, May 23, 2017 09:29:27 PM Peter Zijlstra wrote:
-> > On Tue, May 23, 2017 at 09:53:47AM +0100, Juri Lelli wrote:
-> > > To be able to treat utilization signals of different scheduling classes
-> > > in different ways (e.g., CFS signal might be stale while DEADLINE signal
-> > > is never stale by design) we need to split sugov_cpu::util signal in two:
-> > > util_cfs and util_dl.
-> > > 
-> > > This patch does that by also changing sugov_get_util() parameter list.
-> > > After this change aggregation of the different signals has to be performed
-> > > by sugov_get_util() users (so that they can decide what to do with the
-> > > different signals).
-> > 
-> > So what I don't see this patch doing; and I don't remember if cpufreq is
-> > ready for this at all, is set the util_dl as min/guaranteed freq and
-> > util_cfs+util_dl as requested freq.
+On 23 May 2017 18:17 Mark Brown
+> To: Steve Twiss
+> Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator driver
 > 
-> I'm totally unsure what you mean here.
+> On Tue, May 23, 2017 at 02:40:45PM +0100, Steve Twiss wrote:
+> 
+> > This patch was Acked by Mark Brown, a long time ago, way back in Oct 2016
+> > (https://patchwork.kernel.org/patch/9397787/).
+> > I have kept Mark Brown's Ack attached because there have been no real
+> > code changes since then, but I have recently updated the copyright header
+> > slightly, rebased the code (no changes necessary) and compile tested it
+> > against x86_64.
+> 
+> > The MFD files which this patch depended on were accepted into linux-next
+> > by Lee Jones last week. If there is anything in the way of this patch
+> > acceptance, could you please let me know?
+> 
+> Given that I've acked this and it depends on the MFD changes I'd have
+> expected Lee to apply it.  If nothing else happens I can apply it after
+> the next merge window, otherwise either Lee needs to send me a pull
+> request for the MFD change so I've got the dependency or he needs to
+> apply this.
 
-I was thinking of the CPPC/HWP stuff, where you can set different
-frequencies with different levels of guarantees.
+Hi Mark,
 
-We'd want to set util_dl as the minimum (guaranteed) performance, and
-util_dl + util_cfs as the desired performance level.
+Thanks,
+No problem, just some minor administration.
 
-> cpufreq doesn't have a "guaranteed frequency" concept of any sort right now.
+@Lee
+Could you please send Mark a pull request for the regulator component to the
+DA9062/61 changes [PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
+driver.
 
-I was afraid of that ;-) I think we want a comment in the code stating
-that this is the desired goal though. Then once cpufreq is ready to deal
-with it we can change it..
+Regards,
+Steve
