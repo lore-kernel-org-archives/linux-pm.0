@@ -1,66 +1,59 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
- driver
-Date: Wed, 24 May 2017 09:40:49 +0100
-Message-ID: <20170524084049.iy4dlrbmkzsqjvav@dell>
-References: <cover.1495546845.git.stwiss.opensource@diasemi.com>
- <ac0c9c0edf9a3a48d8de7a5c07b16b771871796e.1495546845.git.stwiss.opensource@diasemi.com>
- <20170523171721.lpqjhakaawnz4prz@sirena.org.uk>
- <6ED8E3B22081A4459DAC7699F3695FB7018CD8D651@SW-EX-MBX02.diasemi.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH RFC 4/8] sched/cpufreq_schedutil: split utilization
+ signals
+Date: Wed, 24 May 2017 10:01:02 +0100
+Message-ID: <20170524090102.wjljvyxw5acbdwfd@e106622-lin>
+References: <20170523085351.18586-1-juri.lelli@arm.com>
+ <20170523085351.18586-5-juri.lelli@arm.com>
+ <20170523192927.ri2n72hrobghlros@hirez.programming.kicks-ass.net>
+ <1941953.5pVr1esCdP@aspire.rjw.lan>
+ <20170524070107.xq7tmjxqg6afsrss@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <6ED8E3B22081A4459DAC7699F3695FB7018CD8D651-68WUHU125fLzLL1Oxlh9IgLouzNaz+3S@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+In-Reply-To: <20170524070107.xq7tmjxqg6afsrss@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, mingo@redhat.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 24 May 2017, Steve Twiss wrote:
+Hi,
 
-> On 23 May 2017 18:17 Mark Brown
-> > To: Steve Twiss
-> > Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator driver
+On 24/05/17 09:01, Peter Zijlstra wrote:
+> On Wed, May 24, 2017 at 01:30:36AM +0200, Rafael J. Wysocki wrote:
+> > On Tuesday, May 23, 2017 09:29:27 PM Peter Zijlstra wrote:
+> > > On Tue, May 23, 2017 at 09:53:47AM +0100, Juri Lelli wrote:
+> > > > To be able to treat utilization signals of different scheduling classes
+> > > > in different ways (e.g., CFS signal might be stale while DEADLINE signal
+> > > > is never stale by design) we need to split sugov_cpu::util signal in two:
+> > > > util_cfs and util_dl.
+> > > > 
+> > > > This patch does that by also changing sugov_get_util() parameter list.
+> > > > After this change aggregation of the different signals has to be performed
+> > > > by sugov_get_util() users (so that they can decide what to do with the
+> > > > different signals).
+> > > 
+> > > So what I don't see this patch doing; and I don't remember if cpufreq is
+> > > ready for this at all, is set the util_dl as min/guaranteed freq and
+> > > util_cfs+util_dl as requested freq.
 > > 
-> > On Tue, May 23, 2017 at 02:40:45PM +0100, Steve Twiss wrote:
-> > 
-> > > This patch was Acked by Mark Brown, a long time ago, way back in Oct 2016
-> > > (https://patchwork.kernel.org/patch/9397787/).
-> > > I have kept Mark Brown's Ack attached because there have been no real
-> > > code changes since then, but I have recently updated the copyright header
-> > > slightly, rebased the code (no changes necessary) and compile tested it
-> > > against x86_64.
-> > 
-> > > The MFD files which this patch depended on were accepted into linux-next
-> > > by Lee Jones last week. If there is anything in the way of this patch
-> > > acceptance, could you please let me know?
-> > 
-> > Given that I've acked this and it depends on the MFD changes I'd have
-> > expected Lee to apply it.  If nothing else happens I can apply it after
-> > the next merge window, otherwise either Lee needs to send me a pull
-> > request for the MFD change so I've got the dependency or he needs to
-> > apply this.
+> > I'm totally unsure what you mean here.
 > 
-> Hi Mark,
+> I was thinking of the CPPC/HWP stuff, where you can set different
+> frequencies with different levels of guarantees.
 > 
-> Thanks,
-> No problem, just some minor administration.
+> We'd want to set util_dl as the minimum (guaranteed) performance, and
+> util_dl + util_cfs as the desired performance level.
 > 
-> @Lee
-> Could you please send Mark a pull request for the regulator component to the
-> DA9062/61 changes [PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
-> driver.
+> > cpufreq doesn't have a "guaranteed frequency" concept of any sort right now.
+> 
+> I was afraid of that ;-) I think we want a comment in the code stating
+> that this is the desired goal though. Then once cpufreq is ready to deal
+> with it we can change it..
 
-That wasn't one of the options. ;)
+Sure, I can add that in next version.
 
--- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+
+- Juri
