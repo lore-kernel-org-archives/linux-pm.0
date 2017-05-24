@@ -1,58 +1,46 @@
 From: Juri Lelli <juri.lelli@arm.com>
 Subject: Re: [PATCH RFC 4/8] sched/cpufreq_schedutil: split utilization
  signals
-Date: Wed, 24 May 2017 10:01:02 +0100
-Message-ID: <20170524090102.wjljvyxw5acbdwfd@e106622-lin>
+Date: Wed, 24 May 2017 10:01:36 +0100
+Message-ID: <20170524090136.6bwwsnfy2a6yicbc@e106622-lin>
 References: <20170523085351.18586-1-juri.lelli@arm.com>
  <20170523085351.18586-5-juri.lelli@arm.com>
- <20170523192927.ri2n72hrobghlros@hirez.programming.kicks-ass.net>
- <1941953.5pVr1esCdP@aspire.rjw.lan>
- <20170524070107.xq7tmjxqg6afsrss@hirez.programming.kicks-ass.net>
+ <20170523190451.3flxegqt7ttmorw6@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170524070107.xq7tmjxqg6afsrss@hirez.programming.kicks-ass.net>
+In-Reply-To: <20170523190451.3flxegqt7ttmorw6@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, mingo@redhat.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>
+Cc: mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-On 24/05/17 09:01, Peter Zijlstra wrote:
-> On Wed, May 24, 2017 at 01:30:36AM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, May 23, 2017 09:29:27 PM Peter Zijlstra wrote:
-> > > On Tue, May 23, 2017 at 09:53:47AM +0100, Juri Lelli wrote:
-> > > > To be able to treat utilization signals of different scheduling classes
-> > > > in different ways (e.g., CFS signal might be stale while DEADLINE signal
-> > > > is never stale by design) we need to split sugov_cpu::util signal in two:
-> > > > util_cfs and util_dl.
-> > > > 
-> > > > This patch does that by also changing sugov_get_util() parameter list.
-> > > > After this change aggregation of the different signals has to be performed
-> > > > by sugov_get_util() users (so that they can decide what to do with the
-> > > > different signals).
-> > > 
-> > > So what I don't see this patch doing; and I don't remember if cpufreq is
-> > > ready for this at all, is set the util_dl as min/guaranteed freq and
-> > > util_cfs+util_dl as requested freq.
-> > 
-> > I'm totally unsure what you mean here.
+On 23/05/17 21:04, Peter Zijlstra wrote:
+> On Tue, May 23, 2017 at 09:53:47AM +0100, Juri Lelli wrote:
+> > @@ -157,14 +158,13 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+> >  	return cpufreq_driver_resolve_freq(policy, freq);
+> >  }
+> >  
+> > -static void sugov_get_util(unsigned long *util, unsigned long *max)
+> > +static void sugov_get_util(struct sugov_cpu *sg_cpu)
+> >  {
+> >  	struct rq *rq = this_rq();
+> > -	unsigned long dl_util = (rq->dl.running_bw * SCHED_CAPACITY_SCALE) >> 20;
+> >  
+> > -	*max = arch_scale_cpu_capacity(NULL, smp_processor_id());
+> > -
+> > -	*util = min(rq->cfs.avg.util_avg + dl_util, *max);
+> > +	sg_cpu->max = arch_scale_cpu_capacity(NULL, smp_processor_id());
+> > +	sg_cpu->util_cfs = rq->cfs.avg.util_avg;
+> > +	sg_cpu->util_dl = (rq->dl.running_bw * SCHED_CAPACITY_SCALE) >> 20;
+> >  }
 > 
-> I was thinking of the CPPC/HWP stuff, where you can set different
-> frequencies with different levels of guarantees.
-> 
-> We'd want to set util_dl as the minimum (guaranteed) performance, and
-> util_dl + util_cfs as the desired performance level.
-> 
-> > cpufreq doesn't have a "guaranteed frequency" concept of any sort right now.
-> 
-> I was afraid of that ;-) I think we want a comment in the code stating
-> that this is the desired goal though. Then once cpufreq is ready to deal
-> with it we can change it..
+> Luca just introduced a nice BW_SHIFT for that '20' thing.
 
-Sure, I can add that in next version.
+Right, will use that.
 
 Thanks,
 
