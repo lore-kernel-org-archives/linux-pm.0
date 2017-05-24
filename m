@@ -1,67 +1,77 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v1] PM / devfreq: exynos-nocp : Handle return value of
- clk_prepare_enable
-Date: Wed, 24 May 2017 10:56:53 +0900
-Message-ID: <5924E865.6030105@samsung.com>
-References: <CGME20170519105215epcas5p26e75138ae5815f288ac6ca57a64c1087@epcas5p2.samsung.com>
-        <1495191035-15882-1-git-send-email-arvind.yadav.cs@gmail.com>
-        <59240441.9090208@samsung.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: cpu_cooling: Replace kmalloc with kmalloc_array
+Date: Tue, 23 May 2017 19:27:10 -0700
+Message-ID: <20170524022706.GA11529@localhost.localdomain>
+References: <1495521460.2303.4.camel@intel.com>
+ <eff10695c92ff2d2e9733987d1b06adf559c07b0.1495522926.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:38817 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751245AbdEXB44 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 21:56:56 -0400
-In-reply-to: <59240441.9090208@samsung.com>
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:34574 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1758128AbdEXC1P (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 22:27:15 -0400
+Content-Disposition: inline
+In-Reply-To: <eff10695c92ff2d2e9733987d1b06adf559c07b0.1495522926.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, krzk@kernel.org, kgene@kernel.org, javier@osg.samsung.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2017년 05월 23일 18:43, Chanwoo Choi wrote:
-> Hi Arvind,
-> 
-> On 2017년 05월 19일 19:50, Arvind Yadav wrote:
->> clk_prepare_enable() can fail here and we must check its return value.
->>
->> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
->> ---
->>  drivers/devfreq/event/exynos-nocp.c | 6 +++++-
->>  1 file changed, 5 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
->> index 5c3e7b1..f6e7956 100644
->> --- a/drivers/devfreq/event/exynos-nocp.c
->> +++ b/drivers/devfreq/event/exynos-nocp.c
->> @@ -267,7 +267,11 @@ static int exynos_nocp_probe(struct platform_device *pdev)
->>  	}
->>  	platform_set_drvdata(pdev, nocp);
->>  
->> -	clk_prepare_enable(nocp->clk);
->> +	ret = clk_prepare_enable(nocp->clk);
->> +	if (ret) {
->> +		dev_err(&pdev->dev, "failed to prepare ppmu clock\n");
->> +		return ret;
->> +	}
-> 
-> I already replied from the similar patch. Thanks.
-> 
->>  
->>  	pr_info("exynos-nocp: new NoC Probe device registered: %s\n",
->>  			dev_name(dev));
->>
-> 
-> 
+Hello,
 
-I'm missing some point that if there is no clock
-this driver initializes 'nocp->clk = NULL;' on 217 line.
+On Tue, May 23, 2017 at 12:33:06PM +0530, Viresh Kumar wrote:
+> Checkpatch reports following:
+>=20
+> WARNING: Prefer kmalloc_array over kmalloc with multiply
+> +	cpufreq_cdev->freq_table =3D kmalloc(sizeof(*cpufreq_cdev->freq_table) =
+* i,
+>=20
+> Fix that.
 
-Looks good to me.
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+That is how the patch would apply. Enter to continue
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+WARNING: line over 80 characters
+#159: FILE: drivers/thermal/cpu_cooling.c:783:
++	cpufreq_cdev->freq_table =3D kmalloc(sizeof(*cpufreq_cdev->freq_table) * =
+i,
+
+WARNING: Prefer kmalloc_array over kmalloc with multiply
+#159: FILE: drivers/thermal/cpu_cooling.c:783:
++	cpufreq_cdev->freq_table =3D kmalloc(sizeof(*cpufreq_cdev->freq_table) * =
+i,
++					  GFP_KERNEL);
+
+WARNING: line over 80 characters
+#190: FILE: include/linux/cpufreq.h:859:
++static inline int cpufreq_table_count_valid_entries(const struct cpufreq_p=
+olicy *policy)
+
+
+>=20
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/thermal/cpu_cooling.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 1305020790b2..908a8014cf76 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -724,8 +724,9 @@ __cpufreq_cooling_register(struct device_node *np,
+>  	/* max_level is an index, not a counter */
+>  	cpufreq_cdev->max_level =3D i - 1;
+> =20
+> -	cpufreq_cdev->freq_table =3D kmalloc(sizeof(*cpufreq_cdev->freq_table) =
+* i,
+> -					  GFP_KERNEL);
+> +	cpufreq_cdev->freq_table =3D kmalloc_array(i,
+> +					sizeof(*cpufreq_cdev->freq_table),
+> +					GFP_KERNEL);
+>  	if (!cpufreq_cdev->freq_table) {
+>  		cdev =3D ERR_PTR(-ENOMEM);
+>  		goto free_idle_time;
+> --=20
+> 2.13.0.70.g6367777092d9
+>=20
