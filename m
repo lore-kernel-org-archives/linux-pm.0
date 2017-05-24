@@ -1,38 +1,100 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH RFC 4/8] sched/cpufreq_schedutil: split utilization signals
-Date: Wed, 24 May 2017 01:30:36 +0200
-Message-ID: <1941953.5pVr1esCdP@aspire.rjw.lan>
-References: <20170523085351.18586-1-juri.lelli@arm.com> <20170523085351.18586-5-juri.lelli@arm.com> <20170523192927.ri2n72hrobghlros@hirez.programming.kicks-ass.net>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: Re: [PATCH v1] PM / devfreq: exynos-ppmu : Handle return value
+ of clk_prepare_enable
+Date: Wed, 24 May 2017 01:30:36 +0000
+Message-ID: <20170524013036epcms1p3f5ced11e6ebe5664ce70718dedcf8de1@epcms1p3>
+References: <592403E7.8060906@samsung.com>
+        <1495191364-16015-1-git-send-email-arvind.yadav.cs@gmail.com>
+        <CGME20170519105745epcas5p29a5cbb259cd15138d7220f34e130e00a@epcms1p3>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45083 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751670AbdEWXhW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 19:37:22 -0400
-In-Reply-To: <20170523192927.ri2n72hrobghlros@hirez.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <592403E7.8060906@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, Arvind Yadav <arvind.yadav.cs@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, "krzk@kernel.org" <krzk@kernel.org>, "kgene@kernel.org" <kgene@kernel.org>, "javier@osg.samsung.com" <javier@osg.samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, mingo@redhat.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>
 
-On Tuesday, May 23, 2017 09:29:27 PM Peter Zijlstra wrote:
-> On Tue, May 23, 2017 at 09:53:47AM +0100, Juri Lelli wrote:
-> > To be able to treat utilization signals of different scheduling classes
-> > in different ways (e.g., CFS signal might be stale while DEADLINE signal
-> > is never stale by design) we need to split sugov_cpu::util signal in two:
-> > util_cfs and util_dl.
+> On 2017년 05월 19일 19:56, Arvind Yadav wrote:
+
+> > clk_prepare_enable() can fail here and we must check its return value.
+
 > > 
-> > This patch does that by also changing sugov_get_util() parameter list.
-> > After this change aggregation of the different signals has to be performed
-> > by sugov_get_util() users (so that they can decide what to do with the
-> > different signals).
+
+> > Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+
+> > ---
+
+> >  drivers/devfreq/event/exynos-ppmu.c | 6 +++++-
+
+> >  1 file changed, 5 insertions(+), 1 deletion(-)
+
+> > 
+
+> > diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+
+> > index 9b73509..8f6537a 100644
+
+> > --- a/drivers/devfreq/event/exynos-ppmu.c
+
+> > +++ b/drivers/devfreq/event/exynos-ppmu.c
+
+> > @@ -648,7 +648,11 @@ static int exynos_ppmu_probe(struct platform_device *pdev)
+
+> >  			dev_name(&pdev->dev), desc[i].name);
+
+> >  	}
+
+> >  
+
+> > -	clk_prepare_enable(info->ppmu.clk);
+
+> > +	ret = clk_prepare_enable(info->ppmu.clk);
+
+> > +	if (ret) {
+
+> > +		dev_err(&pdev->dev, "failed to prepare ppmu clock\n");
+
+> > +		return ret;
+
+> > +	}
+
 > 
-> So what I don't see this patch doing; and I don't remember if cpufreq is
-> ready for this at all, is set the util_dl as min/guaranteed freq and
-> util_cfs+util_dl as requested freq.
 
-I'm totally unsure what you mean here.
+> You're right. But, actually, some ppmu device-tree node doesn't include
 
-cpufreq doesn't have a "guaranteed frequency" concept of any sort right now.
+> the clock information because exynos clk driver don't support the
+
+> clock for some ppmu devices. Until now, the clock of ppmu devices
+
+> are default on state.
+
+
+
+If it does not include the clock information, info->ppmu.clk is NULL,
+
+which makes ret == NULL, so this should be ok.
+
+(Line 593 of this file does that.)
+
+
+
+
+
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+
+(Applied to next-rc in devfreq tree)
+
+
+
+(same applies to exynos-nocp commit as well)
+
+
+
+
+
+Cheers,
+
+MyungJoo
