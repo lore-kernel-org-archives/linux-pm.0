@@ -1,86 +1,92 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V4 00/17] thermal: cpu_cooling: improve interaction with
- cpufreq core
-Date: Tue, 23 May 2017 19:41:49 -0700
-Message-ID: <20170524024148.GA5004@localhost.localdomain>
-References: <cover.1493115651.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 0/2] thermal: power allocator: add new divvy-up
+ algorithm
+Date: Tue, 23 May 2017 20:24:11 -0700
+Message-ID: <20170524032409.GA2548@localhost.localdomain>
+References: <1494575248-4166-1-git-send-email-lukasz.luba@arm.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
+        protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:33961 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1760192AbdEXCly (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 22:41:54 -0400
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:36188 "EHLO
+        mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S965498AbdEXDYP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 May 2017 23:24:15 -0400
+Received: by mail-pf0-f182.google.com with SMTP id m17so132179861pfg.3
+        for <linux-pm@vger.kernel.org>; Tue, 23 May 2017 20:24:15 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <cover.1493115651.git.viresh.kumar@linaro.org>
+In-Reply-To: <1494575248-4166-1-git-send-email-lukasz.luba@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>, linaro-kernel@lists.linaro.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
+To: Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-pm@vger.kernel.org, javi.merino@kernel.org, rui.zhang@intel.com
 
 
---FCuugMFkClbJLl1L
+--Q68bSM7Ycu6FN28Q
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hey,
-
-On Tue, Apr 25, 2017 at 03:57:07PM +0530, Viresh Kumar wrote:
-> Hi Guys,
+On Fri, May 12, 2017 at 08:47:26AM +0100, Lukasz Luba wrote:
+> Hi,
 >=20
-> The cpu_cooling driver is designed to use CPU frequency scaling to avoid
-> high thermal states for a platform. But it wasn't glued really well with
-> cpufreq core. For example clipped-cpus is copied from the policy
-> structure and its much better to use the policy->cpus (or related_cpus)
-> fields directly as they may have got updated. Not that things were
-> broken before this series, but they can be optimized a bit more.
->=20
-> This series tries to improve interactions between cpufreq core and
-> cpu_cooling driver and does some fixes/cleanups to the cpu_cooling
-> driver.
->=20
-> I have tested it on ARM 32 (exynos) and 64 bit (hikey) boards (haven't
-> tested the power specific bits).
->=20
-> Lukasz from ARM has been very generous in testing and finding out few
-> bugs in the earlier versions and getting those fixed.  He has
-> successfully tested the new version on his ARM big LITTLE Juno board.
->=20
-> Pushed here as well:
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git thermal/cool=
-ing
->=20
-> V3->V4:
+> This patch set introduces a new algorithm in IPA.
+> It distributes the power in different way.
+> In first phase the spare power is splited between the same
+> type of deveices. In the next phase the rest of the power
+> is split among all other devices.
+> More detailed description can be found in first patch.
+> Second patch adds trace to the algorithm.
 
 
-Took this version into my -linus branch for the next merge window.
-Including the patch to remove the checkpatch warning. But please send
-an extra patch to fix the style pointed on patch 8.
+Cool! Sorry for the late answer, but can you please provide some sort of
+expected improvement here? From a power/thermal perspective?
 
+>=20
+> Patch set is based on v4.11.
+>=20
+> Changes:
+> v3
+> - trace function call moved to second patch
+> v2
+> - change division to div_u64()
+>=20
+> Regards,
+> Lukasz Luba
+>=20
+> Lukasz Luba (2):
+>   thermal: IPA: add new divvy-up algorithm
+>   trace: power allocator: add trace for divvyup algorithm
+>=20
+>  drivers/thermal/power_allocator.c              | 179 +++++++++++++++++++=
+++----
+>  include/trace/events/thermal_power_allocator.h |  40 ++++++
+>  2 files changed, 195 insertions(+), 24 deletions(-)
+>=20
+> --=20
+> 1.9.1
+>=20
 
---FCuugMFkClbJLl1L
+--Q68bSM7Ycu6FN28Q
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJZJPLjAAoJEA6VkvSQfF5TJ0YP/A3UjzaaqAjz/wmPdoCCuYQL
-RGoioI/6+uIhmmDUe7/Mlq6fTeOiRxSR9fz148m7KIdT49CeYk8E6b8/MlgCaVx7
-H1bUJvNCqXOX+XglTGZ+A16EtqX7aiWyGsRsVJDqM4OdoMWbOT0miwDUFoHIQd84
-fUorBe3nM8MxWHaYJB4/BCd1JWn+sE/Jv3wC7rASZkV+hZkAWtrEzCXWYwr8WhMD
-3wpa/Hzyy1aXSPBS9CapXZBlQHeAaT+LBR+5fJHVrznGPDWMyykOgs9uVpHziU3V
-6ELJC/56qoAP3DnG19yy14I5pHwcI+D6QlFt7YVx5fMUAfto/xGyfeBEhd92plDo
-tM1lMAXC0rTB08JDiJbdLFILav0YR3YZIPvDOtIfkguMDlHNIS148EbaDEDgVMad
-N9BIo70hCx5aIN2uscaujM1zZukcZ7h1jpwRVXizcQQwaPH4B5Xce7HYc7y4R0Sh
-QnMbi3Du5aRABbVtX9FO9vPit4r5zk1KcVv7UJpkHAzEdlyrnA6vTBT9qGA5Ryp2
-VEl/ZTEx7YY144s/IYgUP0jPbi31VrrxiogwYn3QQJXgQWxbzBU83FZU8ACjJkBk
-KYo60aitvuO3/6SVjbTQWODe4aIauCcyWKZBDmyO4EC9OzSrvPHMwEA7pU/atZXc
-36FQ9N3JBhSDtFDKG0Eo
-=UpBs
+iQIcBAEBCAAGBQJZJPzQAAoJEA6VkvSQfF5TJBcP/3yio6yXYXIYaDhXTJCdPnyL
+rKh93cksdPYYtimu+v4XUlxvJ5g3SVXRnPU3dMWijAgJL0L63Z1jJh3yMUIBj5Xd
+VmNtUqKeYPhUWz+hwZ4YR9zsajcPwYF+m2BU1PIAqRCFKjRfr1hM3iehrFzO8xoK
+xOlEOqKHeztK7tsYZi5Jglg6ixnwoQW18DGZDvRrU5SYX24+BMlhxiIAbD8U/NpZ
+ce1XAIorcsF2w3+hys33O0YAQz0wspcNbX28EW2am8yPO/3pQogAGZRgC5ZidQnq
+I14j9UOUWsOV6PilNFtfEFVO6RVtu+90zMESCapUp8AfHmAEUX2kX36GNzifcRQr
+bmwP0KdECOq5FMtP5eew1lt1xukh6EfFuY6iB8VHkljNTMgfMUUqPmi869zAqNWa
+p+CyNIqasTB8jXAV6KLeWrOUe65sppoTW8M2j3jbuZHo1L+EI7f0J0nA+3ddSXlD
+WmJzcUxpEEsNhLJCaDGetrqtScj4jSRpXPTmme0rk+WvWUENj444DVzxXmpWpI4e
+1GaBYxnYxIA35+c+L9ipfL/N8m4N929UDkdD3VgorAx6w8Gv1JEUl9I5esY71Tm5
+8dF2vYwSsEQT2lD19W0itcgf0wZZf+nyb1SjWI3K52zRvkAOQ6XTENJKKkNb2q50
+qqchTSyygUfifEzxMQ6N
+=j87a
 -----END PGP SIGNATURE-----
 
---FCuugMFkClbJLl1L--
+--Q68bSM7Ycu6FN28Q--
