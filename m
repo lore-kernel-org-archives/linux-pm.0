@@ -1,113 +1,53 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch V3 09/32] cpufreq: Use cpuhp_setup_state_nocalls_cpuslocked()
-Date: Wed, 24 May 2017 10:15:20 +0200
-Message-ID: <20170524081547.731628408@linutronix.de>
-References: <20170524081511.203800767@linutronix.de>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
+ driver
+Date: Wed, 24 May 2017 09:32:43 +0100
+Message-ID: <20170524083243.5rhritb2tvmycfc6@dell>
+References: <cover.1495546845.git.stwiss.opensource@diasemi.com>
+ <ac0c9c0edf9a3a48d8de7a5c07b16b771871796e.1495546845.git.stwiss.opensource@diasemi.com>
+ <20170523171721.lpqjhakaawnz4prz@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline;
- filename=cpufreq_Use_cpuhp_setup_state_nocalls_cpuslocked().patch
-Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Siewior <bigeasy@linutronix.de>, Paul McKenney <paulmck@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170523171721.lpqjhakaawnz4prz-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+On Tue, 23 May 2017, Mark Brown wrote:
 
-cpufreq holds get_online_cpus() while invoking cpuhp_setup_state_nocalls()
-to make subsys_interface_register() and the registration of hotplug calls
-atomic versus cpu hotplug.
+> On Tue, May 23, 2017 at 02:40:45PM +0100, Steve Twiss wrote:
+> 
+> > This patch was Acked by Mark Brown, a long time ago, way back in Oct 2016
+> > (https://patchwork.kernel.org/patch/9397787/).
+> > I have kept Mark Brown's Ack attached because there have been no real
+> > code changes since then, but I have recently updated the copyright header
+> > slightly, rebased the code (no changes necessary) and compile tested it
+> > against x86_64.
+> 
+> > The MFD files which this patch depended on were accepted into linux-next
+> > by Lee Jones last week. If there is anything in the way of this patch
+> > acceptance, could you please let me know?
+> 
+> Given that I've acked this and it depends on the MFD changes I'd have
+> expected Lee to apply it.  If nothing else happens I can apply it after
+> the next merge window, otherwise either Lee needs to send me a pull
+> request for the MFD change so I've got the dependency or he needs to
+> apply this.
 
-cpuhp_setup_state_nocalls() invokes get_online_cpus() as well. This is
-correct, but prevents the conversion of the hotplug locking to a percpu
-rwsem.
+Plan is to push this through the MFD tree.
 
-Use cpuhp_setup/remove_state_nocalls_cpuslocked() to avoid the nested
-call. Convert *_online_cpus() to the new interfaces while at it.
+Do you want a PR for this one?
 
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-
----
- drivers/cpufreq/cpufreq.c |   21 +++++++++++----------
- 1 file changed, 11 insertions(+), 10 deletions(-)
-
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -887,7 +887,7 @@ static ssize_t store(struct kobject *kob
- 	struct freq_attr *fattr = to_attr(attr);
- 	ssize_t ret = -EINVAL;
- 
--	get_online_cpus();
-+	cpus_read_lock();
- 
- 	if (cpu_online(policy->cpu)) {
- 		down_write(&policy->rwsem);
-@@ -895,7 +895,7 @@ static ssize_t store(struct kobject *kob
- 		up_write(&policy->rwsem);
- 	}
- 
--	put_online_cpus();
-+	cpus_read_unlock();
- 
- 	return ret;
- }
-@@ -2441,7 +2441,7 @@ int cpufreq_register_driver(struct cpufr
- 	pr_debug("trying to register driver %s\n", driver_data->name);
- 
- 	/* Protect against concurrent CPU online/offline. */
--	get_online_cpus();
-+	cpus_read_lock();
- 
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	if (cpufreq_driver) {
-@@ -2473,9 +2473,10 @@ int cpufreq_register_driver(struct cpufr
- 		goto err_if_unreg;
- 	}
- 
--	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "cpufreq:online",
--					cpuhp_cpufreq_online,
--					cpuhp_cpufreq_offline);
-+	ret = cpuhp_setup_state_nocalls_cpuslocked(CPUHP_AP_ONLINE_DYN,
-+						   "cpufreq:online",
-+						   cpuhp_cpufreq_online,
-+						   cpuhp_cpufreq_offline);
- 	if (ret < 0)
- 		goto err_if_unreg;
- 	hp_online = ret;
-@@ -2493,7 +2494,7 @@ int cpufreq_register_driver(struct cpufr
- 	cpufreq_driver = NULL;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- out:
--	put_online_cpus();
-+	cpus_read_unlock();
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(cpufreq_register_driver);
-@@ -2516,17 +2517,17 @@ int cpufreq_unregister_driver(struct cpu
- 	pr_debug("unregistering driver %s\n", driver->name);
- 
- 	/* Protect against concurrent cpu hotplug */
--	get_online_cpus();
-+	cpus_read_lock();
- 	subsys_interface_unregister(&cpufreq_interface);
- 	remove_boost_sysfs_file();
--	cpuhp_remove_state_nocalls(hp_online);
-+	cpuhp_remove_state_nocalls_cpuslocked(hp_online);
- 
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 
- 	cpufreq_driver = NULL;
- 
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
--	put_online_cpus();
-+	cpus_read_unlock();
- 
- 	return 0;
- }
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
