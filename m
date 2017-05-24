@@ -1,108 +1,54 @@
-From: Luca Abeni <luca.abeni@santannapisa.it>
-Subject: Re: [PATCH RFC 0/8] SCHED_DEADLINE freq/cpu invariance and OPP
- selection
-Date: Wed, 24 May 2017 12:01:51 +0200
-Message-ID: <20170524120151.72847b6e@luca>
-References: <20170523085351.18586-1-juri.lelli@arm.com>
-        <20170523202321.3bygt6ydyiy5xief@hirez.programming.kicks-ass.net>
-        <20170524092505.ipsdp2r4btsxxhn3@e106622-lin>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
+ driver
+Date: Wed, 24 May 2017 11:10:57 +0100
+Message-ID: <20170524101057.v2fqwki4fopx5k7y@sirena.org.uk>
+References: <cover.1495546845.git.stwiss.opensource@diasemi.com>
+ <ac0c9c0edf9a3a48d8de7a5c07b16b771871796e.1495546845.git.stwiss.opensource@diasemi.com>
+ <20170523171721.lpqjhakaawnz4prz@sirena.org.uk>
+ <20170524083243.5rhritb2tvmycfc6@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="ccfyw43wkxzoixsv"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170524092505.ipsdp2r4btsxxhn3@e106622-lin>
+Content-Disposition: inline
+In-Reply-To: <20170524083243.5rhritb2tvmycfc6@dell>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Steve Twiss <stwiss.opensource@diasemi.com>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 24 May 2017 10:25:05 +0100
-Juri Lelli <juri.lelli@arm.com> wrote:
 
-> Hi,
-> 
-> On 23/05/17 22:23, Peter Zijlstra wrote:
-> > On Tue, May 23, 2017 at 09:53:43AM +0100, Juri Lelli wrote:
-> >   
-> > > A point that is still very much up for discussion (more that the
-> > > others :) is how we implement frequency/cpu scaling.
-> > > SCHED_FLAG_RECLAIM tasks only need grub_reclaim(), as the
-> > > function already scales their reservation runtime considering
-> > > other reservations and maximum bandwidth a CPU has to offer.
-> > > However, for normal !RECLAIM tasks multiple things can be
-> > > implemented which seem to make sense:
-> > > 
-> > >  - don't scale at all: normal tasks will only get a % of CPU
-> > > _time_ as granted by AC
-> > >  - go to max as soon as a normal task in enqueued: this because
-> > > dimensioning of parameters is usually done at max OPP/biggest CPU
-> > > and normal task assume that this is always the condition when
-> > > they run
-> > >  - scale runtime acconding to current frequency and max CPU
-> > > capacity: this is what this set is currently implementing
-> > > 
-> > > Opinions?  
-> > 
-> > 
-> > So I'm terribly confused...
-> > 
-> > By using the active bandwidth to select frequency we effectively
-> > reduce idle time (to 0 if we had infinite granular frequency steps
-> > and no margins).
-> > 
-> > So !RECLAIM works as expected. They get the time they reserved,
-> > since that was taken into account by active bandwidth.
-> >   
-> 
-> This was my impression as well, but Luca (and please Luca correct me
-> if I misunderstood your point) argued (in an off-line discussion
-> ahead of this posting) that !reclaim tasks might not be interested in
-> reclaiming *at all*.
+--ccfyw43wkxzoixsv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Well, I also admitted that I am almost completely ignorant about many
-people's requirements...
+On Wed, May 24, 2017 at 09:32:43AM +0100, Lee Jones wrote:
 
-What I know is that there are some people using SCHED_DEADLINE to make
-sure that a task can make progress (executing with a "high priority")
-without consuming more than a specified fraction of CPU time... So,
-they for example schedule a CPU-hungry task with runtime=10ms and
-period=100ms to make sure that the task can execute every 100ms (giving
-the impression of a "fluid progress") without stealing more than 10% of
-CPU time to other tasks.
+> Plan is to push this through the MFD tree.
 
-In this case, if the CPU frequency change the goal is still to
-"reserve" 10% of CPU time (not more, even if the CPU is slower) to the
-task. So, no runtime rescaling (or reclaiming) is required in this case.
+Great, thanks.
 
+> Do you want a PR for this one?
 
-My proposal was that if a task is not interested in a fixed
-runtime / fraction of CPU time but wants to adapt the runtime when the
-CPU frequency scales, then it can select the RECLAIMING flag.
+Ideally but it's not super urgent if (I've started handling these by
+keeping a note of the pull information and only merging if there's an
+actual problem, that way there's less cross tree merges show up when I
+send stuff to Linus).
 
-But of course there might be different requirements or other use-cases.
+--ccfyw43wkxzoixsv
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlklXDAACgkQJNaLcl1U
+h9CgIgf/WVhTbByTuJZ+Gq5KUxGuFjPlhcNiSZ0WAAcZiSyzHNBz8qxmTUJZvF8t
+Ha2TjvxigMiIhDCqeLiid96I9BY+EMl3KAV8gia5zjnwlT4pNoSIoQFXLDPLieVy
+G23jNVBhST9hLtqNxJBbQs+12QugkOuxpvO2uFlvG9J6Zu0oQXjPSxs43F2frPuJ
+iem0f0clQ93jKKliPQf2F8UKHzBfXWNgA1K6sqDAWQUs1dGAqWcRem38fiGv+qv+
+Y6zvy0YWp/VOUkAfwaxXRHy5hOqIyRLzLu9USNgqF+G0tnTbSf61u5Ea2dzN9EYg
+78aXlwmk1QTnIOM9jVzWo3/lTUT/rQ==
+=wM4o
+-----END PGP SIGNATURE-----
 
-			Luca
-
-> Since scaling frequency down is another way of
-> effectively reclaiming unused bandwidth (the other being sharing
-> unused bandwidth among reservations while keeping frequency at
-> max), !reclaim tasks could not be interested in frequency scaling (my
-> first point above) or require frequency to be always at max (second
-> point above).
-> 
-> Does this help claryfing a bit? :)
-> 
-> This said however, I'd personally be inclined to go with option 3
-> above, which is what this set is currently implementing.
-> 
-> > And RECLAIM works, since that only promises to (re)distribute idle
-> > time, and if there is none that is an easy task.
-> >   
-> 
-> Right.
-> 
-> Thanks,
-> 
-> - Juri
+--ccfyw43wkxzoixsv--
