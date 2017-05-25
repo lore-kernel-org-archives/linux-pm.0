@@ -1,220 +1,97 @@
-From: Sean Wang <sean.wang@mediatek.com>
-Subject: Re: [PATCH 1/6] clk: mediatek: add missing cpu mux causing Mediatek
- cpufreq can't work
-Date: Thu, 25 May 2017 15:30:04 +0800
-Message-ID: <1495697404.22797.2.camel@mtkswgap22>
-References: <1493997974-17699-1-git-send-email-sean.wang@mediatek.com>
-         <1493997974-17699-2-git-send-email-sean.wang@mediatek.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH] PCI / PM: Restore the status of PCI devices across hibernation
+Date: Thu, 25 May 2017 16:49:07 +0800
+Message-ID: <1495702147-31427-1-git-send-email-yu.c.chen@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailgw01.mediatek.com ([210.61.82.183]:13166 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1752611AbdEYHaJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 May 2017 03:30:09 -0400
-In-Reply-To: <1493997974-17699-2-git-send-email-sean.wang@mediatek.com>
+Received: from mga06.intel.com ([134.134.136.31]:46510 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1757030AbdEYIsm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 25 May 2017 04:48:42 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: mturquette@baylibre.com, sboyd@codeaurora.org
-Cc: viresh.kumar@linaro.org, robh+dt@kernel.org, matthias.bgg@gmail.com, mark.rutland@arm.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, jdelvare@suse.de, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+To: Yu Chen <yu.c.chen@intel.com>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Len Brown <len.brown@intel.com>, Dan Williams <dan.j.williams@intel.com>, Rui Zhang <rui.zhang@intel.com>, Ying Huang <ying.huang@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Michael and Stephen
+Currently we saw a lot of "No irq handler" errors during hibernation,
+which caused the system hang finally:
 
+[  710.141581] ata4.00: qc timeout (cmd 0xec)
+[  710.147135] ata4.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+[  710.154593] ata4.00: revalidation failed (errno=-5)
+[  710.468124] ata4: SATA link up 6.0 Gbps (SStatus 133 SControl 300)
+[  710.477746] do_IRQ: 31.151 No irq handler for vector
 
-Just a gentle ping on this one :)
+According to above logs, there is an interrupt triggered and it is
+dispatched to CPU31 with a vector number 151, but there is no handler
+for it, thus this irq will not get acked and caused irq flood which kill
+the system. To be more specific, the 31.151 is an interrupt from the ahci
+host controller.
 
+After some investigation, the reason why this issue is triggered is
+because the thaw_noirq() function does not restore the MSI/MSIX settings
+across hibernation.
 
-Cheers, Sean
+The scenario is illustrated below:
 
+1. Before the hibernation starts, the irq 34 is the handler for the ahci device,
+   which is binded on cpu31.
+2. Hibernation starts, the ahci device is put into low power state.
+3. All the nonboot CPUs are put offline, so the irq 34 has to be migrated to
+   the last alive one - CPU0.
+4. After the snapshot has been created, all the nonboot CPUs are brought up again,
+   the CPU affinity for IRQ 34 remains to be 0.
+5. ahci device are put into D0.
+6. The snapshot is written to the disk.
 
-On Fri, 2017-05-05 at 23:26 +0800, sean.wang@mediatek.com wrote:
-> From: Sean Wang <sean.wang@mediatek.com>
-> 
-> This patch adds CPU multiplexer clocks which are essential for Mediatek
-> cpufreq driver. It would use the CPU clock multiplexer to switch to the
-> intermediate clock source temporarily and then wait for the primary clock
-> changing getting stable.
-> 
-> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-> ---
->  drivers/clk/mediatek/Makefile     |   2 +-
->  drivers/clk/mediatek/clk-cpumux.c | 120 ++++++++++++++++++++++++++++++++++++++
->  drivers/clk/mediatek/clk-cpumux.h |  30 ++++++++++
->  3 files changed, 151 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/clk/mediatek/clk-cpumux.c
->  create mode 100644 drivers/clk/mediatek/clk-cpumux.h
-> 
-> diff --git a/drivers/clk/mediatek/Makefile b/drivers/clk/mediatek/Makefile
-> index 5c3afb8..2a755b5 100644
-> --- a/drivers/clk/mediatek/Makefile
-> +++ b/drivers/clk/mediatek/Makefile
-> @@ -1,4 +1,4 @@
-> -obj-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-mtk.o clk-pll.o clk-gate.o clk-apmixed.o
-> +obj-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-mtk.o clk-pll.o clk-gate.o clk-apmixed.o clk-cpumux.o
->  obj-$(CONFIG_RESET_CONTROLLER) += reset.o
->  obj-$(CONFIG_COMMON_CLK_MT6797) += clk-mt6797.o
->  obj-$(CONFIG_COMMON_CLK_MT6797_IMGSYS) += clk-mt6797-img.o
-> diff --git a/drivers/clk/mediatek/clk-cpumux.c b/drivers/clk/mediatek/clk-cpumux.c
-> new file mode 100644
-> index 0000000..edd8e69
-> --- /dev/null
-> +++ b/drivers/clk/mediatek/clk-cpumux.c
-> @@ -0,0 +1,120 @@
-> +/*
-> + * Copyright (c) 2015 Linaro Ltd.
-> + * Author: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#include <linux/clk-provider.h>
-> +#include <linux/mfd/syscon.h>
-> +#include <linux/slab.h>
-> +
-> +#include "clk-mtk.h"
-> +#include "clk-cpumux.h"
-> +
-> +static inline struct mtk_clk_cpumux *to_mtk_clk_cpumux(struct clk_hw *_hw)
-> +{
-> +	return container_of(_hw, struct mtk_clk_cpumux, hw);
-> +}
-> +
-> +static u8 clk_cpumux_get_parent(struct clk_hw *hw)
-> +{
-> +	struct mtk_clk_cpumux *mux = to_mtk_clk_cpumux(hw);
-> +	int num_parents = clk_hw_get_num_parents(hw);
-> +	unsigned int val;
-> +
-> +	regmap_read(mux->regmap, mux->reg, &val);
-> +
-> +	val >>= mux->shift;
-> +	val &= mux->mask;
-> +
-> +	if (val >= num_parents)
-> +		return -EINVAL;
-> +
-> +	return val;
-> +}
-> +
-> +static int clk_cpumux_set_parent(struct clk_hw *hw, u8 index)
-> +{
-> +	struct mtk_clk_cpumux *mux = to_mtk_clk_cpumux(hw);
-> +	u32 mask, val;
-> +
-> +	val = index << mux->shift;
-> +	mask = mux->mask << mux->shift;
-> +
-> +	return regmap_update_bits(mux->regmap, mux->reg, mask, val);
-> +}
-> +
-> +static const struct clk_ops clk_cpumux_ops = {
-> +	.get_parent = clk_cpumux_get_parent,
-> +	.set_parent = clk_cpumux_set_parent,
-> +};
-> +
-> +static struct clk __init *
-> +mtk_clk_register_cpumux(const struct mtk_composite *mux,
-> +			struct regmap *regmap)
-> +{
-> +	struct mtk_clk_cpumux *cpumux;
-> +	struct clk *clk;
-> +	struct clk_init_data init;
-> +
-> +	cpumux = kzalloc(sizeof(*cpumux), GFP_KERNEL);
-> +	if (!cpumux)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	init.name = mux->name;
-> +	init.ops = &clk_cpumux_ops;
-> +	init.parent_names = mux->parent_names;
-> +	init.num_parents = mux->num_parents;
-> +	init.flags = mux->flags;
-> +
-> +	cpumux->reg = mux->mux_reg;
-> +	cpumux->shift = mux->mux_shift;
-> +	cpumux->mask = BIT(mux->mux_width) - 1;
-> +	cpumux->regmap = regmap;
-> +	cpumux->hw.init = &init;
-> +
-> +	clk = clk_register(NULL, &cpumux->hw);
-> +	if (IS_ERR(clk))
-> +		kfree(cpumux);
-> +
-> +	return clk;
-> +}
-> +
-> +int __init mtk_clk_register_cpumuxes(struct device_node *node,
-> +				     const struct mtk_composite *clks, int num,
-> +				     struct clk_onecell_data *clk_data)
-> +{
-> +	int i;
-> +	struct clk *clk;
-> +	struct regmap *regmap;
-> +
-> +	regmap = syscon_node_to_regmap(node);
-> +	if (IS_ERR(regmap)) {
-> +		pr_err("Cannot find regmap for %s: %ld\n", node->full_name,
-> +		       PTR_ERR(regmap));
-> +		return PTR_ERR(regmap);
-> +	}
-> +
-> +	for (i = 0; i < num; i++) {
-> +		const struct mtk_composite *mux = &clks[i];
-> +
-> +		clk = mtk_clk_register_cpumux(mux, regmap);
-> +		if (IS_ERR(clk)) {
-> +			pr_err("Failed to register clk %s: %ld\n",
-> +			       mux->name, PTR_ERR(clk));
-> +			continue;
-> +		}
-> +
-> +		clk_data->clks[mux->id] = clk;
-> +	}
-> +
-> +	return 0;
-> +}
-> diff --git a/drivers/clk/mediatek/clk-cpumux.h b/drivers/clk/mediatek/clk-cpumux.h
-> new file mode 100644
-> index 0000000..dddaad5
-> --- /dev/null
-> +++ b/drivers/clk/mediatek/clk-cpumux.h
-> @@ -0,0 +1,30 @@
-> +/*
-> + * Copyright (c) 2015 Linaro Ltd.
-> + * Author: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#ifndef __DRV_CLK_CPUMUX_H
-> +#define __DRV_CLK_CPUMUX_H
-> +
-> +struct mtk_clk_cpumux {
-> +	struct clk_hw	hw;
-> +	struct regmap	*regmap;
-> +	u32		reg;
-> +	u32		mask;
-> +	u8		shift;
-> +};
-> +
-> +int mtk_clk_register_cpumuxes(struct device_node *node,
-> +			      const struct mtk_composite *clks, int num,
-> +			      struct clk_onecell_data *clk_data);
-> +
-> +#endif /* __DRV_CLK_CPUMUX_H */
+The issue is triggered in step 6, in theory the ahci interrupt should be
+delivered to CPU0, however the actually result is that this interrupt is
+delivered to the original CPU31 instead, which cause the "No irq handler" issue.
+
+Ying Huang has has provided a clue that, in step 3 it is possible that the writing
+to the register might not take effect as the PCI devices have been put suspended.
+Actually it is true:
+In step 3, the irq 34 affinity is supposed to be modified from 31 to 0,
+but actually it did not. In __pci_write_msi_msg(), if the device is already
+in low power state, the low level msi message entry will not be updated
+but cached. So in theory during the device restore process, the cached msi
+modification information should be written back to the hardware, and this
+is what pci_restore_msi_state() do during normal suspend-resume.
+But this is not the case for hibernation, pci_restore_msi_state() is not
+invoked currently, to be more specific, pci_restore_state() is not invoked
+in pci_pm_thaw_noirq(), although pci_save_state() has saved the necessary
+pci cached information in pci_pm_freeze_noirq().
+
+This patch tries to restore the pci status for the device during hibernation,
+otherwise the status might be lost across hibernation(for example, the MSI/MSIX
+message settings), which might cause problems during hibernation.
+
+Suggested-by: Ying Huang <ying.huang@intel.com>
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Rui Zhang <rui.zhang@intel.com>
+Cc: Ying Huang <ying.huang@intel.com>
+Cc: linux-pci@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ drivers/pci/pci-driver.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index 192e7b6..b399fa3 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -964,6 +964,7 @@ static int pci_pm_thaw_noirq(struct device *dev)
+ 		return pci_legacy_resume_early(dev);
+ 
+ 	pci_update_current_state(pci_dev, PCI_D0);
++	pci_restore_state(pci_dev);
+ 
+ 	if (drv && drv->pm && drv->pm->thaw_noirq)
+ 		error = drv->pm->thaw_noirq(dev);
+-- 
+2.7.4
