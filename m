@@ -1,156 +1,220 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [PATCH v2 1/2] cpufreq: Make iowait boost a policy option
-Date: Wed, 24 May 2017 13:17:01 -0700
-Message-ID: <CAJWu+op_QRJWt=L=gGOk15pryD+1pm5xk9q90yt9wD1insdEzA@mail.gmail.com>
-References: <20170519062344.27692-1-joelaf@google.com> <20170519062344.27692-2-joelaf@google.com>
- <20170519094245.ztm6tt2iwkaiwsya@hirez.programming.kicks-ass.net>
- <CAJWu+opefgyzER6jKTa1ktrT4pGL=bKdhAP2+i40k5tYAR38wA@mail.gmail.com> <20170522082154.f57cqovterd2qajv@hirez.programming.kicks-ass.net>
+From: Sean Wang <sean.wang@mediatek.com>
+Subject: Re: [PATCH 1/6] clk: mediatek: add missing cpu mux causing Mediatek
+ cpufreq can't work
+Date: Thu, 25 May 2017 15:30:04 +0800
+Message-ID: <1495697404.22797.2.camel@mtkswgap22>
+References: <1493997974-17699-1-git-send-email-sean.wang@mediatek.com>
+         <1493997974-17699-2-git-send-email-sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f47.google.com ([209.85.213.47]:33450 "EHLO
-        mail-vk0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1032504AbdEXURD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 May 2017 16:17:03 -0400
-Received: by mail-vk0-f47.google.com with SMTP id x71so81558583vkd.0
-        for <linux-pm@vger.kernel.org>; Wed, 24 May 2017 13:17:02 -0700 (PDT)
-In-Reply-To: <20170522082154.f57cqovterd2qajv@hirez.programming.kicks-ass.net>
+Received: from mailgw01.mediatek.com ([210.61.82.183]:13166 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1752611AbdEYHaJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 May 2017 03:30:09 -0400
+In-Reply-To: <1493997974-17699-2-git-send-email-sean.wang@mediatek.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>
+To: mturquette@baylibre.com, sboyd@codeaurora.org
+Cc: viresh.kumar@linaro.org, robh+dt@kernel.org, matthias.bgg@gmail.com, mark.rutland@arm.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, jdelvare@suse.de, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Pi-Cheng Chen <pi-cheng.chen@linaro.org>
 
-Hi Peter,
+Hi Michael and Stephen
 
-On Mon, May 22, 2017 at 1:21 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-[..]
->> On Fri, May 19, 2017 at 2:42 AM, Peter Zijlstra <peterz@infradead.org> wrote:
->> > On Thu, May 18, 2017 at 11:23:43PM -0700, Joel Fernandes wrote:
->> >> Make iowait boost a cpufreq policy option and enable it for intel_pstate
->> >> cpufreq driver. Governors like schedutil can use it to determine if
->> >> boosting for tasks that wake up with p->in_iowait set is needed.
->> >
->> > Rather than just flat out disabling the option, is there something
->> > better we can do on ARM?
->> >
->> > The reason for the IO-wait boost is to ensure we feed our external
->> > devices data ASAP, this reduces wait times, increases throughput and
->> > decreases the duration the devices have to operate.
->>
->> Can you help understand how CPU frequency can affect I/O? The ASAP
->> makes me think of it as a latency thing than a throughput in which
->> case there should a scheduling priority increase? Also, to me it
->> sounds more like memory instead of CPU frequency should be boosted
->> instead so that DMA transfers happen quicker to feed devices data
->> faster.
->
-> Suppose your (I/O) device has the task waiting for a completion for 1ms
-> for each request. Further suppose that feeding it the next request takes
-> .1ms at full speed (1 GHz).
->
-> Then we get, without contending tasks, a cycle of:
->
->
->  R----------R----------                                 (1 GHz)
->
->
-> Which comes at 1/11-th utilization, which would then select something
-> like 100 MHz as being sufficient. But then the R part becomes 10x longer
-> and we end up with:
->
->
->  RRRRRRRRRR----------RRRRRRRRRR----------               (100 MHz)
->
->
-> And since there's still plenty idle time, and the effective utilization
-> is still the same 1/11th, we'll not ramp up at all and continue in this
-> cycle.
->
-> Note however that the total time of the cycle increased from 1.1ms
-> to 2ms, for an ~80% decrease in throughput.
 
-Got it, thanks for the explanation.
+Just a gentle ping on this one :)
 
->> Are you trying to boost the CPU frequency so that a process waiting on
->> I/O does its next set of processing quickly enough after iowaiting on
->> the previous I/O transaction, and is ready to feed I/O the next time
->> sooner?
->
-> This. So we break the above pattern by boosting the task that wakes from
-> IO-wait. Its utilization will never be enough to cause a significant
-> bump in frequency on its own, as its constantly blocked on the IO
-> device.
 
-It sounds like this problem can happen with any other use-case where
-one task blocks on the other, not just IO. Like a case where 2 tasks
-running on different CPUs block on a mutex, then on either task can
-wait on the other causing their utilization to be low right?
+Cheers, Sean
 
->> The case I'm seeing a lot is a background thread does I/O request and
->> blocks for short period, and wakes up. All this while the CPU
->> frequency is low, but that wake up causes a spike in frequency. So
->> over a period of time, you see these spikes that don't really help
->> anything.
->
-> So the background thread is doing some spurious IO but nothing
-> consistent?
 
-Yes, its not a consistent pattern. Its actually a 'kworker' that woke
-up to read/write something related to the video being played by the
-YouTube app and is asynchronous to the app itself. It could be writing
-to the logs or other information. But this definitely not a consistent
-pattern as in the use case you described but intermittent spikes. The
-frequency boosts don't help the actual activity of playing the video
-except increasing power.
-
->> > I realize max freq/volt might not be the best option for you, but is
->> > there another spot that would make sense? I can imagine you want to
->> > return your MMC to low power state ASAP as well.
->> >
->> >
->> > So rather than a disable flag, I would really rather see an IO-wait OPP
->> > state selector or something.
->>
->> We never had this in older kernels and I don't think we ever had an
->> issue where I/O was slow because of CPU frequency. If a task is busy a
->> lot, then its load tracking signal should be high and take care of
->> keeping CPU frequency high right?
->
-> As per the above, no. If the device completion takes long enough to
-> inject enough idle time, the utilization signal will never be high
-> enough to break out of that pattern.
->
->> If PELT is decaying the load
->> tracking of iowaiting tasks too much, then I think that it should be
->> fixed there (probably decay an iowaiting task lesser?).
->
-> For the above to work, we'd have to completely discard IO-wait time on
-> the utilization signal. But that would then give the task u=1, which
-> would be incorrect for placement decisions and wreck EAS.
-
-Not completely discard but cap the decay of the signal during IO wait.
-
->
->> Considering
->> that it makes power worse on newer kernels, it'd probably be best to
->> disable it in my opinion for those who don't need it.
->
-> You have yet to convince me you don't need it. Sure Android might not
-> have much IO heavy workloads, but that's not to say nothing on ARM ever
-> does.
->
-> Also note that if you set the boost OPP to the lowest OPP you
-> effectively do disable it.
->
-> Looking at the code, it appears we already have this in
-> iowait_boost_max.
-
-Currently it is set to:
- sg_cpu->iowait_boost_max = policy->cpuinfo.max_freq
-
-Are you proposing to make this a sysfs tunable so we can override what
-the iowait_boost_max value is?
-
-thanks,
-
--Joel
+On Fri, 2017-05-05 at 23:26 +0800, sean.wang@mediatek.com wrote:
+> From: Sean Wang <sean.wang@mediatek.com>
+> 
+> This patch adds CPU multiplexer clocks which are essential for Mediatek
+> cpufreq driver. It would use the CPU clock multiplexer to switch to the
+> intermediate clock source temporarily and then wait for the primary clock
+> changing getting stable.
+> 
+> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+> ---
+>  drivers/clk/mediatek/Makefile     |   2 +-
+>  drivers/clk/mediatek/clk-cpumux.c | 120 ++++++++++++++++++++++++++++++++++++++
+>  drivers/clk/mediatek/clk-cpumux.h |  30 ++++++++++
+>  3 files changed, 151 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/clk/mediatek/clk-cpumux.c
+>  create mode 100644 drivers/clk/mediatek/clk-cpumux.h
+> 
+> diff --git a/drivers/clk/mediatek/Makefile b/drivers/clk/mediatek/Makefile
+> index 5c3afb8..2a755b5 100644
+> --- a/drivers/clk/mediatek/Makefile
+> +++ b/drivers/clk/mediatek/Makefile
+> @@ -1,4 +1,4 @@
+> -obj-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-mtk.o clk-pll.o clk-gate.o clk-apmixed.o
+> +obj-$(CONFIG_COMMON_CLK_MEDIATEK) += clk-mtk.o clk-pll.o clk-gate.o clk-apmixed.o clk-cpumux.o
+>  obj-$(CONFIG_RESET_CONTROLLER) += reset.o
+>  obj-$(CONFIG_COMMON_CLK_MT6797) += clk-mt6797.o
+>  obj-$(CONFIG_COMMON_CLK_MT6797_IMGSYS) += clk-mt6797-img.o
+> diff --git a/drivers/clk/mediatek/clk-cpumux.c b/drivers/clk/mediatek/clk-cpumux.c
+> new file mode 100644
+> index 0000000..edd8e69
+> --- /dev/null
+> +++ b/drivers/clk/mediatek/clk-cpumux.c
+> @@ -0,0 +1,120 @@
+> +/*
+> + * Copyright (c) 2015 Linaro Ltd.
+> + * Author: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#include <linux/clk-provider.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/slab.h>
+> +
+> +#include "clk-mtk.h"
+> +#include "clk-cpumux.h"
+> +
+> +static inline struct mtk_clk_cpumux *to_mtk_clk_cpumux(struct clk_hw *_hw)
+> +{
+> +	return container_of(_hw, struct mtk_clk_cpumux, hw);
+> +}
+> +
+> +static u8 clk_cpumux_get_parent(struct clk_hw *hw)
+> +{
+> +	struct mtk_clk_cpumux *mux = to_mtk_clk_cpumux(hw);
+> +	int num_parents = clk_hw_get_num_parents(hw);
+> +	unsigned int val;
+> +
+> +	regmap_read(mux->regmap, mux->reg, &val);
+> +
+> +	val >>= mux->shift;
+> +	val &= mux->mask;
+> +
+> +	if (val >= num_parents)
+> +		return -EINVAL;
+> +
+> +	return val;
+> +}
+> +
+> +static int clk_cpumux_set_parent(struct clk_hw *hw, u8 index)
+> +{
+> +	struct mtk_clk_cpumux *mux = to_mtk_clk_cpumux(hw);
+> +	u32 mask, val;
+> +
+> +	val = index << mux->shift;
+> +	mask = mux->mask << mux->shift;
+> +
+> +	return regmap_update_bits(mux->regmap, mux->reg, mask, val);
+> +}
+> +
+> +static const struct clk_ops clk_cpumux_ops = {
+> +	.get_parent = clk_cpumux_get_parent,
+> +	.set_parent = clk_cpumux_set_parent,
+> +};
+> +
+> +static struct clk __init *
+> +mtk_clk_register_cpumux(const struct mtk_composite *mux,
+> +			struct regmap *regmap)
+> +{
+> +	struct mtk_clk_cpumux *cpumux;
+> +	struct clk *clk;
+> +	struct clk_init_data init;
+> +
+> +	cpumux = kzalloc(sizeof(*cpumux), GFP_KERNEL);
+> +	if (!cpumux)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	init.name = mux->name;
+> +	init.ops = &clk_cpumux_ops;
+> +	init.parent_names = mux->parent_names;
+> +	init.num_parents = mux->num_parents;
+> +	init.flags = mux->flags;
+> +
+> +	cpumux->reg = mux->mux_reg;
+> +	cpumux->shift = mux->mux_shift;
+> +	cpumux->mask = BIT(mux->mux_width) - 1;
+> +	cpumux->regmap = regmap;
+> +	cpumux->hw.init = &init;
+> +
+> +	clk = clk_register(NULL, &cpumux->hw);
+> +	if (IS_ERR(clk))
+> +		kfree(cpumux);
+> +
+> +	return clk;
+> +}
+> +
+> +int __init mtk_clk_register_cpumuxes(struct device_node *node,
+> +				     const struct mtk_composite *clks, int num,
+> +				     struct clk_onecell_data *clk_data)
+> +{
+> +	int i;
+> +	struct clk *clk;
+> +	struct regmap *regmap;
+> +
+> +	regmap = syscon_node_to_regmap(node);
+> +	if (IS_ERR(regmap)) {
+> +		pr_err("Cannot find regmap for %s: %ld\n", node->full_name,
+> +		       PTR_ERR(regmap));
+> +		return PTR_ERR(regmap);
+> +	}
+> +
+> +	for (i = 0; i < num; i++) {
+> +		const struct mtk_composite *mux = &clks[i];
+> +
+> +		clk = mtk_clk_register_cpumux(mux, regmap);
+> +		if (IS_ERR(clk)) {
+> +			pr_err("Failed to register clk %s: %ld\n",
+> +			       mux->name, PTR_ERR(clk));
+> +			continue;
+> +		}
+> +
+> +		clk_data->clks[mux->id] = clk;
+> +	}
+> +
+> +	return 0;
+> +}
+> diff --git a/drivers/clk/mediatek/clk-cpumux.h b/drivers/clk/mediatek/clk-cpumux.h
+> new file mode 100644
+> index 0000000..dddaad5
+> --- /dev/null
+> +++ b/drivers/clk/mediatek/clk-cpumux.h
+> @@ -0,0 +1,30 @@
+> +/*
+> + * Copyright (c) 2015 Linaro Ltd.
+> + * Author: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#ifndef __DRV_CLK_CPUMUX_H
+> +#define __DRV_CLK_CPUMUX_H
+> +
+> +struct mtk_clk_cpumux {
+> +	struct clk_hw	hw;
+> +	struct regmap	*regmap;
+> +	u32		reg;
+> +	u32		mask;
+> +	u8		shift;
+> +};
+> +
+> +int mtk_clk_register_cpumuxes(struct device_node *node,
+> +			      const struct mtk_composite *clks, int num,
+> +			      struct clk_onecell_data *clk_data);
+> +
+> +#endif /* __DRV_CLK_CPUMUX_H */
