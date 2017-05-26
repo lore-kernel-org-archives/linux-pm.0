@@ -1,73 +1,44 @@
 From: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
 Subject: Re: [PATCH 1/4] Introduce regmap infrastructure over Maxim/Dalas
  OneWire (W1) bus
-Date: Fri, 26 May 2017 18:50:25 +0300
-Message-ID: <9af21650-51d8-7aa6-445b-9edf634d487a@rambler.ru>
+Date: Fri, 26 May 2017 19:17:11 +0300
+Message-ID: <86e846cd-95c2-621e-51ce-0da11f51b2c7@rambler.ru>
 References: <20170525174639.3191-1-minimumlaw@rambler.ru>
  <20170525174639.3191-2-minimumlaw@rambler.ru>
- <20170526102149.l26fzjwg5zxsqq5e@sirena.org.uk>
+ <404871495743279@web24o.yandex.ru>
+ <20170526110602.jtvxf76abks4v3xf@sirena.org.uk>
+ <3411811495806312@web49j.yandex.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from huan2.mail.rambler.ru ([81.19.78.108]:7966 "EHLO
-        huan2.mail.rambler.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1764898AbdEZPu2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 May 2017 11:50:28 -0400
-In-Reply-To: <20170526102149.l26fzjwg5zxsqq5e@sirena.org.uk>
+Received: from huan3.mail.rambler.ru ([81.19.78.109]:43848 "EHLO
+        huan3.mail.rambler.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752407AbdEZQRO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 May 2017 12:17:14 -0400
+In-Reply-To: <3411811495806312@web49j.yandex.ru>
 Content-Language: en-GB
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Evgeniy Polyakov <zbr@ioremap.net>, Mark Brown <broonie@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
 
-> This looks mostly fine, a couple of small things and like I said in
-> reply to Greg please use subject lines matching the style for the
-> subsystem - this makes it a lot easier for people to identify relevant
-> patches.
->
->> +	int ret = -ENODEV;
->> +
->> +
->> +	if (reg > 255)
->> +		return -EINVAL;
->> +
->> +	mutex_lock(&sl->master->bus_mutex);
->> +	if (!w1_reset_select_slave(sl)) {
->> +		w1_write_8(sl->master, W1_CMD_READ_DATA);
->> +		w1_write_8(sl->master, reg);
->> +		*val = w1_read_8(sl->master);
->> +		ret = 0;
->> +	}
->> +	mutex_unlock(&sl->master->bus_mutex);
-> This is a bit confusing with how -ENODEV is generated - move the
-> assignment into the if statement so it doesn't look like we're silently
-> ignoring errors unless you look back to the top of the function.
-Ok. I set default return value to -ENODEV. W1 (OneWire) Bus periodically 
-scan for connected devices. Typical time between scans about 60 sec. 
-This period W1 slave device can present in kernel device list, but will 
-physically disconnected.
+> Alex, it is up to you to decide whether you want to push your regmap version or not,
+> I will not object against, but in my personal opinion your first version version was much cleaner.
 
-Only w1_reset_select_slave(sl) can say me about device still physically 
-accessible. Only on success w1_reset_select_slave return zero. I think 
-code, like
+I don't know. First edition (without regmap) was very simple. I think 
+anyone could understand how this code works.
 
-if (!w1_reset_select_slave(sl)) {
-   [...]
-   ret =0;
-} else
-   ret = -ENODEV;
+On the other hand, there is already a lot of duplicate code in the 
+kernel, which is responsible for accessing device registers on the bus. 
+In this sense, using the regmap infrastructure should help. As for the 
+complex description of registers of a simple device, I consciously went 
+into this complication by describing all the holes in the register map. 
+Since this driver is a pioneer, he must use the maximum of 
+infrastructure capabilities.
 
-not good.
-
->> +static struct regmap_bus regmap_w1_bus_a8_v16 = {
->> +	.reg_read = w1_reg_a8_v16_read,
->> +	.reg_write = w1_reg_a8_v16_write,
->> +};
-> It'd be clearer to just have all all these structs at the end of the set
-> of functions rather than scattered about randomly.
-Ok. I move this structs down in next version of patches.
-
-I hope that the next edition will not contain such a large number of 
-registration errors. Sorry for all.
+But I somehow do not really believe in the correctness of the 
+realisation of regmap for W1. I have too few devices working with this 
+bus. Theory, they all can work with my implementation of regmap. But not 
+the fact that there will not be those who can not.
