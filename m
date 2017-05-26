@@ -1,77 +1,94 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 1/4] Introduce regmap infrastructure over Maxim/Dalas
- OneWire (W1) bus
-Date: Fri, 26 May 2017 11:21:49 +0100
-Message-ID: <20170526102149.l26fzjwg5zxsqq5e@sirena.org.uk>
-References: <20170525174639.3191-1-minimumlaw@rambler.ru>
- <20170525174639.3191-2-minimumlaw@rambler.ru>
+From: Mian Yousaf Kaukab <yousaf.kaukab@suse.com>
+Subject: Re: [PATCH] ACPI: processor: fix LPI when built as module
+Date: Fri, 26 May 2017 12:21:57 +0200
+Message-ID: <0d6edbd9-938c-a926-1480-c11de01ee38d@suse.com>
+References: <20170519092837.30991-1-yousaf.kaukab@suse.com>
+ <314aff9d-6c24-e533-ef08-c16bc0816474@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="bomizzxukj2iqe64"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:35934 "EHLO
-        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1947655AbdEZKWE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 May 2017 06:22:04 -0400
-Content-Disposition: inline
-In-Reply-To: <20170525174639.3191-2-minimumlaw@rambler.ru>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <314aff9d-6c24-e533-ef08-c16bc0816474@arm.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>, linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, catalin.marinas@arm.com, lorenzo.pieralisi@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
+On 5/23/17 3:08 PM, Sudeep Holla wrote:
+> 
+> 
+> On 19/05/17 10:28, Mian Yousaf Kaukab wrote:
+>> Low Power Idle(LPI) support added acpi_processor_ffh_lpi_probe() and
+>> acpi_processor_ffh_lpi_enter() as __weak functions and arch code is
+>> supposed to provide the actual callbacks. This breaks if
+>> ACPI_PROCESSOR is configured as a module.
+>>
+>> Add CONFIG_ARCH_HAS_ACPI_LPI configuration option to fix this.
+>>
+> 
+> Rafael didn't like the extra Kconfig option when I first posted
+> LPI patches.
+> 
+>> Signed-off-by: Mian Yousaf Kaukab <yousaf.kaukab@suse.com>
+>> ---
+>>   arch/arm64/Kconfig            | 1 +
+>>   arch/arm64/kernel/cpuidle.c   | 2 ++
+>>   drivers/acpi/Kconfig          | 3 +++
+>>   drivers/acpi/processor_idle.c | 9 +++++++--
+>>   4 files changed, 13 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+>> index 848a34116c67..de2f2779cdf5 100644
+>> --- a/arch/arm64/Kconfig
+>> +++ b/arch/arm64/Kconfig
+>> @@ -10,6 +10,7 @@ config ARM64
+>>   	select ARCH_HAS_DEBUG_VIRTUAL
+>>   	select ARCH_HAS_DEVMEM_IS_ALLOWED
+>>   	select ARCH_HAS_ACPI_TABLE_UPGRADE if ACPI
+>> +	select ARCH_HAS_ACPI_LPI if ACPI
+>>   	select ARCH_HAS_ELF_RANDOMIZE
+>>   	select ARCH_HAS_GCOV_PROFILE_ALL
+>>   	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+>> diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
+>> index fd691087dc9a..002d9cb890bd 100644
+>> --- a/arch/arm64/kernel/cpuidle.c
+>> +++ b/arch/arm64/kernel/cpuidle.c
+>> @@ -51,9 +51,11 @@ int acpi_processor_ffh_lpi_probe(unsigned int cpu)
+>>   {
+>>   	return arm_cpuidle_init(cpu);
+>>   }
+>> +EXPORT_SYMBOL(acpi_processor_ffh_lpi_probe);
+>>   
+>>   int acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi)
+>>   {
+>>   	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, lpi->index);
+>>   }
+>> +EXPORT_SYMBOL(acpi_processor_ffh_lpi_enter);
+> 
+> Won't these 2 export suffice ? [...]
+No, they don't suffice.
 
---bomizzxukj2iqe64
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> [...] I am just curious why that won't work.
+I am not really sure. System.map shows the exported symbols as following:
+ffff000008095898 T acpi_processor_ffh_lpi_probe
+ffff0000080958f8 T acpi_processor_ffh_lpi_enter
+ffff000008c19160 R __ksymtab_acpi_processor_ffh_lpi_enter
+ffff000008c19170 R __ksymtab_acpi_processor_ffh_lpi_probe
+ffff000008c357f0 r __kcrctab_acpi_processor_ffh_lpi_enter
+ffff000008c357f8 r __kcrctab_acpi_processor_ffh_lpi_probe
+ffff000008c4361b r __kstrtab_acpi_processor_ffh_lpi_enter
+ffff000008c43638 r __kstrtab_acpi_processor_ffh_lpi_probe
 
-On Thu, May 25, 2017 at 08:46:36PM +0300, Alex A. Mihaylov wrote:
+and 'nm processor.ko' shows that they are defined as weak:
 
-This looks mostly fine, a couple of small things and like I said in
-reply to Greg please use subject lines matching the style for the
-subsystem - this makes it a lot easier for people to identify relevant
-patches.
+0000000000000d68 W acpi_processor_ffh_lpi_enter
+0000000000000cc8 W acpi_processor_ffh_lpi_probe
 
-> +	int ret = -ENODEV;
-> +
-> +
-> +	if (reg > 255)
-> +		return -EINVAL;
-> +
-> +	mutex_lock(&sl->master->bus_mutex);
-> +	if (!w1_reset_select_slave(sl)) {
-> +		w1_write_8(sl->master, W1_CMD_READ_DATA);
-> +		w1_write_8(sl->master, reg);
-> +		*val = w1_read_8(sl->master);
-> +		ret = 0;
-> +	}
-> +	mutex_unlock(&sl->master->bus_mutex);
+But still weak symbols are happily used when the module is inserted.
 
-This is a bit confusing with how -ENODEV is generated - move the
-assignment into the if statement so it doesn't look like we're silently
-ignoring errors unless you look back to the top of the function.
+> Will weak function definitions be still picked when built as modules ?
+Yes.
 
-> +static struct regmap_bus regmap_w1_bus_a8_v16 = {
-> +	.reg_read = w1_reg_a8_v16_read,
-> +	.reg_write = w1_reg_a8_v16_write,
-> +};
-
-It'd be clearer to just have all all these structs at the end of the set
-of functions rather than scattered about randomly.
-
---bomizzxukj2iqe64
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlkoAbwACgkQJNaLcl1U
-h9AofQf/aEue5DoS/zCaqT3tnf+HWPsJVrzAJ4UsGZK2x3Adq14Yn+bjPF4Cf0W9
-RrWhm5XqG+JvXUqJMK1hvNkvH5sLoPzepLZnLcAw8jukIrJv/JiRALN36UMA4WKu
-+1+2JJ+bMeqnnjWe2oyVmOeLf2CCutt1Xo0S2ve4YwldRbQAAQSUovYrTwPqe5mr
-/6CkUHMOJcZKbSgOOTyn259TOY+pELdA7pvDjj5GPkU5wn6SXf+Tuvmmp1C4Az51
-qtPWAbdHn/I3+zYIrTOzO8vMKfdd8cDZNpvOhflul3Of78xT1h9oNS34fQye9nVn
-3b9d+5emL0lvAoZwxnJIvfPrhYt8ZA==
-=EMbR
------END PGP SIGNATURE-----
-
---bomizzxukj2iqe64--
+BR,
+Yousaf
