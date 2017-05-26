@@ -1,68 +1,73 @@
-From: Mark Brown <broonie@kernel.org>
+From: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
 Subject: Re: [PATCH 1/4] Introduce regmap infrastructure over Maxim/Dalas
  OneWire (W1) bus
-Date: Fri, 26 May 2017 12:06:02 +0100
-Message-ID: <20170526110602.jtvxf76abks4v3xf@sirena.org.uk>
+Date: Fri, 26 May 2017 18:50:25 +0300
+Message-ID: <9af21650-51d8-7aa6-445b-9edf634d487a@rambler.ru>
 References: <20170525174639.3191-1-minimumlaw@rambler.ru>
  <20170525174639.3191-2-minimumlaw@rambler.ru>
- <404871495743279@web24o.yandex.ru>
+ <20170526102149.l26fzjwg5zxsqq5e@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="zb4eob3qhd77w2li"
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:36132 "EHLO
-        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753457AbdEZLGU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 May 2017 07:06:20 -0400
-Content-Disposition: inline
-In-Reply-To: <404871495743279@web24o.yandex.ru>
+Received: from huan2.mail.rambler.ru ([81.19.78.108]:7966 "EHLO
+        huan2.mail.rambler.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1764898AbdEZPu2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 May 2017 11:50:28 -0400
+In-Reply-To: <20170526102149.l26fzjwg5zxsqq5e@sirena.org.uk>
+Content-Language: en-GB
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: "Alex A. Mihaylov" <minimumlaw@rambler.ru>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
 
---zb4eob3qhd77w2li
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> This looks mostly fine, a couple of small things and like I said in
+> reply to Greg please use subject lines matching the style for the
+> subsystem - this makes it a lot easier for people to identify relevant
+> patches.
+>
+>> +	int ret = -ENODEV;
+>> +
+>> +
+>> +	if (reg > 255)
+>> +		return -EINVAL;
+>> +
+>> +	mutex_lock(&sl->master->bus_mutex);
+>> +	if (!w1_reset_select_slave(sl)) {
+>> +		w1_write_8(sl->master, W1_CMD_READ_DATA);
+>> +		w1_write_8(sl->master, reg);
+>> +		*val = w1_read_8(sl->master);
+>> +		ret = 0;
+>> +	}
+>> +	mutex_unlock(&sl->master->bus_mutex);
+> This is a bit confusing with how -ENODEV is generated - move the
+> assignment into the if statement so it doesn't look like we're silently
+> ignoring errors unless you look back to the top of the function.
+Ok. I set default return value to -ENODEV. W1 (OneWire) Bus periodically 
+scan for connected devices. Typical time between scans about 60 sec. 
+This period W1 slave device can present in kernel device list, but will 
+physically disconnected.
 
-On Thu, May 25, 2017 at 11:14:39PM +0300, Evgeniy Polyakov wrote:
+Only w1_reset_select_slave(sl) can say me about device still physically 
+accessible. Only on success w1_reset_select_slave return zero. I think 
+code, like
 
-> Frankly saying, your non-regmap version was so much simpler, smaller and cleaner.
-> I wonder why did people force you to use regmap.
+if (!w1_reset_select_slave(sl)) {
+   [...]
+   ret =0;
+} else
+   ret = -ENODEV;
 
-> Guys, please speak up, if you want driver authors to use THIS, it is really flawed.
+not good.
 
-> Sebastien, iirc it was your idea to use regmaps, what was the reason for this?
+>> +static struct regmap_bus regmap_w1_bus_a8_v16 = {
+>> +	.reg_read = w1_reg_a8_v16_read,
+>> +	.reg_write = w1_reg_a8_v16_write,
+>> +};
+> It'd be clearer to just have all all these structs at the end of the set
+> of functions rather than scattered about randomly.
+Ok. I move this structs down in next version of patches.
 
-So, this is the first I've seen of this series but in general the main
-reason for using regmap is that it allows best practice to be factored
-out into common code both in terms of the I/O itself and also in terms
-of framework code being able to provide regmap based helpers for common
-operations so drivers need less code.  The cache code is also really
-useful for a lot of devices, it's a performance boost for reads and is
-well optimized for restoring device state if you don't care about
-sequencing (this is where some of the MMIO users come from).  You also
-get a bunch of debug support for free, things like the tracepoints and
-debugfs files (those do work better if you describe the register map).
-
-Looking at the code in the regmap patch I have to say I'm very surprised
-if this is adding much complexity, usually moving to regmap is basically
-a sed.
-
---zb4eob3qhd77w2li
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlkoDBkACgkQJNaLcl1U
-h9Acogf9Fa8zCh00TCsT+nLIpvX7xNlE0+QZrszLg5vmWNA8DK6TV5OQJoU84bzj
-+4fPME7LbuZ6quWZEjjjd8/DUml+mKE9J+iVNlscqZm8M2GoRHZjpzQEaoZLWAxS
-czB0kriwlxDDNcOpH7Kw4mKFeEFOGw8FmBgcgDq94DUVVQ2nW/+dTO/O2fIe8bIC
-qRSAZT4YqZkGBJ+th0/KRIJrC7UPKgRdMH18g5Xftzq4kzXdLvkE+jB0PNgiE2ki
-UGO5FS3B+0/J0cKaiP6nCyAYpL8NfWjFLhh4cRA+11m0KCXLFjUTkCR4gw+jP+5Y
-Fh86ELLPsc2UPOg0Zz6ly7OXQfIiRg==
-=Hc+E
------END PGP SIGNATURE-----
-
---zb4eob3qhd77w2li--
+I hope that the next edition will not contain such a large number of 
+registration errors. Sorry for all.
