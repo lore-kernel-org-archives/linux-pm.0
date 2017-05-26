@@ -1,15 +1,18 @@
 From: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Subject: [PATCH v3 1/4] dt-bindings: power: supply: add battery charge voltage/current
-Date: Fri, 26 May 2017 13:04:10 +0200
-Message-ID: <20170526110413.24836-1-enric.balletbo@collabora.com>
+Subject: [PATCH v3 2/4] power: supply: core: add charging voltage/current battery info
+Date: Fri, 26 May 2017 13:04:11 +0200
+Message-ID: <20170526110413.24836-2-enric.balletbo@collabora.com>
+References: <20170526110413.24836-1-enric.balletbo@collabora.com>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170526110413.24836-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Add charging voltage and current characteristics to the battery DT for
-proper handling of the battery by fuel-gauge and charger chips.
+Add the parameters to define the battery charging voltage and charging
+current. Charger driver can get this information from the struct
+power_supply_battery_info and apply the desired value.
 
 Signed-off-by: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 ---
@@ -21,31 +24,47 @@ Changes since v1:
    - Rename ti,charge-* to charge-* to be standard properties.
    - Use unit suffixes as per bindings/property-units.txt
 
- Documentation/devicetree/bindings/power/supply/battery.txt | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/power/supply/power_supply_core.c | 6 ++++++
+ include/linux/power_supply.h             | 2 ++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
-index 63a7028..c87a439 100644
---- a/Documentation/devicetree/bindings/power/supply/battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-@@ -12,6 +12,8 @@ Optional Properties:
-  - voltage-min-design-microvolt: drained battery voltage
-  - energy-full-design-microwatt-hours: battery design energy
-  - charge-full-design-microamp-hours: battery design capacity
-+ - charge-voltage-microvolt: battery charging voltage
-+ - charge-current-microamp: battery charging current
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 862fa8fc..a6857c2 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -530,6 +530,8 @@ int power_supply_get_battery_info(struct power_supply *psy,
+ 	info->energy_full_design_uwh = -EINVAL;
+ 	info->charge_full_design_uah = -EINVAL;
+ 	info->voltage_min_design_uv  = -EINVAL;
++	info->charge_voltage_uv = -EINVAL;
++	info->charge_current_ua = -EINVAL;
  
- Batteries must be referenced by chargers and/or fuel-gauges
- using a phandle. The phandle's property should be named
-@@ -24,6 +26,8 @@ Example:
- 		voltage-min-design-microvolt = <3200000>;
- 		energy-full-design-microwatt-hours = <5290000>;
- 		charge-full-design-microamp-hours = <1430000>;
-+		charge-voltage-microvolt = <4100000>;
-+		charge-current-microamp = <300000>;
- 	};
+ 	if (!psy->of_node) {
+ 		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
+@@ -559,6 +561,10 @@ int power_supply_get_battery_info(struct power_supply *psy,
+ 			     &info->charge_full_design_uah);
+ 	of_property_read_u32(battery_np, "voltage-min-design-microvolt",
+ 			     &info->voltage_min_design_uv);
++	of_property_read_u32(battery_np, "charge-voltage-microvolt",
++			     &info->charge_voltage_uv);
++	of_property_read_u32(battery_np, "charge-current-microamp",
++			     &info->charge_current_ua);
  
- 	charger: charger@11 {
+ 	return 0;
+ }
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 8220f7b..3eea323 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -302,6 +302,8 @@ struct power_supply_battery_info {
+ 	int energy_full_design_uwh;	/* microWatt-hours */
+ 	int charge_full_design_uah;	/* microAmp-hours */
+ 	int voltage_min_design_uv;	/* microVolts */
++	int charge_voltage_uv;		/* microVolts */
++	int charge_current_ua;		/* microAmp */
+ };
+ 
+ extern struct atomic_notifier_head power_supply_notifier;
 -- 
 2.9.3
 
