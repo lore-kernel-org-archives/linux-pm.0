@@ -1,38 +1,371 @@
 From: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
-Subject: [PATCH 0/3] Battery monitor MAX1721x with w1-regmap and w1-slave
-Date: Sun, 28 May 2017 10:11:17 +0300
-Message-ID: <20170528071120.6604-1-minimumlaw@rambler.ru>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from huan4.mail.rambler.ru ([81.19.78.110]:7738 "EHLO
-        huan4.mail.rambler.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750794AbdE1HLh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 May 2017 03:11:37 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 1/3] regmap: Add OneWire (W1) bus support
+Date: Sun, 28 May 2017 10:11:18 +0300
+Message-ID: <20170528071120.6604-2-minimumlaw@rambler.ru>
+References: <20170528071120.6604-1-minimumlaw@rambler.ru>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170528071120.6604-1-minimumlaw@rambler.ru>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
+List-Id: linux-pm@vger.kernel.org
 
-  regmap: Add OneWire (W1) bus support
-  w1: Add Maxim Semiconductor MAX1721X W1 slave drivers
-  power: supply: Add support MAX1721x battery monitor
+Add basic support regmap (register map access) API for OneWire (W1) bus
 
- drivers/base/regmap/Kconfig             |   6 +-
- drivers/base/regmap/Makefile            |   1 +
- drivers/base/regmap/regmap-w1.c         | 241 +++++++++++++++++++++
- drivers/power/supply/Kconfig            |  14 ++
- drivers/power/supply/Makefile           |   1 +
- drivers/power/supply/max1721x_battery.c | 357 ++++++++++++++++++++++++++++++++
- drivers/w1/slaves/Kconfig               |  12 ++
- drivers/w1/slaves/Makefile              |   1 +
- drivers/w1/slaves/w1_max1721x.c         |  73 +++++++
- drivers/w1/slaves/w1_max1721x.h         | 102 +++++++++
- drivers/w1/w1_family.h                  |   1 +
- include/linux/regmap.h                  |  34 +++
- 12 files changed, 842 insertions(+), 1 deletion(-)
+Signed-off-by: Alex A. Mihaylov <minimumlaw@rambler.ru>
+---
+ drivers/base/regmap/Kconfig     |   6 +-
+ drivers/base/regmap/Makefile    |   1 +
+ drivers/base/regmap/regmap-w1.c | 241 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/regmap.h          |  34 ++++++
+ 4 files changed, 281 insertions(+), 1 deletion(-)
  create mode 100644 drivers/base/regmap/regmap-w1.c
- create mode 100644 drivers/power/supply/max1721x_battery.c
- create mode 100644 drivers/w1/slaves/w1_max1721x.c
- create mode 100644 drivers/w1/slaves/w1_max1721x.h
 
+diff --git a/drivers/base/regmap/Kconfig b/drivers/base/regmap/Kconfig
+index db9d00c..413af5f 100644
+--- a/drivers/base/regmap/Kconfig
++++ b/drivers/base/regmap/Kconfig
+@@ -3,7 +3,7 @@
+ # subsystems should select the appropriate symbols.
+ 
+ config REGMAP
+-	default y if (REGMAP_I2C || REGMAP_SPI || REGMAP_SPMI || REGMAP_AC97 || REGMAP_MMIO || REGMAP_IRQ)
++	default y if (REGMAP_I2C || REGMAP_SPI || REGMAP_SPMI || REGMAP_W1 || REGMAP_AC97 || REGMAP_MMIO || REGMAP_IRQ)
+ 	select LZO_COMPRESS
+ 	select LZO_DECOMPRESS
+ 	select IRQ_DOMAIN if REGMAP_IRQ
+@@ -24,6 +24,10 @@ config REGMAP_SPMI
+ 	tristate
+ 	depends on SPMI
+ 
++config REGMAP_W1
++	tristate
++	depends on W1
++
+ config REGMAP_MMIO
+ 	tristate
+ 
+diff --git a/drivers/base/regmap/Makefile b/drivers/base/regmap/Makefile
+index 609e4c8..17741ae 100644
+--- a/drivers/base/regmap/Makefile
++++ b/drivers/base/regmap/Makefile
+@@ -10,3 +10,4 @@ obj-$(CONFIG_REGMAP_SPI) += regmap-spi.o
+ obj-$(CONFIG_REGMAP_SPMI) += regmap-spmi.o
+ obj-$(CONFIG_REGMAP_MMIO) += regmap-mmio.o
+ obj-$(CONFIG_REGMAP_IRQ) += regmap-irq.o
++obj-$(CONFIG_REGMAP_W1) += regmap-w1.o
+diff --git a/drivers/base/regmap/regmap-w1.c b/drivers/base/regmap/regmap-w1.c
+new file mode 100644
+index 0000000..6852889
+--- /dev/null
++++ b/drivers/base/regmap/regmap-w1.c
+@@ -0,0 +1,241 @@
++/*
++ * Register map access API - W1 (OneWire) support
++ *
++ * Copyright (C) 2017 OAO Radioavionica
++ * Author: Alex A. Mihaylov <minimumlaw@rambler.ru>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation
++ */
++
++#include <linux/regmap.h>
++#include <linux/module.h>
++#include "../../w1/w1.h"
++
++#include "internal.h"
++
++#define W1_CMD_READ_DATA	0x69
++#define W1_CMD_WRITE_DATA	0x6C
++
++/*
++ * OneWire slaves registers with addess 8 bit and data 8 bit
++ */
++
++static int w1_reg_a8_v8_read(void *context, unsigned int reg, unsigned int *val)
++{
++	struct device *dev = context;
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++	int ret = -ENODEV;
++
++
++	if (reg > 255)
++		return -EINVAL;
++
++	mutex_lock(&sl->master->bus_mutex);
++	if (!w1_reset_select_slave(sl)) {
++		w1_write_8(sl->master, W1_CMD_READ_DATA);
++		w1_write_8(sl->master, reg);
++		*val = w1_read_8(sl->master);
++		ret = 0;
++	}
++	mutex_unlock(&sl->master->bus_mutex);
++
++	return ret;
++}
++
++static int w1_reg_a8_v8_write(void *context, unsigned int reg, unsigned int val)
++{
++	struct device *dev = context;
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++	int ret = -ENODEV;
++
++
++	if (reg > 255)
++		return -EINVAL;
++
++	mutex_lock(&sl->master->bus_mutex);
++	if (!w1_reset_select_slave(sl)) {
++		w1_write_8(sl->master, W1_CMD_WRITE_DATA);
++		w1_write_8(sl->master, reg);
++		w1_write_8(sl->master, val);
++		ret = 0;
++	}
++	mutex_unlock(&sl->master->bus_mutex);
++
++	return ret;
++}
++
++/*
++ * OneWire slaves registers with addess 8 bit and data 16 bit
++ */
++
++static int w1_reg_a8_v16_read(void *context, unsigned int reg,
++				unsigned int *val)
++{
++	struct device *dev = context;
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++	int ret = -ENODEV;
++
++
++	if (reg > 255)
++		return -EINVAL;
++
++	mutex_lock(&sl->master->bus_mutex);
++	if (!w1_reset_select_slave(sl)) {
++		w1_write_8(sl->master, W1_CMD_READ_DATA);
++		w1_write_8(sl->master, reg);
++		*val = w1_read_8(sl->master);
++		*val |= w1_read_8(sl->master)<<8;
++		ret = 0;
++	}
++	mutex_unlock(&sl->master->bus_mutex);
++
++	return ret;
++}
++
++static int w1_reg_a8_v16_write(void *context, unsigned int reg,
++				unsigned int val)
++{
++	struct device *dev = context;
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++	int ret = -ENODEV;
++
++
++	if (reg > 255)
++		return -EINVAL;
++
++	mutex_lock(&sl->master->bus_mutex);
++	if (!w1_reset_select_slave(sl)) {
++		w1_write_8(sl->master, W1_CMD_WRITE_DATA);
++		w1_write_8(sl->master, reg);
++		w1_write_8(sl->master, val & 0x00FF);
++		w1_write_8(sl->master, val>>8 & 0x00FF);
++		ret = 0;
++	}
++	mutex_unlock(&sl->master->bus_mutex);
++
++	return ret;
++}
++
++/*
++ * OneWire slaves registers with addess 16 bit and data 16 bit
++ */
++
++static int w1_reg_a16_v16_read(void *context, unsigned int reg,
++				unsigned int *val)
++{
++	struct device *dev = context;
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++	int ret = -ENODEV;
++
++
++	if (reg > 65535)
++		return -EINVAL;
++
++	mutex_lock(&sl->master->bus_mutex);
++	if (!w1_reset_select_slave(sl)) {
++		w1_write_8(sl->master, W1_CMD_READ_DATA);
++		w1_write_8(sl->master, reg & 0x00FF);
++		w1_write_8(sl->master, reg>>8 & 0x00FF);
++		*val = w1_read_8(sl->master);
++		*val |= w1_read_8(sl->master)<<8;
++		ret = 0;
++	}
++	mutex_unlock(&sl->master->bus_mutex);
++
++	return ret;
++}
++
++static int w1_reg_a16_v16_write(void *context, unsigned int reg,
++				unsigned int val)
++{
++	struct device *dev = context;
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++	int ret = -ENODEV;
++
++
++	if (reg > 65535)
++		return -EINVAL;
++
++	mutex_lock(&sl->master->bus_mutex);
++	if (!w1_reset_select_slave(sl)) {
++		w1_write_8(sl->master, W1_CMD_WRITE_DATA);
++		w1_write_8(sl->master, reg & 0x00FF);
++		w1_write_8(sl->master, reg>>8 & 0x00FF);
++		w1_write_8(sl->master, val & 0x00FF);
++		w1_write_8(sl->master, val>>8 & 0x00FF);
++		ret = 0;
++	}
++	mutex_unlock(&sl->master->bus_mutex);
++
++	return ret;
++}
++
++static struct regmap_bus regmap_w1_bus_a8_v8 = {
++	.reg_read = w1_reg_a8_v8_read,
++	.reg_write = w1_reg_a8_v8_write,
++};
++
++static struct regmap_bus regmap_w1_bus_a8_v16 = {
++	.reg_read = w1_reg_a8_v16_read,
++	.reg_write = w1_reg_a8_v16_write,
++};
++
++static struct regmap_bus regmap_w1_bus_a16_v16 = {
++	.reg_read = w1_reg_a16_v16_read,
++	.reg_write = w1_reg_a16_v16_write,
++};
++
++static const struct regmap_bus *regmap_get_w1_bus(struct device *w1_dev,
++					const struct regmap_config *config)
++{
++	if (config->reg_bits == 8 && config->val_bits == 8)
++		return &regmap_w1_bus_a8_v8;
++
++	if (config->reg_bits == 8 && config->val_bits == 16)
++		return &regmap_w1_bus_a8_v16;
++
++	if (config->reg_bits == 16 && config->val_bits == 16)
++		return &regmap_w1_bus_a16_v16;
++
++	return ERR_PTR(-ENOTSUPP);
++}
++
++struct regmap *__regmap_init_w1(struct device *w1_dev,
++				 const struct regmap_config *config,
++				 struct lock_class_key *lock_key,
++				 const char *lock_name)
++{
++
++	const struct regmap_bus *bus = regmap_get_w1_bus(w1_dev, config);
++
++	if (IS_ERR(bus))
++		return ERR_CAST(bus);
++
++	return __regmap_init(w1_dev, bus, w1_dev, config,
++			 lock_key, lock_name);
++
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(__regmap_init_w1);
++
++struct regmap *__devm_regmap_init_w1(struct device *w1_dev,
++				 const struct regmap_config *config,
++				 struct lock_class_key *lock_key,
++				 const char *lock_name)
++{
++
++	const struct regmap_bus *bus = regmap_get_w1_bus(w1_dev, config);
++
++	if (IS_ERR(bus))
++		return ERR_CAST(bus);
++
++	return __devm_regmap_init(w1_dev, bus, w1_dev, config,
++				 lock_key, lock_name);
++
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(__devm_regmap_init_w1);
++
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/regmap.h b/include/linux/regmap.h
+index e886492..86eeacc 100644
+--- a/include/linux/regmap.h
++++ b/include/linux/regmap.h
+@@ -461,6 +461,10 @@ struct regmap *__regmap_init_spmi_ext(struct spmi_device *dev,
+ 				      const struct regmap_config *config,
+ 				      struct lock_class_key *lock_key,
+ 				      const char *lock_name);
++struct regmap *__regmap_init_w1(struct device *w1_dev,
++				 const struct regmap_config *config,
++				 struct lock_class_key *lock_key,
++				 const char *lock_name);
+ struct regmap *__regmap_init_mmio_clk(struct device *dev, const char *clk_id,
+ 				      void __iomem *regs,
+ 				      const struct regmap_config *config,
+@@ -493,6 +497,10 @@ struct regmap *__devm_regmap_init_spmi_ext(struct spmi_device *dev,
+ 					   const struct regmap_config *config,
+ 					   struct lock_class_key *lock_key,
+ 					   const char *lock_name);
++struct regmap *__devm_regmap_init_w1(struct device *w1_dev,
++				      const struct regmap_config *config,
++				      struct lock_class_key *lock_key,
++				      const char *lock_name);
+ struct regmap *__devm_regmap_init_mmio_clk(struct device *dev,
+ 					   const char *clk_id,
+ 					   void __iomem *regs,
+@@ -597,6 +605,19 @@ int regmap_attach_dev(struct device *dev, struct regmap *map,
+ 				dev, config)
+ 
+ /**
++ * regmap_init_w1() - Initialise register map
++ *
++ * @w1_dev: Device that will be interacted with
++ * @config: Configuration for register map
++ *
++ * The return value will be an ERR_PTR() on error or a valid pointer to
++ * a struct regmap.
++ */
++#define regmap_init_w1(w1_dev, config)					\
++	__regmap_lockdep_wrapper(__regmap_init_w1, #config,		\
++				w1_dev, config)
++
++/**
+  * regmap_init_mmio_clk() - Initialise register map with register clock
+  *
+  * @dev: Device that will be interacted with
+@@ -712,6 +733,19 @@ bool regmap_ac97_default_volatile(struct device *dev, unsigned int reg);
+ 				dev, config)
+ 
+ /**
++ * devm_regmap_init_w1() - Initialise managed register map
++ *
++ * @w1_dev: Device that will be interacted with
++ * @config: Configuration for register map
++ *
++ * The return value will be an ERR_PTR() on error or a valid pointer
++ * to a struct regmap.  The regmap will be automatically freed by the
++ * device management code.
++ */
++#define devm_regmap_init_w1(w1_dev, config)				\
++	__regmap_lockdep_wrapper(__devm_regmap_init_w1, #config,	\
++				w1_dev, config)
++/**
+  * devm_regmap_init_mmio_clk() - Initialise managed register map with clock
+  *
+  * @dev: Device that will be interacted with
 -- 
 2.8.4 (Apple Git-73)
