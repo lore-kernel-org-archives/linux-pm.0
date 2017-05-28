@@ -1,69 +1,83 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V4 00/17] thermal: cpu_cooling: improve interaction with
- cpufreq core
-Date: Sat, 27 May 2017 17:29:48 -0700
-Message-ID: <20170528002945.GA2177@localhost.localdomain>
-References: <cover.1493115651.git.viresh.kumar@linaro.org>
- <ead65416-4833-6f36-81bd-c1673bb71514@arm.com>
- <20170526045718.GA13318@vireshk-i7>
+Subject: [GIT PULL] Thermal SoC management fixes for v4.12-rc3
+Date: Sat, 27 May 2017 17:39:39 -0700
+Message-ID: <20170528003938.GA5083@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="Nq2Wo0NMKNjxTN9z"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="T4sUOijqQbZv57TR"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:36644 "EHLO
+        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750793AbdE1Ajo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 27 May 2017 20:39:44 -0400
 Content-Disposition: inline
-In-Reply-To: <20170526045718.GA13318@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lukasz Luba <lukasz.luba@arm.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linaro-kernel@lists.linaro.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
 
---Nq2Wo0NMKNjxTN9z
+--T4sUOijqQbZv57TR
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 26, 2017 at 10:27:18AM +0530, Viresh Kumar wrote:
-> On 26-04-17, 11:41, Lukasz Luba wrote:
-> > Hi Viresh,
-> >=20
-> > I went through the v4 code and it looks good to me.
-> > Feel free to add for the v4 series
-> > Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
->=20
-> @Eduardo: You missed adding this to the patches.
+Hello Rui,
 
-This is true. I picked your patches before the previous merge window and
-they were locally in my tree. Then I pushed them to k.org and missed
-this. That is fine, only your patches are for next merge window and it
-doesnt hurt too much to rebuild the branch.
+I know this is late, but please send these six fixes for next rc3.
 
-Thanks for noticing.
+The following changes since commit 08332893e37af6ae779367e78e444f8f9571511d:
 
->=20
-> --=20
-> viresh
+  Linux 4.12-rc2 (2017-05-21 19:30:23 -0700)
 
---Nq2Wo0NMKNjxTN9z
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
+
+for you to fetch changes up to a54c51863ed1294078a435151e625313b4365ac5:
+
+  thermal: broadcom: ns-thermal: default on iProc SoCs (2017-05-23 20:09:34 -0700)
+
+----------------------------------------------------------------
+Colin Ian King (1):
+      thermal: core: make thermal_emergency_poweroff static
+
+Jon Mason (1):
+      thermal: broadcom: ns-thermal: default on iProc SoCs
+
+Markus Elfring (3):
+      ti-soc-thermal: Use devm_kcalloc() in ti_bandgap_build()
+      ti-soc-thermal: Delete error messages for failed memory allocations in ti_bandgap_build()
+      ti-soc-thermal: Fix a typo in a comment line
+
+Masahiro Yamada (1):
+      thermal: qoriq: remove useless call for of_thermal_get_trip_points()
+
+ drivers/thermal/broadcom/Kconfig            |  9 +++++----
+ drivers/thermal/qoriq_thermal.c             |  3 ---
+ drivers/thermal/thermal_core.c              |  2 +-
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c | 14 +++++---------
+ 4 files changed, 11 insertions(+), 17 deletions(-)
+
+--T4sUOijqQbZv57TR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJZKhnzAAoJEA6VkvSQfF5Tt5wP/0dc8p9NVs9yPWV8trikYVVK
-pe2Hqg+GfQO9DcCag1EVPBSNxMy1yjGLGkp6zClJ3RTnp8NfMZ4L8npmwVG3uFfx
-sp0J9RQ6mtFciBJv18AHYbwPGqhXO6VErkB6Q0opILZbuio+OeyoDXcTUvP2Erp1
-ckoyWNYYpm3k+/zqx1kvT1a2WKRxhWOKHZ/K8kCJQkU09ozOFuklzYCzMtUUZAK3
-CNnePjJ7k4La/2lcVUi1Cjc9F5MuwN3tFAG9CUpwfm1bCpe5tb7uFgNtTVqTkWgO
-/OjzuUT4XGifum/n+noyQMUCTtPYCbstkFxNxOSFEnDJ9g0xBXRsO0CzzwOa1T9Z
-7T+K2LZ9+n5/PkIorCyIHi4wzah8onbkM4t9tbU3xDl33NMM/bEzg0JTyYHdTNJo
-0PNPE2Vv4jeUm4EeEmWCxUsHQe5Zkoy8Es5QOvQ0R3GqErfWHn2HYeN+IHzTBeoU
-shzLg6TAXxnv5PsDT3rHpu/LLB/T2O3YJN29vTxBs10Ew9sKEnYMv9xw1EqxuL4O
-lCUrVDEjXdYuKBaNpAmTCZZbT1N7BqYZ0c3KTND7avGIFl76/TulaNM9NvZJH/xi
-CV7IBBZWDXCCYAB54J022BaEe9OEap6aY2Ly8FP7cxABIupkwdq75WA5l85aQYfC
-VXlFnwmUaYhV2m+NJ6bP
-=wGcu
+iQIcBAEBCAAGBQJZKhxDAAoJEA6VkvSQfF5Te0kP/Alxs+IkQc/30vhrusHz4QLW
+G2jF0wa34W81MEOZVsip04NJJt0uzHGDpwPVoubVqinodOXAlpuNsX66enjCWMqt
+1EUsWxte7AprFAahj8kEylZox7hKTzKPa6IYFirF4oQL8PX6BWTW2jlyAJrs9XGC
+B5rjNk5rofxOPAIyDKDRV1yqYLDkP9098v+9GIZbS3Nb6wXYduwusck8TFFQrG0X
+6NkJKJXI+IVyztmPUGrfydYqkjV8juG43nO+Pwj93lIz+EORK2IwRbQBCw9dJ9nj
+GqehVoMpf7SBjDfn2+Hl+IJPXRJz1l1NbfJwdUMsDUX5w8JCTT532Tj3hyP5Yv9O
+x/K+YqYrkehbRfO2HDRnqsyM4AoW+spZno2ddcNDoUFF7DQ9kCmGXOLemCt1Bsfa
+Cy5lCGe7Hh0egfHtXIM7QYbaKQLpnIQexDNZm/MM3Inw1Tw3G/63JitDoTeDUV2e
+rupvAIrexxbZLDa6IhtcivSEgM6hkdmRWYIEGA13EBj/x2NDXmDWLU0lqTtMfTWb
+AnNTM8Keykce0TtMdroODN/MoKRKPqehLVXaNzgM1LfQSYjFpYpnD+IgDp2ADwlj
+beANoV142Wgk3L9Z3Y0kti7BKR4CG9ACwuupMNOCP+hUdVvfi6W8tVb7vKhM4bFm
+AAQEcmynV5xMAc30ErQZ
+=JkWa
 -----END PGP SIGNATURE-----
 
---Nq2Wo0NMKNjxTN9z--
+--T4sUOijqQbZv57TR--
