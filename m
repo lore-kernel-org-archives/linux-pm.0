@@ -1,75 +1,119 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
-Date: Mon, 29 May 2017 11:20:33 +0200
-Message-ID: <7306372.PblijfWnMI@amdc3058>
-References: <20170521220212.1404-1-wsa@the-dreams.de>
-	<CGME20170521220224epcas2p4fbcfe69660d457b8af95ddc196c04a9b@epcas2p4.samsung.com>
-	<20170521220212.1404-4-wsa@the-dreams.de>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH v4 8/8] arm,arm64,drivers: add a prefix to drivers
+ arch_topology interfaces
+Date: Mon, 29 May 2017 12:46:47 +0200
+Message-ID: <b5071e53-f9fa-cffe-e13d-731549382d56@arm.com>
+References: <20170420144316.15632-1-juri.lelli@arm.com>
+ <20170420144316.15632-9-juri.lelli@arm.com>
+ <20170525131802.GE16244@kroah.com>
+ <20170526101032.2t2xn5wrfenimu5w@e106622-lin>
+ <20170526183610.GB16490@kroah.com>
+ <bcc2f8f1-e953-9f32-2aa2-e660b0351e0a@arm.com>
+ <20170529095818.GA9892@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <rtc-linux+bncBDMLN5HOIYIOPT5PZECRUBAITP5LK-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-reply-to: <20170521220212.1404-4-wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wim Van Sebroeck <wim@>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:47918 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751069AbdE2Kqx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 May 2017 06:46:53 -0400
+In-Reply-To: <20170529095818.GA9892@kroah.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, broonie@kernel.org
 
-On Monday, May 22, 2017 12:02:10 AM Wolfram Sang wrote:
-> include/linux/i2c is not for client devices. Move the header file to a
-> more appropriate location.
+On 05/29/2017 11:58 AM, Greg KH wrote:
+> On Mon, May 29, 2017 at 11:20:24AM +0200, Dietmar Eggemann wrote:
+>> Hi Greg,
+>>
+>> On 05/26/2017 08:36 PM, Greg KH wrote:
+>>> On Fri, May 26, 2017 at 11:10:32AM +0100, Juri Lelli wrote:
+>>>> Hi,
+>>>>
+>>>> On 25/05/17 15:18, Greg KH wrote:
+>>>>> On Thu, Apr 20, 2017 at 03:43:16PM +0100, Juri Lelli wrote:
+>>
+>> [...]
+>>
+>>>>> But this is all really topology stuff, right?  Why use "capacity" at
+>>>>> all:
+>>>>> 	topology_normalize_cpu()
+>>>>> 	topology_parse_cpu()
+>>>>> 	topology_scale_cpu()
+>>>>> 	topology_set_scale()
+>>>>> ?
+>>>>>
+>>>>> It's always best to put the "subsystem" name first, we have a bad
+>>>>> history of getting this wrong in the past by putting the verb first, not
+>>>>> the noun.
+>>>>>
+>>>>
+>>>> topology_ works for me. However, I'd keep "capacity" in the names, as we
+>>>> might need to topology_normalize_cpu_somethingelse() (etc.) in the
+>>>> future?
+>>>
+>>> Worry about the future, in the future.  Change the names then, _IF_ it
+>>> becomes an issue.  Try to be short and simple please.
+>>>
+>>>> Updated patch follows. I kept Catalin and Russell's acks as I only
+>>>> renamed the functions, please shout if that's not OK.
+>>>>
+>>>> Greg, if you are fine with this approach, do you still want a complete
+>>>> v5 of the set or can you pick this up?
+>>>
+>>> Am I the one who is supposed to take all of these arm-specific patches?
+>>> If so, that's fine, but I need to have acks from the arm maintainers...
+>>>
+>>> Oh, and drop "capacity" please :)
+>>
+>> Once we have driver/base/arch_topology.c in, we want to enable (cpu
+>> micro-architectural + max frequency (OPPmax)) invariant and frequency
+>> (OPPmin..OPPmax) invariant load-tracking/accounting in the task scheduler
+>> for arm and arm64.
+>>
+>> The way to do this is to define the task scheduler interfaces
+>> arch_scale_cpu_capacity() and arch_scale_freq_capacity() in arch specific
+>> code:
+>>
+>> #define arch_scale_cpu_capacity topology_scale_cpu_capacity
+>> #define arch_scale_freq_capacity topology_scale_freq_capacity
+>>
+>> In case an arch is not defining them, the default definitions in
+>> kernel/sched/sched.h are used.
+>>
+>> So topology_scale_cpu() wouldn't be correct since we scale the _capacity_ by
+>> the micro-architectural differences (hence cpu) and not the cpu.
+>>
+>> Likewise we will have a function topology_scale_freq_capacity indicating
+>> that we scale the capacity by the frequency.
+>>
+>> Or would you prefer something like topology_scale_capacity_by_cpu() and
+>> topology_scale_capacity_by_freq()?
 > 
-> Signed-off-by: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+> I think that if you are creating an api that the scheduler will use, you
+> need to ask the scheduler maintainers/developers what they want to see
+> here, as that would be up to them, not me...
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+The scheduler API exists already. It is arch_scale_cpu_capacity() and 
+arch_scale_freq_capacity() in kernel/sched/sched.h. An arch is able to 
+overwrite these two functions by defining them (since commit 
+8cd5601c5060 and dfbca41f3479):
 
-> ---
->  arch/arm/mach-omap2/common.h            | 2 +-
->  arch/arm/mach-omap2/omap_twl.c          | 2 +-
->  drivers/gpio/gpio-twl4030.c             | 2 +-
->  drivers/iio/adc/twl4030-madc.c          | 2 +-
->  drivers/iio/adc/twl6030-gpadc.c         | 2 +-
->  drivers/input/keyboard/twl4030_keypad.c | 2 +-
->  drivers/input/misc/twl4030-pwrbutton.c  | 2 +-
->  drivers/input/misc/twl4030-vibra.c      | 2 +-
->  drivers/mfd/twl-core.c                  | 6 +++---
->  drivers/mfd/twl4030-audio.c             | 2 +-
->  drivers/mfd/twl4030-irq.c               | 2 +-
->  drivers/mfd/twl4030-power.c             | 2 +-
->  drivers/mfd/twl6030-irq.c               | 2 +-
->  drivers/phy/phy-twl4030-usb.c           | 2 +-
->  drivers/power/supply/twl4030_charger.c  | 2 +-
->  drivers/pwm/pwm-twl-led.c               | 2 +-
->  drivers/pwm/pwm-twl.c                   | 2 +-
->  drivers/regulator/twl-regulator.c       | 2 +-
->  drivers/regulator/twl6030-regulator.c   | 2 +-
->  drivers/rtc/rtc-twl.c                   | 2 +-
->  drivers/usb/phy/phy-twl6030-usb.c       | 2 +-
->  drivers/video/backlight/pandora_bl.c    | 2 +-
->  drivers/watchdog/twl4030_wdt.c          | 2 +-
->  include/linux/{i2c => mfd}/twl.h        | 0
->  sound/soc/codecs/twl4030.c              | 2 +-
->  25 files changed, 26 insertions(+), 26 deletions(-)
->  rename include/linux/{i2c => mfd}/twl.h (100%)
+#define arch_scale_cpu_capacity 'arch implementation of capacity scaling 
+by micro-architectural + max frequency (OPPmax)'
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+#define arch_scale_freq_capacity 'arch implementation of capacity 
+scaling by 'frequency ((OPPmin..OPPmax)'
 
--- 
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
---- 
-You received this message because you are subscribed to the Google Groups "rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+There is no naming convention from the scheduler side on these functions 
+though. They should just express what they're doing, scaling capacity by 
+something.
+
+Since Juri already uses the former one in this driver, he should name it 
+  topology_scale_cpu_capacity() or topology_scale_capacity_by_cpu() or 
+something similar.
+
+[...]
