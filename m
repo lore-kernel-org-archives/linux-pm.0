@@ -1,62 +1,73 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 2/2] PM / Domains: Extend generic power domain debugfs.
-Date: Mon, 29 May 2017 17:12:48 +0200
-Message-ID: <CAMuHMdUg0Hoza6xNCjjrPkbqFWa13hWPnAYJ8yOsWUqOTm8zAg@mail.gmail.com>
-References: <1495756293-29534-1-git-send-email-thara.gopinath@linaro.org> <1495756293-29534-3-git-send-email-thara.gopinath@linaro.org>
+From: Scott Branden <scott.branden@broadcom.com>
+Subject: Re: [PATCH v3 2/3] thermal: broadcom: ns-thermal: default on iProc
+ SoCs
+Date: Mon, 29 May 2017 09:21:51 -0700
+Message-ID: <f2544b8e-59fe-8cbc-5598-bd2a2b325a39@broadcom.com>
+References: <1493410291-16679-1-git-send-email-jon.mason@broadcom.com>
+ <1493410291-16679-3-git-send-email-jon.mason@broadcom.com>
+ <6628a958-087d-1221-7717-c07eeaec3cce@broadcom.com>
+ <CAC3K-4oDnL2oiUDo29dLofHX3hQe2-d1xs=Cduwm==BjLH1djQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:36152 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751025AbdE2PMz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 May 2017 11:12:55 -0400
-Received: by mail-it0-f65.google.com with SMTP id i206so7348676ita.3
-        for <linux-pm@vger.kernel.org>; Mon, 29 May 2017 08:12:55 -0700 (PDT)
-In-Reply-To: <1495756293-29534-3-git-send-email-thara.gopinath@linaro.org>
+Received: from mail-wm0-f53.google.com ([74.125.82.53]:35491 "EHLO
+        mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750846AbdE2QV6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 May 2017 12:21:58 -0400
+Received: by mail-wm0-f53.google.com with SMTP id b84so61858977wmh.0
+        for <linux-pm@vger.kernel.org>; Mon, 29 May 2017 09:21:58 -0700 (PDT)
+In-Reply-To: <CAC3K-4oDnL2oiUDo29dLofHX3hQe2-d1xs=Cduwm==BjLH1djQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thara Gopinath <thara.gopinath@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@baylibre.com>
+To: Jon Mason <jon.mason@broadcom.com>
+Cc: Florian Fainelli <florian.fainelli@broadcom.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
 
-Hi Thara,
+Hi Jon,
 
-On Fri, May 26, 2017 at 1:51 AM, Thara Gopinath
-<thara.gopinath@linaro.org> wrote:
-> This patch extends the existing generic power domain debugfs.
-> Changes involve the following
-> - Remove the current flat format of displaying generic power domain
->   summary.
-> - Introduce a unique debugfs entry for each generic power domain with the
->   following attributes
->         - current_state - Displays current state of the domain.
->         - devices - Displays the devices associated with this domain.
->         - slaves - Displays the sub power domains.
->         - on_time - Displays the time the domain was in on state in ms.
->         - idle_time - Displays the time the domain was in any of the idle
->                         states in ms.
->         - idle_states - Displays the various idle states and the time
->                         spent in each idle state in ms.
+
+On 17-04-28 01:50 PM, Jon Mason wrote:
+> On Fri, Apr 28, 2017 at 4:36 PM, Scott Branden
+> <scott.branden@broadcom.com> wrote:
+>>
+>> On 17-04-28 01:11 PM, Jon Mason wrote:
+>>> Tweak the Kconfig description to mention support for NSP and make the
+>>> default on for iProc based platforms.
+>>>
+>>> Signed-off-by: Jon Mason <jon.mason@broadcom.com>
+>>> ---
+>>>   drivers/thermal/broadcom/Kconfig | 9 +++++----
+>>>   1 file changed, 5 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/broadcom/Kconfig
+>>> b/drivers/thermal/broadcom/Kconfig
+>>> index f0dea8a..b6f4b85 100644
+>>> --- a/drivers/thermal/broadcom/Kconfig
+>>> +++ b/drivers/thermal/broadcom/Kconfig
+>>> @@ -1,8 +1,9 @@
+>>>   config BCM_NS_THERMAL
+>>>          tristate "Northstar thermal driver"
+>>>          depends on ARCH_BCM_IPROC || COMPILE_TEST
+>> If this driver is used on these SoCs then it:
+>> depends on ARCH_BCM_NSP || ARCH_BCM_5301X || COMPILE_TEST
+>> ?
+> The code referenced is outside of this patch, as that code was already
+> existing from when the driver was submitted.
 >
-> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+> I did some checking and NS2 and Cygnus do not have the registers in
+> use by this driver.  So, you are correct in that this driver will
+> never be used for them.  So, this is slightly over-permissive in
+> allowing a driver to be selected that could not ever be used on
+> non-NS/NSP hardware.  But barring an incorrect DT string, it would
+> only result in an slightly larger kernel than necessary.
+>
+> I'll do a follow-on patch to correct this with your suggestion above,
+> and push it separately (unless a v4 is needed on this series).
 
-While I don't doubt the merits of having all this additional information in
-separate debugfs files, I think it would be a good idea to keep the existing
-summary.
+Please submit the follow on patch.
 
-Cfr. the clock subsystem, which provides both a summary, and clock-specific
-information in individual files.
-
-BTW, if people disagree, I'll have to write a script to extract all information
-and combine it into a single file ;-) I tend to compare these summaries across
-boots...
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+>
+> Thanks,
+> Jon
+Thanks,
+  Scott
