@@ -1,80 +1,59 @@
-From: Josh Benson <handle2001@gmail.com>
-Subject: [PATCH] Fixed hwmon_register_device() error regression
-Date: Sun, 28 May 2017 22:38:58 -0400
-Message-ID: <20170529023858.GA1713@localhost.highwinds.local>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: cpufreq_register_driver should return -ENODEV
+ if init fails
+Date: Mon, 29 May 2017 10:02:15 +0530
+Message-ID: <20170529043215.GA5752@vireshk-i7>
+References: <1495813051-146077-1-git-send-email-darcari@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f196.google.com ([209.85.161.196]:35270 "EHLO
-        mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750864AbdE2CjI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 May 2017 22:39:08 -0400
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:36164 "EHLO
+        mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750838AbdE2EcU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 May 2017 00:32:20 -0400
+Received: by mail-pf0-f172.google.com with SMTP id m17so42202273pfg.3
+        for <linux-pm@vger.kernel.org>; Sun, 28 May 2017 21:32:20 -0700 (PDT)
 Content-Disposition: inline
+In-Reply-To: <1495813051-146077-1-git-send-email-darcari@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, handle2001@gmail.com
+To: David Arcari <darcari@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: linux-acpi@vger.kernel.org
 
-Signed-off-by: Josh Benson <handle2001@gmail.com>
----
- drivers/thermal/thermal_hwmon.c | 20 +++-----------------
- 1 file changed, 3 insertions(+), 17 deletions(-)
+You sent it to the wrong list and missed Rafael too. MAINTAINERS file should
+help getting these details in the future.
 
-diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
-index 541af5946203..c4a508a124dc 100644
---- a/drivers/thermal/thermal_hwmon.c
-+++ b/drivers/thermal/thermal_hwmon.c
-@@ -59,14 +59,6 @@ static LIST_HEAD(thermal_hwmon_list);
- static DEFINE_MUTEX(thermal_hwmon_list_lock);
- 
- static ssize_t
--name_show(struct device *dev, struct device_attribute *attr, char *buf)
--{
--	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
--	return sprintf(buf, "%s\n", hwmon->type);
--}
--static DEVICE_ATTR_RO(name);
--
--static ssize_t
- temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	int temperature;
-@@ -165,15 +157,12 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
- 
- 	INIT_LIST_HEAD(&hwmon->tz_list);
- 	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
--	hwmon->device = hwmon_device_register(NULL);
-+	hwmon->device = hwmon_device_register_with_info(NULL, hwmon->type,
-+							hwmon, NULL, NULL);
- 	if (IS_ERR(hwmon->device)) {
- 		result = PTR_ERR(hwmon->device);
- 		goto free_mem;
- 	}
--	dev_set_drvdata(hwmon->device, hwmon);
--	result = device_create_file(hwmon->device, &dev_attr_name);
--	if (result)
--		goto free_mem;
- 
-  register_sys_interface:
- 	temp = kzalloc(sizeof(*temp), GFP_KERNEL);
-@@ -222,10 +211,8 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
-  free_temp_mem:
- 	kfree(temp);
-  unregister_name:
--	if (new_hwmon_device) {
--		device_remove_file(hwmon->device, &dev_attr_name);
-+	if (new_hwmon_device)
- 		hwmon_device_unregister(hwmon->device);
--	}
-  free_mem:
- 	if (new_hwmon_device)
- 		kfree(hwmon);
-@@ -267,7 +254,6 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
- 	list_del(&hwmon->node);
- 	mutex_unlock(&thermal_hwmon_list_lock);
- 
--	device_remove_file(hwmon->device, &dev_attr_name);
- 	hwmon_device_unregister(hwmon->device);
- 	kfree(hwmon);
- }
+On 26-05-17, 11:37, David Arcari wrote:
+> For a driver that does not set the CPUFREQ_STICKY flag, if all of the
+> ->init() calls fail, cpufreq_register_driver() should return an error.
+> This will prevent the driver from loading.
+> 
+> Fixes: ce1bcfe94db8 ("cpufreq: check cpufreq_policy_list instead of scanning policies for all CPUs")
+> 
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: David Arcari <darcari@redhat.com>
+
++
+Cc: 4.0+ <stable@vger.kernel.org> # 4.0+
+
+> ---
+>  drivers/cpufreq/cpufreq.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 0e3f649..26b643d 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2468,6 +2468,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+>  	if (!(cpufreq_driver->flags & CPUFREQ_STICKY) &&
+>  	    list_empty(&cpufreq_policy_list)) {
+>  		/* if all ->init() calls failed, unregister */
+> +		ret = -ENODEV;
+>  		pr_debug("%s: No CPU initialized for driver %s\n", __func__,
+>  			 driver_data->name);
+>  		goto err_if_unreg;
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
 -- 
-2.13.0
+viresh
