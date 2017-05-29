@@ -1,28 +1,54 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 1/3] regmap: Add OneWire (W1) bus support
-Date: Mon, 29 May 2017 17:07:53 +0200
-Message-ID: <CAMuHMdXyNqzuY4i7YXMo5tBjYVYDEc9a=csaTe5Jm7oCnsdrrw@mail.gmail.com>
-References: <20170528071120.6604-1-minimumlaw@rambler.ru> <20170528071120.6604-2-minimumlaw@rambler.ru>
+Subject: Re: [PATCH 2/2] PM / Domains: Extend generic power domain debugfs.
+Date: Mon, 29 May 2017 17:12:48 +0200
+Message-ID: <CAMuHMdUg0Hoza6xNCjjrPkbqFWa13hWPnAYJ8yOsWUqOTm8zAg@mail.gmail.com>
+References: <1495756293-29534-1-git-send-email-thara.gopinath@linaro.org> <1495756293-29534-3-git-send-email-thara.gopinath@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f193.google.com ([209.85.223.193]:34664 "EHLO
-        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751146AbdE2PHz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 May 2017 11:07:55 -0400
-In-Reply-To: <20170528071120.6604-2-minimumlaw@rambler.ru>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:36152 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751025AbdE2PMz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 May 2017 11:12:55 -0400
+Received: by mail-it0-f65.google.com with SMTP id i206so7348676ita.3
+        for <linux-pm@vger.kernel.org>; Mon, 29 May 2017 08:12:55 -0700 (PDT)
+In-Reply-To: <1495756293-29534-3-git-send-email-thara.gopinath@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
-Cc: Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Thara Gopinath <thara.gopinath@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@baylibre.com>
 
-On Sun, May 28, 2017 at 9:11 AM, Alex A. Mihaylov <minimumlaw@rambler.ru> wrote:
-> Add basic support regmap (register map access) API for OneWire (W1) bus
+Hi Thara,
 
-It's called "1-wire" or "1-Wire" almost everywhere else in the kernel,
-and on the Maxim
-website (except in the URL
-https://www.maximintegrated.com/en/products/digital/one-wire.html ;-)
+On Fri, May 26, 2017 at 1:51 AM, Thara Gopinath
+<thara.gopinath@linaro.org> wrote:
+> This patch extends the existing generic power domain debugfs.
+> Changes involve the following
+> - Remove the current flat format of displaying generic power domain
+>   summary.
+> - Introduce a unique debugfs entry for each generic power domain with the
+>   following attributes
+>         - current_state - Displays current state of the domain.
+>         - devices - Displays the devices associated with this domain.
+>         - slaves - Displays the sub power domains.
+>         - on_time - Displays the time the domain was in on state in ms.
+>         - idle_time - Displays the time the domain was in any of the idle
+>                         states in ms.
+>         - idle_states - Displays the various idle states and the time
+>                         spent in each idle state in ms.
+>
+> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+
+While I don't doubt the merits of having all this additional information in
+separate debugfs files, I think it would be a good idea to keep the existing
+summary.
+
+Cfr. the clock subsystem, which provides both a summary, and clock-specific
+information in individual files.
+
+BTW, if people disagree, I'll have to write a script to extract all information
+and combine it into a single file ;-) I tend to compare these summaries across
+boots...
 
 Gr{oetje,eeting}s,
 
