@@ -1,63 +1,80 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 5/5] power: supply: bq27xxx: Correct supply status with
- current draw
-Date: Sun, 28 May 2017 21:16:19 +0200
-Message-ID: <20170528191619.GA20159@xo-6d-61-c0.localdomain>
-References: <20170430182727.24412-1-contact@paulk.fr>
- <20170430182727.24412-5-contact@paulk.fr>
+From: Josh Benson <handle2001@gmail.com>
+Subject: [PATCH] Fixed hwmon_register_device() error regression
+Date: Sun, 28 May 2017 22:38:58 -0400
+Message-ID: <20170529023858.GA1713@localhost.highwinds.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36136 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750802AbdE1TQ1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 May 2017 15:16:27 -0400
+Received: from mail-yw0-f196.google.com ([209.85.161.196]:35270 "EHLO
+        mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750864AbdE2CjI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 May 2017 22:39:08 -0400
 Content-Disposition: inline
-In-Reply-To: <20170430182727.24412-5-contact@paulk.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Kocialkowski <contact@paulk.fr>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Chris Lapa <chris@lapa.com.au>, Matt Ranostay <mranostay@gmail.com>
+To: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, handle2001@gmail.com
 
-Hi!
+Signed-off-by: Josh Benson <handle2001@gmail.com>
+---
+ drivers/thermal/thermal_hwmon.c | 20 +++-----------------
+ 1 file changed, 3 insertions(+), 17 deletions(-)
 
-> The status reported directly by the battery controller is not always
-> reliable and should be corrected based on the current draw information.
-> 
-> This implements such a correction with a dedicated function, called
-> when retrieving the supply status.
-> 
-
-> @@ -1182,6 +1196,8 @@ static int bq27xxx_battery_status(struct bq27xxx_device_info *di,
->  		else
->  			status = POWER_SUPPLY_STATUS_DISCHARGING;
->  	} else {
-> +		curr = (int)((s16)curr) * 1000;
-
-Umm.
-
-> @@ -1190,6 +1206,18 @@ static int bq27xxx_battery_status(struct bq27xxx_device_info *di,
->  			status = POWER_SUPPLY_STATUS_CHARGING;
->  	}
->  
-> +
-> +	if (curr == 0 && status != POWER_SUPPLY_STATUS_NOT_CHARGING)
-> +		status = POWER_SUPPLY_STATUS_FULL;
-> +
-> +	if (status == POWER_SUPPLY_STATUS_FULL) {
-> +		/* Drawing or providing current when full */
-> +		if (curr > 0)
-> +			status = POWER_SUPPLY_STATUS_CHARGING;
-> +		else if (curr < 0)
-> +			status = POWER_SUPPLY_STATUS_DISCHARGING;
-> +	}
-
-Are you sure this works? On N900, we normally see small currents to/from "full" battery.
-
-Should the test be for absolute_value(curr) < something rather than for == 0?
-
-What hw did you test it on?
-										Pavel
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index 541af5946203..c4a508a124dc 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -59,14 +59,6 @@ static LIST_HEAD(thermal_hwmon_list);
+ static DEFINE_MUTEX(thermal_hwmon_list_lock);
+ 
+ static ssize_t
+-name_show(struct device *dev, struct device_attribute *attr, char *buf)
+-{
+-	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
+-	return sprintf(buf, "%s\n", hwmon->type);
+-}
+-static DEVICE_ATTR_RO(name);
+-
+-static ssize_t
+ temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	int temperature;
+@@ -165,15 +157,12 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+ 
+ 	INIT_LIST_HEAD(&hwmon->tz_list);
+ 	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
+-	hwmon->device = hwmon_device_register(NULL);
++	hwmon->device = hwmon_device_register_with_info(NULL, hwmon->type,
++							hwmon, NULL, NULL);
+ 	if (IS_ERR(hwmon->device)) {
+ 		result = PTR_ERR(hwmon->device);
+ 		goto free_mem;
+ 	}
+-	dev_set_drvdata(hwmon->device, hwmon);
+-	result = device_create_file(hwmon->device, &dev_attr_name);
+-	if (result)
+-		goto free_mem;
+ 
+  register_sys_interface:
+ 	temp = kzalloc(sizeof(*temp), GFP_KERNEL);
+@@ -222,10 +211,8 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+  free_temp_mem:
+ 	kfree(temp);
+  unregister_name:
+-	if (new_hwmon_device) {
+-		device_remove_file(hwmon->device, &dev_attr_name);
++	if (new_hwmon_device)
+ 		hwmon_device_unregister(hwmon->device);
+-	}
+  free_mem:
+ 	if (new_hwmon_device)
+ 		kfree(hwmon);
+@@ -267,7 +254,6 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+ 	list_del(&hwmon->node);
+ 	mutex_unlock(&thermal_hwmon_list_lock);
+ 
+-	device_remove_file(hwmon->device, &dev_attr_name);
+ 	hwmon_device_unregister(hwmon->device);
+ 	kfree(hwmon);
+ }
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.13.0
