@@ -1,84 +1,75 @@
-From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Subject: [PATCH 4/4] arm64: dts: uniphier: add nodes of thermal monitor and thermal zone for LD20
-Date: Mon, 29 May 2017 18:15:45 +0900
-Message-ID: <1496049345-14649-5-git-send-email-hayashi.kunihiko@socionext.com>
-References: <1496049345-14649-1-git-send-email-hayashi.kunihiko@socionext.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1496049345-14649-1-git-send-email-hayashi.kunihiko@socionext.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, yamada.masahiro@socionext.com, masami.hiramatsu@linaro.org, jaswinder.singh@linaro.org, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
+Date: Mon, 29 May 2017 11:20:33 +0200
+Message-ID: <7306372.PblijfWnMI@amdc3058>
+References: <20170521220212.1404-1-wsa@the-dreams.de>
+	<CGME20170521220224epcas2p4fbcfe69660d457b8af95ddc196c04a9b@epcas2p4.samsung.com>
+	<20170521220212.1404-4-wsa@the-dreams.de>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <rtc-linux+bncBDMLN5HOIYIOPT5PZECRUBAITP5LK-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-reply-to: <20170521220212.1404-4-wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wim Van Sebroeck <wim@>
 List-Id: linux-pm@vger.kernel.org
 
-Add nodes of thermal monitor and thermal zone for UniPhier LD20 SoC.
-The thermal monitor is included in sysctrl.
+On Monday, May 22, 2017 12:02:10 AM Wolfram Sang wrote:
+> include/linux/i2c is not for client devices. Move the header file to a
+> more appropriate location.
+> 
+> Signed-off-by: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
 
-Furthermore, since SoC installed in the reference board doesn't have a
-calibrated value of thermal monitor, this patch gives the default value
-for LD20 Reference board via device-tree property.
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 
-Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
----
- .../arm64/boot/dts/socionext/uniphier-ld20-ref.dts | 25 ++++++++++++++++++++++
- arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi   |  6 ++++++
- 2 files changed, 31 insertions(+)
+> ---
+>  arch/arm/mach-omap2/common.h            | 2 +-
+>  arch/arm/mach-omap2/omap_twl.c          | 2 +-
+>  drivers/gpio/gpio-twl4030.c             | 2 +-
+>  drivers/iio/adc/twl4030-madc.c          | 2 +-
+>  drivers/iio/adc/twl6030-gpadc.c         | 2 +-
+>  drivers/input/keyboard/twl4030_keypad.c | 2 +-
+>  drivers/input/misc/twl4030-pwrbutton.c  | 2 +-
+>  drivers/input/misc/twl4030-vibra.c      | 2 +-
+>  drivers/mfd/twl-core.c                  | 6 +++---
+>  drivers/mfd/twl4030-audio.c             | 2 +-
+>  drivers/mfd/twl4030-irq.c               | 2 +-
+>  drivers/mfd/twl4030-power.c             | 2 +-
+>  drivers/mfd/twl6030-irq.c               | 2 +-
+>  drivers/phy/phy-twl4030-usb.c           | 2 +-
+>  drivers/power/supply/twl4030_charger.c  | 2 +-
+>  drivers/pwm/pwm-twl-led.c               | 2 +-
+>  drivers/pwm/pwm-twl.c                   | 2 +-
+>  drivers/regulator/twl-regulator.c       | 2 +-
+>  drivers/regulator/twl6030-regulator.c   | 2 +-
+>  drivers/rtc/rtc-twl.c                   | 2 +-
+>  drivers/usb/phy/phy-twl6030-usb.c       | 2 +-
+>  drivers/video/backlight/pandora_bl.c    | 2 +-
+>  drivers/watchdog/twl4030_wdt.c          | 2 +-
+>  include/linux/{i2c => mfd}/twl.h        | 0
+>  sound/soc/codecs/twl4030.c              | 2 +-
+>  25 files changed, 26 insertions(+), 26 deletions(-)
+>  rename include/linux/{i2c => mfd}/twl.h (100%)
 
-diff --git a/arch/arm64/boot/dts/socionext/uniphier-ld20-ref.dts b/arch/arm64/boot/dts/socionext/uniphier-ld20-ref.dts
-index 609162a..79e1363 100644
---- a/arch/arm64/boot/dts/socionext/uniphier-ld20-ref.dts
-+++ b/arch/arm64/boot/dts/socionext/uniphier-ld20-ref.dts
-@@ -73,6 +73,27 @@
- 		i2c4 = &i2c4;
- 		i2c5 = &i2c5;
- 	};
-+
-+	thermal-zones {
-+		cpu_thermal {
-+			polling-delay-passive = <250>;	/* 250ms */
-+			polling-delay = <1000>;		/* 1000ms */
-+			thermal-sensors = <&pvtctl>;
-+
-+			trips {
-+				cpu_crit: cpu_crit {
-+					temperature = <95000>;	/* 95C */
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+				cpu_alert: cpu_alert {
-+					temperature = <85000>;	/* 85C */
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+	};
- };
- 
- &ethsc {
-@@ -86,3 +107,7 @@
- &i2c0 {
- 	status = "okay";
- };
-+
-+&pvtctl {
-+	socionext,tmod-calibration = <0x0f22 0x68ee>;
-+};
-diff --git a/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi b/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
-index a6b3a70..effa2e3 100644
---- a/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
-+++ b/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
-@@ -417,6 +417,12 @@
- 				compatible = "socionext,uniphier-ld20-reset";
- 				#reset-cells = <1>;
- 			};
-+
-+			pvtctl: pvtctl {
-+				compatible = "socionext,uniphier-ld20-thermal";
-+				interrupts = <0 3 1>;
-+				#thermal-sensor-cells = <0>;
-+			};
- 		};
- 	};
- };
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
 -- 
-2.7.4
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
