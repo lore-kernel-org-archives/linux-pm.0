@@ -1,92 +1,105 @@
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v1 7/8] powerpc/Kconfig: Enable STRICT_KERNEL_RWX
-Date: Mon, 29 May 2017 10:00:18 +0200
-Message-ID: <6dcd8ea3-e953-3319-0e0e-8543018e882f@c-s.fr>
-References: <201705260000.CDMt1Ieh%fengguang.wu@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Subject: [PATCH 3/4] ARM: dts: uniphier: add nodes of thermal monitor and thermal zone for PXs2
+Date: Mon, 29 May 2017 18:15:44 +0900
+Message-ID: <1496049345-14649-4-git-send-email-hayashi.kunihiko@socionext.com>
+References: <1496049345-14649-1-git-send-email-hayashi.kunihiko@socionext.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201705260000.CDMt1Ieh%fengguang.wu@intel.com>
-Content-Language: fr
+In-Reply-To: <1496049345-14649-1-git-send-email-hayashi.kunihiko@socionext.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: kbuild test robot <lkp@intel.com>, Balbir Singh <bsingharora@gmail.com>, Laura Abbott <labbott@redhat.com>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: paulus@samba.org, kbuild-all@01.org, naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, rashmica.g@gmail.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, yamada.masahiro@socionext.com, masami.hiramatsu@linaro.org, jaswinder.singh@linaro.org, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
 List-Id: linux-pm@vger.kernel.org
 
+Add nodes of thermal monitor and thermal zone for UniPhier PXs2 SoC.
+The thermal monitor is included in sysctrl.
 
+Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+---
+ arch/arm/boot/dts/uniphier-pxs2-gentil.dts | 21 +++++++++++++++++++++
+ arch/arm/boot/dts/uniphier-pxs2-vodka.dts  | 21 +++++++++++++++++++++
+ arch/arm/boot/dts/uniphier-pxs2.dtsi       |  6 ++++++
+ 3 files changed, 48 insertions(+)
 
-Le 25/05/2017 à 18:45, kbuild test robot a écrit :
-> Hi Balbir,
-> 
-> [auto build test ERROR on powerpc/next]
-> [also build test ERROR on v4.12-rc2 next-20170525]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Balbir-Singh/Enable-STRICT_KERNEL_RWX/20170525-150234
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> config: powerpc-allmodconfig (attached as .config)
-> compiler: powerpc64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> reproduce:
->          wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->          chmod +x ~/bin/make.cross
->          # save the attached .config to linux build tree
->          make.cross ARCH=powerpc
-> 
-> All errors (new ones prefixed by >>):
-> 
->>> kernel//power/snapshot.c:40:28: fatal error: asm/set_memory.h: No such file or directory
->      #include <asm/set_memory.h>
-
-Looks like it is linked to commit 50327ddfb ("kernel/power/snapshot.c: 
-use set_memory.h header").
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=50327ddfb
-
-I believe that inclusion should be conditional to 
-CONFIG_ARCH_HAS_SET_MEMORY, which is not set by powerpc arch, just like 
-in include/linux/filter.c
-
-Christophe
-
-
->                                 ^
->     compilation terminated.
-> 
-> vim +40 kernel//power/snapshot.c
-> 
-> 25761b6eb Rafael J. Wysocki    2005-10-30  24  #include <linux/bootmem.h>
-> 38b8d208a Ingo Molnar          2017-02-08  25  #include <linux/nmi.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  26  #include <linux/syscalls.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  27  #include <linux/console.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  28  #include <linux/highmem.h>
-> 846705deb Rafael J. Wysocki    2008-11-26  29  #include <linux/list.h>
-> 5a0e3ad6a Tejun Heo            2010-03-24  30  #include <linux/slab.h>
-> 52f5684c8 Gideon Israel Dsouza 2014-04-07  31  #include <linux/compiler.h>
-> db5976058 Tina Ruchandani      2014-10-30  32  #include <linux/ktime.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  33
-> 7c0f6ba68 Linus Torvalds       2016-12-24  34  #include <linux/uaccess.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  35  #include <asm/mmu_context.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  36  #include <asm/pgtable.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  37  #include <asm/tlbflush.h>
-> 25761b6eb Rafael J. Wysocki    2005-10-30  38  #include <asm/io.h>
-> 50327ddfb Laura Abbott         2017-05-08  39  #ifdef CONFIG_STRICT_KERNEL_RWX
-> 50327ddfb Laura Abbott         2017-05-08 @40  #include <asm/set_memory.h>
-> 50327ddfb Laura Abbott         2017-05-08  41  #endif
-> 25761b6eb Rafael J. Wysocki    2005-10-30  42
-> 25761b6eb Rafael J. Wysocki    2005-10-30  43  #include "power.h"
-> 25761b6eb Rafael J. Wysocki    2005-10-30  44
-> 0f5bf6d0a Laura Abbott         2017-02-06  45  #ifdef CONFIG_STRICT_KERNEL_RWX
-> 4c0b6c10f Rafael J. Wysocki    2016-07-10  46  static bool hibernate_restore_protection;
-> 4c0b6c10f Rafael J. Wysocki    2016-07-10  47  static bool hibernate_restore_protection_active;
-> 4c0b6c10f Rafael J. Wysocki    2016-07-10  48
-> 
-> :::::: The code at line 40 was first introduced by commit
-> :::::: 50327ddfbc926e68da1958e4fac51f1106f5e730 kernel/power/snapshot.c: use set_memory.h header
-> 
-> :::::: TO: Laura Abbott <labbott@redhat.com>
-> :::::: CC: Linus Torvalds <torvalds@linux-foundation.org>
-> 
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-> 
+diff --git a/arch/arm/boot/dts/uniphier-pxs2-gentil.dts b/arch/arm/boot/dts/uniphier-pxs2-gentil.dts
+index 373818a..89ccb88 100644
+--- a/arch/arm/boot/dts/uniphier-pxs2-gentil.dts
++++ b/arch/arm/boot/dts/uniphier-pxs2-gentil.dts
+@@ -70,6 +70,27 @@
+ 		i2c5 = &i2c5;
+ 		i2c6 = &i2c6;
+ 	};
++
++	thermal-zones {
++		cpu_thermal {
++			polling-delay-passive = <250>;	/* 250ms */
++			polling-delay = <1000>;		/* 1000ms */
++			thermal-sensors = <&pvtctl>;
++
++			trips {
++				cpu_crit: cpu_crit {
++					temperature = <95000>;	/* 95C */
++					hysteresis = <2000>;
++					type = "critical";
++				};
++				cpu_alert: cpu_alert {
++					temperature = <85000>;	/* 85C */
++					hysteresis = <2000>;
++					type = "passive";
++				};
++			};
++		};
++	};
+ };
+ 
+ &serial2 {
+diff --git a/arch/arm/boot/dts/uniphier-pxs2-vodka.dts b/arch/arm/boot/dts/uniphier-pxs2-vodka.dts
+index 51a3eac..0201584 100644
+--- a/arch/arm/boot/dts/uniphier-pxs2-vodka.dts
++++ b/arch/arm/boot/dts/uniphier-pxs2-vodka.dts
+@@ -68,6 +68,27 @@
+ 		i2c5 = &i2c5;
+ 		i2c6 = &i2c6;
+ 	};
++
++	thermal-zones {
++		cpu_thermal {
++			polling-delay-passive = <250>;	/* 250ms */
++			polling-delay = <1000>;		/* 1000ms */
++			thermal-sensors = <&pvtctl>;
++
++			trips {
++				cpu_crit: cpu_crit {
++					temperature = <95000>;	/* 95C */
++					hysteresis = <2000>;
++					type = "critical";
++				};
++				cpu_alert: cpu_alert {
++					temperature = <85000>;	/* 85C */
++					hysteresis = <2000>;
++					type = "passive";
++				};
++			};
++		};
++	};
+ };
+ 
+ &serial2 {
+diff --git a/arch/arm/boot/dts/uniphier-pxs2.dtsi b/arch/arm/boot/dts/uniphier-pxs2.dtsi
+index e9e031d..072e3b4 100644
+--- a/arch/arm/boot/dts/uniphier-pxs2.dtsi
++++ b/arch/arm/boot/dts/uniphier-pxs2.dtsi
+@@ -387,6 +387,12 @@
+ 				compatible = "socionext,uniphier-pxs2-reset";
+ 				#reset-cells = <1>;
+ 			};
++
++			pvtctl: pvtctl {
++				compatible = "socionext,uniphier-pxs2-thermal";
++				interrupts = <0 3 1>;
++				#thermal-sensor-cells = <0>;
++			};
+ 		};
+ 	};
+ };
+-- 
+2.7.4
