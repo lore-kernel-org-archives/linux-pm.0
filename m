@@ -1,56 +1,99 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 1/3] regmap: Add OneWire (W1) bus support
-Date: Mon, 29 May 2017 14:13:46 +0100
-Message-ID: <20170529131346.gsauzllpplc2e7vy@sirena.org.uk>
-References: <20170528071120.6604-1-minimumlaw@rambler.ru>
- <20170528071120.6604-2-minimumlaw@rambler.ru>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] Fixed hwmon_register_device() error regression
+Date: Mon, 29 May 2017 21:17:21 +0800
+Message-ID: <1496063841.2572.3.camel@intel.com>
+References: <20170529023858.GA1713@localhost.highwinds.local>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="appagsrjfio4i6qw"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:58318 "EHLO
-        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750987AbdE2NOA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 May 2017 09:14:00 -0400
-Content-Disposition: inline
-In-Reply-To: <20170528071120.6604-2-minimumlaw@rambler.ru>
+Received: from mga11.intel.com ([192.55.52.93]:7814 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750966AbdE2NR0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 May 2017 09:17:26 -0400
+In-Reply-To: <20170529023858.GA1713@localhost.highwinds.local>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Josh Benson <handle2001@gmail.com>, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Hi, Josh
 
---appagsrjfio4i6qw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Sun, 2017-05-28 at 22:38 -0400, Josh Benson wrote:
+> Signed-off-by: Josh Benson <handle2001@gmail.com>
 
-On Sun, May 28, 2017 at 10:11:18AM +0300, Alex A. Mihaylov wrote:
+First of all, you're missing a proper changelog here.
+Second, this patch has already been reverted by commit
+3feb479cea37 because the name of some thermal devices contains special
+characters which is incompatible with hwmon.
 
-> +	int ret = -ENODEV;
-> +
-> +	mutex_lock(&sl->master->bus_mutex);
-> +	if (!w1_reset_select_slave(sl)) {
-> +		w1_write_8(sl->master, W1_CMD_READ_DATA);
-> +		w1_write_8(sl->master, reg);
-> +		*val = w1_read_8(sl->master);
-> +		ret = 0;
-> +	}
-
-I asked you to move the error handling into the else case in these :(
-
---appagsrjfio4i6qw
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlksHoYACgkQJNaLcl1U
-h9Axzgf+OQ1lRt47CeOFYAAhNsd/ElaMkoJMM8/7USx6FE/HJfHESbuJ4+MOl3Wy
-useeBD+GyI8Q5icP5Jmj4UzqdGrXj0eYzOVDsnEmuuBiFv/L5wfWn3SjJH97fB7A
-IAhCh6zlOkm9uOCajx45dhztIGJrbHD18pvKOhnk4mKGcqIqAJjyIBDZXAgqVUfv
-8wYaQ+uvYFG3a1WOm7Ou0jmmIo80ltMuXPSD4JFlKwzYV/d5Nu+pPX0WZs9CSaYk
-11y5+GNcVLbww8aL1imsSqlaX0yTMYyGTDc94WY8es0/Jo6Z6J2iDHd2omiKkOSJ
-yL5Wx6pSVHUXmEYtZUzSv3bd8IU+Sg==
-=3an5
------END PGP SIGNATURE-----
-
---appagsrjfio4i6qw--
+thanks,
+rui
+> ---
+>  drivers/thermal/thermal_hwmon.c | 20 +++-----------------
+>  1 file changed, 3 insertions(+), 17 deletions(-)
+> 
+> diff --git a/drivers/thermal/thermal_hwmon.c
+> b/drivers/thermal/thermal_hwmon.c
+> index 541af5946203..c4a508a124dc 100644
+> --- a/drivers/thermal/thermal_hwmon.c
+> +++ b/drivers/thermal/thermal_hwmon.c
+> @@ -59,14 +59,6 @@ static LIST_HEAD(thermal_hwmon_list);
+>  static DEFINE_MUTEX(thermal_hwmon_list_lock);
+>  
+>  static ssize_t
+> -name_show(struct device *dev, struct device_attribute *attr, char
+> *buf)
+> -{
+> -	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
+> -	return sprintf(buf, "%s\n", hwmon->type);
+> -}
+> -static DEVICE_ATTR_RO(name);
+> -
+> -static ssize_t
+>  temp_input_show(struct device *dev, struct device_attribute *attr,
+> char *buf)
+>  {
+>  	int temperature;
+> @@ -165,15 +157,12 @@ int thermal_add_hwmon_sysfs(struct
+> thermal_zone_device *tz)
+>  
+>  	INIT_LIST_HEAD(&hwmon->tz_list);
+>  	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
+> -	hwmon->device = hwmon_device_register(NULL);
+> +	hwmon->device = hwmon_device_register_with_info(NULL, hwmon-
+> >type,
+> +							hwmon, NULL,
+> NULL);
+>  	if (IS_ERR(hwmon->device)) {
+>  		result = PTR_ERR(hwmon->device);
+>  		goto free_mem;
+>  	}
+> -	dev_set_drvdata(hwmon->device, hwmon);
+> -	result = device_create_file(hwmon->device, &dev_attr_name);
+> -	if (result)
+> -		goto free_mem;
+>  
+>   register_sys_interface:
+>  	temp = kzalloc(sizeof(*temp), GFP_KERNEL);
+> @@ -222,10 +211,8 @@ int thermal_add_hwmon_sysfs(struct
+> thermal_zone_device *tz)
+>   free_temp_mem:
+>  	kfree(temp);
+>   unregister_name:
+> -	if (new_hwmon_device) {
+> -		device_remove_file(hwmon->device, &dev_attr_name);
+> +	if (new_hwmon_device)
+>  		hwmon_device_unregister(hwmon->device);
+> -	}
+>   free_mem:
+>  	if (new_hwmon_device)
+>  		kfree(hwmon);
+> @@ -267,7 +254,6 @@ void thermal_remove_hwmon_sysfs(struct
+> thermal_zone_device *tz)
+>  	list_del(&hwmon->node);
+>  	mutex_unlock(&thermal_hwmon_list_lock);
+>  
+> -	device_remove_file(hwmon->device, &dev_attr_name);
+>  	hwmon_device_unregister(hwmon->device);
+>  	kfree(hwmon);
+>  }
