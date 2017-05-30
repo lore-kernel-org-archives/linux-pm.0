@@ -1,34 +1,67 @@
-From: sathyanarayanan kuppuswamy
-        <sathyanarayanan.kuppuswamy@linux.intel.com>
-Subject: Re: [PATCH v2 1/8] mfd: intel_soc_pmic_bxtwc: fix TMU interrupt index
-Date: Tue, 30 May 2017 11:00:58 -0700
-Message-ID: <dfe2b88c-2470-b014-563d-2c82efc7a216@linux.intel.com>
-References: <0e4d82ca9cdc41c9d2a8b45258cd72659b4c2063.1492210847.git.sathyanarayanan.kuppuswamy@linux.intel.com>
- <20170530085423.bcqy4f3omrmf4rxg@dell>
-Reply-To: sathyanarayanan.kuppuswamy@linux.intel.com
+From: Eduardo Valentin <eduval@amazon.com>
+Subject: Re: [PATCH 7/7] thermal: max77620: fix pinmux conflict on reprobe
+Date: Tue, 30 May 2017 11:57:07 -0700
+Message-ID: <20170530185707.GF7419@u40b0340c692b58f6553c.ant.amazon.com>
+References: <20170530162554.26159-1-johan@kernel.org>
+ <20170530162554.26159-8-johan@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:58354 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750930AbdE3SEU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 30 May 2017 14:04:20 -0400
-In-Reply-To: <20170530085423.bcqy4f3omrmf4rxg@dell>
+Received: from smtp-fw-33001.amazon.com ([207.171.190.10]:3743 "EHLO
+        smtp-fw-33001.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750821AbdE3S5R (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2017 14:57:17 -0400
+Content-Disposition: inline
+In-Reply-To: <20170530162554.26159-8-johan@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, andy@infradead.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com
+To: Johan Hovold <johan@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@freescale.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>
 
-Thanks Lee.
+On Tue, May 30, 2017 at 06:25:54PM +0200, Johan Hovold wrote:
+> Use the new helper for reusing a device-tree node of another device
+> instead of managing the node references explicitly.
+> 
+> This also makes sure that the new of_node_reuse flag is set if the
+> device is ever reprobed, something which specifically now avoids driver
+> core from attempting to claim any pinmux resources already claimed by
+> the parent device.
+> 
+> Fixes: ec4664b3fd6d ("thermal: max77620: Add thermal driver for reporting junction temp")
+> Cc: Laxman Dewangan <ldewangan@nvidia.com>
+> Signed-off-by: Johan Hovold <johan@kernel.org>
+> ---
+>  drivers/thermal/max77620_thermal.c | 8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/thermal/max77620_thermal.c b/drivers/thermal/max77620_thermal.c
+> index 71d35f3c9215..159bbcee8821 100644
+> --- a/drivers/thermal/max77620_thermal.c
+> +++ b/drivers/thermal/max77620_thermal.c
+> @@ -112,12 +112,10 @@ static int max77620_thermal_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	/*
+> -	 * Drop any current reference to a device-tree node and get a
+> -	 * reference to the parent's node which will be balanced on reprobe or
+> -	 * on platform-device release.
+> +	 * The reference taken to the parent's node which will be balanced on
+> +	 * reprobe or on platform-device release.
+>  	 */
+> -	of_node_put(pdev->dev.of_node);
+> -	pdev->dev.of_node = of_node_get(pdev->dev.parent->of_node);
+> +	device_set_of_node_from_dev(&pdev->dev, pdev->dev.parent);
 
+Should this one be squashed with patch 6/7?
 
-On 05/30/2017 01:54 AM, Lee Jones wrote:
-> For future reference, when submitting a patch-set, you really should
-> provide a cover letter ([PATCH 00/XX]).
-Will do.
->
+>  
+>  	mtherm->tz_device = devm_thermal_zone_of_sensor_register(&pdev->dev, 0,
+>  				mtherm, &max77620_thermal_ops);
+> -- 
+> 2.13.0
+> 
+> 
 
 -- 
-Sathyanarayanan Kuppuswamy
-Linux kernel developer
+All the best,
+Eduardo Valentin
