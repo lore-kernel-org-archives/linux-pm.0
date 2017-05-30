@@ -1,49 +1,41 @@
-From: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
-Subject: [PATCH] Thermal/int340x: Fix few typos and kernel-doc style
-Date: Tue, 30 May 2017 23:14:58 +0530
-Message-ID: <1496166298-17125-1-git-send-email-sumeet.r.pawnikar@intel.com>
+From: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
+Subject: [PATCH 0/3] Battery monitor MAX1721x with w1-regmap and w1-slave (resend)
+Date: Tue, 30 May 2017 20:57:32 +0300
+Message-ID: <20170530175735.3481-1-minimumlaw@rambler.ru>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:20174 "EHLO mga09.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750912AbdE3RoN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 30 May 2017 13:44:13 -0400
+Received: from huan4.mail.rambler.ru ([81.19.78.110]:61442 "EHLO
+        huan4.mail.rambler.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750913AbdE3R5t (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2017 13:57:49 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rui.zhang@intel.com, edubezval@gmail.com, Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+To: Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
 
-This patch fix the few typos in function header of
-acpi_parse_trt. Also, fix the typo in kernel debug
-message for acpi_parse_art.
+Again resend patches. All wishes are realized.
 
-Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
----
- drivers/thermal/int340x_thermal/acpi_thermal_rel.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Alex A. Mihaylov (3):
+  regmap: Add 1-Wire bus support
+  w1: MAX1721x Stanalone Fuel Gauge - add 1-Wire slave drivers
+  power: supply: Add support MAX1721x battery monitor
 
-diff --git a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
-index 2c2ec76..51ceb80 100644
---- a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
-+++ b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
-@@ -62,8 +62,8 @@ static int acpi_thermal_rel_release(struct inode *inode, struct file *file)
-  * acpi_parse_trt - Thermal Relationship Table _TRT for passive cooling
-  *
-  * @handle: ACPI handle of the device contains _TRT
-- * @art_count: the number of valid entries resulted from parsing _TRT
-- * @artp: pointer to pointer of array of art entries in parsing result
-+ * @trt_count: the number of valid entries resulted from parsing _TRT
-+ * @trtp: pointer to pointer of array of _TRT entries in parsing result
-  * @create_dev: whether to create platform devices for target and source
-  *
-  */
-@@ -208,7 +208,7 @@ int acpi_parse_art(acpi_handle handle, int *art_count, struct art **artp,
- 		if (art->target) {
- 			result = acpi_bus_get_device(art->target, &adev);
- 			if (result)
--				pr_warn("Failed to get source ACPI device\n");
-+				pr_warn("Failed to get target ACPI device\n");
- 		}
- 	}
- 
+ drivers/base/regmap/Kconfig             |   6 +-
+ drivers/base/regmap/Makefile            |   1 +
+ drivers/base/regmap/regmap-w1.c         | 239 +++++++++++++++++++++
+ drivers/power/supply/Kconfig            |  14 ++
+ drivers/power/supply/Makefile           |   1 +
+ drivers/power/supply/max1721x_battery.c | 357 ++++++++++++++++++++++++++++++++
+ drivers/w1/slaves/Kconfig               |  12 ++
+ drivers/w1/slaves/Makefile              |   1 +
+ drivers/w1/slaves/w1_max1721x.c         |  73 +++++++
+ drivers/w1/slaves/w1_max1721x.h         | 102 +++++++++
+ drivers/w1/w1_family.h                  |   1 +
+ include/linux/regmap.h                  |  34 +++
+ 12 files changed, 840 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/base/regmap/regmap-w1.c
+ create mode 100644 drivers/power/supply/max1721x_battery.c
+ create mode 100644 drivers/w1/slaves/w1_max1721x.c
+ create mode 100644 drivers/w1/slaves/w1_max1721x.h
+
 -- 
-1.7.9.5
+2.8.4 (Apple Git-73)
