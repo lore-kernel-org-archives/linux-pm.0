@@ -1,41 +1,49 @@
 From: Johan Hovold <johan@kernel.org>
-Subject: [PATCH 1/7] USB: core: fix device node leak
-Date: Tue, 30 May 2017 18:25:48 +0200
-Message-ID: <20170530162554.26159-2-johan@kernel.org>
+Subject: [PATCH 7/7] thermal: max77620: fix pinmux conflict on reprobe
+Date: Tue, 30 May 2017 18:25:54 +0200
+Message-ID: <20170530162554.26159-8-johan@kernel.org>
 References: <20170530162554.26159-1-johan@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170530162554.26159-1-johan@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@freescale.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>, stable <stable@vger.kernel.org>, Peter Chen <peter.chen@nxp.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@freescale.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>, Laxman Dewangan <ldewangan@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Make sure to release any OF device-node reference taken when creating
-the USB device.
+Use the new helper for reusing a device-tree node of another device
+instead of managing the node references explicitly.
 
-Note that we currently do not hold a reference to the root hub
-device-tree node (i.e. the parent controller node).
+This also makes sure that the new of_node_reuse flag is set if the
+device is ever reprobed, something which specifically now avoids driver
+core from attempting to claim any pinmux resources already claimed by
+the parent device.
 
-Fixes: 69bec7259853 ("USB: core: let USB device know device node")
-Cc: stable <stable@vger.kernel.org>	# v4.6
-Cc: Peter Chen <peter.chen@nxp.com>
+Fixes: ec4664b3fd6d ("thermal: max77620: Add thermal driver for reporting junction temp")
+Cc: Laxman Dewangan <ldewangan@nvidia.com>
 Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- drivers/usb/core/usb.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/thermal/max77620_thermal.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-index 28b053cacc90..62e1906bb2f3 100644
---- a/drivers/usb/core/usb.c
-+++ b/drivers/usb/core/usb.c
-@@ -416,6 +416,8 @@ static void usb_release_dev(struct device *dev)
+diff --git a/drivers/thermal/max77620_thermal.c b/drivers/thermal/max77620_thermal.c
+index 71d35f3c9215..159bbcee8821 100644
+--- a/drivers/thermal/max77620_thermal.c
++++ b/drivers/thermal/max77620_thermal.c
+@@ -112,12 +112,10 @@ static int max77620_thermal_probe(struct platform_device *pdev)
+ 	}
  
- 	usb_destroy_configuration(udev);
- 	usb_release_bos_descriptor(udev);
-+	if (udev->parent)
-+		of_node_put(dev->of_node);
- 	usb_put_hcd(hcd);
- 	kfree(udev->product);
- 	kfree(udev->manufacturer);
+ 	/*
+-	 * Drop any current reference to a device-tree node and get a
+-	 * reference to the parent's node which will be balanced on reprobe or
+-	 * on platform-device release.
++	 * The reference taken to the parent's node which will be balanced on
++	 * reprobe or on platform-device release.
+ 	 */
+-	of_node_put(pdev->dev.of_node);
+-	pdev->dev.of_node = of_node_get(pdev->dev.parent->of_node);
++	device_set_of_node_from_dev(&pdev->dev, pdev->dev.parent);
+ 
+ 	mtherm->tz_device = devm_thermal_zone_of_sensor_register(&pdev->dev, 0,
+ 				mtherm, &max77620_thermal_ops);
 -- 
 2.13.0
