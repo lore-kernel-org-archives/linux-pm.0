@@ -1,99 +1,501 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v4 8/8] arm,arm64,drivers: add a prefix to drivers
- arch_topology interfaces
-Date: Mon, 29 May 2017 11:58:18 +0200
-Message-ID: <20170529095818.GA9892@kroah.com>
-References: <20170420144316.15632-1-juri.lelli@arm.com>
- <20170420144316.15632-9-juri.lelli@arm.com>
- <20170525131802.GE16244@kroah.com>
- <20170526101032.2t2xn5wrfenimu5w@e106622-lin>
- <20170526183610.GB16490@kroah.com>
- <bcc2f8f1-e953-9f32-2aa2-e660b0351e0a@arm.com>
+From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Subject: Re: [PATCH 1/4] thermal: uniphier: add UniPhier thermal driver
+Date: Tue, 30 May 2017 11:47:38 +0900
+Message-ID: <20170530114738.6856.4A936039@socionext.com>
+References: <1496049345-14649-2-git-send-email-hayashi.kunihiko@socionext.com> <1b7ff5ff-3951-8a9c-37ec-b5c85c6df72a@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:34884 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750866AbdE2J6e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 May 2017 05:58:34 -0400
-Content-Disposition: inline
-In-Reply-To: <bcc2f8f1-e953-9f32-2aa2-e660b0351e0a@arm.com>
+Received: from mx.socionext.com ([202.248.49.38]:26010 "EHLO mx.socionext.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750839AbdE3Crm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 May 2017 22:47:42 -0400
+In-Reply-To: <1b7ff5ff-3951-8a9c-37ec-b5c85c6df72a@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, broonie@kernel.org
+To: Keerthy <j-keerthy@ti.com>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, yamada.masahiro@socionext.com, masami.hiramatsu@linaro.org, jaswinder.singh@linaro.org
 
-On Mon, May 29, 2017 at 11:20:24AM +0200, Dietmar Eggemann wrote:
-> Hi Greg,
-> 
-> On 05/26/2017 08:36 PM, Greg KH wrote:
-> > On Fri, May 26, 2017 at 11:10:32AM +0100, Juri Lelli wrote:
-> > > Hi,
-> > > 
-> > > On 25/05/17 15:18, Greg KH wrote:
-> > > > On Thu, Apr 20, 2017 at 03:43:16PM +0100, Juri Lelli wrote:
-> 
-> [...]
-> 
-> > > > But this is all really topology stuff, right?  Why use "capacity" at
-> > > > all:
-> > > > 	topology_normalize_cpu()
-> > > > 	topology_parse_cpu()
-> > > > 	topology_scale_cpu()
-> > > > 	topology_set_scale()
-> > > > ?
-> > > > 
-> > > > It's always best to put the "subsystem" name first, we have a bad
-> > > > history of getting this wrong in the past by putting the verb first, not
-> > > > the noun.
-> > > > 
-> > > 
-> > > topology_ works for me. However, I'd keep "capacity" in the names, as we
-> > > might need to topology_normalize_cpu_somethingelse() (etc.) in the
-> > > future?
-> > 
-> > Worry about the future, in the future.  Change the names then, _IF_ it
-> > becomes an issue.  Try to be short and simple please.
-> > 
-> > > Updated patch follows. I kept Catalin and Russell's acks as I only
-> > > renamed the functions, please shout if that's not OK.
-> > > 
-> > > Greg, if you are fine with this approach, do you still want a complete
-> > > v5 of the set or can you pick this up?
-> > 
-> > Am I the one who is supposed to take all of these arm-specific patches?
-> > If so, that's fine, but I need to have acks from the arm maintainers...
-> > 
-> > Oh, and drop "capacity" please :)
-> 
-> Once we have driver/base/arch_topology.c in, we want to enable (cpu
-> micro-architectural + max frequency (OPPmax)) invariant and frequency
-> (OPPmin..OPPmax) invariant load-tracking/accounting in the task scheduler
-> for arm and arm64.
-> 
-> The way to do this is to define the task scheduler interfaces
-> arch_scale_cpu_capacity() and arch_scale_freq_capacity() in arch specific
-> code:
-> 
-> #define arch_scale_cpu_capacity topology_scale_cpu_capacity
-> #define arch_scale_freq_capacity topology_scale_freq_capacity
-> 
-> In case an arch is not defining them, the default definitions in
-> kernel/sched/sched.h are used.
-> 
-> So topology_scale_cpu() wouldn't be correct since we scale the _capacity_ by
-> the micro-architectural differences (hence cpu) and not the cpu.
-> 
-> Likewise we will have a function topology_scale_freq_capacity indicating
-> that we scale the capacity by the frequency.
-> 
-> Or would you prefer something like topology_scale_capacity_by_cpu() and
-> topology_scale_capacity_by_freq()?
+Hi Keerthy,
+Thank you for your comment.
 
-I think that if you are creating an api that the scheduler will use, you
-need to ask the scheduler maintainers/developers what they want to see
-here, as that would be up to them, not me...
+On Mon, 29 May 2017 15:53:39 +0530 Keerthy <j-keerthy@ti.com> wrote:
+> 
+> 
+> On Monday 29 May 2017 02:45 PM, Kunihiko Hayashi wrote:
+> > Add a thermal driver for on-chip PVT (Process, Voltage and Temperature)
+> > monitoring unit implemented on UniPhier SoCs. This driver supports
+> > temperature monitoring and alert function.
+> 
+> The Documentation in patch 2/4 should be squashed into this patch.
 
-thanks,
+According to the following guide,
+http://elixir.free-electrons.com/linux/latest/source/Documentation/devicetree/bindings/submitting-patches.txt
 
-greg k-h
+  1) The Documentation/ portion of the patch should be a separate patch.
+
+I think it should be separated, how about that?
+
+> > 
+> > Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+> > ---
+> >  drivers/thermal/Kconfig            |   8 +
+> >  drivers/thermal/Makefile           |   1 +
+> >  drivers/thermal/uniphier_thermal.c | 390 +++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 399 insertions(+)
+> >  create mode 100644 drivers/thermal/uniphier_thermal.c
+> > 
+> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > index 776b343..93ccf25 100644
+> > --- a/drivers/thermal/Kconfig
+> > +++ b/drivers/thermal/Kconfig
+> > @@ -453,4 +453,12 @@ config ZX2967_THERMAL
+> >  	  the primitive temperature sensor embedded in zx2967 SoCs.
+> >  	  This sensor generates the real time die temperature.
+> >  
+> > +config UNIPHIER_THERMAL
+> > +	tristate "Socionext UniPhier thermal driver"
+> > +	depends on ARCH_UNIPHIER || COMPILE_TEST
+> > +	help
+> > +	  Enable this to support thermal reporting on UniPhier SoC.
+> > +	  This driver supports CPU thermal zone to reports the temperture
+> 
+> /s/temperture/temperature
+> 
+> Or consider re-wording to
+> 
+> "Enable this to plug in UniPhier on-chip PVT thermal driver into Linux
+> thermal framework. The driver supports CPU thermal zone temperature
+> reporting and a couple of trip points."
+
+Thanks for finding a typo and your re-wording. I'll fix it.
+
+> > +	  and trip points.
+> > +
+> >  endif
+> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> > index 7adae20..05b6e7c 100644
+> > --- a/drivers/thermal/Makefile
+> > +++ b/drivers/thermal/Makefile
+> > @@ -58,3 +58,4 @@ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+> >  obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
+> >  obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
+> >  obj-$(CONFIG_ZX2967_THERMAL)	+= zx2967_thermal.o
+> > +obj-$(CONFIG_UNIPHIER_THERMAL)	+= uniphier_thermal.o
+> > diff --git a/drivers/thermal/uniphier_thermal.c b/drivers/thermal/uniphier_thermal.c
+> > new file mode 100644
+> > index 0000000..ae7e5ce
+> > --- /dev/null
+> > +++ b/drivers/thermal/uniphier_thermal.c
+> > @@ -0,0 +1,390 @@
+> > +/**
+> > + * uniphier_thermal.c - Socionext UniPhier thermal driver
+> > + *
+> > + * Copyright 2014 Panasonic Corporation
+> > + * Copyright 2016 Socionext Inc.
+> 
+> Update this please.
+
+I see. I'll update it.
+
+> > + * All rights reserved.
+> > + *
+> > + * Author:
+> > + *	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+> > + *
+> > + * This program is free software: you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2  of
+> > + * the License as published by the Free Software Foundation.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.
+> > + */
+> > +
+> > +#include <linux/bitops.h>
+> > +#include <linux/interrupt.h>
+> > +#include <linux/mfd/syscon.h>
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> > +#include <linux/of_device.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/regmap.h>
+> > +#include <linux/thermal.h>
+> > +
+> > +#include "thermal_core.h"
+> > +
+> > +/*
+> > + * block registers
+> > + * addresses are the offset from .block_base
+> > + */
+> > +#define PVTCTLEN				0x0000
+> > +#define PVTCTLEN_EN				BIT(0)
+> > +
+> > +#define PVTCTLMODE				0x0004
+> > +#define PVTCTLMODE_MASK				0xf
+> > +#define PVTCTLMODE_TEMPMON			0x5
+> > +
+> > +#define EMONREPEAT				0x0040
+> > +#define EMONREPEAT_ENDLESS			BIT(24)
+> > +#define EMONREPEAT_PERIOD			0xf
+> > +#define EMONREPEAT_PERIOD_1000000		0x9
+> > +
+> > +/*
+> > + * common registers
+> > + * addresses are the offset from .map_base
+> > + */
+> > +#define PVTCTLSEL				0x0900
+> > +#define PVTCTLSEL_MASK				0x7
+> > +#define PVTCTLSEL_MONITOR			0
+> > +
+> > +#define SETALERT0				0x0910
+> > +#define SETALERT1				0x0914
+> > +#define SETALERT2				0x0918
+> > +#define SETALERT_TEMP_OVF			(0xff << 16)
+> > +#define SETALERT_TEMP_OVF_VALUE(val)		(((val) & 0xff) << 16)
+> > +#define SETALERT_EN				BIT(0)
+> > +
+> > +#define PMALERTINTCTL				0x0920
+> > +#define PMALERTINTCTL_CLR(ch)			BIT(4 * (ch) + 2)
+> > +#define PMALERTINTCTL_SET(ch)			BIT(4 * (ch) + 1)
+> > +#define PMALERTINTCTL_EN(ch)			BIT(4 * (ch) + 0)
+> > +#define PMALERTINTCTL_MASK			0x777
+> > +
+> > +#define TMOD					0x0928
+> > +#define TMOD_MASK				0x1ff
+> > +
+> > +#define TMODCOEF				0x0e5c
+> > +
+> > +#define TMODSETUP0_EN				BIT(30)
+> > +#define TMODSETUP0_VAL(val)			(((val) & 0x3fff) << 16)
+> > +#define TMODSETUP1_EN				BIT(15)
+> > +#define TMODSETUP1_VAL(val)			((val) & 0x7fff)
+> > +
+> > +/* SoC critical temperature is 95 degrees Celsius */
+> > +#define CRITICAL_TEMP_LIMIT			(95 * 1000)
+> > +
+> > +/* Max # of alert channels */
+> > +#define ALERT_CH_NUM				3
+> > +
+> > +/* SoC specific thermal sensor data */
+> > +struct uniphier_tm_soc_data {
+> > +	u32 map_base;
+> > +	u32 block_base;
+> > +	u32 tmod_setup_addr;
+> > +};
+> > +
+> > +struct uniphier_tm_dev {
+> > +	struct regmap *regmap;
+> > +	bool alert_en[ALERT_CH_NUM];
+> > +	u32 tmod_calib0;
+> > +	u32 tmod_calib1;
+> > +	struct thermal_zone_device *tz_dev;
+> > +	const struct uniphier_tm_soc_data *data;
+> > +};
+> > +
+> > +static int uniphier_tm_initialize_sensor(struct uniphier_tm_dev *tdev)
+> > +{
+> > +	struct regmap *map = tdev->regmap;
+> > +	u32 val;
+> > +	int ret;
+> > +
+> > +	/* stop PVT */
+> > +	regmap_write_bits(map,
+> > +			  tdev->data->block_base + PVTCTLEN,
+> > +			  PVTCTLEN_EN, 0);
+> > +
+> > +	/*
+> > +	 * set default value if missing calibrated value
+> > +	 *
+> > +	 * Since SoC has a calibrated value that was set in advance,
+> > +	 * TMODCOEF shows non-zero and PVT refers the value internally.
+> > +	 *
+> > +	 * However, there is the case that some SoCs might not have the
+> > +	 * calibrated value. In that case, TMODCOEF shows zero and the driver
+> > +	 * has to set default value manually.
+> > +	 */
+> > +	ret = regmap_read(map, tdev->data->map_base + TMODCOEF, &val);
+> > +	if (ret)
+> > +		return ret;
+> > +	if (!val)
+> > +		regmap_write(map,
+> > +			     tdev->data->tmod_setup_addr,
+> > +			     TMODSETUP0_EN |
+> 
+> I guess the above parameter could be included in the previous line. Here
+> and else where can save a number of lines.
+> 
+> Ex: regmap_write(map, tdev->data->tmod_setup_addr, TMODSETUP0_EN |
+> 
+> Can go in a single line.
+
+OK, I'll make an effort to save a number of lines including other lines.
+
+> > +			     TMODSETUP0_VAL(tdev->tmod_calib0) |
+> > +			     TMODSETUP1_EN |
+> > +			     TMODSETUP1_VAL(tdev->tmod_calib1));
+> > +
+> > +	/* select temperature mode */
+> > +	regmap_write_bits(map,
+> > +			  tdev->data->block_base + PVTCTLMODE,
+> > +			  PVTCTLMODE_MASK,
+> > +			  PVTCTLMODE_TEMPMON);
+> > +
+> > +	/* set monitoring period */
+> > +	regmap_write_bits(map,
+> > +			  tdev->data->block_base + EMONREPEAT,
+> > +			  EMONREPEAT_ENDLESS |
+> > +			  EMONREPEAT_PERIOD,
+> > +			  EMONREPEAT_ENDLESS |
+> > +			  EMONREPEAT_PERIOD_1000000);
+> > +
+> > +	/* set monitor mode */
+> > +	regmap_write_bits(map,
+> > +			  tdev->data->map_base + PVTCTLSEL,
+> > +			  PVTCTLSEL_MASK, PVTCTLSEL_MONITOR);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static void uniphier_tm_set_alert(struct uniphier_tm_dev *tdev, u32 ch,
+> > +				  u32 temp)
+> > +{
+> > +	struct regmap *map = tdev->regmap;
+> > +
+> > +	/* set alert temperature */
+> > +	regmap_write_bits(map,
+> > +			  tdev->data->map_base + SETALERT0 + (ch << 2),
+> > +			  SETALERT_EN |
+> > +			  SETALERT_TEMP_OVF,
+> > +			  SETALERT_EN |
+> > +			  SETALERT_TEMP_OVF_VALUE(temp / 1000));
+> > +}
+> > +
+> > +static void uniphier_tm_enable_sensor(struct uniphier_tm_dev *tdev)
+> > +{
+> > +	struct regmap *map = tdev->regmap;
+> > +	int i;
+> > +	u32 bits = 0;
+> > +
+> > +	for (i = 0; i < ALERT_CH_NUM; i++)
+> > +		if (tdev->alert_en[i])
+> > +			bits |= PMALERTINTCTL_EN(i);
+> > +
+> > +	/* enable alert interrupt */
+> > +	regmap_write_bits(map,
+> > +			  tdev->data->map_base + PMALERTINTCTL,
+> > +			  PMALERTINTCTL_MASK, bits);
+> > +
+> > +	/* start PVT */
+> > +	regmap_write_bits(map,
+> > +			  tdev->data->block_base + PVTCTLEN,
+> > +			  PVTCTLEN_EN, PVTCTLEN_EN);
+> > +}
+> > +
+> > +static void uniphier_tm_disable_sensor(struct uniphier_tm_dev *tdev)
+> > +{
+> > +	struct regmap *map = tdev->regmap;
+> > +
+> > +	/* disable alert interrupt */
+> > +	regmap_write_bits(map,
+> > +			  tdev->data->map_base + PMALERTINTCTL,
+> > +			  PMALERTINTCTL_MASK, 0);
+> > +
+> > +	/* stop PVT */
+> > +	regmap_write_bits(map,
+> > +			  tdev->data->block_base + PVTCTLEN,
+> > +			  PVTCTLEN_EN, 0);
+> > +}
+> > +
+> > +static int uniphier_tm_get_temp(void *data, int *out_temp)
+> > +{
+> > +	struct uniphier_tm_dev *tdev = data;
+> > +	struct regmap *map = tdev->regmap;
+> > +	int ret;
+> > +	u32 temp;
+> > +
+> > +	ret = regmap_read(map, tdev->data->map_base + TMOD, &temp);
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	temp &= TMOD_MASK;
+> > +	*out_temp = temp * 1000;	/* millicelsius */
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static const struct thermal_zone_of_device_ops uniphier_of_thermal_ops = {
+> > +	.get_temp = uniphier_tm_get_temp,
+> > +};
+> > +
+> > +static void uniphier_tm_irq_clear(struct uniphier_tm_dev *tdev)
+> > +{
+> > +	u32 mask = 0, bits = 0;
+> > +	int i;
+> > +
+> > +	for (i = 0; i < ALERT_CH_NUM; i++) {
+> > +		mask |= (PMALERTINTCTL_CLR(i) |
+> > +			 PMALERTINTCTL_SET(i));
+> > +		bits |= PMALERTINTCTL_CLR(i);
+> > +	}
+> > +
+> > +	/* clear alert interrupt */
+> > +	regmap_write_bits(tdev->regmap,
+> > +			  tdev->data->map_base + PMALERTINTCTL, mask, bits);
+> > +}
+> > +
+> > +static irqreturn_t uniphier_tm_alarm_handler(int irq, void *_tdev)
+> > +{
+> > +	struct uniphier_tm_dev *tdev = _tdev;
+> > +
+> > +	uniphier_tm_irq_clear(tdev);
+> > +	thermal_zone_device_update(tdev->tz_dev, THERMAL_EVENT_UNSPECIFIED);
+> > +
+> > +	return IRQ_HANDLED;
+> > +}
+> > +
+> > +static int uniphier_tm_probe(struct platform_device *pdev)
+> > +{
+> > +	struct device *dev = &pdev->dev;
+> > +	struct regmap *regmap;
+> > +	struct device_node *parent;
+> > +	struct uniphier_tm_dev *tdev;
+> > +	const struct thermal_trip *trips;
+> > +	const u32 *calib;
+> > +	int i, ret, irq, ntrips, crit_temp = INT_MAX;
+> > +
+> > +	tdev = devm_kzalloc(dev, sizeof(*tdev), GFP_KERNEL);
+> > +	if (!tdev)
+> > +		return -ENOMEM;
+> > +
+> > +	tdev->data = of_device_get_match_data(dev);
+> > +	if (WARN_ON(!tdev->data))
+> > +		return -EINVAL;
+> > +
+> > +	/* get irq */
+> > +	irq = platform_get_irq(pdev, 0);
+> > +	if (irq < 0)
+> > +		return irq;
+> > +
+> > +	/* get tmod-calibration values */
+> > +	calib = of_get_property(dev->of_node, "socionext,tmod-calibration",
+> > +				NULL);
+> > +	if (calib) {
+> > +		tdev->tmod_calib0 = of_read_number(calib, 1);
+> > +		tdev->tmod_calib1 = of_read_number(calib + 1, 1);
+> > +	}
+> > +
+> > +	/* get regmap from syscon node */
+> > +	parent = of_get_parent(dev->of_node); /* parent should be syscon node */
+> > +	regmap = syscon_node_to_regmap(parent);
+> > +	of_node_put(parent);
+> > +	if (IS_ERR(regmap)) {
+> > +		dev_err(dev, "failed to get regmap (error %ld)\n",
+> > +			PTR_ERR(regmap));
+> > +		return PTR_ERR(regmap);
+> > +	}
+> > +	tdev->regmap = regmap;
+> > +
+> > +	/* register sensor */
+> > +	tdev->tz_dev = devm_thermal_zone_of_sensor_register(dev, 0, tdev,
+> > +						&uniphier_of_thermal_ops);
+> > +	if (IS_ERR(tdev->tz_dev)) {
+> > +		dev_err(dev, "failed to register sensor device\n");
+> > +		return PTR_ERR(tdev->tz_dev);
+> > +	}
+> > +
+> > +	/* get trip points */
+> > +	trips = of_thermal_get_trip_points(tdev->tz_dev);
+> > +	ntrips = of_thermal_get_ntrips(tdev->tz_dev);
+> > +	if (ntrips > ALERT_CH_NUM) {
+> > +		dev_err(dev, "thermal zone has too many trips\n");
+> > +		return -E2BIG;
+> > +	}
+> > +
+> > +	/* initialize sensor */
+> > +	ret = uniphier_tm_initialize_sensor(tdev);
+> > +	if (ret) {
+> > +		dev_err(dev, "failed to initialize sensor\n");
+> > +		return ret;
+> > +	}
+> > +	for (i = 0; i < ntrips; i++) {
+> > +		if (trips[i].type == THERMAL_TRIP_CRITICAL &&
+> > +		    trips[i].temperature < crit_temp)
+> > +			crit_temp = trips[i].temperature;
+> > +		uniphier_tm_set_alert(tdev, i, trips[i].temperature);
+> > +		tdev->alert_en[i] = true;
+> > +	}
+> > +	if (crit_temp > CRITICAL_TEMP_LIMIT) {
+> > +		dev_err(dev, "critical trip is over limit(>%d), or not set\n",
+> > +			CRITICAL_TEMP_LIMIT);
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	ret = devm_request_irq(dev, irq, uniphier_tm_alarm_handler,
+> > +			       0, "thermal", tdev);
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	/* enable sensor */
+> > +	uniphier_tm_enable_sensor(tdev);
+> > +
+> > +	platform_set_drvdata(pdev, tdev);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int uniphier_tm_remove(struct platform_device *pdev)
+> > +{
+> > +	struct uniphier_tm_dev *tdev = platform_get_drvdata(pdev);
+> > +
+> > +	/* disable sensor */
+> > +	uniphier_tm_disable_sensor(tdev);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static const struct uniphier_tm_soc_data uniphier_pxs2_tm_data = {
+> > +	.map_base        = 0xe000,
+> > +	.block_base      = 0xe000,
+> > +	.tmod_setup_addr = 0xe904,
+> > +};
+> > +
+> > +static const struct uniphier_tm_soc_data uniphier_ld20_tm_data = {
+> > +	.map_base        = 0xe000,
+> > +	.block_base      = 0xe800,
+> > +	.tmod_setup_addr = 0xe938,
+> > +};
+> > +
+> > +static const struct of_device_id uniphier_tm_dt_ids[] = {
+> > +	{
+> > +		.compatible = "socionext,uniphier-pxs2-thermal",
+> > +		.data       = &uniphier_pxs2_tm_data,
+> > +	},
+> > +	{
+> > +		.compatible = "socionext,uniphier-ld20-thermal",
+> > +		.data       = &uniphier_ld20_tm_data,
+> > +	},
+> > +	{ /* sentinel */ }
+> > +};
+> > +MODULE_DEVICE_TABLE(of, uniphier_tm_dt_ids);
+> > +
+> > +static struct platform_driver uniphier_tm_driver = {
+> > +	.probe = uniphier_tm_probe,
+> > +	.remove = uniphier_tm_remove,
+> > +	.driver = {
+> > +		.name = "uniphier-thermal",
+> > +		.of_match_table = uniphier_tm_dt_ids,
+> > +	},
+> > +};
+> > +module_platform_driver(uniphier_tm_driver);
+> > +
+> > +MODULE_AUTHOR("Kunihiko Hayashi <hayashi.kunihiko@socionext.com>");
+> > +MODULE_DESCRIPTION("UniPhier thermal driver");
+> > +MODULE_LICENSE("GPL v2");
+> > 
+
+
+Best Regards,
+Kunihiko Hayashi
