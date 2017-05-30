@@ -1,132 +1,73 @@
-From: Kunihiko Hayashi <hayashi.kunihiko-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
-Subject: Re: [PATCH 3/4] ARM: dts: uniphier: add nodes of thermal monitor and thermal zone for PXs2
-Date: Tue, 30 May 2017 18:25:51 +0900
-Message-ID: <20170530182550.6869.4A936039@socionext.com>
-References: <1496049345-14649-4-git-send-email-hayashi.kunihiko@socionext.com> <20170529163007.GA14413@localhost.localdomain>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/3] regmap: Add OneWire (W1) bus support
+Date: Tue, 30 May 2017 12:50:40 +0100
+Message-ID: <20170530115040.awy7y5rv7ouub6k6@sirena.org.uk>
+References: <20170528071120.6604-1-minimumlaw@rambler.ru>
+ <20170528071120.6604-2-minimumlaw@rambler.ru>
+ <20170529131346.gsauzllpplc2e7vy@sirena.org.uk>
+ <f4efbd7b-6b65-1344-dc36-8695d1d451e8@rambler.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170529163007.GA14413-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, yamada.masahiro-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org, masami.hiramatsu-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, jaswinder.singh-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="nds5slbqgqkx5d5t"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <f4efbd7b-6b65-1344-dc36-8695d1d451e8@rambler.ru>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo,
-Thank you for your comment.
 
-On Mon, 29 May 2017 09:30:09 -0700 Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+--nds5slbqgqkx5d5t
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, May 29, 2017 at 06:15:44PM +0900, Kunihiko Hayashi wrote:
-> > Add nodes of thermal monitor and thermal zone for UniPhier PXs2 SoC.
-> > The thermal monitor is included in sysctrl.
-> > 
-> > Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko-uWyLwvC0a2jby3iVrkZq2A@public.gmane.org>
-> > ---
-> >  arch/arm/boot/dts/uniphier-pxs2-gentil.dts | 21 +++++++++++++++++++++
-> >  arch/arm/boot/dts/uniphier-pxs2-vodka.dts  | 21 +++++++++++++++++++++
-> >  arch/arm/boot/dts/uniphier-pxs2.dtsi       |  6 ++++++
-> >  3 files changed, 48 insertions(+)
-> > 
-> > diff --git a/arch/arm/boot/dts/uniphier-pxs2-gentil.dts b/arch/arm/boot/dts/uniphier-pxs2-gentil.dts
-> > index 373818a..89ccb88 100644
-> > --- a/arch/arm/boot/dts/uniphier-pxs2-gentil.dts
-> > +++ b/arch/arm/boot/dts/uniphier-pxs2-gentil.dts
-> > @@ -70,6 +70,27 @@
-> >  		i2c5 = &i2c5;
-> >  		i2c6 = &i2c6;
-> >  	};
-> > +
-> > +	thermal-zones {
-> > +		cpu_thermal {
-> > +			polling-delay-passive = <250>;	/* 250ms */
-> > +			polling-delay = <1000>;		/* 1000ms */
-> > +			thermal-sensors = <&pvtctl>;
-> > +
-> > +			trips {
-> > +				cpu_crit: cpu_crit {
-> > +					temperature = <95000>;	/* 95C */
-> > +					hysteresis = <2000>;
-> > +					type = "critical";
-> > +				};
-> > +				cpu_alert: cpu_alert {
-> > +					temperature = <85000>;	/* 85C */
-> > +					hysteresis = <2000>;
-> > +					type = "passive";
-> > +				};
-> > +			};
-> These are missing cooling-maps section.
+On Mon, May 29, 2017 at 07:37:58PM +0300, Alex A. Mihaylov wrote:
+> 29.05.17 16:13, Mark Brown =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
 
-I see. I'll add the section including another nodes.
+> > I asked you to move the error handling into the else case in these :(
 
-> > +		};
-> > +	};
-> >  };
-> >  
-> >  &serial2 {
-> > diff --git a/arch/arm/boot/dts/uniphier-pxs2-vodka.dts b/arch/arm/boot/dts/uniphier-pxs2-vodka.dts
-> > index 51a3eac..0201584 100644
-> > --- a/arch/arm/boot/dts/uniphier-pxs2-vodka.dts
-> > +++ b/arch/arm/boot/dts/uniphier-pxs2-vodka.dts
-> > @@ -68,6 +68,27 @@
-> >  		i2c5 = &i2c5;
-> >  		i2c6 = &i2c6;
-> >  	};
-> > +
-> > +	thermal-zones {
-> > +		cpu_thermal {
-> > +			polling-delay-passive = <250>;	/* 250ms */
-> > +			polling-delay = <1000>;		/* 1000ms */
-> > +			thermal-sensors = <&pvtctl>;
-> > +
-> > +			trips {
-> > +				cpu_crit: cpu_crit {
-> > +					temperature = <95000>;	/* 95C */
-> > +					hysteresis = <2000>;
-> > +					type = "critical";
-> > +				};
-> > +				cpu_alert: cpu_alert {
-> > +					temperature = <85000>;	/* 85C */
-> > +					hysteresis = <2000>;
-> > +					type = "passive";
-> > +				};
-> > +			};
-> 
-> same
-> 
-> > +		};
-> > +	};
-> >  };
-> >  
-> >  &serial2 {
-> > diff --git a/arch/arm/boot/dts/uniphier-pxs2.dtsi b/arch/arm/boot/dts/uniphier-pxs2.dtsi
-> > index e9e031d..072e3b4 100644
-> > --- a/arch/arm/boot/dts/uniphier-pxs2.dtsi
-> > +++ b/arch/arm/boot/dts/uniphier-pxs2.dtsi
-> > @@ -387,6 +387,12 @@
-> >  				compatible = "socionext,uniphier-pxs2-reset";
-> >  				#reset-cells = <1>;
-> >  			};
-> > +
-> > +			pvtctl: pvtctl {
-> > +				compatible = "socionext,uniphier-pxs2-thermal";
-> > +				interrupts = <0 3 1>;
-> > +				#thermal-sensor-cells = <0>;
-> > +			};
-> >  		};
-> >  	};
-> >  };
-> > -- 
-> > 2.7.4
-> > 
+> Why do you want to see exactly the construction of if/else?
 
-Best Regards,
-Kunihiko Hayashi
+I want to see some error handling in the lock so it doesn't look like
+it's missing, especially since this is the unusual pattern of "mark it
+as OK in an if statement then carry on running".  The code pattern is
+too unusual and there's too much code and blank space between the ret =3D
+0 meaning it takes too much effort to slow down and check that there's
+not a bug.
 
+> I already wrote that for me this will worsen the quality and understanding
+> of the code. And another point - in fact it is not an error handler. This=
+ is
+> a completely normal and permissible situation. There is no "disconnect"
 
+It's an error.  It may be an expected and recoverable error but as far
+as this write is concerned it's an error.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I can see this pattern in other kernel place, like:
+> drivers/usb/musb/da8xx.c line 374
+
+This one for example looks like normal code - it's jumping to error in
+the error handling cases, the success case is a normal direct return
+with the error cases in the if checks and there's multiple conditions
+that could trigger an error.  You need to get out of the locked region
+so you have limited options but only have one conditional, moving the
+assignment inside the else seems like the clearest.
+
+--nds5slbqgqkx5d5t
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlktXJAACgkQJNaLcl1U
+h9DNVgf8Cm0qwrTg1lrdAfqP0nk+L5qD9G1BZ1EyPoR5Ern/yShnX80NrBIkluxC
+hoUFdTNvvCEUXutJfRVi4eNXk6ML7crTsa5E2n+yTpfQc2XyComjslbqrkbMOUWc
+8guZNJeiBqtNw992aSP/rNxuiuBDtjGnSwWxq/khSjQqXkX7Eilz2DvsxDm3YfaJ
+3I3mEAbNuOfvi9hQ72FdkqKoboa5SQsU38I3L/hX6EINhzD8dQFU2l6smmY2TW8Y
+1KACdX8tJqcVETUmp/Unc+H+63P0zfFYtDu6zVu38+OIse/k6pIYY0HCFENx6PYU
+vwATsWPTmRHFFrkT1ULNUgs3V/1P6Q==
+=zk03
+-----END PGP SIGNATURE-----
+
+--nds5slbqgqkx5d5t--
