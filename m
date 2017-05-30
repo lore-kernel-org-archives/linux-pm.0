@@ -1,38 +1,63 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH 2/2] Input: pm8941-pwrkey: Introduce reboot mode support
-Date: Mon, 29 May 2017 21:47:11 -0700
-Message-ID: <20170530044711.GP12920@tuxbook>
-References: <20170527065130.3456-1-bjorn.andersson@linaro.org>
- <20170527065130.3456-2-bjorn.andersson@linaro.org>
- <20170530025324.GD32841@dtor-ws>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: [GIT PULL] Immutable branch between MFD, GPIO, Thermal and X86 due
+ for the v4.13 merge window
+Date: Tue, 30 May 2017 09:53:06 +0100
+Message-ID: <20170530085306.s4hlijutbz7gp3ay@dell>
+References: <20170523072615.r4widzjc6apwxpwb@dell>
+ <75e12563a835dc4f8e8dab26ecea46822262604b.1495559980.git.sathyanarayanan.kuppuswamy@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170530025324.GD32841@dtor-ws>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, John Stultz <john.stultz@linaro.org>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+In-Reply-To: <75e12563a835dc4f8e8dab26ecea46822262604b.1495559980.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: sathyanarayanan.kuppuswamy@linux.intel.com
+Cc: gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, andy@infradead.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 29 May 19:53 PDT 2017, Dmitry Torokhov wrote:
+Dear fellow Maintainers,
 
-> On Fri, May 26, 2017 at 11:51:30PM -0700, Bjorn Andersson wrote:
-> > In some Qualcomm platforms the magic for informing LK which mode to
-> > reboot into is stored in the PON_SOFT_RB_SPARE register. Register with
-> > the reboot mode helpers to expose this to the user.
-> 
-> Hmm, is the power key driver the best place to have this? WHy isn't this
-> a driver in its own right?
-> 
+Enjoy!
 
-The functionality is part of the "PON" block in the Qualcomm PMICs,
-other functionality from this block relates to configuration and
-handling related to power-key and reset-key.
+The following changes since commit 2ea659a9ef488125eb46da6eb571de5eae5c43f6:
 
-Several of these properties are intermingled, so I do believe it's best
-to handle them in a single driver; that said, it might no longer be
-correct to name the driver "pwrkey" or that it is a "misc input" driver.
+  Linux 4.12-rc1 (2017-05-13 13:19:49 -0700)
 
-Regards,
-Bjorn
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/ib-mfd-gpio-thermal-x86-v4.13
+
+for you to fetch changes up to 6aa60f67c11c10540e43bbe5a6377f7a0231501e:
+
+  platform: x86: intel_bxtwc_tmu: remove first level irq unmask (2017-05-30 09:34:08 +0100)
+
+----------------------------------------------------------------
+Immutable branch between MFD, GPIO, Thermal and X86 due for the v4.13 merge window
+
+----------------------------------------------------------------
+Kuppuswamy Sathyanarayanan (8):
+      mfd: intel_soc_pmic_bxtwc: Fix TMU interrupt index
+      mfd: intel_soc_pmic_bxtwc: Remove thermal second level irqs
+      thermal: intel_bxt_pmic_thermal: use first level PMIC thermal irq
+      mfd: intel_soc_pmic_bxtwc: Remove second level irq for gpio device
+      gpio: gpio-wcove: use first level PMIC GPIO irq
+      mfd: intel_soc_pmic_bxtwc: Utilize devm_* functions in driver probe
+      mfd: intel_soc_pmic_bxtwc: Use chained irqs for second level irq chips
+      platform: x86: intel_bxtwc_tmu: remove first level irq unmask
+
+ drivers/gpio/gpio-wcove.c                |  14 +-
+ drivers/mfd/intel_soc_pmic_bxtwc.c       | 234 ++++++++++++++++++++-----------
+ drivers/platform/x86/intel_bxtwc_tmu.c   |   4 -
+ drivers/thermal/intel_bxt_pmic_thermal.c |   2 +-
+ include/linux/mfd/intel_soc_pmic.h       |   5 +-
+ 5 files changed, 174 insertions(+), 85 deletions(-)
+
+Kind regards,
+Lee
+
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
