@@ -1,90 +1,65 @@
 From: Johan Hovold <johan@kernel.org>
-Subject: [PATCH 0/7] driver core/USB/thermal: fix device-tree node reuse
-Date: Tue, 30 May 2017 18:25:47 +0200
-Message-ID: <20170530162554.26159-1-johan@kernel.org>
+Subject: [PATCH 4/7] driver core: fix automatic pinctrl management
+Date: Tue, 30 May 2017 18:25:51 +0200
+Message-ID: <20170530162554.26159-5-johan@kernel.org>
+References: <20170530162554.26159-1-johan@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:35651 "EHLO
-        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751090AbdE3Q0y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2017 12:26:54 -0400
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:33650 "EHLO
+        mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751067AbdE3Q1B (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2017 12:27:01 -0400
+In-Reply-To: <20170530162554.26159-1-johan@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@freescale.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>
 
-This series fixes a few issues related to device-tree node reuse.
+Commit ab78029ecc34 ("drivers/pinctrl: grab default handles from device
+core") added automatic pin-control management to driver core by looking
+up and setting any default pinctrl state found in device tree while a
+device is being probed.
 
-It is fairly common for drivers to reuse the device-tree node of a
-parent (or other ancestor) device when creating class or bus devices
-(e.g. gpio chips, i2c adapters, iio chips, spi masters, serdev, phys,
-usb root hubs). But reusing a device-tree node may cause problems *if*
-the new device is later probed as for example driver core would
-currently attempt to reinitialise an already active associated pinmux
-configuration.
+This obviously runs into problems as soon as device-tree nodes are
+reused for child devices which are later also probed as pins would
+already have been claimed by the ancestor device.
 
-[ NB: For most examples above this is currently not a problem as the
-devices reusing a node are never probed. ]
+For example if a USB host controller claims a pin, its root hub would
+consequently fail to probe when its device-tree node is set to the node
+of the controller:
 
-Other potential issues include the platform-bus code unconditionally
-dropping the device-tree-node reference in its device destructor,
-reinitialisation of other bus-managed resources such as clocks, and
-(possibly) the recently added DMA-setup in driver core.
+    pinctrl-single 48002030.pinmux: pin PIN204 already requested by 48064800.ehci; cannot claim for usb1
+    pinctrl-single 48002030.pinmux: pin-204 (usb1) status -22
+    pinctrl-single 48002030.pinmux: could not request pin 204 (PIN204) from group usb_dbg_pins  on device pinctrl-single
+    usb usb1: Error applying setting, reverse things back
+    usb: probe of usb1 failed with error -22
 
-Instead of having drivers try to work around this (as is currently done
-for USB root hubs), we can allow devices to reuse a device-tree node by
-setting a flag in their struct device that can be used by core, bus and
-driver code to avoid resources from being over-allocated.
+Fix this by checking the new of_node_reused flag and skipping automatic
+pinctrl configuration during probe if set.
 
-The first two patches fix a device-tree node reference leak for
-non-root-hub devices in USB. These were submitted yesterday to the USB
-list, but are included here for completeness.
+Note that the flag is checked in driver core rather than in pinctrl
+(e.g. in pinctrl_dt_to_map()) which would specifically have prevented
+intentional use of a parent's pinctrl properties by a child device
+(should such a need ever arise).
 
-The third and fourth patches add a helper that can be used when reusing
-a device-tree node of another device and that specifically sets a new
-of_node_reused flag which is then used by driver core to skip the
-automatic pinctrl configuration during probe.
+Fixes: ab78029ecc34 ("drivers/pinctrl: grab default handles from device core")
+Signed-off-by: Johan Hovold <johan@kernel.org>
+---
+ drivers/base/pinctrl.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-The fifth patch removes the pinctrl over-allocation workaround from USB
-core, which also had some undesirable side-effects.
-
-The final two patches fix a device-tree node imbalance and
-use-after-free in an thermal driver, where a platform device was reusing
-the device-tree node of its parent mfd during probe. This would also
-prevent the child device from being reprobed (e.g. due to probe
-deferral) if the parent node defines a pinctrl configuration.
-
-Note that this series is against 4.12-rc3.
-
-For reference, here is a list of relevant commits leading up to the
-current situation:
-
- - [2013-01-22] ab78029ecc34 ("drivers/pinctrl: grab default handles from device core")
- - [2016-02-19] 69bec7259853 ("USB: core: let USB device know device node")
- - [2016-04-25] dc5878abf49c ("usb: core: move root hub's device node assignment after it is added to bus")
- - [2016-10-06] 51fa91475e43 ("usb/core: Added devspec sysfs entry for devices behind the usb hub")
- - [2017-03-13] a8c06e407ef9 ("usb: separate out sysdev pointer from usb_bus")
- - [2017-04-10] 09515ef5ddad ("of/acpi: Configure dma operations at probe time for platform/amba/pci bus devices")
-
-Johan
-
-
-Johan Hovold (7):
-  USB: core: fix device node leak
-  USB: of: document reference taken by child-lookup helper
-  driver core: add helper to reuse a device-tree node
-  driver core: fix automatic pinctrl management
-  USB: of: fix root-hub device-tree node handling
-  thermal: max77620: fix device-node reference imbalance
-  thermal: max77620: fix pinmux conflict on reprobe
-
- drivers/base/core.c                | 16 ++++++++++++++++
- drivers/base/pinctrl.c             |  3 +++
- drivers/thermal/max77620_thermal.c |  8 ++++++--
- drivers/usb/core/hcd.c             |  2 --
- drivers/usb/core/of.c              |  3 +++
- drivers/usb/core/usb.c             |  2 ++
- include/linux/device.h             |  2 ++
- 7 files changed, 32 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/base/pinctrl.c b/drivers/base/pinctrl.c
+index 5917b4b5fb99..eb929dd6ef1e 100644
+--- a/drivers/base/pinctrl.c
++++ b/drivers/base/pinctrl.c
+@@ -23,6 +23,9 @@ int pinctrl_bind_pins(struct device *dev)
+ {
+ 	int ret;
+ 
++	if (dev->of_node_reused)
++		return 0;
++
+ 	dev->pins = devm_kzalloc(dev, sizeof(*(dev->pins)), GFP_KERNEL);
+ 	if (!dev->pins)
+ 		return -ENOMEM;
 -- 
 2.13.0
