@@ -1,122 +1,90 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: [RFC] cpuidle: menu: nearby timer use lightest state; allow state 0 to be disabled
-Date: Wed, 31 May 2017 02:26:31 +1000
-Message-ID: <20170530162631.9073-1-npiggin@gmail.com>
+From: Johan Hovold <johan@kernel.org>
+Subject: [PATCH 0/7] driver core/USB/thermal: fix device-tree node reuse
+Date: Tue, 30 May 2017 18:25:47 +0200
+Message-ID: <20170530162554.26159-1-johan@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:33406 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751063AbdE3Q0n (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2017 12:26:43 -0400
-Received: by mail-pf0-f196.google.com with SMTP id f27so19019239pfe.0
-        for <linux-pm@vger.kernel.org>; Tue, 30 May 2017 09:26:42 -0700 (PDT)
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:35651 "EHLO
+        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751090AbdE3Q0y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 May 2017 12:26:54 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@freescale.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>
 
-I've found the menu driver does not allow state0 to properly be disabled
-because of all this poll logic selecting the first state and then trying
-to iterate over subsequent states. Ripping most of that out and simplifying
-it solved that issue but raised more questions about polling logic.
+This series fixes a few issues related to device-tree node reuse.
 
-Firstly polling logic is there only on architectures which define
-ARCH_HAS_CPU_RELAX, which is only x86. Seems like if we think a
-timer is so close that no powersave should be done, then surely just
-picking the lightest mode (whether that is polling or something else)
-would be best.
+It is fairly common for drivers to reuse the device-tree node of a
+parent (or other ancestor) device when creating class or bus devices
+(e.g. gpio chips, i2c adapters, iio chips, spi masters, serdev, phys,
+usb root hubs). But reusing a device-tree node may cause problems *if*
+the new device is later probed as for example driver core would
+currently attempt to reinitialise an already active associated pinmux
+configuration.
 
-But looking further into it, it seems maybe like some x86 hack (as
-the comments and changelog in 7884084f3bcc and subsequent attempts to
-work around Atom and broken firmware suggests). I would have thought
-such broken hard/firmware should get workarounds applied to fix the
-state values rather than add such logic?
+[ NB: For most examples above this is currently not a problem as the
+devices reusing a node are never probed. ]
 
-On the other hand, if (CPUIDLE_DRIVER_STATE_START > 0) is shorthand for
-if (x86 hacks), that's fine I'm happy to leave that alone and just work
-with the else parts...
+Other potential issues include the platform-bus code unconditionally
+dropping the device-tree-node reference in its device destructor,
+reinitialisation of other bus-managed resources such as clocks, and
+(possibly) the recently added DMA-setup in driver core.
 
-This is just a draft, but it does what I want at least with regard to
-disabling state0 for testing.
+Instead of having drivers try to work around this (as is currently done
+for USB root hubs), we can allow devices to reuse a device-tree node by
+setting a flag in their struct device that can be used by core, bus and
+driver code to avoid resources from being over-allocated.
 
-Thanks,
-Nick
+The first two patches fix a device-tree node reference leak for
+non-root-hub devices in USB. These were submitted yesterday to the USB
+list, but are included here for completeness.
 
----
- drivers/cpuidle/governors/menu.c | 25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
+The third and fourth patches add a helper that can be used when reusing
+a device-tree node of another device and that specifically sets a new
+of_node_reused flag which is then used by driver core to skip the
+automatic pinctrl configuration during probe.
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index b2330fd69e34..05de5d345ac7 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -286,6 +286,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 	struct device *device = get_cpu_device(dev->cpu);
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
- 	int i;
-+	int first_idx;
-+	int idx;
- 	unsigned int interactivity_req;
- 	unsigned int expected_interval;
- 	unsigned long nr_iowaiters, cpu_load;
-@@ -318,7 +320,6 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 	data->predicted_us = DIV_ROUND_CLOSEST_ULL((uint64_t)data->next_timer_us *
- 					 data->correction_factor[data->bucket],
- 					 RESOLUTION * DECAY);
--
- 	expected_interval = get_typical_interval(data);
- 	expected_interval = min(expected_interval, data->next_timer_us);
- 
-@@ -327,19 +328,19 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 		unsigned int polling_threshold;
- 
- 		/*
--		 * We want to default to C1 (hlt), not to busy polling
--		 * unless the timer is happening really really soon, or
--		 * C1's exit latency exceeds the user configured limit.
-+		 * x86 wants to avoid busy polling unless the timer is
-+		 * happening really really soon, or C1's exit latency exceeds
-+		 * the uesr configured limit.
- 		 */
- 		polling_threshold = max_t(unsigned int, 20, s->target_residency);
- 		if (data->next_timer_us > polling_threshold &&
- 		    latency_req > s->exit_latency && !s->disabled &&
- 		    !dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable)
--			data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
-+			first_idx = CPUIDLE_DRIVER_STATE_START;
- 		else
--			data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
-+			first_idx = CPUIDLE_DRIVER_STATE_START - 1;
- 	} else {
--		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
-+		first_idx = 0;
- 	}
- 
- 	/*
-@@ -359,7 +360,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 	 * Find the idle state with the lowest power while satisfying
- 	 * our constraints.
- 	 */
--	for (i = data->last_state_idx + 1; i < drv->state_count; i++) {
-+	idx = -1;
-+	for (i = first_idx; i < drv->state_count; i++) {
- 		struct cpuidle_state *s = &drv->states[i];
- 		struct cpuidle_state_usage *su = &dev->states_usage[i];
- 
-@@ -370,9 +372,14 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 		if (s->exit_latency > latency_req)
- 			break;
- 
--		data->last_state_idx = i;
-+		idx = i;
- 	}
- 
-+	if (idx == -1) /* no states */
-+		idx = 0;
-+
-+	data->last_state_idx = idx;
-+
- 	return data->last_state_idx;
- }
- 
+The fifth patch removes the pinctrl over-allocation workaround from USB
+core, which also had some undesirable side-effects.
+
+The final two patches fix a device-tree node imbalance and
+use-after-free in an thermal driver, where a platform device was reusing
+the device-tree node of its parent mfd during probe. This would also
+prevent the child device from being reprobed (e.g. due to probe
+deferral) if the parent node defines a pinctrl configuration.
+
+Note that this series is against 4.12-rc3.
+
+For reference, here is a list of relevant commits leading up to the
+current situation:
+
+ - [2013-01-22] ab78029ecc34 ("drivers/pinctrl: grab default handles from device core")
+ - [2016-02-19] 69bec7259853 ("USB: core: let USB device know device node")
+ - [2016-04-25] dc5878abf49c ("usb: core: move root hub's device node assignment after it is added to bus")
+ - [2016-10-06] 51fa91475e43 ("usb/core: Added devspec sysfs entry for devices behind the usb hub")
+ - [2017-03-13] a8c06e407ef9 ("usb: separate out sysdev pointer from usb_bus")
+ - [2017-04-10] 09515ef5ddad ("of/acpi: Configure dma operations at probe time for platform/amba/pci bus devices")
+
+Johan
+
+
+Johan Hovold (7):
+  USB: core: fix device node leak
+  USB: of: document reference taken by child-lookup helper
+  driver core: add helper to reuse a device-tree node
+  driver core: fix automatic pinctrl management
+  USB: of: fix root-hub device-tree node handling
+  thermal: max77620: fix device-node reference imbalance
+  thermal: max77620: fix pinmux conflict on reprobe
+
+ drivers/base/core.c                | 16 ++++++++++++++++
+ drivers/base/pinctrl.c             |  3 +++
+ drivers/thermal/max77620_thermal.c |  8 ++++++--
+ drivers/usb/core/hcd.c             |  2 --
+ drivers/usb/core/of.c              |  3 +++
+ drivers/usb/core/usb.c             |  2 ++
+ include/linux/device.h             |  2 ++
+ 7 files changed, 32 insertions(+), 4 deletions(-)
+
 -- 
-2.11.0
+2.13.0
