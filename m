@@ -1,40 +1,59 @@
-From: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 3/7] driver core: add helper to reuse a device-tree node
-Date: Wed, 31 May 2017 10:38:08 +0200
-Message-ID: <20170531083808.GE6735@localhost>
-References: <20170530162554.26159-4-johan@kernel.org>
- <201705310637.M1OKh99R%fengguang.wu@intel.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH 2/3] RTC: rtc-cmos: Fix wakeup from suspend-to-idle
+Date: Wed, 31 May 2017 11:21:55 +0200
+Message-ID: <20170531092155.ofhimzxatz4kqbul@piout.net>
+References: <2169867.RZcCZmJK9B@aspire.rjw.lan>
+ <31830983.Z4sGoD3BOE@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <201705310637.M1OKh99R%fengguang.wu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: kbuild test robot <lkp-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, kbuild-all-JC7UmRfGjtg@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <31830983.Z4sGoD3BOE@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, David Box <david.e.box@linux.intel.com>, Alessandro Zummo <a.zummo@towertech.it>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 31, 2017 at 06:52:39AM +0800, kbuild test robot wrote:
-> Hi Johan,
-> 
-> [auto build test WARNING on usb/usb-testing]
-> [also build test WARNING on v4.12-rc3 next-20170530]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Johan-Hovold/driver-core-USB-thermal-fix-device-tree-node-reuse/20170531-043026
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git usb-testing
-> reproduce: make htmldocs
-> 
-> All warnings (new ones prefixed by >>):
+Hi Rafael,
 
-> >> include/linux/device.h:970: warning: No description found for parameter 'of_node_reused'
+On 14/05/2017 at 01:55:32 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Commit eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from
+> suspend-to-idle) modified the core suspend-to-idle code to filter
+> out spurious SCI interrupts received while suspended, which requires
+> ACPI event source handlers to report wakeup events in a way that
+> will trigger a wakeup from suspend to idle (or abort system suspends
+> in progress, which is equivalent).
+> 
+> That needs to be done in the rtc-cmos driver too, which was overlooked
+> by the above commit, so do that now.
+> 
+> Fixes: eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle)
+> Reported-by: David E. Box <david.e.box@linux.intel.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/rtc/rtc-cmos.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-pm/drivers/rtc/rtc-cmos.c
+> ===================================================================
+> --- linux-pm.orig/drivers/rtc/rtc-cmos.c
+> +++ linux-pm/drivers/rtc/rtc-cmos.c
+> @@ -1085,7 +1085,7 @@ static u32 rtc_handler(void *context)
+>  	}
+>  	spin_unlock_irqrestore(&rtc_lock, flags);
+>  
+> -	pm_wakeup_event(dev, 0);
+> +	pm_wakeup_hard_event(dev);
+>  	acpi_clear_event(ACPI_EVENT_RTC);
+>  	acpi_disable_event(ACPI_EVENT_RTC, 0);
+>  	return ACPI_INTERRUPT_HANDLED;
+> 
 
-Forgot to update the kernel docs here. Will fix this in a v2 after
-addressing any further comments.
+This seems good to me, do you expect it to go through my tree?
 
-Thanks,
-Johan
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
