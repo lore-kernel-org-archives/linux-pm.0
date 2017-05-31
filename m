@@ -1,7 +1,7 @@
 From: sathyanarayanan.kuppuswamy@linux.intel.com
-Subject: [PATCH v5 8/8] platform/x86: intel_bxtwc_tmu: Remove first level irq unmask
-Date: Wed, 31 May 2017 15:37:16 -0700
-Message-ID: <c0439bf64b2eeef807b6197066dbf6118ca09b5e.1496266871.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: [PATCH v5 5/8] gpio: gpio-wcove: Use first level PMIC GPIO irq
+Date: Wed, 31 May 2017 15:37:13 -0700
+Message-ID: <5490d3e89249bfa9edc219ff83055ab457c8b6ea.1496266871.git.sathyanarayanan.kuppuswamy@linux.intel.com>
 References: <20170531070225.bymdhhpclidwwtpt@dell>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170531070225.bymdhhpclidwwtpt@dell>
@@ -14,44 +14,58 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 
-Currently in WCOVE PMIC mfd driver, all second level irq chips
-are chained to the respective first level irqs. So there is no
-need for explicitly unmasking the first level irq in this
-driver. This patches removes this level 1 irq unmask support.
+PMIC mfd driver only exports first level irq for GPIO device.
+But currently we are reading the irqs from the second level irq
+chip, So this patch fixes this issue by adding support to use
+first level PMIC GPIO irq.
 
 Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Reviewed-by: Darren Hart (VMware) <dvhart@infradead.org>
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/platform/x86/intel_bxtwc_tmu.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/gpio/gpio-wcove.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
 Changes since v1:
- * None
+ * used correct mask for GPIO0 and GPIO1 interrupts
 
-Changes since v2:
+Changes since v2: 
  * Rebased on top of latest release.
+ * Removed IRQ0 and IRQ1 mask defines.
 
 Changes since v3:
  * None
 
-Changes since v4:
- * Changed commit subject from "platform: x86:" "to platform/x86:"
-
-diff --git a/drivers/platform/x86/intel_bxtwc_tmu.c b/drivers/platform/x86/intel_bxtwc_tmu.c
-index e202abd..ea865d4 100644
---- a/drivers/platform/x86/intel_bxtwc_tmu.c
-+++ b/drivers/platform/x86/intel_bxtwc_tmu.c
-@@ -92,10 +92,6 @@ static int bxt_wcove_tmu_probe(struct platform_device *pdev)
- 	}
- 	wctmu->irq = virq;
+diff --git a/drivers/gpio/gpio-wcove.c b/drivers/gpio/gpio-wcove.c
+index 7b1bc20..bba7704 100644
+--- a/drivers/gpio/gpio-wcove.c
++++ b/drivers/gpio/gpio-wcove.c
+@@ -401,7 +401,7 @@ static int wcove_gpio_probe(struct platform_device *pdev)
+ 	if (!wg)
+ 		return -ENOMEM;
  
--	/* Enable TMU interrupts */
--	regmap_update_bits(wctmu->regmap, BXTWC_MIRQLVL1,
--				  BXTWC_MIRQLVL1_MTMU, 0);
--
- 	/* Unmask TMU second level Wake & System alarm */
- 	regmap_update_bits(wctmu->regmap, BXTWC_MTMUIRQ_REG,
- 				  BXTWC_TMU_ALRM_MASK, 0);
+-	wg->regmap_irq_chip = pmic->irq_chip_data_level2;
++	wg->regmap_irq_chip = pmic->irq_chip_data;
+ 
+ 	platform_set_drvdata(pdev, wg);
+ 
+@@ -449,6 +449,18 @@ static int wcove_gpio_probe(struct platform_device *pdev)
+ 
+ 	gpiochip_set_nested_irqchip(&wg->chip, &wcove_irqchip, virq);
+ 
++	/* Enable GPIO0 interrupts */
++	ret = regmap_update_bits(wg->regmap, IRQ_MASK_BASE, GPIO_IRQ0_MASK,
++				 0x00);
++	if (ret)
++		return ret;
++
++	/* Enable GPIO1 interrupts */
++	ret = regmap_update_bits(wg->regmap, IRQ_MASK_BASE + 1, GPIO_IRQ1_MASK,
++				 0x00);
++	if (ret)
++		return ret;
++
+ 	return 0;
+ }
+ 
 -- 
 2.7.4
