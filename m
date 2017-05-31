@@ -1,53 +1,54 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] ARM: cpuidle: Support asymmetric idle definition
-Date: Wed, 31 May 2017 18:33:52 +0100
-Message-ID: <160c3091-2d10-9c7b-c55b-e76abf23653f@arm.com>
-References: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
- <850fab54-d6e6-7b4c-631a-f4ee658c96fa@arm.com>
- <ca383c4a-9eeb-bd35-fa7b-1098bd0a5dc1@linaro.org>
- <45754d0a-6a98-2987-74ed-429926d89cbc@arm.com>
- <ce4ee3e6-baeb-5f99-a8d1-f2f3855fde35@linaro.org>
- <3ce7048e-6d9d-9e46-a6fb-4d3263231536@arm.com>
- <abfc0a2d-04bc-6714-f772-5f5ae23a1680@linaro.org>
- <8c5b46d1-8b34-2ced-e27d-4d76f80953c6@arm.com>
- <77df6298-945b-7663-0cb9-cd24fa583c6a@linaro.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/3] regmap: Add 1-Wire bus support
+Date: Wed, 31 May 2017 19:28:34 +0100
+Message-ID: <20170531182834.ne3rghcnm4pcdcsv@sirena.org.uk>
+References: <20170530175735.3481-1-minimumlaw@rambler.ru>
+ <20170530175735.3481-2-minimumlaw@rambler.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <77df6298-945b-7663-0cb9-cd24fa583c6a@linaro.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="ihzb45gcqu23x6og"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:47146 "EHLO
+        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751118AbdEaS2t (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 14:28:49 -0400
+Content-Disposition: inline
+In-Reply-To: <20170530175735.3481-2-minimumlaw@rambler.ru>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
 
+--ihzb45gcqu23x6og
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On 31/05/17 17:40, Daniel Lezcano wrote:
+On Tue, May 30, 2017 at 08:57:33PM +0300, Alex A. Mihaylov wrote:
 
-> Hi Sudeep, Lorenzo,
-> 
-> I have been thinking and looking at the domain-idle-state and I don't
-> see an obvious connection between what is describing the power domain,
-> the cpu idle driver and what we are trying to achieve.
->
+> +	if (!w1_reset_select_slave(sl)) {
+> +		w1_write_8(sl->master, W1_CMD_READ_DATA);
+> +		w1_write_8(sl->master, reg);
+> +		*val = w1_read_8(sl->master);
+> +	} else
+> +		ret = -ENODEV;
 
-I am not sure what you mean by *connection* above.
+CodingStyle says { } on both sides of an if statement if they're on one.
+Otherwise this looks good.
 
-1. With old flat list of idle states, we should get the cpumask sharing
-   the idle states from the phandle or something similar.
-2. With new domain-idle-state and hierarchical DT binding, you just need
-   to infer that from the hierarchy.
+--ihzb45gcqu23x6og
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> I would like to suggest something much more simple, register a cpuidle
-> driver per cpu, so every cpu can have its own idle definitions, that
-> should work for dynamiQ, smp and hmp. The impact on the driver will be
-> minimal.
-> 
+-----BEGIN PGP SIGNATURE-----
 
-Sounds simple, but not sure if it's scalable on platforms with
-relatively large number of CPUs like 48 or 96(e.g. Cavium Thunder
--- 
-Regards,
-Sudeep
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlkvC1EACgkQJNaLcl1U
+h9DOCgf/RUw7xi5b/xQ112ExQWa333F50SsY4IyD3tc1G+CFr9YT94OZnRylokqH
+OaH0Wv7PX6RzavNx8L9GZFbelXc4PBMaCHZGEq6pQwgQGAko4gxnGGaPj0UuRGXL
+Rve7GQu/snRA2p4PUmWWb6UBb7765dQ+aj5GWVcuy6Yxmf9PVKCdDDq0fvLB0ymH
+dZKNUMx2Yz9Q8CmKJakBY4LVybf7DgqlhZHtTqKz1inMDoHn/TMwb12w8r4R9dg7
+qH4rEqnv5J0wGjTyep8ZLQYcFZax69HcCQAYKPhNjA1iGGUD4w6jwCiu0oycza9F
+D6qvqaco5NzB8zkYavJBLx8UsP6cRA==
+=QXv1
+-----END PGP SIGNATURE-----
+
+--ihzb45gcqu23x6og--
