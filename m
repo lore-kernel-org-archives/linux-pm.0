@@ -1,50 +1,57 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [GIT PULL] Immutable branch between MFD, GPIO, Thermal and X86
- due for the v4.13 merge window
-Date: Wed, 31 May 2017 13:38:26 +1000
-Message-ID: <20170531133826.3bee86a0@canb.auug.org.au>
-References: <20170523072615.r4widzjc6apwxpwb@dell>
-        <75e12563a835dc4f8e8dab26ecea46822262604b.1495559980.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-        <20170530085306.s4hlijutbz7gp3ay@dell>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: imx6q: imx6ull should use the same flow as
+ imx6ul
+Date: Wed, 31 May 2017 09:30:13 +0530
+Message-ID: <20170531040013.GA4284@vireshk-i7>
+References: <30688f5aa17763362275c199b2d61841497c26a4.1496159470.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <20170530085306.s4hlijutbz7gp3ay@dell>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: sathyanarayanan.kuppuswamy@linux.intel.com, gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, andy@infradead.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <30688f5aa17763362275c199b2d61841497c26a4.1496159470.git.leonard.crestez@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Octavian Purdila <octavian.purdila@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Bai Ping <ping.bai@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+On 30-05-17, 18:57, Leonard Crestez wrote:
+> From: Octavian Purdila <octavian.purdila@nxp.com>
+> 
+> This fixes an issue with imx6ull where setting the frequency to 528Mhz
+> would actually set the ARM clock to 324Mhz.
+> 
+> Signed-off-by: Octavian Purdila <octavian.purdila@nxp.com>
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index 9c13f09..b6edd3c 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -101,7 +101,8 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+>  	 *  - Reprogram pll1_sys_clk and reparent pll1_sw_clk back to it
+>  	 *  - Disable pll2_pfd2_396m_clk
+>  	 */
+> -	if (of_machine_is_compatible("fsl,imx6ul")) {
+> +	if (of_machine_is_compatible("fsl,imx6ul") ||
+> +	    of_machine_is_compatible("fsl,imx6ull")) {
+>  		/*
+>  		 * When changing pll1_sw_clk's parent to pll1_sys_clk,
+>  		 * CPU may run at higher than 528MHz, this will lead to
+> @@ -215,7 +216,8 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+>  		goto put_clk;
+>  	}
+>  
+> -	if (of_machine_is_compatible("fsl,imx6ul")) {
+> +	if (of_machine_is_compatible("fsl,imx6ul") ||
+> +	    of_machine_is_compatible("fsl,imx6ull")) {
+>  		pll2_bus_clk = clk_get(cpu_dev, "pll2_bus");
+>  		secondary_sel_clk = clk_get(cpu_dev, "secondary_sel");
+>  		if (IS_ERR(pll2_bus_clk) || IS_ERR(secondary_sel_clk)) {
 
-On Tue, 30 May 2017 09:53:06 +0100 Lee Jones <lee.jones@linaro.org> wrote:
->
-> Dear fellow Maintainers,
-> 
-> Enjoy!
-> 
-> The following changes since commit 2ea659a9ef488125eb46da6eb571de5eae5c43f6:
-> 
->   Linux 4.12-rc1 (2017-05-13 13:19:49 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/ib-mfd-gpio-thermal-x86-v4.13
-> 
-> for you to fetch changes up to 6aa60f67c11c10540e43bbe5a6377f7a0231501e:
-> 
->   platform: x86: intel_bxtwc_tmu: remove first level irq unmask (2017-05-30 09:34:08 +0100)
-> 
-> ----------------------------------------------------------------
-> Immutable branch between MFD, GPIO, Thermal and X86 due for the v4.13 merge window
-> 
-> ----------------------------------------------------------------
-> Kuppuswamy Sathyanarayanan (8):
->       mfd: intel_soc_pmic_bxtwc: Use chained irqs for second level irq chips
-
-See my other bug report on this commit ...
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-Cheers,
-Stephen Rothwell
+viresh
