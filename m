@@ -1,35 +1,32 @@
 From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: [PATCH] thermal: broadcom: ns-thermal: depends/default only for
- NS/NSP
-Date: Wed, 31 May 2017 13:03:34 -0700
-Message-ID: <175796a4-41f3-9d27-4d26-58aca1f97a36@gmail.com>
-References: <1496260544-4200-1-git-send-email-jon.mason@broadcom.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH 0/2] power: reset: Couple of POWER_RESET_BRCMSTB Kconfig changes
+Date: Wed, 31 May 2017 13:39:44 -0700
+Message-ID: <20170531203946.32644-1-f.fainelli@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f193.google.com ([209.85.220.193]:35506 "EHLO
-        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751009AbdEaUDi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 16:03:38 -0400
-In-Reply-To: <1496260544-4200-1-git-send-email-jon.mason@broadcom.com>
-Content-Language: en-US
+Received: from mail-qt0-f195.google.com ([209.85.216.195]:36698 "EHLO
+        mail-qt0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750952AbdEaUjy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 16:39:54 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jon Mason <jon.mason@broadcom.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: rafal@milecki.pl, Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com
+To: linux-kernel@vger.kernel.org
+Cc: sre@kernel.org, linux-pm@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, Florian Fainelli <f.fainelli@gmail.com>
 
-On 05/31/2017 12:55 PM, Jon Mason wrote:
-> ARCH_BCM_IPROC includes support for many SoCs, not all of which have the
-> same thermal hardware interface as the Northstar/Northstar Plus SoCs.
-> This is not a major issue, as this driver will only be probed if the
-> relevant device tree entry is present.  However, it will result in a
-> slightly larger than necessary kernel.  By limiting the driver to only
-> work on the NS/NSP SoCs, we can avoid the issue.
-> 
-> Suggested-by: Scott Branden <scott.branden@broadcom.com>
-> Signed-off-by: Jon Mason <jon.mason@broadcom.com>
+Hi Sebastian,
 
-Acked-by: Florian Fainelli <f.fainelli@gmail.com>
+Here are two small tweaks to the POWER_RESET_BRCMSTB Kconfig selection to allow
+the driver on ARM64 and make it default to BMIPS_GENERIC on MIPS platforms.
+
+Based on your "for-next" branch.
+
+Thanks
+
+Florian Fainelli (2):
+  power: reset: Allow selecting POWER_RESET_BRCMSTB on ARM64
+  power: reset: Default POWER_RESET_BRCMSTB to BMIPS_GENERIC
+
+ drivers/power/reset/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
 -- 
-Florian
+2.9.3
