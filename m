@@ -1,59 +1,108 @@
-From: BaoJun Luo <baojun.luo@samsung.com>
-Subject: [PATCH] PM/hibernate: Delete the redundant parameters of the
- swsusp_alloc()
-Date: Tue, 23 May 2017 09:47:13 +0800
-Message-ID: <14144.1925465644$1505300903@news.gmane.org>
-References: <CGME20170523014807epcas1p44d542b7f3bb7ed19f05a11b874231c55@epcas1p4.samsung.com>
+From: sathyanarayanan kuppuswamy
+        <sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: Re: [GIT PULL] Immutable branch between MFD, GPIO, Thermal and X86
+ due for the v4.13 merge window
+Date: Wed, 31 May 2017 15:33:48 -0700
+Message-ID: <cd6f226f-772b-cff6-dd80-f969021ba730@linux.intel.com>
+References: <20170523072615.r4widzjc6apwxpwb@dell>
+ <75e12563a835dc4f8e8dab26ecea46822262604b.1495559980.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <20170530085306.s4hlijutbz7gp3ay@dell>
+ <20170531133826.3bee86a0@canb.auug.org.au>
+ <CAENHMvOFEh_57eFcHM-58i4vPso9-dPc5Y63cQ2Rm0jX2G=yKQ@mail.gmail.com>
+ <20170531065723.yhdgki6zgvbtmine@dell>
+Reply-To: sathyanarayanan.kuppuswamy@linux.intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:47465 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752309AbdEWBsK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 May 2017 21:48:10 -0400
-Content-language: zh-cn
+Received: from mga03.intel.com ([134.134.136.65]:11514 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750952AbdEaWhN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 31 May 2017 18:37:13 -0400
+In-Reply-To: <20170531065723.yhdgki6zgvbtmine@dell>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, pavel@ucw.cz
-Cc: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Sathyanarayanan Kuppuswamy Natarajan <sathyaosid@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Alexandre Courbot <gnurou@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, dvhart@infradead.org, rui.zhang@intel.com, Andy Shevchenko <andy@infradead.org>, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>
 
->From 2a91f46951c676a96621ab7505e168a2dc619064 Mon Sep 17 00:00:00 2001
-From: "baojun.luo" <baojun.luo@samsung.com>
-Date: Mon, 22 May 2017 15:30:19 +0800
-Subject: [PATCH] PM/hibernate: Delete the redundant parameters of the
- swsusp_alloc()
+Hi Lee,
 
-The first parameter of swsusp_alloc has not been used. The patch to make
-sure to delete the redundant parameters
 
-Signed-off-by: baojun.luo <baojun.luo@samsung.com>
----
- kernel/power/snapshot.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+On 05/30/2017 11:57 PM, Lee Jones wrote:
+> On Tue, 30 May 2017, Sathyanarayanan Kuppuswamy Natarajan wrote:
+>
+>> Hi All,
+>>
+>> On Tue, May 30, 2017 at 8:38 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>>> Hi all,
+>>>
+>>> On Tue, 30 May 2017 09:53:06 +0100 Lee Jones <lee.jones@linaro.org> wrote:
+>>>> Dear fellow Maintainers,
+>>>>
+>>>> Enjoy!
+>>>>
+>>>> The following changes since commit 2ea659a9ef488125eb46da6eb571de5eae5c43f6:
+>>>>
+>>>>    Linux 4.12-rc1 (2017-05-13 13:19:49 -0700)
+>>>>
+>>>> are available in the git repository at:
+>>>>
+>>>>    git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/ib-mfd-gpio-thermal-x86-v4.13
+>>>>
+>>>> for you to fetch changes up to 6aa60f67c11c10540e43bbe5a6377f7a0231501e:
+>>>>
+>>>>    platform: x86: intel_bxtwc_tmu: remove first level irq unmask (2017-05-30 09:34:08 +0100)
+>>>>
+>>>> ----------------------------------------------------------------
+>>>> Immutable branch between MFD, GPIO, Thermal and X86 due for the v4.13 merge window
+>>>>
+>>>> ----------------------------------------------------------------
+>>>> Kuppuswamy Sathyanarayanan (8):
+>>>>        mfd: intel_soc_pmic_bxtwc: Use chained irqs for second level irq chips
+>>> See my other bug report on this commit ...
+>> Sorry, its a mistake from my end. It looks like typec wcove driver got
+>> merged recently and I missed to add it to my cleanup patch set.
+>>
+>> Lee,
+>>
+>> I have created a patch to fix this issue.
+>>
+>> Do you want me to send the entire series again with this fix or just
+>> send the fix alone.
+> This highlights the fact that this patch-set is not actually
+> bisectable.
+Except for the last patch set ( which has fix for typec driver 
+compilation issue) that I sent yesterday,
+all other patch set versions are bisectable.
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 3b1e0f3..0f8a039 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1929,8 +1929,7 @@ static inline unsigned int alloc_highmem_pages(struct memory_bitmap *bm,
-  * also be located in the high memory, because of the way in which
-  * copy_data_pages() works.
-  */
--static int swsusp_alloc(struct memory_bitmap *orig_bm,
--			struct memory_bitmap *copy_bm,
-+static int swsusp_alloc(struct memory_bitmap *copy_bm,
- 			unsigned int nr_pages, unsigned int nr_highmem)
- {
- 	if (nr_highmem > 0) {
-@@ -1976,7 +1975,7 @@ asmlinkage __visible int swsusp_save(void)
- 		return -ENOMEM;
- 	}
- 
--	if (swsusp_alloc(&orig_bm, &copy_bm, nr_pages, nr_highmem)) {
-+	if (swsusp_alloc(&copy_bm, nr_pages, nr_highmem)) {
- 		printk(KERN_ERR "PM: Memory allocation failed\n");
- 		return -ENOMEM;
- 	}
+The problem was when I first created this patch set, typec wcove driver 
+was not merged upstream.
+After creating the initial set, I was just improving the patch set and 
+forgot to re-check for
+child devices that depend of PMIC MFD driver.  Thats why we came across 
+this compilation issue.
+
+In future, I will try to avoid these kind of issues. I think adding 
+"allyesconfig" and "allmodconfig"
+compilation tests to my patch submit criteria should prevent these kind 
+of issues.
+
+> To say that, when bisecting if we landed somewhere in the
+> middle of this set, we would receive build errors.
+>
+> Ergo, this set is not actually acceptable in its current state.
+> Please squash all patches where you are a) changing the API (in the
+> MFD header), then b) transitioning users (child devices) over to it.
+>
+> Ensure that you do not make any code changes and remember to move all
+> of the Acks you collected into the squashed patch.  Also, please use
+> the $SUBJECT lines commonly used by particular subsystems.  For MFD
+> the format is thus:
+>
+>    mfd: <device>: Patch description starting with an uppercase character
+yes, will include it in next update.
+>
+
 -- 
-1.9.1
+Sathyanarayanan Kuppuswamy
+Linux kernel developer
