@@ -1,38 +1,40 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 1/4] dt-bindings: power: supply: add battery charge
- voltage/current
-Date: Wed, 31 May 2017 13:50:15 -0500
-Message-ID: <20170531185015.ahruipzepmusuk7r@rob-hp-laptop>
-References: <20170526110413.24836-1-enric.balletbo@collabora.com>
+From: "Kushwaha, Priyalee" <priyalee.kushwaha@intel.com>
+Subject: RE: [PATCH v1 1/1] intel_telemetry_debugfs: fix oops found while
+ load/unload module test
+Date: Wed, 31 May 2017 19:21:57 +0000
+Message-ID: <D3EC02A5926B1B45AA54D922FFAA8B367F5172A0@ORSMSX112.amr.corp.intel.com>
+References: <6718d6200ee45ae58b496225d148d275a2776756.1495897832.git.priyalee.kushwaha@intel.com>
+ <20170527054929.GA118811@localhost.localdomain> <20170527065430.GA24739@amd>
+ <CAHp75VecHUoxP2cYv3chTmJL=ok5_TMUMirdcH8pmcJEgdSFdw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f53.google.com ([209.85.218.53]:36209 "EHLO
-        mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751056AbdEaSuS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 14:50:18 -0400
-Content-Disposition: inline
-In-Reply-To: <20170526110413.24836-1-enric.balletbo@collabora.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <CAHp75VecHUoxP2cYv3chTmJL=ok5_TMUMirdcH8pmcJEgdSFdw@mail.gmail.com>
+Content-Language: en-US
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Andy Shevchenko <andy.shevchenko@gmail.com>, Pavel Machek <pavel@ucw.cz>
+Cc: Darren Hart <dvhart@infradead.org>, "Chakravarty, Souvik K" <souvik.k.chakravarty@intel.com>, Andy Shevchenko <andy@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: sre@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@networkimprov.net
 
-On Fri, May 26, 2017 at 01:04:10PM +0200, Enric Balletbo i Serra wrote:
-> Add charging voltage and current characteristics to the battery DT for
-> proper handling of the battery by fuel-gauge and charger chips.
-> 
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
-> Changes since v2:
->  - Requested by Sebastian Reichel
->    - Move to its own patch and apply to simple-battery framework.
-> Changes since v1:
->  - Requested by Rob Herring
->    - Rename ti,charge-* to charge-* to be standard properties.
->    - Use unit suffixes as per bindings/property-units.txt
-> 
->  Documentation/devicetree/bindings/power/supply/battery.txt | 4 ++++
->  1 file changed, 4 insertions(+)
-
-Acked-by: Rob Herring <robh@kernel.org>
+SSB3aWxsIHJlc3VibWl0IHRoZSBwYXRjaCB3aXRoIHN1Z2dlc3RlZCBjaGFuZ2VzLiANCg0KLS0t
+LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IEFuZHkgU2hldmNoZW5rbyBbbWFpbHRvOmFu
+ZHkuc2hldmNoZW5rb0BnbWFpbC5jb21dIA0KU2VudDogU2F0dXJkYXksIE1heSAyNywgMjAxNyAz
+OjUyIEFNDQpUbzogUGF2ZWwgTWFjaGVrIDxwYXZlbEB1Y3cuY3o+DQpDYzogRGFycmVuIEhhcnQg
+PGR2aGFydEBpbmZyYWRlYWQub3JnPjsgS3VzaHdhaGEsIFByaXlhbGVlIDxwcml5YWxlZS5rdXNo
+d2FoYUBpbnRlbC5jb20+OyBDaGFrcmF2YXJ0eSwgU291dmlrIEsgPHNvdXZpay5rLmNoYWtyYXZh
+cnR5QGludGVsLmNvbT47IEFuZHkgU2hldmNoZW5rbyA8YW5keUBpbmZyYWRlYWQub3JnPjsgbGlu
+dXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgUGxhdGZvcm0gRHJpdmVyIDxwbGF0Zm9ybS1kcml2
+ZXIteDg2QHZnZXIua2VybmVsLm9yZz47IFJhZmFlbCBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5l
+dD47IEJyb3duLCBMZW4gPGxlbi5icm93bkBpbnRlbC5jb20+OyBsaW51eC1wbUB2Z2VyLmtlcm5l
+bC5vcmcNClN1YmplY3Q6IFJlOiBbUEFUQ0ggdjEgMS8xXSBpbnRlbF90ZWxlbWV0cnlfZGVidWdm
+czogZml4IG9vcHMgZm91bmQgd2hpbGUgbG9hZC91bmxvYWQgbW9kdWxlIHRlc3QNCg0KT24gU2F0
+LCBNYXkgMjcsIDIwMTcgYXQgOTo1NCBBTSwgUGF2ZWwgTWFjaGVrIDxwYXZlbEB1Y3cuY3o+IHdy
+b3RlOg0KPj4gT24gU2F0LCBNYXkgMjcsIDIwMTcgYXQgMDg6MTc6MzlBTSAtMDcwMCwgcHJpeWFs
+ZWUua3VzaHdhaGFAaW50ZWwuY29tIHdyb3RlOg0KDQo+PiArUmFmYWVsLCBMZW4sIFBhdmVsLCBs
+aW51eC1wbTogSXMgdGhlcmUgYSBwcmVmZXJyZWQgYXBwcm9hY2ggZm9yIA0KPj4gK2RlYWxpbmcg
+d2l0aA0KPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIENPTkZJR19QTV9TTEVFUD8N
+Cj4NCj4gWWVhaCwgZW1wdHkgInVucmVnaXN0ZXJfcG1fbm90aWZpZXIiIGluICFDT05GSUdfUE1f
+U0xFRVAgY2FzZSBzb3VuZHMgDQo+IGxpa2UgYSBnb29kIGlkZWEuDQoNCkkgbGlrZSB0aGUgaWRl
+YSwgdGhvdWdoIEkgd291bGQgbGV0IFJhZmFlbCB0byBzcGVhayB1cC4NCg0KLS0NCldpdGggQmVz
+dCBSZWdhcmRzLA0KQW5keSBTaGV2Y2hlbmtvDQo=
