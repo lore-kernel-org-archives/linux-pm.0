@@ -1,62 +1,61 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH 7/7] thermal: max77620: fix pinmux conflict on reprobe
-Date: Wed, 31 May 2017 10:23:26 +0200
-Message-ID: <20170531082326.GA6735@localhost>
+From: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/7] USB: core: fix device node leak
+Date: Wed, 31 May 2017 10:25:47 +0200
+Message-ID: <20170531082547.GB6735@localhost>
 References: <20170530162554.26159-1-johan@kernel.org>
- <20170530162554.26159-8-johan@kernel.org>
- <20170530185707.GF7419@u40b0340c692b58f6553c.ant.amazon.com>
+ <20170530162554.26159-2-johan@kernel.org>
+ <9aff0d42-ff3e-963a-7aaa-752c2f592d0d@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170530185707.GF7419@u40b0340c692b58f6553c.ant.amazon.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduval@amazon.com>
-Cc: Johan Hovold <johan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@freescale.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>
+In-Reply-To: <9aff0d42-ff3e-963a-7aaa-752c2f592d0d-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tyrel Datwyler <tyreld-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
+Cc: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stable <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 30, 2017 at 11:57:07AM -0700, Eduardo Valentin wrote:
-> On Tue, May 30, 2017 at 06:25:54PM +0200, Johan Hovold wrote:
-> > Use the new helper for reusing a device-tree node of another device
-> > instead of managing the node references explicitly.
+On Tue, May 30, 2017 at 03:55:56PM -0700, Tyrel Datwyler wrote:
+> On 05/30/2017 09:25 AM, Johan Hovold wrote:
+> > Make sure to release any OF device-node reference taken when creating
+> > the USB device.
 > > 
-> > This also makes sure that the new of_node_reuse flag is set if the
-> > device is ever reprobed, something which specifically now avoids driver
-> > core from attempting to claim any pinmux resources already claimed by
-> > the parent device.
+> > Note that we currently do not hold a reference to the root hub
+> > device-tree node (i.e. the parent controller node).
 > > 
-> > Fixes: ec4664b3fd6d ("thermal: max77620: Add thermal driver for reporting junction temp")
-> > Cc: Laxman Dewangan <ldewangan@nvidia.com>
-> > Signed-off-by: Johan Hovold <johan@kernel.org>
+> > Fixes: 69bec7259853 ("USB: core: let USB device know device node")
+> > Cc: stable <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>	# v4.6
+> > Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+> > Signed-off-by: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 > > ---
-> >  drivers/thermal/max77620_thermal.c | 8 +++-----
-> >  1 file changed, 3 insertions(+), 5 deletions(-)
+> >  drivers/usb/core/usb.c | 2 ++
+> >  1 file changed, 2 insertions(+)
 > > 
-> > diff --git a/drivers/thermal/max77620_thermal.c b/drivers/thermal/max77620_thermal.c
-> > index 71d35f3c9215..159bbcee8821 100644
-> > --- a/drivers/thermal/max77620_thermal.c
-> > +++ b/drivers/thermal/max77620_thermal.c
-> > @@ -112,12 +112,10 @@ static int max77620_thermal_probe(struct platform_device *pdev)
-> >  	}
+> > diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+> > index 28b053cacc90..62e1906bb2f3 100644
+> > --- a/drivers/usb/core/usb.c
+> > +++ b/drivers/usb/core/usb.c
+> > @@ -416,6 +416,8 @@ static void usb_release_dev(struct device *dev)
 > >  
-> >  	/*
-> > -	 * Drop any current reference to a device-tree node and get a
-> > -	 * reference to the parent's node which will be balanced on reprobe or
-> > -	 * on platform-device release.
-> > +	 * The reference taken to the parent's node which will be balanced on
-> > +	 * reprobe or on platform-device release.
-> >  	 */
-> > -	of_node_put(pdev->dev.of_node);
-> > -	pdev->dev.of_node = of_node_get(pdev->dev.parent->of_node);
-> > +	device_set_of_node_from_dev(&pdev->dev, pdev->dev.parent);
+> >  	usb_destroy_configuration(udev);
+> >  	usb_release_bos_descriptor(udev);
+> > +	if (udev->parent)
+> > +		of_node_put(dev->of_node);
 > 
-> Should this one be squashed with patch 6/7?
+> If I'm following the root hub doesn't hold an of_node reference, so
+> does that guarantee that dev->of_node is NULL for the root hub?
 
-I separated the two fixes this way as 6/7 does not depend on the rest of
-the series and could be backported to stable, while this one fixes
-something that has never worked (e.g. deferred probe of the thermal
-child when the parent has a pinctrl configuration) and therefore is not
-stable material.
+No, it may be non-NULL.
+
+> If so of_node_put() is safely called with a NULL reference, making the
+> if(udev->parent) unnecessary, and further no need to remove it in
+> follow-up patch #5.
+
+So this one is still needed.
 
 Thanks,
 Johan
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
