@@ -1,61 +1,80 @@
-From: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/7] USB: core: fix device node leak
-Date: Wed, 31 May 2017 10:25:47 +0200
-Message-ID: <20170531082547.GB6735@localhost>
+From: Johan Hovold <johan@kernel.org>
+Subject: Re: [PATCH 6/7] thermal: max77620: fix device-node reference
+ imbalance
+Date: Wed, 31 May 2017 10:28:27 +0200
+Message-ID: <20170531082827.GC6735@localhost>
 References: <20170530162554.26159-1-johan@kernel.org>
- <20170530162554.26159-2-johan@kernel.org>
- <9aff0d42-ff3e-963a-7aaa-752c2f592d0d@linux.vnet.ibm.com>
+ <20170530162554.26159-7-johan@kernel.org>
+ <41a7b947-579f-e9ba-188d-699e7ff0b27d@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <9aff0d42-ff3e-963a-7aaa-752c2f592d0d-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tyrel Datwyler <tyreld-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
-Cc: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stable <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+In-Reply-To: <41a7b947-579f-e9ba-188d-699e7ff0b27d@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: Johan Hovold <johan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@freescale.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, stable <stable@vger.kernel.org>, Laxman Dewangan <ldewangan@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 30, 2017 at 03:55:56PM -0700, Tyrel Datwyler wrote:
+On Tue, May 30, 2017 at 03:59:10PM -0700, Tyrel Datwyler wrote:
 > On 05/30/2017 09:25 AM, Johan Hovold wrote:
-> > Make sure to release any OF device-node reference taken when creating
-> > the USB device.
+> > The thermal child device reuses the parent MFD-device device-tree node
+> > when registering a thermal zone, but did not take a reference to the
+> > node.
 > > 
-> > Note that we currently do not hold a reference to the root hub
-> > device-tree node (i.e. the parent controller node).
+> > This leads to a reference imbalance, and potential use-after-free, when
+> > the node reference is dropped by the platform-bus device destructor
+> > (once for the child and later again for the parent).
 > > 
-> > Fixes: 69bec7259853 ("USB: core: let USB device know device node")
-> > Cc: stable <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>	# v4.6
-> > Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-> > Signed-off-by: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> > Fix this by dropping any reference already held to a device-tree node
+> > and getting a reference to the parent's node which will be balanced on
+> > reprobe or on platform-device release, whichever comes first.
+> > 
+> > Note that simply clearing the of_node pointer on probe errors and on
+> > driver unbind would not allow the use of device-managed resources as
+> > specifically thermal_zone_of_sensor_unregister() claims that a valid
+> > device-tree node pointer is needed during deregistration (even if it
+> > currently does not seem to use it).
+> > 
+> > Fixes: ec4664b3fd6d ("thermal: max77620: Add thermal driver for reporting junction temp")
+> > Cc: stable <stable@vger.kernel.org>     # 4.9
+> > Cc: Laxman Dewangan <ldewangan@nvidia.com>
+> > Signed-off-by: Johan Hovold <johan@kernel.org>
 > > ---
-> >  drivers/usb/core/usb.c | 2 ++
-> >  1 file changed, 2 insertions(+)
+> >  drivers/thermal/max77620_thermal.c | 10 ++++++++--
+> >  1 file changed, 8 insertions(+), 2 deletions(-)
 > > 
-> > diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-> > index 28b053cacc90..62e1906bb2f3 100644
-> > --- a/drivers/usb/core/usb.c
-> > +++ b/drivers/usb/core/usb.c
-> > @@ -416,6 +416,8 @@ static void usb_release_dev(struct device *dev)
+> > diff --git a/drivers/thermal/max77620_thermal.c b/drivers/thermal/max77620_thermal.c
+> > index e9a1fe342760..71d35f3c9215 100644
+> > --- a/drivers/thermal/max77620_thermal.c
+> > +++ b/drivers/thermal/max77620_thermal.c
+> > @@ -104,8 +104,6 @@ static int max77620_thermal_probe(struct platform_device *pdev)
+> >  		return -EINVAL;
+> >  	}
 > >  
-> >  	usb_destroy_configuration(udev);
-> >  	usb_release_bos_descriptor(udev);
-> > +	if (udev->parent)
-> > +		of_node_put(dev->of_node);
+> > -	pdev->dev.of_node = pdev->dev.parent->of_node;
+> > -
+> >  	mtherm->dev = &pdev->dev;
+> >  	mtherm->rmap = dev_get_regmap(pdev->dev.parent, NULL);
+> >  	if (!mtherm->rmap) {
+> > @@ -113,6 +111,14 @@ static int max77620_thermal_probe(struct platform_device *pdev)
+> >  		return -ENODEV;
+> >  	}
+> >  
+> > +	/*
+> > +	 * Drop any current reference to a device-tree node and get a
+> > +	 * reference to the parent's node which will be balanced on reprobe or
+> > +	 * on platform-device release.
+> > +	 */
+> > +	of_node_put(pdev->dev.of_node);
+> > +	pdev->dev.of_node = of_node_get(pdev->dev.parent->of_node);
+> > +
 > 
-> If I'm following the root hub doesn't hold an of_node reference, so
-> does that guarantee that dev->of_node is NULL for the root hub?
+> This seems like needless churn. Can't this just be squashed into patch
+> #7?
 
-No, it may be non-NULL.
-
-> If so of_node_put() is safely called with a NULL reference, making the
-> if(udev->parent) unnecessary, and further no need to remove it in
-> follow-up patch #5.
-
-So this one is still needed.
+As I just replied to Eduardo, I'm fixing two separate issues here of
+which this one might qualify for stable while the other (7/7) does not.
 
 Thanks,
 Johan
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
