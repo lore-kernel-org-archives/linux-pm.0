@@ -1,113 +1,80 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/3] platform: x86: intel-vbtn: Wake up the system from suspend-to-idle
-Date: Thu, 01 Jun 2017 01:24:58 +0200
-Message-ID: <2310427.y67sGNgvdM@aspire.rjw.lan>
-References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <3454366.uzaJljlWGm@aspire.rjw.lan>
+Subject: Re: FW: [4.12 regression] "cpufreq: intel_pstate: Active mode P-state limits rework"
+Date: Thu, 01 Jun 2017 01:51:32 +0200
+Message-ID: <3772609.tskOqDLWI3@aspire.rjw.lan>
+References: <20170516042511epcms1p33c79e84f62d4b1d37cf227d2379bbecf@epcms1p3> <CGME20170516042313epcms1p5523f4e3e1ae608eaf0327be0242ee46e@epcms1p6> <20170529021852epcms1p66b2e89d2aec7988e00fb64c41a48a839@epcms1p6>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49140 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55069 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751004AbdEaXe5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 19:34:57 -0400
-In-Reply-To: <3454366.uzaJljlWGm@aspire.rjw.lan>
+        by vger.kernel.org with ESMTP id S1750954AbdEaX61 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 19:58:27 -0400
+In-Reply-To: <20170529021852epcms1p66b2e89d2aec7988e00fb64c41a48a839@epcms1p6>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>
+To: jongman.heo@samsung.com
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Monday, May 29, 2017 02:18:52 AM Jongman Heo wrote:
+> 
+> Hi,
+> 
+> FYI, 4.12-rc3 still has this issue.
+> 
+>  
+> --------- Original Message ---------
+> Sender : 허종만 <jongman.heo@samsung.com>
+> Date   : 2017-05-16 13:25 (GMT+9)
+> Title  : [4.12 regression] "cpufreq: intel_pstate: Active mode P-state limits rework"
+>  
+>  
+> Hi,
+>  
+> With 4.12-rc1 (Linus git), booting fails due to kernel panic, at intel_pstate_register_driver+0x56/0x110.
+> I can't copy the whole trace from the graphic console, it looks like below.
+>  
+> Call Trace:
+>   intel_pstate_init
+>   intel_pstate_setup
+>   do_one_initcall
+>   set_debug_rodata
+>   kernel_init_freeable
+>   rest_init
+>   kernel_init
+>   ret_from_fork
+>     Code: ...
+>   RIP: intel_pstate_register_driver+0x56/0x110 RSP: ffffa3a98000bd80
+>   ...
 
-Allow the intel-vbtn driver to wake up the system from suspend-to-idle
-by configuring its platform device as a wakeup one by default and
-switching it over to a system wakeup events triggering mode during
-system suspend transitions.
+I guess this is a division by 0 due to the unmet assumption that the denominator
+in min_perf_pct_min() will always be nonzero.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+If this guess is correct, the patch below should help, so can you please test it?
+
+Thanks,
+Rafael
+
+
 ---
- drivers/platform/x86/intel-vbtn.c |   39 +++++++++++++++++++++++++++++++++++---
- 1 file changed, 36 insertions(+), 3 deletions(-)
+ drivers/cpufreq/intel_pstate.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Index: linux-pm/drivers/platform/x86/intel-vbtn.c
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
---- linux-pm.orig/drivers/platform/x86/intel-vbtn.c
-+++ linux-pm/drivers/platform/x86/intel-vbtn.c
-@@ -23,6 +23,7 @@
- #include <linux/platform_device.h>
- #include <linux/input/sparse-keymap.h>
- #include <linux/acpi.h>
-+#include <linux/suspend.h>
- #include <acpi/acpi_bus.h>
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -571,9 +571,10 @@ static inline void update_turbo_state(vo
+ static int min_perf_pct_min(void)
+ {
+ 	struct cpudata *cpu = all_cpu_data[0];
++	int turbo_pstate = cpu->pstate.turbo_pstate;
  
- MODULE_LICENSE("GPL");
-@@ -46,6 +47,7 @@ static const struct key_entry intel_vbtn
- 
- struct intel_vbtn_priv {
- 	struct input_dev *input_dev;
-+	bool wakeup_mode;
- };
- 
- static int intel_vbtn_input_setup(struct platform_device *device)
-@@ -73,9 +75,15 @@ static void notify_handler(acpi_handle h
- 	struct platform_device *device = context;
- 	struct intel_vbtn_priv *priv = dev_get_drvdata(&device->dev);
- 
--	if (!sparse_keymap_report_event(priv->input_dev, event, 1, true))
--		dev_info(&device->dev, "unknown event index 0x%x\n",
--			 event);
-+	if (priv->wakeup_mode) {
-+		if (sparse_keymap_entry_from_scancode(priv->input_dev, event)) {
-+			pm_wakeup_hard_event(&device->dev);
-+			return;
-+		}
-+	} else if (sparse_keymap_report_event(priv->input_dev, event, 1, true)) {
-+		return;
-+	}
-+	dev_info(&device->dev, "unknown event index 0x%x\n", event);
+-	return DIV_ROUND_UP(cpu->pstate.min_pstate * 100,
+-			    cpu->pstate.turbo_pstate);
++	return turbo_pstate ?
++		DIV_ROUND_UP(cpu->pstate.min_pstate * 100, turbo_pstate) : 0;
  }
  
- static int intel_vbtn_probe(struct platform_device *device)
-@@ -109,6 +117,7 @@ static int intel_vbtn_probe(struct platf
- 	if (ACPI_FAILURE(status))
- 		return -EBUSY;
- 
-+	device_init_wakeup(&device->dev, true);
- 	return 0;
- }
- 
-@@ -125,10 +134,34 @@ static int intel_vbtn_remove(struct plat
- 	return 0;
- }
- 
-+static int intel_vbtn_pm_prepare(struct device *dev)
-+{
-+	struct intel_vbtn_priv *priv = dev_get_drvdata(dev);
-+
-+	priv->wakeup_mode = true;
-+	return 0;
-+}
-+
-+static int intel_vbtn_pm_resume(struct device *dev)
-+{
-+	struct intel_vbtn_priv *priv = dev_get_drvdata(dev);
-+
-+	priv->wakeup_mode = false;
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops intel_vbtn_pm_ops = {
-+	.prepare = intel_vbtn_pm_prepare,
-+	.resume = intel_vbtn_pm_resume,
-+	.restore = intel_vbtn_pm_resume,
-+	.thaw = intel_vbtn_pm_resume,
-+};
-+
- static struct platform_driver intel_vbtn_pl_driver = {
- 	.driver = {
- 		.name = "intel-vbtn",
- 		.acpi_match_table = intel_vbtn_ids,
-+		.pm = &intel_vbtn_pm_ops,
- 	},
- 	.probe = intel_vbtn_probe,
- 	.remove = intel_vbtn_remove,
+ static s16 intel_pstate_get_epb(struct cpudata *cpu_data)
