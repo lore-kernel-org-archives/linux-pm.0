@@ -1,32 +1,36 @@
 From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: [PATCH 0/2] power: reset: Couple of POWER_RESET_BRCMSTB Kconfig changes
-Date: Wed, 31 May 2017 13:39:44 -0700
-Message-ID: <20170531203946.32644-1-f.fainelli@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f195.google.com ([209.85.216.195]:36698 "EHLO
-        mail-qt0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750952AbdEaUjy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 16:39:54 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 2/2] power: reset: Default POWER_RESET_BRCMSTB to BMIPS_GENERIC
+Date: Wed, 31 May 2017 13:39:46 -0700
+Message-ID: <20170531203946.32644-3-f.fainelli@gmail.com>
+References: <20170531203946.32644-1-f.fainelli@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170531203946.32644-1-f.fainelli@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: sre@kernel.org, linux-pm@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, Florian Fainelli <f.fainelli@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi Sebastian,
+On Broadcom MIPS STB platforms, BMIPS_GENERIC is the Kconfig symbol that
+is used, make this reboot driver default to that value to make sure we
+can reboot a system properly.
 
-Here are two small tweaks to the POWER_RESET_BRCMSTB Kconfig selection to allow
-the driver on ARM64 and make it default to BMIPS_GENERIC on MIPS platforms.
+Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+---
+ drivers/power/reset/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Based on your "for-next" branch.
-
-Thanks
-
-Florian Fainelli (2):
-  power: reset: Allow selecting POWER_RESET_BRCMSTB on ARM64
-  power: reset: Default POWER_RESET_BRCMSTB to BMIPS_GENERIC
-
- drivers/power/reset/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index fdad987bed89..ca0de1a78e85 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -60,7 +60,7 @@ config POWER_RESET_BRCMSTB
+ 	bool "Broadcom STB reset driver"
+ 	depends on ARM || ARM64 || MIPS || COMPILE_TEST
+ 	depends on MFD_SYSCON
+-	default ARCH_BRCMSTB
++	default ARCH_BRCMSTB || BMIPS_GENERIC
+ 	help
+ 	  This driver provides restart support for Broadcom STB boards.
+ 
 -- 
 2.9.3
