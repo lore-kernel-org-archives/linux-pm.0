@@ -1,40 +1,91 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] dt-bindings: Drop k2g genpd device ID macros
-Date: Wed, 31 May 2017 11:28:50 -0500
-Message-ID: <20170531162850.mf6giowmxj5vetxq@rob-hp-laptop>
-References: <20170522183737.24946-1-d-gerlach@ti.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCHv2] power: supply: cpcap-battery: Add a battery driver
+Date: Wed, 31 May 2017 11:30:02 -0500
+Message-ID: <20170531163002.j4xb6fo3ipq6ly2d@rob-hp-laptop>
+References: <20170523005637.945-1-tony@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:34823 "EHLO
+        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751219AbdEaQaE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 12:30:04 -0400
 Content-Disposition: inline
-In-Reply-To: <20170522183737.24946-1-d-gerlach-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Cc: Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Suman Anna <s-anna-l0cyMroinI0@public.gmane.org>, Andrew Davis <afd-l0cyMroinI0@public.gmane.org>, Franklin Cooper <fcooper-l0cyMroinI0@public.gmane.org>
+In-Reply-To: <20170523005637.945-1-tony@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
 
-On Mon, May 22, 2017 at 01:37:37PM -0500, Dave Gerlach wrote:
-> Commit 7cc119f29b19 ("dt-bindings: Add TI SCI PM Domains") introduced a
-> number of K2G_DEV_x macros to represent each device ID available on the
-> K2G platform for use by the genpd, clock, and reset drivers. Rather than
-> use these macros, which are only used in the device tree for property
-> values and not actually used by the drivers, let's just use the device
-> ID number directly in the device tree to avoid macro bloat.
+On Mon, May 22, 2017 at 05:56:37PM -0700, Tony Lindgren wrote:
+> On the CPCAP PMIC we can use the ADCs for monitoring the battery,
+> and there is also a coulomb counter. So let's add basic support for
+> the battery driver.
 > 
-> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+> I did not add any capacity prediction as that should probably be
+> done in the user space. Or at least user space should tell the kernel
+> some battery statistics and then the kernel driver could display the
+> capacity based on that.
+> 
+> Note that I left out the battery interrupt handling for now as I need
+> to spend more time on it for the battery empty interrupts. The driver
+> works just fine without the interrupts too.
+> 
+> Cc: devicetree@vger.kernel.org
+> Cc: Marcel Partap <mpartap@gmx.net>
+> Cc: Michael Scott <michael.scott@linaro.org>
+> Cc: Rob Herring <robh@kernel.org>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
 > ---
-> Based on discussion here [1] it was agreed that these macros are not needed
-> and it is better to just use the device IDs directly in dt.
 > 
-> [1] https://www.spinics.net/lists/arm-kernel/msg577079.html
+> Changes since v1:
 > 
->  .../devicetree/bindings/soc/ti/sci-pm-domain.txt   |  5 +-
->  include/dt-bindings/genpd/k2g.h                    | 90 ----------------------
->  2 files changed, 3 insertions(+), 92 deletions(-)
->  delete mode 100644 include/dt-bindings/genpd/k2g.h
+> - Add support for battery low interrupts
+> 
+> - Fix POWER_SUPPLY_STATUS during charging to not flip constantly
+>   by using average current
+> 
+> ---
+>  .../bindings/power/supply/cpcap-battery.txt        |  27 +
+>  drivers/power/supply/Kconfig                       |   8 +
+>  drivers/power/supply/Makefile                      |   1 +
+>  drivers/power/supply/cpcap-battery.c               | 808 +++++++++++++++++++++
+>  4 files changed, 844 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
+>  create mode 100644 drivers/power/supply/cpcap-battery.c
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt b/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
+> new file mode 100644
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
+> @@ -0,0 +1,27 @@
+> +Motorola CPCAP PMIC battery driver binding
+> +
+> +Required properties:
+> +- compatible: Shall be "motorola,cpcap-battery"
+> +- interrupts: Interrupt specifier for each name in interrupt-names
+> +- interrupt-names: Should contain the following entries:
+> +		   "lowbph", "lowbpl", "chrgcurr1", "battdetb"
+> +- io-channels: IIO ADC channel specifier for each name in io-channel-names
+> +- io-channel-names: Should contain the following entries:
+> +		    "battdetb", "battp"
 
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Doesn't match the example.
+
+> +
+> +Example:
+> +
+> +cpcap_battery: battery {
+> +	compatible = "motorola,cpcap-battery";
+> +	interrupts-extended = <
+> +		&cpcap 5 0 &cpcap 3 0
+> +		&cpcap 20 0 &cpcap 54 0
+> +	>;
+> +	interrupt-names =
+> +		"lowbph", "lowbpl",
+> +		"chrgcurr1", "battdetb";
+> +	io-channels = <&cpcap_adc 0 &cpcap_adc 1
+> +		       &cpcap_adc 5 &cpcap_adc 6>;
+> +	io-channel-names = "battdetb", "battp",
+> +			   "chg_isense", "batti";
+> +};
