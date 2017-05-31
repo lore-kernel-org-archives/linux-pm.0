@@ -1,58 +1,64 @@
-From: sathyanarayanan.kuppuswamy@linux.intel.com
-Subject: [PATCH v4 1/9] mfd: intel_soc_pmic_bxtwc: fix TMU interrupt index
-Date: Tue, 30 May 2017 22:19:50 -0700
-Message-ID: <de49c59af4175435f02c8938f9e3a3f5d33f4f69.1496206507.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-References: <cover.1496206507.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1496206507.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: gnurou@gmail.com, heikki.krogerus@linux.intel.com, gregkh@linuxfoundation.org, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, lee.jones@linaro.org, andy@infradead.org
-Cc: linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com, Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [GIT PULL] Immutable branch between MFD, GPIO, Thermal and X86
+ due for the v4.13 merge window
+Date: Wed, 31 May 2017 07:50:33 +0100
+Message-ID: <20170531065033.qkvphbjxg3chauoy@dell>
+References: <20170523072615.r4widzjc6apwxpwb@dell>
+ <75e12563a835dc4f8e8dab26ecea46822262604b.1495559980.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <20170530085306.s4hlijutbz7gp3ay@dell>
+ <20170531133826.3bee86a0@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f179.google.com ([209.85.128.179]:36068 "EHLO
+        mail-wr0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750778AbdEaGuh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 02:50:37 -0400
+Received: by mail-wr0-f179.google.com with SMTP id j27so3376402wre.3
+        for <linux-pm@vger.kernel.org>; Tue, 30 May 2017 23:50:36 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20170531133826.3bee86a0@canb.auug.org.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: sathyanarayanan.kuppuswamy@linux.intel.com, gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, andy@infradead.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com
 
-From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+On Wed, 31 May 2017, Stephen Rothwell wrote:
 
-TMU interrupts are registered as a separate interrupt chip, and
-hence it should start its interrupt index(BXTWC_TMU_IRQ) number
-from 0. But currently, BXTWC_TMU_IRQ is defined as part of enum
-bxtwc_irqs_level2 and its index value is 11. Since this index
-value is used when calculating .num_irqs of regmap_irq_chip_tmu,
-it incorrectly reports number of irqs as 12 instead of actual
-value of 1.
+> Hi all,
+> 
+> On Tue, 30 May 2017 09:53:06 +0100 Lee Jones <lee.jones@linaro.org> wrote:
+> >
+> > Dear fellow Maintainers,
+> > 
+> > Enjoy!
+> > 
+> > The following changes since commit 2ea659a9ef488125eb46da6eb571de5eae5c43f6:
+> > 
+> >   Linux 4.12-rc1 (2017-05-13 13:19:49 -0700)
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/ib-mfd-gpio-thermal-x86-v4.13
+> > 
+> > for you to fetch changes up to 6aa60f67c11c10540e43bbe5a6377f7a0231501e:
+> > 
+> >   platform: x86: intel_bxtwc_tmu: remove first level irq unmask (2017-05-30 09:34:08 +0100)
+> > 
+> > ----------------------------------------------------------------
+> > Immutable branch between MFD, GPIO, Thermal and X86 due for the v4.13 merge window
+> > 
+> > ----------------------------------------------------------------
+> > Kuppuswamy Sathyanarayanan (8):
+> >       mfd: intel_soc_pmic_bxtwc: Use chained irqs for second level irq chips
+> 
+> See my other bug report on this commit ...
 
-This patch fixes this issue by creating new enum of tmu irqs and
-resetting its starting index to 0.
+Thanks Stephen.
 
-Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/mfd/intel_soc_pmic_bxtwc.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-Changes since v1: 
- * Removed code from commit message.
-
-Changes since v2: 
- * Rebased on top of latest release.
-
-Changes sinve v3:
- * Rebased on top of latest release.
-
-diff --git a/drivers/mfd/intel_soc_pmic_bxtwc.c b/drivers/mfd/intel_soc_pmic_bxtwc.c
-index 8c3cbf6..7cbaf1e 100644
---- a/drivers/mfd/intel_soc_pmic_bxtwc.c
-+++ b/drivers/mfd/intel_soc_pmic_bxtwc.c
-@@ -95,7 +95,10 @@ enum bxtwc_irqs_level2 {
- 	BXTWC_GPIO0_IRQ,
- 	BXTWC_GPIO1_IRQ,
- 	BXTWC_CRIT_IRQ,
--	BXTWC_TMU_IRQ,
-+};
-+
-+enum bxtwc_irqs_tmu {
-+	BXTWC_TMU_IRQ = 0,
- };
- 
- static const struct regmap_irq bxtwc_regmap_irqs[] = {
 -- 
-2.7.4
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
