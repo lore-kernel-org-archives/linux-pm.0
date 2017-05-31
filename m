@@ -1,80 +1,62 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [GIT PULL] Immutable branch between MFD, GPIO, Thermal and X86
- due for the v4.13 merge window
-Date: Wed, 31 May 2017 08:02:25 +0100
-Message-ID: <20170531070225.bymdhhpclidwwtpt@dell>
-References: <20170523072615.r4widzjc6apwxpwb@dell>
- <75e12563a835dc4f8e8dab26ecea46822262604b.1495559980.git.sathyanarayanan.kuppuswamy@linux.intel.com>
- <20170530085306.s4hlijutbz7gp3ay@dell>
+From: Johan Hovold <johan@kernel.org>
+Subject: Re: [PATCH 7/7] thermal: max77620: fix pinmux conflict on reprobe
+Date: Wed, 31 May 2017 10:23:26 +0200
+Message-ID: <20170531082326.GA6735@localhost>
+References: <20170530162554.26159-1-johan@kernel.org>
+ <20170530162554.26159-8-johan@kernel.org>
+ <20170530185707.GF7419@u40b0340c692b58f6553c.ant.amazon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f171.google.com ([209.85.128.171]:34043 "EHLO
-        mail-wr0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750996AbdEaHCg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 03:02:36 -0400
-Received: by mail-wr0-f171.google.com with SMTP id g76so3562399wrd.1
-        for <linux-pm@vger.kernel.org>; Wed, 31 May 2017 00:02:36 -0700 (PDT)
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170530085306.s4hlijutbz7gp3ay@dell>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170530185707.GF7419@u40b0340c692b58f6553c.ant.amazon.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <eduval@amazon.com>
+Cc: Johan Hovold <johan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@freescale.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: sathyanarayanan.kuppuswamy@linux.intel.com
-Cc: gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, andy@infradead.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com
 
-> Dear fellow Maintainers,
+On Tue, May 30, 2017 at 11:57:07AM -0700, Eduardo Valentin wrote:
+> On Tue, May 30, 2017 at 06:25:54PM +0200, Johan Hovold wrote:
+> > Use the new helper for reusing a device-tree node of another device
+> > instead of managing the node references explicitly.
+> > 
+> > This also makes sure that the new of_node_reuse flag is set if the
+> > device is ever reprobed, something which specifically now avoids driver
+> > core from attempting to claim any pinmux resources already claimed by
+> > the parent device.
+> > 
+> > Fixes: ec4664b3fd6d ("thermal: max77620: Add thermal driver for reporting junction temp")
+> > Cc: Laxman Dewangan <ldewangan@nvidia.com>
+> > Signed-off-by: Johan Hovold <johan@kernel.org>
+> > ---
+> >  drivers/thermal/max77620_thermal.c | 8 +++-----
+> >  1 file changed, 3 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/max77620_thermal.c b/drivers/thermal/max77620_thermal.c
+> > index 71d35f3c9215..159bbcee8821 100644
+> > --- a/drivers/thermal/max77620_thermal.c
+> > +++ b/drivers/thermal/max77620_thermal.c
+> > @@ -112,12 +112,10 @@ static int max77620_thermal_probe(struct platform_device *pdev)
+> >  	}
+> >  
+> >  	/*
+> > -	 * Drop any current reference to a device-tree node and get a
+> > -	 * reference to the parent's node which will be balanced on reprobe or
+> > -	 * on platform-device release.
+> > +	 * The reference taken to the parent's node which will be balanced on
+> > +	 * reprobe or on platform-device release.
+> >  	 */
+> > -	of_node_put(pdev->dev.of_node);
+> > -	pdev->dev.of_node = of_node_get(pdev->dev.parent->of_node);
+> > +	device_set_of_node_from_dev(&pdev->dev, pdev->dev.parent);
 > 
-> Enjoy!
+> Should this one be squashed with patch 6/7?
 
-... or not!
+I separated the two fixes this way as 6/7 does not depend on the rest of
+the series and could be backported to stable, while this one fixes
+something that has never worked (e.g. deferred probe of the thermal
+child when the parent has a pinctrl configuration) and therefore is not
+stable material.
 
-Please remove these patches from your tree, since they cause build
-problems in the USB subsystem.
-
-I have asked Kuppuswamy to squash all un-bisectable patches and
-re-submit.  Once in my possession, the plan is to push out another
-pull-request.
-
-> The following changes since commit 2ea659a9ef488125eb46da6eb571de5eae5c43f6:
-> 
->   Linux 4.12-rc1 (2017-05-13 13:19:49 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/ib-mfd-gpio-thermal-x86-v4.13
-> 
-> for you to fetch changes up to 6aa60f67c11c10540e43bbe5a6377f7a0231501e:
-> 
->   platform: x86: intel_bxtwc_tmu: remove first level irq unmask (2017-05-30 09:34:08 +0100)
-> 
-> ----------------------------------------------------------------
-> Immutable branch between MFD, GPIO, Thermal and X86 due for the v4.13 merge window
-> 
-> ----------------------------------------------------------------
-> Kuppuswamy Sathyanarayanan (8):
->       mfd: intel_soc_pmic_bxtwc: Fix TMU interrupt index
->       mfd: intel_soc_pmic_bxtwc: Remove thermal second level irqs
->       thermal: intel_bxt_pmic_thermal: use first level PMIC thermal irq
->       mfd: intel_soc_pmic_bxtwc: Remove second level irq for gpio device
->       gpio: gpio-wcove: use first level PMIC GPIO irq
->       mfd: intel_soc_pmic_bxtwc: Utilize devm_* functions in driver probe
->       mfd: intel_soc_pmic_bxtwc: Use chained irqs for second level irq chips
->       platform: x86: intel_bxtwc_tmu: remove first level irq unmask
-> 
->  drivers/gpio/gpio-wcove.c                |  14 +-
->  drivers/mfd/intel_soc_pmic_bxtwc.c       | 234 ++++++++++++++++++++-----------
->  drivers/platform/x86/intel_bxtwc_tmu.c   |   4 -
->  drivers/thermal/intel_bxt_pmic_thermal.c |   2 +-
->  include/linux/mfd/intel_soc_pmic.h       |   5 +-
->  5 files changed, 174 insertions(+), 85 deletions(-)
-> 
-> Kind regards,
-> Lee
-> 
-
--- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Thanks,
+Johan
