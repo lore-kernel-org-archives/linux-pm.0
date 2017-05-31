@@ -1,29 +1,65 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH] cpufreq: imx6q: imx6ull should use the same flow as imx6ul
-Date: Wed, 31 May 2017 01:07:17 -0300
-Message-ID: <CAOMZO5A+suW4gS0_7U+g=abvXfFp-bXs5wE1jNPZWwy7HUgSwA@mail.gmail.com>
-References: <30688f5aa17763362275c199b2d61841497c26a4.1496159470.git.leonard.crestez@nxp.com>
+From: Sathyanarayanan Kuppuswamy Natarajan <sathyaosid@gmail.com>
+Subject: Re: [GIT PULL] Immutable branch between MFD, GPIO, Thermal and X86
+ due for the v4.13 merge window
+Date: Tue, 30 May 2017 21:27:31 -0700
+Message-ID: <CAENHMvMxDDsrBV9WgG4qBe4oUhXpyDJyUDNWncevRM+98A0AuA@mail.gmail.com>
+References: <20170523072615.r4widzjc6apwxpwb@dell> <75e12563a835dc4f8e8dab26ecea46822262604b.1495559980.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <20170530085306.s4hlijutbz7gp3ay@dell> <20170531133826.3bee86a0@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f178.google.com ([209.85.223.178]:35432 "EHLO
-        mail-io0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750968AbdEaEHS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 00:07:18 -0400
-In-Reply-To: <30688f5aa17763362275c199b2d61841497c26a4.1496159470.git.leonard.crestez@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <20170531133826.3bee86a0@canb.auug.org.au>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Lee Jones <lee.jones@linaro.org>, Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, Alexandre Courbot <gnurou@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, dvhart@infradead.org, rui.zhang@intel.com, Andy Shevchenko <andy@infradead.org>, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bai Ping <ping.bai@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
 
-On Tue, May 30, 2017 at 12:57 PM, Leonard Crestez
-<leonard.crestez@nxp.com> wrote:
-> From: Octavian Purdila <octavian.purdila@nxp.com>
->
-> This fixes an issue with imx6ull where setting the frequency to 528Mhz
-> would actually set the ARM clock to 324Mhz.
->
-> Signed-off-by: Octavian Purdila <octavian.purdila@nxp.com>
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Sorry, its a mistake from my end. It looks like typec wcove driver got
+merged recently and I missed to add it to my cleanup patch set.
 
-Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
+Lee,
+
+I have created a patch to fix this issue.
+
+Do you want me to send the entire series again with this fix or just
+send the fix alone.
+
+
+On Tue, May 30, 2017 at 8:38 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi all,
+>
+> On Tue, 30 May 2017 09:53:06 +0100 Lee Jones <lee.jones@linaro.org> wrote:
+>>
+>> Dear fellow Maintainers,
+>>
+>> Enjoy!
+>>
+>> The following changes since commit 2ea659a9ef488125eb46da6eb571de5eae5c43f6:
+>>
+>>   Linux 4.12-rc1 (2017-05-13 13:19:49 -0700)
+>>
+>> are available in the git repository at:
+>>
+>>   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/ib-mfd-gpio-thermal-x86-v4.13
+>>
+>> for you to fetch changes up to 6aa60f67c11c10540e43bbe5a6377f7a0231501e:
+>>
+>>   platform: x86: intel_bxtwc_tmu: remove first level irq unmask (2017-05-30 09:34:08 +0100)
+>>
+>> ----------------------------------------------------------------
+>> Immutable branch between MFD, GPIO, Thermal and X86 due for the v4.13 merge window
+>>
+>> ----------------------------------------------------------------
+>> Kuppuswamy Sathyanarayanan (8):
+>>       mfd: intel_soc_pmic_bxtwc: Use chained irqs for second level irq chips
+>
+> See my other bug report on this commit ...
+>
+> --
+> Cheers,
+> Stephen Rothwell
+
+
+
+-- 
+Sathya
