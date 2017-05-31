@@ -1,41 +1,50 @@
-From: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 4/7] driver core: fix automatic pinctrl management
-Date: Wed, 31 May 2017 02:39:28 +0200
-Message-ID: <CACRpkda2PFrua01uKy3b2Zvqi3SH1i0tsxOfWhNP8bB7RCo45g@mail.gmail.com>
-References: <20170530162554.26159-1-johan@kernel.org> <20170530162554.26159-5-johan@kernel.org>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [GIT PULL] Immutable branch between MFD, GPIO, Thermal and X86
+ due for the v4.13 merge window
+Date: Wed, 31 May 2017 13:38:26 +1000
+Message-ID: <20170531133826.3bee86a0@canb.auug.org.au>
+References: <20170523072615.r4widzjc6apwxpwb@dell>
+        <75e12563a835dc4f8e8dab26ecea46822262604b.1495559980.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+        <20170530085306.s4hlijutbz7gp3ay@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170530162554.26159-5-johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <20170530085306.s4hlijutbz7gp3ay@dell>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: sathyanarayanan.kuppuswamy@linux.intel.com, gnurou@gmail.com, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, andy@infradead.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, sathyaosid@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 30, 2017 at 6:25 PM, Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+Hi all,
 
-> Commit ab78029ecc34 ("drivers/pinctrl: grab default handles from device
-> core") added automatic pin-control management to driver core by looking
-> up and setting any default pinctrl state found in device tree while a
-> device is being probed.
+On Tue, 30 May 2017 09:53:06 +0100 Lee Jones <lee.jones@linaro.org> wrote:
+>
+> Dear fellow Maintainers,
+> 
+> Enjoy!
+> 
+> The following changes since commit 2ea659a9ef488125eb46da6eb571de5eae5c43f6:
+> 
+>   Linux 4.12-rc1 (2017-05-13 13:19:49 -0700)
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/ib-mfd-gpio-thermal-x86-v4.13
+> 
+> for you to fetch changes up to 6aa60f67c11c10540e43bbe5a6377f7a0231501e:
+> 
+>   platform: x86: intel_bxtwc_tmu: remove first level irq unmask (2017-05-30 09:34:08 +0100)
+> 
+> ----------------------------------------------------------------
+> Immutable branch between MFD, GPIO, Thermal and X86 due for the v4.13 merge window
+> 
+> ----------------------------------------------------------------
+> Kuppuswamy Sathyanarayanan (8):
+>       mfd: intel_soc_pmic_bxtwc: Use chained irqs for second level irq chips
 
-Actually we do not just support device tree, but also passing pin control
-states from board files. It is handled by the core all the same.
-So it's not a device tree thing.
+See my other bug report on this commit ...
 
-One of those days we will have ACPI passing state tables too...
-
-But I understand what you mean.
-
-> Fix this by checking the new of_node_reused flag and skipping automatic
-> pinctrl configuration during probe if set.
-
-Seems like a solid idea. I hope we don't need another quirk for ACPI.
-Acked-by: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-
-Yours,
-Linus Walleij
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Cheers,
+Stephen Rothwell
