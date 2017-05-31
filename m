@@ -1,126 +1,115 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] ARM: cpuidle: Support asymmetric idle definition
-Date: Wed, 31 May 2017 18:40:37 +0200
-Message-ID: <77df6298-945b-7663-0cb9-cd24fa583c6a@linaro.org>
-References: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
- <850fab54-d6e6-7b4c-631a-f4ee658c96fa@arm.com>
- <ca383c4a-9eeb-bd35-fa7b-1098bd0a5dc1@linaro.org>
- <45754d0a-6a98-2987-74ed-429926d89cbc@arm.com>
- <ce4ee3e6-baeb-5f99-a8d1-f2f3855fde35@linaro.org>
- <3ce7048e-6d9d-9e46-a6fb-4d3263231536@arm.com>
- <abfc0a2d-04bc-6714-f772-5f5ae23a1680@linaro.org>
- <8c5b46d1-8b34-2ced-e27d-4d76f80953c6@arm.com>
+From: Paul Kocialkowski <contact@paulk.fr>
+Subject: Re: [PATCH 5/5] power: supply: bq27xxx: Correct supply status with
+ current draw
+Date: Wed, 31 May 2017 18:55:19 +0200
+Message-ID: <1496249719.1774.1.camel@paulk.fr>
+References: <20170430182727.24412-1-contact@paulk.fr>
+         <20170430182727.24412-5-contact@paulk.fr>
+         <20170528191619.GA20159@xo-6d-61-c0.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f51.google.com ([74.125.82.51]:36574 "EHLO
-        mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750916AbdEaQkl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 12:40:41 -0400
-Received: by mail-wm0-f51.google.com with SMTP id 7so125515939wmo.1
-        for <linux-pm@vger.kernel.org>; Wed, 31 May 2017 09:40:40 -0700 (PDT)
-In-Reply-To: <8c5b46d1-8b34-2ced-e27d-4d76f80953c6@arm.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg="pgp-sha256";
+        protocol="application/pgp-signature"; boundary="=-oY/8n/V4Fd3wwj5PNmMo"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170528191619.GA20159@xo-6d-61-c0.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Chris Lapa <chris@lapa.com.au>, Matt Ranostay <mranostay@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
-
-On 22/05/2017 17:02, Sudeep Holla wrote:
-> 
-> 
-> On 22/05/17 15:48, Daniel Lezcano wrote:
->> On 22/05/2017 15:02, Sudeep Holla wrote:
->>
->> [ ... ]
->>
->>>>>>>> +		drv->cpumask = &cpu_topology[cpu].core_sibling;
->>>>>>>> +
->>>>>>>
->>>>>>> This is not always true and not architecturally guaranteed. So instead
->>>>>>> of introducing this broken dependency, better to extract information
->>>>>>> from the device tree.
->>>>>>
->>>>>> Can you give an example of a broken dependency ?
->>>>>>
->>>>>> The cpu topology information is extracted from the device tree. So
->>>>>> if the topology is broken, the DT is broken also. Otherwise, the
->>>>>> topology code must fix the broken dependency from the DT.
->>>>>>
->>>>>
->>>>> No, I meant there's no guarantee that all designs must follow this rule.
->>>>> I don't mean CPU topology code or binding is broken. What I meant is
->>>>> linking CPU topology to CPU power domains is wrong. We should make use
->>>>> of DT you infer this information as it's already there. Topology bindings
->>>>> makes no reference to power and hence you simply can't infer that
->>>>> information from it.
->>>>
->>>> Ok, I will have a look how power domains can fit in this.
->>>>
->>>> However I'm curious to know a platform with a cluster idle state
->>>> powering down only a subset of CPUs belonging to the cluster.
->>>>
->>>
->>> We can't reuse CPU topology for power domains:
->>> 1. As I mentioned earlier for sure, it won't be same with ARM DynamIQ.
->>> 2. Topology bindings strictly restrict themselves with topology and not
->>> connected with power-domains. We also have separate power domain
->>> bindings.
->>
->> Yes, the theory is valid, but practically nowadays I don't see where we
->> have a cluster defined by a topology with a different cluster power domain.
->>
-> 
-> While I agree that it's true in current practice, but in past we have
-> seen "innovative designs". We initially had 2 clusters(big and little)
-> then we saw 3 cluster(big little and tiny or whatever you what to call)
-> So as it's not architecturally guaranteed, it's not nice to make this
-> assumption in a generic driver.
-> 
->> By the way, if you have any pointer to documentation for DynamIQ PM and
->> design? I would be interested to have a look.
->>
-> 
-> I don't have anything in detail. Excerpts from the link I sent earlier
-> indicate that it's possible and highly likely.
-> 
-> "DynamIQ supports multiple, configurable, performance domains within a
-> single cluster. These domains, consisting of single or multiple ARM
-> CPUs, can scale in performance and power with finer granularity than
-> previous quad-core clusters."
-> 
->>> We need to separate topology and power domains. We have some dependency
->>> like this in big little drivers(both CPUfreq and CPUIdle) but that
->>> dependencies must be removed as they are not architecturally guaranteed.
->>> Lorenzo had a patch[1] to solve this issue, I can post the latest
->>> version of it again and continue the discussion after some basic
->>> rebase/testing.
->>
->> Actually, I am not convinced by the approach proposed in this patch.
->>
->> Let me have a look at the idle power domain before, I do believe we can
->> do something much more simple.
->>
-> 
-> OK, if you think so.
-
-Hi Sudeep, Lorenzo,
-
-I have been thinking and looking at the domain-idle-state and I don't
-see an obvious connection between what is describing the power domain,
-the cpu idle driver and what we are trying to achieve.
-
-I would like to suggest something much more simple, register a cpuidle
-driver per cpu, so every cpu can have its own idle definitions, that
-should work for dynamiQ, smp and hmp. The impact on the driver will be
-minimal.
 
 
+--=-oY/8n/V4Fd3wwj5PNmMo
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+Hi,
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Le dimanche 28 mai 2017 =C3=A0 21:16 +0200, Pavel Machek a =C3=A9crit :
+> Hi!
+>=20
+> > The status reported directly by the battery controller is not always
+> > reliable and should be corrected based on the current draw information.
+> >=20
+> > This implements such a correction with a dedicated function, called
+> > when retrieving the supply status.
+> >=20
+> > @@ -1182,6 +1196,8 @@ static int bq27xxx_battery_status(struct
+> > bq27xxx_device_info *di,
+> >  		else
+> >  			status =3D POWER_SUPPLY_STATUS_DISCHARGING;
+> >  	} else {
+> > +		curr =3D (int)((s16)curr) * 1000;
+>=20
+> Umm.
+>=20
+> > @@ -1190,6 +1206,18 @@ static int bq27xxx_battery_status(struct
+> > bq27xxx_device_info *di,
+> >  			status =3D POWER_SUPPLY_STATUS_CHARGING;
+> >  	}
+> > =20
+> > +
+> > +	if (curr =3D=3D 0 && status !=3D POWER_SUPPLY_STATUS_NOT_CHARGING)
+> > +		status =3D POWER_SUPPLY_STATUS_FULL;
+> > +
+> > +	if (status =3D=3D POWER_SUPPLY_STATUS_FULL) {
+> > +		/* Drawing or providing current when full */
+> > +		if (curr > 0)
+> > +			status =3D POWER_SUPPLY_STATUS_CHARGING;
+> > +		else if (curr < 0)
+> > +			status =3D POWER_SUPPLY_STATUS_DISCHARGING;
+> > +	}
+>=20
+> Are you sure this works? On N900, we normally see small currents to/from
+> "full" battery.
+
+In my case, this works perfectly and I am quite surprised of what you're
+describing. Is it the case when the battery has a PSU connected?
+
+I guess I would consider this a hardware issue (leak currents) and we could
+definitely set some range (in device-tree) to distinguish between full + le=
+ak
+currents and bad reporting from the fuel gauge. That would work well in my =
+case
+too.
+
+> Should the test be for absolute_value(curr) < something rather than for =
+=3D=3D 0?
+>=20
+> What hw did you test it on?
+
+I tested this on nyan Chromebooks (Acer Chromebook 13 and HP Chromebook 11)=
+ as
+well as veyron Chromebooks (Chromebook C201PA) that use a bq27xxx fuel gaug=
+e.
+
+Cheers!
+
+--=20
+Paul Kocialkowski, developer of free digital technology and hardware suppor=
+t
+
+Website: https://www.paulk.fr/
+Coding blog: https://code.paulk.fr/
+Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
+--=-oY/8n/V4Fd3wwj5PNmMo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlku9XgACgkQhP3B6o/u
+lQw9aA/+IhuQqBBz/Lh1qxBUCIsjL6THIunIJj/TLyYYZ1Qqd3MBYbAP6F/+R6Nm
+0+/zTmSaZlhdrCgwq1QpmQGkdKHuxxhhplejZCRbc3rVDqzdvBWQOGdE7AdxWhWR
+pwcmLcmqsxWQR1U+3YzUpWDRA1OxuwD+VcviABpItorI19yOhbIyLuCbgPSBSoiW
+D8v+KJ7zvlk91/VxxYALmXQ43pbCViMsy5CdL5WfhxcBZyMCjnFoIu0Ufa2beCmi
+Yn/MXzzdl7+iwC9edR1WbxO23ZnpA3W1ukUCt1BMBNvzUIbYqr5ZJsm3XNrj6aqw
+fKZEY8G8UM0y+MXxfY/yLXP4MWUGgcgE2NqAS66rb/wlZwZqDbl5jdflV5Y41axG
+WPDR2ZXMw8QjklplRw/96JoUZgn6tV9NwYVTXG3iansYb1YB8cI+BMLGNzZ2npyx
+R2/XU41aZJRc2HSo3QpkZY+DhTbA+3LS9/QPygR1rbAd5WjJxu+SALG6lwFJiGFA
+mNNDx4LQLx7XkrZMhY6m9IkeolxZmG4Ih2cQNwZ6c2naFamQ5kU1NNrZdvY8Shpd
+YDgwChVaLJM+2g92KiEJ7uWTUnibZzTr1Mah9kvCgwXEVSoHUUgG//zMPMQ134JN
+ykEH1ZJ2hWFwGDeoPOyd/xRyzMUL6U6wzq5RXXIvAjV4tRMM4pw=
+=RzJB
+-----END PGP SIGNATURE-----
+
+--=-oY/8n/V4Fd3wwj5PNmMo--
