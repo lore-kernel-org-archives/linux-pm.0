@@ -1,91 +1,126 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCHv2] power: supply: cpcap-battery: Add a battery driver
-Date: Wed, 31 May 2017 11:30:02 -0500
-Message-ID: <20170531163002.j4xb6fo3ipq6ly2d@rob-hp-laptop>
-References: <20170523005637.945-1-tony@atomide.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] ARM: cpuidle: Support asymmetric idle definition
+Date: Wed, 31 May 2017 18:40:37 +0200
+Message-ID: <77df6298-945b-7663-0cb9-cd24fa583c6a@linaro.org>
+References: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
+ <850fab54-d6e6-7b4c-631a-f4ee658c96fa@arm.com>
+ <ca383c4a-9eeb-bd35-fa7b-1098bd0a5dc1@linaro.org>
+ <45754d0a-6a98-2987-74ed-429926d89cbc@arm.com>
+ <ce4ee3e6-baeb-5f99-a8d1-f2f3855fde35@linaro.org>
+ <3ce7048e-6d9d-9e46-a6fb-4d3263231536@arm.com>
+ <abfc0a2d-04bc-6714-f772-5f5ae23a1680@linaro.org>
+ <8c5b46d1-8b34-2ced-e27d-4d76f80953c6@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:34823 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751219AbdEaQaE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 12:30:04 -0400
-Content-Disposition: inline
-In-Reply-To: <20170523005637.945-1-tony@atomide.com>
+Received: from mail-wm0-f51.google.com ([74.125.82.51]:36574 "EHLO
+        mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750916AbdEaQkl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 May 2017 12:40:41 -0400
+Received: by mail-wm0-f51.google.com with SMTP id 7so125515939wmo.1
+        for <linux-pm@vger.kernel.org>; Wed, 31 May 2017 09:40:40 -0700 (PDT)
+In-Reply-To: <8c5b46d1-8b34-2ced-e27d-4d76f80953c6@arm.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On Mon, May 22, 2017 at 05:56:37PM -0700, Tony Lindgren wrote:
-> On the CPCAP PMIC we can use the ADCs for monitoring the battery,
-> and there is also a coulomb counter. So let's add basic support for
-> the battery driver.
+On 22/05/2017 17:02, Sudeep Holla wrote:
 > 
-> I did not add any capacity prediction as that should probably be
-> done in the user space. Or at least user space should tell the kernel
-> some battery statistics and then the kernel driver could display the
-> capacity based on that.
 > 
-> Note that I left out the battery interrupt handling for now as I need
-> to spend more time on it for the battery empty interrupts. The driver
-> works just fine without the interrupts too.
+> On 22/05/17 15:48, Daniel Lezcano wrote:
+>> On 22/05/2017 15:02, Sudeep Holla wrote:
+>>
+>> [ ... ]
+>>
+>>>>>>>> +		drv->cpumask = &cpu_topology[cpu].core_sibling;
+>>>>>>>> +
+>>>>>>>
+>>>>>>> This is not always true and not architecturally guaranteed. So instead
+>>>>>>> of introducing this broken dependency, better to extract information
+>>>>>>> from the device tree.
+>>>>>>
+>>>>>> Can you give an example of a broken dependency ?
+>>>>>>
+>>>>>> The cpu topology information is extracted from the device tree. So
+>>>>>> if the topology is broken, the DT is broken also. Otherwise, the
+>>>>>> topology code must fix the broken dependency from the DT.
+>>>>>>
+>>>>>
+>>>>> No, I meant there's no guarantee that all designs must follow this rule.
+>>>>> I don't mean CPU topology code or binding is broken. What I meant is
+>>>>> linking CPU topology to CPU power domains is wrong. We should make use
+>>>>> of DT you infer this information as it's already there. Topology bindings
+>>>>> makes no reference to power and hence you simply can't infer that
+>>>>> information from it.
+>>>>
+>>>> Ok, I will have a look how power domains can fit in this.
+>>>>
+>>>> However I'm curious to know a platform with a cluster idle state
+>>>> powering down only a subset of CPUs belonging to the cluster.
+>>>>
+>>>
+>>> We can't reuse CPU topology for power domains:
+>>> 1. As I mentioned earlier for sure, it won't be same with ARM DynamIQ.
+>>> 2. Topology bindings strictly restrict themselves with topology and not
+>>> connected with power-domains. We also have separate power domain
+>>> bindings.
+>>
+>> Yes, the theory is valid, but practically nowadays I don't see where we
+>> have a cluster defined by a topology with a different cluster power domain.
+>>
 > 
-> Cc: devicetree@vger.kernel.org
-> Cc: Marcel Partap <mpartap@gmx.net>
-> Cc: Michael Scott <michael.scott@linaro.org>
-> Cc: Rob Herring <robh@kernel.org>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
+> While I agree that it's true in current practice, but in past we have
+> seen "innovative designs". We initially had 2 clusters(big and little)
+> then we saw 3 cluster(big little and tiny or whatever you what to call)
+> So as it's not architecturally guaranteed, it's not nice to make this
+> assumption in a generic driver.
 > 
-> Changes since v1:
+>> By the way, if you have any pointer to documentation for DynamIQ PM and
+>> design? I would be interested to have a look.
+>>
 > 
-> - Add support for battery low interrupts
+> I don't have anything in detail. Excerpts from the link I sent earlier
+> indicate that it's possible and highly likely.
 > 
-> - Fix POWER_SUPPLY_STATUS during charging to not flip constantly
->   by using average current
+> "DynamIQ supports multiple, configurable, performance domains within a
+> single cluster. These domains, consisting of single or multiple ARM
+> CPUs, can scale in performance and power with finer granularity than
+> previous quad-core clusters."
 > 
-> ---
->  .../bindings/power/supply/cpcap-battery.txt        |  27 +
->  drivers/power/supply/Kconfig                       |   8 +
->  drivers/power/supply/Makefile                      |   1 +
->  drivers/power/supply/cpcap-battery.c               | 808 +++++++++++++++++++++
->  4 files changed, 844 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
->  create mode 100644 drivers/power/supply/cpcap-battery.c
+>>> We need to separate topology and power domains. We have some dependency
+>>> like this in big little drivers(both CPUfreq and CPUIdle) but that
+>>> dependencies must be removed as they are not architecturally guaranteed.
+>>> Lorenzo had a patch[1] to solve this issue, I can post the latest
+>>> version of it again and continue the discussion after some basic
+>>> rebase/testing.
+>>
+>> Actually, I am not convinced by the approach proposed in this patch.
+>>
+>> Let me have a look at the idle power domain before, I do believe we can
+>> do something much more simple.
+>>
 > 
-> diff --git a/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt b/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
-> new file mode 100644
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
-> @@ -0,0 +1,27 @@
-> +Motorola CPCAP PMIC battery driver binding
-> +
-> +Required properties:
-> +- compatible: Shall be "motorola,cpcap-battery"
-> +- interrupts: Interrupt specifier for each name in interrupt-names
-> +- interrupt-names: Should contain the following entries:
-> +		   "lowbph", "lowbpl", "chrgcurr1", "battdetb"
-> +- io-channels: IIO ADC channel specifier for each name in io-channel-names
-> +- io-channel-names: Should contain the following entries:
-> +		    "battdetb", "battp"
+> OK, if you think so.
 
-Doesn't match the example.
+Hi Sudeep, Lorenzo,
 
-> +
-> +Example:
-> +
-> +cpcap_battery: battery {
-> +	compatible = "motorola,cpcap-battery";
-> +	interrupts-extended = <
-> +		&cpcap 5 0 &cpcap 3 0
-> +		&cpcap 20 0 &cpcap 54 0
-> +	>;
-> +	interrupt-names =
-> +		"lowbph", "lowbpl",
-> +		"chrgcurr1", "battdetb";
-> +	io-channels = <&cpcap_adc 0 &cpcap_adc 1
-> +		       &cpcap_adc 5 &cpcap_adc 6>;
-> +	io-channel-names = "battdetb", "battp",
-> +			   "chg_isense", "batti";
-> +};
+I have been thinking and looking at the domain-idle-state and I don't
+see an obvious connection between what is describing the power domain,
+the cpu idle driver and what we are trying to achieve.
+
+I would like to suggest something much more simple, register a cpuidle
+driver per cpu, so every cpu can have its own idle definitions, that
+should work for dynamiQ, smp and hmp. The impact on the driver will be
+minimal.
+
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
