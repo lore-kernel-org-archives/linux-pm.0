@@ -1,7 +1,8 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH v5 5/7] arm,arm64,drivers: reduce scope of cap_parsing_failed
-Date: Wed, 31 May 2017 17:59:29 +0100
-Message-ID: <20170531165931.6945-6-juri.lelli@arm.com>
+Subject: [PATCH v5 7/7] arm, arm64,
+ drivers: add a prefix to drivers arch_topology interfaces
+Date: Wed, 31 May 2017 17:59:31 +0100
+Message-ID: <20170531165931.6945-8-juri.lelli@arm.com>
 References: <20170531165931.6945-1-juri.lelli@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,94 +22,195 @@ To: linux-kernel@vger.kernel.org
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, vincent.guittot@linaro.org, juri.lelli@arm.com, linux-pm@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, broonie@kernel.org, will.deacon@arm.com, gregkh@linuxfoundation.org, dietmar.eggemann@arm.com, robh+dt@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, morten.rasmussen@arm.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Reduce the scope of cap_parsing_failed (making it static in
-drivers/base/arch_topology.c) by slightly changing {arm,arm64} DT
-parsing code.
+Now that some functions that deal with arch topology information live
+under drivers, there is a clash of naming that might create confusion.
 
-For arm checking for !cap_parsing_failed before calling normalize_
-cpu_capacity() is superfluous, as returning an error from parse_
-cpu_capacity() (above) means cap_from _dt is set to false.
+Tidy things up by creating a topology namespace for interfaces used by
+arch code; achieve this by prepending a 'topology_' prefix to driver
+interfaces.
 
-For arm64 we can simply check if raw_capacity points to something,
-which is not if capacity parsing has failed.
-
-Suggested-by: Morten Rasmussen <morten.rasmussen@arm.com>
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 Acked-by: Russell King <rmk+kernel@armlinux.org.uk>
 Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/arm/kernel/topology.c   | 3 +--
- arch/arm64/kernel/topology.c | 5 +----
- drivers/base/arch_topology.c | 4 ++--
- 3 files changed, 4 insertions(+), 8 deletions(-)
+
+Changes from v4:
+
+ - as per discussion with Greg, Dietmar and Morten (off-line)
+   the interface function have been renamed as
+
+   s/atd_normalize_cpu_capacity/topology_normalize_cpu_scale/
+   s/atd_parse_cpu_capacity/topology_parse_cpu_capacity/
+   s/atd_scale_cpu_capacity/topology_get_cpu_scale/
+   s/atd_set_capacity_scale/topology_set_cpu_scale/
+
+   which seems to better reflect their purpose and creates a saner
+   "topology_" scope
+---
+ arch/arm/kernel/topology.c    |  8 ++++----
+ arch/arm64/kernel/topology.c  |  4 ++--
+ drivers/base/arch_topology.c  | 20 ++++++++++----------
+ include/linux/arch_topology.h |  8 ++++----
+ 4 files changed, 20 insertions(+), 20 deletions(-)
 
 diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 49ef025ffaa0..1e35a3265ddf 100644
+index 557be4f1d2d7..bf949a763dbe 100644
 --- a/arch/arm/kernel/topology.c
 +++ b/arch/arm/kernel/topology.c
-@@ -76,7 +76,6 @@ static unsigned long *__cpu_capacity;
+@@ -111,7 +111,7 @@ static void __init parse_dt_topology(void)
+ 			continue;
+ 		}
  
- static unsigned long middle_capacity = 1;
- static bool cap_from_dt = true;
--extern bool cap_parsing_failed;
- extern void normalize_cpu_capacity(void);
- extern int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu);
- 
-@@ -165,7 +164,7 @@ static void __init parse_dt_topology(void)
- 		middle_capacity = ((max_capacity / 3)
+-		if (parse_cpu_capacity(cn, cpu)) {
++		if (topology_parse_cpu_capacity(cn, cpu)) {
+ 			of_node_put(cn);
+ 			continue;
+ 		}
+@@ -160,7 +160,7 @@ static void __init parse_dt_topology(void)
  				>> (SCHED_CAPACITY_SHIFT-1)) + 1;
  
--	if (cap_from_dt && !cap_parsing_failed)
-+	if (cap_from_dt)
- 		normalize_cpu_capacity();
+ 	if (cap_from_dt)
+-		normalize_cpu_capacity();
++		topology_normalize_cpu_scale();
  }
  
+ /*
+@@ -173,10 +173,10 @@ static void update_cpu_capacity(unsigned int cpu)
+ 	if (!cpu_capacity(cpu) || cap_from_dt)
+ 		return;
+ 
+-	set_capacity_scale(cpu, cpu_capacity(cpu) / middle_capacity);
++	topology_set_cpu_scale(cpu, cpu_capacity(cpu) / middle_capacity);
+ 
+ 	pr_info("CPU%u: update cpu_capacity %lu\n",
+-		cpu, arch_scale_cpu_capacity(NULL, cpu));
++		cpu, topology_get_cpu_scale(NULL, cpu));
+ }
+ 
+ #else
 diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index c5bc31eb97e8..7e1f6f75185b 100644
+index 255230c3e835..79244c75eaec 100644
 --- a/arch/arm64/kernel/topology.c
 +++ b/arch/arm64/kernel/topology.c
-@@ -27,7 +27,6 @@
- #include <asm/cputype.h>
- #include <asm/topology.h>
+@@ -39,7 +39,7 @@ static int __init get_cpu_for_node(struct device_node *node)
  
--extern bool cap_parsing_failed;
- extern void normalize_cpu_capacity(void);
- extern int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu);
- 
-@@ -187,10 +186,8 @@ static int __init parse_dt_topology(void)
- 	 * cluster with restricted subnodes.
- 	 */
- 	map = of_get_child_by_name(cn, "cpu-map");
--	if (!map) {
--		cap_parsing_failed = true;
-+	if (!map)
- 		goto out;
--	}
- 
- 	ret = parse_cluster(map, 0);
+ 	for_each_possible_cpu(cpu) {
+ 		if (of_get_cpu_node(cpu, NULL) == cpu_node) {
+-			parse_cpu_capacity(cpu_node, cpu);
++			topology_parse_cpu_capacity(cpu_node, cpu);
+ 			of_node_put(cpu_node);
+ 			return cpu;
+ 		}
+@@ -191,7 +191,7 @@ static int __init parse_dt_topology(void)
  	if (ret != 0)
+ 		goto out_map;
+ 
+-	normalize_cpu_capacity();
++	topology_normalize_cpu_scale();
+ 
+ 	/*
+ 	 * Check that all cores are in the topology; the SMP code will
 diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index 097834f0fcd7..acf99372c5cf 100644
+index 76c19aa0d82f..d1c33a85059e 100644
 --- a/drivers/base/arch_topology.c
 +++ b/drivers/base/arch_topology.c
-@@ -95,7 +95,7 @@ subsys_initcall(register_cpu_capacity_sysctl);
+@@ -25,12 +25,12 @@
+ static DEFINE_MUTEX(cpu_scale_mutex);
+ static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
  
- static u32 capacity_scale;
- static u32 *raw_capacity;
--bool cap_parsing_failed;
-+static bool cap_parsing_failed;
- 
- void normalize_cpu_capacity(void)
+-unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
++unsigned long topology_get_cpu_scale(struct sched_domain *sd, int cpu)
  {
-@@ -210,7 +210,7 @@ static int __init register_cpufreq_notifier(void)
- 	 * until we have the necessary code to parse the cpu capacity, so
- 	 * skip registering cpufreq notifier.
- 	 */
--	if (!acpi_disabled || cap_parsing_failed)
-+	if (!acpi_disabled || !raw_capacity)
- 		return -EINVAL;
+ 	return per_cpu(cpu_scale, cpu);
+ }
  
- 	if (!alloc_cpumask_var(&cpus_to_visit, GFP_KERNEL)) {
+-void set_capacity_scale(unsigned int cpu, unsigned long capacity)
++void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity)
+ {
+ 	per_cpu(cpu_scale, cpu) = capacity;
+ }
+@@ -42,7 +42,7 @@ static ssize_t cpu_capacity_show(struct device *dev,
+ 	struct cpu *cpu = container_of(dev, struct cpu, dev);
+ 
+ 	return sprintf(buf, "%lu\n",
+-			arch_scale_cpu_capacity(NULL, cpu->dev.id));
++			topology_get_cpu_scale(NULL, cpu->dev.id));
+ }
+ 
+ static ssize_t cpu_capacity_store(struct device *dev,
+@@ -67,7 +67,7 @@ static ssize_t cpu_capacity_store(struct device *dev,
+ 
+ 	mutex_lock(&cpu_scale_mutex);
+ 	for_each_cpu(i, &cpu_topology[this_cpu].core_sibling)
+-		set_capacity_scale(i, new_capacity);
++		topology_set_cpu_scale(i, new_capacity);
+ 	mutex_unlock(&cpu_scale_mutex);
+ 
+ 	return count;
+@@ -98,7 +98,7 @@ static u32 capacity_scale;
+ static u32 *raw_capacity;
+ static bool cap_parsing_failed;
+ 
+-void normalize_cpu_capacity(void)
++void topology_normalize_cpu_scale(void)
+ {
+ 	u64 capacity;
+ 	int cpu;
+@@ -113,14 +113,14 @@ void normalize_cpu_capacity(void)
+ 			 cpu, raw_capacity[cpu]);
+ 		capacity = (raw_capacity[cpu] << SCHED_CAPACITY_SHIFT)
+ 			/ capacity_scale;
+-		set_capacity_scale(cpu, capacity);
++		topology_set_cpu_scale(cpu, capacity);
+ 		pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
+-			cpu, arch_scale_cpu_capacity(NULL, cpu));
++			cpu, topology_get_cpu_scale(NULL, cpu));
+ 	}
+ 	mutex_unlock(&cpu_scale_mutex);
+ }
+ 
+-int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
++int __init topology_parse_cpu_capacity(struct device_node *cpu_node, int cpu)
+ {
+ 	int ret = 1;
+ 	u32 cpu_capacity;
+@@ -185,12 +185,12 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+ 			       cpus_to_visit,
+ 			       policy->related_cpus);
+ 		for_each_cpu(cpu, policy->related_cpus) {
+-			raw_capacity[cpu] = arch_scale_cpu_capacity(NULL, cpu) *
++			raw_capacity[cpu] = topology_get_cpu_scale(NULL, cpu) *
+ 					    policy->cpuinfo.max_freq / 1000UL;
+ 			capacity_scale = max(raw_capacity[cpu], capacity_scale);
+ 		}
+ 		if (cpumask_empty(cpus_to_visit)) {
+-			normalize_cpu_capacity();
++			topology_normalize_cpu_scale();
+ 			kfree(raw_capacity);
+ 			pr_debug("cpu_capacity: parsing done\n");
+ 			cap_parsing_done = true;
+diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
+index 4edae9fe8cdd..9af3c174c03a 100644
+--- a/include/linux/arch_topology.h
++++ b/include/linux/arch_topology.h
+@@ -4,14 +4,14 @@
+ #ifndef _LINUX_ARCH_TOPOLOGY_H_
+ #define _LINUX_ARCH_TOPOLOGY_H_
+ 
+-void normalize_cpu_capacity(void);
++void topology_normalize_cpu_scale(void);
+ 
+ struct device_node;
+-int parse_cpu_capacity(struct device_node *cpu_node, int cpu);
++int topology_parse_cpu_capacity(struct device_node *cpu_node, int cpu);
+ 
+ struct sched_domain;
+-unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu);
++unsigned long topology_get_cpu_scale(struct sched_domain *sd, int cpu);
+ 
+-void set_capacity_scale(unsigned int cpu, unsigned long capacity);
++void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
+ 
+ #endif /* _LINUX_ARCH_TOPOLOGY_H_ */
 -- 
 2.11.0
