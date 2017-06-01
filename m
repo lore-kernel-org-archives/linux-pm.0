@@ -1,111 +1,50 @@
-From: Enric Balletbo Serra <eballetbo@gmail.com>
-Subject: Re: [PATCH v3 1/4] dt-bindings: power: supply: add battery charge voltage/current
-Date: Thu, 1 Jun 2017 10:18:54 +0200
-Message-ID: <CAFqH_536VDcx--dJga_+ffut9QmHLySk_gzZbXuCv8TBz++OzA@mail.gmail.com>
-References: <20170526110413.24836-1-enric.balletbo@collabora.com>
- <CAKvHMgTvUkJENP=Y_rdge6Oqq-La341nYW5prB=BpXWo7rF-0A@mail.gmail.com>
- <CAFqH_50+58swMjGOK1oyP0152ap=5Ng1m86q5sdq2Enc08Ui5g@mail.gmail.com> <CAKvHMgQWT-V=vt6bkR7QoCRM8W0MeyfY0hjNL-q0FmfPfNhtfA@mail.gmail.com>
+From: Nicolas Ferre <nicolas.ferre@microchip.com>
+Subject: Re: [PATCH 1/2] power: reset: at91-poweroff: fix clobber list
+Date: Thu, 1 Jun 2017 11:00:42 +0200
+Message-ID: <67ae4003-bcfb-c875-c4b7-0d1dc840d3f0@microchip.com>
+References: <20170531094915.3469-1-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKvHMgQWT-V=vt6bkR7QoCRM8W0MeyfY0hjNL-q0FmfPfNhtfA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Liam Breck <kernel@networkimprov.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from esa1.microchip.iphmx.com ([68.232.147.91]:15703 "EHLO
+        esa1.microchip.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751083AbdFAJAT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jun 2017 05:00:19 -0400
+In-Reply-To: <20170531094915.3469-1-alexandre.belloni@free-electrons.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hi Liam,
+Le 31/05/2017 à 11:49, Alexandre Belloni a écrit :
+> Assembly in at91_lpddr_poweroff has r0 in the clobber list but uses r6.
+> 
+> Reported-by: Ben Hutchings <ben.hutchings@codethink.co.uk>
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 
-2017-06-01 9:01 GMT+02:00 Liam Breck <liam@networkimprov.net>:
-> Hi Enric,
->
-> On Sat, May 27, 2017 at 1:11 PM, Enric Balletbo Serra
-> <eballetbo@gmail.com> wrote:
->> Hi Liam,
->>
->> 2017-05-26 23:20 GMT+02:00 Liam Breck <liam@networkimprov.net>:
->>> Hi Enric,
->>>
->>> On Fri, May 26, 2017 at 4:04 AM, Enric Balletbo i Serra
->>> <enric.balletbo@collabora.com> wrote:
->>>> Add charging voltage and current characteristics to the battery DT for
->>>> proper handling of the battery by fuel-gauge and charger chips.
->>>>
->>>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->>>> ---
->>>> Changes since v2:
->>>>  - Requested by Sebastian Reichel
->>>>    - Move to its own patch and apply to simple-battery framework.
->>>> Changes since v1:
->>>>  - Requested by Rob Herring
->>>>    - Rename ti,charge-* to charge-* to be standard properties.
->>>>    - Use unit suffixes as per bindings/property-units.txt
->>>>
->>>>  Documentation/devicetree/bindings/power/supply/battery.txt | 4 ++++
->>>>  1 file changed, 4 insertions(+)
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>> index 63a7028..c87a439 100644
->>>> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
->>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>> @@ -12,6 +12,8 @@ Optional Properties:
->>>>   - voltage-min-design-microvolt: drained battery voltage
->>>>   - energy-full-design-microwatt-hours: battery design energy
->>>>   - charge-full-design-microamp-hours: battery design capacity
->>>> + - charge-voltage-microvolt: battery charging voltage
->>>> + - charge-current-microamp: battery charging current
->>>
->>> I think you mean constant-charge-* which is how you surface these
->>> properties in your tps65217_charger patch.
->>>
->>
->> Yes, to be strict this is constant-charge-*
->
-> The DT battery node should carry static battery characteristics. So on
-> reflection, I think you want
->
-> constant-charge-current-max-microamp
-> constant-charge-voltage-max-microvolt
->
-> The charger or the user could then safely apply any value <= those.
->
-> Thoughts?
->
+Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
 
-Hmm I see your point and I'm thinking now that actually this is not
-what I wanted to do. What I wanted is set the charger voltage and the
-current hence my first patchset was setting these properties in the
-charger node not the battery.
+> ---
+>  drivers/power/reset/at91-poweroff.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at91-poweroff.c
+> index c6c3beea72f9..c30c40193aaa 100644
+> --- a/drivers/power/reset/at91-poweroff.c
+> +++ b/drivers/power/reset/at91-poweroff.c
+> @@ -97,7 +97,7 @@ static void at91_lpddr_poweroff(void)
+>  		  "r" cpu_to_le32(AT91_DDRSDRC_LPDDR2_PWOFF),
+>  		  "r" (at91_shdwc_base),
+>  		  "r" cpu_to_le32(AT91_SHDW_KEY | AT91_SHDW_SHDW)
+> -		: "r0");
+> +		: "r6");
+>  }
+>  
+>  static int at91_poweroff_get_wakeup_mode(struct device_node *np)
+> 
 
-Said that, I think that you have reason and what we want in battery
-node is the current/voltage max values but we also need to implement a
-mechanism to set the charging voltage/current from userspace or from
-the DT for the charger. The charger should be able to set these values
-and fail if, based in the battery specs, is not supported.
 
-More thoughts?
-
->>> I'll add these to v14 of my patchset which adds simple-battery
->>> support. Rob requested a single patch for this file.
->>>
->>
->> Ok, I'll send the tps charger series without this patch, so please,
->> include this patch in your series.
->>
->>> I've been waiting for feedback on v13.2 from Sebastian. If I don't
->>> hear from him within a few days, I'll post v14.
->>>
->>>>  Batteries must be referenced by chargers and/or fuel-gauges
->>>>  using a phandle. The phandle's property should be named
->>>> @@ -24,6 +26,8 @@ Example:
->>>>                 voltage-min-design-microvolt = <3200000>;
->>>>                 energy-full-design-microwatt-hours = <5290000>;
->>>>                 charge-full-design-microamp-hours = <1430000>;
->>>> +               charge-voltage-microvolt = <4100000>;
->>>> +               charge-current-microamp = <300000>;
->>>>         };
->>>>
->>>>         charger: charger@11 {
->>>> --
->>>> 2.9.3
->>>>
+-- 
+Nicolas Ferre
