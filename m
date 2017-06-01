@@ -1,47 +1,41 @@
-From: Nicolas Ferre <nicolas.ferre@microchip.com>
-Subject: Re: [PATCH 2/2] power: reset: at91-sama5d2_shdwc: fix clobber list
-Date: Thu, 1 Jun 2017 11:00:56 +0200
-Message-ID: <83a8441d-e07c-c1a8-faa5-28521ea9ab39@microchip.com>
-References: <20170531094915.3469-1-alexandre.belloni@free-electrons.com>
- <20170531094915.3469-2-alexandre.belloni@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170531094915.3469-2-alexandre.belloni@free-electrons.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Adam Lessnau <adam.lessnau@intel.com>
+Subject: [PATCH] powercap/rapl: prevent overridding bits outside of the mask
+Date: Thu,  1 Jun 2017 11:21:50 +0200
+Message-ID: <20170601092150.4474-1-adam.lessnau@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga07.intel.com ([134.134.136.100]:4034 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751589AbdFAJWN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 1 Jun 2017 05:22:13 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Adam Lessnau <adam.lessnau@intel.com>
 
-Le 31/05/2017 à 11:49, Alexandre Belloni a écrit :
-> Assembly in at91_lpddr_poweroff has r0 in the clobber list but uses r6.
-> 
-> Reported-by: Ben Hutchings <ben.hutchings@codethink.co.uk>
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Fixes wrong bits shift operation in the rapl_write_data_raw function, which
+might cause overridding bits outside of the mask.
 
-Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+For example, writing new TIME_WINDOW1 value can override POWER_LIMIT1.
 
-> ---
->  drivers/power/reset/at91-sama5d2_shdwc.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/power/reset/at91-sama5d2_shdwc.c b/drivers/power/reset/at91-sama5d2_shdwc.c
-> index 90b0b5a70ce5..55fce8b75245 100644
-> --- a/drivers/power/reset/at91-sama5d2_shdwc.c
-> +++ b/drivers/power/reset/at91-sama5d2_shdwc.c
-> @@ -132,7 +132,7 @@ static void at91_lpddr_poweroff(void)
->  		  "r" cpu_to_le32(AT91_DDRSDRC_LPDDR2_PWOFF),
->  		  "r" (at91_shdwc->at91_shdwc_base),
->  		  "r" cpu_to_le32(AT91_SHDW_KEY | AT91_SHDW_SHDW)
-> -		: "r0");
-> +		: "r6");
->  }
->  
->  static u32 at91_shdwc_debouncer_value(struct platform_device *pdev,
-> 
+Signed-off-by: Adam Lessnau <adam.lessnau@intel.com>
+---
+ drivers/powercap/intel_rapl.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 3c71f608b444..6dc27afb8527 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -887,7 +887,9 @@ static int rapl_write_data_raw(struct rapl_domain *rd,
+ 
+ 	cpu = rd->rp->lead_cpu;
+ 	bits = rapl_unit_xlate(rd, rp->unit, value, 1);
+-	bits |= bits << rp->shift;
++	bits <<= rp->shift;
++	bits &= rp->mask;
++
+ 	memset(&ma, 0, sizeof(ma));
+ 
+ 	ma.msr_no = rd->msrs[rp->id];
 -- 
-Nicolas Ferre
+2.13.0
