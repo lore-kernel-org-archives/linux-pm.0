@@ -1,37 +1,41 @@
-From: =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>
-Subject: Re: [PATCH] thermal: broadcom: ns-thermal: depends/default only for
- NS/NSP
-Date: Thu, 01 Jun 2017 07:29:53 +0200
-Message-ID: <a47f69920ab85252f106b40e8c08e508@milecki.pl>
-References: <1496260544-4200-1-git-send-email-jon.mason@broadcom.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+From: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
+Subject: [0/3] Battery monitor MAX1721x with w1-regmap and w1-slave (resend v2)
+Date: Thu,  1 Jun 2017 09:45:56 +0300
+Message-ID: <20170601064559.7401-1-minimumlaw@rambler.ru>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 10.mo4.mail-out.ovh.net ([188.165.33.109]:41855 "EHLO
-        10.mo4.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750926AbdFAGpu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jun 2017 02:45:50 -0400
-Received: from player746.ha.ovh.net (b6.ovh.net [213.186.33.56])
-        by mo4.mail-out.ovh.net (Postfix) with ESMTP id ED7976E2AF
-        for <linux-pm@vger.kernel.org>; Thu,  1 Jun 2017 07:30:00 +0200 (CEST)
-In-Reply-To: <1496260544-4200-1-git-send-email-jon.mason@broadcom.com>
+Received: from huan2.mail.rambler.ru ([81.19.78.108]:10914 "EHLO
+        huan2.mail.rambler.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750926AbdFAGqJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jun 2017 02:46:09 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jon Mason <jon.mason@broadcom.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com
+To: Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
 
-On 2017-05-31 21:55, Jon Mason wrote:
-> ARCH_BCM_IPROC includes support for many SoCs, not all of which have 
-> the
-> same thermal hardware interface as the Northstar/Northstar Plus SoCs.
-> This is not a major issue, as this driver will only be probed if the
-> relevant device tree entry is present.  However, it will result in a
-> slightly larger than necessary kernel.  By limiting the driver to only
-> work on the NS/NSP SoCs, we can avoid the issue.
-> 
-> Suggested-by: Scott Branden <scott.branden@broadcom.com>
-> Signed-off-by: Jon Mason <jon.mason@broadcom.com>
+Coding style fixes.
 
-Sounds OK, thanks.
+Alex A. Mihaylov (3):
+  regmap: Add 1-Wire bus support
+  w1: MAX1721x Stanalone Fuel Gauge - add 1-Wire slave drivers
+  power: supply: Add support MAX1721x battery monitor
+
+ drivers/base/regmap/Kconfig             |   6 +-
+ drivers/base/regmap/Makefile            |   1 +
+ drivers/base/regmap/regmap-w1.c         | 245 ++++++++++++++++++++++
+ drivers/power/supply/Kconfig            |  14 ++
+ drivers/power/supply/Makefile           |   1 +
+ drivers/power/supply/max1721x_battery.c | 357 ++++++++++++++++++++++++++++++++
+ drivers/w1/slaves/Kconfig               |  12 ++
+ drivers/w1/slaves/Makefile              |   1 +
+ drivers/w1/slaves/w1_max1721x.c         |  73 +++++++
+ drivers/w1/slaves/w1_max1721x.h         | 102 +++++++++
+ drivers/w1/w1_family.h                  |   1 +
+ include/linux/regmap.h                  |  34 +++
+ 12 files changed, 846 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/base/regmap/regmap-w1.c
+ create mode 100644 drivers/power/supply/max1721x_battery.c
+ create mode 100644 drivers/w1/slaves/w1_max1721x.c
+ create mode 100644 drivers/w1/slaves/w1_max1721x.h
+
+-- 
+2.13.0
