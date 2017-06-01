@@ -1,69 +1,111 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] ARM: cpuidle: Support asymmetric idle definition
-Date: Thu, 1 Jun 2017 09:37:50 +0200
-Message-ID: <77a67a7d-4a0d-29b7-dee3-1584f2134309@linaro.org>
-References: <1495212343-24873-1-git-send-email-daniel.lezcano@linaro.org>
- <850fab54-d6e6-7b4c-631a-f4ee658c96fa@arm.com>
- <ca383c4a-9eeb-bd35-fa7b-1098bd0a5dc1@linaro.org>
- <45754d0a-6a98-2987-74ed-429926d89cbc@arm.com>
- <ce4ee3e6-baeb-5f99-a8d1-f2f3855fde35@linaro.org>
- <3ce7048e-6d9d-9e46-a6fb-4d3263231536@arm.com>
- <abfc0a2d-04bc-6714-f772-5f5ae23a1680@linaro.org>
- <8c5b46d1-8b34-2ced-e27d-4d76f80953c6@arm.com>
- <77df6298-945b-7663-0cb9-cd24fa583c6a@linaro.org>
- <160c3091-2d10-9c7b-c55b-e76abf23653f@arm.com>
+From: Enric Balletbo Serra <eballetbo@gmail.com>
+Subject: Re: [PATCH v3 1/4] dt-bindings: power: supply: add battery charge voltage/current
+Date: Thu, 1 Jun 2017 10:18:54 +0200
+Message-ID: <CAFqH_536VDcx--dJga_+ffut9QmHLySk_gzZbXuCv8TBz++OzA@mail.gmail.com>
+References: <20170526110413.24836-1-enric.balletbo@collabora.com>
+ <CAKvHMgTvUkJENP=Y_rdge6Oqq-La341nYW5prB=BpXWo7rF-0A@mail.gmail.com>
+ <CAFqH_50+58swMjGOK1oyP0152ap=5Ng1m86q5sdq2Enc08Ui5g@mail.gmail.com> <CAKvHMgQWT-V=vt6bkR7QoCRM8W0MeyfY0hjNL-q0FmfPfNhtfA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f50.google.com ([74.125.82.50]:35745 "EHLO
-        mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751089AbdFAHhy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jun 2017 03:37:54 -0400
-Received: by mail-wm0-f50.google.com with SMTP id b84so146794971wmh.0
-        for <linux-pm@vger.kernel.org>; Thu, 01 Jun 2017 00:37:54 -0700 (PDT)
-In-Reply-To: <160c3091-2d10-9c7b-c55b-e76abf23653f@arm.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKvHMgQWT-V=vt6bkR7QoCRM8W0MeyfY0hjNL-q0FmfPfNhtfA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Liam Breck <kernel@networkimprov.net>
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On 31/05/2017 19:33, Sudeep Holla wrote:
-> 
-> 
-> On 31/05/17 17:40, Daniel Lezcano wrote:
-> 
->> Hi Sudeep, Lorenzo,
+Hi Liam,
+
+2017-06-01 9:01 GMT+02:00 Liam Breck <liam@networkimprov.net>:
+> Hi Enric,
+>
+> On Sat, May 27, 2017 at 1:11 PM, Enric Balletbo Serra
+> <eballetbo@gmail.com> wrote:
+>> Hi Liam,
 >>
->> I have been thinking and looking at the domain-idle-state and I don't
->> see an obvious connection between what is describing the power domain,
->> the cpu idle driver and what we are trying to achieve.
+>> 2017-05-26 23:20 GMT+02:00 Liam Breck <liam@networkimprov.net>:
+>>> Hi Enric,
+>>>
+>>> On Fri, May 26, 2017 at 4:04 AM, Enric Balletbo i Serra
+>>> <enric.balletbo@collabora.com> wrote:
+>>>> Add charging voltage and current characteristics to the battery DT for
+>>>> proper handling of the battery by fuel-gauge and charger chips.
+>>>>
+>>>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+>>>> ---
+>>>> Changes since v2:
+>>>>  - Requested by Sebastian Reichel
+>>>>    - Move to its own patch and apply to simple-battery framework.
+>>>> Changes since v1:
+>>>>  - Requested by Rob Herring
+>>>>    - Rename ti,charge-* to charge-* to be standard properties.
+>>>>    - Use unit suffixes as per bindings/property-units.txt
+>>>>
+>>>>  Documentation/devicetree/bindings/power/supply/battery.txt | 4 ++++
+>>>>  1 file changed, 4 insertions(+)
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>> index 63a7028..c87a439 100644
+>>>> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>> @@ -12,6 +12,8 @@ Optional Properties:
+>>>>   - voltage-min-design-microvolt: drained battery voltage
+>>>>   - energy-full-design-microwatt-hours: battery design energy
+>>>>   - charge-full-design-microamp-hours: battery design capacity
+>>>> + - charge-voltage-microvolt: battery charging voltage
+>>>> + - charge-current-microamp: battery charging current
+>>>
+>>> I think you mean constant-charge-* which is how you surface these
+>>> properties in your tps65217_charger patch.
+>>>
 >>
-> 
-> I am not sure what you mean by *connection* above.
-> 
-> 1. With old flat list of idle states, we should get the cpumask sharing
->    the idle states from the phandle or something similar.
-> 2. With new domain-idle-state and hierarchical DT binding, you just need
->    to infer that from the hierarchy.
-> 
->> I would like to suggest something much more simple, register a cpuidle
->> driver per cpu, so every cpu can have its own idle definitions, that
->> should work for dynamiQ, smp and hmp. The impact on the driver will be
->> minimal.
+>> Yes, to be strict this is constant-charge-*
+>
+> The DT battery node should carry static battery characteristics. So on
+> reflection, I think you want
+>
+> constant-charge-current-max-microamp
+> constant-charge-voltage-max-microvolt
+>
+> The charger or the user could then safely apply any value <= those.
+>
+> Thoughts?
+>
+
+Hmm I see your point and I'm thinking now that actually this is not
+what I wanted to do. What I wanted is set the charger voltage and the
+current hence my first patchset was setting these properties in the
+charger node not the battery.
+
+Said that, I think that you have reason and what we want in battery
+node is the current/voltage max values but we also need to implement a
+mechanism to set the charging voltage/current from userspace or from
+the DT for the charger. The charger should be able to set these values
+and fail if, based in the battery specs, is not supported.
+
+More thoughts?
+
+>>> I'll add these to v14 of my patchset which adds simple-battery
+>>> support. Rob requested a single patch for this file.
+>>>
 >>
-> 
-> Sounds simple, but not sure if it's scalable on platforms with
-> relatively large number of CPUs like 48 or 96(e.g. Cavium Thunder
-
-I'm pretty sure it scales, we had the idle states per cpuidle devices
-and nobody was complaining. But I agree it could be optimized.
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+>> Ok, I'll send the tps charger series without this patch, so please,
+>> include this patch in your series.
+>>
+>>> I've been waiting for feedback on v13.2 from Sebastian. If I don't
+>>> hear from him within a few days, I'll post v14.
+>>>
+>>>>  Batteries must be referenced by chargers and/or fuel-gauges
+>>>>  using a phandle. The phandle's property should be named
+>>>> @@ -24,6 +26,8 @@ Example:
+>>>>                 voltage-min-design-microvolt = <3200000>;
+>>>>                 energy-full-design-microwatt-hours = <5290000>;
+>>>>                 charge-full-design-microamp-hours = <1430000>;
+>>>> +               charge-voltage-microvolt = <4100000>;
+>>>> +               charge-current-microamp = <300000>;
+>>>>         };
+>>>>
+>>>>         charger: charger@11 {
+>>>> --
+>>>> 2.9.3
+>>>>
