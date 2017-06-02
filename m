@@ -1,71 +1,41 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH V2] ARM: cpuidle: Support asymmetric idle definition
-Date: Fri, 2 Jun 2017 10:39:21 +0100
-Message-ID: <a96db56b-a773-f0a7-431e-acbb969333d1@arm.com>
-References: <1496317188-15272-1-git-send-email-daniel.lezcano@linaro.org>
- <3ec88de3-7d18-0ea6-bc27-e98084f2b6f6@arm.com>
- <4fe4558f-5881-11dc-5d36-93c92a272eed@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: SDHI clock imbalance
+Date: Fri, 2 Jun 2017 11:52:26 +0200
+Message-ID: <CAMuHMdUNF8=HkCt+k1STKofZ00vk0V31OnF1rmupyHrrFZce5Q@mail.gmail.com>
+References: <CAMuHMdX7_u_3TFK22inUp367LR3R77S72RAtRWPFnKE9-cUtpw@mail.gmail.com>
+ <20170602093701.3kn52zfmpgy7kcqo@ninjato>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37776 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750813AbdFBJjZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 2 Jun 2017 05:39:25 -0400
-In-Reply-To: <4fe4558f-5881-11dc-5d36-93c92a272eed@linaro.org>
-Content-Language: en-US
+Received: from mail-it0-f52.google.com ([209.85.214.52]:35885 "EHLO
+        mail-it0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750910AbdFBJwa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2017 05:52:30 -0400
+In-Reply-To: <20170602093701.3kn52zfmpgy7kcqo@ninjato>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net, lorenzo.pieralisi@arm.com
-Cc: Sudeep Holla <sudeep.holla@arm.com>, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, Ulf Hansson <ulf.hansson@linaro.org>, Simon Horman <horms@verge.net.au>, Linux MMC List <linux-mmc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
+Hi Wolfram,
 
+On Fri, Jun 2, 2017 at 11:37 AM, Wolfram Sang <wsa@the-dreams.de> wrote:
+>> While investigating suspend/resume for the R-Car Gen3 clock driver, I
+>> noticed a clock imbalance for SDHI on Salvator-X.
+>
+> Thanks for the heads up! Which branch did you use?
+> renesas-drivers/master? This is important since we had quite some
+> refactoring going on lately.
 
-On 02/06/17 10:25, Daniel Lezcano wrote:
-> On 02/06/2017 11:20, Sudeep Holla wrote:
->>
->>
->> On 01/06/17 12:39, Daniel Lezcano wrote:
->>> Some hardware have clusters with different idle states. The current code does
->>> not support this and fails as it expects all the idle states to be identical.
->>>
->>> Because of this, the Mediatek mtk8173 had to create the same idle state for a
->>> big.Little system and now the Hisilicon 960 is facing the same situation.
->>>
->>> Solve this by simply assuming the multiple driver will be needed for all the
->>> platforms using the ARM generic cpuidle driver which makes sense because of the
->>> different topologies we can support with a single kernel for ARM32 or ARM64.
->>>
->>> Every CPU has its own driver, so every single CPU can specify in the DT the
->>> idle states.
->>>
->>> This simple approach allows to support the future dynamIQ system, current SMP
->>> and HMP.
->>>
->>> It is unoptimal from a memory point of view for a system with a large number of
->>> CPUs but nowadays there is no such system with a cpuidle driver on ARM.
->>>
->>
->> While I agree this may be simple solution, but just not necessary for
->> systems with symmetric idle states especially one with large number of
->> CPUs. I don't like to see 96 CPU Idle driver on say ThunderX. So we
->> *must* have some basic distinction done here.
->>
->> IMO, we can't punish a large SMP systems just because they don't have
->> asymmetric idle states.
-> 
-> Can you point me in the upstream kernel a DTS with 96 cpus and using the
-> cpuidle-arm driver ?
-> 
+Yes, a tree based on renesas-drivers.
 
-The bindings are upstream right. Not all DTS are upstream, firmware
-generate them especially for large systems.
+Gr{oetje,eeting}s,
 
-Check arch/arm64/boot/dts/cavium/thunder{,2}-{88,99}xx.dtsi, it has
-supports PSCI and firmware can update DTB to add the idle states.
-They are systems with 96 and 128 CPUs.
+                        Geert
 
--- 
-Regards,
-Sudeep
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
