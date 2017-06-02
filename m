@@ -1,7 +1,7 @@
 From: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
-Subject: [PATCH 3/3] power: supply: Add support MAX1721x battery monitor
-Date: Fri,  2 Jun 2017 10:06:29 +0300
-Message-ID: <20170602070629.8210-4-minimumlaw@rambler.ru>
+Subject: [PATCH 2/3] w1: MAX1721x Stanalone Fuel Gauge - add 1-Wire slave drivers
+Date: Fri,  2 Jun 2017 10:06:28 +0300
+Message-ID: <20170602070629.8210-3-minimumlaw@rambler.ru>
 References: <20170602070629.8210-1-minimumlaw@rambler.ru>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170602070629.8210-1-minimumlaw@rambler.ru>
@@ -10,415 +10,251 @@ To: Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.
 Cc: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
 List-Id: linux-pm@vger.kernel.org
 
-Add support for battery monitor MAX1721x (power_supply class).
-Maxim Semiconductor MAX1721x Standalone Fuel Gauge battery monitor.
-MAX17211 used for singlecell, MAX17215 for multicell batteryes.
+Add support for Maxim Semiconductor MAX17211/MAX17215
+Standlone Fuel Gauge chips (1-Wire family 0x26)
 ---
- drivers/power/supply/Kconfig            |  14 ++
- drivers/power/supply/Makefile           |   1 +
- drivers/power/supply/max1721x_battery.c | 357 ++++++++++++++++++++++++++++++++
- 3 files changed, 372 insertions(+)
- create mode 100644 drivers/power/supply/max1721x_battery.c
+ drivers/w1/slaves/Kconfig       |  12 +++++
+ drivers/w1/slaves/Makefile      |   1 +
+ drivers/w1/slaves/w1_max1721x.c |  73 ++++++++++++++++++++++++++++
+ drivers/w1/slaves/w1_max1721x.h | 102 ++++++++++++++++++++++++++++++++++++++++
+ drivers/w1/w1_family.h          |   1 +
+ 5 files changed, 189 insertions(+)
+ create mode 100644 drivers/w1/slaves/w1_max1721x.c
+ create mode 100644 drivers/w1/slaves/w1_max1721x.h
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index da54ac88f0..d431d6f8aa 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -268,6 +268,20 @@ config BATTERY_MAX17042
- 	  with MAX17042. This driver also supports max17047/50 chips which are
- 	  improved version of max17042.
+diff --git a/drivers/w1/slaves/Kconfig b/drivers/w1/slaves/Kconfig
+index 0ef9f2663d..06a63a1021 100644
+--- a/drivers/w1/slaves/Kconfig
++++ b/drivers/w1/slaves/Kconfig
+@@ -86,6 +86,18 @@ config W1_SLAVE_DS2433_CRC
+ 	  Each block has 30 bytes of data and a two byte CRC16.
+ 	  Full block writes are only allowed if the CRC is valid.
  
-+config BATTERY_MAX1721X
-+	tristate "MAX17211/MAX17215 standalone gas-gauge"
-+	depends on W1
-+	select W1_SLAVE_MAX1721X
-+	select REGMAP_W1
++config W1_SLAVE_MAX1721X
++	tristate "Maxim MAX17211/MAX17215 battery monitor chip"
 +	help
-+	  MAX1721x is fuel-gauge systems for lithium-ion (Li+) batteries
-+	  in handheld and portable equipment. MAX17211 used with single cell
-+	  battery. MAX17215 designed for muticell battery. Both them have
-+	  1-Wire (W1) host interface.
++	  If you enable this you will have the MAX17211/MAX17215 battery
++	  monitor chip support.
 +
-+	  Say Y here to enable support for the MAX17211/MAX17215 standalone
-+	  battery gas-gauge.
++	  The battery monitor chip is used in many batteries/devices
++	  as the one who is responsible for charging/discharging/monitoring
++	  Li+ batteries.
 +
- config BATTERY_Z2
- 	tristate "Z2 battery driver"
- 	depends on I2C && MACH_ZIPIT2
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 3789a2c06f..c785d05e02 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -41,6 +41,7 @@ obj-$(CONFIG_CHARGER_DA9150)	+= da9150-charger.o
- obj-$(CONFIG_BATTERY_DA9150)	+= da9150-fg.o
- obj-$(CONFIG_BATTERY_MAX17040)	+= max17040_battery.o
- obj-$(CONFIG_BATTERY_MAX17042)	+= max17042_battery.o
-+obj-$(CONFIG_BATTERY_MAX1721X)	+= max1721x_battery.o
- obj-$(CONFIG_BATTERY_Z2)	+= z2_battery.o
- obj-$(CONFIG_BATTERY_RT5033)	+= rt5033_battery.o
- obj-$(CONFIG_CHARGER_RT9455)	+= rt9455_charger.o
-diff --git a/drivers/power/supply/max1721x_battery.c b/drivers/power/supply/max1721x_battery.c
++	  If you are unsure, say N.
++
+ config W1_SLAVE_DS2760
+ 	tristate "Dallas 2760 battery monitor chip (HP iPAQ & others)"
+ 	help
+diff --git a/drivers/w1/slaves/Makefile b/drivers/w1/slaves/Makefile
+index b4a358955e..967329a4b8 100644
+--- a/drivers/w1/slaves/Makefile
++++ b/drivers/w1/slaves/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_W1_SLAVE_DS2406)	+= w1_ds2406.o
+ obj-$(CONFIG_W1_SLAVE_DS2423)	+= w1_ds2423.o
+ obj-$(CONFIG_W1_SLAVE_DS2431)	+= w1_ds2431.o
+ obj-$(CONFIG_W1_SLAVE_DS2433)	+= w1_ds2433.o
++obj-$(CONFIG_W1_SLAVE_MAX1721X)	+= w1_max1721x.o
+ obj-$(CONFIG_W1_SLAVE_DS2760)	+= w1_ds2760.o
+ obj-$(CONFIG_W1_SLAVE_DS2780)	+= w1_ds2780.o
+ obj-$(CONFIG_W1_SLAVE_DS2781)	+= w1_ds2781.o
+diff --git a/drivers/w1/slaves/w1_max1721x.c b/drivers/w1/slaves/w1_max1721x.c
 new file mode 100644
-index 0000000000..aa0effec3d
+index 0000000000..017ec3e159
 --- /dev/null
-+++ b/drivers/power/supply/max1721x_battery.c
-@@ -0,0 +1,357 @@
++++ b/drivers/w1/slaves/w1_max1721x.c
+@@ -0,0 +1,73 @@
 +/*
-+ * 1-wire client/driver for the Maxim Semicondactor
-+ * MAX17211/MAX17215 Standalone Fuel Gauge IC
++ * 1-Wire implementation for Maxim Semiconductor
++ * MAX17211/MAX17215 standalone fuel gauge chip
 + *
 + * Copyright (C) 2017 OAO Radioavionica
 + * Author: Alex A. Mihaylov <minimumlaw@rambler.ru>
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * Use consistent with the GNU GPL is permitted,
++ * provided that this copyright notice is
++ * preserved in its entirety in all copies and derived works.
 + *
 + */
 +
++#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/param.h>
-+#include <linux/pm.h>
-+#include <linux/regmap.h>
++#include <linux/device.h>
++#include <linux/types.h>
 +#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
++#include <linux/mutex.h>
 +#include <linux/idr.h>
++#include <linux/gfp.h>
 +
-+#include "../../w1/w1.h"
-+#include "../../w1/slaves/w1_max1721x.h"
++#include "../w1.h"
++#include "../w1_int.h"
++#include "../w1_family.h"
++#include "w1_max1721x.h"
 +
-+#define DEF_DEV_NAME_MAX17211	"MAX17211"
-+#define DEF_DEV_NAME_MAX17215	"MAX17215"
-+#define DEF_DEV_NAME_UNKNOWN	"UNKNOWN"
-+#define DEF_MFG_NAME		"MAXIM"
-+
-+struct max17211_device_info {
-+	struct device *dev;
-+	struct power_supply *bat;
-+	struct power_supply_desc bat_desc;
-+	struct device *w1_dev;
-+	struct regmap *regmap;
-+	/* battery design format */
-+	unsigned int rsense; /* in tenths uOhm */
-+	char DeviceName[2 * MAX1721X_REG_DEV_NUMB + 1];
-+	char ManufacturerName[2 * MAX1721X_REG_MFG_NUMB + 1];
-+	char SerialNumber[13]; /* see get_sn_str() later for comment */
-+};
-+
-+static inline struct max17211_device_info *
-+to_device_info(struct power_supply *psy)
++static int w1_max17211_add_device(struct w1_slave *sl)
 +{
-+	return power_supply_get_drvdata(psy);
-+}
++	int ret;
++	struct platform_device *pdev;
 +
-+static int max1721x_battery_get_property(struct power_supply *psy,
-+	enum power_supply_property psp,
-+	union power_supply_propval *val)
-+{
-+	struct max17211_device_info *info = to_device_info(psy);
-+	unsigned int reg = 0;
-+	int ret = 0;
++	pdev = platform_device_alloc("max1721x-battery", PLATFORM_DEVID_AUTO);
++	if (!pdev)
++		return -ENOMEM;
++	pdev->dev.parent = &sl->dev;
 +
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		/*
-+		 * POWER_SUPPLY_PROP_PRESENT will always readable via
-+		 * sysfs interface. Value return 0 if battery not
-+		 * present or unaccesable via W1.
-+		 */
-+		val->intval =
-+			regmap_read(info->regmap, MAX172XX_REG_STATUS,
-+			&reg) ? 0 : !(reg & MAX172XX_BAT_PRESENT);
-+		break;
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_REPSOC, &reg);
-+		val->intval = max172xx_percent_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_BATT, &reg);
-+		val->intval = max172xx_voltage_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_DESIGNCAP, &reg);
-+		val->intval = max172xx_capacity_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_AVG:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_REPCAP, &reg);
-+		val->intval = max172xx_capacity_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_TTE, &reg);
-+		val->intval = max172xx_time_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_TIME_TO_FULL_AVG:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_TTF, &reg);
-+		val->intval = max172xx_time_to_ps(reg);
-+		break;
-+	case POWER_SUPPLY_PROP_TEMP:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_TEMP, &reg);
-+		val->intval = max172xx_temperature_to_ps(reg);
-+		break;
-+	/* We need signed current, so must cast info->rsense to signed type */
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_CURRENT, &reg);
-+		val->intval =
-+			max172xx_current_to_voltage(reg) / (int)info->rsense;
-+		break;
-+	case POWER_SUPPLY_PROP_CURRENT_AVG:
-+		ret = regmap_read(info->regmap, MAX172XX_REG_AVGCURRENT, &reg);
-+		val->intval =
-+			max172xx_current_to_voltage(reg) / (int)info->rsense;
-+		break;
-+	/*
-+	 * Strings already received and inited by probe.
-+	 * We do dummy read for check battery still available.
-+	 */
-+	case POWER_SUPPLY_PROP_MODEL_NAME:
-+		ret = regmap_read(info->regmap, MAX1721X_REG_DEV_STR, &reg);
-+		val->strval = info->DeviceName;
-+		break;
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		ret = regmap_read(info->regmap, MAX1721X_REG_MFG_STR, &reg);
-+		val->strval = info->ManufacturerName;
-+		break;
-+	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
-+		ret = regmap_read(info->regmap, MAX1721X_REG_SER_HEX, &reg);
-+		val->strval = info->SerialNumber;
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
++	ret = platform_device_add(pdev);
++	if (ret)
++		goto pdev_add_failed;
++
++	dev_set_drvdata(&sl->dev, pdev);
++
++	return 0;
++
++pdev_add_failed:
++	platform_device_put(pdev);
 +
 +	return ret;
 +}
 +
-+static enum power_supply_property max1721x_battery_props[] = {
-+	/* int */
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_CHARGE_AVG,
-+	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
-+	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
-+	POWER_SUPPLY_PROP_TEMP,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_AVG,
-+	/* strings */
-+	POWER_SUPPLY_PROP_MODEL_NAME,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_SERIAL_NUMBER,
-+};
-+
-+static int get_string(struct max17211_device_info *info,
-+			uint16_t reg, uint8_t nr, char *str)
++static void w1_max17211_remove_device(struct w1_slave *sl)
 +{
-+	unsigned int val;
++	struct platform_device *pdev = dev_get_drvdata(&sl->dev);
 +
-+	if (!str || !(reg == MAX1721X_REG_MFG_STR ||
-+			reg == MAX1721X_REG_DEV_STR))
-+		return -EFAULT;
-+
-+	while (nr--) {
-+		if (regmap_read(info->regmap, reg++, &val))
-+			return -EFAULT;
-+		*str++ = val>>8 & 0x00FF;
-+		*str++ = val & 0x00FF;
-+	}
-+	return 0;
++	platform_device_unregister(pdev);
 +}
 +
-+/* Maxim say: Serial number is a hex string up to 12 hex characters */
-+static int get_sn_string(struct max17211_device_info *info, char *str)
-+{
-+	unsigned int val[3];
-+
-+	if (!str)
-+		return -EFAULT;
-+
-+	if (regmap_read(info->regmap, MAX1721X_REG_SER_HEX, &val[0]))
-+		return -EFAULT;
-+	if (regmap_read(info->regmap, MAX1721X_REG_SER_HEX + 1, &val[1]))
-+		return -EFAULT;
-+	if (regmap_read(info->regmap, MAX1721X_REG_SER_HEX + 2, &val[2]))
-+		return -EFAULT;
-+
-+	snprintf(str, 13, "%04X%04X%04X", val[0], val[1], val[2]);
-+	return 0;
-+}
-+
-+/* Model Gauge M5 Register Memory Map access */
-+static const struct regmap_range max1721x_regs_allow[] = {
-+	/* M5 Model Gauge Algorithm area */
-+	regmap_reg_range(0x00, 0x23),
-+	regmap_reg_range(0x27, 0x2F),
-+	regmap_reg_range(0x32, 0x32),
-+	regmap_reg_range(0x35, 0x36),
-+	regmap_reg_range(0x38, 0x3A),
-+	regmap_reg_range(0x3D, 0x3F),
-+	regmap_reg_range(0x42, 0x42),
-+	regmap_reg_range(0x45, 0x46),
-+	regmap_reg_range(0x4A, 0x4A),
-+	regmap_reg_range(0x4D, 0x4D),
-+	regmap_reg_range(0xB0, 0xB0),
-+	regmap_reg_range(0xB4, 0xB4),
-+	regmap_reg_range(0xB8, 0xBE),
-+	regmap_reg_range(0xD1, 0xDA),
-+	regmap_reg_range(0xDC, 0xDF),
-+	/* Factory settins area */
-+	regmap_reg_range(0x180, 0x1DF),
-+	{ }
++static struct w1_family_ops w1_max17211_fops = {
++	.add_slave    = w1_max17211_add_device,
++	.remove_slave = w1_max17211_remove_device,
 +};
 +
-+static const struct regmap_range max1721x_regs_deny[] = {
-+	regmap_reg_range(0x24, 0x26),
-+	regmap_reg_range(0x30, 0x31),
-+	regmap_reg_range(0x33, 0x34),
-+	regmap_reg_range(0x37, 0x37),
-+	regmap_reg_range(0x3B, 0x3C),
-+	regmap_reg_range(0x40, 0x41),
-+	regmap_reg_range(0x43, 0x44),
-+	regmap_reg_range(0x47, 0x49),
-+	regmap_reg_range(0x4B, 0x4C),
-+	regmap_reg_range(0x4E, 0xAF),
-+	regmap_reg_range(0xB1, 0xB3),
-+	regmap_reg_range(0xB5, 0xB7),
-+	regmap_reg_range(0xBF, 0xD0),
-+	regmap_reg_range(0xDB, 0xDB),
-+	regmap_reg_range(0xE0, 0x17F),
-+	{ }
++static struct w1_family w1_max17211_family = {
++	.fid = W1_FAMILY_MAX17211,
++	.fops = &w1_max17211_fops,
 +};
-+
-+static const struct regmap_access_table max1721x_regs = {
-+	.yes_ranges	= max1721x_regs_allow,
-+	.n_yes_ranges	= ARRAY_SIZE(max1721x_regs_allow),
-+	.no_ranges	= max1721x_regs_deny,
-+	.n_no_ranges	= ARRAY_SIZE(max1721x_regs_deny),
-+};
-+
-+/* W1 regmap config */
-+static const struct regmap_config max1721x_regmap_w1_config = {
-+	.reg_bits = 16,
-+	.val_bits = 16,
-+	.volatile_table = &max1721x_regs,
-+	.max_register = MAX1721X_MAX_REG_NR,
-+};
-+
-+static int max1721x_battery_probe(struct platform_device *pdev)
-+{
-+	struct power_supply_config psy_cfg = {};
-+	struct max17211_device_info *info;
-+
-+	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, info);
-+
-+	info->dev = &pdev->dev;
-+	info->w1_dev = pdev->dev.parent;
-+	info->bat_desc.name = dev_name(&pdev->dev);
-+	info->bat_desc.type = POWER_SUPPLY_TYPE_BATTERY;
-+	info->bat_desc.properties = max1721x_battery_props;
-+	info->bat_desc.num_properties = ARRAY_SIZE(max1721x_battery_props);
-+	info->bat_desc.get_property = max1721x_battery_get_property;
-+	/*
-+	 * FixMe:
-+	 * Device without no_thermal = true not register (err -22)
-+	 * Len of platform device name "max17211-battery.X.auto"
-+	 * more than 20 chars limit in THERMAL_NAME_LENGTH from
-+	 * include/uapi/linux/thermal.h
-+	 */
-+	info->bat_desc.no_thermal = true;
-+	psy_cfg.drv_data = info;
-+
-+	/* regmap init */
-+	info->regmap = devm_regmap_init_w1(info->w1_dev,
-+					&max1721x_regmap_w1_config);
-+	if (IS_ERR(info->regmap)) {
-+		int err = PTR_ERR(info->regmap);
-+
-+		dev_err(info->dev, "Failed to allocate register map: %d\n",
-+			err);
-+		return err;
-+	}
-+
-+	/* rsense init */
-+	info->rsense = 0;
-+	if (regmap_read(info->regmap, MAX1721X_REG_NRSENSE, &info->rsense))
-+
-+	if (!info->rsense) {
-+		dev_warn(info->dev, "RSenese not calibrated, set 10 mOhms!\n");
-+		info->rsense = 1000; /* in regs in 10^-5 */
-+	}
-+	dev_info(info->dev, "RSense: %d mOhms.\n", info->rsense / 100);
-+
-+	if (get_string(info, MAX1721X_REG_MFG_STR,
-+			MAX1721X_REG_MFG_NUMB, info->ManufacturerName)) {
-+		dev_err(info->dev, "Can't read manufacturer. Hardware error.\n");
-+		return -ENODEV;
-+	}
-+
-+	if (!info->ManufacturerName[0])
-+		strncpy(info->ManufacturerName, DEF_MFG_NAME,
-+			2 * MAX1721X_REG_MFG_NUMB);
-+
-+	if (get_string(info, MAX1721X_REG_DEV_STR,
-+			MAX1721X_REG_DEV_NUMB, info->DeviceName)) {
-+		dev_err(info->dev, "Can't read device. Hardware error.\n");
-+		return -ENODEV;
-+	}
-+	if (!info->DeviceName[0]) {
-+		unsigned int dev_name;
-+
-+		if (regmap_read(info->regmap,
-+				MAX172XX_REG_DEVNAME, &dev_name)) {
-+			dev_err(info->w1_dev, "Can't read device name reg.\n");
-+			return -ENODEV;
-+		}
-+
-+		switch (dev_name & MAX172XX_DEV_MASK) {
-+		case MAX172X1_DEV:
-+			strncpy(info->DeviceName, DEF_DEV_NAME_MAX17211,
-+				2 * MAX1721X_REG_DEV_NUMB);
-+			break;
-+		case MAX172X5_DEV:
-+			strncpy(info->DeviceName, DEF_DEV_NAME_MAX17215,
-+				2 * MAX1721X_REG_DEV_NUMB);
-+			break;
-+		default:
-+			strncpy(info->DeviceName, DEF_DEV_NAME_UNKNOWN,
-+				2 * MAX1721X_REG_DEV_NUMB);
-+		}
-+	}
-+
-+	if (get_sn_string(info, info->SerialNumber)) {
-+		dev_err(info->dev, "Can't read serial. Hardware error.\n");
-+		return -ENODEV;
-+	}
-+
-+	info->bat = devm_power_supply_register(&pdev->dev, &info->bat_desc,
-+						&psy_cfg);
-+	if (IS_ERR(info->bat)) {
-+		dev_err(info->dev, "failed to register battery\n");
-+		return PTR_ERR(info->bat);
-+	}
-+
-+	return 0;
-+}
-+
-+static struct platform_driver max1721x_battery_driver = {
-+	.driver = {
-+		.name = "max1721x-battery",
-+	},
-+	.probe	  = max1721x_battery_probe,
-+};
-+module_platform_driver(max1721x_battery_driver);
++module_w1_family(w1_max17211_family);
 +
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Alex A. Mihaylov <minimumlaw@rambler.ru>");
-+MODULE_DESCRIPTION("Maxim MAX17211/MAX17215 Fuel Gauage IC driver");
-+MODULE_ALIAS("platform:max1721x-battery");
++MODULE_DESCRIPTION("1-wire Driver for MAX17211/MAX17215 battery monitor");
++MODULE_ALIAS("w1-family-" __stringify(W1_FAMILY_MAX17211));
+diff --git a/drivers/w1/slaves/w1_max1721x.h b/drivers/w1/slaves/w1_max1721x.h
+new file mode 100644
+index 0000000000..47694d91dc
+--- /dev/null
++++ b/drivers/w1/slaves/w1_max1721x.h
+@@ -0,0 +1,102 @@
++/*
++ * 1-Wire implementation for Maxim Semiconductor
++ * MAX7211/MAX17215 stanalone fuel gauge chip
++ *
++ * Copyright (C) 2017 OAO Radioavionica
++ * Author: Alex A. Mihaylov <minimumlaw@rambler.ru>
++ *
++ * Use consistent with the GNU GPL is permitted,
++ * provided that this copyright notice is
++ * preserved in its entirety in all copies and derived works.
++ *
++ */
++
++#ifndef __w1_max17211_h__
++#define __w1_max17211_h__
++
++/* Known commands to the MAX1721X chip */
++#define W1_MAX1721X_READ_DATA		0x69
++#define W1_MAX1721X_WRITE_DATA		0x6C
++
++/* Factory settings (nonvilatile registers) (W1 specific) */
++
++#define MAX1721X_REG_NRSENSE	0x1CF	/* RSense in 10^-5 Ohm */
++/* Strings */
++#define MAX1721X_REG_MFG_STR	0x1CC
++#define MAX1721X_REG_MFG_NUMB	3
++#define MAX1721X_REG_DEV_STR	0x1DB
++#define MAX1721X_REG_DEV_NUMB	5
++/* HEX Strings */
++#define MAX1721X_REG_SER_HEX	0x1D8
++
++/* MAX1721X/MAX17215 Output Registers for I2C and W1 chips */
++
++#define MAX172XX_REG_STATUS	0x000	/* status reg */
++#define MAX172XX_BAT_PRESENT	(1<<4)	/* battery connected bit */
++#define MAX172XX_REG_DEVNAME	0x021	/* chip config */
++#define MAX172XX_DEV_MASK	0x000F	/* chip type mask */
++#define MAX172X1_DEV		0x0001
++#define MAX172X5_DEV		0x0005
++#define MAX172XX_REG_TEMP	0x008	/* Temperature */
++#define MAX172XX_REG_BATT	0x0DA	/* Battery voltage */
++#define MAX172XX_REG_CURRENT	0x00A	/* Actual current */
++#define MAX172XX_REG_AVGCURRENT	0x00B	/* Average current */
++#define MAX172XX_REG_REPSOC	0x006	/* Percentage of charge */
++#define MAX172XX_REG_DESIGNCAP	0x018	/* Design capacity */
++#define MAX172XX_REG_REPCAP	0x005	/* Average capacity */
++#define MAX172XX_REG_TTE	0x011	/* Time to empty */
++#define MAX172XX_REG_TTF	0x020	/* Time to full */
++
++/* Number of valid register addresses */
++#define MAX1721X_MAX_REG_NR	0x1EF
++
++/* Convert regs value to power_supply units */
++
++static inline int max172xx_time_to_ps(unsigned int reg)
++{
++	return reg * 5625 / 1000;	/* in sec. */
++}
++
++static inline int max172xx_percent_to_ps(unsigned int reg)
++{
++	return reg / 256;	/* in percent from 0 to 100 */
++}
++
++static inline int max172xx_voltage_to_ps(unsigned int reg)
++{
++	return reg * 1250;	/* in uV */
++}
++
++static inline int max172xx_capacity_to_ps(unsigned int reg)
++{
++	return reg * 500;	/* in uAh */
++}
++
++/*
++ * Current and temperature is signed values, so unsigned regs
++ * value must be converted to signed type
++ */
++
++static inline int max172xx_temperature_to_ps(unsigned int reg)
++{
++	int val = (int16_t)(reg);
++
++	return val * 10 / 256; /* in tenths of deg. C */
++}
++
++/*
++ * Calculating current registers resolution:
++ *
++ * RSense stored in 10^-5 Ohm, so mesaurment voltage must be
++ * in 10^-11 Volts for get current in uA.
++ * 16 bit current reg fullscale +/-51.2mV is 102400 uV.
++ * So: 102400 / 65535 * 10^5 = 156252
++ */
++static inline int max172xx_current_to_voltage(unsigned int reg)
++{
++	int val = (int16_t)(reg);
++
++	return val * 156252;
++}
++
++#endif /* !__w1_max17211_h__ */
+diff --git a/drivers/w1/w1_family.h b/drivers/w1/w1_family.h
+index c4a6b257a3..398adc9973 100644
+--- a/drivers/w1/w1_family.h
++++ b/drivers/w1/w1_family.h
+@@ -29,6 +29,7 @@
+ #define W1_COUNTER_DS2423	0x1D
+ #define W1_THERM_DS1822  	0x22
+ #define W1_EEPROM_DS2433  	0x23
++#define W1_FAMILY_MAX17211	0x26
+ #define W1_THERM_DS18B20 	0x28
+ #define W1_FAMILY_DS2408	0x29
+ #define W1_EEPROM_DS2431	0x2D
 -- 
 2.13.0
