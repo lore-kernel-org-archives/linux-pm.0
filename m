@@ -1,34 +1,61 @@
-From: Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
-Subject: [PATCH] dt-bindings: thermal: add file extension to brcm,ns-thermal
-Date: Fri,  2 Jun 2017 10:31:39 -0700
-Message-ID: <20170602173139.71901-1-code@mmayer.net>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.12-rc4
+Date: Sat, 3 Jun 2017 00:43:58 +0200
+Message-ID: <CAJZ5v0i=YSDidLqiCW-Axj++BpDZ9wHOiBAgkktM0r9tw7nZNA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f46.google.com ([209.85.214.46]:36832 "EHLO
+        mail-it0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750971AbdFBWn7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2017 18:43:59 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-From: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Hi Linus,
 
-Add the missing .txt extension to the Broadcom Northstar binding document.
+Please pull from the tag
 
-Signed-off-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
----
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.12-rc4
 
-I noticed the missing .txt extension while preparing another patch series.
+with top-most commit bb5710e72c217e5bbdf0969a2fd84f5f5ad7fc2b
 
- .../devicetree/bindings/thermal/{brcm,ns-thermal => brcm,ns-thermal.txt}  | 0
- 1 file changed, 0 insertions(+), 0 deletions(-)
- rename Documentation/devicetree/bindings/thermal/{brcm,ns-thermal => brcm,ns-thermal.txt} (100%)
+ Merge branch 'pm-cpufreq'
 
-diff --git a/Documentation/devicetree/bindings/thermal/brcm,ns-thermal b/Documentation/devicetree/bindings/thermal/brcm,ns-thermal.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/thermal/brcm,ns-thermal
-rename to Documentation/devicetree/bindings/thermal/brcm,ns-thermal.txt
--- 
-2.7.4
+on top of commit 5ed02dbb497422bf225783f46e6eadd237d23d6b
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ Linux 4.12-rc3
+
+to receive power management fixes for v4.12-rc4.
+
+These fix two bugs in error code paths in the cpufreq core and in
+the kirkwood-cpufreq driver.
+
+Specifics:
+
+ - Make cpufreq_register_driver() return an error if the ->init()
+   calls fail for all CPUs to prevent non-functional drivers from
+   hanging around for no reason (David Arcari).
+
+ - Make kirkwood-cpufreq check the return value of clk_prepare_enable()
+   (which may fail) as appropriate (Arvind Yadav).
+
+Thanks!
+
+
+---------------
+
+Arvind Yadav (1):
+      cpufreq: kirkwood-cpufreq:- Handle return value of clk_prepare_enable()
+
+David Arcari (1):
+      cpufreq: cpufreq_register_driver() should return -ENODEV if init fails
+
+---------------
+
+ drivers/cpufreq/cpufreq.c          |  1 +
+ drivers/cpufreq/kirkwood-cpufreq.c | 19 ++++++++++++++++---
+ 2 files changed, 17 insertions(+), 3 deletions(-)
