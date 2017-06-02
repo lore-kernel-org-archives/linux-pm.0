@@ -1,137 +1,146 @@
-From: Martin Steigerwald <martin@lichtvoll.de>
-Subject: Re: [REGRESSION] [4.11/4.12-rc3] Hang on Suspend to RAM
-Date: Fri, 02 Jun 2017 12:51:19 +0200
-Message-ID: <33255861.C5UZlzXv3T@merkaba>
-References: <748157628.hqj47iI04h@merkaba> <alpine.LSU.2.11.1706011236420.4437@eggly.anvils>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Find transition latency dynamically
+Date: Fri,  2 Jun 2017 16:59:38 +0530
+Message-ID: <8041a965fcca71231576ae77a141b1e4333a81cc.1496402967.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LSU.2.11.1706011236420.4437@eggly.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Hugh Dickins <hughd@google.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Hugh,
+The transition_latency_ns represents the maximum time it can take for
+the hardware to switch from/to any frequency for a CPU.
 
-Hugh Dickins - 01.06.17, 12:55:
-> On Thu, 1 Jun 2017, Martin Steigerwald wrote:
-> > Hello.
-[…]
-> > Since 4.11 I have it quite often that a hang like this even happens on
-> > suspend to RAM (standby) as well. And even quite often about 1 time of of
-> > 2-3 suspend attempts. The hang symptoms are similar. Power LED dims on
-> > and off. Screen is black.
-> > 
-> > Since this is my holidays and this again does not happen all of the time
-> > and thus would be considerable effort to bisect, I think I am out here
-> > now. Unless you have something I can test easily.
-> > 
-> > It seems I am much better off with opting out out of kernel testing as I
-> > tend to usually get the nasty "I hang and I won´t tell you any hint as
-> > about why I do so and do so only sometimes" kind of bugs that are too
-> > much effort for me to provide any usable debug information about.
-[…]
-> > If you have any idea of useful information I can provide to you *easily*
-> > and in a *short amount of time*, then feel free to share it. I have
-> > holidays tough, so I am especially picky about the easily and short
-> > amount of time part.
-> > 
-> > Switching back to 4.10, last known working kernel, now.
-> 
-> The commit below reached Linus's tree a few hours ago, and fixes an i915
-> issue that several of us were seeing in 4.11 and 4.12-rc.  I didn't have
-> your symptoms - but I don't use hibernation: I think there's a good chance
-> that this commit will fix your issue (but I wouldn't be able help any
-> further if it does not work for you, sorry).
-> 
-> Depending on what tree you apply it to, it may not apply cleanly:
-> just delete the synchronize_rcu_expedited() and syncronize_rcu()
-> lines from that file.
+The transition_latency_ns is used currently for two purposes:
 
-Thank you for the hint.
+o To check if the hardware latency is over the maximum allowed for a
+  governor (only for ondemand and conservative (why not schedutil?)) and
+  to decide if the governor can be used or not.
 
-My machine isn´t exactly what I call a low memory machine. It is a Sandybridge 
-ThinkPad T520 with 16 GiB of RAM.
+o To calculate the sampling_rate or rate_limit for the governors by
+  multiplying transition_latency_ns with a constant.
 
-Well… some day, maybe with rc4, maybe earlier, I pull in newest stuff from 
-Linus and look how this works.
+The platform drivers can also set this value to CPUFREQ_ETERNAL if they
+don't know this number and in that case we disallow use of ondemand and
+conservative governors as the latency would be higher than the maximum
+allowed for the governors.
 
-Thanks,
-Martin
+In many cases this number is forged by the driver authors to get the
+default sampling rate to a desired value. Anyway, the actual latency
+values can differ from what is received from the hardware designers.
 
-> commit 4681ee21d62cfed4364e09ec50ee8e88185dd628
-> Author: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-> Date:   Thu May 18 11:49:39 2017 +0300
-> 
->     drm/i915: Do not sync RCU during shrinking
-> 
->     Due to the complex dependencies between workqueues and RCU, which
->     are not easily detected by lockdep, do not synchronize RCU during
->     shrinking.
-> 
->     On low-on-memory systems (mem=1G for example), the RCU sync leads
->     to all system workqueus freezing and unrelated lockdep splats are
->     displayed according to reports. GIT bisecting done by J. R.
->     Okajima points to the commit where RCU syncing was extended.
-> 
->     RCU sync gains us very little benefit in real life scenarios
->     where the amount of memory used by object backing storage is
->     dominant over the metadata under RCU, so drop it altogether.
-> 
->      " Yeeeaah, if core could just, go ahead and reclaim RCU
->        queues, that'd be great. "
-> 
->       - Chris Wilson, 2016 (0eafec6d3244)
-> 
->     v2: More information to commit message.
->     v3: Remove "grep _rcu_" escapee from i915_gem_shrink_all (Andrea)
-> 
->     Fixes: c053b5a506d3 ("drm/i915: Don't call synchronize_rcu_expedited
-> under struct_mutex") Suggested-by: Chris Wilson <chris@chris-wilson.co.uk>
->     Reported-by: J. R. Okajima <hooanon05g@gmail.com>
->     Signed-off-by: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
->     Reviewed-by: Chris Wilson <chris@chris-wilson.co.uk>
->     Tested-by: Hugh Dickins <hughd@google.com>
->     Tested-by: Andrea Arcangeli <aarcange@redhat.com>
->     Cc: Chris Wilson <chris@chris-wilson.co.uk>
->     Cc: Tvrtko Ursulin <tvrtko.ursulin@intel.com>
->     Cc: J. R. Okajima <hooanon05g@gmail.com>
->     Cc: Andrea Arcangeli <aarcange@redhat.com>
->     Cc: Hugh Dickins <hughd@google.com>
->     Cc: Jani Nikula <jani.nikula@intel.com>
->     Cc: <stable@vger.kernel.org> # v4.11+
->     (cherry picked from commit 73cc0b9aa9afa5ba65d92e46ded61d29430d72a4)
->     Signed-off-by: Jani Nikula <jani.nikula@intel.com>
->     Link:
-> http://patchwork.freedesktop.org/patch/msgid/1495097379-573-1-git-send-emai
-> l-joonas.lahtinen@linux.intel.com
-> 
-> diff --git a/drivers/gpu/drm/i915/i915_gem_shrinker.c
-> b/drivers/gpu/drm/i915/i915_gem_shrinker.c index 129ed303a6c4..57d9f7f4ef15
-> 100644
-> --- a/drivers/gpu/drm/i915/i915_gem_shrinker.c
-> +++ b/drivers/gpu/drm/i915/i915_gem_shrinker.c
-> @@ -59,9 +59,6 @@ static void i915_gem_shrinker_unlock(struct drm_device
-> *dev, bool unlock) return;
-> 
->  	mutex_unlock(&dev->struct_mutex);
-> -
-> -	/* expedite the RCU grace period to free some request slabs */
-> -	synchronize_rcu_expedited();
->  }
-> 
->  static bool any_vma_pinned(struct drm_i915_gem_object *obj)
-> @@ -274,8 +271,6 @@ unsigned long i915_gem_shrink_all(struct
-> drm_i915_private *dev_priv) I915_SHRINK_ACTIVE);
->  	intel_runtime_pm_put(dev_priv);
-> 
-> -	synchronize_rcu(); /* wait for our earlier RCU delayed slab frees */
-> -
->  	return freed;
->  }
+Over that, what is provided by the drivers is most likely the time it
+takes to change frequency of the hardware, which doesn't account the
+software overhead involved.
 
+In order to have guarantees about this number, this patch tries to
+calculate the latency dynamically at cpufreq driver registration time by
+first switching to min frequency, then to the max and finally back to
+the initial frequency. And the maximum of all three is used as the
+target_latency. Specifically the time it takes to go from min to max
+frequency (when the software runs the slowest) should be good enough,
+and even if there is a delta involved then it shouldn't be a lot.
 
+For now this patch limits this feature only for platforms which have set
+the transition latency to CPUFREQ_ETERNAL. Maybe we can convert everyone
+to use it in future, but lets see.
+
+This is tested over ARM64 Hikey platform which currently sets
+"clock-latency" as 500 us from DT, while with this patch the actualy
+value increased to 800 us.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 63 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 63 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 0e3f6496524d..478a18364b1f 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -25,6 +25,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/sched/clock.h>
+ #include <linux/slab.h>
+ #include <linux/suspend.h>
+ #include <linux/syscore_ops.h>
+@@ -977,6 +978,66 @@ __weak struct cpufreq_governor *cpufreq_default_governor(void)
+ 	return NULL;
+ }
+ 
++static int find_dvfs_latency(struct cpufreq_policy *policy, unsigned long freq,
++			     unsigned int *latency_ns)
++{
++	u64 time;
++	int ret;
++
++	time = local_clock();
++	ret = __cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
++	*latency_ns = local_clock() - time;
++
++	return ret;
++}
++
++/*
++ * Find the transition latency dynamically by:
++ * - Switching to min freq first.
++ * - Then switching to max freq.
++ * - And finally switching back to the initial freq.
++ *
++ * The maximum duration of the above three freq changes should be good enough to
++ * find the maximum transition latency for a platform.
++ */
++static void cpufreq_find_target_latency(struct cpufreq_policy *policy)
++{
++	unsigned long initial_freq = policy->cur;
++	unsigned int latency_ns, latency_max_ns;
++	int ret;
++
++	if (!has_target())
++		return;
++
++	/* Limit to drivers with latency set to CPUFREQ_ETERNAL for now */
++	if (policy->cpuinfo.transition_latency != CPUFREQ_ETERNAL)
++		return;
++
++	/* Go to min frequency first */
++	ret = find_dvfs_latency(policy, policy->cpuinfo.min_freq, &latency_ns);
++	if (ret)
++		return;
++
++	latency_max_ns = latency_ns;
++
++	/* Go to max frequency then.. */
++	ret = find_dvfs_latency(policy, policy->cpuinfo.max_freq, &latency_ns);
++	if (ret)
++		return;
++
++	latency_max_ns = max(latency_max_ns, latency_ns);
++
++	/* And finally switch back to where we started from */
++	ret = find_dvfs_latency(policy, initial_freq, &latency_ns);
++	if (ret)
++		return;
++
++	policy->cpuinfo.transition_latency = max(latency_max_ns, latency_ns);
++
++	pr_info("%s: Setting transition latency to %u ns for policy of CPU%d\n",
++		__func__, policy->cpuinfo.transition_latency, policy->cpu);
++}
++
+ static int cpufreq_init_policy(struct cpufreq_policy *policy)
+ {
+ 	struct cpufreq_governor *gov = NULL;
+@@ -1246,6 +1307,8 @@ static int cpufreq_online(unsigned int cpu)
+ 	}
+ 
+ 	if (new_policy) {
++		cpufreq_find_target_latency(policy);
++
+ 		ret = cpufreq_add_dev_interface(policy);
+ 		if (ret)
+ 			goto out_exit_policy;
 -- 
-Martin
+2.13.0.70.g6367777092d9
