@@ -1,146 +1,153 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: Find transition latency dynamically
-Date: Fri,  2 Jun 2017 16:59:38 +0530
-Message-ID: <8041a965fcca71231576ae77a141b1e4333a81cc.1496402967.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH V2] ARM: cpuidle: Support asymmetric idle definition
+Date: Fri, 2 Jun 2017 14:45:46 +0100
+Message-ID: <342f052b-03e2-8b1e-935f-b125c57dc051@arm.com>
+References: <1496317188-15272-1-git-send-email-daniel.lezcano@linaro.org>
+ <3ec88de3-7d18-0ea6-bc27-e98084f2b6f6@arm.com>
+ <4fe4558f-5881-11dc-5d36-93c92a272eed@linaro.org>
+ <a96db56b-a773-f0a7-431e-acbb969333d1@arm.com>
+ <d96a6da1-318f-3465-9227-714036431f81@linaro.org>
+ <47e3d236-8d36-d04d-5f87-9fece6875d66@arm.com>
+ <e79e44d6-6f01-6829-3924-6feca7633eae@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:40802 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751125AbdFBNpu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 2 Jun 2017 09:45:50 -0400
+In-Reply-To: <e79e44d6-6f01-6829-3924-6feca7633eae@linaro.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, Sudeep Holla <sudeep.holla@arm.com>, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-The transition_latency_ns represents the maximum time it can take for
-the hardware to switch from/to any frequency for a CPU.
 
-The transition_latency_ns is used currently for two purposes:
 
-o To check if the hardware latency is over the maximum allowed for a
-  governor (only for ondemand and conservative (why not schedutil?)) and
-  to decide if the governor can be used or not.
+On 02/06/17 11:40, Daniel Lezcano wrote:
+> On 02/06/2017 12:14, Sudeep Holla wrote:
+>>
+>>
+>> On 02/06/17 11:06, Daniel Lezcano wrote:
+>>> On 02/06/2017 11:39, Sudeep Holla wrote:
+>>>>
+>>>>
+>>>> On 02/06/17 10:25, Daniel Lezcano wrote:
+>>>>> On 02/06/2017 11:20, Sudeep Holla wrote:
+>>>>>>
+>>>>>>
+>>>>>> On 01/06/17 12:39, Daniel Lezcano wrote:
+>>>>>>> Some hardware have clusters with different idle states. The current code does
+>>>>>>> not support this and fails as it expects all the idle states to be identical.
+>>>>>>>
+>>>>>>> Because of this, the Mediatek mtk8173 had to create the same idle state for a
+>>>>>>> big.Little system and now the Hisilicon 960 is facing the same situation.
+>>>>>>>
+>>>>>>> Solve this by simply assuming the multiple driver will be needed for all the
+>>>>>>> platforms using the ARM generic cpuidle driver which makes sense because of the
+>>>>>>> different topologies we can support with a single kernel for ARM32 or ARM64.
+>>>>>>>
+>>>>>>> Every CPU has its own driver, so every single CPU can specify in the DT the
+>>>>>>> idle states.
+>>>>>>>
+>>>>>>> This simple approach allows to support the future dynamIQ system, current SMP
+>>>>>>> and HMP.
+>>>>>>>
+>>>>>>> It is unoptimal from a memory point of view for a system with a large number of
+>>>>>>> CPUs but nowadays there is no such system with a cpuidle driver on ARM.
+>>>>>>>
+>>>>>>
+>>>>>> While I agree this may be simple solution, but just not necessary for
+>>>>>> systems with symmetric idle states especially one with large number of
+>>>>>> CPUs. I don't like to see 96 CPU Idle driver on say ThunderX. So we
+>>>>>> *must* have some basic distinction done here.
+>>>>>>
+>>>>>> IMO, we can't punish a large SMP systems just because they don't have
+>>>>>> asymmetric idle states.
+>>>>>
+>>>>> Can you point me in the upstream kernel a DTS with 96 cpus and using the
+>>>>> cpuidle-arm driver ?
+>>>>>
+>>>>
+>>>> The bindings are upstream right. Not all DTS are upstream, firmware
+>>>> generate them especially for large systems.
+>>>>
+>>>> Check arch/arm64/boot/dts/cavium/thunder{,2}-{88,99}xx.dtsi, it has
+>>>> supports PSCI and firmware can update DTB to add the idle states.
+>>>> They are systems with 96 and 128 CPUs.
+>>>
+>>> Ok, so I have to assume there are out of tree DTB with idle state
+>>> definitions. In other circumstances I would have just ignored this
+>>> argument but I can admit the DTB blob thing is in the grey area between
+>>> what we have to support upstream and out of tree changes.
+>>>
+>>
+>> Not entirely true. It's clear, we support anything whose binding is
+>> upstream. I do agree that there are lots of out of tree bindings but I
+>> am not referring to them. I am just referring to out of tree DTS with
+>> already upstreamed binding.
+> 
+> That is what I meant :)
+> 
+>>> However, even if it is suboptimal, I'm convinced doing a per-cpu driver
+>>> makes more sense.
+>>>
+>>
+>> OK, but I think a simple check to decide not to, on SMP system is not
+>> too much a ask ?
+> 
+> Yes, it is :)
+> 
 
-o To calculate the sampling_rate or rate_limit for the governors by
-  multiplying transition_latency_ns with a constant.
+If you are objecting out of the tree DTS whose bindings are upstream,
+then that's simply wrong.
+1. Firmware can generate/update DTB
+2. There's or was a plan to move DTS out of the tree.
+In short, bindings is all what matters.
 
-The platform drivers can also set this value to CPUFREQ_ETERNAL if they
-don't know this number and in that case we disallow use of ondemand and
-conservative governors as the latency would be higher than the maximum
-allowed for the governors.
+> We end up with a hack by parsing and analyzing the DT based on the idea
+> different idle states means different cluster where you stated right
+> before in the topology comment that is not necessary true. So Lorenzo's
+> patch adds heuristic which may be wrong.
+> 
 
-In many cases this number is forged by the driver authors to get the
-default sampling rate to a desired value. Anyway, the actual latency
-values can differ from what is received from the hardware designers.
+Completely disagree. When it may look hacky, but it's not heuristics.
+The CPU idle bindings doesn't and need not link with CPU topology.
+I re-iterate that "different idle states doesn't means different
+cluster". It just means they are probably in different power domains.
+Power domains need not share topological boundaries.
 
-Over that, what is provided by the drivers is most likely the time it
-takes to change frequency of the hardware, which doesn't account the
-software overhead involved.
+> If we decide to consider all cpus with their own set of idle states,
+> everything is solved with a cpuidle driver per cpu.
+> 
+> The only drawback is the memory consumption.
+> 
 
-In order to have guarantees about this number, this patch tries to
-calculate the latency dynamically at cpufreq driver registration time by
-first switching to min frequency, then to the max and finally back to
-the initial frequency. And the maximum of all three is used as the
-target_latency. Specifically the time it takes to go from min to max
-frequency (when the software runs the slowest) should be good enough,
-and even if there is a delta involved then it shouldn't be a lot.
+Yes, I get that. I just feel that we need not do that for systems that
+don't need it.
 
-For now this patch limits this feature only for platforms which have set
-the transition latency to CPUFREQ_ETERNAL. Maybe we can convert everyone
-to use it in future, but lets see.
+> But on the other side, as the idle state are per cpu, we don't trash the
+> cache.
+> 
+> Moreover, we already had that, an array of idle states per cpu (see
+> commit 46bcfad7), it was in the struct cpuidle_device instead of the
+> struct cpuidle_driver. It has been moved away in the latter with the
+> assumption the SMP have all the same idle states but now we see it is no
+> longer true.
+> 
+> Creating a cpuidle_driver per cpu is like using the previous approach.
+> The only thing is we must improve to save memory, that's all (eg. a
+> pointer allocating the idle states rather than hardcoding it).
+> 
+> We can live with a driver per cpu and do the memory optimization.
+> 
+> If we have an observed regression with large SMP systems, we fix it.
+> 
 
-This is tested over ARM64 Hikey platform which currently sets
-"clock-latency" as 500 us from DT, while with this patch the actualy
-value increased to 800 us.
+OK, I am fine with that if you agree that we can fix it later.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 63 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 63 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0e3f6496524d..478a18364b1f 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -25,6 +25,7 @@
- #include <linux/kernel_stat.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-+#include <linux/sched/clock.h>
- #include <linux/slab.h>
- #include <linux/suspend.h>
- #include <linux/syscore_ops.h>
-@@ -977,6 +978,66 @@ __weak struct cpufreq_governor *cpufreq_default_governor(void)
- 	return NULL;
- }
- 
-+static int find_dvfs_latency(struct cpufreq_policy *policy, unsigned long freq,
-+			     unsigned int *latency_ns)
-+{
-+	u64 time;
-+	int ret;
-+
-+	time = local_clock();
-+	ret = __cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
-+	*latency_ns = local_clock() - time;
-+
-+	return ret;
-+}
-+
-+/*
-+ * Find the transition latency dynamically by:
-+ * - Switching to min freq first.
-+ * - Then switching to max freq.
-+ * - And finally switching back to the initial freq.
-+ *
-+ * The maximum duration of the above three freq changes should be good enough to
-+ * find the maximum transition latency for a platform.
-+ */
-+static void cpufreq_find_target_latency(struct cpufreq_policy *policy)
-+{
-+	unsigned long initial_freq = policy->cur;
-+	unsigned int latency_ns, latency_max_ns;
-+	int ret;
-+
-+	if (!has_target())
-+		return;
-+
-+	/* Limit to drivers with latency set to CPUFREQ_ETERNAL for now */
-+	if (policy->cpuinfo.transition_latency != CPUFREQ_ETERNAL)
-+		return;
-+
-+	/* Go to min frequency first */
-+	ret = find_dvfs_latency(policy, policy->cpuinfo.min_freq, &latency_ns);
-+	if (ret)
-+		return;
-+
-+	latency_max_ns = latency_ns;
-+
-+	/* Go to max frequency then.. */
-+	ret = find_dvfs_latency(policy, policy->cpuinfo.max_freq, &latency_ns);
-+	if (ret)
-+		return;
-+
-+	latency_max_ns = max(latency_max_ns, latency_ns);
-+
-+	/* And finally switch back to where we started from */
-+	ret = find_dvfs_latency(policy, initial_freq, &latency_ns);
-+	if (ret)
-+		return;
-+
-+	policy->cpuinfo.transition_latency = max(latency_max_ns, latency_ns);
-+
-+	pr_info("%s: Setting transition latency to %u ns for policy of CPU%d\n",
-+		__func__, policy->cpuinfo.transition_latency, policy->cpu);
-+}
-+
- static int cpufreq_init_policy(struct cpufreq_policy *policy)
- {
- 	struct cpufreq_governor *gov = NULL;
-@@ -1246,6 +1307,8 @@ static int cpufreq_online(unsigned int cpu)
- 	}
- 
- 	if (new_policy) {
-+		cpufreq_find_target_latency(policy);
-+
- 		ret = cpufreq_add_dev_interface(policy);
- 		if (ret)
- 			goto out_exit_policy;
 -- 
-2.13.0.70.g6367777092d9
+Regards,
+Sudeep
