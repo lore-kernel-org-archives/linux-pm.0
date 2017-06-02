@@ -1,121 +1,156 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH V2] ARM: cpuidle: Support asymmetric idle definition
-Date: Fri, 2 Jun 2017 11:14:18 +0100
-Message-ID: <47e3d236-8d36-d04d-5f87-9fece6875d66@arm.com>
-References: <1496317188-15272-1-git-send-email-daniel.lezcano@linaro.org>
- <3ec88de3-7d18-0ea6-bc27-e98084f2b6f6@arm.com>
- <4fe4558f-5881-11dc-5d36-93c92a272eed@linaro.org>
- <a96db56b-a773-f0a7-431e-acbb969333d1@arm.com>
- <d96a6da1-318f-3465-9227-714036431f81@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: SDHI clock imbalance
+Date: Fri, 2 Jun 2017 12:37:18 +0200
+Message-ID: <CAPDyKFpfff0AwbKwJEhH_-Vkn+i+1bXp5P-OWiZ2O=71s+s5vw@mail.gmail.com>
+References: <CAMuHMdX7_u_3TFK22inUp367LR3R77S72RAtRWPFnKE9-cUtpw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <d96a6da1-318f-3465-9227-714036431f81@linaro.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net, lorenzo.pieralisi@arm.com
-Cc: Sudeep Holla <sudeep.holla@arm.com>, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdX7_u_3TFK22inUp367LR3R77S72RAtRWPFnKE9-cUtpw@mail.gmail.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, Simon Horman <horms@verge.net.au>, Linux MMC List <linux-mmc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On 2 June 2017 at 10:47, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Wolfram, Ulf, Simon,
+>
+> While investigating suspend/resume for the R-Car Gen3 clock driver, I
+> noticed a clock imbalance for SDHI on Salvator-X.
+>
+> After boot:
+>
+> # head -2 /sys/kernel/debug/clk/clk_summary
+>    clock         enable_cnt prepare_cnt  rate  accuracy phase
+> -------------------------------------------------------------
+> # grep sd /sys/kernel/debug/clk/clk_summary
+>          .sdsrc           3        3 399999984      0 0
+>         sd3               1        1     6250000      0 0
+>            sdif3          1        2     6250000      0 0
+>         sd2               1        1   199999992      0 0
+>            sdif2          1        2   199999992      0 0
+>         sd1               0        0   199999992      0 0
+>            sdif1          0        0   199999992      0 0
+>         sd0               1        1     6250000      0 0
+>            sdif0          1        2     6250000      0 0
+>
+> After s2idle suspend/resume:
+>
+> # grep sd /sys/kernel/debug/clk/clk_summary
+>          .sdsrc           3        3   399999984      0 0
+>         sd3               1        1     6250000      0 0
+>            sdif3          2        2     6250000      0 0
+>         sd2               1        1   199999992      0 0
+>            sdif2          2        2   199999992      0 0
+>         sd1               0        0   199999992      0 0
+>            sdif1          0        0   199999992      0 0
+>         sd0               1        1     6250000      0 0
+>            sdif0          2        2     6250000      0 0
+>
+> Enable counts are 1 before suspend, and 2 after resume.
+>
+>
+> Boot: Enabled once (also at hardware level):
+>
+>     platform_drv_probe
+>         renesas_sdhi_sys_dmac_probe
+>             renesas_sdhi_probe
+>                 tmio_mmc_host_probe
+>                     renesas_sdhi_clk_enable
 
+The driver calls pm_runtime_set_active() during ->probe(), which means
+genpd's ->runtime_resume() callback isn't invoked during that point.
+In other words, the clocks managed by the clock domain isn't enabled
+during ->probe() as genpd's doesn't get to run pm_clk_resume() from
+its ->runtime_resume() callback. Unless I am missing something. :-)
 
-On 02/06/17 11:06, Daniel Lezcano wrote:
-> On 02/06/2017 11:39, Sudeep Holla wrote:
->>
->>
->> On 02/06/17 10:25, Daniel Lezcano wrote:
->>> On 02/06/2017 11:20, Sudeep Holla wrote:
->>>>
->>>>
->>>> On 01/06/17 12:39, Daniel Lezcano wrote:
->>>>> Some hardware have clusters with different idle states. The current code does
->>>>> not support this and fails as it expects all the idle states to be identical.
->>>>>
->>>>> Because of this, the Mediatek mtk8173 had to create the same idle state for a
->>>>> big.Little system and now the Hisilicon 960 is facing the same situation.
->>>>>
->>>>> Solve this by simply assuming the multiple driver will be needed for all the
->>>>> platforms using the ARM generic cpuidle driver which makes sense because of the
->>>>> different topologies we can support with a single kernel for ARM32 or ARM64.
->>>>>
->>>>> Every CPU has its own driver, so every single CPU can specify in the DT the
->>>>> idle states.
->>>>>
->>>>> This simple approach allows to support the future dynamIQ system, current SMP
->>>>> and HMP.
->>>>>
->>>>> It is unoptimal from a memory point of view for a system with a large number of
->>>>> CPUs but nowadays there is no such system with a cpuidle driver on ARM.
->>>>>
->>>>
->>>> While I agree this may be simple solution, but just not necessary for
->>>> systems with symmetric idle states especially one with large number of
->>>> CPUs. I don't like to see 96 CPU Idle driver on say ThunderX. So we
->>>> *must* have some basic distinction done here.
->>>>
->>>> IMO, we can't punish a large SMP systems just because they don't have
->>>> asymmetric idle states.
->>>
->>> Can you point me in the upstream kernel a DTS with 96 cpus and using the
->>> cpuidle-arm driver ?
->>>
->>
->> The bindings are upstream right. Not all DTS are upstream, firmware
->> generate them especially for large systems.
->>
->> Check arch/arm64/boot/dts/cavium/thunder{,2}-{88,99}xx.dtsi, it has
->> supports PSCI and firmware can update DTB to add the idle states.
->> They are systems with 96 and 128 CPUs.
-> 
-> Ok, so I have to assume there are out of tree DTB with idle state
-> definitions. In other circumstances I would have just ignored this
-> argument but I can admit the DTB blob thing is in the grey area between
-> what we have to support upstream and out of tree changes.
-> 
+I think this is the reason to the following problems. How to fix it?
 
-Not entirely true. It's clear, we support anything whose binding is
-upstream. I do agree that there are lots of out of tree bindings but I
-am not referring to them. I am just referring to out of tree DTS with
-already upstreamed binding.
+The driver needs to call pm_runtime_get_sync() instead of
+pm_runtime_set_active(), however that may requires some careful
+changes if one wants the driver to be able to enable clocks also when
+CONFIG_PM is unset. If not, it's pretty easy, else I would do
+something like below.
 
-> However, even if it is suboptimal, I'm convinced doing a per-cpu driver
-> makes more sense.
-> 
+Add a "init" flag to host struct, and set that flag before calling
+pm_runtime_get_sync() in ->probe(). When the driver's
+->runtime_resume() callbacks get called when the "init" flag is set,
+just do an early return 0, as t means ->probe() is running and has
+already taken care of the enabling the clock. When probe is done, and
+before dropping runtime usage count with pm_runtime_put(), reset the
+"init" flag.
 
-OK, but I think a simple check to decide not to, on SMP system is not
-too much a ask ?
+>
+>
+> Suspend: Disabled once (also at hardware level):
+>
+>     suspend_devices_and_enter
+>         dpm_suspend_start
+>             dpm_suspend
+>                 __device_suspend
+>                     dpm_run_callback
+>                         pm_runtime_force_suspend
+>                             genpd_runtime_suspend
+>                                 pm_generic_runtime_suspend
+>                                     tmio_mmc_host_runtime_suspend
+>                                         renesas_sdhi_clk_disable
+>
+>
+> Resume: Enabled twice (first one enables at hardware level):
+>
+>     dpm_resume_noirq
+>         device_resume_noirq
+>             dpm_run_callback
+>                 pm_genpd_resume_noirq
+>                     pm_runtime_force_resume
+>                         genpd_runtime_resume
+>                             genpd_start_dev
+>                                 pm_clk_resume                   (1)
+>                             __genpd_runtime_resume
+>                                 pm_generic_runtime_resume
+>                                     tmio_mmc_host_runtime_resume
+>                                         renesas_sdhi_clk_enable (2)
+>
+>
+> During subsequent suspends, the clock is disabled twice (last one disables
+> at hardware level), as expected:
+>
+>     suspend_devices_and_enter
+>         dpm_suspend_start
+>             dpm_suspend
+>                 __device_suspend
+>                     dpm_run_callback
+>                         pm_runtime_force_suspend
+>                             genpd_runtime_suspend
+>                                 pm_generic_runtime_suspend
+>                                     tmio_mmc_host_runtime_suspend
+>                                         renesas_sdhi_clk_disable (1)
+>                                 genpd_stop_dev
+>                                     pm_clk_suspend               (2)
+>
+>
+> From now on, the imbalance is gone.
+>
+> Note that at boot and initial suspend, genpd does not seem to call into the
+> clock domain operations at all.
+> Presumable some call to pm_runtime_get_sync() is missing?
+>
+> Thanks.
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-> You said, we punish large SMP systems, I don't think it is true,
-> especially from a performance point of view. Do you have access to such
-> hardware to check if it is correct?
-> 
-
-Sorry, I thought "punish" is bit a harsh but couldn't find the work. I
-can say penalize instead.
-
-No I don't have such a system to test.
-
-> We have more memory used but it is not related on how we implement the
-> driver above but on the fixed array size in the cpuidle structures.
-> 
-
-Yes, I agree. But I will see what we can do at minimum to avoid it on
-system's that don't need it.
-
-> I can take care of optimizing the memory usage in the cpuidle framework
-> which will benefit all architectures but that will take some time.
-> 
-
-Yest that's always good to have but I was not referring to that.
-
-> So can you consider acking this patch, so that unblocks other HMP idle
-> development and I take care of optimizing the structure memory usage?
-> 
-
-I am thinking of checking DT to see if we need multiple driver support
-or not. But then it comes down to what Lorenzo had already posted.
-
--- 
-Regards,
-Sudeep
+Kind regards
+Uffe
