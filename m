@@ -1,111 +1,133 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PCI / PM: Restore the status of PCI devices across hibernation
-Date: Fri, 2 Jun 2017 01:22:28 +0200
-Message-ID: <CAJZ5v0hNXJ0+bQdM5v0i0YeMkE7mBWJn5et_okt_qrMytS4ymQ@mail.gmail.com>
-References: <1495702147-31427-1-git-send-email-yu.c.chen@intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: FW: [4.12 regression] "cpufreq: intel_pstate: Active mode P-state limits rework"
+Date: Fri, 02 Jun 2017 02:41:04 +0200
+Message-ID: <1531609.n2MRKDRlk2@aspire.rjw.lan>
+References: <3772609.tskOqDLWI3@aspire.rjw.lan> <CGME20170516042313epcms1p5523f4e3e1ae608eaf0327be0242ee46e@epcms1p1> <20170601010816epcms1p16cded9ef0657a694c5a7a73ab723ecd7@epcms1p1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1495702147-31427-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>, Bjorn Helgaas <bhelgaas@google.com>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Dan Williams <dan.j.williams@intel.com>, Rui Zhang <rui.zhang@intel.com>, Ying Huang <ying.huang@intel.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170601010816epcms1p16cded9ef0657a694c5a7a73ab723ecd7@epcms1p1>
+Sender: linux-kernel-owner@vger.kernel.org
+To: jongman.heo@samsung.com
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 25, 2017 at 10:49 AM, Chen Yu <yu.c.chen@intel.com> wrote:
-> Currently we saw a lot of "No irq handler" errors during hibernation,
-> which caused the system hang finally:
->
-> [  710.141581] ata4.00: qc timeout (cmd 0xec)
-> [  710.147135] ata4.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-> [  710.154593] ata4.00: revalidation failed (errno=-5)
-> [  710.468124] ata4: SATA link up 6.0 Gbps (SStatus 133 SControl 300)
-> [  710.477746] do_IRQ: 31.151 No irq handler for vector
->
-> According to above logs, there is an interrupt triggered and it is
-> dispatched to CPU31 with a vector number 151, but there is no handler
-> for it, thus this irq will not get acked and caused irq flood which kill
-> the system. To be more specific, the 31.151 is an interrupt from the ahci
-> host controller.
->
-> After some investigation, the reason why this issue is triggered is
-> because the thaw_noirq() function does not restore the MSI/MSIX settings
-> across hibernation.
->
-> The scenario is illustrated below:
->
-> 1. Before the hibernation starts, the irq 34 is the handler for the ahci device,
->    which is binded on cpu31.
-> 2. Hibernation starts, the ahci device is put into low power state.
-> 3. All the nonboot CPUs are put offline, so the irq 34 has to be migrated to
->    the last alive one - CPU0.
-> 4. After the snapshot has been created, all the nonboot CPUs are brought up again,
->    the CPU affinity for IRQ 34 remains to be 0.
-> 5. ahci device are put into D0.
-> 6. The snapshot is written to the disk.
->
-> The issue is triggered in step 6, in theory the ahci interrupt should be
-> delivered to CPU0, however the actually result is that this interrupt is
-> delivered to the original CPU31 instead, which cause the "No irq handler" issue.
->
-> Ying Huang has has provided a clue that, in step 3 it is possible that the writing
-> to the register might not take effect as the PCI devices have been put suspended.
-> Actually it is true:
-> In step 3, the irq 34 affinity is supposed to be modified from 31 to 0,
-> but actually it did not. In __pci_write_msi_msg(), if the device is already
-> in low power state, the low level msi message entry will not be updated
-> but cached. So in theory during the device restore process, the cached msi
-> modification information should be written back to the hardware, and this
-> is what pci_restore_msi_state() do during normal suspend-resume.
-> But this is not the case for hibernation, pci_restore_msi_state() is not
-> invoked currently, to be more specific, pci_restore_state() is not invoked
-> in pci_pm_thaw_noirq(), although pci_save_state() has saved the necessary
-> pci cached information in pci_pm_freeze_noirq().
->
-> This patch tries to restore the pci status for the device during hibernation,
-> otherwise the status might be lost across hibernation(for example, the MSI/MSIX
-> message settings), which might cause problems during hibernation.
->
-> Suggested-by: Ying Huang <ying.huang@intel.com>
-> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Dan Williams <dan.j.williams@intel.com>
-> Cc: Rui Zhang <rui.zhang@intel.com>
-> Cc: Ying Huang <ying.huang@intel.com>
-> Cc: linux-pci@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+On Thursday, June 01, 2017 01:08:16 AM Jongman Heo wrote:
+> > 
+> >--------- Original Message ---------
+> >Sender : Rafael J. Wysocki <rjw@rjwysocki.net>
+> >Date   : 2017-06-01 08:58 (GMT+9)
+> >Title  : Re: FW: [4.12 regression] "cpufreq: intel_pstate: Active mode P-state limits rework"
+> > 
+> >On Monday, May 29, 2017 02:18:52 AM Jongman Heo wrote:
+> >> 
+> >> Hi,
+> >> 
+> >> FYI, 4.12-rc3 still has this issue.
+> >> 
+> >>  
+> >> --------- Original Message ---------
+> >> Sender : 허종만 <jongman.heo@samsung.com>
+> >> Date   : 2017-05-16 13:25 (GMT+9)
+> >> Title  : [4.12 regression] "cpufreq: intel_pstate: Active mode P-state limits rework"
+> >>  
+> >>  
+> >> Hi,
+> >>  
+> >> With 4.12-rc1 (Linus git), booting fails due to kernel panic, at intel_pstate_register_driver+0x56/0x110.
+> >> I can't copy the whole trace from the graphic console, it looks like below.
+> >>  
+> >> Call Trace:
+> >>   intel_pstate_init
+> >>   intel_pstate_setup
+> >>   do_one_initcall
+> >>   set_debug_rodata
+> >>   kernel_init_freeable
+> >>   rest_init
+> >>   kernel_init
+> >>   ret_from_fork
+> >>     Code: ...
+> >>   RIP: intel_pstate_register_driver+0x56/0x110 RSP: ffffa3a98000bd80
+> >>   ...
+> > 
+> >I guess this is a division by 0 due to the unmet assumption that the denominator
+> >in min_perf_pct_min() will always be nonzero.
+> > 
+> >If this guess is correct, the patch below should help, so can you please test it?
+> > 
+> >Thanks,
+> >Rafael
+> > 
+> > 
+> >---
+> > drivers/cpufreq/intel_pstate.c |    5 +++--
+> > 1 file changed, 3 insertions(+), 2 deletions(-)
+> > 
+> >Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> >===================================================================
+> >--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> >+++ linux-pm/drivers/cpufreq/intel_pstate.c
+> >@@ -571,9 +571,10 @@ static inline void update_turbo_state(vo
+> > static int min_perf_pct_min(void)
+> > {
+> >         struct cpudata *cpu = all_cpu_data[0];
+> >+        int turbo_pstate = cpu->pstate.turbo_pstate;
+> > 
+> >-        return DIV_ROUND_UP(cpu->pstate.min_pstate * 100,
+> >-                            cpu->pstate.turbo_pstate);
+> >+        return turbo_pstate ?
+> >+                DIV_ROUND_UP(cpu->pstate.min_pstate * 100, turbo_pstate) : 0;
+> > }
+> > 
+> > static s16 intel_pstate_get_epb(struct cpudata *cpu_data)
+> > 
+> > 
+> > 
+> 
+> Hi,
+> 
+> Your patch fixes the issue.
 
-Thanks for the detailed description of what's going on!
+OK, thanks for the confirmation.
 
-The fix is correct IMO, so
+Here it goes again with a changelog and all.
 
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Avoid division by 0 in min_perf_pct_min()
 
-Bjorn, if you want me to take this one, please let me know.
+Commit c5a2ee7dde89 (cpufreq: intel_pstate: Active mode P-state
+limits rework) incorrectly assumed that pstate.turbo_pstate will
+always be nonzero for CPU0 in min_perf_pct_min() if
+cpufreq_register_driver() has succeeded which may not be the case
+in virtualized environments.
 
-> ---
->  drivers/pci/pci-driver.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> index 192e7b6..b399fa3 100644
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -964,6 +964,7 @@ static int pci_pm_thaw_noirq(struct device *dev)
->                 return pci_legacy_resume_early(dev);
->
->         pci_update_current_state(pci_dev, PCI_D0);
-> +       pci_restore_state(pci_dev);
->
->         if (drv && drv->pm && drv->pm->thaw_noirq)
->                 error = drv->pm->thaw_noirq(dev);
-> --
-> 2.7.4
->
+If that is not the case, it leads to an early crash on boot in
+intel_pstate_register_driver(), so add a sanity check to
+min_perf_pct_min() to prevent the crash from happening.
 
-Thanks,
-Rafael
+Fixes: c5a2ee7dde89 (cpufreq: intel_pstate: Active mode P-state limits rework)
+Reported-and-tested-by: Jongman Heo <jongman.heo@samsung.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -571,9 +571,10 @@ static inline void update_turbo_state(vo
+ static int min_perf_pct_min(void)
+ {
+ 	struct cpudata *cpu = all_cpu_data[0];
++	int turbo_pstate = cpu->pstate.turbo_pstate;
+ 
+-	return DIV_ROUND_UP(cpu->pstate.min_pstate * 100,
+-			    cpu->pstate.turbo_pstate);
++	return turbo_pstate ?
++		DIV_ROUND_UP(cpu->pstate.min_pstate * 100, turbo_pstate) : 0;
+ }
+ 
+ static s16 intel_pstate_get_epb(struct cpudata *cpu_data)
