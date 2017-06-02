@@ -1,165 +1,137 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2] ARM: cpuidle: Support asymmetric idle definition
-Date: Fri, 2 Jun 2017 12:40:47 +0200
-Message-ID: <e79e44d6-6f01-6829-3924-6feca7633eae@linaro.org>
-References: <1496317188-15272-1-git-send-email-daniel.lezcano@linaro.org>
- <3ec88de3-7d18-0ea6-bc27-e98084f2b6f6@arm.com>
- <4fe4558f-5881-11dc-5d36-93c92a272eed@linaro.org>
- <a96db56b-a773-f0a7-431e-acbb969333d1@arm.com>
- <d96a6da1-318f-3465-9227-714036431f81@linaro.org>
- <47e3d236-8d36-d04d-5f87-9fece6875d66@arm.com>
+From: Martin Steigerwald <martin@lichtvoll.de>
+Subject: Re: [REGRESSION] [4.11/4.12-rc3] Hang on Suspend to RAM
+Date: Fri, 02 Jun 2017 12:51:19 +0200
+Message-ID: <33255861.C5UZlzXv3T@merkaba>
+References: <748157628.hqj47iI04h@merkaba> <alpine.LSU.2.11.1706011236420.4437@eggly.anvils>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f43.google.com ([74.125.82.43]:34455 "EHLO
-        mail-wm0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751125AbdFBKkv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2017 06:40:51 -0400
-Received: by mail-wm0-f43.google.com with SMTP id 123so11150317wmg.1
-        for <linux-pm@vger.kernel.org>; Fri, 02 Jun 2017 03:40:50 -0700 (PDT)
-In-Reply-To: <47e3d236-8d36-d04d-5f87-9fece6875d66@arm.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.LSU.2.11.1706011236420.4437@eggly.anvils>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Hugh Dickins <hughd@google.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, lorenzo.pieralisi@arm.com
-Cc: leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On 02/06/2017 12:14, Sudeep Holla wrote:
-> 
-> 
-> On 02/06/17 11:06, Daniel Lezcano wrote:
->> On 02/06/2017 11:39, Sudeep Holla wrote:
->>>
->>>
->>> On 02/06/17 10:25, Daniel Lezcano wrote:
->>>> On 02/06/2017 11:20, Sudeep Holla wrote:
->>>>>
->>>>>
->>>>> On 01/06/17 12:39, Daniel Lezcano wrote:
->>>>>> Some hardware have clusters with different idle states. The current code does
->>>>>> not support this and fails as it expects all the idle states to be identical.
->>>>>>
->>>>>> Because of this, the Mediatek mtk8173 had to create the same idle state for a
->>>>>> big.Little system and now the Hisilicon 960 is facing the same situation.
->>>>>>
->>>>>> Solve this by simply assuming the multiple driver will be needed for all the
->>>>>> platforms using the ARM generic cpuidle driver which makes sense because of the
->>>>>> different topologies we can support with a single kernel for ARM32 or ARM64.
->>>>>>
->>>>>> Every CPU has its own driver, so every single CPU can specify in the DT the
->>>>>> idle states.
->>>>>>
->>>>>> This simple approach allows to support the future dynamIQ system, current SMP
->>>>>> and HMP.
->>>>>>
->>>>>> It is unoptimal from a memory point of view for a system with a large number of
->>>>>> CPUs but nowadays there is no such system with a cpuidle driver on ARM.
->>>>>>
->>>>>
->>>>> While I agree this may be simple solution, but just not necessary for
->>>>> systems with symmetric idle states especially one with large number of
->>>>> CPUs. I don't like to see 96 CPU Idle driver on say ThunderX. So we
->>>>> *must* have some basic distinction done here.
->>>>>
->>>>> IMO, we can't punish a large SMP systems just because they don't have
->>>>> asymmetric idle states.
->>>>
->>>> Can you point me in the upstream kernel a DTS with 96 cpus and using the
->>>> cpuidle-arm driver ?
->>>>
->>>
->>> The bindings are upstream right. Not all DTS are upstream, firmware
->>> generate them especially for large systems.
->>>
->>> Check arch/arm64/boot/dts/cavium/thunder{,2}-{88,99}xx.dtsi, it has
->>> supports PSCI and firmware can update DTB to add the idle states.
->>> They are systems with 96 and 128 CPUs.
->>
->> Ok, so I have to assume there are out of tree DTB with idle state
->> definitions. In other circumstances I would have just ignored this
->> argument but I can admit the DTB blob thing is in the grey area between
->> what we have to support upstream and out of tree changes.
->>
-> 
-> Not entirely true. It's clear, we support anything whose binding is
-> upstream. I do agree that there are lots of out of tree bindings but I
-> am not referring to them. I am just referring to out of tree DTS with
-> already upstreamed binding.
+Hello Hugh,
 
-That is what I meant :)
-
->> However, even if it is suboptimal, I'm convinced doing a per-cpu driver
->> makes more sense.
->>
+Hugh Dickins - 01.06.17, 12:55:
+> On Thu, 1 Jun 2017, Martin Steigerwald wrote:
+> > Hello.
+[…]
+> > Since 4.11 I have it quite often that a hang like this even happens on
+> > suspend to RAM (standby) as well. And even quite often about 1 time of of
+> > 2-3 suspend attempts. The hang symptoms are similar. Power LED dims on
+> > and off. Screen is black.
+> > 
+> > Since this is my holidays and this again does not happen all of the time
+> > and thus would be considerable effort to bisect, I think I am out here
+> > now. Unless you have something I can test easily.
+> > 
+> > It seems I am much better off with opting out out of kernel testing as I
+> > tend to usually get the nasty "I hang and I won´t tell you any hint as
+> > about why I do so and do so only sometimes" kind of bugs that are too
+> > much effort for me to provide any usable debug information about.
+[…]
+> > If you have any idea of useful information I can provide to you *easily*
+> > and in a *short amount of time*, then feel free to share it. I have
+> > holidays tough, so I am especially picky about the easily and short
+> > amount of time part.
+> > 
+> > Switching back to 4.10, last known working kernel, now.
 > 
-> OK, but I think a simple check to decide not to, on SMP system is not
-> too much a ask ?
-
-Yes, it is :)
-
-We end up with a hack by parsing and analyzing the DT based on the idea
-different idle states means different cluster where you stated right
-before in the topology comment that is not necessary true. So Lorenzo's
-patch adds heuristic which may be wrong.
-
-If we decide to consider all cpus with their own set of idle states,
-everything is solved with a cpuidle driver per cpu.
-
-The only drawback is the memory consumption.
-
-But on the other side, as the idle state are per cpu, we don't trash the
-cache.
-
-Moreover, we already had that, an array of idle states per cpu (see
-commit 46bcfad7), it was in the struct cpuidle_device instead of the
-struct cpuidle_driver. It has been moved away in the latter with the
-assumption the SMP have all the same idle states but now we see it is no
-longer true.
-
-Creating a cpuidle_driver per cpu is like using the previous approach.
-The only thing is we must improve to save memory, that's all (eg. a
-pointer allocating the idle states rather than hardcoding it).
-
-We can live with a driver per cpu and do the memory optimization.
-
-If we have an observed regression with large SMP systems, we fix it.
-
->> You said, we punish large SMP systems, I don't think it is true,
->> especially from a performance point of view. Do you have access to such
->> hardware to check if it is correct?
->>
+> The commit below reached Linus's tree a few hours ago, and fixes an i915
+> issue that several of us were seeing in 4.11 and 4.12-rc.  I didn't have
+> your symptoms - but I don't use hibernation: I think there's a good chance
+> that this commit will fix your issue (but I wouldn't be able help any
+> further if it does not work for you, sorry).
 > 
-> Sorry, I thought "punish" is bit a harsh but couldn't find the work. I
-> can say penalize instead.
+> Depending on what tree you apply it to, it may not apply cleanly:
+> just delete the synchronize_rcu_expedited() and syncronize_rcu()
+> lines from that file.
+
+Thank you for the hint.
+
+My machine isn´t exactly what I call a low memory machine. It is a Sandybridge 
+ThinkPad T520 with 16 GiB of RAM.
+
+Well… some day, maybe with rc4, maybe earlier, I pull in newest stuff from 
+Linus and look how this works.
+
+Thanks,
+Martin
+
+> commit 4681ee21d62cfed4364e09ec50ee8e88185dd628
+> Author: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
+> Date:   Thu May 18 11:49:39 2017 +0300
 > 
-> No I don't have such a system to test.
+>     drm/i915: Do not sync RCU during shrinking
 > 
->> We have more memory used but it is not related on how we implement the
->> driver above but on the fixed array size in the cpuidle structures.
->>
+>     Due to the complex dependencies between workqueues and RCU, which
+>     are not easily detected by lockdep, do not synchronize RCU during
+>     shrinking.
 > 
-> Yes, I agree. But I will see what we can do at minimum to avoid it on
-> system's that don't need it.
+>     On low-on-memory systems (mem=1G for example), the RCU sync leads
+>     to all system workqueus freezing and unrelated lockdep splats are
+>     displayed according to reports. GIT bisecting done by J. R.
+>     Okajima points to the commit where RCU syncing was extended.
 > 
->> I can take care of optimizing the memory usage in the cpuidle framework
->> which will benefit all architectures but that will take some time.
->>
+>     RCU sync gains us very little benefit in real life scenarios
+>     where the amount of memory used by object backing storage is
+>     dominant over the metadata under RCU, so drop it altogether.
 > 
-> Yest that's always good to have but I was not referring to that.
+>      " Yeeeaah, if core could just, go ahead and reclaim RCU
+>        queues, that'd be great. "
 > 
->> So can you consider acking this patch, so that unblocks other HMP idle
->> development and I take care of optimizing the structure memory usage?
->>
+>       - Chris Wilson, 2016 (0eafec6d3244)
 > 
-> I am thinking of checking DT to see if we need multiple driver support
-> or not. But then it comes down to what Lorenzo had already posted.
+>     v2: More information to commit message.
+>     v3: Remove "grep _rcu_" escapee from i915_gem_shrink_all (Andrea)
 > 
+>     Fixes: c053b5a506d3 ("drm/i915: Don't call synchronize_rcu_expedited
+> under struct_mutex") Suggested-by: Chris Wilson <chris@chris-wilson.co.uk>
+>     Reported-by: J. R. Okajima <hooanon05g@gmail.com>
+>     Signed-off-by: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
+>     Reviewed-by: Chris Wilson <chris@chris-wilson.co.uk>
+>     Tested-by: Hugh Dickins <hughd@google.com>
+>     Tested-by: Andrea Arcangeli <aarcange@redhat.com>
+>     Cc: Chris Wilson <chris@chris-wilson.co.uk>
+>     Cc: Tvrtko Ursulin <tvrtko.ursulin@intel.com>
+>     Cc: J. R. Okajima <hooanon05g@gmail.com>
+>     Cc: Andrea Arcangeli <aarcange@redhat.com>
+>     Cc: Hugh Dickins <hughd@google.com>
+>     Cc: Jani Nikula <jani.nikula@intel.com>
+>     Cc: <stable@vger.kernel.org> # v4.11+
+>     (cherry picked from commit 73cc0b9aa9afa5ba65d92e46ded61d29430d72a4)
+>     Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+>     Link:
+> http://patchwork.freedesktop.org/patch/msgid/1495097379-573-1-git-send-emai
+> l-joonas.lahtinen@linux.intel.com
+> 
+> diff --git a/drivers/gpu/drm/i915/i915_gem_shrinker.c
+> b/drivers/gpu/drm/i915/i915_gem_shrinker.c index 129ed303a6c4..57d9f7f4ef15
+> 100644
+> --- a/drivers/gpu/drm/i915/i915_gem_shrinker.c
+> +++ b/drivers/gpu/drm/i915/i915_gem_shrinker.c
+> @@ -59,9 +59,6 @@ static void i915_gem_shrinker_unlock(struct drm_device
+> *dev, bool unlock) return;
+> 
+>  	mutex_unlock(&dev->struct_mutex);
+> -
+> -	/* expedite the RCU grace period to free some request slabs */
+> -	synchronize_rcu_expedited();
+>  }
+> 
+>  static bool any_vma_pinned(struct drm_i915_gem_object *obj)
+> @@ -274,8 +271,6 @@ unsigned long i915_gem_shrink_all(struct
+> drm_i915_private *dev_priv) I915_SHRINK_ACTIVE);
+>  	intel_runtime_pm_put(dev_priv);
+> 
+> -	synchronize_rcu(); /* wait for our earlier RCU delayed slab frees */
+> -
+>  	return freed;
+>  }
 
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Martin
