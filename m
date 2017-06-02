@@ -1,133 +1,50 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: FW: [4.12 regression] "cpufreq: intel_pstate: Active mode P-state limits rework"
-Date: Fri, 02 Jun 2017 02:41:04 +0200
-Message-ID: <1531609.n2MRKDRlk2@aspire.rjw.lan>
-References: <3772609.tskOqDLWI3@aspire.rjw.lan> <CGME20170516042313epcms1p5523f4e3e1ae608eaf0327be0242ee46e@epcms1p1> <20170601010816epcms1p16cded9ef0657a694c5a7a73ab723ecd7@epcms1p1>
+From: Tom Lanyon <tom@oneshoeco.com>
+Subject: Re: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
+ recent Dell laptops
+Date: Fri, 2 Jun 2017 11:06:49 +1000
+Message-ID: <CA+b4Kqf9YN0x+Sc6Lk28FLD8-iaHnjS74MQV2yMyS599fe5HTw@mail.gmail.com>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <3454366.uzaJljlWGm@aspire.rjw.lan>
+ <1496313803.28981.45.camel@linux.intel.com> <CA+b4KqcxKNaHMTEG3KQOQ98OFmwS+R8PLdfyZB1tastH5m0XVQ@mail.gmail.com>
+ <CAJZ5v0j_jA68cai4mV85DV7QTVh77BcrWv7mnotZ6XKtXO57Wg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170601010816epcms1p16cded9ef0657a694c5a7a73ab723ecd7@epcms1p1>
-Sender: linux-kernel-owner@vger.kernel.org
-To: jongman.heo@samsung.com
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f41.google.com ([74.125.82.41]:37379 "EHLO
+        mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750892AbdFBBHL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Jun 2017 21:07:11 -0400
+Received: by mail-wm0-f41.google.com with SMTP id d127so8755688wmf.0
+        for <linux-pm@vger.kernel.org>; Thu, 01 Jun 2017 18:07:11 -0700 (PDT)
+In-Reply-To: <CAJZ5v0j_jA68cai4mV85DV7QTVh77BcrWv7mnotZ6XKtXO57Wg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>
 
-On Thursday, June 01, 2017 01:08:16 AM Jongman Heo wrote:
-> > 
-> >--------- Original Message ---------
-> >Sender : Rafael J. Wysocki <rjw@rjwysocki.net>
-> >Date   : 2017-06-01 08:58 (GMT+9)
-> >Title  : Re: FW: [4.12 regression] "cpufreq: intel_pstate: Active mode P-state limits rework"
-> > 
-> >On Monday, May 29, 2017 02:18:52 AM Jongman Heo wrote:
-> >> 
-> >> Hi,
-> >> 
-> >> FYI, 4.12-rc3 still has this issue.
-> >> 
-> >>  
-> >> --------- Original Message ---------
-> >> Sender : 허종만 <jongman.heo@samsung.com>
-> >> Date   : 2017-05-16 13:25 (GMT+9)
-> >> Title  : [4.12 regression] "cpufreq: intel_pstate: Active mode P-state limits rework"
-> >>  
-> >>  
-> >> Hi,
-> >>  
-> >> With 4.12-rc1 (Linus git), booting fails due to kernel panic, at intel_pstate_register_driver+0x56/0x110.
-> >> I can't copy the whole trace from the graphic console, it looks like below.
-> >>  
-> >> Call Trace:
-> >>   intel_pstate_init
-> >>   intel_pstate_setup
-> >>   do_one_initcall
-> >>   set_debug_rodata
-> >>   kernel_init_freeable
-> >>   rest_init
-> >>   kernel_init
-> >>   ret_from_fork
-> >>     Code: ...
-> >>   RIP: intel_pstate_register_driver+0x56/0x110 RSP: ffffa3a98000bd80
-> >>   ...
-> > 
-> >I guess this is a division by 0 due to the unmet assumption that the denominator
-> >in min_perf_pct_min() will always be nonzero.
-> > 
-> >If this guess is correct, the patch below should help, so can you please test it?
-> > 
-> >Thanks,
-> >Rafael
-> > 
-> > 
-> >---
-> > drivers/cpufreq/intel_pstate.c |    5 +++--
-> > 1 file changed, 3 insertions(+), 2 deletions(-)
-> > 
-> >Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> >===================================================================
-> >--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> >+++ linux-pm/drivers/cpufreq/intel_pstate.c
-> >@@ -571,9 +571,10 @@ static inline void update_turbo_state(vo
-> > static int min_perf_pct_min(void)
-> > {
-> >         struct cpudata *cpu = all_cpu_data[0];
-> >+        int turbo_pstate = cpu->pstate.turbo_pstate;
-> > 
-> >-        return DIV_ROUND_UP(cpu->pstate.min_pstate * 100,
-> >-                            cpu->pstate.turbo_pstate);
-> >+        return turbo_pstate ?
-> >+                DIV_ROUND_UP(cpu->pstate.min_pstate * 100, turbo_pstate) : 0;
-> > }
-> > 
-> > static s16 intel_pstate_get_epb(struct cpudata *cpu_data)
-> > 
-> > 
-> > 
-> 
-> Hi,
-> 
-> Your patch fixes the issue.
+On 2 June 2017 at 00:59, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> Quoting from my cover letter:
+>
+> "After this series there still is a concern regarding the possible increase of
+> power draw that may result from the processing of non-wakeup EC events while
+> suspended which is why the change only affects Dell XPS13 9360 and 9365
+> for now."
+>
+> So that is what happens, unfortunately, and we can't do much about it
+> at the moment.
 
-OK, thanks for the confirmation.
+OK, but at the moment this is a regression in functionality on those
+platforms. Without this patchset, I can successfully s2idle
+suspend/resume on an XPS 9365 (albeit with a little bit of awkward
+fiddling of the power button to resume). After the patchset, I can't
+realistically go into s2idle at all.
 
-Here it goes again with a changelog and all.
+> The only way to avoid that would be to reconfigure the EC during
+> suspend to stop generating non-wakeup events, but today we have no
+> reliable way to do that.
 
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: Avoid division by 0 in min_perf_pct_min()
+I thought I had read one one of the threads that this was possible in
+the same way that it is for Windows on these laptops.  What's missing
+to make this possible?
 
-Commit c5a2ee7dde89 (cpufreq: intel_pstate: Active mode P-state
-limits rework) incorrectly assumed that pstate.turbo_pstate will
-always be nonzero for CPU0 in min_perf_pct_min() if
-cpufreq_register_driver() has succeeded which may not be the case
-in virtualized environments.
-
-If that is not the case, it leads to an early crash on boot in
-intel_pstate_register_driver(), so add a sanity check to
-min_perf_pct_min() to prevent the crash from happening.
-
-Fixes: c5a2ee7dde89 (cpufreq: intel_pstate: Active mode P-state limits rework)
-Reported-and-tested-by: Jongman Heo <jongman.heo@samsung.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/intel_pstate.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -571,9 +571,10 @@ static inline void update_turbo_state(vo
- static int min_perf_pct_min(void)
- {
- 	struct cpudata *cpu = all_cpu_data[0];
-+	int turbo_pstate = cpu->pstate.turbo_pstate;
- 
--	return DIV_ROUND_UP(cpu->pstate.min_pstate * 100,
--			    cpu->pstate.turbo_pstate);
-+	return turbo_pstate ?
-+		DIV_ROUND_UP(cpu->pstate.min_pstate * 100, turbo_pstate) : 0;
- }
- 
- static s16 intel_pstate_get_epb(struct cpudata *cpu_data)
+Tom
