@@ -1,61 +1,69 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.12-rc4
-Date: Sat, 3 Jun 2017 00:43:58 +0200
-Message-ID: <CAJZ5v0i=YSDidLqiCW-Axj++BpDZ9wHOiBAgkktM0r9tw7nZNA@mail.gmail.com>
+Subject: [GIT PULL] ACPI fixes for v4.12-rc4
+Date: Sat, 3 Jun 2017 00:46:08 +0200
+Message-ID: <CAJZ5v0jKBAgw3U=QOuGNwhqEMb0nfSUUNUotV9oyMr5NznF-Fg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f46.google.com ([209.85.214.46]:36832 "EHLO
-        mail-it0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750971AbdFBWn7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Jun 2017 18:43:59 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
 Hi Linus,
 
 Please pull from the tag
 
  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.12-rc4
+ acpi-4.12-rc4
 
-with top-most commit bb5710e72c217e5bbdf0969a2fd84f5f5ad7fc2b
+with top-most commit 60319130254084b337e02439d3b4ec301b6328bb
 
- Merge branch 'pm-cpufreq'
+ Merge branches 'acpi-button', 'acpica' and 'acpi-sysfs'
 
 on top of commit 5ed02dbb497422bf225783f46e6eadd237d23d6b
 
  Linux 4.12-rc3
 
-to receive power management fixes for v4.12-rc4.
+to receive ACPI fixes for v4.12-rc4.
 
-These fix two bugs in error code paths in the cpufreq core and in
-the kirkwood-cpufreq driver.
+These revert one more problematic commit related to the ACPI-based
+handling of laptop lids and make some unuseful error messages coming
+from ACPICA go away.
 
 Specifics:
 
- - Make cpufreq_register_driver() return an error if the ->init()
-   calls fail for all CPUs to prevent non-functional drivers from
-   hanging around for no reason (David Arcari).
+ - Revert one more commit related to the ACPI-based handling of
+   laptop lids that changed the default behavior on laptops that
+   booted with closed lids and introduced a regression there
+   (Benjamin Tissoires).
 
- - Make kirkwood-cpufreq check the return value of clk_prepare_enable()
-   (which may fail) as appropriate (Arvind Yadav).
+ - Add a missing acpi_put_table() to the code implementing the
+   /sys/firmware/acpi/tables interface to prevent a counter in
+   the ACPICA core from overflowing (Dan Williams).
+
+ - Drop error messages printed by ACPICA on acpi_get_table()
+   reference counting mismatches as they need not indicate real
+   errors at this point (Lv Zheng).
 
 Thanks!
 
 
 ---------------
 
-Arvind Yadav (1):
-      cpufreq: kirkwood-cpufreq:- Handle return value of clk_prepare_enable()
+Benjamin Tissoires (1):
+      Revert "ACPI / button: Change default behavior to lid_init_state=open"
 
-David Arcari (1):
-      cpufreq: cpufreq_register_driver() should return -ENODEV if init fails
+Dan Williams (1):
+      ACPI / sysfs: fix acpi_get_table() leak / acpi-sysfs denial of service
+
+Lv Zheng (1):
+      ACPICA: Tables: Fix regression introduced by a too early
+mechanism enabling
 
 ---------------
 
- drivers/cpufreq/cpufreq.c          |  1 +
- drivers/cpufreq/kirkwood-cpufreq.c | 19 ++++++++++++++++---
- 2 files changed, 17 insertions(+), 3 deletions(-)
+ drivers/acpi/acpica/tbutils.c | 4 ----
+ drivers/acpi/button.c         | 2 +-
+ drivers/acpi/sysfs.c          | 7 +++++--
+ 3 files changed, 6 insertions(+), 7 deletions(-)
