@@ -1,69 +1,66 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: Re: [PATCH v5 0/3] More fixes for twl4030 charger
-Date: Sat, 3 Jun 2017 08:01:13 +0200
-Message-ID: <421EB4BB-9E42-413B-8FB8-2B865FC25D15@goldelico.com>
-References: <cover.1495363097.git.hns@goldelico.com>
-Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1495363097.git.hns@goldelico.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, Marek Belisko <marek@goldelico.com>, Nikolaus Schaller <hns@goldelico.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
+From: Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH] kernel/power/suspend: use CONFIG_HAVE_SET_MEMORY for include condition
+Date: Sat,  3 Jun 2017 20:52:32 +1000
+Message-ID: <20170603105232.6436-1-bsingharora@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:33984 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750765AbdFCKwr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jun 2017 06:52:47 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Balbir Singh <bsingharora@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Laura Abbott <labbott@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
 
-No comments for this series? Everything fine? Has it been merged =
-somewhere?
+Kbuild reported a build failure when CONFIG_STRICT_KERNEL_RWX was
+enabled on powerpc. We don't yet have ARCH_HAS_SET_MEMORY and ppc32
+saw a build failure.
 
-> Am 21.05.2017 um 12:38 schrieb H. Nikolaus Schaller =
-<hns@goldelico.com>:
->=20
-> Changes V5:
-> * reworked max_current removal patch (comments by Sebastian Reichel)
-> * resubmit missing madc connection for AC power detection
-> * resubmit patch for irq allocation and -EPROBE_DEFER
-> * rebased on 4.12-rc1
->=20
-> Changes V4:
-> * resent commit (original one did contain material not upstream)
->=20
-> 2017-04-14 21:29:39: 2017-04-14 20:26:00: Changes V3:
-> * worked in comments by Sebsatian Reichel
-> * clarifications of some commit messages
-> * rebased on v4.11rc-6
->=20
-> It took a while (18 months) until we propose an updated patch for =
-upstream...
->=20
-> 2015-11-02 12:27:39: Changes V2:
-> * worked in comments by Nishanth Menon <nm@ti.com>
-> * added another patch which solves a probing/boot stall problem (irq =
-allocation vs. -EPROBE_DEFER)
->=20
-> V1:
-> 4.3-rc1 introduced a new charger driver for the twl4030. This patch =
-set fixes some
-> issues.
->=20
-> While making twl4030 changes from 4.3 operable we have found some =
-issues
-> during testing on GTA04 and OpenPandora.
->=20
-> H. Nikolaus Schaller (2):
->  drivers:power:twl4030-charger: remove nonstandard max_current sysfs
->    attribute
->  drivers:power:twl4030-charger: add deferred probing for phy and iio
->=20
-> Marek Belisko (1):
->  ARM: dts: twl4030: Add missing madc reference for bci subnode
->=20
-> .../ABI/testing/sysfs-class-power-twl4030          |  17 ----
-> arch/arm/boot/dts/twl4030.dtsi                     |   2 +
-> drivers/power/supply/twl4030_charger.c             | 100 =
-+++++----------------
-> 3 files changed, 24 insertions(+), 95 deletions(-)
->=20
-> --=20
-> 2.12.2
->=20
+fixes(50327dd kernel/power/snapshot.c: use set_memory.h header)
+
+I've only done a basic compile test with a config that has
+hibernation enabled.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Laura Abbott <labbott@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+
+Reported-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+---
+ kernel/power/snapshot.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index fa46606..71730d6 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -36,13 +36,13 @@
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <asm/io.h>
+-#ifdef CONFIG_STRICT_KERNEL_RWX
++#ifdef CONFIG_ARCH_HAS_SET_MEMORY
+ #include <asm/set_memory.h>
+ #endif
+ 
+ #include "power.h"
+ 
+-#ifdef CONFIG_STRICT_KERNEL_RWX
++#if defined(CONFIG_STRICT_KERNEL_RWX) && defined(CONFIG_ARCH_HAS_SET_MEMORY)
+ static bool hibernate_restore_protection;
+ static bool hibernate_restore_protection_active;
+ 
+@@ -77,7 +77,7 @@ static inline void hibernate_restore_protection_begin(void) {}
+ static inline void hibernate_restore_protection_end(void) {}
+ static inline void hibernate_restore_protect_page(void *page_address) {}
+ static inline void hibernate_restore_unprotect_page(void *page_address) {}
+-#endif /* CONFIG_STRICT_KERNEL_RWX */
++#endif /* CONFIG_STRICT_KERNEL_RWX  && CONFIG_ARCH_HAS_SET_MEMORY */
+ 
+ static int swsusp_page_is_free(struct page *);
+ static void swsusp_set_page_forbidden(struct page *);
+-- 
+2.9.3
