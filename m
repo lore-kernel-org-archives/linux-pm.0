@@ -1,66 +1,65 @@
-From: Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH] kernel/power/suspend: use CONFIG_HAVE_SET_MEMORY for include condition
-Date: Sat,  3 Jun 2017 20:52:32 +1000
-Message-ID: <20170603105232.6436-1-bsingharora@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:33984 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750765AbdFCKwr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jun 2017 06:52:47 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v5 3/8] thermal: intel_bxt_pmic_thermal: Use first level
+ PMIC thermal irq
+Date: Sat, 3 Jun 2017 16:00:52 +0300
+Message-ID: <CAHp75Vd5uPmz-0uyPcwYaqyGZhC7caHWj5PbfMJTzSQ6G+1o3w@mail.gmail.com>
+References: <cover.1496266871.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <20170531070225.bymdhhpclidwwtpt@dell> <3e58ab749a67cce5c956ef13db8563fb0a8bc190.1496266871.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <3e58ab749a67cce5c956ef13db8563fb0a8bc190.1496266871.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Cc: Alexandre Courbot <gnurou@gmail.com>, "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "dvhart@infradead.org" <dvhart@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, Lee Jones <lee.jones@linaro.org>, Andy Shevchenko <andy@infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Sathyanarayanan Kuppuswamy Natarajan <sathyaosid@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Balbir Singh <bsingharora@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Laura Abbott <labbott@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
 
-Kbuild reported a build failure when CONFIG_STRICT_KERNEL_RWX was
-enabled on powerpc. We don't yet have ARCH_HAS_SET_MEMORY and ppc32
-saw a build failure.
+On Thu, Jun 1, 2017 at 1:37 AM,
+<sathyanarayanan.kuppuswamy@linux.intel.com> wrote:
+> From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+>
+> PMIC mfd driver only exports first level irq for thermal device.
+> But currently we are reading the irqs from the second level irq
+> chip, So this patch fixes this issue by adding support to use
+> first level PMIC thermal irq.
+>
 
-fixes(50327dd kernel/power/snapshot.c: use set_memory.h header)
+Shouldn't be this squashed to patch 2?
 
-I've only done a basic compile test with a config that has
-hibernation enabled.
+> Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> Acked-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/thermal/intel_bxt_pmic_thermal.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Changes since v1:
+>  * None
+>
+> Changes since v2:
+>  * Rebased on top of latest release.
+>
+> Changes since v3:
+>  * Rebased on top of latest release.
+>
+> diff --git a/drivers/thermal/intel_bxt_pmic_thermal.c b/drivers/thermal/intel_bxt_pmic_thermal.c
+> index 0f19a39..ef6b322 100644
+> --- a/drivers/thermal/intel_bxt_pmic_thermal.c
+> +++ b/drivers/thermal/intel_bxt_pmic_thermal.c
+> @@ -241,7 +241,7 @@ static int pmic_thermal_probe(struct platform_device *pdev)
+>         }
+>
+>         regmap = pmic->regmap;
+> -       regmap_irq_chip = pmic->irq_chip_data_level2;
+> +       regmap_irq_chip = pmic->irq_chip_data;
+>
+>         pmic_irq_count = 0;
+>         while ((irq = platform_get_irq(pdev, pmic_irq_count)) != -ENXIO) {
+> --
+> 2.7.4
+>
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Laura Abbott <labbott@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
 
-Reported-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- kernel/power/snapshot.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index fa46606..71730d6 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -36,13 +36,13 @@
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
- #include <asm/io.h>
--#ifdef CONFIG_STRICT_KERNEL_RWX
-+#ifdef CONFIG_ARCH_HAS_SET_MEMORY
- #include <asm/set_memory.h>
- #endif
- 
- #include "power.h"
- 
--#ifdef CONFIG_STRICT_KERNEL_RWX
-+#if defined(CONFIG_STRICT_KERNEL_RWX) && defined(CONFIG_ARCH_HAS_SET_MEMORY)
- static bool hibernate_restore_protection;
- static bool hibernate_restore_protection_active;
- 
-@@ -77,7 +77,7 @@ static inline void hibernate_restore_protection_begin(void) {}
- static inline void hibernate_restore_protection_end(void) {}
- static inline void hibernate_restore_protect_page(void *page_address) {}
- static inline void hibernate_restore_unprotect_page(void *page_address) {}
--#endif /* CONFIG_STRICT_KERNEL_RWX */
-+#endif /* CONFIG_STRICT_KERNEL_RWX  && CONFIG_ARCH_HAS_SET_MEMORY */
- 
- static int swsusp_page_is_free(struct page *);
- static void swsusp_set_page_forbidden(struct page *);
 -- 
-2.9.3
+With Best Regards,
+Andy Shevchenko
