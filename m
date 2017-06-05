@@ -1,49 +1,61 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v5 3/8] thermal: intel_bxt_pmic_thermal: Use first level
- PMIC thermal irq
-Date: Sat, 3 Jun 2017 21:18:13 +0300
-Message-ID: <CAHp75VcQfSkn7NAWSC2Vq=8RCC0M1p9zvVFjJFLyEo17GDvHsA@mail.gmail.com>
-References: <cover.1496266871.git.sathyanarayanan.kuppuswamy@linux.intel.com>
- <20170531070225.bymdhhpclidwwtpt@dell> <3e58ab749a67cce5c956ef13db8563fb0a8bc190.1496266871.git.sathyanarayanan.kuppuswamy@linux.intel.com>
- <CAHp75Vd5uPmz-0uyPcwYaqyGZhC7caHWj5PbfMJTzSQ6G+1o3w@mail.gmail.com>
- <CAENHMvOzo0e5gs+DzK3ZNL7BbenhpZZCCbmT5kAjpWq-679UOQ@mail.gmail.com>
- <CAHp75VdQyCMzTyPVkbfr6teEugxEmKuDOe5Qk51bDvoNjTay+w@mail.gmail.com> <CAENHMvMF8yOsezMRSYp+4TsVTD9Nnbfm8LJWuX7YccbSL+bsGQ@mail.gmail.com>
+From: "Zheng, Lv" <lv.zheng@intel.com>
+Subject: RE: [GIT PULL] ACPI fixes for v4.12-rc4
+Date: Mon, 5 Jun 2017 02:02:42 +0000
+Message-ID: <1AE640813FDE7649BE1B193DEA596E886CEC5086@SHSMSX101.ccr.corp.intel.com>
+References: <CAJZ5v0jKBAgw3U=QOuGNwhqEMb0nfSUUNUotV9oyMr5NznF-Fg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f195.google.com ([209.85.216.195]:36493 "EHLO
-        mail-qt0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751154AbdFCSSP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Jun 2017 14:18:15 -0400
-In-Reply-To: <CAENHMvMF8yOsezMRSYp+4TsVTD9Nnbfm8LJWuX7YccbSL+bsGQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0jKBAgw3U=QOuGNwhqEMb0nfSUUNUotV9oyMr5NznF-Fg@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sathyanarayanan Kuppuswamy Natarajan <sathyaosid@gmail.com>
-Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, Alexandre Courbot <gnurou@gmail.com>, "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "dvhart@infradead.org" <dvhart@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, Lee Jones <lee.jones@linaro.org>, Andy Shevchenko <andy@infradead.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>
 
-On Sat, Jun 3, 2017 at 8:53 PM, Sathyanarayanan Kuppuswamy Natarajan
-<sathyaosid@gmail.com> wrote:
-> On Sat, Jun 3, 2017 at 10:32 AM, Andy Shevchenko
-> <andy.shevchenko@gmail.com> wrote:
->> On Sat, Jun 3, 2017 at 8:28 PM, Sathyanarayanan Kuppuswamy Natarajan
->> <sathyaosid@gmail.com> wrote:
-
->> Let's assume we applied patches 1 and 2, does it mean the regression
->> to the existing behaviour?
->
-> Yes, Just applying patch 1 & 2 and not apply patch 3 will create
-> regression in thermal driver.
->
-> Since there is no compilation dependency between patch 2 & 3 and they
-> are from two different domains, I submitted them separately to make it
-> easier for review.
-
-And this is exactly bisectability (level 2 :-) ) issue.
-Basically you confirmed you need to squash them like I said.
-
->> (For example, device worked improperly in some cases -> stopped
->> working completely)
-
--- 
-With Best Regards,
-Andy Shevchenko
+SGksDQoNCj4gRnJvbTogbGludXgtYWNwaS1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzps
+aW51eC1hY3BpLW93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIFJhZmFlbCBKLg0K
+PiBXeXNvY2tpDQo+IFN1YmplY3Q6IFtHSVQgUFVMTF0gQUNQSSBmaXhlcyBmb3IgdjQuMTItcmM0
+DQo+IA0KPiBIaSBMaW51cywNCj4gDQo+IFBsZWFzZSBwdWxsIGZyb20gdGhlIHRhZw0KPiANCj4g
+IGdpdDovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9yYWZhZWwvbGlu
+dXgtcG0uZ2l0IFwNCj4gIGFjcGktNC4xMi1yYzQNCj4gDQo+IHdpdGggdG9wLW1vc3QgY29tbWl0
+IDYwMzE5MTMwMjU0MDg0YjMzN2UwMjQzOWQzYjRlYzMwMWI2MzI4YmINCj4gDQo+ICBNZXJnZSBi
+cmFuY2hlcyAnYWNwaS1idXR0b24nLCAnYWNwaWNhJyBhbmQgJ2FjcGktc3lzZnMnDQo+IA0KPiBv
+biB0b3Agb2YgY29tbWl0IDVlZDAyZGJiNDk3NDIyYmYyMjU3ODNmNDZlNmVhZGQyMzdkMjNkNmIN
+Cj4gDQo+ICBMaW51eCA0LjEyLXJjMw0KPiANCj4gdG8gcmVjZWl2ZSBBQ1BJIGZpeGVzIGZvciB2
+NC4xMi1yYzQuDQo+IA0KPiBUaGVzZSByZXZlcnQgb25lIG1vcmUgcHJvYmxlbWF0aWMgY29tbWl0
+IHJlbGF0ZWQgdG8gdGhlIEFDUEktYmFzZWQNCj4gaGFuZGxpbmcgb2YgbGFwdG9wIGxpZHMgYW5k
+IG1ha2Ugc29tZSB1bnVzZWZ1bCBlcnJvciBtZXNzYWdlcyBjb21pbmcNCj4gZnJvbSBBQ1BJQ0Eg
+Z28gYXdheS4NCj4gDQo+IFNwZWNpZmljczoNCj4gDQo+ICAtIFJldmVydCBvbmUgbW9yZSBjb21t
+aXQgcmVsYXRlZCB0byB0aGUgQUNQSS1iYXNlZCBoYW5kbGluZyBvZg0KPiAgICBsYXB0b3AgbGlk
+cyB0aGF0IGNoYW5nZWQgdGhlIGRlZmF1bHQgYmVoYXZpb3Igb24gbGFwdG9wcyB0aGF0DQo+ICAg
+IGJvb3RlZCB3aXRoIGNsb3NlZCBsaWRzIGFuZCBpbnRyb2R1Y2VkIGEgcmVncmVzc2lvbiB0aGVy
+ZQ0KPiAgICAoQmVuamFtaW4gVGlzc29pcmVzKS4NCj4gDQo+ICAtIEFkZCBhIG1pc3NpbmcgYWNw
+aV9wdXRfdGFibGUoKSB0byB0aGUgY29kZSBpbXBsZW1lbnRpbmcgdGhlDQo+ICAgIC9zeXMvZmly
+bXdhcmUvYWNwaS90YWJsZXMgaW50ZXJmYWNlIHRvIHByZXZlbnQgYSBjb3VudGVyIGluDQo+ICAg
+IHRoZSBBQ1BJQ0EgY29yZSBmcm9tIG92ZXJmbG93aW5nIChEYW4gV2lsbGlhbXMpLg0KPiANCj4g
+IC0gRHJvcCBlcnJvciBtZXNzYWdlcyBwcmludGVkIGJ5IEFDUElDQSBvbiBhY3BpX2dldF90YWJs
+ZSgpDQo+ICAgIHJlZmVyZW5jZSBjb3VudGluZyBtaXNtYXRjaGVzIGFzIHRoZXkgbmVlZCBub3Qg
+aW5kaWNhdGUgcmVhbA0KPiAgICBlcnJvcnMgYXQgdGhpcyBwb2ludCAoTHYgWmhlbmcpLg0KPiAN
+Cj4gVGhhbmtzIQ0KPiANCj4gDQo+IC0tLS0tLS0tLS0tLS0tLQ0KPiANCj4gQmVuamFtaW4gVGlz
+c29pcmVzICgxKToNCj4gICAgICAgUmV2ZXJ0ICJBQ1BJIC8gYnV0dG9uOiBDaGFuZ2UgZGVmYXVs
+dCBiZWhhdmlvciB0byBsaWRfaW5pdF9zdGF0ZT1vcGVuIg0KPiANCj4gRGFuIFdpbGxpYW1zICgx
+KToNCj4gICAgICAgQUNQSSAvIHN5c2ZzOiBmaXggYWNwaV9nZXRfdGFibGUoKSBsZWFrIC8gYWNw
+aS1zeXNmcyBkZW5pYWwgb2Ygc2VydmljZQ0KDQpUaGlzIGNvbW1pdCBjYW4gdHJpZ2dlciByZWdy
+ZXNzaW9uIGFzIG1lbnRpb25lZCBieSB0aGlzIGRpc2N1c3Npb246DQpodHRwczovL3BhdGNod29y
+ay5rZXJuZWwub3JnL3BhdGNoLzk3MTcwNzMvDQpTbyBpZiB0aGlzIGNvbW1pdCBpcyBhY2NlcHRl
+ZCBieSB0aGUgdXBzdHJlYW0sIHRoZSBhYm92ZSBjb21taXQgc2hvdWxkIGFsc28gYmUgaW4gdXBz
+dHJlYW0gaW4gb3JkZXIgbm90IHRvIHJlZ3Jlc3MuDQpEbyB5b3UgbmVlZCB0byBtZSByZWZpbmUg
+aXQgYW5kIHJlLXNlbmQgaXQgdG8gdGhlIGNvbW11bml0eT8NCkl0J3MgYSBiaXQgc2xvdyBpbiBB
+Q1BJQ0EgdXBzdHJlYW0gYXMgQUNQSUNBIHVwc3RyZWFtIGlzIGZyb3plbiBmb3Igc3BlYyA2LjIg
+c3VwcG9ydC4NCg0KVGhhbmtzIGFuZCBiZXN0IHJlZ2FyZHMNCkx2DQoNCj4gDQo+IEx2IFpoZW5n
+ICgxKToNCj4gICAgICAgQUNQSUNBOiBUYWJsZXM6IEZpeCByZWdyZXNzaW9uIGludHJvZHVjZWQg
+YnkgYSB0b28gZWFybHkNCj4gbWVjaGFuaXNtIGVuYWJsaW5nDQo+IA0KPiAtLS0tLS0tLS0tLS0t
+LS0NCj4gDQo+ICBkcml2ZXJzL2FjcGkvYWNwaWNhL3RidXRpbHMuYyB8IDQgLS0tLQ0KPiAgZHJp
+dmVycy9hY3BpL2J1dHRvbi5jICAgICAgICAgfCAyICstDQo+ICBkcml2ZXJzL2FjcGkvc3lzZnMu
+YyAgICAgICAgICB8IDcgKysrKystLQ0KPiAgMyBmaWxlcyBjaGFuZ2VkLCA2IGluc2VydGlvbnMo
+KyksIDcgZGVsZXRpb25zKC0pDQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0
+OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1hY3BpIiBpbg0KPiB0aGUgYm9keSBv
+ZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZw0KPiBNb3JlIG1ham9yZG9t
+byBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwNCg==
