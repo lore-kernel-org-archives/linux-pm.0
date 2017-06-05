@@ -1,55 +1,106 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC] cpuidle: menu: nearby timer use lightest state; allow state 0 to be disabled
-Date: Mon, 05 Jun 2017 14:58:18 +0200
-Message-ID: <28814050.hW7zW6Hoc6@aspire.rjw.lan>
-References: <20170530162631.9073-1-npiggin@gmail.com> <20170605174003.18266685@roar.ozlabs.ibm.com>
+Subject: Re: suspend-to-mem broken by eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle)
+Date: Mon, 05 Jun 2017 15:08:57 +0200
+Message-ID: <21111815.riZgbS9lI9@aspire.rjw.lan>
+References: <20170605090521.GA1912@light.dominikbrodowski.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46182 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751326AbdFENFQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jun 2017 09:05:16 -0400
-In-Reply-To: <20170605174003.18266685@roar.ozlabs.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170605090521.GA1912@light.dominikbrodowski.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
 
-On Monday, June 05, 2017 05:40:03 PM Nicholas Piggin wrote:
-> On Wed, 31 May 2017 02:26:31 +1000
-> Nicholas Piggin <npiggin@gmail.com> wrote:
+On Monday, June 05, 2017 11:05:21 AM Dominik Brodowski wrote:
+> Rafael,
+
+Thanks for the report!
+
+> unfortunately, commit eed4d47efe95 (ACPI / sleep: Ignore spurious SCI
+> wakeups from suspend-to-idle) breaks suspend-to-mem on my Dell XPS 13
+> (9343) up to v4.12-rc4: Issuing
 > 
-> > I've found the menu driver does not allow state0 to properly be disabled
-> > because of all this poll logic selecting the first state and then trying
-> > to iterate over subsequent states. Ripping most of that out and simplifying
-> > it solved that issue but raised more questions about polling logic.
-> > 
-> > Firstly polling logic is there only on architectures which define
-> > ARCH_HAS_CPU_RELAX, which is only x86. Seems like if we think a
-> > timer is so close that no powersave should be done, then surely just
-> > picking the lightest mode (whether that is polling or something else)
-> > would be best.
-> > 
-> > But looking further into it, it seems maybe like some x86 hack (as
-> > the comments and changelog in 7884084f3bcc and subsequent attempts to
-> > work around Atom and broken firmware suggests). I would have thought
-> > such broken hard/firmware should get workarounds applied to fix the
-> > state values rather than add such logic?
-> > 
-> > On the other hand, if (CPUIDLE_DRIVER_STATE_START > 0) is shorthand for
-> > if (x86 hacks), that's fine I'm happy to leave that alone and just work
-> > with the else parts...
-> > 
-> > This is just a draft, but it does what I want at least with regard to
-> > disabling state0 for testing.
+> 	$ echo "mem" > /sys/power/state
 > 
-> Ping, any thoughts on these issues?
+> in the initramfs returns, after a while, with "write error: Resource
+> busy", and the system *not* having entered the sleep state in between.
 
-Not yet, sorry for the delay.
+Why initramfs?
 
-I'll get to this as soon as I can.
+> In contrast thereto, 8a537ece3d94 (PM / wakeup: Integrate mechanism to abort
+> transitions in progress) still works fine, and allows to enter
+> suspend-to-mem. No real difference is to be seen in dmesg, with the notable
+> exception of
+> 
+> 	ACPI: Low-level resume complete
+> 	ACPI : EC: EC started
+> 	PM: Restoring platform NVS memory
+> 	Suspended for N.NNNN seconds
+> 
+> only showing up on working kernels. Reverting eed4d47efe95 on top of
+> v4.12-rc4 restores suspend-to-mem to work as expected.
 
-Thanks,
-Rafael
+I'm sure it is not necessary to revert all of it.
+
+I guess what happens is that you get a wakeup event during suspend which is
+aborted as a result.
+
+Please apply the partial revert below and see if it makes the issue go away.
+
+---
+ drivers/acpi/battery.c   |    2 +-
+ drivers/acpi/button.c    |    4 ++--
+ drivers/acpi/device_pm.c |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+Index: linux-pm/drivers/acpi/battery.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/battery.c
++++ linux-pm/drivers/acpi/battery.c
+@@ -782,7 +782,7 @@ static int acpi_battery_update(struct ac
+ 	if ((battery->state & ACPI_BATTERY_STATE_CRITICAL) ||
+ 	    (test_bit(ACPI_BATTERY_ALARM_PRESENT, &battery->flags) &&
+             (battery->capacity_now <= battery->alarm)))
+-		pm_wakeup_hard_event(&battery->device->dev);
++		pm_wakeup_event(&battery->device->dev, 0);
+ 
+ 	return result;
+ }
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -400,7 +400,7 @@ static void acpi_pm_notify_handler(acpi_
+ 	mutex_lock(&acpi_pm_notifier_lock);
+ 
+ 	if (adev->wakeup.flags.notifier_present) {
+-		pm_wakeup_ws_event(adev->wakeup.ws, 0, true);
++		__pm_wakeup_event(adev->wakeup.ws, 0);
+ 		if (adev->wakeup.context.work.func)
+ 			queue_pm_work(&adev->wakeup.context.work);
+ 	}
+Index: linux-pm/drivers/acpi/button.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/button.c
++++ linux-pm/drivers/acpi/button.c
+@@ -217,7 +217,7 @@ static int acpi_lid_notify_state(struct
+ 	}
+ 
+ 	if (state)
+-		pm_wakeup_hard_event(&device->dev);
++		pm_wakeup_event(&device->dev, 0);
+ 
+ 	ret = blocking_notifier_call_chain(&acpi_lid_notifier, state, device);
+ 	if (ret == NOTIFY_DONE)
+@@ -402,7 +402,7 @@ static void acpi_button_notify(struct ac
+ 		} else {
+ 			int keycode;
+ 
+-			pm_wakeup_hard_event(&device->dev);
++			pm_wakeup_event(&device->dev, 0);
+ 			if (button->suspended)
+ 				break;
+ 
+
