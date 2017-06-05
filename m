@@ -1,61 +1,55 @@
-From: "Zheng, Lv" <lv.zheng@intel.com>
-Subject: RE: [GIT PULL] ACPI fixes for v4.12-rc4
-Date: Mon, 5 Jun 2017 02:02:42 +0000
-Message-ID: <1AE640813FDE7649BE1B193DEA596E886CEC5086@SHSMSX101.ccr.corp.intel.com>
-References: <CAJZ5v0jKBAgw3U=QOuGNwhqEMb0nfSUUNUotV9oyMr5NznF-Fg@mail.gmail.com>
+From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 1/7] USB: core: fix device node leak
+Date: Mon, 5 Jun 2017 11:35:30 +0800
+Message-ID: <20170605033530.GA20014@b29397-desktop>
+References: <20170530162554.26159-1-johan@kernel.org>
+ <20170530162554.26159-2-johan@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jKBAgw3U=QOuGNwhqEMb0nfSUUNUotV9oyMr5NznF-Fg@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170530162554.26159-2-johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stable <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGksDQoNCj4gRnJvbTogbGludXgtYWNwaS1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzps
-aW51eC1hY3BpLW93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIFJhZmFlbCBKLg0K
-PiBXeXNvY2tpDQo+IFN1YmplY3Q6IFtHSVQgUFVMTF0gQUNQSSBmaXhlcyBmb3IgdjQuMTItcmM0
-DQo+IA0KPiBIaSBMaW51cywNCj4gDQo+IFBsZWFzZSBwdWxsIGZyb20gdGhlIHRhZw0KPiANCj4g
-IGdpdDovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9yYWZhZWwvbGlu
-dXgtcG0uZ2l0IFwNCj4gIGFjcGktNC4xMi1yYzQNCj4gDQo+IHdpdGggdG9wLW1vc3QgY29tbWl0
-IDYwMzE5MTMwMjU0MDg0YjMzN2UwMjQzOWQzYjRlYzMwMWI2MzI4YmINCj4gDQo+ICBNZXJnZSBi
-cmFuY2hlcyAnYWNwaS1idXR0b24nLCAnYWNwaWNhJyBhbmQgJ2FjcGktc3lzZnMnDQo+IA0KPiBv
-biB0b3Agb2YgY29tbWl0IDVlZDAyZGJiNDk3NDIyYmYyMjU3ODNmNDZlNmVhZGQyMzdkMjNkNmIN
-Cj4gDQo+ICBMaW51eCA0LjEyLXJjMw0KPiANCj4gdG8gcmVjZWl2ZSBBQ1BJIGZpeGVzIGZvciB2
-NC4xMi1yYzQuDQo+IA0KPiBUaGVzZSByZXZlcnQgb25lIG1vcmUgcHJvYmxlbWF0aWMgY29tbWl0
-IHJlbGF0ZWQgdG8gdGhlIEFDUEktYmFzZWQNCj4gaGFuZGxpbmcgb2YgbGFwdG9wIGxpZHMgYW5k
-IG1ha2Ugc29tZSB1bnVzZWZ1bCBlcnJvciBtZXNzYWdlcyBjb21pbmcNCj4gZnJvbSBBQ1BJQ0Eg
-Z28gYXdheS4NCj4gDQo+IFNwZWNpZmljczoNCj4gDQo+ICAtIFJldmVydCBvbmUgbW9yZSBjb21t
-aXQgcmVsYXRlZCB0byB0aGUgQUNQSS1iYXNlZCBoYW5kbGluZyBvZg0KPiAgICBsYXB0b3AgbGlk
-cyB0aGF0IGNoYW5nZWQgdGhlIGRlZmF1bHQgYmVoYXZpb3Igb24gbGFwdG9wcyB0aGF0DQo+ICAg
-IGJvb3RlZCB3aXRoIGNsb3NlZCBsaWRzIGFuZCBpbnRyb2R1Y2VkIGEgcmVncmVzc2lvbiB0aGVy
-ZQ0KPiAgICAoQmVuamFtaW4gVGlzc29pcmVzKS4NCj4gDQo+ICAtIEFkZCBhIG1pc3NpbmcgYWNw
-aV9wdXRfdGFibGUoKSB0byB0aGUgY29kZSBpbXBsZW1lbnRpbmcgdGhlDQo+ICAgIC9zeXMvZmly
-bXdhcmUvYWNwaS90YWJsZXMgaW50ZXJmYWNlIHRvIHByZXZlbnQgYSBjb3VudGVyIGluDQo+ICAg
-IHRoZSBBQ1BJQ0EgY29yZSBmcm9tIG92ZXJmbG93aW5nIChEYW4gV2lsbGlhbXMpLg0KPiANCj4g
-IC0gRHJvcCBlcnJvciBtZXNzYWdlcyBwcmludGVkIGJ5IEFDUElDQSBvbiBhY3BpX2dldF90YWJs
-ZSgpDQo+ICAgIHJlZmVyZW5jZSBjb3VudGluZyBtaXNtYXRjaGVzIGFzIHRoZXkgbmVlZCBub3Qg
-aW5kaWNhdGUgcmVhbA0KPiAgICBlcnJvcnMgYXQgdGhpcyBwb2ludCAoTHYgWmhlbmcpLg0KPiAN
-Cj4gVGhhbmtzIQ0KPiANCj4gDQo+IC0tLS0tLS0tLS0tLS0tLQ0KPiANCj4gQmVuamFtaW4gVGlz
-c29pcmVzICgxKToNCj4gICAgICAgUmV2ZXJ0ICJBQ1BJIC8gYnV0dG9uOiBDaGFuZ2UgZGVmYXVs
-dCBiZWhhdmlvciB0byBsaWRfaW5pdF9zdGF0ZT1vcGVuIg0KPiANCj4gRGFuIFdpbGxpYW1zICgx
-KToNCj4gICAgICAgQUNQSSAvIHN5c2ZzOiBmaXggYWNwaV9nZXRfdGFibGUoKSBsZWFrIC8gYWNw
-aS1zeXNmcyBkZW5pYWwgb2Ygc2VydmljZQ0KDQpUaGlzIGNvbW1pdCBjYW4gdHJpZ2dlciByZWdy
-ZXNzaW9uIGFzIG1lbnRpb25lZCBieSB0aGlzIGRpc2N1c3Npb246DQpodHRwczovL3BhdGNod29y
-ay5rZXJuZWwub3JnL3BhdGNoLzk3MTcwNzMvDQpTbyBpZiB0aGlzIGNvbW1pdCBpcyBhY2NlcHRl
-ZCBieSB0aGUgdXBzdHJlYW0sIHRoZSBhYm92ZSBjb21taXQgc2hvdWxkIGFsc28gYmUgaW4gdXBz
-dHJlYW0gaW4gb3JkZXIgbm90IHRvIHJlZ3Jlc3MuDQpEbyB5b3UgbmVlZCB0byBtZSByZWZpbmUg
-aXQgYW5kIHJlLXNlbmQgaXQgdG8gdGhlIGNvbW11bml0eT8NCkl0J3MgYSBiaXQgc2xvdyBpbiBB
-Q1BJQ0EgdXBzdHJlYW0gYXMgQUNQSUNBIHVwc3RyZWFtIGlzIGZyb3plbiBmb3Igc3BlYyA2LjIg
-c3VwcG9ydC4NCg0KVGhhbmtzIGFuZCBiZXN0IHJlZ2FyZHMNCkx2DQoNCj4gDQo+IEx2IFpoZW5n
-ICgxKToNCj4gICAgICAgQUNQSUNBOiBUYWJsZXM6IEZpeCByZWdyZXNzaW9uIGludHJvZHVjZWQg
-YnkgYSB0b28gZWFybHkNCj4gbWVjaGFuaXNtIGVuYWJsaW5nDQo+IA0KPiAtLS0tLS0tLS0tLS0t
-LS0NCj4gDQo+ICBkcml2ZXJzL2FjcGkvYWNwaWNhL3RidXRpbHMuYyB8IDQgLS0tLQ0KPiAgZHJp
-dmVycy9hY3BpL2J1dHRvbi5jICAgICAgICAgfCAyICstDQo+ICBkcml2ZXJzL2FjcGkvc3lzZnMu
-YyAgICAgICAgICB8IDcgKysrKystLQ0KPiAgMyBmaWxlcyBjaGFuZ2VkLCA2IGluc2VydGlvbnMo
-KyksIDcgZGVsZXRpb25zKC0pDQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0
-OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1hY3BpIiBpbg0KPiB0aGUgYm9keSBv
-ZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZw0KPiBNb3JlIG1ham9yZG9t
-byBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwNCg==
+On Tue, May 30, 2017 at 06:25:48PM +0200, Johan Hovold wrote:
+> Make sure to release any OF device-node reference taken when creating
+> the USB device.
+> 
+> Note that we currently do not hold a reference to the root hub
+> device-tree node (i.e. the parent controller node).
+> 
+> Fixes: 69bec7259853 ("USB: core: let USB device know device node")
+> Cc: stable <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>	# v4.6
+> Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+> Signed-off-by: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> ---
+>  drivers/usb/core/usb.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+> index 28b053cacc90..62e1906bb2f3 100644
+> --- a/drivers/usb/core/usb.c
+> +++ b/drivers/usb/core/usb.c
+> @@ -416,6 +416,8 @@ static void usb_release_dev(struct device *dev)
+>  
+>  	usb_destroy_configuration(udev);
+>  	usb_release_bos_descriptor(udev);
+> +	if (udev->parent)
+> +		of_node_put(dev->of_node);
+>  	usb_put_hcd(hcd);
+>  	kfree(udev->product);
+>  	kfree(udev->manufacturer);
+
+Acked-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+
+-- 
+
+Best Regards,
+Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
