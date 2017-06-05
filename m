@@ -1,64 +1,51 @@
 From: sathyanarayanan.kuppuswamy@linux.intel.com
-Subject: [PATCH v6 6/6] platform/x86: intel_bxtwc_tmu: Remove first level IRQ unmask
-Date: Mon,  5 Jun 2017 12:08:06 -0700
-Message-ID: <e0715b5794f59243193c8c41a6af929e89ff703c.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: [PATCH v6 0/6] mfd: intel_soc_pmic_bxtwc: Add chained IRQ support
+Date: Mon,  5 Jun 2017 12:08:00 -0700
+Message-ID: <cover.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
 References: <CAHp75VcQfSkn7NAWSC2Vq=8RCC0M1p9zvVFjJFLyEo17GDvHsA@mail.gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:33004 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751077AbdFETLk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 5 Jun 2017 15:11:40 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <CAHp75VcQfSkn7NAWSC2Vq=8RCC0M1p9zvVFjJFLyEo17GDvHsA@mail.gmail.com>
-In-Reply-To: <cover.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-References: <cover.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: gnurou@gmail.com, heikki.krogerus@linux.intel.com, gregkh@linuxfoundation.org, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, lee.jones@linaro.org, andy@infradead.org
 Cc: platform-driver-x86@vger.kernel.org, linux-gpio@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sathyaosid@gmail.com, Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 
-Currently in WCOVE PMIC MFD driver, all second level IRQ chips
-are chained to the respective first level IRQs. So there is no
-need for explicitly unmasking the first level IRQ in this
-driver. This patches removes this level 1 IRQ unmask support.
-
-Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Reviewed-by: Darren Hart (VMware) <dvhart@infradead.org>
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
----
- drivers/platform/x86/intel_bxtwc_tmu.c | 4 ----
- 1 file changed, 4 deletions(-)
-
-Changes since v1:
- * None
-
-Changes since v2:
- * Rebased on top of latest release.
+Following patch set adds chained IRQ support to WCOVE PMIC driver.
 
 Changes since v3:
- * None
+ * Added fix for typec wcove driver.
 
 Changes since v4:
- * Changed commit subject from "platform: x86:" "to platform/x86:"
+ * Squashed following two commits, to keep the patch set bisectable.
+   usb: typec: typec_wcove: Use charger irq chip to get usbc virq
+   mfd: intel_soc_pmic_bxtwc: use chained irqs for second level irq chips
 
 Changes since v5:
- * Changed irq->IRQ, mfd->MFD.
+* Changed irq->IRQ, pmic->PMIC in all commit messages.
+* Squashed following two thermal driver related commits.
+  mfd: intel_soc_pmic_bxtwc: Remove thermal second level irqs
+  thermal: intel_bxt_pmic_thermal: Use first level PMIC thermal irq
+* Squashed following two GPIO driver related commits.
+  mfd: intel_soc_pmic_bxtwc: Remove second level irq for gpio device
+  gpio: gpio-wcove: Use first level PMIC GPIO irq
 
-diff --git a/drivers/platform/x86/intel_bxtwc_tmu.c b/drivers/platform/x86/intel_bxtwc_tmu.c
-index e202abd..ea865d4 100644
---- a/drivers/platform/x86/intel_bxtwc_tmu.c
-+++ b/drivers/platform/x86/intel_bxtwc_tmu.c
-@@ -92,10 +92,6 @@ static int bxt_wcove_tmu_probe(struct platform_device *pdev)
- 	}
- 	wctmu->irq = virq;
- 
--	/* Enable TMU interrupts */
--	regmap_update_bits(wctmu->regmap, BXTWC_MIRQLVL1,
--				  BXTWC_MIRQLVL1_MTMU, 0);
--
- 	/* Unmask TMU second level Wake & System alarm */
- 	regmap_update_bits(wctmu->regmap, BXTWC_MTMUIRQ_REG,
- 				  BXTWC_TMU_ALRM_MASK, 0);
+Kuppuswamy Sathyanarayanan (6):
+  mfd: intel_soc_pmic_bxtwc: Fix TMU interrupt index
+  mfd: intel_soc_pmic_bxtwc: Remove thermal second level IRQs
+  mfd: intel_soc_pmic_bxtwc: Remove second level IRQ for gpio device
+  mfd: intel_soc_pmic_bxtwc: Utilize devm_* functions in driver probe
+  mfd: intel_soc_pmic_bxtwc: Use chained IRQs for second level IRQ chips
+  platform/x86: intel_bxtwc_tmu: Remove first level IRQ unmask
+
+ drivers/gpio/gpio-wcove.c                |  14 +-
+ drivers/mfd/intel_soc_pmic_bxtwc.c       | 232 +++++++++++++++++++++----------
+ drivers/platform/x86/intel_bxtwc_tmu.c   |   4 -
+ drivers/thermal/intel_bxt_pmic_thermal.c |   2 +-
+ drivers/usb/typec/typec_wcove.c          |   2 +-
+ include/linux/mfd/intel_soc_pmic.h       |   5 +-
+ 6 files changed, 175 insertions(+), 84 deletions(-)
+
 -- 
 2.7.4
