@@ -1,435 +1,181 @@
-From: Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
-Subject: [PATCH 2/2] thermal: add brcmstb AVS TMON driver
-Date: Mon,  5 Jun 2017 14:09:30 -0700
-Message-ID: <20170605210930.65432-3-code@mmayer.net>
-References: <20170605210930.65432-1-code@mmayer.net>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170605210930.65432-1-code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Doug Berger <opendmb-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory Fong <gregory.0xf0-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
-Cc: Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ARM Kernel List <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: suspend-to-mem broken by eed4d47efe95 (ACPI / sleep: Ignore
+ spurious SCI wakeups from suspend-to-idle)
+Date: Mon, 5 Jun 2017 23:14:40 +0200
+Message-ID: <20170605211440.GA1659@light.dominikbrodowski.net>
+References: <20170605090521.GA1912@light.dominikbrodowski.net>
+ <21111815.riZgbS9lI9@aspire.rjw.lan>
+ <20170605150915.GA1627@light.dominikbrodowski.net>
+ <CAJZ5v0h6U-JvnU03vhNz2zV1EGB8fV8zauBTGogOnxuvv0TonQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="ibTvN161/egqYuK8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0h6U-JvnU03vhNz2zV1EGB8fV8zauBTGogOnxuvv0TonQ@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-The AVS TMON core provides temperature readings, a pair of configurable
-high- and low-temperature threshold interrupts, and an emergency
-over-temperature chip reset. The driver utilizes the first two to
-provide temperature readings and high-temperature notifications to
-applications. The over-temperature reset is not exposed to
-applications; this reset threshold is critical to the system and should
-be set with care within the bootloader.
+--ibTvN161/egqYuK8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Applications may choose to utilize the notification mechanism, the
-temperature reading mechanism (e.g., through polling), or both.
+On Mon, Jun 05, 2017 at 10:32:15PM +0200, Rafael J. Wysocki wrote:
+> On Mon, Jun 5, 2017 at 5:09 PM, Dominik Brodowski
+> <linux@dominikbrodowski.net> wrote:
+> > On Mon, Jun 05, 2017 at 03:08:57PM +0200, Rafael J. Wysocki wrote:
+> >> On Monday, June 05, 2017 11:05:21 AM Dominik Brodowski wrote:
+> >> > unfortunately, commit eed4d47efe95 (ACPI / sleep: Ignore spurious SCI
+> >> > wakeups from suspend-to-idle) breaks suspend-to-mem on my Dell XPS 13
+> >> > (9343) up to v4.12-rc4: Issuing
+> >> >
+> >> >     $ echo "mem" > /sys/power/state
+> >> >
+> >> > in the initramfs returns, after a while, with "write error: Resource
+> >> > busy", and the system *not* having entered the sleep state in betwee=
+n.
+> >>
+> >> Why initramfs?
+> >
+> > Easiest and quickest to test, with no userspace in between to interfere.
+> > During normal operations, I see suspend-to-mem fail, then a fall-back to
+> > s2idle...
+>=20
+> I see, OK.
+>=20
+> >> > In contrast thereto, 8a537ece3d94 (PM / wakeup: Integrate mechanism =
+to abort
+> >> > transitions in progress) still works fine, and allows to enter
+> >> > suspend-to-mem. No real difference is to be seen in dmesg, with the =
+notable
+> >> > exception of
+> >> >
+> >> >     ACPI: Low-level resume complete
+> >> >     ACPI : EC: EC started
+> >> >     PM: Restoring platform NVS memory
+> >> >     Suspended for N.NNNN seconds
+> >> >
+> >> > only showing up on working kernels. Reverting eed4d47efe95 on top of
+> >> > v4.12-rc4 restores suspend-to-mem to work as expected.
+> >>
+> >> I'm sure it is not necessary to revert all of it.
+> >
+> > Thought so, just wanted to confirm that eed4d47efe95 is indeed the culp=
+rit.
+> >
+> >> I guess what happens is that you get a wakeup event during suspend whi=
+ch is
+> >> aborted as a result.
+> >>
+> >> Please apply the partial revert below and see if it makes the issue go=
+ away.
+> >
+> > Yes it does -- with this patch applied on top of v4.12-rc4, everything =
+works
+> > as expected. Both in initramfs and during normal runtime operations. On=
+ly an
+> > (probably unrelated) issue still appears during resume, namely "cache"
+> > complaining that the non-boot CPUs should not be sleeping:
+>=20
+> That's unrelated.
+>=20
+> OK, this still leaves us with three possibilities.
+>=20
+> Can you please try to apply the device_pm.c part of the partial revert
+> alone and see if that helps (and if not, same for the button.c and
+> battery.c changes)?
 
-Signed-off-by: Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Signed-off-by: Doug Berger <opendmb-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Signed-off-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
----
- drivers/thermal/broadcom/Kconfig           |   7 +
- drivers/thermal/broadcom/Makefile          |   1 +
- drivers/thermal/broadcom/brcmstb_thermal.c | 361 +++++++++++++++++++++++++++++
- 3 files changed, 369 insertions(+)
- create mode 100644 drivers/thermal/broadcom/brcmstb_thermal.c
+Indeed, the device_pm.c part of the partial revert helps on its own.
+For completeness, applying only the chunks for button.c or battery.c
+does not help; whether the following stack trace (with battery.c applied)
+is of any help, seems doubtful, but here it is:
 
-diff --git a/drivers/thermal/broadcom/Kconfig b/drivers/thermal/broadcom/Kconfig
-index ab08af4..12e621d 100644
---- a/drivers/thermal/broadcom/Kconfig
-+++ b/drivers/thermal/broadcom/Kconfig
-@@ -6,6 +6,13 @@ config BCM2835_THERMAL
- 	help
- 	  Support for thermal sensors on Broadcom bcm2835 SoCs.
- 
-+config BRCMSTB_THERMAL
-+	tristate "Broadcom STB AVS TMON thermal driver"
-+	depends on ARCH_BRCMSTB || COMPILE_TEST
-+	help
-+	  Enable this driver if you have a Broadcom STB SoC and would like
-+	  thermal framework support.
-+
- config BCM_NS_THERMAL
- 	tristate "Northstar thermal driver"
- 	depends on ARCH_BCM_IPROC || COMPILE_TEST
-diff --git a/drivers/thermal/broadcom/Makefile b/drivers/thermal/broadcom/Makefile
-index c6f62e4..fae10ec 100644
---- a/drivers/thermal/broadcom/Makefile
-+++ b/drivers/thermal/broadcom/Makefile
-@@ -1,2 +1,3 @@
- obj-$(CONFIG_BCM2835_THERMAL)		+= bcm2835_thermal.o
-+obj-$(CONFIG_BRCMSTB_THERMAL)		+= brcmstb_thermal.o
- obj-$(CONFIG_BCM_NS_THERMAL)		+= ns-thermal.o
-diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
-new file mode 100644
-index 0000000..027648c
---- /dev/null
-+++ b/drivers/thermal/broadcom/brcmstb_thermal.c
-@@ -0,0 +1,361 @@
-+/*
-+ * Broadcom STB AVS TMON thermal sensor driver
-+ *
-+ * Copyright (c) 2015-2017 Broadcom
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#define DRV_NAME	"brcmstb_thermal"
-+
-+#define pr_fmt(fmt)	DRV_NAME ": " fmt
-+
-+#include <linux/bitops.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/irqreturn.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/of_device.h>
-+#include <linux/thermal.h>
-+
-+#define AVS_TMON_STATUS			0x00
-+ #define AVS_TMON_STATUS_valid_msk	BIT(11)
-+ #define AVS_TMON_STATUS_data_msk	GENMASK(10, 1)
-+ #define AVS_TMON_STATUS_data_shift	1
-+
-+#define AVS_TMON_EN_OVERTEMP_RESET	0x04
-+ #define AVS_TMON_EN_OVERTEMP_RESET_msk	BIT(0)
-+
-+#define AVS_TMON_RESET_THRESH		0x08
-+ #define AVS_TMON_RESET_THRESH_msk	GENMASK(10, 1)
-+ #define AVS_TMON_RESET_THRESH_shift	1
-+
-+#define AVS_TMON_INT_IDLE_TIME		0x10
-+
-+#define AVS_TMON_EN_TEMP_INT_SRCS	0x14
-+ #define AVS_TMON_EN_TEMP_INT_SRCS_high	BIT(1)
-+ #define AVS_TMON_EN_TEMP_INT_SRCS_low	BIT(0)
-+
-+#define AVS_TMON_INT_THRESH		0x18
-+ #define AVS_TMON_INT_THRESH_high_msk	GENMASK(26, 17)
-+ #define AVS_TMON_INT_THRESH_high_shift	17
-+ #define AVS_TMON_INT_THRESH_low_msk	GENMASK(10, 1)
-+ #define AVS_TMON_INT_THRESH_low_shift	1
-+
-+#define AVS_TMON_TEMP_INT_CODE		0x1c
-+#define AVS_TMON_TP_TEST_ENABLE		0x20
-+
-+enum avs_tmon_trip_type {
-+	TMON_TRIP_TYPE_LOW = 0,
-+	TMON_TRIP_TYPE_HIGH,
-+	TMON_TRIP_TYPE_RESET,
-+	TMON_TRIP_TYPE_MAX,
-+};
-+
-+struct avs_tmon_trip {
-+	/* HW bit to enable the trip */
-+	u32 enable_offs;
-+	u32 enable_mask;
-+
-+	/* HW field to read the trip temperature */
-+	u32 reg_offs;
-+	u32 reg_msk;
-+	int reg_shift;
-+};
-+
-+static struct avs_tmon_trip avs_tmon_trips[] = {
-+	/* Trips when temperature is below threshold */
-+	[TMON_TRIP_TYPE_LOW] = {
-+		.enable_offs	= AVS_TMON_EN_TEMP_INT_SRCS,
-+		.enable_mask	= AVS_TMON_EN_TEMP_INT_SRCS_low,
-+		.reg_offs	= AVS_TMON_INT_THRESH,
-+		.reg_msk	= AVS_TMON_INT_THRESH_low_msk,
-+		.reg_shift	= AVS_TMON_INT_THRESH_low_shift,
-+	},
-+	/* Trips when temperature is above threshold */
-+	[TMON_TRIP_TYPE_HIGH] = {
-+		.enable_offs	= AVS_TMON_EN_TEMP_INT_SRCS,
-+		.enable_mask	= AVS_TMON_EN_TEMP_INT_SRCS_high,
-+		.reg_offs	= AVS_TMON_INT_THRESH,
-+		.reg_msk	= AVS_TMON_INT_THRESH_high_msk,
-+		.reg_shift	= AVS_TMON_INT_THRESH_high_shift,
-+	},
-+	/* Automatically resets chip when above threshold */
-+	[TMON_TRIP_TYPE_RESET] = {
-+		.enable_offs	= AVS_TMON_EN_OVERTEMP_RESET,
-+		.enable_mask	= AVS_TMON_EN_OVERTEMP_RESET_msk,
-+		.reg_offs	= AVS_TMON_RESET_THRESH,
-+		.reg_msk	= AVS_TMON_RESET_THRESH_msk,
-+		.reg_shift	= AVS_TMON_RESET_THRESH_shift,
-+	},
-+};
-+
-+struct brcmstb_thermal_priv {
-+	void __iomem *tmon_base;
-+	struct device *dev;
-+	struct thermal_zone_device *thermal;
-+};
-+
-+/* Convert a HW code to a temperature reading (millidegree celsius) */
-+static inline int avs_tmon_code_to_temp(u32 code)
-+{
-+	return (410040 - (int)((code & 0x3FF) * 487));
-+}
-+
-+/*
-+ * Convert a temperature value (millidegree celsius) to a HW code
-+ *
-+ * @temp: temperature to convert
-+ * @low: if true, round toward the low side
-+ */
-+static inline u32 avs_tmon_temp_to_code(int temp, bool low)
-+{
-+	if (temp < -88161)
-+		return 0x3FF;	/* Maximum code value */
-+
-+	if (temp >= 410040)
-+		return 0;	/* Minimum code value */
-+
-+	if (low)
-+		return (u32)(DIV_ROUND_UP(410040 - temp, 487));
-+	else
-+		return (u32)((410040 - temp) / 487);
-+}
-+
-+static int brcmstb_get_temp(void *data, int *temp)
-+{
-+	struct brcmstb_thermal_priv *priv = data;
-+	u32 val;
-+	long t;
-+
-+	val = __raw_readl(priv->tmon_base + AVS_TMON_STATUS);
-+
-+	if (!(val & AVS_TMON_STATUS_valid_msk)) {
-+		dev_err(priv->dev, "reading not valid\n");
-+
-+		return -EIO;
-+	}
-+
-+	val = (val & AVS_TMON_STATUS_data_msk) >> AVS_TMON_STATUS_data_shift;
-+
-+	t = avs_tmon_code_to_temp(val);
-+	if (t < 0)
-+		*temp = 0;
-+	else
-+		*temp = t;
-+
-+	return 0;
-+}
-+
-+static void avs_tmon_trip_enable(struct brcmstb_thermal_priv *priv,
-+				 enum avs_tmon_trip_type type, int en)
-+{
-+	struct avs_tmon_trip *trip = &avs_tmon_trips[type];
-+	u32 val = __raw_readl(priv->tmon_base + trip->enable_offs);
-+
-+	pr_debug("%s trip, type %d\n", en ? "enable" : "disable", type);
-+
-+	if (en)
-+		val |= trip->enable_mask;
-+	else
-+		val &= ~trip->enable_mask;
-+
-+	__raw_writel(val, priv->tmon_base + trip->enable_offs);
-+}
-+
-+static int avs_tmon_get_trip_temp(struct brcmstb_thermal_priv *priv,
-+				  enum avs_tmon_trip_type type)
-+{
-+	struct avs_tmon_trip *trip = &avs_tmon_trips[type];
-+	u32 val = __raw_readl(priv->tmon_base + trip->reg_offs);
-+
-+	val &= trip->reg_msk;
-+	val >>= trip->reg_shift;
-+
-+	return avs_tmon_code_to_temp(val);
-+}
-+
-+static void avs_tmon_set_trip_temp(struct brcmstb_thermal_priv *priv,
-+				   enum avs_tmon_trip_type type,
-+				   int temp)
-+{
-+	struct avs_tmon_trip *trip = &avs_tmon_trips[type];
-+	u32 val, orig;
-+
-+	pr_debug("set temp %d to %d\n", type, temp);
-+
-+	/* round toward low temp for the low interrupt */
-+	val = avs_tmon_temp_to_code(temp, type == TMON_TRIP_TYPE_LOW);
-+
-+	/* TODO: Check for overflow? */
-+	val <<= trip->reg_shift;
-+	val &= trip->reg_msk;
-+
-+	orig = __raw_readl(priv->tmon_base + trip->reg_offs);
-+	orig &= ~trip->reg_msk;
-+	orig |= val;
-+	__raw_writel(orig, priv->tmon_base + trip->reg_offs);
-+}
-+
-+static int avs_tmon_get_intr_temp(struct brcmstb_thermal_priv *priv)
-+{
-+	u32 val;
-+
-+	val = __raw_readl(priv->tmon_base + AVS_TMON_TEMP_INT_CODE);
-+	return avs_tmon_code_to_temp(val);
-+}
-+
-+static irqreturn_t brcmstb_tmon_irq_thread(int irq, void *data)
-+{
-+	struct brcmstb_thermal_priv *priv = data;
-+	int low, high, intr;
-+
-+	low = avs_tmon_get_trip_temp(priv, TMON_TRIP_TYPE_LOW);
-+	high = avs_tmon_get_trip_temp(priv, TMON_TRIP_TYPE_HIGH);
-+	intr = avs_tmon_get_intr_temp(priv);
-+
-+	dev_dbg(priv->dev, "low/intr/high: %d/%d/%d\n",
-+			low, intr, high);
-+
-+	/* Disable high-temp until next threshold shift */
-+	if (intr >= high)
-+		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_HIGH, 0);
-+	/* Disable low-temp until next threshold shift */
-+	if (intr <= low)
-+		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_LOW, 0);
-+
-+	/*
-+	 * Notify using the interrupt temperature, in case the temperature
-+	 * changes before it can next be read out
-+	 */
-+	thermal_zone_device_update(priv->thermal, intr);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int brcmstb_set_trips(void *data, int low, int high)
-+{
-+	struct brcmstb_thermal_priv *priv = data;
-+
-+	pr_debug("set trips %d <--> %d\n", low, high);
-+
-+	if (low) {
-+		if (low > INT_MAX)
-+			low = INT_MAX;
-+		avs_tmon_set_trip_temp(priv, TMON_TRIP_TYPE_LOW, (int)low);
-+		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_LOW, 1);
-+	} else {
-+		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_LOW, 0);
-+	}
-+
-+	if (high < ULONG_MAX) {
-+		if (high > INT_MAX)
-+			high = INT_MAX;
-+		avs_tmon_set_trip_temp(priv, TMON_TRIP_TYPE_HIGH, (int)high);
-+		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_HIGH, 1);
-+	} else {
-+		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_HIGH, 0);
-+	}
-+
-+	return 0;
-+}
-+
-+static struct thermal_zone_of_device_ops of_ops = {
-+	.get_temp	= brcmstb_get_temp,
-+	.set_trips	= brcmstb_set_trips,
-+};
-+
-+static const struct of_device_id brcmstb_thermal_id_table[] = {
-+	{ .compatible = "brcm,avs-tmon" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, brcmstb_thermal_id_table);
-+
-+static int brcmstb_thermal_probe(struct platform_device *pdev)
-+{
-+	struct thermal_zone_device *thermal;
-+	struct brcmstb_thermal_priv *priv;
-+	struct resource *res;
-+	int irq, ret;
-+
-+	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	priv->tmon_base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(priv->tmon_base))
-+		return PTR_ERR(priv->tmon_base);
-+
-+	priv->dev = &pdev->dev;
-+	platform_set_drvdata(pdev, priv);
-+
-+	thermal = thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &of_ops);
-+	if (IS_ERR(thermal)) {
-+		ret = PTR_ERR(thermal);
-+		dev_err(&pdev->dev, "could not register sensor: %d\n", ret);
-+		goto err;
-+	}
-+
-+	priv->thermal = thermal;
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0) {
-+		dev_err(&pdev->dev, "could not get IRQ\n");
-+		ret = irq;
-+		goto err;
-+	}
-+	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-+					brcmstb_tmon_irq_thread, IRQF_ONESHOT,
-+					DRV_NAME, priv);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "could not request IRQ: %d\n", ret);
-+		goto err;
-+	}
-+
-+	dev_info(&pdev->dev, "registered AVS TMON of-sensor driver\n");
-+
-+	return 0;
-+
-+err:
-+	thermal_zone_of_sensor_unregister(&pdev->dev, priv->thermal);
-+	return ret;
-+}
-+
-+static int brcmstb_thermal_exit(struct platform_device *pdev)
-+{
-+	struct brcmstb_thermal_priv *priv = platform_get_drvdata(pdev);
-+	struct thermal_zone_device *thermal = priv->thermal;
-+
-+	if (thermal)
-+		thermal_zone_of_sensor_unregister(&pdev->dev, priv->thermal);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver brcmstb_thermal_driver = {
-+	.probe = brcmstb_thermal_probe,
-+	.remove = brcmstb_thermal_exit,
-+	.driver = {
-+		.name = DRV_NAME,
-+		.owner = THIS_MODULE,
-+		.of_match_table = brcmstb_thermal_id_table,
-+	},
-+};
-+module_platform_driver(brcmstb_thermal_driver);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Brian Norris");
-+MODULE_DESCRIPTION("Broadcom STB AVS TMON thermal driver");
--- 
-2.7.4
+[   11.312194] PM: Suspending system (mem)
+[   11.312301] Suspending console(s) (use no_console_suspend to debug)
+[   15.879041] psmouse serio1: Failed to deactivate mouse on isa0060/serio1
+[   16.351046] psmouse serio1: Failed to enable mouse on isa0060/serio1
+[   20.695329] input: PS/2 Generic Mouse as /devices/platform/i8042/serio1/=
+input/input7
+[   20.903110] psmouse serio1: Failed to enable mouse on isa0060/serio1
+[   20.923324] sd 3:0:0:0: [sda] Synchronizing SCSI cache
+[   20.925306] sd 3:0:0:0: [sda] Stopping disk
+[   21.126993] psmouse serio1: Failed to disable mouse on isa0060/serio1
+[   21.572782] ACPI : EC: event blocked
+[   22.745084] PM: suspend of devices complete after 1821.805 msecs
+[   22.745085] PM: suspend devices took 11.433 seconds
+[   22.745086] Component: suspend devices, time: 11433
+[   22.745092] ------------[ cut here ]------------
+[   22.745096] WARNING: CPU: 1 PID: 515 at /home/brodo/local/kernel/git/lin=
+ux/kernel/power/suspend_test.c:55 suspend_test_finish+0x76/0x80
+[   22.745096] Modules linked in:
+[   22.745099] CPU: 1 PID: 515 Comm: sh Not tainted 4.12.0-rc4+ #5
+[   22.745100] Hardware name: Dell Inc. XPS 13 9343/0TM99H, BIOS A11 12/08/=
+2016
+<snip>
+[   22.745111] Call Trace:
+[   22.745114]  suspend_devices_and_enter+0xdb/0x860
+[   22.745116]  ? console_unlock.part.8+0x261/0x4a0
+[   22.745118]  pm_suspend+0x3c3/0x590
+[   22.745119]  state_store+0x85/0x100
+[   22.745122]  kobj_attr_store+0xf/0x20
+[   22.745124]  sysfs_kf_write+0x37/0x40
+[   22.745125]  kernfs_fop_write+0x11c/0x1a0
+[   22.745128]  __vfs_write+0x37/0x140
+[   22.745130]  ? preempt_count_sub+0x9b/0x100
+[   22.745132]  vfs_write+0xb1/0x170
+[   22.745134]  SyS_write+0x55/0xc0
+[   22.745137]  entry_SYSCALL_64_fastpath+0x18/0xa8
+<snip>
+[   22.745173] ---[ end trace beda9cb50fa83d31 ]---
+[   22.758152] PM: late suspend of devices complete after 12.961 msecs
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+A second suspend then does not take as long, so I presume that there is much
+noise in the messages above:
+
+[   36.538507] PM: Preparing system for sleep (mem)
+[   36.538846] Freezing user space processes ... (elapsed 0.001 seconds) do=
+ne.
+[   36.540248] OOM killer disabled.
+[   36.540250] Freezing remaining freezable tasks ... (elapsed 0.001 second=
+s) done.
+[   36.541671] PM: Suspending system (mem)
+[   36.541759] Suspending console(s) (use no_console_suspend to debug)
+[   36.561114] sd 3:0:0:0: [sda] Synchronizing SCSI cache
+[   36.563755] sd 3:0:0:0: [sda] Stopping disk
+[   36.593838] ACPI : EC: event blocked
+[   37.785272] PM: suspend of devices complete after 1224.215 msecs
+[   37.785274] PM: suspend devices took 1.244 seconds
+[   37.798224] PM: late suspend of devices complete after 12.946 msecs
+
+
+> Thanks,
+
+Thank you!
+
+	Dominik
+
+--ibTvN161/egqYuK8
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEmgXaWKgmjrvkPhLCmpdgiUyNow0FAlk1ybwACgkQmpdgiUyN
+ow2pPBAAub11oL7AP4yezCk0sBoehiVRleJIRHr7KJ8lp99sOZ34Goal3md3Z+Hb
+8M8E1rRcf8s+tov1PhUXjnEf9JlnzXs+S1K3Bb6sAUnzAVvH/wLL4apnu8j1cOyQ
+E9TKZbirTWdOvpVnA0knequcy65N0bmNyr9c8j32lsVAIX2fEN5n+1+jRxZVhN5t
+dQopBxvhIZgfxq0ds81cjEMmOf+4aQ0lgI50sB8nJuxAOoMMZpjf/93FC9YvcU36
+Qf+2cpgLe+WZOIP3gFWKTXH9JREw8LZTNq3XculeiQ8IQ/1F0bUGb+CtZGbUKrLY
+kEQ/QVcUED6x9OBnvFfPifeiQ0jRbu10yh9Mevji8SHv4OB2G7vuuFdJRqaqMMlb
+heIFVfv5aiJrMaZiDnErSKzOINZseugZlmDIOZ/9pT/lquk545mdZMqn8+DG9cv1
+s7aKHFASThjd3RjVsd3UJBqX8WMs5ewzWmtfPcGzxcKOlIAM3wT/4BQkTR8lcvkT
+gUn9QXkRpETCeTDrr4PlV0pivWWiZWqtIkJyTdzFVL7x6XmA25+LwNEsflETFjQF
+kVfwvXNSI07lakyJKibRNB0LpvpbtYmgDxiSgSBGaw6Xmld0rTuOb1HouRC1uj7c
+yr6uQPLNSxcq0FuttT3PL6Asi4q2s2XTv/jMMzjtSD9ezBl2XR4=
+=XCMK
+-----END PGP SIGNATURE-----
+
+--ibTvN161/egqYuK8--
