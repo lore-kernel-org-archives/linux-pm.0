@@ -1,73 +1,74 @@
 From: Mark Salyzyn <salyzyn@android.com>
-Subject: PM / Suspend: Print wall time at suspend entry and exit
-Date: Mon,  5 Jun 2017 12:31:14 -0700
-Message-ID: <20170605193157.59875-1-salyzyn@android.com>
+Subject: PM / Hibernation: Print wall time at hibernation entry and exit
+Date: Mon,  5 Jun 2017 12:31:15 -0700
+Message-ID: <20170605193157.59875-2-salyzyn@android.com>
+References: <20170605193157.59875-1-salyzyn@android.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f53.google.com ([74.125.83.53]:33370 "EHLO
-        mail-pg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751178AbdFETd2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jun 2017 15:33:28 -0400
-Received: by mail-pg0-f53.google.com with SMTP id f185so24530675pgc.0
-        for <linux-pm@vger.kernel.org>; Mon, 05 Jun 2017 12:33:28 -0700 (PDT)
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:33360 "EHLO
+        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751180AbdFETdq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jun 2017 15:33:46 -0400
+Received: by mail-pf0-f176.google.com with SMTP id 83so29755734pfr.0
+        for <linux-pm@vger.kernel.org>; Mon, 05 Jun 2017 12:33:45 -0700 (PDT)
+In-Reply-To: <20170605193157.59875-1-salyzyn@android.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Mark Salyzyn <salyzyn@android.com>, Todd Poynor <toddpoynor@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, Mark Salyzyn <salyzyn@android.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
 
 Permits power state and battery life diagnosis.
 
-Signed-off-by: Todd Poynor <toddpoynor@google.com>
 Signed-off-by: Mark Salyzyn <salyzyn@android.com>
 ---
- kernel/power/suspend.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ kernel/power/hibernate.c | 2 ++
+ kernel/power/power.h     | 1 +
+ kernel/power/suspend.c   | 2 +-
+ 3 files changed, 4 insertions(+), 1 deletion(-)
 
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index a8b978c35a6a..0a8b7315d298 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -342,6 +342,7 @@ int hibernation_snapshot(int platform_mode)
+ 	pm_message_t msg;
+ 	int error;
+ 
++	pm_suspend_marker("entry hibernation");
+ 	pm_suspend_clear_flags();
+ 	error = platform_begin(platform_mode);
+ 	if (error)
+@@ -409,6 +410,7 @@ int hibernation_snapshot(int platform_mode)
+ 	thaw_kernel_threads();
+  Cleanup:
+ 	swsusp_free();
++	pm_suspend_marker("exit hibernation");
+ 	goto Close;
+ }
+ 
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 7fdc40d31b7d..08f63ae27a31 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -194,6 +194,7 @@ extern const char *pm_states[];
+ extern const char *mem_sleep_states[];
+ extern suspend_state_t mem_sleep_current;
+ 
++extern void pm_suspend_marker(const char *annotation);
+ extern int suspend_devices_and_enter(suspend_state_t state);
+ #else /* !CONFIG_SUSPEND */
+ #define mem_sleep_current	PM_SUSPEND_ON
 diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index c0248c74d6d4..464175f04bc5 100644
+index 464175f04bc5..69da2b880bde 100644
 --- a/kernel/power/suspend.c
 +++ b/kernel/power/suspend.c
-@@ -26,6 +26,7 @@
- #include <linux/suspend.h>
- #include <linux/syscore_ops.h>
- #include <linux/ftrace.h>
-+#include <linux/rtc.h>
- #include <trace/events/power.h>
- #include <linux/compiler.h>
- #include <linux/moduleparam.h>
-@@ -563,6 +564,18 @@ static int enter_state(suspend_state_t state)
+@@ -564,7 +564,7 @@ static int enter_state(suspend_state_t state)
  	return error;
  }
  
-+static void pm_suspend_marker(char *annotation)
-+{
-+	struct timespec ts;
-+	struct rtc_time tm;
-+
-+	getnstimeofday(&ts);
-+	rtc_time_to_tm(ts.tv_sec, &tm);
-+	pr_info("PM: suspend %s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n",
-+		annotation, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-+		tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
-+}
-+
- /**
-  * pm_suspend - Externally visible function for suspending the system.
-  * @state: System sleep state to enter.
-@@ -577,6 +590,7 @@ int pm_suspend(suspend_state_t state)
- 	if (state <= PM_SUSPEND_ON || state >= PM_SUSPEND_MAX)
- 		return -EINVAL;
- 
-+	pm_suspend_marker("entry");
- 	error = enter_state(state);
- 	if (error) {
- 		suspend_stats.fail++;
-@@ -584,6 +598,7 @@ int pm_suspend(suspend_state_t state)
- 	} else {
- 		suspend_stats.success++;
- 	}
-+	pm_suspend_marker("exit");
- 	return error;
- }
- EXPORT_SYMBOL(pm_suspend);
+-static void pm_suspend_marker(char *annotation)
++void pm_suspend_marker(const char *annotation)
+ {
+ 	struct timespec ts;
+ 	struct rtc_time tm;
 -- 
 2.13.0.506.g27d5fe0cd-goog
