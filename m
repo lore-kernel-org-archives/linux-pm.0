@@ -1,41 +1,62 @@
 From: Johan Hovold <johan@kernel.org>
-Subject: [PATCH v2 1/7] USB: core: fix device node leak
-Date: Tue,  6 Jun 2017 17:58:58 +0200
-Message-ID: <20170606155904.26819-2-johan@kernel.org>
+Subject: [PATCH v2 4/7] driver core: fix automatic pinctrl management
+Date: Tue,  6 Jun 2017 17:59:01 +0200
+Message-ID: <20170606155904.26819-5-johan@kernel.org>
 References: <20170606155904.26819-1-johan@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170606155904.26819-1-johan@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@nxp.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, Johan Hovold <johan@kernel.org>, stable <stable@vger.kernel.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@nxp.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, Johan Hovold <johan@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Make sure to release any OF device-node reference taken when creating
-the USB device.
+Commit ab78029ecc34 ("drivers/pinctrl: grab default handles from device
+core") added automatic pin-control management to driver core by looking
+up and setting any default pinctrl state found in device tree while a
+device is being probed.
 
-Note that we currently do not hold a reference to the root hub
-device-tree node (i.e. the parent controller node).
+This obviously runs into problems as soon as device-tree nodes are
+reused for child devices which are later also probed as pins would
+already have been claimed by the ancestor device.
 
-Fixes: 69bec7259853 ("USB: core: let USB device know device node")
-Cc: stable <stable@vger.kernel.org>	# v4.6
-Acked-by: Peter Chen <peter.chen@nxp.com>
+For example if a USB host controller claims a pin, its root hub would
+consequently fail to probe when its device-tree node is set to the node
+of the controller:
+
+    pinctrl-single 48002030.pinmux: pin PIN204 already requested by 48064800.ehci; cannot claim for usb1
+    pinctrl-single 48002030.pinmux: pin-204 (usb1) status -22
+    pinctrl-single 48002030.pinmux: could not request pin 204 (PIN204) from group usb_dbg_pins  on device pinctrl-single
+    usb usb1: Error applying setting, reverse things back
+    usb: probe of usb1 failed with error -22
+
+Fix this by checking the new of_node_reused flag and skipping automatic
+pinctrl configuration during probe if set.
+
+Note that the flag is checked in driver core rather than in pinctrl
+(e.g. in pinctrl_dt_to_map()) which would specifically have prevented
+intentional use of a parent's pinctrl properties by a child device
+(should such a need ever arise).
+
+Fixes: ab78029ecc34 ("drivers/pinctrl: grab default handles from device core")
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- drivers/usb/core/usb.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/base/pinctrl.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-index 28b053cacc90..62e1906bb2f3 100644
---- a/drivers/usb/core/usb.c
-+++ b/drivers/usb/core/usb.c
-@@ -416,6 +416,8 @@ static void usb_release_dev(struct device *dev)
+diff --git a/drivers/base/pinctrl.c b/drivers/base/pinctrl.c
+index 5917b4b5fb99..eb929dd6ef1e 100644
+--- a/drivers/base/pinctrl.c
++++ b/drivers/base/pinctrl.c
+@@ -23,6 +23,9 @@ int pinctrl_bind_pins(struct device *dev)
+ {
+ 	int ret;
  
- 	usb_destroy_configuration(udev);
- 	usb_release_bos_descriptor(udev);
-+	if (udev->parent)
-+		of_node_put(dev->of_node);
- 	usb_put_hcd(hcd);
- 	kfree(udev->product);
- 	kfree(udev->manufacturer);
++	if (dev->of_node_reused)
++		return 0;
++
+ 	dev->pins = devm_kzalloc(dev, sizeof(*(dev->pins)), GFP_KERNEL);
+ 	if (!dev->pins)
+ 		return -ENOMEM;
 -- 
 2.13.0
