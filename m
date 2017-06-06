@@ -1,76 +1,93 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH] cpufreq: Find transition latency dynamically
-Date: Tue, 6 Jun 2017 18:48:30 +0300
-Message-ID: <1496764110.28352.49.camel@nxp.com>
-References: <8041a965fcca71231576ae77a141b1e4333a81cc.1496402967.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE enter
+Date: Tue, 6 Jun 2017 17:56:51 +0200
+Message-ID: <CAJZ5v0h2PB0eNo664nKXsTD8JVycncg8C0Tsj-pp6=AbGdJzWw@mail.gmail.com>
+References: <1488469507-32463-1-git-send-email-patrick.bellasi@arm.com>
+ <1488469507-32463-2-git-send-email-patrick.bellasi@arm.com> <20170606092651.GC5103@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-by2nam01on0058.outbound.protection.outlook.com ([104.47.34.58]:13984
-        "EHLO NAM01-BY2-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1751281AbdFFPsi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Jun 2017 11:48:38 -0400
-In-Reply-To: <8041a965fcca71231576ae77a141b1e4333a81cc.1496402967.git.viresh.kumar@linaro.org>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:33062 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751388AbdFFP4x (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jun 2017 11:56:53 -0400
+In-Reply-To: <20170606092651.GC5103@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Chris Redpath <chris.redpath@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
-On Fri, 2017-06-02 at 16:59 +0530, Viresh Kumar wrote:
-> The transition_latency_ns represents the maximum time it can take for
-> the hardware to switch from/to any frequency for a CPU.
-> 
-> The transition_latency_ns is used currently for two purposes:
-> 
-> o To check if the hardware latency is over the maximum allowed for a
->   governor (only for ondemand and conservative (why not schedutil?)) and
->   to decide if the governor can be used or not.
-> 
-> o To calculate the sampling_rate or rate_limit for the governors by
->   multiplying transition_latency_ns with a constant.
-> 
-> The platform drivers can also set this value to CPUFREQ_ETERNAL if they
-> don't know this number and in that case we disallow use of ondemand and
-> conservative governors as the latency would be higher than the maximum
-> allowed for the governors.
-> 
-> In many cases this number is forged by the driver authors to get the
-> default sampling rate to a desired value. Anyway, the actual latency
-> values can differ from what is received from the hardware designers.
-> 
-> Over that, what is provided by the drivers is most likely the time it
-> takes to change frequency of the hardware, which doesn't account the
-> software overhead involved.
-> 
-> In order to have guarantees about this number, this patch tries to
-> calculate the latency dynamically at cpufreq driver registration time by
-> first switching to min frequency, then to the max and finally back to
-> the initial frequency. And the maximum of all three is used as the
-> target_latency. Specifically the time it takes to go from min to max
-> frequency (when the software runs the slowest) should be good enough,
-> and even if there is a delta involved then it shouldn't be a lot.
-> 
-> For now this patch limits this feature only for platforms which have set
-> the transition latency to CPUFREQ_ETERNAL. Maybe we can convert everyone
-> to use it in future, but lets see.
-> 
-> This is tested over ARM64 Hikey platform which currently sets
-> "clock-latency" as 500 us from DT, while with this patch the actualy
-> value increased to 800 us.
+On Tue, Jun 6, 2017 at 11:26 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 02-03-17, 15:45, Patrick Bellasi wrote:
+>> diff --git a/include/linux/sched.h b/include/linux/sched.h
+>> index e2ed46d..739b29d 100644
+>> --- a/include/linux/sched.h
+>> +++ b/include/linux/sched.h
+>> @@ -3653,6 +3653,7 @@ static inline unsigned long rlimit_max(unsigned int limit)
+>>  #define SCHED_CPUFREQ_RT     (1U << 0)
+>>  #define SCHED_CPUFREQ_DL     (1U << 1)
+>>  #define SCHED_CPUFREQ_IOWAIT (1U << 2)
+>> +#define SCHED_CPUFREQ_IDLE   (1U << 3)
+>>
+>>  #define SCHED_CPUFREQ_RT_DL  (SCHED_CPUFREQ_RT | SCHED_CPUFREQ_DL)
+>>
+>> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+>> index fd46593..084a98b 100644
+>> --- a/kernel/sched/cpufreq_schedutil.c
+>> +++ b/kernel/sched/cpufreq_schedutil.c
+>> @@ -281,6 +281,12 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>>
+>>       raw_spin_lock(&sg_policy->update_lock);
+>>
+>> +     /* CPU is entering IDLE, reset flags without triggering an update */
+>> +     if (flags & SCHED_CPUFREQ_IDLE) {
+>> +             sg_cpu->flags = 0;
+>> +             goto done;
+>> +     }
+>> +
+>>       sg_cpu->util = util;
+>>       sg_cpu->max = max;
+>>       sg_cpu->flags = flags;
+>> @@ -293,6 +299,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>>               sugov_update_commit(sg_policy, time, next_f);
+>>       }
+>>
+>> +done:
+>>       raw_spin_unlock(&sg_policy->update_lock);
+>>  }
+>>
+>> diff --git a/kernel/sched/idle_task.c b/kernel/sched/idle_task.c
+>> index 0c00172..a844c91 100644
+>> --- a/kernel/sched/idle_task.c
+>> +++ b/kernel/sched/idle_task.c
+>> @@ -29,6 +29,10 @@ pick_next_task_idle(struct rq *rq, struct task_struct *prev, struct rq_flags *rf
+>>       put_prev_task(rq, prev);
+>>       update_idle_core(rq);
+>>       schedstat_inc(rq->sched_goidle);
+>> +
+>> +     /* kick cpufreq (see the comment in kernel/sched/sched.h). */
+>> +     cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_IDLE);
+>> +
+>>       return rq->idle;
+>>  }
+>
+> I was discussing about almost the same problem with Vincent today and we were
+> convinced to write exactly the same patch to solve that. And then I saw this old
+> thread again :)
+>
+> Why did this thread die completely ?
 
-I remember checking if transition latency is correct for imx6q-cpufreq
-and it does not appear to be. Maybe because i2c latency of regulator
-adjustments is not counted in?
+Because nobody followed up? :-)
 
-It seems to me it would be much nicer to have a special flag for this
-instead of overriding CPUFREQ_ETERNAL.
+> Can we at least get the patches which don't have any objections merged
+> separately first ?
 
-Also, wouldn't it be possible to update this dynamically? Just measure
-the duration every time it happens and do an update like latency =
-(latency * 7 + latest_latency) / 8.
+Yes, we can in general, but someone needs to "shepherd" them and I've
+been traveling lately.
 
---
-Regards,
-Leonard
+So, if there's anything that appears non-controversial and looks like
+it could be applied, the best way to make that happen would be to
+resend it.
+
+Thanks,
+Rafael
