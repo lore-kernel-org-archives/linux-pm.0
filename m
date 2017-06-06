@@ -1,40 +1,69 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH] thermal: hisilicon: Handle return value of clk_prepare_enable
-Date: Tue,  6 Jun 2017 15:04:46 +0530
-Message-ID: <3343de0616933425916bbe0dc3359d9e3e3608a1.1496741588.git.arvind.yadav.cs@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:34492 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751439AbdFFJfG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jun 2017 05:35:06 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v6 0/6] mfd: intel_soc_pmic_bxtwc: Add chained IRQ support
+Date: Tue, 6 Jun 2017 12:36:36 +0300
+Message-ID: <CAHp75VcizTxgoVF_f+ExV2DJ+vUZveNhLS3mRC8Jr6VGkHDutg@mail.gmail.com>
+References: <CAHp75VcQfSkn7NAWSC2Vq=8RCC0M1p9zvVFjJFLyEo17GDvHsA@mail.gmail.com>
+ <cover.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <cover.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Cc: Alexandre Courbot <gnurou@gmail.com>, "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "dvhart@infradead.org" <dvhart@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, Lee Jones <lee.jones@linaro.org>, Andy Shevchenko <andy@infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sathyanarayanan Kuppuswamy Natarajan <sathyaosid@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-clk_prepare_enable() can fail here and we must check its return value.
+On Mon, Jun 5, 2017 at 10:08 PM,
+<sathyanarayanan.kuppuswamy@linux.intel.com> wrote:
+> From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+>
+> Following patch set adds chained IRQ support to WCOVE PMIC driver.
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/thermal/hisi_thermal.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Assuming it has been tested,
 
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index f642966..9c3ce34 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -397,8 +397,11 @@ static int hisi_thermal_suspend(struct device *dev)
- static int hisi_thermal_resume(struct device *dev)
- {
- 	struct hisi_thermal_data *data = dev_get_drvdata(dev);
-+	int ret;
- 
--	clk_prepare_enable(data->clk);
-+	ret = clk_prepare_enable(data->clk);
-+	if (ret)
-+		return ret;
- 
- 	data->irq_enabled = true;
- 	hisi_thermal_enable_bind_irq_sensor(data);
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+
+to the patches which do not have it yet.
+
+> Changes since v3:
+>  * Added fix for typec wcove driver.
+>
+> Changes since v4:
+>  * Squashed following two commits, to keep the patch set bisectable.
+>    usb: typec: typec_wcove: Use charger irq chip to get usbc virq
+>    mfd: intel_soc_pmic_bxtwc: use chained irqs for second level irq chips
+>
+> Changes since v5:
+> * Changed irq->IRQ, pmic->PMIC in all commit messages.
+> * Squashed following two thermal driver related commits.
+>   mfd: intel_soc_pmic_bxtwc: Remove thermal second level irqs
+>   thermal: intel_bxt_pmic_thermal: Use first level PMIC thermal irq
+> * Squashed following two GPIO driver related commits.
+>   mfd: intel_soc_pmic_bxtwc: Remove second level irq for gpio device
+>   gpio: gpio-wcove: Use first level PMIC GPIO irq
+>
+> Kuppuswamy Sathyanarayanan (6):
+>   mfd: intel_soc_pmic_bxtwc: Fix TMU interrupt index
+>   mfd: intel_soc_pmic_bxtwc: Remove thermal second level IRQs
+>   mfd: intel_soc_pmic_bxtwc: Remove second level IRQ for gpio device
+>   mfd: intel_soc_pmic_bxtwc: Utilize devm_* functions in driver probe
+>   mfd: intel_soc_pmic_bxtwc: Use chained IRQs for second level IRQ chips
+>   platform/x86: intel_bxtwc_tmu: Remove first level IRQ unmask
+>
+>  drivers/gpio/gpio-wcove.c                |  14 +-
+>  drivers/mfd/intel_soc_pmic_bxtwc.c       | 232 +++++++++++++++++++++----------
+>  drivers/platform/x86/intel_bxtwc_tmu.c   |   4 -
+>  drivers/thermal/intel_bxt_pmic_thermal.c |   2 +-
+>  drivers/usb/typec/typec_wcove.c          |   2 +-
+>  include/linux/mfd/intel_soc_pmic.h       |   5 +-
+>  6 files changed, 175 insertions(+), 84 deletions(-)
+>
+> --
+> 2.7.4
+>
+
+
+
 -- 
-1.9.1
+With Best Regards,
+Andy Shevchenko
