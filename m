@@ -1,87 +1,50 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: suspend-to-mem broken by eed4d47efe95 (ACPI / sleep: Ignore
- spurious SCI wakeups from suspend-to-idle)
-Date: Wed, 7 Jun 2017 00:56:23 +0200
-Message-ID: <CAJZ5v0gLxgHk5HK6EKuoAp5D8j_kGDhOX8-dBvqOQe_Sk7pAtg@mail.gmail.com>
-References: <20170605090521.GA1912@light.dominikbrodowski.net>
- <21111815.riZgbS9lI9@aspire.rjw.lan> <20170605150915.GA1627@light.dominikbrodowski.net>
- <CAJZ5v0h6U-JvnU03vhNz2zV1EGB8fV8zauBTGogOnxuvv0TonQ@mail.gmail.com> <20170605211440.GA1659@light.dominikbrodowski.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170605211440.GA1659@light.dominikbrodowski.net>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] thermal: int340x: check for sensor when PTYP is missing
+Date: Tue,  6 Jun 2017 16:00:41 -0700
+Message-ID: <1496790041-104500-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:25225 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751399AbdFFXAw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Jun 2017 19:00:52 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Mon, Jun 5, 2017 at 11:14 PM, Dominik Brodowski
-<linux@dominikbrodowski.net> wrote:
-> On Mon, Jun 05, 2017 at 10:32:15PM +0200, Rafael J. Wysocki wrote:
->> On Mon, Jun 5, 2017 at 5:09 PM, Dominik Brodowski
->> <linux@dominikbrodowski.net> wrote:
->> > On Mon, Jun 05, 2017 at 03:08:57PM +0200, Rafael J. Wysocki wrote:
->> >> On Monday, June 05, 2017 11:05:21 AM Dominik Brodowski wrote:
->> >> > unfortunately, commit eed4d47efe95 (ACPI / sleep: Ignore spurious SCI
->> >> > wakeups from suspend-to-idle) breaks suspend-to-mem on my Dell XPS 13
->> >> > (9343) up to v4.12-rc4: Issuing
->> >> >
->> >> >     $ echo "mem" > /sys/power/state
->> >> >
->> >> > in the initramfs returns, after a while, with "write error: Resource
->> >> > busy", and the system *not* having entered the sleep state in between.
->> >>
->> >> Why initramfs?
->> >
->> > Easiest and quickest to test, with no userspace in between to interfere.
->> > During normal operations, I see suspend-to-mem fail, then a fall-back to
->> > s2idle...
->>
->> I see, OK.
->>
->> >> > In contrast thereto, 8a537ece3d94 (PM / wakeup: Integrate mechanism to abort
->> >> > transitions in progress) still works fine, and allows to enter
->> >> > suspend-to-mem. No real difference is to be seen in dmesg, with the notable
->> >> > exception of
->> >> >
->> >> >     ACPI: Low-level resume complete
->> >> >     ACPI : EC: EC started
->> >> >     PM: Restoring platform NVS memory
->> >> >     Suspended for N.NNNN seconds
->> >> >
->> >> > only showing up on working kernels. Reverting eed4d47efe95 on top of
->> >> > v4.12-rc4 restores suspend-to-mem to work as expected.
->> >>
->> >> I'm sure it is not necessary to revert all of it.
->> >
->> > Thought so, just wanted to confirm that eed4d47efe95 is indeed the culprit.
->> >
->> >> I guess what happens is that you get a wakeup event during suspend which is
->> >> aborted as a result.
->> >>
->> >> Please apply the partial revert below and see if it makes the issue go away.
->> >
->> > Yes it does -- with this patch applied on top of v4.12-rc4, everything works
->> > as expected. Both in initramfs and during normal runtime operations. Only an
->> > (probably unrelated) issue still appears during resume, namely "cache"
->> > complaining that the non-boot CPUs should not be sleeping:
->>
->> That's unrelated.
->>
->> OK, this still leaves us with three possibilities.
->>
->> Can you please try to apply the device_pm.c part of the partial revert
->> alone and see if that helps (and if not, same for the button.c and
->> battery.c changes)?
->
-> Indeed, the device_pm.c part of the partial revert helps on its own.
-> For completeness, applying only the chunks for button.c or battery.c
-> does not help;
+For INT3403 sensor PTYP field is mandatory. But some platforms didn't
+have this field for sensors. This cause load failure for int3403 driver.
 
-That's kind of expected. :-)
+This change checks for the presence of _TMP method and if present, then
+treats this device as a sensor.
 
-Anyway, I decided to revert commit eed4d47efe95 entirely as it turns
-out to be premature and causes too many problems to happen all over.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/thermal/int340x_thermal/int3403_thermal.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-Thanks,
-Rafael
+diff --git a/drivers/thermal/int340x_thermal/int3403_thermal.c b/drivers/thermal/int340x_thermal/int3403_thermal.c
+index c4890c9..8a7f24d 100644
+--- a/drivers/thermal/int340x_thermal/int3403_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3403_thermal.c
+@@ -238,8 +238,16 @@ static int int3403_add(struct platform_device *pdev)
+ 	status = acpi_evaluate_integer(priv->adev->handle, "PTYP",
+ 				       NULL, &priv->type);
+ 	if (ACPI_FAILURE(status)) {
+-		result = -EINVAL;
+-		goto err;
++		unsigned long long tmp;
++
++		status = acpi_evaluate_integer(priv->adev->handle, "_TMP",
++					       NULL, &tmp);
++		if (ACPI_FAILURE(status)) {
++			result = -EINVAL;
++			goto err;
++		} else {
++			priv->type = INT3403_TYPE_SENSOR;
++		}
+ 	}
+ 
+ 	platform_set_drvdata(pdev, priv);
+-- 
+2.7.4
