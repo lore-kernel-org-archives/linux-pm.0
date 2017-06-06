@@ -1,51 +1,76 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH 5/7] USB: of: fix root-hub device-tree node handling
-Date: Tue, 6 Jun 2017 17:44:37 +0200
-Message-ID: <20170606154437.GK15860@localhost>
-References: <20170530162554.26159-1-johan@kernel.org>
- <20170530162554.26159-6-johan@kernel.org>
- <20170605045103.GB20014@b29397-desktop>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH] cpufreq: Find transition latency dynamically
+Date: Tue, 6 Jun 2017 18:48:30 +0300
+Message-ID: <1496764110.28352.49.camel@nxp.com>
+References: <8041a965fcca71231576ae77a141b1e4333a81cc.1496402967.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f65.google.com ([209.85.215.65]:34814 "EHLO
-        mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751281AbdFFPoj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jun 2017 11:44:39 -0400
-Content-Disposition: inline
-In-Reply-To: <20170605045103.GB20014@b29397-desktop>
+Received: from mail-by2nam01on0058.outbound.protection.outlook.com ([104.47.34.58]:13984
+        "EHLO NAM01-BY2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751281AbdFFPsi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Jun 2017 11:48:38 -0400
+In-Reply-To: <8041a965fcca71231576ae77a141b1e4333a81cc.1496402967.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: Johan Hovold <johan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@freescale.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
 
-On Mon, Jun 05, 2017 at 12:51:04PM +0800, Peter Chen wrote:
-> On Tue, May 30, 2017 at 06:25:52PM +0200, Johan Hovold wrote:
-> > In an attempt to work around a pinmux over-allocation issue in driver
-> > core, commit dc5878abf49c ("usb: core: move root hub's device node
-> > assignment after it is added to bus") moved the device-tree node
-> > assignment until after the root hub had been registered.
-> > 
-> > This not only makes the device-tree node unavailable to the usb driver
-> > during probe, but also prevents the of_node from being linked to in
-> > sysfs and causes a race with user-space for the (recently added) devspec
-> > attribute.
-> > 
-> > Use the new device_set_of_node_from_dev() helper to reuse the node of
-> > the sysdev device, something which now prevents driver core from trying
-> > to reclaim any pinctrl pins during probe.
-> > 
-> > Fixes: dc5878abf49c ("usb: core: move root hub's device node assignment after it is added to bus")
-> > Fixes: 51fa91475e43 ("usb/core: Added devspec sysfs entry for devices behind the usb hub")
-> > Signed-off-by: Johan Hovold <johan@kernel.org>
+On Fri, 2017-06-02 at 16:59 +0530, Viresh Kumar wrote:
+> The transition_latency_ns represents the maximum time it can take for
+> the hardware to switch from/to any frequency for a CPU.
+> 
+> The transition_latency_ns is used currently for two purposes:
+> 
+> o To check if the hardware latency is over the maximum allowed for a
+>   governor (only for ondemand and conservative (why not schedutil?)) and
+>   to decide if the governor can be used or not.
+> 
+> o To calculate the sampling_rate or rate_limit for the governors by
+>   multiplying transition_latency_ns with a constant.
+> 
+> The platform drivers can also set this value to CPUFREQ_ETERNAL if they
+> don't know this number and in that case we disallow use of ondemand and
+> conservative governors as the latency would be higher than the maximum
+> allowed for the governors.
+> 
+> In many cases this number is forged by the driver authors to get the
+> default sampling rate to a desired value. Anyway, the actual latency
+> values can differ from what is received from the hardware designers.
+> 
+> Over that, what is provided by the drivers is most likely the time it
+> takes to change frequency of the hardware, which doesn't account the
+> software overhead involved.
+> 
+> In order to have guarantees about this number, this patch tries to
+> calculate the latency dynamically at cpufreq driver registration time by
+> first switching to min frequency, then to the max and finally back to
+> the initial frequency. And the maximum of all three is used as the
+> target_latency. Specifically the time it takes to go from min to max
+> frequency (when the software runs the slowest) should be good enough,
+> and even if there is a delta involved then it shouldn't be a lot.
+> 
+> For now this patch limits this feature only for platforms which have set
+> the transition latency to CPUFREQ_ETERNAL. Maybe we can convert everyone
+> to use it in future, but lets see.
+> 
+> This is tested over ARM64 Hikey platform which currently sets
+> "clock-latency" as 500 us from DT, while with this patch the actualy
+> value increased to 800 us.
 
-> I am OK with it, but I suggest adding it for new rc1 since it is based
-> on the 1st patch which is a bug-fix. If this one is really needed for
-> stable tree in future, you can cherry-pick it.
+I remember checking if transition latency is correct for imx6q-cpufreq
+and it does not appear to be. Maybe because i2c latency of regulator
+adjustments is not counted in?
 
-I agree, and didn't intent for this one to go into 4.12-rc. Let's see
-how Greg wants to handle this. I'll add some comments to the cover
-letter in v2.
+It seems to me it would be much nicer to have a special flag for this
+instead of overriding CPUFREQ_ETERNAL.
 
-Thanks,
-Johan
+Also, wouldn't it be possible to update this dynamically? Just measure
+the duration every time it happens and do an update like latency =
+(latency * 7 + latest_latency) / 8.
+
+--
+Regards,
+Leonard
