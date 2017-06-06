@@ -1,60 +1,59 @@
-From: =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>
-Subject: Re: [PATCH 2/2] thermal: add brcmstb AVS TMON driver
-Date: Tue, 06 Jun 2017 14:27:48 +0200
-Message-ID: <fdccd1ebb4ec0eb4f675168bdcb15fe4@milecki.pl>
-References: <20170605210930.65432-1-code@mmayer.net>
- <20170605210930.65432-3-code@mmayer.net>
+From: Johan Hovold <johan@kernel.org>
+Subject: Re: [PATCH 2/7] USB: of: document reference taken by child-lookup
+ helper
+Date: Tue, 6 Jun 2017 17:38:15 +0200
+Message-ID: <20170606153815.GJ15860@localhost>
+References: <20170530162554.26159-1-johan@kernel.org>
+ <20170530162554.26159-3-johan@kernel.org>
+ <eda774a3-7bd2-94e4-a5b8-67a93ec2fcf4@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170605210930.65432-3-code@mmayer.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Markus Mayer <code@mmayer.net>
-Cc: Mark Rutland <mark.rutland@arm.com>, Device Tree List <devicetree@vger.kernel.org>, Doug Berger <opendmb@gmail.com>, Markus Mayer <mmayer@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Brian Norris <computersforpeace@gmail.com>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <eda774a3-7bd2-94e4-a5b8-67a93ec2fcf4@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: Johan Hovold <johan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@freescale.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2017-06-05 23:09, Markus Mayer wrote:
-> --- /dev/null
-> +++ b/drivers/thermal/broadcom/brcmstb_thermal.c
-> @@ -0,0 +1,361 @@
-> +/*
-> + * Broadcom STB AVS TMON thermal sensor driver
-> + *
-> + * Copyright (c) 2015-2017 Broadcom
-> + *
-> + * This software is licensed under the terms of the GNU General Public
-> + * License version 2, as published by the Free Software Foundation, 
-> and
-> + * may be copied, distributed, and modified under those terms.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + *
-> + */
+On Tue, May 30, 2017 at 03:40:03PM -0700, Tyrel Datwyler wrote:
+> On 05/30/2017 09:25 AM, Johan Hovold wrote:
+> > Document that the child-node lookup helper takes a reference to the
+> > device-tree node which needs to be dropped after use.
+> > 
+> > Signed-off-by: Johan Hovold <johan@kernel.org>
+> > ---
+> >  drivers/usb/core/of.c | 3 +++
+> >  1 file changed, 3 insertions(+)
+> > 
+> > diff --git a/drivers/usb/core/of.c b/drivers/usb/core/of.c
+> > index d563cbcf76cf..17a4af02cf5b 100644
+> > --- a/drivers/usb/core/of.c
+> > +++ b/drivers/usb/core/of.c
+> > @@ -28,6 +28,9 @@
+> >   *
+> >   * Find the node from device tree according to its port number.
+> >   *
+> > + * Takes a reference to the returned device-tree node, which needs to be
+> > + * dropped after use.
+> > + *
+> >   * Return: On success, a pointer to the device node, %NULL on failure.
+> 
+> I would use the same blurb used throughout drivers/of/* for consistency.
+> 
+>  *      Returns a node pointer with refcount incremented, use
+>  *      of_node_put() on it when done.
+>  */
+> 
+> Just my 2-cents
 
-The headers says GPL v2 but it doesn't match MODULE_LICENSE. Please be
-consistent.
+I updated the comment to use a version of this also found in drivers/of:
 
+ * Return: A pointer to the node with incremented refcount if found, or
+ * %NULL otherwise.
 
-> +/* Convert a HW code to a temperature reading (millidegree celsius) */
-> +static inline int avs_tmon_code_to_temp(u32 code)
-> +{
-> +	return (410040 - (int)((code & 0x3FF) * 487));
-> +}
+which is on kernel-doc format. I don't think we need to explicitly
+mention which function to manipulate the refcount with in every header.
 
-I got similar hardcoded values and Eduardo told me to move them to the 
-DT.
-See discussion in: https://patchwork.kernel.org/patch/9642119/
-
-Hint: thermal_zone_get_offset + thermal_zone_get_slope
+Thanks,
+Johan
