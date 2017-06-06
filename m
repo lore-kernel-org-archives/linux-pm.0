@@ -1,87 +1,75 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE
- enter
-Date: Tue, 6 Jun 2017 14:56:51 +0530
-Message-ID: <20170606092651.GC5103@vireshk-i7>
-References: <1488469507-32463-1-git-send-email-patrick.bellasi@arm.com>
- <1488469507-32463-2-git-send-email-patrick.bellasi@arm.com>
+From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Subject: Re: [PATCH v6 5/6] mfd: intel_soc_pmic_bxtwc: Use chained IRQs for
+ second level IRQ chips
+Date: Tue, 6 Jun 2017 12:29:03 +0300
+Message-ID: <20170606092903.GK26659@kuha.fi.intel.com>
+References: <cover.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+ <9881880e5aac28a53398b40db468c704763e941a.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:34343 "EHLO
-        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751246AbdFFJ04 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jun 2017 05:26:56 -0400
-Received: by mail-pf0-f173.google.com with SMTP id 9so95762902pfj.1
-        for <linux-pm@vger.kernel.org>; Tue, 06 Jun 2017 02:26:55 -0700 (PDT)
+Received: from mga01.intel.com ([192.55.52.88]:4739 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751274AbdFFJbY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Jun 2017 05:31:24 -0400
 Content-Disposition: inline
-In-Reply-To: <1488469507-32463-2-git-send-email-patrick.bellasi@arm.com>
+In-Reply-To: <9881880e5aac28a53398b40db468c704763e941a.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Chris Redpath <chris.redpath@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+To: sathyanarayanan.kuppuswamy@linux.intel.com
+Cc: gnurou@gmail.com, gregkh@linuxfoundation.org, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, lee.jones@linaro.org, andy@infradead.org, platform-driver-x86@vger.kernel.org, linux-gpio@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sathyaosid@gmail.com
 
-On 02-03-17, 15:45, Patrick Bellasi wrote:
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index e2ed46d..739b29d 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -3653,6 +3653,7 @@ static inline unsigned long rlimit_max(unsigned int limit)
->  #define SCHED_CPUFREQ_RT	(1U << 0)
->  #define SCHED_CPUFREQ_DL	(1U << 1)
->  #define SCHED_CPUFREQ_IOWAIT	(1U << 2)
-> +#define SCHED_CPUFREQ_IDLE	(1U << 3)
->  
->  #define SCHED_CPUFREQ_RT_DL	(SCHED_CPUFREQ_RT | SCHED_CPUFREQ_DL)
->  
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index fd46593..084a98b 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -281,6 +281,12 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
->  
->  	raw_spin_lock(&sg_policy->update_lock);
->  
-> +	/* CPU is entering IDLE, reset flags without triggering an update */
-> +	if (flags & SCHED_CPUFREQ_IDLE) {
-> +		sg_cpu->flags = 0;
-> +		goto done;
-> +	}
-> +
->  	sg_cpu->util = util;
->  	sg_cpu->max = max;
->  	sg_cpu->flags = flags;
-> @@ -293,6 +299,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
->  		sugov_update_commit(sg_policy, time, next_f);
->  	}
->  
-> +done:
->  	raw_spin_unlock(&sg_policy->update_lock);
->  }
->  
-> diff --git a/kernel/sched/idle_task.c b/kernel/sched/idle_task.c
-> index 0c00172..a844c91 100644
-> --- a/kernel/sched/idle_task.c
-> +++ b/kernel/sched/idle_task.c
-> @@ -29,6 +29,10 @@ pick_next_task_idle(struct rq *rq, struct task_struct *prev, struct rq_flags *rf
->  	put_prev_task(rq, prev);
->  	update_idle_core(rq);
->  	schedstat_inc(rq->sched_goidle);
-> +
-> +	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
-> +	cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_IDLE);
-> +
->  	return rq->idle;
->  }
+On Mon, Jun 05, 2017 at 12:08:05PM -0700, sathyanarayanan.kuppuswamy@linux.intel.com wrote:
+> From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> 
+> Whishkey cove PMIC has support to mask/unmask interrupts at two levels.
+> At first level we can mask/unmask interrupt domains like TMU, GPIO, ADC,
+> CHGR, BCU THERMAL and PWRBTN and at second level, it provides facility
+> to mask/unmask individual interrupts belong each of this domain. For
+> example, in case of TMU, at first level we have TMU interrupt domain,
+> and at second level we have two interrupts, wake alarm, system alarm that
+> belong to the TMU interrupt domain.
+> 
+> Currently, in this driver all first level IRQs are registered as part of
+> IRQ chip(bxtwc_regmap_irq_chip). By default, after you register the IRQ
+> chip from your driver, all IRQs in that chip will masked and can only be
+> enabled if that IRQ is requested using request_irq() call. This is the
+> default Linux IRQ behavior model. And whenever a dependent device that
+> belongs to PMIC requests only the second level IRQ and not explicitly
+> unmask the first level IRQ, then in essence the second level IRQ will
+> still be disabled. For example, if TMU device driver request wake_alarm
+> IRQ and not explicitly unmask TMU level 1 IRQ then according to the default
+> Linux IRQ model,  wake_alarm IRQ will still be disabled. So the proper
+> solution to fix this issue is to use the chained IRQ chip concept. We
+> should chain all the second level chip IRQs to the corresponding first
+> level IRQ. To do this, we need to create separate IRQ chips for every
+> group of second level IRQs.
+> 
+> In case of TMU, when adding second level IRQ chip, instead of using PMIC
+> IRQ we should use the corresponding first level IRQ. So the following
+> code will change from
+> 
+> ret = regmap_add_irq_chip(pmic->regmap, pmic->irq, ...)
+> 
+> to,
+> 
+> virq = regmap_irq_get_virq(&pmic->irq_chip_data, BXTWC_TMU_LVL1_IRQ);
+> 
+> ret = regmap_add_irq_chip(pmic->regmap, virq, ...)
+> 
+> In case of Whiskey Cove Type-C driver, Since USBC IRQ is moved under
+> charger level2 IRQ chip. We should use charger IRQ chip(irq_chip_data_chgr)
+> to get the USBC virtual IRQ number.
+> 
+> Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+> Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 
-I was discussing about almost the same problem with Vincent today and we were
-convinced to write exactly the same patch to solve that. And then I saw this old
-thread again :)
+For the typec_wcove.c part:
 
-Why did this thread die completely ?
+Revieved-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
 
-Can we at least get the patches which don't have any objections merged
-separately first ?
+
+Thanks,
 
 -- 
-viresh
+heikki
