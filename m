@@ -1,7 +1,7 @@
 From: Johan Hovold <johan@kernel.org>
-Subject: [PATCH v2 4/7] driver core: fix automatic pinctrl management
-Date: Tue,  6 Jun 2017 17:59:01 +0200
-Message-ID: <20170606155904.26819-5-johan@kernel.org>
+Subject: [PATCH v2 2/7] USB: of: document reference taken by child-lookup helper
+Date: Tue,  6 Jun 2017 17:58:59 +0200
+Message-ID: <20170606155904.26819-3-johan@kernel.org>
 References: <20170606155904.26819-1-johan@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170606155904.26819-1-johan@kernel.org>
@@ -10,53 +10,27 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Linus Walleij <linus.walleij@linaro.org>, Peter Chen <peter.chen@nxp.com>, Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sricharan R <sricharan@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, Johan Hovold <johan@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Commit ab78029ecc34 ("drivers/pinctrl: grab default handles from device
-core") added automatic pin-control management to driver core by looking
-up and setting any default pinctrl state found in device tree while a
-device is being probed.
+Document that the child-node lookup helper takes a reference to the
+device-tree node which needs to be dropped after use.
 
-This obviously runs into problems as soon as device-tree nodes are
-reused for child devices which are later also probed as pins would
-already have been claimed by the ancestor device.
-
-For example if a USB host controller claims a pin, its root hub would
-consequently fail to probe when its device-tree node is set to the node
-of the controller:
-
-    pinctrl-single 48002030.pinmux: pin PIN204 already requested by 48064800.ehci; cannot claim for usb1
-    pinctrl-single 48002030.pinmux: pin-204 (usb1) status -22
-    pinctrl-single 48002030.pinmux: could not request pin 204 (PIN204) from group usb_dbg_pins  on device pinctrl-single
-    usb usb1: Error applying setting, reverse things back
-    usb: probe of usb1 failed with error -22
-
-Fix this by checking the new of_node_reused flag and skipping automatic
-pinctrl configuration during probe if set.
-
-Note that the flag is checked in driver core rather than in pinctrl
-(e.g. in pinctrl_dt_to_map()) which would specifically have prevented
-intentional use of a parent's pinctrl properties by a child device
-(should such a need ever arise).
-
-Fixes: ab78029ecc34 ("drivers/pinctrl: grab default handles from device core")
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- drivers/base/pinctrl.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/usb/core/of.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/base/pinctrl.c b/drivers/base/pinctrl.c
-index 5917b4b5fb99..eb929dd6ef1e 100644
---- a/drivers/base/pinctrl.c
-+++ b/drivers/base/pinctrl.c
-@@ -23,6 +23,9 @@ int pinctrl_bind_pins(struct device *dev)
- {
- 	int ret;
- 
-+	if (dev->of_node_reused)
-+		return 0;
-+
- 	dev->pins = devm_kzalloc(dev, sizeof(*(dev->pins)), GFP_KERNEL);
- 	if (!dev->pins)
- 		return -ENOMEM;
+diff --git a/drivers/usb/core/of.c b/drivers/usb/core/of.c
+index d563cbcf76cf..3863bb1ce8c5 100644
+--- a/drivers/usb/core/of.c
++++ b/drivers/usb/core/of.c
+@@ -28,7 +28,8 @@
+  *
+  * Find the node from device tree according to its port number.
+  *
+- * Return: On success, a pointer to the device node, %NULL on failure.
++ * Return: A pointer to the node with incremented refcount if found, or
++ * %NULL otherwise.
+  */
+ struct device_node *usb_of_get_child_node(struct device_node *parent,
+ 					int portnum)
 -- 
 2.13.0
