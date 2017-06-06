@@ -1,72 +1,65 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 1/3] regmap: Add 1-Wire bus support
-Date: Tue, 6 Jun 2017 19:50:09 +0100
-Message-ID: <20170606185009.vuosw4amnqnl5bf6@sirena.org.uk>
-References: <20170602070629.8210-1-minimumlaw@rambler.ru>
- <20170602070629.8210-2-minimumlaw@rambler.ru>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
+ driver
+Date: Tue, 6 Jun 2017 20:02:31 +0100
+Message-ID: <20170606190231.abhgfavfg6cvmkfy@sirena.org.uk>
+References: <cover.1495546845.git.stwiss.opensource@diasemi.com>
+ <ac0c9c0edf9a3a48d8de7a5c07b16b771871796e.1495546845.git.stwiss.opensource@diasemi.com>
+ <20170523171721.lpqjhakaawnz4prz@sirena.org.uk>
+ <20170524083243.5rhritb2tvmycfc6@dell>
+ <20170524101057.v2fqwki4fopx5k7y@sirena.org.uk>
+ <20170530091759.tkajnmlyel6h3djw@dell>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="eqt3zajegioz6uiy"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="qdheveixqstjem2l"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170602070629.8210-2-minimumlaw@rambler.ru>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20170530091759.tkajnmlyel6h3djw@dell>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---eqt3zajegioz6uiy
+--qdheveixqstjem2l
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Fri, Jun 02, 2017 at 10:06:27AM +0300, Alex A. Mihaylov wrote:
-> Add basic support regmap (register map access) API for 1-Wire bus
+On Tue, May 30, 2017 at 10:17:59AM +0100, Lee Jones wrote:
+> On Wed, 24 May 2017, Mark Brown wrote:
 
-Applied, thanks.  I created a signed tag for the other two patches to
-use:
+> > On Wed, May 24, 2017 at 09:32:43AM +0100, Lee Jones wrote:
 
-The following changes since commit 2ea659a9ef488125eb46da6eb571de5eae5c43f6:
+> > > Plan is to push this through the MFD tree.
 
-  Linux 4.12-rc1 (2017-05-13 13:19:49 -0700)
+> > Great, thanks.
 
-are available in the git repository at:
+> Just taking a look at this now.  It looks like the dependency:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/broonie/regmap.git regmap-1wire-support
+>   656211b1dfb9 mfd: Add support for DA9061
 
-for you to fetch changes up to cc5d0db390b0ff0f5da95b643a2b070da15a9c3e:
+> ... is now in Mainline.  Therefore it should be okay to take this
+> directly through the Regulator repo.
 
-  regmap: Add 1-Wire bus support (2017-06-06 19:47:28 +0100)
+OK, can you resend please Steve?
 
-----------------------------------------------------------------
-regmap: Add support for 1wire bus
-
-This tag contains a patch adding support for the 1wire bus to regmap.
-
-----------------------------------------------------------------
-Alex A. Mihaylov (1):
-      regmap: Add 1-Wire bus support
-
- drivers/base/regmap/Kconfig     |   6 +-
- drivers/base/regmap/Makefile    |   1 +
- drivers/base/regmap/regmap-w1.c | 245 ++++++++++++++++++++++++++++++++++++++++
- include/linux/regmap.h          |  34 ++++++
- 4 files changed, 285 insertions(+), 1 deletion(-)
- create mode 100644 drivers/base/regmap/regmap-w1.c
-
---eqt3zajegioz6uiy
+--qdheveixqstjem2l
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlk2+WEACgkQJNaLcl1U
-h9BrGQf+LZHHHowIez6HMk8tW/NujtMB8lFOZMSTSz0rVtGkobNep4vNfkc4R0T6
-YEB1PJyzDzjE4uuNpVmk512b7j4Kb/mN9C3rOCvXD5OhLIo+ZpEgOx1mCKwe9d+4
-4EusXZDjM6i+gWVFzzXMR1nkjtHR7JBdlLhZ5cp6oREdn9Q0qYwcCf21IONLYjUn
-cUh1t4az8zgE6fmvrpr27eW1O0SFVnvh8P8mVfCpyzVuFoH8EwDbacdVdDayfWoI
-yUeLb2ofL5+gjEMtIS1sngdA5zKv8EAI95ktCchl3qLkbiGHmUq2YSBtrZe//biq
-Vgf+0pIzrWaEFw0JHJmuqrXSy/5DWQ==
-=IOAQ
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlk2/EYACgkQJNaLcl1U
+h9A03Af/Roh0PLgP0x8PVW2nb/wQPKt46BrQkVeMMZpI1ZkTynNtL2cnXC6+tUi2
+hkGqWxM6inmjOlIlCjTJSsNBt7qORcJfZHy8x381n2nGowpirNJ7W6EaIJpXAkCI
+rXMnYbRo4Wqi+UDbKKS/d6QBMZTLBCKyMKXcEaOznNNLFDTHY6hq7AuVwJn7zAMt
+6DMWCi23nwY1NVl6Z6kym5eEn6x4Ye4OT7zHjjm0xRfMKW4HBVgIDbCK2RYephYj
+tKcmEmWQ7FEmw+jAEzyg+4B2nG3/vokmBgsNDuX6HLmfq3kvn/UL2KossPCti8Sv
+iuUFsKSCjCmGSbu3qBt6fk7ZzA+3JQ==
+=09LB
 -----END PGP SIGNATURE-----
 
---eqt3zajegioz6uiy--
+--qdheveixqstjem2l--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
