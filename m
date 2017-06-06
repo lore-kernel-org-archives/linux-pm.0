@@ -1,83 +1,55 @@
-From: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v2 5/7] USB: of: fix root-hub device-tree node handling
-Date: Tue,  6 Jun 2017 17:59:02 +0200
-Message-ID: <20170606155904.26819-6-johan@kernel.org>
-References: <20170606155904.26819-1-johan@kernel.org>
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170606155904.26819-1-johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Cc: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+From: Markus Mayer <code@mmayer.net>
+Subject: Re: [PATCH 1/2] Documentation: devicetree: add binding for Broadcom
+ STB AVS TMON
+Date: Tue, 6 Jun 2017 10:07:08 -0700
+Message-ID: <CANEuBv6y+FD86oH7hHctjrt=5Oh_4_iitgNHLppMOPt=D5yXig@mail.gmail.com>
+References: <20170605210930.65432-1-code@mmayer.net> <20170605210930.65432-2-code@mmayer.net>
+ <e5da2edfae3bd593fd7819db1d7e2337@milecki.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ua0-f196.google.com ([209.85.217.196]:32919 "EHLO
+        mail-ua0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751445AbdFFRHK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jun 2017 13:07:10 -0400
+Received: by mail-ua0-f196.google.com with SMTP id x47so11757553uab.0
+        for <linux-pm@vger.kernel.org>; Tue, 06 Jun 2017 10:07:09 -0700 (PDT)
+In-Reply-To: <e5da2edfae3bd593fd7819db1d7e2337@milecki.pl>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>
+Cc: Markus Mayer <code@mmayer.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
 
-In an attempt to work around a pinmux over-allocation issue in driver
-core, commit dc5878abf49c ("usb: core: move root hub's device node
-assignment after it is added to bus") moved the device-tree node
-assignment until after the root hub had been registered.
+On 6 June 2017 at 05:21, Rafa=C5=82 Mi=C5=82ecki <rafal@milecki.pl> wrote:
+> On 2017-06-05 23:09, Markus Mayer wrote:
+>>
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
+>> @@ -0,0 +1,20 @@
+>> +* Broadcom STB thermal management
+>> +
+>> +Thermal management core, provided by the AVS TMON hardware block.
+>> +
+>> +Required properties:
+>> +- compatible: must be one of "brcm,avs-tmon" or "brcm,avs-tmon-bcm7445"
+>
+>
+> Is the "one of" correct here? I'm not native English but it sounds like
+> setting both is a wrong thing.
 
-This not only makes the device-tree node unavailable to the usb driver
-during probe, but also prevents the of_node from being linked to in
-sysfs and causes a race with user-space for the (recently added) devspec
-attribute.
+You are right. It should not say "one of". I'll fix the wording.
 
-Use the new device_set_of_node_from_dev() helper to reuse the node of
-the sysdev device, something which now prevents driver core from trying
-to reclaim any pinctrl pins during probe.
-
-Fixes: dc5878abf49c ("usb: core: move root hub's device node assignment after it is added to bus")
-Fixes: 51fa91475e43 ("usb/core: Added devspec sysfs entry for devices behind the usb hub")
-Signed-off-by: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
----
- drivers/usb/core/hcd.c | 2 --
- drivers/usb/core/usb.c | 4 ++--
- 2 files changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index 5dea98358c05..2cff59e9c268 100644
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1076,7 +1076,6 @@ static void usb_deregister_bus (struct usb_bus *bus)
- static int register_root_hub(struct usb_hcd *hcd)
- {
- 	struct device *parent_dev = hcd->self.controller;
--	struct device *sysdev = hcd->self.sysdev;
- 	struct usb_device *usb_dev = hcd->self.root_hub;
- 	const int devnum = 1;
- 	int retval;
-@@ -1123,7 +1122,6 @@ static int register_root_hub(struct usb_hcd *hcd)
- 		/* Did the HC die before the root hub was registered? */
- 		if (HCD_DEAD(hcd))
- 			usb_hc_died (hcd);	/* This time clean up */
--		usb_dev->dev.of_node = sysdev->of_node;
- 	}
- 	mutex_unlock(&usb_bus_idr_lock);
- 
-diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-index 62e1906bb2f3..17681d5638ac 100644
---- a/drivers/usb/core/usb.c
-+++ b/drivers/usb/core/usb.c
-@@ -416,8 +416,7 @@ static void usb_release_dev(struct device *dev)
- 
- 	usb_destroy_configuration(udev);
- 	usb_release_bos_descriptor(udev);
--	if (udev->parent)
--		of_node_put(dev->of_node);
-+	of_node_put(dev->of_node);
- 	usb_put_hcd(hcd);
- 	kfree(udev->product);
- 	kfree(udev->manufacturer);
-@@ -616,6 +615,7 @@ struct usb_device *usb_alloc_dev(struct usb_device *parent,
- 		dev->route = 0;
- 
- 		dev->dev.parent = bus->controller;
-+		device_set_of_node_from_dev(&dev->dev, bus->sysdev);
- 		dev_set_name(&dev->dev, "usb%d", bus->busnum);
- 		root_hub = 1;
- 	} else {
--- 
-2.13.0
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> +- reg: address range for the AVS TMON registers
+>> +- interrupts: temperature monitor interrupt, for high/low threshold
+>> triggers
+>> +- interrupt-names: should be "tmon"
+>> +- interrupt-parent: the parent interrupt controller
+>> +
+>> +Example:
+>> +
+>> +       thermal@f04d1500 {
+>> +               compatible =3D "brcm,avs-tmon-bcm7445", "brcm,avs-tmon";
+>
+>
+> Yet here you use both bindings.
