@@ -1,55 +1,51 @@
-From: Markus Mayer <code@mmayer.net>
-Subject: Re: [PATCH 1/2] Documentation: devicetree: add binding for Broadcom
- STB AVS TMON
-Date: Tue, 6 Jun 2017 10:07:08 -0700
-Message-ID: <CANEuBv6y+FD86oH7hHctjrt=5Oh_4_iitgNHLppMOPt=D5yXig@mail.gmail.com>
-References: <20170605210930.65432-1-code@mmayer.net> <20170605210930.65432-2-code@mmayer.net>
- <e5da2edfae3bd593fd7819db1d7e2337@milecki.pl>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2] ARM: cpuidle: Support asymmetric idle definition
+Date: Tue, 6 Jun 2017 19:28:32 +0200
+Message-ID: <3d97f2a9-cff3-b5e1-d568-5d6d7e3b5abb@linaro.org>
+References: <1496317188-15272-1-git-send-email-daniel.lezcano@linaro.org>
+ <3ec88de3-7d18-0ea6-bc27-e98084f2b6f6@arm.com>
+ <4fe4558f-5881-11dc-5d36-93c92a272eed@linaro.org>
+ <a96db56b-a773-f0a7-431e-acbb969333d1@arm.com>
+ <d96a6da1-318f-3465-9227-714036431f81@linaro.org>
+ <47e3d236-8d36-d04d-5f87-9fece6875d66@arm.com>
+ <e79e44d6-6f01-6829-3924-6feca7633eae@linaro.org>
+ <342f052b-03e2-8b1e-935f-b125c57dc051@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ua0-f196.google.com ([209.85.217.196]:32919 "EHLO
-        mail-ua0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751445AbdFFRHK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jun 2017 13:07:10 -0400
-Received: by mail-ua0-f196.google.com with SMTP id x47so11757553uab.0
-        for <linux-pm@vger.kernel.org>; Tue, 06 Jun 2017 10:07:09 -0700 (PDT)
-In-Reply-To: <e5da2edfae3bd593fd7819db1d7e2337@milecki.pl>
+Received: from mail-wr0-f178.google.com ([209.85.128.178]:33797 "EHLO
+        mail-wr0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751405AbdFFR2g (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Jun 2017 13:28:36 -0400
+Received: by mail-wr0-f178.google.com with SMTP id g76so57242969wrd.1
+        for <linux-pm@vger.kernel.org>; Tue, 06 Jun 2017 10:28:35 -0700 (PDT)
+In-Reply-To: <342f052b-03e2-8b1e-935f-b125c57dc051@arm.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>
-Cc: Markus Mayer <code@mmayer.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: rjw@rjwysocki.net, lorenzo.pieralisi@arm.com, leo.yan@linaro.org, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On 6 June 2017 at 05:21, Rafa=C5=82 Mi=C5=82ecki <rafal@milecki.pl> wrote:
-> On 2017-06-05 23:09, Markus Mayer wrote:
+On 02/06/2017 15:45, Sudeep Holla wrote:
+
+[ ... ]
+
+>> We can live with a driver per cpu and do the memory optimization.
 >>
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
->> @@ -0,0 +1,20 @@
->> +* Broadcom STB thermal management
->> +
->> +Thermal management core, provided by the AVS TMON hardware block.
->> +
->> +Required properties:
->> +- compatible: must be one of "brcm,avs-tmon" or "brcm,avs-tmon-bcm7445"
->
->
-> Is the "one of" correct here? I'm not native English but it sounds like
-> setting both is a wrong thing.
+>> If we have an observed regression with large SMP systems, we fix it.
+>>
+> 
+> OK, I am fine with that if you agree that we can fix it later.
 
-You are right. It should not say "one of". I'll fix the wording.
+Yes, I agree.
 
->> +- reg: address range for the AVS TMON registers
->> +- interrupts: temperature monitor interrupt, for high/low threshold
->> triggers
->> +- interrupt-names: should be "tmon"
->> +- interrupt-parent: the parent interrupt controller
->> +
->> +Example:
->> +
->> +       thermal@f04d1500 {
->> +               compatible =3D "brcm,avs-tmon-bcm7445", "brcm,avs-tmon";
->
->
-> Yet here you use both bindings.
+Shall I consider adding your acked-by ?
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
