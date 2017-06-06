@@ -1,79 +1,53 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: SDHI clock imbalance
-Date: Tue, 6 Jun 2017 12:49:44 +0200
-Message-ID: <20170606104944.6zewibifk3xfxetk@ninjato>
-References: <CAMuHMdX7_u_3TFK22inUp367LR3R77S72RAtRWPFnKE9-cUtpw@mail.gmail.com>
- <CAPDyKFpfff0AwbKwJEhH_-Vkn+i+1bXp5P-OWiZ2O=71s+s5vw@mail.gmail.com>
+From: =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>
+Subject: Re: [PATCH 1/2] Documentation: devicetree: add binding for Broadcom
+ STB AVS TMON
+Date: Tue, 06 Jun 2017 14:21:54 +0200
+Message-ID: <e5da2edfae3bd593fd7819db1d7e2337@milecki.pl>
+References: <20170605210930.65432-1-code@mmayer.net>
+ <20170605210930.65432-2-code@mmayer.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="pibgxcti7gnrdqqq"
-Return-path: <linux-mmc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFpfff0AwbKwJEhH_-Vkn+i+1bXp5P-OWiZ2O=71s+s5vw@mail.gmail.com>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Simon Horman <horms@verge.net.au>, Linux MMC List <linux-mmc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170605210930.65432-2-code@mmayer.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Markus Mayer <code@mmayer.net>
+Cc: Mark Rutland <mark.rutland@arm.com>, Device Tree List <devicetree@vger.kernel.org>, Doug Berger <opendmb@gmail.com>, Markus Mayer <mmayer@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Brian Norris <computersforpeace@gmail.com>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+On 2017-06-05 23:09, Markus Mayer wrote:
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
+> @@ -0,0 +1,20 @@
+> +* Broadcom STB thermal management
+> +
+> +Thermal management core, provided by the AVS TMON hardware block.
+> +
+> +Required properties:
+> +- compatible: must be one of "brcm,avs-tmon" or 
+> "brcm,avs-tmon-bcm7445"
 
---pibgxcti7gnrdqqq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-
-> The driver calls pm_runtime_set_active() during ->probe(), which means
-> genpd's ->runtime_resume() callback isn't invoked during that point.
-> In other words, the clocks managed by the clock domain isn't enabled
-> during ->probe() as genpd's doesn't get to run pm_clk_resume() from
-> its ->runtime_resume() callback. Unless I am missing something. :-)
-
-So, in my words: in that case, the device is not really active since the
-clocks are not enabled?
-
-> I think this is the reason to the following problems. How to fix it?
->=20
-> The driver needs to call pm_runtime_get_sync() instead of
-> pm_runtime_set_active(), however that may requires some careful
-> changes if one wants the driver to be able to enable clocks also when
-> CONFIG_PM is unset.
-
-We have tmio_mmc_clk_enable() already for that, I'd think. Or am I
-misunderstanding?
-
-> Add a "init" flag to host struct, and set that flag before calling
-> pm_runtime_get_sync() in ->probe(). When the driver's
-> ->runtime_resume() callbacks get called when the "init" flag is set,
-> just do an early return 0, as t means ->probe() is running and has
-> already taken care of the enabling the clock. When probe is done, and
-> before dropping runtime usage count with pm_runtime_put(), reset the
-> "init" flag.
-
-Welllll... I hope we can avoid this ;)
-
-Thanks for your thoughts, Ulf. And thanks to Geert for bringing up the
-issue which I can reproduce here. We need to do a bigger PM
-re-evaluation anyhow, I'll add it to the list...
+Is the "one of" correct here? I'm not native English but it sounds like
+setting both is a wrong thing.
 
 
---pibgxcti7gnrdqqq
-Content-Type: application/pgp-signature; name="signature.asc"
+> +- reg: address range for the AVS TMON registers
+> +- interrupts: temperature monitor interrupt, for high/low threshold 
+> triggers
+> +- interrupt-names: should be "tmon"
+> +- interrupt-parent: the parent interrupt controller
+> +
+> +Example:
+> +
+> +	thermal@f04d1500 {
+> +		compatible = "brcm,avs-tmon-bcm7445", "brcm,avs-tmon";
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlk2iMgACgkQFA3kzBSg
-KbZKsg//Zsq83wzm57qYfVXbkB2ILynMExIDGNJildnJFGyGhiM1IFJ4knKpAIZ8
-8WhFMcd9kY3ORDJbm9/F6e15rI7u9+5DFDrRYxQBlaPFrKB7RgEIQNXR4XcX9/zR
-6zRDnTK+SHT9yjz67KiftJGMxNCwI7h5nqk1qk1VV1AGI2uUwAgvkFp/9jqmXjjw
-cH4Knd8E1Adz/Q8L0ARZwziQmYDYmzgOMgMuVjcZrT+CdcCr7JhjJtbyeKZ4G4pc
-MwPxwLn+YKlvEKpe+cUMTteWzbXtt176vlz+lp9DGCkX/VUp9bcFVwlLMbH9zL/Z
-cyP3A2SmehPilzw/BUmhglFqsQlxWa6+TtBGvoO8t9xjIQvbhlMJMdm5XV88ri0Y
-g2Fclt8i1w2BryXUPks1pO/407gPnjGlkcNlb09POLRyun3+9WPVpT2S0QsjpK2S
-ytE5NVJqeZtKn6OxosEX5wH/4VwfgDfJBs+8uFHWItqzP/duYaoq0RlJ+hJjBQ2h
-KV8PItpvfoXAB8TP9CcFxpXXnzumhj/bv0hIURoBUqE16xoNe4ONMcp5iKFcv9G7
-J7eFt2XcDzWtl7TdtP5pkf82gVY5YepgoiwRH2qZDDnUJYb7YmhcynFgFhOfUWji
-xYa42dXWU2Z9i99MDLZNH92pEZUaK0e/C5CWOyHZ0aYlaCpbzyI=
-=4H7w
------END PGP SIGNATURE-----
-
---pibgxcti7gnrdqqq--
+Yet here you use both bindings.
