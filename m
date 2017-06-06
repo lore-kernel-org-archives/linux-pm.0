@@ -1,84 +1,44 @@
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH 2/4] dt-bindings: thermal: add binding documentation for
- UniPhier thermal monitor
-Date: Tue, 6 Jun 2017 11:46:26 +0900
-Message-ID: <CAK7LNAS-1+p7u4RMuF5FVNyuSHvX+SfAYk4+YbQSdEaAVma=zg@mail.gmail.com>
-References: <1496049345-14649-1-git-send-email-hayashi.kunihiko@socionext.com> <1496049345-14649-3-git-send-email-hayashi.kunihiko@socionext.com>
+Subject: Re: [PATCH 4/4] arm64: dts: uniphier: add nodes of thermal monitor
+ and thermal zone for LD20
+Date: Tue, 6 Jun 2017 12:04:12 +0900
+Message-ID: <CAK7LNATm5wbz07_Ny8QkvhgN7kvi-X9o+zrY+-00BK9O__vrxQ@mail.gmail.com>
+References: <1496049345-14649-1-git-send-email-hayashi.kunihiko@socionext.com> <1496049345-14649-5-git-send-email-hayashi.kunihiko@socionext.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1496049345-14649-3-git-send-email-hayashi.kunihiko@socionext.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from conssluserg-05.nifty.com ([210.131.2.90]:39613 "EHLO
+        conssluserg-05.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751335AbdFFDEX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Jun 2017 23:04:23 -0400
+In-Reply-To: <1496049345-14649-5-git-send-email-hayashi.kunihiko@socionext.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
 Cc: rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Masami Hiramatsu <masami.hiramatsu@linaro.org>, Jassi Brar <jaswinder.singh@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
 2017-05-29 18:15 GMT+09:00 Kunihiko Hayashi <hayashi.kunihiko@socionext.com>:
-> Add devicetree binding documentation for thermal monitor implemented on
-> Socionext UniPhier SoCs.
+> Add nodes of thermal monitor and thermal zone for UniPhier LD20 SoC.
+> The thermal monitor is included in sysctrl.
+>
+> Furthermore, since SoC installed in the reference board doesn't have a
+> calibrated value of thermal monitor, this patch gives the default value
+> for LD20 Reference board via device-tree property.
 >
 > Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
 > ---
->  .../bindings/thermal/uniphier-thermal.txt          | 54 ++++++++++++++++++++++
->  1 file changed, 54 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
+>  .../arm64/boot/dts/socionext/uniphier-ld20-ref.dts | 25 ++++++++++++++++++++++
+>  arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi   |  6 ++++++
+>  2 files changed, 31 insertions(+)
 >
-> diff --git a/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt b/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
-> new file mode 100644
-> index 0000000..72834e1
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
-> @@ -0,0 +1,54 @@
-> +* UniPhier Thermal bindings
-> +
-> +This describes the devicetree bindings for thermal monitor supported by
-> +PVT(Process, Voltage and Temperature) monitoring unit implemented on Socionext
-> +UniPhier SoCs.
-
-This paragraph implies this might be a HWMON driver if more features
-are implemented,
-but I assume you use only the Temperature part for a thermal driver at
-the moment.
-(I do not know if other sensors are useful or not, so I do not mind it much.)
-
-
-
-> +Required properties:
-> +- compatible :
-> +  - "socionext,uniphier-pxs2-thermal" : For UniPhier PXs2 SoC
-> +  - "socionext,uniphier-ld20-thermal" : For UniPhier LD20 SoC
-> +- reg : Offset address of the thermal registers from sysctrl
-
-
-This "reg" does not exist in the example.
-
-Your driver code uses regmap for register access.
-
-
-
-
-> +- interrupts : IRQ for the temperature alarm
-> +- #thermal-sensor-cells : Should be 0. See ./thermal.txt for details.
-> +
-> +Optional properties:
-> +- socionext,tmod-calibration: A pair of calibrated values referred from PVT,
-> +                              in case that the values aren't set on SoC,
-> +                              like a reference board.
-> +
-> +Example:
-> +
-> +       sysctrl@61840000 {
-> +               compatible = "socionext,uniphier-ld20-sysctrl",
-> +                            "simple-mfd", "syscon";
-> +               reg = <0x61840000 0x10000>;
-> +               ...
-> +               pvtctl: pvtctl {
-> +                       compatible = "socionext,uniphier-ld20-thermal";
-> +                       interrupts = <0 3 1>;
-> +                       #thermal-sensor-cells = <0>;
-> +               };
-> +               ...
-> +       };
+> diff --git a/arch/arm64/boot/dts/socionext/uniphier-ld20-ref.dts b/arch/arm64/boot/dts/socionext/uniphier-ld20-ref.dts
+> index 609162a..79e1363 100644
+> --- a/arch/arm64/boot/dts/socionext/uniphier-ld20-ref.dts
+> +++ b/arch/arm64/boot/dts/socionext/uniphier-ld20-ref.dts
+> @@ -73,6 +73,27 @@
+>                 i2c4 = &i2c4;
+>                 i2c5 = &i2c5;
+>         };
 > +
 > +       thermal-zones {
 > +               cpu_thermal {
@@ -100,10 +60,42 @@ Your driver code uses regmap for register access.
 > +                       };
 > +               };
 > +       };
-> --
-> 2.7.4
+>  };
 >
+>  &ethsc {
+> @@ -86,3 +107,7 @@
+>  &i2c0 {
+>         status = "okay";
+>  };
+> +
+> +&pvtctl {
+> +       socionext,tmod-calibration = <0x0f22 0x68ee>;
+> +};
+> diff --git a/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi b/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
+> index a6b3a70..effa2e3 100644
+> --- a/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
+> +++ b/arch/arm64/boot/dts/socionext/uniphier-ld20.dtsi
+> @@ -417,6 +417,12 @@
+>                                 compatible = "socionext,uniphier-ld20-reset";
+>                                 #reset-cells = <1>;
+>                         };
+> +
+> +                       pvtctl: pvtctl {
+> +                               compatible = "socionext,uniphier-ld20-thermal";
+> +                               interrupts = <0 3 1>;
+> +                               #thermal-sensor-cells = <0>;
+> +                       };
 
+
+The 3rd cell of the interrupts is 1.
+So, you mean the interrupt is edge-triggered.
+(Documentation/devicetree/bindings/interrupt-controller/arm,gic-v3.txt)
+
+However, in your driver code, the interrupt is explicitly cleared in
+the IRQ handler.
+
+I checked the SoC implementation document and
+the PVT IRQ seems to be level-triggered.
 
 
 -- 
