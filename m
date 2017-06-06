@@ -1,69 +1,36 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v6 0/6] mfd: intel_soc_pmic_bxtwc: Add chained IRQ support
-Date: Tue, 6 Jun 2017 12:36:36 +0300
-Message-ID: <CAHp75VcizTxgoVF_f+ExV2DJ+vUZveNhLS3mRC8Jr6VGkHDutg@mail.gmail.com>
-References: <CAHp75VcQfSkn7NAWSC2Vq=8RCC0M1p9zvVFjJFLyEo17GDvHsA@mail.gmail.com>
- <cover.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <cover.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Cc: Alexandre Courbot <gnurou@gmail.com>, "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "dvhart@infradead.org" <dvhart@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, Lee Jones <lee.jones@linaro.org>, Andy Shevchenko <andy@infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sathyanarayanan Kuppuswamy Natarajan <sathyaosid@gmail.com>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [PATCH] thermal: imx: Handle return value of clk_prepare_enable
+Date: Tue,  6 Jun 2017 15:12:37 +0530
+Message-ID: <629c868baf666c464a0e39515a89eaf13a06c064.1496741979.git.arvind.yadav.cs@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 5, 2017 at 10:08 PM,
-<sathyanarayanan.kuppuswamy@linux.intel.com> wrote:
-> From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
->
-> Following patch set adds chained IRQ support to WCOVE PMIC driver.
+clk_prepare_enable() can fail here and we must check its return value.
 
-Assuming it has been tested,
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/thermal/imx_thermal.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-
-to the patches which do not have it yet.
-
-> Changes since v3:
->  * Added fix for typec wcove driver.
->
-> Changes since v4:
->  * Squashed following two commits, to keep the patch set bisectable.
->    usb: typec: typec_wcove: Use charger irq chip to get usbc virq
->    mfd: intel_soc_pmic_bxtwc: use chained irqs for second level irq chips
->
-> Changes since v5:
-> * Changed irq->IRQ, pmic->PMIC in all commit messages.
-> * Squashed following two thermal driver related commits.
->   mfd: intel_soc_pmic_bxtwc: Remove thermal second level irqs
->   thermal: intel_bxt_pmic_thermal: Use first level PMIC thermal irq
-> * Squashed following two GPIO driver related commits.
->   mfd: intel_soc_pmic_bxtwc: Remove second level irq for gpio device
->   gpio: gpio-wcove: Use first level PMIC GPIO irq
->
-> Kuppuswamy Sathyanarayanan (6):
->   mfd: intel_soc_pmic_bxtwc: Fix TMU interrupt index
->   mfd: intel_soc_pmic_bxtwc: Remove thermal second level IRQs
->   mfd: intel_soc_pmic_bxtwc: Remove second level IRQ for gpio device
->   mfd: intel_soc_pmic_bxtwc: Utilize devm_* functions in driver probe
->   mfd: intel_soc_pmic_bxtwc: Use chained IRQs for second level IRQ chips
->   platform/x86: intel_bxtwc_tmu: Remove first level IRQ unmask
->
->  drivers/gpio/gpio-wcove.c                |  14 +-
->  drivers/mfd/intel_soc_pmic_bxtwc.c       | 232 +++++++++++++++++++++----------
->  drivers/platform/x86/intel_bxtwc_tmu.c   |   4 -
->  drivers/thermal/intel_bxt_pmic_thermal.c |   2 +-
->  drivers/usb/typec/typec_wcove.c          |   2 +-
->  include/linux/mfd/intel_soc_pmic.h       |   5 +-
->  6 files changed, 175 insertions(+), 84 deletions(-)
->
-> --
-> 2.7.4
->
-
-
-
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index fb648a4..1aee321 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -648,8 +648,11 @@ static int imx_thermal_resume(struct device *dev)
+ {
+ 	struct imx_thermal_data *data = dev_get_drvdata(dev);
+ 	struct regmap *map = data->tempmon;
++	int ret;
+ 
+-	clk_prepare_enable(data->thermal_clk);
++	ret = clk_prepare_enable(data->thermal_clk);
++	if (ret)
++		return ret;
+ 	/* Enabled thermal sensor after resume */
+ 	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
+ 	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
 -- 
-With Best Regards,
-Andy Shevchenko
+1.9.1
