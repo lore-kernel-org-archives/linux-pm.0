@@ -1,31 +1,38 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v5 2/3] ARM: dts: twl4030: Add missing madc reference for
- bci subnode
-Date: Tue, 6 Jun 2017 00:23:58 -0700
-Message-ID: <20170606072358.GT3730@atomide.com>
-References: <cover.1495363097.git.hns@goldelico.com>
- <69d95172f257cee8d6abc1eaab57865e536be73c.1495363097.git.hns@goldelico.com>
+From: kbuild test robot <lkp-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 2/2] thermal: add brcmstb AVS TMON driver
+Date: Tue, 6 Jun 2017 15:50:50 +0800
+Message-ID: <201706061553.IyOv7qkB%fengguang.wu@intel.com>
+References: <20170605210930.65432-3-code@mmayer.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:50392 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751165AbdFFHYD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Jun 2017 03:24:03 -0400
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <69d95172f257cee8d6abc1eaab57865e536be73c.1495363097.git.hns@goldelico.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170605210930.65432-3-code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
+Cc: kbuild-all-JC7UmRfGjtg@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Doug Berger <opendmb-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory Fong <gregory.0xf0-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ARM Kernel List <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, Marek Belisko <marek@goldelico.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
 
-* H. Nikolaus Schaller <hns@goldelico.com> [170521 03:44]:
-> From: Marek Belisko <marek@goldelico.com>
-> 
-> The twl4030_charger driver expects an iio channel to detect the
-> presence of an AC charger by looking at VAC (madc channel 11).
-> This definition is missing in the device tree.
+Hi Brian,
 
-I'm picking this patch into omap-for-v4.13/dt thanks.
+[auto build test WARNING on thermal/next]
+[also build test WARNING on v4.12-rc4 next-20170606]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-Tony
+url:    https://github.com/0day-ci/linux/commits/Markus-Mayer/Documentation-devicetree-add-binding-for-Broadcom-STB-AVS-TMON/20170606-133113
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+
+
+coccinelle warnings: (new ones prefixed by >>)
+
+>> drivers/thermal/broadcom/brcmstb_thermal.c:353:3-8: No need to set .owner here. The core will do it.
+
+Please review and possibly fold the followup patch.
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
