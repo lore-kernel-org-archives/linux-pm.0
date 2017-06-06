@@ -1,48 +1,72 @@
-From: Mark Salyzyn <salyzyn@android.com>
-Subject: Re: PM / Suspend: Print wall time at suspend entry and exit
-Date: Tue, 6 Jun 2017 11:05:50 -0700
-Message-ID: <e9c40b99-7fa7-71b2-5917-250d638a5162@android.com>
-References: <20170605193157.59875-1-salyzyn@android.com>
- <CAJZ5v0iLFw68RxzkgyFF_WhxO-nzr0nWoZjq-uEEU6+UzMB7cQ@mail.gmail.com>
- <20170605211835.GB9035@amd>
- <5931f9cb-016f-4163-4908-6825cf84b9d3@android.com>
- <ca5fb419-386f-9e27-43c4-677be6f0ae4b@android.com>
- <20170605224011.GA26558@amd>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/3] regmap: Add 1-Wire bus support
+Date: Tue, 6 Jun 2017 19:50:09 +0100
+Message-ID: <20170606185009.vuosw4amnqnl5bf6@sirena.org.uk>
+References: <20170602070629.8210-1-minimumlaw@rambler.ru>
+ <20170602070629.8210-2-minimumlaw@rambler.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="eqt3zajegioz6uiy"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170605224011.GA26558@amd>
+Content-Disposition: inline
+In-Reply-To: <20170602070629.8210-2-minimumlaw@rambler.ru>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Todd Poynor <toddpoynor@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>
+To: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/05/2017 03:40 PM, Pavel Machek wrote:
->
-> Nanoseconds do not really matter here, right?
 
-useconds do matter (syscall takes about 1us). But no matter, since 
-Suspended message is only available on platforms that support persistent 
-clock, so in those case (more devices than I can count) the messages we 
-add here are all we get since they do not have a requirement to be 
-supported by the persistent clock.
+--eqt3zajegioz6uiy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> And userspace should not really be parsing kernel logs for time
-> keeping, right?
-Post-mortem, armed with user space logs in CLOCK_REALTIME (a choice that 
-most want on Android Logging) and kernel logs, these messages are 
-_invaluable_ in order to merge the kernel activities with user space. At 
-runtime they help too, as there is some post-mortem activities on user 
-space logging daemon startup.
-> The devices you are talking about... is any of them running something
-> close to mainline kernel, or is planned for merge? I'd like to get a
-> phone that is supported by mainline...
+On Fri, Jun 02, 2017 at 10:06:27AM +0300, Alex A. Mihaylov wrote:
+> Add basic support regmap (register map access) API for 1-Wire bus
 
-Android on hikey development board is running 4.9 kernel + Android 
-patches (this is one of 'em), I _expect_ ToT will work. As for _real_ 
-phones, you have to take that up with the vendors making the chips.
-> 									
-> 									Pavel
+Applied, thanks.  I created a signed tag for the other two patches to
+use:
 
--- Mark
+The following changes since commit 2ea659a9ef488125eb46da6eb571de5eae5c43f6:
+
+  Linux 4.12-rc1 (2017-05-13 13:19:49 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/broonie/regmap.git regmap-1wire-support
+
+for you to fetch changes up to cc5d0db390b0ff0f5da95b643a2b070da15a9c3e:
+
+  regmap: Add 1-Wire bus support (2017-06-06 19:47:28 +0100)
+
+----------------------------------------------------------------
+regmap: Add support for 1wire bus
+
+This tag contains a patch adding support for the 1wire bus to regmap.
+
+----------------------------------------------------------------
+Alex A. Mihaylov (1):
+      regmap: Add 1-Wire bus support
+
+ drivers/base/regmap/Kconfig     |   6 +-
+ drivers/base/regmap/Makefile    |   1 +
+ drivers/base/regmap/regmap-w1.c | 245 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/regmap.h          |  34 ++++++
+ 4 files changed, 285 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/base/regmap/regmap-w1.c
+
+--eqt3zajegioz6uiy
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlk2+WEACgkQJNaLcl1U
+h9BrGQf+LZHHHowIez6HMk8tW/NujtMB8lFOZMSTSz0rVtGkobNep4vNfkc4R0T6
+YEB1PJyzDzjE4uuNpVmk512b7j4Kb/mN9C3rOCvXD5OhLIo+ZpEgOx1mCKwe9d+4
+4EusXZDjM6i+gWVFzzXMR1nkjtHR7JBdlLhZ5cp6oREdn9Q0qYwcCf21IONLYjUn
+cUh1t4az8zgE6fmvrpr27eW1O0SFVnvh8P8mVfCpyzVuFoH8EwDbacdVdDayfWoI
+yUeLb2ofL5+gjEMtIS1sngdA5zKv8EAI95ktCchl3qLkbiGHmUq2YSBtrZe//biq
+Vgf+0pIzrWaEFw0JHJmuqrXSy/5DWQ==
+=IOAQ
+-----END PGP SIGNATURE-----
+
+--eqt3zajegioz6uiy--
