@@ -1,65 +1,87 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
- driver
-Date: Tue, 6 Jun 2017 20:02:31 +0100
-Message-ID: <20170606190231.abhgfavfg6cvmkfy@sirena.org.uk>
-References: <cover.1495546845.git.stwiss.opensource@diasemi.com>
- <ac0c9c0edf9a3a48d8de7a5c07b16b771871796e.1495546845.git.stwiss.opensource@diasemi.com>
- <20170523171721.lpqjhakaawnz4prz@sirena.org.uk>
- <20170524083243.5rhritb2tvmycfc6@dell>
- <20170524101057.v2fqwki4fopx5k7y@sirena.org.uk>
- <20170530091759.tkajnmlyel6h3djw@dell>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: suspend-to-mem broken by eed4d47efe95 (ACPI / sleep: Ignore
+ spurious SCI wakeups from suspend-to-idle)
+Date: Wed, 7 Jun 2017 00:56:23 +0200
+Message-ID: <CAJZ5v0gLxgHk5HK6EKuoAp5D8j_kGDhOX8-dBvqOQe_Sk7pAtg@mail.gmail.com>
+References: <20170605090521.GA1912@light.dominikbrodowski.net>
+ <21111815.riZgbS9lI9@aspire.rjw.lan> <20170605150915.GA1627@light.dominikbrodowski.net>
+ <CAJZ5v0h6U-JvnU03vhNz2zV1EGB8fV8zauBTGogOnxuvv0TonQ@mail.gmail.com> <20170605211440.GA1659@light.dominikbrodowski.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="qdheveixqstjem2l"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170530091759.tkajnmlyel6h3djw@dell>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170605211440.GA1659@light.dominikbrodowski.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Jun 5, 2017 at 11:14 PM, Dominik Brodowski
+<linux@dominikbrodowski.net> wrote:
+> On Mon, Jun 05, 2017 at 10:32:15PM +0200, Rafael J. Wysocki wrote:
+>> On Mon, Jun 5, 2017 at 5:09 PM, Dominik Brodowski
+>> <linux@dominikbrodowski.net> wrote:
+>> > On Mon, Jun 05, 2017 at 03:08:57PM +0200, Rafael J. Wysocki wrote:
+>> >> On Monday, June 05, 2017 11:05:21 AM Dominik Brodowski wrote:
+>> >> > unfortunately, commit eed4d47efe95 (ACPI / sleep: Ignore spurious SCI
+>> >> > wakeups from suspend-to-idle) breaks suspend-to-mem on my Dell XPS 13
+>> >> > (9343) up to v4.12-rc4: Issuing
+>> >> >
+>> >> >     $ echo "mem" > /sys/power/state
+>> >> >
+>> >> > in the initramfs returns, after a while, with "write error: Resource
+>> >> > busy", and the system *not* having entered the sleep state in between.
+>> >>
+>> >> Why initramfs?
+>> >
+>> > Easiest and quickest to test, with no userspace in between to interfere.
+>> > During normal operations, I see suspend-to-mem fail, then a fall-back to
+>> > s2idle...
+>>
+>> I see, OK.
+>>
+>> >> > In contrast thereto, 8a537ece3d94 (PM / wakeup: Integrate mechanism to abort
+>> >> > transitions in progress) still works fine, and allows to enter
+>> >> > suspend-to-mem. No real difference is to be seen in dmesg, with the notable
+>> >> > exception of
+>> >> >
+>> >> >     ACPI: Low-level resume complete
+>> >> >     ACPI : EC: EC started
+>> >> >     PM: Restoring platform NVS memory
+>> >> >     Suspended for N.NNNN seconds
+>> >> >
+>> >> > only showing up on working kernels. Reverting eed4d47efe95 on top of
+>> >> > v4.12-rc4 restores suspend-to-mem to work as expected.
+>> >>
+>> >> I'm sure it is not necessary to revert all of it.
+>> >
+>> > Thought so, just wanted to confirm that eed4d47efe95 is indeed the culprit.
+>> >
+>> >> I guess what happens is that you get a wakeup event during suspend which is
+>> >> aborted as a result.
+>> >>
+>> >> Please apply the partial revert below and see if it makes the issue go away.
+>> >
+>> > Yes it does -- with this patch applied on top of v4.12-rc4, everything works
+>> > as expected. Both in initramfs and during normal runtime operations. Only an
+>> > (probably unrelated) issue still appears during resume, namely "cache"
+>> > complaining that the non-boot CPUs should not be sleeping:
+>>
+>> That's unrelated.
+>>
+>> OK, this still leaves us with three possibilities.
+>>
+>> Can you please try to apply the device_pm.c part of the partial revert
+>> alone and see if that helps (and if not, same for the button.c and
+>> battery.c changes)?
+>
+> Indeed, the device_pm.c part of the partial revert helps on its own.
+> For completeness, applying only the chunks for button.c or battery.c
+> does not help;
 
---qdheveixqstjem2l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+That's kind of expected. :-)
 
-On Tue, May 30, 2017 at 10:17:59AM +0100, Lee Jones wrote:
-> On Wed, 24 May 2017, Mark Brown wrote:
+Anyway, I decided to revert commit eed4d47efe95 entirely as it turns
+out to be premature and causes too many problems to happen all over.
 
-> > On Wed, May 24, 2017 at 09:32:43AM +0100, Lee Jones wrote:
-
-> > > Plan is to push this through the MFD tree.
-
-> > Great, thanks.
-
-> Just taking a look at this now.  It looks like the dependency:
-
->   656211b1dfb9 mfd: Add support for DA9061
-
-> ... is now in Mainline.  Therefore it should be okay to take this
-> directly through the Regulator repo.
-
-OK, can you resend please Steve?
-
---qdheveixqstjem2l
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlk2/EYACgkQJNaLcl1U
-h9A03Af/Roh0PLgP0x8PVW2nb/wQPKt46BrQkVeMMZpI1ZkTynNtL2cnXC6+tUi2
-hkGqWxM6inmjOlIlCjTJSsNBt7qORcJfZHy8x381n2nGowpirNJ7W6EaIJpXAkCI
-rXMnYbRo4Wqi+UDbKKS/d6QBMZTLBCKyMKXcEaOznNNLFDTHY6hq7AuVwJn7zAMt
-6DMWCi23nwY1NVl6Z6kym5eEn6x4Ye4OT7zHjjm0xRfMKW4HBVgIDbCK2RYephYj
-tKcmEmWQ7FEmw+jAEzyg+4B2nG3/vokmBgsNDuX6HLmfq3kvn/UL2KossPCti8Sv
-iuUFsKSCjCmGSbu3qBt6fk7ZzA+3JQ==
-=09LB
------END PGP SIGNATURE-----
-
---qdheveixqstjem2l--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Rafael
