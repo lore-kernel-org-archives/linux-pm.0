@@ -1,50 +1,760 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/2] dt-bindings: cpcap-battery: Add binding
-Date: Wed, 7 Jun 2017 16:36:34 -0500
-Message-ID: <20170607213634.y4gpyq6kzrib4lvi@rob-hp-laptop>
-References: <20170601001921.11091-1-tony@atomide.com>
- <20170601001921.11091-2-tony@atomide.com>
- <20170601002621.GQ3730@atomide.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH RFC 1/2] thermal/cpu idle cooling: Introduce cpu idle
+ cooling driver
+Date: Wed, 7 Jun 2017 23:50:28 +0200
+Message-ID: <20170607215028.GL2345@mai>
+References: <1496653645-20283-1-git-send-email-kevin.wangtao@hisilicon.com>
+ <20170606034135.GA5103@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f51.google.com ([74.125.82.51]:36545 "EHLO
+        mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751072AbdFGVuf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2017 17:50:35 -0400
+Received: by mail-wm0-f51.google.com with SMTP id 7so126614046wmo.1
+        for <linux-pm@vger.kernel.org>; Wed, 07 Jun 2017 14:50:34 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20170601002621.GQ3730-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>, Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <20170606034135.GA5103@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tao Wang <kevin.wangtao@hisilicon.com>, rui.zhang@intel.com, edubezval@gmail.com, amit.kachhap@gmail.com, javi.merino@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sunzhaosheng@hisilicon.com, vincent.guittot@linaro.org, jean.wangtao@linaro.org
 
-On Wed, May 31, 2017 at 05:26:22PM -0700, Tony Lindgren wrote:
-> * Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org> [170531 17:23]:
-> 
-> Oh sorry, now I managed to leave out the description..
-> Updated binding patch below.
-> 
-> Regards,
-> 
-> Tony
-> 
-> 8< ---------------
-> From tony Mon Sep 17 00:00:00 2001
-> From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-> Date: Wed, 31 May 2017 17:10:13 -0700
-> Subject: [PATCH] dt-bindings: cpcap-battery: Add binding
-> 
-> Add binding for cpcap pmic battery.
-> 
-> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Cc: Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>
-> Cc: Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Signed-off-by: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-> ---
->  .../bindings/power/supply/cpcap-battery.txt        | 27 ++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
+On Tue, Jun 06, 2017 at 09:11:35AM +0530, viresh kumar wrote:
+> + Daniel
 
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Hi Viresh,
+
+thanks for the head up.
+
+Before going deeply in the review, I have a dumb question:
+
+Why isn't this mechanism implemented at the scheduler level?
+
+
+> On 05-06-17, 17:07, Tao Wang wrote:
+> > cpu idle cooling driver performs synchronized idle injection across
+> > all cpu in same cluster, offers a new method to cooling down cpu,
+> > that is similar to intel_power_clamp driver, but is basically
+> > designed for ARM platform.
+> > Each cluster has its own idle cooling device, each core has its own
+> > idle injection thread, idle injection thread use play_idle to enter
+> > idle. In order to reach deepest idle state, all cores are aligned by
+> > jiffies. the injected idle ratio can be controlled through cooling
+> > device interface.
+> > 
+> > Signed-off-by: Tao Wang <kevin.wangtao@hisilicon.com>
+> > ---
+> >  drivers/thermal/Kconfig            |   13 +
+> >  drivers/thermal/Makefile           |    3 +
+> >  drivers/thermal/cpu_idle_cooling.c |  648 ++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 664 insertions(+)
+> >  create mode 100644 drivers/thermal/cpu_idle_cooling.c
+> > 
+> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > index b5b5fac..f78e85c 100644
+> > --- a/drivers/thermal/Kconfig
+> > +++ b/drivers/thermal/Kconfig
+> > @@ -154,6 +154,19 @@ config CPU_THERMAL
+> >  
+> >  	  If you want this support, you should say Y here.
+> >  
+> > +config CPU_IDLE_THERMAL
+> > +	tristate "generic cpu idle cooling support"
+> > +	depends on CPU_FREQ
+> > +	help
+> > +	  This implements the generic cpu cooling mechanism through idle
+> > +	  injection.
+> > +
+> > +	  This will throttle cpu by injecting specified idle time in
+> > +	  a fixed cycle. All cpu in same cluster will enter idle synchronously
+> > +	  to reach deepest idle state when injecting idle.
+> > +
+> > +	  If you want this support, you should say Y here.
+> > +
+> >  config CLOCK_THERMAL
+> >  	bool "Generic clock cooling support"
+> >  	depends on COMMON_CLK
+> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> > index 094d703..a4db66e 100644
+> > --- a/drivers/thermal/Makefile
+> > +++ b/drivers/thermal/Makefile
+> > @@ -26,6 +26,9 @@ thermal_sys-$(CONFIG_CLOCK_THERMAL)	+= clock_cooling.o
+> >  # devfreq cooling
+> >  thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
+> >  
+> > +# cpu idle cooling
+> > +obj-$(CONFIG_CPU_IDLE_THERMAL)	+= cpu_idle_cooling.o
+> > +
+> >  # platform thermal drivers
+> >  obj-y				+= broadcom/
+> >  obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
+> > diff --git a/drivers/thermal/cpu_idle_cooling.c b/drivers/thermal/cpu_idle_cooling.c
+> > new file mode 100644
+> > index 0000000..89a15c5
+> > --- /dev/null
+> > +++ b/drivers/thermal/cpu_idle_cooling.c
+> > @@ -0,0 +1,648 @@
+> > +/*
+> > + *  linux/drivers/thermal/cpu_idle_cooling.c
+> > + *
+> > + *  Copyright (C) 2017  Tao Wang <kevin.wangtao@hisilicon.com>
+> > + *
+> > + *  This program is free software; you can redistribute it and/or modify
+> > + *  it under the terms of the GNU General Public License as published by
+> > + *  the Free Software Foundation; version 2 of the License.
+> > + *
+> > + *  This program is distributed in the hope that it will be useful,
+> > + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + *  GNU General Public License for more details.
+> > + *
+> > + *  You should have received a copy of the GNU General Public License
+> > + *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+> > + */
+> > +
+> > +#include <linux/module.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/kernel_stat.h>
+> > +#include <linux/delay.h>
+> > +#include <linux/kthread.h>
+> > +#include <linux/freezer.h>
+> > +#include <linux/cpu.h>
+> > +#include <linux/topology.h>
+> > +#include <linux/cpufreq.h>
+> > +#include <linux/cpumask.h>
+> > +#include <linux/cpuidle.h>
+> > +#include <linux/thermal.h>
+> > +#include <linux/sched.h>
+> > +#include <uapi/linux/sched/types.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/tick.h>
+> > +#include <linux/wait.h>
+> > +#include <linux/sched/rt.h>
+> > +
+> > +#define MAX_TARGET_RATIO		(50U)
+> > +
+> > +#define DEFAULT_WINDOW_SIZE		(1)
+> > +#define DEFAULT_DURATION_JIFFIES	(20)
+> > +
+> > +struct cpu_idle_cooling_device {
+> > +	int id;
+> > +	struct thermal_cooling_device *cooling_dev;
+> > +	wait_queue_head_t wait_queue;
+> > +
+> > +	/* The cpu assigned to collect stat and update
+> > +	 * control parameters. default to BSP but BSP
+> > +	 * can be offlined.
+> > +	 */
+> > +	unsigned long control_cpu;
+> > +
+> > +	unsigned int set_target_ratio;
+> > +	unsigned int current_ratio;
+> > +	unsigned int control_ratio;
+> > +	unsigned int duration;
+> > +	unsigned int window_size;
+> > +
+> > +	cpumask_var_t related_cpus;
+> > +	cpumask_var_t injected_cpus;
+> > +	struct list_head node;
+> > +	bool should_skip;
+> > +	bool clamping;
+> > +};
+> > +
+> > +static LIST_HEAD(cpu_idle_cooling_dev_list);
+> > +static DEFINE_PER_CPU(struct task_struct *, idle_injection_thread_ptr);
+> > +static DEFINE_MUTEX(cpu_idle_cooling_lock);
+> > +
+> > +unsigned long idle_time[NR_CPUS] = {0};
+> > +unsigned long time_stamp[NR_CPUS] = {0};
+> > +static enum cpuhp_state hp_state;
+> > +
+> > +#define STORE_PARAM(param, min, max)			\
+> > +static ssize_t store_##param(struct device *dev,	\
+> > +	struct device_attribute *attr,			\
+> > +	const char *buf, size_t count)			\
+> > +{									\
+> > +	unsigned int new_value;						\
+> > +	struct thermal_cooling_device *cdev;				\
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;		\
+> > +									\
+> > +	if (dev == NULL || attr == NULL)				\
+> > +		return 0;						\
+> > +									\
+> > +	if (kstrtouint(buf, 10, &new_value))				\
+> > +		return -EINVAL;						\
+> > +									\
+> > +	if (new_value > max || new_value < min) {			\
+> > +		pr_err("Out of range %u, between %d-%d\n",		\
+> > +			new_value, min, max);				\
+> > +		return -EINVAL;						\
+> > +	}								\
+> > +									\
+> > +	cdev = container_of(dev, struct thermal_cooling_device, device);\
+> > +	idle_cooling_dev = cdev->devdata;				\
+> > +	idle_cooling_dev->param = new_value;				\
+> > +									\
+> > +	/* make new value visible to other cpus */			\
+> > +	smp_mb();							\
+> > +									\
+> > +	return count;							\
+> > +}
+> > +
+> > +STORE_PARAM(duration, 10, 500);
+> > +STORE_PARAM(window_size, 1, 10);
+> > +
+> > +#define SHOW_PARAM(param)				\
+> > +static ssize_t show_##param(struct device *dev,		\
+> > +	struct device_attribute *attr, char *buf)	\
+> > +{									\
+> > +	struct thermal_cooling_device *cdev;				\
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;		\
+> > +									\
+> > +	if (dev == NULL || attr == NULL)				\
+> > +		return 0;						\
+> > +									\
+> > +	cdev = container_of(dev, struct thermal_cooling_device, device);\
+> > +	idle_cooling_dev = cdev->devdata;				\
+> > +									\
+> > +	return snprintf(buf, 12UL, "%d\n",				\
+> > +					idle_cooling_dev->param);	\
+> > +}
+> > +
+> > +SHOW_PARAM(duration);
+> > +SHOW_PARAM(window_size);
+> > +
+> > +static DEVICE_ATTR(duration, 0644, show_duration, store_duration);
+> > +static DEVICE_ATTR(window_size, 0644, show_window_size, store_window_size);
+> > +
+> > +static struct cpu_idle_cooling_device *
+> > +get_cpu_idle_cooling_dev(unsigned long cpu)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;
+> > +
+> > +	list_for_each_entry(idle_cooling_dev,
+> > +		&cpu_idle_cooling_dev_list, node) {
+> > +		if (cpumask_test_cpu(cpu, idle_cooling_dev->related_cpus))
+> > +			return idle_cooling_dev;
+> > +	}
+> > +
+> > +	return NULL;
+> > +}
+> > +
+> > +#define K_P		10
+> > +#define MAX_COMP	10
+> > +static unsigned int get_compensation(unsigned int current_ratio,
+> > +		unsigned int target_ratio, unsigned int control_ratio)
+> > +{
+> > +	unsigned int comp;
+> > +
+> > +	comp = abs(current_ratio - target_ratio) * K_P / 10;
+> > +	if (comp > MAX_COMP)
+> > +		comp = MAX_COMP;
+> > +
+> > +	if (current_ratio > target_ratio) {
+> > +		if (control_ratio > comp)
+> > +			comp = control_ratio - comp;
+> > +		else
+> > +			comp = 1;
+> > +	} else {
+> > +		if (control_ratio + comp < MAX_TARGET_RATIO)
+> > +			comp = control_ratio + comp;
+> > +		else
+> > +			comp = MAX_TARGET_RATIO;
+> > +
+> > +		if (comp > (target_ratio * 6 / 5))
+> > +			comp = target_ratio * 6 / 5;
+> > +	}
+> > +
+> > +	return comp;
+> > +}
+> > +
+> > +static void update_stats(struct cpu_idle_cooling_device *idle_cooling_dev)
+> > +{
+> > +	unsigned long cpu;
+> > +	u64 now, now_idle, delta_time, delta_idle;
+> > +	u64 min_idle_ratio = 100;
+> > +	u64 idle_ratio = 0;
+> > +
+> > +	for_each_cpu(cpu, idle_cooling_dev->related_cpus) {
+> > +		now_idle = get_cpu_idle_time(cpu, &now, 0);
+> > +		delta_idle = now_idle - idle_time[cpu];
+> > +		delta_time = now - time_stamp[cpu];
+> > +		idle_time[cpu] = now_idle;
+> > +		time_stamp[cpu] = now;
+> > +
+> > +		if (delta_idle >= delta_time || !cpu_online(cpu))
+> > +			now_idle = 100;
+> > +		else if (delta_time)
+> > +			now_idle = div64_u64(100 * delta_idle, delta_time);
+> > +		else
+> > +			return;
+> > +
+> > +		if (now_idle < min_idle_ratio)
+> > +			min_idle_ratio = now_idle;
+> > +
+> > +		idle_ratio += now_idle;
+> > +	}
+> > +
+> > +	idle_ratio /= cpumask_weight(idle_cooling_dev->related_cpus);
+> > +	if (idle_ratio > MAX_TARGET_RATIO)
+> > +		idle_ratio = min_idle_ratio;
+> > +
+> > +	if (idle_cooling_dev->should_skip)
+> > +		idle_ratio = (idle_cooling_dev->current_ratio + idle_ratio) / 2;
+> > +
+> > +	idle_cooling_dev->current_ratio = (unsigned int)idle_ratio;
+> > +	idle_cooling_dev->control_ratio = get_compensation(idle_ratio,
+> > +				idle_cooling_dev->set_target_ratio,
+> > +				idle_cooling_dev->control_ratio);
+> > +	idle_cooling_dev->should_skip =
+> > +			(idle_ratio > (2 * idle_cooling_dev->set_target_ratio));
+> > +	/* make new control_ratio and should skip flag visible to other cpus */
+> > +	smp_mb();
+> > +}
+> > +
+> > +static void inject_idle_fn(struct cpu_idle_cooling_device *idle_cooling_dev)
+> > +{
+> > +	long sleeptime, guard;
+> > +	unsigned int interval_ms; /* jiffies to sleep for each attempt */
+> > +	unsigned long target_jiffies;
+> > +	unsigned int duration_ms = idle_cooling_dev->duration;
+> > +	unsigned long duration_jiffies = msecs_to_jiffies(duration_ms);
+> > +
+> > +	guard = DIV_ROUND_UP(duration_jiffies * (90 - MAX_TARGET_RATIO), 100);
+> > +
+> > +	/* align idle time */
+> > +	target_jiffies = roundup(jiffies, duration_jiffies);
+> > +	sleeptime = target_jiffies - jiffies;
+> > +	if (sleeptime < guard)
+> > +		sleeptime += duration_jiffies;
+> > +
+> > +	if (sleeptime > 0)
+> > +		schedule_timeout_interruptible(sleeptime);
+> > +
+> > +	interval_ms = duration_ms * idle_cooling_dev->control_ratio / 100;
+> > +
+> > +	if (idle_cooling_dev->should_skip)
+> > +		return;
+> > +
+> > +	if (interval_ms)
+> > +		play_idle(interval_ms);
+> > +}
+> > +
+> > +static int idle_injection_thread(void *arg)
+> > +{
+> > +	unsigned long cpunr = (unsigned long)arg;
+> > +	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO/2 };
+> > +	unsigned int count = 0;
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;
+> > +
+> > +	set_freezable();
+> > +
+> > +	sched_setscheduler(current, SCHED_FIFO, &param);
+> > +
+> > +	mutex_lock(&cpu_idle_cooling_lock);
+> > +	idle_cooling_dev = get_cpu_idle_cooling_dev(cpunr);
+> > +	mutex_unlock(&cpu_idle_cooling_lock);
+> > +
+> > +	while (!kthread_should_stop()) {
+> > +		wait_event_interruptible(idle_cooling_dev->wait_queue,
+> > +			(idle_cooling_dev->clamping && cpu_online(cpunr)) ||
+> > +			kthread_should_stop());
+> > +
+> > +		if (kthread_should_stop())
+> > +			break;
+> > +
+> > +		/* rebind thread to cpu */
+> > +		if (set_cpus_allowed_ptr(current, cpumask_of(cpunr)))
+> > +			continue;
+> > +
+> > +		try_to_freeze();
+> > +
+> > +		while (idle_cooling_dev->clamping &&
+> > +			cpu_online(cpunr)) {
+> > +			try_to_freeze();
+> > +
+> > +			count++;
+> > +			/*
+> > +			 * only elected controlling cpu can collect stats
+> > +			 * and update control parameters.
+> > +			 */
+> > +			if (cpunr == idle_cooling_dev->control_cpu
+> > +				&& !(count % idle_cooling_dev->window_size))
+> > +				update_stats(idle_cooling_dev);
+> > +
+> > +			inject_idle_fn(idle_cooling_dev);
+> > +		}
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int create_idle_thread(struct cpu_idle_cooling_device *idle_cooling_dev)
+> > +{
+> > +	unsigned long cpu;
+> > +	struct task_struct *thread;
+> > +
+> > +	init_waitqueue_head(&idle_cooling_dev->wait_queue);
+> > +
+> > +	/* start one thread per online cpu */
+> > +	for_each_cpu(cpu, idle_cooling_dev->related_cpus) {
+> > +		thread = kthread_create_on_node(idle_injection_thread,
+> > +						(void *) cpu,
+> > +						cpu_to_node(cpu),
+> > +						"kidle_inject/%lu", cpu);
+> > +		/* bind to cpu here */
+> > +		if (likely(!IS_ERR(thread))) {
+> > +			cpumask_set_cpu(cpu, idle_cooling_dev->injected_cpus);
+> > +			kthread_bind(thread, cpu);
+> > +			wake_up_process(thread);
+> > +			per_cpu(idle_injection_thread_ptr, cpu) = thread;
+> > +		} else {
+> > +			return -ENOMEM;
+> > +		}
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static void stop_idle_thread(struct cpu_idle_cooling_device *idle_cooling_dev)
+> > +{
+> > +	unsigned long cpu;
+> > +	struct task_struct **percpu_thread;
+> > +
+> > +	idle_cooling_dev->clamping = false;
+> > +	/*
+> > +	 * make clamping visible to other cpus and give per cpu threads
+> > +	 * sometime to exit, or gets killed later.
+> > +	 */
+> > +	smp_mb();
+> > +	msleep(idle_cooling_dev->duration);
+> > +	for_each_cpu(cpu, idle_cooling_dev->injected_cpus) {
+> > +		pr_debug("idle inject thread for cpu %lu alive, kill\n", cpu);
+> > +		percpu_thread = per_cpu_ptr(&idle_injection_thread_ptr, cpu);
+> > +		if (!IS_ERR_OR_NULL(*percpu_thread)) {
+> > +			kthread_stop(*percpu_thread);
+> > +			*percpu_thread = NULL;
+> > +		}
+> > +		cpumask_clear_cpu(cpu, idle_cooling_dev->injected_cpus);
+> > +	}
+> > +}
+> > +
+> > +static int idle_injection_cpu_online(unsigned int cpu)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;
+> > +
+> > +	idle_cooling_dev = get_cpu_idle_cooling_dev(cpu);
+> > +	if (idle_cooling_dev) {
+> > +		/* prefer BSP as controlling CPU */
+> > +		if (cpu == cpumask_first(idle_cooling_dev->injected_cpus)
+> > +			|| !cpu_online(idle_cooling_dev->control_cpu)) {
+> > +			idle_cooling_dev->control_cpu = cpu;
+> > +			/* make new control_cpu visible to other cpus */
+> > +			smp_mb();
+> > +		}
+> > +		wake_up_interruptible(&idle_cooling_dev->wait_queue);
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int idle_injection_cpu_predown(unsigned int cpu)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;
+> > +
+> > +	idle_cooling_dev = get_cpu_idle_cooling_dev(cpu);
+> > +	if (idle_cooling_dev) {
+> > +		if (cpu == idle_cooling_dev->control_cpu) {
+> > +			cpu = cpumask_next_and(-1,
+> > +				idle_cooling_dev->injected_cpus,
+> > +				cpu_online_mask);
+> > +
+> > +			if (cpu < nr_cpu_ids)
+> > +				idle_cooling_dev->control_cpu = cpu;
+> > +			/* make new control_cpu visible to other cpus */
+> > +			smp_mb();
+> > +		}
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int idle_get_max_state(struct thermal_cooling_device *cdev,
+> > +				 unsigned long *state)
+> > +{
+> > +	*state = MAX_TARGET_RATIO;
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int idle_get_cur_state(struct thermal_cooling_device *cdev,
+> > +				 unsigned long *state)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev = cdev->devdata;
+> > +
+> > +	if (true == idle_cooling_dev->clamping)
+> > +		*state = (unsigned long)idle_cooling_dev->current_ratio;
+> > +	else
+> > +		*state = 0; /* indicates invalid state */
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int idle_set_cur_state(struct thermal_cooling_device *cdev,
+> > +				 unsigned long new_target_ratio)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev = cdev->devdata;
+> > +	int ret = 0;
+> > +
+> > +	mutex_lock(&cdev->lock);
+> > +
+> > +	new_target_ratio = clamp(new_target_ratio, 0UL,
+> > +				(unsigned long) MAX_TARGET_RATIO);
+> > +	if (idle_cooling_dev->set_target_ratio == 0
+> > +		&& new_target_ratio > 0) {
+> > +		idle_cooling_dev->set_target_ratio =
+> > +			(unsigned int) new_target_ratio;
+> > +		idle_cooling_dev->control_ratio =
+> > +			idle_cooling_dev->set_target_ratio;
+> > +		idle_cooling_dev->current_ratio =
+> > +			idle_cooling_dev->set_target_ratio;
+> > +		idle_cooling_dev->clamping = true;
+> > +		wake_up_interruptible(&idle_cooling_dev->wait_queue);
+> > +	} else if (idle_cooling_dev->set_target_ratio > 0) {
+> > +		if (new_target_ratio == 0) {
+> > +			idle_cooling_dev->set_target_ratio = 0;
+> > +			idle_cooling_dev->clamping = false;
+> > +			/* make clamping visible to other cpus */
+> > +			smp_mb();
+> > +		} else	/* adjust currently running */ {
+> > +			idle_cooling_dev->set_target_ratio =
+> > +				(unsigned int) new_target_ratio;
+> > +			/* make new set_target_ratio visible to other cpus */
+> > +			smp_mb();
+> > +		}
+> > +	}
+> > +
+> > +	mutex_unlock(&cdev->lock);
+> > +
+> > +	return ret;
+> > +}
+> > +
+> > +static struct thermal_cooling_device_ops cpu_idle_injection_cooling_ops = {
+> > +	.get_max_state = idle_get_max_state,
+> > +	.get_cur_state = idle_get_cur_state,
+> > +	.set_cur_state = idle_set_cur_state,
+> > +};
+> > +
+> > +unsigned long get_max_idle_state(const struct cpumask *clip_cpus)
+> > +{
+> > +	return MAX_TARGET_RATIO;
+> > +}
+> > +EXPORT_SYMBOL_GPL(get_max_idle_state);
+> > +
+> > +void set_idle_state(const struct cpumask *clip_cpus, unsigned long idle_ratio)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;
+> > +
+> > +	mutex_lock(&cpu_idle_cooling_lock);
+> > +	list_for_each_entry(idle_cooling_dev,
+> > +		&cpu_idle_cooling_dev_list, node) {
+> > +		if (cpumask_subset(idle_cooling_dev->related_cpus, clip_cpus))
+> > +			idle_set_cur_state(idle_cooling_dev->cooling_dev,
+> > +					idle_ratio);
+> > +	}
+> > +	mutex_unlock(&cpu_idle_cooling_lock);
+> > +}
+> > +EXPORT_SYMBOL_GPL(set_idle_state);
+> > +
+> > +struct thermal_cooling_device * __init
+> > +cpu_idle_cooling_register(const struct cpumask *clip_cpus)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;
+> > +	struct thermal_cooling_device *ret;
+> > +	unsigned long cpu;
+> > +	char dev_name[THERMAL_NAME_LENGTH];
+> > +
+> > +	if (cpumask_empty(clip_cpus))
+> > +		return ERR_PTR(-ENOMEM);
+> > +
+> > +	mutex_lock(&cpu_idle_cooling_lock);
+> > +	get_online_cpus();
+> > +	list_for_each_entry(idle_cooling_dev,
+> > +		&cpu_idle_cooling_dev_list, node) {
+> > +		if (cpumask_intersects(idle_cooling_dev->related_cpus,
+> > +			clip_cpus)) {
+> > +			ret = ERR_PTR(-EINVAL);
+> > +			goto exit_unlock;
+> > +		}
+> > +	}
+> > +
+> > +	idle_cooling_dev = kzalloc(sizeof(*idle_cooling_dev), GFP_KERNEL);
+> > +	if (!idle_cooling_dev) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_unlock;
+> > +	}
+> > +
+> > +	if (!zalloc_cpumask_var(&idle_cooling_dev->related_cpus, GFP_KERNEL)) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_free_dev;
+> > +	}
+> > +
+> > +	if (!zalloc_cpumask_var(&idle_cooling_dev->injected_cpus, GFP_KERNEL)) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_free_related_cpus;
+> > +	}
+> > +
+> > +	cpumask_copy(idle_cooling_dev->related_cpus, clip_cpus);
+> > +	cpu = cpumask_first(clip_cpus);
+> > +	idle_cooling_dev->control_cpu = cpu;
+> > +	idle_cooling_dev->id = topology_physical_package_id(cpu);
+> > +	idle_cooling_dev->window_size = DEFAULT_WINDOW_SIZE;
+> > +	idle_cooling_dev->duration = jiffies_to_msecs(DEFAULT_DURATION_JIFFIES);
+> > +
+> > +	if (create_idle_thread(idle_cooling_dev)) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_free_injected_cpus;
+> > +	}
+> > +
+> > +	snprintf(dev_name, sizeof(dev_name), "thermal-cpuidle-%d",
+> > +		 idle_cooling_dev->id);
+> > +	ret = thermal_cooling_device_register(dev_name,
+> > +					idle_cooling_dev,
+> > +					&cpu_idle_injection_cooling_ops);
+> > +	if (IS_ERR(ret))
+> > +		goto exit_stop_thread;
+> > +
+> > +	idle_cooling_dev->cooling_dev = ret;
+> > +
+> > +	if (device_create_file(&idle_cooling_dev->cooling_dev->device,
+> > +		&dev_attr_duration)) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_unregister_cdev;
+> > +	}
+> > +
+> > +	if (device_create_file(&idle_cooling_dev->cooling_dev->device,
+> > +		&dev_attr_window_size)) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_remove_duration_attr;
+> > +	}
+> > +
+> > +	list_add(&idle_cooling_dev->node, &cpu_idle_cooling_dev_list);
+> > +
+> > +	goto exit_unlock;
+> > +
+> > +exit_remove_duration_attr:
+> > +	device_remove_file(&idle_cooling_dev->cooling_dev->device,
+> > +			&dev_attr_duration);
+> > +exit_unregister_cdev:
+> > +	thermal_cooling_device_unregister(idle_cooling_dev->cooling_dev);
+> > +exit_stop_thread:
+> > +	stop_idle_thread(idle_cooling_dev);
+> > +exit_free_injected_cpus:
+> > +	free_cpumask_var(idle_cooling_dev->injected_cpus);
+> > +exit_free_related_cpus:
+> > +	free_cpumask_var(idle_cooling_dev->related_cpus);
+> > +exit_free_dev:
+> > +	kfree(idle_cooling_dev);
+> > +exit_unlock:
+> > +	put_online_cpus();
+> > +	mutex_unlock(&cpu_idle_cooling_lock);
+> > +	return ret;
+> > +}
+> > +
+> > +void cpu_idle_cooling_unregister(struct thermal_cooling_device *cdev)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;
+> > +
+> > +	if (IS_ERR_OR_NULL(cdev))
+> > +		return;
+> > +
+> > +	idle_cooling_dev = cdev->devdata;
+> > +
+> > +	mutex_lock(&cpu_idle_cooling_lock);
+> > +	get_online_cpus();
+> > +	list_del(&idle_cooling_dev->node);
+> > +	put_online_cpus();
+> > +	mutex_unlock(&cpu_idle_cooling_lock);
+> > +
+> > +	device_remove_file(&cdev->device, &dev_attr_window_size);
+> > +	device_remove_file(&cdev->device, &dev_attr_duration);
+> > +	thermal_cooling_device_unregister(idle_cooling_dev->cooling_dev);
+> > +
+> > +	stop_idle_thread(idle_cooling_dev);
+> > +	free_cpumask_var(idle_cooling_dev->injected_cpus);
+> > +	free_cpumask_var(idle_cooling_dev->related_cpus);
+> > +	kfree(idle_cooling_dev);
+> > +}
+> > +
+> > +static void __cpu_idle_cooling_exit(void)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;
+> > +
+> > +	while (!list_empty(&cpu_idle_cooling_dev_list)) {
+> > +		idle_cooling_dev = list_first_entry(&cpu_idle_cooling_dev_list,
+> > +				struct cpu_idle_cooling_device, node);
+> > +		cpu_idle_cooling_unregister(idle_cooling_dev->cooling_dev);
+> > +	}
+> > +
+> > +	if (hp_state > 0)
+> > +		cpuhp_remove_state_nocalls(hp_state);
+> > +}
+> > +
+> > +static int __init cpu_idle_cooling_init(void)
+> > +{
+> > +	struct thermal_cooling_device *ret;
+> > +	cpumask_t rest_cpu_mask = CPU_MASK_ALL;
+> > +	const struct cpumask *register_cpu_mask;
+> > +
+> > +	hp_state = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
+> > +			"thermal/cpu_idle_cooling:online",
+> > +			idle_injection_cpu_online,
+> > +			idle_injection_cpu_predown);
+> > +	if (hp_state < 0)
+> > +		return hp_state;
+> > +
+> > +	do {
+> > +		register_cpu_mask =
+> > +			topology_core_cpumask(cpumask_first(&rest_cpu_mask));
+> > +
+> > +		if (cpumask_empty(register_cpu_mask))
+> > +			break;
+> > +
+> > +		ret = cpu_idle_cooling_register(register_cpu_mask);
+> > +		if (IS_ERR(ret)) {
+> > +			__cpu_idle_cooling_exit();
+> > +			return -ENOMEM;
+> > +		}
+> > +	} while (cpumask_andnot(&rest_cpu_mask,
+> > +				&rest_cpu_mask,
+> > +				register_cpu_mask));
+> > +
+> > +	return 0;
+> > +}
+> > +module_init(cpu_idle_cooling_init);
+> > +
+> > +static void __exit cpu_idle_cooling_exit(void)
+> > +{
+> > +	__cpu_idle_cooling_exit();
+> > +}
+> > +module_exit(cpu_idle_cooling_exit);
+> > +
+> > +MODULE_LICENSE("GPL v2");
+> > +MODULE_AUTHOR("Tao Wang <kevin.wangtao@hisilicon.com>");
+> > +MODULE_DESCRIPTION("CPU Idle Cooling Driver for ARM Platform");
+> > -- 
+> > 1.7.9.5
+> 
+> -- 
+> viresh
+
+-- 
+
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
