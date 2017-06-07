@@ -1,59 +1,55 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
- driver
-Date: Wed, 7 Jun 2017 16:42:06 +0100
-Message-ID: <20170607154206.3mcozi3fmue3dsuw@sirena.org.uk>
-References: <cover.1496823229.git.stwiss.opensource@diasemi.com>
- <cb544b5c855ded286f2d0c824eb864630495c984.1496823229.git.stwiss.opensource@diasemi.com>
- <20170607094159.uua5zxmeq2z4zrbu@sirena.org.uk>
- <6ED8E3B22081A4459DAC7699F3695FB7018CD927CE@SW-EX-MBX02.diasemi.com>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [RFC] sched: fair: Don't update CPU frequency too frequently
+Date: Wed, 7 Jun 2017 16:43:52 +0100
+Message-ID: <20170607154351.GA2551@e105550-lin.cambridge.arm.com>
+References: <b3a96d619a4cad34f4243a173a42915c41059669.1496316723.git.viresh.kumar@linaro.org>
+ <20170601122224.c324h4t7y3i4wr6e@hirez.programming.kicks-ass.net>
+ <20170607120655.GB11126@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="6zbzl4qxu3yjdd5b"
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <6ED8E3B22081A4459DAC7699F3695FB7018CD927CE@SW-EX-MBX02.diasemi.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Steve Twiss <stwiss.opensource@diasemi.com>
-Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
-List-Id: linux-pm@vger.kernel.org
-
-
---6zbzl4qxu3yjdd5b
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:34426 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750831AbdFGPoA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Jun 2017 11:44:00 -0400
 Content-Disposition: inline
+In-Reply-To: <20170607120655.GB11126@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, Juri Lelli <Juri.Lelli@arm.com>, Dietmar.Eggemann@arm.com, patrick.bellasi@arm.com
 
-On Wed, Jun 07, 2017 at 02:09:56PM +0000, Steve Twiss wrote:
-> On 07 June 2017 10:42, Mark Brown wrote:
+On Wed, Jun 07, 2017 at 05:36:55PM +0530, Viresh Kumar wrote:
+> + Patrick,
+> 
+> On 01-06-17, 14:22, Peter Zijlstra wrote:
+> > On Thu, Jun 01, 2017 at 05:04:27PM +0530, Viresh Kumar wrote:
+> > > This patch relocates the call to utilization hook from
+> > > update_cfs_rq_load_avg() to task_tick_fair().
+> > 
+> > That's not right. Consider hardware where 'setting' the DVFS is a
+> > 'cheap' MSR write, doing that once every 10ms (HZ=100) is absurd.
+> 
+> Yeah, that may be too much for such a platforms. Actually we (/me & Vincent)
+> were worried about the current location of the utilization update hooks and
+> believed that they are getting called way too often. But yeah, this patch
+> optimized it way too much.
+> 
+> One of the goals of this patch was to avoid doing small OPP updates from
+> update_load_avg() which can potentially block significant utilization changes
+> (and hence big OPP changes) while a task is attached or detached, etc.
 
-> > I'm missing the other patches in this series and the cover letter, what
-> > are the dependencies here?
+To me that sounds like you want to apply a more clever filter to the
+utilization updates than a simple rate limiter as Peter suggests below.
+IMHO, it would be better to feed schedutil with all the available
+information and improve the filtering policy there instead of trying to
+hack the policy tweaking the input data.
 
-> My apologies Mark. I didn't re-send the cover letter because this regulator
-> patch is the last one and I assumed it would not add anything.
-> Am I confusing you here by not renaming the patch and leaving its subject
-> as [PATCH V7 5/7]?
+> > We spoke about this problem in Pisa, the proposed solution was having
+> > each driver provide a cost metric and the generic code doing a max
+> > filter over the window constructed from that cost metric.
 
-Yes, you are confusing things.  You're missing the point of numbering
-patches in a series, it's so that when working with a set of patches
-that have been posted pople know what order to apply them in.  The
-numbering only means anything in a given posting of the series, if
-something is resent it doesn't matter if it was posted before the
-numbering should reflect what's being posted at the current time.
-
---6zbzl4qxu3yjdd5b
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlk4Hs0ACgkQJNaLcl1U
-h9B5bwf/ZvvJ7ZHtR06N+uGqYWwXGhMkm/l4SADXZQup2IxJr/zOcGaV1a2Q3dHj
-n/9/wX5Cbmp3aw79Hz/3hhWbTM17gETkVevozvWv5tWNFdt7JFosEeP62qHe+qYs
-KvSxRBZUH4WxIfgJ6/UStPFRm0pvfBciavdREAjh0p6ff3Hw8BZr8ZLc5Ze8vbWY
-J3vTaRXCGSeEN6alblId9rqvcjrD4qXBwEOR5Dpt29+KSlz/ZPpmKnxW9/XuHmIB
-RapDAnPLI1+pev8UwmTXKeDOgDffOLbVm3aUF3J7fmjJtuwDwX6NY/wfF24NyvCk
-oklcZx1xq55c0vrVPb0KVDgeu0KfZQ==
-=wYEq
------END PGP SIGNATURE-----
-
---6zbzl4qxu3yjdd5b--
+Maybe it is possible to somehow let the rate at which we allow OPP
+changes depend on the size of the 'error' delta between the current OPP
+and what we need. So radical changes causes OPP changes immediately, and
+small corrections have to wait longer?
