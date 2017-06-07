@@ -1,67 +1,50 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 0/2] power: reset: Couple of POWER_RESET_BRCMSTB Kconfig
- changes
-Date: Wed, 7 Jun 2017 22:52:25 +0200
-Message-ID: <20170607205225.gxurep7xjtqg7n7a@earth>
-References: <20170531203946.32644-1-f.fainelli@gmail.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/2] dt-bindings: cpcap-battery: Add binding
+Date: Wed, 7 Jun 2017 16:36:34 -0500
+Message-ID: <20170607213634.y4gpyq6kzrib4lvi@rob-hp-laptop>
+References: <20170601001921.11091-1-tony@atomide.com>
+ <20170601001921.11091-2-tony@atomide.com>
+ <20170601002621.GQ3730@atomide.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="phv3tulylccyllwf"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170531203946.32644-1-f.fainelli@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com
+In-Reply-To: <20170601002621.GQ3730-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>, Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, May 31, 2017 at 05:26:22PM -0700, Tony Lindgren wrote:
+> * Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org> [170531 17:23]:
+> 
+> Oh sorry, now I managed to leave out the description..
+> Updated binding patch below.
+> 
+> Regards,
+> 
+> Tony
+> 
+> 8< ---------------
+> From tony Mon Sep 17 00:00:00 2001
+> From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+> Date: Wed, 31 May 2017 17:10:13 -0700
+> Subject: [PATCH] dt-bindings: cpcap-battery: Add binding
+> 
+> Add binding for cpcap pmic battery.
+> 
+> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Cc: Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>
+> Cc: Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Signed-off-by: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+> ---
+>  .../bindings/power/supply/cpcap-battery.txt        | 27 ++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
 
---phv3tulylccyllwf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Florian,
-
-On Wed, May 31, 2017 at 01:39:44PM -0700, Florian Fainelli wrote:
-> Here are two small tweaks to the POWER_RESET_BRCMSTB Kconfig selection to=
- allow
-> the driver on ARM64 and make it default to BMIPS_GENERIC on MIPS platform=
-s.
->=20
-> Based on your "for-next" branch.
-
-Thanks, both queued.
-
--- Sebastian
-
-> Florian Fainelli (2):
->   power: reset: Allow selecting POWER_RESET_BRCMSTB on ARM64
->   power: reset: Default POWER_RESET_BRCMSTB to BMIPS_GENERIC
->=20
->  drivers/power/reset/Kconfig | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-
--- Sebastian
-
---phv3tulylccyllwf
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlk4Z4kACgkQ2O7X88g7
-+poTXw/+P0ItCyFfnKR0mfMQrvC40B1cCbMq0pC5l19gKLAcxeYTq+zvmqAWWNxn
-hUGOUFlYqPGSZ+hgR8hreBJds3VDHEetAfXPaKFbqe3AhcwHCgRLh/NfmK/6rHlS
-zr/qcyujGW6MrobDUlLI8D6d+mhSH/HwGrK9B++AowVM7XG2wzoti6Pjd0s2mlpT
-V/x1azyt/7yvZTv+9pPUii2mLjoYfujqmu+Cb++8f8nULNy7J5OHI1R+DiCzTq39
-fOhIjk22+blgX+i9tGFf8A9orDlIcnOkwVK4SaylRlPhhe/5OPaHQO15NFideXs5
-m+/WXadanqqBACdO4zWr4JeO3mkaPhMI0eEaoT5PQQ/p/e3SaHe7K0LJ+MrDhDVV
-nUYQ+/H38wf+Mmvmy50maE2LVr2sN3zscw4OIEzY49c8bfL/3XNjR378NJJzMIeP
-2qx3sOZdwZo+VHQpWCZj+x727hTG+DUvciRw/eN4thiM81WjX3gT1ybi7tw+Cg+S
-M6l0JxgsArEPR/DfL9tA+VxUyMZAX/ev9BIdStHqaj6CAUsHqQnmNq/qjALnuvF6
-cOHmpYMm38BG+BoB4/c7vUf9NNOo8m9UShNnkKQxhKdeCqgTvN5Cg8+trsoK6Rev
-IybfjFsEyoqq+xpn7QRYuoyaYr7XTl2YNqnehAZyguyomMRlzA4=
-=YyGi
------END PGP SIGNATURE-----
-
---phv3tulylccyllwf--
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
