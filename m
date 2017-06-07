@@ -1,45 +1,32 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: [PATCH 0/2] power: reset: Couple of POWER_RESET_BRCMSTB Kconfig
- changes
-Date: Wed, 7 Jun 2017 09:59:19 -0700
-Message-ID: <99b73965-f64b-7f92-6ee1-eb8fbb711f85@gmail.com>
-References: <20170531203946.32644-1-f.fainelli@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f193.google.com ([209.85.128.193]:34079 "EHLO
-        mail-wr0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751260AbdFGQ7Z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2017 12:59:25 -0400
-In-Reply-To: <20170531203946.32644-1-f.fainelli@gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH] devfreq: exynos-ppmu: Staticize event list
+Date: Wed,  7 Jun 2017 20:12:28 +0200
+Message-ID: <20170607181228.32102-1-krzk@kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, sre@kernel.org
-Cc: linux-pm@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com
 
-On 05/31/2017 01:39 PM, Florian Fainelli wrote:
-> Hi Sebastian,
-> 
-> Here are two small tweaks to the POWER_RESET_BRCMSTB Kconfig selection to allow
-> the driver on ARM64 and make it default to BMIPS_GENERIC on MIPS platforms.
-> 
-> Based on your "for-next" branch.
+The ppmu_events array is accessed only in this compilation unit so it
+can be made static.
 
-Sebastian, are these changes okay with you?
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ drivers/devfreq/event/exynos-ppmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> 
-> Thanks
-> 
-> Florian Fainelli (2):
->   power: reset: Allow selecting POWER_RESET_BRCMSTB on ARM64
->   power: reset: Default POWER_RESET_BRCMSTB to BMIPS_GENERIC
-> 
->  drivers/power/reset/Kconfig | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-
-
+diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+index 9b7350935b73..c68f3b5a10b5 100644
+--- a/drivers/devfreq/event/exynos-ppmu.c
++++ b/drivers/devfreq/event/exynos-ppmu.c
+@@ -44,7 +44,7 @@ struct exynos_ppmu {
+ 	{ "ppmu-event2-"#name, PPMU_PMNCNT2 },	\
+ 	{ "ppmu-event3-"#name, PPMU_PMNCNT3 }
+ 
+-struct __exynos_ppmu_events {
++static struct __exynos_ppmu_events {
+ 	char *name;
+ 	int id;
+ } ppmu_events[] = {
 -- 
-Florian
+2.9.3
