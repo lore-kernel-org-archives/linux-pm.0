@@ -1,70 +1,97 @@
-From: Yazen Ghannam <Yazen.Ghannam@amd.com>
-Subject: [PATCH v2] x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on AMD systems
-Date: Wed,  7 Jun 2017 10:19:46 -0500
-Message-ID: <1496848786-105710-1-git-send-email-Yazen.Ghannam@amd.com>
+From: Paul Kocialkowski <contact@paulk.fr>
+Subject: Re: [PATCH 5/5] power: supply: bq27xxx: Correct supply status with
+ current draw
+Date: Wed, 07 Jun 2017 18:20:39 +0300
+Message-ID: <1496848839.5534.7.camel@paulk.fr>
+References: <20170430182727.24412-1-contact@paulk.fr>
+         <20170430182727.24412-5-contact@paulk.fr>
+         <20170528191619.GA20159@xo-6d-61-c0.localdomain>
+         <1496249719.1774.1.camel@paulk.fr> <20170531173207.GA10763@amd>
+         <1496258936.2038.8.camel@paulk.fr> <1496819733.927.16.camel@paulk.fr>
+         <20170607075218.GA6268@amd>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-by2nam01on0053.outbound.protection.outlook.com ([104.47.34.53]:29049
-        "EHLO NAM01-BY2-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1750940AbdFGPUA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 7 Jun 2017 11:20:00 -0400
+Received: from gagarine.paulk.fr ([109.190.93.129]:64045 "EHLO
+        gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751405AbdFGPUw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2017 11:20:52 -0400
+In-Reply-To: <20170607075218.GA6268@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, bp@suse.de, Yazen Ghannam <yazen.ghannam@amd.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Chris Lapa <chris@lapa.com.au>, Matt Ranostay <mranostay@gmail.com>
 
-From: Yazen Ghannam <yazen.ghannam@amd.com>
+Hey,
 
-AMD systems support the Monitor/Mwait instructions and these can be used
-for ACPI C1 in the same way as on Intel systems.
+On Wed, 2017-06-07 at 09:52 +0200, Pavel Machek wrote:
+> I'd pass to userspace what the controller reports. Yes, I seldom see
+> > > > "STATUS_FULL" but that may be a problem we need to track down.
+> > > 
+> > > The controller is known, from my experience, to not be reliable in that
+> > > regard,
+> > > so I don't think it makes sense to pass a state that doesn't reflect the
+> > > actual
+> > > state of charging just because the chip tells us so.
+> > > 
+> > > Worst case, we could also have a dt property to enable that kind of fixup
+> > > workaround and let every device maintainer decide whether it is relevant
+> > > for
+> > > their device.
+> > 
+> > Actually, since a similar fix[0] was accepted in sbs-battery, I'd rather not
+> > make this optional but rather make it the default and perhaps have a dt prop
+> > to
+> > disable it.
+> > 
+> > [0]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm
+> > it/?
+> > h=v4.12-rc4&id=7f93e1fa032bb5ee19b868b9649bc98c82553003
+> 
+> Is there some documentation that explains what different power supply
+> statuses mean? Because without that, we can have long and useless
+> discussions.
 
-Three things are needed:
-1) This patch.
-2) BIOS that declares a C1 state in _CST to use FFH, with correct values.
-3) CPUID_Fn00000005_EDX is non-zero on the system.
+Well, I couldn't really find much except the following from Documentation/
+(which is not that helpful, and the BATTERY_STATUS_* don't seem to exist
+anymore):
 
-The BIOS on AMD systems have historically not defined a C1 state in _CST,
-so the acpi_idle driver uses HALT for ACPI C1.
+" STATUS - this attribute represents operating status (charging, full,
+discharging (i.e. powering a load), etc.). This corresponds to
+BATTERY_STATUS_* values, as defined in battery.h. "
 
-Currently released systems have CPUID_Fn00000005_EDX as reserved/RAZ. If a
-BIOS is released for these systems that requests a C1 state with FFH, the
-FFH implementation in Linux will fail since CPUID_Fn00000005_EDX is 0. The
-acpi_idle driver will then fallback to using HALT for ACPI C1.
+Generally speaking, I think the question to be asked is what information users
+will be interested in in each scenario we have to consider.
 
-Future systems are expected to have non-zero CPUID_Fn00000005_EDX and BIOS
-support for using FFH for ACPI C1.
+> If you have 40Wh battery, and you are charging it with 1mW, I don't
+> believe you should be indicating "charging". That battery is
+> full. Yes, even full batteries are sometimes charged with very low
+> currents to keep them full.
 
-Allow ffh_cstate_init() to succeed on AMD systems.
+That makes sense. Note that this patch was however designed to solve the problem
+the other way round: my device will report full battery when the PSU was
+disconnected and that it is, in fact, drawing significant current.
 
-Tested on Fam15h and Fam17h systems.
+> And I'm not sure what this is supposed to do, but its quite strange
+> code.
 
-Signed-off-by: Yazen Ghannam <yazen.ghannam@amd.com>
----
-Link:
-https://lkml.kernel.org/r/1495030819-4347-1-git-send-email-Yazen.Ghannam@amd.com
+Could you comment on what is strange about it? This function corrects the status
+based on the current flow as explained through this thread.
 
-v1->v2:
-* Expand commit message.
-* Drop change to description string.
-
- arch/x86/kernel/acpi/cstate.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
-index 8233a63..dde437f 100644
---- a/arch/x86/kernel/acpi/cstate.c
-+++ b/arch/x86/kernel/acpi/cstate.c
-@@ -167,7 +167,8 @@ static int __init ffh_cstate_init(void)
- {
- 	struct cpuinfo_x86 *c = &boot_cpu_data;
- 
--	if (c->x86_vendor != X86_VENDOR_INTEL)
-+	if (c->x86_vendor != X86_VENDOR_INTEL &&
-+	    c->x86_vendor != X86_VENDOR_AMD)
- 		return -1;
- 
- 	cpu_cstate_entry = alloc_percpu(struct cstate_entry);
+> +static int sbs_status_correct(struct i2c_client *client, int *intval)
+> +{
+> +	int ret;
+> +
+> +	ret = sbs_read_word_data(client, sbs_data[REG_CURRENT].addr);
+> +	if (ret < 0)
+> +	   return ret;
+> +
+> +	ret = (s16)ret;
+> +	
 -- 
-2.7.4
+Paul Kocialkowski, developer of free digital technology and hardware support
+
+Website: https://www.paulk.fr/
+Coding blog: https://code.paulk.fr/
+Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
