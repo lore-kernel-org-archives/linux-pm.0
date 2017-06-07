@@ -1,81 +1,67 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 2/2] power: reset: at91-sama5d2_shdwc: fix clobber list
-Date: Wed, 7 Jun 2017 22:50:33 +0200
-Message-ID: <20170607205033.2cmzcrnb5dnp23ej@earth>
-References: <20170531094915.3469-1-alexandre.belloni@free-electrons.com>
- <20170531094915.3469-2-alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH 0/2] power: reset: Couple of POWER_RESET_BRCMSTB Kconfig
+ changes
+Date: Wed, 7 Jun 2017 22:52:25 +0200
+Message-ID: <20170607205225.gxurep7xjtqg7n7a@earth>
+References: <20170531203946.32644-1-f.fainelli@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="47c4rmhky23xhmrs"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:49472 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751425AbdFGUuh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 7 Jun 2017 16:50:37 -0400
+        protocol="application/pgp-signature"; boundary="phv3tulylccyllwf"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170531094915.3469-2-alexandre.belloni@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170531203946.32644-1-f.fainelli@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Nicolas Ferre <nicolas.ferre@microchip.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
 
---47c4rmhky23xhmrs
+--phv3tulylccyllwf
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Florian,
 
-On Wed, May 31, 2017 at 11:49:15AM +0200, Alexandre Belloni wrote:
-> Assembly in at91_lpddr_poweroff has r0 in the clobber list but uses r6.
+On Wed, May 31, 2017 at 01:39:44PM -0700, Florian Fainelli wrote:
+> Here are two small tweaks to the POWER_RESET_BRCMSTB Kconfig selection to=
+ allow
+> the driver on ARM64 and make it default to BMIPS_GENERIC on MIPS platform=
+s.
+>=20
+> Based on your "for-next" branch.
 
-Thanks, queued.
+Thanks, both queued.
 
 -- Sebastian
 
-> Reported-by: Ben Hutchings <ben.hutchings@codethink.co.uk>
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> ---
->  drivers/power/reset/at91-sama5d2_shdwc.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Florian Fainelli (2):
+>   power: reset: Allow selecting POWER_RESET_BRCMSTB on ARM64
+>   power: reset: Default POWER_RESET_BRCMSTB to BMIPS_GENERIC
 >=20
-> diff --git a/drivers/power/reset/at91-sama5d2_shdwc.c b/drivers/power/res=
-et/at91-sama5d2_shdwc.c
-> index 90b0b5a70ce5..55fce8b75245 100644
-> --- a/drivers/power/reset/at91-sama5d2_shdwc.c
-> +++ b/drivers/power/reset/at91-sama5d2_shdwc.c
-> @@ -132,7 +132,7 @@ static void at91_lpddr_poweroff(void)
->  		  "r" cpu_to_le32(AT91_DDRSDRC_LPDDR2_PWOFF),
->  		  "r" (at91_shdwc->at91_shdwc_base),
->  		  "r" cpu_to_le32(AT91_SHDW_KEY | AT91_SHDW_SHDW)
-> -		: "r0");
-> +		: "r6");
->  }
-> =20
->  static u32 at91_shdwc_debouncer_value(struct platform_device *pdev,
-> --=20
-> 2.11.0
->=20
+>  drivers/power/reset/Kconfig | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
---47c4rmhky23xhmrs
+-- Sebastian
+
+--phv3tulylccyllwf
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlk4ZxkACgkQ2O7X88g7
-+pq+Kg/+N0hZ4742rwSDRgHgbyRwPPfQoQFPR1fe1g6C6XeDf5t86LTdP/sojYJY
-nLC5qNe8F8d9GszbSVylcO7Cq4YdL+FImwRNPNNq8NPOLNWDZJ0MhZqd7aX/pOaV
-VSyALBJ/59cdumfLFGVjEt1LGLY7otKG+2p/5KNX2HrGNpYvZ8o2K1O2VRR5LzKg
-nkkV7u1WMFp8fNGTqQZrDcMaP2xNWy6SKYplo4bNKWV0lknicpCw79TfQ/iyL5k6
-lMwxOXdyRE4NJGY/RwrxoY93LzUFW3ON4M1khodnpljFmnAFO4gd28JtSWeRM5EQ
-pfGPdYQN6r8a14iwCQrSZgDNym2iO8XsOc+JXuI01ETtgPsXgzzpvXcYeExGYtHf
-4ONxliL1jY7GUcv2ZAQNyg/L0aWxR5mRL9QHjIDwLLKFH4r15tx4tjlHM0o0ll8p
-ir1My/xxt8SmG3zXuOrj6x2STAl6rmzs+fVJgAnRwJ5SmSB7v+s7BrKqb9A5N47W
-JvjWSfMSonwYDvkG4rvZE901PAHF6gkxGQrd8X4Owsk+nNuX72qc7Zg6d3ByvVe6
-amCmpH3XRZQBaGGcN0F6T2XNZKEHyVWlta1nG7hfqA6BA/A6z5JwmDHClmIDVOHy
-2LihIAl7JoAGFJoPQIiKGrGZGeqjHKGd/b/6JWr/nlib9kouoO8=
-=Ners
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlk4Z4kACgkQ2O7X88g7
++poTXw/+P0ItCyFfnKR0mfMQrvC40B1cCbMq0pC5l19gKLAcxeYTq+zvmqAWWNxn
+hUGOUFlYqPGSZ+hgR8hreBJds3VDHEetAfXPaKFbqe3AhcwHCgRLh/NfmK/6rHlS
+zr/qcyujGW6MrobDUlLI8D6d+mhSH/HwGrK9B++AowVM7XG2wzoti6Pjd0s2mlpT
+V/x1azyt/7yvZTv+9pPUii2mLjoYfujqmu+Cb++8f8nULNy7J5OHI1R+DiCzTq39
+fOhIjk22+blgX+i9tGFf8A9orDlIcnOkwVK4SaylRlPhhe/5OPaHQO15NFideXs5
+m+/WXadanqqBACdO4zWr4JeO3mkaPhMI0eEaoT5PQQ/p/e3SaHe7K0LJ+MrDhDVV
+nUYQ+/H38wf+Mmvmy50maE2LVr2sN3zscw4OIEzY49c8bfL/3XNjR378NJJzMIeP
+2qx3sOZdwZo+VHQpWCZj+x727hTG+DUvciRw/eN4thiM81WjX3gT1ybi7tw+Cg+S
+M6l0JxgsArEPR/DfL9tA+VxUyMZAX/ev9BIdStHqaj6CAUsHqQnmNq/qjALnuvF6
+cOHmpYMm38BG+BoB4/c7vUf9NNOo8m9UShNnkKQxhKdeCqgTvN5Cg8+trsoK6Rev
+IybfjFsEyoqq+xpn7QRYuoyaYr7XTl2YNqnehAZyguyomMRlzA4=
+=YyGi
 -----END PGP SIGNATURE-----
 
---47c4rmhky23xhmrs--
+--phv3tulylccyllwf--
