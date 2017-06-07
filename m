@@ -1,62 +1,142 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH] thermal: int340x: check for sensor when PTYP is missing
-Date: Wed, 7 Jun 2017 13:55:39 +0300
-Message-ID: <CAHp75VfvVNFRiVMnGEe96C84AkxKs=hR29q8dp701Q4OyNO47g@mail.gmail.com>
-References: <1496790041-104500-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f170.google.com ([209.85.220.170]:35575 "EHLO
-        mail-qk0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751008AbdFGKzk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2017 06:55:40 -0400
-In-Reply-To: <1496790041-104500-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC] clk: renesas: cpg-mssr: Restore module clock registers during resume
+Date: Wed,  7 Jun 2017 13:58:38 +0200
+Message-ID: <1496836718-10762-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-clk-owner@vger.kernel.org>
+Sender: linux-clk-owner@vger.kernel.org
+To: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>
+Cc: linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wed, Jun 7, 2017 at 2:00 AM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> For INT3403 sensor PTYP field is mandatory. But some platforms didn't
-> have this field for sensors. This cause load failure for int3403 driver.
->
-> This change checks for the presence of _TMP method and if present, then
-> treats this device as a sensor.
+During PSCI system suspend, R-Car Gen3 SoCs are powered down, and their
+clock register state is lost.  Note that as the boot loader skips most
+initialization after resume, clock register state differs from the state
+encountered during normal system boot, too.
 
->         status = acpi_evaluate_integer(priv->adev->handle, "PTYP",
->                                        NULL, &priv->type);
->         if (ACPI_FAILURE(status)) {
-> -               result = -EINVAL;
-> -               goto err;
+Hence after s2ram, some operations may fail because module clocks are
+disabled, while drivers expect them to be still enabled.  E.g. EtherAVB
+fails when Wake-on-LAN has been enabled using "ethtool -s eth0 wol g":
 
-> +               unsigned long long tmp;
+    ravb e6800000.ethernet eth0: failed to switch device to config mode
+    ravb e6800000.ethernet eth0: device will be stopped after h/w processes are done.
+    ravb e6800000.ethernet eth0: failed to switch device to config
+    PM: Device e6800000.ethernet failed to resume: error -110
 
-You may use &priv->type as temporary variable, though I would go other
-way around:
-declare tmp for function, then
+To fix this, restore all bits of the SMSTPCR registers that have ever
+been written to by Linux.
 
-    unsigned long long tmp;
-...
-    status = acpi_evaluate_integer(priv->adev->handle, "PTYP",  NULL, &tmp);
-    if (ACPI_FAILURE(status)) {
-        status = acpi_evaluate_integer(priv->adev->handle, "_TMP", NULL, &tmp);
-        if (ACPI_FAILURE(status)) {
-            result = -EINVAL;
-            goto err;
-        }
-        tmp = INT3403_TYPE_SENSOR;
-    }
-    priv->type = tmp;
+Note that while this fixes EtherAVB operation after resume from s2ram,
+EtherAVB cannot be used as an actual wake-up source from s2ram, only
+from s2idle, due to PSCI limitations.
 
-> +               } else {
+TODO: Restore other clock registers, which requires clock-specific code.
 
-This is redundant.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+Tested on Salvator-X (R-Car H3 and M3-W), and Koelsch (R-Car M2-W).
 
-> +                       priv->type = INT3403_TYPE_SENSOR;
-> +               }
->         }
+ drivers/clk/renesas/renesas-cpg-mssr.c | 56 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
 
+diff --git a/drivers/clk/renesas/renesas-cpg-mssr.c b/drivers/clk/renesas/renesas-cpg-mssr.c
+index 7bf164ad64ebd8ef..0f23ad17fba979ac 100644
+--- a/drivers/clk/renesas/renesas-cpg-mssr.c
++++ b/drivers/clk/renesas/renesas-cpg-mssr.c
+@@ -106,6 +106,8 @@ static const u16 srcr[] = {
+  * @num_core_clks: Number of Core Clocks in clks[]
+  * @num_mod_clks: Number of Module Clocks in clks[]
+  * @last_dt_core_clk: ID of the last Core Clock exported to DT
++ * @smstpcr_shadow[].mask: Mask of SMSTPCR[] bits ever written to
++ * @smstpcr_shadow[].val: Last bit values written to SMSTPCR[]
+  */
+ struct cpg_mssr_priv {
+ #ifdef CONFIG_RESET_CONTROLLER
+@@ -119,6 +121,11 @@ struct cpg_mssr_priv {
+ 	unsigned int num_core_clks;
+ 	unsigned int num_mod_clks;
+ 	unsigned int last_dt_core_clk;
++
++	struct {
++		u32 mask;
++		u32 val;
++	} smstpcr_shadow[ARRAY_SIZE(smstpcr)];
+ };
+ 
+ 
+@@ -161,6 +168,12 @@ static int cpg_mstp_clock_endisable(struct clk_hw *hw, bool enable)
+ 
+ 	spin_unlock_irqrestore(&priv->rmw_lock, flags);
+ 
++	priv->smstpcr_shadow[reg].mask |= bitmask;
++	if (enable)
++		priv->smstpcr_shadow[reg].val &= ~bitmask;
++	else
++		priv->smstpcr_shadow[reg].val |= bitmask;
++
+ 	if (!enable)
+ 		return 0;
+ 
+@@ -727,6 +740,7 @@ static int __init cpg_mssr_probe(struct platform_device *pdev)
+ 	if (!clks)
+ 		return -ENOMEM;
+ 
++	dev_set_drvdata(dev, priv);
+ 	priv->clks = clks;
+ 	priv->num_core_clks = info->num_total_core_clks;
+ 	priv->num_mod_clks = info->num_hw_mod_clks;
+@@ -763,10 +777,52 @@ static int __init cpg_mssr_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int cpg_mssr_resume_noirq(struct device *dev)
++{
++	struct cpg_mssr_priv *priv = dev_get_drvdata(dev);
++	unsigned int reg, i;
++	u32 value, mask;
++
++	for (reg = 0; reg < ARRAY_SIZE(priv->smstpcr_shadow); reg++) {
++		/* Restore bits ever written to */
++		mask = priv->smstpcr_shadow[reg].mask;
++		if (!mask)
++			continue;
++
++		value = readl(priv->base + SMSTPCR(reg));
++		value &= ~mask;
++		value |= priv->smstpcr_shadow[reg].val;
++		writel(value, priv->base + SMSTPCR(reg));
++
++		/* Wait until enabled clocks are really enabled */
++		mask &= ~priv->smstpcr_shadow[reg].val;
++		if (!mask)
++			continue;
++
++		for (i = 1000; i > 0; --i) {
++			value = readl(priv->base + MSTPSR(reg));
++			if (!(value & mask))
++				break;
++			cpu_relax();
++		}
++
++		if (!i)
++			dev_warn(dev, "Failed to enable SMSTP %p[0x%x]\n",
++				 priv->base + SMSTPCR(reg), value & mask);
++	}
++
++	return 0;
++}
++
++static const struct dev_pm_ops cpg_mssr_pm = {
++	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(NULL, cpg_mssr_resume_noirq)
++};
++
+ static struct platform_driver cpg_mssr_driver = {
+ 	.driver		= {
+ 		.name	= "renesas-cpg-mssr",
+ 		.of_match_table = cpg_mssr_match,
++		.pm = &cpg_mssr_pm,
+ 	},
+ };
+ 
 -- 
-With Best Regards,
-Andy Shevchenko
+2.7.4
+
