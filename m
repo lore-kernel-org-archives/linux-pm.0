@@ -1,112 +1,93 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 5/5] power: supply: bq27xxx: Correct supply status with
- current draw
-Date: Wed, 7 Jun 2017 21:50:23 +0200
-Message-ID: <20170607195023.GA4083@amd>
-References: <20170430182727.24412-1-contact@paulk.fr>
- <20170430182727.24412-5-contact@paulk.fr>
- <20170528191619.GA20159@xo-6d-61-c0.localdomain>
- <1496249719.1774.1.camel@paulk.fr>
- <20170531173207.GA10763@amd>
- <1496258936.2038.8.camel@paulk.fr>
- <1496819733.927.16.camel@paulk.fr>
- <20170607075218.GA6268@amd>
- <1496848839.5534.7.camel@paulk.fr>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: ltc3651-charger: fix some error codes in probe
+Date: Wed, 7 Jun 2017 22:15:18 +0200
+Message-ID: <20170607201518.qkamfjftnjfv5za3@earth>
+References: <20170518074346.flhmb7xi6m7j2cni@mwanda>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="X1bOJ3K7DJ5YkBrT"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="djbdymxwysspb3xs"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:46390 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751405AbdFGUPW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Jun 2017 16:15:22 -0400
 Content-Disposition: inline
-In-Reply-To: <1496848839.5534.7.camel@paulk.fr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Paul Kocialkowski <contact@paulk.fr>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Chris Lapa <chris@lapa.com.au>, Matt Ranostay <mranostay@gmail.com>
+In-Reply-To: <20170518074346.flhmb7xi6m7j2cni@mwanda>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Mike Looijmans <mike.looijmans@topic.nl>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 
 
---X1bOJ3K7DJ5YkBrT
+--djbdymxwysspb3xs
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi!
+Hi,
 
-> On Wed, 2017-06-07 at 09:52 +0200, Pavel Machek wrote:
-> > > [0]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.g=
-it/comm
-> > > it/?
-> > > h=3Dv4.12-rc4&id=3D7f93e1fa032bb5ee19b868b9649bc98c82553003
-> >=20
-> > Is there some documentation that explains what different power supply
-> > statuses mean? Because without that, we can have long and useless
-> > discussions.
+On Thu, May 18, 2017 at 10:43:46AM +0300, Dan Carpenter wrote:
+> There are several cut and past bugs here.  ltc3651_charger->charger is
+> NULL at this point, so we return success instead of the intended error
+> codes.
 >=20
-> Well, I couldn't really find much except the following from Documentation/
-> (which is not that helpful, and the BATTERY_STATUS_* don't seem to exist
-> anymore):
->=20
-> " STATUS - this attribute represents operating status (charging, full,
-> discharging (i.e. powering a load), etc.). This corresponds to
-> BATTERY_STATUS_* values, as defined in battery.h. "
->=20
-> Generally speaking, I think the question to be asked is what information =
-users
-> will be interested in in each scenario we have to consider.
+> Fixes: c94d4ed017ae ("power: supply: Add ltc3651-charger driver")
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-Hmm. We really should add some documentation :-(.
+Thanks, queued.
 
-> > If you have 40Wh battery, and you are charging it with 1mW, I don't
-> > believe you should be indicating "charging". That battery is
-> > full. Yes, even full batteries are sometimes charged with very low
-> > currents to keep them full.
->=20
-> That makes sense. Note that this patch was however designed to solve the =
-problem
-> the other way round: my device will report full battery when the PSU was
-> disconnected and that it is, in fact, drawing significant current.
+-- Sebastian
 
-That is documented / correct behaviour sometimes. Thinkpad batteries
-have thresholds -- lets say 100% and 95%. They charge battery to full
-(as expected), but then they won't start charging battery again unless
-it drops below 95%. So you can have "battery full, charger
-disconnected" state.
+> diff --git a/drivers/power/supply/ltc3651-charger.c b/drivers/power/suppl=
+y/ltc3651-charger.c
+> index 5f8d5c0b5721..eea63ff211c4 100644
+> --- a/drivers/power/supply/ltc3651-charger.c
+> +++ b/drivers/power/supply/ltc3651-charger.c
+> @@ -110,21 +110,21 @@ static int ltc3651_charger_probe(struct platform_de=
+vice *pdev)
+>  	ltc3651_charger->acpr_gpio =3D devm_gpiod_get(&pdev->dev,
+>  					"lltc,acpr", GPIOD_IN);
+>  	if (IS_ERR(ltc3651_charger->acpr_gpio)) {
+> -		ret =3D PTR_ERR(ltc3651_charger->charger);
+> +		ret =3D PTR_ERR(ltc3651_charger->acpr_gpio);
+>  		dev_err(&pdev->dev, "Failed to acquire acpr GPIO: %d\n", ret);
+>  		return ret;
+>  	}
+>  	ltc3651_charger->fault_gpio =3D devm_gpiod_get_optional(&pdev->dev,
+>  					"lltc,fault", GPIOD_IN);
+>  	if (IS_ERR(ltc3651_charger->fault_gpio)) {
+> -		ret =3D PTR_ERR(ltc3651_charger->charger);
+> +		ret =3D PTR_ERR(ltc3651_charger->fault_gpio);
+>  		dev_err(&pdev->dev, "Failed to acquire fault GPIO: %d\n", ret);
+>  		return ret;
+>  	}
+>  	ltc3651_charger->chrg_gpio =3D devm_gpiod_get_optional(&pdev->dev,
+>  					"lltc,chrg", GPIOD_IN);
+>  	if (IS_ERR(ltc3651_charger->chrg_gpio)) {
+> -		ret =3D PTR_ERR(ltc3651_charger->charger);
+> +		ret =3D PTR_ERR(ltc3651_charger->chrg_gpio);
+>  		dev_err(&pdev->dev, "Failed to acquire chrg GPIO: %d\n", ret);
+>  		return ret;
+>  	}
 
-[Design like this prolongs longevity of li-ion batteries.]
-
-> > And I'm not sure what this is supposed to do, but its quite strange
-> > code.
->=20
-> Could you comment on what is strange about it? This function corrects the=
- status
-> based on the current flow as explained through this thread.
->=20
-> > +static int sbs_status_correct(struct i2c_client *client, int *intval)
-> > +{
-> > +	int ret;
-> > +
-> > +	ret =3D sbs_read_word_data(client, sbs_data[REG_CURRENT].addr);
-> > +	if (ret < 0)
-> > +	   return ret;
-> > +
-> > +	ret =3D (s16)ret;
-
-The last line ... is strange.
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---X1bOJ3K7DJ5YkBrT
+--djbdymxwysspb3xs
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
 
-iEYEARECAAYFAlk4WP8ACgkQMOfwapXb+vKMxACfZLPTnqVxmPswDhknxfT5rQgL
-9YgAnj1oRLWKaDQw8ai5uhj1OdfNkEvg
-=oHTe
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlk4XtEACgkQ2O7X88g7
++ppetBAAi9FBJYI/DAXuTpFnuSSzrHL/4DL6/lAOG4jRg66IisfFK5ny8Ipytweb
+Y1J/yGTyee6HuY1Fcl5KqJwGUYz9Q4Qxw0vWPIjTL0Q5HJB64yusnPRQtkyu14Es
+ZDlxYm0Wu0xPaeXqkgPedRCWkgKKb9LqSYd2vQICQT7aml50SC5f6rGlhEpNMtlS
+7xKOfk9j1J3Osblj2KqAJeky8WYi5rANi+HT3xAD524QKxfE5O0lYj/TKhlDDUy5
+Yj3fJuJqwrKgnS87o5YET39LriKym0EVNefEH0iaKW1KpjgjKenCzZzWTs1NG887
+OjB7tyuVdd6r3MDTjsfzO0eRJ7AxfoTzV1CRokKyER/5RUkWJg6WZ3LYnKsAGo8Q
+jFpY3nPhkzVnT/24rnMMANxyuNbau/DnF6KJx91fEi2MhDc53RL8Ccn8WScbUzft
+/+9u9Qk0OYXpqlZfLM3ox1pVaTiS+C/qoPHnxAhfYRpZ3IVxBFyLXQZmiL1RXnb7
+JL0r3CxpgNM0JKKEo6YFGqZRCB3SjGTCxN7PA8AOpLvb6e1M5HuhDq8WS0k7J4sp
+dFl7iG+FNFgZgDiZFt1VZILXuR7uQYDKFrF1a2c5byfxzaBdoL0GSDgqiMsp5h5r
+zhzNBE9qA8mdNA6Vfw1xvXuwBxG3Mwyjb+Jop/HXf4omUxQFDLs=
+=RbkU
 -----END PGP SIGNATURE-----
 
---X1bOJ3K7DJ5YkBrT--
+--djbdymxwysspb3xs--
