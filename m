@@ -1,66 +1,184 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Find transition latency dynamically
-Date: Wed, 7 Jun 2017 09:30:01 +0530
-Message-ID: <20170607040001.GF5103@vireshk-i7>
-References: <8041a965fcca71231576ae77a141b1e4333a81cc.1496402967.git.viresh.kumar@linaro.org>
- <1496764110.28352.49.camel@nxp.com>
+From: Paul Kocialkowski <contact@paulk.fr>
+Subject: Re: [PATCH 5/5] power: supply: bq27xxx: Correct supply status with
+ current draw
+Date: Wed, 07 Jun 2017 10:15:33 +0300
+Message-ID: <1496819733.927.16.camel@paulk.fr>
+References: <20170430182727.24412-1-contact@paulk.fr>
+         <20170430182727.24412-5-contact@paulk.fr>
+         <20170528191619.GA20159@xo-6d-61-c0.localdomain>
+         <1496249719.1774.1.camel@paulk.fr> <20170531173207.GA10763@amd>
+         <1496258936.2038.8.camel@paulk.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:35646 "EHLO
-        mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750730AbdFGEAG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2017 00:00:06 -0400
-Received: by mail-pf0-f177.google.com with SMTP id l89so851375pfi.2
-        for <linux-pm@vger.kernel.org>; Tue, 06 Jun 2017 21:00:06 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1496764110.28352.49.camel@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg="pgp-sha256";
+        protocol="application/pgp-signature"; boundary="=-w/B3qr7lt4n0DCR8rMBF"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1496258936.2038.8.camel@paulk.fr>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Chris Lapa <chris@lapa.com.au>, Matt Ranostay <mranostay@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
 
-On 06-06-17, 18:48, Leonard Crestez wrote:
-> I remember checking if transition latency is correct for imx6q-cpufreq
-> and it does not appear to be. Maybe because i2c latency of regulator
-> adjustments is not counted in?
 
-+ software latency + other stuff based on platforms.
+--=-w/B3qr7lt4n0DCR8rMBF
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-And that's why I am trying to introduce dynamic latencies.
+Le mercredi 31 mai 2017 =C3=A0 21:28 +0200, Paul Kocialkowski a =C3=A9crit =
+:
+> Hi,
+>=20
+> Le mercredi 31 mai 2017 =C3=A0 19:32 +0200, Pavel Machek a =C3=A9crit :
+> > The status reported directly by the battery controller is not always
+> > > > > reliable and should be corrected based on the current draw
+> > > > > information.
+> > > > >=20
+> > > > > This implements such a correction with a dedicated function, call=
+ed
+> > > > > when retrieving the supply status.
+> > > > > @@ -1182,6 +1196,8 @@ static int bq27xxx_battery_status(struct
+> > > > > bq27xxx_device_info *di,
+> > > > >  		else
+> > > > >  			status =3D POWER_SUPPLY_STATUS_DISCHARGING;
+> > > > >  	} else {
+> > > > > +		curr =3D (int)((s16)curr) * 1000;
+> > > >=20
+> > > > Umm.
+> >=20
+> > As in "two casts in one expression -- too ugly to live".
+>=20
+> Oh, I had skipped that comment, sorry about that. Yeah I understand your
+> concern. However, this line was mostly inspired by another part of the co=
+de,
+> below the following comment: /* Other gauges return signed value */
+>=20
+> I think we should fix the first occurence first and then used the fixed s=
+yntax
+> in v2 of this patch. What do you think?
+>=20
+> > > > > @@ -1190,6 +1206,18 @@ static int bq27xxx_battery_status(struct
+> > > > > bq27xxx_device_info *di,
+> > > > >  			status =3D POWER_SUPPLY_STATUS_CHARGING;
+> > > > >  	}
+> > > > > =20
+> > > > > +
+> > > > > +	if (curr =3D=3D 0 && status !=3D POWER_SUPPLY_STATUS_NOT_CHARGI=
+NG)
+> > > > > +		status =3D POWER_SUPPLY_STATUS_FULL;
+> > > > > +
+> > > > > +	if (status =3D=3D POWER_SUPPLY_STATUS_FULL) {
+> > > > > +		/* Drawing or providing current when full */
+> > > > > +		if (curr > 0)
+> > > > > +			status =3D POWER_SUPPLY_STATUS_CHARGING;
+> > > > > +		else if (curr < 0)
+> > > > > +			status =3D POWER_SUPPLY_STATUS_DISCHARGING;
+> > > > > +	}
+> > > >=20
+> > > > Are you sure this works? On N900, we normally see small currents to=
+/from
+> > > > "full" battery.
+> > >=20
+> > > In my case, this works perfectly and I am quite surprised of what you=
+'re
+> > > describing. Is it the case when the battery has a PSU connected?
+> >=20
+> > "PSU"? This is cellphone. It has USB connection and charges from that.
+> >=20
+> > It has been charging for long while now, and current_now fluctuates
+> > between 20706 and -2856. USB has limitted current, so I guess "draw
+> > current from battery if we need more than USB can provide" is quite com=
+mon.
+>=20
+> Ah right, I had forgotten about the USB current limitation thing. In this
+> case,
+> I guess the battery is never actually full and IMO, it should be reported=
+ as
+> such.
+>=20
+> > pavel@n900:~$ cat /sys/class/power_supply/bq27200-0/current_now
+> > 5355
+> > pavel@n900:~$ cat /sys/class/power_supply/bq27200-0/current_now
+> > 5355
+> > pavel@n900:~$ cat /sys/class/power_supply/bq27200-0/current_now
+> > -4105
+> > pavel@n900:~$ cat /sys/class/power_supply/bq27200-0/current_now
+> > -4105
+> > pavel@n900:~$ cat /sys/class/power_supply/bq27200-0/current_now
+> > -7675
+> > pavel@n900:~$ cat /sys/class/power_supply/bq27200-0/current_now
+> > -5712
+> > pavel@n900:~$ #screen on
+> > pavel@n900:~$ cat /sys/class/power_supply/bq27200-0/current_now
+> > 4641
+> > pavel@n900:~$ cat /sys/class/power_supply/bq27200-0/current_now
+> > 4641
+> > pavel@n900:~$ cat /sys/class/power_supply/bq27200-0/current_now
+> > 37842
+> > pavel@n900:~$ cat /sys/class/power_supply/bq27200-0/current_now
+> > 16600
+> > pavel@n900:~$
+> >=20
+> > > I guess I would consider this a hardware issue (leak currents) and we
+> > > could
+> > > definitely set some range (in device-tree) to distinguish between ful=
+l +
+> > > leak
+> > > currents and bad reporting from the fuel gauge. That would work well =
+in my
+> > > case
+> > > too.
+> >=20
+> > I'd pass to userspace what the controller reports. Yes, I seldom see
+> > "STATUS_FULL" but that may be a problem we need to track down.
+>=20
+> The controller is known, from my experience, to not be reliable in that
+> regard,
+> so I don't think it makes sense to pass a state that doesn't reflect the
+> actual
+> state of charging just because the chip tells us so.
+>=20
+> Worst case, we could also have a dt property to enable that kind of fixup
+> workaround and let every device maintainer decide whether it is relevant =
+for
+> their device.
 
-> It seems to me it would be much nicer to have a special flag for this
-> instead of overriding CPUFREQ_ETERNAL.
+Actually, since a similar fix[0] was accepted in sbs-battery, I'd rather no=
+t
+make this optional but rather make it the default and perhaps have a dt pro=
+p to
+disable it.
 
-Well, CPUFREQ_ETERNAL is specially there for drivers which don't know their
-latencies and so we aren't really overriding it here. We are just trying to do
-something sensible for them.
+> What do you think?
 
-Over that I intend to move as many of the current drivers as possible to specify
-CPUFREQ_ETERNAL instead of passing a static transition latency. The field
-transition_latency will stay for platforms which don't want kernel to find it
-dynamically though.
+[0]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/com=
+mit/?
+h=3Dv4.12-rc4&id=3D7f93e1fa032bb5ee19b868b9649bc98c82553003
+--=20
+Paul Kocialkowski, developer of free digital technology and hardware suppor=
+t
 
-The only case which is left from above is where a platform sets its latency to
-CPUFREQ_ETERNAL and it doesn't want the core to find the latency dynamically. I
-would like to learn about the reasons on why do we need that and that is still
-doable by setting the latency to something high enough which disallows us to use
-ondemand/conservative governors.
+Website: https://www.paulk.fr/
+Coding blog: https://code.paulk.fr/
+Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
+--=-w/B3qr7lt4n0DCR8rMBF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-> Also, wouldn't it be possible to update this dynamically? Just measure
-> the duration every time it happens and do an update like latency =
-> (latency * 7 + latest_latency) / 8.
+-----BEGIN PGP SIGNATURE-----
 
-I had that in mind but I want to know of the cases where platforms don't get the
-latencies right in the first go (at boot). Because if we update latencies then
-there are other things we need to do as well, for example update rate_limit_us
-of schedutil governor if it isn't overridden by the user yet. So its not that
-straight forward.
+iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlk3qBUACgkQhP3B6o/u
+lQxG5RAAgqf3whmbka58MkryOBLGdF2VV6XODx3Sy2fW+FXfcul+18vhU7oe6Bj9
+QZu1Suvo/fOYSspgzLR1/rjb/7WEBkO0VHI2B8vgnsSmm/UKXqD7nh2Zx6XHVwEY
+g+SocgVW11EJoJ801XMQ79xByu1pymaaZNpsEWlnWm/c7LZ6fSdRHABC3idpr/vc
+9DurmSmf3ef+mG0pk5UgE99eR7EgjZwjFGJu9ysIkUm4fGorjR55oncWQLeoCxWq
+xXqYrllOhQwHaUeIVeHF+7Eehsw7Eafk0iUskDR9durP02K47VjtytlQdON+4a10
+Hmmjdfv9BKcEc5anY7S4V7JMRpv2OQ0Lyzz/9VyLByrd3IiGU6RR/0oOyKztD8k+
+Cvc8ZcjVExS0giz/XC9N+91maxxT6cD6muR7KqulimodawT/NNoJcxOe8cSxRMB5
+zIJZmAWMvX951wgdBoPUMY0b1Rb//+HuT1UM+a64lToIRq4w7xzzgxg34XGBv8V2
+Y0CWTPahMCvL6WWJV0vTGFpzfaG4j6wgIfuqo7zUHmq/0yabvJxO/Za/kb19PkEe
+ywwNdnUb0K3V76sPpxxzcenyLd4iapAwb+Rj/zDh5s1yv4Sro3q4QLQ+sS3L/75q
+RKPvQTvo3vefhNr2ciBNVHiwHTtdbb5TJ43oxW9acEnMgn5F33Y=
+=PL12
+-----END PGP SIGNATURE-----
 
-Plus, we don't have to get the averages here like you suggested, we are
-interested in the max rather (worst case latency).
-
-Thanks for your reviews :)
-
--- 
-viresh
+--=-w/B3qr7lt4n0DCR8rMBF--
