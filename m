@@ -1,53 +1,33 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
- driver
-Date: Wed, 7 Jun 2017 10:41:59 +0100
-Message-ID: <20170607094159.uua5zxmeq2z4zrbu@sirena.org.uk>
-References: <cover.1496823229.git.stwiss.opensource@diasemi.com>
- <cb544b5c855ded286f2d0c824eb864630495c984.1496823229.git.stwiss.opensource@diasemi.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="tmexwjw6at6kavrg"
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: Re: [PATCH v5 2/3] ARM: dts: twl4030: Add missing madc reference for bci subnode
+Date: Wed, 7 Jun 2017 11:50:36 +0200
+Message-ID: <86926E09-93B8-4C17-BD98-C1340CA48F21@goldelico.com>
+References: <cover.1495363097.git.hns@goldelico.com> <69d95172f257cee8d6abc1eaab57865e536be73c.1495363097.git.hns@goldelico.com> <20170606072358.GT3730@atomide.com>
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:39198 "EHLO
-        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751026AbdFGJmP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2017 05:42:15 -0400
-Content-Disposition: inline
-In-Reply-To: <cb544b5c855ded286f2d0c824eb864630495c984.1496823229.git.stwiss.opensource@diasemi.com>
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.163]:24912 "EHLO
+        mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751616AbdFGJuo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2017 05:50:44 -0400
+In-Reply-To: <20170606072358.GT3730@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Twiss <stwiss.opensource@diasemi.com>
-Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, Marek Belisko <marek@goldelico.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
 
 
---tmexwjw6at6kavrg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Am 06.06.2017 um 09:23 schrieb Tony Lindgren <tony@atomide.com>:
+> 
+> * H. Nikolaus Schaller <hns@goldelico.com> [170521 03:44]:
+>> From: Marek Belisko <marek@goldelico.com>
+>> 
+>> The twl4030_charger driver expects an iio channel to detect the
+>> presence of an AC charger by looking at VAC (madc channel 11).
+>> This definition is missing in the device tree.
+> 
+> I'm picking this patch into omap-for-v4.13/dt thanks.
 
-On Wed, Jun 07, 2017 at 09:13:48AM +0100, Steve Twiss wrote:
-> From: Steve Twiss <stwiss.opensource@diasemi.com>
->=20
-> Regulator support for the DA9061 is added into the DA9062 regulator drive=
-r.
-
-I'm missing the other patches in this series and the cover letter, what
-are the dependencies here?
-
---tmexwjw6at6kavrg
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlk3ymcACgkQJNaLcl1U
-h9D8uwgAgRT/Z6xS6pKyfLP+DJdpuEfpBwUMmWOnNcfBao6esGvwdoQyXMYGu54I
-yLISRiu+vkWYTBQySqpEMkLMrkLU6Tl3AKbzboIOFvggSUaUmTZeDqa1yoF+c3UI
-EuafVC28phq2MFlE6CXVUgdu+w4qUVoSz+dSFrr91ed++mhKXvjIhIwF9JTEz+gN
-2NyT3ibTvNA/lNaWcxo6j1i6sc8aBDPqojAYNA3zWh2MtftDWr8ELFqUX8xBLLcU
-6ehoECOuCoBtkDC0nLcrqbd07YsDQZzmGtog5oCeJmBHeUnFi7mLoBIS99yz9XLX
-KOrSGDmwqWzMcN4N5DnSfJvZUVTNlQ==
-=rX2e
------END PGP SIGNATURE-----
-
---tmexwjw6at6kavrg--
+Thanks and BR!
+Nikolaus
