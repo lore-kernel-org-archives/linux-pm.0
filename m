@@ -1,78 +1,70 @@
-From: Steve Twiss <stwiss.opensource@diasemi.com>
-Subject: RE: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
- driver
-Date: Wed, 7 Jun 2017 14:09:56 +0000
-Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CD927CE@SW-EX-MBX02.diasemi.com>
-References: <cover.1496823229.git.stwiss.opensource@diasemi.com>
- <cb544b5c855ded286f2d0c824eb864630495c984.1496823229.git.stwiss.opensource@diasemi.com>
- <20170607094159.uua5zxmeq2z4zrbu@sirena.org.uk>
+From: Yazen Ghannam <Yazen.Ghannam@amd.com>
+Subject: [PATCH v2] x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on AMD systems
+Date: Wed,  7 Jun 2017 10:19:46 -0500
+Message-ID: <1496848786-105710-1-git-send-email-Yazen.Ghannam@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta5.messagelabs.com ([195.245.231.151]:33915 "EHLO
-        mail1.bemta5.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751412AbdFGOKB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2017 10:10:01 -0400
-In-Reply-To: <20170607094159.uua5zxmeq2z4zrbu@sirena.org.uk>
-Content-Language: en-US
+Received: from mail-by2nam01on0053.outbound.protection.outlook.com ([104.47.34.53]:29049
+        "EHLO NAM01-BY2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1750940AbdFGPUA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Jun 2017 11:20:00 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, bp@suse.de, Yazen Ghannam <yazen.ghannam@amd.com>
 
-Hi Mark,
+From: Yazen Ghannam <yazen.ghannam@amd.com>
 
-On 07 June 2017 10:42, Mark Brown wrote:
+AMD systems support the Monitor/Mwait instructions and these can be used
+for ACPI C1 in the same way as on Intel systems.
 
-> Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator driver
-> 
-> On Wed, Jun 07, 2017 at 09:13:48AM +0100, Steve Twiss wrote:
-> > From: Steve Twiss <stwiss.opensource@diasemi.com>
-> >
-> > Regulator support for the DA9061 is added into the DA9062 regulator driver.
-> 
-> I'm missing the other patches in this series and the cover letter, what
-> are the dependencies here?
+Three things are needed:
+1) This patch.
+2) BIOS that declares a C1 state in _CST to use FFH, with correct values.
+3) CPUID_Fn00000005_EDX is non-zero on the system.
 
-My apologies Mark. I didn't re-send the cover letter because this regulator
-patch is the last one and I assumed it would not add anything.
-Am I confusing you here by not renaming the patch and leaving its subject
-as [PATCH V7 5/7]?
+The BIOS on AMD systems have historically not defined a C1 state in _CST,
+so the acpi_idle driver uses HALT for ACPI C1.
 
-This whole DA9061 patch set was a very long time in the submission process.
-You Acked the DA9061 regulator patch back in 2016, but it had a compile
-dependency with the DA9061 MFD patch so it had to wait until that got
-approved. If the regulator patch had got in first, it would have broken
-the build.
+Currently released systems have CPUID_Fn00000005_EDX as reserved/RAZ. If a
+BIOS is released for these systems that requests a C1 state with FFH, the
+FFH implementation in Linux will fail since CPUID_Fn00000005_EDX is 0. The
+acpi_idle driver will then fallback to using HALT for ACPI C1.
 
-The MFD patch contained a change to the ./include/linux/mfd/da9062/core.h
-file -- it had a new enum for da9062_compatible_types and these values were
-used in the MFD, but also appeared in the regulator patch as part of the
-da9062_regulator_probe().
+Future systems are expected to have non-zero CPUID_Fn00000005_EDX and BIOS
+support for using FFH for ACPI C1.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=656211b1dfb9e0b68d4e634931432e29a6facf46
+Allow ffh_cstate_init() to succeed on AMD systems.
 
-According to my records, I think the MFD made it into linux-mainline/v4.12-rc1
-as part of Lee Jones'  e-mail "[GIT PULL] MFD for v4.12"
-https://lkml.org/lkml/2017/5/3/91 [I can't check that link, LKML is down atm].
-Once the MFD change for DA9062/1 had been added, this unblocked the 
-patch for the regulators.
+Tested on Fam15h and Fam17h systems.
 
-In my test environment here, I've tested the DA9061 and the build by patching 
-v4.12-rc2 with the remaining DA9061 regulator patch.
+Signed-off-by: Yazen Ghannam <yazen.ghannam@amd.com>
+---
+Link:
+https://lkml.kernel.org/r/1495030819-4347-1-git-send-email-Yazen.Ghannam@amd.com
 
-I'm not sure the cover letter for the original V7 patch set will explain much, but I
-will resend again, this time with the cover letter.
+v1->v2:
+* Expand commit message.
+* Drop change to description string.
 
-Regards,
-Steve
+ arch/x86/kernel/acpi/cstate.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-The original components of the PATCH V7 are as follows:
-[v7,1] https://patchwork.kernel.org/patch/9649905/
-[v7,2] https://patchwork.kernel.org/patch/9649921/
-[v7,3] https://patchwork.kernel.org/patch/9649889/
-[v7,4] https://patchwork.kernel.org/patch/9649927/
-[v7,5] https://patchwork.kernel.org/patch/9649895/
-[v7,6] https://patchwork.kernel.org/patch/9649917/
-[v7,7] https://patchwork.kernel.org/patch/9649913/
+diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+index 8233a63..dde437f 100644
+--- a/arch/x86/kernel/acpi/cstate.c
++++ b/arch/x86/kernel/acpi/cstate.c
+@@ -167,7 +167,8 @@ static int __init ffh_cstate_init(void)
+ {
+ 	struct cpuinfo_x86 *c = &boot_cpu_data;
+ 
+-	if (c->x86_vendor != X86_VENDOR_INTEL)
++	if (c->x86_vendor != X86_VENDOR_INTEL &&
++	    c->x86_vendor != X86_VENDOR_AMD)
+ 		return -1;
+ 
+ 	cpu_cstate_entry = alloc_percpu(struct cstate_entry);
+-- 
+2.7.4
