@@ -1,97 +1,59 @@
-From: Paul Kocialkowski <contact@paulk.fr>
-Subject: Re: [PATCH 5/5] power: supply: bq27xxx: Correct supply status with
- current draw
-Date: Wed, 07 Jun 2017 18:20:39 +0300
-Message-ID: <1496848839.5534.7.camel@paulk.fr>
-References: <20170430182727.24412-1-contact@paulk.fr>
-         <20170430182727.24412-5-contact@paulk.fr>
-         <20170528191619.GA20159@xo-6d-61-c0.localdomain>
-         <1496249719.1774.1.camel@paulk.fr> <20170531173207.GA10763@amd>
-         <1496258936.2038.8.camel@paulk.fr> <1496819733.927.16.camel@paulk.fr>
-         <20170607075218.GA6268@amd>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RESEND PATCH V7 5/7] regulator: da9061: BUCK and LDO regulator
+ driver
+Date: Wed, 7 Jun 2017 16:42:06 +0100
+Message-ID: <20170607154206.3mcozi3fmue3dsuw@sirena.org.uk>
+References: <cover.1496823229.git.stwiss.opensource@diasemi.com>
+ <cb544b5c855ded286f2d0c824eb864630495c984.1496823229.git.stwiss.opensource@diasemi.com>
+ <20170607094159.uua5zxmeq2z4zrbu@sirena.org.uk>
+ <6ED8E3B22081A4459DAC7699F3695FB7018CD927CE@SW-EX-MBX02.diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gagarine.paulk.fr ([109.190.93.129]:64045 "EHLO
-        gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751405AbdFGPUw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Jun 2017 11:20:52 -0400
-In-Reply-To: <20170607075218.GA6268@amd>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="6zbzl4qxu3yjdd5b"
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <6ED8E3B22081A4459DAC7699F3695FB7018CD927CE@SW-EX-MBX02.diasemi.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Steve Twiss <stwiss.opensource@diasemi.com>
+Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Chris Lapa <chris@lapa.com.au>, Matt Ranostay <mranostay@gmail.com>
 
-Hey,
 
-On Wed, 2017-06-07 at 09:52 +0200, Pavel Machek wrote:
-> I'd pass to userspace what the controller reports. Yes, I seldom see
-> > > > "STATUS_FULL" but that may be a problem we need to track down.
-> > > 
-> > > The controller is known, from my experience, to not be reliable in that
-> > > regard,
-> > > so I don't think it makes sense to pass a state that doesn't reflect the
-> > > actual
-> > > state of charging just because the chip tells us so.
-> > > 
-> > > Worst case, we could also have a dt property to enable that kind of fixup
-> > > workaround and let every device maintainer decide whether it is relevant
-> > > for
-> > > their device.
-> > 
-> > Actually, since a similar fix[0] was accepted in sbs-battery, I'd rather not
-> > make this optional but rather make it the default and perhaps have a dt prop
-> > to
-> > disable it.
-> > 
-> > [0]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/comm
-> > it/?
-> > h=v4.12-rc4&id=7f93e1fa032bb5ee19b868b9649bc98c82553003
-> 
-> Is there some documentation that explains what different power supply
-> statuses mean? Because without that, we can have long and useless
-> discussions.
+--6zbzl4qxu3yjdd5b
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Well, I couldn't really find much except the following from Documentation/
-(which is not that helpful, and the BATTERY_STATUS_* don't seem to exist
-anymore):
+On Wed, Jun 07, 2017 at 02:09:56PM +0000, Steve Twiss wrote:
+> On 07 June 2017 10:42, Mark Brown wrote:
 
-" STATUS - this attribute represents operating status (charging, full,
-discharging (i.e. powering a load), etc.). This corresponds to
-BATTERY_STATUS_* values, as defined in battery.h. "
+> > I'm missing the other patches in this series and the cover letter, what
+> > are the dependencies here?
 
-Generally speaking, I think the question to be asked is what information users
-will be interested in in each scenario we have to consider.
+> My apologies Mark. I didn't re-send the cover letter because this regulator
+> patch is the last one and I assumed it would not add anything.
+> Am I confusing you here by not renaming the patch and leaving its subject
+> as [PATCH V7 5/7]?
 
-> If you have 40Wh battery, and you are charging it with 1mW, I don't
-> believe you should be indicating "charging". That battery is
-> full. Yes, even full batteries are sometimes charged with very low
-> currents to keep them full.
+Yes, you are confusing things.  You're missing the point of numbering
+patches in a series, it's so that when working with a set of patches
+that have been posted pople know what order to apply them in.  The
+numbering only means anything in a given posting of the series, if
+something is resent it doesn't matter if it was posted before the
+numbering should reflect what's being posted at the current time.
 
-That makes sense. Note that this patch was however designed to solve the problem
-the other way round: my device will report full battery when the PSU was
-disconnected and that it is, in fact, drawing significant current.
+--6zbzl4qxu3yjdd5b
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> And I'm not sure what this is supposed to do, but its quite strange
-> code.
+-----BEGIN PGP SIGNATURE-----
 
-Could you comment on what is strange about it? This function corrects the status
-based on the current flow as explained through this thread.
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlk4Hs0ACgkQJNaLcl1U
+h9B5bwf/ZvvJ7ZHtR06N+uGqYWwXGhMkm/l4SADXZQup2IxJr/zOcGaV1a2Q3dHj
+n/9/wX5Cbmp3aw79Hz/3hhWbTM17gETkVevozvWv5tWNFdt7JFosEeP62qHe+qYs
+KvSxRBZUH4WxIfgJ6/UStPFRm0pvfBciavdREAjh0p6ff3Hw8BZr8ZLc5Ze8vbWY
+J3vTaRXCGSeEN6alblId9rqvcjrD4qXBwEOR5Dpt29+KSlz/ZPpmKnxW9/XuHmIB
+RapDAnPLI1+pev8UwmTXKeDOgDffOLbVm3aUF3J7fmjJtuwDwX6NY/wfF24NyvCk
+oklcZx1xq55c0vrVPb0KVDgeu0KfZQ==
+=wYEq
+-----END PGP SIGNATURE-----
 
-> +static int sbs_status_correct(struct i2c_client *client, int *intval)
-> +{
-> +	int ret;
-> +
-> +	ret = sbs_read_word_data(client, sbs_data[REG_CURRENT].addr);
-> +	if (ret < 0)
-> +	   return ret;
-> +
-> +	ret = (s16)ret;
-> +	
--- 
-Paul Kocialkowski, developer of free digital technology and hardware support
-
-Website: https://www.paulk.fr/
-Coding blog: https://code.paulk.fr/
-Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
+--6zbzl4qxu3yjdd5b--
