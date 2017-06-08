@@ -1,36 +1,52 @@
-From: Becky Miles <info@talentscout.com>
-Subject: Dear Talented.
-Date: Fri, 09 Jun 2017 04:26:48 +0530
-Message-ID: <20170608225652.290A63E03A6075@nhenri.pnri.dost.gov.ph>
-Reply-To: sonypicturesproduction@usa.com
+From: =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?=
+        <jerome.debretagne@gmail.com>
+Subject: Re: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
+ recent Dell laptops
+Date: Fri, 9 Jun 2017 01:44:29 +0200
+Message-ID: <CA+kEDGFUuSC1CpCEgOT+HMTrDa-r1y59kM9-CYn0PSgtuKaG5Q@mail.gmail.com>
+References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
+ <31f516ad46d74225a5d6324c5fd24751@ausx13mpc124.AMER.DELL.COM>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nhenri.pnri.dost.gov.ph ([146.88.73.7]:52300 "EHLO
-        nhenri.pnri.dost.gov.ph" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751428AbdFHXkT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2017 19:40:19 -0400
-Content-Description: Mail message body
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <31f516ad46d74225a5d6324c5fd24751@ausx13mpc124.AMER.DELL.COM>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Mario.Limonciello@dell.com
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Recipients <info@talentscout.com>
 
-Dear Talented,
+Hi Mario,
 
-I am Talent Scout For Sony Pictures Animation, Present Sony Pictures Animation Movies a Film Corporation Located in the United State, is Soliciting for the
-Right to use Your Photo/Face and Personality as One of the Semi -Major
-Role/ Character in our Upcoming ANIMATED Stereoscope 3D Movie-The Story
-of Peter Rabbit (Peter Rabbit 2018) The Movie is Currently Filming (In
-Production) Please Note That There Will Be No Auditions, Traveling or
-Any Special / Professional Acting Skills, Since the Production of This
-Movie Will Be Done with our State of Art Computer -Generating Imagery
-Equipment. We Are Prepared to Pay the Total Sum of $560,000.00 USD. For
-More Information/Understanding, Please Write us on the E-Mail Below.
-CONTACT EMAIL: sonypicturesproduction@usa.com
-All Reply to:  sonypicturesproduction@usa.com
-Note: Only the Response send to this mail will be Given a Prior
-Consideration.
+>> Here is some feedback for Dell Latitude 7275, as suggested by Srinivas
+>> in https://bugzilla.kernel.org/show_bug.cgi?id=3D195897#c15 .
+>>
+>> For some context on that model, suspend-to-RAM is not safe as the
+>> system hangs (raised in the above bug report). I'm wondering if this
+>> is expected somehow, due to S3 not being supported on that model, as
+>> discussed for the XPS 13 9365. Maybe Mario or someone else from Dell
+>> would be able to confirm this point.
+>>
+> The Latitude 7275 was not a machine that was tested with Linux during
+> development.
+> This machine shipped with Windows 8, right?
 
-Talent Scout
-Becky Miles
+I've read that this machine shipped at first with the option to have it eit=
+her
+with Windows 10 or Windows 8.1. Mine came with Windows 10.
+
+> I believe this machine also supports Connected Standby (the precursor
+> to Modern Standby that behaves very similarly).
+
+I've in fact found some WinHEC slides stating that it was among the first
+systems to support Modern Standby, here for reference:
+https://f.ch9.ms/public/WinHEC/06_WinHECDec2016-DesigningPowerEfficient_v02=
+.pptx
+
+> I have an ask out to someone who can confirm that.
+
+Thanks. I'm hoping there's a chance to make it work with suspend-to-RAM
+on Linux still, in addition to suspend-to-idle, by fixing the current hang.
+
+Thanks,
+J=C3=A9rome
