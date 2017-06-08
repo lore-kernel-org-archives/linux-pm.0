@@ -1,42 +1,315 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH RFC 1/2] thermal/cpu idle cooling: Introduce cpu idle
- cooling driver
-Date: Thu, 8 Jun 2017 14:04:28 +0200
-Message-ID: <20170608120428.GC2244@mai>
-References: <1496653645-20283-1-git-send-email-kevin.wangtao@hisilicon.com>
- <20170606034135.GA5103@vireshk-i7>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH 2/3] w1: MAX1721x Stanalone Fuel Gauge - add 1-Wire slave
+ drivers
+Date: Thu, 8 Jun 2017 14:27:04 +0200
+Message-ID: <20170608122704.v2c65rbuygvofbj3@earth>
+References: <20170602070629.8210-1-minimumlaw@rambler.ru>
+ <20170602070629.8210-3-minimumlaw@rambler.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f176.google.com ([209.85.128.176]:33333 "EHLO
-        mail-wr0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751449AbdFHMEd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2017 08:04:33 -0400
-Received: by mail-wr0-f176.google.com with SMTP id v104so17623841wrb.0
-        for <linux-pm@vger.kernel.org>; Thu, 08 Jun 2017 05:04:32 -0700 (PDT)
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="vifwe6y57jk7634z"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170606034135.GA5103@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170602070629.8210-3-minimumlaw@rambler.ru>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
+Cc: Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Tao Wang <kevin.wangtao@hisilicon.com>, rui.zhang@intel.com, edubezval@gmail.com, amit.kachhap@gmail.com, javi.merino@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sunzhaosheng@hisilicon.com, vincent.guittot@linaro.org, jean.wangtao@linaro.org
 
-On Tue, Jun 06, 2017 at 09:11:35AM +0530, viresh kumar wrote:
-> + Daniel
-> 
-> On 05-06-17, 17:07, Tao Wang wrote:
-> > cpu idle cooling driver performs synchronized idle injection across
-> > all cpu in same cluster, offers a new method to cooling down cpu,
-> > that is similar to intel_power_clamp driver, but is basically
-> > designed for ARM platform.
-> > Each cluster has its own idle cooling device, each core has its own
-> > idle injection thread, idle injection thread use play_idle to enter
-> > idle. In order to reach deepest idle state, all cores are aligned by
-> > jiffies. the injected idle ratio can be controlled through cooling
-> > device interface.
-> > 
 
-I don't see any ARM specific code in this driver as stated in the description.
+--vifwe6y57jk7634z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Was it considered to make the intel_powerclamp and this driver to converge to a
-single generic driver?
+Hi,
+
+On Fri, Jun 02, 2017 at 10:06:28AM +0300, Alex A. Mihaylov wrote:
+> Add support for Maxim Semiconductor MAX17211/MAX17215
+> Standlone Fuel Gauge chips (1-Wire family 0x26)
+
+I think this is pretty pointless after the w1 subsystem
+is available publically [0]. We can just instantiate the w1
+device in power-supply and skip registration of another
+platform-device.
+
+The registers and helper functions should also be added directly
+to the power-supply driver.
+
+[0] https://www.spinics.net/lists/kernel/msg2524566.html
+
+-- Sebastian
+
+> ---
+>  drivers/w1/slaves/Kconfig       |  12 +++++
+>  drivers/w1/slaves/Makefile      |   1 +
+>  drivers/w1/slaves/w1_max1721x.c |  73 ++++++++++++++++++++++++++++
+>  drivers/w1/slaves/w1_max1721x.h | 102 ++++++++++++++++++++++++++++++++++=
+++++++
+>  drivers/w1/w1_family.h          |   1 +
+>  5 files changed, 189 insertions(+)
+>  create mode 100644 drivers/w1/slaves/w1_max1721x.c
+>  create mode 100644 drivers/w1/slaves/w1_max1721x.h
+>=20
+> diff --git a/drivers/w1/slaves/Kconfig b/drivers/w1/slaves/Kconfig
+> index 0ef9f2663d..06a63a1021 100644
+> --- a/drivers/w1/slaves/Kconfig
+> +++ b/drivers/w1/slaves/Kconfig
+> @@ -86,6 +86,18 @@ config W1_SLAVE_DS2433_CRC
+>  	  Each block has 30 bytes of data and a two byte CRC16.
+>  	  Full block writes are only allowed if the CRC is valid.
+> =20
+> +config W1_SLAVE_MAX1721X
+> +	tristate "Maxim MAX17211/MAX17215 battery monitor chip"
+> +	help
+> +	  If you enable this you will have the MAX17211/MAX17215 battery
+> +	  monitor chip support.
+> +
+> +	  The battery monitor chip is used in many batteries/devices
+> +	  as the one who is responsible for charging/discharging/monitoring
+> +	  Li+ batteries.
+> +
+> +	  If you are unsure, say N.
+> +
+>  config W1_SLAVE_DS2760
+>  	tristate "Dallas 2760 battery monitor chip (HP iPAQ & others)"
+>  	help
+> diff --git a/drivers/w1/slaves/Makefile b/drivers/w1/slaves/Makefile
+> index b4a358955e..967329a4b8 100644
+> --- a/drivers/w1/slaves/Makefile
+> +++ b/drivers/w1/slaves/Makefile
+> @@ -11,6 +11,7 @@ obj-$(CONFIG_W1_SLAVE_DS2406)	+=3D w1_ds2406.o
+>  obj-$(CONFIG_W1_SLAVE_DS2423)	+=3D w1_ds2423.o
+>  obj-$(CONFIG_W1_SLAVE_DS2431)	+=3D w1_ds2431.o
+>  obj-$(CONFIG_W1_SLAVE_DS2433)	+=3D w1_ds2433.o
+> +obj-$(CONFIG_W1_SLAVE_MAX1721X)	+=3D w1_max1721x.o
+>  obj-$(CONFIG_W1_SLAVE_DS2760)	+=3D w1_ds2760.o
+>  obj-$(CONFIG_W1_SLAVE_DS2780)	+=3D w1_ds2780.o
+>  obj-$(CONFIG_W1_SLAVE_DS2781)	+=3D w1_ds2781.o
+> diff --git a/drivers/w1/slaves/w1_max1721x.c b/drivers/w1/slaves/w1_max17=
+21x.c
+> new file mode 100644
+> index 0000000000..017ec3e159
+> --- /dev/null
+> +++ b/drivers/w1/slaves/w1_max1721x.c
+> @@ -0,0 +1,73 @@
+> +/*
+> + * 1-Wire implementation for Maxim Semiconductor
+> + * MAX17211/MAX17215 standalone fuel gauge chip
+> + *
+> + * Copyright (C) 2017 OAO Radioavionica
+> + * Author: Alex A. Mihaylov <minimumlaw@rambler.ru>
+> + *
+> + * Use consistent with the GNU GPL is permitted,
+> + * provided that this copyright notice is
+> + * preserved in its entirety in all copies and derived works.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/device.h>
+> +#include <linux/types.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/mutex.h>
+> +#include <linux/idr.h>
+> +#include <linux/gfp.h>
+> +
+> +#include "../w1.h"
+> +#include "../w1_int.h"
+> +#include "../w1_family.h"
+> +#include "w1_max1721x.h"
+> +
+> +static int w1_max17211_add_device(struct w1_slave *sl)
+> +{
+> +	int ret;
+> +	struct platform_device *pdev;
+> +
+> +	pdev =3D platform_device_alloc("max1721x-battery", PLATFORM_DEVID_AUTO);
+> +	if (!pdev)
+> +		return -ENOMEM;
+> +	pdev->dev.parent =3D &sl->dev;
+> +
+> +	ret =3D platform_device_add(pdev);
+> +	if (ret)
+> +		goto pdev_add_failed;
+> +
+> +	dev_set_drvdata(&sl->dev, pdev);
+> +
+> +	return 0;
+> +
+> +pdev_add_failed:
+> +	platform_device_put(pdev);
+> +
+> +	return ret;
+> +}
+> +
+> +static void w1_max17211_remove_device(struct w1_slave *sl)
+> +{
+> +	struct platform_device *pdev =3D dev_get_drvdata(&sl->dev);
+> +
+> +	platform_device_unregister(pdev);
+> +}
+> +
+> +static struct w1_family_ops w1_max17211_fops =3D {
+> +	.add_slave    =3D w1_max17211_add_device,
+> +	.remove_slave =3D w1_max17211_remove_device,
+> +};
+> +
+> +static struct w1_family w1_max17211_family =3D {
+> +	.fid =3D W1_FAMILY_MAX17211,
+> +	.fops =3D &w1_max17211_fops,
+> +};
+> +module_w1_family(w1_max17211_family);
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Alex A. Mihaylov <minimumlaw@rambler.ru>");
+> +MODULE_DESCRIPTION("1-wire Driver for MAX17211/MAX17215 battery monitor"=
+);
+> +MODULE_ALIAS("w1-family-" __stringify(W1_FAMILY_MAX17211));
+> diff --git a/drivers/w1/slaves/w1_max1721x.h b/drivers/w1/slaves/w1_max17=
+21x.h
+> new file mode 100644
+> index 0000000000..47694d91dc
+> --- /dev/null
+> +++ b/drivers/w1/slaves/w1_max1721x.h
+> @@ -0,0 +1,102 @@
+> +/*
+> + * 1-Wire implementation for Maxim Semiconductor
+> + * MAX7211/MAX17215 stanalone fuel gauge chip
+> + *
+> + * Copyright (C) 2017 OAO Radioavionica
+> + * Author: Alex A. Mihaylov <minimumlaw@rambler.ru>
+> + *
+> + * Use consistent with the GNU GPL is permitted,
+> + * provided that this copyright notice is
+> + * preserved in its entirety in all copies and derived works.
+> + *
+> + */
+> +
+> +#ifndef __w1_max17211_h__
+> +#define __w1_max17211_h__
+> +
+> +/* Known commands to the MAX1721X chip */
+> +#define W1_MAX1721X_READ_DATA		0x69
+> +#define W1_MAX1721X_WRITE_DATA		0x6C
+> +
+> +/* Factory settings (nonvilatile registers) (W1 specific) */
+> +
+> +#define MAX1721X_REG_NRSENSE	0x1CF	/* RSense in 10^-5 Ohm */
+> +/* Strings */
+> +#define MAX1721X_REG_MFG_STR	0x1CC
+> +#define MAX1721X_REG_MFG_NUMB	3
+> +#define MAX1721X_REG_DEV_STR	0x1DB
+> +#define MAX1721X_REG_DEV_NUMB	5
+> +/* HEX Strings */
+> +#define MAX1721X_REG_SER_HEX	0x1D8
+> +
+> +/* MAX1721X/MAX17215 Output Registers for I2C and W1 chips */
+> +
+> +#define MAX172XX_REG_STATUS	0x000	/* status reg */
+> +#define MAX172XX_BAT_PRESENT	(1<<4)	/* battery connected bit */
+> +#define MAX172XX_REG_DEVNAME	0x021	/* chip config */
+> +#define MAX172XX_DEV_MASK	0x000F	/* chip type mask */
+> +#define MAX172X1_DEV		0x0001
+> +#define MAX172X5_DEV		0x0005
+> +#define MAX172XX_REG_TEMP	0x008	/* Temperature */
+> +#define MAX172XX_REG_BATT	0x0DA	/* Battery voltage */
+> +#define MAX172XX_REG_CURRENT	0x00A	/* Actual current */
+> +#define MAX172XX_REG_AVGCURRENT	0x00B	/* Average current */
+> +#define MAX172XX_REG_REPSOC	0x006	/* Percentage of charge */
+> +#define MAX172XX_REG_DESIGNCAP	0x018	/* Design capacity */
+> +#define MAX172XX_REG_REPCAP	0x005	/* Average capacity */
+> +#define MAX172XX_REG_TTE	0x011	/* Time to empty */
+> +#define MAX172XX_REG_TTF	0x020	/* Time to full */
+> +
+> +/* Number of valid register addresses */
+> +#define MAX1721X_MAX_REG_NR	0x1EF
+> +
+> +/* Convert regs value to power_supply units */
+> +
+> +static inline int max172xx_time_to_ps(unsigned int reg)
+> +{
+> +	return reg * 5625 / 1000;	/* in sec. */
+> +}
+> +
+> +static inline int max172xx_percent_to_ps(unsigned int reg)
+> +{
+> +	return reg / 256;	/* in percent from 0 to 100 */
+> +}
+> +
+> +static inline int max172xx_voltage_to_ps(unsigned int reg)
+> +{
+> +	return reg * 1250;	/* in uV */
+> +}
+> +
+> +static inline int max172xx_capacity_to_ps(unsigned int reg)
+> +{
+> +	return reg * 500;	/* in uAh */
+> +}
+> +
+> +/*
+> + * Current and temperature is signed values, so unsigned regs
+> + * value must be converted to signed type
+> + */
+> +
+> +static inline int max172xx_temperature_to_ps(unsigned int reg)
+> +{
+> +	int val =3D (int16_t)(reg);
+> +
+> +	return val * 10 / 256; /* in tenths of deg. C */
+> +}
+> +
+> +/*
+> + * Calculating current registers resolution:
+> + *
+> + * RSense stored in 10^-5 Ohm, so mesaurment voltage must be
+> + * in 10^-11 Volts for get current in uA.
+> + * 16 bit current reg fullscale +/-51.2mV is 102400 uV.
+> + * So: 102400 / 65535 * 10^5 =3D 156252
+> + */
+> +static inline int max172xx_current_to_voltage(unsigned int reg)
+> +{
+> +	int val =3D (int16_t)(reg);
+> +
+> +	return val * 156252;
+> +}
+> +
+> +#endif /* !__w1_max17211_h__ */
+> diff --git a/drivers/w1/w1_family.h b/drivers/w1/w1_family.h
+> index c4a6b257a3..398adc9973 100644
+> --- a/drivers/w1/w1_family.h
+> +++ b/drivers/w1/w1_family.h
+> @@ -29,6 +29,7 @@
+>  #define W1_COUNTER_DS2423	0x1D
+>  #define W1_THERM_DS1822  	0x22
+>  #define W1_EEPROM_DS2433  	0x23
+> +#define W1_FAMILY_MAX17211	0x26
+>  #define W1_THERM_DS18B20 	0x28
+>  #define W1_FAMILY_DS2408	0x29
+>  #define W1_EEPROM_DS2431	0x2D
+> --=20
+> 2.13.0
+>=20
+
+--vifwe6y57jk7634z
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlk5QpgACgkQ2O7X88g7
++po4lQ//dij5T7hHfRa/cvxEK0vQnFm//yuNhrDsMZ8gPC4fIcyyK6j9DQ0PidEK
+Mmv+bt+B5j58Q216CBW9ryazld1w1zhGPLL0NH0Did8pvWuGYaLQ6S49ugLhALlY
+Ch10vtDPgYn+K/Ow0io+9nHKv0PfUM7q371EnycAHiOuSO8MX48zFL9PxuEIVHR3
+a8Hmuvv2dndDF3lUGwArQ7rAwsw2IJGrgYwgRKOXDZdfnwUwCFndppnP/zywTTta
+7R0U/CVTnDw+I5BWfW5EWcp14xy19X6fbPrw4aj0wLbgWqfUWJUholifGEksWg88
+pqm8m3m2Uy7d5JLAUBSBxtLr/JQRuydURLAk1FQhGHf5MD7Cq4eX2S1s8tMBdSs2
+XsjoKXd3N4EdCqkZZ2Nhyz62eX/ib3TgBtm0fwnf6UTNZSSmAIa+QCNKpEWNMqXk
+oS2hno2UXvxOxWWGh5sfmAl+4Ox7GLfWRhyDQHhpJALBAjhw64PteFjR5UcRG4WL
+IZJjycPD2lFoK+u8o0O6DHmgw59aLfhsDUA78xM8uWib/bl2iFq1ljkuQX8T4ckW
+Qa6VwI0BdwEiWLtEjRhiF+Gd1Upwb1CpekBoBcu6pj6bFyB+jboptTcnDNdHWQ1W
+sV0yxfKbwWB3n76rPTSTgxcWFoxUdS9jVvTR5SsQqQPllrVCpbM=
+=yhCl
+-----END PGP SIGNATURE-----
+
+--vifwe6y57jk7634z--
