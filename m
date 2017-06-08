@@ -1,71 +1,172 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH 0/6] arm, arm64: frequency- and cpu-invariant accounting support for task scheduler
-Date: Thu,  8 Jun 2017 08:55:07 +0100
-Message-ID: <20170608075513.12475-1-dietmar.eggemann@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH 2/6] drivers base/arch_topology: frequency-invariant
+ load-tracking support
+Date: Thu,  8 Jun 2017 08:55:09 +0100
+Message-ID: <20170608075513.12475-3-dietmar.eggemann@arm.com>
+References: <20170608075513.12475-1-dietmar.eggemann@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170608075513.12475-1-dietmar.eggemann@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaor.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: linux@arm.linux.org.uk, Juri Lelli <juri.lelli@arm.com>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Will Deacon <will.deacon@arm.com>, Vincent Guittot <vincent.guittot@linaor.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-For a more accurate (i.e. frequency- and cpu-invariant) load-tracking
-the task scheduler needs a frequency-scaling and on a heterogeneous
-system a cpu-scaling correction factor.
+Implements an arch-specific frequency-scaling function
+topology_get_freq_scale() which provides the following frequency
+scaling factor:
 
-This patch-set implements a Frequency Invariance Engine (FIE)
-(topology_get_freq_scale()) in drivers/base/arch_topology.c to provide
-a frequency-scaling correction factor.
+  current_freq(cpu) << SCHED_CAPACITY_SHIFT / max_supported_freq(cpu)
 
-The Cpu Invariance Engine (CIE) (topology_get_cpu_scale()) providing a
-cpu-scaling correction factor was already introduced by the "Fix issues
-and factorize arm/arm64 capacity information code" patch-set [1].
+The debug output in init_cpu_capacity_callback() has been changed to be
+able to distinguish whether cpu capacity and max frequency or only max
+frequency has been set. The latter case happens on systems where there
+is no or broken cpu capacity binding (cpu node property
+capacity-dmips-mhz) information.
 
-This patch-set also enables the frequency- and cpu-invariant accounting
-support. Enabling here means to associate (wire) the task scheduler
-cname arch_scale_freq_capacity and arch_scale_cpu_capacity with the FIE
-and CIE function names from drivers/base/arch_topology.c. This replaces
-the task scheduler's default FIE and CIE in kernel/sched/sched.h.
+One possible consumer of this is the Per-Entity Load Tracking (PELT)
+mechanism of the task scheduler.
 
-Patch high level description:
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Juri Lelli <juri.lelli@arm.com>
+Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+---
+ drivers/base/arch_topology.c  | 52 ++++++++++++++++++++++++++++++++++++++++---
+ include/linux/arch_topology.h |  2 ++
+ 2 files changed, 51 insertions(+), 3 deletions(-)
 
- [   01/06] Rework cpufreq policy notifier for frequency-invariant
-            accounting support
- [   02/06] Frequency Invariance Engine (FIE)
- [03,04/06] Enable frequency- and cpu-invariant accounting support on
-            arm
- [05,06/06] Enable frequency- and cpu-invariant accounting support on
-            arm64
-
-The patch-set is based on top of linux-next/master (tag: next-20170607)
-and it is also available from:
-
- git://linux-arm.org/linux-de.git upstream/freq_and_cpu_inv
-
-It has been tested on TC2 (arm) and JUNO (arm64) by running a ramp-up
-rt-app task pinned to a cpu with the ondemand cpufreq governor and
-checking the load-tracking signals of this task.
-
-[1] https://marc.info/?l=linux-kernel&m=149625018223002&w=2
-
-
-Dietmar Eggemann (6):
-  drivers base/arch_topology: prepare cpufreq policy notifier for
-    frequency-invariant load-tracking support
-  drivers base/arch_topology: frequency-invariant load-tracking support
-  arm: wire frequency-invariant accounting support up to the task
-    scheduler
-  arm: wire cpu-invariant accounting support up to the task scheduler
-  arm64: wire frequency-invariant accounting support up to the task
-    scheduler
-  arm64: wire cpu-invariant accounting support up to the task scheduler
-
- arch/arm/include/asm/topology.h   |  8 +++++
- arch/arm/kernel/topology.c        |  1 -
- arch/arm64/include/asm/topology.h |  8 +++++
- arch/arm64/kernel/topology.c      |  1 -
- drivers/base/arch_topology.c      | 64 ++++++++++++++++++++++++++++++++++-----
- include/linux/arch_topology.h     |  2 ++
- 6 files changed, 75 insertions(+), 9 deletions(-)
-
+diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+index 272831c89feb..f6f14670bdab 100644
+--- a/drivers/base/arch_topology.c
++++ b/drivers/base/arch_topology.c
+@@ -24,12 +24,18 @@
+ 
+ static DEFINE_MUTEX(cpu_scale_mutex);
+ static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
++static DEFINE_PER_CPU(unsigned long, freq_scale) = SCHED_CAPACITY_SCALE;
+ 
+ unsigned long topology_get_cpu_scale(struct sched_domain *sd, int cpu)
+ {
+ 	return per_cpu(cpu_scale, cpu);
+ }
+ 
++unsigned long topology_get_freq_scale(struct sched_domain *sd, int cpu)
++{
++	return per_cpu(freq_scale, cpu);
++}
++
+ void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity)
+ {
+ 	per_cpu(cpu_scale, cpu) = capacity;
+@@ -164,6 +170,7 @@ static cpumask_var_t cpus_to_visit;
+ static bool cap_parsing_done;
+ static void parsing_done_workfn(struct work_struct *work);
+ static DECLARE_WORK(parsing_done_work, parsing_done_workfn);
++static DEFINE_PER_CPU(unsigned long, max_freq);
+ 
+ static int
+ init_cpu_capacity_callback(struct notifier_block *nb,
+@@ -185,6 +192,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+ 			       cpus_to_visit,
+ 			       policy->related_cpus);
+ 		for_each_cpu(cpu, policy->related_cpus) {
++			per_cpu(max_freq, cpu) = policy->cpuinfo.max_freq;
+ 			if (cap_parsing_failed)
+ 				continue;
+ 			raw_capacity[cpu] = topology_get_cpu_scale(NULL, cpu) *
+@@ -195,8 +203,10 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+ 			if (!cap_parsing_failed) {
+ 				topology_normalize_cpu_scale();
+ 				kfree(raw_capacity);
++				pr_debug("cpu_capacity: parsing done\n");
++			} else {
++				pr_debug("cpu_capacity: max frequency parsing done\n");
+ 			}
+-			pr_debug("cpu_capacity: parsing done\n");
+ 			cap_parsing_done = true;
+ 			schedule_work(&parsing_done_work);
+ 		}
+@@ -208,8 +218,38 @@ static struct notifier_block init_cpu_capacity_notifier = {
+ 	.notifier_call = init_cpu_capacity_callback,
+ };
+ 
++static void set_freq_scale(unsigned int cpu, unsigned long freq)
++{
++	unsigned long max = per_cpu(max_freq, cpu);
++
++	if (!max)
++		return;
++
++	per_cpu(freq_scale, cpu) = (freq << SCHED_CAPACITY_SHIFT) / max;
++}
++
++static int set_freq_scale_callback(struct notifier_block *nb,
++				   unsigned long val,
++				   void *data)
++{
++	struct cpufreq_freqs *freq = data;
++
++	switch (val) {
++	case CPUFREQ_PRECHANGE:
++		set_freq_scale(freq->cpu, freq->new);
++	}
++
++	return 0;
++}
++
++static struct notifier_block set_freq_scale_notifier = {
++	.notifier_call = set_freq_scale_callback,
++};
++
+ static int __init register_cpufreq_notifier(void)
+ {
++	int ret;
++
+ 	/*
+ 	 * on ACPI-based systems we need to use the default cpu capacity
+ 	 * until we have the necessary code to parse the cpu capacity, so
+@@ -225,8 +265,14 @@ static int __init register_cpufreq_notifier(void)
+ 
+ 	cpumask_copy(cpus_to_visit, cpu_possible_mask);
+ 
+-	return cpufreq_register_notifier(&init_cpu_capacity_notifier,
+-					 CPUFREQ_POLICY_NOTIFIER);
++	ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
++					CPUFREQ_POLICY_NOTIFIER);
++
++	if (ret)
++		return ret;
++
++	return cpufreq_register_notifier(&set_freq_scale_notifier,
++					 CPUFREQ_TRANSITION_NOTIFIER);
+ }
+ core_initcall(register_cpufreq_notifier);
+ 
+diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
+index 9af3c174c03a..3fb4d8ccb179 100644
+--- a/include/linux/arch_topology.h
++++ b/include/linux/arch_topology.h
+@@ -12,6 +12,8 @@ int topology_parse_cpu_capacity(struct device_node *cpu_node, int cpu);
+ struct sched_domain;
+ unsigned long topology_get_cpu_scale(struct sched_domain *sd, int cpu);
+ 
++unsigned long topology_get_freq_scale(struct sched_domain *sd, int cpu);
++
+ void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
+ 
+ #endif /* _LINUX_ARCH_TOPOLOGY_H_ */
 -- 
 2.11.0
