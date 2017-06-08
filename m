@@ -1,39 +1,63 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v1 25/25] PM: Switch to use %pt
-Date: Thu,  8 Jun 2017 16:48:11 +0300
-Message-ID: <20170608134811.60786-26-andriy.shevchenko@linux.intel.com>
-References: <20170608134811.60786-1-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170608134811.60786-1-andriy.shevchenko@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rasmus Villemoes <rasmus.villemoes@prevas.dk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-rtc@vger.kernel.org
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 2/6] USB / PCI / PM: Allow the PCI core to do the resume
+ cleanup
+Date: Thu, 8 Jun 2017 11:24:55 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1706081124310.1949-100000@iolanthe.rowland.org>
+References: <1565826.hIbT8kZpDn@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1565826.hIbT8kZpDn@aspire.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, Hans De Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Use %pt instead of open coded variant to print content of
-struct rtc_time in human readable format.
+On Thu, 8 Jun 2017, Rafael J. Wysocki wrote:
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/base/power/trace.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> hcd_pci_resume_noirq() used as a universal _resume_noirq handler for
+> PCI USB controllers calls pci_back_from_sleep() which is unnecessary
+> and may become problematic.
+> 
+> It is unnecessary, because the PCI bus type carries out post-suspend
+> cleanup of all PCI devices during resume and that covers all things
+> done by the pci_back_from_sleep().  There is no reason why USB cannot
+> follow all of the other PCI devices in that respect.
+> 
+> It will become problematic after subsequent changes that make it
+> possible to go back to sleep again after executing dpm_resume_noirq()
+> if no valid system wakeup events have been detected at that point.
+> Namely, calling pci_back_from_sleep() at the _resume_noirq stage
+> will cause the wakeup status of the devices in question to be cleared
+> and if any of them has triggered system wakeup, that event may be
+> missed then.
+> 
+> For the above reasons, drop the pci_back_from_sleep() invocation
+> from hcd_pci_resume_noirq().
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/usb/core/hcd-pci.c |    7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
+> 
+> Index: linux-pm/drivers/usb/core/hcd-pci.c
+> ===================================================================
+> --- linux-pm.orig/drivers/usb/core/hcd-pci.c
+> +++ linux-pm/drivers/usb/core/hcd-pci.c
+> @@ -584,12 +584,7 @@ static int hcd_pci_suspend_noirq(struct
+>  
+>  static int hcd_pci_resume_noirq(struct device *dev)
+>  {
+> -	struct pci_dev		*pci_dev = to_pci_dev(dev);
+> -
+> -	powermac_set_asic(pci_dev, 1);
+> -
+> -	/* Go back to D0 and disable remote wakeup */
+> -	pci_back_from_sleep(pci_dev);
+> +	powermac_set_asic(to_pci_dev(dev), 1);
+>  	return 0;
+>  }
 
-diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-index 1cda505d6a85..5e32a4f28a49 100644
---- a/drivers/base/power/trace.c
-+++ b/drivers/base/power/trace.c
-@@ -118,9 +118,7 @@ static unsigned int read_magic_time(void)
- 	unsigned int val;
- 
- 	mc146818_get_time(&time);
--	pr_info("RTC time: %2d:%02d:%02d, date: %02d/%02d/%02d\n",
--		time.tm_hour, time.tm_min, time.tm_sec,
--		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
-+	pr_info("RTC time: %ptt, date: %ptd\n", &time, &time);
- 	val = time.tm_year;				/* 100 years */
- 	if (val > 100)
- 		val -= 100;
--- 
-2.11.0
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
