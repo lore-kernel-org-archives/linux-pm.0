@@ -1,32 +1,60 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 0/6] ACPI / PM: Suspend-to-idle rework to deal with spurious ACPI wakeups
-Date: Thu, 08 Jun 2017 02:00:40 +0200
-Message-ID: <8918199.uo13RZ8hZk@aspire.rjw.lan>
+Subject: [PATCH 2/6] USB / PCI / PM: Allow the PCI core to do the resume cleanup
+Date: Thu, 08 Jun 2017 02:02:49 +0200
+Message-ID: <1565826.hIbT8kZpDn@aspire.rjw.lan>
+References: <8918199.uo13RZ8hZk@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <8918199.uo13RZ8hZk@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Linux ACPI <linux-acpi@vger.kernel.org>
 Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, Hans De Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi All,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This series is a replacement for commit eed4d47efe95 (ACPI / sleep: Ignore
-spurious SCI wakeups from suspend-to-idle) which is still there in 4.12-rc4 but
-will be reverted shortly, because it triggered issues on quite a few systems.
+hcd_pci_resume_noirq() used as a universal _resume_noirq handler for
+PCI USB controllers calls pci_back_from_sleep() which is unnecessary
+and may become problematic.
 
-The last patch in the series is a counterpart of the above commit with a few
-modifications, mostly to avoid affecting suspend-to-RAM and to reorder messages
-printed to kernel logs to make them somewhat less confusing.
+It is unnecessary, because the PCI bus type carries out post-suspend
+cleanup of all PCI devices during resume and that covers all things
+done by the pci_back_from_sleep().  There is no reason why USB cannot
+follow all of the other PCI devices in that respect.
 
-The previous patches are pre-requisite changes plus some cleanups.  The major
-ones are [1-2/6] and [4/6] that are really needed for things to work as expected
-after [6/6].
+It will become problematic after subsequent changes that make it
+possible to go back to sleep again after executing dpm_resume_noirq()
+if no valid system wakeup events have been detected at that point.
+Namely, calling pci_back_from_sleep() at the _resume_noirq stage
+will cause the wakeup status of the devices in question to be cleared
+and if any of them has triggered system wakeup, that event may be
+missed then.
 
-In addition to that, this patch from Hans: https://patchwork.kernel.org/patch/9762815/
-is needed for USB wakeup on Bay Trail and Cherry Trail systems to work in general.
+For the above reasons, drop the pci_back_from_sleep() invocation
+from hcd_pci_resume_noirq().
 
-Thanks,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/usb/core/hcd-pci.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+Index: linux-pm/drivers/usb/core/hcd-pci.c
+===================================================================
+--- linux-pm.orig/drivers/usb/core/hcd-pci.c
++++ linux-pm/drivers/usb/core/hcd-pci.c
+@@ -584,12 +584,7 @@ static int hcd_pci_suspend_noirq(struct
+ 
+ static int hcd_pci_resume_noirq(struct device *dev)
+ {
+-	struct pci_dev		*pci_dev = to_pci_dev(dev);
+-
+-	powermac_set_asic(pci_dev, 1);
+-
+-	/* Go back to D0 and disable remote wakeup */
+-	pci_back_from_sleep(pci_dev);
++	powermac_set_asic(to_pci_dev(dev), 1);
+ 	return 0;
+ }
+ 
