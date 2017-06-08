@@ -1,47 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 5/6] PM / sleep: Print timing information if debug is enabled
-Date: Thu, 08 Jun 2017 02:05:09 +0200
-Message-ID: <13741045.ZBVOb8TO5O@aspire.rjw.lan>
-References: <8918199.uo13RZ8hZk@aspire.rjw.lan>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] devfreq: exynos-ppmu: Staticize event list
+Date: Thu, 08 Jun 2017 10:22:20 +0900
+Message-ID: <5938A6CC.8030206@samsung.com>
+References: <CGME20170607181258epcas2p4191204d7b3853ef0482d84df7a06589d@epcas2p4.samsung.com>
+        <20170607181228.32102-1-krzk@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8918199.uo13RZ8hZk@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, Hans De Goede <hdegoede@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <20170607181228.32102-1-krzk@kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Krzysztof,
 
-Avoid printing the device suspend/resume timing information if
-CONFIG_PM_DEBUG is not set to reduce the log noise level.
+On 2017년 06월 08일 03:12, Krzysztof Kozlowski wrote:
+> The ppmu_events array is accessed only in this compilation unit so it
+> can be made static.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> ---
+>  drivers/devfreq/event/exynos-ppmu.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+> index 9b7350935b73..c68f3b5a10b5 100644
+> --- a/drivers/devfreq/event/exynos-ppmu.c
+> +++ b/drivers/devfreq/event/exynos-ppmu.c
+> @@ -44,7 +44,7 @@ struct exynos_ppmu {
+>  	{ "ppmu-event2-"#name, PPMU_PMNCNT2 },	\
+>  	{ "ppmu-event3-"#name, PPMU_PMNCNT3 }
+>  
+> -struct __exynos_ppmu_events {
+> +static struct __exynos_ppmu_events {
+>  	char *name;
+>  	int id;
+>  } ppmu_events[] = {
+> 
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/main.c |    4 ++++
- 1 file changed, 4 insertions(+)
+Looks good to me.
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -417,6 +417,7 @@ static void pm_dev_err(struct device *de
- 		dev_name(dev), pm_verb(state.event), info, error);
- }
- 
-+#ifdef CONFIG_PM_DEBUG
- static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
- {
- 	ktime_t calltime;
-@@ -433,6 +434,9 @@ static void dpm_show_time(ktime_t startt
- 		info ?: "", info ? " " : "", pm_verb(state.event),
- 		usecs / USEC_PER_MSEC, usecs % USEC_PER_MSEC);
- }
-+#else
-+static inline void dpm_show_time(ktime_t starttime, pm_message_t state, char *info) {}
-+#endif /* CONFIG_PM_DEBUG */
- 
- static int dpm_run_callback(pm_callback_t cb, struct device *dev,
- 			    pm_message_t state, char *info)
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
