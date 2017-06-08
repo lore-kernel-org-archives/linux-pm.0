@@ -1,7 +1,7 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH 6/6] arm64: wire cpu-invariant accounting support up to the task scheduler
-Date: Thu,  8 Jun 2017 08:55:13 +0100
-Message-ID: <20170608075513.12475-7-dietmar.eggemann@arm.com>
+Subject: [PATCH 4/6] arm: wire cpu-invariant accounting support up to the task scheduler
+Date: Thu,  8 Jun 2017 08:55:11 +0100
+Message-ID: <20170608075513.12475-5-dietmar.eggemann@arm.com>
 References: <20170608075513.12475-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170608075513.12475-1-dietmar.eggemann@arm.com>
@@ -20,27 +20,26 @@ function topology_get_cpu_scale() for the task scheduler's cpu-invariant
 accounting instead of the default arch_scale_cpu_capacity() in
 kernel/sched/sched.h.
 
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
+Cc: Russell King <linux@arm.linux.org.uk>
 Cc: Juri Lelli <juri.lelli@arm.com>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- arch/arm64/include/asm/topology.h | 3 +++
+ arch/arm/include/asm/topology.h | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
-index 44598a86ec4a..e313eeb10756 100644
---- a/arch/arm64/include/asm/topology.h
-+++ b/arch/arm64/include/asm/topology.h
-@@ -37,6 +37,9 @@ int pcibus_to_node(struct pci_bus *bus);
+diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
+index a56a9e24f4c0..b713e7223bc4 100644
+--- a/arch/arm/include/asm/topology.h
++++ b/arch/arm/include/asm/topology.h
+@@ -29,6 +29,9 @@ const struct cpumask *cpu_coregroup_mask(int cpu);
  /* Replace task scheduler's default frequency-invariant accounting */
  #define arch_scale_freq_capacity topology_get_freq_scale
  
 +/* Replace task scheduler's default cpu-invariant accounting */
 +#define arch_scale_cpu_capacity topology_get_cpu_scale
 +
- #include <asm-generic/topology.h>
+ #else
  
- #endif /* _ASM_ARM_TOPOLOGY_H */
+ static inline void init_cpu_topology(void) { }
 -- 
 2.11.0
