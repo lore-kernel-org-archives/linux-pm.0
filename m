@@ -1,57 +1,65 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH RFC 1/2] thermal/cpu idle cooling: Introduce cpu idle
- cooling driver
-Date: Thu, 8 Jun 2017 09:52:24 +0200
-Message-ID: <20170608075224.GN2345@mai>
-References: <1496653645-20283-1-git-send-email-kevin.wangtao@hisilicon.com>
- <20170606034135.GA5103@vireshk-i7>
- <20170607215028.GL2345@mai>
- <CAJZ5v0j8Jg+KuPNtAY6SS2M2g03i8_m2Eja67XtM7H=ub_1A8A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: [PATCH 5/6] arm64: wire frequency-invariant accounting support up to the task scheduler
+Date: Thu,  8 Jun 2017 08:55:12 +0100
+Message-ID: <20170608075513.12475-6-dietmar.eggemann@arm.com>
+References: <20170608075513.12475-1-dietmar.eggemann@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f42.google.com ([74.125.82.42]:35579 "EHLO
-        mail-wm0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751506AbdFHHwa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2017 03:52:30 -0400
-Received: by mail-wm0-f42.google.com with SMTP id x70so71792657wme.0
-        for <linux-pm@vger.kernel.org>; Thu, 08 Jun 2017 00:52:29 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0j8Jg+KuPNtAY6SS2M2g03i8_m2Eja67XtM7H=ub_1A8A@mail.gmail.com>
+Received: from foss.arm.com ([217.140.101.70]:43262 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751946AbdFHHzu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 8 Jun 2017 03:55:50 -0400
+In-Reply-To: <20170608075513.12475-1-dietmar.eggemann@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Tao Wang <kevin.wangtao@hisilicon.com>, "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, amit.kachhap@gmail.com, javi.merino@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, sunzhaosheng@hisilicon.com, Vincent Guittot <vincent.guittot@linaro.org>, jean.wangtao@linaro.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaor.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On Wed, Jun 07, 2017 at 11:59:12PM +0200, Rafael J. Wysocki wrote:
-> On Wed, Jun 7, 2017 at 11:50 PM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
-> > On Tue, Jun 06, 2017 at 09:11:35AM +0530, viresh kumar wrote:
-> >> + Daniel
-> >
-> > Hi Viresh,
-> >
-> > thanks for the head up.
-> >
-> > Before going deeply in the review, I have a dumb question:
-> >
-> > Why isn't this mechanism implemented at the scheduler level?
-> 
-> I suppose for the same reason why intel_powerclamp is not implemented
-> like that: the scheduler maintainers don't like the idea.
+Commit dfbca41f3479 ("sched: Optimize freq invariant accounting")
+changed the wiring which now has to be done by associating
+arch_scale_freq_capacity with the actual implementation provided
+by the architecture.
 
-Ok, I see.
+Define arch_scale_freq_capacity to use the arch_topology "driver"
+function topology_get_freq_scale() for the task scheduler's
+frequency-invariant accounting instead of the default
+arch_scale_freq_capacity() in kernel/sched/sched.h.
 
-Thanks.
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Juri Lelli <juri.lelli@arm.com>
+Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+---
+ arch/arm64/include/asm/topology.h | 5 +++++
+ arch/arm64/kernel/topology.c      | 1 -
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-  -- Daniel
-
-
+diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+index 8b57339823e9..44598a86ec4a 100644
+--- a/arch/arm64/include/asm/topology.h
++++ b/arch/arm64/include/asm/topology.h
+@@ -32,6 +32,11 @@ int pcibus_to_node(struct pci_bus *bus);
+ 
+ #endif /* CONFIG_NUMA */
+ 
++#include <linux/arch_topology.h>
++
++/* Replace task scheduler's default frequency-invariant accounting */
++#define arch_scale_freq_capacity topology_get_freq_scale
++
+ #include <asm-generic/topology.h>
+ 
+ #endif /* _ASM_ARM_TOPOLOGY_H */
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index 79244c75eaec..6cbb6315e493 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -11,7 +11,6 @@
+  * for more details.
+  */
+ 
+-#include <linux/arch_topology.h>
+ #include <linux/cpu.h>
+ #include <linux/cpumask.h>
+ #include <linux/init.h>
 -- 
-
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.11.0
