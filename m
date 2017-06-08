@@ -1,63 +1,66 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
- recent Dell laptops
-Date: Thu, 8 Jun 2017 22:28:23 +0000
-Message-ID: <31f516ad46d74225a5d6324c5fd24751@ausx13mpc124.AMER.DELL.COM>
-References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/6] USB / PCI / PM: Allow the PCI core to do the resume cleanup
+Date: Fri, 09 Jun 2017 01:01:45 +0200
+Message-ID: <4103609.n9yJNxPNSu@aspire.rjw.lan>
+References: <Pine.LNX.4.44L0.1706081124310.1949-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: jerome.debretagne@gmail.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net
-Cc: andriy.shevchenko@linux.intel.com, dvhart@infradead.org, srinivas.pandruvada@linux.intel.com, mika.westerberg@linux.intel.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1706081124310.1949-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, Hans De Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgSmVyb21lLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IErDqXLD
-tG1lIGRlIEJyZXRhZ25lIFttYWlsdG86amVyb21lLmRlYnJldGFnbmVAZ21haWwuY29tXQ0KPiBT
-ZW50OiBXZWRuZXNkYXksIEp1bmUgNywgMjAxNyA2OjA2IFBNDQo+IFRvOiBBQ1BJIERldmVsIE1h
-bGluZyBMaXN0IDxsaW51eC1hY3BpQHZnZXIua2VybmVsLm9yZz47IGxpbnV4LQ0KPiBwbUB2Z2Vy
-Lmtlcm5lbC5vcmc7IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD4NCj4gQ2M6
-IEFuZHkgU2hldmNoZW5rbyA8YW5kcml5LnNoZXZjaGVua29AbGludXguaW50ZWwuY29tPjsgRGFy
-cmVuIEhhcnQNCj4gPGR2aGFydEBpbmZyYWRlYWQub3JnPjsgU3Jpbml2YXMgUGFuZHJ1dmFkYQ0K
-PiA8c3Jpbml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnRlbC5jb20+OyBNaWthIFdlc3RlcmJlcmcN
-Cj4gPG1pa2Eud2VzdGVyYmVyZ0BsaW51eC5pbnRlbC5jb20+OyBMaW1vbmNpZWxsbywgTWFyaW8N
-Cj4gPE1hcmlvX0xpbW9uY2llbGxvQERlbGwuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDAv
-M10gQUNQSSAvIHNsZWVwOiBTdXBwb3J0IHBvd2VyIGJ1dHRvbiB3YWtldXAgZnJvbSBTMkkgb24N
-Cj4gcmVjZW50IERlbGwgbGFwdG9wcw0KPiANCj4gSGksDQo+IA0KPiBIZXJlIGlzIHNvbWUgZmVl
-ZGJhY2sgZm9yIERlbGwgTGF0aXR1ZGUgNzI3NSwgYXMgc3VnZ2VzdGVkIGJ5IFNyaW5pdmFzDQo+
-IGluIGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTk1ODk3I2Mx
-NSAuDQo+IA0KPiBGb3Igc29tZSBjb250ZXh0IG9uIHRoYXQgbW9kZWwsIHN1c3BlbmQtdG8tUkFN
-IGlzIG5vdCBzYWZlIGFzIHRoZQ0KPiBzeXN0ZW0gaGFuZ3MgKHJhaXNlZCBpbiB0aGUgYWJvdmUg
-YnVnIHJlcG9ydCkuIEknbSB3b25kZXJpbmcgaWYgdGhpcw0KPiBpcyBleHBlY3RlZCBzb21laG93
-LCBkdWUgdG8gUzMgbm90IGJlaW5nIHN1cHBvcnRlZCBvbiB0aGF0IG1vZGVsLCBhcw0KPiBkaXNj
-dXNzZWQgZm9yIHRoZSBYUFMgMTMgOTM2NS4gTWF5YmUgTWFyaW8gb3Igc29tZW9uZSBlbHNlIGZy
-b20gRGVsbA0KPiB3b3VsZCBiZSBhYmxlIHRvIGNvbmZpcm0gdGhpcyBwb2ludC4NCj4gDQpUaGUg
-TGF0aXR1ZGUgNzI3NSB3YXMgbm90IGEgbWFjaGluZSB0aGF0IHdhcyB0ZXN0ZWQgd2l0aCBMaW51
-eCBkdXJpbmcgDQpkZXZlbG9wbWVudC4NClRoaXMgbWFjaGluZSBzaGlwcGVkIHdpdGggV2luZG93
-cyA4LCByaWdodD8NCkkgYmVsaWV2ZSB0aGlzIG1hY2hpbmUgYWxzbyBzdXBwb3J0cyBDb25uZWN0
-ZWQgU3RhbmRieSAodGhlIHByZWN1cnNvcg0KdG8gTW9kZXJuIFN0YW5kYnkgdGhhdCBiZWhhdmVz
-IHZlcnkgc2ltaWxhcmx5KS4NCg0KSSBoYXZlIGFuIGFzayBvdXQgdG8gc29tZW9uZSB3aG8gY2Fu
-IGNvbmZpcm0gdGhhdC4JDQoNCj4gV2hpbGUgaXQncyBub3Qgc2V0IGJ5IGRlZmF1bHQsIHN1c3Bl
-bmQtdG8taWRsZSB3b3JrcyBmaW5lLiBIb3dldmVyIHRoZQ0KPiBwb3dlciBidXR0b24gbmVlZHMg
-YSB2ZXJ5IGxvbmcgcHJlc3Mgb2YgYWJvdXQgNi03cyB0byB0cmlnZ2VyIHRoZQ0KPiB3YWtlLXVw
-IChxdWl0ZSBzdXJwcmlzaW5nIGF0IGZpcnN0KS4NCj4gDQo+IEkndmUgYXBwbGllZCBSYWZhZWwn
-cyBwYXRjaCBzZXJpZXMgb24gNC4xMi1yYzQsIHdpdGggdGhlIDNyZCBwYXRjaA0KPiBtb2RpZmll
-ZCB0byBhZGQgdGhlIExhdGl0dWRlIDcyNzUgRE1JIHZhbHVlcywgdG8gY2hlY2sgaWYgdGhlIHBy
-b3Bvc2VkDQo+IGZpeCBmb3IgdGhlIFhQUyAxMyA5MzYwIGFuZCA5MzY1IGNvdWxkIGFsc28gd29y
-ayBmb3IgdGhpcyBvdGhlciBxdWl0ZQ0KPiByZWNlbnQgRGVsbCBtb2RlbC4NCj4gDQo+IFNhZGx5
-IHdpdGggdGhlIGxhdGVzdCBCSU9TIDEuMS4zMSwgdGhpcyBwYXRjaCBzZXQgZG9lc24ndCBzZWVt
-IHRvDQo+IGNoYW5nZSBhbnl0aGluZzogdGhlIGxvbmcgcHJlc3MgaXMgc3RpbGwgbmVlZGVkLg0K
-PiANCj4gU3VycHJpc2luZ2x5IGFuZCBtb3JlIGZvciByZWZlcmVuY2UgSSBzdXBwb3NlLCB0aGlz
-IHBhdGNoIHNldCB3b3JrcyBhcw0KPiBpbnRlbmRlZCB3aXRoIGFuIG9sZGVyIEJJT1MgMS4xLjIw
-IDogdGhlIHN5c3RlbSBjYW4gdGhlbiBiZSB3b2tlbiB1cA0KPiBmcm9tIHN5c3RlbS10by1pZGxl
-IHdpdGggYSB1c3VhbCBzaG9ydCBwcmVzcy4gQ2YuDQo+IGh0dHBzOi8vYnVnemlsbGEua2VybmVs
-Lm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTk1ODk3I2M5IGZvciBtb3JlIGRldGFpbHMNCj4gYWJvdXQg
-d2h5IEkndmUgZG93bmdyYWRlZCB0byBhbmQgdGVzdGVkIHRoYXQgc3BlY2lmaWMgb2xkZXIgQklP
-Uy4NCj4gDQo+IEknbSB3b25kZXJpbmcgaWYgdGhlcmUgY291bGQgYmUgd2F5cyB0byBtb2RpZnkg
-c2xpZ2h0bHkgdGhpcyBwYXRjaA0KPiBzZXJpZXMgdG8gYWxzbyBjb3ZlciB0aGUgTGF0aXR1ZGUg
-NzI3NSB3aGVuIHJ1bm5pbmcgdGhlIGN1cnJlbnQgQklPUy4NCj4gSWYgSSBjYW4gcHJvdmlkZSBh
-bnkgaW5wdXRzIHRoYXQgY291bGQgYmUgdXNlZnVsIHRvIGludmVzdGlnYXRlLA0KPiBwbGVhc2Ug
-bGV0IG1lIGtub3cuDQo+IA0KPiBUaGFua3MsDQo+IErDqXJvbWUNCg==
+On Thursday, June 08, 2017 11:24:55 AM Alan Stern wrote:
+> On Thu, 8 Jun 2017, Rafael J. Wysocki wrote:
+> 
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > hcd_pci_resume_noirq() used as a universal _resume_noirq handler for
+> > PCI USB controllers calls pci_back_from_sleep() which is unnecessary
+> > and may become problematic.
+> > 
+> > It is unnecessary, because the PCI bus type carries out post-suspend
+> > cleanup of all PCI devices during resume and that covers all things
+> > done by the pci_back_from_sleep().  There is no reason why USB cannot
+> > follow all of the other PCI devices in that respect.
+> > 
+> > It will become problematic after subsequent changes that make it
+> > possible to go back to sleep again after executing dpm_resume_noirq()
+> > if no valid system wakeup events have been detected at that point.
+> > Namely, calling pci_back_from_sleep() at the _resume_noirq stage
+> > will cause the wakeup status of the devices in question to be cleared
+> > and if any of them has triggered system wakeup, that event may be
+> > missed then.
+> > 
+> > For the above reasons, drop the pci_back_from_sleep() invocation
+> > from hcd_pci_resume_noirq().
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/usb/core/hcd-pci.c |    7 +------
+> >  1 file changed, 1 insertion(+), 6 deletions(-)
+> > 
+> > Index: linux-pm/drivers/usb/core/hcd-pci.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/usb/core/hcd-pci.c
+> > +++ linux-pm/drivers/usb/core/hcd-pci.c
+> > @@ -584,12 +584,7 @@ static int hcd_pci_suspend_noirq(struct
+> >  
+> >  static int hcd_pci_resume_noirq(struct device *dev)
+> >  {
+> > -	struct pci_dev		*pci_dev = to_pci_dev(dev);
+> > -
+> > -	powermac_set_asic(pci_dev, 1);
+> > -
+> > -	/* Go back to D0 and disable remote wakeup */
+> > -	pci_back_from_sleep(pci_dev);
+> > +	powermac_set_asic(to_pci_dev(dev), 1);
+> >  	return 0;
+> >  }
+> 
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+
+Thanks!
