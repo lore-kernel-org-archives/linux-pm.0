@@ -1,84 +1,61 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+From: Mark Brown <broonie@kernel.org>
 Subject: Re: [PATCH 1/3] regmap: Add 1-Wire bus support
-Date: Thu, 8 Jun 2017 14:53:50 +0200
-Message-ID: <20170608125350.6glgyrlydqmtshru@earth>
+Date: Thu, 8 Jun 2017 13:57:04 +0100
+Message-ID: <20170608125704.rq2mushzmvsjemmv@sirena.org.uk>
 References: <20170602070629.8210-1-minimumlaw@rambler.ru>
  <20170602070629.8210-2-minimumlaw@rambler.ru>
+ <20170608125350.6glgyrlydqmtshru@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="5sjggg3lgpky75ag"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="h4hmmz5l2z34dhif"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:50163 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750914AbdFHMxy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2017 08:53:54 -0400
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:55904 "EHLO
+        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751444AbdFHM5W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2017 08:57:22 -0400
 Content-Disposition: inline
-In-Reply-To: <20170602070629.8210-2-minimumlaw@rambler.ru>
+In-Reply-To: <20170608125350.6glgyrlydqmtshru@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Alex A. Mihaylov" <minimumlaw@rambler.ru>
-Cc: Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: "Alex A. Mihaylov" <minimumlaw@rambler.ru>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
 
---5sjggg3lgpky75ag
+--h4hmmz5l2z34dhif
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-Hi,
+On Thu, Jun 08, 2017 at 02:53:50PM +0200, Sebastian Reichel wrote:
+> On Fri, Jun 02, 2017 at 10:06:27AM +0300, Alex A. Mihaylov wrote:
+> > Add basic support regmap (register map access) API for 1-Wire bus
 
-On Fri, Jun 02, 2017 at 10:06:27AM +0300, Alex A. Mihaylov wrote:
-> Add basic support regmap (register map access) API for 1-Wire bus
+> > +#include <linux/module.h>
+> > +#include "../../w1/w1.h"
 
-Thanks :)
+> This conflicts with the following patch:
 
-> diff --git a/drivers/base/regmap/regmap-w1.c b/drivers/base/regmap/regmap-w1.c
-> new file mode 100644
-> index 0000000000..5f04e7bf06
-> --- /dev/null
-> +++ b/drivers/base/regmap/regmap-w1.c
-> @@ -0,0 +1,245 @@
-> +/*
-> + * Register map access API - W1 (1-Wire) support
-> + *
-> + * Copyright (C) 2017 OAO Radioavionica
-> + * Author: Alex A. Mihaylov <minimumlaw@rambler.ru>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation
-> + */
-> +
-> +#include <linux/regmap.h>
-> +#include <linux/module.h>
-> +#include "../../w1/w1.h"
+> https://www.spinics.net/lists/kernel/msg2524566.html
 
-This conflicts with the following patch:
+Not in -next yet?
 
-https://www.spinics.net/lists/kernel/msg2524566.html
+> I guess Greg could pull your immutable branch and above
+> patch can be augumented to also update regmap-w1.
 
-I guess Greg could pull your immutable branch and above
-patch can be augumented to also update regmap-w1.
+Yes, or I can pull in a tag and apply an integration fix if needed.
 
--- Sebastian
-
---5sjggg3lgpky75ag
+--h4hmmz5l2z34dhif
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlk5SN0ACgkQ2O7X88g7
-+ppYig/5AVvP1piEopbH0dWrQ2dt/o54pPpwOnoxeLtzagtxfpLOw/79PQCjXXCS
-ud6WdcuRxSqunQwjW62pH4ro/91ib9DkNKaV6jGCgKAxwsLI1nRzpUVCY9Zrnwxw
-LF/7Ox4udvcJrEtmjUdd6MqNgJQ0uOehgzLm0RCkN6eXNPKoqW27SlOPSWfuABPW
-GffKJn+0WEvYhLY3lS8YSGwklS5DDg/sk7mkpB6SmwTp3+dP/ENZdqXWI6wkjR4L
-gb8X0uzFuZpc2WwZTM6aK8kJtVR/3k/0v+sX0hN3Rfympz5SmREnov7mp5tq9yCn
-O0O1Va6OIRBXCNuw50iMa1S9FEkDwSWWKnljQiXSWpSLtH0YhoISafGAUpI9E2Em
-0Nvq8kyCSbgUnaNi4H8396ZJoRWtzkQioBaApBb/nQtSdN06mfMzM8+plSbmx0wc
-DaUt0Om9Nd5AdZB7+NsYt8e+jPwB2mCDbPbGrErkNBSQOS9dlWDa+VuUsSUm4Ecn
-oalY0+VGV1/HTEiDPx5NAfZgOhPFUkKs5Iw+xMWObk3JPMVM9jrwEx0ZEkT24SmB
-lQmt2LRxecCgpL4IqVhXMgCYegJgMlVPfdCBqH9cRU6hbLXjoFbF7wUL1jspNypM
-+6steNJOgF9jQxCG0bcD05VKFfK6rPhDiStdmyRVSwz5bJR3Lbw=
-=JA5L
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlk5SZ8ACgkQJNaLcl1U
+h9DNRwf/cimqGqkRq8gnZO1Bez2mZCKIpEZMIP9bklYw8F59o1sJVmNvUTZm/+aN
+/39IO4LCjKYaNFPKepXHIvTlFqn7KDjk/k48bmLSy9QqDBSS6bWNbZdcI06lPtBp
+SaO4JIcKG8N0h4ZRqzGmpYpzw6OyECzwqF2mgbuCGNJ0fdpzWbew+/odpFaWn/0v
+v/lbkETQP4go+ZPBEyvmRLAljb1m7iCb1S8/BR7iNmZ1CChDxakPugJfUtkFoPgd
+os/Ct+MrUSEpuHng6COeruj+kN8K+jNzit2K+vepCp+GCHO2+/Q6DjSwLMKKOUgQ
+wyDmMhbjvYpi9+NixmROUHHu0vZW9w==
+=xI08
 -----END PGP SIGNATURE-----
 
---5sjggg3lgpky75ag--
+--h4hmmz5l2z34dhif--
