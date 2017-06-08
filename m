@@ -1,66 +1,36 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/6] USB / PCI / PM: Allow the PCI core to do the resume cleanup
-Date: Fri, 09 Jun 2017 01:01:45 +0200
-Message-ID: <4103609.n9yJNxPNSu@aspire.rjw.lan>
-References: <Pine.LNX.4.44L0.1706081124310.1949-100000@iolanthe.rowland.org>
+From: Becky Miles <info@talentscout.com>
+Subject: Dear Talented.
+Date: Fri, 09 Jun 2017 03:42:06 +0530
+Message-ID: <20170608221209.729A13E02A5450@nhenri.pnri.dost.gov.ph>
+Reply-To: sonypicturesproduction@usa.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1706081124310.1949-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, Hans De Goede <hdegoede@redhat.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from nhenri.pnri.dost.gov.ph ([146.88.73.7]:45190 "EHLO
+        nhenri.pnri.dost.gov.ph" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751382AbdFHX2r (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2017 19:28:47 -0400
+Content-Description: Mail message body
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Recipients <info@talentscout.com>
 
-On Thursday, June 08, 2017 11:24:55 AM Alan Stern wrote:
-> On Thu, 8 Jun 2017, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > hcd_pci_resume_noirq() used as a universal _resume_noirq handler for
-> > PCI USB controllers calls pci_back_from_sleep() which is unnecessary
-> > and may become problematic.
-> > 
-> > It is unnecessary, because the PCI bus type carries out post-suspend
-> > cleanup of all PCI devices during resume and that covers all things
-> > done by the pci_back_from_sleep().  There is no reason why USB cannot
-> > follow all of the other PCI devices in that respect.
-> > 
-> > It will become problematic after subsequent changes that make it
-> > possible to go back to sleep again after executing dpm_resume_noirq()
-> > if no valid system wakeup events have been detected at that point.
-> > Namely, calling pci_back_from_sleep() at the _resume_noirq stage
-> > will cause the wakeup status of the devices in question to be cleared
-> > and if any of them has triggered system wakeup, that event may be
-> > missed then.
-> > 
-> > For the above reasons, drop the pci_back_from_sleep() invocation
-> > from hcd_pci_resume_noirq().
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/usb/core/hcd-pci.c |    7 +------
-> >  1 file changed, 1 insertion(+), 6 deletions(-)
-> > 
-> > Index: linux-pm/drivers/usb/core/hcd-pci.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/usb/core/hcd-pci.c
-> > +++ linux-pm/drivers/usb/core/hcd-pci.c
-> > @@ -584,12 +584,7 @@ static int hcd_pci_suspend_noirq(struct
-> >  
-> >  static int hcd_pci_resume_noirq(struct device *dev)
-> >  {
-> > -	struct pci_dev		*pci_dev = to_pci_dev(dev);
-> > -
-> > -	powermac_set_asic(pci_dev, 1);
-> > -
-> > -	/* Go back to D0 and disable remote wakeup */
-> > -	pci_back_from_sleep(pci_dev);
-> > +	powermac_set_asic(to_pci_dev(dev), 1);
-> >  	return 0;
-> >  }
-> 
-> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Dear Talented,
 
-Thanks!
+I am Talent Scout For Sony Pictures Animation, Present Sony Pictures Animation Movies a Film Corporation Located in the United State, is Soliciting for the
+Right to use Your Photo/Face and Personality as One of the Semi -Major
+Role/ Character in our Upcoming ANIMATED Stereoscope 3D Movie-The Story
+of Peter Rabbit (Peter Rabbit 2018) The Movie is Currently Filming (In
+Production) Please Note That There Will Be No Auditions, Traveling or
+Any Special / Professional Acting Skills, Since the Production of This
+Movie Will Be Done with our State of Art Computer -Generating Imagery
+Equipment. We Are Prepared to Pay the Total Sum of $560,000.00 USD. For
+More Information/Understanding, Please Write us on the E-Mail Below.
+CONTACT EMAIL: sonypicturesproduction@usa.com
+All Reply to:  sonypicturesproduction@usa.com
+Note: Only the Response send to this mail will be Given a Prior
+Consideration.
+
+Talent Scout
+Becky Miles
