@@ -1,90 +1,56 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH RFC 1/2] thermal/cpu idle cooling: Introduce cpu idle
- cooling driver
-Date: Thu, 8 Jun 2017 09:19:13 +0200
-Message-ID: <CAKfTPtBvc-AiQ67P1L2bYtg=0vzzGwT=pTPM7thT-TxH-KKstg@mail.gmail.com>
-References: <1496653645-20283-1-git-send-email-kevin.wangtao@hisilicon.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH 0/6] ACPI / PM: Suspend-to-idle rework to deal with
+ spurious ACPI wakeups
+Date: Thu, 8 Jun 2017 09:24:37 +0200
+Message-ID: <7579a28c-6237-e16a-6eda-9b41cc657ddf@redhat.com>
+References: <8918199.uo13RZ8hZk@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f50.google.com ([209.85.215.50]:35262 "EHLO
-        mail-lf0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750752AbdFHHTf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2017 03:19:35 -0400
-Received: by mail-lf0-f50.google.com with SMTP id p189so14342483lfe.2
-        for <linux-pm@vger.kernel.org>; Thu, 08 Jun 2017 00:19:35 -0700 (PDT)
-In-Reply-To: <1496653645-20283-1-git-send-email-kevin.wangtao@hisilicon.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <8918199.uo13RZ8hZk@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
-To: Tao Wang <kevin.wangtao@hisilicon.com>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, javi.merino@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Sunzhaosheng Sun(Zhaosheng)" <sunzhaosheng@hisilicon.com>, Jean Wangtao <jean.wangtao@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Hi Kevin,
+Hi,
 
-On 5 June 2017 at 11:07, Tao Wang <kevin.wangtao@hisilicon.com> wrote:
-> cpu idle cooling driver performs synchronized idle injection across
-> all cpu in same cluster, offers a new method to cooling down cpu,
-> that is similar to intel_power_clamp driver, but is basically
-> designed for ARM platform.
-> Each cluster has its own idle cooling device, each core has its own
-> idle injection thread, idle injection thread use play_idle to enter
-> idle. In order to reach deepest idle state, all cores are aligned by
-> jiffies. the injected idle ratio can be controlled through cooling
-> device interface.
->
-> Signed-off-by: Tao Wang <kevin.wangtao@hisilicon.com>
-> ---
->  drivers/thermal/Kconfig            |   13 +
->  drivers/thermal/Makefile           |    3 +
->  drivers/thermal/cpu_idle_cooling.c |  648 ++++++++++++++++++++++++++++++++++++
->  3 files changed, 664 insertions(+)
->  create mode 100644 drivers/thermal/cpu_idle_cooling.c
->
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index b5b5fac..f78e85c 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -154,6 +154,19 @@ config CPU_THERMAL
->
->           If you want this support, you should say Y here.
->
-> +config CPU_IDLE_THERMAL
-> +       tristate "generic cpu idle cooling support"
-> +       depends on CPU_FREQ
+On 08-06-17 02:00, Rafael J. Wysocki wrote:
+> Hi All,
+> 
+> This series is a replacement for commit eed4d47efe95 (ACPI / sleep: Ignore
+> spurious SCI wakeups from suspend-to-idle) which is still there in 4.12-rc4 but
+> will be reverted shortly, because it triggered issues on quite a few systems.
+> 
+> The last patch in the series is a counterpart of the above commit with a few
+> modifications, mostly to avoid affecting suspend-to-RAM and to reorder messages
+> printed to kernel logs to make them somewhat less confusing.
+> 
+> The previous patches are pre-requisite changes plus some cleanups.  The major
+> ones are [1-2/6] and [4/6] that are really needed for things to work as expected
+> after [6/6].
+> 
+> In addition to that, this patch from Hans: https://patchwork.kernel.org/patch/9762815/
+> is needed for USB wakeup on Bay Trail and Cherry Trail systems to work in general.
 
-Does CPU_IDLE_THERMAL really depend on CPU_FREQ ?
-This dependency should be put for CPU_THERMAL_COMBO in the patch 2
+Small correction, that patch currently only influences Cherry Trail devices, it has:
 
-> +       help
-> +         This implements the generic cpu cooling mechanism through idle
-> +         injection.
-> +
-> +         This will throttle cpu by injecting specified idle time in
-> +         a fixed cycle. All cpu in same cluster will enter idle synchronously
-> +         to reach deepest idle state when injecting idle.
-> +
-> +         If you want this support, you should say Y here.
-> +
->  config CLOCK_THERMAL
->         bool "Generic clock cooling support"
->         depends on COMMON_CLK
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 094d703..a4db66e 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -26,6 +26,9 @@ thermal_sys-$(CONFIG_CLOCK_THERMAL)   += clock_cooling.o
->  # devfreq cooling
->  thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
->
-> +# cpu idle cooling
-> +obj-$(CONFIG_CPU_IDLE_THERMAL) += cpu_idle_cooling.o
-> +
->  # platform thermal drivers
->  obj-y                          += broadcom/
->  obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)     += qcom-spmi-temp-alarm.o
-> diff --git a/drivers/thermal/cpu_idle_cooling.c b/drivers/thermal/cpu_idle_cooling.c
-> new file mode 100644
-> index 0000000..89a15c5
-> --- /dev/null
+static const struct x86_cpu_id int0002_cpu_ids[] = {
+/*
+  * Limit ourselves to Cherry Trail for now, until testing shows we
+  * need to handle the INT0002 device on Baytrail too.
+  *     ICPU(INTEL_FAM6_ATOM_SILVERMONT1),       * Valleyview, Bay Trail *
+  */
+        ICPU(INTEL_FAM6_ATOM_AIRMONT),          /* Braswell, Cherry Trail */
+        {}
+};
 
-[snip]
+If anyone sees any issues where the SCI (typically irq 9) gets a nobody
+cared message on Bay Trail try the linked patch with the Bay Trail line
+above uncommented.
+
+Regards,
+
+Hans
