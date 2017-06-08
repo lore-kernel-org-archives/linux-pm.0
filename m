@@ -1,32 +1,46 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
- recent Dell laptops
-Date: Thu, 8 Jun 2017 01:47:07 +0200
-Message-ID: <CAJZ5v0g1XsGA5SaxfPsNYgVcbCZ26JU-xx+aXD=6Dc_=pHe6yw@mail.gmail.com>
-References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
- <CAJZ5v0i+-0dVODOcDpeu+fJNWXJbpb58=3RYOoPNhYONGnqaLg@mail.gmail.com> <CA+kEDGFtO2cVOMFYAMKmJvPEDrPH=y3JF7HCmBGAcToHwwt5dA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: [PATCH 3/6] ACPI / PM: Change log level of wakeup-related message
+Date: Thu, 08 Jun 2017 02:03:33 +0200
+Message-ID: <9422539.lDExOtEzqW@aspire.rjw.lan>
+References: <8918199.uo13RZ8hZk@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CA+kEDGFtO2cVOMFYAMKmJvPEDrPH=y3JF7HCmBGAcToHwwt5dA@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?= <jerome.debretagne@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario_limonciello@dell.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <8918199.uo13RZ8hZk-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Linux ACPI <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mathias Nyman <mathias.nyman-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mario Limonciello <mario_limonciello-8PEkshWhKlo@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Dominik Brodowski <linux-X3ehHDuj6sIIGcDfoQAp7OTW4wlIGRCZ@public.gmane.org>, Hans De Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 8, 2017 at 1:38 AM, J=C3=A9r=C3=B4me de Bretagne
-<jerome.debretagne@gmail.com> wrote:
-> Hi Rafael,
->
->> I'll look at the acpidump output data attached to the bug entry.
->
-> Thanks.
->
->> I only see one acpidump output attachment in the bug entry, so please
->> also attach the one from the other BIOS revision.
->
-> Here you go, I've just attached the second one. I've also updated
-> their respective descriptions to better see which one is which.
+From: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
-Thank you.
+Change the log level of the "System wakeup enabled/disabled by ACPI"
+message in acpi_pm_device_sleep_wake() to "debug" to reduce to log
+noise level.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+---
+ drivers/acpi/device_pm.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -756,8 +756,8 @@ int acpi_pm_device_sleep_wake(struct dev
+ 
+ 	error = acpi_device_wakeup(adev, acpi_target_system_state(), enable);
+ 	if (!error)
+-		dev_info(dev, "System wakeup %s by ACPI\n",
+-				enable ? "enabled" : "disabled");
++		dev_dbg(dev, "System wakeup %s by ACPI\n",
++			enable ? "enabled" : "disabled");
+ 
+ 	return error;
+ }
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
