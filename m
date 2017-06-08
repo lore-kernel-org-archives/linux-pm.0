@@ -1,79 +1,129 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH 1/3] regmap: Add 1-Wire bus support
-Date: Thu, 8 Jun 2017 15:13:41 +0200
-Message-ID: <20170608131341.izvoelvrg37ktrie@earth>
-References: <20170602070629.8210-1-minimumlaw@rambler.ru>
- <20170602070629.8210-2-minimumlaw@rambler.ru>
- <20170608125350.6glgyrlydqmtshru@earth>
- <20170608125704.rq2mushzmvsjemmv@sirena.org.uk>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH RFC 1/2] thermal/cpu idle cooling: Introduce cpu idle
+ cooling driver
+Date: Thu, 8 Jun 2017 15:42:19 +0200
+Message-ID: <CAKfTPtCVsDkjTx5u9ecDj0P2zJ2w3LVRDGiGL2XMT4eES2tVpg@mail.gmail.com>
+References: <1496653645-20283-1-git-send-email-kevin.wangtao@hisilicon.com>
+ <CAKfTPtBvc-AiQ67P1L2bYtg=0vzzGwT=pTPM7thT-TxH-KKstg@mail.gmail.com> <CAMBp1jNWrosu4vaFwqy4cKs69r3-zX_b06-09eitCcfteHBG2w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="6ifdx4s4sool54nv"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:50197 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751232AbdFHNNt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2017 09:13:49 -0400
-Content-Disposition: inline
-In-Reply-To: <20170608125704.rq2mushzmvsjemmv@sirena.org.uk>
+Received: from mail-lf0-f45.google.com ([209.85.215.45]:34328 "EHLO
+        mail-lf0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751656AbdFHNmq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Jun 2017 09:42:46 -0400
+Received: by mail-lf0-f45.google.com with SMTP id v20so18233155lfa.1
+        for <linux-pm@vger.kernel.org>; Thu, 08 Jun 2017 06:42:45 -0700 (PDT)
+In-Reply-To: <CAMBp1jNWrosu4vaFwqy4cKs69r3-zX_b06-09eitCcfteHBG2w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Alex A. Mihaylov" <minimumlaw@rambler.ru>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Evgeniy Polyakov <zbr@ioremap.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Jean Wangtao <jean.wangtao@linaro.org>
+Cc: edubezval@gmail.com, javi.merino@kernel.org, viresh kumar <viresh.kumar@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Tao Wang <kevin.wangtao@hisilicon.com>, "Sunzhaosheng Sun(Zhaosheng)" <sunzhaosheng@hisilicon.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com
+
+On 8 June 2017 at 14:59, Jean Wangtao <jean.wangtao@linaro.org> wrote:
+>
+> Hi Vincent,
+>
+> 2017=E5=B9=B46=E6=9C=888=E6=97=A5 =E4=B8=8B=E5=8D=883:19=EF=BC=8C"Vincent=
+ Guittot" <vincent.guittot@linaro.org>=E5=86=99=E9=81=93=EF=BC=9A
+>
+> Hi Kevin,
+>
+> On 5 June 2017 at 11:07, Tao Wang <kevin.wangtao@hisilicon.com> wrote:
+>> cpu idle cooling driver performs synchronized idle injection across
+>> all cpu in same cluster, offers a new method to cooling down cpu,
+>> that is similar to intel_power_clamp driver, but is basically
+>> designed for ARM platform.
+>> Each cluster has its own idle cooling device, each core has its own
+>> idle injection thread, idle injection thread use play_idle to enter
+>> idle. In order to reach deepest idle state, all cores are aligned by
+>> jiffies. the injected idle ratio can be controlled through cooling
+>> device interface.
+>>
+>> Signed-off-by: Tao Wang <kevin.wangtao@hisilicon.com>
+>> ---
+>>  drivers/thermal/Kconfig            |   13 +
+>>  drivers/thermal/Makefile           |    3 +
+>>  drivers/thermal/cpu_idle_cooling.c |  648
+>> ++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 664 insertions(+)
+>>  create mode 100644 drivers/thermal/cpu_idle_cooling.c
+>>
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index b5b5fac..f78e85c 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -154,6 +154,19 @@ config CPU_THERMAL
+>>
+>>           If you want this support, you should say Y here.
+>>
+>> +config CPU_IDLE_THERMAL
+>> +       tristate "generic cpu idle cooling support"
+>> +       depends on CPU_FREQ
+>
+> Does CPU_IDLE_THERMAL really depend on CPU_FREQ ?
+>
+>
+> because I use a interface of cpufreq to get cpu idle time and current wal=
+l
+> time, that cause the dependency
+
+IMO, you should better use directly get_cpu_idle_time_us and remove
+your dependency with cpufreq
+Furthermore, get_cpu_idle_time from cpufreq may consider iowait as
+busy time which could make sense for cpufreq but not really for idle
+injection
 
 
---6ifdx4s4sool54nv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>
+> This dependency should be put for CPU_THERMAL_COMBO in the patch 2
+>
+>
+> CPU_THERMAL_COMBO depend on CPU_THERMAL and CPU_IDLE_THERMAL, but the cod=
+e
+> of patch 2 have no direct relationship with cpufreq, so I didn't add the
+> dependency
 
-Hi,
+yes you're right, CPU_THERMAL_COMBO depends already on CPUFREQ
 
-On Thu, Jun 08, 2017 at 01:57:04PM +0100, Mark Brown wrote:
-> On Thu, Jun 08, 2017 at 02:53:50PM +0200, Sebastian Reichel wrote:
-> > On Fri, Jun 02, 2017 at 10:06:27AM +0300, Alex A. Mihaylov wrote:
-> > > Add basic support regmap (register map access) API for 1-Wire bus
->=20
-> > > +#include <linux/module.h>
-> > > +#include "../../w1/w1.h"
->=20
-> > This conflicts with the following patch:
->=20
-> > https://www.spinics.net/lists/kernel/msg2524566.html
->=20
-> Not in -next yet?
-
-I think Greg did not yet apply it. It already has been
-Acked by w1 maintainer, though. This was just a heads
-up for upcoming trouble :)
-
-> > I guess Greg could pull your immutable branch and above
-> > patch can be augumented to also update regmap-w1.
->=20
-> Yes, or I can pull in a tag and apply an integration fix if needed.
-
-Sure.
-
--- Sebastian
-
---6ifdx4s4sool54nv
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlk5TX4ACgkQ2O7X88g7
-+poSzg//T+ElHzYw4hMWFQAil44q0W56eMX/MPdNq6oJKVG4XrbHZO9ys4gvbOy7
-DTzk9ZimAQgrN4n2NzhxHYAFPHrIKfKOnTtsRqNk9zlqf9w1cc1b5euvpRUSk+TO
-dV452PXxjmLe4f3kCATI+aalU08dqVAWjlVKAsQPGydDAxhlQQMxWW9bjlqyjjla
-Y7ldIkI1HAxyYAx/7IbE4mgI2EANIQE9z+/GFNnxGwn/f1Trmf/T51AgAWuCVQ6z
-TYKVSJI17U+bSbpjpr9tnhhPzaiWnLPzB/6pArQsLv4nXtQs2YEfiKD2+Q5TSoEk
-HvW2v5TTo/fbaCGMfm5b007F57AYozYy6CaxWmHISdNEBd9pBWK7LFhk8jdUXwJJ
-+xXi9EI8yp4OTzBy0IMJswEb+zm1imhjhctVzspf2K13jSeUHW/ME3Lj/xPZk2em
-mKoNWGZgT8/FPqP9tNcUg28UmvFy3LWL/n/trZI7FQXFGIFIDBKdociod4US9qHn
-G1LsPHr6NjSJXT/Lq1A/ItfP746xX38uh0VuJA62iEnLxih8VpC8h+y6ntRkKZZO
-2Mxzzh5GPA7GpGHV1GTzB6G2wlK5W8WmOdAk1Q2o6LtINuyMiXKTPIhtFPMmx5UH
-H1BAvsrmEq4EZkkps3AYkwyEqpmax9Fg0p/v12g8o3KiMSTkJKM=
-=xCLZ
------END PGP SIGNATURE-----
-
---6ifdx4s4sool54nv--
+>
+>
+>> +       help
+>> +         This implements the generic cpu cooling mechanism through idle
+>> +         injection.
+>> +
+>> +         This will throttle cpu by injecting specified idle time in
+>> +         a fixed cycle. All cpu in same cluster will enter idle
+>> synchronously
+>> +         to reach deepest idle state when injecting idle.
+>> +
+>> +         If you want this support, you should say Y here.
+>> +
+>>  config CLOCK_THERMAL
+>>         bool "Generic clock cooling support"
+>>         depends on COMMON_CLK
+>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+>> index 094d703..a4db66e 100644
+>> --- a/drivers/thermal/Makefile
+>> +++ b/drivers/thermal/Makefile
+>> @@ -26,6 +26,9 @@ thermal_sys-$(CONFIG_CLOCK_THERMAL)   +=3D clock_cooli=
+ng.o
+>>  # devfreq cooling
+>>  thermal_sys-$(CONFIG_DEVFREQ_THERMAL) +=3D devfreq_cooling.o
+>>
+>> +# cpu idle cooling
+>> +obj-$(CONFIG_CPU_IDLE_THERMAL) +=3D cpu_idle_cooling.o
+>> +
+>>  # platform thermal drivers
+>>  obj-y                          +=3D broadcom/
+>>  obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)     +=3D qcom-spmi-temp-alarm.o
+>> diff --git a/drivers/thermal/cpu_idle_cooling.c
+>> b/drivers/thermal/cpu_idle_cooling.c
+>> new file mode 100644
+>> index 0000000..89a15c5
+>> --- /dev/null
+>
+> [snip]
+>
+>
