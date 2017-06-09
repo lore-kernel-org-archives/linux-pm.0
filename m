@@ -1,66 +1,82 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.12-rc5
-Date: Fri, 9 Jun 2017 02:19:20 +0200
-Message-ID: <CAJZ5v0jQ03WFNOs9n=rzTanmhwLmNG4fkjenD+gZ3SzdrtJWxw@mail.gmail.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: Re: [PATCH] devfreq: exynos-ppmu: Staticize event list
+Date: Fri, 09 Jun 2017 00:28:27 +0000
+Message-ID: <20170609002827epcms1p74adfa60f131853c9c7ab9826a921fb53@epcms1p7>
+References: <5938A6CC.8030206@samsung.com>
+        <20170607181228.32102-1-krzk@kernel.org>
+        <CGME20170607181258epcas2p4191204d7b3853ef0482d84df7a06589d@epcms1p7>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <5938A6CC.8030206@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+> Hi Krzysztof,
+> 
+> On 2017년 06월 08일 03:12, Krzysztof Kozlowski wrote:
 
-Please pull from the tag
+> > The ppmu_events array is accessed only in this compilation unit so it
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.12-rc5
+> > can be made static.
 
-with top-most commit fbd78afe34d9cc3a86aff7cc214d9f06e815e63e
+> > 
 
- Merge branches 'intel_pstate' and 'pm-sleep'
+> > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-on top of commit 3c2993b8c6143d8a5793746a54eba8f86f95240f
+> > ---
 
- Linux 4.12-rc4
+> >  drivers/devfreq/event/exynos-ppmu.c | 2 +-
 
-to receive power management fixes for v4.12-rc5.
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
 
-These revert one problematic commit related to system sleep and fix
-one recent intel_pstate regression.
+> > 
 
-Specifics:
+> > diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
 
- - Revert a recent commit that attempted to avoid spurious wakeups
-   from suspend-to-idle via ACPI SCI, but introduced regressions on
-   some systems (Rafael Wysocki).
+> > index 9b7350935b73..c68f3b5a10b5 100644
 
-   We will get back to the problem it tried to address in the next
-   cycle.
+> > --- a/drivers/devfreq/event/exynos-ppmu.c
 
- - Fix a possible division by 0 during intel_pstate initialization
-   due to a missing check (Rafael Wysocki).
+> > +++ b/drivers/devfreq/event/exynos-ppmu.c
 
-Thanks!
+> > @@ -44,7 +44,7 @@ struct exynos_ppmu {
+
+> >  	{ "ppmu-event2-"#name, PPMU_PMNCNT2 },	\
+
+> >  	{ "ppmu-event3-"#name, PPMU_PMNCNT3 }
+
+> >  
+
+> > -struct __exynos_ppmu_events {
+
+> > +static struct __exynos_ppmu_events {
+
+> >  	char *name;
+
+> >  	int id;
+
+> >  } ppmu_events[] = {
+
+> > 
+
+> 
+
+> Looks good to me.
+
+> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 
----------------
 
-Rafael J. Wysocki (2):
-      cpufreq: intel_pstate: Avoid division by 0 in min_perf_pct_min()
-      Revert "ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle"
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
----------------
 
- drivers/acpi/battery.c         |  2 +-
- drivers/acpi/button.c          |  5 ++---
- drivers/acpi/device_pm.c       |  3 +--
- drivers/acpi/sleep.c           | 28 ----------------------------
- drivers/base/power/main.c      |  5 +++++
- drivers/base/power/wakeup.c    | 18 ++++++------------
- drivers/cpufreq/intel_pstate.c |  5 +++--
- include/linux/suspend.h        |  7 ++-----
- kernel/power/process.c         |  2 +-
- kernel/power/suspend.c         | 29 ++++-------------------------
- 10 files changed, 25 insertions(+), 79 deletions(-)
+
+
+
+Cheers,
+
+MyungJoo
