@@ -1,68 +1,73 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: Drivers taking different actions depending on sleep state
-Date: Fri, 9 Jun 2017 15:05:52 -0700
-Message-ID: <9d929be0-67af-22f9-6412-424e258ac9d4@gmail.com>
-References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] thermal: int340x: check for sensor when PTYP is missing
+Date: Fri, 09 Jun 2017 15:23:14 -0700
+Message-ID: <1497046994.26258.9.camel@linux.intel.com>
+References: <1496790041-104500-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+         <CAHp75VfvVNFRiVMnGEe96C84AkxKs=hR29q8dp701Q4OyNO47g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f193.google.com ([209.85.216.193]:33135 "EHLO
-        mail-qt0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751560AbdFIWFz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jun 2017 18:05:55 -0400
-Received: by mail-qt0-f193.google.com with SMTP id w1so17941697qtg.0
-        for <linux-pm@vger.kernel.org>; Fri, 09 Jun 2017 15:05:55 -0700 (PDT)
-In-Reply-To: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr>
-Content-Language: en-US
+Received: from mga05.intel.com ([192.55.52.43]:21662 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751554AbdFIWXP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 9 Jun 2017 18:23:15 -0400
+In-Reply-To: <CAHp75VfvVNFRiVMnGEe96C84AkxKs=hR29q8dp701Q4OyNO47g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm <linux-pm@vger.kernel.org>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 06/09/2017 08:20 AM, Mason wrote:
-> Hello,
+On Wed, 2017-06-07 at 13:55 +0300, Andy Shevchenko wrote:
+> On Wed, Jun 7, 2017 at 2:00 AM, Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com> wrote:
+> > 
+> > For INT3403 sensor PTYP field is mandatory. But some platforms
+> > didn't
+> > have this field for sensors. This cause load failure for int3403
+> > driver.
+> > 
+> > This change checks for the presence of _TMP method and if present,
+> > then
+> > treats this device as a sensor.
+> > 
+> >         status = acpi_evaluate_integer(priv->adev->handle, "PTYP",
+> >                                        NULL, &priv->type);
+> >         if (ACPI_FAILURE(status)) {
+> > -               result = -EINVAL;
+> > -               goto err;
+> > 
+> > +               unsigned long long tmp;
+> You may use &priv->type as temporary variable, though I would go
+> other
+> way around:
+> declare tmp for function, then
 > 
-> I read the "Sleep States" documentation:
-> https://www.kernel.org/doc/Documentation/power/states.txt
+>     unsigned long long tmp;
+> ...
+>     status = acpi_evaluate_integer(priv->adev->handle, "PTYP",  NULL,
+> &tmp);
+>     if (ACPI_FAILURE(status)) {
+>         status = acpi_evaluate_integer(priv->adev->handle, "_TMP",
+> NULL, &tmp);
+>         if (ACPI_FAILURE(status)) {
+>             result = -EINVAL;
+>             goto err;
+>         }
+>         tmp = INT3403_TYPE_SENSOR;
+>     }
+>     priv->type = tmp;
 > 
-> It mentions /sys/power/mem_sleep but I don't have that in 4.9
-> # ll /sys/power/
-> -rw-r--r--    1 root     root          4096 Jan  1 00:31 pm_async
-> -rw-r--r--    1 root     root          4096 Jan  1 00:31 pm_freeze_timeout
-> -rw-r--r--    1 root     root          4096 Jan  1 00:31 state
-> -rw-r--r--    1 root     root          4096 Jan  1 00:31 wakeup_count
-> 
-> # cat /sys/power/state 
-> freeze mem
-> 
-> Currently my platform's "mem" is a true suspend-to-RAM trigger,
-> where drivers are supposed to save their state (register values
-> will be lost), then Linux hands control over to firmware which
-> enables RAM self-refresh and powers the chip down. When the system
-> resumes, drivers restore their state from their copy in memory.
-> 
-> One driver is responsible for loading/unloading microcode running
-> on the DSPs. This operation is required only when powering down
-> the chip, but it should be avoided for "low-latency" sleeps.
+So what are we saving by doing this way?
 
-Yes, makes sense, the STB SoCs I work with have similar requirements,
-and we could benefit from being able to skip/bypass re-initialization
-while entering/leaving S2 for instance.
+Thanks,
+Srinivas
 
+> > 
+> > +               } else {
+> This is redundant.
 > 
-> The problem is that, if I understand correctly, drivers have no way
-> of knowing which sleep state is being entered/exited?
-> 
-> How can I have the microcode driver take different decisions
-> based on the sleep state?
-
-Ideally, pm_message_t could have reflected the system suspend/resume
-state you are entering/leaving, but that does not appear to be the case
-(unlike say, PCI).
-
-I am not sure why that's not the case, but since most platform drivers
-use the "SIMPLE_DEV_PM_OPS" if we were to actually make pm_message_t
-reflect the system sleep state (PM_SUSPEND_STANDBY, PM_SUSPEND_MEM etc.)
--- 
-Florian
+> > 
+> > +                       priv->type = INT3403_TYPE_SENSOR;
+> > +               }
+> >         }
