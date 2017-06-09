@@ -1,226 +1,74 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH v5 3/3] drivers:power:twl4030-charger: add deferred
- probing for phy and iio
-Date: Fri, 9 Jun 2017 11:25:07 -0500
-Message-ID: <1b9f3e92-36ac-2a73-7b2d-037b19fafaad@ti.com>
-References: <cover.1495363097.git.hns@goldelico.com>
- <6ed105f6c9c21c24184913a7be9e665453549d79.1495363097.git.hns@goldelico.com>
- <20170607204444.zumcreuqdnv7euv2@earth>
- <01A3D2F5-9E09-4E93-A363-93130DCEB7DF@goldelico.com>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: Drivers taking different actions depending on sleep state
+Date: Fri, 9 Jun 2017 18:27:45 +0200
+Message-ID: <0181d683-511e-1ff6-3855-e00849863e74@free.fr>
+References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:62073 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751810AbdFIQZc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jun 2017 12:25:32 -0400
-In-Reply-To: <01A3D2F5-9E09-4E93-A363-93130DCEB7DF@goldelico.com>
-Content-Language: en-US
+Received: from smtp5-g21.free.fr ([212.27.42.5]:53806 "EHLO smtp5-g21.free.fr"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751616AbdFIQ2G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 9 Jun 2017 12:28:06 -0400
+In-Reply-To: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "H. Nikolaus Schaller" <hns@goldelico.com>, Sebastian Reichel <sre@kernel.org>
-Cc: NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Marek Belisko <marek@goldelico.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>
 
+On 09/06/2017 17:20, Mason wrote:
 
+> Currently my platform's "mem" is a true suspend-to-RAM trigger,
+> where drivers are supposed to save their state (register values
+> will be lost), then Linux hands control over to firmware which
+> enables RAM self-refresh and powers the chip down. When the system
+> resumes, drivers restore their state from their copy in memory.
+> 
+> One driver is responsible for loading/unloading microcode running
+> on the DSPs. This operation is required only when powering down
+> the chip, but it should be avoided for "low-latency" sleeps.
+> 
+> The problem is that, if I understand correctly, drivers have no way
+> of knowing which sleep state is being entered/exited?
+> 
+> How can I have the microcode driver take different decisions
+> based on the sleep state?
 
-On 06/09/2017 01:05 AM, H. Nikolaus Schaller wrote:
-> Hi,
-> 
->> Am 07.06.2017 um 22:44 schrieb Sebastian Reichel <sre@kernel.org>:
->>
->> Hi,
->>
->> On Sun, May 21, 2017 at 12:38:18PM +0200, H. Nikolaus Schaller wrote:
->>> This fixes an issue if both this twl4030_charger driver and
->>> phy-twl4030-usb are compiled as modules and loaded in random order.
->>> It has been observed on GTA04 and OpenPandora devices that in worst
->>> case the boot process hangs and in best case the AC detection fails
->>> with a warning.
->>>
->>> Therefore we add deferred probing checks for the usb_phy and the
->>> iio channel for AC detection.
->>>
->>> For implementing this we must reorder code because we can't safely
->>> return -EPROBE_DEFER after allocating any devm managed interrupt
->>> (it might already/still be enabled without working interrupt handler).
->>>
->>> So the check for required resources that may abort probing by
->>> returning -EPROBE_DEFER, must come first.
->>
->> This sounds fishy. EPROBE_DEFER should not be different from
->> other error codes in this regard and devm_ requested resources
->> should be free'd on any error. Why is irq handler not working?
-> 
-> 1. there is no other error code involved, before we try to convert the driver to handle EPROBE_DEFER.
-> So it is not that EPROBE_DEFER is special but that we add an error return path for it.
-> 
-> 2. I don't know why it is not working - I just know that the handler seems to be triggered before
-> all resources are available (if probe() is aborted with EPROBE_DEFER error paths) which ends up in kernel panics.
-> 
-> Therefore just to be safe, I have reordered things a little (without changing the function):
-> 
-> 1. check for resources (with some EPROBE_DEFER)
-> 2. allocate non-devm (with optional EPROBE_DEFER)
-> 3. allocate devm
-> 
-> So this should be safe in any case.
-> 
-> Please also compare a discussion
-> 
-> https://lkml.org/lkml/2013/2/22/65
-> 
->>
->>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
->>> ---
->>> drivers/power/supply/twl4030_charger.c | 37 ++++++++++++++++++++--------------
->>> 1 file changed, 22 insertions(+), 15 deletions(-)
->>>
->>> diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
->>> index 785a07bc4f39..945eabdbbc89 100644
->>> --- a/drivers/power/supply/twl4030_charger.c
->>> +++ b/drivers/power/supply/twl4030_charger.c
->>> @@ -984,6 +984,28 @@ static int twl4030_bci_probe(struct platform_device *pdev)
->>>
->>> 	platform_set_drvdata(pdev, bci);
->>>
->>> +	if (bci->dev->of_node) {
->>> +		struct device_node *phynode;
->>> +
->>> +		phynode = of_find_compatible_node(bci->dev->of_node->parent,
->>> +						  NULL, "ti,twl4030-usb");
->>> +		if (phynode) {
->>> +			bci->transceiver = devm_usb_get_phy_by_node(
->>> +				bci->dev, phynode, &bci->usb_nb);
->>> +			if (IS_ERR(bci->transceiver) &&
->>> +			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER)
->>> +				return -EPROBE_DEFER;	/* PHY not ready */
->>> +		}
->>> +	}
->>> +
->>> +	bci->channel_vac = iio_channel_get(&pdev->dev, "vac");
->>> +	if (IS_ERR(bci->channel_vac)) {
->>> +		if (PTR_ERR(bci->channel_vac) == -EPROBE_DEFER)
->>> +			return -EPROBE_DEFER;	/* iio not ready */
->>> +		dev_warn(&pdev->dev, "could not request vac iio channel");
->>> +		bci->channel_vac = NULL;
->>> +	}
->>> +
->>
->> You should not request non-devm managed iio_channel before
->> devm-managed power-supply.
-> 
-> Well, it is not *me* doing that.
-> 
-> It is the unpatched driver which already does. See:
-> 
-> 	https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/power/supply/twl4030_charger.c?h=v4.12-rc4#n1069
-> 
-> I have just moved this line to a different location to be able to add a proper EPROBE_DEFER return path.
-> 
->> This could be fixed by switching to
->> devm_iio_channel_get(), which also cleans up some code.
-> 
-> Yes, this could be an alternative solution.
-> We still need EPROBE_DEFER handling.
-> 
->>
->> I suspect, that this is also your IRQ problem, since iio_channel
->> is currently free'd before irqs are free'd, but its used in irq
->> code.
-> 
-> Hm. No.
-> 
-> In upstream code it is never freed on probe failure because there is only
-> an error return (goto fail) after allocating irqs in case the
-> twl_i2c_write_u8 fails. Which usually doesn't.
-> 
-> The EPROBE_DEFER returned by iio_channel_get not being ready simply prints
-> a warning and turns off AC detection (bci->channel_vac = NULL) forever.
-> 
->>
->>> 	bci->ac = devm_power_supply_register(&pdev->dev, &twl4030_bci_ac_desc,
->>> 					     NULL);
->>> 	if (IS_ERR(bci->ac)) {
->>> @@ -1017,25 +1039,10 @@ static int twl4030_bci_probe(struct platform_device *pdev)
->>> 		return ret;
->>> 	}
->>>
->>> -	bci->channel_vac = iio_channel_get(&pdev->dev, "vac");
->>> -	if (IS_ERR(bci->channel_vac)) {
-> 
-> My first attempt to fix EPROBE_DEFER was to add this
-> 
-> +		if (PTR_ERR(bci->channel_vac) == -EPROBE_DEFER)
-> +			return -EPROBE_DEFER;	/* iio not ready */
-> 
->>> -		bci->channel_vac = NULL;
->>> -		dev_warn(&pdev->dev, "could not request vac iio channel");
->>> -	}
->>> -
->>> 	INIT_WORK(&bci->work, twl4030_bci_usb_work);
->>> 	INIT_DELAYED_WORK(&bci->current_worker, twl4030_current_worker);
->>>
->>> 	bci->usb_nb.notifier_call = twl4030_bci_usb_ncb;
->>> -	if (bci->dev->of_node) {
->>> -		struct device_node *phynode;
->>> -
->>> -		phynode = of_find_compatible_node(bci->dev->of_node->parent,
->>> -						  NULL, "ti,twl4030-usb");
->>> -		if (phynode)
->>> -			bci->transceiver = devm_usb_get_phy_by_node(
->>> -				bci->dev, phynode, &bci->usb_nb);
-> 
-> and this
-> 
-> +			if (IS_ERR(bci->transceiver) &&
-> +			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER) {
-> +				ret = -EPROBE_DEFER;	/* PHY not ready */
-> +				goto fail;
-> 
-> This did run (and potentially return) after installing devm_request_threaded_irq leading
-> to observation of severe kernel panics by interrupts.
-> 
-> Moving the iio channel allocation before devm_request_threaded_irq made them go away.
-> 
->>> -	}
->>>
->>> 	/* Enable interrupts now. */
->>> 	reg = ~(u32)(TWL4030_ICHGLOW | TWL4030_ICHGEOC | TWL4030_TBATOR2 |
->>
->> -- Sebastian
-> 
-> How important is it to keep the current sequence of devm_request_threaded_irq() + (devm_)iio_channel_get() untouched?
-> 
-> The reason I ask is that it is more likely for (devm_)iio_channel_get() to fail than devm_request_threaded_irq().
-> 
-> Hence the iio channel should imho be always allocated first, so that we skip allocating+freeing unused irq handlers in case
-> of iio not being ready.
-> 
-> Therefore, I suggest to keep the proposed reordering even if we think devm-conversion of iio_channel_get() alone
-> would solve it equally well.
-> 
-> Next: should there be two separate patches? One for converting the non-devm iio_channel_get() and cleaning up error path.
-> And one for adding EPROBE_DEFER error path.
-> 
-> Or keep it in a single patch because they only make sense if done together (you can't add/remove deferred probing
-> without converting and/or moving iio_channel_get())?
-> 
-> So please advise how to proceed.
-> 
+FWIW, here's a transcript of a parallel discussion on #armlinux
 
-You should request irq as late as possible in probe - it's safest way to go always.
-You see crushes simply because request_irq enables IRQ and IRQ can trigger immediately, so
-IRQ handler will run and all required resources should be ready and initialized.
-
-In this case:
-twl4030_bci_interrupt() -> twl4030_charger_update_current() -> ac_available() -> iio_read_channel_processed()
-OOOPS.
-
-So, first thing to do is to reorder probe to ensure that sequence is safe.
-Then other stuff - devm, EPROBE_DEFER ...
-
-
--- 
-regards,
--grygorii
+Mason385	The kernel supports several "levels" of sleeps (S0, S1, S3, S4) ... is it possible for drivers to differentiate which level is being entered/exited ?
+kos_tom		Mason385: ask abelloni, he knows this topic very well
+Mason385	abelloni: I'd be happy to tap that knowledge of yours
+Mason385	I think khilman also knows a thing or three
+abelloni	it is not currently possible
+Mason385	abelloni: one of the drivers is responsible for loading/unloading microcode to the DSP, and this is a very long operation (on the order of 1-2 seconds) and the author wants to be able to avoid this unload/reload for "freeze"
+Mason385	the current "solution" has been to export the requested state in a global variable exported to all kernel modules (bleh)
+Mason385	IIUC, there is no better way then?
+abelloni	no, that is what we do on at91
+Mason385	abelloni: I'm confused because there's already an argument passed to drivers to indicate the sleep state, only it's the same arg for every state. Did someone determine it is unnecessary for drivers to have that information? But then why have the parameter in the first place?
+abelloni	I think up until recently, the stance was that it was unnecessary for the drivers to have that info
+abelloni	I would like to change that too but currently, you can't have it
+khilman		Mason385: abelloni is right (unfortunately)
+Mason385	khilman: so you would also recommend exporting a global variable then?
+khilman		I cannot confirm or deny such a recommendation.  
+khilman		(but there is no other way)
+Mason385	Don't worry, this code has negative chance to ever hit upstream
+khilman		curious though: is the reason to avoid the unload/reload just for optimization of suspend/resume time?  or is it because the DSP actually loses context?
+Mason385	on suspend to RAM, the chip is powered down and loses all context
+khilman		so the compromise solution I've used in this case is to make the driver a bit smarter.
+khilman		iow, the driver always saves context, but then on resume, checks to see if restore is actually needed before doing the full restore (which is usually the time consuming part)
+khilman		often that can be done by checking some register that has a known power-on reset value (that's different from the driver programmed state)
+abelloni	khilman: I think it would still be worth exporting the target state to the drivers
+Mason385	khilman: I *think* even the suspend side of the problem is time-consuming
+javier__	Mason385: silly question, but does it necessarily lose state because the machine is suspended to RAM and the DSP needs to be reset on resume or is because the DSP loses power?
+abelloni	It may be difficult for drivers to know whether the IP has lost state
+abelloni	Also, we only have one platform loosing state and now, all the previous SoC are taking the hit
+khilman		abelloni: sure, but the goal is still that the drivers try to be smart.  Having the global variable is an optimization.
+Mason385	javier__: there's some authentication required when S2R is involved (from the firmware)
+javier__	Mason385: ah, Ok. I just asked because if it was the latter, the regulator subsystem has infrastructure to keep the regulators on during S2R
+Mason385	javier__: OK so there's two issues. We are required to re-authenticate microcode when resuming from S2R (because someone "may" have tampered with the contents) and on suspend, power is cut to the DSPs and they lose context
+Mason385	javier__: were you suggesting to keep power to the DSPs during S2R (I don't think that is possible in the chip)
+javier__	Mason385: I wasn't suggesting since I don't know your HW and use case
+Mason385	I meant if it was possible, of course 
+javier__	Mason385: yes, I was just mentioning that the regulator subsys had a regulator-on-in-suspend property since we had a similar issue with a chip and solved that way
