@@ -1,115 +1,236 @@
-From: Paul Kocialkowski <contact@paulk.fr>
-Subject: Re: [PATCH 5/5] power: supply: bq27xxx: Correct supply status with
- current draw
-Date: Fri, 09 Jun 2017 09:16:01 +0300
-Message-ID: <1496988961.1319.1.camel@paulk.fr>
-References: <20170430182727.24412-5-contact@paulk.fr>
-         <20170528191619.GA20159@xo-6d-61-c0.localdomain>
-         <1496249719.1774.1.camel@paulk.fr> <20170531173207.GA10763@amd>
-         <1496258936.2038.8.camel@paulk.fr> <1496819733.927.16.camel@paulk.fr>
-         <20170607075218.GA6268@amd> <1496848839.5534.7.camel@paulk.fr>
-         <20170607195023.GA4083@amd> <1496916532.12882.2.camel@paulk.fr>
-         <20170608192733.pry6ydf5auyaepyw@earth>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH RFC 1/2] thermal/cpu idle cooling: Introduce cpu idle
+ cooling driver
+Date: Fri, 9 Jun 2017 10:20:40 +0200
+Message-ID: <20170609082040.GE2244@mai>
+References: <1496653645-20283-1-git-send-email-kevin.wangtao@hisilicon.com>
+ <20170606034135.GA5103@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha256";
-        protocol="application/pgp-signature"; boundary="=-/UD5T+arvtez3zasbxVc"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gagarine.paulk.fr ([109.190.93.129]:55906 "EHLO
-        gagarine.paulk.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751502AbdFIGQR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Jun 2017 02:16:17 -0400
-In-Reply-To: <20170608192733.pry6ydf5auyaepyw@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170606034135.GA5103@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tao Wang <kevin.wangtao@hisilicon.com>, rui.zhang@intel.com, edubezval@gmail.com, amit.kachhap@gmail.com, javi.merino@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sunzhaosheng@hisilicon.com, vincent.guittot@linaro.org, jean.wangtao@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, "Andrew F . Davis" <afd@ti.com>, Chris Lapa <chris@lapa.com.au>, Matt Ranostay <mranostay@gmail.com>
+
+On Tue, Jun 06, 2017 at 09:11:35AM +0530, viresh kumar wrote:
+> + Daniel
+> 
+> On 05-06-17, 17:07, Tao Wang wrote:
+> > cpu idle cooling driver performs synchronized idle injection across
+> > all cpu in same cluster, offers a new method to cooling down cpu,
+> > that is similar to intel_power_clamp driver, but is basically
+> > designed for ARM platform.
+> > Each cluster has its own idle cooling device, each core has its own
+> > idle injection thread, idle injection thread use play_idle to enter
+> > idle. In order to reach deepest idle state, all cores are aligned by
+> > jiffies. the injected idle ratio can be controlled through cooling
+> > device interface.
+> > 
+> > Signed-off-by: Tao Wang <kevin.wangtao@hisilicon.com>
+
+[ ... ]
+
+Hi Kevin,
+
+I'm failing to understand all the cpumask logic.
+
+Can you explain the rational?
+
+Thanks.
+
+  -- Daniel
 
 
---=-/UD5T+arvtez3zasbxVc
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> > +struct thermal_cooling_device * __init
+> > +cpu_idle_cooling_register(const struct cpumask *clip_cpus)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;
+> > +	struct thermal_cooling_device *ret;
+> > +	unsigned long cpu;
+> > +	char dev_name[THERMAL_NAME_LENGTH];
+> > +
+> > +	if (cpumask_empty(clip_cpus))
+> > +		return ERR_PTR(-ENOMEM);
+> > +
+> > +	mutex_lock(&cpu_idle_cooling_lock);
+> > +	get_online_cpus();
+> > +	list_for_each_entry(idle_cooling_dev,
+> > +		&cpu_idle_cooling_dev_list, node) {
+> > +		if (cpumask_intersects(idle_cooling_dev->related_cpus,
+> > +			clip_cpus)) {
+> > +			ret = ERR_PTR(-EINVAL);
+> > +			goto exit_unlock;
+> > +		}
+> > +	}
+> > +
+> > +	idle_cooling_dev = kzalloc(sizeof(*idle_cooling_dev), GFP_KERNEL);
+> > +	if (!idle_cooling_dev) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_unlock;
+> > +	}
+> > +
+> > +	if (!zalloc_cpumask_var(&idle_cooling_dev->related_cpus, GFP_KERNEL)) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_free_dev;
+> > +	}
+> > +
+> > +	if (!zalloc_cpumask_var(&idle_cooling_dev->injected_cpus, GFP_KERNEL)) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_free_related_cpus;
+> > +	}
+> > +
+> > +	cpumask_copy(idle_cooling_dev->related_cpus, clip_cpus);
+> > +	cpu = cpumask_first(clip_cpus);
+> > +	idle_cooling_dev->control_cpu = cpu;
+> > +	idle_cooling_dev->id = topology_physical_package_id(cpu);
+> > +	idle_cooling_dev->window_size = DEFAULT_WINDOW_SIZE;
+> > +	idle_cooling_dev->duration = jiffies_to_msecs(DEFAULT_DURATION_JIFFIES);
+> > +
+> > +	if (create_idle_thread(idle_cooling_dev)) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_free_injected_cpus;
+> > +	}
+> > +
+> > +	snprintf(dev_name, sizeof(dev_name), "thermal-cpuidle-%d",
+> > +		 idle_cooling_dev->id);
+> > +	ret = thermal_cooling_device_register(dev_name,
+> > +					idle_cooling_dev,
+> > +					&cpu_idle_injection_cooling_ops);
+> > +	if (IS_ERR(ret))
+> > +		goto exit_stop_thread;
+> > +
+> > +	idle_cooling_dev->cooling_dev = ret;
+> > +
+> > +	if (device_create_file(&idle_cooling_dev->cooling_dev->device,
+> > +		&dev_attr_duration)) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_unregister_cdev;
+> > +	}
+> > +
+> > +	if (device_create_file(&idle_cooling_dev->cooling_dev->device,
+> > +		&dev_attr_window_size)) {
+> > +		ret = ERR_PTR(-ENOMEM);
+> > +		goto exit_remove_duration_attr;
+> > +	}
+> > +
+> > +	list_add(&idle_cooling_dev->node, &cpu_idle_cooling_dev_list);
+> > +
+> > +	goto exit_unlock;
+> > +
+> > +exit_remove_duration_attr:
+> > +	device_remove_file(&idle_cooling_dev->cooling_dev->device,
+> > +			&dev_attr_duration);
+> > +exit_unregister_cdev:
+> > +	thermal_cooling_device_unregister(idle_cooling_dev->cooling_dev);
+> > +exit_stop_thread:
+> > +	stop_idle_thread(idle_cooling_dev);
+> > +exit_free_injected_cpus:
+> > +	free_cpumask_var(idle_cooling_dev->injected_cpus);
+> > +exit_free_related_cpus:
+> > +	free_cpumask_var(idle_cooling_dev->related_cpus);
+> > +exit_free_dev:
+> > +	kfree(idle_cooling_dev);
+> > +exit_unlock:
+> > +	put_online_cpus();
+> > +	mutex_unlock(&cpu_idle_cooling_lock);
+> > +	return ret;
+> > +}
+> > +
+> > +void cpu_idle_cooling_unregister(struct thermal_cooling_device *cdev)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;
+> > +
+> > +	if (IS_ERR_OR_NULL(cdev))
+> > +		return;
+> > +
+> > +	idle_cooling_dev = cdev->devdata;
+> > +
+> > +	mutex_lock(&cpu_idle_cooling_lock);
+> > +	get_online_cpus();
+> > +	list_del(&idle_cooling_dev->node);
+> > +	put_online_cpus();
+> > +	mutex_unlock(&cpu_idle_cooling_lock);
+> > +
+> > +	device_remove_file(&cdev->device, &dev_attr_window_size);
+> > +	device_remove_file(&cdev->device, &dev_attr_duration);
+> > +	thermal_cooling_device_unregister(idle_cooling_dev->cooling_dev);
+> > +
+> > +	stop_idle_thread(idle_cooling_dev);
+> > +	free_cpumask_var(idle_cooling_dev->injected_cpus);
+> > +	free_cpumask_var(idle_cooling_dev->related_cpus);
+> > +	kfree(idle_cooling_dev);
+> > +}
+> > +
+> > +static void __cpu_idle_cooling_exit(void)
+> > +{
+> > +	struct cpu_idle_cooling_device *idle_cooling_dev;
+> > +
+> > +	while (!list_empty(&cpu_idle_cooling_dev_list)) {
+> > +		idle_cooling_dev = list_first_entry(&cpu_idle_cooling_dev_list,
+> > +				struct cpu_idle_cooling_device, node);
+> > +		cpu_idle_cooling_unregister(idle_cooling_dev->cooling_dev);
+> > +	}
+> > +
+> > +	if (hp_state > 0)
+> > +		cpuhp_remove_state_nocalls(hp_state);
+> > +}
+> > +
+> > +static int __init cpu_idle_cooling_init(void)
+> > +{
+> > +	struct thermal_cooling_device *ret;
+> > +	cpumask_t rest_cpu_mask = CPU_MASK_ALL;
+> > +	const struct cpumask *register_cpu_mask;
+> > +
+> > +	hp_state = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
+> > +			"thermal/cpu_idle_cooling:online",
+> > +			idle_injection_cpu_online,
+> > +			idle_injection_cpu_predown);
+> > +	if (hp_state < 0)
+> > +		return hp_state;
+> > +
+> > +	do {
+> > +		register_cpu_mask =
+> > +			topology_core_cpumask(cpumask_first(&rest_cpu_mask));
+> > +
+> > +		if (cpumask_empty(register_cpu_mask))
+> > +			break;
+> > +
+> > +		ret = cpu_idle_cooling_register(register_cpu_mask);
+> > +		if (IS_ERR(ret)) {
+> > +			__cpu_idle_cooling_exit();
+> > +			return -ENOMEM;
+> > +		}
+> > +	} while (cpumask_andnot(&rest_cpu_mask,
+> > +				&rest_cpu_mask,
+> > +				register_cpu_mask));
+> > +
+> > +	return 0;
+> > +}
+> > +module_init(cpu_idle_cooling_init);
+> > +
+> > +static void __exit cpu_idle_cooling_exit(void)
+> > +{
+> > +	__cpu_idle_cooling_exit();
+> > +}
+> > +module_exit(cpu_idle_cooling_exit);
+> > +
+> > +MODULE_LICENSE("GPL v2");
+> > +MODULE_AUTHOR("Tao Wang <kevin.wangtao@hisilicon.com>");
+> > +MODULE_DESCRIPTION("CPU Idle Cooling Driver for ARM Platform");
+> > -- 
+> > 1.7.9.5
+> 
+> -- 
+> viresh
 
-Le jeudi 08 juin 2017 =C3=A0 21:27 +0200, Sebastian Reichel a =C3=A9crit :
-> Hi,
->=20
-> On Thu, Jun 08, 2017 at 01:08:52PM +0300, Paul Kocialkowski wrote:
-> > > > On Wed, 2017-06-07 at 09:52 +0200, Pavel Machek wrote:
-> > > > > > [0]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/l=
-inux.
-> > > > > > git/
-> > > > > > comm
-> > > > > > it/?
-> > > > > > h=3Dv4.12-rc4&id=3D7f93e1fa032bb5ee19b868b9649bc98c82553003
-> > > > >=20
-> > > > > Is there some documentation that explains what different power su=
-pply
-> > > > > statuses mean? Because without that, we can have long and useless
-> > > > > discussions.
-> > > >=20
-> > > > Well, I couldn't really find much except the following from
-> > > > Documentation/
-> > > > (which is not that helpful, and the BATTERY_STATUS_* don't seem to =
-exist
-> > > > anymore):
-> > > >=20
-> > > > " STATUS - this attribute represents operating status (charging, fu=
-ll,
-> > > > discharging (i.e. powering a load), etc.). This corresponds to
-> > > > BATTERY_STATUS_* values, as defined in battery.h. "
-> > > >=20
-> > > > Generally speaking, I think the question to be asked is what inform=
-ation
-> > > > users
-> > > > will be interested in in each scenario we have to consider.
-> > >=20
-> > > Hmm. We really should add some documentation :-(.
-> >=20
-> > Maybe we should start a new thread about this to give it more visibilit=
-y.
-> > That way, PM maintainers could weigh-in and share thoughts.
-> >=20
-> > I definitely agree there is a need to clarify what we want to report to
-> > userspace given the various scenarios we've been discussing.
->=20
-> +1 for extension and update of documentation. If its known, that
-> the battery is trickle charged, it should report FULL. No need
-> to annoy people by constantly updating the status. Think of it
-> being mapped directly to a status LED. Of course the CURRENT/ENERGY
-> properties should still be updated, so that anyone interested in
-> the details can see them.
+-- 
 
-Agreed. Do ou think there is a need to start a specific discussion about
-various scenarios and how to handle them or do shall we just use common sen=
-se
-here?
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
---=20
-Paul Kocialkowski, developer of free digital technology and hardware suppor=
-t
-
-Website: https://www.paulk.fr/
-Coding blog: https://code.paulk.fr/
-Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
---=-/UD5T+arvtez3zasbxVc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlk6PSIACgkQhP3B6o/u
-lQwzug/+NspBxPrBPMQXkj1tlhKVQefu+3pfTSVSXtWQ4xqotbEAyYpp/njgN6dt
-iNN6UrsJttVfcZSdsFP+6lC/ey63bH6wZMLpEyq8kLhUlJ289Xs8jHIjsqso7oMC
-L6BpCSyvotPb2jzigsq+EAECrFbCckQm7S4Rrp50WjpJFpOSwWEq3hV5IL4nNjti
-gC5fCNW0/4UneI5c2zYZRIbQMP5ehyKpx+e/VQ8iY4y8LQyWpsSJToVjeBJH8pdW
-SMUmb1MAa/sDD4F6lFsH2b6b/dSj0uWmstvyZlgue3Wcv051MLmy8AUq0kEEOvXl
-hzy8Jg5mcY1uwjdnysdrxS/MzGM6s91fPQHnNBd9EEy//oPmodtLF5ymPcvAd12R
-9vP99Q7tDbVzwOPG86PPFDIme3o/c1CcIx83oDyvg5YCHVAe5qJSA7g1OchDlFzH
-YgyIDEip+yl4PllbbTSbqPe2DFAJ6nF8IrRBkgQOFHEabhPQrohttY58uAVR5tA1
-Vx8xol7twAYBYz7pBXTnzzcnmCFQmpT5cSL2IPF2FcJHDCuPe0t94rsssNRdL9Gh
-QTdX27key8WM3ZBPwlNZvwycVe7DhKPVZED9HwbNLobgweUCpZ8bKQL0b67FI0HB
-A/EmFt9qenNNqcO1Wlo5HnAzW8n1tbFYyL6gSWlE7SRhy6rkJSQ=
-=OI69
------END PGP SIGNATURE-----
-
---=-/UD5T+arvtez3zasbxVc--
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
