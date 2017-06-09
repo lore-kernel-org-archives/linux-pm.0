@@ -1,74 +1,80 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: Drivers taking different actions depending on sleep state
-Date: Fri, 9 Jun 2017 18:27:45 +0200
-Message-ID: <0181d683-511e-1ff6-3855-e00849863e74@free.fr>
-References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
+ recent Dell laptops
+Date: Fri, 9 Jun 2017 16:49:58 +0000
+Message-ID: <343a8430fb144adf8d65ef9d0b2bfd40@ausx13mpc124.AMER.DELL.COM>
+References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
+ <31f516ad46d74225a5d6324c5fd24751@ausx13mpc124.AMER.DELL.COM>
+ <CA+kEDGFUuSC1CpCEgOT+HMTrDa-r1y59kM9-CYn0PSgtuKaG5Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp5-g21.free.fr ([212.27.42.5]:53806 "EHLO smtp5-g21.free.fr"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751616AbdFIQ2G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 9 Jun 2017 12:28:06 -0400
-In-Reply-To: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CA+kEDGFUuSC1CpCEgOT+HMTrDa-r1y59kM9-CYn0PSgtuKaG5Q@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: jerome.debretagne@gmail.com
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, andriy.shevchenko@linux.intel.com, dvhart@infradead.org, srinivas.pandruvada@linux.intel.com, mika.westerberg@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>
 
-On 09/06/2017 17:20, Mason wrote:
-
-> Currently my platform's "mem" is a true suspend-to-RAM trigger,
-> where drivers are supposed to save their state (register values
-> will be lost), then Linux hands control over to firmware which
-> enables RAM self-refresh and powers the chip down. When the system
-> resumes, drivers restore their state from their copy in memory.
-> 
-> One driver is responsible for loading/unloading microcode running
-> on the DSPs. This operation is required only when powering down
-> the chip, but it should be avoided for "low-latency" sleeps.
-> 
-> The problem is that, if I understand correctly, drivers have no way
-> of knowing which sleep state is being entered/exited?
-> 
-> How can I have the microcode driver take different decisions
-> based on the sleep state?
-
-FWIW, here's a transcript of a parallel discussion on #armlinux
-
-Mason385	The kernel supports several "levels" of sleeps (S0, S1, S3, S4) ... is it possible for drivers to differentiate which level is being entered/exited ?
-kos_tom		Mason385: ask abelloni, he knows this topic very well
-Mason385	abelloni: I'd be happy to tap that knowledge of yours
-Mason385	I think khilman also knows a thing or three
-abelloni	it is not currently possible
-Mason385	abelloni: one of the drivers is responsible for loading/unloading microcode to the DSP, and this is a very long operation (on the order of 1-2 seconds) and the author wants to be able to avoid this unload/reload for "freeze"
-Mason385	the current "solution" has been to export the requested state in a global variable exported to all kernel modules (bleh)
-Mason385	IIUC, there is no better way then?
-abelloni	no, that is what we do on at91
-Mason385	abelloni: I'm confused because there's already an argument passed to drivers to indicate the sleep state, only it's the same arg for every state. Did someone determine it is unnecessary for drivers to have that information? But then why have the parameter in the first place?
-abelloni	I think up until recently, the stance was that it was unnecessary for the drivers to have that info
-abelloni	I would like to change that too but currently, you can't have it
-khilman		Mason385: abelloni is right (unfortunately)
-Mason385	khilman: so you would also recommend exporting a global variable then?
-khilman		I cannot confirm or deny such a recommendation.  
-khilman		(but there is no other way)
-Mason385	Don't worry, this code has negative chance to ever hit upstream
-khilman		curious though: is the reason to avoid the unload/reload just for optimization of suspend/resume time?  or is it because the DSP actually loses context?
-Mason385	on suspend to RAM, the chip is powered down and loses all context
-khilman		so the compromise solution I've used in this case is to make the driver a bit smarter.
-khilman		iow, the driver always saves context, but then on resume, checks to see if restore is actually needed before doing the full restore (which is usually the time consuming part)
-khilman		often that can be done by checking some register that has a known power-on reset value (that's different from the driver programmed state)
-abelloni	khilman: I think it would still be worth exporting the target state to the drivers
-Mason385	khilman: I *think* even the suspend side of the problem is time-consuming
-javier__	Mason385: silly question, but does it necessarily lose state because the machine is suspended to RAM and the DSP needs to be reset on resume or is because the DSP loses power?
-abelloni	It may be difficult for drivers to know whether the IP has lost state
-abelloni	Also, we only have one platform loosing state and now, all the previous SoC are taking the hit
-khilman		abelloni: sure, but the goal is still that the drivers try to be smart.  Having the global variable is an optimization.
-Mason385	javier__: there's some authentication required when S2R is involved (from the firmware)
-javier__	Mason385: ah, Ok. I just asked because if it was the latter, the regulator subsystem has infrastructure to keep the regulators on during S2R
-Mason385	javier__: OK so there's two issues. We are required to re-authenticate microcode when resuming from S2R (because someone "may" have tampered with the contents) and on suspend, power is cut to the DSPs and they lose context
-Mason385	javier__: were you suggesting to keep power to the DSPs during S2R (I don't think that is possible in the chip)
-javier__	Mason385: I wasn't suggesting since I don't know your HW and use case
-Mason385	I meant if it was possible, of course 
-javier__	Mason385: yes, I was just mentioning that the regulator subsys had a regulator-on-in-suspend property since we had a similar issue with a chip and solved that way
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBKw6lyw7RtZSBkZSBCcmV0YWdu
+ZSBbbWFpbHRvOmplcm9tZS5kZWJyZXRhZ25lQGdtYWlsLmNvbV0NCj4gU2VudDogVGh1cnNkYXks
+IEp1bmUgOCwgMjAxNyA2OjQ0IFBNDQo+IFRvOiBMaW1vbmNpZWxsbywgTWFyaW8gPE1hcmlvX0xp
+bW9uY2llbGxvQERlbGwuY29tPg0KPiBDYzogQUNQSSBEZXZlbCBNYWxpbmcgTGlzdCA8bGludXgt
+YWNwaUB2Z2VyLmtlcm5lbC5vcmc+OyBMaW51eCBQTSA8bGludXgtDQo+IHBtQHZnZXIua2VybmVs
+Lm9yZz47IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD47IEFuZHkgU2hldmNo
+ZW5rbw0KPiA8YW5kcml5LnNoZXZjaGVua29AbGludXguaW50ZWwuY29tPjsgRGFycmVuIEhhcnQg
+PGR2aGFydEBpbmZyYWRlYWQub3JnPjsNCj4gU3Jpbml2YXMgUGFuZHJ1dmFkYSA8c3Jpbml2YXMu
+cGFuZHJ1dmFkYUBsaW51eC5pbnRlbC5jb20+OyBNaWthIFdlc3RlcmJlcmcNCj4gPG1pa2Eud2Vz
+dGVyYmVyZ0BsaW51eC5pbnRlbC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMC8zXSBBQ1BJ
+IC8gc2xlZXA6IFN1cHBvcnQgcG93ZXIgYnV0dG9uIHdha2V1cCBmcm9tIFMySSBvbg0KPiByZWNl
+bnQgRGVsbCBsYXB0b3BzDQo+IA0KPiBIaSBNYXJpbywNCj4gDQo+ID4+IEhlcmUgaXMgc29tZSBm
+ZWVkYmFjayBmb3IgRGVsbCBMYXRpdHVkZSA3Mjc1LCBhcyBzdWdnZXN0ZWQgYnkgU3Jpbml2YXMN
+Cj4gPj4gaW4gaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xOTU4
+OTcjYzE1IC4NCj4gPj4NCj4gPj4gRm9yIHNvbWUgY29udGV4dCBvbiB0aGF0IG1vZGVsLCBzdXNw
+ZW5kLXRvLVJBTSBpcyBub3Qgc2FmZSBhcyB0aGUNCj4gPj4gc3lzdGVtIGhhbmdzIChyYWlzZWQg
+aW4gdGhlIGFib3ZlIGJ1ZyByZXBvcnQpLiBJJ20gd29uZGVyaW5nIGlmIHRoaXMNCj4gPj4gaXMg
+ZXhwZWN0ZWQgc29tZWhvdywgZHVlIHRvIFMzIG5vdCBiZWluZyBzdXBwb3J0ZWQgb24gdGhhdCBt
+b2RlbCwgYXMNCj4gPj4gZGlzY3Vzc2VkIGZvciB0aGUgWFBTIDEzIDkzNjUuIE1heWJlIE1hcmlv
+IG9yIHNvbWVvbmUgZWxzZSBmcm9tIERlbGwNCj4gPj4gd291bGQgYmUgYWJsZSB0byBjb25maXJt
+IHRoaXMgcG9pbnQuDQo+ID4+DQo+ID4gVGhlIExhdGl0dWRlIDcyNzUgd2FzIG5vdCBhIG1hY2hp
+bmUgdGhhdCB3YXMgdGVzdGVkIHdpdGggTGludXggZHVyaW5nDQo+ID4gZGV2ZWxvcG1lbnQuDQo+
+ID4gVGhpcyBtYWNoaW5lIHNoaXBwZWQgd2l0aCBXaW5kb3dzIDgsIHJpZ2h0Pw0KPiANCj4gSSd2
+ZSByZWFkIHRoYXQgdGhpcyBtYWNoaW5lIHNoaXBwZWQgYXQgZmlyc3Qgd2l0aCB0aGUgb3B0aW9u
+IHRvIGhhdmUgaXQgZWl0aGVyDQo+IHdpdGggV2luZG93cyAxMCBvciBXaW5kb3dzIDguMS4gTWlu
+ZSBjYW1lIHdpdGggV2luZG93cyAxMC4NCj4gDQo+ID4gSSBiZWxpZXZlIHRoaXMgbWFjaGluZSBh
+bHNvIHN1cHBvcnRzIENvbm5lY3RlZCBTdGFuZGJ5ICh0aGUgcHJlY3Vyc29yDQo+ID4gdG8gTW9k
+ZXJuIFN0YW5kYnkgdGhhdCBiZWhhdmVzIHZlcnkgc2ltaWxhcmx5KS4NCj4gDQo+IEkndmUgaW4g
+ZmFjdCBmb3VuZCBzb21lIFdpbkhFQyBzbGlkZXMgc3RhdGluZyB0aGF0IGl0IHdhcyBhbW9uZyB0
+aGUgZmlyc3QNCj4gc3lzdGVtcyB0byBzdXBwb3J0IE1vZGVybiBTdGFuZGJ5LCBoZXJlIGZvciBy
+ZWZlcmVuY2U6DQo+IGh0dHBzOi8vZi5jaDkubXMvcHVibGljL1dpbkhFQy8wNl9XaW5IRUNEZWMy
+MDE2LQ0KPiBEZXNpZ25pbmdQb3dlckVmZmljaWVudF92MDIucHB0eA0KPiANCj4gPiBJIGhhdmUg
+YW4gYXNrIG91dCB0byBzb21lb25lIHdobyBjYW4gY29uZmlybSB0aGF0LgkNCj4gDQo+IFRoYW5r
+cy4gSSdtIGhvcGluZyB0aGVyZSdzIGEgY2hhbmNlIHRvIG1ha2UgaXQgd29yayB3aXRoIHN1c3Bl
+bmQtdG8tUkFNDQo+IG9uIExpbnV4IHN0aWxsLCBpbiBhZGRpdGlvbiB0byBzdXNwZW5kLXRvLWlk
+bGUsIGJ5IGZpeGluZyB0aGUgY3VycmVudCBoYW5nLg0KDQpJIGdvdCBhIHJlc3BvbnNlIGJhY2sg
+dGhhdCBjb25maXJtZWQgdGhhdCB0aGlzIG1hY2hpbmUgb25seSBpcyBzdXBwb3J0ZWQNCndpdGgg
+Q1MvTVMuICBJIHdvdWxkIG5vdCBleHBlY3QgUzMgdG8gd29yayBwcm9wZXJseS4NCg0KRXZlbiBp
+ZiBTMyBpcyBwYXJ0IG9mIHRoZSBBQ1BJIG5hbWVzcGFjZSwgdGhlIGJlaGF2aW9yIHRoYXQgV2lu
+ZG93cyBmb2xsb3dzDQppcyB0aGF0IFMzIGlzIG5vdCBvZmZlcmVkIHdoZW4gdGhlIGxvdyBwb3dl
+ciBpZGxlIGJpdCBpcyBzZXQgaW4gRkFEVC4NCg0KSSBrbm93IHRoYXQgdGhlIGN1cnJlbnQgYmVo
+YXZpb3IgaW4gTGludXggZG9lcyBub3QgcmV2aWV3IGxvdyBwb3dlciBpZGxlDQpiaXQgdG8gZGV0
+ZXJtaW5lIHdoZXRoZXIgdG8gb2ZmZXIgUzJJIG9yIFMzIHNvIEknbSBpbnF1aXJpbmcgaWYgd2Ug
+Y2FuIHJlbW92ZQ0KUzMgZnJvbSBhIGZ1dHVyZSBCSU9TIHVwZGF0ZSBvbiB0aGlzIHBsYXRmb3Jt
+IHRvIGxldCBMaW51eCB3b3JrIGJldHRlcg0KZXZlbiB0aG91Z2ggd2UgZG9uJ3Qgc2hpcCB0aGlz
+IHBsYXRmb3JtIHdpdGggTGludXguDQoNCkZvciBub3cgSSB3b3VsZCByZWNvbW1lbmQgdGhhdCB5
+b3UgZm9jdXMgZWZmb3J0cyBleGNsdXNpdmVseSBvbiBtYWtpbmcNClMySSB3b3JrLCBhbmQgaWdu
+b3JlIFMzIHByb2JsZW1zLg0KDQoNClJlZ2FyZGluZyB0aGUgbG9uZyBidXR0b24gcHJlc3MgbmVj
+ZXNzYXJ5IHRvIHdha2UgdGhlIHN5c3RlbSwgeW91IG1pZ2h0DQpub3QgaGF2ZSBzZWVuIHRoZSBk
+aXNjdXNzaW9ucyBhbmQgdGhyZWFkcyB0aGF0IGV4cGxhaW4gdGhpcy4NCkVzc2VudGlhbGx5IHRo
+ZSBFQyBpcyBzZW5kaW5nIGEgU0NJIHdoZW4geW91IHByZXNzIHRoZSBidXR0b24gcHJlc3MsIGFu
+ZCBpdCdzDQpzdXBwb3NlZCBiZSBpbnRlcnByZXRlZCBieSBhIGRyaXZlciBhbmQgdGhhdCBkcml2
+ZXIgd291bGQgd2FrZSB0aGUgc3lzdGVtLg0KKGludGVsLWhpZCBvciBpbnRlbC12YnRuIG9uIExp
+bnV4KS4NCklmIHlvdSBsb25nIHByZXNzIHRoZSBwb3dlciBidXR0b24sIGFmdGVyIGEgY2VydGFp
+biBwZXJpb2Qgb2YgIHRpbWUgaXQgdXNlcw0KYSBHUElPIHRvIHdha2UgdXAgdGhlIHN5c3RlbS4N
+Cg0KSXQncyB1bmNsZWFyIHRvIG1lIGV4YWN0bHkgd2hlbiB5b3UgdGVzdGVkIHMyaWRsZS1kZWxs
+LXRlc3QuDQpDYW4geW91IHJlLXRlc3Qgd2l0aCBSYWZhZWwncyBuZXdlc3Qgc3VibWlzc2lvbnMg
+YW5kIGNoYW5nZXMgdG8gczJpZGxlLWRlbGwtdGVzdA0KY29tbWl0dGVkIDI4IGhvdXJzIGFnbz8N
+CllvdSdsbCBzdGlsbCBoYXZlIHRvIGFkZCB5b3VyIHN5c3RlbSB0byB0aGUgRE1JIHdoaXRlbGlz
+dCBmb3IgdGhlIGxhc3QgcGF0Y2gNCmJ1dCBoZSBoYXMgcmV3b3JrZWQgYSBidW5jaCBvZiByZWxh
+dGVkIHdha2V1cCBjb2RlIHRoYXQgaGFzIGFsc28gY2hhbmdlZC4NCg0KVGhhbmtzLA0K
