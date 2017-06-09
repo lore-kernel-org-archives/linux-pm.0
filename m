@@ -1,48 +1,102 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH 2/2] ARM: dts: imx6ul: Add imx6ul-tempmon
-Date: Fri, 9 Jun 2017 13:58:15 +0300
-Message-ID: <1497005895.28352.88.camel@nxp.com>
-References: <7055ce6095c0b7f026ac6f0dc37e43fc5c0b1793.1496939031.git.leonard.crestez@nxp.com>
-         <b9b91617985607f24c4986bcad5199483805d6b7.1496939031.git.leonard.crestez@nxp.com>
-         <CAOMZO5BP4fPyzDmSg+DFLRYh3QMf-8T0gqvnZn6mEMt-QqSgfw@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V7 1/2] PM / Domains: Add support to select
+ performance-state of domains
+Date: Fri, 9 Jun 2017 13:00:04 +0200
+Message-ID: <CAPDyKFrBnAzz6wYvmk7xtdeFUH+sEVLCE2WhMFtwipby-Xj8_w@mail.gmail.com>
+References: <cover.1495003720.git.viresh.kumar@linaro.org> <4cc55fce0fd4199941f1d7b785e677255ff792d5.1495003720.git.viresh.kumar@linaro.org>
+ <CAPDyKFoWXPJx9pahzv6CkXosncODHSThYA9MoMVdruRtzHRyZg@mail.gmail.com>
+ <20170608070505.GB4634@vireshk-i7> <CAPDyKFo1-BN2PqXZgKUCGee_QH1zevXFLFSO2+TaCpkWxd5r-g@mail.gmail.com>
+ <20170608094251.GC4634@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn3nam01on0085.outbound.protection.outlook.com ([104.47.33.85]:36496
-        "EHLO NAM01-BN3-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1751528AbdFIK6X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 9 Jun 2017 06:58:23 -0400
-In-Reply-To: <CAOMZO5BP4fPyzDmSg+DFLRYh3QMf-8T0gqvnZn6mEMt-QqSgfw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170608094251.GC4634@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: Shawn Guo <shawnguo@kernel.org>, Bai Ping <ping.bai@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Thu, 2017-06-08 at 13:45 -0300, Fabio Estevam wrote:
-> On Thu, Jun 8, 2017 at 1:26 PM, Leonard Crestez  wrote:
-> 
-> > 
-> > +                       tempmon: tempmon {
-> > +                               compatible = "fsl,imx6ul-tempmon", "fsl,imx6sx-tempmon";
-> > +                               interrupts = ;
-> > +                               fsl,tempmon = <&anatop>;
-> > +                               fsl,tempmon-data = <&ocotp>;
-> > +                               clocks = <&clks IMX6UL_CLK_PLL3_USB_OTG>;
-> Does the IMX6UL_CLK_PLL3_USB_OTG clock really control tempmon? Please
-> double check.
+On 8 June 2017 at 11:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 08-06-17, 09:48, Ulf Hansson wrote:
+>> It's not a nightmare, just a tricky thing to solve. :-)
+>
+> I may have just solved it actually :)
 
-Yes, as far as I can tell the tempmon block uses the 480 Mhz PLL3 clock
-directly. This is similar to other imx6 SOCs. This PLL is used for
-stuff like USB but not only that. My understanding is the _USB_OTG
-suffix is descriptive, similar to PLL4_AUDIO and PLL6_ENET. Other non-
-usb components use PLL3 (like UART) but through other gates/dividers.
+That was quick. :-)
 
-Setting this to IMX6UL_CLK_DUMMY will cause temperature reads to fail.
-Even if PLL3 usually ends up being constantly enabled because of uarts
-this is not true at imx_thermal_probe time (or uarts can be disabled).
+>
+> So the real locking problem was the case where a subdomain have multiple parent
+> domains and how do we access its performance_state field from all the paths that
+> originate from the parent's update and from the subdomains own path. And a
+> single performance_state field isn't going to help in that as multiple locks are
+> involved here. I have added another per parent-domain field and that will help
+> get the locking quite simple. Here is the new patch (compile tested):
 
---
-Regards,
-Leonard
+Obviously you didn't think about this long enough. Please spare me
+from having to review something of this complexity just being compile
+tested. I don't have unlimited bandwidth. :-)
+
+I recommend at least some functional tests run together with lockdep tests.
+
+>
+> ---
+>  drivers/base/power/domain.c | 193 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_domain.h   |  22 +++++
+>  2 files changed, 215 insertions(+)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 71c95ad808d5..40815974287f 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -466,6 +466,187 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+>         return NOTIFY_DONE;
+>  }
+>
+> +/*
+> + * Returns true if anyone in genpd's parent hierarchy has
+> + * set_performance_state() set.
+> + */
+> +static bool genpd_has_set_performance_state(struct generic_pm_domain *genpd)
+> +{
+> +       struct gpd_link *link;
+> +
+> +       if (genpd->set_performance_state)
+> +               return true;
+> +
+> +       list_for_each_entry(link, &genpd->slave_links, slave_node) {
+> +               if (genpd_has_set_performance_state(link->master))
+> +                       return true;
+> +       }
+> +
+> +       return false;
+> +}
+> +
+> +/**
+> + * pm_genpd_has_performance_state - Checks if power domain does performance
+> + * state management.
+> + *
+> + * @dev: Device whose power domain is getting inquired.
+> + */
+> +bool pm_genpd_has_performance_state(struct device *dev)
+> +{
+> +       struct generic_pm_domain *genpd = dev_to_genpd(dev);
+> +
+> +       /* The parent domain must have set get_performance_state() */
+> +       if (!IS_ERR(genpd) && genpd->get_performance_state)
+> +               return true;
+> +
+> +       return false;
+> +}
+> +EXPORT_SYMBOL_GPL(pm_genpd_has_performance_state);
+
+I think you didn't read my earlier comments well enough.
+
+Who is going to call this? What prevents the genpd object from being
+removed in the middle of when you are operating on the genpd pointer?
+How can you even be sure the pm_domain pointer is a valid genpd
+object?
+
+[...]
+
+Kind regards
+Uffe
