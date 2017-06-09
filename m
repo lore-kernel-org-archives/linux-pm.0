@@ -1,52 +1,66 @@
-From: =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?=
-        <jerome.debretagne@gmail.com>
-Subject: Re: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
- recent Dell laptops
-Date: Fri, 9 Jun 2017 01:44:29 +0200
-Message-ID: <CA+kEDGFUuSC1CpCEgOT+HMTrDa-r1y59kM9-CYn0PSgtuKaG5Q@mail.gmail.com>
-References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
- <31f516ad46d74225a5d6324c5fd24751@ausx13mpc124.AMER.DELL.COM>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.12-rc5
+Date: Fri, 9 Jun 2017 02:19:20 +0200
+Message-ID: <CAJZ5v0jQ03WFNOs9n=rzTanmhwLmNG4fkjenD+gZ3SzdrtJWxw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <31f516ad46d74225a5d6324c5fd24751@ausx13mpc124.AMER.DELL.COM>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Mario.Limonciello@dell.com
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Mario,
+Hi Linus,
 
->> Here is some feedback for Dell Latitude 7275, as suggested by Srinivas
->> in https://bugzilla.kernel.org/show_bug.cgi?id=3D195897#c15 .
->>
->> For some context on that model, suspend-to-RAM is not safe as the
->> system hangs (raised in the above bug report). I'm wondering if this
->> is expected somehow, due to S3 not being supported on that model, as
->> discussed for the XPS 13 9365. Maybe Mario or someone else from Dell
->> would be able to confirm this point.
->>
-> The Latitude 7275 was not a machine that was tested with Linux during
-> development.
-> This machine shipped with Windows 8, right?
+Please pull from the tag
 
-I've read that this machine shipped at first with the option to have it eit=
-her
-with Windows 10 or Windows 8.1. Mine came with Windows 10.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.12-rc5
 
-> I believe this machine also supports Connected Standby (the precursor
-> to Modern Standby that behaves very similarly).
+with top-most commit fbd78afe34d9cc3a86aff7cc214d9f06e815e63e
 
-I've in fact found some WinHEC slides stating that it was among the first
-systems to support Modern Standby, here for reference:
-https://f.ch9.ms/public/WinHEC/06_WinHECDec2016-DesigningPowerEfficient_v02=
-.pptx
+ Merge branches 'intel_pstate' and 'pm-sleep'
 
-> I have an ask out to someone who can confirm that.
+on top of commit 3c2993b8c6143d8a5793746a54eba8f86f95240f
 
-Thanks. I'm hoping there's a chance to make it work with suspend-to-RAM
-on Linux still, in addition to suspend-to-idle, by fixing the current hang.
+ Linux 4.12-rc4
 
-Thanks,
-J=C3=A9rome
+to receive power management fixes for v4.12-rc5.
+
+These revert one problematic commit related to system sleep and fix
+one recent intel_pstate regression.
+
+Specifics:
+
+ - Revert a recent commit that attempted to avoid spurious wakeups
+   from suspend-to-idle via ACPI SCI, but introduced regressions on
+   some systems (Rafael Wysocki).
+
+   We will get back to the problem it tried to address in the next
+   cycle.
+
+ - Fix a possible division by 0 during intel_pstate initialization
+   due to a missing check (Rafael Wysocki).
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (2):
+      cpufreq: intel_pstate: Avoid division by 0 in min_perf_pct_min()
+      Revert "ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle"
+
+---------------
+
+ drivers/acpi/battery.c         |  2 +-
+ drivers/acpi/button.c          |  5 ++---
+ drivers/acpi/device_pm.c       |  3 +--
+ drivers/acpi/sleep.c           | 28 ----------------------------
+ drivers/base/power/main.c      |  5 +++++
+ drivers/base/power/wakeup.c    | 18 ++++++------------
+ drivers/cpufreq/intel_pstate.c |  5 +++--
+ include/linux/suspend.h        |  7 ++-----
+ kernel/power/process.c         |  2 +-
+ kernel/power/suspend.c         | 29 ++++-------------------------
+ 10 files changed, 25 insertions(+), 79 deletions(-)
