@@ -1,268 +1,165 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: Re: [PATCH v5 3/3] drivers:power:twl4030-charger: add deferred probing for phy and iio
-Date: Sat, 10 Jun 2017 06:59:08 +0200
-Message-ID: <DC2DA07F-72A1-45B9-A4F5-BD83D930974D@goldelico.com>
-References: <cover.1495363097.git.hns@goldelico.com> <6ed105f6c9c21c24184913a7be9e665453549d79.1495363097.git.hns@goldelico.com> <20170607204444.zumcreuqdnv7euv2@earth> <01A3D2F5-9E09-4E93-A363-93130DCEB7DF@goldelico.com> <1b9f3e92-36ac-2a73-7b2d-037b19fafaad@ti.com>
-Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+From: Joel Fernandes <joelaf@google.com>
+Subject: Re: [PATCH v2 1/2] cpufreq: Make iowait boost a policy option
+Date: Sat, 10 Jun 2017 01:08:18 -0700
+Message-ID: <CAJWu+opua5nw5w=hUUNWVWekV_6HBPb1mM3PgR8VN=GcoTwMgg@mail.gmail.com>
+References: <20170519062344.27692-1-joelaf@google.com> <20170519062344.27692-2-joelaf@google.com>
+ <20170519094245.ztm6tt2iwkaiwsya@hirez.programming.kicks-ass.net>
+ <CAJWu+opefgyzER6jKTa1ktrT4pGL=bKdhAP2+i40k5tYAR38wA@mail.gmail.com>
+ <20170522082154.f57cqovterd2qajv@hirez.programming.kicks-ass.net> <CAJWu+op_QRJWt=L=gGOk15pryD+1pm5xk9q90yt9wD1insdEzA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1b9f3e92-36ac-2a73-7b2d-037b19fafaad@ti.com>
+In-Reply-To: <CAJWu+op_QRJWt=L=gGOk15pryD+1pm5xk9q90yt9wD1insdEzA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Marek Belisko <marek@goldelico.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Grygorii,
+Adding Juri and Patrick as well to share any thoughts. Replied to
+Peter in the end of this email.
 
-> Am 09.06.2017 um 18:25 schrieb Grygorii Strashko =
-<grygorii.strashko@ti.com>:
->=20
->=20
->=20
-> On 06/09/2017 01:05 AM, H. Nikolaus Schaller wrote:
->> Hi,
->>=20
->>> Am 07.06.2017 um 22:44 schrieb Sebastian Reichel <sre@kernel.org>:
->>>=20
->>> Hi,
->>>=20
->>> On Sun, May 21, 2017 at 12:38:18PM +0200, H. Nikolaus Schaller =
-wrote:
->>>> This fixes an issue if both this twl4030_charger driver and
->>>> phy-twl4030-usb are compiled as modules and loaded in random order.
->>>> It has been observed on GTA04 and OpenPandora devices that in worst
->>>> case the boot process hangs and in best case the AC detection fails
->>>> with a warning.
->>>>=20
->>>> Therefore we add deferred probing checks for the usb_phy and the
->>>> iio channel for AC detection.
->>>>=20
->>>> For implementing this we must reorder code because we can't safely
->>>> return -EPROBE_DEFER after allocating any devm managed interrupt
->>>> (it might already/still be enabled without working interrupt =
-handler).
->>>>=20
->>>> So the check for required resources that may abort probing by
->>>> returning -EPROBE_DEFER, must come first.
->>>=20
->>> This sounds fishy. EPROBE_DEFER should not be different from
->>> other error codes in this regard and devm_ requested resources
->>> should be free'd on any error. Why is irq handler not working?
->>=20
->> 1. there is no other error code involved, before we try to convert =
-the driver to handle EPROBE_DEFER.
->> So it is not that EPROBE_DEFER is special but that we add an error =
-return path for it.
->>=20
->> 2. I don't know why it is not working - I just know that the handler =
-seems to be triggered before
->> all resources are available (if probe() is aborted with EPROBE_DEFER =
-error paths) which ends up in kernel panics.
->>=20
->> Therefore just to be safe, I have reordered things a little (without =
-changing the function):
->>=20
->> 1. check for resources (with some EPROBE_DEFER)
->> 2. allocate non-devm (with optional EPROBE_DEFER)
->> 3. allocate devm
->>=20
->> So this should be safe in any case.
->>=20
->> Please also compare a discussion
->>=20
->> https://lkml.org/lkml/2013/2/22/65
->>=20
->>>=20
->>>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
->>>> ---
->>>> drivers/power/supply/twl4030_charger.c | 37 =
-++++++++++++++++++++--------------
->>>> 1 file changed, 22 insertions(+), 15 deletions(-)
->>>>=20
->>>> diff --git a/drivers/power/supply/twl4030_charger.c =
-b/drivers/power/supply/twl4030_charger.c
->>>> index 785a07bc4f39..945eabdbbc89 100644
->>>> --- a/drivers/power/supply/twl4030_charger.c
->>>> +++ b/drivers/power/supply/twl4030_charger.c
->>>> @@ -984,6 +984,28 @@ static int twl4030_bci_probe(struct =
-platform_device *pdev)
->>>>=20
->>>> 	platform_set_drvdata(pdev, bci);
->>>>=20
->>>> +	if (bci->dev->of_node) {
->>>> +		struct device_node *phynode;
->>>> +
->>>> +		phynode =3D =
-of_find_compatible_node(bci->dev->of_node->parent,
->>>> +						  NULL, =
-"ti,twl4030-usb");
->>>> +		if (phynode) {
->>>> +			bci->transceiver =3D devm_usb_get_phy_by_node(
->>>> +				bci->dev, phynode, &bci->usb_nb);
->>>> +			if (IS_ERR(bci->transceiver) &&
->>>> +			    PTR_ERR(bci->transceiver) =3D=3D =
--EPROBE_DEFER)
->>>> +				return -EPROBE_DEFER;	/* PHY not ready =
-*/
->>>> +		}
->>>> +	}
->>>> +
->>>> +	bci->channel_vac =3D iio_channel_get(&pdev->dev, "vac");
->>>> +	if (IS_ERR(bci->channel_vac)) {
->>>> +		if (PTR_ERR(bci->channel_vac) =3D=3D -EPROBE_DEFER)
->>>> +			return -EPROBE_DEFER;	/* iio not ready */
->>>> +		dev_warn(&pdev->dev, "could not request vac iio =
-channel");
->>>> +		bci->channel_vac =3D NULL;
->>>> +	}
->>>> +
->>>=20
->>> You should not request non-devm managed iio_channel before
->>> devm-managed power-supply.
->>=20
->> Well, it is not *me* doing that.
->>=20
->> It is the unpatched driver which already does. See:
->>=20
->> 	=
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/dr=
-ivers/power/supply/twl4030_charger.c?h=3Dv4.12-rc4#n1069
->>=20
->> I have just moved this line to a different location to be able to add =
-a proper EPROBE_DEFER return path.
->>=20
->>> This could be fixed by switching to
->>> devm_iio_channel_get(), which also cleans up some code.
->>=20
->> Yes, this could be an alternative solution.
->> We still need EPROBE_DEFER handling.
->>=20
->>>=20
->>> I suspect, that this is also your IRQ problem, since iio_channel
->>> is currently free'd before irqs are free'd, but its used in irq
->>> code.
->>=20
->> Hm. No.
->>=20
->> In upstream code it is never freed on probe failure because there is =
-only
->> an error return (goto fail) after allocating irqs in case the
->> twl_i2c_write_u8 fails. Which usually doesn't.
->>=20
->> The EPROBE_DEFER returned by iio_channel_get not being ready simply =
-prints
->> a warning and turns off AC detection (bci->channel_vac =3D NULL) =
-forever.
->>=20
->>>=20
->>>> 	bci->ac =3D devm_power_supply_register(&pdev->dev, =
-&twl4030_bci_ac_desc,
->>>> 					     NULL);
->>>> 	if (IS_ERR(bci->ac)) {
->>>> @@ -1017,25 +1039,10 @@ static int twl4030_bci_probe(struct =
-platform_device *pdev)
->>>> 		return ret;
->>>> 	}
->>>>=20
->>>> -	bci->channel_vac =3D iio_channel_get(&pdev->dev, "vac");
->>>> -	if (IS_ERR(bci->channel_vac)) {
->>=20
->> My first attempt to fix EPROBE_DEFER was to add this
->>=20
->> +		if (PTR_ERR(bci->channel_vac) =3D=3D -EPROBE_DEFER)
->> +			return -EPROBE_DEFER;	/* iio not ready */
->>=20
->>>> -		bci->channel_vac =3D NULL;
->>>> -		dev_warn(&pdev->dev, "could not request vac iio =
-channel");
->>>> -	}
->>>> -
->>>> 	INIT_WORK(&bci->work, twl4030_bci_usb_work);
->>>> 	INIT_DELAYED_WORK(&bci->current_worker, twl4030_current_worker);
->>>>=20
->>>> 	bci->usb_nb.notifier_call =3D twl4030_bci_usb_ncb;
->>>> -	if (bci->dev->of_node) {
->>>> -		struct device_node *phynode;
->>>> -
->>>> -		phynode =3D =
-of_find_compatible_node(bci->dev->of_node->parent,
->>>> -						  NULL, =
-"ti,twl4030-usb");
->>>> -		if (phynode)
->>>> -			bci->transceiver =3D devm_usb_get_phy_by_node(
->>>> -				bci->dev, phynode, &bci->usb_nb);
->>=20
->> and this
->>=20
->> +			if (IS_ERR(bci->transceiver) &&
->> +			    PTR_ERR(bci->transceiver) =3D=3D =
--EPROBE_DEFER) {
->> +				ret =3D -EPROBE_DEFER;	/* PHY not ready =
-*/
->> +				goto fail;
->>=20
->> This did run (and potentially return) after installing =
-devm_request_threaded_irq leading
->> to observation of severe kernel panics by interrupts.
->>=20
->> Moving the iio channel allocation before devm_request_threaded_irq =
-made them go away.
->>=20
->>>> -	}
->>>>=20
->>>> 	/* Enable interrupts now. */
->>>> 	reg =3D ~(u32)(TWL4030_ICHGLOW | TWL4030_ICHGEOC | =
-TWL4030_TBATOR2 |
->>>=20
->>> -- Sebastian
->>=20
->> How important is it to keep the current sequence of =
-devm_request_threaded_irq() + (devm_)iio_channel_get() untouched?
->>=20
->> The reason I ask is that it is more likely for =
-(devm_)iio_channel_get() to fail than devm_request_threaded_irq().
->>=20
->> Hence the iio channel should imho be always allocated first, so that =
-we skip allocating+freeing unused irq handlers in case
->> of iio not being ready.
->>=20
->> Therefore, I suggest to keep the proposed reordering even if we think =
-devm-conversion of iio_channel_get() alone
->> would solve it equally well.
->>=20
->> Next: should there be two separate patches? One for converting the =
-non-devm iio_channel_get() and cleaning up error path.
->> And one for adding EPROBE_DEFER error path.
->>=20
->> Or keep it in a single patch because they only make sense if done =
-together (you can't add/remove deferred probing
->> without converting and/or moving iio_channel_get())?
->>=20
->> So please advise how to proceed.
->>=20
->=20
-> You should request irq as late as possible in probe - it's safest way =
-to go always.
-> You see crushes simply because request_irq enables IRQ and IRQ can =
-trigger immediately, so
-> IRQ handler will run and all required resources should be ready and =
-initialized.
->=20
-> In this case:
-> twl4030_bci_interrupt() -> twl4030_charger_update_current() -> =
-ac_available() -> iio_read_channel_processed()
-> OOOPS.
->=20
-> So, first thing to do is to reorder probe to ensure that sequence is =
-safe.
+On Wed, May 24, 2017 at 1:17 PM, Joel Fernandes <joelaf@google.com> wrote:
+> Hi Peter,
+>
+> On Mon, May 22, 2017 at 1:21 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> [..]
+>>> On Fri, May 19, 2017 at 2:42 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+>>> > On Thu, May 18, 2017 at 11:23:43PM -0700, Joel Fernandes wrote:
+>>> >> Make iowait boost a cpufreq policy option and enable it for intel_pstate
+>>> >> cpufreq driver. Governors like schedutil can use it to determine if
+>>> >> boosting for tasks that wake up with p->in_iowait set is needed.
+>>> >
+>>> > Rather than just flat out disabling the option, is there something
+>>> > better we can do on ARM?
+>>> >
+>>> > The reason for the IO-wait boost is to ensure we feed our external
+>>> > devices data ASAP, this reduces wait times, increases throughput and
+>>> > decreases the duration the devices have to operate.
+>>>
+>>> Can you help understand how CPU frequency can affect I/O? The ASAP
+>>> makes me think of it as a latency thing than a throughput in which
+>>> case there should a scheduling priority increase? Also, to me it
+>>> sounds more like memory instead of CPU frequency should be boosted
+>>> instead so that DMA transfers happen quicker to feed devices data
+>>> faster.
+>>
+>> Suppose your (I/O) device has the task waiting for a completion for 1ms
+>> for each request. Further suppose that feeding it the next request takes
+>> .1ms at full speed (1 GHz).
+>>
+>> Then we get, without contending tasks, a cycle of:
+>>
+>>
+>>  R----------R----------                                 (1 GHz)
+>>
+>>
+>> Which comes at 1/11-th utilization, which would then select something
+>> like 100 MHz as being sufficient. But then the R part becomes 10x longer
+>> and we end up with:
+>>
+>>
+>>  RRRRRRRRRR----------RRRRRRRRRR----------               (100 MHz)
+>>
+>>
+>> And since there's still plenty idle time, and the effective utilization
+>> is still the same 1/11th, we'll not ramp up at all and continue in this
+>> cycle.
+>>
+>> Note however that the total time of the cycle increased from 1.1ms
+>> to 2ms, for an ~80% decrease in throughput.
+>
+> Got it, thanks for the explanation.
+>
+>>> Are you trying to boost the CPU frequency so that a process waiting on
+>>> I/O does its next set of processing quickly enough after iowaiting on
+>>> the previous I/O transaction, and is ready to feed I/O the next time
+>>> sooner?
+>>
+>> This. So we break the above pattern by boosting the task that wakes from
+>> IO-wait. Its utilization will never be enough to cause a significant
+>> bump in frequency on its own, as its constantly blocked on the IO
+>> device.
+>
+> It sounds like this problem can happen with any other use-case where
+> one task blocks on the other, not just IO. Like a case where 2 tasks
+> running on different CPUs block on a mutex, then on either task can
+> wait on the other causing their utilization to be low right?
+>
+>>> The case I'm seeing a lot is a background thread does I/O request and
+>>> blocks for short period, and wakes up. All this while the CPU
+>>> frequency is low, but that wake up causes a spike in frequency. So
+>>> over a period of time, you see these spikes that don't really help
+>>> anything.
+>>
+>> So the background thread is doing some spurious IO but nothing
+>> consistent?
+>
+> Yes, its not a consistent pattern. Its actually a 'kworker' that woke
+> up to read/write something related to the video being played by the
+> YouTube app and is asynchronous to the app itself. It could be writing
+> to the logs or other information. But this definitely not a consistent
+> pattern as in the use case you described but intermittent spikes. The
+> frequency boosts don't help the actual activity of playing the video
+> except increasing power.
+>
+>>> > I realize max freq/volt might not be the best option for you, but is
+>>> > there another spot that would make sense? I can imagine you want to
+>>> > return your MMC to low power state ASAP as well.
+>>> >
+>>> >
+>>> > So rather than a disable flag, I would really rather see an IO-wait OPP
+>>> > state selector or something.
+>>>
+>>> We never had this in older kernels and I don't think we ever had an
+>>> issue where I/O was slow because of CPU frequency. If a task is busy a
+>>> lot, then its load tracking signal should be high and take care of
+>>> keeping CPU frequency high right?
+>>
+>> As per the above, no. If the device completion takes long enough to
+>> inject enough idle time, the utilization signal will never be high
+>> enough to break out of that pattern.
+>>
+>>> If PELT is decaying the load
+>>> tracking of iowaiting tasks too much, then I think that it should be
+>>> fixed there (probably decay an iowaiting task lesser?).
+>>
+>> For the above to work, we'd have to completely discard IO-wait time on
+>> the utilization signal. But that would then give the task u=1, which
+>> would be incorrect for placement decisions and wreck EAS.
+>
+> Not completely discard but cap the decay of the signal during IO wait.
+>
+>>
+>>> Considering
+>>> that it makes power worse on newer kernels, it'd probably be best to
+>>> disable it in my opinion for those who don't need it.
+>>
+>> You have yet to convince me you don't need it. Sure Android might not
+>> have much IO heavy workloads, but that's not to say nothing on ARM ever
+>> does.
+>>
+>> Also note that if you set the boost OPP to the lowest OPP you
+>> effectively do disable it.
+>>
+>> Looking at the code, it appears we already have this in
+>> iowait_boost_max.
+>
+> Currently it is set to:
+>  sg_cpu->iowait_boost_max = policy->cpuinfo.max_freq
+>
+> Are you proposing to make this a sysfs tunable so we can override what
+> the iowait_boost_max value is?
+>
 
-That is exactly what I guessed when proposing the reordering patch.
+Peter I didn't hear back from you. Maybe my comment here did not make
+much sense to you? That could be because I was confused what you meant
+by iowait_boost_max setting to 0. Currently afaik there isn't an
+upstream way of doing this. Were you suggesting making
+iowait_boost_max as a tunable and setting it to 0?
 
-> Then other stuff - devm, EPROBE_DEFER ...
+Or did you mean to have us carry an out of tree patch that sets it to
+0? One of the reason I am pushing this patch is to not have to carry
+an out of tree patch that disables it. Looking forward to your reply.
 
-IMHO, reordering alone doesn't make much sense as a single patch. Or =
-does it?
-
-BR and thanks,
-Nikolaus
+Thanks a lot,
+Joel
