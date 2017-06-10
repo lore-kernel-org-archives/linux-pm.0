@@ -1,165 +1,139 @@
 From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [PATCH v2 1/2] cpufreq: Make iowait boost a policy option
-Date: Sat, 10 Jun 2017 01:08:18 -0700
-Message-ID: <CAJWu+opua5nw5w=hUUNWVWekV_6HBPb1mM3PgR8VN=GcoTwMgg@mail.gmail.com>
-References: <20170519062344.27692-1-joelaf@google.com> <20170519062344.27692-2-joelaf@google.com>
- <20170519094245.ztm6tt2iwkaiwsya@hirez.programming.kicks-ass.net>
- <CAJWu+opefgyzER6jKTa1ktrT4pGL=bKdhAP2+i40k5tYAR38wA@mail.gmail.com>
- <20170522082154.f57cqovterd2qajv@hirez.programming.kicks-ass.net> <CAJWu+op_QRJWt=L=gGOk15pryD+1pm5xk9q90yt9wD1insdEzA@mail.gmail.com>
+Subject: Re: [PATCH 2/3] cpufreq: schedutil: Fix selection algorithm while
+ reducing frequency
+Date: Sat, 10 Jun 2017 02:11:39 -0700
+Message-ID: <CAJWu+or0GhiVS2rTAGMzS+y5xMrVUakYKO8G7u5Cn1dHX_P=SQ@mail.gmail.com>
+References: <cover.1497002895.git.viresh.kumar@linaro.org> <8d5e793df4f06d54794a889543817cf5be131650.1497002895.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJWu+op_QRJWt=L=gGOk15pryD+1pm5xk9q90yt9wD1insdEzA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f174.google.com ([74.125.82.174]:33229 "EHLO
+        mail-ot0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751876AbdFJJLl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Jun 2017 05:11:41 -0400
+Received: by mail-ot0-f174.google.com with SMTP id k4so48661369otd.0
+        for <linux-pm@vger.kernel.org>; Sat, 10 Jun 2017 02:11:40 -0700 (PDT)
+In-Reply-To: <8d5e793df4f06d54794a889543817cf5be131650.1497002895.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, john.ettedgui@gmail.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-Adding Juri and Patrick as well to share any thoughts. Replied to
-Peter in the end of this email.
+On Fri, Jun 9, 2017 at 3:15 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> While reducing frequency if there are no frequencies available between
+> "current" and "next" calculated frequency, then the core will never
+> select the "next" frequency.
+>
+> For example, consider the possible range of frequencies as 900 MHz, 1
+> GHz, 1.1 GHz, and 1.2 GHz. If the current frequency is 1.1 GHz and the
+> next frequency (based on current utilization) is 1 GHz, then the
+> schedutil governor will try to set the average of these as the next
+> frequency (i.e. 1.05 GHz).
+>
+> Because we always try to find the lowest frequency greater than equal to
+> the target frequency, cpufreq_driver_resolve_freq() will end up
+> returning 1.1 GHz only. And we will not be able to reduce the frequency
+> eventually. The worst hit is the policy->min frequency as that will
+> never get selected after the frequency is increased once.
 
-On Wed, May 24, 2017 at 1:17 PM, Joel Fernandes <joelaf@google.com> wrote:
-> Hi Peter,
->
-> On Mon, May 22, 2017 at 1:21 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> [..]
->>> On Fri, May 19, 2017 at 2:42 AM, Peter Zijlstra <peterz@infradead.org> wrote:
->>> > On Thu, May 18, 2017 at 11:23:43PM -0700, Joel Fernandes wrote:
->>> >> Make iowait boost a cpufreq policy option and enable it for intel_pstate
->>> >> cpufreq driver. Governors like schedutil can use it to determine if
->>> >> boosting for tasks that wake up with p->in_iowait set is needed.
->>> >
->>> > Rather than just flat out disabling the option, is there something
->>> > better we can do on ARM?
->>> >
->>> > The reason for the IO-wait boost is to ensure we feed our external
->>> > devices data ASAP, this reduces wait times, increases throughput and
->>> > decreases the duration the devices have to operate.
->>>
->>> Can you help understand how CPU frequency can affect I/O? The ASAP
->>> makes me think of it as a latency thing than a throughput in which
->>> case there should a scheduling priority increase? Also, to me it
->>> sounds more like memory instead of CPU frequency should be boosted
->>> instead so that DMA transfers happen quicker to feed devices data
->>> faster.
->>
->> Suppose your (I/O) device has the task waiting for a completion for 1ms
->> for each request. Further suppose that feeding it the next request takes
->> .1ms at full speed (1 GHz).
->>
->> Then we get, without contending tasks, a cycle of:
->>
->>
->>  R----------R----------                                 (1 GHz)
->>
->>
->> Which comes at 1/11-th utilization, which would then select something
->> like 100 MHz as being sufficient. But then the R part becomes 10x longer
->> and we end up with:
->>
->>
->>  RRRRRRRRRR----------RRRRRRRRRR----------               (100 MHz)
->>
->>
->> And since there's still plenty idle time, and the effective utilization
->> is still the same 1/11th, we'll not ramp up at all and continue in this
->> cycle.
->>
->> Note however that the total time of the cycle increased from 1.1ms
->> to 2ms, for an ~80% decrease in throughput.
->
-> Got it, thanks for the explanation.
->
->>> Are you trying to boost the CPU frequency so that a process waiting on
->>> I/O does its next set of processing quickly enough after iowaiting on
->>> the previous I/O transaction, and is ready to feed I/O the next time
->>> sooner?
->>
->> This. So we break the above pattern by boosting the task that wakes from
->> IO-wait. Its utilization will never be enough to cause a significant
->> bump in frequency on its own, as its constantly blocked on the IO
->> device.
->
-> It sounds like this problem can happen with any other use-case where
-> one task blocks on the other, not just IO. Like a case where 2 tasks
-> running on different CPUs block on a mutex, then on either task can
-> wait on the other causing their utilization to be low right?
->
->>> The case I'm seeing a lot is a background thread does I/O request and
->>> blocks for short period, and wakes up. All this while the CPU
->>> frequency is low, but that wake up causes a spike in frequency. So
->>> over a period of time, you see these spikes that don't really help
->>> anything.
->>
->> So the background thread is doing some spurious IO but nothing
->> consistent?
->
-> Yes, its not a consistent pattern. Its actually a 'kworker' that woke
-> up to read/write something related to the video being played by the
-> YouTube app and is asynchronous to the app itself. It could be writing
-> to the logs or other information. But this definitely not a consistent
-> pattern as in the use case you described but intermittent spikes. The
-> frequency boosts don't help the actual activity of playing the video
-> except increasing power.
->
->>> > I realize max freq/volt might not be the best option for you, but is
->>> > there another spot that would make sense? I can imagine you want to
->>> > return your MMC to low power state ASAP as well.
->>> >
->>> >
->>> > So rather than a disable flag, I would really rather see an IO-wait OPP
->>> > state selector or something.
->>>
->>> We never had this in older kernels and I don't think we ever had an
->>> issue where I/O was slow because of CPU frequency. If a task is busy a
->>> lot, then its load tracking signal should be high and take care of
->>> keeping CPU frequency high right?
->>
->> As per the above, no. If the device completion takes long enough to
->> inject enough idle time, the utilization signal will never be high
->> enough to break out of that pattern.
->>
->>> If PELT is decaying the load
->>> tracking of iowaiting tasks too much, then I think that it should be
->>> fixed there (probably decay an iowaiting task lesser?).
->>
->> For the above to work, we'd have to completely discard IO-wait time on
->> the utilization signal. But that would then give the task u=1, which
->> would be incorrect for placement decisions and wreck EAS.
->
-> Not completely discard but cap the decay of the signal during IO wait.
->
->>
->>> Considering
->>> that it makes power worse on newer kernels, it'd probably be best to
->>> disable it in my opinion for those who don't need it.
->>
->> You have yet to convince me you don't need it. Sure Android might not
->> have much IO heavy workloads, but that's not to say nothing on ARM ever
->> does.
->>
->> Also note that if you set the boost OPP to the lowest OPP you
->> effectively do disable it.
->>
->> Looking at the code, it appears we already have this in
->> iowait_boost_max.
->
-> Currently it is set to:
->  sg_cpu->iowait_boost_max = policy->cpuinfo.max_freq
->
-> Are you proposing to make this a sysfs tunable so we can override what
-> the iowait_boost_max value is?
->
+But once utilization goes to 0, it will select the min frequency
+(because it selects lowest frequency >= target)?
 
-Peter I didn't hear back from you. Maybe my comment here did not make
-much sense to you? That could be because I was confused what you meant
-by iowait_boost_max setting to 0. Currently afaik there isn't an
-upstream way of doing this. Were you suggesting making
-iowait_boost_max as a tunable and setting it to 0?
+>
+> This affects all the drivers that provide ->target() or ->target_index()
+> callbacks.
+>
+> Though for cpufreq drivers, like intel_pstate, which provide ->target()
+> but not ->resolve_freq() (i.e.  cpufreq_driver_resolve_freq() simply
+> returns the next frequency), sg_policy->next_freq gets updated with the
+> average frequency. And so we will finally select the min frequency when
+> the next_freq is 1 more than the min frequency as the average then will
+> be equal to the min frequency. But that will also take lots of
+> iterations of the schedutil update callbacks to happen.
+>
+> Fix that by not using the average value for the next_freq in such cases.
+>
+> Note that this still doesn't fix the drivers which provide ->target()
+> but don't provide ->resolve_freq() (e.g. intel_pstate) and such drivers
+> need to be updated to provide the ->resolve_freq() callbacks as well in
+> order to fix this.
+>
+> Fixes: 39b64aa1c007 ("cpufreq: schedutil: Reduce frequencies slower")
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 33 ++++++++++++++++++++++++++++-----
+>  1 file changed, 28 insertions(+), 5 deletions(-)
+>
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 1852bd73d903..30e6a62d227c 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -117,6 +117,17 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+>         }
+>  }
+>
+> +static unsigned int resolve_freq(struct sugov_policy *sg_policy,
+> +                                unsigned int freq)
+> +{
+> +       if (freq == sg_policy->cached_raw_freq &&
+> +           sg_policy->next_freq != UINT_MAX)
+> +               return sg_policy->next_freq;
+> +
+> +       sg_policy->cached_raw_freq = freq;
+> +       return cpufreq_driver_resolve_freq(sg_policy->policy, freq);
+> +}
+> +
+>  /**
+>   * get_next_freq - Compute a new frequency for a given cpufreq policy.
+>   * @sg_policy: schedutil policy object to compute the new frequency for.
+> @@ -145,6 +156,7 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+>         struct cpufreq_policy *policy = sg_policy->policy;
+>         unsigned int freq = arch_scale_freq_invariant() ?
+>                                 policy->cpuinfo.max_freq : policy->cur;
+> +       unsigned int target, original = 0;
+>
+>         freq = (freq + (freq >> 2)) * util / max;
+>
+> @@ -156,13 +168,24 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+>         if (freq < policy->min)
+>                 freq = policy->min;
+>
+> -       if (sg_policy->next_freq > freq)
+> +       if (sg_policy->next_freq > freq) {
+> +               original = freq;
+>                 freq = (sg_policy->next_freq + freq) >> 1;
+> +       }
+>
+> -       if (freq == sg_policy->cached_raw_freq && sg_policy->next_freq != UINT_MAX)
+> -               return sg_policy->next_freq;
+> -       sg_policy->cached_raw_freq = freq;
+> -       return cpufreq_driver_resolve_freq(policy, freq);
+> +       target = resolve_freq(sg_policy, freq);
+> +
+> +       /*
+> +        * While reducing frequency if there are no frequencies available
+> +        * between "original" and "next_freq", resolve_freq() will return
+> +        * next_freq because we always try to find the lowest frequency greater
+> +        * than equal to the "freq". Fix that by going directly to the
+> +        * "original" frequency in that case.
+> +        */
+> +       if (unlikely(original && target == sg_policy->next_freq))
+> +               target = resolve_freq(sg_policy, original);
+> +
+> +       return target;
+>  }
 
-Or did you mean to have us carry an out of tree patch that sets it to
-0? One of the reason I am pushing this patch is to not have to carry
-an out of tree patch that disables it. Looking forward to your reply.
+I thought its confusing to have a special case like this. On one hand
+we're saying we'd like to select next frequency to be lowest frequency
+>= target, on the other hand we're saying if the target wasn't low
+enough to trigger an OPP change, then we'd just rather drop the
+frequency to the lower OPP. I get why you'd like to do that, because
+with patch 1/3 you're lowering frequency more slower before doing the
+cpufreq_resolve, but what if the reduction in utilization was really
+small to begin with and not because the "reduce frequencies more
+slowly" stuff that you moved in patch 1/3? Then in that case you'd be
+falsely dropping frequency when the right thing to do would be to
+select the lowest freq >= target?
 
-Thanks a lot,
+Thanks,
 Joel
