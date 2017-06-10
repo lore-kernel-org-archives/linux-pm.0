@@ -1,64 +1,81 @@
-From: =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?=
-        <jerome.debretagne@gmail.com>
-Subject: Re: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
+From: <Mario.Limonciello@dell.com>
+Subject: RE: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
  recent Dell laptops
-Date: Sat, 10 Jun 2017 01:11:15 +0200
-Message-ID: <CA+kEDGFVgmXf_B=qHfhWS1HCD+Ei6KSp_rSJBOGYtNZVkm+MeA@mail.gmail.com>
+Date: Sat, 10 Jun 2017 00:23:37 +0000
+Message-ID: <24ac3bb8850c4b7a8fa9c0c2d9e3cbc4@ausx13mpc124.AMER.DELL.COM>
 References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
  <31f516ad46d74225a5d6324c5fd24751@ausx13mpc124.AMER.DELL.COM>
- <CA+kEDGFUuSC1CpCEgOT+HMTrDa-r1y59kM9-CYn0PSgtuKaG5Q@mail.gmail.com> <343a8430fb144adf8d65ef9d0b2bfd40@ausx13mpc124.AMER.DELL.COM>
+ <CA+kEDGFUuSC1CpCEgOT+HMTrDa-r1y59kM9-CYn0PSgtuKaG5Q@mail.gmail.com>
+ <343a8430fb144adf8d65ef9d0b2bfd40@ausx13mpc124.AMER.DELL.COM>
+ <CA+kEDGFVgmXf_B=qHfhWS1HCD+Ei6KSp_rSJBOGYtNZVkm+MeA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <343a8430fb144adf8d65ef9d0b2bfd40@ausx13mpc124.AMER.DELL.COM>
+In-Reply-To: <CA+kEDGFVgmXf_B=qHfhWS1HCD+Ei6KSp_rSJBOGYtNZVkm+MeA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-acpi-owner@vger.kernel.org
-To: Mario.Limonciello@dell.com
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+To: jerome.debretagne@gmail.com
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, andriy.shevchenko@linux.intel.com, dvhart@infradead.org, srinivas.pandruvada@linux.intel.com, mika.westerberg@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-> I got a response back that confirmed that this machine only is supported
-> with CS/MS.  I would not expect S3 to work properly.
-
-Thanks for the confirmation, that's what I expected following the feedback on
-other recent Dell machines.
-
-> Even if S3 is part of the ACPI namespace, the behavior that Windows follows
-> is that S3 is not offered when the low power idle bit is set in FADT.
->
-> I know that the current behavior in Linux does not review low power idle
-> bit to determine whether to offer S2I or S3
-
-Is it something that is envisioned already as a future evolution in Linux as
-well, if more and more systems are now designed with S2I in mind?
-
-> so I'm inquiring if we can remove
-> S3 from a future BIOS update on this platform to let Linux work better
-> even though we don't ship this platform with Linux.
-
-That would be a great fix, removing the default to S3 for this system on Linux.
-
-> For now I would recommend that you focus efforts exclusively on making
-> S2I work, and ignore S3 problems.
-
-Well noted!
-
-> It's unclear to me exactly when you tested s2idle-dell-test.
-> Can you re-test with Rafael's newest submissions and changes to s2idle-dell-test
-> committed 28 hours ago?
-> You'll still have to add your system to the DMI whitelist for the last patch
-> but he has reworked a bunch of related wakeup code that has also changed.
-
-I've just done so, using the updated s2idle-dell-test branch + my DMI
-adaptation.
-
-I still get exactly the same results than during my previous tests:
-- it provides the expected fix when running BIOS 1.1.20: short press to wake-up
-- it doesn't fix with the current BIOS 1.1.31: long press still needed
-to wake-up
-so something has clearly changed between these 2 versions. Btw, the EC is
-explicitly updated when flashing version 1.1.31, that's one of the
-visible steps.
-
-Some assumptions now: either the SCI is ignored erroneously or it's
-not interpreted correctly by the expected driver? I guess that's the 2
-possibilities I'll try to investigate.
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBKw6lyw7RtZSBkZSBCcmV0YWdu
+ZSBbbWFpbHRvOmplcm9tZS5kZWJyZXRhZ25lQGdtYWlsLmNvbV0NCj4gU2VudDogRnJpZGF5LCBK
+dW5lIDksIDIwMTcgNjoxMSBQTQ0KPiBUbzogTGltb25jaWVsbG8sIE1hcmlvIDxNYXJpb19MaW1v
+bmNpZWxsb0BEZWxsLmNvbT4NCj4gQ2M6IEFDUEkgRGV2ZWwgTWFsaW5nIExpc3QgPGxpbnV4LWFj
+cGlAdmdlci5rZXJuZWwub3JnPjsgTGludXggUE0gPGxpbnV4LQ0KPiBwbUB2Z2VyLmtlcm5lbC5v
+cmc+OyBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHJqd3lzb2NraS5uZXQ+OyBBbmR5IFNoZXZjaGVu
+a28NCj4gPGFuZHJpeS5zaGV2Y2hlbmtvQGxpbnV4LmludGVsLmNvbT47IERhcnJlbiBIYXJ0IDxk
+dmhhcnRAaW5mcmFkZWFkLm9yZz47DQo+IFNyaW5pdmFzIFBhbmRydXZhZGEgPHNyaW5pdmFzLnBh
+bmRydXZhZGFAbGludXguaW50ZWwuY29tPjsgTWlrYSBXZXN0ZXJiZXJnDQo+IDxtaWthLndlc3Rl
+cmJlcmdAbGludXguaW50ZWwuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDAvM10gQUNQSSAv
+IHNsZWVwOiBTdXBwb3J0IHBvd2VyIGJ1dHRvbiB3YWtldXAgZnJvbSBTMkkgb24NCj4gcmVjZW50
+IERlbGwgbGFwdG9wcw0KPiANCj4gPiBJIGdvdCBhIHJlc3BvbnNlIGJhY2sgdGhhdCBjb25maXJt
+ZWQgdGhhdCB0aGlzIG1hY2hpbmUgb25seSBpcyBzdXBwb3J0ZWQNCj4gPiB3aXRoIENTL01TLiAg
+SSB3b3VsZCBub3QgZXhwZWN0IFMzIHRvIHdvcmsgcHJvcGVybHkuDQo+IA0KPiBUaGFua3MgZm9y
+IHRoZSBjb25maXJtYXRpb24sIHRoYXQncyB3aGF0IEkgZXhwZWN0ZWQgZm9sbG93aW5nIHRoZSBm
+ZWVkYmFjayBvbg0KPiBvdGhlciByZWNlbnQgRGVsbCBtYWNoaW5lcy4NCg0KU3BlY2lmaWNhbGx5
+IHRoZSBEZWxsIG1hY2hpbmVzIHRoYXQgYXJlbid0IHNvbGQgd2l0aCBMaW51eC4gIFRoZSBtYWNo
+aW5lcyBzb2xkDQp3aXRoIExpbnV4IGRvIHVuZGVyZ28gUzMgdGVzdGluZyBhbmQgQklPUyBpc3N1
+ZXMgYXJlIHNvcnRlZCBvdXQgZm9yIFMzLg0KDQpUaG9zZSBpdCBtYWtlcyBzZW5zZSB0byBsZWF2
+ZSBTMyBpbiB0aGUgQklPUyB1bnRpbCBTMkkgaXMgd29ya2luZyB3ZWxsIG9uIExpbnV4DQphdCBs
+ZWFzdC4NCg0KPiANCj4gPiBFdmVuIGlmIFMzIGlzIHBhcnQgb2YgdGhlIEFDUEkgbmFtZXNwYWNl
+LCB0aGUgYmVoYXZpb3IgdGhhdCBXaW5kb3dzIGZvbGxvd3MNCj4gPiBpcyB0aGF0IFMzIGlzIG5v
+dCBvZmZlcmVkIHdoZW4gdGhlIGxvdyBwb3dlciBpZGxlIGJpdCBpcyBzZXQgaW4gRkFEVC4NCj4g
+Pg0KPiA+IEkga25vdyB0aGF0IHRoZSBjdXJyZW50IGJlaGF2aW9yIGluIExpbnV4IGRvZXMgbm90
+IHJldmlldyBsb3cgcG93ZXIgaWRsZQ0KPiA+IGJpdCB0byBkZXRlcm1pbmUgd2hldGhlciB0byBv
+ZmZlciBTMkkgb3IgUzMNCj4gDQo+IElzIGl0IHNvbWV0aGluZyB0aGF0IGlzIGVudmlzaW9uZWQg
+YWxyZWFkeSBhcyBhIGZ1dHVyZSBldm9sdXRpb24gaW4gTGludXggYXMNCj4gd2VsbCwgaWYgbW9y
+ZSBhbmQgbW9yZSBzeXN0ZW1zIGFyZSBub3cgZGVzaWduZWQgd2l0aCBTMkkgaW4gbWluZD8NCg0K
+RXZlbnR1YWxseSB0aGlzIHdpbGwgY2hhbmdlLCBidXQgZm9yIG5vdyBmaXJzdCB3ZSBuZWVkIHRv
+IHNvcnQgb3V0IHRoZSBwcm9ibGVtcw0Kd2l0aCB0aGUgc3lzdGVtcyB0aGF0IGRvIFMySS4NCg0K
+PiANCj4gPiBzbyBJJ20gaW5xdWlyaW5nIGlmIHdlIGNhbiByZW1vdmUNCj4gPiBTMyBmcm9tIGEg
+ZnV0dXJlIEJJT1MgdXBkYXRlIG9uIHRoaXMgcGxhdGZvcm0gdG8gbGV0IExpbnV4IHdvcmsgYmV0
+dGVyDQo+ID4gZXZlbiB0aG91Z2ggd2UgZG9uJ3Qgc2hpcCB0aGlzIHBsYXRmb3JtIHdpdGggTGlu
+dXguDQo+IA0KPiBUaGF0IHdvdWxkIGJlIGEgZ3JlYXQgZml4LCByZW1vdmluZyB0aGUgZGVmYXVs
+dCB0byBTMyBmb3IgdGhpcyBzeXN0ZW0gb24gTGludXguDQo+IA0KPiA+IEZvciBub3cgSSB3b3Vs
+ZCByZWNvbW1lbmQgdGhhdCB5b3UgZm9jdXMgZWZmb3J0cyBleGNsdXNpdmVseSBvbiBtYWtpbmcN
+Cj4gPiBTMkkgd29yaywgYW5kIGlnbm9yZSBTMyBwcm9ibGVtcy4NCj4gDQo+IFdlbGwgbm90ZWQh
+DQo+IA0KPiA+IEl0J3MgdW5jbGVhciB0byBtZSBleGFjdGx5IHdoZW4geW91IHRlc3RlZCBzMmlk
+bGUtZGVsbC10ZXN0Lg0KPiA+IENhbiB5b3UgcmUtdGVzdCB3aXRoIFJhZmFlbCdzIG5ld2VzdCBz
+dWJtaXNzaW9ucyBhbmQgY2hhbmdlcyB0byBzMmlkbGUtZGVsbC10ZXN0DQo+ID4gY29tbWl0dGVk
+IDI4IGhvdXJzIGFnbz8NCj4gPiBZb3UnbGwgc3RpbGwgaGF2ZSB0byBhZGQgeW91ciBzeXN0ZW0g
+dG8gdGhlIERNSSB3aGl0ZWxpc3QgZm9yIHRoZSBsYXN0IHBhdGNoDQo+ID4gYnV0IGhlIGhhcyBy
+ZXdvcmtlZCBhIGJ1bmNoIG9mIHJlbGF0ZWQgd2FrZXVwIGNvZGUgdGhhdCBoYXMgYWxzbyBjaGFu
+Z2VkLg0KPiANCj4gSSd2ZSBqdXN0IGRvbmUgc28sIHVzaW5nIHRoZSB1cGRhdGVkIHMyaWRsZS1k
+ZWxsLXRlc3QgYnJhbmNoICsgbXkgRE1JDQo+IGFkYXB0YXRpb24uDQo+IA0KPiBJIHN0aWxsIGdl
+dCBleGFjdGx5IHRoZSBzYW1lIHJlc3VsdHMgdGhhbiBkdXJpbmcgbXkgcHJldmlvdXMgdGVzdHM6
+DQo+IC0gaXQgcHJvdmlkZXMgdGhlIGV4cGVjdGVkIGZpeCB3aGVuIHJ1bm5pbmcgQklPUyAxLjEu
+MjA6IHNob3J0IHByZXNzIHRvIHdha2UtdXANCj4gLSBpdCBkb2Vzbid0IGZpeCB3aXRoIHRoZSBj
+dXJyZW50IEJJT1MgMS4xLjMxOiBsb25nIHByZXNzIHN0aWxsIG5lZWRlZA0KPiB0byB3YWtlLXVw
+DQo+IHNvIHNvbWV0aGluZyBoYXMgY2xlYXJseSBjaGFuZ2VkIGJldHdlZW4gdGhlc2UgMiB2ZXJz
+aW9ucy4gQnR3LCB0aGUgRUMgaXMNCj4gZXhwbGljaXRseSB1cGRhdGVkIHdoZW4gZmxhc2hpbmcg
+dmVyc2lvbiAxLjEuMzEsIHRoYXQncyBvbmUgb2YgdGhlDQo+IHZpc2libGUgc3RlcHMuDQo+IA0K
+PiBTb21lIGFzc3VtcHRpb25zIG5vdzogZWl0aGVyIHRoZSBTQ0kgaXMgaWdub3JlZCBlcnJvbmVv
+dXNseSBvciBpdCdzDQo+IG5vdCBpbnRlcnByZXRlZCBjb3JyZWN0bHkgYnkgdGhlIGV4cGVjdGVk
+IGRyaXZlcj8gSSBndWVzcyB0aGF0J3MgdGhlIDINCj4gcG9zc2liaWxpdGllcyBJJ2xsIHRyeSB0
+byBpbnZlc3RpZ2F0ZS4NCg0KV2VsbCB0aGF0J3MgdG9vIGJhZC4gIFllcywgeW91J3JlIGNvcnJl
+Y3QgdGhhdCB0aGUgRUMgaGFzIGNoYW5nZWQgYmV0d2Vlbg0KdGhvc2UgdmVyc2lvbnMuICBBcmUg
+eW91IHRlc3Rpbmcgb24gb3Igb2ZmIEFDIGFkYXB0ZXI/ICBBcyBmYXIgYXMgSSBjYW4gdGVsbCAN
+CnRoZSBmaXggdGhhdCB3ZW50ICBpbnRvIHRoYXQgd2FzIHNwZWNpZmljYWxseSByZWxhdGVkIHRv
+IHBvd2VyIGJ1dHRvbiANCmhhbmRsaW5nIG9mZiBBQyBhZGFwdGVyLg0K
