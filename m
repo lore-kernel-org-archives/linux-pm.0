@@ -1,45 +1,51 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH v2 6/8] PM / Domains: Fix unsafe iteration over modified list of domains
-Date: Mon, 12 Jun 2017 17:17:46 +0200
-Message-ID: <20170612151748.7380-7-krzk@kernel.org>
+Subject: [RFT v2 2/8] PM / Domains: Handle safely genpd_syscore_switch() call on non-genpd device
+Date: Mon, 12 Jun 2017 17:17:42 +0200
+Message-ID: <20170612151748.7380-3-krzk@kernel.org>
 References: <20170612151748.7380-1-krzk@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170612151748.7380-1-krzk@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, stable@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-of_genpd_remove_last() iterates over list of domains and removes
-matching element thus it has to use safe version of list iteration.
+genpd_syscore_switch() had two problems:
+1. It silently assumed that device, it is being called for, belongs to
+   generic power domain and used container_of() on its power domain
+   pointer.  Such assumption might not be true always.
 
-Fixes: 17926551c98a ("PM / Domains: Add support for removing nested PM domains by provider")
-Cc: <stable@vger.kernel.org>
+2. It iterated over list of generic power domains without holding
+   gpd_list_lock mutex thus list could have been modified in the same
+   time.
+
+Usage of genpd_lookup_dev() solves both problems as it is safe a call
+for non-generic power domains and uses mutex when iterating.
+
+Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+
+---
+
+Not tested on real hardware.
 ---
  drivers/base/power/domain.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index b74b5111957a..33467beaeea4 100644
+index 2e8d0f423507..983f086ab235 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -1934,14 +1934,14 @@ EXPORT_SYMBOL_GPL(of_genpd_add_subdomain);
-  */
- struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
+@@ -1098,8 +1098,8 @@ static void genpd_syscore_switch(struct device *dev, bool suspend)
  {
--	struct generic_pm_domain *gpd, *genpd = ERR_PTR(-ENOENT);
-+	struct generic_pm_domain *gpd, *tmp, *genpd = ERR_PTR(-ENOENT);
- 	int ret;
+ 	struct generic_pm_domain *genpd;
  
- 	if (IS_ERR_OR_NULL(np))
- 		return ERR_PTR(-EINVAL);
+-	genpd = dev_to_genpd(dev);
+-	if (!pm_genpd_present(genpd))
++	genpd = genpd_lookup_dev(dev);
++	if (!genpd)
+ 		return;
  
- 	mutex_lock(&gpd_list_lock);
--	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
-+	list_for_each_entry_safe(gpd, tmp, &gpd_list, gpd_list_node) {
- 		if (gpd->provider == &np->fwnode) {
- 			ret = genpd_remove(gpd);
- 			genpd = ret ? ERR_PTR(ret) : gpd;
+ 	if (suspend) {
 -- 
 2.9.3
