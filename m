@@ -1,74 +1,69 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v2 5/8] PM / sleep: Print timing information if debug is
- enabled
-Date: Mon, 12 Jun 2017 15:18:15 -0700
-Message-ID: <1497305895.18751.1.camel@perches.com>
-References: <8918199.uo13RZ8hZk@aspire.rjw.lan>
-         <1615075.mBkoKApGGc@aspire.rjw.lan> <7222456.034JZvbkBs@aspire.rjw.lan>
+From: =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?=
+        <jerome.debretagne@gmail.com>
+Subject: Re: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
+ recent Dell laptops
+Date: Tue, 13 Jun 2017 00:38:49 +0200
+Message-ID: <CA+kEDGEM7PmMTonmoFKoJrMU6hxLh_zauLRt_fq=2v_Jxo35NQ@mail.gmail.com>
+References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
+ <31f516ad46d74225a5d6324c5fd24751@ausx13mpc124.AMER.DELL.COM>
+ <CA+kEDGFUuSC1CpCEgOT+HMTrDa-r1y59kM9-CYn0PSgtuKaG5Q@mail.gmail.com>
+ <343a8430fb144adf8d65ef9d0b2bfd40@ausx13mpc124.AMER.DELL.COM>
+ <CA+kEDGFVgmXf_B=qHfhWS1HCD+Ei6KSp_rSJBOGYtNZVkm+MeA@mail.gmail.com>
+ <24ac3bb8850c4b7a8fa9c0c2d9e3cbc4@ausx13mpc124.AMER.DELL.COM>
+ <CA+kEDGHev9XYQr=BEVZ8od+nX_cQ637eY0cF81_v3auQZvBKRQ@mail.gmail.com>
+ <CAJZ5v0haCFYW8FRXtuLREFscLq_QRbyhnGf39u0P7xzUaGYVVQ@mail.gmail.com>
+ <88366b425cce41358ae8f88e43f3d201@ausx13mpc120.AMER.DELL.COM> <CA+kEDGEXEYEV+tGnswvHsFmOX5W_GAYPTYxk0YUUt0D1pdr92A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay0075.hostedemail.com ([216.40.44.75]:59281 "EHLO
-        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1752765AbdFLWSV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 18:18:21 -0400
-In-Reply-To: <7222456.034JZvbkBs@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CA+kEDGEXEYEV+tGnswvHsFmOX5W_GAYPTYxk0YUUt0D1pdr92A@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Mario.Limonciello@dell.com
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, Hans De Goede <hdegoede@redhat.com>, Alan Stern <stern@rowland.harvard.edu>
 
-On Mon, 2017-06-12 at 22:51 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Avoid printing the device suspend/resume timing information if
-> CONFIG_PM_DEBUG is not set to reduce the log noise level.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/base/power/main.c |    4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> Index: linux-pm/drivers/base/power/main.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/main.c
-> +++ linux-pm/drivers/base/power/main.c
-> @@ -417,6 +417,7 @@ static void pm_dev_err(struct device *de
->  		dev_name(dev), pm_verb(state.event), info, error);
->  }
->  
-> +#ifdef CONFIG_PM_DEBUG
->  static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
->  {
->  	ktime_t calltime;
-> @@ -433,6 +434,9 @@ static void dpm_show_time(ktime_t startt
->  		info ?: "", info ? " " : "", pm_verb(state.event),
->  		usecs / USEC_PER_MSEC, usecs % USEC_PER_MSEC);
->  }
-> +#else
-> +static inline void dpm_show_time(ktime_t starttime, pm_message_t state, char *info) {}
-> +#endif /* CONFIG_PM_DEBUG */
->  
->  static int dpm_run_callback(pm_callback_t cb, struct device *dev,
->  			    pm_message_t state, char *info)
-> 
+2017-06-12 22:35 GMT+02:00 J=C3=A9r=C3=B4me de Bretagne <jerome.debretagne@=
+gmail.com>:
+>> I don't see HEBC in the ASL for the 7275.  It would be good to provide
+>> this information across both of the BIOS versions (working and non-worki=
+ng).
+>>
+>> As well as what
+>>         status =3D acpi_evaluate_integer(handle, "BTNC", NULL, &button_c=
+ap);
+>> evaluates as on both too.
+>
+> I'll provide both BTNC and HEBC log results to compare, with both BIOS
+> versions, a bit later today.
 
-trivia:
+Here are both requested logs, with BIOS 1.1.31 first:
 
-This style of code can be reduced a few lines of code
-using a single definition.
+* right after status =3D acpi_evaluate_integer(handle, "HEBC", NULL, &event=
+_cap);
+[    4.167874] intel-hid INT33D5:00: intel_hid_probe: event_cap =3D
+0xffff9bfe71bdc410
+[    4.167875] intel-hid INT33D5:00: intel_hid_probe: status =3D 5
 
-static type func(args...)
-{
-#ifdef CONFIG_<FOO>
-	[code ...]
-#endif
-}
+* right after status =3D acpi_evaluate_integer(handle, "BTNC", NULL, &butto=
+n_cap);
+=3D> No log output for that one
 
-and compilers will generate the same code for the
-!defined CONFIG_<FOO> case.
 
-This style can help avoid defects of updating one
-function definition and not the other and only
-compile testing the updated version.
+And with BIOS 1.1.20 then:
+
+* right after status =3D acpi_evaluate_integer(handle, "HEBC", NULL, &event=
+_cap);
+[    4.172543] intel-hid INT33D5:00: intel_hid_probe: event_cap =3D
+0xffff8d1f70950810
+[    4.172545] intel-hid INT33D5:00: intel_hid_probe: status =3D 5
+
+* right after status =3D acpi_evaluate_integer(handle, "BTNC", NULL, &butto=
+n_cap);
+=3D> No log output for that one
+
+
+Status =3D 5 confirms the assumption that HEBC is not found in both cases.
+I guess the absence of logs for BTNC is more surprising, isn't it?
+
+J=C3=A9rome
