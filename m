@@ -1,56 +1,74 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH 2/2] ARM: dts: imx6ul: Add imx6ul-tempmon
-Date: Mon, 12 Jun 2017 11:30:41 -0300
-Message-ID: <CAOMZO5B63ZefwN5Obab-a6rsngFy5m38US-pVvZtjHJSwUOvtw@mail.gmail.com>
-References: <7055ce6095c0b7f026ac6f0dc37e43fc5c0b1793.1496939031.git.leonard.crestez@nxp.com>
- <b9b91617985607f24c4986bcad5199483805d6b7.1496939031.git.leonard.crestez@nxp.com>
- <CAOMZO5BP4fPyzDmSg+DFLRYh3QMf-8T0gqvnZn6mEMt-QqSgfw@mail.gmail.com>
- <1497005895.28352.88.camel@nxp.com> <20170609154638.3b64e6d0@karo-electronics.de>
- <1497022484.28352.105.camel@nxp.com> <20170612124029.1643469d@karo-electronics.de>
- <1497268028.32422.15.camel@nxp.com> <CAOMZO5Dm8+1Ddh1QqkgNLbSrZPQgFL=EO6NcjusXA0Vi9mvXeg@mail.gmail.com>
- <20170612153752.3b71516c@karo-electronics.de>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH 3/6] arm: wire frequency-invariant accounting support up
+ to the task scheduler
+Date: Mon, 12 Jun 2017 16:30:50 +0200
+Message-ID: <CAKfTPtCHOsEDMDTiBvu-vdLgNJjD_j=hancL8RTJHOe9a6gJag@mail.gmail.com>
+References: <20170608075513.12475-1-dietmar.eggemann@arm.com> <20170608075513.12475-4-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f195.google.com ([74.125.82.195]:36383 "EHLO
-        mail-ot0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752047AbdFLOam (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 10:30:42 -0400
-In-Reply-To: <20170612153752.3b71516c@karo-electronics.de>
+Received: from mail-lf0-f42.google.com ([209.85.215.42]:36395 "EHLO
+        mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752442AbdFLObN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 10:31:13 -0400
+Received: by mail-lf0-f42.google.com with SMTP id o83so51849233lff.3
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2017 07:31:12 -0700 (PDT)
+In-Reply-To: <20170608075513.12475-4-dietmar.eggemann@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Lothar_Wa=C3=9Fmann?= <LW@karo-electronics.de>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, Bai Ping <ping.bai@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, LAK <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaor.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On Mon, Jun 12, 2017 at 10:37 AM, Lothar Wa=C3=9Fmann <LW@karo-electronics.=
-de> wrote:
-> Hi,
+On 8 June 2017 at 09:55, Dietmar Eggemann <dietmar.eggemann@arm.com> wrote:
+> Commit dfbca41f3479 ("sched: Optimize freq invariant accounting")
+> changed the wiring which now has to be done by associating
+> arch_scale_freq_capacity with the actual implementation provided
+> by the architecture.
 >
-> On Mon, 12 Jun 2017 10:22:45 -0300 Fabio Estevam wrote:
->> On Mon, Jun 12, 2017 at 8:47 AM, Leonard Crestez
->> <leonard.crestez@nxp.com> wrote:
->>
->> > However it seems that this might be accidental, it just happens that
->> > the OCOTP clock starts as enabled and is only disabled later in the
->>
->> Most likely because U-Boot enabled the OCOTP clock as it reads the
->> speed grading fuse.
->>
-> No, the imx6q_opp_check_speed_grading() runs on an i.MX6Q which, as
-> mentioned in my other mail <20170612124029.1643469d@karo-electronics.de>,
-> does not require any clock to be enabled for accessing the OCOTP regs.
+> Define arch_scale_freq_capacity to use the arch_topology "driver"
+> function topology_get_freq_scale() for the task scheduler's
+> frequency-invariant accounting instead of the default
+> arch_scale_freq_capacity() in kernel/sched/sched.h.
+>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Juri Lelli <juri.lelli@arm.com>
+> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-[Sorry I removed the list in my previous response by mistake]
+Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
 
-What I was trying to say is that the OCOTP clock is enabled by U-Boot
-on mx6ul evk board.
-
-Please check:
-http://git.denx.de/?p=3Du-boot.git;a=3Dblob;f=3Dboard/freescale/mx6ul_14x14=
-_evk/mx6ul_14x14_evk.c;h=3Da5746fe08688d5752bf1d69cff465a355404d6da;hb=3DHE=
-AD#l833
-
-This would explain why Leonard did not see the kernel hang on his test.
-
-So I agree with you that the thermal driver needs the IMX6UL_CLK_OCOTP too.
+> ---
+>  arch/arm/include/asm/topology.h | 5 +++++
+>  arch/arm/kernel/topology.c      | 1 -
+>  2 files changed, 5 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
+> index 370f7a732900..a56a9e24f4c0 100644
+> --- a/arch/arm/include/asm/topology.h
+> +++ b/arch/arm/include/asm/topology.h
+> @@ -24,6 +24,11 @@ void init_cpu_topology(void);
+>  void store_cpu_topology(unsigned int cpuid);
+>  const struct cpumask *cpu_coregroup_mask(int cpu);
+>
+> +#include <linux/arch_topology.h>
+> +
+> +/* Replace task scheduler's default frequency-invariant accounting */
+> +#define arch_scale_freq_capacity topology_get_freq_scale
+> +
+>  #else
+>
+>  static inline void init_cpu_topology(void) { }
+> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+> index bf949a763dbe..2c47a76c67b0 100644
+> --- a/arch/arm/kernel/topology.c
+> +++ b/arch/arm/kernel/topology.c
+> @@ -11,7 +11,6 @@
+>   * for more details.
+>   */
+>
+> -#include <linux/arch_topology.h>
+>  #include <linux/cpu.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/cpumask.h>
+> --
+> 2.11.0
+>
