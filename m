@@ -1,157 +1,77 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 2/2] ARM: cpuidle: Support asymmetric idle definition
-Date: Mon, 12 Jun 2017 17:55:10 +0200
-Message-ID: <1497282910-19085-2-git-send-email-daniel.lezcano@linaro.org>
-References: <20170612155441.GE2261@mai>
- <1497282910-19085-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1497282910-19085-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Leo Yan <leo.yan@linaro.org>, open list <linux-kernel@vger.kernel.org>
+From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH] dt-bindings: power: supply: cpcap-battery: Add
+ power-supplies property
+Date: Mon, 12 Jun 2017 09:04:00 -0700
+Message-ID: <20170612160400.GY3730@atomide.com>
+References: <20170612072025.30033-1-tony@atomide.com>
+ <20170612142217.tg7gidqg63uagwm4@earth>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170612142217.tg7gidqg63uagwm4@earth>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>, Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Some hardware have clusters with different idle states. The current code does
-not support this and fails as it expects all the idle states to be identical.
+* Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org> [170612 07:26]:
+> On Mon, Jun 12, 2017 at 12:20:25AM -0700, Tony Lindgren wrote:
+> > +- power-supplies: List of devices that supply power, typically cpcap_charger
+> 
+> This is missing the info, that its about phandles. Maybe:
+> 
+> - power-supplies: List of phandles for power-supplying devices, as
+>                   described in power_supply.txt. Typically a reference
+>                   to cpcap_charger.
 
-Because of this, the Mediatek mtk8173 had to create the same idle state for a
-big.Little system and now the Hisilicon 960 is facing the same situation.
+Sure, updated patch below.
 
-Solve this by simply assuming the multiple driver will be needed for all the
-platforms using the ARM generic cpuidle driver which makes sense because of the
-different topologies we can support with a single kernel for ARM32 or ARM64.
+Regards,
 
-Every CPU has its own driver, so every single CPU can specify in the DT the
-idle states.
+Tony
 
-This simple approach allows to support the future dynamIQ system, current SMP
-and HMP.
+8< ------
+>From tony Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Date: Mon, 12 Jun 2017 00:13:45 -0700
+Subject: [PATCH] dt-bindings: power: supply: cpcap-battery: Add
+ power-supplies property
 
-Tested on:
- - 96boards: Hikey 620
- - 96boards: Hikey 960
- - 96boards: dragonboard410c
- - Mediatek 8173
+The binding for cpcap-battery is missing the standard power-supplies
+property as noted by Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>.
 
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Tested-by: Leo Yan <leo.yan@linaro.org>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>
+Cc: Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
 ---
- drivers/cpuidle/Kconfig.arm   |  1 +
- drivers/cpuidle/cpuidle-arm.c | 62 ++++++++++++++++++++++++++-----------------
- 2 files changed, 39 insertions(+), 24 deletions(-)
+ Documentation/devicetree/bindings/power/supply/cpcap-battery.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index 21340e0..f521448 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -4,6 +4,7 @@
- config ARM_CPUIDLE
-         bool "Generic ARM/ARM64 CPU idle Driver"
-         select DT_IDLE_STATES
-+	select CPU_IDLE_MULTIPLE_DRIVERS
-         help
-           Select this to enable generic cpuidle driver for ARM.
-           It provides a generic idle driver whose idle states are configured
-diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-index f440d38..7080c38 100644
---- a/drivers/cpuidle/cpuidle-arm.c
-+++ b/drivers/cpuidle/cpuidle-arm.c
-@@ -18,6 +18,7 @@
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/slab.h>
-+#include <linux/topology.h>
+diff --git a/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt b/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
+--- a/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
++++ b/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
+@@ -8,6 +8,9 @@ Required properties:
+ - io-channels: IIO ADC channel specifier for each name in io-channel-names
+ - io-channel-names: Should contain the following entries:
+ 		    "battdetb", "battp", "chg_isense", "batti"
++- power-supplies: List of phandles for power-supplying devices, as
++		  described in power_supply.txt. Typically a reference
++		  to cpcap_charger.
  
- #include <asm/cpuidle.h>
+ Example:
  
-@@ -44,7 +45,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
- 	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, idx);
- }
- 
--static struct cpuidle_driver arm_idle_driver = {
-+static struct cpuidle_driver arm_idle_driver __initdata = {
- 	.name = "arm_idle",
- 	.owner = THIS_MODULE,
- 	/*
-@@ -80,30 +81,42 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
- static int __init arm_idle_init(void)
- {
- 	int cpu, ret;
--	struct cpuidle_driver *drv = &arm_idle_driver;
-+	struct cpuidle_driver *drv;
- 	struct cpuidle_device *dev;
- 
--	/*
--	 * Initialize idle states data, starting at index 1.
--	 * This driver is DT only, if no DT idle states are detected (ret == 0)
--	 * let the driver initialization fail accordingly since there is no
--	 * reason to initialize the idle driver if only wfi is supported.
--	 */
--	ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
--	if (ret <= 0)
--		return ret ? : -ENODEV;
--
--	ret = cpuidle_register_driver(drv);
--	if (ret) {
--		pr_err("Failed to register cpuidle driver\n");
--		return ret;
--	}
--
--	/*
--	 * Call arch CPU operations in order to initialize
--	 * idle states suspend back-end specific data
--	 */
- 	for_each_possible_cpu(cpu) {
-+
-+		drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
-+		if (!drv) {
-+			ret = -ENOMEM;
-+			goto out_fail;
-+		}
-+
-+		drv->cpumask = (struct cpumask *)cpumask_of(cpu);
-+
-+		/*
-+		 * Initialize idle states data, starting at index 1.  This
-+		 * driver is DT only, if no DT idle states are detected (ret
-+		 * == 0) let the driver initialization fail accordingly since
-+		 * there is no reason to initialize the idle driver if only
-+		 * wfi is supported.
-+		 */
-+		ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
-+		if (ret <= 0) {
-+			ret = ret ? : -ENODEV;
-+			goto out_fail;
-+		}
-+
-+		ret = cpuidle_register_driver(drv);
-+		if (ret) {
-+			pr_err("Failed to register cpuidle driver\n");
-+			goto out_fail;
-+		}
-+
-+		/*
-+		 * Call arch CPU operations in order to initialize
-+		 * idle states suspend back-end specific data
-+		 */
- 		ret = arm_cpuidle_init(cpu);
- 
- 		/*
-@@ -141,10 +154,11 @@ static int __init arm_idle_init(void)
- 		dev = per_cpu(cpuidle_devices, cpu);
- 		cpuidle_unregister_device(dev);
- 		kfree(dev);
-+		drv = cpuidle_get_driver();
-+		cpuidle_unregister_driver(drv);
-+		kfree(drv);
- 	}
- 
--	cpuidle_unregister_driver(drv);
--
- 	return ret;
- }
- device_initcall(arm_idle_init);
+@@ -24,4 +27,5 @@ cpcap_battery: battery {
+ 		       &cpcap_adc 5 &cpcap_adc 6>;
+ 	io-channel-names = "battdetb", "battp",
+ 			   "chg_isense", "batti";
++	power-supplies = <&cpcap_charger>;
+ };
 -- 
-2.7.4
+2.13.0
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
