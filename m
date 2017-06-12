@@ -1,34 +1,168 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpuidle: dt: Add missing 'of_node_put()'
-Date: Mon, 12 Jun 2017 20:46:26 +0200
-Message-ID: <17037298.Hu7HCo3Bt8@aspire.rjw.lan>
-References: <20170612155441.GE2261@mai> <1497282910-19085-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/2] ARM: cpuidle: Support asymmetric idle definition
+Date: Mon, 12 Jun 2017 20:49:39 +0200
+Message-ID: <2056969.dMlCPX6XND@aspire.rjw.lan>
+References: <20170612155441.GE2261@mai> <1497282910-19085-1-git-send-email-daniel.lezcano@linaro.org> <1497282910-19085-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50290 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752439AbdFLSxf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 14:53:35 -0400
-In-Reply-To: <1497282910-19085-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1497282910-19085-2-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, Christophe Jaillet <christophe.jaillet@wanadoo.fr>, open list <linux-kernel@vger.kernel.org>
+Cc: linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Leo Yan <leo.yan@linaro.org>, open list <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 12, 2017 05:55:09 PM Daniel Lezcano wrote:
-> From: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+On Monday, June 12, 2017 05:55:10 PM Daniel Lezcano wrote:
+> Some hardware have clusters with different idle states. The current code does
+> not support this and fails as it expects all the idle states to be identical.
 > 
-> 'of_node_put()' should be called on pointer returned by
-> 'of_parse_phandle()' when done. In this function this is done in all path
-> except this 'continue', so add it.
+> Because of this, the Mediatek mtk8173 had to create the same idle state for a
+> big.Little system and now the Hisilicon 960 is facing the same situation.
 > 
-> Fixes: 97735da074fd ("drivers: cpuidle: Add status property to ARM idle states")
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> Solve this by simply assuming the multiple driver will be needed for all the
+> platforms using the ARM generic cpuidle driver which makes sense because of the
+> different topologies we can support with a single kernel for ARM32 or ARM64.
+> 
+> Every CPU has its own driver, so every single CPU can specify in the DT the
+> idle states.
+> 
+> This simple approach allows to support the future dynamIQ system, current SMP
+> and HMP.
+> 
+> Tested on:
+>  - 96boards: Hikey 620
+>  - 96boards: Hikey 960
+>  - 96boards: dragonboard410c
+>  - Mediatek 8173
+> 
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Tested-by: Leo Yan <leo.yan@linaro.org>
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-I've already applied this one.
+There seems to have been quite some discussion regarding this one and I'm not
+sure about the resolution of it.
+
+I'd feel more comfortable with an ACK or Reviewed-by from Sudeep or Lorenzo here.
+
+> ---
+>  drivers/cpuidle/Kconfig.arm   |  1 +
+>  drivers/cpuidle/cpuidle-arm.c | 62 ++++++++++++++++++++++++++-----------------
+>  2 files changed, 39 insertions(+), 24 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+> index 21340e0..f521448 100644
+> --- a/drivers/cpuidle/Kconfig.arm
+> +++ b/drivers/cpuidle/Kconfig.arm
+> @@ -4,6 +4,7 @@
+>  config ARM_CPUIDLE
+>          bool "Generic ARM/ARM64 CPU idle Driver"
+>          select DT_IDLE_STATES
+> +	select CPU_IDLE_MULTIPLE_DRIVERS
+>          help
+>            Select this to enable generic cpuidle driver for ARM.
+>            It provides a generic idle driver whose idle states are configured
+> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+> index f440d38..7080c38 100644
+> --- a/drivers/cpuidle/cpuidle-arm.c
+> +++ b/drivers/cpuidle/cpuidle-arm.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+>  #include <linux/slab.h>
+> +#include <linux/topology.h>
+>  
+>  #include <asm/cpuidle.h>
+>  
+> @@ -44,7 +45,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>  	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, idx);
+>  }
+>  
+> -static struct cpuidle_driver arm_idle_driver = {
+> +static struct cpuidle_driver arm_idle_driver __initdata = {
+>  	.name = "arm_idle",
+>  	.owner = THIS_MODULE,
+>  	/*
+> @@ -80,30 +81,42 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
+>  static int __init arm_idle_init(void)
+>  {
+>  	int cpu, ret;
+> -	struct cpuidle_driver *drv = &arm_idle_driver;
+> +	struct cpuidle_driver *drv;
+>  	struct cpuidle_device *dev;
+>  
+> -	/*
+> -	 * Initialize idle states data, starting at index 1.
+> -	 * This driver is DT only, if no DT idle states are detected (ret == 0)
+> -	 * let the driver initialization fail accordingly since there is no
+> -	 * reason to initialize the idle driver if only wfi is supported.
+> -	 */
+> -	ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
+> -	if (ret <= 0)
+> -		return ret ? : -ENODEV;
+> -
+> -	ret = cpuidle_register_driver(drv);
+> -	if (ret) {
+> -		pr_err("Failed to register cpuidle driver\n");
+> -		return ret;
+> -	}
+> -
+> -	/*
+> -	 * Call arch CPU operations in order to initialize
+> -	 * idle states suspend back-end specific data
+> -	 */
+>  	for_each_possible_cpu(cpu) {
+> +
+> +		drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
+> +		if (!drv) {
+> +			ret = -ENOMEM;
+> +			goto out_fail;
+> +		}
+> +
+> +		drv->cpumask = (struct cpumask *)cpumask_of(cpu);
+> +
+> +		/*
+> +		 * Initialize idle states data, starting at index 1.  This
+> +		 * driver is DT only, if no DT idle states are detected (ret
+> +		 * == 0) let the driver initialization fail accordingly since
+> +		 * there is no reason to initialize the idle driver if only
+> +		 * wfi is supported.
+> +		 */
+> +		ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
+> +		if (ret <= 0) {
+> +			ret = ret ? : -ENODEV;
+> +			goto out_fail;
+> +		}
+> +
+> +		ret = cpuidle_register_driver(drv);
+> +		if (ret) {
+> +			pr_err("Failed to register cpuidle driver\n");
+> +			goto out_fail;
+> +		}
+> +
+> +		/*
+> +		 * Call arch CPU operations in order to initialize
+> +		 * idle states suspend back-end specific data
+> +		 */
+>  		ret = arm_cpuidle_init(cpu);
+>  
+>  		/*
+> @@ -141,10 +154,11 @@ static int __init arm_idle_init(void)
+>  		dev = per_cpu(cpuidle_devices, cpu);
+>  		cpuidle_unregister_device(dev);
+>  		kfree(dev);
+> +		drv = cpuidle_get_driver();
+> +		cpuidle_unregister_driver(drv);
+> +		kfree(drv);
+>  	}
+>  
+> -	cpuidle_unregister_driver(drv);
+> -
+>  	return ret;
+>  }
+>  device_initcall(arm_idle_init);
+> 
 
 Thanks,
 Rafael
