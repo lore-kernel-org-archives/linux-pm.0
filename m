@@ -1,73 +1,88 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PULL-REQUEST] PM / devfreq for next
-Date: Mon, 12 Jun 2017 09:01:30 +0000
-Message-ID: <20170612090130epcms1p1073b77da56448af9f6e88f937bcd0675@epcms1p1>
-References: <CGME20170612090130epcms1p1073b77da56448af9f6e88f937bcd0675@epcms1p1>
-Reply-To: myungjoo.ham@samsung.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 2/2] ARM: shmobile: pm-rmobile: Use GENPD_FLAG_ALWAYS_ON
+Date: Mon, 12 Jun 2017 11:23:46 +0200
+Message-ID: <1497259427-8299-3-git-send-email-geert+renesas@glider.be>
+References: <1497259427-8299-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:27777 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750868AbdFLJBd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 05:01:33 -0400
-Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
-        by mailout2.samsung.com (KnoxPortal) with ESMTP id 20170612090131epoutp0277b0b3808791deb62024de39a5474ab5~HVE0aWEnz1277412774epoutp02j
-        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2017 09:01:31 +0000 (GMT)
+Received: from xavier.telenet-ops.be ([195.130.132.52]:59002 "EHLO
+        xavier.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751968AbdFLJXy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 05:23:54 -0400
+In-Reply-To: <1497259427-8299-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "krzk@kernel.org" <krzk@kernel.org>, "arvind.yadav.cs@gmail.com" <arvind.yadav.cs@gmail.com>
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Dear Rafael,
+Improve handling of always-on PM domains by using the
+GENPD_FLAG_ALWAYS_ON flag introduced in commit ffaa42e8a40b7f10 ("PM /
+Domains: Enable users of genpd to specify always on PM domains").
 
-Here goes pull-request from PM / devfreq with trivial fixes.
+Note that the PM domain containing the serial console is still handled
+locally.
 
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ arch/arm/mach-shmobile/pm-rmobile.c | 19 ++++---------------
+ 1 file changed, 4 insertions(+), 15 deletions(-)
 
-Cheers,
-MyungJoo
-
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-The following changes since commit 32c1431eea4881a6b17bd7c639315010aeefa452:
-
-  Linux 4.12-rc5 (2017-06-11 16:48:20 -0700)
-
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-next
-
-for you to fetch changes up to 6b1355f9ace06a65443c607e1b70872a5f613f80:
-
-  PM / devfreq: exynos-ppmu: Staticize event list (2017-06-12 10:12:07 +0900)
-
-- ----------------------------------------------------------------
-Arvind Yadav (2):
-      PM / devfreq: exynos-nocp: Handle return value of clk_prepare_enable
-      PM / devfreq: exynos-ppmu: Handle return value of clk_prepare_enable
-
-Krzysztof Kozlowski (1):
-      PM / devfreq: exynos-ppmu: Staticize event list
-
- drivers/devfreq/event/exynos-nocp.c | 6 +++++-
- drivers/devfreq/event/exynos-ppmu.c | 8 ++++++--
- 2 files changed, 11 insertions(+), 3 deletions(-)
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJZPjmsAAoJEBOhurvWBoCKL4EP/003qfsc+vuulJuDtWjbwuOr
-WdzNRjqPqkmExz61kLmMVBhwB/vkraFrQfOR8k/XYd2RSzNxtYE973r7HKzsoh51
-9io8jQHJNpqn8k62rFV/mJymGGrhKRrHJ+iHwvol5gTapJtV3ZCFUYjYDnsG8TIg
-b2eax+xhpc9S8Agg1/2e8I0atFWVDkWFtzQ6hMserQ1tyomSPfyFe5v/jZV8gANA
-ZSAfEvEv0+8hAIi79R6zF09CV1uiBi/DrBRjlujyVOIttbRkUhV1yZfSf4vISL0m
-1pXWuutUrU8qhu5WKZJpl82AQm59AuTrj12Ha43M7SnRSrvzpHfQ9Bi0tPSj406u
-H7yaOhgU3BsJ/QSiDzMmAMFOx7sOcN6witwSNJxT2IDVBPSUJ3Ze98WaS2gQkTap
-AMfIhVAzFKPQHfz8oItSSn0dj3R5DpTwkkBTwKyp7Z/jXwpuSCQV5EdBjV67ncr0
-M82S8k9vLck/b4HipW0LlvgNOP4n4eLYFw4RuZlSufFh7m1fbb6wVeJHNNiYZiW4
-hTz+/zXGcX/ThaJXMUxAJvSvbWPOhyaNvuIVWxxkyA0Ck657AtMBL2sORaaTp4rZ
-BwYCdkyaftIlVBeoZZeP/NQpT8VFq0bUD/f39h9mjose1Pf1K+z2QKjrUSMIgEqI
-p28ax3Q8zjUXprFcfLA8
-=qNcN
------END PGP SIGNATURE-----
+diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+index 175bd3d91ebcbcb4..e5fa6a3cf1ddf159 100644
+--- a/arch/arm/mach-shmobile/pm-rmobile.c
++++ b/arch/arm/mach-shmobile/pm-rmobile.c
+@@ -130,7 +130,7 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+ 	struct generic_pm_domain *genpd = &rmobile_pd->genpd;
+ 	struct dev_power_governor *gov = rmobile_pd->gov;
+ 
+-	genpd->flags = GENPD_FLAG_PM_CLK;
++	genpd->flags |= GENPD_FLAG_PM_CLK;
+ 	genpd->dev_ops.active_wakeup	= rmobile_pd_active_wakeup;
+ 	genpd->power_off		= rmobile_pd_power_down;
+ 	genpd->power_on			= rmobile_pd_power_up;
+@@ -140,14 +140,6 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+ 	pm_genpd_init(genpd, gov ? : &simple_qos_governor, false);
+ }
+ 
+-static int rmobile_pd_suspend_busy(void)
+-{
+-	/*
+-	 * This domain should not be turned off.
+-	 */
+-	return -EBUSY;
+-}
+-
+ static int rmobile_pd_suspend_console(void)
+ {
+ 	/*
+@@ -260,8 +252,7 @@ static void __init rmobile_setup_pm_domain(struct device_node *np,
+ 		 * only be turned off if the CPU is not in use.
+ 		 */
+ 		pr_debug("PM domain %s contains CPU\n", name);
+-		pd->gov = &pm_domain_always_on_gov;
+-		pd->suspend = rmobile_pd_suspend_busy;
++		pd->genpd.flags |= GENPD_FLAG_ALWAYS_ON;
+ 		break;
+ 
+ 	case PD_CONSOLE:
+@@ -277,8 +268,7 @@ static void __init rmobile_setup_pm_domain(struct device_node *np,
+ 		 * is not in use.
+ 		 */
+ 		pr_debug("PM domain %s contains Coresight-ETM\n", name);
+-		pd->gov = &pm_domain_always_on_gov;
+-		pd->suspend = rmobile_pd_suspend_busy;
++		pd->genpd.flags |= GENPD_FLAG_ALWAYS_ON;
+ 		break;
+ 
+ 	case PD_MEMCTL:
+@@ -287,8 +277,7 @@ static void __init rmobile_setup_pm_domain(struct device_node *np,
+ 		 * should only be turned off if memory is not in use.
+ 		 */
+ 		pr_debug("PM domain %s contains MEMCTL\n", name);
+-		pd->gov = &pm_domain_always_on_gov;
+-		pd->suspend = rmobile_pd_suspend_busy;
++		pd->genpd.flags |= GENPD_FLAG_ALWAYS_ON;
+ 		break;
+ 
+ 	case PD_NORMAL:
+-- 
+2.7.4
