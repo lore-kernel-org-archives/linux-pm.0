@@ -1,143 +1,103 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH 2/3] PM: Constify info string used in messages
-Date: Mon, 12 Jun 2017 17:19:32 +0200
-Message-ID: <20170612151933.7588-2-krzk@kernel.org>
-References: <20170612151933.7588-1-krzk@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170612151933.7588-1-krzk@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzk@kernel.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I
+ on recent Dell laptops
+Date: Mon, 12 Jun 2017 08:54:12 -0700
+Message-ID: <1497282852.195383.56.camel@linux.intel.com>
+References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
+         <31f516ad46d74225a5d6324c5fd24751@ausx13mpc124.AMER.DELL.COM>
+         <CA+kEDGFUuSC1CpCEgOT+HMTrDa-r1y59kM9-CYn0PSgtuKaG5Q@mail.gmail.com>
+         <343a8430fb144adf8d65ef9d0b2bfd40@ausx13mpc124.AMER.DELL.COM>
+         <CA+kEDGFVgmXf_B=qHfhWS1HCD+Ei6KSp_rSJBOGYtNZVkm+MeA@mail.gmail.com>
+         <24ac3bb8850c4b7a8fa9c0c2d9e3cbc4@ausx13mpc124.AMER.DELL.COM>
+         <CA+kEDGHev9XYQr=BEVZ8od+nX_cQ637eY0cF81_v3auQZvBKRQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:50689 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754362AbdFLPyY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 12 Jun 2017 11:54:24 -0400
+In-Reply-To: <CA+kEDGHev9XYQr=BEVZ8od+nX_cQ637eY0cF81_v3auQZvBKRQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?ISO-8859-1?Q?J=E9r=F4me?= de Bretagne <jerome.debretagne@gmail.com>, Mario.Limonciello@dell.com
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-The 'info' string appearing in many places points to a .rodata string so
-it should be passes as pointer to const.
+On Mon, 2017-06-12 at 00:01 +0200, Jérôme de Bretagne wrote:
+> Hi Mario, Hi Rafael,
+> 
+> > 
+> > > 
+> > > Some assumptions now: either the SCI is ignored erroneously or
+> > > it's
+> > > not interpreted correctly by the expected driver? I guess that's
+> > > the 2
+> > > possibilities I'll try to investigate.
+> > 
+> > Well that's too bad.  Yes, you're correct that the EC has changed
+> > between
+> > those versions.  Are you testing on or off AC adapter?
+> 
+> I haven't detected a pattern specific to the state of the AC adapter.
+> 
+> Good news on another front. By adding some more logs in the
+> s2idle-dell-test branch, I've been able to check and confirm that
+> notify_handler() from intel-hid.c is actually called upon short power
+> key
+> press during s2idle on my Latitude 7275.
+> 
+> However, the system with BIOS 1.1.31 doesn't match (anymore?) the
+> current criteria to call pm_wakeup_hard_event introduced in commit:
+> 
+> platform: x86: intel-hid: Wake up the system from suspend-to-idle
+> 7871dc61497a71be93c4f80d43ac109152510e7e
+> 
+> This ugly 3-line modification I've added on the actual patch here:
+> 
+> + if (priv->wakeup_mode) {
+> +
+> + /* Wake up Dell Latitude 7275 BIOS 1.1.31. */
+> + if (event == 0xce)
+> + pm_wakeup_hard_event(&device->dev);
+0xce is a 5 button array press and 0xcf is release.
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- drivers/base/power/main.c | 28 +++++++++++++++-------------
- 1 file changed, 15 insertions(+), 13 deletions(-)
+> +
+> + /* Wake up on 5-button array events only. */
+> + if (event == 0xc0 || !priv->array)
+> + return;
+I don't think 0xc0 is any valid 5 button code.
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 924a5ba7aa27..6add28799f6d 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -208,7 +208,8 @@ static ktime_t initcall_debug_start(struct device *dev)
- }
- 
- static void initcall_debug_report(struct device *dev, ktime_t calltime,
--				  int error, pm_message_t state, char *info)
-+				  int error, pm_message_t state,
-+				  const char *info)
- {
- 	ktime_t rettime;
- 	s64 nsecs;
-@@ -403,21 +404,22 @@ static pm_callback_t pm_noirq_op(const struct dev_pm_ops *ops, pm_message_t stat
- 	return NULL;
- }
- 
--static void pm_dev_dbg(struct device *dev, pm_message_t state, char *info)
-+static void pm_dev_dbg(struct device *dev, pm_message_t state, const char *info)
- {
- 	dev_dbg(dev, "%s%s%s\n", info, pm_verb(state.event),
- 		((state.event & PM_EVENT_SLEEP) && device_may_wakeup(dev)) ?
- 		", may wakeup" : "");
- }
- 
--static void pm_dev_err(struct device *dev, pm_message_t state, char *info,
-+static void pm_dev_err(struct device *dev, pm_message_t state, const char *info,
- 			int error)
- {
- 	printk(KERN_ERR "PM: Device %s failed to %s%s: error %d\n",
- 		dev_name(dev), pm_verb(state.event), info, error);
- }
- 
--static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
-+static void dpm_show_time(ktime_t starttime, pm_message_t state,
-+			  const char *info)
- {
- 	ktime_t calltime;
- 	u64 usecs64;
-@@ -435,7 +437,7 @@ static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
- }
- 
- static int dpm_run_callback(pm_callback_t cb, struct device *dev,
--			    pm_message_t state, char *info)
-+			    pm_message_t state, const char *info)
- {
- 	ktime_t calltime;
- 	int error;
-@@ -535,7 +537,7 @@ static void dpm_watchdog_clear(struct dpm_watchdog *wd)
- static int device_resume_noirq(struct device *dev, pm_message_t state, bool async)
- {
- 	pm_callback_t callback = NULL;
--	char *info = NULL;
-+	const char *info = NULL;
- 	int error = 0;
- 
- 	TRACE_DEVICE(dev);
-@@ -665,7 +667,7 @@ void dpm_resume_noirq(pm_message_t state)
- static int device_resume_early(struct device *dev, pm_message_t state, bool async)
- {
- 	pm_callback_t callback = NULL;
--	char *info = NULL;
-+	const char *info = NULL;
- 	int error = 0;
- 
- 	TRACE_DEVICE(dev);
-@@ -793,7 +795,7 @@ EXPORT_SYMBOL_GPL(dpm_resume_start);
- static int device_resume(struct device *dev, pm_message_t state, bool async)
- {
- 	pm_callback_t callback = NULL;
--	char *info = NULL;
-+	const char *info = NULL;
- 	int error = 0;
- 	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
- 
-@@ -955,7 +957,7 @@ void dpm_resume(pm_message_t state)
- static void device_complete(struct device *dev, pm_message_t state)
- {
- 	void (*callback)(struct device *) = NULL;
--	char *info = NULL;
-+	const char *info = NULL;
- 
- 	if (dev->power.syscore)
- 		return;
-@@ -1080,7 +1082,7 @@ static pm_message_t resume_event(pm_message_t sleep_state)
- static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool async)
- {
- 	pm_callback_t callback = NULL;
--	char *info = NULL;
-+	const char *info = NULL;
- 	int error = 0;
- 
- 	TRACE_DEVICE(dev);
-@@ -1225,7 +1227,7 @@ int dpm_suspend_noirq(pm_message_t state)
- static int __device_suspend_late(struct device *dev, pm_message_t state, bool async)
- {
- 	pm_callback_t callback = NULL;
--	char *info = NULL;
-+	const char *info = NULL;
- 	int error = 0;
- 
- 	TRACE_DEVICE(dev);
-@@ -1384,7 +1386,7 @@ EXPORT_SYMBOL_GPL(dpm_suspend_end);
-  */
- static int legacy_suspend(struct device *dev, pm_message_t state,
- 			  int (*cb)(struct device *dev, pm_message_t state),
--			  char *info)
-+			  const char *info)
- {
- 	int error;
- 	ktime_t calltime;
-@@ -1426,7 +1428,7 @@ static void dpm_clear_suppliers_direct_complete(struct device *dev)
- static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- {
- 	pm_callback_t callback = NULL;
--	char *info = NULL;
-+	const char *info = NULL;
- 	int error = 0;
- 	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
- 
--- 
-2.9.3
+> +
+> + if (sparse_keymap_entry_from_scancode(priv->array, event))
+> + pm_wakeup_hard_event(&device->dev);
+> + else
+> + dev_info(&device->dev, "unknown event 0x%x\n", event);
+> +
+> + return;
+> + }
+> 
+> make the system wake up on a standard short press finally!
+> 
+> Is the "Wake up on 5-button array events only." assumption broad
+> enough to cover the various Intel systems that need this behavior?
+For the platforms which supported Win 8.1 only the event should be
+handled by vbtn driver.
+
+Thanks,
+Srinivas
+
+> 
+> Or am I just detecting another ACPI issue in fact that prevents this
+> system from setting up properly the 5 button array with BIOS 1.1.31?
+> How would you recommend me to test that 2nd assumption?
+> 
+> Thanks,
+> Jérome
+> 
+> 
+> P.S. I've gone in that direction after seeing the following messages
+> in
+>  /var/log/kernel.log on normal power key press at runtime:
+> [ 2727.596359] intel-hid INT33D5:00: unknown event 0xce
+> [ 2727.769140] intel-hid INT33D5:00: unknown event 0xcf
