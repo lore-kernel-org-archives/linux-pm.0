@@ -1,78 +1,74 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH 3/4] mfd: tps65217: remove duplicated interrupt resources.
-Date: Mon, 12 Jun 2017 23:24:11 +0200
-Message-ID: <20170612212412.22719-3-enric.balletbo@collabora.com>
-References: <20170612212412.22719-1-enric.balletbo@collabora.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170612212412.22719-1-enric.balletbo@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-omap@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, grygorii.strashko@ti.com, javier@dowhile0.org
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH v2 5/8] PM / sleep: Print timing information if debug is
+ enabled
+Date: Mon, 12 Jun 2017 15:18:15 -0700
+Message-ID: <1497305895.18751.1.camel@perches.com>
+References: <8918199.uo13RZ8hZk@aspire.rjw.lan>
+         <1615075.mBkoKApGGc@aspire.rjw.lan> <7222456.034JZvbkBs@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtprelay0075.hostedemail.com ([216.40.44.75]:59281 "EHLO
+        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1752765AbdFLWSV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 18:18:21 -0400
+In-Reply-To: <7222456.034JZvbkBs@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, Hans De Goede <hdegoede@redhat.com>, Alan Stern <stern@rowland.harvard.edu>
 
-I don't think it makes sense to have the interrupt resources for charger
-and power button in two different places, the driver and the DT binding.
-That's confusing so remove the ones from the mfd driver in favour of
-having the interrupt resources only described in the DT. Having the
-resources in DT may help if there is or will be a similar pmic with
-different resource allocation.
+On Mon, 2017-06-12 at 22:51 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Avoid printing the device suspend/resume timing information if
+> CONFIG_PM_DEBUG is not set to reduce the log noise level.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/base/power/main.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -417,6 +417,7 @@ static void pm_dev_err(struct device *de
+>  		dev_name(dev), pm_verb(state.event), info, error);
+>  }
+>  
+> +#ifdef CONFIG_PM_DEBUG
+>  static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
+>  {
+>  	ktime_t calltime;
+> @@ -433,6 +434,9 @@ static void dpm_show_time(ktime_t startt
+>  		info ?: "", info ? " " : "", pm_verb(state.event),
+>  		usecs / USEC_PER_MSEC, usecs % USEC_PER_MSEC);
+>  }
+> +#else
+> +static inline void dpm_show_time(ktime_t starttime, pm_message_t state, char *info) {}
+> +#endif /* CONFIG_PM_DEBUG */
+>  
+>  static int dpm_run_callback(pm_callback_t cb, struct device *dev,
+>  			    pm_message_t state, char *info)
+> 
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
- drivers/mfd/tps65217.c | 22 +---------------------
- 1 file changed, 1 insertion(+), 21 deletions(-)
+trivia:
 
-diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
-index f769c7d..fd83bae 100644
---- a/drivers/mfd/tps65217.c
-+++ b/drivers/mfd/tps65217.c
-@@ -33,15 +33,6 @@
- #include <linux/mfd/core.h>
- #include <linux/mfd/tps65217.h>
- 
--static struct resource charger_resources[] = {
--	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_AC, "AC"),
--	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_USB, "USB"),
--};
--
--static struct resource pb_resources[] = {
--	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_PB, "PB"),
--};
--
- static void tps65217_irq_lock(struct irq_data *data)
- {
- 	struct tps65217 *tps = irq_data_get_irq_chip_data(data);
-@@ -97,14 +88,10 @@ static struct mfd_cell tps65217s[] = {
- 	},
- 	{
- 		.name = "tps65217-charger",
--		.num_resources = ARRAY_SIZE(charger_resources),
--		.resources = charger_resources,
- 		.of_compatible = "ti,tps65217-charger",
- 	},
- 	{
- 		.name = "tps65217-pwrbutton",
--		.num_resources = ARRAY_SIZE(pb_resources),
--		.resources = pb_resources,
- 		.of_compatible = "ti,tps65217-pwrbutton",
- 	},
- };
-@@ -359,15 +346,8 @@ static int tps65217_probe(struct i2c_client *client,
- 		return ret;
- 	}
- 
--	if (client->irq) {
-+	if (client->irq)
- 		tps65217_irq_init(tps, client->irq);
--	} else {
--		int i;
--
--		/* Don't tell children about IRQ resources which won't fire */
--		for (i = 0; i < ARRAY_SIZE(tps65217s); i++)
--			tps65217s[i].num_resources = 0;
--	}
- 
- 	ret = devm_mfd_add_devices(tps->dev, -1, tps65217s,
- 				   ARRAY_SIZE(tps65217s), NULL, 0,
--- 
-2.9.3
+This style of code can be reduced a few lines of code
+using a single definition.
+
+static type func(args...)
+{
+#ifdef CONFIG_<FOO>
+	[code ...]
+#endif
+}
+
+and compilers will generate the same code for the
+!defined CONFIG_<FOO> case.
+
+This style can help avoid defects of updating one
+function definition and not the other and only
+compile testing the updated version.
