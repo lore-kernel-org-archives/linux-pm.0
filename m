@@ -1,168 +1,74 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] ARM: cpuidle: Support asymmetric idle definition
-Date: Mon, 12 Jun 2017 20:49:39 +0200
-Message-ID: <2056969.dMlCPX6XND@aspire.rjw.lan>
-References: <20170612155441.GE2261@mai> <1497282910-19085-1-git-send-email-daniel.lezcano@linaro.org> <1497282910-19085-2-git-send-email-daniel.lezcano@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 3/8] PM / Domains: Add lockdep asserts for domains list mutex
+Date: Mon, 12 Jun 2017 21:09:59 +0200
+Message-ID: <CAPDyKFr=-Ty9ZQ276nmkAPnJjwc3PmuKSdJrOqeEYcxbgfypYA@mail.gmail.com>
+References: <20170612151748.7380-1-krzk@kernel.org> <20170612151748.7380-4-krzk@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1497282910-19085-2-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Leo Yan <leo.yan@linaro.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f180.google.com ([209.85.216.180]:35835 "EHLO
+        mail-qt0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752086AbdFLTKA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 15:10:00 -0400
+Received: by mail-qt0-f180.google.com with SMTP id w1so138336334qtg.2
+        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2017 12:10:00 -0700 (PDT)
+In-Reply-To: <20170612151748.7380-4-krzk@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Monday, June 12, 2017 05:55:10 PM Daniel Lezcano wrote:
-> Some hardware have clusters with different idle states. The current code does
-> not support this and fails as it expects all the idle states to be identical.
-> 
-> Because of this, the Mediatek mtk8173 had to create the same idle state for a
-> big.Little system and now the Hisilicon 960 is facing the same situation.
-> 
-> Solve this by simply assuming the multiple driver will be needed for all the
-> platforms using the ARM generic cpuidle driver which makes sense because of the
-> different topologies we can support with a single kernel for ARM32 or ARM64.
-> 
-> Every CPU has its own driver, so every single CPU can specify in the DT the
-> idle states.
-> 
-> This simple approach allows to support the future dynamIQ system, current SMP
-> and HMP.
-> 
-> Tested on:
->  - 96boards: Hikey 620
->  - 96boards: Hikey 960
->  - 96boards: dragonboard410c
->  - Mediatek 8173
-> 
-> Cc: Sudeep Holla <sudeep.holla@arm.com>
-> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> Tested-by: Leo Yan <leo.yan@linaro.org>
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On 12 June 2017 at 17:17, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> Add lockdep checks for holding mutex protecting the list of domains.
+> This might expose misuse even though only file-scope functions use it
+> for now.
 
-There seems to have been quite some discussion regarding this one and I'm not
-sure about the resolution of it.
+I think it seems a bit silly to use these lockdep checks as these
+functions are as you state above, static functions. Moreover there are
+called from a quite limited amount of places.
 
-I'd feel more comfortable with an ACK or Reviewed-by from Sudeep or Lorenzo here.
+Do you really think this add some value?
 
+Kind regards
+Uffe
+
+>
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 > ---
->  drivers/cpuidle/Kconfig.arm   |  1 +
->  drivers/cpuidle/cpuidle-arm.c | 62 ++++++++++++++++++++++++++-----------------
->  2 files changed, 39 insertions(+), 24 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-> index 21340e0..f521448 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -4,6 +4,7 @@
->  config ARM_CPUIDLE
->          bool "Generic ARM/ARM64 CPU idle Driver"
->          select DT_IDLE_STATES
-> +	select CPU_IDLE_MULTIPLE_DRIVERS
->          help
->            Select this to enable generic cpuidle driver for ARM.
->            It provides a generic idle driver whose idle states are configured
-> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-> index f440d38..7080c38 100644
-> --- a/drivers/cpuidle/cpuidle-arm.c
-> +++ b/drivers/cpuidle/cpuidle-arm.c
-> @@ -18,6 +18,7 @@
->  #include <linux/module.h>
->  #include <linux/of.h>
->  #include <linux/slab.h>
-> +#include <linux/topology.h>
->  
->  #include <asm/cpuidle.h>
->  
-> @@ -44,7 +45,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
->  	return CPU_PM_CPU_IDLE_ENTER(arm_cpuidle_suspend, idx);
->  }
->  
-> -static struct cpuidle_driver arm_idle_driver = {
-> +static struct cpuidle_driver arm_idle_driver __initdata = {
->  	.name = "arm_idle",
->  	.owner = THIS_MODULE,
->  	/*
-> @@ -80,30 +81,42 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
->  static int __init arm_idle_init(void)
+>  drivers/base/power/domain.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 983f086ab235..9d3d3c2a5979 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -726,6 +726,8 @@ static bool pm_genpd_present(const struct generic_pm_domain *genpd)
 >  {
->  	int cpu, ret;
-> -	struct cpuidle_driver *drv = &arm_idle_driver;
-> +	struct cpuidle_driver *drv;
->  	struct cpuidle_device *dev;
->  
-> -	/*
-> -	 * Initialize idle states data, starting at index 1.
-> -	 * This driver is DT only, if no DT idle states are detected (ret == 0)
-> -	 * let the driver initialization fail accordingly since there is no
-> -	 * reason to initialize the idle driver if only wfi is supported.
-> -	 */
-> -	ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
-> -	if (ret <= 0)
-> -		return ret ? : -ENODEV;
-> -
-> -	ret = cpuidle_register_driver(drv);
-> -	if (ret) {
-> -		pr_err("Failed to register cpuidle driver\n");
-> -		return ret;
-> -	}
-> -
-> -	/*
-> -	 * Call arch CPU operations in order to initialize
-> -	 * idle states suspend back-end specific data
-> -	 */
->  	for_each_possible_cpu(cpu) {
+>         const struct generic_pm_domain *gpd;
+>
+> +       lockdep_assert_held(&gpd_list_lock);
 > +
-> +		drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
-> +		if (!drv) {
-> +			ret = -ENOMEM;
-> +			goto out_fail;
-> +		}
+>         if (IS_ERR_OR_NULL(genpd))
+>                 return false;
+>
+> @@ -1321,6 +1323,8 @@ static int genpd_add_subdomain(struct generic_pm_domain *genpd,
+>         struct gpd_link *link, *itr;
+>         int ret = 0;
+>
+> +       lockdep_assert_held(&gpd_list_lock);
 > +
-> +		drv->cpumask = (struct cpumask *)cpumask_of(cpu);
+>         if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(subdomain)
+>             || genpd == subdomain)
+>                 return -EINVAL;
+> @@ -1528,6 +1532,8 @@ static int genpd_remove(struct generic_pm_domain *genpd)
+>  {
+>         struct gpd_link *l, *link;
+>
+> +       lockdep_assert_held(&gpd_list_lock);
 > +
-> +		/*
-> +		 * Initialize idle states data, starting at index 1.  This
-> +		 * driver is DT only, if no DT idle states are detected (ret
-> +		 * == 0) let the driver initialization fail accordingly since
-> +		 * there is no reason to initialize the idle driver if only
-> +		 * wfi is supported.
-> +		 */
-> +		ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
-> +		if (ret <= 0) {
-> +			ret = ret ? : -ENODEV;
-> +			goto out_fail;
-> +		}
-> +
-> +		ret = cpuidle_register_driver(drv);
-> +		if (ret) {
-> +			pr_err("Failed to register cpuidle driver\n");
-> +			goto out_fail;
-> +		}
-> +
-> +		/*
-> +		 * Call arch CPU operations in order to initialize
-> +		 * idle states suspend back-end specific data
-> +		 */
->  		ret = arm_cpuidle_init(cpu);
->  
->  		/*
-> @@ -141,10 +154,11 @@ static int __init arm_idle_init(void)
->  		dev = per_cpu(cpuidle_devices, cpu);
->  		cpuidle_unregister_device(dev);
->  		kfree(dev);
-> +		drv = cpuidle_get_driver();
-> +		cpuidle_unregister_driver(drv);
-> +		kfree(drv);
->  	}
->  
-> -	cpuidle_unregister_driver(drv);
-> -
->  	return ret;
->  }
->  device_initcall(arm_idle_init);
-> 
-
-Thanks,
-Rafael
+>         if (IS_ERR_OR_NULL(genpd))
+>                 return -EINVAL;
+>
+> --
+> 2.9.3
+>
