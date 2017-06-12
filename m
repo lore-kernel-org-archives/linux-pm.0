@@ -1,178 +1,90 @@
-From: Mike Looijmans <mike.looijmans@topic.nl>
-Subject: Re: [PATCH 2/2] power: supply: ltc2941-battery-gauge: Add support for
- LTC2942
-Date: Mon, 12 Jun 2017 18:29:54 +0200
-Message-ID: <c854309e-68b0-c1f2-a7f8-3161e38e1579@topic.nl>
+From: Ladislav Michl <ladis@linux-mips.org>
+Subject: Re: [PATCH 1/2] power: supply: ltc2941-battery-gauge: Define LTC2942
+ registers
+Date: Mon, 12 Jun 2017 19:59:25 +0200
+Message-ID: <20170612175925.fblyzaewuuoivt55@lenoch>
 References: <20170612150226.woxfdi4lharq5gtq@lenoch>
- <20170612150453.kjsyu5jjsfb7kzoq@lenoch>
+ <20170612150356.wvehmijba6xbdwvb@lenoch>
+ <8d97cccb-fef7-428d-b075-b0e59a590d80@topic.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx6-05.smtp.antispamcloud.com ([95.211.2.196]:55065 "EHLO
-        mx6-05.smtp.antispamcloud.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751964AbdFLRxO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 13:53:14 -0400
-In-Reply-To: <20170612150453.kjsyu5jjsfb7kzoq@lenoch>
+Received: from eddie.linux-mips.org ([148.251.95.138]:51676 "EHLO
+        cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752132AbdFLR7k (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 13:59:40 -0400
+Received: (from localhost user: 'ladis' uid#1021 fake: STDIN
+        (ladis@eddie.linux-mips.org)) by eddie.linux-mips.org
+        id S23991346AbdFLR7c1wZ9d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 12 Jun 2017 19:59:32 +0200
+Content-Disposition: inline
+In-Reply-To: <8d97cccb-fef7-428d-b075-b0e59a590d80@topic.nl>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ladislav Michl <ladis@linux-mips.org>, linux-pm@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+To: Mike Looijmans <mike.looijmans@topic.nl>
+Cc: linux-pm@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>
 
-﻿On 12-6-2017 17:04, Ladislav Michl wrote:
-> LTC2942 is pin compatible with LTC2941 providing additional
-> informations about battery voltage and temperature. It can
-> be runtime detected using bit A7 in the Status register.
+On Mon, Jun 12, 2017 at 06:26:17PM +0200, Mike Looijmans wrote:
+> On 12-6-2017 17:03, Ladislav Michl wrote:
+> > Add LTC2942 registers definitions. No functional changes.
+> > 
+> > Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+> > ---
+> >  drivers/power/supply/ltc2941-battery-gauge.c | 27 +++++++++++++--------------
+> >  1 file changed, 13 insertions(+), 14 deletions(-)
+> > 
+> > diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
+> > index 7efb908f4451..0a1b69bbca7f 100644
+> > --- a/drivers/power/supply/ltc2941-battery-gauge.c
+> > +++ b/drivers/power/supply/ltc2941-battery-gauge.c
+> > @@ -34,16 +34,14 @@ enum ltc294x_reg {
+> >  	LTC294X_REG_CONTROL		= 0x01,
+> >  	LTC294X_REG_ACC_CHARGE_MSB	= 0x02,
+> >  	LTC294X_REG_ACC_CHARGE_LSB	= 0x03,
+> > -	LTC294X_REG_THRESH_HIGH_MSB	= 0x04,
+> > -	LTC294X_REG_THRESH_HIGH_LSB	= 0x05,
+> > -	LTC294X_REG_THRESH_LOW_MSB	= 0x06,
+> > -	LTC294X_REG_THRESH_LOW_LSB	= 0x07,
+> > -	LTC294X_REG_VOLTAGE_MSB	= 0x08,
+> > -	LTC294X_REG_VOLTAGE_LSB	= 0x09,
+> > -	LTC294X_REG_CURRENT_MSB	= 0x0E,
+> > -	LTC294X_REG_CURRENT_LSB	= 0x0F,
+> > -	LTC294X_REG_TEMPERATURE_MSB	= 0x14,
+> > -	LTC294X_REG_TEMPERATURE_LSB	= 0x15,
+> > +	LTC294X_REG_VOLTAGE_MSB		= 0x08,
+> > +	LTC294X_REG_VOLTAGE_LSB		= 0x09,
+> > +	LTC2942_REG_TEMPERATURE_MSB	= 0x0C,
+> > +	LTC2942_REG_TEMPERATURE_LSB	= 0x0D,
+> > +	LTC2943_REG_CURRENT_MSB		= 0x0E,
+> > +	LTC2943_REG_CURRENT_LSB		= 0x0F,
+> > +	LTC2943_REG_TEMPERATURE_MSB	= 0x14,
+> > +	LTC2943_REG_TEMPERATURE_LSB	= 0x15,
+> >  };
+> 
+> I don't see the advantage of renaming these, I'd rather see the LTC294X
+> naming throughout, making it easier to locate them in the enum as they all
+> share the exact same prefix.
 
-Runtime detection is always nice. I'd suggest adding "ltc2942" to the 
-device name list, since having to specify "ltc2941" when the chip is in 
-fact an "ltc2942" looks a bit strange.
+LTC2942 and LTC2943 are using different register offsets for temperature
+and current register is LTC2943 specific. Hence the rename, otherwise you
+won't be able to distinguish between temperature registers in different chips.
 
-Again, no strong preference, whatever the maintainers think is best is 
-fine with me also.
+> But if you do want this renaming, I guess you should also rename the LTC2941
+> registers.
 
->
-> Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
-> ---
->  drivers/power/supply/ltc2941-battery-gauge.c | 56 ++++++++++++++++++++--------
->  1 file changed, 41 insertions(+), 15 deletions(-)
->
-> diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
-> index 0a1b69bbca7f..07e47478dbc6 100644
-> --- a/drivers/power/supply/ltc2941-battery-gauge.c
-> +++ b/drivers/power/supply/ltc2941-battery-gauge.c
-> @@ -44,6 +44,8 @@ enum ltc294x_reg {
->  	LTC2943_REG_TEMPERATURE_LSB	= 0x15,
->  };
->
-> +#define LTC2941_REG_STATUS_CHIP_ID	BIT(7)
-> +
->  #define LTC2943_REG_CONTROL_MODE_MASK (BIT(7) | BIT(6))
->  #define LTC2943_REG_CONTROL_MODE_SCAN BIT(7)
->  #define LTC294X_REG_CONTROL_PRESCALER_MASK	(BIT(5) | BIT(4) | BIT(3))
-> @@ -250,8 +252,9 @@ static int ltc294x_get_voltage(const struct ltc294x_info *info, int *val)
->
->  	ret = ltc294x_read_regs(info->client,
->  		LTC294X_REG_VOLTAGE_MSB, &datar[0], 2);
-> -	value = (datar[0] << 8) | datar[1];
-> -	*val = ((value * 23600) / 0xFFFF) * 1000; /* in uV */
-> +	value = info->num_regs == LTC2943_NUM_REGS ? 23600 : 6000;
-> +	value *= (datar[0] << 8) | datar[1];
-> +	*val = 1000 * value / 0xFFFF; /* in uV */
->  	return ret;
->  }
->
-> @@ -274,15 +277,22 @@ static int ltc294x_get_current(const struct ltc294x_info *info, int *val)
->
->  static int ltc294x_get_temperature(const struct ltc294x_info *info, int *val)
->  {
-> +	enum ltc294x_reg reg;
->  	int ret;
->  	u8 datar[2];
->  	u32 value;
->
-> -	ret = ltc294x_read_regs(info->client,
-> -		LTC2943_REG_TEMPERATURE_MSB, &datar[0], 2);
-> -	value = (datar[0] << 8) | datar[1];
-> -	/* Full-scale is 510 Kelvin, convert to centidegrees  */
-> -	*val = (((51000 * value) / 0xFFFF) - 27215);
-> +	if (info->num_regs == LTC2943_NUM_REGS) {
-> +		reg = LTC2943_REG_TEMPERATURE_MSB;
-> +		value = 51000;	/* Full-scale is 510 Kelvin */
-> +	} else {
-> +		reg = LTC2942_REG_TEMPERATURE_MSB;
-> +		value = 60000;	/* Full-scale is 600 Kelvin */
-> +	}
-> +	ret = ltc294x_read_regs(info->client, reg, &datar[0], 2);
-> +	value *= (datar[0] << 8) | datar[1];
-> +	/* Convert to centidegrees  */
-> +	*val = value / 0xFFFF - 27215;
->  	return ret;
->  }
->
-> @@ -356,8 +366,8 @@ static enum power_supply_property ltc294x_properties[] = {
->  	POWER_SUPPLY_PROP_CHARGE_COUNTER,
->  	POWER_SUPPLY_PROP_CHARGE_NOW,
->  	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-> -	POWER_SUPPLY_PROP_CURRENT_NOW,
->  	POWER_SUPPLY_PROP_TEMP,
-> +	POWER_SUPPLY_PROP_CURRENT_NOW,
->  };
->
->  static int ltc294x_i2c_remove(struct i2c_client *client)
-> @@ -374,10 +384,11 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
->  {
->  	struct power_supply_config psy_cfg = {};
->  	struct ltc294x_info *info;
-> +	struct device_node *np;
->  	int ret;
->  	u32 prescaler_exp;
->  	s32 r_sense;
-> -	struct device_node *np;
-> +	u8 status;
->
->  	info = devm_kzalloc(&client->dev, sizeof(*info), GFP_KERNEL);
->  	if (info == NULL)
-> @@ -420,21 +431,36 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
->  				(128 / (1 << prescaler_exp));
->  	}
->
-> +	/* Read status register to check for LTC2942 */
-> +	if (info->num_regs == LTC2941_NUM_REGS) {
-> +		ret = ltc294x_read_regs(client, LTC294X_REG_STATUS, &status, 1);
-> +		if (ret < 0) {
-> +			dev_err(&info->client->dev,
-> +				"Could not read status register\n");
-> +			return ret;
-> +		}
-> +		if (!(status & LTC2941_REG_STATUS_CHIP_ID))
-> +			info->num_regs = LTC2942_NUM_REGS;
-> +	}
-> +
->  	info->client = client;
->  	info->supply_desc.type = POWER_SUPPLY_TYPE_BATTERY;
->  	info->supply_desc.properties = ltc294x_properties;
-> -	if (info->num_regs >= LTC2943_REG_TEMPERATURE_LSB)
-> +	switch (info->num_regs) {
-> +	case LTC2943_NUM_REGS:
->  		info->supply_desc.num_properties =
->  			ARRAY_SIZE(ltc294x_properties);
-> -	else if (info->num_regs >= LTC2943_REG_CURRENT_LSB)
-> +		break;
-> +	case LTC2942_NUM_REGS:
->  		info->supply_desc.num_properties =
->  			ARRAY_SIZE(ltc294x_properties) - 1;
-> -	else if (info->num_regs >= LTC294X_REG_VOLTAGE_LSB)
-> -		info->supply_desc.num_properties =
-> -			ARRAY_SIZE(ltc294x_properties) - 2;
-> -	else
-> +		break;
-> +	case LTC2941_NUM_REGS:
-> +	default:
->  		info->supply_desc.num_properties =
->  			ARRAY_SIZE(ltc294x_properties) - 3;
-> +		break;
-> +	}
->  	info->supply_desc.get_property = ltc294x_get_property;
->  	info->supply_desc.set_property = ltc294x_set_property;
->  	info->supply_desc.property_is_writeable = ltc294x_property_is_writeable;
->
+Well, naming convention is to use LTC294X prefix only for registers common
+to all chips. Chip specific registers are using chip specific prefixes. Also
+I'm not big fan of having register offsets as enums - offset is a number and
+should be represented as such.
 
+> I'm neutral to either naming, linux-pm maintainer will have the final word I
+> guess.
 
--- 
-Mike Looijmans
+I have no problem rolling change back with exception of tepmerature registers
+(LTC294X_LTC2942_REG_TEMPERATURE_MSB would probably be an option, but such a
+long identifier hurts my eyes).
 
+Let's wait for maintainer's comment.
 
-Kind regards,
-
-Mike Looijmans
-System Expert
-
-TOPIC Products
-Materiaalweg 4, NL-5681 RJ Best
-Postbus 440, NL-5680 AK Best
-Telefoon: +31 (0) 499 33 69 79
-E-mail: mike.looijmans@topicproducts.com
-Website: www.topicproducts.com
-
-Please consider the environment before printing this e-mail
+Best regards,
+	ladis
