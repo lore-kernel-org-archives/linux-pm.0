@@ -1,77 +1,53 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] cpufreq: intel_pstate: Provide resolve_freq() to fix
- regression
-Date: Mon, 12 Jun 2017 09:11:08 +0530
-Message-ID: <20170612034108.GC5297@vireshk-i7>
+Subject: Re: [PATCH 2/3] cpufreq: schedutil: Fix selection algorithm while
+ reducing frequency
+Date: Mon, 12 Jun 2017 09:14:20 +0530
+Message-ID: <20170612034420.GD5297@vireshk-i7>
 References: <cover.1497002895.git.viresh.kumar@linaro.org>
- <eb1c4db95f52dbd4014438b901cc21dd693df005.1497002895.git.viresh.kumar@linaro.org>
- <CAJWu+ooKaGZ6rWYmSmE0Auii9QLROKA4rGwUHXEj2v4XB8hBcQ@mail.gmail.com>
+ <8d5e793df4f06d54794a889543817cf5be131650.1497002895.git.viresh.kumar@linaro.org>
+ <CAJWu+or0GhiVS2rTAGMzS+y5xMrVUakYKO8G7u5Cn1dHX_P=SQ@mail.gmail.com>
+ <CAJWu+oomeeyCaz_zXQRGgz+yB59AANnrMLtXV8Lu+n=UvMhkcA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f48.google.com ([74.125.83.48]:36071 "EHLO
-        mail-pg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752034AbdFLDlM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Jun 2017 23:41:12 -0400
-Received: by mail-pg0-f48.google.com with SMTP id a70so40894138pge.3
-        for <linux-pm@vger.kernel.org>; Sun, 11 Jun 2017 20:41:11 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJWu+ooKaGZ6rWYmSmE0Auii9QLROKA4rGwUHXEj2v4XB8hBcQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <CAJWu+oomeeyCaz_zXQRGgz+yB59AANnrMLtXV8Lu+n=UvMhkcA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Joel Fernandes <joelaf@google.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, linaro-kernel@lists.linaro.org, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Patrick Bellasi <patrick.bellasi@arm.com>, john.ettedgui@gmail.com, Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, John Ettedgui <john.ettedgui@gmail.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Morten Rasmussen <morten.rasmussen@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
-On 10-06-17, 02:26, Joel Fernandes wrote:
-> On Fri, Jun 9, 2017 at 3:15 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > When the schedutil governor calls cpufreq_driver_resolve_freq() for the
-> > intel_pstate (in passive mode) driver, it simply returns the requested
-> > frequency as there is no ->resolve_freq() callback provided.
+On 10-06-17, 23:21, Joel Fernandes wrote:
+> On Sat, Jun 10, 2017 at 2:11 AM, Joel Fernandes <joelaf@google.com> wrote:
+> > On Fri, Jun 9, 2017 at 3:15 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >> While reducing frequency if there are no frequencies available between
+> >> "current" and "next" calculated frequency, then the core will never
+> >> select the "next" frequency.
+> >>
+> >> For example, consider the possible range of frequencies as 900 MHz, 1
+> >> GHz, 1.1 GHz, and 1.2 GHz. If the current frequency is 1.1 GHz and the
+> >> next frequency (based on current utilization) is 1 GHz, then the
+> >> schedutil governor will try to set the average of these as the next
+> >> frequency (i.e. 1.05 GHz).
+> >>
+> >> Because we always try to find the lowest frequency greater than equal to
+> >> the target frequency, cpufreq_driver_resolve_freq() will end up
+> >> returning 1.1 GHz only. And we will not be able to reduce the frequency
+> >> eventually. The worst hit is the policy->min frequency as that will
+> >> never get selected after the frequency is increased once.
 > >
-> > The result is that get_next_freq() doesn't get a chance to know the
-> > frequency which will be set eventually and we can hit a potential
-> > regression as explained in the following paragraph.
-> >
-> > For example, consider the possible range of frequencies as 900 MHz, 1
-> > GHz, 1.1 GHz, and 1.2 GHz. If the current frequency is 1.1 GHz and the
-> > next frequency (based on current utilization) is 1 GHz, then the
-> > schedutil governor will try to set the average of these as the next
-> > frequency (i.e. 1.05 GHz).
-> >
-> > Because we always try to find the lowest frequency greater than equal to
-> > the target frequency, the intel_pstate driver will end up setting the
-> > frequency as 1.1 GHz.
-> >
-> > Though the sg_policy->next_freq field gets updated with the average
-> > frequency only. And so we will finally select the min frequency when the
-> > next_freq is 1 more than the min frequency as the average then will be
-> > equal to the min frequency. But that will also take lots of iterations
-> > of the schedutil update callbacks.
-> >
-> > Fix that by providing a resolve_freq() callback.
-> >
-> > Tested on desktop with Intel Skylake processors.
-> >
-> > Fixes: 39b64aa1c007 ("cpufreq: schedutil: Reduce frequencies slower")
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  drivers/cpufreq/intel_pstate.c | 14 ++++++++++++++
-> >  1 file changed, 14 insertions(+)
-> >
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > index 029a93bfb558..e177352180c3 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -2213,6 +2213,19 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
-> >         return 0;
-> >  }
-> >
-> > +unsigned int intel_cpufreq_resolve_freq(struct cpufreq_policy *policy,
-> > +                                       unsigned int target_freq)
+> > But once utilization goes to 0, it will select the min frequency
+> > (because it selects lowest frequency >= target)?
 > 
-> Should be defined as static?
+> Never mind my comment about util 0, I see the problem you mention.
+> However I feel that this entire series adds complexity all to handle
+> the case of a false cache-miss which I think might not be that bad,
+> and the tradeoff with complexity/readability of the code kind of
+> negates the benefit. That's just my opinion about it fwiw.
 
-Yes.
+Right and that's why I said in the cover letter that we may want to revert the
+offending commit for the time being as the solutions provided here have too much
+dependency on the resolve_freq() callback.
 
 -- 
 viresh
