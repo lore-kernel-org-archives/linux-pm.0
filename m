@@ -1,97 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 4/8] ACPI / PM: Clean up device wakeup enable/disable code
-Date: Mon, 12 Jun 2017 22:51:07 +0200
-Message-ID: <21723904.gpIm5LkHCV@aspire.rjw.lan>
-References: <8918199.uo13RZ8hZk@aspire.rjw.lan> <1615075.mBkoKApGGc@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1615075.mBkoKApGGc@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, Hans De Goede <hdegoede@redhat.com>, Alan Stern <stern@rowland.harvard.edu>
+From: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Subject: [PATCH 1/4] ARM: dts: tps65217: Add charger interrupts to the common tps65217.dtsi file
+Date: Mon, 12 Jun 2017 23:24:09 +0200
+Message-ID: <20170612212412.22719-1-enric.balletbo@collabora.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, grygorii.strashko-l0cyMroinI0@public.gmane.org, javier-0uQlZySMnqxg9hUCZPvPmw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The interrupt specifiers for USB and AC charger input are static data that
+comes from the datasheet, there is no reason to need to define these values
+on every board so seem reasonable put this information into the common
+tps65217 file.
 
-The wakeup.flags.enabled flag in struct acpi_device is not used
-consistently, as there is no reason why it should only apply
-to the enabling/disabling of the wakeup GPE, so put the invocation
-of acpi_enable_wakeup_device_power() under it too.
-
-Moreover, it is not necessary to call
-acpi_enable_wakeup_devices() and acpi_disable_wakeup_devices() for
-suspend-to-idle, so don't do that.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 ---
- drivers/acpi/device_pm.c |   19 ++++++++-----------
- drivers/acpi/sleep.c     |    4 ++--
- 2 files changed, 10 insertions(+), 13 deletions(-)
+ arch/arm/boot/dts/am335x-bone-common.dtsi | 2 --
+ arch/arm/boot/dts/am335x-chiliboard.dts   | 2 --
+ arch/arm/boot/dts/tps65217.dtsi           | 2 ++
+ 3 files changed, 2 insertions(+), 4 deletions(-)
 
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -688,26 +688,23 @@ static int acpi_device_wakeup(struct acp
- 		acpi_status res;
- 		int error;
+diff --git a/arch/arm/boot/dts/am335x-bone-common.dtsi b/arch/arm/boot/dts/am335x-bone-common.dtsi
+index bf6b26a..bfa4258 100644
+--- a/arch/arm/boot/dts/am335x-bone-common.dtsi
++++ b/arch/arm/boot/dts/am335x-bone-common.dtsi
+@@ -319,8 +319,6 @@
+ 	ti,pmic-shutdown-controller;
  
-+		if (adev->wakeup.flags.enabled)
-+			return 0;
-+
- 		error = acpi_enable_wakeup_device_power(adev, target_state);
- 		if (error)
- 			return error;
+ 	charger {
+-		interrupts = <0>, <1>;
+-		interrupt-names = "USB", "AC";
+ 		status = "okay";
+ 	};
  
--		if (adev->wakeup.flags.enabled)
--			return 0;
--
- 		res = acpi_enable_gpe(wakeup->gpe_device, wakeup->gpe_number);
--		if (ACPI_SUCCESS(res)) {
--			adev->wakeup.flags.enabled = 1;
--		} else {
-+		if (ACPI_FAILURE(res)) {
- 			acpi_disable_wakeup_device_power(adev);
- 			return -EIO;
- 		}
--	} else {
--		if (adev->wakeup.flags.enabled) {
--			acpi_disable_gpe(wakeup->gpe_device, wakeup->gpe_number);
--			adev->wakeup.flags.enabled = 0;
--		}
-+		adev->wakeup.flags.enabled = 1;
-+	} else if (adev->wakeup.flags.enabled) {
-+		acpi_disable_gpe(wakeup->gpe_device, wakeup->gpe_number);
- 		acpi_disable_wakeup_device_power(adev);
-+		adev->wakeup.flags.enabled = 0;
- 	}
- 	return 0;
- }
-Index: linux-pm/drivers/acpi/sleep.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sleep.c
-+++ linux-pm/drivers/acpi/sleep.c
-@@ -658,19 +658,19 @@ static int acpi_freeze_begin(void)
+diff --git a/arch/arm/boot/dts/am335x-chiliboard.dts b/arch/arm/boot/dts/am335x-chiliboard.dts
+index d876979..5c25f3a 100644
+--- a/arch/arm/boot/dts/am335x-chiliboard.dts
++++ b/arch/arm/boot/dts/am335x-chiliboard.dts
+@@ -191,8 +191,6 @@
+ 	interrupts = <7>; /* NNMI */
  
- static int acpi_freeze_prepare(void)
- {
--	acpi_enable_wakeup_devices(ACPI_STATE_S0);
- 	acpi_enable_all_wakeup_gpes();
- 	acpi_os_wait_events_complete();
- 	if (acpi_sci_irq_valid())
- 		enable_irq_wake(acpi_sci_irq);
-+
- 	return 0;
- }
+ 	charger {
+-		interrupts = <0>, <1>;
+-		interrupt-names = "USB", "AC";
+ 		status = "okay";
+ 	};
  
- static void acpi_freeze_restore(void)
- {
--	acpi_disable_wakeup_devices(ACPI_STATE_S0);
- 	if (acpi_sci_irq_valid())
- 		disable_irq_wake(acpi_sci_irq);
-+
- 	acpi_enable_all_runtime_gpes();
- }
+diff --git a/arch/arm/boot/dts/tps65217.dtsi b/arch/arm/boot/dts/tps65217.dtsi
+index 02de56b..1973159 100644
+--- a/arch/arm/boot/dts/tps65217.dtsi
++++ b/arch/arm/boot/dts/tps65217.dtsi
+@@ -18,6 +18,8 @@
  
+ 	charger {
+ 		compatible = "ti,tps65217-charger";
++		interrupts = <0>, <1>;
++		interrupt-names = "USB", "AC";
+ 		status = "disabled";
+ 	};
+ 
+-- 
+2.9.3
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
