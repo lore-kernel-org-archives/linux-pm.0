@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 5/8] PM / sleep: Print timing information if debug is enabled
-Date: Mon, 12 Jun 2017 22:51:55 +0200
-Message-ID: <7222456.034JZvbkBs@aspire.rjw.lan>
+Subject: [PATCH v2 6/8] PCI / PM: Restore PME Enable if skipping wakeup setup
+Date: Mon, 12 Jun 2017 22:53:36 +0200
+Message-ID: <1667474.rysFhR2k32@aspire.rjw.lan>
 References: <8918199.uo13RZ8hZk@aspire.rjw.lan> <1615075.mBkoKApGGc@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,33 +15,67 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Avoid printing the device suspend/resume timing information if
-CONFIG_PM_DEBUG is not set to reduce the log noise level.
+The wakeup_prepared PCI device flag is used for preventing subsequent
+changes of PCI device wakeup settings in the same way (e.g. enabling
+device wakeup twice in a row).
+
+However, in some cases PME Enable may be updated by things like PCI
+configuration space restoration in the meantime and it may need to be
+set again even though the rest of the settings need not change, so
+modify __pci_enable_wake() to do that when it is about to return
+early.
+
+Also, it is reasonable to expect that __pci_enable_wake() will always
+clear PME Status when invoked to disable device wakeup, so make it do
+so even if it is going to return early then.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/base/power/main.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/pci/pci.c |   26 ++++++++++++++++++++++++--
+ 1 file changed, 24 insertions(+), 2 deletions(-)
 
-Index: linux-pm/drivers/base/power/main.c
+Index: linux-pm/drivers/pci/pci.c
 ===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -417,6 +417,7 @@ static void pm_dev_err(struct device *de
- 		dev_name(dev), pm_verb(state.event), info, error);
+--- linux-pm.orig/drivers/pci/pci.c
++++ linux-pm/drivers/pci/pci.c
+@@ -1805,6 +1805,23 @@ static void __pci_pme_active(struct pci_
+ 	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
  }
  
-+#ifdef CONFIG_PM_DEBUG
- static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
- {
- 	ktime_t calltime;
-@@ -433,6 +434,9 @@ static void dpm_show_time(ktime_t startt
- 		info ?: "", info ? " " : "", pm_verb(state.event),
- 		usecs / USEC_PER_MSEC, usecs % USEC_PER_MSEC);
- }
-+#else
-+static inline void dpm_show_time(ktime_t starttime, pm_message_t state, char *info) {}
-+#endif /* CONFIG_PM_DEBUG */
++static void pci_pme_restore(struct pci_dev *dev)
++{
++	u16 pmcsr;
++
++	if (!dev->pme_support)
++		return;
++
++	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
++	if (dev->wakeup_prepared) {
++		pmcsr |= PCI_PM_CTRL_PME_ENABLE;
++	} else {
++		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
++		pmcsr |= PCI_PM_CTRL_PME_STATUS;
++	}
++	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
++}
++
+ /**
+  * pci_pme_active - enable or disable PCI device's PME# function
+  * @dev: PCI device to handle.
+@@ -1899,9 +1916,14 @@ int __pci_enable_wake(struct pci_dev *de
+ 	if (enable && !runtime && !device_may_wakeup(&dev->dev))
+ 		return -EINVAL;
  
- static int dpm_run_callback(pm_callback_t cb, struct device *dev,
- 			    pm_message_t state, char *info)
+-	/* Don't do the same thing twice in a row for one device. */
+-	if (!!enable == !!dev->wakeup_prepared)
++	/*
++	 * Don't do the same thing twice in a row for one device, but restore
++	 * PME Enable in case it has been updated by config space restoration.
++	 */
++	if (!!enable == !!dev->wakeup_prepared) {
++		pci_pme_restore(dev);
+ 		return 0;
++	}
+ 
+ 	/*
+ 	 * According to "PCI System Architecture" 4th ed. by Tom Shanley & Don
