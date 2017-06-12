@@ -1,63 +1,77 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: conservative: Allow down_threshold to take
- values from 1 to 10
-Date: Mon, 12 Jun 2017 09:10:35 +0530
-Message-ID: <20170612034035.GB5297@vireshk-i7>
-References: <1497169719-13613-1-git-send-email-twilczynski@naver.com>
+Subject: Re: [PATCH 3/3] cpufreq: intel_pstate: Provide resolve_freq() to fix
+ regression
+Date: Mon, 12 Jun 2017 09:11:08 +0530
+Message-ID: <20170612034108.GC5297@vireshk-i7>
+References: <cover.1497002895.git.viresh.kumar@linaro.org>
+ <eb1c4db95f52dbd4014438b901cc21dd693df005.1497002895.git.viresh.kumar@linaro.org>
+ <CAJWu+ooKaGZ6rWYmSmE0Auii9QLROKA4rGwUHXEj2v4XB8hBcQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f46.google.com ([74.125.83.46]:32776 "EHLO
-        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752046AbdFLDki (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Jun 2017 23:40:38 -0400
-Received: by mail-pg0-f46.google.com with SMTP id f185so40940472pgc.0
-        for <linux-pm@vger.kernel.org>; Sun, 11 Jun 2017 20:40:38 -0700 (PDT)
+Received: from mail-pg0-f48.google.com ([74.125.83.48]:36071 "EHLO
+        mail-pg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752034AbdFLDlM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Jun 2017 23:41:12 -0400
+Received: by mail-pg0-f48.google.com with SMTP id a70so40894138pge.3
+        for <linux-pm@vger.kernel.org>; Sun, 11 Jun 2017 20:41:11 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1497169719-13613-1-git-send-email-twilczynski@naver.com>
+In-Reply-To: <CAJWu+ooKaGZ6rWYmSmE0Auii9QLROKA4rGwUHXEj2v4XB8hBcQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz =?utf-8?Q?Wilczy=C5=84ski?= <twilczynski@naver.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Joel Fernandes <joelaf@google.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, linaro-kernel@lists.linaro.org, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Patrick Bellasi <patrick.bellasi@arm.com>, john.ettedgui@gmail.com, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On 11-06-17, 17:28, Tomasz Wilczyński wrote:
-> Commit 27ed3cd2ebf4cd78b198be9758c538cdede36d8a ("cpufreq: conservative:
-> Fix the logic in frequency decrease checking") removed the 10 point
-> substraction when comparing the load against down_threshold but did not
-> remove the related limit for the down_threshold value. As a result,
-> down_threshold lower than 11 is not allowed even though values from
-> 1 to 10 do work correctly too. The comment ("cannot be lower than 11
-> otherwise freq will not fall") is also not true after removing the
-> substraction.
+On 10-06-17, 02:26, Joel Fernandes wrote:
+> On Fri, Jun 9, 2017 at 3:15 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > When the schedutil governor calls cpufreq_driver_resolve_freq() for the
+> > intel_pstate (in passive mode) driver, it simply returns the requested
+> > frequency as there is no ->resolve_freq() callback provided.
+> >
+> > The result is that get_next_freq() doesn't get a chance to know the
+> > frequency which will be set eventually and we can hit a potential
+> > regression as explained in the following paragraph.
+> >
+> > For example, consider the possible range of frequencies as 900 MHz, 1
+> > GHz, 1.1 GHz, and 1.2 GHz. If the current frequency is 1.1 GHz and the
+> > next frequency (based on current utilization) is 1 GHz, then the
+> > schedutil governor will try to set the average of these as the next
+> > frequency (i.e. 1.05 GHz).
+> >
+> > Because we always try to find the lowest frequency greater than equal to
+> > the target frequency, the intel_pstate driver will end up setting the
+> > frequency as 1.1 GHz.
+> >
+> > Though the sg_policy->next_freq field gets updated with the average
+> > frequency only. And so we will finally select the min frequency when the
+> > next_freq is 1 more than the min frequency as the average then will be
+> > equal to the min frequency. But that will also take lots of iterations
+> > of the schedutil update callbacks.
+> >
+> > Fix that by providing a resolve_freq() callback.
+> >
+> > Tested on desktop with Intel Skylake processors.
+> >
+> > Fixes: 39b64aa1c007 ("cpufreq: schedutil: Reduce frequencies slower")
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >  drivers/cpufreq/intel_pstate.c | 14 ++++++++++++++
+> >  1 file changed, 14 insertions(+)
+> >
+> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> > index 029a93bfb558..e177352180c3 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -2213,6 +2213,19 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
+> >         return 0;
+> >  }
+> >
+> > +unsigned int intel_cpufreq_resolve_freq(struct cpufreq_policy *policy,
+> > +                                       unsigned int target_freq)
 > 
-> For this reason, allow down_threshold to take any value from 1 to 99
-> and fix the related comment.
-> 
-> Signed-off-by: Tomasz Wilczyński <twilczynski@naver.com>
+> Should be defined as static?
 
-Please add Fixes tag and relevant kernel release for stable tag.
-
-> ---
->  drivers/cpufreq/cpufreq_conservative.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index 992f7c2..88220ff 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -185,8 +185,8 @@ static ssize_t store_down_threshold(struct gov_attr_set *attr_set,
->  	int ret;
->  	ret = sscanf(buf, "%u", &input);
->  
-> -	/* cannot be lower than 11 otherwise freq will not fall */
-> -	if (ret != 1 || input < 11 || input > 100 ||
-> +	/* cannot be lower than 1 otherwise freq will not fall */
-> +	if (ret != 1 || input < 1 || input > 100 ||
->  			input >= dbs_data->up_threshold)
->  		return -EINVAL;
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Yes.
 
 -- 
 viresh
