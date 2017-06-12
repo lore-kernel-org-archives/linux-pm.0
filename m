@@ -1,132 +1,101 @@
-From: Mike Looijmans <mike.looijmans@topic.nl>
-Subject: Re: [PATCH 1/2] power: supply: ltc2941-battery-gauge: Define LTC2942
- registers
-Date: Mon, 12 Jun 2017 18:26:17 +0200
-Message-ID: <8d97cccb-fef7-428d-b075-b0e59a590d80@topic.nl>
-References: <20170612150226.woxfdi4lharq5gtq@lenoch>
- <20170612150356.wvehmijba6xbdwvb@lenoch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx6-05.smtp.antispamcloud.com ([95.211.2.196]:42991 "EHLO
-        mx6-05.smtp.antispamcloud.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753065AbdFLQ4W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 12:56:22 -0400
-In-Reply-To: <20170612150356.wvehmijba6xbdwvb@lenoch>
-Sender: linux-pm-owner@vger.kernel.org
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: Re: [PATCH v5 3/3] drivers:power:twl4030-charger: add deferred probing for phy and iio
+Date: Mon, 12 Jun 2017 19:02:09 +0200
+Message-ID: <D12A5BD7-65A1-49E6-A25C-B2A2162FCA05@goldelico.com>
+References: <cover.1495363097.git.hns@goldelico.com> <6ed105f6c9c21c24184913a7be9e665453549d79.1495363097.git.hns@goldelico.com> <20170607204444.zumcreuqdnv7euv2@earth> <01A3D2F5-9E09-4E93-A363-93130DCEB7DF@goldelico.com> <1b9f3e92-36ac-2a73-7b2d-037b19fafaad@ti.com> <DC2DA07F-72A1-45B9-A4F5-BD83D930974D@goldelico.com> <754fbc28-f5ff-4736-1d46-f467667b130d@ti.com>
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <754fbc28-f5ff-4736-1d46-f467667b130d@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Sebastian Reichel <sre@kernel.org>, NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Marek Belisko <marek@goldelico.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ladislav Michl <ladis@linux-mips.org>, linux-pm@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>
 
-﻿See below for my comment...
+Hi Grygorii,
 
-On 12-6-2017 17:03, Ladislav Michl wrote:
-> Add LTC2942 registers definitions. No functional changes.
->
-> Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
-> ---
->  drivers/power/supply/ltc2941-battery-gauge.c | 27 +++++++++++++--------------
->  1 file changed, 13 insertions(+), 14 deletions(-)
->
-> diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
-> index 7efb908f4451..0a1b69bbca7f 100644
-> --- a/drivers/power/supply/ltc2941-battery-gauge.c
-> +++ b/drivers/power/supply/ltc2941-battery-gauge.c
-> @@ -34,16 +34,14 @@ enum ltc294x_reg {
->  	LTC294X_REG_CONTROL		= 0x01,
->  	LTC294X_REG_ACC_CHARGE_MSB	= 0x02,
->  	LTC294X_REG_ACC_CHARGE_LSB	= 0x03,
-> -	LTC294X_REG_THRESH_HIGH_MSB	= 0x04,
-> -	LTC294X_REG_THRESH_HIGH_LSB	= 0x05,
-> -	LTC294X_REG_THRESH_LOW_MSB	= 0x06,
-> -	LTC294X_REG_THRESH_LOW_LSB	= 0x07,
-> -	LTC294X_REG_VOLTAGE_MSB	= 0x08,
-> -	LTC294X_REG_VOLTAGE_LSB	= 0x09,
-> -	LTC294X_REG_CURRENT_MSB	= 0x0E,
-> -	LTC294X_REG_CURRENT_LSB	= 0x0F,
-> -	LTC294X_REG_TEMPERATURE_MSB	= 0x14,
-> -	LTC294X_REG_TEMPERATURE_LSB	= 0x15,
-> +	LTC294X_REG_VOLTAGE_MSB		= 0x08,
-> +	LTC294X_REG_VOLTAGE_LSB		= 0x09,
-> +	LTC2942_REG_TEMPERATURE_MSB	= 0x0C,
-> +	LTC2942_REG_TEMPERATURE_LSB	= 0x0D,
-> +	LTC2943_REG_CURRENT_MSB		= 0x0E,
-> +	LTC2943_REG_CURRENT_LSB		= 0x0F,
-> +	LTC2943_REG_TEMPERATURE_MSB	= 0x14,
-> +	LTC2943_REG_TEMPERATURE_LSB	= 0x15,
->  };
+> Am 12.06.2017 um 18:24 schrieb Grygorii Strashko =
+<grygorii.strashko@ti.com>:
+>=20
+>=20
+>=20
+> On 06/09/2017 11:59 PM, H. Nikolaus Schaller wrote:
+>> Hi Grygorii,
+>>=20
+>>> Am 09.06.2017 um 18:25 schrieb Grygorii Strashko =
+<grygorii.strashko@ti.com>:
+>>>=20
+>>>=20
+>>>>=20
+>>>> So please advise how to proceed.
+>>>>=20
+>>>=20
+>>> You should request irq as late as possible in probe - it's safest =
+way to go always.
+>>> You see crushes simply because request_irq enables IRQ and IRQ can =
+trigger immediately, so
+>>> IRQ handler will run and all required resources should be ready and =
+initialized.
+>>>=20
+>>> In this case:
+>>> twl4030_bci_interrupt() -> twl4030_charger_update_current() -> =
+ac_available() -> iio_read_channel_processed()
+>>> OOOPS.
+>>>=20
+>>> So, first thing to do is to reorder probe to ensure that sequence is =
+safe.
+>>=20
+>> That is exactly what I guessed when proposing the reordering patch.
+>>=20
+>>> Then other stuff - devm, EPROBE_DEFER ...
+>>=20
+>> IMHO, reordering alone doesn't make much sense as a single patch. Or =
+does it?
+>>=20
+>=20
+> The question is - is there bug in driver or not? As per current code =
+seems yes.
 
-I don't see the advantage of renaming these, I'd rather see the LTC294X 
-naming throughout, making it easier to locate them in the enum as they 
-all share the exact same prefix.
+If we all agree, do we need another confirmation?
 
-But if you do want this renaming, I guess you should also rename the 
-LTC2941 registers.
+> You can easily test it by directly calling twl4030_charger_interrupt() =
+right after
+> IRQ is requested. there is a bug if it will crush.
 
-I'm neutral to either naming, linux-pm maintainer will have the final 
-word I guess.
+In the variant without EPROBE_DEFER you won't see it since ac_available =
+either
+has a valid iio channel or NULL.
 
+The problem is only if we add an EPROBE_DEFER return if getting the iio =
+channel
+fails. This seems to make trouble if we don't take care of it. There are =
+certainly
+several options to work around but IMHO reordering is the best one (and =
+even works
+w/o devm for iio - which should be added in a separate step).
 
+And there is a strong argument for reordering to have the most likely =
+failure
+first (iio fails more likely due to DEFER than allocating an irq). But =
+only if
+we process the iio failure at all.
 
->
->  #define LTC2943_REG_CONTROL_MODE_MASK (BIT(7) | BIT(6))
-> @@ -55,6 +53,7 @@ enum ltc294x_reg {
->  #define LTC294X_REG_CONTROL_ALCC_CONFIG_DISABLED	0
->
->  #define LTC2941_NUM_REGS	0x08
-> +#define LTC2942_NUM_REGS	0x10
->  #define LTC2943_NUM_REGS	0x18
->
->  struct ltc294x_info {
-> @@ -263,7 +262,7 @@ static int ltc294x_get_current(const struct ltc294x_info *info, int *val)
->  	s32 value;
->
->  	ret = ltc294x_read_regs(info->client,
-> -		LTC294X_REG_CURRENT_MSB, &datar[0], 2);
-> +		LTC2943_REG_CURRENT_MSB, &datar[0], 2);
->  	value = (datar[0] << 8) | datar[1];
->  	value -= 0x7FFF;
->  	/* Value is in range -32k..+32k, r_sense is usually 10..50 mOhm,
-> @@ -280,7 +279,7 @@ static int ltc294x_get_temperature(const struct ltc294x_info *info, int *val)
->  	u32 value;
->
->  	ret = ltc294x_read_regs(info->client,
-> -		LTC294X_REG_TEMPERATURE_MSB, &datar[0], 2);
-> +		LTC2943_REG_TEMPERATURE_MSB, &datar[0], 2);
->  	value = (datar[0] << 8) | datar[1];
->  	/* Full-scale is 510 Kelvin, convert to centidegrees  */
->  	*val = (((51000 * value) / 0xFFFF) - 27215);
-> @@ -424,10 +423,10 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
->  	info->client = client;
->  	info->supply_desc.type = POWER_SUPPLY_TYPE_BATTERY;
->  	info->supply_desc.properties = ltc294x_properties;
-> -	if (info->num_regs >= LTC294X_REG_TEMPERATURE_LSB)
-> +	if (info->num_regs >= LTC2943_REG_TEMPERATURE_LSB)
->  		info->supply_desc.num_properties =
->  			ARRAY_SIZE(ltc294x_properties);
-> -	else if (info->num_regs >= LTC294X_REG_CURRENT_LSB)
-> +	else if (info->num_regs >= LTC2943_REG_CURRENT_LSB)
->  		info->supply_desc.num_properties =
->  			ARRAY_SIZE(ltc294x_properties) - 1;
->  	else if (info->num_regs >= LTC294X_REG_VOLTAGE_LSB)
->
+So there are one a little doubtful argument for reordering (driver bug) =
+and
+a strong one.
 
+> As for me it more reasonable to move forward using smaller steps.
 
--- 
-Mike Looijmans
+Well, I wonder what it does help to fix a bug which does not even become =
+visible
+if we don't add EPROBE_DEFER?
 
+So I would count two steps:
+a) add EPROBE_DEFER and reorder code to make it work
+b) convert to devm for iio
 
-Kind regards,
+Ok?
 
-Mike Looijmans
-System Expert
-
-TOPIC Products
-Materiaalweg 4, NL-5681 RJ Best
-Postbus 440, NL-5680 AK Best
-Telefoon: +31 (0) 499 33 69 79
-E-mail: mike.looijmans@topicproducts.com
-Website: www.topicproducts.com
-
-Please consider the environment before printing this e-mail
+BR and thanks,
+Nikolaus
