@@ -1,69 +1,72 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 2/8] PM / domains: Protect reading loop over list of domains
-Date: Mon, 12 Jun 2017 14:57:21 +0200
-Message-ID: <CAPDyKFosxZCVfSHiv5Q2zbkX+PGbGXuxr88rK1eggQO1UXPM0g@mail.gmail.com>
-References: <20170609160853.31789-1-krzk@kernel.org> <20170609160853.31789-3-krzk@kernel.org>
- <20170609161649.g5wjn24tm2opyq3h@kozik-lap>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH 0/6] arm, arm64: frequency- and cpu-invariant accounting
+ support for task scheduler
+Date: Mon, 12 Jun 2017 14:00:52 +0100
+Message-ID: <20170612130052.6ujugxmbxarvgsyf@e106622-lin>
+References: <20170608075513.12475-1-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f180.google.com ([209.85.216.180]:35833 "EHLO
-        mail-qt0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750868AbdFLM5X (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 08:57:23 -0400
-Received: by mail-qt0-f180.google.com with SMTP id w1so123836566qtg.2
-        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2017 05:57:23 -0700 (PDT)
-In-Reply-To: <20170609161649.g5wjn24tm2opyq3h@kozik-lap>
+Received: from foss.arm.com ([217.140.101.70]:33410 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751494AbdFLNA5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 12 Jun 2017 09:00:57 -0400
+Content-Disposition: inline
+In-Reply-To: <20170608075513.12475-1-dietmar.eggemann@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Vincent Guittot <vincent.guittot@linaor.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On 9 June 2017 at 18:16, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> On Fri, Jun 09, 2017 at 06:08:47PM +0200, Krzysztof Kozlowski wrote:
->> The pm_genpd_present() iterates over list of domains so grabbing a
->> gpd_list_lock mutex is necessary before calling it.  Otherwise we could
->> end up in iterating over and modifying the list at the same time.
->>
->> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
->> ---
->>  drivers/base/power/domain.c | 7 ++++++-
->>  1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index 2e8d0f423507..2a6935dc0164 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -1099,8 +1099,13 @@ static void genpd_syscore_switch(struct device *dev, bool suspend)
->>       struct generic_pm_domain *genpd;
->>
->>       genpd = dev_to_genpd(dev);
+Hi Dietmar,
 
-Actually there may be potential problem here as we may end up trying
-to use the container_of() call for a PM domain, not being a genpd but
-something else.
+On 08/06/17 08:55, Dietmar Eggemann wrote:
+> For a more accurate (i.e. frequency- and cpu-invariant) load-tracking
+> the task scheduler needs a frequency-scaling and on a heterogeneous
+> system a cpu-scaling correction factor.
+> 
+> This patch-set implements a Frequency Invariance Engine (FIE)
+> (topology_get_freq_scale()) in drivers/base/arch_topology.c to provide
+> a frequency-scaling correction factor.
+> 
+> The Cpu Invariance Engine (CIE) (topology_get_cpu_scale()) providing a
+> cpu-scaling correction factor was already introduced by the "Fix issues
+> and factorize arm/arm64 capacity information code" patch-set [1].
+> 
+> This patch-set also enables the frequency- and cpu-invariant accounting
+> support. Enabling here means to associate (wire) the task scheduler
+> cname arch_scale_freq_capacity and arch_scale_cpu_capacity with the FIE
+> and CIE function names from drivers/base/arch_topology.c. This replaces
+> the task scheduler's default FIE and CIE in kernel/sched/sched.h.
+> 
+> Patch high level description:
+> 
+>  [   01/06] Rework cpufreq policy notifier for frequency-invariant
+>             accounting support
+>  [   02/06] Frequency Invariance Engine (FIE)
+>  [03,04/06] Enable frequency- and cpu-invariant accounting support on
+>             arm
+>  [05,06/06] Enable frequency- and cpu-invariant accounting support on
+>             arm64
+> 
+> The patch-set is based on top of linux-next/master (tag: next-20170607)
+> and it is also available from:
+> 
+>  git://linux-arm.org/linux-de.git upstream/freq_and_cpu_inv
+> 
+> It has been tested on TC2 (arm) and JUNO (arm64) by running a ramp-up
+> rt-app task pinned to a cpu with the ondemand cpufreq governor and
+> checking the load-tracking signals of this task.
+> 
 
->> -     if (!pm_genpd_present(genpd))
->> +
->> +     mutex_lock(&gpd_list_lock);
->> +     if (!pm_genpd_present(genpd)) {
->> +             mutex_unlock(&gpd_list_lock);
->>               return;
->> +     }
->> +     mutex_unlock(&gpd_list_lock);
+The whole set looks OK to me, and I tested it as well.
 
-Perhaps convert the hole thing above to call genpd_lookup_dev() instead?
+Feel free to add my
 
->
-> Eh, I might be too fast as this is not executed on my platform.  The
-> genpd_syscore_switch() seems to be called by clocksource_suspend() which
-> is called by syscore ops. Should be safe but actually not tested.
->
-> Someone with SH hardware is needed...
->
-> Best regards,
-> Krzysztof
->
+Reviewed-and-tested-by: Juri Lelli <juri.lelli@arm.com>
 
-Kind regards
-Uffe
+to it.
+
+Best,
+
+- Juri
