@@ -1,241 +1,69 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: Remove max/min fractions to limit performance
-Date: Mon, 12 Jun 2017 16:30:27 -0700
-Message-ID: <1497310227-120903-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:5909 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752193AbdFLXae (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 12 Jun 2017 19:30:34 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: Re: [PATCH 2/2] Input: pm8941-pwrkey: Introduce reboot mode support
+Date: Mon, 12 Jun 2017 16:32:03 -0700
+Message-ID: <20170612233203.GT12920@tuxbook>
+References: <20170527065130.3456-1-bjorn.andersson@linaro.org>
+ <20170527065130.3456-2-bjorn.andersson@linaro.org>
+ <20170530025324.GD32841@dtor-ws>
+ <20170530044711.GP12920@tuxbook>
+ <20170608163243.j4dfpa6swoz27ofd@earth>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170608163243.j4dfpa6swoz27ofd@earth>
+Sender: linux-input-owner@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh@kernel.org>, John Stultz <john.stultz@linaro.org>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-In the current model the max/min perf limits are a fraction of current
-user space limits to the allowed max_freq or 100% for global limits.
-This results in wrong ratio limits calculation because of rounding
-issues for some user space limits.
+On Thu 08 Jun 09:32 PDT 2017, Sebastian Reichel wrote:
 
-Initially we tried to solve this issue by issue by having more shift
-bits to increase precision. Still there are isolated cases where we still
-have error.
+> Hi,
+> 
+> On Mon, May 29, 2017 at 09:47:11PM -0700, Bjorn Andersson wrote:
+> > On Mon 29 May 19:53 PDT 2017, Dmitry Torokhov wrote:
+> > 
+> > > On Fri, May 26, 2017 at 11:51:30PM -0700, Bjorn Andersson wrote:
+> > > > In some Qualcomm platforms the magic for informing LK which mode to
+> > > > reboot into is stored in the PON_SOFT_RB_SPARE register. Register with
+> > > > the reboot mode helpers to expose this to the user.
+> > > 
+> > > Hmm, is the power key driver the best place to have this? WHy isn't this
+> > > a driver in its own right?
+> > > 
+> > 
+> > The functionality is part of the "PON" block in the Qualcomm PMICs,
+> > other functionality from this block relates to configuration and
+> > handling related to power-key and reset-key.
+> > 
+> > Several of these properties are intermingled, so I do believe it's best
+> > to handle them in a single driver; that said, it might no longer be
+> > correct to name the driver "pwrkey" or that it is a "misc input" driver.
+> 
+> I merged patch 1 and provided an immutable branch, so
+> that this could go through the input subsystem.
+> 
 
-This can be avoided by using ratios all together. Since the way we get
-cpuinfo.max_freq is by multiplying scaling factor to max ratio, we can
-easily keep the max/min ratios in terms of ratios and not fractions.
+Thanks
 
-For example:
-if the max ratio = 36
-cpuinfo.max_freq = 36 * 100000 = 3600000
+> To me it doesn't look that intermingled, though. I think
+> the reboot and reboot-mode parts could go into their own
+> driver in drivers/power/reset.
+> 
 
-Suppose user space sets a limit of 1200000, then we can calculate
-max ratio limit as
-= 36 * 1200000 / 3600000
-= 12
-This will be correct for any user limits.
+I did reach out to Rob regarding this and the single hardware block
+should be described by a single node in DeviceTree.
 
-The other advantage is that, we don't need to do any calculation in the
-fast path as ratio limit is already calculated via set_policy() callback.
+As such if we split the non-input related handling into another driver
+we would need to make the input driver create a subdevice during probe -
+or create a new pon-driver with a new compatible that internally spawns
+the pwrkey driver. Neither seems desirable to me...
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 114 +++++++++++++++++++++++------------------
- 1 file changed, 63 insertions(+), 51 deletions(-)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index df4e76a..8266e0d 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -231,10 +231,8 @@ struct global_params {
-  * @prev_cummulative_iowait: IO Wait time difference from last and
-  *			current sample
-  * @sample:		Storage for storing last Sample data
-- * @min_perf:		Minimum capacity limit as a fraction of the maximum
-- *			turbo P-state capacity.
-- * @max_perf:		Maximum capacity limit as a fraction of the maximum
-- *			turbo P-state capacity.
-+ * @min_perf_ratio:	Minimum capacity in terms of PERF or HWP ratios
-+ * @max_perf_ratio:	Maximum capacity in terms of PERF or HWP ratios
-  * @acpi_perf_data:	Stores ACPI perf information read from _PSS
-  * @valid_pss_table:	Set to true for valid ACPI _PSS entries found
-  * @epp_powersave:	Last saved HWP energy performance preference
-@@ -266,8 +264,8 @@ struct cpudata {
- 	u64	prev_tsc;
- 	u64	prev_cummulative_iowait;
- 	struct sample sample;
--	int32_t	min_perf;
--	int32_t	max_perf;
-+	int32_t	min_perf_ratio;
-+	int32_t	max_perf_ratio;
- #ifdef CONFIG_ACPI
- 	struct acpi_processor_performance acpi_perf_data;
- 	bool valid_pss_table;
-@@ -793,25 +791,32 @@ static struct freq_attr *hwp_cpufreq_attrs[] = {
- 	NULL,
- };
- 
--static void intel_pstate_hwp_set(unsigned int cpu)
-+static void intel_pstate_get_hwp_max(unsigned int cpu, int *phy_max,
-+				     int *current_max)
- {
--	struct cpudata *cpu_data = all_cpu_data[cpu];
--	int min, hw_min, max, hw_max;
--	u64 value, cap;
--	s16 epp;
-+	u64 cap;
- 
- 	rdmsrl_on_cpu(cpu, MSR_HWP_CAPABILITIES, &cap);
--	hw_min = HWP_LOWEST_PERF(cap);
- 	if (global.no_turbo)
--		hw_max = HWP_GUARANTEED_PERF(cap);
-+		*current_max = HWP_GUARANTEED_PERF(cap);
- 	else
--		hw_max = HWP_HIGHEST_PERF(cap);
-+		*current_max = HWP_HIGHEST_PERF(cap);
-+
-+	*phy_max = HWP_HIGHEST_PERF(cap);
-+}
-+
-+static void intel_pstate_hwp_set(unsigned int cpu)
-+{
-+	struct cpudata *cpu_data = all_cpu_data[cpu];
-+	int max, min;
-+	u64 value;
-+	s16 epp;
-+
-+	max = cpu_data->max_perf_ratio;
-+	min = cpu_data->min_perf_ratio;
- 
--	max = fp_ext_toint(hw_max * cpu_data->max_perf);
- 	if (cpu_data->policy == CPUFREQ_POLICY_PERFORMANCE)
- 		min = max;
--	else
--		min = fp_ext_toint(hw_max * cpu_data->min_perf);
- 
- 	rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
- 
-@@ -1527,8 +1532,7 @@ static void intel_pstate_max_within_limits(struct cpudata *cpu)
- 
- 	update_turbo_state();
- 	pstate = intel_pstate_get_base_pstate(cpu);
--	pstate = max(cpu->pstate.min_pstate,
--		     fp_ext_toint(pstate * cpu->max_perf));
-+	pstate = max(cpu->pstate.min_pstate, cpu->max_perf_ratio);
- 	intel_pstate_set_pstate(cpu, pstate);
- }
- 
-@@ -1694,9 +1698,8 @@ static int intel_pstate_prepare_request(struct cpudata *cpu, int pstate)
- 	int max_pstate = intel_pstate_get_base_pstate(cpu);
- 	int min_pstate;
- 
--	min_pstate = max(cpu->pstate.min_pstate,
--			 fp_ext_toint(max_pstate * cpu->min_perf));
--	max_pstate = max(min_pstate, fp_ext_toint(max_pstate * cpu->max_perf));
-+	min_pstate = max(cpu->pstate.min_pstate, cpu->min_perf_ratio);
-+	max_pstate = max(min_pstate, cpu->max_perf_ratio);
- 	return clamp_t(int, pstate, min_pstate, max_pstate);
- }
- 
-@@ -1968,52 +1971,61 @@ static void intel_pstate_update_perf_limits(struct cpufreq_policy *policy,
- {
- 	int max_freq = intel_pstate_get_max_freq(cpu);
- 	int32_t max_policy_perf, min_policy_perf;
-+	int max_state, turbo_max;
- 
--	max_policy_perf = div_ext_fp(policy->max, max_freq);
--	max_policy_perf = clamp_t(int32_t, max_policy_perf, 0, int_ext_tofp(1));
-+	/*
-+	 * HWP needs some special consideration, because on BDX the
-+	 * HWP_REQUEST uses abstract value to represent performance
-+	 * rather than pure ratios.
-+	 */
-+	if (hwp_active) {
-+		intel_pstate_get_hwp_max(cpu->cpu, &turbo_max, &max_state);
-+	} else {
-+		max_state = intel_pstate_get_base_pstate(cpu);
-+		turbo_max = cpu->pstate.turbo_pstate;
-+	}
-+
-+	max_policy_perf = max_state * policy->max / max_freq;
- 	if (policy->max == policy->min) {
- 		min_policy_perf = max_policy_perf;
- 	} else {
--		min_policy_perf = div_ext_fp(policy->min, max_freq);
-+		min_policy_perf = max_state * policy->min / max_freq;
- 		min_policy_perf = clamp_t(int32_t, min_policy_perf,
- 					  0, max_policy_perf);
- 	}
- 
-+	pr_debug("cpu:%d max_state %d min_policy_perf:%d max_policy_perf:%d\n",
-+		 policy->cpu, max_state,
-+		 min_policy_perf, max_policy_perf);
-+
- 	/* Normalize user input to [min_perf, max_perf] */
- 	if (per_cpu_limits) {
--		cpu->min_perf = min_policy_perf;
--		cpu->max_perf = max_policy_perf;
-+		cpu->min_perf_ratio = min_policy_perf;
-+		cpu->max_perf_ratio = max_policy_perf;
- 	} else {
- 		int32_t global_min, global_max;
- 
- 		/* Global limits are in percent of the maximum turbo P-state. */
--		global_max = percent_ext_fp(global.max_perf_pct);
--		global_min = percent_ext_fp(global.min_perf_pct);
--		if (max_freq != cpu->pstate.turbo_freq) {
--			int32_t turbo_factor;
--
--			turbo_factor = div_ext_fp(cpu->pstate.turbo_pstate,
--						  cpu->pstate.max_pstate);
--			global_min = mul_ext_fp(global_min, turbo_factor);
--			global_max = mul_ext_fp(global_max, turbo_factor);
--		}
-+		global_max = DIV_ROUND_UP(turbo_max * global.max_perf_pct, 100);
-+		global_min = DIV_ROUND_UP(turbo_max * global.min_perf_pct, 100);
- 		global_min = clamp_t(int32_t, global_min, 0, global_max);
- 
--		cpu->min_perf = max(min_policy_perf, global_min);
--		cpu->min_perf = min(cpu->min_perf, max_policy_perf);
--		cpu->max_perf = min(max_policy_perf, global_max);
--		cpu->max_perf = max(min_policy_perf, cpu->max_perf);
-+		pr_debug("cpu:%d global_min:%d global_max:%d\n", policy->cpu,
-+			 global_min, global_max);
- 
--		/* Make sure min_perf <= max_perf */
--		cpu->min_perf = min(cpu->min_perf, cpu->max_perf);
--	}
-+		cpu->min_perf_ratio = max(min_policy_perf, global_min);
-+		cpu->min_perf_ratio = min(cpu->min_perf_ratio, max_policy_perf);
-+		cpu->max_perf_ratio = min(max_policy_perf, global_max);
-+		cpu->max_perf_ratio = max(min_policy_perf, cpu->max_perf_ratio);
- 
--	cpu->max_perf = round_up(cpu->max_perf, EXT_FRAC_BITS);
--	cpu->min_perf = round_up(cpu->min_perf, EXT_FRAC_BITS);
-+		/* Make sure min_perf <= max_perf */
-+		cpu->min_perf_ratio = min(cpu->min_perf_ratio,
-+					  cpu->max_perf_ratio);
- 
--	pr_debug("cpu:%d max_perf_pct:%d min_perf_pct:%d\n", policy->cpu,
--		 fp_ext_toint(cpu->max_perf * 100),
--		 fp_ext_toint(cpu->min_perf * 100));
-+	}
-+	pr_debug("cpu:%d max_perf_ratio:%d min_perf_ratio:%d\n", policy->cpu,
-+		 cpu->max_perf_ratio,
-+		 cpu->min_perf_ratio);
- }
- 
- static int intel_pstate_set_policy(struct cpufreq_policy *policy)
-@@ -2116,8 +2128,8 @@ static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
- 
- 	cpu = all_cpu_data[policy->cpu];
- 
--	cpu->max_perf = int_ext_tofp(1);
--	cpu->min_perf = 0;
-+	cpu->max_perf_ratio = 0xFF;
-+	cpu->min_perf_ratio = 0;
- 
- 	policy->min = cpu->pstate.min_pstate * cpu->pstate.scaling;
- 	policy->max = cpu->pstate.turbo_pstate * cpu->pstate.scaling;
--- 
-2.7.4
+The features of the PON block not yet shown on LKML are status registers
+to indicate the reason for powering up the PMIC and a watchdog (which I
+don't believe is used or exposed today).
+
+Regards,
+Bjorn
