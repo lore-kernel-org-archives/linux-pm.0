@@ -1,51 +1,97 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 0/2] renesas: sysc: Use GENPD_FLAG_ALWAYS_ON
-Date: Mon, 12 Jun 2017 11:23:44 +0200
-Message-ID: <1497259427-8299-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
+Subject: Re: [PATCH 2/2] ARM: dts: imx6ul: Add imx6ul-tempmon
+Date: Mon, 12 Jun 2017 12:40:29 +0200
+Message-ID: <20170612124029.1643469d@karo-electronics.de>
+References: <7055ce6095c0b7f026ac6f0dc37e43fc5c0b1793.1496939031.git.leonard.crestez@nxp.com>
+        <b9b91617985607f24c4986bcad5199483805d6b7.1496939031.git.leonard.crestez@nxp.com>
+        <CAOMZO5BP4fPyzDmSg+DFLRYh3QMf-8T0gqvnZn6mEMt-QqSgfw@mail.gmail.com>
+        <1497005895.28352.88.camel@nxp.com>
+        <20170609154638.3b64e6d0@karo-electronics.de>
+        <1497022484.28352.105.camel@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtprelay02.ispgateway.de ([80.67.31.25]:60847 "EHLO
+        smtprelay02.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752129AbdFLKkv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 06:40:51 -0400
+In-Reply-To: <1497022484.28352.105.camel@nxp.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Bai Ping <ping.bai@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Zhang Rui <rui.zhang@intel.com>, Fabio Estevam <festevam@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-	Hi Simon, Magnus,
+Hi,
 
-Commit ffaa42e8a40b7f10 ("PM / Domains: Enable users of genpd to specify
-always on PM domains") introduced a new flag GENPD_FLAG_ALWAYS_ON, which
-allows to remove some code for drivers handling always-on PM domains.
+On Fri, 9 Jun 2017 18:34:44 +0300 Leonard Crestez wrote:
+> On Fri, 2017-06-09 at 15:46 +0200, Lothar Waßmann wrote:
+> > On Fri, 9 Jun 2017 13:58:15 +0300 Leonard Crestez wrote:
+> > > On Thu, 2017-06-08 at 13:45 -0300, Fabio Estevam wrote:
+> > > > On Thu, Jun 8, 2017 at 1:26 PM, Leonard Crestez  wrote:
+> > > > > +                       tempmon: tempmon {
+> > > > > +                               compatible = "fsl,imx6ul-tempmon", "fsl,imx6sx-tempmon";
+> > > > > +                               interrupts = ;
+> > > > > +                               fsl,tempmon = <&anatop>;
+> > > > > +                               fsl,tempmon-data = <&ocotp>;
+> > > > > +                               clocks = <&clks IMX6UL_CLK_PLL3_USB_OTG>;
+> > > > Does the IMX6UL_CLK_PLL3_USB_OTG clock really control tempmon? Please
+> > > > double check.
+> > > Yes, as far as I can tell the tempmon block uses the 480 Mhz PLL3 clock
+> > > directly. This is similar to other imx6 SOCs. This PLL is used for
+> > > stuff like USB but not only that. My understanding is the _USB_OTG
+> > > suffix is descriptive, similar to PLL4_AUDIO and PLL6_ENET. Other non-
+> > > usb components use PLL3 (like UART) but through other gates/dividers.
+> > > 
+> > > Setting this to IMX6UL_CLK_DUMMY will cause temperature reads to fail.
+> > > Even if PLL3 usually ends up being constantly enabled because of uarts
+> > > this is not true at imx_thermal_probe time (or uarts can be disabled).
+> > > 
+> > Since the driver is accessing the OCOTP registers it definitely needs
+> > the IMX6UL_CLK_OCOTP too!
+> > 
+> I don't think so. OCOTP reads fuse values into shadows registers on
+> chip reset and values seem to be available even if it's specific OCOTP
+>
+Shadow registers are registers nonetheless which require a clock for
+accessing them.
 
-This series does that for the Renesas R-Car SYSC driver (used on R-Car
-Gen2 and Gen3, and RZ/G1) and the R-Mobile SYSC driver (used on R-Mobile
-APE6 and A1, and SH-Mobile AG5).
+> clock is off. I think that clock is only required for writes or shadow
+> updates.
+> 
+Sometimes it helps to read the Reference Manual or take hardware and try
+it out. The i.MX6(Q|UL) Reference Manual lists the required clocks as:
+                                  Table 35-1. OCOTP Clocks
+Clock name       Clock Root           Description
+ipg_clk          ipg_clk_root         Peripheral clock
+ipg_clk_s        ipg_clk_root         Peripheral access clock
 
-Note that on R/SH-Mobile, the PM domain containing the serial console is
-still handled locally.
+and Table 18-3. "System Clocks, Gating, and Override (continued)"
+for i.MX6UL shows:
+OCOTP IPG_CLK   IPG_CLK_ROOT CCGR2[CG6] (IIM_CLK_ENABLE)
+      IPG_CLK_S IPG_CLK_ROOT CCGR2[CG6] (IIM_CLK_ENABLE)
 
-Tested on:
-  - r8a7790/koelsch and r8a7795/salvator-x,
-  - r8a73a4/ape6evm, r8a7740/armadillo, sh73a0/kzm9g.
+while the same table for i.MX6Q shows:
+OCOTP ipg_clk   ipg_clk_root CCGR2[CG6] (iim_clk_enable)
+      ipg_clk_s ipg_clk_root
 
-Thanks!
+with a blank entry in the "Clock Gating" column for the access clock.
+So, for i.MX6Q there is no clock enable necessary for the access clock,
+but for i.MX6UL there is!
 
-Geert Uytterhoeven (2):
-  soc: renesas: rcar-sysc: Use GENPD_FLAG_ALWAYS_ON
-  ARM: shmobile: pm-rmobile: Use GENPD_FLAG_ALWAYS_ON
+You can simply verify it by trying to read any of the fuse registers
+with the OCOTP clock disabled (which immediately hangs the processor).
 
- arch/arm/mach-shmobile/pm-rmobile.c | 19 ++++---------------
- drivers/soc/renesas/rcar-sysc.c     | 28 ++++------------------------
- drivers/soc/renesas/rcar-sysc.h     |  2 --
- 3 files changed, 8 insertions(+), 41 deletions(-)
+> In theory perhaps tempmon could be made to read ocotp through the imx-
+> ocotp nvmem driver? It is not clear in what scenario this would
+> actually be required.
+> 
+> This discussion is not specific to 6ul/6ull. There are other reads from
+> ocotp which don't enable it's clock, for example
+> imx6q_opp_check_speed_grading.
+> 
+Which works, because i.MX6Q doesn't require to enable the OCOTP access
+clock.
 
--- 
-2.7.4
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Lothar Waßmann
