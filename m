@@ -1,65 +1,137 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Subject: Re: [PATCH 2/2] power: supply: ltc2941-battery-gauge: Add support
- for LTC2942
-Date: Mon, 12 Jun 2017 20:07:41 +0200
-Message-ID: <20170612180741.indbu2qkt6hz7ji4@lenoch>
-References: <20170612150226.woxfdi4lharq5gtq@lenoch>
- <20170612150453.kjsyu5jjsfb7kzoq@lenoch>
- <c854309e-68b0-c1f2-a7f8-3161e38e1579@topic.nl>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH v5 3/3] drivers:power:twl4030-charger: add deferred
+ probing for phy and iio
+Date: Mon, 12 Jun 2017 13:42:48 -0500
+Message-ID: <a91d2ad7-5985-789e-e4ad-04057dfdd8a3@ti.com>
+References: <cover.1495363097.git.hns@goldelico.com>
+ <6ed105f6c9c21c24184913a7be9e665453549d79.1495363097.git.hns@goldelico.com>
+ <20170607204444.zumcreuqdnv7euv2@earth>
+ <01A3D2F5-9E09-4E93-A363-93130DCEB7DF@goldelico.com>
+ <1b9f3e92-36ac-2a73-7b2d-037b19fafaad@ti.com>
+ <DC2DA07F-72A1-45B9-A4F5-BD83D930974D@goldelico.com>
+ <754fbc28-f5ff-4736-1d46-f467667b130d@ti.com>
+ <D12A5BD7-65A1-49E6-A25C-B2A2162FCA05@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eddie.linux-mips.org ([148.251.95.138]:51820 "EHLO
-        cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752065AbdFLSHq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 14:07:46 -0400
-Received: (from localhost user: 'ladis' uid#1021 fake: STDIN
-        (ladis@eddie.linux-mips.org)) by eddie.linux-mips.org
-        id S23990644AbdFLSHochhNd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 12 Jun 2017 20:07:44 +0200
-Content-Disposition: inline
-In-Reply-To: <c854309e-68b0-c1f2-a7f8-3161e38e1579@topic.nl>
+Received: from fllnx209.ext.ti.com ([198.47.19.16]:54978 "EHLO
+        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752371AbdFLSom (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 14:44:42 -0400
+In-Reply-To: <D12A5BD7-65A1-49E6-A25C-B2A2162FCA05@goldelico.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Looijmans <mike.looijmans@topic.nl>
-Cc: linux-pm@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Sebastian Reichel <sre@kernel.org>, NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Marek Belisko <marek@goldelico.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
 
-On Mon, Jun 12, 2017 at 06:29:54PM +0200, Mike Looijmans wrote:
-> ﻿On 12-6-2017 17:04, Ladislav Michl wrote:
-> > LTC2942 is pin compatible with LTC2941 providing additional
-> > informations about battery voltage and temperature. It can
-> > be runtime detected using bit A7 in the Status register.
+
+
+On 06/12/2017 12:02 PM, H. Nikolaus Schaller wrote:
+> Hi Grygorii,
 > 
-> Runtime detection is always nice. I'd suggest adding "ltc2942" to the device
-> name list, since having to specify "ltc2941" when the chip is in fact an
-> "ltc2942" looks a bit strange.
+>> Am 12.06.2017 um 18:24 schrieb Grygorii Strashko <grygorii.strashko@ti.com>:
+>>
+>>
+>>
+>> On 06/09/2017 11:59 PM, H. Nikolaus Schaller wrote:
+>>> Hi Grygorii,
+>>>
+>>>> Am 09.06.2017 um 18:25 schrieb Grygorii Strashko <grygorii.strashko@ti.com>:
+>>>>
+>>>>
+>>>>>
+>>>>> So please advise how to proceed.
+>>>>>
+>>>>
+>>>> You should request irq as late as possible in probe - it's safest way to go always.
+>>>> You see crushes simply because request_irq enables IRQ and IRQ can trigger immediately, so
+>>>> IRQ handler will run and all required resources should be ready and initialized.
+>>>>
+>>>> In this case:
+>>>> twl4030_bci_interrupt() -> twl4030_charger_update_current() -> ac_available() -> iio_read_channel_processed()
+>>>> OOOPS.
+>>>>
+>>>> So, first thing to do is to reorder probe to ensure that sequence is safe.
+>>>
+>>> That is exactly what I guessed when proposing the reordering patch.
+>>>
+>>>> Then other stuff - devm, EPROBE_DEFER ...
+>>>
+>>> IMHO, reordering alone doesn't make much sense as a single patch. Or does it?
+>>>
+>>
+>> The question is - is there bug in driver or not? As per current code seems yes.
+> 
+> If we all agree, do we need another confirmation?
+> 
+>> You can easily test it by directly calling twl4030_charger_interrupt() right after
+>> IRQ is requested. there is a bug if it will crush.
+> 
+> In the variant without EPROBE_DEFER you won't see it since ac_available either
+> has a valid iio channel or NULL.
+> 
+> The problem is only if we add an EPROBE_DEFER return if getting the iio channel
+> fails. This seems to make trouble if we don't take care of it. There are certainly
+> several options to work around but IMHO reordering is the best one (and even works
+> w/o devm for iio - which should be added in a separate step).
+> 
+> And there is a strong argument for reordering to have the most likely failure
+> first (iio fails more likely due to DEFER than allocating an irq). But only if
+> we process the iio failure at all.
+> 
+> So there are one a little doubtful argument for reordering (driver bug) and
+> a strong one.
+> 
+>> As for me it more reasonable to move forward using smaller steps.
+> 
+> Well, I wonder what it does help to fix a bug which does not even become visible
+> if we don't add EPROBE_DEFER?
 
-It is not that strange after the one who would otherwise blindly type ltc2942
-reads the datasheet ;-)
+Sry, but have you tried test I've proposed (I can't try it by myself now, sry)? 
+There is not only iio channel can be a problem - for example "current_worker"
+ initialized after IRQ request, but can be scheduled from IRQ handler.
 
-> Again, no strong preference, whatever the maintainers think is best is fine
-> with me also.
+> 
+> So I would count two steps:
+> a) add EPROBE_DEFER and reorder code to make it work
+> b) convert to devm for iio
+> 
 
-What about adding something like this?
+Few words regarding devm_request_irq() - it's useful, from one side, and
+dangerous form another :(, as below init sequence is proved to be unsafe
+and so it has to be used very carefully:
 
-diff --git a/Documentation/devicetree/bindings/power/supply/ltc2941.txt b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
-index a9d7aa60558b..0d065d54d294 100644
---- a/Documentation/devicetree/bindings/power/supply/ltc2941.txt
-+++ b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
-@@ -1,9 +1,10 @@
--binding for LTC2941 and LTC2943 battery gauges
-+binding for LTC2941, LTC2942 and LTC2943 battery gauges
- 
--Both the LTC2941 and LTC2943 measure battery capacity.
--The LTC2943 is compatible with the LTC2941, it adds voltage and
--temperature monitoring, and uses a slightly different conversion
--formula for the charge counter.
-+All chips measure battery capacity.
-+The LTC2942 is pin compatible with the LTC2941, it adds voltage and
-+temperature monitoring, and is runtime detected. LTC2943 is software
-+compatible, uses a slightly different conversion formula for the
-+charge counter and adds voltage, current and temperature monitoring.
- 
- Required properties:
- - compatible: Should contain "lltc,ltc2941" or "lltc,ltc2943" which also
+probe() {
+ <do some initialization>
+ <create some object:> objX = create_objX() -- no devm
+ devm_request_irq(IrqY) -- IrqY handler using objX
+
+ <init step failed>
+	goto err;
+...
+
+err:
+ [a]
+ release_objX() - note IRQ is still enabled here
+}
+dd_core if err:
+ devres_release_all() - IRQ disabled and freed only here
+
+remove() {
+ [b]
+ release_objX() -- note IRQ is still enabled here
+}
+dd_core:
+ devres_release_all() - IRQ disabled and freed only here
+
+IRQ has to be explicitly disabled at points [a] & [b] 
+
+Sequence to move forward can be up to you in general,
+personally I'd try to add devm_iio and move  devm_request_irq()
+down right before "/* Enable interrupts now. */" line first.
+
+-- 
+regards,
+-grygorii
