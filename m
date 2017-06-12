@@ -1,97 +1,92 @@
-From: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH 3/4] mfd: tps65217: remove duplicated interrupt resources.
-Date: Mon, 12 Jun 2017 17:41:22 -0500
-Message-ID: <bddc09a1-53d7-e7ed-5c04-a9ecf5310dde@ti.com>
-References: <20170612212412.22719-1-enric.balletbo@collabora.com>
- <20170612212412.22719-3-enric.balletbo@collabora.com>
+From: =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?=
+        <jerome.debretagne@gmail.com>
+Subject: Re: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
+ recent Dell laptops
+Date: Tue, 13 Jun 2017 00:50:37 +0200
+Message-ID: <CA+kEDGHHVJS9vgNVdowVQ4+eACFFdqTXR04e1V5qFcs_pZ0_yA@mail.gmail.com>
+References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
+ <88366b425cce41358ae8f88e43f3d201@ausx13mpc120.AMER.DELL.COM>
+ <CA+kEDGEXEYEV+tGnswvHsFmOX5W_GAYPTYxk0YUUt0D1pdr92A@mail.gmail.com> <1872413.KDFIRZOQLU@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170612212412.22719-3-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, javier-0uQlZySMnqxg9hUCZPvPmw@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1872413.KDFIRZOQLU@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Mario.Limonciello@dell.com, "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+>> That was my assumption also, since my earlier 3-liner patch was doing
+>> this exactly: trying to wake up on a regular 0xCE event. And it did work=
+.
+>
+> OK
+>
+> Can you try the patch below, please?
 
+Thank you for this patch proposal. I've applied it but the system with
+BIOS 1.1.31 doesn't wake up on short press.
 
-On 06/12/2017 04:24 PM, Enric Balletbo i Serra wrote:
-> I don't think it makes sense to have the interrupt resources for charger
-> and power button in two different places, the driver and the DT binding.
-> That's confusing so remove the ones from the mfd driver in favour of
-> having the interrupt resources only described in the DT. Having the
-> resources in DT may help if there is or will be a similar pmic with
-> different resource allocation.
+I can see the following (added) messages in the logs for info:
 
-Wouldn't this break DT compatibility? Old DTs do not contain IRQ resources
-and so they work only because of IRQ definitions in code.
+- short press first while suspended -> no wake-up
+[  702.567912] intel-hid INT33D5:00: notify_handler with event 0xce
+[  702.567913] intel-hid INT33D5:00: 0xce =3D=3D 0xc0 || !priv->array
+[  702.765067] intel-hid INT33D5:00: notify_handler with event 0xcf
+[  702.765072] intel-hid INT33D5:00: 0xcf =3D=3D 0xc0 || !priv->array
+- long press then -> waking up the system
+[  704.954703] intel-hid INT33D5:00: notify_handler with event 0xce
+[  704.954704] intel-hid INT33D5:00: 0xce =3D=3D 0xc0 || !priv->array
+[  711.646088] intel-hid INT33D5:00: notify_handler with event 0xcf
+[  711.646092] intel-hid INT33D5:00: unknown event 0xcf
 
-> 
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+confirming that priv->array is indeed not set, even with the patch below.
+
+With BIOS 1.1.20, I don't have such logs, notify_handler seems never called=
+.
+
+J=C3=A9rome
+
 > ---
->   drivers/mfd/tps65217.c | 22 +---------------------
->   1 file changed, 1 insertion(+), 21 deletions(-)
-> 
-> diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
-> index f769c7d..fd83bae 100644
-> --- a/drivers/mfd/tps65217.c
-> +++ b/drivers/mfd/tps65217.c
-> @@ -33,15 +33,6 @@
->   #include <linux/mfd/core.h>
->   #include <linux/mfd/tps65217.h>
->   
-> -static struct resource charger_resources[] = {
-> -	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_AC, "AC"),
-> -	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_USB, "USB"),
-> -};
-> -
-> -static struct resource pb_resources[] = {
-> -	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_PB, "PB"),
-> -};
-> -
->   static void tps65217_irq_lock(struct irq_data *data)
->   {
->   	struct tps65217 *tps = irq_data_get_irq_chip_data(data);
-> @@ -97,14 +88,10 @@ static struct mfd_cell tps65217s[] = {
->   	},
->   	{
->   		.name = "tps65217-charger",
-> -		.num_resources = ARRAY_SIZE(charger_resources),
-> -		.resources = charger_resources,
->   		.of_compatible = "ti,tps65217-charger",
->   	},
->   	{
->   		.name = "tps65217-pwrbutton",
-> -		.num_resources = ARRAY_SIZE(pb_resources),
-> -		.resources = pb_resources,
->   		.of_compatible = "ti,tps65217-pwrbutton",
->   	},
->   };
-> @@ -359,15 +346,8 @@ static int tps65217_probe(struct i2c_client *client,
->   		return ret;
->   	}
->   
-> -	if (client->irq) {
-> +	if (client->irq)
->   		tps65217_irq_init(tps, client->irq);
-> -	} else {
-> -		int i;
-> -
-> -		/* Don't tell children about IRQ resources which won't fire */
-> -		for (i = 0; i < ARRAY_SIZE(tps65217s); i++)
-> -			tps65217s[i].num_resources = 0;
-> -	}
->   
->   	ret = devm_mfd_add_devices(tps->dev, -1, tps65217s,
->   				   ARRAY_SIZE(tps65217s), NULL, 0,
-> 
-
--- 
-regards,
--grygorii
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  drivers/platform/x86/intel-hid.c |   17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
+>
+> Index: linux-pm/drivers/platform/x86/intel-hid.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-pm.orig/drivers/platform/x86/intel-hid.c
+> +++ linux-pm/drivers/platform/x86/intel-hid.c
+> @@ -270,12 +270,17 @@ static int intel_hid_probe(struct platfo
+>         }
+>
+>         /* Setup 5 button array */
+> -       status =3D acpi_evaluate_integer(handle, "HEBC", NULL, &event_cap=
+);
+> -       if (ACPI_SUCCESS(status) && (event_cap & 0x20000)) {
+> -               dev_info(&device->dev, "platform supports 5 button array\=
+n");
+> -               err =3D intel_button_array_input_setup(device);
+> -               if (err)
+> -                       pr_err("Failed to setup Intel 5 button array hotk=
+eys\n");
+> +       if (acpi_has_method(handle, "BTNC") && acpi_has_method(handle, "B=
+TNE")) {
+> +               unsigned long long event_cap;
+> +
+> +               status =3D acpi_evaluate_integer(handle, "HEBC", NULL, &e=
+vent_cap);
+> +               if ((ACPI_SUCCESS(status) && (event_cap & 0x20000)) ||
+> +                   status =3D=3D AE_NOT_FOUND) {
+> +                       dev_info(&device->dev, "5-button array supported\=
+n");
+> +                       err =3D intel_button_array_input_setup(device);
+> +                       if (err)
+> +                               dev_dbg(&device->dev, "5-button array set=
+up failure\n");
+> +               }
+>         }
+>
+>         status =3D acpi_install_notify_handler(handle,
+>
