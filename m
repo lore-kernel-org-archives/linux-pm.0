@@ -1,101 +1,178 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: Re: [PATCH v5 3/3] drivers:power:twl4030-charger: add deferred probing for phy and iio
-Date: Mon, 12 Jun 2017 19:02:09 +0200
-Message-ID: <D12A5BD7-65A1-49E6-A25C-B2A2162FCA05@goldelico.com>
-References: <cover.1495363097.git.hns@goldelico.com> <6ed105f6c9c21c24184913a7be9e665453549d79.1495363097.git.hns@goldelico.com> <20170607204444.zumcreuqdnv7euv2@earth> <01A3D2F5-9E09-4E93-A363-93130DCEB7DF@goldelico.com> <1b9f3e92-36ac-2a73-7b2d-037b19fafaad@ti.com> <DC2DA07F-72A1-45B9-A4F5-BD83D930974D@goldelico.com> <754fbc28-f5ff-4736-1d46-f467667b130d@ti.com>
-Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <754fbc28-f5ff-4736-1d46-f467667b130d@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Marek Belisko <marek@goldelico.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
+From: Mike Looijmans <mike.looijmans@topic.nl>
+Subject: Re: [PATCH 2/2] power: supply: ltc2941-battery-gauge: Add support for
+ LTC2942
+Date: Mon, 12 Jun 2017 18:29:54 +0200
+Message-ID: <c854309e-68b0-c1f2-a7f8-3161e38e1579@topic.nl>
+References: <20170612150226.woxfdi4lharq5gtq@lenoch>
+ <20170612150453.kjsyu5jjsfb7kzoq@lenoch>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx6-05.smtp.antispamcloud.com ([95.211.2.196]:55065 "EHLO
+        mx6-05.smtp.antispamcloud.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751964AbdFLRxO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 13:53:14 -0400
+In-Reply-To: <20170612150453.kjsyu5jjsfb7kzoq@lenoch>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ladislav Michl <ladis@linux-mips.org>, linux-pm@vger.kernel.org
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>
 
-Hi Grygorii,
+﻿On 12-6-2017 17:04, Ladislav Michl wrote:
+> LTC2942 is pin compatible with LTC2941 providing additional
+> informations about battery voltage and temperature. It can
+> be runtime detected using bit A7 in the Status register.
 
-> Am 12.06.2017 um 18:24 schrieb Grygorii Strashko =
-<grygorii.strashko@ti.com>:
->=20
->=20
->=20
-> On 06/09/2017 11:59 PM, H. Nikolaus Schaller wrote:
->> Hi Grygorii,
->>=20
->>> Am 09.06.2017 um 18:25 schrieb Grygorii Strashko =
-<grygorii.strashko@ti.com>:
->>>=20
->>>=20
->>>>=20
->>>> So please advise how to proceed.
->>>>=20
->>>=20
->>> You should request irq as late as possible in probe - it's safest =
-way to go always.
->>> You see crushes simply because request_irq enables IRQ and IRQ can =
-trigger immediately, so
->>> IRQ handler will run and all required resources should be ready and =
-initialized.
->>>=20
->>> In this case:
->>> twl4030_bci_interrupt() -> twl4030_charger_update_current() -> =
-ac_available() -> iio_read_channel_processed()
->>> OOOPS.
->>>=20
->>> So, first thing to do is to reorder probe to ensure that sequence is =
-safe.
->>=20
->> That is exactly what I guessed when proposing the reordering patch.
->>=20
->>> Then other stuff - devm, EPROBE_DEFER ...
->>=20
->> IMHO, reordering alone doesn't make much sense as a single patch. Or =
-does it?
->>=20
->=20
-> The question is - is there bug in driver or not? As per current code =
-seems yes.
+Runtime detection is always nice. I'd suggest adding "ltc2942" to the 
+device name list, since having to specify "ltc2941" when the chip is in 
+fact an "ltc2942" looks a bit strange.
 
-If we all agree, do we need another confirmation?
+Again, no strong preference, whatever the maintainers think is best is 
+fine with me also.
 
-> You can easily test it by directly calling twl4030_charger_interrupt() =
-right after
-> IRQ is requested. there is a bug if it will crush.
+>
+> Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+> ---
+>  drivers/power/supply/ltc2941-battery-gauge.c | 56 ++++++++++++++++++++--------
+>  1 file changed, 41 insertions(+), 15 deletions(-)
+>
+> diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
+> index 0a1b69bbca7f..07e47478dbc6 100644
+> --- a/drivers/power/supply/ltc2941-battery-gauge.c
+> +++ b/drivers/power/supply/ltc2941-battery-gauge.c
+> @@ -44,6 +44,8 @@ enum ltc294x_reg {
+>  	LTC2943_REG_TEMPERATURE_LSB	= 0x15,
+>  };
+>
+> +#define LTC2941_REG_STATUS_CHIP_ID	BIT(7)
+> +
+>  #define LTC2943_REG_CONTROL_MODE_MASK (BIT(7) | BIT(6))
+>  #define LTC2943_REG_CONTROL_MODE_SCAN BIT(7)
+>  #define LTC294X_REG_CONTROL_PRESCALER_MASK	(BIT(5) | BIT(4) | BIT(3))
+> @@ -250,8 +252,9 @@ static int ltc294x_get_voltage(const struct ltc294x_info *info, int *val)
+>
+>  	ret = ltc294x_read_regs(info->client,
+>  		LTC294X_REG_VOLTAGE_MSB, &datar[0], 2);
+> -	value = (datar[0] << 8) | datar[1];
+> -	*val = ((value * 23600) / 0xFFFF) * 1000; /* in uV */
+> +	value = info->num_regs == LTC2943_NUM_REGS ? 23600 : 6000;
+> +	value *= (datar[0] << 8) | datar[1];
+> +	*val = 1000 * value / 0xFFFF; /* in uV */
+>  	return ret;
+>  }
+>
+> @@ -274,15 +277,22 @@ static int ltc294x_get_current(const struct ltc294x_info *info, int *val)
+>
+>  static int ltc294x_get_temperature(const struct ltc294x_info *info, int *val)
+>  {
+> +	enum ltc294x_reg reg;
+>  	int ret;
+>  	u8 datar[2];
+>  	u32 value;
+>
+> -	ret = ltc294x_read_regs(info->client,
+> -		LTC2943_REG_TEMPERATURE_MSB, &datar[0], 2);
+> -	value = (datar[0] << 8) | datar[1];
+> -	/* Full-scale is 510 Kelvin, convert to centidegrees  */
+> -	*val = (((51000 * value) / 0xFFFF) - 27215);
+> +	if (info->num_regs == LTC2943_NUM_REGS) {
+> +		reg = LTC2943_REG_TEMPERATURE_MSB;
+> +		value = 51000;	/* Full-scale is 510 Kelvin */
+> +	} else {
+> +		reg = LTC2942_REG_TEMPERATURE_MSB;
+> +		value = 60000;	/* Full-scale is 600 Kelvin */
+> +	}
+> +	ret = ltc294x_read_regs(info->client, reg, &datar[0], 2);
+> +	value *= (datar[0] << 8) | datar[1];
+> +	/* Convert to centidegrees  */
+> +	*val = value / 0xFFFF - 27215;
+>  	return ret;
+>  }
+>
+> @@ -356,8 +366,8 @@ static enum power_supply_property ltc294x_properties[] = {
+>  	POWER_SUPPLY_PROP_CHARGE_COUNTER,
+>  	POWER_SUPPLY_PROP_CHARGE_NOW,
+>  	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+> -	POWER_SUPPLY_PROP_CURRENT_NOW,
+>  	POWER_SUPPLY_PROP_TEMP,
+> +	POWER_SUPPLY_PROP_CURRENT_NOW,
+>  };
+>
+>  static int ltc294x_i2c_remove(struct i2c_client *client)
+> @@ -374,10 +384,11 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
+>  {
+>  	struct power_supply_config psy_cfg = {};
+>  	struct ltc294x_info *info;
+> +	struct device_node *np;
+>  	int ret;
+>  	u32 prescaler_exp;
+>  	s32 r_sense;
+> -	struct device_node *np;
+> +	u8 status;
+>
+>  	info = devm_kzalloc(&client->dev, sizeof(*info), GFP_KERNEL);
+>  	if (info == NULL)
+> @@ -420,21 +431,36 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
+>  				(128 / (1 << prescaler_exp));
+>  	}
+>
+> +	/* Read status register to check for LTC2942 */
+> +	if (info->num_regs == LTC2941_NUM_REGS) {
+> +		ret = ltc294x_read_regs(client, LTC294X_REG_STATUS, &status, 1);
+> +		if (ret < 0) {
+> +			dev_err(&info->client->dev,
+> +				"Could not read status register\n");
+> +			return ret;
+> +		}
+> +		if (!(status & LTC2941_REG_STATUS_CHIP_ID))
+> +			info->num_regs = LTC2942_NUM_REGS;
+> +	}
+> +
+>  	info->client = client;
+>  	info->supply_desc.type = POWER_SUPPLY_TYPE_BATTERY;
+>  	info->supply_desc.properties = ltc294x_properties;
+> -	if (info->num_regs >= LTC2943_REG_TEMPERATURE_LSB)
+> +	switch (info->num_regs) {
+> +	case LTC2943_NUM_REGS:
+>  		info->supply_desc.num_properties =
+>  			ARRAY_SIZE(ltc294x_properties);
+> -	else if (info->num_regs >= LTC2943_REG_CURRENT_LSB)
+> +		break;
+> +	case LTC2942_NUM_REGS:
+>  		info->supply_desc.num_properties =
+>  			ARRAY_SIZE(ltc294x_properties) - 1;
+> -	else if (info->num_regs >= LTC294X_REG_VOLTAGE_LSB)
+> -		info->supply_desc.num_properties =
+> -			ARRAY_SIZE(ltc294x_properties) - 2;
+> -	else
+> +		break;
+> +	case LTC2941_NUM_REGS:
+> +	default:
+>  		info->supply_desc.num_properties =
+>  			ARRAY_SIZE(ltc294x_properties) - 3;
+> +		break;
+> +	}
+>  	info->supply_desc.get_property = ltc294x_get_property;
+>  	info->supply_desc.set_property = ltc294x_set_property;
+>  	info->supply_desc.property_is_writeable = ltc294x_property_is_writeable;
+>
 
-In the variant without EPROBE_DEFER you won't see it since ac_available =
-either
-has a valid iio channel or NULL.
 
-The problem is only if we add an EPROBE_DEFER return if getting the iio =
-channel
-fails. This seems to make trouble if we don't take care of it. There are =
-certainly
-several options to work around but IMHO reordering is the best one (and =
-even works
-w/o devm for iio - which should be added in a separate step).
+-- 
+Mike Looijmans
 
-And there is a strong argument for reordering to have the most likely =
-failure
-first (iio fails more likely due to DEFER than allocating an irq). But =
-only if
-we process the iio failure at all.
 
-So there are one a little doubtful argument for reordering (driver bug) =
-and
-a strong one.
+Kind regards,
 
-> As for me it more reasonable to move forward using smaller steps.
+Mike Looijmans
+System Expert
 
-Well, I wonder what it does help to fix a bug which does not even become =
-visible
-if we don't add EPROBE_DEFER?
+TOPIC Products
+Materiaalweg 4, NL-5681 RJ Best
+Postbus 440, NL-5680 AK Best
+Telefoon: +31 (0) 499 33 69 79
+E-mail: mike.looijmans@topicproducts.com
+Website: www.topicproducts.com
 
-So I would count two steps:
-a) add EPROBE_DEFER and reorder code to make it work
-b) convert to devm for iio
-
-Ok?
-
-BR and thanks,
-Nikolaus
+Please consider the environment before printing this e-mail
