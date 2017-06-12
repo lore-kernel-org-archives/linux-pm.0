@@ -1,80 +1,63 @@
-From: =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?=
-        <jerome.debretagne@gmail.com>
-Subject: Re: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
- recent Dell laptops
-Date: Mon, 12 Jun 2017 00:01:42 +0200
-Message-ID: <CA+kEDGHev9XYQr=BEVZ8od+nX_cQ637eY0cF81_v3auQZvBKRQ@mail.gmail.com>
-References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
- <31f516ad46d74225a5d6324c5fd24751@ausx13mpc124.AMER.DELL.COM>
- <CA+kEDGFUuSC1CpCEgOT+HMTrDa-r1y59kM9-CYn0PSgtuKaG5Q@mail.gmail.com>
- <343a8430fb144adf8d65ef9d0b2bfd40@ausx13mpc124.AMER.DELL.COM>
- <CA+kEDGFVgmXf_B=qHfhWS1HCD+Ei6KSp_rSJBOGYtNZVkm+MeA@mail.gmail.com> <24ac3bb8850c4b7a8fa9c0c2d9e3cbc4@ausx13mpc124.AMER.DELL.COM>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: conservative: Allow down_threshold to take
+ values from 1 to 10
+Date: Mon, 12 Jun 2017 09:10:35 +0530
+Message-ID: <20170612034035.GB5297@vireshk-i7>
+References: <1497169719-13613-1-git-send-email-twilczynski@naver.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <24ac3bb8850c4b7a8fa9c0c2d9e3cbc4@ausx13mpc124.AMER.DELL.COM>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Mario.Limonciello@dell.com
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f46.google.com ([74.125.83.46]:32776 "EHLO
+        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752046AbdFLDki (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Jun 2017 23:40:38 -0400
+Received: by mail-pg0-f46.google.com with SMTP id f185so40940472pgc.0
+        for <linux-pm@vger.kernel.org>; Sun, 11 Jun 2017 20:40:38 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1497169719-13613-1-git-send-email-twilczynski@naver.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomasz =?utf-8?Q?Wilczy=C5=84ski?= <twilczynski@naver.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Mario, Hi Rafael,
+On 11-06-17, 17:28, Tomasz Wilczyński wrote:
+> Commit 27ed3cd2ebf4cd78b198be9758c538cdede36d8a ("cpufreq: conservative:
+> Fix the logic in frequency decrease checking") removed the 10 point
+> substraction when comparing the load against down_threshold but did not
+> remove the related limit for the down_threshold value. As a result,
+> down_threshold lower than 11 is not allowed even though values from
+> 1 to 10 do work correctly too. The comment ("cannot be lower than 11
+> otherwise freq will not fall") is also not true after removing the
+> substraction.
+> 
+> For this reason, allow down_threshold to take any value from 1 to 99
+> and fix the related comment.
+> 
+> Signed-off-by: Tomasz Wilczyński <twilczynski@naver.com>
 
->> Some assumptions now: either the SCI is ignored erroneously or it's
->> not interpreted correctly by the expected driver? I guess that's the 2
->> possibilities I'll try to investigate.
->
-> Well that's too bad.  Yes, you're correct that the EC has changed between
-> those versions.  Are you testing on or off AC adapter?
+Please add Fixes tag and relevant kernel release for stable tag.
 
-I haven't detected a pattern specific to the state of the AC adapter.
+> ---
+>  drivers/cpufreq/cpufreq_conservative.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index 992f7c2..88220ff 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -185,8 +185,8 @@ static ssize_t store_down_threshold(struct gov_attr_set *attr_set,
+>  	int ret;
+>  	ret = sscanf(buf, "%u", &input);
+>  
+> -	/* cannot be lower than 11 otherwise freq will not fall */
+> -	if (ret != 1 || input < 11 || input > 100 ||
+> +	/* cannot be lower than 1 otherwise freq will not fall */
+> +	if (ret != 1 || input < 1 || input > 100 ||
+>  			input >= dbs_data->up_threshold)
+>  		return -EINVAL;
 
-Good news on another front. By adding some more logs in the
-s2idle-dell-test branch, I've been able to check and confirm that
-notify_handler() from intel-hid.c is actually called upon short power key
-press during s2idle on my Latitude 7275.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-However, the system with BIOS 1.1.31 doesn't match (anymore?) the
-current criteria to call pm_wakeup_hard_event introduced in commit:
-
-platform: x86: intel-hid: Wake up the system from suspend-to-idle
-7871dc61497a71be93c4f80d43ac109152510e7e
-
-This ugly 3-line modification I've added on the actual patch here:
-
-+ if (priv->wakeup_mode) {
-+
-+ /* Wake up Dell Latitude 7275 BIOS 1.1.31. */
-+ if (event =3D=3D 0xce)
-+ pm_wakeup_hard_event(&device->dev);
-+
-+ /* Wake up on 5-button array events only. */
-+ if (event =3D=3D 0xc0 || !priv->array)
-+ return;
-+
-+ if (sparse_keymap_entry_from_scancode(priv->array, event))
-+ pm_wakeup_hard_event(&device->dev);
-+ else
-+ dev_info(&device->dev, "unknown event 0x%x\n", event);
-+
-+ return;
-+ }
-
-make the system wake up on a standard short press finally!
-
-Is the "Wake up on 5-button array events only." assumption broad
-enough to cover the various Intel systems that need this behavior?
-
-Or am I just detecting another ACPI issue in fact that prevents this
-system from setting up properly the 5 button array with BIOS 1.1.31?
-How would you recommend me to test that 2nd assumption?
-
-Thanks,
-J=C3=A9rome
-
-
-P.S. I've gone in that direction after seeing the following messages in
- /var/log/kernel.log on normal power key press at runtime:
-[ 2727.596359] intel-hid INT33D5:00: unknown event 0xce
-[ 2727.769140] intel-hid INT33D5:00: unknown event 0xcf
+-- 
+viresh
