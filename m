@@ -1,77 +1,152 @@
-From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH] dt-bindings: power: supply: cpcap-battery: Add
- power-supplies property
-Date: Mon, 12 Jun 2017 09:04:00 -0700
-Message-ID: <20170612160400.GY3730@atomide.com>
-References: <20170612072025.30033-1-tony@atomide.com>
- <20170612142217.tg7gidqg63uagwm4@earth>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] intel_idle: Use more common logging style
+Date: Mon, 12 Jun 2017 09:18:04 -0700
+Message-ID: <20170612091804.114b4b5b@jacob-builder>
+References: <a3acab19b42e51c59e2e20464ceb91f94f033eea.1497036538.git.joe@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170612142217.tg7gidqg63uagwm4@earth>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>, Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <a3acab19b42e51c59e2e20464ceb91f94f033eea.1497036538.git.joe@perches.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Joe Perches <joe@perches.com>
+Cc: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-* Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org> [170612 07:26]:
-> On Mon, Jun 12, 2017 at 12:20:25AM -0700, Tony Lindgren wrote:
-> > +- power-supplies: List of devices that supply power, typically cpcap_charger
+On Fri,  9 Jun 2017 12:29:20 -0700
+Joe Perches <joe@perches.com> wrote:
+
+> Remove #define PREFIX and add #define pr_fmt to use more common
+> logging.
 > 
-> This is missing the info, that its about phandles. Maybe:
+> Miscellanea:
 > 
-> - power-supplies: List of phandles for power-supplying devices, as
->                   described in power_supply.txt. Typically a reference
->                   to cpcap_charger.
+> o Add missing newline to format
+> o Convert a single printk without KERN_<LEVEL> to pr_info
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-Sure, updated patch below.
+Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Regards,
+Thanks,
+> ---
+>  drivers/idle/intel_idle.c | 32 ++++++++++++++++----------------
+>  1 file changed, 16 insertions(+), 16 deletions(-)
+> 
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index 216d7ec88c0c..c2ae819a871c 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -51,6 +51,8 @@
+>  /* un-comment DEBUG to enable pr_debug() statements */
+>  #define DEBUG
+>  
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+>  #include <linux/kernel.h>
+>  #include <linux/cpuidle.h>
+>  #include <linux/tick.h>
+> @@ -65,7 +67,6 @@
+>  #include <asm/msr.h>
+>  
+>  #define INTEL_IDLE_VERSION "0.4.1"
+> -#define PREFIX "intel_idle: "
+>  
+>  static struct cpuidle_driver intel_idle_driver = {
+>  	.name = "intel_idle",
+> @@ -1111,7 +1112,7 @@ static int __init intel_idle_probe(void)
+>  	const struct x86_cpu_id *id;
+>  
+>  	if (max_cstate == 0) {
+> -		pr_debug(PREFIX "disabled\n");
+> +		pr_debug("disabled\n");
+>  		return -EPERM;
+>  	}
+>  
+> @@ -1119,8 +1120,8 @@ static int __init intel_idle_probe(void)
+>  	if (!id) {
+>  		if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
+>  		    boot_cpu_data.x86 == 6)
+> -			pr_debug(PREFIX "does not run on family %d
+> model %d\n",
+> -				boot_cpu_data.x86,
+> boot_cpu_data.x86_model);
+> +			pr_debug("does not run on family %d model
+> %d\n",
+> +				 boot_cpu_data.x86,
+> boot_cpu_data.x86_model); return -ENODEV;
+>  	}
+>  
+> @@ -1134,13 +1135,13 @@ static int __init intel_idle_probe(void)
+>  	    !mwait_substates)
+>  			return -ENODEV;
+>  
+> -	pr_debug(PREFIX "MWAIT substates: 0x%x\n", mwait_substates);
+> +	pr_debug("MWAIT substates: 0x%x\n", mwait_substates);
+>  
+>  	icpu = (const struct idle_cpu *)id->driver_data;
+>  	cpuidle_state_table = icpu->state_table;
+>  
+> -	pr_debug(PREFIX "v" INTEL_IDLE_VERSION
+> -		" model 0x%X\n", boot_cpu_data.x86_model);
+> +	pr_debug("v" INTEL_IDLE_VERSION " model 0x%X\n",
+> +		 boot_cpu_data.x86_model);
+>  
+>  	return 0;
+>  }
+> @@ -1340,8 +1341,7 @@ static void __init
+> intel_idle_cpuidle_driver_init(void) break;
+>  
+>  		if (cstate + 1 > max_cstate) {
+> -			printk(PREFIX "max_cstate %d reached\n",
+> -				max_cstate);
+> +			pr_info("max_cstate %d reached\n",
+> max_cstate); break;
+>  		}
+>  
+> @@ -1358,8 +1358,8 @@ static void __init
+> intel_idle_cpuidle_driver_init(void) 
+>  		/* if state marked as disabled, skip it */
+>  		if (cpuidle_state_table[cstate].disabled != 0) {
+> -			pr_debug(PREFIX "state %s is disabled",
+> -				cpuidle_state_table[cstate].name);
+> +			pr_debug("state %s is disabled\n",
+> +				 cpuidle_state_table[cstate].name);
+>  			continue;
+>  		}
+>  
+> @@ -1395,7 +1395,7 @@ static int intel_idle_cpu_init(unsigned int cpu)
+>  	dev->cpu = cpu;
+>  
+>  	if (cpuidle_register_device(dev)) {
+> -		pr_debug(PREFIX "cpuidle_register_device %d
+> failed!\n", cpu);
+> +		pr_debug("cpuidle_register_device %d failed!\n",
+> cpu); return -EIO;
+>  	}
+>  
+> @@ -1447,8 +1447,8 @@ static int __init intel_idle_init(void)
+>  	retval = cpuidle_register_driver(&intel_idle_driver);
+>  	if (retval) {
+>  		struct cpuidle_driver *drv = cpuidle_get_driver();
+> -		printk(KERN_DEBUG PREFIX "intel_idle yielding to %s",
+> -			drv ? drv->name : "none");
+> +		printk(KERN_DEBUG pr_fmt("intel_idle yielding to
+> %s\n"),
+> +		       drv ? drv->name : "none");
+>  		goto init_driver_fail;
+>  	}
+>  
+> @@ -1460,8 +1460,8 @@ static int __init intel_idle_init(void)
+>  	if (retval < 0)
+>  		goto hp_setup_fail;
+>  
+> -	pr_debug(PREFIX "lapic_timer_reliable_states 0x%x\n",
+> -		lapic_timer_reliable_states);
+> +	pr_debug("lapic_timer_reliable_states 0x%x\n",
+> +		 lapic_timer_reliable_states);
+>  
+>  	return 0;
+>  
 
-Tony
-
-8< ------
->From tony Mon Sep 17 00:00:00 2001
-From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Date: Mon, 12 Jun 2017 00:13:45 -0700
-Subject: [PATCH] dt-bindings: power: supply: cpcap-battery: Add
- power-supplies property
-
-The binding for cpcap-battery is missing the standard power-supplies
-property as noted by Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>.
-
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Marcel Partap <mpartap-hi6Y0CQ0nG0@public.gmane.org>
-Cc: Michael Scott <michael.scott-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Signed-off-by: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
----
- Documentation/devicetree/bindings/power/supply/cpcap-battery.txt | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt b/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
---- a/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/cpcap-battery.txt
-@@ -8,6 +8,9 @@ Required properties:
- - io-channels: IIO ADC channel specifier for each name in io-channel-names
- - io-channel-names: Should contain the following entries:
- 		    "battdetb", "battp", "chg_isense", "batti"
-+- power-supplies: List of phandles for power-supplying devices, as
-+		  described in power_supply.txt. Typically a reference
-+		  to cpcap_charger.
- 
- Example:
- 
-@@ -24,4 +27,5 @@ cpcap_battery: battery {
- 		       &cpcap_adc 5 &cpcap_adc 6>;
- 	io-channel-names = "battdetb", "battp",
- 			   "chg_isense", "batti";
-+	power-supplies = <&cpcap_charger>;
- };
--- 
-2.13.0
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+[Jacob Pan]
