@@ -1,69 +1,241 @@
-From: =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?=
-        <jerome.debretagne@gmail.com>
-Subject: Re: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
- recent Dell laptops
-Date: Tue, 13 Jun 2017 01:29:12 +0200
-Message-ID: <CA+kEDGF57sfz+f8_9XMqGQqPt-5LmtvceO70_gOpdaZ548tT-g@mail.gmail.com>
-References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
- <88366b425cce41358ae8f88e43f3d201@ausx13mpc120.AMER.DELL.COM>
- <CA+kEDGEXEYEV+tGnswvHsFmOX5W_GAYPTYxk0YUUt0D1pdr92A@mail.gmail.com>
- <1872413.KDFIRZOQLU@aspire.rjw.lan> <CA+kEDGHHVJS9vgNVdowVQ4+eACFFdqTXR04e1V5qFcs_pZ0_yA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CA+kEDGHHVJS9vgNVdowVQ4+eACFFdqTXR04e1V5qFcs_pZ0_yA@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Mario.Limonciello@dell.com, "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Remove max/min fractions to limit performance
+Date: Mon, 12 Jun 2017 16:30:27 -0700
+Message-ID: <1497310227-120903-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga06.intel.com ([134.134.136.31]:5909 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752193AbdFLXae (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 12 Jun 2017 19:30:34 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
->>> That was my assumption also, since my earlier 3-liner patch was doing
->>> this exactly: trying to wake up on a regular 0xCE event. And it did work.
+In the current model the max/min perf limits are a fraction of current
+user space limits to the allowed max_freq or 100% for global limits.
+This results in wrong ratio limits calculation because of rounding
+issues for some user space limits.
 
-One more ouput for tonight. After doing a diff of the acpidump from
-both BIOS versions, I've found explicit references to the two 0xCE and
-0xCF values right in the delta, in the dsdt.dsl files.
+Initially we tried to solve this issue by issue by having more shift
+bits to increase precision. Still there are isolated cases where we still
+have error.
 
-Here is the section that seems relevant in the newer one, for v1.1.31:
+This can be avoided by using ratios all together. Since the way we get
+cpuinfo.max_freq is by multiplying scaling factor to max ratio, we can
+easily keep the max/min ratios in terms of ratios and not fractions.
 
-        If (Local1 & 0x08)
-        {
-            Local1 = ECBT (One, 0x04)
-            If (Local1)
-            {
-                If (OSYS >= 0x07DF)
-                {
-                    Notify (\_SB.HIDD, 0xCE) // Hardware-Specific
-                }
-                ElseIf (CondRefOf (\_SB.PCI0.LPCB.ECDV.VGBI))
-                {
-                    Notify (\_SB.PCI0.LPCB.ECDV.VGBI, 0xC0) // Hardware-Specific
-                }
-            }
-            ElseIf (OSYS >= 0x07DF)
-            {
-                Notify (\_SB.HIDD, 0xCF) // Hardware-Specific
-            }
-            ElseIf (CondRefOf (\_SB.PCI0.LPCB.ECDV.VGBI))
-            {
-                Notify (\_SB.PCI0.LPCB.ECDV.VGBI, 0xC1) // Hardware-Specific
-            }
-        }
+For example:
+if the max ratio = 36
+cpuinfo.max_freq = 36 * 100000 = 3600000
 
-        If (Local1 & 0x0100)
-        {
-            Local1 = ECBT (One, 0x10)
-            If (Local1)
-            {
-                Notify (\_SB.HIDD, 0xC6) // Hardware-Specific
-            }
-            Else
-            {
-                Notify (\_SB.HIDD, 0xC7) // Hardware-Specific
-            }
-        }
+Suppose user space sets a limit of 1200000, then we can calculate
+max ratio limit as
+= 36 * 1200000 / 3600000
+= 12
+This will be correct for any user limits.
 
+The other advantage is that, we don't need to do any calculation in the
+fast path as ratio limit is already calculated via set_policy() callback.
 
-I'm new to ACPI but could that ECBT mean "EC Button" maybe?
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 114 +++++++++++++++++++++++------------------
+ 1 file changed, 63 insertions(+), 51 deletions(-)
 
-Jerome
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index df4e76a..8266e0d 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -231,10 +231,8 @@ struct global_params {
+  * @prev_cummulative_iowait: IO Wait time difference from last and
+  *			current sample
+  * @sample:		Storage for storing last Sample data
+- * @min_perf:		Minimum capacity limit as a fraction of the maximum
+- *			turbo P-state capacity.
+- * @max_perf:		Maximum capacity limit as a fraction of the maximum
+- *			turbo P-state capacity.
++ * @min_perf_ratio:	Minimum capacity in terms of PERF or HWP ratios
++ * @max_perf_ratio:	Maximum capacity in terms of PERF or HWP ratios
+  * @acpi_perf_data:	Stores ACPI perf information read from _PSS
+  * @valid_pss_table:	Set to true for valid ACPI _PSS entries found
+  * @epp_powersave:	Last saved HWP energy performance preference
+@@ -266,8 +264,8 @@ struct cpudata {
+ 	u64	prev_tsc;
+ 	u64	prev_cummulative_iowait;
+ 	struct sample sample;
+-	int32_t	min_perf;
+-	int32_t	max_perf;
++	int32_t	min_perf_ratio;
++	int32_t	max_perf_ratio;
+ #ifdef CONFIG_ACPI
+ 	struct acpi_processor_performance acpi_perf_data;
+ 	bool valid_pss_table;
+@@ -793,25 +791,32 @@ static struct freq_attr *hwp_cpufreq_attrs[] = {
+ 	NULL,
+ };
+ 
+-static void intel_pstate_hwp_set(unsigned int cpu)
++static void intel_pstate_get_hwp_max(unsigned int cpu, int *phy_max,
++				     int *current_max)
+ {
+-	struct cpudata *cpu_data = all_cpu_data[cpu];
+-	int min, hw_min, max, hw_max;
+-	u64 value, cap;
+-	s16 epp;
++	u64 cap;
+ 
+ 	rdmsrl_on_cpu(cpu, MSR_HWP_CAPABILITIES, &cap);
+-	hw_min = HWP_LOWEST_PERF(cap);
+ 	if (global.no_turbo)
+-		hw_max = HWP_GUARANTEED_PERF(cap);
++		*current_max = HWP_GUARANTEED_PERF(cap);
+ 	else
+-		hw_max = HWP_HIGHEST_PERF(cap);
++		*current_max = HWP_HIGHEST_PERF(cap);
++
++	*phy_max = HWP_HIGHEST_PERF(cap);
++}
++
++static void intel_pstate_hwp_set(unsigned int cpu)
++{
++	struct cpudata *cpu_data = all_cpu_data[cpu];
++	int max, min;
++	u64 value;
++	s16 epp;
++
++	max = cpu_data->max_perf_ratio;
++	min = cpu_data->min_perf_ratio;
+ 
+-	max = fp_ext_toint(hw_max * cpu_data->max_perf);
+ 	if (cpu_data->policy == CPUFREQ_POLICY_PERFORMANCE)
+ 		min = max;
+-	else
+-		min = fp_ext_toint(hw_max * cpu_data->min_perf);
+ 
+ 	rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
+ 
+@@ -1527,8 +1532,7 @@ static void intel_pstate_max_within_limits(struct cpudata *cpu)
+ 
+ 	update_turbo_state();
+ 	pstate = intel_pstate_get_base_pstate(cpu);
+-	pstate = max(cpu->pstate.min_pstate,
+-		     fp_ext_toint(pstate * cpu->max_perf));
++	pstate = max(cpu->pstate.min_pstate, cpu->max_perf_ratio);
+ 	intel_pstate_set_pstate(cpu, pstate);
+ }
+ 
+@@ -1694,9 +1698,8 @@ static int intel_pstate_prepare_request(struct cpudata *cpu, int pstate)
+ 	int max_pstate = intel_pstate_get_base_pstate(cpu);
+ 	int min_pstate;
+ 
+-	min_pstate = max(cpu->pstate.min_pstate,
+-			 fp_ext_toint(max_pstate * cpu->min_perf));
+-	max_pstate = max(min_pstate, fp_ext_toint(max_pstate * cpu->max_perf));
++	min_pstate = max(cpu->pstate.min_pstate, cpu->min_perf_ratio);
++	max_pstate = max(min_pstate, cpu->max_perf_ratio);
+ 	return clamp_t(int, pstate, min_pstate, max_pstate);
+ }
+ 
+@@ -1968,52 +1971,61 @@ static void intel_pstate_update_perf_limits(struct cpufreq_policy *policy,
+ {
+ 	int max_freq = intel_pstate_get_max_freq(cpu);
+ 	int32_t max_policy_perf, min_policy_perf;
++	int max_state, turbo_max;
+ 
+-	max_policy_perf = div_ext_fp(policy->max, max_freq);
+-	max_policy_perf = clamp_t(int32_t, max_policy_perf, 0, int_ext_tofp(1));
++	/*
++	 * HWP needs some special consideration, because on BDX the
++	 * HWP_REQUEST uses abstract value to represent performance
++	 * rather than pure ratios.
++	 */
++	if (hwp_active) {
++		intel_pstate_get_hwp_max(cpu->cpu, &turbo_max, &max_state);
++	} else {
++		max_state = intel_pstate_get_base_pstate(cpu);
++		turbo_max = cpu->pstate.turbo_pstate;
++	}
++
++	max_policy_perf = max_state * policy->max / max_freq;
+ 	if (policy->max == policy->min) {
+ 		min_policy_perf = max_policy_perf;
+ 	} else {
+-		min_policy_perf = div_ext_fp(policy->min, max_freq);
++		min_policy_perf = max_state * policy->min / max_freq;
+ 		min_policy_perf = clamp_t(int32_t, min_policy_perf,
+ 					  0, max_policy_perf);
+ 	}
+ 
++	pr_debug("cpu:%d max_state %d min_policy_perf:%d max_policy_perf:%d\n",
++		 policy->cpu, max_state,
++		 min_policy_perf, max_policy_perf);
++
+ 	/* Normalize user input to [min_perf, max_perf] */
+ 	if (per_cpu_limits) {
+-		cpu->min_perf = min_policy_perf;
+-		cpu->max_perf = max_policy_perf;
++		cpu->min_perf_ratio = min_policy_perf;
++		cpu->max_perf_ratio = max_policy_perf;
+ 	} else {
+ 		int32_t global_min, global_max;
+ 
+ 		/* Global limits are in percent of the maximum turbo P-state. */
+-		global_max = percent_ext_fp(global.max_perf_pct);
+-		global_min = percent_ext_fp(global.min_perf_pct);
+-		if (max_freq != cpu->pstate.turbo_freq) {
+-			int32_t turbo_factor;
+-
+-			turbo_factor = div_ext_fp(cpu->pstate.turbo_pstate,
+-						  cpu->pstate.max_pstate);
+-			global_min = mul_ext_fp(global_min, turbo_factor);
+-			global_max = mul_ext_fp(global_max, turbo_factor);
+-		}
++		global_max = DIV_ROUND_UP(turbo_max * global.max_perf_pct, 100);
++		global_min = DIV_ROUND_UP(turbo_max * global.min_perf_pct, 100);
+ 		global_min = clamp_t(int32_t, global_min, 0, global_max);
+ 
+-		cpu->min_perf = max(min_policy_perf, global_min);
+-		cpu->min_perf = min(cpu->min_perf, max_policy_perf);
+-		cpu->max_perf = min(max_policy_perf, global_max);
+-		cpu->max_perf = max(min_policy_perf, cpu->max_perf);
++		pr_debug("cpu:%d global_min:%d global_max:%d\n", policy->cpu,
++			 global_min, global_max);
+ 
+-		/* Make sure min_perf <= max_perf */
+-		cpu->min_perf = min(cpu->min_perf, cpu->max_perf);
+-	}
++		cpu->min_perf_ratio = max(min_policy_perf, global_min);
++		cpu->min_perf_ratio = min(cpu->min_perf_ratio, max_policy_perf);
++		cpu->max_perf_ratio = min(max_policy_perf, global_max);
++		cpu->max_perf_ratio = max(min_policy_perf, cpu->max_perf_ratio);
+ 
+-	cpu->max_perf = round_up(cpu->max_perf, EXT_FRAC_BITS);
+-	cpu->min_perf = round_up(cpu->min_perf, EXT_FRAC_BITS);
++		/* Make sure min_perf <= max_perf */
++		cpu->min_perf_ratio = min(cpu->min_perf_ratio,
++					  cpu->max_perf_ratio);
+ 
+-	pr_debug("cpu:%d max_perf_pct:%d min_perf_pct:%d\n", policy->cpu,
+-		 fp_ext_toint(cpu->max_perf * 100),
+-		 fp_ext_toint(cpu->min_perf * 100));
++	}
++	pr_debug("cpu:%d max_perf_ratio:%d min_perf_ratio:%d\n", policy->cpu,
++		 cpu->max_perf_ratio,
++		 cpu->min_perf_ratio);
+ }
+ 
+ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+@@ -2116,8 +2128,8 @@ static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ 
+ 	cpu = all_cpu_data[policy->cpu];
+ 
+-	cpu->max_perf = int_ext_tofp(1);
+-	cpu->min_perf = 0;
++	cpu->max_perf_ratio = 0xFF;
++	cpu->min_perf_ratio = 0;
+ 
+ 	policy->min = cpu->pstate.min_pstate * cpu->pstate.scaling;
+ 	policy->max = cpu->pstate.turbo_pstate * cpu->pstate.scaling;
+-- 
+2.7.4
