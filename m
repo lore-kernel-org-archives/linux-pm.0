@@ -1,104 +1,95 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH 2/2] ARM: dts: imx6ul: Add imx6ul-tempmon
-Date: Mon, 12 Jun 2017 14:47:08 +0300
-Message-ID: <1497268028.32422.15.camel@nxp.com>
-References: <7055ce6095c0b7f026ac6f0dc37e43fc5c0b1793.1496939031.git.leonard.crestez@nxp.com>
-         <b9b91617985607f24c4986bcad5199483805d6b7.1496939031.git.leonard.crestez@nxp.com>
-         <CAOMZO5BP4fPyzDmSg+DFLRYh3QMf-8T0gqvnZn6mEMt-QqSgfw@mail.gmail.com>
-         <1497005895.28352.88.camel@nxp.com>
-         <20170609154638.3b64e6d0@karo-electronics.de>
-         <1497022484.28352.105.camel@nxp.com>
-         <20170612124029.1643469d@karo-electronics.de>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 2/2] ARM: shmobile: pm-rmobile: Use GENPD_FLAG_ALWAYS_ON
+Date: Mon, 12 Jun 2017 14:27:53 +0200
+Message-ID: <CAPDyKFoeu2uJxFKYN1M46Nm9mVy3aeN_zdKwEhjPf7VmTW+3QA@mail.gmail.com>
+References: <1497259427-8299-1-git-send-email-geert+renesas@glider.be> <1497259427-8299-3-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-sn1nam01on0044.outbound.protection.outlook.com ([104.47.32.44]:27520
-        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1751718AbdFLLrR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 12 Jun 2017 07:47:17 -0400
-In-Reply-To: <20170612124029.1643469d@karo-electronics.de>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1497259427-8299-3-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>
-Cc: Bai Ping <ping.bai@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Zhang Rui <rui.zhang@intel.com>, Fabio Estevam <festevam@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Mon, 2017-06-12 at 12:40 +0200, Lothar Waßmann wrote:
-> On Fri, 9 Jun 2017 18:34:44 +0300 Leonard Crestez wrote:
-> > 
-> > On Fri, 2017-06-09 at 15:46 +0200, Lothar Waßmann wrote:
-> > > 
-> > > On Fri, 9 Jun 2017 13:58:15 +0300 Leonard Crestez wrote:
-> > > > 
-> > > > On Thu, 2017-06-08 at 13:45 -0300, Fabio Estevam wrote:
-> > > > > 
-> > > > > On Thu, Jun 8, 2017 at 1:26 PM, Leonard Crestez  wrote:
-> > > > > > 
-> > > > > > +                       tempmon: tempmon {
-> > > > > > +                               compatible = "fsl,imx6ul-tempmon", "fsl,imx6sx-tempmon";
-> > > > > > +                               interrupts = ;
-> > > > > > +                               fsl,tempmon = <&anatop>;
-> > > > > > +                               fsl,tempmon-data = <&ocotp>;
-> > > > > > +                               clocks = <&clks IMX6UL_CLK_PLL3_USB_OTG>;
-> > > > > Does the IMX6UL_CLK_PLL3_USB_OTG clock really control tempmon? Please
-> > > > > double check.
-> > > > Yes, as far as I can tell the tempmon block uses the 480 Mhz PLL3 clock
-> > > > directly. This is similar to other imx6 SOCs. This PLL is used for
-> > > > stuff like USB but not only that. My understanding is the _USB_OTG
-> > > > suffix is descriptive, similar to PLL4_AUDIO and PLL6_ENET. Other non-
-> > > > usb components use PLL3 (like UART) but through other gates/dividers.
-> > > > 
-> > > > Setting this to IMX6UL_CLK_DUMMY will cause temperature reads to fail.
-> > > > Even if PLL3 usually ends up being constantly enabled because of uarts
-> > > > this is not true at imx_thermal_probe time (or uarts can be disabled).
-> > > > 
-> > > Since the driver is accessing the OCOTP registers it definitely needs
-> > > the IMX6UL_CLK_OCOTP too!
-> > > 
-> > I don't think so. OCOTP reads fuse values into shadows registers on
-> > chip reset and values seem to be available even if it's specific OCOTP
-> > 
-> Shadow registers are registers nonetheless which require a clock for
-> accessing them.
-> 
-> > 
-> > clock is off. I think that clock is only required for writes or shadow
-> > updates.
-> > 
-> Sometimes it helps to read the Reference Manual or take hardware and try
-> it out. The i.MX6(Q|UL) Reference Manual lists the required clocks as:
->                                   Table 35-1. OCOTP Clocks
-> Clock name       Clock Root           Description
-> ipg_clk          ipg_clk_root         Peripheral clock
-> ipg_clk_s        ipg_clk_root         Peripheral access clock
-> 
-> and Table 18-3. "System Clocks, Gating, and Override (continued)"
-> for i.MX6UL shows:
-> OCOTP IPG_CLK   IPG_CLK_ROOT CCGR2[CG6] (IIM_CLK_ENABLE)
->       IPG_CLK_S IPG_CLK_ROOT CCGR2[CG6] (IIM_CLK_ENABLE)
-> 
-> while the same table for i.MX6Q shows:
-> OCOTP ipg_clk   ipg_clk_root CCGR2[CG6] (iim_clk_enable)
->       ipg_clk_s ipg_clk_root
-> 
-> with a blank entry in the "Clock Gating" column for the access clock.
-> So, for i.MX6Q there is no clock enable necessary for the access clock,
-> but for i.MX6UL there is!
-> 
-> You can simply verify it by trying to read any of the fuse registers
-> with the OCOTP clock disabled (which immediately hangs the processor).
+On 12 June 2017 at 11:23, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> Improve handling of always-on PM domains by using the
+> GENPD_FLAG_ALWAYS_ON flag introduced in commit ffaa42e8a40b7f10 ("PM /
+> Domains: Enable users of genpd to specify always on PM domains").
+>
+> Note that the PM domain containing the serial console is still handled
+> locally.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-I did check this on real hardware and it seems to work. Printing the
-values read from OCOTP inside imx_get_sensor_data displays what looks
-like valid data.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-However it seems that this might be accidental, it just happens that
-the OCOTP clock starts as enabled and is only disabled later in the
-boot from "clk_disable_unused". But in theory imx-tempmon can be built
-as a module so this is a real bug. It currently seems to already affect
-imx6sx.
+Kind regards
+Uffe
 
---
-Regards,
-Leonard
+
+> ---
+>  arch/arm/mach-shmobile/pm-rmobile.c | 19 ++++---------------
+>  1 file changed, 4 insertions(+), 15 deletions(-)
+>
+> diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
+> index 175bd3d91ebcbcb4..e5fa6a3cf1ddf159 100644
+> --- a/arch/arm/mach-shmobile/pm-rmobile.c
+> +++ b/arch/arm/mach-shmobile/pm-rmobile.c
+> @@ -130,7 +130,7 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+>         struct generic_pm_domain *genpd = &rmobile_pd->genpd;
+>         struct dev_power_governor *gov = rmobile_pd->gov;
+>
+> -       genpd->flags = GENPD_FLAG_PM_CLK;
+> +       genpd->flags |= GENPD_FLAG_PM_CLK;
+>         genpd->dev_ops.active_wakeup    = rmobile_pd_active_wakeup;
+>         genpd->power_off                = rmobile_pd_power_down;
+>         genpd->power_on                 = rmobile_pd_power_up;
+> @@ -140,14 +140,6 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+>         pm_genpd_init(genpd, gov ? : &simple_qos_governor, false);
+>  }
+>
+> -static int rmobile_pd_suspend_busy(void)
+> -{
+> -       /*
+> -        * This domain should not be turned off.
+> -        */
+> -       return -EBUSY;
+> -}
+> -
+>  static int rmobile_pd_suspend_console(void)
+>  {
+>         /*
+> @@ -260,8 +252,7 @@ static void __init rmobile_setup_pm_domain(struct device_node *np,
+>                  * only be turned off if the CPU is not in use.
+>                  */
+>                 pr_debug("PM domain %s contains CPU\n", name);
+> -               pd->gov = &pm_domain_always_on_gov;
+> -               pd->suspend = rmobile_pd_suspend_busy;
+> +               pd->genpd.flags |= GENPD_FLAG_ALWAYS_ON;
+>                 break;
+>
+>         case PD_CONSOLE:
+> @@ -277,8 +268,7 @@ static void __init rmobile_setup_pm_domain(struct device_node *np,
+>                  * is not in use.
+>                  */
+>                 pr_debug("PM domain %s contains Coresight-ETM\n", name);
+> -               pd->gov = &pm_domain_always_on_gov;
+> -               pd->suspend = rmobile_pd_suspend_busy;
+> +               pd->genpd.flags |= GENPD_FLAG_ALWAYS_ON;
+>                 break;
+>
+>         case PD_MEMCTL:
+> @@ -287,8 +277,7 @@ static void __init rmobile_setup_pm_domain(struct device_node *np,
+>                  * should only be turned off if memory is not in use.
+>                  */
+>                 pr_debug("PM domain %s contains MEMCTL\n", name);
+> -               pd->gov = &pm_domain_always_on_gov;
+> -               pd->suspend = rmobile_pd_suspend_busy;
+> +               pd->genpd.flags |= GENPD_FLAG_ALWAYS_ON;
+>                 break;
+>
+>         case PD_NORMAL:
+> --
+> 2.7.4
+>
