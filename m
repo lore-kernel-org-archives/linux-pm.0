@@ -1,7 +1,7 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH v2 4/8] PM / Domains: Fix unsafe iteration over modified list of device links
-Date: Mon, 12 Jun 2017 17:17:44 +0200
-Message-ID: <20170612151748.7380-5-krzk@kernel.org>
+Subject: [PATCH v2 6/8] PM / Domains: Fix unsafe iteration over modified list of domains
+Date: Mon, 12 Jun 2017 17:17:46 +0200
+Message-ID: <20170612151748.7380-7-krzk@kernel.org>
 References: <20170612151748.7380-1-krzk@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170612151748.7380-1-krzk@kernel.org>
@@ -10,11 +10,10 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, 
 Cc: Krzysztof Kozlowski <krzk@kernel.org>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-pm_genpd_remove_subdomain() iterates over domain's master_links list and
-removes matching element thus it has to use safe version of list
-iteration.
+of_genpd_remove_last() iterates over list of domains and removes
+matching element thus it has to use safe version of list iteration.
 
-Fixes: f721889ff65a ("PM / Domains: Support for generic I/O PM domains (v8)")
+Fixes: 17926551c98a ("PM / Domains: Add support for removing nested PM domains by provider")
 Cc: <stable@vger.kernel.org>
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
@@ -22,26 +21,25 @@ Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 9d3d3c2a5979..d1e438024e46 100644
+index b74b5111957a..33467beaeea4 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -1400,7 +1400,7 @@ EXPORT_SYMBOL_GPL(pm_genpd_add_subdomain);
- int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 			      struct generic_pm_domain *subdomain)
+@@ -1934,14 +1934,14 @@ EXPORT_SYMBOL_GPL(of_genpd_add_subdomain);
+  */
+ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
  {
--	struct gpd_link *link;
-+	struct gpd_link *l, *link;
- 	int ret = -EINVAL;
+-	struct generic_pm_domain *gpd, *genpd = ERR_PTR(-ENOENT);
++	struct generic_pm_domain *gpd, *tmp, *genpd = ERR_PTR(-ENOENT);
+ 	int ret;
  
- 	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(subdomain))
-@@ -1416,7 +1416,7 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 		goto out;
- 	}
+ 	if (IS_ERR_OR_NULL(np))
+ 		return ERR_PTR(-EINVAL);
  
--	list_for_each_entry(link, &genpd->master_links, master_node) {
-+	list_for_each_entry_safe(link, l, &genpd->master_links, master_node) {
- 		if (link->slave != subdomain)
- 			continue;
- 
+ 	mutex_lock(&gpd_list_lock);
+-	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
++	list_for_each_entry_safe(gpd, tmp, &gpd_list, gpd_list_node) {
+ 		if (gpd->provider == &np->fwnode) {
+ 			ret = genpd_remove(gpd);
+ 			genpd = ret ? ERR_PTR(ret) : gpd;
 -- 
 2.9.3
