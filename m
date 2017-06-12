@@ -1,90 +1,65 @@
 From: Ladislav Michl <ladis@linux-mips.org>
-Subject: Re: [PATCH 1/2] power: supply: ltc2941-battery-gauge: Define LTC2942
- registers
-Date: Mon, 12 Jun 2017 19:59:25 +0200
-Message-ID: <20170612175925.fblyzaewuuoivt55@lenoch>
+Subject: Re: [PATCH 2/2] power: supply: ltc2941-battery-gauge: Add support
+ for LTC2942
+Date: Mon, 12 Jun 2017 20:07:41 +0200
+Message-ID: <20170612180741.indbu2qkt6hz7ji4@lenoch>
 References: <20170612150226.woxfdi4lharq5gtq@lenoch>
- <20170612150356.wvehmijba6xbdwvb@lenoch>
- <8d97cccb-fef7-428d-b075-b0e59a590d80@topic.nl>
+ <20170612150453.kjsyu5jjsfb7kzoq@lenoch>
+ <c854309e-68b0-c1f2-a7f8-3161e38e1579@topic.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eddie.linux-mips.org ([148.251.95.138]:51676 "EHLO
+Received: from eddie.linux-mips.org ([148.251.95.138]:51820 "EHLO
         cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752132AbdFLR7k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 13:59:40 -0400
+        with ESMTP id S1752065AbdFLSHq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Jun 2017 14:07:46 -0400
 Received: (from localhost user: 'ladis' uid#1021 fake: STDIN
         (ladis@eddie.linux-mips.org)) by eddie.linux-mips.org
-        id S23991346AbdFLR7c1wZ9d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 12 Jun 2017 19:59:32 +0200
+        id S23990644AbdFLSHochhNd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 12 Jun 2017 20:07:44 +0200
 Content-Disposition: inline
-In-Reply-To: <8d97cccb-fef7-428d-b075-b0e59a590d80@topic.nl>
+In-Reply-To: <c854309e-68b0-c1f2-a7f8-3161e38e1579@topic.nl>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Mike Looijmans <mike.looijmans@topic.nl>
 Cc: linux-pm@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>
 
-On Mon, Jun 12, 2017 at 06:26:17PM +0200, Mike Looijmans wrote:
-> On 12-6-2017 17:03, Ladislav Michl wrote:
-> > Add LTC2942 registers definitions. No functional changes.
-> > 
-> > Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
-> > ---
-> >  drivers/power/supply/ltc2941-battery-gauge.c | 27 +++++++++++++--------------
-> >  1 file changed, 13 insertions(+), 14 deletions(-)
-> > 
-> > diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
-> > index 7efb908f4451..0a1b69bbca7f 100644
-> > --- a/drivers/power/supply/ltc2941-battery-gauge.c
-> > +++ b/drivers/power/supply/ltc2941-battery-gauge.c
-> > @@ -34,16 +34,14 @@ enum ltc294x_reg {
-> >  	LTC294X_REG_CONTROL		= 0x01,
-> >  	LTC294X_REG_ACC_CHARGE_MSB	= 0x02,
-> >  	LTC294X_REG_ACC_CHARGE_LSB	= 0x03,
-> > -	LTC294X_REG_THRESH_HIGH_MSB	= 0x04,
-> > -	LTC294X_REG_THRESH_HIGH_LSB	= 0x05,
-> > -	LTC294X_REG_THRESH_LOW_MSB	= 0x06,
-> > -	LTC294X_REG_THRESH_LOW_LSB	= 0x07,
-> > -	LTC294X_REG_VOLTAGE_MSB	= 0x08,
-> > -	LTC294X_REG_VOLTAGE_LSB	= 0x09,
-> > -	LTC294X_REG_CURRENT_MSB	= 0x0E,
-> > -	LTC294X_REG_CURRENT_LSB	= 0x0F,
-> > -	LTC294X_REG_TEMPERATURE_MSB	= 0x14,
-> > -	LTC294X_REG_TEMPERATURE_LSB	= 0x15,
-> > +	LTC294X_REG_VOLTAGE_MSB		= 0x08,
-> > +	LTC294X_REG_VOLTAGE_LSB		= 0x09,
-> > +	LTC2942_REG_TEMPERATURE_MSB	= 0x0C,
-> > +	LTC2942_REG_TEMPERATURE_LSB	= 0x0D,
-> > +	LTC2943_REG_CURRENT_MSB		= 0x0E,
-> > +	LTC2943_REG_CURRENT_LSB		= 0x0F,
-> > +	LTC2943_REG_TEMPERATURE_MSB	= 0x14,
-> > +	LTC2943_REG_TEMPERATURE_LSB	= 0x15,
-> >  };
+On Mon, Jun 12, 2017 at 06:29:54PM +0200, Mike Looijmans wrote:
+> ﻿On 12-6-2017 17:04, Ladislav Michl wrote:
+> > LTC2942 is pin compatible with LTC2941 providing additional
+> > informations about battery voltage and temperature. It can
+> > be runtime detected using bit A7 in the Status register.
 > 
-> I don't see the advantage of renaming these, I'd rather see the LTC294X
-> naming throughout, making it easier to locate them in the enum as they all
-> share the exact same prefix.
+> Runtime detection is always nice. I'd suggest adding "ltc2942" to the device
+> name list, since having to specify "ltc2941" when the chip is in fact an
+> "ltc2942" looks a bit strange.
 
-LTC2942 and LTC2943 are using different register offsets for temperature
-and current register is LTC2943 specific. Hence the rename, otherwise you
-won't be able to distinguish between temperature registers in different chips.
+It is not that strange after the one who would otherwise blindly type ltc2942
+reads the datasheet ;-)
 
-> But if you do want this renaming, I guess you should also rename the LTC2941
-> registers.
+> Again, no strong preference, whatever the maintainers think is best is fine
+> with me also.
 
-Well, naming convention is to use LTC294X prefix only for registers common
-to all chips. Chip specific registers are using chip specific prefixes. Also
-I'm not big fan of having register offsets as enums - offset is a number and
-should be represented as such.
+What about adding something like this?
 
-> I'm neutral to either naming, linux-pm maintainer will have the final word I
-> guess.
-
-I have no problem rolling change back with exception of tepmerature registers
-(LTC294X_LTC2942_REG_TEMPERATURE_MSB would probably be an option, but such a
-long identifier hurts my eyes).
-
-Let's wait for maintainer's comment.
-
-Best regards,
-	ladis
+diff --git a/Documentation/devicetree/bindings/power/supply/ltc2941.txt b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
+index a9d7aa60558b..0d065d54d294 100644
+--- a/Documentation/devicetree/bindings/power/supply/ltc2941.txt
++++ b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
+@@ -1,9 +1,10 @@
+-binding for LTC2941 and LTC2943 battery gauges
++binding for LTC2941, LTC2942 and LTC2943 battery gauges
+ 
+-Both the LTC2941 and LTC2943 measure battery capacity.
+-The LTC2943 is compatible with the LTC2941, it adds voltage and
+-temperature monitoring, and uses a slightly different conversion
+-formula for the charge counter.
++All chips measure battery capacity.
++The LTC2942 is pin compatible with the LTC2941, it adds voltage and
++temperature monitoring, and is runtime detected. LTC2943 is software
++compatible, uses a slightly different conversion formula for the
++charge counter and adds voltage, current and temperature monitoring.
+ 
+ Required properties:
+ - compatible: Should contain "lltc,ltc2941" or "lltc,ltc2943" which also
