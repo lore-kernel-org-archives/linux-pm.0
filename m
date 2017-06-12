@@ -1,152 +1,244 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] intel_idle: Use more common logging style
-Date: Mon, 12 Jun 2017 09:18:04 -0700
-Message-ID: <20170612091804.114b4b5b@jacob-builder>
-References: <a3acab19b42e51c59e2e20464ceb91f94f033eea.1497036538.git.joe@perches.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH v5 3/3] drivers:power:twl4030-charger: add deferred
+ probing for phy and iio
+Date: Mon, 12 Jun 2017 11:24:28 -0500
+Message-ID: <754fbc28-f5ff-4736-1d46-f467667b130d@ti.com>
+References: <cover.1495363097.git.hns@goldelico.com>
+ <6ed105f6c9c21c24184913a7be9e665453549d79.1495363097.git.hns@goldelico.com>
+ <20170607204444.zumcreuqdnv7euv2@earth>
+ <01A3D2F5-9E09-4E93-A363-93130DCEB7DF@goldelico.com>
+ <1b9f3e92-36ac-2a73-7b2d-037b19fafaad@ti.com>
+ <DC2DA07F-72A1-45B9-A4F5-BD83D930974D@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a3acab19b42e51c59e2e20464ceb91f94f033eea.1497036538.git.joe@perches.com>
+In-Reply-To: <DC2DA07F-72A1-45B9-A4F5-BD83D930974D@goldelico.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Sebastian Reichel <sre@kernel.org>, NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Marek Belisko <marek@goldelico.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri,  9 Jun 2017 12:29:20 -0700
-Joe Perches <joe@perches.com> wrote:
 
-> Remove #define PREFIX and add #define pr_fmt to use more common
-> logging.
-> 
-> Miscellanea:
-> 
-> o Add missing newline to format
-> o Convert a single printk without KERN_<LEVEL> to pr_info
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
 
-Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-
-Thanks,
-> ---
->  drivers/idle/intel_idle.c | 32 ++++++++++++++++----------------
->  1 file changed, 16 insertions(+), 16 deletions(-)
+On 06/09/2017 11:59 PM, H. Nikolaus Schaller wrote:
+> Hi Grygorii,
 > 
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index 216d7ec88c0c..c2ae819a871c 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -51,6 +51,8 @@
->  /* un-comment DEBUG to enable pr_debug() statements */
->  #define DEBUG
->  
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
->  #include <linux/kernel.h>
->  #include <linux/cpuidle.h>
->  #include <linux/tick.h>
-> @@ -65,7 +67,6 @@
->  #include <asm/msr.h>
->  
->  #define INTEL_IDLE_VERSION "0.4.1"
-> -#define PREFIX "intel_idle: "
->  
->  static struct cpuidle_driver intel_idle_driver = {
->  	.name = "intel_idle",
-> @@ -1111,7 +1112,7 @@ static int __init intel_idle_probe(void)
->  	const struct x86_cpu_id *id;
->  
->  	if (max_cstate == 0) {
-> -		pr_debug(PREFIX "disabled\n");
-> +		pr_debug("disabled\n");
->  		return -EPERM;
->  	}
->  
-> @@ -1119,8 +1120,8 @@ static int __init intel_idle_probe(void)
->  	if (!id) {
->  		if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
->  		    boot_cpu_data.x86 == 6)
-> -			pr_debug(PREFIX "does not run on family %d
-> model %d\n",
-> -				boot_cpu_data.x86,
-> boot_cpu_data.x86_model);
-> +			pr_debug("does not run on family %d model
-> %d\n",
-> +				 boot_cpu_data.x86,
-> boot_cpu_data.x86_model); return -ENODEV;
->  	}
->  
-> @@ -1134,13 +1135,13 @@ static int __init intel_idle_probe(void)
->  	    !mwait_substates)
->  			return -ENODEV;
->  
-> -	pr_debug(PREFIX "MWAIT substates: 0x%x\n", mwait_substates);
-> +	pr_debug("MWAIT substates: 0x%x\n", mwait_substates);
->  
->  	icpu = (const struct idle_cpu *)id->driver_data;
->  	cpuidle_state_table = icpu->state_table;
->  
-> -	pr_debug(PREFIX "v" INTEL_IDLE_VERSION
-> -		" model 0x%X\n", boot_cpu_data.x86_model);
-> +	pr_debug("v" INTEL_IDLE_VERSION " model 0x%X\n",
-> +		 boot_cpu_data.x86_model);
->  
->  	return 0;
->  }
-> @@ -1340,8 +1341,7 @@ static void __init
-> intel_idle_cpuidle_driver_init(void) break;
->  
->  		if (cstate + 1 > max_cstate) {
-> -			printk(PREFIX "max_cstate %d reached\n",
-> -				max_cstate);
-> +			pr_info("max_cstate %d reached\n",
-> max_cstate); break;
->  		}
->  
-> @@ -1358,8 +1358,8 @@ static void __init
-> intel_idle_cpuidle_driver_init(void) 
->  		/* if state marked as disabled, skip it */
->  		if (cpuidle_state_table[cstate].disabled != 0) {
-> -			pr_debug(PREFIX "state %s is disabled",
-> -				cpuidle_state_table[cstate].name);
-> +			pr_debug("state %s is disabled\n",
-> +				 cpuidle_state_table[cstate].name);
->  			continue;
->  		}
->  
-> @@ -1395,7 +1395,7 @@ static int intel_idle_cpu_init(unsigned int cpu)
->  	dev->cpu = cpu;
->  
->  	if (cpuidle_register_device(dev)) {
-> -		pr_debug(PREFIX "cpuidle_register_device %d
-> failed!\n", cpu);
-> +		pr_debug("cpuidle_register_device %d failed!\n",
-> cpu); return -EIO;
->  	}
->  
-> @@ -1447,8 +1447,8 @@ static int __init intel_idle_init(void)
->  	retval = cpuidle_register_driver(&intel_idle_driver);
->  	if (retval) {
->  		struct cpuidle_driver *drv = cpuidle_get_driver();
-> -		printk(KERN_DEBUG PREFIX "intel_idle yielding to %s",
-> -			drv ? drv->name : "none");
-> +		printk(KERN_DEBUG pr_fmt("intel_idle yielding to
-> %s\n"),
-> +		       drv ? drv->name : "none");
->  		goto init_driver_fail;
->  	}
->  
-> @@ -1460,8 +1460,8 @@ static int __init intel_idle_init(void)
->  	if (retval < 0)
->  		goto hp_setup_fail;
->  
-> -	pr_debug(PREFIX "lapic_timer_reliable_states 0x%x\n",
-> -		lapic_timer_reliable_states);
-> +	pr_debug("lapic_timer_reliable_states 0x%x\n",
-> +		 lapic_timer_reliable_states);
->  
->  	return 0;
->  
+>> Am 09.06.2017 um 18:25 schrieb Grygorii Strashko <grygorii.strashko@ti.com>:
+>>
+>>
+>>
+>> On 06/09/2017 01:05 AM, H. Nikolaus Schaller wrote:
+>>> Hi,
+>>>
+>>>> Am 07.06.2017 um 22:44 schrieb Sebastian Reichel <sre@kernel.org>:
+>>>>
+>>>> Hi,
+>>>>
+>>>> On Sun, May 21, 2017 at 12:38:18PM +0200, H. Nikolaus Schaller wrote:
+>>>>> This fixes an issue if both this twl4030_charger driver and
+>>>>> phy-twl4030-usb are compiled as modules and loaded in random order.
+>>>>> It has been observed on GTA04 and OpenPandora devices that in worst
+>>>>> case the boot process hangs and in best case the AC detection fails
+>>>>> with a warning.
+>>>>>
+>>>>> Therefore we add deferred probing checks for the usb_phy and the
+>>>>> iio channel for AC detection.
+>>>>>
+>>>>> For implementing this we must reorder code because we can't safely
+>>>>> return -EPROBE_DEFER after allocating any devm managed interrupt
+>>>>> (it might already/still be enabled without working interrupt handler).
+>>>>>
+>>>>> So the check for required resources that may abort probing by
+>>>>> returning -EPROBE_DEFER, must come first.
+>>>>
+>>>> This sounds fishy. EPROBE_DEFER should not be different from
+>>>> other error codes in this regard and devm_ requested resources
+>>>> should be free'd on any error. Why is irq handler not working?
+>>>
+>>> 1. there is no other error code involved, before we try to convert the driver to handle EPROBE_DEFER.
+>>> So it is not that EPROBE_DEFER is special but that we add an error return path for it.
+>>>
+>>> 2. I don't know why it is not working - I just know that the handler seems to be triggered before
+>>> all resources are available (if probe() is aborted with EPROBE_DEFER error paths) which ends up in kernel panics.
+>>>
+>>> Therefore just to be safe, I have reordered things a little (without changing the function):
+>>>
+>>> 1. check for resources (with some EPROBE_DEFER)
+>>> 2. allocate non-devm (with optional EPROBE_DEFER)
+>>> 3. allocate devm
+>>>
+>>> So this should be safe in any case.
+>>>
+>>> Please also compare a discussion
+>>>
+>>> https://lkml.org/lkml/2013/2/22/65
+>>>
+>>>>
+>>>>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+>>>>> ---
+>>>>> drivers/power/supply/twl4030_charger.c | 37 ++++++++++++++++++++--------------
+>>>>> 1 file changed, 22 insertions(+), 15 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
+>>>>> index 785a07bc4f39..945eabdbbc89 100644
+>>>>> --- a/drivers/power/supply/twl4030_charger.c
+>>>>> +++ b/drivers/power/supply/twl4030_charger.c
+>>>>> @@ -984,6 +984,28 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+>>>>>
+>>>>> 	platform_set_drvdata(pdev, bci);
+>>>>>
+>>>>> +	if (bci->dev->of_node) {
+>>>>> +		struct device_node *phynode;
+>>>>> +
+>>>>> +		phynode = of_find_compatible_node(bci->dev->of_node->parent,
+>>>>> +						  NULL, "ti,twl4030-usb");
+>>>>> +		if (phynode) {
+>>>>> +			bci->transceiver = devm_usb_get_phy_by_node(
+>>>>> +				bci->dev, phynode, &bci->usb_nb);
+>>>>> +			if (IS_ERR(bci->transceiver) &&
+>>>>> +			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER)
+>>>>> +				return -EPROBE_DEFER;	/* PHY not ready */
+>>>>> +		}
+>>>>> +	}
+>>>>> +
+>>>>> +	bci->channel_vac = iio_channel_get(&pdev->dev, "vac");
+>>>>> +	if (IS_ERR(bci->channel_vac)) {
+>>>>> +		if (PTR_ERR(bci->channel_vac) == -EPROBE_DEFER)
+>>>>> +			return -EPROBE_DEFER;	/* iio not ready */
+>>>>> +		dev_warn(&pdev->dev, "could not request vac iio channel");
+>>>>> +		bci->channel_vac = NULL;
+>>>>> +	}
+>>>>> +
+>>>>
+>>>> You should not request non-devm managed iio_channel before
+>>>> devm-managed power-supply.
+>>>
+>>> Well, it is not *me* doing that.
+>>>
+>>> It is the unpatched driver which already does. See:
+>>>
+>>> 	https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/power/supply/twl4030_charger.c?h=v4.12-rc4#n1069
+>>>
+>>> I have just moved this line to a different location to be able to add a proper EPROBE_DEFER return path.
+>>>
+>>>> This could be fixed by switching to
+>>>> devm_iio_channel_get(), which also cleans up some code.
+>>>
+>>> Yes, this could be an alternative solution.
+>>> We still need EPROBE_DEFER handling.
+>>>
+>>>>
+>>>> I suspect, that this is also your IRQ problem, since iio_channel
+>>>> is currently free'd before irqs are free'd, but its used in irq
+>>>> code.
+>>>
+>>> Hm. No.
+>>>
+>>> In upstream code it is never freed on probe failure because there is only
+>>> an error return (goto fail) after allocating irqs in case the
+>>> twl_i2c_write_u8 fails. Which usually doesn't.
+>>>
+>>> The EPROBE_DEFER returned by iio_channel_get not being ready simply prints
+>>> a warning and turns off AC detection (bci->channel_vac = NULL) forever.
+>>>
+>>>>
+>>>>> 	bci->ac = devm_power_supply_register(&pdev->dev, &twl4030_bci_ac_desc,
+>>>>> 					     NULL);
+>>>>> 	if (IS_ERR(bci->ac)) {
+>>>>> @@ -1017,25 +1039,10 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+>>>>> 		return ret;
+>>>>> 	}
+>>>>>
+>>>>> -	bci->channel_vac = iio_channel_get(&pdev->dev, "vac");
+>>>>> -	if (IS_ERR(bci->channel_vac)) {
+>>>
+>>> My first attempt to fix EPROBE_DEFER was to add this
+>>>
+>>> +		if (PTR_ERR(bci->channel_vac) == -EPROBE_DEFER)
+>>> +			return -EPROBE_DEFER;	/* iio not ready */
+>>>
+>>>>> -		bci->channel_vac = NULL;
+>>>>> -		dev_warn(&pdev->dev, "could not request vac iio channel");
+>>>>> -	}
+>>>>> -
+>>>>> 	INIT_WORK(&bci->work, twl4030_bci_usb_work);
+>>>>> 	INIT_DELAYED_WORK(&bci->current_worker, twl4030_current_worker);
+>>>>>
+>>>>> 	bci->usb_nb.notifier_call = twl4030_bci_usb_ncb;
+>>>>> -	if (bci->dev->of_node) {
+>>>>> -		struct device_node *phynode;
+>>>>> -
+>>>>> -		phynode = of_find_compatible_node(bci->dev->of_node->parent,
+>>>>> -						  NULL, "ti,twl4030-usb");
+>>>>> -		if (phynode)
+>>>>> -			bci->transceiver = devm_usb_get_phy_by_node(
+>>>>> -				bci->dev, phynode, &bci->usb_nb);
+>>>
+>>> and this
+>>>
+>>> +			if (IS_ERR(bci->transceiver) &&
+>>> +			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER) {
+>>> +				ret = -EPROBE_DEFER;	/* PHY not ready */
+>>> +				goto fail;
+>>>
+>>> This did run (and potentially return) after installing devm_request_threaded_irq leading
+>>> to observation of severe kernel panics by interrupts.
+>>>
+>>> Moving the iio channel allocation before devm_request_threaded_irq made them go away.
+>>>
+>>>>> -	}
+>>>>>
+>>>>> 	/* Enable interrupts now. */
+>>>>> 	reg = ~(u32)(TWL4030_ICHGLOW | TWL4030_ICHGEOC | TWL4030_TBATOR2 |
+>>>>
+>>>> -- Sebastian
+>>>
+>>> How important is it to keep the current sequence of devm_request_threaded_irq() + (devm_)iio_channel_get() untouched?
+>>>
+>>> The reason I ask is that it is more likely for (devm_)iio_channel_get() to fail than devm_request_threaded_irq().
+>>>
+>>> Hence the iio channel should imho be always allocated first, so that we skip allocating+freeing unused irq handlers in case
+>>> of iio not being ready.
+>>>
+>>> Therefore, I suggest to keep the proposed reordering even if we think devm-conversion of iio_channel_get() alone
+>>> would solve it equally well.
+>>>
+>>> Next: should there be two separate patches? One for converting the non-devm iio_channel_get() and cleaning up error path.
+>>> And one for adding EPROBE_DEFER error path.
+>>>
+>>> Or keep it in a single patch because they only make sense if done together (you can't add/remove deferred probing
+>>> without converting and/or moving iio_channel_get())?
+>>>
+>>> So please advise how to proceed.
+>>>
+>>
+>> You should request irq as late as possible in probe - it's safest way to go always.
+>> You see crushes simply because request_irq enables IRQ and IRQ can trigger immediately, so
+>> IRQ handler will run and all required resources should be ready and initialized.
+>>
+>> In this case:
+>> twl4030_bci_interrupt() -> twl4030_charger_update_current() -> ac_available() -> iio_read_channel_processed()
+>> OOOPS.
+>>
+>> So, first thing to do is to reorder probe to ensure that sequence is safe.
+> 
+> That is exactly what I guessed when proposing the reordering patch.
+> 
+>> Then other stuff - devm, EPROBE_DEFER ...
+> 
+> IMHO, reordering alone doesn't make much sense as a single patch. Or does it?
+> 
 
-[Jacob Pan]
+The question is - is there bug in driver or not? As per current code seems yes.
+You can easily test it by directly calling twl4030_charger_interrupt() right after
+IRQ is requested. there is a bug if it will crush.
+As for me it more reasonable to move forward using smaller steps.
+
+
+Thanks for you work and patches.
+
+-- 
+regards,
+-grygorii
