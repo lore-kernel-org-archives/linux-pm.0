@@ -1,38 +1,46 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH] power: supply: constify psy_tcd_ops.
-Date: Tue, 13 Jun 2017 10:39:43 +0530
-Message-ID: <52491fb24dcf85b8e5624a9582d68784e762656c.1497330213.git.arvind.yadav.cs@gmail.com>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH v2 0/8] ACPI / PM: Suspend-to-idle rework to deal with
+ spurious ACPI wakeups
+Date: Tue, 13 Jun 2017 07:54:22 +0200
+Message-ID: <20170613055422.GA1911@light.dominikbrodowski.net>
+References: <8918199.uo13RZ8hZk@aspire.rjw.lan>
+ <1615075.mBkoKApGGc@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1615075.mBkoKApGGc@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Hans De Goede <hdegoede@redhat.com>, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
 
-File size before:
-text	data	bss	dec   hex filename
-4240	 200	 80	4520 11a8 drivers/power/supply/power_supply_core.o
+Rafael,
 
-File size After adding 'const':
-text	data	bss	dec   hex filename
-4296	 136	 80	4512 11a0 drivers/power/supply/power_supply_core.o
+On Mon, Jun 12, 2017 at 10:46:47PM +0200, Rafael J. Wysocki wrote:
+> Hi All,
+> 
+> On Thursday, June 08, 2017 02:00:40 AM Rafael J. Wysocki wrote:
+> > Hi All,
+> > 
+> > This series is a replacement for commit eed4d47efe95 (ACPI / sleep: Ignore
+> > spurious SCI wakeups from suspend-to-idle) which is still there in 4.12-rc4 but
+> > will be reverted shortly, because it triggered issues on quite a few systems.
+> > 
+> > The last patch in the series is a counterpart of the above commit with a few
+> > modifications, mostly to avoid affecting suspend-to-RAM and to reorder messages
+> > printed to kernel logs to make them somewhat less confusing.
+> 
+> Here's a v2 which is very similar to the previous one, except for 3 things:
+> - There are few build fixes in the last patch.
+> - The patch from Hans mentioned previously is included now (as [7/8]).
+> - There is an additional PCI change related to config space saving/restoring
+>   and PME.
+> 
+> If anyone has any objections or concerns regarding this, please speak up now,
+> as I'm going to put it into linux-next shortly to allow it to receive some more
+> testing than commit eed4d47efe95 had had before it went it.
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/power/supply/power_supply_core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+suspend-to-mem works as expected, also with this v2 applied. Thanks!
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 7ec7c7c..2cc64b8 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -669,7 +669,7 @@ static int ps_set_cur_charge_cntl_limit(struct thermal_cooling_device *tcd,
- 	return ret;
- }
- 
--static struct thermal_cooling_device_ops psy_tcd_ops = {
-+static const struct thermal_cooling_device_ops psy_tcd_ops = {
- 	.get_max_state = ps_get_max_charge_cntl_limit,
- 	.get_cur_state = ps_get_cur_chrage_cntl_limit,
- 	.set_cur_state = ps_set_cur_charge_cntl_limit,
--- 
-1.9.1
+	Dominik
