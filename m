@@ -1,266 +1,48 @@
-From: Thara Gopinath <thara.gopinath@linaro.org>
-Subject: [PATCH V2 2/2] PM / Domains: Extend generic power domain debugfs.
-Date: Tue, 13 Jun 2017 16:27:39 -0400
-Message-ID: <1497385659-2356-3-git-send-email-thara.gopinath@linaro.org>
-References: <1497385659-2356-1-git-send-email-thara.gopinath@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f178.google.com ([209.85.216.178]:34903 "EHLO
-        mail-qt0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753845AbdFMU1w (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2017 16:27:52 -0400
-Received: by mail-qt0-f178.google.com with SMTP id w1so187990928qtg.2
-        for <linux-pm@vger.kernel.org>; Tue, 13 Jun 2017 13:27:51 -0700 (PDT)
-In-Reply-To: <1497385659-2356-1-git-send-email-thara.gopinath@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Santosh Shilimkar <santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH] dt-bindings: Drop k2g genpd device ID macros
+Date: Tue, 13 Jun 2017 13:32:19 -0700
+Message-ID: <fc503960-d225-895c-c993-974ba6c5a92d@oracle.com>
+References: <20170522183737.24946-1-d-gerlach@ti.com>
+ <20170531162850.mf6giowmxj5vetxq@rob-hp-laptop>
+ <ca91000a-627b-a655-4304-b64b78bbcf9a@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <ca91000a-627b-a655-4304-b64b78bbcf9a-l0cyMroinI0@public.gmane.org>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Suman Anna <s-anna-l0cyMroinI0@public.gmane.org>, Andrew Davis <afd-l0cyMroinI0@public.gmane.org>, Franklin Cooper <fcooper-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org
 
-This patch extends the existing generic power domain debugfs.
-Changes involve the following
-- Introduce a unique debugfs entry for each generic power domain with the
-  following attributes
-	- current_state - Displays current state of the domain.
-	- devices - Displays the devices associated with this domain.
-	- sub_domains - Displays the sub power domains.
-	- active_time - Displays the time the domain was in active state
-			in ms.
-	- total_idle_time - Displays the time the domain was in any of the idle
-			states in ms.
-	- idle_states - Displays the various idle states and the time
-			spent in each idle state in ms.
+On 6/13/2017 1:16 PM, Dave Gerlach wrote:
+> Santosh,
+> On 05/31/2017 11:28 AM, Rob Herring wrote:
+>> On Mon, May 22, 2017 at 01:37:37PM -0500, Dave Gerlach wrote:
+[...]
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
----
- drivers/base/power/domain.c | 203 ++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 195 insertions(+), 8 deletions(-)
+>>> [1] https://www.spinics.net/lists/arm-kernel/msg577079.html
+>>>
+>>>   .../devicetree/bindings/soc/ti/sci-pm-domain.txt   |  5 +-
+>>>   include/dt-bindings/genpd/k2g.h                    | 90 ----------------------
+>>>   2 files changed, 3 insertions(+), 92 deletions(-)
+>>>   delete mode 100644 include/dt-bindings/genpd/k2g.h
+>>
+>> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>>
+> 
+> Gentle ping on this. If you're OK with the patch any chance you can pick it up?
+> 
+Sorry Dave I missed to pick this one in pull request for 4.13. Will pick 
+this
+one along with what Suman and Tero have been working for following merge
+window. Thanks for reminding about this one.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 33b4632..c1a0cd1 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2322,21 +2322,189 @@ static int pm_genpd_summary_show(struct seq_file *s, void *data)
- 	return ret;
- }
- 
--static int pm_genpd_summary_open(struct inode *inode, struct file *file)
-+static int pm_genpd_status_show(struct seq_file *s, void *data)
- {
--	return single_open(file, pm_genpd_summary_show, NULL);
-+	static const char * const status_lookup[] = {
-+		[GPD_STATE_ACTIVE] = "on",
-+		[GPD_STATE_POWER_OFF] = "off"
-+	};
-+
-+	struct generic_pm_domain *genpd = s->private;
-+	int ret = 0;
-+
-+	ret = genpd_lock_interruptible(genpd);
-+	if (ret)
-+		return -ERESTARTSYS;
-+
-+	if (WARN_ON(genpd->status >= ARRAY_SIZE(status_lookup)))
-+		goto exit;
-+
-+	if (genpd->status == GPD_STATE_POWER_OFF)
-+		seq_printf(s, "%s-%u\n", status_lookup[genpd->status],
-+			genpd->state_idx);
-+	else
-+		seq_printf(s, "%s\n", status_lookup[genpd->status]);
-+exit:
-+	genpd_unlock(genpd);
-+	return ret;
- }
- 
--static const struct file_operations pm_genpd_summary_fops = {
--	.open = pm_genpd_summary_open,
--	.read = seq_read,
--	.llseek = seq_lseek,
--	.release = single_release,
--};
-+static int pm_genpd_sub_domains_show(struct seq_file *s, void *data)
-+{
-+	struct generic_pm_domain *genpd = s->private;
-+	struct gpd_link *link;
-+	int ret = 0;
-+
-+	ret = genpd_lock_interruptible(genpd);
-+	if (ret)
-+		return -ERESTARTSYS;
-+
-+	list_for_each_entry(link, &genpd->master_links, master_node) {
-+		seq_printf(s, "%s", link->slave->name);
-+		if (!list_is_last(&link->master_node, &genpd->master_links))
-+			seq_puts(s, ", ");
-+	}
-+	seq_puts(s, "\n");
-+
-+	genpd_unlock(genpd);
-+	return ret;
-+}
-+
-+static int pm_genpd_idle_states_show(struct seq_file *s, void *data)
-+{
-+	struct generic_pm_domain *genpd = s->private;
-+	int i, ret = 0;
-+
-+	ret = genpd_lock_interruptible(genpd);
-+	if (ret)
-+		return -ERESTARTSYS;
-+
-+	seq_puts(s, "State          Time Spent(ms)\n");
-+
-+	for (i = 0; i < genpd->state_count; i++) {
-+		ktime_t delta = 0;
-+		s64 msecs;
-+
-+		if ((genpd->status == GPD_STATE_POWER_OFF) &&
-+				(genpd->state_idx == i))
-+			delta = ktime_sub(ktime_get(), genpd->accounting_time);
-+
-+		msecs = ktime_to_ms(
-+			ktime_add(genpd->states[i].idle_time, delta));
-+		seq_printf(s, "S%-15i %lld\n", i, msecs);
-+	}
-+
-+	genpd_unlock(genpd);
-+	return ret;
-+}
-+
-+static int pm_genpd_active_time_show(struct seq_file *s, void *data)
-+{
-+	struct generic_pm_domain *genpd = s->private;
-+	ktime_t delta = 0;
-+	int ret = 0;
-+
-+	ret = genpd_lock_interruptible(genpd);
-+	if (ret)
-+		return -ERESTARTSYS;
-+
-+	if (genpd->status == GPD_STATE_ACTIVE)
-+		delta = ktime_sub(ktime_get(), genpd->accounting_time);
-+
-+	seq_printf(s, "%lld ms\n", ktime_to_ms(
-+				ktime_add(genpd->on_time, delta)));
-+
-+	genpd_unlock(genpd);
-+	return ret;
-+}
-+
-+static int pm_genpd_total_idle_time_show(struct seq_file *s, void *data)
-+{
-+	struct generic_pm_domain *genpd = s->private;
-+	ktime_t delta = 0, total = 0;
-+	int i, ret = 0;
-+
-+	ret = genpd_lock_interruptible(genpd);
-+	if (ret)
-+		return -ERESTARTSYS;
-+
-+	for (i = 0; i < genpd->state_count; i++) {
-+
-+		if ((genpd->status == GPD_STATE_POWER_OFF) &&
-+				(genpd->state_idx == i))
-+			delta = ktime_sub(ktime_get(), genpd->accounting_time);
-+
-+		total = ktime_add(total, genpd->states[i].idle_time);
-+	}
-+	total = ktime_add(total, delta);
-+
-+	seq_printf(s, "%lld ms\n", ktime_to_ms(total));
-+
-+	genpd_unlock(genpd);
-+	return ret;
-+}
-+
-+
-+static int pm_genpd_devices_show(struct seq_file *s, void *data)
-+{
-+	struct generic_pm_domain *genpd = s->private;
-+	struct pm_domain_data *pm_data;
-+	const char *kobj_path;
-+	int ret = 0;
-+
-+	ret = genpd_lock_interruptible(genpd);
-+	if (ret)
-+		return -ERESTARTSYS;
-+
-+	list_for_each_entry(pm_data, &genpd->dev_list, list_node) {
-+		kobj_path = kobject_get_path(&pm_data->dev->kobj,
-+				genpd_is_irq_safe(genpd) ?
-+				GFP_ATOMIC : GFP_KERNEL);
-+		if (kobj_path == NULL)
-+			continue;
-+
-+		seq_printf(s, "%s\n", kobj_path);
-+		kfree(kobj_path);
-+	}
-+
-+	genpd_unlock(genpd);
-+	return ret;
-+}
-+
-+#define define_pm_genpd_open_function(name) \
-+static int pm_genpd_##name##_open(struct inode *inode, struct file *file) \
-+{ \
-+	return single_open(file, pm_genpd_##name##_show, inode->i_private); \
-+}
-+
-+define_pm_genpd_open_function(summary);
-+define_pm_genpd_open_function(status);
-+define_pm_genpd_open_function(sub_domains);
-+define_pm_genpd_open_function(idle_states);
-+define_pm_genpd_open_function(active_time);
-+define_pm_genpd_open_function(total_idle_time);
-+define_pm_genpd_open_function(devices);
-+
-+#define define_pm_genpd_debugfs_fops(name) \
-+static const struct file_operations pm_genpd_##name##_fops = { \
-+	.open = pm_genpd_##name##_open, \
-+	.read = seq_read, \
-+	.llseek = seq_lseek, \
-+	.release = single_release, \
-+}
-+
-+define_pm_genpd_debugfs_fops(summary);
-+define_pm_genpd_debugfs_fops(status);
-+define_pm_genpd_debugfs_fops(sub_domains);
-+define_pm_genpd_debugfs_fops(idle_states);
-+define_pm_genpd_debugfs_fops(active_time);
-+define_pm_genpd_debugfs_fops(total_idle_time);
-+define_pm_genpd_debugfs_fops(devices);
- 
- static int __init pm_genpd_debug_init(void)
- {
- 	struct dentry *d;
-+	struct generic_pm_domain *genpd;
- 
- 	pm_genpd_debugfs_dir = debugfs_create_dir("pm_genpd", NULL);
- 
-@@ -2348,6 +2516,25 @@ static int __init pm_genpd_debug_init(void)
- 	if (!d)
- 		return -ENOMEM;
- 
-+	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
-+		d = debugfs_create_dir(genpd->name, pm_genpd_debugfs_dir);
-+		if (!d)
-+			return -ENOMEM;
-+
-+		debugfs_create_file("current_state", 0444,
-+				d, genpd, &pm_genpd_status_fops);
-+		debugfs_create_file("sub_domains", 0444,
-+				d, genpd, &pm_genpd_sub_domains_fops);
-+		debugfs_create_file("idle_states", 0444,
-+				d, genpd, &pm_genpd_idle_states_fops);
-+		debugfs_create_file("active_time", 0444,
-+				d, genpd, &pm_genpd_active_time_fops);
-+		debugfs_create_file("total_idle_time", 0444,
-+				d, genpd, &pm_genpd_total_idle_time_fops);
-+		debugfs_create_file("devices", 0444,
-+				d, genpd, &pm_genpd_devices_fops);
-+	}
-+
- 	return 0;
- }
- late_initcall(pm_genpd_debug_init);
--- 
-2.1.4
+Regards,
+Santosh
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
