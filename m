@@ -1,42 +1,60 @@
-From: Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
-Subject: Re: [PATCH] dt-bindings: thermal: add file extension to brcm,ns-thermal
-Date: Tue, 13 Jun 2017 15:26:29 -0700
-Message-ID: <CANEuBv7riK2fMtdMkGxm_aTe5XOyu1bJjMZDyh7LwkRO6QAx1A@mail.gmail.com>
-References: <20170602173139.71901-1-code@mmayer.net> <20170613221738.7qfnzcy55ybzseul@rob-hp-laptop>
+From: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH 3/4] mfd: tps65217: remove duplicated interrupt resources.
+Date: Tue, 13 Jun 2017 18:05:32 -0500
+Message-ID: <d223e106-3718-e34e-da3f-d664985f7b59@ti.com>
+References: <20170612212412.22719-1-enric.balletbo@collabora.com>
+ <20170612212412.22719-3-enric.balletbo@collabora.com>
+ <bddc09a1-53d7-e7ed-5c04-a9ecf5310dde@ti.com>
+ <CAFqH_51wYc-xXU9fAF=1KNJ4wC69oZToMXjVP==yCgrMVfwn+g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170613221738.7qfnzcy55ybzseul@rob-hp-laptop>
+In-Reply-To: <CAFqH_51wYc-xXU9fAF=1KNJ4wC69oZToMXjVP==yCgrMVfwn+g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-US
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: Enric Balletbo Serra <eballetbo-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, "linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Javier Martinez Canillas <javier-0uQlZySMnqxg9hUCZPvPmw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 13 June 2017 at 15:17, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> On Fri, Jun 02, 2017 at 10:31:39AM -0700, Markus Mayer wrote:
->> From: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+
+
+On 06/13/2017 03:18 AM, Enric Balletbo Serra wrote:
+> Hi Grygorii,
+> 
+> 2017-06-13 0:41 GMT+02:00 Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>:
 >>
->> Add the missing .txt extension to the Broadcom Northstar binding document.
 >>
->> Signed-off-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
->> ---
+>> On 06/12/2017 04:24 PM, Enric Balletbo i Serra wrote:
+>>> I don't think it makes sense to have the interrupt resources for charger
+>>> and power button in two different places, the driver and the DT binding.
+>>> That's confusing so remove the ones from the mfd driver in favour of
+>>> having the interrupt resources only described in the DT. Having the
+>>> resources in DT may help if there is or will be a similar pmic with
+>>> different resource allocation.
 >>
->> I noticed the missing .txt extension while preparing another patch series.
->
-> I can take this, but if you have another series it should go thru the
-> thermal tree.
->
-> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>> Wouldn't this break DT compatibility? Old DTs do not contain IRQ resources
+>> and so they work only because of IRQ definitions in code.
+>>
+> 
+> I don't think so, the DT binding [1] and [2] says that the interrupts
+> proprieties are required, so the bindings that that doesn't have these
+> proprieties are wrong. Also I suspect that the binding that doesn't
+> define the interrupts expect the hw block disabled as the status =
+> "disabled" was defined, so I don't think was his intention have i.e
+> the charger active.
+> 
+> [1] https://www.kernel.org/doc/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
+> [2] https://www.kernel.org/doc/Documentation/devicetree/bindings/input/tps65218-pwrbutton.txt
 
-The other series is unrelated to Northstar:
-https://www.spinics.net/lists/kernel/msg2525115.html
+Ok. fair enough.
 
-An updated version for that will be coming soon.
+Anyway, personally I would prefer to remove irqs from DT, but as both 
+points are valid - its up to maintainers to decide.
 
-Not sure if that'll influence what happens to this patch.
-
-Thanks,
--Markus
+-- 
+regards,
+-grygorii
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
