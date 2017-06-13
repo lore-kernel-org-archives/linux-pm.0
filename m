@@ -1,85 +1,69 @@
-From: Thara Gopinath <thara.gopinath@linaro.org>
-Subject: Re: [PATCH 1/2] PM / Domains: Add time accounting to various genpd
- states.
-Date: Tue, 13 Jun 2017 08:44:44 -0400
-Message-ID: <593FDE3C.1090408@linaro.org>
-References: <1495756293-29534-1-git-send-email-thara.gopinath@linaro.org>
- <1495756293-29534-2-git-send-email-thara.gopinath@linaro.org>
- <CAPDyKFqfVN4KDQETdq9_edkNE0wi2Ff-g0w9i6UFE-NKbwhJGg@mail.gmail.com>
- <593EE298.1060805@linaro.org>
- <CAPDyKFq9xDLP0_o4z0jQMtzA9rxTZT4Ns_BrmqPeMbNUr8suwQ@mail.gmail.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [RFC v2 1/3] interconnect: Add generic interconnect controller
+ API
+Date: Tue, 13 Jun 2017 15:42:00 +0200
+Message-ID: <20170613134200.GA4769@kroah.com>
+References: <20170612141359.26117-1-georgi.djakov@linaro.org>
+ <20170612141359.26117-2-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f176.google.com ([209.85.161.176]:33405 "EHLO
-        mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752078AbdFMMor (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2017 08:44:47 -0400
-Received: by mail-yw0-f176.google.com with SMTP id 63so48141476ywr.0
-        for <linux-pm@vger.kernel.org>; Tue, 13 Jun 2017 05:44:47 -0700 (PDT)
-In-Reply-To: <CAPDyKFq9xDLP0_o4z0jQMtzA9rxTZT4Ns_BrmqPeMbNUr8suwQ@mail.gmail.com>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:55444 "EHLO
+        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753351AbdFMNmI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2017 09:42:08 -0400
+Content-Disposition: inline
+In-Reply-To: <20170612141359.26117-2-georgi.djakov@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@baylibre.com>
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, khilman@baylibre.com, mturquette@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, sboyd@codeaurora.org, andy.gross@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 
-On 06/13/2017 04:11 AM, Ulf Hansson wrote:
-> [...]
+On Mon, Jun 12, 2017 at 05:13:57PM +0300, Georgi Djakov wrote:
+> This patch introduce a new API to get the requirement and configure the
+> interconnect buses across the entire chipset to fit with the current demand.
 > 
->>> Isn't the off_time the summary of the states' genpd->states[i].active_time?
->>
->> Yes. it is.
->>>
->>> Then we could do that computation quite easily at the point when
->>> producing the debugfs output instead.
->>
->> Are yu suggesting doing away with off_time parameter all together. It is
->> possible.
+> The API is using a consumer/provider-based model, where the providers are
+> the interconnect controllers and the consumers could be various drivers.
+> The consumers request interconnect resources (path) to an endpoint and set
+> the desired constraints on this data flow path. The provider(s) receive
+> requests from consumers and aggregate these requests for all master-slave
+> pairs on that path. Then the providers configure each participating in the
+> topology node according to the requested data flow path, physical links and
+> constraints. The topology could be complicated and multi-tiered and is SoC
+> specific.
 > 
-> Yes, I think that makes sense.
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+>  Documentation/interconnect/interconnect.txt |  65 +++++
+>  drivers/Kconfig                             |   2 +
+>  drivers/Makefile                            |   1 +
+>  drivers/interconnect/Kconfig                |  10 +
+>  drivers/interconnect/Makefile               |   1 +
+>  drivers/interconnect/interconnect.c         | 376 ++++++++++++++++++++++++++++
+>  include/linux/interconnect-consumer.h       |  72 ++++++
+>  include/linux/interconnect-provider.h       | 120 +++++++++
+>  8 files changed, 647 insertions(+)
+>  create mode 100644 Documentation/interconnect/interconnect.txt
+>  create mode 100644 drivers/interconnect/Kconfig
+>  create mode 100644 drivers/interconnect/Makefile
+>  create mode 100644 drivers/interconnect/interconnect.c
+>  create mode 100644 include/linux/interconnect-consumer.h
+>  create mode 100644 include/linux/interconnect-provider.h
 > 
->>>
->>>> +       }
->>>> +       genpd->accounting_time = now;
->>>> +}
->>>> +
-> 
-> [...]
-> 
->>>>
->>>> @@ -774,6 +795,7 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
->>>>         if (_genpd_power_off(genpd, false))
->>>>                 return;
->>>>
->>>> +       genpd_update_accounting(genpd);
->>>
->>> Timekeeping gets disabled at a certain point during suspend. Therefore
->>> you can't update accounting here, as this function gets called in this
->>> stages.
->>
->> I will remove the update of accounting at this point. But then the
->> statistics  can be skewed for some power domains atleast. Other option
->> is to restart the accounting every time after device suspend and resume.
-> 
-> I would suggest to start simple and just avoid updating the accounting
-> in these cases. Then we can look into improvements, if we think there
-> is a need for it.
-> 
-> What do you think?
-I do agree. Will post the updated series.
+> diff --git a/Documentation/interconnect/interconnect.txt b/Documentation/interconnect/interconnect.txt
+> new file mode 100644
+> index 000000000000..f761a2fb553c
+> --- /dev/null
+> +++ b/Documentation/interconnect/interconnect.txt
 
-Regards
-Thara
+.rst for new Documenation files please, and hook it up to the larger
+documentation build process at the same time.
 
-> 
-> [...]
-> 
-> Kind regards
-> Uffe
-> 
+And why are these RFC patches?  Don't you feel they are ready to be
+reviewed?  I know I ignore RFC patches for the most part as obviously
+the author does not think they are ready :)
 
+thanks,
 
--- 
-Regards
-Thara
+greg k-h
