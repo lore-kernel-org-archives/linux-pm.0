@@ -1,72 +1,78 @@
 From: Guenter Roeck <groeck@google.com>
-Subject: Re: [PATCH 1/2] power: supply: sbs-battery: Prevent CAPACITY_MODE races
-Date: Tue, 13 Jun 2017 11:15:23 -0700
-Message-ID: <CABXOdTf=ObbPUaZp+zvBGaKqvifbLSTcZcnzWQt80xGcvusyYg@mail.gmail.com>
-References: <1497376406-86470-1-git-send-email-shawnn@chromium.org>
+Subject: Re: [PATCH 2/2] power: supply: sbs-battery: Don't needlessly set CAPACITY_MODE
+Date: Tue, 13 Jun 2017 11:17:50 -0700
+Message-ID: <CABXOdTcrYNpFswn6L7+jXpRwjxjaSvJNjEDoFuWz+7GYF-xjjQ@mail.gmail.com>
+References: <1497376406-86470-1-git-send-email-shawnn@chromium.org> <1497376406-86470-2-git-send-email-shawnn@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f175.google.com ([209.85.216.175]:35810 "EHLO
-        mail-qt0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752081AbdFMSPZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2017 14:15:25 -0400
-Received: by mail-qt0-f175.google.com with SMTP id w1so182578849qtg.2
-        for <linux-pm@vger.kernel.org>; Tue, 13 Jun 2017 11:15:25 -0700 (PDT)
-In-Reply-To: <1497376406-86470-1-git-send-email-shawnn@chromium.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1497376406-86470-2-git-send-email-shawnn@chromium.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Shawn Nematbakhsh <shawnn@chromium.org>
 Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>
+List-Id: linux-pm@vger.kernel.org
 
 On Tue, Jun 13, 2017 at 10:53 AM, Shawn Nematbakhsh <shawnn@chromium.org> wrote:
-> A subset of smart battery commands return charge or energy depending on
-> the CAPACITY_MODE bit setting of BatteryMode(). In order to
-> unambiguously read a charge or energy value, it is necessary to ensure
-> that CAPACITY_MODE is set as desired, and not changed for the duration
-> of the attribute read.
+> According to the smart battery spec (1), the CAPACITY_MODE bit does not
+> influence the value read from RelativeStateOfCharge(), so don't bother
+> changing CAPACITY_MODE when doing such a read.
+>
+> (1) - Smart Battery Data Specification, Rev 1.1, Dec. 11, 1998
 >
 > Signed-off-by: Shawn Nematbakhsh <shawnn@chromium.org>
 
 Reviewed-by: Guenter Roeck <groeck@chromium.org>
 
 > ---
->  drivers/power/supply/sbs-battery.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
+>  drivers/power/supply/sbs-battery.c | 14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
 >
 > diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-> index e3a114e60f1a..d7e68fd97099 100644
+> index d7e68fd97099..4bae210d5a8a 100644
 > --- a/drivers/power/supply/sbs-battery.c
 > +++ b/drivers/power/supply/sbs-battery.c
-> @@ -171,6 +171,7 @@ struct sbs_info {
->         u32                             i2c_retry_count;
->         u32                             poll_retry_count;
->         struct delayed_work             work;
-> +       struct mutex                    mode_lock;
->  };
+> @@ -439,6 +439,11 @@ static int sbs_get_battery_property(struct i2c_client *client,
+>         } else {
+>                 if (psp == POWER_SUPPLY_PROP_STATUS)
+>                         val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
+> +               else if (psp == POWER_SUPPLY_PROP_CAPACITY)
+> +                       /* sbs spec says that this can be >100 %
+> +                        * even if max value is 100 %
+> +                        */
+> +                       val->intval = min(ret, 100);
+>                 else
+>                         val->intval = 0;
+>         }
+> @@ -549,12 +554,7 @@ static int sbs_get_battery_capacity(struct i2c_client *client,
+>         if (ret < 0)
+>                 return ret;
 >
->  static char model_name[I2C_SMBUS_BLOCK_MAX + 1];
-> @@ -623,7 +624,13 @@ static int sbs_get_property(struct power_supply *psy,
+> -       if (psp == POWER_SUPPLY_PROP_CAPACITY) {
+> -               /* sbs spec says that this can be >100 %
+> -               * even if max value is 100 % */
+> -               val->intval = min(ret, 100);
+> -       } else
+> -               val->intval = ret;
+> +       val->intval = ret;
+>
+>         ret = sbs_set_battery_mode(client, mode);
+>         if (ret < 0)
+> @@ -619,7 +619,6 @@ static int sbs_get_property(struct power_supply *psy,
+>         case POWER_SUPPLY_PROP_CHARGE_NOW:
+>         case POWER_SUPPLY_PROP_CHARGE_FULL:
+>         case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+> -       case POWER_SUPPLY_PROP_CAPACITY:
+>                 ret = sbs_get_property_index(client, psp);
 >                 if (ret < 0)
 >                         break;
->
-> +               /* sbs_get_battery_capacity() will change the battery mode
-> +                * temporarily to read the requested attribute. Ensure we stay
-> +                * in the desired mode for the duration of the attribute read.
-> +                */
-> +               mutex_lock(&chip->mode_lock);
->                 ret = sbs_get_battery_capacity(client, ret, psp, val);
-> +               mutex_unlock(&chip->mode_lock);
->                 break;
->
->         case POWER_SUPPLY_PROP_SERIAL_NUMBER:
-> @@ -808,6 +815,7 @@ static int sbs_probe(struct i2c_client *client,
->         psy_cfg.of_node = client->dev.of_node;
->         psy_cfg.drv_data = chip;
->         chip->last_state = POWER_SUPPLY_STATUS_UNKNOWN;
-> +       mutex_init(&chip->mode_lock);
->
->         /* use pdata if available, fall back to DT properties,
->          * or hardcoded defaults if not
+> @@ -647,6 +646,7 @@ static int sbs_get_property(struct power_supply *psy,
+>         case POWER_SUPPLY_PROP_TIME_TO_FULL_AVG:
+>         case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+>         case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+> +       case POWER_SUPPLY_PROP_CAPACITY:
+>                 ret = sbs_get_property_index(client, psp);
+>                 if (ret < 0)
+>                         break;
 > --
 > 2.13.1.508.gb3defc5cc-goog
 >
