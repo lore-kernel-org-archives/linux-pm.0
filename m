@@ -1,97 +1,67 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 1/8] PM / Domains: Constify genpd pointer
-Date: Tue, 13 Jun 2017 12:36:45 +0200
-Message-ID: <CAPDyKFpNKpgGCy5TX_LC95tU2j9XGqKs8kmVyd+OifpOAuj60g@mail.gmail.com>
-References: <20170612151748.7380-1-krzk@kernel.org> <20170612151748.7380-2-krzk@kernel.org>
+Subject: Re: [RFT v2 2/8] PM / Domains: Handle safely genpd_syscore_switch()
+ call on non-genpd device
+Date: Tue, 13 Jun 2017 12:38:01 +0200
+Message-ID: <CAPDyKFqYySVe3KC8vT6XW52mjnxZZFu5VVKJ373DA2B8Z8GiGg@mail.gmail.com>
+References: <20170612151748.7380-1-krzk@kernel.org> <20170612151748.7380-3-krzk@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170612151748.7380-2-krzk@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f179.google.com ([209.85.216.179]:33610 "EHLO
+        mail-qt0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752021AbdFMKiD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2017 06:38:03 -0400
+Received: by mail-qt0-f179.google.com with SMTP id u12so165140750qth.0
+        for <linux-pm@vger.kernel.org>; Tue, 13 Jun 2017 03:38:02 -0700 (PDT)
+In-Reply-To: <20170612151748.7380-3-krzk@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Krzysztof Kozlowski <krzk@kernel.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
 On 12 June 2017 at 17:17, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> Mark pointer to struct generic_pm_domain const (either passed in
-> argument or used localy in a function), whenever it is not modifed by
-> the function itself.
+> genpd_syscore_switch() had two problems:
+> 1. It silently assumed that device, it is being called for, belongs to
+>    generic power domain and used container_of() on its power domain
+>    pointer.  Such assumption might not be true always.
 >
+> 2. It iterated over list of generic power domains without holding
+>    gpd_list_lock mutex thus list could have been modified in the same
+>    time.
+>
+> Usage of genpd_lookup_dev() solves both problems as it is safe a call
+> for non-generic power domains and uses mutex when iterating.
+>
+> Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
 > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+>
+> ---
+>
+> Not tested on real hardware.
+
+When tested you may add my:
 
 Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 > ---
->  drivers/base/power/domain.c | 17 ++++++++++-------
->  1 file changed, 10 insertions(+), 7 deletions(-)
+>  drivers/base/power/domain.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
 > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index da49a8383dc3..2e8d0f423507 100644
+> index 2e8d0f423507..983f086ab235 100644
 > --- a/drivers/base/power/domain.c
 > +++ b/drivers/base/power/domain.c
-> @@ -126,7 +126,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
->  #define genpd_is_always_on(genpd)      (genpd->flags & GENPD_FLAG_ALWAYS_ON)
->
->  static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
-> -               struct generic_pm_domain *genpd)
-> +               const struct generic_pm_domain *genpd)
+> @@ -1098,8 +1098,8 @@ static void genpd_syscore_switch(struct device *dev, bool suspend)
 >  {
->         bool ret;
+>         struct generic_pm_domain *genpd;
 >
-> @@ -181,12 +181,14 @@ static struct generic_pm_domain *dev_to_genpd(struct device *dev)
->         return pd_to_genpd(dev->pm_domain);
->  }
+> -       genpd = dev_to_genpd(dev);
+> -       if (!pm_genpd_present(genpd))
+> +       genpd = genpd_lookup_dev(dev);
+> +       if (!genpd)
+>                 return;
 >
-> -static int genpd_stop_dev(struct generic_pm_domain *genpd, struct device *dev)
-> +static int genpd_stop_dev(const struct generic_pm_domain *genpd,
-> +                         struct device *dev)
->  {
->         return GENPD_DEV_CALLBACK(genpd, int, stop, dev);
->  }
->
-> -static int genpd_start_dev(struct generic_pm_domain *genpd, struct device *dev)
-> +static int genpd_start_dev(const struct generic_pm_domain *genpd,
-> +                          struct device *dev)
->  {
->         return GENPD_DEV_CALLBACK(genpd, int, start, dev);
->  }
-> @@ -738,7 +740,7 @@ static bool pm_genpd_present(const struct generic_pm_domain *genpd)
->
->  #ifdef CONFIG_PM_SLEEP
->
-> -static bool genpd_dev_active_wakeup(struct generic_pm_domain *genpd,
-> +static bool genpd_dev_active_wakeup(const struct generic_pm_domain *genpd,
->                                     struct device *dev)
->  {
->         return GENPD_DEV_CALLBACK(genpd, bool, active_wakeup, dev);
-> @@ -840,7 +842,8 @@ static void genpd_sync_power_on(struct generic_pm_domain *genpd, bool use_lock,
->   * signal remote wakeup from the system's working state as needed by runtime PM.
->   * Return 'true' in either of the above cases.
->   */
-> -static bool resume_needed(struct device *dev, struct generic_pm_domain *genpd)
-> +static bool resume_needed(struct device *dev,
-> +                         const struct generic_pm_domain *genpd)
->  {
->         bool active_wakeup;
->
-> @@ -975,7 +978,7 @@ static int pm_genpd_resume_noirq(struct device *dev)
->   */
->  static int pm_genpd_freeze_noirq(struct device *dev)
->  {
-> -       struct generic_pm_domain *genpd;
-> +       const struct generic_pm_domain *genpd;
->         int ret = 0;
->
->         dev_dbg(dev, "%s()\n", __func__);
-> @@ -999,7 +1002,7 @@ static int pm_genpd_freeze_noirq(struct device *dev)
->   */
->  static int pm_genpd_thaw_noirq(struct device *dev)
->  {
-> -       struct generic_pm_domain *genpd;
-> +       const struct generic_pm_domain *genpd;
->         int ret = 0;
->
->         dev_dbg(dev, "%s()\n", __func__);
+>         if (suspend) {
 > --
 > 2.9.3
 >
