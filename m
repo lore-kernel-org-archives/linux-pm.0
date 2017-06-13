@@ -1,66 +1,95 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: conservative: Allow down_threshold to take
- values from 1 to 10
-Date: Tue, 13 Jun 2017 11:32:14 +0530
-Message-ID: <20170613060214.GG5297@vireshk-i7>
-References: <1497169719-13613-1-git-send-email-twilczynski@naver.com>
- <20170612034035.GB5297@vireshk-i7>
- <3062414.lj8A9ADAOY@aspire.rjw.lan>
- <7fa1e0c6-8d9c-c346-f5e2-87f024ebc1bb@naver.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v2 3/8] PM / Domains: Add lockdep asserts for domains
+ list mutex
+Date: Tue, 13 Jun 2017 09:12:18 +0200
+Message-ID: <20170613071218.bbml7vsfcdgpirlp@kozik-lap>
+References: <20170612151748.7380-1-krzk@kernel.org>
+ <20170612151748.7380-4-krzk@kernel.org>
+ <CAPDyKFr=-Ty9ZQ276nmkAPnJjwc3PmuKSdJrOqeEYcxbgfypYA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:33150 "EHLO
-        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752114AbdFMGCS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2017 02:02:18 -0400
-Received: by mail-pf0-f174.google.com with SMTP id 83so62304189pfr.0
-        for <linux-pm@vger.kernel.org>; Mon, 12 Jun 2017 23:02:18 -0700 (PDT)
+Received: from mail-wr0-f196.google.com ([209.85.128.196]:35724 "EHLO
+        mail-wr0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752191AbdFMHMW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2017 03:12:22 -0400
 Content-Disposition: inline
-In-Reply-To: <7fa1e0c6-8d9c-c346-f5e2-87f024ebc1bb@naver.com>
+In-Reply-To: <CAPDyKFr=-Ty9ZQ276nmkAPnJjwc3PmuKSdJrOqeEYcxbgfypYA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz Wilczynski <twilczynski@naver.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 13-06-17, 14:58, Tomasz Wilczynski wrote:
-> This is my first patch so please bare with me...
+On Mon, Jun 12, 2017 at 09:09:59PM +0200, Ulf Hansson wrote:
+> On 12 June 2017 at 17:17, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> > Add lockdep checks for holding mutex protecting the list of domains.
+> > This might expose misuse even though only file-scope functions use it
+> > for now.
+> 
+> I think it seems a bit silly to use these lockdep checks as these
+> functions are as you state above, static functions. Moreover there are
+> called from a quite limited amount of places.
+> 
+> Do you really think this add some value?
 
-No worries, we were just telling you about what's the right way..
+In ideal world, these would not need lockdeps because we do not make
+mistakes. I agree, that mostly the exposed functions to other kernel
+modules should be protected, as lockdep annotation is a more advanced
+way of documenting the need of locking.
 
-> I am just a little
-> confused. Does this mean that it is all right to leave the patch as it is,
-> or should I still add the Fixes: tag and resubmit it?
+Does it mean that file-scope functions should not be annotated? Even in
+such case function can be misused as the code is getting more and more
+complicated.
 
-Rafael has already applied the patch with all the required tags (look
-in the PM tree):
+What is best example, one of these calls (pm_genpd_present()) was
+already used in wrong way, without locking when iterating over the list.
+Having lockdep would point this early.
 
-commit b8e11f7d2791bd9320be1c6e772a60b2aa093e45
-Author: Tomasz Wilczyński <twilczynski@naver.com>
-Date:   Sun Jun 11 17:28:39 2017 +0900
+Best regards,
+Krzysztof
 
-    cpufreq: conservative: Allow down_threshold to take values from 1 to 10
-    
-    Commit 27ed3cd2ebf4 (cpufreq: conservative: Fix the logic in frequency
-    decrease checking) removed the 10 point substraction when comparing the
-    load against down_threshold but did not remove the related limit for the
-    down_threshold value.  As a result, down_threshold lower than 11 is not
-    allowed even though values from 1 to 10 do work correctly too. The
-    comment ("cannot be lower than 11 otherwise freq will not fall") also
-    does not apply after removing the substraction.
-    
-    For this reason, allow down_threshold to take any value from 1 to 99
-    and fix the related comment.
-    
-    Fixes: 27ed3cd2ebf4 (cpufreq: conservative: Fix the logic in frequency decrease checking)
-    Signed-off-by: Tomasz Wilczyński <twilczynski@naver.com>
-    Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-    Cc: 3.10+ <stable@vger.kernel.org> # 3.10+
-    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq_conservative.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
--- 
-viresh
+> 
+> Kind regards
+> Uffe
+> 
+> >
+> > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> > ---
+> >  drivers/base/power/domain.c | 6 ++++++
+> >  1 file changed, 6 insertions(+)
+> >
+> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> > index 983f086ab235..9d3d3c2a5979 100644
+> > --- a/drivers/base/power/domain.c
+> > +++ b/drivers/base/power/domain.c
+> > @@ -726,6 +726,8 @@ static bool pm_genpd_present(const struct generic_pm_domain *genpd)
+> >  {
+> >         const struct generic_pm_domain *gpd;
+> >
+> > +       lockdep_assert_held(&gpd_list_lock);
+> > +
+> >         if (IS_ERR_OR_NULL(genpd))
+> >                 return false;
+> >
+> > @@ -1321,6 +1323,8 @@ static int genpd_add_subdomain(struct generic_pm_domain *genpd,
+> >         struct gpd_link *link, *itr;
+> >         int ret = 0;
+> >
+> > +       lockdep_assert_held(&gpd_list_lock);
+> > +
+> >         if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(subdomain)
+> >             || genpd == subdomain)
+> >                 return -EINVAL;
+> > @@ -1528,6 +1532,8 @@ static int genpd_remove(struct generic_pm_domain *genpd)
+> >  {
+> >         struct gpd_link *l, *link;
+> >
+> > +       lockdep_assert_held(&gpd_list_lock);
+> > +
+> >         if (IS_ERR_OR_NULL(genpd))
+> >                 return -EINVAL;
+> >
+> > --
+> > 2.9.3
+> >
