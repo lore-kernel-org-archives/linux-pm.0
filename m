@@ -1,48 +1,45 @@
-From: Santosh Shilimkar <santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH] dt-bindings: Drop k2g genpd device ID macros
-Date: Tue, 13 Jun 2017 13:32:19 -0700
-Message-ID: <fc503960-d225-895c-c993-974ba6c5a92d@oracle.com>
-References: <20170522183737.24946-1-d-gerlach@ti.com>
- <20170531162850.mf6giowmxj5vetxq@rob-hp-laptop>
- <ca91000a-627b-a655-4304-b64b78bbcf9a@ti.com>
+From: =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?=
+        <jerome.debretagne@gmail.com>
+Subject: Re: [PATCH 0/3] ACPI / sleep: Support power button wakeup from S2I on
+ recent Dell laptops
+Date: Tue, 13 Jun 2017 23:11:46 +0200
+Message-ID: <CA+kEDGHS0JAoPiXowBEYCRwgi43-Ss_sJa9ngiuwP_xYt3rtaA@mail.gmail.com>
+References: <CA+kEDGHNOQboMy34=EmH6zVSgtdVz1afOz5hwx5HBKshWhackA@mail.gmail.com>
+ <88366b425cce41358ae8f88e43f3d201@ausx13mpc120.AMER.DELL.COM>
+ <CA+kEDGEXEYEV+tGnswvHsFmOX5W_GAYPTYxk0YUUt0D1pdr92A@mail.gmail.com>
+ <1872413.KDFIRZOQLU@aspire.rjw.lan> <CA+kEDGHHVJS9vgNVdowVQ4+eACFFdqTXR04e1V5qFcs_pZ0_yA@mail.gmail.com>
+ <CA+kEDGF57sfz+f8_9XMqGQqPt-5LmtvceO70_gOpdaZ548tT-g@mail.gmail.com>
+ <CAJZ5v0jHf3zDJ6K8pN3DQZa2Xq14Cz5XQMpwxqJfwH=nS8jGdA@mail.gmail.com>
+ <CA+kEDGFiyynapLQPgnxNxuphBFYNpp7OYu9dn7vv-Z9PJNG6dA@mail.gmail.com> <CAJZ5v0h=GVjqwZ7fdJGHWrQN5GuNotk5xCH-nYynFUadVAH0Xg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <ca91000a-627b-a655-4304-b64b78bbcf9a-l0cyMroinI0@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Suman Anna <s-anna-l0cyMroinI0@public.gmane.org>, Andrew Davis <afd-l0cyMroinI0@public.gmane.org>, Franklin Cooper <fcooper-l0cyMroinI0@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0h=GVjqwZ7fdJGHWrQN5GuNotk5xCH-nYynFUadVAH0Xg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mario Limonciello <Mario.Limonciello@dell.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 6/13/2017 1:16 PM, Dave Gerlach wrote:
-> Santosh,
-> On 05/31/2017 11:28 AM, Rob Herring wrote:
->> On Mon, May 22, 2017 at 01:37:37PM -0500, Dave Gerlach wrote:
-[...]
-
->>> [1] https://www.spinics.net/lists/arm-kernel/msg577079.html
->>>
->>>   .../devicetree/bindings/soc/ti/sci-pm-domain.txt   |  5 +-
->>>   include/dt-bindings/genpd/k2g.h                    | 90 ----------------------
->>>   2 files changed, 3 insertions(+), 92 deletions(-)
->>>   delete mode 100644 include/dt-bindings/genpd/k2g.h
+>>> However, the bottom line is that there is no way for the kernel at all
+>>> to know in advance that these events are going to be generated.
 >>
->> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->>
-> 
-> Gentle ping on this. If you're OK with the patch any chance you can pick it up?
-> 
-Sorry Dave I missed to pick this one in pull request for 4.13. Will pick 
-this
-one along with what Suman and Tero have been working for following merge
-window. Thanks for reminding about this one.
+>> Would a patch to handle this specific case be acceptable in the kernel though?
+>
+> We have quirks. :-)
+>
+> That said I think intel-hid could check the 0xCE event unconditionally
+> in the "wakeup" mode, but that will be a separate patch on top of my
+> series.
 
-Regards,
-Santosh
+Thank you again, Rafael and Mario, to have helped understand the
+special behavior implemented on this system / BIOS combination. I
+guess I'll wait for your s2-idle-dell-test patch series to land first, to
+discuss then how to handle this other Dell model (with Alex Hung?).
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Or do you have another suggestion about how to proceed?
+
+In the meantime, I'll update the bug report I had created:
+https://bugzilla.kernel.org/show_bug.cgi?id=195897
+to track and share there all the discoveries from this thread.
+
+Jerome
