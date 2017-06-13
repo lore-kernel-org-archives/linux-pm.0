@@ -1,53 +1,180 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH] dt-bindings: Drop k2g genpd device ID macros
-Date: Tue, 13 Jun 2017 15:16:01 -0500
-Message-ID: <ca91000a-627b-a655-4304-b64b78bbcf9a@ti.com>
-References: <20170522183737.24946-1-d-gerlach@ti.com>
- <20170531162850.mf6giowmxj5vetxq@rob-hp-laptop>
+From: Thara Gopinath <thara.gopinath@linaro.org>
+Subject: Re: [PATCH 1/2] PM / Domains: Add time accounting to various genpd
+ states.
+Date: Tue, 13 Jun 2017 16:17:39 -0400
+Message-ID: <59404863.1030608@linaro.org>
+References: <1495756293-29534-1-git-send-email-thara.gopinath@linaro.org>
+ <1495756293-29534-2-git-send-email-thara.gopinath@linaro.org>
+ <CAPDyKFqfVN4KDQETdq9_edkNE0wi2Ff-g0w9i6UFE-NKbwhJGg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170531162850.mf6giowmxj5vetxq@rob-hp-laptop>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Santosh Shilimkar <ssantosh@kernel.org>
-Cc: Nishanth Menon <nm@ti.com>, Rob Herring <robh@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Arnd Bergmann <arnd@arndb.de>, devicetree@vger.kernel.org, Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Davis <afd@ti.com>, Tero Kristo <t-kristo@ti.com>, Kevin Hilman <khilman@kernel.org>, Franklin Cooper <fcooper@ti.com>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f177.google.com ([209.85.216.177]:33743 "EHLO
+        mail-qt0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753538AbdFMURo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2017 16:17:44 -0400
+Received: by mail-qt0-f177.google.com with SMTP id u12so188589965qth.0
+        for <linux-pm@vger.kernel.org>; Tue, 13 Jun 2017 13:17:44 -0700 (PDT)
+In-Reply-To: <CAPDyKFqfVN4KDQETdq9_edkNE0wi2Ff-g0w9i6UFE-NKbwhJGg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@baylibre.com>
 
-Santosh,
-On 05/31/2017 11:28 AM, Rob Herring wrote:
-> On Mon, May 22, 2017 at 01:37:37PM -0500, Dave Gerlach wrote:
->> Commit 7cc119f29b19 ("dt-bindings: Add TI SCI PM Domains") introduced a
->> number of K2G_DEV_x macros to represent each device ID available on the
->> K2G platform for use by the genpd, clock, and reset drivers. Rather than
->> use these macros, which are only used in the device tree for property
->> values and not actually used by the drivers, let's just use the device
->> ID number directly in the device tree to avoid macro bloat.
+On 06/07/2017 09:28 AM, Ulf Hansson wrote:
+Hello Ulf,
+
+> On 26 May 2017 at 01:51, Thara Gopinath <thara.gopinath@linaro.org> wrote:
+>> This patch adds support to calculate the time spent by the generic
+>> power domains in on and various idle states.
 >>
->> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+>> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
 >> ---
->> Based on discussion here [1] it was agreed that these macros are not needed
->> and it is better to just use the device IDs directly in dt.
+>>  drivers/base/power/domain.c | 24 ++++++++++++++++++++++++
+>>  include/linux/pm_domain.h   |  4 ++++
+>>  2 files changed, 28 insertions(+)
 >>
->> [1] https://www.spinics.net/lists/arm-kernel/msg577079.html
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index da49a83..e733796 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -207,6 +207,25 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
+>>         smp_mb__after_atomic();
+>>  }
 >>
->>  .../devicetree/bindings/soc/ti/sci-pm-domain.txt   |  5 +-
->>  include/dt-bindings/genpd/k2g.h                    | 90 ----------------------
->>  2 files changed, 3 insertions(+), 92 deletions(-)
->>  delete mode 100644 include/dt-bindings/genpd/k2g.h
+>> +static void genpd_update_accounting(struct generic_pm_domain *genpd)
 > 
-> Acked-by: Rob Herring <robh@kernel.org>
+> I suggest we have all this within #ifdef CONFIG_DEBUG_FS and add a
+> stub for !CONFIG_DEBUG_FS.
+> 
+>> +{
+>> +       ktime_t delta, now;
+>> +
+>> +       now = ktime_get();
+>> +       delta = ktime_sub(now, genpd->accounting_time);
+>> +
+>> +       if (genpd->status == GPD_STATE_ACTIVE) {
+>> +               genpd->on_time = ktime_add(genpd->on_time, delta);
+>> +       } else {
+>> +               int state_idx = genpd->state_idx;
+>> +
+>> +               genpd->states[state_idx].active_time =
+> 
+> "active_time" seems to be a misleading, can we rename it to "idle_time" instead?
+> 
+>> +                       ktime_add(genpd->states[state_idx].active_time, delta);
+>> +               genpd->off_time = ktime_add(genpd->off_time, delta);
+> 
+> Isn't the off_time the summary of the states' genpd->states[i].active_time?
+> 
+> Then we could do that computation quite easily at the point when
+> producing the debugfs output instead.
+> 
+>> +       }
+>> +       genpd->accounting_time = now;
+>> +}
+>> +
+>>  static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+>>  {
+>>         unsigned int state_idx = genpd->state_idx;
+>> @@ -358,6 +377,7 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
+>>                         return ret;
+>>         }
+>>
+>> +       genpd_update_accounting(genpd);
+> 
+> It find it a bit odd to update accounting just before changing the
+> status. Can we re-work this and update accounting right afterwards
+> instead? At least to me, that makes this easier to understand.
+
+The accounting is being updated for the previous state and not the
+current state. For eg if the domain has been previously off and just
+turned on, the time spent in off state is updated. So it
+upadte_accounting has to be before changing the status.
+Sorry I did not mention this earlier as I just realized this as
+I was reworking the patches.
+
+Regards
+Thara
+> 
+>>         genpd->status = GPD_STATE_POWER_OFF;
+>>
+>>         list_for_each_entry(link, &genpd->slave_links, slave_node) {
+>> @@ -410,6 +430,7 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
+>>         if (ret)
+>>                 goto err;
+>>
+>> +       genpd_update_accounting(genpd);
+> 
+> Ditto.
+> 
+>>         genpd->status = GPD_STATE_ACTIVE;
+>>         return 0;
+>>
+>> @@ -774,6 +795,7 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
+>>         if (_genpd_power_off(genpd, false))
+>>                 return;
+>>
+>> +       genpd_update_accounting(genpd);
+> 
+> Timekeeping gets disabled at a certain point during suspend. Therefore
+> you can't update accounting here, as this function gets called in this
+> stages.
+> 
+>>         genpd->status = GPD_STATE_POWER_OFF;
+>>
+>>         list_for_each_entry(link, &genpd->slave_links, slave_node) {
+>> @@ -821,6 +843,7 @@ static void genpd_sync_power_on(struct generic_pm_domain *genpd, bool use_lock,
+>>
+>>         _genpd_power_on(genpd, false);
+>>
+>> +       genpd_update_accounting(genpd);
+> 
+> Ditto.
+> 
+>>         genpd->status = GPD_STATE_ACTIVE;
+>>  }
+>>
+>> @@ -1486,6 +1509,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+>>         genpd->max_off_time_changed = true;
+>>         genpd->provider = NULL;
+>>         genpd->has_provider = false;
+>> +       genpd->accounting_time = ktime_get();
+>>         genpd->domain.ops.runtime_suspend = genpd_runtime_suspend;
+>>         genpd->domain.ops.runtime_resume = genpd_runtime_resume;
+>>         genpd->domain.ops.prepare = pm_genpd_prepare;
+>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>> index b7803a2..8bee0e3 100644
+>> --- a/include/linux/pm_domain.h
+>> +++ b/include/linux/pm_domain.h
+>> @@ -43,6 +43,7 @@ struct genpd_power_state {
+>>         s64 power_on_latency_ns;
+>>         s64 residency_ns;
+>>         struct fwnode_handle *fwnode;
+>> +       ktime_t active_time;
+>>  };
+>>
+>>  struct genpd_lock_ops;
+>> @@ -78,6 +79,9 @@ struct generic_pm_domain {
+>>         unsigned int state_count; /* number of states */
+>>         unsigned int state_idx; /* state that genpd will go to when off */
+>>         void *free; /* Free the state that was allocated for default */
+>> +       ktime_t on_time;
+>> +       ktime_t off_time;
+>> +       ktime_t accounting_time;
+>>         const struct genpd_lock_ops *lock_ops;
+>>         union {
+>>                 struct mutex mlock;
+>> --
+>> 2.1.4
+>>
+> 
+> Kind regards
+> Uffe
 > 
 
-Gentle ping on this. If you're OK with the patch any chance you can pick it up?
 
-Regards,
-Dave
+-- 
+Regards
+Thara
