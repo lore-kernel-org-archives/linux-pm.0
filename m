@@ -1,53 +1,66 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 6/8] PM / Domains: Fix unsafe iteration over modified
- list of domains
-Date: Tue, 13 Jun 2017 12:39:14 +0200
-Message-ID: <CAPDyKFqo_JscR6e16pXceCT5YqwNFozkJw+YNB5Jz60kQd0Vxw@mail.gmail.com>
-References: <20170612151748.7380-1-krzk@kernel.org> <20170612151748.7380-7-krzk@kernel.org>
+Subject: Re: [PATCH v2 7/8] PM / Domains: Fix missing default_power_down_ok comment
+Date: Tue, 13 Jun 2017 12:39:35 +0200
+Message-ID: <CAPDyKFryAji5ZFkhuN24zNCjPf2kcfvzVgxC9j1ub3L59LRVTg@mail.gmail.com>
+References: <20170612151748.7380-1-krzk@kernel.org> <20170612151748.7380-8-krzk@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170612151748.7380-7-krzk@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "# 4.0+" <stable@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f171.google.com ([209.85.216.171]:35620 "EHLO
+        mail-qt0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752078AbdFMKjg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Jun 2017 06:39:36 -0400
+Received: by mail-qt0-f171.google.com with SMTP id w1so164602203qtg.2
+        for <linux-pm@vger.kernel.org>; Tue, 13 Jun 2017 03:39:36 -0700 (PDT)
+In-Reply-To: <20170612151748.7380-8-krzk@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
 On 12 June 2017 at 17:17, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> of_genpd_remove_last() iterates over list of domains and removes
-> matching element thus it has to use safe version of list iteration.
+> Commit fc5cbf0c94b6 ("PM / Domains: Support for multiple states") split
+> out some code out of default_power_down_ok() function so the
+> documentation has to be moved to appropriate place.
 >
-> Fixes: 17926551c98a ("PM / Domains: Add support for removing nested PM domains by provider")
-> Cc: <stable@vger.kernel.org>
 > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
 Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 > ---
->  drivers/base/power/domain.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/base/power/domain_governor.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
 >
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index b74b5111957a..33467beaeea4 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1934,14 +1934,14 @@ EXPORT_SYMBOL_GPL(of_genpd_add_subdomain);
->   */
->  struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
+> diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+> index 2e0fce711135..281f949c5ffe 100644
+> --- a/drivers/base/power/domain_governor.c
+> +++ b/drivers/base/power/domain_governor.c
+> @@ -92,12 +92,6 @@ static bool default_suspend_ok(struct device *dev)
+>         return td->cached_suspend_ok;
+>  }
+>
+> -/**
+> - * default_power_down_ok - Default generic PM domain power off governor routine.
+> - * @pd: PM domain to check.
+> - *
+> - * This routine must be executed under the PM domain's lock.
+> - */
+>  static bool __default_power_down_ok(struct dev_pm_domain *pd,
+>                                      unsigned int state)
 >  {
-> -       struct generic_pm_domain *gpd, *genpd = ERR_PTR(-ENOENT);
-> +       struct generic_pm_domain *gpd, *tmp, *genpd = ERR_PTR(-ENOENT);
->         int ret;
+> @@ -187,6 +181,12 @@ static bool __default_power_down_ok(struct dev_pm_domain *pd,
+>         return true;
+>  }
 >
->         if (IS_ERR_OR_NULL(np))
->                 return ERR_PTR(-EINVAL);
->
->         mutex_lock(&gpd_list_lock);
-> -       list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
-> +       list_for_each_entry_safe(gpd, tmp, &gpd_list, gpd_list_node) {
->                 if (gpd->provider == &np->fwnode) {
->                         ret = genpd_remove(gpd);
->                         genpd = ret ? ERR_PTR(ret) : gpd;
+> +/**
+> + * default_power_down_ok - Default generic PM domain power off governor routine.
+> + * @pd: PM domain to check.
+> + *
+> + * This routine must be executed under the PM domain's lock.
+> + */
+>  static bool default_power_down_ok(struct dev_pm_domain *pd)
+>  {
+>         struct generic_pm_domain *genpd = pd_to_genpd(pd);
 > --
 > 2.9.3
 >
