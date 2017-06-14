@@ -1,32 +1,32 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 1/2] soc: renesas: rcar-sysc: Use GENPD_FLAG_ALWAYS_ON
-Date: Wed, 14 Jun 2017 10:58:14 +0200
-Message-ID: <20170614085814.GD26958@verge.net.au>
-References: <1497259427-8299-1-git-send-email-geert+renesas@glider.be>
- <1497259427-8299-2-git-send-email-geert+renesas@glider.be>
- <CAPDyKFrPzzK+-Re-nPvrs_S2wMLDyuNh+1w3_z3w_L7wmy7bEg@mail.gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: [PATCH] thermal: bcm2835: fix an error code in probe()
+Date: Wed, 14 Jun 2017 12:13:27 +0300
+Message-ID: <20170614091327.GD29394@elgon.mountain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:44274 "EHLO
-        kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753624AbdFNI6Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2017 04:58:24 -0400
+Return-path: <kernel-janitors-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFrPzzK+-Re-nPvrs_S2wMLDyuNh+1w3_z3w_L7wmy7bEg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Stefan Wahren <stefan.wahren@i2se.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Eric Anholt <eric@anholt.net>, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, Martin Sperl <kernel@martin.sperl.org>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, Jun 12, 2017 at 02:27:58PM +0200, Ulf Hansson wrote:
-> On 12 June 2017 at 11:23, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> > Improve handling of always-on PM domains by using the
-> > GENPD_FLAG_ALWAYS_ON flag introduced in commit ffaa42e8a40b7f10 ("PM /
-> > Domains: Enable users of genpd to specify always on PM domains").
-> >
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> 
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+This causes a static checker because we're passing a valid pointer to
+PTR_ERR().  "err" is already the correct error code, so we can just
+delete this line.
 
-Thanks, I have queued this up for v4.13.
+Fixes: bcb7dd9ef206 ("thermal: bcm2835: add thermal driver for bcm2835 SoC")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
+index 0ecf80890c84..e6863c841662 100644
+--- a/drivers/thermal/broadcom/bcm2835_thermal.c
++++ b/drivers/thermal/broadcom/bcm2835_thermal.c
+@@ -245,7 +245,6 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 		 */
+ 		err = tz->ops->get_trip_temp(tz, 0, &trip_temp);
+ 		if (err < 0) {
+-			err = PTR_ERR(tz);
+ 			dev_err(&pdev->dev,
+ 				"Not able to read trip_temp: %d\n",
+ 				err);
