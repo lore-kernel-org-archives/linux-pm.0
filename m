@@ -1,71 +1,49 @@
-From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v15 2/7] power: add power sequence library
-Date: Wed, 14 Jun 2017 09:53:39 +0800
-Message-ID: <20170614015338.GA4635@b29397-desktop>
-References: <1497319166-17287-1-git-send-email-peter.chen@nxp.com>
- <1497319166-17287-3-git-send-email-peter.chen@nxp.com>
- <CAPDyKFpOQWTPpdd__OBP1DcW58CbqnygGAOxiEFq5kqqvCm0QA@mail.gmail.com>
+From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH 2/4] ARM: dts: tps65217: Add power button interrupt to
+ the common tps65217.dtsi file
+Date: Tue, 13 Jun 2017 21:55:52 -0700
+Message-ID: <20170614045551.GB3730@atomide.com>
+References: <20170612212412.22719-1-enric.balletbo@collabora.com>
+ <20170612212412.22719-2-enric.balletbo@collabora.com>
+ <20170613073519.GA3730@atomide.com>
+ <CAFqH_50syu5aHBQtJkh-Dpz8Yc_6w0X853DO46T3ZAAJ10F-Pw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFpOQWTPpdd__OBP1DcW58CbqnygGAOxiEFq5kqqvCm0QA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+In-Reply-To: <CAFqH_50syu5aHBQtJkh-Dpz8Yc_6w0X853DO46T3ZAAJ10F-Pw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Stephen Boyd <stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, frank.li-3arQi8VN3Tc@public.gmane.org, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Gary Bisson <gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org>, Fabio Estevam <festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Vaibhav Hiremath <vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Maciej S. Szmigiero" <mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY@public.gmane.org>
+To: Enric Balletbo Serra <eballetbo-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, "linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Javier Martinez Canillas <javier-0uQlZySMnqxg9hUCZPvPmw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 13, 2017 at 12:24:42PM +0200, Ulf Hansson wrote:
-> [...]
+* Enric Balletbo Serra <eballetbo-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> [170613 02:12]:
+> Hi Tony,
 > 
-> > +
-> > +/**
-> > + * of_pwrseq_on - Carry out power sequence on for device node
-> > + *
-> > + * @np: the device node would like to power on
-> > + *
-> > + * Carry out a single device power on.  If multiple devices
-> > + * need to be handled, use of_pwrseq_on_list() instead.
-> > + *
-> > + * Return a pointer to the power sequence instance on success,
-> > + * or an error code otherwise.
-> > + */
-> > +struct pwrseq *of_pwrseq_on(struct device_node *np)
-> > +{
-> > +       struct pwrseq *pwrseq;
-> > +       int ret;
-> > +
-> > +       pwrseq = pwrseq_find_available_instance(np);
-> > +       if (!pwrseq)
-> > +               return ERR_PTR(-ENOENT);
+> 2017-06-13 9:35 GMT+02:00 Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>:
+> > * Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> [170612 14:28]:
+> >> The interrupt for power button is static data that comes from the
+> >> datasheet, there is no reason to need to define this value on every
+> >> board so seams reasonable put this information into the common tps65217
+> >> file.
+> >
+> > I think there's a problem with these patches where we no longer know
+> > if the interrupts are wired up on a board. For example, if the USB PHY
+> > VBUS interrupt is not connected, the phy driver needs poll the
+> > cable state.
+> >
 > 
-> In case the pwrseq instance hasn't been registered yet, then there is
-> no way to deal with -EPROBE_DEFER properly here.
-> 
-> I haven't been following the discussions in-depth during all
-> iterations, so perhaps you have already discussed why doing it like
-> this.
+> Hmm, the tps65217 doesn't have a USB PHY like others tps, so not sure
+> how could affect this patch. Did you see this issue in any board that
+> uses tps65217 or any am335x based board which commonly uses this pmic?
 
-Yes, it has been discussed. In order to compare with compatible string
-at dts, we need to have one registered pwrseq instance for each
-pwrseq library, this pre-registered one is allocated using
-postcore_initcall, and the new (eg, second) instance is registered
-after pwrseq_get has succeeded.
+Oh sorry I misread your patch. I thought you're removing
+the interrupts from dts, but you're just moving the dts entries
+to the common dtsi file :) So seems just fine with me.
 
-Peter
+Regards,
 
-> 
-> Anyway, that means all pwrseq instances needs to be registered an
-> early boot level, to be safe. To me, that seems like poor design
-> choice.
-> 
-> Otherwise I think this looks okay to me.
-> 
-
--- 
-
-Best Regards,
-Peter Chen
+Tony
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
