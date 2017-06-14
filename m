@@ -1,47 +1,40 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [PATCH] thermal: bcm2835: fix an error code in probe()
-Date: Wed, 14 Jun 2017 19:12:21 +0200 (CEST)
-Message-ID: <1228273578.70849.1497460341422@email.1und1.de>
-References: <20170614091327.GD29394@elgon.mountain>
+From: "santosh.shilimkar@oracle.com" <santosh.shilimkar@oracle.com>
+Subject: Re: [PATCH] dt-bindings: Drop k2g genpd device ID macros
+Date: Wed, 14 Jun 2017 10:21:37 -0700
+Message-ID: <4785c98e-9b3d-9881-c0e3-9570c283dfd3@oracle.com>
+References: <20170522183737.24946-1-d-gerlach@ti.com>
+ <20170531162850.mf6giowmxj5vetxq@rob-hp-laptop>
+ <ca91000a-627b-a655-4304-b64b78bbcf9a@ti.com>
+ <fc503960-d225-895c-c993-974ba6c5a92d@oracle.com>
+ <3de2ed22-2de9-101a-5ee6-0077fe523ce2@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([217.72.192.73]:63490 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751714AbdFNRMx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2017 13:12:53 -0400
-In-Reply-To: <20170614091327.GD29394@elgon.mountain>
+Received: from userp1040.oracle.com ([156.151.31.81]:30822 "EHLO
+        userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751904AbdFNRWJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2017 13:22:09 -0400
+In-Reply-To: <3de2ed22-2de9-101a-5ee6-0077fe523ce2@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>, Martin Sperl <kernel@martin.sperl.org>, Eric Anholt <eric@anholt.net>, kernel-janitors@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
+To: Tero Kristo <t-kristo@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Suman Anna <s-anna@ti.com>, Andrew Davis <afd@ti.com>, Franklin Cooper <fcooper@ti.com>
 
+On 6/14/17 12:07 AM, Tero Kristo wrote:
+> On 13/06/17 23:32, Santosh Shilimkar wrote:
 
-> Dan Carpenter <dan.carpenter@oracle.com> hat am 14. Juni 2017 um 11:13 geschrieben:
-> 
-> 
-> This causes a static checker because we're passing a valid pointer to
-> PTR_ERR().  "err" is already the correct error code, so we can just
-> delete this line.
-> 
-> Fixes: bcb7dd9ef206 ("thermal: bcm2835: add thermal driver for bcm2835 SoC")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> 
-> diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
-> index 0ecf80890c84..e6863c841662 100644
-> --- a/drivers/thermal/broadcom/bcm2835_thermal.c
-> +++ b/drivers/thermal/broadcom/bcm2835_thermal.c
-> @@ -245,7 +245,6 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
->  		 */
->  		err = tz->ops->get_trip_temp(tz, 0, &trip_temp);
->  		if (err < 0) {
-> -			err = PTR_ERR(tz);
->  			dev_err(&pdev->dev,
->  				"Not able to read trip_temp: %d\n",
->  				err);
+[...]
 
-Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+>> Sorry Dave I missed to pick this one in pull request for 4.13. Will
+>> pick this
+>> one along with what Suman and Tero have been working for following merge
+>> window. Thanks for reminding about this one.
+>
+> I think Stephen will probably be picking up the clock part directly by
+> himself.
+>
+Works for me :-)
 
-Thanks
-Stefan
+Regards,
+Santosh
