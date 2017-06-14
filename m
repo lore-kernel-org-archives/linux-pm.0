@@ -1,57 +1,122 @@
-From: Tero Kristo <t-kristo@ti.com>
-Subject: Re: [PATCH] dt-bindings: Drop k2g genpd device ID macros
-Date: Wed, 14 Jun 2017 10:07:23 +0300
-Message-ID: <3de2ed22-2de9-101a-5ee6-0077fe523ce2@ti.com>
-References: <20170522183737.24946-1-d-gerlach@ti.com>
- <20170531162850.mf6giowmxj5vetxq@rob-hp-laptop>
- <ca91000a-627b-a655-4304-b64b78bbcf9a@ti.com>
- <fc503960-d225-895c-c993-974ba6c5a92d@oracle.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH 2/6] drivers base/arch_topology: frequency-invariant
+ load-tracking support
+Date: Wed, 14 Jun 2017 09:55:44 +0200
+Message-ID: <9716a48d-8198-a1d8-9450-de6386338665@arm.com>
+References: <20170608075513.12475-1-dietmar.eggemann@arm.com>
+ <20170608075513.12475-3-dietmar.eggemann@arm.com>
+ <CAKfTPtDB=5mQnJfzES+iU-nmNjVDM48f_iKuc7WefkRVWW4JOQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <fc503960-d225-895c-c993-974ba6c5a92d@oracle.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKfTPtDB=5mQnJfzES+iU-nmNjVDM48f_iKuc7WefkRVWW4JOQ@mail.gmail.com>
 Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Santosh Shilimkar <santosh.shilimkar@oracle.com>, Dave Gerlach <d-gerlach@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>
-Cc: Nishanth Menon <nm@ti.com>, Rob Herring <robh@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Arnd Bergmann <arnd@arndb.de>, devicetree@vger.kernel.org, Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Davis <afd@ti.com>, Kevin Hilman <khilman@kernel.org>, Franklin Cooper <fcooper@ti.com>, linux-arm-kernel@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, LAK <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 13/06/17 23:32, Santosh Shilimkar wrote:
-> On 6/13/2017 1:16 PM, Dave Gerlach wrote:
->> Santosh,
->> On 05/31/2017 11:28 AM, Rob Herring wrote:
->>> On Mon, May 22, 2017 at 01:37:37PM -0500, Dave Gerlach wrote:
-> [...]
+On 06/12/2017 04:27 PM, Vincent Guittot wrote:
+> On 8 June 2017 at 09:55, Dietmar Eggemann <dietmar.eggemann@arm.com> wrote:
+
+Hi Vincent,
+
+Thanks for the review!
+
+[...]
+
+>> @@ -225,8 +265,14 @@ static int __init register_cpufreq_notifier(void)
+>>
+>>          cpumask_copy(cpus_to_visit, cpu_possible_mask);
+>>
+>> -       return cpufreq_register_notifier(&init_cpu_capacity_notifier,
+>> -                                        CPUFREQ_POLICY_NOTIFIER);
+>> +       ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
+>> +                                       CPUFREQ_POLICY_NOTIFIER);
+>> +
+>> +       if (ret)
 > 
->>>> [1] https://www.spinics.net/lists/arm-kernel/msg577079.html
->>>>
->>>>   .../devicetree/bindings/soc/ti/sci-pm-domain.txt   |  5 +-
->>>>   include/dt-bindings/genpd/k2g.h                    | 90 
->>>> ----------------------
->>>>   2 files changed, 3 insertions(+), 92 deletions(-)
->>>>   delete mode 100644 include/dt-bindings/genpd/k2g.h
->>>
->>> Acked-by: Rob Herring <robh@kernel.org>
->>>
->>
->> Gentle ping on this. If you're OK with the patch any chance you can 
->> pick it up?
->>
-> Sorry Dave I missed to pick this one in pull request for 4.13. Will pick 
-> this
-> one along with what Suman and Tero have been working for following merge
-> window. Thanks for reminding about this one.
+> Don't you have to free memory allocated for cpus_to_visit in case of
+> errot ? it was not done before your patch as well
 
-I think Stephen will probably be picking up the clock part directly by 
-himself.
+Yes, we should free cpus_to_visit if the policy notifier registration
+fails. But IMHO also, once the parsing of the capacity-dmips-mhz property
+is done. free cpus_to_visit is only used in the notifier call 
+init_cpu_capacity_callback() after being allocated and initialized in
+register_cpufreq_notifier().
 
--Tero
+We could add something like this as the first patch of this set. Only
+mildly tested on Juno. Juri, what do you think?
+
+Author: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Date:   Tue Jun 13 23:21:59 2017 +0100
+
+    drivers base/arch_topology: free cpumask cpus_to_visit
+    
+    Free cpumask cpus_to_visit in case registering
+    init_cpu_capacity_notifier has failed or the parsing of the cpu
+    capacity-dmips-mhz property is done. The cpumask cpus_to_visit is
+    only used inside the notifier call init_cpu_capacity_callback.
+    
+    Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
+    Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+
+diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+index d1c33a85059e..f4832c662762 100644
+--- a/drivers/base/arch_topology.c
++++ b/drivers/base/arch_topology.c
+@@ -206,6 +206,8 @@ static struct notifier_block init_cpu_capacity_notifier = {
+ 
+ static int __init register_cpufreq_notifier(void)
+ {
++       int ret;
++
+        /*
+         * on ACPI-based systems we need to use the default cpu capacity
+         * until we have the necessary code to parse the cpu capacity, so
+@@ -221,13 +223,19 @@ static int __init register_cpufreq_notifier(void)
+ 
+        cpumask_copy(cpus_to_visit, cpu_possible_mask);
+ 
+-       return cpufreq_register_notifier(&init_cpu_capacity_notifier,
+-                                        CPUFREQ_POLICY_NOTIFIER);
++       ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
++                                       CPUFREQ_POLICY_NOTIFIER);
++
++       if (ret)
++               free_cpumask_var(cpus_to_visit);
++
++       return ret;
+ }
+ core_initcall(register_cpufreq_notifier);
+ 
+ static void parsing_done_workfn(struct work_struct *work)
+ {
++       free_cpumask_var(cpus_to_visit);
+        cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
+                                         CPUFREQ_POLICY_NOTIFIER);
+ }
+
+>> +               return ret;
+>> +
+>> +       return cpufreq_register_notifier(&set_freq_scale_notifier,
+>> +                                        CPUFREQ_TRANSITION_NOTIFIER);
+> 
+> Don't you have to unregister the other cpufreq notifier if an error is
+> returned and free the mem allocated for cpus_to_visit ?
+
+IMHO, that's not necessary.
+
+The transition notifier works completely independent from the policy
+notifier. In case the latter gets registered correctly and the registration
+of the former fails, the notifier call of the policy notifier still parses
+the capacity-dmips-mhz property information and sets per_cpu(max_freq, cpu).
+
+The notifier call set_freq_scale_callback() of the transition notifier will
+not be called so that frequency invariance always returns
+SCHED_CAPACITY_SCALE.
+
+After the policy notifier has finished its work, it schedules
+parsing_done_work() in which it gets unregistered.
+
+[...]
