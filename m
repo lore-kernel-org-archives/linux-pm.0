@@ -1,63 +1,96 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH V2 2/2] PM / Domains: Extend generic power domain debugfs.
-Date: Wed, 14 Jun 2017 10:26:58 +0200
-Message-ID: <CAMuHMdXNdgegJ40k8QZ-B09Q1uT=jt+W=gMDUfBVi=u690LKYw@mail.gmail.com>
-References: <1497385659-2356-1-git-send-email-thara.gopinath@linaro.org> <1497385659-2356-3-git-send-email-thara.gopinath@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v15 2/7] power: add power sequence library
+Date: Wed, 14 Jun 2017 10:53:29 +0200
+Message-ID: <CAPDyKFrLL10TY1JZAhF44_0+qGETLNtFc6ujKVUu7Ay=O8+M5A@mail.gmail.com>
+References: <1497319166-17287-1-git-send-email-peter.chen@nxp.com>
+ <1497319166-17287-3-git-send-email-peter.chen@nxp.com>
+ <CAPDyKFpOQWTPpdd__OBP1DcW58CbqnygGAOxiEFq5kqqvCm0QA@mail.gmail.com>
+ <20170614015338.GA4635@b29397-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f51.google.com ([209.85.214.51]:37737 "EHLO
-        mail-it0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750828AbdFNI1B (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2017 04:27:01 -0400
-Received: by mail-it0-f51.google.com with SMTP id m47so51517897iti.0
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2017 01:27:00 -0700 (PDT)
-In-Reply-To: <1497385659-2356-3-git-send-email-thara.gopinath@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170614015338.GA4635@b29397-desktop>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Peter Chen <hzpeterchen@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Peter Chen <peter.chen@nxp.com>, Heiko Stuebner <heiko@sntech.de>, Stephen Boyd <stephen.boyd@linaro.org>, frank.li@nxp.com, Sebastian Reichel <sre@kernel.org>, Gary Bisson <gary.bisson@boundarydevices.com>, Fabio Estevam <festevam@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Vaibhav Hiremath <vaibhav.hiremath@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, mka@chromium.org, Alan Stern <stern@rowland.harvard.edu>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, troy.kisky@boundarydevices.com, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infra
 List-Id: linux-pm@vger.kernel.org
-To: Thara Gopinath <thara.gopinath@linaro.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg KH <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Thara,
+On 14 June 2017 at 03:53, Peter Chen <hzpeterchen@gmail.com> wrote:
+> On Tue, Jun 13, 2017 at 12:24:42PM +0200, Ulf Hansson wrote:
+>> [...]
+>>
+>> > +
+>> > +/**
+>> > + * of_pwrseq_on - Carry out power sequence on for device node
+>> > + *
+>> > + * @np: the device node would like to power on
+>> > + *
+>> > + * Carry out a single device power on.  If multiple devices
+>> > + * need to be handled, use of_pwrseq_on_list() instead.
+>> > + *
+>> > + * Return a pointer to the power sequence instance on success,
+>> > + * or an error code otherwise.
+>> > + */
+>> > +struct pwrseq *of_pwrseq_on(struct device_node *np)
+>> > +{
+>> > +       struct pwrseq *pwrseq;
+>> > +       int ret;
+>> > +
+>> > +       pwrseq = pwrseq_find_available_instance(np);
+>> > +       if (!pwrseq)
+>> > +               return ERR_PTR(-ENOENT);
+>>
+>> In case the pwrseq instance hasn't been registered yet, then there is
+>> no way to deal with -EPROBE_DEFER properly here.
+>>
+>> I haven't been following the discussions in-depth during all
+>> iterations, so perhaps you have already discussed why doing it like
+>> this.
+>
+> Yes, it has been discussed. In order to compare with compatible string
+> at dts, we need to have one registered pwrseq instance for each
+> pwrseq library, this pre-registered one is allocated using
+> postcore_initcall, and the new (eg, second) instance is registered
+> after pwrseq_get has succeeded.
 
-On Tue, Jun 13, 2017 at 10:27 PM, Thara Gopinath
-<thara.gopinath@linaro.org> wrote:
-> +static int pm_genpd_idle_states_show(struct seq_file *s, void *data)
-> +{
-> +       struct generic_pm_domain *genpd = s->private;
-> +       int i, ret = 0;
-> +
-> +       ret = genpd_lock_interruptible(genpd);
-> +       if (ret)
-> +               return -ERESTARTSYS;
-> +
-> +       seq_puts(s, "State          Time Spent(ms)\n");
-> +
-> +       for (i = 0; i < genpd->state_count; i++) {
-> +               ktime_t delta = 0;
-> +               s64 msecs;
-> +
-> +               if ((genpd->status == GPD_STATE_POWER_OFF) &&
-> +                               (genpd->state_idx == i))
-> +                       delta = ktime_sub(ktime_get(), genpd->accounting_time);
-> +
-> +               msecs = ktime_to_ms(
-> +                       ktime_add(genpd->states[i].idle_time, delta));
-> +               seq_printf(s, "S%-15i %lld\n", i, msecs);
-> +       }
+I understand you need one compatible per pwrseq library, but how does
+that have anything to do with -EPROBE_DEFER?
 
-The ms values are misaligned by one space, compared to the table header:
+My point is that, if a driver calls of_pwrseq_on() (which calls
+pwrseq_find_available_instance()), but the corresponding pwrseq
+library and instance has not yet been registered for that device. Then
+how will you handle -EPROBE_DEFER? I guess you simply can't, which is
+why *all* pwrseq libraries needs to be registered in early boot phase,
+like at postcore_initcall(). Right?
 
-    State          Time Spent(ms)
-    S0               0
+If that is the case, I really don't like it.
 
-Gr{oetje,eeting}s,
+Moreover, I have found yet another severe problem but reviewing the code:
+In the struct pwrseq, you have a "bool used", which you are setting to
+"true" once the pwrseq has been hooked up with the device, when a
+driver calls of_pwrseq_on(). Setting that variable to true, will also
+prevent another driver from using the same instance of the pwrseq for
+its device. So, to cope with multiple users, you register a new
+instance of the same pwrseq library that got hooked up, once the
+->get() callback is about to complete.
 
-                        Geert
+The problem the occurs, when there is another driver calling
+of_pwrseq_on() in between, meaning that the new instance has not yet
+been registered. This will simply fail, won't it?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Sorry for jumping in late, however to me it seems like there is still
+some pieces missing to make this work.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+[...]
+
+Kind regards
+Uffe
