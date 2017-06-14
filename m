@@ -1,50 +1,57 @@
-From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 2/4] ARM: dts: tps65217: Add power button interrupt to
- the common tps65217.dtsi file
-Date: Tue, 13 Jun 2017 21:55:52 -0700
-Message-ID: <20170614045551.GB3730@atomide.com>
-References: <20170612212412.22719-1-enric.balletbo@collabora.com>
- <20170612212412.22719-2-enric.balletbo@collabora.com>
- <20170613073519.GA3730@atomide.com>
- <CAFqH_50syu5aHBQtJkh-Dpz8Yc_6w0X853DO46T3ZAAJ10F-Pw@mail.gmail.com>
+From: Tero Kristo <t-kristo@ti.com>
+Subject: Re: [PATCH] dt-bindings: Drop k2g genpd device ID macros
+Date: Wed, 14 Jun 2017 10:07:23 +0300
+Message-ID: <3de2ed22-2de9-101a-5ee6-0077fe523ce2@ti.com>
+References: <20170522183737.24946-1-d-gerlach@ti.com>
+ <20170531162850.mf6giowmxj5vetxq@rob-hp-laptop>
+ <ca91000a-627b-a655-4304-b64b78bbcf9a@ti.com>
+ <fc503960-d225-895c-c993-974ba6c5a92d@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAFqH_50syu5aHBQtJkh-Dpz8Yc_6w0X853DO46T3ZAAJ10F-Pw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Enric Balletbo Serra <eballetbo-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, "linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Javier Martinez Canillas <javier-0uQlZySMnqxg9hUCZPvPmw@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <fc503960-d225-895c-c993-974ba6c5a92d@oracle.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Santosh Shilimkar <santosh.shilimkar@oracle.com>, Dave Gerlach <d-gerlach@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>
+Cc: Nishanth Menon <nm@ti.com>, Rob Herring <robh@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Arnd Bergmann <arnd@arndb.de>, devicetree@vger.kernel.org, Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Davis <afd@ti.com>, Kevin Hilman <khilman@kernel.org>, Franklin Cooper <fcooper@ti.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-* Enric Balletbo Serra <eballetbo-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> [170613 02:12]:
-> Hi Tony,
+On 13/06/17 23:32, Santosh Shilimkar wrote:
+> On 6/13/2017 1:16 PM, Dave Gerlach wrote:
+>> Santosh,
+>> On 05/31/2017 11:28 AM, Rob Herring wrote:
+>>> On Mon, May 22, 2017 at 01:37:37PM -0500, Dave Gerlach wrote:
+> [...]
 > 
-> 2017-06-13 9:35 GMT+02:00 Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>:
-> > * Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> [170612 14:28]:
-> >> The interrupt for power button is static data that comes from the
-> >> datasheet, there is no reason to need to define this value on every
-> >> board so seams reasonable put this information into the common tps65217
-> >> file.
-> >
-> > I think there's a problem with these patches where we no longer know
-> > if the interrupts are wired up on a board. For example, if the USB PHY
-> > VBUS interrupt is not connected, the phy driver needs poll the
-> > cable state.
-> >
-> 
-> Hmm, the tps65217 doesn't have a USB PHY like others tps, so not sure
-> how could affect this patch. Did you see this issue in any board that
-> uses tps65217 or any am335x based board which commonly uses this pmic?
+>>>> [1] https://www.spinics.net/lists/arm-kernel/msg577079.html
+>>>>
+>>>>   .../devicetree/bindings/soc/ti/sci-pm-domain.txt   |  5 +-
+>>>>   include/dt-bindings/genpd/k2g.h                    | 90 
+>>>> ----------------------
+>>>>   2 files changed, 3 insertions(+), 92 deletions(-)
+>>>>   delete mode 100644 include/dt-bindings/genpd/k2g.h
+>>>
+>>> Acked-by: Rob Herring <robh@kernel.org>
+>>>
+>>
+>> Gentle ping on this. If you're OK with the patch any chance you can 
+>> pick it up?
+>>
+> Sorry Dave I missed to pick this one in pull request for 4.13. Will pick 
+> this
+> one along with what Suman and Tero have been working for following merge
+> window. Thanks for reminding about this one.
 
-Oh sorry I misread your patch. I thought you're removing
-the interrupts from dts, but you're just moving the dts entries
-to the common dtsi file :) So seems just fine with me.
+I think Stephen will probably be picking up the clock part directly by 
+himself.
 
-Regards,
-
-Tony
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-Tero
