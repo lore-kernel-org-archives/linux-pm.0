@@ -1,124 +1,36 @@
-From: Thara Gopinath <thara.gopinath@linaro.org>
-Subject: Re: [PATCH 1/2] PM / Domains: Add time accounting to various genpd
- states.
-Date: Wed, 14 Jun 2017 17:01:37 -0400
-Message-ID: <5941A431.1090901@linaro.org>
-References: <1495756293-29534-1-git-send-email-thara.gopinath@linaro.org>
- <1495756293-29534-2-git-send-email-thara.gopinath@linaro.org>
- <CAPDyKFqfVN4KDQETdq9_edkNE0wi2Ff-g0w9i6UFE-NKbwhJGg@mail.gmail.com>
- <59404863.1030608@linaro.org>
- <CAPDyKFpVnvCv5P8xXBmnabgzvhLAFDVKn1bSM4MysXAzReMsjA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 1/8] ACPI / PM: Run wakeup notify handlers synchronously
+Date: Thu, 15 Jun 2017 00:22:25 +0200
+Message-ID: <CAJZ5v0gtGfpwHM-n+-e=Vc_+PwSMC3YxM1XESTgxL5Z1R-XsNg@mail.gmail.com>
+References: <8918199.uo13RZ8hZk@aspire.rjw.lan> <1615075.mBkoKApGGc@aspire.rjw.lan>
+ <5652844.yCt16F1gBo@aspire.rjw.lan> <20170614180943.GA20778@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f182.google.com ([209.85.161.182]:34198 "EHLO
-        mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751664AbdFNVBk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2017 17:01:40 -0400
-Received: by mail-yw0-f182.google.com with SMTP id e142so8187907ywa.1
-        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2017 14:01:40 -0700 (PDT)
-In-Reply-To: <CAPDyKFpVnvCv5P8xXBmnabgzvhLAFDVKn1bSM4MysXAzReMsjA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170614180943.GA20778@bhelgaas-glaptop.roam.corp.google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, Hans De Goede <hdegoede@redhat.com>, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@baylibre.com>
 
-On 06/14/2017 05:18 AM, Ulf Hansson wrote:
-> On 13 June 2017 at 22:17, Thara Gopinath <thara.gopinath@linaro.org> wrote:
->> On 06/07/2017 09:28 AM, Ulf Hansson wrote:
->> Hello Ulf,
+On Wed, Jun 14, 2017 at 8:09 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> On Mon, Jun 12, 2017 at 10:48:41PM +0200, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >>
->>> On 26 May 2017 at 01:51, Thara Gopinath <thara.gopinath@linaro.org> wrote:
->>>> This patch adds support to calculate the time spent by the generic
->>>> power domains in on and various idle states.
->>>>
->>>> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
->>>> ---
->>>>  drivers/base/power/domain.c | 24 ++++++++++++++++++++++++
->>>>  include/linux/pm_domain.h   |  4 ++++
->>>>  2 files changed, 28 insertions(+)
->>>>
->>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>>> index da49a83..e733796 100644
->>>> --- a/drivers/base/power/domain.c
->>>> +++ b/drivers/base/power/domain.c
->>>> @@ -207,6 +207,25 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
->>>>         smp_mb__after_atomic();
->>>>  }
->>>>
->>>> +static void genpd_update_accounting(struct generic_pm_domain *genpd)
->>>
->>> I suggest we have all this within #ifdef CONFIG_DEBUG_FS and add a
->>> stub for !CONFIG_DEBUG_FS.
->>>
->>>> +{
->>>> +       ktime_t delta, now;
->>>> +
->>>> +       now = ktime_get();
->>>> +       delta = ktime_sub(now, genpd->accounting_time);
->>>> +
->>>> +       if (genpd->status == GPD_STATE_ACTIVE) {
->>>> +               genpd->on_time = ktime_add(genpd->on_time, delta);
->>>> +       } else {
->>>> +               int state_idx = genpd->state_idx;
->>>> +
->>>> +               genpd->states[state_idx].active_time =
->>>
->>> "active_time" seems to be a misleading, can we rename it to "idle_time" instead?
->>>
->>>> +                       ktime_add(genpd->states[state_idx].active_time, delta);
->>>> +               genpd->off_time = ktime_add(genpd->off_time, delta);
->>>
->>> Isn't the off_time the summary of the states' genpd->states[i].active_time?
->>>
->>> Then we could do that computation quite easily at the point when
->>> producing the debugfs output instead.
->>>
->>>> +       }
->>>> +       genpd->accounting_time = now;
->>>> +}
->>>> +
->>>>  static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
->>>>  {
->>>>         unsigned int state_idx = genpd->state_idx;
->>>> @@ -358,6 +377,7 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
->>>>                         return ret;
->>>>         }
->>>>
->>>> +       genpd_update_accounting(genpd);
->>>
->>> It find it a bit odd to update accounting just before changing the
->>> status. Can we re-work this and update accounting right afterwards
->>> instead? At least to me, that makes this easier to understand.
+>> The work functions provided by the users of acpi_add_pm_notifier()
+>> should be run synchronously before re-enabling the wakeup GPE in
+>> case they are used to clear the status and/or disable the wakeup
+>> signaling at the source.  Otherwise, which is the case currently in
+>> the PCI bus type code, the same wakeup event may be signaled for
+>> multiple times while the execution of the work function in response
+>> to it has already been queued up.
 >>
->> The accounting is being updated for the previous state and not the
->> current state. For eg if the domain has been previously off and just
->> turned on, the time spent in off state is updated. So it
->> upadte_accounting has to be before changing the status.
->> Sorry I did not mention this earlier as I just realized this as
->> I was reworking the patches.
+>> Fortunately, acpi_add_pm_notifier() is only used by PCI and by
+>> ACPI device PM code internally, so the change is relatively
+>> straightforward to make.
 >>
-> 
-> Yes, I understand.
-> 
-> However, of course changing this also means that you need to change
-> how genpd_update_accounting works. That's was my main point, sorry if
-> that wasn't clear.
-Ok. Sorry for all the confusion. It is possible to rework
-genpd_update_accounting. I sent out the V2 yesterday. I will wait for a
-couple of more days for any other review comments on V2 before sending
-the re-worked patch set.
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Regards
-Thara
-
-> 
-> Kind regards
-> Uffe
-> 
-
-
--- 
-Regards
-Thara
+Thanks!
