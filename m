@@ -1,70 +1,83 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/2] dt-bindings: power: supply: move maxim,max14656.txt
- to proper location
-Date: Wed, 14 Jun 2017 22:12:07 +0200
-Message-ID: <20170614201206.wydlkxugmi26sqgy@earth>
-References: <20170608213602.13311-1-sre@kernel.org>
- <20170614152707.5iymwfw6fxerf6b7@rob-hp-laptop>
+Subject: Re: [PATCH] power: supply: constify psy_tcd_ops.
+Date: Wed, 14 Jun 2017 22:12:46 +0200
+Message-ID: <20170614201245.amwprdmnq4vso2xh@earth>
+References: <52491fb24dcf85b8e5624a9582d68784e762656c.1497330213.git.arvind.yadav.cs@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="s2ggw4o7wdgzxb2w"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:40298 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752413AbdFNUMM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 14 Jun 2017 16:12:12 -0400
+        protocol="application/pgp-signature"; boundary="cq6tfav7erfpe7nq"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170614152707.5iymwfw6fxerf6b7@rob-hp-laptop>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <52491fb24dcf85b8e5624a9582d68784e762656c.1497330213.git.arvind.yadav.cs@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
 
---s2ggw4o7wdgzxb2w
+--cq6tfav7erfpe7nq
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Jun 14, 2017 at 10:27:07AM -0500, Rob Herring wrote:
-> On Thu, Jun 08, 2017 at 11:36:01PM +0200, Sebastian Reichel wrote:
-> > This moves maxim,max14656.txt to proper location for
-> > power-supply bindings.
-> >=20
-> > Signed-off-by: Sebastian Reichel <sre@kernel.org>
-> > ---
-> >  .../devicetree/bindings/{power_supply =3D> power/supply}/maxim,max1465=
-6.txt | 0
-> >  1 file changed, 0 insertions(+), 0 deletions(-)
-> >  rename Documentation/devicetree/bindings/{power_supply =3D> power/supp=
-ly}/maxim,max14656.txt (100%)
+On Tue, Jun 13, 2017 at 10:39:43AM +0530, Arvind Yadav wrote:
+> File size before:
+> text	data	bss	dec   hex filename
+> 4240	 200	 80	4520 11a8 drivers/power/supply/power_supply_core.o
 >=20
-> Acked-by: Rob Herring <robh@kernel.org>
+> File size After adding 'const':
+> text	data	bss	dec   hex filename
+> 4296	 136	 80	4512 11a0 drivers/power/supply/power_supply_core.o
+>=20
+> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 
-Thanks for your Acks, both queued.
+Thanks, queued.
 
 -- Sebastian
 
---s2ggw4o7wdgzxb2w
+> ---
+>  drivers/power/supply/power_supply_core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
+ply/power_supply_core.c
+> index 7ec7c7c..2cc64b8 100644
+> --- a/drivers/power/supply/power_supply_core.c
+> +++ b/drivers/power/supply/power_supply_core.c
+> @@ -669,7 +669,7 @@ static int ps_set_cur_charge_cntl_limit(struct therma=
+l_cooling_device *tcd,
+>  	return ret;
+>  }
+> =20
+> -static struct thermal_cooling_device_ops psy_tcd_ops =3D {
+> +static const struct thermal_cooling_device_ops psy_tcd_ops =3D {
+>  	.get_max_state =3D ps_get_max_charge_cntl_limit,
+>  	.get_cur_state =3D ps_get_cur_chrage_cntl_limit,
+>  	.set_cur_state =3D ps_set_cur_charge_cntl_limit,
+> --=20
+> 1.9.1
+>=20
+
+--cq6tfav7erfpe7nq
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllBmJYACgkQ2O7X88g7
-+pp6AQ//bHsCO7opjXFQI13KOCW6mWlUbKwIrQ14mvv5mUDwiH5+dtGpiUvLH9cE
-GSUsIg/BbysmFK616ROK1RDs+qFfzrME0w0vqNxLimhQbxzBpyrWoMm5iml0aS3k
-0M/17HX6sEOS5l/jppAQl2gCNjsSZlTPjTzQgFYeyRQSb/URHNglOYcT1OmLVnXP
-mS+hz8uFYTjyNlGMq9o+fi9BmrmbWbVJM9gR7L5H1nVEXks1c0To2JEY28s7Sq+R
-up/P1hZKwDct1luUfNO9erSY8cgusiZ284P8alXPVAyEbpAecMnNbk83B7JXoE8k
-ZqtK4wiYZROV7C9nqpkF8MY8rPZ4x53d03tPBKrXMrs4Qgj+B60u6ylyl7jiEV7a
-lHQmiSgzW1f3p3lYVRhE6NNFYPvIWVLCBNRiBKFzTCwp1sMdmvG73acYGaBJ1hgw
-yZffjJxaPZ99rvb0qVSzIwluHsScL28g+GiXGkwQizCtZGIiyQu8udfqrOiUmfW8
-qubTet+HX5H9pVKMFUezAI8QgCq9yhjVWwqtazgUuG5MUiRCaPwtxwNc1Lo1P7XX
-izgYK5YYN+2wop8Mekbk/hyNjMMsfL4ngLMMqq+9SPrt+yLT9Am0aFhHexDpw/tn
-adkXOCMZbOqaYoo4Xork/2WGuYGEfyVp1n3Opk9QMKpT5iNFlKs=
-=MvZm
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllBmL0ACgkQ2O7X88g7
++prJJA/9EIJ/SZZe/eZ5naSthI95yRqMhXT0ANN5YqtbpHR27XlvjpRjiYeogqb/
+9KgalB/q+A7/o0gUuCtbBae+wOtyxuW5OocPy+mMeREdbTHnLqVJ9KTXBwYkr+w2
+NpR8GnahO2mVgz2rYbmA+lgdWM1YlhdGCBV7ehWwikcBqtU9xXof5IT2HdFHagRo
+pWBgzzU8n764BkLbdHgdWfPL6d3XhYAY36t4tR7CbenikgFFpaMcbO1wb8Vio6nB
+ha67ypv31rlNGIfb0DX2IIZtG4zKhUycc6u4hUX1m8U7HdQwCDP7k+/oSXokOxLv
+gT+qe06db+k0UALutkcpfuFEZ9KuMK7FjeSWf4eadpKKDSsFnXMAWQPJ8TKgRVVF
+c6ZLybVwfSgOcxwNBz7gHchAZJnNQ8Wadt+5xWDbHnyz5PLWrzK48RhrQedU4n0g
+wKhGvCdtZM4mp3nTpeUfzf5YzJHbuwhnOizxcjwPhwwJeg3UGT9H3TPHB+7GRV7A
+pfpRhSPL76pZNTG7bDR26nLSzNEqDIyJVZQLDIbwWuNF7p5TpWJ9vsApguDJqSQi
+3aB/vPehfczTrsoRVkpkG/pUpv5eW8lpCrLv8xGAxreHNzYU4UY0GDrNJH4dyW4O
+c0wdN+3xx38BEDBHWDA0ug2u82ISyk1DrCmFqag5N8sVRtSH5p4=
+=i7x0
 -----END PGP SIGNATURE-----
 
---s2ggw4o7wdgzxb2w--
+--cq6tfav7erfpe7nq--
