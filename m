@@ -1,83 +1,106 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: supply: constify psy_tcd_ops.
-Date: Wed, 14 Jun 2017 22:12:46 +0200
-Message-ID: <20170614201245.amwprdmnq4vso2xh@earth>
-References: <52491fb24dcf85b8e5624a9582d68784e762656c.1497330213.git.arvind.yadav.cs@gmail.com>
+Subject: Re: [PATCH v6 1/4] power: supply: twl4030-charger: allocate iio by
+ devm_iio_channel_get() and fix error path
+Date: Wed, 14 Jun 2017 22:13:18 +0200
+Message-ID: <20170614201317.36kwxhdvgh55qbcg@earth>
+References: <cover.1497432355.git.hns@goldelico.com>
+ <cf004f21916eb8bc1c9421b076c298d801b90de0.1497432355.git.hns@goldelico.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="cq6tfav7erfpe7nq"
+        protocol="application/pgp-signature"; boundary="tb7pgrbwpcelzydg"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <52491fb24dcf85b8e5624a9582d68784e762656c.1497330213.git.arvind.yadav.cs@gmail.com>
+In-Reply-To: <cf004f21916eb8bc1c9421b076c298d801b90de0.1497432355.git.hns@goldelico.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Marek Belisko <marek@goldelico.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---cq6tfav7erfpe7nq
+--tb7pgrbwpcelzydg
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Jun 13, 2017 at 10:39:43AM +0530, Arvind Yadav wrote:
-> File size before:
-> text	data	bss	dec   hex filename
-> 4240	 200	 80	4520 11a8 drivers/power/supply/power_supply_core.o
+On Wed, Jun 14, 2017 at 11:25:53AM +0200, H. Nikolaus Schaller wrote:
+> Suggested-by: Sebastian Reichel <sre@kernel.org>
+> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+> ---
+>  drivers/power/supply/twl4030_charger.c | 10 ++--------
+>  1 file changed, 2 insertions(+), 8 deletions(-)
 >=20
-> File size After adding 'const':
-> text	data	bss	dec   hex filename
-> 4296	 136	 80	4512 11a0 drivers/power/supply/power_supply_core.o
->=20
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+> diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/suppl=
+y/twl4030_charger.c
+> index 785a07bc4f39..9507c24495ba 100644
+> --- a/drivers/power/supply/twl4030_charger.c
+> +++ b/drivers/power/supply/twl4030_charger.c
+> @@ -1017,7 +1017,7 @@ static int twl4030_bci_probe(struct platform_device=
+ *pdev)
+>  		return ret;
+>  	}
+> =20
+> -	bci->channel_vac =3D iio_channel_get(&pdev->dev, "vac");
+> +	bci->channel_vac =3D devm_iio_channel_get(&pdev->dev, "vac");
+>  	if (IS_ERR(bci->channel_vac)) {
+>  		bci->channel_vac =3D NULL;
+>  		dev_warn(&pdev->dev, "could not request vac iio channel");
+> @@ -1044,7 +1044,7 @@ static int twl4030_bci_probe(struct platform_device=
+ *pdev)
+>  			       TWL4030_INTERRUPTS_BCIIMR1A);
+>  	if (ret < 0) {
+>  		dev_err(&pdev->dev, "failed to unmask interrupts: %d\n", ret);
+> -		goto fail;
+> +		return ret;
+>  	}
+> =20
+>  	reg =3D ~(u32)(TWL4030_VBATOV | TWL4030_VBUSOV | TWL4030_ACCHGOV);
+> @@ -1073,10 +1073,6 @@ static int twl4030_bci_probe(struct platform_devic=
+e *pdev)
+>  		twl4030_charger_enable_backup(0, 0);
+> =20
+>  	return 0;
+> -fail:
+> -	iio_channel_release(bci->channel_vac);
+> -
+> -	return ret;
+>  }
+> =20
+>  static int twl4030_bci_remove(struct platform_device *pdev)
+> @@ -1087,8 +1083,6 @@ static int twl4030_bci_remove(struct platform_devic=
+e *pdev)
+>  	twl4030_charger_enable_usb(bci, false);
+>  	twl4030_charger_enable_backup(0, 0);
+> =20
+> -	iio_channel_release(bci->channel_vac);
+> -
+>  	device_remove_file(&bci->usb->dev, &dev_attr_mode);
+>  	device_remove_file(&bci->ac->dev, &dev_attr_mode);
+>  	/* mask interrupts */
 
 Thanks, queued.
 
 -- Sebastian
 
-> ---
->  drivers/power/supply/power_supply_core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
-ply/power_supply_core.c
-> index 7ec7c7c..2cc64b8 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -669,7 +669,7 @@ static int ps_set_cur_charge_cntl_limit(struct therma=
-l_cooling_device *tcd,
->  	return ret;
->  }
-> =20
-> -static struct thermal_cooling_device_ops psy_tcd_ops =3D {
-> +static const struct thermal_cooling_device_ops psy_tcd_ops =3D {
->  	.get_max_state =3D ps_get_max_charge_cntl_limit,
->  	.get_cur_state =3D ps_get_cur_chrage_cntl_limit,
->  	.set_cur_state =3D ps_set_cur_charge_cntl_limit,
-> --=20
-> 1.9.1
->=20
-
---cq6tfav7erfpe7nq
+--tb7pgrbwpcelzydg
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllBmL0ACgkQ2O7X88g7
-+prJJA/9EIJ/SZZe/eZ5naSthI95yRqMhXT0ANN5YqtbpHR27XlvjpRjiYeogqb/
-9KgalB/q+A7/o0gUuCtbBae+wOtyxuW5OocPy+mMeREdbTHnLqVJ9KTXBwYkr+w2
-NpR8GnahO2mVgz2rYbmA+lgdWM1YlhdGCBV7ehWwikcBqtU9xXof5IT2HdFHagRo
-pWBgzzU8n764BkLbdHgdWfPL6d3XhYAY36t4tR7CbenikgFFpaMcbO1wb8Vio6nB
-ha67ypv31rlNGIfb0DX2IIZtG4zKhUycc6u4hUX1m8U7HdQwCDP7k+/oSXokOxLv
-gT+qe06db+k0UALutkcpfuFEZ9KuMK7FjeSWf4eadpKKDSsFnXMAWQPJ8TKgRVVF
-c6ZLybVwfSgOcxwNBz7gHchAZJnNQ8Wadt+5xWDbHnyz5PLWrzK48RhrQedU4n0g
-wKhGvCdtZM4mp3nTpeUfzf5YzJHbuwhnOizxcjwPhwwJeg3UGT9H3TPHB+7GRV7A
-pfpRhSPL76pZNTG7bDR26nLSzNEqDIyJVZQLDIbwWuNF7p5TpWJ9vsApguDJqSQi
-3aB/vPehfczTrsoRVkpkG/pUpv5eW8lpCrLv8xGAxreHNzYU4UY0GDrNJH4dyW4O
-c0wdN+3xx38BEDBHWDA0ug2u82ISyk1DrCmFqag5N8sVRtSH5p4=
-=i7x0
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllBmN0ACgkQ2O7X88g7
++pqABg//VM+t+l0rzyu5Z5YT6vs02u/zv8ygTxQUmrbw1IcpZSUL6OBfTfVjraM7
+kVE7DXughWfoNrSDSPap19HfXm3BGlTt7PRCy5aCxYYhco35UBPn2d8tzJH/poWd
+2Lbymm8B3a4tbyRSRo0Ojoo8ywZZwXk/fxkQYGemaqHDWnemftWLGdOelmNWav+i
+MePG/Eqnv/iWxwCrRSpt2Hc8tOXMBquasQzSjMuptL6Nl9Rm430KAIS0/DNnqXwT
+FsW9Jwh4Z6hrAC6o6oZbqEiOcA3ATW6x9WWQYtHZ7B9gwFBhCmcn4CqOvBWYSaKO
+CiHz4QW4lFdPT4gwbN5ladvyVFsH4hZfH5QdoulzdGh7MdFnnCcTaRKx8IcTJSvG
+5yTTaOVZ1bRholA0eNMGDDXsxoCJQ4/U9zxFzq8DvubgwSxqga0+trhKlq7zu1jf
+KC8/9XDqCYRI8IbuFWuMuWHgbo1ETN8SCDW9zbzBQ99h+N6L47JgqUKhN/8xq/qy
+b0LAlDEgnioQU2pMeM3UTH1cgN+XyURqeIj7hJ1DwVb9rhwfdp6jxi3bzgjA7cHt
+TWUfVgR/7x2hs96+et1oGOmNSYODG2Yr6hLGnF5TDoRA3OEO1ggkw8JgkUtrsyCu
+FnZ7o7v6Ux1Ihu0oI+/xhQXQezPqAiOjRFE464sJnojqMqjR30A=
+=EEaT
 -----END PGP SIGNATURE-----
 
---cq6tfav7erfpe7nq--
+--tb7pgrbwpcelzydg--
