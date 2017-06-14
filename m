@@ -1,102 +1,388 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v6 2/4] power: supply: twl4030-charger: move allocation
- of iio channel to the beginning
-Date: Wed, 14 Jun 2017 22:13:51 +0200
-Message-ID: <20170614201351.ixpfellwc35u27id@earth>
-References: <cover.1497432355.git.hns@goldelico.com>
- <0aa7052c6c8183ef12c08ed6aa069ddf8c748809.1497432355.git.hns@goldelico.com>
+From: Thara Gopinath <thara.gopinath@linaro.org>
+Subject: Re: [PATCH V2 0/2] PM / Domains: Expand generic power domain debugfs.
+Date: Wed, 14 Jun 2017 16:59:24 -0400
+Message-ID: <5941A3AC.6030605@linaro.org>
+References: <1497385659-2356-1-git-send-email-thara.gopinath@linaro.org>
+ <CAMuHMdXYkXm3NKE=MT0dF+x-wNHWDjYJ+bbO9gWEwwuFwYUKmA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="sqho5hzbgzetc2ah"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <0aa7052c6c8183ef12c08ed6aa069ddf8c748809.1497432355.git.hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
-Cc: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, NeilBrown <neil-+NVA1uvv1dVBDLzU/O5InQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Marek Belisko <marek-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, letux-kernel-S0jZdbWzriLCfDggNXIi3w@public.gmane.org, notasas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f180.google.com ([209.85.216.180]:34526 "EHLO
+        mail-qt0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751754AbdFNU73 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2017 16:59:29 -0400
+Received: by mail-qt0-f180.google.com with SMTP id c10so15781909qtd.1
+        for <linux-pm@vger.kernel.org>; Wed, 14 Jun 2017 13:59:29 -0700 (PDT)
+In-Reply-To: <CAMuHMdXYkXm3NKE=MT0dF+x-wNHWDjYJ+bbO9gWEwwuFwYUKmA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg KH <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>
+
+Hi Geert,
+
+On 06/14/2017 04:24 AM, Geert Uytterhoeven wrote:
+> Hi Thara,
+> 
+> On Tue, Jun 13, 2017 at 10:27 PM, Thara Gopinath
+> <thara.gopinath@linaro.org> wrote:
+>> This patch set attempts to improve the existing generic power domain
+>> debugfs capabilities. The first  patch adds various accounting and
+>> other bits needed to expose out the generic power domain statistics.
+>> The second patch introduces new debugfs entries and attributes.
+>>
+>> V1->V2:
+>> - Removed calling of update accounting from suspend resume context
+>>   where time keeping can be disabled.
+>> - Added back the pm_genpd_summary which was removed by the first version
+>>   of this patchset.
+>> - Renamed a few debugfs parameters.
+> 
+> Thanks for your patches!
+> 
+> For reference, I'm adding the output of all new files on a Renesas Salvator-X
+> board (slightly reformatted, as "idle_states" and "devices" may span multiple
+> lines):
+
+Thanks for the review and testing. The results below look good. I did
+see your minor comments in the other email. I will fix all of them in
+the next version.
+
+Regards
+Thara
+> 
+> 3dg-a
+>   active_time : 6231 ms
+>   current_state : off-0
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               305565
+>   sub_domains : 3dg-b
+>   total_idle_time : 305782 ms
+> 3dg-b
+>   active_time : 6231 ms
+>   current_state : off-0
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               306142
+>   sub_domains : 3dg-c
+>   total_idle_time : 306351 ms
+> 3dg-c
+>   active_time : 6231 ms
+>   current_state : off-0
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               306706
+>   sub_domains : 3dg-d
+>   total_idle_time : 306923 ms
+> 3dg-d
+>   active_time : 6231 ms
+>   current_state : off-0
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               307299
+>   sub_domains : 3dg-e
+>   total_idle_time : 307516 ms
+> 3dg-e
+>   active_time : 6231 ms
+>   current_state : off-0
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               307902
+>   sub_domains :
+>   total_idle_time : 308119 ms
+> a2vc1
+>   active_time : 6231 ms
+>   current_state : off-0
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               308511
+>   sub_domains :
+>   total_idle_time : 308722 ms
+> a3ir
+>   active_time : 6231 ms
+>   current_state : off-0
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               309115
+>   sub_domains :
+>   total_idle_time : 309332 ms
+> a3vc
+>   active_time : 6231 ms
+>   current_state : off-0
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               309705
+>   sub_domains : a2vc1
+>   total_idle_time : 309905 ms
+> a3vp
+>   active_time : 4552 ms
+>   current_state : off-0
+>   devices : /devices/platform/soc/fe92f000.fcp
+>             /devices/platform/soc/fe950000.fcp
+>             /devices/platform/soc/fe951000.fcp
+>             /devices/platform/soc/fe96f000.fcp
+>             /devices/platform/soc/fe9af000.fcp
+>             /devices/platform/soc/fe9bf000.fcp
+>             /devices/platform/soc/fe940000.fdp1
+>             /devices/platform/soc/fe944000.fdp1
+>             /devices/platform/soc/fe920000.vsp
+>             /devices/platform/soc/fe960000.vsp
+>             /devices/platform/soc/fe9a0000.vsp
+>             /devices/platform/soc/fe9b0000.vsp
+>   idle_states : State          Time Spent(ms)
+>                 S0               312002
+>   sub_domains :
+>   total_idle_time : 312219 ms
+> always-on
+>   active_time : 316884 ms
+>   current_state : on
+>   devices : /devices/platform/soc/e60b0000.i2c
+>             /devices/platform/soc/ee0a0200.usb-phy
+>             /devices/platform/soc/ee0c0200.usb-phy
+>             /devices/platform/soc/e6050000.gpio
+>             /devices/platform/soc/e6051000.gpio
+>             /devices/platform/soc/e6052000.gpio
+>             /devices/platform/soc/e6053000.gpio
+>             /devices/platform/soc/e6054000.gpio
+>             /devices/platform/soc/e6055000.gpio
+>             /devices/platform/soc/e6055400.gpio
+>             /devices/platform/soc/e6055800.gpio
+>             /devices/platform/soc/e6700000.dma-controller
+>             /devices/platform/soc/e7300000.dma-controller
+>             /devices/platform/soc/e7310000.dma-controller
+>             /devices/platform/soc/ec700000.dma-controller
+>             /devices/platform/soc/ec720000.dma-controller
+>             /devices/platform/soc/e65a0000.dma-controller
+>             /devices/platform/soc/e65b0000.dma-controller
+>             /devices/platform/soc/e6e68000.serial
+>             /devices/platform/soc/e6e88000.serial
+>             /devices/platform/soc/fead0000.hdmi0
+>             /devices/platform/soc/feae0000.hdmi1
+>             /devices/platform/soc/e6800000.ethernet
+>             /devices/platform/soc/ee0a0100.usb
+>             /devices/platform/soc/ee0c0100.usb
+>             /devices/platform/soc/ee0a0000.usb
+>             /devices/platform/soc/ee0c0000.usb
+>             /devices/platform/soc/e6510000.i2c
+>             /devices/platform/soc/e66d8000.i2c
+>             /devices/platform/soc/fea27000.fcp
+>             /devices/platform/soc/fea2f000.fcp
+>             /devices/platform/soc/fea37000.fcp
+>             /devices/platform/soc/fea28000.vsp
+>             /devices/platform/soc/fea30000.vsp
+>             /devices/platform/soc/e6198000.thermal
+>             /devices/platform/soc/e6020000.watchdog
+>             /devices/platform/soc/ee140000.sd
+>             /devices/platform/soc/ec500000.sound
+>             /devices/platform/soc/e61c0000.interrupt-controller
+>             /devices/platform/soc/ee080200.usb-phy
+>             /devices/platform/soc/ee080100.usb
+>             /devices/platform/soc/ee080000.usb
+>             /devices/platform/soc/ee100000.sd
+>             /devices/platform/soc/ee160000.sd
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains : ca57-scu, ca53-scu, a3vp, cr7, a3vc, 3dg-a, a3ir
+>   total_idle_time : 0 ms
+> ca53-cpu0
+>   active_time : 317535 ms
+>   current_state : on
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains :
+>   total_idle_time : 0 ms
+> ca53-cpu1
+>   active_time : 318121 ms
+>   current_state : on
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains :
+>   total_idle_time : 0 ms
+> ca53-cpu2
+>   active_time : 318691 ms
+>   current_state : on
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains :
+>   total_idle_time : 0 ms
+> ca53-cpu3
+>   active_time : 319273 ms
+>   current_state : on
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains :
+>   total_idle_time : 0 ms
+> ca53-scu
+>   active_time : 319874 ms
+>   current_state : on
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains : ca53-cpu0, ca53-cpu1, ca53-cpu2, ca53-cpu3
+>   total_idle_time : 0 ms
+> ca57-cpu0
+>   active_time : 320455 ms
+>   current_state : on
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains :
+>   total_idle_time : 0 ms
+> ca57-cpu1
+>   active_time : 321014 ms
+>   current_state : on
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains :
+>   total_idle_time : 0 ms
+> ca57-cpu2
+>   active_time : 321569 ms
+>   current_state : on
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains :
+>   total_idle_time : 0 ms
+> ca57-cpu3
+>   active_time : 322147 ms
+>   current_state : on
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains :
+>   total_idle_time : 0 ms
+> ca57-scu
+>   active_time : 322748 ms
+>   current_state : on
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains : ca57-cpu0, ca57-cpu1, ca57-cpu2, ca57-cpu3
+>   total_idle_time : 0 ms
+> clock-controller
+>   active_time : 323302 ms
+>   current_state : on
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               0
+>   sub_domains :
+>   total_idle_time : 0 ms
+> cr7
+>   active_time : 6231 ms
+>   current_state : off-0
+>   devices :
+>   idle_states : State          Time Spent(ms)
+>                 S0               318018
+>   sub_domains :
+>   total_idle_time : 318237 ms
+> 
+> Plain pm_genpd_summary:
+> 
+> domain                          status          slaves
+>     /device                                             runtime status
+> ----------------------------------------------------------------------
+> clock-controller                on
+> a3ir                            off-0
+> 3dg-e                           off-0
+> 3dg-d                           off-0           3dg-e
+> 3dg-c                           off-0           3dg-d
+> 3dg-b                           off-0           3dg-c
+> 3dg-a                           off-0           3dg-b
+> a2vc1                           off-0
+> a3vc                            off-0           a2vc1
+> cr7                             off-0
+> a3vp                            off-0
+>     /devices/platform/soc/fe92f000.fcp                  suspended
+>     /devices/platform/soc/fe950000.fcp                  suspended
+>     /devices/platform/soc/fe951000.fcp                  suspended
+>     /devices/platform/soc/fe96f000.fcp                  suspended
+>     /devices/platform/soc/fe9af000.fcp                  suspended
+>     /devices/platform/soc/fe9bf000.fcp                  suspended
+>     /devices/platform/soc/fe940000.fdp1                 suspended
+>     /devices/platform/soc/fe944000.fdp1                 suspended
+>     /devices/platform/soc/fe920000.vsp                  suspended
+>     /devices/platform/soc/fe960000.vsp                  suspended
+>     /devices/platform/soc/fe9a0000.vsp                  suspended
+>     /devices/platform/soc/fe9b0000.vsp                  suspended
+> ca53-cpu3                       on
+> ca53-cpu2                       on
+> ca53-cpu1                       on
+> ca53-cpu0                       on
+> ca53-scu                        on              ca53-cpu0, ca53-cpu1,
+> ca53-cpu2, ca53-cpu3
+> ca57-cpu3                       on
+> ca57-cpu2                       on
+> ca57-cpu1                       on
+> ca57-cpu0                       on
+> ca57-scu                        on              ca57-cpu0, ca57-cpu1,
+> ca57-cpu2, ca57-cpu3
+> always-on                       on              ca57-scu, ca53-scu,
+> a3vp, cr7, a3vc, 3dg-a, a3ir
+>     /devices/platform/soc/e60b0000.i2c                  suspended
+>     /devices/platform/soc/ee0a0200.usb-phy              active
+>     /devices/platform/soc/ee0c0200.usb-phy              active
+>     /devices/platform/soc/e6050000.gpio                 suspended
+>     /devices/platform/soc/e6051000.gpio                 suspended
+>     /devices/platform/soc/e6052000.gpio                 active
+>     /devices/platform/soc/e6053000.gpio                 active
+>     /devices/platform/soc/e6054000.gpio                 active
+>     /devices/platform/soc/e6055000.gpio                 active
+>     /devices/platform/soc/e6055400.gpio                 active
+>     /devices/platform/soc/e6055800.gpio                 suspended
+>     /devices/platform/soc/e6700000.dma-controller       active
+>     /devices/platform/soc/e7300000.dma-controller       active
+>     /devices/platform/soc/e7310000.dma-controller       suspended
+>     /devices/platform/soc/ec700000.dma-controller       suspended
+>     /devices/platform/soc/ec720000.dma-controller       suspended
+>     /devices/platform/soc/e65a0000.dma-controller       suspended
+>     /devices/platform/soc/e65b0000.dma-controller       suspended
+>     /devices/platform/soc/e6e68000.serial               active
+>     /devices/platform/soc/e6e88000.serial               active
+>     /devices/platform/soc/fead0000.hdmi0                unsupported
+>     /devices/platform/soc/feae0000.hdmi1                unsupported
+>     /devices/platform/soc/e6800000.ethernet             active
+>     /devices/platform/soc/ee0a0100.usb                  unsupported
+>     /devices/platform/soc/ee0c0100.usb                  unsupported
+>     /devices/platform/soc/ee0a0000.usb                  suspended
+>     /devices/platform/soc/ee0c0000.usb                  suspended
+>     /devices/platform/soc/e6510000.i2c                  suspended
+>     /devices/platform/soc/e66d8000.i2c                  suspended
+>     /devices/platform/soc/fea27000.fcp                  suspended
+>     /devices/platform/soc/fea2f000.fcp                  suspended
+>     /devices/platform/soc/fea37000.fcp                  suspended
+>     /devices/platform/soc/fea28000.vsp                  suspended
+>     /devices/platform/soc/fea30000.vsp                  suspended
+>     /devices/platform/soc/e6198000.thermal              active
+>     /devices/platform/soc/e6020000.watchdog             active
+>     /devices/platform/soc/ee140000.sd                   active
+>     /devices/platform/soc/ec500000.sound                suspended
+>     /devices/platform/soc/e61c0000.interrupt-controller  active
+>     /devices/platform/soc/ee080200.usb-phy              active
+>     /devices/platform/soc/ee080100.usb                  unsupported
+>     /devices/platform/soc/ee080000.usb                  suspended
+>     /devices/platform/soc/ee100000.sd                   active
+>     /devices/platform/soc/ee160000.sd                   active
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+> 
 
 
---sqho5hzbgzetc2ah
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Wed, Jun 14, 2017 at 11:25:54AM +0200, H. Nikolaus Schaller wrote:
-> This is in prepraration for EPROBE_DEFER handling because it is quite
-> likely that geting the (madc) iio channel is deferred more often than
-> later steps.
->=20
-> Signed-off-by: H. Nikolaus Schaller <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
-
-Thanks, queued.
-
--- Sebastian
-
->  drivers/power/supply/twl4030_charger.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/suppl=
-y/twl4030_charger.c
-> index 9507c24495ba..1fbbe0cc216a 100644
-> --- a/drivers/power/supply/twl4030_charger.c
-> +++ b/drivers/power/supply/twl4030_charger.c
-> @@ -984,6 +984,12 @@ static int twl4030_bci_probe(struct platform_device =
-*pdev)
-> =20
->  	platform_set_drvdata(pdev, bci);
-> =20
-> +	bci->channel_vac =3D devm_iio_channel_get(&pdev->dev, "vac");
-> +	if (IS_ERR(bci->channel_vac)) {
-> +		bci->channel_vac =3D NULL;
-> +		dev_warn(&pdev->dev, "could not request vac iio channel");
-> +	}
-> +
->  	bci->ac =3D devm_power_supply_register(&pdev->dev, &twl4030_bci_ac_desc,
->  					     NULL);
->  	if (IS_ERR(bci->ac)) {
-> @@ -1017,12 +1023,6 @@ static int twl4030_bci_probe(struct platform_devic=
-e *pdev)
->  		return ret;
->  	}
-> =20
-> -	bci->channel_vac =3D devm_iio_channel_get(&pdev->dev, "vac");
-> -	if (IS_ERR(bci->channel_vac)) {
-> -		bci->channel_vac =3D NULL;
-> -		dev_warn(&pdev->dev, "could not request vac iio channel");
-> -	}
-> -
->  	INIT_WORK(&bci->work, twl4030_bci_usb_work);
->  	INIT_DELAYED_WORK(&bci->current_worker, twl4030_current_worker);
-> =20
-> --=20
-> 2.12.2
->=20
-
---sqho5hzbgzetc2ah
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllBmP8ACgkQ2O7X88g7
-+poByQ/7B/RW5R7aGBgAKN401evrnIeX+y/kRJslSP9VVyLk/ExnKf0PxpbUsQ5I
-X1NU6Sa996sb0TOumwB0goNt84nJnSRgIfltSs1kNq2GYFzlDuAG8ebDgEOakERJ
-2kwBRb7st/FuBqan7MIPmR4jdCwqop65mFtruczSUKjGU1W0CyTULN84UG11RCB4
-3ixPVZgY7BiyrB0X049uRLZbnVg41H/mUVWf8wRbupK+RLBwBY5LQFsNipeAZeDp
-lNUi1VGI0YzJFoZduB+BpA+76f8XKULcgHS+/SN1RYUYN0vJ8RGBn8fmKZXC7O/p
-2LXXCrqMQsagDlbPDsMDq3oBS3KEc4SfnYEL3hGRLC0Scl1LbA1U0jYWC0FNbYjn
-LGxJFXGfVZDIg+IJMEDcDY85uDwzKdngCimH5RMVsiCr5mUQZDBlVcNmwj3QM4vI
-ZJc6G3OgaSUumF9vjw2PazJPd9YYIh/JXoncHTxjaXJmUmKmWYX8ULk/oflbXU/r
-8S4XXCjzF8FhZEKu3Jurd7st5DpI9uoR4wKjdOMOlUS4k80TywXc1/GOX4ZsGN8D
-OnXjjlPRB0SQkvQ6cUaC5ltuNbZjLCtS9Jk2kQz6hTF01uWLaiuBRBN6Su2rlZYH
-2FZXyGZRvGLk9/x49H634QFTUK65Ugxr/vKjcwBieImX8Z/gnIA=
-=HROy
------END PGP SIGNATURE-----
-
---sqho5hzbgzetc2ah--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Regards
+Thara
