@@ -1,36 +1,83 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 1/8] ACPI / PM: Run wakeup notify handlers synchronously
-Date: Thu, 15 Jun 2017 00:22:25 +0200
-Message-ID: <CAJZ5v0gtGfpwHM-n+-e=Vc_+PwSMC3YxM1XESTgxL5Z1R-XsNg@mail.gmail.com>
-References: <8918199.uo13RZ8hZk@aspire.rjw.lan> <1615075.mBkoKApGGc@aspire.rjw.lan>
- <5652844.yCt16F1gBo@aspire.rjw.lan> <20170614180943.GA20778@bhelgaas-glaptop.roam.corp.google.com>
+Subject: [GIT PULL] Power management fixes for v4.12-rc6
+Date: Thu, 15 Jun 2017 02:34:24 +0200
+Message-ID: <CAJZ5v0haQpA=eTX8P=s29jWD8nVafHX7dzzCAD+xYpiqYRUc4Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170614180943.GA20778@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux USB <linux-usb@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>, Mario Limonciello <mario_limonciello@dell.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>, Hans De Goede <hdegoede@redhat.com>, Alan Stern <stern@rowland.harvard.edu>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f193.google.com ([209.85.223.193]:36292 "EHLO
+        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751555AbdFOAeZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Jun 2017 20:34:25 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, Jun 14, 2017 at 8:09 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> On Mon, Jun 12, 2017 at 10:48:41PM +0200, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> The work functions provided by the users of acpi_add_pm_notifier()
->> should be run synchronously before re-enabling the wakeup GPE in
->> case they are used to clear the status and/or disable the wakeup
->> signaling at the source.  Otherwise, which is the case currently in
->> the PCI bus type code, the same wakeup event may be signaled for
->> multiple times while the execution of the work function in response
->> to it has already been queued up.
->>
->> Fortunately, acpi_add_pm_notifier() is only used by PCI and by
->> ACPI device PM code internally, so the change is relatively
->> straightforward to make.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Hi Linus,
+
+Please pull from the tag
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.12-rc6
+
+with top-most commit f63e4f7d4179c9157c51bbe82af7c8f6b5fb39dd
+
+ Merge branches 'pm-cpufreq', 'pm-cpuidle' and 'pm-devfreq'
+
+on top of commit 32c1431eea4881a6b17bd7c639315010aeefa452
+
+ Linux 4.12-rc5
+
+to receive power management fixes for v4.12-rc6.
+
+These revert a recent cpufreq schedutil governor change that turned
+out to be problematic and fix a few minor issues in cpufreq, cpuidle
+and the Exynos devfreq drivers.
+
+Specifics:
+
+ - Revert a recent cpufreq schedutil governor change that caused some
+   systems to behave undesirably (Rafael Wysocki).
+
+ - Fix a cpufreq conservative governor issue introduced during the
+   3.10 cycle that prevents it from working as expected in some
+   situations (Tomasz Wilczy=C5=84ski).
+
+ - Fix an error code path in the generic cpuidle driver for DT-based
+   systems (Christophe Jaillet).
+
+ - Fix 3 minor issues in devfreq drivers for Exynos (Arvind Yadav,
+   Krzysztof Kozlowski).
 
 Thanks!
+
+
+---------------
+
+Arvind Yadav (2):
+      PM / devfreq: exynos-nocp: Handle return value of clk_prepare_enable
+      PM / devfreq: exynos-ppmu: Handle return value of clk_prepare_enable
+
+Christophe Jaillet (1):
+      cpuidle: dt: Add missing 'of_node_put()'
+
+Krzysztof Kozlowski (1):
+      PM / devfreq: exynos-ppmu: Staticize event list
+
+Rafael J. Wysocki (1):
+      Revert "cpufreq: schedutil: Reduce frequencies slower"
+
+Tomasz Wilczy=C5=84ski (1):
+      cpufreq: conservative: Allow down_threshold to take values from 1 to =
+10
+
+---------------
+
+ drivers/cpufreq/cpufreq_conservative.c | 4 ++--
+ drivers/cpuidle/dt_idle_states.c       | 4 +++-
+ drivers/devfreq/event/exynos-nocp.c    | 6 +++++-
+ drivers/devfreq/event/exynos-ppmu.c    | 8 ++++++--
+ kernel/sched/cpufreq_schedutil.c       | 3 ---
+ 5 files changed, 16 insertions(+), 9 deletions(-)
