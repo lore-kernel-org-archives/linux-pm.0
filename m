@@ -1,351 +1,128 @@
-From: Jean Wangtao <jean.wangtao@linaro.org>
-Subject: Re: [PATCH RFC 1/2] thermal/cpu idle cooling: Introduce cpu idle
- cooling driver
-Date: Thu, 15 Jun 2017 16:55:23 +0100
-Message-ID: <CAMBp1jOdtHfAiJ78HDBj-5gmJKskP16i385ezCCtHziO5Mn2KQ@mail.gmail.com>
-References: <1496653645-20283-1-git-send-email-kevin.wangtao@hisilicon.com>
- <20170606034135.GA5103@vireshk-i7> <20170609082040.GE2244@mai>
- <CAMBp1jM4KV5yj2=p=JBSfnw9u1D6qqtru49Rqp_8d3ePkHcE5Q@mail.gmail.com> <20170614125551.GI2261@mai>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH v14 09/11] power: supply: bq27xxx: Enable data memory
+ update for certain chips
+Date: Thu, 15 Jun 2017 18:02:18 +0200
+Message-ID: <20170615160218.sq5jychjn7x2dhyq@earth>
+References: <20170607183759.20261-1-liam@networkimprov.net>
+ <20170607183759.20261-10-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170614125551.GI2261@mai>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Tao Wang <kevin.wangtao@hisilicon.com>, rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, Amit Kachhap <amit.kachhap@gmail.com>, javi.merino@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "Sunzhaosheng Sun(Zhaosheng)" <sunzhaosheng@hisilicon.com>, Vincent Guittot <vincent.guittot@linaro.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="ikzm2nxuzyhhosk2"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:45446 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751789AbdFOQCW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Jun 2017 12:02:22 -0400
+Content-Disposition: inline
+In-Reply-To: <20170607183759.20261-10-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Pali Rohar <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Enric Balletbo <enric.balletbo@collabora.com>, Paul Kocialkowski <contact@paulk.fr>, Quentin Schulz <quentin.schulz@free-electrons.com>, Liam Breck <kernel@networkimprov.net>
 
-On 14 June 2017 at 13:55, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
-> On Sat, Jun 10, 2017 at 08:00:28PM +0200, Jean Wangtao wrote:
->> On 9 June 2017 at 10:20, Daniel Lezcano <daniel.lezcano@linaro.org> wrot=
-e:
->>
->> > On Tue, Jun 06, 2017 at 09:11:35AM +0530, viresh kumar wrote:
->> > > + Daniel
->> > >
->> > > On 05-06-17, 17:07, Tao Wang wrote:
->> > > > cpu idle cooling driver performs synchronized idle injection acros=
-s
->> > > > all cpu in same cluster, offers a new method to cooling down cpu,
->> > > > that is similar to intel_power_clamp driver, but is basically
->> > > > designed for ARM platform.
->> > > > Each cluster has its own idle cooling device, each core has its ow=
-n
->> > > > idle injection thread, idle injection thread use play_idle to ente=
-r
->> > > > idle. In order to reach deepest idle state, all cores are aligned =
-by
->> > > > jiffies. the injected idle ratio can be controlled through cooling
->> > > > device interface.
->> > > >
->> > > > Signed-off-by: Tao Wang <kevin.wangtao@hisilicon.com>
->> >
->> > [ ... ]
->> >
->> > Hi Kevin,
->> >
->> > I'm failing to understand all the cpumask logic.
->> >
->> > Can you explain the rational?
->> >
->> > Thanks.
->> >
->>
->> This driver register cooling device for each cluster, so in module_init,=
- we
->> init rest_cpu_mask as all cpu, then pick first cpu of the rest_cpu_mask,
->> set register_cpu_mask as all cpus in the cluster which contains the pick=
-ed
->> cpu, and register idle cooling device, clear the register_cpu_mask out o=
-f
->> rest_cpu_mask after the register. repeat the process above until there a=
-re
->> no cpu left.
->>
->> In cpu_idle_cooling_register, we will check whether the input cpumask is
->> empty or have intersection with registered devices(that seems to be
->> unnecessary now, because the input is under control), the related_cpus i=
-s
->> the copy of input cpumask, the injected_cpus is the same as related_cpus=
- if
->> there are no error happened during create_idle_thread(there is bug here =
-if
->> create_idle_thread return error we should call stop_idle_thread to destr=
-oy
->> the idle injection thread already created).
->>
->> In create_idle_thread, we create idle injection thread for each cpu in
->> related_cpus, if operation success, set cpumask in injected_cpus.
->> In stop_idle_thread, we destory idle injection thread for each cpu in
->> injected_cpus which marks the threads we have created.
->>
->> In get_cpu_idle_injection_dev, we go through all the registered devices =
-to
->> find one which contain the input cpu.
->> In idle_injection_cpu_online, when a cpu plug in, if this cpu is the fir=
-st
->> cpu of the cluster or current control cpu of the cooling device is offli=
-ne,
->> set this cpu as the control cpu.
->> In idle_injection_cpu_predown, when a cpu plug off, we set the first onl=
-ine
->> cpu of injected_cpus as the control cpu.
->>
->> In set_idle_state, the input cpu mask may cover several cooling device, =
-so
->> we go through all the registered devices, each device who's related_cpus=
- is
->> the subset of the input cpumask will execute idle injection with the inp=
-ut
->> ratio.
->>
->> I wish I have explained it clearly.
->>
->
-> Well, you explained what it does but I was expecting the why.
->
-> Is there any document describing in details your code or the logic?
 
-sorry, currently there is no document for the driver.
+--ikzm2nxuzyhhosk2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
->
-> For example why the following pseudo-code would it be wrong in place of t=
-he
-> cpumask dance?
-the pseudo-code also register cooling device for one cluster, but each
-cooling device only contains one cpu not all cpu in the cluster.
-I am not sure if I understand your question.
->
-> [pseudo code]
->
-> cpumask_t cluster_id;
->
-> cpumask_clear(cluster_id);
->
-> for_each_cpu_possible(cpu) {
->
->         if (cpumask_test_cpu(topology_physical_package_id(cpu]),
->                                 &cluster_id))
->                 continue;
->
->         th_cool_dev =3D cpu_idle_cooling_register(cpumask_of(cpu));
->         if (IS_ERR(th_cool_dev)
->                 goto rollback;
->
->         cpumask_set(topology_physical_package_id(cpu], &cluster_id);
-> }
->
->
->> > > > +struct thermal_cooling_device * __init
->> > > > +cpu_idle_cooling_register(const struct cpumask *clip_cpus)
->> > > > +{
->> > > > +   struct cpu_idle_cooling_device *idle_cooling_dev;
->> > > > +   struct thermal_cooling_device *ret;
->> > > > +   unsigned long cpu;
->> > > > +   char dev_name[THERMAL_NAME_LENGTH];
->> > > > +
->> > > > +   if (cpumask_empty(clip_cpus))
->> > > > +           return ERR_PTR(-ENOMEM);
->> > > > +
->> > > > +   mutex_lock(&cpu_idle_cooling_lock);
->> > > > +   get_online_cpus();
->> > > > +   list_for_each_entry(idle_cooling_dev,
->> > > > +           &cpu_idle_cooling_dev_list, node) {
->> > > > +           if (cpumask_intersects(idle_cooling_dev->related_cpus,
->> > > > +                   clip_cpus)) {
->> > > > +                   ret =3D ERR_PTR(-EINVAL);
->> > > > +                   goto exit_unlock;
->> > > > +           }
->> > > > +   }
->> > > > +
->> > > > +   idle_cooling_dev =3D kzalloc(sizeof(*idle_cooling_dev), GFP_KE=
-RNEL);
->> > > > +   if (!idle_cooling_dev) {
->> > > > +           ret =3D ERR_PTR(-ENOMEM);
->> > > > +           goto exit_unlock;
->> > > > +   }
->> > > > +
->> > > > +   if (!zalloc_cpumask_var(&idle_cooling_dev->related_cpus,
->> > GFP_KERNEL)) {
->> > > > +           ret =3D ERR_PTR(-ENOMEM);
->> > > > +           goto exit_free_dev;
->> > > > +   }
->> > > > +
->> > > > +   if (!zalloc_cpumask_var(&idle_cooling_dev->injected_cpus,
->> > GFP_KERNEL)) {
->> > > > +           ret =3D ERR_PTR(-ENOMEM);
->> > > > +           goto exit_free_related_cpus;
->> > > > +   }
->> > > > +
->> > > > +   cpumask_copy(idle_cooling_dev->related_cpus, clip_cpus);
->> > > > +   cpu =3D cpumask_first(clip_cpus);
->> > > > +   idle_cooling_dev->control_cpu =3D cpu;
->> > > > +   idle_cooling_dev->id =3D topology_physical_package_id(cpu);
->> > > > +   idle_cooling_dev->window_size =3D DEFAULT_WINDOW_SIZE;
->> > > > +   idle_cooling_dev->duration =3D jiffies_to_msecs(DEFAULT_
->> > DURATION_JIFFIES);
->> > > > +
->> > > > +   if (create_idle_thread(idle_cooling_dev)) {
->> > > > +           ret =3D ERR_PTR(-ENOMEM);
->> > > > +           goto exit_free_injected_cpus;
->> > > > +   }
->> > > > +
->> > > > +   snprintf(dev_name, sizeof(dev_name), "thermal-cpuidle-%d",
->> > > > +            idle_cooling_dev->id);
->> > > > +   ret =3D thermal_cooling_device_register(dev_name,
->> > > > +                                   idle_cooling_dev,
->> > > > +                                   &cpu_idle_injection_cooling_op=
-s);
->> > > > +   if (IS_ERR(ret))
->> > > > +           goto exit_stop_thread;
->> > > > +
->> > > > +   idle_cooling_dev->cooling_dev =3D ret;
->> > > > +
->> > > > +   if (device_create_file(&idle_cooling_dev->cooling_dev->device,
->> > > > +           &dev_attr_duration)) {
->> > > > +           ret =3D ERR_PTR(-ENOMEM);
->> > > > +           goto exit_unregister_cdev;
->> > > > +   }
->> > > > +
->> > > > +   if (device_create_file(&idle_cooling_dev->cooling_dev->device,
->> > > > +           &dev_attr_window_size)) {
->> > > > +           ret =3D ERR_PTR(-ENOMEM);
->> > > > +           goto exit_remove_duration_attr;
->> > > > +   }
->> > > > +
->> > > > +   list_add(&idle_cooling_dev->node, &cpu_idle_cooling_dev_list);
->> > > > +
->> > > > +   goto exit_unlock;
->> > > > +
->> > > > +exit_remove_duration_attr:
->> > > > +   device_remove_file(&idle_cooling_dev->cooling_dev->device,
->> > > > +                   &dev_attr_duration);
->> > > > +exit_unregister_cdev:
->> > > > +   thermal_cooling_device_unregister(idle_cooling_dev->cooling_de=
-v);
->> > > > +exit_stop_thread:
->> > > > +   stop_idle_thread(idle_cooling_dev);
->> > > > +exit_free_injected_cpus:
->> > > > +   free_cpumask_var(idle_cooling_dev->injected_cpus);
->> > > > +exit_free_related_cpus:
->> > > > +   free_cpumask_var(idle_cooling_dev->related_cpus);
->> > > > +exit_free_dev:
->> > > > +   kfree(idle_cooling_dev);
->> > > > +exit_unlock:
->> > > > +   put_online_cpus();
->> > > > +   mutex_unlock(&cpu_idle_cooling_lock);
->> > > > +   return ret;
->> > > > +}
->> > > > +
->> > > > +void cpu_idle_cooling_unregister(struct thermal_cooling_device *c=
-dev)
->> > > > +{
->> > > > +   struct cpu_idle_cooling_device *idle_cooling_dev;
->> > > > +
->> > > > +   if (IS_ERR_OR_NULL(cdev))
->> > > > +           return;
->> > > > +
->> > > > +   idle_cooling_dev =3D cdev->devdata;
->> > > > +
->> > > > +   mutex_lock(&cpu_idle_cooling_lock);
->> > > > +   get_online_cpus();
->> > > > +   list_del(&idle_cooling_dev->node);
->> > > > +   put_online_cpus();
->> > > > +   mutex_unlock(&cpu_idle_cooling_lock);
->> > > > +
->> > > > +   device_remove_file(&cdev->device, &dev_attr_window_size);
->> > > > +   device_remove_file(&cdev->device, &dev_attr_duration);
->> > > > +   thermal_cooling_device_unregister(idle_cooling_dev->cooling_de=
-v);
->> > > > +
->> > > > +   stop_idle_thread(idle_cooling_dev);
->> > > > +   free_cpumask_var(idle_cooling_dev->injected_cpus);
->> > > > +   free_cpumask_var(idle_cooling_dev->related_cpus);
->> > > > +   kfree(idle_cooling_dev);
->> > > > +}
->> > > > +
->> > > > +static void __cpu_idle_cooling_exit(void)
->> > > > +{
->> > > > +   struct cpu_idle_cooling_device *idle_cooling_dev;
->> > > > +
->> > > > +   while (!list_empty(&cpu_idle_cooling_dev_list)) {
->> > > > +           idle_cooling_dev =3D list_first_entry(&cpu_idle_
->> > cooling_dev_list,
->> > > > +                           struct cpu_idle_cooling_device, node);
->> > > > +           cpu_idle_cooling_unregister(idle_cooling_dev->cooling_=
-dev)
->> > ;
->> > > > +   }
->> > > > +
->> > > > +   if (hp_state > 0)
->> > > > +           cpuhp_remove_state_nocalls(hp_state);
->> > > > +}
->> > > > +
->> > > > +static int __init cpu_idle_cooling_init(void)
->> > > > +{
->> > > > +   struct thermal_cooling_device *ret;
->> > > > +   cpumask_t rest_cpu_mask =3D CPU_MASK_ALL;
->> > > > +   const struct cpumask *register_cpu_mask;
->> > > > +
->> > > > +   hp_state =3D cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
->> > > > +                   "thermal/cpu_idle_cooling:online",
->> > > > +                   idle_injection_cpu_online,
->> > > > +                   idle_injection_cpu_predown);
->> > > > +   if (hp_state < 0)
->> > > > +           return hp_state;
->> > > > +
->> > > > +   do {
->> > > > +           register_cpu_mask =3D
->> > > > +                   topology_core_cpumask(cpumask_
->> > first(&rest_cpu_mask));
->> > > > +
->> > > > +           if (cpumask_empty(register_cpu_mask))
->> > > > +                   break;
->> > > > +
->> > > > +           ret =3D cpu_idle_cooling_register(register_cpu_mask);
->> > > > +           if (IS_ERR(ret)) {
->> > > > +                   __cpu_idle_cooling_exit();
->> > > > +                   return -ENOMEM;
->> > > > +           }
->> > > > +   } while (cpumask_andnot(&rest_cpu_mask,
->> > > > +                           &rest_cpu_mask,
->> > > > +                           register_cpu_mask));
->> > > > +
->> > > > +   return 0;
->> > > > +}
->> > > > +module_init(cpu_idle_cooling_init);
->> > > > +
->> > > > +static void __exit cpu_idle_cooling_exit(void)
->> > > > +{
->> > > > +   __cpu_idle_cooling_exit();
->> > > > +}
->> > > > +module_exit(cpu_idle_cooling_exit);
->> > > > +
->> > > > +MODULE_LICENSE("GPL v2");
->> > > > +MODULE_AUTHOR("Tao Wang <kevin.wangtao@hisilicon.com>");
->> > > > +MODULE_DESCRIPTION("CPU Idle Cooling Driver for ARM Platform");
->> > > > --
->> > > > 1.7.9.5
->> > >
->> > > --
->> > > viresh
->> >
->> > --
->> >
->> >  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
->> >
->> > Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
->> > <http://twitter.com/#!/linaroorg> Twitter |
->> > <http://www.linaro.org/linaro-blog/> Blog
->> >
->
-> --
->
->  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for A=
-RM SoCs
->
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
+Hi,
+
+On Wed, Jun 07, 2017 at 11:37:57AM -0700, Liam Breck wrote:
+>  static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+> -	{ "bq27200", BQ27000 },
+> -	{ "bq27210", BQ27010 },
+> -	{ "bq27500", BQ2750X },
+> -	{ "bq27510", BQ2751X },
+> -	{ "bq27520", BQ2751X },
+> -	{ "bq27500-1", BQ27500 },
+> -	{ "bq27510g1", BQ27510G1 },
+> -	{ "bq27510g2", BQ27510G2 },
+> -	{ "bq27510g3", BQ27510G3 },
+> -	{ "bq27520g1", BQ27520G1 },
+> -	{ "bq27520g2", BQ27520G2 },
+> -	{ "bq27520g3", BQ27520G3 },
+> -	{ "bq27520g4", BQ27520G4 },
+> -	{ "bq27530", BQ27530 },
+> -	{ "bq27531", BQ27530 },
+> -	{ "bq27541", BQ27541 },
+> -	{ "bq27542", BQ27541 },
+> -	{ "bq27546", BQ27541 },
+> -	{ "bq27742", BQ27541 },
+> -	{ "bq27545", BQ27545 },
+> -	{ "bq27421", BQ27421 },
+> -	{ "bq27425", BQ27421 },
+> -	{ "bq27441", BQ27421 },
+> -	{ "bq27621", BQ27421 },
+> +	/* dest.    di->real_chip       di->chip      */
+> +	{ "bq27200",   (BQ27000   << 16) |  BQ27000   },
+> +	{ "bq27210",   (BQ27010   << 16) |  BQ27010   },
+> +	{ "bq27500",   (BQ2750X   << 16) |  BQ2750X   },
+> +	{ "bq27510",   (BQ2751X   << 16) |  BQ2751X   },
+> +	{ "bq27520",   (BQ2752X   << 16) |  BQ2751X   },
+> +	{ "bq27500-1", (BQ27500   << 16) |  BQ27500   },
+> +	{ "bq27510g1", (BQ27510G1 << 16) |  BQ27510G1 },
+> +	{ "bq27510g2", (BQ27510G2 << 16) |  BQ27510G2 },
+> +	{ "bq27510g3", (BQ27510G3 << 16) |  BQ27510G3 },
+> +	{ "bq27520g1", (BQ27520G1 << 16) |  BQ27520G1 },
+> +	{ "bq27520g2", (BQ27520G2 << 16) |  BQ27520G2 },
+> +	{ "bq27520g3", (BQ27520G3 << 16) |  BQ27520G3 },
+> +	{ "bq27520g4", (BQ27520G4 << 16) |  BQ27520G4 },
+> +	{ "bq27530",   (BQ27530   << 16) |  BQ27530   },
+> +	{ "bq27531",   (BQ27531   << 16) |  BQ27530   },
+> +	{ "bq27541",   (BQ27541   << 16) |  BQ27541   },
+> +	{ "bq27542",   (BQ27542   << 16) |  BQ27541   },
+> +	{ "bq27546",   (BQ27546   << 16) |  BQ27541   },
+> +	{ "bq27742",   (BQ27742   << 16) |  BQ27541   },
+> +	{ "bq27545",   (BQ27545   << 16) |  BQ27545   },
+> +	{ "bq27421",   (BQ27421   << 16) |  BQ27421   },
+> +	{ "bq27425",   (BQ27425   << 16) |  BQ27421   },
+> +	{ "bq27441",   (BQ27441   << 16) |  BQ27421   },
+> +	{ "bq27621",   (BQ27621   << 16) |  BQ27421   },
+
+This is ugly. The proper way to do this is by providing a pointer
+to a structure with all required information. E.g.:
+
+static const struct bq27xxx_pdata chip_info_bq27530 {
+    .reg_layout = &reg_info_bq27530,
+    .feature = false,
+    /* more stuff */
+};
+
+static const struct bq27xxx_pdata chip_info_bq27531 {
+    .reg_layout = &reg_info_bq27530,
+    .feature = true,
+    /* more stuff */
+};
+
+/* ... */
+
+static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+/* ... */
+{ "bq27530", &chip_info_bq27530 },
+{ "bq27531", &chip_info_bq27531 },
+/* ... */
+}
+
+-- Sebastian
+
+--ikzm2nxuzyhhosk2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllCr4QACgkQ2O7X88g7
++prP6A//W04rzXmgc7yz5X5C8tAEq+u+CmjIAZgMgVEVs0adCX015odoRYTSgyLP
+eUnydlszrnIlXh1SJi97hToqtYuGMvI0cmH12qTSBhpBkClX94mSmoM0gciLPFjK
+8UYOqKJpq+KhqC6qowDtSwN6ZtDNK9hU1EY3NhlxOJ0PCU72Q8RqsvkZSo7HTy26
+hY3C5UtLcUgeYQHKLsXQRgtKNXLIkJ0h6Pj4Z91q6m/0H+C1ORHbdrWcvCZ5McOo
+GMct2jRE2LtfFrK41Nm1kXAt1ZjR1EqjsobCsNOsfxGkZiRv3iQZHEmhfwBGeqUZ
+M0l/zlPhLUkLFUcX40oEHqUPHxzTyg7eKr/+HX+V8poVh+KYIXtRKsbPeUQRr2lJ
+81H8QKjFsZDu8V/zqkA4SRGXhNMFu2yHCPflsoOh1qgjkdDhLyM/W0HgF/+y6Izy
+0QqFCtF9V6HUQeLN8L2ObrUtta7JcjkF99V1wlYk6lGIGvDdV/IL6QX7JnoD0uYn
+P2C/OIWqZP9CUcKc2+XWl7spN/7USFjcclfQv0K556Bey93bW0jD8WhAcN2EZkL/
+tXK8/GhOca+WZz5LeiiVgyOZIBi8tApOrCW/icxaJmbDxs+0BmIG9pWEk0TNH3/y
+bZ3wZ4yxNKwpOZwT8c868yf94zA01j74+iwnezukm4wwCPYicfc=
+=F0ws
+-----END PGP SIGNATURE-----
+
+--ikzm2nxuzyhhosk2--
