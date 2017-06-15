@@ -1,52 +1,63 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH] power: supply: cpcap-charger: Add missing power_supply_config
-Date: Wed, 14 Jun 2017 21:41:08 -0700
-Message-ID: <20170615044108.26707-1-tony@atomide.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:51864 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750776AbdFOEsN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 15 Jun 2017 00:48:13 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Subject: Re: [PATCH] usb: host: ehci: workaround PME bug on AMD EHCI controller
+Date: Thu, 15 Jun 2017 14:57:24 +0800
+Message-ID: <CAAd53p4-84G=NeJMOGcL_3fd7_s6EC4udLEGTcNNSBF=4FxHyA@mail.gmail.com>
+References: <CAAd53p6S9NPBD=qGP419mhBgSgn-s1dc=adued8Y+Y0=GDsHKg@mail.gmail.com>
+ <Pine.LNX.4.44L0.1706121010010.2092-100000@iolanthe.rowland.org>
+ <CAAd53p580X5_G6a05aAueHVxEoy5hpQrs6s2gtJA+gPEf2PqLg@mail.gmail.com> <20170613172849.GA7012@bhelgaas-glaptop.roam.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170613172849.GA7012@bhelgaas-glaptop.roam.corp.google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, gregkh@linuxfoundation.org, USB list <linux-usb@vger.kernel.org>, linux-pci@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
 
-Otherwise cpcap-battery won't probe properly with the power-supplies
-property configured but will fail with "Not all required supplies found,
-defer probe".
+On Wed, Jun 14, 2017 at 1:28 AM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+>
+> The lspci output [1] shows:
+>
+>   00:12.0 USB controller: Advanced Micro Devices, Inc. [AMD] FCH USB EHCI Controller (rev 39) (prog-if 20 [EHCI])
+>     Capabilities: [c0] Power Management version 2
+>       Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+>       Status: D3 NoSoftRst- PME-Enable+ DSel=0 DScale=0 PME-
+>       Bridge: PM- B3+
+>
+> The device claims it can assert PME# from D3hot.  If it can't, that
+> sounds like a hardware defect that should be addressed with a quirk.
+> Ideally we would also have a pointer to the AMD hardware erratum.
 
-Cc: Marcel Partap <mpartap@gmx.net>
-Cc: Michael Scott <michael.scott@linaro.org>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- drivers/power/supply/cpcap-charger.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Looks like it's pretty similar to "23 USB Wake on Connect/Disconnect
+with Low Speed Devices" in [1].
+It points to a workaround in appendix A2 from [2].
+However it says this bug only effects Low Speed devices, but it
+actually also happens on High Speed devices.
 
-diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/cpcap-charger.c
---- a/drivers/power/supply/cpcap-charger.c
-+++ b/drivers/power/supply/cpcap-charger.c
-@@ -637,6 +637,7 @@ static int cpcap_charger_probe(struct platform_device *pdev)
- {
- 	struct cpcap_charger_ddata *ddata;
- 	const struct of_device_id *of_id;
-+	struct power_supply_config psy_cfg = {};
- 	int error;
- 
- 	of_id = of_match_device(of_match_ptr(cpcap_charger_id_table),
-@@ -665,9 +666,12 @@ static int cpcap_charger_probe(struct platform_device *pdev)
- 
- 	atomic_set(&ddata->active, 1);
- 
-+	psy_cfg.of_node = pdev->dev.of_node;
-+	psy_cfg.drv_data = ddata;
-+
- 	ddata->usb = devm_power_supply_register(ddata->dev,
- 						&cpcap_charger_usb_desc,
--						NULL);
-+						&psy_cfg);
- 	if (IS_ERR(ddata->usb)) {
- 		error = PTR_ERR(ddata->usb);
- 		dev_err(ddata->dev, "failed to register USB charger: %i\n",
--- 
-2.13.0
+[1] https://support.amd.com/TechDocs/46837.pdf
+[2] https://support.amd.com/TechDocs/42413.pdf
+
+>
+> Is the following path involved here?
+>
+>   pci_finish_runtime_suspend
+>     target_state = pci_target_state()
+>       if (device_may_wakup())
+>         if (dev->pme_support)
+>           ...
+>     pci_set_power_state(..., target_state)
+
+Yes, it's involved.
+
+>
+> If so, I would naively expect that a quirk could clear the
+> PCI_PM_CAP_PME_D3 and PCI_PM_CAP_PME_D3cold bits in dev->pme_support,
+> and pci_target_state() would then avoid selecting D3 or D3cold.  But
+> I'm not an expert in power management.
+
+Clearing those two bits does the trick, thanks for the tip.
+
+>
+> Bjorn
+>
+> [1] http://marc.info/?l=linux-usb&m=149570231732519&w=2
