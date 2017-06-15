@@ -1,73 +1,43 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH v7 10/10] power: supply: sbs-battery: move gpio present detect to sbs_get_property
-Date: Thu, 15 Jun 2017 21:59:38 +0800
-Message-ID: <1497535178-12001-11-git-send-email-preid@electromag.com.au>
-References: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
-Sender: linux-i2c-owner@vger.kernel.org
-To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, preid@electromag.com.au, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] usb: host: ehci: workaround PME bug on AMD EHCI controller
+Date: Thu, 15 Jun 2017 10:12:15 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1706151008380.1573-100000@iolanthe.rowland.org>
+References: <CAAd53p4-84G=NeJMOGcL_3fd7_s6EC4udLEGTcNNSBF=4FxHyA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAAd53p4-84G=NeJMOGcL_3fd7_s6EC4udLEGTcNNSBF=4FxHyA@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, gregkh@linuxfoundation.org, USB list <linux-usb@vger.kernel.org>, linux-pci@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently when a gpio is defined for battery presence it is only used in
-the sbs_get_battery_presence_and_health function for 2 properties.
-All other properties currently try to read data form the battery before
-returning an error if not present. We should know in advance that no
-data is going to returned.
+On Thu, 15 Jun 2017, Kai-Heng Feng wrote:
 
-As the driver tries multiple times to access a property, this prevents
-a lot of smbus accesses, which had a significant effect on device boot-up.
-As when the device is registered lots of property accesses are attempted
-during boot.
+> On Wed, Jun 14, 2017 at 1:28 AM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> >
+> > The lspci output [1] shows:
+> >
+> >   00:12.0 USB controller: Advanced Micro Devices, Inc. [AMD] FCH USB EHCI Controller (rev 39) (prog-if 20 [EHCI])
+> >     Capabilities: [c0] Power Management version 2
+> >       Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> >       Status: D3 NoSoftRst- PME-Enable+ DSel=0 DScale=0 PME-
+> >       Bridge: PM- B3+
+> >
+> > The device claims it can assert PME# from D3hot.  If it can't, that
+> > sounds like a hardware defect that should be addressed with a quirk.
+> > Ideally we would also have a pointer to the AMD hardware erratum.
+> 
+> Looks like it's pretty similar to "23 USB Wake on Connect/Disconnect
+> with Low Speed Devices" in [1].
+> It points to a workaround in appendix A2 from [2].
+> However it says this bug only effects Low Speed devices, but it
+> actually also happens on High Speed devices.
+> 
+> [1] https://support.amd.com/TechDocs/46837.pdf
+> [2] https://support.amd.com/TechDocs/42413.pdf
 
-If no gpio is used for presence detection no change in behaviour should
-occur.
+Those documents refer to a hardware bug with a workaround in the BIOS.  
+Have you checked to see if your BIOS is up to date?
 
-Signed-off-by: Phil Reid <preid@electromag.com.au>
----
- drivers/power/supply/sbs-battery.c | 23 +++++++++++++----------
- 1 file changed, 13 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index cf43e38..1e3a8b2 100644
---- a/drivers/power/supply/sbs-battery.c
-+++ b/drivers/power/supply/sbs-battery.c
-@@ -324,16 +324,6 @@ static int sbs_get_battery_presence_and_health(
- 	union power_supply_propval *val)
- {
- 	s32 ret;
--	struct sbs_info *chip = i2c_get_clientdata(client);
--
--	if (psp == POWER_SUPPLY_PROP_PRESENT && chip->gpio_detect) {
--		ret = gpiod_get_value_cansleep(chip->gpio_detect);
--		if (ret < 0)
--			return ret;
--		val->intval = ret;
--		chip->is_present = val->intval;
--		return ret;
--	}
- 
- 	/*
- 	 * Write to ManufacturerAccess with ManufacturerAccess command
-@@ -599,6 +589,19 @@ static int sbs_get_property(struct power_supply *psy,
- 	struct sbs_info *chip = power_supply_get_drvdata(psy);
- 	struct i2c_client *client = chip->client;
- 
-+	if (chip->gpio_detect) {
-+		ret = gpiod_get_value_cansleep(chip->gpio_detect);
-+		if (ret < 0)
-+			return ret;
-+		if (psp == POWER_SUPPLY_PROP_PRESENT) {
-+			val->intval = ret;
-+			chip->is_present = val->intval;
-+			return 0;
-+		}
-+		if (ret == 0)
-+			return -ENODATA;
-+	}
-+
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_PRESENT:
- 	case POWER_SUPPLY_PROP_HEALTH:
--- 
-1.8.3.1
+Alan Stern
