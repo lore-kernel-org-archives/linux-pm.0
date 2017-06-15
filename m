@@ -1,98 +1,162 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH] power: supply: cpcap-charger: Add missing
- power_supply_config
-Date: Thu, 15 Jun 2017 14:55:18 +0200
-Message-ID: <20170615125518.xesqz6a2qwjtal7x@earth>
-References: <20170615044108.26707-1-tony@atomide.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] usb: host: ehci: workaround PME bug on AMD EHCI
+ controller
+Date: Thu, 15 Jun 2017 08:23:07 -0500
+Message-ID: <20170615132307.GJ20778@bhelgaas-glaptop.roam.corp.google.com>
+References: <20170613172849.GA7012@bhelgaas-glaptop.roam.corp.google.com>
+ <Pine.LNX.4.44L0.1706141449190.1889-100000@iolanthe.rowland.org>
+ <CAAd53p7RuDDqJ4q4JcRyJJ6AkVz4yZ5b-K3p8ooYpLJpFpHpqw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="fh5tfmqzfinl3wiw"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:45000 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752381AbdFOMz1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Jun 2017 08:55:27 -0400
+Received: from mail.kernel.org ([198.145.29.99]:49834 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751016AbdFONXL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 15 Jun 2017 09:23:11 -0400
 Content-Disposition: inline
-In-Reply-To: <20170615044108.26707-1-tony@atomide.com>
+In-Reply-To: <CAAd53p7RuDDqJ4q4JcRyJJ6AkVz4yZ5b-K3p8ooYpLJpFpHpqw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
+To: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, gregkh@linuxfoundation.org, USB list <linux-usb@vger.kernel.org>, linux-pci@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 
-
---fh5tfmqzfinl3wiw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Wed, Jun 14, 2017 at 09:41:08PM -0700, Tony Lindgren wrote:
-> Otherwise cpcap-battery won't probe properly with the power-supplies
-> property configured but will fail with "Not all required supplies found,
-> defer probe".
->=20
-> Cc: Marcel Partap <mpartap@gmx.net>
-> Cc: Michael Scott <michael.scott@linaro.org>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-
-Thanks, queued.
-
--- Sebastian
-
-> ---
->  drivers/power/supply/cpcap-charger.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/=
-cpcap-charger.c
-> --- a/drivers/power/supply/cpcap-charger.c
-> +++ b/drivers/power/supply/cpcap-charger.c
-> @@ -637,6 +637,7 @@ static int cpcap_charger_probe(struct platform_device=
- *pdev)
->  {
->  	struct cpcap_charger_ddata *ddata;
->  	const struct of_device_id *of_id;
-> +	struct power_supply_config psy_cfg =3D {};
->  	int error;
-> =20
->  	of_id =3D of_match_device(of_match_ptr(cpcap_charger_id_table),
-> @@ -665,9 +666,12 @@ static int cpcap_charger_probe(struct platform_devic=
-e *pdev)
-> =20
->  	atomic_set(&ddata->active, 1);
-> =20
-> +	psy_cfg.of_node =3D pdev->dev.of_node;
-> +	psy_cfg.drv_data =3D ddata;
+On Thu, Jun 15, 2017 at 03:02:25PM +0800, Kai-Heng Feng wrote:
+> On Thu, Jun 15, 2017 at 2:55 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Tue, 13 Jun 2017, Bjorn Helgaas wrote:
+> >
+> >> [+cc Rafael, linux-pm]
+> >>
+> >> On Tue, Jun 13, 2017 at 12:21:15PM +0800, Kai-Heng Feng wrote:
+> >> > On Mon, Jun 12, 2017 at 10:18 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> >> > > Let's get some help from people who understand PCI well.
+> >> > >
+> >> > > Here's the general problem: Kai-Heng has a PCI-based USB host
+> >> > > controller that advertises wakeup capability from D3, but it doesn't
+> >> > > assert PME# from D3 when it should.  For "lspci -vv" output, see
+> >> > >
+> >> > >         http://marc.info/?l=linux-usb&m=149570231732519&w=2
+> >> > >
+> >> > > On Mon, 12 Jun 2017, Kai-Heng Feng wrote:
+> >> > >
+> >> > >> On Mon, Jun 12, 2017 at 3:04 PM, Kai-Heng Feng
+> >> > >> <kai.heng.feng@canonical.com> wrote:
+> >> > >> > On Fri, Jun 9, 2017 at 10:43 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> >> > >> >> On Fri, 9 Jun 2017, Kai-Heng Feng wrote:
+> >> > >> >>
+> >> > >> >> Is this really the right solution?  Maybe it would be better to allow
+> >> > >> >> the controller to go into D3 provided no wakeup signal is needed.  You
+> >> > >> >> could do:
+> >> > >> >>
+> >> > >> >>                 device_set_wakeup_capable(&pdev->dev, 0);
+> >> > >> >
+> >> > >> > This doesn't work.
+> >> > >> > After applying this function, still nothing happens when devices get plugged in.
+> >> > >> > IIUC this function disable the wakeup function, but what I want to do
+> >> > >> > here is to have PME signal works even when runtime PM is enabled.
+> >> > >
+> >> > > This may indicate a bug in either the PCI or USB stacks (or both!).  If
+> >> > > a driver requires wakeup capability from runtime suspend but the device
+> >> > > does not provide it, the PCI core should not allow the device to go
+> >> > > into runtime suspend.  Or is that the driver's responsibility?
+> >> > >
+> >> > >> > I also saw some legacy PCI PM stuff, so I also tried:
+> >> > >> > device_set_wakeup_capable(&pdev->dev, 1);
+> >> > >> > ...doesn't work either.
+> >> > >> >
+> >> > >> >>
+> >> > >> >> Another alternative is to put the controller into D2 instead of D3, but
+> >> > >> >> (1) I don't know how to do that, and (2) we don't know if wakeup
+> >> > >> >> signalling works any better in D2 than it does in D3.
+> >> > >> >
+> >> > >> > I'll try if D2 works.
+> >> > >>
+> >> > >> Put the device into D2 instead of D3 can make the wakeup signaling
+> >> > >> work, i.e. USB devices can be correctly detected after plugged into
+> >> > >> EHCI port.
+> >> > >>
+> >> > >> Do you think this alternative an acceptable workaround?
+> >> > >
+> >> > > Yes, it is.  The difficulty is that I don't know how to tell the PCI
+> >> > > core that the device should go in D2 during runtime suspend instead of
+> >> > > D3.  Some sort of quirk may be needed -- perhaps Bjorn can help.
+> >
+> >> The lspci output [1] shows:
+> >>
+> >>   00:12.0 USB controller: Advanced Micro Devices, Inc. [AMD] FCH USB EHCI Controller (rev 39) (prog-if 20 [EHCI])
+> >>     Capabilities: [c0] Power Management version 2
+> >>       Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> >>       Status: D3 NoSoftRst- PME-Enable+ DSel=0 DScale=0 PME-
+> >>       Bridge: PM- B3+
+> >>
+> >> The device claims it can assert PME# from D3hot.  If it can't, that
+> >> sounds like a hardware defect that should be addressed with a quirk.
+> >> Ideally we would also have a pointer to the AMD hardware erratum.
+> >>
+> >> Is the following path involved here?
+> >>
+> >>   pci_finish_runtime_suspend
+> >>     target_state = pci_target_state()
+> >>       if (device_may_wakup())
+> >>       if (dev->pme_support)
+> >>         ...
+> >>     pci_set_power_state(..., target_state)
+> >>
+> >> If so, I would naively expect that a quirk could clear the
+> >> PCI_PM_CAP_PME_D3 and PCI_PM_CAP_PME_D3cold bits in dev->pme_support,
+> >> and pci_target_state() would then avoid selecting D3 or D3cold.  But
+> >> I'm not an expert in power management.
+> >
+> > That's a good idea.  However, we should apply the quirk only when it is
+> > needed.  Which means we need to know the numeric values for the PCI
+> > IDs.  Also, this will help searching for published errata.
+> >
+> > Kai-Heng, what does "lspci -nvs 00:12.0" show?
+> 
+> 00:12.0 0c03: 1022:7808 (rev 39) (prog-if 20 [EHCI])
+>         Subsystem: 1028:0732
+>         Flags: bus master, 66MHz, medium devsel, latency 32, IRQ 18
+>         Memory at fe769000 (32-bit, non-prefetchable) [size=256]
+>         Capabilities: [c0] Power Management version 2
+>         Capabilities: [e4] Debug port: BAR=1 offset=00e0
+>         Kernel driver in use: ehci-pci
+> 
+> Here's the diff that can make it work:
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 1a14ca8965e6..7bd278535ab3 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -2208,6 +2208,12 @@ void pci_pm_init(struct pci_dev *dev)
+>         }
+> 
+>         pmc &= PCI_PM_CAP_PME_MASK;
 > +
->  	ddata->usb =3D devm_power_supply_register(ddata->dev,
->  						&cpcap_charger_usb_desc,
-> -						NULL);
-> +						&psy_cfg);
->  	if (IS_ERR(ddata->usb)) {
->  		error =3D PTR_ERR(ddata->usb);
->  		dev_err(ddata->dev, "failed to register USB charger: %i\n",
-> --=20
-> 2.13.0
+> +       if (unlikely(dev->vendor == 0x1022 && dev->device == 0x7808))
+> {
+> +               dev_info(&dev->dev, "PME# does not work under D3,
+> disabling it\n");
+> +               pmc &= ~(PCI_PM_CAP_PME_D3 | PCI_PM_CAP_PME_D3cold);
+> +       }
+> +
+>         if (pmc) {
+>                 dev_printk(KERN_DEBUG, &dev->dev,
+>                          "PME# supported from%s%s%s%s%s\n",
+> 
+> If you think this is OK, I'll resend the patch.
 
---fh5tfmqzfinl3wiw
-Content-Type: application/pgp-signature; name="signature.asc"
+Thanks for checking this out!
 
------BEGIN PGP SIGNATURE-----
+My suggestion:
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllCg7YACgkQ2O7X88g7
-+ppgAA/+OrT/7a/9NSb21Sh6z/S977OXk6960D/STLWby5UHpIPWx1qMwcN9mg1Q
-fcQS/nWBXtVq2kUpR7YRgkYuwSj4XmE86/upv+DsY5oeLsbJEU43qUZPU8J8PBa3
-xu13tKnk6BW2kMlok5vLztZ4wccAKYKr8T84jnrNn1r7c1LuPLV0vBiL/XbFkMCZ
-xoj0U7I0S4Tgw/6Os1dst8RnUOiy8IlLLy0suJ3GEs20ffiy1aH5ogYGzkWN62yO
-jPFo7/6x8zgpqBCH9FlJl3cZYoZpg0JhFlUer/SMke2VjBvvcfBlOHK/69h39k7x
-KJVbLj8qy+KXC//iJ8Bowpke+sk/xfqFNitN0QJThLwswifO0uUnSXwESL7oF/oM
-Sjd2rfa40JSRM1GZUFc8b4wM0M/aHqH9fxTYbhFZi2FNjPOfngS4A4O9G2lsm8zu
-i4Xk1QGJePta2KYkocIGnO3zn5y8Fh0eaYJQDZJZGRnyuzF6Zxnld/BEFy2ygQVH
-EBuu5xUinFG9ujvXyDNAFseZoleDaXUjpO6rgpxXAcv849KzaUqFQg9ZDDvrMxQM
-hUjtco8/3oQCtjTQVsiDlNmEBEuQkOmQZHOgElK5qA4pr3Q/BTqbGjYMXQom/nDy
-wycuUlTT9na4xsTt8oplGK5zPhCtRfePoxwkNvalw7bm/mVIz6w=
-=LY3m
------END PGP SIGNATURE-----
+  - Open a bug report at bugzilla.kernel.org, Drivers/PCI component,
+    attach "lspci -vv" output for entire system.
 
---fh5tfmqzfinl3wiw--
+  - Reorganize your diff above as a "final" quirk that updates
+    dev->pme_support and puts a note in dmesg.  I think this could go
+    in arch/x86/pci/fixup.c since I think this is only possible on
+    x86.
+
+  - Include the bug URL, errata URL, and "Description" and "Potential
+    Effect on System" text in your changelog.
+
+Bjorn
