@@ -1,121 +1,102 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH 2/2] power: supply: sbs-battery: Don't needlessly set
- CAPACITY_MODE
-Date: Thu, 15 Jun 2017 18:43:27 +0200
-Message-ID: <20170615164327.6puhwbzzgdi2tq7v@earth>
+Subject: Re: [PATCH 1/2] power: supply: sbs-battery: Prevent CAPACITY_MODE
+ races
+Date: Thu, 15 Jun 2017 18:43:53 +0200
+Message-ID: <20170615164353.suitnkeiaorkj6cz@earth>
 References: <1497376406-86470-1-git-send-email-shawnn@chromium.org>
- <1497376406-86470-2-git-send-email-shawnn@chromium.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ikuh7vqbucwsbllz"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:45581 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750814AbdFOQnb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Jun 2017 12:43:31 -0400
+        protocol="application/pgp-signature"; boundary="2qoadlsi3vp4d74m"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1497376406-86470-2-git-send-email-shawnn@chromium.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1497376406-86470-1-git-send-email-shawnn@chromium.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Shawn Nematbakhsh <shawnn@chromium.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org
+List-Id: linux-pm@vger.kernel.org
 
 
---ikuh7vqbucwsbllz
+--2qoadlsi3vp4d74m
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Jun 13, 2017 at 10:53:26AM -0700, Shawn Nematbakhsh wrote:
-> According to the smart battery spec (1), the CAPACITY_MODE bit does not
-> influence the value read from RelativeStateOfCharge(), so don't bother
-> changing CAPACITY_MODE when doing such a read.
->=20
-> (1) - Smart Battery Data Specification, Rev 1.1, Dec. 11, 1998
+On Tue, Jun 13, 2017 at 10:53:25AM -0700, Shawn Nematbakhsh wrote:
+> A subset of smart battery commands return charge or energy depending on
+> the CAPACITY_MODE bit setting of BatteryMode(). In order to
+> unambiguously read a charge or energy value, it is necessary to ensure
+> that CAPACITY_MODE is set as desired, and not changed for the duration
+> of the attribute read.
 >=20
 > Signed-off-by: Shawn Nematbakhsh <shawnn@chromium.org>
+> ---
 
 Thanks, queued.
 
 -- Sebastian
 
-> ---
->  drivers/power/supply/sbs-battery.c | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
+>  drivers/power/supply/sbs-battery.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
 >=20
 > diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sb=
 s-battery.c
-> index d7e68fd97099..4bae210d5a8a 100644
+> index e3a114e60f1a..d7e68fd97099 100644
 > --- a/drivers/power/supply/sbs-battery.c
 > +++ b/drivers/power/supply/sbs-battery.c
-> @@ -439,6 +439,11 @@ static int sbs_get_battery_property(struct i2c_clien=
-t *client,
->  	} else {
->  		if (psp =3D=3D POWER_SUPPLY_PROP_STATUS)
->  			val->intval =3D POWER_SUPPLY_STATUS_UNKNOWN;
-> +		else if (psp =3D=3D POWER_SUPPLY_PROP_CAPACITY)
-> +			/* sbs spec says that this can be >100 %
-> +			 * even if max value is 100 %
-> +			 */
-> +			val->intval =3D min(ret, 100);
->  		else
->  			val->intval =3D 0;
->  	}
-> @@ -549,12 +554,7 @@ static int sbs_get_battery_capacity(struct i2c_clien=
-t *client,
->  	if (ret < 0)
->  		return ret;
+> @@ -171,6 +171,7 @@ struct sbs_info {
+>  	u32				i2c_retry_count;
+>  	u32				poll_retry_count;
+>  	struct delayed_work		work;
+> +	struct mutex			mode_lock;
+>  };
 > =20
-> -	if (psp =3D=3D POWER_SUPPLY_PROP_CAPACITY) {
-> -		/* sbs spec says that this can be >100 %
-> -		* even if max value is 100 % */
-> -		val->intval =3D min(ret, 100);
-> -	} else
-> -		val->intval =3D ret;
-> +	val->intval =3D ret;
-> =20
->  	ret =3D sbs_set_battery_mode(client, mode);
->  	if (ret < 0)
-> @@ -619,7 +619,6 @@ static int sbs_get_property(struct power_supply *psy,
->  	case POWER_SUPPLY_PROP_CHARGE_NOW:
->  	case POWER_SUPPLY_PROP_CHARGE_FULL:
->  	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-> -	case POWER_SUPPLY_PROP_CAPACITY:
->  		ret =3D sbs_get_property_index(client, psp);
+>  static char model_name[I2C_SMBUS_BLOCK_MAX + 1];
+> @@ -623,7 +624,13 @@ static int sbs_get_property(struct power_supply *psy,
 >  		if (ret < 0)
 >  			break;
-> @@ -647,6 +646,7 @@ static int sbs_get_property(struct power_supply *psy,
->  	case POWER_SUPPLY_PROP_TIME_TO_FULL_AVG:
->  	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
->  	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-> +	case POWER_SUPPLY_PROP_CAPACITY:
->  		ret =3D sbs_get_property_index(client, psp);
->  		if (ret < 0)
->  			break;
+> =20
+> +		/* sbs_get_battery_capacity() will change the battery mode
+> +		 * temporarily to read the requested attribute. Ensure we stay
+> +		 * in the desired mode for the duration of the attribute read.
+> +		 */
+> +		mutex_lock(&chip->mode_lock);
+>  		ret =3D sbs_get_battery_capacity(client, ret, psp, val);
+> +		mutex_unlock(&chip->mode_lock);
+>  		break;
+> =20
+>  	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
+> @@ -808,6 +815,7 @@ static int sbs_probe(struct i2c_client *client,
+>  	psy_cfg.of_node =3D client->dev.of_node;
+>  	psy_cfg.drv_data =3D chip;
+>  	chip->last_state =3D POWER_SUPPLY_STATUS_UNKNOWN;
+> +	mutex_init(&chip->mode_lock);
+> =20
+>  	/* use pdata if available, fall back to DT properties,
+>  	 * or hardcoded defaults if not
 > --=20
 > 2.13.1.508.gb3defc5cc-goog
 >=20
 
---ikuh7vqbucwsbllz
+--2qoadlsi3vp4d74m
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllCuSwACgkQ2O7X88g7
-+pr86w/+JvdHDx1BcH8u7u/u/NEbU4TZB4qDTBgFOUS9IMG9msnR/lorfxftepxc
-F2O0EPoETSNEsOuS9NwD8kFH6xqwi+5jq8qO+ggYmzi0MkQa296NM8U1YBjO1L95
-nJuNxGj4LOA+E9MkPfayG8MquqiQk1sZ8ZzVIqWJXLbYXvsf11xf2O7gPxcm/yyg
-XhXMy+blVDPl4FNg6YEPIoyhw8f8L5XDivoyGm7VwE0YDf6kIHvdJTZcjzihXvpb
-CpvfSzluAScqORdn+LJFYuGhPS0uAfIvumrn2FzcS3SzA/oRpsLKH8VbbGy3LYby
-CsfdtboJGcyAxuJP8rVq4poikVBkdtW1zbBUcrEGw500wW0l6vGRpktchevSfJcB
-UlH6zjgW5xQZ8D0SWcEOAXL4vwU+nJeIwInfzjc4V78km+iuBhlGfyPirDEWxoFd
-OkoCPaKUTlzdv0fE3PkH8MjHr+OV6AEjtp3kg/p8N+V3SQ9i6136+qvjLxcNb80N
-RM9xtWJRgzCxYuZWFAir5C1lGZLeI7g6qQAFWgdsUzOpfDa31scjdWAmeT5fB23B
-2BpPwWOlxkJmBIuYJyxUGtZs2iguujBwr5ikbqhZK1IJpJV+MNX9++z2vgHYKtyL
-QlKO0VtqQriimaFdhCAml7qzyzQCYxHhQ3EkUH7rL2mkpMHbryk=
-=GZa4
+iQIyBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllCuUkACgkQ2O7X88g7
++pqIdw/2MrHDSyyh22viDUFa2HoZidTZCYrstbCpzimk424vlcYeKOzBYoYq98Uv
+5xFlZ0OwY7l8MhCAS1ffBzyUDhz9phS0FTJkzsMpWzKhGDc2muN/BXBGRmeUCJ/8
+KL/D++cLbB+PFe1EQ+yKvUn9Bzmo141/zGoMUTGY08r4IUpdQJ9HmwtqRI5ogji4
+Y6GRuEvtHXFPZ38veH43yMR5Ya+jGpjbeW2iDDq3nK7ppOBFmttaAVnMoOAZ+tLz
+6+6Hp/NdWKzcKZH8TOxySxESB+uVZ887czhEnql5BvRRbtjnWQvSC0VwhCl5d3ab
+29Z8UyBNjNBKEFbArbIHdPOjthZ2t7s53M0mVyrObIQtjMuaPPQRiwpGwqtw5p1g
+5HKe4/sLO5AAaoGWxSFptb6MZ07u1TDbhpLTABrWsWfwBuyPlsphfCZ3dQl2uNrI
+l7PU0ISnFndu8d+eV5R1mkG1pCSE+lKECgGQPZpLpuryAa0XUo+Qm0RbB5jtqzov
+Kgiwp7n35bnMNftOK57b7JljJID9+EelJKzGIb6EQngme6TpMb3BiHOohvjZUDUP
+S99emhv2CKB0TbdhobknuD2JB/bikLh+fpJRXirkavXlLu+VmhiHgcGLV0q79rFV
+Vaf408dLeGOqV7T8l802TNdk92FNEQAYkxyQTfLvUvKB36YOhQ==
+=1C7p
 -----END PGP SIGNATURE-----
 
---ikuh7vqbucwsbllz--
+--2qoadlsi3vp4d74m--
