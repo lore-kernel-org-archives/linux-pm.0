@@ -1,102 +1,131 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v15 2/7] power: add power sequence library
-Date: Thu, 15 Jun 2017 18:06:04 +0800
-Message-ID: <20170615100604.GC24157@b29397-desktop>
-References: <1497319166-17287-1-git-send-email-peter.chen@nxp.com>
- <1497319166-17287-3-git-send-email-peter.chen@nxp.com>
- <CAPDyKFpOQWTPpdd__OBP1DcW58CbqnygGAOxiEFq5kqqvCm0QA@mail.gmail.com>
- <20170614015338.GA4635@b29397-desktop>
- <CAPDyKFrLL10TY1JZAhF44_0+qGETLNtFc6ujKVUu7Ay=O8+M5A@mail.gmail.com>
- <20170615065854.GA24157@b29397-desktop>
- <CAPDyKFpc8GRKK8bafMU_HPaqWNrger3grPSd5rWWCTYhUGHZLA@mail.gmail.com>
- <20170615091131.GB24157@b29397-desktop>
- <CAPDyKFrZoyoYCQA1rnRbz9tmT9vJigzSb+xyTZpJjhd=5eFA5A@mail.gmail.com>
+From: Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
+Subject: Re: [PATCH v6 3/4] power: supply: twl4030-charger: move irq
+ allocation to just before irqs are enabled
+Date: Thu, 15 Jun 2017 13:47:04 +0200
+Message-ID: <20170615114704.odpislk5a4nsigtv@earth>
+References: <cover.1497432355.git.hns@goldelico.com>
+ <0eeffa7a6ab8e4213f518e2caf6982d2b77dc0b2.1497432355.git.hns@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="k7sxcplenkf75emn"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFrZoyoYCQA1rnRbz9tmT9vJigzSb+xyTZpJjhd=5eFA5A@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Peter Chen <peter.chen@nxp.com>, Mark Rutland <mark.rutland@arm.com>, Heiko Stuebner <heiko@sntech.de>, Stephen Boyd <stephen.boyd@linaro.org>, frank.li@nxp.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Gary Bisson <gary.bisson@boundarydevices.com>, Fabio Estevam <festevam@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Vaibhav Hiremath <vaibhav.hiremath@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, mka@chromium.org, Alan Stern <stern@rowland.harvard.edu>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.ker>
+In-Reply-To: <0eeffa7a6ab8e4213f518e2caf6982d2b77dc0b2.1497432355.git.hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
+Cc: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, NeilBrown <neil-+NVA1uvv1dVBDLzU/O5InQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Marek Belisko <marek-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, letux-kernel-S0jZdbWzriLCfDggNXIi3w@public.gmane.org, notasas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 15, 2017 at 11:35:20AM +0200, Ulf Hansson wrote:
-> On 15 June 2017 at 11:11, Peter Chen <hzpeterchen@gmail.com> wrote:
-> > On Thu, Jun 15, 2017 at 10:11:45AM +0200, Ulf Hansson wrote:
-> >> > Yes, you are right. This is the limitation for this power sequence
-> >> > library, the registration for the 1st power sequence instance must
-> >> > be finished before device driver uses it. I am appreciated that
-> >> > you can supply some suggestions for it.
-> >>
-> >> In general this kind of problems is solved by first parsing the DTB,
-> >> which means you will find out whether there is a resource (a pwrseq)
-> >> required for the device. Then you try to fetch that resource, and if
-> >> that fails, it means the resource is not yet available, and hence you
-> >> want to retry later and should return -EPROBE_DEFER.
-> >>
-> >> In this case, of_pwrseq_on() needs to be converted to start looking
-> >> for a pwrseq compatible in it's child node - I guess. Then if that is
-> >> found, you try to fetch the instance of the corresponding library.
-> >> Failing to fetch the library instance should then cause a return
-> >> -EPROBE_DEFER.
-> >
-> > The most difficulty for this is we can't know whether the requested
-> > pwrseq instance will be registered or not, the kernel configuration
-> > for this pwrseq library may not be chosen at all.
-> 
-> In such case it is still correct to return -EPROBE_DEFER, because the
-> driver that tries to probe its device will fail unless it can run the
-> needed pwrseq. Right?
-> 
 
-Unlike the MMC design, there is no dts entry to indicate whether this
-device needs pwrseq or not at this design, it will only carry out power
-on sequence after matching. So, return -EPROBE_DEFER may not work since
-this device may never need pwrseq.
+--k7sxcplenkf75emn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> >
-> >>
-> >> >
-> >> >> Moreover, I have found yet another severe problem but reviewing the code:
-> >> >> In the struct pwrseq, you have a "bool used", which you are setting to
-> >> >> "true" once the pwrseq has been hooked up with the device, when a
-> >> >> driver calls of_pwrseq_on(). Setting that variable to true, will also
-> >> >> prevent another driver from using the same instance of the pwrseq for
-> >> >> its device. So, to cope with multiple users, you register a new
-> >> >> instance of the same pwrseq library that got hooked up, once the
-> >> >> ->get() callback is about to complete.
-> >> >>
-> >> >> The problem the occurs, when there is another driver calling
-> >> >> of_pwrseq_on() in between, meaning that the new instance has not yet
-> >> >> been registered. This will simply fail, won't it?
-> >> >
-> >> > Yes, you are right, thanks for pointing that, I will add mutex_lock for
-> >> > of_pwrseq_on.
-> >>
-> >> Another option is to entirely skip to two step approach.
-> >>
-> >> In other words, make the library to cope with multiple users via the
-> >> same registered library instance.
-> >>
-> >
-> > No, the pwrseq instance stores dtb information (clock, gpio, etc), it
-> > needs to be per device.
-> 
-> I think you misunderstood my suggestion here. Of course you need to
-> allocate one pwrseq data per device.
-> 
-> However, my point is that you shouldn't need more than one instance of
-> the library functions to be registered in the list of available pwrseq
-> libraries.
-> 
+Hi,
 
-This additional instance is used to store compatible information for
-this pwrseq library, it is used for the next matching between device
-and pwrseq library, it just likes we need the first pwrseq instance
-registered at boot stage.
+On Wed, Jun 14, 2017 at 11:25:55AM +0200, H. Nikolaus Schaller wrote:
+> This avoids a potential race if irqs are enabled and triggered too early
+> before the worker is properly set up.
+>=20
+> Suggested-by: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
+> Signed-off-by: H. Nikolaus Schaller <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
+> ---
+>  drivers/power/supply/twl4030_charger.c | 28 ++++++++++++++--------------
+>  1 file changed, 14 insertions(+), 14 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/suppl=
+y/twl4030_charger.c
+> index 1fbbe0cc216a..3bebeecb4a1f 100644
+> --- a/drivers/power/supply/twl4030_charger.c
+> +++ b/drivers/power/supply/twl4030_charger.c
+> @@ -984,6 +984,16 @@ static int twl4030_bci_probe(struct platform_device =
+*pdev)
+> =20
+>  	platform_set_drvdata(pdev, bci);
+> =20
+> +	if (bci->dev->of_node) {
+> +		struct device_node *phynode;
+> +
+> +		phynode =3D of_find_compatible_node(bci->dev->of_node->parent,
+> +						  NULL, "ti,twl4030-usb");
+> +		if (phynode)
+> +			bci->transceiver =3D devm_usb_get_phy_by_node(
+> +				bci->dev, phynode, &bci->usb_nb);
+> +	}
+> +
 
--- 
+The notifier is not that much different from an irq. I see
+the call can access at least the iio channel (so iio channel
+should be registered first). I suspect worker and power-supply
+should also be initialized/registered first. Best location seems
+to be directly before requesting the irqs.
 
-Best Regards,
-Peter Chen
+>  	bci->channel_vac =3D devm_iio_channel_get(&pdev->dev, "vac");
+>  	if (IS_ERR(bci->channel_vac)) {
+>  		bci->channel_vac =3D NULL;
+> @@ -1006,6 +1016,10 @@ static int twl4030_bci_probe(struct platform_devic=
+e *pdev)
+>  		return ret;
+>  	}
+> =20
+> +	INIT_WORK(&bci->work, twl4030_bci_usb_work);
+> +	INIT_DELAYED_WORK(&bci->current_worker, twl4030_current_worker);
+> +
+> +	bci->usb_nb.notifier_call =3D twl4030_bci_usb_ncb;
+
+You should configure the notifier block *before* registering it.
+
+>  	ret =3D devm_request_threaded_irq(&pdev->dev, bci->irq_chg, NULL,
+>  			twl4030_charger_interrupt, IRQF_ONESHOT, pdev->name,
+>  			bci);
+> @@ -1023,20 +1037,6 @@ static int twl4030_bci_probe(struct platform_devic=
+e *pdev)
+>  		return ret;
+>  	}
+> =20
+> -	INIT_WORK(&bci->work, twl4030_bci_usb_work);
+> -	INIT_DELAYED_WORK(&bci->current_worker, twl4030_current_worker);
+> -
+> -	bci->usb_nb.notifier_call =3D twl4030_bci_usb_ncb;
+> -	if (bci->dev->of_node) {
+> -		struct device_node *phynode;
+> -
+> -		phynode =3D of_find_compatible_node(bci->dev->of_node->parent,
+> -						  NULL, "ti,twl4030-usb");
+> -		if (phynode)
+> -			bci->transceiver =3D devm_usb_get_phy_by_node(
+> -				bci->dev, phynode, &bci->usb_nb);
+> -	}
+> -
+>  	/* Enable interrupts now. */
+>  	reg =3D ~(u32)(TWL4030_ICHGLOW | TWL4030_ICHGEOC | TWL4030_TBATOR2 |
+>  		TWL4030_TBATOR1 | TWL4030_BATSTS);
+
+-- Sebastian
+
+--k7sxcplenkf75emn
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllCc7UACgkQ2O7X88g7
++pr4+g/9EwqRqoVSXxtPsq0Df0xwR3FdYw1lz9PAD8emgyiRwGAVkHWEyJZsJwZy
+8ccvkSgZmsi/Q9kSYjN9MDY96yt+qaboZsuEtDC9ecsocvt6p/akjgM5Zzy6m1Ms
+5cj/bTImQc8vSstzdt24DLh1KhDclAjUhNBV3AodEPl4g2Gq686LEqpWjd0VGQkY
+gq77aV3aYtBX7itBMoX4Bc0xX29QhCcS0TtyvDZKCVSIzlX6fs57/N20J3ucbq3f
+MjujX1ynkxY5DfzwzseZ9nnzH4ukFhI3CKbA1gkqsXrWrMAEwcvon1MpbQbI7rRX
+a2JG9lckAhWNeixEtwb1NdWXv3aI1u2ARm63Eh2iHh2vrIw4UKM3ghbzhq8wVL83
+TXv6mVmJIeiwr4M1BtwCEN5oidlmhQgoO7fWEIEPkbXAE6vAzhaTr7F+NlVI3/WP
+vZpT+QGgIL3+hgjo+iraCsADvMBcIy6EVIy0ODAZ/CXN0VVgaQkJpr7ACM5p7toG
+LN2IwFPjFsRUWruVq9Lf/6RSEJzVjcqPmvbxTMP+NPON4hOpASiARQ7COeGGsRpl
+lUrijZdjKDnDQZxptfzbOtoPLadvCH1WBfNK9EIYzyBUZnbqf0WtNMqbvugZL++G
+/LHZDFZUs/K9aoKc5ntwNKPizCj/89uUBzFdq6dFvMt2DEduIG0=
+=TbWi
+-----END PGP SIGNATURE-----
+
+--k7sxcplenkf75emn--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
