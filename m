@@ -1,27 +1,52 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH 1/2] ARM: imx_v6_v7_defconfig: Set
- THERMAL_WRITABLE_TRIPS=y for testing
-Date: Thu, 15 Jun 2017 09:35:30 +0800
-Message-ID: <20170615013528.GD30112@dragon>
-References: <7055ce6095c0b7f026ac6f0dc37e43fc5c0b1793.1496939031.git.leonard.crestez@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Tony Lindgren <tony@atomide.com>
+Subject: [PATCH] power: supply: cpcap-charger: Add missing power_supply_config
+Date: Wed, 14 Jun 2017 21:41:08 -0700
+Message-ID: <20170615044108.26707-1-tony@atomide.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:58734 "EHLO mail.kernel.org"
+Received: from muru.com ([72.249.23.125]:51864 "EHLO muru.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752101AbdFOBgP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 14 Jun 2017 21:36:15 -0400
-Content-Disposition: inline
-In-Reply-To: <7055ce6095c0b7f026ac6f0dc37e43fc5c0b1793.1496939031.git.leonard.crestez@nxp.com>
+        id S1750776AbdFOEsN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 15 Jun 2017 00:48:13 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Bai Ping <ping.bai@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Marcel Partap <mpartap@gmx.net>, Michael Scott <michael.scott@linaro.org>
 
-On Thu, Jun 08, 2017 at 07:26:57PM +0300, Leonard Crestez wrote:
-> Setting trip points is supported by the imx thermal driver and it is
-> useful to be able to test this without adjusting config.
-> 
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Otherwise cpcap-battery won't probe properly with the power-supplies
+property configured but will fail with "Not all required supplies found,
+defer probe".
 
-Applied, thanks.
+Cc: Marcel Partap <mpartap@gmx.net>
+Cc: Michael Scott <michael.scott@linaro.org>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/power/supply/cpcap-charger.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/cpcap-charger.c
+--- a/drivers/power/supply/cpcap-charger.c
++++ b/drivers/power/supply/cpcap-charger.c
+@@ -637,6 +637,7 @@ static int cpcap_charger_probe(struct platform_device *pdev)
+ {
+ 	struct cpcap_charger_ddata *ddata;
+ 	const struct of_device_id *of_id;
++	struct power_supply_config psy_cfg = {};
+ 	int error;
+ 
+ 	of_id = of_match_device(of_match_ptr(cpcap_charger_id_table),
+@@ -665,9 +666,12 @@ static int cpcap_charger_probe(struct platform_device *pdev)
+ 
+ 	atomic_set(&ddata->active, 1);
+ 
++	psy_cfg.of_node = pdev->dev.of_node;
++	psy_cfg.drv_data = ddata;
++
+ 	ddata->usb = devm_power_supply_register(ddata->dev,
+ 						&cpcap_charger_usb_desc,
+-						NULL);
++						&psy_cfg);
+ 	if (IS_ERR(ddata->usb)) {
+ 		error = PTR_ERR(ddata->usb);
+ 		dev_err(ddata->dev, "failed to register USB charger: %i\n",
+-- 
+2.13.0
