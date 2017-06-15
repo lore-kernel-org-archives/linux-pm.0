@@ -1,7 +1,7 @@
 From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH v7 06/10] i2c: mux: pca954x: Call request irq after adding mux segments
-Date: Thu, 15 Jun 2017 21:59:34 +0800
-Message-ID: <1497535178-12001-7-git-send-email-preid@electromag.com.au>
+Subject: [PATCH v7 04/10] i2c: i2c-smbus: add of_i2c_setup_smbus_alert
+Date: Thu, 15 Jun 2017 21:59:32 +0800
+Message-ID: <1497535178-12001-5-git-send-email-preid@electromag.com.au>
 References: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
 Return-path: <linux-i2c-owner@vger.kernel.org>
 In-Reply-To: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
@@ -9,125 +9,122 @@ Sender: linux-i2c-owner@vger.kernel.org
 To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, preid@electromag.com.au, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The pca954x device do not have the ability to mask interrupts. For
-i2c slave devices that also don't have masking ability (eg ltc1760
-smbalert output) delay registering the irq until after the mux
-segments have been configured. During the mux add_adaptor call the
-core i2c system can register an smbalert handler which would then
-be called immediately when the irq is registered. This smbalert
-handler will then clear the pending irq.
-
-Also add return check to irq_create_mapping call.
+This commit adds of_i2c_setup_smbus_alert which allows the smbalert
+driver to be attached to an i2c adapter via the device tree.
 
 Signed-off-by: Phil Reid <preid@electromag.com.au>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
- drivers/i2c/muxes/i2c-mux-pca954x.c | 59 +++++++++++++++++++------------------
- 1 file changed, 30 insertions(+), 29 deletions(-)
+ Documentation/devicetree/bindings/i2c/i2c.txt |  4 ++--
+ drivers/i2c/i2c-smbus.c                       | 34 ++++++++++++++++++++++++---
+ include/linux/i2c-smbus.h                     |  9 +++++++
+ 3 files changed, 42 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/i2c/muxes/i2c-mux-pca954x.c b/drivers/i2c/muxes/i2c-mux-pca954x.c
-index 2f21138..b152efa 100644
---- a/drivers/i2c/muxes/i2c-mux-pca954x.c
-+++ b/drivers/i2c/muxes/i2c-mux-pca954x.c
-@@ -305,7 +305,7 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
+diff --git a/Documentation/devicetree/bindings/i2c/i2c.txt b/Documentation/devicetree/bindings/i2c/i2c.txt
+index cee9d50..1126398 100644
+--- a/Documentation/devicetree/bindings/i2c/i2c.txt
++++ b/Documentation/devicetree/bindings/i2c/i2c.txt
+@@ -59,8 +59,8 @@ wants to support one of the below features, it should adapt the bindings below.
+ 	interrupts used by the device.
+ 
+ - interrupt-names
+-	"irq" and "wakeup" names are recognized by I2C core, other names are
+-	left to individual drivers.
++	"irq", "wakeup" and "smbus_alert" names are recognized by I2C core,
++	other names are	left to individual drivers.
+ 
+ - host-notify
+ 	device uses SMBus host notify protocol instead of interrupt line.
+diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
+index d4af270..0ad7f7f 100644
+--- a/drivers/i2c/i2c-smbus.c
++++ b/drivers/i2c/i2c-smbus.c
+@@ -21,6 +21,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/of_irq.h>
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
+ 
+@@ -131,7 +132,7 @@ static int smbalert_probe(struct i2c_client *ara,
  {
- 	struct pca954x *data = i2c_mux_priv(muxc);
- 	struct i2c_client *client = data->client;
--	int c, err, irq;
-+	int c, irq;
+ 	struct i2c_smbus_alert_setup *setup = dev_get_platdata(&ara->dev);
+ 	struct i2c_smbus_alert *alert;
+-	struct i2c_adapter *adapter = ara->adapter;
++	struct i2c_adapter *adap = ara->adapter;
+ 	int res, irq;
  
- 	if (!data->chip->has_irq || client->irq <= 0)
- 		return 0;
-@@ -320,29 +320,31 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
+ 	alert = devm_kzalloc(&ara->dev, sizeof(struct i2c_smbus_alert),
+@@ -139,7 +140,14 @@ static int smbalert_probe(struct i2c_client *ara,
+ 	if (!alert)
+ 		return -ENOMEM;
  
- 	for (c = 0; c < data->chip->nchans; c++) {
- 		irq = irq_create_mapping(data->irq, c);
-+		if (irq <= 0) {
-+			dev_err(&client->dev, "failed irq create map\n");
-+			return -EINVAL;
-+		}
- 		irq_set_chip_data(irq, data);
- 		irq_set_chip_and_handler(irq, &pca954x_irq_chip,
--			handle_simple_irq);
-+					 handle_simple_irq);
- 	}
- 
--	err = devm_request_threaded_irq(&client->dev, data->client->irq, NULL,
--					pca954x_irq_handler,
--					IRQF_ONESHOT | IRQF_SHARED,
--					"pca954x", data);
--	if (err)
--		goto err_req_irq;
-+	return 0;
-+}
- 
--	disable_irq(data->client->irq);
-+static void pca954x_cleanup(struct i2c_mux_core *muxc)
-+{
-+	struct pca954x *data = i2c_mux_priv(muxc);
-+	int c, irq;
- 
--	return 0;
--err_req_irq:
--	for (c = 0; c < data->chip->nchans; c++) {
--		irq = irq_find_mapping(data->irq, c);
--		irq_dispose_mapping(irq);
-+	if (data->irq) {
-+		for (c = 0; c < data->chip->nchans; c++) {
-+			irq = irq_find_mapping(data->irq, c);
-+			irq_dispose_mapping(irq);
-+		}
-+		irq_domain_remove(data->irq);
- 	}
--	irq_domain_remove(data->irq);
--
--	return err;
-+	i2c_mux_del_adapters(muxc);
- }
- 
- /*
-@@ -435,6 +437,15 @@ static int pca954x_probe(struct i2c_client *client,
- 		}
- 	}
- 
-+	if (data->irq) {
-+		ret = devm_request_threaded_irq(&client->dev, data->client->irq,
-+						NULL, pca954x_irq_handler,
-+						IRQF_ONESHOT | IRQF_SHARED,
-+						"pca954x", data);
-+		if (ret)
-+			goto fail_del_adapters;
+-	irq = setup->irq;
++	if (setup) {
++		irq = setup->irq;
++	} else {
++		irq = of_irq_get_byname(adap->dev.of_node, "smbus_alert");
++		if (irq <= 0)
++			return irq;
 +	}
 +
- 	dev_info(&client->dev,
- 		 "registered %d multiplexed busses for I2C %s %s\n",
- 		 num, data->chip->muxtype == pca954x_ismux
-@@ -443,25 +454,15 @@ static int pca954x_probe(struct i2c_client *client,
- 	return 0;
+ 	INIT_WORK(&alert->alert, smbalert_work);
+ 	alert->ara = ara;
  
- fail_del_adapters:
--	i2c_mux_del_adapters(muxc);
-+	pca954x_cleanup(muxc);
- 	return ret;
- }
+@@ -153,7 +161,7 @@ static int smbalert_probe(struct i2c_client *ara,
+ 	}
  
- static int pca954x_remove(struct i2c_client *client)
- {
- 	struct i2c_mux_core *muxc = i2c_get_clientdata(client);
--	struct pca954x *data = i2c_mux_priv(muxc);
--	int c, irq;
--
--	if (data->irq) {
--		for (c = 0; c < data->chip->nchans; c++) {
--			irq = irq_find_mapping(data->irq, c);
--			irq_dispose_mapping(irq);
--		}
--		irq_domain_remove(data->irq);
--	}
+ 	i2c_set_clientdata(ara, alert);
+-	dev_info(&adapter->dev, "supports SMBALERT#\n");
++	dev_info(&adap->dev, "supports SMBALERT#\n");
  
--	i2c_mux_del_adapters(muxc);
-+	pca954x_cleanup(muxc);
  	return 0;
  }
+@@ -214,6 +222,26 @@ struct i2c_client *i2c_setup_smbus_alert(struct i2c_adapter *adapter,
+ }
+ EXPORT_SYMBOL_GPL(i2c_setup_smbus_alert);
  
++int of_i2c_setup_smbus_alert(struct i2c_adapter *adap)
++{
++	struct i2c_client *client;
++	int irq;
++
++	irq = of_property_match_string(adap->dev.of_node, "interrupt-names",
++				       "smbus_alert");
++	if (irq == -EINVAL || irq == -ENODATA)
++		return 0;
++	else if (irq < 0)
++		return irq;
++
++	client = i2c_setup_smbus_alert(adap, NULL);
++	if (!client)
++		return -ENODEV;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_i2c_setup_smbus_alert);
++
+ /**
+  * i2c_handle_smbus_alert - Handle an SMBus alert
+  * @ara: the ARA client on the relevant adapter
+diff --git a/include/linux/i2c-smbus.h b/include/linux/i2c-smbus.h
+index 19efbd1..b5261c1 100644
+--- a/include/linux/i2c-smbus.h
++++ b/include/linux/i2c-smbus.h
+@@ -49,4 +49,13 @@ struct i2c_client *i2c_setup_smbus_alert(struct i2c_adapter *adapter,
+ 					 struct i2c_smbus_alert_setup *setup);
+ int i2c_handle_smbus_alert(struct i2c_client *ara);
+ 
++#if IS_ENABLED(CONFIG_I2C_SMBUS)
++int of_i2c_setup_smbus_alert(struct i2c_adapter *adap);
++#else
++static inline int of_i2c_setup_smbus_alert(struct i2c_adapter *adap)
++{
++	return 0;
++}
++#endif
++
+ #endif /* _LINUX_I2C_SMBUS_H */
 -- 
 1.8.3.1
