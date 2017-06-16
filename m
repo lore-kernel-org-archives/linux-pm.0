@@ -1,101 +1,92 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PCI / PM: Restore the status of PCI devices across hibernation
-Date: Sat, 17 Jun 2017 00:23:58 +0200
-Message-ID: <CAJZ5v0gBeO2559mVNCO-w9_mgzfbzZB6oRY7xc6T=G2DsXV5ag@mail.gmail.com>
-References: <1495702147-31427-1-git-send-email-yu.c.chen@intel.com> <20170616194559.GD11129@bhelgaas-glaptop.roam.corp.google.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 3/5] intel_pstate: remove intel_pstate.get()
+Date: Sat, 17 Jun 2017 01:53:32 +0200
+Message-ID: <1968308.WZqDeDH7Bi@aspire.rjw.lan>
+References: <1496889556-17923-1-git-send-email-lenb@kernel.org> <2e0f8c13884240d7189087d19bb8274573638aaf.1496889051.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170616194559.GD11129@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Chen Yu <yu.c.chen@intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Len Brown <len.brown@intel.com>, Dan Williams <dan.j.williams@intel.com>, Rui Zhang <rui.zhang@intel.com>, Ying Huang <ying.huang@intel.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42732 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750967AbdFQAAo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2017 20:00:44 -0400
+In-Reply-To: <2e0f8c13884240d7189087d19bb8274573638aaf.1496889051.git.len.brown@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, srinivas.pandruvada@linux.intel.com, hpa@linux.intel.com, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-On Fri, Jun 16, 2017 at 9:45 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> On Thu, May 25, 2017 at 04:49:07PM +0800, Chen Yu wrote:
->> Currently we saw a lot of "No irq handler" errors during hibernation,
->> which caused the system hang finally:
->>
->> [  710.141581] ata4.00: qc timeout (cmd 0xec)
->> [  710.147135] ata4.00: failed to IDENTIFY (I/O error, err_mask=0x4)
->> [  710.154593] ata4.00: revalidation failed (errno=-5)
->> [  710.468124] ata4: SATA link up 6.0 Gbps (SStatus 133 SControl 300)
->> [  710.477746] do_IRQ: 31.151 No irq handler for vector
->>
->> According to above logs, there is an interrupt triggered and it is
->> dispatched to CPU31 with a vector number 151, but there is no handler
->> for it, thus this irq will not get acked and caused irq flood which kill
->> the system. To be more specific, the 31.151 is an interrupt from the ahci
->> host controller.
->>
->> After some investigation, the reason why this issue is triggered is
->> because the thaw_noirq() function does not restore the MSI/MSIX settings
->> across hibernation.
->>
->> The scenario is illustrated below:
->>
->> 1. Before the hibernation starts, the irq 34 is the handler for the ahci device,
->>    which is binded on cpu31.
->> 2. Hibernation starts, the ahci device is put into low power state.
->> 3. All the nonboot CPUs are put offline, so the irq 34 has to be migrated to
->>    the last alive one - CPU0.
->> 4. After the snapshot has been created, all the nonboot CPUs are brought up again,
->>    the CPU affinity for IRQ 34 remains to be 0.
->> 5. ahci device are put into D0.
->> 6. The snapshot is written to the disk.
->>
->> The issue is triggered in step 6, in theory the ahci interrupt should be
->> delivered to CPU0, however the actually result is that this interrupt is
->> delivered to the original CPU31 instead, which cause the "No irq handler" issue.
->>
->> Ying Huang has has provided a clue that, in step 3 it is possible that the writing
->> to the register might not take effect as the PCI devices have been put suspended.
->> Actually it is true:
->> In step 3, the irq 34 affinity is supposed to be modified from 31 to 0,
->> but actually it did not. In __pci_write_msi_msg(), if the device is already
->> in low power state, the low level msi message entry will not be updated
->> but cached. So in theory during the device restore process, the cached msi
->> modification information should be written back to the hardware, and this
->> is what pci_restore_msi_state() do during normal suspend-resume.
->> But this is not the case for hibernation, pci_restore_msi_state() is not
->> invoked currently, to be more specific, pci_restore_state() is not invoked
->> in pci_pm_thaw_noirq(), although pci_save_state() has saved the necessary
->> pci cached information in pci_pm_freeze_noirq().
->>
->> This patch tries to restore the pci status for the device during hibernation,
->> otherwise the status might be lost across hibernation(for example, the MSI/MSIX
->> message settings), which might cause problems during hibernation.
->>
->> Suggested-by: Ying Huang <ying.huang@intel.com>
->> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Cc: Bjorn Helgaas <bhelgaas@google.com>
->> Cc: Len Brown <len.brown@intel.com>
->> Cc: Dan Williams <dan.j.williams@intel.com>
->> Cc: Rui Zhang <rui.zhang@intel.com>
->> Cc: Ying Huang <ying.huang@intel.com>
->> Cc: linux-pci@vger.kernel.org
->> Cc: linux-pm@vger.kernel.org
->> Cc: linux-kernel@vger.kernel.org
->> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
->
-> Added a stable tag and applied with Rafael's reviewed-by to pci/pm for
-> v4.13, thanks!
->
-> pci_restore_state() restores a lot of stuff besides MSI/MSI-X: PCIe
-> device, link, slot control, ATS, VC, BARs, ACS, IOV.  I guess I'm a
-> little surprised that we haven't noticed more issues if all these
-> things were broken.
+On Wednesday, June 07, 2017 07:39:14 PM Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
+> 
+> The x86 cpufreq core now uses aperfmperf_khz_on_cpu()
+> to supply /sys/.../cpufreq/scaling_cur_freq
+> on all x86 systems supporting APERF/MPERF.
+> 
+> That includes 100% of systems supported by intel_pstate,
+> and so intel_pstate.get() is now a NOP -- remove it.
+> 
+> Invoke aperfmperf_khz_on_cpu() directly,
+> if legacy-mode p-state tracing is enabled.
+> 
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 16 +---------------
+>  1 file changed, 1 insertion(+), 15 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index b7de5bd..5d67780 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1597,12 +1597,6 @@ static inline bool intel_pstate_sample(struct cpudata *cpu, u64 time)
+>  	return false;
+>  }
+>  
+> -static inline int32_t get_avg_frequency(struct cpudata *cpu)
+> -{
+> -	return mul_ext_fp(cpu->sample.core_avg_perf,
+> -			  cpu->pstate.max_pstate_physical * cpu->pstate.scaling);
+> -}
+> -
+>  static inline int32_t get_avg_pstate(struct cpudata *cpu)
+>  {
+>  	return mul_ext_fp(cpu->pstate.max_pstate_physical,
+> @@ -1728,7 +1722,7 @@ static void intel_pstate_adjust_pstate(struct cpudata *cpu, int target_pstate)
+>  		sample->mperf,
+>  		sample->aperf,
+>  		sample->tsc,
+> -		get_avg_frequency(cpu),
+> +		aperfmperf_khz_on_cpu(cpu->cpu),
+>  		fp_toint(cpu->iowait_boost * 100));
+>  }
+>  
+> @@ -1922,13 +1916,6 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
+>  	return 0;
+>  }
+>  
+> -static unsigned int intel_pstate_get(unsigned int cpu_num)
+> -{
+> -	struct cpudata *cpu = all_cpu_data[cpu_num];
+> -
+> -	return cpu ? get_avg_frequency(cpu) : 0;
+> -}
+> -
+>  static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+>  {
+>  	struct cpudata *cpu = all_cpu_data[cpu_num];
+> @@ -2157,7 +2144,6 @@ static struct cpufreq_driver intel_pstate = {
+>  	.setpolicy	= intel_pstate_set_policy,
+>  	.suspend	= intel_pstate_hwp_save_state,
+>  	.resume		= intel_pstate_resume,
+> -	.get		= intel_pstate_get,
+>  	.init		= intel_pstate_cpu_init,
+>  	.exit		= intel_pstate_cpu_exit,
+>  	.stop_cpu	= intel_pstate_stop_cpu,
+> 
 
-That's because they weren't broken. :-)
-
-None of them is expected to change over the image creation, which is
-why pci_pm_thaw_noirq() didn't call pci_restore_state(), but we
-overlooked the fact that taking nonboot CPUs offline changed the
-configuration of interrupts that needed to be restored afterward.
-
-So this one is really exceptional.
+This change will cause cpufreq_quick_get() to work differently and it is
+called by KVM among other things.  Will that still work?
 
 Thanks,
 Rafael
