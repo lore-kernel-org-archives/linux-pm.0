@@ -1,69 +1,67 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 4/5] intel_pstate: skip scheduler hook when in
- "performance" mode.
-Date: Fri, 16 Jun 2017 21:35:01 -0400
-Message-ID: <CAJvTdKnZTese3kiqtQiGn0F+i2p3eQ4KzR6QiCQdwAdqO=JUTQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/5] intel_pstate: remove intel_pstate.get()
+Date: Sat, 17 Jun 2017 03:40:09 +0200
+Message-ID: <CAJZ5v0itMGFq3PZSoy23ybSXfhP_-v4WKWXCT6A0dOssED-gwA@mail.gmail.com>
 References: <1496889556-17923-1-git-send-email-lenb@kernel.org>
- <6542869.y10POnRxLl@aspire.rjw.lan> <CAJvTdKmoV4WbHOCy9WsspcLSNeCxO-egZP_j9XbbTTCTT7OeVA@mail.gmail.com>
- <4318906.Nci2R8jF0d@aspire.rjw.lan> <CAJvTdKnULzQCdwg7vqfSymr+nbS=7UgVPBCqYpqcH8gApUHrxQ@mail.gmail.com>
+ <1963166.eOk3pBXQhq@aspire.rjw.lan> <CAJvTdKmmHSM8FJq=1d4vQAYg=orgHb7OFRLmZ7EH2yWM7mQcAg@mail.gmail.com>
+ <1534231.XqQ6Lv6Ybd@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f171.google.com ([209.85.216.171]:35878 "EHLO
-        mail-qt0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752529AbdFQBfD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2017 21:35:03 -0400
-In-Reply-To: <CAJvTdKnULzQCdwg7vqfSymr+nbS=7UgVPBCqYpqcH8gApUHrxQ@mail.gmail.com>
+Received: from mail-io0-f194.google.com ([209.85.223.194]:34132 "EHLO
+        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752323AbdFQBkL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2017 21:40:11 -0400
+In-Reply-To: <1534231.XqQ6Lv6Ybd@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, X86 ML <x86@kernel.org>, "H. Peter Anvin" <hpa@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+Cc: Len Brown <lenb@kernel.org>, X86 ML <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "H. Peter Anvin" <hpa@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-sorry, that was a premature send...
-
->>> > What about update_turbo_pstate()?
->>> >
->>> > In theory MSR_IA32_MISC_ENABLE_TURBO_DISABLE can be set at any time, so
->>> > wouldn't that become problematic after this change?
->>>
->>> yes, the sysfs "no_turbo" attribute can be modified at any time, invoking
->>> update_turbo_state(), which will update MSR_IA32_MISC_ENABLE_TURBO_DISABLE
+On Sat, Jun 17, 2017 at 3:21 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, June 16, 2017 09:10:39 PM Len Brown wrote:
+>> >> >> -             get_avg_frequency(cpu),
+>> >> >> +             aperfmperf_khz_on_cpu(cpu->cpu),
+>> >>
+>> >> Note that I deleted the line above in an updated version of this patch
+>> >> that I'm ready to send out.
+>> >>
+>> >> There were a couple of problems with it.
+>> >> The first is that it was  ugly that tracing (which occurs only in the
+>> >> SW governor case)
+>> >> could shorten the measurement interval as seen by the sysfs interface.
+>> >>
+>> >> The second is that this trace point can be called with irqs off,
+>> >> and smp_call_function_single() will WARN when called with irqs off.
+>> >>
+>> >> Srinivas Acked that I simply remove this field from the tracepoint --
+>> >> as it is redundant to calculate it in the kernel when we are already
+>> >> exporting the raw values of aperf and mperf.
+>> >
+>> > This changes the tracepoint format and I know about a couple of user space
+>> > scripts that consume these tracepoints though.
+>> > What would be wrong with leaving it as is?
 >>
->> If that was the only way it could change, I wouldn't worry about it, but what
->> about changes by BMCs and similar?  Are they not a concern?
+>> I'm fine keeping get_avg_frequency() for the purpose of just this tracepoint
+>> compatibility, if you think it is useful to do so.
 >>
->>> But how is the presence or change in turbo related to the lack of a
->>> need to hook the scheduler callback in "performance" mode?  The hook
->>> literally does nothing in this case, except consume cycles, no?
->>
->> No.
->>
->> It actually sets the P-state to the current maximum (which admittedly is
->> excessive) exactly because the maximum may change on the fly in theory.
+>> I removed it because its only function was the (removed) intel_pstate.get()
+>> and this tracepoint.  And this tracepoint already includes aperf and mperf,
+>> which can be used to calculate frequency in user-space, if desired.
+>> Srinivas Acked' that updating his user-space script would be fine --
+>> dunno if that is sufficient.
 >
-> There are 2 cases.
+> Well, we can try to make this change and see if there are any complaints
+> about it.
 >
-> If turbo was enabled and were we requesting max turbo
-> and "somebody" disabled turbo in an MSR, then the HW would
-> simply clip our excessive
-request to what the hardware supports.
+> But the Srinivas' script is in the tree, so it would be good to update it too
+> along with the tracepoint.
 
-if turbo was disabled and we were requesting max non-turbo,
-and "somebody" enabled turbo in the MSR,
-then it is highly likely that current request is already sufficiently
-high enough
-to enable turbo.  "highly likely" = would work on 100% of the
-machines I have ever seen, including those with mis-configured TAR.
+On a second thought, in order to compute the frequency, user space
+needs to know the scaling and the max_pstate_physical value too, which
+may not be straightforward to obtain (on some Atoms, for example).
 
-ie. it should not matter.
+So why don't we leave the tracepoint as is for now?
 
->> If it can't change on the fly (or we don't care), we can do some more
->> simplifications there. :-)
->
-> I do not think it is Linux's responsibility to monitor changes to MSRs
-> such as Turbo enable/disable done behind its back by a BMC at run-time.
-> (if this is even possible)
->
->
-> --
-> Len Brown, Intel Open Source Technology Center
+Thanks,
+Rafael
