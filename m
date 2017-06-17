@@ -1,13 +1,11 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 3/4] intel_pstate: delete scheduler hook in HWP mode
-Date: Fri, 16 Jun 2017 20:03:13 -0700
-Message-ID: <7cc506b720aa12801c534d51235eeca45b81ba7f.1497665794.git.len.brown@intel.com>
+Subject: [PATCH 1/4] x86: do not use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"
+Date: Fri, 16 Jun 2017 20:03:11 -0700
+Message-ID: <f9250362b5eb66bc34402c1fd175f9db7a841532.1497665794.git.len.brown@intel.com>
 References: <1497668594-9266-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1497668594-9266-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <f9250362b5eb66bc34402c1fd175f9db7a841532.1497665794.git.len.brown@intel.com>
-References: <f9250362b5eb66bc34402c1fd175f9db7a841532.1497665794.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rafael@kernel.org
 Cc: x86@kernel.org, srinivas.pandruvada@linux.intel.com, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
@@ -15,57 +13,84 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-The cpufreq/scaling_cur_freq sysfs attribute is now provided by
-shared x86 cpufreq code on modern x86 systems, including
-all systems supported by the intel_pstate driver.
+cpufreq_quick_get() allows cpufreq drivers to over-ride cpu_khz
+that is otherwise reported in x86 /proc/cpuinfo "cpu MHz".
 
-In HWP mode, maintaining that value was the sole purpose of
-the scheduler hook, intel_pstate_update_util_hwp(),
-so it can now be removed.
+There are four problems with this scheme,
+any of them is sufficient justification to delete it.
+
+1. Depending on which cpufreq driver is loaded, the behavior
+   of this field is different.
+
+2. Distros complain that they have to explain to users
+   why and how this field changes.  Distros have requested a constant.
+
+3. The two major providers of this information, acpi_cpufreq
+   and intel_pstate, both "get it wrong" in different ways.
+
+   acpi_cpufreq lies to the user by telling them that
+   they are running at whatever frequency was last
+   requested by software.
+
+   intel_pstate lies to the user by telling them that
+   they are running at the average frequency computed
+   over an undefined measurement.  But an average computed
+   over an undefined interval, is itself, undefined...
+
+4. On modern processors, user space utilities, such as
+   turbostat(1), are more accurate and more precise, while
+   supporing concurrent measurement over arbitrary intervals.
+
+Users who have been consulting /proc/cpuinfo to
+track changing CPU frequency will be dissapointed that
+it no longer wiggles -- perhaps being unaware of the
+limitations of the information they have been consuming.
+
+Yes, they can change their scripts to look in sysfs
+cpufreq/scaling_cur_frequency.  Here they will find the same
+data of dubious quality here removed from /proc/cpuinfo.
+The value in sysfs will be addressed in a subsequent patch
+to address issues 1-3, above.
+
+Issue 4 will remain -- users that really care about
+accurate frequency information should not be using either
+proc or sysfs kernel interfaces.
+They should be using using turbostat(8), or a similar
+purpose-built analysis tool.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 14 +++-----------
- 1 file changed, 3 insertions(+), 11 deletions(-)
+ arch/x86/kernel/cpu/proc.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index b7de5bd..4ec5668 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1732,16 +1732,6 @@ static void intel_pstate_adjust_pstate(struct cpudata *cpu, int target_pstate)
- 		fp_toint(cpu->iowait_boost * 100));
- }
+diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+index 6df621a..218f798 100644
+--- a/arch/x86/kernel/cpu/proc.c
++++ b/arch/x86/kernel/cpu/proc.c
+@@ -2,7 +2,6 @@
+ #include <linux/timex.h>
+ #include <linux/string.h>
+ #include <linux/seq_file.h>
+-#include <linux/cpufreq.h>
  
--static void intel_pstate_update_util_hwp(struct update_util_data *data,
--					 u64 time, unsigned int flags)
--{
--	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
--	u64 delta_ns = time - cpu->sample.time;
+ /*
+  *	Get CPU information for use by the procfs.
+@@ -76,14 +75,9 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 	if (c->microcode)
+ 		seq_printf(m, "microcode\t: 0x%x\n", c->microcode);
+ 
+-	if (cpu_has(c, X86_FEATURE_TSC)) {
+-		unsigned int freq = cpufreq_quick_get(cpu);
 -
--	if ((s64)delta_ns >= INTEL_PSTATE_HWP_SAMPLING_INTERVAL)
--		intel_pstate_sample(cpu, time);
--}
--
- static void intel_pstate_update_util_pid(struct update_util_data *data,
- 					 u64 time, unsigned int flags)
- {
-@@ -1933,6 +1923,9 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
- {
- 	struct cpudata *cpu = all_cpu_data[cpu_num];
+-		if (!freq)
+-			freq = cpu_khz;
++	if (cpu_has(c, X86_FEATURE_TSC))
+ 		seq_printf(m, "cpu MHz\t\t: %u.%03u\n",
+-			   freq / 1000, (freq % 1000));
+-	}
++			   cpu_khz / 1000, (cpu_khz % 1000));
  
-+	if (hwp_active)
-+		return;
-+
- 	if (cpu->update_util_set)
- 		return;
- 
-@@ -2557,7 +2550,6 @@ static int __init intel_pstate_init(void)
- 		} else {
- 			hwp_active++;
- 			intel_pstate.attr = hwp_cpufreq_attrs;
--			pstate_funcs.update_util = intel_pstate_update_util_hwp;
- 			goto hwp_cpu_matched;
- 		}
- 	} else {
+ 	/* Cache size */
+ 	if (c->x86_cache_size >= 0)
 -- 
 2.7.4
