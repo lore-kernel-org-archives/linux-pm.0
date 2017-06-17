@@ -1,92 +1,69 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/5] intel_pstate: remove intel_pstate.get()
-Date: Sat, 17 Jun 2017 01:53:32 +0200
-Message-ID: <1968308.WZqDeDH7Bi@aspire.rjw.lan>
-References: <1496889556-17923-1-git-send-email-lenb@kernel.org> <2e0f8c13884240d7189087d19bb8274573638aaf.1496889051.git.len.brown@intel.com>
+Subject: Re: [PATCH 4/5] intel_pstate: skip scheduler hook when in "performance" mode.
+Date: Sat, 17 Jun 2017 02:04:59 +0200
+Message-ID: <6542869.y10POnRxLl@aspire.rjw.lan>
+References: <1496889556-17923-1-git-send-email-lenb@kernel.org> <1ecfadf4193fbd8873d4bcda9e9faec5825bcafb.1496889051.git.len.brown@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42732 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:44916 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750967AbdFQAAo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2017 20:00:44 -0400
-In-Reply-To: <2e0f8c13884240d7189087d19bb8274573638aaf.1496889051.git.len.brown@intel.com>
+        by vger.kernel.org with ESMTP id S1751144AbdFQAMK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2017 20:12:10 -0400
+In-Reply-To: <1ecfadf4193fbd8873d4bcda9e9faec5825bcafb.1496889051.git.len.brown@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: x86@kernel.org, srinivas.pandruvada@linux.intel.com, hpa@linux.intel.com, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: Len Brown <lenb@kernel.org>, srinivas.pandruvada@linux.intel.com
+Cc: x86@kernel.org, hpa@linux.intel.com, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-On Wednesday, June 07, 2017 07:39:14 PM Len Brown wrote:
+On Wednesday, June 07, 2017 07:39:15 PM Len Brown wrote:
 > From: Len Brown <len.brown@intel.com>
 > 
-> The x86 cpufreq core now uses aperfmperf_khz_on_cpu()
-> to supply /sys/.../cpufreq/scaling_cur_freq
-> on all x86 systems supporting APERF/MPERF.
+> When the governor is set to "performance", intel_pstate does not
+> need the scheduler hook for doing any calculations.  Under these
+> conditions, its only purpose is to continue to maintain
+> cpufreq/scaling_cur_freq.
 > 
-> That includes 100% of systems supported by intel_pstate,
-> and so intel_pstate.get() is now a NOP -- remove it.
+> But the cpufreq/scaling_cur_freq sysfs attribute is now provided by
+> the x86 cpufreq core on all modern x86 systems, including
+> all systems supported by the intel_pstate driver.
 > 
-> Invoke aperfmperf_khz_on_cpu() directly,
-> if legacy-mode p-state tracing is enabled.
+> So in "performance" governor mode, the scheduler hook can be skipped.
+> This applies to both in Software and Hardware P-state control modes.
 > 
+> Suggested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 > Signed-off-by: Len Brown <len.brown@intel.com>
 > ---
->  drivers/cpufreq/intel_pstate.c | 16 +---------------
->  1 file changed, 1 insertion(+), 15 deletions(-)
+>  drivers/cpufreq/intel_pstate.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
 > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index b7de5bd..5d67780 100644
+> index 5d67780..0ff3a4b 100644
 > --- a/drivers/cpufreq/intel_pstate.c
 > +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1597,12 +1597,6 @@ static inline bool intel_pstate_sample(struct cpudata *cpu, u64 time)
->  	return false;
->  }
+> @@ -2025,10 +2025,10 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>  		 */
+>  		intel_pstate_clear_update_util_hook(policy->cpu);
+
+The statement above shouldn't be necessary any more after the change below.
+
+>  		intel_pstate_max_within_limits(cpu);
+> +	} else {
+> +		intel_pstate_set_update_util_hook(policy->cpu);
+>  	}
 >  
-> -static inline int32_t get_avg_frequency(struct cpudata *cpu)
-> -{
-> -	return mul_ext_fp(cpu->sample.core_avg_perf,
-> -			  cpu->pstate.max_pstate_physical * cpu->pstate.scaling);
-> -}
+> -	intel_pstate_set_update_util_hook(policy->cpu);
 > -
->  static inline int32_t get_avg_pstate(struct cpudata *cpu)
->  {
->  	return mul_ext_fp(cpu->pstate.max_pstate_physical,
-> @@ -1728,7 +1722,7 @@ static void intel_pstate_adjust_pstate(struct cpudata *cpu, int target_pstate)
->  		sample->mperf,
->  		sample->aperf,
->  		sample->tsc,
-> -		get_avg_frequency(cpu),
-> +		aperfmperf_khz_on_cpu(cpu->cpu),
->  		fp_toint(cpu->iowait_boost * 100));
->  }
+>  	if (hwp_active)
+>  		intel_pstate_hwp_set(policy->cpu);
 >  
-> @@ -1922,13 +1916,6 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
->  	return 0;
->  }
->  
-> -static unsigned int intel_pstate_get(unsigned int cpu_num)
-> -{
-> -	struct cpudata *cpu = all_cpu_data[cpu_num];
-> -
-> -	return cpu ? get_avg_frequency(cpu) : 0;
-> -}
-> -
->  static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
->  {
->  	struct cpudata *cpu = all_cpu_data[cpu_num];
-> @@ -2157,7 +2144,6 @@ static struct cpufreq_driver intel_pstate = {
->  	.setpolicy	= intel_pstate_set_policy,
->  	.suspend	= intel_pstate_hwp_save_state,
->  	.resume		= intel_pstate_resume,
-> -	.get		= intel_pstate_get,
->  	.init		= intel_pstate_cpu_init,
->  	.exit		= intel_pstate_cpu_exit,
->  	.stop_cpu	= intel_pstate_stop_cpu,
 > 
 
-This change will cause cpufreq_quick_get() to work differently and it is
-called by KVM among other things.  Will that still work?
+What about update_turbo_pstate()?
+
+In theory MSR_IA32_MISC_ENABLE_TURBO_DISABLE can be set at any time, so
+wouldn't that become problematic after this change?
 
 Thanks,
 Rafael
