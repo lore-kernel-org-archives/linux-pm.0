@@ -1,86 +1,211 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [GIT PULL] x86,cpufreq: unify APERF/MPERF computation
-Date: Fri, 16 Jun 2017 20:03:10 -0700
-Message-ID: <1497668594-9266-1-git-send-email-lenb@kernel.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f193.google.com ([209.85.220.193]:33434 "EHLO
-        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752234AbdFQDDX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2017 23:03:23 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 2/4] x86: use common aperfmperf_khz_on_cpu() to calculate KHz using APERF/MPERF
+Date: Fri, 16 Jun 2017 20:03:12 -0700
+Message-ID: <aba8474c690306eb708d4737d0b63c5ca448d019.1497665794.git.len.brown@intel.com>
+References: <1497668594-9266-1-git-send-email-lenb@kernel.org>
+Reply-To: Len Brown <lenb@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1497668594-9266-1-git-send-email-lenb@kernel.org>
+In-Reply-To: <f9250362b5eb66bc34402c1fd175f9db7a841532.1497665794.git.len.brown@intel.com>
+References: <f9250362b5eb66bc34402c1fd175f9db7a841532.1497665794.git.len.brown@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rafael@kernel.org
-Cc: x86@kernel.org, srinivas.pandruvada@linux.intel.com, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: x86@kernel.org, srinivas.pandruvada@linux.intel.com, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
+From: Len Brown <len.brown@intel.com>
 
-In-Reply-To: 
+The goal of this change is to give users a uniform and meaningful
+result when they read /sys/...cpufreq/scaling_cur_freq
+on modern x86 hardware, as compared to what they get today.
 
-Hi Rafael,
+Modern x86 processors include the hardware needed
+to accurately calculate frequency over an interval --
+APERF, MPERF, and the TSC.
 
-This patch series has 3 goals:
+Here we provide an x86 routine to make this calculation
+on supported hardware, and use it in preference to any
+driver driver-specific cpufreq_driver.get() routine.
 
-1. Make "cpu MHz" in /proc/cpuinfo supportable.
+MHz is computed like so:
 
-2. Make /sys/.../cpufreq/scaling_cur_freq meaningful
-   and consistent on modern x86 systems.
+MHz = base_MHz * delta_APERF / delta_MPERF
 
-3. Use 1. and 2. to remove scheduler and cpufreq overhead
+MHz is the average frequency of the busy processor
+over a measurement interval.  The interval is
+defined to be the time between successive invocations
+of aperfmperf_khz_on_cpu(), which are expected to to
+happen on-demand when users read sysfs attribute
+cpufreq/scaling_cur_freq.
 
-There are 3 main changes since this series was proposed
-about a year ago:
+As with previous methods of calculating MHz,
+idle time is excluded.
 
-This update responds to distro feedback to make /proc/cpuinfo
-"cpu MHz" constant.  Originally, we had proposed making it return
-the same dynamic value as cpufreq sysfs.
+base_MHz above is from TSC calibration global "cpu_khz".
 
-Some community members suggested that sysfs MHz values should
-be meaninful, even down to 10ms intervals.  So this has been
-changed, versus the original proposal to not re-compute
-at intervals shorter than 100ms.
+This x86 native method to calculate MHz returns a meaningful result
+no matter if P-states are controlled by hardware or firmware
+and/or if the Linux cpufreq sub-system is or is-not installed.
 
-(For those who really care about observing frequency, the
- recommendation remains to use turbostat(8) or equivalent utility,
- which can reliably measure concurrent intervals of arbitrary length)
+When this routine is invoked more frequently, the measurement
+interval becomes shorter.  However, the code limits re-computation
+to 10ms intervals so that average frequency remains meaningful.
 
-The intel_pstate sampling mechanism has changed.
-Originally this series removed an intel_pstate timer in HWP mode.
-Now it removes the analogous scheduler call-back.
+Discerning users are encouraged to take advantage of
+the turbostat(8) utility, which can gracefully handle
+concurrent measurement intervals of arbitrary length.
 
-Most recently, in response to posting this patch on the list
-about 10-days ago, the patch to remove frequency calculation
-from inside intel_pstate was dropped, in order to maintain compatibility
-with tracing scripts.  Also, the order of the last two patches
-has been exchanged.
-
-Please let me know if you see any issues with this series.
-
-thanks!
-Len Brown, Intel Open Source Technology Center
-
-The following changes since commit 3c2993b8c6143d8a5793746a54eba8f86f95240f:
-
-  Linux 4.12-rc4 (2017-06-04 16:47:43 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git x86
-
-for you to fetch changes up to d020eed98440faa4a529c621f881aa9fda296956:
-
-  intel_pstate: skip scheduler hook when in "performance" mode. (2017-06-16 19:11:13 -0700)
-
-----------------------------------------------------------------
-Len Brown (4):
-      x86: do not use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"
-      x86: use common aperfmperf_khz_on_cpu() to calculate KHz using APERF/MPERF
-      intel_pstate: delete scheduler hook in HWP mode
-      intel_pstate: skip scheduler hook when in "performance" mode.
-
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
  arch/x86/kernel/cpu/Makefile     |  1 +
  arch/x86/kernel/cpu/aperfmperf.c | 82 ++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/cpu/proc.c       | 10 +----
  drivers/cpufreq/cpufreq.c        |  7 +++-
- drivers/cpufreq/intel_pstate.c   | 18 +++------
  include/linux/cpufreq.h          | 13 +++++++
- 6 files changed, 109 insertions(+), 22 deletions(-)
+ 4 files changed, 102 insertions(+), 1 deletion(-)
  create mode 100644 arch/x86/kernel/cpu/aperfmperf.c
+
+diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
+index 5200001..cdf8249 100644
+--- a/arch/x86/kernel/cpu/Makefile
++++ b/arch/x86/kernel/cpu/Makefile
+@@ -21,6 +21,7 @@ obj-y			+= common.o
+ obj-y			+= rdrand.o
+ obj-y			+= match.o
+ obj-y			+= bugs.o
++obj-$(CONFIG_CPU_FREQ)	+= aperfmperf.o
+ 
+ obj-$(CONFIG_PROC_FS)	+= proc.o
+ obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
+diff --git a/arch/x86/kernel/cpu/aperfmperf.c b/arch/x86/kernel/cpu/aperfmperf.c
+new file mode 100644
+index 0000000..5ccf63a
+--- /dev/null
++++ b/arch/x86/kernel/cpu/aperfmperf.c
+@@ -0,0 +1,82 @@
++/*
++ * x86 APERF/MPERF KHz calculation for
++ * /sys/.../cpufreq/scaling_cur_freq
++ *
++ * Copyright (C) 2017 Intel Corp.
++ * Author: Len Brown <len.brown@intel.com>
++ *
++ * This file is licensed under GPLv2.
++ */
++
++#include <linux/jiffies.h>
++#include <linux/math64.h>
++#include <linux/percpu.h>
++#include <linux/smp.h>
++
++struct aperfmperf_sample {
++	unsigned int khz;
++	unsigned long jiffies;
++	u64 aperf;
++	u64 mperf;
++};
++
++static DEFINE_PER_CPU(struct aperfmperf_sample, samples);
++
++/*
++ * aperfmperf_snapshot_khz()
++ * On the current CPU, snapshot APERF, MPERF, and jiffies
++ * unless we already did it within 10ms
++ * calculate kHz, save snapshot
++ */
++static void aperfmperf_snapshot_khz(void *dummy)
++{
++	u64 aperf, aperf_delta;
++	u64 mperf, mperf_delta;
++	struct aperfmperf_sample *s = &get_cpu_var(samples);
++
++	/* Don't bother re-computing within 10 ms */
++	if (time_before(jiffies, s->jiffies + HZ/100))
++		goto out;
++
++	rdmsrl(MSR_IA32_APERF, aperf);
++	rdmsrl(MSR_IA32_MPERF, mperf);
++
++	aperf_delta = aperf - s->aperf;
++	mperf_delta = mperf - s->mperf;
++
++	/*
++	 * There is no architectural guarantee that MPERF
++	 * increments faster than we can read it.
++	 */
++	if (mperf_delta == 0)
++		goto out;
++
++	/*
++	 * if (cpu_khz * aperf_delta) fits into ULLONG_MAX, then
++	 *	khz = (cpu_khz * aperf_delta) / mperf_delta
++	 */
++	if (div64_u64(ULLONG_MAX, cpu_khz) > aperf_delta)
++		s->khz = div64_u64((cpu_khz * aperf_delta), mperf_delta);
++	else	/* khz = aperf_delta / (mperf_delta / cpu_khz) */
++		s->khz = div64_u64(aperf_delta,
++			div64_u64(mperf_delta, cpu_khz));
++	s->jiffies = jiffies;
++	s->aperf = aperf;
++	s->mperf = mperf;
++
++out:
++	put_cpu_var(samples);
++}
++
++unsigned int aperfmperf_khz_on_cpu(unsigned int cpu)
++{
++	if (!cpu_khz)
++		return 0;
++
++	if (!static_cpu_has(X86_FEATURE_APERFMPERF))
++		return 0;
++
++	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, 1);
++
++	return per_cpu(samples.khz, cpu);
++}
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 26b643d..a667fac 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -635,8 +635,13 @@ show_one(scaling_max_freq, max);
+ static ssize_t show_scaling_cur_freq(struct cpufreq_policy *policy, char *buf)
+ {
+ 	ssize_t ret;
++	unsigned int freq;
+ 
+-	if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get)
++	freq = arch_freq_get_on_cpu(policy->cpu);
++	if (freq)
++		ret = sprintf(buf, "%u\n", freq);
++	else if (cpufreq_driver && cpufreq_driver->setpolicy &&
++			cpufreq_driver->get)
+ 		ret = sprintf(buf, "%u\n", cpufreq_driver->get(policy->cpu));
+ 	else
+ 		ret = sprintf(buf, "%u\n", policy->cur);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index a5ce0bbe..cfc6220 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -883,6 +883,19 @@ static inline bool policy_has_boost_freq(struct cpufreq_policy *policy)
+ }
+ #endif
+ 
++#ifdef CONFIG_X86
++extern unsigned int aperfmperf_khz_on_cpu(unsigned int cpu);
++static inline unsigned int arch_freq_get_on_cpu(int cpu)
++{
++	return aperfmperf_khz_on_cpu(cpu);
++}
++#else
++static inline unsigned int arch_freq_get_on_cpu(int cpu)
++{
++	return 0;
++}
++#endif
++
+ /* the following are really really optional */
+ extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
+ extern struct freq_attr cpufreq_freq_attr_scaling_boost_freqs;
+-- 
+2.7.4
