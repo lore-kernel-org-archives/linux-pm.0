@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 4/4] intel_pstate: skip scheduler hook when in "performance" mode.
-Date: Fri, 16 Jun 2017 20:03:14 -0700
-Message-ID: <d020eed98440faa4a529c621f881aa9fda296956.1497665794.git.len.brown@intel.com>
+Subject: [PATCH 3/4] intel_pstate: delete scheduler hook in HWP mode
+Date: Fri, 16 Jun 2017 20:03:13 -0700
+Message-ID: <7cc506b720aa12801c534d51235eeca45b81ba7f.1497665794.git.len.brown@intel.com>
 References: <1497668594-9266-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,40 +15,57 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-When the governor is set to "performance", intel_pstate does not
-need the scheduler hook for doing any calculations.  Under these
-conditions, its only purpose is to continue to maintain
-cpufreq/scaling_cur_freq.
-
 The cpufreq/scaling_cur_freq sysfs attribute is now provided by
 shared x86 cpufreq code on modern x86 systems, including
 all systems supported by the intel_pstate driver.
 
-So in "performance" governor mode, the scheduler hook can be skipped.
-This applies to both in Software and Hardware P-state control modes.
+In HWP mode, maintaining that value was the sole purpose of
+the scheduler hook, intel_pstate_update_util_hwp(),
+so it can now be removed.
 
-Suggested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 4ec5668..4538182 100644
+index b7de5bd..4ec5668 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -2031,10 +2031,10 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 		 */
- 		intel_pstate_clear_update_util_hook(policy->cpu);
- 		intel_pstate_max_within_limits(cpu);
-+	} else {
-+		intel_pstate_set_update_util_hook(policy->cpu);
- 	}
+@@ -1732,16 +1732,6 @@ static void intel_pstate_adjust_pstate(struct cpudata *cpu, int target_pstate)
+ 		fp_toint(cpu->iowait_boost * 100));
+ }
  
--	intel_pstate_set_update_util_hook(policy->cpu);
+-static void intel_pstate_update_util_hwp(struct update_util_data *data,
+-					 u64 time, unsigned int flags)
+-{
+-	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
+-	u64 delta_ns = time - cpu->sample.time;
 -
- 	if (hwp_active)
- 		intel_pstate_hwp_set(policy->cpu);
+-	if ((s64)delta_ns >= INTEL_PSTATE_HWP_SAMPLING_INTERVAL)
+-		intel_pstate_sample(cpu, time);
+-}
+-
+ static void intel_pstate_update_util_pid(struct update_util_data *data,
+ 					 u64 time, unsigned int flags)
+ {
+@@ -1933,6 +1923,9 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+ {
+ 	struct cpudata *cpu = all_cpu_data[cpu_num];
  
++	if (hwp_active)
++		return;
++
+ 	if (cpu->update_util_set)
+ 		return;
+ 
+@@ -2557,7 +2550,6 @@ static int __init intel_pstate_init(void)
+ 		} else {
+ 			hwp_active++;
+ 			intel_pstate.attr = hwp_cpufreq_attrs;
+-			pstate_funcs.update_util = intel_pstate_update_util_hwp;
+ 			goto hwp_cpu_matched;
+ 		}
+ 	} else {
 -- 
 2.7.4
