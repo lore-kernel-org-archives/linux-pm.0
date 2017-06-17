@@ -1,121 +1,221 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 3/5] intel_pstate: remove intel_pstate.get()
-Date: Fri, 16 Jun 2017 20:35:19 -0400
-Message-ID: <CAJvTdKm461G0HGmxZbQuk4Bp_N8tF94o8J-YAZKGBvjKvLeYDA@mail.gmail.com>
-References: <1496889556-17923-1-git-send-email-lenb@kernel.org>
- <2e0f8c13884240d7189087d19bb8274573638aaf.1496889051.git.len.brown@intel.com> <1968308.WZqDeDH7Bi@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/5] x86: use common aperfmperf_khz_on_cpu() to calculate KHz using APERF/MPERF
+Date: Sat, 17 Jun 2017 02:30:09 +0200
+Message-ID: <2034981.ATAhzOCgUq@aspire.rjw.lan>
+References: <1496889556-17923-1-git-send-email-lenb@kernel.org> <aba8474c690306eb708d4737d0b63c5ca448d019.1496889051.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f193.google.com ([209.85.216.193]:34654 "EHLO
-        mail-qt0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751971AbdFQAfV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Jun 2017 20:35:21 -0400
-In-Reply-To: <1968308.WZqDeDH7Bi@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <aba8474c690306eb708d4737d0b63c5ca448d019.1496889051.git.len.brown@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, srinivas.pandruvada@linux.intel.com, hpa@linux.intel.com, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: X86 ML <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "H. Peter Anvin" <hpa@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On Fri, Jun 16, 2017 at 7:53 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, June 07, 2017 07:39:14 PM Len Brown wrote:
->> From: Len Brown <len.brown@intel.com>
->>
->> The x86 cpufreq core now uses aperfmperf_khz_on_cpu()
->> to supply /sys/.../cpufreq/scaling_cur_freq
->> on all x86 systems supporting APERF/MPERF.
->>
->> That includes 100% of systems supported by intel_pstate,
->> and so intel_pstate.get() is now a NOP -- remove it.
->>
->> Invoke aperfmperf_khz_on_cpu() directly,
->> if legacy-mode p-state tracing is enabled.
->>
->> Signed-off-by: Len Brown <len.brown@intel.com>
->> ---
->>  drivers/cpufreq/intel_pstate.c | 16 +---------------
->>  1 file changed, 1 insertion(+), 15 deletions(-)
->>
->> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->> index b7de5bd..5d67780 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -1597,12 +1597,6 @@ static inline bool intel_pstate_sample(struct cpudata *cpu, u64 time)
->>       return false;
->>  }
->>
->> -static inline int32_t get_avg_frequency(struct cpudata *cpu)
->> -{
->> -     return mul_ext_fp(cpu->sample.core_avg_perf,
->> -                       cpu->pstate.max_pstate_physical * cpu->pstate.scaling);
->> -}
->> -
->>  static inline int32_t get_avg_pstate(struct cpudata *cpu)
->>  {
->>       return mul_ext_fp(cpu->pstate.max_pstate_physical,
->> @@ -1728,7 +1722,7 @@ static void intel_pstate_adjust_pstate(struct cpudata *cpu, int target_pstate)
->>               sample->mperf,
->>               sample->aperf,
->>               sample->tsc,
->> -             get_avg_frequency(cpu),
->> +             aperfmperf_khz_on_cpu(cpu->cpu),
+On Wednesday, June 07, 2017 07:39:13 PM Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
+> 
+> The goal of this change is to give users a uniform and meaningful
+> result when they read /sys/...cpufreq/scaling_cur_freq
+> on modern x86 hardware, as compared to what they get today.
+> 
+> Modern x86 processors include the hardware needed
+> to accurately calculate frequency over an interval --
+> APERF, MPERF, and the TSC.
+> 
+> Here we provide an x86 routine to make this calculation
+> on supported hardware, and use it in preference to any
+> driver driver-specific cpufreq_driver.get() routine.
+> 
+> MHz is computed like so:
+> 
+> MHz = base_MHz * delta_APERF / delta_MPERF
+> 
+> MHz is the average frequency of the busy processor
+> over a measurement interval.  The interval is
+> defined to be the time between successive invocations
+> of aperfmperf_khz_on_cpu(), which are expected to to
+> happen on-demand when users read sysfs attribute
+> cpufreq/scaling_cur_freq.
+> 
+> As with previous methods of calculating MHz,
+> idle time is excluded.
+> 
+> base_MHz above is from TSC calibration global "cpu_khz".
+> 
+> This x86 native method to calculate MHz returns a meaningful result
+> no matter if P-states are controlled by hardware or firmware
+> and/or if the Linux cpufreq sub-system is or is-not installed.
+> 
+> When this routine is invoked more frequently, the measurement
+> interval becomes shorter.  However, the code limits re-computation
+> to 10ms intervals so that average frequency remains meaningful.
+> 
+> Discerning users are encouraged to take advantage of
+> the turbostat(8) utility, which can gracefully handle
+> concurrent measurement intervals of arbitrary length.
+> 
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  arch/x86/kernel/cpu/Makefile     |  1 +
+>  arch/x86/kernel/cpu/aperfmperf.c | 82 ++++++++++++++++++++++++++++++++++++++++
+>  drivers/cpufreq/cpufreq.c        |  7 +++-
+>  include/linux/cpufreq.h          | 13 +++++++
+>  4 files changed, 102 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/x86/kernel/cpu/aperfmperf.c
+> 
+> diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
+> index 5200001..cdf8249 100644
+> --- a/arch/x86/kernel/cpu/Makefile
+> +++ b/arch/x86/kernel/cpu/Makefile
+> @@ -21,6 +21,7 @@ obj-y			+= common.o
+>  obj-y			+= rdrand.o
+>  obj-y			+= match.o
+>  obj-y			+= bugs.o
+> +obj-$(CONFIG_CPU_FREQ)	+= aperfmperf.o
+>  
+>  obj-$(CONFIG_PROC_FS)	+= proc.o
+>  obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
+> diff --git a/arch/x86/kernel/cpu/aperfmperf.c b/arch/x86/kernel/cpu/aperfmperf.c
+> new file mode 100644
+> index 0000000..5ccf63a
+> --- /dev/null
+> +++ b/arch/x86/kernel/cpu/aperfmperf.c
+> @@ -0,0 +1,82 @@
+> +/*
+> + * x86 APERF/MPERF KHz calculation for
+> + * /sys/.../cpufreq/scaling_cur_freq
+> + *
+> + * Copyright (C) 2017 Intel Corp.
+> + * Author: Len Brown <len.brown@intel.com>
+> + *
+> + * This file is licensed under GPLv2.
+> + */
+> +
+> +#include <linux/jiffies.h>
+> +#include <linux/math64.h>
+> +#include <linux/percpu.h>
+> +#include <linux/smp.h>
+> +
+> +struct aperfmperf_sample {
+> +	unsigned int khz;
+> +	unsigned long jiffies;
+> +	u64 aperf;
+> +	u64 mperf;
+> +};
+> +
+> +static DEFINE_PER_CPU(struct aperfmperf_sample, samples);
+> +
+> +/*
+> + * aperfmperf_snapshot_khz()
+> + * On the current CPU, snapshot APERF, MPERF, and jiffies
+> + * unless we already did it within 10ms
+> + * calculate kHz, save snapshot
+> + */
+> +static void aperfmperf_snapshot_khz(void *dummy)
+> +{
+> +	u64 aperf, aperf_delta;
+> +	u64 mperf, mperf_delta;
+> +	struct aperfmperf_sample *s = &get_cpu_var(samples);
+> +
+> +	/* Don't bother re-computing within 10 ms */
+> +	if (time_before(jiffies, s->jiffies + HZ/100))
+> +		goto out;
+> +
+> +	rdmsrl(MSR_IA32_APERF, aperf);
+> +	rdmsrl(MSR_IA32_MPERF, mperf);
+> +
+> +	aperf_delta = aperf - s->aperf;
+> +	mperf_delta = mperf - s->mperf;
+> +
+> +	/*
+> +	 * There is no architectural guarantee that MPERF
+> +	 * increments faster than we can read it.
+> +	 */
+> +	if (mperf_delta == 0)
+> +		goto out;
+> +
+> +	/*
+> +	 * if (cpu_khz * aperf_delta) fits into ULLONG_MAX, then
+> +	 *	khz = (cpu_khz * aperf_delta) / mperf_delta
+> +	 */
+> +	if (div64_u64(ULLONG_MAX, cpu_khz) > aperf_delta)
+> +		s->khz = div64_u64((cpu_khz * aperf_delta), mperf_delta);
+> +	else	/* khz = aperf_delta / (mperf_delta / cpu_khz) */
+> +		s->khz = div64_u64(aperf_delta,
+> +			div64_u64(mperf_delta, cpu_khz));
+> +	s->jiffies = jiffies;
+> +	s->aperf = aperf;
+> +	s->mperf = mperf;
+> +
+> +out:
+> +	put_cpu_var(samples);
+> +}
+> +
+> +unsigned int aperfmperf_khz_on_cpu(unsigned int cpu)
+> +{
+> +	if (!cpu_khz)
+> +		return 0;
+> +
+> +	if (!static_cpu_has(X86_FEATURE_APERFMPERF))
+> +		return 0;
+> +
+> +	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, 1);
+> +
+> +	return per_cpu(samples.khz, cpu);
+> +}
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 26b643d..a667fac 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -635,8 +635,13 @@ show_one(scaling_max_freq, max);
+>  static ssize_t show_scaling_cur_freq(struct cpufreq_policy *policy, char *buf)
+>  {
+>  	ssize_t ret;
+> +	unsigned int freq;
+>  
+> -	if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get)
+> +	freq = arch_freq_get_on_cpu(policy->cpu);
+> +	if (freq)
+> +		ret = sprintf(buf, "%u\n", freq);
+> +	else if (cpufreq_driver && cpufreq_driver->setpolicy &&
+> +			cpufreq_driver->get)
+>  		ret = sprintf(buf, "%u\n", cpufreq_driver->get(policy->cpu));
+>  	else
+>  		ret = sprintf(buf, "%u\n", policy->cur);
 
-Note that I deleted the line above in an updated version of this patch
-that I'm ready to send out.
+I wonder if we could change intel_pstate_get() to simply return
+aperfmperf_khz_on_cpu(cpu_num)?
 
-There were a couple of problems with it.
-The first is that it was  ugly that tracing (which occurs only in the
-SW governor case)
-could shorten the measurement interval as seen by the sysfs interface.
+That would allow us to avoid the extra branch here and get rid of the
+#ifdef x86 from the header.
 
-The second is that this trace point can be called with irqs off,
-and smp_call_function_single() will WARN when called with irqs off.
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index a5ce0bbe..cfc6220 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -883,6 +883,19 @@ static inline bool policy_has_boost_freq(struct cpufreq_policy *policy)
+>  }
+>  #endif
+>  
+> +#ifdef CONFIG_X86
+> +extern unsigned int aperfmperf_khz_on_cpu(unsigned int cpu);
+> +static inline unsigned int arch_freq_get_on_cpu(int cpu)
+> +{
+> +	return aperfmperf_khz_on_cpu(cpu);
+> +}
+> +#else
+> +static inline unsigned int arch_freq_get_on_cpu(int cpu)
+> +{
+> +	return 0;
+> +}
+> +#endif
+> +
+>  /* the following are really really optional */
+>  extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
+>  extern struct freq_attr cpufreq_freq_attr_scaling_boost_freqs;
+> 
 
-Srinivas Acked that I simply remove this field from the tracepoint --
-as it is redundant to calculate it in the kernel when we are already
-exporting the raw values of aperf and mperf.
-
->>               fp_toint(cpu->iowait_boost * 100));
->>  }
->>
->> @@ -1922,13 +1916,6 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
->>       return 0;
->>  }
->>
->> -static unsigned int intel_pstate_get(unsigned int cpu_num)
->> -{
->> -     struct cpudata *cpu = all_cpu_data[cpu_num];
->> -
->> -     return cpu ? get_avg_frequency(cpu) : 0;
->> -}
->> -
->>  static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
->>  {
->>       struct cpudata *cpu = all_cpu_data[cpu_num];
->> @@ -2157,7 +2144,6 @@ static struct cpufreq_driver intel_pstate = {
->>       .setpolicy      = intel_pstate_set_policy,
->>       .suspend        = intel_pstate_hwp_save_state,
->>       .resume         = intel_pstate_resume,
->> -     .get            = intel_pstate_get,
->>       .init           = intel_pstate_cpu_init,
->>       .exit           = intel_pstate_cpu_exit,
->>       .stop_cpu       = intel_pstate_stop_cpu,
->>
->
-> This change will cause cpufreq_quick_get() to work differently and it is
-> called by KVM among other things.  Will that still work?
-
-Neither invocation of cpufreq_quick_get() (ARM cpu-cooling and X86 variable TSC)
-are aligned with the hardware supported by the intel_pstate driver.
-
-If it were, then  yes, cpufreq_quick_get() would not call the (absent)
-intel_pstate.get,
-and instead would return policy->cur.
-
-acpi_cpufreq() retains its internal .get routine, and so cpufreq_quick_get()
-doesn't change at all on those legacy systems.  As it turns out this
-is moot, since that
-driver returns the cached frequency request in either case.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+Thanks,
+Rafael
