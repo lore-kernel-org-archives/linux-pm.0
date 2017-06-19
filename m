@@ -1,127 +1,120 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v15 2/7] power: add power sequence library
-Date: Mon, 19 Jun 2017 10:09:58 +0200
-Message-ID: <CAPDyKFrSQ7m+yUvKqB9yAMakk8pHZooboZMFdXGU6Xb=TZSGNA@mail.gmail.com>
-References: <1497319166-17287-1-git-send-email-peter.chen@nxp.com>
- <1497319166-17287-3-git-send-email-peter.chen@nxp.com> <CAPDyKFpOQWTPpdd__OBP1DcW58CbqnygGAOxiEFq5kqqvCm0QA@mail.gmail.com>
- <20170614015338.GA4635@b29397-desktop> <CAPDyKFrLL10TY1JZAhF44_0+qGETLNtFc6ujKVUu7Ay=O8+M5A@mail.gmail.com>
- <20170615065854.GA24157@b29397-desktop> <CAPDyKFpc8GRKK8bafMU_HPaqWNrger3grPSd5rWWCTYhUGHZLA@mail.gmail.com>
- <20170615091131.GB24157@b29397-desktop> <CAPDyKFrZoyoYCQA1rnRbz9tmT9vJigzSb+xyTZpJjhd=5eFA5A@mail.gmail.com>
- <20170615100604.GC24157@b29397-desktop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170615100604.GC24157@b29397-desktop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Stephen Boyd <stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, frank.li-3arQi8VN3Tc@public.gmane.org, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Gary Bisson <gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org>, Fabio Estevam <festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Vaibhav Hiremath <vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Maciej S. Szmigiero" <mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TasMV2rI37PzA@public.gmane.org>
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: Re: [PATCH v6 4/4] power: supply: twl4030-charger: add deferred probing for phy and iio
+Date: Mon, 19 Jun 2017 10:40:53 +0200
+Message-ID: <20C06268-8BAC-4631-AE3F-80E65D7639DE@goldelico.com>
+References: <cover.1497432355.git.hns@goldelico.com> <6573ec523aa73971562c9b7e7d89f6045185d8c4.1497432355.git.hns@goldelico.com> <20170615115757.wuhzc6c2qrme2te6@earth>
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
+Content-Type: multipart/signed; boundary="Apple-Mail=_ED7155D3-150B-44FD-AB6F-145B7D13C24E"; protocol="application/pgp-signature"; micalg=pgp-sha256
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.162]:14637 "EHLO
+        mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753492AbdFSIlK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2017 04:41:10 -0400
+In-Reply-To: <20170615115757.wuhzc6c2qrme2te6@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Marek Belisko <marek@goldelico.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
 
-On 15 June 2017 at 12:06, Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
-> On Thu, Jun 15, 2017 at 11:35:20AM +0200, Ulf Hansson wrote:
->> On 15 June 2017 at 11:11, Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
->> > On Thu, Jun 15, 2017 at 10:11:45AM +0200, Ulf Hansson wrote:
->> >> > Yes, you are right. This is the limitation for this power sequence
->> >> > library, the registration for the 1st power sequence instance must
->> >> > be finished before device driver uses it. I am appreciated that
->> >> > you can supply some suggestions for it.
->> >>
->> >> In general this kind of problems is solved by first parsing the DTB,
->> >> which means you will find out whether there is a resource (a pwrseq)
->> >> required for the device. Then you try to fetch that resource, and if
->> >> that fails, it means the resource is not yet available, and hence you
->> >> want to retry later and should return -EPROBE_DEFER.
->> >>
->> >> In this case, of_pwrseq_on() needs to be converted to start looking
->> >> for a pwrseq compatible in it's child node - I guess. Then if that is
->> >> found, you try to fetch the instance of the corresponding library.
->> >> Failing to fetch the library instance should then cause a return
->> >> -EPROBE_DEFER.
->> >
->> > The most difficulty for this is we can't know whether the requested
->> > pwrseq instance will be registered or not, the kernel configuration
->> > for this pwrseq library may not be chosen at all.
->>
->> In such case it is still correct to return -EPROBE_DEFER, because the
->> driver that tries to probe its device will fail unless it can run the
->> needed pwrseq. Right?
->>
->
-> Unlike the MMC design, there is no dts entry to indicate whether this
-> device needs pwrseq or not at this design, it will only carry out power
-> on sequence after matching. So, return -EPROBE_DEFER may not work since
-> this device may never need pwrseq.
 
-Then, how will you really be able to fetch the correct pwrseq library
-instance for the device node?
+--Apple-Mail=_ED7155D3-150B-44FD-AB6F-145B7D13C24E
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=us-ascii
 
-Suppose their is a *list* of pwrseq library instances available. In
-pwrseq_find_available_instance() you call of_match_node(table, np).
-The "table" there corresponds to the compatible for the pwrseq library
-and the np is the device node provided by the caller of
-of_pwrseq_on().
 
-Why is this match done?
+> Am 15.06.2017 um 13:57 schrieb Sebastian Reichel =
+<sebastian.reichel@collabora.co.uk>:
+>=20
+> Hi,
+>=20
+> On Wed, Jun 14, 2017 at 11:25:56AM +0200, H. Nikolaus Schaller wrote:
+>> This fixes an issue if both this twl4030_charger driver and
+>> phy-twl4030-usb are compiled as modules and loaded in random order.
+>>=20
+>> It has been observed on GTA04 and OpenPandora devices that in worst
+>> case the boot process hangs and in best case the AC detection fails
+>> with a warning.
+>>=20
+>> Therefore we add deferred probing checks for the usb_phy and the
+>> iio channel for AC detection.
+>>=20
+>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+>> ---
+>> drivers/power/supply/twl4030_charger.c | 10 ++++++++--
+>> 1 file changed, 8 insertions(+), 2 deletions(-)
+>>=20
+>> diff --git a/drivers/power/supply/twl4030_charger.c =
+b/drivers/power/supply/twl4030_charger.c
+>> index 3bebeecb4a1f..6ac8816262bd 100644
+>> --- a/drivers/power/supply/twl4030_charger.c
+>> +++ b/drivers/power/supply/twl4030_charger.c
+>> @@ -989,15 +989,21 @@ static int twl4030_bci_probe(struct =
+platform_device *pdev)
+>>=20
+>> 		phynode =3D =
+of_find_compatible_node(bci->dev->of_node->parent,
+>> 						  NULL, =
+"ti,twl4030-usb");
+>> -		if (phynode)
+>> +		if (phynode) {
+>> 			bci->transceiver =3D devm_usb_get_phy_by_node(
+>> 				bci->dev, phynode, &bci->usb_nb);
+>> +			if (IS_ERR(bci->transceiver) &&
+>> +			    PTR_ERR(bci->transceiver) =3D=3D =
+-EPROBE_DEFER)
+>> +				return -EPROBE_DEFER;	/* PHY not ready =
+*/
+>> +		}
+>> 	}
+>=20
+> Let's also set to NULL + dev_warn for other errors (like the iio
+> channel error handling).
 
-Why can't the match be done before trying to fetch a library instance
-and then in a second step, really try to fetch the instance? If only
-the second step fails, returning -EPROBE_DEFER can be done, no?
+Added to v7.
 
-BTW, I didn't compatible for the generic pwrseq library being
-documented in this series.
+Also added a %d to print the error number to aid spotting the problems.
 
->
->> >
->> >>
->> >> >
->> >> >> Moreover, I have found yet another severe problem but reviewing the code:
->> >> >> In the struct pwrseq, you have a "bool used", which you are setting to
->> >> >> "true" once the pwrseq has been hooked up with the device, when a
->> >> >> driver calls of_pwrseq_on(). Setting that variable to true, will also
->> >> >> prevent another driver from using the same instance of the pwrseq for
->> >> >> its device. So, to cope with multiple users, you register a new
->> >> >> instance of the same pwrseq library that got hooked up, once the
->> >> >> ->get() callback is about to complete.
->> >> >>
->> >> >> The problem the occurs, when there is another driver calling
->> >> >> of_pwrseq_on() in between, meaning that the new instance has not yet
->> >> >> been registered. This will simply fail, won't it?
->> >> >
->> >> > Yes, you are right, thanks for pointing that, I will add mutex_lock for
->> >> > of_pwrseq_on.
->> >>
->> >> Another option is to entirely skip to two step approach.
->> >>
->> >> In other words, make the library to cope with multiple users via the
->> >> same registered library instance.
->> >>
->> >
->> > No, the pwrseq instance stores dtb information (clock, gpio, etc), it
->> > needs to be per device.
->>
->> I think you misunderstood my suggestion here. Of course you need to
->> allocate one pwrseq data per device.
->>
->> However, my point is that you shouldn't need more than one instance of
->> the library functions to be registered in the list of available pwrseq
->> libraries.
->>
->
-> This additional instance is used to store compatible information for
-> this pwrseq library, it is used for the next matching between device
-> and pwrseq library, it just likes we need the first pwrseq instance
-> registered at boot stage.
+>=20
+>> 	bci->channel_vac =3D devm_iio_channel_get(&pdev->dev, "vac");
+>> 	if (IS_ERR(bci->channel_vac)) {
+>> -		bci->channel_vac =3D NULL;
+>> +		if (PTR_ERR(bci->channel_vac) =3D=3D -EPROBE_DEFER)
+>> +			return -EPROBE_DEFER;	/* iio not ready */
+>> 		dev_warn(&pdev->dev, "could not request vac iio =
+channel");
+>> +		bci->channel_vac =3D NULL;
+>> 	}
+>>=20
+>> 	bci->ac =3D devm_power_supply_register(&pdev->dev, =
+&twl4030_bci_ac_desc,
+>=20
+> -- Sebastian
 
-Why can't the compatible information be a static table, known by the
-pwrseq core library?
 
-Then when of_pwrseq_on() is called, that static table is parsed and
-matched, then a corresponding pwrseq library instance tries to be
-fetched.
+--Apple-Mail=_ED7155D3-150B-44FD-AB6F-145B7D13C24E
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename=signature.asc
+Content-Type: application/pgp-signature;
+	name=signature.asc
+Content-Description: Message signed with OpenPGP using GPGMail
 
-Kind regards
-Uffe
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJZR44WAAoJEIl79TGLgAm6crAQAKJuBd82kpbgrqFf/Jvv2BjI
+2hKaTppxjad1+cnKWAQtxZlmDeNcMJkRHTsifXq5BHWXhAXTd6QOc9k+nAWqgcf6
+pt/vnYwh/fklPmRGa6RXTxiSfkaNdlGWOzm821+5XivfanXapUdc6HWeB7gJlZ03
+xOKZjBnMb1qzUVmTIFv2N2brdubThA1+QOkPPaTMWyj0fHE0ksMmPFfnGtTAThpl
+9wToeDcBQ2GhOe0fafqhiKT6WDDRiYARc6ka0FNaMgeaCxaXuNRDOT+D4Bjtwfuk
+6W3RFv9U82lTJCX7N3rLwKGrpC/yp9ZVLhhF4+3dWU66tDPnR9jFW9icTBIfjLBV
+LP1ik0NrHiWF+m5zovjX2QMS7PComoLdrmv/m93eIzXt0i+Eajr210uBffbUjrmW
+gTE8/Nl3p8277421yP0uumxSpkpzimGyliow8vM/8W5pRxqXebSON5aWeqM2t5HE
+nXvvGyzafhhMgduEOQZ7Ibu9lBqci7V2rjUYg+VnoTDhmgUSQkf3jKsn/BxzjUz+
+75ghH2fNUHtnadsQ5ZM6dJecY6a9DDk7osHH3jv164uN8XYMFg11ml+Hamk0aL/a
+j8VC6ssAXS/k1nuR5qUIL5jOXm38qNs0wYSYREY8sWA6PmSmXoh0MQB97zg1bYcF
+AH6FCbWMhntHNo0xJcpf
+=7ZXU
+-----END PGP SIGNATURE-----
+
+--Apple-Mail=_ED7155D3-150B-44FD-AB6F-145B7D13C24E--
