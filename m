@@ -1,70 +1,88 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/5] x86: use common aperfmperf_khz_on_cpu() to calculate KHz using APERF/MPERF
-Date: Mon, 19 Jun 2017 14:28:21 +0200
-Message-ID: <136184443.Dv0asqkIzm@aspire.rjw.lan>
-References: <1496889556-17923-1-git-send-email-lenb@kernel.org> <2034981.ATAhzOCgUq@aspire.rjw.lan> <CAJvTdKmK6SPq1L1nWpkAcVgXBT92r=-EZsTNPi1C5eBDaux5xQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [GIT PULL] x86,cpufreq: unify APERF/MPERF computation
+Date: Mon, 19 Jun 2017 14:45:57 +0200
+Message-ID: <CAJZ5v0iCryQUDnidW_ahYz0VrO0RXMdF0Ww2efiRtoytahPZsg@mail.gmail.com>
+References: <1497668594-9266-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63570 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751054AbdFSMfg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2017 08:35:36 -0400
-In-Reply-To: <CAJvTdKmK6SPq1L1nWpkAcVgXBT92r=-EZsTNPi1C5eBDaux5xQ@mail.gmail.com>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:34118 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753699AbdFSMp7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2017 08:45:59 -0400
+In-Reply-To: <1497668594-9266-1-git-send-email-lenb@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Len Brown <lenb@kernel.org>
-Cc: X86 ML <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "H. Peter Anvin" <hpa@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
 
-On Friday, June 16, 2017 09:49:00 PM Len Brown wrote:
-> On Fri, Jun 16, 2017 at 8:30 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Wednesday, June 07, 2017 07:39:13 PM Len Brown wrote:
-> >> From: Len Brown <len.brown@intel.com>
-
-[cut]
-
-> >
-> > I wonder if we could change intel_pstate_get() to simply return
-> > aperfmperf_khz_on_cpu(cpu_num)?
-> >
-> > That would allow us to avoid the extra branch here and get rid of the
-> > #ifdef x86 from the header.
-> 
-> The reason I put the hook here is specifically so that the same
-> code would always be called on the x86 architecture,
-> no not matter what cpufreq driver is loaded.
-> 
-> Yes, alternatively, all possible driver.get routines could be updated
-> to call the same routine.  That is acpi-cpufreq.c, intel_pstate.c,
-> others?
-
-Just acpi-cpufreq.c and intel_pstate.c.
-
-Moreover, I wouldn't change the behavior on systems using acpi-cpufreq.c,
-because why really?
-
-And some users may complain that now what they see in cpuinfo_cur_freq is
-different from what they saw there before.
-
-That leaves us with just intel_pstate.
-
-In addition to that, it would be good to avoid reading APERF and MPERF in the
-cases when we already have the values.  I have an idea on how to do that, but
-I'll just need to prepare a patch.
-
-> Do I think that saving a branch is meaningful in a system call to retrieve
-> the average frequency from the kernel?  No, I don't.
+On Sat, Jun 17, 2017 at 5:03 AM, Len Brown <lenb@kernel.org> wrote:
 >
-> I'm not religious about "if (CONFIG_X86)" appearing in cpufreq.h.
-> If somebody really cares, then the purist approach would be
-> to add an additional arch-specific-hook header -- though that seemed
-> overkill to me...
+> In-Reply-To:
+>
+> Hi Rafael,
+>
+> This patch series has 3 goals:
+>
+> 1. Make "cpu MHz" in /proc/cpuinfo supportable.
+>
+> 2. Make /sys/.../cpufreq/scaling_cur_freq meaningful
+>    and consistent on modern x86 systems.
+>
+> 3. Use 1. and 2. to remove scheduler and cpufreq overhead
+>
+> There are 3 main changes since this series was proposed
+> about a year ago:
+>
+> This update responds to distro feedback to make /proc/cpuinfo
+> "cpu MHz" constant.  Originally, we had proposed making it return
+> the same dynamic value as cpufreq sysfs.
+>
+> Some community members suggested that sysfs MHz values should
+> be meaninful, even down to 10ms intervals.  So this has been
+> changed, versus the original proposal to not re-compute
+> at intervals shorter than 100ms.
+>
+> (For those who really care about observing frequency, the
+>  recommendation remains to use turbostat(8) or equivalent utility,
+>  which can reliably measure concurrent intervals of arbitrary length)
+>
+> The intel_pstate sampling mechanism has changed.
+> Originally this series removed an intel_pstate timer in HWP mode.
+> Now it removes the analogous scheduler call-back.
+>
+> Most recently, in response to posting this patch on the list
+> about 10-days ago, the patch to remove frequency calculation
+> from inside intel_pstate was dropped, in order to maintain compatibility
+> with tracing scripts.  Also, the order of the last two patches
+> has been exchanged.
+>
+> Please let me know if you see any issues with this series.
+>
+> thanks!
+> Len Brown, Intel Open Source Technology Center
+>
+> The following changes since commit 3c2993b8c6143d8a5793746a54eba8f86f95240f:
+>
+>   Linux 4.12-rc4 (2017-06-04 16:47:43 -0700)
+>
+> are available in the git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git x86
+>
+> for you to fetch changes up to d020eed98440faa4a529c621f881aa9fda296956:
+>
+>   intel_pstate: skip scheduler hook when in "performance" mode. (2017-06-16 19:11:13 -0700)
+>
+> ----------------------------------------------------------------
+> Len Brown (4):
+>       x86: do not use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"
+>       x86: use common aperfmperf_khz_on_cpu() to calculate KHz using APERF/MPERF
+>       intel_pstate: delete scheduler hook in HWP mode
+>       intel_pstate: skip scheduler hook when in "performance" mode.
 
-I'm not a fan of arch stuff in general code, C or headers.
-
-If it is necessary to add an arch header, let's add it, but at this point I'm
-not sure about that even.
+I'd like to hear from the x86 maintainers about the first two patches.
+At least I'd like to know that there are no objections there.
 
 Thanks,
 Rafael
