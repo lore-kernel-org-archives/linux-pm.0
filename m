@@ -1,256 +1,178 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v7 03/10] i2c: i2c-smbus: Use threaded irq for smbalert
-Date: Mon, 19 Jun 2017 17:27:18 +0200
-Message-ID: <20170619152718.3xjksam7ns4ms6xk@ninjato>
+From: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+Subject: Re: [PATCH v7 04/10] i2c: i2c-smbus: add of_i2c_setup_smbus_alert
+Date: Mon, 19 Jun 2017 17:27:44 +0200
+Message-ID: <20170619152744.4gtlyrwdhjbhy562@ninjato>
 References: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
- <1497535178-12001-4-git-send-email-preid@electromag.com.au>
+ <1497535178-12001-5-git-send-email-preid@electromag.com.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="5bk4ef74avjgooz6"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sauhun.de ([88.99.104.3]:53695 "EHLO pokefinder.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752609AbdFSP1V (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 19 Jun 2017 11:27:21 -0400
+        protocol="application/pgp-signature"; boundary="sg3igiwhncn6se2f"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1497535178-12001-4-git-send-email-preid@electromag.com.au>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1497535178-12001-5-git-send-email-preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>, Benjamin Tissoires <benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jdelvare-IBi9RG/b67k@public.gmane.org, jglauber-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, david.daney-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>, Benjamin Tissoires <benjamin.tissoires@redhat.com>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
 
---5bk4ef74avjgooz6
+--sg3igiwhncn6se2f
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jun 15, 2017 at 09:59:31PM +0800, Phil Reid wrote:
-> Prior to this commit the smbalert_irq was handling in the hard irq
-> context. This change switch to using a thread irq which avoids the need
-> for the work thread. Using threaded irq also removes the need for the
-> edge_triggered flag as the enabling / disabling of the hard irq for level
-> triggered interrupts will be handled by the irq core.
+On Thu, Jun 15, 2017 at 09:59:32PM +0800, Phil Reid wrote:
+> This commit adds of_i2c_setup_smbus_alert which allows the smbalert
+> driver to be attached to an i2c adapter via the device tree.
 >=20
-> Without this change have an irq connected to something like an i2c gpio
-> resulted in a null ptr deferences. Specifically handle_nested_irq calls
-> the threaded irq handler.
->=20
-> There are currently 3 in tree drivers affected by this change.
->=20
-> i2c-parport driver calls i2c_handle_smbus_alert in a hard irq context.
-> This driver use edge trigger interrupts which skip the enable / disable
-> calls. But it still need to handle the smbus transaction on a thread. So
-> the work thread is kept for this driver.
->=20
-> i2c-parport-light & i2c-thunderx-pcidrv provide the irq number in the
-> setup which will result in the thread irq being used.
->=20
-> i2c-parport-light is edge trigger so the enable / disable call was
-> skipped as well.
->=20
-> i2c-thunderx-pcidrv is getting the edge / level trigger setting from of
-> data and was setting the flag as required. However the irq core should
-> handle this automatically.
->=20
-> Signed-off-by: Phil Reid <preid@electromag.com.au>
+> Signed-off-by: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
-CCing Benjamin for smbus changes (like last time). Please CC him in the
-future in case we need another revision of this series.
+CCing Benjamin
 
 > ---
->  drivers/i2c/busses/i2c-parport-light.c   |  1 -
->  drivers/i2c/busses/i2c-parport.c         |  1 -
->  drivers/i2c/busses/i2c-thunderx-pcidrv.c |  6 -----
->  drivers/i2c/i2c-smbus.c                  | 41 +++++++++++++-------------=
-------
->  include/linux/i2c-smbus.h                |  1 -
->  5 files changed, 17 insertions(+), 33 deletions(-)
+>  Documentation/devicetree/bindings/i2c/i2c.txt |  4 ++--
+>  drivers/i2c/i2c-smbus.c                       | 34 +++++++++++++++++++++=
++++---
+>  include/linux/i2c-smbus.h                     |  9 +++++++
+>  3 files changed, 42 insertions(+), 5 deletions(-)
 >=20
-> diff --git a/drivers/i2c/busses/i2c-parport-light.c b/drivers/i2c/busses/=
-i2c-parport-light.c
-> index 1bcdd10..e6e22b8 100644
-> --- a/drivers/i2c/busses/i2c-parport-light.c
-> +++ b/drivers/i2c/busses/i2c-parport-light.c
-> @@ -123,7 +123,6 @@ static int parport_getsda(void *data)
+> diff --git a/Documentation/devicetree/bindings/i2c/i2c.txt b/Documentatio=
+n/devicetree/bindings/i2c/i2c.txt
+> index cee9d50..1126398 100644
+> --- a/Documentation/devicetree/bindings/i2c/i2c.txt
+> +++ b/Documentation/devicetree/bindings/i2c/i2c.txt
+> @@ -59,8 +59,8 @@ wants to support one of the below features, it should a=
+dapt the bindings below.
+>  	interrupts used by the device.
 > =20
->  /* SMBus alert support */
->  static struct i2c_smbus_alert_setup alert_data =3D {
-> -	.alert_edge_triggered	=3D 1,
->  };
->  static struct i2c_client *ara;
->  static struct lineop parport_ctrl_irq =3D {
-> diff --git a/drivers/i2c/busses/i2c-parport.c b/drivers/i2c/busses/i2c-pa=
-rport.c
-> index a8e54df..319209a 100644
-> --- a/drivers/i2c/busses/i2c-parport.c
-> +++ b/drivers/i2c/busses/i2c-parport.c
-> @@ -237,7 +237,6 @@ static void i2c_parport_attach(struct parport *port)
+>  - interrupt-names
+> -	"irq" and "wakeup" names are recognized by I2C core, other names are
+> -	left to individual drivers.
+> +	"irq", "wakeup" and "smbus_alert" names are recognized by I2C core,
+> +	other names are	left to individual drivers.
 > =20
->  	/* Setup SMBus alert if supported */
->  	if (adapter_parm[type].smbus_alert) {
-> -		adapter->alert_data.alert_edge_triggered =3D 1;
->  		adapter->ara =3D i2c_setup_smbus_alert(&adapter->adapter,
->  						     &adapter->alert_data);
->  		if (adapter->ara)
-> diff --git a/drivers/i2c/busses/i2c-thunderx-pcidrv.c b/drivers/i2c/busse=
-s/i2c-thunderx-pcidrv.c
-> index 1d4c2be..c27a50f 100644
-> --- a/drivers/i2c/busses/i2c-thunderx-pcidrv.c
-> +++ b/drivers/i2c/busses/i2c-thunderx-pcidrv.c
-> @@ -112,8 +112,6 @@ static void thunder_i2c_clock_disable(struct device *=
-dev, struct clk *clk)
->  static int thunder_i2c_smbus_setup_of(struct octeon_i2c *i2c,
->  				      struct device_node *node)
->  {
-> -	u32 type;
-> -
->  	if (!node)
->  		return -EINVAL;
-> =20
-> @@ -121,10 +119,6 @@ static int thunder_i2c_smbus_setup_of(struct octeon_=
-i2c *i2c,
->  	if (!i2c->alert_data.irq)
->  		return -EINVAL;
-> =20
-> -	type =3D irqd_get_trigger_type(irq_get_irq_data(i2c->alert_data.irq));
-> -	i2c->alert_data.alert_edge_triggered =3D
-> -		(type & IRQ_TYPE_LEVEL_MASK) ? 1 : 0;
-> -
->  	i2c->ara =3D i2c_setup_smbus_alert(&i2c->adap, &i2c->alert_data);
->  	if (!i2c->ara)
->  		return -ENODEV;
+>  - host-notify
+>  	device uses SMBus host notify protocol instead of interrupt line.
 > diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
-> index f9271c7..d4af270 100644
+> index d4af270..0ad7f7f 100644
 > --- a/drivers/i2c/i2c-smbus.c
 > +++ b/drivers/i2c/i2c-smbus.c
-> @@ -25,8 +25,6 @@
+> @@ -21,6 +21,7 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+> +#include <linux/of_irq.h>
+>  #include <linux/slab.h>
 >  #include <linux/workqueue.h>
 > =20
->  struct i2c_smbus_alert {
-> -	unsigned int		alert_edge_triggered:1;
-> -	int			irq;
->  	struct work_struct	alert;
->  	struct i2c_client	*ara;		/* Alert response address */
->  };
-> @@ -72,13 +70,12 @@ static int smbus_do_alert(struct device *dev, void *a=
-ddrp)
->   * The alert IRQ handler needs to hand work off to a task which can issue
->   * SMBus calls, because those sleeping calls can't be made in IRQ contex=
-t.
->   */
-> -static void smbus_alert(struct work_struct *work)
-> +static irqreturn_t smbus_alert(int irq, void *d)
+> @@ -131,7 +132,7 @@ static int smbalert_probe(struct i2c_client *ara,
 >  {
-> -	struct i2c_smbus_alert *alert;
-> +	struct i2c_smbus_alert *alert =3D d;
->  	struct i2c_client *ara;
->  	unsigned short prev_addr =3D 0;	/* Not a valid address */
-> =20
-> -	alert =3D container_of(work, struct i2c_smbus_alert, alert);
->  	ara =3D alert->ara;
-> =20
->  	for (;;) {
-> @@ -115,21 +112,17 @@ static void smbus_alert(struct work_struct *work)
->  		prev_addr =3D data.addr;
->  	}
-> =20
-> -	/* We handled all alerts; re-enable level-triggered IRQs */
-> -	if (!alert->alert_edge_triggered)
-> -		enable_irq(alert->irq);
-> +	return IRQ_HANDLED;
->  }
-> =20
-> -static irqreturn_t smbalert_irq(int irq, void *d)
-> +static void smbalert_work(struct work_struct *work)
->  {
-> -	struct i2c_smbus_alert *alert =3D d;
-> +	struct i2c_smbus_alert *alert;
-> +
-> +	alert =3D container_of(work, struct i2c_smbus_alert, alert);
-> =20
-> -	/* Disable level-triggered IRQs until we handle them */
-> -	if (!alert->alert_edge_triggered)
-> -		disable_irq_nosync(irq);
-> +	smbus_alert(0, alert);
-> =20
-> -	schedule_work(&alert->alert);
-> -	return IRQ_HANDLED;
->  }
-> =20
->  /* Setup SMBALERT# infrastructure */
-> @@ -139,28 +132,28 @@ static int smbalert_probe(struct i2c_client *ara,
 >  	struct i2c_smbus_alert_setup *setup =3D dev_get_platdata(&ara->dev);
 >  	struct i2c_smbus_alert *alert;
->  	struct i2c_adapter *adapter =3D ara->adapter;
-> -	int res;
-> +	int res, irq;
+> -	struct i2c_adapter *adapter =3D ara->adapter;
+> +	struct i2c_adapter *adap =3D ara->adapter;
+>  	int res, irq;
 > =20
 >  	alert =3D devm_kzalloc(&ara->dev, sizeof(struct i2c_smbus_alert),
->  			     GFP_KERNEL);
+> @@ -139,7 +140,14 @@ static int smbalert_probe(struct i2c_client *ara,
 >  	if (!alert)
 >  		return -ENOMEM;
 > =20
-> -	alert->alert_edge_triggered =3D setup->alert_edge_triggered;
-> -	alert->irq =3D setup->irq;
-> -	INIT_WORK(&alert->alert, smbus_alert);
-> +	irq =3D setup->irq;
-> +	INIT_WORK(&alert->alert, smbalert_work);
+> -	irq =3D setup->irq;
+> +	if (setup) {
+> +		irq =3D setup->irq;
+> +	} else {
+> +		irq =3D of_irq_get_byname(adap->dev.of_node, "smbus_alert");
+> +		if (irq <=3D 0)
+> +			return irq;
+> +	}
+> +
+>  	INIT_WORK(&alert->alert, smbalert_work);
 >  	alert->ara =3D ara;
 > =20
-> -	if (setup->irq > 0) {
-> -		res =3D devm_request_irq(&ara->dev, setup->irq, smbalert_irq,
-> -				       0, "smbus_alert", alert);
-> +	if (irq > 0) {
-> +		res =3D devm_request_threaded_irq(&ara->dev, irq,
-> +						NULL, smbus_alert,
-> +						IRQF_SHARED | IRQF_ONESHOT,
-> +						"smbus_alert", alert);
->  		if (res)
->  			return res;
+> @@ -153,7 +161,7 @@ static int smbalert_probe(struct i2c_client *ara,
 >  	}
 > =20
 >  	i2c_set_clientdata(ara, alert);
-> -	dev_info(&adapter->dev, "supports SMBALERT#, %s trigger\n",
-> -		 setup->alert_edge_triggered ? "edge" : "level");
-> +	dev_info(&adapter->dev, "supports SMBALERT#\n");
+> -	dev_info(&adapter->dev, "supports SMBALERT#\n");
+> +	dev_info(&adap->dev, "supports SMBALERT#\n");
 > =20
 >  	return 0;
 >  }
+> @@ -214,6 +222,26 @@ struct i2c_client *i2c_setup_smbus_alert(struct i2c_=
+adapter *adapter,
+>  }
+>  EXPORT_SYMBOL_GPL(i2c_setup_smbus_alert);
+> =20
+> +int of_i2c_setup_smbus_alert(struct i2c_adapter *adap)
+> +{
+> +	struct i2c_client *client;
+> +	int irq;
+> +
+> +	irq =3D of_property_match_string(adap->dev.of_node, "interrupt-names",
+> +				       "smbus_alert");
+> +	if (irq =3D=3D -EINVAL || irq =3D=3D -ENODATA)
+> +		return 0;
+> +	else if (irq < 0)
+> +		return irq;
+> +
+> +	client =3D i2c_setup_smbus_alert(adap, NULL);
+> +	if (!client)
+> +		return -ENODEV;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(of_i2c_setup_smbus_alert);
+> +
+>  /**
+>   * i2c_handle_smbus_alert - Handle an SMBus alert
+>   * @ara: the ARA client on the relevant adapter
 > diff --git a/include/linux/i2c-smbus.h b/include/linux/i2c-smbus.h
-> index a138502..19efbd1 100644
+> index 19efbd1..b5261c1 100644
 > --- a/include/linux/i2c-smbus.h
 > +++ b/include/linux/i2c-smbus.h
-> @@ -42,7 +42,6 @@
->   * properly set.
->   */
->  struct i2c_smbus_alert_setup {
-> -	unsigned int		alert_edge_triggered:1;
->  	int			irq;
->  };
+> @@ -49,4 +49,13 @@ struct i2c_client *i2c_setup_smbus_alert(struct i2c_ad=
+apter *adapter,
+>  					 struct i2c_smbus_alert_setup *setup);
+>  int i2c_handle_smbus_alert(struct i2c_client *ara);
 > =20
+> +#if IS_ENABLED(CONFIG_I2C_SMBUS)
+> +int of_i2c_setup_smbus_alert(struct i2c_adapter *adap);
+> +#else
+> +static inline int of_i2c_setup_smbus_alert(struct i2c_adapter *adap)
+> +{
+> +	return 0;
+> +}
+> +#endif
+> +
+>  #endif /* _LINUX_I2C_SMBUS_H */
 > --=20
 > 1.8.3.1
 >=20
 
---5bk4ef74avjgooz6
+--sg3igiwhncn6se2f
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAllH7VIACgkQFA3kzBSg
-KbZpww//f47D+w0oW4aTQB5X76POla81SsHOBkw2MFZxTI+sSj/wXdg8izkR1+fV
-iRU9T1e0LKQrY0DVkt5f4oL4xV0iV293PwSwsPAjiLpr54NHnmdkykqrJ/Qf+mXd
-llvalVkdtlDZ3qLqqDLultLK3/G2tQRX2Hm4W0gBZGmLcifsSGxE7alJJnA90fSH
-bRUcUxWvvIDrIqZ/LBjc6fburehaLVkUR/+dc7f0hxb3g4VpnfhnKbKqNEhDciPW
-VGEP7UL942PXvunvs2ITwxfZQQfzHfTFUqQQ/VY7MrCfPHU5qAnUjkyIzGmOsHQH
-pQl2reP68E+xUPgG2Wfasjxa1PCXodVkoyq1urofcY+nwiSpMv6/xkF4ru13k8v9
-nqp1SpnPu4RUX5aEHY4OlPoXmQArPElU58vjucEnp9RlIAyGvwtyK5sVHNqzXK2y
-z7yIKlgLg91dvb41b6r9NSFj570ibuJIlTwEjht2f5MM25Euipw6sEbXMXMKDj/x
-1dgSEHgauCguPh4Mn5bDw7l7Ihp4DF9mkanvReP8kSI2V2nLwktqDwZ8oze4ajOI
-e1nHRuSu9lKTAdsydn19NoWFKPJpUG2/nOLE2ZVUyK4UGvsGrP2/3tSs7bIrfVho
-rBV++eVost3zs/Jt7F/+nW1rCyB7hZ2TkY2ap47z3mrkz3obWmI=
-=R7ES
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAllH7XAACgkQFA3kzBSg
+KbZh7Q//bKXPeqfEQOmkErIzU4f+GpW5CdRA/F7oUeaRWrZyubYBX5jxk13iGqAN
+edcafYoo4yKwEAmP3GstMO7khhWaDFPfHhuHJdrPZDA2aWHxY1yLFHFrBatAFPvN
+9jmDtYD3Np7AX+svYrrdw4P9IY9j6ZnC62NkwTMw7y1XDnNQVup5ycYykLXM6jAw
+RPBj4u+livjhx67OdY2DyO72G7XmR4afp0ST7AkpDpgbp5bTUNXFNNGFnnLAqYVd
+C7zCQYn6qMMzImoQr1uxGV8hIXHdtDWWic7nVkfrJ37xYm6c1l/mOSUXY3GC7VSI
+SokAx4pbh2q37FoAo+AJbQ4A6LHHYoVA2iuTmLn+wIEg1p/ArKiR/vJSFXAGZOYI
+qttwWxhiwuF9N/C6UX9qXC1r5TntSD+xhPJJENKafD5/emow9hXAXJKgT43WwUns
+jdA2UBLdJ1+8+vB1W1e+zl1gUuqL2JeG/ugb+TfrJzO+cO/NWVlw5y9dt+cK9wKb
+UtlGjBHGlzAJjAh1vHy7pxVyi1KdsSMIVepHxeIzeUuq4RHnZvrsjsnvXsSITMWb
+wef1NbLh5Y9FdP8/ostxbTDs1PkZmO4nneHjlA300uGlrzuTCT6FOM+65XhtUL7N
+pvi0GLDjmRvp1togzMZWBPBBYzfGC/nGN30/GLowoMJ4Z/32Z3w=
+=UtCa
 -----END PGP SIGNATURE-----
 
---5bk4ef74avjgooz6--
+--sg3igiwhncn6se2f--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
