@@ -1,33 +1,36 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v2 3/3] ACPI / sleep: EC-based wakeup from suspend-to-idle
- on recent Dell systems
-Date: Tue, 20 Jun 2017 08:07:11 +0800
-Message-ID: <CA+55aFwywLewxDenVcH1GxeigpS30B_+rvYh+=ff76EQpOcuOg@mail.gmail.com>
-References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <3454366.uzaJljlWGm@aspire.rjw.lan>
- <3689795.xuIczRHZsl@aspire.rjw.lan> <2026371.DVJN39QYJi@aspire.rjw.lan>
+From: INFO <mguerrero@huv.gov.co>
+Subject: Re: Reply Urgent
+Date: Mon, 19 Jun 2017 14:39:18 -0500
+Message-ID: <20170619143918.2132176qvnaamicm__22873.3179429129$1497917328$gmane$org@correo.huv.gov.co>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2026371.DVJN39QYJi@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, Tom Lanyon <tom@oneshoeco.com>, =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?= <jerome.debretagne@gmail.com>
+Content-Type: text/plain;
+ charset=ISO-8859-1;
+ DelSp="Yes";
+ format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from correo.huv.gov.co ([190.6.160.84]:4695 "EHLO correo.huv.gov.co"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753205AbdFTAIX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 19 Jun 2017 20:08:23 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 20, 2017 at 5:53 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> -> v2: Added acpi_sleep=no_ec_wakeup to prevent EC events from waking up
->           the system from s2idle on systems where they do that by default.
+Hello,
 
-This seems a big hacky.
+How are you doing? I have been sent to inform you that, We have an  
+inheritance of a deceased client with your surname. Contact Mr Andrew  
+Bailey Reply Email To: myinfand@gmail.com with your "Full Names" for  
+more info.  Thanks for your understanding.
 
-Is there no way to simply make acpi_ec_suspend() smarter while going
-to sleep? Instead of just unconditionally disabling every EC GPE, can
-we see that "this gpe is the power botton" somehow?
+Reply ASAP thank you.
 
-Disabling the power button event sounds fundamentally broken, and it
-sounds like Windows doesn't do that. I doubt Windows has some hacky
-whitelist. So I'd rather fix a deeper issue than have these kinds of
-hacks, if at all possible.
+Melissa.
+----------------------------------
+Correo Corporativo Hospital Universitario del Valle E.S.E
+*******************************************************************************
 
-                Linus
+"Estamos re-dimensionandonos para crecer!"
+
+******************************************************************************
