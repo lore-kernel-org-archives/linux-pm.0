@@ -1,167 +1,123 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/6] ACPI / PM: Drop run_wake from struct acpi_device_wakeup_flags
-Date: Mon, 19 Jun 2017 23:33:05 +0200
-Message-ID: <4516672.gNkEGjz9qs@aspire.rjw.lan>
-References: <12296383.UdE5HVtyng@aspire.rjw.lan>
+Subject: [PATCH v2 2/3] platform: x86: intel-hid: Wake up the system from suspend-to-idle
+Date: Mon, 19 Jun 2017 23:51:08 +0200
+Message-ID: <4322786.AmAVYa8p3U@aspire.rjw.lan>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <3454366.uzaJljlWGm@aspire.rjw.lan> <3689795.xuIczRHZsl@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <12296383.UdE5HVtyng@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <3689795.xuIczRHZsl@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
 To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, Tom Lanyon <tom@oneshoeco.com>, =?ISO-8859-1?Q?J=E9r=F4me?= de Bretagne <jerome.debretagne@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The run_wake flag in struct acpi_device_wakeup_flags stores the
-information on whether or not the device can generate wakeup
-signals at run time, but in ACPI that really is equivalent to
-being able to generate wakeup signals at all.
-
-In fact, run_wake will always be set after successful executeion of
-acpi_setup_gpe_for_wake(), but if that fails, the device will not be
-able to use a wakeup GPE at all, so it won't be able to wake up the
-systems from sleep states too.  Hence, run_wake actually means that
-the device is capable of triggering wakeup and so it is equivalent
-to the valid flag.
-
-For this reason, drop run_wake from struct acpi_device_wakeup_flags
-and make sure that the valid flag is only set if
-acpi_setup_gpe_for_wake() has been successful.
+Allow the intel-hid driver to wake up the system from suspend-to-idle
+by configuring its platform device as a wakeup one by default and
+switching it over to a system wakeup events triggering mode during
+system suspend transitions.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/acpi/pci_root.c |    2 +-
- drivers/acpi/proc.c     |    4 ++--
- drivers/acpi/scan.c     |   23 ++++++++---------------
- drivers/pci/pci-acpi.c  |    3 +--
- include/acpi/acpi_bus.h |    1 -
- 5 files changed, 12 insertions(+), 21 deletions(-)
 
-Index: linux-pm/drivers/acpi/scan.c
+-> v2: Added tag.
+
+---
+ drivers/platform/x86/intel-hid.c |   40 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 35 insertions(+), 5 deletions(-)
+
+Index: linux-pm/drivers/platform/x86/intel-hid.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/scan.c
-+++ linux-pm/drivers/acpi/scan.c
-@@ -835,7 +835,7 @@ static int acpi_bus_extract_wakeup_devic
- 	return err;
- }
+--- linux-pm.orig/drivers/platform/x86/intel-hid.c
++++ linux-pm/drivers/platform/x86/intel-hid.c
+@@ -23,6 +23,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/input/sparse-keymap.h>
+ #include <linux/acpi.h>
++#include <linux/suspend.h>
+ #include <acpi/acpi_bus.h>
  
--static void acpi_wakeup_gpe_init(struct acpi_device *device)
-+static bool acpi_wakeup_gpe_init(struct acpi_device *device)
- {
- 	static const struct acpi_device_id button_device_ids[] = {
- 		{"PNP0C0C", 0},
-@@ -845,13 +845,11 @@ static void acpi_wakeup_gpe_init(struct
- 	};
- 	struct acpi_device_wakeup *wakeup = &device->wakeup;
- 	acpi_status status;
--	acpi_event_status event_status;
- 
- 	wakeup->flags.notifier_present = 0;
- 
- 	/* Power button, Lid switch always enable wakeup */
- 	if (!acpi_match_device_ids(device, button_device_ids)) {
--		wakeup->flags.run_wake = 1;
- 		if (!acpi_match_device_ids(device, &button_device_ids[1])) {
- 			/* Do not use Lid/sleep button for S5 wakeup */
- 			if (wakeup->sleep_state == ACPI_STATE_S5)
-@@ -859,17 +857,12 @@ static void acpi_wakeup_gpe_init(struct
- 		}
- 		acpi_mark_gpe_for_wake(wakeup->gpe_device, wakeup->gpe_number);
- 		device_set_wakeup_capable(&device->dev, true);
--		return;
-+		return true;
- 	}
- 
--	acpi_setup_gpe_for_wake(device->handle, wakeup->gpe_device,
--				wakeup->gpe_number);
--	status = acpi_get_gpe_status(wakeup->gpe_device, wakeup->gpe_number,
--				     &event_status);
--	if (ACPI_FAILURE(status))
--		return;
--
--	wakeup->flags.run_wake = !!(event_status & ACPI_EVENT_FLAG_HAS_HANDLER);
-+	status = acpi_setup_gpe_for_wake(device->handle, wakeup->gpe_device,
-+					 wakeup->gpe_number);
-+	return ACPI_SUCCESS(status);
- }
- 
- static void acpi_bus_get_wakeup_device_flags(struct acpi_device *device)
-@@ -887,10 +880,10 @@ static void acpi_bus_get_wakeup_device_f
- 		return;
- 	}
- 
--	device->wakeup.flags.valid = 1;
-+	device->wakeup.flags.valid = acpi_wakeup_gpe_init(device);
- 	device->wakeup.prepare_count = 0;
--	acpi_wakeup_gpe_init(device);
--	/* Call _PSW/_DSW object to disable its ability to wake the sleeping
-+	/*
-+	 * Call _PSW/_DSW object to disable its ability to wake the sleeping
- 	 * system for the ACPI device with the _PRW object.
- 	 * The _PSW object is depreciated in ACPI 3.0 and is replaced by _DSW.
- 	 * So it is necessary to call _DSW object first. Only when it is not
-Index: linux-pm/include/acpi/acpi_bus.h
-===================================================================
---- linux-pm.orig/include/acpi/acpi_bus.h
-+++ linux-pm/include/acpi/acpi_bus.h
-@@ -313,7 +313,6 @@ struct acpi_device_perf {
- /* Wakeup Management */
- struct acpi_device_wakeup_flags {
- 	u8 valid:1;		/* Can successfully enable wakeup? */
--	u8 run_wake:1;		/* Run-Wake GPE devices */
- 	u8 notifier_present:1;  /* Wake-up notify handler has been installed */
- 	u8 enabled:1;		/* Enabled for wakeup */
+ MODULE_LICENSE("GPL");
+@@ -75,6 +76,7 @@ static const struct key_entry intel_arra
+ struct intel_hid_priv {
+ 	struct input_dev *input_dev;
+ 	struct input_dev *array;
++	bool wakeup_mode;
  };
-Index: linux-pm/drivers/acpi/pci_root.c
-===================================================================
---- linux-pm.orig/drivers/acpi/pci_root.c
-+++ linux-pm/drivers/acpi/pci_root.c
-@@ -608,7 +608,7 @@ static int acpi_pci_root_add(struct acpi
- 		pcie_no_aspm();
  
- 	pci_acpi_add_bus_pm_notifier(device);
--	if (device->wakeup.flags.run_wake)
-+	if (device->wakeup.flags.valid)
- 		device_set_run_wake(root->bus->bridge, true);
- 
- 	if (hotadd) {
-Index: linux-pm/drivers/pci/pci-acpi.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -778,9 +778,8 @@ static void pci_acpi_setup(struct device
- 		return;
- 
- 	device_set_wakeup_capable(dev, true);
-+	device_set_run_wake(dev, true);
- 	acpi_pci_sleep_wake(pci_dev, false);
--	if (adev->wakeup.flags.run_wake)
--		device_set_run_wake(dev, true);
+ static int intel_hid_set_enable(struct device *device, bool enable)
+@@ -116,23 +118,37 @@ static void intel_button_array_enable(st
+ 		dev_warn(device, "failed to set button capability\n");
  }
  
- static void pci_acpi_cleanup(struct device *dev)
-Index: linux-pm/drivers/acpi/proc.c
-===================================================================
---- linux-pm.orig/drivers/acpi/proc.c
-+++ linux-pm/drivers/acpi/proc.c
-@@ -42,7 +42,7 @@ acpi_system_wakeup_device_seq_show(struc
+-static int intel_hid_pl_suspend_handler(struct device *device)
++static int intel_hid_pm_prepare(struct device *device)
+ {
+-	intel_hid_set_enable(device, false);
+-	intel_button_array_enable(device, false);
++	struct intel_hid_priv *priv = dev_get_drvdata(device);
++
++	priv->wakeup_mode = true;
++	return 0;
++}
  
- 		if (!dev->physical_node_count) {
- 			seq_printf(seq, "%c%-8s\n",
--				dev->wakeup.flags.run_wake ? '*' : ' ',
-+				dev->wakeup.flags.valid ? '*' : ' ',
- 				device_may_wakeup(&dev->dev) ?
- 					"enabled" : "disabled");
- 		} else {
-@@ -58,7 +58,7 @@ acpi_system_wakeup_device_seq_show(struc
- 					seq_printf(seq, "\t\t");
++static int intel_hid_pl_suspend_handler(struct device *device)
++{
++	if (pm_suspend_via_firmware()) {
++		intel_hid_set_enable(device, false);
++		intel_button_array_enable(device, false);
++	}
+ 	return 0;
+ }
  
- 				seq_printf(seq, "%c%-8s  %s:%s\n",
--					dev->wakeup.flags.run_wake ? '*' : ' ',
-+					dev->wakeup.flags.valid ? '*' : ' ',
- 					(device_may_wakeup(&dev->dev) ||
- 					device_may_wakeup(ldev)) ?
- 					"enabled" : "disabled",
+ static int intel_hid_pl_resume_handler(struct device *device)
+ {
+-	intel_hid_set_enable(device, true);
+-	intel_button_array_enable(device, true);
++	struct intel_hid_priv *priv = dev_get_drvdata(device);
+ 
++	priv->wakeup_mode = false;
++	if (pm_resume_via_firmware()) {
++		intel_hid_set_enable(device, true);
++		intel_button_array_enable(device, true);
++	}
+ 	return 0;
+ }
+ 
+ static const struct dev_pm_ops intel_hid_pl_pm_ops = {
++	.prepare = intel_hid_pm_prepare,
+ 	.freeze  = intel_hid_pl_suspend_handler,
+ 	.thaw  = intel_hid_pl_resume_handler,
+ 	.restore  = intel_hid_pl_resume_handler,
+@@ -186,6 +202,19 @@ static void notify_handler(acpi_handle h
+ 	unsigned long long ev_index;
+ 	acpi_status status;
+ 
++	if (priv->wakeup_mode) {
++		/* Wake up on 5-button array events only. */
++		if (event == 0xc0 || !priv->array)
++			return;
++
++		if (sparse_keymap_entry_from_scancode(priv->array, event))
++			pm_wakeup_hard_event(&device->dev);
++		else
++			dev_info(&device->dev, "unknown event 0x%x\n", event);
++
++		return;
++	}
++
+ 	/* 0xC0 is for HID events, other values are for 5 button array */
+ 	if (event != 0xc0) {
+ 		if (!priv->array ||
+@@ -270,6 +299,7 @@ static int intel_hid_probe(struct platfo
+ 				 "failed to enable HID power button\n");
+ 	}
+ 
++	device_init_wakeup(&device->dev, true);
+ 	return 0;
+ 
+ err_remove_notify:
