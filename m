@@ -1,115 +1,70 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 1/3] platform: x86: intel-vbtn: Wake up the system from suspend-to-idle
-Date: Mon, 19 Jun 2017 23:49:53 +0200
-Message-ID: <1776559.xgCzDaOhAk@aspire.rjw.lan>
-References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <3454366.uzaJljlWGm@aspire.rjw.lan> <3689795.xuIczRHZsl@aspire.rjw.lan>
+Subject: Re: [PATCH] usb: host: ehci: workaround PME bug on AMD EHCI controller
+Date: Tue, 20 Jun 2017 00:00:33 +0200
+Message-ID: <4743716.D4sjtRmsBZ@aspire.rjw.lan>
+References: <Pine.LNX.4.44L0.1706191415180.1715-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <3689795.xuIczRHZsl@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, Tom Lanyon <tom@oneshoeco.com>, =?ISO-8859-1?Q?J=E9r=F4me?= de Bretagne <jerome.debretagne@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1706191415180.1715-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Kai-Heng Feng <kai.heng.feng@canonical.com>, Bjorn Helgaas <bhelgaas@google.com>, gregkh@linuxfoundation.org, USB list <linux-usb@vger.kernel.org>, linux-pci@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Monday, June 19, 2017 02:32:57 PM Alan Stern wrote:
+> On Mon, 19 Jun 2017, Bjorn Helgaas wrote:
+> 
+> > > > Have you tested it with system suspend?  That is, if you suspend the
+> > > > whole computer, does plugging or unplugging a USB device cause the
+> > > > system to wake up?
+> > > 
+> > > No, the system will not wake up when plugging or unplugging.
+> > > Tried several times, nether runtime PM enabled nor runtime PM disabled
+> > > will wake up the system under S3, when (un)plugging USB devices.
+> > 
+> > Alan, I don't know what this test means for the patch
+> > (http://marc.info/?l=linux-pci&m=149760607914628&w=2).
+> > 
+> > pci_target_state() is documented as "return the deepest state from
+> > which the device can generate wake events."  For this device, I guess
+> > that means D2, and the patch should accomplish that.
+> > 
+> > I don't know what's supposed to happen to this device when the system
+> > is in S3.  I assume that if the system is in S3, most devices are in
+> > D3.  If this device is in D3, we won't get PMEs, which I guess is what
+> > Kai-Heng is seeing.  Is that the desired behavior?  Or do we want the
+> > PMEs enough that we should leave the device in D2 (if that's even
+> > possible)?
+> 
+> It's possible that the test was invalid.  Kai-Heng did not say whether
+> /sys/.../power/wakeup was set to "enabled" for both the EHCI controller
+> and the USB root hub beneath it, before the test was started.  If
+> either of them was set to "disabled" then we would not expect a plug or
+> unplug event to wake up the system.
+> 
+> In any case, the controller should be set to the lowest power setting 
+> that is consistent with the desired wakeup behavior.  If wakeup is set 
+> to "enabled" then the state should be D2 -- if possible.  That's the 
+> theory, anyway.  If the system supports putting devices only into D3 
+> during S3 sleep then there's no choice, but if we do have a choice then 
+> we should take it.
+> 
+> BTW, I just noticed that pci_target_state() uses device_may_wakeup() to
+> get the desired wakeup behavior.  That is correct for system sleep, but
+> it is wrong for runtime PM.  For runtime PM, wakeup should be enabled
+> whenever the hardware allows it, so the test should be
+> device_can_wakeup().
+> 
+> This means that pci_target_state() should behave differently depending
+> on whether it is called from pci_prepare_to_sleep() or from
+> pci_finish_runtime_suspend().  Probably nobody noticed this before 
+> because it usually doesn't make any difference.
 
-Allow the intel-vbtn driver to wake up the system from suspend-to-idle
-by configuring its platform device as a wakeup one by default and
-switching it over to a system wakeup events triggering mode during
-system suspend transitions.
+Right, this is a bug.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
+Let me cut a fix for it.
 
--> v2: Added tag.
-
----
- drivers/platform/x86/intel-vbtn.c |   39 +++++++++++++++++++++++++++++++++++---
- 1 file changed, 36 insertions(+), 3 deletions(-)
-
-Index: linux-pm/drivers/platform/x86/intel-vbtn.c
-===================================================================
---- linux-pm.orig/drivers/platform/x86/intel-vbtn.c
-+++ linux-pm/drivers/platform/x86/intel-vbtn.c
-@@ -23,6 +23,7 @@
- #include <linux/platform_device.h>
- #include <linux/input/sparse-keymap.h>
- #include <linux/acpi.h>
-+#include <linux/suspend.h>
- #include <acpi/acpi_bus.h>
- 
- MODULE_LICENSE("GPL");
-@@ -46,6 +47,7 @@ static const struct key_entry intel_vbtn
- 
- struct intel_vbtn_priv {
- 	struct input_dev *input_dev;
-+	bool wakeup_mode;
- };
- 
- static int intel_vbtn_input_setup(struct platform_device *device)
-@@ -73,9 +75,15 @@ static void notify_handler(acpi_handle h
- 	struct platform_device *device = context;
- 	struct intel_vbtn_priv *priv = dev_get_drvdata(&device->dev);
- 
--	if (!sparse_keymap_report_event(priv->input_dev, event, 1, true))
--		dev_info(&device->dev, "unknown event index 0x%x\n",
--			 event);
-+	if (priv->wakeup_mode) {
-+		if (sparse_keymap_entry_from_scancode(priv->input_dev, event)) {
-+			pm_wakeup_hard_event(&device->dev);
-+			return;
-+		}
-+	} else if (sparse_keymap_report_event(priv->input_dev, event, 1, true)) {
-+		return;
-+	}
-+	dev_info(&device->dev, "unknown event index 0x%x\n", event);
- }
- 
- static int intel_vbtn_probe(struct platform_device *device)
-@@ -109,6 +117,7 @@ static int intel_vbtn_probe(struct platf
- 	if (ACPI_FAILURE(status))
- 		return -EBUSY;
- 
-+	device_init_wakeup(&device->dev, true);
- 	return 0;
- }
- 
-@@ -125,10 +134,34 @@ static int intel_vbtn_remove(struct plat
- 	return 0;
- }
- 
-+static int intel_vbtn_pm_prepare(struct device *dev)
-+{
-+	struct intel_vbtn_priv *priv = dev_get_drvdata(dev);
-+
-+	priv->wakeup_mode = true;
-+	return 0;
-+}
-+
-+static int intel_vbtn_pm_resume(struct device *dev)
-+{
-+	struct intel_vbtn_priv *priv = dev_get_drvdata(dev);
-+
-+	priv->wakeup_mode = false;
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops intel_vbtn_pm_ops = {
-+	.prepare = intel_vbtn_pm_prepare,
-+	.resume = intel_vbtn_pm_resume,
-+	.restore = intel_vbtn_pm_resume,
-+	.thaw = intel_vbtn_pm_resume,
-+};
-+
- static struct platform_driver intel_vbtn_pl_driver = {
- 	.driver = {
- 		.name = "intel-vbtn",
- 		.acpi_match_table = intel_vbtn_ids,
-+		.pm = &intel_vbtn_pm_ops,
- 	},
- 	.probe = intel_vbtn_probe,
- 	.remove = intel_vbtn_remove,
-
+Thanks,
+Rafael
