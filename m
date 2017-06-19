@@ -1,50 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/5] x86: use common aperfmperf_khz_on_cpu() to calculate KHz using APERF/MPERF
-Date: Mon, 19 Jun 2017 16:18:07 +0200
-Message-ID: <4066164.lk5f1Ou666@aspire.rjw.lan>
-References: <1496889556-17923-1-git-send-email-lenb@kernel.org> <CAJvTdKmK6SPq1L1nWpkAcVgXBT92r=-EZsTNPi1C5eBDaux5xQ@mail.gmail.com> <136184443.Dv0asqkIzm@aspire.rjw.lan>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: [GIT PULL] Immutable branch between MFD and X86 due for the v4.13
+ merge window
+Date: Mon, 19 Jun 2017 15:48:49 +0100
+Message-ID: <20170619144849.ltx2qny5v66od3ml@dell>
+References: <CAHp75VcQfSkn7NAWSC2Vq=8RCC0M1p9zvVFjJFLyEo17GDvHsA@mail.gmail.com>
+ <cover.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <136184443.Dv0asqkIzm@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: X86 ML <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "H. Peter Anvin" <hpa@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-gpio-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <cover.1496687716.git.sathyanarayanan.kuppuswamy@linux.intel.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: sathyanarayanan.kuppuswamy@linux.intel.com
+Cc: gnurou@gmail.com, heikki.krogerus@linux.intel.com, gregkh@linuxfoundation.org, linus.walleij@linaro.org, edubezval@gmail.com, dvhart@infradead.org, rui.zhang@intel.com, andy@infradead.org, platform-driver-x86@vger.kernel.org, linux-gpio@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sathyaosid@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 19, 2017 02:28:21 PM Rafael J. Wysocki wrote:
-> On Friday, June 16, 2017 09:49:00 PM Len Brown wrote:
-> > On Fri, Jun 16, 2017 at 8:30 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > On Wednesday, June 07, 2017 07:39:13 PM Len Brown wrote:
-> > >> From: Len Brown <len.brown@intel.com>
-> 
-> [cut]
-> 
-> > >
-> > > I wonder if we could change intel_pstate_get() to simply return
-> > > aperfmperf_khz_on_cpu(cpu_num)?
-> > >
-> > > That would allow us to avoid the extra branch here and get rid of the
-> > > #ifdef x86 from the header.
-> > 
-> > The reason I put the hook here is specifically so that the same
-> > code would always be called on the x86 architecture,
-> > no not matter what cpufreq driver is loaded.
-> > 
-> > Yes, alternatively, all possible driver.get routines could be updated
-> > to call the same routine.  That is acpi-cpufreq.c, intel_pstate.c,
-> > others?
-> 
-> Just acpi-cpufreq.c and intel_pstate.c.
-> 
-> Moreover, I wouldn't change the behavior on systems using acpi-cpufreq.c,
-> because why really?
+Enjoy!
 
-Actually, having thought a bit more about this, I see why that may be useful.
+The following changes since commit 2ea659a9ef488125eb46da6eb571de5eae5c43f6:
 
-Also the #ifdef CONFIG_X86 in the header is better than an arch header, at
-least for now, so I agree with the approach in your patch.
+  Linux 4.12-rc1 (2017-05-13 13:19:49 -0700)
 
-Thanks,
-Rafael
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git ib-mfd-x86-v4.13
+
+for you to fetch changes up to 94d68594a7b4fd2eec457f22110de644e1c4ee57:
+
+  platform/x86: intel_bxtwc_tmu: Remove first level IRQ unmask (2017-06-19 15:45:30 +0100)
+
+----------------------------------------------------------------
+Immutable branch between MFD and X86 due for the v4.13 merge window
+
+----------------------------------------------------------------
+Kuppuswamy Sathyanarayanan (6):
+      mfd: intel_soc_pmic_bxtwc: Fix TMU interrupt index
+      mfd: intel_soc_pmic_bxtwc: Remove thermal second level IRQs
+      mfd: intel_soc_pmic_bxtwc: Remove second level IRQ for gpio device
+      mfd: intel_soc_pmic_bxtwc: Utilize devm_* functions in driver probe
+      mfd: intel_soc_pmic_bxtwc: Use chained IRQs for second level IRQ chips
+      platform/x86: intel_bxtwc_tmu: Remove first level IRQ unmask
+
+ drivers/gpio/gpio-wcove.c                |  14 +-
+ drivers/mfd/intel_soc_pmic_bxtwc.c       | 232 +++++++++++++++++++++----------
+ drivers/platform/x86/intel_bxtwc_tmu.c   |   4 -
+ drivers/thermal/intel_bxt_pmic_thermal.c |   2 +-
+ drivers/usb/typec/typec_wcove.c          |   2 +-
+ include/linux/mfd/intel_soc_pmic.h       |   5 +-
+ 6 files changed, 175 insertions(+), 84 deletions(-)
+
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
