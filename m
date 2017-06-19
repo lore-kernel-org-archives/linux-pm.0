@@ -1,88 +1,59 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v7 05/10] i2c: core: call of_i2c_setup_smbus_alert in
- i2c_register_adapter
-Date: Mon, 19 Jun 2017 17:28:11 +0200
-Message-ID: <20170619152811.svoxmxybyoy6l4hc@ninjato>
-References: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
- <1497535178-12001-6-git-send-email-preid@electromag.com.au>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] usb: host: ehci: workaround PME bug on AMD EHCI
+ controller
+Date: Mon, 19 Jun 2017 12:45:33 -0500
+Message-ID: <20170619174533.GA20550@bhelgaas-glaptop.roam.corp.google.com>
+References: <CAAd53p4ntaZ48dsHG+ftDadgOnX=xwX9c3WeBr2SXZye3VL4CA@mail.gmail.com>
+ <Pine.LNX.4.44L0.1706161327410.1715-100000@iolanthe.rowland.org>
+ <CAAd53p6iH=T+ynpsdmQVeexOXRdwdiznLiRGM40Q88__r1s7QQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="vnowmshfru3jtffk"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sauhun.de ([88.99.104.3]:53724 "EHLO pokefinder.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752899AbdFSP2N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 19 Jun 2017 11:28:13 -0400
-Content-Disposition: inline
-In-Reply-To: <1497535178-12001-6-git-send-email-preid@electromag.com.au>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>, Benjamin Tissoires <benjamin.tissoires@redhat.com>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-
-
---vnowmshfru3jtffk
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <CAAd53p6iH=T+ynpsdmQVeexOXRdwdiznLiRGM40Q88__r1s7QQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, gregkh@linuxfoundation.org, USB list <linux-usb@vger.kernel.org>, linux-pci@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 15, 2017 at 09:59:33PM +0800, Phil Reid wrote:
-> Add a call to of_i2c_setup_smbus_alert when a i2c adapter is registered
-> so the the smbalert driver can be registered.
->=20
-> Signed-off-by: Phil Reid <preid@electromag.com.au>
+On Mon, Jun 19, 2017 at 11:30:18AM +0800, Kai-Heng Feng wrote:
+> On Sat, Jun 17, 2017 at 1:30 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Sat, 17 Jun 2017, Kai-Heng Feng wrote:
+> >
+> >> On Fri, Jun 16, 2017 at 11:07 AM, Kai-Heng Feng
+> >> <kai.heng.feng@canonical.com> wrote:
+> >> > On Thu, Jun 15, 2017 at 10:12 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> >> >> Those documents refer to a hardware bug with a workaround in the BIOS.
+> >> >> Have you checked to see if your BIOS is up to date?
+> >> >
+> >> > Yes, it's up to date.
+> >> >
+> >>
+> >> Alan, I re-sent a patch but I forgot to add you to CC list:
+> >> http://marc.info/?l=linux-pci&m=149760607914628&w=2
+> >
+> > Thanks for letting me know.  The patch seems reasonable.
+> >
+> > Have you tested it with system suspend?  That is, if you suspend the
+> > whole computer, does plugging or unplugging a USB device cause the
+> > system to wake up?
+> 
+> No, the system will not wake up when plugging or unplugging.
+> Tried several times, nether runtime PM enabled nor runtime PM disabled
+> will wake up the system under S3, when (un)plugging USB devices.
 
-CCing Benjamin
+Alan, I don't know what this test means for the patch
+(http://marc.info/?l=linux-pci&m=149760607914628&w=2).
 
-> ---
->  drivers/i2c/i2c-core.c | 4 ++++
->  1 file changed, 4 insertions(+)
->=20
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index d2402bb..626471b 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -40,6 +40,7 @@
->  #include <linux/gpio.h>
->  #include <linux/hardirq.h>
->  #include <linux/i2c.h>
-> +#include <linux/i2c-smbus.h>
->  #include <linux/idr.h>
->  #include <linux/init.h>
->  #include <linux/irqflags.h>
-> @@ -2045,6 +2046,9 @@ static int i2c_register_adapter(struct i2c_adapter =
-*adap)
->  		dev_warn(&adap->dev,
->  			 "Failed to create compatibility class link\n");
->  #endif
-> +	res =3D of_i2c_setup_smbus_alert(adap);
-> +	if (res)
-> +		goto out_list;
-> =20
->  	i2c_init_recovery(adap);
-> =20
-> --=20
-> 1.8.3.1
->=20
+pci_target_state() is documented as "return the deepest state from
+which the device can generate wake events."  For this device, I guess
+that means D2, and the patch should accomplish that.
 
---vnowmshfru3jtffk
-Content-Type: application/pgp-signature; name="signature.asc"
+I don't know what's supposed to happen to this device when the system
+is in S3.  I assume that if the system is in S3, most devices are in
+D3.  If this device is in D3, we won't get PMEs, which I guess is what
+Kai-Heng is seeing.  Is that the desired behavior?  Or do we want the
+PMEs enough that we should leave the device in D2 (if that's even
+possible)?
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAllH7YsACgkQFA3kzBSg
-Kba4QhAAkmrmp/tUJpOFlGU3XMCXnLq6Syf4LIG6lqb3uLeEekbHu8quJBq7PvcP
-U2uSLJ6gh1zgrI4jIij/ow/pAKJYOqWWZM5vywraY6+dOmUltW3JHuTXzIwiZx28
-cATEZRzBTOyq3mESSY3kpV0lPi5+P0Yw1Ab1sCIm3n56KaV9U8oLqZZqFCLjIElO
-BwSPYLRipro4P9KQwHjHOkAa6uE89gi2egMYNudMoTVld05k60riyaBKa+/fcvM9
-B/3h1R+cr0C7/Vg2KkWLVK3LmVkwI+NpQ7aElAIUGpT6WRdj8+0gJr66N3ZCMTLy
-SQQ5HatT23uDTA0fqIQoimFITsdUyeKgE2Gf3VjWT05d25RegFTKgaM2+MC91TUF
-adI0y/mm0WCnYSH9IvJ93BK53Ue2FnJX4JZya1u4EO89gDQnLGwAhGOJ81TyAJOG
-FJCMIRvpol8N+wnSZ41RAeVktSG+MpEwBd5AEc3Q6UfhvSiQwPPLohQx2pPC3G62
-OB6BbAIsHTeke/pX5L1K3eM84mZGF6E4oG2OWl/6MTnPoSGNyoZNpJztPUKe6Z5w
-LS+dOH6MH/uzyz23anT4XWp7gczXsPf2ha9j/LN4eUZ2ozrt/3QvGqJrlY0sxtae
-G7uwg4aIZ3Qnrye68pBEMOL4ZhNvqDI8mSuN2JI/uMngAM14t9U=
-=ZKr3
------END PGP SIGNATURE-----
-
---vnowmshfru3jtffk--
+Bjorn
