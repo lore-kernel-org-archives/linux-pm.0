@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 6/6] PM / core: Drop run_wake flag from struct dev_pm_info
-Date: Mon, 19 Jun 2017 23:37:33 +0200
-Message-ID: <1831898.nt9pKhSvh2@aspire.rjw.lan>
+Subject: [PATCH 3/6] PCI / PM: Drop pme_interrupt flag from struct pci_dev
+Date: Mon, 19 Jun 2017 23:34:47 +0200
+Message-ID: <1644843.vaX8zhTRDN@aspire.rjw.lan>
 References: <12296383.UdE5HVtyng@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59953 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:44796 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750903AbdFSVps (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2017 17:45:48 -0400
+        by vger.kernel.org with ESMTP id S1752082AbdFSVpu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Jun 2017 17:45:50 -0400
 In-Reply-To: <12296383.UdE5HVtyng@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,194 +19,238 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, 
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The run_wake flag in struct dev_pm_info is used to indicate whether
-or not the device is capable of generating remote wakeup signals at
-run time (or in the system working state), but the distinction
-between runtime remote wakeup and system wakeup signaling has always
-been rather artificial.  The only practical reason for it to exist
-at the core level was that ACPI and PCI treated those two cases
-differently, but that's not the case any more after recent changes.
+The pme_interrupt flag in struct pci_dev is set when PMEs generated
+by the device are going to be signaled via root port PME interrupts.
 
-For this reason, get rid of the run_wake flag and, when applicable,
-use device_set_wakeup_capable() and device_can_wakeup() instead of
-device_set_run_wake() and device_run_wake(), respectively.
+Ironically enough, that information is only used by the code setting
+up device wakeup through ACPI which returns as soon as it sees the
+pme_interrupt flag set while setting up "remote runtime wakeup".
+That is questionable, however, because in theory there may be PCIe
+devices using out-of-band PME signaling under root ports handled
+by the native PME code.  For such devices, ACPI wakeup should be
+set up regardless of whether or not native PME signaling is used
+in general.
+
+For this reason, drop the pme_interrupt flag and rework the code
+using it which then allows the ACPI-based device wakeup handling
+in PCI to be consolidated to use one code path for both "runtime
+remote wakeup" and system wakeup (from sleep states).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/pci_root.c     |    5 ++---
- drivers/pci/pci-acpi.c      |    5 +----
- drivers/pci/pci.c           |    6 +++---
- drivers/pci/pcie/pme.c      |    2 +-
- drivers/usb/dwc3/dwc3-pci.c |    3 +--
- drivers/usb/host/uhci-pci.c |    2 +-
- include/linux/pm.h          |    1 -
- include/linux/pm_runtime.h  |   12 ------------
- 8 files changed, 9 insertions(+), 27 deletions(-)
+ drivers/acpi/device_pm.c |   10 +++++-
+ drivers/pci/pci-acpi.c   |   68 ++++++++++-------------------------------------
+ drivers/pci/pcie/pme.c   |   14 ++++-----
+ include/acpi/acpi_bus.h  |    5 +++
+ include/linux/pci.h      |    1 
+ 5 files changed, 34 insertions(+), 64 deletions(-)
 
-Index: linux-pm/include/linux/pm.h
+Index: linux-pm/include/linux/pci.h
 ===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -584,7 +584,6 @@ struct dev_pm_info {
- 	unsigned int		idle_notification:1;
- 	unsigned int		request_pending:1;
- 	unsigned int		deferred_resume:1;
--	unsigned int		run_wake:1;
- 	unsigned int		runtime_auto:1;
- 	bool			ignore_children:1;
- 	unsigned int		no_callbacks:1;
-Index: linux-pm/include/linux/pm_runtime.h
-===================================================================
---- linux-pm.orig/include/linux/pm_runtime.h
-+++ linux-pm/include/linux/pm_runtime.h
-@@ -76,16 +76,6 @@ static inline void pm_runtime_put_noidle
- 	atomic_add_unless(&dev->power.usage_count, -1, 0);
- }
- 
--static inline bool device_run_wake(struct device *dev)
--{
--	return dev->power.run_wake;
--}
--
--static inline void device_set_run_wake(struct device *dev, bool enable)
--{
--	dev->power.run_wake = enable;
--}
--
- static inline bool pm_runtime_suspended(struct device *dev)
- {
- 	return dev->power.runtime_status == RPM_SUSPENDED
-@@ -163,8 +153,6 @@ static inline void pm_runtime_forbid(str
- static inline void pm_suspend_ignore_children(struct device *dev, bool enable) {}
- static inline void pm_runtime_get_noresume(struct device *dev) {}
- static inline void pm_runtime_put_noidle(struct device *dev) {}
--static inline bool device_run_wake(struct device *dev) { return false; }
--static inline void device_set_run_wake(struct device *dev, bool enable) {}
- static inline bool pm_runtime_suspended(struct device *dev) { return false; }
- static inline bool pm_runtime_active(struct device *dev) { return true; }
- static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
-Index: linux-pm/drivers/acpi/pci_root.c
-===================================================================
---- linux-pm.orig/drivers/acpi/pci_root.c
-+++ linux-pm/drivers/acpi/pci_root.c
-@@ -608,8 +608,7 @@ static int acpi_pci_root_add(struct acpi
- 		pcie_no_aspm();
- 
- 	pci_acpi_add_bus_pm_notifier(device);
--	if (device->wakeup.flags.valid)
--		device_set_run_wake(root->bus->bridge, true);
-+	device_set_wakeup_capable(root->bus->bridge, device->wakeup.flags.valid);
- 
- 	if (hotadd) {
- 		pcibios_resource_survey_bus(root->bus);
-@@ -649,7 +648,7 @@ static void acpi_pci_root_remove(struct
- 	pci_stop_root_bus(root->bus);
- 
- 	pci_ioapic_remove(root);
--	device_set_run_wake(root->bus->bridge, false);
-+	device_set_wakeup_capable(root->bus->bridge, false);
- 	pci_acpi_remove_bus_pm_notifier(device);
- 
- 	pci_remove_root_bus(root->bus);
+--- linux-pm.orig/include/linux/pci.h
++++ linux-pm/include/linux/pci.h
+@@ -307,7 +307,6 @@ struct pci_dev {
+ 	u8		pm_cap;		/* PM capability offset */
+ 	unsigned int	pme_support:5;	/* Bitmask of states from which PME#
+ 					   can be generated */
+-	unsigned int	pme_interrupt:1;
+ 	unsigned int	pme_poll:1;	/* Poll device's PME status bit */
+ 	unsigned int	d1_support:1;	/* Low power state D1 is supported */
+ 	unsigned int	d2_support:1;	/* Low power state D2 is supported */
 Index: linux-pm/drivers/pci/pci-acpi.c
 ===================================================================
 --- linux-pm.orig/drivers/pci/pci-acpi.c
 +++ linux-pm/drivers/pci/pci-acpi.c
-@@ -739,7 +739,6 @@ static void pci_acpi_setup(struct device
- 		return;
+@@ -570,67 +570,29 @@ static pci_power_t acpi_pci_get_power_st
+ 	return state_conv[state];
+ }
+ 
+-static bool acpi_pci_can_wakeup(struct pci_dev *dev)
+-{
+-	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
+-	return adev ? acpi_device_can_wakeup(adev) : false;
+-}
+-
+-static void acpi_pci_propagate_wakeup_enable(struct pci_bus *bus, bool enable)
++static int acpi_pci_propagate_wakeup(struct pci_bus *bus, bool enable)
+ {
+ 	while (bus->parent) {
+-		if (!acpi_pm_device_wakeup(&bus->self->dev, enable))
+-			return;
+-		bus = bus->parent;
+-	}
++		if (acpi_pm_device_can_wakeup(&bus->self->dev))
++			return acpi_pm_device_wakeup(&bus->self->dev, enable);
+ 
+-	/* We have reached the root bus. */
+-	if (bus->bridge)
+-		acpi_pm_device_wakeup(bus->bridge, enable);
+-}
+-
+-static int acpi_pci_sleep_wake(struct pci_dev *dev, bool enable)
+-{
+-	if (acpi_pci_can_wakeup(dev))
+-		return acpi_pm_device_wakeup(&dev->dev, enable);
+-
+-	acpi_pci_propagate_wakeup_enable(dev->bus, enable);
+-	return 0;
+-}
+-
+-static void acpi_pci_propagate_run_wake(struct pci_bus *bus, bool enable)
+-{
+-	while (bus->parent) {
+-		struct pci_dev *bridge = bus->self;
+-
+-		if (bridge->pme_interrupt)
+-			return;
+-		if (!acpi_pm_device_wakeup(&bridge->dev, enable))
+-			return;
+ 		bus = bus->parent;
+ 	}
+ 
+ 	/* We have reached the root bus. */
+-	if (bus->bridge)
+-		acpi_pm_device_wakeup(bus->bridge, enable);
++	if (bus->bridge) {
++		if (acpi_pm_device_can_wakeup(bus->bridge))
++			return acpi_pm_device_wakeup(bus->bridge, enable);
++	}
++	return 0;
+ }
+ 
+-static int acpi_pci_run_wake(struct pci_dev *dev, bool enable)
++static int acpi_pci_wakeup(struct pci_dev *dev, bool enable)
+ {
+-	/*
+-	 * Per PCI Express Base Specification Revision 2.0 section
+-	 * 5.3.3.2 Link Wakeup, platform support is needed for D3cold
+-	 * waking up to power on the main link even if there is PME
+-	 * support for D3cold
+-	 */
+-	if (dev->pme_interrupt && !dev->runtime_d3cold)
+-		return 0;
+-
+-	if (!acpi_pm_device_wakeup(&dev->dev, enable))
+-		return 0;
++	if (acpi_pm_device_can_wakeup(&dev->dev))
++		return acpi_pm_device_wakeup(&dev->dev, enable);
+ 
+-	acpi_pci_propagate_run_wake(dev->bus, enable);
+-	return 0;
++	return acpi_pci_propagate_wakeup(dev->bus, enable);
+ }
+ 
+ static bool acpi_pci_need_resume(struct pci_dev *dev)
+@@ -654,8 +616,8 @@ static const struct pci_platform_pm_ops
+ 	.set_state = acpi_pci_set_power_state,
+ 	.get_state = acpi_pci_get_power_state,
+ 	.choose_state = acpi_pci_choose_state,
+-	.sleep_wake = acpi_pci_sleep_wake,
+-	.run_wake = acpi_pci_run_wake,
++	.sleep_wake = acpi_pci_wakeup,
++	.run_wake = acpi_pci_wakeup,
+ 	.need_resume = acpi_pci_need_resume,
+ };
+ 
+@@ -779,7 +741,7 @@ static void pci_acpi_setup(struct device
  
  	device_set_wakeup_capable(dev, true);
--	device_set_run_wake(dev, true);
- 	acpi_pci_wakeup(pci_dev, false);
+ 	device_set_run_wake(dev, true);
+-	acpi_pci_sleep_wake(pci_dev, false);
++	acpi_pci_wakeup(pci_dev, false);
  }
  
-@@ -751,10 +750,8 @@ static void pci_acpi_cleanup(struct devi
- 		return;
- 
- 	pci_acpi_remove_pm_notifier(adev);
--	if (adev->wakeup.flags.valid) {
-+	if (adev->wakeup.flags.valid)
- 		device_set_wakeup_capable(dev, false);
--		device_set_run_wake(dev, false);
--	}
- }
- 
- static bool pci_acpi_bus_match(struct device *dev)
+ static void pci_acpi_cleanup(struct device *dev)
 Index: linux-pm/drivers/pci/pcie/pme.c
 ===================================================================
 --- linux-pm.orig/drivers/pci/pcie/pme.c
 +++ linux-pm/drivers/pci/pcie/pme.c
-@@ -300,7 +300,7 @@ static irqreturn_t pcie_pme_irq(int irq,
+@@ -294,31 +294,29 @@ static irqreturn_t pcie_pme_irq(int irq,
+ }
+ 
+ /**
+- * pcie_pme_set_native - Set the PME interrupt flag for given device.
++ * pcie_pme_can_wakeup - Set the wakeup capability flag.
+  * @dev: PCI device to handle.
+  * @ign: Ignored.
   */
- static int pcie_pme_can_wakeup(struct pci_dev *dev, void *ign)
+-static int pcie_pme_set_native(struct pci_dev *dev, void *ign)
++static int pcie_pme_can_wakeup(struct pci_dev *dev, void *ign)
  {
--	device_set_run_wake(&dev->dev, true);
-+	device_set_wakeup_capable(&dev->dev, true);
+ 	device_set_run_wake(&dev->dev, true);
+-	dev->pme_interrupt = true;
  	return 0;
  }
  
-Index: linux-pm/drivers/usb/dwc3/dwc3-pci.c
-===================================================================
---- linux-pm.orig/drivers/usb/dwc3/dwc3-pci.c
-+++ linux-pm/drivers/usb/dwc3/dwc3-pci.c
-@@ -230,7 +230,6 @@ static int dwc3_pci_probe(struct pci_dev
- 	}
- 
- 	device_init_wakeup(dev, true);
--	device_set_run_wake(dev, true);
- 	pci_set_drvdata(pci, dwc);
- 	pm_runtime_put(dev);
- 
-@@ -310,7 +309,7 @@ static int dwc3_pci_runtime_suspend(stru
+ /**
+- * pcie_pme_mark_devices - Set the PME interrupt flag for devices below a port.
++ * pcie_pme_mark_devices - Set the wakeup flag for devices below a port.
+  * @port: PCIe root port or event collector to handle.
+  *
+  * For each device below given root port, including the port itself (or for each
+  * root complex integrated endpoint if @port is a root complex event collector)
+- * set the flag indicating that it can signal run-time wake-up events via PCIe
+- * PME interrupts.
++ * set the flag indicating that it can signal run-time wake-up events.
+  */
+ static void pcie_pme_mark_devices(struct pci_dev *port)
  {
- 	struct dwc3_pci		*dwc = dev_get_drvdata(dev);
- 
--	if (device_run_wake(dev))
-+	if (device_can_wakeup(dev))
- 		return dwc3_pci_dsm(dwc, PCI_INTEL_BXT_STATE_D3);
- 
- 	return -EBUSY;
-Index: linux-pm/drivers/usb/host/uhci-pci.c
-===================================================================
---- linux-pm.orig/drivers/usb/host/uhci-pci.c
-+++ linux-pm/drivers/usb/host/uhci-pci.c
-@@ -131,7 +131,7 @@ static int uhci_pci_init(struct usb_hcd
- 
- 	/* Intel controllers use non-PME wakeup signalling */
- 	if (to_pci_dev(uhci_dev(uhci))->vendor == PCI_VENDOR_ID_INTEL)
--		device_set_run_wake(uhci_dev(uhci), 1);
-+		device_set_wakeup_capable(uhci_dev(uhci), true);
- 
- 	/* Set up pointers to PCI-specific functions */
- 	uhci->reset_hc = uhci_pci_reset_hc;
-Index: linux-pm/drivers/pci/pci.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci.c
-+++ linux-pm/drivers/pci/pci.c
-@@ -2105,7 +2105,7 @@ bool pci_dev_run_wake(struct pci_dev *de
- {
- 	struct pci_bus *bus = dev->bus;
- 
--	if (device_run_wake(&dev->dev))
-+	if (device_can_wakeup(&dev->dev))
- 		return true;
- 
- 	if (!dev->pme_support)
-@@ -2118,7 +2118,7 @@ bool pci_dev_run_wake(struct pci_dev *de
- 	while (bus->parent) {
- 		struct pci_dev *bridge = bus->self;
- 
--		if (device_run_wake(&bridge->dev))
-+		if (device_can_wakeup(&bridge->dev))
- 			return true;
- 
- 		bus = bus->parent;
-@@ -2126,7 +2126,7 @@ bool pci_dev_run_wake(struct pci_dev *de
- 
- 	/* We have reached the root bus. */
- 	if (bus->bridge)
--		return device_run_wake(bus->bridge);
-+		return device_can_wakeup(bus->bridge);
- 
- 	return false;
+-	pcie_pme_set_native(port, NULL);
++	pcie_pme_can_wakeup(port, NULL);
+ 	if (port->subordinate)
+-		pci_walk_bus(port->subordinate, pcie_pme_set_native, NULL);
++		pci_walk_bus(port->subordinate, pcie_pme_can_wakeup, NULL);
  }
+ 
+ /**
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -496,6 +496,13 @@ bool acpi_bus_can_wakeup(acpi_handle han
+ }
+ EXPORT_SYMBOL(acpi_bus_can_wakeup);
+ 
++bool acpi_pm_device_can_wakeup(struct device *dev)
++{
++	struct acpi_device *adev = ACPI_COMPANION(dev);
++
++	return adev ? acpi_device_can_wakeup(adev) : false;
++}
++
+ /**
+  * acpi_dev_pm_get_state - Get preferred power state of ACPI device.
+  * @dev: Device whose preferred target power state to return.
+@@ -737,8 +744,7 @@ int acpi_pm_device_wakeup(struct device
+ 
+ 	error = acpi_device_wakeup(adev, acpi_target_system_state(), enable);
+ 	if (!error)
+-		dev_dbg(dev, "Wakeup %s by ACPI\n",
+-			enable ? "enabled" : "disabled");
++		dev_dbg(dev, "Wakeup %s by ACPI\n", enable ? "enabled" : "disabled");
+ 
+ 	return error;
+ }
+Index: linux-pm/include/acpi/acpi_bus.h
+===================================================================
+--- linux-pm.orig/include/acpi/acpi_bus.h
++++ linux-pm/include/acpi/acpi_bus.h
+@@ -601,6 +601,7 @@ void acpi_pm_wakeup_event(struct device
+ acpi_status acpi_add_pm_notifier(struct acpi_device *adev, struct device *dev,
+ 			void (*func)(struct acpi_device_wakeup_context *context));
+ acpi_status acpi_remove_pm_notifier(struct acpi_device *adev);
++bool acpi_pm_device_can_wakeup(struct device *dev);
+ int acpi_pm_device_sleep_state(struct device *, int *, int);
+ int acpi_pm_device_wakeup(struct device *dev, bool enable);
+ #else
+@@ -617,6 +618,10 @@ static inline acpi_status acpi_remove_pm
+ {
+ 	return AE_SUPPORT;
+ }
++static inline bool acpi_pm_device_can_wakeup(struct device *dev)
++{
++	return false;
++}
+ static inline int acpi_pm_device_sleep_state(struct device *d, int *p, int m)
+ {
+ 	if (p)
