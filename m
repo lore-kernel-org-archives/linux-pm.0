@@ -1,131 +1,98 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH 2/2] Input: pm8941-pwrkey: Introduce reboot mode support
-Date: Tue, 20 Jun 2017 16:27:07 +0200
-Message-ID: <20170620142707.wbfma6jbe5rmuw4d@earth>
-References: <20170527065130.3456-1-bjorn.andersson@linaro.org>
- <20170527065130.3456-2-bjorn.andersson@linaro.org>
- <20170530025324.GD32841@dtor-ws>
- <20170530044711.GP12920@tuxbook>
- <20170608163243.j4dfpa6swoz27ofd@earth>
- <20170612233203.GT12920@tuxbook>
- <20170615162657.dgjsriesdzlqwzux@earth>
- <20170615183342.GX12920@tuxbook>
- <CAL_JsqJAErTqmfYXPReWpOsCnOi8b8u+Uk8mgB-BT3sksC8rFw@mail.gmail.com>
+From: Benjamin Gaignard <benjamin.gaignard-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 00/51] rtc: stop using rtc deprecated functions
+Date: Tue, 20 Jun 2017 17:07:46 +0200
+Message-ID: <CA+M3ks68+z6nDtYM8CDpso7SxjB6Nt5E=rOc1yxx=kDz6PUeVQ@mail.gmail.com>
+References: <1497951359-13334-1-git-send-email-benjamin.gaignard@linaro.org>
+ <20170620100348.zh4ygvjjgnhxvmvl@piout.net> <20170620121011.GA13221@amd>
+ <20170620122400.sm7qqvwyj6cuzarw@piout.net> <20170620132620.GA16881@amd>
+ <6ED8E3B22081A4459DAC7699F3695FB7018CD96FCD@SW-EX-MBX02.diasemi.com>
+ <20170620134458.GA10104@amd> <20170620134827.ubvzhh25klaotupv@piout.net>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="aopeqpabdxkkrkdt"
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAL_JsqJAErTqmfYXPReWpOsCnOi8b8u+Uk8mgB-BT3sksC8rFw@mail.gmail.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Bjorn Andersson <bjorn.andersson@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, John Stultz <john.stultz@linaro.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <rtc-linux+bncBDKNBMNKRMJRBQ7UUTFAKGQEHT67STY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20170620134827.ubvzhh25klaotupv-m++hUPXGwpdeoWH0uzbU5w@public.gmane.org>
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "adi-buildroot-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org" <adi-buildroot-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Michael Chan <michael.chan-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, "netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org" <rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Support Opensource <Support.Opensource@diasemi.>
 List-Id: linux-pm@vger.kernel.org
 
+2017-06-20 15:48 GMT+02:00 Alexandre Belloni
+<alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>:
+> On 20/06/2017 at 15:44:58 +0200, Pavel Machek wrote:
+>> On Tue 2017-06-20 13:37:22, Steve Twiss wrote:
+>> > Hi Pavel,
+>> >
+>> > On 20 June 2017 14:26, Pavel Machek wrote:
+>> >
+>> > > Subject: Re: [PATCH 00/51] rtc: stop using rtc deprecated functions
+>> > >
+>> > > On Tue 2017-06-20 14:24:00, Alexandre Belloni wrote:
+>> > > > On 20/06/2017 at 14:10:11 +0200, Pavel Machek wrote:
+>> > > > > On Tue 2017-06-20 12:03:48, Alexandre Belloni wrote:
+>> > > > > > On 20/06/2017 at 11:35:08 +0200, Benjamin Gaignard wrote:
+>> > > > > > > rtc_time_to_tm() and rtc_tm_to_time() are deprecated because they
+>> > > > > > > rely on 32bits variables and that will make rtc break in y2038/2016.
+>> > > > > >
+>> > > > > > Please don't, because this hide the fact that the hardware will not
+>> > > > > > handle dates in y2038 anyway and as pointed by Russell a few month ago,
+>> > > > > > rtc_time_to_tm will be able to catch it but the 64 bit version will
+>> > > > > > silently ignore it.
+>> > > > >
+>> > > > > Reference? Because rtc on PCs stores date in binary coded decimal, so
+>> > > > > it is likely to break in 2100, not 2038...
+>> > > >
+>> > > > I'm not saying it should be done but clearly, that is not the correct
+>> > > > thing to do for RTCs that are using a single 32 bits register to store
+>> > > > the time.
+>> > > > You give one example, I can give you three: armada38x, at91sam9,
+>> > > > at32ap700x and that just in the beginning of the series.
+>> > >
+>> > > I wanted reference to Russell's mail.
+>> >
+>> > This is it.
+>> > https://patchwork.kernel.org/patch/6219401/
+>>
+>> Thanks.
+>>
+>> Yes, that's argument against changing rtc _drivers_ for hardware that
+>> can not do better than 32bit. For generic code (such as 44/51 sysfs,
+>> 51/51 suspend test), the change still makes sense.
 
---aopeqpabdxkkrkdt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+What I had in mind when writing those patches was to remove the limitations
+coming from those functions usage, even more since they been marked has
+deprecated.
 
-Hi,
+I agree that will change nothing of hardware limitation but at least
+the limit will
+not come from the framework.
 
-On Thu, Jun 15, 2017 at 04:38:34PM -0500, Rob Herring wrote:
-> On Thu, Jun 15, 2017 at 1:33 PM, Bjorn Andersson
-> <bjorn.andersson@linaro.org> wrote:
-> > On Thu 15 Jun 09:26 PDT 2017, Sebastian Reichel wrote:
-> >
-> >> Hi,
-> >>
-> >> On Mon, Jun 12, 2017 at 04:32:03PM -0700, Bjorn Andersson wrote:
-> > [..]
-> >> > As such if we split the non-input related handling into another driv=
-er
-> >> > we would need to make the input driver create a subdevice during pro=
-be -
-> >> > or create a new pon-driver with a new compatible that internally spa=
-wns
-> >> > the pwrkey driver. Neither seems desirable to me...
-> >>
-> >> The pon-driver would have been the proper solution, but with the
-> >> binding already being defined that's no longer a nice option :(
-> >>
-> >
-> > We have a binding for the "qcom,pm8941-pwrkey", but as long as we
-> > maintain the compatibility in the input driver with this we could come
-> > up with a new binding for the "pon" block.
->=20
-> Yes. My only objection was having the pon node with child devices
-> purely because that is how Linux splits the driver.
+>>
+>
+> Yes, we agree on that but I won't cherry pick working patches from a 51
+> patches series.
 
+maybe only the acked ones ?
 
-So maybe 'compatible =3D "qcom,pm8041-pon", "qcom,pm8941-pwrkey";'
-with pm8941-pwrkey being marked as deprecated in the binding?
+>
+>
+> --
+> Alexandre Belloni, Free Electrons
+> Embedded Linux and Kernel engineering
+> http://free-electrons.com
 
-> >> > The features of the PON block not yet shown on LKML are status regis=
-ters
-> >> > to indicate the reason for powering up the PMIC and a watchdog (whic=
-h I
-> >> > don't believe is used or exposed today).
-> >>
-> >> So we have a block, which has watchdog, powerdown, reboot, boot-reason,
-> >> reboot-mode and power key. To me that does not look like it should be
-> >> one driver.
-> >>
-> >
-> > Unfortunately I do agree with this.
->=20
-> As do I. But that is a separate decision from DT bindings.
-
-not much of a discussion if everyone agrees? :)
-
-> > It would make sense to describe the pon in a single DT-node and have a
-> > pon-driver spawning off individual driver for each functionality. That
-> > way we get a clean representation in DT and we get clean implementation
-> > of each component...
->=20
-> My objection here is we should not just create child nodes to align
-> with current Linux driver needs.
-
-Ack.
-
-> That said, child nodes do sometimes make sense. If, for example,
-> the key function was not fixed and you needed to configure what
-> key function is used, then probably a child node makes sense.
-
-Ack.
-
-> It's always possible to add child nodes later without breaking
-> compatibility. It's hard to remove them.
-
-I don't think so. Adding a child node means, that we want to do
-something based on the existance of this child node. So something,
-that worked without the child node before no longer works
-afterwards.
-
-OTOH removing a child node means, that the child node is not needed
-and stuff will work without it =3D> system still works.
-
--- Sebastian
-
---aopeqpabdxkkrkdt
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllJMLkACgkQ2O7X88g7
-+ppTRBAAgp1/8zw9YUg6zgPCPUivy2EzODgsf/aYbrlU6+2UoBMghVwi+lvq3ZsE
-MaLcO8Bhz9C5VQoaQcNwn3qnCRqySUnjM8//e4Prmu72OCfRYWoUek4vhn4MLP04
-5+CUtOfkMJf97iZJJzuW1wcMoV21Sb3wmJfMzpNHLQ4EtH30TOTE0Id072lfpsSN
-ceTaWJyq+aG0fTYqIYm6LNm9SQ+gCCdgeyuesVJ5qk6TcWfgJE7V2Y0u3oz6A6cM
-cK0qG08WWYqiQmlLdS/+Qzr7HoX5SsMew54JC22NWWhxuAiVYOggtdbonfKdMM5J
-CZr6cCUcrPSnSLjNxwrth0U3wDEKBCIRMpzPyhivhO/szRztuVmJ0S3XOOpRQ57j
-DUIwCqe5TVyKKN/pz0afIMahICLNGcoVpJFFV/HYdTKo0jt2OA5YEG+lTHdu4Xke
-+Yp68C6AGd7+lH3URlviTnP8SDAXLs44Uk1RNL5Swk/1pT9DHxeENJY/OVmWUvEW
-qp+xzXCMxugxTF5P/+4PW+xhVZm0n0H4qY50pY6olpO0lcBT+QZfBv3BkAU2LLzB
-ujBh9QvUz4h1qcCysO2r3v+5YUwKsu1zFjc+zKLPI+zljCDcCuphRktqnNfdTTSU
-778bthqE5D9s5FOSJGMQbV+wcuQOtEBV5/0LeA6s8cC5BKxtapE=
-=Wbm4
------END PGP SIGNATURE-----
-
---aopeqpabdxkkrkdt--
+-- 
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
