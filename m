@@ -1,96 +1,248 @@
-From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Subject: Re: [PATCH 00/51] rtc: stop using rtc deprecated functions
-Date: Wed, 21 Jun 2017 00:08:05 +0200
-Message-ID: <20170620220805.GA11195@amd>
-References: <1497951359-13334-1-git-send-email-benjamin.gaignard@linaro.org>
- <20170620100348.zh4ygvjjgnhxvmvl@piout.net>
- <20170620121011.GA13221@amd>
- <20170620122400.sm7qqvwyj6cuzarw@piout.net>
- <20170620132620.GA16881@amd>
- <6ED8E3B22081A4459DAC7699F3695FB7018CD96FCD@SW-EX-MBX02.diasemi.com>
- <20170620134458.GA10104@amd>
- <20170620134827.ubvzhh25klaotupv@piout.net>
- <CA+M3ks68+z6nDtYM8CDpso7SxjB6Nt5E=rOc1yxx=kDz6PUeVQ@mail.gmail.com>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [Update][PATCH 4/6] PCI / PM: Simplify device wakeup settings code
+Date: Wed, 21 Jun 2017 00:23:22 +0200
+Message-ID: <3503310.PpLX01x4gZ@aspire.rjw.lan>
+References: <12296383.UdE5HVtyng@aspire.rjw.lan> <6082855.gb7lhtNroi@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="n8g4imXOkfNTN/H1"
-Return-path: <rtc-linux+bncBDZKLXNI4ACBBRVZU3FAKGQE6MKYZEI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <CA+M3ks68+z6nDtYM8CDpso7SxjB6Nt5E=rOc1yxx=kDz6PUeVQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Benjamin Gaignard <benjamin.gaignard-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "adi-buildroot-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org" <adi-buildroot-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Michael Chan <michael.chan-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, "netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org" <rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Support Opensource <Support>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <6082855.gb7lhtNroi@aspire.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---n8g4imXOkfNTN/H1
-Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
+After previous changes it is not necessary to distinguish between
+device wakeup for run time and device wakeup from system sleep states
+any more, so rework the PCI device wakeup settings code accordingly.
 
-Hi!
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-> >> > This is it.
-> >> > https://patchwork.kernel.org/patch/6219401/
-> >>
-> >> Thanks.
-> >>
-> >> Yes, that's argument against changing rtc _drivers_ for hardware that
-> >> can not do better than 32bit. For generic code (such as 44/51 sysfs,
-> >> 51/51 suspend test), the change still makes sense.
-> 
-> What I had in mind when writing those patches was to remove the limitations
-> coming from those functions usage, even more since they been marked has
-> deprecated.
-> 
-> I agree that will change nothing of hardware limitation but at least
-> the limit will
-> not come from the framework.
+Updated to fix a build issue in pci-mid.c reported by 0-day.
 
-> > Yes, we agree on that but I won't cherry pick working patches from a 51
-> > patches series.
+---
+ drivers/pci/pci-acpi.c   |    3 +--
+ drivers/pci/pci-driver.c |    2 +-
+ drivers/pci/pci-mid.c    |   10 ++--------
+ drivers/pci/pci.c        |   36 ++++++++++--------------------------
+ drivers/pci/pci.h        |    9 ++-------
+ include/linux/pci.h      |    9 +--------
+ 6 files changed, 17 insertions(+), 52 deletions(-)
 
-Well, it would be actually nice for you to do the cherry
-picking. That's something maintainers do, because it is hard for
-contributors to guess maintainer's taste.
-
-Anyway, it looks like someone should go through all the RTC drivers,
-and document their limitations of each driver (date in future when
-hardware ceases to be useful). If Benjamin has time to do that, I
-guess that removes all the objections to the series.
-
-Regards,
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
--- 
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
---- 
-You received this message because you are subscribed to the Google Groups "rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
-
---n8g4imXOkfNTN/H1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAllJnMUACgkQMOfwapXb+vIDOQCfQnx1NT5fMvO6eGcya2neg3Lo
-GpwAnjYOvRGs1DnaiYvc81U6VGXY+VxJ
-=OI7P
------END PGP SIGNATURE-----
-
---n8g4imXOkfNTN/H1--
+Index: linux-pm/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-acpi.c
++++ linux-pm/drivers/pci/pci-acpi.c
+@@ -616,8 +616,7 @@ static const struct pci_platform_pm_ops
+ 	.set_state = acpi_pci_set_power_state,
+ 	.get_state = acpi_pci_get_power_state,
+ 	.choose_state = acpi_pci_choose_state,
+-	.sleep_wake = acpi_pci_wakeup,
+-	.run_wake = acpi_pci_wakeup,
++	.set_wakeup = acpi_pci_wakeup,
+ 	.need_resume = acpi_pci_need_resume,
+ };
+ 
+Index: linux-pm/drivers/pci/pci.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci.c
++++ linux-pm/drivers/pci/pci.c
+@@ -574,8 +574,7 @@ static const struct pci_platform_pm_ops
+ int pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
+ {
+ 	if (!ops->is_manageable || !ops->set_state  || !ops->get_state ||
+-	    !ops->choose_state  || !ops->sleep_wake || !ops->run_wake  ||
+-	    !ops->need_resume)
++	    !ops->choose_state  || !ops->set_wakeup || !ops->need_resume)
+ 		return -EINVAL;
+ 	pci_platform_pm = ops;
+ 	return 0;
+@@ -603,16 +602,10 @@ static inline pci_power_t platform_pci_c
+ 			pci_platform_pm->choose_state(dev) : PCI_POWER_ERROR;
+ }
+ 
+-static inline int platform_pci_sleep_wake(struct pci_dev *dev, bool enable)
++static inline int platform_pci_set_wakeup(struct pci_dev *dev, bool enable)
+ {
+ 	return pci_platform_pm ?
+-			pci_platform_pm->sleep_wake(dev, enable) : -ENODEV;
+-}
+-
+-static inline int platform_pci_run_wake(struct pci_dev *dev, bool enable)
+-{
+-	return pci_platform_pm ?
+-			pci_platform_pm->run_wake(dev, enable) : -ENODEV;
++			pci_platform_pm->set_wakeup(dev, enable) : -ENODEV;
+ }
+ 
+ static inline bool platform_pci_need_resume(struct pci_dev *dev)
+@@ -1889,10 +1882,9 @@ void pci_pme_active(struct pci_dev *dev,
+ EXPORT_SYMBOL(pci_pme_active);
+ 
+ /**
+- * __pci_enable_wake - enable PCI device as wakeup event source
++ * pci_enable_wake - enable PCI device as wakeup event source
+  * @dev: PCI device affected
+  * @state: PCI state from which device will issue wakeup events
+- * @runtime: True if the events are to be generated at run time
+  * @enable: True to enable event generation; false to disable
+  *
+  * This enables the device as a wakeup event source, or disables it.
+@@ -1908,14 +1900,10 @@ EXPORT_SYMBOL(pci_pme_active);
+  * Error code depending on the platform is returned if both the platform and
+  * the native mechanism fail to enable the generation of wake-up events
+  */
+-int __pci_enable_wake(struct pci_dev *dev, pci_power_t state,
+-		      bool runtime, bool enable)
++int pci_enable_wake(struct pci_dev *dev, pci_power_t state, bool enable)
+ {
+ 	int ret = 0;
+ 
+-	if (enable && !runtime && !device_may_wakeup(&dev->dev))
+-		return -EINVAL;
+-
+ 	/*
+ 	 * Don't do the same thing twice in a row for one device, but restore
+ 	 * PME Enable in case it has been updated by config space restoration.
+@@ -1938,24 +1926,20 @@ int __pci_enable_wake(struct pci_dev *de
+ 			pci_pme_active(dev, true);
+ 		else
+ 			ret = 1;
+-		error = runtime ? platform_pci_run_wake(dev, true) :
+-					platform_pci_sleep_wake(dev, true);
++		error = platform_pci_set_wakeup(dev, true);
+ 		if (ret)
+ 			ret = error;
+ 		if (!ret)
+ 			dev->wakeup_prepared = true;
+ 	} else {
+-		if (runtime)
+-			platform_pci_run_wake(dev, false);
+-		else
+-			platform_pci_sleep_wake(dev, false);
++		platform_pci_set_wakeup(dev, false);
+ 		pci_pme_active(dev, false);
+ 		dev->wakeup_prepared = false;
+ 	}
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL(__pci_enable_wake);
++EXPORT_SYMBOL(pci_enable_wake);
+ 
+ /**
+  * pci_wake_from_d3 - enable/disable device to wake up from D3_hot or D3_cold
+@@ -2097,12 +2081,12 @@ int pci_finish_runtime_suspend(struct pc
+ 
+ 	dev->runtime_d3cold = target_state == PCI_D3cold;
+ 
+-	__pci_enable_wake(dev, target_state, true, pci_dev_run_wake(dev));
++	pci_enable_wake(dev, target_state, pci_dev_run_wake(dev));
+ 
+ 	error = pci_set_power_state(dev, target_state);
+ 
+ 	if (error) {
+-		__pci_enable_wake(dev, target_state, true, false);
++		pci_enable_wake(dev, target_state, false);
+ 		dev->runtime_d3cold = false;
+ 	}
+ 
+Index: linux-pm/include/linux/pci.h
+===================================================================
+--- linux-pm.orig/include/linux/pci.h
++++ linux-pm/include/linux/pci.h
+@@ -1097,8 +1097,7 @@ int pci_set_power_state(struct pci_dev *
+ pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
+ bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
+ void pci_pme_active(struct pci_dev *dev, bool enable);
+-int __pci_enable_wake(struct pci_dev *dev, pci_power_t state,
+-		      bool runtime, bool enable);
++int pci_enable_wake(struct pci_dev *dev, pci_power_t state, bool enable);
+ int pci_wake_from_d3(struct pci_dev *dev, bool enable);
+ int pci_prepare_to_sleep(struct pci_dev *dev);
+ int pci_back_from_sleep(struct pci_dev *dev);
+@@ -1108,12 +1107,6 @@ void pci_pme_wakeup_bus(struct pci_bus *
+ void pci_d3cold_enable(struct pci_dev *dev);
+ void pci_d3cold_disable(struct pci_dev *dev);
+ 
+-static inline int pci_enable_wake(struct pci_dev *dev, pci_power_t state,
+-				  bool enable)
+-{
+-	return __pci_enable_wake(dev, state, false, enable);
+-}
+-
+ /* PCI Virtual Channel */
+ int pci_save_vc_state(struct pci_dev *dev);
+ void pci_restore_vc_state(struct pci_dev *dev);
+Index: linux-pm/drivers/pci/pci.h
+===================================================================
+--- linux-pm.orig/drivers/pci/pci.h
++++ linux-pm/drivers/pci/pci.h
+@@ -47,11 +47,7 @@ int pci_probe_reset_function(struct pci_
+  *                platform; to be used during system-wide transitions from a
+  *                sleeping state to the working state and vice versa
+  *
+- * @sleep_wake: enables/disables the system wake up capability of given device
+- *
+- * @run_wake: enables/disables the platform to generate run-time wake-up events
+- *		for given device (the device's wake-up capability has to be
+- *		enabled by @sleep_wake for this feature to work)
++ * @set_wakeup: enables/disables wakeup capability for the device
+  *
+  * @need_resume: returns 'true' if the given device (which is currently
+  *		suspended) needs to be resumed to be configured for system
+@@ -65,8 +61,7 @@ struct pci_platform_pm_ops {
+ 	int (*set_state)(struct pci_dev *dev, pci_power_t state);
+ 	pci_power_t (*get_state)(struct pci_dev *dev);
+ 	pci_power_t (*choose_state)(struct pci_dev *dev);
+-	int (*sleep_wake)(struct pci_dev *dev, bool enable);
+-	int (*run_wake)(struct pci_dev *dev, bool enable);
++	int (*set_wakeup)(struct pci_dev *dev, bool enable);
+ 	bool (*need_resume)(struct pci_dev *dev);
+ };
+ 
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -1216,7 +1216,7 @@ static int pci_pm_runtime_resume(struct
+ 
+ 	pci_restore_standard_config(pci_dev);
+ 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+-	__pci_enable_wake(pci_dev, PCI_D0, true, false);
++	pci_enable_wake(pci_dev, PCI_D0, false);
+ 	pci_fixup_device(pci_fixup_resume, pci_dev);
+ 
+ 	rc = pm->runtime_resume(dev);
+Index: linux-pm/drivers/pci/pci-mid.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-mid.c
++++ linux-pm/drivers/pci/pci-mid.c
+@@ -39,12 +39,7 @@ static pci_power_t mid_pci_choose_state(
+ 	return PCI_D3hot;
+ }
+ 
+-static int mid_pci_sleep_wake(struct pci_dev *dev, bool enable)
+-{
+-	return 0;
+-}
+-
+-static int mid_pci_run_wake(struct pci_dev *dev, bool enable)
++static int mid_pci_wakeup(struct pci_dev *dev, bool enable)
+ {
+ 	return 0;
+ }
+@@ -59,8 +54,7 @@ static const struct pci_platform_pm_ops
+ 	.set_state	= mid_pci_set_power_state,
+ 	.get_state	= mid_pci_get_power_state,
+ 	.choose_state	= mid_pci_choose_state,
+-	.sleep_wake	= mid_pci_sleep_wake,
+-	.run_wake	= mid_pci_run_wake,
++	.set_wakeup	= mid_pci_wakeup,
+ 	.need_resume	= mid_pci_need_resume,
+ };
+ 
