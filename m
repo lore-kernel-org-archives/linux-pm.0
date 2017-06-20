@@ -1,140 +1,131 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2] PM / Domains: Call driver's noirq callbacks
-Date: Tue, 20 Jun 2017 16:18:48 +0200
-Message-ID: <CAPDyKFr-e3rJ0XU8snbLVgz3vh=mtL787e4fyb=2GqnPa7rYfA@mail.gmail.com>
-References: <CAPDyKFpgXCwErOUBcXwOVycYpro6=-vxoQeGnTMwsn0ji8iXJQ@mail.gmail.com>
- <1497965895-11486-1-git-send-email-mperttunen@nvidia.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH 2/2] Input: pm8941-pwrkey: Introduce reboot mode support
+Date: Tue, 20 Jun 2017 16:27:07 +0200
+Message-ID: <20170620142707.wbfma6jbe5rmuw4d@earth>
+References: <20170527065130.3456-1-bjorn.andersson@linaro.org>
+ <20170527065130.3456-2-bjorn.andersson@linaro.org>
+ <20170530025324.GD32841@dtor-ws>
+ <20170530044711.GP12920@tuxbook>
+ <20170608163243.j4dfpa6swoz27ofd@earth>
+ <20170612233203.GT12920@tuxbook>
+ <20170615162657.dgjsriesdzlqwzux@earth>
+ <20170615183342.GX12920@tuxbook>
+ <CAL_JsqJAErTqmfYXPReWpOsCnOi8b8u+Uk8mgB-BT3sksC8rFw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f169.google.com ([209.85.216.169]:33223 "EHLO
-        mail-qt0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751102AbdFTOSz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2017 10:18:55 -0400
-Received: by mail-qt0-f169.google.com with SMTP id u12so134628979qth.0
-        for <linux-pm@vger.kernel.org>; Tue, 20 Jun 2017 07:18:54 -0700 (PDT)
-In-Reply-To: <1497965895-11486-1-git-send-email-mperttunen@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="aopeqpabdxkkrkdt"
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqJAErTqmfYXPReWpOsCnOi8b8u+Uk8mgB-BT3sksC8rFw@mail.gmail.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Bjorn Andersson <bjorn.andersson@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, John Stultz <john.stultz@linaro.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mikko Perttunen <mperttunen@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 20 June 2017 at 15:38, Mikko Perttunen <mperttunen@nvidia.com> wrote:
-> Currently genpd installs its own suspend_noirq, resume_noirq,
-> and poweroff_noirq callbacks, but never calls down to the driver's
-> corresponding callbacks. Add these calls.
->
-> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
-> ---
-> v2:
-> - Moved pm_generic_suspend_noirq to before pm_runtime_force_suspend,
->   and correspondingly pm_generic_resume_noirq after
->   pm_runtime_force_resume
-> - Added new pm_genpd_poweroff_noirq callback that is identical to
->   pm_genpd_suspend_noirq but calls the appropriate driver callback
->
->  drivers/base/power/domain.c | 50 ++++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 49 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index d3f1d96f75e9..b070ee58186d 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -919,6 +919,10 @@ static int pm_genpd_suspend_noirq(struct device *dev)
->         if (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev))
->                 return 0;
->
-> +       ret = pm_generic_suspend_noirq(dev);
-> +       if (ret)
-> +               return ret;
-> +
->         if (genpd->dev_ops.stop && genpd->dev_ops.start) {
->                 ret = pm_runtime_force_suspend(dev);
->                 if (ret)
-> @@ -961,6 +965,10 @@ static int pm_genpd_resume_noirq(struct device *dev)
->         if (genpd->dev_ops.stop && genpd->dev_ops.start)
->                 ret = pm_runtime_force_resume(dev);
->
-> +       ret = pm_generic_resume_noirq(dev);
-> +       if (ret)
-> +               return ret;
-> +
->         return ret;
->  }
->
-> @@ -1015,6 +1023,46 @@ static int pm_genpd_thaw_noirq(struct device *dev)
->  }
->
->  /**
-> + * pm_genpd_poweroff_noirq - Completion of hibernation of device in an
-> + *   I/O PM domain.
-> + * @dev: Device to poweroff.
-> + *
-> + * Stop the device and remove power from the domain if all devices in it have
-> + * been stopped.
-> + */
-> +static int pm_genpd_poweroff_noirq(struct device *dev)
-> +{
-> +       struct generic_pm_domain *genpd;
-> +       int ret;
-> +
-> +       dev_dbg(dev, "%s()\n", __func__);
-> +
-> +       genpd = dev_to_genpd(dev);
-> +       if (IS_ERR(genpd))
-> +               return -EINVAL;
-> +
-> +       if (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev))
-> +               return 0;
-> +
-> +       ret = pm_generic_poweroff_noirq(dev);
 
-The only difference between  pm_genpd_suspend_noirq() and
-pm_genpd_poweroff_noirq() is the above line. Can we re-factor the code
-so we avoid open code here, please.
+--aopeqpabdxkkrkdt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> +       if (ret)
-> +               return ret;
-> +
-> +       if (genpd->dev_ops.stop && genpd->dev_ops.start) {
-> +               ret = pm_runtime_force_suspend(dev);
-> +               if (ret)
-> +                       return ret;
-> +       }
-> +
-> +       genpd_lock(genpd);
-> +       genpd->suspended_count++;
-> +       genpd_sync_power_off(genpd, true, 0);
-> +       genpd_unlock(genpd);
-> +
-> +       return 0;
-> +}
-> +
-> +/**
->   * pm_genpd_restore_noirq - Start of restore of device in an I/O PM domain.
->   * @dev: Device to resume.
->   *
-> @@ -1493,7 +1541,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
->         genpd->domain.ops.resume_noirq = pm_genpd_resume_noirq;
->         genpd->domain.ops.freeze_noirq = pm_genpd_freeze_noirq;
->         genpd->domain.ops.thaw_noirq = pm_genpd_thaw_noirq;
-> -       genpd->domain.ops.poweroff_noirq = pm_genpd_suspend_noirq;
-> +       genpd->domain.ops.poweroff_noirq = pm_genpd_poweroff_noirq;
->         genpd->domain.ops.restore_noirq = pm_genpd_restore_noirq;
+Hi,
 
-The pm_genpd_restore_noirq() doesn't invokes the lower level
-->restore_noirq() callbacks. If you are going to change that for the
-*poweroff* callback, certainly we should change that also for the
-*restore* callbacks as well. Don't you think?
+On Thu, Jun 15, 2017 at 04:38:34PM -0500, Rob Herring wrote:
+> On Thu, Jun 15, 2017 at 1:33 PM, Bjorn Andersson
+> <bjorn.andersson@linaro.org> wrote:
+> > On Thu 15 Jun 09:26 PDT 2017, Sebastian Reichel wrote:
+> >
+> >> Hi,
+> >>
+> >> On Mon, Jun 12, 2017 at 04:32:03PM -0700, Bjorn Andersson wrote:
+> > [..]
+> >> > As such if we split the non-input related handling into another driv=
+er
+> >> > we would need to make the input driver create a subdevice during pro=
+be -
+> >> > or create a new pon-driver with a new compatible that internally spa=
+wns
+> >> > the pwrkey driver. Neither seems desirable to me...
+> >>
+> >> The pon-driver would have been the proper solution, but with the
+> >> binding already being defined that's no longer a nice option :(
+> >>
+> >
+> > We have a binding for the "qcom,pm8941-pwrkey", but as long as we
+> > maintain the compatibility in the input driver with this we could come
+> > up with a new binding for the "pon" block.
+>=20
+> Yes. My only objection was having the pon node with child devices
+> purely because that is how Linux splits the driver.
 
-Moreover, what about the freeze and thaw callbacks, should these also
-walk the lower level callbacks?
 
->         genpd->domain.ops.complete = pm_genpd_complete;
->
-> --
-> 2.1.4
->
+So maybe 'compatible =3D "qcom,pm8041-pon", "qcom,pm8941-pwrkey";'
+with pm8941-pwrkey being marked as deprecated in the binding?
 
-Kind regards
-Uffe
+> >> > The features of the PON block not yet shown on LKML are status regis=
+ters
+> >> > to indicate the reason for powering up the PMIC and a watchdog (whic=
+h I
+> >> > don't believe is used or exposed today).
+> >>
+> >> So we have a block, which has watchdog, powerdown, reboot, boot-reason,
+> >> reboot-mode and power key. To me that does not look like it should be
+> >> one driver.
+> >>
+> >
+> > Unfortunately I do agree with this.
+>=20
+> As do I. But that is a separate decision from DT bindings.
+
+not much of a discussion if everyone agrees? :)
+
+> > It would make sense to describe the pon in a single DT-node and have a
+> > pon-driver spawning off individual driver for each functionality. That
+> > way we get a clean representation in DT and we get clean implementation
+> > of each component...
+>=20
+> My objection here is we should not just create child nodes to align
+> with current Linux driver needs.
+
+Ack.
+
+> That said, child nodes do sometimes make sense. If, for example,
+> the key function was not fixed and you needed to configure what
+> key function is used, then probably a child node makes sense.
+
+Ack.
+
+> It's always possible to add child nodes later without breaking
+> compatibility. It's hard to remove them.
+
+I don't think so. Adding a child node means, that we want to do
+something based on the existance of this child node. So something,
+that worked without the child node before no longer works
+afterwards.
+
+OTOH removing a child node means, that the child node is not needed
+and stuff will work without it =3D> system still works.
+
+-- Sebastian
+
+--aopeqpabdxkkrkdt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllJMLkACgkQ2O7X88g7
++ppTRBAAgp1/8zw9YUg6zgPCPUivy2EzODgsf/aYbrlU6+2UoBMghVwi+lvq3ZsE
+MaLcO8Bhz9C5VQoaQcNwn3qnCRqySUnjM8//e4Prmu72OCfRYWoUek4vhn4MLP04
+5+CUtOfkMJf97iZJJzuW1wcMoV21Sb3wmJfMzpNHLQ4EtH30TOTE0Id072lfpsSN
+ceTaWJyq+aG0fTYqIYm6LNm9SQ+gCCdgeyuesVJ5qk6TcWfgJE7V2Y0u3oz6A6cM
+cK0qG08WWYqiQmlLdS/+Qzr7HoX5SsMew54JC22NWWhxuAiVYOggtdbonfKdMM5J
+CZr6cCUcrPSnSLjNxwrth0U3wDEKBCIRMpzPyhivhO/szRztuVmJ0S3XOOpRQ57j
+DUIwCqe5TVyKKN/pz0afIMahICLNGcoVpJFFV/HYdTKo0jt2OA5YEG+lTHdu4Xke
++Yp68C6AGd7+lH3URlviTnP8SDAXLs44Uk1RNL5Swk/1pT9DHxeENJY/OVmWUvEW
+qp+xzXCMxugxTF5P/+4PW+xhVZm0n0H4qY50pY6olpO0lcBT+QZfBv3BkAU2LLzB
+ujBh9QvUz4h1qcCysO2r3v+5YUwKsu1zFjc+zKLPI+zljCDcCuphRktqnNfdTTSU
+778bthqE5D9s5FOSJGMQbV+wcuQOtEBV5/0LeA6s8cC5BKxtapE=
+=Wbm4
+-----END PGP SIGNATURE-----
+
+--aopeqpabdxkkrkdt--
