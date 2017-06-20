@@ -1,85 +1,62 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/4] x86: use common aperfmperf_khz_on_cpu() to calculate
- KHz using APERF/MPERF
-Date: Tue, 20 Jun 2017 12:15:10 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1706201207170.1869@nanos>
-References: <1497668594-9266-1-git-send-email-lenb@kernel.org> <aba8474c690306eb708d4737d0b63c5ca448d019.1497665794.git.len.brown@intel.com>
+From: Wei Xu <xuwei5@hisilicon.com>
+Subject: Re: [PATCH 1/3] dt-bindings: Document the hi3660 thermal sensor
+ bindings
+Date: Tue, 20 Jun 2017 11:27:43 +0100
+Message-ID: <5948F89F.3070005@hisilicon.com>
+References: <1497930035-60894-1-git-send-email-kevin.wangtao@hisilicon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <aba8474c690306eb708d4737d0b63c5ca448d019.1497665794.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: rafael@kernel.org, x86@kernel.org, srinivas.pandruvada@linux.intel.com, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from szxga02-in.huawei.com ([45.249.212.188]:8359 "EHLO
+        szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750925AbdFTK23 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2017 06:28:29 -0400
+In-Reply-To: <1497930035-60894-1-git-send-email-kevin.wangtao@hisilicon.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tao Wang <kevin.wangtao@hisilicon.com>, rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sunzhaosheng@hisilicon.com, leo.yan@linaro.org
 
-On Fri, 16 Jun 2017, Len Brown wrote:
-> +#include <linux/jiffies.h>
-> +#include <linux/math64.h>
-> +#include <linux/percpu.h>
-> +#include <linux/smp.h>
+Hi Tao,
+
+On 2017/6/20 4:40, Tao Wang wrote:
+> This adds documentation of device tree bindings for the
+> thermal sensor controller of hi3660 SoC.
+> 
+> Signed-off-by: Tao Wang <kevin.wangtao@hisilicon.com>
+> ---
+>  .../devicetree/bindings/thermal/hi3660-thermal.txt |   17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/hi3660-thermal.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/hi3660-thermal.txt b/Documentation/devicetree/bindings/thermal/hi3660-thermal.txt
+> new file mode 100644
+> index 0000000..c034670
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/hi3660-thermal.txt
+> @@ -0,0 +1,17 @@
+> +* Temperature Sensor on hisilicon hi3660 SoC
 > +
-> +struct aperfmperf_sample {
-> +	unsigned int khz;
-> +	unsigned long jiffies;
-> +	u64 aperf;
-> +	u64 mperf;
-
-Nit. Please write these in tabular fashion:
-
-	unsigned	int khz;
-	unsigned long	jiffies;
-	u64		aperf;
-	u64		mperf;
-
-> +};
+> +** Required properties :
 > +
-> +static DEFINE_PER_CPU(struct aperfmperf_sample, samples);
+> +- compatible: "hisilicon,thermal-hi3660".
+
+It is better to put the SoC name before the function string.
+
+BR,
+Wei
+
+> +- reg: physical base address of thermal sensor and length of memory mapped
+> +  region.
+> +- #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
 > +
-> +/*
-> + * aperfmperf_snapshot_khz()
-> + * On the current CPU, snapshot APERF, MPERF, and jiffies
-> + * unless we already did it within 10ms
-> + * calculate kHz, save snapshot
-> + */
-> +static void aperfmperf_snapshot_khz(void *dummy)
-> +{
-> +	u64 aperf, aperf_delta;
-> +	u64 mperf, mperf_delta;
-> +	struct aperfmperf_sample *s = &get_cpu_var(samples);
-
-This is invoked via a smp function call, so you want
-
-     this_cpu_ptr(samples)
-
-here.
-
-> +	/* Don't bother re-computing within 10 ms */
-> +	if (time_before(jiffies, s->jiffies + HZ/100))
-> +		goto out;
-
-That way you can spare the gotos and simply return
-
-> index a5ce0bbe..cfc6220 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -883,6 +883,19 @@ static inline bool policy_has_boost_freq(struct cpufreq_policy *policy)
->  }
->  #endif
->  
-> +#ifdef CONFIG_X86
-> +extern unsigned int aperfmperf_khz_on_cpu(unsigned int cpu);
-> +static inline unsigned int arch_freq_get_on_cpu(int cpu)
-
-Please don't add arch specific crap in general headers.
-
-Also having cpu as int and unsigned int is not really consistent.
-
-The simple way to avoid that is to have a weak function and have an arch
-override for it. If that does not work because the cpufreq stuff must be
-built as a module, then you still can avoid CONFIG_X86 and have something
-like CONFIG_ARCH_HAS_FOO.
-
-Thanks,
-
-	tglx
+> +Example :
+> +
+> +	tsensor: tsensor {
+> +		compatible = "hisilicon,thermal-hi3660";
+> +		reg = <0x0 0xfff30000 0x0 0x1000>;
+> +		#thermal-sensor-cells = <1>;
+> +		status = "ok";
+> +	 };
+> 
