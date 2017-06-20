@@ -1,180 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update][PATCH 5/6] PCI / ACPI / PM: Avoid disabling wakeup for bridges too early
-Date: Wed, 21 Jun 2017 00:24:37 +0200
-Message-ID: <6348342.xyCN0zAH0p@aspire.rjw.lan>
-References: <12296383.UdE5HVtyng@aspire.rjw.lan> <374495495.9Wgi8cFFrW@aspire.rjw.lan>
+From: Russell King - ARM Linux <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>
+Subject: Re: [PATCH 00/51] rtc: stop using rtc deprecated functions
+Date: Tue, 20 Jun 2017 23:38:59 +0100
+Message-ID: <20170620223859.GO4902@n2100.armlinux.org.uk>
+References: <20170620213507.urobmtg34vzubrdq@piout.net>
+ <alpine.DEB.2.20.1706202343120.2157@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <374495495.9Wgi8cFFrW@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.20.1706202343120.2157@nanos>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
+Cc: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Benjamin Gaignard <benjamin.gaignard-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Sylvain Lemieux <slemieux.tyco-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Jun 21, 2017 at 12:00:30AM +0200, Thomas Gleixner wrote:
+> Yes, but there are still quite some issues to solve there:
+> 
+>      1) How do you tell the system that it should apply the offset in the
+>      	first place, i.e at boot time before NTP or any other mechanism can
+>      	correct it?
+> 
+>      2) Deal with creative vendors who have their own idea about the 'start
+>      	of the epoch'
+> 	
+>      3) Add the information of wraparound time to the rtc device which
+>      	needs to be filled in for each device. That way the rtc_***
+>      	accessor functions can deal with them whether they wrap in 2038 or
+>      	2100 or whatever.
+> 
+> #3 is the simplest problem of them :)	
 
-If acpi_pci_propagate_wakeup() is used, it may trigger wakeup
-configuration twice for the same bridge indirectly, when configuring
-wakeup for two different PCI devices under that bridge.  Actually,
-however, the ACPI wakeup code can only be enabled to trigger wakeup
-notifications for the bridge once in a row and there is no reference
-counting in that code, so wakeup signaling on the bridge can be
-disabled prematurely when it is disabled for the first of those
-devices.
+Well, if there's additional non-volatile storage, you can store
+additional information in there, but you still need the RTC
+subsystem to be aware that the hardware is only 32-bit capable.
 
-To prevent that from happening, add optional reference counting to
-the ACPI device wakeup code and make acpi_pci_propagate_wakeup()
-use if for bridges.
+You'd also still need something along the lines I detailed
+(redefining what dates the past 32-bit values indicate) to cope
+with the RTC being set backwards after the machine thinks (possibly
+incorrectly) that the date has jumped forwards.
 
-This works, because ACPI wakeup signaling for PCI bridges is only
-set up by acpi_pci_propagate_wakeup(), so the reference counting
-will only be used for them.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-Updated to fix an uninitialized variable bug reported by 0-day.
-
----
- drivers/acpi/device_pm.c |   37 ++++++++++++++++++++++++++++++++-----
- drivers/pci/pci-acpi.c   |    4 ++--
- include/acpi/acpi_bus.h  |   11 +++++++++--
- 3 files changed, 43 insertions(+), 9 deletions(-)
-
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -385,6 +385,7 @@ EXPORT_SYMBOL(acpi_bus_power_manageable)
- 
- #ifdef CONFIG_PM
- static DEFINE_MUTEX(acpi_pm_notifier_lock);
-+static DEFINE_MUTEX(acpi_wakeup_lock);
- 
- void acpi_pm_wakeup_event(struct device *dev)
- {
-@@ -724,14 +725,14 @@ static int acpi_device_wakeup(struct acp
- }
- 
- /**
-- * acpi_pm_device_wakeup - Enable/disable remote wakeup for given device.
-+ * __acpi_pm_device_wakeup - Enable/disable remote wakeup for given device.
-  * @dev: Device to enable/disable to generate wakeup events.
-  * @enable: Whether to enable or disable the wakeup functionality.
-  */
--int acpi_pm_device_wakeup(struct device *dev, bool enable)
-+int __acpi_pm_device_wakeup(struct device *dev, bool enable, bool refcount)
- {
- 	struct acpi_device *adev;
--	int error;
-+	int error = 0;
- 
- 	adev = ACPI_COMPANION(dev);
- 	if (!adev) {
-@@ -742,13 +743,39 @@ int acpi_pm_device_wakeup(struct device
- 	if (!acpi_device_can_wakeup(adev))
- 		return -EINVAL;
- 
-+	if (refcount) {
-+		mutex_lock(&acpi_wakeup_lock);
-+
-+		if (enable) {
-+			if (++adev->wakeup.enable_count > 1)
-+				goto out;
-+		} else {
-+			if (WARN_ON_ONCE(adev->wakeup.enable_count == 0))
-+				goto out;
-+
-+			if (--adev->wakeup.enable_count > 0)
-+				goto out;
-+		}
-+	}
- 	error = acpi_device_wakeup(adev, acpi_target_system_state(), enable);
--	if (!error)
-+	if (error) {
-+		if (refcount) {
-+			if (enable)
-+				adev->wakeup.enable_count--;
-+			else
-+				adev->wakeup.enable_count++;
-+		}
-+	} else {
- 		dev_dbg(dev, "Wakeup %s by ACPI\n", enable ? "enabled" : "disabled");
-+	}
-+
-+out:
-+	if (refcount)
-+		mutex_unlock(&acpi_wakeup_lock);
- 
- 	return error;
- }
--EXPORT_SYMBOL(acpi_pm_device_wakeup);
-+EXPORT_SYMBOL(__acpi_pm_device_wakeup);
- 
- /**
-  * acpi_dev_pm_low_power - Put ACPI device into a low-power state.
-Index: linux-pm/include/acpi/acpi_bus.h
-===================================================================
---- linux-pm.orig/include/acpi/acpi_bus.h
-+++ linux-pm/include/acpi/acpi_bus.h
-@@ -331,6 +331,7 @@ struct acpi_device_wakeup {
- 	struct acpi_device_wakeup_context context;
- 	struct wakeup_source *ws;
- 	int prepare_count;
-+	unsigned int enable_count;
- };
- 
- struct acpi_device_physical_node {
-@@ -603,7 +604,7 @@ acpi_status acpi_add_pm_notifier(struct
- acpi_status acpi_remove_pm_notifier(struct acpi_device *adev);
- bool acpi_pm_device_can_wakeup(struct device *dev);
- int acpi_pm_device_sleep_state(struct device *, int *, int);
--int acpi_pm_device_wakeup(struct device *dev, bool enable);
-+int __acpi_pm_device_wakeup(struct device *dev, bool enable, bool refcount);
- #else
- static inline void acpi_pm_wakeup_event(struct device *dev)
- {
-@@ -630,12 +631,18 @@ static inline int acpi_pm_device_sleep_s
- 	return (m >= ACPI_STATE_D0 && m <= ACPI_STATE_D3_COLD) ?
- 		m : ACPI_STATE_D0;
- }
--static inline int acpi_pm_device_wakeup(struct device *dev, bool enable)
-+static inline int __acpi_pm_device_wakeup(struct device *dev, bool enable,
-+					  bool refcount)
- {
- 	return -ENODEV;
- }
- #endif
- 
-+static inline int acpi_pm_device_wakeup(struct device *dev, bool enable)
-+{
-+	return __acpi_pm_device_wakeup(dev, enable, false);
-+}
-+
- #ifdef CONFIG_ACPI_SLEEP
- u32 acpi_target_system_state(void);
- #else
-Index: linux-pm/drivers/pci/pci-acpi.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -574,7 +574,7 @@ static int acpi_pci_propagate_wakeup(str
- {
- 	while (bus->parent) {
- 		if (acpi_pm_device_can_wakeup(&bus->self->dev))
--			return acpi_pm_device_wakeup(&bus->self->dev, enable);
-+			return __acpi_pm_device_wakeup(&bus->self->dev, enable, true);
- 
- 		bus = bus->parent;
- 	}
-@@ -582,7 +582,7 @@ static int acpi_pci_propagate_wakeup(str
- 	/* We have reached the root bus. */
- 	if (bus->bridge) {
- 		if (acpi_pm_device_can_wakeup(bus->bridge))
--			return acpi_pm_device_wakeup(bus->bridge, enable);
-+			return __acpi_pm_device_wakeup(bus->bridge, enable, true);
- 	}
- 	return 0;
- }
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
