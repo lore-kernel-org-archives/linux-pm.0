@@ -1,54 +1,96 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 7/9] PM / ACPI: Enable the runtime PM centric approach for
- system sleep
-Date: Wed, 21 Jun 2017 23:47:53 +0200
-Message-ID: <CAJZ5v0jL-0TKUv5nK7tFLm+X7nE7J2e3hm21i=+FBFBzQLQ=Xw@mail.gmail.com>
-References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org> <1498072888-14782-8-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: Drivers taking different actions depending on sleep state
+Date: Wed, 21 Jun 2017 23:59:05 +0200
+Message-ID: <CAJZ5v0g_egRwxOLqft=JhvzAqBWuyvC8yiO7De5TYUZLUT2Fpw@mail.gmail.com>
+References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr> <CAJZ5v0iL7voAz9T+36fXXncOj4UrFSAH8WzwEbec96GuFUteaQ@mail.gmail.com>
+ <ccac39d6-4611-8b46-12f7-24227ef3b35e@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1498072888-14782-8-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f54.google.com ([209.85.214.54]:38099 "EHLO
+        mail-it0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751667AbdFUV7G (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 17:59:06 -0400
+Received: by mail-it0-f54.google.com with SMTP id b205so10993120itg.1
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2017 14:59:06 -0700 (PDT)
+In-Reply-To: <ccac39d6-4611-8b46-12f7-24227ef3b35e@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Mason <slash.tmp@free.fr>, Ulf Hansson <ulf.hansson@linaro.org>, JB <jb_lescher@sigmadesigns.com>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> This change extends the interpretation of the ACPI's no_direct_complete
-> flag to be used to enable the so called runtime PM centric approach, for
-> devices being attached to the ACPI PM domain.
+On Wed, Jun 21, 2017 at 11:16 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+> On 06/09/2017 03:53 PM, Rafael J. Wysocki wrote:
+>> Hi,
+>>
+>> On Fri, Jun 9, 2017 at 5:20 PM, Mason <slash.tmp@free.fr> wrote:
+>>> Hello,
+>>>
+>>> I read the "Sleep States" documentation:
+>>> https://www.kernel.org/doc/Documentation/power/states.txt
+>>>
+>>> It mentions /sys/power/mem_sleep but I don't have that in 4.9
+>>> # ll /sys/power/
+>>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 pm_async
+>>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 pm_freeze_timeout
+>>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 state
+>>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 wakeup_count
+>>>
+>>> # cat /sys/power/state
+>>> freeze mem
+>>>
+>>> Currently my platform's "mem" is a true suspend-to-RAM trigger,
+>>> where drivers are supposed to save their state (register values
+>>> will be lost), then Linux hands control over to firmware which
+>>> enables RAM self-refresh and powers the chip down. When the system
+>>> resumes, drivers restore their state from their copy in memory.
+>>>
+>>> One driver is responsible for loading/unloading microcode running
+>>> on the DSPs. This operation is required only when powering down
+>>> the chip, but it should be avoided for "low-latency" sleeps.
+>>>
+>>> The problem is that, if I understand correctly, drivers have no way
+>>> of knowing which sleep state is being entered/exited?
+>>>
+>>> How can I have the microcode driver take different decisions
+>>> based on the sleep state?
+>>
+>> The cleanest way would be to run that code from one of the platform
+>> suspend hooks that receive information on what sleep state is to be
+>> entered.
 >
-> The principle behind the runtime PM centric approach is to re-use the
-> runtime PM callbacks to implement system sleep for drivers/subsystems.
-> Moreover, using the runtime PM centric approach gives an optimized
-> behaviour around avoiding to wake up a device from its low power state
-> during system sleep, unless really needed.
+> I am not sure this would be cleaner, because that would create a tighter
+> dependency between different drivers, each of them having their
+> suspend/resume routings and the driver that implements the
+> platform_suspend_ops, that could also create some nice layering
+> violations and some difficult to solve dependencies.
 >
-> To deploy the runtime PM centric approach for a subsystem/driver, the
-> following adaptations needs to be made.
+>>
+>> Alternatively, those hooks can set/clear flags that can be accessed by
+>> drivers, but that of course may your drivers depend on the platform
+>> (still, in the microcode case the driver seems to be
+>> platform-dependent anyway).
 >
-> First, the runtime PM callbacks may be called when runtime PM has been
-> disabled for the device. This serves as an indication for the callbacks to
-> understand they are running in the system sleep sequence, instead of in the
-> regular runtime PM path. In some cases, a callback needs to take different
-> actions depending in what path it is being executed in, as is the case for
-> the ACPI PM domain.
+> It may be platform dependent, but the actual system-wide suspend/resume
+> implementations can vary a lot. For example you may have started with
+> some particular CPU architecture on your platforms, with one driver
+> implementing an instance of platform_suspend_ops, and then as you moved
+> to another CPU architecture, some of that could be managed by a generic
+> driver (e.g: ARM SCPI, ACPI etc. etc.).
 >
-> In particular for the ACPI PM domain's ->runtime_suspend|resume()
-> callbacks, when those finds runtime PM being disabled for the device, it
-> instead executes the same operations as normally being run when
-> ->suspend_late() and ->resume_early() callbacks are invoked during system
-> sleep.
+> The same HW blocks are likely to be present on these different SoCs, and
+> have the same requirements where they need to see a slightly different
+> path taken on suspend/resume. If we have to patch both the "legacy"
+> platform_suspend_ops, and the "new" platform_suspend_ops that does not
+> really scale.
 >
-> Second, at the PM domain level, it is expected that the driver for the
-> device makes use of pm_runtime_force_suspend|resume(), to re-use the
-> runtime PM callbacks to put the device into low power state and to wake it
-> up when needed during system sleep.
+> Would it be that much of a stretch if we reflected e.g:
+> PM_SUSPEND_STANDBY, PM_SUSPEND_MEM into the pm_message_t that is
+> communicated to platform_driver::suspend and platform_driver::resume?
 
-What if it doesn't do that?
+I'm not sure what you mean, really.
 
-Do all drivers of devices that may fall into the ACPI PM domain use
-pm_runtime_force_suspend|resume()?
+The ->suspend callback in struct platform_driver has been long deprecated.
 
 Thanks,
 Rafael
