@@ -1,46 +1,79 @@
-From: Russell King - ARM Linux <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>
-Subject: Re: [PATCH 00/51] rtc: stop using rtc deprecated functions
-Date: Tue, 20 Jun 2017 23:38:59 +0100
-Message-ID: <20170620223859.GO4902@n2100.armlinux.org.uk>
-References: <20170620213507.urobmtg34vzubrdq@piout.net>
- <alpine.DEB.2.20.1706202343120.2157@nanos>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH 2/6] drivers base/arch_topology: frequency-invariant load-tracking
+ support
+Date: Tue, 20 Jun 2017 17:31:27 -0700
+Message-ID: <5949BE5F.4020502@codeaurora.org>
+References: <20170608075513.12475-1-dietmar.eggemann@arm.com> <20170608075513.12475-3-dietmar.eggemann@arm.com> <CAOh2x=k1Zr15vAq8LA0+Sg3Cz7o=dL5C-erkEx_py7g56b7BwA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.20.1706202343120.2157@nanos>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
-Cc: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Benjamin Gaignard <benjamin.gaignard-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Sylvain Lemieux <slemieux.tyco-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:60934 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752534AbdFUAba (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2017 20:31:30 -0400
+In-Reply-To: <CAOh2x=k1Zr15vAq8LA0+Sg3Cz7o=dL5C-erkEx_py7g56b7BwA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaor.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On Wed, Jun 21, 2017 at 12:00:30AM +0200, Thomas Gleixner wrote:
-> Yes, but there are still quite some issues to solve there:
-> 
->      1) How do you tell the system that it should apply the offset in the
->      	first place, i.e at boot time before NTP or any other mechanism can
->      	correct it?
-> 
->      2) Deal with creative vendors who have their own idea about the 'start
->      	of the epoch'
-> 	
->      3) Add the information of wraparound time to the rtc device which
->      	needs to be filled in for each device. That way the rtc_***
->      	accessor functions can deal with them whether they wrap in 2038 or
->      	2100 or whatever.
-> 
-> #3 is the simplest problem of them :)	
+On 06/19/2017 11:17 PM, Viresh Kumar wrote:
+> On Thu, Jun 8, 2017 at 1:25 PM, Dietmar Eggemann
+> <dietmar.eggemann@arm.com> wrote:
+>
+>> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+>
+>>   static int __init register_cpufreq_notifier(void)
+>>   {
+>> +       int ret;
+>> +
+>>          /*
+>>           * on ACPI-based systems we need to use the default cpu capacity
+>>           * until we have the necessary code to parse the cpu capacity, so
+>> @@ -225,8 +265,14 @@ static int __init register_cpufreq_notifier(void)
+>>
+>>          cpumask_copy(cpus_to_visit, cpu_possible_mask);
+>>
+>> -       return cpufreq_register_notifier(&init_cpu_capacity_notifier,
+>> -                                        CPUFREQ_POLICY_NOTIFIER);
+>> +       ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
+>> +                                       CPUFREQ_POLICY_NOTIFIER);
+>
+> Wanted to make sure that we all understand the constraints this is going to add
+> for the ARM64 platforms.
+>
+> With the introduction of this transition notifier, we would not be able to use
+> the fast-switch path in the schedutil governor. I am not sure if there are any
+> ARM platforms that can actually use the fast-switch path in future or not
+> though. The requirement of fast-switch path is that the freq can be changed
+> without sleeping in the hot-path.
+>
+> So, will we ever want fast-switching for ARM platforms ?
+>
 
-Well, if there's additional non-volatile storage, you can store
-additional information in there, but you still need the RTC
-subsystem to be aware that the hardware is only 32-bit capable.
+I don't think we should go down a path that'll prevent ARM platform from 
+switching over to fast-switching in the future.
 
-You'd also still need something along the lines I detailed
-(redefining what dates the past 32-bit values indicate) to cope
-with the RTC being set backwards after the machine thinks (possibly
-incorrectly) that the date has jumped forwards.
+Having said that, I'm not sure I fully agree with the decision to 
+completely disable notifiers in the fast-switching case. How many of the 
+current users of notifiers truly need support for sleeping in the 
+notifier? Why not make all the transition notifiers atomic? Or at least 
+add atomic transition notifiers that can be registered for separately if 
+the client doesn't need the ability to sleep?
+
+Most of the clients don't seem like ones that'll need to sleep.
+
+There are a bunch of generic off-tree drivers (can't upstream them yet 
+because it depends on the bus scaling framework) that also depend on 
+CPUfreq transition notifiers that are going to stop working if fast 
+switching becomes available in the future. So, this decision to disallow 
+transition notifiers is painful for other reasons too.
+
+-Saravana
+
 
 -- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
