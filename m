@@ -1,93 +1,80 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 1/9] i2c: designware: Fix system suspend
-Date: Wed, 21 Jun 2017 21:21:20 +0200
-Message-ID: <1498072888-14782-2-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 3/9] PM / Sleep: Remove pm_complete_with_resume_check()
+Date: Wed, 21 Jun 2017 21:21:22 +0200
+Message-ID: <1498072888-14782-4-git-send-email-ulf.hansson@linaro.org>
 References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-i2c-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f48.google.com ([209.85.215.48]:36276 "EHLO
+        mail-lf0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751223AbdFUTVw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 15:21:52 -0400
+Received: by mail-lf0-f48.google.com with SMTP id h22so23138795lfk.3
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2017 12:21:51 -0700 (PDT)
 In-Reply-To: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, stable@vger.linux.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 
-The commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming
-during system suspend"), may suggest to the PM core to try out the so
-called direct_complete path for system sleep. In this path, the PM core
-treats a runtime suspended device as it's already in a proper low power
-state for system sleep, which makes it skip calling the system sleep
-callbacks for the device, except for the ->prepare() and the ->complete()
-callback.
+According to recent changes for ACPI, the are longer any users of
+pm_complete_with_resume_check(), thus let's drop it.
 
-Moreover, under certain circumstances the PM core may unset the
-direct_complete flag for a parent device, in case its child device are
-being system suspended before. In other words, the PM core doesn't skip
-calling the system sleep callbacks, no matter if the device is runtime
-suspended or not.
-
-In cases of an i2c slave device, the above situation is triggered.
-Unfortunate, this also breaks the assumption that the i2c device is always
-runtime resumed, whenever the dw_i2c_plat_suspend() callback is being
-invoked, which then leads to a regression.
-
-More precisely, dw_i2c_plat_suspend() then calls clk_core_disable() and
-clk_core_unprepare(), for an already disabled/unprepared clock, leading to
-complaints about clocks calls being wrongly balanced.
-
-In cases when the i2c device is attached to the ACPI PM domain, the problem
-doesn't occur. That's because ACPI's ->suspend() callback, assigned to
-acpi_subsys_suspend(), calls pm_runtime_resume() for the i2c device.
-
-To make a simple fix for this regression, let's runtime resume the i2c
-device in the ->prepare() callback, assigned to dw_i2c_plat_prepare(). This
-prevents the direct_complete path from being executed by the PM core and
-guarantees the dw_i2c_plat_suspend() is called with the i2c device always
-being runtime resumed.
-
-Of course this change is suboptimal, because to always force a runtime
-resume of the i2c device in ->prepare() is a waste, especially in those
-cases when it could have remained runtime suspended during the entire
-system sleep sequence. However, to accomplish that behaviour a bigger
-change is needed, so defer that to future changes not applicable as fixes
-or for stable.
-
-Fixes: 8503ff166504 ("i2c: designware: Avoid unnecessary resuming...")
-Cc: stable@vger.linux.org
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/i2c/busses/i2c-designware-platdrv.c | 11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
+ drivers/base/power/generic_ops.c | 23 -----------------------
+ include/linux/pm.h               |  1 -
+ 2 files changed, 24 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/busses/i2c-designware-platdrv.c
-index d1263b8..2b7fa75 100644
---- a/drivers/i2c/busses/i2c-designware-platdrv.c
-+++ b/drivers/i2c/busses/i2c-designware-platdrv.c
-@@ -375,17 +375,11 @@ MODULE_DEVICE_TABLE(of, dw_i2c_of_match);
- #ifdef CONFIG_PM_SLEEP
- static int dw_i2c_plat_prepare(struct device *dev)
- {
--	return pm_runtime_suspended(dev);
--}
--
--static void dw_i2c_plat_complete(struct device *dev)
--{
--	if (dev->power.direct_complete)
--		pm_request_resume(dev);
-+	pm_runtime_resume(dev);
-+	return 0;
- }
- #else
- #define dw_i2c_plat_prepare	NULL
--#define dw_i2c_plat_complete	NULL
- #endif
+diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+index 07c3c4a..b2ed606 100644
+--- a/drivers/base/power/generic_ops.c
++++ b/drivers/base/power/generic_ops.c
+@@ -9,7 +9,6 @@
+ #include <linux/pm.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/export.h>
+-#include <linux/suspend.h>
  
  #ifdef CONFIG_PM
-@@ -413,7 +407,6 @@ static int dw_i2c_plat_resume(struct device *dev)
+ /**
+@@ -298,26 +297,4 @@ void pm_generic_complete(struct device *dev)
+ 	if (drv && drv->pm && drv->pm->complete)
+ 		drv->pm->complete(dev);
+ }
+-
+-/**
+- * pm_complete_with_resume_check - Complete a device power transition.
+- * @dev: Device to handle.
+- *
+- * Complete a device power transition during a system-wide power transition and
+- * optionally schedule a runtime resume of the device if the system resume in
+- * progress has been initated by the platform firmware and the device had its
+- * power.direct_complete flag set.
+- */
+-void pm_complete_with_resume_check(struct device *dev)
+-{
+-	pm_generic_complete(dev);
+-	/*
+-	 * If the device had been runtime-suspended before the system went into
+-	 * the sleep state it is going out of and it has never been resumed till
+-	 * now, resume it in case the firmware powered it up.
+-	 */
+-	if (dev->power.direct_complete && pm_resume_via_firmware())
+-		pm_request_resume(dev);
+-}
+-EXPORT_SYMBOL_GPL(pm_complete_with_resume_check);
+ #endif /* CONFIG_PM_SLEEP */
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index a0894bc..de28313 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -733,7 +733,6 @@ extern int pm_generic_poweroff_noirq(struct device *dev);
+ extern int pm_generic_poweroff_late(struct device *dev);
+ extern int pm_generic_poweroff(struct device *dev);
+ extern void pm_generic_complete(struct device *dev);
+-extern void pm_complete_with_resume_check(struct device *dev);
  
- static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
- 	.prepare = dw_i2c_plat_prepare,
--	.complete = dw_i2c_plat_complete,
- 	SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
- 	SET_RUNTIME_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume, NULL)
- };
+ #else /* !CONFIG_PM_SLEEP */
+ 
 -- 
 2.7.4
