@@ -1,90 +1,138 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 2/9] PM / ACPI: Restore acpi_subsys_complete()
-Date: Wed, 21 Jun 2017 21:21:21 +0200
-Message-ID: <1498072888-14782-3-git-send-email-ulf.hansson@linaro.org>
-References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v14 09/11] power: supply: bq27xxx: Enable data memory
+ update for certain chips
+Date: Wed, 21 Jun 2017 13:55:52 -0700
+Message-ID: <CAKvHMgQaKtUEhTLWp+sYPPLRpZvXUxBWEJCH5e1+S3QnZJ+8fA@mail.gmail.com>
+References: <20170607183759.20261-1-liam@networkimprov.net>
+ <20170607183759.20261-10-liam@networkimprov.net> <20170615160218.sq5jychjn7x2dhyq@earth>
+ <CAKvHMgT-QW1GXizipj0bRk7DMhwv=NsZJnvoQ_9OEjf_MgfJgg@mail.gmail.com>
+ <20170616103307.bfl6ig66qeq2qvz6@earth> <CAKvHMgSP6KR+4LRb0p3amAXyD=-r6Ap_i06cTffhnVOvE7NLJQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f52.google.com ([209.85.214.52]:36807 "EHLO
+        mail-it0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751901AbdFUUzx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 16:55:53 -0400
+Received: by mail-it0-f52.google.com with SMTP id m47so39520516iti.1
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2017 13:55:53 -0700 (PDT)
+In-Reply-To: <CAKvHMgSP6KR+4LRb0p3amAXyD=-r6Ap_i06cTffhnVOvE7NLJQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Pali Rohar <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
 
-The commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have
-been reset by firmware"), made PCI's and ACPI's ->complete() callbacks to
-be assigned to a new API called pm_complete_with_resume_check(), which was
-introduced in the same change.
+Hi Sebastian, can we resolve the two outstanding issues this week? I
+sent comments on both last week...
 
-Later it turned out that using pm_complete_with_resume_check() isn't good
-enough for PCI, as it needs additional PCI specific checks, before deciding
-whether runtime resuming the device is needed when running the ->complete()
-callback.
-
-This leaves ACPI being the only user of pm_complete_with_resume_check().
-Therefore let's restore ACPI's acpi_subsys_complete(), which was dropped in
-commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have been
-reset by firmware").
-
-This enables us to remove the pm_complete_with_resume_check() API in a
-following change, but it also enables ACPI to add more ACPI specific checks
-in acpi_subsys_complete() if it turns out that is needed.
-
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/acpi/acpi_lpss.c |  2 +-
- drivers/acpi/device_pm.c | 19 ++++++++++++++++++-
- 2 files changed, 19 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/acpi/acpi_lpss.c b/drivers/acpi/acpi_lpss.c
-index 10347e3..d7b6778 100644
---- a/drivers/acpi/acpi_lpss.c
-+++ b/drivers/acpi/acpi_lpss.c
-@@ -879,7 +879,7 @@ static struct dev_pm_domain acpi_lpss_pm_domain = {
- #ifdef CONFIG_PM
- #ifdef CONFIG_PM_SLEEP
- 		.prepare = acpi_subsys_prepare,
--		.complete = pm_complete_with_resume_check,
-+		.complete = acpi_subsys_complete,
- 		.suspend = acpi_subsys_suspend,
- 		.suspend_late = acpi_lpss_suspend_late,
- 		.resume_early = acpi_lpss_resume_early,
-diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
-index ca02102..d38acbc 100644
---- a/drivers/acpi/device_pm.c
-+++ b/drivers/acpi/device_pm.c
-@@ -964,6 +964,23 @@ int acpi_subsys_prepare(struct device *dev)
- EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
- 
- /**
-+ * acpi_subsys_complete - Finalize device's resume during system resume.
-+ * @dev: Device to handle.
-+ */
-+void acpi_subsys_complete(struct device *dev)
-+{
-+	pm_generic_complete(dev);
-+	/*
-+	 * If the device had been runtime-suspended before the system went into
-+	 * the sleep state it is going out of and it has never been resumed till
-+	 * now, resume it in case the firmware powered it up.
-+	 */
-+	if (dev->power.direct_complete && pm_resume_via_firmware())
-+		pm_request_resume(dev);
-+}
-+EXPORT_SYMBOL_GPL(acpi_subsys_complete);
-+
-+/**
-  * acpi_subsys_suspend - Run the device driver's suspend callback.
-  * @dev: Device to handle.
-  *
-@@ -1031,7 +1048,7 @@ static struct dev_pm_domain acpi_general_pm_domain = {
- 		.runtime_resume = acpi_subsys_runtime_resume,
- #ifdef CONFIG_PM_SLEEP
- 		.prepare = acpi_subsys_prepare,
--		.complete = pm_complete_with_resume_check,
-+		.complete = acpi_subsys_complete,
- 		.suspend = acpi_subsys_suspend,
- 		.suspend_late = acpi_subsys_suspend_late,
- 		.resume_early = acpi_subsys_resume_early,
--- 
-2.7.4
-
+On Fri, Jun 16, 2017 at 4:32 AM, Liam Breck <liam@networkimprov.net> wrote:
+> Hi Sebastian,
+>
+>
+> On Fri, Jun 16, 2017 at 3:33 AM, Sebastian Reichel
+> <sebastian.reichel@collabora.co.uk> wrote:
+>> Hi Liam,
+>>
+>> On Fri, Jun 16, 2017 at 02:21:42AM -0700, Liam Breck wrote:
+>>> On Thu, Jun 15, 2017 at 9:02 AM, Sebastian Reichel
+>>> <sebastian.reichel@collabora.co.uk> wrote:
+>>> > On Wed, Jun 07, 2017 at 11:37:57AM -0700, Liam Breck wrote:
+>>> >>  static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>> >> -     { "bq27200", BQ27000 },
+>>> >> -     { "bq27210", BQ27010 },
+>>> >> -     { "bq27500", BQ2750X },
+>>> >> -     { "bq27510", BQ2751X },
+>>> >> -     { "bq27520", BQ2751X },
+>>> >> -     { "bq27500-1", BQ27500 },
+>>> >> -     { "bq27510g1", BQ27510G1 },
+>>> >> -     { "bq27510g2", BQ27510G2 },
+>>> >> -     { "bq27510g3", BQ27510G3 },
+>>> >> -     { "bq27520g1", BQ27520G1 },
+>>> >> -     { "bq27520g2", BQ27520G2 },
+>>> >> -     { "bq27520g3", BQ27520G3 },
+>>> >> -     { "bq27520g4", BQ27520G4 },
+>>> >> -     { "bq27530", BQ27530 },
+>>> >> -     { "bq27531", BQ27530 },
+>>> >> -     { "bq27541", BQ27541 },
+>>> >> -     { "bq27542", BQ27541 },
+>>> >> -     { "bq27546", BQ27541 },
+>>> >> -     { "bq27742", BQ27541 },
+>>> >> -     { "bq27545", BQ27545 },
+>>> >> -     { "bq27421", BQ27421 },
+>>> >> -     { "bq27425", BQ27421 },
+>>> >> -     { "bq27441", BQ27421 },
+>>> >> -     { "bq27621", BQ27421 },
+>>> >> +     /* dest.    di->real_chip       di->chip      */
+>>> >> +     { "bq27200",   (BQ27000   << 16) |  BQ27000   },
+>>> >> +     { "bq27210",   (BQ27010   << 16) |  BQ27010   },
+>>> >> +     { "bq27500",   (BQ2750X   << 16) |  BQ2750X   },
+>>> >> +     { "bq27510",   (BQ2751X   << 16) |  BQ2751X   },
+>>> >> +     { "bq27520",   (BQ2752X   << 16) |  BQ2751X   },
+>>> >> +     { "bq27500-1", (BQ27500   << 16) |  BQ27500   },
+>>> >> +     { "bq27510g1", (BQ27510G1 << 16) |  BQ27510G1 },
+>>> >> +     { "bq27510g2", (BQ27510G2 << 16) |  BQ27510G2 },
+>>> >> +     { "bq27510g3", (BQ27510G3 << 16) |  BQ27510G3 },
+>>> >> +     { "bq27520g1", (BQ27520G1 << 16) |  BQ27520G1 },
+>>> >> +     { "bq27520g2", (BQ27520G2 << 16) |  BQ27520G2 },
+>>> >> +     { "bq27520g3", (BQ27520G3 << 16) |  BQ27520G3 },
+>>> >> +     { "bq27520g4", (BQ27520G4 << 16) |  BQ27520G4 },
+>>> >> +     { "bq27530",   (BQ27530   << 16) |  BQ27530   },
+>>> >> +     { "bq27531",   (BQ27531   << 16) |  BQ27530   },
+>>> >> +     { "bq27541",   (BQ27541   << 16) |  BQ27541   },
+>>> >> +     { "bq27542",   (BQ27542   << 16) |  BQ27541   },
+>>> >> +     { "bq27546",   (BQ27546   << 16) |  BQ27541   },
+>>> >> +     { "bq27742",   (BQ27742   << 16) |  BQ27541   },
+>>> >> +     { "bq27545",   (BQ27545   << 16) |  BQ27545   },
+>>> >> +     { "bq27421",   (BQ27421   << 16) |  BQ27421   },
+>>> >> +     { "bq27425",   (BQ27425   << 16) |  BQ27421   },
+>>> >> +     { "bq27441",   (BQ27441   << 16) |  BQ27421   },
+>>> >> +     { "bq27621",   (BQ27621   << 16) |  BQ27421   },
+>>> >
+>>> > This is ugly. The proper way to do this is by providing a pointer
+>>> > to a structure with all required information. E.g.:
+>>> >
+>>> > static const struct bq27xxx_pdata chip_info_bq27530 {
+>>> >     .reg_layout = &reg_info_bq27530,
+>>> >     .feature = false,
+>>> >     /* more stuff */
+>>> > };
+>>> >
+>>> > static const struct bq27xxx_pdata chip_info_bq27531 {
+>>> >     .reg_layout = &reg_info_bq27530,
+>>> >     .feature = true,
+>>> >     /* more stuff */
+>>> > };
+>>> >
+>>> > /* ... */
+>>> >
+>>> > static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>> > /* ... */
+>>> > { "bq27530", &chip_info_bq27530 },
+>>> > { "bq27531", &chip_info_bq27531 },
+>>> > /* ... */
+>>> > }
+>>>
+>>> How's this...
+>>>
+>>> static const struct bq27xxx_chip_ids[] = {
+>>>   [BQ27425] = { .chip = BQ27421, .real_chip = BQ27425 },
+>>>   ...
+>>> }
+>>>
+>>> static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>>>   { "bq27425", &bq27xxx_chip_ids[BQ27425] },
+>>> ...
+>>
+>> That's better, but let's get rid of real_chip. Just add the required
+>> information directly to the above struct (e.g. seal_key, ramtype).
+>
+> I don't think the new chip data belongs in bq27*_i2c.c. All the
+> (extensive) existing chip data is in the main file.
+>
+> A later patch could rework the chip data scheme; I was trying to
+> minimize changes in this one. The original i2c table did a real_chip
+> -> chip mapping. Now we're just carrying real_chip forward.
+>
+> The easiest fix would be to define a macro which does << and |
+>
+> { "bq27621",   BQ27XXX_ID_PAIR(BQ27621, BQ27421) },
