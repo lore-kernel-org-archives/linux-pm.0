@@ -1,152 +1,161 @@
-From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: Re: [PATCH v2] PM / Domains: Call driver's noirq callbacks
-Date: Wed, 21 Jun 2017 10:06:00 +0300
-Message-ID: <f864d70e-4572-e60e-1d51-397f0886e64a@nvidia.com>
-References: <CAPDyKFpgXCwErOUBcXwOVycYpro6=-vxoQeGnTMwsn0ji8iXJQ@mail.gmail.com>
- <1497965895-11486-1-git-send-email-mperttunen@nvidia.com>
- <CAPDyKFr-e3rJ0XU8snbLVgz3vh=mtL787e4fyb=2GqnPa7rYfA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V8 0/6] PM / Domains: Power domain performance states
+Date: Wed, 21 Jun 2017 12:40:47 +0530
+Message-ID: <cover.1498026827.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:6867 "EHLO
-        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751015AbdFUHGH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 03:06:07 -0400
-In-Reply-To: <CAPDyKFr-e3rJ0XU8snbLVgz3vh=mtL787e4fyb=2GqnPa7rYfA@mail.gmail.com>
+Received: from mail-pg0-f45.google.com ([74.125.83.45]:34797 "EHLO
+        mail-pg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751082AbdFUHLA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 03:11:00 -0400
+Received: by mail-pg0-f45.google.com with SMTP id e187so21148424pgc.1
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2017 00:11:00 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 
-On 20.06.2017 17:18, Ulf Hansson wrote:
-> On 20 June 2017 at 15:38, Mikko Perttunen <mperttunen@nvidia.com> wrote:
->> Currently genpd installs its own suspend_noirq, resume_noirq,
->> and poweroff_noirq callbacks, but never calls down to the driver's
->> corresponding callbacks. Add these calls.
->>
->> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
->> ---
->> v2:
->> - Moved pm_generic_suspend_noirq to before pm_runtime_force_suspend,
->>   and correspondingly pm_generic_resume_noirq after
->>   pm_runtime_force_resume
->> - Added new pm_genpd_poweroff_noirq callback that is identical to
->>   pm_genpd_suspend_noirq but calls the appropriate driver callback
->>
->>  drivers/base/power/domain.c | 50 ++++++++++++++++++++++++++++++++++++++++++++-
->>  1 file changed, 49 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index d3f1d96f75e9..b070ee58186d 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -919,6 +919,10 @@ static int pm_genpd_suspend_noirq(struct device *dev)
->>         if (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev))
->>                 return 0;
->>
->> +       ret = pm_generic_suspend_noirq(dev);
->> +       if (ret)
->> +               return ret;
->> +
->>         if (genpd->dev_ops.stop && genpd->dev_ops.start) {
->>                 ret = pm_runtime_force_suspend(dev);
->>                 if (ret)
->> @@ -961,6 +965,10 @@ static int pm_genpd_resume_noirq(struct device *dev)
->>         if (genpd->dev_ops.stop && genpd->dev_ops.start)
->>                 ret = pm_runtime_force_resume(dev);
->>
->> +       ret = pm_generic_resume_noirq(dev);
->> +       if (ret)
->> +               return ret;
->> +
->>         return ret;
->>  }
->>
->> @@ -1015,6 +1023,46 @@ static int pm_genpd_thaw_noirq(struct device *dev)
->>  }
->>
->>  /**
->> + * pm_genpd_poweroff_noirq - Completion of hibernation of device in an
->> + *   I/O PM domain.
->> + * @dev: Device to poweroff.
->> + *
->> + * Stop the device and remove power from the domain if all devices in it have
->> + * been stopped.
->> + */
->> +static int pm_genpd_poweroff_noirq(struct device *dev)
->> +{
->> +       struct generic_pm_domain *genpd;
->> +       int ret;
->> +
->> +       dev_dbg(dev, "%s()\n", __func__);
->> +
->> +       genpd = dev_to_genpd(dev);
->> +       if (IS_ERR(genpd))
->> +               return -EINVAL;
->> +
->> +       if (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev))
->> +               return 0;
->> +
->> +       ret = pm_generic_poweroff_noirq(dev);
->
-> The only difference between  pm_genpd_suspend_noirq() and
-> pm_genpd_poweroff_noirq() is the above line. Can we re-factor the code
-> so we avoid open code here, please.
+Hi,
 
-I wasn't sure if the functions' complexity warranted adding a helper 
-function, but sure, I'll refactor this with a helper function.
+Some platforms have the capability to configure the performance state of
+their power domains. The process of configuring the performance state is
+pretty much platform dependent and we may need to work with a wide range
+of configurables.  For some platforms, like Qcom, it can be a positive
+integer value alone, while in other cases it can be voltage levels, etc.
 
->
->> +       if (ret)
->> +               return ret;
->> +
->> +       if (genpd->dev_ops.stop && genpd->dev_ops.start) {
->> +               ret = pm_runtime_force_suspend(dev);
->> +               if (ret)
->> +                       return ret;
->> +       }
->> +
->> +       genpd_lock(genpd);
->> +       genpd->suspended_count++;
->> +       genpd_sync_power_off(genpd, true, 0);
->> +       genpd_unlock(genpd);
->> +
->> +       return 0;
->> +}
->> +
->> +/**
->>   * pm_genpd_restore_noirq - Start of restore of device in an I/O PM domain.
->>   * @dev: Device to resume.
->>   *
->> @@ -1493,7 +1541,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
->>         genpd->domain.ops.resume_noirq = pm_genpd_resume_noirq;
->>         genpd->domain.ops.freeze_noirq = pm_genpd_freeze_noirq;
->>         genpd->domain.ops.thaw_noirq = pm_genpd_thaw_noirq;
->> -       genpd->domain.ops.poweroff_noirq = pm_genpd_suspend_noirq;
->> +       genpd->domain.ops.poweroff_noirq = pm_genpd_poweroff_noirq;
->>         genpd->domain.ops.restore_noirq = pm_genpd_restore_noirq;
->
-> The pm_genpd_restore_noirq() doesn't invokes the lower level
-> ->restore_noirq() callbacks. If you are going to change that for the
-> *poweroff* callback, certainly we should change that also for the
-> *restore* callbacks as well. Don't you think?
->
-> Moreover, what about the freeze and thaw callbacks, should these also
-> walk the lower level callbacks?
+The power-domain framework until now was only designed for the idle
+state management of the device and this needs to change in order to
+reuse the power-domain framework for active state management of the
+devices.
 
-Yes, I'll add the calls to the rest of the ops as well.
+The first patch updates the genpd framework to supply new APIs to
+support active state management and the second patch uses them from the
+OPP core.
 
-Thanks,
-Mikko.
+Rest of the patches [3-6/6] are included just to show how user drivers
+would end up using the new APIs and these patches aren't there to get
+merged and are marked clearly like that.
 
->
->>         genpd->domain.ops.complete = pm_genpd_complete;
->>
->> --
->> 2.1.4
->>
->
-> Kind regards
-> Uffe
->
+The ideal way is still to get the relation between device and domain
+states via the DT instead of platform code, but that can be done
+incrementally later once we have some users for it upstream.
+
+This is currently tested by:
+- me by hacking the kernel a bit with virtual power-domains for the dual
+  A15 exynos platform. I have also tested the complex cases where the
+  device's parent power domain doesn't have set_performance_state()
+  callback set, but parents of that domains have it. Lockdep configs
+  were enabled for these tests.
+- Rajendra Nayak, on msm8996 platform (Qcom) with MMC controller.
+
+Thanks Rajendra for helping me testing this out.
+
+Pushed here as well:
+
+https://git.linaro.org/people/viresh.kumar/linux.git/log/?h=opp/genpd-performance-state
+
+Rebased on: 4.12-rc6 + some OPP core changes [1] and [2].
+
+V7->V8:
+- Ulf helped a lot in reviewing V7 and pointed out couple of issues,
+  specially in locking while dealing with a hierarchy of power domains.
+- All those locking issues are sorted out now, even for the complex
+  cases.
+- genpd_lookup_dev() is used in pm_genpd_has_performance_state() to make
+  sure we have a valid genpd available for the device.
+- Validation of performance state callbacks isn't done anymore in
+  pm_genpd_init() as it gets called very early and the binding of
+  subdomains to their parent domains happens later. This is handled in
+  pm_genpd_has_performance_state() now, which is called from user
+  drivers.
+- User driver changes (not to be merged) are included for the first time
+  here, to demonstrate how changes would look finally.
+
+V6->V7:
+- Almost a rewrite, only two patches against 9 in earlier version.
+- No bindings updated now and domain's performance state aren't passed
+  via DT for now (until we know how users are going to use it).
+- We also skipped the QoS framework completely and new APIs are provided
+  directly by genpd.
+
+V5->V6:
+- Use freq/voltage in OPP table as it is for power domain and don't
+  create "domain-performance-level" property
+- Create new "power-domain-opp" property for the devices.
+- Take care of domain providers that provide multiple domains and extend
+  "operating-points-v2" property to contain a list of phandles
+- Update code according to those bindings.
+
+V4->V5:
+- Only 3 patches were resent and 2 of them are Acked from Ulf.
+
+V3->V4:
+- Use OPP table for genpd devices as well.
+- Add struct device to genpd, in order to reuse OPP infrastructure.
+- Based over: https://marc.info/?l=linux-kernel&m=148972988002317&w=2
+- Fixed examples in DT document to have voltage in target,min,max order.
+
+V2->V3:
+- Based over latest pm/linux-next
+- Bindings and code are merged together
+- Lots of updates in bindings
+  - the performance-states node is present within the power-domain now,
+    instead of its phandle.
+  - performance-level property is replaced by "reg".
+  - domain-performance-state property of the consumers contain an
+    integer value now instead of phandle.
+- Lots of updates to the code as well
+  - Patch "PM / QOS: Add default case to the switch" is merged with
+    other patches and the code is changed a bit as well.
+  - Don't pass 'type' to dev_pm_qos_add_notifier(), rather handle all
+    notifiers with a single list. A new patch is added for that.
+  - The OPP framework patch can be applied now and has proper SoB from
+    me.
+  - Dropped "PM / domain: Save/restore performance state at runtime
+    suspend/resume".
+  - Drop all WARN().
+  - Tested-by Rajendra nayak.
+
+V1->V2:
+- Based over latest pm/linux-next
+- It is mostly a resend of what is sent earlier as this series hasn't
+  got any reviews so far and Rafael suggested that its better I resend
+  it.
+- Only the 4/6 patch got an update, which was shared earlier as reply to
+  V1 as well. It has got several fixes for taking care of power domain
+  hierarchy, etc.
+
+--
+viresh
+
+[1] https://marc.info/?l=linux-kernel&m=149499607030364&w=2
+[2] https://marc.info/?l=linux-kernel&m=149795317123259&w=2
+
+Rajendra Nayak (4):
+  soc: qcom: rpmpd: Add a powerdomain driver to model cx/mx powerdomains
+  soc: qcom: rpmpd: Add support for get/set performance state
+  mmc: sdhci-msm: Adapt the driver to use OPPs to set clocks/performance
+    state
+  remoteproc: qcom: q6v5: Vote for proxy powerdomain performance state
+
+Viresh Kumar (2):
+  PM / Domains: Add support to select performance-state of domains
+  PM / OPP: Support updating performance state of device's power domains
+
+ .../devicetree/bindings/power/qcom,rpmpd.txt       |  10 +
+ arch/arm64/boot/dts/qcom/msm8996.dtsi              |  39 ++
+ drivers/base/power/domain.c                        | 223 +++++++++++
+ drivers/base/power/opp/core.c                      |  48 ++-
+ drivers/base/power/opp/opp.h                       |   2 +
+ drivers/clk/qcom/gcc-msm8996.c                     |   8 +-
+ drivers/mmc/host/sdhci-msm.c                       |  39 +-
+ drivers/remoteproc/qcom_q6v5_pil.c                 |  20 +-
+ drivers/soc/qcom/Kconfig                           |   9 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/rpmpd.c                           | 412 +++++++++++++++++++++
+ include/linux/pm_domain.h                          |  22 ++
+ 12 files changed, 811 insertions(+), 22 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/qcom,rpmpd.txt
+ create mode 100644 drivers/soc/qcom/rpmpd.c
+
+-- 
+2.13.0.71.gd7076ec9c9cb
