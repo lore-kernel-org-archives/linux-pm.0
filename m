@@ -1,101 +1,89 @@
-From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Subject: Re: [PATCH 00/51] rtc: stop using rtc deprecated functions
-Date: Wed, 21 Jun 2017 20:08:47 +0200
-Message-ID: <20170621180847.GA24175@amd>
-References: <20170620213507.urobmtg34vzubrdq@piout.net>
- <alpine.DEB.2.20.1706202343120.2157@nanos>
- <20170621075152.GA15996@amd>
- <20170621083907.y3gadsmsoufa5niv@piout.net>
- <20170621063443.GA4862@localhost>
- <20170621123535.b5fvwlydfhnhuqll@piout.net>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="W/nzBZO5zC0uMSeA"
-Return-path: <rtc-linux+bncBDZKLXNI4ACBBMPMVLFAKGQEGQ5644I-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <20170621123535.b5fvwlydfhnhuqll-m++hUPXGwpdeoWH0uzbU5w@public.gmane.org>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Russell King - ARM Linux <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Benjamin Gaignard <benjamin.gaignard-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Sylvain Lemieux <slemieux.tyco-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, "rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org" <rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TaqPxH82wqD4g@public.gmane.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 0/9] PM / ACPI / i2c: Fix system suspend and deploy runtime PM centric path for ACPI
+Date: Wed, 21 Jun 2017 21:21:19 +0200
+Message-ID: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
+The i2c designware platform driver, drivers/i2c/busses/i2c-designware-platdrv.c,
+currently suffers from a regression, which easily can be triggerd during system
+suspend/resume.
 
---W/nzBZO5zC0uMSeA
-Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
+In particular the regression concerns those SoCs, which doesn't have the i2c
+device being attached to the ACPI PM domain.
 
-Hi!
+The regression, introduced in commit 8503ff166504 ("i2c: designware: Avoid
+unnecessary resuming during system suspend"), takes advantage of the so called
+direct_complete path during system sleep, which works well when using the ACPI
+PM domain, however as stated, that's not the case for other SoCs.
 
-> > > Or not, having an RTC set in the past is actually quite common. I'd find
-> > > it weird to have a new device boot and be set to a date in the future.
-> > 
-> > ...but still better than board stuck in the past, no?
-> > 
-> > > Also note that the threshold or offset thing may seem like a good idea
-> > > but fails with many RTCs because of how they handle leap years.
-> > 
-> > Well, you can still convert time from rtc to unix time, then do adjustment
-> > there.
-> > 
-> 
-> You can only if your machine is running when that happens. If that is
-> not the case, then you lost and your time is not correct anymore.
+In this series, patch 1, takes a very simplistic approach to solve the problem
+and the change is limited to the i2c driver itself. The aim with this change is
+to make it acceptable as a fix for v4.2+.
 
-I don't see why that should be a case... as long as you know what RTC
-does in event of overflow, and it is not something completely crazy.
+However, patch 1 is unfortunate also reverting back to the old behaviour,
+avoiding the direct_complete path, by always runtime resuming the device in the
+device_prepare() phase during system sleep. In many cases this is a waste,
+especially when the device could have remained runtime suspended during the
+entire system sleep sequence.
 
-> > Anyway, I guess it would be cool for rtc drivers to annotate what limits
-> > underlying storage has to the common code, so that we can do fixups once
-> > per class, not once per driver.
-> 
-> Yes, I'm in the middle of the whole rework that allows that.
-> 
-> I don't understand the sudden urgency of fixing that and the amount of
-> bikeshedding, seeing that the closest cutoff date is actually 31st of
-> december 2069 in the rtc subsystem and that anyway the current 32bit
-> userspace will explode in february 2038.
-> 
-> My plan from the beginning was to have something for the next stable. I
-> know nobody can read my mind but again, I don't think there is currently
-> any urgency to change anything.
+The rest of the changes in this series, addresses the above problem, avoiding
+to runtime resume the device unless it's really needed. One could have tried
+out other local hacks, limited to the i2c driver, but I believe the problem
+could exist for other drivers/devices as well, thus I aim for a more generic
+solution.
 
-Yes, mind reading is a problem. I can only read minds of ferungulates,
-and only if they are physicaly near me :-).
+In principle, this series enables the proven runtime PM centric approach to
+implement system sleep in the i2c driver. However, to do that the ACPI PM
+domain have to collaborate and understand this behaviour. Therefore a number of
+changes, patch 2 to patch 8, makes the needed changes to the ACPI PM domain.
+In the last change, patch9, the i2c driver converts to the runtime PM centric
+approach.
 
-Best regards,
-									Pavel
+It shall be noted, the behaviour of the ACPI PM domain should remain intact,
+still taking benefit of using the direct_complete path during system sleep,
+except for those devices that explicitly request it not to.
+
+This series has been tested on an ARM64 Hikey board, not having its i2c device
+attach to the ACPI PM domain. This means that the ACPI changes has so far only
+been compile tested. Any help in testing on relevant Intel SoCs is greatly
+appreciated and so is of course review comments.
+
+The series is based upon Rafael's pm tree and linux-next branch. It's also
+available at the following git:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/mmc.git acpi_pm_i2c_rpm_path
+
+Kind regards
+Ulf Hansson
+
+
+Ulf Hansson (9):
+  i2c: designware: Fix system suspend
+  PM / ACPI: Restore acpi_subsys_complete()
+  PM / Sleep: Remove pm_complete_with_resume_check()
+  PM / ACPI: Split code validating need for runtime resume in
+    ->prepare()
+  PM / ACPI: Split acpi_lpss_suspend_late|resume_early()
+  PM / ACPI: Provide option to disable direct_complete for ACPI devices
+  PM / ACPI: Enable the runtime PM centric approach for system sleep
+  PM / ACPI: Avoid runtime resuming device in
+    acpi_subsys_suspend|freeze()
+  i2c: designware: Deploy the runtime PM centric approach for system
+    sleep
+
+ drivers/acpi/acpi_lpss.c                    |  81 ++++++++++----
+ drivers/acpi/device_pm.c                    | 164 ++++++++++++++++++++++++----
+ drivers/base/power/generic_ops.c            |  23 ----
+ drivers/i2c/busses/i2c-designware-platdrv.c |  32 ++----
+ include/acpi/acpi_bus.h                     |   1 +
+ include/linux/acpi.h                        |   4 +
+ include/linux/pm.h                          |   1 -
+ 7 files changed, 219 insertions(+), 87 deletions(-)
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.7.4
 
--- 
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
---- 
-You received this message because you are subscribed to the Google Groups "rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
-
---W/nzBZO5zC0uMSeA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAllKti8ACgkQMOfwapXb+vIiwQCfQ7QxR1SKvoHK+zdLpdef2SvB
-0tQAnjy9uAFNWGhOZqLuDSMvdZ5dh9DC
-=n6oF
------END PGP SIGNATURE-----
-
---W/nzBZO5zC0uMSeA--
