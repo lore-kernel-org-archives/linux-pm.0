@@ -1,363 +1,419 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V8 1/6] PM / Domains: Add support to select performance-state of domains
-Date: Wed, 21 Jun 2017 12:40:48 +0530
-Message-ID: <52daf22d2c9d92b0e61c8c5c5a88516d7a08a31a.1498026827.git.viresh.kumar@linaro.org>
+Subject: [NOT-FOR-MERGE V8 3/6] soc: qcom: rpmpd: Add a powerdomain driver to model cx/mx powerdomains
+Date: Wed, 21 Jun 2017 12:40:50 +0530
+Message-ID: <c75b481cd4c32ba338c9b0218309be6217723dcf.1498026827.git.viresh.kumar@linaro.org>
 References: <cover.1498026827.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:36857 "EHLO
+        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752403AbdFUHLJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 03:11:09 -0400
+Received: by mail-pf0-f169.google.com with SMTP id x63so80877682pff.3
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2017 00:11:08 -0700 (PDT)
 In-Reply-To: <cover.1498026827.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1498026827.git.viresh.kumar@linaro.org>
 References: <cover.1498026827.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-Some platforms have the capability to configure the performance state of
-their Power Domains. The performance levels are identified by positive
-integer values, a lower value represents lower performance state.
+From: Rajendra Nayak <rnayak@codeaurora.org>
 
-This patch adds a new genpd API: pm_genpd_update_performance_state().
-The caller passes the affected device and the frequency representing its
-next DVFS state.
+THIS IS TEST CODE, SHOULDN'T BE MERGED.
 
-The power domains get two new callbacks:
+The cx/mx powerdomains just pass the performance state set by the
+consumers to the RPM (Remote Power manager) which then takes care
+of setting the appropriate voltage on the corresponding rails to
+meet the performance needs.
 
-- get_performance_state(): This is called by the genpd core to retrieve
-  the performance state (integer value) corresponding to a target
-  frequency for the device. This state is used by the genpd core to find
-  the highest requested state by all the devices powered by a domain.
+Add data for all powerdomains on msm8996.
 
-- set_performance_state(): The highest state retrieved from above
-  interface is then passed to this callback to finally program the
-  performance state of the power domain.
-
-The power domains can avoid supplying these callbacks, if they don't
-support setting performance-states.
-
-A power domain may have only get_performance_state() callback, if it
-doesn't have the capability of changing the performance state itself but
-someone in its parent hierarchy has.
-
-A power domain may have only set_performance_state(), if it doesn't have
-any direct devices below it but subdomains. And so the
-get_performance_state() will never get called from the core.
-
-The more common case would be to have both the callbacks set.
-
-Another API, pm_genpd_has_performance_state(), is also added to let
-other parts of the kernel check if the power domain of a device supports
-performance-states or not. This could have been done from
-pm_genpd_update_performance_state() as well, but that routine gets
-called every time we do DVFS for the device and it wouldn't be optimal
-in that case.
-
-Note that, the performance level as returned by
-->get_performance_state() for the parent domain of a device is used for
-all domains in parent hierarchy.
-
-Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+NOT-signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+NOT-signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/domain.c | 223 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   |  22 +++++
- 2 files changed, 245 insertions(+)
+ .../devicetree/bindings/power/qcom,rpmpd.txt       |  10 +
+ arch/arm64/boot/dts/qcom/msm8996.dtsi              |   5 +
+ drivers/soc/qcom/Kconfig                           |   9 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/rpmpd.c                           | 307 +++++++++++++++++++++
+ 5 files changed, 332 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/qcom,rpmpd.txt
+ create mode 100644 drivers/soc/qcom/rpmpd.c
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 71c95ad808d5..d506be9ff1f7 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -466,6 +466,229 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
- 	return NOTIFY_DONE;
- }
+diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.txt b/Documentation/devicetree/bindings/power/qcom,rpmpd.txt
+new file mode 100644
+index 000000000000..8b48ce57a563
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.txt
+@@ -0,0 +1,10 @@
++Qualcomm RPM Powerdomains
++
++* For RPM powerdomains, we communicate a performance state to RPM
++which then translates it into a corresponding voltage on a rail
++
++Required Properties:
++ - compatible: Should be one of the following
++	* qcom,rpmpd-msm8996: RPM Powerdomain for the msm8996 family of SoC
++ - power-domain-cells: number of cells in power domain specifier
++	must be 1.
+diff --git a/arch/arm64/boot/dts/qcom/msm8996.dtsi b/arch/arm64/boot/dts/qcom/msm8996.dtsi
+index 9bc9c857a000..1fec06285f38 100644
+--- a/arch/arm64/boot/dts/qcom/msm8996.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8996.dtsi
+@@ -412,6 +412,11 @@
+ 			status = "disabled";
+ 		};
  
++		rpmpd: qcom,rpmpd {
++			compatible = "qcom,rpmpd-msm8996", "qcom,rpmpd";
++			#power-domain-cells = <1>;
++		};
++
+ 		sdhc2: sdhci@74a4900 {
+ 			 status = "disabled";
+ 			 compatible = "qcom,sdhci-msm-v4";
+diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
+index 9fca977ef18d..3892148be3c3 100644
+--- a/drivers/soc/qcom/Kconfig
++++ b/drivers/soc/qcom/Kconfig
+@@ -24,6 +24,15 @@ config QCOM_PM
+ 	  modes. It interface with various system drivers to put the cores in
+ 	  low power modes.
+ 
++config QCOM_RPMPD
++	tristate "Qualcomm RPM Powerdomain driver"
++	depends on MFD_QCOM_RPM && QCOM_SMD_RPM
++	help
++	  QCOM RPM powerdomain driver to support powerdomain with
++	  performance states. The driver communicates a performance state
++	  value to RPM which then translates it into corresponding voltage
++	  for the voltage rail.
++
+ config QCOM_SMEM
+ 	tristate "Qualcomm Shared Memory Manager (SMEM)"
+ 	depends on ARCH_QCOM
+diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
+index 414f0de274fa..f7c3edfa6de8 100644
+--- a/drivers/soc/qcom/Makefile
++++ b/drivers/soc/qcom/Makefile
+@@ -7,3 +7,4 @@ obj-$(CONFIG_QCOM_SMEM_STATE) += smem_state.o
+ obj-$(CONFIG_QCOM_SMP2P)	+= smp2p.o
+ obj-$(CONFIG_QCOM_SMSM)	+= smsm.o
+ obj-$(CONFIG_QCOM_WCNSS_CTRL) += wcnss_ctrl.o
++obj-$(CONFIG_QCOM_RPMPD) += rpmpd.o
+diff --git a/drivers/soc/qcom/rpmpd.c b/drivers/soc/qcom/rpmpd.c
+new file mode 100644
+index 000000000000..d34d9c363815
+--- /dev/null
++++ b/drivers/soc/qcom/rpmpd.c
+@@ -0,0 +1,307 @@
 +/*
-+ * Returns true if anyone in genpd's parent hierarchy has
-+ * set_performance_state() set.
++ * Copyright (c) 2017, The Linux Foundation. All rights reserved.
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + */
-+static bool genpd_has_set_performance_state(struct generic_pm_domain *genpd)
-+{
-+	struct gpd_link *link;
 +
-+	if (genpd->set_performance_state)
-+		return true;
++#include <linux/err.h>
++#include <linux/export.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/pm_domain.h>
++#include <linux/mfd/qcom_rpm.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/platform_device.h>
++#include <linux/soc/qcom/smd-rpm.h>
 +
-+	list_for_each_entry(link, &genpd->slave_links, slave_node) {
-+		if (genpd_has_set_performance_state(link->master))
-+			return true;
++#include <dt-bindings/mfd/qcom-rpm.h>
++
++#define domain_to_rpmpd(domain) container_of(domain, struct rpmpd, pd)
++
++/* Resource types */
++#define RPMPD_SMPA 0x61706d73
++#define RPMPD_LDOA 0x616f646c
++
++/* Operation Keys */
++#define KEY_CORNER		0x6e726f63 /* corn */
++#define KEY_ENABLE		0x6e657773 /* swen */
++#define KEY_FLOOR_CORNER	0x636676   /* vfc */
++
++#define DEFINE_RPMPD_CORN_SMPA(_platform, _name, _active, r_id)		\
++	static struct rpmpd _platform##_##_active;			\
++	static struct rpmpd _platform##_##_name = {			\
++		.pd = {	.name = #_name,	},				\
++		.peer = &_platform##_##_active,				\
++		.res_type = RPMPD_SMPA,					\
++		.res_id = r_id,						\
++		.key = KEY_CORNER,					\
++	};								\
++	static struct rpmpd _platform##_##_active = {			\
++		.pd = { .name = #_active, },				\
++		.peer = &_platform##_##_name,				\
++		.active_only = true,					\
++		.res_type = RPMPD_SMPA,					\
++		.res_id = r_id,						\
++		.key = KEY_CORNER,					\
 +	}
 +
-+	return false;
-+}
-+
-+/**
-+ * pm_genpd_has_performance_state - Checks if power domain does performance
-+ * state management.
-+ *
-+ * @dev: Device whose power domain is getting inquired.
-+ *
-+ * This must be called by the user drivers, before they start calling
-+ * pm_genpd_update_performance_state(), to guarantee that all dependencies are
-+ * met and the device's genpd supports performance states.
-+ *
-+ * It is assumed that the user driver guarantees that the genpd wouldn't be
-+ * detached while this routine is getting called.
-+ *
-+ * Returns "true" if device's genpd supports performance states, "false"
-+ * otherwise.
-+ */
-+bool pm_genpd_has_performance_state(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd = genpd_lookup_dev(dev);
-+
-+	/* The parent domain must have set get_performance_state() */
-+	if (!IS_ERR(genpd) && genpd->get_performance_state) {
-+		if (genpd_has_set_performance_state(genpd))
-+			return true;
-+
-+		/*
-+		 * A genpd with ->get_performance_state() callback must also
-+		 * allow setting performance state.
-+		 */
-+		dev_err(dev, "genpd doesn't support setting performance state\n");
++#define DEFINE_RPMPD_CORN_LDOA(_platform, _name, r_id)			\
++	static struct rpmpd _platform##_##_name = {			\
++		.pd = { .name = #_name, },				\
++		.res_type = RPMPD_LDOA,					\
++		.res_id = r_id,						\
++		.key = KEY_CORNER,					\
 +	}
 +
-+	return false;
-+}
-+EXPORT_SYMBOL_GPL(pm_genpd_has_performance_state);
++#define DEFINE_RPMPD_VFC(_platform, _name, r_id, r_type)		\
++	static struct rpmpd _platform##_##_name = {			\
++		.pd = { .name = #_name, },				\
++		.res_type = r_type,					\
++		.res_id = r_id,						\
++		.key = KEY_FLOOR_CORNER,				\
++	}
 +
-+/*
-+ * Re-evaluate performance state of a power domain. Finds the highest requested
-+ * performance state by the devices and subdomains within the power domain and
-+ * then tries to change its performance state. If the power domain doesn't have
-+ * a set_performance_state() callback, then we move the request to its parent
-+ * power domain.
-+ *
-+ * Locking: Access (or update) to device's "pd_data->performance_state" field
-+ * happens only with parent domain's lock held. Subdomains have their
-+ * "genpd->performance_state" protected with their own lock (and they are the
-+ * only user of this field) and their per-parent-domain
-+ * "link->performance_state" field is protected with individual parent power
-+ * domain's lock and is only accessed/updated with that lock held.
-+ */
-+static int genpd_update_performance_state(struct generic_pm_domain *genpd,
-+					  int depth)
++#define DEFINE_RPMPD_VFC_SMPA(_platform, _name, r_id)			\
++	DEFINE_RPMPD_VFC(_platform, _name, r_id, RPMPD_SMPA)
++
++#define DEFINE_RPMPD_VFC_LDOA(_platform, _name, r_id)			\
++	DEFINE_RPMPD_VFC(_platform, _name, r_id, RPMPD_LDOA)
++
++struct rpmpd_req {
++	__le32 key;
++	__le32 nbytes;
++	__le32 value;
++};
++
++struct rpmpd {
++	struct generic_pm_domain pd;
++	struct rpmpd *peer;
++	const bool active_only;
++	unsigned long corner;
++	bool enabled;
++	const char *res_name;
++	const int res_type;
++	const int res_id;
++	struct qcom_smd_rpm *rpm;
++	__le32 key;
++};
++
++struct rpmpd_desc {
++	struct rpmpd **rpmpds;
++	size_t num_pds;
++};
++
++static DEFINE_MUTEX(rpmpd_lock);
++
++/* msm8996 RPM powerdomains */
++DEFINE_RPMPD_CORN_SMPA(msm8996, vddcx, vddcx_ao, 1);
++DEFINE_RPMPD_CORN_SMPA(msm8996, vddmx, vddmx_ao, 2);
++DEFINE_RPMPD_CORN_LDOA(msm8996, vddsscx, 26);
++
++DEFINE_RPMPD_VFC_SMPA(msm8996, vddcx_vfc, 1);
++DEFINE_RPMPD_VFC_LDOA(msm8996, vddsscx_vfc, 26);
++
++static struct rpmpd *msm8996_rpmpds[] = {
++	[0] = &msm8996_vddcx,
++	[1] = &msm8996_vddcx_ao,
++	[2] = &msm8996_vddcx_vfc,
++	[3] = &msm8996_vddmx,
++	[4] = &msm8996_vddmx_ao,
++	[5] = &msm8996_vddsscx,
++	[6] = &msm8996_vddsscx_vfc,
++};
++
++static const struct rpmpd_desc msm8996_desc = {
++	.rpmpds = msm8996_rpmpds,
++	.num_pds = ARRAY_SIZE(msm8996_rpmpds),
++};
++
++static const struct of_device_id rpmpd_match_table[] = {
++	{ .compatible = "qcom,rpmpd-msm8996", .data = &msm8996_desc },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, rpmpd_match_table);
++
++static int rpmpd_send_enable(struct rpmpd *pd, bool enable)
 +{
-+	struct generic_pm_domain_data *pd_data;
-+	struct generic_pm_domain *master;
-+	struct pm_domain_data *pdd;
-+	unsigned int state = 0, prev;
-+	struct gpd_link *link;
++	struct rpmpd_req req = {
++		.key = KEY_ENABLE,
++		.nbytes = cpu_to_le32(sizeof(u32)),
++		.value = cpu_to_le32(enable),
++	};
++
++	return qcom_rpm_smd_write(pd->rpm, QCOM_RPM_ACTIVE_STATE, pd->res_type,
++				  pd->res_id, &req, sizeof(req));
++}
++
++static int rpmpd_send_corner(struct rpmpd *pd, int state, unsigned int corner)
++{
++	struct rpmpd_req req = {
++		.key = pd->key,
++		.nbytes = cpu_to_le32(sizeof(u32)),
++		.value = cpu_to_le32(corner),
++	};
++
++	return qcom_rpm_smd_write(pd->rpm, state, pd->res_type, pd->res_id,
++				  &req, sizeof(req));
++};
++
++static void to_active_sleep(struct rpmpd *pd, unsigned long corner,
++			    unsigned long *active, unsigned long *sleep)
++{
++	*active = corner;
++
++	if (pd->active_only)
++		*sleep = 0;
++	else
++		*sleep = *active;
++}
++
++static int rpmpd_aggregate_corner(struct rpmpd *pd)
++{
 +	int ret;
++	struct rpmpd *peer = pd->peer;
++	unsigned long active_corner, sleep_corner;
++	unsigned long this_corner = 0, this_sleep_corner = 0;
++	unsigned long peer_corner = 0, peer_sleep_corner = 0;
 +
-+	/* Traverse all devices within the domain */
-+	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-+		pd_data = to_gpd_data(pdd);
++	to_active_sleep(pd, pd->corner, &this_corner, &this_sleep_corner);
 +
-+		if (pd_data->performance_state > state)
-+			state = pd_data->performance_state;
-+	}
++	if (peer && peer->enabled)
++		to_active_sleep(peer, peer->corner, &peer_corner,
++				&peer_sleep_corner);
 +
-+	/* Traverse all subdomains within the domain */
-+	list_for_each_entry(link, &genpd->master_links, master_node) {
-+		if (link->performance_state > state)
-+			state = link->performance_state;
-+	}
++	active_corner = max(this_corner, peer_corner);
 +
-+	if (genpd->performance_state == state)
-+		return 0;
-+
-+	if (genpd->set_performance_state) {
-+		ret = genpd->set_performance_state(genpd, state);
-+		if (!ret)
-+			genpd->performance_state = state;
-+
-+		return ret;
-+	}
-+
-+	/*
-+	 * Not all domains support updating performance state. Move on to their
-+	 * parent domains in that case.
-+	 */
-+	prev = genpd->performance_state;
-+
-+	list_for_each_entry(link, &genpd->slave_links, slave_node) {
-+		master = link->master;
-+
-+		genpd_lock_nested(master, depth + 1);
-+
-+		link->performance_state = state;
-+		ret = genpd_update_performance_state(master, depth + 1);
-+		if (ret)
-+			link->performance_state = prev;
-+
-+		genpd_unlock(master);
-+
-+		if (ret)
-+			goto err;
-+	}
-+
-+	/*
-+	 * The parent domains are updated now, lets get genpd performance_state
-+	 * in sync with those.
-+	 */
-+	genpd->performance_state = state;
-+	return 0;
-+
-+err:
-+	list_for_each_entry_continue_reverse(link, &genpd->slave_links,
-+					     slave_node) {
-+		master = link->master;
-+
-+		genpd_lock_nested(master, depth + 1);
-+		link->performance_state = prev;
-+		if (genpd_update_performance_state(master, depth + 1))
-+			pr_err("%s: Failed to roll back to %d performance state\n",
-+			       genpd->name, prev);
-+		genpd_unlock(master);
-+	}
-+
-+	return ret;
-+}
-+
-+static int __dev_update_performance_state(struct device *dev, int state)
-+{
-+	struct generic_pm_domain_data *gpd_data;
-+	int ret;
-+
-+	spin_lock_irq(&dev->power.lock);
-+
-+	if (!dev->power.subsys_data || !dev->power.subsys_data->domain_data) {
-+		ret = -ENODEV;
-+		goto unlock;
-+	}
-+
-+	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
-+
-+	ret = gpd_data->performance_state;
-+	gpd_data->performance_state = state;
-+
-+unlock:
-+	spin_unlock_irq(&dev->power.lock);
-+
-+	return ret;
-+}
-+
-+/**
-+ * pm_genpd_update_performance_state - Update performance state of device's
-+ * parent power domain for the target frequency for the device.
-+ *
-+ * @dev: Device for which the performance-state needs to be adjusted.
-+ * @rate: Device's next frequency. This can be set as 0 when the device doesn't
-+ * have any performance state constraints left (And so the device wouldn't
-+ * participate anymore to find the target performance state of the genpd).
-+ *
-+ * This must be called by the user drivers (as many times as they want) only
-+ * after pm_genpd_has_performance_state() is called (only once) and that
-+ * returned "true".
-+ *
-+ * It is assumed that the user driver guarantees that the genpd wouldn't be
-+ * detached while this routine is getting called.
-+ *
-+ * Returns 0 on success and negative error values on failures.
-+ */
-+int pm_genpd_update_performance_state(struct device *dev, unsigned long rate)
-+{
-+	struct generic_pm_domain *genpd = dev_to_genpd(dev);
-+	int ret, state;
-+
-+	if (IS_ERR(genpd))
-+		return -ENODEV;
-+
-+	genpd_lock(genpd);
-+
-+	state = genpd->get_performance_state(dev, rate);
-+	if (state < 0) {
-+		ret = state;
-+		goto unlock;
-+	}
-+
-+	state = __dev_update_performance_state(dev, state);
-+	if (state < 0) {
-+		ret = state;
-+		goto unlock;
-+	}
-+
-+	ret = genpd_update_performance_state(genpd, 0);
++	ret = rpmpd_send_corner(pd, QCOM_RPM_ACTIVE_STATE, active_corner);
 +	if (ret)
-+		__dev_update_performance_state(dev, state);
++		return ret;
 +
-+unlock:
-+	genpd_unlock(genpd);
++	sleep_corner = max(this_sleep_corner, peer_sleep_corner);
++
++	return rpmpd_send_corner(pd, QCOM_RPM_SLEEP_STATE, sleep_corner);
++}
++
++static int rpmpd_power_on(struct generic_pm_domain *domain)
++{
++	int ret;
++	struct rpmpd *pd = domain_to_rpmpd(domain);
++
++	mutex_lock(&rpmpd_lock);
++
++	ret = rpmpd_send_enable(pd, true);
++	if (ret)
++		goto out;
++
++	pd->enabled = true;
++
++	if (pd->corner)
++		ret = rpmpd_aggregate_corner(pd);
++
++out:
++	mutex_unlock(&rpmpd_lock);
 +
 +	return ret;
 +}
-+EXPORT_SYMBOL_GPL(pm_genpd_update_performance_state);
 +
- /**
-  * genpd_power_off_work_fn - Power off PM domain whose subdomain count is 0.
-  * @work: Work structure used for scheduling the execution of this function.
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index b7803a251044..bf90177208a2 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -63,8 +63,12 @@ struct generic_pm_domain {
- 	unsigned int device_count;	/* Number of devices */
- 	unsigned int suspended_count;	/* System suspend device counter */
- 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
-+	unsigned int performance_state;	/* Max requested performance state */
- 	int (*power_off)(struct generic_pm_domain *domain);
- 	int (*power_on)(struct generic_pm_domain *domain);
-+	int (*get_performance_state)(struct device *dev, unsigned long rate);
-+	int (*set_performance_state)(struct generic_pm_domain *domain,
-+				     unsigned int state);
- 	struct gpd_dev_ops dev_ops;
- 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
- 	bool max_off_time_changed;
-@@ -99,6 +103,9 @@ struct gpd_link {
- 	struct list_head master_node;
- 	struct generic_pm_domain *slave;
- 	struct list_head slave_node;
-+
-+	/* Sub-domain's per-parent domain performance state */
-+	unsigned int performance_state;
- };
- 
- struct gpd_timing_data {
-@@ -118,6 +125,7 @@ struct generic_pm_domain_data {
- 	struct pm_domain_data base;
- 	struct gpd_timing_data td;
- 	struct notifier_block nb;
-+	unsigned int performance_state;
- 	void *data;
- };
- 
-@@ -148,6 +156,9 @@ extern int pm_genpd_remove(struct generic_pm_domain *genpd);
- 
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-+extern bool pm_genpd_has_performance_state(struct device *dev);
-+extern int pm_genpd_update_performance_state(struct device *dev,
-+					     unsigned long rate);
- #else
- 
- static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
-@@ -185,6 +196,17 @@ static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
- 	return -ENOTSUPP;
- }
- 
-+static inline bool pm_genpd_has_performance_state(struct device *dev)
++static int rpmpd_power_off(struct generic_pm_domain *domain)
 +{
-+	return false;
++	int ret;
++	struct rpmpd *pd = domain_to_rpmpd(domain);
++
++	mutex_lock(&rpmpd_lock);
++
++	ret = rpmpd_send_enable(pd, false);
++	if (!ret)
++		pd->enabled = false;
++
++	mutex_unlock(&rpmpd_lock);
++
++	return ret;
 +}
 +
-+static inline int pm_genpd_update_performance_state(struct device *dev,
-+						    unsigned long rate)
++static int rpmpd_probe(struct platform_device *pdev)
 +{
-+	return -ENOTSUPP;
++	int i;
++	size_t num;
++	struct genpd_onecell_data *data;
++	struct qcom_smd_rpm *rpm;
++	struct rpmpd **rpmpds;
++	const struct rpmpd_desc *desc;
++
++	rpm = dev_get_drvdata(pdev->dev.parent);
++	if (!rpm) {
++		dev_err(&pdev->dev, "Unable to retrieve handle to RPM\n");
++		return -ENODEV;
++	}
++
++	desc = of_device_get_match_data(&pdev->dev);
++	if (!desc)
++		return -EINVAL;
++
++	rpmpds = desc->rpmpds;
++	num = desc->num_pds;
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->domains = devm_kcalloc(&pdev->dev, num, sizeof(*data->domains),
++				     GFP_KERNEL);
++	data->num_domains = num;
++
++	for (i = 0; i < num; i++) {
++		if (!rpmpds[i])
++			continue;
++
++		rpmpds[i]->rpm = rpm;
++		rpmpds[i]->pd.power_off = rpmpd_power_off;
++		rpmpds[i]->pd.power_on = rpmpd_power_on;
++		pm_genpd_init(&rpmpds[i]->pd, NULL, true);
++
++		data->domains[i] = &rpmpds[i]->pd;
++	}
++
++	return of_genpd_add_provider_onecell(pdev->dev.of_node, data);
 +}
 +
- #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
- #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
- #endif
++static int rpmpd_remove(struct platform_device *pdev)
++{
++	of_genpd_del_provider(pdev->dev.of_node);
++	return 0;
++}
++
++static struct platform_driver rpmpd_driver = {
++	.driver = {
++		.name = "qcom-rpmpd",
++		.of_match_table = rpmpd_match_table,
++	},
++	.probe = rpmpd_probe,
++	.remove = rpmpd_remove,
++};
++
++static int __init rpmpd_init(void)
++{
++	return platform_driver_register(&rpmpd_driver);
++}
++core_initcall(rpmpd_init);
++
++static void __exit rpmpd_exit(void)
++{
++	platform_driver_unregister(&rpmpd_driver);
++}
++module_exit(rpmpd_exit);
++
++MODULE_DESCRIPTION("Qualcomm RPM Power Domain Driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:qcom-rpmpd");
 -- 
 2.13.0.71.gd7076ec9c9cb
