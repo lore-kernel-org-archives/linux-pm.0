@@ -1,102 +1,101 @@
-From: "Zheng, Lv" <lv.zheng@intel.com>
-Subject: RE: [PATCH v2 3/3] ACPI / sleep: EC-based wakeup from
- suspend-to-idle on recent Dell systems
-Date: Wed, 21 Jun 2017 01:13:25 +0000
-Message-ID: <1AE640813FDE7649BE1B193DEA596E886CED22FF@SHSMSX101.ccr.corp.intel.com>
-References: <1979543.KIEJ8uyRaT@aspire.rjw.lan>
- <3454366.uzaJljlWGm@aspire.rjw.lan> <3689795.xuIczRHZsl@aspire.rjw.lan>
- <2026371.DVJN39QYJi@aspire.rjw.lan>
- <CA+55aFwywLewxDenVcH1GxeigpS30B_+rvYh+=ff76EQpOcuOg@mail.gmail.com>
- <CAJZ5v0iH-nv3Ziu+JhcERit1oykmYxkPZE6j6zswL-LssnhQbQ@mail.gmail.com>
+From: Guodong Xu <guodong.xu-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 3/3] arm64: dts: register Hi3660's thermal sensor
+Date: Wed, 21 Jun 2017 09:58:13 +0800
+Message-ID: <CAFGCpxyHowrssdhT1RffDO1o4-5=ksqAz+r8Q23-myVCi5h_fA@mail.gmail.com>
+References: <1497930035-60894-1-git-send-email-kevin.wangtao@hisilicon.com>
+ <1497930035-60894-3-git-send-email-kevin.wangtao@hisilicon.com>
+ <CAFGCpxwmN3jAZn2chK+QQ-YKg7TwWJOTHSi1VzwcSQ7Mm3gQng@mail.gmail.com> <7abe5b01-c728-accd-d6bb-05d9ceee2176@hisilicon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iH-nv3Ziu+JhcERit1oykmYxkPZE6j6zswL-LssnhQbQ@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, Tom Lanyon <tom@oneshoeco.com>, =?utf-8?B?SsOpcj9tZSBkZSBCcmV0YWduZQ==?= <jerome.debretagne@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <7abe5b01-c728-accd-d6bb-05d9ceee2176-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Wangtao (Kevin, Kirin)" <kevin.wangtao-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
+Cc: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "xuwei (O)" <xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, "Sunzhaosheng Sun(Zhaosheng)" <sunzhaosheng-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGksIFJhZmFlbA0KDQo+IEZyb206IGxpbnV4LWFjcGktb3duZXJAdmdlci5rZXJuZWwub3JnIFtt
-YWlsdG86bGludXgtYWNwaS1vd25lckB2Z2VyLmtlcm5lbC5vcmddIE9uIEJlaGFsZiBPZiBSYWZh
-ZWwgSi4NCj4gV3lzb2NraQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyIDMvM10gQUNQSSAvIHNs
-ZWVwOiBFQy1iYXNlZCB3YWtldXAgZnJvbSBzdXNwZW5kLXRvLWlkbGUgb24gcmVjZW50IERlbGwg
-c3lzdGVtcw0KPiANCj4gT24gVHVlLCBKdW4gMjAsIDIwMTcgYXQgMjowNyBBTSwgTGludXMgVG9y
-dmFsZHMNCj4gPHRvcnZhbGRzQGxpbnV4LWZvdW5kYXRpb24ub3JnPiB3cm90ZToNCj4gPiBPbiBU
-dWUsIEp1biAyMCwgMjAxNyBhdCA1OjUzIEFNLCBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHJqd3lz
-b2NraS5uZXQ+IHdyb3RlOg0KPiA+Pg0KPiA+PiAtPiB2MjogQWRkZWQgYWNwaV9zbGVlcD1ub19l
-Y193YWtldXAgdG8gcHJldmVudCBFQyBldmVudHMgZnJvbSB3YWtpbmcgdXANCj4gPj4gICAgICAg
-ICAgIHRoZSBzeXN0ZW0gZnJvbSBzMmlkbGUgb24gc3lzdGVtcyB3aGVyZSB0aGV5IGRvIHRoYXQg
-YnkgZGVmYXVsdC4NCj4gPg0KPiA+IFRoaXMgc2VlbXMgYSBiaWcgaGFja3kuDQo+ID4NCj4gPiBJ
-cyB0aGVyZSBubyB3YXkgdG8gc2ltcGx5IG1ha2UgYWNwaV9lY19zdXNwZW5kKCkgc21hcnRlciB3
-aGlsZSBnb2luZw0KPiA+IHRvIHNsZWVwPyBJbnN0ZWFkIG9mIGp1c3QgdW5jb25kaXRpb25hbGx5
-IGRpc2FibGluZyBldmVyeSBFQyBHUEUsIGNhbg0KPiA+IHdlIHNlZSB0aGF0ICJ0aGlzIGdwZSBp
-cyB0aGUgcG93ZXIgYm90dG9uIiBzb21laG93Pw0KPiANCj4gVW5mb3J0dW5hdGVseSwgdGhlIGNv
-bm5lY3Rpb24gYmV0d2VlbiB0aGUgR1BFIGFuZCB0aGUgcG93ZXIgYnV0dG9uIGlzDQo+IG5vdCBk
-aXJlY3QuDQo+IA0KPiBUaGUgRUMgR1BFIGhhbmRsZXIgaGFzIG5vIGlkZWEgdGhhdCBpdCB3aWxs
-IGdlbmVyYXRlIHBvd2VyIGJ1dHRvbg0KPiBldmVudHMuICBJdCBzaW1wbHkgZXhlY3V0ZXMgYW4g
-QU1MIG1ldGhvZCBkb2luZyB0aGF0Lg0KPiANCj4gVGhlIEFNTCBtZXRob2QsIGluIHR1cm4sIGV4
-ZWN1dGVzIE5vdGlmeShwb3dlciBidXR0b24gZGV2aWNlKSBhbmQgdGhlDQo+ICJwb3dlciBidXR0
-b24gZGV2aWNlIiBkcml2ZXIgaGFzIHRvIHJlZ2lzdGVyIGEgbm90aWZ5IGhhbmRsZXIgdGhhdA0K
-PiB3aWxsIHJlY29nbml6ZSBhbmQgcHJvY2VzcyB0aGUgZXZlbnRzLiAgSXQgZG9lc24ndCBrbm93
-IGluIHByaW5jaXBsZQ0KPiB3aGVyZSB0aGUgZXZlbnRzIHdpbGwgY29tZSBmcm9tLCB0aG91Z2gu
-ICBUaGV5IG1heSBjb21lIGZyb20gdGhlIEVDIG9yDQo+IGZyb20gYSBkaWZmZXJlbnQgR1BFIGV0
-Yy4NCj4gDQo+IE5laXRoZXIgdGhlIEVDIGRyaXZlciwgbm9yIHRoZSAicG93ZXIgYnV0dG9uIGRl
-dmljZSIgZHJpdmVyIGNhbiBmaWd1cmUNCj4gb3V0IHRoYXQgdGhlIGNvbm5lY3Rpb24gaXMgdGhl
-cmUuDQoNClRoZSBFQyBkcml2ZXIgY2FuIG9ubHkgZ2V0IGFuIGV2ZW50IG51bWJlciBhZnRlciBx
-dWVyeWluZyB0aGUgZmlybXdhcmUuDQpBbmQgaXQgaGFzIG5vIGlkZWEgd2hldGhlciBoYW5kbGlu
-ZyB0aGlzIGV2ZW50IGJ5IGV4ZWN1dGluZyBfRXh4IHdoZXJlDQpYeCBpcyB0aGUgbnVtYmVyIG9m
-IHRoZSBldmVudCBjYW4gcmVzdWx0IGluIE5vdGlmeShwb3dlciBidXR0b24gZGV2aWNlKS4NCg0K
-VHJhZGl0aW9uYWwgQUNQSSBwb3dlciBidXR0b24gZXZlbnRzIGFyZSBBQ1BJIGZpeGVkIGV2ZW50
-cywgbm90IEVDIEdQRToNCg0KUG93ZXIgYnV0dG9uIHNpZ25hbA0KQSBwb3dlciBidXR0b24gY2Fu
-IGJlIHN1cHBsaWVkIGluIHR3byB3YXlzLg0KIE9uZSB3YXkgaXMgdG8gc2ltcGx5IHVzZSB0aGUg
-Zml4ZWQgc3RhdHVzIGJpdCwgYW5kDQogVGhlIG90aGVyIHVzZXMgdGhlIGRlY2xhcmF0aW9uIG9m
-IGFuIEFDUEkgcG93ZXIgZGV2aWNlIGFuZCBBTUwgY29kZSB0bw0KICBkZXRlcm1pbmUgdGhlIGV2
-ZW50Lg0KRm9yIG1vcmUgaW5mb3JtYXRpb24gYWJvdXQgdGhlIGFsdGVybmF0ZS1kZXZpY2UgYmFz
-ZWQgcG93ZXIgYnV0dG9uLCBzZWUNClNlY3Rpb24gNC44LjIuMi4xLjIsIENvbnRyb2wgTWV0aG9k
-IFBvd2VyIEJ1dHRvbi7igJ0NCg0KSWYgaXQgaXMgbm90IGRlc2lnbmVkIGFzIGZpeGVkIGV2ZW50
-LCBPUyBoYXMgbm8gaWRlYSB3aGF0IEdQRSwgb3INCkVDIGV2ZW50IG51bWJlciBpcyByZWxhdGVk
-IHRvIHRoZSBwb3dlciBidXR0b24uDQoNCj4gDQo+ID4gRGlzYWJsaW5nIHRoZSBwb3dlciBidXR0
-b24gZXZlbnQgc291bmRzIGZ1bmRhbWVudGFsbHkgYnJva2VuLCBhbmQgaXQNCj4gPiBzb3VuZHMg
-bGlrZSBXaW5kb3dzIGRvZXNuJ3QgZG8gdGhhdC4gSSBkb3VidCBXaW5kb3dzIGhhcyBzb21lIGhh
-Y2t5DQo+ID4gd2hpdGVsaXN0LiBTbyBJJ2QgcmF0aGVyIGZpeCBhIGRlZXBlciBpc3N1ZSB0aGFu
-IGhhdmUgdGhlc2Uga2luZHMgb2YNCj4gPiBoYWNrcywgaWYgYXQgYWxsIHBvc3NpYmxlLg0KPiAN
-Cj4gTXkgdW5kZXJzdGFuZGluZyBpcyB0aGF0IFdpbmRvd3MgdXNlcyB0aGUgQUNQSV9GQURUX0xP
-V19QT1dFUl9TMCBmbGFnLg0KPiBJdCBnZW5lcmFsbHkgZW5hYmxlcyBub24tUzMgc3VzcGVuZC9y
-ZXN1bWUgd2hlbiB0aGlzIGZsYWcgaXMgc2V0IGFuZA0KPiBpdCBkb2Vzbid0IHRvdWNoIFMzIHRo
-ZW4uICBLZWVwaW5nIHRoZSBFQyBHUEUgKGFuZCBvdGhlciBHUEVzIGZvciB0aGF0DQo+IG1hdHRl
-cikgZW5hYmxlZCBvdmVyIHN1c3BlbmQvcmVzdW1lIGlzIHBhcnQgb2YgdGhhdCBpZiBteQ0KPiB1
-bmRlcnN0YW5kaW5nIGlzIGNvcnJlY3QuDQoNClRoaXMgc291bmRzIHJlYXNvbmFibGUsIGJ1dCBJ
-IGhhdmUgYSBxdWVzdGlvbi4NCg0KT24gU3VyZmFjZSBub3RlYm9va3MsIGFuIEVDIEdQRSB3YWtl
-IGNhcGFibGUgc2V0dGluZyBpcyBwcmVwYXJlZDoNCiAgICAgICAgICAgICAgICAgICAgRGV2aWNl
-IChFQzApDQogICAgICAgICAgICAgICAgICAgIHsNCiAgICAgICAgICAgICAgICAgICAgICAgIE5h
-bWUgKF9ISUQsIEVpc2FJZCAoIlBOUDBDMDkiKSkgIC8vIF9ISUQ6IEhhcmR3YXJlIElEDQogICAg
-ICAgICAgICAgICAgICAgICAgICAuLi4NCiAgICAgICAgICAgICAgICAgICAgICAgIE1ldGhvZCAo
-X1NUQSwgMCwgTm90U2VyaWFsaXplZCkgIC8vIF9TVEE6IFN0YXR1cw0KICAgICAgICAgICAgICAg
-ICAgICAgICAgew0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIC4uLg0KICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIFJldHVybiAoMHgwRikNCiAgICAgICAgICAgICAgICAgICAgICAgIH0N
-CiAgICAgICAgICAgICAgICAgICAgICAgIE5hbWUgKF9HUEUsIDB4MzgpICAvLyBfR1BFOiBHZW5l
-cmFsIFB1cnBvc2UgRXZlbnRzDQogICAgICAgICAgICAgICAgICAgICAgICBOYW1lIChfUFJXLCBQ
-YWNrYWdlICgweDAyKSAgLy8gX1BSVzogUG93ZXIgUmVzb3VyY2VzIGZvciBXYWtlDQogICAgICAg
-ICAgICAgICAgICAgICAgICB7DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgMHgzOCwgDQog
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgMHgwMw0KICAgICAgICAgICAgICAgICAgICAgICAg
-fSkNCg0KVGhlIF9QUlcgbWVhbnMgR1BFIDB4MzggKEVDIEdQRSkgY2FuIHdha2UtdXAgdGhlIHN5
-c3RlbSBmcm9tIFMzLVMwLg0KQW5kIHRoZSBwbGF0Zm9ybSBvbmx5IHN1cHBvcnRzIHMyaWRsZS4N
-CkRlY29kaW5nIGl0cyBGQURULCB3ZSBjYW4gc2VlIHRoZSBmbGFnIGlzIHNldDoNClswNzBoIDAx
-MTIgICA0XSAgICAgICAgRmxhZ3MgKGRlY29kZWQgYmVsb3cpIDogMDAyMzg0QjUNCi4uLg0KICAg
-ICAgICAgICAgICAgICAgICAgIExvdyBQb3dlciBTMCBJZGxlIChWNSkgOiAxDQoNCklmIEVDIEdQ
-RSBzaG91bGQgYWx3YXlzIGJlIGVuYWJsZWQgd2hlbiB0aGUgZmxhZyBpcyBzZXQsIHdoeSBNUw0K
-KHN1cmZhY2UgcHJvcyBhcmUgbWFudWZhY3R1cmVkIGJ5IE1TKSBwcmVwYXJlcyBfUFJXIGZvciBp
-dHMgRUM/DQoNClRoYW5rcywNCkx2DQoNCj4gDQo+IER1cmluZyBzdXNwZW5kIHdlIGdlbmVyYWxs
-eSBkaXNhYmxlIGFsbCBHUEVzIHRoYXQgYXJlIG5vdCBleHBlY3RlZCB0bw0KPiBnZW5lcmF0ZSB3
-YWtldXAgZXZlbnRzIGluIG9yZGVyIHRvIGF2b2lkIHNwdXJpb3VzIHdha2V1cHMsIGJ1dCB3ZSBj
-YW4NCj4gdHJ5IHRvIGtlZXAgdGhlbSBlbmFibGVkIGlmIEFDUElfRkFEVF9MT1dfUE9XRVJfUzAg
-aXMgc2V0LiAgVGhhdCB3aWxsDQo+IHJlZHVjZSB0aGUgdWdsaW5lc3MsIGJ1dCB0aGUgY29zdCBt
-YXkgYmUgbW9yZSBlbmVyZ3kgdXNlZCB3aGlsZQ0KPiBzdXNwZW5kZWQgb24gc29tZSBzeXN0ZW1z
-Lg0KPiANCj4gVGhhbmtzLA0KPiBSYWZhZWwNCj4gLS0NCj4gVG8gdW5zdWJzY3JpYmUgZnJvbSB0
-aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWFjcGkiIGluDQo+IHRo
-ZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnDQo+IE1vcmUg
-bWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8u
-aHRtbA0K
+On Tue, Jun 20, 2017 at 4:32 PM, Wangtao (Kevin, Kirin)
+<kevin.wangtao-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org> wrote:
+>
+>
+> =E5=9C=A8 2017/6/20 15:38, Guodong Xu =E5=86=99=E9=81=93:
+>>
+>>
+>>
+>> 2017=E5=B9=B46=E6=9C=8820=E6=97=A5 =E4=B8=8A=E5=8D=8811:49=EF=BC=8C"Tao =
+Wang" <kevin.wangtao-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org
+>> <mailto:kevin.wangtao-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>>=E5=86=99=E9=81=93=EF=BC=9A
+>>
+>>     Bind thermal sensor driver for Hi3660.
+>>
+>>     Signed-off-by: Tao Wang <kevin.wangtao-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org
+>> <mailto:kevin.wangtao-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>>
+>>     Signed-off-by: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+>> <mailto:leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>>
+>>     ---
+>>       arch/arm64/boot/dts/hisilicon/hi3660.dtsi |    7 +++++++
+>>       1 file changed, 7 insertions(+)
+>>
+>>     diff --git a/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
+>> b/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
+>>     index 3983086..cc67958 100644
+>>     --- a/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
+>>     +++ b/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
+>>     @@ -156,5 +156,12 @@
+>>
+>>
+>> i am wondering which tree this patch should be applied to. Actually Olof
+>> Johansson olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org <mailto:olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org> just merged hi3660 dts =
+into
+>> his tree. You should better rebase you dts patch onto that.
+>
+> Can you share me the git path?
+
+As of this morning, it has shown up in linux next tag: next-20170620
+
+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/ar=
+ch/arm64/boot/dts/hisilicon?h=3Dnext-20170620
+
+-Guodong
+
+
+>>
+>>
+>>
+>>                              clock-names =3D "uartclk", "apb_pclk";
+>>                              status =3D "disabled";
+>>                      };
+>>     +
+>>     +               tsensor: tsensor {
+>>     +                       compatible =3D "hisilicon,thermal-hi3660";
+>>     +                       reg =3D <0x0 0xfff30000 0x0 0x1000>;
+>>     +                       #thermal-sensor-cells =3D <1>;
+>>     +                       status =3D "ok";
+>>
+>>
+>> please remove status ok. that's default. redundant.
+>
+> ok
+>>
+>>
+>>     +               };
+>>              };
+>>       };
+>>     --
+>>     1.7.9.5
+>>
+>>
+>>     _______________________________________________
+>>     linux-arm-kernel mailing list
+>>     linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+>> <mailto:linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+>>     http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>> <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>
+>>
+>>
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
