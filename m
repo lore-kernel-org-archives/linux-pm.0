@@ -1,96 +1,77 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Drivers taking different actions depending on sleep state
-Date: Wed, 21 Jun 2017 23:59:05 +0200
-Message-ID: <CAJZ5v0g_egRwxOLqft=JhvzAqBWuyvC8yiO7De5TYUZLUT2Fpw@mail.gmail.com>
-References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr> <CAJZ5v0iL7voAz9T+36fXXncOj4UrFSAH8WzwEbec96GuFUteaQ@mail.gmail.com>
- <ccac39d6-4611-8b46-12f7-24227ef3b35e@gmail.com>
+From: John Stultz <john.stultz@linaro.org>
+Subject: Re: [PATCH 0/9] PM / ACPI / i2c: Fix system suspend and deploy
+ runtime PM centric path for ACPI
+Date: Wed, 21 Jun 2017 15:39:21 -0700
+Message-ID: <CALAqxLXe0mTN=RizWroJE3p=dcr8JbV+jTws6WjtG1SpWJd5mg@mail.gmail.com>
+References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f54.google.com ([209.85.214.54]:38099 "EHLO
-        mail-it0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751667AbdFUV7G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 17:59:06 -0400
-Received: by mail-it0-f54.google.com with SMTP id b205so10993120itg.1
-        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2017 14:59:06 -0700 (PDT)
-In-Reply-To: <ccac39d6-4611-8b46-12f7-24227ef3b35e@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Mason <slash.tmp@free.fr>, Ulf Hansson <ulf.hansson@linaro.org>, JB <jb_lescher@sigmadesigns.com>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Jun 21, 2017 at 11:16 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
-> On 06/09/2017 03:53 PM, Rafael J. Wysocki wrote:
->> Hi,
->>
->> On Fri, Jun 9, 2017 at 5:20 PM, Mason <slash.tmp@free.fr> wrote:
->>> Hello,
->>>
->>> I read the "Sleep States" documentation:
->>> https://www.kernel.org/doc/Documentation/power/states.txt
->>>
->>> It mentions /sys/power/mem_sleep but I don't have that in 4.9
->>> # ll /sys/power/
->>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 pm_async
->>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 pm_freeze_timeout
->>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 state
->>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 wakeup_count
->>>
->>> # cat /sys/power/state
->>> freeze mem
->>>
->>> Currently my platform's "mem" is a true suspend-to-RAM trigger,
->>> where drivers are supposed to save their state (register values
->>> will be lost), then Linux hands control over to firmware which
->>> enables RAM self-refresh and powers the chip down. When the system
->>> resumes, drivers restore their state from their copy in memory.
->>>
->>> One driver is responsible for loading/unloading microcode running
->>> on the DSPs. This operation is required only when powering down
->>> the chip, but it should be avoided for "low-latency" sleeps.
->>>
->>> The problem is that, if I understand correctly, drivers have no way
->>> of knowing which sleep state is being entered/exited?
->>>
->>> How can I have the microcode driver take different decisions
->>> based on the sleep state?
->>
->> The cleanest way would be to run that code from one of the platform
->> suspend hooks that receive information on what sleep state is to be
->> entered.
+On Wed, Jun 21, 2017 at 12:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> The i2c designware platform driver, drivers/i2c/busses/i2c-designware-platdrv.c,
+> currently suffers from a regression, which easily can be triggerd during system
+> suspend/resume.
 >
-> I am not sure this would be cleaner, because that would create a tighter
-> dependency between different drivers, each of them having their
-> suspend/resume routings and the driver that implements the
-> platform_suspend_ops, that could also create some nice layering
-> violations and some difficult to solve dependencies.
+> In particular the regression concerns those SoCs, which doesn't have the i2c
+> device being attached to the ACPI PM domain.
 >
->>
->> Alternatively, those hooks can set/clear flags that can be accessed by
->> drivers, but that of course may your drivers depend on the platform
->> (still, in the microcode case the driver seems to be
->> platform-dependent anyway).
+> The regression, introduced in commit 8503ff166504 ("i2c: designware: Avoid
+> unnecessary resuming during system suspend"), takes advantage of the so called
+> direct_complete path during system sleep, which works well when using the ACPI
+> PM domain, however as stated, that's not the case for other SoCs.
 >
-> It may be platform dependent, but the actual system-wide suspend/resume
-> implementations can vary a lot. For example you may have started with
-> some particular CPU architecture on your platforms, with one driver
-> implementing an instance of platform_suspend_ops, and then as you moved
-> to another CPU architecture, some of that could be managed by a generic
-> driver (e.g: ARM SCPI, ACPI etc. etc.).
+> In this series, patch 1, takes a very simplistic approach to solve the problem
+> and the change is limited to the i2c driver itself. The aim with this change is
+> to make it acceptable as a fix for v4.2+.
 >
-> The same HW blocks are likely to be present on these different SoCs, and
-> have the same requirements where they need to see a slightly different
-> path taken on suspend/resume. If we have to patch both the "legacy"
-> platform_suspend_ops, and the "new" platform_suspend_ops that does not
-> really scale.
+> However, patch 1 is unfortunate also reverting back to the old behaviour,
+> avoiding the direct_complete path, by always runtime resuming the device in the
+> device_prepare() phase during system sleep. In many cases this is a waste,
+> especially when the device could have remained runtime suspended during the
+> entire system sleep sequence.
 >
-> Would it be that much of a stretch if we reflected e.g:
-> PM_SUSPEND_STANDBY, PM_SUSPEND_MEM into the pm_message_t that is
-> communicated to platform_driver::suspend and platform_driver::resume?
+> The rest of the changes in this series, addresses the above problem, avoiding
+> to runtime resume the device unless it's really needed. One could have tried
+> out other local hacks, limited to the i2c driver, but I believe the problem
+> could exist for other drivers/devices as well, thus I aim for a more generic
+> solution.
+>
+> In principle, this series enables the proven runtime PM centric approach to
+> implement system sleep in the i2c driver. However, to do that the ACPI PM
+> domain have to collaborate and understand this behaviour. Therefore a number of
+> changes, patch 2 to patch 8, makes the needed changes to the ACPI PM domain.
+> In the last change, patch9, the i2c driver converts to the runtime PM centric
+> approach.
+>
+> It shall be noted, the behaviour of the ACPI PM domain should remain intact,
+> still taking benefit of using the direct_complete path during system sleep,
+> except for those devices that explicitly request it not to.
+>
+> This series has been tested on an ARM64 Hikey board, not having its i2c device
+> attach to the ACPI PM domain. This means that the ACPI changes has so far only
+> been compile tested. Any help in testing on relevant Intel SoCs is greatly
+> appreciated and so is of course review comments.
+>
+> The series is based upon Rafael's pm tree and linux-next branch. It's also
+> available at the following git:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/mmc.git acpi_pm_i2c_rpm_path
 
-I'm not sure what you mean, really.
+With this patchset I'm not seeing any i2c errors on resume w/ the
+HiKey (which I do see if I remove these patches).
 
-The ->suspend callback in struct platform_driver has been long deprecated.
+Tested-by: John Stultz <john.stultz@linaro.org>
 
-Thanks,
-Rafael
+Unfortunately... that said, in testing I did just find a regression
+elsewhere with suspend/resume on HiKey, where we'll not go all the way
+to suspend if wifi is enabled. So If anyone else is having trouble
+testing these patches on HiKey, turn off wifi for now.
+
+thanks
+-john
