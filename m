@@ -1,138 +1,94 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v14 09/11] power: supply: bq27xxx: Enable data memory
- update for certain chips
-Date: Wed, 21 Jun 2017 13:55:52 -0700
-Message-ID: <CAKvHMgQaKtUEhTLWp+sYPPLRpZvXUxBWEJCH5e1+S3QnZJ+8fA@mail.gmail.com>
-References: <20170607183759.20261-1-liam@networkimprov.net>
- <20170607183759.20261-10-liam@networkimprov.net> <20170615160218.sq5jychjn7x2dhyq@earth>
- <CAKvHMgT-QW1GXizipj0bRk7DMhwv=NsZJnvoQ_9OEjf_MgfJgg@mail.gmail.com>
- <20170616103307.bfl6ig66qeq2qvz6@earth> <CAKvHMgSP6KR+4LRb0p3amAXyD=-r6Ap_i06cTffhnVOvE7NLJQ@mail.gmail.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: Drivers taking different actions depending on sleep state
+Date: Wed, 21 Jun 2017 14:16:11 -0700
+Message-ID: <ccac39d6-4611-8b46-12f7-24227ef3b35e@gmail.com>
+References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr>
+ <CAJZ5v0iL7voAz9T+36fXXncOj4UrFSAH8WzwEbec96GuFUteaQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f52.google.com ([209.85.214.52]:36807 "EHLO
-        mail-it0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751901AbdFUUzx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 16:55:53 -0400
-Received: by mail-it0-f52.google.com with SMTP id m47so39520516iti.1
-        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2017 13:55:53 -0700 (PDT)
-In-Reply-To: <CAKvHMgSP6KR+4LRb0p3amAXyD=-r6Ap_i06cTffhnVOvE7NLJQ@mail.gmail.com>
+Received: from mail-wr0-f195.google.com ([209.85.128.195]:36266 "EHLO
+        mail-wr0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751130AbdFUVQW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 17:16:22 -0400
+Received: by mail-wr0-f195.google.com with SMTP id 77so29934901wrb.3
+        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2017 14:16:22 -0700 (PDT)
+In-Reply-To: <CAJZ5v0iL7voAz9T+36fXXncOj4UrFSAH8WzwEbec96GuFUteaQ@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: Pali Rohar <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Mason <slash.tmp@free.fr>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, JB <jb_lescher@sigmadesigns.com>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-Hi Sebastian, can we resolve the two outstanding issues this week? I
-sent comments on both last week...
+On 06/09/2017 03:53 PM, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> On Fri, Jun 9, 2017 at 5:20 PM, Mason <slash.tmp@free.fr> wrote:
+>> Hello,
+>>
+>> I read the "Sleep States" documentation:
+>> https://www.kernel.org/doc/Documentation/power/states.txt
+>>
+>> It mentions /sys/power/mem_sleep but I don't have that in 4.9
+>> # ll /sys/power/
+>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 pm_async
+>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 pm_freeze_timeout
+>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 state
+>> -rw-r--r--    1 root     root          4096 Jan  1 00:31 wakeup_count
+>>
+>> # cat /sys/power/state
+>> freeze mem
+>>
+>> Currently my platform's "mem" is a true suspend-to-RAM trigger,
+>> where drivers are supposed to save their state (register values
+>> will be lost), then Linux hands control over to firmware which
+>> enables RAM self-refresh and powers the chip down. When the system
+>> resumes, drivers restore their state from their copy in memory.
+>>
+>> One driver is responsible for loading/unloading microcode running
+>> on the DSPs. This operation is required only when powering down
+>> the chip, but it should be avoided for "low-latency" sleeps.
+>>
+>> The problem is that, if I understand correctly, drivers have no way
+>> of knowing which sleep state is being entered/exited?
+>>
+>> How can I have the microcode driver take different decisions
+>> based on the sleep state?
+> 
+> The cleanest way would be to run that code from one of the platform
+> suspend hooks that receive information on what sleep state is to be
+> entered.
 
-On Fri, Jun 16, 2017 at 4:32 AM, Liam Breck <liam@networkimprov.net> wrote:
-> Hi Sebastian,
->
->
-> On Fri, Jun 16, 2017 at 3:33 AM, Sebastian Reichel
-> <sebastian.reichel@collabora.co.uk> wrote:
->> Hi Liam,
->>
->> On Fri, Jun 16, 2017 at 02:21:42AM -0700, Liam Breck wrote:
->>> On Thu, Jun 15, 2017 at 9:02 AM, Sebastian Reichel
->>> <sebastian.reichel@collabora.co.uk> wrote:
->>> > On Wed, Jun 07, 2017 at 11:37:57AM -0700, Liam Breck wrote:
->>> >>  static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>> >> -     { "bq27200", BQ27000 },
->>> >> -     { "bq27210", BQ27010 },
->>> >> -     { "bq27500", BQ2750X },
->>> >> -     { "bq27510", BQ2751X },
->>> >> -     { "bq27520", BQ2751X },
->>> >> -     { "bq27500-1", BQ27500 },
->>> >> -     { "bq27510g1", BQ27510G1 },
->>> >> -     { "bq27510g2", BQ27510G2 },
->>> >> -     { "bq27510g3", BQ27510G3 },
->>> >> -     { "bq27520g1", BQ27520G1 },
->>> >> -     { "bq27520g2", BQ27520G2 },
->>> >> -     { "bq27520g3", BQ27520G3 },
->>> >> -     { "bq27520g4", BQ27520G4 },
->>> >> -     { "bq27530", BQ27530 },
->>> >> -     { "bq27531", BQ27530 },
->>> >> -     { "bq27541", BQ27541 },
->>> >> -     { "bq27542", BQ27541 },
->>> >> -     { "bq27546", BQ27541 },
->>> >> -     { "bq27742", BQ27541 },
->>> >> -     { "bq27545", BQ27545 },
->>> >> -     { "bq27421", BQ27421 },
->>> >> -     { "bq27425", BQ27421 },
->>> >> -     { "bq27441", BQ27421 },
->>> >> -     { "bq27621", BQ27421 },
->>> >> +     /* dest.    di->real_chip       di->chip      */
->>> >> +     { "bq27200",   (BQ27000   << 16) |  BQ27000   },
->>> >> +     { "bq27210",   (BQ27010   << 16) |  BQ27010   },
->>> >> +     { "bq27500",   (BQ2750X   << 16) |  BQ2750X   },
->>> >> +     { "bq27510",   (BQ2751X   << 16) |  BQ2751X   },
->>> >> +     { "bq27520",   (BQ2752X   << 16) |  BQ2751X   },
->>> >> +     { "bq27500-1", (BQ27500   << 16) |  BQ27500   },
->>> >> +     { "bq27510g1", (BQ27510G1 << 16) |  BQ27510G1 },
->>> >> +     { "bq27510g2", (BQ27510G2 << 16) |  BQ27510G2 },
->>> >> +     { "bq27510g3", (BQ27510G3 << 16) |  BQ27510G3 },
->>> >> +     { "bq27520g1", (BQ27520G1 << 16) |  BQ27520G1 },
->>> >> +     { "bq27520g2", (BQ27520G2 << 16) |  BQ27520G2 },
->>> >> +     { "bq27520g3", (BQ27520G3 << 16) |  BQ27520G3 },
->>> >> +     { "bq27520g4", (BQ27520G4 << 16) |  BQ27520G4 },
->>> >> +     { "bq27530",   (BQ27530   << 16) |  BQ27530   },
->>> >> +     { "bq27531",   (BQ27531   << 16) |  BQ27530   },
->>> >> +     { "bq27541",   (BQ27541   << 16) |  BQ27541   },
->>> >> +     { "bq27542",   (BQ27542   << 16) |  BQ27541   },
->>> >> +     { "bq27546",   (BQ27546   << 16) |  BQ27541   },
->>> >> +     { "bq27742",   (BQ27742   << 16) |  BQ27541   },
->>> >> +     { "bq27545",   (BQ27545   << 16) |  BQ27545   },
->>> >> +     { "bq27421",   (BQ27421   << 16) |  BQ27421   },
->>> >> +     { "bq27425",   (BQ27425   << 16) |  BQ27421   },
->>> >> +     { "bq27441",   (BQ27441   << 16) |  BQ27421   },
->>> >> +     { "bq27621",   (BQ27621   << 16) |  BQ27421   },
->>> >
->>> > This is ugly. The proper way to do this is by providing a pointer
->>> > to a structure with all required information. E.g.:
->>> >
->>> > static const struct bq27xxx_pdata chip_info_bq27530 {
->>> >     .reg_layout = &reg_info_bq27530,
->>> >     .feature = false,
->>> >     /* more stuff */
->>> > };
->>> >
->>> > static const struct bq27xxx_pdata chip_info_bq27531 {
->>> >     .reg_layout = &reg_info_bq27530,
->>> >     .feature = true,
->>> >     /* more stuff */
->>> > };
->>> >
->>> > /* ... */
->>> >
->>> > static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>> > /* ... */
->>> > { "bq27530", &chip_info_bq27530 },
->>> > { "bq27531", &chip_info_bq27531 },
->>> > /* ... */
->>> > }
->>>
->>> How's this...
->>>
->>> static const struct bq27xxx_chip_ids[] = {
->>>   [BQ27425] = { .chip = BQ27421, .real_chip = BQ27425 },
->>>   ...
->>> }
->>>
->>> static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
->>>   { "bq27425", &bq27xxx_chip_ids[BQ27425] },
->>> ...
->>
->> That's better, but let's get rid of real_chip. Just add the required
->> information directly to the above struct (e.g. seal_key, ramtype).
->
-> I don't think the new chip data belongs in bq27*_i2c.c. All the
-> (extensive) existing chip data is in the main file.
->
-> A later patch could rework the chip data scheme; I was trying to
-> minimize changes in this one. The original i2c table did a real_chip
-> -> chip mapping. Now we're just carrying real_chip forward.
->
-> The easiest fix would be to define a macro which does << and |
->
-> { "bq27621",   BQ27XXX_ID_PAIR(BQ27621, BQ27421) },
+I am not sure this would be cleaner, because that would create a tighter
+dependency between different drivers, each of them having their
+suspend/resume routings and the driver that implements the
+platform_suspend_ops, that could also create some nice layering
+violations and some difficult to solve dependencies.
+
+> 
+> Alternatively, those hooks can set/clear flags that can be accessed by
+> drivers, but that of course may your drivers depend on the platform
+> (still, in the microcode case the driver seems to be
+> platform-dependent anyway).
+
+It may be platform dependent, but the actual system-wide suspend/resume
+implementations can vary a lot. For example you may have started with
+some particular CPU architecture on your platforms, with one driver
+implementing an instance of platform_suspend_ops, and then as you moved
+to another CPU architecture, some of that could be managed by a generic
+driver (e.g: ARM SCPI, ACPI etc. etc.).
+
+The same HW blocks are likely to be present on these different SoCs, and
+have the same requirements where they need to see a slightly different
+path taken on suspend/resume. If we have to patch both the "legacy"
+platform_suspend_ops, and the "new" platform_suspend_ops that does not
+really scale.
+
+Would it be that much of a stretch if we reflected e.g:
+PM_SUSPEND_STANDBY, PM_SUSPEND_MEM into the pm_message_t that is
+communicated to platform_driver::suspend and platform_driver::resume?
+
+Thanks!
+-- 
+Florian
