@@ -1,107 +1,194 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/6] drivers base/arch_topology: frequency-invariant
- load-tracking support
-Date: Wed, 21 Jun 2017 11:07:35 +0530
-Message-ID: <20170621053735.GR3942@vireshk-i7>
-References: <20170608075513.12475-1-dietmar.eggemann@arm.com>
- <20170608075513.12475-3-dietmar.eggemann@arm.com>
- <CAOh2x=k1Zr15vAq8LA0+Sg3Cz7o=dL5C-erkEx_py7g56b7BwA@mail.gmail.com>
- <5949BE5F.4020502@codeaurora.org>
+From: Peter Chen <peter.chen@nxp.com>
+Subject: [PATCH v16 0/7] power: add power sequence library
+Date: Wed, 21 Jun 2017 14:42:01 +0800
+Message-ID: <1498027328-25078-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f50.google.com ([74.125.83.50]:36224 "EHLO
-        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751069AbdFUFhj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 01:37:39 -0400
-Received: by mail-pg0-f50.google.com with SMTP id u62so53408027pgb.3
-        for <linux-pm@vger.kernel.org>; Tue, 20 Jun 2017 22:37:39 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <5949BE5F.4020502@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
+Cc: heiko@sntech.de, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org, gary.bisson@boundarydevices.com, hverkuil@xs4all.nl, krzk@kernel.org, frank.li@nxp.com, jun.li@nxp.com, Peter Chen <peter.chen@nxp.com>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaor.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On 20-06-17, 17:31, Saravana Kannan wrote:
-> On 06/19/2017 11:17 PM, Viresh Kumar wrote:
-> >On Thu, Jun 8, 2017 at 1:25 PM, Dietmar Eggemann
-> ><dietmar.eggemann@arm.com> wrote:
-> >
-> >>diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-> >
-> >>  static int __init register_cpufreq_notifier(void)
-> >>  {
-> >>+       int ret;
-> >>+
-> >>         /*
-> >>          * on ACPI-based systems we need to use the default cpu capacity
-> >>          * until we have the necessary code to parse the cpu capacity, so
-> >>@@ -225,8 +265,14 @@ static int __init register_cpufreq_notifier(void)
-> >>
-> >>         cpumask_copy(cpus_to_visit, cpu_possible_mask);
-> >>
-> >>-       return cpufreq_register_notifier(&init_cpu_capacity_notifier,
-> >>-                                        CPUFREQ_POLICY_NOTIFIER);
-> >>+       ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
-> >>+                                       CPUFREQ_POLICY_NOTIFIER);
-> >
-> >Wanted to make sure that we all understand the constraints this is going to add
-> >for the ARM64 platforms.
-> >
-> >With the introduction of this transition notifier, we would not be able to use
-> >the fast-switch path in the schedutil governor. I am not sure if there are any
-> >ARM platforms that can actually use the fast-switch path in future or not
-> >though. The requirement of fast-switch path is that the freq can be changed
-> >without sleeping in the hot-path.
-> >
-> >So, will we ever want fast-switching for ARM platforms ?
-> >
-> 
-> I don't think we should go down a path that'll prevent ARM platform from
-> switching over to fast-switching in the future.
+This is a follow-up for my last power sequence framework patch set [1].
+According to Rob Herring and Ulf Hansson's comments[2]. The kinds of
+power sequence instances will be added at postcore_initcall, the match
+criteria is compatible string first, if the compatible string is not
+matched between dts and library, it will try to use generic power sequence.
+	 
+The host driver just needs to call of_pwrseq_on/of_pwrseq_off
+if only one power sequence instance is needed, for more power sequences
+are used, using of_pwrseq_on_list/of_pwrseq_off_list instead (eg, USB hub driver).
 
-Yeah, that's why brought attention to this stuff.
+In future, if there are special power sequence requirements, the special
+power sequence library can be created.
 
-I think this patch doesn't really need to go down the notifiers way.
+This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+two hot-plug devices to simulate this use case, the related binding
+change is updated at patch [1/6], The udoo board changes were tested
+using my last power sequence patch set.[3]
 
-We can do something like this in the implementation of
-topology_get_freq_scale():
+Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+need to power on itself before it can be found by ULPI bus.
 
-        return (policy->cur << SCHED_CAPACITY_SHIFT) / max;
+@Rafael, USB Maintainer has already acked the USB related changes, would you
+consider queueing it at v4.13-rc1, sereval guys are waiting for this series.
+Thanks.
 
-Though, we would be required to take care of policy structure in this
-case somehow.
+Changes for v16:
+- Change match way between pwrseq instance and device. Currently, it maintains a global
+  table for compatible string and corresponding pwrseq library allocation function. The
+  match is occurred when host controller tries to carry out power on device, if it is
+  matched, it will allocate pwrseq instance for this device. [Patch 2/7]
+- Add related compatible string maintained at pwrseq_match_table_list. [Patch 1/7]
 
-> Having said that, I'm not sure I fully agree with the decision to completely
-> disable notifiers in the fast-switching case. How many of the current users
-> of notifiers truly need support for sleeping in the notifier?
+Changes for v15:
+- Change pwrseq list name at USB hub structure (pwrseq_on_list->pwrseq_list). [Patch 4/7]
+- Add USB Maintainer's Ack [Patch 4/7]
 
-Its not just about sleeping here. We do not wish to call too much
-stuff from scheduler hot path. Even if it doesn't sleep.
+Changes for v14:
+- Rebase for v4.12-rc1
+- Delete some USB sysdev patches which has already merged
 
-> Why not make
-> all the transition notifiers atomic? Or at least add atomic transition
-> notifiers that can be registered for separately if the client doesn't need
-> the ability to sleep?
-> 
-> Most of the clients don't seem like ones that'll need to sleep.
+Changes for v13:
+- Add more design descriptions at design doc and fix one build error
+  introduced by v12 wrongly [Patch 2/12]
+- Add the last three dts patches which were forgotten at last series
+- Move the comment for usb_create_shared_hcd to correct place [Patch 3/12]
+- Add sysdev for shared hcd too for xhci-plat.c [Patch 6/12]
 
-Only if the scheduler maintainers agree to getting these notifiers
-called from hot path, which I don't think is going to happen.
+Rafael, if the first two power sequence patches are ok for you, would you consider
+accept these first, the other USB patches can go through USB tree at v4.12-rc1?
 
-> There are a bunch of generic off-tree drivers (can't upstream them yet
-> because it depends on the bus scaling framework) that also depend on CPUfreq
-> transition notifiers that are going to stop working if fast switching
-> becomes available in the future. So, this decision to disallow transition
-> notifiers is painful for other reasons too.
+Changes for v12:
+- Add design doc and more comments at generic power sequence source file [Patch 2/9]
+- Introduce four Arnd Bergmann patches and one my ehci related patches, these patches
+  are used to get property DT/firmware information at USB code, and these information
+  are needed for power sequence operation at USB. With these five patches, my chipidea
+  hack patch in previous patch set can be removed. [Patch 3-7/9]
+- Add -ENOENT judgement to avoid USB error if no power sequence library is chosen [9/9]
 
-I think its kind of fine to work without fast switch in those cases,
-as we are anyway ready to call notifiers which may end up taking any
-amount of time.
+Changes for v11:
+- Fix warning: (USB) selects POWER_SEQUENCE which has unmet direct dependencies (OF)
+- Delete redundant copyright statement.
+- Change pr_warn to pr_debug at wrseq_find_available_instance
+- Refine kerneldoc
+- %s/ENONET/ENOENT 
+- Allocate pwrseq list node before than carry out power sequence on 
+- Add mutex_lock/mutex_lock for pwrseq node browse at pwrseq_find_available_instance
+- Add pwrseq_suspend/resume for API both single instance and list 
+- Add .pwrseq_suspend/resume for pwrseq_generic.c
+- Add pwrseq_suspend_list and pwrseq_resume_list for USB hub suspend
+  and resume routine
 
-This case was special as it is affecting entire arch here and so I
-pointed it out.
+Changes for v10:
+- Improve the kernel-doc for power sequence core, including exported APIs and
+  main structure. [Patch 2/8]
+- Change Kconfig, and let the user choose power sequence. [Patch 2/8]
+- Delete EXPORT_SYMBOL and change related APIs as local, these APIs do not
+  be intended to export currently. [Patch 2/8]
+- Selete POWER_SEQUENCE at USB core's Kconfig. [Patch 4/8]
+
+Changes for v9:
+- Add Vaibhav Hiremath's reviewed-by [Patch 4/8]
+- Rebase to v4.9-rc1
+
+Changes for v8:
+- Allocate one extra pwrseq instance if pwrseq_get has succeed, it can avoid
+  preallocate instances problem which the number of instance is decided at
+  compile time, thanks for Heiko Stuebner's suggestion [Patch 2/8]
+- Delete pwrseq_compatible_sample.c which is the demo purpose to show compatible
+  match method. [Patch 2/8]
+- Add Maciej S. Szmigiero's tested-by. [Patch 7/8]
+
+Changes for v7:
+- Create kinds of power sequence instance at postcore_initcall, and match
+  the instance with node using compatible string, the beneit of this is
+  the host driver doesn't need to consider which pwrseq instance needs
+  to be used, and pwrseq core will match it, however, it eats some memories
+  if less power sequence instances are used. [Patch 2/8]
+- Add pwrseq_compatible_sample.c to test match pwrseq using device_id. [Patch 2/8]
+- Fix the comments Vaibhav Hiremath adds for error path for clock and do not
+  use device_node for parameters at pwrseq_on. [Patch 2/8]
+- Simplify the caller to use power sequence, follows Alan's commnets [Patch 4/8]
+- Tested three pwrseq instances together using both specific compatible string and
+  generic libraries.
+
+Changes for v6:
+- Add Matthias Kaehlcke's Reviewed-by and Tested-by. (patch [2/6])
+- Change chipidea core of_node assignment for coming user. (patch [5/6])
+- Applies Joshua Clayton's three dts changes for two boards,
+  the USB device's reg has only #address-cells, but without #size-cells.
+
+Changes for v5:
+- Delete pwrseq_register/pwrseq_unregister, which is useless currently
+- Fix the linker error when the pwrseq user is compiled as module
+
+Changes for v4:
+- Create the patch on next-20160722 
+- Fix the of_node is not NULL after chipidea driver is unbinded [Patch 5/6]
+- Using more friendly wait method for reset gpio [Patch 2/6]
+- Support multiple input clocks [Patch 2/6]
+- Add Rob Herring's ack for DT changes
+- Add Joshua Clayton's Tested-by
+
+Changes for v3:
+- Delete "power-sequence" property at binding-doc, and change related code
+  at both library and user code.
+- Change binding-doc example node name with Rob's comments
+- of_get_named_gpio_flags only gets the gpio, but without setting gpio flags,
+  add additional code request gpio with proper gpio flags
+- Add Philipp Zabel's Ack and MAINTAINER's entry
+
+Changes for v2:
+- Delete "pwrseq" prefix and clock-names for properties at dt binding
+- Should use structure not but its pointer for kzalloc
+- Since chipidea core has no of_node, let core's of_node equals glue
+  layer's at core's probe
+
+[1] http://www.spinics.net/lists/linux-usb/msg142755.html
+[2] http://www.spinics.net/lists/linux-usb/msg143106.html
+[3] http://www.spinics.net/lists/linux-usb/msg142815.html
+[4] http://www.spinics.net/lists/linux-usb/msg152375.html
+
+Joshua Clayton (2):
+  ARM: dts: imx6qdl: Enable usb node children with <reg>
+  ARM: dts: imx6q-evi: Fix onboard hub reset line
+
+Peter Chen (5):
+  binding-doc: power: pwrseq-generic: add binding doc for generic power
+    sequence library
+  power: add power sequence library
+  binding-doc: usb: usb-device: add optional properties for power
+    sequence
+  usb: core: add power sequence handling for USB devices
+  ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+
+ .../bindings/power/pwrseq/pwrseq-generic.txt       |  53 ++++
+ .../devicetree/bindings/usb/usb-device.txt         |  10 +-
+ Documentation/power/power-sequence/design.rst      |  54 ++++
+ MAINTAINERS                                        |   9 +
+ arch/arm/boot/dts/imx6q-evi.dts                    |  25 +-
+ arch/arm/boot/dts/imx6qdl-udoo.dtsi                |  26 +-
+ arch/arm/boot/dts/imx6qdl.dtsi                     |   6 +
+ drivers/power/Kconfig                              |   1 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/pwrseq/Kconfig                       |  20 ++
+ drivers/power/pwrseq/Makefile                      |   2 +
+ drivers/power/pwrseq/core.c                        | 293 +++++++++++++++++++++
+ drivers/power/pwrseq/pwrseq_generic.c              | 210 +++++++++++++++
+ drivers/usb/Kconfig                                |   1 +
+ drivers/usb/core/hub.c                             |  49 +++-
+ drivers/usb/core/hub.h                             |   1 +
+ include/linux/power/pwrseq.h                       |  84 ++++++
+ 17 files changed, 808 insertions(+), 37 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+ create mode 100644 Documentation/power/power-sequence/design.rst
+ create mode 100644 drivers/power/pwrseq/Kconfig
+ create mode 100644 drivers/power/pwrseq/Makefile
+ create mode 100644 drivers/power/pwrseq/core.c
+ create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
+ create mode 100644 include/linux/power/pwrseq.h
 
 -- 
-viresh
+2.7.4
