@@ -1,80 +1,82 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 3/9] PM / Sleep: Remove pm_complete_with_resume_check()
-Date: Wed, 21 Jun 2017 21:21:22 +0200
-Message-ID: <1498072888-14782-4-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 5/9] PM / ACPI: Split acpi_lpss_suspend_late|resume_early()
+Date: Wed, 21 Jun 2017 21:21:24 +0200
+Message-ID: <1498072888-14782-6-git-send-email-ulf.hansson@linaro.org>
 References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f48.google.com ([209.85.215.48]:36276 "EHLO
-        mail-lf0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751223AbdFUTVw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 15:21:52 -0400
-Received: by mail-lf0-f48.google.com with SMTP id h22so23138795lfk.3
-        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2017 12:21:51 -0700 (PDT)
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-According to recent changes for ACPI, the are longer any users of
-pm_complete_with_resume_check(), thus let's drop it.
+Move the code which is special to ACPI LPSS into separate functions. This
+may clarify the code a bit, but the main purpose of this change, is instead
+to prepare for additional changes on top. Ideally the following changes
+should then become easier to review.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/generic_ops.c | 23 -----------------------
- include/linux/pm.h               |  1 -
- 2 files changed, 24 deletions(-)
+ drivers/acpi/acpi_lpss.c | 29 +++++++++++++++++++++++------
+ 1 file changed, 23 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
-index 07c3c4a..b2ed606 100644
---- a/drivers/base/power/generic_ops.c
-+++ b/drivers/base/power/generic_ops.c
-@@ -9,7 +9,6 @@
- #include <linux/pm.h>
- #include <linux/pm_runtime.h>
- #include <linux/export.h>
--#include <linux/suspend.h>
- 
- #ifdef CONFIG_PM
- /**
-@@ -298,26 +297,4 @@ void pm_generic_complete(struct device *dev)
- 	if (drv && drv->pm && drv->pm->complete)
- 		drv->pm->complete(dev);
+diff --git a/drivers/acpi/acpi_lpss.c b/drivers/acpi/acpi_lpss.c
+index d7b6778..12bc5c7 100644
+--- a/drivers/acpi/acpi_lpss.c
++++ b/drivers/acpi/acpi_lpss.c
+@@ -702,22 +702,28 @@ static void acpi_lpss_dismiss(struct device *dev)
  }
+ 
+ #ifdef CONFIG_PM_SLEEP
+-static int acpi_lpss_suspend_late(struct device *dev)
++static int lpss_suspend_late(struct device *dev)
+ {
+ 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
++
++	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
++		acpi_lpss_save_ctx(dev, pdata);
++
++	return acpi_dev_suspend_late(dev);
++}
++
++static int acpi_lpss_suspend_late(struct device *dev)
++{
+ 	int ret;
+ 
+ 	ret = pm_generic_suspend_late(dev);
+ 	if (ret)
+ 		return ret;
+ 
+-	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
+-		acpi_lpss_save_ctx(dev, pdata);
 -
--/**
-- * pm_complete_with_resume_check - Complete a device power transition.
-- * @dev: Device to handle.
-- *
-- * Complete a device power transition during a system-wide power transition and
-- * optionally schedule a runtime resume of the device if the system resume in
-- * progress has been initated by the platform firmware and the device had its
-- * power.direct_complete flag set.
-- */
--void pm_complete_with_resume_check(struct device *dev)
--{
--	pm_generic_complete(dev);
--	/*
--	 * If the device had been runtime-suspended before the system went into
--	 * the sleep state it is going out of and it has never been resumed till
--	 * now, resume it in case the firmware powered it up.
--	 */
--	if (dev->power.direct_complete && pm_resume_via_firmware())
--		pm_request_resume(dev);
--}
--EXPORT_SYMBOL_GPL(pm_complete_with_resume_check);
+-	return acpi_dev_suspend_late(dev);
++	return lpss_suspend_late(dev);
+ }
+ 
+-static int acpi_lpss_resume_early(struct device *dev)
++static int lpss_resume_early(struct device *dev)
+ {
+ 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+ 	int ret;
+@@ -731,6 +737,17 @@ static int acpi_lpss_resume_early(struct device *dev)
+ 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
+ 		acpi_lpss_restore_ctx(dev, pdata);
+ 
++	return 0;
++}
++
++static int acpi_lpss_resume_early(struct device *dev)
++{
++	int ret;
++
++	ret = lpss_resume_early(dev);
++	if (ret)
++		return ret;
++
+ 	return pm_generic_resume_early(dev);
+ }
  #endif /* CONFIG_PM_SLEEP */
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index a0894bc..de28313 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -733,7 +733,6 @@ extern int pm_generic_poweroff_noirq(struct device *dev);
- extern int pm_generic_poweroff_late(struct device *dev);
- extern int pm_generic_poweroff(struct device *dev);
- extern void pm_generic_complete(struct device *dev);
--extern void pm_complete_with_resume_check(struct device *dev);
- 
- #else /* !CONFIG_PM_SLEEP */
- 
 -- 
 2.7.4
+
