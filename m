@@ -1,118 +1,54 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 6/9] PM / ACPI: Provide option to disable direct_complete
- for ACPI devices
-Date: Wed, 21 Jun 2017 23:42:18 +0200
-Message-ID: <CAJZ5v0h71LNPgmU1ri3S0VJMPb-1_AHkGksNAaYn68rrLyAR2A@mail.gmail.com>
-References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org> <1498072888-14782-7-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH 7/9] PM / ACPI: Enable the runtime PM centric approach for
+ system sleep
+Date: Wed, 21 Jun 2017 23:47:53 +0200
+Message-ID: <CAJZ5v0jL-0TKUv5nK7tFLm+X7nE7J2e3hm21i=+FBFBzQLQ=Xw@mail.gmail.com>
+References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org> <1498072888-14782-8-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1498072888-14782-7-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-i2c-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1498072888-14782-8-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> In some cases a driver for an ACPI device needs to be able to prevent the
-> ACPI PM domain from using the direct_complete path during system sleep.
+> This change extends the interpretation of the ACPI's no_direct_complete
+> flag to be used to enable the so called runtime PM centric approach, for
+> devices being attached to the ACPI PM domain.
 >
-> One typical case is when the driver for the device needs its device to stay
-> runtime enabled, during the __device_suspend phase. This isn't the case
-> when the direct_complete path is being executed by the PM core, as it then
-> disables runtime PM for the device in __device_suspend(). Any following
-> attempts to runtime resume the device after that point, just fails.
+> The principle behind the runtime PM centric approach is to re-use the
+> runtime PM callbacks to implement system sleep for drivers/subsystems.
+> Moreover, using the runtime PM centric approach gives an optimized
+> behaviour around avoiding to wake up a device from its low power state
+> during system sleep, unless really needed.
 >
-> A workaround to this problem is to let the driver runtime resume its device
-> from its ->prepare() callback, as that would prevent the direct_complete
-> path from being executed. However, that may often be a waste, especially if
-> it turned out that no one really needed the device.
+> To deploy the runtime PM centric approach for a subsystem/driver, the
+> following adaptations needs to be made.
 >
-> For this reason, invent acpi_dev_disable|enable_direct_complete(), to allow
-> drivers to inform the ACPI PM domain to change its default behaviour during
-> system sleep, and thus control whether it may use the direct_complete path
-> or not.
+> First, the runtime PM callbacks may be called when runtime PM has been
+> disabled for the device. This serves as an indication for the callbacks to
+> understand they are running in the system sleep sequence, instead of in the
+> regular runtime PM path. In some cases, a callback needs to take different
+> actions depending in what path it is being executed in, as is the case for
+> the ACPI PM domain.
 >
-> Typically a driver should call acpi_dev_disable_direct_comlete() during
-> ->probe() and acpi_dev_enable_direct_complete() in ->remove().
+> In particular for the ACPI PM domain's ->runtime_suspend|resume()
+> callbacks, when those finds runtime PM being disabled for the device, it
+> instead executes the same operations as normally being run when
+> ->suspend_late() and ->resume_early() callbacks are invoked during system
+> sleep.
 >
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/acpi/device_pm.c | 37 ++++++++++++++++++++++++++++++++++++-
->  include/acpi/acpi_bus.h  |  1 +
->  include/linux/acpi.h     |  4 ++++
->  3 files changed, 41 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
-> index ee51e75..2393a1a 100644
-> --- a/drivers/acpi/device_pm.c
-> +++ b/drivers/acpi/device_pm.c
-> @@ -879,6 +879,41 @@ EXPORT_SYMBOL_GPL(acpi_subsys_runtime_resume);
->
->  #ifdef CONFIG_PM_SLEEP
->  /**
-> + * acpi_dev_disable_direct_complete - Disable the direct_complete path for ACPI.
-> + * @dev: Device to disable the path for.
-> + *
-> + * Per default the ACPI PM domain tries to use the direct_complete path for its
-> + * devices during system sleep. This function allows a user, typically a driver
-> + * during probe, to disable the direct_complete path from being used by ACPI.
-> + */
-> +void acpi_dev_disable_direct_complete(struct device *dev)
-> +{
-> +       struct acpi_device *adev = ACPI_COMPANION(dev);
-> +
-> +       if (adev)
-> +               adev->no_direct_complete = true;
+> Second, at the PM domain level, it is expected that the driver for the
+> device makes use of pm_runtime_force_suspend|resume(), to re-use the
+> runtime PM callbacks to put the device into low power state and to wake it
+> up when needed during system sleep.
 
-We have an analogous flag in PCI now and it is called needs_resume, so
-it would be good to be consistent with that.
+What if it doesn't do that?
 
-> +}
-> +EXPORT_SYMBOL_GPL(acpi_dev_disable_direct_complete);
-> +
-> +/**
-> + * acpi_dev_enable_direct_complete - Enable the direct_complete path for ACPI.
-> + * @dev: Device to enable the path for.
-> + *
-> + * Enable the direct_complete path to be used during system suspend for the ACPI
-> + * PM domain, which is the default option. Typically a driver that disabled the
-> + * path during ->probe(), must call this function during ->remove() to re-enable
-> + * the direct_complete path to be used by ACPI.
-> + */
-> +void acpi_dev_enable_direct_complete(struct device *dev)
-> +{
-> +       struct acpi_device *adev = ACPI_COMPANION(dev);
-> +
-> +       if (adev)
-> +               adev->no_direct_complete = false;
-> +}
-> +EXPORT_SYMBOL_GPL(acpi_dev_enable_direct_complete);
-> +
-> +/**
->   * acpi_dev_suspend_late - Put device into a low-power state using ACPI.
->   * @dev: Device to put into a low-power state.
->   *
-> @@ -967,7 +1002,7 @@ int acpi_subsys_prepare(struct device *dev)
->         if (ret < 0)
->                 return ret;
->
-> -       if (!adev || !pm_runtime_suspended(dev))
-> +       if (!adev || adev->no_direct_complete || !pm_runtime_suspended(dev))
->                 return 0;
->
->         return !acpi_dev_needs_resume(dev, adev);
-> diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-> index 63a90a6..2293d24 100644
-> --- a/include/acpi/acpi_bus.h
-> +++ b/include/acpi/acpi_bus.h
-> @@ -380,6 +380,7 @@ struct acpi_device {
->         struct list_head physical_node_list;
->         struct mutex physical_node_lock;
->         void (*remove)(struct acpi_device *);
-> +       bool no_direct_complete;
-
-Also what about adding this to struct acpi_device_power instead?
+Do all drivers of devices that may fall into the ACPI PM domain use
+pm_runtime_force_suspend|resume()?
 
 Thanks,
 Rafael
