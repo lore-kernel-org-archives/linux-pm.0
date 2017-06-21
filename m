@@ -1,103 +1,111 @@
-From: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH 00/51] rtc: stop using rtc deprecated functions
-Date: Wed, 21 Jun 2017 14:35:35 +0200
-Message-ID: <20170621123535.b5fvwlydfhnhuqll@piout.net>
-References: <20170620213507.urobmtg34vzubrdq@piout.net>
- <alpine.DEB.2.20.1706202343120.2157@nanos>
- <20170621075152.GA15996@amd>
- <20170621083907.y3gadsmsoufa5niv@piout.net>
- <20170621063443.GA4862@localhost>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] i2c: designware: Do nothing in system suspend/resume when
+ RT suspended
+Date: Wed, 21 Jun 2017 16:40:18 +0200
+Message-ID: <CAPDyKFrC8PEu4v+Ce4Y-ZE+9dRs3OR7TcTrPA54qKGtZjkNL3A@mail.gmail.com>
+References: <20170330120444.12499-1-jarkko.nikula@linux.intel.com>
+ <CAPDyKFqfDYg1ZzcJ2Z7md5CD6tYWRMwi4N8M82DesG_ybVKHMw@mail.gmail.com>
+ <da36d4c0-7bcb-be18-6c8c-9fd714e2f1e0@linux.intel.com> <CAPDyKFqg3TDMwBO7a-1zuKYeLjE-BQ4RPmtXFKzA0s2a50jQqg@mail.gmail.com>
+ <CAPDyKFrJGFHvvM=-xYLcSTtv0FVvo=CNjnA9RAdm=pUrg552GQ@mail.gmail.com>
+ <CAPDyKFoqZuv3niz_0FQ1WVP2+gNjebxw9zLVnJ-L0WN24LK3eA@mail.gmail.com> <1497974938.22624.170.camel@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <rtc-linux+bncBCKYNX7Y3IMBBI6QVHFAKGQEVXY45VQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <20170621063443.GA4862@localhost>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Russell King - ARM Linux <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Benjamin Gaignard <benjamin.gaignard-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jonathan Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Sylvain Lemieux <slemieux.tyco-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, "rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org" <rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TaqPxH82wqD4g@public.gmane.org>
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1497974938.22624.170.camel@linux.intel.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Jarkko Nikula <jarkko.nikula@linux.intel.com>, John Stultz <john.stultz@linaro.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 21/06/2017 at 08:34:43 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > > > I think tglx had a plan for offsetting the time at some point so 32-bit
-> > > > > platform can pass 2038 properly.
-> > > > 
-> > > > Yes, but there are still quite some issues to solve there:
-> > > > 
-> > > >      1) How do you tell the system that it should apply the offset in the
-> > > >      	first place, i.e at boot time before NTP or any other mechanism can
-> > > >      	correct it?
-> > > 
-> > > I'd not do offset. Instead, I'd select a threshold (perhaps year of
-> > > release of given kernel?) and
-> > > 
-> > > 	if (rtc_time < year_of_release_of_kernel)
-> > > 	   rtc_time += 0x100000000;
-> > > 
-> > > Ok, we'll have to move away from "rtc_time == 0 indicates zero", as
-> > > seen in some drivers.
-> > > 
-> > > >      2) Deal with creative vendors who have their own idea about the 'start
-> > > >      	of the epoch'
-> > > 
-> > > If someone uses different threshold, well, there will be
-> > > confusion. But only for users that have their rtc set to the past,
-> > > which is quite unusual.
-> > > 
-> > 
-> > Or not, having an RTC set in the past is actually quite common. I'd find
-> > it weird to have a new device boot and be set to a date in the future.
-> 
-> ...but still better than board stuck in the past, no?
-> 
-> > Also note that the threshold or offset thing may seem like a good idea
-> > but fails with many RTCs because of how they handle leap years.
-> 
-> Well, you can still convert time from rtc to unix time, then do adjustment
-> there.
-> 
+On 20 June 2017 at 18:08, Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+> On Tue, 2017-06-20 at 15:07 +0200, Ulf Hansson wrote:
+>> On 16 June 2017 at 15:49, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+>> > Jarkko, Andy,
+>> >
+>> > I just wanted to mention that I haven't forgot about this, I am
+>> > doing
+>> > the final changes for the ACPI PM domain at this very moment,
+>> > however
+>> > I need a couple of more days more before I can post something.
+>> >
+>>
+>> I have now published a branch at:
+>>
+>> git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/mmc.git
+>> acpi_pm_domain_wip
+>>
+>> It contains both changes for the i2c designware platform driver and
+>> for the ACPI PM domain. If you by coincidence happen to have slack
+>> time (probably not), then please try it out.
+>>
+>> The branch is based upon today's version of Rafael's pm tree linux-
+>> next branch.
+>>
+>> If everything goes well, I intend to post the patches after some more
+>> tests.
+>>
+>
+> I have gone through the series briefly.
+> My concern is a quite nasty bug we have workaround for in acpi_lpss.c,
+> i.e. auto power gating of DesignWare DMA on Intel Braswell (CherryTrail)
+> platforms when it's enumerated via ACPI.
 
-You can only if your machine is running when that happens. If that is
-not the case, then you lost and your time is not correct anymore.
+First, as long as there is no driver calling the new API
+acpi_dev_disable_direct_comlete(), the ACPI PM domain should behave
+exactly the same as before these changes.
 
-There is currently one rtc doing that kind of trick but it is used as a
-simple time counter from the beginning. Transitioning is the difficult
-part.
+However, regarding your concern, can you please be a bit more precise
+on how you deal with the problems. I would appreciate if you could
+give me real pointers to the code for the workaround, the above is too
+hand wavy for me to understand.
 
-> Anyway, I guess it would be cool for rtc drivers to annotate what limits
-> underlying storage has to the common code, so that we can do fixups once
-> per class, not once per driver.
+So where things really starts to change is in the final i2c patch in
+the series, which converts the i2c designware platform driver to use
+the runtime PM centric approach, and to do that, it calls the
+acpi_dev_disable_direct_complete().
 
-Yes, I'm in the middle of the whole rework that allows that.
+>
+> Below is the sequence to test if it works and survives removal and
+> system sleep (lpss-power.sh is the script which shows a power state of
+> selected devices along with PMC Atom status registers and runtime PM):
+>
+>    0 lpss-power.sh
+>    1 mount -t debugfs none /sys/kernel/debug
+>    2 lpss-power.sh
+>    3 modprobe i2c-designware-platform
+>    4 lpss-power.sh
+>    5 modprobe sdhci-acpi
+>    6 lpss-power.sh
+>    7 lsmod
+>    8 modprobe dw-dmac
+>    9 lpss-power.sh
+>   10 modprobe -r dw-dmac
+>   11 lpss-power.sh
+>   12 modprobe dw-dmac
+>   13 lpss-power.sh
+>   14 rtcwake -m mem -s3
+>   15 lpss-power.sh
+>   16 modprobe -r dw-dmac
+>   17 lpss-power.sh
+>   18 modprobe dw-dmac
+>   19 lpss-power.sh
+>   20 stty -F /dev/ttyS2 921600
+>   21 dmesg > /dev/ttyS2
+>   22 cat /proc/interrupts
+>   23 cat < /dev/ttyS1
+>   24 lpss-power.sh
+>   25 cat < /dev/ttyS1 &
+>   26 lpss-power.sh
+>   27 rtcwake -m mem -s3
+>   28 lpss-power.sh
+>   29 fg
+>   30 lpss-power.sh
+>
+> Be aware that DMA is not enabled for I2C!
 
-I don't understand the sudden urgency of fixing that and the amount of
-bikeshedding, seeing that the closest cutoff date is actually 31st of
-december 2069 in the rtc subsystem and that anyway the current 32bit
-userspace will explode in february 2038.
+So if DMA isn't enabled for I2C, what is there to worry about?
 
-My plan from the beginning was to have something for the next stable. I
-know nobody can read my mind but again, I don't think there is currently
-any urgency to change anything.
-
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
-
--- 
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
---- 
-You received this message because you are subscribed to the Google Groups "rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+Kind regards
+Uffe
