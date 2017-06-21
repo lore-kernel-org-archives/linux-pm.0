@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V8 2/6] PM / OPP: Support updating performance state of device's power domains
-Date: Wed, 21 Jun 2017 12:40:49 +0530
-Message-ID: <cc129342ca72fcd1bb5be2cd0e3ffc8e83126227.1498026827.git.viresh.kumar@linaro.org>
+Subject: [NOT-FOR-MERGE V8 4/6] soc: qcom: rpmpd: Add support for get/set performance state
+Date: Wed, 21 Jun 2017 12:40:51 +0530
+Message-ID: <f880d3e38cdbf07d7f4cbb26453be160b33c8635.1498026827.git.viresh.kumar@linaro.org>
 References: <cover.1498026827.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1498026827.git.viresh.kumar@linaro.org>
@@ -12,124 +12,151 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <kh
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The genpd framework now provides an API to request device's power
-domain to update its performance state based on a particular target
-frequency for the device.
+From: Rajendra Nayak <rnayak@codeaurora.org>
 
-Use that interface from the OPP core for devices whose power domains
-support performance states.
+THIS IS TEST CODE, SHOULDN'T BE MERGED.
 
-Note that the current implementation is restricted to the case where the
-device doesn't have separate regulators for itself. We shouldn't
-over engineer the code before we have real use case for them. We can
-always come back and add more code to support such cases later on.
+With genpd now expecting powerdomain drivers supporting performance
+state to support get/set performance state callbacks, add support for it
+in the rpmpd driver.
 
-Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+NOT-signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+NOT-signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 48 ++++++++++++++++++++++++++++++++++++++++++-
- drivers/base/power/opp/opp.h  |  2 ++
- 2 files changed, 49 insertions(+), 1 deletion(-)
+ drivers/soc/qcom/rpmpd.c | 100 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 100 insertions(+)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index a8cc14fd8ae4..ef623afcc5fd 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -19,6 +19,7 @@
- #include <linux/slab.h>
- #include <linux/device.h>
- #include <linux/export.h>
-+#include <linux/pm_domain.h>
- #include <linux/regulator/consumer.h>
+diff --git a/drivers/soc/qcom/rpmpd.c b/drivers/soc/qcom/rpmpd.c
+index d34d9c363815..7ef81429c5c5 100644
+--- a/drivers/soc/qcom/rpmpd.c
++++ b/drivers/soc/qcom/rpmpd.c
+@@ -101,6 +101,20 @@ struct rpmpd_desc {
+ 	size_t num_pds;
+ };
  
- #include "opp.h"
-@@ -535,6 +536,42 @@ _generic_set_opp_clk_only(struct device *dev, struct clk *clk,
++enum rpmpd_levels {
++	NONE,
++	LOWER,          /* SVS2 */
++	LOW,            /* SVS */
++	NOMINAL,        /* NOMINAL */
++	HIGH,           /* Turbo */
++	MAX_LEVEL,
++};
++
++struct rpmpd_freq_map {
++	struct rpmpd *pd;
++	unsigned long freq[MAX_LEVEL];
++};
++
+ static DEFINE_MUTEX(rpmpd_lock);
+ 
+ /* msm8996 RPM powerdomains */
+@@ -126,6 +140,47 @@ static const struct rpmpd_desc msm8996_desc = {
+ 	.num_pds = ARRAY_SIZE(msm8996_rpmpds),
+ };
+ 
++enum msm8996_devices {
++	SDHCI,
++	UFS,
++	PCIE,
++	USB3,
++};
++
++static struct rpmpd_freq_map msm8996_rpmpd_freq_map[] = {
++	[SDHCI] = {
++		.pd = &msm8996_vddcx,
++		.freq[LOWER] = 19200000,
++		.freq[LOW] = 200000000,
++		.freq[NOMINAL] = 400000000,
++	},
++	[UFS] = {
++		.pd = &msm8996_vddcx,
++		.freq[LOWER] = 19200000,
++		.freq[LOW] = 100000000,
++		.freq[NOMINAL] = 200000000,
++		.freq[HIGH] = 240000000,
++	},
++	[PCIE] = {
++		.pd = &msm8996_vddcx,
++		.freq[LOWER] = 1011000,
++	},
++	[USB3] = {
++		.pd = &msm8996_vddcx,
++		.freq[LOWER] = 60000000,
++		.freq[LOW] = 120000000,
++		.freq[NOMINAL] = 150000000,
++	},
++};
++
++static const struct of_device_id rpmpd_performance_table[] = {
++	{ .compatible = "qcom,sdhci-msm-v4", .data = (void *)SDHCI },
++	{ .compatible = "qcom,ufshc", .data = (void *)UFS },
++	{ .compatible = "qcom,pcie-msm8996", .data = (void *)PCIE },
++	{ .compatible = "qcom,dwc3", .data = (void *)USB3 },
++	{ }
++};
++
+ static const struct of_device_id rpmpd_match_table[] = {
+ 	{ .compatible = "qcom,rpmpd-msm8996", .data = &msm8996_desc },
+ 	{ }
+@@ -230,6 +285,49 @@ static int rpmpd_power_off(struct generic_pm_domain *domain)
  	return ret;
  }
  
-+static inline int
-+_generic_set_opp_domain(struct device *dev, struct clk *clk,
-+			unsigned long old_freq, unsigned long freq)
++static int rpmpd_set_performance(struct generic_pm_domain *domain,
++			     unsigned int state)
 +{
-+	int ret;
++	int ret = 0;
++	struct rpmpd *pd = domain_to_rpmpd(domain);
 +
-+	/* Scaling up? Scale domain performance state before frequency */
-+	if (freq > old_freq) {
-+		ret = pm_genpd_update_performance_state(dev, freq);
-+		if (ret)
-+			return ret;
-+	}
++	mutex_lock(&rpmpd_lock);
 +
-+	ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
-+	if (ret)
-+		goto restore_domain_state;
++	pd->corner = state;
 +
-+	/* Scaling down? Scale domain performance state after frequency */
-+	if (freq < old_freq) {
-+		ret = pm_genpd_update_performance_state(dev, freq);
-+		if (ret)
-+			goto restore_freq;
-+	}
++	if (!pd->enabled && (pd->key != KEY_FLOOR_CORNER))
++		goto out;
 +
-+	return 0;
++	ret = rpmpd_aggregate_corner(pd);
 +
-+restore_freq:
-+	if (_generic_set_opp_clk_only(dev, clk, freq, old_freq))
-+		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
-+			__func__, old_freq);
-+restore_domain_state:
-+	pm_genpd_update_performance_state(dev, old_freq);
++out:
++	mutex_unlock(&rpmpd_lock);
 +
 +	return ret;
 +}
 +
- static int _generic_set_opp_regulator(const struct opp_table *opp_table,
- 				      struct device *dev,
- 				      unsigned long old_freq,
-@@ -653,7 +690,14 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 
- 	/* Only frequency scaling */
- 	if (!opp_table->regulators) {
--		ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
-+		/*
-+		 * We don't support devices with both regulator and
-+		 * domain performance-state for now.
-+		 */
-+		if (opp_table->genpd_performance_state)
-+			ret = _generic_set_opp_domain(dev, clk, old_freq, freq);
-+		else
-+			ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
- 	} else if (!opp_table->set_opp) {
- 		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
- 						 IS_ERR(old_opp) ? NULL : old_opp->supplies,
-@@ -755,6 +799,8 @@ static struct opp_table *_allocate_opp_table(struct device *dev)
- 				ret);
- 	}
- 
-+	opp_table->genpd_performance_state = pm_genpd_has_performance_state(dev);
 +
- 	BLOCKING_INIT_NOTIFIER_HEAD(&opp_table->head);
- 	INIT_LIST_HEAD(&opp_table->opp_list);
- 	mutex_init(&opp_table->lock);
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index 166eef990599..1efa253e1934 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -135,6 +135,7 @@ enum opp_table_access {
-  * @clk: Device's clock handle
-  * @regulators: Supply regulators
-  * @regulator_count: Number of power supply regulators
-+ * @genpd_performance_state: Device's power domain support performance state.
-  * @set_opp: Platform specific set_opp callback
-  * @set_opp_data: Data to be passed to set_opp callback
-  * @dentry:	debugfs dentry pointer of the real device directory (not links).
-@@ -170,6 +171,7 @@ struct opp_table {
- 	struct clk *clk;
- 	struct regulator **regulators;
- 	unsigned int regulator_count;
-+	bool genpd_performance_state;
++static int rpmpd_get_performance(struct device *dev, unsigned long rate)
++{
++	int i;
++	unsigned long index;
++	const struct of_device_id *id;
++
++	if (!rate)
++		return 0;
++
++	id = of_match_device(rpmpd_performance_table, dev);
++	if (!id)
++		return -EINVAL;
++
++	index = (unsigned long)id->data;
++	for (i = 0; i < MAX_LEVEL; i++)
++		if (msm8996_rpmpd_freq_map[index].freq[i] >= rate)
++			return i;
++
++	return MAX_LEVEL;
++}
++
+ static int rpmpd_probe(struct platform_device *pdev)
+ {
+ 	int i;
+@@ -267,6 +365,8 @@ static int rpmpd_probe(struct platform_device *pdev)
+ 		rpmpds[i]->rpm = rpm;
+ 		rpmpds[i]->pd.power_off = rpmpd_power_off;
+ 		rpmpds[i]->pd.power_on = rpmpd_power_on;
++		rpmpds[i]->pd.set_performance_state = rpmpd_set_performance;
++		rpmpds[i]->pd.get_performance_state = rpmpd_get_performance;
+ 		pm_genpd_init(&rpmpds[i]->pd, NULL, true);
  
- 	int (*set_opp)(struct dev_pm_set_opp_data *data);
- 	struct dev_pm_set_opp_data *set_opp_data;
+ 		data->domains[i] = &rpmpds[i]->pd;
 -- 
 2.13.0.71.gd7076ec9c9cb
