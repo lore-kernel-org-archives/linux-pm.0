@@ -1,79 +1,115 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 2/6] drivers base/arch_topology: frequency-invariant load-tracking
- support
-Date: Tue, 20 Jun 2017 17:31:27 -0700
-Message-ID: <5949BE5F.4020502@codeaurora.org>
-References: <20170608075513.12475-1-dietmar.eggemann@arm.com> <20170608075513.12475-3-dietmar.eggemann@arm.com> <CAOh2x=k1Zr15vAq8LA0+Sg3Cz7o=dL5C-erkEx_py7g56b7BwA@mail.gmail.com>
+From: "Zheng, Lv" <lv.zheng@intel.com>
+Subject: RE: [PATCH v2 3/3] ACPI / sleep: EC-based wakeup from
+ suspend-to-idle on recent Dell systems
+Date: Wed, 21 Jun 2017 01:13:25 +0000
+Message-ID: <1AE640813FDE7649BE1B193DEA596E886CED22FA@SHSMSX101.ccr.corp.intel.com>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan>
+ <3454366.uzaJljlWGm@aspire.rjw.lan> <3689795.xuIczRHZsl@aspire.rjw.lan>
+ <2026371.DVJN39QYJi@aspire.rjw.lan>
+ <1AE640813FDE7649BE1B193DEA596E886CED1B22@SHSMSX101.ccr.corp.intel.com>
+ <CAJZ5v0ix2z4MKf3rYiHEQiqr9u00LMPAZ-6hA=LBocUg7SLfJQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:60934 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752534AbdFUAba (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Jun 2017 20:31:30 -0400
-In-Reply-To: <CAOh2x=k1Zr15vAq8LA0+Sg3Cz7o=dL5C-erkEx_py7g56b7BwA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0ix2z4MKf3rYiHEQiqr9u00LMPAZ-6hA=LBocUg7SLfJQ@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, Tom Lanyon <tom@oneshoeco.com>, =?utf-8?B?SsOpcj9tZSBkZSBCcmV0YWduZQ==?= <jerome.debretagne@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaor.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On 06/19/2017 11:17 PM, Viresh Kumar wrote:
-> On Thu, Jun 8, 2017 at 1:25 PM, Dietmar Eggemann
-> <dietmar.eggemann@arm.com> wrote:
->
->> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
->
->>   static int __init register_cpufreq_notifier(void)
->>   {
->> +       int ret;
->> +
->>          /*
->>           * on ACPI-based systems we need to use the default cpu capacity
->>           * until we have the necessary code to parse the cpu capacity, so
->> @@ -225,8 +265,14 @@ static int __init register_cpufreq_notifier(void)
->>
->>          cpumask_copy(cpus_to_visit, cpu_possible_mask);
->>
->> -       return cpufreq_register_notifier(&init_cpu_capacity_notifier,
->> -                                        CPUFREQ_POLICY_NOTIFIER);
->> +       ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
->> +                                       CPUFREQ_POLICY_NOTIFIER);
->
-> Wanted to make sure that we all understand the constraints this is going to add
-> for the ARM64 platforms.
->
-> With the introduction of this transition notifier, we would not be able to use
-> the fast-switch path in the schedutil governor. I am not sure if there are any
-> ARM platforms that can actually use the fast-switch path in future or not
-> though. The requirement of fast-switch path is that the freq can be changed
-> without sleeping in the hot-path.
->
-> So, will we ever want fast-switching for ARM platforms ?
->
-
-I don't think we should go down a path that'll prevent ARM platform from 
-switching over to fast-switching in the future.
-
-Having said that, I'm not sure I fully agree with the decision to 
-completely disable notifiers in the fast-switching case. How many of the 
-current users of notifiers truly need support for sleeping in the 
-notifier? Why not make all the transition notifiers atomic? Or at least 
-add atomic transition notifiers that can be registered for separately if 
-the client doesn't need the ability to sleep?
-
-Most of the clients don't seem like ones that'll need to sleep.
-
-There are a bunch of generic off-tree drivers (can't upstream them yet 
-because it depends on the bus scaling framework) that also depend on 
-CPUfreq transition notifiers that are going to stop working if fast 
-switching becomes available in the future. So, this decision to disallow 
-transition notifiers is painful for other reasons too.
-
--Saravana
-
-
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+SGksDQoNCj4gRnJvbTogcmp3eXNvY2tpQGdtYWlsLmNvbSBbbWFpbHRvOnJqd3lzb2NraUBnbWFp
+bC5jb21dIE9uIEJlaGFsZiBPZiBSYWZhZWwgSi4gV3lzb2NraQ0KPiBTdWJqZWN0OiBSZTogW1BB
+VENIIHYyIDMvM10gQUNQSSAvIHNsZWVwOiBFQy1iYXNlZCB3YWtldXAgZnJvbSBzdXNwZW5kLXRv
+LWlkbGUgb24gcmVjZW50IERlbGwgc3lzdGVtcw0KPiANCj4gT24gVHVlLCBKdW4gMjAsIDIwMTcg
+YXQgMTozNyBBTSwgWmhlbmcsIEx2IDxsdi56aGVuZ0BpbnRlbC5jb20+IHdyb3RlOg0KPiA+IEhp
+LCBSYWZhZWwNCj4gPg0KPiA+PiBGcm9tOiBsaW51eC1hY3BpLW93bmVyQHZnZXIua2VybmVsLm9y
+ZyBbbWFpbHRvOmxpbnV4LWFjcGktb3duZXJAdmdlci5rZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YN
+Cj4gUmFmYWVsIEouDQo+ID4+IFd5c29ja2kNCj4gPj4gU3ViamVjdDogW1BBVENIIHYyIDMvM10g
+QUNQSSAvIHNsZWVwOiBFQy1iYXNlZCB3YWtldXAgZnJvbSBzdXNwZW5kLXRvLWlkbGUgb24gcmVj
+ZW50IERlbGwgc3lzdGVtcw0KPiA+Pg0KPiA+PiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSA8cmFm
+YWVsLmoud3lzb2NraUBpbnRlbC5jb20+DQo+ID4+DQo+ID4+IFNvbWUgcmVjZW50IERlbGwgbGFw
+dG9wcywgaW5jbHVkaW5nIHRoZSBYUFMxMyBtb2RlbCBudW1iZXJzIDkzNjAgYW5kDQo+ID4+IDkz
+NjUsIGNhbm5vdCBiZSB3b2tlbiB1cCBmcm9tIHN1c3BlbmQtdG8taWRsZSBieSBwcmVzc2luZyB0
+aGUgcG93ZXINCj4gPj4gYnV0dG9uIHdoaWNoIGlzIHVuZXhwZWN0ZWQgYW5kIG1ha2VzIHRoYXQg
+ZmVhdHVyZSBsZXNzIHVzYWJsZSBvbg0KPiA+PiB0aG9zZSBzeXN0ZW1zLiAgTW9yZW92ZXIsIG9u
+IHRoZSA5MzY1IEFDUEkgUzMgKHN1c3BlbmQtdG8tUkFNKSBpcw0KPiA+PiBub3QgZXhwZWN0ZWQg
+dG8gYmUgdXNlZCBhdCBhbGwgKHRoZSBPUyB0aGVzZSBzeXN0ZW1zIHNoaXAgd2l0aCBuZXZlcg0K
+PiA+PiBleGVyY2lzZXMgdGhlIEFDUEkgUzMgcGF0aCkgYW5kIHN1c3BlbmQtdG8taWRsZSBpcyB0
+aGUgb25seSB2aWFibGUNCj4gPj4gc3lzdGVtIHN1c3BlbmQgbWVjaGFuaXNtIGluIHRoZXJlLg0K
+PiA+Pg0KPiA+PiBUaGUgcmVhc29uIHdoeSB0aGUgcG93ZXIgYnV0dG9uIHdha2V1cCBmcm9tIHN1
+c3BlbmQtdG8taWRsZSBkb2Vzbid0DQo+ID4+IHdvcmsgb24gdGhvc2Ugc3lzdGVtcyBpcyBiZWNh
+dXNlIHRoZWlyIHBvd2VyIGJ1dHRvbiBldmVudHMgYXJlDQo+ID4+IHNpZ25hbGVkIGJ5IHRoZSBF
+QyAoRW1iZWRkZWQgQ29udHJvbGxlciksIHdob3NlIEdQRSAoR2VuZXJhbCBQdXJwb3NlDQo+ID4+
+IEV2ZW50KSBsaW5lIGlzIGRpc2FibGVkIGR1cmluZyBzdXNwZW5kLXRvLWlkbGUgdHJhbnNpdGlv
+bnMgaW4gTGludXguDQo+ID4+IFRoYXQgaXMgZG9uZSBvbiBwdXJwb3NlLCBiZWNhdXNlIGluIGdl
+bmVyYWwgdGhlIEVDIHRlbmRzIHRvIGdlbmVyYXRlDQo+ID4+IHRvbnMgb2YgZXZlbnRzIGZvciB2
+YXJpb3VzIHJlYXNvbnMgKGJhdHRlcnkgYW5kIHRoZXJtYWwgdXBkYXRlcyBhbmQNCj4gPj4gc2lt
+aWxhciwgZm9yIGV4YW1wbGUpIGFuZCBhbGwgb2YgdGhlbSB3b3VsZCBraWNrIHRoZSBDUFVzIG91
+dCBvZiBkZWVwDQo+ID4+IGlkbGUgc3RhdGVzIHdoaWxlIGluIHN1c3BlbmQtdG8taWRsZSwgd2hp
+Y2ggZWZmZWN0aXZlbHkgd291bGQgZGVmZWF0DQo+ID4+IGl0cyBwdXJwb3NlLg0KPiA+Pg0KPiA+
+PiBPZiBjb3Vyc2UsIG9uIHRoZSBEZWxsIHN5c3RlbXMgaW4gcXVlc3Rpb24gdGhlIEVDIEdQRSBt
+dXN0IGJlIGVuYWJsZWQNCj4gPj4gZHVyaW5nIHN1c3BlbmQtdG8taWRsZSB0cmFuc2l0aW9ucyBm
+b3IgdGhlIGJ1dHRvbiBwcmVzcyBldmVudHMgdG8NCj4gPj4gYmUgc2lnbmFsZWQgd2hpbGUgc3Vz
+cGVuZGVkIGF0IGFsbC4gIEZvciB0aGlzIHJlYXNvbiwgYWRkIGEgRE1JDQo+ID4+IHN3aXRjaCB0
+byB0aGUgQUNQSSBzeXN0ZW0gc3VzcGVuZCBpbmZyYXN0cnVjdHVyZSB0byB0cmVhdCB0aGUgRUMN
+Cj4gPj4gR1BFIGFzIGEgd2FrZXVwIG9uZSBvbiB0aGUgYWZmZWN0ZWQgRGVsbCBzeXN0ZW1zLiAg
+SW4gY2FzZSB0aGUNCj4gPj4gdXNlcnMgd291bGQgcHJlZmVyIG5vdCB0byBkbyB0aGF0IGFmdGVy
+IGFsbCwgYWRkIGEgbmV3IGtlcm5lbA0KPiA+PiBjb21tYW5kIGxpbmUgc3dpdGNoLCBhY3BpX3Ns
+ZWVwPW5vX2VjX3dha2V1cCwgdG8gZGlzYWJsZSB0aGF0IG5ldw0KPiA+PiBiZWhhdmlvci4NCj4g
+Pj4NCj4gDQo+IFtjdXRdDQo+IA0KPiA+Pg0KPiA+PiBJbmRleDogbGludXgtcG0vZHJpdmVycy9h
+Y3BpL3NsZWVwLmMNCj4gPj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0KPiA+PiAtLS0gbGludXgtcG0ub3JpZy9kcml2
+ZXJzL2FjcGkvc2xlZXAuYw0KPiA+PiArKysgbGludXgtcG0vZHJpdmVycy9hY3BpL3NsZWVwLmMN
+Cj4gPj4gQEAgLTE2MCw2ICsxNjAsMjMgQEAgc3RhdGljIGludCBfX2luaXQgaW5pdF9udnNfbm9z
+YXZlKGNvbnN0DQo+ID4+ICAgICAgIHJldHVybiAwOw0KPiA+PiAgfQ0KPiA+Pg0KPiA+PiArLyog
+SWYgc2V0LCBpdCBpcyBhbGxvd2VkIHRvIHVzZSB0aGUgRUMgR1BFIHRvIHdha2UgdXAgdGhlIHN5
+c3RlbS4gKi8NCj4gPj4gK3N0YXRpYyBib29sIGVjX2dwZV93YWtldXBfYWxsb3dlZCBfX2luaXRk
+YXRhID0gdHJ1ZTsNCj4gPj4gKw0KPiA+PiArdm9pZCBfX2luaXQgYWNwaV9kaXNhYmxlX2VjX2dw
+ZV93YWtldXAodm9pZCkNCj4gPj4gK3sNCj4gPj4gKyAgICAgZWNfZ3BlX3dha2V1cF9hbGxvd2Vk
+ID0gZmFsc2U7DQo+ID4+ICt9DQo+ID4+ICsNCj4gPj4gKy8qIElmIHNldCwgdGhlIEVDIEdQRSB3
+aWxsIGJlIGNvbmZpZ3VyZWQgdG8gd2FrZSB1cCB0aGUgc3lzdGVtLiAqLw0KPiA+PiArc3RhdGlj
+IGJvb2wgZWNfZ3BlX3dha2V1cDsNCj4gPj4gKw0KPiA+PiArc3RhdGljIGludCBfX2luaXQgaW5p
+dF9lY19ncGVfd2FrZXVwKGNvbnN0IHN0cnVjdCBkbWlfc3lzdGVtX2lkICpkKQ0KPiA+PiArew0K
+PiA+PiArICAgICBlY19ncGVfd2FrZXVwID0gZWNfZ3BlX3dha2V1cF9hbGxvd2VkOw0KPiA+PiAr
+ICAgICByZXR1cm4gMDsNCj4gPj4gK30NCj4gPj4gKw0KPiA+PiAgc3RhdGljIHN0cnVjdCBkbWlf
+c3lzdGVtX2lkIGFjcGlzbGVlcF9kbWlfdGFibGVbXSBfX2luaXRkYXRhID0gew0KPiA+PiAgICAg
+ICB7DQo+ID4+ICAgICAgIC5jYWxsYmFjayA9IGluaXRfb2xkX3N1c3BlbmRfb3JkZXJpbmcsDQo+
+ID4+IEBAIC0zNDMsNiArMzYwLDI2IEBAIHN0YXRpYyBzdHJ1Y3QgZG1pX3N5c3RlbV9pZCBhY3Bp
+c2xlZXBfZG0NCj4gPj4gICAgICAgICAgICAgICBETUlfTUFUQ0goRE1JX1BST0RVQ1RfTkFNRSwg
+IjgwRTMiKSwNCj4gPj4gICAgICAgICAgICAgICB9LA0KPiA+PiAgICAgICB9LA0KPiA+PiArICAg
+ICAvKg0KPiA+PiArICAgICAgKiBFbmFibGUgdGhlIEVDIHRvIHdha2UgdXAgdGhlIHN5c3RlbSBm
+cm9tIHN1c3BlbmQtdG8taWRsZSB0byBhbGxvdw0KPiA+PiArICAgICAgKiBwb3dlciBidXR0b24g
+ZXZlbnRzIHRvIGl0IHdha2UgdXAuDQo+ID4+ICsgICAgICAqLw0KPiA+PiArICAgICB7DQo+ID4+
+ICsgICAgICAuY2FsbGJhY2sgPSBpbml0X2VjX2dwZV93YWtldXAsDQo+ID4+ICsgICAgICAuaWRl
+bnQgPSAiRGVsbCBYUFMgMTMgOTM2MCIsDQo+ID4+ICsgICAgICAubWF0Y2hlcyA9IHsNCj4gPj4g
+KyAgICAgICAgICAgICBETUlfTUFUQ0goRE1JX1NZU19WRU5ET1IsICJEZWxsIEluYy4iKSwNCj4g
+Pj4gKyAgICAgICAgICAgICBETUlfTUFUQ0goRE1JX1BST0RVQ1RfTkFNRSwgIlhQUyAxMyA5MzYw
+IiksDQo+ID4+ICsgICAgICAgICAgICAgfSwNCj4gPj4gKyAgICAgfSwNCj4gPj4gKyAgICAgew0K
+PiA+PiArICAgICAgLmNhbGxiYWNrID0gaW5pdF9lY19ncGVfd2FrZXVwLA0KPiA+PiArICAgICAg
+LmlkZW50ID0gIkRlbGwgWFBTIDEzIDkzNjUiLA0KPiA+PiArICAgICAgLm1hdGNoZXMgPSB7DQo+
+ID4+ICsgICAgICAgICAgICAgRE1JX01BVENIKERNSV9TWVNfVkVORE9SLCAiRGVsbCBJbmMuIiks
+DQo+ID4+ICsgICAgICAgICAgICAgRE1JX01BVENIKERNSV9QUk9EVUNUX05BTUUsICJYUFMgMTMg
+OTM2NSIpLA0KPiA+PiArICAgICAgICAgICAgIH0sDQo+ID4+ICsgICAgIH0sDQo+ID4+ICAgICAg
+IHt9LA0KPiA+PiAgfTsNCj4gPj4NCj4gPg0KPiA+IEkgaGF2ZSBhIGNvbmNlcm4gaGVyZS4NCj4g
+Pg0KPiA+IEFDUEkgc3BlYyBoYXMgYWxyZWFkeSBkZWZpbmVkIGEgbWVjaGFuaXNtIHRvIHN0YXRp
+Y2FsbHkNCj4gPiBNYXJrIEdQRXMgYXMgd2FrZS1jYXBhYmxlIGFuZCBlbmFibGUgaXQsIGl0IGlz
+IGRvbmUgdmlhDQo+ID4gX1BSVy4gV2UgbWF5IGNhbGwgaXQgYSAic3RhdGljIHdha2V1cCBHUEUi
+IG1lY2hhbmlzbS4NCj4gPg0KPiA+IE5vdyB0aGUgcHJvYmxlbSBtaWdodCBiZSBvbiBzb21lIHBs
+YXRmb3JtcywgX1BSVyBjYW5ub3QgYmUNCj4gPiBwcmVwYXJlZCB1bmNvbmRpdGlvbmFsbHkuIEFu
+ZCB0aGUgcGxhdGZvcm0gZGVzaWduZXJzIHdhbnRzDQo+ID4gYSAiZHluYW1pYyB3YWtldXAgR1BF
+IiBtZWNoYW5pc20gdG8gZHluYW1pY2FsbHkNCj4gPiBtYXJrL2VuYWJsZSBHUEVzIGFzIHdha2V1
+cCBHUEUgYWZ0ZXIgaGF2aW5nIGRvbmUgc29tZQ0KPiA+IHBsYXRmb3JtIHNwZWNpZmljIGJlaGF2
+aW9ycyAoZXguLCBhZnRlci9iZWZvcmUNCj4gPiBzYXZpbmcvcmVzdG9yaW5nIHNvbWUgZmlybXdh
+cmUgY29uZmlndXJhdGlvbnMpLg0KPiA+DQo+ID4gRnJvbSB0aGlzIHBvaW50IG9mIHZpZXcsIGNh
+biB3ZSBwcmVwYXJlIHNldmVyYWwgQVBJcyBpbg0KPiA+IHNsZWVwLmMgdG8gYWxsb3cgZHluYW1p
+Y2FsbHkgbWFyay9lbmFibGUgd2FrZXVwIEdQRXMgYW5kDQo+ID4gZXhwb3J0IEVDIGluZm9ybWF0
+aW9uIHZpYSBhIG5ldyBBUEkgZnJvbSBlYy5jLCBleC4sDQo+ID4gYWNwaV9lY19nZXRfYXR0cmli
+dXRlcygpLCBvciBqdXN0IHB1Ymxpc2ggc3RydWN0IGFjcGlfZWMNCj4gPiBhbmQgZmlyc3RfZWMg
+aW4gYWNwaV9lYy5oIHRvIHRoZSBvdGhlciBkcml2ZXJzLg0KPiA+IFNvIHRoYXQgYWxsIHN1Y2gg
+a2luZHMgb2YgcGxhdGZvcm1zIGRyaXZlcnMgY2FuIHVzZSBib3RoDQo+ID4gaW50ZXJmYWNlcyB0
+byBkeW5hbWljYWxseSBhY2hpZXZlIHRoaXMsIHdoaWNoIGNhbiBoZWxwDQo+ID4gdG8gYXZvaWQg
+aW50cm9kdWNpbmcgcXVpcmsgdGFibGVzIGhlcmUuDQo+IA0KPiBJJ20gbm90IHN1cmUgaG93IHRo
+aXMgaXMgcmVsYXRlZCB0byB0aGUgcGF0Y2guDQoNClNvcnJ5LCBJIHdhcyB0aGlua2luZyB0aGlz
+IGlzIHN0aWxsIHJlbGF0ZWQgdG8gdVBFUC4NCg0KQmVzdCByZWdhcmRzDQpMdg0K
