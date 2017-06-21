@@ -1,94 +1,61 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: Drivers taking different actions depending on sleep state
-Date: Wed, 21 Jun 2017 14:16:11 -0700
-Message-ID: <ccac39d6-4611-8b46-12f7-24227ef3b35e@gmail.com>
-References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr>
- <CAJZ5v0iL7voAz9T+36fXXncOj4UrFSAH8WzwEbec96GuFUteaQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 4/9] PM / ACPI: Split code validating need for runtime
+ resume in ->prepare()
+Date: Wed, 21 Jun 2017 23:35:14 +0200
+Message-ID: <CAJZ5v0j3oLUmg-8fW4372yE-uy0kM28E06jFQCPp14xb66aY+A@mail.gmail.com>
+References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org> <1498072888-14782-5-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f195.google.com ([209.85.128.195]:36266 "EHLO
-        mail-wr0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751130AbdFUVQW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Jun 2017 17:16:22 -0400
-Received: by mail-wr0-f195.google.com with SMTP id 77so29934901wrb.3
-        for <linux-pm@vger.kernel.org>; Wed, 21 Jun 2017 14:16:22 -0700 (PDT)
-In-Reply-To: <CAJZ5v0iL7voAz9T+36fXXncOj4UrFSAH8WzwEbec96GuFUteaQ@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1498072888-14782-5-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Mason <slash.tmp@free.fr>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, JB <jb_lescher@sigmadesigns.com>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 06/09/2017 03:53 PM, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> On Fri, Jun 9, 2017 at 5:20 PM, Mason <slash.tmp@free.fr> wrote:
->> Hello,
->>
->> I read the "Sleep States" documentation:
->> https://www.kernel.org/doc/Documentation/power/states.txt
->>
->> It mentions /sys/power/mem_sleep but I don't have that in 4.9
->> # ll /sys/power/
->> -rw-r--r--    1 root     root          4096 Jan  1 00:31 pm_async
->> -rw-r--r--    1 root     root          4096 Jan  1 00:31 pm_freeze_timeout
->> -rw-r--r--    1 root     root          4096 Jan  1 00:31 state
->> -rw-r--r--    1 root     root          4096 Jan  1 00:31 wakeup_count
->>
->> # cat /sys/power/state
->> freeze mem
->>
->> Currently my platform's "mem" is a true suspend-to-RAM trigger,
->> where drivers are supposed to save their state (register values
->> will be lost), then Linux hands control over to firmware which
->> enables RAM self-refresh and powers the chip down. When the system
->> resumes, drivers restore their state from their copy in memory.
->>
->> One driver is responsible for loading/unloading microcode running
->> on the DSPs. This operation is required only when powering down
->> the chip, but it should be avoided for "low-latency" sleeps.
->>
->> The problem is that, if I understand correctly, drivers have no way
->> of knowing which sleep state is being entered/exited?
->>
->> How can I have the microcode driver take different decisions
->> based on the sleep state?
-> 
-> The cleanest way would be to run that code from one of the platform
-> suspend hooks that receive information on what sleep state is to be
-> entered.
+On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> Move the code dealing with validation of whether runtime resuming the
+> device is needed during system suspend.
+>
+> In this way it becomes more clear for what circumstances ACPI is prevented
+> from trying the direct_complete path.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/acpi/device_pm.c | 37 ++++++++++++++++++++++++-------------
+>  1 file changed, 24 insertions(+), 13 deletions(-)
+>
+> diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+> index d38acbc..ee51e75 100644
+> --- a/drivers/acpi/device_pm.c
+> +++ b/drivers/acpi/device_pm.c
+> @@ -933,6 +933,27 @@ int acpi_dev_resume_early(struct device *dev)
+>  }
+>  EXPORT_SYMBOL_GPL(acpi_dev_resume_early);
+>
+> +static bool acpi_dev_needs_resume(struct device *dev, struct acpi_device *adev)
+> +{
+> +       u32 sys_target = acpi_target_system_state();
+> +       int ret, state;
+> +
+> +       if (device_may_wakeup(dev) != !!adev->wakeup.prepare_count)
+> +               return true;
+> +
+> +       if (sys_target == ACPI_STATE_S0)
+> +               return false;
+> +
+> +       if (adev->power.flags.dsw_present)
+> +               return true;
+> +
+> +       ret = acpi_dev_pm_get_state(dev, adev, sys_target, NULL, &state);
+> +       if (ret)
+> +               return true;
+> +
+> +       return !(state == adev->power.state);
 
-I am not sure this would be cleaner, because that would create a tighter
-dependency between different drivers, each of them having their
-suspend/resume routings and the driver that implements the
-platform_suspend_ops, that could also create some nice layering
-violations and some difficult to solve dependencies.
+Nit: I would write this as
 
-> 
-> Alternatively, those hooks can set/clear flags that can be accessed by
-> drivers, but that of course may your drivers depend on the platform
-> (still, in the microcode case the driver seems to be
-> platform-dependent anyway).
+  return state != adev->power.state;
 
-It may be platform dependent, but the actual system-wide suspend/resume
-implementations can vary a lot. For example you may have started with
-some particular CPU architecture on your platforms, with one driver
-implementing an instance of platform_suspend_ops, and then as you moved
-to another CPU architecture, some of that could be managed by a generic
-driver (e.g: ARM SCPI, ACPI etc. etc.).
-
-The same HW blocks are likely to be present on these different SoCs, and
-have the same requirements where they need to see a slightly different
-path taken on suspend/resume. If we have to patch both the "legacy"
-platform_suspend_ops, and the "new" platform_suspend_ops that does not
-really scale.
-
-Would it be that much of a stretch if we reflected e.g:
-PM_SUSPEND_STANDBY, PM_SUSPEND_MEM into the pm_message_t that is
-communicated to platform_driver::suspend and platform_driver::resume?
-
-Thanks!
--- 
-Florian
+Thanks,
+Rafael
