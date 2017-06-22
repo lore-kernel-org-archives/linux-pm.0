@@ -1,70 +1,49 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Drivers taking different actions depending on sleep state
-Date: Thu, 22 Jun 2017 18:09:52 +0200
-Message-ID: <CAJZ5v0i0HBXG_Ocipf86PuKTdSM_g3aQoV7OZ-a977GVXJykFg@mail.gmail.com>
-References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr> <CAJZ5v0iL7voAz9T+36fXXncOj4UrFSAH8WzwEbec96GuFUteaQ@mail.gmail.com>
- <ccac39d6-4611-8b46-12f7-24227ef3b35e@gmail.com> <CAJZ5v0g_egRwxOLqft=JhvzAqBWuyvC8yiO7De5TYUZLUT2Fpw@mail.gmail.com>
- <7001768d-9134-4975-127e-e8444e00f677@gmail.com> <CAJZ5v0ihqn5Xcj1yoZcrb7caYiH+x8YivLJit6BqvDGradZJ=Q@mail.gmail.com>
- <b7a49925-d823-b03d-2990-2894ba2c2714@gmail.com> <CAJZ5v0hzkVwf1HkH4GLbAeK7iJ_7V1UXHErruuvMVEpb5MqZ3Q@mail.gmail.com>
- <6a4d18d9-2494-e35c-d209-a019292d6648@gmail.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] dt-bindings: thermal: add file extension to
+ brcm,ns-thermal
+Date: Thu, 22 Jun 2017 12:08:38 -0500
+Message-ID: <20170622170838.nsodxcsp5mk5kb3j@rob-hp-laptop>
+References: <20170602173139.71901-1-code@mmayer.net>
+ <20170613221738.7qfnzcy55ybzseul@rob-hp-laptop>
+ <CANEuBv7riK2fMtdMkGxm_aTe5XOyu1bJjMZDyh7LwkRO6QAx1A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f172.google.com ([209.85.223.172]:36294 "EHLO
-        mail-io0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751095AbdFVQJx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jun 2017 12:09:53 -0400
-Received: by mail-io0-f172.google.com with SMTP id e63so16947947iod.3
-        for <linux-pm@vger.kernel.org>; Thu, 22 Jun 2017 09:09:53 -0700 (PDT)
-In-Reply-To: <6a4d18d9-2494-e35c-d209-a019292d6648@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CANEuBv7riK2fMtdMkGxm_aTe5XOyu1bJjMZDyh7LwkRO6QAx1A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Mason <slash.tmp@free.fr>, Ulf Hansson <ulf.hansson@linaro.org>, JB <jb_lescher@sigmadesigns.com>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>
 
-On Thu, Jun 22, 2017 at 5:18 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
->
->
-> On 06/21/2017 05:03 PM, Rafael J. Wysocki wrote:
->> On Thu, Jun 22, 2017 at 1:55 AM, Florian Fainelli <f.fainelli@gmail.com> wrote:
->>> On 06/21/2017 03:57 PM, Rafael J. Wysocki wrote:
->>>> On Thu, Jun 22, 2017 at 12:48 AM, Florian Fainelli <f.fainelli@gmail.com> wrote:
->>>>> On 06/21/2017 02:59 PM, Rafael J. Wysocki wrote:
->>>>>> On Wed, Jun 21, 2017 at 11:16 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
->>>>>>> On 06/09/2017 03:53 PM, Rafael J. Wysocki wrote:
+On Tue, Jun 13, 2017 at 03:26:29PM -0700, Markus Mayer wrote:
+> On 13 June 2017 at 15:17, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> > On Fri, Jun 02, 2017 at 10:31:39AM -0700, Markus Mayer wrote:
+> >> From: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+> >>
+> >> Add the missing .txt extension to the Broadcom Northstar binding document.
+> >>
+> >> Signed-off-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+> >> ---
+> >>
+> >> I noticed the missing .txt extension while preparing another patch series.
+> >
+> > I can take this, but if you have another series it should go thru the
+> > thermal tree.
+> >
+> > Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> 
+> The other series is unrelated to Northstar:
+> https://www.spinics.net/lists/kernel/msg2525115.html
+> 
+> An updated version for that will be coming soon.
+> 
+> Not sure if that'll influence what happens to this patch.
 
-[cut]
+That sounds like a no, so I've applied this.
 
->
-> For the reasons explained before, if the same set of drivers need to
-> deal with one or more platform_suspend_ops driver, say a classic
-> homegrown one, and one that is ACPI/ARM SCPI based for instance, we
-> would have to sprinkle checks like these in the driver:
->
-> static int drv_suspend(struct device *d)
-> {
->         if (platform_suspend_get_state() == PM_SUSPEND_STANDBY ||
->             acpi_target_system_state() == XXXX |
->
->
-> and so on and so forth, that does not seem to scale horizontally.
->
->>
->> ACPI has acpi_target_system_state() for this very purpose, for example.
->>
->>> If this seems acceptable to you along with proper documentation to
->>> illustrate the platform specific meaning of these states, I will got
->>> ahead and cook a patch.
->>
->> I wouldn't like platform-specific things to pretend that they are generic.
->
-> Would a notifier model be more appropriate perhaps? The mechanism by
-> which the notifications get registered to and signaled can be made
-> generic, the exact information however would be inherently
-> platform_suspend_ops specific, and only the relevant drivers that need
-> to subscribe to that kind of information would do that.
-
-Please see the message I've just sent in this thread. :-)
-
-Thanks,
-Rafael
+Rob
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
