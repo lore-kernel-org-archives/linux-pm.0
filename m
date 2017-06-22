@@ -1,36 +1,62 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/6] ACPI / PM: Consolidate device wakeup settings code
-Date: Thu, 22 Jun 2017 16:38:49 +0200
-Message-ID: <4634255.ux8TmyfYTx@aspire.rjw.lan>
-References: <12296383.UdE5HVtyng@aspire.rjw.lan> <4424061.UyS4hGnq0F@aspire.rjw.lan> <20170622073937.GR629@lahna.fi.intel.com>
+Subject: Re: [PATCH 1/9] i2c: designware: Fix system suspend
+Date: Thu, 22 Jun 2017 16:41:41 +0200
+Message-ID: <2842386.AFZiXzV2Sq@aspire.rjw.lan>
+References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com> <20170622104933.GY629@lahna.fi.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64005 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751248AbdFVOqJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jun 2017 10:46:09 -0400
-In-Reply-To: <20170622073937.GR629@lahna.fi.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20170622104933.GY629@lahna.fi.intel.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>, stable@vger.linux.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Thursday, June 22, 2017 10:39:37 AM Mika Westerberg wrote:
-> On Mon, Jun 19, 2017 at 11:33:52PM +0200, Rafael J. Wysocki wrote:
-> > -#ifdef CONFIG_PM_SLEEP
-> > -/**
-> > - * acpi_pm_device_sleep_wake - Enable or disable device to wake up the system.
-> > - * @dev: Device to enable/desible to wake up the system from sleep states.
-> > - * @enable: Whether to enable or disable @dev to wake up the system.
-> > - */
-> > -int acpi_pm_device_sleep_wake(struct device *dev, bool enable)
-> > +int acpi_pm_device_wakeup(struct device *dev, bool enable)
+On Thursday, June 22, 2017 01:49:33 PM Mika Westerberg wrote:
+> On Thu, Jun 22, 2017 at 01:31:51AM +0200, Rafael J. Wysocki wrote:
+> > On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > > The commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming
+> > > during system suspend"), may suggest to the PM core to try out the so
+> > > called direct_complete path for system sleep. In this path, the PM core
+> > > treats a runtime suspended device as it's already in a proper low power
+> > > state for system sleep, which makes it skip calling the system sleep
+> > > callbacks for the device, except for the ->prepare() and the ->complete()
+> > > callback.
+> > >
+> > > Moreover, under certain circumstances the PM core may unset the
+> > > direct_complete flag for a parent device, in case its child device are
+> > > being system suspended before. In other words, the PM core doesn't skip
+> > > calling the system sleep callbacks, no matter if the device is runtime
+> > > suspended or not.
+> > >
+> > > In cases of an i2c slave device, the above situation is triggered.
+> > > Unfortunate, this also breaks the assumption that the i2c device is always
+> > > runtime resumed, whenever the dw_i2c_plat_suspend() callback is being
+> > > invoked, which then leads to a regression.
+> > >
+> > > More precisely, dw_i2c_plat_suspend() then calls clk_core_disable() and
+> > > clk_core_unprepare(), for an already disabled/unprepared clock, leading to
+> > > complaints about clocks calls being wrongly balanced.
+> > >
+> > > In cases when the i2c device is attached to the ACPI PM domain, the problem
+> > > doesn't occur. That's because ACPI's ->suspend() callback, assigned to
+> > > acpi_subsys_suspend(), calls pm_runtime_resume() for the i2c device.
+> > 
+> > Which really is expected to happen, so direct_complete should only be
+> > used along with the ACPI PM domain in this case.
+> > 
+> > Moreover, in the ACPI PM domain case acpi_subsys_prepare() is supposed
+> > to do the right thing without dw_i2c_plat_prepare() and the return
+> > value of the latter will be ignored anyway, so dw_i2c_plat_prepare()
+> > will only have effect without ACPI PM domain AFAICS.
+> > 
+> > It looks like commit 8503ff166504 is entirely misguided.
 > 
-> Can we call it acpi_pm_device_enable_wakeup() and then provide
-> corresponding acpi_pm_device_disable_wakeup()? I find those easier to
-> understand than acpi_pm_device_wakeup() that sounds like the device
-> should be woken up now.
+> Indeed it is. At the time I suggested that change I did not really
+> understand how the direct complete is supposed to be used :-/
 
-OK, fair enough.  I'll change it this way.
+So can we go for a full revert, please, and then fix up things properly?
+
+Thanks,
+Rafael
