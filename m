@@ -1,56 +1,75 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / QoS: constify *_attribute_group.
-Date: Thu, 22 Jun 2017 13:28:46 +0200
-Message-ID: <20170622112845.GA32083@amd>
-References: <572276af30704b5b79cca4e4864a2c3303e4ab4e.1498128683.git.arvind.yadav.cs@gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/2] ARM: cpuidle: Support asymmetric idle definition
+Date: Thu, 22 Jun 2017 14:25:19 +0200
+Message-ID: <9c00e3ed-693d-4ea7-7a9f-be158b7eb7c5@linaro.org>
+References: <20170612155441.GE2261@mai>
+ <1497282910-19085-1-git-send-email-daniel.lezcano@linaro.org>
+ <1497282910-19085-2-git-send-email-daniel.lezcano@linaro.org>
+ <2056969.dMlCPX6XND@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40358 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750986AbdFVL2s (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jun 2017 07:28:48 -0400
-Content-Disposition: inline
-In-Reply-To: <572276af30704b5b79cca4e4864a2c3303e4ab4e.1498128683.git.arvind.yadav.cs@gmail.com>
+Received: from mail-wr0-f170.google.com ([209.85.128.170]:33811 "EHLO
+        mail-wr0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751546AbdFVMZX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jun 2017 08:25:23 -0400
+Received: by mail-wr0-f170.google.com with SMTP id 77so21326292wrb.1
+        for <linux-pm@vger.kernel.org>; Thu, 22 Jun 2017 05:25:22 -0700 (PDT)
+In-Reply-To: <2056969.dMlCPX6XND@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Leo Yan <leo.yan@linaro.org>, open list <linux-kernel@vger.kernel.org>
+
+On 12/06/2017 20:49, Rafael J. Wysocki wrote:
+> On Monday, June 12, 2017 05:55:10 PM Daniel Lezcano wrote:
+>> Some hardware have clusters with different idle states. The current code does
+>> not support this and fails as it expects all the idle states to be identical.
+>>
+>> Because of this, the Mediatek mtk8173 had to create the same idle state for a
+>> big.Little system and now the Hisilicon 960 is facing the same situation.
+>>
+>> Solve this by simply assuming the multiple driver will be needed for all the
+>> platforms using the ARM generic cpuidle driver which makes sense because of the
+>> different topologies we can support with a single kernel for ARM32 or ARM64.
+>>
+>> Every CPU has its own driver, so every single CPU can specify in the DT the
+>> idle states.
+>>
+>> This simple approach allows to support the future dynamIQ system, current SMP
+>> and HMP.
+>>
+>> Tested on:
+>>  - 96boards: Hikey 620
+>>  - 96boards: Hikey 960
+>>  - 96boards: dragonboard410c
+>>  - Mediatek 8173
+>>
+>> Cc: Sudeep Holla <sudeep.holla@arm.com>
+>> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>> Tested-by: Leo Yan <leo.yan@linaro.org>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> 
+> There seems to have been quite some discussion regarding this one and I'm not
+> sure about the resolution of it.
+> 
+> I'd feel more comfortable with an ACK or Reviewed-by from Sudeep or Lorenzo here.
 
 
---mYCpIKhGyMATD0i+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Rafael,
 
-On Thu 2017-06-22 16:23:32, Arvind Yadav wrote:
-> File size before:
->    text	   data	    bss	    dec	    hex	filename
->    3890	   1152	      8	   5050	   13ba	drivers/base/power/sysfs.o
->=20
-> File size After adding 'const':
->    text	   data	    bss	    dec	    hex	filename
->    4250	    800	      8	   5058	   13c2	drivers/base/power/sysfs.o
->=20
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+just a gentle reminder, Sudeep acked the patch.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Thanks.
 
---mYCpIKhGyMATD0i+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+  -- Daniel
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
 
-iEYEARECAAYFAllLqe0ACgkQMOfwapXb+vI+/gCeM2rQEzbtpFlwxyitOOYoUvnA
-pboAn1p4+RPUVVUTcC7/bMVdQ+KTSqzg
-=WY0+
------END PGP SIGNATURE-----
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
---mYCpIKhGyMATD0i+--
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
