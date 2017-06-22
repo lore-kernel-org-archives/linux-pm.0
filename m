@@ -1,63 +1,73 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] ARM: cpuidle: Support asymmetric idle definition
-Date: Thu, 22 Jun 2017 16:27:52 +0200
-Message-ID: <2129371.vqmlXSuh4K@aspire.rjw.lan>
-References: <20170612155441.GE2261@mai> <2056969.dMlCPX6XND@aspire.rjw.lan> <9c00e3ed-693d-4ea7-7a9f-be158b7eb7c5@linaro.org>
+Subject: Re: [PATCH 7/9] PM / ACPI: Enable the runtime PM centric approach for system sleep
+Date: Thu, 22 Jun 2017 16:32:16 +0200
+Message-ID: <2162861.FQgDXG4xnB@aspire.rjw.lan>
+References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0jL-0TKUv5nK7tFLm+X7nE7J2e3hm21i=+FBFBzQLQ=Xw@mail.gmail.com> <CAPDyKFpYpLqPiyfqp16JT8fA7xwhanAcfhdnYm6MgeXyq0QfNQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:48045 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750812AbdFVOfL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jun 2017 10:35:11 -0400
-In-Reply-To: <9c00e3ed-693d-4ea7-7a9f-be158b7eb7c5@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFpYpLqPiyfqp16JT8fA7xwhanAcfhdnYm6MgeXyq0QfNQ@mail.gmail.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Leo Yan <leo.yan@linaro.org>, open list <linux-kernel@vger.kernel.org>
 
-On Thursday, June 22, 2017 02:25:19 PM Daniel Lezcano wrote:
-> On 12/06/2017 20:49, Rafael J. Wysocki wrote:
-> > On Monday, June 12, 2017 05:55:10 PM Daniel Lezcano wrote:
-> >> Some hardware have clusters with different idle states. The current code does
-> >> not support this and fails as it expects all the idle states to be identical.
+On Thursday, June 22, 2017 11:42:11 AM Ulf Hansson wrote:
+> On 21 June 2017 at 23:47, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >> This change extends the interpretation of the ACPI's no_direct_complete
+> >> flag to be used to enable the so called runtime PM centric approach, for
+> >> devices being attached to the ACPI PM domain.
 > >>
-> >> Because of this, the Mediatek mtk8173 had to create the same idle state for a
-> >> big.Little system and now the Hisilicon 960 is facing the same situation.
+> >> The principle behind the runtime PM centric approach is to re-use the
+> >> runtime PM callbacks to implement system sleep for drivers/subsystems.
+> >> Moreover, using the runtime PM centric approach gives an optimized
+> >> behaviour around avoiding to wake up a device from its low power state
+> >> during system sleep, unless really needed.
 > >>
-> >> Solve this by simply assuming the multiple driver will be needed for all the
-> >> platforms using the ARM generic cpuidle driver which makes sense because of the
-> >> different topologies we can support with a single kernel for ARM32 or ARM64.
+> >> To deploy the runtime PM centric approach for a subsystem/driver, the
+> >> following adaptations needs to be made.
 > >>
-> >> Every CPU has its own driver, so every single CPU can specify in the DT the
-> >> idle states.
+> >> First, the runtime PM callbacks may be called when runtime PM has been
+> >> disabled for the device. This serves as an indication for the callbacks to
+> >> understand they are running in the system sleep sequence, instead of in the
+> >> regular runtime PM path. In some cases, a callback needs to take different
+> >> actions depending in what path it is being executed in, as is the case for
+> >> the ACPI PM domain.
 > >>
-> >> This simple approach allows to support the future dynamIQ system, current SMP
-> >> and HMP.
+> >> In particular for the ACPI PM domain's ->runtime_suspend|resume()
+> >> callbacks, when those finds runtime PM being disabled for the device, it
+> >> instead executes the same operations as normally being run when
+> >> ->suspend_late() and ->resume_early() callbacks are invoked during system
+> >> sleep.
 > >>
-> >> Tested on:
-> >>  - 96boards: Hikey 620
-> >>  - 96boards: Hikey 960
-> >>  - 96boards: dragonboard410c
-> >>  - Mediatek 8173
-> >>
-> >> Cc: Sudeep Holla <sudeep.holla@arm.com>
-> >> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> >> Tested-by: Leo Yan <leo.yan@linaro.org>
-> >> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > 
-> > There seems to have been quite some discussion regarding this one and I'm not
-> > sure about the resolution of it.
-> > 
-> > I'd feel more comfortable with an ACK or Reviewed-by from Sudeep or Lorenzo here.
+> >> Second, at the PM domain level, it is expected that the driver for the
+> >> device makes use of pm_runtime_force_suspend|resume(), to re-use the
+> >> runtime PM callbacks to put the device into low power state and to wake it
+> >> up when needed during system sleep.
+> >
+> > What if it doesn't do that?
+> >
+> > Do all drivers of devices that may fall into the ACPI PM domain use
+> > pm_runtime_force_suspend|resume()?
 > 
+> No, no - the runtime PM centric path is optional by all ACPI
+> devices/drivers. The default is still for the ACPI PM domain to try
+> the direct_complete path.
 > 
-> Hi Rafael,
+> However if an ACPI device/driver (i2c designware in this case) likes
+> to do that, they need to inform the ACPI PM domain about it. Then they
+> call acpi_dev_disable_direct_complete() and makes use of
+> pm_runtime_force_suspend|resume() to deal with system sleep.
 > 
-> just a gentle reminder, Sudeep acked the patch.
+> Does that makes sense?
 
-Yes, I'll get to it later today, most likely.
+Overall, yes, it does, but then it should be made clear that when you use
+"no_direct_complete" (all what you are going to call that eventually), you
+also must use pm_runtime_force_suspend|resume() as your sleep callbacks.
+
+Otherwise things may not work correctly if my understanding is correct.
 
 Thanks,
 Rafael
