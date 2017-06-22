@@ -1,118 +1,66 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [PATCH 2/6] drivers base/arch_topology: frequency-invariant
- load-tracking support
-Date: Thu, 22 Jun 2017 10:59:31 +0100
-Message-ID: <20170622095931.GC2551@e105550-lin.cambridge.arm.com>
-References: <20170608075513.12475-1-dietmar.eggemann@arm.com>
- <20170608075513.12475-3-dietmar.eggemann@arm.com>
- <CAOh2x=k1Zr15vAq8LA0+Sg3Cz7o=dL5C-erkEx_py7g56b7BwA@mail.gmail.com>
- <5949BE5F.4020502@codeaurora.org>
- <20170621053735.GR3942@vireshk-i7>
- <20170621165714.GB2551@e105550-lin.cambridge.arm.com>
- <20170622040643.GB6314@vireshk-i7>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH 1/9] i2c: designware: Fix system suspend
+Date: Thu, 22 Jun 2017 13:49:33 +0300
+Message-ID: <20170622104933.GY629@lahna.fi.intel.com>
+References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
+ <1498072888-14782-2-git-send-email-ulf.hansson@linaro.org>
+ <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:35548 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751191AbdFVJ7g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 22 Jun 2017 05:59:36 -0400
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170622040643.GB6314@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>, stable@vger.linux.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>
 
-On Thu, Jun 22, 2017 at 09:36:43AM +0530, Viresh Kumar wrote:
-> On 21-06-17, 17:57, Morten Rasmussen wrote:
-> > It is true that this patch relies on the notifiers, but I don't see how
-> > that prevents us from adding a non-notifier based solution for
-> > fast-switch enabled platforms later?
+On Thu, Jun 22, 2017 at 01:31:51AM +0200, Rafael J. Wysocki wrote:
+> On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > The commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming
+> > during system suspend"), may suggest to the PM core to try out the so
+> > called direct_complete path for system sleep. In this path, the PM core
+> > treats a runtime suspended device as it's already in a proper low power
+> > state for system sleep, which makes it skip calling the system sleep
+> > callbacks for the device, except for the ->prepare() and the ->complete()
+> > callback.
+> >
+> > Moreover, under certain circumstances the PM core may unset the
+> > direct_complete flag for a parent device, in case its child device are
+> > being system suspended before. In other words, the PM core doesn't skip
+> > calling the system sleep callbacks, no matter if the device is runtime
+> > suspended or not.
+> >
+> > In cases of an i2c slave device, the above situation is triggered.
+> > Unfortunate, this also breaks the assumption that the i2c device is always
+> > runtime resumed, whenever the dw_i2c_plat_suspend() callback is being
+> > invoked, which then leads to a regression.
+> >
+> > More precisely, dw_i2c_plat_suspend() then calls clk_core_disable() and
+> > clk_core_unprepare(), for an already disabled/unprepared clock, leading to
+> > complaints about clocks calls being wrongly balanced.
+> >
+> > In cases when the i2c device is attached to the ACPI PM domain, the problem
+> > doesn't occur. That's because ACPI's ->suspend() callback, assigned to
+> > acpi_subsys_suspend(), calls pm_runtime_resume() for the i2c device.
 > 
-> No it doesn't, but I thought it would be better to have a single
-> solution (if possible) for all the cases here.
+> Which really is expected to happen, so direct_complete should only be
+> used along with the ACPI PM domain in this case.
+> 
+> Moreover, in the ACPI PM domain case acpi_subsys_prepare() is supposed
+> to do the right thing without dw_i2c_plat_prepare() and the return
+> value of the latter will be ignored anyway, so dw_i2c_plat_prepare()
+> will only have effect without ACPI PM domain AFAICS.
+> 
+> It looks like commit 8503ff166504 is entirely misguided.
 
-Right. As I mentioned further down in my reply. There is no single
-solution that fits all. Smart platforms with HW counters, like x86,
-would want to use those. IIUC, cpufreq has no idea what the true
-delivered performance is anyway on those platforms.
+Indeed it is. At the time I suggested that change I did not really
+understand how the direct complete is supposed to be used :-/
 
-> 
-> > > I think this patch doesn't really need to go down the notifiers way.
-> > > 
-> > > We can do something like this in the implementation of
-> > > topology_get_freq_scale():
-> > > 
-> > >         return (policy->cur << SCHED_CAPACITY_SHIFT) / max;
-> > > 
-> > > Though, we would be required to take care of policy structure in this
-> > > case somehow.
-> > 
-> > This is exactly what this patch implements. Unfortunately we can't be
-> > sure that there is a valid policy data structure where we can read the
-> > information from.
-> 
-> Actually there is a way around that.
-> 
-> - Revert one of my patches:
->   commit f9f41e3ef99a ("cpufreq: Remove policy create/remove notifiers")
-> 
-> - Use those notifiers in init_cpu_capacity_callback() instead of
->   CPUFREQ_NOTIFY and set/reset a local policy pointer.
-> 
-> - And this pointer we can use safely/reliably in
->   topology_get_freq_scale(). We may need to use RCU read side
->   protection in topology_get_freq_scale() though, to make sure the
->   local policy pointer isn't getting updated simultaneously.
-> 
-> - If the policy pointer isn't set, then we can use
->   SCHED_CAPACITY_SCALE value instead.
+Thanks Ulf for taking care of this!
 
-IIUC, you are proposing to maintain an RCU protected pointer in the
-topology driver to the policy data structure inside cpufreq and keep it
-up to date through cpufreq notifiers. So instead of getting notified
-when the frequency changes so we can recompute the scaling ratio, we
-have to poll the value and recompute the ratio on each access.
+I tested this series on Dell XPS 9350 which has touch panel connected to
+I2C and suspend/resume still works fine and I can see the controller
+going to D3 when the touch panel is idle.
 
-If we are modifying cpufreq, why not just make cpufreq responsible for
-providing the scaling factor? It seems easier, cleaner, and a lot
-less fragile.
-
-> 
-> 
-> > Isn't the policy protected by a lock as well?
-> 
-> There are locks, but you don't need any to read policy->cur.
-
-Okay, but you need to rely on notifiers to know when it is valid.
-
-> 
-> > Another thing is that I don't think a transition notifier based solution
-> > or any other solution based on the cur/max ratio is really the right way
-> > to go for fast-switching platforms. If we can do very frequent frequency
-> > switching it makes less sense to use the current ratio whenever we
-> > update the PELT averages as the frequency might have changed multiple
-> > times since the last update. So it would make more sense to have an
-> > average ratio instead.
-> 
-> > If the platform has HW counters (e.g. APERF/MPERF) that can provide the
-> > ratio then we should of course use those, if not, one solution could be
-> > to let cpufreq track the average frequency for each cpu over a suitable
-> > time window (around one sched period I think). It should be fairly low
-> > overhead to maintain. In the topology driver, we would then choose
-> > whether the scaling factor is provided by the cpufreq average frequency
-> > ratio or the current transition notifier based approach based on the
-> > capabilities of the platform.
-> 
-> Hmm, maybe.
-
-You said you wanted a solution that works for fast-switch enabled
-platforms ;-)
-
-The cur/max ratio isn't sufficient for those. PeterZ has already
-proposed to use APERF/MPERF for x86 to use the average frequency for
-PELT updates. I think other fast-switch platforms would want something
-similar, as it makes much more sense.
-
-Morten
+I can perform more comprehensive testing next week.
