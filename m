@@ -1,66 +1,83 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH 1/9] i2c: designware: Fix system suspend
-Date: Thu, 22 Jun 2017 13:49:33 +0300
-Message-ID: <20170622104933.GY629@lahna.fi.intel.com>
-References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
- <1498072888-14782-2-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>, stable@vger.linux.org
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [PATCH] PM / QoS: constify *_attribute_group.
+Date: Thu, 22 Jun 2017 16:23:32 +0530
+Message-ID: <572276af30704b5b79cca4e4864a2c3303e4ab4e.1498128683.git.arvind.yadav.cs@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 22, 2017 at 01:31:51AM +0200, Rafael J. Wysocki wrote:
-> On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > The commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming
-> > during system suspend"), may suggest to the PM core to try out the so
-> > called direct_complete path for system sleep. In this path, the PM core
-> > treats a runtime suspended device as it's already in a proper low power
-> > state for system sleep, which makes it skip calling the system sleep
-> > callbacks for the device, except for the ->prepare() and the ->complete()
-> > callback.
-> >
-> > Moreover, under certain circumstances the PM core may unset the
-> > direct_complete flag for a parent device, in case its child device are
-> > being system suspended before. In other words, the PM core doesn't skip
-> > calling the system sleep callbacks, no matter if the device is runtime
-> > suspended or not.
-> >
-> > In cases of an i2c slave device, the above situation is triggered.
-> > Unfortunate, this also breaks the assumption that the i2c device is always
-> > runtime resumed, whenever the dw_i2c_plat_suspend() callback is being
-> > invoked, which then leads to a regression.
-> >
-> > More precisely, dw_i2c_plat_suspend() then calls clk_core_disable() and
-> > clk_core_unprepare(), for an already disabled/unprepared clock, leading to
-> > complaints about clocks calls being wrongly balanced.
-> >
-> > In cases when the i2c device is attached to the ACPI PM domain, the problem
-> > doesn't occur. That's because ACPI's ->suspend() callback, assigned to
-> > acpi_subsys_suspend(), calls pm_runtime_resume() for the i2c device.
-> 
-> Which really is expected to happen, so direct_complete should only be
-> used along with the ACPI PM domain in this case.
-> 
-> Moreover, in the ACPI PM domain case acpi_subsys_prepare() is supposed
-> to do the right thing without dw_i2c_plat_prepare() and the return
-> value of the latter will be ignored anyway, so dw_i2c_plat_prepare()
-> will only have effect without ACPI PM domain AFAICS.
-> 
-> It looks like commit 8503ff166504 is entirely misguided.
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+   3890	   1152	      8	   5050	   13ba	drivers/base/power/sysfs.o
 
-Indeed it is. At the time I suggested that change I did not really
-understand how the direct complete is supposed to be used :-/
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+   4250	    800	      8	   5058	   13c2	drivers/base/power/sysfs.o
 
-Thanks Ulf for taking care of this!
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/base/power/sysfs.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-I tested this series on Dell XPS 9350 which has touch panel connected to
-I2C and suspend/resume still works fine and I can see the controller
-going to D3 when the touch panel is idle.
-
-I can perform more comprehensive testing next week.
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index 33b4b90..185a525 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -607,7 +607,7 @@ static ssize_t async_store(struct device *dev, struct device_attribute *attr,
+ #endif /* CONFIG_PM_ADVANCED_DEBUG */
+ 	NULL,
+ };
+-static struct attribute_group pm_attr_group = {
++static const struct attribute_group pm_attr_group = {
+ 	.name	= power_group_name,
+ 	.attrs	= power_attrs,
+ };
+@@ -629,7 +629,7 @@ static ssize_t async_store(struct device *dev, struct device_attribute *attr,
+ #endif
+ 	NULL,
+ };
+-static struct attribute_group pm_wakeup_attr_group = {
++static const struct attribute_group pm_wakeup_attr_group = {
+ 	.name	= power_group_name,
+ 	.attrs	= wakeup_attrs,
+ };
+@@ -644,7 +644,7 @@ static ssize_t async_store(struct device *dev, struct device_attribute *attr,
+ 	&dev_attr_autosuspend_delay_ms.attr,
+ 	NULL,
+ };
+-static struct attribute_group pm_runtime_attr_group = {
++static const struct attribute_group pm_runtime_attr_group = {
+ 	.name	= power_group_name,
+ 	.attrs	= runtime_attrs,
+ };
+@@ -653,7 +653,7 @@ static ssize_t async_store(struct device *dev, struct device_attribute *attr,
+ 	&dev_attr_pm_qos_resume_latency_us.attr,
+ 	NULL,
+ };
+-static struct attribute_group pm_qos_resume_latency_attr_group = {
++static const struct attribute_group pm_qos_resume_latency_attr_group = {
+ 	.name	= power_group_name,
+ 	.attrs	= pm_qos_resume_latency_attrs,
+ };
+@@ -662,7 +662,7 @@ static ssize_t async_store(struct device *dev, struct device_attribute *attr,
+ 	&dev_attr_pm_qos_latency_tolerance_us.attr,
+ 	NULL,
+ };
+-static struct attribute_group pm_qos_latency_tolerance_attr_group = {
++static const struct attribute_group pm_qos_latency_tolerance_attr_group = {
+ 	.name	= power_group_name,
+ 	.attrs	= pm_qos_latency_tolerance_attrs,
+ };
+@@ -672,7 +672,7 @@ static ssize_t async_store(struct device *dev, struct device_attribute *attr,
+ 	&dev_attr_pm_qos_remote_wakeup.attr,
+ 	NULL,
+ };
+-static struct attribute_group pm_qos_flags_attr_group = {
++static const struct attribute_group pm_qos_flags_attr_group = {
+ 	.name	= power_group_name,
+ 	.attrs	= pm_qos_flags_attrs,
+ };
+-- 
+1.9.1
