@@ -1,66 +1,70 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: Drivers taking different actions depending on sleep state
-Date: Thu, 22 Jun 2017 18:00:21 +0200
-Message-ID: <1791746.otcIQZBd7p@aspire.rjw.lan>
-References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr> <b7a49925-d823-b03d-2990-2894ba2c2714@gmail.com> <20170622085102.mpk7vxodpgxtrlfd@piout.net>
+Date: Thu, 22 Jun 2017 18:09:52 +0200
+Message-ID: <CAJZ5v0i0HBXG_Ocipf86PuKTdSM_g3aQoV7OZ-a977GVXJykFg@mail.gmail.com>
+References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr> <CAJZ5v0iL7voAz9T+36fXXncOj4UrFSAH8WzwEbec96GuFUteaQ@mail.gmail.com>
+ <ccac39d6-4611-8b46-12f7-24227ef3b35e@gmail.com> <CAJZ5v0g_egRwxOLqft=JhvzAqBWuyvC8yiO7De5TYUZLUT2Fpw@mail.gmail.com>
+ <7001768d-9134-4975-127e-e8444e00f677@gmail.com> <CAJZ5v0ihqn5Xcj1yoZcrb7caYiH+x8YivLJit6BqvDGradZJ=Q@mail.gmail.com>
+ <b7a49925-d823-b03d-2990-2894ba2c2714@gmail.com> <CAJZ5v0hzkVwf1HkH4GLbAeK7iJ_7V1UXHErruuvMVEpb5MqZ3Q@mail.gmail.com>
+ <6a4d18d9-2494-e35c-d209-a019292d6648@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53843 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750812AbdFVQHl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jun 2017 12:07:41 -0400
-In-Reply-To: <20170622085102.mpk7vxodpgxtrlfd@piout.net>
+Received: from mail-io0-f172.google.com ([209.85.223.172]:36294 "EHLO
+        mail-io0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751095AbdFVQJx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jun 2017 12:09:53 -0400
+Received: by mail-io0-f172.google.com with SMTP id e63so16947947iod.3
+        for <linux-pm@vger.kernel.org>; Thu, 22 Jun 2017 09:09:53 -0700 (PDT)
+In-Reply-To: <6a4d18d9-2494-e35c-d209-a019292d6648@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>, Florian Fainelli <f.fainelli@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Mason <slash.tmp@free.fr>, Ulf Hansson <ulf.hansson@linaro.org>, JB <jb_lescher@sigmadesigns.com>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>
 
-On Thursday, June 22, 2017 10:51:02 AM Alexandre Belloni wrote:
-> On 21/06/2017 at 16:55:04 -0700, Florian Fainelli wrote:
-> > > That is conceivable, but again, the meaning of STANDBY and MEM is
-> > > platform-specific.  Actions to be taken for, say, STANDBY, may differ
-> > > from one platform to another.
-> > 
-> > True, though I would only expect drivers for that particular platform to
-> > care about that information and these drivers would only make sense on
-> > that particular platform so the meaning of STANDBY and MEM would be
-> > clear for those drivers. The intent is really to keep the "distributed"
-> > model where individual drivers manage their particular piece of HW,
-> > while utilizing a global piece of information that is platform specific.
-> > 
-> > If this seems acceptable to you along with proper documentation to
-> > illustrate the platform specific meaning of these states, I will got
-> > ahead and cook a patch.
-> 
-> Well, that won't work for us. We need need two kind of information:
->  - whether main clock is switched from the master clock to the slow
->    clock
->  - whether VDDcore will be cut
-> 
-> for the first one, we already have an hackish callback:
-> at91_suspend_entering_slow_clock() that will call from the platform
-> specific drivers.
-> 
-> The main issue now is for the second one. We also need it for IPs that
-> are shared with other SoCs. For example, the macb ethernet controller
-> that is shared with the zynq and the m_can controller. In those cases,
-> I don't think it is a good idea to add platform specific code in the
-> drivers but at the same time, I don't think it is reasonable to
-> unconditionally reinit the IP on resume as there is a significant
-> latency hit. I don't think that the xilinx guys will like when suddenly
-> their platform takes 500ms to resume.
+On Thu, Jun 22, 2017 at 5:18 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+>
+>
+> On 06/21/2017 05:03 PM, Rafael J. Wysocki wrote:
+>> On Thu, Jun 22, 2017 at 1:55 AM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+>>> On 06/21/2017 03:57 PM, Rafael J. Wysocki wrote:
+>>>> On Thu, Jun 22, 2017 at 12:48 AM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+>>>>> On 06/21/2017 02:59 PM, Rafael J. Wysocki wrote:
+>>>>>> On Wed, Jun 21, 2017 at 11:16 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+>>>>>>> On 06/09/2017 03:53 PM, Rafael J. Wysocki wrote:
 
-We can add a ->target_state callback in struct platform_suspend_ops that
-will return a value representing the the particular target state the platform
-has chosen to go to.  Along with it, there can be a list of values for all
-of the low-level sleep states defined by all of the different platforms
-(in which case I'd like to reserve values 0-5 for the ACPI system states).
+[cut]
 
-There can be a wrapper, say platform_suspend_target_state() around that,
-so the driver will call it, compare the return value with what is known to it
-about the different platforms it can run on and act accordingly.
+>
+> For the reasons explained before, if the same set of drivers need to
+> deal with one or more platform_suspend_ops driver, say a classic
+> homegrown one, and one that is ACPI/ARM SCPI based for instance, we
+> would have to sprinkle checks like these in the driver:
+>
+> static int drv_suspend(struct device *d)
+> {
+>         if (platform_suspend_get_state() == PM_SUSPEND_STANDBY ||
+>             acpi_target_system_state() == XXXX |
+>
+>
+> and so on and so forth, that does not seem to scale horizontally.
+>
+>>
+>> ACPI has acpi_target_system_state() for this very purpose, for example.
+>>
+>>> If this seems acceptable to you along with proper documentation to
+>>> illustrate the platform specific meaning of these states, I will got
+>>> ahead and cook a patch.
+>>
+>> I wouldn't like platform-specific things to pretend that they are generic.
+>
+> Would a notifier model be more appropriate perhaps? The mechanism by
+> which the notifications get registered to and signaled can be made
+> generic, the exact information however would be inherently
+> platform_suspend_ops specific, and only the relevant drivers that need
+> to subscribe to that kind of information would do that.
+
+Please see the message I've just sent in this thread. :-)
 
 Thanks,
 Rafael
