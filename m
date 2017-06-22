@@ -1,64 +1,137 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: Drivers taking different actions depending on sleep state
-Date: Thu, 22 Jun 2017 10:51:02 +0200
-Message-ID: <20170622085102.mpk7vxodpgxtrlfd@piout.net>
-References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr>
- <CAJZ5v0iL7voAz9T+36fXXncOj4UrFSAH8WzwEbec96GuFUteaQ@mail.gmail.com>
- <ccac39d6-4611-8b46-12f7-24227ef3b35e@gmail.com>
- <CAJZ5v0g_egRwxOLqft=JhvzAqBWuyvC8yiO7De5TYUZLUT2Fpw@mail.gmail.com>
- <7001768d-9134-4975-127e-e8444e00f677@gmail.com>
- <CAJZ5v0ihqn5Xcj1yoZcrb7caYiH+x8YivLJit6BqvDGradZJ=Q@mail.gmail.com>
- <b7a49925-d823-b03d-2990-2894ba2c2714@gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 6/9] PM / ACPI: Provide option to disable direct_complete
+ for ACPI devices
+Date: Thu, 22 Jun 2017 11:35:35 +0200
+Message-ID: <CAPDyKFqW+QhzMhVgdp9-7t0eP0ePdV8pHqysQZU1OWT3A8Q56Q@mail.gmail.com>
+References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
+ <1498072888-14782-7-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0h71LNPgmU1ri3S0VJMPb-1_AHkGksNAaYn68rrLyAR2A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:60940 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752630AbdFVIvP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jun 2017 04:51:15 -0400
-Content-Disposition: inline
-In-Reply-To: <b7a49925-d823-b03d-2990-2894ba2c2714@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0h71LNPgmU1ri3S0VJMPb-1_AHkGksNAaYn68rrLyAR2A@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 21/06/2017 at 16:55:04 -0700, Florian Fainelli wrote:
-> > That is conceivable, but again, the meaning of STANDBY and MEM is
-> > platform-specific.  Actions to be taken for, say, STANDBY, may differ
-> > from one platform to another.
-> 
-> True, though I would only expect drivers for that particular platform to
-> care about that information and these drivers would only make sense on
-> that particular platform so the meaning of STANDBY and MEM would be
-> clear for those drivers. The intent is really to keep the "distributed"
-> model where individual drivers manage their particular piece of HW,
-> while utilizing a global piece of information that is platform specific.
-> 
-> If this seems acceptable to you along with proper documentation to
-> illustrate the platform specific meaning of these states, I will got
-> ahead and cook a patch.
+On 21 June 2017 at 23:42, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> In some cases a driver for an ACPI device needs to be able to prevent the
+>> ACPI PM domain from using the direct_complete path during system sleep.
+>>
+>> One typical case is when the driver for the device needs its device to stay
+>> runtime enabled, during the __device_suspend phase. This isn't the case
+>> when the direct_complete path is being executed by the PM core, as it then
+>> disables runtime PM for the device in __device_suspend(). Any following
+>> attempts to runtime resume the device after that point, just fails.
+>>
+>> A workaround to this problem is to let the driver runtime resume its device
+>> from its ->prepare() callback, as that would prevent the direct_complete
+>> path from being executed. However, that may often be a waste, especially if
+>> it turned out that no one really needed the device.
+>>
+>> For this reason, invent acpi_dev_disable|enable_direct_complete(), to allow
+>> drivers to inform the ACPI PM domain to change its default behaviour during
+>> system sleep, and thus control whether it may use the direct_complete path
+>> or not.
+>>
+>> Typically a driver should call acpi_dev_disable_direct_comlete() during
+>> ->probe() and acpi_dev_enable_direct_complete() in ->remove().
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  drivers/acpi/device_pm.c | 37 ++++++++++++++++++++++++++++++++++++-
+>>  include/acpi/acpi_bus.h  |  1 +
+>>  include/linux/acpi.h     |  4 ++++
+>>  3 files changed, 41 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+>> index ee51e75..2393a1a 100644
+>> --- a/drivers/acpi/device_pm.c
+>> +++ b/drivers/acpi/device_pm.c
+>> @@ -879,6 +879,41 @@ EXPORT_SYMBOL_GPL(acpi_subsys_runtime_resume);
+>>
+>>  #ifdef CONFIG_PM_SLEEP
+>>  /**
+>> + * acpi_dev_disable_direct_complete - Disable the direct_complete path for ACPI.
+>> + * @dev: Device to disable the path for.
+>> + *
+>> + * Per default the ACPI PM domain tries to use the direct_complete path for its
+>> + * devices during system sleep. This function allows a user, typically a driver
+>> + * during probe, to disable the direct_complete path from being used by ACPI.
+>> + */
+>> +void acpi_dev_disable_direct_complete(struct device *dev)
+>> +{
+>> +       struct acpi_device *adev = ACPI_COMPANION(dev);
+>> +
+>> +       if (adev)
+>> +               adev->no_direct_complete = true;
+>
+> We have an analogous flag in PCI now and it is called needs_resume, so
+> it would be good to be consistent with that.
 
-Well, that won't work for us. We need need two kind of information:
- - whether main clock is switched from the master clock to the slow
-   clock
- - whether VDDcore will be cut
+I was trying to come up with a nice name, however I couldn't find
+anything better than no_direct_complete.
 
-for the first one, we already have an hackish callback:
-at91_suspend_entering_slow_clock() that will call from the platform
-specific drivers.
+However as the next patch somewhat, extends the flag to also be use
+for the runtime PM centric path, I should perhaps choose something
+more related to that?
 
-The main issue now is for the second one. We also need it for IPs that
-are shared with other SoCs. For example, the macb ethernet controller
-that is shared with the zynq and the m_can controller. In those cases,
-I don't think it is a good idea to add platform specific code in the
-drivers but at the same time, I don't think it is reasonable to
-unconditionally reinit the IP on resume as there is a significant
-latency hit. I don't think that the xilinx guys will like when suddenly
-their platform takes 500ms to resume.
+I think make "needs_resume" is going to e bit confusing, especially
+while extending the usage for the flag it in the next patch, no?
 
+>
+>> +}
+>> +EXPORT_SYMBOL_GPL(acpi_dev_disable_direct_complete);
+>> +
+>> +/**
+>> + * acpi_dev_enable_direct_complete - Enable the direct_complete path for ACPI.
+>> + * @dev: Device to enable the path for.
+>> + *
+>> + * Enable the direct_complete path to be used during system suspend for the ACPI
+>> + * PM domain, which is the default option. Typically a driver that disabled the
+>> + * path during ->probe(), must call this function during ->remove() to re-enable
+>> + * the direct_complete path to be used by ACPI.
+>> + */
+>> +void acpi_dev_enable_direct_complete(struct device *dev)
+>> +{
+>> +       struct acpi_device *adev = ACPI_COMPANION(dev);
+>> +
+>> +       if (adev)
+>> +               adev->no_direct_complete = false;
+>> +}
+>> +EXPORT_SYMBOL_GPL(acpi_dev_enable_direct_complete);
+>> +
+>> +/**
+>>   * acpi_dev_suspend_late - Put device into a low-power state using ACPI.
+>>   * @dev: Device to put into a low-power state.
+>>   *
+>> @@ -967,7 +1002,7 @@ int acpi_subsys_prepare(struct device *dev)
+>>         if (ret < 0)
+>>                 return ret;
+>>
+>> -       if (!adev || !pm_runtime_suspended(dev))
+>> +       if (!adev || adev->no_direct_complete || !pm_runtime_suspended(dev))
+>>                 return 0;
+>>
+>>         return !acpi_dev_needs_resume(dev, adev);
+>> diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+>> index 63a90a6..2293d24 100644
+>> --- a/include/acpi/acpi_bus.h
+>> +++ b/include/acpi/acpi_bus.h
+>> @@ -380,6 +380,7 @@ struct acpi_device {
+>>         struct list_head physical_node_list;
+>>         struct mutex physical_node_lock;
+>>         void (*remove)(struct acpi_device *);
+>> +       bool no_direct_complete;
+>
+> Also what about adding this to struct acpi_device_power instead?
 
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+Yes, thanks for the suggestion!
+
+>
+> Thanks,
+> Rafael
+
+Kind regards
+Uffe
