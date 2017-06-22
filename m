@@ -1,121 +1,74 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 6/9] PM / ACPI: Provide option to disable direct_complete
- for ACPI devices
-Date: Thu, 22 Jun 2017 23:33:37 +0200
-Message-ID: <CAJZ5v0i+H0kqdX=cBopfbjeQG72XBF3q82M=J-vfGc7g6VUxjg@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/9] i2c: designware: Fix system suspend
+Date: Thu, 22 Jun 2017 23:37:22 +0200
+Message-ID: <CAPDyKFo80QWYhU_SFexr_riPSZS3QEXDyBcywa5qBYa3sJXcjw@mail.gmail.com>
 References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0h71LNPgmU1ri3S0VJMPb-1_AHkGksNAaYn68rrLyAR2A@mail.gmail.com>
- <CAPDyKFqW+QhzMhVgdp9-7t0eP0ePdV8pHqysQZU1OWT3A8Q56Q@mail.gmail.com>
- <4327771.heNtWYIbhO@aspire.rjw.lan> <CAPDyKFqNg_LtopFEUBx0GOWoCpnhf-G9SzY2RDCBoEaR-Mf4Yg@mail.gmail.com>
+ <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com>
+ <20170622104933.GY629@lahna.fi.intel.com> <2842386.AFZiXzV2Sq@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqNg_LtopFEUBx0GOWoCpnhf-G9SzY2RDCBoEaR-Mf4Yg@mail.gmail.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2842386.AFZiXzV2Sq@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>, stable@vger.linux.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 22, 2017 at 11:29 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 22 June 2017 at 16:38, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Thursday, June 22, 2017 11:35:35 AM Ulf Hansson wrote:
->>> On 21 June 2017 at 23:42, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> > On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> >> In some cases a driver for an ACPI device needs to be able to prevent the
->>> >> ACPI PM domain from using the direct_complete path during system sleep.
->>> >>
->>> >> One typical case is when the driver for the device needs its device to stay
->>> >> runtime enabled, during the __device_suspend phase. This isn't the case
->>> >> when the direct_complete path is being executed by the PM core, as it then
->>> >> disables runtime PM for the device in __device_suspend(). Any following
->>> >> attempts to runtime resume the device after that point, just fails.
->>> >>
->>> >> A workaround to this problem is to let the driver runtime resume its device
->>> >> from its ->prepare() callback, as that would prevent the direct_complete
->>> >> path from being executed. However, that may often be a waste, especially if
->>> >> it turned out that no one really needed the device.
->>> >>
->>> >> For this reason, invent acpi_dev_disable|enable_direct_complete(), to allow
->>> >> drivers to inform the ACPI PM domain to change its default behaviour during
->>> >> system sleep, and thus control whether it may use the direct_complete path
->>> >> or not.
->>> >>
->>> >> Typically a driver should call acpi_dev_disable_direct_comlete() during
->>> >> ->probe() and acpi_dev_enable_direct_complete() in ->remove().
->>> >>
->>> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>> >> ---
->>> >>  drivers/acpi/device_pm.c | 37 ++++++++++++++++++++++++++++++++++++-
->>> >>  include/acpi/acpi_bus.h  |  1 +
->>> >>  include/linux/acpi.h     |  4 ++++
->>> >>  3 files changed, 41 insertions(+), 1 deletion(-)
->>> >>
->>> >> diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
->>> >> index ee51e75..2393a1a 100644
->>> >> --- a/drivers/acpi/device_pm.c
->>> >> +++ b/drivers/acpi/device_pm.c
->>> >> @@ -879,6 +879,41 @@ EXPORT_SYMBOL_GPL(acpi_subsys_runtime_resume);
->>> >>
->>> >>  #ifdef CONFIG_PM_SLEEP
->>> >>  /**
->>> >> + * acpi_dev_disable_direct_complete - Disable the direct_complete path for ACPI.
->>> >> + * @dev: Device to disable the path for.
->>> >> + *
->>> >> + * Per default the ACPI PM domain tries to use the direct_complete path for its
->>> >> + * devices during system sleep. This function allows a user, typically a driver
->>> >> + * during probe, to disable the direct_complete path from being used by ACPI.
->>> >> + */
->>> >> +void acpi_dev_disable_direct_complete(struct device *dev)
->>> >> +{
->>> >> +       struct acpi_device *adev = ACPI_COMPANION(dev);
->>> >> +
->>> >> +       if (adev)
->>> >> +               adev->no_direct_complete = true;
->>> >
->>> > We have an analogous flag in PCI now and it is called needs_resume, so
->>> > it would be good to be consistent with that.
->>>
->>> I was trying to come up with a nice name, however I couldn't find
->>> anything better than no_direct_complete.
->>>
->>> However as the next patch somewhat, extends the flag to also be use
->>> for the runtime PM centric path, I should perhaps choose something
->>> more related to that?
->>>
->>> I think make "needs_resume" is going to e bit confusing, especially
->>> while extending the usage for the flag it in the next patch, no?
+On 22 June 2017 at 16:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, June 22, 2017 01:49:33 PM Mika Westerberg wrote:
+>> On Thu, Jun 22, 2017 at 01:31:51AM +0200, Rafael J. Wysocki wrote:
+>> > On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> > > The commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming
+>> > > during system suspend"), may suggest to the PM core to try out the so
+>> > > called direct_complete path for system sleep. In this path, the PM core
+>> > > treats a runtime suspended device as it's already in a proper low power
+>> > > state for system sleep, which makes it skip calling the system sleep
+>> > > callbacks for the device, except for the ->prepare() and the ->complete()
+>> > > callback.
+>> > >
+>> > > Moreover, under certain circumstances the PM core may unset the
+>> > > direct_complete flag for a parent device, in case its child device are
+>> > > being system suspended before. In other words, the PM core doesn't skip
+>> > > calling the system sleep callbacks, no matter if the device is runtime
+>> > > suspended or not.
+>> > >
+>> > > In cases of an i2c slave device, the above situation is triggered.
+>> > > Unfortunate, this also breaks the assumption that the i2c device is always
+>> > > runtime resumed, whenever the dw_i2c_plat_suspend() callback is being
+>> > > invoked, which then leads to a regression.
+>> > >
+>> > > More precisely, dw_i2c_plat_suspend() then calls clk_core_disable() and
+>> > > clk_core_unprepare(), for an already disabled/unprepared clock, leading to
+>> > > complaints about clocks calls being wrongly balanced.
+>> > >
+>> > > In cases when the i2c device is attached to the ACPI PM domain, the problem
+>> > > doesn't occur. That's because ACPI's ->suspend() callback, assigned to
+>> > > acpi_subsys_suspend(), calls pm_runtime_resume() for the i2c device.
+>> >
+>> > Which really is expected to happen, so direct_complete should only be
+>> > used along with the ACPI PM domain in this case.
+>> >
+>> > Moreover, in the ACPI PM domain case acpi_subsys_prepare() is supposed
+>> > to do the right thing without dw_i2c_plat_prepare() and the return
+>> > value of the latter will be ignored anyway, so dw_i2c_plat_prepare()
+>> > will only have effect without ACPI PM domain AFAICS.
+>> >
+>> > It looks like commit 8503ff166504 is entirely misguided.
 >>
->> OK, fair enough, but I still think the name isn't really nice. :-)
+>> Indeed it is. At the time I suggested that change I did not really
+>> understand how the direct complete is supposed to be used :-/
 >
-> How about use_rpm_centric_sleep or use_rpm_ops_for_sleep?
->
-> :-)
+> So can we go for a full revert, please, and then fix up things properly?
 
-no_direct_complete is better than that IMO.
+Unfortunate I think a revert is going to make it worse, for the non ACPI case.
 
->>
->> In fact, I'm not sure if the new flag is necessary at all.
->>
->> If the driver is expected to use pm_runtime_force_suspend|resume() along with
->> it every time, why not to make the ACPI PM domain code check if the driver's
->> callback pointers point to pm_runtime_force_suspend|resume() and work
->> accordingly?
->
-> I get the idea, however it would limit the driver from doing other
-> specific things from its sleep callbacks.
->
-> It may for example deal with wakeups during system suspend, and when
-> that is done, it can call pm_runtime_force_suspend() from that
-> callback.
+Because in that case, unless I am reading the code wrong, I think when
+the device is runtime suspended during system sleep, then the system
+suspend callback will also be called (because the direct_complete
+isn't run), again causing clock unbalance issues.
 
-I see.
+This makes it worse in that sense, that then you don't even need an
+i2c slave to trigger the problem.
 
-> Potentially that could be done from the runtime PM callback itself,
-> (via checking pm_runtime_enabled)...
-
-Anyway, it would be good to have a way to verify that the driver is
-doing the right thing or we'll have bugs in that area and people
-wondering what's up.
-
-Thanks,
-Rafael
+Kind regards
+Uffe
