@@ -1,49 +1,64 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH 0/6] PM: Unify the handling of device wakeup settings
-Date: Thu, 22 Jun 2017 11:22:10 +0300
-Message-ID: <20170622082210.GU629@lahna.fi.intel.com>
-References: <12296383.UdE5HVtyng@aspire.rjw.lan>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: Drivers taking different actions depending on sleep state
+Date: Thu, 22 Jun 2017 10:51:02 +0200
+Message-ID: <20170622085102.mpk7vxodpgxtrlfd@piout.net>
+References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr>
+ <CAJZ5v0iL7voAz9T+36fXXncOj4UrFSAH8WzwEbec96GuFUteaQ@mail.gmail.com>
+ <ccac39d6-4611-8b46-12f7-24227ef3b35e@gmail.com>
+ <CAJZ5v0g_egRwxOLqft=JhvzAqBWuyvC8yiO7De5TYUZLUT2Fpw@mail.gmail.com>
+ <7001768d-9134-4975-127e-e8444e00f677@gmail.com>
+ <CAJZ5v0ihqn5Xcj1yoZcrb7caYiH+x8YivLJit6BqvDGradZJ=Q@mail.gmail.com>
+ <b7a49925-d823-b03d-2990-2894ba2c2714@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.free-electrons.com ([62.4.15.54]:60940 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752630AbdFVIvP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jun 2017 04:51:15 -0400
 Content-Disposition: inline
-In-Reply-To: <12296383.UdE5HVtyng@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+In-Reply-To: <b7a49925-d823-b03d-2990-2894ba2c2714@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On Mon, Jun 19, 2017 at 11:31:58PM +0200, Rafael J. Wysocki wrote:
-> Hi All,
+On 21/06/2017 at 16:55:04 -0700, Florian Fainelli wrote:
+> > That is conceivable, but again, the meaning of STANDBY and MEM is
+> > platform-specific.  Actions to be taken for, say, STANDBY, may differ
+> > from one platform to another.
 > 
-> The handling of device wakeup settings, especially in the ACPI core and the PCI
-> bus type, depends on whether it is about system wakeup from sleep states or
-> remote wakeup in the working state (runtime).  However, that distinction is
-> mostly based on the ACPI concept of "wakeup" and "runtime" GPEs, which is
-> somewhat artificial, because the underlying hardware mechanism is basically
-> the same in both cases.
+> True, though I would only expect drivers for that particular platform to
+> care about that information and these drivers would only make sense on
+> that particular platform so the meaning of STANDBY and MEM would be
+> clear for those drivers. The intent is really to keep the "distributed"
+> model where individual drivers manage their particular piece of HW,
+> while utilizing a global piece of information that is platform specific.
 > 
-> Moreover, suspend-to-idle is now supported as a sleep state and wakeup from it
-> is based on exactly the same hardware capabilities as the working-state
-> (runtime) remote wakeup.
-> 
-> The following patch series removes that distinction and unifies the handling of
-> device wakeup settings between system sleep and runtime.  It also fixes one
-> issue related to wakeup signaling through PCI bridges.
-> 
-> [1/6]: Get rid of the "runtime wakeup" concept from the ACPI core.
-> [2/6]: Unify device wakeup settings code paths in the ACPI core.
-> [3-4/6]: Unify device wakeup settings code paths in the PCI bus type code.
-> [5/6]: Fix wakeup-related issue with bridges in the PCI bus type code.
-> [6/6]: Get rid of the "runtime wakeup" concept from the driver core.
-> 
-> The series is based on current linux-next and will be made available for
-> testing in the linux-pm.git tree in a couple of days.
+> If this seems acceptable to you along with proper documentation to
+> illustrate the platform specific meaning of these states, I will got
+> ahead and cook a patch.
 
-Apart from that one minor comment, this looks good to me. I'm happy that
-we get rid of those run_wake things which I always find really
-confusing :)
+Well, that won't work for us. We need need two kind of information:
+ - whether main clock is switched from the master clock to the slow
+   clock
+ - whether VDDcore will be cut
 
-For the whole series,
+for the first one, we already have an hackish callback:
+at91_suspend_entering_slow_clock() that will call from the platform
+specific drivers.
 
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+The main issue now is for the second one. We also need it for IPs that
+are shared with other SoCs. For example, the macb ethernet controller
+that is shared with the zynq and the m_can controller. In those cases,
+I don't think it is a good idea to add platform specific code in the
+drivers but at the same time, I don't think it is reasonable to
+unconditionally reinit the IP on resume as there is a significant
+latency hit. I don't think that the xilinx guys will like when suddenly
+their platform takes 500ms to resume.
+
+
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
