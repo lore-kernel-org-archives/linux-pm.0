@@ -1,85 +1,173 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/6] drivers base/arch_topology: frequency-invariant
- load-tracking support
-Date: Thu, 22 Jun 2017 09:36:43 +0530
-Message-ID: <20170622040643.GB6314@vireshk-i7>
-References: <20170608075513.12475-1-dietmar.eggemann@arm.com>
- <20170608075513.12475-3-dietmar.eggemann@arm.com>
- <CAOh2x=k1Zr15vAq8LA0+Sg3Cz7o=dL5C-erkEx_py7g56b7BwA@mail.gmail.com>
- <5949BE5F.4020502@codeaurora.org>
- <20170621053735.GR3942@vireshk-i7>
- <20170621165714.GB2551@e105550-lin.cambridge.arm.com>
+From: Mikko Perttunen <mperttunen@nvidia.com>
+Subject: [PATCH v3] PM / Domains: Call driver's noirq callbacks
+Date: Thu, 22 Jun 2017 10:18:33 +0300
+Message-ID: <1498115913-8785-1-git-send-email-mperttunen@nvidia.com>
+References: <CAPDyKFr-e3rJ0XU8snbLVgz3vh=mtL787e4fyb=2GqnPa7rYfA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170621165714.GB2551@e105550-lin.cambridge.arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Saravana Kannan <skannan@codeaurora.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:19153 "EHLO
+        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751116AbdFVHSt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Jun 2017 03:18:49 -0400
+In-Reply-To: <CAPDyKFr-e3rJ0XU8snbLVgz3vh=mtL787e4fyb=2GqnPa7rYfA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cyndis@kapsi.fi, Mikko Perttunen <mperttunen@nvidia.com>
 
-On 21-06-17, 17:57, Morten Rasmussen wrote:
-> It is true that this patch relies on the notifiers, but I don't see how
-> that prevents us from adding a non-notifier based solution for
-> fast-switch enabled platforms later?
+Currently genpd installs its own noirq callbacks, but never calls down
+to the driver's corresponding callbacks. Add these calls.
 
-No it doesn't, but I thought it would be better to have a single
-solution (if possible) for all the cases here.
+Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+---
+v3:
+- Factored out common code in pm_genpd_{suspend,poweroff}_noirq
+- Added pm_generic_* calls to rest of callbacks
 
-> > I think this patch doesn't really need to go down the notifiers way.
-> > 
-> > We can do something like this in the implementation of
-> > topology_get_freq_scale():
-> > 
-> >         return (policy->cur << SCHED_CAPACITY_SHIFT) / max;
-> > 
-> > Though, we would be required to take care of policy structure in this
-> > case somehow.
-> 
-> This is exactly what this patch implements. Unfortunately we can't be
-> sure that there is a valid policy data structure where we can read the
-> information from.
+ drivers/base/power/domain.c | 68 +++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 59 insertions(+), 9 deletions(-)
 
-Actually there is a way around that.
-
-- Revert one of my patches:
-  commit f9f41e3ef99a ("cpufreq: Remove policy create/remove notifiers")
-
-- Use those notifiers in init_cpu_capacity_callback() instead of
-  CPUFREQ_NOTIFY and set/reset a local policy pointer.
-
-- And this pointer we can use safely/reliably in
-  topology_get_freq_scale(). We may need to use RCU read side
-  protection in topology_get_freq_scale() though, to make sure the
-  local policy pointer isn't getting updated simultaneously.
-
-- If the policy pointer isn't set, then we can use
-  SCHED_CAPACITY_SCALE value instead.
-
-
-> Isn't the policy protected by a lock as well?
-
-There are locks, but you don't need any to read policy->cur.
-
-> Another thing is that I don't think a transition notifier based solution
-> or any other solution based on the cur/max ratio is really the right way
-> to go for fast-switching platforms. If we can do very frequent frequency
-> switching it makes less sense to use the current ratio whenever we
-> update the PELT averages as the frequency might have changed multiple
-> times since the last update. So it would make more sense to have an
-> average ratio instead.
-
-> If the platform has HW counters (e.g. APERF/MPERF) that can provide the
-> ratio then we should of course use those, if not, one solution could be
-> to let cpufreq track the average frequency for each cpu over a suitable
-> time window (around one sched period I think). It should be fairly low
-> overhead to maintain. In the topology driver, we would then choose
-> whether the scaling factor is provided by the cpufreq average frequency
-> ratio or the current transition notifier based approach based on the
-> capabilities of the platform.
-
-Hmm, maybe.
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index d3f1d96f75e9..248c5f79f588 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -899,19 +899,19 @@ static int pm_genpd_prepare(struct device *dev)
+ }
+ 
+ /**
+- * pm_genpd_suspend_noirq - Completion of suspend of device in an I/O PM domain.
++ * genpd_finish_suspend - Completion of suspend or hibernation of device in an
++ *   I/O pm domain.
+  * @dev: Device to suspend.
++ * @poweroff: Specifies if this is a poweroff_noirq or suspend_noirq callback.
+  *
+  * Stop the device and remove power from the domain if all devices in it have
+  * been stopped.
+  */
+-static int pm_genpd_suspend_noirq(struct device *dev)
++static int genpd_finish_suspend(struct device *dev, bool poweroff)
+ {
+ 	struct generic_pm_domain *genpd;
+ 	int ret;
+ 
+-	dev_dbg(dev, "%s()\n", __func__);
+-
+ 	genpd = dev_to_genpd(dev);
+ 	if (IS_ERR(genpd))
+ 		return -EINVAL;
+@@ -919,6 +919,13 @@ static int pm_genpd_suspend_noirq(struct device *dev)
+ 	if (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev))
+ 		return 0;
+ 
++	if (poweroff)
++		ret = pm_generic_poweroff_noirq(dev);
++	else
++		ret = pm_generic_suspend_noirq(dev);
++	if (ret)
++		return ret;
++
+ 	if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+ 		ret = pm_runtime_force_suspend(dev);
+ 		if (ret)
+@@ -934,6 +941,20 @@ static int pm_genpd_suspend_noirq(struct device *dev)
+ }
+ 
+ /**
++ * pm_genpd_suspend_noirq - Completion of suspend of device in an I/O PM domain.
++ * @dev: Device to suspend.
++ *
++ * Stop the device and remove power from the domain if all devices in it have
++ * been stopped.
++ */
++static int pm_genpd_suspend_noirq(struct device *dev)
++{
++	dev_dbg(dev, "%s()\n", __func__);
++
++	return genpd_finish_suspend(dev, false);
++}
++
++/**
+  * pm_genpd_resume_noirq - Start of resume of device in an I/O PM domain.
+  * @dev: Device to resume.
+  *
+@@ -961,6 +982,10 @@ static int pm_genpd_resume_noirq(struct device *dev)
+ 	if (genpd->dev_ops.stop && genpd->dev_ops.start)
+ 		ret = pm_runtime_force_resume(dev);
+ 
++	ret = pm_generic_resume_noirq(dev);
++	if (ret)
++		return ret;
++
+ 	return ret;
+ }
+ 
+@@ -984,6 +1009,10 @@ static int pm_genpd_freeze_noirq(struct device *dev)
+ 	if (IS_ERR(genpd))
+ 		return -EINVAL;
+ 
++	ret = pm_generic_freeze_noirq(dev);
++	if (ret)
++		return ret;
++
+ 	if (genpd->dev_ops.stop && genpd->dev_ops.start)
+ 		ret = pm_runtime_force_suspend(dev);
+ 
+@@ -1008,10 +1037,28 @@ static int pm_genpd_thaw_noirq(struct device *dev)
+ 	if (IS_ERR(genpd))
+ 		return -EINVAL;
+ 
+-	if (genpd->dev_ops.stop && genpd->dev_ops.start)
++	if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+ 		ret = pm_runtime_force_resume(dev);
++		if (ret)
++			return ret;
++	}
+ 
+-	return ret;
++	return pm_generic_thaw_noirq(dev);
++}
++
++/**
++ * pm_genpd_poweroff_noirq - Completion of hibernation of device in an
++ *   I/O PM domain.
++ * @dev: Device to poweroff.
++ *
++ * Stop the device and remove power from the domain if all devices in it have
++ * been stopped.
++ */
++static int pm_genpd_poweroff_noirq(struct device *dev)
++{
++	dev_dbg(dev, "%s()\n", __func__);
++
++	return genpd_finish_suspend(dev, true);
+ }
+ 
+ /**
+@@ -1048,10 +1095,13 @@ static int pm_genpd_restore_noirq(struct device *dev)
+ 	genpd_sync_power_on(genpd, true, 0);
+ 	genpd_unlock(genpd);
+ 
+-	if (genpd->dev_ops.stop && genpd->dev_ops.start)
++	if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+ 		ret = pm_runtime_force_resume(dev);
++		if (ret)
++			return ret;
++	}
+ 
+-	return ret;
++	return pm_generic_restore_noirq(dev);
+ }
+ 
+ /**
+@@ -1493,7 +1543,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 	genpd->domain.ops.resume_noirq = pm_genpd_resume_noirq;
+ 	genpd->domain.ops.freeze_noirq = pm_genpd_freeze_noirq;
+ 	genpd->domain.ops.thaw_noirq = pm_genpd_thaw_noirq;
+-	genpd->domain.ops.poweroff_noirq = pm_genpd_suspend_noirq;
++	genpd->domain.ops.poweroff_noirq = pm_genpd_poweroff_noirq;
+ 	genpd->domain.ops.restore_noirq = pm_genpd_restore_noirq;
+ 	genpd->domain.ops.complete = pm_genpd_complete;
+ 
 -- 
-viresh
+2.1.4
