@@ -1,89 +1,282 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/9] i2c: designware: Fix system suspend
-Date: Fri, 23 Jun 2017 00:01:26 +0200
-Message-ID: <CAJZ5v0irHvYXHv1GykatTH+XROZyL0nR0c=KfdSrpH395s6V8g@mail.gmail.com>
-References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com>
- <20170622104933.GY629@lahna.fi.intel.com> <2842386.AFZiXzV2Sq@aspire.rjw.lan> <CAPDyKFo80QWYhU_SFexr_riPSZS3QEXDyBcywa5qBYa3sJXcjw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] ACPI / sleep: EC-based wakeup from suspend-to-idle on recent systems
+Date: Fri, 23 Jun 2017 01:56:03 +0200
+Message-ID: <2368998.dmCsnrcXZy@aspire.rjw.lan>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <3689795.xuIczRHZsl@aspire.rjw.lan> <2026371.DVJN39QYJi@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFo80QWYhU_SFexr_riPSZS3QEXDyBcywa5qBYa3sJXcjw@mail.gmail.com>
+In-Reply-To: <2026371.DVJN39QYJi@aspire.rjw.lan>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>, stable@vger.linux.org
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, Tom Lanyon <tom@oneshoeco.com>, =?ISO-8859-1?Q?J=E9r=F4me?= de Bretagne <jerome.debretagne@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Zheng, Lv" <lv.zheng@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 22, 2017 at 11:37 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 22 June 2017 at 16:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Thursday, June 22, 2017 01:49:33 PM Mika Westerberg wrote:
->>> On Thu, Jun 22, 2017 at 01:31:51AM +0200, Rafael J. Wysocki wrote:
->>> > On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> > > The commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming
->>> > > during system suspend"), may suggest to the PM core to try out the so
->>> > > called direct_complete path for system sleep. In this path, the PM core
->>> > > treats a runtime suspended device as it's already in a proper low power
->>> > > state for system sleep, which makes it skip calling the system sleep
->>> > > callbacks for the device, except for the ->prepare() and the ->complete()
->>> > > callback.
->>> > >
->>> > > Moreover, under certain circumstances the PM core may unset the
->>> > > direct_complete flag for a parent device, in case its child device are
->>> > > being system suspended before. In other words, the PM core doesn't skip
->>> > > calling the system sleep callbacks, no matter if the device is runtime
->>> > > suspended or not.
->>> > >
->>> > > In cases of an i2c slave device, the above situation is triggered.
->>> > > Unfortunate, this also breaks the assumption that the i2c device is always
->>> > > runtime resumed, whenever the dw_i2c_plat_suspend() callback is being
->>> > > invoked, which then leads to a regression.
->>> > >
->>> > > More precisely, dw_i2c_plat_suspend() then calls clk_core_disable() and
->>> > > clk_core_unprepare(), for an already disabled/unprepared clock, leading to
->>> > > complaints about clocks calls being wrongly balanced.
->>> > >
->>> > > In cases when the i2c device is attached to the ACPI PM domain, the problem
->>> > > doesn't occur. That's because ACPI's ->suspend() callback, assigned to
->>> > > acpi_subsys_suspend(), calls pm_runtime_resume() for the i2c device.
->>> >
->>> > Which really is expected to happen, so direct_complete should only be
->>> > used along with the ACPI PM domain in this case.
->>> >
->>> > Moreover, in the ACPI PM domain case acpi_subsys_prepare() is supposed
->>> > to do the right thing without dw_i2c_plat_prepare() and the return
->>> > value of the latter will be ignored anyway, so dw_i2c_plat_prepare()
->>> > will only have effect without ACPI PM domain AFAICS.
->>> >
->>> > It looks like commit 8503ff166504 is entirely misguided.
->>>
->>> Indeed it is. At the time I suggested that change I did not really
->>> understand how the direct complete is supposed to be used :-/
->>
->> So can we go for a full revert, please, and then fix up things properly?
->
-> Unfortunate I think a revert is going to make it worse, for the non ACPI case.
->
-> Because in that case, unless I am reading the code wrong, I think when
-> the device is runtime suspended during system sleep, then the system
-> suspend callback will also be called (because the direct_complete
-> isn't run), again causing clock unbalance issues.
->
-> This makes it worse in that sense, that then you don't even need an
-> i2c slave to trigger the problem.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In that case your changelog is a bit misleading.
+Some recent Dell laptops, including the XPS13 model numbers 9360 and
+9365, cannot be woken up from suspend-to-idle by pressing the power
+button which is unexpected and makes that feature less usable on
+those systems.  Moreover, on the 9365 ACPI S3 (suspend-to-RAM) is
+not expected to be used at all (the OS these systems ship with never
+exercises the ACPI S3 path in the firmware) and suspend-to-idle is
+the only viable system suspend mechanism there.
 
-It looks like the commit in question attempted to fix exactly this
-issue, but it failed, so it should be replaced with something else
-which is what your patch is effectively doing.
+The reason why the power button wakeup from suspend-to-idle doesn't
+work on those systems is because their power button events are
+signaled by the EC (Embedded Controller), whose GPE (General Purpose
+Event) line is disabled during suspend-to-idle transitions in Linux.
+That is done on purpose, because in general the EC tends to be noisy
+for various reasons (battery and thermal updates and similar, for
+example) and all events signaled by it would kick the CPUs out of
+deep idle states while in suspend-to-idle, which effectively might
+defeat its purpose.
 
-IMO you should describe the original problem, explain why that commit
-is not sufficient to fix it and then describe the final fix.
+Of course, on the Dell systems in question the EC GPE must be enabled
+during suspend-to-idle transitions for the button press events to
+be signaled while suspended at all, but fortunately there is a way
+out of this puzzle.
 
-Anyway, after reading the changelog it should be clear that things
-were broken before the commit in question.
+First of all, those systems have the ACPI_FADT_LOW_POWER_S0 flag set
+in their ACPI tables, which means that the OS is expected to prefer
+the "low power S0 idle" system state over ACPI S3 on them.  That
+causes the most recent versions of other OSes to simply ignore ACPI
+S3 on those systems, so it is reasonable to expect that it should not
+be necessary to block GPEs during suspend-to-idle on them.
 
-And BTW I'm not really sure how the rest of the series is related to this?
+Second, in addition to that, the systems in question provide a special
+firmware interface that can be used to indicate to the platform that
+the OS is transitioning into a system-wide low-power state in which
+certain types of activity are not desirable or that it is leaving
+such a state and that (in principle) should allow the platform to
+adjust its operation mode accordingly.
+
+That interface is a special _DSM object under a System Power
+Management Controller device (PNP0D80).  The expected way to use it
+is to invoke function 0 from it on system initialization, functions
+3 and 5 during suspend transitions and functions 4 and 6 during
+resume transitions (to reverse the actions carried out by the
+former).  In particular, function 5 from the "Low-Power S0" device
+_DSM is expected to cause the platform to put itself into a low-power
+operation mode which should include making the EC less verbose (so to
+speak).  Next, on resume, function 6 switches the platform back to
+the "working-state" operation mode.
+
+In accordance with the above, modify the ACPI suspend-to-idle code
+to look for the "Low-Power S0" _DSM interface on platforms with the
+ACPI_FADT_LOW_POWER_S0 flag set in the ACPI tables.  If it's there,
+use it during suspend-to-idle transitions as prescribed and avoid
+changing the GPE configuration in that case.  [That should reflect
+what the most recent versions of other OSes do.]
+
+Also modify the ACPI EC driver to make it handle events during
+suspend-to-idle in the usual way if the "Low-Power S0" _DSM interface
+is going to be used to make the power button events work while
+suspended on the Dell machines mentioned above
+
+Link: http://www.uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+This is a replacement for https://patchwork.kernel.org/patch/9797909/
+
+The changelog describes what is going on (and now the "Low-Power S0" _DSM
+specification is public, so it can be used officially here) and it gets the job
+done on the XPS13 9360.  [The additional sort of "bonus" is that the machine
+looks "suspended" in s2idle now, as one of the effects of the _DSM appears
+to be turning off the lights in a quite literal sense.]
+
+The patch is based on https://patchwork.kernel.org/patch/9797913/ and
+https://patchwork.kernel.org/patch/9797903/ on top of the current linux-next.
 
 Thanks,
 Rafael
+
+---
+ drivers/acpi/ec.c       |    2 
+ drivers/acpi/internal.h |    2 
+ drivers/acpi/sleep.c    |  107 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 107 insertions(+), 4 deletions(-)
+
+Index: linux-pm/drivers/acpi/sleep.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -652,6 +652,84 @@ static const struct platform_suspend_ops
+ 
+ static bool s2idle_wakeup;
+ 
++/*
++ * On platforms supporting the Low Power S0 Idle interface there is an ACPI
++ * device object with the PNP0D80 compatible device ID (System Power Management
++ * Controller) and a specific _DSM method under it.  That method, if present,
++ * can be used to indicate to the platform that the OS is transitioning into a
++ * low-power state in which certain types of activity are not desirable or that
++ * it is leaving such a state, which allows the platform to adjust its operation
++ * mode accordingly.
++ */
++static const struct acpi_device_id lps0_device_ids[] = {
++	{"PNP0D80", },
++	{"", },
++};
++
++#define ACPI_LPS0_DSM_UUID	"c4eb40a0-6cd2-11e2-bcfd-0800200c9a66"
++
++#define ACPI_LPS0_SCREEN_OFF	3
++#define ACPI_LPS0_SCREEN_ON	4
++#define ACPI_LPS0_ENTRY		5
++#define ACPI_LPS0_EXIT		6
++
++#define ACPI_S2IDLE_FUNC_MASK	((1 << ACPI_LPS0_ENTRY) | (1 << ACPI_LPS0_EXIT))
++
++static acpi_handle lps0_device_handle;
++static guid_t lps0_dsm_guid;
++static char lps0_dsm_func_mask;
++
++static void acpi_sleep_run_lps0_dsm(unsigned int func)
++{
++	union acpi_object *out_obj;
++
++	if (!(lps0_dsm_func_mask & (1 << func)))
++		return;
++
++	out_obj = acpi_evaluate_dsm(lps0_device_handle, &lps0_dsm_guid, 1, func, NULL);
++	ACPI_FREE(out_obj);
++
++	acpi_handle_debug(lps0_device_handle, "_DSM function %u evaluation %s\n",
++			  func, out_obj ? "successful" : "failed");
++}
++
++static int lps0_device_attach(struct acpi_device *adev,
++			      const struct acpi_device_id *not_used)
++{
++	union acpi_object *out_obj;
++
++	if (lps0_device_handle)
++		return 0;
++
++	if (!(acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0))
++		return 0;
++
++	guid_parse(ACPI_LPS0_DSM_UUID, &lps0_dsm_guid);
++	/* Check if the _DSM is present and as expected. */
++	out_obj = acpi_evaluate_dsm(adev->handle, &lps0_dsm_guid, 1, 0, NULL);
++	if (out_obj && out_obj->type == ACPI_TYPE_BUFFER) {
++		char bitmask = *(char *)out_obj->buffer.pointer;
++
++		if ((bitmask & ACPI_S2IDLE_FUNC_MASK) == ACPI_S2IDLE_FUNC_MASK) {
++			lps0_dsm_func_mask = bitmask;
++			lps0_device_handle = adev->handle;
++		}
++
++		acpi_handle_debug(adev->handle, "_DSM function mask: 0x%x\n",
++				  bitmask);
++	} else {
++		acpi_handle_debug(adev->handle,
++				  "_DSM function 0 evaluation failed\n");
++	}
++	ACPI_FREE(out_obj);
++	return 0;
++}
++
++static struct acpi_scan_handler lps0_handler = {
++	.ids = lps0_device_ids,
++	.attach = lps0_device_attach,
++};
++
+ static int acpi_freeze_begin(void)
+ {
+ 	acpi_scan_lock_acquire();
+@@ -660,8 +738,18 @@ static int acpi_freeze_begin(void)
+ 
+ static int acpi_freeze_prepare(void)
+ {
+-	acpi_enable_all_wakeup_gpes();
+-	acpi_os_wait_events_complete();
++	if (lps0_device_handle) {
++		acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_OFF);
++		acpi_sleep_run_lps0_dsm(ACPI_LPS0_ENTRY);
++	} else {
++		/*
++		 * The configuration of GPEs is changed here to avoid spurious
++		 * wakeups, but that should not be necessary if this is a
++		 * "low-power S0" platform and the low-power S0 _DSM is present.
++		 */
++		acpi_enable_all_wakeup_gpes();
++		acpi_os_wait_events_complete();
++	}
+ 	if (acpi_sci_irq_valid())
+ 		enable_irq_wake(acpi_sci_irq);
+ 
+@@ -700,7 +788,12 @@ static void acpi_freeze_restore(void)
+ 	if (acpi_sci_irq_valid())
+ 		disable_irq_wake(acpi_sci_irq);
+ 
+-	acpi_enable_all_runtime_gpes();
++	if (lps0_device_handle) {
++		acpi_sleep_run_lps0_dsm(ACPI_LPS0_EXIT);
++		acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_ON);
++	} else {
++		acpi_enable_all_runtime_gpes();
++	}
+ }
+ 
+ static void acpi_freeze_end(void)
+@@ -727,11 +820,14 @@ static void acpi_sleep_suspend_setup(voi
+ 
+ 	suspend_set_ops(old_suspend_ordering ?
+ 		&acpi_suspend_ops_old : &acpi_suspend_ops);
++
++	acpi_scan_add_handler(&lps0_handler);
+ 	freeze_set_ops(&acpi_freeze_ops);
+ }
+ 
+ #else /* !CONFIG_SUSPEND */
+ #define s2idle_wakeup	(false)
++#define lps0_device_handle	(NULL)
+ static inline void acpi_sleep_suspend_setup(void) {}
+ #endif /* !CONFIG_SUSPEND */
+ 
+@@ -740,6 +836,11 @@ bool acpi_s2idle_wakeup(void)
+ 	return s2idle_wakeup;
+ }
+ 
++bool acpi_sleep_no_ec_events(void)
++{
++	return pm_suspend_via_firmware() || !lps0_device_handle;
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ static u32 saved_bm_rld;
+ 
+Index: linux-pm/drivers/acpi/ec.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/ec.c
++++ linux-pm/drivers/acpi/ec.c
+@@ -1835,7 +1835,7 @@ static int acpi_ec_suspend(struct device
+ 	struct acpi_ec *ec =
+ 		acpi_driver_data(to_acpi_device(dev));
+ 
+-	if (ec_freeze_events)
++	if (acpi_sleep_no_ec_events() && ec_freeze_events)
+ 		acpi_ec_disable_event(ec);
+ 	return 0;
+ }
+Index: linux-pm/drivers/acpi/internal.h
+===================================================================
+--- linux-pm.orig/drivers/acpi/internal.h
++++ linux-pm/drivers/acpi/internal.h
+@@ -199,9 +199,11 @@ void acpi_ec_remove_query_handler(struct
+   -------------------------------------------------------------------------- */
+ #ifdef CONFIG_ACPI_SYSTEM_POWER_STATES_SUPPORT
+ extern bool acpi_s2idle_wakeup(void);
++extern bool acpi_sleep_no_ec_events(void);
+ extern int acpi_sleep_init(void);
+ #else
+ static inline bool acpi_s2idle_wakeup(void) { return false; }
++static inline bool acpi_sleep_no_ec_events(void) { return true; }
+ static inline int acpi_sleep_init(void) { return -ENXIO; }
+ #endif
+ 
+
