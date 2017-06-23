@@ -1,38 +1,42 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpupower: Fix bug where return value was not used
-Date: Sat, 24 Jun 2017 01:03:18 +0200
-Message-ID: <11633691.tH8W96l7QX@aspire.rjw.lan>
-References: <20170620065708.21434.80154.stgit@Diesel2540.amd.com> <20170620070241.21434.57148.stgit@Diesel2540.amd.com> <6275735.KfbznezEp5@skinner>
+Subject: Re: [PATCH V5 Resend] PM / OPP: Use - instead of @ for DT entries
+Date: Sat, 24 Jun 2017 01:45:15 +0200
+Message-ID: <4275705.6o67YAg0Lz@aspire.rjw.lan>
+References: <31dd4526b3975260a669494aaaaa19323f6d201d.1498103050.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58950 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55808 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753900AbdFWXKj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Jun 2017 19:10:39 -0400
-In-Reply-To: <6275735.KfbznezEp5@skinner>
+        by vger.kernel.org with ESMTP id S1754058AbdFWXwg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Jun 2017 19:52:36 -0400
+In-Reply-To: <31dd4526b3975260a669494aaaaa19323f6d201d.1498103050.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: Sherry Hurwitz <sherry.hurwitz@amd.com>, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Friday, June 23, 2017 04:00:57 PM Thomas Renninger wrote:
-> On Tuesday, June 20, 2017 02:07:37 AM Sherry Hurwitz wrote:
-> > Save return value from amd_pci_get_num_boost_states
-> > and remove redundant setting of *support
-> > 
-> > Signed-off-by: Sherry Hurwitz <sherry.hurwitz@amd.com>
+On Thursday, June 22, 2017 09:15:11 AM Viresh Kumar wrote:
+> Compiling the DT file with W=1, DTC warns like follows:
 > 
-> Acked-by: Thomas Renninger <trenn@suse.com>
-> Reviewed-by: Thomas Renninger <trenn@suse.com>
-> whatever is more appropriate or both...
+> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
+> unit name, but no reg property
 > 
-> Thanks, good catch!
+> Fix this by replacing '@' with '-' as the OPP nodes will never have a
+> "reg" property.
 > 
-> Rafael can you queue this an the next one, please?
+> Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> Suggested-by: Mark Rutland <mark.rutland@arm.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Acked-by: Rob Herring <robh@kernel.org>
+> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+> ---
+> @Rafael: You haven't applied it yesterday and I couldn't find it in
+> patchwork anymore, so I am assuming that I need to send it again.
 
-I'll do that.
+Correct.
 
 Thanks,
 Rafael
