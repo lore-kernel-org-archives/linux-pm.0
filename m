@@ -1,36 +1,35 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 2/4] dt-bindings: Add bindings for
- nvidia,tegra186-bpmp-thermal
-Date: Fri, 23 Jun 2017 13:48:42 -0500
-Message-ID: <20170623184842.ndb44vqyu5rtaa2e@rob-hp-laptop>
-References: <20170616112825.31025-1-mperttunen@nvidia.com>
- <20170616112825.31025-2-mperttunen@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f196.google.com ([209.85.161.196]:36081 "EHLO
-        mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754549AbdFWSso (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Jun 2017 14:48:44 -0400
-Content-Disposition: inline
-In-Reply-To: <20170616112825.31025-2-mperttunen@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: [PATCH] thermal: bcm2835:
+Date: Fri, 23 Jun 2017 21:38:11 +0200
+Message-ID: <20170623193811.8016-1-christophe.jaillet@wanadoo.fr>
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, eric@anholt.net, stefan.wahren@i2se.com, f.fainelli@gmail.com, rjui@broadcom.com, sbranden@broadcom.com, bcm-kernel-feedback-list@broadcom.com, kernel@martin.sperl.org, rafal@milecki.pl
+Cc: linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 List-Id: linux-pm@vger.kernel.org
-To: Mikko Perttunen <mperttunen@nvidia.com>
-Cc: mark.rutland@arm.com, rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com, jonathanh@nvidia.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On Fri, Jun 16, 2017 at 02:28:23PM +0300, Mikko Perttunen wrote:
-> In Tegra186, the BPMP (Boot and Power Management Processor) implements
-> an interface that is used to read system temperatures, including CPU
-> cluster and GPU temperatures. This binding describes the thermal sensor
-> that is exposed by BPMP.
-> 
-> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
-> ---
->  .../thermal/nvidia,tegra186-bpmp-thermal.txt       | 32 ++++++++++++++++++++++
->  .../dt-bindings/thermal/tegra186-bpmp-thermal.h    | 14 ++++++++++
->  2 files changed, 46 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt
->  create mode 100644 include/dt-bindings/thermal/tegra186-bpmp-thermal.h
+'tz' is a valid pointer at this point, so calling PTR_ERR on it is
+pointless.
+This 'err = PTR_ERR(tz)' looks like a cut'n'paste from a few lines above.
+So remove it. 'err' is already the error we want to report.
 
-Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+ drivers/thermal/broadcom/bcm2835_thermal.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
+index 0ecf80890c84..e6863c841662 100644
+--- a/drivers/thermal/broadcom/bcm2835_thermal.c
++++ b/drivers/thermal/broadcom/bcm2835_thermal.c
+@@ -245,7 +245,6 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 		 */
+ 		err = tz->ops->get_trip_temp(tz, 0, &trip_temp);
+ 		if (err < 0) {
+-			err = PTR_ERR(tz);
+ 			dev_err(&pdev->dev,
+ 				"Not able to read trip_temp: %d\n",
+ 				err);
+-- 
+2.11.0
+
