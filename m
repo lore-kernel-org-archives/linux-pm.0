@@ -1,66 +1,43 @@
-From: Benjamin Tissoires <benjamin.tissoires@redhat.com>
-Subject: Re: [PATCH v7 05/10] i2c: core: call of_i2c_setup_smbus_alert in
- i2c_register_adapter
-Date: Fri, 23 Jun 2017 14:19:23 +0200
-Message-ID: <20170623121923.GN26073@mail.corp.redhat.com>
-References: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
- <1497535178-12001-6-git-send-email-preid@electromag.com.au>
- <20170619152811.svoxmxybyoy6l4hc@ninjato>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] ACPI / sleep: EC-based wakeup from suspend-to-idle on recent systems
+Date: Fri, 23 Jun 2017 14:13:57 +0200
+Message-ID: <2892243.DJpRz1t3Fg@aspire.rjw.lan>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <2368998.dmCsnrcXZy@aspire.rjw.lan> <1AE640813FDE7649BE1B193DEA596E886CED4669@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-i2c-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170619152811.svoxmxybyoy6l4hc@ninjato>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: Phil Reid <preid@electromag.com.au>, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1AE640813FDE7649BE1B193DEA596E886CED4669@SHSMSX101.ccr.corp.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Zheng, Lv" <lv.zheng@intel.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, Tom Lanyon <tom@oneshoeco.com>, =?ISO-8859-1?Q?J=E9r=3Fme?= de Bretagne <jerome.debretagne@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Jun 19 2017 or thereabouts, Wolfram Sang wrote:
-> On Thu, Jun 15, 2017 at 09:59:33PM +0800, Phil Reid wrote:
-> > Add a call to of_i2c_setup_smbus_alert when a i2c adapter is registered
-> > so the the smbalert driver can be registered.
-> > 
-> > Signed-off-by: Phil Reid <preid@electromag.com.au>
+On Friday, June 23, 2017 06:30:35 AM Zheng, Lv wrote:
+> Hi, Rafael
 > 
-> CCing Benjamin
+
+[cut]
+
+> > 
+> > Index: linux-pm/drivers/acpi/ec.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/acpi/ec.c
+> > +++ linux-pm/drivers/acpi/ec.c
+> > @@ -1835,7 +1835,7 @@ static int acpi_ec_suspend(struct device
+> >  	struct acpi_ec *ec =
+> >  		acpi_driver_data(to_acpi_device(dev));
+> > 
+> > -	if (ec_freeze_events)
+> > +	if (acpi_sleep_no_ec_events() && ec_freeze_events)
+> >  		acpi_ec_disable_event(ec);
+> >  	return 0;
+> >  }
 > 
-> > ---
-> >  drivers/i2c/i2c-core.c | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> > 
-> > diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> > index d2402bb..626471b 100644
-> > --- a/drivers/i2c/i2c-core.c
-> > +++ b/drivers/i2c/i2c-core.c
-> > @@ -40,6 +40,7 @@
-> >  #include <linux/gpio.h>
-> >  #include <linux/hardirq.h>
-> >  #include <linux/i2c.h>
-> > +#include <linux/i2c-smbus.h>
-> >  #include <linux/idr.h>
-> >  #include <linux/init.h>
-> >  #include <linux/irqflags.h>
-> > @@ -2045,6 +2046,9 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
-> >  		dev_warn(&adap->dev,
-> >  			 "Failed to create compatibility class link\n");
-> >  #endif
-> > +	res = of_i2c_setup_smbus_alert(adap);
-> > +	if (res)
-> > +		goto out_list;
+> I just notice a slight pontential issue.
+> Should we add a similar change to acpi_ec_stop()?
 
-See my concerns in patch 4/10.
+Yes, it looks like that, thanks!
 
-In addition, shouldn't this be placed before device_register() for the
-least? pm_runtime_enable() would require a matching pm_runtime_disable(),
-and device_register() some unregistering behavior too.
+Rafael
 
-Cheers,
-Benjamin
-
-> >  
-> >  	i2c_init_recovery(adap);
-> >  
-> > -- 
-> > 1.8.3.1
-> > 
