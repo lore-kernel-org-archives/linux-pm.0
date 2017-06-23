@@ -1,134 +1,285 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] PCI / PM: Avoid using device_may_wakeup() for runtime PM
-Date: Fri, 23 Jun 2017 14:58:11 +0200
-Message-ID: <2677722.OnHOCzR3UZ@aspire.rjw.lan>
-References: <Pine.LNX.4.44L0.1706191415180.1715-100000@iolanthe.rowland.org> <2883450.A8OIi7Gmb8@aspire.rjw.lan>
+Subject: [PATCH v2] ACPI / sleep: EC-based wakeup from suspend-to-idle on recent systems
+Date: Fri, 23 Jun 2017 15:15:25 +0200
+Message-ID: <2279758.LZ0rCGQtcH@aspire.rjw.lan>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <2026371.DVJN39QYJi@aspire.rjw.lan> <2368998.dmCsnrcXZy@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2883450.A8OIi7Gmb8@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pci@vger.kernel.org
-Cc: Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <helgaas@kernel.org>, Kai-Heng Feng <kai.heng.feng@canonical.com>, Bjorn Helgaas <bhelgaas@google.com>, gregkh@linuxfoundation.org, USB list <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2368998.dmCsnrcXZy@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, Tom Lanyon <tom@oneshoeco.com>, =?ISO-8859-1?Q?J=E9r=F4me?= de Bretagne <jerome.debretagne@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Zheng, Lv" <lv.zheng@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-pci_target_state() calls device_may_wakeup() which checks whether
-or not the device may wake up the system from sleep states, but
-pci_target_state() is used for runtime PM too.
+Some recent Dell laptops, including the XPS13 model numbers 9360 and
+9365, cannot be woken up from suspend-to-idle by pressing the power
+button which is unexpected and makes that feature less usable on
+those systems.  Moreover, on the 9365 ACPI S3 (suspend-to-RAM) is
+not expected to be used at all (the OS these systems ship with never
+exercises the ACPI S3 path in the firmware) and suspend-to-idle is
+the only viable system suspend mechanism there.
 
-Since runtime PM is expected to always enable remote wakeup if
-possible, modify pci_target_state() to take additional argument
-indicating whether or not it should look for a state from which
-the device can signal wakeup and pass either the return value
-of device_can_wakeup(), or "false" (if the device itself is not
-wakeup-capable) to it from the code related to runtime PM.
+The reason why the power button wakeup from suspend-to-idle doesn't
+work on those systems is because their power button events are
+signaled by the EC (Embedded Controller), whose GPE (General Purpose
+Event) line is disabled during suspend-to-idle transitions in Linux.
+That is done on purpose, because in general the EC tends to be noisy
+for various reasons (battery and thermal updates and similar, for
+example) and all events signaled by it would kick the CPUs out of
+deep idle states while in suspend-to-idle, which effectively might
+defeat its purpose.
 
-While at it, fix the comment in pci_dev_run_wake() which is not
-about sleep states.
+Of course, on the Dell systems in question the EC GPE must be enabled
+during suspend-to-idle transitions for the button press events to
+be signaled while suspended at all, but fortunately there is a way
+out of this puzzle.
 
+First of all, those systems have the ACPI_FADT_LOW_POWER_S0 flag set
+in their ACPI tables, which means that the OS is expected to prefer
+the "low power S0 idle" system state over ACPI S3 on them.  That
+causes the most recent versions of other OSes to simply ignore ACPI
+S3 on those systems, so it is reasonable to expect that it should not
+be necessary to block GPEs during suspend-to-idle on them.
+
+Second, in addition to that, the systems in question provide a special
+firmware interface that can be used to indicate to the platform that
+the OS is transitioning into a system-wide low-power state in which
+certain types of activity are not desirable or that it is leaving
+such a state and that (in principle) should allow the platform to
+adjust its operation mode accordingly.
+
+That interface is a special _DSM object under a System Power
+Management Controller device (PNP0D80).  The expected way to use it
+is to invoke function 0 from it on system initialization, functions
+3 and 5 during suspend transitions and functions 4 and 6 during
+resume transitions (to reverse the actions carried out by the
+former).  In particular, function 5 from the "Low-Power S0" device
+_DSM is expected to cause the platform to put itself into a low-power
+operation mode which should include making the EC less verbose (so to
+speak).  Next, on resume, function 6 switches the platform back to
+the "working-state" operation mode.
+
+In accordance with the above, modify the ACPI suspend-to-idle code
+to look for the "Low-Power S0" _DSM interface on platforms with the
+ACPI_FADT_LOW_POWER_S0 flag set in the ACPI tables.  If it's there,
+use it during suspend-to-idle transitions as prescribed and avoid
+changing the GPE configuration in that case.  [That should reflect
+what the most recent versions of other OSes do.]
+
+Also modify the ACPI EC driver to make it handle events during
+suspend-to-idle in the usual way if the "Low-Power S0" _DSM interface
+is going to be used to make the power button events work while
+suspended on the Dell machines mentioned above
+
+Link: http://www.uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
 -> v2:
-
-Passing "true" as the second argument to pci_target_state() for runtime PM
-might trigger suboptimal state choices to be made, so pass the return value
-of device_can_wakeup() to it instead and pass "false" to it in pci_dev_run_wake(),
-because that assumes device_can_wakeup() to return "false" already.
+ Add the s2idle_in_progress variable to distinguish between s2idle and other
+ transitions, as pm_suspend_via_firmware() is not entirely sufficient for that,
+ and use it in acpi_sleep_no_ec_events().
 
 ---
- drivers/pci/pci.c |   22 +++++++++++++---------
- 1 file changed, 13 insertions(+), 9 deletions(-)
+ drivers/acpi/ec.c       |    2 
+ drivers/acpi/internal.h |    2 
+ drivers/acpi/sleep.c    |  113 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 112 insertions(+), 5 deletions(-)
 
-Index: linux-pm/drivers/pci/pci.c
+Index: linux-pm/drivers/acpi/sleep.c
 ===================================================================
---- linux-pm.orig/drivers/pci/pci.c
-+++ linux-pm/drivers/pci/pci.c
-@@ -1982,12 +1982,13 @@ EXPORT_SYMBOL(pci_wake_from_d3);
- /**
-  * pci_target_state - find an appropriate low power state for a given PCI dev
-  * @dev: PCI device
-+ * @wakeup: Whether or not wakeup functionality will be enabled for the device.
-  *
-  * Use underlying platform code to find a supported low power state for @dev.
-  * If the platform can't manage @dev, return the deepest state from which it
-  * can generate wake events, based on any available PME info.
-  */
--static pci_power_t pci_target_state(struct pci_dev *dev)
-+static pci_power_t pci_target_state(struct pci_dev *dev, bool wakeup)
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -650,18 +650,108 @@ static const struct platform_suspend_ops
+ 	.recover = acpi_pm_finish,
+ };
+ 
++static bool s2idle_in_progress;
+ static bool s2idle_wakeup;
+ 
++/*
++ * On platforms supporting the Low Power S0 Idle interface there is an ACPI
++ * device object with the PNP0D80 compatible device ID (System Power Management
++ * Controller) and a specific _DSM method under it.  That method, if present,
++ * can be used to indicate to the platform that the OS is transitioning into a
++ * low-power state in which certain types of activity are not desirable or that
++ * it is leaving such a state, which allows the platform to adjust its operation
++ * mode accordingly.
++ */
++static const struct acpi_device_id lps0_device_ids[] = {
++	{"PNP0D80", },
++	{"", },
++};
++
++#define ACPI_LPS0_DSM_UUID	"c4eb40a0-6cd2-11e2-bcfd-0800200c9a66"
++
++#define ACPI_LPS0_SCREEN_OFF	3
++#define ACPI_LPS0_SCREEN_ON	4
++#define ACPI_LPS0_ENTRY		5
++#define ACPI_LPS0_EXIT		6
++
++#define ACPI_S2IDLE_FUNC_MASK	((1 << ACPI_LPS0_ENTRY) | (1 << ACPI_LPS0_EXIT))
++
++static acpi_handle lps0_device_handle;
++static guid_t lps0_dsm_guid;
++static char lps0_dsm_func_mask;
++
++static void acpi_sleep_run_lps0_dsm(unsigned int func)
++{
++	union acpi_object *out_obj;
++
++	if (!(lps0_dsm_func_mask & (1 << func)))
++		return;
++
++	out_obj = acpi_evaluate_dsm(lps0_device_handle, &lps0_dsm_guid, 1, func, NULL);
++	ACPI_FREE(out_obj);
++
++	acpi_handle_debug(lps0_device_handle, "_DSM function %u evaluation %s\n",
++			  func, out_obj ? "successful" : "failed");
++}
++
++static int lps0_device_attach(struct acpi_device *adev,
++			      const struct acpi_device_id *not_used)
++{
++	union acpi_object *out_obj;
++
++	if (lps0_device_handle)
++		return 0;
++
++	if (!(acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0))
++		return 0;
++
++	guid_parse(ACPI_LPS0_DSM_UUID, &lps0_dsm_guid);
++	/* Check if the _DSM is present and as expected. */
++	out_obj = acpi_evaluate_dsm(adev->handle, &lps0_dsm_guid, 1, 0, NULL);
++	if (out_obj && out_obj->type == ACPI_TYPE_BUFFER) {
++		char bitmask = *(char *)out_obj->buffer.pointer;
++
++		if ((bitmask & ACPI_S2IDLE_FUNC_MASK) == ACPI_S2IDLE_FUNC_MASK) {
++			lps0_dsm_func_mask = bitmask;
++			lps0_device_handle = adev->handle;
++		}
++
++		acpi_handle_debug(adev->handle, "_DSM function mask: 0x%x\n",
++				  bitmask);
++	} else {
++		acpi_handle_debug(adev->handle,
++				  "_DSM function 0 evaluation failed\n");
++	}
++	ACPI_FREE(out_obj);
++	return 0;
++}
++
++static struct acpi_scan_handler lps0_handler = {
++	.ids = lps0_device_ids,
++	.attach = lps0_device_attach,
++};
++
+ static int acpi_freeze_begin(void)
  {
- 	pci_power_t target_state = PCI_D3hot;
+ 	acpi_scan_lock_acquire();
++	s2idle_in_progress = true;
+ 	return 0;
+ }
  
-@@ -2024,7 +2025,7 @@ static pci_power_t pci_target_state(stru
- 	if (dev->current_state == PCI_D3cold)
- 		target_state = PCI_D3cold;
- 
--	if (device_may_wakeup(&dev->dev)) {
-+	if (wakeup) {
- 		/*
- 		 * Find the deepest state from which the device can generate
- 		 * wake-up events, make it the target state and enable device
-@@ -2050,13 +2051,14 @@ static pci_power_t pci_target_state(stru
-  */
- int pci_prepare_to_sleep(struct pci_dev *dev)
+ static int acpi_freeze_prepare(void)
  {
--	pci_power_t target_state = pci_target_state(dev);
-+	bool wakeup = device_may_wakeup(&dev->dev);
-+	pci_power_t target_state = pci_target_state(dev, wakeup);
- 	int error;
+-	acpi_enable_all_wakeup_gpes();
+-	acpi_os_wait_events_complete();
++	if (lps0_device_handle) {
++		acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_OFF);
++		acpi_sleep_run_lps0_dsm(ACPI_LPS0_ENTRY);
++	} else {
++		/*
++		 * The configuration of GPEs is changed here to avoid spurious
++		 * wakeups, but that should not be necessary if this is a
++		 * "low-power S0" platform and the low-power S0 _DSM is present.
++		 */
++		acpi_enable_all_wakeup_gpes();
++		acpi_os_wait_events_complete();
++	}
+ 	if (acpi_sci_irq_valid())
+ 		enable_irq_wake(acpi_sci_irq);
  
- 	if (target_state == PCI_POWER_ERROR)
- 		return -EIO;
+@@ -700,11 +790,17 @@ static void acpi_freeze_restore(void)
+ 	if (acpi_sci_irq_valid())
+ 		disable_irq_wake(acpi_sci_irq);
  
--	pci_enable_wake(dev, target_state, device_may_wakeup(&dev->dev));
-+	pci_enable_wake(dev, target_state, wakeup);
+-	acpi_enable_all_runtime_gpes();
++	if (lps0_device_handle) {
++		acpi_sleep_run_lps0_dsm(ACPI_LPS0_EXIT);
++		acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_ON);
++	} else {
++		acpi_enable_all_runtime_gpes();
++	}
+ }
  
- 	error = pci_set_power_state(dev, target_state);
- 
-@@ -2089,9 +2091,10 @@ EXPORT_SYMBOL(pci_back_from_sleep);
-  */
- int pci_finish_runtime_suspend(struct pci_dev *dev)
+ static void acpi_freeze_end(void)
  {
--	pci_power_t target_state = pci_target_state(dev);
-+	pci_power_t target_state;
- 	int error;
++	s2idle_in_progress = false;
+ 	acpi_scan_lock_release();
+ }
  
-+	target_state = pci_target_state(dev, device_can_wakeup(&dev->dev));
- 	if (target_state == PCI_POWER_ERROR)
- 		return -EIO;
+@@ -727,11 +823,15 @@ static void acpi_sleep_suspend_setup(voi
  
-@@ -2127,8 +2130,8 @@ bool pci_dev_run_wake(struct pci_dev *de
- 	if (!dev->pme_support)
- 		return false;
+ 	suspend_set_ops(old_suspend_ordering ?
+ 		&acpi_suspend_ops_old : &acpi_suspend_ops);
++
++	acpi_scan_add_handler(&lps0_handler);
+ 	freeze_set_ops(&acpi_freeze_ops);
+ }
  
--	/* PME-capable in principle, but not from the intended sleep state */
--	if (!pci_pme_capable(dev, pci_target_state(dev)))
-+	/* PME-capable in principle, but not from the target power state */
-+	if (!pci_pme_capable(dev, pci_target_state(dev, false)))
- 		return false;
+ #else /* !CONFIG_SUSPEND */
+-#define s2idle_wakeup	(false)
++#define s2idle_in_progress	(false)
++#define s2idle_wakeup		(false)
++#define lps0_device_handle	(NULL)
+ static inline void acpi_sleep_suspend_setup(void) {}
+ #endif /* !CONFIG_SUSPEND */
  
- 	while (bus->parent) {
-@@ -2163,9 +2166,10 @@ EXPORT_SYMBOL_GPL(pci_dev_run_wake);
- bool pci_dev_keep_suspended(struct pci_dev *pci_dev)
- {
- 	struct device *dev = &pci_dev->dev;
-+	bool wakeup = device_may_wakeup(dev);
+@@ -740,6 +840,11 @@ bool acpi_s2idle_wakeup(void)
+ 	return s2idle_wakeup;
+ }
  
- 	if (!pm_runtime_suspended(dev)
--	    || pci_target_state(pci_dev) != pci_dev->current_state
-+	    || pci_target_state(pci_dev, wakeup) != pci_dev->current_state
- 	    || platform_pci_need_resume(pci_dev)
- 	    || (pci_dev->dev_flags & PCI_DEV_FLAGS_NEEDS_RESUME))
- 		return false;
-@@ -2183,7 +2187,7 @@ bool pci_dev_keep_suspended(struct pci_d
- 	spin_lock_irq(&dev->power.lock);
++bool acpi_sleep_no_ec_events(void)
++{
++	return !s2idle_in_progress || !lps0_device_handle;
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ static u32 saved_bm_rld;
  
- 	if (pm_runtime_suspended(dev) && pci_dev->current_state < PCI_D3cold &&
--	    !device_may_wakeup(dev))
-+	    !wakeup)
- 		__pci_pme_active(pci_dev, false);
+Index: linux-pm/drivers/acpi/ec.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/ec.c
++++ linux-pm/drivers/acpi/ec.c
+@@ -1835,7 +1835,7 @@ static int acpi_ec_suspend(struct device
+ 	struct acpi_ec *ec =
+ 		acpi_driver_data(to_acpi_device(dev));
  
- 	spin_unlock_irq(&dev->power.lock);
+-	if (ec_freeze_events)
++	if (acpi_sleep_no_ec_events() && ec_freeze_events)
+ 		acpi_ec_disable_event(ec);
+ 	return 0;
+ }
+Index: linux-pm/drivers/acpi/internal.h
+===================================================================
+--- linux-pm.orig/drivers/acpi/internal.h
++++ linux-pm/drivers/acpi/internal.h
+@@ -199,9 +199,11 @@ void acpi_ec_remove_query_handler(struct
+   -------------------------------------------------------------------------- */
+ #ifdef CONFIG_ACPI_SYSTEM_POWER_STATES_SUPPORT
+ extern bool acpi_s2idle_wakeup(void);
++extern bool acpi_sleep_no_ec_events(void);
+ extern int acpi_sleep_init(void);
+ #else
+ static inline bool acpi_s2idle_wakeup(void) { return false; }
++static inline bool acpi_sleep_no_ec_events(void) { return true; }
+ static inline int acpi_sleep_init(void) { return -ENXIO; }
+ #endif
+ 
+
