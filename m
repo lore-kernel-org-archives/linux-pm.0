@@ -1,42 +1,240 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V5 Resend] PM / OPP: Use - instead of @ for DT entries
-Date: Sat, 24 Jun 2017 01:45:15 +0200
-Message-ID: <4275705.6o67YAg0Lz@aspire.rjw.lan>
-References: <31dd4526b3975260a669494aaaaa19323f6d201d.1498103050.git.viresh.kumar@linaro.org>
+Subject: [PATCH v2 5/5] PM / core: Drop run_wake flag from struct dev_pm_info
+Date: Sat, 24 Jun 2017 01:58:53 +0200
+Message-ID: <4730797.2siOkGHevq@aspire.rjw.lan>
+References: <12296383.UdE5HVtyng@aspire.rjw.lan> <2524735.NRzn8A9HAf@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55808 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1754058AbdFWXwg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Jun 2017 19:52:36 -0400
-In-Reply-To: <31dd4526b3975260a669494aaaaa19323f6d201d.1498103050.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <2524735.NRzn8A9HAf@aspire.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thursday, June 22, 2017 09:15:11 AM Viresh Kumar wrote:
-> Compiling the DT file with W=1, DTC warns like follows:
-> 
-> Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
-> unit name, but no reg property
-> 
-> Fix this by replacing '@' with '-' as the OPP nodes will never have a
-> "reg" property.
-> 
-> Reported-by: Krzysztof Kozlowski <krzk@kernel.org>
-> Reported-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Suggested-by: Mark Rutland <mark.rutland@arm.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Acked-by: Rob Herring <robh@kernel.org>
-> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
-> ---
-> @Rafael: You haven't applied it yesterday and I couldn't find it in
-> patchwork anymore, so I am assuming that I need to send it again.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Correct.
+The run_wake flag in struct dev_pm_info is used to indicate whether
+or not the device is capable of generating remote wakeup signals at
+run time (or in the system working state), but the distinction
+between runtime remote wakeup and system wakeup signaling has always
+been rather artificial.  The only practical reason for it to exist
+at the core level was that ACPI and PCI treated those two cases
+differently, but that's not the case any more after recent changes.
 
-Thanks,
-Rafael
+For this reason, get rid of the run_wake flag and, when applicable,
+use device_set_wakeup_capable() and device_can_wakeup() instead of
+device_set_run_wake() and device_run_wake(), respectively.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+---
+
+-> v2: No changes, but it was [6/6] previously.
+
+---
+ Documentation/power/runtime_pm.txt |    7 ++-----
+ drivers/acpi/pci_root.c            |    5 ++---
+ drivers/pci/pci-acpi.c             |    5 +----
+ drivers/pci/pci.c                  |    6 +++---
+ drivers/pci/pcie/pme.c             |    2 +-
+ drivers/usb/dwc3/dwc3-pci.c        |    3 +--
+ drivers/usb/host/uhci-pci.c        |    2 +-
+ include/linux/pm.h                 |    1 -
+ include/linux/pm_runtime.h         |   12 ------------
+ 9 files changed, 11 insertions(+), 32 deletions(-)
+
+Index: linux-pm/include/linux/pm.h
+===================================================================
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -584,7 +584,6 @@ struct dev_pm_info {
+ 	unsigned int		idle_notification:1;
+ 	unsigned int		request_pending:1;
+ 	unsigned int		deferred_resume:1;
+-	unsigned int		run_wake:1;
+ 	unsigned int		runtime_auto:1;
+ 	bool			ignore_children:1;
+ 	unsigned int		no_callbacks:1;
+Index: linux-pm/include/linux/pm_runtime.h
+===================================================================
+--- linux-pm.orig/include/linux/pm_runtime.h
++++ linux-pm/include/linux/pm_runtime.h
+@@ -76,16 +76,6 @@ static inline void pm_runtime_put_noidle
+ 	atomic_add_unless(&dev->power.usage_count, -1, 0);
+ }
+ 
+-static inline bool device_run_wake(struct device *dev)
+-{
+-	return dev->power.run_wake;
+-}
+-
+-static inline void device_set_run_wake(struct device *dev, bool enable)
+-{
+-	dev->power.run_wake = enable;
+-}
+-
+ static inline bool pm_runtime_suspended(struct device *dev)
+ {
+ 	return dev->power.runtime_status == RPM_SUSPENDED
+@@ -163,8 +153,6 @@ static inline void pm_runtime_forbid(str
+ static inline void pm_suspend_ignore_children(struct device *dev, bool enable) {}
+ static inline void pm_runtime_get_noresume(struct device *dev) {}
+ static inline void pm_runtime_put_noidle(struct device *dev) {}
+-static inline bool device_run_wake(struct device *dev) { return false; }
+-static inline void device_set_run_wake(struct device *dev, bool enable) {}
+ static inline bool pm_runtime_suspended(struct device *dev) { return false; }
+ static inline bool pm_runtime_active(struct device *dev) { return true; }
+ static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
+Index: linux-pm/drivers/acpi/pci_root.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/pci_root.c
++++ linux-pm/drivers/acpi/pci_root.c
+@@ -608,8 +608,7 @@ static int acpi_pci_root_add(struct acpi
+ 		pcie_no_aspm();
+ 
+ 	pci_acpi_add_bus_pm_notifier(device);
+-	if (device->wakeup.flags.valid)
+-		device_set_run_wake(root->bus->bridge, true);
++	device_set_wakeup_capable(root->bus->bridge, device->wakeup.flags.valid);
+ 
+ 	if (hotadd) {
+ 		pcibios_resource_survey_bus(root->bus);
+@@ -649,7 +648,7 @@ static void acpi_pci_root_remove(struct
+ 	pci_stop_root_bus(root->bus);
+ 
+ 	pci_ioapic_remove(root);
+-	device_set_run_wake(root->bus->bridge, false);
++	device_set_wakeup_capable(root->bus->bridge, false);
+ 	pci_acpi_remove_bus_pm_notifier(device);
+ 
+ 	pci_remove_root_bus(root->bus);
+Index: linux-pm/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-acpi.c
++++ linux-pm/drivers/pci/pci-acpi.c
+@@ -738,7 +738,6 @@ static void pci_acpi_setup(struct device
+ 		return;
+ 
+ 	device_set_wakeup_capable(dev, true);
+-	device_set_run_wake(dev, true);
+ 	acpi_pci_wakeup(pci_dev, false);
+ }
+ 
+@@ -750,10 +749,8 @@ static void pci_acpi_cleanup(struct devi
+ 		return;
+ 
+ 	pci_acpi_remove_pm_notifier(adev);
+-	if (adev->wakeup.flags.valid) {
++	if (adev->wakeup.flags.valid)
+ 		device_set_wakeup_capable(dev, false);
+-		device_set_run_wake(dev, false);
+-	}
+ }
+ 
+ static bool pci_acpi_bus_match(struct device *dev)
+Index: linux-pm/drivers/pci/pcie/pme.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pcie/pme.c
++++ linux-pm/drivers/pci/pcie/pme.c
+@@ -300,7 +300,7 @@ static irqreturn_t pcie_pme_irq(int irq,
+  */
+ static int pcie_pme_can_wakeup(struct pci_dev *dev, void *ign)
+ {
+-	device_set_run_wake(&dev->dev, true);
++	device_set_wakeup_capable(&dev->dev, true);
+ 	return 0;
+ }
+ 
+Index: linux-pm/drivers/usb/dwc3/dwc3-pci.c
+===================================================================
+--- linux-pm.orig/drivers/usb/dwc3/dwc3-pci.c
++++ linux-pm/drivers/usb/dwc3/dwc3-pci.c
+@@ -230,7 +230,6 @@ static int dwc3_pci_probe(struct pci_dev
+ 	}
+ 
+ 	device_init_wakeup(dev, true);
+-	device_set_run_wake(dev, true);
+ 	pci_set_drvdata(pci, dwc);
+ 	pm_runtime_put(dev);
+ 
+@@ -310,7 +309,7 @@ static int dwc3_pci_runtime_suspend(stru
+ {
+ 	struct dwc3_pci		*dwc = dev_get_drvdata(dev);
+ 
+-	if (device_run_wake(dev))
++	if (device_can_wakeup(dev))
+ 		return dwc3_pci_dsm(dwc, PCI_INTEL_BXT_STATE_D3);
+ 
+ 	return -EBUSY;
+Index: linux-pm/drivers/usb/host/uhci-pci.c
+===================================================================
+--- linux-pm.orig/drivers/usb/host/uhci-pci.c
++++ linux-pm/drivers/usb/host/uhci-pci.c
+@@ -131,7 +131,7 @@ static int uhci_pci_init(struct usb_hcd
+ 
+ 	/* Intel controllers use non-PME wakeup signalling */
+ 	if (to_pci_dev(uhci_dev(uhci))->vendor == PCI_VENDOR_ID_INTEL)
+-		device_set_run_wake(uhci_dev(uhci), 1);
++		device_set_wakeup_capable(uhci_dev(uhci), true);
+ 
+ 	/* Set up pointers to PCI-specific functions */
+ 	uhci->reset_hc = uhci_pci_reset_hc;
+Index: linux-pm/drivers/pci/pci.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci.c
++++ linux-pm/drivers/pci/pci.c
+@@ -2105,7 +2105,7 @@ bool pci_dev_run_wake(struct pci_dev *de
+ {
+ 	struct pci_bus *bus = dev->bus;
+ 
+-	if (device_run_wake(&dev->dev))
++	if (device_can_wakeup(&dev->dev))
+ 		return true;
+ 
+ 	if (!dev->pme_support)
+@@ -2118,7 +2118,7 @@ bool pci_dev_run_wake(struct pci_dev *de
+ 	while (bus->parent) {
+ 		struct pci_dev *bridge = bus->self;
+ 
+-		if (device_run_wake(&bridge->dev))
++		if (device_can_wakeup(&bridge->dev))
+ 			return true;
+ 
+ 		bus = bus->parent;
+@@ -2126,7 +2126,7 @@ bool pci_dev_run_wake(struct pci_dev *de
+ 
+ 	/* We have reached the root bus. */
+ 	if (bus->bridge)
+-		return device_run_wake(bus->bridge);
++		return device_can_wakeup(bus->bridge);
+ 
+ 	return false;
+ }
+Index: linux-pm/Documentation/power/runtime_pm.txt
+===================================================================
+--- linux-pm.orig/Documentation/power/runtime_pm.txt
++++ linux-pm/Documentation/power/runtime_pm.txt
+@@ -105,9 +105,9 @@ knows what to do to handle the device).
+ 
+ In particular, if the driver requires remote wakeup capability (i.e. hardware
+ mechanism allowing the device to request a change of its power state, such as
+-PCI PME) for proper functioning and device_run_wake() returns 'false' for the
++PCI PME) for proper functioning and device_can_wakeup() returns 'false' for the
+ device, then ->runtime_suspend() should return -EBUSY.  On the other hand, if
+-device_run_wake() returns 'true' for the device and the device is put into a
++device_can_wakeup() returns 'true' for the device and the device is put into a
+ low-power state during the execution of the suspend callback, it is expected
+ that remote wakeup will be enabled for the device.  Generally, remote wakeup
+ should be enabled for all input devices put into low-power states at run time.
+@@ -253,9 +253,6 @@ defined in include/linux/pm.h:
+       being executed for that device and it is not practical to wait for the
+       suspend to complete; means "start a resume as soon as you've suspended"
+ 
+-  unsigned int run_wake;
+-    - set if the device is capable of generating runtime wake-up events
+-
+   enum rpm_status runtime_status;
+     - the runtime PM status of the device; this field's initial value is
+       RPM_SUSPENDED, which means that each device is initially regarded by the
