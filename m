@@ -1,42 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/6] ACPI / PM: Consolidate device wakeup settings code
-Date: Fri, 23 Jun 2017 03:05:57 +0200
-Message-ID: <8111646.zzkDnlQnPE@aspire.rjw.lan>
-References: <12296383.UdE5HVtyng@aspire.rjw.lan> <20170622073937.GR629@lahna.fi.intel.com> <4634255.ux8TmyfYTx@aspire.rjw.lan>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] ACPI / sleep: EC-based wakeup from suspend-to-idle on
+ recent systems
+Date: Thu, 22 Jun 2017 19:40:39 -0700
+Message-ID: <CA+55aFyBfHVyh=TMifF+0KGEVy6JEyDz=gbHdP7nM2roa++X4Q@mail.gmail.com>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <3689795.xuIczRHZsl@aspire.rjw.lan>
+ <2026371.DVJN39QYJi@aspire.rjw.lan> <2368998.dmCsnrcXZy@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4634255.ux8TmyfYTx@aspire.rjw.lan>
+In-Reply-To: <2368998.dmCsnrcXZy@aspire.rjw.lan>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, Tom Lanyon <tom@oneshoeco.com>, =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?= <jerome.debretagne@gmail.com>, "Zheng, Lv" <lv.zheng@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 22, 2017 04:38:49 PM Rafael J. Wysocki wrote:
-> On Thursday, June 22, 2017 10:39:37 AM Mika Westerberg wrote:
-> > On Mon, Jun 19, 2017 at 11:33:52PM +0200, Rafael J. Wysocki wrote:
-> > > -#ifdef CONFIG_PM_SLEEP
-> > > -/**
-> > > - * acpi_pm_device_sleep_wake - Enable or disable device to wake up the system.
-> > > - * @dev: Device to enable/desible to wake up the system from sleep states.
-> > > - * @enable: Whether to enable or disable @dev to wake up the system.
-> > > - */
-> > > -int acpi_pm_device_sleep_wake(struct device *dev, bool enable)
-> > > +int acpi_pm_device_wakeup(struct device *dev, bool enable)
-> > 
-> > Can we call it acpi_pm_device_enable_wakeup() and then provide
-> > corresponding acpi_pm_device_disable_wakeup()? I find those easier to
-> > understand than acpi_pm_device_wakeup() that sounds like the device
-> > should be woken up now.
-> 
-> OK, fair enough.  I'll change it this way.
+On Thu, Jun 22, 2017 at 4:56 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> Some recent Dell laptops, including the XPS13 model numbers 9360 and
+> 9365, cannot be woken up from suspend-to-idle by pressing the power
+> button which is unexpected and makes that feature less usable on
+> those systems.  [ details removed ]
 
-Well, sorry, I'd rather not to, or we'll have to add a wrapper around them in
-pci-acpi.c. :-)
+This looks much more reasonable and more likely to work on future machines too.
 
-I can rename it to acpi_pm_device_set_wakeup(), though.
+Of course, who knows what broken machines it will cause problems on,
+but it sounds like the code now does what it's supposed to and what
+Win10 does, so maybe it JustWorks(tm). Hah.
 
-Thanks,
-Rafael
+Anyway - thanks.
 
+             Linus
