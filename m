@@ -1,50 +1,36 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: [PATCH v2] ACPI / sleep: EC-based wakeup from suspend-to-idle on
- recent systems
-Date: Fri, 23 Jun 2017 18:01:15 +0000
-Message-ID: <745fa37f0ad6477e84131740828550f0@ausx13mpc120.AMER.DELL.COM>
-References: <1979543.KIEJ8uyRaT@aspire.rjw.lan>
-         <2026371.DVJN39QYJi@aspire.rjw.lan> <2368998.dmCsnrcXZy@aspire.rjw.lan>
-         <2279758.LZ0rCGQtcH@aspire.rjw.lan>
-         <3f1cbd8cd7e54576b17c788f4eae2205@ausx13mpc120.AMER.DELL.COM>
- <1498233988.7952.45.camel@linux.intel.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 2/4] dt-bindings: Add bindings for
+ nvidia,tegra186-bpmp-thermal
+Date: Fri, 23 Jun 2017 13:48:42 -0500
+Message-ID: <20170623184842.ndb44vqyu5rtaa2e@rob-hp-laptop>
+References: <20170616112825.31025-1-mperttunen@nvidia.com>
+ <20170616112825.31025-2-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1498233988.7952.45.camel@linux.intel.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: srinivas.pandruvada@linux.intel.com, rjw@rjwysocki.net, linux-acpi@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, andriy.shevchenko@linux.intel.com, dvhart@infradead.org, linux-kernel@vger.kernel.org, mika.westerberg@linux.intel.com, tom@oneshoeco.com, jerome.debretagne@gmail.com, torvalds@linux-foundation.org, lv.zheng@intel.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f196.google.com ([209.85.161.196]:36081 "EHLO
+        mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754549AbdFWSso (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Jun 2017 14:48:44 -0400
+Content-Disposition: inline
+In-Reply-To: <20170616112825.31025-2-mperttunen@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikko Perttunen <mperttunen@nvidia.com>
+Cc: mark.rutland@arm.com, rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com, jonathanh@nvidia.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTcmluaXZhcyBQYW5kcnV2YWRh
-IFttYWlsdG86c3Jpbml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnRlbC5jb21dDQo+IFNlbnQ6IEZy
-aWRheSwgSnVuZSAyMywgMjAxNyAxMTowNiBBTQ0KPiBUbzogTGltb25jaWVsbG8sIE1hcmlvIDxN
-YXJpb19MaW1vbmNpZWxsb0BEZWxsLmNvbT47IHJqd0Byand5c29ja2kubmV0OyBsaW51eC0NCj4g
-YWNwaUB2Z2VyLmtlcm5lbC5vcmcNCj4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgYW5k
-cml5LnNoZXZjaGVua29AbGludXguaW50ZWwuY29tOw0KPiBkdmhhcnRAaW5mcmFkZWFkLm9yZzsg
-bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gbWlrYS53ZXN0ZXJiZXJnQGxpbnV4Lmlu
-dGVsLmNvbTsgdG9tQG9uZXNob2Vjby5jb207DQo+IGplcm9tZS5kZWJyZXRhZ25lQGdtYWlsLmNv
-bTsgdG9ydmFsZHNAbGludXgtZm91bmRhdGlvbi5vcmc7DQo+IGx2LnpoZW5nQGludGVsLmNvbQ0K
-PiBTdWJqZWN0OiBSZTogW1BBVENIIHYyXSBBQ1BJIC8gc2xlZXA6IEVDLWJhc2VkIHdha2V1cCBm
-cm9tIHN1c3BlbmQtdG8taWRsZSBvbg0KPiByZWNlbnQgc3lzdGVtcw0KPiANCj4gT24gRnJpLCAy
-MDE3LTA2LTIzIGF0IDE1OjM3ICswMDAwLCBNYXJpby5MaW1vbmNpZWxsb0BkZWxsLmNvbSB3cm90
-ZToNCj4gDQo+IFsuLi5dDQo+IA0KPiA+ID4NCj4gPiA+ICsjZGVmaW5lIEFDUElfTFBTMF9TQ1JF
-RU5fT04JNA0KPiA+ID4gKyNkZWZpbmUgQUNQSV9MUFMwX0VOVFJZCQk1DQo+ID4gPiArI2RlZmlu
-ZSBBQ1BJX0xQUzBfRVhJVAkJNg0KPiA+IFRoZSBzcGVjIHlvdSBzaGFyZWQgYWxzbyBkZWZpbmVz
-IGRldmljZSBjb25zdHJhaW50cyAoZnVuY3Rpb24gMSkuIEl0DQo+ID4gd291bGQgYmUgdmVyeQ0K
-PiA+IHVzZWZ1bCBpZiB0aGVzZSBjb25zdHJhaW50c8KgwqBjb3VsZCBiZSBwYXJzZWQgYW5kIGNv
-bXBhcmVkIGFnYWluc3QgdGhlDQo+ID4gYWN0dWFsIHBvd2VyDQo+ID4gc3RhdGVzIG9mIGRldmlj
-ZXMgb24gdGhlIHN5c3RlbSBhdCBsZWFzdCBmb3IgZGVidWdnaW5nIHB1cnBvc2VzLsKgwqBJJ20N
-Cj4gPiBub3Qgc3VyZSBpZiB5b3UNCj4gPiBhbHJlYWR5IGhhZCBhIHBsYW4gZm9yIHRoYXQgaW4g
-YSBmdXR1cmUgc2VyaWVzLg0KPiA+DQo+IEZvciBkZWJ1ZyBwdXJwb3NlLCBJIGhhdmUgd29ya2Vk
-IG9uIGEgcGF0Y2ggdG8gZHVtcCB0aGUgY29uc3RyYWludA0KPiB0YWJsZSBpbiBkZWJ1Z2ZzLiBC
-dXQgaW4gdGhlIGZyZWV6ZSBwYXRoIHdoZXRoZXIgd2UgbWVldCB0aGUNCj4gY29uc3RyYWludHMg
-b3Igbm90IHdpbGwgbm90IG1ha2UgYW55IGRpZmZlcmVuY2UsIG90aGVyIHRoYW4gZm9yIGp1c3QN
-Cj4gZGVidWdnaW5nLg0KPiANCj4gVGhhbmtzLA0KPiBTcmluaXZhcw0KDQpSaWdodCB0aGF0IHdh
-cyB3aGF0IEkgdGhvdWdodCB3b3VsZCBiZSBtb3N0IGludGVyZXN0aW5nLiAgWW91IGNhbiBwb3Rl
-bnRpYWxseQ0Kb3V0cHV0IHRvIHN5c2xvZyBhcyBhIGxhc3Qgc3RlcCBnb2luZyBkb3duIHdoYXQg
-aXNuJ3QgaW4gdGhlIHJpZ2h0IHN0YXRlIHRvIG1hdGNoDQp0aGUgY29uc3RyYWludCB0YWJsZS4N
-Cg==
+On Fri, Jun 16, 2017 at 02:28:23PM +0300, Mikko Perttunen wrote:
+> In Tegra186, the BPMP (Boot and Power Management Processor) implements
+> an interface that is used to read system temperatures, including CPU
+> cluster and GPU temperatures. This binding describes the thermal sensor
+> that is exposed by BPMP.
+> 
+> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+> ---
+>  .../thermal/nvidia,tegra186-bpmp-thermal.txt       | 32 ++++++++++++++++++++++
+>  .../dt-bindings/thermal/tegra186-bpmp-thermal.h    | 14 ++++++++++
+>  2 files changed, 46 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt
+>  create mode 100644 include/dt-bindings/thermal/tegra186-bpmp-thermal.h
+
+Acked-by: Rob Herring <robh@kernel.org>
