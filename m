@@ -1,104 +1,42 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: [RFC 1/2] PM / suspend: Add platform_suspend_target_state()
-Date: Thu, 22 Jun 2017 18:08:36 -0700
-Message-ID: <20170623010837.11199-2-f.fainelli@gmail.com>
-References: <20170622085102.mpk7vxodpgxtrlfd@piout.net>
- <20170623010837.11199-1-f.fainelli@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170623010837.11199-1-f.fainelli@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Florian Fainelli <f.fainelli@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/6] ACPI / PM: Consolidate device wakeup settings code
+Date: Fri, 23 Jun 2017 03:05:57 +0200
+Message-ID: <8111646.zzkDnlQnPE@aspire.rjw.lan>
+References: <12296383.UdE5HVtyng@aspire.rjw.lan> <20170622073937.GR629@lahna.fi.intel.com> <4634255.ux8TmyfYTx@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <4634255.ux8TmyfYTx@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add an optional platform_suspend_ops callback: target_state, and a
-helper function globally visible to get this called:
-platform_suspend_target_state().
+On Thursday, June 22, 2017 04:38:49 PM Rafael J. Wysocki wrote:
+> On Thursday, June 22, 2017 10:39:37 AM Mika Westerberg wrote:
+> > On Mon, Jun 19, 2017 at 11:33:52PM +0200, Rafael J. Wysocki wrote:
+> > > -#ifdef CONFIG_PM_SLEEP
+> > > -/**
+> > > - * acpi_pm_device_sleep_wake - Enable or disable device to wake up the system.
+> > > - * @dev: Device to enable/desible to wake up the system from sleep states.
+> > > - * @enable: Whether to enable or disable @dev to wake up the system.
+> > > - */
+> > > -int acpi_pm_device_sleep_wake(struct device *dev, bool enable)
+> > > +int acpi_pm_device_wakeup(struct device *dev, bool enable)
+> > 
+> > Can we call it acpi_pm_device_enable_wakeup() and then provide
+> > corresponding acpi_pm_device_disable_wakeup()? I find those easier to
+> > understand than acpi_pm_device_wakeup() that sounds like the device
+> > should be woken up now.
+> 
+> OK, fair enough.  I'll change it this way.
 
-This is useful for platform specific drivers that may need to take a
-slightly different suspend/resume path based on the system's
-suspend/resume state being entered.
+Well, sorry, I'd rather not to, or we'll have to add a wrapper around them in
+pci-acpi.c. :-)
 
-Although this callback is optional and documented as such, it requires
-a platform_suspend_ops::begin callback to be implemented in order to
-provide an accurate suspend/resume state within the driver that
-implements this platform_suspend_ops.
+I can rename it to acpi_pm_device_set_wakeup(), though.
 
-Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
----
- include/linux/suspend.h | 12 ++++++++++++
- kernel/power/suspend.c  | 15 +++++++++++++++
- 2 files changed, 27 insertions(+)
+Thanks,
+Rafael
 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index d9718378a8be..d998a04a90a2 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -172,6 +172,15 @@ static inline void dpm_save_failed_step(enum suspend_stat_step step)
-  *	Called by the PM core if the suspending of devices fails.
-  *	This callback is optional and should only be implemented by platforms
-  *	which require special recovery actions in that situation.
-+ *
-+ * @target_state: Returns the suspend state the suspend_ops will be entering.
-+ * 	Called by device drivers that need to know the platform specific suspend
-+ * 	state the system is about to enter.
-+ * 	This callback is optional and should only be implemented by platforms
-+ * 	which require special handling of power management states within
-+ * 	drivers. It does require @begin to be implemented to provide the suspend
-+ * 	state. Return value is platform_suspend_ops specific, and may be a 1:1
-+ * 	mapping to suspend_state_t when relevant.
-  */
- struct platform_suspend_ops {
- 	int (*valid)(suspend_state_t state);
-@@ -184,6 +193,7 @@ struct platform_suspend_ops {
- 	bool (*suspend_again)(void);
- 	void (*end)(void);
- 	void (*recover)(void);
-+	int (*target_state)(void);
- };
- 
- struct platform_freeze_ops {
-@@ -200,6 +210,7 @@ struct platform_freeze_ops {
-  */
- extern void suspend_set_ops(const struct platform_suspend_ops *ops);
- extern int suspend_valid_only_mem(suspend_state_t state);
-+extern int platform_suspend_target_state(void);
- 
- extern unsigned int pm_suspend_global_flags;
- 
-@@ -279,6 +290,7 @@ static inline bool pm_resume_via_firmware(void) { return false; }
- 
- static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
- static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
-+static inline int platform_suspend_target_state(void) { return -ENOSYS; }
- static inline bool idle_should_freeze(void) { return false; }
- static inline void __init pm_states_init(void) {}
- static inline void freeze_set_ops(const struct platform_freeze_ops *ops) {}
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 15e6baef5c73..d31fe7a08f4a 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -177,6 +177,21 @@ void suspend_set_ops(const struct platform_suspend_ops *ops)
- EXPORT_SYMBOL_GPL(suspend_set_ops);
- 
- /**
-+ * platform_suspend_target_state - Return the platform specific suspend state.
-+ * a begin() callback is necessary in order to fill this information correctly
-+ * for callers.
-+ */
-+int platform_suspend_target_state(void)
-+{
-+	if (!suspend_ops || !suspend_ops->target_state ||
-+	    (suspend_ops->target_state && !suspend_ops->begin))
-+		return -ENOTSUPP;
-+
-+	return suspend_ops->target_state();
-+}
-+EXPORT_SYMBOL_GPL(platform_suspend_target_state);
-+
-+/**
-  * suspend_valid_only_mem - Generic memory-only valid callback.
-  *
-  * Platform drivers that implement mem suspend only and only need to check for
--- 
-2.9.3
