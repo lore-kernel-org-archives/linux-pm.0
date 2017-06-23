@@ -1,240 +1,249 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 5/5] PM / core: Drop run_wake flag from struct dev_pm_info
-Date: Sat, 24 Jun 2017 01:58:53 +0200
-Message-ID: <4730797.2siOkGHevq@aspire.rjw.lan>
+Subject: [PATCH v2 4/5] PCI / PM: Simplify device wakeup settings code
+Date: Sat, 24 Jun 2017 01:57:35 +0200
+Message-ID: <1822244.KrTDatnU8u@aspire.rjw.lan>
 References: <12296383.UdE5HVtyng@aspire.rjw.lan> <2524735.NRzn8A9HAf@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <2524735.NRzn8A9HAf@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The run_wake flag in struct dev_pm_info is used to indicate whether
-or not the device is capable of generating remote wakeup signals at
-run time (or in the system working state), but the distinction
-between runtime remote wakeup and system wakeup signaling has always
-been rather artificial.  The only practical reason for it to exist
-at the core level was that ACPI and PCI treated those two cases
-differently, but that's not the case any more after recent changes.
-
-For this reason, get rid of the run_wake flag and, when applicable,
-use device_set_wakeup_capable() and device_can_wakeup() instead of
-device_set_run_wake() and device_run_wake(), respectively.
+After previous changes it is not necessary to distinguish between
+device wakeup for run time and device wakeup from system sleep states
+any more, so rework the PCI device wakeup settings code accordingly.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 ---
 
--> v2: No changes, but it was [6/6] previously.
+-> v2: No changes.
 
 ---
- Documentation/power/runtime_pm.txt |    7 ++-----
- drivers/acpi/pci_root.c            |    5 ++---
- drivers/pci/pci-acpi.c             |    5 +----
- drivers/pci/pci.c                  |    6 +++---
- drivers/pci/pcie/pme.c             |    2 +-
- drivers/usb/dwc3/dwc3-pci.c        |    3 +--
- drivers/usb/host/uhci-pci.c        |    2 +-
- include/linux/pm.h                 |    1 -
- include/linux/pm_runtime.h         |   12 ------------
- 9 files changed, 11 insertions(+), 32 deletions(-)
+ drivers/pci/pci-acpi.c   |    3 +--
+ drivers/pci/pci-driver.c |    2 +-
+ drivers/pci/pci-mid.c    |   10 ++--------
+ drivers/pci/pci.c        |   36 ++++++++++--------------------------
+ drivers/pci/pci.h        |    9 ++-------
+ include/linux/pci.h      |    9 +--------
+ 6 files changed, 17 insertions(+), 52 deletions(-)
 
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -584,7 +584,6 @@ struct dev_pm_info {
- 	unsigned int		idle_notification:1;
- 	unsigned int		request_pending:1;
- 	unsigned int		deferred_resume:1;
--	unsigned int		run_wake:1;
- 	unsigned int		runtime_auto:1;
- 	bool			ignore_children:1;
- 	unsigned int		no_callbacks:1;
-Index: linux-pm/include/linux/pm_runtime.h
-===================================================================
---- linux-pm.orig/include/linux/pm_runtime.h
-+++ linux-pm/include/linux/pm_runtime.h
-@@ -76,16 +76,6 @@ static inline void pm_runtime_put_noidle
- 	atomic_add_unless(&dev->power.usage_count, -1, 0);
- }
- 
--static inline bool device_run_wake(struct device *dev)
--{
--	return dev->power.run_wake;
--}
--
--static inline void device_set_run_wake(struct device *dev, bool enable)
--{
--	dev->power.run_wake = enable;
--}
--
- static inline bool pm_runtime_suspended(struct device *dev)
- {
- 	return dev->power.runtime_status == RPM_SUSPENDED
-@@ -163,8 +153,6 @@ static inline void pm_runtime_forbid(str
- static inline void pm_suspend_ignore_children(struct device *dev, bool enable) {}
- static inline void pm_runtime_get_noresume(struct device *dev) {}
- static inline void pm_runtime_put_noidle(struct device *dev) {}
--static inline bool device_run_wake(struct device *dev) { return false; }
--static inline void device_set_run_wake(struct device *dev, bool enable) {}
- static inline bool pm_runtime_suspended(struct device *dev) { return false; }
- static inline bool pm_runtime_active(struct device *dev) { return true; }
- static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
-Index: linux-pm/drivers/acpi/pci_root.c
-===================================================================
---- linux-pm.orig/drivers/acpi/pci_root.c
-+++ linux-pm/drivers/acpi/pci_root.c
-@@ -608,8 +608,7 @@ static int acpi_pci_root_add(struct acpi
- 		pcie_no_aspm();
- 
- 	pci_acpi_add_bus_pm_notifier(device);
--	if (device->wakeup.flags.valid)
--		device_set_run_wake(root->bus->bridge, true);
-+	device_set_wakeup_capable(root->bus->bridge, device->wakeup.flags.valid);
- 
- 	if (hotadd) {
- 		pcibios_resource_survey_bus(root->bus);
-@@ -649,7 +648,7 @@ static void acpi_pci_root_remove(struct
- 	pci_stop_root_bus(root->bus);
- 
- 	pci_ioapic_remove(root);
--	device_set_run_wake(root->bus->bridge, false);
-+	device_set_wakeup_capable(root->bus->bridge, false);
- 	pci_acpi_remove_bus_pm_notifier(device);
- 
- 	pci_remove_root_bus(root->bus);
 Index: linux-pm/drivers/pci/pci-acpi.c
 ===================================================================
 --- linux-pm.orig/drivers/pci/pci-acpi.c
 +++ linux-pm/drivers/pci/pci-acpi.c
-@@ -738,7 +738,6 @@ static void pci_acpi_setup(struct device
- 		return;
+@@ -615,8 +615,7 @@ static const struct pci_platform_pm_ops
+ 	.set_state = acpi_pci_set_power_state,
+ 	.get_state = acpi_pci_get_power_state,
+ 	.choose_state = acpi_pci_choose_state,
+-	.sleep_wake = acpi_pci_wakeup,
+-	.run_wake = acpi_pci_wakeup,
++	.set_wakeup = acpi_pci_wakeup,
+ 	.need_resume = acpi_pci_need_resume,
+ };
  
- 	device_set_wakeup_capable(dev, true);
--	device_set_run_wake(dev, true);
- 	acpi_pci_wakeup(pci_dev, false);
- }
- 
-@@ -750,10 +749,8 @@ static void pci_acpi_cleanup(struct devi
- 		return;
- 
- 	pci_acpi_remove_pm_notifier(adev);
--	if (adev->wakeup.flags.valid) {
-+	if (adev->wakeup.flags.valid)
- 		device_set_wakeup_capable(dev, false);
--		device_set_run_wake(dev, false);
--	}
- }
- 
- static bool pci_acpi_bus_match(struct device *dev)
-Index: linux-pm/drivers/pci/pcie/pme.c
-===================================================================
---- linux-pm.orig/drivers/pci/pcie/pme.c
-+++ linux-pm/drivers/pci/pcie/pme.c
-@@ -300,7 +300,7 @@ static irqreturn_t pcie_pme_irq(int irq,
-  */
- static int pcie_pme_can_wakeup(struct pci_dev *dev, void *ign)
- {
--	device_set_run_wake(&dev->dev, true);
-+	device_set_wakeup_capable(&dev->dev, true);
- 	return 0;
- }
- 
-Index: linux-pm/drivers/usb/dwc3/dwc3-pci.c
-===================================================================
---- linux-pm.orig/drivers/usb/dwc3/dwc3-pci.c
-+++ linux-pm/drivers/usb/dwc3/dwc3-pci.c
-@@ -230,7 +230,6 @@ static int dwc3_pci_probe(struct pci_dev
- 	}
- 
- 	device_init_wakeup(dev, true);
--	device_set_run_wake(dev, true);
- 	pci_set_drvdata(pci, dwc);
- 	pm_runtime_put(dev);
- 
-@@ -310,7 +309,7 @@ static int dwc3_pci_runtime_suspend(stru
- {
- 	struct dwc3_pci		*dwc = dev_get_drvdata(dev);
- 
--	if (device_run_wake(dev))
-+	if (device_can_wakeup(dev))
- 		return dwc3_pci_dsm(dwc, PCI_INTEL_BXT_STATE_D3);
- 
- 	return -EBUSY;
-Index: linux-pm/drivers/usb/host/uhci-pci.c
-===================================================================
---- linux-pm.orig/drivers/usb/host/uhci-pci.c
-+++ linux-pm/drivers/usb/host/uhci-pci.c
-@@ -131,7 +131,7 @@ static int uhci_pci_init(struct usb_hcd
- 
- 	/* Intel controllers use non-PME wakeup signalling */
- 	if (to_pci_dev(uhci_dev(uhci))->vendor == PCI_VENDOR_ID_INTEL)
--		device_set_run_wake(uhci_dev(uhci), 1);
-+		device_set_wakeup_capable(uhci_dev(uhci), true);
- 
- 	/* Set up pointers to PCI-specific functions */
- 	uhci->reset_hc = uhci_pci_reset_hc;
 Index: linux-pm/drivers/pci/pci.c
 ===================================================================
 --- linux-pm.orig/drivers/pci/pci.c
 +++ linux-pm/drivers/pci/pci.c
-@@ -2105,7 +2105,7 @@ bool pci_dev_run_wake(struct pci_dev *de
+@@ -574,8 +574,7 @@ static const struct pci_platform_pm_ops
+ int pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
  {
- 	struct pci_bus *bus = dev->bus;
- 
--	if (device_run_wake(&dev->dev))
-+	if (device_can_wakeup(&dev->dev))
- 		return true;
- 
- 	if (!dev->pme_support)
-@@ -2118,7 +2118,7 @@ bool pci_dev_run_wake(struct pci_dev *de
- 	while (bus->parent) {
- 		struct pci_dev *bridge = bus->self;
- 
--		if (device_run_wake(&bridge->dev))
-+		if (device_can_wakeup(&bridge->dev))
- 			return true;
- 
- 		bus = bus->parent;
-@@ -2126,7 +2126,7 @@ bool pci_dev_run_wake(struct pci_dev *de
- 
- 	/* We have reached the root bus. */
- 	if (bus->bridge)
--		return device_run_wake(bus->bridge);
-+		return device_can_wakeup(bus->bridge);
- 
- 	return false;
+ 	if (!ops->is_manageable || !ops->set_state  || !ops->get_state ||
+-	    !ops->choose_state  || !ops->sleep_wake || !ops->run_wake  ||
+-	    !ops->need_resume)
++	    !ops->choose_state  || !ops->set_wakeup || !ops->need_resume)
+ 		return -EINVAL;
+ 	pci_platform_pm = ops;
+ 	return 0;
+@@ -603,16 +602,10 @@ static inline pci_power_t platform_pci_c
+ 			pci_platform_pm->choose_state(dev) : PCI_POWER_ERROR;
  }
-Index: linux-pm/Documentation/power/runtime_pm.txt
-===================================================================
---- linux-pm.orig/Documentation/power/runtime_pm.txt
-+++ linux-pm/Documentation/power/runtime_pm.txt
-@@ -105,9 +105,9 @@ knows what to do to handle the device).
  
- In particular, if the driver requires remote wakeup capability (i.e. hardware
- mechanism allowing the device to request a change of its power state, such as
--PCI PME) for proper functioning and device_run_wake() returns 'false' for the
-+PCI PME) for proper functioning and device_can_wakeup() returns 'false' for the
- device, then ->runtime_suspend() should return -EBUSY.  On the other hand, if
--device_run_wake() returns 'true' for the device and the device is put into a
-+device_can_wakeup() returns 'true' for the device and the device is put into a
- low-power state during the execution of the suspend callback, it is expected
- that remote wakeup will be enabled for the device.  Generally, remote wakeup
- should be enabled for all input devices put into low-power states at run time.
-@@ -253,9 +253,6 @@ defined in include/linux/pm.h:
-       being executed for that device and it is not practical to wait for the
-       suspend to complete; means "start a resume as soon as you've suspended"
- 
--  unsigned int run_wake;
--    - set if the device is capable of generating runtime wake-up events
+-static inline int platform_pci_sleep_wake(struct pci_dev *dev, bool enable)
++static inline int platform_pci_set_wakeup(struct pci_dev *dev, bool enable)
+ {
+ 	return pci_platform_pm ?
+-			pci_platform_pm->sleep_wake(dev, enable) : -ENODEV;
+-}
 -
-   enum rpm_status runtime_status;
-     - the runtime PM status of the device; this field's initial value is
-       RPM_SUSPENDED, which means that each device is initially regarded by the
+-static inline int platform_pci_run_wake(struct pci_dev *dev, bool enable)
+-{
+-	return pci_platform_pm ?
+-			pci_platform_pm->run_wake(dev, enable) : -ENODEV;
++			pci_platform_pm->set_wakeup(dev, enable) : -ENODEV;
+ }
+ 
+ static inline bool platform_pci_need_resume(struct pci_dev *dev)
+@@ -1889,10 +1882,9 @@ void pci_pme_active(struct pci_dev *dev,
+ EXPORT_SYMBOL(pci_pme_active);
+ 
+ /**
+- * __pci_enable_wake - enable PCI device as wakeup event source
++ * pci_enable_wake - enable PCI device as wakeup event source
+  * @dev: PCI device affected
+  * @state: PCI state from which device will issue wakeup events
+- * @runtime: True if the events are to be generated at run time
+  * @enable: True to enable event generation; false to disable
+  *
+  * This enables the device as a wakeup event source, or disables it.
+@@ -1908,14 +1900,10 @@ EXPORT_SYMBOL(pci_pme_active);
+  * Error code depending on the platform is returned if both the platform and
+  * the native mechanism fail to enable the generation of wake-up events
+  */
+-int __pci_enable_wake(struct pci_dev *dev, pci_power_t state,
+-		      bool runtime, bool enable)
++int pci_enable_wake(struct pci_dev *dev, pci_power_t state, bool enable)
+ {
+ 	int ret = 0;
+ 
+-	if (enable && !runtime && !device_may_wakeup(&dev->dev))
+-		return -EINVAL;
+-
+ 	/*
+ 	 * Don't do the same thing twice in a row for one device, but restore
+ 	 * PME Enable in case it has been updated by config space restoration.
+@@ -1938,24 +1926,20 @@ int __pci_enable_wake(struct pci_dev *de
+ 			pci_pme_active(dev, true);
+ 		else
+ 			ret = 1;
+-		error = runtime ? platform_pci_run_wake(dev, true) :
+-					platform_pci_sleep_wake(dev, true);
++		error = platform_pci_set_wakeup(dev, true);
+ 		if (ret)
+ 			ret = error;
+ 		if (!ret)
+ 			dev->wakeup_prepared = true;
+ 	} else {
+-		if (runtime)
+-			platform_pci_run_wake(dev, false);
+-		else
+-			platform_pci_sleep_wake(dev, false);
++		platform_pci_set_wakeup(dev, false);
+ 		pci_pme_active(dev, false);
+ 		dev->wakeup_prepared = false;
+ 	}
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL(__pci_enable_wake);
++EXPORT_SYMBOL(pci_enable_wake);
+ 
+ /**
+  * pci_wake_from_d3 - enable/disable device to wake up from D3_hot or D3_cold
+@@ -2097,12 +2081,12 @@ int pci_finish_runtime_suspend(struct pc
+ 
+ 	dev->runtime_d3cold = target_state == PCI_D3cold;
+ 
+-	__pci_enable_wake(dev, target_state, true, pci_dev_run_wake(dev));
++	pci_enable_wake(dev, target_state, pci_dev_run_wake(dev));
+ 
+ 	error = pci_set_power_state(dev, target_state);
+ 
+ 	if (error) {
+-		__pci_enable_wake(dev, target_state, true, false);
++		pci_enable_wake(dev, target_state, false);
+ 		dev->runtime_d3cold = false;
+ 	}
+ 
+Index: linux-pm/include/linux/pci.h
+===================================================================
+--- linux-pm.orig/include/linux/pci.h
++++ linux-pm/include/linux/pci.h
+@@ -1097,8 +1097,7 @@ int pci_set_power_state(struct pci_dev *
+ pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
+ bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
+ void pci_pme_active(struct pci_dev *dev, bool enable);
+-int __pci_enable_wake(struct pci_dev *dev, pci_power_t state,
+-		      bool runtime, bool enable);
++int pci_enable_wake(struct pci_dev *dev, pci_power_t state, bool enable);
+ int pci_wake_from_d3(struct pci_dev *dev, bool enable);
+ int pci_prepare_to_sleep(struct pci_dev *dev);
+ int pci_back_from_sleep(struct pci_dev *dev);
+@@ -1108,12 +1107,6 @@ void pci_pme_wakeup_bus(struct pci_bus *
+ void pci_d3cold_enable(struct pci_dev *dev);
+ void pci_d3cold_disable(struct pci_dev *dev);
+ 
+-static inline int pci_enable_wake(struct pci_dev *dev, pci_power_t state,
+-				  bool enable)
+-{
+-	return __pci_enable_wake(dev, state, false, enable);
+-}
+-
+ /* PCI Virtual Channel */
+ int pci_save_vc_state(struct pci_dev *dev);
+ void pci_restore_vc_state(struct pci_dev *dev);
+Index: linux-pm/drivers/pci/pci.h
+===================================================================
+--- linux-pm.orig/drivers/pci/pci.h
++++ linux-pm/drivers/pci/pci.h
+@@ -47,11 +47,7 @@ int pci_probe_reset_function(struct pci_
+  *                platform; to be used during system-wide transitions from a
+  *                sleeping state to the working state and vice versa
+  *
+- * @sleep_wake: enables/disables the system wake up capability of given device
+- *
+- * @run_wake: enables/disables the platform to generate run-time wake-up events
+- *		for given device (the device's wake-up capability has to be
+- *		enabled by @sleep_wake for this feature to work)
++ * @set_wakeup: enables/disables wakeup capability for the device
+  *
+  * @need_resume: returns 'true' if the given device (which is currently
+  *		suspended) needs to be resumed to be configured for system
+@@ -65,8 +61,7 @@ struct pci_platform_pm_ops {
+ 	int (*set_state)(struct pci_dev *dev, pci_power_t state);
+ 	pci_power_t (*get_state)(struct pci_dev *dev);
+ 	pci_power_t (*choose_state)(struct pci_dev *dev);
+-	int (*sleep_wake)(struct pci_dev *dev, bool enable);
+-	int (*run_wake)(struct pci_dev *dev, bool enable);
++	int (*set_wakeup)(struct pci_dev *dev, bool enable);
+ 	bool (*need_resume)(struct pci_dev *dev);
+ };
+ 
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -1216,7 +1216,7 @@ static int pci_pm_runtime_resume(struct
+ 
+ 	pci_restore_standard_config(pci_dev);
+ 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+-	__pci_enable_wake(pci_dev, PCI_D0, true, false);
++	pci_enable_wake(pci_dev, PCI_D0, false);
+ 	pci_fixup_device(pci_fixup_resume, pci_dev);
+ 
+ 	rc = pm->runtime_resume(dev);
+Index: linux-pm/drivers/pci/pci-mid.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-mid.c
++++ linux-pm/drivers/pci/pci-mid.c
+@@ -39,12 +39,7 @@ static pci_power_t mid_pci_choose_state(
+ 	return PCI_D3hot;
+ }
+ 
+-static int mid_pci_sleep_wake(struct pci_dev *dev, bool enable)
+-{
+-	return 0;
+-}
+-
+-static int mid_pci_run_wake(struct pci_dev *dev, bool enable)
++static int mid_pci_wakeup(struct pci_dev *dev, bool enable)
+ {
+ 	return 0;
+ }
+@@ -59,8 +54,7 @@ static const struct pci_platform_pm_ops
+ 	.set_state	= mid_pci_set_power_state,
+ 	.get_state	= mid_pci_get_power_state,
+ 	.choose_state	= mid_pci_choose_state,
+-	.sleep_wake	= mid_pci_sleep_wake,
+-	.run_wake	= mid_pci_run_wake,
++	.set_wakeup	= mid_pci_wakeup,
+ 	.need_resume	= mid_pci_need_resume,
+ };
+ 
