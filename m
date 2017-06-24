@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/4 v2] x86: use common aperfmperf_khz_on_cpu() to calculate KHz using APERF/MPERF
-Date: Fri, 23 Jun 2017 22:11:52 -0700
-Message-ID: <7c8784a63cdab6ff5ff7756060be6a77f5fe5915.1498280509.git.len.brown@intel.com>
+Subject: [PATCH 3/4] intel_pstate: delete scheduler hook in HWP mode
+Date: Fri, 23 Jun 2017 22:11:53 -0700
+Message-ID: <43ecf292a796eaa86bf112eebdc066e46db15c39.1498280509.git.len.brown@intel.com>
 References: <1498281114-3868-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,191 +15,57 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-The goal of this change is to give users a uniform and meaningful
-result when they read /sys/...cpufreq/scaling_cur_freq
-on modern x86 hardware, as compared to what they get today.
+The cpufreq/scaling_cur_freq sysfs attribute is now provided by
+shared x86 cpufreq code on modern x86 systems, including
+all systems supported by the intel_pstate driver.
 
-Modern x86 processors include the hardware needed
-to accurately calculate frequency over an interval --
-APERF, MPERF, and the TSC.
-
-Here we provide an x86 routine to make this calculation
-on supported hardware, and use it in preference to any
-driver driver-specific cpufreq_driver.get() routine.
-
-MHz is computed like so:
-
-MHz = base_MHz * delta_APERF / delta_MPERF
-
-MHz is the average frequency of the busy processor
-over a measurement interval.  The interval is
-defined to be the time between successive invocations
-of aperfmperf_khz_on_cpu(), which are expected to to
-happen on-demand when users read sysfs attribute
-cpufreq/scaling_cur_freq.
-
-As with previous methods of calculating MHz,
-idle time is excluded.
-
-base_MHz above is from TSC calibration global "cpu_khz".
-
-This x86 native method to calculate MHz returns a meaningful result
-no matter if P-states are controlled by hardware or firmware
-and/or if the Linux cpufreq sub-system is or is-not installed.
-
-When this routine is invoked more frequently, the measurement
-interval becomes shorter.  However, the code limits re-computation
-to 10ms intervals so that average frequency remains meaningful.
-
-Discerning users are encouraged to take advantage of
-the turbostat(8) utility, which can gracefully handle
-concurrent measurement intervals of arbitrary length.
+In HWP mode, maintaining that value was the sole purpose of
+the scheduler hook, intel_pstate_update_util_hwp(),
+so it can now be removed.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/kernel/cpu/Makefile     |  1 +
- arch/x86/kernel/cpu/aperfmperf.c | 79 ++++++++++++++++++++++++++++++++++++++++
- drivers/cpufreq/cpufreq.c        | 12 +++++-
- include/linux/cpufreq.h          |  2 +
- 4 files changed, 93 insertions(+), 1 deletion(-)
- create mode 100644 arch/x86/kernel/cpu/aperfmperf.c
+ drivers/cpufreq/intel_pstate.c | 14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
-index 5200001..cdf8249 100644
---- a/arch/x86/kernel/cpu/Makefile
-+++ b/arch/x86/kernel/cpu/Makefile
-@@ -21,6 +21,7 @@ obj-y			+= common.o
- obj-y			+= rdrand.o
- obj-y			+= match.o
- obj-y			+= bugs.o
-+obj-$(CONFIG_CPU_FREQ)	+= aperfmperf.o
- 
- obj-$(CONFIG_PROC_FS)	+= proc.o
- obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
-diff --git a/arch/x86/kernel/cpu/aperfmperf.c b/arch/x86/kernel/cpu/aperfmperf.c
-new file mode 100644
-index 0000000..d869c86
---- /dev/null
-+++ b/arch/x86/kernel/cpu/aperfmperf.c
-@@ -0,0 +1,79 @@
-+/*
-+ * x86 APERF/MPERF KHz calculation for
-+ * /sys/.../cpufreq/scaling_cur_freq
-+ *
-+ * Copyright (C) 2017 Intel Corp.
-+ * Author: Len Brown <len.brown@intel.com>
-+ *
-+ * This file is licensed under GPLv2.
-+ */
-+
-+#include <linux/jiffies.h>
-+#include <linux/math64.h>
-+#include <linux/percpu.h>
-+#include <linux/smp.h>
-+
-+struct aperfmperf_sample {
-+	unsigned int	khz;
-+	unsigned long	jiffies;
-+	u64	aperf;
-+	u64	mperf;
-+};
-+
-+static DEFINE_PER_CPU(struct aperfmperf_sample, samples);
-+
-+/*
-+ * aperfmperf_snapshot_khz()
-+ * On the current CPU, snapshot APERF, MPERF, and jiffies
-+ * unless we already did it within 10ms
-+ * calculate kHz, save snapshot
-+ */
-+static void aperfmperf_snapshot_khz(void *dummy)
-+{
-+	u64 aperf, aperf_delta;
-+	u64 mperf, mperf_delta;
-+	struct aperfmperf_sample *s = this_cpu_ptr(&samples);
-+
-+	/* Don't bother re-computing within 10 ms */
-+	if (time_before(jiffies, s->jiffies + HZ/100))
-+		return;
-+
-+	rdmsrl(MSR_IA32_APERF, aperf);
-+	rdmsrl(MSR_IA32_MPERF, mperf);
-+
-+	aperf_delta = aperf - s->aperf;
-+	mperf_delta = mperf - s->mperf;
-+
-+	/*
-+	 * There is no architectural guarantee that MPERF
-+	 * increments faster than we can read it.
-+	 */
-+	if (mperf_delta == 0)
-+		return;
-+
-+	/*
-+	 * if (cpu_khz * aperf_delta) fits into ULLONG_MAX, then
-+	 *	khz = (cpu_khz * aperf_delta) / mperf_delta
-+	 */
-+	if (div64_u64(ULLONG_MAX, cpu_khz) > aperf_delta)
-+		s->khz = div64_u64((cpu_khz * aperf_delta), mperf_delta);
-+	else	/* khz = aperf_delta / (mperf_delta / cpu_khz) */
-+		s->khz = div64_u64(aperf_delta,
-+			div64_u64(mperf_delta, cpu_khz));
-+	s->jiffies = jiffies;
-+	s->aperf = aperf;
-+	s->mperf = mperf;
-+}
-+
-+unsigned int arch_freq_get_on_cpu(int cpu)
-+{
-+	if (!cpu_khz)
-+		return 0;
-+
-+	if (!static_cpu_has(X86_FEATURE_APERFMPERF))
-+		return 0;
-+
-+	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, 1);
-+
-+	return per_cpu(samples.khz, cpu);
-+}
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 26b643d..6e7424d 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -632,11 +632,21 @@ show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
- show_one(scaling_min_freq, min);
- show_one(scaling_max_freq, max);
- 
-+__weak unsigned int arch_freq_get_on_cpu(int cpu)
-+{
-+	return 0;
-+}
-+
- static ssize_t show_scaling_cur_freq(struct cpufreq_policy *policy, char *buf)
- {
- 	ssize_t ret;
-+	unsigned int freq;
- 
--	if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get)
-+	freq = arch_freq_get_on_cpu(policy->cpu);
-+	if (freq)
-+		ret = sprintf(buf, "%u\n", freq);
-+	else if (cpufreq_driver && cpufreq_driver->setpolicy &&
-+			cpufreq_driver->get)
- 		ret = sprintf(buf, "%u\n", cpufreq_driver->get(policy->cpu));
- 	else
- 		ret = sprintf(buf, "%u\n", policy->cur);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index a5ce0bbe..905117b 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -883,6 +883,8 @@ static inline bool policy_has_boost_freq(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index b7de5bd..4ec5668 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1732,16 +1732,6 @@ static void intel_pstate_adjust_pstate(struct cpudata *cpu, int target_pstate)
+ 		fp_toint(cpu->iowait_boost * 100));
  }
- #endif
  
-+extern unsigned int arch_freq_get_on_cpu(int cpu);
+-static void intel_pstate_update_util_hwp(struct update_util_data *data,
+-					 u64 time, unsigned int flags)
+-{
+-	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
+-	u64 delta_ns = time - cpu->sample.time;
+-
+-	if ((s64)delta_ns >= INTEL_PSTATE_HWP_SAMPLING_INTERVAL)
+-		intel_pstate_sample(cpu, time);
+-}
+-
+ static void intel_pstate_update_util_pid(struct update_util_data *data,
+ 					 u64 time, unsigned int flags)
+ {
+@@ -1933,6 +1923,9 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+ {
+ 	struct cpudata *cpu = all_cpu_data[cpu_num];
+ 
++	if (hwp_active)
++		return;
 +
- /* the following are really really optional */
- extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
- extern struct freq_attr cpufreq_freq_attr_scaling_boost_freqs;
+ 	if (cpu->update_util_set)
+ 		return;
+ 
+@@ -2557,7 +2550,6 @@ static int __init intel_pstate_init(void)
+ 		} else {
+ 			hwp_active++;
+ 			intel_pstate.attr = hwp_cpufreq_attrs;
+-			pstate_funcs.update_util = intel_pstate_update_util_hwp;
+ 			goto hwp_cpu_matched;
+ 		}
+ 	} else {
 -- 
 2.7.4
