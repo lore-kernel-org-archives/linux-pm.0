@@ -1,43 +1,42 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/4 v2] x86: use common aperfmperf_khz_on_cpu() to
- calculate KHz using APERF/MPERF
-Date: Sat, 24 Jun 2017 14:03:41 +0200
-Message-ID: <CAJZ5v0j2m-tQz0CkrX9uPiNbivkXhiF-orEGqRAAa-euUqXqNQ@mail.gmail.com>
-References: <1498281114-3868-1-git-send-email-lenb@kernel.org>
- <7c8784a63cdab6ff5ff7756060be6a77f5fe5915.1498280509.git.len.brown@intel.com> <alpine.DEB.2.20.1706241052050.1941@nanos>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: PM / wakeirq: Convert to SRCU
+Date: Sat, 24 Jun 2017 14:13:35 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1706241413060.1941@nanos>
+References: <alpine.DEB.2.20.1706241153260.1941@nanos> <CAJZ5v0iU86mmcpm_U3u8Ee0c+F3Ym9wumezY8Mr7JZFi78Hkrg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f68.google.com ([209.85.214.68]:32814 "EHLO
-        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751276AbdFXMDm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Jun 2017 08:03:42 -0400
-In-Reply-To: <alpine.DEB.2.20.1706241052050.1941@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0iU86mmcpm_U3u8Ee0c+F3Ym9wumezY8Mr7JZFi78Hkrg@mail.gmail.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Brian Norris <briannorris@chromium.org>, Heiko Stuebner <heiko@sntech.de>, Linus Walleij <linus.walleij@linaro.org>, linux-rockchip@lists.infradead.org, Julia Cartwright <julia@ni.com>, LKML <linux-kernel@vger.kernel.org>, linux-gpio@vger.kernel.org, John Keeping <john@metanate.com>, Linux PM <linux-pm@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Peter Zijlstra <peterz@infradead.org>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On Sat, Jun 24, 2017 at 10:56 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Fri, 23 Jun 2017, Len Brown wrote:
->> This x86 native method to calculate MHz returns a meaningful result
->> no matter if P-states are controlled by hardware or firmware
->> and/or if the Linux cpufreq sub-system is or is-not installed.
->>
->> When this routine is invoked more frequently, the measurement
->> interval becomes shorter.  However, the code limits re-computation
->> to 10ms intervals so that average frequency remains meaningful.
->>
->> Discerning users are encouraged to take advantage of
->> the turbostat(8) utility, which can gracefully handle
->> concurrent measurement intervals of arbitrary length.
->>
->> Signed-off-by: Len Brown <len.brown@intel.com>
->
-> Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
->
-> Raphael, please take the whole lot through the cpufreq tree.
+On Sat, 24 Jun 2017, Rafael J. Wysocki wrote:
+> On Sat, Jun 24, 2017 at 11:56 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > The wakeirq infrastructure uses RCU to protect the list of wakeirqs. That
+> > breaks the irq bus locking infrastructure, which allows sleeping functions
+> > to be called so interrupt controllers behind slow busses, e.g. i2c, can be
+> > handled.
+> >
+> > The wakeirq functions hold rcu_read_lock and call into irq functions, which
+> > in case of interrupts using the irq bus locking will trigger a
+> > might_sleep() splat.
+> >
+> > Convert the wakeirq infrastructure to Sleepable RCU and unbreak it.
+> >
+> > Fixes: 4990d4fe327b ("PM / Wakeirq: Add automated device wake IRQ handling")
+> > Reported-by: Brian Norris <briannorris@chromium.org>
+> > Suggested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: stable@vger.kernel.org
+> 
+> OK
+> 
+> I guess it would be good to get this into 4.12?
 
-I will, thanks!
+I think so, but it probably wants some testing and breeding in next.
 
-Rafael
+Thanks,
+
+	tglx
