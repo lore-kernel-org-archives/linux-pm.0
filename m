@@ -1,207 +1,49 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Subject: [PATCH v3 2/2] power: supply: ltc2941-battery-gauge: Add support for
- LTC2942
-Date: Sat, 24 Jun 2017 17:09:02 +0200
-Message-ID: <20170624150901.jngjwyxafyutkdhv@lenoch>
-References: <20170624150545.2oxwror5fy2xlvaz@lenoch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Len Brown <lenb@kernel.org>
+Subject: [GIT PULL] turbostat fixes
+Date: Sat, 24 Jun 2017 20:12:56 -0700
+Message-ID: <1498360381-10293-1-git-send-email-lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eddie.linux-mips.org ([148.251.95.138]:58582 "EHLO
-        cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754929AbdFXPJJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Jun 2017 11:09:09 -0400
-Received: (from localhost user: 'ladis' uid#1021 fake: STDIN
-        (ladis@eddie.linux-mips.org)) by eddie.linux-mips.org
-        id S23993904AbdFXPJDJywMW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 24 Jun 2017 17:09:03 +0200
-Content-Disposition: inline
-In-Reply-To: <20170624150545.2oxwror5fy2xlvaz@lenoch>
+Received: from mail-qk0-f182.google.com ([209.85.220.182]:35454 "EHLO
+        mail-qk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750944AbdFYDNI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Jun 2017 23:13:08 -0400
+Received: by mail-qk0-f182.google.com with SMTP id 16so59173993qkg.2
+        for <linux-pm@vger.kernel.org>; Sat, 24 Jun 2017 20:13:08 -0700 (PDT)
+Received: from localhost.localdomain (pool-173-48-65-169.bstnma.fios.verizon.net. [173.48.65.169])
+        by smtp.gmail.com with ESMTPSA id o76sm6158770qke.7.2017.06.24.20.13.06
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Sat, 24 Jun 2017 20:13:07 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Mike Looijmans <mike.looijmans@topic.nl>, Javier Martinez Canillas <javier@osg.samsung.com>, Sebastian Reichel <sre@kernel.org>
 
-LTC2942 is pin compatible with LTC2941 providing additional
-informations about battery voltage and temperature. It can
-be runtime detected using bit A7 in the Status register.
+Hi Rafael,
 
-Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
----
- Changes:
- - v2: reworked voltage computing to not overflow and keep presision
- - v3: update devicetree binding documentation
+Please pull these turbostat patches.
 
- .../devicetree/bindings/power/supply/ltc2941.txt   | 11 ++--
- drivers/power/supply/ltc2941-battery-gauge.c       | 76 +++++++++++++++++-----
- 2 files changed, 64 insertions(+), 23 deletions(-)
+thanks!
+Len Brown, Intel Open Source Technology Center
 
-diff --git a/Documentation/devicetree/bindings/power/supply/ltc2941.txt b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
-index a9d7aa60558b..0d065d54d294 100644
---- a/Documentation/devicetree/bindings/power/supply/ltc2941.txt
-+++ b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
-@@ -1,9 +1,10 @@
--binding for LTC2941 and LTC2943 battery gauges
-+binding for LTC2941, LTC2942 and LTC2943 battery gauges
- 
--Both the LTC2941 and LTC2943 measure battery capacity.
--The LTC2943 is compatible with the LTC2941, it adds voltage and
--temperature monitoring, and uses a slightly different conversion
--formula for the charge counter.
-+All chips measure battery capacity.
-+The LTC2942 is pin compatible with the LTC2941, it adds voltage and
-+temperature monitoring, and is runtime detected. LTC2943 is software
-+compatible, uses a slightly different conversion formula for the
-+charge counter and adds voltage, current and temperature monitoring.
- 
- Required properties:
- - compatible: Should contain "lltc,ltc2941" or "lltc,ltc2943" which also
-diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
-index 0a1b69bbca7f..c4a949dddb66 100644
---- a/drivers/power/supply/ltc2941-battery-gauge.c
-+++ b/drivers/power/supply/ltc2941-battery-gauge.c
-@@ -44,8 +44,10 @@ enum ltc294x_reg {
- 	LTC2943_REG_TEMPERATURE_LSB	= 0x15,
- };
- 
--#define LTC2943_REG_CONTROL_MODE_MASK (BIT(7) | BIT(6))
--#define LTC2943_REG_CONTROL_MODE_SCAN BIT(7)
-+#define LTC2941_REG_STATUS_CHIP_ID	BIT(7)
-+
-+#define LTC2942_REG_CONTROL_MODE_SCAN	(BIT(7) | BIT(6))
-+#define LTC2943_REG_CONTROL_MODE_SCAN	BIT(7)
- #define LTC294X_REG_CONTROL_PRESCALER_MASK	(BIT(5) | BIT(4) | BIT(3))
- #define LTC294X_REG_CONTROL_SHUTDOWN_MASK	(BIT(0))
- #define LTC294X_REG_CONTROL_PRESCALER_SET(x) \
-@@ -144,9 +146,15 @@ static int ltc294x_reset(const struct ltc294x_info *info, int prescaler_exp)
- 
- 	control = LTC294X_REG_CONTROL_PRESCALER_SET(prescaler_exp) |
- 				LTC294X_REG_CONTROL_ALCC_CONFIG_DISABLED;
--	/* Put the 2943 into "monitor" mode, so it measures every 10 sec */
--	if (info->num_regs == LTC2943_NUM_REGS)
-+	/* Put device into "monitor" mode */
-+	switch (info->num_regs) {
-+	case LTC2942_NUM_REGS:	/* 2942 measures every 2 sec */
-+		control |= LTC2942_REG_CONTROL_MODE_SCAN;
-+		break;
-+	case LTC2943_NUM_REGS:	/* 2943 measures every 10 sec */
- 		control |= LTC2943_REG_CONTROL_MODE_SCAN;
-+		break;
-+	}
- 
- 	if (value != control) {
- 		ret = ltc294x_write_regs(info->client,
-@@ -251,7 +259,16 @@ static int ltc294x_get_voltage(const struct ltc294x_info *info, int *val)
- 	ret = ltc294x_read_regs(info->client,
- 		LTC294X_REG_VOLTAGE_MSB, &datar[0], 2);
- 	value = (datar[0] << 8) | datar[1];
--	*val = ((value * 23600) / 0xFFFF) * 1000; /* in uV */
-+	if (info->num_regs == LTC2943_NUM_REGS) {
-+		value *= 23600 * 2;
-+		value /= 0xFFFF;
-+		value *= 1000 / 2;
-+	} else {
-+		value *= 6000 * 10;
-+		value /= 0xFFFF;
-+		value *= 1000 / 10;
-+	}
-+	*val = value;
- 	return ret;
- }
- 
-@@ -274,15 +291,22 @@ static int ltc294x_get_current(const struct ltc294x_info *info, int *val)
- 
- static int ltc294x_get_temperature(const struct ltc294x_info *info, int *val)
- {
-+	enum ltc294x_reg reg;
- 	int ret;
- 	u8 datar[2];
- 	u32 value;
- 
--	ret = ltc294x_read_regs(info->client,
--		LTC2943_REG_TEMPERATURE_MSB, &datar[0], 2);
--	value = (datar[0] << 8) | datar[1];
--	/* Full-scale is 510 Kelvin, convert to centidegrees  */
--	*val = (((51000 * value) / 0xFFFF) - 27215);
-+	if (info->num_regs == LTC2943_NUM_REGS) {
-+		reg = LTC2943_REG_TEMPERATURE_MSB;
-+		value = 51000;	/* Full-scale is 510 Kelvin */
-+	} else {
-+		reg = LTC2942_REG_TEMPERATURE_MSB;
-+		value = 60000;	/* Full-scale is 600 Kelvin */
-+	}
-+	ret = ltc294x_read_regs(info->client, reg, &datar[0], 2);
-+	value *= (datar[0] << 8) | datar[1];
-+	/* Convert to centidegrees  */
-+	*val = value / 0xFFFF - 27215;
- 	return ret;
- }
- 
-@@ -356,8 +380,8 @@ static enum power_supply_property ltc294x_properties[] = {
- 	POWER_SUPPLY_PROP_CHARGE_COUNTER,
- 	POWER_SUPPLY_PROP_CHARGE_NOW,
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
--	POWER_SUPPLY_PROP_CURRENT_NOW,
- 	POWER_SUPPLY_PROP_TEMP,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
- };
- 
- static int ltc294x_i2c_remove(struct i2c_client *client)
-@@ -374,10 +398,11 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
- {
- 	struct power_supply_config psy_cfg = {};
- 	struct ltc294x_info *info;
-+	struct device_node *np;
- 	int ret;
- 	u32 prescaler_exp;
- 	s32 r_sense;
--	struct device_node *np;
-+	u8 status;
- 
- 	info = devm_kzalloc(&client->dev, sizeof(*info), GFP_KERNEL);
- 	if (info == NULL)
-@@ -420,21 +445,36 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
- 				(128 / (1 << prescaler_exp));
- 	}
- 
-+	/* Read status register to check for LTC2942 */
-+	if (info->num_regs == LTC2941_NUM_REGS) {
-+		ret = ltc294x_read_regs(client, LTC294X_REG_STATUS, &status, 1);
-+		if (ret < 0) {
-+			dev_err(&client->dev,
-+				"Could not read status register\n");
-+			return ret;
-+		}
-+		if (!(status & LTC2941_REG_STATUS_CHIP_ID))
-+			info->num_regs = LTC2942_NUM_REGS;
-+	}
-+
- 	info->client = client;
- 	info->supply_desc.type = POWER_SUPPLY_TYPE_BATTERY;
- 	info->supply_desc.properties = ltc294x_properties;
--	if (info->num_regs >= LTC2943_REG_TEMPERATURE_LSB)
-+	switch (info->num_regs) {
-+	case LTC2943_NUM_REGS:
- 		info->supply_desc.num_properties =
- 			ARRAY_SIZE(ltc294x_properties);
--	else if (info->num_regs >= LTC2943_REG_CURRENT_LSB)
-+		break;
-+	case LTC2942_NUM_REGS:
- 		info->supply_desc.num_properties =
- 			ARRAY_SIZE(ltc294x_properties) - 1;
--	else if (info->num_regs >= LTC294X_REG_VOLTAGE_LSB)
--		info->supply_desc.num_properties =
--			ARRAY_SIZE(ltc294x_properties) - 2;
--	else
-+		break;
-+	case LTC2941_NUM_REGS:
-+	default:
- 		info->supply_desc.num_properties =
- 			ARRAY_SIZE(ltc294x_properties) - 3;
-+		break;
-+	}
- 	info->supply_desc.get_property = ltc294x_get_property;
- 	info->supply_desc.set_property = ltc294x_set_property;
- 	info->supply_desc.property_is_writeable = ltc294x_property_is_writeable;
--- 
-2.11.0
+The following changes since commit 3c2993b8c6143d8a5793746a54eba8f86f95240f:
+
+  Linux 4.12-rc4 (2017-06-04 16:47:43 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git turbostat
+
+for you to fetch changes up to f7d44a8f3fd7f13770470a306a233acbaad5e96d:
+
+  tools/power turbostat: update version number (2017-06-24 20:03:42 -0700)
+
+----------------------------------------------------------------
+Len Brown (5):
+      tools/power turbostat: hide SKL counters, when not requested
+      tools/power turbostat: if  --debug, print sampling overhead
+      tools/power turbostat: stop migrating, unless '-m'
+      tools/power turbostat: decode MSR_IA32_MISC_ENABLE only on Intel
+      tools/power turbostat: update version number
+
+ tools/power/x86/turbostat/turbostat.c | 94 ++++++++++++++++++++++++++++-------
+ 1 file changed, 77 insertions(+), 17 deletions(-)
