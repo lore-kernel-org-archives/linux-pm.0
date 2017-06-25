@@ -1,16 +1,16 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 4/5] tools/power turbostat: decode MSR_IA32_MISC_ENABLE only on Intel
-Date: Sat, 24 Jun 2017 20:13:00 -0700
-Message-ID: <f26b151977447be3b86f92c91e1caedc9b5eb8bf.1498359826.git.len.brown@intel.com>
+Subject: [PATCH 5/5] tools/power turbostat: update version number
+Date: Sat, 24 Jun 2017 20:13:01 -0700
+Message-ID: <f7d44a8f3fd7f13770470a306a233acbaad5e96d.1498359826.git.len.brown@intel.com>
 References: <1498360381-10293-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f194.google.com ([209.85.216.194]:36361 "EHLO
+Received: from mail-qt0-f194.google.com ([209.85.216.194]:35546 "EHLO
         mail-qt0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751114AbdFYDNL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Jun 2017 23:13:11 -0400
-Received: by mail-qt0-f194.google.com with SMTP id v31so5948086qtb.3
-        for <linux-pm@vger.kernel.org>; Sat, 24 Jun 2017 20:13:11 -0700 (PDT)
+        with ESMTP id S1750944AbdFYDNM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Jun 2017 23:13:12 -0400
+Received: by mail-qt0-f194.google.com with SMTP id w12so9928718qta.2
+        for <linux-pm@vger.kernel.org>; Sat, 24 Jun 2017 20:13:12 -0700 (PDT)
 In-Reply-To: <1498360381-10293-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <a99d87306f83d2a97c8c7e854b6583c4037ecf75.1498359826.git.len.brown@intel.com>
 References: <a99d87306f83d2a97c8c7e854b6583c4037ecf75.1498359826.git.len.brown@intel.com>
@@ -21,29 +21,23 @@ Cc: Len Brown <len.brown@intel.com>
 
 From: Len Brown <len.brown@intel.com>
 
-otherwise, turbostat bails on on AMD Opteron boxes:
-
-turbostat: cpu26: msr offset 0x1a0 read failed: Input/output error
-
-Reported-by: Kamil Kolakowski <kkolakow@redhat.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 3 +++
- 1 file changed, 3 insertions(+)
+ tools/power/x86/turbostat/turbostat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 1a3a5b4..33992a9 100644
+index 33992a9..0dafba2 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -3943,6 +3943,9 @@ void decode_misc_enable_msr(void)
- {
- 	unsigned long long msr;
+@@ -4634,7 +4634,7 @@ int get_and_dump_counters(void)
+ }
  
-+	if (!genuine_intel)
-+		return;
-+
- 	if (!get_msr(base_cpu, MSR_IA32_MISC_ENABLE, &msr))
- 		fprintf(outf, "cpu%d: MSR_IA32_MISC_ENABLE: 0x%08llx (%sTCC %sEIST %sMWAIT %sPREFETCH %sTURBO)\n",
- 			base_cpu, msr,
+ void print_version() {
+-	fprintf(outf, "turbostat version 17.04.12"
++	fprintf(outf, "turbostat version 17.06.23"
+ 		" - Len Brown <lenb@kernel.org>\n");
+ }
+ 
 -- 
 2.7.4
