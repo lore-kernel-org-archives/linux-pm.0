@@ -1,52 +1,58 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: PM / wakeirq: Convert to SRCU
-Date: Sun, 25 Jun 2017 11:11:57 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1706251103320.1996@nanos>
-References: <alpine.DEB.2.20.1706241153260.1941@nanos> <20170624135320.GS3721@linux.vnet.ibm.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Making the kernel control fanspeed ?
+Date: Sun, 25 Jun 2017 16:42:09 +0200
+Message-ID: <632d19eb-38e0-0213-d9a3-843b0dbff2cb@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <20170624135320.GS3721@linux.vnet.ibm.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Brian Norris <briannorris@chromium.org>, Heiko Stuebner <heiko@sntech.de>, Linus Walleij <linus.walleij@linaro.org>, linux-rockchip@lists.infradead.org, Julia Cartwright <julia@ni.com>, LKML <linux-kernel@vger.kernel.org>, linux-gpio@vger.kernel.org, John Keeping <john@metanate.com>, linux-pm@vger.kernel.org, Doug Anderson <dianders@chromium.org>, Peter Zijlstra <peterz@infradead.org>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-acpi <linux-acpi@vger.kernel.org>
+Cc: Christopher Williamson <home@chrisaw.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 24 Jun 2017, Paul E. McKenney wrote:
-> On Sat, Jun 24, 2017 at 11:56:11AM +0200, Thomas Gleixner wrote:
-> >  static DECLARE_WAIT_QUEUE_HEAD(wakeup_count_wait_queue);
-> > 
-> > +static struct srcu_struct wakeup_srcu;
-> 
-> I suggest this to avoid the need for boot-time init_srcu_struct():
-> 
-> DEFINE_STATIC_SRCU(wakeup_srcu);
+Hi All,
 
-Now I know why I had this nagging feeling, that should stay away from
-computers yesterday morning.....
+I've been contacted by Christopher Williamson who owns
+this device:
 
-> >  static struct wakeup_source deleted_ws = {
-> >  	.name = "deleted",
-> >  	.lock =  __SPIN_LOCK_UNLOCKED(deleted_ws.lock),
-> > @@ -198,7 +200,7 @@ void wakeup_source_remove(struct wakeup_
-> >  	spin_lock_irqsave(&events_lock, flags);
-> >  	list_del_rcu(&ws->entry);
-> >  	spin_unlock_irqrestore(&events_lock, flags);
-> > -	synchronize_rcu();
-> > +	synchronize_srcu(&wakeup_srcu);
-> >  }
-> >  EXPORT_SYMBOL_GPL(wakeup_source_remove);
-> 
-> The uses of RCU in device_wakeup_arm_wake_irqs() and
-> device_wakeup_disarm_wake_irqs() are unrelated and thus do not
-> need to be converted?  Or am I looking at the wrong version of
-> the kernel?  (Looking at f65013d655ac ("Merge branch 'for-linus' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/ebiederm/user-namespace")
-> in Linus's tree.)
+https://www.indiegogo.com/projects/gpd-pocket-7-0-umpc-laptop-ubuntu-or-win-10-os-laptop--2#/
 
-No, you are looking at the result of heat induced brain melt. Will send a
-proper one soon.
+And is trying to run Linux on it.
 
-Thanks,
+As the indiegogo campaign shows is quite a popular device,
+so supporting this properly with the mainline kernel is
+important IMHO.
 
-	tglx
+It has a (small) fan for cooling which we (Christopher and
+me) have managed to figure out is controller by 2 GPIOs,
+giving it 4 speeds (including "off" as speed). Writing a
+driver for this is easy, it has an ACPI node with a unique
+_HID and a _CSR table listing the GPIOs.
+
+At least writing a driver using the lm_sensors to export
+this as a fan-speed controller (fake pwm) is easy, but
+that requires the user to setup the fancontrol service
+to actually control the fan speed, while as I really
+want something which will make installing the distributions
+coming out April 2018 just work without needing tweaks.
+
+So I was wondering if there was a way to make the driver
+directly adjust the fan speeds based on SoC temperature.
+
+I was thinking of maybe registering it as a cooling device,
+if I were to do this will it get called when the system
+is getting somewhat hot, or only when approaching really
+hot ?
+
+Or maybe a combination of lm_sensors interface, defaulting
+to medium speed + a cooling device to ramp up to max speed
+when necessary?  Down side of that approach is the fan will
+spin needlessly when the system is idle ...
+
+Any other suggestions ?
+
+Regards,
+
+Hans
