@@ -1,45 +1,40 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v2]  PM / wakeirq: Convert to SRCU
-Date: Mon, 26 Jun 2017 03:15:57 -0700
-Message-ID: <20170626101557.GV3730@atomide.com>
-References: <alpine.DEB.2.20.1706241153260.1941@nanos>
- <20170624135320.GS3721@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1706251103320.1996@nanos>
- <20170625144559.GA3721@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1706251930220.2528@nanos>
- <20170625182926.GB3721@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-gpio-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170625182926.GB3721@linux.vnet.ibm.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Brian Norris <briannorris@chromium.org>, Heiko Stuebner <heiko@sntech.de>, Linus Walleij <linus.walleij@linaro.org>, linux-rockchip@lists.infradead.org, Julia Cartwright <julia@ni.com>, LKML <linux-kernel@vger.kernel.org>, linux-gpio@vger.kernel.org, John Keeping <john@metanate.com>, linux-pm@vger.kernel.org, Doug Anderson <dianders@chromium.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Ming Lei <ming.lei@redhat.com>
+Subject: [PATCH v2 03/51] kernel/power/swap.c: comment on direct access to bvec table
+Date: Mon, 26 Jun 2017 20:09:46 +0800
+Message-ID: <20170626121034.3051-4-ming.lei@redhat.com>
+References: <20170626121034.3051-1-ming.lei@redhat.com>
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20170626121034.3051-1-ming.lei@redhat.com>
+Sender: owner-linux-mm@kvack.org
+To: Jens Axboe <axboe@fb.com>, Christoph Hellwig <hch@infradead.org>, Huang Ying <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, Ming Lei <ming.lei@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> [170625 11:29]:
-> On Sun, Jun 25, 2017 at 07:31:13PM +0200, Thomas Gleixner wrote:
-> > The wakeirq infrastructure uses RCU to protect the list of wakeirqs. That
-> > breaks the irq bus locking infrastructure, which is allows sleeping
-> > functions to be called so interrupt controllers behind slow busses,
-> > e.g. i2c, can be handled.
-> > 
-> > The wakeirq functions hold rcu_read_lock and call into irq functions, which
-> > in case of interrupts using the irq bus locking will trigger a
-> > might_sleep() splat.
-> > 
-> > Convert the wakeirq infrastructure to Sleepable RCU and unbreak it.
-> > 
-> > Fixes: 4990d4fe327b ("PM / Wakeirq: Add automated device wake IRQ handling")
-> > Reported-by: Brian Norris <briannorris@chromium.org>
-> > Suggested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> Looks good to me!
-> 
-> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Ming Lei <ming.lei@redhat.com>
+---
+ kernel/power/swap.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-And still works for me!
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 57d22571f306..aa52ccc03fcc 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -238,6 +238,8 @@ static void hib_init_batch(struct hib_bio_batch *hb)
+ static void hib_end_io(struct bio *bio)
+ {
+ 	struct hib_bio_batch *hb = bio->bi_private;
++
++	/* single page bio, safe for multipage bvec */
+ 	struct page *page = bio->bi_io_vec[0].bv_page;
+ 
+ 	if (bio->bi_status) {
+-- 
+2.9.4
 
-Tested-by: Tony Lindgren <tony@atomide.com>
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
