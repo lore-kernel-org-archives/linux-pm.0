@@ -1,42 +1,43 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] kernel/power/suspend: use CONFIG_HAVE_SET_MEMORY for include condition
-Date: Mon, 26 Jun 2017 23:07:27 +0200
-Message-ID: <1602211.zd022FB7i2@aspire.rjw.lan>
-References: <20170603105232.6436-1-bsingharora@gmail.com> <20170603132747.GA18185@amd> <CAKTCnzk2bhFr3BvgQSzQr8TK9DB+bW7TyCtfzq7537F9Ym8QKw@mail.gmail.com>
+Subject: Re: intel-pstate driver not clocking down on Atom Z8750
+Date: Mon, 26 Jun 2017 23:22:05 +0200
+Message-ID: <1546394.yeB72YUSV0@aspire.rjw.lan>
+References: <13898444.q12oX9ZNe5@aspire.rjw.lan> <CAAYJcCXPUE78PBN_njrnHseBUOPXsek48ac4RGh5Jx_mgvYpKg@mail.gmail.com> <1498436879.4671.22.camel@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47286 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53034 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751403AbdFZVO6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jun 2017 17:14:58 -0400
-In-Reply-To: <CAKTCnzk2bhFr3BvgQSzQr8TK9DB+bW7TyCtfzq7537F9Ym8QKw@mail.gmail.com>
+        by vger.kernel.org with ESMTP id S1751381AbdFZV3a (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jun 2017 17:29:30 -0400
+In-Reply-To: <1498436879.4671.22.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Laura Abbott <labbott@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Christopher Williamson <home@chrisaw.com>
+Cc: "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>
 
-On Monday, June 26, 2017 01:34:52 PM Balbir Singh wrote:
-> On Sat, Jun 3, 2017 at 11:27 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> > On Sat 2017-06-03 20:52:32, Balbir Singh wrote:
-> >> Kbuild reported a build failure when CONFIG_STRICT_KERNEL_RWX was
-> >> enabled on powerpc. We don't yet have ARCH_HAS_SET_MEMORY and ppc32
-> >> saw a build failure.
-> >>
-> >> fixes(50327dd kernel/power/snapshot.c: use set_memory.h header)
-> >>
-> >> I've only done a basic compile test with a config that has
-> >> hibernation enabled.
-> >>
-> >> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> >> Cc: Len Brown <len.brown@intel.com>
-> > Acked-by: Pavel Machek <pavel@ucw.cz>
+On Sunday, June 25, 2017 05:27:59 PM Srinivas Pandruvada wrote:
+> On Sun, 2017-06-25 at 18:37 -0400, Christopher Williamson wrote:
+> > 4.8 and 4.12-rc6
+> > 
+> I just gave a quick test on a HP Cherrytrail laptop with 4.12 tip.
+> Attached is the output, which show that this does scale.
+> It is possible that you don't have any idle (C-states) or some task is
+> keeping system busy.
 > 
-> Ping. Could we please pick this up? it breaks any attempt to support
-> STRICT_KERNEL_RWX on powerpc
+> I suggest:
+> 1. Run turbostat and attach output.
+> 2. Attach output of tools/power/x86/intel_pstate_tracer for a minute
+> run.
 
-Yes, I'm going to pick it up for 4.13.
+The output of acpidump may be useful as well.
+
+I'd suggest filing a bug at bugzilla.kernel.org against intel_pstate and
+attaching all of the requested information there.
+
+You don't have to provide a full problem description again, a link to the
+initial message in this thread should suffice.
 
 Thanks,
 Rafael
