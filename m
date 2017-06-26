@@ -1,40 +1,44 @@
-From: Ming Lei <ming.lei@redhat.com>
-Subject: [PATCH v2 03/51] kernel/power/swap.c: comment on direct access to bvec table
-Date: Mon, 26 Jun 2017 20:09:46 +0800
-Message-ID: <20170626121034.3051-4-ming.lei@redhat.com>
-References: <20170626121034.3051-1-ming.lei@redhat.com>
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20170626121034.3051-1-ming.lei@redhat.com>
-Sender: owner-linux-mm@kvack.org
-To: Jens Axboe <axboe@fb.com>, Christoph Hellwig <hch@infradead.org>, Huang Ying <ying.huang@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, Ming Lei <ming.lei@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH 2/6] ACPI / PM: Consolidate device wakeup settings code
+Date: Mon, 26 Jun 2017 16:29:41 +0300
+Message-ID: <20170626132941.GD629@lahna.fi.intel.com>
+References: <12296383.UdE5HVtyng@aspire.rjw.lan>
+ <20170622073937.GR629@lahna.fi.intel.com>
+ <4634255.ux8TmyfYTx@aspire.rjw.lan>
+ <8111646.zzkDnlQnPE@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <8111646.zzkDnlQnPE@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Ming Lei <ming.lei@redhat.com>
----
- kernel/power/swap.c | 2 ++
- 1 file changed, 2 insertions(+)
+On Fri, Jun 23, 2017 at 03:05:57AM +0200, Rafael J. Wysocki wrote:
+> On Thursday, June 22, 2017 04:38:49 PM Rafael J. Wysocki wrote:
+> > On Thursday, June 22, 2017 10:39:37 AM Mika Westerberg wrote:
+> > > On Mon, Jun 19, 2017 at 11:33:52PM +0200, Rafael J. Wysocki wrote:
+> > > > -#ifdef CONFIG_PM_SLEEP
+> > > > -/**
+> > > > - * acpi_pm_device_sleep_wake - Enable or disable device to wake up the system.
+> > > > - * @dev: Device to enable/desible to wake up the system from sleep states.
+> > > > - * @enable: Whether to enable or disable @dev to wake up the system.
+> > > > - */
+> > > > -int acpi_pm_device_sleep_wake(struct device *dev, bool enable)
+> > > > +int acpi_pm_device_wakeup(struct device *dev, bool enable)
+> > > 
+> > > Can we call it acpi_pm_device_enable_wakeup() and then provide
+> > > corresponding acpi_pm_device_disable_wakeup()? I find those easier to
+> > > understand than acpi_pm_device_wakeup() that sounds like the device
+> > > should be woken up now.
+> > 
+> > OK, fair enough.  I'll change it this way.
+> 
+> Well, sorry, I'd rather not to, or we'll have to add a wrapper around them in
+> pci-acpi.c. :-)
+> 
+> I can rename it to acpi_pm_device_set_wakeup(), though.
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 57d22571f306..aa52ccc03fcc 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -238,6 +238,8 @@ static void hib_init_batch(struct hib_bio_batch *hb)
- static void hib_end_io(struct bio *bio)
- {
- 	struct hib_bio_batch *hb = bio->bi_private;
-+
-+	/* single page bio, safe for multipage bvec */
- 	struct page *page = bio->bi_io_vec[0].bv_page;
- 
- 	if (bio->bi_status) {
--- 
-2.9.4
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Works for me :)
