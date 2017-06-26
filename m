@@ -1,82 +1,42 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/9] i2c: designware: Fix system suspend
-Date: Mon, 26 Jun 2017 23:11:34 +0200
-Message-ID: <CAJZ5v0i-AgTDTOX+O41abVsnahU9V=NV+HEW0vajhBqGfJuUEg@mail.gmail.com>
-References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com>
- <20170622104933.GY629@lahna.fi.intel.com> <2842386.AFZiXzV2Sq@aspire.rjw.lan>
- <CAPDyKFo80QWYhU_SFexr_riPSZS3QEXDyBcywa5qBYa3sJXcjw@mail.gmail.com>
- <CAJZ5v0irHvYXHv1GykatTH+XROZyL0nR0c=KfdSrpH395s6V8g@mail.gmail.com>
- <CAPDyKFov=08AQw0PPPgcFbrerTskoPGfLZcJL9gjikfQfZUJpw@mail.gmail.com> <4324e2c8-ab79-5a21-a8ab-c660920cba59@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] kernel/power/suspend: use CONFIG_HAVE_SET_MEMORY for include condition
+Date: Mon, 26 Jun 2017 23:07:27 +0200
+Message-ID: <1602211.zd022FB7i2@aspire.rjw.lan>
+References: <20170603105232.6436-1-bsingharora@gmail.com> <20170603132747.GA18185@amd> <CAKTCnzk2bhFr3BvgQSzQr8TK9DB+bW7TyCtfzq7537F9Ym8QKw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4324e2c8-ab79-5a21-a8ab-c660920cba59@ti.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47286 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751403AbdFZVO6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jun 2017 17:14:58 -0400
+In-Reply-To: <CAKTCnzk2bhFr3BvgQSzQr8TK9DB+bW7TyCtfzq7537F9Ym8QKw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Laura Abbott <labbott@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
 
-On Mon, Jun 26, 2017 at 9:39 PM, Grygorii Strashko
-<grygorii.strashko@ti.com> wrote:
-> On 06/26/2017 11:49 AM, Ulf Hansson wrote:
+On Monday, June 26, 2017 01:34:52 PM Balbir Singh wrote:
+> On Sat, Jun 3, 2017 at 11:27 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Sat 2017-06-03 20:52:32, Balbir Singh wrote:
+> >> Kbuild reported a build failure when CONFIG_STRICT_KERNEL_RWX was
+> >> enabled on powerpc. We don't yet have ARCH_HAS_SET_MEMORY and ppc32
+> >> saw a build failure.
+> >>
+> >> fixes(50327dd kernel/power/snapshot.c: use set_memory.h header)
+> >>
+> >> I've only done a basic compile test with a config that has
+> >> hibernation enabled.
+> >>
+> >> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> >> Cc: Len Brown <len.brown@intel.com>
+> > Acked-by: Pavel Machek <pavel@ucw.cz>
+> 
+> Ping. Could we please pick this up? it breaks any attempt to support
+> STRICT_KERNEL_RWX on powerpc
 
-[cut]
-
->>>> This makes it worse in that sense, that then you don't even need an
->>>> i2c slave to trigger the problem.
->>>
->>> In that case your changelog is a bit misleading.
->>
->> Yeah, it is! I didn't realize that until I fully investigated the revert option.
->>
->>>
->>> It looks like the commit in question attempted to fix exactly this
->>> issue, but it failed, so it should be replaced with something else
->>> which is what your patch is effectively doing.
->>>
->>> IMO you should describe the original problem, explain why that commit
->>> is not sufficient to fix it and then describe the final fix.
->>>
->>> Anyway, after reading the changelog it should be clear that things
->>> were broken before the commit in question.
->>>
->>> And BTW I'm not really sure how the rest of the series is related to this?
->>
->> Going back in history, I realize the system sleep support in this
->> driver has been broken even before the commit $subject patch intends
->> to fix.
->> However it has been working fine for the ACPI case, because of how the
->> ACPI PM domain manages its devices during system sleep.
->>
->> The commit in question, adds an improvement to the driver, because it
->> enables the direct_complete path. For ACPI, that was already working,
->> but not for the other cases. So to be able to support the similar
->> improvement as the direct_complete path offers, as that isn't working
->> for this driver, I tried out using the runtime PM centric path
->> instead. That is what the rest of the changes in this series takes
->> care of.
->>
->> Now, as the system sleep support is broken I wanted to make a simple
->> fix for that first, via $subject patch. I guess what makes this a bit
->> confusing is that I shouldn't point to a certain commit, but rather
->> just add a stable tag and update the changelog accordingly.
-
-I agree, modulo the below.
-
->
-> Wouldn't it fix suspend for this driver if you will just replace
-> dw_i2c_plat_suspend() with pm_runtime_force_suspend() in SET_SYSTEM_SLEEP_PM_OPS() as
-> you've done in patch 9?
->
-> And, I think, direct_complete path should still work after this also.
-
-That's a good point and I was about to mention that.
-
-In any case, even if the pm_runtime_resume() added by the $subject
-patch is necessary to start with, it could be added to the ->suspend
-callback of the driver instead of the ->complete one, in which case
-the ACPI path would not be affected by this change.
+Yes, I'm going to pick it up for 4.13.
 
 Thanks,
 Rafael
