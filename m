@@ -1,37 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: CPPC patches from Prashanth
-Date: Mon, 26 Jun 2017 23:33:12 +0200
-Message-ID: <2429607.Bmg7t1DNJ4@aspire.rjw.lan>
-References: <CAOZdJXUc5YiHYoH6Q=iYUWpvBBAygY5xnTdV3iiOR4J4Yxg7xg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [GIT PULL] turbostat fixes
+Date: Tue, 27 Jun 2017 01:45:02 +0200
+Message-ID: <CAJZ5v0g41qn+w4fPnkdj-boJo5gJtcQJH6q_GuH_B2UGp32vTA@mail.gmail.com>
+References: <1498360381-10293-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAOZdJXUc5YiHYoH6Q=iYUWpvBBAygY5xnTdV3iiOR4J4Yxg7xg@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Timur Tabi <timur@codeaurora.org>
-Cc: linux-pm@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Prashanth Prakash <pprakash@codeaurora.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f66.google.com ([209.85.214.66]:34873 "EHLO
+        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751453AbdFZXpD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Jun 2017 19:45:03 -0400
+Received: by mail-it0-f66.google.com with SMTP id v193so717663itc.2
+        for <linux-pm@vger.kernel.org>; Mon, 26 Jun 2017 16:45:03 -0700 (PDT)
+In-Reply-To: <1498360381-10293-1-git-send-email-lenb@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>
 
-On Monday, June 26, 2017 04:38:20 PM Timur Tabi wrote:
-> Rafael,
-> 
-> If you haven't already, can you pick up these two patch from Prashanth?
-> 
-> https://patchwork.codeaurora.org/patch/247325/
-> https://patchwork.codeaurora.org/patch/241917/
-> 
-> We'd like these in 4.13.
-> 
-> 
+On Sun, Jun 25, 2017 at 5:12 AM, Len Brown <lenb@kernel.org> wrote:
+> Hi Rafael,
 
-I'm actually unsure about the first one.
+Hi,
 
-I'll reply to the patch later today (or tomorrow).
+> Please pull these turbostat patches.
+>
+> thanks!
+> Len Brown, Intel Open Source Technology Center
+>
+> The following changes since commit 3c2993b8c6143d8a5793746a54eba8f86f95240f:
+>
+>   Linux 4.12-rc4 (2017-06-04 16:47:43 -0700)
+>
+> are available in the git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git turbostat
+>
+> for you to fetch changes up to f7d44a8f3fd7f13770470a306a233acbaad5e96d:
+>
+>   tools/power turbostat: update version number (2017-06-24 20:03:42 -0700)
+>
+> ----------------------------------------------------------------
+> Len Brown (5):
+>       tools/power turbostat: hide SKL counters, when not requested
+>       tools/power turbostat: if  --debug, print sampling overhead
+>       tools/power turbostat: stop migrating, unless '-m'
+>       tools/power turbostat: decode MSR_IA32_MISC_ENABLE only on Intel
+>       tools/power turbostat: update version number
+>
+>  tools/power/x86/turbostat/turbostat.c | 94 ++++++++++++++++++++++++++++-------
+>  1 file changed, 77 insertions(+), 17 deletions(-)
 
-The second one is in my TODO list for things to apply, but I need to look at
-it more closely still.
-
-Thanks,
-Rafael
-
+Pulled, thanks!
