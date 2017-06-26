@@ -1,43 +1,82 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH v2]  PM / wakeirq: Convert to SRCU
-Date: Mon, 26 Jun 2017 13:37:11 -0700
-Message-ID: <20170626203709.GA11099@google.com>
-References: <alpine.DEB.2.20.1706241153260.1941@nanos>
- <20170624135320.GS3721@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1706251103320.1996@nanos>
- <20170625144559.GA3721@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1706251930220.2528@nanos>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/9] i2c: designware: Fix system suspend
+Date: Mon, 26 Jun 2017 23:11:34 +0200
+Message-ID: <CAJZ5v0i-AgTDTOX+O41abVsnahU9V=NV+HEW0vajhBqGfJuUEg@mail.gmail.com>
+References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
+ <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com>
+ <20170622104933.GY629@lahna.fi.intel.com> <2842386.AFZiXzV2Sq@aspire.rjw.lan>
+ <CAPDyKFo80QWYhU_SFexr_riPSZS3QEXDyBcywa5qBYa3sJXcjw@mail.gmail.com>
+ <CAJZ5v0irHvYXHv1GykatTH+XROZyL0nR0c=KfdSrpH395s6V8g@mail.gmail.com>
+ <CAPDyKFov=08AQw0PPPgcFbrerTskoPGfLZcJL9gjikfQfZUJpw@mail.gmail.com> <4324e2c8-ab79-5a21-a8ab-c660920cba59@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-gpio-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.20.1706251930220.2528@nanos>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Heiko Stuebner <heiko@sntech.de>, Linus Walleij <linus.walleij@linaro.org>, linux-rockchip@lists.infradead.org, Julia Cartwright <julia@ni.com>, LKML <linux-kernel@vger.kernel.org>, linux-gpio@vger.kernel.org, John Keeping <john@metanate.com>, linux-pm@vger.kernel.org, Doug Anderson <dianders@chromium.org>, Peter Zijlstra <peterz@infradead.org>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <4324e2c8-ab79-5a21-a8ab-c660920cba59@ti.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 25, 2017 at 07:31:13PM +0200, Thomas Gleixner wrote:
-> The wakeirq infrastructure uses RCU to protect the list of wakeirqs. That
-> breaks the irq bus locking infrastructure, which is allows sleeping
-> functions to be called so interrupt controllers behind slow busses,
-> e.g. i2c, can be handled.
-> 
-> The wakeirq functions hold rcu_read_lock and call into irq functions, which
-> in case of interrupts using the irq bus locking will trigger a
-> might_sleep() splat.
-> 
-> Convert the wakeirq infrastructure to Sleepable RCU and unbreak it.
-> 
-> Fixes: 4990d4fe327b ("PM / Wakeirq: Add automated device wake IRQ handling")
-> Reported-by: Brian Norris <briannorris@chromium.org>
-> Suggested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
->  drivers/base/power/wakeup.c |   32 ++++++++++++++++++--------------
->  1 file changed, 18 insertions(+), 14 deletions(-)
+On Mon, Jun 26, 2017 at 9:39 PM, Grygorii Strashko
+<grygorii.strashko@ti.com> wrote:
+> On 06/26/2017 11:49 AM, Ulf Hansson wrote:
 
-This resolves the warnings I've seen, for sure. And I don't seem to have
-any new suspend/resume problems, so:
+[cut]
 
-Tested-by: Brian Norris <briannorris@chromium.org>
+>>>> This makes it worse in that sense, that then you don't even need an
+>>>> i2c slave to trigger the problem.
+>>>
+>>> In that case your changelog is a bit misleading.
+>>
+>> Yeah, it is! I didn't realize that until I fully investigated the revert option.
+>>
+>>>
+>>> It looks like the commit in question attempted to fix exactly this
+>>> issue, but it failed, so it should be replaced with something else
+>>> which is what your patch is effectively doing.
+>>>
+>>> IMO you should describe the original problem, explain why that commit
+>>> is not sufficient to fix it and then describe the final fix.
+>>>
+>>> Anyway, after reading the changelog it should be clear that things
+>>> were broken before the commit in question.
+>>>
+>>> And BTW I'm not really sure how the rest of the series is related to this?
+>>
+>> Going back in history, I realize the system sleep support in this
+>> driver has been broken even before the commit $subject patch intends
+>> to fix.
+>> However it has been working fine for the ACPI case, because of how the
+>> ACPI PM domain manages its devices during system sleep.
+>>
+>> The commit in question, adds an improvement to the driver, because it
+>> enables the direct_complete path. For ACPI, that was already working,
+>> but not for the other cases. So to be able to support the similar
+>> improvement as the direct_complete path offers, as that isn't working
+>> for this driver, I tried out using the runtime PM centric path
+>> instead. That is what the rest of the changes in this series takes
+>> care of.
+>>
+>> Now, as the system sleep support is broken I wanted to make a simple
+>> fix for that first, via $subject patch. I guess what makes this a bit
+>> confusing is that I shouldn't point to a certain commit, but rather
+>> just add a stable tag and update the changelog accordingly.
+
+I agree, modulo the below.
+
+>
+> Wouldn't it fix suspend for this driver if you will just replace
+> dw_i2c_plat_suspend() with pm_runtime_force_suspend() in SET_SYSTEM_SLEEP_PM_OPS() as
+> you've done in patch 9?
+>
+> And, I think, direct_complete path should still work after this also.
+
+That's a good point and I was about to mention that.
+
+In any case, even if the pm_runtime_resume() added by the $subject
+patch is necessary to start with, it could be added to the ->suspend
+callback of the driver instead of the ->complete one, in which case
+the ACPI path would not be affected by this change.
+
+Thanks,
+Rafael
