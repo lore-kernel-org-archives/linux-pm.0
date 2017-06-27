@@ -1,69 +1,44 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: [PATCH] ACPI / sleep: EC-based wakeup from suspend-to-idle on
- recent systems
-Date: Tue, 27 Jun 2017 11:10:13 +0000
-Message-ID: <17c669c9562747319f743ef8d76e3114@ausx13mpc120.AMER.DELL.COM>
-References: <1979543.KIEJ8uyRaT@aspire.rjw.lan>
- <3689795.xuIczRHZsl@aspire.rjw.lan> <2026371.DVJN39QYJi@aspire.rjw.lan>
- <2368998.dmCsnrcXZy@aspire.rjw.lan>
- <CA+55aFyBfHVyh=TMifF+0KGEVy6JEyDz=gbHdP7nM2roa++X4Q@mail.gmail.com>
- <CA+b4Kqd9qV0Pc7wJ2eHKcA-7+a23tY9gfe2Abm4=Bd08SKkh8w@mail.gmail.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH] kernel/power/suspend: use CONFIG_HAVE_SET_MEMORY for
+ include condition
+Date: Tue, 27 Jun 2017 21:57:58 +1000
+Message-ID: <CAKTCnz=1AixH3BVV8PuRLTwn6DZ=Lj9rM697K0sKTo3sypM0MQ@mail.gmail.com>
+References: <20170603105232.6436-1-bsingharora@gmail.com> <20170603132747.GA18185@amd>
+ <CAKTCnzk2bhFr3BvgQSzQr8TK9DB+bW7TyCtfzq7537F9Ym8QKw@mail.gmail.com> <1602211.zd022FB7i2@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from esa7.dell-outbound.iphmx.com ([68.232.153.96]:42577 "EHLO
-        esa7.dell-outbound.iphmx.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751632AbdF0LKP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 07:10:15 -0400
-In-Reply-To: <CA+b4Kqd9qV0Pc7wJ2eHKcA-7+a23tY9gfe2Abm4=Bd08SKkh8w@mail.gmail.com>
-Content-Language: en-US
+Received: from mail-qt0-f195.google.com ([209.85.216.195]:35666 "EHLO
+        mail-qt0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752635AbdF0L6E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 07:58:04 -0400
+In-Reply-To: <1602211.zd022FB7i2@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tom@oneshoeco.com, rjw@rjwysocki.net
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, andriy.shevchenko@linux.intel.com, dvhart@infradead.org, linux-kernel@vger.kernel.org, srinivas.pandruvada@linux.intel.com, mika.westerberg@linux.intel.com, jerome.debretagne@gmail.com, lv.zheng@intel.com, torvalds@linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Laura Abbott <labbott@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBUb20gTGFueW9uIFttYWlsdG86
-dG9tQG9uZXNob2Vjby5jb21dDQo+IFNlbnQ6IFR1ZXNkYXksIEp1bmUgMjcsIDIwMTcgMTI6NTEg
-QU0NCj4gVG86IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD4NCj4gQ2M6IExp
-bnV4IEFDUEkgPGxpbnV4LWFjcGlAdmdlci5rZXJuZWwub3JnPjsgTGludXggUE0gPGxpbnV4LQ0K
-PiBwbUB2Z2VyLmtlcm5lbC5vcmc+OyBBbmR5IFNoZXZjaGVua28gPGFuZHJpeS5zaGV2Y2hlbmtv
-QGxpbnV4LmludGVsLmNvbT47DQo+IERhcnJlbiBIYXJ0IDxkdmhhcnRAaW5mcmFkZWFkLm9yZz47
-IExLTUwgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+Ow0KPiBTcmluaXZhcyBQYW5kcnV2
-YWRhIDxzcmluaXZhcy5wYW5kcnV2YWRhQGxpbnV4LmludGVsLmNvbT47IE1pa2EgV2VzdGVyYmVy
-Zw0KPiA8bWlrYS53ZXN0ZXJiZXJnQGxpbnV4LmludGVsLmNvbT47IExpbW9uY2llbGxvLCBNYXJp
-bw0KPiA8TWFyaW9fTGltb25jaWVsbG9ARGVsbC5jb20+OyBKw6lyw7RtZSBkZSBCcmV0YWduZQ0K
-PiA8amVyb21lLmRlYnJldGFnbmVAZ21haWwuY29tPjsgWmhlbmcsIEx2IDxsdi56aGVuZ0BpbnRl
-bC5jb20+OyBMaW51cyBUb3J2YWxkcw0KPiA8dG9ydmFsZHNAbGludXgtZm91bmRhdGlvbi5vcmc+
-DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIEFDUEkgLyBzbGVlcDogRUMtYmFzZWQgd2FrZXVwIGZy
-b20gc3VzcGVuZC10by1pZGxlIG9uIHJlY2VudA0KPiBzeXN0ZW1zDQo+IA0KPiBPbiAyMyBKdW5l
-IDIwMTcgYXQgMTI6NDAsIExpbnVzIFRvcnZhbGRzIDx0b3J2YWxkc0BsaW51eC1mb3VuZGF0aW9u
-Lm9yZz4gd3JvdGU6DQo+ID4gT24gVGh1LCBKdW4gMjIsIDIwMTcgYXQgNDo1NiBQTSwgUmFmYWVs
-IEouIFd5c29ja2kgPHJqd0Byand5c29ja2kubmV0PiB3cm90ZToNCj4gPj4NCj4gPj4gU29tZSBy
-ZWNlbnQgRGVsbCBsYXB0b3BzLCBpbmNsdWRpbmcgdGhlIFhQUzEzIG1vZGVsIG51bWJlcnMgOTM2
-MCBhbmQNCj4gPj4gOTM2NSwgY2Fubm90IGJlIHdva2VuIHVwIGZyb20gc3VzcGVuZC10by1pZGxl
-IGJ5IHByZXNzaW5nIHRoZSBwb3dlcg0KPiA+PiBidXR0b24gd2hpY2ggaXMgdW5leHBlY3RlZCBh
-bmQgbWFrZXMgdGhhdCBmZWF0dXJlIGxlc3MgdXNhYmxlIG9uDQo+ID4+IHRob3NlIHN5c3RlbXMu
-ICBbIGRldGFpbHMgcmVtb3ZlZCBdDQo+ID4NCj4gPiBUaGlzIGxvb2tzIG11Y2ggbW9yZSByZWFz
-b25hYmxlIGFuZCBtb3JlIGxpa2VseSB0byB3b3JrIG9uIGZ1dHVyZSBtYWNoaW5lcyB0b28uDQo+
-ID4NCj4gPiBPZiBjb3Vyc2UsIHdobyBrbm93cyB3aGF0IGJyb2tlbiBtYWNoaW5lcyBpdCB3aWxs
-IGNhdXNlIHByb2JsZW1zIG9uLA0KPiA+IGJ1dCBpdCBzb3VuZHMgbGlrZSB0aGUgY29kZSBub3cg
-ZG9lcyB3aGF0IGl0J3Mgc3VwcG9zZWQgdG8gYW5kIHdoYXQNCj4gPiBXaW4xMCBkb2VzLCBzbyBt
-YXliZSBpdCBKdXN0V29ya3ModG0pLiBIYWguDQo+IA0KPiBSYWZhZWwgLSB0aGFua3MgZm9yIHlv
-dXIgZWZmb3J0cyBvbiB0aGlzLg0KPiANCj4gSSB3YW50ZWQgdG8gcHJvdmlkZSBzb21lIGZlZWRi
-YWNrIGZyb20gc29tZSBxdWljayBhbmQgbmFpdmUgdGVzdHMgb24NCj4gYW4gWFBTIDEzIDkzNjUg
-aW4gY2FzZSBpdCB3YXMgdXNlZnVsLCBhcyBpdCBzZWVtcyBsaWtlIHRoZXJlJ3Mgc3RpbGwNCj4g
-c29tZSB3YXkgdG8gZ28gYmVmb3JlIG1hdGNoaW5nIFdpbjEwJ3MgYmVoYXZpb3VyLg0KPiANCj4g
-ICAgIExpbnV4IGlkbGluZyB3LyBzY3JlZW4gT04gPT4gMTclIGJhdHRlcnkgZHJhaW4gcGVyIGhv
-dXIuDQo+ICAgICBMaW51eCBpZGxpbmcgdy8gc2NyZWVuIE9GRiA9PiAxMiUgYmF0dGVyeSBkcmFp
-biBwZXIgaG91ci4NCj4gICAgIExpbnV4IGR1cmluZyBzMmlkbGUgPT4gNiUgYmF0dGVyeSBkcmFp
-biBwZXIgaG91ci4NCj4gICAgIFdpbjEwIGR1cmluZyBzbGVlcCA9PiAxJSBiYXR0ZXJ5IGRyYWlu
-IHBlciBob3VyLg0KPiANCj4gd2hlcmUgTGludXggPSA0LjEyLXJjNiArIHRoZSBsYXRlc3QgcGF0
-Y2ggZnJvbSB5b3VyIGFjcGktcG0tdGVzdCBicmFuY2guDQo+IA0KPiBTbyB3aGlsc3QgczJpZGxl
-IGhhbHZlcyB0aGUgYmF0dGVyeSBkcmFpbiBjb21wYXJlZCB0byB0aGUgbWFjaGluZQ0KPiBzdGF5
-aW5nIHBvd2VyZWQgb24sIGl0J3Mgc3RpbGwgc2lnbmlmaWNhbnRseSBtb3JlIGRyYWluaW5nIHRo
-YW4gV2luMTAuDQo+IExldCBtZSBrbm93IGlmIHRoZXJlJ3MgYW55IG1vcmUgdXNlZnVsIGFuYWx5
-c2lzIEkgY2FuIGRvLg0KPiANCj4gLVRvbQ0KDQpUb20sDQoNClRoaXMgaXMgcXVpdGUgdXNlZnVs
-IGRhdGEgcG9pbnRzIHRvIHByb3ZpZGUsIHRoYW5rcy4NCg0KV291bGQgeW91IG1pbmQgZG9pbmcg
-b24gbW9yZSB0ZXN0IGluIHlvdXIgTGludXggY29tcGFyaXNvbiBvZiB0dXJuaW5nIG9mZiBTRCBj
-YXJkIHJlYWRlciBpbiB0aGUgQklPUyBzZXR1cD8NCg0KVGhhbmtzLA0K
+On Tue, Jun 27, 2017 at 7:07 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, June 26, 2017 01:34:52 PM Balbir Singh wrote:
+>> On Sat, Jun 3, 2017 at 11:27 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>> > On Sat 2017-06-03 20:52:32, Balbir Singh wrote:
+>> >> Kbuild reported a build failure when CONFIG_STRICT_KERNEL_RWX was
+>> >> enabled on powerpc. We don't yet have ARCH_HAS_SET_MEMORY and ppc32
+>> >> saw a build failure.
+>> >>
+>> >> fixes(50327dd kernel/power/snapshot.c: use set_memory.h header)
+>> >>
+>> >> I've only done a basic compile test with a config that has
+>> >> hibernation enabled.
+>> >>
+>> >> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> >> Cc: Len Brown <len.brown@intel.com>
+>> > Acked-by: Pavel Machek <pavel@ucw.cz>
+>>
+>> Ping. Could we please pick this up? it breaks any attempt to support
+>> STRICT_KERNEL_RWX on powerpc
+>
+> Yes, I'm going to pick it up for 4.13.
+
+Thanks,
+Balbir Singh.
