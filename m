@@ -1,61 +1,76 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH for 4.12] Revert "pinctrl: rockchip: avoid hardirq-unsafe
- functions in irq_chip"
-Date: Mon, 26 Jun 2017 23:24:09 -0700
-Message-ID: <20170627062409.GX3730@atomide.com>
-References: <20170517225634.GA11404@google.com>
- <20170527021900.GA119873@google.com>
- <20170623205911.GA143883@google.com>
- <alpine.DEB.2.20.1706232353220.2234@nanos>
- <20170627000622.GA63039@google.com>
+From: Ladislav Michl <ladis@linux-mips.org>
+Subject: Re: LTC3651 and other GPIO chargers
+Date: Tue, 27 Jun 2017 08:38:37 +0200
+Message-ID: <20170627063836.bp32zzxtf5ulu7dw@lenoch>
+References: <20170626162105.rgewvl2z2ftbxqyn@lenoch>
+ <5b439c7f-4401-5333-a45f-2d2e243902c8@topic.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:58976 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751492AbdF0GYP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 27 Jun 2017 02:24:15 -0400
+Received: from eddie.linux-mips.org ([148.251.95.138]:33170 "EHLO
+        cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751412AbdF0Gik (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 02:38:40 -0400
+Received: (from localhost user: 'ladis' uid#1021 fake: STDIN
+        (ladis@eddie.linux-mips.org)) by eddie.linux-mips.org
+        id S23993932AbdF0Gih5y7gf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 27 Jun 2017 08:38:37 +0200
 Content-Disposition: inline
-In-Reply-To: <20170627000622.GA63039@google.com>
+In-Reply-To: <5b439c7f-4401-5333-a45f-2d2e243902c8@topic.nl>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Heiko Stuebner <heiko@sntech.de>, Linus Walleij <linus.walleij@linaro.org>, linux-rockchip@lists.infradead.org, Julia Cartwright <julia@ni.com>, LKML <linux-kernel@vger.kernel.org>, linux-gpio@vger.kernel.org, John Keeping <john@metanate.com>, linux-pm@vger.kernel.org, Doug Anderson <dianders@chromium.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, "David.Wu" <david.wu@rock-chips.com>, =?utf-8?B?J+m7hOa2myc=?= <huangtao@rock-chips.com>
+To: Mike Looijmans <mike.looijmans@topic.nl>
+Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
 
-* Brian Norris <briannorris@chromium.org> [170626 17:06]:
-> So I agree that the above commit was problematic, and that you have
-> fixed that in your patch ("PM / wakeirq: Convert to SRCU"). But I
-> noticed there were other threads where people have complained about the
-> $subject patch also causing problems with drivers that call
-> disable_irq_nosync() from within an IRQ context. So I poked around with
-> one such driver that calls disable_irq_nosync() from its ISR [1], and
-> saw this:
+On Tue, Jun 27, 2017 at 07:39:21AM +0200, Mike Looijmans wrote:
+> ﻿On 26-06-17 18:21, Ladislav Michl wrote:
+> > Hi there!
+> > 
+> > A driver for LTC3651 was recently added to -next
+> > https://patchwork.kernel.org/patch/9717049/
+> > which brings a question whenever we want to add separate driver
+> > (or vendor specific bindings) for ever growing list of similar
+> > chargers. For example those using the same status output lines
+> > are: BQ24232HA, LTC4007, LTM8061, RT9502, LT3651, LT3650, TP4056,
+> > MAX1737...
+> > Others for example BQ24032A and LM3658 (which I have to support)
+> > are using different status encoding, ie. LM3658:
+> > 
+> > stat1	stat2		Condition
+> >    0	  0	Power-Down, charging is suspended or interrupted
+> >    1	  0	Pre-qualification mode, CC and CV charging
+> >    0	  1	Charge is completed
+> >    1	  1	Bad battery (Safety timer expired), or LDO mode
+> > 
+> > What about extending gpio-charger instead?
+> > - allow gpio list fdt subnode
+> >    - consider each gpio line to represent bit in a word
+> > - provide per property subnodes
+> >    - each subnode holds a mask and mapping to property values
+> > This way we should be able to cover most chargers providing status
+> > using gpios. Comments welcome and appreciated - those will turn into
+> > implementation.
 > 
-> [   14.524945] Bluetooth: : OOB Wake-on-BT configured at IRQ 56
-> [   14.531657] usbcore: registered new interface driver btusb
-> [   18.973886] BUG: sleeping function called from invalid context at kernel/locking/mutex.c:238
-> [   18.987695] in_atomic(): 1, irqs_disabled(): 128, pid: 0, name: swapper/0
-> [   18.995282] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.12.0-rc6+ #1233
-> [   19.002669] Hardware name: Google Kevin (DT)
-> [   19.007435] Call trace:
-> [   19.010171] [<ffffff8008089928>] dump_backtrace+0x0/0x24c
-> [   19.016202] [<ffffff8008089b94>] show_stack+0x20/0x28
-> [   19.021846] [<ffffff8008371270>] dump_stack+0x90/0xb0
-> [   19.027488] [<ffffff80080cd2a0>] ___might_sleep+0x10c/0x124
-> [   19.033713] [<ffffff80080cd330>] __might_sleep+0x78/0x88
-> [   19.039647] [<ffffff800879e248>] mutex_lock+0x2c/0x64
-> [   19.045291] [<ffffff80083ad578>] rockchip_irq_bus_lock+0x30/0x3c
-> [   19.052003] [<ffffff80080f6c68>] __irq_get_desc_lock+0x78/0x98
-> [   19.058519] [<ffffff80080f8e90>] __disable_irq_nosync+0x38/0x80
-> [   19.065132] [<ffffff80080f8ef8>] disable_irq_nosync+0x20/0x2c
-> [   19.071555] [<ffffff8000a99f58>] btusb_oob_wake_handler+0x4c/0x68 [btusb]
+> It's an interesting idea, and while writing the ltc3651 driver, I was
+> thinking along those lines already. However, there are only two gpio charger
+> drivers now, so I didn't see the need yet.
+> 
+> The table is an interesting approach. Something else to consider: Some gpio
+> chargers allow control as well, e.g. pulling the "charging" ping low
+> externally forces the charging to stop.
 
-Hmm so how come drivers/bluetooth/btusb.c can't use the generic
-dev_pm_set_dedicated_wake_irq()? Can you please take a look?
+Yes, the aforementioned LM3658 chip is one of such chargers. We already
+have charger-manager and gpio-regulator, but this doesn't seem to solve
+this situation as it provides "software charger ic". So for now I'm
+just misusing led class to enable charger - something which indeed needs
+to be solved properly.
 
-If there are issues remaining let's rather fix them so we can get rid
-of the custom tinkering of wake-up events in the drivers.
+> Something that might help is to create a "GPIO charger" sub-menu in Kconfig,
+> to make hunting for these drivers a bit easier.
 
-Regards,
+I hope number of these driver will stop rising after we have one to rule
+them all :-)
 
-Tony
+Best regards,
+	ladis
