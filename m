@@ -1,47 +1,104 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH for 4.12] Revert "pinctrl: rockchip: avoid hardirq-unsafe
- functions in irq_chip"
-Date: Tue, 27 Jun 2017 00:07:33 -0700
-Message-ID: <20170627070731.GA23083@google.com>
-References: <20170517225634.GA11404@google.com>
- <20170527021900.GA119873@google.com>
- <20170623205911.GA143883@google.com>
- <alpine.DEB.2.20.1706232353220.2234@nanos>
- <20170627000622.GA63039@google.com>
- <20170627062409.GX3730@atomide.com>
+From: Mike Looijmans <mike.looijmans@topic.nl>
+Subject: Re: LTC3651 and other GPIO chargers
+Date: Tue, 27 Jun 2017 08:59:17 +0200
+Message-ID: <81719e77-05a6-f5a8-e62d-e12f0a0c8d55@topic.nl>
+References: <20170626162105.rgewvl2z2ftbxqyn@lenoch>
+ <5b439c7f-4401-5333-a45f-2d2e243902c8@topic.nl>
+ <20170627063836.bp32zzxtf5ulu7dw@lenoch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:36836 "EHLO
-        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751658AbdF0HHh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 03:07:37 -0400
-Received: by mail-pf0-f175.google.com with SMTP id q86so12030056pfl.3
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jun 2017 00:07:37 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20170627062409.GX3730@atomide.com>
+Received: from mx12-04.smtp.antispamcloud.com ([46.165.232.174]:42673 "EHLO
+        mx12-04.smtp.antispamcloud.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751716AbdF0HSR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 03:18:17 -0400
+In-Reply-To: <20170627063836.bp32zzxtf5ulu7dw@lenoch>
+Content-Language: nl
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Heiko Stuebner <heiko@sntech.de>, Linus Walleij <linus.walleij@linaro.org>, linux-rockchip@lists.infradead.org, Julia Cartwright <julia@ni.com>, LKML <linux-kernel@vger.kernel.org>, linux-gpio@vger.kernel.org, John Keeping <john@metanate.com>, linux-pm@vger.kernel.org, Doug Anderson <dianders@chromium.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, "David.Wu" <david.wu@rock-chips.com>, =?utf-8?B?J+m7hOa2myc=?= <huangtao@rock-chips.com>
+To: Ladislav Michl <ladis@linux-mips.org>
+Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
 
-On Mon, Jun 26, 2017 at 11:24:09PM -0700, Tony Lindgren wrote:
-> Hmm so how come drivers/bluetooth/btusb.c can't use the generic
-> dev_pm_set_dedicated_wake_irq()? Can you please take a look?
+﻿On 27-06-17 08:38, Ladislav Michl wrote:
+> On Tue, Jun 27, 2017 at 07:39:21AM +0200, Mike Looijmans wrote:
+>> ﻿On 26-06-17 18:21, Ladislav Michl wrote:
+>>> Hi there!
+>>>
+>>> A driver for LTC3651 was recently added to -next
+>>> https://patchwork.kernel.org/patch/9717049/
+>>> which brings a question whenever we want to add separate driver
+>>> (or vendor specific bindings) for ever growing list of similar
+>>> chargers. For example those using the same status output lines
+>>> are: BQ24232HA, LTC4007, LTM8061, RT9502, LT3651, LT3650, TP4056,
+>>> MAX1737...
+>>> Others for example BQ24032A and LM3658 (which I have to support)
+>>> are using different status encoding, ie. LM3658:
+>>>
+>>> stat1	stat2		Condition
+>>>     0	  0	Power-Down, charging is suspended or interrupted
+>>>     1	  0	Pre-qualification mode, CC and CV charging
+>>>     0	  1	Charge is completed
+>>>     1	  1	Bad battery (Safety timer expired), or LDO mode
+>>>
+>>> What about extending gpio-charger instead?
+>>> - allow gpio list fdt subnode
+>>>     - consider each gpio line to represent bit in a word
+>>> - provide per property subnodes
+>>>     - each subnode holds a mask and mapping to property values
+>>> This way we should be able to cover most chargers providing status
+>>> using gpios. Comments welcome and appreciated - those will turn into
+>>> implementation.
+>>
+>> It's an interesting idea, and while writing the ltc3651 driver, I was
+>> thinking along those lines already. However, there are only two gpio charger
+>> drivers now, so I didn't see the need yet.
+>>
+>> The table is an interesting approach. Something else to consider: Some gpio
+>> chargers allow control as well, e.g. pulling the "charging" ping low
+>> externally forces the charging to stop.
+> 
+> Yes, the aforementioned LM3658 chip is one of such chargers. We already
+> have charger-manager and gpio-regulator, but this doesn't seem to solve
+> this situation as it provides "software charger ic". So for now I'm
+> just misusing led class to enable charger - something which indeed needs
+> to be solved properly.
 
-I took a look previously, and last time I did, there were too many bugs
-for it to be useful. You may have fixed the ones I reported w.r.t.
-assumptions about runtime PM.
+Yeah, LED is great for (mis)using for all kinds of generic GPIO switches. Been 
+there, done that (controlling model trains through relais for example...)
 
-I also recall there being some difficulty with supporting
-level-triggered interrupts that way. (This signal has no device-level
-mask, and it triggers for all sorts of BT activity. There may not be a
-relevant "edge".)
+The problem goes a bit deeper. There's a bit of support for everything, and 
+laptops and tablets seem to have it worked out reasonably, but for embedded 
+devices, we somehow always end up with some very bare drivers for the charger, 
+fuel gauge, charge detector, monitors, controllers and whatnot, and we always 
+need a dedicated user-mode application to stitch it all together, for example 
+to reset the battery gauge to full when the charger reports that charge has 
+completed, or changing the max charger current from 0.5 to 1.5A when a 
+dedicated charger has been detected on the USB wires. would be nice if that 
+application could get that information from the drivers so we could make a 
+generic power manager...
 
-> If there are issues remaining let's rather fix them so we can get rid
-> of the custom tinkering of wake-up events in the drivers.
 
-That's nice, but that doesn't answer my questions. Perhaps that's a side
-project. The point is that we're clearly violating the documented APIs.
+>> Something that might help is to create a "GPIO charger" sub-menu in Kconfig,
+>> to make hunting for these drivers a bit easier.
+> 
+> I hope number of these driver will stop rising after we have one to rule
+> them all :-)
 
-Brian
+True.
+
+
+
+Kind regards,
+
+Mike Looijmans
+System Expert
+
+TOPIC Products
+Materiaalweg 4, NL-5681 RJ Best
+Postbus 440, NL-5680 AK Best
+Telefoon: +31 (0) 499 33 69 79
+E-mail: mike.looijmans@topicproducts.com
+Website: www.topicproducts.com
+
+Please consider the environment before printing this e-mail
