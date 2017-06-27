@@ -1,42 +1,47 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH] ACPI / sleep: EC-based wakeup from suspend-to-idle on
- recent systems
-Date: Tue, 27 Jun 2017 09:47:45 +0300
-Message-ID: <CAHp75VeYkh4hHtLbjWwVZjT=wGp0wrq_k6XiLuFF62L2MiRVxg@mail.gmail.com>
-References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <3689795.xuIczRHZsl@aspire.rjw.lan>
- <2026371.DVJN39QYJi@aspire.rjw.lan> <2368998.dmCsnrcXZy@aspire.rjw.lan>
- <CA+55aFyBfHVyh=TMifF+0KGEVy6JEyDz=gbHdP7nM2roa++X4Q@mail.gmail.com> <CA+b4Kqd9qV0Pc7wJ2eHKcA-7+a23tY9gfe2Abm4=Bd08SKkh8w@mail.gmail.com>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH for 4.12] Revert "pinctrl: rockchip: avoid hardirq-unsafe
+ functions in irq_chip"
+Date: Tue, 27 Jun 2017 00:07:33 -0700
+Message-ID: <20170627070731.GA23083@google.com>
+References: <20170517225634.GA11404@google.com>
+ <20170527021900.GA119873@google.com>
+ <20170623205911.GA143883@google.com>
+ <alpine.DEB.2.20.1706232353220.2234@nanos>
+ <20170627000622.GA63039@google.com>
+ <20170627062409.GX3730@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f196.google.com ([209.85.216.196]:34163 "EHLO
-        mail-qt0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751510AbdF0Grr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 02:47:47 -0400
-In-Reply-To: <CA+b4Kqd9qV0Pc7wJ2eHKcA-7+a23tY9gfe2Abm4=Bd08SKkh8w@mail.gmail.com>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:36836 "EHLO
+        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751658AbdF0HHh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 03:07:37 -0400
+Received: by mail-pf0-f175.google.com with SMTP id q86so12030056pfl.3
+        for <linux-pm@vger.kernel.org>; Tue, 27 Jun 2017 00:07:37 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20170627062409.GX3730@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tom Lanyon <tom@oneshoeco.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?= <jerome.debretagne@gmail.com>, "Zheng, Lv" <lv.zheng@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Heiko Stuebner <heiko@sntech.de>, Linus Walleij <linus.walleij@linaro.org>, linux-rockchip@lists.infradead.org, Julia Cartwright <julia@ni.com>, LKML <linux-kernel@vger.kernel.org>, linux-gpio@vger.kernel.org, John Keeping <john@metanate.com>, linux-pm@vger.kernel.org, Doug Anderson <dianders@chromium.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, "David.Wu" <david.wu@rock-chips.com>, =?utf-8?B?J+m7hOa2myc=?= <huangtao@rock-chips.com>
 
-On Tue, Jun 27, 2017 at 8:50 AM, Tom Lanyon <tom@oneshoeco.com> wrote:
-> On 23 June 2017 at 12:40, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Mon, Jun 26, 2017 at 11:24:09PM -0700, Tony Lindgren wrote:
+> Hmm so how come drivers/bluetooth/btusb.c can't use the generic
+> dev_pm_set_dedicated_wake_irq()? Can you please take a look?
 
->     Linux during s2idle => 6% battery drain per hour.
->     Win10 during sleep => 1% battery drain per hour.
->
-> where Linux = 4.12-rc6 + the latest patch from your acpi-pm-test branch.
->
-> So whilst s2idle halves the battery drain compared to the machine
-> staying powered on, it's still significantly more draining than Win10.
-> Let me know if there's any more useful analysis I can do.
+I took a look previously, and last time I did, there were too many bugs
+for it to be useful. You may have fixed the ones I reported w.r.t.
+assumptions about runtime PM.
 
-Tom, thanks for this.
-I would speculate that the problem might be in the certain device
-drivers. It would be nice to get statistics which wakeup source
-generates more hits.
+I also recall there being some difficulty with supporting
+level-triggered interrupts that way. (This signal has no device-level
+mask, and it triggers for all sorts of BT activity. There may not be a
+relevant "edge".)
 
+> If there are issues remaining let's rather fix them so we can get rid
+> of the custom tinkering of wake-up events in the drivers.
 
--- 
-With Best Regards,
-Andy Shevchenko
+That's nice, but that doesn't answer my questions. Perhaps that's a side
+project. The point is that we're clearly violating the documented APIs.
+
+Brian
