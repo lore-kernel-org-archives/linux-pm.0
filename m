@@ -1,76 +1,42 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Subject: Re: LTC3651 and other GPIO chargers
-Date: Tue, 27 Jun 2017 08:38:37 +0200
-Message-ID: <20170627063836.bp32zzxtf5ulu7dw@lenoch>
-References: <20170626162105.rgewvl2z2ftbxqyn@lenoch>
- <5b439c7f-4401-5333-a45f-2d2e243902c8@topic.nl>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH] ACPI / sleep: EC-based wakeup from suspend-to-idle on
+ recent systems
+Date: Tue, 27 Jun 2017 09:47:45 +0300
+Message-ID: <CAHp75VeYkh4hHtLbjWwVZjT=wGp0wrq_k6XiLuFF62L2MiRVxg@mail.gmail.com>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <3689795.xuIczRHZsl@aspire.rjw.lan>
+ <2026371.DVJN39QYJi@aspire.rjw.lan> <2368998.dmCsnrcXZy@aspire.rjw.lan>
+ <CA+55aFyBfHVyh=TMifF+0KGEVy6JEyDz=gbHdP7nM2roa++X4Q@mail.gmail.com> <CA+b4Kqd9qV0Pc7wJ2eHKcA-7+a23tY9gfe2Abm4=Bd08SKkh8w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eddie.linux-mips.org ([148.251.95.138]:33170 "EHLO
-        cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751412AbdF0Gik (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 02:38:40 -0400
-Received: (from localhost user: 'ladis' uid#1021 fake: STDIN
-        (ladis@eddie.linux-mips.org)) by eddie.linux-mips.org
-        id S23993932AbdF0Gih5y7gf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 27 Jun 2017 08:38:37 +0200
-Content-Disposition: inline
-In-Reply-To: <5b439c7f-4401-5333-a45f-2d2e243902c8@topic.nl>
+Received: from mail-qt0-f196.google.com ([209.85.216.196]:34163 "EHLO
+        mail-qt0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751510AbdF0Grr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 02:47:47 -0400
+In-Reply-To: <CA+b4Kqd9qV0Pc7wJ2eHKcA-7+a23tY9gfe2Abm4=Bd08SKkh8w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Looijmans <mike.looijmans@topic.nl>
-Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
+To: Tom Lanyon <tom@oneshoeco.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?= <jerome.debretagne@gmail.com>, "Zheng, Lv" <lv.zheng@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>
 
-On Tue, Jun 27, 2017 at 07:39:21AM +0200, Mike Looijmans wrote:
-> ﻿On 26-06-17 18:21, Ladislav Michl wrote:
-> > Hi there!
-> > 
-> > A driver for LTC3651 was recently added to -next
-> > https://patchwork.kernel.org/patch/9717049/
-> > which brings a question whenever we want to add separate driver
-> > (or vendor specific bindings) for ever growing list of similar
-> > chargers. For example those using the same status output lines
-> > are: BQ24232HA, LTC4007, LTM8061, RT9502, LT3651, LT3650, TP4056,
-> > MAX1737...
-> > Others for example BQ24032A and LM3658 (which I have to support)
-> > are using different status encoding, ie. LM3658:
-> > 
-> > stat1	stat2		Condition
-> >    0	  0	Power-Down, charging is suspended or interrupted
-> >    1	  0	Pre-qualification mode, CC and CV charging
-> >    0	  1	Charge is completed
-> >    1	  1	Bad battery (Safety timer expired), or LDO mode
-> > 
-> > What about extending gpio-charger instead?
-> > - allow gpio list fdt subnode
-> >    - consider each gpio line to represent bit in a word
-> > - provide per property subnodes
-> >    - each subnode holds a mask and mapping to property values
-> > This way we should be able to cover most chargers providing status
-> > using gpios. Comments welcome and appreciated - those will turn into
-> > implementation.
-> 
-> It's an interesting idea, and while writing the ltc3651 driver, I was
-> thinking along those lines already. However, there are only two gpio charger
-> drivers now, so I didn't see the need yet.
-> 
-> The table is an interesting approach. Something else to consider: Some gpio
-> chargers allow control as well, e.g. pulling the "charging" ping low
-> externally forces the charging to stop.
+On Tue, Jun 27, 2017 at 8:50 AM, Tom Lanyon <tom@oneshoeco.com> wrote:
+> On 23 June 2017 at 12:40, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Yes, the aforementioned LM3658 chip is one of such chargers. We already
-have charger-manager and gpio-regulator, but this doesn't seem to solve
-this situation as it provides "software charger ic". So for now I'm
-just misusing led class to enable charger - something which indeed needs
-to be solved properly.
+>     Linux during s2idle => 6% battery drain per hour.
+>     Win10 during sleep => 1% battery drain per hour.
+>
+> where Linux = 4.12-rc6 + the latest patch from your acpi-pm-test branch.
+>
+> So whilst s2idle halves the battery drain compared to the machine
+> staying powered on, it's still significantly more draining than Win10.
+> Let me know if there's any more useful analysis I can do.
 
-> Something that might help is to create a "GPIO charger" sub-menu in Kconfig,
-> to make hunting for these drivers a bit easier.
+Tom, thanks for this.
+I would speculate that the problem might be in the certain device
+drivers. It would be nice to get statistics which wakeup source
+generates more hits.
 
-I hope number of these driver will stop rising after we have one to rule
-them all :-)
 
-Best regards,
-	ladis
+-- 
+With Best Regards,
+Andy Shevchenko
