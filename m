@@ -1,71 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: dt: Set default policy->transition_delay_ns
-Date: Tue, 27 Jun 2017 09:50:41 +0530
-Message-ID: <20170627042041.GA29665@vireshk-i7>
-References: <16157eb75bb26cca73a0da930e49f2549b96fd65.1495429745.git.viresh.kumar@linaro.org>
- <20170522111738.GB9325@leoy-ThinkPad-T440>
- <20170522112727.GI6510@vireshk-i7>
- <1537403.PHBCuCX8Fr@aspire.rjw.lan>
+From: Tom Lanyon <tom@oneshoeco.com>
+Subject: Re: [PATCH] ACPI / sleep: EC-based wakeup from suspend-to-idle on
+ recent systems
+Date: Tue, 27 Jun 2017 15:50:33 +1000
+Message-ID: <CA+b4Kqd9qV0Pc7wJ2eHKcA-7+a23tY9gfe2Abm4=Bd08SKkh8w@mail.gmail.com>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <3689795.xuIczRHZsl@aspire.rjw.lan>
+ <2026371.DVJN39QYJi@aspire.rjw.lan> <2368998.dmCsnrcXZy@aspire.rjw.lan> <CA+55aFyBfHVyh=TMifF+0KGEVy6JEyDz=gbHdP7nM2roa++X4Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:36551 "EHLO
-        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750850AbdF0EUo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 00:20:44 -0400
-Received: by mail-pf0-f174.google.com with SMTP id q86so10084616pfl.3
-        for <linux-pm@vger.kernel.org>; Mon, 26 Jun 2017 21:20:44 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1537403.PHBCuCX8Fr@aspire.rjw.lan>
+Received: from mail-wm0-f42.google.com ([74.125.82.42]:38723 "EHLO
+        mail-wm0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751786AbdF0Fuz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 01:50:55 -0400
+Received: by mail-wm0-f42.google.com with SMTP id b184so15609656wme.1
+        for <linux-pm@vger.kernel.org>; Mon, 26 Jun 2017 22:50:55 -0700 (PDT)
+In-Reply-To: <CA+55aFyBfHVyh=TMifF+0KGEVy6JEyDz=gbHdP7nM2roa++X4Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Leo Yan <leo.yan@linaro.org>, Brendan Jackman <brendan.jackman@arm.com>, linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, =?UTF-8?B?SsOpcsO0bWUgZGUgQnJldGFnbmU=?= <jerome.debretagne@gmail.com>, "Zheng, Lv" <lv.zheng@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>
 
-On 27-06-17, 02:15, Rafael J. Wysocki wrote:
-> On Monday, May 22, 2017 04:57:27 PM Viresh Kumar wrote:
-> > On 22-05-17, 19:17, Leo Yan wrote:
-> > > This afternoon Amit pointed me for this patch, should fix as below?
-> > > Otherwise it seems directly assign the same value from unit 'ns' to
-> > > 'us' but without any value conversion.
-> > > 
-> > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > > index 76877a6..dcc90fc 100644
-> > > --- a/kernel/sched/cpufreq_schedutil.c
-> > > +++ b/kernel/sched/cpufreq_schedutil.c
-> > > @@ -538,7 +538,7 @@ static int sugov_init(struct cpufreq_policy *policy)
-> > >                 unsigned int lat;
-> > >  
-> > >                 tunables->rate_limit_us = LATENCY_MULTIPLIER;
-> > > -               lat = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
+On 23 June 2017 at 12:40, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> On Thu, Jun 22, 2017 at 4:56 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>
+>> Some recent Dell laptops, including the XPS13 model numbers 9360 and
+>> 9365, cannot be woken up from suspend-to-idle by pressing the power
+>> button which is unexpected and makes that feature less usable on
+>> those systems.  [ details removed ]
+>
+> This looks much more reasonable and more likely to work on future machines too.
+>
+> Of course, who knows what broken machines it will cause problems on,
+> but it sounds like the code now does what it's supposed to and what
+> Win10 does, so maybe it JustWorks(tm). Hah.
 
-I think the above line is just fine and the below one is incorrect, as
-we wanted to convert transition latency to usec here (i.e. in the
-units of rate_limit_us).
+Rafael - thanks for your efforts on this.
 
-> > > +               lat = policy->cpuinfo.transition_latency / NSEC_PER_MSEC;
-> > >                 if (lat)
-> > >                         tunables->rate_limit_us *= lat;
-> > >         }
-> > 
-> > I will let Rafael comment in as well. NSEC_PER_USEC is used in the
-> > earlier governors as well (ondemand/conservative) in exactly the same
-> > way as schedutil is using.
-> 
-> The reason why it is used by schedutil is because the other governors used it
-> that way.  IOW, doesn't matter. :-)
+I wanted to provide some feedback from some quick and naive tests on
+an XPS 13 9365 in case it was useful, as it seems like there's still
+some way to go before matching Win10's behaviour.
 
-But I feel the value of LATENCY_MULTIPLIER (1000) is way too high. It currently
-says that if freq-switching takes time X, then we should wait for 999X time
-before we change the freq again.
+    Linux idling w/ screen ON => 17% battery drain per hour.
+    Linux idling w/ screen OFF => 12% battery drain per hour.
+    Linux during s2idle => 6% battery drain per hour.
+    Win10 during sleep => 1% battery drain per hour.
 
-Perhaps LATENCY_MULTIPLIER should be just 10 or 20 here. For a platform with
-transition_latency 500 us, rate_limit_us comes to 500 ms. Which is absurd. We
-ideally want it to be around 10-20 ms here. And compared to other ARM platforms,
-500 us transition_latency is very low. It normally is around 1-3 ms for ARM32
-platforms.
+where Linux = 4.12-rc6 + the latest patch from your acpi-pm-test branch.
 
-@Rafael: Will it be fine to lower down the value of LATENCY_MULTIPLIER?
+So whilst s2idle halves the battery drain compared to the machine
+staying powered on, it's still significantly more draining than Win10.
+Let me know if there's any more useful analysis I can do.
 
--- 
-viresh
+-Tom
