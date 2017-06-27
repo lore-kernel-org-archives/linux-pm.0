@@ -1,79 +1,39 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH for 4.12] Revert "pinctrl: rockchip: avoid hardirq-unsafe
- functions in irq_chip"
-Date: Tue, 27 Jun 2017 00:32:50 -0700
-Message-ID: <20170627073249.GY3730@atomide.com>
-References: <20170517225634.GA11404@google.com>
- <20170527021900.GA119873@google.com>
- <20170623205911.GA143883@google.com>
- <alpine.DEB.2.20.1706232353220.2234@nanos>
- <20170627000622.GA63039@google.com>
- <20170627062409.GX3730@atomide.com>
- <20170627070731.GA23083@google.com>
+From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Subject: Re: [PATCH 1/9] i2c: designware: Fix system suspend
+Date: Tue, 27 Jun 2017 10:33:33 +0300
+Message-ID: <bca550fd-3821-fb14-c3b0-8f05c7a1fdff@linux.intel.com>
+References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
+ <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com>
+ <20170622104933.GY629@lahna.fi.intel.com> <2842386.AFZiXzV2Sq@aspire.rjw.lan>
+ <CAPDyKFo80QWYhU_SFexr_riPSZS3QEXDyBcywa5qBYa3sJXcjw@mail.gmail.com>
+ <CAJZ5v0irHvYXHv1GykatTH+XROZyL0nR0c=KfdSrpH395s6V8g@mail.gmail.com>
+ <CAPDyKFov=08AQw0PPPgcFbrerTskoPGfLZcJL9gjikfQfZUJpw@mail.gmail.com>
+ <4324e2c8-ab79-5a21-a8ab-c660920cba59@ti.com>
+ <CAJZ5v0i-AgTDTOX+O41abVsnahU9V=NV+HEW0vajhBqGfJuUEg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:59170 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751492AbdF0Hcz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 27 Jun 2017 03:32:55 -0400
-Content-Disposition: inline
-In-Reply-To: <20170627070731.GA23083@google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0i-AgTDTOX+O41abVsnahU9V=NV+HEW0vajhBqGfJuUEg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Heiko Stuebner <heiko@sntech.de>, Linus Walleij <linus.walleij@linaro.org>, linux-rockchip@lists.infradead.org, Julia Cartwright <julia@ni.com>, LKML <linux-kernel@vger.kernel.org>, linux-gpio@vger.kernel.org, John Keeping <john@metanate.com>, linux-pm@vger.kernel.org, Doug Anderson <dianders@chromium.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, "David.Wu" <david.wu@rock-chips.com>, =?utf-8?B?J+m7hOa2myc=?= <huangtao@rock-chips.com>
 
-* Brian Norris <briannorris@chromium.org> [170627 00:07]:
-> On Mon, Jun 26, 2017 at 11:24:09PM -0700, Tony Lindgren wrote:
-> > Hmm so how come drivers/bluetooth/btusb.c can't use the generic
-> > dev_pm_set_dedicated_wake_irq()? Can you please take a look?
-> 
-> I took a look previously, and last time I did, there were too many bugs
-> for it to be useful. You may have fixed the ones I reported w.r.t.
-> assumptions about runtime PM.
+On 06/27/2017 12:11 AM, Rafael J. Wysocki wrote:
+> On Mon, Jun 26, 2017 at 9:39 PM, Grygorii Strashko
+>> Wouldn't it fix suspend for this driver if you will just replace
+>> dw_i2c_plat_suspend() with pm_runtime_force_suspend() in SET_SYSTEM_SLEEP_PM_OPS() as
+>> you've done in patch 9?
+>>
+>> And, I think, direct_complete path should still work after this also.
+>
+> That's a good point and I was about to mention that.
+>
+Unfortunately it will cause regression to platforms using 
+drivers/acpi/acpi_lpss.c power domain:
 
-Yes several issues got fixed over past few years. If you find issues
-please let me know, otherwise I can't help.
+http://www.spinics.net/lists/linux-i2c/msg29079.html
 
-> I also recall there being some difficulty with supporting
-> level-triggered interrupts that way. (This signal has no device-level
-> mask, and it triggers for all sorts of BT activity. There may not be a
-> relevant "edge".)
-
-Well typically the wakeirq needs to be disabled during runtime like we
-do for the generic wakeirqs. It might be connected to the RX line for
-example so it's just noise during runtime. If you actually need it during
-runtime then it's a separate story but I doubt that's the case here.
-
-Talking of GPIO interrupt triggering, I wonder if something like below
-might help? It seems we're missing the setting of triggering, see below.
-
-> > If there are issues remaining let's rather fix them so we can get rid
-> > of the custom tinkering of wake-up events in the drivers.
-> 
-> That's nice, but that doesn't answer my questions. Perhaps that's a side
-> project. The point is that we're clearly violating the documented APIs.
-
-Certainly all these issues need to be fixed if we intent to use it. Funny
-how I have not run into these with my test cases. Do you have a GPIO
-irqchip on I2C for handling the wake-up interrupts?
-
-Regards,
-
-Tony
-
-8< -------
-diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
---- a/drivers/base/power/wakeirq.c
-+++ b/drivers/base/power/wakeirq.c
-@@ -198,7 +198,8 @@ int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
- 	 * so we use a threaded irq.
- 	 */
- 	err = request_threaded_irq(irq, NULL, handle_threaded_wake_irq,
--				   IRQF_ONESHOT, dev_name(dev), wirq);
-+				   irq_get_trigger_type(irq) | IRQF_ONESHOT,
-+				   dev_name(dev), wirq);
- 	if (err)
- 		goto err_free;
- 
+-- 
+Jarkko
