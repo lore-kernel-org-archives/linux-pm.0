@@ -1,87 +1,73 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/9] i2c: designware: Fix system suspend
-Date: Tue, 27 Jun 2017 17:25:59 +0200
-Message-ID: <CAJZ5v0i6zEmb1anxL2ge5YqDJ6jMZA2v4W-u65AtoZv8b7Z89w@mail.gmail.com>
-References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com>
- <20170622104933.GY629@lahna.fi.intel.com> <2842386.AFZiXzV2Sq@aspire.rjw.lan>
- <CAPDyKFo80QWYhU_SFexr_riPSZS3QEXDyBcywa5qBYa3sJXcjw@mail.gmail.com>
- <CAJZ5v0irHvYXHv1GykatTH+XROZyL0nR0c=KfdSrpH395s6V8g@mail.gmail.com>
- <CAPDyKFov=08AQw0PPPgcFbrerTskoPGfLZcJL9gjikfQfZUJpw@mail.gmail.com>
- <4324e2c8-ab79-5a21-a8ab-c660920cba59@ti.com> <CAJZ5v0i-AgTDTOX+O41abVsnahU9V=NV+HEW0vajhBqGfJuUEg@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: dt: Set default policy->transition_delay_ns
+Date: Tue, 27 Jun 2017 18:08:43 +0200
+Message-ID: <CAJZ5v0hWQ0=3aB1Xp2tU1RyMfVhg-9xZiix8ccpH_MjvqS5PAw@mail.gmail.com>
+References: <16157eb75bb26cca73a0da930e49f2549b96fd65.1495429745.git.viresh.kumar@linaro.org>
+ <20170522111738.GB9325@leoy-ThinkPad-T440> <20170522112727.GI6510@vireshk-i7>
+ <1537403.PHBCuCX8Fr@aspire.rjw.lan> <20170627042041.GA29665@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0i-AgTDTOX+O41abVsnahU9V=NV+HEW0vajhBqGfJuUEg@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:33195 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751483AbdF0QIp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 12:08:45 -0400
+In-Reply-To: <20170627042041.GA29665@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Leo Yan <leo.yan@linaro.org>, Brendan Jackman <brendan.jackman@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>
 
-On Mon, Jun 26, 2017 at 11:11 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Mon, Jun 26, 2017 at 9:39 PM, Grygorii Strashko
-> <grygorii.strashko@ti.com> wrote:
->> On 06/26/2017 11:49 AM, Ulf Hansson wrote:
+Hi,
+
+On Tue, Jun 27, 2017 at 6:20 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 27-06-17, 02:15, Rafael J. Wysocki wrote:
+>> On Monday, May 22, 2017 04:57:27 PM Viresh Kumar wrote:
+>> > On 22-05-17, 19:17, Leo Yan wrote:
+>> > > This afternoon Amit pointed me for this patch, should fix as below?
+>> > > Otherwise it seems directly assign the same value from unit 'ns' to
+>> > > 'us' but without any value conversion.
+>> > >
+>> > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+>> > > index 76877a6..dcc90fc 100644
+>> > > --- a/kernel/sched/cpufreq_schedutil.c
+>> > > +++ b/kernel/sched/cpufreq_schedutil.c
+>> > > @@ -538,7 +538,7 @@ static int sugov_init(struct cpufreq_policy *policy)
+>> > >                 unsigned int lat;
+>> > >
+>> > >                 tunables->rate_limit_us = LATENCY_MULTIPLIER;
+>> > > -               lat = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
 >
-> [cut]
+> I think the above line is just fine and the below one is incorrect, as
+> we wanted to convert transition latency to usec here (i.e. in the
+> units of rate_limit_us).
 >
->>>>> This makes it worse in that sense, that then you don't even need an
->>>>> i2c slave to trigger the problem.
->>>>
->>>> In that case your changelog is a bit misleading.
->>>
->>> Yeah, it is! I didn't realize that until I fully investigated the revert option.
->>>
->>>>
->>>> It looks like the commit in question attempted to fix exactly this
->>>> issue, but it failed, so it should be replaced with something else
->>>> which is what your patch is effectively doing.
->>>>
->>>> IMO you should describe the original problem, explain why that commit
->>>> is not sufficient to fix it and then describe the final fix.
->>>>
->>>> Anyway, after reading the changelog it should be clear that things
->>>> were broken before the commit in question.
->>>>
->>>> And BTW I'm not really sure how the rest of the series is related to this?
->>>
->>> Going back in history, I realize the system sleep support in this
->>> driver has been broken even before the commit $subject patch intends
->>> to fix.
->>> However it has been working fine for the ACPI case, because of how the
->>> ACPI PM domain manages its devices during system sleep.
->>>
->>> The commit in question, adds an improvement to the driver, because it
->>> enables the direct_complete path. For ACPI, that was already working,
->>> but not for the other cases. So to be able to support the similar
->>> improvement as the direct_complete path offers, as that isn't working
->>> for this driver, I tried out using the runtime PM centric path
->>> instead. That is what the rest of the changes in this series takes
->>> care of.
->>>
->>> Now, as the system sleep support is broken I wanted to make a simple
->>> fix for that first, via $subject patch. I guess what makes this a bit
->>> confusing is that I shouldn't point to a certain commit, but rather
->>> just add a stable tag and update the changelog accordingly.
->
-> I agree, modulo the below.
->
+>> > > +               lat = policy->cpuinfo.transition_latency / NSEC_PER_MSEC;
+>> > >                 if (lat)
+>> > >                         tunables->rate_limit_us *= lat;
+>> > >         }
+>> >
+>> > I will let Rafael comment in as well. NSEC_PER_USEC is used in the
+>> > earlier governors as well (ondemand/conservative) in exactly the same
+>> > way as schedutil is using.
 >>
->> Wouldn't it fix suspend for this driver if you will just replace
->> dw_i2c_plat_suspend() with pm_runtime_force_suspend() in SET_SYSTEM_SLEEP_PM_OPS() as
->> you've done in patch 9?
->>
->> And, I think, direct_complete path should still work after this also.
+>> The reason why it is used by schedutil is because the other governors used it
+>> that way.  IOW, doesn't matter. :-)
 >
-> That's a good point and I was about to mention that.
+> But I feel the value of LATENCY_MULTIPLIER (1000) is way too high. It currently
+> says that if freq-switching takes time X, then we should wait for 999X time
+> before we change the freq again.
 >
-> In any case, even if the pm_runtime_resume() added by the $subject
-> patch is necessary to start with, it could be added to the ->suspend
+> Perhaps LATENCY_MULTIPLIER should be just 10 or 20 here. For a platform with
+> transition_latency 500 us, rate_limit_us comes to 500 ms. Which is absurd. We
+> ideally want it to be around 10-20 ms here. And compared to other ARM platforms,
+> 500 us transition_latency is very low. It normally is around 1-3 ms for ARM32
+> platforms.
+>
+> @Rafael: Will it be fine to lower down the value of LATENCY_MULTIPLIER?
 
-I meant ->resume, sorry.
-
-> callback of the driver instead of the ->complete one, in which case
-> the ACPI path would not be affected by this change.
+We can do that, but then I think we need to compensate for the change
+in the old governors code or there may be surprises.
 
 Thanks,
 Rafael
