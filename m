@@ -1,59 +1,62 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] powercap/rapl: prevent overridding bits outside of the
- mask
-Date: Tue, 27 Jun 2017 09:25:56 -0700
-Message-ID: <20170627092556.082a58c7@jacob-builder>
-References: <20170601092150.4474-1-adam.lessnau@intel.com>
-        <30611930.SfmUctH6tv@aspire.rjw.lan>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH for 4.12] Revert "pinctrl: rockchip: avoid hardirq-unsafe
+ functions in irq_chip"
+Date: Tue, 27 Jun 2017 18:35:11 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1706271621530.1798@nanos>
+References: <20170517225634.GA11404@google.com> <20170627000622.GA63039@google.com> <alpine.DEB.2.20.1706271357520.1798@nanos> <1674651.7QIPUCEQPh@diego>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; BOUNDARY="8323329-1454316633-1498578140=:1798"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:39868 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752530AbdF0QYS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 27 Jun 2017 12:24:18 -0400
-In-Reply-To: <30611930.SfmUctH6tv@aspire.rjw.lan>
+Received: from Galois.linutronix.de ([146.0.238.70]:47272 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751501AbdF0Qf3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 12:35:29 -0400
+In-Reply-To: <1674651.7QIPUCEQPh@diego>
+Content-ID: <alpine.DEB.2.20.1706271834500.1798@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Adam Lessnau <adam.lessnau@intel.com>, linux-pm@vger.kernel.org, jacob.jun.pan@linux.intel.com
+To: =?ISO-8859-15?Q?Heiko_St=FCbner?= <heiko@sntech.de>
+Cc: Brian Norris <briannorris@chromium.org>, Linus Walleij <linus.walleij@linaro.org>, linux-rockchip@lists.infradead.org, Julia Cartwright <julia@ni.com>, LKML <linux-kernel@vger.kernel.org>, linux-gpio@vger.kernel.org, John Keeping <john@metanate.com>, linux-pm@vger.kernel.org, Doug Anderson <dianders@chromium.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, Tony Lindgren <tony@atomide.com>, "David.Wu" <david.wu@rock-chips.com>, =?ISO-2022-JP?Q?'=1B$B2+Es=1B=28J'?= <huangtao@rock-chips.com>
 
-On Tue, 27 Jun 2017 02:17:32 +0200
-"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Thursday, June 01, 2017 11:21:50 AM Adam Lessnau wrote:
-> > Fixes wrong bits shift operation in the rapl_write_data_raw
-> > function, which might cause overridding bits outside of the mask.
-> > 
-> > For example, writing new TIME_WINDOW1 value can override
-> > POWER_LIMIT1.
-> > 
-> > Signed-off-by: Adam Lessnau <adam.lessnau@intel.com>  
-> 
-> Jacob, any comments?
-> 
-Looks like a good fix. Thanks.
-> > ---
-> >  drivers/powercap/intel_rapl.c | 4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/powercap/intel_rapl.c
-> > b/drivers/powercap/intel_rapl.c index 3c71f608b444..6dc27afb8527
-> > 100644 --- a/drivers/powercap/intel_rapl.c
-> > +++ b/drivers/powercap/intel_rapl.c
-> > @@ -887,7 +887,9 @@ static int rapl_write_data_raw(struct
-> > rapl_domain *rd, 
-> >  	cpu = rd->rp->lead_cpu;
-> >  	bits = rapl_unit_xlate(rd, rp->unit, value, 1);
-> > -	bits |= bits << rp->shift;
-> > +	bits <<= rp->shift;
-> > +	bits &= rp->mask;
-> > +
-> >  	memset(&ma, 0, sizeof(ma));
-> >  
-> >  	ma.msr_no = rd->msrs[rp->id];
-> >   
-> 
+--8323329-1454316633-1498578140=:1798
+Content-Type: text/plain; CHARSET=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+Content-ID: <alpine.DEB.2.20.1706271834501.1798@nanos>
 
-[Jacob Pan]
+On Tue, 27 Jun 2017, Heiko Stübner wrote:
+> Am Dienstag, 27. Juni 2017, 15:01:32 CEST schrieb Thomas Gleixner:
+> > The only irq chip function which uses the regmap magic is the
+> > irq_set_type() callback. Now, I have a hard time to understand (though I'm
+> > no regmap/pinctrl expert) why that regmap stuff needs to be called in the
+> > first place. The level and the polarity are programmed via:
+> > 
+> >         writel_relaxed(level, gc->reg_base + GPIO_INTTYPE_LEVEL);
+> >         writel_relaxed(polarity, gc->reg_base + GPIO_INT_POLARITY);
+> > 
+> > Why needs the regmap machinery to be invoked there? The GPIO is already
+> > muxed and configured as interrupt, otherwise none of the irq functions
+> > could be invoked. Hmm?
+> 
+> That is a safeguard against the pinmux not being set as "gpio" but some other 
+> function, if the irq is requested directly without going through the gpio API. 
+> 
+> But looking at struct irq_chip and also other pinctrl drivers again, it seems
+> the new [0] irq_request_resources might be the way saner place for this.
+> Especially as it also prevents the mux-setting from being called more than 
+> once.
+
+That'll fail on RT as well because irq_request_resources() is called with
+irq_desc->lock held and interrupts disabled.
+
+irq_request_resources() can probably be called without holding desc->lock,
+though we need some form of protection against concurrent irq
+requests/free. I'll have look into that.
+
+Thanks,
+
+	tglx
+
+--8323329-1454316633-1498578140=:1798--
