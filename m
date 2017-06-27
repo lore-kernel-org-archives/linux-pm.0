@@ -1,42 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 0/8] PM / Domains: Bunch of small improvements and fixes
-Date: Wed, 28 Jun 2017 00:51:45 +0200
-Message-ID: <4345431.pLgQ8x6N6R@aspire.rjw.lan>
-References: <20170612151748.7380-1-krzk@kernel.org>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v2 0/5] PM: Unify the handling of device wakeup settings
+Date: Tue, 27 Jun 2017 18:43:26 -0500
+Message-ID: <20170627234326.GO17844@bhelgaas-glaptop.roam.corp.google.com>
+References: <12296383.UdE5HVtyng@aspire.rjw.lan>
+ <2524735.NRzn8A9HAf@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:48386 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753886AbdF0W7L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Jun 2017 18:59:11 -0400
-In-Reply-To: <20170612151748.7380-1-krzk@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2524735.NRzn8A9HAf@aspire.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, June 12, 2017 05:17:40 PM Krzysztof Kozlowski wrote:
-> Hi,
+Hi Rafael,
+
+On Sat, Jun 24, 2017 at 01:50:55AM +0200, Rafael J. Wysocki wrote:
+> On Monday, June 19, 2017 11:31:58 PM Rafael J. Wysocki wrote:
+> > Hi All,
+> > 
+> > The handling of device wakeup settings, especially in the ACPI core and the PCI
+> > bus type, depends on whether it is about system wakeup from sleep states or
+> > remote wakeup in the working state (runtime).  However, that distinction is
+> > mostly based on the ACPI concept of "wakeup" and "runtime" GPEs, which is
+> > somewhat artificial, because the underlying hardware mechanism is basically
+> > the same in both cases.
+> > 
+> > Moreover, suspend-to-idle is now supported as a sleep state and wakeup from it
+> > is based on exactly the same hardware capabilities as the working-state
+> > (runtime) remote wakeup.
+> > 
+> > The following patch series removes that distinction and unifies the handling of
+> > device wakeup settings between system sleep and runtime.  It also fixes one
+> > issue related to wakeup signaling through PCI bridges.
+> > 
+> > [1/6]: Get rid of the "runtime wakeup" concept from the ACPI core.
+> > [2/6]: Unify device wakeup settings code paths in the ACPI core.
+> > [3-4/6]: Unify device wakeup settings code paths in the PCI bus type code.
+> > [5/6]: Fix wakeup-related issue with bridges in the PCI bus type code.
+> > [6/6]: Get rid of the "runtime wakeup" concept from the driver core.
+> > 
+> > The series is based on current linux-next and will be made available for
+> > testing in the linux-pm.git tree in a couple of days.
 > 
-> Changes since v1:
-> =================
-> 1. Patch 2/8: Follow Ulf's advice and use genpd_lookup_dev() which also
->    solves risk of calling this for non-genpd (thus I added Ulf's
->    Reported-by).
+> Here's a v2 with tentatively added Reviewed-by tags from Mika.
 > 
-> Description:
-> ============
-> Except adding lockdep assert to domains list mutex (3/8), all patches
-> are independent.  Including the fixes for unsafe loop iteration.
+> I've dropped patch [5/6] from the previous iteration as it didn't really belong
+> here and the issue it attempted to fix is rather theoretical.  I'm going to
+> take a different approach there.
 > 
-> The last patch is RFC as this brings small overhead.
+> Apart from this, the function previously called acpi_pm_device_wakeup() has
+> a different name now: acpi_pm_set_device_wakeup(), to possibly avoid
+> confusion about its purpose.
+> 
+> Also the changelog of patch [3/5] has been modified slightly.
 
-I've applied the [1/8] from this set, but I realize that some other patches in
-it have been ACKed by Ulf, so can you please resend those with the tags?
+This series does touch drivers/pci, but is mostly ACPI.  Do you want
+to take it via your tree?  I have a couple PM changes in my tree, but
+I don't see anything that should conflict with this series.
 
-Unless, of course, they depend on the ones that have not been ACKed still.
+For the PCI parts:
 
-Thanks,
-Rafael
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
