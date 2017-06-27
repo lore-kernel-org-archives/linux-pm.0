@@ -1,40 +1,73 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 0/9] Drop unnecessary static
-Date: Tue, 27 Jun 2017 16:47:37 -0700
-Message-ID: <CAGXu5jK+oz7SoBKmHDjUpmZ96=keiou+75WK2or37Z8RL9jLxA@mail.gmail.com>
-References: <1493928654-18768-1-git-send-email-Julia.Lawall@lip6.fr>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 0/5] PM: Unify the handling of device wakeup settings
+Date: Wed, 28 Jun 2017 01:49:29 +0200
+Message-ID: <CAJZ5v0jzyj=gEu9NXYaf1mM3XG+4GcRuWcz+Pwhq67ZVEg4Y4w@mail.gmail.com>
+References: <12296383.UdE5HVtyng@aspire.rjw.lan> <2524735.NRzn8A9HAf@aspire.rjw.lan>
+ <20170627234326.GO17844@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-janitors-owner@vger.kernel.org>
-In-Reply-To: <1493928654-18768-1-git-send-email-Julia.Lawall@lip6.fr>
-Sender: kernel-janitors-owner@vger.kernel.org
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, kernel-janitors@vger.kernel.org, Linux mtd <linux-mtd@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, drbd-dev@lists.linbit.com, linux-omap@vger.kernel.org, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, linux-input <linux-input@vger.kernel.org>, linux-iio@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170627234326.GO17844@bhelgaas-glaptop.roam.corp.google.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 4, 2017 at 1:10 PM, Julia Lawall <Julia.Lawall@lip6.fr> wrote:
-> These patches fix cases where there is a static on a local variable, but
-> the variable is either first initialized or never used, on every possible
-> execution path through the function.  The static has no benefit, and
-> dropping it reduces the code size.
+On Wed, Jun 28, 2017 at 1:43 AM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> Hi Rafael,
+
+Hi Bjorn,
+
+> On Sat, Jun 24, 2017 at 01:50:55AM +0200, Rafael J. Wysocki wrote:
+>> On Monday, June 19, 2017 11:31:58 PM Rafael J. Wysocki wrote:
+>> > Hi All,
+>> >
+>> > The handling of device wakeup settings, especially in the ACPI core and the PCI
+>> > bus type, depends on whether it is about system wakeup from sleep states or
+>> > remote wakeup in the working state (runtime).  However, that distinction is
+>> > mostly based on the ACPI concept of "wakeup" and "runtime" GPEs, which is
+>> > somewhat artificial, because the underlying hardware mechanism is basically
+>> > the same in both cases.
+>> >
+>> > Moreover, suspend-to-idle is now supported as a sleep state and wakeup from it
+>> > is based on exactly the same hardware capabilities as the working-state
+>> > (runtime) remote wakeup.
+>> >
+>> > The following patch series removes that distinction and unifies the handling of
+>> > device wakeup settings between system sleep and runtime.  It also fixes one
+>> > issue related to wakeup signaling through PCI bridges.
+>> >
+>> > [1/6]: Get rid of the "runtime wakeup" concept from the ACPI core.
+>> > [2/6]: Unify device wakeup settings code paths in the ACPI core.
+>> > [3-4/6]: Unify device wakeup settings code paths in the PCI bus type code.
+>> > [5/6]: Fix wakeup-related issue with bridges in the PCI bus type code.
+>> > [6/6]: Get rid of the "runtime wakeup" concept from the driver core.
+>> >
+>> > The series is based on current linux-next and will be made available for
+>> > testing in the linux-pm.git tree in a couple of days.
+>>
+>> Here's a v2 with tentatively added Reviewed-by tags from Mika.
+>>
+>> I've dropped patch [5/6] from the previous iteration as it didn't really belong
+>> here and the issue it attempted to fix is rather theoretical.  I'm going to
+>> take a different approach there.
+>>
+>> Apart from this, the function previously called acpi_pm_device_wakeup() has
+>> a different name now: acpi_pm_set_device_wakeup(), to possibly avoid
+>> confusion about its purpose.
+>>
+>> Also the changelog of patch [3/5] has been modified slightly.
 >
-> ---
+> This series does touch drivers/pci, but is mostly ACPI.  Do you want
+> to take it via your tree?
+
+Yes, I do.
+
+> I have a couple PM changes in my tree, but
+> I don't see anything that should conflict with this series.
 >
->  drivers/block/drbd/drbd_nl.c            |    2 +-
->  drivers/clocksource/timer-fttmr010.c    |    2 +-
->  drivers/iio/accel/hid-sensor-accel-3d.c |    2 +-
->  drivers/mfd/max8925-i2c.c               |    2 +-
->  drivers/mfd/twl4030-irq.c               |    2 +-
->  drivers/mtd/chips/cfi_cmdset_0020.c     |    2 +-
->  drivers/mtd/maps/physmap_of_gemini.c    |    2 +-
->  drivers/power/supply/axp20x_usb_power.c |    2 +-
->  drivers/regulator/palmas-regulator.c    |    2 +-
->  9 files changed, 9 insertions(+), 9 deletions(-)
+> For the PCI parts:
+>
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-It looks like most of these were taken. I pinged the other three. Thanks!
-
--Kees
-
--- 
-Kees Cook
-Pixel Security
+Thanks!
