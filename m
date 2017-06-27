@@ -1,118 +1,62 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH] i2c: designware: Do nothing in system suspend/resume
- when RT suspended
-Date: Tue, 27 Jun 2017 17:34:56 +0300
-Message-ID: <1498574096.22624.201.camel@linux.intel.com>
-References: <20170330120444.12499-1-jarkko.nikula@linux.intel.com>
-         <CAPDyKFqfDYg1ZzcJ2Z7md5CD6tYWRMwi4N8M82DesG_ybVKHMw@mail.gmail.com>
-         <da36d4c0-7bcb-be18-6c8c-9fd714e2f1e0@linux.intel.com>
-         <CAPDyKFqg3TDMwBO7a-1zuKYeLjE-BQ4RPmtXFKzA0s2a50jQqg@mail.gmail.com>
-         <CAPDyKFrJGFHvvM=-xYLcSTtv0FVvo=CNjnA9RAdm=pUrg552GQ@mail.gmail.com>
-         <CAPDyKFoqZuv3niz_0FQ1WVP2+gNjebxw9zLVnJ-L0WN24LK3eA@mail.gmail.com>
-         <1497974938.22624.170.camel@linux.intel.com>
-         <CAPDyKFrC8PEu4v+Ce4Y-ZE+9dRs3OR7TcTrPA54qKGtZjkNL3A@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] ACPI / sleep: EC-based wakeup from suspend-to-idle on recent systems
+Date: Tue, 27 Jun 2017 17:03:48 +0200
+Message-ID: <1908911.91yT2N6t2f@aspire.rjw.lan>
+References: <1979543.KIEJ8uyRaT@aspire.rjw.lan> <CA+55aFyBfHVyh=TMifF+0KGEVy6JEyDz=gbHdP7nM2roa++X4Q@mail.gmail.com> <CA+b4Kqd9qV0Pc7wJ2eHKcA-7+a23tY9gfe2Abm4=Bd08SKkh8w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrC8PEu4v+Ce4Y-ZE+9dRs3OR7TcTrPA54qKGtZjkNL3A@mail.gmail.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Hans de Goede <hdegoede@redhat.com>
-Cc: Jarkko Nikula <jarkko.nikula@linux.intel.com>, John Stultz <john.stultz@linaro.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CA+b4Kqd9qV0Pc7wJ2eHKcA-7+a23tY9gfe2Abm4=Bd08SKkh8w@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Tom Lanyon <tom@oneshoeco.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>, =?ISO-8859-1?Q?J=E9r=F4me?= de Bretagne <jerome.debretagne@gmail.com>, "Zheng, Lv" <lv.zheng@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-+Cc: Hans.
-
-On Wed, 2017-06-21 at 16:40 +0200, Ulf Hansson wrote:
-> On 20 June 2017 at 18:08, Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> wrote:
-> > On Tue, 2017-06-20 at 15:07 +0200, Ulf Hansson wrote:
-> > > On 16 June 2017 at 15:49, Ulf Hansson <ulf.hansson@linaro.org>
-> > > wrote:
-> > > > Jarkko, Andy,
-> > > > 
-> > > > I just wanted to mention that I haven't forgot about this, I am
-> > > > doing
-> > > > the final changes for the ACPI PM domain at this very moment,
-> > > > however
-> > > > I need a couple of more days more before I can post something.
-> > > > 
-
-> > I have gone through the series briefly.
-> > My concern is a quite nasty bug we have workaround for in
-> > acpi_lpss.c,
-> > i.e. auto power gating of DesignWare DMA on Intel Braswell
-> > (CherryTrail)
-> > platforms when it's enumerated via ACPI.
+On Tuesday, June 27, 2017 03:50:33 PM Tom Lanyon wrote:
+> On 23 June 2017 at 12:40, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > On Thu, Jun 22, 2017 at 4:56 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >>
+> >> Some recent Dell laptops, including the XPS13 model numbers 9360 and
+> >> 9365, cannot be woken up from suspend-to-idle by pressing the power
+> >> button which is unexpected and makes that feature less usable on
+> >> those systems.  [ details removed ]
+> >
+> > This looks much more reasonable and more likely to work on future machines too.
+> >
+> > Of course, who knows what broken machines it will cause problems on,
+> > but it sounds like the code now does what it's supposed to and what
+> > Win10 does, so maybe it JustWorks(tm). Hah.
 > 
-> First, as long as there is no driver calling the new API
-> acpi_dev_disable_direct_comlete(), the ACPI PM domain should behave
-> exactly the same as before these changes.
+> Rafael - thanks for your efforts on this.
+
+You're welcome!
+
+> I wanted to provide some feedback from some quick and naive tests on
+> an XPS 13 9365 in case it was useful, as it seems like there's still
+> some way to go before matching Win10's behaviour.
 > 
-> However, regarding your concern, can you please be a bit more precise
-> on how you deal with the problems. I would appreciate if you could
-> give me real pointers to the code for the workaround, the above is too
-> hand wavy for me to understand.
-
-In acpi_lpss.c there are big comments about this issue.
-
-Hans, Cc'ed, is working on that in relation to PWM power problems.
-
+>     Linux idling w/ screen ON => 17% battery drain per hour.
+>     Linux idling w/ screen OFF => 12% battery drain per hour.
+>     Linux during s2idle => 6% battery drain per hour.
+>     Win10 during sleep => 1% battery drain per hour.
 > 
-> So where things really starts to change is in the final i2c patch in
-> the series, which converts the i2c designware platform driver to use
-> the runtime PM centric approach, and to do that, it calls the
-> acpi_dev_disable_direct_complete().
-
-Does it mean we will loose a possibility to use DMA for I2C (not much I
-care about and would be unlikely a user for this, just wondering)?
-
-> > 
-> > Below is the sequence to test if it works and survives removal and
-> > system sleep (lpss-power.sh is the script which shows a power state
-> > of
-> > selected devices along with PMC Atom status registers and runtime
-> > PM):
-> > 
-> >    0 lpss-power.sh
-> >    1 mount -t debugfs none /sys/kernel/debug
-> >    2 lpss-power.sh
-> >    3 modprobe i2c-designware-platform
-> >    4 lpss-power.sh
-> >    5 modprobe sdhci-acpi
-> >    6 lpss-power.sh
-> >    7 lsmod
-> >    8 modprobe dw-dmac
-> >    9 lpss-power.sh
-> >   10 modprobe -r dw-dmac
-> >   11 lpss-power.sh
-> >   12 modprobe dw-dmac
-> >   13 lpss-power.sh
-> >   14 rtcwake -m mem -s3
-> >   15 lpss-power.sh
-> >   16 modprobe -r dw-dmac
-> >   17 lpss-power.sh
-> >   18 modprobe dw-dmac
-> >   19 lpss-power.sh
-> >   20 stty -F /dev/ttyS2 921600
-> >   21 dmesg > /dev/ttyS2
-> >   22 cat /proc/interrupts
-> >   23 cat < /dev/ttyS1
-> >   24 lpss-power.sh
-> >   25 cat < /dev/ttyS1 &
-> >   26 lpss-power.sh
-> >   27 rtcwake -m mem -s3
-> >   28 lpss-power.sh
-> >   29 fg
-> >   30 lpss-power.sh
-> > 
-> > Be aware that DMA is not enabled for I2C!
+> where Linux = 4.12-rc6 + the latest patch from your acpi-pm-test branch.
 > 
-> So if DMA isn't enabled for I2C, what is there to worry about?
+> So whilst s2idle halves the battery drain compared to the machine
+> staying powered on, it's still significantly more draining than Win10.
 
-Since LPSS are all in the same ACPI PM, and I would really carefully
-change behaviour for any of LPSS component driver without wide testing.
+Thanks for the data.
 
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+> Let me know if there's any more useful analysis I can do.
+
+I would carry out s2idle under turbostat to see how much PC10 residency is
+there while suspended.  That may be a significant factor.
+
+Most likely there is a device preventing the SoC from reaching its deepest
+low-power states under Linux on your system and it needs to be identified
+and dealt with.
+
+Thanks,
+Rafael
+
