@@ -1,55 +1,92 @@
 From: Benjamin Tissoires <benjamin.tissoires@redhat.com>
-Subject: Re: [PATCH v7 04/10] i2c: i2c-smbus: add of_i2c_setup_smbus_alert
-Date: Wed, 28 Jun 2017 14:42:37 +0200
-Message-ID: <20170628124237.GE26073@mail.corp.redhat.com>
+Subject: Re: [PATCH v7 05/10] i2c: core: call of_i2c_setup_smbus_alert in
+ i2c_register_adapter
+Date: Wed, 28 Jun 2017 14:45:49 +0200
+Message-ID: <20170628124549.GF26073@mail.corp.redhat.com>
 References: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
- <1497535178-12001-5-git-send-email-preid@electromag.com.au>
- <20170619152744.4gtlyrwdhjbhy562@ninjato>
- <20170623121552.GM26073@mail.corp.redhat.com>
- <96160849-c1c7-afdd-8f9f-c9269f66efb2@electromag.com.au>
+ <1497535178-12001-6-git-send-email-preid@electromag.com.au>
+ <20170619152811.svoxmxybyoy6l4hc@ninjato>
+ <20170623121923.GN26073@mail.corp.redhat.com>
+ <367a1a1d-afdb-8895-8216-ae3c18e16fc8@electromag.com.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-i2c-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:58780 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751597AbdF1MqA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 28 Jun 2017 08:46:00 -0400
 Content-Disposition: inline
-In-Reply-To: <96160849-c1c7-afdd-8f9f-c9269f66efb2@electromag.com.au>
-Sender: linux-i2c-owner@vger.kernel.org
+In-Reply-To: <367a1a1d-afdb-8895-8216-ae3c18e16fc8@electromag.com.au>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Phil Reid <preid@electromag.com.au>
 Cc: Wolfram Sang <wsa@the-dreams.de>, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 On Jun 28 2017 or thereabouts, Phil Reid wrote:
-> > > > diff --git a/include/linux/i2c-smbus.h b/include/linux/i2c-smbus.h
-> > > > index 19efbd1..b5261c1 100644
-> > > > --- a/include/linux/i2c-smbus.h
-> > > > +++ b/include/linux/i2c-smbus.h
-> > > > @@ -49,4 +49,13 @@ struct i2c_client *i2c_setup_smbus_alert(struct i2c_adapter *adapter,
-> > > >   					 struct i2c_smbus_alert_setup *setup);
-> > > >   int i2c_handle_smbus_alert(struct i2c_client *ara);
-> > > > +#if IS_ENABLED(CONFIG_I2C_SMBUS)
+> On 23/06/2017 20:19, Benjamin Tissoires wrote:
+> > On Jun 19 2017 or thereabouts, Wolfram Sang wrote:
+> > > On Thu, Jun 15, 2017 at 09:59:33PM +0800, Phil Reid wrote:
+> > > > Add a call to of_i2c_setup_smbus_alert when a i2c adapter is registered
+> > > > so the the smbalert driver can be registered.
+> > > > 
+> > > > Signed-off-by: Phil Reid <preid@electromag.com.au>
+> > > 
+> > > CCing Benjamin
+> > > 
+> > > > ---
+> > > >   drivers/i2c/i2c-core.c | 4 ++++
+> > > >   1 file changed, 4 insertions(+)
+> > > > 
+> > > > diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> > > > index d2402bb..626471b 100644
+> > > > --- a/drivers/i2c/i2c-core.c
+> > > > +++ b/drivers/i2c/i2c-core.c
+> > > > @@ -40,6 +40,7 @@
+> > > >   #include <linux/gpio.h>
+> > > >   #include <linux/hardirq.h>
+> > > >   #include <linux/i2c.h>
+> > > > +#include <linux/i2c-smbus.h>
+> > > >   #include <linux/idr.h>
+> > > >   #include <linux/init.h>
+> > > >   #include <linux/irqflags.h>
+> > > > @@ -2045,6 +2046,9 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
+> > > >   		dev_warn(&adap->dev,
+> > > >   			 "Failed to create compatibility class link\n");
+> > > >   #endif
+> > > > +	res = of_i2c_setup_smbus_alert(adap);
+> > > > +	if (res)
+> > > > +		goto out_list;
 > > 
-> > Can't we have:
-> > #if IS_ENABLED(CONFIG_I2C_SMBUS) && IS_ENABLED(*whatever OF config symbol is*)
+> > See my concerns in patch 4/10.
 > > 
-> > Because otherwise, even if the code works from what I understand, we
-> > will pull in i2c-smbus from i2c-core all the time.
+> > In addition, shouldn't this be placed before device_register() for the
+> > least? pm_runtime_enable() would require a matching pm_runtime_disable(),
+> > and device_register() some unregistering behavior too.
+> > 
 > 
-> Sorry I'm lost here.
-> CONFIG_I2C_SMBUS looks to the be symbol that enables i2c-smbus in the makefile.
-> I thought this would be enough to keep it out of the core.
+> G'day Ben,
 > 
+> Thanks for the review.
+> Yes this makes sense. I tried having it before the device_register and I get an error
+> about a kobject not being initialised in the a call from of_i2c_setup_smbus_alert.
+> 
+> Having a look at what I'm doing in of_i2c_setup_smbus_alert now I'm not sure there's
+> a need to bail out on an error now. Originally I was registering the irq in the setup call.
+> Which need to handle probe defer. Now this should be handled in the alert probe call.
+> 
+> WDYR?
 
-Assuming CONFIG_I2C_SMBUS is set, my concerns are regarding the fact
-that i2c-smbus.ko will now be pulled in by i2c-core.ko no matter what.
-There is nothing wrong per se in the code, just that now i2c-core
-depends on i2c_smbus given that you call i2c_setup_smbus_alert() in
-i2c-core. So that makes the whole point of having a separate module
-for i2c-smbus moot.
+Well, of_i2c_setup_smbus_alert() returns an error code, so it has to be
+accounted for. If the error is not a reason to fail, you should at least
+shout some error messages and act accordingly.
 
-If of_i2c_setup_smbus_alert() is masked by IS_ENABLED(OF), then the call
-for i2c_setup_smbus_alert() will only be done with OF enabled, meaning
-that i2c-smbus.ko will only be pulled in by i2c-core when OF is in use.
-
-But maybe that is too much of thinking from my part :)
+However, looking at of_i2c_setup_smbus_alert() again, I wonder if we
+should not split it in 2: one part that checks for the OF flag presence
+and bail out early if an error is encountered (before device
+registration), and one part once the device is registered that calls
+i2c_setup_smbus_alert(). In case of a failure here, we need to
+unregister the adapter because we don't have all the elements at hands
+(assuming we consider that smbus-alert should be mandatory).
 
 Cheers,
 Benjamin
