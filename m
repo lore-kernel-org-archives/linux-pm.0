@@ -1,57 +1,78 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH 2/3] usb: phy: Add USB charger support
-Date: Wed, 28 Jun 2017 13:28:21 +0800
-Message-ID: <CAMz4kuLdvJBXL83Je8LHx2oCWL8um2dKTo4erkFTDySM1Q91CQ@mail.gmail.com>
-References: <e0f9ed54d6834231dd5785781ddedb9346f15720.1498548022.git.baolin.wang@linaro.org>
- <201706281044.sD7wiJXZ%fengguang.wu@intel.com>
+From: Phil Reid <preid@electromag.com.au>
+Subject: Re: [PATCH v7 05/10] i2c: core: call of_i2c_setup_smbus_alert in
+ i2c_register_adapter
+Date: Wed, 28 Jun 2017 14:44:23 +0800
+Message-ID: <367a1a1d-afdb-8895-8216-ae3c18e16fc8@electromag.com.au>
+References: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
+ <1497535178-12001-6-git-send-email-preid@electromag.com.au>
+ <20170619152811.svoxmxybyoy6l4hc@ninjato>
+ <20170623121923.GN26073@mail.corp.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f53.google.com ([209.85.218.53]:33066 "EHLO
-        mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751043AbdF1F2X (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jun 2017 01:28:23 -0400
-Received: by mail-oi0-f53.google.com with SMTP id p66so33562797oia.0
-        for <linux-pm@vger.kernel.org>; Tue, 27 Jun 2017 22:28:22 -0700 (PDT)
-In-Reply-To: <201706281044.sD7wiJXZ%fengguang.wu@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20170623121923.GN26073@mail.corp.redhat.com>
+Content-Language: en-AU
+Sender: linux-i2c-owner@vger.kernel.org
+To: Benjamin Tissoires <benjamin.tissoires@redhat.com>, Wolfram Sang <wsa@the-dreams.de>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <lkp@intel.com>
-Cc: kbuild-all@01.org, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Jun Li <jun.li@nxp.com>, Peter Chen <peter.chen@freescale.com>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, NeilBrown <neilb@suse.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-Hi,
+On 23/06/2017 20:19, Benjamin Tissoires wrote:
+> On Jun 19 2017 or thereabouts, Wolfram Sang wrote:
+>> On Thu, Jun 15, 2017 at 09:59:33PM +0800, Phil Reid wrote:
+>>> Add a call to of_i2c_setup_smbus_alert when a i2c adapter is registered
+>>> so the the smbalert driver can be registered.
+>>>
+>>> Signed-off-by: Phil Reid <preid@electromag.com.au>
+>>
+>> CCing Benjamin
+>>
+>>> ---
+>>>   drivers/i2c/i2c-core.c | 4 ++++
+>>>   1 file changed, 4 insertions(+)
+>>>
+>>> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+>>> index d2402bb..626471b 100644
+>>> --- a/drivers/i2c/i2c-core.c
+>>> +++ b/drivers/i2c/i2c-core.c
+>>> @@ -40,6 +40,7 @@
+>>>   #include <linux/gpio.h>
+>>>   #include <linux/hardirq.h>
+>>>   #include <linux/i2c.h>
+>>> +#include <linux/i2c-smbus.h>
+>>>   #include <linux/idr.h>
+>>>   #include <linux/init.h>
+>>>   #include <linux/irqflags.h>
+>>> @@ -2045,6 +2046,9 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
+>>>   		dev_warn(&adap->dev,
+>>>   			 "Failed to create compatibility class link\n");
+>>>   #endif
+>>> +	res = of_i2c_setup_smbus_alert(adap);
+>>> +	if (res)
+>>> +		goto out_list;
+> 
+> See my concerns in patch 4/10.
+> 
+> In addition, shouldn't this be placed before device_register() for the
+> least? pm_runtime_enable() would require a matching pm_runtime_disable(),
+> and device_register() some unregistering behavior too.
+> 
 
-On 28 June 2017 at 10:44, kbuild test robot <lkp@intel.com> wrote:
-> Hi Baolin,
->
-> [auto build test ERROR on balbi-usb/next]
-> [also build test ERROR on next-20170627]
-> [cannot apply to v4.12-rc7]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Baolin-Wang/include-uapi-usb-Introduce-USB-charger-type-and-state-definition/20170628-093530
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/balbi/usb.git next
-> config: i386-randconfig-x076-06262345 (attached as .config)
-> compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
-> reproduce:
->         # save the attached .config to linux build tree
->         make ARCH=i386
->
-> All errors (new ones prefixed by >>):
->
->    drivers/power/supply/rt9455_charger.o: In function `usb_phy_set_charger_current':
->>> rt9455_charger.c:(.text+0x1660): multiple definition of `usb_phy_set_charger_current'
->    drivers/power/supply/pda_power.o:pda_power.c:(.text+0xad0): first defined here
->    drivers/power/supply/rt9455_charger.o: In function `usb_phy_get_charger_current':
->>> rt9455_charger.c:(.text+0x1670): multiple definition of `usb_phy_get_charger_current'
->    drivers/power/supply/pda_power.o:pda_power.c:(.text+0xae0): first defined here
->    drivers/power/supply/rt9455_charger.o: In function `usb_phy_set_charger_state':
->>> rt9455_charger.c:(.text+0x1680): multiple definition of `usb_phy_set_charger_state'
->    drivers/power/supply/pda_power.o:pda_power.c:(.text+0xaf0): first defined here
+G'day Ben,
 
-Sorry for missing "static inline" for these exported functions, will
-fix in next version.
+Thanks for the review.
+Yes this makes sense. I tried having it before the device_register and I get an error
+about a kobject not being initialised in the a call from of_i2c_setup_smbus_alert.
+
+Having a look at what I'm doing in of_i2c_setup_smbus_alert now I'm not sure there's
+a need to bail out on an error now. Originally I was registering the irq in the setup call.
+Which need to handle probe defer. Now this should be handled in the alert probe call.
+
+WDYR?
+
+
 
 -- 
-Baolin.wang
-Best Regards
+Regards
+Phil Reid
