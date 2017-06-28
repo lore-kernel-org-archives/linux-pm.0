@@ -1,161 +1,184 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: [PATCH v7 04/10] i2c: i2c-smbus: add of_i2c_setup_smbus_alert
-Date: Wed, 28 Jun 2017 14:48:07 +0800
-Message-ID: <96160849-c1c7-afdd-8f9f-c9269f66efb2@electromag.com.au>
-References: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
- <1497535178-12001-5-git-send-email-preid@electromag.com.au>
- <20170619152744.4gtlyrwdhjbhy562@ninjato>
- <20170623121552.GM26073@mail.corp.redhat.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3] PM / Domains: Call driver's noirq callbacks
+Date: Wed, 28 Jun 2017 11:00:21 +0200
+Message-ID: <CAPDyKFr_evKBADYd_aV25rgezHbm5DJyOASf90Q9yVMX88t+iA@mail.gmail.com>
+References: <CAPDyKFr-e3rJ0XU8snbLVgz3vh=mtL787e4fyb=2GqnPa7rYfA@mail.gmail.com>
+ <1498115913-8785-1-git-send-email-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20170623121552.GM26073@mail.corp.redhat.com>
-Content-Language: en-AU
-Sender: linux-i2c-owner@vger.kernel.org
-To: Benjamin Tissoires <benjamin.tissoires@redhat.com>, Wolfram Sang <wsa@the-dreams.de>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f177.google.com ([209.85.216.177]:33233 "EHLO
+        mail-qt0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751495AbdF1JAX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jun 2017 05:00:23 -0400
+Received: by mail-qt0-f177.google.com with SMTP id r30so44217300qtc.0
+        for <linux-pm@vger.kernel.org>; Wed, 28 Jun 2017 02:00:23 -0700 (PDT)
+In-Reply-To: <1498115913-8785-1-git-send-email-mperttunen@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mikko Perttunen <mperttunen@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, cyndis@kapsi.fi
 
-On 23/06/2017 20:15, Benjamin Tissoires wrote:
-> On Jun 19 2017 or thereabouts, Wolfram Sang wrote:
->> On Thu, Jun 15, 2017 at 09:59:32PM +0800, Phil Reid wrote:
->>> This commit adds of_i2c_setup_smbus_alert which allows the smbalert
->>> driver to be attached to an i2c adapter via the device tree.
->>>
->>> Signed-off-by: Phil Reid <preid@electromag.com.au>
->>> Acked-by: Rob Herring <robh@kernel.org>
->>
->> CCing Benjamin
->>
->>> ---
->>>   Documentation/devicetree/bindings/i2c/i2c.txt |  4 ++--
->>>   drivers/i2c/i2c-smbus.c                       | 34 ++++++++++++++++++++++++---
->>>   include/linux/i2c-smbus.h                     |  9 +++++++
->>>   3 files changed, 42 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/Documentation/devicetree/bindings/i2c/i2c.txt b/Documentation/devicetree/bindings/i2c/i2c.txt
->>> index cee9d50..1126398 100644
->>> --- a/Documentation/devicetree/bindings/i2c/i2c.txt
->>> +++ b/Documentation/devicetree/bindings/i2c/i2c.txt
->>> @@ -59,8 +59,8 @@ wants to support one of the below features, it should adapt the bindings below.
->>>   	interrupts used by the device.
->>>   
->>>   - interrupt-names
->>> -	"irq" and "wakeup" names are recognized by I2C core, other names are
->>> -	left to individual drivers.
->>> +	"irq", "wakeup" and "smbus_alert" names are recognized by I2C core,
->>> +	other names are	left to individual drivers.
->>>   
->>>   - host-notify
->>>   	device uses SMBus host notify protocol instead of interrupt line.
->>> diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
->>> index d4af270..0ad7f7f 100644
->>> --- a/drivers/i2c/i2c-smbus.c
->>> +++ b/drivers/i2c/i2c-smbus.c
->>> @@ -21,6 +21,7 @@
->>>   #include <linux/interrupt.h>
->>>   #include <linux/kernel.h>
->>>   #include <linux/module.h>
->>> +#include <linux/of_irq.h>
->>>   #include <linux/slab.h>
->>>   #include <linux/workqueue.h>
->>>   
->>> @@ -131,7 +132,7 @@ static int smbalert_probe(struct i2c_client *ara,
->>>   {
->>>   	struct i2c_smbus_alert_setup *setup = dev_get_platdata(&ara->dev);
->>>   	struct i2c_smbus_alert *alert;
->>> -	struct i2c_adapter *adapter = ara->adapter;
->>> +	struct i2c_adapter *adap = ara->adapter;
-> 
-> I am not a big fan of this rename (even for consistency with the rest of
-> the file). It makes the patch bigger of 2 hunks for nothing :/
-> 
-> (Wolfram might have a different opinion)
+On 22 June 2017 at 09:18, Mikko Perttunen <mperttunen@nvidia.com> wrote:
+> Currently genpd installs its own noirq callbacks, but never calls down
+> to the driver's corresponding callbacks. Add these calls.
+>
+> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
 
-Fair enough I'll remove the rename.
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-> 
->>>   	int res, irq;
->>>   
->>>   	alert = devm_kzalloc(&ara->dev, sizeof(struct i2c_smbus_alert),
->>> @@ -139,7 +140,14 @@ static int smbalert_probe(struct i2c_client *ara,
->>>   	if (!alert)
->>>   		return -ENOMEM;
->>>   
->>> -	irq = setup->irq;
->>> +	if (setup) {
->>> +		irq = setup->irq;
->>> +	} else {
->>> +		irq = of_irq_get_byname(adap->dev.of_node, "smbus_alert");
->>> +		if (irq <= 0)
->>> +			return irq;
->>> +	}
->>> +
->>>   	INIT_WORK(&alert->alert, smbalert_work);
->>>   	alert->ara = ara;
->>>   
->>> @@ -153,7 +161,7 @@ static int smbalert_probe(struct i2c_client *ara,
->>>   	}
->>>   
->>>   	i2c_set_clientdata(ara, alert);
->>> -	dev_info(&adapter->dev, "supports SMBALERT#\n");
->>> +	dev_info(&adap->dev, "supports SMBALERT#\n");
->>>   
->>>   	return 0;
->>>   }
->>> @@ -214,6 +222,26 @@ struct i2c_client *i2c_setup_smbus_alert(struct i2c_adapter *adapter,
->>>   }
->>>   EXPORT_SYMBOL_GPL(i2c_setup_smbus_alert);
->>>   
->>> +int of_i2c_setup_smbus_alert(struct i2c_adapter *adap)
->>> +{
->>> +	struct i2c_client *client;
->>> +	int irq;
->>> +
->>> +	irq = of_property_match_string(adap->dev.of_node, "interrupt-names",
->>> +				       "smbus_alert");
->>> +	if (irq == -EINVAL || irq == -ENODATA)
->>> +		return 0;
->>> +	else if (irq < 0)
->>> +		return irq;
->>> +
->>> +	client = i2c_setup_smbus_alert(adap, NULL);
->>> +	if (!client)
->>> +		return -ENODEV;
->>> +
->>> +	return 0;
->>> +}
->>> +EXPORT_SYMBOL_GPL(of_i2c_setup_smbus_alert);
->>> +
->>>   /**
->>>    * i2c_handle_smbus_alert - Handle an SMBus alert
->>>    * @ara: the ARA client on the relevant adapter
->>> diff --git a/include/linux/i2c-smbus.h b/include/linux/i2c-smbus.h
->>> index 19efbd1..b5261c1 100644
->>> --- a/include/linux/i2c-smbus.h
->>> +++ b/include/linux/i2c-smbus.h
->>> @@ -49,4 +49,13 @@ struct i2c_client *i2c_setup_smbus_alert(struct i2c_adapter *adapter,
->>>   					 struct i2c_smbus_alert_setup *setup);
->>>   int i2c_handle_smbus_alert(struct i2c_client *ara);
->>>   
->>> +#if IS_ENABLED(CONFIG_I2C_SMBUS)
-> 
-> Can't we have:
-> #if IS_ENABLED(CONFIG_I2C_SMBUS) && IS_ENABLED(*whatever OF config symbol is*)
-> 
-> Because otherwise, even if the code works from what I understand, we
-> will pull in i2c-smbus from i2c-core all the time.
+Kind regards
+Uffe
 
-Sorry I'm lost here.
-CONFIG_I2C_SMBUS looks to the be symbol that enables i2c-smbus in the makefile.
-I thought this would be enough to keep it out of the core.
-
-
-
-
-
-
--- 
-Regards
-Phil Reid
+> ---
+> v3:
+> - Factored out common code in pm_genpd_{suspend,poweroff}_noirq
+> - Added pm_generic_* calls to rest of callbacks
+>
+>  drivers/base/power/domain.c | 68 +++++++++++++++++++++++++++++++++++++++------
+>  1 file changed, 59 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index d3f1d96f75e9..248c5f79f588 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -899,19 +899,19 @@ static int pm_genpd_prepare(struct device *dev)
+>  }
+>
+>  /**
+> - * pm_genpd_suspend_noirq - Completion of suspend of device in an I/O PM domain.
+> + * genpd_finish_suspend - Completion of suspend or hibernation of device in an
+> + *   I/O pm domain.
+>   * @dev: Device to suspend.
+> + * @poweroff: Specifies if this is a poweroff_noirq or suspend_noirq callback.
+>   *
+>   * Stop the device and remove power from the domain if all devices in it have
+>   * been stopped.
+>   */
+> -static int pm_genpd_suspend_noirq(struct device *dev)
+> +static int genpd_finish_suspend(struct device *dev, bool poweroff)
+>  {
+>         struct generic_pm_domain *genpd;
+>         int ret;
+>
+> -       dev_dbg(dev, "%s()\n", __func__);
+> -
+>         genpd = dev_to_genpd(dev);
+>         if (IS_ERR(genpd))
+>                 return -EINVAL;
+> @@ -919,6 +919,13 @@ static int pm_genpd_suspend_noirq(struct device *dev)
+>         if (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev))
+>                 return 0;
+>
+> +       if (poweroff)
+> +               ret = pm_generic_poweroff_noirq(dev);
+> +       else
+> +               ret = pm_generic_suspend_noirq(dev);
+> +       if (ret)
+> +               return ret;
+> +
+>         if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+>                 ret = pm_runtime_force_suspend(dev);
+>                 if (ret)
+> @@ -934,6 +941,20 @@ static int pm_genpd_suspend_noirq(struct device *dev)
+>  }
+>
+>  /**
+> + * pm_genpd_suspend_noirq - Completion of suspend of device in an I/O PM domain.
+> + * @dev: Device to suspend.
+> + *
+> + * Stop the device and remove power from the domain if all devices in it have
+> + * been stopped.
+> + */
+> +static int pm_genpd_suspend_noirq(struct device *dev)
+> +{
+> +       dev_dbg(dev, "%s()\n", __func__);
+> +
+> +       return genpd_finish_suspend(dev, false);
+> +}
+> +
+> +/**
+>   * pm_genpd_resume_noirq - Start of resume of device in an I/O PM domain.
+>   * @dev: Device to resume.
+>   *
+> @@ -961,6 +982,10 @@ static int pm_genpd_resume_noirq(struct device *dev)
+>         if (genpd->dev_ops.stop && genpd->dev_ops.start)
+>                 ret = pm_runtime_force_resume(dev);
+>
+> +       ret = pm_generic_resume_noirq(dev);
+> +       if (ret)
+> +               return ret;
+> +
+>         return ret;
+>  }
+>
+> @@ -984,6 +1009,10 @@ static int pm_genpd_freeze_noirq(struct device *dev)
+>         if (IS_ERR(genpd))
+>                 return -EINVAL;
+>
+> +       ret = pm_generic_freeze_noirq(dev);
+> +       if (ret)
+> +               return ret;
+> +
+>         if (genpd->dev_ops.stop && genpd->dev_ops.start)
+>                 ret = pm_runtime_force_suspend(dev);
+>
+> @@ -1008,10 +1037,28 @@ static int pm_genpd_thaw_noirq(struct device *dev)
+>         if (IS_ERR(genpd))
+>                 return -EINVAL;
+>
+> -       if (genpd->dev_ops.stop && genpd->dev_ops.start)
+> +       if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+>                 ret = pm_runtime_force_resume(dev);
+> +               if (ret)
+> +                       return ret;
+> +       }
+>
+> -       return ret;
+> +       return pm_generic_thaw_noirq(dev);
+> +}
+> +
+> +/**
+> + * pm_genpd_poweroff_noirq - Completion of hibernation of device in an
+> + *   I/O PM domain.
+> + * @dev: Device to poweroff.
+> + *
+> + * Stop the device and remove power from the domain if all devices in it have
+> + * been stopped.
+> + */
+> +static int pm_genpd_poweroff_noirq(struct device *dev)
+> +{
+> +       dev_dbg(dev, "%s()\n", __func__);
+> +
+> +       return genpd_finish_suspend(dev, true);
+>  }
+>
+>  /**
+> @@ -1048,10 +1095,13 @@ static int pm_genpd_restore_noirq(struct device *dev)
+>         genpd_sync_power_on(genpd, true, 0);
+>         genpd_unlock(genpd);
+>
+> -       if (genpd->dev_ops.stop && genpd->dev_ops.start)
+> +       if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+>                 ret = pm_runtime_force_resume(dev);
+> +               if (ret)
+> +                       return ret;
+> +       }
+>
+> -       return ret;
+> +       return pm_generic_restore_noirq(dev);
+>  }
+>
+>  /**
+> @@ -1493,7 +1543,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+>         genpd->domain.ops.resume_noirq = pm_genpd_resume_noirq;
+>         genpd->domain.ops.freeze_noirq = pm_genpd_freeze_noirq;
+>         genpd->domain.ops.thaw_noirq = pm_genpd_thaw_noirq;
+> -       genpd->domain.ops.poweroff_noirq = pm_genpd_suspend_noirq;
+> +       genpd->domain.ops.poweroff_noirq = pm_genpd_poweroff_noirq;
+>         genpd->domain.ops.restore_noirq = pm_genpd_restore_noirq;
+>         genpd->domain.ops.complete = pm_genpd_complete;
+>
+> --
+> 2.1.4
+>
