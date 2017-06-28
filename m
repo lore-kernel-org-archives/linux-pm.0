@@ -1,45 +1,52 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH v3 4/8] PM / Domains: Fix unsafe iteration over modified list of domain providers
-Date: Wed, 28 Jun 2017 16:56:19 +0200
-Message-ID: <20170628145623.20716-5-krzk@kernel.org>
+Subject: [PATCH v3 2/8] PM / Domains: Handle safely genpd_syscore_switch() call on non-genpd device
+Date: Wed, 28 Jun 2017 16:56:17 +0200
+Message-ID: <20170628145623.20716-3-krzk@kernel.org>
 References: <20170628145623.20716-1-krzk@kernel.org>
-Return-path: <stable-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170628145623.20716-1-krzk@kernel.org>
-Sender: stable-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, stable@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-of_genpd_del_provider() iterates over list of domain provides and
-removes matching element thus it has to use safe version of list
-iteration.
+genpd_syscore_switch() had two problems:
+1. It silently assumed that device, it is being called for, belongs to
+   generic power domain and used container_of() on its power domain
+   pointer.  Such assumption might not be true always.
 
-Fixes: aa42240ab254 ("PM / Domains: Add generic OF-based PM domain look-up")
-Cc: <stable@vger.kernel.org>
+2. It iterated over list of generic power domains without holding
+   gpd_list_lock mutex thus list could have been modified in the same
+   time.
+
+Usage of genpd_lookup_dev() solves both problems as it is safe a call
+for non-generic power domains and uses mutex when iterating.
+
+Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+---
+
+Not tested on real hardware.
 ---
  drivers/base/power/domain.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index ebbce6ef0850..793f9f7f3f2d 100644
+index 01e31d9f6c94..d31a4434b8b3 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -1783,12 +1783,12 @@ EXPORT_SYMBOL_GPL(of_genpd_add_provider_onecell);
-  */
- void of_genpd_del_provider(struct device_node *np)
+@@ -1098,8 +1098,8 @@ static void genpd_syscore_switch(struct device *dev, bool suspend)
  {
--	struct of_genpd_provider *cp;
-+	struct of_genpd_provider *cp, *tmp;
- 	struct generic_pm_domain *gpd;
+ 	struct generic_pm_domain *genpd;
  
- 	mutex_lock(&gpd_list_lock);
- 	mutex_lock(&of_genpd_mutex);
--	list_for_each_entry(cp, &of_genpd_providers, link) {
-+	list_for_each_entry_safe(cp, tmp, &of_genpd_providers, link) {
- 		if (cp->node == np) {
- 			/*
- 			 * For each PM domain associated with the
+-	genpd = dev_to_genpd(dev);
+-	if (!pm_genpd_present(genpd))
++	genpd = genpd_lookup_dev(dev);
++	if (!genpd)
+ 		return;
+ 
+ 	if (suspend) {
 -- 
 2.11.0
