@@ -1,7 +1,7 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [RFC v3 8/8] PM / Domains: Add asserts for PM domain locks
-Date: Wed, 28 Jun 2017 16:56:23 +0200
-Message-ID: <20170628145623.20716-9-krzk@kernel.org>
+Subject: [PATCH v3 6/8] PM / Domains: Fix missing default_power_down_ok comment
+Date: Wed, 28 Jun 2017 16:56:21 +0200
+Message-ID: <20170628145623.20716-7-krzk@kernel.org>
 References: <20170628145623.20716-1-krzk@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170628145623.20716-1-krzk@kernel.org>
@@ -10,115 +10,45 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, 
 Cc: Krzysztof Kozlowski <krzk@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add lockdep checks for holding domain lock in few places where this is
-required.  This might expose misuse even though only file-scope
-functions use it for now.
-
-Regular lockdep asserts can be entirely discarded by preprocessor, however
-domain code uses mixed type of lock: spinlock or mutex.  This means that
-these asserts will not be thrown away entirely.  Instead, always
-at least two pointer dereferences (p->lock_ops->assert_held) and
-probably one function call (assert_held()) will be made.
+Commit fc5cbf0c94b6 ("PM / Domains: Support for multiple states") split
+out some code out of default_power_down_ok() function so the
+documentation has to be moved to appropriate place.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/domain.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ drivers/base/power/domain_governor.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 1a47c5ff6a2f..1c3bd7434675 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -40,12 +40,18 @@ static LIST_HEAD(gpd_list);
- static DEFINE_MUTEX(gpd_list_lock);
- 
- struct genpd_lock_ops {
-+	void (*assert_held)(struct generic_pm_domain *genpd);
- 	void (*lock)(struct generic_pm_domain *genpd);
- 	void (*lock_nested)(struct generic_pm_domain *genpd, int depth);
- 	int (*lock_interruptible)(struct generic_pm_domain *genpd);
- 	void (*unlock)(struct generic_pm_domain *genpd);
- };
- 
-+static void genpd_assert_held_mtx(struct generic_pm_domain *genpd)
-+{
-+	lockdep_assert_held(&genpd->mlock);
-+}
-+
- static void genpd_lock_mtx(struct generic_pm_domain *genpd)
- {
- 	mutex_lock(&genpd->mlock);
-@@ -68,12 +74,18 @@ static void genpd_unlock_mtx(struct generic_pm_domain *genpd)
+diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+index 2e0fce711135..281f949c5ffe 100644
+--- a/drivers/base/power/domain_governor.c
++++ b/drivers/base/power/domain_governor.c
+@@ -92,12 +92,6 @@ static bool default_suspend_ok(struct device *dev)
+ 	return td->cached_suspend_ok;
  }
  
- static const struct genpd_lock_ops genpd_mtx_ops = {
-+	.assert_held = genpd_assert_held_mtx,
- 	.lock = genpd_lock_mtx,
- 	.lock_nested = genpd_lock_nested_mtx,
- 	.lock_interruptible = genpd_lock_interruptible_mtx,
- 	.unlock = genpd_unlock_mtx,
- };
- 
-+static void genpd_assert_held_spin(struct generic_pm_domain *genpd)
-+{
-+	lockdep_assert_held(&genpd->slock);
-+}
-+
- static void genpd_lock_spin(struct generic_pm_domain *genpd)
- 	__acquires(&genpd->slock)
+-/**
+- * default_power_down_ok - Default generic PM domain power off governor routine.
+- * @pd: PM domain to check.
+- *
+- * This routine must be executed under the PM domain's lock.
+- */
+ static bool __default_power_down_ok(struct dev_pm_domain *pd,
+ 				     unsigned int state)
  {
-@@ -110,12 +122,14 @@ static void genpd_unlock_spin(struct generic_pm_domain *genpd)
+@@ -187,6 +181,12 @@ static bool __default_power_down_ok(struct dev_pm_domain *pd,
+ 	return true;
  }
  
- static const struct genpd_lock_ops genpd_spin_ops = {
-+	.assert_held = genpd_assert_held_spin,
- 	.lock = genpd_lock_spin,
- 	.lock_nested = genpd_lock_nested_spin,
- 	.lock_interruptible = genpd_lock_interruptible_spin,
- 	.unlock = genpd_unlock_spin,
- };
- 
-+#define genpd_assert_held(p)		p->lock_ops->assert_held(p)
- #define genpd_lock(p)			p->lock_ops->lock(p)
- #define genpd_lock_nested(p, d)		p->lock_ops->lock_nested(p, d)
- #define genpd_lock_interruptible(p)	p->lock_ops->lock_interruptible(p)
-@@ -299,6 +313,8 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
- 	struct gpd_link *link;
- 	unsigned int not_suspended = 0;
- 
-+	genpd_assert_held(genpd);
-+
- 	/*
- 	 * Do not try to power off the domain in the following situations:
- 	 * (1) The domain is already in the "power off" state.
-@@ -385,6 +401,8 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
- 	struct gpd_link *link;
- 	int ret = 0;
- 
-+	genpd_assert_held(genpd);
-+
- 	if (genpd_status_on(genpd))
- 		return 0;
- 
-@@ -766,6 +784,9 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
++/**
++ * default_power_down_ok - Default generic PM domain power off governor routine.
++ * @pd: PM domain to check.
++ *
++ * This routine must be executed under the PM domain's lock.
++ */
+ static bool default_power_down_ok(struct dev_pm_domain *pd)
  {
- 	struct gpd_link *link;
- 
-+	if (use_lock)
-+		genpd_assert_held(genpd);
-+
- 	if (!genpd_status_on(genpd) || genpd_is_always_on(genpd))
- 		return;
- 
-@@ -808,6 +829,9 @@ static void genpd_sync_power_on(struct generic_pm_domain *genpd, bool use_lock,
- {
- 	struct gpd_link *link;
- 
-+	if (use_lock)
-+		genpd_assert_held(genpd);
-+
- 	if (genpd_status_on(genpd))
- 		return;
- 
+ 	struct generic_pm_domain *genpd = pd_to_genpd(pd);
 -- 
 2.11.0
