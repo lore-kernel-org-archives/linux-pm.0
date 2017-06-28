@@ -1,60 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/9] i2c: designware: Fix system suspend
-Date: Wed, 28 Jun 2017 16:51:08 +0200
-Message-ID: <2931814.Q2Ytvoipjr@aspire.rjw.lan>
-References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org> <a7881812-0da6-478c-7eed-faf8a6e30891@linux.intel.com> <CAPDyKFqShg+9rYfjMwKU6ri7nWt3nAqv_A+N-hHitRLwDi0_5g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqShg+9rYfjMwKU6ri7nWt3nAqv_A+N-hHitRLwDi0_5g@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Jarkko Nikula <jarkko.nikula@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>, stable@vger.linux.org
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH v3 5/8] PM / Domains: Fix unsafe iteration over modified list of domains
+Date: Wed, 28 Jun 2017 16:56:20 +0200
+Message-ID: <20170628145623.20716-6-krzk@kernel.org>
+References: <20170628145623.20716-1-krzk@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170628145623.20716-1-krzk@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 28, 2017 04:01:39 PM Ulf Hansson wrote:
-> On 27 June 2017 at 09:55, Jarkko Nikula <jarkko.nikula@linux.intel.com> wrote:
-> > On 06/22/2017 02:16 PM, Jarkko Nikula wrote:
-> >>
-> >> On 06/22/2017 01:49 PM, Mika Westerberg wrote:
-> >>>
-> >>> On Thu, Jun 22, 2017 at 01:31:51AM +0200, Rafael J. Wysocki wrote:
-> >>>>
-> >>>> On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org>
-> >>>> wrote:
-> >>>
-> >>> Thanks Ulf for taking care of this!
-> >>>
-> >> Indeed!
-> >>
-> >>> I tested this series on Dell XPS 9350 which has touch panel connected to
-> >>> I2C and suspend/resume still works fine and I can see the controller
-> >>> going to D3 when the touch panel is idle.
-> >>>
-> >>> I can perform more comprehensive testing next week.
-> >>>
-> >> Unfortunately I'm seeing interrupt storm during suspend/resume on
-> >> platform using PM domain from drivers/acpi/acpi_lpss.c straight after
-> >> this patch. Maybe some timing related as I see it only if I have debug
-> >> messages on (i2c_designware_core.dyndbg=+p). But it occurs only after
-> >> this patch.
-> >>
-> > Sorry the noise, this was bogus. That platform is doing this interrupt storm
-> > randomly and it occurs also without the patch.
-> 
-> 
-> Okay, then it seems like we should go with $subject patch, although
-> allow me to update the changelog and post a new version.
+of_genpd_remove_last() iterates over list of domains and removes
+matching element thus it has to use safe version of list iteration.
 
-But as I said, it would be better to do the pm_runtime_resume() in ->resume
-(unless that breaks something), for two reasons.
+Fixes: 17926551c98a ("PM / Domains: Add support for removing nested PM domains by provider")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/domain.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-The first reason is that ->complete is synchronous and ->resume can be done
-in parallel with other devices which potentially saves time.  The second reason
-is that it wouldn't interfere with direct_complete on systems where that
-actually works.
-
-Thanks,
-Rafael
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 793f9f7f3f2d..be34cbf3793e 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1928,14 +1928,14 @@ EXPORT_SYMBOL_GPL(of_genpd_add_subdomain);
+  */
+ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
+ {
+-	struct generic_pm_domain *gpd, *genpd = ERR_PTR(-ENOENT);
++	struct generic_pm_domain *gpd, *tmp, *genpd = ERR_PTR(-ENOENT);
+ 	int ret;
+ 
+ 	if (IS_ERR_OR_NULL(np))
+ 		return ERR_PTR(-EINVAL);
+ 
+ 	mutex_lock(&gpd_list_lock);
+-	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
++	list_for_each_entry_safe(gpd, tmp, &gpd_list, gpd_list_node) {
+ 		if (gpd->provider == &np->fwnode) {
+ 			ret = genpd_remove(gpd);
+ 			genpd = ret ? ERR_PTR(ret) : gpd;
+-- 
+2.11.0
