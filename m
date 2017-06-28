@@ -1,7 +1,7 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH v3 2/8] PM / Domains: Handle safely genpd_syscore_switch() call on non-genpd device
-Date: Wed, 28 Jun 2017 16:56:17 +0200
-Message-ID: <20170628145623.20716-3-krzk@kernel.org>
+Subject: [PATCH v3 7/8] PM / Domains: Add lockdep asserts for domains list mutex
+Date: Wed, 28 Jun 2017 16:56:22 +0200
+Message-ID: <20170628145623.20716-8-krzk@kernel.org>
 References: <20170628145623.20716-1-krzk@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170628145623.20716-1-krzk@kernel.org>
@@ -10,43 +10,45 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, 
 Cc: Krzysztof Kozlowski <krzk@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-genpd_syscore_switch() had two problems:
-1. It silently assumed that device, it is being called for, belongs to
-   generic power domain and used container_of() on its power domain
-   pointer.  Such assumption might not be true always.
+Add lockdep checks for holding mutex protecting the list of domains.
+This might expose misuse even though only file-scope functions use it
+for now.
 
-2. It iterated over list of generic power domains without holding
-   gpd_list_lock mutex thus list could have been modified in the same
-   time.
-
-Usage of genpd_lookup_dev() solves both problems as it is safe a call
-for non-generic power domains and uses mutex when iterating.
-
-Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-
 ---
-
-Not tested on real hardware.
----
- drivers/base/power/domain.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/base/power/domain.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 01e31d9f6c94..d31a4434b8b3 100644
+index be34cbf3793e..1a47c5ff6a2f 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -1098,8 +1098,8 @@ static void genpd_syscore_switch(struct device *dev, bool suspend)
+@@ -726,6 +726,8 @@ static bool pm_genpd_present(const struct generic_pm_domain *genpd)
  {
- 	struct generic_pm_domain *genpd;
+ 	const struct generic_pm_domain *gpd;
  
--	genpd = dev_to_genpd(dev);
--	if (!pm_genpd_present(genpd))
-+	genpd = genpd_lookup_dev(dev);
-+	if (!genpd)
- 		return;
++	lockdep_assert_held(&gpd_list_lock);
++
+ 	if (IS_ERR_OR_NULL(genpd))
+ 		return false;
  
- 	if (suspend) {
+@@ -1321,6 +1323,8 @@ static int genpd_add_subdomain(struct generic_pm_domain *genpd,
+ 	struct gpd_link *link, *itr;
+ 	int ret = 0;
+ 
++	lockdep_assert_held(&gpd_list_lock);
++
+ 	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(subdomain)
+ 	    || genpd == subdomain)
+ 		return -EINVAL;
+@@ -1528,6 +1532,8 @@ static int genpd_remove(struct generic_pm_domain *genpd)
+ {
+ 	struct gpd_link *l, *link;
+ 
++	lockdep_assert_held(&gpd_list_lock);
++
+ 	if (IS_ERR_OR_NULL(genpd))
+ 		return -EINVAL;
+ 
 -- 
 2.11.0
