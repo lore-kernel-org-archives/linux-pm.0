@@ -1,167 +1,453 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH 1/9] i2c: designware: Fix system suspend
-Date: Wed, 28 Jun 2017 11:52:41 -0500
-Message-ID: <e5da7776-2086-f393-c87b-5b1d94a38e76@ti.com>
-References: <1498072888-14782-1-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0iYwPE8rpn=aZ9n6LV-qbAK3kynRqVZ7xxuB+gYar_fyg@mail.gmail.com>
- <20170622104933.GY629@lahna.fi.intel.com> <2842386.AFZiXzV2Sq@aspire.rjw.lan>
- <CAPDyKFo80QWYhU_SFexr_riPSZS3QEXDyBcywa5qBYa3sJXcjw@mail.gmail.com>
- <CAJZ5v0irHvYXHv1GykatTH+XROZyL0nR0c=KfdSrpH395s6V8g@mail.gmail.com>
- <CAPDyKFov=08AQw0PPPgcFbrerTskoPGfLZcJL9gjikfQfZUJpw@mail.gmail.com>
- <4324e2c8-ab79-5a21-a8ab-c660920cba59@ti.com>
- <CAPDyKFoNq2ssCtuBovvCE0jByjnh74=VHFHLuf3ZPXPK6TXJCg@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v1 1/3] interconnect: Add generic interconnect controller API
+Date: Wed, 28 Jun 2017 19:45:00 +0200
+Message-ID: <CAKfTPtCLf-JAKM5MD-pe-az3xUF_4nYtYvnsZpztmtaqk0C4PQ@mail.gmail.com>
+References: <20170627174903.27978-1-georgi.djakov@linaro.org> <20170627174903.27978-2-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAPDyKFoNq2ssCtuBovvCE0jByjnh74=VHFHLuf3ZPXPK6TXJCg@mail.gmail.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Jisheng Zhang <jszhang@marvell.com>, stable@vger.linux.org, Guodong Xu <guodong.xu@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-i2c <linux-i2c@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Haojian Zhuang <haojian.zhuang@linaro.org>, John Stultz <john.stultz@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Sumit Semwal <sumit.semwal@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f43.google.com ([209.85.215.43]:36832 "EHLO
+        mail-lf0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751532AbdF1RpW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Jun 2017 13:45:22 -0400
+Received: by mail-lf0-f43.google.com with SMTP id h22so39283108lfk.3
+        for <linux-pm@vger.kernel.org>; Wed, 28 Jun 2017 10:45:21 -0700 (PDT)
+In-Reply-To: <20170627174903.27978-2-georgi.djakov@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>, mturquette <mturquette@baylibre.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Saravana Kannan <skannan@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, "Sweeney, Sean" <seansw@qti.qualcomm.com>, "Dai, David" <davidai@quicinc.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org
 
+Hi Georgi,
 
+On 27 June 2017 at 19:49, Georgi Djakov <georgi.djakov@linaro.org> wrote:
 
-On 06/28/2017 09:31 AM, Ulf Hansson wrote:
-> On 26 June 2017 at 21:39, Grygorii Strashko <grygorii.strashko@ti.com> wrote:
->>
->>
->> On 06/26/2017 11:49 AM, Ulf Hansson wrote:
->>> On 23 June 2017 at 00:01, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>>> On Thu, Jun 22, 2017 at 11:37 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>>> On 22 June 2017 at 16:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>>>> On Thursday, June 22, 2017 01:49:33 PM Mika Westerberg wrote:
->>>>>>> On Thu, Jun 22, 2017 at 01:31:51AM +0200, Rafael J. Wysocki wrote:
->>>>>>>> On Wed, Jun 21, 2017 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>>>>>>> The commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming
->>>>>>>>> during system suspend"), may suggest to the PM core to try out the so
->>>>>>>>> called direct_complete path for system sleep. In this path, the PM core
->>>>>>>>> treats a runtime suspended device as it's already in a proper low power
->>>>>>>>> state for system sleep, which makes it skip calling the system sleep
->>>>>>>>> callbacks for the device, except for the ->prepare() and the ->complete()
->>>>>>>>> callback.
->>>>>>>>>
->>>>>>>>> Moreover, under certain circumstances the PM core may unset the
->>>>>>>>> direct_complete flag for a parent device, in case its child device are
->>>>>>>>> being system suspended before. In other words, the PM core doesn't skip
->>>>>>>>> calling the system sleep callbacks, no matter if the device is runtime
->>>>>>>>> suspended or not.
->>>>>>>>>
->>>>>>>>> In cases of an i2c slave device, the above situation is triggered.
->>>>>>>>> Unfortunate, this also breaks the assumption that the i2c device is always
->>>>>>>>> runtime resumed, whenever the dw_i2c_plat_suspend() callback is being
->>>>>>>>> invoked, which then leads to a regression.
->>>>>>>>>
->>>>>>>>> More precisely, dw_i2c_plat_suspend() then calls clk_core_disable() and
->>>>>>>>> clk_core_unprepare(), for an already disabled/unprepared clock, leading to
->>>>>>>>> complaints about clocks calls being wrongly balanced.
->>>>>>>>>
->>>>>>>>> In cases when the i2c device is attached to the ACPI PM domain, the problem
->>>>>>>>> doesn't occur. That's because ACPI's ->suspend() callback, assigned to
->>>>>>>>> acpi_subsys_suspend(), calls pm_runtime_resume() for the i2c device.
->>>>>>>>
->>>>>>>> Which really is expected to happen, so direct_complete should only be
->>>>>>>> used along with the ACPI PM domain in this case.
->>>>>>>>
->>>>>>>> Moreover, in the ACPI PM domain case acpi_subsys_prepare() is supposed
->>>>>>>> to do the right thing without dw_i2c_plat_prepare() and the return
->>>>>>>> value of the latter will be ignored anyway, so dw_i2c_plat_prepare()
->>>>>>>> will only have effect without ACPI PM domain AFAICS.
->>>>>>>>
->>>>>>>> It looks like commit 8503ff166504 is entirely misguided.
->>>>>>>
->>>>>>> Indeed it is. At the time I suggested that change I did not really
->>>>>>> understand how the direct complete is supposed to be used :-/
->>>>>>
->>>>>> So can we go for a full revert, please, and then fix up things properly?
->>>>>
->>>>> Unfortunate I think a revert is going to make it worse, for the non ACPI case.
->>>>>
->>>>> Because in that case, unless I am reading the code wrong, I think when
->>>>> the device is runtime suspended during system sleep, then the system
->>>>> suspend callback will also be called (because the direct_complete
->>>>> isn't run), again causing clock unbalance issues.
->>>>>
->>>>> This makes it worse in that sense, that then you don't even need an
->>>>> i2c slave to trigger the problem.
->>>>
->>>> In that case your changelog is a bit misleading.
->>>
->>> Yeah, it is! I didn't realize that until I fully investigated the revert option.
->>>
->>>>
->>>> It looks like the commit in question attempted to fix exactly this
->>>> issue, but it failed, so it should be replaced with something else
->>>> which is what your patch is effectively doing.
->>>>
->>>> IMO you should describe the original problem, explain why that commit
->>>> is not sufficient to fix it and then describe the final fix.
->>>>
->>>> Anyway, after reading the changelog it should be clear that things
->>>> were broken before the commit in question.
->>>>
->>>> And BTW I'm not really sure how the rest of the series is related to this?
->>>
->>> Going back in history, I realize the system sleep support in this
->>> driver has been broken even before the commit $subject patch intends
->>> to fix.
->>> However it has been working fine for the ACPI case, because of how the
->>> ACPI PM domain manages its devices during system sleep.
->>>
->>> The commit in question, adds an improvement to the driver, because it
->>> enables the direct_complete path. For ACPI, that was already working,
->>> but not for the other cases. So to be able to support the similar
->>> improvement as the direct_complete path offers, as that isn't working
->>> for this driver, I tried out using the runtime PM centric path
->>> instead. That is what the rest of the changes in this series takes
->>> care of.
->>>
->>> Now, as the system sleep support is broken I wanted to make a simple
->>> fix for that first, via $subject patch. I guess what makes this a bit
->>> confusing is that I shouldn't point to a certain commit, but rather
->>> just add a stable tag and update the changelog accordingly.
->>>
->>
->> Wouldn't it fix suspend for this driver if you will just replace
->> dw_i2c_plat_suspend() with pm_runtime_force_suspend() in SET_SYSTEM_SLEEP_PM_OPS() as
->> you've done in patch 9?
-> 
-> For the non-ACPI case - yes.
-> 
-> For the ACPI case - no. Here we need to adapt the ACPI PM domain
-> first, as it currently doesn't support the runtime PM centric path for
-> system sleep.
+[snip]
 
-Yeah. 
+> +
+> +static int interconnect_aggregate(struct interconnect_node *node,
+> +                                 struct interconnect_creq *creq)
+> +{
+> +       int ret = 0;
+> +
+> +       mutex_lock(&node->icp->lock);
+> +
+> +       if (node->icp->ops->aggregate) {
+> +               ret = node->icp->ops->aggregate(node, creq);
+> +               if (ret) {
+> +                       pr_info("%s: error (%d)\n", __func__, ret);
+> +                       goto out;
+> +               }
+> +       } else {
+> +               /* do not aggregate by default */
+> +               struct icp *icp = node->icp;
+> +
+> +               icp->creq.avg_bw = creq->avg_bw;
+> +               icp->creq.peak_bw = creq->peak_bw;
 
-> 
->>
->> And, I think, direct_complete path should still work after this also.
-> 
-> I don't understand why we want or need that?
-> 
-> To me it would only make the code in the ACPI PM domain more
-> complicated, comparing to the changes I have posted in rest of this
-> series.
-> 
+Does it means that by default the last caller defines the bandwidth
+for everybody ?
+IMHO, having a default aggregation policy that sums the avg_bw of all
+request of the node
+and that gets the max of peak_bw of all request of a node is better
 
-I'm not sure about benefits with this particular driver - everything
-depend on power on/off latencies, if they are big direct_complete make sense.
+> +       }
+> +
+> +out:
+> +       mutex_unlock(&node->icp->lock);
+> +       return ret;
+> +}
+> +
+> +/**
+> + * interconnect_set() - set constraints on a path between two endpoints
+> + * @path: reference to the path returned by interconnect_get()
+> + * @creq: request from the consumer, containing its requirements
+> + *
+> + * This function is used by an interconnect consumer to express its own needs
+> + * in term of bandwidth and QoS for a previously requested path between two
+> + * endpoints. The requests are aggregated and each node is updated accordingly.
+> + *
+> + * Returns 0 on success, or an approproate error code otherwise.
+> + */
+> +int interconnect_set(struct interconnect_path *path,
+> +                    struct interconnect_creq *creq)
+> +{
+> +       struct interconnect_node *next, *prev = NULL;
+> +       size_t i;
+> +       int ret = 0;
+> +
+> +       for (i = 0; i < path->num_nodes; i++, prev = next) {
+> +               next = path->reqs[i].node;
+> +
+> +               if (!next || !prev)
 
-The main point of my comment was based on fact that dw_i2c driver uses
-the same function for PM runtime and System suspend callbacks, but this is
-definitely wrong (ACPI or not), because PM runtime and System suspend
-are not synchronized.
+This needs a comment with an explanation about why you don't do
+anything in this case
 
--- 
-regards,
--grygorii
+> +                       continue;
+> +
+> +               if (next->icp != prev->icp)
+
+This needs a comment with an explanation about why you don't do
+anything in this case
+
+> +                       continue;
+> +
+> +               /* aggregate requests from consumers */
+
+you should update the path->reqs[i].avg_bw and path->reqs[i].peak_bw
+with creq values
+before aggregating the requests from the different consumer of a node ?
+
+              path->reqs[i].avg_bw = creq->avg_bw
+              path->reqs[i].peak_bw = creq->peak_bw
+
+> +               ret = interconnect_aggregate(next, creq);
+> +               if (ret)
+> +                       goto out;
+> +
+> +               if (next->icp->ops->set) {
+> +                       mutex_lock(&next->icp->lock);
+> +                       /* commit the aggregated constraints */
+> +                       ret = next->icp->ops->set(prev, next, &next->icp->creq);
+> +                       mutex_unlock(&next->icp->lock);
+> +                       if (ret)
+> +                               goto out;
+> +               }
+> +       }
+> +
+> +out:
+> +       return ret;
+> +}
+> +
+> +/**
+> + * interconnect_get() - return a handle for path between two endpoints
+> + * @sdev: source device identifier
+> + * @sid: source device port id
+> + * @ddev: destination device identifier
+> + * @did: destination device port id
+> + *
+> + * This function will search for a path between two endpoints and return an
+> + * interconnect_path handle on success. Use interconnect_put() to release
+> + * constraints when the they are not needed anymore.
+> + *
+> + * Return: interconnect_path pointer on success, or ERR_PTR() on error
+> + */
+> +struct interconnect_path *interconnect_get(const char *sdev, const int sid,
+> +                                          const char *ddev, const int did)
+> +{
+> +       struct interconnect_node *src, *dst;
+> +       struct interconnect_path *path;
+> +       int ret;
+> +
+> +       src = node_find(sdev, sid);
+> +       if (IS_ERR(src))
+> +               return ERR_CAST(src);
+> +
+> +       dst = node_find(ddev, did);
+> +       if (IS_ERR(dst))
+> +               return ERR_CAST(dst);
+> +
+> +       /* TODO: cache the path */
+> +       path = path_find(src, dst);
+> +       if (IS_ERR(path)) {
+> +               pr_err("error finding path between %p and %p (%ld)\n",
+> +                      src, dst, PTR_ERR(path));
+> +               return path;
+> +       }
+> +
+> +       ret = path_init(path);
+> +       if (ret)
+> +               return ERR_PTR(ret);
+> +
+> +       return path;
+> +}
+> +EXPORT_SYMBOL_GPL(interconnect_get);
+> +
+> +/**
+> + * interconnect_put() - release the reference to the interconnect_path
+> + *
+> + * @path: interconnect path
+> + *
+> + * Use this function to release the path and free the memory when setting
+> + * constraints on the path is no longer needed.
+> + */
+> +void interconnect_put(struct interconnect_path *path)
+> +{
+> +       struct interconnect_creq creq = { 0, 0 };
+> +       struct interconnect_node *node;
+> +       size_t i;
+> +       int ret;
+> +
+> +       if (IS_ERR(path))
+> +               return;
+> +
+> +       for (i = 0; i < path->num_nodes; i++) {
+> +               node = path->reqs[i].node;
+> +
+> +               /*
+> +                * Remove the constraints from the path,
+> +                * update the nodes and free the memory
+> +                */
+> +               ret = interconnect_set(path, &creq);
+> +               if (ret)
+> +                       pr_err("%s error %d\n", __func__, ret);
+> +
+> +               node->icp->users--;
+> +       }
+> +
+> +       kfree(path);
+> +}
+> +EXPORT_SYMBOL_GPL(interconnect_put);
+> +
+> +/**
+> + * interconnect_add_provider() - add a new interconnect provider
+> + * @icp: the interconnect provider that will be added into topology
+> + *
+> + * Return: 0 on success, or an error code otherwise
+> + */
+> +int interconnect_add_provider(struct icp *icp)
+> +{
+> +       WARN(!icp->ops->set, "%s: .set is not implemented\n", __func__);
+> +
+> +       mutex_lock(&interconnect_provider_list_mutex);
+> +       mutex_init(&icp->lock);
+> +       list_add(&icp->icp_list, &interconnect_provider_list);
+> +       mutex_unlock(&interconnect_provider_list_mutex);
+> +
+> +       dev_info(icp->dev, "interconnect provider is added to topology\n");
+> +
+> +       return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(interconnect_add_provider);
+> +
+> +/**
+> + * interconnect_del_provider() - delete previously added interconnect provider
+> + * @icp: the interconnect provider that will be removed from topology
+> + *
+> + * Return: 0 on success, or an error code otherwise
+> + */
+> +int interconnect_del_provider(struct icp *icp)
+> +{
+> +       mutex_lock(&icp->lock);
+> +       if (icp->users) {
+> +               mutex_unlock(&icp->lock);
+> +               return -EBUSY;
+> +       }
+> +       mutex_unlock(&icp->lock);
+> +
+> +       mutex_lock(&interconnect_provider_list_mutex);
+> +       list_del(&icp->icp_list);
+> +       mutex_unlock(&interconnect_provider_list_mutex);
+> +
+> +       return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(interconnect_del_provider);
+> +
+> +MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org");
+> +MODULE_DESCRIPTION("Interconnect Driver Core");
+> +MODULE_LICENSE("GPL v2");
+> diff --git a/include/linux/interconnect-consumer.h b/include/linux/interconnect-consumer.h
+> new file mode 100644
+> index 000000000000..c8055f936ff3
+> --- /dev/null
+> +++ b/include/linux/interconnect-consumer.h
+> @@ -0,0 +1,72 @@
+> +/*
+> + * Copyright (c) 2017, Linaro Ltd.
+> + *
+> + * This software is licensed under the terms of the GNU General Public
+> + * License version 2, as published by the Free Software Foundation, and
+> + * may be copied, distributed, and modified under those terms.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#ifndef _LINUX_INTERCONNECT_CONSUMER_H
+> +#define _LINUX_INTERCONNECT_CONSUMER_H
+> +
+> +struct interconnect_node;
+> +struct interconnect_path;
+> +
+> +#if IS_ENABLED(CONFIG_INTERCONNECT)
+> +
+> +struct interconnect_path *interconnect_get(const char *sdev, const int sid,
+> +                                          const char *ddev, const int did);
+> +
+> +void interconnect_put(struct interconnect_path *path);
+> +
+> +/**
+> + * struct creq - interconnect consumer request
+> + * @avg_bw: the average requested bandwidth (over longer period of time) in kbps
+> + * @peak_bw: the peak (maximum) bandwidth in kpbs
+> + */
+> +struct interconnect_creq {
+> +       u32 avg_bw;
+> +       u32 peak_bw;
+> +};
+> +
+> +/**
+> + * interconnect_set() - set constraints on a path between two endpoints
+> + * @path: reference to the path returned by interconnect_get()
+> + * @creq: request from the consumer, containing its requirements
+> + *
+> + * This function is used by an interconnect consumer to express its own needs
+> + * in term of bandwidth and QoS for a previously requested path between two
+> + * endpoints. The requests are aggregated and each node is updated accordingly.
+> + *
+> + * Returns 0 on success, or an approproate error code otherwise.
+> + */
+> +int interconnect_set(struct interconnect_path *path,
+> +                    struct interconnect_creq *creq);
+> +
+> +#else
+> +
+> +inline struct interconnect_path *interconnect_get(const char *sdev,
+> +                                                        const int sid,
+> +                                                        const char *ddev,
+> +                                                        const int did)
+> +{
+> +       return ERR_PTR(-ENOTSUPP);
+> +}
+> +
+> +inline void interconnect_put(struct interconnect_path *path)
+> +{
+> +}
+> +
+> +inline int interconnect_set(struct interconnect_path *path, u32 bandwidth)
+> +{
+> +       return -ENOTSUPP
+> +}
+> +
+> +#endif /* CONFIG_INTERCONNECT */
+> +
+> +#endif /* _LINUX_INTERCONNECT_CONSUMER_H */
+> diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
+> new file mode 100644
+> index 000000000000..84b9c7130553
+> --- /dev/null
+> +++ b/include/linux/interconnect-provider.h
+> @@ -0,0 +1,120 @@
+> +/*
+> + * Copyright (c) 2017, Linaro Ltd.
+> + *
+> + * This software is licensed under the terms of the GNU General Public
+> + * License version 2, as published by the Free Software Foundation, and
+> + * may be copied, distributed, and modified under those terms.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#ifndef _LINUX_INTERCONNECT_PROVIDER_H
+> +#define _LINUX_INTERCONNECT_PROVIDER_H
+> +
+> +#include <linux/interconnect-consumer.h>
+> +
+> +/**
+> + * struct icp_ops - platform specific callback operations for interconnect
+> + * providers that will be called from drivers
+> + *
+> + * @aggregate: aggregate constraints with the current configuration
+> + * @set: set constraints on interconnect
+> + */
+> +struct icp_ops {
+> +       int (*aggregate)(struct interconnect_node *node,
+> +                        struct interconnect_creq *creq);
+> +       int (*set)(struct interconnect_node *src, struct interconnect_node *dst,
+> +                  struct interconnect_creq *creq);
+> +};
+> +
+> +/**
+> + * struct icp - interconnect provider (controller) entity that might
+> + * provide multiple interconnect controls
+> + *
+> + * @icp_list: list of the registered interconnect providers
+> + * @nodes: internal list of the interconnect provider nodes
+> + * @ops: pointer to device specific struct icp_ops
+> + * @dev: the device this interconnect provider belongs to
+> + * @lock: a lock to protect creq and users
+> + * @creq: the actual state of constraints for this interconnect provider
+> + * @users: count of active users
+> + * @data: pointer to private data
+> + */
+> +struct icp {
+> +       struct list_head        icp_list;
+> +       struct list_head        nodes;
+> +       const struct icp_ops    *ops;
+> +       struct device           *dev;
+> +       struct mutex            lock;
+> +       struct interconnect_creq creq;
+> +       int                     users;
+> +       void                    *data;
+> +};
+> +
+> +/**
+> + * struct interconnect_node - entity that is part of the interconnect topology
+> + *
+> + * @links: links to other interconnect nodes
+> + * @num_links: number of links to other interconnect nodes
+> + * @icp: points to the interconnect provider of this node
+> + * @icn_list: list of interconnect nodes
+> + * @search_list: list used when walking the nodes graph
+> + * @reverse: pointer to previous node when walking the nodes graph
+> + * @is_traversed: flag that is used when walking the nodes graph
+> + * @req_list: a list of QoS constraint requests
+> + * @dev_id: device id
+> + * @con_id: connection id
+> + */
+> +struct interconnect_node {
+> +       struct interconnect_node **links;
+> +       size_t                  num_links;
+> +
+> +       struct icp              *icp;
+> +       struct list_head        icn_list;
+> +       struct list_head        search_list;
+> +       struct interconnect_node *reverse;
+> +       bool                    is_traversed;
+> +       struct hlist_head       req_list;
+> +
+> +       const char              *dev_id;
+> +       int                     con_id;
+> +};
+> +
+> +/**
+> + * struct interconnect_req - constraints that are attached to each node
+> + *
+> + * @req_node: the linked list node
+> + * @node: the interconnect node to which this constraint applies
+> + * @avg_bw: an integer describing the average bandwidth in kbps
+> + * @peak_bw: an integer describing the peak bandwidth in kbps
+> + */
+> +struct interconnect_req {
+> +       struct hlist_node req_node;
+> +       struct interconnect_node *node;
+> +       u32 avg_bw;
+> +       u32 peak_bw;
+> +};
+> +
+> +#if IS_ENABLED(CONFIG_INTERCONNECT)
+> +
+> +int interconnect_add_provider(struct icp *icp);
+> +int interconnect_del_provider(struct icp *icp);
+> +
+> +#else
+> +
+> +static inline int interconnect_add_provider(struct icp *icp)
+> +{
+> +       return -ENOTSUPP;
+> +}
+> +
+> +static inline int interconnect_del_provider(struct icp *icp)
+> +{
+> +       return -ENOTSUPP;
+> +}
+> +
+> +#endif /* CONFIG_INTERCONNECT */
+> +
+> +#endif /* _LINUX_INTERCONNECT_PROVIDER_H */
