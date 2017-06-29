@@ -1,36 +1,45 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v1 3/3] dt-bindings: Interconnect device-tree bindings
- draft
-Date: Thu, 29 Jun 2017 16:32:47 -0500
-Message-ID: <20170629213247.qk54ocaomcz42gn7@rob-hp-laptop>
-References: <20170627174903.27978-1-georgi.djakov@linaro.org>
- <20170627174903.27978-4-georgi.djakov@linaro.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH fixes v3] pinctrl: Really force states during suspend/resume
+Date: Fri, 30 Jun 2017 00:25:27 +0200
+Message-ID: <CACRpkdZbbgUcj149aE=N-RX4BLjVNsiOqvRDzWFDELyaKr_Z4Q@mail.gmail.com>
+References: <20170301183257.6554-1-f.fainelli@gmail.com> <CAHp75VdWVq3E3qrgtvvJK=A4yxK+yM_q3ZJd1hNnFBTj-H4Mxw@mail.gmail.com>
+ <304fb86d-0862-992b-4563-61151b37d060@gmail.com> <CACRpkdb-_oTuRyGWtH9Rb2g2w_J9VM=m3mXK94OYbCXy+E0XLw@mail.gmail.com>
+ <18ca4418-8b62-a1c9-1282-0c468f2aefb2@gmail.com> <CACRpkdZBrYT=vXhR77W+v_hN=t6zYACVPm5HR==kC7nmDYJLQA@mail.gmail.com>
+ <5e61618b-cfb0-ddff-3d87-bf512521e669@gmail.com> <CACRpkdbGza+vYTSqBRPbUGGnUsuNQS-6oKkweSch5Pwpku=CEg@mail.gmail.com>
+ <37d75c89-883f-1c58-23e8-7e0213935986@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170627174903.27978-4-georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, skannan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, seansw-Rm6X0d1/PG5y9aJCnZT0Uw@public.gmane.org, davidai-jfJNa2p1gH1BDgjK7y7TUQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <37d75c89-883f-1c58-23e8-7e0213935986@gmail.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Warren <swarren@nvidia.com>, Al Cooper <alcooperx@gmail.com>, "open list:PIN CONTROL SUBSYSTEM" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 27, 2017 at 08:49:03PM +0300, Georgi Djakov wrote:
-> The interconnect API is not yet using DT bindings for expressing
-> the relations between the API consumers and providers. This is
-> posted a separate patch as it needs further discussions on how
-> to represent this with DT.
+On Thu, Jun 29, 2017 at 9:38 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+> On 06/29/2017 02:17 AM, Linus Walleij wrote:
 
-I would recommend continuing to sort out how this works within the 
-kernel before fixing things in DT. Something like this needs to be a 
-core binding in the DT spec.
+>> So if it is not desireable to have every driver know which exact
+>> state it came from like S3 this or S2 that and on this laptop
+>> we have S2' which is slightly different and such mess (that you
+>> predict IIUC) what we really need to know is pretty simple:
+>> did the hardware loose its state or not?
+>
+> That information is inherently platform specific though, so on platforms
+> where pinctrl-single is used, you won't necessarily know whether the
+> state should be restored (conversely saved) so maybe that means we
+> should have the possibility for a platform to define a wrapper around
+> pinctrl-single whose purpose is to implement platform specific
+> suspend/r/resume functions and just that really? Is there such a driver
+> already that uses pinctrl-single more as a "library" than anything else?
 
-Also, you should CC some ARM, Ltd. folks like Mark R and Lorenzo. 
-There's been some discussion in the past how to describe the DMA master 
-side of the bus topology.
+pinctrl-single maye not be the easiest in cases like this, but Tony
+et al have bolted in a few OMAP specifics to pinctrl-single in the
+past so I don't see why this would be a problem.
 
-Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+commit 02e483f66deb6bd8df6af450726574614eb53be3
+"pinctrl: single: Prepare for supporting SoC specific features"
+etc.
+
+Yours,
+Linus Walleij
