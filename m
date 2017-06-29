@@ -1,73 +1,45 @@
-From: Dirk Behme <dirk.behme@de.bosch.com>
-Subject: Re: Clocks used by another OS/CPU
-Date: Thu, 29 Jun 2017 14:55:14 +0200
-Message-ID: <d1ee0f5b-d9ef-96c0-b698-a4a1cef58428@de.bosch.com>
-References: <CAMuHMdW9+CNTTOVO4SRRUxuz3ajLbY2j1uG8b_RpHX52NPwXrQ@mail.gmail.com>
- <CAMuHMdWRadUCZUycUW3dKJhS__aRRVbV1tXo0umUQ7KHOYQMoQ@mail.gmail.com>
- <50911172-8fa1-8341-0ed0-d40f00d9392c@de.bosch.com>
- <CAMuHMdXedexq_jGq+y3Hbmph1_1N_LjT7dhYJ=rC0Q2oK_Xjug@mail.gmail.com>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: cpufreq: frequency scaling spec in DT node
+Date: Thu, 29 Jun 2017 15:01:11 +0200
+Message-ID: <136334fe-c2a7-875b-91e0-329a0d7a2304@free.fr>
+References: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
+ <20170629100459.GL29665@vireshk-i7>
+ <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdXedexq_jGq+y3Hbmph1_1N_LjT7dhYJ=rC0Q2oK_Xjug@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@baylibre.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp5-g21.free.fr ([212.27.42.5]:63736 "EHLO smtp5-g21.free.fr"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752536AbdF2NBY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Jun 2017 09:01:24 -0400
+In-Reply-To: <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-On 29.06.2017 14:45, Geert Uytterhoeven wrote:
-> Hi Dirk,
+On 29/06/2017 13:41, Mason wrote:
+
+> On 29/06/2017 12:04, Viresh Kumar wrote:
 > 
-> On Thu, Jun 29, 2017 at 2:07 PM, Dirk Behme <dirk.behme@de.bosch.com> wrote:
->> On 29.06.2017 13:56, Geert Uytterhoeven wrote:
->>> On Thu, Jun 29, 2017 at 11:27 AM, Geert Uytterhoeven
->>> <geert@linux-m68k.org> wrote:
->>>> CC clock, ARM, DT, PM people
->>>>
->>>> TL;DR: Clocks may be in use by another CPU not running Linux, while Linux
->>>> disables them as being unused.
->>>
->>>> Of course this is not limited to clocks, but also to e.g. PM domains.
->>>
->>> BTW, how do you prevent Linux from powering down the CR7 PM domain,
->>> which contains the Cortex R7?
->>
->> The idea is
->>
->> --- a/drivers/soc/renesas/r8a7795-sysc.c
->> +++ b/drivers/soc/renesas/r8a7795-sysc.c
->> @@ -38,7 +38,8 @@ static const struct rcar_sysc_area r8a7795_areas[]
->> __initconst = {
->>          { "ca53-cpu3",  0x200, 3, R8A7795_PD_CA53_CPU3, R8A7795_PD_CA53_SCU,
->>            PD_CPU_NOCR },
->>          { "a3vp",       0x340, 0, R8A7795_PD_A3VP,      R8A7795_PD_ALWAYS_ON
->> },
->> -       { "cr7",        0x240, 0, R8A7795_PD_CR7,       R8A7795_PD_ALWAYS_ON
->> },
->> +       { "cr7",        0x240, 0, R8A7795_PD_CR7,
->> R8A7795_PD_ALWAYS_ON,
->> +         PD_CPU_NOCR },
->>          { "a3vc",       0x380, 0, R8A7795_PD_A3VC,      R8A7795_PD_ALWAYS_ON
->> },
->>          { "a2vc0",      0x3c0, 0, R8A7795_PD_A2VC0,     R8A7795_PD_A3VC },
->>          { "a2vc1",      0x3c0, 1, R8A7795_PD_A2VC1,     R8A7795_PD_A3VC },
->>
->>
->> Not finally tested, though.
+>> There is one thing you can do to avoid adding OPP entries in the DT.
+>> You can rather add them dynamically with help of: dev_pm_opp_add() and
+>> cpufreq-dt will continue to work with that too.
 > 
-> Pretending the CR7 PM Domain can only be controlled through WFI/APMU only should
-> work.
-> But IMHO it is a hack, just like your solution for the CANFD clock.
+> In what driver should I call these... the clk driver?
+> (drivers/clk/tegra/cvb.c seems to be doind that)
 
+The problem I run into is that calling get_cpu_device(0) from the
+clk driver returns NULL, because topology_init() has not run yet
+(to initialize the cpu_sys_devices).
 
-Well, it seems to be the best solution recent mainline gives us and 
-seems to work ;)
+So the OPP table needs to be built *after* topology_init() but
+*before* dt_cpufreq_probe().
 
-And for me it looks at least better than the other solution I've seen so 
-far: Remove the 'cr7', 'canfd' etc lines completely from the kernel.
+subsys_initcall(topology_init);
+device_initcall(cpufreq_dt_platdev_init);
 
-Best regards
+I'm not sure how to proceed.
 
-Dirk
+Regards.
