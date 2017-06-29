@@ -1,225 +1,71 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Clocks used by another OS/CPU (was: Re: [RFC PATCH] clk: renesas:
- cpg-mssr: Add interface for critical core clocks)
-Date: Thu, 29 Jun 2017 11:27:28 +0200
-Message-ID: <CAMuHMdW9+CNTTOVO4SRRUxuz3ajLbY2j1uG8b_RpHX52NPwXrQ@mail.gmail.com>
+From: Mason <slash.tmp@free.fr>
+Subject: cpufreq: frequency scaling spec in DT node
+Date: Thu, 29 Jun 2017 11:48:15 +0200
+Message-ID: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-clk-owner@vger.kernel.org>
-Sender: linux-clk-owner@vger.kernel.org
-To: Dirk Behme <dirk.behme@de.bosch.com>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@baylibre.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp5-g21.free.fr ([212.27.42.5]:60964 "EHLO smtp5-g21.free.fr"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751804AbdF2Jsd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Jun 2017 05:48:33 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-Hi Dirk,
+Hello,
 
-CC clock, ARM, DT, PM people
+I have two similar, but slightly different SoCs.
 
-TL;DR: Clocks may be in use by another CPU not running Linux, while Linux
-disables them as being unused.
+Firmware/bootloader sets the "nominal" CPU frequency to
+- 1215 MHz on SoC A
+- 1206 MHz on SoC B
 
-On Mon, Jun 26, 2017 at 1:30 PM, Dirk Behme <dirk.behme@de.bosch.com> wrote:
-> With commit 72f5df2c2bbb6 ("clk: renesas: cpg-mssr: Migrate to
-> CLK_IS_CRITICAL") we are able to handle critical module clocks.
-> Introduce the same logic for critical core clocks.
->
-> Signed-off-by: Dirk Behme <dirk.behme@de.bosch.com>
-> ---
-> Commit
->
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/clk/renesas?id=72f5df2c2bbb66d4a555cb51eb9f412abf1af77f
->
-> is quite nice to avoid *module* clocks being disabled. Unfortunately,
-> there are *core* clocks, too. E.g. using an other OS on the Cortex R7
-> core of the r8a7795, the 'canfd' is a quite popular core clock which
-> shouldn't be disabled by Linux.
->
-> Therefore, this patch is a proposal to use the same 'mark clocks as
-> critical' logic implemented for the module clocks for the core
-> clocks, too.
->
-> Opinions?
+On both systems, software can reduce the CPU frequency by
+writing an 8-bit integer divider to an MMIO register.
 
-On r8a7795, there are several Cortex A cores running Linux, and a Cortex R7
-core which may run another OS.
-This is an interesting issue, and relevant to other SoCs, too.
+Originally, I wanted to define a small number of operating points,
+defined only by the divider value, and compute the actual OPP freq
+at init.
 
-In this particular case, the "canfd" clock is a core clock used as an
-auxiliary clock for the CAN0, CAN1, and CANFD interfaces.  This can lead
-to three scenarios:
-  1. Linux controls all CAN interfaces
-     => no issue,
-  2. The OS on the RT CPU controls all CAN interfaces
-     => issue, Linux disables the clock
-  3. Mix of 1 and 2
-     => More issues.
-Of course this is not limited to clocks, but also to e.g. PM domains.
+For example, use { 1, 2, 3, 5, 9 } for dividers =>
+1215, 607.5, 405, 243, 135 on SoC A
+1206, 603, 402, 241.2, 134 on Soc B
 
-How can this be handled?
-I believe just marking the "canfd" clock critical is not the right solution,
-as about any clock could be used by the RT CPU.
+I'm using the generic cpufreq driver.
 
-Still, Linux needs to be made aware that devices (clocks and PM domains) are
-controlled by another CPU/OS.
+Binding for the generic cpufreq driver:
+https://www.kernel.org/doc/Documentation/devicetree/bindings/cpufreq/cpufreq-dt.txt
 
-Should this be described in DT? It feels like software policy to me.
+I don't think there's a way to do what I want with the
+existing driver, right?
 
-Note that we (mainline) currently don't describe the Cortex R7 core in DT.
-Dirk: do you describe it?
+It's not a big deal, I can write the actual target frequencies
+in the DT. (BTW, the OPPs are more SW than HW desc, right?)
 
-Summary:
-  1. Core/module clocks are described in the clock driver (not in DT),
-  2. Unused clocks are disabled by CCF,
-  3. Clocks may be in use by the Real-Time CPU core, running another OS,
-  4. How to communicate to Linux which clocks are under control of the RT CPU?
+But my problem is: what happens if firmware/bootloader is
+changed without me knowing, and they change the nominal
+frequency? Because of the rounding, if the nominal freq
+is slightly increased, the SoC will start working at
+*slower* speeds.
 
-Thanks for your comments!
+For example, if nominal is 1215, and I request 603, I will
+actually get 405.
 
->  drivers/clk/renesas/clk-div6.c         | 17 +++++++++++++++--
->  drivers/clk/renesas/clk-div6.h         |  4 +++-
->  drivers/clk/renesas/r8a7795-cpg-mssr.c |  7 +++++++
->  drivers/clk/renesas/renesas-cpg-mssr.c |  3 ++-
->  drivers/clk/renesas/renesas-cpg-mssr.h |  8 ++++++++
->  5 files changed, 35 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/clk/renesas/clk-div6.c b/drivers/clk/renesas/clk-div6.c
-> index 0627860..5917e05 100644
-> --- a/drivers/clk/renesas/clk-div6.c
-> +++ b/drivers/clk/renesas/clk-div6.c
-> @@ -18,6 +18,7 @@
->  #include <linux/of_address.h>
->  #include <linux/slab.h>
->
-> +#include "renesas-cpg-mssr.h"
->  #include "clk-div6.h"
->
->  #define CPG_DIV6_CKSTP         BIT(8)
-> @@ -184,7 +185,9 @@ static const struct clk_ops cpg_div6_clock_ops = {
->  struct clk * __init cpg_div6_register(const char *name,
->                                       unsigned int num_parents,
->                                       const char **parent_names,
-> -                                     void __iomem *reg)
-> +                                     void __iomem *reg,
-> +                                     const struct cpg_mssr_info *info,
-> +                                     unsigned int id)
->  {
->         unsigned int valid_parents;
->         struct clk_init_data init;
-> @@ -246,6 +249,15 @@ struct clk * __init cpg_div6_register(const char *name,
->         init.name = name;
->         init.ops = &cpg_div6_clock_ops;
->         init.flags = CLK_IS_BASIC;
-> +       if (info) {
-> +               for (i = 0; i < info->num_crit_core_clks; i++)
-> +                       if (id == info->crit_core_clks[i]) {
-> +                               pr_devel("DIV6 %s setting CLK_IS_CRITICAL\n",
-> +                                        name);
-> +                               init.flags |= CLK_IS_CRITICAL;
-> +                               break;
-> +                       }
-> +       }
->         init.parent_names = parent_names;
->         init.num_parents = valid_parents;
->
-> @@ -298,7 +310,8 @@ static void __init cpg_div6_clock_init(struct device_node *np)
->         for (i = 0; i < num_parents; i++)
->                 parent_names[i] = of_clk_get_parent_name(np, i);
->
-> -       clk = cpg_div6_register(clk_name, num_parents, parent_names, reg);
-> +       clk = cpg_div6_register(clk_name, num_parents, parent_names, reg,
-> +                               NULL, 0);
->         if (IS_ERR(clk)) {
->                 pr_err("%s: failed to register %s DIV6 clock (%ld)\n",
->                        __func__, np->name, PTR_ERR(clk));
-> diff --git a/drivers/clk/renesas/clk-div6.h b/drivers/clk/renesas/clk-div6.h
-> index 567b31d..b619d6b4 100644
-> --- a/drivers/clk/renesas/clk-div6.h
-> +++ b/drivers/clk/renesas/clk-div6.h
-> @@ -2,6 +2,8 @@
->  #define __RENESAS_CLK_DIV6_H__
->
->  struct clk *cpg_div6_register(const char *name, unsigned int num_parents,
-> -                             const char **parent_names, void __iomem *reg);
-> +                             const char **parent_names, void __iomem *reg,
-> +                             const struct cpg_mssr_info *info,
-> +                             unsigned int id);
->
->  #endif
-> diff --git a/drivers/clk/renesas/r8a7795-cpg-mssr.c b/drivers/clk/renesas/r8a7795-cpg-mssr.c
-> index eaa98b4..a54fed6 100644
-> --- a/drivers/clk/renesas/r8a7795-cpg-mssr.c
-> +++ b/drivers/clk/renesas/r8a7795-cpg-mssr.c
-> @@ -114,6 +114,9 @@ static struct cpg_core_clk r8a7795_core_clks[] __initdata = {
->         DEF_BASE("r",           R8A7795_CLK_R,     CLK_TYPE_GEN3_R, CLK_RINT),
->  };
->
-> +static const unsigned int r8a7795_crit_core_clks[] __initconst = {
-> +};
-> +
->  static struct mssr_mod_clk r8a7795_mod_clks[] __initdata = {
->         DEF_MOD("fdp1-2",                117,   R8A7795_CLK_S2D1), /* ES1.x */
->         DEF_MOD("fdp1-1",                118,   R8A7795_CLK_S0D1),
-> @@ -441,6 +444,10 @@ const struct cpg_mssr_info r8a7795_cpg_mssr_info __initconst = {
->         .last_dt_core_clk = LAST_DT_CORE_CLK,
->         .num_total_core_clks = MOD_CLK_BASE,
->
-> +       /* Critical Core Clocks */
-> +       .crit_core_clks = r8a7795_crit_core_clks,
-> +       .num_crit_core_clks = ARRAY_SIZE(r8a7795_crit_core_clks),
-> +
->         /* Module Clocks */
->         .mod_clks = r8a7795_mod_clks,
->         .num_mod_clks = ARRAY_SIZE(r8a7795_mod_clks),
-> diff --git a/drivers/clk/renesas/renesas-cpg-mssr.c b/drivers/clk/renesas/renesas-cpg-mssr.c
-> index 99eeec6..80be019 100644
-> --- a/drivers/clk/renesas/renesas-cpg-mssr.c
-> +++ b/drivers/clk/renesas/renesas-cpg-mssr.c
-> @@ -293,7 +293,8 @@ static void __init cpg_mssr_register_core_clk(const struct cpg_core_clk *core,
->
->                 if (core->type == CLK_TYPE_DIV6P1) {
->                         clk = cpg_div6_register(core->name, 1, &parent_name,
-> -                                               priv->base + core->offset);
-> +                                               priv->base + core->offset, info,
-> +                                               core->id);
->                 } else {
->                         clk = clk_register_fixed_factor(NULL, core->name,
->                                                         parent_name, 0,
-> diff --git a/drivers/clk/renesas/renesas-cpg-mssr.h b/drivers/clk/renesas/renesas-cpg-mssr.h
-> index 148f4f0a..a723fdd 100644
-> --- a/drivers/clk/renesas/renesas-cpg-mssr.h
-> +++ b/drivers/clk/renesas/renesas-cpg-mssr.h
-> @@ -86,6 +86,10 @@ struct device_node;
->       * @last_dt_core_clk: ID of the last Core Clock exported to DT
->       * @num_total_core_clks: Total number of Core Clocks (exported + internal)
->       *
-> +     * @crit_core_clks: Array with Core Clock IDs of critical clocks that
-> +     *                  should not be disabled without a knowledgeable driver
-> +     * @num_core_mod_clks: Number of entries in crit_core_clks[]
-> +     *
->       * @mod_clks: Array of Module Clock definitions
->       * @num_mod_clks: Number of entries in mod_clks[]
->       * @num_hw_mod_clks: Number of Module Clocks supported by the hardware
-> @@ -109,6 +113,10 @@ struct cpg_mssr_info {
->         unsigned int last_dt_core_clk;
->         unsigned int num_total_core_clks;
->
-> +       /* Critical Core Clocks that should not be disabled */
-> +       const unsigned int *crit_core_clks;
-> +       unsigned int num_crit_core_clks;
-> +
->         /* Module Clocks */
->         const struct mssr_mod_clk *mod_clks;
->         unsigned int num_mod_clks;
-> --
-> 2.8.0
+This effect can be seen if I define SoC B OPPs on SoC A:
 
-Gr{oetje,eeting}s,
+$ cat scaling_available_frequencies
+134000 241200 402000 603000 1206000 
+/sys/devices/system/cpu/cpu0/cpufreq$ echo 603000 > scaling_max_freq
+[   60.401883] set_target: index=3
+[   60.405118] clk_divider_set_rate: rate=405000000 parent_rate=1215000000 div=3
 
-                        Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+What can I do against that?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Should I check the nominal frequency in my clk driver?
+(I'm not sure reading properties of unrelated nodes is acceptable practice.)
+
+Regards.
