@@ -1,92 +1,59 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH 1/2] cpufreq: intel_pstate: Clean up after performance
- governor changes
-Date: Thu, 29 Jun 2017 14:19:48 -0700
-Message-ID: <1498771188.7952.114.camel@linux.intel.com>
-References: <5158983.ihgooJZPke@aspire.rjw.lan>
-         <4550329.lZWPcKkG2D@aspire.rjw.lan>
+Subject: Re: [PATCH V2 3/4] intel_pstate: Ignore scheduler cpufreq callbacks
+ on remote CPUs
+Date: Thu, 29 Jun 2017 14:23:58 -0700
+Message-ID: <1498771438.7952.118.camel@linux.intel.com>
+References: <cover.1498712046.git.viresh.kumar@linaro.org>
+         <a33ba3746dacce67a7c2e17b64e54ee89f64a3bc.1498712046.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:17894 "EHLO mga02.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:17848 "EHLO mga01.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751819AbdF2VTt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 29 Jun 2017 17:19:49 -0400
-In-Reply-To: <4550329.lZWPcKkG2D@aspire.rjw.lan>
+        id S1751776AbdF2VYA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Jun 2017 17:24:00 -0400
+In-Reply-To: <a33ba3746dacce67a7c2e17b64e54ee89f64a3bc.1498712046.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org
 
-On Thu, 2017-06-29 at 01:47 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, 2017-06-29 at 10:56 +0530, Viresh Kumar wrote:
+> From: Steve Muckle <smuckle.linux@gmail.com>
 > 
-> After commit 82b4e03e01bc (intel_pstate: skip scheduler hook when in
-> "performance" mode) get_target_pstate_use_performance() and
-> get_target_pstate_use_cpu_load() are never called if scaling_governor
-> is "performance", so drop the CPUFREQ_POLICY_PERFORMANCE checks from
-> them as they will never trigger anyway.
-> 
-> Moreover, the documentation needs to be updated to reflect the change
-> made by the above commit, so do that too.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> In preparation for the scheduler cpufreq callback happening on remote
+> CPUs, check for this case in intel_pstate which currently requires
+> the
+> callback run on the local CPU. Such callbacks are ignored for now.
+Is it possible that we miss a chance to calculate load periodically at
+a predefined interval (10ms default), because the callback happened on
+a different CPU?
 
+Thanks,
+Srinivas
+
+> 
+> Signed-off-by: Steve Muckle <smuckle.linux@gmail.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  Documentation/admin-guide/pm/intel_pstate.rst |    6 ++----
->  drivers/cpufreq/intel_pstate.c                |    6 ------
->  2 files changed, 2 insertions(+), 10 deletions(-)
+>  drivers/cpufreq/intel_pstate.c | 3 +++
+>  1 file changed, 3 insertions(+)
 > 
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -1612,9 +1612,6 @@ static inline int32_t get_target_pstate_
->  	int32_t busy_frac, boost;
->  	int target, avg_pstate;
+> diff --git a/drivers/cpufreq/intel_pstate.c
+> b/drivers/cpufreq/intel_pstate.c
+> index 4ce501148790..7a2a8ee579ef 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1755,6 +1755,9 @@ static void intel_pstate_update_util(struct
+> update_util_data *data, u64 time,
+>  	struct cpudata *cpu = container_of(data, struct cpudata,
+> update_util);
+>  	u64 delta_ns;
 >  
-> -	if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE)
-> -		return cpu->pstate.turbo_pstate;
-> -
->  	busy_frac = div_fp(sample->mperf, sample->tsc);
->  
->  	boost = cpu->iowait_boost;
-> @@ -1651,9 +1648,6 @@ static inline int32_t get_target_pstate_
->  	int32_t perf_scaled, max_pstate, current_pstate,
-> sample_ratio;
->  	u64 duration_ns;
->  
-> -	if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE)
-> -		return cpu->pstate.turbo_pstate;
-> -
->  	/*
->  	 * perf_scaled is the ratio of the average P-state during
-> the last
->  	 * sampling period to the P-state requested last time (in
-> percent).
-> Index: linux-pm/Documentation/admin-guide/pm/intel_pstate.rst
-> ===================================================================
-> --- linux-pm.orig/Documentation/admin-guide/pm/intel_pstate.rst
-> +++ linux-pm/Documentation/admin-guide/pm/intel_pstate.rst
-> @@ -157,10 +157,8 @@ Without HWP, this P-state selection algo
->  the processor model and platform configuration.
->  
->  It selects the maximum P-state it is allowed to use, subject to
-> limits set via
-> -``sysfs``, every time the P-state selection computations are carried
-> out by the
-> -driver's utilization update callback for the given CPU (that does
-> not happen
-> -more often than every 10 ms), but the hardware configuration will
-> not be changed
-> -if the new P-state is the same as the current one.
-> +``sysfs``, every time the driver configuration for the given CPU is
-> updated
-> +(e.g. via ``sysfs``).
->  
->  This is the default P-state selection algorithm if the
->  :c:macro:`CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE` kernel
-> configuration option
-> 
+> +	if (smp_processor_id() != data->cpu)
+> +		return;
+> +
+>  	if (flags & SCHED_CPUFREQ_IOWAIT) {
+>  		cpu->iowait_boost = int_tofp(1);
+>  	} else if (cpu->iowait_boost) {
