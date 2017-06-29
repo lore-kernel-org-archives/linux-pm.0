@@ -1,45 +1,60 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: cpufreq: frequency scaling spec in DT node
-Date: Thu, 29 Jun 2017 15:01:11 +0200
-Message-ID: <136334fe-c2a7-875b-91e0-329a0d7a2304@free.fr>
-References: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
- <20170629100459.GL29665@vireshk-i7>
- <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH for 4.12] Revert "pinctrl: rockchip: avoid hardirq-unsafe
+ functions in irq_chip"
+Date: Thu, 29 Jun 2017 15:05:07 +0200
+Message-ID: <CACRpkdbwTR24eo6RYVR3GmWT+aWKEAj3CpAqv45xQwbFyxb8mw@mail.gmail.com>
+References: <20170517225634.GA11404@google.com> <20170527021900.GA119873@google.com>
+ <20170623205911.GA143883@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp5-g21.free.fr ([212.27.42.5]:63736 "EHLO smtp5-g21.free.fr"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752536AbdF2NBY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 29 Jun 2017 09:01:24 -0400
-In-Reply-To: <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <20170623205911.GA143883@google.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: Heiko Stuebner <heiko@sntech.de>, Thomas Gleixner <tglx@linutronix.de>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Julia Cartwright <julia@ni.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, John Keeping <john@metanate.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Doug Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-On 29/06/2017 13:41, Mason wrote:
+On Fri, Jun 23, 2017 at 10:59 PM, Brian Norris <briannorris@chromium.org> wrote:
 
-> On 29/06/2017 12:04, Viresh Kumar wrote:
-> 
->> There is one thing you can do to avoid adding OPP entries in the DT.
->> You can rather add them dynamically with help of: dev_pm_opp_add() and
->> cpufreq-dt will continue to work with that too.
-> 
-> In what driver should I call these... the clk driver?
-> (drivers/clk/tegra/cvb.c seems to be doind that)
+> This reverts commit 88bb94216f59e10802aaf78c858a4146085faf18.
+>
+> It introduced a new CONFIG_DEBUG_ATOMIC_SLEEP warning in v4.12-rc1:
+>
+> [ 7226.716713] BUG: sleeping function called from invalid context at kernel/locking/mutex.c:238
+> [ 7226.716716] in_atomic(): 0, irqs_disabled(): 0, pid: 1708, name: bash
+> [ 7226.716722] CPU: 1 PID: 1708 Comm: bash Not tainted 4.12.0-rc6+ #1213
+> [ 7226.716724] Hardware name: Google Kevin (DT)
+> [ 7226.716726] Call trace:
+> [ 7226.716738] [<ffffff8008089928>] dump_backtrace+0x0/0x24c
+> [ 7226.716743] [<ffffff8008089b94>] show_stack+0x20/0x28
+> [ 7226.716749] [<ffffff8008371370>] dump_stack+0x90/0xb0
+> [ 7226.716755] [<ffffff80080cd2a0>] ___might_sleep+0x10c/0x124
+> [ 7226.716760] [<ffffff80080cd330>] __might_sleep+0x78/0x88
+> [ 7226.716765] [<ffffff800879e210>] mutex_lock+0x2c/0x64
+> [ 7226.716771] [<ffffff80083ad678>] rockchip_irq_bus_lock+0x30/0x3c
+> [ 7226.716777] [<ffffff80080f6d40>] __irq_get_desc_lock+0x78/0x98
+> [ 7226.716782] [<ffffff80080f7e6c>] irq_set_irq_wake+0x44/0x12c
+> [ 7226.716787] [<ffffff8008486e18>] dev_pm_arm_wake_irq+0x4c/0x58
+> [ 7226.716792] [<ffffff800848b80c>] device_wakeup_arm_wake_irqs+0x3c/0x58
+> [ 7226.716796] [<ffffff80084896fc>] dpm_suspend_noirq+0xf8/0x3a0
+> [ 7226.716800] [<ffffff80080f1384>] suspend_devices_and_enter+0x1a4/0x9a8
+> [ 7226.716803] [<ffffff80080f21ec>] pm_suspend+0x664/0x6a4
+> [ 7226.716807] [<ffffff80080f04d8>] state_store+0xd4/0xf8
+> ...
+>
+> It was reported on -rc1, and it's still not fixed in -rc6, so it should
+> just be reverted.
+>
+> Cc: John Keeping <john@metanate.com>
+> Cc: Heiko Stuebner <heiko@sntech.de>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
 
-The problem I run into is that calling get_cpu_device(0) from the
-clk driver returns NULL, because topology_init() has not run yet
-(to initialize the cpu_sys_devices).
+Revert applied for fixes with Heiko's review tag after reading up
+on the discussion.
 
-So the OPP table needs to be built *after* topology_init() but
-*before* dt_cpufreq_probe().
+What a mess, sigh. Thanks to everyone who is helping to fix this
+up.
 
-subsys_initcall(topology_init);
-device_initcall(cpufreq_dt_platdev_init);
-
-I'm not sure how to proceed.
-
-Regards.
+Yours,
+Linus Walleij
