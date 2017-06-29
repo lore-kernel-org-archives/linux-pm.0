@@ -1,140 +1,86 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PCI / PM: Avoid using device_may_wakeup() for runtime PM
-Date: Fri, 30 Jun 2017 00:37 +0200
-Message-ID: <2254362.EY9ByagAJb@aspire.rjw.lan>
-References: <Pine.LNX.4.44L0.1706191415180.1715-100000@iolanthe.rowland.org> <2883450.A8OIi7Gmb8@aspire.rjw.lan> <2677722.OnHOCzR3UZ@aspire.rjw.lan>
+Subject: Re: [RFC 1/2] PM / suspend: Add platform_suspend_target_state()
+Date: Fri, 30 Jun 2017 01:00:58 +0200
+Message-ID: <6613228.WfFrGvAy1X@aspire.rjw.lan>
+References: <20170622085102.mpk7vxodpgxtrlfd@piout.net> <20170623010837.11199-1-f.fainelli@gmail.com> <20170623010837.11199-2-f.fainelli@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <2677722.OnHOCzR3UZ@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: linux-pci@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Kai-Heng Feng <kai.heng.feng@canonical.com>, Bjorn Helgaas <bhelgaas@google.com>, gregkh@linuxfoundation.org, USB list <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45214 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751333AbdF2XI1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jun 2017 19:08:27 -0400
+In-Reply-To: <20170623010837.11199-2-f.fainelli@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On Friday, June 23, 2017 02:58:11 PM Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thursday, June 22, 2017 06:08:36 PM Florian Fainelli wrote:
+> Add an optional platform_suspend_ops callback: target_state, and a
+> helper function globally visible to get this called:
+> platform_suspend_target_state().
 > 
-> pci_target_state() calls device_may_wakeup() which checks whether
-> or not the device may wake up the system from sleep states, but
-> pci_target_state() is used for runtime PM too.
+> This is useful for platform specific drivers that may need to take a
+> slightly different suspend/resume path based on the system's
+> suspend/resume state being entered.
 > 
-> Since runtime PM is expected to always enable remote wakeup if
-> possible, modify pci_target_state() to take additional argument
-> indicating whether or not it should look for a state from which
-> the device can signal wakeup and pass either the return value
-> of device_can_wakeup(), or "false" (if the device itself is not
-> wakeup-capable) to it from the code related to runtime PM.
+> Although this callback is optional and documented as such, it requires
+> a platform_suspend_ops::begin callback to be implemented in order to
+> provide an accurate suspend/resume state within the driver that
+> implements this platform_suspend_ops.
 > 
-> While at it, fix the comment in pci_dev_run_wake() which is not
-> about sleep states.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 > ---
+>  include/linux/suspend.h | 12 ++++++++++++
+>  kernel/power/suspend.c  | 15 +++++++++++++++
+>  2 files changed, 27 insertions(+)
 > 
-> -> v2:
-> 
-> Passing "true" as the second argument to pci_target_state() for runtime PM
-> might trigger suboptimal state choices to be made, so pass the return value
-> of device_can_wakeup() to it instead and pass "false" to it in pci_dev_run_wake(),
-> because that assumes device_can_wakeup() to return "false" already.
-
-This was sent a week ago without any response so far.
-
-Any concerns?
-
-> ---
->  drivers/pci/pci.c |   22 +++++++++++++---------
->  1 file changed, 13 insertions(+), 9 deletions(-)
-> 
-> Index: linux-pm/drivers/pci/pci.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci.c
-> +++ linux-pm/drivers/pci/pci.c
-> @@ -1982,12 +1982,13 @@ EXPORT_SYMBOL(pci_wake_from_d3);
->  /**
->   * pci_target_state - find an appropriate low power state for a given PCI dev
->   * @dev: PCI device
-> + * @wakeup: Whether or not wakeup functionality will be enabled for the device.
->   *
->   * Use underlying platform code to find a supported low power state for @dev.
->   * If the platform can't manage @dev, return the deepest state from which it
->   * can generate wake events, based on any available PME info.
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index d9718378a8be..d998a04a90a2 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -172,6 +172,15 @@ static inline void dpm_save_failed_step(enum suspend_stat_step step)
+>   *	Called by the PM core if the suspending of devices fails.
+>   *	This callback is optional and should only be implemented by platforms
+>   *	which require special recovery actions in that situation.
+> + *
+> + * @target_state: Returns the suspend state the suspend_ops will be entering.
+> + * 	Called by device drivers that need to know the platform specific suspend
+> + * 	state the system is about to enter.
+> + * 	This callback is optional and should only be implemented by platforms
+> + * 	which require special handling of power management states within
+> + * 	drivers. It does require @begin to be implemented to provide the suspend
+> + * 	state. Return value is platform_suspend_ops specific, and may be a 1:1
+> + * 	mapping to suspend_state_t when relevant.
 >   */
-> -static pci_power_t pci_target_state(struct pci_dev *dev)
-> +static pci_power_t pci_target_state(struct pci_dev *dev, bool wakeup)
->  {
->  	pci_power_t target_state = PCI_D3hot;
->  
-> @@ -2024,7 +2025,7 @@ static pci_power_t pci_target_state(stru
->  	if (dev->current_state == PCI_D3cold)
->  		target_state = PCI_D3cold;
->  
-> -	if (device_may_wakeup(&dev->dev)) {
-> +	if (wakeup) {
->  		/*
->  		 * Find the deepest state from which the device can generate
->  		 * wake-up events, make it the target state and enable device
-> @@ -2050,13 +2051,14 @@ static pci_power_t pci_target_state(stru
->   */
->  int pci_prepare_to_sleep(struct pci_dev *dev)
->  {
-> -	pci_power_t target_state = pci_target_state(dev);
-> +	bool wakeup = device_may_wakeup(&dev->dev);
-> +	pci_power_t target_state = pci_target_state(dev, wakeup);
->  	int error;
->  
->  	if (target_state == PCI_POWER_ERROR)
->  		return -EIO;
->  
-> -	pci_enable_wake(dev, target_state, device_may_wakeup(&dev->dev));
-> +	pci_enable_wake(dev, target_state, wakeup);
->  
->  	error = pci_set_power_state(dev, target_state);
->  
-> @@ -2089,9 +2091,10 @@ EXPORT_SYMBOL(pci_back_from_sleep);
->   */
->  int pci_finish_runtime_suspend(struct pci_dev *dev)
->  {
-> -	pci_power_t target_state = pci_target_state(dev);
-> +	pci_power_t target_state;
->  	int error;
->  
-> +	target_state = pci_target_state(dev, device_can_wakeup(&dev->dev));
->  	if (target_state == PCI_POWER_ERROR)
->  		return -EIO;
->  
-> @@ -2127,8 +2130,8 @@ bool pci_dev_run_wake(struct pci_dev *de
->  	if (!dev->pme_support)
->  		return false;
->  
-> -	/* PME-capable in principle, but not from the intended sleep state */
-> -	if (!pci_pme_capable(dev, pci_target_state(dev)))
-> +	/* PME-capable in principle, but not from the target power state */
-> +	if (!pci_pme_capable(dev, pci_target_state(dev, false)))
->  		return false;
->  
->  	while (bus->parent) {
-> @@ -2163,9 +2166,10 @@ EXPORT_SYMBOL_GPL(pci_dev_run_wake);
->  bool pci_dev_keep_suspended(struct pci_dev *pci_dev)
->  {
->  	struct device *dev = &pci_dev->dev;
-> +	bool wakeup = device_may_wakeup(dev);
->  
->  	if (!pm_runtime_suspended(dev)
-> -	    || pci_target_state(pci_dev) != pci_dev->current_state
-> +	    || pci_target_state(pci_dev, wakeup) != pci_dev->current_state
->  	    || platform_pci_need_resume(pci_dev)
->  	    || (pci_dev->dev_flags & PCI_DEV_FLAGS_NEEDS_RESUME))
->  		return false;
-> @@ -2183,7 +2187,7 @@ bool pci_dev_keep_suspended(struct pci_d
->  	spin_lock_irq(&dev->power.lock);
->  
->  	if (pm_runtime_suspended(dev) && pci_dev->current_state < PCI_D3cold &&
-> -	    !device_may_wakeup(dev))
-> +	    !wakeup)
->  		__pci_pme_active(pci_dev, false);
->  
->  	spin_unlock_irq(&dev->power.lock);
-> 
+>  struct platform_suspend_ops {
+>  	int (*valid)(suspend_state_t state);
+> @@ -184,6 +193,7 @@ struct platform_suspend_ops {
+>  	bool (*suspend_again)(void);
+>  	void (*end)(void);
+>  	void (*recover)(void);
+> +	int (*target_state)(void);
+
+I would use unsigned int (the sign should not matter).
+
+>  };
+
+That's almost what I was thinking about except that the values returned by
+->target_state should be unique, so it would be good to do something to
+ensure that.
+
+The concern is as follows.
+
+Say you have a driver develped for platform X where ->target_state returns
+A for "mem" and B for "standby".  Then, the same IP is re-used on platform Y
+returning B for "mem" and C for "standby" and now the driver cannot
+distinguish between them.
+
+Moreover, even if they both returned A for "mem" there might be differences
+in how "mem" was defined by each of them and therefore in what the driver was
+expected to do to handle "mem" on X and Y.
+
+Thanks,
+Rafael
