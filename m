@@ -1,54 +1,35 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH] PM / Domains: defer dev_pm_domain_set() until genpd->attach_dev succeeds if present
-Date: Thu, 29 Jun 2017 19:00:51 +0100
-Message-ID: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH 3/6] cpufreq: governor: Drop min_sampling_rate
+Date: Thu, 29 Jun 2017 20:01:23 +0200
+Message-ID: <20170629180123.GA2443@light.dominikbrodowski.net>
+References: <cover.1498733506.git.viresh.kumar@linaro.org>
+ <713af1a417a9a77f0c41976b25874687ac235e8e.1498733506.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <713af1a417a9a77f0c41976b25874687ac235e8e.1498733506.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-If the genpd->attach_dev or genpd->power_on fails, genpd_dev_pm_attach
-may return -EPROBE_DEFER initially. However genpd_alloc_dev_data sets
-the PM domain for the device unconditionally.
+On Thu, Jun 29, 2017 at 04:29:06PM +0530, Viresh Kumar wrote:
+> The cpufreq core and governors aren't supposed to set a limit on how
+> fast we want to try changing the frequency. This is currently done for
+> the legacy governors with help of min_sampling_rate.
+> 
+> At worst, we may end up setting the sampling rate to a value lower than
+> the rate at which frequency can be changed and then one of the CPUs in
+> the policy will be only changing frequency for ever.
 
-When subsequent attempts are made to call genpd_dev_pm_attach, it may
-return -EEXISTS checking dev->pm_domain without re-attempting to call
-attach_dev or power_on.
+Is it safe to issue requests to change the CPU frequency so frequently, even
+on historic hardware such as speedstep-{ich,smi,centrino}? In the past,
+these checks more or less disallowed the running of dynamic frequency
+scaling at least on speedstep-smi[*], but maybe on a few other platforms as
+well. That's why I am curious on whether this may break systems potentially
+on a hardware level if the hardware was not designed to do dynamic frequency
+scaling (and not just frequency switches on battery/AC).
 
-platform_drv_probe then attempts to call drv->probe as the return value
--EEXIST != -EPROBE_DEFER, which may end up in a situation where the
-device is accessed without it's power domain switched on.
-
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/base/power/domain.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index da49a8383dc3..b195d34de888 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1168,8 +1168,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
- 
- 	spin_unlock_irq(&dev->power.lock);
- 
--	dev_pm_domain_set(dev, &genpd->domain);
--
- 	return gpd_data;
- 
-  err_free:
-@@ -1221,6 +1219,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 	if (ret)
- 		goto out;
- 
-+	dev_pm_domain_set(dev, &genpd->domain);
-+
- 	genpd->device_count++;
- 	genpd->max_off_time_changed = true;
- 
--- 
-2.7.4
+Best,
+	Dominik
