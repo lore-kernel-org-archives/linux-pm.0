@@ -1,85 +1,75 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V2 0/4] sched: cpufreq: Allow remote callbacks
-Date: Thu, 29 Jun 2017 22:30:41 +0200
-Message-ID: <CAJZ5v0g0Lo2mJzjs_WcHuCFRNMcLpU5GUhDKghFeMtxTTzbKYA@mail.gmail.com>
-References: <cover.1498712046.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Find transition latency dynamically
+Date: Thu, 29 Jun 2017 22:34:22 +0200
+Message-ID: <CAJZ5v0gOq-XPcXFfbycQkWzobBktoH5=eLxYAdh_G33fu8L1cg@mail.gmail.com>
+References: <8041a965fcca71231576ae77a141b1e4333a81cc.1496402967.git.viresh.kumar@linaro.org>
+ <20170629042836.GI29665@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f194.google.com ([209.85.223.194]:35002 "EHLO
-        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751661AbdF2Uam (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jun 2017 16:30:42 -0400
-In-Reply-To: <cover.1498712046.git.viresh.kumar@linaro.org>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:32865 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751661AbdF2UeX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jun 2017 16:34:23 -0400
+In-Reply-To: <20170629042836.GI29665@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <smuckle.linux@gmail.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, eas-dev@lists.linaro.org
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-Hi,
+On Thu, Jun 29, 2017 at 6:28 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 02-06-17, 16:59, Viresh Kumar wrote:
+>> The transition_latency_ns represents the maximum time it can take for
+>> the hardware to switch from/to any frequency for a CPU.
+>>
+>> The transition_latency_ns is used currently for two purposes:
+>>
+>> o To check if the hardware latency is over the maximum allowed for a
+>>   governor (only for ondemand and conservative (why not schedutil?)) and
+>>   to decide if the governor can be used or not.
+>>
+>> o To calculate the sampling_rate or rate_limit for the governors by
+>>   multiplying transition_latency_ns with a constant.
+>>
+>> The platform drivers can also set this value to CPUFREQ_ETERNAL if they
+>> don't know this number and in that case we disallow use of ondemand and
+>> conservative governors as the latency would be higher than the maximum
+>> allowed for the governors.
+>>
+>> In many cases this number is forged by the driver authors to get the
+>> default sampling rate to a desired value. Anyway, the actual latency
+>> values can differ from what is received from the hardware designers.
+>>
+>> Over that, what is provided by the drivers is most likely the time it
+>> takes to change frequency of the hardware, which doesn't account the
+>> software overhead involved.
+>>
+>> In order to have guarantees about this number, this patch tries to
+>> calculate the latency dynamically at cpufreq driver registration time by
+>> first switching to min frequency, then to the max and finally back to
+>> the initial frequency. And the maximum of all three is used as the
+>> target_latency. Specifically the time it takes to go from min to max
+>> frequency (when the software runs the slowest) should be good enough,
+>> and even if there is a delta involved then it shouldn't be a lot.
+>>
+>> For now this patch limits this feature only for platforms which have set
+>> the transition latency to CPUFREQ_ETERNAL. Maybe we can convert everyone
+>> to use it in future, but lets see.
+>>
+>> This is tested over ARM64 Hikey platform which currently sets
+>> "clock-latency" as 500 us from DT, while with this patch the actualy
+>> value increased to 800 us.
+>>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  drivers/cpufreq/cpufreq.c | 63 +++++++++++++++++++++++++++++++++++++++++++++++
+>>  1 file changed, 63 insertions(+)
+>
+> Hi Rafael,
+>
+> Any inputs on this one ?
 
-On Thu, Jun 29, 2017 at 7:26 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Hi,
->
-> Here is the second version of this series. The first [1] version was
-> sent several months back.
->
-> With Android UI and benchmarks the latency of cpufreq response to
-> certain scheduling events can become very critical. Currently, callbacks
-> into schedutil are only made from the scheduler if the target CPU of the
-> event is the same as the current CPU. This means there are certain
-> situations where a target CPU may not run schedutil for some time.
->
-> One testcase to show this behavior is where a task starts running on
-> CPU0, then a new task is also spawned on CPU0 by a task on CPU1. If the
-> system is configured such that new tasks should receive maximum demand
-> initially, this should result in CPU0 increasing frequency immediately.
-> Because of the above mentioned limitation though this does not occur.
-> This is verified using ftrace with the sample [2] application.
->
-> Maybe the ideal solution is to always allow remote callbacks but that
-> has its own challenges:
->
-> o There is no protection required for single CPU per policy case today,
->   and adding any kind of locking there, to supply remote callbacks,
->   isn't really a good idea.
->
-> o If is local CPU isn't part of the same cpufreq policy as the target
->   CPU, then we wouldn't be able to do fast switching at all and have to
->   use some kind of bottom half to schedule work on the target CPU to do
->   real switching. That may be overkill as well.
->
->
-> Taking above challenges into consideration, this version proposes a much
-> simpler diff as compared to the first version.
->
-> This series only allows remote callbacks for target CPUs that share the
-> cpufreq policy with the local CPU. Locking is mostly in place everywhere
-> and we wouldn't be required to change a lot of things.
->
-> This series is tested with couple of usecases (Android: hackbench,
-> recentfling, galleryfling, vellamo, Ubuntu: hackbench) on ARM hikey
-> board (64 bit octa-core, single policy). Only galleryfling showed minor
-> improvements, while others didn't had much deviation.
->
-> The reason being that this patchset only targets a corner case, where
-> following are required to be true to improve performance and that
-> doesn't happen too often with these tests:
->
-> - Task is migrated to another CPU.
-> - The task has maximum demand initially, and should take the CPU to
->   higher OPPs.
-> - And the target CPU doesn't call into schedutil until the next tick.
->
->
-> V1->V2:
-> - Don't support remote callbacks for unshared cpufreq policies.
-> - Don't support remote callbacks where local CPU isn't part of the
->   target CPU's cpufreq policy.
-> - Dropped dvfs_possible_from_any_cpu flag.
-
-There is no way I could consider this for inclusion into 4.13, so I'm
-not sure why you chose this specific timing.
+Shouldn't drivers do that really?
 
 Thanks,
 Rafael
