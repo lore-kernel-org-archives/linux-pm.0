@@ -1,84 +1,193 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 1/6] cpufreq: Don't check for max_transition_latency
-Date: Thu, 29 Jun 2017 16:29:04 +0530
-Message-ID: <9924a30ffcce1b83fd6b3d199753a039a1d6f5ef.1498733506.git.viresh.kumar@linaro.org>
+Subject: [PATCH 3/6] cpufreq: governor: Drop min_sampling_rate
+Date: Thu, 29 Jun 2017 16:29:06 +0530
+Message-ID: <713af1a417a9a77f0c41976b25874687ac235e8e.1498733506.git.viresh.kumar@linaro.org>
 References: <cover.1498733506.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f50.google.com ([74.125.83.50]:36143 "EHLO
-        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752440AbdF2K7R (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jun 2017 06:59:17 -0400
-Received: by mail-pg0-f50.google.com with SMTP id u62so46261953pgb.3
-        for <linux-pm@vger.kernel.org>; Thu, 29 Jun 2017 03:59:17 -0700 (PDT)
+Return-path: <linux-doc-owner@vger.kernel.org>
 In-Reply-To: <cover.1498733506.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1498733506.git.viresh.kumar@linaro.org>
 References: <cover.1498733506.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-doc-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-This check is there only for drivers that set transition_latency to
-CPUFREQ_ETERNAL. And the "max_transition_latency" field is only set for
-ondemand and conservative governors (i.e. This code doesn't run for
-schedutil governor).
+The cpufreq core and governors aren't supposed to set a limit on how
+fast we want to try changing the frequency. This is currently done for
+the legacy governors with help of min_sampling_rate.
 
-With CPUFREQ_ETERNAL, transition latency becomes around 4 seconds (yeah
-its practically impossible). But even then there is nothing particular
-in the governor's code that will not function if the latency is over
-10ms (TRANSITION_LATENCY_LIMIT). Why disable use of the governor
-completely ?
+At worst, we may end up setting the sampling rate to a value lower than
+the rate at which frequency can be changed and then one of the CPUs in
+the policy will be only changing frequency for ever.
 
-And if its about falling back to the performance governor for such
-platforms, then we aren't doing the same for schedutil governor.
-
-This patch get rids of this particular check and let platforms decide if
-they want to use legacy governors or not.
+But that is something for the user to decide and there is no need to
+have special handling for such cases in the core. Leave it for the user
+to figure out.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 14 --------------
- include/linux/cpufreq.h   |  3 ---
- 2 files changed, 17 deletions(-)
+ Documentation/admin-guide/pm/cpufreq.rst |  8 --------
+ drivers/cpufreq/cpufreq_conservative.c   |  6 ------
+ drivers/cpufreq/cpufreq_governor.c       | 10 ++--------
+ drivers/cpufreq/cpufreq_governor.h       |  1 -
+ drivers/cpufreq/cpufreq_ondemand.c       | 12 ------------
+ include/linux/cpufreq.h                  |  2 --
+ 6 files changed, 2 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 6e7424d12de9..34dbbf3122c8 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1988,20 +1988,6 @@ static int cpufreq_init_governor(struct cpufreq_policy *policy)
- 	if (!policy->governor)
+diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/Documentation/admin-guide/pm/cpufreq.rst
+index 09aa2e949787..6adbe1ed58b9 100644
+--- a/Documentation/admin-guide/pm/cpufreq.rst
++++ b/Documentation/admin-guide/pm/cpufreq.rst
+@@ -471,14 +471,6 @@ it is allowed to use (the ``scaling_max_freq`` policy limit).
+ 
+ 	# echo `$(($(cat cpuinfo_transition_latency) * 750 / 1000)) > ondemand/sampling_rate
+ 
+-
+-``min_sampling_rate``
+-	The minimum value of ``sampling_rate``.
+-
+-	Equal to 10000 (10 ms) if :c:macro:`CONFIG_NO_HZ_COMMON` and
+-	:c:data:`tick_nohz_active` are both set or to 20 times the value of
+-	:c:data:`jiffies` in microseconds otherwise.
+-
+ ``up_threshold``
+ 	If the estimated CPU load is above this value (in percent), the governor
+ 	will set the frequency to the maximum value allowed for the policy.
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 88220ff3e1c2..f20f20a77d4d 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -246,7 +246,6 @@ gov_show_one_common(sampling_rate);
+ gov_show_one_common(sampling_down_factor);
+ gov_show_one_common(up_threshold);
+ gov_show_one_common(ignore_nice_load);
+-gov_show_one_common(min_sampling_rate);
+ gov_show_one(cs, down_threshold);
+ gov_show_one(cs, freq_step);
+ 
+@@ -254,12 +253,10 @@ gov_attr_rw(sampling_rate);
+ gov_attr_rw(sampling_down_factor);
+ gov_attr_rw(up_threshold);
+ gov_attr_rw(ignore_nice_load);
+-gov_attr_ro(min_sampling_rate);
+ gov_attr_rw(down_threshold);
+ gov_attr_rw(freq_step);
+ 
+ static struct attribute *cs_attributes[] = {
+-	&min_sampling_rate.attr,
+ 	&sampling_rate.attr,
+ 	&sampling_down_factor.attr,
+ 	&up_threshold.attr,
+@@ -297,10 +294,7 @@ static int cs_init(struct dbs_data *dbs_data)
+ 	dbs_data->up_threshold = DEF_FREQUENCY_UP_THRESHOLD;
+ 	dbs_data->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
+ 	dbs_data->ignore_nice_load = 0;
+-
+ 	dbs_data->tuners = tuners;
+-	dbs_data->min_sampling_rate = MIN_SAMPLING_RATE_RATIO *
+-		jiffies_to_usecs(10);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 47e24b5384b3..858081f9c3d7 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -47,14 +47,11 @@ ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
+ {
+ 	struct dbs_data *dbs_data = to_dbs_data(attr_set);
+ 	struct policy_dbs_info *policy_dbs;
+-	unsigned int rate;
+ 	int ret;
+-	ret = sscanf(buf, "%u", &rate);
++	ret = sscanf(buf, "%u", &dbs_data->sampling_rate);
+ 	if (ret != 1)
  		return -EINVAL;
  
--	if (policy->governor->max_transition_latency &&
--	    policy->cpuinfo.transition_latency >
--	    policy->governor->max_transition_latency) {
--		struct cpufreq_governor *gov = cpufreq_fallback_governor();
+-	dbs_data->sampling_rate = max(rate, dbs_data->min_sampling_rate);
 -
--		if (gov) {
--			pr_warn("%s governor failed, too long transition latency of HW, fallback to %s governor\n",
--				policy->governor->name, gov->name);
--			policy->governor = gov;
--		} else {
--			return -EINVAL;
--		}
--	}
--
- 	if (!try_module_get(policy->governor->owner))
- 		return -EINVAL;
+ 	/*
+ 	 * We are operating under dbs_data->mutex and so the list and its
+ 	 * entries can't be freed concurrently.
+@@ -437,10 +434,7 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
+ 		latency = 1;
  
+ 	/* Bring kernel and HW constraints together */
+-	dbs_data->min_sampling_rate = max(dbs_data->min_sampling_rate,
+-					  MIN_LATENCY_MULTIPLIER * latency);
+-	dbs_data->sampling_rate = max(dbs_data->min_sampling_rate,
+-				      LATENCY_MULTIPLIER * latency);
++	dbs_data->sampling_rate = LATENCY_MULTIPLIER * latency;
+ 
+ 	if (!have_governor_per_policy())
+ 		gov->gdbs_data = dbs_data;
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index 7cbb07512e4c..06d9f90ede93 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -41,7 +41,6 @@ enum {OD_NORMAL_SAMPLE, OD_SUB_SAMPLE};
+ struct dbs_data {
+ 	struct gov_attr_set attr_set;
+ 	void *tuners;
+-	unsigned int min_sampling_rate;
+ 	unsigned int ignore_nice_load;
+ 	unsigned int sampling_rate;
+ 	unsigned int sampling_down_factor;
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 3937acf7e026..6b423eebfd5d 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -319,7 +319,6 @@ gov_show_one_common(sampling_rate);
+ gov_show_one_common(up_threshold);
+ gov_show_one_common(sampling_down_factor);
+ gov_show_one_common(ignore_nice_load);
+-gov_show_one_common(min_sampling_rate);
+ gov_show_one_common(io_is_busy);
+ gov_show_one(od, powersave_bias);
+ 
+@@ -329,10 +328,8 @@ gov_attr_rw(up_threshold);
+ gov_attr_rw(sampling_down_factor);
+ gov_attr_rw(ignore_nice_load);
+ gov_attr_rw(powersave_bias);
+-gov_attr_ro(min_sampling_rate);
+ 
+ static struct attribute *od_attributes[] = {
+-	&min_sampling_rate.attr,
+ 	&sampling_rate.attr,
+ 	&up_threshold.attr,
+ 	&sampling_down_factor.attr,
+@@ -373,17 +370,8 @@ static int od_init(struct dbs_data *dbs_data)
+ 	if (idle_time != -1ULL) {
+ 		/* Idle micro accounting is supported. Use finer thresholds */
+ 		dbs_data->up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
+-		/*
+-		 * In nohz/micro accounting case we set the minimum frequency
+-		 * not depending on HZ, but fixed (very low).
+-		*/
+-		dbs_data->min_sampling_rate = MICRO_FREQUENCY_MIN_SAMPLE_RATE;
+ 	} else {
+ 		dbs_data->up_threshold = DEF_FREQUENCY_UP_THRESHOLD;
+-
+-		/* For correct statistics, we need 10 ticks for each measure */
+-		dbs_data->min_sampling_rate = MIN_SAMPLING_RATE_RATIO *
+-			jiffies_to_usecs(10);
+ 	}
+ 
+ 	dbs_data->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
 diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 905117bd5012..0818bdc3ebf2 100644
+index 54dfa1bdf138..083e7f3c23dd 100644
 --- a/include/linux/cpufreq.h
 +++ b/include/linux/cpufreq.h
-@@ -487,9 +487,6 @@ static inline unsigned long cpufreq_scale(unsigned long old, u_int div,
-  * polling frequency is 1000 times the transition latency of the processor. The
+@@ -488,9 +488,7 @@ static inline unsigned long cpufreq_scale(unsigned long old, u_int div,
   * ondemand governor will work on any processor with transition latency <= 10ms,
   * using appropriate sampling rate.
-- *
-- * For CPUs with transition latency > 10ms (mostly drivers with CPUFREQ_ETERNAL)
-- * the ondemand governor will not work. All times here are in us (microseconds).
   */
- #define MIN_SAMPLING_RATE_RATIO		(2)
+-#define MIN_SAMPLING_RATE_RATIO		(2)
  #define LATENCY_MULTIPLIER		(1000)
+-#define MIN_LATENCY_MULTIPLIER		(20)
+ 
+ struct cpufreq_governor {
+ 	char	name[CPUFREQ_NAME_LEN];
 -- 
 2.13.0.71.gd7076ec9c9cb
+
