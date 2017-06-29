@@ -1,45 +1,37 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH fixes v3] pinctrl: Really force states during suspend/resume
-Date: Fri, 30 Jun 2017 00:25:27 +0200
-Message-ID: <CACRpkdZbbgUcj149aE=N-RX4BLjVNsiOqvRDzWFDELyaKr_Z4Q@mail.gmail.com>
-References: <20170301183257.6554-1-f.fainelli@gmail.com> <CAHp75VdWVq3E3qrgtvvJK=A4yxK+yM_q3ZJd1hNnFBTj-H4Mxw@mail.gmail.com>
- <304fb86d-0862-992b-4563-61151b37d060@gmail.com> <CACRpkdb-_oTuRyGWtH9Rb2g2w_J9VM=m3mXK94OYbCXy+E0XLw@mail.gmail.com>
- <18ca4418-8b62-a1c9-1282-0c468f2aefb2@gmail.com> <CACRpkdZBrYT=vXhR77W+v_hN=t6zYACVPm5HR==kC7nmDYJLQA@mail.gmail.com>
- <5e61618b-cfb0-ddff-3d87-bf512521e669@gmail.com> <CACRpkdbGza+vYTSqBRPbUGGnUsuNQS-6oKkweSch5Pwpku=CEg@mail.gmail.com>
- <37d75c89-883f-1c58-23e8-7e0213935986@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM/hibernate: Free memory occupied by the memory bitmap when hibernation failed
+Date: Fri, 30 Jun 2017 00:31:21 +0200
+Message-ID: <2672809.Vy2seEJDbu@aspire.rjw.lan>
+References: <CGME20170522054414epcas1p38b221b576b6f304c911a196457e248fe@epcas1p3.samsung.com> <"002101d2d2be$71fc1210$55f43630$@luo"@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <37d75c89-883f-1c58-23e8-7e0213935986@gmail.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Warren <swarren@nvidia.com>, Al Cooper <alcooperx@gmail.com>, "open list:PIN CONTROL SUBSYSTEM" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47446 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751683AbdF2Wiu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jun 2017 18:38:50 -0400
+In-Reply-To: <"002101d2d2be$71fc1210$55f43630$@luo"@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: BaoJun Luo <baojun.luo@samsung.com>
+Cc: pavel@ucw.cz, linux-pm@vger.kernel.org
 
-On Thu, Jun 29, 2017 at 9:38 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
-> On 06/29/2017 02:17 AM, Linus Walleij wrote:
+On Monday, May 22, 2017 01:43:17 PM BaoJun Luo wrote:
+> From 17f24d918f4c2ac292ec2aaeb13a527a10b91f80 Mon Sep 17 00:00:00 2001
+> From: "baojun.luo" <baojun.luo@samsung.com>
+> Date: Fri, 19 May 2017 17:58:21 +0800
+> Subject: [PATCH] PM/hibernate: Free memory bitmap by orig_bm/copy_bm hold when  hibernation failed
+> 
+> During prepare for hibernation operation, if there is an error, the image bitmap memory needs to be released.
+> 
+> This patch will make sure the bitmap memory be released when hibernation error
 
->> So if it is not desireable to have every driver know which exact
->> state it came from like S3 this or S2 that and on this laptop
->> we have S2' which is slightly different and such mess (that you
->> predict IIUC) what we really need to know is pretty simple:
->> did the hardware loose its state or not?
->
-> That information is inherently platform specific though, so on platforms
-> where pinctrl-single is used, you won't necessarily know whether the
-> state should be restored (conversely saved) so maybe that means we
-> should have the possibility for a platform to define a wrapper around
-> pinctrl-single whose purpose is to implement platform specific
-> suspend/r/resume functions and just that really? Is there such a driver
-> already that uses pinctrl-single more as a "library" than anything else?
+They will be released by swsusp_free(), because the pages used by them are
+marked as "image pages".
 
-pinctrl-single maye not be the easiest in cases like this, but Tony
-et al have bolted in a few OMAP specifics to pinctrl-single in the
-past so I don't see why this would be a problem.
+At least that's what is supposed to happen, maybe it does not work correctly,
+but in that case it needs to be fixed instead of worked around.
 
-commit 02e483f66deb6bd8df6af450726574614eb53be3
-"pinctrl: single: Prepare for supporting SoC specific features"
-etc.
-
-Yours,
-Linus Walleij
+Thanks,
+Rafael
