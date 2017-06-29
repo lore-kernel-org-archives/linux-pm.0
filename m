@@ -1,400 +1,109 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v2] ACPI: surface3_power: MSHW0011 rev-eng implementation
-Date: Thu, 29 Jun 2017 17:22:21 +0300
-Message-ID: <CAHp75Vdn1-m0gDSHtZXX2A=Q07xG9j1eBiV8iM4e11Qk=oJfZg@mail.gmail.com>
-References: <20170629121009.30234-1-benjamin.tissoires@redhat.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufreq: frequency scaling spec in DT node
+Date: Thu, 29 Jun 2017 20:04:32 +0530
+Message-ID: <20170629143432.GM29665@vireshk-i7>
+References: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
+ <20170629100459.GL29665@vireshk-i7>
+ <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170629121009.30234-1-benjamin.tissoires@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Benjamin Tissoires <benjamin.tissoires@redhat.com>, Hans de Goede <hdegoede@redhat.com>
-Cc: Bastien Nocera <hadess@hadess.net>, Stephen Just <stephenjust@gmail.com>, Sebastian Reichel <sre@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, devel@acpica.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:35016 "EHLO
+        mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751974AbdF2Oeg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jun 2017 10:34:36 -0400
+Received: by mail-pf0-f182.google.com with SMTP id c73so51546386pfk.2
+        for <linux-pm@vger.kernel.org>; Thu, 29 Jun 2017 07:34:36 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-+Cc: Hans (he might give some advice regarding to the below)
-
-On Thu, Jun 29, 2017 at 3:10 PM, Benjamin Tissoires
-<benjamin.tissoires@redhat.com> wrote:
-> MSHW0011 replaces the battery firmware by using ACPI operation regions.
-> The values have been obtained by reverse engineering, and are subject to
-> errors. Looks like it works on overall pretty well.
-
-What devices (laptops, tablets) have it?
-Surface 3. What else?
-
-> I couldn't manage to get the IRQ correctly triggered, so I am using a
-> good old polling thread to check for changes.
-
-It might be
-
->
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=106231
-
-> +config ACPI_SURFACE3_POWER_OPREGION
-> +       tristate "Surface 3 battery platform operation region support"
-
-depends on ACPI ?
-
-> +       help
-> +         Select this option to enable support for ACPI operation
-> +         region of the Surface 3 battery platform driver.
-
-> +/*
-> + * Supports for the power IC on the Surface 3 tablet.
-
-Shouldn't it go to drivers/acpi/pmic folder ?
-
-And did you check if it have actual chip IP vendor name and model?
-Most likely it's a TI (based?) solution.
-
-> + */
-
-> +/*
-> + * Further findings regarding the 2 chips declared in the MSHW0011 are:
-> + * - there are 2 chips declared:
-> + *   . 0x22 seems to control the ADP1 line status (and probably the charger)
-> + *   . 0x55 controls the battery directly
-> + * - the battery chip uses a SMBus protocol (using plain SMBus allows non
-> + *   destructive commands):
-> + *   . the commands/registers used are in the range 0x00..0x7F
-> + *   . if bit 8 (0x80) is set in the SMBus command, the returned value is the
-> + *     same as when it is not set. There is a high chance this bit is the
-> + *     read/write
-> + *   . the various registers semantic as been deduced by observing the register
-> + *     dumps.
-
-All of this sounds familiar if look at what Hans discovered while was
-doing INT33FE support.
-Hans, does above ring any bell to you?
-
-> + */
-
-> +static bool dump_registers;
-> +module_param_named(dump_registers, dump_registers, bool, 0644);
-> +MODULE_PARM_DESC(dump_registers,
-> +                "Dump the SMBus register at probe (debugging only).");
-
-I'm not a fan of module parameter. Why not to use debugfs?
-
-> +#define ACPI_BATTERY_STATE_DISCHARGING 0x1
-> +#define ACPI_BATTERY_STATE_CHARGING    0x2
-> +#define ACPI_BATTERY_STATE_CRITICAL    0x4
-
-BIT() ?
-
-> +#define MSHW0011_EV_2_5                        0x1ff
-
-Is it mask? GENMASK() then.
-
-> +
-> +static int mshw0011_i2c_read_block(struct i2c_client *client, u8 reg, u8 *buf,
-> +                                  int len)
-> +{
-> +       int status, i;
-> +
-> +       for (i = 0; i < len; i++) {
-> +               status = i2c_smbus_read_byte_data(client, reg + i);
-> +               if (status < 0) {
-> +                       buf[i] = 0xff;
-> +                       continue;
-> +               }
-
-Hmm... This looks weird. Why can you read entire block at once?
-
-> +
-> +               buf[i] = (u8)status;
-> +       }
-> +
-> +       return 0;
-> +}
-
-> +static int
-> +mshw0011_notify(struct mshw0011_data *cdata, u8 arg1, u8 arg2,
-> +               unsigned int *ret_value)
-> +{
-
-> +       static const uuid_le mshw0011_guid =
-
-guid_t, please :-)
-
-> +               GUID_INIT(0x3F99E367, 0x6220, 0x4955,
-> +                         0x8B, 0x0F, 0x06, 0xEF, 0x2A, 0xE7, 0x94, 0x12);
-
-> +       *ret_value = 0;
-> +       for (i = 0; i < obj->buffer.length; i++)
-> +               *ret_value |= obj->buffer.pointer[i] << (i * 8);
-
-
-
-> +
-> +       ACPI_FREE(obj);
-> +       return 0;
-> +}
-
-> +static int mshw0011_bix(struct mshw0011_data *cdata, struct bix *bix)
-> +{
-
-> +       memcpy(bix->serial, buf + 7, 3);
-> +       memcpy(bix->serial + 3, buf, 6);
-> +       bix->serial[9] = '\0';
-
-snprintf()?
-
-> +       bix->cycle_count = le16_to_cpu(ret);
-
-non-x86 ?
-
-> +       memcpy(bix->OEM, buf, 3);
-> +       bix->OEM[4] = '\0';
-
-snprintf() ?
-
-> +
-> +       return 0;
-> +}
-
-> +static int mshw0011_bst(struct mshw0011_data *cdata, struct bst *bst)
-> +{
-> +       struct i2c_client *client = cdata->bat0;
-> +       int rate, capacity, voltage, state;
-> +       s16 tmp;
-> +
-> +       rate = i2c_smbus_read_word_data(client, MSHW0011_BAT0_REG_RATE);
-> +       if (rate < 0)
-> +               return rate;
-> +
-> +       capacity = i2c_smbus_read_word_data(client, MSHW0011_BAT0_REG_CAPACITY);
-> +       if (capacity < 0)
-> +               return capacity;
-> +
-> +       voltage = i2c_smbus_read_word_data(client, MSHW0011_BAT0_REG_VOLTAGE);
-> +       if (voltage < 0)
-> +               return voltage;
-> +
-
-> +       tmp = le16_to_cpu(rate);
-
-Do we need that on x86?
-
-> +       bst->battery_present_rate = abs((s32)tmp);
-> +
-> +       state = 0;
-
-> +       if ((s32) tmp > 0)
-
-See above, perhaps using rate directly.
-
-> +               state |= ACPI_BATTERY_STATE_CHARGING;
-> +       else if ((s32) tmp < 0)
-
-Ditto.
-
-> +       bst->battery_remaining_capacity = le16_to_cpu(capacity);
-> +       bst->battery_present_voltage = le16_to_cpu(voltage);
-
-non-x86 ?
-
-> +}
-> +
-
-
-ret = 0; ?
-...
-> +       switch (gsb->cmd.arg1) {
-> +       case MSHW0011_CMD_BAT0_STA:
-
-> +               ret = 0;
-
-See above.
-
-> +               break;
-> +       case MSHW0011_CMD_BAT0_BIX:
-> +               ret = mshw0011_bix(cdata, &gsb->bix);
-> +               break;
-> +       case MSHW0011_CMD_BAT0_BTP:
-
-> +               ret = 0;
-
-Ditto.
-
-> +               cdata->trip_point = gsb->cmd.arg2;
-> +               break;
-> +       case MSHW0011_CMD_BAT0_BST:
-> +               ret = mshw0011_bst(cdata, &gsb->bst);
-> +               break;
-> +       default:
-> +               pr_info("command(0x%02x) is not supported.\n", gsb->cmd.arg1);
-> +               ret = AE_BAD_PARAMETER;
-> +               goto err;
-> +       }
-> +
-> + out:
-> +       gsb->ret = status;
-> +       gsb->status = 0;
-> +
-> + err:
-> +       ACPI_FREE(ares);
-> +       return ret;
-> +}
-> +
-> +static int mshw0011_install_space_handler(struct i2c_client *client)
-> +{
-> +       acpi_handle handle;
-> +       struct mshw0011_handler_data *data;
-> +       acpi_status status;
-> +
-> +       handle = ACPI_HANDLE(&client->dev);
-> +
-> +       if (!handle)
-> +               return -ENODEV;
-> +
-> +       data = kzalloc(sizeof(struct mshw0011_handler_data),
-> +                           GFP_KERNEL);
-> +       if (!data)
-> +               return -ENOMEM;
-> +
-> +       data->client = client;
-> +       status = acpi_bus_attach_private_data(handle, (void *)data);
-> +       if (ACPI_FAILURE(status)) {
-> +               kfree(data);
-> +               return -ENOMEM;
-> +       }
-> +
-> +       status = acpi_install_address_space_handler(handle,
-> +                               ACPI_ADR_SPACE_GSBUS,
-> +                               &mshw0011_space_handler,
-> +                               NULL,
-> +                               data);
-> +       if (ACPI_FAILURE(status)) {
-> +               dev_err(&client->dev, "Error installing i2c space handler\n");
-> +               acpi_bus_detach_private_data(handle);
-> +               kfree(data);
-> +               return -ENOMEM;
-> +       }
-> +
-> +       acpi_walk_dep_device_list(handle);
-> +       return 0;
-> +}
-> +
-> +static void mshw0011_remove_space_handler(struct i2c_client *client)
-> +{
-> +       acpi_handle handle = ACPI_HANDLE(&client->dev);
-> +       struct mshw0011_handler_data *data;
-> +       acpi_status status;
-> +
-> +       if (!handle)
-> +               return;
-> +
-> +       acpi_remove_address_space_handler(handle,
-> +                               ACPI_ADR_SPACE_GSBUS,
-> +                               &mshw0011_space_handler);
-> +
-> +       status = acpi_bus_get_private_data(handle, (void **)&data);
-> +       if (ACPI_SUCCESS(status))
-> +               kfree(data);
-> +
-> +       acpi_bus_detach_private_data(handle);
-> +}
-> +
-
-> +static int acpi_find_i2c(struct acpi_resource *ares, void *data)
-> +{
-> +       struct mshw0011_lookup *lookup = data;
-> +
-> +       if (ares->type != ACPI_RESOURCE_TYPE_SERIAL_BUS)
-> +               return 1;
-> +
-> +       if (lookup->n++ == lookup->index && !lookup->addr)
-> +               lookup->addr = ares->data.i2c_serial_bus.slave_address;
-> +
-> +       return 1;
-> +}
-> +
-> +static int mshw0011_i2c_resource_lookup(struct mshw0011_data *cdata,
-> +                                       unsigned int index)
-> +{
-> +       struct i2c_client *client = cdata->adp1;
-> +       struct acpi_device *adev = ACPI_COMPANION(&client->dev);
-> +       struct mshw0011_lookup lookup = {
-> +               .cdata = cdata,
-> +               .index = index,
-> +       };
-> +       struct list_head res_list;
-> +       int ret;
-> +
-> +       INIT_LIST_HEAD(&res_list);
-> +
-> +       ret = acpi_dev_get_resources(adev, &res_list, acpi_find_i2c, &lookup);
-> +       if (ret < 0)
-> +               return ret;
-> +
-> +       acpi_dev_free_resource_list(&res_list);
-> +
-> +       if (!lookup.addr)
-> +               return -ENOENT;
-> +
-> +       return lookup.addr;
-> +}
-
-Strange you have above functions here. It's a copy paste from I2C
-core. Please, think about way of deduplicating it.
-
-> +static void mshw0011_dump_registers(struct i2c_client *client,
-> +                                   struct i2c_client *bat0, u8 end_register)
-> +{
-> +       char *rd_buf;
-
-> +       char prefix[128];
-
-128 is too way big for a prefix.
-
-> +       unsigned int length = end_register + 1;
-> +       int error;
-> +
-> +       snprintf(prefix, ARRAY_SIZE(prefix), "%s: ", bat0->name);
-
-> +       prefix[127] = '\0';
-
-Why?
-
-> +       rd_buf = kzalloc(length, GFP_KERNEL);
-
-> +       error = mshw0011_i2c_read_block(bat0, 0, rd_buf, length);
-> +       print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_OFFSET, 16, 1,
-> +                      rd_buf, length, true);
-
-If you switch to debugfs it makes things a bit more easier to handle I think.
-
-> +
-> +       kfree(rd_buf);
-> +}
-
-> +static int mshw0011_probe(struct i2c_client *client,
-> +                         const struct i2c_device_id *id)
-> +{
-
-> +       data->notify_version = version == MSHW0011_EV_2_5;
-
-0x1ff as version sounds hmm suspicious.
-
-> +static const struct i2c_device_id mshw0011_id[] = {
-> +       { }
-> +};
-> +MODULE_DEVICE_TABLE(i2c, mshw0011_id);
-
-->probe_new(), please.
-
-If I2C framework is _still_ broken we need to fix that part.
-
-> +#ifdef CONFIG_ACPI
-
-Is it going to be non-ACPI at all? See my proposal to Kconfig as well.
-
-> +               .acpi_match_table = ACPI_PTR(mshw0011_acpi_match),
-
-ACPI_PTR() might be gone
+To: Mason <slash.tmp@free.fr>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
+
+On 29-06-17, 13:41, Mason wrote:
+> I was trying to "emulate" the behavior of the ondemand governor.
+> Based on your reaction, I got it wrong...
+> Here is the actual issue:
+> 
+> I'm on SoC B, where nominal/max freq is expected to be 1206 MHz.
+> So the OPPs in the DT are:
+> operating-points = <1206000 0 603000 0 402000 0 241200 0 134000 0>;
+> *But* FW changed the max freq behind my back, to 1215 MHz.
+> 
+> Here is what happens when I execute:
+> echo ondemand >scaling_governor
+> sleep 2
+> cpuburn-a9 & cpuburn-a9 & cpuburn-a9 & cpuburn-a9
+> ### cpuburn-a9 spins in a tight infinite loop,
+> ### hitting all FUs to raise the CPU temperature
+> 
+> # cpufreq_test.sh
+> [   69.933874] set_target: index=4
+> [   69.944799] set_target: index=2
+> [   69.947988] clk_divider_set_rate: rate=303750000 parent_rate=1215000000 div=4
+> [   69.955542] set_target: index=4
+> [   69.958801] clk_divider_set_rate: rate=607500000 parent_rate=1215000000 div=2
+> [   69.984789] set_target: index=0
+> [   69.987980] clk_divider_set_rate: rate=121500000 parent_rate=1215000000 div=10
+> [   71.947597] set_target: index=4
+> [   71.950996] clk_divider_set_rate: rate=607500000 parent_rate=1215000000 div=2
+> 
+> As you can see, the divider remains stuck at 2, so the SoC
+> is actually running only at 607.5 MHz (instead of 1215 MHz).
+> 
+> If I fix the OPPs in DT to:
+> operating-points = <1215000 0 607500 0 405000 0 243000 0 135000 0>;
+> Then I get the expected behavior:
+> 
+> $ cpufreq_test.sh 
+> [   32.717930] set_target: index=1
+> [   32.721131] clk_divider_set_rate: rate=243000000 parent_rate=1215000000 div=5
+> [   32.731326] set_target: index=4
+> [   32.734521] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+> [   32.754556] set_target: index=0
+> [   32.757738] clk_divider_set_rate: rate=135000000 parent_rate=1215000000 div=9
+> [   32.765864] set_target: index=4
+> [   32.769217] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+> [   33.438811] set_target: index=0
+> [   33.442001] clk_divider_set_rate: rate=135000000 parent_rate=1215000000 div=9
+> [   33.450249] set_target: index=4
+> [   33.453470] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+> [   33.477888] set_target: index=0
+> [   33.481067] clk_divider_set_rate: rate=135000000 parent_rate=1215000000 div=9
+> [   34.714786] set_target: index=4
+> [   34.718237] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+> 
+> Divider settles at 1 (full speed) to provide maximum
+> performance for the user-space processes.
+
+I am not sure how such behavior will happen just because we changed
+the max OPP (actually increased it). You need to dig in a bit to see
+why this happens, as I can't agree to your numbers for now.
+
+> My concern is that if I don't check somewhere that the
+> nominal frequency is as expected in the DT, the CPU might
+> run slower than expected (max freq cut in half).
+
+Its for the bootloader to decide, not a kernel developer. So whatever
+they choose is what we want to use. This can happen with everyone else
+as well, we are all using DT.
+
+But surely, increasing the max OPP value shouldn't have any bad
+effects.
+
+> In what driver should I call these... the clk driver?
+> (drivers/clk/tegra/cvb.c seems to be doind that)
+> 
+> A problem might arise when I need to do voltage scaling,
+> though, since I also need to specify voltages, right?
+
+Your cpufreq driver, which uses cpufreq-dt.c.
+
+> You're talking about this document, right?
+> https://www.kernel.org/doc/Documentation/cpu-freq/user-guide.txt
+
+Documentation/admin-guide/pm/cpufreq.rst in mainline kernel.
 
 -- 
-With Best Regards,
-Andy Shevchenko
+viresh
