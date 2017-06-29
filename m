@@ -1,97 +1,75 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Subject: Re: [PATCH] thermal/intel_powerclamp: add const to
- thermal_cooling_device_ops structure
-Date: Thu, 29 Jun 2017 11:26:26 +0530
-Message-ID: <CAOH+1jHKLf+PVY=g4iXZcT5mKbskuVki5Lcwb1w=AgnVRtksYg@mail.gmail.com>
-References: <1498028988-12916-1-git-send-email-bhumirks@gmail.com>
- <1498705219.2510.4.camel@intel.com> <CAOH+1jGUxFVakQxBnr2Hm+8aY2fFTGLrJ2WEi8d-YHAmrFiZsw@mail.gmail.com>
- <1498714351.2510.35.camel@intel.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH fixes v3] pinctrl: Really force states during suspend/resume
+Date: Thu, 29 Jun 2017 11:17:46 +0200
+Message-ID: <CACRpkdbGza+vYTSqBRPbUGGnUsuNQS-6oKkweSch5Pwpku=CEg@mail.gmail.com>
+References: <20170301183257.6554-1-f.fainelli@gmail.com> <CAHp75VdWVq3E3qrgtvvJK=A4yxK+yM_q3ZJd1hNnFBTj-H4Mxw@mail.gmail.com>
+ <304fb86d-0862-992b-4563-61151b37d060@gmail.com> <CACRpkdb-_oTuRyGWtH9Rb2g2w_J9VM=m3mXK94OYbCXy+E0XLw@mail.gmail.com>
+ <18ca4418-8b62-a1c9-1282-0c468f2aefb2@gmail.com> <CACRpkdZBrYT=vXhR77W+v_hN=t6zYACVPm5HR==kC7nmDYJLQA@mail.gmail.com>
+ <5e61618b-cfb0-ddff-3d87-bf512521e669@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f67.google.com ([209.85.214.67]:33609 "EHLO
-        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751596AbdF2F42 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jun 2017 01:56:28 -0400
-In-Reply-To: <1498714351.2510.35.camel@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <5e61618b-cfb0-ddff-3d87-bf512521e669@gmail.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Warren <swarren@nvidia.com>, Al Cooper <alcooperx@gmail.com>, "open list:PIN CONTROL SUBSYSTEM" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Julia Lawall <julia.lawall@lip6.fr>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-On Thu, Jun 29, 2017 at 11:02 AM, Zhang Rui <rui.zhang@intel.com> wrote:
-> On Thu, 2017-06-29 at 10:41 +0530, Bhumika Goyal wrote:
->> On Thu, Jun 29, 2017 at 8:30 AM, Zhang Rui <rui.zhang@intel.com>
->> wrote:
->> >
->> > On Wed, 2017-06-21 at 12:39 +0530, Bhumika Goyal wrote:
->> > >
->> > > Declare thermal_cooling_device_ops structure as const as it is
->> > > only
->> > > passed
->> > > as an argument to the function thermal_cooling_device_register
->> > > and
->> > > this
->> > > argument is of type const. So, declare the structure as const.
->> > >
->> > I checked the source and the code is written in this way as well in
->> > some other drivers, why not fix them altogether?
->> >
->> Hey,
->>
->> I have already sent the patches for the drivers requiring this
->> change.
->> Some of them got applied as well.
+Sorry for slowness...
+
+On Wed, Jun 21, 2017 at 11:23 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+> On 03/16/2017 07:08 AM, Linus Walleij wrote:
+
+>> I guess then it is better to assume we will loose the state, or
+>> push for more granular handling of S2/3 etc states in the
+>> PM core (I guess these states comes from ACPI or similar).
 >
-> I mean the other drivers that use thermal_cooling_device_ops.
+> I expected to see pm_message_t reflect which state we were entering into
+> (PM_SUSPEND_STANDBY vs. PM_SUSPEND_MEM), but that is not the case.
+
+Can we fix it?
+
+>> Alternatively develop the PM core. Is it really impossible for
+>> PM hooks to know which state it went into/came from?
 >
-
-Actually, I also meant the same but maybe I wasn't clear enough :)
-
-> Surely I can applied this patch, but still it would be nice if you can
-> check the other places that defines thermal_cooling_device_ops and fix
-> all of them in one time. :)
+> I don't think I liked Rafael's suggestion of putting that kind of detail
+> into the platform_suspend_ops routine as he seems to suggest here:
 >
+> https://www.spinics.net/lists/arm-kernel/msg587311.html
 
-I checked again and there remains only one file in power/supply where
-thermal_cooling_device_ops can be made const. I will submit a patch
-for it but I think I will have to create a separate patch because the
-maintainers are different.
-All other places are either already const or I have submitted patches
-for them or cannot be made const.
+He is suggesting:
 
-Thanks,
-Bhumika
+> The cleanest way would be to run that code from one of the platform
+> suspend hooks that receive information on what sleep state is to be
+> entered.
 
-> thanks,
-> rui
->>
->> Thanks,
->> Bhumika
->>
->> >
->> > thanks,
->> > rui
->> > >
->> > > Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
->> > > ---
->> > >  drivers/thermal/intel_powerclamp.c | 2 +-
->> > >  1 file changed, 1 insertion(+), 1 deletion(-)
->> > >
->> > > diff --git a/drivers/thermal/intel_powerclamp.c
->> > > b/drivers/thermal/intel_powerclamp.c
->> > > index d718cd1..e4c68b7 100644
->> > > --- a/drivers/thermal/intel_powerclamp.c
->> > > +++ b/drivers/thermal/intel_powerclamp.c
->> > > @@ -659,7 +659,7 @@ static int powerclamp_set_cur_state(struct
->> > > thermal_cooling_device *cdev,
->> > >  }
->> > >
->> > >  /* bind to generic thermal layer as cooling device*/
->> > > -static struct thermal_cooling_device_ops powerclamp_cooling_ops
->> > > = {
->> > > +static const struct thermal_cooling_device_ops
->> > > powerclamp_cooling_ops = {
->> > >       .get_max_state = powerclamp_get_max_state,
->> > >       .get_cur_state = powerclamp_get_cur_state,
->> > >       .set_cur_state = powerclamp_set_cur_state,
+But what I suggest is more the inverse: that it receive information
+on what state it is coming from, rather than which state it is
+going to.
+
+But I guess it would be logical that suspend() get to know what state
+it is going to and resume() get to know which state it is coming from.
+
+So Rafael seem to be aligned with that idea.
+
+> and here is my response:
+>
+> https://www.spinics.net/lists/arm-kernel/msg589844.html
+
+So if it is not desireable to have every driver know which exact
+state it came from like S3 this or S2 that and on this laptop
+we have S2' which is slightly different and such mess (that you
+predict IIUC) what we really need to know is pretty simple:
+did the hardware loose its state or not?
+
+That is the information we want the PM core to provide to
+the resume() callback, somehow. A simple bool is fine.
+
+Any platform specifics or simplifications pertaining to certain
+states and whether S5 or S7 looses the context should not
+be the concern of a driver, what it wants to know is simply
+whether its device has been powered off and lost its hardware
+context.
+
+Yours,
+Linus Walleij
