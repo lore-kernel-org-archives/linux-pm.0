@@ -1,64 +1,93 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Clocks used by another OS/CPU
-Date: Thu, 29 Jun 2017 15:22:51 +0200
-Message-ID: <CAMuHMdV7onyF3o0POVh0v0O-Zp_bmGK3zyadg1SHa4r6k-P_2g@mail.gmail.com>
-References: <CAMuHMdW9+CNTTOVO4SRRUxuz3ajLbY2j1uG8b_RpHX52NPwXrQ@mail.gmail.com>
- <b2328038-64ac-f7e0-d8a9-434f2f0b0300@de.bosch.com> <CAMuHMdVD3i0YhGCf-HSS+y+4SHvXi9sW3V4-ScQX=7R+DX=kEQ@mail.gmail.com>
- <b42a6818-4bc1-6556-5adf-c74a205b745b@de.bosch.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <b42a6818-4bc1-6556-5adf-c74a205b745b@de.bosch.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Dirk Behme <dirk.behme@de.bosch.com>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@baylibre.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC v2 0/5] clk: renesas: rcar-gen3: Restore clocks during resume
+Date: Thu, 29 Jun 2017 15:25:15 +0200
+Message-ID: <1498742720-2713-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from laurent.telenet-ops.be ([195.130.137.89]:34434 "EHLO
+        laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753252AbdF2NZY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jun 2017 09:25:24 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>
+Cc: linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Hi Dirk,
+	Hi all,
 
-On Thu, Jun 29, 2017 at 3:18 PM, Dirk Behme <dirk.behme@de.bosch.com> wrote:
-> On 29.06.2017 13:18, Geert Uytterhoeven wrote:
->> On Thu, Jun 29, 2017 at 12:28 PM, Dirk Behme <dirk.behme@de.bosch.com>
->> wrote:
->>> On 29.06.2017 11:27, Geert Uytterhoeven wrote:
->>>> TL;DR: Clocks may be in use by another CPU not running Linux, while
->>>> Linux
->>>> disables them as being unused.
+During PSCI system suspend, R-Car Gen3 SoCs are powered down, and their
+clock register state is lost.  Note that as the boot loader skips most
+initialization after resume, clock register state differs from the state
+encountered during normal system boot, too.
 
->>>> On r8a7795, there are several Cortex A cores running Linux, and a Cortex
->>>> R7
->>>> core which may run another OS.
->>>> This is an interesting issue, and relevant to other SoCs, too.
+Hence after s2ram, some operations may fail because module clocks are
+disabled, while drivers expect them to be still enabled.  E.g. EtherAVB
+fails when Wake-on-LAN has been enabled using "ethtool -s eth0 wol g":
 
-> First of all, just the clocks we know (*) are used by the R7 side *and* are
-> disabled by the kernel (for a practical demo this are e.g. ~7 clocks).
->
-> (*) Yes, this is board (and R7 software) related. And yes, this might result
-> in board specific r8a7795_crit_mod_clks/r8a7795_crit_core_clks[] tables. So
-> yes, most probably device tree would be an option. While there is
->
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk.c#n3402
->
-> unfortunately
->
-> a) its marked as "Do not use this function"
->
-> and
->
-> b) even if we would ignore (a) we couldn't figure how to use this for the
-> RCar3 clocks (being no clock expert)
+    ravb e6800000.ethernet eth0: failed to switch device to config mode
+    ravb e6800000.ethernet eth0: device will be stopped after h/w processes are done.
+    ravb e6800000.ethernet eth0: failed to switch device to config
+    PM: Device e6800000.ethernet failed to resume: error -110
 
-You cannot, as it only supports the legacy one-clock-per-node style.
-You can use it on e.g. sd2_clk in arch/arm/boot/dts/r8a7791.dtsi, until R-Car
-Gen2 is switched to the new CPG/MSSR driver.
+In addition, some clocks that were disabled by clk_disable_unused() may
+have been re-enabled, wasting power.
+
+This RFC is a second attempt to fix this issue by restoring clock registers
+during system resume.
+
+Note that while this fixes EtherAVB operation after resume from s2ram,
+EtherAVB cannot be used as an actual wake-up source from s2ram, only
+from s2idle, due to PSCI limitations.
+
+Changes compared to v1 (more details in the individual patches):
+  - Save module clock registers in suspend_noirq instead of constantly
+    updating shadow registers,
+  - Restore all module clocks under our control, not just the ones we ever
+    changed,
+  - Also restore DIV6, SDHI, and R clocks, thus covering all supported
+    programmable core clocks on R-Car Gen3.
+
+As clock register restore is only needed on R-Car Gen3 with PSCI, although
+harmless on other systems, perhaps the save/restore code should be
+protected by #ifdef CONFIG_ARM_PSCI_FW?
+
+This series is against clk-next, with "clk: renesas: div6: Document fields
+used for parent selection" applied on top.
+
+This has been tested on Salvator-X with R-Car H3 ES1.0 and M3-W ES1.0.
+On Salvator-XS with R-Car H3 ES2.0, EtherAVB restarts after system resume,
+but NFS fails with "server not responding", probably not due to a clock
+issue.
+
+Thanks for your comments!
+
+Geert Uytterhoeven (5):
+  [RFC] clk: renesas: cpg-mssr: Restore module clocks during resume
+  [RFC] clk: renesas: cpg-mssr: Add support to restore core clocks
+    during resume
+  [RFC] clk: renesas: div6: Restore clock state during resume
+  [RFC] clk: renesas: rcar-gen3: Restore SDHI clocks during resume
+  [RFC] clk: renesas: rcar-gen3: Restore R clock during resume
+
+ drivers/clk/renesas/clk-div6.c         | 38 ++++++++++++++-
+ drivers/clk/renesas/clk-div6.h         |  3 +-
+ drivers/clk/renesas/rcar-gen2-cpg.c    |  7 ++-
+ drivers/clk/renesas/rcar-gen2-cpg.h    |  6 +--
+ drivers/clk/renesas/rcar-gen3-cpg.c    | 79 +++++++++++++++++++++++++-------
+ drivers/clk/renesas/rcar-gen3-cpg.h    |  3 +-
+ drivers/clk/renesas/renesas-cpg-mssr.c | 84 +++++++++++++++++++++++++++++++++-
+ drivers/clk/renesas/renesas-cpg-mssr.h |  3 +-
+ 8 files changed, 193 insertions(+), 30 deletions(-)
+
+-- 
+2.7.4
 
 Gr{oetje,eeting}s,
 
-                        Geert
+						Geert
 
 --
 Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
 In personal conversations with technical people, I call myself a hacker. But
 when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+							    -- Linus Torvalds
