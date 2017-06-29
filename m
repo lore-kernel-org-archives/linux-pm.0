@@ -1,106 +1,53 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: [PATCH fixes v3] pinctrl: Really force states during
- suspend/resume
-Date: Thu, 29 Jun 2017 12:38:11 -0700
-Message-ID: <37d75c89-883f-1c58-23e8-7e0213935986@gmail.com>
-References: <20170301183257.6554-1-f.fainelli@gmail.com>
- <CAHp75VdWVq3E3qrgtvvJK=A4yxK+yM_q3ZJd1hNnFBTj-H4Mxw@mail.gmail.com>
- <304fb86d-0862-992b-4563-61151b37d060@gmail.com>
- <CACRpkdb-_oTuRyGWtH9Rb2g2w_J9VM=m3mXK94OYbCXy+E0XLw@mail.gmail.com>
- <18ca4418-8b62-a1c9-1282-0c468f2aefb2@gmail.com>
- <CACRpkdZBrYT=vXhR77W+v_hN=t6zYACVPm5HR==kC7nmDYJLQA@mail.gmail.com>
- <5e61618b-cfb0-ddff-3d87-bf512521e669@gmail.com>
- <CACRpkdbGza+vYTSqBRPbUGGnUsuNQS-6oKkweSch5Pwpku=CEg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] ACPI: surface3_power: MSHW0011 rev-eng implementation
+Date: Thu, 29 Jun 2017 22:22:50 +0200
+Message-ID: <CAJZ5v0hq1YSECBGD9QvqKuzmaFW2+jhWPSzvTb64yTxd6yH06w@mail.gmail.com>
+References: <20170629121009.30234-1-benjamin.tissoires@redhat.com> <CAHp75Vdn1-m0gDSHtZXX2A=Q07xG9j1eBiV8iM4e11Qk=oJfZg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <CACRpkdbGza+vYTSqBRPbUGGnUsuNQS-6oKkweSch5Pwpku=CEg@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-gpio-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Warren <swarren@nvidia.com>, Al Cooper <alcooperx@gmail.com>, "open list:PIN CONTROL SUBSYSTEM" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAHp75Vdn1-m0gDSHtZXX2A=Q07xG9j1eBiV8iM4e11Qk=oJfZg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Andy Shevchenko <andy.shevchenko@gmail.com>, Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, Bastien Nocera <hadess@hadess.net>, Stephen Just <stephenjust@gmail.com>, Sebastian Reichel <sre@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/29/2017 02:17 AM, Linus Walleij wrote:
-> Sorry for slowness...
-> 
-> On Wed, Jun 21, 2017 at 11:23 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
->> On 03/16/2017 07:08 AM, Linus Walleij wrote:
-> 
->>> I guess then it is better to assume we will loose the state, or
->>> push for more granular handling of S2/3 etc states in the
->>> PM core (I guess these states comes from ACPI or similar).
+On Thu, Jun 29, 2017 at 4:22 PM, Andy Shevchenko
+<andy.shevchenko@gmail.com> wrote:
+> +Cc: Hans (he might give some advice regarding to the below)
+>
+> On Thu, Jun 29, 2017 at 3:10 PM, Benjamin Tissoires
+> <benjamin.tissoires@redhat.com> wrote:
+>> MSHW0011 replaces the battery firmware by using ACPI operation regions.
+>> The values have been obtained by reverse engineering, and are subject to
+>> errors. Looks like it works on overall pretty well.
+>
+> What devices (laptops, tablets) have it?
+> Surface 3. What else?
+>
+>> I couldn't manage to get the IRQ correctly triggered, so I am using a
+>> good old polling thread to check for changes.
+>
+> It might be
+>
 >>
->> I expected to see pm_message_t reflect which state we were entering into
->> (PM_SUSPEND_STANDBY vs. PM_SUSPEND_MEM), but that is not the case.
-> 
-> Can we fix it?
+>> Link: https://bugzilla.kernel.org/show_bug.cgi?id=106231
+>
+>> +config ACPI_SURFACE3_POWER_OPREGION
+>> +       tristate "Surface 3 battery platform operation region support"
+>
+> depends on ACPI ?
+>
+>> +       help
+>> +         Select this option to enable support for ACPI operation
+>> +         region of the Surface 3 battery platform driver.
+>
+>> +/*
+>> + * Supports for the power IC on the Surface 3 tablet.
+>
+> Shouldn't it go to drivers/acpi/pmic folder ?
 
-Yes, I proposed this and got no feedback so far:
+Surely not directly into drivers/acpi/ in any case.
 
-https://www.spinics.net/lists/arm-kernel/msg590135.html
-
-> 
->>> Alternatively develop the PM core. Is it really impossible for
->>> PM hooks to know which state it went into/came from?
->>
->> I don't think I liked Rafael's suggestion of putting that kind of detail
->> into the platform_suspend_ops routine as he seems to suggest here:
->>
->> https://www.spinics.net/lists/arm-kernel/msg587311.html
-> 
-> He is suggesting:
-> 
->> The cleanest way would be to run that code from one of the platform
->> suspend hooks that receive information on what sleep state is to be
->> entered.
-> 
-> But what I suggest is more the inverse: that it receive information
-> on what state it is coming from, rather than which state it is
-> going to.
-
-The same information is available and it won't change from one suspend
-cycle to resume, since in between these calls you are supposed to be...
-suspended.
-
-> 
-> But I guess it would be logical that suspend() get to know what state
-> it is going to and resume() get to know which state it is coming from.>
-> So Rafael seem to be aligned with that idea.
-> 
->> and here is my response:
->>
->> https://www.spinics.net/lists/arm-kernel/msg589844.html
-> 
-> So if it is not desireable to have every driver know which exact
-> state it came from like S3 this or S2 that and on this laptop
-> we have S2' which is slightly different and such mess (that you
-> predict IIUC) what we really need to know is pretty simple:
-> did the hardware loose its state or not?
-
-That information is inherently platform specific though, so on platforms
-where pinctrl-single is used, you won't necessarily know whether the
-state should be restored (conversely saved) so maybe that means we
-should have the possibility for a platform to define a wrapper around
-pinctrl-single whose purpose is to implement platform specific
-suspend/r/resume functions and just that really? Is there such a driver
-already that uses pinctrl-single more as a "library" than anything else?
-
-> 
-> That is the information we want the PM core to provide to
-> the resume() callback, somehow. A simple bool is fine.
-> 
-> Any platform specifics or simplifications pertaining to certain
-> states and whether S5 or S7 looses the context should not
-> be the concern of a driver, what it wants to know is simply
-> whether its device has been powered off and lost its hardware
-> context.
-> 
-> Yours,
-> Linus Walleij
-> 
-
-
--- 
-Florian
+Thanks,
+Rafael
