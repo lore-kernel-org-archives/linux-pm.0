@@ -1,126 +1,796 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal/intel_powerclamp: add const to
- thermal_cooling_device_ops structure
-Date: Thu, 29 Jun 2017 20:08:33 +0800
-Message-ID: <1498738113.2510.40.camel@intel.com>
-References: <1498028988-12916-1-git-send-email-bhumirks@gmail.com>
-         <1498705219.2510.4.camel@intel.com>
-         <CAOH+1jGUxFVakQxBnr2Hm+8aY2fFTGLrJ2WEi8d-YHAmrFiZsw@mail.gmail.com>
-         <1498714351.2510.35.camel@intel.com>
-         <CAOH+1jHKLf+PVY=g4iXZcT5mKbskuVki5Lcwb1w=AgnVRtksYg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+From: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Subject: [PATCH v2] ACPI: surface3_power: MSHW0011 rev-eng implementation
+Date: Thu, 29 Jun 2017 14:10:09 +0200
+Message-ID: <20170629121009.30234-1-benjamin.tissoires@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:47453 "EHLO mga06.intel.com"
+Received: from mx1.redhat.com ([209.132.183.28]:42328 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752143AbdF2MIk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 29 Jun 2017 08:08:40 -0400
-In-Reply-To: <CAOH+1jHKLf+PVY=g4iXZcT5mKbskuVki5Lcwb1w=AgnVRtksYg@mail.gmail.com>
+        id S1751893AbdF2MK4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Jun 2017 08:10:56 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bhumika Goyal <bhumirks@gmail.com>
-Cc: Julia Lawall <julia.lawall@lip6.fr>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: Bastien Nocera <hadess@hadess.net>, Stephen Just <stephenjust@gmail.com>, Sebastian Reichel <sre@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: linux-acpi@vger.kernel.org, devel@acpica.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Benjamin Tissoires <benjamin.tissoires@redhat.com>
 
-On Thu, 2017-06-29 at 11:26 +0530, Bhumika Goyal wrote:
-> On Thu, Jun 29, 2017 at 11:02 AM, Zhang Rui <rui.zhang@intel.com>
-> wrote:
-> > 
-> > On Thu, 2017-06-29 at 10:41 +0530, Bhumika Goyal wrote:
-> > > 
-> > > On Thu, Jun 29, 2017 at 8:30 AM, Zhang Rui <rui.zhang@intel.com>
-> > > wrote:
-> > > > 
-> > > > 
-> > > > On Wed, 2017-06-21 at 12:39 +0530, Bhumika Goyal wrote:
-> > > > > 
-> > > > > 
-> > > > > Declare thermal_cooling_device_ops structure as const as it
-> > > > > is
-> > > > > only
-> > > > > passed
-> > > > > as an argument to the function
-> > > > > thermal_cooling_device_register
-> > > > > and
-> > > > > this
-> > > > > argument is of type const. So, declare the structure as
-> > > > > const.
-> > > > > 
-> > > > I checked the source and the code is written in this way as
-> > > > well in
-> > > > some other drivers, why not fix them altogether?
-> > > > 
-> > > Hey,
-> > > 
-> > > I have already sent the patches for the drivers requiring this
-> > > change.
-> > > Some of them got applied as well.
-> > I mean the other drivers that use thermal_cooling_device_ops.
-> > 
-> Actually, I also meant the same but maybe I wasn't clear enough :)
-> 
-> > 
-> > Surely I can applied this patch, but still it would be nice if you
-> > can
-> > check the other places that defines thermal_cooling_device_ops and
-> > fix
-> > all of them in one time. :)
-> > 
-> I checked again and there remains only one file in power/supply where
-> thermal_cooling_device_ops can be made const. I will submit a patch
-> for it but I think I will have to create a separate patch because the
-> maintainers are different.
-> All other places are either already const
+MSHW0011 replaces the battery firmware by using ACPI operation regions.
+The values have been obtained by reverse engineering, and are subject to
+errors. Looks like it works on overall pretty well.
 
+I couldn't manage to get the IRQ correctly triggered, so I am using a
+good old polling thread to check for changes.
 
->  or I have submitted patches
-> for them
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=106231
 
-am I in the loop of the patches? because I was not aware of those
-changes.
+Signed-off-by: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Signed-off-by: Stephen Just <stephenjust@gmail.com>
 
-thanks,
-rui
->  or cannot be made const.
-> 
-> Thanks,
-> Bhumika
-> 
-> > 
-> > thanks,
-> > rui
-> > > 
-> > > 
-> > > Thanks,
-> > > Bhumika
-> > > 
-> > > > 
-> > > > 
-> > > > thanks,
-> > > > rui
-> > > > > 
-> > > > > 
-> > > > > Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
-> > > > > ---
-> > > > >  drivers/thermal/intel_powerclamp.c | 2 +-
-> > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > > 
-> > > > > diff --git a/drivers/thermal/intel_powerclamp.c
-> > > > > b/drivers/thermal/intel_powerclamp.c
-> > > > > index d718cd1..e4c68b7 100644
-> > > > > --- a/drivers/thermal/intel_powerclamp.c
-> > > > > +++ b/drivers/thermal/intel_powerclamp.c
-> > > > > @@ -659,7 +659,7 @@ static int
-> > > > > powerclamp_set_cur_state(struct
-> > > > > thermal_cooling_device *cdev,
-> > > > >  }
-> > > > > 
-> > > > >  /* bind to generic thermal layer as cooling device*/
-> > > > > -static struct thermal_cooling_device_ops
-> > > > > powerclamp_cooling_ops
-> > > > > = {
-> > > > > +static const struct thermal_cooling_device_ops
-> > > > > powerclamp_cooling_ops = {
-> > > > >       .get_max_state = powerclamp_get_max_state,
-> > > > >       .get_cur_state = powerclamp_get_cur_state,
-> > > > >       .set_cur_state = powerclamp_set_cur_state,
+---
+
+Hi guys,
+
+sorry for taking so long providing a v2 for this one, but it took me a while
+to understand the acpica process and to get a proper PR done and merged[1].
+(I must confess this felt through the crack too)
+With ACPICA PR #277 merged, we now just need to have this patch included to
+have proper battery reporting on the Surface 3.
+
+I have included all the reviews Sebastian, Mika and Andy gave.
+
+Cheers,
+Benjamin
+
+[1] https://github.com/acpica/acpica/pull/277
+
+changes in v2:
+- moved to drivers/acpi/ instead of power
+- use uuid_le (guuid even)
+- fix uper/lower case
+- print_hex_dump() used in mshw0011_dump_registers() instead of custom dump
+- removed "MSHW0011:00" in mshw0011_id
+---
+ drivers/acpi/Kconfig          |   6 +
+ drivers/acpi/Makefile         |   2 +
+ drivers/acpi/surface3_power.c | 702 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 710 insertions(+)
+ create mode 100644 drivers/acpi/surface3_power.c
+
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index 1ce52f8..ac29170 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -488,6 +488,12 @@ config ACPI_EXTLOG
+ 	  driver adds support for that functionality with corresponding
+ 	  tracepoint which carries that information to userspace.
+ 
++config ACPI_SURFACE3_POWER_OPREGION
++	tristate "Surface 3 battery platform operation region support"
++	help
++	  Select this option to enable support for ACPI operation
++	  region of the Surface 3 battery platform driver.
++
+ menuconfig PMIC_OPREGION
+ 	bool "PMIC (Power Management Integrated Circuit) operation region support"
+ 	help
+diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+index b1aacfc..459a1aa 100644
+--- a/drivers/acpi/Makefile
++++ b/drivers/acpi/Makefile
+@@ -98,6 +98,8 @@ obj-$(CONFIG_ACPI_APEI)		+= apei/
+ 
+ obj-$(CONFIG_ACPI_EXTLOG)	+= acpi_extlog.o
+ 
++obj-$(CONFIG_ACPI_SURFACE3_POWER_OPREGION) += surface3_power.o
++
+ obj-$(CONFIG_PMIC_OPREGION)	+= pmic/intel_pmic.o
+ obj-$(CONFIG_CRC_PMIC_OPREGION) += pmic/intel_pmic_crc.o
+ obj-$(CONFIG_XPOWER_PMIC_OPREGION) += pmic/intel_pmic_xpower.o
+diff --git a/drivers/acpi/surface3_power.c b/drivers/acpi/surface3_power.c
+new file mode 100644
+index 0000000..6d59c7f
+--- /dev/null
++++ b/drivers/acpi/surface3_power.c
+@@ -0,0 +1,702 @@
++/*
++ * Supports for the power IC on the Surface 3 tablet.
++ *
++ * (C) Copyright 2016-2017 Red Hat, Inc
++ * (C) Copyright 2016-2017 Benjamin Tissoires <benjamin.tissoires@gmail.com>
++ * (C) Copyright 2016 Stephen Just <stephenjust@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; version 2
++ * of the License.
++ */
++
++/*
++ * This driver has been reverse-engineered by parsing the DSDT of the Surface 3
++ * and looking at the registers of the chips.
++ *
++ * The DSDT allowed to find out that:
++ * - the driver is required for the ACPI BAT0 device to communicate to the chip
++ *   through an operation region.
++ * - the various defines for the operation region functions to communicate with
++ *   this driver
++ * - the DSM 3f99e367-6220-4955-8b0f-06ef2ae79412 allows to trigger ACPI
++ *   events to BAT0 (the code is all available in the DSDT).
++ *
++ * Further findings regarding the 2 chips declared in the MSHW0011 are:
++ * - there are 2 chips declared:
++ *   . 0x22 seems to control the ADP1 line status (and probably the charger)
++ *   . 0x55 controls the battery directly
++ * - the battery chip uses a SMBus protocol (using plain SMBus allows non
++ *   destructive commands):
++ *   . the commands/registers used are in the range 0x00..0x7F
++ *   . if bit 8 (0x80) is set in the SMBus command, the returned value is the
++ *     same as when it is not set. There is a high chance this bit is the
++ *     read/write
++ *   . the various registers semantic as been deduced by observing the register
++ *     dumps.
++ */
++
++#include <asm/unaligned.h>
++#include <linux/acpi.h>
++#include <linux/freezer.h>
++#include <linux/i2c.h>
++#include <linux/kernel.h>
++#include <linux/kthread.h>
++#include <linux/slab.h>
++#include <linux/uuid.h>
++
++#define POLL_INTERVAL		(2 * HZ)
++
++static bool dump_registers;
++module_param_named(dump_registers, dump_registers, bool, 0644);
++MODULE_PARM_DESC(dump_registers,
++		 "Dump the SMBus register at probe (debugging only).");
++
++struct mshw0011_data {
++	struct i2c_client	*adp1;
++	struct i2c_client	*bat0;
++	unsigned short		notify_version;
++	struct task_struct	*poll_task;
++	bool			kthread_running;
++
++	bool			charging;
++	bool			bat_charging;
++	u8			trip_point;
++	s32			full_capacity;
++};
++
++struct mshw0011_lookup {
++	struct mshw0011_data	*cdata;
++	unsigned int		n;
++	unsigned int		index;
++	int			addr;
++};
++
++struct mshw0011_handler_data {
++	struct acpi_connection_info	info;
++	struct i2c_client		*client;
++};
++
++struct bix {
++	u32	revision;
++	u32	power_unit;
++	u32	design_capacity;
++	u32	last_full_charg_capacity;
++	u32	battery_technology;
++	u32	design_voltage;
++	u32	design_capacity_of_warning;
++	u32	design_capacity_of_low;
++	u32	cycle_count;
++	u32	measurement_accuracy;
++	u32	max_sampling_time;
++	u32	min_sampling_time;
++	u32	max_average_interval;
++	u32	min_average_interval;
++	u32	battery_capacity_granularity_1;
++	u32	battery_capacity_granularity_2;
++	char	model[10];
++	char	serial[10];
++	char	type[10];
++	char	OEM[10];
++} __packed;
++
++struct bst {
++	u32	battery_state;
++	s32	battery_present_rate;
++	u32	battery_remaining_capacity;
++	u32	battery_present_voltage;
++} __packed;
++
++struct gsb_command {
++	u8	arg0;
++	u8	arg1;
++	u8	arg2;
++} __packed;
++
++struct gsb_buffer {
++	u8	status;
++	u8	len;
++	u8	ret;
++	union {
++		struct gsb_command	cmd;
++		struct bst		bst;
++		struct bix		bix;
++	} __packed;
++} __packed;
++
++#define ACPI_BATTERY_STATE_DISCHARGING	0x1
++#define ACPI_BATTERY_STATE_CHARGING	0x2
++#define ACPI_BATTERY_STATE_CRITICAL	0x4
++
++#define MSHW0011_CMD_DEST_BAT0		0x01
++#define MSHW0011_CMD_DEST_ADP1		0x03
++
++#define MSHW0011_CMD_BAT0_STA		0x01
++#define MSHW0011_CMD_BAT0_BIX		0x02
++#define MSHW0011_CMD_BAT0_BCT		0x03
++#define MSHW0011_CMD_BAT0_BTM		0x04
++#define MSHW0011_CMD_BAT0_BST		0x05
++#define MSHW0011_CMD_BAT0_BTP		0x06
++#define MSHW0011_CMD_ADP1_PSR		0x07
++#define MSHW0011_CMD_BAT0_PSOC		0x09
++#define MSHW0011_CMD_BAT0_PMAX		0x0a
++#define MSHW0011_CMD_BAT0_PSRC		0x0b
++#define MSHW0011_CMD_BAT0_CHGI		0x0c
++#define MSHW0011_CMD_BAT0_ARTG		0x0d
++
++#define MSHW0011_NOTIFY_GET_VERSION	0x00
++#define MSHW0011_NOTIFY_ADP1		0x01
++#define MSHW0011_NOTIFY_BAT0_BST	0x02
++#define MSHW0011_NOTIFY_BAT0_BIX	0x05
++
++#define MSHW0011_ADP1_REG_PSR		0x04
++
++#define MSHW0011_BAT0_REG_CAPACITY		0x0c
++#define MSHW0011_BAT0_REG_FULL_CHG_CAPACITY	0x0e
++#define MSHW0011_BAT0_REG_DESIGN_CAPACITY	0x40
++#define MSHW0011_BAT0_REG_VOLTAGE	0x08
++#define MSHW0011_BAT0_REG_RATE		0x14
++#define MSHW0011_BAT0_REG_OEM		0x45
++#define MSHW0011_BAT0_REG_TYPE		0x4e
++#define MSHW0011_BAT0_REG_SERIAL_NO	0x56
++#define MSHW0011_BAT0_REG_CYCLE_CNT	0x6e
++
++#define MSHW0011_EV_2_5			0x1ff
++
++static int mshw0011_i2c_read_block(struct i2c_client *client, u8 reg, u8 *buf,
++				   int len)
++{
++	int status, i;
++
++	for (i = 0; i < len; i++) {
++		status = i2c_smbus_read_byte_data(client, reg + i);
++		if (status < 0) {
++			buf[i] = 0xff;
++			continue;
++		}
++
++		buf[i] = (u8)status;
++	}
++
++	return 0;
++}
++
++static int
++mshw0011_notify(struct mshw0011_data *cdata, u8 arg1, u8 arg2,
++		unsigned int *ret_value)
++{
++	static const uuid_le mshw0011_guid =
++		GUID_INIT(0x3F99E367, 0x6220, 0x4955,
++			  0x8B, 0x0F, 0x06, 0xEF, 0x2A, 0xE7, 0x94, 0x12);
++	union acpi_object *obj;
++	struct acpi_device *adev;
++	acpi_handle handle;
++	unsigned int i;
++
++	handle = ACPI_HANDLE(&cdata->adp1->dev);
++	if (!handle || acpi_bus_get_device(handle, &adev))
++		return -ENODEV;
++
++	obj = acpi_evaluate_dsm_typed(handle, &mshw0011_guid, arg1, arg2, NULL,
++				      ACPI_TYPE_BUFFER);
++	if (!obj) {
++		dev_err(&cdata->adp1->dev, "device _DSM execution failed\n");
++		return -ENODEV;
++	}
++
++	*ret_value = 0;
++	for (i = 0; i < obj->buffer.length; i++)
++		*ret_value |= obj->buffer.pointer[i] << (i * 8);
++
++	ACPI_FREE(obj);
++	return 0;
++}
++
++static const struct bix default_bix = {
++	.revision = 0x00,
++	.power_unit = 0x01,
++	.design_capacity = 0x1dca,
++	.last_full_charg_capacity = 0x1dca,
++	.battery_technology = 0x01,
++	.design_voltage = 0x10df,
++	.design_capacity_of_warning = 0x8f,
++	.design_capacity_of_low = 0x47,
++	.cycle_count = 0xffffffff,
++	.measurement_accuracy = 0x00015f90,
++	.max_sampling_time = 0x03e8,
++	.min_sampling_time = 0x03e8,
++	.max_average_interval = 0x03e8,
++	.min_average_interval = 0x03e8,
++	.battery_capacity_granularity_1 = 0x45,
++	.battery_capacity_granularity_2 = 0x11,
++	.model = "P11G8M",
++	.serial = "",
++	.type = "LION",
++	.OEM = "",
++};
++
++static int mshw0011_bix(struct mshw0011_data *cdata, struct bix *bix)
++{
++	struct i2c_client *client = cdata->bat0;
++	char buf[10];
++	int ret;
++
++	*bix = default_bix;
++
++	/* get design capacity */
++	ret = i2c_smbus_read_word_data(client,
++				       MSHW0011_BAT0_REG_DESIGN_CAPACITY);
++	if (ret < 0) {
++		dev_err(&client->dev, "Error reading design capacity: %d\n",
++			ret);
++		return ret;
++	}
++	bix->design_capacity = le16_to_cpu(ret);
++
++	/* get last full charge capacity */
++	ret = i2c_smbus_read_word_data(client,
++				       MSHW0011_BAT0_REG_FULL_CHG_CAPACITY);
++	if (ret < 0) {
++		dev_err(&client->dev,
++			"Error reading last full charge capacity: %d\n", ret);
++		return ret;
++	}
++	bix->last_full_charg_capacity = le16_to_cpu(ret);
++
++	/* get serial number */
++	ret = mshw0011_i2c_read_block(client, MSHW0011_BAT0_REG_SERIAL_NO,
++				      buf, 10);
++	if (ret) {
++		dev_err(&client->dev, "Error reading serial no: %d\n", ret);
++		return ret;
++	}
++	memcpy(bix->serial, buf + 7, 3);
++	memcpy(bix->serial + 3, buf, 6);
++	bix->serial[9] = '\0';
++
++	/* get cycle count */
++	ret = i2c_smbus_read_word_data(client, MSHW0011_BAT0_REG_CYCLE_CNT);
++	if (ret < 0) {
++		dev_err(&client->dev, "Error reading cycle count: %d\n", ret);
++		return ret;
++	}
++	bix->cycle_count = le16_to_cpu(ret);
++
++	/* get OEM name */
++	ret = mshw0011_i2c_read_block(client, MSHW0011_BAT0_REG_OEM, buf, 4);
++	if (ret) {
++		dev_err(&client->dev, "Error reading cycle count: %d\n", ret);
++		return ret;
++	}
++	memcpy(bix->OEM, buf, 3);
++	bix->OEM[4] = '\0';
++
++	return 0;
++}
++
++static int mshw0011_bst(struct mshw0011_data *cdata, struct bst *bst)
++{
++	struct i2c_client *client = cdata->bat0;
++	int rate, capacity, voltage, state;
++	s16 tmp;
++
++	rate = i2c_smbus_read_word_data(client, MSHW0011_BAT0_REG_RATE);
++	if (rate < 0)
++		return rate;
++
++	capacity = i2c_smbus_read_word_data(client, MSHW0011_BAT0_REG_CAPACITY);
++	if (capacity < 0)
++		return capacity;
++
++	voltage = i2c_smbus_read_word_data(client, MSHW0011_BAT0_REG_VOLTAGE);
++	if (voltage < 0)
++		return voltage;
++
++	tmp = le16_to_cpu(rate);
++	bst->battery_present_rate = abs((s32)tmp);
++
++	state = 0;
++	if ((s32) tmp > 0)
++		state |= ACPI_BATTERY_STATE_CHARGING;
++	else if ((s32) tmp < 0)
++		state |= ACPI_BATTERY_STATE_DISCHARGING;
++	bst->battery_state = state;
++
++	bst->battery_remaining_capacity = le16_to_cpu(capacity);
++	bst->battery_present_voltage = le16_to_cpu(voltage);
++
++	return 0;
++}
++
++static int mshw0011_adp_psr(struct mshw0011_data *cdata)
++{
++	struct i2c_client *client = cdata->adp1;
++	int ret;
++
++	ret = i2c_smbus_read_byte_data(client, MSHW0011_ADP1_REG_PSR);
++	if (ret < 0)
++		return ret;
++
++	return ret;
++}
++
++static int mshw0011_isr(struct mshw0011_data *cdata)
++{
++	struct bst bst;
++	struct bix bix;
++	int ret;
++	bool status, bat_status;
++
++	ret = mshw0011_adp_psr(cdata);
++	if (ret < 0)
++		return ret;
++
++	status = ret;
++
++	if (status != cdata->charging)
++		mshw0011_notify(cdata, cdata->notify_version,
++				MSHW0011_NOTIFY_ADP1, &ret);
++
++	cdata->charging = status;
++
++	ret = mshw0011_bst(cdata, &bst);
++	if (ret < 0)
++		return ret;
++
++	bat_status = bst.battery_state;
++
++	if (bat_status != cdata->bat_charging)
++		mshw0011_notify(cdata, cdata->notify_version,
++				MSHW0011_NOTIFY_BAT0_BST, &ret);
++
++	cdata->bat_charging = bat_status;
++
++	ret = mshw0011_bix(cdata, &bix);
++	if (ret < 0)
++		return ret;
++	if (bix.last_full_charg_capacity != cdata->full_capacity)
++		mshw0011_notify(cdata, cdata->notify_version,
++				MSHW0011_NOTIFY_BAT0_BIX, &ret);
++
++	cdata->full_capacity = bix.last_full_charg_capacity;
++
++	return 0;
++}
++
++static int mshw0011_poll_task(void *data)
++{
++	struct mshw0011_data *cdata = data;
++	int ret = 0;
++
++	cdata->kthread_running = true;
++
++	set_freezable();
++
++	while (!kthread_should_stop()) {
++		schedule_timeout_interruptible(POLL_INTERVAL);
++		try_to_freeze();
++		ret = mshw0011_isr(data);
++		if (ret)
++			break;
++	}
++
++	cdata->kthread_running = false;
++	return ret;
++}
++
++static acpi_status
++mshw0011_space_handler(u32 function, acpi_physical_address command,
++			u32 bits, u64 *value64,
++			void *handler_context, void *region_context)
++{
++	struct gsb_buffer *gsb = (struct gsb_buffer *)value64;
++	struct mshw0011_handler_data *data = handler_context;
++	struct acpi_connection_info *info = &data->info;
++	struct acpi_resource_i2c_serialbus *sb;
++	struct i2c_client *client = data->client;
++	struct mshw0011_data *cdata = i2c_get_clientdata(client);
++	struct acpi_resource *ares;
++	u32 accessor_type = function >> 16;
++	acpi_status ret;
++	int status = 1;
++
++	ret = acpi_buffer_to_resource(info->connection, info->length, &ares);
++	if (ACPI_FAILURE(ret))
++		return ret;
++
++	if (!value64 || ares->type != ACPI_RESOURCE_TYPE_SERIAL_BUS) {
++		ret = AE_BAD_PARAMETER;
++		goto err;
++	}
++
++	sb = &ares->data.i2c_serial_bus;
++	if (sb->type != ACPI_RESOURCE_SERIAL_TYPE_I2C) {
++		ret = AE_BAD_PARAMETER;
++		goto err;
++	}
++
++	if (accessor_type != ACPI_GSB_ACCESS_ATTRIB_RAW_PROCESS) {
++		ret = AE_BAD_PARAMETER;
++		goto err;
++	}
++
++	if (gsb->cmd.arg0 == MSHW0011_CMD_DEST_ADP1 &&
++	    gsb->cmd.arg1 == MSHW0011_CMD_ADP1_PSR) {
++		ret = mshw0011_adp_psr(cdata);
++		if (ret >= 0) {
++			status = ret;
++			ret = 0;
++		}
++		goto out;
++	}
++
++	if (gsb->cmd.arg0 != MSHW0011_CMD_DEST_BAT0) {
++		ret = AE_BAD_PARAMETER;
++		goto err;
++	}
++
++	switch (gsb->cmd.arg1) {
++	case MSHW0011_CMD_BAT0_STA:
++		ret = 0;
++		break;
++	case MSHW0011_CMD_BAT0_BIX:
++		ret = mshw0011_bix(cdata, &gsb->bix);
++		break;
++	case MSHW0011_CMD_BAT0_BTP:
++		ret = 0;
++		cdata->trip_point = gsb->cmd.arg2;
++		break;
++	case MSHW0011_CMD_BAT0_BST:
++		ret = mshw0011_bst(cdata, &gsb->bst);
++		break;
++	default:
++		pr_info("command(0x%02x) is not supported.\n", gsb->cmd.arg1);
++		ret = AE_BAD_PARAMETER;
++		goto err;
++	}
++
++ out:
++	gsb->ret = status;
++	gsb->status = 0;
++
++ err:
++	ACPI_FREE(ares);
++	return ret;
++}
++
++static int mshw0011_install_space_handler(struct i2c_client *client)
++{
++	acpi_handle handle;
++	struct mshw0011_handler_data *data;
++	acpi_status status;
++
++	handle = ACPI_HANDLE(&client->dev);
++
++	if (!handle)
++		return -ENODEV;
++
++	data = kzalloc(sizeof(struct mshw0011_handler_data),
++			    GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->client = client;
++	status = acpi_bus_attach_private_data(handle, (void *)data);
++	if (ACPI_FAILURE(status)) {
++		kfree(data);
++		return -ENOMEM;
++	}
++
++	status = acpi_install_address_space_handler(handle,
++				ACPI_ADR_SPACE_GSBUS,
++				&mshw0011_space_handler,
++				NULL,
++				data);
++	if (ACPI_FAILURE(status)) {
++		dev_err(&client->dev, "Error installing i2c space handler\n");
++		acpi_bus_detach_private_data(handle);
++		kfree(data);
++		return -ENOMEM;
++	}
++
++	acpi_walk_dep_device_list(handle);
++	return 0;
++}
++
++static void mshw0011_remove_space_handler(struct i2c_client *client)
++{
++	acpi_handle handle = ACPI_HANDLE(&client->dev);
++	struct mshw0011_handler_data *data;
++	acpi_status status;
++
++	if (!handle)
++		return;
++
++	acpi_remove_address_space_handler(handle,
++				ACPI_ADR_SPACE_GSBUS,
++				&mshw0011_space_handler);
++
++	status = acpi_bus_get_private_data(handle, (void **)&data);
++	if (ACPI_SUCCESS(status))
++		kfree(data);
++
++	acpi_bus_detach_private_data(handle);
++}
++
++static int acpi_find_i2c(struct acpi_resource *ares, void *data)
++{
++	struct mshw0011_lookup *lookup = data;
++
++	if (ares->type != ACPI_RESOURCE_TYPE_SERIAL_BUS)
++		return 1;
++
++	if (lookup->n++ == lookup->index && !lookup->addr)
++		lookup->addr = ares->data.i2c_serial_bus.slave_address;
++
++	return 1;
++}
++
++static int mshw0011_i2c_resource_lookup(struct mshw0011_data *cdata,
++					unsigned int index)
++{
++	struct i2c_client *client = cdata->adp1;
++	struct acpi_device *adev = ACPI_COMPANION(&client->dev);
++	struct mshw0011_lookup lookup = {
++		.cdata = cdata,
++		.index = index,
++	};
++	struct list_head res_list;
++	int ret;
++
++	INIT_LIST_HEAD(&res_list);
++
++	ret = acpi_dev_get_resources(adev, &res_list, acpi_find_i2c, &lookup);
++	if (ret < 0)
++		return ret;
++
++	acpi_dev_free_resource_list(&res_list);
++
++	if (!lookup.addr)
++		return -ENOENT;
++
++	return lookup.addr;
++}
++
++static void mshw0011_dump_registers(struct i2c_client *client,
++				    struct i2c_client *bat0, u8 end_register)
++{
++	char *rd_buf;
++	char prefix[128];
++	unsigned int length = end_register + 1;
++	int error;
++
++	snprintf(prefix, ARRAY_SIZE(prefix), "%s: ", bat0->name);
++	prefix[127] = '\0';
++
++	rd_buf = kzalloc(length, GFP_KERNEL);
++	error = mshw0011_i2c_read_block(bat0, 0, rd_buf, length);
++	print_hex_dump(KERN_INFO, prefix, DUMP_PREFIX_OFFSET, 16, 1,
++		       rd_buf, length, true);
++
++	kfree(rd_buf);
++}
++
++static int mshw0011_probe(struct i2c_client *client,
++			  const struct i2c_device_id *id)
++{
++	struct device *dev = &client->dev;
++	struct i2c_client *bat0;
++	struct mshw0011_data *data;
++	int error, version, addr;
++
++	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->adp1 = client;
++	i2c_set_clientdata(client, data);
++
++	addr = mshw0011_i2c_resource_lookup(data, 1);
++	if (addr < 0)
++		return addr;
++
++	bat0 = i2c_new_dummy(client->adapter, addr);
++	if (!bat0)
++		return -ENOMEM;
++
++	data->bat0 = bat0;
++	i2c_set_clientdata(bat0, data);
++
++	if (dump_registers) {
++		mshw0011_dump_registers(client, client, 0xFF);
++		mshw0011_dump_registers(client, bat0, 0x80);
++	}
++
++	error = mshw0011_notify(data, 1, MSHW0011_NOTIFY_GET_VERSION, &version);
++	if (error)
++		goto out_err;
++
++	data->notify_version = version == MSHW0011_EV_2_5;
++
++	data->poll_task = kthread_run(mshw0011_poll_task, data, "mshw0011_adp");
++	if (IS_ERR(data->poll_task)) {
++		error = PTR_ERR(data->poll_task);
++		dev_err(&client->dev, "Unable to run kthread err %d\n", error);
++		goto out_err;
++	}
++
++	error = mshw0011_install_space_handler(client);
++	if (error)
++		goto out_err;
++
++	return 0;
++
++out_err:
++	if (data->kthread_running)
++		kthread_stop(data->poll_task);
++	i2c_unregister_device(data->bat0);
++	return error;
++}
++
++static int mshw0011_remove(struct i2c_client *client)
++{
++	struct mshw0011_data *cdata = i2c_get_clientdata(client);
++
++	mshw0011_remove_space_handler(client);
++
++	if (cdata->kthread_running)
++		kthread_stop(cdata->poll_task);
++
++	i2c_unregister_device(cdata->bat0);
++
++	return 0;
++}
++
++static const struct i2c_device_id mshw0011_id[] = {
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, mshw0011_id);
++
++#ifdef CONFIG_ACPI
++static const struct acpi_device_id mshw0011_acpi_match[] = {
++	{ "MSHW0011", 0 },
++	{ }
++};
++MODULE_DEVICE_TABLE(acpi, mshw0011_acpi_match);
++#endif
++
++static struct i2c_driver mshw0011_driver = {
++	.probe = mshw0011_probe,
++	.remove = mshw0011_remove,
++	.id_table = mshw0011_id,
++	.driver = {
++		.name = "mshw0011",
++		.acpi_match_table = ACPI_PTR(mshw0011_acpi_match),
++	},
++};
++module_i2c_driver(mshw0011_driver);
++
++MODULE_AUTHOR("Benjamin Tissoires <benjamin.tissoires@gmail.com>");
++MODULE_DESCRIPTION("mshw0011 driver");
++MODULE_LICENSE("GPL v2");
+-- 
+2.9.4
