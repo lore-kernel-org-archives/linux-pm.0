@@ -1,74 +1,43 @@
-From: Rob Herring <robh+dt@kernel.org>
-Subject: Re: Clocks used by another OS/CPU (was: Re: [RFC PATCH] clk: renesas:
- cpg-mssr: Add interface for critical core clocks)
-Date: Fri, 30 Jun 2017 10:58:26 -0500
-Message-ID: <CAL_JsqKGrZeR7z80beY_XEjqd5fEQQwPxusJ1FADoALgNE3fEg@mail.gmail.com>
-References: <CAMuHMdW9+CNTTOVO4SRRUxuz3ajLbY2j1uG8b_RpHX52NPwXrQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdW9+CNTTOVO4SRRUxuz3ajLbY2j1uG8b_RpHX52NPwXrQ@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Dirk Behme <dirk.behme@de.bosch.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@baylibre.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] PM / Domains: provide pm_genpd_poweroff_noirq stub
+Date: Fri, 30 Jun 2017 18:06:57 +0200
+Message-ID: <20170630160816.4153006-1-arnd@arndb.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.187]:59278 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751072AbdF3QIe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jun 2017 12:08:34 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Lina Iyer <lina.iyer@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, Mikko Perttunen <mperttunen@nvidia.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Jun 29, 2017 at 4:27 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> Hi Dirk,
->
-> CC clock, ARM, DT, PM people
->
-> TL;DR: Clocks may be in use by another CPU not running Linux, while Linux
-> disables them as being unused.
->
-> On Mon, Jun 26, 2017 at 1:30 PM, Dirk Behme <dirk.behme@de.bosch.com> wrote:
->> With commit 72f5df2c2bbb6 ("clk: renesas: cpg-mssr: Migrate to
->> CLK_IS_CRITICAL") we are able to handle critical module clocks.
->> Introduce the same logic for critical core clocks.
->>
->> Signed-off-by: Dirk Behme <dirk.behme@de.bosch.com>
->> ---
->> Commit
->>
->> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/clk/renesas?id=72f5df2c2bbb66d4a555cb51eb9f412abf1af77f
->>
->> is quite nice to avoid *module* clocks being disabled. Unfortunately,
->> there are *core* clocks, too. E.g. using an other OS on the Cortex R7
->> core of the r8a7795, the 'canfd' is a quite popular core clock which
->> shouldn't be disabled by Linux.
->>
->> Therefore, this patch is a proposal to use the same 'mark clocks as
->> critical' logic implemented for the module clocks for the core
->> clocks, too.
->>
->> Opinions?
->
-> On r8a7795, there are several Cortex A cores running Linux, and a Cortex R7
-> core which may run another OS.
-> This is an interesting issue, and relevant to other SoCs, too.
->
-> In this particular case, the "canfd" clock is a core clock used as an
-> auxiliary clock for the CAN0, CAN1, and CANFD interfaces.  This can lead
-> to three scenarios:
->   1. Linux controls all CAN interfaces
->      => no issue,
->   2. The OS on the RT CPU controls all CAN interfaces
->      => issue, Linux disables the clock
->   3. Mix of 1 and 2
->      => More issues.
-> Of course this is not limited to clocks, but also to e.g. PM domains.
->
-> How can this be handled?
-> I believe just marking the "canfd" clock critical is not the right solution,
-> as about any clock could be used by the RT CPU.
->
-> Still, Linux needs to be made aware that devices (clocks and PM domains) are
-> controlled by another CPU/OS.
->
-> Should this be described in DT? It feels like software policy to me.
+When CONFIG_PM_SLEEP is disabled, we don't have a pm_genpd_poweroff_noirq
+function definition:
 
-No, it shouldn't. It is Linux policy to disable all unused clocks, so
-Linux gets to deal with the consequences.
+drivers/base/power/domain.c: In function 'pm_genpd_init':
+drivers/base/power/domain.c:1549:37: error: 'pm_genpd_poweroff_noirq' undeclared (first use in this function); did you mean 'genpd_power_off_unused'?
 
-Rob
+This adds another NULL definition for it, just like we already have
+for the other _noirq handlers.
+
+Fixes: 10da65423fdb ("PM / Domains: Call driver's noirq callbacks")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/base/power/domain.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index ac1ff052653f..a380d9d61335 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1158,6 +1158,7 @@ EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
+ #define pm_genpd_resume_noirq		NULL
+ #define pm_genpd_freeze_noirq		NULL
+ #define pm_genpd_thaw_noirq		NULL
++#define pm_genpd_poweroff_noirq		NULL
+ #define pm_genpd_restore_noirq		NULL
+ #define pm_genpd_complete		NULL
+ 
+-- 
+2.9.0
