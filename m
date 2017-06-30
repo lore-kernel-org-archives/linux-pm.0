@@ -1,51 +1,61 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v1 3/3] dt-bindings: Interconnect device-tree bindings
- draft
-Date: Fri, 30 Jun 2017 15:57:13 +0300
-Message-ID: <635775cb-fc4f-370c-297b-f12cd5d3f4ce@linaro.org>
-References: <20170627174903.27978-1-georgi.djakov@linaro.org>
- <20170627174903.27978-4-georgi.djakov@linaro.org>
- <20170629213247.qk54ocaomcz42gn7@rob-hp-laptop>
+From: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Subject: Re: [PATCH v2] ACPI: surface3_power: MSHW0011 rev-eng implementation
+Date: Fri, 30 Jun 2017 17:24:06 +0200
+Message-ID: <20170630152406.GJ26073@mail.corp.redhat.com>
+References: <20170629121009.30234-1-benjamin.tissoires@redhat.com>
+ <CAHp75Vdn1-m0gDSHtZXX2A=Q07xG9j1eBiV8iM4e11Qk=oJfZg@mail.gmail.com>
+ <CAJZ5v0hq1YSECBGD9QvqKuzmaFW2+jhWPSzvTb64yTxd6yH06w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170629213247.qk54ocaomcz42gn7@rob-hp-laptop>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, vincent.guittot@linaro.org, linux-pm@vger.kernel.org, seansw@qti.qualcomm.com, khilman@baylibre.com, mturquette@baylibre.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, davidai@quicinc.com, skannan@codeaurora.org, gregkh@linuxfoundation.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hq1YSECBGD9QvqKuzmaFW2+jhWPSzvTb64yTxd6yH06w@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Hans de Goede <hdegoede@redhat.com>, Bastien Nocera <hadess@hadess.net>, Stephen Just <stephenjust@gmail.com>, Sebastian Reichel <sre@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
-
-On 06/30/2017 12:32 AM, Rob Herring wrote:
-> On Tue, Jun 27, 2017 at 08:49:03PM +0300, Georgi Djakov wrote:
->> The interconnect API is not yet using DT bindings for expressing
->> the relations between the API consumers and providers. This is
->> posted a separate patch as it needs further discussions on how
->> to represent this with DT.
+On Jun 29 2017 or thereabouts, Rafael J. Wysocki wrote:
+> On Thu, Jun 29, 2017 at 4:22 PM, Andy Shevchenko
+> <andy.shevchenko@gmail.com> wrote:
+> > +Cc: Hans (he might give some advice regarding to the below)
+> >
+> > On Thu, Jun 29, 2017 at 3:10 PM, Benjamin Tissoires
+> > <benjamin.tissoires@redhat.com> wrote:
+> >> MSHW0011 replaces the battery firmware by using ACPI operation regions.
+> >> The values have been obtained by reverse engineering, and are subject to
+> >> errors. Looks like it works on overall pretty well.
+> >
+> > What devices (laptops, tablets) have it?
+> > Surface 3. What else?
+> >
+> >> I couldn't manage to get the IRQ correctly triggered, so I am using a
+> >> good old polling thread to check for changes.
+> >
+> > It might be
+> >
+> >>
+> >> Link: https://bugzilla.kernel.org/show_bug.cgi?id=106231
+> >
+> >> +config ACPI_SURFACE3_POWER_OPREGION
+> >> +       tristate "Surface 3 battery platform operation region support"
+> >
+> > depends on ACPI ?
+> >
+> >> +       help
+> >> +         Select this option to enable support for ACPI operation
+> >> +         region of the Surface 3 battery platform driver.
+> >
+> >> +/*
+> >> + * Supports for the power IC on the Surface 3 tablet.
+> >
+> > Shouldn't it go to drivers/acpi/pmic folder ?
 > 
-> I would recommend continuing to sort out how this works within the 
-> kernel before fixing things in DT. Something like this needs to be a 
-> core binding in the DT spec.
-
-Yes, that's the plan. Do you prefer me to drop this patch for now?
-
+> Surely not directly into drivers/acpi/ in any case.
 > 
-> Also, you should CC some ARM, Ltd. folks like Mark R and Lorenzo. 
-> There's been some discussion in the past how to describe the DMA master 
-> side of the bus topology.
 
-Thanks for the information! I will CC them on the next version!
+Yep, drivers/acpi/pmic seems like a good candidate. I will do that in
+v3.
 
-BR,
-Georgi
+Cheers,
+Benjamin
