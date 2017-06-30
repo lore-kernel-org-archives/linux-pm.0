@@ -1,59 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/6] cpufreq: governor: Drop min_sampling_rate
-Date: Fri, 30 Jun 2017 09:04:25 +0530
-Message-ID: <20170630033425.GU29665@vireshk-i7>
-References: <cover.1498733506.git.viresh.kumar@linaro.org>
- <713af1a417a9a77f0c41976b25874687ac235e8e.1498733506.git.viresh.kumar@linaro.org>
- <20170629180123.GA2443@light.dominikbrodowski.net>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [1/3] cpuidle: powerpc: cpuidle set polling before enabling irqs
+Date: Fri, 30 Jun 2017 13:45:09 +1000
+Message-ID: <878tkaqgu2.fsf@concordia.ellerman.id.au>
+References: <20170614130241.19865-2-npiggin@gmail.com> <3wyzKL1g2Vz9s65@ozlabs.org> <CAJZ5v0g2DMRcL78k2+qA0svxGqtt-sTW2BpcfvRjU-=iCBjEYg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:33467 "EHLO
-        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751817AbdF3De2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Jun 2017 23:34:28 -0400
-Received: by mail-pf0-f169.google.com with SMTP id e7so60161616pfk.0
-        for <linux-pm@vger.kernel.org>; Thu, 29 Jun 2017 20:34:28 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20170629180123.GA2443@light.dominikbrodowski.net>
+Received: from ozlabs.org ([103.22.144.67]:57299 "EHLO ozlabs.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751696AbdF3DpM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Jun 2017 23:45:12 -0400
+In-Reply-To: <CAJZ5v0g2DMRcL78k2+qA0svxGqtt-sTW2BpcfvRjU-=iCBjEYg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>, Linux PM <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 29-06-17, 20:01, Dominik Brodowski wrote:
-> On Thu, Jun 29, 2017 at 04:29:06PM +0530, Viresh Kumar wrote:
-> > The cpufreq core and governors aren't supposed to set a limit on how
-> > fast we want to try changing the frequency. This is currently done for
-> > the legacy governors with help of min_sampling_rate.
-> > 
-> > At worst, we may end up setting the sampling rate to a value lower than
-> > the rate at which frequency can be changed and then one of the CPUs in
-> > the policy will be only changing frequency for ever.
-> 
-> Is it safe to issue requests to change the CPU frequency so frequently,
+"Rafael J. Wysocki" <rafael@kernel.org> writes:
 
-Well, I assumed so. I am not sure the hardware would break though.
-Overheating ?
+> On Thu, Jun 29, 2017 at 2:21 PM, Michael Ellerman
+> <patch-notifications@ellerman.id.au> wrote:
+>> On Wed, 2017-06-14 at 13:02:39 UTC, Nicholas Piggin wrote:
+>>> local_irq_enable can cause interrupts to be taken which could
+>>> take significant amount of processing time. The idle process
+>>> should set its polling flag before this, so another process that
+>>> wakes it during this time will not have to send an IPI.
+>>>
+>>> Expand the TIF_POLLING_NRFLAG coverage to as large as possible.
+>>>
+>>> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>
+>> Series applied to powerpc next, thanks.
+>>
+>> https://git.kernel.org/powerpc/c/3fc5ee927ff4ffed6aa2fcd44d2fbf
+>
+> OK
+>
+> I've applied it too, so I guess I should drop it?
 
-> even
-> on historic hardware such as speedstep-{ich,smi,centrino}? In the past,
-> these checks more or less disallowed the running of dynamic frequency
-> scaling at least on speedstep-smi[*],
+Erk sorry. I hadn't heard anything so I picked it up.
 
-We must by doing dynamic freq scaling even without this patch. I don't
-see why you say the above then.
+If you can drop it that would be good, but if not git will probably work
+it out mostly :)
 
-All we do here is that we get rid of the limit on how soon we can
-change the freq again.
-
-> but maybe on a few other platforms as
-> well. That's why I am curious on whether this may break systems potentially
-> on a hardware level if the hardware was not designed to do dynamic frequency
-> scaling (and not just frequency switches on battery/AC).
-
-Honestly I am not sure if any hardware can break or not, just because
-of this commit.
-
--- 
-viresh
+cheers
