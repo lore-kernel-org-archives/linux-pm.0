@@ -1,28 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Find transition latency dynamically
-Date: Fri, 30 Jun 2017 09:28:44 +0530
-Message-ID: <20170630035844.GW29665@vireshk-i7>
-References: <8041a965fcca71231576ae77a141b1e4333a81cc.1496402967.git.viresh.kumar@linaro.org>
- <20170629042836.GI29665@vireshk-i7>
- <CAJZ5v0gOq-XPcXFfbycQkWzobBktoH5=eLxYAdh_G33fu8L1cg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gOq-XPcXFfbycQkWzobBktoH5=eLxYAdh_G33fu8L1cg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [PATCH] PM / sleep: constify attribute_group structures.
+Date: Fri, 30 Jun 2017 10:22:14 +0530
+Message-ID: <ff23d3ae01b1a980eee8df412dfda4e64dfdc223.1498798163.git.arvind.yadav.cs@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:34439 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751599AbdF3Ew2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jun 2017 00:52:28 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, rafael.j.wysocki@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 29-06-17, 22:34, Rafael J. Wysocki wrote:
-> Shouldn't drivers do that really?
+attribute_groups are not supposed to change at runtime. All functions
+working with attribute_groups provided by <linux/sysfs.h> work with const
+attribute_group. So mark the non-const structs as const.
 
-Well they can, but the we will have some sort of code duplication
-then. Or else we can provide a helper for them to find this value
-dynamically and that would be fine too. And maybe we can add a
-callback for the cpufreq-driver, which can be filled by the generic
-helper and core can call it once at policy initialization time.
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+   3802	    624	     32	   4458	   116a	kernel/power/main.o
 
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+   3866	    560	     32	   4458	   116a	kernel/power/main.o
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ kernel/power/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index d401c21..42bd800 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -705,7 +705,7 @@ static ssize_t pm_freeze_timeout_store(struct kobject *kobj,
+ 	NULL,
+ };
+ 
+-static struct attribute_group attr_group = {
++static const struct attribute_group attr_group = {
+ 	.attrs = g,
+ };
+ 
 -- 
-viresh
+1.9.1
