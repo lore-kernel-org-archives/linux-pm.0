@@ -1,212 +1,86 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2 2/2] thermal: core: Allow to disable polling when
- disabling thermal zone.
-Date: Fri, 30 Jun 2017 13:05:09 +0800
-Message-ID: <1498799109.2520.15.camel@intel.com>
-References: <20170629165035.23101-1-enric.balletbo@collabora.com>
-         <20170629165035.23101-2-enric.balletbo@collabora.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/6] cpufreq: governor: Drop min_sampling_rate
+Date: Fri, 30 Jun 2017 11:10:33 +0530
+Message-ID: <20170630054033.GZ29665@vireshk-i7>
+References: <cover.1498733506.git.viresh.kumar@linaro.org>
+ <713af1a417a9a77f0c41976b25874687ac235e8e.1498733506.git.viresh.kumar@linaro.org>
+ <20170629180123.GA2443@light.dominikbrodowski.net>
+ <20170630033425.GU29665@vireshk-i7>
+ <20170630045306.GA8069@light.dominikbrodowski.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170629165035.23101-2-enric.balletbo@collabora.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, rjw@rjwysocki.net, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Guenter Roeck <groeck@chromium.org>, Sameer Nanda <snanda@chromium.org>, Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:34462 "EHLO
+        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751715AbdF3Fki (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jun 2017 01:40:38 -0400
+Received: by mail-pf0-f169.google.com with SMTP id s66so61469195pfs.1
+        for <linux-pm@vger.kernel.org>; Thu, 29 Jun 2017 22:40:38 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20170630045306.GA8069@light.dominikbrodowski.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 2017-06-29 at 18:50 +0200, Enric Balletbo i Serra wrote:
-> Under each thermal zone there is a optional file called "mode".
-> Writing
-> enabled or disabled to this file allows a given thermal zone to be
-> enabled
-> or disabled, but in current code, the monitoring queue doesn't stops.
-> Add
-> the code to disable polling when disabling thermal zone and enable
-> polling
-> when enabling the thermal zone.
+On 30-06-17, 06:53, Dominik Brodowski wrote:
+> On Fri, Jun 30, 2017 at 09:04:25AM +0530, Viresh Kumar wrote:
+> > On 29-06-17, 20:01, Dominik Brodowski wrote:
+> > > On Thu, Jun 29, 2017 at 04:29:06PM +0530, Viresh Kumar wrote:
+> > > > The cpufreq core and governors aren't supposed to set a limit on how
+> > > > fast we want to try changing the frequency. This is currently done for
+> > > > the legacy governors with help of min_sampling_rate.
+> > > > 
+> > > > At worst, we may end up setting the sampling rate to a value lower than
+> > > > the rate at which frequency can be changed and then one of the CPUs in
+> > > > the policy will be only changing frequency for ever.
+> > > 
+> > > Is it safe to issue requests to change the CPU frequency so frequently,
+> > 
+> > Well, I assumed so. I am not sure the hardware would break though.
+> > Overheating ?
+> > 
+> > > even
+> > > on historic hardware such as speedstep-{ich,smi,centrino}? In the past,
+
+speedstep-smi is the only one which sets transition_latency to
+CPUFREQ_ETERNAL and the others are putting some meaningful values. So
+yes, they should be doing DVFS dynamically.
+
+> > > these checks more or less disallowed the running of dynamic frequency
+> > > scaling at least on speedstep-smi[*],
+> > 
+> > We must by doing dynamic freq scaling even without this patch. I don't
+> > see why you say the above then.
+> > 
+> > All we do here is that we get rid of the limit on how soon we can
+> > change the freq again.
 > 
-> This patch is based on the original Sameer Nanda <snanda@chromium.org
-> >
-> patch that implemented this idea for the ACPI thermal driver.
+> Well, as I understand it, first generation "speedstep" was designed more or
+> less to switch frequencies only when AC power was lost or restored.
 > 
+> The Linux implementation merely said: "no on-the-fly changes", but switch
+> frequencies whenever a user explicitly requested such a change (presumably
+> only every once in an unspecified while).
+> 
+> This same reasoning may be present in other drivers using CPUFREQ_ETERNAL.
 
-Before these two patches, only platform thermal driver cares about
-"mode", thermal core does nothing but invokes platform .set_mode()
-callback upon sysfs I/F write.
-But after this patch set, "mode" becomes something that we should
-take into account in thermal core as well.
-Thus, IMO, we have a couple of things more to do, like the prototype
-patch attached, which I have not tested yet.
+Thanks for the explanation here and I am convinced that this series
+has at least done one thing wrong. And that is removal of
+max_transition_latency from governors and allowing ondemand to run on
+such platforms (which may end up breaking them).
 
->From 8bf51fe65bd386b7e8c3c2ca8b9f7d321c92b22f Mon Sep 17 00:00:00 2001
-From: Zhang Rui <rui.zhang@intel.com>
-Date: Fri, 30 Jun 2017 11:11:45 +0800
-Subject: [RFC PATCH] Thermal: introduce thermal zone device mode control
+So I will actually modify that patch and set max_transition_latency to
+CPUFREQ_ETERNAL for ondemand/conservative instead of 10ms. Also we
+should do the same for schedutil as well, so that will also use the
+max_transition_latency field.
 
-Thermal "mode" sysfs attribute is introduced to enable/disable a thermal zone,
-and .get_mode()/.set_mode() callback is introduced for platform thermal driver
-to enable/disable the hardware thermal control logic. And thermal core takes
-no action upon thermal zone enable/disable.
+But I hope, this patch will still be fine. Right ?
 
-Actually, this is not quite right because thermal core still pokes those
-disabled thermal zones occasionally, e.g. upon system resume.
+> I am not *sure* either, I am just worried of the consequences of doing
+> things out-of-spec...
 
-To fix this, a new flag 'mode' is introduced in struct thermal_zone_device
-to represent the thermal zone mode, and several decisions have been made
-based on this flag, including
-1. check the thermal zone mode right after it's registered.
-2. skip updating thermal zone if the zone is disabled
-3. stop the polling timer when the thermal zone is disabled
+Thanks for your inputs Dominik.
 
-Note: basically, this patch doesn't affect the existing always-enabled
-thermal zones much, with just one exception -
-thermal zone .get_mode() must be well prepared to reflect the real thermal
-zone status upon the thermal zone registration.
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/thermal_core.c  | 37 +++++++++++++++++++++++++++++++++++--
- drivers/thermal/thermal_sysfs.c | 22 ++++++----------------
- include/linux/thermal.h         |  3 +++
- 3 files changed, 44 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 5a51c74..89b2254 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -306,9 +306,9 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
- {
- 	mutex_lock(&tz->lock);
- 
--	if (tz->passive)
-+	if (tz->enabled == THERMAL_DEVICE_ENABLED && tz->passive)
- 		thermal_zone_device_set_polling(tz, tz->passive_delay);
--	else if (tz->polling_delay)
-+	else if (tz->enabled == THERMAL_DEVICE_ENABLED && tz->polling_delay)
- 		thermal_zone_device_set_polling(tz, tz->polling_delay);
- 	else
- 		thermal_zone_device_set_polling(tz, 0);
-@@ -464,11 +464,35 @@ static void thermal_zone_device_reset(struct thermal_zone_device *tz)
- 		pos->initialized = false;
- }
- 
-+int thermal_zone_set_mode(struct thermal_zone_device *tz,
-+				 enum thermal_device_mode mode)
-+{
-+	int result;
-+
-+	if (!tz->ops->set_mode)
-+		return -EPERM;
-+
-+	result = tz->ops->set_mode(tz, mode);
-+	if (result)
-+		return result;
-+
-+	if (tz->mode != mode) {
-+		tz->mode = mode;
-+		monitor_thermal_zone(tz);
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(thermal_zone_set_mode);
-+
- void thermal_zone_device_update(struct thermal_zone_device *tz,
- 				enum thermal_notify_event event)
- {
- 	int count;
- 
-+	/* Do nothing if the thermal zone is disabled */
-+	if (tz->mode == THERMAL_DEVICE_DISABLED)
-+		return;
-+
- 	if (atomic_read(&in_suspend))
- 		return;
- 
-@@ -1287,6 +1311,15 @@ thermal_zone_device_register(const char *type, int trips, int mask,
- 	INIT_DELAYED_WORK(&tz->poll_queue, thermal_zone_device_check);
- 
- 	thermal_zone_device_reset(tz);
-+
-+	if (tz->ops->get_mode()) {
-+		enum thermal_device_mode mode;
-+
-+		result = tz->ops->get_mode(tz, &mode);
-+		tz->mode = result ? THERMAL_DEVICE_ENABLED : mode;
-+	} else
-+		tz->mode = THERMAL_DEVICE_ENABLED;
-+
- 	/* Update the new thermal zone and mark it as already updated. */
- 	if (atomic_cmpxchg(&tz->need_update, 1, 0))
- 		thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index a694de9..95d2587 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -51,17 +51,8 @@ static ssize_t
- mode_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
--	enum thermal_device_mode mode;
--	int result;
--
--	if (!tz->ops->get_mode)
--		return -EPERM;
- 
--	result = tz->ops->get_mode(tz, &mode);
--	if (result)
--		return result;
--
--	return sprintf(buf, "%s\n", mode == THERMAL_DEVICE_ENABLED ? "enabled"
-+	return sprintf(buf, "%s\n", tz->mode == THERMAL_DEVICE_ENABLED ? "enabled"
- 		       : "disabled");
- }
- 
-@@ -70,18 +61,17 @@ mode_store(struct device *dev, struct device_attribute *attr,
- 	   const char *buf, size_t count)
- {
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	enum thermal_device_mode mode;
- 	int result;
- 
--	if (!tz->ops->set_mode)
--		return -EPERM;
--
- 	if (!strncmp(buf, "enabled", sizeof("enabled") - 1))
--		result = tz->ops->set_mode(tz, THERMAL_DEVICE_ENABLED);
-+		mode = THERMAL_DEVICE_ENABLED;
- 	else if (!strncmp(buf, "disabled", sizeof("disabled") - 1))
--		result = tz->ops->set_mode(tz, THERMAL_DEVICE_DISABLED);
-+		mode = THERMAL_DEVICE_DISABLED;
- 	else
--		result = -EINVAL;
-+		return -EINVAL;
- 
-+	result = thermal_zone_set_mode(tz, mode)
- 	if (result)
- 		return result;
- 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index dab11f9..2f427de 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -210,6 +210,7 @@ struct thermal_zone_device {
- 	struct thermal_attr *trip_type_attrs;
- 	struct thermal_attr *trip_hyst_attrs;
- 	void *devdata;
-+	enum thermal_device_mode mode;
- 	int trips;
- 	unsigned long trips_disabled;	/* bitmap for disabled trips */
- 	int passive_delay;
-@@ -465,6 +466,8 @@ struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
- int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
- int thermal_zone_get_slope(struct thermal_zone_device *tz);
- int thermal_zone_get_offset(struct thermal_zone_device *tz);
-+int thermal_zone_set_mode(struct thermal_zone_device *tz,
-+			  enum thermal_device_mode mode);
- 
- int get_tz_trend(struct thermal_zone_device *, int);
- struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
--- 
-2.7.4
-
+-- 
+viresh
