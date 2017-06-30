@@ -1,146 +1,143 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2] PCI / PM: Avoid using device_may_wakeup() for runtime
- PM
-Date: Fri, 30 Jun 2017 11:16:48 -0500
-Message-ID: <20170630161648.GY17844@bhelgaas-glaptop.roam.corp.google.com>
-References: <Pine.LNX.4.44L0.1706191415180.1715-100000@iolanthe.rowland.org>
- <2883450.A8OIi7Gmb8@aspire.rjw.lan>
- <2677722.OnHOCzR3UZ@aspire.rjw.lan>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v2] ACPI: surface3_power: MSHW0011 rev-eng implementation
+Date: Fri, 30 Jun 2017 19:37:15 +0300
+Message-ID: <CAHp75VdLU57x2YuDH+SkB1jR3rSpqcVNszhq5fDUVZZt+sqxyQ@mail.gmail.com>
+References: <20170629121009.30234-1-benjamin.tissoires@redhat.com>
+ <CAHp75Vdn1-m0gDSHtZXX2A=Q07xG9j1eBiV8iM4e11Qk=oJfZg@mail.gmail.com> <20170630155706.GL26073@mail.corp.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:33580 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751728AbdF3QQu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 30 Jun 2017 12:16:50 -0400
-Content-Disposition: inline
-In-Reply-To: <2677722.OnHOCzR3UZ@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170630155706.GL26073@mail.corp.redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, Bastien Nocera <hadess@hadess.net>, Stephen Just <stephenjust@gmail.com>, Sebastian Reichel <sre@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, devel@acpica.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pci@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Kai-Heng Feng <kai.heng.feng@canonical.com>, Bjorn Helgaas <bhelgaas@google.com>, gregkh@linuxfoundation.org, USB list <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On Fri, Jun 23, 2017 at 02:58:11PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> pci_target_state() calls device_may_wakeup() which checks whether
-> or not the device may wake up the system from sleep states, but
-> pci_target_state() is used for runtime PM too.
-> 
-> Since runtime PM is expected to always enable remote wakeup if
-> possible, modify pci_target_state() to take additional argument
-> indicating whether or not it should look for a state from which
-> the device can signal wakeup and pass either the return value
-> of device_can_wakeup(), or "false" (if the device itself is not
-> wakeup-capable) to it from the code related to runtime PM.
-> 
-> While at it, fix the comment in pci_dev_run_wake() which is not
-> about sleep states.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Jun 30, 2017 at 6:57 PM, Benjamin Tissoires
+<benjamin.tissoires@redhat.com> wrote:
+> On Jun 29 2017 or thereabouts, Andy Shevchenko wrote:
+>> On Thu, Jun 29, 2017 at 3:10 PM, Benjamin Tissoires
+>> <benjamin.tissoires@redhat.com> wrote:
 
-Applied with Mika's reviewed-by to pci/pm for v4.13, thanks!
+>> What devices (laptops, tablets) have it?
+>> Surface 3. What else?
+>
+> So far, Surface 3 only. It's a Microsoft PNPId, so I guess they control
+> which device has it. Maybe the model after the Surface 3 (reduced
+> platform) will have such chip, but for now, it's unknown.
 
-> ---
-> 
-> -> v2:
-> 
-> Passing "true" as the second argument to pci_target_state() for runtime PM
-> might trigger suboptimal state choices to be made, so pass the return value
-> of device_can_wakeup() to it instead and pass "false" to it in pci_dev_run_wake(),
-> because that assumes device_can_wakeup() to return "false" already.
-> 
-> ---
->  drivers/pci/pci.c |   22 +++++++++++++---------
->  1 file changed, 13 insertions(+), 9 deletions(-)
-> 
-> Index: linux-pm/drivers/pci/pci.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci.c
-> +++ linux-pm/drivers/pci/pci.c
-> @@ -1982,12 +1982,13 @@ EXPORT_SYMBOL(pci_wake_from_d3);
->  /**
->   * pci_target_state - find an appropriate low power state for a given PCI dev
->   * @dev: PCI device
-> + * @wakeup: Whether or not wakeup functionality will be enabled for the device.
->   *
->   * Use underlying platform code to find a supported low power state for @dev.
->   * If the platform can't manage @dev, return the deepest state from which it
->   * can generate wake events, based on any available PME info.
->   */
-> -static pci_power_t pci_target_state(struct pci_dev *dev)
-> +static pci_power_t pci_target_state(struct pci_dev *dev, bool wakeup)
->  {
->  	pci_power_t target_state = PCI_D3hot;
->  
-> @@ -2024,7 +2025,7 @@ static pci_power_t pci_target_state(stru
->  	if (dev->current_state == PCI_D3cold)
->  		target_state = PCI_D3cold;
->  
-> -	if (device_may_wakeup(&dev->dev)) {
-> +	if (wakeup) {
->  		/*
->  		 * Find the deepest state from which the device can generate
->  		 * wake-up events, make it the target state and enable device
-> @@ -2050,13 +2051,14 @@ static pci_power_t pci_target_state(stru
->   */
->  int pci_prepare_to_sleep(struct pci_dev *dev)
->  {
-> -	pci_power_t target_state = pci_target_state(dev);
-> +	bool wakeup = device_may_wakeup(&dev->dev);
-> +	pci_power_t target_state = pci_target_state(dev, wakeup);
->  	int error;
->  
->  	if (target_state == PCI_POWER_ERROR)
->  		return -EIO;
->  
-> -	pci_enable_wake(dev, target_state, device_may_wakeup(&dev->dev));
-> +	pci_enable_wake(dev, target_state, wakeup);
->  
->  	error = pci_set_power_state(dev, target_state);
->  
-> @@ -2089,9 +2091,10 @@ EXPORT_SYMBOL(pci_back_from_sleep);
->   */
->  int pci_finish_runtime_suspend(struct pci_dev *dev)
->  {
-> -	pci_power_t target_state = pci_target_state(dev);
-> +	pci_power_t target_state;
->  	int error;
->  
-> +	target_state = pci_target_state(dev, device_can_wakeup(&dev->dev));
->  	if (target_state == PCI_POWER_ERROR)
->  		return -EIO;
->  
-> @@ -2127,8 +2130,8 @@ bool pci_dev_run_wake(struct pci_dev *de
->  	if (!dev->pme_support)
->  		return false;
->  
-> -	/* PME-capable in principle, but not from the intended sleep state */
-> -	if (!pci_pme_capable(dev, pci_target_state(dev)))
-> +	/* PME-capable in principle, but not from the target power state */
-> +	if (!pci_pme_capable(dev, pci_target_state(dev, false)))
->  		return false;
->  
->  	while (bus->parent) {
-> @@ -2163,9 +2166,10 @@ EXPORT_SYMBOL_GPL(pci_dev_run_wake);
->  bool pci_dev_keep_suspended(struct pci_dev *pci_dev)
->  {
->  	struct device *dev = &pci_dev->dev;
-> +	bool wakeup = device_may_wakeup(dev);
->  
->  	if (!pm_runtime_suspended(dev)
-> -	    || pci_target_state(pci_dev) != pci_dev->current_state
-> +	    || pci_target_state(pci_dev, wakeup) != pci_dev->current_state
->  	    || platform_pci_need_resume(pci_dev)
->  	    || (pci_dev->dev_flags & PCI_DEV_FLAGS_NEEDS_RESUME))
->  		return false;
-> @@ -2183,7 +2187,7 @@ bool pci_dev_keep_suspended(struct pci_d
->  	spin_lock_irq(&dev->power.lock);
->  
->  	if (pm_runtime_suspended(dev) && pci_dev->current_state < PCI_D3cold &&
-> -	    !device_may_wakeup(dev))
-> +	    !wakeup)
->  		__pci_pme_active(pci_dev, false);
->  
->  	spin_unlock_irq(&dev->power.lock);
-> 
+Please, extend introduction in commit message to state above.
+
+>> > I couldn't manage to get the IRQ correctly triggered, so I am using a
+>> > good old polling thread to check for changes.
+>>
+>> It might be
+
+It seems I didn't finished the sentence here.
+
+I though it might be actually ACPI event, GPE or direct IRQ (when GPIO
+chip should not disable it, though if it's the case it likely a BIOS
+bug for this hardware).
+
+>> > +       help
+>> > +         Select this option to enable support for ACPI operation
+>> > +         region of the Surface 3 battery platform driver.
+>>
+>> > +/*
+>> > + * Supports for the power IC on the Surface 3 tablet.
+>>
+>> Shouldn't it go to drivers/acpi/pmic folder ?
+>
+> Already answered later in the thread, so yes, I'll move it there.
+
+Actually Hans did a good point, so, feel free to use drivers/platform/x86.
+
+>> And did you check if it have actual chip IP vendor name and model?
+>> Most likely it's a TI (based?) solution.
+>
+> As mentioned, I have strictly no idea. I can not crack open the Surface
+> 3 without breaking the warranty (I already had to return it once because
+> the disk crashed).
+
+We have one indeed cracked (screen is broken for good :-) ), so, I
+would check what I can find there.
+
+> And I do not find anything brand-related under Windows either:
+> - it's called "Surface Platform Power Driver"
+> - and the driver is provided by Microsoft
+
+Fair enough.
+
+>> > +static int mshw0011_bix(struct mshw0011_data *cdata, struct bix *bix)
+>> > +{
+>>
+>> > +       memcpy(bix->serial, buf + 7, 3);
+>> > +       memcpy(bix->serial + 3, buf, 6);
+>> > +       bix->serial[9] = '\0';
+>>
+>> snprintf()?
+>
+> probably :)
+
+I would do this until we have an evidence that it contains non-printable symbols
+(or, in case you want to fix ahead, make the buffer 4 times bigger and use %*pE)
+
+>> > +       memcpy(bix->OEM, buf, 3);
+>> > +       bix->OEM[4] = '\0';
+>>
+>> snprintf() ?
+
+Ditto.
+
+>> > +       snprintf(prefix, ARRAY_SIZE(prefix), "%s: ", bat0->name);
+>>
+>> > +       prefix[127] = '\0';
+>>
+>> Why?
+>
+> Just me being paranoid in case the code doesn't follow the spec... Yeah, I'll
+> remove it.
+
+snprintf() despite n in the name takes care of terminating NUL.
+
+>> > +static int mshw0011_probe(struct i2c_client *client,
+>> > +                         const struct i2c_device_id *id)
+>> > +{
+>>
+>> > +       data->notify_version = version == MSHW0011_EV_2_5;
+>>
+>> 0x1ff as version sounds hmm suspicious.
+>
+> So after a little bit of digging, it appears those values were taken
+> from the DSDT:
+> https://bugzilla.kernel.org/attachment.cgi?id=187171 line 11694.
+>
+> It appears 0x3F is EV 2.1 and before, and 0x1FF is EV 2.5 and above.
+> The returned value is not a version of the chip, just a flag to know
+> which path we are taking in the DSM.
+>
+> The name is probably not the best.
+
+63 and 511 looks too suspicious to be a version. Rather block size, a
+mask or alike.
+
+>> > +static const struct i2c_device_id mshw0011_id[] = {
+>> > +       { }
+>> > +};
+>> > +MODULE_DEVICE_TABLE(i2c, mshw0011_id);
+>>
+>> ->probe_new(), please.
+>
+> Correct
+>
+>>
+>> If I2C framework is _still_ broken we need to fix that part.
+>
+> I haven't check, so let's see for v3.
+
+Cc: Wolfram for v3 and ask him directly. Last time I checked it looks
+like I2C core doesn't care about ACPI when ->probe_new() is used.
+
+-- 
+With Best Regards,
+Andy Shevchenko
