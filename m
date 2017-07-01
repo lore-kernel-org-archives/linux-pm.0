@@ -1,104 +1,68 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 1/4] arm64: tegra: Add BPMP thermal sensor to Tegra186
-Date: Fri, 30 Jun 2017 16:56:05 -0700
-Message-ID: <20170630235603.GA2943@localhost.localdomain>
-References: <20170616112825.31025-1-mperttunen@nvidia.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2] ACPI: surface3_power: MSHW0011 rev-eng implementation
+Date: Sat, 1 Jul 2017 02:47:32 +0200
+Message-ID: <20170701004731.e55fbqh76bkmy7hr@earth>
+References: <20170629121009.30234-1-benjamin.tissoires@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:35289 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751922AbdF3X4K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Jun 2017 19:56:10 -0400
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="k6at4n5jimjo5jai"
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170616112825.31025-1-mperttunen@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170629121009.30234-1-benjamin.tissoires@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Benjamin Tissoires <benjamin.tissoires@redhat.com>, Julia Lawall <julia.lawall@lip6.fr>
+Cc: Bastien Nocera <hadess@hadess.net>, Stephen Just <stephenjust@gmail.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andy.shevchenko@gmail.com>, linux-acpi@vger.kernel.org, devel@acpica.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mikko Perttunen <mperttunen@nvidia.com>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, rui.zhang@intel.com, thierry.reding@gmail.com, jonathanh@nvidia.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On Fri, Jun 16, 2017 at 02:28:22PM +0300, Mikko Perttunen wrote:
-> This adds the thermal sensor device provided by the BPMP, and the
-> relevant thermal sensors to the Tegra186 device tree.
->=20
-> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
-> ---
->  arch/arm64/boot/dts/nvidia/tegra186.dtsi | 48 ++++++++++++++++++++++++++=
-++++++
->  1 file changed, 48 insertions(+)
->=20
-> diff --git a/arch/arm64/boot/dts/nvidia/tegra186.dtsi b/arch/arm64/boot/d=
-ts/nvidia/tegra186.dtsi
-> index 5e62e68ac053..5c19ea74da24 100644
-> --- a/arch/arm64/boot/dts/nvidia/tegra186.dtsi
-> +++ b/arch/arm64/boot/dts/nvidia/tegra186.dtsi
-> @@ -4,6 +4,7 @@
->  #include <dt-bindings/mailbox/tegra186-hsp.h>
->  #include <dt-bindings/power/tegra186-powergate.h>
->  #include <dt-bindings/reset/tegra186-reset.h>
-> +#include <dt-bindings/thermal/tegra186-bpmp-thermal.h>
-> =20
->  / {
->  	compatible =3D "nvidia,tegra186";
-> @@ -444,6 +445,53 @@
->  			#size-cells =3D <0>;
->  			status =3D "disabled";
->  		};
-> +
-> +		bpmp_thermal: thermal {
-> +			compatible =3D "nvidia,tegra186-bpmp-thermal";
-> +			#thermal-sensor-cells =3D <1>;
-> +		};
-> +	};
-> +
-> +	thermal-zones {
-> +		a57 {
-> +			polling-delay =3D <0>;
-> +			polling-delay-passive =3D <1000>;
-> +
-> +			thermal-sensors =3D
-> +				<&bpmp_thermal TEGRA186_BPMP_THERMAL_ZONE_CPU>;
-> +		};
-> +
-> +		denver {
-> +			polling-delay =3D <0>;
-> +			polling-delay-passive =3D <1000>;
-> +
-> +			thermal-sensors =3D
-> +				<&bpmp_thermal TEGRA186_BPMP_THERMAL_ZONE_AUX>;
-> +		};
-> +
-> +		gpu {
-> +			polling-delay =3D <0>;
-> +			polling-delay-passive =3D <1000>;
-> +
-> +			thermal-sensors =3D
-> +				<&bpmp_thermal TEGRA186_BPMP_THERMAL_ZONE_GPU>;
-> +		};
-> +
-> +		pll {
-> +			polling-delay =3D <0>;
-> +			polling-delay-passive =3D <1000>;
-> +
-> +			thermal-sensors =3D
-> +				<&bpmp_thermal TEGRA186_BPMP_THERMAL_ZONE_PLLX>;
-> +		};
-> +
-> +		always_on {
-> +			polling-delay =3D <0>;
-> +			polling-delay-passive =3D <1000>;
-> +
-> +			thermal-sensors =3D
-> +				<&bpmp_thermal TEGRA186_BPMP_THERMAL_ZONE_AO>;
-> +		};
 
-All the above zones are lacking mandatory fields. Please refer to the
-thermal binding documentation.=20
+--k6at4n5jimjo5jai
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
->  	};
-> =20
->  	timer {
-> --=20
-> 2.13.1
->=20
+Hi,
+
+On Thu, Jun 29, 2017 at 02:10:09PM +0200, Benjamin Tissoires wrote:
+> [...]
+>
+> +	/* get design capacity */
+> +	ret = i2c_smbus_read_word_data(client,
+> +				       MSHW0011_BAT0_REG_DESIGN_CAPACITY);
+> +	if (ret < 0) {
+> +		dev_err(&client->dev, "Error reading design capacity: %d\n",
+> +			ret);
+> +		return ret;
+> +	}
+> +	bix->design_capacity = le16_to_cpu(ret);
+
+i2c_smbus_read_word_data() returns native endianess for
+little-endian bus (it basically has builtin le16_to_cpu).
+Your conversion actually _breaks_ support on big endian
+machines by converting it back.
+
+That seems to be a common mistake in the kernel and it
+might be a good idea to add some Coccinelle script for
+it?
+
+-- Sebastian
+
+--k6at4n5jimjo5jai
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllW8RsACgkQ2O7X88g7
++poCsg/8CD6lUQ0aAu3uMSexrU66F7O9HfmK4XG3FcBGjMG/PMknG7TzQiRDASza
+xhAcP1noFqv9HCb83iV3dj0/0GuiITmjV7Wp0NZlaGXgsGHnDmXWSCAIIyxB8LbV
+UYUGPUHXzv/wwSSUcq2XHCp/A5jw+l1T1mOBcCUMuHAFwhMlJ2HrPXu5K8PsKFfP
+TPRulUrc88EIMmjfRmURkGkdMelp0DTUuW47He6UVNImPel7po+GjDVYF9Z2p/Sc
+cS6UolaE+2how35a20jyXIAB905Ysu+cKGCEtekdgaLLE3IaDMjVyQWaKB070Fao
+mz4eCxa1QucrXzC0E7XGnv9e8dPasOQzMZppKKel5qVsjyQSKHQc+aPlEERtb0l2
+4pvpAmmeOGHFBOl32390xppPb9whgBKTOr3+2eYQKIn9+KZ3Jry/Y5U1Favqtw46
+WmNCQGlLJOXcSfsNHOrOHro8NEqpMWctOp3xMEl6keUW+aj7i1lGAa3nErKdh5wx
+Yclmuk+AypF39M/pY5cxqZMhOTViYQgtCTxY3RlfPAGdx/kLh+boYhWNn/wh5/6e
+x6FEIZaJCXdQtd2HBx7WntGDybntyupZSBkP2dQTxrLO8DYouajPZXZJjljrYyFe
+1s8MuX4z/IQvjftvqMEChvRXTQcRrzY/3BKkSDOsEYSvUjm8MwY=
+=yunr
+-----END PGP SIGNATURE-----
+
+--k6at4n5jimjo5jai--
