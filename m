@@ -1,144 +1,82 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
-        <u.kleine-koenig@pengutronix.de>
-Subject: Re: Clocks used by another OS/CPU (was: Re: [RFC PATCH] clk:
- renesas: cpg-mssr: Add interface for critical core clocks)
-Date: Sat, 1 Jul 2017 20:14:08 +0200
-Message-ID: <20170701181408.yuocymwtj5dgt74d@pengutronix.de>
-References: <CAMuHMdW9+CNTTOVO4SRRUxuz3ajLbY2j1uG8b_RpHX52NPwXrQ@mail.gmail.com>
- <CAL_JsqKGrZeR7z80beY_XEjqd5fEQQwPxusJ1FADoALgNE3fEg@mail.gmail.com>
- <20170630202453.eh6vaehkap3as4np@pengutronix.de>
- <8d86a9aa-1928-6b52-1487-d5fb9dae17f4@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <8d86a9aa-1928-6b52-1487-d5fb9dae17f4@gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Dirk Behme <dirk.behme@gmail.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Dirk Behme <dirk.behme@de.bosch.com>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Kevin Hilman <khilman@baylibre.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Subject: [PATCH] coccinelle: api: detect unnecessary le16_to_cpu
+Date: Sat,  1 Jul 2017 21:28:10 +0200
+Message-ID: <1498937290-12285-1-git-send-email-Julia.Lawall@lip6.fr>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: kernel-janitors@vger.kernel.org, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, Benjamin Tissoires <benjamin.tissoires@redhat.com>, Bastien Nocera <hadess@hadess.net>, Stephen Just <stephenjust@gmail.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andy.shevchenko@gmail.com>, linux-acpi@vger.kernel.org, devel@acpica.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+As reported by Sebastian Reichel, i2c_smbus_read_word_data() returns native
+endianness for little-endian bus (it basically has builtin
+le16_to_cpu). Calling le16_to_cpu on the result breaks support on big
+endian machines by converting it back.
 
-On Sat, Jul 01, 2017 at 07:02:48AM +0200, Dirk Behme wrote:
-> On 30.06.2017 22:24, Uwe Kleine-König wrote:
-> > Hello,
-> > 
-> > On Fri, Jun 30, 2017 at 10:58:26AM -0500, Rob Herring wrote:
-> > > > TL;DR: Clocks may be in use by another CPU not running Linux, while Linux
-> > > > disables them as being unused.
-> > 
-> > not long ago I thought with a few colleagues about this. The scenario is
-> > to start a Linux kernel on a Cortex-M companion to a Cortex-A.
-> > 
-> > > > On Mon, Jun 26, 2017 at 1:30 PM, Dirk Behme <dirk.behme@de.bosch.com> wrote:
-> > > > > With commit 72f5df2c2bbb6 ("clk: renesas: cpg-mssr: Migrate to
-> > > > > CLK_IS_CRITICAL") we are able to handle critical module clocks.
-> > > > > Introduce the same logic for critical core clocks.
-> > > > > 
-> > > > > Signed-off-by: Dirk Behme <dirk.behme@de.bosch.com>
-> > > > > ---
-> > > > > Commit
-> > > > > 
-> > > > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/clk/renesas?id=72f5df2c2bbb66d4a555cb51eb9f412abf1af77f
-> > > > > 
-> > > > > is quite nice to avoid *module* clocks being disabled. Unfortunately,
-> > > > > there are *core* clocks, too. E.g. using an other OS on the Cortex R7
-> > > > > core of the r8a7795, the 'canfd' is a quite popular core clock which
-> > > > > shouldn't be disabled by Linux.
-> > > > > 
-> > > > > Therefore, this patch is a proposal to use the same 'mark clocks as
-> > > > > critical' logic implemented for the module clocks for the core
-> > > > > clocks, too.
-> > > > > 
-> > > > > Opinions?
-> > > > 
-> > > > On r8a7795, there are several Cortex A cores running Linux, and a Cortex R7
-> > > > core which may run another OS.
-> > > > This is an interesting issue, and relevant to other SoCs, too.
-> > > > 
-> > > > In this particular case, the "canfd" clock is a core clock used as an
-> > > > auxiliary clock for the CAN0, CAN1, and CANFD interfaces.  This can lead
-> > > > to three scenarios:
-> > > >    1. Linux controls all CAN interfaces
-> > > >       => no issue,
-> > > >    2. The OS on the RT CPU controls all CAN interfaces
-> > > >       => issue, Linux disables the clock
-> > > >    3. Mix of 1 and 2
-> > > >       => More issues.
-> > > > Of course this is not limited to clocks, but also to e.g. PM domains.
-> > > > 
-> > > > How can this be handled?
-> > > > I believe just marking the "canfd" clock critical is not the right solution,
-> > > > as about any clock could be used by the RT CPU.
-> > > > 
-> > > > Still, Linux needs to be made aware that devices (clocks and PM domains) are
-> > > > controlled by another CPU/OS.
-> > > > 
-> > > > Should this be described in DT? It feels like software policy to me.
-> > > 
-> > > No, it shouldn't. It is Linux policy to disable all unused clocks, so
-> > > Linux gets to deal with the consequences.
-> > 
-> > The ideal solution I imagine is to make the other CPU's OS a consumer of
-> > the Linux clock driver. This would require a generic device driver on the
-> > companion CPU that forwards clk requests via inter-cpu communication to
-> > the Linux clk driver. It could be feed with the necessary information by
-> > the rproc glue. So when the companion cpu is supposed to care for the
-> > can0 device, the steps that should happen are:
-> > 
-> >   - make sure can0 isn't occupied by the Linux Host
-> >   - reroute the can irq to the companion cpu (if necessary)
-> >   - create a dtb containing something like this for the companion CPU:
-> > 
-> >   	clks: virtclk {
-> > 		compatible = ???
-> > 		#clock-cells = <1>;
-> > 		...
-> > 	};
-> > 
-> > 	can@$address {
-> > 		compatible = ...
-> > 		regs = ...
-> > 		clocks = <&clks 3>;
-> > 		clock-names = ...
-> > 		...
-> > 	};
-> > 
-> >     where the driver binding to the virtclk device just forwards clk
-> >     requests to the Linux host side which then knows that clk 3 is the
-> >     can clock and does the necessary stuff.
-> > 
-> > This way the can clock doesn't need special handling in the host's dtb
-> > and no clock necessary for the companion is disabled as unused because
-> > it is requested and enabled.
-> > 
-> > The only problem I see is that implementing such a driver/protocol
-> > probably is time consuming.
-> 
-> 
-> The other problem is security related. If, at all, you have to do it the
-> other way around, then:
-> 
-> Make Linux a consumer of the other CPU's (trusted/trustzone/whatever
-> secured) OS clock driver.
+This semantic patch give no reports on kernel code currently, but the
+issue is somewhat obscure and has occurred in a sumitted patch, so it could
+be good to have a check for it.
 
-That doesn't matter much. Either way the first CPU has to provide the
-master side of this device (as it needs clks for booting up) and the 2nd
-gets this virtual clk device that forwards clk requests to the first
-CPU.
+Suggested-by: Sebastian Reichel <sre@kernel.org>
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-On my machine (Udoo Neo, A9 + M4) the A9 is the primary CPU that is
-started by the bootrom. If I want the M4 being the primary device I'd
-need support in the bootloader to wait long enough (i.e. until the M4 is
-up) before letting the A9 jump into Linux. Managable I'd say. This way
-would even make sense if the M4 runs a rt critical OS that shouldn't be
-forced to wait on the non-rt A9 to enable a clk.
+---
 
-Best regards
-Uwe
+The rule could easily be extended with more such functions.  Let me know if
+anything else should be taken into account.
 
--- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+ scripts/coccinelle/api/smbus_word.cocci |   45 ++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+
+diff --git a/scripts/coccinelle/api/smbus_word.cocci b/scripts/coccinelle/api/smbus_word.cocci
+new file mode 100644
+index 0000000..b167cf0
+--- /dev/null
++++ b/scripts/coccinelle/api/smbus_word.cocci
+@@ -0,0 +1,45 @@
++/// i2c_smbus_read_word_data() returns native endianness for little-endian
++/// bus (it basically has builtin le16_to_cpu). Calling le16_to_cpu on the
++/// result breaks support on big endian machines by converting it back.
++///
++// Confidence: Moderate
++// Copyright: (C) 2017 Julia Lawall, Inria. GPLv2.
++// URL: http://coccinelle.lip6.fr/
++// Options: --no-includes --include-headers
++// Keywords: i2c_smbus_read_word_data, le16_to_cpu
++
++virtual context
++virtual org
++virtual report
++
++// ----------------------------------------------------------------------------
++
++@r depends on context || org || report exists@
++expression e, x;
++position j0, j1;
++@@
++
++* x@j0 = i2c_smbus_read_word_data(...)
++... when != x = e
++* le16_to_cpu@j1(x)
++
++// ----------------------------------------------------------------------------
++
++@script:python r_org depends on org@
++j0 << r.j0;
++j1 << r.j1;
++@@
++
++msg = "le16_to_cpu not needed on i2c_smbus_read_word_data result."
++coccilib.org.print_todo(j0[0], msg)
++coccilib.org.print_link(j1[0], "")
++
++// ----------------------------------------------------------------------------
++
++@script:python r_report depends on report@
++j0 << r.j0;
++j1 << r.j1;
++@@
++
++msg = "le16_to_cpu not needed on i2c_smbus_read_word_data result around line %s." % (j1[0].line)
++coccilib.report.print_report(j0[0], msg)
+
