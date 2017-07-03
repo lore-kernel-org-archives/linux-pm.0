@@ -1,40 +1,41 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq and boost with amd ryzen
-Date: Mon, 3 Jul 2017 09:55:38 +0530
-Message-ID: <CAOh2x=k87W_i88fXn7LeaMnMJVW8Jvn-jMAxm+Cg5db6xy3bpQ@mail.gmail.com>
-References: <CAFFvMK3sFE+zBu3k9vFRTBFVig70DQK8fpvSKiTXkw1bW+zF=A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f169.google.com ([209.85.161.169]:35975 "EHLO
-        mail-yw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750737AbdGCEZj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jul 2017 00:25:39 -0400
-Received: by mail-yw0-f169.google.com with SMTP id a12so18451767ywh.3
-        for <linux-pm@vger.kernel.org>; Sun, 02 Jul 2017 21:25:39 -0700 (PDT)
-In-Reply-To: <CAFFvMK3sFE+zBu3k9vFRTBFVig70DQK8fpvSKiTXkw1bW+zF=A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v2 0/3] Introduce USB charger support in USB phy
+Date: Mon,  3 Jul 2017 14:07:12 +0800
+Message-ID: <cover.1499061617.git.baolin.wang@linaro.org>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: jun.li-3arQi8VN3Tc@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, neilb-IBi9RG/b67k@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Sergio P <sergio.pieiga@gmail.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-On Sun, Jul 2, 2017 at 8:04 PM, Sergio P <sergio.pieiga@gmail.com> wrote:
-> I was wondering why cpufreq is not creating
-> /sys/devices/system/cpu/cpufreq/boost for an AMD Ryzen processor? I am
-> running kernel 4.11.  I do see cpb (AMD's legacy core performance
-> boost) in each individual profile*/ but regardless, it does not seem
-> to boost.  (fyi no overclocking going on).
->
-> cpupower frequency-info reports
->   boost state support:
->     Supported: no
->     Active: no
+Currently the Linux kernel does not provide any standard integration of this
+feature that integrates the USB subsystem with the system power regulation
+provided by PMICs meaning that either vendors must add this in their kernels
+or USB gadget devices based on Linux (such as mobile phones) may not behave
+as they should. Thus provide a standard USB charger support in USB phy core
+for doing this in kernel.
 
-Please give output of:
+Now introduce one user with wm831x_power to support and test the usb charger.
 
-grep . /sys/devices/system/cpu/cpu0/cpufreq/*
+Changes since v1:
+ - Fix building errors.
 
-I want to see what driver is running and what features are available.
+Baolin Wang (3):
+  include: uapi: usb: Introduce USB charger type and state definition
+  usb: phy: Add USB charger support
+  power: wm831x_power: Support USB charger current limit management
+
+ drivers/power/supply/wm831x_power.c |   61 ++++++++
+ drivers/usb/phy/phy.c               |  265 +++++++++++++++++++++++++++++++++++
+ include/linux/usb/phy.h             |   49 +++++++
+ include/uapi/linux/usb/charger.h    |   31 ++++
+ 4 files changed, 406 insertions(+)
+ create mode 100644 include/uapi/linux/usb/charger.h
+
+-- 
+1.7.9.5
 
 --
-viresh
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
