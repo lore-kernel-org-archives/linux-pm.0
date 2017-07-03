@@ -1,184 +1,105 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v2 3/3] power: wm831x_power: Support USB charger current
- limit management
-Date: Mon, 3 Jul 2017 17:50:34 +0200
-Message-ID: <20170703155034.mygcebphsyskzhhw@earth>
-References: <cover.1499061617.git.baolin.wang@linaro.org>
- <dc4200357a69f0c0bca5404b9e1da8b486452731.1499061617.git.baolin.wang@linaro.org>
+Subject: Re: [PATCH v3 2/2] power: supply: ltc2941-battery-gauge: Add support
+ for LTC2942
+Date: Mon, 3 Jul 2017 18:10:10 +0200
+Message-ID: <20170703161010.i7elaahpp6i63ikg@earth>
+References: <20170624150545.2oxwror5fy2xlvaz@lenoch>
+ <20170624150901.jngjwyxafyutkdhv@lenoch>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="in6sjsnbcwlefzhg"
+        protocol="application/pgp-signature"; boundary="vebbygkmcq7lmfpe"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:52851 "EHLO
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:52883 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752658AbdGCPuj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jul 2017 11:50:39 -0400
+        with ESMTP id S1752562AbdGCQKO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jul 2017 12:10:14 -0400
 Content-Disposition: inline
-In-Reply-To: <dc4200357a69f0c0bca5404b9e1da8b486452731.1499061617.git.baolin.wang@linaro.org>
+In-Reply-To: <20170624150901.jngjwyxafyutkdhv@lenoch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: balbi@kernel.org, gregkh@linuxfoundation.org, jun.li@nxp.com, peter.chen@freescale.com, broonie@kernel.org, john.stultz@linaro.org, neilb@suse.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
+To: Ladislav Michl <ladis@linux-mips.org>
+Cc: linux-pm@vger.kernel.org, Mike Looijmans <mike.looijmans@topic.nl>, Javier Martinez Canillas <javier@osg.samsung.com>
 
 
---in6sjsnbcwlefzhg
+--vebbygkmcq7lmfpe
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Jul 03, 2017 at 02:07:15PM +0800, Baolin Wang wrote:
-> Integrate with the newly added USB charger interface to limit the current
-> we draw from the USB input based on the input device configuration
-> identified by the USB stack, allowing us to charge more quickly from high
-> current inputs without drawing more current than specified from others.
+Next mail should CC DT binding people.
+
+On Sat, Jun 24, 2017 at 05:09:02PM +0200, Ladislav Michl wrote:
+> LTC2942 is pin compatible with LTC2941 providing additional
+> informations about battery voltage and temperature. It can
+> be runtime detected using bit A7 in the Status register.
 >=20
-> Signed-off-by: Mark Brown <broonie@kernel.org>
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+> ---
+>  Changes:
+>  - v2: reworked voltage computing to not overflow and keep presision
+>  - v3: update devicetree binding documentation
+>=20
+>  .../devicetree/bindings/power/supply/ltc2941.txt   | 11 ++--
+>  drivers/power/supply/ltc2941-battery-gauge.c       | 76 ++++++++++++++++=
++-----
+>  2 files changed, 64 insertions(+), 23 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/supply/ltc2941.txt b=
+/Documentation/devicetree/bindings/power/supply/ltc2941.txt
+> index a9d7aa60558b..0d065d54d294 100644
+> --- a/Documentation/devicetree/bindings/power/supply/ltc2941.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
+> @@ -1,9 +1,10 @@
+> -binding for LTC2941 and LTC2943 battery gauges
+> +binding for LTC2941, LTC2942 and LTC2943 battery gauges
+> =20
+> -Both the LTC2941 and LTC2943 measure battery capacity.
+> -The LTC2943 is compatible with the LTC2941, it adds voltage and
+> -temperature monitoring, and uses a slightly different conversion
+> -formula for the charge counter.
+> +All chips measure battery capacity.
+> +The LTC2942 is pin compatible with the LTC2941, it adds voltage and
+> +temperature monitoring, and is runtime detected. LTC2943 is software
+> +compatible, uses a slightly different conversion formula for the
+> +charge counter and adds voltage, current and temperature monitoring.
+> =20
+>  Required properties:
+>  - compatible: Should contain "lltc,ltc2941" or "lltc,ltc2943" which also
 
-Missing DT binding documentation, otherwise fine with me.
-Would be nice to convert existing drivers:
+ltc2942 should get its own compatible value.
 
-$ git grep -l extcon -- drivers/power/supply
-drivers/power/supply/axp288_charger.c
-drivers/power/supply/bq24190_charger.c
-drivers/power/supply/charger-manager.c
-drivers/power/supply/qcom_smbb.c
+> diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power=
+/supply/ltc2941-battery-gauge.c
+> index 0a1b69bbca7f..c4a949dddb66 100644
+> --- a/drivers/power/supply/ltc2941-battery-gauge.c
+> +++ b/drivers/power/supply/ltc2941-battery-gauge.c
+> [...]
+
+In addition to the binding document the new compatible value also
+needs to be added in the driver.
 
 -- Sebastian
 
-> ---
->  drivers/power/supply/wm831x_power.c |   61 +++++++++++++++++++++++++++++=
-++++++
->  1 file changed, 61 insertions(+)
->=20
-> diff --git a/drivers/power/supply/wm831x_power.c b/drivers/power/supply/w=
-m831x_power.c
-> index 7082301..3e3480708 100644
-> --- a/drivers/power/supply/wm831x_power.c
-> +++ b/drivers/power/supply/wm831x_power.c
-> @@ -13,6 +13,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/power_supply.h>
->  #include <linux/slab.h>
-> +#include <linux/usb/phy.h>
-> =20
->  #include <linux/mfd/wm831x/core.h>
->  #include <linux/mfd/wm831x/auxadc.h>
-> @@ -31,6 +32,8 @@ struct wm831x_power {
->  	char usb_name[20];
->  	char battery_name[20];
->  	bool have_battery;
-> +	struct usb_phy *usb_phy;
-> +	struct notifier_block usb_notify;
->  };
-> =20
->  static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
-> @@ -125,6 +128,43 @@ static int wm831x_usb_get_prop(struct power_supply *=
-psy,
->  	POWER_SUPPLY_PROP_VOLTAGE_NOW,
->  };
-> =20
-> +/* In milliamps */
-> +static const unsigned int wm831x_usb_limits[] =3D {
-> +	0,
-> +	2,
-> +	100,
-> +	500,
-> +	900,
-> +	1500,
-> +	1800,
-> +	550,
-> +};
-> +
-> +static int wm831x_usb_limit_change(struct notifier_block *nb,
-> +				   unsigned long limit, void *data)
-> +{
-> +	struct wm831x_power *wm831x_power =3D container_of(nb,
-> +							 struct wm831x_power,
-> +							 usb_notify);
-> +	unsigned int i, best;
-> +
-> +	/* Find the highest supported limit */
-> +	best =3D 0;
-> +	for (i =3D 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
-> +		if (limit >=3D wm831x_usb_limits[i] &&
-> +		    wm831x_usb_limits[best] < wm831x_usb_limits[i])
-> +			best =3D i;
-> +	}
-> +
-> +	dev_dbg(wm831x_power->wm831x->dev,
-> +		"Limiting USB current to %umA", wm831x_usb_limits[best]);
-> +
-> +	wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
-> +		        WM831X_USB_ILIM_MASK, best);
-> +
-> +	return 0;
-> +}
-> +
->  /*********************************************************************
->   *		Battery properties
->   *********************************************************************/
-> @@ -607,6 +647,22 @@ static int wm831x_power_probe(struct platform_device=
- *pdev)
->  		}
->  	}
-> =20
-> +	power->usb_phy =3D devm_usb_get_phy_by_phandle(&pdev->dev,
-> +						     "usb-phy", 0);
-> +	if (IS_ERR(power->usb_phy)) {
-> +		ret =3D PTR_ERR(power->usb_phy);
-> +		dev_err(&pdev->dev, "Failed to find USB phy: %d\n", ret);
-> +		goto err_bat_irq;
-> +	}
-> +
-> +	power->usb_notify.notifier_call =3D wm831x_usb_limit_change;
-> +	ret =3D usb_register_notifier(power->usb_phy,
-> +				    &power->usb_notify);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "Failed to register notifier: %d\n", ret);
-> +		goto err_bat_irq;
-> +	}
-> +
->  	return ret;
-> =20
->  err_bat_irq:
-> @@ -637,6 +693,11 @@ static int wm831x_power_remove(struct platform_devic=
-e *pdev)
->  	struct wm831x *wm831x =3D wm831x_power->wm831x;
->  	int irq, i;
-> =20
-> +	if (wm831x_power->usb_phy) {
-> +		usb_unregister_notifier(wm831x_power->usb_phy,
-> +					&wm831x_power->usb_notify);
-> +	}
-> +
->  	for (i =3D 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
->  		irq =3D wm831x_irq(wm831x,=20
->  				 platform_get_irq_byname(pdev,
-> --=20
-> 1.7.9.5
->=20
-
---in6sjsnbcwlefzhg
+--vebbygkmcq7lmfpe
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllaZ8cACgkQ2O7X88g7
-+prdfg//fvehSNNoRtbrevyoca1x6CDU5x5qtXBSpTg112D9fQpYBoSIRM2ehKtU
-xxfFHjiRezxLezUznaivjqSpsmg27Tpv5Ynw2G49RsPbtWRiGuh83qarK7EWmhnF
-MVGEgIWBMRKINleeKZrEbRcRb3Dp5MjSdhneKiBso+mSzaaE1DFQy5zed5QJBmRx
-GZZ89hDmGAuQsFuZ8UNGGZc+fnxr8SEXZzf3bYnixF0QoWPiJ7nbRwoJBbZ+412A
-pO/q6g1eQPJMD6OZ1LpNQ4qiOl70cbGkYMQNuk8kd4DhXsq6QHlUSSw+NBooGGaj
-xQ9EobP98yZoenTpfzgTzOPJIW3I70jqXCPqhjdwT4x6hy8mTER/YLHtnLariPRl
-SxHjSyze4jLicUksOCyfcfPzuDfx5HGUrUV/p3cIc+SKxaGkgRbY7+x5TDVEvzwL
-IcLzXrYwrV0fzAcAHryBvNyRiN9e3QYh+HshYiRelwF/2jGd13RttpdWmWHgDHah
-z8bmlXSYBIY2A2SZBYNnjabHrLiynFS+qf2nU5h0K3qdC5NhgisPhl4r/c2XooN6
-k1Ll1py+HE6gJ3gwbrxquqCyN4Ys1mgSevdd8FNKfet3hlDQWVC5z5g7SeD6dK4c
-Tg28zBlkDu5t10H/meTtypP+zUeMpbUMu19HGPUSMHhSI1vInrY=
-=sczM
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllabF8ACgkQ2O7X88g7
++ppuhQ//fphe2VMdEI2DJWNstHFMaPKaZNtYsS7AlIEYahQmr6VmVxDXRs7AFIGc
+oss91zRk/ZU5MFKcbqqcJR1rHpBJvECn59tPkrkd4DV6XPjOphFedL1tSexu+06N
+iCpOsmUYAdYsR4xP0doNUUQimgmvKn8DyJ2hD8lVWDP6gBpd0Rnq+Zl4E5SoOq3t
+Uw+CrS6nOT19IIiTIy/gX/OOfiQxw0bGZmvtTIKgodyAItJkaT/8YcCkOjoofOzU
+2Aw+5ZqswCYnD5Ipt7sfBcWJa1eypQw+PFh0KTF+rSRJFTmQ31HpkFK3Ldu76oHV
+bdBdS9KH46rD9itCVzSERZYeyM3eHyQMBd/uUKQuIeW8f6OLaeGdngpg/u5iqKyB
+TH5c5ci+7dRp1+Mk5MuC4UM2fN+wZQPVwgN1kuB87L9KkKBbbxPwjlrSjFCaNT1C
+7zLRUnd4CEiRb7S7ddJIfutc7+5/2GJI31DMA9OduOowkBcCBkNzYXybSAQ2HvQK
+8xLnLO1R2ElAHvxK79NjRW/hZNpedbwauoUEiNeyCIovp+JSxXYBYxUEsike9iYB
+KHNV7IS60+eq9qJJJS8sHnZpAY3tHUQ8AwvISUdI+4uTy5ybwTYV/vnqBLEmL+9R
+kPwCVwfubo0AyoDQDmw3PgmVLjYb3EkVRr2HTRH/Ap1DavGNjl8=
+=dVYX
 -----END PGP SIGNATURE-----
 
---in6sjsnbcwlefzhg--
+--vebbygkmcq7lmfpe--
