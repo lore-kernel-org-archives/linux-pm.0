@@ -1,132 +1,96 @@
-From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v2 3/3] power: wm831x_power: Support USB charger current limit management
-Date: Mon,  3 Jul 2017 14:07:15 +0800
-Message-ID: <dc4200357a69f0c0bca5404b9e1da8b486452731.1499061617.git.baolin.wang@linaro.org>
-References: <cover.1499061617.git.baolin.wang@linaro.org>
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1499061617.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-In-Reply-To: <cover.1499061617.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-References: <cover.1499061617.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: jun.li-3arQi8VN3Tc@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, neilb-IBi9RG/b67k@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Clocks used by another OS/CPU (was: Re: [RFC PATCH] clk: renesas:
+ cpg-mssr: Add interface for critical core clocks)
+Date: Mon, 3 Jul 2017 09:40:21 +0200
+Message-ID: <CAMuHMdVgDNEf8Pe2HsqFpgFiTupVBa-7dvmSR6fJ4eS1LnzRxg@mail.gmail.com>
+References: <CAMuHMdW9+CNTTOVO4SRRUxuz3ajLbY2j1uG8b_RpHX52NPwXrQ@mail.gmail.com>
+ <CAL_JsqKGrZeR7z80beY_XEjqd5fEQQwPxusJ1FADoALgNE3fEg@mail.gmail.com>
+ <20170630202453.eh6vaehkap3as4np@pengutronix.de> <8d86a9aa-1928-6b52-1487-d5fb9dae17f4@gmail.com>
+ <20170701181408.yuocymwtj5dgt74d@pengutronix.de> <6098d579-f206-5a23-bbfc-ac13e0448479@gmail.com>
+ <20170702092336.uxwl23kyd4koxclj@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <20170702092336.uxwl23kyd4koxclj@pengutronix.de>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Dirk Behme <dirk.behme@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Dirk Behme <dirk.behme@de.bosch.com>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Kevin Hilman <khilman@baylibre.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Integrate with the newly added USB charger interface to limit the current
-we draw from the USB input based on the input device configuration
-identified by the USB stack, allowing us to charge more quickly from high
-current inputs without drawing more current than specified from others.
+Hi Uwe,
 
-Signed-off-by: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
----
- drivers/power/supply/wm831x_power.c |   61 +++++++++++++++++++++++++++++++++++
- 1 file changed, 61 insertions(+)
+On Sun, Jul 2, 2017 at 11:23 AM, Uwe Kleine-K=C3=B6nig
+<u.kleine-koenig@pengutronix.de> wrote:
+> On Sun, Jul 02, 2017 at 07:48:41AM +0200, Dirk Behme wrote:
+>> > On my machine (Udoo Neo, A9 + M4) the A9 is the primary CPU that is
+>> > started by the bootrom. If I want the M4 being the primary device I'd
+>> > need support in the bootloader to wait long enough (i.e. until the M4 =
+is
+>> > up) before letting the A9 jump into Linux. Managable I'd say. This way
+>> > would even make sense if the M4 runs a rt critical OS that shouldn't b=
+e
+>> > forced to wait on the non-rt A9 to enable a clk.
+>>
+>> Overall, assuming that the issue we are discussing here can be solved qu=
+ite
+>> easily in hardware (a set of clock registers for each CPU/OS domain,
+>> connected cleverly to effectively control each clock, with access protec=
+tion
+>> for each set of registers) I tend to think that for a SoC supposed to ru=
+n
+>> different OS on different cores this is a missing hardware feature (bug?=
+).
+>
+> So you want to enable bits for your CAN clock, one in each cpu's domain.
+>
+> I'd say that is a nice idea that a hardware engineer might be proud to
+> pick up but that results in more headache than fun for the software
+> colleague.
+>
+> There are several problems that come immediately to mind:
+>
+>  - You can switch of a clk because you don't need it on, or because you
+>    need it off. I guess you want to have the clock on if at least one
+>    cpu wants it on. So you take away the freedom from the other cpu to
+>    force the clock off. (Yeah, the currently available clk framework
+>    doesn't allow that either.)
+>  - What if cpu 0 sets the parent of the can clk to pll2 but cpu 1 wants
+>    it set to pll1? How does cpu 1 notice the change?
+>  - On off might be relatively easy, what about clk dividers? cpu 0 sets
+>    2 which cpu 1 sets 6.
+>
+> That convinces me that the disadvantages of having two views on the clk
+> core have more weight and you really want a single view and share that
+> by software.
 
-diff --git a/drivers/power/supply/wm831x_power.c b/drivers/power/supply/wm831x_power.c
-index 7082301..3e3480708 100644
---- a/drivers/power/supply/wm831x_power.c
-+++ b/drivers/power/supply/wm831x_power.c
-@@ -13,6 +13,7 @@
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
- #include <linux/slab.h>
-+#include <linux/usb/phy.h>
- 
- #include <linux/mfd/wm831x/core.h>
- #include <linux/mfd/wm831x/auxadc.h>
-@@ -31,6 +32,8 @@ struct wm831x_power {
- 	char usb_name[20];
- 	char battery_name[20];
- 	bool have_battery;
-+	struct usb_phy *usb_phy;
-+	struct notifier_block usb_notify;
- };
- 
- static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
-@@ -125,6 +128,43 @@ static int wm831x_usb_get_prop(struct power_supply *psy,
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- };
- 
-+/* In milliamps */
-+static const unsigned int wm831x_usb_limits[] = {
-+	0,
-+	2,
-+	100,
-+	500,
-+	900,
-+	1500,
-+	1800,
-+	550,
-+};
-+
-+static int wm831x_usb_limit_change(struct notifier_block *nb,
-+				   unsigned long limit, void *data)
-+{
-+	struct wm831x_power *wm831x_power = container_of(nb,
-+							 struct wm831x_power,
-+							 usb_notify);
-+	unsigned int i, best;
-+
-+	/* Find the highest supported limit */
-+	best = 0;
-+	for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
-+		if (limit >= wm831x_usb_limits[i] &&
-+		    wm831x_usb_limits[best] < wm831x_usb_limits[i])
-+			best = i;
-+	}
-+
-+	dev_dbg(wm831x_power->wm831x->dev,
-+		"Limiting USB current to %umA", wm831x_usb_limits[best]);
-+
-+	wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
-+		        WM831X_USB_ILIM_MASK, best);
-+
-+	return 0;
-+}
-+
- /*********************************************************************
-  *		Battery properties
-  *********************************************************************/
-@@ -607,6 +647,22 @@ static int wm831x_power_probe(struct platform_device *pdev)
- 		}
- 	}
- 
-+	power->usb_phy = devm_usb_get_phy_by_phandle(&pdev->dev,
-+						     "usb-phy", 0);
-+	if (IS_ERR(power->usb_phy)) {
-+		ret = PTR_ERR(power->usb_phy);
-+		dev_err(&pdev->dev, "Failed to find USB phy: %d\n", ret);
-+		goto err_bat_irq;
-+	}
-+
-+	power->usb_notify.notifier_call = wm831x_usb_limit_change;
-+	ret = usb_register_notifier(power->usb_phy,
-+				    &power->usb_notify);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to register notifier: %d\n", ret);
-+		goto err_bat_irq;
-+	}
-+
- 	return ret;
- 
- err_bat_irq:
-@@ -637,6 +693,11 @@ static int wm831x_power_remove(struct platform_device *pdev)
- 	struct wm831x *wm831x = wm831x_power->wm831x;
- 	int irq, i;
- 
-+	if (wm831x_power->usb_phy) {
-+		usb_unregister_notifier(wm831x_power->usb_phy,
-+					&wm831x_power->usb_notify);
-+	}
-+
- 	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
- 		irq = wm831x_irq(wm831x, 
- 				 platform_get_irq_byname(pdev,
--- 
-1.7.9.5
+Renesas ARM SoCs already implement (parts of) that.
+
+There are separate sets of the Module SToP register bits for each set of
+CPUs. Only if all sets agree the clock supply to a module will be stopped,
+which can be monitored using the status Registers.
+So for the CAN modules itself there is no issue, as the clock supply to the
+modules will not be stopped as long as the RT CPU keeps it enabled.
+There must be more to it (secure mode?), as some R-Car Gen3 module clocks
+cannot seem to be disabled by disabling them for all documented CPU sets.
+
+There's also a global bit to prevent modifying any clock register.
+This could be used to prevent changing the CAN parent clock (changing
+its divider and/or stopping it). However, as this is a global bit, it would
+affect the full Linux clock driver.
+
+Again, probably there's more to it when using secure mode...
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 --
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
