@@ -1,84 +1,33 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: [PATCH v8 1/2] power: supply: twl4030-charger: move irq allocation to just before irqs are enabled
-Date: Mon,  3 Jul 2017 18:37:10 +0200
-Message-ID: <b7ff97460c40593e92a83abbb3b70a58316f9b63.1499099830.git.hns@goldelico.com>
-References: <cover.1499099830.git.hns@goldelico.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.216]:34709 "EHLO
-        mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754914AbdGCQh5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jul 2017 12:37:57 -0400
-In-Reply-To: <cover.1499099830.git.hns@goldelico.com>
-In-Reply-To: <cover.1499099830.git.hns@goldelico.com>
-References: <cover.1499099830.git.hns@goldelico.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH] coccinelle: api: detect unnecessary le16_to_cpu
+Date: Mon, 3 Jul 2017 19:37:59 +0300
+Message-ID: <CAHp75VeJY8Xr2H8XK8A7Piu-38TnAeKu5Gn+edtkZmbw2quW0g@mail.gmail.com>
+References: <1498937290-12285-1-git-send-email-Julia.Lawall@lip6.fr> <20170703133602.ejcdu35ku3i63cj2@earth>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170703133602.ejcdu35ku3i63cj2@earth>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Julia Lawall <Julia.Lawall@lip6.fr>, kernel-janitors@vger.kernel.org, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Benjamin Tissoires <benjamin.tissoires@redhat.com>, Bastien Nocera <hadess@hadess.net>, Stephen Just <stephenjust@gmail.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, devel@acpica.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, NeilBrown <neil@brown.name>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Sebastian Reichel <sre@kernel.org>, Marek Belisko <marek@goldelico.com>, "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, letux-kernel@openphoenux.org, notasas@gmail.com, linux-omap@vger.kernel.org
 
-And initialize workers and notifiers as soon as possible.
+On Mon, Jul 3, 2017 at 4:36 PM, Sebastian Reichel
+<sebastian.reichel@collabora.co.uk> wrote:
+> On Sat, Jul 01, 2017 at 09:28:10PM +0200, Julia Lawall wrote:
 
-This avoids a potential race if irqs are enabled and triggered too early
-before the worker is properly set up.
+>  * drivers/gpio/gpio-pca953x.c (line 190-192)
 
-Suggested-by: Grygorii Strashko <grygorii.strashko@ti.com>
-Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
----
- drivers/power/supply/twl4030_charger.c | 29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+It has double conversion there:
+1. LE CPU: Read as LE and converted to LE (no-op), so, just u16
+2. BE CPU: Read as BE and converted to LE, makes it __le16
 
-diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
-index 1fbbe0cc216a..fde6f07ba8c3 100644
---- a/drivers/power/supply/twl4030_charger.c
-+++ b/drivers/power/supply/twl4030_charger.c
-@@ -984,12 +984,27 @@ static int twl4030_bci_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, bci);
- 
-+	INIT_WORK(&bci->work, twl4030_bci_usb_work);
-+	INIT_DELAYED_WORK(&bci->current_worker, twl4030_current_worker);
-+
- 	bci->channel_vac = devm_iio_channel_get(&pdev->dev, "vac");
- 	if (IS_ERR(bci->channel_vac)) {
- 		bci->channel_vac = NULL;
- 		dev_warn(&pdev->dev, "could not request vac iio channel");
- 	}
- 
-+	if (bci->dev->of_node) {
-+		struct device_node *phynode;
-+
-+		phynode = of_find_compatible_node(bci->dev->of_node->parent,
-+						  NULL, "ti,twl4030-usb");
-+		if (phynode) {
-+			bci->usb_nb.notifier_call = twl4030_bci_usb_ncb;
-+			bci->transceiver = devm_usb_get_phy_by_node(
-+				bci->dev, phynode, &bci->usb_nb);
-+		}
-+	}
-+
- 	bci->ac = devm_power_supply_register(&pdev->dev, &twl4030_bci_ac_desc,
- 					     NULL);
- 	if (IS_ERR(bci->ac)) {
-@@ -1023,20 +1038,6 @@ static int twl4030_bci_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	INIT_WORK(&bci->work, twl4030_bci_usb_work);
--	INIT_DELAYED_WORK(&bci->current_worker, twl4030_current_worker);
--
--	bci->usb_nb.notifier_call = twl4030_bci_usb_ncb;
--	if (bci->dev->of_node) {
--		struct device_node *phynode;
--
--		phynode = of_find_compatible_node(bci->dev->of_node->parent,
--						  NULL, "ti,twl4030-usb");
--		if (phynode)
--			bci->transceiver = devm_usb_get_phy_by_node(
--				bci->dev, phynode, &bci->usb_nb);
--	}
--
- 	/* Enable interrupts now. */
- 	reg = ~(u32)(TWL4030_ICHGLOW | TWL4030_ICHGEOC | TWL4030_TBATOR2 |
- 		TWL4030_TBATOR1 | TWL4030_BATSTS);
+Looks like the conversion is not needed, only get_unaligned() is necessary.
+
+P.S. What about lines 244-245 there? I think they are no-op.
+Interesting that those two parts were added in quite different
+commits.
+
 -- 
-2.12.2
+With Best Regards,
+Andy Shevchenko
