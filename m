@@ -1,12 +1,16 @@
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH] cpufreq: cpufreq_stats: constify attribute_group structures.
-Date: Mon,  3 Jul 2017 13:29:04 +0530
-Message-ID: <8211aa191c9b5924a804e4a3304cfb7534b77a13.1499068637.git.arvind.yadav.cs@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] cpufreq: intel_pstate: constify attribute_group structures.
+Date: Mon,  3 Jul 2017 13:40:33 +0530
+Message-ID: <229e26ffc410cf4908c55ca0cb13906fd4bf4cf5.1499068985.git.arvind.yadav.cs@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:34289 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752558AbdGCIKy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jul 2017 04:10:54 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: srinivas.pandruvada@linux.intel.com, lenb@kernel.org, rjw@rjwysocki.net, rafael.j.wysocki@intel.com, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 attribute_groups are not supposed to change at runtime. All functions
 working with attribute_groups provided by <linux/sysfs.h> work with const
@@ -14,29 +18,29 @@ attribute_group. So mark the non-const structs as const.
 
 File size before:
    text	   data	    bss	    dec	    hex	filename
-   1655	    256	      4	   1915	    77b	drivers/cpufreq/cpufreq_stats.o
+  15197	   2552	     40	  17789	   457d	drivers/cpufreq/intel_pstate.o
 
 File size After adding 'const':
    text	   data	    bss	    dec	    hex	filename
-   1695	    192	      4	   1891	    763	drivers/cpufreq/cpufreq_stats.o
+  15261	   2488	     40	  17789	   457d	drivers/cpufreq/intel_pstate.o
 
 Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/cpufreq/cpufreq_stats.c | 2 +-
+ drivers/cpufreq/intel_pstate.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index f570ead..d362739 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -135,7 +135,7 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
- 	&trans_table.attr,
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index b7de5bd..4323f94 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1212,7 +1212,7 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
  	NULL
  };
--static struct attribute_group stats_attr_group = {
-+static const struct attribute_group stats_attr_group = {
- 	.attrs = default_attrs,
- 	.name = "stats"
+ 
+-static struct attribute_group intel_pstate_attr_group = {
++static const struct attribute_group intel_pstate_attr_group = {
+ 	.attrs = intel_pstate_attributes,
  };
+ 
 -- 
 1.9.1
