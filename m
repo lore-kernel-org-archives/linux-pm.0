@@ -1,84 +1,116 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH] thermal: imx: interpret fsl,tempmon-data through nvmem
-Date: Tue, 4 Jul 2017 14:51:18 +0300
-Message-ID: <1499169078.16068.26.camel@nxp.com>
-References: <d1a8ec1ef73aefe6018f6a4923bd04b3ac34a5d4.1497879110.git.leonard.crestez@nxp.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3 2/8] PM / Domains: Handle safely genpd_syscore_switch()
+ call on non-genpd device
+Date: Tue, 4 Jul 2017 15:01:15 +0200
+Message-ID: <CAMuHMdXNAT6dW6Q_=_ZTUwiRmF0CpWXGfK0wYDgETT0xbTdZTA@mail.gmail.com>
+References: <20170628145623.20716-1-krzk@kernel.org> <20170628145623.20716-3-krzk@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-sn1nam01on0075.outbound.protection.outlook.com ([104.47.32.75]:39155
-        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1752052AbdGDLv0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 4 Jul 2017 07:51:26 -0400
-In-Reply-To: <d1a8ec1ef73aefe6018f6a4923bd04b3ac34a5d4.1497879110.git.leonard.crestez@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <20170628145623.20716-3-krzk@kernel.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawnguo@kernel.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>, Fabio Estevam <fabio.estevam@nxp.com>
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, devicetree@vger.kernel.org, Bai Ping <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Octavian Purdila <octavian.purdila@nxp.com>, linux-arm-kernel@lists.infradead.org
 
-On Mon, 2017-06-19 at 16:40 +0300, Leonard Crestez wrote:
-> On imx6sx accessing the ocotp memory area directly is wrong because the
-> ocotp clock needs to be enabled first. Fix this by reinterpreting the
-> fsl,tempmon-data phandle as a reference to a nvmem_device and doing all
-> the read through that.
-> 
-> This clock requirement does not apply to older imx6qdl chips because
-> there the ocotp access clock (clk_ipg_s) is always enabled.
-> 
-> This is visible by comparing the "System Clocks, Gating, and Override"
-> tables (OCOTP rows) in the 6DQ and 6SX manuals:
-> http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6SXRM.pdf
-> http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6DQRM.pdf
-> 
-> This happens to work right now without this patch because the ocotp
-> clock might be enabled for some other reason. In particular it might be
-> enabled from the bootloader and it only gets disabled late during boot
-> in clk_disable_unused, after imx-thermal has completed probing.
-> 
-> If imx-thermal is compiled as a module then the system can hang on
-> probe.
-> 
-> This makes IMX_THERMAL depend on NVMEM_IMX_OCOTP but that driver seems
-> be already available for all chips that contain tempmon so it's
-> acceptable.
-> 
-> Reported-by: Lothar Waßmann <LW@KARO-electronics.de>
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-> 
+Hi Krzysztof, Rafael,
+
+On Wed, Jun 28, 2017 at 4:56 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> genpd_syscore_switch() had two problems:
+> 1. It silently assumed that device, it is being called for, belongs to
+>    generic power domain and used container_of() on its power domain
+>    pointer.  Such assumption might not be true always.
+>
+> 2. It iterated over list of generic power domains without holding
+>    gpd_list_lock mutex thus list could have been modified in the same
+>    time.
+>
+> Usage of genpd_lookup_dev() solves both problems as it is safe a call
+> for non-generic power domains and uses mutex when iterating.
+>
+> Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+This is commit 8b55e55ee44356d6 in pm/linux-next, also part of the pull
+request "[GIT PULL] Power management updates for v4.13-rc1".
+
+> Not tested on real hardware.
+
+This causes the following BUG during s2ram on all my Renesas arm32 boards,
+where the system timer is an IRQ safe device:
+
+PM: Syncing filesystems ... done.
+PM: Preparing system for sleep (mem)
+Freezing user space processes ... (elapsed 0.001 seconds) done.
+OOM killer disabled.
+Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
+PM: Suspending system (mem)
+PM: suspend of devices complete after 122.841 msecs
+PM: suspend devices took 0.130 seconds
+PM: late suspend of devices complete after 2.682 msecs
+PM: noirq suspend of devices complete after 29.951 msecs
+Disabling non-boot CPUs ...
+BUG: sleeping function called from invalid context at kernel/locking/mutex.c:238
+in_atomic(): 0, irqs_disabled(): 128, pid: 1730, name: s2ram
+CPU: 0 PID: 1730 Comm: s2ram Not tainted
+4.12.0-koelsch-07061-g810fee9afeba15ef #3592
+Hardware name: Generic R8A7791 (Flattened Device Tree)
+[<c020e9f4>] (unwind_backtrace) from [<c020a484>] (show_stack+0x10/0x14)
+[<c020a484>] (show_stack) from [<c04017e8>] (dump_stack+0x7c/0x9c)
+[<c04017e8>] (dump_stack) from [<c0240284>] (___might_sleep+0x124/0x160)
+[<c0240284>] (___might_sleep) from [<c0717cfc>] (mutex_lock+0x18/0x60)
+[<c0717cfc>] (mutex_lock) from [<c04de11c>] (genpd_lookup_dev+0x38/0x94)
+[<c04de11c>] (genpd_lookup_dev) from [<c04dfd34>]
+(pm_genpd_syscore_poweroff+0x8/0x2c)
+[<c04dfd34>] (pm_genpd_syscore_poweroff) from [<c05fcb70>]
+(sh_cmt_clock_event_suspend+0x18/0x28)
+[<c05fcb70>] (sh_cmt_clock_event_suspend) from [<c027f174>]
+(clockevents_suspend+0x40/0x54)
+[<c027f174>] (clockevents_suspend) from [<c02762d8>]
+(timekeeping_suspend+0x23c/0x278)
+[<c02762d8>] (timekeeping_suspend) from [<c04ce028>]
+(syscore_suspend+0x88/0x138)
+[<c04ce028>] (syscore_suspend) from [<c025d740>]
+(suspend_devices_and_enter+0x308/0x4fc)
+[<c025d740>] (suspend_devices_and_enter) from [<c025db5c>]
+(pm_suspend+0x228/0x280)
+[<c025db5c>] (pm_suspend) from [<c025c6b8>] (state_store+0xac/0xcc)
+[<c025c6b8>] (state_store) from [<c0342f9c>] (kernfs_fop_write+0x170/0x1b0)
+[<c0342f9c>] (kernfs_fop_write) from [<c02e47dc>] (__vfs_write+0x20/0x108)
+[<c02e47dc>] (__vfs_write) from [<c02e5b80>] (vfs_write+0xb8/0x144)
+[<c02e5b80>] (vfs_write) from [<c02e6804>] (SyS_write+0x40/0x80)
+[<c02e6804>] (SyS_write) from [<c0206c40>] (ret_fast_syscall+0x0/0x34)
+
+Reverting the commit fixes the issue.
+
 > ---
-> 
-> This was reported as a comment to a patch adding tempmon support for
-> imx6ul (which is very similar to imx6sx). Since it already affects a
-> supported chip this patch is sent as a separate bugfix.
-> 
-> Link: https://lkml.org/lkml/2017/6/9/578
-> 
-> There are various other ways to fix this problem. The main advantage of
-> this solution is that it does not add a new binding but rather preserves
-> compatibility with old DTBs. It also aligns with the idea that
-> devicetree describes hardware relationships rather than a specific linux
-> implementation.
-> 
-> An alternative would have been to add a nvmem-cells binding to imx-thermal and
-> use that if available instead of fsl,tempmon-data. It might not be good to
-> sidestep the official nvmem bindings, the devicetree people were added so that
-> they have an opportunity to object.
-> 
-> In theory the "thermal grade" is a two-bit quantity and might be a
-> candidate for using a cell with a "bits" binding. However this causes
-> the nvmem core to issue reads of length and alignment less than 4 to the
-> imx-ocotp driver so additional fixes might be required.
-> 
+>  drivers/base/power/domain.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 01e31d9f6c94..d31a4434b8b3 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1098,8 +1098,8 @@ static void genpd_syscore_switch(struct device *dev, bool suspend)
+>  {
+>         struct generic_pm_domain *genpd;
+>
+> -       genpd = dev_to_genpd(dev);
+> -       if (!pm_genpd_present(genpd))
+> +       genpd = genpd_lookup_dev(dev);
+> +       if (!genpd)
+>                 return;
+>
+>         if (suspend) {
 
-It's been two weeks without a reply, any advice on how to proceed?
-Since the original message is quite long I will summarize the main
-question:
+Gr{oetje,eeting}s,
 
-Is it OK to reinterpret the fsl,tempmon-data property as a nvmem
-reference instead of a "raw" syscon regmap?
+                        Geert
 
 --
-Regards,
-Leonard
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
