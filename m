@@ -1,39 +1,44 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH] coccinelle: api: detect unnecessary le16_to_cpu
-Date: Tue, 4 Jul 2017 12:51:15 +0300
-Message-ID: <CAHp75VdyurjwN+DZQuKnEzNe+XgZwiLLkc0Rg0NvFr=4D2GiQA@mail.gmail.com>
-References: <1498937290-12285-1-git-send-email-Julia.Lawall@lip6.fr>
- <20170703133602.ejcdu35ku3i63cj2@earth> <CAHp75VeJY8Xr2H8XK8A7Piu-38TnAeKu5Gn+edtkZmbw2quW0g@mail.gmail.com>
- <20170703171427.qtpodt7watymphac@earth> <CAHp75VeLV_ySCRN3B=MSoZdyrbXXqqEXrgC+hJCDoLLCJRComQ@mail.gmail.com>
- <20170703182033.5stv5eq33et63coh@earth> <alpine.DEB.2.20.1707041104390.3346@hadrien>
+From: "Wangtao (Kevin, Kirin)" <kevin.wangtao-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
+Subject: =?utf-8?B?562U5aSNOiBbUGF0Y2ggdjIgMy8zXSBhcm02NDogZHRzOiByZWdpc3RlciBI?=
+ =?utf-8?Q?i3660's_thermal_sensor?=
+Date: Tue, 4 Jul 2017 10:50:35 +0000
+Message-ID: <68C6844FB78C6946B9DB8EACE2D237B0985B5A0D@dggeml507-mbx.china.huawei.com>
+References: <1497930035-60894-3-git-send-email-kevin.wangtao@hisilicon.com>
+ <1498102923-68481-1-git-send-email-kevin.wangtao@hisilicon.com>
+ <1498102923-68481-3-git-send-email-kevin.wangtao@hisilicon.com>
+ <20170701030613.GC11424@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1707041104390.3346@hadrien>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, kernel-janitors@vger.kernel.org, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Benjamin Tissoires <benjamin.tissoires@redhat.com>, Bastien Nocera <hadess@hadess.net>, Stephen Just <stephenjust@gmail.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, devel@acpica.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170701030613.GC11424-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Content-Language: zh-CN
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "mark.rutland-5wv7dgnIgG8@public.gmane.org" <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "xuwei (O)" <xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, "catalin.marinas-5wv7dgnIgG8@public.gmane.org" <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, "will.deacon-5wv7dgnIgG8@public.gmane.org" <will.deacon-5wv7dgnIgG8@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "Sunzhaosheng Sun(Zhaosheng)" <sunzhaosheng-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, "leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 4, 2017 at 12:11 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
-> Here is a revised version (not a patch because it doesn't support all of
-> the various modes) and the results.  It doesn't return anything beyond
-> what was mentioned in previous mails.
->
-> For the following code:
->
->         ret = i2c_smbus_read_word_data(chip->client, reg << 1);
->         val[0] = (u16)ret & 0xFF;
->         val[1] = (u16)ret >> 8;
->
-> do we want to see:
->
-> put_unaligned(val,i2c_smbus_read_word_data(chip->client, reg << 1));
-
-If and only if the type of the pointer is a byte type (u8 *, char *,
-or alike) _and_ we try to use it as a provider for 16-bit value (2
-bytes).
-
--- 
-With Best Regards,
-Andy Shevchenko
+DQpPbiAyMDE3LzcvMSAxMTowNiwgIkVkdWFyZG8gVmFsZW50aW4iIDxlZHViZXp2YWxAZ21haWwu
+Y29tPiB3cm90ZTo+IA0KPiBPbiBUaHUsIEp1biAyMiwgMjAxNyBhdCAxMTo0MjowM0FNICswODAw
+LCBUYW8gV2FuZyB3cm90ZToNCj4gPiBCaW5kIHRoZXJtYWwgc2Vuc29yIGRyaXZlciBmb3IgSGkz
+NjYwLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogVGFvIFdhbmcgPGtldmluLndhbmd0YW9AaGlz
+aWxpY29uLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBMZW8gWWFuIDxsZW8ueWFuQGxpbmFyby5v
+cmc+DQo+ID4gLS0tDQo+ID4gQ2hhbmdlcyBpbiB2MjoNCj4gPiAtIHJlYmFzZSBjaGFuZ2VzIG9u
+IGxpbnV4IG5leHQNCj4gPg0KPiA+ICBhcmNoL2FybTY0L2Jvb3QvZHRzL2hpc2lsaWNvbi9oaTM2
+NjAuZHRzaSB8ICAgIDYgKysrKysrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA2IGluc2VydGlvbnMo
+KykNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL2FybTY0L2Jvb3QvZHRzL2hpc2lsaWNvbi9o
+aTM2NjAuZHRzaQ0KPiBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvaGlzaWxpY29uL2hpMzY2MC5kdHNp
+DQo+ID4gaW5kZXggYzZhMTk2MS4uYTZhMWUwMSAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL2FybTY0
+L2Jvb3QvZHRzL2hpc2lsaWNvbi9oaTM2NjAuZHRzaQ0KPiA+ICsrKyBiL2FyY2gvYXJtNjQvYm9v
+dC9kdHMvaGlzaWxpY29uL2hpMzY2MC5kdHNpDQo+ID4gQEAgLTg0OCw1ICs4NDgsMTEgQEANCj4g
+PiAgCQkJCSAgICAgJnNkaW9fY2ZnX2Z1bmM+Ow0KPiA+ICAJCQlzdGF0dXMgPSAiZGlzYWJsZWQi
+Ow0KPiA+ICAJCX07DQo+ID4gKw0KPiA+ICsJCXRzZW5zb3I6IHRzZW5zb3Igew0KPiA+ICsJCQlj
+b21wYXRpYmxlID0gImhpc2lsaWNvbixoaTM2NjAtdGhlcm1hbCI7DQo+ID4gKwkJCXJlZyA9IDww
+eDAgMHhmZmYzMDAwMCAweDAgMHgxMDAwPjsNCj4gPiArCQkJI3RoZXJtYWwtc2Vuc29yLWNlbGxz
+ID0gPDE+Ow0KPiA+ICsJCX07DQo+IA0KPiBBcmUgeW91IHBsYW5uaW5nIHRvIGFsc28gYWRkIHRo
+ZXJtYWwgem9uZSBlbnRyaWVzPw0KWWVzLCBhZnRlciBjcHVmcmVxIGVuYWJsZWQuDQo+IA0KPiA+
+ICAJfTsNCj4gPiAgfTsNCj4gPiAtLQ0KPiA+IDEuNy45LjUNCj4gPg0K
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
