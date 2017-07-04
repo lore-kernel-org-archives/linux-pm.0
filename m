@@ -1,49 +1,54 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [1/3] cpuidle: powerpc: cpuidle set polling before enabling irqs
-Date: Tue, 04 Jul 2017 12:59:01 +1000
-Message-ID: <87y3s4ykju.fsf@concordia.ellerman.id.au>
-References: <20170614130241.19865-2-npiggin@gmail.com> <3wyzKL1g2Vz9s65@ozlabs.org> <CAJZ5v0g2DMRcL78k2+qA0svxGqtt-sTW2BpcfvRjU-=iCBjEYg@mail.gmail.com> <878tkaqgu2.fsf@concordia.ellerman.id.au> <CAJZ5v0i7kmgVdaqajChvyvebK8ZpjY8HTnLbAH7-ktmj4K8QZQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufreq and boost with amd ryzen
+Date: Tue, 4 Jul 2017 11:40:00 +0530
+Message-ID: <20170704061000.GE3532@vireshk-i7>
+References: <CAFFvMK3sFE+zBu3k9vFRTBFVig70DQK8fpvSKiTXkw1bW+zF=A@mail.gmail.com>
+ <CAOh2x=k87W_i88fXn7LeaMnMJVW8Jvn-jMAxm+Cg5db6xy3bpQ@mail.gmail.com>
+ <CAFFvMK1zUZhKAqFMxSWjbW7Bb-j0Odr0DjmTiC8DbqKonNL+Kg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0i7kmgVdaqajChvyvebK8ZpjY8HTnLbAH7-ktmj4K8QZQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Michael Ellerman <patch-notifications@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>, Linux PM <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f41.google.com ([74.125.83.41]:33433 "EHLO
+        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750921AbdGDGKE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2017 02:10:04 -0400
+Received: by mail-pg0-f41.google.com with SMTP id k14so29414290pgr.0
+        for <linux-pm@vger.kernel.org>; Mon, 03 Jul 2017 23:10:04 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAFFvMK1zUZhKAqFMxSWjbW7Bb-j0Odr0DjmTiC8DbqKonNL+Kg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sergio P <sergio.pieiga@gmail.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-"Rafael J. Wysocki" <rafael@kernel.org> writes:
+On 03-07-17, 07:21, Sergio P wrote:
+> Hi Viresh, thank you for responding.
+> 
+> /sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0
+> /sys/devices/system/cpu/cpu0/cpufreq/bios_limit:3400000
+> /sys/devices/system/cpu/cpu0/cpufreq/cpb:0
+> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:3400000
+> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq:3400000
+> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq:2200000
+> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_transition_latency:0
+> /sys/devices/system/cpu/cpu0/cpufreq/freqdomain_cpus:0 1
+> /sys/devices/system/cpu/cpu0/cpufreq/related_cpus:0
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies:3400000
+> 3000000 2200000
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors:userspace
+> powersave conservative ondemand performance schedutil
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq:3400000
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver:acpi-cpufreq
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:ondemand
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq:3400000
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq:2200000
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed:<unsupported>
+> grep: /sys/devices/system/cpu/cpu0/cpufreq/stats: Is a directory
 
-> On Fri, Jun 30, 2017 at 5:45 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> "Rafael J. Wysocki" <rafael@kernel.org> writes:
->>
->>> On Thu, Jun 29, 2017 at 2:21 PM, Michael Ellerman
->>> <patch-notifications@ellerman.id.au> wrote:
->>>> On Wed, 2017-06-14 at 13:02:39 UTC, Nicholas Piggin wrote:
->>>>> local_irq_enable can cause interrupts to be taken which could
->>>>> take significant amount of processing time. The idle process
->>>>> should set its polling flag before this, so another process that
->>>>> wakes it during this time will not have to send an IPI.
->>>>>
->>>>> Expand the TIF_POLLING_NRFLAG coverage to as large as possible.
->>>>>
->>>>> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->>>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>>>
->>>> Series applied to powerpc next, thanks.
->>>>
->>>> https://git.kernel.org/powerpc/c/3fc5ee927ff4ffed6aa2fcd44d2fbf
->>>
->>> OK
->>>
->>> I've applied it too, so I guess I should drop it?
->>
->> Erk sorry. I hadn't heard anything so I picked it up.
->>
->> If you can drop it that would be good, but if not git will probably work
->> it out mostly :)
->
-> I've dropped it, no problem.
+You need to help debugging a bit. Looks like you are returning early from
+acpi_cpufreq_boost_init() (in drivers/cpufreq/acpi-cpufreq.c). Can you please
+check if acpi_cpufreq_driver.set_boost is getting set ? Without that boost
+wouldn't work.
 
-Thanks.
-
-cheers
+-- 
+viresh
