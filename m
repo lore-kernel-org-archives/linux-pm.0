@@ -1,49 +1,145 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v2 4/6] cpufreq: schedutil: update CFS util only if used
-Date: Tue,  4 Jul 2017 18:34:09 +0100
-Message-ID: <1499189651-18797-5-git-send-email-patrick.bellasi@arm.com>
-References: <1499189651-18797-1-git-send-email-patrick.bellasi@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1499189651-18797-1-git-send-email-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Todd Kjos <tkjos@android.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v3 2/8] PM / Domains: Handle safely
+ genpd_syscore_switch() call on non-genpd device
+Date: Tue, 4 Jul 2017 20:10:11 +0200
+Message-ID: <20170704181011.zcialijxnyucwzry@kozik-lap>
+References: <20170628145623.20716-1-krzk@kernel.org>
+ <20170628145623.20716-3-krzk@kernel.org>
+ <CAMuHMdXNAT6dW6Q_=_ZTUwiRmF0CpWXGfK0wYDgETT0xbTdZTA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdXNAT6dW6Q_=_ZTUwiRmF0CpWXGfK0wYDgETT0xbTdZTA@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Currently the utilization of the FAIR class is collected before locking
-the policy. Although that should not be a big issue for most cases, we
-also don't really know how much latency there can be between the
-utilization reading and its usage.
+On Tue, Jul 04, 2017 at 03:01:15PM +0200, Geert Uytterhoeven wrote:
+> Hi Krzysztof, Rafael,
+> 
+> On Wed, Jun 28, 2017 at 4:56 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> > genpd_syscore_switch() had two problems:
+> > 1. It silently assumed that device, it is being called for, belongs to
+> >    generic power domain and used container_of() on its power domain
+> >    pointer.  Such assumption might not be true always.
+> >
+> > 2. It iterated over list of generic power domains without holding
+> >    gpd_list_lock mutex thus list could have been modified in the same
+> >    time.
+> >
+> > Usage of genpd_lookup_dev() solves both problems as it is safe a call
+> > for non-generic power domains and uses mutex when iterating.
+> >
+> > Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> > Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+> 
+> This is commit 8b55e55ee44356d6 in pm/linux-next, also part of the pull
+> request "[GIT PULL] Power management updates for v4.13-rc1".
+> 
+> > Not tested on real hardware.
+> 
+> This causes the following BUG during s2ram on all my Renesas arm32 boards,
+> where the system timer is an IRQ safe device:
+> 
+> PM: Syncing filesystems ... done.
+> PM: Preparing system for sleep (mem)
+> Freezing user space processes ... (elapsed 0.001 seconds) done.
+> OOM killer disabled.
+> Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
+> PM: Suspending system (mem)
+> PM: suspend of devices complete after 122.841 msecs
+> PM: suspend devices took 0.130 seconds
+> PM: late suspend of devices complete after 2.682 msecs
+> PM: noirq suspend of devices complete after 29.951 msecs
+> Disabling non-boot CPUs ...
+> BUG: sleeping function called from invalid context at kernel/locking/mutex.c:238
 
-Let's get the FAIR utilization right before its usage to be better in
-sync with the current status of a CPU.
+Hi,
 
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
----
- kernel/sched/cpufreq_schedutil.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Thanks for report!
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 98704d8..df433f1 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -308,10 +308,9 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
- 	if (unlikely(current == sg_policy->thread))
- 		return;
- 
--	sugov_get_util(&util, &max);
--
- 	raw_spin_lock(&sg_policy->update_lock);
- 
-+	sugov_get_util(&util, &max);
- 	sg_cpu->util = util;
- 	sg_cpu->max = max;
- 
--- 
-2.7.4
+Damn it, although I couldn't find this in the code, but I was fearing
+that this ends up in atomic section. That would kind of explain why
+mutex was not there [1].
+
+Anyway, the buggy code was there already. Instead of "sleeping in atomic
+section" there was no locking at all... In this context this was
+probably safe because it was executed *after* disabling non-boot CPUs
+but then the function cannot be called in other contexts.
+
+I am not sure I will be capable of developing the proper fix as I do not
+have the hardware and I do not know all stuff happening in sh suspend.
+Probably reverting this and living with non-locked path would be the
+safest choice.
+
+[1] https://patchwork.kernel.org/patch/9778903/
+
+Best regards,
+Krzysztof
+
+
+> in_atomic(): 0, irqs_disabled(): 128, pid: 1730, name: s2ram
+> CPU: 0 PID: 1730 Comm: s2ram Not tainted
+> 4.12.0-koelsch-07061-g810fee9afeba15ef #3592
+> Hardware name: Generic R8A7791 (Flattened Device Tree)
+> [<c020e9f4>] (unwind_backtrace) from [<c020a484>] (show_stack+0x10/0x14)
+> [<c020a484>] (show_stack) from [<c04017e8>] (dump_stack+0x7c/0x9c)
+> [<c04017e8>] (dump_stack) from [<c0240284>] (___might_sleep+0x124/0x160)
+> [<c0240284>] (___might_sleep) from [<c0717cfc>] (mutex_lock+0x18/0x60)
+> [<c0717cfc>] (mutex_lock) from [<c04de11c>] (genpd_lookup_dev+0x38/0x94)
+> [<c04de11c>] (genpd_lookup_dev) from [<c04dfd34>]
+> (pm_genpd_syscore_poweroff+0x8/0x2c)
+> [<c04dfd34>] (pm_genpd_syscore_poweroff) from [<c05fcb70>]
+> (sh_cmt_clock_event_suspend+0x18/0x28)
+> [<c05fcb70>] (sh_cmt_clock_event_suspend) from [<c027f174>]
+> (clockevents_suspend+0x40/0x54)
+> [<c027f174>] (clockevents_suspend) from [<c02762d8>]
+> (timekeeping_suspend+0x23c/0x278)
+> [<c02762d8>] (timekeeping_suspend) from [<c04ce028>]
+> (syscore_suspend+0x88/0x138)
+> [<c04ce028>] (syscore_suspend) from [<c025d740>]
+> (suspend_devices_and_enter+0x308/0x4fc)
+> [<c025d740>] (suspend_devices_and_enter) from [<c025db5c>]
+> (pm_suspend+0x228/0x280)
+> [<c025db5c>] (pm_suspend) from [<c025c6b8>] (state_store+0xac/0xcc)
+> [<c025c6b8>] (state_store) from [<c0342f9c>] (kernfs_fop_write+0x170/0x1b0)
+> [<c0342f9c>] (kernfs_fop_write) from [<c02e47dc>] (__vfs_write+0x20/0x108)
+> [<c02e47dc>] (__vfs_write) from [<c02e5b80>] (vfs_write+0xb8/0x144)
+> [<c02e5b80>] (vfs_write) from [<c02e6804>] (SyS_write+0x40/0x80)
+> [<c02e6804>] (SyS_write) from [<c0206c40>] (ret_fast_syscall+0x0/0x34)
+> 
+> Reverting the commit fixes the issue.
+> 
+> > ---
+> >  drivers/base/power/domain.c | 4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> > index 01e31d9f6c94..d31a4434b8b3 100644
+> > --- a/drivers/base/power/domain.c
+> > +++ b/drivers/base/power/domain.c
+> > @@ -1098,8 +1098,8 @@ static void genpd_syscore_switch(struct device *dev, bool suspend)
+> >  {
+> >         struct generic_pm_domain *genpd;
+> >
+> > -       genpd = dev_to_genpd(dev);
+> > -       if (!pm_genpd_present(genpd))
+> > +       genpd = genpd_lookup_dev(dev);
+> > +       if (!genpd)
+> >                 return;
+> >
+> >         if (suspend) {
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
