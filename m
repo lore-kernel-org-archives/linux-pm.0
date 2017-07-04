@@ -1,190 +1,84 @@
-From: "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
-Subject: RE: [Patch v2 2/3] thermal: hisilicon: add thermal sensor driver
- for Hi3660
-Date: Tue, 4 Jul 2017 11:24:06 +0000
-Message-ID: <68C6844FB78C6946B9DB8EACE2D237B0985B5A55@dggeml507-mbx.china.huawei.com>
-References: <1497930035-60894-3-git-send-email-kevin.wangtao@hisilicon.com>
- <1498102923-68481-1-git-send-email-kevin.wangtao@hisilicon.com>
- <1498102923-68481-2-git-send-email-kevin.wangtao@hisilicon.com>
- <20170701030426.GA11424@localhost.localdomain>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH] thermal: imx: interpret fsl,tempmon-data through nvmem
+Date: Tue, 4 Jul 2017 14:51:18 +0300
+Message-ID: <1499169078.16068.26.camel@nxp.com>
+References: <d1a8ec1ef73aefe6018f6a4923bd04b3ac34a5d4.1497879110.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga01-in.huawei.com ([45.249.212.187]:9274 "EHLO
-        szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751910AbdGDLYh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2017 07:24:37 -0400
-In-Reply-To: <20170701030426.GA11424@localhost.localdomain>
-Content-Language: zh-CN
+Received: from mail-sn1nam01on0075.outbound.protection.outlook.com ([104.47.32.75]:39155
+        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1752052AbdGDLv0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 4 Jul 2017 07:51:26 -0400
+In-Reply-To: <d1a8ec1ef73aefe6018f6a4923bd04b3ac34a5d4.1497879110.git.leonard.crestez@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "xuwei (O)" <xuwei5@hisilicon.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Sunzhaosheng Sun(Zhaosheng)" <sunzhaosheng@hisilicon.com>, "leo.yan@linaro.org" <leo.yan@linaro.org>
+To: Shawn Guo <shawnguo@kernel.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>, Fabio Estevam <fabio.estevam@nxp.com>
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, devicetree@vger.kernel.org, Bai Ping <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Octavian Purdila <octavian.purdila@nxp.com>, linux-arm-kernel@lists.infradead.org
 
-DQpPbiAyMDE3LzcvMSAxMTowNiwgIkVkdWFyZG8gVmFsZW50aW4iIDxlZHViZXp2YWxAZ21haWwu
-Y29tPiB3cm90ZTo+IA0KPiBIZXkgVGFvLA0KPiANCj4gT24gVGh1LCBKdW4gMjIsIDIwMTcgYXQg
-MTE6NDI6MDJBTSArMDgwMCwgVGFvIFdhbmcgd3JvdGU6DQo+ID4gVGhpcyBwYXRjaCBhZGRzIHRo
-ZSBzdXBwb3J0IGZvciB0aGVybWFsIHNlbnNvciBvZiBIaTM2NjAgU29DLg0KPiA+IHRoaXMgd2ls
-bCByZWdpc3RlciBzZW5zb3JzIGZvciB0aGVybWFsIGZyYW1ld29yayBhbmQgdXNlIGRldmljZQ0K
-PiA+IHRyZWUgdG8gYmluZCBjb29saW5nIGRldmljZS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6
-IFRhbyBXYW5nIDxrZXZpbi53YW5ndGFvQGhpc2lsaWNvbi5jb20+DQo+ID4gU2lnbmVkLW9mZi1i
-eTogTGVvIFlhbiA8bGVvLnlhbkBsaW5hcm8ub3JnPg0KPiA+IC0tLQ0KPiA+IENoYW5nZXMgaW4g
-djI6DQo+ID4gLSBjb3JyZWN0IGFscGhhYmV0IG9yZGVyDQo+ID4gLSBjb3JyZWN0IGNvbXBhdGli
-bGUgbmFtZQ0KPiA+DQo+ID4gIGRyaXZlcnMvdGhlcm1hbC9LY29uZmlnICAgICAgICAgIHwgICAx
-MCArKw0KPiA+ICBkcml2ZXJzL3RoZXJtYWwvTWFrZWZpbGUgICAgICAgICB8ICAgIDEgKw0KPiA+
-ICBkcml2ZXJzL3RoZXJtYWwvaGkzNjYwX3RoZXJtYWwuYyB8ICAxOTgNCj4gKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gPiAgMyBmaWxlcyBjaGFuZ2VkLCAyMDkgaW5z
-ZXJ0aW9ucygrKQ0KPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy90aGVybWFsL2hpMzY2
-MF90aGVybWFsLmMNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvS2NvbmZp
-ZyBiL2RyaXZlcnMvdGhlcm1hbC9LY29uZmlnDQo+ID4gaW5kZXggYjViNWZhYy4uZWQyMmE5MCAx
-MDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZw0KPiA+ICsrKyBiL2RyaXZl
-cnMvdGhlcm1hbC9LY29uZmlnDQo+ID4gQEAgLTE5Miw2ICsxOTIsMTYgQEAgY29uZmlnIFRIRVJN
-QUxfRU1VTEFUSU9ODQo+ID4gIAkgIGJlY2F1c2UgdXNlcmxhbmQgY2FuIGVhc2lseSBkaXNhYmxl
-IHRoZSB0aGVybWFsIHBvbGljeSBieSBzaW1wbHkNCj4gPiAgCSAgZmxvb2RpbmcgdGhpcyBzeXNm
-cyBub2RlIHdpdGggbG93IHRlbXBlcmF0dXJlIHZhbHVlcy4NCj4gPg0KPiA+ICtjb25maWcgSEkz
-NjYwX1RIRVJNQUwNCj4gPiArCXRyaXN0YXRlICJIaTM2NjAgdGhlcm1hbCBkcml2ZXIiDQo+ID4g
-KwlkZXBlbmRzIG9uIEFSQ0hfSElTSSB8fCBDT01QSUxFX1RFU1QNCj4gPiArCWRlcGVuZHMgb24g
-SEFTX0lPTUVNDQo+ID4gKwlkZXBlbmRzIG9uIE9GDQo+ID4gKwlkZWZhdWx0IHkNCj4gPiArCWhl
-bHANCj4gPiArCSAgRW5hYmxlIHRoaXMgdG8gcGx1ZyBIaTM2NjAgdGhlcm1hbCBkcml2ZXIgaW50
-byB0aGUgTGludXggdGhlcm1hbA0KPiA+ICsJICBmcmFtZXdvcmsuDQo+ID4gKw0KPiA+ICBjb25m
-aWcgSElTSV9USEVSTUFMDQo+ID4gIAl0cmlzdGF0ZSAiSGlzaWxpY29uIHRoZXJtYWwgZHJpdmVy
-Ig0KPiA+ICAJZGVwZW5kcyBvbiBBUkNIX0hJU0kgfHwgQ09NUElMRV9URVNUDQo+ID4gZGlmZiAt
-LWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9NYWtlZmlsZSBiL2RyaXZlcnMvdGhlcm1hbC9NYWtlZmls
-ZQ0KPiA+IGluZGV4IDA5NGQ3MDMuLmYyOWQwYTUgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy90
-aGVybWFsL01ha2VmaWxlDQo+ID4gKysrIGIvZHJpdmVycy90aGVybWFsL01ha2VmaWxlDQo+ID4g
-QEAgLTU1LDYgKzU1LDcgQEAgb2JqLSQoQ09ORklHX0lOVEVMX1BDSF9USEVSTUFMKQkrPQ0KPiBp
-bnRlbF9wY2hfdGhlcm1hbC5vDQo+ID4gIG9iai0kKENPTkZJR19TVF9USEVSTUFMKQkrPSBzdC8N
-Cj4gPiAgb2JqLSQoQ09ORklHX1FDT01fVFNFTlMpCSs9IHFjb20vDQo+ID4gIG9iai0kKENPTkZJ
-R19URUdSQV9TT0NUSEVSTSkJKz0gdGVncmEvDQo+ID4gK29iai0kKENPTkZJR19ISTM2NjBfVEhF
-Uk1BTCkJKz0gaGkzNjYwX3RoZXJtYWwubw0KPiA+ICBvYmotJChDT05GSUdfSElTSV9USEVSTUFM
-KSAgICAgKz0gaGlzaV90aGVybWFsLm8NCj4gPiAgb2JqLSQoQ09ORklHX01US19USEVSTUFMKQkr
-PSBtdGtfdGhlcm1hbC5vDQo+ID4gIG9iai0kKENPTkZJR19HRU5FUklDX0FEQ19USEVSTUFMKQkr
-PSB0aGVybWFsLWdlbmVyaWMtYWRjLm8NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFs
-L2hpMzY2MF90aGVybWFsLmMNCj4gYi9kcml2ZXJzL3RoZXJtYWwvaGkzNjYwX3RoZXJtYWwuYw0K
-PiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+ID4gaW5kZXggMDAwMDAwMC4uNjhmYTkwMTgNCj4g
-PiAtLS0gL2Rldi9udWxsDQo+ID4gKysrIGIvZHJpdmVycy90aGVybWFsL2hpMzY2MF90aGVybWFs
-LmMNCj4gPiBAQCAtMCwwICsxLDE5OCBAQA0KPiA+ICsvKg0KPiA+ICsgKiAgbGludXgvZHJpdmVy
-cy90aGVybWFsL2hpMzY2MF90aGVybWFsLmMNCj4gPiArICoNCj4gPiArICogIENvcHlyaWdodCAo
-YykgMjAxNyBIaXNpbGljb24gTGltaXRlZC4NCj4gPiArICogIENvcHlyaWdodCAoYykgMjAxNyBM
-aW5hcm8gTGltaXRlZC4NCj4gPiArICoNCj4gPiArICogIEF1dGhvcjogVGFvIFdhbmcgPGtldmlu
-Lndhbmd0YW9AaGlzaWxpY29uLmNvbT4NCj4gPiArICogIEF1dGhvcjogTGVvIFlhbiA8bGVvLnlh
-bkBsaW5hcm8ub3JnPg0KPiA+ICsgKg0KPiA+ICsgKiAgVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29m
-dHdhcmU7IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkNCj4gPiArICogIGl0
-IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgYXMgcHVi
-bGlzaGVkIGJ5DQo+ID4gKyAqICB0aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uOyB2ZXJzaW9u
-IDIgb2YgdGhlIExpY2Vuc2UuDQo+ID4gKyAqDQo+ID4gKyAqICBUaGlzIHByb2dyYW0gaXMgZGlz
-dHJpYnV0ZWQgaW4gdGhlIGhvcGUgdGhhdCBpdCB3aWxsIGJlIHVzZWZ1bCwNCj4gPiArICogIGJ1
-dCBXSVRIT1VUIEFOWSBXQVJSQU5UWTsgd2l0aG91dCBldmVuIHRoZSBpbXBsaWVkIHdhcnJhbnR5
-IG9mDQo+ID4gKyAqICBNRVJDSEFOVEFCSUxJVFkgb3IgRklUTkVTUyBGT1IgQSBQQVJUSUNVTEFS
-IFBVUlBPU0UuICBTZWUgdGhlDQo+ID4gKyAqICBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBm
-b3IgbW9yZSBkZXRhaWxzLg0KPiA+ICsgKg0KPiA+ICsgKiAgWW91IHNob3VsZCBoYXZlIHJlY2Vp
-dmVkIGEgY29weSBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UNCj4gPiArICogIGFs
-b25nIHdpdGggdGhpcyBwcm9ncmFtLiAgSWYgbm90LCBzZWUgPGh0dHA6Ly93d3cuZ251Lm9yZy9s
-aWNlbnNlcy8+Lg0KPiA+ICsgKi8NCj4gPiArDQo+ID4gKyNpbmNsdWRlIDxsaW51eC9jbGsuaD4N
-Cj4gPiArI2luY2x1ZGUgPGxpbnV4L2RldmljZS5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvZXJy
-Lmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9pby5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgva2Vy
-bmVsLmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9vZi5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgv
-bW9kdWxlLmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4NCj4gPiAr
-I2luY2x1ZGUgPGxpbnV4L3RoZXJtYWwuaD4NCj4gPiArDQo+ID4gKyNpbmNsdWRlICJ0aGVybWFs
-X2NvcmUuaCINCj4gPiArDQo+ID4gKyNkZWZpbmUgSFdfTUFYX1NFTlNPUlMJCQk0DQo+ID4gKyNk
-ZWZpbmUgSElTSV9NQVhfU0VOU09SUwkJNg0KPiA+ICsjZGVmaW5lIFNFTlNPUl9NQVgJCQk0DQo+
-ID4gKyNkZWZpbmUgU0VOU09SX0FWRwkJCTUNCj4gPiArDQo+ID4gKyNkZWZpbmUgQURDX01JTgkJ
-MTE2DQo+ID4gKyNkZWZpbmUgQURDX01BWAkJOTIyDQo+ID4gKw0KPiA+ICsvKiBoaTM2NjAgVGhl
-cm1hbCBTZW5zb3IgRGV2IFN0cnVjdHVyZSAqLw0KPiA+ICtzdHJ1Y3QgaGkzNjYwX3RoZXJtYWxf
-c2Vuc29yIHsNCj4gPiArCXN0cnVjdCBoaTM2NjBfdGhlcm1hbF9kYXRhICp0aGVybWFsOw0KPiA+
-ICsJc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6ZDsNCj4gPiArDQo+ID4gKwl1aW50MzJf
-dCBpZDsNCj4gPiArfTsNCj4gPiArDQo+ID4gK3N0cnVjdCBoaTM2NjBfdGhlcm1hbF9kYXRhIHsN
-Cj4gPiArCXN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXY7DQo+ID4gKwlzdHJ1Y3QgaGkzNjYw
-X3RoZXJtYWxfc2Vuc29yIHNlbnNvcnNbSElTSV9NQVhfU0VOU09SU107DQo+ID4gKwl2b2lkIF9f
-aW9tZW0gKnRoZXJtYWxfYmFzZTsNCj4gPiArfTsNCj4gPiArDQo+ID4gK3Vuc2lnbmVkIGludCBz
-ZW5zb3JfcmVnX29mZnNldFtIV19NQVhfU0VOU09SU10gPSB7IDB4MWMsIDB4NWMsIDB4OWMsDQo+
-IDB4ZGMgfTsNCj4gPiArDQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IGhpMzY2MF90aGVybWFsX2dl
-dF90ZW1wKHZvaWQgKl9zZW5zb3IsIGludCAqdGVtcCkNCj4gPiArew0KPiA+ICsJc3RydWN0IGhp
-MzY2MF90aGVybWFsX3NlbnNvciAqc2Vuc29yID0gX3NlbnNvcjsNCj4gPiArCXN0cnVjdCBoaTM2
-NjBfdGhlcm1hbF9kYXRhICpkYXRhID0gc2Vuc29yLT50aGVybWFsOw0KPiA+ICsJdW5zaWduZWQg
-aW50IGlkeDsNCj4gPiArCWludCB2YWwsIGF2ZXJhZ2UgPSAwLCBtYXggPSAwOw0KPiA+ICsNCj4g
-PiArCWlmIChzZW5zb3ItPmlkIDwgSFdfTUFYX1NFTlNPUlMpIHsNCj4gPiArCQl2YWwgPSByZWFk
-bChkYXRhLT50aGVybWFsX2Jhc2UgKyBzZW5zb3JfcmVnX29mZnNldFtzZW5zb3ItDQo+ID5pZF0p
-Ow0KPiA+ICsJCXZhbCA9IGNsYW1wX3ZhbCh2YWwsIEFEQ19NSU4sIEFEQ19NQVgpOw0KPiA+ICsJ
-fSBlbHNlIHsNCj4gPiArCQlmb3IgKGlkeCA9IDA7IGlkeCA8IEhXX01BWF9TRU5TT1JTOyBpZHgr
-Kykgew0KPiA+ICsJCQl2YWwgPSByZWFkbChkYXRhLT50aGVybWFsX2Jhc2UNCj4gPiArCQkJCQkr
-IHNlbnNvcl9yZWdfb2Zmc2V0W2lkeF0pOw0KPiA+ICsJCQl2YWwgPSBjbGFtcF92YWwodmFsLCBB
-RENfTUlOLCBBRENfTUFYKTsNCj4gPiArCQkJYXZlcmFnZSArPSB2YWw7DQo+ID4gKwkJCWlmICh2
-YWwgPiBtYXgpDQo+ID4gKwkJCQltYXggPSB2YWw7DQo+ID4gKwkJfQ0KPiA+ICsNCj4gPiArCQlp
-ZiAoc2Vuc29yLT5pZCA9PSBTRU5TT1JfTUFYKQ0KPiA+ICsJCQl2YWwgPSBtYXg7DQo+ID4gKwkJ
-ZWxzZSBpZiAoc2Vuc29yLT5pZCA9PSBTRU5TT1JfQVZHKQ0KPiA+ICsJCQl2YWwgPSBhdmVyYWdl
-IC8gSFdfTUFYX1NFTlNPUlM7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJKnRlbXAgPSAoKHZhbCAt
-IEFEQ19NSU4pICogMTY1MDAwKSAvIChBRENfTUFYIC0gQURDX01JTikgLQ0KPiA0MDAwMDsNCj4g
-DQo+IFdoZXJlIGRvIHRoZXNlIGNvbnN0YW50cyBjb21lIGZyb20gKDE2NTAwMCBhbmQgNDAwMDAp
-IGNhbiB0aGVzZSBzb21lDQoNClRoZSBzZW5zb3IncyB0ZW1wZXJhdHVyZSByYW5nZSBpcyAtNDAg
-dG8gMTI1LCB0aGF0J3MgdGhlIHNvdXJjZSBvZiB0aGUgY29uc3RhbnRzLg0KDQo+IGhvdw0KPiBi
-ZSByZWFycmFuZ2VkIGFuZCBkZXNjcmliZWQgaW4gRFQgKGNvZWZmaWNpZW50cykgYW5kIHVzaW5n
-IHRoZSBvZmZzZXQgYW5kDQo+IHNsb3BlIGZpZWxkcz8NCg0KVGhhdCBtYWtlIHNlbnNlLCBJIHdp
-bGwgcmVjb25zaWRlciBhYm91dCBpdC4NCg0KPiANCj4gPiArDQo+ID4gKwlyZXR1cm4gMDsNCj4g
-PiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIHN0cnVjdCB0aGVybWFsX3pvbmVfb2ZfZGV2aWNlX29w
-cyBoaTM2NjBfb2ZfdGhlcm1hbF9vcHMgPSB7DQo+ID4gKwkuZ2V0X3RlbXAgPSBoaTM2NjBfdGhl
-cm1hbF9nZXRfdGVtcCwNCj4gPiArfTsNCj4gPiArDQo+ID4gK3N0YXRpYyBpbnQgaGkzNjYwX3Ro
-ZXJtYWxfcmVnaXN0ZXJfc2Vuc29yKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYsDQo+ID4g
-KwkJc3RydWN0IGhpMzY2MF90aGVybWFsX2RhdGEgKmRhdGEsDQo+ID4gKwkJc3RydWN0IGhpMzY2
-MF90aGVybWFsX3NlbnNvciAqc2Vuc29yLA0KPiA+ICsJCWludCBpbmRleCkNCj4gPiArew0KPiA+
-ICsJaW50IHJldCA9IDA7DQo+ID4gKw0KPiA+ICsJc2Vuc29yLT5pZCA9IGluZGV4Ow0KPiA+ICsJ
-c2Vuc29yLT50aGVybWFsID0gZGF0YTsNCj4gPiArDQo+ID4gKwlzZW5zb3ItPnR6ZCA9IGRldm1f
-dGhlcm1hbF96b25lX29mX3NlbnNvcl9yZWdpc3RlcigmcGRldi0NCj4gPmRldiwNCj4gPiArCQkJ
-CXNlbnNvci0+aWQsIHNlbnNvciwNCj4gJmhpMzY2MF9vZl90aGVybWFsX29wcyk7DQo+ID4gKwlp
-ZiAoSVNfRVJSKHNlbnNvci0+dHpkKSkgew0KPiA+ICsJCXJldCA9IFBUUl9FUlIoc2Vuc29yLT50
-emQpOw0KPiA+ICsJCXNlbnNvci0+dHpkID0gTlVMTDsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwly
-ZXR1cm4gcmV0Ow0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgdm9pZCBoaTM2NjBfdGhlcm1h
-bF90b2dnbGVfc2Vuc29yKHN0cnVjdCBoaTM2NjBfdGhlcm1hbF9zZW5zb3INCj4gKnNlbnNvciwN
-Cj4gPiArCQkJCSAgICAgICBib29sIG9uKQ0KPiA+ICt7DQo+ID4gKwlzdHJ1Y3QgdGhlcm1hbF96
-b25lX2RldmljZSAqdHpkID0gc2Vuc29yLT50emQ7DQo+ID4gKw0KPiA+ICsJdHpkLT5vcHMtPnNl
-dF9tb2RlKHR6ZCwNCj4gPiArCQlvbiA/IFRIRVJNQUxfREVWSUNFX0VOQUJMRUQgOg0KPiBUSEVS
-TUFMX0RFVklDRV9ESVNBQkxFRCk7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBpbnQgaGkz
-NjYwX3RoZXJtYWxfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gPiArew0K
-PiA+ICsJc3RydWN0IGRldmljZSAqZGV2ID0gJnBkZXYtPmRldjsNCj4gPiArCXN0cnVjdCBoaTM2
-NjBfdGhlcm1hbF9kYXRhICpkYXRhOw0KPiA+ICsJc3RydWN0IHJlc291cmNlICpyZXM7DQo+ID4g
-KwlpbnQgcmV0ID0gMDsNCj4gPiArCWludCBpOw0KPiA+ICsNCj4gPiArCWRhdGEgPSBkZXZtX2t6
-YWxsb2MoZGV2LCBzaXplb2YoKmRhdGEpLCBHRlBfS0VSTkVMKTsNCj4gPiArCWlmICghZGF0YSkN
-Cj4gPiArCQlyZXR1cm4gLUVOT01FTTsNCj4gPiArDQo+ID4gKwlkYXRhLT5wZGV2ID0gcGRldjsN
-Cj4gPiArCXJlcyA9IHBsYXRmb3JtX2dldF9yZXNvdXJjZShwZGV2LCBJT1JFU09VUkNFX01FTSwg
-MCk7DQo+ID4gKwlkYXRhLT50aGVybWFsX2Jhc2UgPSBkZXZtX2lvcmVtYXBfcmVzb3VyY2UoZGV2
-LCByZXMpOw0KPiA+ICsJaWYgKElTX0VSUihkYXRhLT50aGVybWFsX2Jhc2UpKSB7DQo+ID4gKwkJ
-ZGV2X2VycihkZXYsICJmYWlsZWQgZ2V0IHJlZyBiYXNlXG4iKTsNCj4gPiArCQlyZXR1cm4gLUVO
-T01FTTsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwlwbGF0Zm9ybV9zZXRfZHJ2ZGF0YShwZGV2LCBk
-YXRhKTsNCj4gPiArDQo+ID4gKwlmb3IgKGkgPSAwOyBpIDwgSElTSV9NQVhfU0VOU09SUzsgKytp
-KSB7DQo+ID4gKwkJcmV0ID0gaGkzNjYwX3RoZXJtYWxfcmVnaXN0ZXJfc2Vuc29yKHBkZXYsIGRh
-dGEsDQo+ID4gKwkJCQkJCSAgICAgJmRhdGEtPnNlbnNvcnNbaV0sIGkpOw0KPiA+ICsJCWlmIChy
-ZXQpDQo+ID4gKwkJCWRldl9lcnIoJnBkZXYtPmRldiwNCj4gPiArCQkJCSJmYWlsZWQgdG8gcmVn
-aXN0ZXIgdGhlcm1hbCBzZW5zb3IlZDogJWRcbiIsDQo+ID4gKwkJCQlpLCByZXQpOw0KPiANCj4g
-RG8geW91IHJlYWxseSB3YW50IHRvIGNvbnRpbnVlIGlmIHNvbWUgb2YgdGhlIHNlbnNvcnMgZmFp
-bCB0byByZWdpc3Rlcj8NCg0KWWVzLCAgYmVjYXVzZSBjdXJyZW50bHkgd2Ugb25seSB1c2Ugb25l
-IG9mIHRoZXNlIHNlbnNvcnMsIHRoZSBvdGhlcnMgd2lsbCByZWdpc3RlciBmYWlsIA0KDQo+IA0K
-PiA+ICsJCWVsc2UNCj4gPiArCQkJaGkzNjYwX3RoZXJtYWxfdG9nZ2xlX3NlbnNvcigmZGF0YS0+
-c2Vuc29yc1tpXSwNCj4gdHJ1ZSk7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJZGV2X2luZm8oJnBk
-ZXYtPmRldiwgIlRoZXJtYWwgU2Vuc29yIExvYWRlZFxuIik7DQo+IA0KPiBEbyB5b3UgcmVhbGx5
-IG5lZWQgdGhlIGFib3ZlIGluZm8gaW4gdGhlIGtlcm5lbCBsb2c/DQoNClRoYXQgc2hvdWxkIGJl
-IHVubmVjZXNzYXJ5LCBJIHdpbGwgcmVtb3ZlIGl0Lg0KDQo+IA0KPiA+ICsJcmV0dXJuIDA7DQo+
-ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBpbnQgaGkzNjYwX3RoZXJtYWxfZXhpdChzdHJ1Y3Qg
-cGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+ICt7DQo+ID4gKwlzdHJ1Y3QgaGkzNjYwX3RoZXJt
-YWxfZGF0YSAqZGF0YSA9IHBsYXRmb3JtX2dldF9kcnZkYXRhKHBkZXYpOw0KPiA+ICsJaW50IGk7
-DQo+ID4gKw0KPiA+ICsJZm9yIChpID0gMDsgaSA8IEhJU0lfTUFYX1NFTlNPUlM7IGkrKykgew0K
-PiA+ICsJCXN0cnVjdCBoaTM2NjBfdGhlcm1hbF9zZW5zb3IgKnNlbnNvciA9ICZkYXRhLT5zZW5z
-b3JzW2ldOw0KPiA+ICsNCj4gPiArCQlpZiAoIXNlbnNvci0+dHpkKQ0KPiA+ICsJCQljb250aW51
-ZTsNCj4gDQo+IFdoeSBhcmUgeW91IGNvbnNpZGVyaW5nIGEgdmFsaWQgY2FzZSBvZiBub3QgcmVn
-aXN0ZXJpbmcgYWxsIGV4cGVjdGVkDQo+IHNlbnNvcnM/DQoNCkJlY2F1c2UgY3VycmVudGx5IHdl
-IG9ubHkgdXNlIG9uZSBvZiB0aGVzZSBzZW5zb3JzLg0KDQo+ID4gKw0KPiA+ICsJCWhpMzY2MF90
-aGVybWFsX3RvZ2dsZV9zZW5zb3Ioc2Vuc29yLCBmYWxzZSk7DQo+ID4gKwl9DQo+ID4gKw0KPiA+
-ICsJcmV0dXJuIDA7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBjb25zdCBzdHJ1Y3Qgb2Zf
-ZGV2aWNlX2lkIGhpMzY2MF90aGVybWFsX2lkX3RhYmxlW10gPSB7DQo+ID4gKwl7IC5jb21wYXRp
-YmxlID0gImhpc2lsaWNvbixoaTM2NjAtdGhlcm1hbCIgfSwNCj4gPiArCXt9DQo+ID4gK307DQo+
-ID4gK01PRFVMRV9ERVZJQ0VfVEFCTEUob2YsIGhpMzY2MF90aGVybWFsX2lkX3RhYmxlKTsNCj4g
-PiArDQo+ID4gK3N0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIGhpMzY2MF90aGVybWFsX2Ry
-aXZlciA9IHsNCj4gPiArCS5wcm9iZSA9IGhpMzY2MF90aGVybWFsX3Byb2JlLA0KPiA+ICsJLnJl
-bW92ZSA9IGhpMzY2MF90aGVybWFsX2V4aXQsDQo+ID4gKwkuZHJpdmVyID0gew0KPiA+ICsJCS5u
-YW1lID0gImhpMzY2MF90aGVybWFsIiwNCj4gPiArCQkub2ZfbWF0Y2hfdGFibGUgPSBoaTM2NjBf
-dGhlcm1hbF9pZF90YWJsZSwNCj4gPiArCX0sDQo+ID4gK307DQo+ID4gKw0KPiA+ICttb2R1bGVf
-cGxhdGZvcm1fZHJpdmVyKGhpMzY2MF90aGVybWFsX2RyaXZlcik7DQo+ID4gKw0KPiA+ICtNT0RV
-TEVfQVVUSE9SKCJUYW8gV2FuZyA8a2V2aW4ud2FuZ3Rhb0BoaXNpbGljb24uY29tPiIpOw0KPiA+
-ICtNT0RVTEVfQVVUSE9SKCJMZW8gWWFuIDxsZW8ueWFuQGxpbmFyby5vcmc+Iik7DQo+ID4gK01P
-RFVMRV9ERVNDUklQVElPTigiaGkzNjYwIHRoZXJtYWwgZHJpdmVyIik7DQo+ID4gK01PRFVMRV9M
-SUNFTlNFKCJHUEwgdjIiKTsNCj4gPiAtLQ0KPiA+IDEuNy45LjUNCj4gPg0K
+On Mon, 2017-06-19 at 16:40 +0300, Leonard Crestez wrote:
+> On imx6sx accessing the ocotp memory area directly is wrong because the
+> ocotp clock needs to be enabled first. Fix this by reinterpreting the
+> fsl,tempmon-data phandle as a reference to a nvmem_device and doing all
+> the read through that.
+> 
+> This clock requirement does not apply to older imx6qdl chips because
+> there the ocotp access clock (clk_ipg_s) is always enabled.
+> 
+> This is visible by comparing the "System Clocks, Gating, and Override"
+> tables (OCOTP rows) in the 6DQ and 6SX manuals:
+> http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6SXRM.pdf
+> http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6DQRM.pdf
+> 
+> This happens to work right now without this patch because the ocotp
+> clock might be enabled for some other reason. In particular it might be
+> enabled from the bootloader and it only gets disabled late during boot
+> in clk_disable_unused, after imx-thermal has completed probing.
+> 
+> If imx-thermal is compiled as a module then the system can hang on
+> probe.
+> 
+> This makes IMX_THERMAL depend on NVMEM_IMX_OCOTP but that driver seems
+> be already available for all chips that contain tempmon so it's
+> acceptable.
+> 
+> Reported-by: Lothar Waßmann <LW@KARO-electronics.de>
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> 
+> ---
+> 
+> This was reported as a comment to a patch adding tempmon support for
+> imx6ul (which is very similar to imx6sx). Since it already affects a
+> supported chip this patch is sent as a separate bugfix.
+> 
+> Link: https://lkml.org/lkml/2017/6/9/578
+> 
+> There are various other ways to fix this problem. The main advantage of
+> this solution is that it does not add a new binding but rather preserves
+> compatibility with old DTBs. It also aligns with the idea that
+> devicetree describes hardware relationships rather than a specific linux
+> implementation.
+> 
+> An alternative would have been to add a nvmem-cells binding to imx-thermal and
+> use that if available instead of fsl,tempmon-data. It might not be good to
+> sidestep the official nvmem bindings, the devicetree people were added so that
+> they have an opportunity to object.
+> 
+> In theory the "thermal grade" is a two-bit quantity and might be a
+> candidate for using a cell with a "bits" binding. However this causes
+> the nvmem core to issue reads of length and alignment less than 4 to the
+> imx-ocotp driver so additional fixes might be required.
+> 
+
+It's been two weeks without a reply, any advice on how to proceed?
+Since the original message is quite long I will summarize the main
+question:
+
+Is it OK to reinterpret the fsl,tempmon-data property as a nvmem
+reference instead of a "raw" syscon regmap?
+
+--
+Regards,
+Leonard
