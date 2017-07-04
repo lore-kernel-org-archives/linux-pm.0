@@ -1,54 +1,160 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq and boost with amd ryzen
-Date: Tue, 4 Jul 2017 11:40:00 +0530
-Message-ID: <20170704061000.GE3532@vireshk-i7>
-References: <CAFFvMK3sFE+zBu3k9vFRTBFVig70DQK8fpvSKiTXkw1bW+zF=A@mail.gmail.com>
- <CAOh2x=k87W_i88fXn7LeaMnMJVW8Jvn-jMAxm+Cg5db6xy3bpQ@mail.gmail.com>
- <CAFFvMK1zUZhKAqFMxSWjbW7Bb-j0Odr0DjmTiC8DbqKonNL+Kg@mail.gmail.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v2 3/3] power: wm831x_power: Support USB charger current
+ limit management
+Date: Tue, 4 Jul 2017 15:20:41 +0800
+Message-ID: <CAMz4kuLjB=XxVj_BrDAeU3qP9xgJ5h_u5ZQfOKrM8as7DsLgHQ@mail.gmail.com>
+References: <cover.1499061617.git.baolin.wang@linaro.org> <dc4200357a69f0c0bca5404b9e1da8b486452731.1499061617.git.baolin.wang@linaro.org>
+ <20170703155034.mygcebphsyskzhhw@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f41.google.com ([74.125.83.41]:33433 "EHLO
-        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750921AbdGDGKE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jul 2017 02:10:04 -0400
-Received: by mail-pg0-f41.google.com with SMTP id k14so29414290pgr.0
-        for <linux-pm@vger.kernel.org>; Mon, 03 Jul 2017 23:10:04 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAFFvMK1zUZhKAqFMxSWjbW7Bb-j0Odr0DjmTiC8DbqKonNL+Kg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170703155034.mygcebphsyskzhhw@earth>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Jun Li <jun.li@nxp.com>, Peter Chen <peter.chen@freescale.com>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, NeilBrown <neilb@suse.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sergio P <sergio.pieiga@gmail.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-On 03-07-17, 07:21, Sergio P wrote:
-> Hi Viresh, thank you for responding.
-> 
-> /sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0
-> /sys/devices/system/cpu/cpu0/cpufreq/bios_limit:3400000
-> /sys/devices/system/cpu/cpu0/cpufreq/cpb:0
-> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:3400000
-> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq:3400000
-> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq:2200000
-> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_transition_latency:0
-> /sys/devices/system/cpu/cpu0/cpufreq/freqdomain_cpus:0 1
-> /sys/devices/system/cpu/cpu0/cpufreq/related_cpus:0
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies:3400000
-> 3000000 2200000
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors:userspace
-> powersave conservative ondemand performance schedutil
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq:3400000
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver:acpi-cpufreq
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:ondemand
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq:3400000
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq:2200000
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed:<unsupported>
-> grep: /sys/devices/system/cpu/cpu0/cpufreq/stats: Is a directory
+Hi,
 
-You need to help debugging a bit. Looks like you are returning early from
-acpi_cpufreq_boost_init() (in drivers/cpufreq/acpi-cpufreq.c). Can you please
-check if acpi_cpufreq_driver.set_boost is getting set ? Without that boost
-wouldn't work.
+On 3 July 2017 at 23:50, Sebastian Reichel
+<sebastian.reichel@collabora.co.uk> wrote:
+> Hi,
+>
+> On Mon, Jul 03, 2017 at 02:07:15PM +0800, Baolin Wang wrote:
+>> Integrate with the newly added USB charger interface to limit the current
+>> we draw from the USB input based on the input device configuration
+>> identified by the USB stack, allowing us to charge more quickly from high
+>> current inputs without drawing more current than specified from others.
+>>
+>> Signed-off-by: Mark Brown <broonie@kernel.org>
+>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+>
+> Missing DT binding documentation, otherwise fine with me.
+> Would be nice to convert existing drivers:
+>
+> $ git grep -l extcon -- drivers/power/supply
+> drivers/power/supply/axp288_charger.c
+> drivers/power/supply/bq24190_charger.c
+> drivers/power/supply/charger-manager.c
+> drivers/power/supply/qcom_smbb.c
+
+I'll create new patches with adding the DT binding documentation if
+there are no objections for USB phy modification, moreover I will help
+to convert these drivers you listed. Thanks.
+
+>
+> -- Sebastian
+>
+>> ---
+>>  drivers/power/supply/wm831x_power.c |   61 +++++++++++++++++++++++++++++++++++
+>>  1 file changed, 61 insertions(+)
+>>
+>> diff --git a/drivers/power/supply/wm831x_power.c b/drivers/power/supply/wm831x_power.c
+>> index 7082301..3e3480708 100644
+>> --- a/drivers/power/supply/wm831x_power.c
+>> +++ b/drivers/power/supply/wm831x_power.c
+>> @@ -13,6 +13,7 @@
+>>  #include <linux/platform_device.h>
+>>  #include <linux/power_supply.h>
+>>  #include <linux/slab.h>
+>> +#include <linux/usb/phy.h>
+>>
+>>  #include <linux/mfd/wm831x/core.h>
+>>  #include <linux/mfd/wm831x/auxadc.h>
+>> @@ -31,6 +32,8 @@ struct wm831x_power {
+>>       char usb_name[20];
+>>       char battery_name[20];
+>>       bool have_battery;
+>> +     struct usb_phy *usb_phy;
+>> +     struct notifier_block usb_notify;
+>>  };
+>>
+>>  static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
+>> @@ -125,6 +128,43 @@ static int wm831x_usb_get_prop(struct power_supply *psy,
+>>       POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>>  };
+>>
+>> +/* In milliamps */
+>> +static const unsigned int wm831x_usb_limits[] = {
+>> +     0,
+>> +     2,
+>> +     100,
+>> +     500,
+>> +     900,
+>> +     1500,
+>> +     1800,
+>> +     550,
+>> +};
+>> +
+>> +static int wm831x_usb_limit_change(struct notifier_block *nb,
+>> +                                unsigned long limit, void *data)
+>> +{
+>> +     struct wm831x_power *wm831x_power = container_of(nb,
+>> +                                                      struct wm831x_power,
+>> +                                                      usb_notify);
+>> +     unsigned int i, best;
+>> +
+>> +     /* Find the highest supported limit */
+>> +     best = 0;
+>> +     for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
+>> +             if (limit >= wm831x_usb_limits[i] &&
+>> +                 wm831x_usb_limits[best] < wm831x_usb_limits[i])
+>> +                     best = i;
+>> +     }
+>> +
+>> +     dev_dbg(wm831x_power->wm831x->dev,
+>> +             "Limiting USB current to %umA", wm831x_usb_limits[best]);
+>> +
+>> +     wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
+>> +                     WM831X_USB_ILIM_MASK, best);
+>> +
+>> +     return 0;
+>> +}
+>> +
+>>  /*********************************************************************
+>>   *           Battery properties
+>>   *********************************************************************/
+>> @@ -607,6 +647,22 @@ static int wm831x_power_probe(struct platform_device *pdev)
+>>               }
+>>       }
+>>
+>> +     power->usb_phy = devm_usb_get_phy_by_phandle(&pdev->dev,
+>> +                                                  "usb-phy", 0);
+>> +     if (IS_ERR(power->usb_phy)) {
+>> +             ret = PTR_ERR(power->usb_phy);
+>> +             dev_err(&pdev->dev, "Failed to find USB phy: %d\n", ret);
+>> +             goto err_bat_irq;
+>> +     }
+>> +
+>> +     power->usb_notify.notifier_call = wm831x_usb_limit_change;
+>> +     ret = usb_register_notifier(power->usb_phy,
+>> +                                 &power->usb_notify);
+>> +     if (ret) {
+>> +             dev_err(&pdev->dev, "Failed to register notifier: %d\n", ret);
+>> +             goto err_bat_irq;
+>> +     }
+>> +
+>>       return ret;
+>>
+>>  err_bat_irq:
+>> @@ -637,6 +693,11 @@ static int wm831x_power_remove(struct platform_device *pdev)
+>>       struct wm831x *wm831x = wm831x_power->wm831x;
+>>       int irq, i;
+>>
+>> +     if (wm831x_power->usb_phy) {
+>> +             usb_unregister_notifier(wm831x_power->usb_phy,
+>> +                                     &wm831x_power->usb_notify);
+>> +     }
+>> +
+>>       for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
+>>               irq = wm831x_irq(wm831x,
+>>                                platform_get_irq_byname(pdev,
+>> --
+>> 1.7.9.5
+>>
+
+
 
 -- 
-viresh
+Baolin.wang
+Best Regards
