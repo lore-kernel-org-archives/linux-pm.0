@@ -1,141 +1,169 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v2 2/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE
- enter
-Date: Wed, 5 Jul 2017 14:04:46 +0100
-Message-ID: <20170705130446.GC2659@e110439-lin>
+Subject: Re: [PATCH v2 3/6] cpufreq: schedutil: ensure max frequency while
+ running RT/DL tasks
+Date: Wed, 5 Jul 2017 14:41:26 +0100
+Message-ID: <20170705134126.GD2659@e110439-lin>
 References: <1499189651-18797-1-git-send-email-patrick.bellasi@arm.com>
- <1499189651-18797-3-git-send-email-patrick.bellasi@arm.com>
- <20170705045012.GM3532@vireshk-i7>
+ <1499189651-18797-4-git-send-email-patrick.bellasi@arm.com>
+ <20170705060136.GO3532@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:55908 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751637AbdGENEw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 5 Jul 2017 09:04:52 -0400
+Received: from foss.arm.com ([217.140.101.70]:56396 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750975AbdGENlc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Jul 2017 09:41:32 -0400
 Content-Disposition: inline
-In-Reply-To: <20170705045012.GM3532@vireshk-i7>
+In-Reply-To: <20170705060136.GO3532@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Todd Kjos <tkjos@android.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Todd Kjos <tkjos@android.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, Brendan Jackman <brendan.jackman@arm.com>
 
-On 05-Jul 10:20, Viresh Kumar wrote:
+[+Brendan]
+
+On 05-Jul 11:31, Viresh Kumar wrote:
 > On 04-07-17, 18:34, Patrick Bellasi wrote:
-> > diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
-> > index d2be2cc..36ac8d2 100644
-> > --- a/include/linux/sched/cpufreq.h
-> > +++ b/include/linux/sched/cpufreq.h
-> > @@ -10,6 +10,7 @@
-> >  #define SCHED_CPUFREQ_RT	(1U << 0)
-> >  #define SCHED_CPUFREQ_DL	(1U << 1)
-> >  #define SCHED_CPUFREQ_IOWAIT	(1U << 2)
-> > +#define SCHED_CPUFREQ_IDLE	(1U << 3)
-> >  
-> >  #define SCHED_CPUFREQ_RT_DL	(SCHED_CPUFREQ_RT | SCHED_CPUFREQ_DL)
-> >  
 > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > index eaba6d6..004ae18 100644
+> > index 004ae18..98704d8 100644
 > > --- a/kernel/sched/cpufreq_schedutil.c
 > > +++ b/kernel/sched/cpufreq_schedutil.c
-> > @@ -304,6 +304,12 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+> > @@ -216,6 +216,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+> >  	struct cpufreq_policy *policy = sg_policy->policy;
+> >  	unsigned long util, max;
+> >  	unsigned int next_f;
+> > +	bool rt_mode;
+> >  	bool busy;
 > >  
-> >  	sg_cpu->util = util;
-> >  	sg_cpu->max = max;
-> > +
-> > +	/* CPU is entering IDLE, reset flags without triggering an update */
-> > +	if (unlikely(flags & SCHED_CPUFREQ_IDLE)) {
-> > +		sg_cpu->flags = 0;
-> > +		goto done;
-> > +	}
-> 
-> Why is it important to have the above diff at all ? For example we aren't doing
-> similar stuff in sugov_update_single() and that will go on and try to change the
-> frequency if rate_limit_us time is over since last update.
-
-The p repose here is mainly to avoid interference of IDLE CPUs on
-other CPUs in the same frequency domain, by just resetting their
-"requests".
-
-In the single case, it's completely up to the policy to decide what to
-do when we enter IDLE without risking to affect other CPUs.
-But perhaps you are right, maybe we should use the same heuristics in
-both cases. Entering idle just reset the flags and do not enforce for
-example a frequency drop.
-
-> And also why is it important to write 0 to sg_cpu->flags ? What wouldn't work if
-> we set sg_cpu->flags to SCHED_CPUFREQ_IDLE in this case ? i.e. Just the below
-> statement should be good for us.
-
-Let say flags have the RT/DL flag set when the RT task sleep, is there
-any specific reason to keep this flag up while the CPU is IDLE?
-IOW, why should we care about an information related to an even which
-is now over?
-
-The proposal of this patch is just meant to make sure that the flags,
-being a state variable, always describe the current status of the
-sugov "state machine".
-If a CPU is IDLE there are not sensible events going on and thus flags
-should better be reset.
-
-> 
-> >  	sg_cpu->flags = flags;
+> >  	/* Skip updates generated by sugov kthreads */
+> > @@ -230,7 +231,15 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
 > >  
-> >  	sugov_set_iowait_boost(sg_cpu, time, flags);
-> > @@ -318,6 +324,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
-> >  		sugov_update_commit(sg_policy, time, next_f);
-> >  	}
+> >  	busy = sugov_cpu_is_busy(sg_cpu);
 > >  
-> > +done:
-> >  	raw_spin_unlock(&sg_policy->update_lock);
-> >  }
-> >  
-> > diff --git a/kernel/sched/idle_task.c b/kernel/sched/idle_task.c
-> > index 0c00172..a844c91 100644
-> > --- a/kernel/sched/idle_task.c
-> > +++ b/kernel/sched/idle_task.c
-> > @@ -29,6 +29,10 @@ pick_next_task_idle(struct rq *rq, struct task_struct *prev, struct rq_flags *rf
-> >  	put_prev_task(rq, prev);
-> >  	update_idle_core(rq);
-> >  	schedstat_inc(rq->sched_goidle);
-> > +
-> > +	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
-> > +	cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_IDLE);
-> > +
+> > -	if (flags & SCHED_CPUFREQ_RT_DL) {
+> > +	/*
+> > +	 * While RT/DL tasks are running we do not want FAIR tasks to
+> > +	 * overvrite this CPU's flags, still we can update utilization and
+> > +	 * frequency (if required/possible) to be fair with these tasks.
+> > +	 */
+> > +	rt_mode = task_has_dl_policy(current) ||
+> > +		  task_has_rt_policy(current) ||
+> > +		  (flags & SCHED_CPUFREQ_RT_DL);
 > 
-> This looks correct.
+> We may want to create a separate inline function for above, as it is already
+> used twice in this patch.
+
+Good idea.
+
+> But I was wondering if we can get some help from the scheduler to avoid such
+> code here. I understand that we don't want to do the aggregation in the
+> scheduler to keep it clean and keep such governor specific thing here.
+
+Indeed.
+
+> But what about clearing the sched-class's flag from .pick_next_task() callback
+> when they return NULL ?
 > 
-> Can we completely avoid the utilization contribution of the CPUs which have gone
-> idle? Right now we avoid them with help of (delta_ns > TICK_NSEC). Can we
-> instead check this SCHED_CPUFREQ_IDLE flag ?
+> What about something like this instead (completely untested), with which we
+> don't need the 2/3 patch as well:
 
-I would say that the blocked utilization of an IDLE CPU is still worth
-to be considered, at least for a limited amount of time, for few main
-reasons:
+Just had a fast check but I think something like that can work.
+We had an internal discussion with Brendan (in CC now) which had a
+similar proposal.
 
-1. it represents CPU bandwidth that is likely to be required by a task
-   which can wakeup in a short while. Consider for example an 80% task
-   activated every 16ms: even if it's not running right now it's
-   likely to wakeup in the next ~3ms to run for the following ~13ms.
-   Thus, we should probably better consider that CPU utilization.
+Main counter arguments for me was:
+1. we wanna to reduce the pollution of scheduling classes code with
+   schedutil specific code, unless strictly necessary
+2. we never had a "clear bit" semantics for flags updates
 
-2. we already have policies to gratefully reduce the current OPP if
-   its utilization decrease. This means that we are interested in a
-   sort of policy which favors higher OPPs to avoid impacting
-   performance of tasks which suddenly wakeup.
- 
-3. A CPU entering IDLE is not a great source of new information
-   for OPP selection, I would not strictly bind an OPP change to this
-   event. That's also why this patch propose to clear the flags
-   without actually triggering an OPP change.
+Thus this proposal seemed to me less of a discontinuity wrt the
+current interface. However, something similar to what you propose
+below should also work. Let's collect some more feedback...
 
-Moreover, maybe the issue you are trying to solve it's more related to
-having a stale utilization for an IDLE CPUs?
-In that case we should fix the real source of the issue, which is the
-utilization of an IDLE CPU not being updated over time. But that's
-outside of the scope of this series.
 
-Cheers Patrick
+> diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
+> index d2be2ccbb372..e81a6b5591f5 100644
+> --- a/include/linux/sched/cpufreq.h
+> +++ b/include/linux/sched/cpufreq.h
+> @@ -11,6 +11,10 @@
+>  #define SCHED_CPUFREQ_DL       (1U << 1)
+>  #define SCHED_CPUFREQ_IOWAIT   (1U << 2)
+>  
+> +#define SCHED_CPUFREQ_CLEAR    (1U << 31)
+> +#define SCHED_CPUFREQ_CLEAR_RT (SCHED_CPUFREQ_CLEAR | SCHED_CPUFREQ_RT)
+> +#define SCHED_CPUFREQ_CLEAR_DL (SCHED_CPUFREQ_CLEAR | SCHED_CPUFREQ_DL)
+> +
+>  #define SCHED_CPUFREQ_RT_DL    (SCHED_CPUFREQ_RT | SCHED_CPUFREQ_DL)
+>  
+>  #ifdef CONFIG_CPU_FREQ
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 076a2e31951c..f32e15d59d62 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -218,6 +218,9 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>         unsigned int next_f;
+>         bool busy;
+>  
+> +       if (flags & SCHED_CPUFREQ_CLEAR)
+> +               return;
+
+Here we should still clear the flags, like what we do for the shared
+case... just to keep the internal status consiste with the
+notifications we have got from the scheduling classes.
+
+> +
+>         sugov_set_iowait_boost(sg_cpu, time, flags);
+>         sg_cpu->last_update = time;
+>  
+> @@ -296,7 +299,13 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>  
+>         sg_cpu->util = util;
+>         sg_cpu->max = max;
+> -       sg_cpu->flags = flags;
+> +
+> +       if (unlikely(flags & SCHED_CPUFREQ_CLEAR)) {
+> +               sg_cpu->flags &= ~(flags & ~SCHED_CPUFREQ_CLEAR);
+> +               return;
+> +       }
+> +
+> +       sg_cpu->flags |= flags;
+>  
+>         sugov_set_iowait_boost(sg_cpu, time, flags);
+>         sg_cpu->last_update = time;
+> diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
+> index a2ce59015642..441d6153d654 100644
+> --- a/kernel/sched/deadline.c
+> +++ b/kernel/sched/deadline.c
+> @@ -1203,8 +1203,10 @@ pick_next_task_dl(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
+>         if (prev->sched_class == &dl_sched_class)
+>                 update_curr_dl(rq);
+>  
+> -       if (unlikely(!dl_rq->dl_nr_running))
+> +       if (unlikely(!dl_rq->dl_nr_running)) {
+> +               cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_CLEAR_DL);
+>                 return NULL;
+> +       }
+>  
+>         put_prev_task(rq, prev);
+>  
+> diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
+> index 979b7341008a..bca9e4bb7ec4 100644
+> --- a/kernel/sched/rt.c
+> +++ b/kernel/sched/rt.c
+> @@ -1556,8 +1556,10 @@ pick_next_task_rt(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
+>         if (prev->sched_class == &rt_sched_class)
+>                 update_curr_rt(rq);
+>  
+> -       if (!rt_rq->rt_queued)
+> +       if (!rt_rq->rt_queued) {
+> +               cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_CLEAR_RT);
+>                 return NULL;
+> +       }
+>  
+>         put_prev_task(rq, prev);
+> 
+> -- 
+> viresh
 
 -- 
 #include <best/regards.h>
