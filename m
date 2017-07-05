@@ -1,78 +1,87 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH v3 2/2] thermal: uniphier: add UniPhier thermal driver
-Date: Wed, 5 Jul 2017 21:27:57 +0900
-Message-ID: <CAK7LNAQgPEoNDTL-Er0bKSVwmNmjyvwz2BcVSvNONFj9-6499Q@mail.gmail.com>
-References: <1499255419-31684-1-git-send-email-hayashi.kunihiko@socionext.com>
- <1499255419-31684-3-git-send-email-hayashi.kunihiko@socionext.com> <CAK7LNASfco5oj8pLDykqq_xFsx4P0qjR1CuXsbF0n-1v0PBGKg@mail.gmail.com>
+From: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+Subject: Re: [PATCH] thermal: imx: interpret fsl,tempmon-data through nvmem
+Date: Wed, 5 Jul 2017 15:33:05 +0300
+Message-ID: <1499257985.23291.7.camel@nxp.com>
+References: <d1a8ec1ef73aefe6018f6a4923bd04b3ac34a5d4.1497879110.git.leonard.crestez@nxp.com>
+         <20170704185400.GB18084@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from conssluserg-03.nifty.com ([210.131.2.82]:62783 "EHLO
-        conssluserg-03.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752044AbdGEM2C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jul 2017 08:28:02 -0400
-In-Reply-To: <CAK7LNASfco5oj8pLDykqq_xFsx4P0qjR1CuXsbF0n-1v0PBGKg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170704185400.GB18084-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Cc: rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Masami Hiramatsu <masami.hiramatsu@linaro.org>, Jassi Brar <jaswinder.singh@linaro.org>
 
-2017-07-05 21:20 GMT+09:00 Masahiro Yamada <yamada.masahiro@socionext.com>:
-> 2017-07-05 20:50 GMT+09:00 Kunihiko Hayashi <hayashi.kunihiko@socionext.com>:
->
->> +
->> +#define TMOD                           0x0928
->> +#define TMOD_MASK                      GENMASK(9, 0)
->> +
->  [ snip ]
->> +
->> +       /*
->> +        * The bit[8:0] of TMOD register represents 2's complement value
->> +        * of temperature in Celsius. Since bit8 of TMOD shows a sign bit,
->> +        * 32bit temperature value is obtained by sign extension.
->> +        */
->
->
-> Apparently, this comment does not match your code:
->
->      #define TMOD_MASK                      GENMASK(9, 0)
->
->
-> TMOD_MASK is indicating bit[9:0].
->
->
->
-> Digging into the patch history, now I understood what happened.
->
->
->
-> In v1, you described
-> #define TMOD_MASK         0x1ff
->
-> This was correct.
->
->
-> In v2, you converted it into
-> #define TMOD_MASK          GENMASK(9, 0)
->
-> This was misconversion.  It should be GENMASK(8, 0)
->
->
->
-> Anyway, TMOD_MASK is not used any more.
->
->
->> +       *out_temp = sign_extend32(temp, 8) * 1000;
->
->
-> Why magic number here?
->
->    /* MSB of the TMOD field is a sign bit */
->    *out_temp = sign_extend32(temp, TMOD_WIDTH) * 1000;
+On Tue, 2017-07-04 at 11:54 -0700, Eduardo Valentin wrote:
+> On Mon, Jun 19, 2017 at 04:40:43PM +0300, Leonard Crestez wrote:
+> > 
+> > On imx6sx accessing the ocotp memory area directly is wrong because the
+> > ocotp clock needs to be enabled first. Fix this by reinterpreting the
+> > fsl,tempmon-data phandle as a reference to a nvmem_device and doing all
+> > the read through that.
+> > 
+> > @@ -347,29 +348,39 @@ static struct thermal_zone_device_ops imx_tz_ops = {
+> >  static int imx_get_sensor_data(struct platform_device *pdev)
+> >  {
+> >  	struct imx_thermal_data *data = platform_get_drvdata(pdev);
+> > -	struct regmap *map;
+> > +	struct device_node *ocotp_np;
+> > +	struct nvmem_device *ocotp;
+> >  	int t1, n1;
+> >  	int ret;
+> >  	u32 val;
+> >  	u64 temp64;
+> >  
+> > -	map = syscon_regmap_lookup_by_phandle(pdev->dev.of_node,
+> > -					      "fsl,tempmon-data");
+> > -	if (IS_ERR(map)) {
+> > -		ret = PTR_ERR(map);
+> > -		dev_err(&pdev->dev, "failed to get sensor regmap: %d\n", ret);
+> > +	ocotp_np = of_parse_phandle(pdev->dev.of_node, "fsl,tempmon-data", 0);
+> > +	if (IS_ERR(ocotp_np)) {
+> > +		ret = PTR_ERR(ocotp_np);
+> > +		dev_err(&pdev->dev, "failed to parse fsl,tempmon-data phandle: %d\n", ret);
+> > +		return ret;
+> > +	}
+> > +	ocotp = of_nvmem_device_phandle_get(ocotp_np);
+> > +	of_node_put(ocotp_np);
+> > +	if (IS_ERR(ocotp)) {
+> > +		ret = PTR_ERR(ocotp);
+> > +		if (ret != -EPROBE_DEFER)
+> > +			dev_err(&pdev->dev, "failed to get fsl,tempmon-data nvmem device: %d\n", ret);
+> >  		return ret;
+> >  	}
+> >  
+> > @@ -404,10 +415,11 @@ static int imx_get_sensor_data(struct platform_device *pdev)
+> >  	data->c2 = n1 * data->c1 + 1000 * t1;
+> >  
+> >  	/* use OTP for thermal grade */
+> > -	ret = regmap_read(map, OCOTP_MEM0, &val);
+> > -	if (ret) {
+> > -		dev_err(&pdev->dev, "failed to read temp grade: %d\n", ret);
+> > -		return ret;
 
-No.    sign_extend32(temp, TMOD_WIDTH - 1) or
-       sign_extend32(temp, TMOD_MSB)  or whatever.
+> I see a few other occurences of regmap_read() in this driver, for
+> example, inside imx_get_temp(). Do they also get affect by the reported
+> bug? Should they be replaced with nvmem_device_read() too?
 
--- 
-Best Regards
-Masahiro Yamada
+No, most of the code uses regmap to read from the tempmon device
+itself.
+
+It is only imx_get_sensor_data which uses syscon_regmap_lookup to fetch
+the regmap for another device (ocotp) in order to read calibration data
+and thermal grading at probe time. Perhaps this function should be
+renamed to something like imx_tempmon_init_calib.
+
+The problem is that on newer imx SOCs reading directly from OCOTP like
+that doesn't work if the ocotp clock is not enabled.
+
+--
+Regards,
+Leonard
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
