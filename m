@@ -1,94 +1,261 @@
-From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Subject: [PATCH v3 1/2] dt-bindings: thermal: add binding documentation for UniPhier thermal monitor
-Date: Wed,  5 Jul 2017 20:50:18 +0900
-Message-ID: <1499255419-31684-2-git-send-email-hayashi.kunihiko@socionext.com>
-References: <1499255419-31684-1-git-send-email-hayashi.kunihiko@socionext.com>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v16 2/7] power: add power sequence library
+Date: Wed, 5 Jul 2017 19:54:00 +0800
+Message-ID: <20170705115400.GA17226@b29397-desktop>
+References: <1498027328-25078-1-git-send-email-peter.chen@nxp.com>
+ <1498027328-25078-3-git-send-email-peter.chen@nxp.com>
+ <1868803.ffQpiaMTN5@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1499255419-31684-1-git-send-email-hayashi.kunihiko@socionext.com>
+Content-Disposition: inline
+In-Reply-To: <1868803.ffQpiaMTN5@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, yamada.masahiro@socionext.com, masami.hiramatsu@linaro.org, jaswinder.singh@linaro.org, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Chen <peter.chen@nxp.com>, mark.rutland@arm.com, ulf.hansson@linaro.org, heiko@sntech.de, stephen.boyd@linaro.org, frank.li@nxp.com, linux-kernel@vger.kernel.org, gary.bisson@boundarydevices.com, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, dbaryshkov@gmail.com, vaibhav.hiremath@linaro.org, krzk@kernel.org, mka@chromium.org, stern@rowland.harvard.edu, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, sre@kernel.org, broonie@kernel.org, p.zabel@pe
 List-Id: linux-pm@vger.kernel.org
 
-Add devicetree binding documentation for thermal monitor implemented on
-Socionext UniPhier SoCs.
+On Wed, Jul 05, 2017 at 02:44:56AM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, June 21, 2017 02:42:03 PM Peter Chen wrote:
+> > We have an well-known problem that the device needs to do some power
+> > sequence before it can be recognized by related host, the typical
+> > example like hard-wired mmc devices and usb devices.
+> > 
+> > This power sequence is hard to be described at device tree and handled by
+> > related host driver, so we have created a common power sequence
+> > library to cover this requirement. The core code has supplied
+> > some common helpers for host driver, and individual power sequence
+> > libraries handle kinds of power sequence for devices. The pwrseq
+> > librares always need to allocate extra instance for compatible
+> > string match.
+> > 
+> > pwrseq_generic is intended for general purpose of power sequence, which
+> > handles gpios and clocks currently, and can cover other controls in
+> > future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
+> > if only one power sequence is needed, else call of_pwrseq_on_list
+> > /of_pwrseq_off_list instead (eg, USB hub driver).
+> > 
+> > For new power sequence library, it needs to add its compatible string
+> > and allocation function at pwrseq_match_table_list, then the pwrseq
+> > core will match it with DT's, and choose this library at runtime.
+> > 
+> > Signed-off-by: Peter Chen <peter.chen@nxp.com>
+> > Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+> > Tested-by Joshua Clayton <stillcompiling@gmail.com>
+> > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> > Tested-by: Matthias Kaehlcke <mka@chromium.org>
+> 
+> The executive summary here is that I'm not going to apply this patch (and the
+> following series depending on it), because in my opinion it is misguided and
+> I quite fundamentally disagree with the basic concept.
+> 
+> The code has problems too, but we first need to agree on the basics.
+> 
 
-Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Acked-by: Rob Herring <robh@kernel.org>
----
- .../bindings/thermal/uniphier-thermal.txt          | 64 ++++++++++++++++++++++
- 1 file changed, 64 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
+Thanks for valuable comments, let's agree on the concept and design
+first.
 
-diff --git a/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt b/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
-new file mode 100644
-index 0000000..686c0b4
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
-@@ -0,0 +1,64 @@
-+* UniPhier Thermal bindings
-+
-+This describes the devicetree bindings for thermal monitor supported by
-+PVT(Process, Voltage and Temperature) monitoring unit implemented on Socionext
-+UniPhier SoCs.
-+
-+Required properties:
-+- compatible :
-+  - "socionext,uniphier-pxs2-thermal" : For UniPhier PXs2 SoC
-+  - "socionext,uniphier-ld20-thermal" : For UniPhier LD20 SoC
-+- interrupts : IRQ for the temperature alarm
-+- #thermal-sensor-cells : Should be 0. See ./thermal.txt for details.
-+
-+Optional properties:
-+- socionext,tmod-calibration: A pair of calibrated values referred from PVT,
-+                              in case that the values aren't set on SoC,
-+                              like a reference board.
-+
-+Example:
-+
-+	sysctrl@61840000 {
-+		compatible = "socionext,uniphier-ld20-sysctrl",
-+			     "simple-mfd", "syscon";
-+		reg = <0x61840000 0x10000>;
-+		...
-+		pvtctl: pvtctl {
-+			compatible = "socionext,uniphier-ld20-thermal";
-+			interrupts = <0 3 1>;
-+			#thermal-sensor-cells = <0>;
-+		};
-+		...
-+	};
-+
-+	thermal-zones {
-+		cpu_thermal {
-+			polling-delay-passive = <250>;	/* 250ms */
-+			polling-delay = <1000>;		/* 1000ms */
-+			thermal-sensors = <&pvtctl>;
-+
-+			trips {
-+				cpu_crit: cpu_crit {
-+					temperature = <110000>;	/* 110C */
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+				cpu_alert: cpu_alert {
-+					temperature = <100000>;	/* 100C */
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu_alert>;
-+					cooling-device = <&cpu0 (-1) (-1)>;
-+				};
-+				map1 {
-+					trip = <&cpu_alert>;
-+					cooling-device = <&cpu2 (-1) (-1)>;
-+				};
-+			};
-+		};
-+	};
+> > ---
+> >  Documentation/power/power-sequence/design.rst |  54 +++++
+> >  MAINTAINERS                                   |   9 +
+> >  drivers/power/Kconfig                         |   1 +
+> >  drivers/power/Makefile                        |   1 +
+> >  drivers/power/pwrseq/Kconfig                  |  20 ++
+> >  drivers/power/pwrseq/Makefile                 |   2 +
+> >  drivers/power/pwrseq/core.c                   | 293 ++++++++++++++++++++++++++
+> >  drivers/power/pwrseq/pwrseq_generic.c         | 210 ++++++++++++++++++
+> >  include/linux/power/pwrseq.h                  |  84 ++++++++
+> >  9 files changed, 674 insertions(+)
+> >  create mode 100644 Documentation/power/power-sequence/design.rst
+> >  create mode 100644 drivers/power/pwrseq/Kconfig
+> >  create mode 100644 drivers/power/pwrseq/Makefile
+> >  create mode 100644 drivers/power/pwrseq/core.c
+> >  create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
+> >  create mode 100644 include/linux/power/pwrseq.h
+> > 
+> > diff --git a/Documentation/power/power-sequence/design.rst b/Documentation/power/power-sequence/design.rst
+> > new file mode 100644
+> > index 0000000..554608e
+> > --- /dev/null
+> > +++ b/Documentation/power/power-sequence/design.rst
+> > @@ -0,0 +1,54 @@
+> > +====================================
+> > +Power Sequence Library
+> > +====================================
+> > +
+> > +:Date: Feb, 2017
+> > +:Author: Peter Chen <peter.chen@nxp.com>
+> > +
+> > +
+> > +Introduction
+> > +============
+> > +
+> > +We have an well-known problem that the device needs to do a power
+> > +sequence before it can be recognized by related host, the typical
+> > +examples are hard-wired mmc devices and usb devices. The host controller
+> > +can't know what kinds of this device is in its bus if the power
+> > +sequence has not done, since the related devices driver's probe calling
+> > +is determined by runtime according to eunumeration results. Besides,
+> > +the devices may have custom power sequence, so the power sequence library
+> > +which is independent with the devices is needed.
+> 
+> In other words, devices can be in different power states and there are power
+> states in which they are not accessible to software.  In order to be accessed
+> by software, they need to be put into power states in which that is actually
+> possible.
+> 
+> That has been known for over 20 years and by no means it is limited to MMC
+> or USB.
+> 
+> Moreover, power states of devices generally depend on the platform and if
+> the same IP block is used in two different platforms (or even in two different
+> SoCs for that matter), the power states of it can be defined differently in
+> each case.
+> 
+> It also is quite well known how to define a power state of a device.  There
+> usually is a list of power resources (clocks, regulators, etc) that have to
+> be "on" for the device to be in the given power state.  In addition to that,
+> it may be necessary to carry out some operations after turning those
+> power resources "on" in order to trigger the power state change (like
+> toggling a GPIO or writing to a specific register etc).
+> 
+> Now, of course, it is not generally guaranteed that devices will be in
+> software-accessible power states initially, so it is necessary to put them
+> into those power states before trying to access them.
+> 
+> Again, this isn't anything new, but it has always been about power states.
+> 
+> By defining a "power sequence" you generally define two power states for
+> the device, say "on" and "off", and a way to switch between them, but what
+> about simply treating power states as the primary concept in the first place?
+> 
+> That would be more general, because there are platforms with more than
+> two power states per device.  In those cases, the power state choice may
+> depend on additional factors, like say during system suspend it may matter
+> whether or not the device is a wakeup one (and it may not be able to
+> generate wakeup signals from certain power states).  Using a single "power
+> sequence" would not be sufficient then.
+
+I agree on the concept of "power state" for it,
+but I have several questions for above:
+
+- Can I write new code for it or I need to depend on something?
+I find there is already "power state" concept at documentation.
+Documentation/ABI/testing/sysfs-devices-power_state
+- If I can write the new code for it, except the problems I want
+to fix, are there any other use cases I need to consider?
+> 
+> > +
+> > +Design
+> > +============
+> > +
+> > +The power sequence library includes the core file and customer power
+> > +sequence library. The core file exports interfaces are called by
+> > +host controller driver for power sequence and customer power sequence
+> > +library files to register its power sequence instance to global
+> > +power sequence list. The custom power sequence library creates power
+> > +sequence instance and implement custom power sequence.
+> 
+> The above paragraph is really hard to decode.
+> 
+> There is no explanation of basic concepts at all.  What exactly do you mean by
+> "power sequence"?  What is a "power sequence instance"?  What do you mean
+> by "custom power sequence"?
+
+"power sequence" means the sequence for power on/off device
+"power sequence instance" means when carry out power on, it
+need to allocate one "power sequence" structure, and this structure
+includes all operations during power on/off sequence.
+"custom power sequence" means different devices need different
+power on sequence, eg, one may need to open regulator before
+toggle gpio, but another may need opposite sequence.
+
+> 
+> > +
+> > +Since the power sequence describes hardware design, the description is
+> > +located at board description file, eg, device tree dts file. And
+> > +a specific power sequence belongs to device, so its description
+> > +is under the device node, please refer to:
+> > +Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+> 
+> This, again, is really difficult to understand, especially the difference between
+> "the power sequence" and "a specific power sequence" is quite unclear.
+> 
+
+"a specific power sequence" for one custom power sequence
+
+> > +
+> > +Custom power sequence library allocates one power sequence instance at
+> > +bootup periods using postcore_initcall, this static allocated instance is
+> > +used to compare with device-tree (DT) node to see if this library can be
+> > +used for the node or not.
+> 
+> Same here.
+> 
+> > When the result is matched, the core API will
+> > +try to get resourses (->get, implemented at each library) for power
+> > +sequence, if all resources are got, it will try to allocate another
+> > +instance for next possible request from host driver.
+> > +
+> > +Then, the host controller driver can carry out power sequence on for this
+> > +DT node, the library will do corresponding operations, like open clocks,
+> > +toggle gpio, etc. The power sequence off routine will close and free the
+> > +resources, and is called when the parent is removed. And the power
+> > +sequence suspend and resume routine can be called at host driver's
+> > +suspend and resume routine if needed.
+> 
+> Let me try to say what I understood from this.
+> 
+> If there is a DT node with a matching "compatible" string, the initialization
+> code will try to acquire resources needed for "power sequencing" of the
+> corresponding device.  It is expected that host controller drivers will
+> then use the provided helper functions to turn the subordinate devices
+> "on" during enumeration and "off" on the (host controller) driver removal.
+> They also are expected to use the "suspend" and "resume" helpers when
+> the host controller is suspended or resumed, respectively.
+> 
+> If the above is what you intended, then it is not the right model IMO.
+> 
+> In particular, I don't see why the controller driver suspend and resume
+> should operate "power sequences" of subordinate devices directly as the
+> subordinate devices are expected to be suspended (in which case they
+> also should have been turned "off" already) when the controller is
+> suspending and the controller resume need not affect the subordinate
+> devices at all.
+
+For example, one device's clock needs to be opened before it can be
+seen by the controller, but the device's clock isn't controlled by
+controller driver, controller driver only operate its own clocks.
+So, after the controller suspends the device, it can turn off
+device's clock for power consumption, and when the controller
+resumes, it needs to turn on the device's clock before talking
+to device.
+> 
+> Moreover, it assumes that all of the platforms including the IP block driven
+> by the controller driver in question will use the "power sequences" model,
+> but what if there are more generally defined power domains on them?
+
+No, the IP block doesn't need this "power sequence", the power stuffs
+(clock, gpio, regulator) are described at firmware (eg, DT), and power
+operations are carried out during the probe, the device and driver match
+happens before power operation.
+
+But for devices on the bus (bus is controlled by controller), the match
+information (eg, product id/vendor id) is stored at device's firmware, the
+controller device needs to talk with its child first to get the match
+information before the child device's probe.
+
+> 
+> It looks like the power management should really be carried out by an
+> additional layer of code to avoid imposing platform dependencies on
+> controller drivers.
+> 
+> Further, what if there are "power sequences" for the host controllers
+> themselves?  Who's expected to operate those "power sequences" then?
+
+See above.
+
 -- 
-2.7.4
+
+Best Regards,
+Peter Chen
