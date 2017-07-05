@@ -1,99 +1,42 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [PATCH] cpufreq: speedstep: remove unnecessary static in
- speedstep_detect_chipset()
-Date: Wed, 5 Jul 2017 12:14:04 +0200
-Message-ID: <20170705101404.GA17431@isilmar-4.linta.de>
-References: <20170705030921.GA18166@embeddedgus>
- <20170705035344.GI3532@vireshk-i7>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: cpufreq and boost with amd ryzen
+Date: Wed, 05 Jul 2017 13:01:32 +0200
+Message-ID: <2081647.Fs5kDZcm2E@aspire.rjw.lan>
+References: <CAFFvMK3sFE+zBu3k9vFRTBFVig70DQK8fpvSKiTXkw1bW+zF=A@mail.gmail.com> <CAFFvMK1FuCUWjOk_hv9W+zTqWcDT86qNbybRrzx989d1gfoZKw@mail.gmail.com> <20170705041758.GJ3532@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170705035344.GI3532@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Gustavo A. R. Silva" <garsilva@embeddedor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:56065 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751755AbdGELJN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jul 2017 07:09:13 -0400
+In-Reply-To: <20170705041758.GJ3532@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sergio P <sergio.pieiga@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-Viresh, Gustavo,
+On Wednesday, July 05, 2017 09:47:58 AM Viresh Kumar wrote:
+> +Rafael,
+> 
+> On 04-07-17, 16:38, Sergio P wrote:
+> > To be honest, I am not very familiar on how to debug the kernel.
+> > 
+> > My guess would be that X86_FEATURE_CPB is not being detected correctly
+> > for Ryzen family in the CPUID registers, and it returns early from
+> > acpi_cpufreq_boost_init().  Also, CPB was a feature in earlier AMD
+> > processors, but now in the new Ryzen family, I'm not sure if it's
+> > called something else and perhaps defined in a different CPUID bit.
+> 
+> @Rafael: Do you have any idea about the new Ryzen family or how to get boost
+> working on them ?
 
-On Wed, Jul 05, 2017 at 09:23:44AM +0530, Viresh Kumar wrote:
-> + Dominic,
-> 
-> On 04-07-17, 22:09, Gustavo A. R. Silva wrote:
-> > Remove unnecessary static on local variable hostbridge.
-> > Such variable is initialized before being used,
-> > on every execution path throughout the function.
-> > The static has no benefit and, removing it reduces
-> > the code size.
-> > 
-> > This issue was detected using Coccinelle and the following semantic patch:
-> > 
-> > @bad exists@
-> > position p;
-> > identifier x;
-> > type T;
-> > @@
-> > 
-> > static T x@p;
-> > ...
-> > x = <+...x...+>
-> > 
-> > @@
-> > identifier x;
-> > expression e;
-> > type T;
-> > position p != bad.p;
-> > @@
-> > 
-> > -static
-> >  T x@p;
-> >  ... when != x
-> >      when strict
-> > ?x = e;
-> > 
-> > In the following log you can see the difference in the code size. Also,
-> > there is a significant difference in the bss segment. This log is the
-> > output of the size command, before and after the code change:
-> > 
-> > before:
-> >    text    data     bss     dec     hex filename
-> >    5084    3392     256    8732    221c drivers/cpufreq/speedstep-ich.o
-> > 
-> > after:
-> >    text    data     bss     dec     hex filename
-> >    5062    3304     192    8558    216e drivers/cpufreq/speedstep-ich.o
-> > 
-> > Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
-> > ---
-> >  drivers/cpufreq/speedstep-ich.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/speedstep-ich.c b/drivers/cpufreq/speedstep-ich.c
-> > index b86953a..0412a24 100644
-> > --- a/drivers/cpufreq/speedstep-ich.c
-> > +++ b/drivers/cpufreq/speedstep-ich.c
-> > @@ -207,7 +207,7 @@ static unsigned int speedstep_detect_chipset(void)
-> >  		 * 8100 which use a pretty old revision of the 82815
-> >  		 * host bridge. Abort on these systems.
-> >  		 */
-> > -		static struct pci_dev *hostbridge;
-> > +		struct pci_dev *hostbridge;
-> 
-> This was added way back Sep'02 by Dominic (@Dominic: I hope you are the same
-> Dominic with a different email id) and I don't think we need it to be static
-> here. Anyway, Dominic can respond on that.
-> 
-> commit 1673f3b404bd ("[PATCH] CPUfreq i386 drivers update")
-> 
-> (Note: You can find it in history kernel git repo, not the current one).
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Not from the top of my head, I need to look into the code.
 
-indeed, that's me, and the patch seems to be valid and therefore is a useful
-improvement:
-
-Acked-by: Dominik Brodowski <linux@dominikbrodowski.net>
+In any case, IIRC, the boost and cpb attributes are mutually exclusive, so you
+won't see the former if you see the latter.  I'm not sure how we decide which
+one to expose, though.
 
 Thanks,
-	Dominik
+Rafael
