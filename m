@@ -1,41 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq and boost with amd ryzen
-Date: Wed, 5 Jul 2017 09:47:58 +0530
-Message-ID: <20170705041758.GJ3532@vireshk-i7>
-References: <CAFFvMK3sFE+zBu3k9vFRTBFVig70DQK8fpvSKiTXkw1bW+zF=A@mail.gmail.com>
- <CAOh2x=k87W_i88fXn7LeaMnMJVW8Jvn-jMAxm+Cg5db6xy3bpQ@mail.gmail.com>
- <CAFFvMK1zUZhKAqFMxSWjbW7Bb-j0Odr0DjmTiC8DbqKonNL+Kg@mail.gmail.com>
- <20170704061000.GE3532@vireshk-i7>
- <CAFFvMK1FuCUWjOk_hv9W+zTqWcDT86qNbybRrzx989d1gfoZKw@mail.gmail.com>
+Subject: Re: [PATCH v2 3/3] dt-bindings: cpufreq: enhance MediaTek cpufreq
+ dt-binding document
+Date: Wed, 5 Jul 2017 09:52:12 +0530
+Message-ID: <20170705042212.GK3532@vireshk-i7>
+References: <cover.1499194061.git.sean.wang@mediatek.com>
+ <ce40386c0ae1e574d8d03354aa665bf9de6b0bbc.1499194061.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f45.google.com ([74.125.83.45]:34732 "EHLO
-        mail-pg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750767AbdGEESD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jul 2017 00:18:03 -0400
-Received: by mail-pg0-f45.google.com with SMTP id t186so118415515pgb.1
-        for <linux-pm@vger.kernel.org>; Tue, 04 Jul 2017 21:18:02 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAFFvMK1FuCUWjOk_hv9W+zTqWcDT86qNbybRrzx989d1gfoZKw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <ce40386c0ae1e574d8d03354aa665bf9de6b0bbc.1499194061.git.sean.wang@mediatek.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: sean.wang@mediatek.com
+Cc: robh+dt@kernel.org, matthias.bgg@gmail.com, mark.rutland@arm.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, jdelvare@suse.de, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sergio P <sergio.pieiga@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-+Rafael,
-
-On 04-07-17, 16:38, Sergio P wrote:
-> To be honest, I am not very familiar on how to debug the kernel.
+On 05-07-17, 02:55, sean.wang@mediatek.com wrote:
+> From: Sean Wang <sean.wang@mediatek.com>
 > 
-> My guess would be that X86_FEATURE_CPB is not being detected correctly
-> for Ryzen family in the CPUID registers, and it returns early from
-> acpi_cpufreq_boost_init().  Also, CPB was a feature in earlier AMD
-> processors, but now in the new Ryzen family, I'm not sure if it's
-> called something else and perhaps defined in a different CPUID bit.
+> Update binding document with adding operating-points-v2 as the required
+> property and the cooling level as the optional properties and adding more
+> examples guiding people how to use MediaTek cpufreq driver for MediaTek
+> SoCs.
+> 
+> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+> ---
+>  .../bindings/cpufreq/cpufreq-mediatek.txt          | 170 ++++++++++++++++++++-
+>  1 file changed, 167 insertions(+), 3 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+> index 52b457c..e919ca7 100644
+> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+> @@ -1,4 +1,5 @@
+> -Device Tree Clock bindins for CPU DVFS of Mediatek MT8173 SoC
+> +Binding for MediaTek's CPUFreq driver
+> +=====================================
+>  
+>  Required properties:
+>  - clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
+> @@ -9,6 +10,8 @@ Required properties:
+>  			  transition and not stable yet.
+>  	Please refer to Documentation/devicetree/bindings/clk/clock-bindings.txt for
+>  	generic clock consumer properties.
+> +- operating-points-v2: Pleaser refer to Documentation/devicetree/bindings/opp/opp.txt
 
-@Rafael: Do you have any idea about the new Ryzen family or how to get boost
-working on them ?
+s/Pleaser/Please
 
 -- 
 viresh
