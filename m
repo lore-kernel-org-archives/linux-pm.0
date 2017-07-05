@@ -1,7 +1,7 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [RFC PATCH v1 8/8] sched/deadline: make bandwidth enforcement scale-invariant
-Date: Wed,  5 Jul 2017 09:59:05 +0100
-Message-ID: <20170705085905.6558-9-juri.lelli@arm.com>
+Subject: [RFC PATCH v1 4/8] sched/cpufreq_schedutil: split utilization signals
+Date: Wed,  5 Jul 2017 09:59:01 +0100
+Message-ID: <20170705085905.6558-5-juri.lelli@arm.com>
 References: <20170705085905.6558-1-juri.lelli@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170705085905.6558-1-juri.lelli@arm.com>
@@ -10,14 +10,17 @@ To: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@lina
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, juri.lelli@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Apply frequency and cpu scale-invariance correction factor to bandwidth
-enforcement (similar to what we already do to fair utilization tracking).
+To be able to treat utilization signals of different scheduling classes
+in different ways (e.g., CFS signal might be stale while DEADLINE signal
+is never stale by design) we need to split sugov_cpu::util signal in two:
+util_cfs and util_dl.
 
-Each delta_exec gets scaled considering current frequency and maximum
-cpu capacity; which means that the reservation runtime parameter (that
-need to be specified profiling the task execution at max frequency on
-biggest capacity core) gets thus scaled accordingly.
+This patch does that by also changing sugov_get_util() parameter list.
+After this change, aggregation of the different signals has to be performed
+by sugov_get_util() users (so that they can decide what to do with the
+different signals).
 
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Ingo Molnar <mingo@kernel.org>
@@ -26,80 +29,94 @@ Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Luca Abeni <luca.abeni@santannapisa.it>
 Cc: Claudio Scordino <claudio@evidence.eu.com>
 ---
- kernel/sched/deadline.c | 26 ++++++++++++++++++++++----
- kernel/sched/fair.c     |  2 --
- kernel/sched/sched.h    |  2 ++
- 3 files changed, 24 insertions(+), 6 deletions(-)
+Changes from RFCv0:
 
-diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
-index 4ec82fa56b04..5bed1a2fae06 100644
---- a/kernel/sched/deadline.c
-+++ b/kernel/sched/deadline.c
-@@ -1122,7 +1122,8 @@ static void update_curr_dl(struct rq *rq)
+ - refactor aggregation of utilization in sugov_aggregate_util()
+---
+ kernel/sched/cpufreq_schedutil.c | 28 ++++++++++++++++------------
+ 1 file changed, 16 insertions(+), 12 deletions(-)
+
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index ba6227625f24..e835fa886225 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -58,7 +58,8 @@ struct sugov_cpu {
+ 	u64 last_update;
+ 
+ 	/* The fields below are only needed when sharing a policy. */
+-	unsigned long util;
++	unsigned long util_cfs;
++	unsigned long util_dl;
+ 	unsigned long max;
+ 	unsigned int flags;
+ 
+@@ -154,20 +155,24 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+ 	return cpufreq_driver_resolve_freq(policy, freq);
+ }
+ 
+-static void sugov_get_util(unsigned long *util, unsigned long *max)
++static void sugov_get_util(struct sugov_cpu *sg_cpu)
  {
- 	struct task_struct *curr = rq->curr;
- 	struct sched_dl_entity *dl_se = &curr->dl;
--	u64 delta_exec;
-+	u64 delta_exec, scaled_delta_exec;
-+	int cpu = cpu_of(rq);
+ 	struct rq *rq = this_rq();
+-	unsigned long dl_util = (rq->dl.running_bw * SCHED_CAPACITY_SCALE)
+-				>> BW_SHIFT;
  
- 	if (!dl_task(curr) || !on_dl_rq(dl_se))
- 		return;
-@@ -1156,9 +1157,26 @@ static void update_curr_dl(struct rq *rq)
- 	if (unlikely(dl_entity_is_special(dl_se)))
- 		return;
+-	*max = arch_scale_cpu_capacity(NULL, smp_processor_id());
++	sg_cpu->max = arch_scale_cpu_capacity(NULL, smp_processor_id());
++	sg_cpu->util_cfs = rq->cfs.avg.util_avg;
++	sg_cpu->util_dl = (rq->dl.running_bw * SCHED_CAPACITY_SCALE)
++			  >> BW_SHIFT;
++}
  
--	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM))
--		delta_exec = grub_reclaim(delta_exec, rq, &curr->dl);
--	dl_se->runtime -= delta_exec;
-+	/*
-+	 * For tasks that participate in GRUB, we implement GRUB-PA: the
-+	 * spare reclaimed bandwidth is used to clock down frequency.
-+	 *
-+	 * For the others, we still need to scale reservation parameters
-+	 * according to current frequency and CPU maximum capacity.
-+	 */
-+	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM)) {
-+		scaled_delta_exec = grub_reclaim(delta_exec,
-+						 rq,
-+						 &curr->dl);
-+	} else {
-+		unsigned long scale_freq = arch_scale_freq_capacity(cpu);
-+		unsigned long scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
-+
-+		scaled_delta_exec = cap_scale(delta_exec, scale_freq);
-+		scaled_delta_exec = cap_scale(scaled_delta_exec, scale_cpu);
-+	}
-+
-+	dl_se->runtime -= scaled_delta_exec;
- 
- throttle:
- 	if (dl_runtime_exceeded(dl_se) || dl_se->dl_yielded) {
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 97bd5aae285d..a6e8a4f5786f 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -2844,8 +2844,6 @@ static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
- 	return c1 + c2 + c3;
++static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
++{
+ 	/*
+ 	 * Ideally we would like to set util_dl as min/guaranteed freq and
+ 	 * util_cfs + util_dl as requested freq. However, cpufreq is not yet
+ 	 * ready for such an interface. So, we only do the latter for now.
+ 	 */
+-	*util = min(rq->cfs.avg.util_avg + dl_util, *max);
++	return min(sg_cpu->util_cfs + sg_cpu->util_dl, sg_cpu->max);
  }
  
--#define cap_scale(v, s) ((v)*(s) >> SCHED_CAPACITY_SHIFT)
--
- /*
-  * Accumulate the three separate parts of the sum; d1 the remainder
-  * of the last (incomplete) period, d2 the span of full periods and d3
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 178f4a5df2fa..688185761eaf 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -155,6 +155,8 @@ static inline int task_has_dl_policy(struct task_struct *p)
- 	return dl_policy(p->policy);
- }
+ static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
+@@ -234,7 +239,9 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 	if (flags & SCHED_CPUFREQ_RT) {
+ 		next_f = policy->cpuinfo.max_freq;
+ 	} else {
+-		sugov_get_util(&util, &max);
++		sugov_get_util(sg_cpu);
++		max = sg_cpu->max;
++		util = sugov_aggregate_util(sg_cpu);
+ 		sugov_iowait_boost(sg_cpu, &util, &max);
+ 		next_f = get_next_freq(sg_policy, util, max);
+ 		/*
+@@ -274,8 +281,8 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
+ 		if (j_sg_cpu->flags & SCHED_CPUFREQ_RT)
+ 			return policy->cpuinfo.max_freq;
  
-+#define cap_scale(v, s) ((v)*(s) >> SCHED_CAPACITY_SHIFT)
-+
- /*
-  * !! For sched_setattr_nocheck() (kernel) only !!
-  *
+-		j_util = j_sg_cpu->util;
+ 		j_max = j_sg_cpu->max;
++		j_util = sugov_aggregate_util(j_sg_cpu);
+ 		if (j_util * max > j_max * util) {
+ 			util = j_util;
+ 			max = j_max;
+@@ -292,15 +299,12 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+ {
+ 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
+ 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+-	unsigned long util, max;
+ 	unsigned int next_f;
+ 
+-	sugov_get_util(&util, &max);
+ 
+ 	raw_spin_lock(&sg_policy->update_lock);
+ 
+-	sg_cpu->util = util;
+-	sg_cpu->max = max;
++	sugov_get_util(sg_cpu);
+ 	sg_cpu->flags = flags;
+ 
+ 	sugov_set_iowait_boost(sg_cpu, time, flags);
 -- 
 2.11.0
