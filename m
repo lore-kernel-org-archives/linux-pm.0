@@ -1,7 +1,7 @@
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH 5/5] powernv:idle: Disable LOSE_FULL_CONTEXT states when stop-api fails.
-Date: Wed,  5 Jul 2017 22:08:16 +0530
-Message-ID: <1499272696-28751-6-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH 3/5] powernv:idle: Define idle init function for power8
+Date: Wed,  5 Jul 2017 22:08:14 +0530
+Message-ID: <1499272696-28751-4-git-send-email-ego@linux.vnet.ibm.com>
 References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
@@ -12,185 +12,114 @@ List-Id: linux-pm@vger.kernel.org
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Currently, we use the opal call opal_slw_set_reg() to inform the that
-the Sleep-Winkle Engine (SLW) to restore the contents of some of the
-Hypervisor state on wakeup from deep idle states that lose full
-hypervisor context (characterized by the flag
-OPAL_PM_LOSE_FULL_CONTEXT).
+In this patch we define a new function named pnv_power8_idle_init().
 
-However, the current code has a bug in that if opal_slw_set_reg()
-fails, we don't disable the use of these deep states (winkle on
-POWER8, stop4 onwards on POWER9).
+We move the following code from pnv_init_idle_states() into this newly
+defined function.
+   a) That patches out pnv_fastsleep_workaround_at_entry/exit when
+      no states with OPAL_PM_SLEEP_ENABLED_ER1 are present.
+   b) Creating a sysfs control to choose how the workaround has to be
+   applied when a OPAL_PM_SLEEP_ENABLED_ER1 state is present.
+   c) Set ppc_md.power_save to power7_idle when OPAL_PM_NAP_ENABLED is
+   present.
 
-This patch fixes this bug by ensuring that if the the sleep winkle
-engine is unable to restore the hypervisor states in
-pnv_save_sprs_for_deep_states(), then we mark as invalid the states
-which lose full context.
-
-As a side-effect, since supported_cpuidle_states in
-pnv_probe_idle_states() consists of flags of only the valid states,
-this patch will ensure that no other subsystem in the kernel can use
-the states which lose full context on stop-api failures.
+With this, all the power8 specific initializations are in one place.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/idle.c | 98 +++++++++++++++++++++++++++++++----
- 1 file changed, 87 insertions(+), 11 deletions(-)
+ arch/powerpc/platforms/powernv/idle.c | 59 ++++++++++++++++++++++++-----------
+ 1 file changed, 40 insertions(+), 19 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 254a0db8..8d07ce6 100644
+index a5990d9..c400ff9 100644
 --- a/arch/powerpc/platforms/powernv/idle.c
 +++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -217,9 +217,6 @@ static void pnv_alloc_idle_core_states(void)
- 	}
- 
- 	update_subcore_sibling_mask();
--
--	if (supported_cpuidle_states & OPAL_PM_LOSE_FULL_CONTEXT)
--		pnv_save_sprs_for_deep_states();
+@@ -564,6 +564,44 @@ static void __init pnv_power9_idle_init(void)
+ 		pnv_first_deep_stop_state);
  }
  
- u32 pnv_get_supported_cpuidle_states(void)
-@@ -518,6 +515,57 @@ static void __init pnv_power9_idle_init(void)
- 	u64 max_residency_ns = 0;
- 	int i;
- 	int dt_idle_states = pnv_idle.nr_states;
-+	bool save_sprs_for_deep_stop = false;
-+	bool disable_lose_full_context = false;
-+	u64 psscr_rl, residency_ns, psscr_val, psscr_mask;
-+	u32 flags;
 +
-+	/*
-+	 * pnv_deepest_stop_{val,mask} should be set to values
-+	 * corresponding to the deepest stop state.
-+	 */
++static void __init pnv_power8_idle_init(void)
++{
++	int i;
++	bool has_nap = false;
++	bool has_sleep_er1 = false;
++	int dt_idle_states = pnv_idle.nr_states;
++
 +	for (i = 0; i < dt_idle_states; i++) {
-+		psscr_val = pnv_idle.states[i].ctrl_reg_val;
-+		psscr_mask = pnv_idle.states[i].ctrl_reg_mask;
-+		psscr_rl = psscr_val & PSSCR_RL_MASK;
-+		flags = pnv_idle.states[i].flags;
-+		residency_ns = pnv_idle.states[i].residency_ns;
++		struct pnv_idle_state *state = &pnv_idle.states[i];
 +
-+		if (flags & OPAL_PM_LOSE_FULL_CONTEXT)
-+			save_sprs_for_deep_stop = true;
-+
-+		if (max_residency_ns < residency_ns) {
-+			max_residency_ns = residency_ns;
-+			pnv_deepest_stop_psscr_val = psscr_val;
-+			pnv_deepest_stop_psscr_mask = psscr_mask;
-+			deepest_stop_found = true;
-+		}
++		if (state->flags & OPAL_PM_NAP_ENABLED)
++			has_nap = true;
++		if (state->flags & OPAL_PM_SLEEP_ENABLED_ER1)
++			has_sleep_er1 = true;
 +	}
 +
-+	/*
-+	 * pnv_save_sprs_for_deep_states() expects
-+	 * pnv_deepest_stop_psscr_val to be initialized.
-+	 */
-+	if (save_sprs_for_deep_stop) {
-+		int rc;
-+
-+		rc = pnv_save_sprs_for_deep_states();
-+
++	if (!has_sleep_er1) {
++		patch_instruction(
++			(unsigned int *)pnv_fastsleep_workaround_at_entry,
++			PPC_INST_NOP);
++		patch_instruction(
++			(unsigned int *)pnv_fastsleep_workaround_at_exit,
++			PPC_INST_NOP);
++	} else {
 +		/*
-+		 * If the Sleep-Winkle Engine is unable to restore the
-+		 * critical SPRs on wakeup from some of the deep stop
-+		 * states that lose full context, then we mark such
-+		 * deep states as invalid and recompute the
-+		 * pnv_deepest_stop_psscr_val/mask from among the
-+		 * valid states.
++		 * OPAL_PM_SLEEP_ENABLED_ER1 is set. It indicates that
++		 * workaround is needed to use fastsleep. Provide sysfs
++		 * control to choose how this workaround has to be applied.
 +		 */
-+		if (unlikely(rc)) {
-+			pr_warn("cpuidle-powernv:Disabling full-context loss states.SLW unable to restore SPRs\n");
-+			disable_lose_full_context = true;
-+			max_residency_ns = 0;
-+			deepest_stop_found = false;
-+		}
++		device_create_file(cpu_subsys.dev_root,
++				&dev_attr_fastsleep_workaround_applyonce);
 +	}
- 
- 	/*
- 	 * Set pnv_first_deep_stop_state, pnv_deepest_stop_psscr_{val,mask},
-@@ -526,16 +574,20 @@ static void __init pnv_power9_idle_init(void)
- 	 * pnv_first_deep_stop_state should be set to the first stop
- 	 * level to cause hypervisor state loss.
- 	 *
--	 * pnv_deepest_stop_{val,mask} should be set to values corresponding to
--	 * the deepest stop state.
- 	 *
- 	 * pnv_default_stop_{val,mask} should be set to values corresponding to
- 	 * the shallowest (OPAL_PM_STOP_INST_FAST) loss-less stop state.
- 	 */
- 	pnv_first_deep_stop_state = MAX_STOP_STATE;
- 	for (i = 0; i < dt_idle_states; i++) {
--		u64 psscr_rl, residency_ns, psscr_val, psscr_mask;
--		u32 flags;
-+		flags = pnv_idle.states[i].flags;
 +
-+		if ((flags & OPAL_PM_LOSE_FULL_CONTEXT) &&
-+			disable_lose_full_context) {
-+			pnv_idle.states[i].valid = false;
-+			pr_warn("cpuidle-powernv: Disabling full-context loss state :%s\n",
-+				pnv_idle.states[i].name);
-+		}
++	if (has_nap)
++		ppc_md.power_save = power7_idle;
++}
++
+ /*
+  * Returns 0 if prop1_len == prop2_len. Else returns -1
+  */
+@@ -837,6 +875,8 @@ static int __init pnv_probe_idle_states(void)
  
+ 	if (cpu_has_feature(CPU_FTR_ARCH_300))
+ 		pnv_power9_idle_init();
++	else
++		pnv_power8_idle_init();
+ 
+ 	for (i = 0; i < dt_idle_states; i++) {
  		if (!pnv_idle.states[i].valid)
- 			continue;
-@@ -543,15 +595,14 @@ static void __init pnv_power9_idle_init(void)
- 		psscr_val = pnv_idle.states[i].ctrl_reg_val;
- 		psscr_mask = pnv_idle.states[i].ctrl_reg_mask;
- 		psscr_rl = psscr_val & PSSCR_RL_MASK;
--		flags = pnv_idle.states[i].flags;
-+
- 		residency_ns = pnv_idle.states[i].residency_ns;
+@@ -858,22 +898,6 @@ static int __init pnv_init_idle_states(void)
+ 	if (pnv_probe_idle_states())
+ 		goto out;
  
- 		if ((flags & OPAL_PM_LOSE_FULL_CONTEXT) &&
--		    (pnv_first_deep_stop_state > psscr_rl)) {
-+		    (pnv_first_deep_stop_state > psscr_rl))
- 			pnv_first_deep_stop_state = psscr_rl;
--		}
+-	if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
+-		patch_instruction(
+-			(unsigned int *)pnv_fastsleep_workaround_at_entry,
+-			PPC_INST_NOP);
+-		patch_instruction(
+-			(unsigned int *)pnv_fastsleep_workaround_at_exit,
+-			PPC_INST_NOP);
+-	} else {
+-		/*
+-		 * OPAL_PM_SLEEP_ENABLED_ER1 is set. It indicates that
+-		 * workaround is needed to use fastsleep. Provide sysfs
+-		 * control to choose how this workaround has to be applied.
+-		 */
+-		device_create_file(cpu_subsys.dev_root,
+-				&dev_attr_fastsleep_workaround_applyonce);
+-	}
  
--		if (max_residency_ns < residency_ns) {
-+		if (unlikely(max_residency_ns < residency_ns)) {
- 			max_residency_ns = residency_ns;
- 			pnv_deepest_stop_psscr_val = psscr_val;
- 			pnv_deepest_stop_psscr_mask = psscr_mask;
-@@ -593,6 +644,8 @@ static void __init pnv_power8_idle_init(void)
- 	bool has_nap = false;
- 	bool has_sleep_er1 = false;
- 	int dt_idle_states = pnv_idle.nr_states;
-+	bool disable_full_context_loss = false;
-+	bool sprs_for_deep_state_saved = false;
+ 	pnv_alloc_idle_core_states();
  
- 	for (i = 0; i < dt_idle_states; i++) {
- 		struct pnv_idle_state *state = &pnv_idle.states[i];
-@@ -601,6 +654,29 @@ static void __init pnv_power8_idle_init(void)
- 			has_nap = true;
- 		if (state->flags & OPAL_PM_SLEEP_ENABLED_ER1)
- 			has_sleep_er1 = true;
-+		if (state->flags & OPAL_PM_LOSE_FULL_CONTEXT) {
-+			int rc;
-+
-+			if (sprs_for_deep_state_saved)
-+				continue;
-+			if (disable_full_context_loss) {
-+				state->valid = false;
-+				pr_warn("cpuidle-powernv: Disabling full-context loss state :%s\n",
-+					pnv_idle.states[i].name);
-+				continue;
-+			}
-+
-+			rc = pnv_save_sprs_for_deep_states();
-+			if (likely(!rc)) {
-+				sprs_for_deep_state_saved = true;
-+			} else {
-+				pr_warn("cpuidle-powernv:Disabling full-context loss states.SLW unable to restore SPRs.\n");
-+				disable_full_context_loss = true;
-+				state->valid = false;
-+				pr_warn("cpuidle-powernv:Disabling full-context loss state:%s\n",
-+					pnv_idle.states[i].name);
-+			}
-+		}
+@@ -899,9 +923,6 @@ static int __init pnv_init_idle_states(void)
+ 		}
  	}
  
- 	if (!has_sleep_er1) {
+-	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
+-		ppc_md.power_save = power7_idle;
+-
+ out:
+ 	return 0;
+ }
 -- 
 1.9.4
