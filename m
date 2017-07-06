@@ -1,117 +1,54 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 3/5] powernv:idle: Define idle init function for power8
-Date: Fri, 7 Jul 2017 01:06:46 +1000
-Message-ID: <20170707010646.0157d251@roar.ozlabs.ibm.com>
+Subject: Re: [PATCH 4/5] powernv:idle: Move initialization of sibling pacas
+ to pnv_alloc_idle_core_states
+Date: Fri, 7 Jul 2017 01:16:09 +1000
+Message-ID: <20170707011609.76c51329@roar.ozlabs.ibm.com>
 References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
-        <1499272696-28751-4-git-send-email-ego@linux.vnet.ibm.com>
+        <1499272696-28751-5-git-send-email-ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f67.google.com ([74.125.83.67]:33686 "EHLO
-        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751861AbdGFPHB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 11:07:01 -0400
-In-Reply-To: <1499272696-28751-4-git-send-email-ego@linux.vnet.ibm.com>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:32906 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750970AbdGFPQX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 11:16:23 -0400
+In-Reply-To: <1499272696-28751-5-git-send-email-ego@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed,  5 Jul 2017 22:08:14 +0530
+On Wed,  5 Jul 2017 22:08:15 +0530
 "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
 > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> In this patch we define a new function named pnv_power8_idle_init().
+> On POWER9 DD1, in order to get around a hardware issue, we store in
+> every CPU thread's paca the paca pointers of all its siblings.
 > 
-> We move the following code from pnv_init_idle_states() into this newly
-> defined function.
->    a) That patches out pnv_fastsleep_workaround_at_entry/exit when
->       no states with OPAL_PM_SLEEP_ENABLED_ER1 are present.
->    b) Creating a sysfs control to choose how the workaround has to be
->    applied when a OPAL_PM_SLEEP_ENABLED_ER1 state is present.
->    c) Set ppc_md.power_save to power7_idle when OPAL_PM_NAP_ENABLED is
->    present.
-> 
-> With this, all the power8 specific initializations are in one place.
+> Move this code into pnv_alloc_idle_core_states() soon after the space
+> for saving the sibling pacas is allocated.
 > 
 > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/idle.c | 59 ++++++++++++++++++++++++-----------
->  1 file changed, 40 insertions(+), 19 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> index a5990d9..c400ff9 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -564,6 +564,44 @@ static void __init pnv_power9_idle_init(void)
->  		pnv_first_deep_stop_state);
->  }
->  
-> +
-> +static void __init pnv_power8_idle_init(void)
-> +{
-> +	int i;
-> +	bool has_nap = false;
-> +	bool has_sleep_er1 = false;
-> +	int dt_idle_states = pnv_idle.nr_states;
-> +
-> +	for (i = 0; i < dt_idle_states; i++) {
-> +		struct pnv_idle_state *state = &pnv_idle.states[i];
-> +
-> +		if (state->flags & OPAL_PM_NAP_ENABLED)
-> +			has_nap = true;
-> +		if (state->flags & OPAL_PM_SLEEP_ENABLED_ER1)
-> +			has_sleep_er1 = true;
-> +	}
-> +
-> +	if (!has_sleep_er1) {
-> +		patch_instruction(
-> +			(unsigned int *)pnv_fastsleep_workaround_at_entry,
-> +			PPC_INST_NOP);
-> +		patch_instruction(
-> +			(unsigned int *)pnv_fastsleep_workaround_at_exit,
-> +			PPC_INST_NOP);
-> +	} else {
-> +		/*
-> +		 * OPAL_PM_SLEEP_ENABLED_ER1 is set. It indicates that
-> +		 * workaround is needed to use fastsleep. Provide sysfs
-> +		 * control to choose how this workaround has to be applied.
-> +		 */
-> +		device_create_file(cpu_subsys.dev_root,
-> +				&dev_attr_fastsleep_workaround_applyonce);
-> +	}
-> +
-> +	if (has_nap)
-> +		ppc_md.power_save = power7_idle;
-> +}
-> +
->  /*
->   * Returns 0 if prop1_len == prop2_len. Else returns -1
->   */
-> @@ -837,6 +875,8 @@ static int __init pnv_probe_idle_states(void)
->  
->  	if (cpu_has_feature(CPU_FTR_ARCH_300))
->  		pnv_power9_idle_init();
-> +	else
-> +		pnv_power8_idle_init();
->  
->  	for (i = 0; i < dt_idle_states; i++) {
->  		if (!pnv_idle.states[i].valid)
-> @@ -858,22 +898,6 @@ static int __init pnv_init_idle_states(void)
->  	if (pnv_probe_idle_states())
->  		goto out;
->  
-> -	if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
-> -		patch_instruction(
-> -			(unsigned int *)pnv_fastsleep_workaround_at_entry,
-> -			PPC_INST_NOP);
-> -		patch_instruction(
-> -			(unsigned int *)pnv_fastsleep_workaround_at_exit,
-> -			PPC_INST_NOP);
 
-So previously this would run on POWER9 and patch out those branches.
-But POWER9 never runs that code, so no problem. Good cleanup.
+> -	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+> -		int cpu;
+> -
+> -		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
+> -		for_each_possible_cpu(cpu) {
+> -			int base_cpu = cpu_first_thread_sibling(cpu);
+> -			int idx = cpu_thread_in_core(cpu);
+> -			int i;
+> -
+
+You could move the thread_sibling_pacas allocation to here?
+
+Speaking of which... core_idle_state and thread_sibling_pacas are
+allocated with kmalloc_node... What happens if we take an SLB miss
+in the idle wakeup code on these guys? Nothing good I think. Perhaps
+we should put them into the pacas or somewhere in bolted memory.
+
+Good cleanup though.
 
 Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
