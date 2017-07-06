@@ -1,59 +1,153 @@
-From: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
-Subject: [PATCH 1/4] thermal: imx: Add nvmem-cells alternate binding for OCOTP access
-Date: Thu, 6 Jul 2017 16:20:41 +0300
-Message-ID: <1bd07f44515f05d936a3c166217e844253a85d2d.1499347157.git.leonard.crestez@nxp.com>
-References: <cover.1499347157.git.leonard.crestez@nxp.com>
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 1/5] powernv:idle: Move device-tree parsing to one
+ place.
+Date: Fri, 7 Jul 2017 00:53:40 +1000
+Message-ID: <20170707005340.003c530b@roar.ozlabs.ibm.com>
+References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
+        <1499272696-28751-2-git-send-email-ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1499347157.git.leonard.crestez-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>
-Cc: Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1499272696-28751-2-git-send-email-ego@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On newer imx SOCs accessing OCOTP directly is wrong because the ocotp
-clock needs to be enabled first. Add a binding for accessing the same
-values through the imx-ocotp nvmem driver using nvmem-cells. This is
-similar to other thermal drivers.
+On Wed,  5 Jul 2017 22:08:12 +0530
+"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
-The old binding is preserved for compatibility and because it still
-works fine on imx6qdl series chips.
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> The details of the platform idle state are exposed by the firmware to
+> the kernel via device tree.
+> 
+> In the current code, we parse the device tree twice :
+> 
+> 1) During the boot up in arch/powerpc/platforms/powernv/idle.c Here,
+> the device tree is parsed to obtain the details of the
+> supported_cpuidle_states which is used to determine the default idle
+> state (which would be used when cpuidle is absent) and the deepest
+> idle state (which would be used for cpu-hotplug).
+> 
+> 2) During the powernv cpuidle driver initializion
+> (drivers/cpuidle/cpuidle-powernv.c). Here we parse the device tree to
+> populate the cpuidle driver's states.
+> 
+> This patch moves all the device tree parsing to the platform idle
+> code. It defines data-structures for recording the details of the
+> parsed idle states. Any other kernel subsystem that is interested in
+> the idle states (eg: cpuidle-powernv driver) can just use the
+> in-kernel data structure instead of parsing the device tree all over
+> again.
+> 
+> Further, this helps to check the validity of states in one place and
+> in case of invalid states (eg : stop states whose psscr values are
+> errorenous) flag them as invalid, so that the other subsystems can be
+> prevented from using those.
+> 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-In theory this problem could be solved by adding a reference to the
-OCOTP clock instead but it is better to hide such details in a specific
-nvmem driver.
+Hi,
 
-Signed-off-by: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
----
- Documentation/devicetree/bindings/thermal/imx-thermal.txt | 7 +++++++
- 1 file changed, 7 insertions(+)
+I think the overall direction is good. A few small things.
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-index 3c67bd5..2842a05 100644
---- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-@@ -7,9 +7,16 @@ Required properties:
-   is higher than panic threshold, system will auto reboot by SRC module.
- - fsl,tempmon : phandle pointer to system controller that contains TEMPMON
-   control registers, e.g. ANATOP on imx6q.
-+
-+Properties for OCOTP access:
- - fsl,tempmon-data : phandle pointer to fuse controller that contains TEMPMON
-   calibration data, e.g. OCOTP on imx6q.  The details about calibration data
-   can be found in SoC Reference Manual.
-+Alternatively:
-+- nvmem-cells: A phandle to the calibration cells provided by ocotp.
-+- nvmem-cell-names: Should be "calib", "temp_grade".
-+
-+Direct access to OCOTP is deprecated, please use nvmem cells instead.
- 
- Optional properties:
- - clocks : thermal sensor's clock source.
--- 
-2.7.4
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> +
+> +#define PNV_IDLE_NAME_LEN     16
+> +struct pnv_idle_state {
+> +	char name[PNV_IDLE_NAME_LEN];
+> +	u32 flags;
+> +	u32 latency_ns;
+> +	u32 residency_ns;
+> +	u64 ctrl_reg_val;   /* The ctrl_reg on POWER8 would be pmicr. */
+> +	u64 ctrl_reg_mask;  /* On POWER9 it is psscr */
+> +	bool valid;
+> +};
+
+Do we use PMICR anywhere in the idle code? What about allowing for some
+machine-specific fields?
+
+    union {
+        struct { /* p9 */
+            u64 psscr_val;
+            u64 psscr_mask;
+        };
+        struct { /* p8 */
+            u64 pmicr...;
+
+
+> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> index 2abee07..b747bb5 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -58,6 +58,17 @@
+>  static u64 pnv_deepest_stop_psscr_mask;
+>  static bool deepest_stop_found;
+>  
+> +/*
+> + * Data structure that stores details of
+> + * all the platform idle states.
+> + */
+> +struct pnv_idle_states pnv_idle;
+> +
+> +struct pnv_idle_states *get_pnv_idle_states(void)
+> +{
+> +	return &pnv_idle;
+> +}
+
+I wouldn't have the wrapper function... but it's your code so it's
+up to you. One thing though is that this function you have called get_
+just to return the pointer, but it does not take a reference or
+allocate memory or initialize the structure. Other functions with the
+same prefix do such things. Can we make something more consistent?
+
+...
+
+> +/**
+> + * get_idle_prop_u32_array: Returns an array of u32 elements
+> + *			    parsed from the device tree corresponding
+> + *			    to the property provided in variable propname.
+> + *
+> + * @np: Pointer to device tree node "/ibm,opal/power-mgt"
+> + * @nr_states: Expected number of elements.
+> + * @propname : Name of the property whose values is an array of
+> + *             u32 elements
+> + *
+> + * Returns a pointer to a u32 array of size nr_states on success.
+> + * Returns NULL on failure.
+> + */
+> +static inline u32 *get_idle_prop_u32_array(struct device_node *np,
+> +					   int nr_states,
+> +					   const char *propname)
+> +{
+> +	u32 *ret_array;
+> +	int rc, count;
+> +
+> +	count = of_property_count_u32_elems(np, propname);
+> +	rc = validate_dt_prop_sizes("ibm,cpu-idle-state-flags", nr_states,
+> +				    propname, count);
+> +	if (rc)
+> +		return NULL;
+> +
+> +	ret_array = kcalloc(nr_states, sizeof(*ret_array), GFP_KERNEL);
+> +	if (!ret_array)
+> +		return NULL;
+
+So I would say for this, how about moving the allocations into the caller?
+You're still doing most of the error handling freeing there, so I would
+say it's more balanced if you do that.
+
+Also, perhaps consider dropping most of the inline keywords. Unless it's
+performance critical or does some significant optimisation due to constant
+parameters I would say avoid the keyword as a rule.
+
+[snip]
+
+There's a lot of code movement, I haven't reviewed it all carefully, but
+it looks good in general. I'll apply the patches and check the result
+in the next few days when I get a bit of time.
+
+Thanks,
+Nick
