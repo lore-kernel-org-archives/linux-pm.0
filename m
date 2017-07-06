@@ -1,153 +1,83 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PCI / PM: Fix native PME handling during system suspend/resume
-Date: Thu, 06 Jul 2017 02:32:02 +0200
-Message-ID: <3705400.FL23FbEzsj@aspire.rjw.lan>
+From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Subject: Re: [PATCH v3 2/2] thermal: uniphier: add UniPhier thermal driver
+Date: Thu, 06 Jul 2017 09:42:06 +0900
+Message-ID: <20170706094205.1DAF.4A936039@socionext.com>
+References: <CAK7LNASfco5oj8pLDykqq_xFsx4P0qjR1CuXsbF0n-1v0PBGKg@mail.gmail.com> <CAK7LNAQgPEoNDTL-Er0bKSVwmNmjyvwz2BcVSvNONFj9-6499Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50300 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752726AbdGFAjj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jul 2017 20:39:39 -0400
+Received: from mx.socionext.com ([202.248.49.38]:17464 "EHLO mx.socionext.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752479AbdGFAmI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Jul 2017 20:42:08 -0400
+In-Reply-To: <CAK7LNAQgPEoNDTL-Er0bKSVwmNmjyvwz2BcVSvNONFj9-6499Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PCI <linux-pci@vger.kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Sadashiva Rao Pv <sadashiva.rao.pv@intel.com>, Naresh Solanki <naresh.solanki@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Masami Hiramatsu <masami.hiramatsu@linaro.org>, Jassi Brar <jaswinder.singh@linaro.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, 5 Jul 2017 21:27:57 +0900 <yamada.masahiro@socionext.com> wrote:
 
-Commit 76cde7e49590 (PCI / PM: Make PCIe PME interrupts wake up from
-suspend-to-idle) went too far with preventing pcie_pme_work_fn() from
-clearing the root port's PME Status and re-enabling the PME interrupt
-which should be done for PMEs to work correctly after system resume.
+> 2017-07-05 21:20 GMT+09:00 Masahiro Yamada <yamada.masahiro@socionext.com>:
+> > 2017-07-05 20:50 GMT+09:00 Kunihiko Hayashi <hayashi.kunihiko@socionext.com>:
+> >
+> >> +
+> >> +#define TMOD                           0x0928
+> >> +#define TMOD_MASK                      GENMASK(9, 0)
+> >> +
+> >  [ snip ]
+> >> +
+> >> +       /*
+> >> +        * The bit[8:0] of TMOD register represents 2's complement value
+> >> +        * of temperature in Celsius. Since bit8 of TMOD shows a sign bit,
+> >> +        * 32bit temperature value is obtained by sign extension.
+> >> +        */
+> >
+> >
+> > Apparently, this comment does not match your code:
+> >
+> >      #define TMOD_MASK                      GENMASK(9, 0)
+> >
+> >
+> > TMOD_MASK is indicating bit[9:0].
+> >
+> >
+> >
+> > Digging into the patch history, now I understood what happened.
+> >
+> >
+> >
+> > In v1, you described
+> > #define TMOD_MASK         0x1ff
+> >
+> > This was correct.
+> >
+> >
+> > In v2, you converted it into
+> > #define TMOD_MASK          GENMASK(9, 0)
+> >
+> > This was misconversion.  It should be GENMASK(8, 0)
+> >
+> >
+> >
+> > Anyway, TMOD_MASK is not used any more.
 
-The failing scenario is as follows:
+That's true.
+TMOD_MASK in v2/v3 is wrong, and not used no longer.
 
- 1. pcie_pme_suspend() finds that the PME IRQ should be designated
-    for system wakeup, so it calls enable_irq_wake() and then sets
-    data->suspend_level to PME_SUSPEND_WAKEUP.
+> >> +       *out_temp = sign_extend32(temp, 8) * 1000;
+> >
+> >
+> > Why magic number here?
+> >
+> >    /* MSB of the TMOD field is a sign bit */
+> >    *out_temp = sign_extend32(temp, TMOD_WIDTH) * 1000;
+> 
+> No.    sign_extend32(temp, TMOD_WIDTH - 1) or
+>        sign_extend32(temp, TMOD_MSB)  or whatever.
 
- 2. PME interrupt happens at this point.
+I see. I'll replace with the macro.
 
- 3. pcie_pme_irq() runs, disables the PME interrupt and queues up
-    the execution of pcie_pme_work_fn().
-
- 4. pcie_pme_work_fn() runs before pcie_pme_resume() and breaks out
-    of the loop right away, because data->suspend_level is not 
-    PME_SUSPEND_NONE, and it doesn't re-enable the PME interrupt
-    for the same reason.
-
- 5. pcie_pme_resume() runs and simply calls disable_irq_wake()
-    without re-enabling the PME interrupt (because data->suspend_level
-    is not PME_SUSPEND_NONE), so the PME interrupt remains disabled
-    and the PME Status remains set.
-
-To fix this notice that there is no reason why pcie_pme_work_fn()
-should behave in a special way during system resume if the PME
-interrupt is not disabled by pcie_pme_suspend() and partially revert
-commit 76cde7e49590 and restore the previous (and correct) behavior
-of pcie_pme_work_fn().
-
-Fixes: 76cde7e49590 (PCI / PM: Make PCIe PME interrupts wake up from suspend-to-idle)
-Reported-by: Naresh Solanki <naresh.solanki@intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/pci/pcie/pme.c |   35 +++++++++++++----------------------
- 1 file changed, 13 insertions(+), 22 deletions(-)
-
-Index: linux-pm/drivers/pci/pcie/pme.c
-===================================================================
---- linux-pm.orig/drivers/pci/pcie/pme.c
-+++ linux-pm/drivers/pci/pcie/pme.c
-@@ -40,17 +40,11 @@ static int __init pcie_pme_setup(char *s
- }
- __setup("pcie_pme=", pcie_pme_setup);
- 
--enum pme_suspend_level {
--	PME_SUSPEND_NONE = 0,
--	PME_SUSPEND_WAKEUP,
--	PME_SUSPEND_NOIRQ,
--};
--
- struct pcie_pme_service_data {
- 	spinlock_t lock;
- 	struct pcie_device *srv;
- 	struct work_struct work;
--	enum pme_suspend_level suspend_level;
-+	bool noirq; /* If set, keep the PME interrupt disabled. */
- };
- 
- /**
-@@ -228,7 +222,7 @@ static void pcie_pme_work_fn(struct work
- 	spin_lock_irq(&data->lock);
- 
- 	for (;;) {
--		if (data->suspend_level != PME_SUSPEND_NONE)
-+		if (data->noirq)
- 			break;
- 
- 		pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
-@@ -255,7 +249,7 @@ static void pcie_pme_work_fn(struct work
- 		spin_lock_irq(&data->lock);
- 	}
- 
--	if (data->suspend_level == PME_SUSPEND_NONE)
-+	if (!data->noirq)
- 		pcie_pme_interrupt_enable(port, true);
- 
- 	spin_unlock_irq(&data->lock);
-@@ -378,7 +372,7 @@ static int pcie_pme_suspend(struct pcie_
- {
- 	struct pcie_pme_service_data *data = get_service_data(srv);
- 	struct pci_dev *port = srv->port;
--	bool wakeup, wake_irq_enabled = false;
-+	bool wakeup;
- 	int ret;
- 
- 	if (device_may_wakeup(&port->dev)) {
-@@ -388,19 +382,16 @@ static int pcie_pme_suspend(struct pcie_
- 		wakeup = pcie_pme_check_wakeup(port->subordinate);
- 		up_read(&pci_bus_sem);
- 	}
--	spin_lock_irq(&data->lock);
- 	if (wakeup) {
- 		ret = enable_irq_wake(srv->irq);
--		if (ret == 0) {
--			data->suspend_level = PME_SUSPEND_WAKEUP;
--			wake_irq_enabled = true;
--		}
--	}
--	if (!wake_irq_enabled) {
--		pcie_pme_interrupt_enable(port, false);
--		pcie_clear_root_pme_status(port);
--		data->suspend_level = PME_SUSPEND_NOIRQ;
-+		if (!ret)
-+			return 0;
- 	}
-+
-+	spin_lock_irq(&data->lock);
-+	pcie_pme_interrupt_enable(port, false);
-+	pcie_clear_root_pme_status(port);
-+	data->noirq = true;
- 	spin_unlock_irq(&data->lock);
- 
- 	synchronize_irq(srv->irq);
-@@ -417,15 +408,15 @@ static int pcie_pme_resume(struct pcie_d
- 	struct pcie_pme_service_data *data = get_service_data(srv);
- 
- 	spin_lock_irq(&data->lock);
--	if (data->suspend_level == PME_SUSPEND_NOIRQ) {
-+	if (data->noirq) {
- 		struct pci_dev *port = srv->port;
- 
- 		pcie_clear_root_pme_status(port);
- 		pcie_pme_interrupt_enable(port, true);
-+		data->noirq = false;
- 	} else {
- 		disable_irq_wake(srv->irq);
- 	}
--	data->suspend_level = PME_SUSPEND_NONE;
- 	spin_unlock_irq(&data->lock);
- 
- 	return 0;
+Best Regards,
+Kunihiko Hayashi
