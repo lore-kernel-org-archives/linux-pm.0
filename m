@@ -1,67 +1,93 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: schedutil: Fix sugov_start versus sugov_update_shared race
-Date: Thu, 06 Jul 2017 22:48:55 +0200
-Message-ID: <9317902.eOnA0Raa4s@aspire.rjw.lan>
-References: <1499363600-10732-1-git-send-email-markivx@codeaurora.org>
+Subject: Re: [RFC PATCH v1 0/8] SCHED_DEADLINE freq/cpu invariance and OPP selection
+Date: Thu, 06 Jul 2017 23:08:12 +0200
+Message-ID: <2630896.M7AEhLILWO@aspire.rjw.lan>
+References: <20170705085905.6558-1-juri.lelli@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54230 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:44235 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751873AbdGFU4g (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 16:56:36 -0400
-In-Reply-To: <1499363600-10732-1-git-send-email-markivx@codeaurora.org>
+        by vger.kernel.org with ESMTP id S1751899AbdGFVPt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 17:15:49 -0400
+In-Reply-To: <20170705085905.6558-1-juri.lelli@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vikram Mulukutla <markivx@codeaurora.org>
-Cc: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org, juri.lelli@arm.com, skannan@codeaurora.org, linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: peterz@infradead.org, mingo@redhat.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com
 
-On Thursday, July 06, 2017 10:53:20 AM Vikram Mulukutla wrote:
-> With a shared policy in place, when one of the CPUs in the policy is
-> hotplugged out and then brought back online, sugov_stop and
-> sugov_start are called in order.
+On Wednesday, July 05, 2017 09:58:57 AM Juri Lelli wrote:
+> Hi,
 > 
-> sugov_stop removes utilization hooks for each CPU in the policy and
-> does nothing else in the for_each_cpu loop. sugov_start on the other
-> hand iterates through the CPUs in the policy and re-initializes the
-> per-cpu structure _and_ adds the utilization hook. This implies that
-> the scheduler is allowed to invoke a CPU's utilization update hook
-> when the rest of the per-cpu structures have yet to be re-inited.
+> v1 of the RFC set implementing frequency/cpu invariance and OPP selection for
+> SCHED_DEADLINE [1]. The set is based on tip/sched/core as of today
+> (72298e5c92c5), which now already includes Luca's "CPU reclaiming for
+> SCHED_DEADLINE".
 > 
-> Apart from some strange values in tracepoints this doesn't cause a
-> problem, but if we do end up accessing a pointer from the per-cpu
-> sugov_cpu structure somewhere in the sugov_update_shared path,
-> we will likely see crashes since the memset for another CPU in the
-> policy is free to race with sugov_update_shared from the CPU that is
-> ready to go. So let's fix this now to first init all per-cpu
-> structures, and then add the per-cpu utilization update hooks all at
-> once.
+> Thanks a lot for reviewing RFCv0!
 > 
-> Signed-off-by: Vikram Mulukutla <markivx@codeaurora.org>
+> Patches high level description:
+> 
+>  o [01-02]/08 add the necessary links to start accounting DEADLINE contribution
+>               to OPP selection 
+>  o 03/08      it's a temporary solution to make possible (on ARM) to change
+>               frequency for DEADLINE tasks (that would possibly delay the SCHED_FIFO
+>               worker kthread); proper solution would be to be able to issue frequency
+>               transition from an atomic ctx
+>  o [04-05]/08 it's a schedutil change that copes with the fact that DEADLINE
+>               doesn't require periodic OPP selection triggering point
+>  o [06-07]/08 make arch_scale_{freq,cpu}_capacity() function available on !CONFIG_SMP
+>               configurations too
+>  o 08/08      implements frequency/cpu invariance for tasks' reservation
+>               parameters; which basically means that we implement GRUB-PA [2]
+> 
+> Changes w.r.t. RFCv0:
+> 
+>  - rebase on tip/sched/core
+>  - make use of BW_SHIFT for calculations (Peter)
+>  - added a comment about guaranteed/requested frequency (Peter)
+>  - use a high bit for sched_flags SCHED_FLAG_SPECIAL hack; don't expose it to
+>    userspace and add comments (Peter)
+>  - refactor aggregation of utilization from scheduling classes
+> 
+> Please have a look. Feedback and comments are, as usual, more than welcome.
+> 
+> In case you would like to test this out:
+> 
+>  git://linux-arm.org/linux-jl.git upstream/deadline/freq-rfc-v1
+> 
+> Best,
+> 
+> - Juri
+> 
+> 
+> Juri Lelli (8):
+>   sched/cpufreq_schedutil: make use of DEADLINE utilization signal
+>   sched/deadline: move cpu frequency selection triggering points
+>   sched/cpufreq_schedutil: make worker kthread be SCHED_DEADLINE
+>   sched/cpufreq_schedutil: split utilization signals
+>   sched/cpufreq_schedutil: always consider all CPUs when deciding next
+>     freq
+>   sched/sched.h: remove sd arch_scale_freq_capacity parameter
+>   sched/sched.h: move arch_scale_{freq,cpu}_capacity outside CONFIG_SMP
+>   sched/deadline: make bandwidth enforcement scale-invariant
+> 
+>  include/linux/sched.h            |  1 +
+>  include/linux/sched/cpufreq.h    |  2 --
+>  include/linux/sched/topology.h   | 12 +++----
+>  kernel/sched/core.c              | 15 ++++++--
+>  kernel/sched/cpufreq_schedutil.c | 77 ++++++++++++++++++++++++++--------------
+>  kernel/sched/deadline.c          | 46 ++++++++++++++++++++----
+>  kernel/sched/fair.c              |  4 +--
+>  kernel/sched/sched.h             | 51 +++++++++++++++++++-------
+>  8 files changed, 149 insertions(+), 59 deletions(-)
 
-OK
+The schedutil changes in this series look OK to me, so please feel free to add
 
-Any objections anyone?
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> ---
->  kernel/sched/cpufreq_schedutil.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 076a2e3..29a3970 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -610,6 +610,11 @@ static int sugov_start(struct cpufreq_policy *policy)
->  		sg_cpu->sg_policy = sg_policy;
->  		sg_cpu->flags = SCHED_CPUFREQ_RT;
->  		sg_cpu->iowait_boost_max = policy->cpuinfo.max_freq;
-> +	}
-> +
-> +	for_each_cpu(cpu, policy->cpus) {
-> +		struct sugov_cpu *sg_cpu = &per_cpu(sugov_cpu, cpu);
-> +
->  		cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util,
->  					     policy_is_shared(policy) ?
->  							sugov_update_shared :
-> 
+to these patches.
+
+Thanks,
+Rafael
