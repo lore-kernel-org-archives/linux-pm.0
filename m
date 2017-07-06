@@ -1,99 +1,55 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 03/10] drivers base/arch_topology: frequency-invariant
- load-tracking support
-Date: Thu, 6 Jul 2017 16:15:15 +0530
-Message-ID: <20170706104515.GD13048@vireshk-i7>
+Subject: Re: [PATCH v2 05/10] arm: wire frequency-invariant accounting
+ support up to the task scheduler
+Date: Thu, 6 Jul 2017 16:16:58 +0530
+Message-ID: <20170706104658.GE13048@vireshk-i7>
 References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
- <20170706094948.8779-4-dietmar.eggemann@arm.com>
+ <20170706094948.8779-6-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170706094948.8779-4-dietmar.eggemann@arm.com>
+In-Reply-To: <20170706094948.8779-6-dietmar.eggemann@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
 On 06-07-17, 10:49, Dietmar Eggemann wrote:
-> Implements an arch-specific frequency-scaling function
-> topology_get_freq_scale() which provides the following frequency
-> scaling factor:
+> Commit dfbca41f3479 ("sched: Optimize freq invariant accounting")
+> changed the wiring which now has to be done by associating
+> arch_scale_freq_capacity with the actual implementation provided
+> by the architecture.
 > 
->   current_freq(cpu) << SCHED_CAPACITY_SHIFT / max_supported_freq(cpu)
+> Define arch_scale_freq_capacity to use the arch_topology "driver"
+> function topology_get_freq_scale() for the task scheduler's
+> frequency-invariant accounting instead of the default
+> arch_scale_freq_capacity() in kernel/sched/sched.h.
 > 
-> One possible consumer of this is the Per-Entity Load Tracking (PELT)
-> mechanism of the task scheduler.
-> 
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Russell King <linux@arm.linux.org.uk>
 > Cc: Juri Lelli <juri.lelli@arm.com>
 > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
+> Tested-by: Juri Lelli <juri.lelli@arm.com>
+> Reviewed-by: Juri Lelli <juri.lelli@arm.com>
 > ---
->  drivers/base/arch_topology.c  | 20 ++++++++++++++++++++
->  include/linux/arch_topology.h |  7 +++++++
->  2 files changed, 27 insertions(+)
+>  arch/arm/include/asm/topology.h | 3 +++
+>  1 file changed, 3 insertions(+)
 > 
-> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-> index f4832c662762..63fb3f945d21 100644
-> --- a/drivers/base/arch_topology.c
-> +++ b/drivers/base/arch_topology.c
-> @@ -22,6 +22,26 @@
->  #include <linux/string.h>
->  #include <linux/sched/topology.h>
+> diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
+> index ca05d1b90411..57aebfa03e24 100644
+> --- a/arch/arm/include/asm/topology.h
+> +++ b/arch/arm/include/asm/topology.h
+> @@ -29,6 +29,9 @@ const struct cpumask *cpu_coregroup_mask(int cpu);
+>  /* Subscribe for input data for frequency-invariant load-tracking */
+>  #define arch_set_freq_scale topology_set_freq_scale
 >  
-> +static DEFINE_PER_CPU(unsigned long, freq_scale) = SCHED_CAPACITY_SCALE;
+> +/* Replace task scheduler's default frequency-invariant accounting */
+> +#define arch_scale_freq_capacity topology_get_freq_scale
 > +
-> +unsigned long topology_get_freq_scale(struct sched_domain *sd, int cpu)
-> +{
-> +	return per_cpu(freq_scale, cpu);
-> +}
-> +
-> +void topology_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
-> +			     unsigned long max_freq)
-> +{
-> +	unsigned long scale;
-> +	int i;
-> +
-> +	scale = (cur_freq << SCHED_CAPACITY_SHIFT) / max_freq;
-> +
-> +	for_each_cpu(i, cpus)
-> +		per_cpu(freq_scale, i) = scale;
-> +}
-> +
-> +
->  static DEFINE_MUTEX(cpu_scale_mutex);
->  static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
+>  #else
 >  
-> diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
-> index 9af3c174c03a..168104d2d2cf 100644
-> --- a/include/linux/arch_topology.h
-> +++ b/include/linux/arch_topology.h
-> @@ -4,6 +4,8 @@
->  #ifndef _LINUX_ARCH_TOPOLOGY_H_
->  #define _LINUX_ARCH_TOPOLOGY_H_
->  
-> +#include <linux/cpumask.h>
-> +
-
-You don't need a full include here, instead following will work pretty well.
-
-struct cpumask;
-
->  void topology_normalize_cpu_scale(void);
->  
->  struct device_node;
-> @@ -14,4 +16,9 @@ unsigned long topology_get_cpu_scale(struct sched_domain *sd, int cpu);
->  
->  void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
->  
-> +unsigned long topology_get_freq_scale(struct sched_domain *sd, int cpu);
-> +
-> +void topology_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
-> +			     unsigned long max_freq);
-> +
->  #endif /* _LINUX_ARCH_TOPOLOGY_H_ */
-
-Apart from that:
+>  static inline void init_cpu_topology(void) { }
 
 Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 
