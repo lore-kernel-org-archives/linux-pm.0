@@ -1,7 +1,7 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v2 09/10] arm64: wire cpu-invariant accounting support up to the task scheduler
-Date: Thu,  6 Jul 2017 10:49:47 +0100
-Message-ID: <20170706094948.8779-10-dietmar.eggemann@arm.com>
+Subject: [PATCH v2 07/10] arm64: wire cpufreq input data for frequency-invariant accounting up to the arch
+Date: Thu,  6 Jul 2017 10:49:45 +0100
+Message-ID: <20170706094948.8779-8-dietmar.eggemann@arm.com>
 References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170706094948.8779-1-dietmar.eggemann@arm.com>
@@ -10,41 +10,45 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-Commit 8cd5601c5060 ("sched/fair: Convert arch_scale_cpu_capacity() from
-weak function to #define") changed the wiring which now has to be done
-by associating arch_scale_cpu_capacity with the actual implementation
-provided by the architecture.
-
-Define arch_scale_cpu_capacity to use the arch_topology "driver"
-function topology_get_cpu_scale() for the task scheduler's cpu-invariant
-accounting instead of the default arch_scale_cpu_capacity() in
-kernel/sched/sched.h.
+Define arch_set_freq_scale to be the arch_topology "driver" function
+topology_set_freq_scale() to let FIE work correctly.
 
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will.deacon@arm.com>
 Cc: Juri Lelli <juri.lelli@arm.com>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
-Tested-by: Juri Lelli <juri.lelli@arm.com>
-Reviewed-by: Juri Lelli <juri.lelli@arm.com>
 ---
- arch/arm64/include/asm/topology.h | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/arm64/include/asm/topology.h | 5 +++++
+ arch/arm64/kernel/topology.c      | 1 -
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
-index 4fd598b432e6..0dc81860cc0d 100644
+index 8b57339823e9..d9cbb289e295 100644
 --- a/arch/arm64/include/asm/topology.h
 +++ b/arch/arm64/include/asm/topology.h
-@@ -40,6 +40,9 @@ int pcibus_to_node(struct pci_bus *bus);
- /* Replace task scheduler's default frequency-invariant accounting */
- #define arch_scale_freq_capacity topology_get_freq_scale
+@@ -32,6 +32,11 @@ int pcibus_to_node(struct pci_bus *bus);
  
-+/* Replace task scheduler's default cpu-invariant accounting */
-+#define arch_scale_cpu_capacity topology_get_cpu_scale
+ #endif /* CONFIG_NUMA */
+ 
++#include <linux/arch_topology.h>
++
++/* Subscribe for input data for frequency-invariant load-tracking */
++#define arch_set_freq_scale topology_set_freq_scale
 +
  #include <asm-generic/topology.h>
  
  #endif /* _ASM_ARM_TOPOLOGY_H */
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index 79244c75eaec..6cbb6315e493 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -11,7 +11,6 @@
+  * for more details.
+  */
+ 
+-#include <linux/arch_topology.h>
+ #include <linux/cpu.h>
+ #include <linux/cpumask.h>
+ #include <linux/init.h>
 -- 
 2.11.0
