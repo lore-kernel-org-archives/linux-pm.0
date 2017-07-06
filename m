@@ -1,54 +1,36 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 4/5] powernv:idle: Move initialization of sibling pacas
- to pnv_alloc_idle_core_states
-Date: Fri, 7 Jul 2017 01:16:09 +1000
-Message-ID: <20170707011609.76c51329@roar.ozlabs.ibm.com>
-References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
-        <1499272696-28751-5-git-send-email-ego@linux.vnet.ibm.com>
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Subject: Re: [PATCH 0/2] ARM: add missing includes to header files
+Date: Thu, 6 Jul 2017 16:16:07 +0100
+Message-ID: <20170706151607.GC23750@n2100.armlinux.org.uk>
+References: <20170704132542.27644-1-johan@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:32906 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750970AbdGFPQX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 11:16:23 -0400
-In-Reply-To: <1499272696-28751-5-git-send-email-ego@linux.vnet.ibm.com>
+Received: from pandora.armlinux.org.uk ([78.32.30.218]:45010 "EHLO
+        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751653AbdGFPQZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 11:16:25 -0400
+Content-Disposition: inline
+In-Reply-To: <20170704132542.27644-1-johan@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Johan Hovold <johan@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dave Gerlach <d-gerlach@ti.com>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Wed,  5 Jul 2017 22:08:15 +0530
-"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
-
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Tue, Jul 04, 2017 at 03:25:40PM +0200, Johan Hovold wrote:
+> Add two missing include directives to two header files to avoid
+> compile breakage when the required symbols have not already been
+> defined.
 > 
-> On POWER9 DD1, in order to get around a hardware issue, we store in
-> every CPU thread's paca the paca pointers of all its siblings.
+> The missing SCU include broke compilation of the (not-yet-merged)
+> suspend support for am335x when !CONFIG_HAVE_ARM_SCU for example:
 > 
-> Move this code into pnv_alloc_idle_core_states() soon after the space
-> for saving the sibling pacas is allocated.
-> 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> 	https://lkml.kernel.org/r/20170704131441.GH27842@localhost
 
-> -	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-> -		int cpu;
-> -
-> -		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
-> -		for_each_possible_cpu(cpu) {
-> -			int base_cpu = cpu_first_thread_sibling(cpu);
-> -			int idx = cpu_thread_in_core(cpu);
-> -			int i;
-> -
+These look reasonable, please send them to the patch system for merging
+after this merge window, thanks.
 
-You could move the thread_sibling_pacas allocation to here?
-
-Speaking of which... core_idle_state and thread_sibling_pacas are
-allocated with kmalloc_node... What happens if we take an SLB miss
-in the idle wakeup code on these guys? Nothing good I think. Perhaps
-we should put them into the pacas or somewhere in bolted memory.
-
-Good cleanup though.
-
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
