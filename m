@@ -1,78 +1,73 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFC 1/2] PM / suspend: Add platform_suspend_target_state()
-Date: Thu, 6 Jul 2017 05:17:50 +0200
-Message-ID: <20170706031750.GA12954@xo-6d-61-c0.localdomain>
+Date: Thu, 6 Jul 2017 05:18:19 +0200
+Message-ID: <20170706031819.GD12954@xo-6d-61-c0.localdomain>
 References: <20170622085102.mpk7vxodpgxtrlfd@piout.net>
+ <2497538.J9F6XFeBfd@aspire.rjw.lan>
+ <20170715062838.GA20741@amd>
  <5864280.u6UQBsuXnA@aspire.rjw.lan>
  <20170715164626.GA1373@amd>
- <1529148.KHlxNOSRLV@aspire.rjw.lan>
+ <1a5ef0ae-16f3-5a61-ae4e-083664cb30c0@gmail.com>
+ <20170715183358.4bnhshokalyulswz@piout.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33561 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750934AbdGPHdg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Jul 2017 03:33:36 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1529148.KHlxNOSRLV@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170715183358.4bnhshokalyulswz@piout.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Florian Fainelli <f.fainelli@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Florian Fainelli <f.fainelli@gmail.com>, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On Sun 2017-07-16 01:29:57, Rafael J. Wysocki wrote:
-> On Saturday, July 15, 2017 06:46:26 PM Pavel Machek wrote:
-> > Hi!
-> > 
-> > > > > I had an idea of using an enum type encompassing all of the power states
-> > > > > defined for various platforms and serving both as a registry (to ensure the
-> > > > > uniqueness of the values assigned to the states) and a common ground
-> > > > > between platforms and drivers.
-> > > > > 
-> > > > > Something like:
-> > > > > 
-> > > > > enum platform_target_state {
-> > > > > 	PLATFORM_STATE_UNKNOWN = -1,
-> > > > > 	PLATFORM_STATE_WORKING = 0,
-> > > > > 	PLATFORM_STATE_ACPI_S1,
-> > > > > 	PLATFORM_STATE_ACPI_S2,
-> > > > > 	PLATFORM_STATE_ACPI_S3,
-> > > > > 	PLATFORM_STATE_MY_BOARD_1_GATE_CLOCKS,
-> > > > > 	PLATFORM_STATE_MY_BOARD_1_GATE_POWER,
-> > > > > 	PLATFORM_STATE_ANOTHER_BOARD_DO_CRAZY_STUFF,
-> > > > > 	...
-> > > > > };
-> > > > > 
-> > > > > and define ->target_state to return a value of this type.
-> > > > > 
-> > > > > Then, if a driver sees one of these and recognizes that value, it should
-> > > > > know exactly what to do.
-> > > > 
-> > > > Remind me why this is good idea?
+On Sat 2017-07-15 20:33:58, Alexandre Belloni wrote:
+> On 15/07/2017 at 10:20:27 -0700, Florian Fainelli wrote:
+> > > We already have
 > > > 
-> > > Because there are drivers that need to do specific things during
-> > > suspend on a specific board when it goes into a specific state as a
-> > > whole.
+> > > struct regulator_state {
+> > >        int uV; /* suspend voltage */
+> > >        unsigned int mode; /* suspend regulator operating mode */
+> > >        int enabled; /* is regulator enabled in this suspend state */
+> > >        int disabled; /* is the regulator disabled in this suspend state */
+> > > };
+> > > 
+> > >  * struct regulation_constraints - regulator operating constraints.
+> > >   * @state_disk: State for regulator when system is suspended in disk
+> > >   * mode.
+> > >   * @state_mem: State for regulator when system is suspended in mem
+> > >   * mode.
+> > >   * @state_standby: State for regulator when system is suspended in
+> > >   * standby
+> > >   *                 mode.
+> > >    
+> > > . So it seems that maybe we should tell the drivers if we are entering
+> > > "state_mem" or "state_standby" (something I may have opposed, sorry),
+> > > then the driver can get neccessary information from regulator
+> > > framework.
 > > 
-> > We have seen driver that cares about voltage to his device being
-> > lost. That's reasonable.
+> > OK, so what would be the mechanism to tell these drivers about the
+> > system wide suspend state they are entering if it is not via
+> > platform_suspend_target_state()?
 > > 
-> > Inquiring what the platform target state is... is not.
+> > Keep in mind that regulators might be one aspect of what could be
+> > causing the platform to behave specifically in one suspend state vs.
+> > another, but there could be pieces of HW within the SoC that can't be
+> > described with power domains, voltage islands etc. that would still have
+> > inherent suspend states properties (like memory retention, pin/pad
+> > controls etc. etc). We still need some mechanism, possibly centralized
+> > 
 > 
-> So why exactly isn't it reasonable?
-> 
-> Please use technical arguments.  Saying that something is wrong without
-> explaining the problem you see with it isn't particulatly useful in technical
-> discussions.
+> I concur, the regulator stuff is one aspect of one of our suspend state
+> (cutting VDDcore). But we have another state where the main clock (going
+> to the IPs) is going from a few hundred MHz to 32kHz. This is currently
+> handled by calling at91_suspend_entering_slow_clock(). I think it is
+> important to take that into account so we can remove this hack from the
+> kernel.
 
-Deep in your heart, you should know that having enum listing all the platforms linux
-runs on is a very bad idea.
+Cure should not be worse then the disease... and it is in this case.
 
-Anyway, there are better solutions, regulator framework already knows if given rail
-will be powered off or not, and their driver already knows if they are going
-suspend/standby. They just need to use existing interfaces.
+For clocks, take a look at clock framework, perhaps it already has "clock_will_be_suspended"
+as regulator framework had. If not, implement it.
 
-										Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Same with memory retention, pin/pad controls.
+
+									Pavel
