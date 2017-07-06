@@ -1,52 +1,69 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 5/5] powernv:idle: Disable LOSE_FULL_CONTEXT states when
- stop-api fails.
-Date: Fri, 7 Jul 2017 01:29:16 +1000
-Message-ID: <20170707012916.215ed32a@roar.ozlabs.ibm.com>
-References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
-        <1499272696-28751-6-git-send-email-ego@linux.vnet.ibm.com>
+From: Michael Heinemann <posted@heine.so>
+Subject: sbs-battery: Reading CHARGE in uAh
+Date: Thu, 06 Jul 2017 17:23:02 +0200
+Message-ID: <d760d0a1b38fbda966caaefc63677a56@heine.so>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1499272696-28751-6-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.stresser.de ([88.198.198.115]:56658 "EHLO mail.stresser.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750970AbdGFPcM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 6 Jul 2017 11:32:12 -0400
+Received: from localhost (localhost.localdomain [127.0.0.1])
+        by mail.stresser.de (Postfix) with ESMTP id 2F1664380064
+        for <linux-pm@vger.kernel.org>; Thu,  6 Jul 2017 17:23:05 +0200 (CEST)
+Received: from _ (frachter.stresser.de [46.4.84.91])
+        (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.stresser.de (Postfix) with ESMTPSA id 38FCD4380063
+        for <linux-pm@vger.kernel.org>; Thu,  6 Jul 2017 17:23:03 +0200 (CEST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Wed,  5 Jul 2017 22:08:16 +0530
-"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> 
-> Currently, we use the opal call opal_slw_set_reg() to inform the that
-> the Sleep-Winkle Engine (SLW) to restore the contents of some of the
-> Hypervisor state on wakeup from deep idle states that lose full
-> hypervisor context (characterized by the flag
-> OPAL_PM_LOSE_FULL_CONTEXT).
-> 
-> However, the current code has a bug in that if opal_slw_set_reg()
-> fails, we don't disable the use of these deep states (winkle on
-> POWER8, stop4 onwards on POWER9).
-> 
-> This patch fixes this bug by ensuring that if the the sleep winkle
-> engine is unable to restore the hypervisor states in
-> pnv_save_sprs_for_deep_states(), then we mark as invalid the states
-> which lose full context.
-> 
-> As a side-effect, since supported_cpuidle_states in
-> pnv_probe_idle_states() consists of flags of only the valid states,
-> this patch will ensure that no other subsystem in the kernel can use
-> the states which lose full context on stop-api failures.
 
-Looks good. Is there something minimal we can do for stable here?
+Hi,
 
-Aside question, do we need to restore LPCR at all with the SLW engine?
-It gets set up again when by the idle wakeup code.
+I got an INSPIRED ENERGY NH2057 Battery which is compliant to SBS 
+Specification Version 1.1.
 
-And does POWER9 really need MSR and PSSCR restored by SLW? (going a bit
-off topic here, I'm just curious)
+The Battery is generally working but I noticed that the values I get 
+from sysfs for the CHARGE values
+are identical to the values I get as ENERGY and they are in uWh. 
+According to the power_supply_class
+documentation CHARGE should be in uAh and ENERGY in uWh.
 
-Thanks,
-Nick
+So I took a look into the drivers/power/supply/sbs-battery.c and noticed 
+a possible bug in the code
+when switching from BATTERY_MODE_WATTS to BATTERY_MODE_AMPS:
+
+The configuration bit, according to the SBS Spec, is bit 15 of the 
+BatteryMode Register.
+
+These two modes are reflected in the code as:
+
+enum sbs_battery_mode {
+	BATTERY_MODE_AMPS,
+	BATTERY_MODE_WATTS
+};
+
+When I look into the 'sbs_set_battery_mode' function I don't see any 
+point where these mode bits are
+shifted to bit 15. When I debug I only see the register being changed 
+from 0x8000 to 0x8001 and back.
+
+So I'm a bit confused, is this actually working for somebody? I see in 
+the 'for-next' branch [1] that
+there is currently work done to add a mutex to the mode switch. So at 
+least it seems to be working for
+some people. But I don't see why. Am I missing something?
+
+
+Regards,
+Michael
+
+[1] 
+https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/log/drivers/power/supply/sbs-battery.c?h=for-next
