@@ -1,83 +1,137 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
-Date: Thu, 6 Jul 2017 08:03:52 +0100
-Message-ID: <20170706070352.xdecvsnremwqed72@dell>
-References: <20170521220212.1404-1-wsa@the-dreams.de>
- <20170521220212.1404-4-wsa@the-dreams.de>
- <20170706064453.GH16144@ulmo.fritz.box>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <rtc-linux+bncBDA7X7F2WUEBBXGB67FAKGQEIDFRN5Q-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <20170706064453.GH16144-m5CkvRiFyV9wFLYp8hBm2A@public.gmane.org>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Wi
+From: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
+Subject: [PATCH] Fix header-name to read full state name and adjust column width
+Date: Thu,  6 Jul 2017 12:44:24 +0530
+Message-ID: <1499325264-15521-1-git-send-email-s1seetee@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:51133 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752610AbdGFHOf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 03:14:35 -0400
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id v667DcMc066460
+        for <linux-pm@vger.kernel.org>; Thu, 6 Jul 2017 03:14:34 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2bh38m5jnn-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Thu, 06 Jul 2017 03:14:34 -0400
+Received: from localhost
+        by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <s1seetee@linux.vnet.ibm.com>;
+        Thu, 6 Jul 2017 17:14:32 +1000
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, trenn@suse.com
+Cc: s1seetee@linux.vnet.ibm.com
 
-On Thu, 06 Jul 2017, Thierry Reding wrote:
+---Steps to Reproduce---
 
-> On Mon, May 22, 2017 at 12:02:10AM +0200, Wolfram Sang wrote:
-> > include/linux/i2c is not for client devices. Move the header file to a
-> > more appropriate location.
-> >=20
-> > Signed-off-by: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-> > ---
-> >  arch/arm/mach-omap2/common.h            | 2 +-
-> >  arch/arm/mach-omap2/omap_twl.c          | 2 +-
-> >  drivers/gpio/gpio-twl4030.c             | 2 +-
-> >  drivers/iio/adc/twl4030-madc.c          | 2 +-
-> >  drivers/iio/adc/twl6030-gpadc.c         | 2 +-
-> >  drivers/input/keyboard/twl4030_keypad.c | 2 +-
-> >  drivers/input/misc/twl4030-pwrbutton.c  | 2 +-
-> >  drivers/input/misc/twl4030-vibra.c      | 2 +-
-> >  drivers/mfd/twl-core.c                  | 6 +++---
-> >  drivers/mfd/twl4030-audio.c             | 2 +-
-> >  drivers/mfd/twl4030-irq.c               | 2 +-
-> >  drivers/mfd/twl4030-power.c             | 2 +-
-> >  drivers/mfd/twl6030-irq.c               | 2 +-
-> >  drivers/phy/phy-twl4030-usb.c           | 2 +-
-> >  drivers/power/supply/twl4030_charger.c  | 2 +-
-> >  drivers/pwm/pwm-twl-led.c               | 2 +-
-> >  drivers/pwm/pwm-twl.c                   | 2 +-
-> >  drivers/regulator/twl-regulator.c       | 2 +-
-> >  drivers/regulator/twl6030-regulator.c   | 2 +-
-> >  drivers/rtc/rtc-twl.c                   | 2 +-
-> >  drivers/usb/phy/phy-twl6030-usb.c       | 2 +-
-> >  drivers/video/backlight/pandora_bl.c    | 2 +-
-> >  drivers/watchdog/twl4030_wdt.c          | 2 +-
-> >  include/linux/{i2c =3D> mfd}/twl.h        | 0
-> >  sound/soc/codecs/twl4030.c              | 2 +-
-> >  25 files changed, 26 insertions(+), 26 deletions(-)
-> >  rename include/linux/{i2c =3D> mfd}/twl.h (100%)
->=20
-> I didn't see this get applied yet, so just in case anyone was waiting
-> for me (this is trivial, so I don't think there's a need):
+1.Execute the cpupower monitor command to fetch all the Idle_Stats values.
 
-You're not the last. :)
+root:~# cpupower monitor
+              |Idle_Stats
+PKG |CORE|CPU | snoo | stop | stop
+   0|   8|   0|  0.00|  0.00|  2.79
+   0|   8|   1|  0.00|  0.00| 70.68
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+User interpret it as 2 columns for stop Idle_stats.
 
---=20
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
----=20
-You received this message because you are subscribed to the Google Groups "=
-rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+root:/sys/devices/system/cpu/cpu8/cpuidle# cat */name
+snooze
+stop0_lite
+stop1_lite
+
+cpupower monitor now shows full state name and adjust colomn width.
+
+root:~/linux/tools/power/cpupower# cpupower monitor
+              |Idle_Stats
+PKG |CORE|CPU |snooze|stop0_lite|stop1_lite
+   0|   8|   0|  0.00|      0.00|     99.83
+   0|   8|   1|  0.00|      0.00|     43.82
+   0|   8|   2|  0.00|      0.00|     102.1
+   0|   8|   3|  0.00|      0.00|     96.56
+
+tested on x86 as well.
+
+Signed-off-by: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
+---
+ .../cpupower/utils/idle_monitor/cpupower-monitor.c | 25 ++++++++++++++--------
+ .../cpupower/utils/idle_monitor/cpupower-monitor.h |  2 +-
+ 2 files changed, 17 insertions(+), 10 deletions(-)
+
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+index 05f953f..5e708d5 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
++++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+@@ -88,7 +88,7 @@ void print_header(int topology_depth)
+ 	int state, need_len;
+ 	cstate_t s;
+ 	char buf[128] = "";
+-	int percent_width = 4;
++	unsigned int percent_width = 6;
+ 
+ 	fill_string_with_spaces(buf, topology_depth * 5 - 1);
+ 	printf("%s|", buf);
+@@ -116,17 +116,18 @@ void print_header(int topology_depth)
+ 	for (mon = 0; mon < avail_monitors; mon++) {
+ 		if (mon != 0)
+ 			printf("|| ");
+-		else
+-			printf(" ");
+ 		for (state = 0; state < monitors[mon]->hw_states_num; state++) {
+ 			if (state != 0)
+-				printf(" | ");
++				printf("|");
+ 			s = monitors[mon]->hw_states[state];
+ 			sprintf(buf, "%s", s.name);
+-			fill_string_with_spaces(buf, percent_width);
++			if (strlen(s.name) > percent_width)
++				fill_string_with_spaces(buf, strlen(s.name));
++			else
++				fill_string_with_spaces(buf, percent_width);
++
+ 			printf("%s", buf);
+-		}
+-		printf(" ");
++			}
+ 	}
+ 	printf("\n");
+ }
+@@ -139,7 +140,9 @@ void print_results(int topology_depth, int cpu)
+ 	double percent;
+ 	unsigned long long result;
+ 	cstate_t s;
+-
++	char buf[128] = "";
++	unsigned int percent_width = 6;
++	unsigned int width;
+ 	/* Be careful CPUs may got resorted for pkg value do not just use cpu */
+ 	if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
+ 		return;
+@@ -163,7 +166,11 @@ void print_results(int topology_depth, int cpu)
+ 				printf("|");
+ 
+ 			s = monitors[mon]->hw_states[state];
+-
++			if (strlen(s.name) > percent_width) {
++				width = strlen(s.name) - percent_width;
++				fill_string_with_spaces(buf, width);
++				printf("%s", buf);
++			}
+ 			if (s.get_count_percent) {
+ 				ret = s.get_count_percent(s.id, &percent,
+ 						  cpu_top.core_info[cpu].cpu);
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+index 9e43f33..c9179c6 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
++++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+@@ -15,7 +15,7 @@
+ 
+ #define MONITORS_MAX 20
+ #define MONITOR_NAME_LEN 20
+-#define CSTATE_NAME_LEN 5
++#define CSTATE_NAME_LEN 16
+ #define CSTATE_DESC_LEN 60
+ 
+ int cpu_count;
+-- 
+1.8.3.1
