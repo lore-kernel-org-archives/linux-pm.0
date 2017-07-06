@@ -1,73 +1,58 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC 1/2] PM / suspend: Add platform_suspend_target_state()
-Date: Thu, 6 Jul 2017 05:18:19 +0200
-Message-ID: <20170706031819.GD12954@xo-6d-61-c0.localdomain>
-References: <20170622085102.mpk7vxodpgxtrlfd@piout.net>
- <2497538.J9F6XFeBfd@aspire.rjw.lan>
- <20170715062838.GA20741@amd>
- <5864280.u6UQBsuXnA@aspire.rjw.lan>
- <20170715164626.GA1373@amd>
- <1a5ef0ae-16f3-5a61-ae4e-083664cb30c0@gmail.com>
- <20170715183358.4bnhshokalyulswz@piout.net>
+Subject: Re: [PATCH 1/2] PM / suspend: Add platform_suspend_target_state()
+Date: Thu, 6 Jul 2017 05:18:31 +0200
+Message-ID: <20170706031831.GE12954@xo-6d-61-c0.localdomain>
+References: <20170623010837.11199-1-f.fainelli@gmail.com>
+ <20170716023610.4658-1-f.fainelli@gmail.com>
+ <20170716023610.4658-2-f.fainelli@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170715183358.4bnhshokalyulswz@piout.net>
+In-Reply-To: <20170716023610.4658-2-f.fainelli@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Florian Fainelli <f.fainelli@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2017-07-15 20:33:58, Alexandre Belloni wrote:
-> On 15/07/2017 at 10:20:27 -0700, Florian Fainelli wrote:
-> > > We already have
-> > > 
-> > > struct regulator_state {
-> > >        int uV; /* suspend voltage */
-> > >        unsigned int mode; /* suspend regulator operating mode */
-> > >        int enabled; /* is regulator enabled in this suspend state */
-> > >        int disabled; /* is the regulator disabled in this suspend state */
-> > > };
-> > > 
-> > >  * struct regulation_constraints - regulator operating constraints.
-> > >   * @state_disk: State for regulator when system is suspended in disk
-> > >   * mode.
-> > >   * @state_mem: State for regulator when system is suspended in mem
-> > >   * mode.
-> > >   * @state_standby: State for regulator when system is suspended in
-> > >   * standby
-> > >   *                 mode.
-> > >    
-> > > . So it seems that maybe we should tell the drivers if we are entering
-> > > "state_mem" or "state_standby" (something I may have opposed, sorry),
-> > > then the driver can get neccessary information from regulator
-> > > framework.
-> > 
-> > OK, so what would be the mechanism to tell these drivers about the
-> > system wide suspend state they are entering if it is not via
-> > platform_suspend_target_state()?
-> > 
-> > Keep in mind that regulators might be one aspect of what could be
-> > causing the platform to behave specifically in one suspend state vs.
-> > another, but there could be pieces of HW within the SoC that can't be
-> > described with power domains, voltage islands etc. that would still have
-> > inherent suspend states properties (like memory retention, pin/pad
-> > controls etc. etc). We still need some mechanism, possibly centralized
-> > 
+Hi!
+
+> Although this callback is optional and documented as such, it requires
+> a platform_suspend_ops::begin callback to be implemented in order to
+> provide an accurate suspend/resume state within the driver that
+> implements this platform_suspend_ops.
 > 
-> I concur, the regulator stuff is one aspect of one of our suspend state
-> (cutting VDDcore). But we have another state where the main clock (going
-> to the IPs) is going from a few hundred MHz to 32kHz. This is currently
-> handled by calling at91_suspend_entering_slow_clock(). I think it is
-> important to take that into account so we can remove this hack from the
-> kernel.
+> An enumeration: platform_target_state is defined which currently defines
+> the standard ACPI_S[1-4] states and can be extended with platform
+> specific suspend states.
+> 
+> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+> ---
+>  include/linux/suspend.h | 25 +++++++++++++++++++++++++
+>  kernel/power/suspend.c  | 15 +++++++++++++++
+>  2 files changed, 40 insertions(+)
+> 
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index 0b1cf32edfd7..6e6cc0778816 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -50,6 +50,16 @@ enum suspend_stat_step {
+>  	SUSPEND_RESUME
+>  };
+>  
+> +enum platform_target_state {
+> +	PLATFORM_STATE_UNKNOWN = -1,
+> +	PLATFORM_STATE_WORKING = 0,
+> +	PLATFORM_STATE_ACPI_S1,
+> +	PLATFORM_STATE_ACPI_S2,
+> +	PLATFORM_STATE_ACPI_S3,
+> +	PLATFORM_STATE_ACPI_S4,
+> +	/* Add platform specific states here */
+> +};
+> +
 
-Cure should not be worse then the disease... and it is in this case.
+As I tried to explain in the email thread, having list with all the possible platform
+states is no-go. We have about 1000 platforms supported...
 
-For clocks, take a look at clock framework, perhaps it already has "clock_will_be_suspended"
-as regulator framework had. If not, implement it.
-
-Same with memory retention, pin/pad controls.
-
+NAK.
 									Pavel
