@@ -1,79 +1,59 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH 3/4] ARM: dts: imx6sx: Use nvmem-cells for tempmon
-Date: Thu, 6 Jul 2017 16:20:43 +0300
-Message-ID: <6dc9bb756daf75bb26648b06b204872f71b3a548.1499347157.git.leonard.crestez@nxp.com>
+From: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+Subject: [PATCH 1/4] thermal: imx: Add nvmem-cells alternate binding for OCOTP access
+Date: Thu, 6 Jul 2017 16:20:41 +0300
+Message-ID: <1bd07f44515f05d936a3c166217e844253a85d2d.1499347157.git.leonard.crestez@nxp.com>
 References: <cover.1499347157.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-co1nam03on0057.outbound.protection.outlook.com ([104.47.40.57]:8768
-        "EHLO NAM03-CO1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1752694AbdGFNVG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 6 Jul 2017 09:21:06 -0400
-In-Reply-To: <cover.1499347157.git.leonard.crestez@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1499347157.git.leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>
+Cc: Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>, Dong Aisheng <aisheng.dong@nxp.com>, Bai Ping <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On imx6sx accessing OCOTP directly is wrong because the ocotp clock
-needs to be enabled first. Use the nvmem-cells binding instead.
+On newer imx SOCs accessing OCOTP directly is wrong because the ocotp
+clock needs to be enabled first. Add a binding for accessing the same
+values through the imx-ocotp nvmem driver using nvmem-cells. This is
+similar to other thermal drivers.
 
-This requirement does not apply to older imx6qdl chips because there the
-ocotp access clock (clk_ipg_s) is always enabled.
+The old binding is preserved for compatibility and because it still
+works fine on imx6qdl series chips.
 
-This is visible by comparing the "System Clocks, Gating, and Override"
-tables (OCOTP rows) in the 6DQ and 6SX manuals:
-http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6SXRM.pdf
-http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6DQRM.pdf
+In theory this problem could be solved by adding a reference to the
+OCOTP clock instead but it is better to hide such details in a specific
+nvmem driver.
 
-This happens to work right now because the ocotp clock might be enabled
-for some other reason. In particular the it might be enabled from the
-bootloader and it only gets disabled late during boot in
-clk_disable_unused, after imx-thermal has completed probing.
-
-If imx-thermal is compiled as a module then the system can hang on
-probe.
-
-Reported-by: Lothar Waßmann <LW@KARO-electronics.de>
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Signed-off-by: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
 ---
- arch/arm/boot/dts/imx6sx.dtsi | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ Documentation/devicetree/bindings/thermal/imx-thermal.txt | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/arm/boot/dts/imx6sx.dtsi b/arch/arm/boot/dts/imx6sx.dtsi
-index f16b9df..5cfee85 100644
---- a/arch/arm/boot/dts/imx6sx.dtsi
-+++ b/arch/arm/boot/dts/imx6sx.dtsi
-@@ -675,7 +675,8 @@
- 				compatible = "fsl,imx6sx-tempmon", "fsl,imx6q-tempmon";
- 				interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
- 				fsl,tempmon = <&anatop>;
--				fsl,tempmon-data = <&ocotp>;
-+				nvmem-cells = <&tempmon_calib>, <&tempmon_temp_grade>;
-+				nvmem-cell-names = "calib", "temp_grade";
- 				clocks = <&clks IMX6SX_CLK_PLL3_USB_OTG>;
- 			};
+diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+index 3c67bd5..2842a05 100644
+--- a/Documentation/devicetree/bindings/thermal/imx-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+@@ -7,9 +7,16 @@ Required properties:
+   is higher than panic threshold, system will auto reboot by SRC module.
+ - fsl,tempmon : phandle pointer to system controller that contains TEMPMON
+   control registers, e.g. ANATOP on imx6q.
++
++Properties for OCOTP access:
+ - fsl,tempmon-data : phandle pointer to fuse controller that contains TEMPMON
+   calibration data, e.g. OCOTP on imx6q.  The details about calibration data
+   can be found in SoC Reference Manual.
++Alternatively:
++- nvmem-cells: A phandle to the calibration cells provided by ocotp.
++- nvmem-cell-names: Should be "calib", "temp_grade".
++
++Direct access to OCOTP is deprecated, please use nvmem cells instead.
  
-@@ -993,9 +994,17 @@
- 			};
- 
- 			ocotp: ocotp@021bc000 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
- 				compatible = "fsl,imx6sx-ocotp", "syscon";
- 				reg = <0x021bc000 0x4000>;
- 				clocks = <&clks IMX6SX_CLK_OCOTP>;
-+				tempmon_calib: calib {
-+					reg = <56 4>;
-+				};
-+				tempmon_temp_grade: temp_grade {
-+					reg = <32 4>;
-+				};
- 			};
- 
- 			sai1: sai@021d4000 {
+ Optional properties:
+ - clocks : thermal sensor's clock source.
 -- 
 2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
