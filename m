@@ -1,7 +1,7 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v2 01/10] drivers base/arch_topology: free cpumask cpus_to_visit
-Date: Thu,  6 Jul 2017 10:49:39 +0100
-Message-ID: <20170706094948.8779-2-dietmar.eggemann@arm.com>
+Subject: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant load-tracking support
+Date: Thu,  6 Jul 2017 10:49:40 +0100
+Message-ID: <20170706094948.8779-3-dietmar.eggemann@arm.com>
 References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170706094948.8779-1-dietmar.eggemann@arm.com>
@@ -10,56 +10,82 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-Free cpumask cpus_to_visit in case registering
-init_cpu_capacity_notifier has failed or the parsing of the cpu
-capacity-dmips-mhz property is done. The cpumask cpus_to_visit is
-only used inside the notifier call init_cpu_capacity_callback.
+A frequency-invariant load-tracking solution based on cpufreq transition
+notifier will not work for future fast frequency switching policies.
+That is why a different solution is presented with this patch.
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Juri Lelli <juri.lelli@arm.com>
-Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
+Let cpufreq call the function arch_set_freq_scale() to pass the current
+frequency, the max supported frequency and the cpumask of the related
+cpus to a consumer (an arch) which defines arch_set_freq_scale().
+
+The consumer has to associate arch_set_freq_scale with the name of its
+own implementation foo_set_freq_scale() to overwrite the empty standard
+definition in drivers/cpufreq/cpufreq.c.
+An arch could do this in one of its arch-specific header files
+(e.g. arch/$ARCH/include/asm/topology.h) which gets included in
+drivers/cpufreq/cpufreq.c.
+
+In case arch_set_freq_scale() is not defined (and because of the
+pr_debug() drivers/cpufreq/cpufreq.c is not compiled with -DDEBUG) the
+function cpufreq_set_freq_scale() gets compiled out.
+
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
-Tested-by: Juri Lelli <juri.lelli@arm.com>
-Reviewed-by: Juri Lelli <juri.lelli@arm.com>
 ---
- drivers/base/arch_topology.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index d1c33a85059e..f4832c662762 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -206,6 +206,8 @@ static struct notifier_block init_cpu_capacity_notifier = {
- 
- static int __init register_cpufreq_notifier(void)
- {
-+	int ret;
-+
- 	/*
- 	 * on ACPI-based systems we need to use the default cpu capacity
- 	 * until we have the necessary code to parse the cpu capacity, so
-@@ -221,13 +223,19 @@ static int __init register_cpufreq_notifier(void)
- 
- 	cpumask_copy(cpus_to_visit, cpu_possible_mask);
- 
--	return cpufreq_register_notifier(&init_cpu_capacity_notifier,
--					 CPUFREQ_POLICY_NOTIFIER);
-+	ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
-+					CPUFREQ_POLICY_NOTIFIER);
-+
-+	if (ret)
-+		free_cpumask_var(cpus_to_visit);
-+
-+	return ret;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 9bf97a366029..a04c5886a5ce 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -347,6 +347,28 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+ 	}
  }
- core_initcall(register_cpufreq_notifier);
  
- static void parsing_done_workfn(struct work_struct *work)
- {
-+	free_cpumask_var(cpus_to_visit);
- 	cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
- 					 CPUFREQ_POLICY_NOTIFIER);
++/*********************************************************************
++ *           FREQUENCY INVARIANT CPU CAPACITY SUPPORT                *
++ *********************************************************************/
++
++#ifndef arch_set_freq_scale
++static void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
++				unsigned long max_freq)
++{}
++#endif
++
++static void cpufreq_set_freq_scale(struct cpufreq_policy *policy,
++				   struct cpufreq_freqs *freqs)
++{
++	unsigned long cur_freq = freqs ? freqs->new : policy->cur;
++	unsigned long max_freq = policy->cpuinfo.max_freq;
++
++	pr_debug("cpus %*pbl cur/cur max freq %lu/%lu kHz\n",
++		 cpumask_pr_args(policy->related_cpus), cur_freq, max_freq);
++
++	arch_set_freq_scale(policy->related_cpus, cur_freq, max_freq);
++}
++
+ /**
+  * cpufreq_notify_transition - call notifier chain and adjust_jiffies
+  * on frequency transition.
+@@ -405,6 +427,8 @@ void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
+ 
+ 	spin_unlock(&policy->transition_lock);
+ 
++	cpufreq_set_freq_scale(policy, freqs);
++
+ 	cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
  }
+ EXPORT_SYMBOL_GPL(cpufreq_freq_transition_begin);
+@@ -2203,6 +2227,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+ 			CPUFREQ_NOTIFY, new_policy);
+ 
++	cpufreq_set_freq_scale(new_policy, NULL);
++
+ 	policy->min = new_policy->min;
+ 	policy->max = new_policy->max;
+ 
 -- 
 2.11.0
