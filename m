@@ -1,36 +1,58 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH v1 0/8] SCHED_DEADLINE freq/cpu invariance and OPP
- selection
-Date: Thu, 6 Jul 2017 18:15:12 +0200
-Message-ID: <20170706161511.c7mf633xkez6d6sj@hirez.programming.kicks-ass.net>
-References: <20170705085905.6558-1-juri.lelli@arm.com>
- <20170706115715.6154d823@gandalf.local.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Vikram Mulukutla <markivx@codeaurora.org>
+Subject: [PATCH] cpufreq: schedutil: Fix sugov_start versus sugov_update_shared race
+Date: Thu,  6 Jul 2017 10:53:20 -0700
+Message-ID: <1499363600-10732-1-git-send-email-markivx@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:52893 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751797AbdGFQP0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 12:15:26 -0400
-Content-Disposition: inline
-In-Reply-To: <20170706115715.6154d823@gandalf.local.home>
+Received: from smtp.codeaurora.org ([198.145.29.96]:60046 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751765AbdGFRyq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 13:54:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com
+To: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org
+Cc: juri.lelli@arm.com, skannan@codeaurora.org, linux-pm@vger.kernel.org, Vikram Mulukutla <markivx@codeaurora.org>
 
-On Thu, Jul 06, 2017 at 11:57:15AM -0400, Steven Rostedt wrote:
-> On Wed,  5 Jul 2017 09:58:57 +0100
-> Juri Lelli <juri.lelli@arm.com> wrote:
-> 
-> > Hi,
-> > 
-> > v1 of the RFC set implementing frequency/cpu invariance and OPP selection for
-> 
-> It would be nice if you specify what "OPP" stands for. A quick google
-> search shows "Other Peoples Privates", which isn't the type of
-> selection I would be looking for.
+With a shared policy in place, when one of the CPUs in the policy is
+hotplugged out and then brought back online, sugov_stop and
+sugov_start are called in order.
 
-Its ARM speak for P-state. It stands for OPerating Point or something
-like that. But yes, I too always play the Naughty by Nature song in my
-head when I read that.
+sugov_stop removes utilization hooks for each CPU in the policy and
+does nothing else in the for_each_cpu loop. sugov_start on the other
+hand iterates through the CPUs in the policy and re-initializes the
+per-cpu structure _and_ adds the utilization hook. This implies that
+the scheduler is allowed to invoke a CPU's utilization update hook
+when the rest of the per-cpu structures have yet to be re-inited.
+
+Apart from some strange values in tracepoints this doesn't cause a
+problem, but if we do end up accessing a pointer from the per-cpu
+sugov_cpu structure somewhere in the sugov_update_shared path,
+we will likely see crashes since the memset for another CPU in the
+policy is free to race with sugov_update_shared from the CPU that is
+ready to go. So let's fix this now to first init all per-cpu
+structures, and then add the per-cpu utilization update hooks all at
+once.
+
+Signed-off-by: Vikram Mulukutla <markivx@codeaurora.org>
+---
+ kernel/sched/cpufreq_schedutil.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 076a2e3..29a3970 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -610,6 +610,11 @@ static int sugov_start(struct cpufreq_policy *policy)
+ 		sg_cpu->sg_policy = sg_policy;
+ 		sg_cpu->flags = SCHED_CPUFREQ_RT;
+ 		sg_cpu->iowait_boost_max = policy->cpuinfo.max_freq;
++	}
++
++	for_each_cpu(cpu, policy->cpus) {
++		struct sugov_cpu *sg_cpu = &per_cpu(sugov_cpu, cpu);
++
+ 		cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util,
+ 					     policy_is_shared(policy) ?
+ 							sugov_update_shared :
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
