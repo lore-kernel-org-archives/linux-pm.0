@@ -1,84 +1,87 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE
- enter
-Date: Thu, 6 Jul 2017 11:16:54 +0530
-Message-ID: <20170706054654.GQ3532@vireshk-i7>
+Subject: Re: [PATCH v2 3/6] cpufreq: schedutil: ensure max frequency while
+ running RT/DL tasks
+Date: Thu, 6 Jul 2017 11:26:55 +0530
+Message-ID: <20170706055655.GR3532@vireshk-i7>
 References: <1499189651-18797-1-git-send-email-patrick.bellasi@arm.com>
- <1499189651-18797-3-git-send-email-patrick.bellasi@arm.com>
- <20170705045012.GM3532@vireshk-i7>
- <20170705130446.GC2659@e110439-lin>
+ <1499189651-18797-4-git-send-email-patrick.bellasi@arm.com>
+ <20170705060136.GO3532@vireshk-i7>
+ <20170705134126.GD2659@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f51.google.com ([74.125.83.51]:36447 "EHLO
-        mail-pg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750968AbdGFFq7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 01:46:59 -0400
-Received: by mail-pg0-f51.google.com with SMTP id u62so5820991pgb.3
-        for <linux-pm@vger.kernel.org>; Wed, 05 Jul 2017 22:46:59 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170705130446.GC2659@e110439-lin>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <20170705134126.GD2659@e110439-lin>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Todd Kjos <tkjos@android.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Todd Kjos <tkjos@android.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, Brendan Jackman <brendan.jackman@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
-On 05-07-17, 14:04, Patrick Bellasi wrote:
-> On 05-Jul 10:20, Viresh Kumar wrote:
-> > And also why is it important to write 0 to sg_cpu->flags ? What wouldn't work if
-> > we set sg_cpu->flags to SCHED_CPUFREQ_IDLE in this case ? i.e. Just the below
-> > statement should be good for us.
+On 05-07-17, 14:41, Patrick Bellasi wrote:
+> On 05-Jul 11:31, Viresh Kumar wrote:
+
+> Just had a fast check but I think something like that can work.
+> We had an internal discussion with Brendan (in CC now) which had a
+> similar proposal.
 > 
-> Let say flags have the RT/DL flag set when the RT task sleep, is there
-> any specific reason to keep this flag up while the CPU is IDLE?
-> IOW, why should we care about an information related to an even which
-> is now over?
+> Main counter arguments for me was:
+> 1. we wanna to reduce the pollution of scheduling classes code with
+>    schedutil specific code, unless strictly necessary
 
-Maybe I wasn't able to communicate what I wanted to say, but I am not asking you
-to keep RT/DL flags as is, but rather set the flags variable to
-SCHED_CPUFREQ_IDLE (1 << 3). My concerns were about adding an additional
-conditional statement here, while we can live without one.
+s/schedutil/cpufreq, as the util hooks are getting called for some other stuff
+as well.
 
-> The proposal of this patch is just meant to make sure that the flags,
-> being a state variable, always describe the current status of the
-> sugov "state machine".
-> If a CPU is IDLE there are not sensible events going on and thus flags
-> should better be reset.
-
-or set to SCHED_CPUFREQ_IDLE.
-
-> > This looks correct.
-> > 
-> > Can we completely avoid the utilization contribution of the CPUs which have gone
-> > idle? Right now we avoid them with help of (delta_ns > TICK_NSEC). Can we
-> > instead check this SCHED_CPUFREQ_IDLE flag ?
+> 2. we never had a "clear bit" semantics for flags updates
 > 
-> I would say that the blocked utilization of an IDLE CPU is still worth
-> to be considered, at least for a limited amount of time, for few main
-> reasons:
-> 
-> 1. it represents CPU bandwidth that is likely to be required by a task
->    which can wakeup in a short while. Consider for example an 80% task
->    activated every 16ms: even if it's not running right now it's
->    likely to wakeup in the next ~3ms to run for the following ~13ms.
->    Thus, we should probably better consider that CPU utilization.
-> 
-> 2. we already have policies to gratefully reduce the current OPP if
->    its utilization decrease. This means that we are interested in a
->    sort of policy which favors higher OPPs to avoid impacting
->    performance of tasks which suddenly wakeup.
->  
-> 3. A CPU entering IDLE is not a great source of new information
->    for OPP selection, I would not strictly bind an OPP change to this
->    event. That's also why this patch propose to clear the flags
->    without actually triggering an OPP change.
-> 
-> Moreover, maybe the issue you are trying to solve it's more related to
-> having a stale utilization for an IDLE CPUs?
+> Thus this proposal seemed to me less of a discontinuity wrt the
+> current interface. However, something similar to what you propose
+> below should also work.
 
-I wasn't trying to solve any issue here, but just discussing about what should
-we do here. Yeah it seems fair to keep the utilization of the idle CPU for
-another TICK, after which we are ignoring it anyway.
+With the kind of problems we have in hand now, it seems that it would be good
+for the governors to know what kind of stuff is queued on the CPU (i.e. the
+aggregation of all the flags) and the only sane way of doing that is by clearing
+the flag once a class is done with it.
+
+Else we would be required to have code that tries to find the same information
+in an indirect way, like what this patch does with the current task.
+
+> Let's collect some more feedback...
+
+Sure.
+ 
+> > diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
+> > index d2be2ccbb372..e81a6b5591f5 100644
+> > --- a/include/linux/sched/cpufreq.h
+> > +++ b/include/linux/sched/cpufreq.h
+> > @@ -11,6 +11,10 @@
+> >  #define SCHED_CPUFREQ_DL       (1U << 1)
+> >  #define SCHED_CPUFREQ_IOWAIT   (1U << 2)
+> >  
+> > +#define SCHED_CPUFREQ_CLEAR    (1U << 31)
+> > +#define SCHED_CPUFREQ_CLEAR_RT (SCHED_CPUFREQ_CLEAR | SCHED_CPUFREQ_RT)
+> > +#define SCHED_CPUFREQ_CLEAR_DL (SCHED_CPUFREQ_CLEAR | SCHED_CPUFREQ_DL)
+> > +
+> >  #define SCHED_CPUFREQ_RT_DL    (SCHED_CPUFREQ_RT | SCHED_CPUFREQ_DL)
+> >  
+> >  #ifdef CONFIG_CPU_FREQ
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > index 076a2e31951c..f32e15d59d62 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -218,6 +218,9 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+> >         unsigned int next_f;
+> >         bool busy;
+> >  
+> > +       if (flags & SCHED_CPUFREQ_CLEAR)
+> > +               return;
+> 
+> Here we should still clear the flags, like what we do for the shared
+> case... just to keep the internal status consiste with the
+> notifications we have got from the scheduling classes.
+
+The sg_cpu->flags field isn't used currently for the single CPU per policy case,
+but only for shared policies. But yes, we need to maintain that here now as
+well to know what all is queued on a CPU.
 
 -- 
 viresh
