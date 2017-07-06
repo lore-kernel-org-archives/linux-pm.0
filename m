@@ -1,7 +1,7 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant load-tracking support
-Date: Thu,  6 Jul 2017 10:49:40 +0100
-Message-ID: <20170706094948.8779-3-dietmar.eggemann@arm.com>
+Subject: [PATCH v2 04/10] arm: wire cpufreq input data for frequency-invariant accounting up to the arch
+Date: Thu,  6 Jul 2017 10:49:42 +0100
+Message-ID: <20170706094948.8779-5-dietmar.eggemann@arm.com>
 References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170706094948.8779-1-dietmar.eggemann@arm.com>
@@ -10,82 +10,44 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-A frequency-invariant load-tracking solution based on cpufreq transition
-notifier will not work for future fast frequency switching policies.
-That is why a different solution is presented with this patch.
+Define arch_set_freq_scale to be the arch_topology "driver" function
+topology_set_freq_scale() to let FIE work correctly.
 
-Let cpufreq call the function arch_set_freq_scale() to pass the current
-frequency, the max supported frequency and the cpumask of the related
-cpus to a consumer (an arch) which defines arch_set_freq_scale().
-
-The consumer has to associate arch_set_freq_scale with the name of its
-own implementation foo_set_freq_scale() to overwrite the empty standard
-definition in drivers/cpufreq/cpufreq.c.
-An arch could do this in one of its arch-specific header files
-(e.g. arch/$ARCH/include/asm/topology.h) which gets included in
-drivers/cpufreq/cpufreq.c.
-
-In case arch_set_freq_scale() is not defined (and because of the
-pr_debug() drivers/cpufreq/cpufreq.c is not compiled with -DDEBUG) the
-function cpufreq_set_freq_scale() gets compiled out.
-
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Juri Lelli <juri.lelli@arm.com>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ arch/arm/include/asm/topology.h | 5 +++++
+ arch/arm/kernel/topology.c      | 1 -
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 9bf97a366029..a04c5886a5ce 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -347,6 +347,28 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
- 	}
- }
+diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
+index 370f7a732900..ca05d1b90411 100644
+--- a/arch/arm/include/asm/topology.h
++++ b/arch/arm/include/asm/topology.h
+@@ -24,6 +24,11 @@ void init_cpu_topology(void);
+ void store_cpu_topology(unsigned int cpuid);
+ const struct cpumask *cpu_coregroup_mask(int cpu);
  
-+/*********************************************************************
-+ *           FREQUENCY INVARIANT CPU CAPACITY SUPPORT                *
-+ *********************************************************************/
++#include <linux/arch_topology.h>
 +
-+#ifndef arch_set_freq_scale
-+static void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
-+				unsigned long max_freq)
-+{}
-+#endif
++/* Subscribe for input data for frequency-invariant load-tracking */
++#define arch_set_freq_scale topology_set_freq_scale
 +
-+static void cpufreq_set_freq_scale(struct cpufreq_policy *policy,
-+				   struct cpufreq_freqs *freqs)
-+{
-+	unsigned long cur_freq = freqs ? freqs->new : policy->cur;
-+	unsigned long max_freq = policy->cpuinfo.max_freq;
-+
-+	pr_debug("cpus %*pbl cur/cur max freq %lu/%lu kHz\n",
-+		 cpumask_pr_args(policy->related_cpus), cur_freq, max_freq);
-+
-+	arch_set_freq_scale(policy->related_cpus, cur_freq, max_freq);
-+}
-+
- /**
-  * cpufreq_notify_transition - call notifier chain and adjust_jiffies
-  * on frequency transition.
-@@ -405,6 +427,8 @@ void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
+ #else
  
- 	spin_unlock(&policy->transition_lock);
+ static inline void init_cpu_topology(void) { }
+diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+index bf949a763dbe..2c47a76c67b0 100644
+--- a/arch/arm/kernel/topology.c
++++ b/arch/arm/kernel/topology.c
+@@ -11,7 +11,6 @@
+  * for more details.
+  */
  
-+	cpufreq_set_freq_scale(policy, freqs);
-+
- 	cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
- }
- EXPORT_SYMBOL_GPL(cpufreq_freq_transition_begin);
-@@ -2203,6 +2227,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 			CPUFREQ_NOTIFY, new_policy);
- 
-+	cpufreq_set_freq_scale(new_policy, NULL);
-+
- 	policy->min = new_policy->min;
- 	policy->max = new_policy->max;
- 
+-#include <linux/arch_topology.h>
+ #include <linux/cpu.h>
+ #include <linux/cpufreq.h>
+ #include <linux/cpumask.h>
 -- 
 2.11.0
