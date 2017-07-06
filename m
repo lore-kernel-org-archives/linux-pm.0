@@ -1,36 +1,52 @@
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-Subject: Re: [PATCH 0/2] ARM: add missing includes to header files
-Date: Thu, 6 Jul 2017 16:16:07 +0100
-Message-ID: <20170706151607.GC23750@n2100.armlinux.org.uk>
-References: <20170704132542.27644-1-johan@kernel.org>
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 5/5] powernv:idle: Disable LOSE_FULL_CONTEXT states when
+ stop-api fails.
+Date: Fri, 7 Jul 2017 01:29:16 +1000
+Message-ID: <20170707012916.215ed32a@roar.ozlabs.ibm.com>
+References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
+        <1499272696-28751-6-git-send-email-ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.armlinux.org.uk ([78.32.30.218]:45010 "EHLO
-        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751653AbdGFPQZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 11:16:25 -0400
-Content-Disposition: inline
-In-Reply-To: <20170704132542.27644-1-johan@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1499272696-28751-6-git-send-email-ego@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Johan Hovold <johan@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dave Gerlach <d-gerlach@ti.com>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Tue, Jul 04, 2017 at 03:25:40PM +0200, Johan Hovold wrote:
-> Add two missing include directives to two header files to avoid
-> compile breakage when the required symbols have not already been
-> defined.
+On Wed,  5 Jul 2017 22:08:16 +0530
+"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> The missing SCU include broke compilation of the (not-yet-merged)
-> suspend support for am335x when !CONFIG_HAVE_ARM_SCU for example:
+> Currently, we use the opal call opal_slw_set_reg() to inform the that
+> the Sleep-Winkle Engine (SLW) to restore the contents of some of the
+> Hypervisor state on wakeup from deep idle states that lose full
+> hypervisor context (characterized by the flag
+> OPAL_PM_LOSE_FULL_CONTEXT).
 > 
-> 	https://lkml.kernel.org/r/20170704131441.GH27842@localhost
+> However, the current code has a bug in that if opal_slw_set_reg()
+> fails, we don't disable the use of these deep states (winkle on
+> POWER8, stop4 onwards on POWER9).
+> 
+> This patch fixes this bug by ensuring that if the the sleep winkle
+> engine is unable to restore the hypervisor states in
+> pnv_save_sprs_for_deep_states(), then we mark as invalid the states
+> which lose full context.
+> 
+> As a side-effect, since supported_cpuidle_states in
+> pnv_probe_idle_states() consists of flags of only the valid states,
+> this patch will ensure that no other subsystem in the kernel can use
+> the states which lose full context on stop-api failures.
 
-These look reasonable, please send them to the patch system for merging
-after this merge window, thanks.
+Looks good. Is there something minimal we can do for stable here?
 
--- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+Aside question, do we need to restore LPCR at all with the SLW engine?
+It gets set up again when by the idle wakeup code.
+
+And does POWER9 really need MSR and PSSCR restored by SLW? (going a bit
+off topic here, I'm just curious)
+
+Thanks,
+Nick
