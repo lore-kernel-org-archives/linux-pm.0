@@ -1,314 +1,99 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v14 09/11] power: supply: bq27xxx: Enable data memory
- update for certain chips
-Date: Wed, 5 Jul 2017 23:06:31 -0700
-Message-ID: <CAKvHMgQ3bqzi5Y4x2KGL4_koaciYm5fSxO3nom6U7zbGUgdz0Q@mail.gmail.com>
-References: <20170607183759.20261-1-liam@networkimprov.net>
- <20170607183759.20261-10-liam@networkimprov.net> <20170615160218.sq5jychjn7x2dhyq@earth>
- <CAKvHMgT-QW1GXizipj0bRk7DMhwv=NsZJnvoQ_9OEjf_MgfJgg@mail.gmail.com>
- <20170616103307.bfl6ig66qeq2qvz6@earth> <CAKvHMgSP6KR+4LRb0p3amAXyD=-r6Ap_i06cTffhnVOvE7NLJQ@mail.gmail.com>
- <20170703164833.govvgqz7xxbeuycv@earth> <CAKvHMgQr98kEtp6obizO94zy84990uZ=2_iowfn+EFQDUvPHmg@mail.gmail.com>
- <20170705094732.jxpf3yoiqb276e36@earth> <CAKvHMgSLYDfrbfwJYLha90s=4F+DeaANUEVrk+0OB8JbsjEsQw@mail.gmail.com>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
+Date: Thu, 6 Jul 2017 08:44:53 +0200
+Message-ID: <20170706064453.GH16144@ulmo.fritz.box>
+References: <20170521220212.1404-1-wsa@the-dreams.de>
+ <20170521220212.1404-4-wsa@the-dreams.de>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f67.google.com ([209.85.214.67]:34788 "EHLO
-        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751057AbdGFGGd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 02:06:33 -0400
-Received: by mail-it0-f67.google.com with SMTP id o202so17492832itc.1
-        for <linux-pm@vger.kernel.org>; Wed, 05 Jul 2017 23:06:32 -0700 (PDT)
-In-Reply-To: <CAKvHMgSLYDfrbfwJYLha90s=4F+DeaANUEVrk+0OB8JbsjEsQw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="0XhtP95kHFp3KGBe"
+Return-path: <rtc-linux+bncBDTKFPPJUEHRBZ5Y67FAKGQE2BCR6EY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Disposition: inline
+In-Reply-To: <20170521220212.1404-4-wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Wi
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: Pali Rohar <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
-
-Hi Sebastian,
-
-On Wed, Jul 5, 2017 at 10:49 AM, Liam Breck <liam@networkimprov.net> wrote:
-> Hi Sebastian,
->
-> On Wed, Jul 5, 2017 at 2:47 AM, Sebastian Reichel
-> <sebastian.reichel@collabora.co.uk> wrote:
->> Hi,
->>
->> On Tue, Jul 04, 2017 at 04:24:05PM -0700, Liam Breck wrote:
->>> OK, below is a minimal change to bq27xxx_battery.c creating a single
->>> data table for all chips. It can easily be extended with new fields
->>> for my patchset.
->>
->> Patch looks good.
->>
->>> This is probably safe to upstream without testing on all the chips, as
->>> it was mostly search/replace. However various conditionals test the
->>> chip ID, so when adding the rest of the IDs (previously only in
->>> real_chip) in the next patch, I'd have to touch that code, but I have
->>> no way of testing all the affected parts. I could use .acts_like =
->>> OTHER_ID in the data table to minimize that risk. Thoughts?
->>
->> As far as I can see there are only a couple of different things
->> di->chip is used for:
->>
->> di->chip == BQ27421 => flag_cfgupdate,
->> di->chip == BQ27000 || di->chip == BQ27010 => flag_single,
->> di->chip == BQ27530 || di->chip == BQ27421 => flag_temp_ot_ut,
->
-> There are two more cases. Also there's a lot more which could be added
-> to the driver down the road. Therefore I'd suggest a single u32 field
-> and bitwise flags. Then the table has:
->
-> [BQ27421]   = BQ27XXX_DATA(bq27421, BQ27OPT_CFGUP | BQ27OPT_OTUT | BQ27OPT_RAM)
->
->> If we add those flags to bq27xxx_battery_data we do not need
->> to check di->chip in the driver at all.
->
-> I can define .opts in the table, and constants for the two cases I'm
-> responsible for. Outside of those, this idea has me changing a LOT of
-> logic for chips I cannot test, which isn't fail-safe. I would like to
-> leave that logic as-is and do the following after setup() is done with
-> bq27xxx_battery_data[di->chip].*
->
-> di->chip = bq27xxx_battery_data[di->chip].acts_like
->    //todo migrate this and other di->chip uses to di->opts
-
-Below is a second patch which adds the missing IDs and enables the
-.opts field in table. Specific opts would be defined in subsequent
-patches.
-
-Re the defines at the top of the patch, I first tried pointers to the
-referenced arrays, but C rejects that in a static initializer.
 
 
-From: Liam Breck <kernel@networkimprov.net>
+--0XhtP95kHFp3KGBe
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
 
-power: supply: bq27xxx: add chip IDs for previously unlisted supported chips
+On Mon, May 22, 2017 at 12:02:10AM +0200, Wolfram Sang wrote:
+> include/linux/i2c is not for client devices. Move the header file to a
+> more appropriate location.
+> 
+> Signed-off-by: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+> ---
+>  arch/arm/mach-omap2/common.h            | 2 +-
+>  arch/arm/mach-omap2/omap_twl.c          | 2 +-
+>  drivers/gpio/gpio-twl4030.c             | 2 +-
+>  drivers/iio/adc/twl4030-madc.c          | 2 +-
+>  drivers/iio/adc/twl6030-gpadc.c         | 2 +-
+>  drivers/input/keyboard/twl4030_keypad.c | 2 +-
+>  drivers/input/misc/twl4030-pwrbutton.c  | 2 +-
+>  drivers/input/misc/twl4030-vibra.c      | 2 +-
+>  drivers/mfd/twl-core.c                  | 6 +++---
+>  drivers/mfd/twl4030-audio.c             | 2 +-
+>  drivers/mfd/twl4030-irq.c               | 2 +-
+>  drivers/mfd/twl4030-power.c             | 2 +-
+>  drivers/mfd/twl6030-irq.c               | 2 +-
+>  drivers/phy/phy-twl4030-usb.c           | 2 +-
+>  drivers/power/supply/twl4030_charger.c  | 2 +-
+>  drivers/pwm/pwm-twl-led.c               | 2 +-
+>  drivers/pwm/pwm-twl.c                   | 2 +-
+>  drivers/regulator/twl-regulator.c       | 2 +-
+>  drivers/regulator/twl6030-regulator.c   | 2 +-
+>  drivers/rtc/rtc-twl.c                   | 2 +-
+>  drivers/usb/phy/phy-twl6030-usb.c       | 2 +-
+>  drivers/video/backlight/pandora_bl.c    | 2 +-
+>  drivers/watchdog/twl4030_wdt.c          | 2 +-
+>  include/linux/{i2c => mfd}/twl.h        | 0
+>  sound/soc/codecs/twl4030.c              | 2 +-
+>  25 files changed, 26 insertions(+), 26 deletions(-)
+>  rename include/linux/{i2c => mfd}/twl.h (100%)
 
-No functional change to the driver.
+I didn't see this get applied yet, so just in case anyone was waiting
+for me (this is trivial, so I don't think there's a need):
 
----
- drivers/power/supply/bq27xxx_battery.c     | 65 ++++++++++++++++++++++--------
- drivers/power/supply/bq27xxx_battery_i2c.c | 16 ++++----
- include/linux/power/bq27xxx_battery.h      |  9 +++++
- 3 files changed, 65 insertions(+), 25 deletions(-)
+Acked-by: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c
-b/drivers/power/supply/bq27xxx_battery.c
-index 9769a83cd2db9..c7039d4ba6d07 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -221,6 +221,7 @@ static u8
-         [BQ27XXX_REG_AP] = INVALID_REG_ADDR,
-         BQ27XXX_DM_REG_ROWS,
-     },
-+#define bq2752x_regs bq2751x_regs
-     bq27500_regs[BQ27XXX_REG_MAX] = {
-         [BQ27XXX_REG_CTRL] = 0x00,
-         [BQ27XXX_REG_TEMP] = 0x06,
-@@ -401,6 +402,7 @@ static u8
-         [BQ27XXX_REG_AP] = 0x24,
-         BQ27XXX_DM_REG_ROWS,
-     },
-+#define bq27531_regs bq27530_regs
-     bq27541_regs[BQ27XXX_REG_MAX] = {
-         [BQ27XXX_REG_CTRL] = 0x00,
-         [BQ27XXX_REG_TEMP] = 0x06,
-@@ -421,6 +423,9 @@ static u8
-         [BQ27XXX_REG_AP] = 0x24,
-         BQ27XXX_DM_REG_ROWS,
-     },
-+#define bq27542_regs bq27541_regs
-+#define bq27546_regs bq27541_regs
-+#define bq27742_regs bq27541_regs
-     bq27545_regs[BQ27XXX_REG_MAX] = {
-         [BQ27XXX_REG_CTRL] = 0x00,
-         [BQ27XXX_REG_TEMP] = 0x06,
-@@ -461,6 +466,9 @@ static u8
-         [BQ27XXX_REG_AP] = 0x18,
-         BQ27XXX_DM_REG_ROWS,
-     };
-+#define bq27425_regs bq27421_regs
-+#define bq27441_regs bq27421_regs
-+#define bq27621_regs bq27421_regs
+-- 
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
 
- static enum power_supply_property bq27000_props[] = {
-     POWER_SUPPLY_PROP_STATUS,
-@@ -539,6 +547,7 @@ static enum power_supply_property bq2751x_props[] = {
-     POWER_SUPPLY_PROP_HEALTH,
-     POWER_SUPPLY_PROP_MANUFACTURER,
- };
-+#define bq2752x_props bq2751x_props
+--0XhtP95kHFp3KGBe
+Content-Type: application/pgp-signature; name="signature.asc"
 
- static enum power_supply_property bq27500_props[] = {
-     POWER_SUPPLY_PROP_STATUS,
-@@ -716,6 +725,7 @@ static enum power_supply_property bq27530_props[] = {
-     POWER_SUPPLY_PROP_CYCLE_COUNT,
-     POWER_SUPPLY_PROP_MANUFACTURER,
- };
-+#define bq27531_props bq27530_props
+-----BEGIN PGP SIGNATURE-----
 
- static enum power_supply_property bq27541_props[] = {
-     POWER_SUPPLY_PROP_STATUS,
-@@ -735,6 +745,9 @@ static enum power_supply_property bq27541_props[] = {
-     POWER_SUPPLY_PROP_HEALTH,
-     POWER_SUPPLY_PROP_MANUFACTURER,
- };
-+#define bq27542_props bq27541_props
-+#define bq27546_props bq27541_props
-+#define bq27742_props bq27541_props
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlld3GQACgkQ3SOs138+
+s6GKZBAAnbaonsyjZHxBKy02VF3I7RgESdTVzw24ZuKTsTfvsFmc2CA381KfPjjt
+Js7AMkJtv1xg+GEZo4NvX9YkJadeOsp1YDqdY+60JV/Zbc7fQKVq/FFxFNiC3+Xj
+ZAUG9SDF3CqERuu89WLgpE612bUJr7xqBBp9e6tC8gClFNrgWpy5obN3dEU3hE/N
+nJ9lDBIKVELG3YfqOHYC8ClAX1WIpPuXpJTVfEa25soRmyZc8HTXMxnQH8oYU9/i
+jTn4MZZ8JukuvxgMsyJ1IHSFJE0qRzWIzbQekjVpagpOoNzx9Ghy4dzs/1at8dZq
+CF3jQ9gdXOChmnFcVZWXcDDRrAk4h0AdcdSr6ZsL739XdUUVy+tKw+4G35fof6xU
+0CBx/lOsbhto9Zc67SmrnwY5TuTj2E34KM5vbdWybd3vEuIVyq+vvJSvi4hCLgBT
+b04xAUBruRDG3gjvRyInWU3E26UCsu4T5GTXmfgoxTBMEiGaeqHSi4J5Oa0mdCeS
+js+bQxkau26nSwVrxXbSEPu37zaJFe/g+tZb7v3xTjq6JM/+yjbVzCu66SiGUZJr
+mg+h/Qyl9v0m59/tHhde3QEaXGCPv1eMN/G92pIRId68wI+nYvlaBe3HkVT7pUj4
+TurLCCSyBwJqn56Sf6711848LT3rcKRmFk16PleVEcWPqHMNTyA=
+=MpPI
+-----END PGP SIGNATURE-----
 
- static enum power_supply_property bq27545_props[] = {
-     POWER_SUPPLY_PROP_STATUS,
-@@ -768,33 +781,48 @@ static enum power_supply_property bq27421_props[] = {
-     POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-     POWER_SUPPLY_PROP_MANUFACTURER,
- };
-+#define bq27425_props bq27421_props
-+#define bq27441_props bq27421_props
-+#define bq27621_props bq27421_props
-
--#define BQ27XXX_DATA(ref) {            \
-+#define BQ27XXX_DATA(ref, act, opt) {        \
-+    .opts = (opt),                \
-+    .acts_like = act,            \
-     .regs  = bq27##ref##_regs,        \
-     .props = bq27##ref##_props,        \
-     .props_size = ARRAY_SIZE(bq27##ref##_props) }
-
- static struct {
-+    u32 opts;
-+    int acts_like; //todo drop this when opts fully implemented
-     u8 *regs;
-     enum power_supply_property *props;
-     size_t props_size;
- } bq27xxx_battery_data[] = {
--    [BQ27000]   = BQ27XXX_DATA(000),
--    [BQ27010]   = BQ27XXX_DATA(010),
--    [BQ2750X]   = BQ27XXX_DATA(50x),
--    [BQ2751X]   = BQ27XXX_DATA(51x),
--    [BQ27500]   = BQ27XXX_DATA(500),
--    [BQ27510G1] = BQ27XXX_DATA(510g1),
--    [BQ27510G2] = BQ27XXX_DATA(510g2),
--    [BQ27510G3] = BQ27XXX_DATA(510g3),
--    [BQ27520G1] = BQ27XXX_DATA(520g1),
--    [BQ27520G2] = BQ27XXX_DATA(520g2),
--    [BQ27520G3] = BQ27XXX_DATA(520g3),
--    [BQ27520G4] = BQ27XXX_DATA(520g4),
--    [BQ27530]   = BQ27XXX_DATA(530),
--    [BQ27541]   = BQ27XXX_DATA(541),
--    [BQ27545]   = BQ27XXX_DATA(545),
--    [BQ27421]   = BQ27XXX_DATA(421),
-+    [BQ27000]   = BQ27XXX_DATA(000,   BQ27000, 0),
-+    [BQ27010]   = BQ27XXX_DATA(010,   BQ27010, 0),
-+    [BQ2750X]   = BQ27XXX_DATA(50x,   BQ2750X, 0),
-+    [BQ2751X]   = BQ27XXX_DATA(51x,   BQ2751X, 0),
-+    [BQ2752X]   = BQ27XXX_DATA(52x,   BQ2751X, 0),
-+    [BQ27500]   = BQ27XXX_DATA(500,   BQ27500, 0),
-+    [BQ27510G1] = BQ27XXX_DATA(510g1, BQ27510G1, 0),
-+    [BQ27510G2] = BQ27XXX_DATA(510g2, BQ27510G2, 0),
-+    [BQ27510G3] = BQ27XXX_DATA(510g3, BQ27510G3, 0),
-+    [BQ27520G1] = BQ27XXX_DATA(520g1, BQ27520G1, 0),
-+    [BQ27520G2] = BQ27XXX_DATA(520g2, BQ27520G2, 0),
-+    [BQ27520G3] = BQ27XXX_DATA(520g3, BQ27520G3, 0),
-+    [BQ27520G4] = BQ27XXX_DATA(520g4, BQ27520G4, 0),
-+    [BQ27530]   = BQ27XXX_DATA(530,   BQ27530, 0),
-+    [BQ27531]   = BQ27XXX_DATA(531,   BQ27530, 0),
-+    [BQ27541]   = BQ27XXX_DATA(541,   BQ27541, 0),
-+    [BQ27542]   = BQ27XXX_DATA(542,   BQ27541, 0),
-+    [BQ27546]   = BQ27XXX_DATA(546,   BQ27541, 0),
-+    [BQ27742]   = BQ27XXX_DATA(742,   BQ27541, 0),
-+    [BQ27545]   = BQ27XXX_DATA(545,   BQ27545, 0),
-+    [BQ27421]   = BQ27XXX_DATA(421,   BQ27421, 0),
-+    [BQ27425]   = BQ27XXX_DATA(425,   BQ27421, 0),
-+    [BQ27441]   = BQ27XXX_DATA(441,   BQ27421, 0),
-+    [BQ27621]   = BQ27XXX_DATA(621,   BQ27421, 0),
- };
-
- static DEFINE_MUTEX(bq27xxx_list_lock);
-@@ -1902,6 +1930,9 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
-         return PTR_ERR(di->bat);
-     }
-
-+    di->opts = bq27xxx_battery_data[di->chip].opts;
-+    di->chip = bq27xxx_battery_data[di->chip].acts_like;
-+
-     dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
-
-     bq27xxx_battery_settings(di);
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c
-b/drivers/power/supply/bq27xxx_battery_i2c.c
-index a5972214f0742..0b11ed472f338 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -230,7 +230,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
-     { "bq27210", BQ27010 },
-     { "bq27500", BQ2750X },
-     { "bq27510", BQ2751X },
--    { "bq27520", BQ2751X },
-+    { "bq27520", BQ2752X },
-     { "bq27500-1", BQ27500 },
-     { "bq27510g1", BQ27510G1 },
-     { "bq27510g2", BQ27510G2 },
-@@ -240,16 +240,16 @@ static const struct i2c_device_id
-bq27xxx_i2c_id_table[] = {
-     { "bq27520g3", BQ27520G3 },
-     { "bq27520g4", BQ27520G4 },
-     { "bq27530", BQ27530 },
--    { "bq27531", BQ27530 },
-+    { "bq27531", BQ27531 },
-     { "bq27541", BQ27541 },
--    { "bq27542", BQ27541 },
--    { "bq27546", BQ27541 },
--    { "bq27742", BQ27541 },
-+    { "bq27542", BQ27542 },
-+    { "bq27546", BQ27546 },
-+    { "bq27742", BQ27742 },
-     { "bq27545", BQ27545 },
-     { "bq27421", BQ27421 },
--    { "bq27425", BQ27421 },
--    { "bq27441", BQ27421 },
--    { "bq27621", BQ27421 },
-+    { "bq27425", BQ27425 },
-+    { "bq27441", BQ27441 },
-+    { "bq27621", BQ27621 },
-     {},
- };
- MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
-diff --git a/include/linux/power/bq27xxx_battery.h
-b/include/linux/power/bq27xxx_battery.h
-index 11e11685dd1d5..77fe94f1d5f25 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -6,6 +6,7 @@ enum bq27xxx_chip {
-     BQ27010, /* bq27010, bq27210 */
-     BQ2750X, /* bq27500 deprecated alias */
-     BQ2751X, /* bq27510, bq27520 deprecated alias */
-+    BQ2752X,
-     BQ27500, /* bq27500/1 */
-     BQ27510G1, /* bq27510G1 */
-     BQ27510G2, /* bq27510G2 */
-@@ -15,9 +16,16 @@ enum bq27xxx_chip {
-     BQ27520G3, /* bq27520G3 */
-     BQ27520G4, /* bq27520G4 */
-     BQ27530, /* bq27530, bq27531 */
-+    BQ27531,
-     BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
-+    BQ27542,
-+    BQ27546,
-+    BQ27742,
-     BQ27545, /* bq27545 */
-     BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
-+    BQ27425,
-+    BQ27441,
-+    BQ27621,
- };
-
- /**
-@@ -64,6 +72,7 @@ struct bq27xxx_device_info {
-     int id;
-     enum bq27xxx_chip chip;
-     bool ram_chip;
-+    u32 opts;
-     const char *name;
-     struct bq27xxx_dm_reg *dm_regs;
-     u32 unseal_key;
+--0XhtP95kHFp3KGBe--
