@@ -1,153 +1,45 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 1/5] powernv:idle: Move device-tree parsing to one
- place.
-Date: Fri, 7 Jul 2017 00:53:40 +1000
-Message-ID: <20170707005340.003c530b@roar.ozlabs.ibm.com>
+Subject: Re: [PATCH 2/5] powernv:idle: Change return type of
+ pnv_probe_idle_states to int
+Date: Fri, 7 Jul 2017 01:01:49 +1000
+Message-ID: <20170707010149.7526c784@roar.ozlabs.ibm.com>
 References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
-        <1499272696-28751-2-git-send-email-ego@linux.vnet.ibm.com>
+        <1499272696-28751-3-git-send-email-ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1499272696-28751-2-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:34665 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750896AbdGFPCD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 11:02:03 -0400
+In-Reply-To: <1499272696-28751-3-git-send-email-ego@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-On Wed,  5 Jul 2017 22:08:12 +0530
+On Wed,  5 Jul 2017 22:08:13 +0530
 "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
 
 > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> The details of the platform idle state are exposed by the firmware to
-> the kernel via device tree.
+> In the current idle initialization code, if there are failures in
+> pnv_probe_idle_states, then no platform idle state is
+> enabled. However, since the error is not propagated to the top-level
+> function pnv_init_idle_states, we continue initialization in this
+> top-level function even though this will never be used.
 > 
-> In the current code, we parse the device tree twice :
-> 
-> 1) During the boot up in arch/powerpc/platforms/powernv/idle.c Here,
-> the device tree is parsed to obtain the details of the
-> supported_cpuidle_states which is used to determine the default idle
-> state (which would be used when cpuidle is absent) and the deepest
-> idle state (which would be used for cpu-hotplug).
-> 
-> 2) During the powernv cpuidle driver initializion
-> (drivers/cpuidle/cpuidle-powernv.c). Here we parse the device tree to
-> populate the cpuidle driver's states.
-> 
-> This patch moves all the device tree parsing to the platform idle
-> code. It defines data-structures for recording the details of the
-> parsed idle states. Any other kernel subsystem that is interested in
-> the idle states (eg: cpuidle-powernv driver) can just use the
-> in-kernel data structure instead of parsing the device tree all over
-> again.
-> 
-> Further, this helps to check the validity of states in one place and
-> in case of invalid states (eg : stop states whose psscr values are
-> errorenous) flag them as invalid, so that the other subsystems can be
-> prevented from using those.
+> Hence change the the return type of pnv_probe_idle_states from void to
+> int and in case of failures, bail out early on in
+> pnv_init_idle_states.
 > 
 > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-Hi,
+Looks good to me.
 
-I think the overall direction is good. A few small things.
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-
-> +
-> +#define PNV_IDLE_NAME_LEN     16
-> +struct pnv_idle_state {
-> +	char name[PNV_IDLE_NAME_LEN];
-> +	u32 flags;
-> +	u32 latency_ns;
-> +	u32 residency_ns;
-> +	u64 ctrl_reg_val;   /* The ctrl_reg on POWER8 would be pmicr. */
-> +	u64 ctrl_reg_mask;  /* On POWER9 it is psscr */
-> +	bool valid;
-> +};
-
-Do we use PMICR anywhere in the idle code? What about allowing for some
-machine-specific fields?
-
-    union {
-        struct { /* p9 */
-            u64 psscr_val;
-            u64 psscr_mask;
-        };
-        struct { /* p8 */
-            u64 pmicr...;
-
-
-> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> index 2abee07..b747bb5 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -58,6 +58,17 @@
->  static u64 pnv_deepest_stop_psscr_mask;
->  static bool deepest_stop_found;
->  
-> +/*
-> + * Data structure that stores details of
-> + * all the platform idle states.
-> + */
-> +struct pnv_idle_states pnv_idle;
-> +
-> +struct pnv_idle_states *get_pnv_idle_states(void)
-> +{
-> +	return &pnv_idle;
-> +}
-
-I wouldn't have the wrapper function... but it's your code so it's
-up to you. One thing though is that this function you have called get_
-just to return the pointer, but it does not take a reference or
-allocate memory or initialize the structure. Other functions with the
-same prefix do such things. Can we make something more consistent?
-
-...
-
-> +/**
-> + * get_idle_prop_u32_array: Returns an array of u32 elements
-> + *			    parsed from the device tree corresponding
-> + *			    to the property provided in variable propname.
-> + *
-> + * @np: Pointer to device tree node "/ibm,opal/power-mgt"
-> + * @nr_states: Expected number of elements.
-> + * @propname : Name of the property whose values is an array of
-> + *             u32 elements
-> + *
-> + * Returns a pointer to a u32 array of size nr_states on success.
-> + * Returns NULL on failure.
-> + */
-> +static inline u32 *get_idle_prop_u32_array(struct device_node *np,
-> +					   int nr_states,
-> +					   const char *propname)
-> +{
-> +	u32 *ret_array;
-> +	int rc, count;
-> +
-> +	count = of_property_count_u32_elems(np, propname);
-> +	rc = validate_dt_prop_sizes("ibm,cpu-idle-state-flags", nr_states,
-> +				    propname, count);
-> +	if (rc)
-> +		return NULL;
-> +
-> +	ret_array = kcalloc(nr_states, sizeof(*ret_array), GFP_KERNEL);
-> +	if (!ret_array)
-> +		return NULL;
-
-So I would say for this, how about moving the allocations into the caller?
-You're still doing most of the error handling freeing there, so I would
-say it's more balanced if you do that.
-
-Also, perhaps consider dropping most of the inline keywords. Unless it's
-performance critical or does some significant optimisation due to constant
-parameters I would say avoid the keyword as a rule.
-
-[snip]
-
-There's a lot of code movement, I haven't reviewed it all carefully, but
-it looks good in general. I'll apply the patches and check the result
-in the next few days when I get a bit of time.
-
-Thanks,
-Nick
+I wonder if the warnings are strong enough here to let people know
+idle won't be used so power consumption will be high and performance
+significantly reduced on SMT machines?
