@@ -1,7 +1,7 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v2 05/10] arm: wire frequency-invariant accounting support up to the task scheduler
-Date: Thu,  6 Jul 2017 10:49:43 +0100
-Message-ID: <20170706094948.8779-6-dietmar.eggemann@arm.com>
+Subject: [PATCH v2 08/10] arm64: wire frequency-invariant accounting support up to the task scheduler
+Date: Thu,  6 Jul 2017 10:49:46 +0100
+Message-ID: <20170706094948.8779-9-dietmar.eggemann@arm.com>
 References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170706094948.8779-1-dietmar.eggemann@arm.com>
@@ -20,29 +20,31 @@ function topology_get_freq_scale() for the task scheduler's
 frequency-invariant accounting instead of the default
 arch_scale_freq_capacity() in kernel/sched/sched.h.
 
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
 Cc: Juri Lelli <juri.lelli@arm.com>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
 Tested-by: Juri Lelli <juri.lelli@arm.com>
 Reviewed-by: Juri Lelli <juri.lelli@arm.com>
 ---
- arch/arm/include/asm/topology.h | 3 +++
+ arch/arm64/include/asm/topology.h | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
-index ca05d1b90411..57aebfa03e24 100644
---- a/arch/arm/include/asm/topology.h
-+++ b/arch/arm/include/asm/topology.h
-@@ -29,6 +29,9 @@ const struct cpumask *cpu_coregroup_mask(int cpu);
+diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+index d9cbb289e295..4fd598b432e6 100644
+--- a/arch/arm64/include/asm/topology.h
++++ b/arch/arm64/include/asm/topology.h
+@@ -37,6 +37,9 @@ int pcibus_to_node(struct pci_bus *bus);
  /* Subscribe for input data for frequency-invariant load-tracking */
  #define arch_set_freq_scale topology_set_freq_scale
  
 +/* Replace task scheduler's default frequency-invariant accounting */
 +#define arch_scale_freq_capacity topology_get_freq_scale
 +
- #else
+ #include <asm-generic/topology.h>
  
- static inline void init_cpu_topology(void) { }
+ #endif /* _ASM_ARM_TOPOLOGY_H */
 -- 
 2.11.0
