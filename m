@@ -1,113 +1,115 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 01/10] drivers base/arch_topology: free cpumask
- cpus_to_visit
-Date: Thu, 6 Jul 2017 15:52:49 +0530
-Message-ID: <20170706102249.GA13048@vireshk-i7>
+Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
+ load-tracking support
+Date: Thu, 6 Jul 2017 16:10:27 +0530
+Message-ID: <20170706104027.GB13048@vireshk-i7>
 References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
- <20170706094948.8779-2-dietmar.eggemann@arm.com>
+ <20170706094948.8779-3-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:36624 "EHLO
-        mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751850AbdGFKWy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jul 2017 06:22:54 -0400
-Received: by mail-pf0-f172.google.com with SMTP id q86so9251778pfl.3
-        for <linux-pm@vger.kernel.org>; Thu, 06 Jul 2017 03:22:53 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170706094948.8779-2-dietmar.eggemann@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <20170706094948.8779-3-dietmar.eggemann@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+List-Id: linux-pm@vger.kernel.org
 
 On 06-07-17, 10:49, Dietmar Eggemann wrote:
-> Free cpumask cpus_to_visit in case registering
-> init_cpu_capacity_notifier has failed or the parsing of the cpu
-> capacity-dmips-mhz property is done. The cpumask cpus_to_visit is
-> only used inside the notifier call init_cpu_capacity_callback.
+> A frequency-invariant load-tracking solution based on cpufreq transition
+> notifier will not work for future fast frequency switching policies.
+> That is why a different solution is presented with this patch.
 > 
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Juri Lelli <juri.lelli@arm.com>
-> Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
+> Let cpufreq call the function arch_set_freq_scale() to pass the current
+> frequency, the max supported frequency and the cpumask of the related
+> cpus to a consumer (an arch) which defines arch_set_freq_scale().
+> 
+> The consumer has to associate arch_set_freq_scale with the name of its
+> own implementation foo_set_freq_scale() to overwrite the empty standard
+> definition in drivers/cpufreq/cpufreq.c.
+> An arch could do this in one of its arch-specific header files
+> (e.g. arch/$ARCH/include/asm/topology.h) which gets included in
+> drivers/cpufreq/cpufreq.c.
+> 
+> In case arch_set_freq_scale() is not defined (and because of the
+> pr_debug() drivers/cpufreq/cpufreq.c is not compiled with -DDEBUG)
+
+The line within () needs to be improved to convey a clear message.
+
+> the
+> function cpufreq_set_freq_scale() gets compiled out.
+> 
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
 > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
-> Tested-by: Juri Lelli <juri.lelli@arm.com>
-> Reviewed-by: Juri Lelli <juri.lelli@arm.com>
 > ---
->  drivers/base/arch_topology.c | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
+>  drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
 > 
-> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-> index d1c33a85059e..f4832c662762 100644
-> --- a/drivers/base/arch_topology.c
-> +++ b/drivers/base/arch_topology.c
-> @@ -206,6 +206,8 @@ static struct notifier_block init_cpu_capacity_notifier = {
->  
->  static int __init register_cpufreq_notifier(void)
->  {
-> +	int ret;
-> +
->  	/*
->  	 * on ACPI-based systems we need to use the default cpu capacity
->  	 * until we have the necessary code to parse the cpu capacity, so
-> @@ -221,13 +223,19 @@ static int __init register_cpufreq_notifier(void)
->  
->  	cpumask_copy(cpus_to_visit, cpu_possible_mask);
->  
-> -	return cpufreq_register_notifier(&init_cpu_capacity_notifier,
-> -					 CPUFREQ_POLICY_NOTIFIER);
-> +	ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
-> +					CPUFREQ_POLICY_NOTIFIER);
-> +
-> +	if (ret)
-> +		free_cpumask_var(cpus_to_visit);
-> +
-> +	return ret;
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 9bf97a366029..a04c5886a5ce 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -347,6 +347,28 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+>  	}
 >  }
->  core_initcall(register_cpufreq_notifier);
 >  
->  static void parsing_done_workfn(struct work_struct *work)
->  {
-> +	free_cpumask_var(cpus_to_visit);
->  	cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
->  					 CPUFREQ_POLICY_NOTIFIER);
+> +/*********************************************************************
+> + *           FREQUENCY INVARIANT CPU CAPACITY SUPPORT                *
+> + *********************************************************************/
+> +
+> +#ifndef arch_set_freq_scale
+> +static void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
+> +				unsigned long max_freq)
+> +{}
+> +#endif
+> +
+> +static void cpufreq_set_freq_scale(struct cpufreq_policy *policy,
+> +				   struct cpufreq_freqs *freqs)
+> +{
+> +	unsigned long cur_freq = freqs ? freqs->new : policy->cur;
+> +	unsigned long max_freq = policy->cpuinfo.max_freq;
+> +
+> +	pr_debug("cpus %*pbl cur/cur max freq %lu/%lu kHz\n",
+> +		 cpumask_pr_args(policy->related_cpus), cur_freq, max_freq);
+> +
+> +	arch_set_freq_scale(policy->related_cpus, cur_freq, max_freq);
 
-As a general rule (and good coding practice), it is better to free resources
-only after the users are gone. And so we should have changed the order here.
-i.e. Unregister the notifier first and then free the cpumask.
+I am not sure why all these are required to be sent here and will come back to
+it later on after going through other patches.
 
-And because of that we may end up crashing the kernel here.
+> +}
+> +
+>  /**
+>   * cpufreq_notify_transition - call notifier chain and adjust_jiffies
+>   * on frequency transition.
+> @@ -405,6 +427,8 @@ void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
+>  
+>  	spin_unlock(&policy->transition_lock);
+>  
+> +	cpufreq_set_freq_scale(policy, freqs);
+> +
 
-Here is an example:
+Why do this before even changing the frequency ? We may fail while changing it.
 
-Consider that init_cpu_capacity_callback() is getting called concurrently on big
-and LITTLE CPUs.
+IMHO, you should call this routine whenever we update policy->cur and that
+happens regularly in __cpufreq_notify_transition() and few other places..
 
+>  	cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_freq_transition_begin);
+> @@ -2203,6 +2227,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+>  	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+>  			CPUFREQ_NOTIFY, new_policy);
+>  
+> +	cpufreq_set_freq_scale(new_policy, NULL);
 
-CPU0 (big)                            CPU4 (LITTLE)
+Why added it here ? To get it initialized ? If yes, then we should do that in
+cpufreq_online() where we first initialize policy->cur.
 
-                                      if (cap_parsing_failed || cap_parsing_done)
-                                          return 0;
-
-cap_parsing_done = true;
-schedule_work(&parsing_done_work);
-
-parsing_done_workfn(work)
-  -> free_cpumask_var(cpus_to_visit);
-  -> cpufreq_unregister_notifier()
-
-
-                                      switch (val) {
-                                          ...
-                                          /* Touch cpus_to_visit and crash */
-
-
-My assumption here is that the same notifier head can get called in parallel on
-two CPUs as all I see there is a down_read() in __blocking_notifier_call_chain()
-which shouldn't block parallel calls.
-
-Maybe I am wrong :(
+Apart from this, you also need to update this in the schedutil governor (if you
+haven't done that in this series later) as that also updates policy->cur in the
+fast path.
 
 -- 
 viresh
