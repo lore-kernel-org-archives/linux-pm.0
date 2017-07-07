@@ -1,65 +1,69 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/5] powernv:idle: Move initialization of sibling pacas
- to pnv_alloc_idle_core_states
-Date: Fri, 7 Jul 2017 20:34:16 +0530
-Message-ID: <20170707150416.GD8913@in.ibm.com>
-References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
- <1499272696-28751-5-git-send-email-ego@linux.vnet.ibm.com>
- <20170707011609.76c51329@roar.ozlabs.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH] thermal/drivers/hisi: Remove confusing error message
+Date: Fri,  7 Jul 2017 17:03:52 +0200
+Message-ID: <1499439833-32531-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170707011609.76c51329@roar.ozlabs.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 07, 2017 at 01:16:09AM +1000, Nicholas Piggin wrote:
-> On Wed,  5 Jul 2017 22:08:15 +0530
-> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
-> 
-> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> > 
-> > On POWER9 DD1, in order to get around a hardware issue, we store in
-> > every CPU thread's paca the paca pointers of all its siblings.
-> > 
-> > Move this code into pnv_alloc_idle_core_states() soon after the space
-> > for saving the sibling pacas is allocated.
-> > 
-> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> 
-> > -	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-> > -		int cpu;
-> > -
-> > -		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
-> > -		for_each_possible_cpu(cpu) {
-> > -			int base_cpu = cpu_first_thread_sibling(cpu);
-> > -			int idx = cpu_thread_in_core(cpu);
-> > -			int i;
-> > -
-> 
-> You could move the thread_sibling_pacas allocation to here?
-> 
-> Speaking of which... core_idle_state and thread_sibling_pacas are
-> allocated with kmalloc_node... What happens if we take an SLB miss
-> in the idle wakeup code on these guys? Nothing good I think. Perhaps
-> we should put them into the pacas or somewhere in bolted memory.
+The sensor id is unknown at init time and we use all id in the authorized
+MAX_SENSORS interval to register the sensor. On this SoC there is one
+thermal-zone with one sensor on it. No need to spit on the console everytime we
+failed to register thermal sensors, information which is deliberaly known as it
+is part of the discovery process.
 
-Yes, though the SLB miss hasn't yet been encountered in practise so
-far!
+ hisi_thermal f7030700.tsensor: failed to register sensor id 0: -19
+ hisi_thermal f7030700.tsensor: failed to register thermal sensor: -19
+ hisi_thermal f7030700.tsensor: failed to register sensor id 1: -19
+ hisi_thermal f7030700.tsensor: failed to register thermal sensor: -19
+ hisi_thermal f7030700.tsensor: failed to register sensor id 3: -19
+ hisi_thermal f7030700.tsensor: failed to register thermal sensor: -19
 
-While one can define thread_sibling_pacas in PACA, it doesn't make
-sense to allocate space for core_idle_state in PACA since the
-allocated value of the secondary threads will never be used.
+Remove the error messages.
 
-What is the right way to ensure that these allocations fall in the
-bolted range ?
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/thermal/hisi_thermal.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-> 
-> Good cleanup though.
-> 
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> 
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index f642966..2cc98c6 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -187,6 +187,9 @@ static int hisi_thermal_get_temp(void *_sensor, int *temp)
+ 
+ 	dev_dbg(&data->pdev->dev, "id=%d, irq=%d, temp=%d, thres=%d\n",
+ 		sensor->id, data->irq_enabled, *temp, sensor->thres_temp);
++
++	printk("id=%d, irq=%d, temp=%d, thres=%d\n",
++		sensor->id, data->irq_enabled, *temp, sensor->thres_temp);
+ 	/*
+ 	 * Bind irq to sensor for two cases:
+ 	 *   Reenable alarm IRQ if temperature below threshold;
+@@ -260,8 +263,6 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+ 	if (IS_ERR(sensor->tzd)) {
+ 		ret = PTR_ERR(sensor->tzd);
+ 		sensor->tzd = NULL;
+-		dev_err(&pdev->dev, "failed to register sensor id %d: %d\n",
+-			sensor->id, ret);
+ 		return ret;
+ 	}
+ 
+@@ -352,10 +353,9 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ 		ret = hisi_thermal_register_sensor(pdev, data,
+ 						   &data->sensors[i], i);
+ 		if (ret)
+-			dev_err(&pdev->dev,
+-				"failed to register thermal sensor: %d\n", ret);
+-		else
+-			hisi_thermal_toggle_sensor(&data->sensors[i], true);
++			continue;
++
++		hisi_thermal_toggle_sensor(&data->sensors[i], true);
+ 	}
+ 
+ 	return 0;
+-- 
+2.7.4
