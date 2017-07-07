@@ -1,43 +1,62 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
- load-tracking support
-Date: Fri, 7 Jul 2017 18:06:30 +0100
-Message-ID: <22f004af-0158-8265-2da5-34743f294bfb@arm.com>
-References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
- <20170706094948.8779-3-dietmar.eggemann@arm.com>
- <20170706104027.GB13048@vireshk-i7>
- <c92f1bd0-6611-8eec-51d7-f6d7754a5870@arm.com>
- <CAJZ5v0gBPNDBYWbuHVaB7deNHSZKziaAeybSw3mg+S8V_roO-Q@mail.gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/4] Introduce regmap infrastructure over Maxim/Dalas
+ OneWire (W1) bus
+Date: Fri, 7 Jul 2017 18:11:20 +0100
+Message-ID: <20170707171120.vgiw62sobwnq6jbu@sirena.org.uk>
+References: <20170525174639.3191-1-minimumlaw@rambler.ru>
+ <20170525174639.3191-2-minimumlaw@rambler.ru>
+ <404871495743279@web24o.yandex.ru>
+ <20170526110602.jtvxf76abks4v3xf@sirena.org.uk>
+ <3411811495806312@web49j.yandex.ru>
+ <20170526171834.uq4ke5cm5qtobxgl@sirena.org.uk>
+ <4265821495830391@web12o.yandex.ru>
+ <20170628193750.jh4vbl4x32rzvcng@sirena.org.uk>
+ <939401499441188@web18j.yandex.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gBPNDBYWbuHVaB7deNHSZKziaAeybSw3mg+S8V_roO-Q@mail.gmail.com>
-Content-Language: en-GB
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="frpmabkkgdef7gpd"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:51168 "EHLO
+        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751059AbdGGRLh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2017 13:11:37 -0400
+Content-Disposition: inline
+In-Reply-To: <939401499441188@web18j.yandex.ru>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: "Alex A. Mihaylov" <minimumlaw@rambler.ru>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 07/07/17 17:18, Rafael J. Wysocki wrote:
-> On Fri, Jul 7, 2017 at 6:01 PM, Dietmar Eggemann
-> <dietmar.eggemann@arm.com> wrote:
->> On 06/07/17 11:40, Viresh Kumar wrote:
->>> On 06-07-17, 10:49, Dietmar Eggemann wrote:
 
-[...]
+--frpmabkkgdef7gpd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
->> So what about I call arch_set_freq_scale() in __cpufreq_notify_transition() in the
->> CPUFREQ_POSTCHANGE case for slow-switching and in cpufreq_driver_fast_switch() for
->> fast-switching?
-> 
-> Why don't you do this in drivers instead of in the core?
-> 
-> Ultimately, the driver knows what frequency it has requested, so why
-> can't it call arch_set_freq_scale()?
+On Fri, Jul 07, 2017 at 06:26:28PM +0300, Evgeniy Polyakov wrote:
 
-That's correct but for arm/arm64 we have a lot of different cpufreq
-drivers to deal with. And doing this call to arch_set_freq_scale() once
-in the cpufreq core will cover them all.
+> In fact, regmap-w1 brings virtually nothing to w1 from regmap point fo view -
+> code is more complex and even a bit more error prone, but we found a nice feature,
+> that we do not have to export IO functions anymore, they will be hidden behind
+> regmap wrappers.
 
-[...]
+It's not for the benefit of the bus, it's for the benefit of the devices
+on the bus and their subsystems.  From the point of view of the
+subsystem it shouldn't have any impact at all, it's a helper library for
+the layers above.
+
+--frpmabkkgdef7gpd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAllfwLcACgkQJNaLcl1U
+h9DW5wf/ZrWncYiq0veCK7YaO2BPPZbGsoIXHTbY12kW81LSYWW7qU9kB8RxU4kZ
+Sn03vIhASJT8tAZejBhtJgue34KEmMAq7vlQqsqVbVGWUoZuinXlavFj80BDmFeW
+g7PltVXkDFeT+1Jhn7USj8X2BIE/qZyb1U1KP+EBzvA1c/KiH/rFEEueTCCqZ2mg
+EGHa8bstex7brR1z1mINjDPofhf3dsB1GYpZlR4pGtfVVkSDiduPQf3kyyUWdcBv
+75zX+PKx+dGEphmv01bOOvNL+GfOhLqEQdVzn21geJsP/FPgCVhWk9gYlg1ybxk8
+XBBb3q7ClEX0lFVYwEFH+0G3SlVqSQ==
+=OiDz
+-----END PGP SIGNATURE-----
+
+--frpmabkkgdef7gpd--
