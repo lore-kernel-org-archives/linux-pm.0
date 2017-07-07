@@ -1,27 +1,32 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH v1 1/8] sched/cpufreq_schedutil: make use of DEADLINE
- utilization signal
-Date: Fri, 7 Jul 2017 12:50:04 +0530
-Message-ID: <20170707072004.GF1523@vireshk-i7>
+Subject: Re: [RFC PATCH v1 2/8] sched/deadline: move cpu frequency selection
+ triggering points
+Date: Fri, 7 Jul 2017 12:51:04 +0530
+Message-ID: <20170707072104.GG1523@vireshk-i7>
 References: <20170705085905.6558-1-juri.lelli@arm.com>
- <20170705085905.6558-2-juri.lelli@arm.com>
+ <20170705085905.6558-3-juri.lelli@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:34533 "EHLO
+        mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750883AbdGGHVI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2017 03:21:08 -0400
+Received: by mail-pf0-f172.google.com with SMTP id q85so13015595pfq.1
+        for <linux-pm@vger.kernel.org>; Fri, 07 Jul 2017 00:21:07 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20170705085905.6558-2-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <20170705085905.6558-3-juri.lelli@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Juri Lelli <juri.lelli@arm.com>
 Cc: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-List-Id: linux-pm@vger.kernel.org
 
 On 05-07-17, 09:58, Juri Lelli wrote:
-> SCHED_DEADLINE tracks active utilization signal with a per dl_rq
-> variable named running_bw.
+> Since SCHED_DEADLINE doesn't track utilization signal (but reserves a
+> fraction of CPU bandwidth to tasks admitted to the system), there is no
+> point in evaluating frequency changes during each tick event.
 > 
-> Make use of that to drive cpu frequency selection: add up FAIR and
-> DEADLINE contribution to get the required CPU capacity to handle both
-> requirements (while RT still selects max frequency).
+> Move frequency selection triggering points to where running_bw changes.
 > 
 > Co-authored-by: Claudio Scordino <claudio@evidence.eu.com>
 > Signed-off-by: Juri Lelli <juri.lelli@arm.com>
@@ -33,15 +38,13 @@ On 05-07-17, 09:58, Juri Lelli wrote:
 > ---
 > Changes from RFCv0:
 > 
->  - use BW_SHIFT (Peter)
->  - add comment about guaranteed and requested freq (Peter)
->  - modify comment about go to max behaviour (Claudio)
+>  - modify comment regarding periodic RT updates (Claudio)
 > ---
->  include/linux/sched/cpufreq.h    |  2 --
->  kernel/sched/cpufreq_schedutil.c | 25 +++++++++++++++----------
->  2 files changed, 15 insertions(+), 12 deletions(-)
+>  kernel/sched/deadline.c |  7 ++++---
+>  kernel/sched/sched.h    | 12 ++++++------
+>  2 files changed, 10 insertions(+), 9 deletions(-)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
