@@ -1,86 +1,49 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/5] powernv:idle: Disable LOSE_FULL_CONTEXT states when
- stop-api fails.
-Date: Fri, 7 Jul 2017 23:07:10 +0530
-Message-ID: <20170707173710.GE8913@in.ibm.com>
-References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
- <1499272696-28751-6-git-send-email-ego@linux.vnet.ibm.com>
- <20170707012916.215ed32a@roar.ozlabs.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC PATCH v1 3/8] sched/cpufreq_schedutil: make worker kthread
+ be SCHED_DEADLINE
+Date: Fri, 7 Jul 2017 17:58:05 -0400
+Message-ID: <20170707175805.6bd8f34d@gandalf.local.home>
+References: <20170705085905.6558-1-juri.lelli@arm.com>
+        <alpine.DEB.2.20.1707071244520.1871@nanos>
+        <20170707105316.whutk3h6x2h6xvyt@e106622-lin>
+        <4582085.aKtjXTl7qR@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:35665 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1751915AbdGGRhc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2017 13:37:32 -0400
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id v67HNeme055684
-        for <linux-pm@vger.kernel.org>; Fri, 7 Jul 2017 13:37:31 -0400
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2bjcmjd6bn-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Fri, 07 Jul 2017 13:37:31 -0400
-Received: from localhost
-        by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-        Fri, 7 Jul 2017 11:37:30 -0600
-Content-Disposition: inline
-In-Reply-To: <20170707012916.215ed32a@roar.ozlabs.ibm.com>
+Received: from mail.kernel.org ([198.145.29.99]:55212 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751034AbdGGV6K (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 7 Jul 2017 17:58:10 -0400
+In-Reply-To: <4582085.aKtjXTl7qR@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Juri Lelli <juri.lelli@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Joel Fernandes <joelaf@google.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, luca.abeni@santannapisa.it, claudio@evidence.eu.com, Tommaso Cucinotta <tommaso.cucinotta@santannapisa.it>, bristot@redhat.com, mathieu.poirier@linaro.org, Todd Kjos <tkjos@android.com>, Andres Oportus <andresoportus@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Ingo Molnar <mingo@kernel.org>, Rafael J . Wysocki
 
-On Fri, Jul 07, 2017 at 01:29:16AM +1000, Nicholas Piggin wrote:
-> On Wed,  5 Jul 2017 22:08:16 +0530
-> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
-> 
-> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Fri, 07 Jul 2017 15:11:45 +0200
+"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+
+> On Friday, July 07, 2017 11:53:16 AM Juri Lelli wrote:
+> > On 07/07/17 12:46, Thomas Gleixner wrote:  
+> > > On Fri, 7 Jul 2017, Juri Lelli wrote:  
+> > > > How about SCHED_FLAG_SUGOV then?  
+> > > 
+> > > I know sugo della carne, but what's sugo V?
+> > >   
 > > 
-> > Currently, we use the opal call opal_slw_set_reg() to inform the that
-> > the Sleep-Winkle Engine (SLW) to restore the contents of some of the
-> > Hypervisor state on wakeup from deep idle states that lose full
-> > hypervisor context (characterized by the flag
-> > OPAL_PM_LOSE_FULL_CONTEXT).
+> > Right.. can't really help not thinking about the same (especially close
+> > to lunch) :)
 > > 
-> > However, the current code has a bug in that if opal_slw_set_reg()
-> > fails, we don't disable the use of these deep states (winkle on
-> > POWER8, stop4 onwards on POWER9).
-> > 
-> > This patch fixes this bug by ensuring that if the the sleep winkle
-> > engine is unable to restore the hypervisor states in
-> > pnv_save_sprs_for_deep_states(), then we mark as invalid the states
-> > which lose full context.
-> > 
-> > As a side-effect, since supported_cpuidle_states in
-> > pnv_probe_idle_states() consists of flags of only the valid states,
-> > this patch will ensure that no other subsystem in the kernel can use
-> > the states which lose full context on stop-api failures.
+> > But the abbreviation stands for SchedUtil GOVernor (AFAIK). We already
+> > have a SUGOV_KTHREAD_PRIORITY (that I just noticed I need to remove BTW)
+> > in sched/cpufreq_schedutil.c.  
 > 
-> Looks good. Is there something minimal we can do for stable here?
-> 
-> Aside question, do we need to restore LPCR at all with the SLW engine?
-> It gets set up again when by the idle wakeup code.
-
-
-> 
-> And does POWER9 really need MSR and PSSCR restored by SLW? (going a bit
-> off topic here, I'm just curious)
-
-MSR is needed to be restored so that we wakeup with the right
-endianness and with the IR,DR disabled.
-
-PSSCR is set to a value so that in case of a special wakeup for a
-deep-stop, the SLW can program the core to go back to the stop level
-provided by the PSSCR value via the stop-api.
-
-
-> 
-> Thanks,
-> Nick
+> SCHED_FLAG_CPUFREQ_WORKER comes to mind, but it's somewhat long.
 > 
 
---
-Thanks and Regards
-gautham.
+It is rather long. Although I actually hate the SUGOV, it is easily
+grepable. Just comment what it stands for. We can always change it
+later.
+
+-- Steve
