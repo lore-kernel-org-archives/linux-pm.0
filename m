@@ -1,114 +1,58 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH v1 7/8] sched/sched.h: move
- arch_scale_{freq,cpu}_capacity outside CONFIG_SMP
-Date: Fri, 7 Jul 2017 18:04:58 -0400
-Message-ID: <20170707180458.013325a2@gandalf.local.home>
-References: <20170705085905.6558-1-juri.lelli@arm.com>
-        <20170705085905.6558-8-juri.lelli@arm.com>
+From: Joel Fernandes <joelaf@google.com>
+Subject: Re: [RFC PATCH v1 3/8] sched/cpufreq_schedutil: make worker kthread
+ be SCHED_DEADLINE
+Date: Fri, 7 Jul 2017 15:07:09 -0700
+Message-ID: <CAJWu+ord8UTQhQs0cThPejg-H+56j+7kH6ohaukwO2466_zg1g@mail.gmail.com>
+References: <20170705085905.6558-1-juri.lelli@arm.com> <alpine.DEB.2.20.1707071244520.1871@nanos>
+ <20170707105316.whutk3h6x2h6xvyt@e106622-lin> <4582085.aKtjXTl7qR@aspire.rjw.lan>
+ <20170707175805.6bd8f34d@gandalf.local.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170705085905.6558-8-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f44.google.com ([209.85.218.44]:33233 "EHLO
+        mail-oi0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750882AbdGGWHK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2017 18:07:10 -0400
+Received: by mail-oi0-f44.google.com with SMTP id p188so38463486oia.0
+        for <linux-pm@vger.kernel.org>; Fri, 07 Jul 2017 15:07:10 -0700 (PDT)
+In-Reply-To: <20170707175805.6bd8f34d@gandalf.local.home>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Juri Lelli <juri.lelli@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Luca Abeni <luca.abeni@santannapisa.it>, claudio@evidence.eu.com, Tommaso Cucinotta <tommaso.cucinotta@santannapisa.it>, bristot@redhat.com, Mathieu Poirier <mathieu.poirier@linaro.org>, Todd Kjos <tkjos@android.com>, Andres Oportus <andresoportus@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>Ingo Molnar <mi>
 
-On Wed,  5 Jul 2017 09:59:04 +0100
-Juri Lelli <juri.lelli@arm.com> wrote:
+Hi,
 
-> Currently, frequency and cpu capacity scaling is only performed on
-> CONFIG_SMP systems (as CFS PELT signals are only present for such
-> systems). However, other scheduling classes want to do freq/cpu scaling,
-> and for !CONFIG_SMP configurations as well.
-> 
-> arch_scale_freq_capacity is useful to implement frequency scaling even
-> on !CONFIG_SMP platforms, so we simply move it outside CONFIG_SMP
-> ifdeffery.
-> 
-> Even if arch_scale_cpu_capacity is not useful on !CONFIG_SMP platforms,
-> we make a default implementation available for such configurations anyway
-> to simplify scheduler code doing CPU scale invariance.
-> 
+On Fri, Jul 7, 2017 at 2:58 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> On Fri, 07 Jul 2017 15:11:45 +0200
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+>
+>> On Friday, July 07, 2017 11:53:16 AM Juri Lelli wrote:
+>> > On 07/07/17 12:46, Thomas Gleixner wrote:
+>> > > On Fri, 7 Jul 2017, Juri Lelli wrote:
+>> > > > How about SCHED_FLAG_SUGOV then?
+>> > >
+>> > > I know sugo della carne, but what's sugo V?
+>> > >
+>> >
+>> > Right.. can't really help not thinking about the same (especially close
+>> > to lunch) :)
+>> >
+>> > But the abbreviation stands for SchedUtil GOVernor (AFAIK). We already
+>> > have a SUGOV_KTHREAD_PRIORITY (that I just noticed I need to remove BTW)
+>> > in sched/cpufreq_schedutil.c.
+>>
+>> SCHED_FLAG_CPUFREQ_WORKER comes to mind, but it's somewhat long.
+>>
+>
+> It is rather long. Although I actually hate the SUGOV, it is easily
+> grepable. Just comment what it stands for. We can always change it
+> later.
 
-Reviewed-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+I was thinking why not just SCHED_FLAG_CPUFREQ. That says its for
+cpufreq purposes, and is a bit self-documenting. "WORKER" is a bit
+redundant and can be dropped in my opinion.
 
--- Steve
+thanks,
 
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> ---
->  include/linux/sched/topology.h | 12 ++++++------
->  kernel/sched/sched.h           | 13 ++++++++++---
->  2 files changed, 16 insertions(+), 9 deletions(-)
-> 
-> diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
-> index 7d065abc7a47..953cf4f889ec 100644
-> --- a/include/linux/sched/topology.h
-> +++ b/include/linux/sched/topology.h
-> @@ -6,6 +6,12 @@
->  #include <linux/sched/idle.h>
->  
->  /*
-> + * Increase resolution of cpu_capacity calculations
-> + */
-> +#define SCHED_CAPACITY_SHIFT	SCHED_FIXEDPOINT_SHIFT
-> +#define SCHED_CAPACITY_SCALE	(1L << SCHED_CAPACITY_SHIFT)
-> +
-> +/*
->   * sched-domains (multiprocessor balancing) declarations:
->   */
->  #ifdef CONFIG_SMP
-> @@ -26,12 +32,6 @@
->  #define SD_OVERLAP		0x2000	/* sched_domains of this level overlap */
->  #define SD_NUMA			0x4000	/* cross-node balancing */
->  
-> -/*
-> - * Increase resolution of cpu_capacity calculations
-> - */
-> -#define SCHED_CAPACITY_SHIFT	SCHED_FIXEDPOINT_SHIFT
-> -#define SCHED_CAPACITY_SCALE	(1L << SCHED_CAPACITY_SHIFT)
-> -
->  #ifdef CONFIG_SCHED_SMT
->  static inline int cpu_smt_flags(void)
->  {
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index ec5769288927..178f4a5df2fa 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -1668,9 +1668,6 @@ static inline int hrtick_enabled(struct rq *rq)
->  
->  #endif /* CONFIG_SCHED_HRTICK */
->  
-> -#ifdef CONFIG_SMP
-> -extern void sched_avg_update(struct rq *rq);
-> -
->  #ifndef arch_scale_freq_capacity
->  static __always_inline
->  unsigned long arch_scale_freq_capacity(int cpu)
-> @@ -1679,6 +1676,9 @@ unsigned long arch_scale_freq_capacity(int cpu)
->  }
->  #endif
->  
-> +#ifdef CONFIG_SMP
-> +extern void sched_avg_update(struct rq *rq);
-> +
->  #ifndef arch_scale_cpu_capacity
->  static __always_inline
->  unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
-> @@ -1696,6 +1696,13 @@ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
->  	sched_avg_update(rq);
->  }
->  #else
-> +#ifndef arch_scale_cpu_capacity
-> +static __always_inline
-> +unsigned long arch_scale_cpu_capacity(void __always_unused *sd, int cpu)
-> +{
-> +	return SCHED_CAPACITY_SCALE;
-> +}
-> +#endif
->  static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta) { }
->  static inline void sched_avg_update(struct rq *rq) { }
->  #endif
+-Joel
