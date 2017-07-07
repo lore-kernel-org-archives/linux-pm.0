@@ -1,38 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH v1 3/8] sched/cpufreq_schedutil: make worker kthread be SCHED_DEADLINE
-Date: Fri, 07 Jul 2017 15:11:45 +0200
-Message-ID: <4582085.aKtjXTl7qR@aspire.rjw.lan>
-References: <20170705085905.6558-1-juri.lelli@arm.com> <alpine.DEB.2.20.1707071244520.1871@nanos> <20170707105316.whutk3h6x2h6xvyt@e106622-lin>
+From: Michael Heinemann <posted@heine.so>
+Subject: [PATCH] sbs-battery: correct capacity mode selection bits
+Date: Fri, 07 Jul 2017 16:23:54 +0200
+Message-ID: <1a1c52f56a9e530ae2d0bf825e67f6a6@heine.so>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42007 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750904AbdGGNTX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2017 09:19:23 -0400
-In-Reply-To: <20170707105316.whutk3h6x2h6xvyt@e106622-lin>
+Received: from mail.stresser.de ([88.198.198.115]:47098 "EHLO mail.stresser.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750726AbdGGOX5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 7 Jul 2017 10:23:57 -0400
+Received: from localhost (localhost.localdomain [127.0.0.1])
+        by mail.stresser.de (Postfix) with ESMTP id 6310B4380064
+        for <linux-pm@vger.kernel.org>; Fri,  7 Jul 2017 16:23:56 +0200 (CEST)
+Received: from _ (frachter.stresser.de [46.4.84.91])
+        (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.stresser.de (Postfix) with ESMTPSA id F379D4380063
+        for <linux-pm@vger.kernel.org>; Fri,  7 Jul 2017 16:23:54 +0200 (CEST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Joel Fernandes <joelaf@google.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Steven Rostedt <rostedt@goodmis.org>, luca.abeni@santannapisa.it, claudio@evidence.eu.com, Tommaso Cucinotta <tommaso.cucinotta@santannapisa.it>, bristot@redhat.com, mathieu.poirier@linaro.org, Todd Kjos <tkjos@android.com>, Andres Oportus <andresoportus@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Ingo Molnar <mingo@kernel.org>, Rafael J . Wy
+To: linux-pm@vger.kernel.org
 
-On Friday, July 07, 2017 11:53:16 AM Juri Lelli wrote:
-> On 07/07/17 12:46, Thomas Gleixner wrote:
-> > On Fri, 7 Jul 2017, Juri Lelli wrote:
-> > > How about SCHED_FLAG_SUGOV then?
-> > 
-> > I know sugo della carne, but what's sugo V?
-> > 
-> 
-> Right.. can't really help not thinking about the same (especially close
-> to lunch) :)
-> 
-> But the abbreviation stands for SchedUtil GOVernor (AFAIK). We already
-> have a SUGOV_KTHREAD_PRIORITY (that I just noticed I need to remove BTW)
-> in sched/cpufreq_schedutil.c.
+The capacity mode bit is bit 15. Currently it is written as
+default initialized enum and never shifted. This leads to
+a behaviour where the BATTERY_MODE is not correctly
+recognized and set again.
 
-SCHED_FLAG_CPUFREQ_WORKER comes to mind, but it's somewhat long.
+This commit initializes the enum accordingly.
 
-Thanks,
-Rafael
+Signed-off-by: Michael Heinemann <committed@heine.so>
+---
+  drivers/power/supply/sbs-battery.c | 4 ++--
+  1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/supply/sbs-battery.c 
+b/drivers/power/supply/sbs-battery.c
+index 8bb2eb3..498e9af 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -60,8 +60,8 @@ enum {
+  #define BATTERY_MODE_OFFSET		0x03
+  #define BATTERY_MODE_MASK		0x8000
+  enum sbs_battery_mode {
+-	BATTERY_MODE_AMPS,
+-	BATTERY_MODE_WATTS
++	BATTERY_MODE_AMPS = 0,
++	BATTERY_MODE_WATTS = 0x8000
+  };
+
+  /* manufacturer access defines */
+-- 
+2.7.4
