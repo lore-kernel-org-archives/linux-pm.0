@@ -1,128 +1,174 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/5] powernv:idle: Define idle init function for power8
-Date: Fri, 7 Jul 2017 18:13:02 +0530
-Message-ID: <20170707124302.GC8913@in.ibm.com>
-References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
- <1499272696-28751-4-git-send-email-ego@linux.vnet.ibm.com>
- <20170707010646.0157d251@roar.ozlabs.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Michael Heinemann <posted@heine.so>
+Subject: Re: sbs-battery: Reading CHARGE in uAh
+Date: Fri, 07 Jul 2017 15:06:48 +0200
+Message-ID: <1c63583aadf77510ce85946f7fe3c815@heine.so>
+References: <d760d0a1b38fbda966caaefc63677a56@heine.so>
+ <164cda30-47ba-5289-a6c8-4740752b047d@electromag.com.au>
+ <51e4c77c0a6a5fb9d31d2d79bb998235@heine.so>
+ <058c8617-3b9b-58b8-1fae-056ee90fed80@electromag.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170707010646.0157d251@roar.ozlabs.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.stresser.de ([88.198.198.115]:46148 "EHLO mail.stresser.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750883AbdGGNGv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 7 Jul 2017 09:06:51 -0400
+In-Reply-To: <058c8617-3b9b-58b8-1fae-056ee90fed80@electromag.com.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Phil Reid <preid@electromag.com.au>
+Cc: linux-pm@vger.kernel.org
 
-Hi Nicholas,
-
-On Fri, Jul 07, 2017 at 01:06:46AM +1000, Nicholas Piggin wrote:
-> On Wed,  5 Jul 2017 22:08:14 +0530
-> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+On 2017-07-07 10:27, Phil Reid wrote:
+> On 7/07/2017 16:01, Michael Heinemann wrote:
+>> Hi Phil,
+>> On 2017-07-07 03:49, Phil Reid wrote:
+>>> G'day Michael,
+>>> On 6/07/2017 23:23, Michael Heinemann wrote:
+>>>> 
+>>>> 
+>>>> I got an INSPIRED ENERGY NH2057 Battery which is compliant to SBS 
+>>>> Specification Version 1.1.
+>>>> 
+>>>> The Battery is generally working but I noticed that the values I get 
+>>>> from sysfs for the CHARGE values
+>>>> are identical to the values I get as ENERGY and they are in uWh. 
+>>>> According to the power_supply_class
+>>>> documentation CHARGE should be in uAh and ENERGY in uWh.
+>>>> 
+>>>> So I took a look into the drivers/power/supply/sbs-battery.c and 
+>>>> noticed a possible bug in the code
+>>>> when switching from BATTERY_MODE_WATTS to BATTERY_MODE_AMPS:
+>>>> 
+>>>> The configuration bit, according to the SBS Spec, is bit 15 of the 
+>>>> BatteryMode Register.
+>>>> 
+>>>> These two modes are reflected in the code as:
+>>>> 
+>>>> enum sbs_battery_mode {
+>>>>      BATTERY_MODE_AMPS,
+>>>>      BATTERY_MODE_WATTS
+>>>> };
+>>>> 
+>>>> When I look into the 'sbs_set_battery_mode' function I don't see any 
+>>>> point where these mode bits are
+>>>> shifted to bit 15. When I debug I only see the register being 
+>>>> changed from 0x8000 to 0x8001 and back.
+>>>> 
+>>>> So I'm a bit confused, is this actually working for somebody? I see 
+>>>> in the 'for-next' branch [1] that
+>>>> there is currently work done to add a mutex to the mode switch. So 
+>>>> at least it seems to be working for
+>>>> some people. But I don't see why. Am I missing something?
+>>>> 
+>>>> 
+>>> 
+>>> Your analyse looks correct. I've not look that closely at the data
+>>> from the battery as yet.
+>>> There's looks to be a few issues in there related to switching mode.
+>>> 
+>>> The return value from sbs_set_battery_mode also looks suspect.
+>>> Perhaps it should just return 0 on success.
+>>> 
+>>> And then sbs_get_battery_capacity needs cleaning up as it's using the
+>>> return value to set the mode at the end.
+>>> 
+>>> It setts the mode, and then I guess the intention was to set it back 
+>>> again.
+>>> But do we event need to do that? The next get is going to set the 
+>>> correct mode.
+>>> And the mode setting will soon be wrapped in a mutex.
+>> 
+>> I spend some more time to look at the code and my conclusion is that 
+>> the cause
+>> of the problem is a mix up of two different approaches for the mode.
+>> 
+>> The initial mode is passed in as 0 or 1 coming from enum 
+>> sbs_battery_mode.
+>> But when the setting back is done the value comes from the return 
+>> value of
+>> the previous call to sbs_set_battery_mode which is 0x8000 or 0x0000.
+>> 
+>> At least for my battery this leads to a situation where the status 
+>> register is
+>> 0x8000 so it's in mWh Mode. Then the mode=0 is passed in to set uAh.
+>> 
+>> But this statement
+>> 
+>> if ((original_val & BATTERY_MODE_MASK) == mode)
+>>          return mode;
+>> 
+>> is true by mistake ((0x8000 & 0x8000) == 0) so the function exits and 
+>> never
+>> sets anything.
+> Yeap that what I thought.
 > 
-> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> > 
-> > In this patch we define a new function named pnv_power8_idle_init().
-> > 
-> > We move the following code from pnv_init_idle_states() into this newly
-> > defined function.
-> >    a) That patches out pnv_fastsleep_workaround_at_entry/exit when
-> >       no states with OPAL_PM_SLEEP_ENABLED_ER1 are present.
-> >    b) Creating a sysfs control to choose how the workaround has to be
-> >    applied when a OPAL_PM_SLEEP_ENABLED_ER1 state is present.
-> >    c) Set ppc_md.power_save to power7_idle when OPAL_PM_NAP_ENABLED is
-> >    present.
-> > 
-> > With this, all the power8 specific initializations are in one place.
-> > 
-> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/platforms/powernv/idle.c | 59 ++++++++++++++++++++++++-----------
-> >  1 file changed, 40 insertions(+), 19 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> > index a5990d9..c400ff9 100644
-> > --- a/arch/powerpc/platforms/powernv/idle.c
-> > +++ b/arch/powerpc/platforms/powernv/idle.c
-> > @@ -564,6 +564,44 @@ static void __init pnv_power9_idle_init(void)
-> >  		pnv_first_deep_stop_state);
-> >  }
-> >  
-> > +
-> > +static void __init pnv_power8_idle_init(void)
-> > +{
-> > +	int i;
-> > +	bool has_nap = false;
-> > +	bool has_sleep_er1 = false;
-> > +	int dt_idle_states = pnv_idle.nr_states;
-> > +
-> > +	for (i = 0; i < dt_idle_states; i++) {
-> > +		struct pnv_idle_state *state = &pnv_idle.states[i];
-> > +
-> > +		if (state->flags & OPAL_PM_NAP_ENABLED)
-> > +			has_nap = true;
-> > +		if (state->flags & OPAL_PM_SLEEP_ENABLED_ER1)
-> > +			has_sleep_er1 = true;
-> > +	}
-> > +
-> > +	if (!has_sleep_er1) {
-> > +		patch_instruction(
-> > +			(unsigned int *)pnv_fastsleep_workaround_at_entry,
-> > +			PPC_INST_NOP);
-> > +		patch_instruction(
-> > +			(unsigned int *)pnv_fastsleep_workaround_at_exit,
-> > +			PPC_INST_NOP);
-> > +	} else {
-> > +		/*
-> > +		 * OPAL_PM_SLEEP_ENABLED_ER1 is set. It indicates that
-> > +		 * workaround is needed to use fastsleep. Provide sysfs
-> > +		 * control to choose how this workaround has to be applied.
-> > +		 */
-> > +		device_create_file(cpu_subsys.dev_root,
-> > +				&dev_attr_fastsleep_workaround_applyonce);
-> > +	}
-> > +
-> > +	if (has_nap)
-> > +		ppc_md.power_save = power7_idle;
-> > +}
-> > +
-> >  /*
-> >   * Returns 0 if prop1_len == prop2_len. Else returns -1
-> >   */
-> > @@ -837,6 +875,8 @@ static int __init pnv_probe_idle_states(void)
-> >  
-> >  	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> >  		pnv_power9_idle_init();
-> > +	else
-> > +		pnv_power8_idle_init();
-> >  
-> >  	for (i = 0; i < dt_idle_states; i++) {
-> >  		if (!pnv_idle.states[i].valid)
-> > @@ -858,22 +898,6 @@ static int __init pnv_init_idle_states(void)
-> >  	if (pnv_probe_idle_states())
-> >  		goto out;
-> >  
-> > -	if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
-> > -		patch_instruction(
-> > -			(unsigned int *)pnv_fastsleep_workaround_at_entry,
-> > -			PPC_INST_NOP);
-> > -		patch_instruction(
-> > -			(unsigned int *)pnv_fastsleep_workaround_at_exit,
-> > -			PPC_INST_NOP);
+>> 
+>> What would be the "kernel style" way to fix this?
+> That I'm not sure of. My personal style would be against using the enum 
+> value.
+> Unless is was set to a constant. ie:
+> BATTERY_MODE_AMPS  = 0,
+> BATTERY_MODE_WATTS = 0x8000
+> But I'd probably make the enum a #define instead with above value
 > 
-> So previously this would run on POWER9 and patch out those branches.
-> But POWER9 never runs that code, so no problem. Good cleanup.
-
-And that's what I thought, but on checking the assembly code, I found
-that pnv_fastsleep_workaround_at_exit is executed on POWER9. Will fix
-this!
-
 > 
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+>> Define the sbs_battery_mode like this:
+>> 
+>> enum sbs_battery_mode {
+>>      BATTERY_MODE_AMPS,
+>>      BATTERY_MODE_WATTS
+>> };
+>> 
+>> Or add a #define CAPACITY_MODE_OFFSET 0xf and shift the mode bit in 
+>> the function?
+>> 
+>> I tested a bit with the shifted bit and the added mutex and get I 
+>> correct values now.
+>> Without the mutex it's more or less randomly changing between uAh and 
+>> mWh.
+>> I would writeup a patch and submit it as proposal.
+>> 
+>>  From my understanding of the SBS Spec (Page 19) the intention of the 
+>> Mode setting is
+>> to select one Mode for your power source and leave it at that. For 
+>> Example the AtRate()
+>> calculations become wrong when you change the mode. But as the driver 
+>> is not using
+>> these features that might not be an issue.
+> Had a quick look at that and it'd have to do the same thing as the
+> sbs_get_battery_capacity
+> call and use the mutex if it was implemented. Don't think we need to
+> wrory about it at present thou.
 > 
+>> 
+>> I would agree that the driver does not need to change back the Mode 
+>> bit as it is
+>> set on every read anyway. So this is unnecessary overhead.
+>> If I find time I'll submit a patch to remove this and clean up a bit.
+>> 
+> I like any speed improvement. It takes a while to poll all the values
+> from the battery.
 
---
-Thanks and Regards
-gautham.
+I did some more testing and came to a bit disappointing outcome. I
+don't know if this is specific to my battery or a general thing with
+SBS devices.
+When I set the CAPACITY_MODE bit the change is not always effective
+immediately. Sometimes it works, sometimes it takes a few ms and
+sometimes the bit never changes and I have to write it again.
+
+So there seems to be no guarantee to get the reading in the expected
+format.
+
+How could this be handled? Return an error when the CAPACITY_MODE bit
+was not set succesfully? Retry setting it (which takes time)?
+
+I guess if some service is using the values from the battery it
+normaly relies on ENERGY or CHARGE and not both. So not setting
+back the mode after each read would be a first step in the
+right direction. What do you think?
+
+Regards,
+Michael
