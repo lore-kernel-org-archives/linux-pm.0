@@ -1,115 +1,134 @@
-From: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
-Subject: Re: [PATCH v3 1/3] cpufreq: mediatek: Add support of cpufreq to
- MT2701/MT7623 SoC
-Date: Fri, 07 Jul 2017 09:30:49 +0200
-Message-ID: <1499412649.4449.33.camel@suse.de>
-References: <cover.1499399121.git.sean.wang@mediatek.com>
-         <de42e68d86dd161bb18b4ca7f27774c63c1bd55d.1499399121.git.sean.wang@mediatek.com>
+From: Michael Heinemann <posted@heine.so>
+Subject: Re: sbs-battery: Reading CHARGE in uAh
+Date: Fri, 07 Jul 2017 10:01:39 +0200
+Message-ID: <51e4c77c0a6a5fb9d31d2d79bb998235@heine.so>
+References: <d760d0a1b38fbda966caaefc63677a56@heine.so>
+ <164cda30-47ba-5289-a6c8-4740752b047d@electromag.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <de42e68d86dd161bb18b4ca7f27774c63c1bd55d.1499399121.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, jamesjj.liao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, shunli.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.stresser.de ([88.198.198.115]:41728 "EHLO mail.stresser.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751001AbdGGIBm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 7 Jul 2017 04:01:42 -0400
+In-Reply-To: <164cda30-47ba-5289-a6c8-4740752b047d@electromag.com.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Phil Reid <preid@electromag.com.au>
+Cc: linux-pm@vger.kernel.org
 
-Hi Sean,
-
-On ven., 2017-07-07 at 11:56 +0800, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org wrote:
-> From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Hi Phil,
+On 2017-07-07 03:49, Phil Reid wrote:
+> G'day Michael,
+> On 6/07/2017 23:23, Michael Heinemann wrote:
+>> 
+>> 
+>> I got an INSPIRED ENERGY NH2057 Battery which is compliant to SBS 
+>> Specification Version 1.1.
+>> 
+>> The Battery is generally working but I noticed that the values I get 
+>> from sysfs for the CHARGE values
+>> are identical to the values I get as ENERGY and they are in uWh. 
+>> According to the power_supply_class
+>> documentation CHARGE should be in uAh and ENERGY in uWh.
+>> 
+>> So I took a look into the drivers/power/supply/sbs-battery.c and 
+>> noticed a possible bug in the code
+>> when switching from BATTERY_MODE_WATTS to BATTERY_MODE_AMPS:
+>> 
+>> The configuration bit, according to the SBS Spec, is bit 15 of the 
+>> BatteryMode Register.
+>> 
+>> These two modes are reflected in the code as:
+>> 
+>> enum sbs_battery_mode {
+>>      BATTERY_MODE_AMPS,
+>>      BATTERY_MODE_WATTS
+>> };
+>> 
+>> When I look into the 'sbs_set_battery_mode' function I don't see any 
+>> point where these mode bits are
+>> shifted to bit 15. When I debug I only see the register being changed 
+>> from 0x8000 to 0x8001 and back.
+>> 
+>> So I'm a bit confused, is this actually working for somebody? I see in 
+>> the 'for-next' branch [1] that
+>> there is currently work done to add a mutex to the mode switch. So at 
+>> least it seems to be working for
+>> some people. But I don't see why. Am I missing something?
+>> 
+>> 
 > 
-> MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
-> single cluster and this hardware is also compatible with the existing
-> driver through enabling CPU frequency feature with operating-points-v2
-> bindings. Also, this driver actually supports all MediaTek SoCs, the
-> Kconfig menu entry and file name itself should be updated with more
-> generic name to drop "MT8173"
+> Your analyse looks correct. I've not look that closely at the data
+> from the battery as yet.
+> There's looks to be a few issues in there related to switching mode.
 > 
-> Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> ---
->  drivers/cpufreq/Kconfig.arm                         | 8 ++++----
->  drivers/cpufreq/Makefile                            | 2 +-
->  drivers/cpufreq/{mt8173-cpufreq.c => mtk-cpufreq.c} | 2 ++
->  3 files changed, 7 insertions(+), 5 deletions(-)
->  rename drivers/cpufreq/{mt8173-cpufreq.c => mtk-cpufreq.c} (99%)
+> The return value from sbs_set_battery_mode also looks suspect.
+> Perhaps it should just return 0 on success.
 > 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 74ed7e9..79aece7 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -87,14 +87,14 @@ config ARM_KIRKWOOD_CPUFREQ
->  	  This adds the CPUFreq driver for Marvell Kirkwood
->  	  SoCs.
->  
-> -config ARM_MT8173_CPUFREQ
-> -	tristate "Mediatek MT8173 CPUFreq support"
-> +config ARM_MEDIATEK_CPUFREQ
-> +	tristate "CPU Frequency scaling support for MediaTek SoCs"
->  	depends on ARCH_MEDIATEK && REGULATOR
-> -	depends on ARM64 || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
-> +	depends on ARM || ARM64 || COMPILE_TEST
+> And then sbs_get_battery_capacity needs cleaning up as it's using the
+> return value to set the mode at the end.
+> 
+> It setts the mode, and then I guess the intention was to set it back 
+> again.
+> But do we event need to do that? The next get is going to set the 
+> correct mode.
+> And the mode setting will soon be wrapped in a mutex.
 
-This statement no longer serves any purpose. The whole Kconfig.arm file
-depends on ARM || ARM64, so you can drop it. As a matter of fact no
-other entry in this file has the dependency.
+I spend some more time to look at the code and my conclusion is that the 
+cause
+of the problem is a mix up of two different approaches for the mode.
 
->  	depends on !CPU_THERMAL || THERMAL
->  	select PM_OPP
->  	help
-> -	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
-> +	  This adds the CPUFreq driver support for MediaTek SoCs.
->  
->  config ARM_OMAP2PLUS_CPUFREQ
->  	bool "TI OMAP2+"
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index b7e78f0..4956f5d 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -58,7 +58,7 @@ obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
->  obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
->  obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
->  obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
-> -obj-$(CONFIG_ARM_MT8173_CPUFREQ)	+= mt8173-cpufreq.o
-> +obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mtk-cpufreq.o
+The initial mode is passed in as 0 or 1 coming from enum 
+sbs_battery_mode.
+But when the setting back is done the value comes from the return value 
+of
+the previous call to sbs_set_battery_mode which is 0x8000 or 0x0000.
 
-I would have preferred mediatek-cpufreq. 3-letter abbreviations are
-likely to collide and cause confusion at some point in time. However it
-seems I am late to the party, I see that there are already many files
-named mtk-* or *-mtk.*... So, so be it.
+At least for my battery this leads to a situation where the status 
+register is
+0x8000 so it's in mWh Mode. Then the mode=0 is passed in to set uAh.
 
-Also the file describing the bindings is named cpufreq-mediatek.txt,
-which is inconsistent... But the situation is the same for a few other
-cpufreq drivers already, so I suppose this is acceptable.
+But this statement
 
->  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
->  obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
->  obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
-> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mtk-cpufreq.c
-> similarity index 99%
-> rename from drivers/cpufreq/mt8173-cpufreq.c
-> rename to drivers/cpufreq/mtk-cpufreq.c
-> index fd1886f..481ec77 100644
-> --- a/drivers/cpufreq/mt8173-cpufreq.c
-> +++ b/drivers/cpufreq/mtk-cpufreq.c
-> @@ -575,6 +575,8 @@ static struct platform_driver mt8173_cpufreq_platdrv = {
->  
->  /* List of machines supported by this driver */
->  static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
-> +	{ .compatible = "mediatek,mt2701", },
-> +	{ .compatible = "mediatek,mt7623", },
->  	{ .compatible = "mediatek,mt817x", },
->  	{ .compatible = "mediatek,mt8173", },
->  	{ .compatible = "mediatek,mt8176", },
+if ((original_val & BATTERY_MODE_MASK) == mode)
+		return mode;
 
-Reviewed-by: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
+is true by mistake ((0x8000 & 0x8000) == 0) so the function exits and 
+never
+sets anything.
 
--- 
-Jean Delvare
-SUSE L3 Support
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+What would be the "kernel style" way to fix this?
+Define the sbs_battery_mode like this:
+
+enum sbs_battery_mode {
+	BATTERY_MODE_AMPS,
+	BATTERY_MODE_WATTS
+};
+
+Or add a #define CAPACITY_MODE_OFFSET 0xf and shift the mode bit in the 
+function?
+
+I tested a bit with the shifted bit and the added mutex and get I 
+correct values now.
+Without the mutex it's more or less randomly changing between uAh and 
+mWh.
+I would writeup a patch and submit it as proposal.
+
+ From my understanding of the SBS Spec (Page 19) the intention of the 
+Mode setting is
+to select one Mode for your power source and leave it at that. For 
+Example the AtRate()
+calculations become wrong when you change the mode. But as the driver is 
+not using
+these features that might not be an issue.
+
+I would agree that the driver does not need to change back the Mode bit 
+as it is
+set on every read anyway. So this is unnecessary overhead.
+If I find time I'll submit a patch to remove this and clean up a bit.
+
+Regards,
+Michael
