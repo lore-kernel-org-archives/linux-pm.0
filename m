@@ -1,75 +1,198 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC PATCH v1 4/8] sched/cpufreq_schedutil: split utilization
- signals
-Date: Fri, 7 Jul 2017 11:59:32 +0100
-Message-ID: <20170707105932.bnslgcqjp4rwg273@e106622-lin>
-References: <20170705085905.6558-1-juri.lelli@arm.com>
- <20170705085905.6558-5-juri.lelli@arm.com>
- <20170707085848.GA32542@vireshk-i7>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/5] powernv:idle: Move device-tree parsing to one place.
+Date: Fri, 7 Jul 2017 16:55:39 +0530
+Message-ID: <20170707112539.GA8913@in.ibm.com>
+References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1499272696-28751-2-git-send-email-ego@linux.vnet.ibm.com>
+ <20170707005340.003c530b@roar.ozlabs.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:46056 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751091AbdGGK7j (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 7 Jul 2017 06:59:39 -0400
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:57543 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1751001AbdGGLZq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2017 07:25:46 -0400
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id v67BNpl1108372
+        for <linux-pm@vger.kernel.org>; Fri, 7 Jul 2017 07:25:46 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 2bj387w57a-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Fri, 07 Jul 2017 07:25:45 -0400
+Received: from localhost
+        by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+        Fri, 7 Jul 2017 05:25:45 -0600
 Content-Disposition: inline
-In-Reply-To: <20170707085848.GA32542@vireshk-i7>
+In-Reply-To: <20170707005340.003c530b@roar.ozlabs.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi,
+Hello Nicholas,
 
-On 07/07/17 14:28, Viresh Kumar wrote:
-> On 05-07-17, 09:59, Juri Lelli wrote:
-> > To be able to treat utilization signals of different scheduling classes
-> > in different ways (e.g., CFS signal might be stale while DEADLINE signal
-> > is never stale by design) we need to split sugov_cpu::util signal in two:
-> > util_cfs and util_dl.
+On Fri, Jul 07, 2017 at 12:53:40AM +1000, Nicholas Piggin wrote:
+> On Wed,  5 Jul 2017 22:08:12 +0530
+> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+> 
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > > 
-> > This patch does that by also changing sugov_get_util() parameter list.
-> > After this change, aggregation of the different signals has to be performed
-> > by sugov_get_util() users (so that they can decide what to do with the
-> > different signals).
+> > The details of the platform idle state are exposed by the firmware to
+> > the kernel via device tree.
 > > 
-> > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > In the current code, we parse the device tree twice :
+> > 
+> > 1) During the boot up in arch/powerpc/platforms/powernv/idle.c Here,
+> > the device tree is parsed to obtain the details of the
+> > supported_cpuidle_states which is used to determine the default idle
+> > state (which would be used when cpuidle is absent) and the deepest
+> > idle state (which would be used for cpu-hotplug).
+> > 
+> > 2) During the powernv cpuidle driver initializion
+> > (drivers/cpuidle/cpuidle-powernv.c). Here we parse the device tree to
+> > populate the cpuidle driver's states.
+> > 
+> > This patch moves all the device tree parsing to the platform idle
+> > code. It defines data-structures for recording the details of the
+> > parsed idle states. Any other kernel subsystem that is interested in
+> > the idle states (eg: cpuidle-powernv driver) can just use the
+> > in-kernel data structure instead of parsing the device tree all over
+> > again.
+> > 
+> > Further, this helps to check the validity of states in one place and
+> > in case of invalid states (eg : stop states whose psscr values are
+> > errorenous) flag them as invalid, so that the other subsystems can be
+> > prevented from using those.
+> > 
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 > 
-> Are you referring to this response here ?
+> Hi,
 > 
-> https://marc.info/?l=linux-kernel&m=149095102600847&w=2
-> 
+> I think the overall direction is good. A few small things.
 
-Yep.
-
-> If yes, then I don't think it was about having separate APIs, but just storing
-> util_cfs/dl separately.
+Thanks for reviewing the patches.
 > 
-> > -static void sugov_get_util(unsigned long *util, unsigned long *max)
-> > +static void sugov_get_util(struct sugov_cpu *sg_cpu)
-> >  {
-> >  	struct rq *rq = this_rq();
-> > -	unsigned long dl_util = (rq->dl.running_bw * SCHED_CAPACITY_SCALE)
-> > -				>> BW_SHIFT;
+> 
+> > +
+> > +#define PNV_IDLE_NAME_LEN     16
+> > +struct pnv_idle_state {
+> > +	char name[PNV_IDLE_NAME_LEN];
+> > +	u32 flags;
+> > +	u32 latency_ns;
+> > +	u32 residency_ns;
+> > +	u64 ctrl_reg_val;   /* The ctrl_reg on POWER8 would be pmicr. */
+> > +	u64 ctrl_reg_mask;  /* On POWER9 it is psscr */
+> > +	bool valid;
+> > +};
+> 
+> Do we use PMICR anywhere in the idle code? What about allowing for some
+> machine-specific fields?
+
+PMICR is not used anywhere so far. I will change to to psscr_val and
+psscr_mask for now. If there is a use for pmicr n the future, we can
+change this to the union struct as you suggest.
+
+
+> 
+>     union {
+>         struct { /* p9 */
+>             u64 psscr_val;
+>             u64 psscr_mask;
+>         };
+>         struct { /* p8 */
+>             u64 pmicr...;
+> 
+> 
+> > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> > index 2abee07..b747bb5 100644
+> > --- a/arch/powerpc/platforms/powernv/idle.c
+> > +++ b/arch/powerpc/platforms/powernv/idle.c
+> > @@ -58,6 +58,17 @@
+> >  static u64 pnv_deepest_stop_psscr_mask;
+> >  static bool deepest_stop_found;
 > >  
-> > -	*max = arch_scale_cpu_capacity(NULL, smp_processor_id());
-> > +	sg_cpu->max = arch_scale_cpu_capacity(NULL, smp_processor_id());
-> > +	sg_cpu->util_cfs = rq->cfs.avg.util_avg;
-> > +	sg_cpu->util_dl = (rq->dl.running_bw * SCHED_CAPACITY_SCALE)
-> > +			  >> BW_SHIFT;
+> > +/*
+> > + * Data structure that stores details of
+> > + * all the platform idle states.
+> > + */
+> > +struct pnv_idle_states pnv_idle;
+> > +
+> > +struct pnv_idle_states *get_pnv_idle_states(void)
+> > +{
+> > +	return &pnv_idle;
 > > +}
-> >  
-> > +static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
 > 
-> As Joel already mentioned, I don't think we should create two separate routines
-> here.
+> I wouldn't have the wrapper function... but it's your code so it's
+> up to you. One thing though is that this function you have called get_
+> just to return the pointer, but it does not take a reference or
+> allocate memory or initialize the structure. Other functions with the
+> same prefix do such things. Can we make something more consistent?
+
+I agree with the wrapper function. But then the alternative was to
+declare this variable as an extern so that cpuidle can access it. Is
+that preferable ?
+
 > 
+> ...
+> 
+> > +/**
+> > + * get_idle_prop_u32_array: Returns an array of u32 elements
+> > + *			    parsed from the device tree corresponding
+> > + *			    to the property provided in variable propname.
+> > + *
+> > + * @np: Pointer to device tree node "/ibm,opal/power-mgt"
+> > + * @nr_states: Expected number of elements.
+> > + * @propname : Name of the property whose values is an array of
+> > + *             u32 elements
+> > + *
+> > + * Returns a pointer to a u32 array of size nr_states on success.
+> > + * Returns NULL on failure.
+> > + */
+> > +static inline u32 *get_idle_prop_u32_array(struct device_node *np,
+> > +					   int nr_states,
+> > +					   const char *propname)
+> > +{
+> > +	u32 *ret_array;
+> > +	int rc, count;
+> > +
+> > +	count = of_property_count_u32_elems(np, propname);
+> > +	rc = validate_dt_prop_sizes("ibm,cpu-idle-state-flags", nr_states,
+> > +				    propname, count);
+> > +	if (rc)
+> > +		return NULL;
+> > +
+> > +	ret_array = kcalloc(nr_states, sizeof(*ret_array), GFP_KERNEL);
+> > +	if (!ret_array)
+> > +		return NULL;
+> 
+> So I would say for this, how about moving the allocations into the caller?
+> You're still doing most of the error handling freeing there, so I would
+> say it's more balanced if you do that.
 
-Mmm, it makes retrieving of utilization in sugov_update_shared and
-aggregating values for the domain in sugov_next_freq_shared cleaner,
-IMHO.
+Sure, that makes sense. I will move the allocation to the main
+function and remove the "inline" associated with these helpers.
 
-Thanks,
+> 
+> Also, perhaps consider dropping most of the inline keywords. Unless it's
+> performance critical or does some significant optimisation due to constant
+> parameters I would say avoid the keyword as a rule.
+> 
+> [snip]
+> 
+> There's a lot of code movement, I haven't reviewed it all carefully, but
+> it looks good in general. I'll apply the patches and check the result
+> in the next few days when I get a bit of time.
 
-- Juri
+If it helps, I will post the subsequent version breaking this patch
+into smaller ones.
+
+
+> 
+> Thanks,
+> Nick
+> 
+--
+Thanks and Regards
+gautham.
