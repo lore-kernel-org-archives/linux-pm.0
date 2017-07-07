@@ -1,73 +1,47 @@
-From: Vikram Mulukutla <markivx@codeaurora.org>
-Subject: Re: [PATCH v2 4/6] cpufreq: schedutil: update CFS util only if used
-Date: Thu, 06 Jul 2017 23:44:09 -0700
-Message-ID: <c04bdad3354a0ee0aabe63fe813fdaf5@codeaurora.org>
-References: <1499189651-18797-1-git-send-email-patrick.bellasi@arm.com>
- <1499189651-18797-5-git-send-email-patrick.bellasi@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH v1 1/8] sched/cpufreq_schedutil: make use of DEADLINE
+ utilization signal
+Date: Fri, 7 Jul 2017 12:50:04 +0530
+Message-ID: <20170707072004.GF1523@vireshk-i7>
+References: <20170705085905.6558-1-juri.lelli@arm.com>
+ <20170705085905.6558-2-juri.lelli@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:41038 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750886AbdGGGoL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2017 02:44:11 -0400
-In-Reply-To: <1499189651-18797-5-git-send-email-patrick.bellasi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170705085905.6558-2-juri.lelli@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Joel Fernandes <joelaf@google.com>, Andres Oportus <andresoportus@google.com>, Todd Kjos <tkjos@android.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel-owner@vger.kernel.org
 
-On 2017-07-04 10:34, Patrick Bellasi wrote:
-> Currently the utilization of the FAIR class is collected before locking
-> the policy. Although that should not be a big issue for most cases, we
-> also don't really know how much latency there can be between the
-> utilization reading and its usage.
+On 05-07-17, 09:58, Juri Lelli wrote:
+> SCHED_DEADLINE tracks active utilization signal with a per dl_rq
+> variable named running_bw.
 > 
-> Let's get the FAIR utilization right before its usage to be better in
-> sync with the current status of a CPU.
+> Make use of that to drive cpu frequency selection: add up FAIR and
+> DEADLINE contribution to get the required CPU capacity to handle both
+> requirements (while RT still selects max frequency).
 > 
-> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
+> Co-authored-by: Claudio Scordino <claudio@evidence.eu.com>
+> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 > Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Ingo Molnar <mingo@kernel.org>
 > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
+> Cc: Luca Abeni <luca.abeni@santannapisa.it>
 > ---
->  kernel/sched/cpufreq_schedutil.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+> Changes from RFCv0:
 > 
-> diff --git a/kernel/sched/cpufreq_schedutil.c 
-> b/kernel/sched/cpufreq_schedutil.c
-> index 98704d8..df433f1 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -308,10 +308,9 @@ static void sugov_update_shared(struct
-> update_util_data *hook, u64 time,
->  	if (unlikely(current == sg_policy->thread))
->  		return;
-> 
-> -	sugov_get_util(&util, &max);
-> -
->  	raw_spin_lock(&sg_policy->update_lock);
-> 
-> +	sugov_get_util(&util, &max);
->  	sg_cpu->util = util;
->  	sg_cpu->max = max;
+>  - use BW_SHIFT (Peter)
+>  - add comment about guaranteed and requested freq (Peter)
+>  - modify comment about go to max behaviour (Claudio)
+> ---
+>  include/linux/sched/cpufreq.h    |  2 --
+>  kernel/sched/cpufreq_schedutil.c | 25 +++++++++++++++----------
+>  2 files changed, 15 insertions(+), 12 deletions(-)
 
-Given that the utilization update hooks are called with the per-cpu rq 
-lock held (for all classes), I don't think PELT utilization can change 
-throughout the lifetime of the cpufreq_update_{util,this_cpu} call? Even 
-with Viresh's remote cpu callback series we'd still have to hold the rq 
-lock across cpufreq_update_util..  what can change today is 'max' 
-(arch_scale_cpu_capacity) when a cpufreq policy is shared, so the patch 
-is still needed for that reason I think?
-
-Thanks,
-Vikram
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+viresh
