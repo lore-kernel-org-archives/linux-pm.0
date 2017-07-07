@@ -1,134 +1,124 @@
-From: Michael Heinemann <posted@heine.so>
-Subject: Re: sbs-battery: Reading CHARGE in uAh
-Date: Fri, 07 Jul 2017 10:01:39 +0200
-Message-ID: <51e4c77c0a6a5fb9d31d2d79bb998235@heine.so>
-References: <d760d0a1b38fbda966caaefc63677a56@heine.so>
- <164cda30-47ba-5289-a6c8-4740752b047d@electromag.com.au>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v16 2/7] power: add power sequence library
+Date: Fri, 7 Jul 2017 16:01:07 +0800
+Message-ID: <20170707080107.GC21909@b29397-desktop>
+References: <1498027328-25078-1-git-send-email-peter.chen@nxp.com>
+ <1868803.ffQpiaMTN5@aspire.rjw.lan>
+ <20170705115400.GA17226@b29397-desktop>
+ <2629938.X3D3UTyHBr@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.stresser.de ([88.198.198.115]:41728 "EHLO mail.stresser.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751001AbdGGIBm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 7 Jul 2017 04:01:42 -0400
-In-Reply-To: <164cda30-47ba-5289-a6c8-4740752b047d@electromag.com.au>
+Received: from mail-co1nam03on0079.outbound.protection.outlook.com ([104.47.40.79]:51072
+        "EHLO NAM03-CO1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751001AbdGGIBo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 7 Jul 2017 04:01:44 -0400
+Content-Disposition: inline
+In-Reply-To: <2629938.X3D3UTyHBr@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Chen <peter.chen@nxp.com>, mark.rutland@arm.com, ulf.hansson@linaro.org, heiko@sntech.de, stephen.boyd@linaro.org, frank.li@nxp.com, linux-kernel@vger.kernel.org, gary.bisson@boundarydevices.com, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, dbaryshkov@gmail.com, vaibhav.hiremath@linaro.org, krzk@kernel.org, mka@chromium.org, stern@rowland.harvard.edu, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, sre@kernel.org, broonie@kernel.org, p.zabel@pe
 
-Hi Phil,
-On 2017-07-07 03:49, Phil Reid wrote:
-> G'day Michael,
-> On 6/07/2017 23:23, Michael Heinemann wrote:
->> 
->> 
->> I got an INSPIRED ENERGY NH2057 Battery which is compliant to SBS 
->> Specification Version 1.1.
->> 
->> The Battery is generally working but I noticed that the values I get 
->> from sysfs for the CHARGE values
->> are identical to the values I get as ENERGY and they are in uWh. 
->> According to the power_supply_class
->> documentation CHARGE should be in uAh and ENERGY in uWh.
->> 
->> So I took a look into the drivers/power/supply/sbs-battery.c and 
->> noticed a possible bug in the code
->> when switching from BATTERY_MODE_WATTS to BATTERY_MODE_AMPS:
->> 
->> The configuration bit, according to the SBS Spec, is bit 15 of the 
->> BatteryMode Register.
->> 
->> These two modes are reflected in the code as:
->> 
->> enum sbs_battery_mode {
->>      BATTERY_MODE_AMPS,
->>      BATTERY_MODE_WATTS
->> };
->> 
->> When I look into the 'sbs_set_battery_mode' function I don't see any 
->> point where these mode bits are
->> shifted to bit 15. When I debug I only see the register being changed 
->> from 0x8000 to 0x8001 and back.
->> 
->> So I'm a bit confused, is this actually working for somebody? I see in 
->> the 'for-next' branch [1] that
->> there is currently work done to add a mutex to the mode switch. So at 
->> least it seems to be working for
->> some people. But I don't see why. Am I missing something?
->> 
->> 
+On Fri, Jul 07, 2017 at 03:13:48AM +0200, Rafael J. Wysocki wrote:
+> > 
+> > - Can I write new code for it or I need to depend on something?
 > 
-> Your analyse looks correct. I've not look that closely at the data
-> from the battery as yet.
-> There's looks to be a few issues in there related to switching mode.
+> There is nothing this code needs to depend on AFAICS, but there are existing
+> solutions in this problem space (ACPI power management, genpd), so it needs to
+> be careful enough about possible overlaps etc.
 > 
-> The return value from sbs_set_battery_mode also looks suspect.
-> Perhaps it should just return 0 on success.
+> > I find there is already "power state" concept at documentation.
+> > Documentation/ABI/testing/sysfs-devices-power_state
 > 
-> And then sbs_get_battery_capacity needs cleaning up as it's using the
-> return value to set the mode at the end.
+> This is ACPI-specific and only in sysfs directories representing ACPI device
+> objects (which aren't physical devices).
 > 
-> It setts the mode, and then I guess the intention was to set it back 
-> again.
-> But do we event need to do that? The next get is going to set the 
-> correct mode.
-> And the mode setting will soon be wrapped in a mutex.
+> Anyway, since ACPI covers the problem space you are working in already,
+> your code has to be mutually exclusive with it.
+> 
+> > - If I can write the new code for it, except the problems I want
+> > to fix, are there any other use cases I need to consider?
+> 
+> I would start simple and focus on the particular problem at hand, that is
+> devices with two power states ("on" and "off") where the "on" state
+> depends on a number of clocks and/or GPIOs.  Still, I'd also avoid making
+> design choices that might prevent it from being extended in the future
+> if need be.
+> 
+> One major problem I can see is how to "attach" the power states framework
+> to a particular device (once we have discovered that it should be used with
+> that device).
+> 
+> For bus types that don't do power management of their own you could follow
+> ACPI (and genpd) and provide a PM domain for this purpose, but bus types
+> doing their own PM (like USB) will probably need to be treated differently.
+> In those cases the bus type code will have to know that it should call some
+> helpers to switch power states of devices.
+> 
 
-I spend some more time to look at the code and my conclusion is that the 
-cause
-of the problem is a mix up of two different approaches for the mode.
+After thinking more, using a power state framework is seems too heavy
+for this use case. This use case is just do some clock and gpio
+operations before device is created, and do some put operations
+after device is deleted. We just need some helpers in one structure
+(called "power sequence" or "power state") for this purpose.
 
-The initial mode is passed in as 0 or 1 coming from enum 
-sbs_battery_mode.
-But when the setting back is done the value comes from the return value 
-of
-the previous call to sbs_set_battery_mode which is 0x8000 or 0x0000.
+For the use case, the clock and gpio operation can be done after device
+is created, the power domain is more suitable.
 
-At least for my battery this leads to a situation where the status 
-register is
-0x8000 so it's in mWh Mode. Then the mode=0 is passed in to set uAh.
+> > > 
+> > > Moreover, it assumes that all of the platforms including the IP block driven
+> > > by the controller driver in question will use the "power sequences" model,
+> > > but what if there are more generally defined power domains on them?
+> > 
+> > No, the IP block doesn't need this "power sequence", the power stuffs
+> > (clock, gpio, regulator) are described at firmware (eg, DT), and power
+> > operations are carried out during the probe, the device and driver match
+> > happens before power operation.
+> > 
+> > But for devices on the bus (bus is controlled by controller), the match
+> > information (eg, product id/vendor id) is stored at device's firmware, the
+> > controller device needs to talk with its child first to get the match
+> > information before the child device's probe.
+> 
+> Actually, that may vary from bus to bus.  In some cases the enumeration is
+> entirely firmware-based and in some cases devices are discoverable.
+> 
+> I guess you mean the latter situation and you are saying that subordinate
+> devices may need to be turned "on" (by means of a "power sequence") in order
+> to be enumerated.
+> 
+> Fair enough, but this is not what I meant.
+> 
+> The concern was that if drivers started to use "power sequences", they would
+> become incompatible with alternative solutions in the same problem space,
+> like genpd, but that need not be the case, so never mind.
 
-But this statement
+"power sequence" is just used before the device is created and after the
+device is deleted from the bus. I don't want to overlap with power
+domain.
 
-if ((original_val & BATTERY_MODE_MASK) == mode)
-		return mode;
+> 
+> > > 
+> > > It looks like the power management should really be carried out by an
+> > > additional layer of code to avoid imposing platform dependencies on
+> > > controller drivers.
+> > > 
+> > > Further, what if there are "power sequences" for the host controllers
+> > > themselves?  Who's expected to operate those "power sequences" then?
+> > 
+> > See above.
+> 
+> Let me rephrase.  Assume that your host controller is a platform device and
+> it is not "on" when the SoC comes up.  It has to be turned "on" via a "power
+> sequence".  Who's expected to do that for it?
+> 
 
-is true by mistake ((0x8000 & 0x8000) == 0) so the function exits and 
-never
-sets anything.
+We can use power domain for it, doesn't need "power sequence" in this
+series introduces.
 
-What would be the "kernel style" way to fix this?
-Define the sbs_battery_mode like this:
+-- 
 
-enum sbs_battery_mode {
-	BATTERY_MODE_AMPS,
-	BATTERY_MODE_WATTS
-};
-
-Or add a #define CAPACITY_MODE_OFFSET 0xf and shift the mode bit in the 
-function?
-
-I tested a bit with the shifted bit and the added mutex and get I 
-correct values now.
-Without the mutex it's more or less randomly changing between uAh and 
-mWh.
-I would writeup a patch and submit it as proposal.
-
- From my understanding of the SBS Spec (Page 19) the intention of the 
-Mode setting is
-to select one Mode for your power source and leave it at that. For 
-Example the AtRate()
-calculations become wrong when you change the mode. But as the driver is 
-not using
-these features that might not be an issue.
-
-I would agree that the driver does not need to change back the Mode bit 
-as it is
-set on every read anyway. So this is unnecessary overhead.
-If I find time I'll submit a patch to remove this and clean up a bit.
-
-Regards,
-Michael
+Best Regards,
+Peter Chen
