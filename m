@@ -1,174 +1,199 @@
-From: Michael Heinemann <posted@heine.so>
-Subject: Re: sbs-battery: Reading CHARGE in uAh
-Date: Fri, 07 Jul 2017 15:06:48 +0200
-Message-ID: <1c63583aadf77510ce85946f7fe3c815@heine.so>
-References: <d760d0a1b38fbda966caaefc63677a56@heine.so>
- <164cda30-47ba-5289-a6c8-4740752b047d@electromag.com.au>
- <51e4c77c0a6a5fb9d31d2d79bb998235@heine.so>
- <058c8617-3b9b-58b8-1fae-056ee90fed80@electromag.com.au>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v16 2/7] power: add power sequence library
+Date: Fri, 07 Jul 2017 15:03:06 +0200
+Message-ID: <2042394.b4eZkzrJ5f@aspire.rjw.lan>
+References: <1498027328-25078-1-git-send-email-peter.chen@nxp.com> <2629938.X3D3UTyHBr@aspire.rjw.lan> <20170707080107.GC21909@b29397-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.stresser.de ([88.198.198.115]:46148 "EHLO mail.stresser.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750883AbdGGNGv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 7 Jul 2017 09:06:51 -0400
-In-Reply-To: <058c8617-3b9b-58b8-1fae-056ee90fed80@electromag.com.au>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57551 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750726AbdGGNKo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2017 09:10:44 -0400
+In-Reply-To: <20170707080107.GC21909@b29397-desktop>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: linux-pm@vger.kernel.org
+To: Peter Chen <hzpeterchen@gmail.com>
+Cc: Peter Chen <peter.chen@nxp.com>, mark.rutland@arm.com, ulf.hansson@linaro.org, heiko@sntech.de, stephen.boyd@linaro.org, frank.li@nxp.com, linux-kernel@vger.kernel.org, gary.bisson@boundarydevices.com, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, dbaryshkov@gmail.com, vaibhav.hiremath@linaro.org, krzk@kernel.org, mka@chromium.org, stern@rowland.harvard.edu, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, sre@kernel.org, broonie@kernel.org, p.zabel@pengutronix.de, shawnguo@kernel.org, jun.li@nxp.com
 
-On 2017-07-07 10:27, Phil Reid wrote:
-> On 7/07/2017 16:01, Michael Heinemann wrote:
->> Hi Phil,
->> On 2017-07-07 03:49, Phil Reid wrote:
->>> G'day Michael,
->>> On 6/07/2017 23:23, Michael Heinemann wrote:
->>>> 
->>>> 
->>>> I got an INSPIRED ENERGY NH2057 Battery which is compliant to SBS 
->>>> Specification Version 1.1.
->>>> 
->>>> The Battery is generally working but I noticed that the values I get 
->>>> from sysfs for the CHARGE values
->>>> are identical to the values I get as ENERGY and they are in uWh. 
->>>> According to the power_supply_class
->>>> documentation CHARGE should be in uAh and ENERGY in uWh.
->>>> 
->>>> So I took a look into the drivers/power/supply/sbs-battery.c and 
->>>> noticed a possible bug in the code
->>>> when switching from BATTERY_MODE_WATTS to BATTERY_MODE_AMPS:
->>>> 
->>>> The configuration bit, according to the SBS Spec, is bit 15 of the 
->>>> BatteryMode Register.
->>>> 
->>>> These two modes are reflected in the code as:
->>>> 
->>>> enum sbs_battery_mode {
->>>>      BATTERY_MODE_AMPS,
->>>>      BATTERY_MODE_WATTS
->>>> };
->>>> 
->>>> When I look into the 'sbs_set_battery_mode' function I don't see any 
->>>> point where these mode bits are
->>>> shifted to bit 15. When I debug I only see the register being 
->>>> changed from 0x8000 to 0x8001 and back.
->>>> 
->>>> So I'm a bit confused, is this actually working for somebody? I see 
->>>> in the 'for-next' branch [1] that
->>>> there is currently work done to add a mutex to the mode switch. So 
->>>> at least it seems to be working for
->>>> some people. But I don't see why. Am I missing something?
->>>> 
->>>> 
->>> 
->>> Your analyse looks correct. I've not look that closely at the data
->>> from the battery as yet.
->>> There's looks to be a few issues in there related to switching mode.
->>> 
->>> The return value from sbs_set_battery_mode also looks suspect.
->>> Perhaps it should just return 0 on success.
->>> 
->>> And then sbs_get_battery_capacity needs cleaning up as it's using the
->>> return value to set the mode at the end.
->>> 
->>> It setts the mode, and then I guess the intention was to set it back 
->>> again.
->>> But do we event need to do that? The next get is going to set the 
->>> correct mode.
->>> And the mode setting will soon be wrapped in a mutex.
->> 
->> I spend some more time to look at the code and my conclusion is that 
->> the cause
->> of the problem is a mix up of two different approaches for the mode.
->> 
->> The initial mode is passed in as 0 or 1 coming from enum 
->> sbs_battery_mode.
->> But when the setting back is done the value comes from the return 
->> value of
->> the previous call to sbs_set_battery_mode which is 0x8000 or 0x0000.
->> 
->> At least for my battery this leads to a situation where the status 
->> register is
->> 0x8000 so it's in mWh Mode. Then the mode=0 is passed in to set uAh.
->> 
->> But this statement
->> 
->> if ((original_val & BATTERY_MODE_MASK) == mode)
->>          return mode;
->> 
->> is true by mistake ((0x8000 & 0x8000) == 0) so the function exits and 
->> never
->> sets anything.
-> Yeap that what I thought.
+On Friday, July 07, 2017 04:01:07 PM Peter Chen wrote:
+> On Fri, Jul 07, 2017 at 03:13:48AM +0200, Rafael J. Wysocki wrote:
+> > > 
+> > > - Can I write new code for it or I need to depend on something?
+> > 
+> > There is nothing this code needs to depend on AFAICS, but there are existing
+> > solutions in this problem space (ACPI power management, genpd), so it needs to
+> > be careful enough about possible overlaps etc.
+> > 
+> > > I find there is already "power state" concept at documentation.
+> > > Documentation/ABI/testing/sysfs-devices-power_state
+> > 
+> > This is ACPI-specific and only in sysfs directories representing ACPI device
+> > objects (which aren't physical devices).
+> > 
+> > Anyway, since ACPI covers the problem space you are working in already,
+> > your code has to be mutually exclusive with it.
+> > 
+> > > - If I can write the new code for it, except the problems I want
+> > > to fix, are there any other use cases I need to consider?
+> > 
+> > I would start simple and focus on the particular problem at hand, that is
+> > devices with two power states ("on" and "off") where the "on" state
+> > depends on a number of clocks and/or GPIOs.  Still, I'd also avoid making
+> > design choices that might prevent it from being extended in the future
+> > if need be.
+> > 
+> > One major problem I can see is how to "attach" the power states framework
+> > to a particular device (once we have discovered that it should be used with
+> > that device).
+> > 
+> > For bus types that don't do power management of their own you could follow
+> > ACPI (and genpd) and provide a PM domain for this purpose, but bus types
+> > doing their own PM (like USB) will probably need to be treated differently.
+> > In those cases the bus type code will have to know that it should call some
+> > helpers to switch power states of devices.
+> > 
 > 
->> 
->> What would be the "kernel style" way to fix this?
-> That I'm not sure of. My personal style would be against using the enum 
-> value.
-> Unless is was set to a constant. ie:
-> BATTERY_MODE_AMPS  = 0,
-> BATTERY_MODE_WATTS = 0x8000
-> But I'd probably make the enum a #define instead with above value
+> After thinking more, using a power state framework is seems too heavy
+> for this use case. This use case is just do some clock and gpio
+> operations before device is created, and do some put operations
+> after device is deleted. We just need some helpers in one structure
+> (called "power sequence" or "power state") for this purpose.
 > 
-> 
->> Define the sbs_battery_mode like this:
->> 
->> enum sbs_battery_mode {
->>      BATTERY_MODE_AMPS,
->>      BATTERY_MODE_WATTS
->> };
->> 
->> Or add a #define CAPACITY_MODE_OFFSET 0xf and shift the mode bit in 
->> the function?
->> 
->> I tested a bit with the shifted bit and the added mutex and get I 
->> correct values now.
->> Without the mutex it's more or less randomly changing between uAh and 
->> mWh.
->> I would writeup a patch and submit it as proposal.
->> 
->>  From my understanding of the SBS Spec (Page 19) the intention of the 
->> Mode setting is
->> to select one Mode for your power source and leave it at that. For 
->> Example the AtRate()
->> calculations become wrong when you change the mode. But as the driver 
->> is not using
->> these features that might not be an issue.
-> Had a quick look at that and it'd have to do the same thing as the
-> sbs_get_battery_capacity
-> call and use the mutex if it was implemented. Don't think we need to
-> wrory about it at present thou.
-> 
->> 
->> I would agree that the driver does not need to change back the Mode 
->> bit as it is
->> set on every read anyway. So this is unnecessary overhead.
->> If I find time I'll submit a patch to remove this and clean up a bit.
->> 
-> I like any speed improvement. It takes a while to poll all the values
-> from the battery.
+> For the use case, the clock and gpio operation can be done after device
+> is created, the power domain is more suitable.
 
-I did some more testing and came to a bit disappointing outcome. I
-don't know if this is specific to my battery or a general thing with
-SBS devices.
-When I set the CAPACITY_MODE bit the change is not always effective
-immediately. Sometimes it works, sometimes it takes a few ms and
-sometimes the bit never changes and I have to write it again.
+There is a problem with PM domains that they only provide hooks for runtime PM
+and system suspend/resume (including hibernation) and not for generic
+"power up" and "power down" operations that may need to be carried out at
+probe time before the runtime PM framework can be used (and analogously
+at remove time).
 
-So there seems to be no guarantee to get the reading in the expected
-format.
+I would consider starting with the patch below or similar.
 
-How could this be handled? Return an error when the CAPACITY_MODE bit
-was not set succesfully? Retry setting it (which takes time)?
+Then you can define something like POWER_STATE_SEQUENCE type for your
+case and basically use almost what you have already with it, except that
+struct pwrsec_generic will now become struct power_state_sequence and
+struct power_state_info will be embedded in it instead of struct pwrsec.
 
-I guess if some service is using the values from the battery it
-normaly relies on ENERGY or CHARGE and not both. So not setting
-back the mode after each read would be a first step in the
-right direction. What do you think?
+The major comceptual difference is that ->power_up and ->power_down are
+now available at the level of the device that needs the power sequence and
+pm_device_power_up/down() can be used wherever necessary (in the code,
+in a bus type, in a controller driver or even in the driver for this particular
+device).
 
-Regards,
-Michael
+Most likely you will need a PM domain in addition to that, but mostly to avoid
+code duplication.
+
+And in the future other types of power state definitions may be hooked up
+to that, including ACPI etc.
+
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/common.c |   35 +++++++++++++++++++++++++++++++++++
+ include/linux/pm.h          |   33 +++++++++++++++++++++++++++++++++
+ 2 files changed, 68 insertions(+)
+
+Index: linux-pm/include/linux/pm.h
+===================================================================
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -550,6 +550,30 @@ struct pm_subsys_data {
+ #endif
+ };
+ 
++enum power_state_type {
++	POWER_STATE_GENERIC = 0,
++};
++
++/**
++ * struct power_state_info - information related to device power states.
++ *
++ * @type: Power states definition type.
++ * @power_up: Device power up method.
++ * @power_down: Device power down method.
++ *
++ * @power_up is expected to put the device into a power state in which it can
++ * be operated by software (it doesn't have to be the full power state in
++ * principle as long as the device will respond to all software accesses in
++ * this state) and @power_down is expected to put the device into the lowest
++ * power state the device can be put into given all of the applicable
++ * constraints and limitations (it may not mean completely off).
++ */
++struct power_state_info {
++	enum power_state_type type;
++	int (*power_up)(struct device *dev);
++	int (*power_down)(struct device *dev);
++};
++
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
+ 	unsigned int		can_wakeup:1;
+@@ -600,6 +624,7 @@ struct dev_pm_info {
+ 	unsigned long		active_jiffies;
+ 	unsigned long		suspended_jiffies;
+ 	unsigned long		accounting_timestamp;
++	struct power_state_info	*state;
+ #endif
+ 	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
+ 	void (*set_latency_tolerance)(struct device *, s32);
+@@ -610,6 +635,14 @@ extern void update_pm_runtime_accounting
+ extern int dev_pm_get_subsys_data(struct device *dev);
+ extern void dev_pm_put_subsys_data(struct device *dev);
+ 
++#ifdef CONFIG_PM
++extern int pm_device_power_up(struct device *dev);
++extern int pm_device_power_down(struct device *dev);
++#else
++static inline int pm_device_power_up(struct device *dev) { return 0; }
++static inline int pm_device_power_down(struct device *dev) { return 0; }
++#endif /* CONFIG_PM */
++
+ /**
+  * struct dev_pm_domain - power management domain representation.
+  *
+Index: linux-pm/drivers/base/power/common.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/common.c
++++ linux-pm/drivers/base/power/common.c
+@@ -152,3 +152,38 @@ void dev_pm_domain_set(struct device *de
+ 	device_pm_check_callbacks(dev);
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_domain_set);
++
++/**
++ * pm_device_power_up - Power up a device using the power states framework.
++ * @dev: Device to power up.
++ *
++ * Put the device into a power state in which it will respond to all software
++ * accesses (that may not mean maximum power) using the callback provided
++ * through the device power state framework, if present.
++ */
++int pm_device_power_up(struct device *dev)
++{
++	if (dev->power.state && dev->power.state->power_up)
++		return dev->power.state->power_up(dev);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pm_device_power_up);
++
++/**
++ * pm_device_power_down - Power down a device using the power states framework.
++ * @dev: Device to power down.
++ *
++ * Put the device into the lowest power state it can be put into given the
++ * applicable constraints and limitations (that may not mean maximum power)
++ * using the callback provided through the device power state framework, if
++ * present.
++ */
++int pm_device_power_down(struct device *dev)
++{
++	if (dev->power.state && dev->power.state->power_down)
++		return dev->power.state->power_down(dev);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pm_device_power_down);
