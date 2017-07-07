@@ -1,129 +1,64 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: sbs-battery: Reading CHARGE in uAh
-Date: Fri, 7 Jul 2017 16:27:25 +0800
-Message-ID: <058c8617-3b9b-58b8-1fae-056ee90fed80@electromag.com.au>
-References: <d760d0a1b38fbda966caaefc63677a56@heine.so>
- <164cda30-47ba-5289-a6c8-4740752b047d@electromag.com.au>
- <51e4c77c0a6a5fb9d31d2d79bb998235@heine.so>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH v1 4/8] sched/cpufreq_schedutil: split utilization
+ signals
+Date: Fri, 7 Jul 2017 14:28:48 +0530
+Message-ID: <20170707085848.GA32542@vireshk-i7>
+References: <20170705085905.6558-1-juri.lelli@arm.com>
+ <20170705085905.6558-5-juri.lelli@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy3.45ru.net.au ([203.30.46.155]:55749 "EHLO
-        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751011AbdGGI13 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2017 04:27:29 -0400
-In-Reply-To: <51e4c77c0a6a5fb9d31d2d79bb998235@heine.so>
-Content-Language: en-AU
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:33059 "EHLO
+        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751992AbdGGI6w (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2017 04:58:52 -0400
+Received: by mail-pf0-f170.google.com with SMTP id e7so14228338pfk.0
+        for <linux-pm@vger.kernel.org>; Fri, 07 Jul 2017 01:58:51 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20170705085905.6558-5-juri.lelli@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Heinemann <posted@heine.so>
-Cc: linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
-On 7/07/2017 16:01, Michael Heinemann wrote:
-> Hi Phil,
-> On 2017-07-07 03:49, Phil Reid wrote:
->> G'day Michael,
->> On 6/07/2017 23:23, Michael Heinemann wrote:
->>>
->>>
->>> I got an INSPIRED ENERGY NH2057 Battery which is compliant to SBS Specification Version 1.1.
->>>
->>> The Battery is generally working but I noticed that the values I get from sysfs for the CHARGE values
->>> are identical to the values I get as ENERGY and they are in uWh. According to the power_supply_class
->>> documentation CHARGE should be in uAh and ENERGY in uWh.
->>>
->>> So I took a look into the drivers/power/supply/sbs-battery.c and noticed a possible bug in the code
->>> when switching from BATTERY_MODE_WATTS to BATTERY_MODE_AMPS:
->>>
->>> The configuration bit, according to the SBS Spec, is bit 15 of the BatteryMode Register.
->>>
->>> These two modes are reflected in the code as:
->>>
->>> enum sbs_battery_mode {
->>>      BATTERY_MODE_AMPS,
->>>      BATTERY_MODE_WATTS
->>> };
->>>
->>> When I look into the 'sbs_set_battery_mode' function I don't see any point where these mode bits are
->>> shifted to bit 15. When I debug I only see the register being changed from 0x8000 to 0x8001 and back.
->>>
->>> So I'm a bit confused, is this actually working for somebody? I see in the 'for-next' branch [1] that
->>> there is currently work done to add a mutex to the mode switch. So at least it seems to be working for
->>> some people. But I don't see why. Am I missing something?
->>>
->>>
->>
->> Your analyse looks correct. I've not look that closely at the data
->> from the battery as yet.
->> There's looks to be a few issues in there related to switching mode.
->>
->> The return value from sbs_set_battery_mode also looks suspect.
->> Perhaps it should just return 0 on success.
->>
->> And then sbs_get_battery_capacity needs cleaning up as it's using the
->> return value to set the mode at the end.
->>
->> It setts the mode, and then I guess the intention was to set it back again.
->> But do we event need to do that? The next get is going to set the correct mode.
->> And the mode setting will soon be wrapped in a mutex.
+On 05-07-17, 09:59, Juri Lelli wrote:
+> To be able to treat utilization signals of different scheduling classes
+> in different ways (e.g., CFS signal might be stale while DEADLINE signal
+> is never stale by design) we need to split sugov_cpu::util signal in two:
+> util_cfs and util_dl.
 > 
-> I spend some more time to look at the code and my conclusion is that the cause
-> of the problem is a mix up of two different approaches for the mode.
+> This patch does that by also changing sugov_get_util() parameter list.
+> After this change, aggregation of the different signals has to be performed
+> by sugov_get_util() users (so that they can decide what to do with the
+> different signals).
 > 
-> The initial mode is passed in as 0 or 1 coming from enum sbs_battery_mode.
-> But when the setting back is done the value comes from the return value of
-> the previous call to sbs_set_battery_mode which is 0x8000 or 0x0000.
-> 
-> At least for my battery this leads to a situation where the status register is
-> 0x8000 so it's in mWh Mode. Then the mode=0 is passed in to set uAh.
-> 
-> But this statement
-> 
-> if ((original_val & BATTERY_MODE_MASK) == mode)
->          return mode;
-> 
-> is true by mistake ((0x8000 & 0x8000) == 0) so the function exits and never
-> sets anything.
-Yeap that what I thought.
+> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> 
-> What would be the "kernel style" way to fix this?
-That I'm not sure of. My personal style would be against using the enum value.
-Unless is was set to a constant. ie:
-BATTERY_MODE_AMPS  = 0,
-BATTERY_MODE_WATTS = 0x8000
-But I'd probably make the enum a #define instead with above value
+Are you referring to this response here ?
 
+https://marc.info/?l=linux-kernel&m=149095102600847&w=2
 
-> Define the sbs_battery_mode like this:
-> 
-> enum sbs_battery_mode {
->      BATTERY_MODE_AMPS,
->      BATTERY_MODE_WATTS
-> };
-> 
-> Or add a #define CAPACITY_MODE_OFFSET 0xf and shift the mode bit in the function?
-> 
-> I tested a bit with the shifted bit and the added mutex and get I correct values now.
-> Without the mutex it's more or less randomly changing between uAh and mWh.
-> I would writeup a patch and submit it as proposal.
-> 
->  From my understanding of the SBS Spec (Page 19) the intention of the Mode setting is
-> to select one Mode for your power source and leave it at that. For Example the AtRate()
-> calculations become wrong when you change the mode. But as the driver is not using
-> these features that might not be an issue.
-Had a quick look at that and it'd have to do the same thing as the sbs_get_battery_capacity
-call and use the mutex if it was implemented. Don't think we need to wrory about it at present thou.
+If yes, then I don't think it was about having separate APIs, but just storing
+util_cfs/dl separately.
 
-> 
-> I would agree that the driver does not need to change back the Mode bit as it is
-> set on every read anyway. So this is unnecessary overhead.
-> If I find time I'll submit a patch to remove this and clean up a bit.
-> 
-I like any speed improvement. It takes a while to poll all the values from the battery.
+> -static void sugov_get_util(unsigned long *util, unsigned long *max)
+> +static void sugov_get_util(struct sugov_cpu *sg_cpu)
+>  {
+>  	struct rq *rq = this_rq();
+> -	unsigned long dl_util = (rq->dl.running_bw * SCHED_CAPACITY_SCALE)
+> -				>> BW_SHIFT;
+>  
+> -	*max = arch_scale_cpu_capacity(NULL, smp_processor_id());
+> +	sg_cpu->max = arch_scale_cpu_capacity(NULL, smp_processor_id());
+> +	sg_cpu->util_cfs = rq->cfs.avg.util_avg;
+> +	sg_cpu->util_dl = (rq->dl.running_bw * SCHED_CAPACITY_SCALE)
+> +			  >> BW_SHIFT;
+> +}
+>  
+> +static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
 
+As Joel already mentioned, I don't think we should create two separate routines
+here.
 
 -- 
-Regards
-Phil Reid
+viresh
