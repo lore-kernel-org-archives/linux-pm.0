@@ -1,55 +1,65 @@
-From: Michael Heinemann <posted@heine.so>
-Subject: [PATCH] sbs-battery: correct capacity mode selection bits
-Date: Fri, 07 Jul 2017 16:23:54 +0200
-Message-ID: <1a1c52f56a9e530ae2d0bf825e67f6a6@heine.so>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 4/5] powernv:idle: Move initialization of sibling pacas
+ to pnv_alloc_idle_core_states
+Date: Fri, 7 Jul 2017 20:34:16 +0530
+Message-ID: <20170707150416.GD8913@in.ibm.com>
+References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1499272696-28751-5-git-send-email-ego@linux.vnet.ibm.com>
+ <20170707011609.76c51329@roar.ozlabs.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.stresser.de ([88.198.198.115]:47098 "EHLO mail.stresser.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750726AbdGGOX5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 7 Jul 2017 10:23:57 -0400
-Received: from localhost (localhost.localdomain [127.0.0.1])
-        by mail.stresser.de (Postfix) with ESMTP id 6310B4380064
-        for <linux-pm@vger.kernel.org>; Fri,  7 Jul 2017 16:23:56 +0200 (CEST)
-Received: from _ (frachter.stresser.de [46.4.84.91])
-        (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.stresser.de (Postfix) with ESMTPSA id F379D4380063
-        for <linux-pm@vger.kernel.org>; Fri,  7 Jul 2017 16:23:54 +0200 (CEST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170707011609.76c51329@roar.ozlabs.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-The capacity mode bit is bit 15. Currently it is written as
-default initialized enum and never shifted. This leads to
-a behaviour where the BATTERY_MODE is not correctly
-recognized and set again.
+On Fri, Jul 07, 2017 at 01:16:09AM +1000, Nicholas Piggin wrote:
+> On Wed,  5 Jul 2017 22:08:15 +0530
+> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
+> 
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > 
+> > On POWER9 DD1, in order to get around a hardware issue, we store in
+> > every CPU thread's paca the paca pointers of all its siblings.
+> > 
+> > Move this code into pnv_alloc_idle_core_states() soon after the space
+> > for saving the sibling pacas is allocated.
+> > 
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> 
+> > -	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+> > -		int cpu;
+> > -
+> > -		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
+> > -		for_each_possible_cpu(cpu) {
+> > -			int base_cpu = cpu_first_thread_sibling(cpu);
+> > -			int idx = cpu_thread_in_core(cpu);
+> > -			int i;
+> > -
+> 
+> You could move the thread_sibling_pacas allocation to here?
+> 
+> Speaking of which... core_idle_state and thread_sibling_pacas are
+> allocated with kmalloc_node... What happens if we take an SLB miss
+> in the idle wakeup code on these guys? Nothing good I think. Perhaps
+> we should put them into the pacas or somewhere in bolted memory.
 
-This commit initializes the enum accordingly.
+Yes, though the SLB miss hasn't yet been encountered in practise so
+far!
 
-Signed-off-by: Michael Heinemann <committed@heine.so>
----
-  drivers/power/supply/sbs-battery.c | 4 ++--
-  1 file changed, 2 insertions(+), 2 deletions(-)
+While one can define thread_sibling_pacas in PACA, it doesn't make
+sense to allocate space for core_idle_state in PACA since the
+allocated value of the secondary threads will never be used.
 
-diff --git a/drivers/power/supply/sbs-battery.c 
-b/drivers/power/supply/sbs-battery.c
-index 8bb2eb3..498e9af 100644
---- a/drivers/power/supply/sbs-battery.c
-+++ b/drivers/power/supply/sbs-battery.c
-@@ -60,8 +60,8 @@ enum {
-  #define BATTERY_MODE_OFFSET		0x03
-  #define BATTERY_MODE_MASK		0x8000
-  enum sbs_battery_mode {
--	BATTERY_MODE_AMPS,
--	BATTERY_MODE_WATTS
-+	BATTERY_MODE_AMPS = 0,
-+	BATTERY_MODE_WATTS = 0x8000
-  };
+What is the right way to ensure that these allocations fall in the
+bolted range ?
 
-  /* manufacturer access defines */
--- 
-2.7.4
+> 
+> Good cleanup though.
+> 
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> 
