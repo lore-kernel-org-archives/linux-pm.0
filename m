@@ -1,58 +1,68 @@
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v5 1/5] x86: stub out pmc function
-Date: Sat, 8 Jul 2017 19:00:43 +0300
-Message-ID: <CAHp75VeB_osvYsgmo5WcDbjB+ZWYVEG6CP043KxFoPximDReHA@mail.gmail.com>
-References: <20170708000303.21863-1-dbasehore@chromium.org>
+Subject: Re: [PATCH v5 2/5] tick: Add freeze timer events
+Date: Sat, 8 Jul 2017 19:05:37 +0300
+Message-ID: <CAHp75Vcw7uG+d42Td9d7vzmzWu2b_LMKzeO=aHc5kWSDbS54KA@mail.gmail.com>
+References: <20170708000303.21863-1-dbasehore@chromium.org> <20170708000303.21863-2-dbasehore@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f194.google.com ([209.85.220.194]:33584 "EHLO
-        mail-qk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752689AbdGHQAp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jul 2017 12:00:45 -0400
-In-Reply-To: <20170708000303.21863-1-dbasehore@chromium.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <20170708000303.21863-2-dbasehore@chromium.org>
+Sender: platform-driver-x86-owner@vger.kernel.org
 To: Derek Basehore <dbasehore@chromium.org>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, "x86@kernel.org" <x86@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jul 8, 2017 at 3:02 AM, Derek Basehore <dbasehore@chromium.org> wrote:
-> This creates an inline function of intel_pmc_slp_s0_counter_read for
-> !CONFIG_INTEL_PMC_CORE.
-
-it doesn't make sense alone.
-There is a plan to move this header to where it nowadays belongs to, i.e.
-include/linux/platform_data/x86/.
-
-Please, do this relocation first.
-
+On Sat, Jul 8, 2017 at 3:03 AM, Derek Basehore <dbasehore@chromium.org> wrote:
+> Adds a new feature to tick to schedule wakeups on a CPU during freeze.
+> This won't fully wake up the system (devices are not resumed), but
+> allow simple platform functionality to be run during freeze with
+> little power impact.
 >
-> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
-> ---
->  arch/x86/include/asm/pmc_core.h | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
+> This implementation allows an idle driver to setup a timer event with
+> the clock event device when entering freeze by calling
+> tick_set_freeze_event. Only one caller should exist for the function.
 >
-> diff --git a/arch/x86/include/asm/pmc_core.h b/arch/x86/include/asm/pmc_core.h
-> index d4855f11136d..5d142d915f30 100644
-> --- a/arch/x86/include/asm/pmc_core.h
-> +++ b/arch/x86/include/asm/pmc_core.h
-> @@ -22,6 +22,10 @@
->  #define _ASM_PMC_CORE_H
+> tick_freeze_event_expired is used to check if the timer went off when
+> the CPU wakes.
 >
->  /* API to read SLP_S0_RESIDENCY counter */
-> -int intel_pmc_slp_s0_counter_read(u32 *data);
-> +#ifdef CONFIG_INTEL_PMC_CORE
-> +extern int intel_pmc_slp_s0_counter_read(u32 *data);
-> +#else
-> +static inline int intel_pmc_slp_s0_counter_read(u32 *data) { return -EPERM; }
-> +#endif
->
->  #endif /* _ASM_PMC_CORE_H */
-> --
-> 2.13.2.725.g09c95d1e9-goog
->
+> The event is cleared by tick_clear_freeze_event.
 
+> +int tick_set_freeze_event(int cpu, ktime_t delta)
+> +{
 
+> +               printk_deferred(KERN_WARNING
+> +                               "[%s] unsupported by clock event device\n",
+
+Can it be one line?
+
+> +               printk_deferred(KERN_WARNING
+> +                               "[%s] clock event device in use\n",
+
+Ditto.
+
+> +               printk_deferred(KERN_WARNING
+> +                               "[%s] %lluns outside range: [%lluns, %lluns]\n",
+
+Ditto.
+
+> +               printk_deferred(KERN_WARNING
+> +                               "Failed to program freeze event\n");
+
+Ditto.
+
+> +int tick_freeze_event_expired(int cpu)
+> +{
+> +       struct clock_event_device *dev = per_cpu(tick_cpu_device, cpu).evtdev;
+> +
+> +       if (!(dev && dev->event_expired))
+
+Usually we use a pattern (!x || !x->y). At least for me it looks
+slightly better to read.
+
+> +               return 0;
+> +
+> +       return dev->event_expired(dev);
+> +}
 
 -- 
 With Best Regards,
