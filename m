@@ -1,104 +1,72 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [PATCH v16 2/7] power: add power sequence library
-Date: Sat, 08 Jul 2017 14:14:56 +0200
-Message-ID: <10723509.cz5GGA4OTz@aspire.rjw.lan>
-References: <1498027328-25078-1-git-send-email-peter.chen@nxp.com> <2042394.b4eZkzrJ5f@aspire.rjw.lan> <20170708055115.GA25873@b29397-desktop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170708055115.GA25873@b29397-desktop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, mark.rutland-5wv7dgnIgG8@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, frank.li-3arQi8VN3Tc@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jun.li-3arQi8VN3Tc@public.gmane.org
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 1/2] ACPI / boot: Correct address space of __acpi_map_table()
+Date: Sat,  8 Jul 2017 18:50:29 +0300
+Message-ID: <20170708155030.12587-1-andriy.shevchenko@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:54216 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752769AbdGHPuf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 8 Jul 2017 11:50:35 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-On Saturday, July 08, 2017 01:51:15 PM Peter Chen wrote:
-> On Fri, Jul 07, 2017 at 03:03:06PM +0200, Rafael J. Wysocki wrote:
-> > On Friday, July 07, 2017 04:01:07 PM Peter Chen wrote:
-> > > On Fri, Jul 07, 2017 at 03:13:48AM +0200, Rafael J. Wysocki wrote:
-> > > > > 
-> > > > > - Can I write new code for it or I need to depend on something?
-> > > > 
-> > > > There is nothing this code needs to depend on AFAICS, but there are existing
-> > > > solutions in this problem space (ACPI power management, genpd), so it needs to
-> > > > be careful enough about possible overlaps etc.
-> > > > 
-> > > > > I find there is already "power state" concept at documentation.
-> > > > > Documentation/ABI/testing/sysfs-devices-power_state
-> > > > 
-> > > > This is ACPI-specific and only in sysfs directories representing ACPI device
-> > > > objects (which aren't physical devices).
-> > > > 
-> > > > Anyway, since ACPI covers the problem space you are working in already,
-> > > > your code has to be mutually exclusive with it.
-> > > > 
-> > > > > - If I can write the new code for it, except the problems I want
-> > > > > to fix, are there any other use cases I need to consider?
-> > > > 
-> > > > I would start simple and focus on the particular problem at hand, that is
-> > > > devices with two power states ("on" and "off") where the "on" state
-> > > > depends on a number of clocks and/or GPIOs.  Still, I'd also avoid making
-> > > > design choices that might prevent it from being extended in the future
-> > > > if need be.
-> > > > 
-> > > > One major problem I can see is how to "attach" the power states framework
-> > > > to a particular device (once we have discovered that it should be used with
-> > > > that device).
-> > > > 
-> > > > For bus types that don't do power management of their own you could follow
-> > > > ACPI (and genpd) and provide a PM domain for this purpose, but bus types
-> > > > doing their own PM (like USB) will probably need to be treated differently.
-> > > > In those cases the bus type code will have to know that it should call some
-> > > > helpers to switch power states of devices.
-> > > > 
-> > > 
-> > > After thinking more, using a power state framework is seems too heavy
-> > > for this use case. This use case is just do some clock and gpio
-> > > operations before device is created, and do some put operations
-> > > after device is deleted. We just need some helpers in one structure
-> > > (called "power sequence" or "power state") for this purpose.
-> > > 
-> > > For the use case, the clock and gpio operation can be done after device
-> > > is created, the power domain is more suitable.
-> > 
-> > There is a problem with PM domains that they only provide hooks for runtime PM
-> > and system suspend/resume (including hibernation) and not for generic
-> > "power up" and "power down" operations that may need to be carried out at
-> > probe time before the runtime PM framework can be used (and analogously
-> > at remove time).
-> > 
-> > I would consider starting with the patch below or similar.
-> > 
-> > Then you can define something like POWER_STATE_SEQUENCE type for your
-> > case and basically use almost what you have already with it, except that
-> > struct pwrsec_generic will now become struct power_state_sequence and
-> > struct power_state_info will be embedded in it instead of struct pwrsec.
-> > 
-> > The major comceptual difference is that ->power_up and ->power_down are
-> > now available at the level of the device that needs the power sequence and
-> > pm_device_power_up/down() can be used wherever necessary (in the code,
-> > in a bus type, in a controller driver or even in the driver for this particular
-> > device).
-> 
-> Rafeal, thanks for your patch.
-> 
-> The biggest problem for my use case is the device is still not created.
-> How can I call pm_device_power_up(dev)?
+Sparse complains about wrong address space used in __acpi_map_table()
+and in __acpi_unmap_table().
 
-Can you please elaborate on that a bit?
+arch/x86/kernel/acpi/boot.c:127:29: warning: incorrect type in return expression (different address spaces)
+arch/x86/kernel/acpi/boot.c:127:29:    expected char *
+arch/x86/kernel/acpi/boot.c:127:29:    got void [noderef] <asn:2>*
+arch/x86/kernel/acpi/boot.c:135:23: warning: incorrect type in argument 1 (different address spaces)
+arch/x86/kernel/acpi/boot.c:135:23:    expected void [noderef] <asn:2>*addr
+arch/x86/kernel/acpi/boot.c:135:23:    got char *map
 
-You surely need a device object before probing the device and why would the
-device be accessed before that point?
+Correct address space to be in align of type of returned and passed
+parameter.
 
-I guess you have a bus with devices that are discoverable in principle, but
-they cannot be discovered before being powered up, so you need the information
-on which devices to power up in a DT, right?
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ arch/x86/kernel/acpi/boot.c | 4 ++--
+ include/linux/acpi.h        | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Thanks,
-Rafael
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 6d534af94761..ac9bb564f004 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -118,7 +118,7 @@ static u32 isa_irq_to_gsi[NR_IRQS_LEGACY] __read_mostly = {
+  * This is just a simple wrapper around early_ioremap(),
+  * with sanity checks for phys == 0 and size == 0.
+  */
+-char *__init __acpi_map_table(unsigned long phys, unsigned long size)
++void __init __iomem *__acpi_map_table(unsigned long phys, unsigned long size)
+ {
+ 
+ 	if (!phys || !size)
+@@ -127,7 +127,7 @@ char *__init __acpi_map_table(unsigned long phys, unsigned long size)
+ 	return early_ioremap(phys, size);
+ }
+ 
+-void __init __acpi_unmap_table(char *map, unsigned long size)
++void __init __acpi_unmap_table(void __iomem *map, unsigned long size)
+ {
+ 	if (!map || !size)
+ 		return;
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 99f96df83dd8..17cb57a533bb 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -224,8 +224,8 @@ struct acpi_subtable_proc {
+ 	int count;
+ };
+ 
+-char * __acpi_map_table (unsigned long phys_addr, unsigned long size);
+-void __acpi_unmap_table(char *map, unsigned long size);
++void __iomem *__acpi_map_table(unsigned long phys_addr, unsigned long size);
++void __acpi_unmap_table(void __iomem *map, unsigned long size);
+ int early_acpi_boot_init(void);
+ int acpi_boot_init (void);
+ void acpi_boot_table_init (void);
+-- 
+2.11.0
