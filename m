@@ -1,183 +1,216 @@
-From: Derek Basehore <dbasehore@chromium.org>
-Subject: [PATCH v5 2/5] tick: Add freeze timer events
-Date: Fri,  7 Jul 2017 17:03:00 -0700
-Message-ID: <20170708000303.21863-2-dbasehore@chromium.org>
-References: <20170708000303.21863-1-dbasehore@chromium.org>
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <20170708000303.21863-1-dbasehore@chromium.org>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, x86@kernel.org, platform-driver-x86@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>
+From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v16 2/7] power: add power sequence library
+Date: Sat, 8 Jul 2017 13:51:15 +0800
+Message-ID: <20170708055115.GA25873@b29397-desktop>
+References: <1498027328-25078-1-git-send-email-peter.chen@nxp.com>
+ <2629938.X3D3UTyHBr@aspire.rjw.lan>
+ <20170707080107.GC21909@b29397-desktop>
+ <2042394.b4eZkzrJ5f@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <2042394.b4eZkzrJ5f-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, mark.rutland-5wv7dgnIgG8@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, frank.li-3arQi8VN3Tc@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, p.zabel@pe
 List-Id: linux-pm@vger.kernel.org
 
-Adds a new feature to tick to schedule wakeups on a CPU during freeze.
-This won't fully wake up the system (devices are not resumed), but
-allow simple platform functionality to be run during freeze with
-little power impact.
+On Fri, Jul 07, 2017 at 03:03:06PM +0200, Rafael J. Wysocki wrote:
+> On Friday, July 07, 2017 04:01:07 PM Peter Chen wrote:
+> > On Fri, Jul 07, 2017 at 03:13:48AM +0200, Rafael J. Wysocki wrote:
+> > > > 
+> > > > - Can I write new code for it or I need to depend on something?
+> > > 
+> > > There is nothing this code needs to depend on AFAICS, but there are existing
+> > > solutions in this problem space (ACPI power management, genpd), so it needs to
+> > > be careful enough about possible overlaps etc.
+> > > 
+> > > > I find there is already "power state" concept at documentation.
+> > > > Documentation/ABI/testing/sysfs-devices-power_state
+> > > 
+> > > This is ACPI-specific and only in sysfs directories representing ACPI device
+> > > objects (which aren't physical devices).
+> > > 
+> > > Anyway, since ACPI covers the problem space you are working in already,
+> > > your code has to be mutually exclusive with it.
+> > > 
+> > > > - If I can write the new code for it, except the problems I want
+> > > > to fix, are there any other use cases I need to consider?
+> > > 
+> > > I would start simple and focus on the particular problem at hand, that is
+> > > devices with two power states ("on" and "off") where the "on" state
+> > > depends on a number of clocks and/or GPIOs.  Still, I'd also avoid making
+> > > design choices that might prevent it from being extended in the future
+> > > if need be.
+> > > 
+> > > One major problem I can see is how to "attach" the power states framework
+> > > to a particular device (once we have discovered that it should be used with
+> > > that device).
+> > > 
+> > > For bus types that don't do power management of their own you could follow
+> > > ACPI (and genpd) and provide a PM domain for this purpose, but bus types
+> > > doing their own PM (like USB) will probably need to be treated differently.
+> > > In those cases the bus type code will have to know that it should call some
+> > > helpers to switch power states of devices.
+> > > 
+> > 
+> > After thinking more, using a power state framework is seems too heavy
+> > for this use case. This use case is just do some clock and gpio
+> > operations before device is created, and do some put operations
+> > after device is deleted. We just need some helpers in one structure
+> > (called "power sequence" or "power state") for this purpose.
+> > 
+> > For the use case, the clock and gpio operation can be done after device
+> > is created, the power domain is more suitable.
+> 
+> There is a problem with PM domains that they only provide hooks for runtime PM
+> and system suspend/resume (including hibernation) and not for generic
+> "power up" and "power down" operations that may need to be carried out at
+> probe time before the runtime PM framework can be used (and analogously
+> at remove time).
+> 
+> I would consider starting with the patch below or similar.
+> 
+> Then you can define something like POWER_STATE_SEQUENCE type for your
+> case and basically use almost what you have already with it, except that
+> struct pwrsec_generic will now become struct power_state_sequence and
+> struct power_state_info will be embedded in it instead of struct pwrsec.
+> 
+> The major comceptual difference is that ->power_up and ->power_down are
+> now available at the level of the device that needs the power sequence and
+> pm_device_power_up/down() can be used wherever necessary (in the code,
+> in a bus type, in a controller driver or even in the driver for this particular
+> device).
 
-This implementation allows an idle driver to setup a timer event with
-the clock event device when entering freeze by calling
-tick_set_freeze_event. Only one caller should exist for the function.
+Rafeal, thanks for your patch.
 
-tick_freeze_event_expired is used to check if the timer went off when
-the CPU wakes.
+The biggest problem for my use case is the device is still not created.
+How can I call pm_device_power_up(dev)?
 
-The event is cleared by tick_clear_freeze_event.
+Peter
+> 
+> Most likely you will need a PM domain in addition to that, but mostly to avoid
+> code duplication.
+> 
+> And in the future other types of power state definitions may be hooked up
+> to that, including ACPI etc.
+> 
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> ---
+>  drivers/base/power/common.c |   35 +++++++++++++++++++++++++++++++++++
+>  include/linux/pm.h          |   33 +++++++++++++++++++++++++++++++++
+>  2 files changed, 68 insertions(+)
+> 
+> Index: linux-pm/include/linux/pm.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/pm.h
+> +++ linux-pm/include/linux/pm.h
+> @@ -550,6 +550,30 @@ struct pm_subsys_data {
+>  #endif
+>  };
+>  
+> +enum power_state_type {
+> +	POWER_STATE_GENERIC = 0,
+> +};
+> +
+> +/**
+> + * struct power_state_info - information related to device power states.
+> + *
+> + * @type: Power states definition type.
+> + * @power_up: Device power up method.
+> + * @power_down: Device power down method.
+> + *
+> + * @power_up is expected to put the device into a power state in which it can
+> + * be operated by software (it doesn't have to be the full power state in
+> + * principle as long as the device will respond to all software accesses in
+> + * this state) and @power_down is expected to put the device into the lowest
+> + * power state the device can be put into given all of the applicable
+> + * constraints and limitations (it may not mean completely off).
+> + */
+> +struct power_state_info {
+> +	enum power_state_type type;
+> +	int (*power_up)(struct device *dev);
+> +	int (*power_down)(struct device *dev);
+> +};
+> +
+>  struct dev_pm_info {
+>  	pm_message_t		power_state;
+>  	unsigned int		can_wakeup:1;
+> @@ -600,6 +624,7 @@ struct dev_pm_info {
+>  	unsigned long		active_jiffies;
+>  	unsigned long		suspended_jiffies;
+>  	unsigned long		accounting_timestamp;
+> +	struct power_state_info	*state;
+>  #endif
+>  	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
+>  	void (*set_latency_tolerance)(struct device *, s32);
+> @@ -610,6 +635,14 @@ extern void update_pm_runtime_accounting
+>  extern int dev_pm_get_subsys_data(struct device *dev);
+>  extern void dev_pm_put_subsys_data(struct device *dev);
+>  
+> +#ifdef CONFIG_PM
+> +extern int pm_device_power_up(struct device *dev);
+> +extern int pm_device_power_down(struct device *dev);
+> +#else
+> +static inline int pm_device_power_up(struct device *dev) { return 0; }
+> +static inline int pm_device_power_down(struct device *dev) { return 0; }
+> +#endif /* CONFIG_PM */
+> +
+>  /**
+>   * struct dev_pm_domain - power management domain representation.
+>   *
+> Index: linux-pm/drivers/base/power/common.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/common.c
+> +++ linux-pm/drivers/base/power/common.c
+> @@ -152,3 +152,38 @@ void dev_pm_domain_set(struct device *de
+>  	device_pm_check_callbacks(dev);
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_domain_set);
+> +
+> +/**
+> + * pm_device_power_up - Power up a device using the power states framework.
+> + * @dev: Device to power up.
+> + *
+> + * Put the device into a power state in which it will respond to all software
+> + * accesses (that may not mean maximum power) using the callback provided
+> + * through the device power state framework, if present.
+> + */
+> +int pm_device_power_up(struct device *dev)
+> +{
+> +	if (dev->power.state && dev->power.state->power_up)
+> +		return dev->power.state->power_up(dev);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(pm_device_power_up);
+> +
+> +/**
+> + * pm_device_power_down - Power down a device using the power states framework.
+> + * @dev: Device to power down.
+> + *
+> + * Put the device into the lowest power state it can be put into given the
+> + * applicable constraints and limitations (that may not mean maximum power)
+> + * using the callback provided through the device power state framework, if
+> + * present.
+> + */
+> +int pm_device_power_down(struct device *dev)
+> +{
+> +	if (dev->power.state && dev->power.state->power_down)
+> +		return dev->power.state->power_down(dev);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(pm_device_power_down);
+> 
 
-Signed-off-by: Derek Basehore <dbasehore@chromium.org>
----
- include/linux/clockchips.h |  9 +++++
- include/linux/suspend.h    |  2 +
- kernel/time/tick-common.c  | 91 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 102 insertions(+)
-
-diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
-index a116926598fd..6a3f30008020 100644
---- a/include/linux/clockchips.h
-+++ b/include/linux/clockchips.h
-@@ -66,12 +66,20 @@ enum clock_event_state {
-  */
- # define CLOCK_EVT_FEAT_HRTIMER		0x000080
- 
-+/*
-+ * Clockevent device may run during freeze
-+ */
-+# define CLOCK_EVT_FEAT_FREEZE_NONSTOP	0x000100
-+
- /**
-  * struct clock_event_device - clock event device descriptor
-  * @event_handler:	Assigned by the framework to be called by the low
-  *			level handler of the event source
-  * @set_next_event:	set next event function using a clocksource delta
-  * @set_next_ktime:	set next event function using a direct ktime value
-+ * @event_expired:	check if the programmed event is expired. Used for
-+ *			freeze events when timekeeping is suspended and
-+ *			irqs are disabled.
-  * @next_event:		local storage for the next event in oneshot mode
-  * @max_delta_ns:	maximum delta value in ns
-  * @min_delta_ns:	minimum delta value in ns
-@@ -100,6 +108,7 @@ struct clock_event_device {
- 	void			(*event_handler)(struct clock_event_device *);
- 	int			(*set_next_event)(unsigned long evt, struct clock_event_device *);
- 	int			(*set_next_ktime)(ktime_t expires, struct clock_event_device *);
-+	int			(*event_expired)(struct clock_event_device *);
- 	ktime_t			next_event;
- 	u64			max_delta_ns;
- 	u64			min_delta_ns;
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 0b1cf32edfd7..1d56269a7b31 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -248,6 +248,8 @@ static inline bool idle_should_freeze(void)
- }
- 
- extern void __init pm_states_init(void);
-+int tick_set_freeze_event(int cpu, ktime_t expires);
-+int tick_clear_freeze_event(int cpu);
- extern void freeze_set_ops(const struct platform_freeze_ops *ops);
- extern void freeze_wake(void);
- 
-diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
-index 49edc1c4f3e6..688d1c0cad10 100644
---- a/kernel/time/tick-common.c
-+++ b/kernel/time/tick-common.c
-@@ -498,6 +498,97 @@ void tick_freeze(void)
- 	raw_spin_unlock(&tick_freeze_lock);
- }
- 
-+/**
-+ * tick_set_freeze_event - Set timer to wake up the CPU from freeze.
-+ *
-+ * @cpu:	CPU to set the clock event for
-+ * @delta:	time to wait before waking the CPU
-+ *
-+ * Returns 0 on success and -EERROR on failure.
-+ */
-+int tick_set_freeze_event(int cpu, ktime_t delta)
-+{
-+	struct clock_event_device *dev = per_cpu(tick_cpu_device, cpu).evtdev;
-+	u64 delta_ns;
-+	int ret;
-+
-+	if (!dev->set_next_event ||
-+	    !(dev->features & CLOCK_EVT_FEAT_FREEZE_NONSTOP)) {
-+		printk_deferred(KERN_WARNING
-+				"[%s] unsupported by clock event device\n",
-+				__func__);
-+		return -EPERM;
-+	}
-+
-+	if (!clockevent_state_shutdown(dev)) {
-+		printk_deferred(KERN_WARNING
-+				"[%s] clock event device in use\n",
-+				__func__);
-+		return -EBUSY;
-+	}
-+
-+	delta_ns = ktime_to_ns(delta);
-+	if (delta_ns > dev->max_delta_ns || delta_ns < dev->min_delta_ns) {
-+		printk_deferred(KERN_WARNING
-+				"[%s] %lluns outside range: [%lluns, %lluns]\n",
-+				__func__, delta_ns, dev->min_delta_ns,
-+				dev->max_delta_ns);
-+		return -ERANGE;
-+	}
-+
-+	clockevents_tick_resume(dev);
-+	clockevents_switch_state(dev, CLOCK_EVT_STATE_ONESHOT);
-+	ret = dev->set_next_event((delta_ns * dev->mult) >> dev->shift, dev);
-+	if (ret < 0) {
-+		printk_deferred(KERN_WARNING
-+				"Failed to program freeze event\n");
-+		clockevents_shutdown(dev);
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(tick_set_freeze_event);
-+
-+/**
-+ * tick_freeze_event_expired - Check if the programmed freeze event expired
-+ *
-+ * @cpu:	CPU to check the clock event device for an expired event
-+ *
-+ * Returns 1 if the event expired and 0 otherwise.
-+ */
-+int tick_freeze_event_expired(int cpu)
-+{
-+	struct clock_event_device *dev = per_cpu(tick_cpu_device, cpu).evtdev;
-+
-+	if (!(dev && dev->event_expired))
-+		return 0;
-+
-+	return dev->event_expired(dev);
-+}
-+
-+/**
-+ * tick_clear_freeze_event - Shuts down the clock device after programming a
-+ * freeze event.
-+ *
-+ * @cpu:	CPU to shutdown the clock device for
-+ *
-+ * Returns 0 on success and -EERROR otherwise.
-+ */
-+int tick_clear_freeze_event(int cpu)
-+{
-+	struct clock_event_device *dev = per_cpu(tick_cpu_device, cpu).evtdev;
-+
-+	if (!dev)
-+		return -ENODEV;
-+
-+	if (!clockevent_state_oneshot(dev))
-+		return -EBUSY;
-+
-+	clockevents_shutdown(dev);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(tick_clear_freeze_event);
-+
- /**
-  * tick_unfreeze - Resume the local tick and (possibly) timekeeping.
-  *
 -- 
-2.13.2.725.g09c95d1e9-goog
+
+Best Regards,
+Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
