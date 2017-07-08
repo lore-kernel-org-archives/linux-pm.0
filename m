@@ -1,80 +1,132 @@
-From: Joel Fernandes <joelaf@google.com>
-Subject: Re: [PATCH v2 4/6] cpufreq: schedutil: update CFS util only if used
-Date: Fri, 7 Jul 2017 23:14:48 -0700
-Message-ID: <CAJWu+opqoBzYr7fZJQ5RP=72ci6xKsh2Jes0GJe_L1x8dZW+dA@mail.gmail.com>
-References: <1499189651-18797-1-git-send-email-patrick.bellasi@arm.com>
- <1499189651-18797-5-git-send-email-patrick.bellasi@arm.com> <c04bdad3354a0ee0aabe63fe813fdaf5@codeaurora.org>
+From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH v3 1/3] cpufreq: mediatek: Add support of cpufreq to
+ MT2701/MT7623 SoC
+Date: Sat, 8 Jul 2017 14:30:26 +0800
+Message-ID: <1499495426.16278.9.camel@mtkswgap22>
+References: <cover.1499399121.git.sean.wang@mediatek.com>
+         <de42e68d86dd161bb18b4ca7f27774c63c1bd55d.1499399121.git.sean.wang@mediatek.com>
+         <1499412649.4449.33.camel@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f47.google.com ([209.85.218.47]:34428 "EHLO
-        mail-oi0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752417AbdGHGOu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jul 2017 02:14:50 -0400
-Received: by mail-oi0-f47.google.com with SMTP id l130so43048626oib.1
-        for <linux-pm@vger.kernel.org>; Fri, 07 Jul 2017 23:14:50 -0700 (PDT)
-In-Reply-To: <c04bdad3354a0ee0aabe63fe813fdaf5@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1499412649.4449.33.camel-l3A5Bk7waGM@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
+Cc: viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, jamesjj.liao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, shunli.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Vikram Mulukutla <markivx@codeaurora.org>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Andres Oportus <andresoportus@google.com>, Todd Kjos <tkjos@android.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-kernel-owner@vger.kernel.org
 
-Hi Vikram,
+On Fri, 2017-07-07 at 09:30 +0200, Jean Delvare wrote:
+> Hi Sean,
+> 
+> On ven., 2017-07-07 at 11:56 +0800, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org wrote:
+> > From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> > 
+> > MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
+> > single cluster and this hardware is also compatible with the existing
+> > driver through enabling CPU frequency feature with operating-points-v2
+> > bindings. Also, this driver actually supports all MediaTek SoCs, the
+> > Kconfig menu entry and file name itself should be updated with more
+> > generic name to drop "MT8173"
+> > 
+> > Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> > Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > ---
+> >  drivers/cpufreq/Kconfig.arm                         | 8 ++++----
+> >  drivers/cpufreq/Makefile                            | 2 +-
+> >  drivers/cpufreq/{mt8173-cpufreq.c => mtk-cpufreq.c} | 2 ++
+> >  3 files changed, 7 insertions(+), 5 deletions(-)
+> >  rename drivers/cpufreq/{mt8173-cpufreq.c => mtk-cpufreq.c} (99%)
+> > 
+> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> > index 74ed7e9..79aece7 100644
+> > --- a/drivers/cpufreq/Kconfig.arm
+> > +++ b/drivers/cpufreq/Kconfig.arm
+> > @@ -87,14 +87,14 @@ config ARM_KIRKWOOD_CPUFREQ
+> >  	  This adds the CPUFreq driver for Marvell Kirkwood
+> >  	  SoCs.
+> >  
+> > -config ARM_MT8173_CPUFREQ
+> > -	tristate "Mediatek MT8173 CPUFreq support"
+> > +config ARM_MEDIATEK_CPUFREQ
+> > +	tristate "CPU Frequency scaling support for MediaTek SoCs"
+> >  	depends on ARCH_MEDIATEK && REGULATOR
+> > -	depends on ARM64 || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
+> > +	depends on ARM || ARM64 || COMPILE_TEST
+> 
+> This statement no longer serves any purpose. The whole Kconfig.arm file
+> depends on ARM || ARM64, so you can drop it. As a matter of fact no
+> other entry in this file has the dependency.
+> 
 
-On Thu, Jul 6, 2017 at 11:44 PM, Vikram Mulukutla
-<markivx@codeaurora.org> wrote:
-> On 2017-07-04 10:34, Patrick Bellasi wrote:
->>
->> Currently the utilization of the FAIR class is collected before locking
->> the policy. Although that should not be a big issue for most cases, we
->> also don't really know how much latency there can be between the
->> utilization reading and its usage.
->>
->> Let's get the FAIR utilization right before its usage to be better in
->> sync with the current status of a CPU.
->>
->> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
->> Cc: Ingo Molnar <mingo@redhat.com>
->> Cc: Peter Zijlstra <peterz@infradead.org>
->> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: linux-kernel@vger.kernel.org
->> Cc: linux-pm@vger.kernel.org
->> ---
->>  kernel/sched/cpufreq_schedutil.c | 3 +--
->>  1 file changed, 1 insertion(+), 2 deletions(-)
->>
->> diff --git a/kernel/sched/cpufreq_schedutil.c
->> b/kernel/sched/cpufreq_schedutil.c
->> index 98704d8..df433f1 100644
->> --- a/kernel/sched/cpufreq_schedutil.c
->> +++ b/kernel/sched/cpufreq_schedutil.c
->> @@ -308,10 +308,9 @@ static void sugov_update_shared(struct
->> update_util_data *hook, u64 time,
->>         if (unlikely(current == sg_policy->thread))
->>                 return;
->>
->> -       sugov_get_util(&util, &max);
->> -
->>         raw_spin_lock(&sg_policy->update_lock);
->>
->> +       sugov_get_util(&util, &max);
->>         sg_cpu->util = util;
->>         sg_cpu->max = max;
->
->
-> Given that the utilization update hooks are called with the per-cpu rq lock
-> held (for all classes), I don't think PELT utilization can change throughout
-> the lifetime of the cpufreq_update_{util,this_cpu} call? Even with Viresh's
-> remote cpu callback series we'd still have to hold the rq lock across
-> cpufreq_update_util..  what can change today is 'max'
-> (arch_scale_cpu_capacity) when a cpufreq policy is shared, so the patch is
-> still needed for that reason I think?
->
+Okay, the whole line seemed redundant for that's always true. 
+I will drop it in the next version.
 
-I didn't follow, Could you elaborate more why you think the patch
-helps with the case where max changes while the per-cpu rq lock held?
+> >  	depends on !CPU_THERMAL || THERMAL
+> >  	select PM_OPP
+> >  	help
+> > -	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
+> > +	  This adds the CPUFreq driver support for MediaTek SoCs.
+> >  
+> >  config ARM_OMAP2PLUS_CPUFREQ
+> >  	bool "TI OMAP2+"
+> > diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> > index b7e78f0..4956f5d 100644
+> > --- a/drivers/cpufreq/Makefile
+> > +++ b/drivers/cpufreq/Makefile
+> > @@ -58,7 +58,7 @@ obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
+> >  obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
+> >  obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+> >  obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
+> > -obj-$(CONFIG_ARM_MT8173_CPUFREQ)	+= mt8173-cpufreq.o
+> > +obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mtk-cpufreq.o
+> 
+> I would have preferred mediatek-cpufreq. 3-letter abbreviations are
+> likely to collide and cause confusion at some point in time. However it
+> seems I am late to the party, I see that there are already many files
+> named mtk-* or *-mtk.*... So, so be it.
+> 
+> Also the file describing the bindings is named cpufreq-mediatek.txt,
+> which is inconsistent... But the situation is the same for a few other
+> cpufreq drivers already, so I suppose this is acceptable.
+> 
 
-thanks,
+Agreed. I also prefer using whole name with mediatek as the 
+prefix than just abbreviation used. I will update it also in the
+next version.
 
--Joel
+As for the file naming for other drivers, i feel it's okay for me
+changing into mediatek as file prefix, but it still depends on
+maintainers or original authors if they likes this.
+
+
+	Sean
+
+> >  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+> >  obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+> >  obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
+> > diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mtk-cpufreq.c
+> > similarity index 99%
+> > rename from drivers/cpufreq/mt8173-cpufreq.c
+> > rename to drivers/cpufreq/mtk-cpufreq.c
+> > index fd1886f..481ec77 100644
+> > --- a/drivers/cpufreq/mt8173-cpufreq.c
+> > +++ b/drivers/cpufreq/mtk-cpufreq.c
+> > @@ -575,6 +575,8 @@ static struct platform_driver mt8173_cpufreq_platdrv = {
+> >  
+> >  /* List of machines supported by this driver */
+> >  static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
+> > +	{ .compatible = "mediatek,mt2701", },
+> > +	{ .compatible = "mediatek,mt7623", },
+> >  	{ .compatible = "mediatek,mt817x", },
+> >  	{ .compatible = "mediatek,mt8173", },
+> >  	{ .compatible = "mediatek,mt8176", },
+> 
+> Reviewed-by: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
+> 
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
