@@ -1,292 +1,293 @@
 From: Derek Basehore <dbasehore@chromium.org>
-Subject: [PATCH v5 5/5] intel_idle: Add S0ix validation
-Date: Fri,  7 Jul 2017 17:03:03 -0700
-Message-ID: <20170708000303.21863-5-dbasehore@chromium.org>
+Subject: [PATCH v5 4/5] freeze: Add error reporting
+Date: Fri,  7 Jul 2017 17:03:02 -0700
+Message-ID: <20170708000303.21863-4-dbasehore@chromium.org>
 References: <20170708000303.21863-1-dbasehore@chromium.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f54.google.com ([74.125.83.54]:35913 "EHLO
+        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752642AbdGHADX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jul 2017 20:03:23 -0400
+Received: by mail-pg0-f54.google.com with SMTP id u62so23904149pgb.3
+        for <linux-pm@vger.kernel.org>; Fri, 07 Jul 2017 17:03:23 -0700 (PDT)
 In-Reply-To: <20170708000303.21863-1-dbasehore@chromium.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, x86@kernel.org, platform-driver-x86@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>
-List-Id: linux-pm@vger.kernel.org
 
-This adds validation of S0ix entry and enables it on Skylake. Using
-the new tick_set_freeze_event function, we program the CPU to wake up
-X seconds after entering freeze. After X seconds, it will wake the CPU
-to check the S0ix residency counters and make sure we entered the
-lowest power state for suspend-to-idle.
-
-It exits freeze and reports an error to userspace when the SoC does
-not enter S0ix on suspend-to-idle.
-
-One example of a bug that can prevent a Skylake CPU from entering S0ix
-(suspend-to-idle) is a leaked reference count to one of the i915 power
-wells. The CPU will not be able to enter Package C10 and will
-therefore use about 4x as much power for the entire system. The issue
-is not specific to the i915 power wells though.
+This adds error reporting for cpuidle to freeze so suspend-to-idle can
+report errors when the CPU/SoC is unable to idle properly. Freeze will
+abort when an error is encounted.
 
 Signed-off-by: Derek Basehore <dbasehore@chromium.org>
 ---
- drivers/idle/intel_idle.c | 142 +++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 134 insertions(+), 8 deletions(-)
+ drivers/acpi/processor_idle.c | 10 ++++++----
+ drivers/cpuidle/cpuidle.c     | 32 +++++++++++++++++++++++++++-----
+ drivers/idle/intel_idle.c     |  8 +++++---
+ include/linux/cpuidle.h       | 12 ++++++++----
+ kernel/power/suspend.c        | 20 +++++++++++++-------
+ 5 files changed, 59 insertions(+), 23 deletions(-)
 
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 5c8aa9cf62d7..1c0ac4d24563 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -789,8 +789,8 @@ static int acpi_idle_enter(struct cpuidle_device *dev,
+ 	return index;
+ }
+ 
+-static void acpi_idle_enter_freeze(struct cpuidle_device *dev,
+-				   struct cpuidle_driver *drv, int index)
++static int acpi_idle_enter_freeze(struct cpuidle_device *dev,
++				  struct cpuidle_driver *drv, int index)
+ {
+ 	struct acpi_processor_cx *cx = per_cpu(acpi_cstate[index], dev->cpu);
+ 
+@@ -798,16 +798,18 @@ static void acpi_idle_enter_freeze(struct cpuidle_device *dev,
+ 		struct acpi_processor *pr = __this_cpu_read(processors);
+ 
+ 		if (unlikely(!pr))
+-			return;
++			return 0;
+ 
+ 		if (pr->flags.bm_check) {
+ 			acpi_idle_enter_bm(pr, cx, false);
+-			return;
++			return 0;
+ 		} else {
+ 			ACPI_FLUSH_CPU_CACHE();
+ 		}
+ 	}
+ 	acpi_idle_do_entry(cx);
++
++	return 0;
+ }
+ 
+ static int acpi_processor_setup_cpuidle_cx(struct acpi_processor *pr,
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 60bb64f4329d..862c55341088 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -128,9 +128,13 @@ int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
+ }
+ 
+ #ifdef CONFIG_SUSPEND
+-static void enter_freeze_proper(struct cpuidle_driver *drv,
+-				struct cpuidle_device *dev, int index)
++static int cpuidle_freeze_error;
++
++static int enter_freeze_proper(struct cpuidle_driver *drv,
++			       struct cpuidle_device *dev, int index)
+ {
++	int ret;
++
+ 	/*
+ 	 * trace_suspend_resume() called by tick_freeze() for the last CPU
+ 	 * executing it contains RCU usage regarded as invalid in the idle
+@@ -143,7 +147,7 @@ static void enter_freeze_proper(struct cpuidle_driver *drv,
+ 	 * suspended is generally unsafe.
+ 	 */
+ 	stop_critical_timings();
+-	drv->states[index].enter_freeze(dev, drv, index);
++	ret = drv->states[index].enter_freeze(dev, drv, index);
+ 	WARN_ON(!irqs_disabled());
+ 	/*
+ 	 * timekeeping_resume() that will be called by tick_unfreeze() for the
+@@ -152,6 +156,7 @@ static void enter_freeze_proper(struct cpuidle_driver *drv,
+ 	 */
+ 	RCU_NONIDLE(tick_unfreeze());
+ 	start_critical_timings();
++	return ret;
+ }
+ 
+ /**
+@@ -164,7 +169,7 @@ static void enter_freeze_proper(struct cpuidle_driver *drv,
+  */
+ int cpuidle_enter_freeze(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+-	int index;
++	int index, ret = 0;
+ 
+ 	/*
+ 	 * Find the deepest state with ->enter_freeze present, which guarantees
+@@ -173,10 +178,27 @@ int cpuidle_enter_freeze(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 	 */
+ 	index = find_deepest_state(drv, dev, UINT_MAX, 0, true);
+ 	if (index > 0)
+-		enter_freeze_proper(drv, dev, index);
++		ret = enter_freeze_proper(drv, dev, index);
++
++	if (ret < 0) {
++		cpuidle_freeze_error = ret;
++		freeze_wake();
++	}
+ 
+ 	return index;
+ }
++
++void cpuidle_prepare_freeze(void)
++{
++	cpuidle_freeze_error = 0;
++	cpuidle_resume();
++}
++
++int cpuidle_complete_freeze(void)
++{
++	cpuidle_pause();
++	return cpuidle_freeze_error;
++}
+ #endif /* CONFIG_SUSPEND */
+ 
+ /**
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index ebed3f804291..d38621da6e54 100644
+index c2ae819a871c..ebed3f804291 100644
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
-@@ -61,10 +61,12 @@
- #include <linux/notifier.h>
- #include <linux/cpu.h>
- #include <linux/moduleparam.h>
-+#include <linux/suspend.h>
- #include <asm/cpu_device_id.h>
- #include <asm/intel-family.h>
- #include <asm/mwait.h>
- #include <asm/msr.h>
-+#include <asm/pmc_core.h>
- 
- #define INTEL_IDLE_VERSION "0.4.1"
- 
-@@ -93,12 +95,29 @@ struct idle_cpu {
- 	bool disable_promotion_to_c1e;
- };
- 
-+/*
-+ * The limit for the exponential backoff for the freeze duration. At this point,
-+ * power impact is is far from measurable. It's about 3uW based on scaling from
-+ * waking up 10 times a second.
-+ */
-+#define MAX_SLP_S0_SECONDS 1000
-+#define SLP_S0_EXP_BASE 10
-+
-+static bool slp_s0_check;
-+static unsigned int slp_s0_seconds;
-+
-+static DEFINE_SPINLOCK(slp_s0_check_lock);
-+static unsigned int slp_s0_num_cpus;
-+static bool slp_s0_check_inprogress;
-+
- static const struct idle_cpu *icpu;
+@@ -97,8 +97,8 @@ static const struct idle_cpu *icpu;
  static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
  static int intel_idle(struct cpuidle_device *dev,
  			struct cpuidle_driver *drv, int index);
- static int intel_idle_freeze(struct cpuidle_device *dev,
- 			     struct cpuidle_driver *drv, int index);
-+static int intel_idle_freeze_and_check(struct cpuidle_device *dev,
-+				       struct cpuidle_driver *drv, int index);
+-static void intel_idle_freeze(struct cpuidle_device *dev,
+-			      struct cpuidle_driver *drv, int index);
++static int intel_idle_freeze(struct cpuidle_device *dev,
++			     struct cpuidle_driver *drv, int index);
  static struct cpuidle_state *cpuidle_state_table;
  
  /*
-@@ -597,7 +616,7 @@ static struct cpuidle_state skl_cstates[] = {
- 		.exit_latency = 2,
- 		.target_residency = 2,
- 		.enter = &intel_idle,
--		.enter_freeze = intel_idle_freeze, },
-+		.enter_freeze = intel_idle_freeze_and_check, },
- 	{
- 		.name = "C1E",
- 		.desc = "MWAIT 0x01",
-@@ -605,7 +624,7 @@ static struct cpuidle_state skl_cstates[] = {
- 		.exit_latency = 10,
- 		.target_residency = 20,
- 		.enter = &intel_idle,
--		.enter_freeze = intel_idle_freeze, },
-+		.enter_freeze = intel_idle_freeze_and_check, },
- 	{
- 		.name = "C3",
- 		.desc = "MWAIT 0x10",
-@@ -613,7 +632,7 @@ static struct cpuidle_state skl_cstates[] = {
- 		.exit_latency = 70,
- 		.target_residency = 100,
- 		.enter = &intel_idle,
--		.enter_freeze = intel_idle_freeze, },
-+		.enter_freeze = intel_idle_freeze_and_check, },
- 	{
- 		.name = "C6",
- 		.desc = "MWAIT 0x20",
-@@ -621,7 +640,7 @@ static struct cpuidle_state skl_cstates[] = {
- 		.exit_latency = 85,
- 		.target_residency = 200,
- 		.enter = &intel_idle,
--		.enter_freeze = intel_idle_freeze, },
-+		.enter_freeze = intel_idle_freeze_and_check, },
- 	{
- 		.name = "C7s",
- 		.desc = "MWAIT 0x33",
-@@ -629,7 +648,7 @@ static struct cpuidle_state skl_cstates[] = {
- 		.exit_latency = 124,
- 		.target_residency = 800,
- 		.enter = &intel_idle,
--		.enter_freeze = intel_idle_freeze, },
-+		.enter_freeze = intel_idle_freeze_and_check, },
- 	{
- 		.name = "C8",
- 		.desc = "MWAIT 0x40",
-@@ -637,7 +656,7 @@ static struct cpuidle_state skl_cstates[] = {
- 		.exit_latency = 200,
- 		.target_residency = 800,
- 		.enter = &intel_idle,
--		.enter_freeze = intel_idle_freeze, },
-+		.enter_freeze = intel_idle_freeze_and_check, },
- 	{
- 		.name = "C9",
- 		.desc = "MWAIT 0x50",
-@@ -645,7 +664,7 @@ static struct cpuidle_state skl_cstates[] = {
- 		.exit_latency = 480,
- 		.target_residency = 5000,
- 		.enter = &intel_idle,
--		.enter_freeze = intel_idle_freeze, },
-+		.enter_freeze = intel_idle_freeze_and_check, },
- 	{
- 		.name = "C10",
- 		.desc = "MWAIT 0x60",
-@@ -653,7 +672,7 @@ static struct cpuidle_state skl_cstates[] = {
- 		.exit_latency = 890,
- 		.target_residency = 5000,
- 		.enter = &intel_idle,
--		.enter_freeze = intel_idle_freeze, },
-+		.enter_freeze = intel_idle_freeze_and_check, },
- 	{
- 		.enter = NULL }
- };
-@@ -940,6 +959,8 @@ static __cpuidle int intel_idle(struct cpuidle_device *dev,
-  * @dev: cpuidle_device
+@@ -941,13 +941,15 @@ static __cpuidle int intel_idle(struct cpuidle_device *dev,
   * @drv: cpuidle driver
   * @index: state index
-+ *
-+ * @return 0 for success, no failure state
   */
- static int intel_idle_freeze(struct cpuidle_device *dev,
+-static void intel_idle_freeze(struct cpuidle_device *dev,
++static int intel_idle_freeze(struct cpuidle_device *dev,
  			     struct cpuidle_driver *drv, int index)
-@@ -952,6 +973,101 @@ static int intel_idle_freeze(struct cpuidle_device *dev,
- 	return 0;
- }
+ {
+ 	unsigned long ecx = 1; /* break on interrupt flag */
+ 	unsigned long eax = flg2MWAIT(drv->states[index].flags);
  
-+static int check_slp_s0(u32 slp_s0_saved_count)
-+{
-+	u32 slp_s0_new_count;
-+
-+	if (intel_pmc_slp_s0_counter_read(&slp_s0_new_count)) {
-+		pr_warn("Unable to read SLP S0 residency counter\n");
-+		return -EIO;
-+	}
-+
-+	if (slp_s0_saved_count == slp_s0_new_count) {
-+		pr_warn("CPU did not enter SLP S0 for suspend-to-idle.\n");
-+		return -EIO;
-+	}
+ 	mwait_idle_with_hints(eax, ecx);
 +
 +	return 0;
-+}
+ }
+ 
+ static void __setup_broadcast_timer(bool on)
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index fc1e5d7fc1c7..ad0b563c5975 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -54,11 +54,11 @@ struct cpuidle_state {
+ 	/*
+ 	 * CPUs execute ->enter_freeze with the local tick or entire timekeeping
+ 	 * suspended, so it must not re-enable interrupts at any point (even
+-	 * temporarily) or attempt to change states of clock event devices.
++	 * temporarily). Returns 0 on success and non-zero if an error occurred.
+ 	 */
+-	void (*enter_freeze) (struct cpuidle_device *dev,
+-			      struct cpuidle_driver *drv,
+-			      int index);
++	int (*enter_freeze) (struct cpuidle_device *dev,
++			     struct cpuidle_driver *drv,
++			     int index);
+ };
+ 
+ /* Idle State Flags */
+@@ -200,6 +200,8 @@ extern int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
+ extern int cpuidle_enter_freeze(struct cpuidle_driver *drv,
+ 				struct cpuidle_device *dev);
+ extern void cpuidle_use_deepest_state(bool enable);
++extern void cpuidle_prepare_freeze(void);
++extern int cpuidle_complete_freeze(void);
+ #else
+ static inline int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
+ 					     struct cpuidle_device *dev)
+@@ -210,6 +212,8 @@ static inline int cpuidle_enter_freeze(struct cpuidle_driver *drv,
+ static inline void cpuidle_use_deepest_state(bool enable)
+ {
+ }
++static inline void cpuidle_prepare_freeze(void) { }
++static inline int cpuidle_complete_freeze(void) { return -ENODEV; }
+ #endif
+ 
+ /* kernel/sched/idle.c */
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 3ecf275d7e44..4ee883642093 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -70,8 +70,10 @@ static void freeze_begin(void)
+ 	suspend_freeze_state = FREEZE_STATE_NONE;
+ }
+ 
+-static void freeze_enter(void)
++static int freeze_enter(void)
+ {
++	int error = 0;
 +
-+/**
-+ * intel_idle_freeze_and_check - enters suspend-to-idle and validates the power
-+ * state
-+ *
-+ * This function enters suspend-to-idle with intel_idle_freeze, but also sets up
-+ * a timer to check that S0ix (low power state for suspend-to-idle on Intel
-+ * CPUs) is properly entered.
-+ *
-+ * @dev: cpuidle_device
-+ * @drv: cpuidle_driver
-+ * @index: state index
-+ * @return 0 for success, -EERROR if S0ix was not entered.
-+ */
-+static int intel_idle_freeze_and_check(struct cpuidle_device *dev,
-+				       struct cpuidle_driver *drv, int index)
-+{
-+	bool check_on_this_cpu = false;
-+	u32 slp_s0_saved_count;
-+	unsigned long flags;
-+	int cpu = smp_processor_id();
+ 	trace_suspend_resume(TPS("machine_suspend"), PM_SUSPEND_FREEZE, true);
+ 
+ 	spin_lock_irq(&suspend_freeze_lock);
+@@ -82,7 +84,7 @@ static void freeze_enter(void)
+ 	spin_unlock_irq(&suspend_freeze_lock);
+ 
+ 	get_online_cpus();
+-	cpuidle_resume();
++	cpuidle_prepare_freeze();
+ 
+ 	/* Push all the CPUs into the idle loop. */
+ 	wake_up_all_idle_cpus();
+@@ -90,7 +92,7 @@ static void freeze_enter(void)
+ 	wait_event(suspend_freeze_wait_head,
+ 		   suspend_freeze_state == FREEZE_STATE_WAKE);
+ 
+-	cpuidle_pause();
++	error = cpuidle_complete_freeze();
+ 	put_online_cpus();
+ 
+ 	spin_lock_irq(&suspend_freeze_lock);
+@@ -100,14 +102,17 @@ static void freeze_enter(void)
+ 	spin_unlock_irq(&suspend_freeze_lock);
+ 
+ 	trace_suspend_resume(TPS("machine_suspend"), PM_SUSPEND_FREEZE, false);
++	return error;
+ }
+ 
+-static void s2idle_loop(void)
++static int s2idle_loop(void)
+ {
 +	int ret;
 +
-+	/* The last CPU to freeze sets up checking SLP S0 assertion. */
-+	spin_lock_irqsave(&slp_s0_check_lock, flags);
-+	slp_s0_num_cpus++;
-+	if (slp_s0_seconds &&
-+	    slp_s0_num_cpus == num_online_cpus() &&
-+	    !slp_s0_check_inprogress &&
-+	    !intel_pmc_slp_s0_counter_read(&slp_s0_saved_count)) {
-+		ret = tick_set_freeze_event(cpu, ktime_set(slp_s0_seconds, 0));
-+		if (ret < 0) {
-+			spin_unlock_irqrestore(&slp_s0_check_lock, flags);
-+			goto out;
-+		}
-+
-+		/*
-+		 * Make sure check_slp_s0 isn't scheduled on another CPU if it
-+		 * were to leave freeze and enter it again before this CPU
-+		 * leaves freeze.
-+		 */
-+		slp_s0_check_inprogress = true;
-+		check_on_this_cpu = true;
-+	}
-+	spin_unlock_irqrestore(&slp_s0_check_lock, flags);
-+
-+	ret = intel_idle_freeze(dev, drv, index);
-+	if (ret < 0)
-+		goto out;
-+
-+	if (check_on_this_cpu && tick_clear_freeze_event(cpu))
-+		ret = check_slp_s0(slp_s0_saved_count);
-+
-+out:
-+	spin_lock_irqsave(&slp_s0_check_lock, flags);
-+	if (check_on_this_cpu) {
-+		slp_s0_check_inprogress = false;
-+		slp_s0_seconds = min_t(unsigned int,
-+				       SLP_S0_EXP_BASE * slp_s0_seconds,
-+				       MAX_SLP_S0_SECONDS);
-+	}
-+	slp_s0_num_cpus--;
-+	spin_unlock_irqrestore(&slp_s0_check_lock, flags);
+ 	pr_debug("PM: suspend-to-idle\n");
+ 
+ 	do {
+-		freeze_enter();
++		ret = freeze_enter();
+ 
+ 		if (freeze_ops && freeze_ops->wake)
+ 			freeze_ops->wake();
+@@ -116,13 +121,14 @@ static void s2idle_loop(void)
+ 		if (freeze_ops && freeze_ops->sync)
+ 			freeze_ops->sync();
+ 
+-		if (pm_wakeup_pending())
++		if (ret < 0 || pm_wakeup_pending())
+ 			break;
+ 
+ 		pm_wakeup_clear(false);
+ 	} while (!dpm_suspend_noirq(PMSG_SUSPEND));
+ 
+ 	pr_debug("PM: resume from suspend-to-idle\n");
 +	return ret;
-+}
-+
-+static int slp_s0_check_prepare(struct notifier_block *nb, unsigned long action,
-+				void *data)
-+{
-+	if (action == PM_SUSPEND_PREPARE)
-+		slp_s0_seconds = slp_s0_check ? 1 : 0;
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block intel_slp_s0_check_nb = {
-+	.notifier_call = slp_s0_check_prepare,
-+};
-+
- static void __setup_broadcast_timer(bool on)
- {
- 	if (on)
-@@ -1454,6 +1570,13 @@ static int __init intel_idle_init(void)
- 		goto init_driver_fail;
+ }
+ 
+ void freeze_wake(void)
+@@ -396,7 +402,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 	 * all the devices are suspended.
+ 	 */
+ 	if (state == PM_SUSPEND_FREEZE) {
+-		s2idle_loop();
++		error = s2idle_loop();
+ 		goto Platform_early_resume;
  	}
  
-+	retval = register_pm_notifier(&intel_slp_s0_check_nb);
-+	if (retval) {
-+		free_percpu(intel_idle_cpuidle_devices);
-+		cpuidle_unregister_driver(&intel_idle_driver);
-+		goto pm_nb_fail;
-+	}
-+
- 	if (boot_cpu_has(X86_FEATURE_ARAT))	/* Always Reliable APIC Timer */
- 		lapic_timer_reliable_states = LAPIC_TIMER_ALWAYS_RELIABLE;
- 
-@@ -1469,6 +1592,8 @@ static int __init intel_idle_init(void)
- 
- hp_setup_fail:
- 	intel_idle_cpuidle_devices_uninit();
-+	unregister_pm_notifier(&intel_slp_s0_check_nb);
-+pm_nb_fail:
- 	cpuidle_unregister_driver(&intel_idle_driver);
- init_driver_fail:
- 	free_percpu(intel_idle_cpuidle_devices);
-@@ -1484,3 +1609,4 @@ device_initcall(intel_idle_init);
-  * is the easiest way (currently) to continue doing that.
-  */
- module_param(max_cstate, int, 0444);
-+module_param(slp_s0_check, bool, 0644);
 -- 
 2.13.2.725.g09c95d1e9-goog
