@@ -1,76 +1,53 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 5/5] powernv:idle: Disable LOSE_FULL_CONTEXT states when
- stop-api fails.
-Date: Sat, 8 Jul 2017 19:05:26 +1000
-Message-ID: <20170708190526.44ea9ab9@roar.ozlabs.ibm.com>
-References: <1499272696-28751-1-git-send-email-ego@linux.vnet.ibm.com>
-        <1499272696-28751-6-git-send-email-ego@linux.vnet.ibm.com>
-        <20170707012916.215ed32a@roar.ozlabs.ibm.com>
-        <20170707173710.GE8913@in.ibm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant load-tracking support
+Date: Sat, 08 Jul 2017 14:09:37 +0200
+Message-ID: <12829054.TWIodSo4bb@aspire.rjw.lan>
+References: <20170706094948.8779-1-dietmar.eggemann@arm.com> <CAJZ5v0gBPNDBYWbuHVaB7deNHSZKziaAeybSw3mg+S8V_roO-Q@mail.gmail.com> <22f004af-0158-8265-2da5-34743f294bfb@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:36541 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752636AbdGHJFp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jul 2017 05:05:45 -0400
-In-Reply-To: <20170707173710.GE8913@in.ibm.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41038 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752797AbdGHMRX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jul 2017 08:17:23 -0400
+In-Reply-To: <22f004af-0158-8265-2da5-34743f294bfb@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On Fri, 7 Jul 2017 23:07:10 +0530
-Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-
-> On Fri, Jul 07, 2017 at 01:29:16AM +1000, Nicholas Piggin wrote:
-> > On Wed,  5 Jul 2017 22:08:16 +0530
-> > "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> wrote:
-> >   
-> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> > > 
-> > > Currently, we use the opal call opal_slw_set_reg() to inform the that
-> > > the Sleep-Winkle Engine (SLW) to restore the contents of some of the
-> > > Hypervisor state on wakeup from deep idle states that lose full
-> > > hypervisor context (characterized by the flag
-> > > OPAL_PM_LOSE_FULL_CONTEXT).
-> > > 
-> > > However, the current code has a bug in that if opal_slw_set_reg()
-> > > fails, we don't disable the use of these deep states (winkle on
-> > > POWER8, stop4 onwards on POWER9).
-> > > 
-> > > This patch fixes this bug by ensuring that if the the sleep winkle
-> > > engine is unable to restore the hypervisor states in
-> > > pnv_save_sprs_for_deep_states(), then we mark as invalid the states
-> > > which lose full context.
-> > > 
-> > > As a side-effect, since supported_cpuidle_states in
-> > > pnv_probe_idle_states() consists of flags of only the valid states,
-> > > this patch will ensure that no other subsystem in the kernel can use
-> > > the states which lose full context on stop-api failures.  
-> > 
-> > Looks good. Is there something minimal we can do for stable here?
-> > 
-> > Aside question, do we need to restore LPCR at all with the SLW engine?
-> > It gets set up again when by the idle wakeup code.  
+On Friday, July 07, 2017 06:06:30 PM Dietmar Eggemann wrote:
+> On 07/07/17 17:18, Rafael J. Wysocki wrote:
+> > On Fri, Jul 7, 2017 at 6:01 PM, Dietmar Eggemann
+> > <dietmar.eggemann@arm.com> wrote:
+> >> On 06/07/17 11:40, Viresh Kumar wrote:
+> >>> On 06-07-17, 10:49, Dietmar Eggemann wrote:
 > 
+> [...]
 > 
+> >> So what about I call arch_set_freq_scale() in __cpufreq_notify_transition() in the
+> >> CPUFREQ_POSTCHANGE case for slow-switching and in cpufreq_driver_fast_switch() for
+> >> fast-switching?
 > > 
-> > And does POWER9 really need MSR and PSSCR restored by SLW? (going a bit
-> > off topic here, I'm just curious)  
+> > Why don't you do this in drivers instead of in the core?
+> > 
+> > Ultimately, the driver knows what frequency it has requested, so why
+> > can't it call arch_set_freq_scale()?
 > 
-> MSR is needed to be restored so that we wakeup with the right
-> endianness and with the IR,DR disabled.
+> That's correct but for arm/arm64 we have a lot of different cpufreq
+> drivers to deal with. And doing this call to arch_set_freq_scale() once
+> in the cpufreq core will cover them all.
+> 
+> [...]
 
-And POWER8 does not require this?
+I'm sort of wondering how many is "a lot" really.  For instance, do you really
+want all of the existing ARM platforms to use the new stuff even though
+it may regress things there in principle?
 
-> PSSCR is set to a value so that in case of a special wakeup for a
-> deep-stop, the SLW can program the core to go back to the stop level
-> provided by the PSSCR value via the stop-api.
-
-It always restores to deepest stop? Is there any way to restore to the
-achieved stop level? Maybe there is no usefulness for that.
+Anyway, if everyone agrees that doing it in the core is the way to go (Peter?),
+why don't you introduce a __weak function for setting policy->cur and
+override it from your arch so as to call arch_set_freq_scale() from there?
 
 Thanks,
-Nick
+Rafael
