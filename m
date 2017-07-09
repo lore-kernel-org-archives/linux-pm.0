@@ -1,15 +1,15 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [RFC v1 5/6] power: supply: bq27xxx: Flag identical chip data when in debug mode
-Date: Sat,  8 Jul 2017 19:16:59 -0700
-Message-ID: <20170709021700.14354-6-liam@networkimprov.net>
+Subject: [RFC v1 4/6] power: supply: bq27xxx: Add chip data options for cfgupdate & ram-only
+Date: Sat,  8 Jul 2017 19:16:58 -0700
+Message-ID: <20170709021700.14354-5-liam@networkimprov.net>
 References: <20170709021700.14354-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:36277 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751654AbdGICRn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jul 2017 22:17:43 -0400
-Received: by mail-pf0-f195.google.com with SMTP id z6so9736878pfk.3
-        for <linux-pm@vger.kernel.org>; Sat, 08 Jul 2017 19:17:42 -0700 (PDT)
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:34685 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751654AbdGICRm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jul 2017 22:17:42 -0400
+Received: by mail-pg0-f66.google.com with SMTP id j186so8546812pge.1
+        for <linux-pm@vger.kernel.org>; Sat, 08 Jul 2017 19:17:41 -0700 (PDT)
 In-Reply-To: <20170709021700.14354-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,78 +18,97 @@ Cc: Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
 
 From: Liam Breck <kernel@networkimprov.net>
 
-The driver has 13 unique register maps, several of which are shared
-by multiple chips. When adding support for a new chip, it's easy to
-add a duplicate map by mistake.
+Add BQ27XXX_O_CFGUP & _O_RAM for use in bq27xxx_chip_data[n].opts
+Replace related uses of di->chip == BQ27nnn with (BQ27XXX_O_XYZ & di->opts)
 
-In debug mode we now scan bq27xxx_chip_data[n].regs/props/dm_regs for
-duplicates.
+No functional changes to the driver.
 
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- drivers/power/supply/bq27xxx_battery.c | 36 +++++++++++++++++++++++++++++++++-
- 1 file changed, 35 insertions(+), 1 deletion(-)
+ drivers/power/supply/bq27xxx_battery.c | 22 +++++++++++-----------
+ include/linux/power/bq27xxx_battery.h  |  1 -
+ 2 files changed, 11 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 5d3893a9..54755c88 100644
+index 0bd46fae..5d3893a9 100644
 --- a/drivers/power/supply/bq27xxx_battery.c
 +++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -883,7 +883,7 @@ static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
- 	.props = bq27##ref##_props,		\
- 	.props_size = ARRAY_SIZE(bq27##ref##_props) }
+@@ -871,6 +871,9 @@ static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
+ #define bq27621_dm_regs 0
+ #endif
  
--static struct {
-+static struct bq27xxx_chip_datum {
- 	u32 opts;
- 	int acts_like; //todo drop this when opts fully implemented
- 	u32 unseal_key;
-@@ -918,6 +918,38 @@ static struct {
- 	[BQ27621]   = BQ27XXX_DATA(621,   BQ27421, 0x80008000, BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
++#define BQ27XXX_O_CFGUP  0x00000001
++#define BQ27XXX_O_RAM    0x00000002
++
+ #define BQ27XXX_DATA(ref, act, key, opt) {	\
+ 	.opts = (opt),				\
+ 	.acts_like = act,			\
+@@ -909,10 +912,10 @@ static struct {
+ 	[BQ27546]   = BQ27XXX_DATA(546,   BQ27541, 0, 0),
+ 	[BQ27742]   = BQ27XXX_DATA(742,   BQ27541, 0, 0),
+ 	[BQ27545]   = BQ27XXX_DATA(545,   0,       0x04143672, 0),
+-	[BQ27421]   = BQ27XXX_DATA(421,   0,       0x80008000, 0),
+-	[BQ27425]   = BQ27XXX_DATA(425,   BQ27421, 0x04143672, 0),
+-	[BQ27441]   = BQ27XXX_DATA(441,   BQ27421, 0x80008000, 0),
+-	[BQ27621]   = BQ27XXX_DATA(621,   BQ27421, 0x80008000, 0),
++	[BQ27421]   = BQ27XXX_DATA(421,   0,       0x80008000, BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
++	[BQ27425]   = BQ27XXX_DATA(425,   BQ27421, 0x04143672, BQ27XXX_O_CFGUP),
++	[BQ27441]   = BQ27XXX_DATA(441,   BQ27421, 0x80008000, BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
++	[BQ27621]   = BQ27XXX_DATA(621,   BQ27421, 0x80008000, BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
  };
  
-+static void __maybe_unused bq27xxx_battery_dbg_dupes(struct bq27xxx_device_info *di)
-+{
-+	const size_t max = ARRAY_SIZE(bq27xxx_chip_data);
-+	const char * const msg = "bq27xxx_chip_data[%d].%s & [%d].%s are identical\n";
-+	struct bq27xxx_chip_datum *a, *b;
-+	int i, j;
-+
-+	for (i = 1; i < max-1; i++) {
-+		a = bq27xxx_chip_data + i;
-+
-+		for (j = i+1; j < max; j++) {
-+			b = bq27xxx_chip_data + j;
-+
-+			if (a->regs != b->regs &&
-+			    !memcmp(a->regs, b->regs, sizeof(bq27000_regs)))
-+				dev_warn(di->dev, msg, i, "regs", j, "regs");
-+
-+			if (a->props != b->props &&
-+			    a->props_size == b->props_size &&
-+			    !memcmp(a->props, b->props, a->props_size))
-+				dev_warn(di->dev, msg, i, "props", j, "props");
-+
-+			if (a->dm_regs != b->dm_regs &&
-+			    !memcmp(a->dm_regs, b->dm_regs, sizeof(bq27500_dm_regs)))
-+				dev_warn(di->dev, msg, i, "dm_regs", j, "dm_regs");
-+		}
-+	}
-+}
-+#ifndef DEBUG
-+#define bq27xxx_battery_dbg_dupes(di)
-+#endif
-+
  static DEFINE_MUTEX(bq27xxx_list_lock);
- static LIST_HEAD(bq27xxx_battery_devices);
+@@ -1196,9 +1199,9 @@ static void bq27xxx_battery_update_dm_block(struct bq27xxx_device_info *di,
+ 	}
  
-@@ -1989,6 +2021,8 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
- 		.drv_data = di,
- 	};
+ #ifdef CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM
+-	if (!di->ram_chip && !bq27xxx_dt_to_nvm) {
++	if (!(BQ27XXX_O_RAM & di->opts) && !bq27xxx_dt_to_nvm) {
+ #else
+-	if (!di->ram_chip) {
++	if (!(BQ27XXX_O_RAM & di->opts)) {
+ #endif
+ 		/* devicetree and NVM differ; defer to NVM */
+ 		dev_warn(di->dev, "%s has %u; update to %u disallowed "
+@@ -1266,7 +1269,7 @@ static inline int bq27xxx_battery_soft_reset(struct bq27xxx_device_info *di)
+ static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
+ 					  struct bq27xxx_dm_buf *buf)
+ {
+-	bool cfgup = di->chip == BQ27421; /* assume related chips need cfgupdate */
++	bool cfgup = BQ27XXX_O_CFGUP & di->opts;
+ 	int ret;
  
-+	bq27xxx_battery_dbg_dupes(di);
-+
- 	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
- 	mutex_init(&di->lock);
+ 	if (!buf->dirty)
+@@ -1365,7 +1368,7 @@ static void bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
  
+ 	bq27xxx_battery_seal(di);
+ 
+-	if (updated && di->chip != BQ27421) { /* not a cfgupdate chip, so reset */
++	if (updated && !(BQ27XXX_O_CFGUP & di->opts)) {
+ 		bq27xxx_write(di, BQ27XXX_REG_CTRL, BQ27XXX_RESET, false);
+ 		BQ27XXX_MSLEEP(300); /* reset time is not documented */
+ 	}
+@@ -1993,9 +1996,6 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+ 	di->unseal_key = bq27xxx_chip_data[di->chip].unseal_key;
+ 	di->dm_regs    = bq27xxx_chip_data[di->chip].dm_regs;
+ 	di->opts       = bq27xxx_chip_data[di->chip].opts;
+-	di->ram_chip = di->chip == BQ27421 ||
+-		       di->chip == BQ27441 ||
+-		       di->chip == BQ27621;
+ 
+ 	psy_desc = devm_kzalloc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
+ 	if (!psy_desc)
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index 77fe94f1..8a8a3f61 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -71,7 +71,6 @@ struct bq27xxx_device_info {
+ 	struct device *dev;
+ 	int id;
+ 	enum bq27xxx_chip chip;
+-	bool ram_chip;
+ 	u32 opts;
+ 	const char *name;
+ 	struct bq27xxx_dm_reg *dm_regs;
 -- 
 2.13.1
