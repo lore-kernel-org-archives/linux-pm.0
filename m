@@ -1,54 +1,33 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH v1 4/8] sched/cpufreq_schedutil: split utilization
- signals
-Date: Mon, 10 Jul 2017 12:35:35 +0530
-Message-ID: <20170710070535.GH2928@vireshk-i7>
-References: <20170705085905.6558-1-juri.lelli@arm.com>
- <20170705085905.6558-5-juri.lelli@arm.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: [PATCH] PM / sysfs: return -EINVAL for bogus strings
+Date: Mon, 10 Jul 2017 10:21:40 +0300
+Message-ID: <20170710072140.chms22ep35myvvbd@mwanda>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f47.google.com ([74.125.83.47]:34521 "EHLO
-        mail-pg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752335AbdGJHFi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jul 2017 03:05:38 -0400
-Received: by mail-pg0-f47.google.com with SMTP id t186so45005812pgb.1
-        for <linux-pm@vger.kernel.org>; Mon, 10 Jul 2017 00:05:38 -0700 (PDT)
+Return-path: <kernel-janitors-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170705085905.6558-5-juri.lelli@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: kernel-janitors-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
-On 05-07-17, 09:59, Juri Lelli wrote:
-> To be able to treat utilization signals of different scheduling classes
-> in different ways (e.g., CFS signal might be stale while DEADLINE signal
-> is never stale by design) we need to split sugov_cpu::util signal in two:
-> util_cfs and util_dl.
-> 
-> This patch does that by also changing sugov_get_util() parameter list.
-> After this change, aggregation of the different signals has to be performed
-> by sugov_get_util() users (so that they can decide what to do with the
-> different signals).
-> 
-> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Luca Abeni <luca.abeni@santannapisa.it>
-> Cc: Claudio Scordino <claudio@evidence.eu.com>
-> ---
-> Changes from RFCv0:
-> 
->  - refactor aggregation of utilization in sugov_aggregate_util()
-> ---
->  kernel/sched/cpufreq_schedutil.c | 28 ++++++++++++++++------------
->  1 file changed, 16 insertions(+), 12 deletions(-)
+In the current code, if the user accidentally writes a bogus command to
+this sysfs file, then we set the latency tolerance to an uninitialized
+variable.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Fixes: 2d984ad132a8 ("PM / QoS: Introcuce latency tolerance device PM QoS type")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
--- 
-viresh
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index 185a52581cfa..156ab57bca77 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -272,6 +272,8 @@ static ssize_t pm_qos_latency_tolerance_store(struct device *dev,
+ 			value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
+ 		else if (!strcmp(buf, "any") || !strcmp(buf, "any\n"))
+ 			value = PM_QOS_LATENCY_ANY;
++		else
++			return -EINVAL;
+ 	}
+ 	ret = dev_pm_qos_update_user_latency_tolerance(dev, value);
+ 	return ret < 0 ? ret : n;
