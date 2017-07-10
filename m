@@ -1,51 +1,56 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH 3/4] power: supply: sbs-battery: Add delay when changing capacity mode bit
-Date: Mon, 10 Jul 2017 14:23:19 +0800
-Message-ID: <1499667800-69055-4-git-send-email-preid@electromag.com.au>
-References: <1499667800-69055-1-git-send-email-preid@electromag.com.au>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
+ load-tracking support
+Date: Mon, 10 Jul 2017 12:10:10 +0530
+Message-ID: <20170710064010.GF2928@vireshk-i7>
+References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
+ <20170706094948.8779-3-dietmar.eggemann@arm.com>
+ <20170706104027.GB13048@vireshk-i7>
+ <c92f1bd0-6611-8eec-51d7-f6d7754a5870@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy1.45ru.net.au ([203.30.46.145]:51832 "EHLO
-        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751161AbdGJGaL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jul 2017 02:30:11 -0400
-In-Reply-To: <1499667800-69055-1-git-send-email-preid@electromag.com.au>
+Received: from mail-pg0-f54.google.com ([74.125.83.54]:33808 "EHLO
+        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751124AbdGJGkN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jul 2017 02:40:13 -0400
+Received: by mail-pg0-f54.google.com with SMTP id t186so44675069pgb.1
+        for <linux-pm@vger.kernel.org>; Sun, 09 Jul 2017 23:40:13 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <c92f1bd0-6611-8eec-51d7-f6d7754a5870@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org, preid@electromag.com.au, linux-pm@vger.kernel.org, posted@heine.so
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
 
-At least with the Inspired Energy compatible batteries a delay is required
-after setting the capacity mode bit from amp to watts or the reverse.
-Setting the bit and then immediately pooling the status register results
-in an unknown error being returned in the register. Add the delay results
-in and ok status being return. This was also seen when reading the charge
-and energy registers where the wrong value was returned for the requested
-mode.
+On 07-07-17, 17:01, Dietmar Eggemann wrote:
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 9bf97a366029..77c4d5e7a598 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -301,6 +301,12 @@ static void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
+>  #endif
+>  }
+>  
+> +#ifndef arch_set_freq_scale
+> +static void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
+> +                               unsigned long max_freq)
+> +{}
+> +#endif
+> +
+>  static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+>                 struct cpufreq_freqs *freqs, unsigned int state)
+>  {
+> @@ -343,6 +349,8 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+>                                 CPUFREQ_POSTCHANGE, freqs);
+>                 if (likely(policy) && likely(policy->cpu == freqs->cpu))
+>                         policy->cur = freqs->new;
+> +               arch_set_freq_scale(policy->related_cpus, policy->cur,
+> +                                   policy->cpuinfo.max_freq);
 
-Signed-off-by: Phil Reid <preid@electromag.com.au>
----
- drivers/power/supply/sbs-battery.c | 3 +++
- 1 file changed, 3 insertions(+)
+This function gets called for-each-cpu-in-policy, so you don't need the first
+argument. And the topology code already has max_freq, so not sure if you need
+the last parameter as well, specially for the ARM solution.
 
-diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index 4594ed1..3473b45 100644
---- a/drivers/power/supply/sbs-battery.c
-+++ b/drivers/power/supply/sbs-battery.c
-@@ -14,6 +14,7 @@
-  * more details.
-  */
- 
-+#include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/gpio/consumer.h>
- #include <linux/i2c.h>
-@@ -511,6 +512,8 @@ static enum sbs_battery_mode sbs_set_battery_mode(struct i2c_client *client,
- 	if (ret < 0)
- 		return ret;
- 
-+	usleep_range(1000, 2000);
-+
- 	return original_val & BATTERY_MODE_MASK;
- }
- 
 -- 
-1.8.3.1
+viresh
