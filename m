@@ -1,90 +1,250 @@
 From: <sean.wang@mediatek.com>
-Subject: [PATCH v4 1/3] cpufreq: mediatek: Add support of cpufreq to MT2701/MT7623 SoC
-Date: Mon, 10 Jul 2017 22:23:08 +0800
-Message-ID: <feabcfd53899954198c6620e9d9b68f4a3c55201.1499692967.git.sean.wang@mediatek.com>
+Subject: [PATCH v4 3/3] dt-bindings: cpufreq: enhance MediaTek cpufreq dt-binding document
+Date: Mon, 10 Jul 2017 22:23:10 +0800
+Message-ID: <8489dfbfc7ad8f849605709b1632f1835f075a33.1499692967.git.sean.wang@mediatek.com>
 References: <cover.1499692967.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailgw01.mediatek.com ([210.61.82.183]:37095 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S932395AbdGJOX0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jul 2017 10:23:26 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1499692967.git.sean.wang@mediatek.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: viresh.kumar@linaro.org, robh+dt@kernel.org, matthias.bgg@gmail.com, mark.rutland@arm.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, jdelvare@suse.de, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang@mediatek.com>
 
-MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
-single cluster and this hardware is also compatible with the existing
-driver through enabling CPU frequency feature with operating-points-v2
-bindings. Also, this driver actually supports all MediaTek SoCs, the
-Kconfig menu entry and file name itself should be updated with more
-generic name to drop "MT8173"
+Update binding document with adding operating-points-v2 as the required
+property and the cooling level as the optional properties and adding more
+examples guiding people how to use MediaTek cpufreq driver for MediaTek
+SoCs.
 
 Signed-off-by: Sean Wang <sean.wang@mediatek.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Reviewed-by: Jean Delvare <jdelvare@suse.de>
 ---
- drivers/cpufreq/Kconfig.arm                              | 7 +++----
- drivers/cpufreq/Makefile                                 | 2 +-
- drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} | 2 ++
- 3 files changed, 6 insertions(+), 5 deletions(-)
- rename drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} (99%)
+ .../bindings/cpufreq/cpufreq-mediatek.txt          | 170 ++++++++++++++++++++-
+ 1 file changed, 167 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 74ed7e9..24ef446 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -87,14 +87,13 @@ config ARM_KIRKWOOD_CPUFREQ
- 	  This adds the CPUFreq driver for Marvell Kirkwood
- 	  SoCs.
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+index 52b457c..f640308 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
+@@ -1,4 +1,5 @@
+-Device Tree Clock bindins for CPU DVFS of Mediatek MT8173 SoC
++Binding for MediaTek's CPUFreq driver
++=====================================
  
--config ARM_MT8173_CPUFREQ
--	tristate "Mediatek MT8173 CPUFreq support"
-+config ARM_MEDIATEK_CPUFREQ
-+	tristate "CPU Frequency scaling support for MediaTek SoCs"
- 	depends on ARCH_MEDIATEK && REGULATOR
--	depends on ARM64 || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
- 	depends on !CPU_THERMAL || THERMAL
- 	select PM_OPP
- 	help
--	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
-+	  This adds the CPUFreq driver support for MediaTek SoCs.
+ Required properties:
+ - clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
+@@ -9,6 +10,8 @@ Required properties:
+ 			  transition and not stable yet.
+ 	Please refer to Documentation/devicetree/bindings/clk/clock-bindings.txt for
+ 	generic clock consumer properties.
++- operating-points-v2: Please refer to Documentation/devicetree/bindings/opp/opp.txt
++	for detail.
+ - proc-supply: Regulator for Vproc of CPU cluster.
  
- config ARM_OMAP2PLUS_CPUFREQ
- 	bool "TI OMAP2+"
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index b7e78f0..ea043aa 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -58,7 +58,7 @@ obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
- obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
- obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
- obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
--obj-$(CONFIG_ARM_MT8173_CPUFREQ)	+= mt8173-cpufreq.o
-+obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mediatek-cpufreq.o
- obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
- obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
- obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
-diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-similarity index 99%
-rename from drivers/cpufreq/mt8173-cpufreq.c
-rename to drivers/cpufreq/mediatek-cpufreq.c
-index fd1886f..481ec77 100644
---- a/drivers/cpufreq/mt8173-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -575,6 +575,8 @@ static struct platform_driver mt8173_cpufreq_platdrv = {
+ Optional properties:
+@@ -17,9 +20,166 @@ Optional properties:
+ 	       Vsram to fit SoC specific needs. When absent, the voltage scaling
+ 	       flow is handled by hardware, hence no software "voltage tracking" is
+ 	       needed.
++- #cooling-cells:
++- cooling-min-level:
++- cooling-max-level:
++	Please refer to Documentation/devicetree/bindings/thermal/thermal.txt
++	for detail.
++
++Example 1 (MT7623 SoC):
++
++	cpu_opp_table: opp_table {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-598000000 {
++			opp-hz = /bits/ 64 <598000000>;
++			opp-microvolt = <1050000>;
++		};
++
++		opp-747500000 {
++			opp-hz = /bits/ 64 <747500000>;
++			opp-microvolt = <1050000>;
++		};
++
++		opp-1040000000 {
++			opp-hz = /bits/ 64 <1040000000>;
++			opp-microvolt = <1150000>;
++		};
++
++		opp-1196000000 {
++			opp-hz = /bits/ 64 <1196000000>;
++			opp-microvolt = <1200000>;
++		};
++
++		opp-1300000000 {
++			opp-hz = /bits/ 64 <1300000000>;
++			opp-microvolt = <1300000>;
++		};
++	};
++
++	cpu0: cpu@0 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a7";
++		reg = <0x0>;
++		clocks = <&infracfg CLK_INFRA_CPUSEL>,
++			 <&apmixedsys CLK_APMIXED_MAINPLL>;
++		clock-names = "cpu", "intermediate";
++		operating-points-v2 = <&cpu_opp_table>;
++		#cooling-cells = <2>;
++		cooling-min-level = <0>;
++		cooling-max-level = <7>;
++	};
++	cpu@1 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a7";
++		reg = <0x1>;
++		operating-points-v2 = <&cpu_opp_table>;
++	};
++	cpu@2 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a7";
++		reg = <0x2>;
++		operating-points-v2 = <&cpu_opp_table>;
++	};
++	cpu@3 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a7";
++		reg = <0x3>;
++		operating-points-v2 = <&cpu_opp_table>;
++	};
++
++Example 2 (MT8173 SoC):
++	cpu_opp_table_a: opp_table_a {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-507000000 {
++			opp-hz = /bits/ 64 <507000000>;
++			opp-microvolt = <859000>;
++		};
++
++		opp-702000000 {
++			opp-hz = /bits/ 64 <702000000>;
++			opp-microvolt = <908000>;
++		};
++
++		opp-1001000000 {
++			opp-hz = /bits/ 64 <1001000000>;
++			opp-microvolt = <983000>;
++		};
++
++		opp-1105000000 {
++			opp-hz = /bits/ 64 <1105000000>;
++			opp-microvolt = <1009000>;
++		};
++
++		opp-1183000000 {
++			opp-hz = /bits/ 64 <1183000000>;
++			opp-microvolt = <1028000>;
++		};
++
++		opp-1404000000 {
++			opp-hz = /bits/ 64 <1404000000>;
++			opp-microvolt = <1083000>;
++		};
++
++		opp-1508000000 {
++			opp-hz = /bits/ 64 <1508000000>;
++			opp-microvolt = <1109000>;
++		};
++
++		opp-1573000000 {
++			opp-hz = /bits/ 64 <1573000000>;
++			opp-microvolt = <1125000>;
++		};
++	};
++
++	cpu_opp_table_b: opp_table_b {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-507000000 {
++			opp-hz = /bits/ 64 <507000000>;
++			opp-microvolt = <828000>;
++		};
++
++		opp-702000000 {
++			opp-hz = /bits/ 64 <702000000>;
++			opp-microvolt = <867000>;
++		};
++
++		opp-1001000000 {
++			opp-hz = /bits/ 64 <1001000000>;
++			opp-microvolt = <927000>;
++		};
++
++		opp-1209000000 {
++			opp-hz = /bits/ 64 <1209000000>;
++			opp-microvolt = <968000>;
++		};
++
++		opp-1404000000 {
++			opp-hz = /bits/ 64 <1007000000>;
++			opp-microvolt = <1028000>;
++		};
++
++		opp-1612000000 {
++			opp-hz = /bits/ 64 <1612000000>;
++			opp-microvolt = <1049000>;
++		};
++
++		opp-1807000000 {
++			opp-hz = /bits/ 64 <1807000000>;
++			opp-microvolt = <1089000>;
++		};
++
++		opp-1989000000 {
++			opp-hz = /bits/ 64 <1989000000>;
++			opp-microvolt = <1125000>;
++		};
++	};
  
- /* List of machines supported by this driver */
- static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
-+	{ .compatible = "mediatek,mt2701", },
-+	{ .compatible = "mediatek,mt7623", },
- 	{ .compatible = "mediatek,mt817x", },
- 	{ .compatible = "mediatek,mt8173", },
- 	{ .compatible = "mediatek,mt8176", },
+-Example:
+---------
+ 	cpu0: cpu@0 {
+ 		device_type = "cpu";
+ 		compatible = "arm,cortex-a53";
+@@ -29,6 +189,7 @@ Example:
+ 		clocks = <&infracfg CLK_INFRA_CA53SEL>,
+ 			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+ 		clock-names = "cpu", "intermediate";
++		operating-points-v2 = <&cpu_opp_table_a>;
+ 	};
+ 
+ 	cpu1: cpu@1 {
+@@ -40,6 +201,7 @@ Example:
+ 		clocks = <&infracfg CLK_INFRA_CA53SEL>,
+ 			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+ 		clock-names = "cpu", "intermediate";
++		operating-points-v2 = <&cpu_opp_table_a>;
+ 	};
+ 
+ 	cpu2: cpu@100 {
+@@ -51,6 +213,7 @@ Example:
+ 		clocks = <&infracfg CLK_INFRA_CA57SEL>,
+ 			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+ 		clock-names = "cpu", "intermediate";
++		operating-points-v2 = <&cpu_opp_table_b>;
+ 	};
+ 
+ 	cpu3: cpu@101 {
+@@ -62,6 +225,7 @@ Example:
+ 		clocks = <&infracfg CLK_INFRA_CA57SEL>,
+ 			 <&apmixedsys CLK_APMIXED_MAINPLL>;
+ 		clock-names = "cpu", "intermediate";
++		operating-points-v2 = <&cpu_opp_table_b>;
+ 	};
+ 
+ 	&cpu0 {
 -- 
 2.7.4
