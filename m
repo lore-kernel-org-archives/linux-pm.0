@@ -1,75 +1,140 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
- load-tracking support
-Date: Mon, 10 Jul 2017 13:02:54 +0100
-Message-ID: <bac850da-6256-2a92-abfe-71d229cc99dc@arm.com>
-References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
- <CAJZ5v0gBPNDBYWbuHVaB7deNHSZKziaAeybSw3mg+S8V_roO-Q@mail.gmail.com>
- <22f004af-0158-8265-2da5-34743f294bfb@arm.com>
- <12829054.TWIodSo4bb@aspire.rjw.lan>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH v3 1/3] cpufreq: mediatek: Add support of cpufreq to
+ MT2701/MT7623 SoC
+Date: Mon, 10 Jul 2017 14:05:53 +0200
+Message-ID: <d77f367b-75db-ca23-f334-9bd6154ee26a@gmail.com>
+References: <cover.1499399121.git.sean.wang@mediatek.com>
+ <de42e68d86dd161bb18b4ca7f27774c63c1bd55d.1499399121.git.sean.wang@mediatek.com>
+ <1499412649.4449.33.camel@suse.de> <1499495426.16278.9.camel@mtkswgap22>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:34696 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752227AbdGJMC6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 10 Jul 2017 08:02:58 -0400
-In-Reply-To: <12829054.TWIodSo4bb@aspire.rjw.lan>
-Content-Language: en-GB
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1499495426.16278.9.camel@mtkswgap22>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sean Wang <sean.wang@mediatek.com>, Jean Delvare <jdelvare@suse.de>
+Cc: viresh.kumar@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On 08/07/17 13:09, Rafael J. Wysocki wrote:
-> On Friday, July 07, 2017 06:06:30 PM Dietmar Eggemann wrote:
->> On 07/07/17 17:18, Rafael J. Wysocki wrote:
->>> On Fri, Jul 7, 2017 at 6:01 PM, Dietmar Eggemann
->>> <dietmar.eggemann@arm.com> wrote:
->>>> On 06/07/17 11:40, Viresh Kumar wrote:
->>>>> On 06-07-17, 10:49, Dietmar Eggemann wrote:
+
+
+On 07/08/2017 08:30 AM, Sean Wang wrote:
+> On Fri, 2017-07-07 at 09:30 +0200, Jean Delvare wrote:
+>> Hi Sean,
 >>
->> [...]
->>
->>>> So what about I call arch_set_freq_scale() in __cpufreq_notify_transition() in the
->>>> CPUFREQ_POSTCHANGE case for slow-switching and in cpufreq_driver_fast_switch() for
->>>> fast-switching?
+>> On ven., 2017-07-07 at 11:56 +0800, sean.wang@mediatek.com wrote:
+>>> From: Sean Wang <sean.wang@mediatek.com>
 >>>
->>> Why don't you do this in drivers instead of in the core?
+>>> MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
+>>> single cluster and this hardware is also compatible with the existing
+>>> driver through enabling CPU frequency feature with operating-points-v2
+>>> bindings. Also, this driver actually supports all MediaTek SoCs, the
+>>> Kconfig menu entry and file name itself should be updated with more
+>>> generic name to drop "MT8173"
 >>>
->>> Ultimately, the driver knows what frequency it has requested, so why
->>> can't it call arch_set_freq_scale()?
+>>> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>> ---
+>>>   drivers/cpufreq/Kconfig.arm                         | 8 ++++----
+>>>   drivers/cpufreq/Makefile                            | 2 +-
+>>>   drivers/cpufreq/{mt8173-cpufreq.c => mtk-cpufreq.c} | 2 ++
+>>>   3 files changed, 7 insertions(+), 5 deletions(-)
+>>>   rename drivers/cpufreq/{mt8173-cpufreq.c => mtk-cpufreq.c} (99%)
+>>>
+>>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+>>> index 74ed7e9..79aece7 100644
+>>> --- a/drivers/cpufreq/Kconfig.arm
+>>> +++ b/drivers/cpufreq/Kconfig.arm
+>>> @@ -87,14 +87,14 @@ config ARM_KIRKWOOD_CPUFREQ
+>>>   	  This adds the CPUFreq driver for Marvell Kirkwood
+>>>   	  SoCs.
+>>>   
+>>> -config ARM_MT8173_CPUFREQ
+>>> -	tristate "Mediatek MT8173 CPUFreq support"
+>>> +config ARM_MEDIATEK_CPUFREQ
+>>> +	tristate "CPU Frequency scaling support for MediaTek SoCs"
+>>>   	depends on ARCH_MEDIATEK && REGULATOR
+>>> -	depends on ARM64 || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
+>>> +	depends on ARM || ARM64 || COMPILE_TEST
 >>
->> That's correct but for arm/arm64 we have a lot of different cpufreq
->> drivers to deal with. And doing this call to arch_set_freq_scale() once
->> in the cpufreq core will cover them all.
+>> This statement no longer serves any purpose. The whole Kconfig.arm file
+>> depends on ARM || ARM64, so you can drop it. As a matter of fact no
+>> other entry in this file has the dependency.
 >>
->> [...]
 > 
-> I'm sort of wondering how many is "a lot" really.  For instance, do you really
-> want all of the existing ARM platforms to use the new stuff even though
-> it may regress things there in principle?
+> Okay, the whole line seemed redundant for that's always true.
+> I will drop it in the next version.
+> 
+>>>   	depends on !CPU_THERMAL || THERMAL
+>>>   	select PM_OPP
+>>>   	help
+>>> -	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
+>>> +	  This adds the CPUFreq driver support for MediaTek SoCs.
+>>>   
+>>>   config ARM_OMAP2PLUS_CPUFREQ
+>>>   	bool "TI OMAP2+"
+>>> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+>>> index b7e78f0..4956f5d 100644
+>>> --- a/drivers/cpufreq/Makefile
+>>> +++ b/drivers/cpufreq/Makefile
+>>> @@ -58,7 +58,7 @@ obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
+>>>   obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
+>>>   obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+>>>   obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
+>>> -obj-$(CONFIG_ARM_MT8173_CPUFREQ)	+= mt8173-cpufreq.o
+>>> +obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mtk-cpufreq.o
+>>
+>> I would have preferred mediatek-cpufreq. 3-letter abbreviations are
+>> likely to collide and cause confusion at some point in time. However it
+>> seems I am late to the party, I see that there are already many files
+>> named mtk-* or *-mtk.*... So, so be it.
+>>
+>> Also the file describing the bindings is named cpufreq-mediatek.txt,
+>> which is inconsistent... But the situation is the same for a few other
+>> cpufreq drivers already, so I suppose this is acceptable.
+>>
+> 
+> Agreed. I also prefer using whole name with mediatek as the
+> prefix than just abbreviation used. I will update it also in the
+> next version.
+> 
+> As for the file naming for other drivers, i feel it's okay for me
+> changing into mediatek as file prefix, but it still depends on
+> maintainers or original authors if they likes this.
+> 
 
-Yeah, in mainline we probably only care about a couple of them, I know
-about cpufreq-dt.c, mt8173-cpufreq.c and arm_big_little.c.
-But a lot of development in arm64 still happens outside mainline and we
-would have to inform people to provision their cpufreq drivers with this
-functionality.
+If you want to clean that up, be my guest. Other low-hanging fruits to 
+clean up would be the config options. Right now we have MEDIATEK, MTK 
+and MT65 in kconfig, which is a mess.
 
-With a solution in cpufreq.c we could just implement the functionality
-in the arch which we then connect to the call in cpufreq.c.
+Regards,
+Matthias
 
-> Anyway, if everyone agrees that doing it in the core is the way to go (Peter?),
-> why don't you introduce a __weak function for setting policy->cur and
-> override it from your arch so as to call arch_set_freq_scale() from there?
-
-Yes, I will change this. The #define approach is not really necessary
-here since we're not in the scheduler hot-path and inlining is not
-really required here.
-
-Thanks,
-
--- Dietmar
-
-[...]
+> 
+> 	Sean
+> 
+>>>   obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+>>>   obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+>>>   obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
+>>> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mtk-cpufreq.c
+>>> similarity index 99%
+>>> rename from drivers/cpufreq/mt8173-cpufreq.c
+>>> rename to drivers/cpufreq/mtk-cpufreq.c
+>>> index fd1886f..481ec77 100644
+>>> --- a/drivers/cpufreq/mt8173-cpufreq.c
+>>> +++ b/drivers/cpufreq/mtk-cpufreq.c
+>>> @@ -575,6 +575,8 @@ static struct platform_driver mt8173_cpufreq_platdrv = {
+>>>   
+>>>   /* List of machines supported by this driver */
+>>>   static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
+>>> +	{ .compatible = "mediatek,mt2701", },
+>>> +	{ .compatible = "mediatek,mt7623", },
+>>>   	{ .compatible = "mediatek,mt817x", },
+>>>   	{ .compatible = "mediatek,mt8173", },
+>>>   	{ .compatible = "mediatek,mt8176", },
+>>
+>> Reviewed-by: Jean Delvare <jdelvare@suse.de>
+>>
+> 
+> 
