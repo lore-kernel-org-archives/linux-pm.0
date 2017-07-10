@@ -1,200 +1,380 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: sbs-battery: Reading CHARGE in uAh
-Date: Mon, 10 Jul 2017 16:04:38 +0800
-Message-ID: <8ec0d59a-6d31-fe3c-8f86-f1bc761d53b0@electromag.com.au>
-References: <d760d0a1b38fbda966caaefc63677a56@heine.so>
- <164cda30-47ba-5289-a6c8-4740752b047d@electromag.com.au>
- <51e4c77c0a6a5fb9d31d2d79bb998235@heine.so>
- <058c8617-3b9b-58b8-1fae-056ee90fed80@electromag.com.au>
- <1c63583aadf77510ce85946f7fe3c815@heine.so>
- <5aaaba0a-d52e-eb0f-cbb0-24a0078aa059@electromag.com.au>
- <06932b6865de4abf20330903fd554056@heine.so>
+From: Mikko Perttunen <cyndis@kapsi.fi>
+Subject: Re: [PATCH 4/4] thermal: Add Tegra BPMP thermal sensor driver
+Date: Mon, 10 Jul 2017 11:50:20 +0300
+Message-ID: <24019d55-b4df-dd6e-f43d-57a41b208e09@kapsi.fi>
+References: <20170616112825.31025-1-mperttunen@nvidia.com>
+ <20170616112825.31025-4-mperttunen@nvidia.com>
+ <20170701025325.GA11217@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy2.45ru.net.au ([203.30.46.146]:36974 "EHLO
-        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1753480AbdGJIEq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jul 2017 04:04:46 -0400
-In-Reply-To: <06932b6865de4abf20330903fd554056@heine.so>
-Content-Language: en-AU
+Received: from mail.kapsi.fi ([217.30.184.167]:49236 "EHLO mail.kapsi.fi"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752454AbdGJIu1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 10 Jul 2017 04:50:27 -0400
+In-Reply-To: <20170701025325.GA11217@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Heinemann <posted@heine.so>
-Cc: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Mikko Perttunen <mperttunen@nvidia.com>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, rui.zhang@intel.com, thierry.reding@gmail.com, jonathanh@nvidia.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On 10/07/2017 15:54, Michael Heinemann wrote:
-> On 2017-07-10 03:35, Phil Reid wrote:
->> On 7/07/2017 21:06, Michael Heinemann wrote:
->>> On 2017-07-07 10:27, Phil Reid wrote:
->>>> On 7/07/2017 16:01, Michael Heinemann wrote:
->>>>> Hi Phil,
->>>>> On 2017-07-07 03:49, Phil Reid wrote:
->>>>>> G'day Michael,
->>>>>> On 6/07/2017 23:23, Michael Heinemann wrote:
->>>>>>>
->>>>>>>
->>>>>>> I got an INSPIRED ENERGY NH2057 Battery which is compliant to SBS Specification Version 1.1.
->>>>>>>
->>>>>>> The Battery is generally working but I noticed that the values I get from sysfs for the CHARGE values
->>>>>>> are identical to the values I get as ENERGY and they are in uWh. According to the power_supply_class
->>>>>>> documentation CHARGE should be in uAh and ENERGY in uWh.
->>>>>>>
->>>>>>> So I took a look into the drivers/power/supply/sbs-battery.c and noticed a possible bug in the code
->>>>>>> when switching from BATTERY_MODE_WATTS to BATTERY_MODE_AMPS:
->>>>>>>
->>>>>>> The configuration bit, according to the SBS Spec, is bit 15 of the BatteryMode Register.
->>>>>>>
->>>>>>> These two modes are reflected in the code as:
->>>>>>>
->>>>>>> enum sbs_battery_mode {
->>>>>>>      BATTERY_MODE_AMPS,
->>>>>>>      BATTERY_MODE_WATTS
->>>>>>> };
->>>>>>>
->>>>>>> When I look into the 'sbs_set_battery_mode' function I don't see any point where these mode bits are
->>>>>>> shifted to bit 15. When I debug I only see the register being changed from 0x8000 to 0x8001 and back.
->>>>>>>
->>>>>>> So I'm a bit confused, is this actually working for somebody? I see in the 'for-next' branch [1] that
->>>>>>> there is currently work done to add a mutex to the mode switch. So at least it seems to be working for
->>>>>>> some people. But I don't see why. Am I missing something?
->>>>>>>
->>>>>>>
->>>>>>
->>>>>> Your analyse looks correct. I've not look that closely at the data
->>>>>> from the battery as yet.
->>>>>> There's looks to be a few issues in there related to switching mode.
->>>>>>
->>>>>> The return value from sbs_set_battery_mode also looks suspect.
->>>>>> Perhaps it should just return 0 on success.
->>>>>>
->>>>>> And then sbs_get_battery_capacity needs cleaning up as it's using the
->>>>>> return value to set the mode at the end.
->>>>>>
->>>>>> It setts the mode, and then I guess the intention was to set it back again.
->>>>>> But do we event need to do that? The next get is going to set the correct mode.
->>>>>> And the mode setting will soon be wrapped in a mutex.
->>>>>
->>>>> I spend some more time to look at the code and my conclusion is that the cause
->>>>> of the problem is a mix up of two different approaches for the mode.
->>>>>
->>>>> The initial mode is passed in as 0 or 1 coming from enum sbs_battery_mode.
->>>>> But when the setting back is done the value comes from the return value of
->>>>> the previous call to sbs_set_battery_mode which is 0x8000 or 0x0000.
->>>>>
->>>>> At least for my battery this leads to a situation where the status register is
->>>>> 0x8000 so it's in mWh Mode. Then the mode=0 is passed in to set uAh.
->>>>>
->>>>> But this statement
->>>>>
->>>>> if ((original_val & BATTERY_MODE_MASK) == mode)
->>>>>          return mode;
->>>>>
->>>>> is true by mistake ((0x8000 & 0x8000) == 0) so the function exits and never
->>>>> sets anything.
->>>> Yeap that what I thought.
->>>>
->>>>>
->>>>> What would be the "kernel style" way to fix this?
->>>> That I'm not sure of. My personal style would be against using the enum value.
->>>> Unless is was set to a constant. ie:
->>>> BATTERY_MODE_AMPS  = 0,
->>>> BATTERY_MODE_WATTS = 0x8000
->>>> But I'd probably make the enum a #define instead with above value
->>>>
->>>>
->>>>> Define the sbs_battery_mode like this:
->>>>>
->>>>> enum sbs_battery_mode {
->>>>>      BATTERY_MODE_AMPS,
->>>>>      BATTERY_MODE_WATTS
->>>>> };
->>>>>
->>>>> Or add a #define CAPACITY_MODE_OFFSET 0xf and shift the mode bit in the function?
->>>>>
->>>>> I tested a bit with the shifted bit and the added mutex and get I correct values now.
->>>>> Without the mutex it's more or less randomly changing between uAh and mWh.
->>>>> I would writeup a patch and submit it as proposal.
->>>>>
->>>>>  From my understanding of the SBS Spec (Page 19) the intention of the Mode setting is
->>>>> to select one Mode for your power source and leave it at that. For Example the AtRate()
->>>>> calculations become wrong when you change the mode. But as the driver is not using
->>>>> these features that might not be an issue.
->>>> Had a quick look at that and it'd have to do the same thing as the
->>>> sbs_get_battery_capacity
->>>> call and use the mutex if it was implemented. Don't think we need to
->>>> wrory about it at present thou.
->>>>
->>>>>
->>>>> I would agree that the driver does not need to change back the Mode bit as it is
->>>>> set on every read anyway. So this is unnecessary overhead.
->>>>> If I find time I'll submit a patch to remove this and clean up a bit.
->>>>>
->>>> I like any speed improvement. It takes a while to poll all the values
->>>> from the battery.
->>>
->>> I did some more testing and came to a bit disappointing outcome. I
->>> don't know if this is specific to my battery or a general thing with
->>> SBS devices.
->>> When I set the CAPACITY_MODE bit the change is not always effective
->>> immediately. Sometimes it works, sometimes it takes a few ms and
->>> sometimes the bit never changes and I have to write it again.
->>>
->>> So there seems to be no guarantee to get the reading in the expected
->>> format.
->>>
->>> How could this be handled? Return an error when the CAPACITY_MODE bit
->>> was not set succesfully? Retry setting it (which takes time)?
+On 01.07.2017 05:53, Eduardo Valentin wrote:
+> Hey Mikko,
+>
+> Sorry for the late answer,
+
+Likewise,
+
+>
+> On Fri, Jun 16, 2017 at 02:28:25PM +0300, Mikko Perttunen wrote:
+>> On Tegra186, the BPMP (Boot and Power Management Processor) exposes an
+>> interface to thermal sensors on the system-on-chip. This driver
+>> implements access to the interface. It supports reading the
+>> temperature, setting trip points and receiving notification of a
+>> tripped trip point.
 >>
->> Where you getting an i2c error or it just failing to set.
->> I've got a number of different Inspired Energy batteries on hand that
->> I can test against.
->> I'll try and run some tests with you patch today and see what I get with them.
+>> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+>> ---
+>>  drivers/thermal/Makefile             |   2 +-
+>>  drivers/thermal/tegra/Kconfig        |   7 +
+>>  drivers/thermal/tegra/Makefile       |   3 +-
+>>  drivers/thermal/tegra/bpmp-thermal.c | 253 +++++++++++++++++++++++++++++++++++
+>>  4 files changed, 263 insertions(+), 2 deletions(-)
+>>  create mode 100644 drivers/thermal/tegra/bpmp-thermal.c
 >>
-> The i2c calls return successfully. The value reported is in the wrong unit and
-> the status register is also not changed.
-> 
-> I saw that you introduced a delay, this should help at least in
-> ~50% of the times. Do you always see correct values with your
-> batteries?
+>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+>> index 094d7039981c..c03dccdba7b8 100644
+>> --- a/drivers/thermal/Makefile
+>> +++ b/drivers/thermal/Makefile
+>> @@ -54,7 +54,7 @@ obj-$(CONFIG_INTEL_BXT_PMIC_THERMAL) += intel_bxt_pmic_thermal.o
+>>  obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
+>>  obj-$(CONFIG_ST_THERMAL)	+= st/
+>>  obj-$(CONFIG_QCOM_TSENS)	+= qcom/
+>> -obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra/
+>> +obj-y				+= tegra/
+>>  obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+>>  obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
+>>  obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
+>> diff --git a/drivers/thermal/tegra/Kconfig b/drivers/thermal/tegra/Kconfig
+>> index cec586ec7e4b..36e4b03bb98b 100644
+>> --- a/drivers/thermal/tegra/Kconfig
+>> +++ b/drivers/thermal/tegra/Kconfig
+>> @@ -10,4 +10,11 @@ config TEGRA_SOCTHERM
+>>  	  zones to manage temperatures. This option is also required for the
+>>  	  emergency thermal reset (thermtrip) feature to function.
+>>
+>> +config TEGRA_BPMP_THERMAL
+>> +	tristate "Tegra BPMP thermal sensing"
+>> +	depends on TEGRA_BPMP
+>
+> Can you add COMPILE_TEST support here?
 
-Yeah I also saw no error messaging. Battery acks the command ok.
-I hooked a scope up to the sda / scl lines and there was also no evidence of bus
-stretching by the battery to force the host to wait.
+Sure.
 
-Prior to adding the delay I applied the changes to not reset the mode bit.
-That allowed me to poll the charge / energy registers without the mode change reseting.
+>
+>> +	help
+>> +	 Enable this option for support for sensing system temperature of NVIDIA
+>> +	 Tegra systems-on-chip with the BPMP coprocessor (Tegra186).
+>> +
+>>  endmenu
+>> diff --git a/drivers/thermal/tegra/Makefile b/drivers/thermal/tegra/Makefile
+>> index 1ce1af2cf0f5..757abcd1feaf 100644
+>> --- a/drivers/thermal/tegra/Makefile
+>> +++ b/drivers/thermal/tegra/Makefile
+>> @@ -1,4 +1,5 @@
+>> -obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra-soctherm.o
+>> +obj-$(CONFIG_TEGRA_SOCTHERM)		+= tegra-soctherm.o
+>> +obj-$(CONFIG_TEGRA_BPMP_THERMAL)	+= bpmp-thermal.o
+>>
+>>  tegra-soctherm-y				:= soctherm.o soctherm-fuse.o
+>>  tegra-soctherm-$(CONFIG_ARCH_TEGRA_124_SOC)	+= tegra124-soctherm.o
+>> diff --git a/drivers/thermal/tegra/bpmp-thermal.c b/drivers/thermal/tegra/bpmp-thermal.c
+>> new file mode 100644
+>> index 000000000000..3465a201d1ac
+>> --- /dev/null
+>> +++ b/drivers/thermal/tegra/bpmp-thermal.c
+>> @@ -0,0 +1,253 @@
+>> +/*
+>> + * Copyright (c) 2015-2017, NVIDIA CORPORATION.  All rights reserved.
+>> + *
+>> + * Author:
+>> + *	Mikko Perttunen <mperttunen@nvidia.com>
+>> + *	Aapo Vienamo	<avienamo@nvidia.com>
+>> + *
+>> + * This software is licensed under the terms of the GNU General Public
+>> + * License version 2, as published by the Free Software Foundation, and
+>> + * may be copied, distributed, and modified under those terms.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + */
+>> +
+>> +#include <linux/err.h>
+>> +#include <linux/module.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/thermal.h>
+>> +#include <linux/workqueue.h>
+>> +
+>> +#include <soc/tegra/bpmp.h>
+>> +#include <soc/tegra/bpmp-abi.h>
+>> +
+>> +struct tegra_bpmp_thermal_zone {
+>> +	struct tegra_bpmp_thermal *tegra;
+>> +	struct thermal_zone_device *tzd;
+>> +	struct work_struct tz_device_update_work;
+>> +	unsigned int idx;
+>> +};
+>> +
+>> +struct tegra_bpmp_thermal {
+>> +	struct device *dev;
+>> +	struct tegra_bpmp *bpmp;
+>> +	unsigned int num_zones;
+>> +	struct tegra_bpmp_thermal_zone *zones;
+>> +};
+>> +
+>> +static int tegra_bpmp_thermal_get_temp(void *data, int *out_temp)
+>> +{
+>> +	struct tegra_bpmp_thermal_zone *zone = data;
+>> +	struct mrq_thermal_host_to_bpmp_request req;
+>> +	union mrq_thermal_bpmp_to_host_response reply;
+>> +	struct tegra_bpmp_message msg;
+>> +	int err;
+>> +
+>> +	memset(&req, 0, sizeof(req));
+>> +	req.type = CMD_THERMAL_GET_TEMP;
+>> +	req.get_temp.zone = zone->idx;
+>> +
+>> +	memset(&msg, 0, sizeof(msg));
+>> +	msg.mrq = MRQ_THERMAL;
+>> +	msg.tx.data = &req;
+>> +	msg.tx.size = sizeof(req);
+>> +	msg.rx.data = &reply;
+>> +	msg.rx.size = sizeof(reply);
+>> +
+>> +	err = tegra_bpmp_transfer(zone->tegra->bpmp, &msg);
+>> +	if (err)
+>> +		return err;
+>> +
+>> +	*out_temp = reply.get_temp.temp;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int tegra_bpmp_thermal_set_trips(void *data, int low, int high)
+>> +{
+>> +	struct tegra_bpmp_thermal_zone *zone = data;
+>> +	struct mrq_thermal_host_to_bpmp_request req;
+>> +	struct tegra_bpmp_message msg;
+>> +
+>> +	memset(&req, 0, sizeof(req));
+>> +	req.type = CMD_THERMAL_SET_TRIP;
+>> +	req.set_trip.zone = zone->idx;
+>> +	req.set_trip.enabled = true;
+>> +	req.set_trip.low = low;
+>> +	req.set_trip.high = high;
+>> +
+>> +	memset(&msg, 0, sizeof(msg));
+>> +	msg.mrq = MRQ_THERMAL;
+>> +	msg.tx.data = &req;
+>> +	msg.tx.size = sizeof(req);
+>> +
+>> +	return tegra_bpmp_transfer(zone->tegra->bpmp, &msg);
+>> +}
+>> +
+>> +static void tz_device_update_work_fn(struct work_struct *work)
+>> +{
+>> +	struct tegra_bpmp_thermal_zone *zone;
+>> +
+>> +	zone = container_of(work, struct tegra_bpmp_thermal_zone,
+>> +			    tz_device_update_work);
+>> +
+>> +	thermal_zone_device_update(zone->tzd, THERMAL_TRIP_VIOLATED);
+>> +}
+>> +
+>> +static void bpmp_mrq_thermal(unsigned int mrq, struct tegra_bpmp_channel *ch,
+>> +			     void *data)
+>> +{
+>> +	struct mrq_thermal_bpmp_to_host_request *req;
+>> +	struct tegra_bpmp_thermal *tegra = data;
+>> +	int zone_idx;
+>> +
+>> +	req = (struct mrq_thermal_bpmp_to_host_request *)ch->ib->data;
+>> +
+>> +	if (req->type != CMD_THERMAL_HOST_TRIP_REACHED) {
+>> +		dev_err(tegra->dev, "%s: invalid request type: %d\n",
+>> +			__func__, req->type);
+>> +		tegra_bpmp_mrq_return(ch, -EINVAL, NULL, 0);
+>> +		return;
+>> +	}
+>> +
+>> +	zone_idx = req->host_trip_reached.zone;
+>> +	if (zone_idx >= tegra->num_zones) {
+>> +		dev_err(tegra->dev, "%s: invalid thermal zone: %d\n",
+>> +			__func__, zone_idx);
+>> +		tegra_bpmp_mrq_return(ch, -EINVAL, NULL, 0);
+>> +		return;
+>> +	}
+>> +
+>> +	tegra_bpmp_mrq_return(ch, 0, NULL, 0);
+>> +
+>> +	schedule_work(&tegra->zones[zone_idx].tz_device_update_work);
+>
+> Why not a thermal update right here?
 
-I've got a 4 battery system and I'd see some of the batteries change mode.
-Continuously polling them for say energy when they'd all been in charge "mode"
-they'd eventually set themselves to the correct mode and stay there. But it was very random.
+The device update will call back to the .get_temp callback, which will 
+call tegra_bpmp_transfer - but this function may not be called from 
+atomic context. (bpmp_mrq_thermal is called from atomic context)
 
-After the delay I've done hundreds of cycle on each battery and they seem to be behaving.
-Just reading the status register after the set seemed to upset them and they wouldn't change mode.
-Bus had to be completely idle.
+>
+>> +}
+>> +
+>> +static int tegra_bpmp_thermal_get_num_zones(struct tegra_bpmp *bpmp,
+>> +					    int *num_zones)
+>> +{
+>> +	struct mrq_thermal_host_to_bpmp_request req;
+>> +	union mrq_thermal_bpmp_to_host_response reply;
+>> +	struct tegra_bpmp_message msg;
+>> +	int err;
+>> +
+>> +	memset(&req, 0, sizeof(req));
+>> +	req.type = CMD_THERMAL_GET_NUM_ZONES;
+>> +
+>> +	memset(&msg, 0, sizeof(msg));
+>> +	msg.mrq = MRQ_THERMAL;
+>> +	msg.tx.data = &req;
+>> +	msg.tx.size = sizeof(req);
+>> +	msg.rx.data = &reply;
+>> +	msg.rx.size = sizeof(reply);
+>> +
+>> +	err = tegra_bpmp_transfer(bpmp, &msg);
+>> +	if (err)
+>> +		return err;
+>> +
+>> +	*num_zones = reply.get_num_zones.num;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static const struct thermal_zone_of_device_ops tegra_bpmp_of_thermal_ops = {
+>> +	.get_temp = tegra_bpmp_thermal_get_temp,
+>> +	.set_trips = tegra_bpmp_thermal_set_trips,
+>> +};
+>> +
+>> +static int tegra_bpmp_thermal_probe(struct platform_device *pdev)
+>> +{
+>> +	struct tegra_bpmp *bpmp = dev_get_drvdata(pdev->dev.parent);
+>> +	struct tegra_bpmp_thermal *tegra;
+>> +	struct thermal_zone_device *tzd;
+>> +	unsigned int i;
+>> +	int err;
+>> +
+>> +	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
+>> +	if (!tegra)
+>> +		return -ENOMEM;
+>> +
+>> +	tegra->dev = &pdev->dev;
+>> +	tegra->bpmp = bpmp;
+>> +
+>> +	err = tegra_bpmp_thermal_get_num_zones(bpmp, &tegra->num_zones);
+>> +	if (err) {
+>> +		dev_err(&pdev->dev, "failed to get the number of zones: %d\n",
+>> +			err);
+>> +		return err;
+>> +	}
+>> +
+>> +	tegra->zones = devm_kcalloc(&pdev->dev, tegra->num_zones,
+>> +				    sizeof(*tegra->zones), GFP_KERNEL);
+>> +	if (!tegra->zones)
+>> +		return -ENOMEM;
+>> +
+>> +	for (i = 0; i < tegra->num_zones; ++i) {
+>> +		int temp;
+>> +
+>> +		tegra->zones[i].idx = i;
+>> +		tegra->zones[i].tegra = tegra;
+>> +
+>> +		err = tegra_bpmp_thermal_get_temp(&tegra->zones[i], &temp);
+>> +		if (err < 0)
+>> +			continue;
+>
+> Should we release the memory allocated for zones that fail to retrieve
+> temperature here, given that you are not going to use it elsewhere.
 
-Thought I'd post the patches for you to have a play with and anyone else to comment on.
+That's possible, though then we will need a separate allocation for each 
+zone struct. I'll make the change.
 
-I was also going to send Insipred Energy support an email to see what they had to say.
+>
+>> +
+>> +		tzd = devm_thermal_zone_of_sensor_register(
+>> +			&pdev->dev, i, &tegra->zones[i],
+>> +			&tegra_bpmp_of_thermal_ops);
+>> +		if (IS_ERR(tzd)) {
+>> +			if (PTR_ERR(tzd) == -EPROBE_DEFER)
+>> +				return -EPROBE_DEFER;
+>> +			continue;
+>
+> same here?
+>
+>> +		}
+>> +
+>> +		tegra->zones[i].tzd = tzd;
+>> +		INIT_WORK(&tegra->zones[i].tz_device_update_work,
+>> +			  tz_device_update_work_fn);
+>> +	}
+>> +
+>> +	err = tegra_bpmp_request_mrq(bpmp, MRQ_THERMAL, bpmp_mrq_thermal,
+>> +				     tegra);
+>> +	if (err) {
+>> +		dev_err(&pdev->dev, "failed to register mrq handler: %d\n",
+>> +			err);
+>> +		return err;
+>> +	}
+>> +
+>> +	platform_set_drvdata(pdev, tegra);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int tegra_bpmp_thermal_remove(struct platform_device *pdev)
+>> +{
+>> +	struct tegra_bpmp_thermal *tegra = platform_get_drvdata(pdev);
+>> +
+>> +	tegra_bpmp_free_mrq(tegra->bpmp, MRQ_THERMAL, tegra);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static const struct of_device_id tegra_bpmp_thermal_of_match[] = {
+>> +	{ .compatible = "nvidia,tegra186-bpmp-thermal" },
+>> +	{ },
+>> +};
+>> +MODULE_DEVICE_TABLE(of, tegra_bpmp_thermal_of_match);
+>> +
+>> +static struct platform_driver tegra_bpmp_thermal_driver = {
+>> +	.probe = tegra_bpmp_thermal_probe,
+>> +	.remove = tegra_bpmp_thermal_remove,
+>> +	.driver = {
+>> +		.name = "tegra-bpmp-thermal",
+>> +		.of_match_table = tegra_bpmp_thermal_of_match,
+>> +	},
+>> +};
+>> +module_platform_driver(tegra_bpmp_thermal_driver);
+>> +
+>> +MODULE_AUTHOR("Mikko Perttunen <mperttunen@nvidia.com>");
+>> +MODULE_DESCRIPTION("NVIDIA Tegra BPMP thermal sensor driver");
+>> +MODULE_LICENSE("GPL v2");
+>> --
+>> 2.13.1
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-tegra" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-
-> 
-> I added something like this at the end of sbs_set_battery_mode
-> 
->      ret = sbs_read_word_data(client, BATTERY_MODE_OFFSET);
->      if ((ret & BATTERY_MODE_MASK) != mode)
->                 return -ENODATA;
-> 
-> In this way one knows if the value is actually in the right unit
-> which as it is currently implemented is not the case. But this of
-> course adds more delay.
-> 
-> I will now do some tests with your submitted patches.
-> 
-
-
-
--- 
-Regards
-Phil Reid
+Thanks,
+Mikko
