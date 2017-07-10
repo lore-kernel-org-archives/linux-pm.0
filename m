@@ -1,375 +1,187 @@
-From: "dbasehore ." <dbasehore@chromium.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH v5 5/5] intel_idle: Add S0ix validation
-Date: Mon, 10 Jul 2017 14:57:48 -0700
-Message-ID: <CAGAzgsrJ5Pg4LjC6i=LAeVz-Sd5xhr4mrqYfBKZfEiKHTPFZjw@mail.gmail.com>
-References: <20170708000303.21863-1-dbasehore@chromium.org>
- <20170708000303.21863-5-dbasehore@chromium.org> <2511262.5Lce4mW4Bc@aspire.rjw.lan>
+Date: Tue, 11 Jul 2017 00:09:59 +0200
+Message-ID: <4255011.FH94tfVCB1@aspire.rjw.lan>
+References: <20170708000303.21863-1-dbasehore@chromium.org> <2511262.5Lce4mW4Bc@aspire.rjw.lan> <CAGAzgsrJ5Pg4LjC6i=LAeVz-Sd5xhr4mrqYfBKZfEiKHTPFZjw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <2511262.5Lce4mW4Bc@aspire.rjw.lan>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, x86@kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49807 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1754041AbdGJWRm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jul 2017 18:17:42 -0400
+In-Reply-To: <CAGAzgsrJ5Pg4LjC6i=LAeVz-Sd5xhr4mrqYfBKZfEiKHTPFZjw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "dbasehore ." <dbasehore@chromium.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, x86@kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Mon, Jul 10, 2017 at 6:33 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Friday, July 07, 2017 05:03:03 PM Derek Basehore wrote:
->> This adds validation of S0ix entry and enables it on Skylake. Using
->> the new tick_set_freeze_event function, we program the CPU to wake up
->> X seconds after entering freeze. After X seconds, it will wake the CPU
->> to check the S0ix residency counters and make sure we entered the
->> lowest power state for suspend-to-idle.
->>
->> It exits freeze and reports an error to userspace when the SoC does
->> not enter S0ix on suspend-to-idle.
->>
->
-> Honestly, I'm totally unsure about this ATM, as it seems to assume that it
-> doesn't make senes to stay suspended if SLP_S0 residency is not there, but
-> that totally may not be the case.
->
-> First of all, there are systems in which SLP_S0 is related to about 10%-20% of
-> the total power draw reduction whereas the remaining 80%-90% comes from PC10
-> alone.  So, if you can get to PC10, being unable to get SLP_S0 residency on top
-> of that may not be a big deal after all.  Of course, you may argue that 10%-20%
-> of battery life while suspended is "a lot", but that really depends on the
-> possible alternatives.
->
+On Monday, July 10, 2017 02:57:48 PM dbasehore . wrote:
+> On Mon, Jul 10, 2017 at 6:33 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Friday, July 07, 2017 05:03:03 PM Derek Basehore wrote:
+> >> This adds validation of S0ix entry and enables it on Skylake. Using
+> >> the new tick_set_freeze_event function, we program the CPU to wake up
+> >> X seconds after entering freeze. After X seconds, it will wake the CPU
+> >> to check the S0ix residency counters and make sure we entered the
+> >> lowest power state for suspend-to-idle.
+> >>
+> >> It exits freeze and reports an error to userspace when the SoC does
+> >> not enter S0ix on suspend-to-idle.
+> >>
+> >
+> > Honestly, I'm totally unsure about this ATM, as it seems to assume that it
+> > doesn't make senes to stay suspended if SLP_S0 residency is not there, but
+> > that totally may not be the case.
+> >
+> > First of all, there are systems in which SLP_S0 is related to about 10%-20% of
+> > the total power draw reduction whereas the remaining 80%-90% comes from PC10
+> > alone.  So, if you can get to PC10, being unable to get SLP_S0 residency on top
+> > of that may not be a big deal after all.  Of course, you may argue that 10%-20%
+> > of battery life while suspended is "a lot", but that really depends on the
+> > possible alternatives.
+> >
+> 
+> We'd have to track actual PC10 residency instead of checking if it's
+> the requested state since the SoC can enter a higher power package
+> cstate even if PC10 is requested.
 
-We'd have to track actual PC10 residency instead of checking if it's
-the requested state since the SoC can enter a higher power package
-cstate even if PC10 is requested. I think this can be done by reading
-an msr register, though. Is there an example of how PC10 can be
-entered without SLP_S0 getting asserted by the way?
+That's correct, but it should be sufficient to check the PC10 residency
+(there's some code to do that in turbostat, for example).
 
-Also, this feature is disabled by default, so it doesn't prevent these
-use cases.
+> I think this can be done by reading
+> an msr register, though. Is there an example of how PC10 can be
+> entered without SLP_S0 getting asserted by the way?
 
-> Second, as far as the alternatives go, it may not be rosy, because there are
-> systems that don't support S3 (or any other ACPI sleep states at all for that
-> matter) and suspend-to-idle is the only suspend mechanism available there.
-> On those systems it still may make sense to use it even though it may not
-> reduce the power draw that much.  And from some experiments, suspend-to-idle
-> still extends battery life by 100% over runtime idle even if the system is not
-> able to get to PC10 most of the time.
+Yes, there is.
 
-This is off by default.
+PC10 is a power state of the north complex and it can be entered regardless
+of the SLP_S0 status which is related to the south complex.
 
->
-> While I understand the use case, I don't think it is a binary "yes"-"no" thing
-> and the focus on just SLP_S0 may be misguided.
+> Also, this feature is disabled by default, so it doesn't prevent these
+> use cases.
+> 
+> > Second, as far as the alternatives go, it may not be rosy, because there are
+> > systems that don't support S3 (or any other ACPI sleep states at all for that
+> > matter) and suspend-to-idle is the only suspend mechanism available there.
+> > On those systems it still may make sense to use it even though it may not
+> > reduce the power draw that much.  And from some experiments, suspend-to-idle
+> > still extends battery life by 100% over runtime idle even if the system is not
+> > able to get to PC10 most of the time.
+> 
+> This is off by default.
 
-Do you have a preference such as being able to set the level that you
-want to validate to? For instance, there could be an option to check
-that SLP_So is asserted, but there could also be an option to check
-for PC9 or PC10 residency. For instance, there could be a module
-parameters for setting the validated state:
+Fair enough, but even so it may not be very useful in general as is.
 
-available_suspend_to_idle_states:
-"none pc6 pc9 pc10 slp_s0"
+> >
+> > While I understand the use case, I don't think it is a binary "yes"-"no" thing
+> > and the focus on just SLP_S0 may be misguided.
+> 
+> Do you have a preference such as being able to set the level that you
+> want to validate to? For instance, there could be an option to check
+> that SLP_So is asserted, but there could also be an option to check
+> for PC9 or PC10 residency. For instance, there could be a module
+> parameters for setting the validated state:
+> 
+> available_suspend_to_idle_states:
+> "none pc6 pc9 pc10 slp_s0"
+> 
+> max_suspend_to_idle_state:
+> "none"
+> 
+> Where the default validated state is none, but it can be set to any of
+> the states in available_suspend_to_idle_states
 
-max_suspend_to_idle_state:
-"none"
+In the suspend-to-idle path the driver will always request the deepest state
+available (C10 for Skylake) and I would validate the associated package state
+by default plus optionally SLP_S0.
 
-Where the default validated state is none, but it can be set to any of
-the states in available_suspend_to_idle_states
+> >
+> >> One example of a bug that can prevent a Skylake CPU from entering S0ix
+> >> (suspend-to-idle) is a leaked reference count to one of the i915 power
+> >
+> > Suspend-to-idle is not S0ix.  Suspend-to-idle is the state the kernel puts the
+> > system into after echoing "freeze" to /sys/power/state and S0ix is a platform
+> > power state that may or may not be entered as a result of that.
+> >
+> >> wells. The CPU will not be able to enter Package C10 and will
+> >> therefore use about 4x as much power for the entire system. The issue
+> >> is not specific to the i915 power wells though.
+> >
+> > Well, fair enough, but what if the SoC can enter PC10, but without SLP_S0
+> > residency on top of it?
+> >
+> >> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+> >> ---
+> >>  drivers/idle/intel_idle.c | 142 +++++++++++++++++++++++++++++++++++++++++++---
+> >>  1 file changed, 134 insertions(+), 8 deletions(-)
+> >>
+> >> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> >> index ebed3f804291..d38621da6e54 100644
+> >> --- a/drivers/idle/intel_idle.c
+> >> +++ b/drivers/idle/intel_idle.c
+> >> @@ -61,10 +61,12 @@
+> >>  #include <linux/notifier.h>
+> >>  #include <linux/cpu.h>
+> >>  #include <linux/moduleparam.h>
+> >> +#include <linux/suspend.h>
+> >>  #include <asm/cpu_device_id.h>
+> >>  #include <asm/intel-family.h>
+> >>  #include <asm/mwait.h>
+> >>  #include <asm/msr.h>
+> >> +#include <asm/pmc_core.h>
+> >>
+> >>  #define INTEL_IDLE_VERSION "0.4.1"
+> >>
+> >> @@ -93,12 +95,29 @@ struct idle_cpu {
+> >>       bool disable_promotion_to_c1e;
+> >>  };
+> >>
+> >> +/*
+> >> + * The limit for the exponential backoff for the freeze duration. At this point,
+> >> + * power impact is is far from measurable. It's about 3uW based on scaling from
+> >> + * waking up 10 times a second.
+> >> + */
+> >> +#define MAX_SLP_S0_SECONDS 1000
+> >> +#define SLP_S0_EXP_BASE 10
+> >> +
+> >> +static bool slp_s0_check;
+> >> +static unsigned int slp_s0_seconds;
+> >> +
+> >> +static DEFINE_SPINLOCK(slp_s0_check_lock);
+> >> +static unsigned int slp_s0_num_cpus;
+> >> +static bool slp_s0_check_inprogress;
+> >> +
+> >>  static const struct idle_cpu *icpu;
+> >>  static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
+> >>  static int intel_idle(struct cpuidle_device *dev,
+> >>                       struct cpuidle_driver *drv, int index);
+> >>  static int intel_idle_freeze(struct cpuidle_device *dev,
+> >>                            struct cpuidle_driver *drv, int index);
+> >> +static int intel_idle_freeze_and_check(struct cpuidle_device *dev,
+> >> +                                    struct cpuidle_driver *drv, int index);
+> >>  static struct cpuidle_state *cpuidle_state_table;
+> >>
+> >>  /*
+> >> @@ -597,7 +616,7 @@ static struct cpuidle_state skl_cstates[] = {
+> >>               .exit_latency = 2,
+> >>               .target_residency = 2,
+> >>               .enter = &intel_idle,
+> >> -             .enter_freeze = intel_idle_freeze, },
+> >> +             .enter_freeze = intel_idle_freeze_and_check, },
+> >
+> > Why do you do this for anything lower than C6?
+> 
+> In that case, it's probably best the fail in these cases if the check
+> is enabled. The CPU can't enter a lower cstate than the hinted one,
+> correct?
 
->
->> One example of a bug that can prevent a Skylake CPU from entering S0ix
->> (suspend-to-idle) is a leaked reference count to one of the i915 power
->
-> Suspend-to-idle is not S0ix.  Suspend-to-idle is the state the kernel puts the
-> system into after echoing "freeze" to /sys/power/state and S0ix is a platform
-> power state that may or may not be entered as a result of that.
->
->> wells. The CPU will not be able to enter Package C10 and will
->> therefore use about 4x as much power for the entire system. The issue
->> is not specific to the i915 power wells though.
->
-> Well, fair enough, but what if the SoC can enter PC10, but without SLP_S0
-> residency on top of it?
->
->> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
->> ---
->>  drivers/idle/intel_idle.c | 142 +++++++++++++++++++++++++++++++++++++++++++---
->>  1 file changed, 134 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
->> index ebed3f804291..d38621da6e54 100644
->> --- a/drivers/idle/intel_idle.c
->> +++ b/drivers/idle/intel_idle.c
->> @@ -61,10 +61,12 @@
->>  #include <linux/notifier.h>
->>  #include <linux/cpu.h>
->>  #include <linux/moduleparam.h>
->> +#include <linux/suspend.h>
->>  #include <asm/cpu_device_id.h>
->>  #include <asm/intel-family.h>
->>  #include <asm/mwait.h>
->>  #include <asm/msr.h>
->> +#include <asm/pmc_core.h>
->>
->>  #define INTEL_IDLE_VERSION "0.4.1"
->>
->> @@ -93,12 +95,29 @@ struct idle_cpu {
->>       bool disable_promotion_to_c1e;
->>  };
->>
->> +/*
->> + * The limit for the exponential backoff for the freeze duration. At this point,
->> + * power impact is is far from measurable. It's about 3uW based on scaling from
->> + * waking up 10 times a second.
->> + */
->> +#define MAX_SLP_S0_SECONDS 1000
->> +#define SLP_S0_EXP_BASE 10
->> +
->> +static bool slp_s0_check;
->> +static unsigned int slp_s0_seconds;
->> +
->> +static DEFINE_SPINLOCK(slp_s0_check_lock);
->> +static unsigned int slp_s0_num_cpus;
->> +static bool slp_s0_check_inprogress;
->> +
->>  static const struct idle_cpu *icpu;
->>  static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
->>  static int intel_idle(struct cpuidle_device *dev,
->>                       struct cpuidle_driver *drv, int index);
->>  static int intel_idle_freeze(struct cpuidle_device *dev,
->>                            struct cpuidle_driver *drv, int index);
->> +static int intel_idle_freeze_and_check(struct cpuidle_device *dev,
->> +                                    struct cpuidle_driver *drv, int index);
->>  static struct cpuidle_state *cpuidle_state_table;
->>
->>  /*
->> @@ -597,7 +616,7 @@ static struct cpuidle_state skl_cstates[] = {
->>               .exit_latency = 2,
->>               .target_residency = 2,
->>               .enter = &intel_idle,
->> -             .enter_freeze = intel_idle_freeze, },
->> +             .enter_freeze = intel_idle_freeze_and_check, },
->
-> Why do you do this for anything lower than C6?
+Yes, it can, but this is based on the hint and not on the entered state. :-)
 
-In that case, it's probably best the fail in these cases if the check
-is enabled. The CPU can't enter a lower cstate than the hinted one,
-correct?
+There is some gray area related to what if the user disabled the deepest state
+via sysfs, but other than that the check only needs to be made in the deepest
+state's callback (because that's what will be requested in the suspend-to-idle
+path).
 
->
->>       {
->>               .name = "C1E",
->>               .desc = "MWAIT 0x01",
->> @@ -605,7 +624,7 @@ static struct cpuidle_state skl_cstates[] = {
->>               .exit_latency = 10,
->>               .target_residency = 20,
->>               .enter = &intel_idle,
->> -             .enter_freeze = intel_idle_freeze, },
->> +             .enter_freeze = intel_idle_freeze_and_check, },
->>       {
->>               .name = "C3",
->>               .desc = "MWAIT 0x10",
->> @@ -613,7 +632,7 @@ static struct cpuidle_state skl_cstates[] = {
->>               .exit_latency = 70,
->>               .target_residency = 100,
->>               .enter = &intel_idle,
->> -             .enter_freeze = intel_idle_freeze, },
->> +             .enter_freeze = intel_idle_freeze_and_check, },
->>       {
->>               .name = "C6",
->>               .desc = "MWAIT 0x20",
->> @@ -621,7 +640,7 @@ static struct cpuidle_state skl_cstates[] = {
->>               .exit_latency = 85,
->>               .target_residency = 200,
->>               .enter = &intel_idle,
->> -             .enter_freeze = intel_idle_freeze, },
->> +             .enter_freeze = intel_idle_freeze_and_check, },
->>       {
->>               .name = "C7s",
->>               .desc = "MWAIT 0x33",
->> @@ -629,7 +648,7 @@ static struct cpuidle_state skl_cstates[] = {
->>               .exit_latency = 124,
->>               .target_residency = 800,
->>               .enter = &intel_idle,
->> -             .enter_freeze = intel_idle_freeze, },
->> +             .enter_freeze = intel_idle_freeze_and_check, },
->>       {
->>               .name = "C8",
->>               .desc = "MWAIT 0x40",
->> @@ -637,7 +656,7 @@ static struct cpuidle_state skl_cstates[] = {
->>               .exit_latency = 200,
->>               .target_residency = 800,
->>               .enter = &intel_idle,
->> -             .enter_freeze = intel_idle_freeze, },
->> +             .enter_freeze = intel_idle_freeze_and_check, },
->>       {
->>               .name = "C9",
->>               .desc = "MWAIT 0x50",
->> @@ -645,7 +664,7 @@ static struct cpuidle_state skl_cstates[] = {
->>               .exit_latency = 480,
->>               .target_residency = 5000,
->>               .enter = &intel_idle,
->> -             .enter_freeze = intel_idle_freeze, },
->> +             .enter_freeze = intel_idle_freeze_and_check, },
->>       {
->>               .name = "C10",
->>               .desc = "MWAIT 0x60",
->> @@ -653,7 +672,7 @@ static struct cpuidle_state skl_cstates[] = {
->>               .exit_latency = 890,
->>               .target_residency = 5000,
->>               .enter = &intel_idle,
->> -             .enter_freeze = intel_idle_freeze, },
->> +             .enter_freeze = intel_idle_freeze_and_check, },
->>       {
->>               .enter = NULL }
->>  };
->> @@ -940,6 +959,8 @@ static __cpuidle int intel_idle(struct cpuidle_device *dev,
->>   * @dev: cpuidle_device
->>   * @drv: cpuidle driver
->>   * @index: state index
->> + *
->> + * @return 0 for success, no failure state
->>   */
->>  static int intel_idle_freeze(struct cpuidle_device *dev,
->>                            struct cpuidle_driver *drv, int index)
->> @@ -952,6 +973,101 @@ static int intel_idle_freeze(struct cpuidle_device *dev,
->>       return 0;
->>  }
->>
->> +static int check_slp_s0(u32 slp_s0_saved_count)
->> +{
->> +     u32 slp_s0_new_count;
->> +
->> +     if (intel_pmc_slp_s0_counter_read(&slp_s0_new_count)) {
->> +             pr_warn("Unable to read SLP S0 residency counter\n");
->> +             return -EIO;
->> +     }
->> +
->> +     if (slp_s0_saved_count == slp_s0_new_count) {
->> +             pr_warn("CPU did not enter SLP S0 for suspend-to-idle.\n");
->> +             return -EIO;
->> +     }
->> +
->> +     return 0;
->> +}
->> +
->> +/**
->> + * intel_idle_freeze_and_check - enters suspend-to-idle and validates the power
->> + * state
->> + *
->> + * This function enters suspend-to-idle with intel_idle_freeze, but also sets up
->> + * a timer to check that S0ix (low power state for suspend-to-idle on Intel
->> + * CPUs) is properly entered.
->> + *
->> + * @dev: cpuidle_device
->> + * @drv: cpuidle_driver
->> + * @index: state index
->> + * @return 0 for success, -EERROR if S0ix was not entered.
->> + */
->> +static int intel_idle_freeze_and_check(struct cpuidle_device *dev,
->> +                                    struct cpuidle_driver *drv, int index)
->> +{
->> +     bool check_on_this_cpu = false;
->> +     u32 slp_s0_saved_count;
->> +     unsigned long flags;
->> +     int cpu = smp_processor_id();
->> +     int ret;
->> +
->> +     /* The last CPU to freeze sets up checking SLP S0 assertion. */
->> +     spin_lock_irqsave(&slp_s0_check_lock, flags);
->> +     slp_s0_num_cpus++;
->> +     if (slp_s0_seconds &&
->> +         slp_s0_num_cpus == num_online_cpus() &&
->> +         !slp_s0_check_inprogress &&
->> +         !intel_pmc_slp_s0_counter_read(&slp_s0_saved_count)) {
->> +             ret = tick_set_freeze_event(cpu, ktime_set(slp_s0_seconds, 0));
->> +             if (ret < 0) {
->> +                     spin_unlock_irqrestore(&slp_s0_check_lock, flags);
->> +                     goto out;
->> +             }
->> +
->> +             /*
->> +              * Make sure check_slp_s0 isn't scheduled on another CPU if it
->> +              * were to leave freeze and enter it again before this CPU
->> +              * leaves freeze.
->> +              */
->> +             slp_s0_check_inprogress = true;
->> +             check_on_this_cpu = true;
->> +     }
->> +     spin_unlock_irqrestore(&slp_s0_check_lock, flags);
->> +
->> +     ret = intel_idle_freeze(dev, drv, index);
->> +     if (ret < 0)
->> +             goto out;
->> +
->> +     if (check_on_this_cpu && tick_clear_freeze_event(cpu))
->> +             ret = check_slp_s0(slp_s0_saved_count);
->> +
->> +out:
->> +     spin_lock_irqsave(&slp_s0_check_lock, flags);
->> +     if (check_on_this_cpu) {
->> +             slp_s0_check_inprogress = false;
->> +             slp_s0_seconds = min_t(unsigned int,
->> +                                    SLP_S0_EXP_BASE * slp_s0_seconds,
->> +                                    MAX_SLP_S0_SECONDS);
->> +     }
->> +     slp_s0_num_cpus--;
->> +     spin_unlock_irqrestore(&slp_s0_check_lock, flags);
->> +     return ret;
->> +}
->> +
->> +static int slp_s0_check_prepare(struct notifier_block *nb, unsigned long action,
->> +                             void *data)
->> +{
->> +     if (action == PM_SUSPEND_PREPARE)
->> +             slp_s0_seconds = slp_s0_check ? 1 : 0;
->> +
->> +     return NOTIFY_DONE;
->> +}
->> +
->> +static struct notifier_block intel_slp_s0_check_nb = {
->> +     .notifier_call = slp_s0_check_prepare,
->> +};
->> +
->>  static void __setup_broadcast_timer(bool on)
->>  {
->>       if (on)
->> @@ -1454,6 +1570,13 @@ static int __init intel_idle_init(void)
->>               goto init_driver_fail;
->>       }
->>
->> +     retval = register_pm_notifier(&intel_slp_s0_check_nb);
->> +     if (retval) {
->> +             free_percpu(intel_idle_cpuidle_devices);
->> +             cpuidle_unregister_driver(&intel_idle_driver);
->> +             goto pm_nb_fail;
->> +     }
->> +
->>       if (boot_cpu_has(X86_FEATURE_ARAT))     /* Always Reliable APIC Timer */
->>               lapic_timer_reliable_states = LAPIC_TIMER_ALWAYS_RELIABLE;
->>
->> @@ -1469,6 +1592,8 @@ static int __init intel_idle_init(void)
->>
->>  hp_setup_fail:
->>       intel_idle_cpuidle_devices_uninit();
->> +     unregister_pm_notifier(&intel_slp_s0_check_nb);
->> +pm_nb_fail:
->>       cpuidle_unregister_driver(&intel_idle_driver);
->>  init_driver_fail:
->>       free_percpu(intel_idle_cpuidle_devices);
->> @@ -1484,3 +1609,4 @@ device_initcall(intel_idle_init);
->>   * is the easiest way (currently) to continue doing that.
->>   */
->>  module_param(max_cstate, int, 0444);
->> +module_param(slp_s0_check, bool, 0644);
->
-> This has to be documented somehow.
->
-> Also, if it is not set, there is a useless overhead every time
-> intel_idle_freeze_and_check() is called.  It looks like you could use
-> a static key or similar to avoid that.
->
-> Moreover, the notifier is not necessary then as well.
->
-> Thanks,
-> Rafael
->
+Thanks,
+Rafael
