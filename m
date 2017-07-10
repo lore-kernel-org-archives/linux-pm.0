@@ -1,95 +1,64 @@
 From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH 4/4] power: supply: sbs-battery: Don't reset mode in get_battery_capacity
-Date: Mon, 10 Jul 2017 14:23:20 +0800
-Message-ID: <1499667800-69055-5-git-send-email-preid@electromag.com.au>
+Subject: [PATCH 2/4] power: supply: sbs-battery: sort includes
+Date: Mon, 10 Jul 2017 14:23:18 +0800
+Message-ID: <1499667800-69055-3-git-send-email-preid@electromag.com.au>
 References: <1499667800-69055-1-git-send-email-preid@electromag.com.au>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy1.45ru.net.au ([203.30.46.145]:51831 "EHLO
+Received: from anchovy2.45ru.net.au ([203.30.46.146]:47473 "EHLO
         anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751161AbdGJGaO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jul 2017 02:30:14 -0400
+        with ESMTP id S1751161AbdGJGaJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jul 2017 02:30:09 -0400
 In-Reply-To: <1499667800-69055-1-git-send-email-preid@electromag.com.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: sre@kernel.org, preid@electromag.com.au, linux-pm@vger.kernel.org, posted@heine.so
 
-There seems little point in resetting the capacity mode bit when
-reading a capacity register that is affected by this bit. The
-next call to the register read will set the bit if it's not in
-the correct mode.
+Sort the header includes prior to adding to the list.
 
 Signed-off-by: Phil Reid <preid@electromag.com.au>
 ---
- drivers/power/supply/sbs-battery.c | 31 ++++++++++++-------------------
- 1 file changed, 12 insertions(+), 19 deletions(-)
+ drivers/power/supply/sbs-battery.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index 3473b45..441a576 100644
+index 15873df..4594ed1 100644
 --- a/drivers/power/supply/sbs-battery.c
 +++ b/drivers/power/supply/sbs-battery.c
-@@ -491,22 +491,19 @@ static void  sbs_unit_adjustment(struct i2c_client *client,
- 	}
- }
+@@ -14,19 +14,18 @@
+  * more details.
+  */
  
--static enum sbs_battery_mode sbs_set_battery_mode(struct i2c_client *client,
-+static int sbs_set_battery_mode(struct i2c_client *client,
- 	enum sbs_battery_mode mode)
- {
--	int ret, original_val;
-+	int ret;
- 
--	original_val = sbs_read_word_data(client, BATTERY_MODE_OFFSET);
--	if (original_val < 0)
--		return original_val;
-+	ret = sbs_read_word_data(client, BATTERY_MODE_OFFSET);
-+	if (ret < 0)
-+		return ret;
- 
--	if ((original_val & BATTERY_MODE_MASK) == mode)
--		return mode;
-+	if ((ret & BATTERY_MODE_MASK) == mode)
-+		return 0;
- 
--	if (mode == BATTERY_MODE_AMPS)
--		ret = original_val & ~BATTERY_MODE_MASK;
--	else
--		ret = original_val | BATTERY_MODE_MASK;
-+	ret = (ret & ~BATTERY_MODE_MASK) | mode;
- 
- 	ret = sbs_write_word_data(client, BATTERY_MODE_OFFSET, ret);
- 	if (ret < 0)
-@@ -514,7 +511,7 @@ static enum sbs_battery_mode sbs_set_battery_mode(struct i2c_client *client,
- 
- 	usleep_range(1000, 2000);
- 
--	return original_val & BATTERY_MODE_MASK;
-+	return 0;
- }
- 
- static int sbs_get_battery_capacity(struct i2c_client *client,
-@@ -527,9 +524,9 @@ static int sbs_get_battery_capacity(struct i2c_client *client,
- 	if (power_supply_is_amp_property(psp))
- 		mode = BATTERY_MODE_AMPS;
- 
--	mode = sbs_set_battery_mode(client, mode);
--	if (mode < 0)
--		return mode;
-+	ret = sbs_set_battery_mode(client, mode);
-+	if (ret < 0)
-+		return ret;
- 
- 	ret = sbs_read_word_data(client, sbs_data[reg_offset].addr);
- 	if (ret < 0)
-@@ -542,10 +539,6 @@ static int sbs_get_battery_capacity(struct i2c_client *client,
- 	} else
- 		val->intval = ret;
- 
--	ret = sbs_set_battery_mode(client, mode);
--	if (ret < 0)
--		return ret;
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+ #include <linux/err.h>
+-#include <linux/power_supply.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/i2c.h>
+-#include <linux/slab.h>
++#include <linux/init.h>
+ #include <linux/interrupt.h>
+-#include <linux/gpio/consumer.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/of.h>
+-#include <linux/stat.h>
 -
- 	return 0;
- }
+ #include <linux/power/sbs-battery.h>
++#include <linux/power_supply.h>
++#include <linux/slab.h>
++#include <linux/stat.h>
  
+ enum {
+ 	REG_MANUFACTURER_DATA,
+@@ -57,7 +56,7 @@ enum {
+ #define BATTERY_MODE_MASK		0x8000
+ enum sbs_battery_mode {
+ 	BATTERY_MODE_AMPS = 0,
+-	BATTERY_MODE_WATTS = 0x800
++	BATTERY_MODE_WATTS = 0x8000
+ };
+ 
+ /* manufacturer access defines */
 -- 
 1.8.3.1
