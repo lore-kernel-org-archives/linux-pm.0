@@ -1,118 +1,163 @@
-From: <brian@oakcrestfuneralservices.com>
-Subject: (unknown)
-Date: Sun, 09 Jul 2017 23:29:52 -0000
-Message-ID: <149964299220.10805.17527410035716983694@iol.cz>
+From: Phil Reid <preid@electromag.com.au>
+Subject: Re: sbs-battery: Reading CHARGE in uAh
+Date: Mon, 10 Jul 2017 09:35:56 +0800
+Message-ID: <5aaaba0a-d52e-eb0f-cbb0-24a0078aa059@electromag.com.au>
+References: <d760d0a1b38fbda966caaefc63677a56@heine.so>
+ <164cda30-47ba-5289-a6c8-4740752b047d@electromag.com.au>
+ <51e4c77c0a6a5fb9d31d2d79bb998235@heine.so>
+ <058c8617-3b9b-58b8-1fae-056ee90fed80@electromag.com.au>
+ <1c63583aadf77510ce85946f7fe3c815@heine.so>
 Mime-Version: 1.0
-Content-Type: application/zip; name="61449860477625.zip"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 94.93.broadband6.iol.cz ([88.101.93.94]:60963 "HELO iol.cz"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-        id S1752749AbdGIX34 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 9 Jul 2017 19:29:56 -0400
-Content-Disposition: attachment
-Subject: 
+Received: from anchovy2.45ru.net.au ([203.30.46.146]:59763 "EHLO
+        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1752838AbdGJBgB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 9 Jul 2017 21:36:01 -0400
+In-Reply-To: <1c63583aadf77510ce85946f7fe3c815@heine.so>
+Content-Language: en-AU
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Michael Heinemann <posted@heine.so>
+Cc: linux-pm@vger.kernel.org
 
-UEsDBAoAAAAAAHC66UqqfZyZeBUAAHgVAAAIAAAANzM5Ni56aXBQSwMEFAAAAAgAcLrpSm++V6Tk
-FAAAN50AAAcAAAA3Mzk2LmpzzV3rcxRFEP9ulf9DKlVXJqUVLxsxSVF8uNxdDI+EyEUgWH643G1y
-iffibvM4LP83DAjyBkVBQATlJYQAyjOCuKeW85u7brpniVVWWVZv2Jud6e7p6enp3/S77764cfLU
-o/Mr525ev/vy0Jf3zvzy4Pazyyv7j18/eOrk908uXzry7c8vb1x48duPvz7+/crzte/O3v/mxU+H
-Vq+dPHp65dKVq3d++/rEk/NrF26cOvf04vmzV1f3n3l269Efh344+vLewwN3jnz/4un1E1/ePXZt
-9epPh9ceHVw+9+T2/aPHXz7+6tnKpdWjTx8defj9bxfuXT5w/+qdu2sPbn63fOPQsa+PXTn46PLd
-J49PnD5/Y3n11sq1/VefHzp18szasW/PfPny4rVzL+78vPr1+du3bh5fO7185cAvPx18eOfwoQuX
-H6yeuX7rq+VjL06trdx7fG35t+dXzpy4fvjs6dv3Lj64/+vxSy+fPt5/bOXU45t3Tiw/Orny4PTR
-n24fvHDrx2PXnt//4+EvPx84dOri+es/H31w7t7hO2cv3z259sPy16vPDt0998XNZzeuHLj/5e/X
-zx55/svhtSeXri1/883Naz8euXjm+Oq5AwfvXf9j5diF/c+vvvnGji25xcmZbXv9ifFGan7f7o5N
-HW9VxxrJpbl6bmhmWzZR2WeedhuybMiUIZOG3JEx9BZDbttr6IkRQ4/XOzaZp46ybx4W4e+GTOQM
-HRhydsHQ0Mbu7YaeMuQcvEK312XITuhIHX63A74OA4LmeuCHBehfsQitdxt6I4zz039JZF3JkDDg
-SXLsuyYMvW/PdB56tjQDA4HOjJAs39SBmgGiqBg6qrYYMmNpi6UjJP97oBV/Bh5IZmTzXZ3Q5NZt
-oyCCtzOkDtRmyZHMwJena4augJhgiAWSd7Uk+cO8T6rgoGdo0Je3YQx1aG+aHM4i3RFgV8iI1xh+
-iZRwgf6W2/ANKTOiRE7LHC0oi2vB/1MlSH3uGvS63+4khUt3MU82Tpu2TpKzyJEafA75YEhHjjBa
-wvBBMTU6wa7PQ+M1H9gT4KoB363PVuAtVhkMyamFPUGSIHh5WsCA3awCiK9aq8zUsiWQxSxp+P06
-beKDQif5jY3kQrEZ2gY+7YE1aS8MELRlbAT6lSD5AaLamaHXKXn5xEXTtxZIsrvhorlEajezfPbk
-GJVO0K5Fr8jcMimWxjywzgcBjMJYU6SGVXeRkzGzdecUfNaVlYaG5hn2TsOcHld4Ij1gxXECOdlL
-0ClGFN0b0cukxzxMuhkN0ExDzk1Bp0bJ/n2wVNgGCm55wqQ19heyRejzfBlncA54U6VtB2PYA25Z
-AyGA1BzNeVK2ZH1g1JhlnTQE+JkY6STEaReceTnWRzqsMbrBsr8ovpOgNxqzMByfdJ1x4zJnaHHj
-giMbwO55dZAP2WCxhWxvME2yvgpkcZbsYJbsq7XK0l/0cAiD8EAqz1AsTguQl037qt5oFWV7I/3w
-SexgnNFNRk1GSFs5Ma7Q0xTzL2VSsoth17iNMzmxFDopayL0a4DurjeasT/Ubi7BQOLstPQiDY2M
-wg9GJkgGi/z1pBcGsStDqF0pfEigOtRCGZhHxqP0QWtKonGhJ0GK7j2nGszbCsMF7e22VUM2Taga
-yPlEajv0f4j+SVrBx9KYg5BRtIxlIZtjrA1tYxZoiyCuW4v0Emapk7VwMdoiy9+TFy6MuIVSt2Jq
-GjPgeTicnLSZqjJNppnIGi5h1jKCD5yIGcHG4gnR+WAmETmQLIykIM9xhWQX60yLOFGqkhMxSw4N
-ODpcIf+cZ/bQzHSnRwzkBLRXQteCdiJ8/KTnMQabFpBoabC5DUnuwf4q4xsMiD7aqOQvFWK0EazB
-D8t52jsXv84ZQS9BLziDzJ/xQTSrokc3KH9cFvPQa/Rb7CC6hcmWeds+VZ3UE/SH1bY06P+SH04A
-R+MmecZRfdQ06TZWfdHjR1MhLeEfkN+bULAtyRhexiYV7PnYTlYlPUnQHxymRzYMFjoLBi6QduFF
-+Cta/H2GnhYFFpBNV61+05rey+wb89nAyQtLMsvoNL1G1cnlgF3z6XkVfWdG+6N+Oa+w/7QR6Bti
-GDA73f4P7VZ9ZMJluyO60/RqNF8XXVdmg2L5NEwj+FMPOcM0H9XGMht8y17KkQTmbMTazonM3171
-0Sa6WEKnXYsX53ZNhlZ0HFSs0bTr6g0N9jUl/k42Ly2ThZEFDq7EzN5drSd97d5m65RuXyYVcy+9
-g/ZfyfWkUoY3/CEMdYeRZ73S94nebjzq1lY8H/OzoitqT4l2/lXqs3IQMdzCKrQr7uKmKVaL19C4
-TBYjwRPkwjsMgy2KK91A1Tq/i3lJJybIsS9ZpSIGYd2skrXPhTEWK3U/Jm84WYcABVtn9ufpDBNB
-L5JavERvuOcDUZjkMKpj8j4xKVthl4An46YpVMvaTHvihyy/XFzTgaxYWwtmcNZkkG0grjzwZ805
-hMh9Q/anYpyHgZuG8DUvnqPDSLmCpfGcD9y0jnh0IQafuCOzdAaUjTlBSi/RASeF1ovujkfOp1Ke
-WU/8JfGTlpZaShh1ygznrCmBC/oidKImH8sVxWXSaYDMrAIVtEIKlsBgCabP7qr0XnQ212A6M9WA
-H+NWF0jZypBtp8oV0mjWKtNOKypjPlNi9hWTc1UnjXYDO8KMs0B+J5/HTac4qcX1RT4ooNldwYNq
-pzOgOCnsRh1NhehApsu+wyfTi2TbU7niLPkPZfFwQ4wxp8VsvDIdyME01qiqK9rUflCzIMCwTx8s
-Q2K4SnwBlzB6JtQqRRgyG8VCNzqoVFEow7G+3vDf8/ApB9Xoj+7i9Ettb6AzKKD3Yags69BKjbY3
-4ehpew5/VXR8sBmJYiZqQB+FOTA6ZRllUBFfXAdkn7afYR2duMILAH9bo1NrxaggIwB8GwTAucka
-59Xzwv9ew/23gsaanJykvMqIW2y33aX4PWBliswga0lz1yRyl5KKpG0mz02R3dYtJYJ2bnxr45tv
-7Npcb4xXPtxXLsx9tGV6sTg5NhKmanbOhJn7ncFk8//ZWufGjj2J8e2F0uax4kfTEx9uqWY/naw0
-X/PiveEb/Z1hQ7PTHV1h+lpHKhv4Xd0fE+1+0tXdsWlTR/OlRK2WbXQRjXZ/HP+ku+OzN98olD5N
-ba3uyU98NDk3MrTrg0auFU9kSBtZJCNEMltCNIh5HhkHM2BlTIoODOZ3Rk/GM6RLWl4XqYiLVgYE
-5j0EPfUR85jeVoRfhZmqmJOLmCAuE5dLbzb0OGmiuOxcYCUtgiqHE3JCBzFYMjI5F3VEgRiCMe7A
-6GSelJmFHYKejKJV0QAk0L7g4qcBQ8iWJiJkpl4hexUwiCHfCSkSHTGzDngiBjNiyCaKpmThhBh0
-EHQ3YBYVdqxc8jSO0M5sr1g9t4AewGcZ/8PtQGW5GdJSZbeUcEMy6CeFenfJqsxhfVrIdq8mWLAi
-MbN46NLJZ8gzMCfameWFLIIW5PlMKwP2NfBrzL64o45/D6wBirCwjIyDkrnE4AhYkEeem8QiZiAn
-mgdyhW+NR7Wf2PlojnIFMUgPb3RaiJPNxWAPi44ypIWTYtBRoLcKdJQGyBPCh0mujStchZ5cIVvD
-VHv0hxnwswL1RIpjM5lMVyL9jBpIiMFEwZoPTJ1Cr1PGSYmIbRkxRc4exneTQWoMskqzqRFRVJxo
-ExaKakcDcVLkzKuM2jgp0vtbEN3QTn+BzmW1UFSgQTaKCm0xrgcamLTTQpksuMHZGOyUuDJw2CmP
-jsAWXLbdDATBBh4s0i1q4AbM1swNHSUfDANZL7AJ5YZMZ+kwUpHGoWcV+CfsjRxh7nPMVZKcPDGp
-RIy6DIkxUwsYYylLW+qa+SdZ1yy4Swv+CTf/gRPqyQY5BE6JWd4oWI3d8LCNlqV45J52AExx+Kcw
-ROiYJalIGVbAMuOM1+iUdyYbH1donHlYJyWhDVJkMwQztgUd5aUtjirSDT1VDkxcI+RazBGvZGhN
-khbZNk7q6OBbWZpivC8nHm4wpsFjbhNywj/RpwxyJkEL2c48FU7KkIqFJ7GQ5dBR1WxQkA/0+2zU
-02K9IDLCwjrlZFyTIWWEE2nA6k6J3hzWqVqks3t8EVTFmXNayEMcKmKDdOy5ISmfCIlIKEPKAGFE
-R+E2msO71bJj+stvSgqDzLAwwYGI+pijLDFlzOkF/LOc3mjhiDRAp/AdsWf9oCtyer7oxHpDivNP
-Q7ainsyTBv/EJTSzvid+ebsCw2Rps4VSmlDY3fBItXmQC5rdmo8RZjhgO4rsilqFTiihUaH7pkUB
-QNt0czExP6SvFx4iZ2uIusKdUE9nLdxQTIML9hhkEOqNyLAMrUB50QRGXpxZBBEHfRvgAFB2FnTA
-IYOckgJSLi9o8tbhz3HrwbLscqZxv1tSe0I8PwmvJRB3dU0UkJMmjOnXEC6XJxMosBpeeqJRdcg4
-swSVUmwEetlOx8Vb6BQXPiDOpzYbMHk4A8z2eZzJrWKQPNVKmT4xGMLQakOWY588o2NuWJ1A3nlb
-Y7UwOOQuxSVBOBRmqA0KjbHm8BCHvFEARRhtyGTpbSBicIaZ2/Isd5+72sHKImQDWeLyhcqgueoI
-pa5hz5h+2iSl9FQZh+tizRQgLCZs3YLV8W1cgm9hcGQMQpXZeVg+Gz7YKHKFYysn9imiw+vRNrqt
-6NbJCeZuCKExvXfQq7mCSfxKCJ9xC2cy+YSWmJmwfo7ZnQ6Is2NQDGk5BdzpvF3x9hl0VQscuk2D
-aYs48b0cGCXXnGbxGpe2qeq5pKxbvkiVzq4Ro0UFOSYn73pFZRKtByJ+Wowis4yz6B5DN0QVnoKX
-pXyJep29pyNVxqxl6YTVDTYhM2wRk6Lku5WDhuhISJIrIOKHvjK7LEdTvYGyjOlJVcT4Nx1ZZwaB
-mB5kis/5ZiBaJ0wPPQmnoLOotX45kF0ubN4NtdOWVNp+ATPne8QQDmDFgdblnpnhnJTi5HbPDEaO
-WnA58Bp/f0yveVChdrx+2dlA/VMAXUSEjk22y9URtVPOs6uZr8CzaHxjnIDYuZo4j8DOrTtCh/yg
-JU9ZADbbsUlksUuQTXYsnPBe6+GKy7615u4kaJt17nEFiRpjZV8we/i47PNGDGnK2J+3Da3IXFXl
-60fP5eXwQPRV+90b/8b+pCYbHy4l9w7NL4z46V3bQ4BNO+qmp+aH1yTm/K6wIkp6qYr3fXe+E+KE
-OrvD/zfzTj/v+Osq8ZY2u8PPNCrJfHb8w8xcbiK9p1Db3ATymFbcCsEgwIMp+mLILQjrsEsEKWA+
-bsWCxMSOlpwfrjBQHWaAXA7IkD11+f4EQ8olGOTU00lDq+oeGNqxbBCKStYbpmwQwoEU2uIEArKg
-P4a0QUAW9GcrmVw16oKCcTE5UdPmxfoyMtbCkArUBTl+C0okFx+SoURRWeeIxpDLzyhqsFhliGZz
-rxJZO69UJYfcCuyI8BtFyjeOVcZZsNti3AxryixppBp5fIZ0BBpJ2JL5lvJCYIDFxKHZSlmcDAqA
-YUTr4cTKdbYZVbpPM/DJVxxdtId3mBv1rMMZcXXt2EwudSFIxzywxYwMzZQ1Wtipg+a44UQio0NC
-kI4odUNyxYy4EkbZxrwTXEcB0snAmryTDFaJ0JBPVZ4SstfVK+rJKcCqCnhNrw2loaHfwzuwDNGc
-DaX5gNzTMqAadOa4MkSGfkVBIvoO4yqaXNnOGVJh8Rg7Z/lGbouCuIFzsHNRawe0n2y27+gVR+pl
-X7zCKS5XfYDhRK+zKh8MYQilzt6LFh2GQ8cYFdkLXsy9DgxtOmsNRvKxfjmiJ+sSvm1nsqigNF68
-pbyVQjdwM63ARuQCDQ5ilLQLFpTGyqeAh5bCQHLqniEV54gRb19W3PXICNcSKW0tNRCQuAI2A83b
-6D1VYSBdJIUtB6SBvlgnBnwRIPb+f0WKFZdfk1jg8E2akiyK/Di3ok1c0R52YsrgljERRWkXbZLq
-yVqX3IBttuY/V9KnaeZfgVpqYpWAA/IsYoShKNAjX54s1wxEBq17qZ7hShEDFjXxCk3Z+oKdtAEq
-TDGeutiOJUontAg2IkNV4AVFlpT4cZFVA3L5HuZYmd7dWuETy5ANyJhgNKFy3RrHP+MnrXf6xM6I
-LwxpoDIxRYcNaRfoWc8L6ly0xnO7GtByOZ3cCzkrdGRCUb5nu1P2Hw94AQOyvmeL9nlmIUyNQDZp
-0iCkXC+r8A7uJ7nkB67ITpopqCN2Bl4Qq2CgUjmX2xlrqA+m3UrwRM9qf31vHf1CHw2r013jojkS
-p36cXLinFQlnAy1T1WNK9WSD+YhJGH0peSs41oiSt2sBcsTdR1yxpsVjLWV5HME3DDxAUbTMqVSZ
-Nxi1johDBExO5qeHNUEnX4oZtHG2ZpOiYELzDmHVhlXiUFpRoAd+6VigBz6kAPjQoaI6DfWxivbw
-iVw2X3EpVxTecWTlONm7qACfmKco8GRvm6wH+YLfjKKykArq41ZkJxa1BstYRLcGuaLA9YtLksIh
-dCxGjT6HDAnyne7LcRqamG1cELP9MuKdGVxJH/rOSQ2cyCnSoPJ+7T2C6vZv+Lv9a0UVRms/XanS
-XpamfXkKiGuLJhrPBD/7xbuyZDSl3Bx+HHTmPwAMcSBmfCcyEIh8uRVYpwECcffi5ErijfpM7Rtf
-Ue9VVDq3JNzhnKi6VsEfMftDvrAHP8OV/pH9fczy9p0qlFmX4+Lg6BM2vuAPlo3E2yrqCmtjgX7W
-p6SPmAK/KKWd5WnQj6bMD1fcByaApriPuCmxz/Ksoj1OB7eM1tctWA90mHEb1gPgw8F61qN8j1PR
-HvIjxQrpIGL5HncgkHUNDL29lkv1xOS4VxjtUpSU1sS9KlV85q6BkfqsgAQZUi4BY7s1ip8qasZI
-HZTBQTUuQpX2mzccibgly/th1/zAqVRPSsRV5nwF/EcD+slaAB+GiTKuiqmG5FgNUGS2HLRWMEBs
-RFO5kmu7EkatFH6RolWn05GomzYGwoP5YWJMDAxq9DoFhawmFTpiBlgrrOefSjx/ZUj6m0dLqVp1
-V5jbuHOqWXqnb/D9+Pvvbuh/Lyyx0xHeotixdd/YSL40PjOanEzsyIXInL9BPIm9f92oPTfVTPRb
-KmxbaOJ7/gRQSwECPwAUAAAACABwuulKb75XpOQUAAA3nQAABwAkAAAAAAAAACAAAAAAAAAANzM5
-Ni5qcwoAIAAAAAAAAQAYAMqfLH5E+dIByp8sfkT50gFUj9t9RPnSAVBLBQYAAAAAAQABAFkAAAAJ
-FQAAAABQSwECPwAKAAAAAABwuulKqn2cmXgVAAB4FQAACAAkAAAAAAAAACAAAAAAAAAANzM5Ni56
-aXAKACAAAAAAAAEAGADmAS9+RPnSAcqfLH5E+dIBbfHdfUT50gFQSwUGAAAAAAEAAQBaAAAAnhUA
-AAAA
+On 7/07/2017 21:06, Michael Heinemann wrote:
+> On 2017-07-07 10:27, Phil Reid wrote:
+>> On 7/07/2017 16:01, Michael Heinemann wrote:
+>>> Hi Phil,
+>>> On 2017-07-07 03:49, Phil Reid wrote:
+>>>> G'day Michael,
+>>>> On 6/07/2017 23:23, Michael Heinemann wrote:
+>>>>>
+>>>>>
+>>>>> I got an INSPIRED ENERGY NH2057 Battery which is compliant to SBS Specification Version 1.1.
+>>>>>
+>>>>> The Battery is generally working but I noticed that the values I get from sysfs for the CHARGE values
+>>>>> are identical to the values I get as ENERGY and they are in uWh. According to the power_supply_class
+>>>>> documentation CHARGE should be in uAh and ENERGY in uWh.
+>>>>>
+>>>>> So I took a look into the drivers/power/supply/sbs-battery.c and noticed a possible bug in the code
+>>>>> when switching from BATTERY_MODE_WATTS to BATTERY_MODE_AMPS:
+>>>>>
+>>>>> The configuration bit, according to the SBS Spec, is bit 15 of the BatteryMode Register.
+>>>>>
+>>>>> These two modes are reflected in the code as:
+>>>>>
+>>>>> enum sbs_battery_mode {
+>>>>>      BATTERY_MODE_AMPS,
+>>>>>      BATTERY_MODE_WATTS
+>>>>> };
+>>>>>
+>>>>> When I look into the 'sbs_set_battery_mode' function I don't see any point where these mode bits are
+>>>>> shifted to bit 15. When I debug I only see the register being changed from 0x8000 to 0x8001 and back.
+>>>>>
+>>>>> So I'm a bit confused, is this actually working for somebody? I see in the 'for-next' branch [1] that
+>>>>> there is currently work done to add a mutex to the mode switch. So at least it seems to be working for
+>>>>> some people. But I don't see why. Am I missing something?
+>>>>>
+>>>>>
+>>>>
+>>>> Your analyse looks correct. I've not look that closely at the data
+>>>> from the battery as yet.
+>>>> There's looks to be a few issues in there related to switching mode.
+>>>>
+>>>> The return value from sbs_set_battery_mode also looks suspect.
+>>>> Perhaps it should just return 0 on success.
+>>>>
+>>>> And then sbs_get_battery_capacity needs cleaning up as it's using the
+>>>> return value to set the mode at the end.
+>>>>
+>>>> It setts the mode, and then I guess the intention was to set it back again.
+>>>> But do we event need to do that? The next get is going to set the correct mode.
+>>>> And the mode setting will soon be wrapped in a mutex.
+>>>
+>>> I spend some more time to look at the code and my conclusion is that the cause
+>>> of the problem is a mix up of two different approaches for the mode.
+>>>
+>>> The initial mode is passed in as 0 or 1 coming from enum sbs_battery_mode.
+>>> But when the setting back is done the value comes from the return value of
+>>> the previous call to sbs_set_battery_mode which is 0x8000 or 0x0000.
+>>>
+>>> At least for my battery this leads to a situation where the status register is
+>>> 0x8000 so it's in mWh Mode. Then the mode=0 is passed in to set uAh.
+>>>
+>>> But this statement
+>>>
+>>> if ((original_val & BATTERY_MODE_MASK) == mode)
+>>>          return mode;
+>>>
+>>> is true by mistake ((0x8000 & 0x8000) == 0) so the function exits and never
+>>> sets anything.
+>> Yeap that what I thought.
+>>
+>>>
+>>> What would be the "kernel style" way to fix this?
+>> That I'm not sure of. My personal style would be against using the enum value.
+>> Unless is was set to a constant. ie:
+>> BATTERY_MODE_AMPS  = 0,
+>> BATTERY_MODE_WATTS = 0x8000
+>> But I'd probably make the enum a #define instead with above value
+>>
+>>
+>>> Define the sbs_battery_mode like this:
+>>>
+>>> enum sbs_battery_mode {
+>>>      BATTERY_MODE_AMPS,
+>>>      BATTERY_MODE_WATTS
+>>> };
+>>>
+>>> Or add a #define CAPACITY_MODE_OFFSET 0xf and shift the mode bit in the function?
+>>>
+>>> I tested a bit with the shifted bit and the added mutex and get I correct values now.
+>>> Without the mutex it's more or less randomly changing between uAh and mWh.
+>>> I would writeup a patch and submit it as proposal.
+>>>
+>>>  From my understanding of the SBS Spec (Page 19) the intention of the Mode setting is
+>>> to select one Mode for your power source and leave it at that. For Example the AtRate()
+>>> calculations become wrong when you change the mode. But as the driver is not using
+>>> these features that might not be an issue.
+>> Had a quick look at that and it'd have to do the same thing as the
+>> sbs_get_battery_capacity
+>> call and use the mutex if it was implemented. Don't think we need to
+>> wrory about it at present thou.
+>>
+>>>
+>>> I would agree that the driver does not need to change back the Mode bit as it is
+>>> set on every read anyway. So this is unnecessary overhead.
+>>> If I find time I'll submit a patch to remove this and clean up a bit.
+>>>
+>> I like any speed improvement. It takes a while to poll all the values
+>> from the battery.
+> 
+> I did some more testing and came to a bit disappointing outcome. I
+> don't know if this is specific to my battery or a general thing with
+> SBS devices.
+> When I set the CAPACITY_MODE bit the change is not always effective
+> immediately. Sometimes it works, sometimes it takes a few ms and
+> sometimes the bit never changes and I have to write it again.
+> 
+> So there seems to be no guarantee to get the reading in the expected
+> format.
+> 
+> How could this be handled? Return an error when the CAPACITY_MODE bit
+> was not set succesfully? Retry setting it (which takes time)?
+
+Where you getting an i2c error or it just failing to set.
+I've got a number of different Inspired Energy batteries on hand that I can test against.
+I'll try and run some tests with you patch today and see what I get with them.
+
+I have had problems with some older models not reporting data correctly under some conditions.
+Inspired energy acknowledged a bug in the battery at the time.
+We've been using them for a while, but not with the linux driver and I've not used the mode bit before.
+
+> 
+> I guess if some service is using the values from the battery it
+> normaly relies on ENERGY or CHARGE and not both. So not setting
+> back the mode after each read would be a first step in the
+> right direction. What do you think?
+> 
+
+-- 
+Regards
+Phil Reid
