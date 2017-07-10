@@ -1,80 +1,49 @@
-From: <brian@oakcrestfuneralservices.com>
-Subject: (unknown)
-Date: Mon, 10 Jul 2017 12:43:08 -0000
-Message-ID: <149969058882.17620.2349432615542949447@telenet.ru>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant load-tracking support
+Date: Mon, 10 Jul 2017 14:46:38 +0200
+Message-ID: <4673356.gkeX7KYvlb@aspire.rjw.lan>
+References: <20170706094948.8779-1-dietmar.eggemann@arm.com> <12829054.TWIodSo4bb@aspire.rjw.lan> <20170710065443.GG2928@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: application/zip; name="402377184145.zip"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 197.214-31-94.telenet.ru ([94.31.214.197]:54384 "HELO
-        telenet.ru" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-        id S1753715AbdGJMnM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 10 Jul 2017 08:43:12 -0400
-Content-Disposition: attachment
-Subject: 
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61671 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753245AbdGJMyT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jul 2017 08:54:19 -0400
+In-Reply-To: <20170710065443.GG2928@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-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
+On Monday, July 10, 2017 12:24:43 PM Viresh Kumar wrote:
+> On 08-07-17, 14:09, Rafael J. Wysocki wrote:
+> > I'm sort of wondering how many is "a lot" really.  For instance, do you really
+> > want all of the existing ARM platforms to use the new stuff even though
+> > it may regress things there in principle?
+> 
+> That's a valid question and we must (maybe we already have) have a policy for
+> such changes.
+
+I don't think it is a matter of policy, as it tends to vary from case to case.
+
+What really matters is the reason to make the changes in this particular case.
+
+If the reason if to help new systems to work better in the first place and the
+old ones are affected just by the way, it may be better to avoid affecting them.
+
+On the other hand, if the reason is to improve things for all the new and old
+systems altogether, then sure let's do it this way.
+
+> I thought that such changes (which are so closely bound to the
+> scheduler) must be at least done at the architecture level and not really at
+> platform level. And so doing it widely (like done in this patch) maybe the right
+> thing to do.
+
+This particular change is about a new feature, so making it in the core is OK
+in two cases IMO: (a) when you actively want everyone to be affected by it and
+(b) when the effect of it on the old systems should not be noticeable.
+
+Thanks,
+Rafael
