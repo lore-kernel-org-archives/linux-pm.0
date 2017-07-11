@@ -1,35 +1,180 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH v5 5/5] intel_idle: Add S0ix validation
-Date: Tue, 11 Jul 2017 11:43:51 -0400
-Message-ID: <CAJvTdKmV9KitivMQXGb4GiDTJVuUxHHsym+uQULKNw1w63fUAQ@mail.gmail.com>
-References: <20170708000303.21863-1-dbasehore@chromium.org>
- <4255011.FH94tfVCB1@aspire.rjw.lan> <CAGAzgsq-4VZRGgeS7XSzP+QHMpUx9jRGa-ANk3=UxD9BxwKuRg@mail.gmail.com>
- <2519579.h5lvWVZraV@aspire.rjw.lan>
+From: Dragos Bogdan <dragos.bogdan@analog.com>
+Subject: [PATCH v2] power: supply: ltc2941-battery-gauge: Add LTC2944 support
+Date: Tue, 11 Jul 2017 19:07:32 +0300
+Message-ID: <20170711160732.16170-1-dragos.bogdan@analog.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f180.google.com ([209.85.220.180]:33412 "EHLO
-        mail-qk0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933384AbdGKPnw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 11:43:52 -0400
-In-Reply-To: <2519579.h5lvWVZraV@aspire.rjw.lan>
+Received: from mail-sn1nam01on0073.outbound.protection.outlook.com ([104.47.32.73]:15280
+        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S932498AbdGKQHt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 11 Jul 2017 12:07:49 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "dbasehore ." <dbasehore@chromium.org>, linux-kernel <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, X86 ML <x86@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Dragos Bogdan <dragos.bogdan@analog.com>
 
-I acknowledge the specific need for this check to assure a great
-user-experience on specific hardware.
+The only difference between the already supported LTC2943 and LTC2944 is the operating range (3.6V - 20V compared to 3.6V - 60V).
 
-I also concur the motivation to make mechanisms general and generic so
-they can be re-used.
+Signed-off-by: Dragos Bogdan <dragos.bogdan@analog.com>
+---
+Changes in v2:
+- Fix the voltage and current conversion.
 
-However, it isn't clear to me that this check would be used outside of
-some very specific scenarios,
-and so we may be trying too hard to make it general, and the code
-would be simpler
-if we focus on that.  We can always make it more general when we have
-more use-cases...
+ .../devicetree/bindings/power/supply/ltc2941.txt   | 10 ++---
+ drivers/power/supply/ltc2941-battery-gauge.c       | 46 +++++++++++++++++-----
+ 2 files changed, 41 insertions(+), 15 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/power/supply/ltc2941.txt b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
+index a9d7aa60558b..ed0f02846d10 100644
+--- a/Documentation/devicetree/bindings/power/supply/ltc2941.txt
++++ b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
+@@ -1,9 +1,9 @@
+-binding for LTC2941 and LTC2943 battery gauges
++binding for LTC2941, LTC2943 and LTC2944 battery gauges
+ 
+-Both the LTC2941 and LTC2943 measure battery capacity.
+-The LTC2943 is compatible with the LTC2941, it adds voltage and
+-temperature monitoring, and uses a slightly different conversion
+-formula for the charge counter.
++All the LTC2941, LTC2943 and LTC2944 measure battery capacity.
++The LTC2943 and LTC2944 are compatible with the LTC2941, they add voltage and
++temperature monitoring, and use a slightly different conversion formula for the
++charge counter.
+ 
+ Required properties:
+ - compatible: Should contain "lltc,ltc2941" or "lltc,ltc2943" which also
+diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
+index 7efb908f4451..4c979b1a022b 100644
+--- a/drivers/power/supply/ltc2941-battery-gauge.c
++++ b/drivers/power/supply/ltc2941-battery-gauge.c
+@@ -1,5 +1,5 @@
+ /*
+- * I2C client/driver for the Linear Technology LTC2941 and LTC2943
++ * I2C client/driver for the Linear Technology LTC2941, LTC2943 and LTC2944
+  * Battery Gas Gauge IC
+  *
+  * Copyright (C) 2014 Topic Embedded Systems
+@@ -57,6 +57,12 @@ enum ltc294x_reg {
+ #define LTC2941_NUM_REGS	0x08
+ #define LTC2943_NUM_REGS	0x18
+ 
++enum ltc294x_id {
++	LTC2941_ID,
++	LTC2943_ID,
++	LTC2944_ID,
++};
++
+ struct ltc294x_info {
+ 	struct i2c_client *client;	/* I2C Client pointer */
+ 	struct power_supply *supply;	/* Supply pointer */
+@@ -66,6 +72,7 @@ struct ltc294x_info {
+ 	int charge;	/* Last charge register content */
+ 	int r_sense;	/* mOhm */
+ 	int Qlsb;	/* nAh */
++	enum ltc294x_id id;
+ };
+ 
+ static inline int convert_bin_to_uAh(
+@@ -145,7 +152,7 @@ static int ltc294x_reset(const struct ltc294x_info *info, int prescaler_exp)
+ 
+ 	control = LTC294X_REG_CONTROL_PRESCALER_SET(prescaler_exp) |
+ 				LTC294X_REG_CONTROL_ALCC_CONFIG_DISABLED;
+-	/* Put the 2943 into "monitor" mode, so it measures every 10 sec */
++	/* Put the 2943/4 into "monitor" mode, so it measures every 10 sec */
+ 	if (info->num_regs == LTC2943_NUM_REGS)
+ 		control |= LTC2943_REG_CONTROL_MODE_SCAN;
+ 
+@@ -248,11 +255,16 @@ static int ltc294x_get_voltage(const struct ltc294x_info *info, int *val)
+ 	int ret;
+ 	u8 datar[2];
+ 	u32 value;
++	u32 full_scale;
+ 
+ 	ret = ltc294x_read_regs(info->client,
+ 		LTC294X_REG_VOLTAGE_MSB, &datar[0], 2);
+ 	value = (datar[0] << 8) | datar[1];
+-	*val = ((value * 23600) / 0xFFFF) * 1000; /* in uV */
++	if (info->id == LTC2944_ID)
++		full_scale = 70800;
++	else
++		full_scale = 23600;
++	*val = ((value * full_scale) / 0xFFFF) * 1000; /* in uV */
+ 	return ret;
+ }
+ 
+@@ -261,15 +273,20 @@ static int ltc294x_get_current(const struct ltc294x_info *info, int *val)
+ 	int ret;
+ 	u8 datar[2];
+ 	s32 value;
++	u32 full_scale;
+ 
+ 	ret = ltc294x_read_regs(info->client,
+ 		LTC294X_REG_CURRENT_MSB, &datar[0], 2);
+ 	value = (datar[0] << 8) | datar[1];
+ 	value -= 0x7FFF;
++	if (info->id == LTC2944_ID)
++		full_scale = 64000;
++	else
++		full_scale = 60000;
+ 	/* Value is in range -32k..+32k, r_sense is usually 10..50 mOhm,
+ 	 * the formula below keeps everything in s32 range while preserving
+ 	 * enough digits */
+-	*val = 1000 * ((60000 * value) / (info->r_sense * 0x7FFF)); /* in uA */
++	*val = 1000 * ((full_scale * value) / (info->r_sense * 0x7FFF)); /* in uA */
+ 	return ret;
+ }
+ 
+@@ -388,7 +405,11 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
+ 
+ 	np = of_node_get(client->dev.of_node);
+ 
+-	info->num_regs = (unsigned long)of_device_get_match_data(&client->dev);
++	info->id = (enum ltc294x_id)of_device_get_match_data(&client->dev);
++	if (info->id == LTC2941_ID)
++		info->num_regs = LTC2941_NUM_REGS;
++	else
++		info->num_regs = LTC2943_NUM_REGS;
+ 	info->supply_desc.name = np->name;
+ 
+ 	/* r_sense can be negative, when sense+ is connected to the battery
+@@ -492,8 +513,9 @@ static SIMPLE_DEV_PM_OPS(ltc294x_pm_ops, ltc294x_suspend, ltc294x_resume);
+ 
+ 
+ static const struct i2c_device_id ltc294x_i2c_id[] = {
+-	{"ltc2941", LTC2941_NUM_REGS},
+-	{"ltc2943", LTC2943_NUM_REGS},
++	{"ltc2941", LTC2941_ID},
++	{"ltc2943", LTC2943_ID},
++	{"ltc2944", LTC2944_ID},
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(i2c, ltc294x_i2c_id);
+@@ -501,11 +523,15 @@ MODULE_DEVICE_TABLE(i2c, ltc294x_i2c_id);
+ static const struct of_device_id ltc294x_i2c_of_match[] = {
+ 	{
+ 		.compatible = "lltc,ltc2941",
+-		.data = (void *)LTC2941_NUM_REGS
++		.data = (void *)LTC2941_ID
+ 	},
+ 	{
+ 		.compatible = "lltc,ltc2943",
+-		.data = (void *)LTC2943_NUM_REGS
++		.data = (void *)LTC2943_ID
++	},
++	{
++		.compatible = "lltc,ltc2944",
++		.data = (void *)LTC2944_ID
+ 	},
+ 	{ },
+ };
+@@ -525,5 +551,5 @@ module_i2c_driver(ltc294x_driver);
+ 
+ MODULE_AUTHOR("Auryn Verwegen, Topic Embedded Systems");
+ MODULE_AUTHOR("Mike Looijmans, Topic Embedded Products");
+-MODULE_DESCRIPTION("LTC2941/LTC2943 Battery Gas Gauge IC driver");
++MODULE_DESCRIPTION("LTC2941/LTC2943/LTC2944 Battery Gas Gauge IC driver");
+ MODULE_LICENSE("GPL");
 -- 
-Len Brown, Intel Open Source Technology Center
+2.11.0
