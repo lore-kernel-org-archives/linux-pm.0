@@ -1,56 +1,55 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: Fix ratio setting for min_perf_pct
-Date: Mon, 10 Jul 2017 16:23:52 -0700
-Message-ID: <1499729032-22038-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Phil Reid <preid@electromag.com.au>
+Subject: Re: [PATCH] sbs-battery: correct capacity mode selection bits
+Date: Tue, 11 Jul 2017 10:32:22 +0800
+Message-ID: <b5fbff52-3e9d-fef1-02ed-3a2328fda32a@electromag.com.au>
+References: <1a1c52f56a9e530ae2d0bf825e67f6a6@heine.so>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:45910 "EHLO mga02.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754656AbdGJXYP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 10 Jul 2017 19:24:15 -0400
+Received: from anchovy2.45ru.net.au ([203.30.46.146]:51520 "EHLO
+        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1753810AbdGKCc1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jul 2017 22:32:27 -0400
+In-Reply-To: <1a1c52f56a9e530ae2d0bf825e67f6a6@heine.so>
+Content-Language: en-AU
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: lenb@kernel.org, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Michael Heinemann <posted@heine.so>, linux-pm@vger.kernel.org
 
-When the minimum performance limit percentage is set to power-up default,
-it is possible that minimum performance ratio is set to one more than the
-desired.
+On 7/07/2017 22:23, Michael Heinemann wrote:
+> The capacity mode bit is bit 15. Currently it is written as
+> default initialized enum and never shifted. This leads to
+> a behaviour where the BATTERY_MODE is not correctly
+> recognized and set again.
+> 
+> This commit initializes the enum accordingly.
+> 
+> Signed-off-by: Michael Heinemann <committed@heine.so>
 
-During set_policy() callback the minimum ratio is calculated by applying
-global.min_perf_pct to the turbo_ratio and rounding up. But the power-up
-default global.min_perf_pct is already rounded up to next percent in the
-function min_perf_pct_min(). So this will result in two round up
-operations. So for the default min_perf_pct, one of the rounding up is
-not required.
+Tested-by: Phil Reid <preid@electromag.com.au>
 
-It is better to remove rounding up in min_perf_pct_min() as this matches
-the displayed min_perf_pct prior to the
-commit c5a2ee7dde89 ("cpufreq: intel_pstate: Active mode P-state limits
-rework") in the kernel version 4,12. For example on a platform with
-max turbo ratio of 37 and minimum ratio of 10, the min_perf_pct resulted
-in 28 with the above commit. Before this commit it was 27 and same after
-this change.
 
-Fixes: 1a4fe38add8b ("cpufreq: intel_pstate: Remove max/min fractions to
-limit performance")
-Reported-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> ---
+>   drivers/power/supply/sbs-battery.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+> index 8bb2eb3..498e9af 100644
+> --- a/drivers/power/supply/sbs-battery.c
+> +++ b/drivers/power/supply/sbs-battery.c
+> @@ -60,8 +60,8 @@ enum {
+>   #define BATTERY_MODE_OFFSET        0x03
+>   #define BATTERY_MODE_MASK        0x8000
+>   enum sbs_battery_mode {
+> -    BATTERY_MODE_AMPS,
+> -    BATTERY_MODE_WATTS
+> +    BATTERY_MODE_AMPS = 0,
+> +    BATTERY_MODE_WATTS = 0x8000
+>   };
+> 
+>   /* manufacturer access defines */
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 48a98f11a84e..2a65bd313938 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -572,7 +572,7 @@ static int min_perf_pct_min(void)
- 	int turbo_pstate = cpu->pstate.turbo_pstate;
- 
- 	return turbo_pstate ?
--		DIV_ROUND_UP(cpu->pstate.min_pstate * 100, turbo_pstate) : 0;
-+		(cpu->pstate.min_pstate * 100 / turbo_pstate) : 0;
- }
- 
- static s16 intel_pstate_get_epb(struct cpudata *cpu_data)
 -- 
-2.11.0
+Regards
+Phil Reid
