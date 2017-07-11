@@ -1,140 +1,132 @@
-From: Michael Heinemann <posted@heine.so>
-Subject: Re: [PATCH 4/4] power: supply: sbs-battery: Don't reset mode in
- get_battery_capacity
-Date: Tue, 11 Jul 2017 12:03:08 +0200
-Message-ID: <ce7b3d0c2ac49c6d654402881c05d90e@heine.so>
-References: <1499667800-69055-1-git-send-email-preid@electromag.com.au>
- <1499667800-69055-5-git-send-email-preid@electromag.com.au>
- <f27e0672-fbc5-dd9d-c9dd-1bfbfed8272a@electromag.com.au>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufreq: frequency scaling spec in DT node
+Date: Tue, 11 Jul 2017 15:55:14 +0530
+Message-ID: <20170711102514.GC17115@vireshk-i7>
+References: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
+ <20170629100459.GL29665@vireshk-i7>
+ <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
+ <20170629143432.GM29665@vireshk-i7>
+ <405bfa30-b083-2690-5747-aa1cd423e576@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.stresser.de ([88.198.198.115]:35370 "EHLO mail.stresser.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755827AbdGKKDM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Jul 2017 06:03:12 -0400
-In-Reply-To: <f27e0672-fbc5-dd9d-c9dd-1bfbfed8272a@electromag.com.au>
+Received: from mail-pg0-f50.google.com ([74.125.83.50]:36665 "EHLO
+        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752361AbdGKKZS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 06:25:18 -0400
+Received: by mail-pg0-f50.google.com with SMTP id u62so64430585pgb.3
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2017 03:25:18 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <405bfa30-b083-2690-5747-aa1cd423e576@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: sre@kernel.org, linux-pm@vger.kernel.org
+To: Mason <slash.tmp@free.fr>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-On 2017-07-11 06:57, Phil Reid wrote:
-> On 10/07/2017 14:23, Phil Reid wrote:
->> There seems little point in resetting the capacity mode bit when
->> reading a capacity register that is affected by this bit. The
->> next call to the register read will set the bit if it's not in
->> the correct mode.
->> 
+On 11-07-17, 11:27, Mason wrote:
+> On 29/06/2017 16:34, Viresh Kumar wrote:
 > 
-> Thinking about this a bit more and I don't think this is a good idea.
-> Reading the spec again I'm guessing the runtime till empty calcs will
-> be different based on this mode bit.
-> 
-> ie:
-> in uW mode, the spec is making an assumption of constant power, ie
-> Switch Mode regulator load.
-> in mA mode, the spec is make an assumption of constant current, ie
-> linear regulator load
-> 
-> What it probably needs is a mode selection option and set that at
-> probe or when a battery is detected.
-> 
-> I'm not sure what impact changing the mode has to data calcs that uses
-> averaging.
-> 
-> Please drop this patch for now.
-> 
+> > On 29-06-17, 13:41, Mason wrote:
+> > 
+> >> I was trying to "emulate" the behavior of the ondemand governor.
+> >> Based on your reaction, I got it wrong...
+> >> Here is the actual issue:
+> >>
+> >> I'm on SoC B, where nominal/max freq is expected to be 1206 MHz.
+> >> So the OPPs in the DT are:
+> >> operating-points = <1206000 0 603000 0 402000 0 241200 0 134000 0>;
+> >> *But* FW changed the max freq behind my back, to 1215 MHz.
 
-I agree that changing the mode implictly might lead to trouble. So
-getting back to the initial mode might be wise to do.
+What does this line mean really? Where is this frequency changed ? In the OPP
+table in DT?
 
-I applied your patches (without Patch 4/4) and made the following
-observation:
-
-Coming fresh from the charger the battery is in Amps mode.
-But sometimes it is suddenly in Watts mode. I guess switching the
-mode back failed at some point.
-So maybe it would make sense to define a default mode to which it is
-always set back. This might also be configurable (devicetree?). But
-for a Battery I guess Amps should be the default Mode.
-
-(Actually it confused me intially that WATTS mode is handled as the
-default from code perspective.)
-
+> >>
+> >> Here is what happens when I execute:
+> >> echo ondemand >scaling_governor
+> >> sleep 2
+> >> cpuburn-a9 & cpuburn-a9 & cpuburn-a9 & cpuburn-a9
+> >> ### cpuburn-a9 spins in a tight infinite loop,
+> >> ### hitting all FUs to raise the CPU temperature
+> >>
+> >> # cpufreq_test.sh
+> >> [   69.933874] set_target: index=4
+> >> [   69.944799] set_target: index=2
+> >> [   69.947988] clk_divider_set_rate: rate=303750000 parent_rate=1215000000 div=4
+> >> [   69.955542] set_target: index=4
+> >> [   69.958801] clk_divider_set_rate: rate=607500000 parent_rate=1215000000 div=2
+> >> [   69.984789] set_target: index=0
+> >> [   69.987980] clk_divider_set_rate: rate=121500000 parent_rate=1215000000 div=10
+> >> [   71.947597] set_target: index=4
+> >> [   71.950996] clk_divider_set_rate: rate=607500000 parent_rate=1215000000 div=2
+> >>
+> >> As you can see, the divider remains stuck at 2, so the SoC
+> >> is actually running only at 607.5 MHz (instead of 1215 MHz).
+> >>
+> >> If I fix the OPPs in DT to:
+> >> operating-points = <1215000 0 607500 0 405000 0 243000 0 135000 0>;
+> >> Then I get the expected behavior:
+> >>
+> >> $ cpufreq_test.sh 
+> >> [   32.717930] set_target: index=1
+> >> [   32.721131] clk_divider_set_rate: rate=243000000 parent_rate=1215000000 div=5
+> >> [   32.731326] set_target: index=4
+> >> [   32.734521] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+> >> [   32.754556] set_target: index=0
+> >> [   32.757738] clk_divider_set_rate: rate=135000000 parent_rate=1215000000 div=9
+> >> [   32.765864] set_target: index=4
+> >> [   32.769217] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+> >> [   33.438811] set_target: index=0
+> >> [   33.442001] clk_divider_set_rate: rate=135000000 parent_rate=1215000000 div=9
+> >> [   33.450249] set_target: index=4
+> >> [   33.453470] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+> >> [   33.477888] set_target: index=0
+> >> [   33.481067] clk_divider_set_rate: rate=135000000 parent_rate=1215000000 div=9
+> >> [   34.714786] set_target: index=4
+> >> [   34.718237] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+> >>
+> >> Divider settles at 1 (full speed) to provide maximum
+> >> performance for the user-space processes.
+> > 
+> > I am not sure how such behavior will happen just because we changed
+> > the max OPP (actually increased it). You need to dig in a bit to see
+> > why this happens, as I can't agree to your numbers for now.
 > 
+> I had a closer look.
 > 
->> Signed-off-by: Phil Reid <preid@electromag.com.au>
->> ---
->>   drivers/power/supply/sbs-battery.c | 31 
->> ++++++++++++-------------------
->>   1 file changed, 12 insertions(+), 19 deletions(-)
->> 
->> diff --git a/drivers/power/supply/sbs-battery.c 
->> b/drivers/power/supply/sbs-battery.c
->> index 3473b45..441a576 100644
->> --- a/drivers/power/supply/sbs-battery.c
->> +++ b/drivers/power/supply/sbs-battery.c
->> @@ -491,22 +491,19 @@ static void  sbs_unit_adjustment(struct 
->> i2c_client *client,
->>   	}
->>   }
->>   -static enum sbs_battery_mode sbs_set_battery_mode(struct i2c_client 
->> *client,
->> +static int sbs_set_battery_mode(struct i2c_client *client,
->>   	enum sbs_battery_mode mode)
->>   {
->> -	int ret, original_val;
->> +	int ret;
->>   -	original_val = sbs_read_word_data(client, BATTERY_MODE_OFFSET);
->> -	if (original_val < 0)
->> -		return original_val;
->> +	ret = sbs_read_word_data(client, BATTERY_MODE_OFFSET);
->> +	if (ret < 0)
->> +		return ret;
->>   -	if ((original_val & BATTERY_MODE_MASK) == mode)
->> -		return mode;
->> +	if ((ret & BATTERY_MODE_MASK) == mode)
->> +		return 0;
->>   -	if (mode == BATTERY_MODE_AMPS)
->> -		ret = original_val & ~BATTERY_MODE_MASK;
->> -	else
->> -		ret = original_val | BATTERY_MODE_MASK;
->> +	ret = (ret & ~BATTERY_MODE_MASK) | mode;
->>     	ret = sbs_write_word_data(client, BATTERY_MODE_OFFSET, ret);
->>   	if (ret < 0)
->> @@ -514,7 +511,7 @@ static enum sbs_battery_mode 
->> sbs_set_battery_mode(struct i2c_client *client,
->>     	usleep_range(1000, 2000);
->>   -	return original_val & BATTERY_MODE_MASK;
->> +	return 0;
->>   }
->>     static int sbs_get_battery_capacity(struct i2c_client *client,
->> @@ -527,9 +524,9 @@ static int sbs_get_battery_capacity(struct 
->> i2c_client *client,
->>   	if (power_supply_is_amp_property(psp))
->>   		mode = BATTERY_MODE_AMPS;
->>   -	mode = sbs_set_battery_mode(client, mode);
->> -	if (mode < 0)
->> -		return mode;
->> +	ret = sbs_set_battery_mode(client, mode);
->> +	if (ret < 0)
->> +		return ret;
->>     	ret = sbs_read_word_data(client, sbs_data[reg_offset].addr);
->>   	if (ret < 0)
->> @@ -542,10 +539,6 @@ static int sbs_get_battery_capacity(struct 
->> i2c_client *client,
->>   	} else
->>   		val->intval = ret;
->>   -	ret = sbs_set_battery_mode(client, mode);
->> -	if (ret < 0)
->> -		return ret;
->> -
->>   	return 0;
->>   }
->> 
+> static int _div_round(...)
+> {
+> 	if (flags & CLK_DIVIDER_ROUND_CLOSEST)
+> 		return _div_round_closest(table, parent_rate, rate, flags);
+> 
+> 	return _div_round_up(table, parent_rate, rate, flags);
+> }
+> 
+> This flag was /not/ set for the CPU divider clock.
 
-Regards,
-Michael
+i.e. _div_round_up() was getting called ? And you failed to explain why do you
+think this results in that awkward behavior.
+
+> But setting it breaks in dev_pm_opp_set_rate()
+> 
+> [    9.201681] set_target: index=4
+> [    9.204870] dev_pm_opp_set_rate: target_freq=1206000000 freq=1215000000 old_freq=243000000
+
+I have some assumptions on how you are printing this line and will present my
+analysis based on that.
+
+cpufreq core asked for a freq of 1206 (why?, DT should have had 1215 as max),
+but clk framework rounded it up to 1215 (this should happen without the
+CLK_DIVIDER_ROUND_CLOSEST flag as well).
+
+> [    9.213647] cpu cpu0: dev_pm_opp_set_rate: failed to find OPP for freq 1215000000 (-34)
+
+Now we failed because DT didn't had the max set to 1215, why ?
+
+> I'll experiment with the other solution of creating the OPP table
+> at init.
+
+Sorry, I haven't got a convincing answer to why you see the problem you are
+seeing.
+
+-- 
+viresh
