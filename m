@@ -1,52 +1,42 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC PATCH v1 5/8] sched/cpufreq_schedutil: always consider all
- CPUs when deciding next freq
-Date: Tue, 11 Jul 2017 18:18:34 +0100
-Message-ID: <20170711171834.7kldjsjg7utsc2jl@e106622-lin>
-References: <20170705085905.6558-1-juri.lelli@arm.com>
- <20170705085905.6558-6-juri.lelli@arm.com>
- <20170711161731.plbzv42yv7l66fwh@hirez.programming.kicks-ass.net>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH] PM / Domains: defer dev_pm_domain_set() until genpd->attach_dev succeeds if present
+Date: Tue, 11 Jul 2017 11:53:05 -0700
+Message-ID: <7hk23evm9a.fsf@baylibre.com>
+References: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com>
+        <CAJZ5v0i42jjbm2M7fBjfPSu88gGz-Rxp3QBJM3uFggaN=8VkcA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:47492 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753681AbdGKRSl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Jul 2017 13:18:41 -0400
-Content-Disposition: inline
-In-Reply-To: <20170711161731.plbzv42yv7l66fwh@hirez.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0i42jjbm2M7fBjfPSu88gGz-Rxp3QBJM3uFggaN=8VkcA@mail.gmail.com>
+        (Rafael J. Wysocki's message of "Tue, 4 Jul 2017 22:39:17 +0200")
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
-On 11/07/17 18:17, Peter Zijlstra wrote:
-> On Wed, Jul 05, 2017 at 09:59:02AM +0100, Juri Lelli wrote:
-> >  		delta_ns = time - j_sg_cpu->last_update;
-> >  		if (delta_ns > TICK_NSEC) {
-> >  			j_sg_cpu->iowait_boost = 0;
-> > -			continue;
-> > +			j_sg_cpu->util_cfs = 0;
-> 
-> this is slighly confusing. Is this because we might not 'continue' with
-> the new code?
-> 
+"Rafael J. Wysocki" <rafael@kernel.org> writes:
 
-This is because, after TICK_NSEC, we only want to discard CFS
-contribution and (yes) continue (so don't take into account
-j_sg_cpu contribution) if DEADLINE contribution is zero as well.
+> On Thu, Jun 29, 2017 at 8:00 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>> If the genpd->attach_dev or genpd->power_on fails, genpd_dev_pm_attach
+>> may return -EPROBE_DEFER initially. However genpd_alloc_dev_data sets
+>> the PM domain for the device unconditionally.
+>>
+>> When subsequent attempts are made to call genpd_dev_pm_attach, it may
+>> return -EEXISTS checking dev->pm_domain without re-attempting to call
+>> attach_dev or power_on.
+>>
+>> platform_drv_probe then attempts to call drv->probe as the return value
+>> -EEXIST != -EPROBE_DEFER, which may end up in a situation where the
+>> device is accessed without it's power domain switched on.
+>>
+>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> Cc: Kevin Hilman <khilman@kernel.org>
+>> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+>
+> Ulf, this looks like a genuine fix to me, any comments?
+>
 
-> > +			if (j_sg_cpu->util_dl == 0)
-> > +				continue;
-> >  		}
-> > +
+This looks like the right fix to me.
 
-With this change we might not continue if some DEADLINE utilization is
-present for j_sg_cpu.
-
-> >  		if (j_sg_cpu->flags & SCHED_CPUFREQ_RT)
-> >  			return policy->cpuinfo.max_freq;
-> >  
-> > -- 
-> > 2.11.0
-> > 
+Acked-by: Kevin Hilman <khilman@baylibre.com>
