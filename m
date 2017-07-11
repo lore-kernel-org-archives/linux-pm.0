@@ -1,63 +1,44 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: cpufreq: frequency scaling spec in DT node
-Date: Tue, 11 Jul 2017 13:56:03 +0200
-Message-ID: <3095a4bb-39d0-5d91-e6e8-b39811e24ec1@free.fr>
-References: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
- <20170629100459.GL29665@vireshk-i7>
- <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
- <20170629143432.GM29665@vireshk-i7>
- <405bfa30-b083-2690-5747-aa1cd423e576@free.fr>
- <20170711102514.GC17115@vireshk-i7>
- <c0838592-5613-660d-56fc-e7022a38a86d@free.fr>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v1 3/8] sched/cpufreq_schedutil: make worker kthread
+ be SCHED_DEADLINE
+Date: Tue, 11 Jul 2017 14:37:02 +0200
+Message-ID: <20170711123702.jvu47jahuo47uyab@hirez.programming.kicks-ass.net>
+References: <20170705085905.6558-1-juri.lelli@arm.com>
+ <20170705085905.6558-4-juri.lelli@arm.com>
+ <CAJWu+op-y5Q6Ginhxk7ntjTrZmNbJX8arMsqOrkxs34m7CukaA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp5-g21.free.fr ([212.27.42.5]:38393 "EHLO smtp5-g21.free.fr"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752659AbdGKL4Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Jul 2017 07:56:16 -0400
-In-Reply-To: <c0838592-5613-660d-56fc-e7022a38a86d@free.fr>
+Received: from bombadil.infradead.org ([65.50.211.133]:45667 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754695AbdGKMhT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 08:37:19 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJWu+op-y5Q6Ginhxk7ntjTrZmNbJX8arMsqOrkxs34m7CukaA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
+To: Joel Fernandes <joelaf@google.com>
+Cc: Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Steven Rostedt <rostedt@goodmis.org>, luca.abeni@santannapisa.it, claudio@evidence.eu.com, Tommaso Cucinotta <tommaso.cucinotta@santannapisa.it>, bristot@redhat.com, mathieu.poirier@linaro.org, Todd Kjos <tkjos@android.com>, Andres Oportus <andresoportus@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Ingo Molnar <mingo@kernel.org>"Rafael J . Wysocki" <r>
 
-On 11/07/2017 13:09, Mason wrote:
-> On 11/07/2017 12:25, Viresh Kumar wrote:
->> On 11-07-17, 11:27, Mason wrote:
->>> On 29/06/2017 16:34, Viresh Kumar wrote:
->>>
->>>> On 29-06-17, 13:41, Mason wrote:
->>>>
->>>>> I'm on SoC B, where nominal/max freq is expected to be 1206 MHz.
->>>>> So the OPPs in the DT are:
->>>>> operating-points = <1206000 0 603000 0 402000 0 241200 0 134000 0>;
->>>>> *But* FW changed the max freq behind my back, to 1215 MHz.
->>
->> What does this line mean really? Where is this frequency changed?
->> In the OPP table in DT?
-> 
-> I apologize for being unclear.
-> 
-> What I meant is that the bootloader originally set the max frequency
-> to 1206 MHz. The OPP table in DTS was written based on that value.
-> 
-> Later, someone changed the bootloader code to set a slightly higher
-> max frequency. When I flashed the new bootloader on my board, the
-> OPP table no longer matches the actual frequency.
-> 
-> But I am not notified when bootloader authors change max frequencies,
-> which is why I wrote "changed the max freq behind my back".
-> 
-> Again, sorry for the confusing statements.
-> 
-> (The bootloader is not DT-aware, so it leaves the DT untouched.)
+On Thu, Jul 06, 2017 at 08:56:32PM -0700, Joel Fernandes wrote:
 
-I just realized that there's another unstated assumption.
+> > @@ -3998,7 +3998,9 @@ static int __sched_setscheduler(struct task_struct *p,
+> >         }
+> >
+> >         if (attr->sched_flags &
+> > -               ~(SCHED_FLAG_RESET_ON_FORK | SCHED_FLAG_RECLAIM))
+> > +               ~(SCHED_FLAG_RESET_ON_FORK |
+> > +                 SCHED_FLAG_RECLAIM |
+> > +                 SCHED_FLAG_SPECIAL))
+> >                 return -EINVAL;
+> 
+> I was thinking if its better to name SCHED_FLAG_SPECIAL something more
+> descriptive than "special", since it will not be clear looking at
+> other parts of the code that this is used for the frequency scaling
+> thread or that its a DL task. I was thinking since this flag is
+> specifically setup for the sugov thread frequency scaling purpose, a
+> better flag name than SPECIAL might be SCHED_FLAG_DL_FREQ_SCALE or
+> SCHED_FLAG_FREQ_SCALE. But I am Ok with whatever makes sense to do
+> here. Thanks,
 
-Since the bootloader is not DT-aware, the DTB is, in fact, appended
-to the kernel image. This is why it's possible to have "mismatching"
-kernel and bootloader.
-
-Regards.
+SCHED_FLAG_IM_DOING_IT_WRONG ;-)
