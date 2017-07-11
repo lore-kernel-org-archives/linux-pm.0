@@ -1,40 +1,186 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
- load-tracking support
-Date: Tue, 11 Jul 2017 12:09:44 +0530
-Message-ID: <20170711063944.GA17115@vireshk-i7>
-References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
- <12829054.TWIodSo4bb@aspire.rjw.lan>
- <20170710065443.GG2928@vireshk-i7>
- <4673356.gkeX7KYvlb@aspire.rjw.lan>
+From: Phil Reid <preid@electromag.com.au>
+Subject: Re: [PATCH v7 05/10] i2c: core: call of_i2c_setup_smbus_alert in
+ i2c_register_adapter
+Date: Tue, 11 Jul 2017 15:52:38 +0800
+Message-ID: <6d3cbda9-2459-60a8-170c-db3671969925@electromag.com.au>
+References: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
+ <1497535178-12001-6-git-send-email-preid@electromag.com.au>
+ <20170619152811.svoxmxybyoy6l4hc@ninjato>
+ <20170623121923.GN26073@mail.corp.redhat.com>
+ <367a1a1d-afdb-8895-8216-ae3c18e16fc8@electromag.com.au>
+ <20170628124549.GF26073@mail.corp.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:34150 "EHLO
-        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753946AbdGKGjw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 02:39:52 -0400
-Received: by mail-pf0-f169.google.com with SMTP id q85so61929856pfq.1
-        for <linux-pm@vger.kernel.org>; Mon, 10 Jul 2017 23:39:52 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <4673356.gkeX7KYvlb@aspire.rjw.lan>
+Received: from anchovy3.45ru.net.au ([203.30.46.155]:48717 "EHLO
+        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1755426AbdGKHwu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 03:52:50 -0400
+In-Reply-To: <20170628124549.GF26073@mail.corp.redhat.com>
+Content-Language: en-AU
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
+To: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 10-07-17, 14:46, Rafael J. Wysocki wrote:
-> This particular change is about a new feature, so making it in the core is OK
-> in two cases IMO: (a) when you actively want everyone to be affected by it and
+On 28/06/2017 20:45, Benjamin Tissoires wrote:
+> On Jun 28 2017 or thereabouts, Phil Reid wrote:
+>> On 23/06/2017 20:19, Benjamin Tissoires wrote:
+>>> On Jun 19 2017 or thereabouts, Wolfram Sang wrote:
+>>>> On Thu, Jun 15, 2017 at 09:59:33PM +0800, Phil Reid wrote:
+>>>>> Add a call to of_i2c_setup_smbus_alert when a i2c adapter is registered
+>>>>> so the the smbalert driver can be registered.
+>>>>>
+>>>>> Signed-off-by: Phil Reid <preid@electromag.com.au>
+>>>>
+>>>> CCing Benjamin
+>>>>
+>>>>> ---
+>>>>>    drivers/i2c/i2c-core.c | 4 ++++
+>>>>>    1 file changed, 4 insertions(+)
+>>>>>
+>>>>> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+>>>>> index d2402bb..626471b 100644
+>>>>> --- a/drivers/i2c/i2c-core.c
+>>>>> +++ b/drivers/i2c/i2c-core.c
+>>>>> @@ -40,6 +40,7 @@
+>>>>>    #include <linux/gpio.h>
+>>>>>    #include <linux/hardirq.h>
+>>>>>    #include <linux/i2c.h>
+>>>>> +#include <linux/i2c-smbus.h>
+>>>>>    #include <linux/idr.h>
+>>>>>    #include <linux/init.h>
+>>>>>    #include <linux/irqflags.h>
+>>>>> @@ -2045,6 +2046,9 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
+>>>>>    		dev_warn(&adap->dev,
+>>>>>    			 "Failed to create compatibility class link\n");
+>>>>>    #endif
+>>>>> +	res = of_i2c_setup_smbus_alert(adap);
+>>>>> +	if (res)
+>>>>> +		goto out_list;
+>>>
+>>> See my concerns in patch 4/10.
+>>>
+>>> In addition, shouldn't this be placed before device_register() for the
+>>> least? pm_runtime_enable() would require a matching pm_runtime_disable(),
+>>> and device_register() some unregistering behavior too.
+>>>
+>>
+>> G'day Ben,
+>>
+>> Thanks for the review.
+>> Yes this makes sense. I tried having it before the device_register and I get an error
+>> about a kobject not being initialised in the a call from of_i2c_setup_smbus_alert.
+>>
+>> Having a look at what I'm doing in of_i2c_setup_smbus_alert now I'm not sure there's
+>> a need to bail out on an error now. Originally I was registering the irq in the setup call.
+>> Which need to handle probe defer. Now this should be handled in the alert probe call.
+>>
+>> WDYR?
+> 
+> Well, of_i2c_setup_smbus_alert() returns an error code, so it has to be
+> accounted for. If the error is not a reason to fail, you should at least
+> shout some error messages and act accordingly.
+> 
+> However, looking at of_i2c_setup_smbus_alert() again, I wonder if we
+> should not split it in 2: one part that checks for the OF flag presence
+> and bail out early if an error is encountered (before device
+> registration), and one part once the device is registered that calls
+> i2c_setup_smbus_alert(). In case of a failure here, we need to
+> unregister the adapter because we don't have all the elements at hands
+> (assuming we consider that smbus-alert should be mandatory).
+> 
 
-IMO this change should be done for the whole ARM architecture. And if some
-regression happens due to this, then we come back and solve it.
+G'day Benjamin,
 
-> (b) when the effect of it on the old systems should not be noticeable.
+I've tried a couple of different ways of handling errors from of_i2c_setup_smbus_alert()
+and not having much success.
 
-I am not sure about the effects of this on performance really.
+Call of_i2c_setup_smbus_alert() before the device_register() call results in a kernel panic.
 
-@Dietmar: Any inputs for that ?
+Call after device_register() and injecting an error into the of_i2c_setup_smbus_alert()
+also results in a kernel panic.
+
+On error I'm calling device_unregister()
+
+I also tried spliting the device_unregister() call into
+   device_initialize(dev);
+   of_i2c_setup_smbus_alert()
+   device_add(dev);
+
+but that results in a crash in of_i2c_setup_smbus_alert()
+
+
+If i2c_new_device() is not called then I get:
+Unable to handle kernel NULL pointer dereference at virtual address 00000000
+  PC is at __wake_up_common+0x2c/0x90
+
+[<8015d940>] (__wake_up_common) from [<8015d9c8>] (__wake_up_locked+0x24/0x2c)
+[<8015d9c8>] (__wake_up_locked) from [<8015e680>] (complete+0x48/0x58)
+[<8015e680>] (complete) from [<805ba6c0>] (i2c_adapter_dev_release+0x1c/0x20)
+[<805ba6c0>] (i2c_adapter_dev_release) from [<804d22f8>] (device_release+0x3c/0xa0)
+[<804d22f8>] (device_release) from [<80419ab0>] (kobject_put+0xac/0x208)
+[<80419ab0>] (kobject_put) from [<804d3778>] (device_unregister+0x64/0x70)
+[<804d3778>] (device_unregister) from [<805bb234>] (i2c_register_adapter+0x2a4/0x480)
+[<805bb234>] (i2c_register_adapter) from [<805bc5b4>] (i2c_add_adapter+0x8c/0xd0)
+[<805bc5b4>] (i2c_add_adapter) from [<805c0690>] (i2c_mux_add_adapter+0x278/0x428)
+[<805c0690>] (i2c_mux_add_adapter) from [<805c4b48>] (pca954x_probe+0x2b0/0x394)
+[<805c4b48>] (pca954x_probe) from [<805b9c44>] (i2c_device_probe+0x200/0x2dc)
+[<805b9c44>] (i2c_device_probe) from [<804d7e0c>] (driver_probe_device+0x338/0x460)
+[<804d7e0c>] (driver_probe_device) from [<804d814c>] (__device_attach_driver+0xa4/0x128)
+[<804d814c>] (__device_attach_driver) from [<804d5ad8>] (bus_for_each_drv+0x68/0x9c)
+[<804d5ad8>] (bus_for_each_drv) from [<804d792c>] (__device_attach+0xc0/0x14c)
+[<804d792c>] (__device_attach) from [<804d81ec>] (device_initial_probe+0x1c/0x20)
+[<804d81ec>] (device_initial_probe) from [<804d6cf4>] (bus_probe_device+0x94/0x9c)
+[<804d6cf4>] (bus_probe_device) from [<804d72dc>] (deferred_probe_work_func+0xa0/0xd4)
+[<804d72dc>] (deferred_probe_work_func) from [<8013d7f0>] (process_one_work+0x14c/0x4c4)
+[<8013d7f0>] (process_one_work) from [<8013dd94>] (worker_thread+0x22c/0x514)
+[<8013dd94>] (worker_thread) from [<80143a20>] (kthread+0x140/0x170)
+[<80143a20>] (kthread) from [<80108e38>] (ret_from_fork+0x14/0x3c)
+
+And the system hangs.
+
+
+If i2c_new_device() is called and I return an error after I get:
+This one probably wouldn't happen.
+
+WARNING: CPU: 0 PID: 70 at fs/proc/generic.c:580 remove_proc_entry+0x124/0x168
+remove_proc_entry: removing non-empty directory 'irq/193', leaking at least 'smbus_alert'
+Modules linked in:
+CPU: 0 PID: 70 Comm: kworker/0:2 Not tainted 4.12.0-rc6+ #141
+Hardware name: Altera SOCFPGA
+Workqueue: events deferred_probe_work_func
+[<801145a4>] (unwind_backtrace) from [<8010df44>] (show_stack+0x20/0x24)
+[<8010df44>] (show_stack) from [<80418308>] (dump_stack+0x8c/0xa0)
+[<80418308>] (dump_stack) from [<80123518>] (__warn+0xf8/0x110)
+[<80123518>] (__warn) from [<80123578>] (warn_slowpath_fmt+0x48/0x50)
+[<80123578>] (warn_slowpath_fmt) from [<802acfa0>] (remove_proc_entry+0x124/0x168)
+[<802acfa0>] (remove_proc_entry) from [<80174d38>] (unregister_irq_proc+0xac/0xb4)
+[<80174d38>] (unregister_irq_proc) from [<8016b404>] (free_desc+0x40/0x78)
+[<8016b404>] (free_desc) from [<8016b494>] (irq_free_descs+0x58/0x90)
+[<8016b494>] (irq_free_descs) from [<80174128>] (irq_dispose_mapping+0x54/0x7c)
+[<80174128>] (irq_dispose_mapping) from [<805c45ac>] (pca954x_cleanup+0x4c/0x70)
+[<805c45ac>] (pca954x_cleanup) from [<805c4ac0>] (pca954x_probe+0x210/0x394)
+[<805c4ac0>] (pca954x_probe) from [<805b9c44>] (i2c_device_probe+0x200/0x2dc)
+[<805b9c44>] (i2c_device_probe) from [<804d7e0c>] (driver_probe_device+0x338/0x460)
+[<804d7e0c>] (driver_probe_device) from [<804d814c>] (__device_attach_driver+0xa4/0x128)
+[<804d814c>] (__device_attach_driver) from [<804d5ad8>] (bus_for_each_drv+0x68/0x9c)
+[<804d5ad8>] (bus_for_each_drv) from [<804d792c>] (__device_attach+0xc0/0x14c)
+[<804d792c>] (__device_attach) from [<804d81ec>] (device_initial_probe+0x1c/0x20)
+[<804d81ec>] (device_initial_probe) from [<804d6cf4>] (bus_probe_device+0x94/0x9c)
+[<804d6cf4>] (bus_probe_device) from [<804d72dc>] (deferred_probe_work_func+0xa0/0xd4)
+[<804d72dc>] (deferred_probe_work_func) from [<8013d7f0>] (process_one_work+0x14c/0x4c4)
+[<8013d7f0>] (process_one_work) from [<8013dd94>] (worker_thread+0x22c/0x514)
+[<8013dd94>] (worker_thread) from [<80143a20>] (kthread+0x140/0x170)
+[<80143a20>] (kthread) from [<80108e38>] (ret_from_fork+0x14/0x3c)
+
+
+I'm at a real loss on how to safely handle the error from of_i2c_setup_smbus_alert()
+
+Any hints as to what the correct way is to unregister the device?
+
 
 -- 
-viresh
+Regards
+Phil Reid
