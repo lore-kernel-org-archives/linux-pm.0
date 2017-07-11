@@ -1,82 +1,92 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: [PATCH 2/4] power: supply: sbs-battery: sort includes
-Date: Tue, 11 Jul 2017 16:47:34 +0800
-Message-ID: <fd25febd-2ccf-00dd-5a9d-b8530b00657b@electromag.com.au>
-References: <1499667800-69055-1-git-send-email-preid@electromag.com.au>
- <1499667800-69055-3-git-send-email-preid@electromag.com.au>
- <d4bd4cfbbbb4e26b62bc78f3f4c40ad1@heine.so>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V3 2/2] PM / Domains: Extend generic power domain debugfs.
+Date: Tue, 11 Jul 2017 11:06:17 +0200
+Message-ID: <CAPDyKFoFhegBOEbw6YHJK+AG7dmPFh9nY-pt+7q27ZSN-JkejA@mail.gmail.com>
+References: <1498235543-30064-1-git-send-email-thara.gopinath@linaro.org> <1498235543-30064-3-git-send-email-thara.gopinath@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy1.45ru.net.au ([203.30.46.145]:34957 "EHLO
-        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1755222AbdGKIrh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 04:47:37 -0400
-In-Reply-To: <d4bd4cfbbbb4e26b62bc78f3f4c40ad1@heine.so>
-Content-Language: en-AU
+Received: from mail-qt0-f170.google.com ([209.85.216.170]:36182 "EHLO
+        mail-qt0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755242AbdGKJGS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 05:06:18 -0400
+Received: by mail-qt0-f170.google.com with SMTP id i2so93344906qta.3
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2017 02:06:18 -0700 (PDT)
+In-Reply-To: <1498235543-30064-3-git-send-email-thara.gopinath@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Heinemann <posted@heine.so>
-Cc: sre@kernel.org, linux-pm@vger.kernel.org
+To: Thara Gopinath <thara.gopinath@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 11/07/2017 16:37, Michael Heinemann wrote:
-> On 2017-07-10 08:23, Phil Reid wrote:
->> Sort the header includes prior to adding to the list.
->>
->> Signed-off-by: Phil Reid <preid@electromag.com.au>
->> ---
->>  drivers/power/supply/sbs-battery.c | 17 ++++++++---------
->>  1 file changed, 8 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/power/supply/sbs-battery.c
->> b/drivers/power/supply/sbs-battery.c
->> index 15873df..4594ed1 100644
->> --- a/drivers/power/supply/sbs-battery.c
->> +++ b/drivers/power/supply/sbs-battery.c
->> @@ -14,19 +14,18 @@
->>   * more details.
->>   */
->>
->> -#include <linux/init.h>
->> -#include <linux/module.h>
->> -#include <linux/kernel.h>
->>  #include <linux/err.h>
->> -#include <linux/power_supply.h>
->> +#include <linux/gpio/consumer.h>
->>  #include <linux/i2c.h>
->> -#include <linux/slab.h>
->> +#include <linux/init.h>
->>  #include <linux/interrupt.h>
->> -#include <linux/gpio/consumer.h>
->> +#include <linux/kernel.h>
->> +#include <linux/module.h>
->>  #include <linux/of.h>
->> -#include <linux/stat.h>
->> -
->>  #include <linux/power/sbs-battery.h>
->> +#include <linux/power_supply.h>
->> +#include <linux/slab.h>
->> +#include <linux/stat.h>
->>
->>  enum {
->>      REG_MANUFACTURER_DATA,
->> @@ -57,7 +56,7 @@ enum {
->>  #define BATTERY_MODE_MASK        0x8000
->>  enum sbs_battery_mode {
->>      BATTERY_MODE_AMPS = 0,
->> -    BATTERY_MODE_WATTS = 0x800
->> +    BATTERY_MODE_WATTS = 0x8000
->>  };
-> 
-> I guess the second chunk is in there by accident.
-> 
->>
->>  /* manufacturer access defines */
-> 
-> 
-Damn, Thought I'd fixed that before sending the email
+On 23 June 2017 at 18:32, Thara Gopinath <thara.gopinath@linaro.org> wrote:
+> This patch extends the existing generic power domain debugfs.
+> Changes involve the following
+> - Introduce a unique debugfs entry for each generic power domain with the
+>   following attributes
+>         - current_state - Displays current state of the domain.
+>         - devices - Displays the devices associated with this domain.
+>         - sub_domains - Displays the sub power domains.
+>         - active_time - Displays the time the domain was in active state
+>                         in ms.
+>         - total_idle_time - Displays the time the domain was in any of the idle
+>                         states in ms.
+>         - idle_states - Displays the various idle states and the time
+>                         spent in each idle state in ms.
+>
+> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+> ---
+>  drivers/base/power/domain.c | 205 ++++++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 197 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 40768cc..a10f789 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2328,21 +2328,191 @@ static int pm_genpd_summary_show(struct seq_file *s, void *data)
+>         return ret;
+>  }
+>
+> -static int pm_genpd_summary_open(struct inode *inode, struct file *file)
+> +static int pm_genpd_status_show(struct seq_file *s, void *data)
 
--- 
-Regards
-Phil Reid
+Naming rules for static functions in genpd should have genpd_* as
+prefix and not pm_genpd_* as those are for exported APIs.
+
+There still some static functions that doesn't follow that rule, but
+please don't add more. Following applies to all new functions adding
+in this change.
+
+>  {
+> -       return single_open(file, pm_genpd_summary_show, NULL);
+> +       static const char * const status_lookup[] = {
+> +               [GPD_STATE_ACTIVE] = "on",
+> +               [GPD_STATE_POWER_OFF] = "off"
+> +       };
+> +
+> +       struct generic_pm_domain *genpd = s->private;
+> +       int ret = 0;
+> +
+> +       ret = genpd_lock_interruptible(genpd);
+> +       if (ret)
+> +               return -ERESTARTSYS;
+> +
+> +       if (WARN_ON_ONCE(genpd->status >= ARRAY_SIZE(status_lookup)))
+> +               goto exit;
+> +
+> +       if (genpd->status == GPD_STATE_POWER_OFF)
+> +               seq_printf(s, "%s-%u\n", status_lookup[genpd->status],
+> +                       genpd->state_idx);
+> +       else
+> +               seq_printf(s, "%s\n", status_lookup[genpd->status]);
+> +exit:
+> +       genpd_unlock(genpd);
+> +       return ret;
+>  }
+>
+
+[...]
+
+Fixing the nitpick above, then you may add my ack.
+
+Kind regards
+Uffe
