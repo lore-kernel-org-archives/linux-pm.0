@@ -1,55 +1,54 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: [PATCH] sbs-battery: correct capacity mode selection bits
-Date: Tue, 11 Jul 2017 10:32:22 +0800
-Message-ID: <b5fbff52-3e9d-fef1-02ed-3a2328fda32a@electromag.com.au>
-References: <1a1c52f56a9e530ae2d0bf825e67f6a6@heine.so>
+From: Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH v4 1/3] cpufreq: mediatek: Add support of cpufreq to
+ MT2701/MT7623 SoC
+Date: Tue, 11 Jul 2017 10:49:46 +0800
+Message-ID: <1499741386.12408.11.camel@mtksdaap41>
+References: <cover.1499692967.git.sean.wang@mediatek.com>
+         <feabcfd53899954198c6620e9d9b68f4a3c55201.1499692967.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy2.45ru.net.au ([203.30.46.146]:51520 "EHLO
-        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1753810AbdGKCc1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jul 2017 22:32:27 -0400
-In-Reply-To: <1a1c52f56a9e530ae2d0bf825e67f6a6@heine.so>
-Content-Language: en-AU
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <feabcfd53899954198c6620e9d9b68f4a3c55201.1499692967.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
+Cc: viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, jamesjj.liao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, shunli.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, jdelvare-l3A5Bk7waGM@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Heinemann <posted@heine.so>, linux-pm@vger.kernel.org
 
-On 7/07/2017 22:23, Michael Heinemann wrote:
-> The capacity mode bit is bit 15. Currently it is written as
-> default initialized enum and never shifted. This leads to
-> a behaviour where the BATTERY_MODE is not correctly
-> recognized and set again.
+Hi Sean,
+
+On Mon, 2017-07-10 at 22:23 +0800, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org wrote:
+> From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 > 
-> This commit initializes the enum accordingly.
+> MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
+> single cluster and this hardware is also compatible with the existing
+> driver through enabling CPU frequency feature with operating-points-v2
+> bindings. Also, this driver actually supports all MediaTek SoCs, the
+> Kconfig menu entry and file name itself should be updated with more
+> generic name to drop "MT8173"
 > 
-> Signed-off-by: Michael Heinemann <committed@heine.so>
-
-Tested-by: Phil Reid <preid@electromag.com.au>
-
-
+> Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Reviewed-by: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
 > ---
->   drivers/power/supply/sbs-battery.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/cpufreq/Kconfig.arm                              | 7 +++----
+>  drivers/cpufreq/Makefile                                 | 2 +-
+>  drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} | 2 ++
+>  3 files changed, 6 insertions(+), 5 deletions(-)
+>  rename drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} (99%)
 > 
-> diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-> index 8bb2eb3..498e9af 100644
-> --- a/drivers/power/supply/sbs-battery.c
-> +++ b/drivers/power/supply/sbs-battery.c
-> @@ -60,8 +60,8 @@ enum {
->   #define BATTERY_MODE_OFFSET        0x03
->   #define BATTERY_MODE_MASK        0x8000
->   enum sbs_battery_mode {
-> -    BATTERY_MODE_AMPS,
-> -    BATTERY_MODE_WATTS
-> +    BATTERY_MODE_AMPS = 0,
-> +    BATTERY_MODE_WATTS = 0x8000
->   };
-> 
->   /* manufacturer access defines */
 
--- 
-Regards
-Phil Reid
+As Viresh mentioned, there are already many drivers use "mtk" as
+filename prefix or postfix.To align with those files, I suggest use
+mtk-cpufreq.c.I think there are not too many values to change all "mtk-"
+to "mediatek-", but it is worth to have the same naming rule for
+mediatek upstream driver.
+
+Regards,
+Eddie. 
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
