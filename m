@@ -1,124 +1,109 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V3 1/2] PM / Domains: Add time accounting to various genpd states.
-Date: Tue, 11 Jul 2017 11:06:24 +0200
-Message-ID: <CAPDyKFq5imu+f+ovD9tTo=chwycMJDjBjmfU3_Dc_79_grYyPQ@mail.gmail.com>
-References: <1498235543-30064-1-git-send-email-thara.gopinath@linaro.org> <1498235543-30064-2-git-send-email-thara.gopinath@linaro.org>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: cpufreq: frequency scaling spec in DT node
+Date: Tue, 11 Jul 2017 11:27:46 +0200
+Message-ID: <405bfa30-b083-2690-5747-aa1cd423e576@free.fr>
+References: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
+ <20170629100459.GL29665@vireshk-i7>
+ <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
+ <20170629143432.GM29665@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f171.google.com ([209.85.216.171]:36233 "EHLO
-        mail-qt0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932158AbdGKJG1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 05:06:27 -0400
-Received: by mail-qt0-f171.google.com with SMTP id i2so93347179qta.3
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2017 02:06:26 -0700 (PDT)
-In-Reply-To: <1498235543-30064-2-git-send-email-thara.gopinath@linaro.org>
+Received: from smtp5-g21.free.fr ([212.27.42.5]:20181 "EHLO smtp5-g21.free.fr"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755609AbdGKJ2E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 11 Jul 2017 05:28:04 -0400
+In-Reply-To: <20170629143432.GM29665@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thara Gopinath <thara.gopinath@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-On 23 June 2017 at 18:32, Thara Gopinath <thara.gopinath@linaro.org> wrote:
-> This patch adds support to calculate the time spent by the generic
-> power domains in on and various idle states.
->
-> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+On 29/06/2017 16:34, Viresh Kumar wrote:
 
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+> On 29-06-17, 13:41, Mason wrote:
+> 
+>> I was trying to "emulate" the behavior of the ondemand governor.
+>> Based on your reaction, I got it wrong...
+>> Here is the actual issue:
+>>
+>> I'm on SoC B, where nominal/max freq is expected to be 1206 MHz.
+>> So the OPPs in the DT are:
+>> operating-points = <1206000 0 603000 0 402000 0 241200 0 134000 0>;
+>> *But* FW changed the max freq behind my back, to 1215 MHz.
+>>
+>> Here is what happens when I execute:
+>> echo ondemand >scaling_governor
+>> sleep 2
+>> cpuburn-a9 & cpuburn-a9 & cpuburn-a9 & cpuburn-a9
+>> ### cpuburn-a9 spins in a tight infinite loop,
+>> ### hitting all FUs to raise the CPU temperature
+>>
+>> # cpufreq_test.sh
+>> [   69.933874] set_target: index=4
+>> [   69.944799] set_target: index=2
+>> [   69.947988] clk_divider_set_rate: rate=303750000 parent_rate=1215000000 div=4
+>> [   69.955542] set_target: index=4
+>> [   69.958801] clk_divider_set_rate: rate=607500000 parent_rate=1215000000 div=2
+>> [   69.984789] set_target: index=0
+>> [   69.987980] clk_divider_set_rate: rate=121500000 parent_rate=1215000000 div=10
+>> [   71.947597] set_target: index=4
+>> [   71.950996] clk_divider_set_rate: rate=607500000 parent_rate=1215000000 div=2
+>>
+>> As you can see, the divider remains stuck at 2, so the SoC
+>> is actually running only at 607.5 MHz (instead of 1215 MHz).
+>>
+>> If I fix the OPPs in DT to:
+>> operating-points = <1215000 0 607500 0 405000 0 243000 0 135000 0>;
+>> Then I get the expected behavior:
+>>
+>> $ cpufreq_test.sh 
+>> [   32.717930] set_target: index=1
+>> [   32.721131] clk_divider_set_rate: rate=243000000 parent_rate=1215000000 div=5
+>> [   32.731326] set_target: index=4
+>> [   32.734521] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+>> [   32.754556] set_target: index=0
+>> [   32.757738] clk_divider_set_rate: rate=135000000 parent_rate=1215000000 div=9
+>> [   32.765864] set_target: index=4
+>> [   32.769217] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+>> [   33.438811] set_target: index=0
+>> [   33.442001] clk_divider_set_rate: rate=135000000 parent_rate=1215000000 div=9
+>> [   33.450249] set_target: index=4
+>> [   33.453470] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+>> [   33.477888] set_target: index=0
+>> [   33.481067] clk_divider_set_rate: rate=135000000 parent_rate=1215000000 div=9
+>> [   34.714786] set_target: index=4
+>> [   34.718237] clk_divider_set_rate: rate=1215000000 parent_rate=1215000000 div=1
+>>
+>> Divider settles at 1 (full speed) to provide maximum
+>> performance for the user-space processes.
+> 
+> I am not sure how such behavior will happen just because we changed
+> the max OPP (actually increased it). You need to dig in a bit to see
+> why this happens, as I can't agree to your numbers for now.
 
-Kind regards
-Uffe
+I had a closer look.
 
-> ---
->  drivers/base/power/domain.c | 32 ++++++++++++++++++++++++++++++++
->  include/linux/pm_domain.h   |  3 +++
->  2 files changed, 35 insertions(+)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index da49a83..40768cc 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -207,6 +207,34 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
->         smp_mb__after_atomic();
->  }
->
-> +#ifdef CONFIG_DEBUG_FS
-> +static void genpd_update_accounting(struct generic_pm_domain *genpd)
-> +{
-> +       ktime_t delta, now;
-> +
-> +       now = ktime_get();
-> +       delta = ktime_sub(now, genpd->accounting_time);
-> +
-> +       /*
-> +        * If genpd->status is active, it means we are just
-> +        * out of off and so update the idle time and vice
-> +        * versa.
-> +        */
-> +       if (genpd->status == GPD_STATE_ACTIVE) {
-> +               int state_idx = genpd->state_idx;
-> +
-> +               genpd->states[state_idx].idle_time =
-> +                       ktime_add(genpd->states[state_idx].idle_time, delta);
-> +       } else {
-> +               genpd->on_time = ktime_add(genpd->on_time, delta);
-> +       }
-> +
-> +       genpd->accounting_time = now;
-> +}
-> +#else
-> +static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
-> +#endif
-> +
->  static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
->  {
->         unsigned int state_idx = genpd->state_idx;
-> @@ -359,6 +387,7 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
->         }
->
->         genpd->status = GPD_STATE_POWER_OFF;
-> +       genpd_update_accounting(genpd);
->
->         list_for_each_entry(link, &genpd->slave_links, slave_node) {
->                 genpd_sd_counter_dec(link->master);
-> @@ -411,6 +440,8 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
->                 goto err;
->
->         genpd->status = GPD_STATE_ACTIVE;
-> +       genpd_update_accounting(genpd);
-> +
->         return 0;
->
->   err:
-> @@ -1486,6 +1517,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
->         genpd->max_off_time_changed = true;
->         genpd->provider = NULL;
->         genpd->has_provider = false;
-> +       genpd->accounting_time = ktime_get();
->         genpd->domain.ops.runtime_suspend = genpd_runtime_suspend;
->         genpd->domain.ops.runtime_resume = genpd_runtime_resume;
->         genpd->domain.ops.prepare = pm_genpd_prepare;
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index b7803a2..9c8b334 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -43,6 +43,7 @@ struct genpd_power_state {
->         s64 power_on_latency_ns;
->         s64 residency_ns;
->         struct fwnode_handle *fwnode;
-> +       ktime_t idle_time;
->  };
->
->  struct genpd_lock_ops;
-> @@ -78,6 +79,8 @@ struct generic_pm_domain {
->         unsigned int state_count; /* number of states */
->         unsigned int state_idx; /* state that genpd will go to when off */
->         void *free; /* Free the state that was allocated for default */
-> +       ktime_t on_time;
-> +       ktime_t accounting_time;
->         const struct genpd_lock_ops *lock_ops;
->         union {
->                 struct mutex mlock;
-> --
-> 2.1.4
->
+static int _div_round(...)
+{
+	if (flags & CLK_DIVIDER_ROUND_CLOSEST)
+		return _div_round_closest(table, parent_rate, rate, flags);
+
+	return _div_round_up(table, parent_rate, rate, flags);
+}
+
+This flag was /not/ set for the CPU divider clock.
+But setting it breaks in dev_pm_opp_set_rate()
+
+[    9.201681] set_target: index=4
+[    9.204870] dev_pm_opp_set_rate: target_freq=1206000000 freq=1215000000 old_freq=243000000
+[    9.213647] cpu cpu0: dev_pm_opp_set_rate: failed to find OPP for freq 1215000000 (-34)
+[    9.222029] cpufreq: __target_index: Failed to change cpu frequency: -34
+
+
+
+I'll experiment with the other solution of creating the OPP table
+at init.
+
+Regards.
