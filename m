@@ -1,54 +1,123 @@
-From: Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH v4 1/3] cpufreq: mediatek: Add support of cpufreq to
- MT2701/MT7623 SoC
-Date: Tue, 11 Jul 2017 10:49:46 +0800
-Message-ID: <1499741386.12408.11.camel@mtksdaap41>
-References: <cover.1499692967.git.sean.wang@mediatek.com>
-         <feabcfd53899954198c6620e9d9b68f4a3c55201.1499692967.git.sean.wang@mediatek.com>
+From: Phil Reid <preid@electromag.com.au>
+Subject: Re: [PATCH 4/4] power: supply: sbs-battery: Don't reset mode in
+ get_battery_capacity
+Date: Tue, 11 Jul 2017 12:57:43 +0800
+Message-ID: <f27e0672-fbc5-dd9d-c9dd-1bfbfed8272a@electromag.com.au>
+References: <1499667800-69055-1-git-send-email-preid@electromag.com.au>
+ <1499667800-69055-5-git-send-email-preid@electromag.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <feabcfd53899954198c6620e9d9b68f4a3c55201.1499692967.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
-Cc: viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, jamesjj.liao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, shunli.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, jdelvare-l3A5Bk7waGM@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from anchovy1.45ru.net.au ([203.30.46.145]:35020 "EHLO
+        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1754266AbdGKE5r (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 00:57:47 -0400
+In-Reply-To: <1499667800-69055-5-git-send-email-preid@electromag.com.au>
+Content-Language: en-AU
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org, linux-pm@vger.kernel.org, posted@heine.so
 
-Hi Sean,
+On 10/07/2017 14:23, Phil Reid wrote:
+> There seems little point in resetting the capacity mode bit when
+> reading a capacity register that is affected by this bit. The
+> next call to the register read will set the bit if it's not in
+> the correct mode.
+> 
 
-On Mon, 2017-07-10 at 22:23 +0800, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org wrote:
-> From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> 
-> MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
-> single cluster and this hardware is also compatible with the existing
-> driver through enabling CPU frequency feature with operating-points-v2
-> bindings. Also, this driver actually supports all MediaTek SoCs, the
-> Kconfig menu entry and file name itself should be updated with more
-> generic name to drop "MT8173"
-> 
-> Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Reviewed-by: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
+Thinking about this a bit more and I don't think this is a good idea.
+Reading the spec again I'm guessing the runtime till empty calcs will
+be different based on this mode bit.
+
+ie:
+in uW mode, the spec is making an assumption of constant power, ie Switch Mode regulator load.
+in mA mode, the spec is make an assumption of constant current, ie linear regulator load
+
+What it probably needs is a mode selection option and set that at probe or when a battery is detected.
+
+I'm not sure what impact changing the mode has to data calcs that uses averaging.
+
+Please drop this patch for now.
+
+
+
+> Signed-off-by: Phil Reid <preid@electromag.com.au>
 > ---
->  drivers/cpufreq/Kconfig.arm                              | 7 +++----
->  drivers/cpufreq/Makefile                                 | 2 +-
->  drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} | 2 ++
->  3 files changed, 6 insertions(+), 5 deletions(-)
->  rename drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} (99%)
+>   drivers/power/supply/sbs-battery.c | 31 ++++++++++++-------------------
+>   1 file changed, 12 insertions(+), 19 deletions(-)
+> 
+> diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+> index 3473b45..441a576 100644
+> --- a/drivers/power/supply/sbs-battery.c
+> +++ b/drivers/power/supply/sbs-battery.c
+> @@ -491,22 +491,19 @@ static void  sbs_unit_adjustment(struct i2c_client *client,
+>   	}
+>   }
+>   
+> -static enum sbs_battery_mode sbs_set_battery_mode(struct i2c_client *client,
+> +static int sbs_set_battery_mode(struct i2c_client *client,
+>   	enum sbs_battery_mode mode)
+>   {
+> -	int ret, original_val;
+> +	int ret;
+>   
+> -	original_val = sbs_read_word_data(client, BATTERY_MODE_OFFSET);
+> -	if (original_val < 0)
+> -		return original_val;
+> +	ret = sbs_read_word_data(client, BATTERY_MODE_OFFSET);
+> +	if (ret < 0)
+> +		return ret;
+>   
+> -	if ((original_val & BATTERY_MODE_MASK) == mode)
+> -		return mode;
+> +	if ((ret & BATTERY_MODE_MASK) == mode)
+> +		return 0;
+>   
+> -	if (mode == BATTERY_MODE_AMPS)
+> -		ret = original_val & ~BATTERY_MODE_MASK;
+> -	else
+> -		ret = original_val | BATTERY_MODE_MASK;
+> +	ret = (ret & ~BATTERY_MODE_MASK) | mode;
+>   
+>   	ret = sbs_write_word_data(client, BATTERY_MODE_OFFSET, ret);
+>   	if (ret < 0)
+> @@ -514,7 +511,7 @@ static enum sbs_battery_mode sbs_set_battery_mode(struct i2c_client *client,
+>   
+>   	usleep_range(1000, 2000);
+>   
+> -	return original_val & BATTERY_MODE_MASK;
+> +	return 0;
+>   }
+>   
+>   static int sbs_get_battery_capacity(struct i2c_client *client,
+> @@ -527,9 +524,9 @@ static int sbs_get_battery_capacity(struct i2c_client *client,
+>   	if (power_supply_is_amp_property(psp))
+>   		mode = BATTERY_MODE_AMPS;
+>   
+> -	mode = sbs_set_battery_mode(client, mode);
+> -	if (mode < 0)
+> -		return mode;
+> +	ret = sbs_set_battery_mode(client, mode);
+> +	if (ret < 0)
+> +		return ret;
+>   
+>   	ret = sbs_read_word_data(client, sbs_data[reg_offset].addr);
+>   	if (ret < 0)
+> @@ -542,10 +539,6 @@ static int sbs_get_battery_capacity(struct i2c_client *client,
+>   	} else
+>   		val->intval = ret;
+>   
+> -	ret = sbs_set_battery_mode(client, mode);
+> -	if (ret < 0)
+> -		return ret;
+> -
+>   	return 0;
+>   }
+>   
 > 
 
-As Viresh mentioned, there are already many drivers use "mtk" as
-filename prefix or postfix.To align with those files, I suggest use
-mtk-cpufreq.c.I think there are not too many values to change all "mtk-"
-to "mediatek-", but it is worth to have the same naming rule for
-mediatek upstream driver.
 
-Regards,
-Eddie. 
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Regards
+Phil Reid
