@@ -1,52 +1,90 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH] selftests: cpufreq: Check cpuinfo_cur_freq set as
- expected
-Date: Wed, 12 Jul 2017 19:51:27 +0300
-Message-ID: <1499878287.11612.35.camel@nxp.com>
-References: <704cfb6696840b3838576ea583b8ab8ed2265aaf.1499858779.git.leonard.crestez@nxp.com>
-         <CAJZ5v0g5Chq-zw0tN6Mvp2YD2WKavUMp37UtAoFPLW3yiX4F1w@mail.gmail.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH] cpufreq: schedutil: Update cached "current frequency"
+ when limits change
+Date: Wed, 12 Jul 2017 10:44:01 -0700
+Message-ID: <59665FE1.3070305@codeaurora.org>
+References: <1499826256-23491-1-git-send-email-skannan@codeaurora.org> <20170712052448.GI17115@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn3nam01on0086.outbound.protection.outlook.com ([104.47.33.86]:10689
-        "EHLO NAM01-BN3-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1753659AbdGLQvd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 12 Jul 2017 12:51:33 -0400
-In-Reply-To: <CAJZ5v0g5Chq-zw0tN6Mvp2YD2WKavUMp37UtAoFPLW3yiX4F1w@mail.gmail.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:45228 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750775AbdGLRoD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2017 13:44:03 -0400
+In-Reply-To: <20170712052448.GI17115@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shuah Khan <shuah@kernel.org>, linux-kselftest@vger.kernel.org, Octavian Purdila <octavian.purdila@nxp.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, 2017-07-12 at 13:36 +0200, Rafael J. Wysocki wrote:
-> On Wed, Jul 12, 2017 at 1:29 PM, Leonard Crestez
-> <leonard.crestez@nxp.com> wrote:
-> > 
-> > This checks that the cpufreq driver actually sets the requested
-> > frequency.
-> This won't work on modern x86  with APERF/MPERF (see recent commits in
-> that area).
+On 07/11/2017 10:24 PM, Viresh Kumar wrote:
+> On 11-07-17, 19:24, Saravana Kannan wrote:
+>> Currently, the governor calculates the next frequency, set the current CPU
+>> frequency (policy->cur). It also assumes the current CPU frequency doesn't
+>> change if the next frequency isn't calculated again and hence caches the
+>> "current frequency".
+>>
+>> However, this isn't true when CPU min/max frequency limits are changed. So,
+>> there's room for the CPU frequency to get stuck at the wrong level if the
+>> calculated next frequency doesn't change across multiple limits updates.
+>>
+>> Fix this by updating the cached "current frequency" when limits changes the
+>> current CPU frequency.
+>>
+>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>> ---
+>>   kernel/sched/cpufreq_schedutil.c | 6 ++++++
+>>   1 file changed, 6 insertions(+)
+>>
+>> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+>> index 076a2e3..fe0b2fb 100644
+>> --- a/kernel/sched/cpufreq_schedutil.c
+>> +++ b/kernel/sched/cpufreq_schedutil.c
+>> @@ -226,6 +226,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>>
+>>   	busy = sugov_cpu_is_busy(sg_cpu);
+>>
+>> +	raw_spin_lock(&sg_policy->update_lock);
+>>   	if (flags & SCHED_CPUFREQ_RT_DL) {
+>>   		next_f = policy->cpuinfo.max_freq;
+>>   	} else {
+>> @@ -240,6 +241,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>>   			next_f = sg_policy->next_freq;
+>>   	}
+>>   	sugov_update_commit(sg_policy, time, next_f);
+>> +	raw_spin_unlock(&sg_policy->update_lock);
+>
+> We wouldn't allow locking here until the time we can :)
+>
+>>   }
+>>
+>>   static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
+>> @@ -637,10 +639,14 @@ static void sugov_stop(struct cpufreq_policy *policy)
+>>   static void sugov_limits(struct cpufreq_policy *policy)
+>>   {
+>>   	struct sugov_policy *sg_policy = policy->governor_data;
+>> +	unsigned long flags;
+>>
+>>   	if (!policy->fast_switch_enabled) {
+>>   		mutex_lock(&sg_policy->work_lock);
+>>   		cpufreq_policy_apply_limits(policy);
+>> +		raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
+>> +		sg_policy->next_freq = policy->cur;
+>> +		raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+>>   		mutex_unlock(&sg_policy->work_lock);
+>>   	}
+>
+> Did you miss the following part which is after the closing } here ?
+>
+>          sg_policy->need_freq_update = true;
+>
+> As this should already take care of the problem you are worried about. Or did I
+> misunderstood your problem completely ?
+>
+Yup, I did. Thanks! Ignore patch please.
 
-This test should be skipped if the cpu always adjusts it's own
-frequency dynamically. It should check if scaling_set_speed won't
-reflect in cpuinfo_cur_freq, but I'm not sure how to do that reliably.
-
-I checked with the intel_pstate driver and it's already skipped in this
-test because no userspace governor is available. This could be a way to
-check if the CPU supports targetting a precise constant frequency.
-
-Or are you saying that cpuinfo_cur_freq in general shouldn't be
-expected to just return the current frequency but also adjust for time
-spent in various idle states? It seems to me that if you want to track
-the current load it might be better to report this through different
-more explicit mechanism.
-
-In particular imx already supports cpuidle states where the arm core
-clock is turned off and later resumed but this has no effect on
-cpuinfo_cur_freq.
-
---
-Regards,
-Leonard
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
