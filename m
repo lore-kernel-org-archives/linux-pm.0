@@ -1,73 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
- load-tracking support
-Date: Wed, 12 Jul 2017 14:57:55 +0530
-Message-ID: <20170712092755.GD1679@vireshk-i7>
-References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
- <CAJZ5v0gBPNDBYWbuHVaB7deNHSZKziaAeybSw3mg+S8V_roO-Q@mail.gmail.com>
- <22f004af-0158-8265-2da5-34743f294bfb@arm.com>
- <12829054.TWIodSo4bb@aspire.rjw.lan>
- <bac850da-6256-2a92-abfe-71d229cc99dc@arm.com>
- <20170711060106.GL2928@vireshk-i7>
- <45224055-7bf1-243b-9366-0f2d3442ef59@arm.com>
- <20170712040917.GG17115@vireshk-i7>
- <20170712083125.at7jic63ozoxoqap@hirez.programming.kicks-ass.net>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: cpufreq: frequency scaling spec in DT node
+Date: Wed, 12 Jul 2017 11:58:53 +0200
+Message-ID: <9476e8ee-24ae-1676-067b-18a867892894@free.fr>
+References: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
+ <20170629100459.GL29665@vireshk-i7>
+ <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
+ <20170629143432.GM29665@vireshk-i7>
+ <405bfa30-b083-2690-5747-aa1cd423e576@free.fr>
+ <20170711102514.GC17115@vireshk-i7>
+ <c0838592-5613-660d-56fc-e7022a38a86d@free.fr>
+ <20170712034150.GD17115@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:34386 "EHLO
-        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750959AbdGLJ17 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2017 05:27:59 -0400
-Received: by mail-pf0-f174.google.com with SMTP id q85so10143585pfq.1
-        for <linux-pm@vger.kernel.org>; Wed, 12 Jul 2017 02:27:59 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20170712083125.at7jic63ozoxoqap@hirez.programming.kicks-ass.net>
+Received: from smtp5-g21.free.fr ([212.27.42.5]:63710 "EHLO smtp5-g21.free.fr"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751215AbdGLJ7j (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 12 Jul 2017 05:59:39 -0400
+In-Reply-To: <20170712034150.GD17115@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-On 12-07-17, 10:31, Peter Zijlstra wrote:
-> So the problem with the thread is two-fold; one the one hand we like the
-> scheduler to directly set frequency, but then we need to schedule a task
-> to change the frequency, which will change the frequency and around we
-> go.
+On 12/07/2017 05:41, Viresh Kumar wrote:
+
+> On 11-07-17, 13:09, Mason wrote:
+>
+>> What I meant is that the bootloader originally set the max frequency
+>> to 1206 MHz. The OPP table in DTS was written based on that value.
+>>
+>> Later, someone changed the bootloader code to set a slightly higher
+>> max frequency. When I flashed the new bootloader on my board, the
+>> OPP table no longer matches the actual frequency.
+>>
+>> But I am not notified when bootloader authors change max frequencies,
+>> which is why I wrote "changed the max freq behind my back".
+>>
+>> (The bootloader is not DT-aware, so it leaves the DT untouched.)
 > 
-> On the other hand, there's very nasty issues with PI. This thread would
-> have very high priority (otherwise the SCHED_DEADLINE stuff won't work)
-> but that then means this thread needs to boost the owner of the i2c
-> mutex. And that then creates a massive bandwidth accounting hole.
+> Here we go. Finally I have understood what the problem you are facing is :)
+> And yes, it was really not clear to me until now. I though that someone just
+> changed the max in DT and that's making things go bad :)
 > 
-> 
-> The advantage of using an interrupt driven state machine is that all
-> those issues go away.
-> 
-> But yes, whichever way around you turn things, its crap. But given the
-> hardware its the best we can do.
+> Anyway, how does the bootloader control the max frequency? For the boards I
+> worked on, it's just a PLL that the kernel needs to set and kernel can choose to
+> program it the way it wants to irrespective of the way bootloader has worked on it.
 
-Thanks for the explanation Peter.
+I would object to the characterization of "just a PLL" :-)
 
-IIUC, it will take more time to change the frequency eventually with
-the interrupt-driven state machine as there may be multiple bottom
-halves involved here, for supply, clk, etc, which would run at normal
-priorities now. And those were boosted currently due to the high
-priority sugov thread. And we are fine with that (from performance
-point of view) ?
+The PLL outputs "garbage" before actually "locking" a target
+frequency. It is not possible for the CPU to blindly change
+the PLL settings, because that crashes the system.
 
-Coming back to where we started from (where should we call
-arch_set_freq_scale() from ?).
+The bootloader implements the steps required to change said
+settings, so the strategy has been: have Linux use whatever
+PLL frequency the bootloader programs.
 
-I think we would still need some kind of synchronization between
-cpufreq core and the cpufreq drivers to make sure we don't start
-another freq change before the previous one is complete. Otherwise
-the cpufreq drivers would be required to have similar support with
-proper locking in place.
+Behind the PLL, there is a glitch-free divider, which is able
+to divide the PLL output without crashing the system. I've
+been using that divider for DFS.
 
-And if the core is going to get notified about successful freq changes
-(which it should IMHO), then it may still be better to call
-arch_set_freq_scale() from the core itself and not from individual
-drivers.
+drivers/clk/clk-tango4.c
 
--- 
-viresh
+Regards.
