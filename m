@@ -1,64 +1,61 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: [PATCH] cpufreq: schedutil: Update cached "current frequency" when limits change
-Date: Tue, 11 Jul 2017 19:24:12 -0700
-Message-ID: <1499826256-23491-1-git-send-email-skannan@codeaurora.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufreq: frequency scaling spec in DT node
+Date: Wed, 12 Jul 2017 09:11:50 +0530
+Message-ID: <20170712034150.GD17115@vireshk-i7>
+References: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
+ <20170629100459.GL29665@vireshk-i7>
+ <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
+ <20170629143432.GM29665@vireshk-i7>
+ <405bfa30-b083-2690-5747-aa1cd423e576@free.fr>
+ <20170711102514.GC17115@vireshk-i7>
+ <c0838592-5613-660d-56fc-e7022a38a86d@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:36636 "EHLO
+        mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932475AbdGLDlz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 23:41:55 -0400
+Received: by mail-pf0-f172.google.com with SMTP id q86so5958347pfl.3
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2017 20:41:55 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <c0838592-5613-660d-56fc-e7022a38a86d@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mason <slash.tmp@free.fr>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-Currently, the governor calculates the next frequency, set the current CPU
-frequency (policy->cur). It also assumes the current CPU frequency doesn't
-change if the next frequency isn't calculated again and hence caches the
-"current frequency".
+On 11-07-17, 13:09, Mason wrote:
+> I apologize for being unclear.
+> 
+> What I meant is that the bootloader originally set the max frequency
+> to 1206 MHz. The OPP table in DTS was written based on that value.
+> 
+> Later, someone changed the bootloader code to set a slightly higher
+> max frequency. When I flashed the new bootloader on my board, the
+> OPP table no longer matches the actual frequency.
+> 
+> But I am not notified when bootloader authors change max frequencies,
+> which is why I wrote "changed the max freq behind my back".
+> 
+> Again, sorry for the confusing statements.
+> 
+> (The bootloader is not DT-aware, so it leaves the DT untouched.)
 
-However, this isn't true when CPU min/max frequency limits are changed. So,
-there's room for the CPU frequency to get stuck at the wrong level if the
-calculated next frequency doesn't change across multiple limits updates.
+Here we go. Finally I have understood what the problem you are facing is :)
+And yes, it was really not clear to me until now. I though that someone just
+changed the max in DT and that's making things go bad :)
 
-Fix this by updating the cached "current frequency" when limits changes the
-current CPU frequency.
+Anyway, how does the bootloader control the max frequency? For the boards I
+worked on, its just a PLL that the kernel needs to set and kernel can choose to
+program it the way it wants to irrespective of the way bootloader has worked on
+it.
 
-Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
----
- kernel/sched/cpufreq_schedutil.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+> Maybe this is the real issue that needs to be addressed,
+> rather than the symptoms that turn up later because of
+> the root issue.
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 076a2e3..fe0b2fb 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -226,6 +226,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 
- 	busy = sugov_cpu_is_busy(sg_cpu);
- 
-+	raw_spin_lock(&sg_policy->update_lock);
- 	if (flags & SCHED_CPUFREQ_RT_DL) {
- 		next_f = policy->cpuinfo.max_freq;
- 	} else {
-@@ -240,6 +241,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 			next_f = sg_policy->next_freq;
- 	}
- 	sugov_update_commit(sg_policy, time, next_f);
-+	raw_spin_unlock(&sg_policy->update_lock);
- }
- 
- static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
-@@ -637,10 +639,14 @@ static void sugov_stop(struct cpufreq_policy *policy)
- static void sugov_limits(struct cpufreq_policy *policy)
- {
- 	struct sugov_policy *sg_policy = policy->governor_data;
-+	unsigned long flags;
- 
- 	if (!policy->fast_switch_enabled) {
- 		mutex_lock(&sg_policy->work_lock);
- 		cpufreq_policy_apply_limits(policy);
-+		raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
-+		sg_policy->next_freq = policy->cur;
-+		raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
- 		mutex_unlock(&sg_policy->work_lock);
- 	}
- 
+Sure, I just need a bit more of input from you :)
+
 -- 
-~/caf-sig.txt
+viresh
