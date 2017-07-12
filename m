@@ -1,98 +1,52 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] PM / Domains: defer dev_pm_domain_set() until
- genpd->attach_dev succeeds if present
-Date: Wed, 12 Jul 2017 17:36:35 +0100
-Message-ID: <e6f02160-4153-5e44-8153-bc919808db0e@arm.com>
-References: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com>
- <CAPDyKFrTSwiUFLbWp7BV4NJiuvoedEX=f4pA6wZzsrhDh4TctA@mail.gmail.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH] selftests: cpufreq: Check cpuinfo_cur_freq set as
+ expected
+Date: Wed, 12 Jul 2017 19:51:27 +0300
+Message-ID: <1499878287.11612.35.camel@nxp.com>
+References: <704cfb6696840b3838576ea583b8ab8ed2265aaf.1499858779.git.leonard.crestez@nxp.com>
+         <CAJZ5v0g5Chq-zw0tN6Mvp2YD2WKavUMp37UtAoFPLW3yiX4F1w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrTSwiUFLbWp7BV4NJiuvoedEX=f4pA6wZzsrhDh4TctA@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn3nam01on0086.outbound.protection.outlook.com ([104.47.33.86]:10689
+        "EHLO NAM01-BN3-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1753659AbdGLQvd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 12 Jul 2017 12:51:33 -0400
+In-Reply-To: <CAJZ5v0g5Chq-zw0tN6Mvp2YD2WKavUMp37UtAoFPLW3yiX4F1w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Shuah Khan <shuah@kernel.org>, linux-kselftest@vger.kernel.org, Octavian Purdila <octavian.purdila@nxp.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+On Wed, 2017-07-12 at 13:36 +0200, Rafael J. Wysocki wrote:
+> On Wed, Jul 12, 2017 at 1:29 PM, Leonard Crestez
+> <leonard.crestez@nxp.com> wrote:
+> > 
+> > This checks that the cpufreq driver actually sets the requested
+> > frequency.
+> This won't work on modern x86  with APERF/MPERF (see recent commits in
+> that area).
 
+This test should be skipped if the cpu always adjusts it's own
+frequency dynamically. It should check if scaling_set_speed won't
+reflect in cpuinfo_cur_freq, but I'm not sure how to do that reliably.
 
-On 12/07/17 14:59, Ulf Hansson wrote:
-> On 29 June 2017 at 20:00, Sudeep Holla <sudeep.holla@arm.com> wrote:
->> If the genpd->attach_dev or genpd->power_on fails, genpd_dev_pm_attach
->> may return -EPROBE_DEFER initially. However genpd_alloc_dev_data sets
->> the PM domain for the device unconditionally.
->>
->> When subsequent attempts are made to call genpd_dev_pm_attach, it may
->> return -EEXISTS checking dev->pm_domain without re-attempting to call
->> attach_dev or power_on.
->>
->> platform_drv_probe then attempts to call drv->probe as the return value
->> -EEXIST != -EPROBE_DEFER, which may end up in a situation where the
->> device is accessed without it's power domain switched on.
-> 
-> Right, this makes sense.
-> 
+I checked with the intel_pstate driver and it's already skipped in this
+test because no userspace governor is available. This could be a way to
+check if the CPU supports targetting a precise constant frequency.
 
-Thanks
+Or are you saying that cpuinfo_cur_freq in general shouldn't be
+expected to just return the current frequency but also adjust for time
+spent in various idle states? It seems to me that if you want to track
+the current load it might be better to report this through different
+more explicit mechanism.
 
->>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Kevin Hilman <khilman@kernel.org>
->> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> 
-> Could we perhaps work out which commit it fixes, or perhaps the
-> problem been there long time ago and we should just add a stable tag?
->
+In particular imx already supports cpuidle states where the arm core
+clock is turned off and later resumed but this has no effect on
+cpuinfo_cur_freq.
 
-OK I will dig that out.
-
->> ---
->>  drivers/base/power/domain.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index da49a8383dc3..b195d34de888 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -1168,8 +1168,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
->>
->>         spin_unlock_irq(&dev->power.lock);
->>
->> -       dev_pm_domain_set(dev, &genpd->domain);
->> -
->>         return gpd_data;
->>
->>   err_free:
->> @@ -1221,6 +1219,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->>         if (ret)
->>                 goto out;
->>
->> +       dev_pm_domain_set(dev, &genpd->domain);
->> +
->>         genpd->device_count++;
->>         genpd->max_off_time_changed = true;
->>
->> --
->> 2.7.4
->>
-> 
-> One piece is missing to make this fix complete.
-> 
-> More precisely, you must also move the call to dev_pm_domain_set(dev, NULL).
-> 
-
-Sure will add.
-
-> Currently that is done from genpd_free_dev_data(), as it corresponds
-> to genpd_alloc_dev_data(), but clearly the proper place to call it
-> should be from genpd_remove_device().
-> 
-
-OK, will also look into that.
-
--- 
+--
 Regards,
-Sudeep
+Leonard
