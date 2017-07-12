@@ -1,63 +1,75 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PULL REQUEST] for Linux-PM (rc-X) from PM/Devfreq
-Date: Wed, 12 Jul 2017 23:29:47 +0200
-Message-ID: <3425387.Oejay9Fbzf@aspire.rjw.lan>
-References: <CGME20170712051435epcms1p71763f426ee4cf7ab8c760ac130db1178@epcms1p7> <20170712051435epcms1p71763f426ee4cf7ab8c760ac130db1178@epcms1p7>
+Subject: Re: [PATCH] cpu_pm: replace raw_notifier to atomic_notifier
+Date: Wed, 12 Jul 2017 23:30:56 +0200
+Message-ID: <5232233.WFeFAu20WR@aspire.rjw.lan>
+References: <1499820498-7983-1-git-send-email-alex.shi@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:62798 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:62213 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752363AbdGLVhk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2017 17:37:40 -0400
-In-Reply-To: <20170712051435epcms1p71763f426ee4cf7ab8c760ac130db1178@epcms1p7>
+        by vger.kernel.org with ESMTP id S1753083AbdGLVij (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2017 17:38:39 -0400
+In-Reply-To: <1499820498-7983-1-git-send-email-alex.shi@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "arvind.yadav.cs@gmail.com" <arvind.yadav.cs@gmail.com>, "garsilva@embeddedor.com" <garsilva@embeddedor.com>
+To: Alex Shi <alex.shi@linaro.org>
+Cc: open list <linux-kernel@vger.kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, Anders Roxell <anders.roxell@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-rt-users <linux-rt-users@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On Wednesday, July 12, 2017 05:14:35 AM MyungJoo Ham wrote:
-> Dear Rafael,
+On Wednesday, July 12, 2017 08:48:18 AM Alex Shi wrote:
+> This patch replace a rwlock and raw notifier by atomic notifier which
+> protected by spin_lock and rcu.
 > 
+> The first to reason to have this replace is due to a 'scheduling while
+>  atomic' bug of RT kernel on arm/arm64 platform. On arm/arm64, rwlock
+> cpu_pm_notifier_lock in cpu_pm cause a potential schedule after irq
+> disable in idle call chain:
 > 
-> Here goes pull-request from PM / devfreq with a few fixes.
+> cpu_startup_entry
+>   cpu_idle_loop
+>     local_irq_disable()
+>     cpuidle_idle_call
+>       call_cpuidle
+>         cpuidle_enter
+>           cpuidle_enter_state
+>             ->enter :arm_enter_idle_state
+>               cpu_pm_enter/exit
+>                 CPU_PM_CPU_IDLE_ENTER
+>                   read_lock(&cpu_pm_notifier_lock); <-- sleep in idle
+>                      __rt_spin_lock();
+>                         schedule();
 > 
+> The kernel panic is here:
+> [    4.609601] BUG: scheduling while atomic: swapper/1/0/0x00000002
+> [    4.609608] [<ffff0000086fae70>] arm_enter_idle_state+0x18/0x70
+> [    4.609614] Modules linked in:
+> [    4.609615] [<ffff0000086f9298>] cpuidle_enter_state+0xf0/0x218
+> [    4.609620] [<ffff0000086f93f8>] cpuidle_enter+0x18/0x20
+> [    4.609626] Preemption disabled at:
+> [    4.609627] [<ffff0000080fa234>] call_cpuidle+0x24/0x40
+> [    4.609635] [<ffff000008882fa4>] schedule_preempt_disabled+0x1c/0x28
+> [    4.609639] [<ffff0000080fa49c>] cpu_startup_entry+0x154/0x1f8
+> [    4.609645] [<ffff00000808e004>] secondary_start_kernel+0x15c/0x1a0
 > 
-> Cheers,
-> MyungJoo
+> Daniel Lezcano said this notification is needed on arm/arm64 platforms.
+> Sebastian suggested using atomic_notifier instead of rwlock, which is not
+> only removing the sleeping in idle, but also getting better latency
+> improvement.
 > 
+> This patch passed Fengguang's 0day testing.
 > 
-> The following changes since commit 6f7da290413ba713f0cdd9ff1a2a9bb129ef4f6c:
-> 
->   Linux 4.12 (2017-07-02 16:07:02 -0700)
-> 
-> are available in the git repository at:
-> 
->   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-rc
-> 
-> for you to fetch changes up to 37d644aa01c092686af8a96f34df93c74e55b480:
-> 
->   PM / devfreq: constify attribute_group structures. (2017-07-06 10:17:24 +0900)
-> 
-> ----------------------------------------------------------------
-> Arvind Yadav (1):
->       PM / devfreq: constify attribute_group structures.
-> 
-> Gustavo A. R. Silva (2):
->       PM / devfreq: rk3399_dmc: fix error return code in rk3399_dmcfreq_probe()
->       PM / devfreq: tegra: fix error return code in tegra_devfreq_probe()
-> 
->  drivers/devfreq/governor_userspace.c | 2 +-
->  drivers/devfreq/rk3399_dmc.c         | 5 +++--
->  drivers/devfreq/tegra-devfreq.c      | 6 +++---
->  3 files changed, 7 insertions(+), 6 deletions(-)
+> Signed-off-by: Alex Shi <alex.shi@linaro.org>
+> To: linux-kernel@vger.kernel.org
+> Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Anders Roxell <anders.roxell@linaro.org>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: linux-rt-users <linux-rt-users@vger.kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Acked-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-Pulled, but please send these pull requests before merge windows or at least
-in the first half of a merge window.
-
-If this had not been fixes/cleanups I would have deferred it and queued it up
-for the next release.
+Applied (although you have forgotten to CC me actually).
 
 Thanks,
 Rafael
