@@ -1,90 +1,98 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH] cpufreq: schedutil: Update cached "current frequency"
- when limits change
-Date: Wed, 12 Jul 2017 10:44:01 -0700
-Message-ID: <59665FE1.3070305@codeaurora.org>
-References: <1499826256-23491-1-git-send-email-skannan@codeaurora.org> <20170712052448.GI17115@vireshk-i7>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [RFC 1/2] PM / suspend: Add platform_suspend_target_state()
+Date: Wed, 12 Jul 2017 11:08:19 -0700
+Message-ID: <85441336-8d89-f7aa-4fbe-a4edaf478649@gmail.com>
+References: <20170622085102.mpk7vxodpgxtrlfd@piout.net>
+ <20170623010837.11199-1-f.fainelli@gmail.com>
+ <20170623010837.11199-2-f.fainelli@gmail.com>
+ <6613228.WfFrGvAy1X@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:45228 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750775AbdGLRoD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2017 13:44:03 -0400
-In-Reply-To: <20170712052448.GI17115@vireshk-i7>
+Received: from mail-wr0-f193.google.com ([209.85.128.193]:33521 "EHLO
+        mail-wr0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750977AbdGLSI1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2017 14:08:27 -0400
+In-Reply-To: <6613228.WfFrGvAy1X@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 07/11/2017 10:24 PM, Viresh Kumar wrote:
-> On 11-07-17, 19:24, Saravana Kannan wrote:
->> Currently, the governor calculates the next frequency, set the current CPU
->> frequency (policy->cur). It also assumes the current CPU frequency doesn't
->> change if the next frequency isn't calculated again and hence caches the
->> "current frequency".
+On 06/29/2017 04:00 PM, Rafael J. Wysocki wrote:
+> On Thursday, June 22, 2017 06:08:36 PM Florian Fainelli wrote:
+>> Add an optional platform_suspend_ops callback: target_state, and a
+>> helper function globally visible to get this called:
+>> platform_suspend_target_state().
 >>
->> However, this isn't true when CPU min/max frequency limits are changed. So,
->> there's room for the CPU frequency to get stuck at the wrong level if the
->> calculated next frequency doesn't change across multiple limits updates.
+>> This is useful for platform specific drivers that may need to take a
+>> slightly different suspend/resume path based on the system's
+>> suspend/resume state being entered.
 >>
->> Fix this by updating the cached "current frequency" when limits changes the
->> current CPU frequency.
+>> Although this callback is optional and documented as such, it requires
+>> a platform_suspend_ops::begin callback to be implemented in order to
+>> provide an accurate suspend/resume state within the driver that
+>> implements this platform_suspend_ops.
 >>
->> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 >> ---
->>   kernel/sched/cpufreq_schedutil.c | 6 ++++++
->>   1 file changed, 6 insertions(+)
+>>  include/linux/suspend.h | 12 ++++++++++++
+>>  kernel/power/suspend.c  | 15 +++++++++++++++
+>>  2 files changed, 27 insertions(+)
 >>
->> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
->> index 076a2e3..fe0b2fb 100644
->> --- a/kernel/sched/cpufreq_schedutil.c
->> +++ b/kernel/sched/cpufreq_schedutil.c
->> @@ -226,6 +226,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
->>
->>   	busy = sugov_cpu_is_busy(sg_cpu);
->>
->> +	raw_spin_lock(&sg_policy->update_lock);
->>   	if (flags & SCHED_CPUFREQ_RT_DL) {
->>   		next_f = policy->cpuinfo.max_freq;
->>   	} else {
->> @@ -240,6 +241,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
->>   			next_f = sg_policy->next_freq;
->>   	}
->>   	sugov_update_commit(sg_policy, time, next_f);
->> +	raw_spin_unlock(&sg_policy->update_lock);
->
-> We wouldn't allow locking here until the time we can :)
->
->>   }
->>
->>   static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
->> @@ -637,10 +639,14 @@ static void sugov_stop(struct cpufreq_policy *policy)
->>   static void sugov_limits(struct cpufreq_policy *policy)
->>   {
->>   	struct sugov_policy *sg_policy = policy->governor_data;
->> +	unsigned long flags;
->>
->>   	if (!policy->fast_switch_enabled) {
->>   		mutex_lock(&sg_policy->work_lock);
->>   		cpufreq_policy_apply_limits(policy);
->> +		raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
->> +		sg_policy->next_freq = policy->cur;
->> +		raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
->>   		mutex_unlock(&sg_policy->work_lock);
->>   	}
->
-> Did you miss the following part which is after the closing } here ?
->
->          sg_policy->need_freq_update = true;
->
-> As this should already take care of the problem you are worried about. Or did I
-> misunderstood your problem completely ?
->
-Yup, I did. Thanks! Ignore patch please.
+>> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+>> index d9718378a8be..d998a04a90a2 100644
+>> --- a/include/linux/suspend.h
+>> +++ b/include/linux/suspend.h
+>> @@ -172,6 +172,15 @@ static inline void dpm_save_failed_step(enum suspend_stat_step step)
+>>   *	Called by the PM core if the suspending of devices fails.
+>>   *	This callback is optional and should only be implemented by platforms
+>>   *	which require special recovery actions in that situation.
+>> + *
+>> + * @target_state: Returns the suspend state the suspend_ops will be entering.
+>> + * 	Called by device drivers that need to know the platform specific suspend
+>> + * 	state the system is about to enter.
+>> + * 	This callback is optional and should only be implemented by platforms
+>> + * 	which require special handling of power management states within
+>> + * 	drivers. It does require @begin to be implemented to provide the suspend
+>> + * 	state. Return value is platform_suspend_ops specific, and may be a 1:1
+>> + * 	mapping to suspend_state_t when relevant.
+>>   */
+>>  struct platform_suspend_ops {
+>>  	int (*valid)(suspend_state_t state);
+>> @@ -184,6 +193,7 @@ struct platform_suspend_ops {
+>>  	bool (*suspend_again)(void);
+>>  	void (*end)(void);
+>>  	void (*recover)(void);
+>> +	int (*target_state)(void);
+> 
+> I would use unsigned int (the sign should not matter).
+> 
+>>  };
+> 
+> That's almost what I was thinking about except that the values returned by
+> ->target_state should be unique, so it would be good to do something to
+> ensure that.
+> 
+> The concern is as follows.
+> 
+> Say you have a driver develped for platform X where ->target_state returns
+> A for "mem" and B for "standby".  Then, the same IP is re-used on platform Y
+> returning B for "mem" and C for "standby" and now the driver cannot
+> distinguish between them.
+> 
+> Moreover, even if they both returned A for "mem" there might be differences
+> in how "mem" was defined by each of them and therefore in what the driver was
+> expected to do to handle "mem" on X and Y.
 
+That makes sense, would you need the core implementation in
+platform_suspend_target_state() to range check what
+suspend_ops->target_state() returns against a set of reserved value say,
+checking from 0 up to ACPI_S_STATE_COUNT or is there another range you
+would like to see being used?
+
+Thanks!
 -- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Florian
