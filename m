@@ -1,51 +1,141 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] PM / OPP: OF: Use pr_debug() instead of pr_err() while adding OPP table
-Date: Wed, 12 Jul 2017 09:21:49 +0530
-Message-ID: <3b5b0e789b7296f7b38f4ab9503a53031280a672.1499831484.git.viresh.kumar@linaro.org>
+Subject: Re: cpufreq: frequency scaling spec in DT node
+Date: Wed, 12 Jul 2017 09:26:30 +0530
+Message-ID: <20170712035630.GE17115@vireshk-i7>
+References: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
+ <20170629100459.GL29665@vireshk-i7>
+ <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
+ <20170629143432.GM29665@vireshk-i7>
+ <405bfa30-b083-2690-5747-aa1cd423e576@free.fr>
+ <9a2638ee-e04f-13f1-b1e5-56f27b58da2e@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:36736 "EHLO
-        mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755749AbdGLDwQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 23:52:16 -0400
-Received: by mail-pf0-f177.google.com with SMTP id q86so6067007pfl.3
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2017 20:52:16 -0700 (PDT)
+Received: from mail-pg0-f43.google.com ([74.125.83.43]:33406 "EHLO
+        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754620AbdGLD4e (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 23:56:34 -0400
+Received: by mail-pg0-f43.google.com with SMTP id k14so6203134pgr.0
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2017 20:56:33 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <9a2638ee-e04f-13f1-b1e5-56f27b58da2e@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Mason <slash.tmp@free.fr>, linux-kernel@vger.kernel.org
+To: Mason <slash.tmp@free.fr>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-Some platforms add the OPPs dynamically from platform specific drivers
-instead of getting them statically from DT. The cpufreq-dt driver
-already ignores the return value of dev_pm_opp_of_cpumask_add_table() to
-not error out for such cases, but we still end up printing error message
-from that routine. That's not nice.
+On 11-07-17, 15:36, Mason wrote:
+> On 11/07/2017 11:27, Mason wrote:
+> 
+> > I'll experiment with the other solution of creating the OPP table
+> > at init.
+> 
+> For the sake of discussion, based on your suggestion to use
+> dev_pm_opp_add(), I have tested the patch below.
+> 
+> There is one remaining error:
+> [    2.071139] of: dev_pm_opp_of_cpumask_add_table: couldn't find opp table for cpu:0, -19
+> 
+> Reached through:
+> [    1.878461] [<c0359a0c>] (dev_pm_opp_of_add_table) from [<c0359ff0>] (dev_pm_opp_of_cpumask_add_table+0x40/0xc8)
+> [    1.888695] [<c0359ff0>] (dev_pm_opp_of_cpumask_add_table) from [<c03d66d8>] (cpufreq_init+0x23c/0x2dc)
+> [    1.898139] [<c03d66d8>] (cpufreq_init) from [<c03d3d94>] (cpufreq_online+0xb8/0x660)
+> [    1.906009] [<c03d3d94>] (cpufreq_online) from [<c03d43f8>] (cpufreq_add_dev+0xbc/0xcc)
+> [    1.914058] [<c03d43f8>] (cpufreq_add_dev) from [<c0350560>] (subsys_interface_register+0x90/0xcc)
+> [    1.923065] [<c0350560>] (subsys_interface_register) from [<c03d32f4>] (cpufreq_register_driver+0x15c/0x1e0)
+> [    1.932945] [<c03d32f4>] (cpufreq_register_driver) from [<c03d67f0>] (dt_cpufreq_probe+0x78/0xec)
+> [    1.941866] [<c03d67f0>] (dt_cpufreq_probe) from [<c035327c>] (platform_drv_probe+0x34/0x6c)
 
-Convert the print message to use pr_debug() instead.
+I have sent a patch to fix that.
 
-Reported-by: Mason <slash.tmp@free.fr>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/opp/of.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+> The cpufreq-dt driver seems to recover despite the error:
+> 
+> /sys/devices/system/cpu/cpu0/cpufreq$ cat scaling_available_frequencies
+> 135000 243000 405000 607500 1215000 
 
-diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-index 779428676f63..f1d8b01db546 100644
---- a/drivers/base/power/opp/of.c
-+++ b/drivers/base/power/opp/of.c
-@@ -533,8 +533,12 @@ int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask)
- 
- 		ret = dev_pm_opp_of_add_table(cpu_dev);
- 		if (ret) {
--			pr_err("%s: couldn't find opp table for cpu:%d, %d\n",
--			       __func__, cpu, ret);
-+			/*
-+			 * OPP may get registered dynamically, don't print error
-+			 * message here.
-+			 */
-+			pr_debug("%s: couldn't find opp table for cpu:%d, %d\n",
-+				 __func__, cpu, ret);
- 
- 			/* Free all other OPPs */
- 			dev_pm_opp_of_cpumask_remove_table(cpumask);
+Yeah, it worked as expected.
+
+>  arch/arm/boot/dts/tango4-smp8758.dtsi |  1 -
+>  drivers/cpufreq/Makefile              |  1 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c  |  2 --
+>  drivers/cpufreq/tango-cpufreq.c       | 45 +++++++++++++++++++++++++++++++++++
+>  4 files changed, 46 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/tango4-smp8758.dtsi b/arch/arm/boot/dts/tango4-smp8758.dtsi
+> index d2e65c46bcc7..eca33d568690 100644
+> --- a/arch/arm/boot/dts/tango4-smp8758.dtsi
+> +++ b/arch/arm/boot/dts/tango4-smp8758.dtsi
+> @@ -13,7 +13,6 @@
+>  			reg = <0>;
+>  			clocks = <&clkgen CPU_CLK>;
+>  			clock-latency = <1>;
+> -			operating-points = <1215000 0 607500 0 405000 0 243000 0 135000 0>;
+>  		};
+>  
+>  		cpu1: cpu@1 {
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index 0a9b6a093646..5ae156dc0d35 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -75,6 +75,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
+>  obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
+>  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+>  obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
+> +obj-$(CONFIG_ARCH_TANGO)		+= tango-cpufreq.o
+>  obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
+>  obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
+>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index 71267626456b..1490e4ce3fbc 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -70,8 +70,6 @@
+>  	{ .compatible = "rockchip,rk3368", },
+>  	{ .compatible = "rockchip,rk3399", },
+>  
+> -	{ .compatible = "sigma,tango4" },
+> -
+>  	{ .compatible = "ti,am33xx", },
+>  	{ .compatible = "ti,dra7", },
+>  	{ .compatible = "ti,omap2", },
+> diff --git a/drivers/cpufreq/tango-cpufreq.c b/drivers/cpufreq/tango-cpufreq.c
+> new file mode 100644
+> index 000000000000..270c8261ebfa
+> --- /dev/null
+> +++ b/drivers/cpufreq/tango-cpufreq.c
+> @@ -0,0 +1,45 @@
+> +#include <linux/of.h>
+> +#include <linux/cpu.h>
+> +#include <linux/clk.h>
+> +#include <linux/pm_opp.h>
+> +#include <linux/platform_device.h>
+> +
+> +static const struct of_device_id machines[] __initconst = {
+> +	{ .compatible = "sigma,tango4" },
+> +	{ .compatible = "sigma,tango5" },
+> +	{ /* sentinel */ }
+> +};
+> +
+> +static void __init build_opp_table(struct device *cpu_dev, struct clk *cpu_clk)
+> +{
+> +	unsigned long max_freq = clk_get_rate(cpu_clk);
+
+I kind of get the idea on how is the bootloader fixing your max. So you take the
+frequency at which the CPU booted to be Max, right ?
+
+I think that is part of the problem here. IMHO, the kernel really isn't required
+to do that. It can have a MAX value of its own. Not sure if we can get it via DT
+somehow today, otherwise statically should be fine as well.
+
+And if kernel can take care of max and not depend on the value set by
+bootloader, you wouldn't be required to have this patch and use DT based OPP.
+
+> +	dev_pm_opp_add(cpu_dev, max_freq / 1, 0);
+> +	dev_pm_opp_add(cpu_dev, max_freq / 2, 0);
+> +	dev_pm_opp_add(cpu_dev, max_freq / 3, 0);
+> +	dev_pm_opp_add(cpu_dev, max_freq / 5, 0);
+> +	dev_pm_opp_add(cpu_dev, max_freq / 9, 0);
+> +}
+
 -- 
-2.13.0.71.gd7076ec9c9cb
+viresh
