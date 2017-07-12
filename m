@@ -1,41 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq: frequency scaling spec in DT node
-Date: Wed, 12 Jul 2017 19:38:04 +0530
-Message-ID: <20170712140804.GG1679@vireshk-i7>
-References: <20170629100459.GL29665@vireshk-i7>
- <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
- <20170629143432.GM29665@vireshk-i7>
- <405bfa30-b083-2690-5747-aa1cd423e576@free.fr>
- <20170711102514.GC17115@vireshk-i7>
- <c0838592-5613-660d-56fc-e7022a38a86d@free.fr>
- <20170712034150.GD17115@vireshk-i7>
- <9476e8ee-24ae-1676-067b-18a867892894@free.fr>
- <20170712100942.GF1679@vireshk-i7>
- <19d1613b-aea0-1ddf-e5b4-11e027402de1@free.fr>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH v4 1/3] cpufreq: mediatek: Add support of cpufreq to
+ MT2701/MT7623 SoC
+Date: Wed, 12 Jul 2017 16:50:53 +0200
+Message-ID: <12f23fb1-a145-bdf0-54c8-c2818ba75d9d@gmail.com>
+References: <cover.1499692967.git.sean.wang@mediatek.com>
+ <feabcfd53899954198c6620e9d9b68f4a3c55201.1499692967.git.sean.wang@mediatek.com>
+ <1499741386.12408.11.camel@mtksdaap41>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f46.google.com ([74.125.83.46]:36388 "EHLO
-        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750927AbdGLOII (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2017 10:08:08 -0400
-Received: by mail-pg0-f46.google.com with SMTP id u62so13589940pgb.3
-        for <linux-pm@vger.kernel.org>; Wed, 12 Jul 2017 07:08:08 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <19d1613b-aea0-1ddf-e5b4-11e027402de1@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1499741386.12408.11.camel@mtksdaap41>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eddie Huang <eddie.huang@mediatek.com>, sean.wang@mediatek.com
+Cc: viresh.kumar@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, jdelvare@suse.de, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Jean Delvare <jdelvare@suse.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-On 12-07-17, 13:25, Mason wrote:
-> I will test your patch on my 4.9 branch.
+Hi Eddie,
+
+On 07/11/2017 04:49 AM, Eddie Huang wrote:
+> Hi Sean,
 > 
-> Does tango-cpufreq.c look acceptable to you?
-> (I am aware the patch needs work in the the Kconfig/Makefile part.
-> That was quick and dirty.)
+> On Mon, 2017-07-10 at 22:23 +0800, sean.wang@mediatek.com wrote:
+>> From: Sean Wang <sean.wang@mediatek.com>
+>>
+>> MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
+>> single cluster and this hardware is also compatible with the existing
+>> driver through enabling CPU frequency feature with operating-points-v2
+>> bindings. Also, this driver actually supports all MediaTek SoCs, the
+>> Kconfig menu entry and file name itself should be updated with more
+>> generic name to drop "MT8173"
+>>
+>> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> Reviewed-by: Jean Delvare <jdelvare@suse.de>
+>> ---
+>>   drivers/cpufreq/Kconfig.arm                              | 7 +++----
+>>   drivers/cpufreq/Makefile                                 | 2 +-
+>>   drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} | 2 ++
+>>   3 files changed, 6 insertions(+), 5 deletions(-)
+>>   rename drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} (99%)
+>>
+> 
+> As Viresh mentioned, there are already many drivers use "mtk" as
+> filename prefix or postfix.To align with those files, I suggest use
+> mtk-cpufreq.c.I think there are not too many values to change all "mtk-"
+> to "mediatek-", but it is worth to have the same naming rule for
+> mediatek upstream driver.
+> 
 
-Mostly yes. Just make sure everything is well handled when u send it.
+In the last submission Jean proposed to change all file names from 
+mtk-*.[ch] to mediatek-*.[ch] as this will cause less confusion.
 
--- 
-viresh
+Viresh are you OK with that approach or do you prefer that we stay with 
+mtk prefix? I think it makes sense to have a unique prefix and resolve 
+the situation we now have with source files and Kconfig options.
+But TBH I have no strong feeling for any of the two prefixes.
+
+Regards,
+Matthias
