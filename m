@@ -1,85 +1,78 @@
-From: Michael Tatarinov <kukabu@gmail.com>
-Subject: Re: [PATCH] of: thermal: Introduce "hwmon" optional property
-Date: Wed, 12 Jul 2017 11:49:10 +0400
-Message-ID: <CABrG=Zy7SYZBP6PyZ4aP6Fi5q3k5nCh6b5shN=CtOYTQ2DDoTA@mail.gmail.com>
-References: <20170710115146.27313-1-kukabu@gmail.com>
+From: Benjamin Gaignard <benjamin.gaignard-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v2 22/22] power: suspend test: stop using rtc
+ deprecated functions
+Date: Wed, 12 Jul 2017 10:04:42 +0200
+Message-ID: <1499846682-14093-23-git-send-email-benjamin.gaignard@linaro.org>
+References: <1499846682-14093-1-git-send-email-benjamin.gaignard@linaro.org>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f66.google.com ([209.85.215.66]:34679 "EHLO
-        mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756778AbdGLHtM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2017 03:49:12 -0400
-Received: by mail-lf0-f66.google.com with SMTP id g21so1474171lfk.1
-        for <linux-pm@vger.kernel.org>; Wed, 12 Jul 2017 00:49:11 -0700 (PDT)
-In-Reply-To: <20170710115146.27313-1-kukabu@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <rtc-linux+bncBDKNBMNKRMJRBW5QS7FQKGQEB733YEI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <1499846682-14093-1-git-send-email-benjamin.gaignard-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: benjamin.gaignard-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Hello
+rtc_time_to_tm() and rtc_tm_to_time() are deprecated because they
+rely on 32bits variables and that will make rtc break in y2038/2016.
+Stop using those two functions to safer 64bits ones.
 
-Some clarifications for this patch.
-I uses CONFIG_THERMAL_HWMON feature on Raspberry PI. It works ok with
-the downstream thermal driver because it uses
-thermal_zone_device_register(). After I switches to the upstream
-driver this feature doesn't work because it uses
-thermal_zone_of_sensor_register().
-I would like to use this opportunity and in the future.
+Signed-off-by: Benjamin Gaignard <benjamin.gaignard-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+CC: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+CC: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+CC: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+CC: Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>
+CC: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+CC: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+CC: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+CC: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+---
+ kernel/power/suspend_test.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-2017-07-10 15:51 GMT+04:00, Michael Tatarinov <kukabu@gmail.com>:
-> Introduce an optional property called, hwmon, which enable
-> registration in hwmon subsystems.
->
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Michael Tatarinov <kukabu@gmail.com>
-> ---
->  Documentation/devicetree/bindings/thermal/thermal.txt | 6 ++++++
->  drivers/thermal/of-thermal.c                          | 3 +--
->  2 files changed, 7 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt
-> b/Documentation/devicetree/bindings/thermal/thermal.txt
-> index 88b6ea1ad290..4e51fbd4efa2 100644
-> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> @@ -175,6 +175,10 @@ Optional property:
->  			2000mW, while on a 10'' tablet is around
->  			4500mW.
->
-> +- hwmon:		Register the thermal zone in hwmon subsystems
-> +  Type: boolean 	(requires CONFIG_THERMAL_HWMON).
-> +  Size: one cell
-> +
->  Note: The delay properties are bound to the maximum dT/dt (temperature
->  derivative over time) in two situations for a thermal zone:
->  (i)  - when passive cooling is activated (polling-delay-passive); and
-> @@ -556,6 +560,8 @@ thermal-zones {
->
->  		sustainable-power = <2500>;
->
-> +		hwmon;
-> +
->  		trips {
->  			/* Trips are based on resulting linear equation */
->  			cpu_trip: cpu-trip {
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index d04ec3b9e5ff..ce580a57313b 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -994,8 +994,7 @@ int __init of_parse_thermal_zones(void)
->  			goto exit_free;
->  		}
->
-> -		/* No hwmon because there might be hwmon drivers registering */
-> -		tzp->no_hwmon = true;
-> +		tzp->no_hwmon = !of_property_read_bool(child, "hwmon");
->
->  		if (!of_property_read_u32(child, "sustainable-power", &prop))
->  			tzp->sustainable_power = prop;
-> --
-> 2.9.4
->
->
+diff --git a/kernel/power/suspend_test.c b/kernel/power/suspend_test.c
+index 5db2170..334a893 100644
+--- a/kernel/power/suspend_test.c
++++ b/kernel/power/suspend_test.c
+@@ -71,7 +71,7 @@ static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
+ 	static char info_test[] __initdata =
+ 		KERN_INFO "PM: test RTC wakeup from '%s' suspend\n";
+ 
+-	unsigned long		now;
++	unsigned long long		now;
+ 	struct rtc_wkalrm	alm;
+ 	int			status;
+ 
+@@ -82,10 +82,10 @@ static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
+ 		printk(err_readtime, dev_name(&rtc->dev), status);
+ 		return;
+ 	}
+-	rtc_tm_to_time(&alm.time, &now);
++	now = rtc_tm_to_time64(&alm.time);
+ 
+ 	memset(&alm, 0, sizeof alm);
+-	rtc_time_to_tm(now + TEST_SUSPEND_SECONDS, &alm.time);
++	rtc_time64_to_tm(now + TEST_SUSPEND_SECONDS, &alm.time);
+ 	alm.enabled = true;
+ 
+ 	status = rtc_set_alarm(rtc, &alm);
+-- 
+1.9.1
+
+-- 
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
