@@ -1,79 +1,41 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: defer dev_pm_domain_set() until
- genpd->attach_dev succeeds if present
-Date: Wed, 12 Jul 2017 15:59:59 +0200
-Message-ID: <CAPDyKFrTSwiUFLbWp7BV4NJiuvoedEX=f4pA6wZzsrhDh4TctA@mail.gmail.com>
-References: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufreq: frequency scaling spec in DT node
+Date: Wed, 12 Jul 2017 19:38:04 +0530
+Message-ID: <20170712140804.GG1679@vireshk-i7>
+References: <20170629100459.GL29665@vireshk-i7>
+ <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
+ <20170629143432.GM29665@vireshk-i7>
+ <405bfa30-b083-2690-5747-aa1cd423e576@free.fr>
+ <20170711102514.GC17115@vireshk-i7>
+ <c0838592-5613-660d-56fc-e7022a38a86d@free.fr>
+ <20170712034150.GD17115@vireshk-i7>
+ <9476e8ee-24ae-1676-067b-18a867892894@free.fr>
+ <20170712100942.GF1679@vireshk-i7>
+ <19d1613b-aea0-1ddf-e5b4-11e027402de1@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f46.google.com ([74.125.83.46]:36388 "EHLO
+        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750927AbdGLOII (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2017 10:08:08 -0400
+Received: by mail-pg0-f46.google.com with SMTP id u62so13589940pgb.3
+        for <linux-pm@vger.kernel.org>; Wed, 12 Jul 2017 07:08:08 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <19d1613b-aea0-1ddf-e5b4-11e027402de1@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mason <slash.tmp@free.fr>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-On 29 June 2017 at 20:00, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> If the genpd->attach_dev or genpd->power_on fails, genpd_dev_pm_attach
-> may return -EPROBE_DEFER initially. However genpd_alloc_dev_data sets
-> the PM domain for the device unconditionally.
->
-> When subsequent attempts are made to call genpd_dev_pm_attach, it may
-> return -EEXISTS checking dev->pm_domain without re-attempting to call
-> attach_dev or power_on.
->
-> platform_drv_probe then attempts to call drv->probe as the return value
-> -EEXIST != -EPROBE_DEFER, which may end up in a situation where the
-> device is accessed without it's power domain switched on.
+On 12-07-17, 13:25, Mason wrote:
+> I will test your patch on my 4.9 branch.
+> 
+> Does tango-cpufreq.c look acceptable to you?
+> (I am aware the patch needs work in the the Kconfig/Makefile part.
+> That was quick and dirty.)
 
-Right, this makes sense.
+Mostly yes. Just make sure everything is well handled when u send it.
 
->
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Kevin Hilman <khilman@kernel.org>
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-
-Could we perhaps work out which commit it fixes, or perhaps the
-problem been there long time ago and we should just add a stable tag?
-
-> ---
->  drivers/base/power/domain.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index da49a8383dc3..b195d34de888 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1168,8 +1168,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
->
->         spin_unlock_irq(&dev->power.lock);
->
-> -       dev_pm_domain_set(dev, &genpd->domain);
-> -
->         return gpd_data;
->
->   err_free:
-> @@ -1221,6 +1219,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->         if (ret)
->                 goto out;
->
-> +       dev_pm_domain_set(dev, &genpd->domain);
-> +
->         genpd->device_count++;
->         genpd->max_off_time_changed = true;
->
-> --
-> 2.7.4
->
-
-One piece is missing to make this fix complete.
-
-More precisely, you must also move the call to dev_pm_domain_set(dev, NULL).
-
-Currently that is done from genpd_free_dev_data(), as it corresponds
-to genpd_alloc_dev_data(), but clearly the proper place to call it
-should be from genpd_remove_device().
-
-Kind regards
-Uffe
+-- 
+viresh
