@@ -1,53 +1,93 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq: frequency scaling spec in DT node
-Date: Wed, 12 Jul 2017 15:39:42 +0530
-Message-ID: <20170712100942.GF1679@vireshk-i7>
-References: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
- <20170629100459.GL29665@vireshk-i7>
- <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
- <20170629143432.GM29665@vireshk-i7>
- <405bfa30-b083-2690-5747-aa1cd423e576@free.fr>
- <20170711102514.GC17115@vireshk-i7>
- <c0838592-5613-660d-56fc-e7022a38a86d@free.fr>
- <20170712034150.GD17115@vireshk-i7>
- <9476e8ee-24ae-1676-067b-18a867892894@free.fr>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
+ load-tracking support
+Date: Wed, 12 Jul 2017 13:14:26 +0200
+Message-ID: <20170712111426.lmbwowbrvjl55aft@hirez.programming.kicks-ass.net>
+References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
+ <CAJZ5v0gBPNDBYWbuHVaB7deNHSZKziaAeybSw3mg+S8V_roO-Q@mail.gmail.com>
+ <22f004af-0158-8265-2da5-34743f294bfb@arm.com>
+ <12829054.TWIodSo4bb@aspire.rjw.lan>
+ <bac850da-6256-2a92-abfe-71d229cc99dc@arm.com>
+ <20170711060106.GL2928@vireshk-i7>
+ <45224055-7bf1-243b-9366-0f2d3442ef59@arm.com>
+ <20170712040917.GG17115@vireshk-i7>
+ <20170712083125.at7jic63ozoxoqap@hirez.programming.kicks-ass.net>
+ <20170712092755.GD1679@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:34816 "EHLO
-        mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756180AbdGLKJu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2017 06:09:50 -0400
-Received: by mail-pf0-f172.google.com with SMTP id c73so10651774pfk.2
-        for <linux-pm@vger.kernel.org>; Wed, 12 Jul 2017 03:09:50 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <9476e8ee-24ae-1676-067b-18a867892894@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170712092755.GD1679@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-On 12-07-17, 11:58, Mason wrote:
-> I would object to the characterization of "just a PLL" :-)
+On Wed, Jul 12, 2017 at 02:57:55PM +0530, Viresh Kumar wrote:
+> On 12-07-17, 10:31, Peter Zijlstra wrote:
+> > So the problem with the thread is two-fold; one the one hand we like the
+> > scheduler to directly set frequency, but then we need to schedule a task
+> > to change the frequency, which will change the frequency and around we
+> > go.
+> > 
+> > On the other hand, there's very nasty issues with PI. This thread would
+> > have very high priority (otherwise the SCHED_DEADLINE stuff won't work)
+> > but that then means this thread needs to boost the owner of the i2c
+> > mutex. And that then creates a massive bandwidth accounting hole.
+> > 
+> > 
+> > The advantage of using an interrupt driven state machine is that all
+> > those issues go away.
+> > 
+> > But yes, whichever way around you turn things, its crap. But given the
+> > hardware its the best we can do.
 > 
-> The PLL outputs "garbage" before actually "locking" a target
-> frequency. It is not possible for the CPU to blindly change
-> the PLL settings, because that crashes the system.
+> Thanks for the explanation Peter.
 > 
-> The bootloader implements the steps required to change said
-> settings, so the strategy has been: have Linux use whatever
-> PLL frequency the bootloader programs.
-> 
-> Behind the PLL, there is a glitch-free divider, which is able
-> to divide the PLL output without crashing the system. I've
-> been using that divider for DFS.
-> 
-> drivers/clk/clk-tango4.c
+> IIUC, it will take more time to change the frequency eventually with
+> the interrupt-driven state machine as there may be multiple bottom
+> halves involved here, for supply, clk, etc, which would run at normal
+> priorities now. And those were boosted currently due to the high
+> priority sugov thread. And we are fine with that (from performance
+> point of view) ?
 
-Okay, got it now.
+I'm not sure what you mean; bottom halves as in softirq? From what I can
+tell an i2c bus does clk_prepare_enable() on registration and from that
+point on clk_enable() is usable from atomic contexts. But afaict clk
+stuff doesn't do interrupts at all.
 
-Yes, you *really* need to create these OPPs dynamically. I am
-convinced now :)
+(with a note that I absolutely hate the clk locking)
 
--- 
-viresh
+I think the interrupt driven thing can actually be faster than the
+'regular' task waiting on the mutex. The regulator message can be
+locklessly queued (it only ever makes sense to have 1 such message
+pending, any later one will invalidate a prior one).
+
+Then the i2c interrupt can detect the availability of this pending
+message and splice it into the transfer queue at an opportune moment.
+
+(of course, the current i2c bits don't support any of that)
+
+> Coming back to where we started from (where should we call
+> arch_set_freq_scale() from ?).
+
+The drivers.. the core cpufreq doesn't know when (if any) transition is
+completed.
+
+> I think we would still need some kind of synchronization between
+> cpufreq core and the cpufreq drivers to make sure we don't start
+> another freq change before the previous one is complete. Otherwise
+> the cpufreq drivers would be required to have similar support with
+> proper locking in place.
+
+Not sure what you mean; also not sure why. On x86 we never know, cannot
+know. So why would this stuff be any different.
+
+> And if the core is going to get notified about successful freq changes
+> (which it should IMHO), then it may still be better to call
+> arch_set_freq_scale() from the core itself and not from individual
+> drivers.
+
+I would not involve the core. All we want from the core is a unified
+interface towards requesting DVFS changes. Everything that happens after
+is not its business.
