@@ -1,95 +1,85 @@
-From: Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 3/4] ARM: dts: imx6sx: Use nvmem-cells for tempmon
-Date: Wed, 12 Jul 2017 14:40:43 +0800
-Message-ID: <20170712064041.GE3172@dragon>
-References: <cover.1499347157.git.leonard.crestez@nxp.com>
- <6dc9bb756daf75bb26648b06b204872f71b3a548.1499347157.git.leonard.crestez@nxp.com>
+From: Michael Tatarinov <kukabu@gmail.com>
+Subject: Re: [PATCH] of: thermal: Introduce "hwmon" optional property
+Date: Wed, 12 Jul 2017 11:49:10 +0400
+Message-ID: <CABrG=Zy7SYZBP6PyZ4aP6Fi5q3k5nCh6b5shN=CtOYTQ2DDoTA@mail.gmail.com>
+References: <20170710115146.27313-1-kukabu@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <6dc9bb756daf75bb26648b06b204872f71b3a548.1499347157.git.leonard.crestez-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lothar =?iso-8859-1?Q?Wa=DFmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:34679 "EHLO
+        mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756778AbdGLHtM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jul 2017 03:49:12 -0400
+Received: by mail-lf0-f66.google.com with SMTP id g21so1474171lfk.1
+        for <linux-pm@vger.kernel.org>; Wed, 12 Jul 2017 00:49:11 -0700 (PDT)
+In-Reply-To: <20170710115146.27313-1-kukabu@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-On Thu, Jul 06, 2017 at 04:20:43PM +0300, Leonard Crestez wrote:
-> On imx6sx accessing OCOTP directly is wrong because the ocotp clock
-> needs to be enabled first. Use the nvmem-cells binding instead.
-> 
-> This requirement does not apply to older imx6qdl chips because there the
-> ocotp access clock (clk_ipg_s) is always enabled.
-> 
-> This is visible by comparing the "System Clocks, Gating, and Override"
-> tables (OCOTP rows) in the 6DQ and 6SX manuals:
-> http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6SXRM.pdf
-> http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6DQRM.pdf
-> 
-> This happens to work right now because the ocotp clock might be enabled
-> for some other reason. In particular the it might be enabled from the
-> bootloader and it only gets disabled late during boot in
-> clk_disable_unused, after imx-thermal has completed probing.
-> 
-> If imx-thermal is compiled as a module then the system can hang on
-> probe.
-> 
-> Reported-by: Lothar Waﬂmann <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>
-> Signed-off-by: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+Hello
+
+Some clarifications for this patch.
+I uses CONFIG_THERMAL_HWMON feature on Raspberry PI. It works ok with
+the downstream thermal driver because it uses
+thermal_zone_device_register(). After I switches to the upstream
+driver this feature doesn't work because it uses
+thermal_zone_of_sensor_register().
+I would like to use this opportunity and in the future.
+
+2017-07-10 15:51 GMT+04:00, Michael Tatarinov <kukabu@gmail.com>:
+> Introduce an optional property called, hwmon, which enable
+> registration in hwmon subsystems.
+>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Signed-off-by: Michael Tatarinov <kukabu@gmail.com>
 > ---
->  arch/arm/boot/dts/imx6sx.dtsi | 11 ++++++++++-
->  1 file changed, 10 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/boot/dts/imx6sx.dtsi b/arch/arm/boot/dts/imx6sx.dtsi
-> index f16b9df..5cfee85 100644
-> --- a/arch/arm/boot/dts/imx6sx.dtsi
-> +++ b/arch/arm/boot/dts/imx6sx.dtsi
-> @@ -675,7 +675,8 @@
->  				compatible = "fsl,imx6sx-tempmon", "fsl,imx6q-tempmon";
->  				interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
->  				fsl,tempmon = <&anatop>;
-> -				fsl,tempmon-data = <&ocotp>;
-> +				nvmem-cells = <&tempmon_calib>, <&tempmon_temp_grade>;
-> +				nvmem-cell-names = "calib", "temp_grade";
->  				clocks = <&clks IMX6SX_CLK_PLL3_USB_OTG>;
->  			};
->  
-> @@ -993,9 +994,17 @@
->  			};
->  
->  			ocotp: ocotp@021bc000 {
-> +				#address-cells = <1>;
-> +				#size-cells = <1>;
->  				compatible = "fsl,imx6sx-ocotp", "syscon";
->  				reg = <0x021bc000 0x4000>;
->  				clocks = <&clks IMX6SX_CLK_OCOTP>;
-
-Please have a newline between child node and property list ...
-
-> +				tempmon_calib: calib {
-> +					reg = <56 4>;
-> +				};
-
-... and between child nodes as well.
-
-> +				tempmon_temp_grade: temp_grade {
-
-We prefer to use hyphen rather than underscore in node name.  And node
-name should have a corresponding unit-address, if the node has a 'reg'
-property.
-
-Shawn
-
-> +					reg = <32 4>;
-> +				};
->  			};
->  
->  			sai1: sai@021d4000 {
-> -- 
-> 2.7.4
-> 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  Documentation/devicetree/bindings/thermal/thermal.txt | 6 ++++++
+>  drivers/thermal/of-thermal.c                          | 3 +--
+>  2 files changed, 7 insertions(+), 2 deletions(-)
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt
+> b/Documentation/devicetree/bindings/thermal/thermal.txt
+> index 88b6ea1ad290..4e51fbd4efa2 100644
+> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+> @@ -175,6 +175,10 @@ Optional property:
+>  			2000mW, while on a 10'' tablet is around
+>  			4500mW.
+>
+> +- hwmon:		Register the thermal zone in hwmon subsystems
+> +  Type: boolean 	(requires CONFIG_THERMAL_HWMON).
+> +  Size: one cell
+> +
+>  Note: The delay properties are bound to the maximum dT/dt (temperature
+>  derivative over time) in two situations for a thermal zone:
+>  (i)  - when passive cooling is activated (polling-delay-passive); and
+> @@ -556,6 +560,8 @@ thermal-zones {
+>
+>  		sustainable-power = <2500>;
+>
+> +		hwmon;
+> +
+>  		trips {
+>  			/* Trips are based on resulting linear equation */
+>  			cpu_trip: cpu-trip {
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index d04ec3b9e5ff..ce580a57313b 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -994,8 +994,7 @@ int __init of_parse_thermal_zones(void)
+>  			goto exit_free;
+>  		}
+>
+> -		/* No hwmon because there might be hwmon drivers registering */
+> -		tzp->no_hwmon = true;
+> +		tzp->no_hwmon = !of_property_read_bool(child, "hwmon");
+>
+>  		if (!of_property_read_u32(child, "sustainable-power", &prop))
+>  			tzp->sustainable_power = prop;
+> --
+> 2.9.4
+>
+>
