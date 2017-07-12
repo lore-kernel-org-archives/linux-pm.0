@@ -1,62 +1,98 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [PATCH v4 1/3] cpufreq: mediatek: Add support of cpufreq to
- MT2701/MT7623 SoC
-Date: Wed, 12 Jul 2017 16:50:53 +0200
-Message-ID: <12f23fb1-a145-bdf0-54c8-c2818ba75d9d@gmail.com>
-References: <cover.1499692967.git.sean.wang@mediatek.com>
- <feabcfd53899954198c6620e9d9b68f4a3c55201.1499692967.git.sean.wang@mediatek.com>
- <1499741386.12408.11.camel@mtksdaap41>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] PM / Domains: defer dev_pm_domain_set() until
+ genpd->attach_dev succeeds if present
+Date: Wed, 12 Jul 2017 17:36:35 +0100
+Message-ID: <e6f02160-4153-5e44-8153-bc919808db0e@arm.com>
+References: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com>
+ <CAPDyKFrTSwiUFLbWp7BV4NJiuvoedEX=f4pA6wZzsrhDh4TctA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1499741386.12408.11.camel@mtksdaap41>
+In-Reply-To: <CAPDyKFrTSwiUFLbWp7BV4NJiuvoedEX=f4pA6wZzsrhDh4TctA@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eddie Huang <eddie.huang@mediatek.com>, sean.wang@mediatek.com
-Cc: viresh.kumar@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, jamesjj.liao@mediatek.com, p.zabel@pengutronix.de, shunli.wang@mediatek.com, erin.lo@mediatek.com, jdelvare@suse.de, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Jean Delvare <jdelvare@suse.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eddie,
 
-On 07/11/2017 04:49 AM, Eddie Huang wrote:
-> Hi Sean,
+
+On 12/07/17 14:59, Ulf Hansson wrote:
+> On 29 June 2017 at 20:00, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>> If the genpd->attach_dev or genpd->power_on fails, genpd_dev_pm_attach
+>> may return -EPROBE_DEFER initially. However genpd_alloc_dev_data sets
+>> the PM domain for the device unconditionally.
+>>
+>> When subsequent attempts are made to call genpd_dev_pm_attach, it may
+>> return -EEXISTS checking dev->pm_domain without re-attempting to call
+>> attach_dev or power_on.
+>>
+>> platform_drv_probe then attempts to call drv->probe as the return value
+>> -EEXIST != -EPROBE_DEFER, which may end up in a situation where the
+>> device is accessed without it's power domain switched on.
 > 
-> On Mon, 2017-07-10 at 22:23 +0800, sean.wang@mediatek.com wrote:
->> From: Sean Wang <sean.wang@mediatek.com>
+> Right, this makes sense.
+> 
+
+Thanks
+
 >>
->> MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
->> single cluster and this hardware is also compatible with the existing
->> driver through enabling CPU frequency feature with operating-points-v2
->> bindings. Also, this driver actually supports all MediaTek SoCs, the
->> Kconfig menu entry and file name itself should be updated with more
->> generic name to drop "MT8173"
->>
->> Signed-off-by: Sean Wang <sean.wang@mediatek.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> Reviewed-by: Jean Delvare <jdelvare@suse.de>
+>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> Cc: Kevin Hilman <khilman@kernel.org>
+>> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> 
+> Could we perhaps work out which commit it fixes, or perhaps the
+> problem been there long time ago and we should just add a stable tag?
+>
+
+OK I will dig that out.
+
 >> ---
->>   drivers/cpufreq/Kconfig.arm                              | 7 +++----
->>   drivers/cpufreq/Makefile                                 | 2 +-
->>   drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} | 2 ++
->>   3 files changed, 6 insertions(+), 5 deletions(-)
->>   rename drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} (99%)
+>>  drivers/base/power/domain.c | 4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index da49a8383dc3..b195d34de888 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -1168,8 +1168,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+>>
+>>         spin_unlock_irq(&dev->power.lock);
+>>
+>> -       dev_pm_domain_set(dev, &genpd->domain);
+>> -
+>>         return gpd_data;
+>>
+>>   err_free:
+>> @@ -1221,6 +1219,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+>>         if (ret)
+>>                 goto out;
+>>
+>> +       dev_pm_domain_set(dev, &genpd->domain);
+>> +
+>>         genpd->device_count++;
+>>         genpd->max_off_time_changed = true;
+>>
+>> --
+>> 2.7.4
 >>
 > 
-> As Viresh mentioned, there are already many drivers use "mtk" as
-> filename prefix or postfix.To align with those files, I suggest use
-> mtk-cpufreq.c.I think there are not too many values to change all "mtk-"
-> to "mediatek-", but it is worth to have the same naming rule for
-> mediatek upstream driver.
+> One piece is missing to make this fix complete.
+> 
+> More precisely, you must also move the call to dev_pm_domain_set(dev, NULL).
 > 
 
-In the last submission Jean proposed to change all file names from 
-mtk-*.[ch] to mediatek-*.[ch] as this will cause less confusion.
+Sure will add.
 
-Viresh are you OK with that approach or do you prefer that we stay with 
-mtk prefix? I think it makes sense to have a unique prefix and resolve 
-the situation we now have with source files and Kconfig options.
-But TBH I have no strong feeling for any of the two prefixes.
+> Currently that is done from genpd_free_dev_data(), as it corresponds
+> to genpd_alloc_dev_data(), but clearly the proper place to call it
+> should be from genpd_remove_device().
+> 
 
+OK, will also look into that.
+
+-- 
 Regards,
-Matthias
+Sudeep
