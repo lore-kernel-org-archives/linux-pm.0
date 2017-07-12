@@ -1,141 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpufreq: frequency scaling spec in DT node
-Date: Wed, 12 Jul 2017 09:26:30 +0530
-Message-ID: <20170712035630.GE17115@vireshk-i7>
-References: <1f665895-a2a0-6bdf-a9d9-66219fe3a8ef@free.fr>
- <20170629100459.GL29665@vireshk-i7>
- <538b1aa2-9298-6f21-392e-73d6559b581c@free.fr>
- <20170629143432.GM29665@vireshk-i7>
- <405bfa30-b083-2690-5747-aa1cd423e576@free.fr>
- <9a2638ee-e04f-13f1-b1e5-56f27b58da2e@free.fr>
+Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
+ load-tracking support
+Date: Wed, 12 Jul 2017 09:39:17 +0530
+Message-ID: <20170712040917.GG17115@vireshk-i7>
+References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
+ <CAJZ5v0gBPNDBYWbuHVaB7deNHSZKziaAeybSw3mg+S8V_roO-Q@mail.gmail.com>
+ <22f004af-0158-8265-2da5-34743f294bfb@arm.com>
+ <12829054.TWIodSo4bb@aspire.rjw.lan>
+ <bac850da-6256-2a92-abfe-71d229cc99dc@arm.com>
+ <20170711060106.GL2928@vireshk-i7>
+ <45224055-7bf1-243b-9366-0f2d3442ef59@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f43.google.com ([74.125.83.43]:33406 "EHLO
-        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754620AbdGLD4e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jul 2017 23:56:34 -0400
-Received: by mail-pg0-f43.google.com with SMTP id k14so6203134pgr.0
-        for <linux-pm@vger.kernel.org>; Tue, 11 Jul 2017 20:56:33 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <9a2638ee-e04f-13f1-b1e5-56f27b58da2e@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <45224055-7bf1-243b-9366-0f2d3442ef59@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-On 11-07-17, 15:36, Mason wrote:
-> On 11/07/2017 11:27, Mason wrote:
-> 
-> > I'll experiment with the other solution of creating the OPP table
-> > at init.
-> 
-> For the sake of discussion, based on your suggestion to use
-> dev_pm_opp_add(), I have tested the patch below.
-> 
-> There is one remaining error:
-> [    2.071139] of: dev_pm_opp_of_cpumask_add_table: couldn't find opp table for cpu:0, -19
-> 
-> Reached through:
-> [    1.878461] [<c0359a0c>] (dev_pm_opp_of_add_table) from [<c0359ff0>] (dev_pm_opp_of_cpumask_add_table+0x40/0xc8)
-> [    1.888695] [<c0359ff0>] (dev_pm_opp_of_cpumask_add_table) from [<c03d66d8>] (cpufreq_init+0x23c/0x2dc)
-> [    1.898139] [<c03d66d8>] (cpufreq_init) from [<c03d3d94>] (cpufreq_online+0xb8/0x660)
-> [    1.906009] [<c03d3d94>] (cpufreq_online) from [<c03d43f8>] (cpufreq_add_dev+0xbc/0xcc)
-> [    1.914058] [<c03d43f8>] (cpufreq_add_dev) from [<c0350560>] (subsys_interface_register+0x90/0xcc)
-> [    1.923065] [<c0350560>] (subsys_interface_register) from [<c03d32f4>] (cpufreq_register_driver+0x15c/0x1e0)
-> [    1.932945] [<c03d32f4>] (cpufreq_register_driver) from [<c03d67f0>] (dt_cpufreq_probe+0x78/0xec)
-> [    1.941866] [<c03d67f0>] (dt_cpufreq_probe) from [<c035327c>] (platform_drv_probe+0x34/0x6c)
+On 11-07-17, 16:06, Dietmar Eggemann wrote:
+> But in the meantime we're convinced that cpufreq_driver_fast_switch() is
+> not the right place to call arch_set_freq_scale() since for (future)
+> arm/arm64 fast-switch driver, the return value of
+> cpufreq_driver->fast_switch() does not give us the information that the
+> frequency value did actually change.
 
-I have sent a patch to fix that.
+Yeah, I saw your discussion with Peter on #linux-rt IRC and TBH I wasn't aware
+that we are going to do fast switching that way. Just trying to get
+understanding of that idea a bit..
 
-> The cpufreq-dt driver seems to recover despite the error:
-> 
-> /sys/devices/system/cpu/cpu0/cpufreq$ cat scaling_available_frequencies
-> 135000 243000 405000 607500 1215000 
+So we will do fast switching from scheduler's point of view, i.e. we wouldn't
+schedule a kthread to change the frequency. But the real hardware still can't do
+that without sleeping, like if we have I2C somewhere in between. AFAIU, we will
+still have some kind of *software* bottom half to do that work, isn't it? And it
+wouldn't be that we have pushed some instructions to the hardware, which it can
+do a bit later.
 
-Yeah, it worked as expected.
+For example, the regulator may be accessed via I2C and we need to program that
+before changing the clock. So, it will be done by some software code only.
 
->  arch/arm/boot/dts/tango4-smp8758.dtsi |  1 -
->  drivers/cpufreq/Makefile              |  1 +
->  drivers/cpufreq/cpufreq-dt-platdev.c  |  2 --
->  drivers/cpufreq/tango-cpufreq.c       | 45 +++++++++++++++++++++++++++++++++++
->  4 files changed, 46 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/tango4-smp8758.dtsi b/arch/arm/boot/dts/tango4-smp8758.dtsi
-> index d2e65c46bcc7..eca33d568690 100644
-> --- a/arch/arm/boot/dts/tango4-smp8758.dtsi
-> +++ b/arch/arm/boot/dts/tango4-smp8758.dtsi
-> @@ -13,7 +13,6 @@
->  			reg = <0>;
->  			clocks = <&clkgen CPU_CLK>;
->  			clock-latency = <1>;
-> -			operating-points = <1215000 0 607500 0 405000 0 243000 0 135000 0>;
->  		};
->  
->  		cpu1: cpu@1 {
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index 0a9b6a093646..5ae156dc0d35 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -75,6 +75,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
->  obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
->  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
->  obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
-> +obj-$(CONFIG_ARCH_TANGO)		+= tango-cpufreq.o
->  obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
->  obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
->  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 71267626456b..1490e4ce3fbc 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -70,8 +70,6 @@
->  	{ .compatible = "rockchip,rk3368", },
->  	{ .compatible = "rockchip,rk3399", },
->  
-> -	{ .compatible = "sigma,tango4" },
-> -
->  	{ .compatible = "ti,am33xx", },
->  	{ .compatible = "ti,dra7", },
->  	{ .compatible = "ti,omap2", },
-> diff --git a/drivers/cpufreq/tango-cpufreq.c b/drivers/cpufreq/tango-cpufreq.c
-> new file mode 100644
-> index 000000000000..270c8261ebfa
-> --- /dev/null
-> +++ b/drivers/cpufreq/tango-cpufreq.c
-> @@ -0,0 +1,45 @@
-> +#include <linux/of.h>
-> +#include <linux/cpu.h>
-> +#include <linux/clk.h>
-> +#include <linux/pm_opp.h>
-> +#include <linux/platform_device.h>
-> +
-> +static const struct of_device_id machines[] __initconst = {
-> +	{ .compatible = "sigma,tango4" },
-> +	{ .compatible = "sigma,tango5" },
-> +	{ /* sentinel */ }
-> +};
-> +
-> +static void __init build_opp_table(struct device *cpu_dev, struct clk *cpu_clk)
-> +{
-> +	unsigned long max_freq = clk_get_rate(cpu_clk);
-
-I kind of get the idea on how is the bootloader fixing your max. So you take the
-frequency at which the CPU booted to be Max, right ?
-
-I think that is part of the problem here. IMHO, the kernel really isn't required
-to do that. It can have a MAX value of its own. Not sure if we can get it via DT
-somehow today, otherwise statically should be fine as well.
-
-And if kernel can take care of max and not depend on the value set by
-bootloader, you wouldn't be required to have this patch and use DT based OPP.
-
-> +	dev_pm_opp_add(cpu_dev, max_freq / 1, 0);
-> +	dev_pm_opp_add(cpu_dev, max_freq / 2, 0);
-> +	dev_pm_opp_add(cpu_dev, max_freq / 3, 0);
-> +	dev_pm_opp_add(cpu_dev, max_freq / 5, 0);
-> +	dev_pm_opp_add(cpu_dev, max_freq / 9, 0);
-> +}
+And now I am wondering on why that would be any better than the kthread in
+schedutil. Sorry, I haven't understood the idea completely yet :(
 
 -- 
 viresh
