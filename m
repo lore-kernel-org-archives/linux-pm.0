@@ -1,96 +1,130 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC V2 4/6] cpufreq: Use transition_delay_us for legacy
- governors as well
-Date: Thu, 13 Jul 2017 18:31:11 +0200
-Message-ID: <CAJZ5v0hn2CSXvoQf+Xs8d43=Y8O86J30w9iK99WS_ot8v_Tg4g@mail.gmail.com>
-References: <cover.1499853492.git.viresh.kumar@linaro.org> <2b3bfd2566ecaa0635c29a49c110e16803f80db0.1499853492.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Correct the busy calculation for KNL
+Date: Thu, 13 Jul 2017 15:03:51 -0700
+Message-ID: <1499983431-65396-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f68.google.com ([209.85.214.68]:33787 "EHLO
-        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752363AbdGMQbN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2017 12:31:13 -0400
-In-Reply-To: <2b3bfd2566ecaa0635c29a49c110e16803f80db0.1499853492.git.viresh.kumar@linaro.org>
+Received: from mga01.intel.com ([192.55.52.88]:9459 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753356AbdGMWDx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Jul 2017 18:03:53 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: lenb@kernel.org, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org
 
-On Thu, Jul 13, 2017 at 7:40 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> The policy->transition_delay_us field is used only by the schedutil
-> governor currently, and this field describes how fast the driver wants
-> the cpufreq governor to change CPUs frequency. It should rather be a
-> common thing across all governors, as it doesn't have any schedutil
-> dependency here.
->
-> Create a new helper cpufreq_policy_transition_delay_us() to get the
-> transition delay across all governors.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq_governor.c |  9 +--------
->  include/linux/cpufreq.h            | 15 +++++++++++++++
->  kernel/sched/cpufreq_schedutil.c   | 11 +----------
->  3 files changed, 17 insertions(+), 18 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 858081f9c3d7..eed069ecfd5e 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -389,7 +389,6 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
->         struct dbs_governor *gov = dbs_governor_of(policy);
->         struct dbs_data *dbs_data;
->         struct policy_dbs_info *policy_dbs;
-> -       unsigned int latency;
->         int ret = 0;
->
->         /* State should be equivalent to EXIT */
-> @@ -428,13 +427,7 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
->         if (ret)
->                 goto free_policy_dbs_info;
->
-> -       /* policy latency is in ns. Convert it to us first */
-> -       latency = policy->cpuinfo.transition_latency / 1000;
-> -       if (latency == 0)
-> -               latency = 1;
-> -
-> -       /* Bring kernel and HW constraints together */
-> -       dbs_data->sampling_rate = LATENCY_MULTIPLIER * latency;
-> +       dbs_data->sampling_rate = cpufreq_policy_transition_delay_us(policy);
->
->         if (!have_governor_per_policy())
->                 gov->gdbs_data = dbs_data;
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 00e4c40a3249..14f0ab61ed17 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -532,6 +532,21 @@ static inline void cpufreq_policy_apply_limits(struct cpufreq_policy *policy)
->                 __cpufreq_driver_target(policy, policy->min, CPUFREQ_RELATION_L);
->  }
->
-> +static inline unsigned int
-> +cpufreq_policy_transition_delay_us(struct cpufreq_policy *policy)
-> +{
-> +       unsigned int delay_us = LATENCY_MULTIPLIER, latency;
-> +
-> +       if (policy->transition_delay_us)
-> +               return policy->transition_delay_us;
-> +
-> +       latency = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
-> +       if (latency)
-> +               delay_us *= latency;
-> +
-> +       return delay_us;
-> +}
+The busy percent calculated for Knights Landing (KNL) platform is 1024
+times smaller than the correct busy value. This causes performance to get
+stuck at the lowest ratio.
 
-Not in the header, please, and I don't think you need delay_us:
+The scaling algorithm used for KNL is performance based but it will
+still use cpu busy less than 1 percent to set the scaled busy to 0. In
+this case since the busy is 1024x smaller, the scaled busy will always
+be 0, irrespective of CPU business.
 
-    latency = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
-    if (latency)
-        return latency * LATENCY_MULTIPLIER;
+This needs similar fix done to turbostat in
+commit b2b34dfe4d9a ("tools/power turbostat: KNL workaround for %Busy
+and Avg_MHz")
 
-    return LATENCY_MULTIPLIER;
+Added another callback to processor specific callbacks to specify a
+multiplier to aper & mperf by specifying number of left shifts. This
+shift value is used during CPU busy calculations.
 
-Thanks,
-Rafael
+Fixes: ffb810563c ("intel_pstate: Avoid getting stuck in high P-states
+when idle")
+Reported-and-tested-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: 4.6+ <stable@vger.kernel.org> # 4.6+
+---
+ drivers/cpufreq/intel_pstate.c | 21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index b7fb8b7..6cd5035 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -225,6 +225,9 @@ struct global_params {
+  * @vid:		Stores VID limits for this CPU
+  * @pid:		Stores PID parameters for this CPU
+  * @last_sample_time:	Last Sample time
++ * @aperf_mperf_shift:	Number of clock cycles after aperf, merf is incremented
++ *			This shift is a multiplier to mperf delta to
++ *			calculate CPU busy.
+  * @prev_aperf:		Last APERF value read from APERF MSR
+  * @prev_mperf:		Last MPERF value read from MPERF MSR
+  * @prev_tsc:		Last timestamp counter (TSC) value
+@@ -259,6 +262,7 @@ struct cpudata {
+ 
+ 	u64	last_update;
+ 	u64	last_sample_time;
++	u64	aperf_mperf_shift;
+ 	u64	prev_aperf;
+ 	u64	prev_mperf;
+ 	u64	prev_tsc;
+@@ -321,6 +325,7 @@ struct pstate_funcs {
+ 	int (*get_min)(void);
+ 	int (*get_turbo)(void);
+ 	int (*get_scaling)(void);
++	int (*get_aperf_mperf_shift)(void);
+ 	u64 (*get_val)(struct cpudata*, int pstate);
+ 	void (*get_vid)(struct cpudata *);
+ 	void (*update_util)(struct update_util_data *data, u64 time,
+@@ -1486,6 +1491,11 @@ static u64 core_get_val(struct cpudata *cpudata, int pstate)
+ 	return val;
+ }
+ 
++static int knl_get_aperf_mperf_shift(void)
++{
++	return 10;
++}
++
+ static int knl_get_turbo_pstate(void)
+ {
+ 	u64 value;
+@@ -1543,6 +1553,9 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ 	cpu->pstate.max_freq = cpu->pstate.max_pstate * cpu->pstate.scaling;
+ 	cpu->pstate.turbo_freq = cpu->pstate.turbo_pstate * cpu->pstate.scaling;
+ 
++	if (pstate_funcs.get_aperf_mperf_shift)
++		cpu->aperf_mperf_shift = pstate_funcs.get_aperf_mperf_shift();
++
+ 	if (pstate_funcs.get_vid)
+ 		pstate_funcs.get_vid(cpu);
+ 
+@@ -1616,7 +1629,8 @@ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
+ 	int32_t busy_frac, boost;
+ 	int target, avg_pstate;
+ 
+-	busy_frac = div_fp(sample->mperf, sample->tsc);
++	busy_frac = div_fp(sample->mperf << cpu->aperf_mperf_shift,
++			   sample->tsc);
+ 
+ 	boost = cpu->iowait_boost;
+ 	cpu->iowait_boost >>= 1;
+@@ -1675,7 +1689,8 @@ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+ 		sample_ratio = div_fp(pid_params.sample_rate_ns, duration_ns);
+ 		perf_scaled = mul_fp(perf_scaled, sample_ratio);
+ 	} else {
+-		sample_ratio = div_fp(100 * cpu->sample.mperf, cpu->sample.tsc);
++		sample_ratio = div_fp(100 * (cpu->sample.mperf << cpu->aperf_mperf_shift),
++				      cpu->sample.tsc);
+ 		if (sample_ratio < int_tofp(1))
+ 			perf_scaled = 0;
+ 	}
+@@ -1807,6 +1822,7 @@ static const struct pstate_funcs knl_funcs = {
+ 	.get_max_physical = core_get_max_pstate_physical,
+ 	.get_min = core_get_min_pstate,
+ 	.get_turbo = knl_get_turbo_pstate,
++	.get_aperf_mperf_shift = knl_get_aperf_mperf_shift,
+ 	.get_scaling = core_get_scaling,
+ 	.get_val = core_get_val,
+ 	.update_util = intel_pstate_update_util_pid,
+@@ -2403,6 +2419,7 @@ static void __init copy_cpu_funcs(struct pstate_funcs *funcs)
+ 	pstate_funcs.get_val   = funcs->get_val;
+ 	pstate_funcs.get_vid   = funcs->get_vid;
+ 	pstate_funcs.update_util = funcs->update_util;
++	pstate_funcs.get_aperf_mperf_shift = funcs->get_aperf_mperf_shift;
+ 
+ 	intel_pstate_use_acpi_profile();
+ }
+-- 
+2.7.5
