@@ -1,65 +1,51 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
- load-tracking support
-Date: Thu, 13 Jul 2017 13:40:39 +0100
-Message-ID: <d2b121f1-1fd4-2842-f5bd-110a76997b65@arm.com>
-References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
- <12829054.TWIodSo4bb@aspire.rjw.lan> <20170710065443.GG2928@vireshk-i7>
- <4673356.gkeX7KYvlb@aspire.rjw.lan> <20170711063944.GA17115@vireshk-i7>
- <de0feb89-4759-b50c-e44b-a9a51984d396@arm.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: Regression with suspicious RCU usage splats with cpu_pm change
+Date: Thu, 13 Jul 2017 05:43:18 -0700
+Message-ID: <20170713124318.GK2393@linux.vnet.ibm.com>
+References: <20170713070749.GE16509@atomide.com>
+ <c00272dc-cf84-81a2-b2e2-d52cadf7bcc6@linaro.org>
+ <CAJZ5v0j15uWyCRAPep4KwqSiC4UD4ZppAG++SUvN3Ok1wzDwNQ@mail.gmail.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <de0feb89-4759-b50c-e44b-a9a51984d396@arm.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:53289 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1751157AbdGMMnY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2017 08:43:24 -0400
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id v6DCd8sN048891
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2017 08:43:23 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 2bnt3pphjm-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2017 08:43:23 -0400
+Received: from localhost
+        by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
+        Thu, 13 Jul 2017 08:43:23 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0j15uWyCRAPep4KwqSiC4UD4ZppAG++SUvN3Ok1wzDwNQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Alex Shi <alex.shi@linaro.org>, Tony Lindgren <tony@atomide.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>
 
-
-
-On 11/07/17 16:21, Dietmar Eggemann wrote:
-> On 11/07/17 07:39, Viresh Kumar wrote:
->> On 10-07-17, 14:46, Rafael J. Wysocki wrote:
->>> This particular change is about a new feature, so making it in the core is OK
->>> in two cases IMO: (a) when you actively want everyone to be affected by it and
->>
->> IMO this change should be done for the whole ARM architecture. And if some
->> regression happens due to this, then we come back and solve it.
->>
->>> (b) when the effect of it on the old systems should not be noticeable.
->>
->> I am not sure about the effects of this on performance really.
->>
->> @Dietmar: Any inputs for that ?
+On Thu, Jul 13, 2017 at 01:50:26PM +0200, Rafael J. Wysocki wrote:
+> On Thu, Jul 13, 2017 at 11:43 AM, Alex Shi <alex.shi@linaro.org> wrote:
+> >
+> > On 07/13/2017 03:07 PM, Tony Lindgren wrote:
+> >> Hi,
+> >>
+> >> Looks like next-20170713 gives me a bunch of "suspicious RCU usage"
+> >> splats with cpuidle_coupled on duovero, see below. I bisected it down
+> >> to commit 2f027e003d05 ("cpu_pm: replace raw_notifier with
+> >> atomic_notifier").
 > 
-> Like I said in the other email, since for (future)
-> arm/arm64 fast-switch driver, the return value of
-> cpufreq_driver->fast_switch() does not give us the information that the
-> frequency value did actually change, we have to implement
+> OK, so I'm dropping this commit.
 
-I was under the impression that we strictly don't care about that
-information when I started exploring the fast_switch with the standard
-firmware interface on ARM platforms(until if and when ARM provides an
-instruction to achieve that).
+You can surround idle-loop RCU-reading code with RCU_NONIDLE().
+This will tell RCU to pay attention even though the CPU is otherwise
+idle.
 
-If f/w failed to change the frequency, will that be not corrected in the
-next sample or instance. I would like to know the impact of absence of
-such notifications.
-
-> arch_set_freq_scale() in the driver.
-> This means that we probably only implement this in the subset of drivers
-> which will be used in platforms on which we want to have
-> frequency-invariant load-tracking.
-> 
-> A future aperf/mperf like counter FIE solution can give us arch-wide
-> support when those counters are available.
-> 
-
-Agreed.
-
--- 
-Regards,
-Sudeep
+							Thanx, Paul
