@@ -1,73 +1,56 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: [GIT PULL] power-supply changes for 4.13 (part 2)
-Date: Thu, 13 Jul 2017 12:22:32 +0200
-Message-ID: <20170713102232.dhwcq2e6ml4ijhnc@earth>
+From: Imre Deak <imre.deak@intel.com>
+Subject: Re: ACPI target state during S4 quiesce phase
+Date: Thu, 13 Jul 2017 13:30:19 +0300
+Message-ID: <20170713103019.7qvfkcmaoufyk4ln@ideak-desk.fi.intel.com>
+References: <20170712191009.pylvv4kpjmyi7lny@ideak-desk.fi.intel.com>
+ <CAJZ5v0g=c3FL3X-_SuYp-=pds+r7VtaQpZESSNzNht9i0o94kw@mail.gmail.com>
+Reply-To: imre.deak@intel.com
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="tg5fjojqgctmbki7"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:49254 "EHLO mail.kernel.org"
+Received: from mga05.intel.com ([192.55.52.43]:27829 "EHLO mga05.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751193AbdGMKWg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Jul 2017 06:22:36 -0400
+        id S1751267AbdGMKaW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Jul 2017 06:30:22 -0400
 Content-Disposition: inline
+In-Reply-To: <CAJZ5v0g=c3FL3X-_SuYp-=pds+r7VtaQpZESSNzNht9i0o94kw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>
 
+On Wed, Jul 12, 2017 at 10:40:31PM +0200, Rafael J. Wysocki wrote:
+> On Wed, Jul 12, 2017 at 9:10 PM, Imre Deak <imre.deak@intel.com> wrote:
+> > Hi,
+> >
+> > I noticed that acpi_target_system_state() returns ACPI_STATE_S0
+> > when called from a dev pm->freeze hook before restoring the hibernation
+> > image (PMSG_QUIESCE). Is this on purpose?
+> 
+> Yes, it is.
 
---tg5fjojqgctmbki7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Ok.
 
-Hi Linus,
+> After all, the platform is not going to change the power state, is it?
 
-I have two more fixes for the power-supply subsystem.
+No it won't, so yes S0 is the proper target state in that sense.
 
-The following changes since commit bfa953d336cdd713f6968c85ca820ef22333dc35:
+> 
+> > One could argue that it should
+> > be ACPI_STATE_S4, matching the target state before creating the
+> > hibernation image (PMSG_FREEZE).
+> 
+> And what would the argument be then?
 
-  power: supply: sbs-battery: Don't needlessly set CAPACITY_MODE (2017-06-15 16:52:04 +0200)
+To me it makes sense to resume a device in pm->restore from the same
+device power state pm->freeze/PMSG_FREEZE suspended it to. This device
+power state can in turn depend on the platform target state and this
+latter state will be different in pm->freeze/PMSG_QUIESCE wrt.
+pm->freeze/PMSG_FREEZE.
 
-are available in the git repository at:
+A driver could also just use a fixed device power state in pm->freeze
+independent of the platform target state. So I'm not saying
+acpi_target_system_state() is incorrect, just wanted to understand the
+logic behind it and how a driver can use it.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v4.13-2
-
-for you to fetch changes up to 7bb5a650f3471e4052e1692b29b0f3d3ca099c47:
-
-  power: supply: twl4030-charger: add deferred probing for phy and iio (2017-07-03 19:15:22 +0200)
-
-----------------------------------------------------------------
-power supply and reset changes for the v4.13 series (part 2)
-
-* two fixes for twl4030-charger
-
-----------------------------------------------------------------
-H. Nikolaus Schaller (2):
-      power: supply: twl4030-charger: move irq allocation to just before irqs are enabled
-      power: supply: twl4030-charger: add deferred probing for phy and iio
-
- drivers/power/supply/twl4030_charger.c | 43 ++++++++++++++++++++++------------
- 1 file changed, 28 insertions(+), 15 deletions(-)
-
---tg5fjojqgctmbki7
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllnSeUACgkQ2O7X88g7
-+pq8dg//ZSEdV3ksReNiIQZf+S2oC6pS6p/saPk+4OHxrjJ7KVYzt9PzwmLnXYTQ
-bDsG6Kp4o/Kw5rzh8T76mpaLMzI3uQG15lnEpsWaW/z6oXeB+37iYuLp6AMQt0uy
-/w0wywNGVyzJ8wNoxM+j+utPoBhsOkAoYU8BwPMx1zj9FO22MuZLtPyLaoczCxYX
-a7GSCn7Gyv7NaflkEl+VQermEgTANZ1D/FR2m9bv2UmokFk98/qelWtJawVAb2/c
-671LTiOjayuPisomXbgm+8c2Buj31P+BJ89yGDvHeoWQ9nQCeYvXqNbF7A60OP3c
-e5x8e5i0v01WtU7ACRazMuSI4MbGeDDqhGCXbR6blPh99HpmFP5ttmbmbEnYSfUW
-w3Fw+KsMQWMs5EUpKATMAvCLLNaeOejcx425bYgie5XWWNFHvW85X0t+StI8UKno
-AgbkADJOktIty8yujrQ7RmN6GQ9+u0/DTtWQjMvjvVDo1SWw8A02ivv3/BA5nVa3
-snJ422LXso6WXRSapsktfuDol2m7bHGyCClg9C2fKGX8UFJVTZdQ2IgUiN9BIEL8
-ivAIVn52zzr9Tu1vJKmB7wGVIrbi9oT4UVP/3lFAwz0FP6Rt87YrrCtXb/tPyzTw
-nYqON1GAxLJo53Is93CwiOvUeLlRgS/0BziFp0R5Gi+FtL+6Te4=
-=Fwbq
------END PGP SIGNATURE-----
-
---tg5fjojqgctmbki7--
+--Imre
