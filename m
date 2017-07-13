@@ -1,56 +1,56 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v5 5/5] intel_idle: Add S0ix validation
-Date: Thu, 13 Jul 2017 07:11:22 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1707130655200.2332@nanos>
-References: <20170708000303.21863-1-dbasehore@chromium.org> <20170708000303.21863-5-dbasehore@chromium.org> <alpine.DEB.2.20.1707130003150.2510@nanos> <CAGAzgsqZvfR9WtYDq5yaSDiKK8LSivE5uOTsUorVtWxfy18SEA@mail.gmail.com>
+Subject: Re: [PATCH v5 3/5] x86, apic: Add freeze event support
+Date: Thu, 13 Jul 2017 07:13:05 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1707130712030.2332@nanos>
+References: <20170708000303.21863-1-dbasehore@chromium.org> <20170708000303.21863-3-dbasehore@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:46226 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750748AbdGMFLe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2017 01:11:34 -0400
-In-Reply-To: <CAGAzgsqZvfR9WtYDq5yaSDiKK8LSivE5uOTsUorVtWxfy18SEA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <20170708000303.21863-3-dbasehore@chromium.org>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Derek Basehore <dbasehore@chromium.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, x86@kernel.org, platform-driver-x86@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "dbasehore ." <dbasehore@chromium.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, x86@kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
 
-On Wed, 12 Jul 2017, dbasehore . wrote:
-> On Wed, Jul 12, 2017 at 3:16 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > There are more issues with this: If there is a hrtimer scheduled on that
-> > last CPU which enters the idle freeze state and that timer is 10 minutes
-> > away, then the check timer can't be programmed and the system will happily
-> > stay for 10 minutes in some shallow C state without notice. Not really
-> > useful.
+On Fri, 7 Jul 2017, Derek Basehore wrote:
+
+> This adds support to the clock event devices created by apic to use
+> freeze events. The apic is able to run a timer during freeze with near
+> zero power impact on modern CPUs such as skylake. This will allow
+> S0ix, suspend-to-idle, to be validated on Intel CPUs that support it.
 > 
-> Are hrtimers not suspended after timekeeping_suspend is called?
-
-They are. As I said I forgot about the inner workings and that check for
-state != shutdown confused me even more, as it just looked like this might
-be a valid state.
-
-> > You know upfront whether the i915 power wells (or whatever other machinery)
-> > is not powered off to allow the system to enter a specific power state. If
-> > you think hard enough about creating infrastructure which allows you to
-> > register power related facilities and then check them in that idle freeze
-> > enter state, then you get immediate information WHY this happens and not
-> > just the by chance notification about the fact that it happened.
+> This is needed because bugs with power settings on the SoC can prevent
+> S0ix entry. There is also no way to check this before idling all of
+> the CPUs.
 > 
-> It's not always something that can be checked by software. There was
-> one case where an ordering for powering down audio hardware prevented
-> proper PC10 entry, but there didn't seem to be any way to check that.
-> Hardware watchdogs also have the same lack of clarity, but most if not
-> all desktop and mobile processors ship with one. Overall, this seems
-> to be the best that can be done at this point in freeze, and we can't
-> really rely on every part of the system properly validating it's state
-> in its suspend operation.
+> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+> ---
+>  arch/x86/kernel/apic/apic.c | 24 +++++++++++++++++++++++-
+>  1 file changed, 23 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+> index 98b3dd8cf2bf..adc69d2f11ce 100644
+> --- a/arch/x86/kernel/apic/apic.c
+> +++ b/arch/x86/kernel/apic/apic.c
+> @@ -480,6 +480,26 @@ static int lapic_next_deadline(unsigned long delta,
+>  	return 0;
+>  }
+>  
+> +static int lapic_event_expired(struct clock_event_device *evt)
 
-So if I understand correctly, this is the last resort of catching problems
-which can't be detected upfront or are caused by a software bug.
+That want's to have a boolean return.
 
-I'm fine with that, but please explain and document it proper. The current
-explanation is confusing at best.
+> +{
+> +	u32 cct;
+> +
+> +	cct = apic_read(APIC_TMCCT);
+> +	return cct == 0 ? 1 : 0;
+
+which makes that:
+
+      	return !cct;
+
+> +}
 
 Thanks,
 
