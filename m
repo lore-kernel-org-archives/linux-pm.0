@@ -1,81 +1,73 @@
-From: Alex Shi <alex.shi@linaro.org>
-Subject: Re: Regression with suspicious RCU usage splats with cpu_pm change
-Date: Thu, 13 Jul 2017 17:43:06 +0800
-Message-ID: <c00272dc-cf84-81a2-b2e2-d52cadf7bcc6@linaro.org>
-References: <20170713070749.GE16509@atomide.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: [GIT PULL] power-supply changes for 4.13 (part 2)
+Date: Thu, 13 Jul 2017 12:22:32 +0200
+Message-ID: <20170713102232.dhwcq2e6ml4ijhnc@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="tg5fjojqgctmbki7"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f48.google.com ([74.125.83.48]:34620 "EHLO
-        mail-pg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751037AbdGMJnL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2017 05:43:11 -0400
-Received: by mail-pg0-f48.google.com with SMTP id t186so27123784pgb.1
-        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2017 02:43:11 -0700 (PDT)
-In-Reply-To: <20170713070749.GE16509@atomide.com>
-Content-Language: en-US
+Received: from mail.kernel.org ([198.145.29.99]:49254 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751193AbdGMKWg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Jul 2017 06:22:36 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
 
-On 07/13/2017 03:07 PM, Tony Lindgren wrote:
-> Hi,
-> 
-> Looks like next-20170713 gives me a bunch of "suspicious RCU usage"
-> splats with cpuidle_coupled on duovero, see below. I bisected it down
-> to commit 2f027e003d05 ("cpu_pm: replace raw_notifier with
-> atomic_notifier").
-> 
-> Regards,
-> 
-> Tony
-> 
-> 8< -----------------------
-> =============================
-> WARNING: suspicious RCU usage
-> 4.12.0-next-20170713+ #118 Tainted: G        W
-> -----------------------------
-> ./include/linux/rcupdate.h:611 rcu_read_lock() used illegally while idle!
-> [    2.928802]
-> other info that might help us debug this:
-> [    2.928802]
-> [    2.946777]
-> RCU used illegally from idle CPU!
-> rcu_scheduler_active = 2, debug_locks = 1
-> RCU used illegally from extended quiescent state!
+--tg5fjojqgctmbki7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-CC Catalin & Will,
+Hi Linus,
 
-It's a shame for me. :(
+I have two more fixes for the power-supply subsystem.
 
-lockdep_rcu_suspicious() explained, rcu_read_lock can not be used after
-rcu_idle_enter():
+The following changes since commit bfa953d336cdd713f6968c85ca820ef22333dc35:
 
-* If a CPU is in the RCU-free window in idle (ie: in the section
-* between rcu_idle_enter() and rcu_idle_exit(), then RCU
-* considers that CPU to be in an "extended quiescent state",
-* which means that RCU will be completely ignoring that CPU.
-* Therefore, rcu_read_lock() and friends have absolutely no
-* effect on a CPU running in that state. In other words, even if
-* such an RCU-idle CPU has called rcu_read_lock(), RCU might well
-* delete data structures out from under it.  RCU really has no
-* choice here: we need to keep an RCU-free window in idle where
-* the CPU may possibly enter into low power mode. This way we can
-* notice an extended quiescent state to other CPUs that started a grace
-* period. Otherwise we would delay any grace period as long as we run
-* in the idle task.
+  power: supply: sbs-battery: Don't needlessly set CAPACITY_MODE (2017-06-15 16:52:04 +0200)
 
-Although the cpu is still alive and not going to idle yet, the RCU is
-starting to count this cpu into quiescent state. I guess it's not so
-good to put off rcu_idle_enter for all archs. We need another solution
-on this problem, maybe unsleepable raw_rwlock? or may best way is split
-the notification and the real idle trigger in the function
-arm_enter_idle_state()?
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v4.13-2
 
+for you to fetch changes up to 7bb5a650f3471e4052e1692b29b0f3d3ca099c47:
 
-Regards
-Alex
+  power: supply: twl4030-charger: add deferred probing for phy and iio (2017-07-03 19:15:22 +0200)
+
+----------------------------------------------------------------
+power supply and reset changes for the v4.13 series (part 2)
+
+* two fixes for twl4030-charger
+
+----------------------------------------------------------------
+H. Nikolaus Schaller (2):
+      power: supply: twl4030-charger: move irq allocation to just before irqs are enabled
+      power: supply: twl4030-charger: add deferred probing for phy and iio
+
+ drivers/power/supply/twl4030_charger.c | 43 ++++++++++++++++++++++------------
+ 1 file changed, 28 insertions(+), 15 deletions(-)
+
+--tg5fjojqgctmbki7
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllnSeUACgkQ2O7X88g7
++pq8dg//ZSEdV3ksReNiIQZf+S2oC6pS6p/saPk+4OHxrjJ7KVYzt9PzwmLnXYTQ
+bDsG6Kp4o/Kw5rzh8T76mpaLMzI3uQG15lnEpsWaW/z6oXeB+37iYuLp6AMQt0uy
+/w0wywNGVyzJ8wNoxM+j+utPoBhsOkAoYU8BwPMx1zj9FO22MuZLtPyLaoczCxYX
+a7GSCn7Gyv7NaflkEl+VQermEgTANZ1D/FR2m9bv2UmokFk98/qelWtJawVAb2/c
+671LTiOjayuPisomXbgm+8c2Buj31P+BJ89yGDvHeoWQ9nQCeYvXqNbF7A60OP3c
+e5x8e5i0v01WtU7ACRazMuSI4MbGeDDqhGCXbR6blPh99HpmFP5ttmbmbEnYSfUW
+w3Fw+KsMQWMs5EUpKATMAvCLLNaeOejcx425bYgie5XWWNFHvW85X0t+StI8UKno
+AgbkADJOktIty8yujrQ7RmN6GQ9+u0/DTtWQjMvjvVDo1SWw8A02ivv3/BA5nVa3
+snJ422LXso6WXRSapsktfuDol2m7bHGyCClg9C2fKGX8UFJVTZdQ2IgUiN9BIEL8
+ivAIVn52zzr9Tu1vJKmB7wGVIrbi9oT4UVP/3lFAwz0FP6Rt87YrrCtXb/tPyzTw
+nYqON1GAxLJo53Is93CwiOvUeLlRgS/0BziFp0R5Gi+FtL+6Te4=
+=Fwbq
+-----END PGP SIGNATURE-----
+
+--tg5fjojqgctmbki7--
