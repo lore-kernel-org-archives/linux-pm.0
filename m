@@ -1,84 +1,220 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Drivers taking different actions depending on sleep state
-Date: Thu, 13 Jul 2017 14:03:01 +0200
-Message-ID: <20170713120300.GH1363@amd>
-References: <9dc7b7f4-e47d-59f3-3b51-52e0aefd2487@free.fr>
- <CAJZ5v0iL7voAz9T+36fXXncOj4UrFSAH8WzwEbec96GuFUteaQ@mail.gmail.com>
- <ccac39d6-4611-8b46-12f7-24227ef3b35e@gmail.com>
- <CAJZ5v0g_egRwxOLqft=JhvzAqBWuyvC8yiO7De5TYUZLUT2Fpw@mail.gmail.com>
- <7001768d-9134-4975-127e-e8444e00f677@gmail.com>
- <CAJZ5v0ihqn5Xcj1yoZcrb7caYiH+x8YivLJit6BqvDGradZJ=Q@mail.gmail.com>
- <b7a49925-d823-b03d-2990-2894ba2c2714@gmail.com>
- <20170622085102.mpk7vxodpgxtrlfd@piout.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="xHbokkKX1kTiQeDC"
+From: Kiran Gunda <kgunda@codeaurora.org>
+Subject: [PATCH V1] thermal: qcom-spmi-temp-alarm: add support for GEN2 PMIC peripherals
+Date: Thu, 13 Jul 2017 17:39:32 +0530
+Message-ID: <1499947772-19199-1-git-send-email-kgunda@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50251 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751201AbdGMMDD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2017 08:03:03 -0400
-Content-Disposition: inline
-In-Reply-To: <20170622085102.mpk7vxodpgxtrlfd@piout.net>
+Received: from smtp.codeaurora.org ([198.145.29.96]:52958 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751157AbdGMMKB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2017 08:10:01 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Florian Fainelli <f.fainelli@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, Kiran Gunda <kgunda@codeaurora.org>
 
+From: David Collins <collinsd@codeaurora.org>
 
---xHbokkKX1kTiQeDC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Add support for the TEMP_ALARM GEN2 PMIC peripheral subtype.  The
+GEN2 subtype defines an over temperature state with hysteresis
+instead of stage in the status register.  There are two GEN2
+states corresponding to stages 1 and 2.
 
-On Thu 2017-06-22 10:51:02, Alexandre Belloni wrote:
-> On 21/06/2017 at 16:55:04 -0700, Florian Fainelli wrote:
-> > > That is conceivable, but again, the meaning of STANDBY and MEM is
-> > > platform-specific.  Actions to be taken for, say, STANDBY, may differ
-> > > from one platform to another.
-> >=20
-> > True, though I would only expect drivers for that particular platform to
-> > care about that information and these drivers would only make sense on
-> > that particular platform so the meaning of STANDBY and MEM would be
-> > clear for those drivers. The intent is really to keep the "distributed"
-> > model where individual drivers manage their particular piece of HW,
-> > while utilizing a global piece of information that is platform specific.
-> >=20
-> > If this seems acceptable to you along with proper documentation to
-> > illustrate the platform specific meaning of these states, I will got
-> > ahead and cook a patch.
->=20
-> Well, that won't work for us. We need need two kind of information:
->  - whether main clock is switched from the master clock to the slow
->    clock
->  - whether VDDcore will be cut
->=20
-> for the first one, we already have an hackish callback:
-> at91_suspend_entering_slow_clock() that will call from the platform
-> specific drivers.
+Signed-off-by: David Collins <collinsd@codeaurora.org>
+Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+---
+ drivers/thermal/qcom-spmi-temp-alarm.c | 92 ++++++++++++++++++++++++++--------
+ 1 file changed, 71 insertions(+), 21 deletions(-)
 
-Sounds like you need another "will_vddcore_be_cut?()" callback, not
-"int platform_suspend_target_state(void)".
-
-And actually I'd hope you have some kind of regulator, so that "will
-this regulator be available over suspend" question can be asked?
-
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---xHbokkKX1kTiQeDC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAllnYXQACgkQMOfwapXb+vIokwCghlo28Ze4ZboP/yL2zqgbNFea
-/ssAn19ybkfqqrJl1q6nFAjK+GATRPTR
-=8gzl
------END PGP SIGNATURE-----
-
---xHbokkKX1kTiQeDC--
+diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
+index f502419..a5e17ba 100644
+--- a/drivers/thermal/qcom-spmi-temp-alarm.c
++++ b/drivers/thermal/qcom-spmi-temp-alarm.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
++ * Copyright (c) 2011-2015, 2017, The Linux Foundation. All rights reserved.
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 and
+@@ -11,6 +11,7 @@
+  * GNU General Public License for more details.
+  */
+ 
++#include <linux/bitops.h>
+ #include <linux/delay.h>
+ #include <linux/err.h>
+ #include <linux/iio/consumer.h>
+@@ -29,13 +30,17 @@
+ #define QPNP_TM_REG_ALARM_CTRL		0x46
+ 
+ #define QPNP_TM_TYPE			0x09
+-#define QPNP_TM_SUBTYPE			0x08
++#define QPNP_TM_SUBTYPE_GEN1		0x08
++#define QPNP_TM_SUBTYPE_GEN2		0x09
+ 
+-#define STATUS_STAGE_MASK		0x03
++#define STATUS_GEN1_STAGE_MASK		GENMASK(1, 0)
++#define STATUS_GEN2_STATE_MASK		GENMASK(6, 4)
++#define STATUS_GEN2_STATE_SHIFT		4
+ 
+-#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
++#define SHUTDOWN_CTRL1_OVERRIDE_MASK	GENMASK(7, 6)
++#define SHUTDOWN_CTRL1_THRESHOLD_MASK	GENMASK(1, 0)
+ 
+-#define ALARM_CTRL_FORCE_ENABLE		0x80
++#define ALARM_CTRL_FORCE_ENABLE		BIT(7)
+ 
+ /*
+  * Trip point values based on threshold control
+@@ -58,6 +63,7 @@
+ struct qpnp_tm_chip {
+ 	struct regmap			*map;
+ 	struct thermal_zone_device	*tz_dev;
++	unsigned int			subtype;
+ 	long				temp;
+ 	unsigned int			thresh;
+ 	unsigned int			stage;
+@@ -66,6 +72,9 @@ struct qpnp_tm_chip {
+ 	struct iio_channel		*adc;
+ };
+ 
++/* This array maps from GEN2 alarm state to GEN1 alarm stage */
++static const unsigned int alarm_state_map[8] = {0, 1, 1, 2, 2, 3, 3, 3};
++
+ static int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr, u8 *data)
+ {
+ 	unsigned int val;
+@@ -84,30 +93,59 @@ static int qpnp_tm_write(struct qpnp_tm_chip *chip, u16 addr, u8 data)
+ 	return regmap_write(chip->map, chip->base + addr, data);
+ }
+ 
++/**
++ * qpnp_tm_get_temp_stage() - return over-temperature stage
++ * @chip:		Pointer to the qpnp_tm chip
++ *
++ * Return: stage (GEN1) or state (GEN2) on success, or errno on failure.
++ */
++static int qpnp_tm_get_temp_stage(struct qpnp_tm_chip *chip)
++{
++	int ret;
++	u8 reg = 0;
++
++	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
++	if (ret < 0)
++		return ret;
++
++	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1)
++		ret = reg & STATUS_GEN1_STAGE_MASK;
++	else
++		ret = (reg & STATUS_GEN2_STATE_MASK) >> STATUS_GEN2_STATE_SHIFT;
++
++	return ret;
++}
++
+ /*
+  * This function updates the internal temp value based on the
+  * current thermal stage and threshold as well as the previous stage
+  */
+ static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
+ {
+-	unsigned int stage;
++	unsigned int stage, stage_new, stage_old;
+ 	int ret;
+-	u8 reg = 0;
+ 
+-	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
++	ret = qpnp_tm_get_temp_stage(chip);
+ 	if (ret < 0)
+ 		return ret;
++	stage = ret;
+ 
+-	stage = reg & STATUS_STAGE_MASK;
++	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1) {
++		stage_new = stage;
++		stage_old = chip->stage;
++	} else {
++		stage_new = alarm_state_map[stage];
++		stage_old = alarm_state_map[chip->stage];
++	}
+ 
+-	if (stage > chip->stage) {
++	if (stage_new > stage_old) {
+ 		/* increasing stage, use lower bound */
+-		chip->temp = (stage - 1) * TEMP_STAGE_STEP +
++		chip->temp = (stage_new - 1) * TEMP_STAGE_STEP +
+ 			     chip->thresh * TEMP_THRESH_STEP +
+ 			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
+-	} else if (stage < chip->stage) {
++	} else if (stage_new < stage_old) {
+ 		/* decreasing stage, use upper bound */
+-		chip->temp = stage * TEMP_STAGE_STEP +
++		chip->temp = stage_new * TEMP_STAGE_STEP +
+ 			     chip->thresh * TEMP_THRESH_STEP -
+ 			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
+ 	}
+@@ -162,28 +200,37 @@ static irqreturn_t qpnp_tm_isr(int irq, void *data)
+  */
+ static int qpnp_tm_init(struct qpnp_tm_chip *chip)
+ {
++	unsigned int stage;
+ 	int ret;
+-	u8 reg;
++	u8 reg = 0;
+ 
+-	chip->thresh = THRESH_MIN;
++	ret = qpnp_tm_read(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, &reg);
++	if (ret < 0)
++		return ret;
++
++	chip->thresh = reg & SHUTDOWN_CTRL1_THRESHOLD_MASK;
+ 	chip->temp = DEFAULT_TEMP;
+ 
+-	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
++	ret = qpnp_tm_get_temp_stage(chip);
+ 	if (ret < 0)
+ 		return ret;
++	chip->stage = ret;
+ 
+-	chip->stage = reg & STATUS_STAGE_MASK;
++	stage = chip->subtype == QPNP_TM_SUBTYPE_GEN1
++		? chip->stage : alarm_state_map[chip->stage];
+ 
+-	if (chip->stage)
++	if (stage)
+ 		chip->temp = chip->thresh * TEMP_THRESH_STEP +
+-			     (chip->stage - 1) * TEMP_STAGE_STEP +
++			     (stage - 1) * TEMP_STAGE_STEP +
+ 			     TEMP_THRESH_MIN;
+ 
+ 	/*
+ 	 * Set threshold and disable software override of stage 2 and 3
+ 	 * shutdowns.
+ 	 */
+-	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
++	chip->thresh = THRESH_MIN;
++	reg &= ~(SHUTDOWN_CTRL1_OVERRIDE_MASK | SHUTDOWN_CTRL1_THRESHOLD_MASK);
++	reg |= chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
+ 	ret = qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
+ 	if (ret < 0)
+ 		return ret;
+@@ -242,13 +289,16 @@ static int qpnp_tm_probe(struct platform_device *pdev)
+ 		goto fail;
+ 	}
+ 
+-	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
++	if (type != QPNP_TM_TYPE || (subtype != QPNP_TM_SUBTYPE_GEN1
++				     && subtype != QPNP_TM_SUBTYPE_GEN2)) {
+ 		dev_err(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
+ 			type, subtype);
+ 		ret = -ENODEV;
+ 		goto fail;
+ 	}
+ 
++	chip->subtype = subtype;
++
+ 	ret = qpnp_tm_init(chip);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "init failed\n");
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+ a Linux Foundation Collaborative Project
