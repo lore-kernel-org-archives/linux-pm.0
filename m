@@ -1,77 +1,89 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: PM / Suspend: Print wall time at suspend entry and exit
-Date: Thu, 13 Jul 2017 10:54:08 +0200
-Message-ID: <20170713085407.GD1363@amd>
-References: <20170605193157.59875-1-salyzyn@android.com>
- <CAJZ5v0iLFw68RxzkgyFF_WhxO-nzr0nWoZjq-uEEU6+UzMB7cQ@mail.gmail.com>
- <20170605211835.GB9035@amd>
- <5931f9cb-016f-4163-4908-6825cf84b9d3@android.com>
- <ca5fb419-386f-9e27-43c4-677be6f0ae4b@android.com>
- <20170605224011.GA26558@amd>
- <e9c40b99-7fa7-71b2-5917-250d638a5162@android.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] selftests: cpufreq: Check cpuinfo_cur_freq set as
+ expected
+Date: Thu, 13 Jul 2017 14:25:37 +0530
+Message-ID: <20170713085537.GD352@vireshk-i7>
+References: <704cfb6696840b3838576ea583b8ab8ed2265aaf.1499858779.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="9dgjiU4MmWPVapMU"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <e9c40b99-7fa7-71b2-5917-250d638a5162@android.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Salyzyn <salyzyn@android.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Todd Poynor <toddpoynor@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>
-List-Id: linux-pm@vger.kernel.org
-
-
---9dgjiU4MmWPVapMU
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:33267 "EHLO
+        mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750807AbdGMIzl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2017 04:55:41 -0400
+Received: by mail-pf0-f182.google.com with SMTP id e7so26329838pfk.0
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jul 2017 01:55:40 -0700 (PDT)
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <704cfb6696840b3838576ea583b8ab8ed2265aaf.1499858779.git.leonard.crestez@nxp.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Shuah Khan <shuah@kernel.org>, linux-kselftest@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Octavian Purdila <octavian.purdila@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi!
+On 12-07-17, 14:29, Leonard Crestez wrote:
+> This checks that the cpufreq driver actually sets the requested
+> frequency.
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> 
+> ---
+> 
+> I've been looking at using kselftests for imx. This patch exposes an
+> issue with the imx6 cpufreq driver on imx6sx where frequencies are set
+> incorrectly because of clk mishandling. This is already caught by some
+> internal test scripts which also run against upstream but it's nice to
+> make this visible through kselftest.
 
-> >And userspace should not really be parsing kernel logs for time
-> >keeping, right?
-> Post-mortem, armed with user space logs in CLOCK_REALTIME (a choice that
-> most want on Android Logging) and kernel logs, these messages are
-> _invaluable_ in order to merge the kernel activities with user space. At
-> runtime they help too, as there is some post-mortem activities on user sp=
-ace
-> logging daemon startup.
-> >The devices you are talking about... is any of them running something
-> >close to mainline kernel, or is planned for merge? I'd like to get a
-> >phone that is supported by mainline...
->=20
-> Android on hikey development board is running 4.9 kernel + Android patches
-> (this is one of 'em), I _expect_ ToT will work. As for _real_ phones, you
-> have to take that up with the vendors making the chips.
+Sure, thanks for that.
 
-Well, there are real phones with mainline Linux: Nokia N900, N9, N950,
-Motorola Droid 4.
+> I'm not sure it's correct to check that frequency matches exactly,
+> perhaps something like a 5% tolerance should be included for complex
+> drivers where the target freq is only a "hint"?
 
-Current kernel is 4.13, not v4.9.
+We can do better, see below..
 
-Yes, Qualcomm is a problem. There are other vendors, you can get those
-phones in retail. So no, I don't think android community is doing a
-good job. I don't think it makes sense to merge patches that "help
-debugging" when basic support is missing.
+> I checked intel_pstate
+> but it doesn't even seem to expose an userspace governor for manual
+> frequency selection anyway.
 
-Best regards,
+Sure, and so that wouldn't be affected by this.
 
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+> Unfortunately cpufreq selftests don't seem to have a clear idea of
+> "pass" or "fail" results.
 
---9dgjiU4MmWPVapMU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Yeah, I had this test setup for a while and just pushed it through.
+Over that many tests aren't really tests but just looking out for
+crashes, etc. Never got a chance to improve it :(
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+> This patch will just print some TAP-like
+> "ok" and "not ok" lines but failures are not actually propagated upwards
+> in a well-defined way.
 
-iEYEARECAAYFAllnNS8ACgkQMOfwapXb+vJ6GACeP2tusmfKJPMpHhAsukkrIs+C
-E4IAoL0tLer/ttrN1+m6ke8Vl+04lE/V
-=2zMt
------END PGP SIGNATURE-----
+That would be fine for now.
 
---9dgjiU4MmWPVapMU--
+> Have you considered what it would take to TAP-ify the output of cpufreq
+> tests? Output is very complex so perhaps it might make sense to adopt some
+> sort of subtest syntax for kselftest, something like this:
+
+Not yet :(
+
+> diff --git a/tools/testing/selftests/cpufreq/cpufreq.sh b/tools/testing/selftests/cpufreq/cpufreq.sh
+> index 1ed3832..323b5bb 100755
+> --- a/tools/testing/selftests/cpufreq/cpufreq.sh
+> +++ b/tools/testing/selftests/cpufreq/cpufreq.sh
+> @@ -151,6 +151,14 @@ test_all_frequencies()
+>  	# Set all frequencies one-by-one
+>  	for freq in $freqs; do
+>  		set_cpu_frequency $1 $freq
+> +
+> +		local cur_freq
+> +		cur_freq=`cat $CPUFREQROOT/$1/cpuinfo_cur_freq`
+
+Yes, we want to verify if freq change happened or not, but may be only
+reading scaling_cur_freq would be enough for now?
+
+And that wouldn't be a problem for X86 (which Rafael mentioned) as
+well IIUC.
+
+-- 
+viresh
