@@ -1,62 +1,46 @@
 From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: [PATCH v5 5/5] intel_idle: Add S0ix validation
-Date: Thu, 13 Jul 2017 15:49:37 -0700
-Message-ID: <CAGAzgspRz4vx-enfX1De_ffzRXLxFKUNxKc2NKZWC-04K9-3LQ@mail.gmail.com>
+Subject: Re: [PATCH v5 2/5] tick: Add freeze timer events
+Date: Thu, 13 Jul 2017 15:58:53 -0700
+Message-ID: <CAGAzgsoFugSw=UQsJmep0woGg70J3nie0-EtvtQ4Ec1NG1usOg@mail.gmail.com>
 References: <20170708000303.21863-1-dbasehore@chromium.org>
- <20170708000303.21863-5-dbasehore@chromium.org> <alpine.DEB.2.20.1707130003150.2510@nanos>
- <CAGAzgsqZvfR9WtYDq5yaSDiKK8LSivE5uOTsUorVtWxfy18SEA@mail.gmail.com> <alpine.DEB.2.20.1707130655200.2332@nanos>
+ <20170708000303.21863-2-dbasehore@chromium.org> <20170713073200.uh3oxqowei6vxvwy@hirez.programming.kicks-ass.net>
+ <CAJZ5v0horA+vgR3bAbEu+AiqEFJ7JyZ49nTv6FBPHRvmXOUFpQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1707130655200.2332@nanos>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, x86@kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0horA+vgR3bAbEu+AiqEFJ7JyZ49nTv6FBPHRvmXOUFpQ@mail.gmail.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, the arch/x86 maintainers <x86@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 12, 2017 at 10:11 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Wed, 12 Jul 2017, dbasehore . wrote:
->> On Wed, Jul 12, 2017 at 3:16 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
->> > There are more issues with this: If there is a hrtimer scheduled on that
->> > last CPU which enters the idle freeze state and that timer is 10 minutes
->> > away, then the check timer can't be programmed and the system will happily
->> > stay for 10 minutes in some shallow C state without notice. Not really
->> > useful.
+On Thu, Jul 13, 2017 at 8:09 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Thu, Jul 13, 2017 at 9:32 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+>> On Fri, Jul 07, 2017 at 05:03:00PM -0700, Derek Basehore wrote:
+>>> Adds a new feature to tick to schedule wakeups on a CPU during freeze.
+>>> This won't fully wake up the system (devices are not resumed), but
+>>> allow simple platform functionality to be run during freeze with
+>>> little power impact.
+>>>
+>>> This implementation allows an idle driver to setup a timer event with
+>>> the clock event device when entering freeze by calling
+>>> tick_set_freeze_event. Only one caller should exist for the function.
+>>>
+>>> tick_freeze_event_expired is used to check if the timer went off when
+>>> the CPU wakes.
+>>>
+>>> The event is cleared by tick_clear_freeze_event.
 >>
->> Are hrtimers not suspended after timekeeping_suspend is called?
+>> Why? What's wrong with using the RTC stuff? RTC should be able to wake
+>> suspended systems, see RTCWAKE(8).
 >
-> They are. As I said I forgot about the inner workings and that check for
-> state != shutdown confused me even more, as it just looked like this might
-> be a valid state.
+> The RTC interrupt is an SCI (on ACPI systems) and we don't handle it
+> at this point, so we don't know what woke us up until we re-enable
+> interrupt handlers and run the one for the SCI.
 
-Okay. I'll add a comment to clarify this part.
-
->
->> > You know upfront whether the i915 power wells (or whatever other machinery)
->> > is not powered off to allow the system to enter a specific power state. If
->> > you think hard enough about creating infrastructure which allows you to
->> > register power related facilities and then check them in that idle freeze
->> > enter state, then you get immediate information WHY this happens and not
->> > just the by chance notification about the fact that it happened.
->>
->> It's not always something that can be checked by software. There was
->> one case where an ordering for powering down audio hardware prevented
->> proper PC10 entry, but there didn't seem to be any way to check that.
->> Hardware watchdogs also have the same lack of clarity, but most if not
->> all desktop and mobile processors ship with one. Overall, this seems
->> to be the best that can be done at this point in freeze, and we can't
->> really rely on every part of the system properly validating it's state
->> in its suspend operation.
->
-> So if I understand correctly, this is the last resort of catching problems
-> which can't be detected upfront or are caused by a software bug.
->
-> I'm fine with that, but please explain and document it proper. The current
-> explanation is confusing at best.
-
-Will do.
-
->
-> Thanks,
->
->         tglx
+To add to that point, RTC wake ups are valid for fully waking up the
+system. The clock event wake up wasn't used for waking up the system
+before, so we know that we don't have to check if it should wake up
+the system entirely. The way rtc timers work right now, I think that
+we'd have to go all the way through resume devices to figure out if we
+should resume to user space or freeze again.
