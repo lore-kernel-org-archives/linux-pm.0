@@ -1,75 +1,56 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v5 2/5] tick: Add freeze timer events
-Date: Thu, 13 Jul 2017 06:54:35 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1707130641520.2332@nanos>
-References: <20170708000303.21863-1-dbasehore@chromium.org> <20170708000303.21863-2-dbasehore@chromium.org> <alpine.DEB.2.20.1707122248270.2510@nanos> <CAGAzgspJ1HoT_RsxCv-sGAWGeLw+cLCkN=kMUTika8fBeA2YxA@mail.gmail.com>
+Subject: Re: [PATCH v5 5/5] intel_idle: Add S0ix validation
+Date: Thu, 13 Jul 2017 07:11:22 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1707130655200.2332@nanos>
+References: <20170708000303.21863-1-dbasehore@chromium.org> <20170708000303.21863-5-dbasehore@chromium.org> <alpine.DEB.2.20.1707130003150.2510@nanos> <CAGAzgsqZvfR9WtYDq5yaSDiKK8LSivE5uOTsUorVtWxfy18SEA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <CAGAzgspJ1HoT_RsxCv-sGAWGeLw+cLCkN=kMUTika8fBeA2YxA@mail.gmail.com>
-Sender: platform-driver-x86-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from Galois.linutronix.de ([146.0.238.70]:46226 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750748AbdGMFLe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2017 01:11:34 -0400
+In-Reply-To: <CAGAzgsqZvfR9WtYDq5yaSDiKK8LSivE5uOTsUorVtWxfy18SEA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "dbasehore ." <dbasehore@chromium.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, x86@kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
-List-Id: linux-pm@vger.kernel.org
-
-Derek,
 
 On Wed, 12 Jul 2017, dbasehore . wrote:
-> On Wed, Jul 12, 2017 at 2:25 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > On Fri, 7 Jul 2017, Derek Basehore wrote:
-> >> +/*
-> >> + * Clockevent device may run during freeze
-> >> + */
-> >> +# define CLOCK_EVT_FEAT_FREEZE_NONSTOP       0x000100
-> >
-> > Is that really restricted to freezing?
+> On Wed, Jul 12, 2017 at 3:16 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > There are more issues with this: If there is a hrtimer scheduled on that
+> > last CPU which enters the idle freeze state and that timer is 10 minutes
+> > away, then the check timer can't be programmed and the system will happily
+> > stay for 10 minutes in some shallow C state without notice. Not really
+> > useful.
 > 
-> I'm not going to make the call on what firmware may do when it enters
-> suspend. Even if it's not supposed to do anything, it still might.
+> Are hrtimers not suspended after timekeeping_suspend is called?
 
-The feature is a description of the hardware capability not of the
-way how it's used by software.
+They are. As I said I forgot about the inner workings and that check for
+state != shutdown confused me even more, as it just looked like this might
+be a valid state.
 
-> >> +     if (!clockevent_state_shutdown(dev)) {
-> >
-> > What puts the device in shutdown mode when the machine is in freeze state?
+> > You know upfront whether the i915 power wells (or whatever other machinery)
+> > is not powered off to allow the system to enter a specific power state. If
+> > you think hard enough about creating infrastructure which allows you to
+> > register power related facilities and then check them in that idle freeze
+> > enter state, then you get immediate information WHY this happens and not
+> > just the by chance notification about the fact that it happened.
 > 
-> tick_freeze does through timekeeping_suspend or tick_suspend_local
-> depending on whether it's the last CPU to freeze or not.
+> It's not always something that can be checked by software. There was
+> one case where an ordering for powering down audio hardware prevented
+> proper PC10 entry, but there didn't seem to be any way to check that.
+> Hardware watchdogs also have the same lack of clarity, but most if not
+> all desktop and mobile processors ship with one. Overall, this seems
+> to be the best that can be done at this point in freeze, and we can't
+> really rely on every part of the system properly validating it's state
+> in its suspend operation.
 
-Ok. I completely forgot about the inner workings of freeze. So this check
-for shutdown actually wants to have a printk, because that's a state which
-is wrong. The nonavailability of oneshot mode is just factual information
-that this is not possible and does not justify dmesg spam.
+So if I understand correctly, this is the last resort of catching problems
+which can't be detected upfront or are caused by a software bug.
 
-> >> +     clockevents_tick_resume(dev);
-> >
-> > That looks wrong as well. What did call suspend on that device?
-> >
-> > I'm not aware that freeze will actually call suspend on anything down deep
-> > in the core code. Can you please explain this magic here?
-> 
-> tick_freeze in tick-common.c calls the tick suspend code.
-
-Fair enough.
-
-> > All of this lacks an explanation how any of this is safe vs. the normal
-> > operation of clock event devices and the tick device code.
-> >
-> > This lacks documentation of calling conventions and checks which make sure
-> > they are obeyed.
-> 
-> If I get rid of passing in the cpu id, the only thing left to check
-> seems to be making sure that tick_clear_freeze_event is called on the
-> same CPU as tick_set_freeze_event.
-
-Yes, you want to store that information somewhere.
-
-> Am I missing something? I'll add Documentation.
-
-Please make that whole thing depend on a Kconfig option. There is no point
-having the code and the exports there for everyone while it has only a
-single user.
+I'm fine with that, but please explain and document it proper. The current
+explanation is confusing at best.
 
 Thanks,
 
