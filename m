@@ -1,56 +1,83 @@
-From: Imre Deak <imre.deak@intel.com>
-Subject: Re: ACPI target state during S4 quiesce phase
-Date: Thu, 13 Jul 2017 13:30:19 +0300
-Message-ID: <20170713103019.7qvfkcmaoufyk4ln@ideak-desk.fi.intel.com>
-References: <20170712191009.pylvv4kpjmyi7lny@ideak-desk.fi.intel.com>
- <CAJZ5v0g=c3FL3X-_SuYp-=pds+r7VtaQpZESSNzNht9i0o94kw@mail.gmail.com>
-Reply-To: imre.deak@intel.com
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
+ load-tracking support
+Date: Thu, 13 Jul 2017 13:15:47 +0200
+Message-ID: <20170713111547.y33gkhugtccnsnto@hirez.programming.kicks-ass.net>
+References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
+ <20170712092755.GD1679@vireshk-i7>
+ <20170712111426.lmbwowbrvjl55aft@hirez.programming.kicks-ass.net>
+ <14176128.txNmPKaVBr@aspire.rjw.lan>
+ <20170713084804.GC352@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:27829 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751267AbdGMKaW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Jul 2017 06:30:22 -0400
+Received: from bombadil.infradead.org ([65.50.211.133]:60273 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751050AbdGMLPy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2017 07:15:54 -0400
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0g=c3FL3X-_SuYp-=pds+r7VtaQpZESSNzNht9i0o94kw@mail.gmail.com>
+In-Reply-To: <20170713084804.GC352@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On Wed, Jul 12, 2017 at 10:40:31PM +0200, Rafael J. Wysocki wrote:
-> On Wed, Jul 12, 2017 at 9:10 PM, Imre Deak <imre.deak@intel.com> wrote:
-> > Hi,
-> >
-> > I noticed that acpi_target_system_state() returns ACPI_STATE_S0
-> > when called from a dev pm->freeze hook before restoring the hibernation
-> > image (PMSG_QUIESCE). Is this on purpose?
+On Thu, Jul 13, 2017 at 02:18:04PM +0530, Viresh Kumar wrote:
+> Workqueues or normal threads actually. Maybe I am completely wrong,
+> but this is how I believe things are going to be:
 > 
-> Yes, it is.
-
-Ok.
-
-> After all, the platform is not going to change the power state, is it?
-
-No it won't, so yes S0 is the proper target state in that sense.
-
+> Configuration: Both regulator and clk registers accessible over I2C
+> bus.
 > 
-> > One could argue that it should
-> > be ACPI_STATE_S4, matching the target state before creating the
-> > hibernation image (PMSG_FREEZE).
+> Scheduler calls schedutil, which eventually calls cpufreq driver (w/o
+> kthread). The cpufreq backend driver will queue a async request with
+> callback (with regulator core) to update regulator's constraints
+> (which can sleep as we need to talk over I2C). The callback will be
+> called once regulator is programmed. And we return right after
+> submitting the request with regulator core.
 > 
-> And what would the argument be then?
+> Now, I2C transfer will finish (i.e. regulator programmed) and the
+> driver specific callback will get called. It will try to change the
+> frequency now and wait (sleep) until it finishes. I hope the regulator
+> core wouldn't call the driver callback from interrupt context but some
+> sort of bottom half, maybe workqueue (That's what I was referring to
+> earlier).
+> 
+> And finally the clk is programmed and the state machine finished.
+> 
+> > > From what I can
+> > > tell an i2c bus does clk_prepare_enable() on registration and from that
+> > > point on clk_enable() is usable from atomic contexts.
+> 
+> That assumes that we can access registers of the I2C controller
+> atomically without sleeping. Not sure how many ARM platforms have I2C
+> controller connected over a slow bus though.
+> 
+> > > But afaict clk
+> > > stuff doesn't do interrupts at all.
+> 
+> The clk stuff may not need it if the clock controllers registers can
+> be accessed atomically. But if (as in my example) the clk controller
+> is also over the I2C bus, then the interrupt will be provided from I2C
+> bus and clk routines would return only after transfer is done.
 
-To me it makes sense to resume a device in pm->restore from the same
-device power state pm->freeze/PMSG_FREEZE suspended it to. This device
-power state can in turn depend on the platform target state and this
-latter state will be different in pm->freeze/PMSG_QUIESCE wrt.
-pm->freeze/PMSG_FREEZE.
+So no, that's not the idea at all.
 
-A driver could also just use a fixed device power state in pm->freeze
-independent of the platform target state. So I'm not saying
-acpi_target_system_state() is incorrect, just wanted to understand the
-logic behind it and how a driver can use it.
+The one thing we assume is that the I2C bus does indeed have interrupts
+(which isn't a given per se, but lacking that we're completely hosed).
 
---Imre
+For interrupt enabled I2C busses, we must be able to write to their
+registers from atomic context, otherwise the interrupts can't very well
+work.
+
+With that, you can drive the entire thing from the IRQ.
+
+
+I don't believe anyone is quite as silly as to put the regulator on a
+nested I2C; in which case I think you still _could_ do, but I'll just
+class that with failure of using a polling I2C bus for your regulator.
+
+
+As to the serialization, your driver can easily keep track of that and
+not allow a new transition to start while a previous is still in
+critical transit.
