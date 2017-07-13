@@ -1,89 +1,76 @@
-From: Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH v4 1/3] cpufreq: mediatek: Add support of cpufreq to
- MT2701/MT7623 SoC
-Date: Thu, 13 Jul 2017 11:54:38 +0800
-Message-ID: <1499918078.2392.14.camel@mtksdaap41>
-References: <cover.1499692967.git.sean.wang@mediatek.com>
-         <feabcfd53899954198c6620e9d9b68f4a3c55201.1499692967.git.sean.wang@mediatek.com>
-         <1499741386.12408.11.camel@mtksdaap41>
-         <12f23fb1-a145-bdf0-54c8-c2818ba75d9d@gmail.com>
-         <20170713031614.GH1679@vireshk-i7>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v5 2/5] tick: Add freeze timer events
+Date: Thu, 13 Jul 2017 06:54:35 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1707130641520.2332@nanos>
+References: <20170708000303.21863-1-dbasehore@chromium.org> <20170708000303.21863-2-dbasehore@chromium.org> <alpine.DEB.2.20.1707122248270.2510@nanos> <CAGAzgspJ1HoT_RsxCv-sGAWGeLw+cLCkN=kMUTika8fBeA2YxA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170713031614.GH1679@vireshk-i7>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, jamesjj.liao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, shunli.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, jdelvare-l3A5Bk7waGM@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <CAGAzgspJ1HoT_RsxCv-sGAWGeLw+cLCkN=kMUTika8fBeA2YxA@mail.gmail.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: "dbasehore ." <dbasehore@chromium.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, x86@kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2017-07-13 at 08:46 +0530, Viresh Kumar wrote:
-> On 12-07-17, 16:50, Matthias Brugger wrote:
-> > Hi Eddie,
-> > 
-> > On 07/11/2017 04:49 AM, Eddie Huang wrote:
-> > >Hi Sean,
-> > >
-> > >On Mon, 2017-07-10 at 22:23 +0800, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org wrote:
-> > >>From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> > >>
-> > >>MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
-> > >>single cluster and this hardware is also compatible with the existing
-> > >>driver through enabling CPU frequency feature with operating-points-v2
-> > >>bindings. Also, this driver actually supports all MediaTek SoCs, the
-> > >>Kconfig menu entry and file name itself should be updated with more
-> > >>generic name to drop "MT8173"
-> > >>
-> > >>Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> > >>Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> > >>Reviewed-by: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
-> > >>---
-> > >>  drivers/cpufreq/Kconfig.arm                              | 7 +++----
-> > >>  drivers/cpufreq/Makefile                                 | 2 +-
-> > >>  drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} | 2 ++
-> > >>  3 files changed, 6 insertions(+), 5 deletions(-)
-> > >>  rename drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} (99%)
-> > >>
-> > >
-> > >As Viresh mentioned, there are already many drivers use "mtk" as
+Derek,
+
+On Wed, 12 Jul 2017, dbasehore . wrote:
+> On Wed, Jul 12, 2017 at 2:25 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > On Fri, 7 Jul 2017, Derek Basehore wrote:
+> >> +/*
+> >> + * Clockevent device may run during freeze
+> >> + */
+> >> +# define CLOCK_EVT_FEAT_FREEZE_NONSTOP       0x000100
+> >
+> > Is that really restricted to freezing?
 > 
-> Do you have a link to when I mentioned this?
+> I'm not going to make the call on what firmware may do when it enters
+> suspend. Even if it's not supposed to do anything, it still might.
+
+The feature is a description of the hardware capability not of the
+way how it's used by software.
+
+> >> +     if (!clockevent_state_shutdown(dev)) {
+> >
+> > What puts the device in shutdown mode when the machine is in freeze state?
 > 
-> /me suffering from Amnesia ? :)
+> tick_freeze does through timekeeping_suspend or tick_suspend_local
+> depending on whether it's the last CPU to freeze or not.
 
-Sorry, my fault. It's from Jean. The link is 
-http://lists.infradead.org/pipermail/linux-arm-kernel/2017-July/517782.html
+Ok. I completely forgot about the inner workings of freeze. So this check
+for shutdown actually wants to have a printk, because that's a state which
+is wrong. The nonavailability of oneshot mode is just factual information
+that this is not possible and does not justify dmesg spam.
 
+> >> +     clockevents_tick_resume(dev);
+> >
+> > That looks wrong as well. What did call suspend on that device?
+> >
+> > I'm not aware that freeze will actually call suspend on anything down deep
+> > in the core code. Can you please explain this magic here?
 > 
-> > >filename prefix or postfix.To align with those files, I suggest use
-> > >mtk-cpufreq.c.I think there are not too many values to change all "mtk-"
-> > >to "mediatek-", but it is worth to have the same naming rule for
-> > >mediatek upstream driver.
-> > >
-> > 
-> > In the last submission Jean proposed to change all file names from
-> > mtk-*.[ch] to mediatek-*.[ch] as this will cause less confusion.
-> > 
-> > Viresh are you OK with that approach or do you prefer that we stay with mtk
-> > prefix? I think it makes sense to have a unique prefix and resolve the
-> > situation we now have with source files and Kconfig options.
-> > But TBH I have no strong feeling for any of the two prefixes.
+> tick_freeze in tick-common.c calls the tick suspend code.
+
+Fair enough.
+
+> > All of this lacks an explanation how any of this is safe vs. the normal
+> > operation of clock event devices and the tick device code.
+> >
+> > This lacks documentation of calling conventions and checks which make sure
+> > they are obeyed.
 > 
-> I am fine with both. Maybe don't resend for just that, mediatek
-> doesn't sound any bad.
+> If I get rid of passing in the cpu id, the only thing left to check
+> seems to be making sure that tick_clear_freeze_event is called on the
+> same CPU as tick_set_freeze_event.
 
-I am also fine with both. I think most people won't confuse about mtk
-and mediatek. I don't like send patches to just only change filenames
-and kconfig, especially kconfig modification will affect project
-defconfigs. My point is we shouldn't spend much time on this topic, and
-revisit filename when that driver need support new SoC, like this case.
+Yes, you want to store that information somewhere.
 
-Regards,
-Eddie
+> Am I missing something? I'll add Documentation.
 
+Please make that whole thing depend on a Kconfig option. There is no point
+having the code and the exports there for everyone while it has only a
+single user.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+
+	tglx
