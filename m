@@ -1,70 +1,47 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
  load-tracking support
-Date: Thu, 13 Jul 2017 15:06:12 +0100
-Message-ID: <5172dfcb-2d4c-6f90-671c-bd3639b44aab@arm.com>
-References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
- <12829054.TWIodSo4bb@aspire.rjw.lan> <20170710065443.GG2928@vireshk-i7>
- <4673356.gkeX7KYvlb@aspire.rjw.lan> <20170711063944.GA17115@vireshk-i7>
- <de0feb89-4759-b50c-e44b-a9a51984d396@arm.com>
- <d2b121f1-1fd4-2842-f5bd-110a76997b65@arm.com>
- <acd9c300-8be6-e87b-5583-191fd5bda94c@arm.com>
+Date: Thu, 13 Jul 2017 16:42:05 +0200
+Message-ID: <20170713144205.sv5wtoadazk65p5n@hirez.programming.kicks-ass.net>
+References: <22f004af-0158-8265-2da5-34743f294bfb@arm.com>
+ <12829054.TWIodSo4bb@aspire.rjw.lan>
+ <bac850da-6256-2a92-abfe-71d229cc99dc@arm.com>
+ <20170711060106.GL2928@vireshk-i7>
+ <45224055-7bf1-243b-9366-0f2d3442ef59@arm.com>
+ <20170712040917.GG17115@vireshk-i7>
+ <20170712083125.at7jic63ozoxoqap@hirez.programming.kicks-ass.net>
+ <20170712092755.GD1679@vireshk-i7>
+ <20170712111426.lmbwowbrvjl55aft@hirez.programming.kicks-ass.net>
+ <a7b74ee0-24ef-5cc8-89e6-50c705a594f4@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:38908 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751193AbdGMOGR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Jul 2017 10:06:17 -0400
-In-Reply-To: <acd9c300-8be6-e87b-5583-191fd5bda94c@arm.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <a7b74ee0-24ef-5cc8-89e6-50c705a594f4@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 
+On Thu, Jul 13, 2017 at 03:04:09PM +0100, Sudeep Holla wrote:
 
+> The question is whether we *need* to know the completion of frequency
+> transition. What is the impact of absence of it ? I am considering
+> platforms which may take up to a ms or more to do the actual transition
+> in the firmware.
 
-On 13/07/17 14:08, Dietmar Eggemann wrote:
-> On 13/07/17 13:40, Sudeep Holla wrote:
->>
->>
->> On 11/07/17 16:21, Dietmar Eggemann wrote:
->>> On 11/07/17 07:39, Viresh Kumar wrote:
->>>> On 10-07-17, 14:46, Rafael J. Wysocki wrote:
-> 
-> [...]
-> 
->>> Like I said in the other email, since for (future)
->>> arm/arm64 fast-switch driver, the return value of
->>> cpufreq_driver->fast_switch() does not give us the information that the
->>> frequency value did actually change, we have to implement
->>
->> I was under the impression that we strictly don't care about that
->> information when I started exploring the fast_switch with the standard
->> firmware interface on ARM platforms(until if and when ARM provides an
->> instruction to achieve that).
->>
->> If f/w failed to change the frequency, will that be not corrected in the
->> next sample or instance. I would like to know the impact of absence of
->> such notifications.
-> 
-> In the meantime we agreed that we have to invoke frequency invariance
-> from within the cpufreq driver.
-> 
-> For a fast-switch driver I would have to put the call to
-> arch_set_freq_scale() somewhere where I know that the frequency has been
-> set.
-> 
-> Without a notification (from the firmware) that the frequency has been
-> set, I would have to call arch_set_freq_scale() somewhere in the
-> driver::fast_switch() call assuming that the frequency has been actually
-> set.
-> 
+So on x86 we can recover from not knowing by means of the APERF/MPERF
+thing, which gives us the average effective frequency over the last
+period.
 
-Yes, that's what I was thinking too.
+If you lack that you need something to update the actual effective
+frequency.
 
--- 
-Regards,
-Sudeep
+Changing the effective frequency at request time might confuse things --
+esp. if the request might not be honoured at all or can take a
+significant time to complete. Not to mention that _IF_ you rely on the
+effective frequency to set other clocks things can come unstuck.
+
+So unless you go the whole distance and do APERF/MPERF like things, I
+think it would be very good to have a notification of completion (and
+possibly a read-back of the effective frequency that is now set).
