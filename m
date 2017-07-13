@@ -1,220 +1,65 @@
-From: Kiran Gunda <kgunda@codeaurora.org>
-Subject: [PATCH V1] thermal: qcom-spmi-temp-alarm: add support for GEN2 PMIC peripherals
-Date: Thu, 13 Jul 2017 17:39:32 +0530
-Message-ID: <1499947772-19199-1-git-send-email-kgunda@codeaurora.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:52958 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751157AbdGMMKB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jul 2017 08:10:01 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 02/10] cpufreq: provide data for frequency-invariant
+ load-tracking support
+Date: Thu, 13 Jul 2017 13:40:39 +0100
+Message-ID: <d2b121f1-1fd4-2842-f5bd-110a76997b65@arm.com>
+References: <20170706094948.8779-1-dietmar.eggemann@arm.com>
+ <12829054.TWIodSo4bb@aspire.rjw.lan> <20170710065443.GG2928@vireshk-i7>
+ <4673356.gkeX7KYvlb@aspire.rjw.lan> <20170711063944.GA17115@vireshk-i7>
+ <de0feb89-4759-b50c-e44b-a9a51984d396@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <de0feb89-4759-b50c-e44b-a9a51984d396@arm.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, Kiran Gunda <kgunda@codeaurora.org>
 
-From: David Collins <collinsd@codeaurora.org>
 
-Add support for the TEMP_ALARM GEN2 PMIC peripheral subtype.  The
-GEN2 subtype defines an over temperature state with hysteresis
-instead of stage in the status register.  There are two GEN2
-states corresponding to stages 1 and 2.
 
-Signed-off-by: David Collins <collinsd@codeaurora.org>
-Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
----
- drivers/thermal/qcom-spmi-temp-alarm.c | 92 ++++++++++++++++++++++++++--------
- 1 file changed, 71 insertions(+), 21 deletions(-)
+On 11/07/17 16:21, Dietmar Eggemann wrote:
+> On 11/07/17 07:39, Viresh Kumar wrote:
+>> On 10-07-17, 14:46, Rafael J. Wysocki wrote:
+>>> This particular change is about a new feature, so making it in the core is OK
+>>> in two cases IMO: (a) when you actively want everyone to be affected by it and
+>>
+>> IMO this change should be done for the whole ARM architecture. And if some
+>> regression happens due to this, then we come back and solve it.
+>>
+>>> (b) when the effect of it on the old systems should not be noticeable.
+>>
+>> I am not sure about the effects of this on performance really.
+>>
+>> @Dietmar: Any inputs for that ?
+> 
+> Like I said in the other email, since for (future)
+> arm/arm64 fast-switch driver, the return value of
+> cpufreq_driver->fast_switch() does not give us the information that the
+> frequency value did actually change, we have to implement
 
-diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
-index f502419..a5e17ba 100644
---- a/drivers/thermal/qcom-spmi-temp-alarm.c
-+++ b/drivers/thermal/qcom-spmi-temp-alarm.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
-+ * Copyright (c) 2011-2015, 2017, The Linux Foundation. All rights reserved.
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 and
-@@ -11,6 +11,7 @@
-  * GNU General Public License for more details.
-  */
- 
-+#include <linux/bitops.h>
- #include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/iio/consumer.h>
-@@ -29,13 +30,17 @@
- #define QPNP_TM_REG_ALARM_CTRL		0x46
- 
- #define QPNP_TM_TYPE			0x09
--#define QPNP_TM_SUBTYPE			0x08
-+#define QPNP_TM_SUBTYPE_GEN1		0x08
-+#define QPNP_TM_SUBTYPE_GEN2		0x09
- 
--#define STATUS_STAGE_MASK		0x03
-+#define STATUS_GEN1_STAGE_MASK		GENMASK(1, 0)
-+#define STATUS_GEN2_STATE_MASK		GENMASK(6, 4)
-+#define STATUS_GEN2_STATE_SHIFT		4
- 
--#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
-+#define SHUTDOWN_CTRL1_OVERRIDE_MASK	GENMASK(7, 6)
-+#define SHUTDOWN_CTRL1_THRESHOLD_MASK	GENMASK(1, 0)
- 
--#define ALARM_CTRL_FORCE_ENABLE		0x80
-+#define ALARM_CTRL_FORCE_ENABLE		BIT(7)
- 
- /*
-  * Trip point values based on threshold control
-@@ -58,6 +63,7 @@
- struct qpnp_tm_chip {
- 	struct regmap			*map;
- 	struct thermal_zone_device	*tz_dev;
-+	unsigned int			subtype;
- 	long				temp;
- 	unsigned int			thresh;
- 	unsigned int			stage;
-@@ -66,6 +72,9 @@ struct qpnp_tm_chip {
- 	struct iio_channel		*adc;
- };
- 
-+/* This array maps from GEN2 alarm state to GEN1 alarm stage */
-+static const unsigned int alarm_state_map[8] = {0, 1, 1, 2, 2, 3, 3, 3};
-+
- static int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr, u8 *data)
- {
- 	unsigned int val;
-@@ -84,30 +93,59 @@ static int qpnp_tm_write(struct qpnp_tm_chip *chip, u16 addr, u8 data)
- 	return regmap_write(chip->map, chip->base + addr, data);
- }
- 
-+/**
-+ * qpnp_tm_get_temp_stage() - return over-temperature stage
-+ * @chip:		Pointer to the qpnp_tm chip
-+ *
-+ * Return: stage (GEN1) or state (GEN2) on success, or errno on failure.
-+ */
-+static int qpnp_tm_get_temp_stage(struct qpnp_tm_chip *chip)
-+{
-+	int ret;
-+	u8 reg = 0;
-+
-+	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1)
-+		ret = reg & STATUS_GEN1_STAGE_MASK;
-+	else
-+		ret = (reg & STATUS_GEN2_STATE_MASK) >> STATUS_GEN2_STATE_SHIFT;
-+
-+	return ret;
-+}
-+
- /*
-  * This function updates the internal temp value based on the
-  * current thermal stage and threshold as well as the previous stage
-  */
- static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
- {
--	unsigned int stage;
-+	unsigned int stage, stage_new, stage_old;
- 	int ret;
--	u8 reg = 0;
- 
--	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-+	ret = qpnp_tm_get_temp_stage(chip);
- 	if (ret < 0)
- 		return ret;
-+	stage = ret;
- 
--	stage = reg & STATUS_STAGE_MASK;
-+	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1) {
-+		stage_new = stage;
-+		stage_old = chip->stage;
-+	} else {
-+		stage_new = alarm_state_map[stage];
-+		stage_old = alarm_state_map[chip->stage];
-+	}
- 
--	if (stage > chip->stage) {
-+	if (stage_new > stage_old) {
- 		/* increasing stage, use lower bound */
--		chip->temp = (stage - 1) * TEMP_STAGE_STEP +
-+		chip->temp = (stage_new - 1) * TEMP_STAGE_STEP +
- 			     chip->thresh * TEMP_THRESH_STEP +
- 			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
--	} else if (stage < chip->stage) {
-+	} else if (stage_new < stage_old) {
- 		/* decreasing stage, use upper bound */
--		chip->temp = stage * TEMP_STAGE_STEP +
-+		chip->temp = stage_new * TEMP_STAGE_STEP +
- 			     chip->thresh * TEMP_THRESH_STEP -
- 			     TEMP_STAGE_HYSTERESIS + TEMP_THRESH_MIN;
- 	}
-@@ -162,28 +200,37 @@ static irqreturn_t qpnp_tm_isr(int irq, void *data)
-  */
- static int qpnp_tm_init(struct qpnp_tm_chip *chip)
- {
-+	unsigned int stage;
- 	int ret;
--	u8 reg;
-+	u8 reg = 0;
- 
--	chip->thresh = THRESH_MIN;
-+	ret = qpnp_tm_read(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, &reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	chip->thresh = reg & SHUTDOWN_CTRL1_THRESHOLD_MASK;
- 	chip->temp = DEFAULT_TEMP;
- 
--	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-+	ret = qpnp_tm_get_temp_stage(chip);
- 	if (ret < 0)
- 		return ret;
-+	chip->stage = ret;
- 
--	chip->stage = reg & STATUS_STAGE_MASK;
-+	stage = chip->subtype == QPNP_TM_SUBTYPE_GEN1
-+		? chip->stage : alarm_state_map[chip->stage];
- 
--	if (chip->stage)
-+	if (stage)
- 		chip->temp = chip->thresh * TEMP_THRESH_STEP +
--			     (chip->stage - 1) * TEMP_STAGE_STEP +
-+			     (stage - 1) * TEMP_STAGE_STEP +
- 			     TEMP_THRESH_MIN;
- 
- 	/*
- 	 * Set threshold and disable software override of stage 2 and 3
- 	 * shutdowns.
- 	 */
--	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
-+	chip->thresh = THRESH_MIN;
-+	reg &= ~(SHUTDOWN_CTRL1_OVERRIDE_MASK | SHUTDOWN_CTRL1_THRESHOLD_MASK);
-+	reg |= chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
- 	ret = qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
- 	if (ret < 0)
- 		return ret;
-@@ -242,13 +289,16 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 		goto fail;
- 	}
- 
--	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
-+	if (type != QPNP_TM_TYPE || (subtype != QPNP_TM_SUBTYPE_GEN1
-+				     && subtype != QPNP_TM_SUBTYPE_GEN2)) {
- 		dev_err(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
- 			type, subtype);
- 		ret = -ENODEV;
- 		goto fail;
- 	}
- 
-+	chip->subtype = subtype;
-+
- 	ret = qpnp_tm_init(chip);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "init failed\n");
+I was under the impression that we strictly don't care about that
+information when I started exploring the fast_switch with the standard
+firmware interface on ARM platforms(until if and when ARM provides an
+instruction to achieve that).
+
+If f/w failed to change the frequency, will that be not corrected in the
+next sample or instance. I would like to know the impact of absence of
+such notifications.
+
+> arch_set_freq_scale() in the driver.
+> This means that we probably only implement this in the subset of drivers
+> which will be used in platforms on which we want to have
+> frequency-invariant load-tracking.
+> 
+> A future aperf/mperf like counter FIE solution can give us arch-wide
+> support when those counters are available.
+> 
+
+Agreed.
+
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
- a Linux Foundation Collaborative Project
+Regards,
+Sudeep
