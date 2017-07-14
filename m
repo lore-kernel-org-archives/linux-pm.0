@@ -1,128 +1,59 @@
-From: Prashanth Prakash <pprakash@codeaurora.org>
-Subject: [PATCH 1/2] thermal: add a sysfs entry for thermal zone description
-Date: Fri, 14 Jul 2017 11:48:54 -0600
-Message-ID: <1500054535-975-2-git-send-email-pprakash@codeaurora.org>
-References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC V2 1/6] cpufreq: Replace "max_transition_latency" with "dynamic_switching"
+Date: Sat, 15 Jul 2017 00:06:24 +0200
+Message-ID: <2309380.IRBF8BkiFH@aspire.rjw.lan>
+References: <cover.1499853492.git.viresh.kumar@linaro.org> <20170714070142.GA14515@isilmar-4.linta.de> <CAJZ5v0hagTXFmV94abxeEL5=dPn0FQtW7SogyK6iJd6ika+GUQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:38052 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750857AbdGNR7C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2017 13:59:02 -0400
-In-Reply-To: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46997 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751132AbdGNWOK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2017 18:14:10 -0400
+In-Reply-To: <CAJZ5v0hagTXFmV94abxeEL5=dPn0FQtW7SogyK6iJd6ika+GUQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
-Cc: rui.zhang@intel.com, edubezval@gmail.com, Prashanth Prakash <pprakash@codeaurora.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Add a method to thermal_zone_device_ops to read the description of a
-thermal zone. Use the same method to expose the description to the
-userspace via a sysfs entry.
+On Friday, July 14, 2017 01:11:58 PM Rafael J. Wysocki wrote:
+> On Fri, Jul 14, 2017 at 9:01 AM, Dominik Brodowski
+> <linux@dominikbrodowski.net> wrote:
+> > On Thu, Jul 13, 2017 at 06:19:53PM +0200, Rafael J. Wysocki wrote:
+> >> On Thu, Jul 13, 2017 at 7:40 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >> > There is no limitation in the ondemand or conservative governors which
+> >> > disallow the transition_latency to be greater than 10 ms.
+> >> >
+> >> > The max_transition_latency field is rather used to disallow automatic
+> >> > dynamic frequency switching for platforms which didn't wanted these
+> >> > governors to run.
+> >> >
+> >> > Replace max_transition_latency with a boolean (dynamic_switching) and
+> >> > check for transition_latency == CPUFREQ_ETERNAL along with that. This
+> >> > makes it pretty straight forward to read/understand now.
+> >>
+> >> Well, using CPUFREQ_ETERNAL for that on the driver side is still not
+> >> particularly straightforward IMO, so maybe add a
+> >> "no_dynamic_switching" to the driver structure and set it to "true"
+> >> for the one driver in question?
+> >
+> > IIRC it's not just one driver which sets the latency to CPUFREQ_ETERNAL, and
+> > where dynamic switching might be harmful or at least lead to undefined
+> > behavior.
+> 
+> OK
+> 
+> Still, though, using CPUFREQ_ETERNAL to indicate the "no dynamic
+> switching" condition is somewhat convoluted, so why don't we have a
+> flag to *explicitly* say that instead?
+> 
+> Do you know which drivers they are or is it just all drivers that use
+> CPUFREQ_ETERNAL?
 
-Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
----
- Documentation/thermal/sysfs-api.txt |  6 ++++++
- drivers/thermal/thermal_sysfs.c     | 19 +++++++++++++++++++
- include/linux/thermal.h             |  4 ++++
- 3 files changed, 29 insertions(+)
+Well, after the $subject patch it effectively is all drivers that use
+CPUFREQ_ETERNAL anyway, so it looks like we actually can do a complete
+switch-over.
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index bb9a0a5..b6aa417 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -62,6 +62,7 @@ temperature) and throttle appropriate devices.
- 			will be fired.
- 	.set_emul_temp: set the emulation temperature which helps in debugging
- 			different threshold temperature points.
-+	.get_desc: get a user friendly description for a thermal zone (optional)
-     tzp: thermal zone platform parameters.
-     passive_delay: number of milliseconds to wait between polls when
- 	performing passive cooling.
-@@ -280,6 +281,7 @@ Thermal zone device sys I/F, created once it's registered:
-     |---integral_cutoff:        Offset above which errors are accumulated
-     |---slope:                  Slope constant applied as linear extrapolation
-     |---offset:                 Offset constant applied as linear extrapolation
-+    |---desc			User friendly description/name
- 
- Thermal cooling device sys I/F, created once it's registered:
- /sys/class/thermal/cooling_device[0-*]:
-@@ -329,6 +331,10 @@ temp
- 	Unit: millidegree Celsius
- 	RO, Required
- 
-+desc
-+	Provides a user friendly description/name for thermal zone
-+        RO, Optional
-+
- mode
- 	One of the predefined values in [enabled, disabled].
- 	This file gives information about the algorithm that is currently
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index a694de9..46d961d 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -34,6 +34,23 @@
- }
- 
- static ssize_t
-+desc_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	int ret;
-+	char desc_str[THERMAL_MAX_DESC_STR_LEN];
-+
-+	if (!tz->ops->get_desc)
-+		return scnprintf(buf, PAGE_SIZE, "<not supported>\n");
-+
-+	ret = tz->ops->get_desc(tz, desc_str, THERMAL_MAX_DESC_STR_LEN);
-+	if (ret)
-+		return ret;
-+
-+	return scnprintf(buf, THERMAL_MAX_DESC_STR_LEN, "%s\n", desc_str);
-+}
-+
-+static ssize_t
- temp_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
-@@ -397,6 +414,7 @@
-  * present on the sysfs interface.
-  */
- static DEVICE_ATTR(type, 0444, type_show, NULL);
-+static DEVICE_ATTR(desc, 0444, desc_show, NULL);
- static DEVICE_ATTR(temp, 0444, temp_show, NULL);
- static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
- static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
-@@ -411,6 +429,7 @@ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
- static struct attribute *thermal_zone_dev_attrs[] = {
- 	&dev_attr_type.attr,
- 	&dev_attr_temp.attr,
-+	&dev_attr_desc.attr,
- #if (IS_ENABLED(CONFIG_THERMAL_EMULATION))
- 	&dev_attr_emul_temp.attr,
- #endif
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index dab11f9..bd8377a 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -47,6 +47,9 @@
- /* use value, which < 0K, to indicate an invalid/uninitialized temperature */
- #define THERMAL_TEMP_INVALID	-274000
- 
-+/* Maximum length of thermal zone description string */
-+#define THERMAL_MAX_DESC_STR_LEN 32
-+
- /* Unit conversion macros */
- #define DECI_KELVIN_TO_CELSIUS(t)	({			\
- 	long _t = (t);						\
-@@ -127,6 +130,7 @@ struct thermal_zone_device_ops {
- 			  enum thermal_trend *);
- 	int (*notify) (struct thermal_zone_device *, int,
- 		       enum thermal_trip_type);
-+	int (*get_desc) (struct thermal_zone_device *, char *, int);
- };
- 
- struct thermal_cooling_device_ops {
--- 
-Qualcomm Datacenter Technologies on behalf of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the
-Code Aurora Forum, a Linux Foundation Collaborative Project.
+Thanks,
+Rafael
