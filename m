@@ -1,94 +1,45 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH v2] PM / Domains: defer dev_pm_domain_set() until genpd->attach_dev succeeds if present
-Date: Fri, 14 Jul 2017 11:51:48 +0100
-Message-ID: <1500029508-7103-1-git-send-email-sudeep.holla@arm.com>
-References: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com>
+From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Subject: Re: [PATCH 2/4] thermal: imx: Add support for reading OCOTP through
+ nvmem
+Date: Fri, 14 Jul 2017 11:54:11 +0100
+Message-ID: <4ad5c6dd-8179-360f-9a90-51f13565956f@linaro.org>
+References: <cover.1499347157.git.leonard.crestez@nxp.com>
+ <68b476b35b0c0cbce21da0e87338323bb77e9bc4.1499347157.git.leonard.crestez@nxp.com>
+ <20170712063629.GD3172@dragon>
+ <3dd43cba-02f2-204c-c3a2-582827018ef8@linaro.org>
+ <1500029388.11612.54.camel@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:47010 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753577AbdGNKwB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Jul 2017 06:52:01 -0400
-In-Reply-To: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com>
+Received: from mail-wm0-f47.google.com ([74.125.82.47]:38763 "EHLO
+        mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753486AbdGNKyO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2017 06:54:14 -0400
+Received: by mail-wm0-f47.google.com with SMTP id f67so18817665wmh.1
+        for <linux-pm@vger.kernel.org>; Fri, 14 Jul 2017 03:54:13 -0700 (PDT)
+In-Reply-To: <1500029388.11612.54.camel@nxp.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "# v4 . 0+" <stable@vger.kernel.org>
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <LW@KARO-electronics.de>, Fabio Estevam <fabio.estevam@nxp.com>, Dong Aisheng <aisheng.dong@nxp.com>, Bai Ping <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
-If the genpd->attach_dev or genpd->power_on fails, genpd_dev_pm_attach
-may return -EPROBE_DEFER initially. However genpd_alloc_dev_data sets
-the PM domain for the device unconditionally.
 
-When subsequent attempts are made to call genpd_dev_pm_attach, it may
-return -EEXISTS checking dev->pm_domain without re-attempting to call
-attach_dev or power_on.
 
-platform_drv_probe then attempts to call drv->probe as the return value
--EEXIST != -EPROBE_DEFER, which may end up in a situation where the
-device is accessed without it's power domain switched on.
+On 14/07/17 11:49, Leonard Crestez wrote:
+>>>> +	}
+>>>> +	memcpy(val, buf, sizeof(*val));
+>> This can overflow the memory allocated to val, we should be careful here
+>> not to do so.
+>> limit this to sizeof(u32) should be good. Also add some sanity checks to
+>> make sure that len is atleast 4 bytes.
+> I'm not sure what you mean, isn't this already done? There is an
+> explicit check above that the read len is exactly as expected. It's
+> just that the limit is written as sizeof(*val) rather than sizeof(u32).
 
-Fixes: f104e1e5ef57 ("PM / Domains: Re-order initialization of generic_pm_domain_data")
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: <stable@vger.kernel.org> # v4.0+
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/base/power/domain.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Opps, I overlooked the type.. it looks okay.
 
-Hi,
-
-I have added Cc/Fixes tags based on the original commit that caused the issue.
-I need to workout a patch that can cleanly apply before commit 989561de9b51
-("PM / Domains: add setter for dev.pm_domain"), i.e. for v4.0.x to v4.4.x
-This patch should apply from v4.5.x onwards.
-
-Let me know if I got anything wrong.
-
-v1->v2: Moved dev_pm_domain_set(dev, NULL) from genpd_free_dev_data
-
-Regards,
-Sudeep
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index da49a8383dc3..2d9178660061 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1168,8 +1168,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
- 
- 	spin_unlock_irq(&dev->power.lock);
- 
--	dev_pm_domain_set(dev, &genpd->domain);
--
- 	return gpd_data;
- 
-  err_free:
-@@ -1183,8 +1181,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
- static void genpd_free_dev_data(struct device *dev,
- 				struct generic_pm_domain_data *gpd_data)
- {
--	dev_pm_domain_set(dev, NULL);
--
- 	spin_lock_irq(&dev->power.lock);
- 
- 	dev->power.subsys_data->domain_data = NULL;
-@@ -1221,6 +1217,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 	if (ret)
- 		goto out;
- 
-+	dev_pm_domain_set(dev, &genpd->domain);
-+
- 	genpd->device_count++;
- 	genpd->max_off_time_changed = true;
- 
-@@ -1282,6 +1280,8 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
- 	if (genpd->detach_dev)
- 		genpd->detach_dev(genpd, dev);
- 
-+	dev_pm_domain_set(dev, NULL);
-+
- 	list_del_init(&pdd->list_node);
- 
- 	genpd_unlock(genpd);
--- 
-2.7.4
+thanks,
+srini
+> 
