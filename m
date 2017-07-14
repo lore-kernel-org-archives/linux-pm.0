@@ -1,184 +1,238 @@
-From: "Bogdan, Dragos" <Dragos.Bogdan-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v5 3/3] power: supply: ltc2941-battery-gauge: Add
- LTC2944 support
-Date: Fri, 14 Jul 2017 14:55:35 +0000
-Message-ID: <6067964B99C6A049AA5840B6F7BB2D0ABDAAD294@NWD2MBX5.ad.analog.com>
+From: "Bogdan, Dragos" <Dragos.Bogdan@analog.com>
+Subject: Re: [PATCH v5 1/3] power: supply: ltc2941-battery-gauge: Prepare
+ for LTC2942 and LTC2944
+Date: Fri, 14 Jul 2017 15:05:13 +0000
+Message-ID: <6067964B99C6A049AA5840B6F7BB2D0ABDAAD2C7@NWD2MBX5.ad.analog.com>
 References: <20170712010758.66jx54qbdjfyt6x6@lenoch>
- <20170712011227.jpc5zhotxg4iqjlx@lenoch>
+ <20170712010926.phvueosxw4o3ey44@lenoch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn3nam01on0081.outbound.protection.outlook.com ([104.47.33.81]:51663
+        "EHLO NAM01-BN3-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1754120AbdGNPFU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Jul 2017 11:05:20 -0400
 Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ladislav Michl <ladis-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: Mike Looijmans <mike.looijmans-Oq418RWZeHk@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ladislav Michl <ladis@linux-mips.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Cc: Mike Looijmans <mike.looijmans@topic.nl>, Javier Martinez Canillas <javier@osg.samsung.com>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 
-On 07/12/2017 04:13 AM, Ladislav Michl wrote:=0A=
-> From: Dragos Bogdan <dragos.bogdan-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>=0A=
+On 07/12/2017 04:09 AM, Ladislav Michl wrote:=0A=
+> In order to support LTC2942 which has temperature registers=0A=
+> at different offsets than LTC2943 use following register naming=0A=
+> scheme (prefixes):=0A=
+> - LTC294X_ common registers=0A=
+> - LTC2942_ chips specific registers=0A=
+> - LTC2943_ specific registers=0A=
 >=0A=
-> LTC2944 is compatible with LTC2943, but used different=0A=
-> voltage and current computing constants.=0A=
+> LTC2944 is compatible with LTC2943 but uses different constants=0A=
+> to compute voltage and current, so replace num_regs misused=0A=
+> for device indentification with real device id to discriminate=0A=
+> between those two.=0A=
 >=0A=
-> Signed-off-by: Dragos Bogdan <dragos.bogdan-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>=0A=
-> [ladis: fix voltage conversion, rebase on LTC2942 patchset]=0A=
-> Signed-off-by: Ladislav Michl <ladis-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>=0A=
+> There are no functional changes.=0A=
+>=0A=
+> Signed-off-by: Ladislav Michl <ladis@linux-mips.org>=0A=
 > ---=0A=
->  Dragos, LTC2944 datasheet states 500K full range temperature,=0A=
->  but the rest of paragraph is the same as in LTC2943 datasheet=0A=
->  (LTC2943 is using 510K full range). As Linear was recently accuired=0A=
->  by Analog, please ask for the truth there, so we can write it=0A=
->  into code comment. Thank you!=0A=
->  http://cds.linear.com/docs/en/datasheet/2943fa.pdf=0A=
->  http://cds.linear.com/docs/en/datasheet/2944f.pdf=0A=
->  both on pdf page 15=0A=
-=0A=
-The Full-Scale Temperature is 510 K (as it is displayed in the Electrical C=
-haracteristics section)=0A=
-for both LTC2943 and LTC2944 parts, so the same computing formula should be=
- used.=0A=
-=0A=
-For LTC2944, the 500 K value used in the Applications Information section i=
-s an error that will be=0A=
-fixed in the next version of the datasheet.=0A=
-=0A=
 >  Changes:=0A=
->  - v2: fixed voltage and current conversion=0A=
->  - v3: skipped=0A=
->  - v4: skipped=0A=
->  - v5: fixed voltage conversion overflow, rebased on LTC2942 patchset=0A=
+>  - v2: None=0A=
+>  - v3: Extend commit message=0A=
+>  - v4: None=0A=
+>  - v5: Count on LTC2944 too=0A=
 >=0A=
->  .../devicetree/bindings/power/supply/ltc2941.txt   | 12 +++++------=0A=
->  drivers/power/supply/ltc2941-battery-gauge.c       | 24 ++++++++++++++++=
-+-----=0A=
->  2 files changed, 25 insertions(+), 11 deletions(-)=0A=
+>  drivers/power/supply/ltc2941-battery-gauge.c | 66 +++++++++++++++-------=
+------=0A=
+>  1 file changed, 36 insertions(+), 30 deletions(-)=0A=
 >=0A=
-> diff --git a/Documentation/devicetree/bindings/power/supply/ltc2941.txt b=
-/Documentation/devicetree/bindings/power/supply/ltc2941.txt=0A=
-> index 8ec10366295d..3b9ba147b041 100644=0A=
-> --- a/Documentation/devicetree/bindings/power/supply/ltc2941.txt=0A=
-> +++ b/Documentation/devicetree/bindings/power/supply/ltc2941.txt=0A=
-> @@ -1,14 +1,14 @@=0A=
-> -binding for LTC2941, LTC2942 and LTC2943 battery gauges=0A=
-> +binding for LTC2941, LTC2942, LTC2943 and LTC2944 battery gauges=0A=
->  =0A=
->  All chips measure battery capacity.=0A=
->  The LTC2942 is pin compatible with the LTC2941, it adds voltage and=0A=
-> -temperature monitoring, and is runtime detected. LTC2943 is software=0A=
-> -compatible, uses a slightly different conversion formula for the=0A=
-> -charge counter and adds voltage, current and temperature monitoring.=0A=
-> +temperature monitoring, and is runtime detected. LTC2943 and LTC2944=0A=
-> +is software compatible, uses a slightly different conversion formula=0A=
-> +for the charge counter and adds voltage, current and temperature monitor=
-ing.=0A=
->  =0A=
->  Required properties:=0A=
-> -- compatible: Should contain "lltc,ltc2941", "lltc,ltc2942" or "lltc,ltc=
-2943"=0A=
-> -    which also indicates the type of I2C chip attached.=0A=
-> +- compatible: Should contain "lltc,ltc2941", "lltc,ltc2942", "lltc,ltc29=
-43"=0A=
-> +    or "lltc,ltc2944" which also indicates the type of I2C chip attached=
-.=0A=
->  - reg: The 7-bit I2C address.=0A=
->  - lltc,resistor-sense: The sense resistor value in milli-ohms. Can be a =
-32-bit=0A=
->      negative value when the battery has been connected to the wrong end =
-of the=0A=
 > diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power=
 /supply/ltc2941-battery-gauge.c=0A=
-> index f67fa8d8009e..b257ec943041 100644=0A=
+> index 7efb908f4451..7e264e8f28ab 100644=0A=
 > --- a/drivers/power/supply/ltc2941-battery-gauge.c=0A=
 > +++ b/drivers/power/supply/ltc2941-battery-gauge.c=0A=
-> @@ -1,6 +1,6 @@=0A=
->  /*=0A=
-> - * I2C client/driver for the Linear Technology LTC2941, LTC2942 and LTC2=
-943=0A=
-> - * Battery Gas Gauge IC=0A=
-> + * I2C client/driver for the Linear Technology LTC2941, LTC2942, LTC2943=
+> @@ -34,16 +34,21 @@ enum ltc294x_reg {=0A=
+>  	LTC294X_REG_CONTROL		=3D 0x01,=0A=
+>  	LTC294X_REG_ACC_CHARGE_MSB	=3D 0x02,=0A=
+>  	LTC294X_REG_ACC_CHARGE_LSB	=3D 0x03,=0A=
+> -	LTC294X_REG_THRESH_HIGH_MSB	=3D 0x04,=0A=
+> -	LTC294X_REG_THRESH_HIGH_LSB	=3D 0x05,=0A=
+> -	LTC294X_REG_THRESH_LOW_MSB	=3D 0x06,=0A=
+> -	LTC294X_REG_THRESH_LOW_LSB	=3D 0x07,=0A=
+> -	LTC294X_REG_VOLTAGE_MSB	=3D 0x08,=0A=
+> -	LTC294X_REG_VOLTAGE_LSB	=3D 0x09,=0A=
+> -	LTC294X_REG_CURRENT_MSB	=3D 0x0E,=0A=
+> -	LTC294X_REG_CURRENT_LSB	=3D 0x0F,=0A=
+> -	LTC294X_REG_TEMPERATURE_MSB	=3D 0x14,=0A=
+> -	LTC294X_REG_TEMPERATURE_LSB	=3D 0x15,=0A=
+> +	LTC294X_REG_VOLTAGE_MSB		=3D 0x08,=0A=
+> +	LTC294X_REG_VOLTAGE_LSB		=3D 0x09,=0A=
+> +	LTC2942_REG_TEMPERATURE_MSB	=3D 0x0C,=0A=
+> +	LTC2942_REG_TEMPERATURE_LSB	=3D 0x0D,=0A=
+> +	LTC2943_REG_CURRENT_MSB		=3D 0x0E,=0A=
+> +	LTC2943_REG_CURRENT_LSB		=3D 0x0F,=0A=
+> +	LTC2943_REG_TEMPERATURE_MSB	=3D 0x14,=0A=
+> +	LTC2943_REG_TEMPERATURE_LSB	=3D 0x15,=0A=
+> +};=0A=
+> +=0A=
+> +enum ltc294x_id {=0A=
+> +	LTC2941_ID,=0A=
+> +	LTC2942_ID,=0A=
+> +	LTC2943_ID,=0A=
+> +	LTC2944_ID,=0A=
+>  };=0A=
 =0A=
-> + * and LTC2944 Battery Gas Gauge IC=0A=
->   *=0A=
->   * Copyright (C) 2014 Topic Embedded Systems=0A=
->   *=0A=
-> @@ -154,7 +154,8 @@ static int ltc294x_reset(const struct ltc294x_info *i=
+Since v6 is required because of the bug present in [PATCH v5 3/3], I would =
+not define here LTC2942_ID=0A=
+and LTC2944_ID. They should be defined only when the support for these two =
+parts is added (part 2 and=0A=
+part 3 of the patch).=0A=
+=0A=
+>  =0A=
+>  #define LTC2943_REG_CONTROL_MODE_MASK (BIT(7) | BIT(6))=0A=
+> @@ -54,15 +59,12 @@ enum ltc294x_reg {=0A=
+>  	((x << 3) & LTC294X_REG_CONTROL_PRESCALER_MASK)=0A=
+>  #define LTC294X_REG_CONTROL_ALCC_CONFIG_DISABLED	0=0A=
+>  =0A=
+> -#define LTC2941_NUM_REGS	0x08=0A=
+> -#define LTC2943_NUM_REGS	0x18=0A=
+> -=0A=
+>  struct ltc294x_info {=0A=
+>  	struct i2c_client *client;	/* I2C Client pointer */=0A=
+>  	struct power_supply *supply;	/* Supply pointer */=0A=
+>  	struct power_supply_desc supply_desc;	/* Supply description */=0A=
+>  	struct delayed_work work;	/* Work scheduler */=0A=
+> -	unsigned long num_regs;	/* Number of registers (chip type) */=0A=
+> +	enum ltc294x_id id;		/* Chip type */=0A=
+>  	int charge;	/* Last charge register content */=0A=
+>  	int r_sense;	/* mOhm */=0A=
+>  	int Qlsb;	/* nAh */=0A=
+> @@ -146,7 +148,7 @@ static int ltc294x_reset(const struct ltc294x_info *i=
 nfo, int prescaler_exp)=0A=
->  	case LTC2942_ID:	/* 2942 measures every 2 sec */=0A=
->  		control |=3D LTC2942_REG_CONTROL_MODE_SCAN;=0A=
->  		break;=0A=
-> -	case LTC2943_ID:	/* 2943 measures every 10 sec */=0A=
-> +	case LTC2943_ID:=0A=
-> +	case LTC2944_ID:	/* 2943 and 2944 measure every 10 sec */=0A=
+>  	control =3D LTC294X_REG_CONTROL_PRESCALER_SET(prescaler_exp) |=0A=
+>  				LTC294X_REG_CONTROL_ALCC_CONFIG_DISABLED;=0A=
+>  	/* Put the 2943 into "monitor" mode, so it measures every 10 sec */=0A=
+> -	if (info->num_regs =3D=3D LTC2943_NUM_REGS)=0A=
+> +	if (info->id =3D=3D LTC2941_ID)=0A=
 >  		control |=3D LTC2943_REG_CONTROL_MODE_SCAN;=0A=
->  		break;=0A=
->  	default:=0A=
-> @@ -270,6 +271,10 @@ static int ltc294x_get_voltage(const struct ltc294x_=
-info *info, int *val)=0A=
->  		value /=3D 0xFFFF;=0A=
->  		value *=3D 1000 / 2;=0A=
->  		break;=0A=
-> +	case LTC2944_ID:=0A=
-> +		value *=3D 70800 / 5*4;=0A=
-> +		value /=3D 0xFFFF;=0A=
-> +		value *=3D 1000 * 5/4;=0A=
-=0A=
-A break is required here.=0A=
-=0A=
->  	default:=0A=
->  		value *=3D 6000 * 10;=0A=
->  		value /=3D 0xFFFF;=0A=
-> @@ -290,10 +295,14 @@ static int ltc294x_get_current(const struct ltc294x=
-_info *info, int *val)=0A=
->  		LTC2943_REG_CURRENT_MSB, &datar[0], 2);=0A=
+>  =0A=
+>  	if (value !=3D control) {=0A=
+> @@ -263,7 +265,7 @@ static int ltc294x_get_current(const struct ltc294x_i=
+nfo *info, int *val)=0A=
+>  	s32 value;=0A=
+>  =0A=
+>  	ret =3D ltc294x_read_regs(info->client,=0A=
+> -		LTC294X_REG_CURRENT_MSB, &datar[0], 2);=0A=
+> +		LTC2943_REG_CURRENT_MSB, &datar[0], 2);=0A=
 >  	value =3D (datar[0] << 8) | datar[1];=0A=
 >  	value -=3D 0x7FFF;=0A=
-> +	if (info->id =3D=3D LTC2944_ID)=0A=
-> +		value *=3D 64000;=0A=
-> +	else=0A=
-> +		value *=3D 60000;=0A=
 >  	/* Value is in range -32k..+32k, r_sense is usually 10..50 mOhm,=0A=
->  	 * the formula below keeps everything in s32 range while preserving=0A=
->  	 * enough digits */=0A=
-> -	*val =3D 1000 * ((60000 * value) / (info->r_sense * 0x7FFF)); /* in uA =
-*/=0A=
-> +	*val =3D 1000 * (value / (info->r_sense * 0x7FFF)); /* in uA */=0A=
->  	return ret;=0A=
->  }=0A=
+> @@ -280,7 +282,7 @@ static int ltc294x_get_temperature(const struct ltc29=
+4x_info *info, int *val)=0A=
+>  	u32 value;=0A=
 >  =0A=
-> @@ -545,6 +554,7 @@ static const struct i2c_device_id ltc294x_i2c_id[] =
-=3D {=0A=
->  	{ "ltc2941", LTC2941_ID, },=0A=
->  	{ "ltc2942", LTC2942_ID, },=0A=
->  	{ "ltc2943", LTC2943_ID, },=0A=
-> +	{ "ltc2944", LTC2944_ID, },=0A=
+>  	ret =3D ltc294x_read_regs(info->client,=0A=
+> -		LTC294X_REG_TEMPERATURE_MSB, &datar[0], 2);=0A=
+> +		LTC2943_REG_TEMPERATURE_MSB, &datar[0], 2);=0A=
+>  	value =3D (datar[0] << 8) | datar[1];=0A=
+>  	/* Full-scale is 510 Kelvin, convert to centidegrees  */=0A=
+>  	*val =3D (((51000 * value) / 0xFFFF) - 27215);=0A=
+> @@ -357,8 +359,8 @@ static enum power_supply_property ltc294x_properties[=
+] =3D {=0A=
+>  	POWER_SUPPLY_PROP_CHARGE_COUNTER,=0A=
+>  	POWER_SUPPLY_PROP_CHARGE_NOW,=0A=
+>  	POWER_SUPPLY_PROP_VOLTAGE_NOW,=0A=
+> -	POWER_SUPPLY_PROP_CURRENT_NOW,=0A=
+>  	POWER_SUPPLY_PROP_TEMP,=0A=
+> +	POWER_SUPPLY_PROP_CURRENT_NOW,=0A=
+>  };=0A=
+>  =0A=
+>  static int ltc294x_i2c_remove(struct i2c_client *client)=0A=
+> @@ -388,7 +390,7 @@ static int ltc294x_i2c_probe(struct i2c_client *clien=
+t,=0A=
+>  =0A=
+>  	np =3D of_node_get(client->dev.of_node);=0A=
+>  =0A=
+> -	info->num_regs =3D (unsigned long)of_device_get_match_data(&client->dev=
+);=0A=
+> +	info->id =3D (enum ltc294x_id)of_device_get_match_data(&client->dev);=
+=0A=
+>  	info->supply_desc.name =3D np->name;=0A=
+>  =0A=
+>  	/* r_sense can be negative, when sense+ is connected to the battery=0A=
+> @@ -409,7 +411,7 @@ static int ltc294x_i2c_probe(struct i2c_client *clien=
+t,=0A=
+>  		prescaler_exp =3D LTC2941_MAX_PRESCALER_EXP;=0A=
+>  	}=0A=
+>  =0A=
+> -	if (info->num_regs =3D=3D LTC2943_NUM_REGS) {=0A=
+> +	if (info->id =3D=3D LTC2943_ID) {=0A=
+>  		if (prescaler_exp > LTC2943_MAX_PRESCALER_EXP)=0A=
+>  			prescaler_exp =3D LTC2943_MAX_PRESCALER_EXP;=0A=
+>  		info->Qlsb =3D ((340 * 50000) / r_sense) /=0A=
+> @@ -424,18 +426,22 @@ static int ltc294x_i2c_probe(struct i2c_client *cli=
+ent,=0A=
+>  	info->client =3D client;=0A=
+>  	info->supply_desc.type =3D POWER_SUPPLY_TYPE_BATTERY;=0A=
+>  	info->supply_desc.properties =3D ltc294x_properties;=0A=
+> -	if (info->num_regs >=3D LTC294X_REG_TEMPERATURE_LSB)=0A=
+> +	switch (info->id) {=0A=
+> +	case LTC2944_ID:=0A=
+=0A=
+Same comment as above.=0A=
+=0A=
+> +	case LTC2943_ID:=0A=
+>  		info->supply_desc.num_properties =3D=0A=
+>  			ARRAY_SIZE(ltc294x_properties);=0A=
+> -	else if (info->num_regs >=3D LTC294X_REG_CURRENT_LSB)=0A=
+> +		break;=0A=
+> +	case LTC2942_ID:=0A=
+=0A=
+Same comment as above.=0A=
+=0A=
+>  		info->supply_desc.num_properties =3D=0A=
+>  			ARRAY_SIZE(ltc294x_properties) - 1;=0A=
+> -	else if (info->num_regs >=3D LTC294X_REG_VOLTAGE_LSB)=0A=
+> -		info->supply_desc.num_properties =3D=0A=
+> -			ARRAY_SIZE(ltc294x_properties) - 2;=0A=
+> -	else=0A=
+> +		break;=0A=
+> +	case LTC2941_ID:=0A=
+> +	default:=0A=
+>  		info->supply_desc.num_properties =3D=0A=
+>  			ARRAY_SIZE(ltc294x_properties) - 3;=0A=
+> +		break;=0A=
+> +	}=0A=
+>  	info->supply_desc.get_property =3D ltc294x_get_property;=0A=
+>  	info->supply_desc.set_property =3D ltc294x_set_property;=0A=
+>  	info->supply_desc.property_is_writeable =3D ltc294x_property_is_writeab=
+le;=0A=
+> @@ -492,8 +498,8 @@ static SIMPLE_DEV_PM_OPS(ltc294x_pm_ops, ltc294x_susp=
+end, ltc294x_resume);=0A=
+>  =0A=
+>  =0A=
+>  static const struct i2c_device_id ltc294x_i2c_id[] =3D {=0A=
+> -	{"ltc2941", LTC2941_NUM_REGS},=0A=
+> -	{"ltc2943", LTC2943_NUM_REGS},=0A=
+> +	{ "ltc2941", LTC2941_ID, },=0A=
+> +	{ "ltc2943", LTC2943_ID, },=0A=
 >  	{ },=0A=
 >  };=0A=
 >  MODULE_DEVICE_TABLE(i2c, ltc294x_i2c_id);=0A=
-> @@ -562,6 +572,10 @@ static const struct of_device_id ltc294x_i2c_of_matc=
-h[] =3D {=0A=
->  		.compatible =3D "lltc,ltc2943",=0A=
->  		.data =3D (void *)LTC2943_ID,=0A=
+> @@ -501,11 +507,11 @@ MODULE_DEVICE_TABLE(i2c, ltc294x_i2c_id);=0A=
+>  static const struct of_device_id ltc294x_i2c_of_match[] =3D {=0A=
+>  	{=0A=
+>  		.compatible =3D "lltc,ltc2941",=0A=
+> -		.data =3D (void *)LTC2941_NUM_REGS=0A=
+> +		.data =3D (void *)LTC2941_ID,=0A=
 >  	},=0A=
-> +	{=0A=
-> +		.compatible =3D "lltc,ltc2944",=0A=
-> +		.data =3D (void *)LTC2944_ID,=0A=
-> +	},=0A=
+>  	{=0A=
+>  		.compatible =3D "lltc,ltc2943",=0A=
+> -		.data =3D (void *)LTC2943_NUM_REGS=0A=
+> +		.data =3D (void *)LTC2943_ID,=0A=
+>  	},=0A=
 >  	{ },=0A=
 >  };=0A=
->  MODULE_DEVICE_TABLE(of, ltc294x_i2c_of_match);=0A=
-> @@ -580,5 +594,5 @@ module_i2c_driver(ltc294x_driver);=0A=
->  =0A=
->  MODULE_AUTHOR("Auryn Verwegen, Topic Embedded Systems");=0A=
->  MODULE_AUTHOR("Mike Looijmans, Topic Embedded Products");=0A=
-> -MODULE_DESCRIPTION("LTC2941/LTC2942/LTC2943 Battery Gas Gauge IC driver"=
-);=0A=
-> +MODULE_DESCRIPTION("LTC2941/LTC2942/LTC2943/LTC2944 Battery Gas Gauge IC=
- driver");=0A=
->  MODULE_LICENSE("GPL");=0A=
 =0A=
 =0A=
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
