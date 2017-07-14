@@ -1,96 +1,118 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM / Domains: defer dev_pm_domain_set() until genpd->attach_dev succeeds if present
-Date: Sat, 15 Jul 2017 00:06:57 +0200
-Message-ID: <4426566.dI53sBdSeV@aspire.rjw.lan>
-References: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com> <1500029508-7103-1-git-send-email-sudeep.holla@arm.com>
+Subject: Re: [RFC 1/2] PM / suspend: Add platform_suspend_target_state()
+Date: Sat, 15 Jul 2017 00:16:16 +0200
+Message-ID: <2497538.J9F6XFeBfd@aspire.rjw.lan>
+References: <20170622085102.mpk7vxodpgxtrlfd@piout.net> <6613228.WfFrGvAy1X@aspire.rjw.lan> <85441336-8d89-f7aa-4fbe-a4edaf478649@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1500029508-7103-1-git-send-email-sudeep.holla@arm.com>
-Sender: stable-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, "# v4 . 0+" <stable@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64594 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751035AbdGNWYC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2017 18:24:02 -0400
+In-Reply-To: <85441336-8d89-f7aa-4fbe-a4edaf478649@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On Friday, July 14, 2017 11:51:48 AM Sudeep Holla wrote:
-> If the genpd->attach_dev or genpd->power_on fails, genpd_dev_pm_attach
-> may return -EPROBE_DEFER initially. However genpd_alloc_dev_data sets
-> the PM domain for the device unconditionally.
+On Wednesday, July 12, 2017 11:08:19 AM Florian Fainelli wrote:
+> On 06/29/2017 04:00 PM, Rafael J. Wysocki wrote:
+> > On Thursday, June 22, 2017 06:08:36 PM Florian Fainelli wrote:
+> >> Add an optional platform_suspend_ops callback: target_state, and a
+> >> helper function globally visible to get this called:
+> >> platform_suspend_target_state().
+> >>
+> >> This is useful for platform specific drivers that may need to take a
+> >> slightly different suspend/resume path based on the system's
+> >> suspend/resume state being entered.
+> >>
+> >> Although this callback is optional and documented as such, it requires
+> >> a platform_suspend_ops::begin callback to be implemented in order to
+> >> provide an accurate suspend/resume state within the driver that
+> >> implements this platform_suspend_ops.
+> >>
+> >> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+> >> ---
+> >>  include/linux/suspend.h | 12 ++++++++++++
+> >>  kernel/power/suspend.c  | 15 +++++++++++++++
+> >>  2 files changed, 27 insertions(+)
+> >>
+> >> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> >> index d9718378a8be..d998a04a90a2 100644
+> >> --- a/include/linux/suspend.h
+> >> +++ b/include/linux/suspend.h
+> >> @@ -172,6 +172,15 @@ static inline void dpm_save_failed_step(enum suspend_stat_step step)
+> >>   *	Called by the PM core if the suspending of devices fails.
+> >>   *	This callback is optional and should only be implemented by platforms
+> >>   *	which require special recovery actions in that situation.
+> >> + *
+> >> + * @target_state: Returns the suspend state the suspend_ops will be entering.
+> >> + * 	Called by device drivers that need to know the platform specific suspend
+> >> + * 	state the system is about to enter.
+> >> + * 	This callback is optional and should only be implemented by platforms
+> >> + * 	which require special handling of power management states within
+> >> + * 	drivers. It does require @begin to be implemented to provide the suspend
+> >> + * 	state. Return value is platform_suspend_ops specific, and may be a 1:1
+> >> + * 	mapping to suspend_state_t when relevant.
+> >>   */
+> >>  struct platform_suspend_ops {
+> >>  	int (*valid)(suspend_state_t state);
+> >> @@ -184,6 +193,7 @@ struct platform_suspend_ops {
+> >>  	bool (*suspend_again)(void);
+> >>  	void (*end)(void);
+> >>  	void (*recover)(void);
+> >> +	int (*target_state)(void);
+> > 
+> > I would use unsigned int (the sign should not matter).
+> > 
+> >>  };
+> > 
+> > That's almost what I was thinking about except that the values returned by
+> > ->target_state should be unique, so it would be good to do something to
+> > ensure that.
+> > 
+> > The concern is as follows.
+> > 
+> > Say you have a driver develped for platform X where ->target_state returns
+> > A for "mem" and B for "standby".  Then, the same IP is re-used on platform Y
+> > returning B for "mem" and C for "standby" and now the driver cannot
+> > distinguish between them.
+> > 
+> > Moreover, even if they both returned A for "mem" there might be differences
+> > in how "mem" was defined by each of them and therefore in what the driver was
+> > expected to do to handle "mem" on X and Y.
 > 
-> When subsequent attempts are made to call genpd_dev_pm_attach, it may
-> return -EEXISTS checking dev->pm_domain without re-attempting to call
-> attach_dev or power_on.
-> 
-> platform_drv_probe then attempts to call drv->probe as the return value
-> -EEXIST != -EPROBE_DEFER, which may end up in a situation where the
-> device is accessed without it's power domain switched on.
-> 
-> Fixes: f104e1e5ef57 ("PM / Domains: Re-order initialization of generic_pm_domain_data")
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Kevin Hilman <khilman@kernel.org>
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: <stable@vger.kernel.org> # v4.0+
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> That makes sense, would you need the core implementation in
+> platform_suspend_target_state() to range check what
+> suspend_ops->target_state() returns against a set of reserved value say,
+> checking from 0 up to ACPI_S_STATE_COUNT or is there another range you
+> would like to see being used?
 
-Ulf, Kevin?
+I had an idea of using an enum type encompassing all of the power states
+defined for various platforms and serving both as a registry (to ensure the
+uniqueness of the values assigned to the states) and a common ground
+between platforms and drivers.
 
-> ---
->  drivers/base/power/domain.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> Hi,
-> 
-> I have added Cc/Fixes tags based on the original commit that caused the issue.
-> I need to workout a patch that can cleanly apply before commit 989561de9b51
-> ("PM / Domains: add setter for dev.pm_domain"), i.e. for v4.0.x to v4.4.x
-> This patch should apply from v4.5.x onwards.
-> 
-> Let me know if I got anything wrong.
-> 
-> v1->v2: Moved dev_pm_domain_set(dev, NULL) from genpd_free_dev_data
-> 
-> Regards,
-> Sudeep
-> 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index da49a8383dc3..2d9178660061 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1168,8 +1168,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
->  
->  	spin_unlock_irq(&dev->power.lock);
->  
-> -	dev_pm_domain_set(dev, &genpd->domain);
-> -
->  	return gpd_data;
->  
->   err_free:
-> @@ -1183,8 +1181,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
->  static void genpd_free_dev_data(struct device *dev,
->  				struct generic_pm_domain_data *gpd_data)
->  {
-> -	dev_pm_domain_set(dev, NULL);
-> -
->  	spin_lock_irq(&dev->power.lock);
->  
->  	dev->power.subsys_data->domain_data = NULL;
-> @@ -1221,6 +1217,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->  	if (ret)
->  		goto out;
->  
-> +	dev_pm_domain_set(dev, &genpd->domain);
-> +
->  	genpd->device_count++;
->  	genpd->max_off_time_changed = true;
->  
-> @@ -1282,6 +1280,8 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
->  	if (genpd->detach_dev)
->  		genpd->detach_dev(genpd, dev);
->  
-> +	dev_pm_domain_set(dev, NULL);
-> +
->  	list_del_init(&pdd->list_node);
->  
->  	genpd_unlock(genpd);
-> 
+Something like:
+
+enum platform_target_state {
+	PLATFORM_STATE_UNKNOWN = -1,
+	PLATFORM_STATE_WORKING = 0,
+	PLATFORM_STATE_ACPI_S1,
+	PLATFORM_STATE_ACPI_S2,
+	PLATFORM_STATE_ACPI_S3,
+	PLATFORM_STATE_MY_BOARD_1_GATE_CLOCKS,
+	PLATFORM_STATE_MY_BOARD_1_GATE_POWER,
+	PLATFORM_STATE_ANOTHER_BOARD_DO_CRAZY_STUFF,
+	...
+};
+
+and define ->target_state to return a value of this type.
+
+Then, if a driver sees one of these and recognizes that value, it should
+know exactly what to do.
+
+Thanks,
+Rafael
