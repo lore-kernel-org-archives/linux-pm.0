@@ -1,59 +1,96 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC V2 1/6] cpufreq: Replace "max_transition_latency" with "dynamic_switching"
-Date: Sat, 15 Jul 2017 00:06:24 +0200
-Message-ID: <2309380.IRBF8BkiFH@aspire.rjw.lan>
-References: <cover.1499853492.git.viresh.kumar@linaro.org> <20170714070142.GA14515@isilmar-4.linta.de> <CAJZ5v0hagTXFmV94abxeEL5=dPn0FQtW7SogyK6iJd6ika+GUQ@mail.gmail.com>
+Subject: Re: [PATCH v2] PM / Domains: defer dev_pm_domain_set() until genpd->attach_dev succeeds if present
+Date: Sat, 15 Jul 2017 00:06:57 +0200
+Message-ID: <4426566.dI53sBdSeV@aspire.rjw.lan>
+References: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com> <1500029508-7103-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46997 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751132AbdGNWOK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2017 18:14:10 -0400
-In-Reply-To: <CAJZ5v0hagTXFmV94abxeEL5=dPn0FQtW7SogyK6iJd6ika+GUQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1500029508-7103-1-git-send-email-sudeep.holla@arm.com>
+Sender: stable-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org, "# v4 . 0+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Friday, July 14, 2017 01:11:58 PM Rafael J. Wysocki wrote:
-> On Fri, Jul 14, 2017 at 9:01 AM, Dominik Brodowski
-> <linux@dominikbrodowski.net> wrote:
-> > On Thu, Jul 13, 2017 at 06:19:53PM +0200, Rafael J. Wysocki wrote:
-> >> On Thu, Jul 13, 2017 at 7:40 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> > There is no limitation in the ondemand or conservative governors which
-> >> > disallow the transition_latency to be greater than 10 ms.
-> >> >
-> >> > The max_transition_latency field is rather used to disallow automatic
-> >> > dynamic frequency switching for platforms which didn't wanted these
-> >> > governors to run.
-> >> >
-> >> > Replace max_transition_latency with a boolean (dynamic_switching) and
-> >> > check for transition_latency == CPUFREQ_ETERNAL along with that. This
-> >> > makes it pretty straight forward to read/understand now.
-> >>
-> >> Well, using CPUFREQ_ETERNAL for that on the driver side is still not
-> >> particularly straightforward IMO, so maybe add a
-> >> "no_dynamic_switching" to the driver structure and set it to "true"
-> >> for the one driver in question?
-> >
-> > IIRC it's not just one driver which sets the latency to CPUFREQ_ETERNAL, and
-> > where dynamic switching might be harmful or at least lead to undefined
-> > behavior.
+On Friday, July 14, 2017 11:51:48 AM Sudeep Holla wrote:
+> If the genpd->attach_dev or genpd->power_on fails, genpd_dev_pm_attach
+> may return -EPROBE_DEFER initially. However genpd_alloc_dev_data sets
+> the PM domain for the device unconditionally.
 > 
-> OK
+> When subsequent attempts are made to call genpd_dev_pm_attach, it may
+> return -EEXISTS checking dev->pm_domain without re-attempting to call
+> attach_dev or power_on.
 > 
-> Still, though, using CPUFREQ_ETERNAL to indicate the "no dynamic
-> switching" condition is somewhat convoluted, so why don't we have a
-> flag to *explicitly* say that instead?
+> platform_drv_probe then attempts to call drv->probe as the return value
+> -EEXIST != -EPROBE_DEFER, which may end up in a situation where the
+> device is accessed without it's power domain switched on.
 > 
-> Do you know which drivers they are or is it just all drivers that use
-> CPUFREQ_ETERNAL?
+> Fixes: f104e1e5ef57 ("PM / Domains: Re-order initialization of generic_pm_domain_data")
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: <stable@vger.kernel.org> # v4.0+
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 
-Well, after the $subject patch it effectively is all drivers that use
-CPUFREQ_ETERNAL anyway, so it looks like we actually can do a complete
-switch-over.
+Ulf, Kevin?
 
-Thanks,
-Rafael
+> ---
+>  drivers/base/power/domain.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> Hi,
+> 
+> I have added Cc/Fixes tags based on the original commit that caused the issue.
+> I need to workout a patch that can cleanly apply before commit 989561de9b51
+> ("PM / Domains: add setter for dev.pm_domain"), i.e. for v4.0.x to v4.4.x
+> This patch should apply from v4.5.x onwards.
+> 
+> Let me know if I got anything wrong.
+> 
+> v1->v2: Moved dev_pm_domain_set(dev, NULL) from genpd_free_dev_data
+> 
+> Regards,
+> Sudeep
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index da49a8383dc3..2d9178660061 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1168,8 +1168,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+>  
+>  	spin_unlock_irq(&dev->power.lock);
+>  
+> -	dev_pm_domain_set(dev, &genpd->domain);
+> -
+>  	return gpd_data;
+>  
+>   err_free:
+> @@ -1183,8 +1181,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+>  static void genpd_free_dev_data(struct device *dev,
+>  				struct generic_pm_domain_data *gpd_data)
+>  {
+> -	dev_pm_domain_set(dev, NULL);
+> -
+>  	spin_lock_irq(&dev->power.lock);
+>  
+>  	dev->power.subsys_data->domain_data = NULL;
+> @@ -1221,6 +1217,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+>  	if (ret)
+>  		goto out;
+>  
+> +	dev_pm_domain_set(dev, &genpd->domain);
+> +
+>  	genpd->device_count++;
+>  	genpd->max_off_time_changed = true;
+>  
+> @@ -1282,6 +1280,8 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
+>  	if (genpd->detach_dev)
+>  		genpd->detach_dev(genpd, dev);
+>  
+> +	dev_pm_domain_set(dev, NULL);
+> +
+>  	list_del_init(&pdd->list_node);
+>  
+>  	genpd_unlock(genpd);
+> 
