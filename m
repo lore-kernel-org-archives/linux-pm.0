@@ -1,70 +1,94 @@
-From: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
-Subject: Re: [PATCH 2/4] thermal: imx: Add support for reading OCOTP through
- nvmem
-Date: Fri, 14 Jul 2017 13:49:48 +0300
-Message-ID: <1500029388.11612.54.camel@nxp.com>
-References: <cover.1499347157.git.leonard.crestez@nxp.com>
-         <68b476b35b0c0cbce21da0e87338323bb77e9bc4.1499347157.git.leonard.crestez@nxp.com>
-         <20170712063629.GD3172@dragon>
-         <3dd43cba-02f2-204c-c3a2-582827018ef8@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <3dd43cba-02f2-204c-c3a2-582827018ef8-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v2] PM / Domains: defer dev_pm_domain_set() until genpd->attach_dev succeeds if present
+Date: Fri, 14 Jul 2017 11:51:48 +0100
+Message-ID: <1500029508-7103-1-git-send-email-sudeep.holla@arm.com>
+References: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:47010 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753577AbdGNKwB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Jul 2017 06:52:01 -0400
+In-Reply-To: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "# v4 . 0+" <stable@vger.kernel.org>
 
-On Fri, 2017-07-14 at 09:48 +0100, Srinivas Kandagatla wrote:
-> On 12/07/17 07:36, Shawn Guo wrote:
+If the genpd->attach_dev or genpd->power_on fails, genpd_dev_pm_attach
+may return -EPROBE_DEFER initially. However genpd_alloc_dev_data sets
+the PM domain for the device unconditionally.
 
-> > > +static int nvmem_cell_read_u32(struct device* dev, const char *cell_id, u32 *val)
-> > > +{
-> > > +	struct nvmem_cell *cell;
-> > > +	void *buf;
-> > > +	size_t len;
-> > > +
-> > > +	cell = nvmem_cell_get(dev, cell_id);
-> > > +	if (IS_ERR(cell))
-> > > +		return PTR_ERR(cell);
-> > > +
-> > > +	buf = nvmem_cell_read(cell, &len);
-> > > +	if (IS_ERR(buf)) {
-> > > +		nvmem_cell_put(cell);
-> > > +		return PTR_ERR(buf);
-> > > +	}
-> > > +	if (len != sizeof(*val)) {
-> > > +		kfree(buf);
-> > > +		nvmem_cell_put(cell);
-> > > +		return -EINVAL;
-> > > +	}
-> > > +	memcpy(val, buf, sizeof(*val));
+When subsequent attempts are made to call genpd_dev_pm_attach, it may
+return -EEXISTS checking dev->pm_domain without re-attempting to call
+attach_dev or power_on.
 
-> This can overflow the memory allocated to val, we should be careful here 
-> not to do so.
-> limit this to sizeof(u32) should be good. Also add some sanity checks to 
-> make sure that len is atleast 4 bytes.
+platform_drv_probe then attempts to call drv->probe as the return value
+-EEXIST != -EPROBE_DEFER, which may end up in a situation where the
+device is accessed without it's power domain switched on.
 
-I'm not sure what you mean, isn't this already done? There is an
-explicit check above that the read len is exactly as expected. It's
-just that the limit is written as sizeof(*val) rather than sizeof(u32).
+Fixes: f104e1e5ef57 ("PM / Domains: Re-order initialization of generic_pm_domain_data")
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: <stable@vger.kernel.org> # v4.0+
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/base/power/domain.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-> > > +
-> > > +	kfree(buf);
-> > > +	nvmem_cell_put(cell);
-> > > +	return 0;
-> > > +}
-> > The function looks nothing IMX specific, and could be a nvmem core
-> > function?
-> > 
-> > @Srinivas, thoughts?
-> Yep, this function looks generic, can be moved to nvmem layer.
+Hi,
 
-Ok, next version of the series will have this function in nvmem core as
-a separate commit.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I have added Cc/Fixes tags based on the original commit that caused the issue.
+I need to workout a patch that can cleanly apply before commit 989561de9b51
+("PM / Domains: add setter for dev.pm_domain"), i.e. for v4.0.x to v4.4.x
+This patch should apply from v4.5.x onwards.
+
+Let me know if I got anything wrong.
+
+v1->v2: Moved dev_pm_domain_set(dev, NULL) from genpd_free_dev_data
+
+Regards,
+Sudeep
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index da49a8383dc3..2d9178660061 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1168,8 +1168,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+ 
+ 	spin_unlock_irq(&dev->power.lock);
+ 
+-	dev_pm_domain_set(dev, &genpd->domain);
+-
+ 	return gpd_data;
+ 
+  err_free:
+@@ -1183,8 +1181,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+ static void genpd_free_dev_data(struct device *dev,
+ 				struct generic_pm_domain_data *gpd_data)
+ {
+-	dev_pm_domain_set(dev, NULL);
+-
+ 	spin_lock_irq(&dev->power.lock);
+ 
+ 	dev->power.subsys_data->domain_data = NULL;
+@@ -1221,6 +1217,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	if (ret)
+ 		goto out;
+ 
++	dev_pm_domain_set(dev, &genpd->domain);
++
+ 	genpd->device_count++;
+ 	genpd->max_off_time_changed = true;
+ 
+@@ -1282,6 +1280,8 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
+ 	if (genpd->detach_dev)
+ 		genpd->detach_dev(genpd, dev);
+ 
++	dev_pm_domain_set(dev, NULL);
++
+ 	list_del_init(&pdd->list_node);
+ 
+ 	genpd_unlock(genpd);
+-- 
+2.7.4
