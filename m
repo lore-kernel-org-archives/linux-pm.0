@@ -1,113 +1,128 @@
 From: Prashanth Prakash <pprakash@codeaurora.org>
-Subject: [PATCH 2/2] ACPI/thermal: support for thermal zone description
-Date: Fri, 14 Jul 2017 11:48:55 -0600
-Message-ID: <1500054535-975-3-git-send-email-pprakash@codeaurora.org>
+Subject: [PATCH 1/2] thermal: add a sysfs entry for thermal zone description
+Date: Fri, 14 Jul 2017 11:48:54 -0600
+Message-ID: <1500054535-975-2-git-send-email-pprakash@codeaurora.org>
 References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:38052 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750857AbdGNR7C (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jul 2017 13:59:02 -0400
 In-Reply-To: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 Cc: rui.zhang@intel.com, edubezval@gmail.com, Prashanth Prakash <pprakash@codeaurora.org>
-List-Id: linux-pm@vger.kernel.org
 
-Per ACPI 6.2 spec, platforms can optionally add a string(_STR)
-object within each thermal zone package which provides a user
-friendly name/description.
-
-Add support to parse the string object, which will be exposed
-to userspace by thermal framework.
+Add a method to thermal_zone_device_ops to read the description of a
+thermal zone. Use the same method to expose the description to the
+userspace via a sysfs entry.
 
 Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
 ---
- drivers/acpi/thermal.c | 38 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ Documentation/thermal/sysfs-api.txt |  6 ++++++
+ drivers/thermal/thermal_sysfs.c     | 19 +++++++++++++++++++
+ include/linux/thermal.h             |  4 ++++
+ 3 files changed, 29 insertions(+)
 
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 1d0417b..6ab6480 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -41,6 +41,7 @@
- #include <linux/acpi.h>
- #include <linux/workqueue.h>
- #include <linux/uaccess.h>
-+#include <linux/nls.h>
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index bb9a0a5..b6aa417 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -62,6 +62,7 @@ temperature) and throttle appropriate devices.
+ 			will be fired.
+ 	.set_emul_temp: set the emulation temperature which helps in debugging
+ 			different threshold temperature points.
++	.get_desc: get a user friendly description for a thermal zone (optional)
+     tzp: thermal zone platform parameters.
+     passive_delay: number of milliseconds to wait between polls when
+ 	performing passive cooling.
+@@ -280,6 +281,7 @@ Thermal zone device sys I/F, created once it's registered:
+     |---integral_cutoff:        Offset above which errors are accumulated
+     |---slope:                  Slope constant applied as linear extrapolation
+     |---offset:                 Offset constant applied as linear extrapolation
++    |---desc			User friendly description/name
  
- #define PREFIX "ACPI: "
+ Thermal cooling device sys I/F, created once it's registered:
+ /sys/class/thermal/cooling_device[0-*]:
+@@ -329,6 +331,10 @@ temp
+ 	Unit: millidegree Celsius
+ 	RO, Required
  
-@@ -188,6 +189,7 @@ struct acpi_thermal {
- 	int tz_enabled;
- 	int kelvin_offset;
- 	struct work_struct thermal_check_work;
-+	char desc[THERMAL_MAX_DESC_STR_LEN];
- };
- 
- /* --------------------------------------------------------------------------
-@@ -543,6 +545,15 @@ static int thermal_get_temp(struct thermal_zone_device *thermal, int *temp)
- 	return 0;
++desc
++	Provides a user friendly description/name for thermal zone
++        RO, Optional
++
+ mode
+ 	One of the predefined values in [enabled, disabled].
+ 	This file gives information about the algorithm that is currently
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index a694de9..46d961d 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -34,6 +34,23 @@
  }
  
-+static int thermal_get_desc(struct thermal_zone_device *thermal, char *desc,
-+			int size)
+ static ssize_t
++desc_show(struct device *dev, struct device_attribute *attr, char *buf)
 +{
-+	struct acpi_thermal *tz = thermal->devdata;
++	struct thermal_zone_device *tz = to_thermal_zone(dev);
++	int ret;
++	char desc_str[THERMAL_MAX_DESC_STR_LEN];
 +
-+	strlcpy(desc, tz->desc, size);
-+	return 0;
++	if (!tz->ops->get_desc)
++		return scnprintf(buf, PAGE_SIZE, "<not supported>\n");
++
++	ret = tz->ops->get_desc(tz, desc_str, THERMAL_MAX_DESC_STR_LEN);
++	if (ret)
++		return ret;
++
++	return scnprintf(buf, THERMAL_MAX_DESC_STR_LEN, "%s\n", desc_str);
 +}
 +
- static int thermal_get_mode(struct thermal_zone_device *thermal,
- 				enum thermal_device_mode *mode)
++static ssize_t
+ temp_show(struct device *dev, struct device_attribute *attr, char *buf)
  {
-@@ -880,6 +891,7 @@ static int acpi_thermal_cooling_device_cb(struct thermal_zone_device *thermal,
- 	.get_crit_temp = thermal_get_crit_temp,
- 	.get_trend = thermal_get_trend,
- 	.notify = thermal_notify,
-+	.get_desc = thermal_get_desc,
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+@@ -397,6 +414,7 @@
+  * present on the sysfs interface.
+  */
+ static DEVICE_ATTR(type, 0444, type_show, NULL);
++static DEVICE_ATTR(desc, 0444, desc_show, NULL);
+ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+ static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
+ static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
+@@ -411,6 +429,7 @@ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
+ static struct attribute *thermal_zone_dev_attrs[] = {
+ 	&dev_attr_type.attr,
+ 	&dev_attr_temp.attr,
++	&dev_attr_desc.attr,
+ #if (IS_ENABLED(CONFIG_THERMAL_EMULATION))
+ 	&dev_attr_emul_temp.attr,
+ #endif
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index dab11f9..bd8377a 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -47,6 +47,9 @@
+ /* use value, which < 0K, to indicate an invalid/uninitialized temperature */
+ #define THERMAL_TEMP_INVALID	-274000
+ 
++/* Maximum length of thermal zone description string */
++#define THERMAL_MAX_DESC_STR_LEN 32
++
+ /* Unit conversion macros */
+ #define DECI_KELVIN_TO_CELSIUS(t)	({			\
+ 	long _t = (t);						\
+@@ -127,6 +130,7 @@ struct thermal_zone_device_ops {
+ 			  enum thermal_trend *);
+ 	int (*notify) (struct thermal_zone_device *, int,
+ 		       enum thermal_trip_type);
++	int (*get_desc) (struct thermal_zone_device *, char *, int);
  };
  
- static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
-@@ -1014,6 +1026,29 @@ static void acpi_thermal_aml_dependency_fix(struct acpi_thermal *tz)
- 	acpi_evaluate_integer(handle, "_TMP", NULL, &value);
- }
- 
-+static void acpi_thermal_get_desc(struct acpi_thermal *tz)
-+{
-+	acpi_handle handle = tz->device->handle;
-+	acpi_status status;
-+	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
-+
-+	status = acpi_evaluate_object(handle, "_STR", NULL, &buffer);
-+
-+	if (ACPI_FAILURE(status))
-+		strlcpy(tz->desc, "<not supported>", THERMAL_MAX_DESC_STR_LEN);
-+	else {
-+		union acpi_object *str;
-+		int result;
-+
-+		str = buffer.pointer;
-+		result = utf16s_to_utf8s((wchar_t *)str->string.pointer,
-+					str->string.length, UTF16_LITTLE_ENDIAN,
-+					tz->desc, THERMAL_MAX_DESC_STR_LEN-1);
-+		tz->desc[result] = 0;
-+		kfree(buffer.pointer);
-+	}
-+}
-+
- static int acpi_thermal_get_info(struct acpi_thermal *tz)
- {
- 	int result = 0;
-@@ -1045,6 +1080,9 @@ static int acpi_thermal_get_info(struct acpi_thermal *tz)
- 	else
- 		acpi_thermal_get_polling_frequency(tz);
- 
-+	/* Get thermal zone description [_STR] (optional) */
-+	acpi_thermal_get_desc(tz);
-+
- 	return 0;
- }
- 
+ struct thermal_cooling_device_ops {
 -- 
 Qualcomm Datacenter Technologies on behalf of Qualcomm Technologies, Inc.
 Qualcomm Technologies, Inc. is a member of the
 Code Aurora Forum, a Linux Foundation Collaborative Project.
-
