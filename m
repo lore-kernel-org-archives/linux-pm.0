@@ -1,72 +1,77 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH] cpufreq: s5pv210: add missing of_node_put
-Date: Sat, 15 Jul 2017 21:40:53 +0200
-Message-ID: <1500147653-31229-1-git-send-email-Julia.Lawall@lip6.fr>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC 1/2] PM / suspend: Add platform_suspend_target_state()
+Date: Sun, 16 Jul 2017 01:24:25 +0200
+Message-ID: <1578637.1XJQpJurXn@aspire.rjw.lan>
+References: <20170622085102.mpk7vxodpgxtrlfd@piout.net> <20170715164626.GA1373@amd> <1a5ef0ae-16f3-5a61-ae4e-083664cb30c0@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:59820
-        "EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751244AbdGOUF6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Jul 2017 16:05:58 -0400
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46268 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751198AbdGOXcM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Jul 2017 19:32:12 -0400
+In-Reply-To: <1a5ef0ae-16f3-5a61-ae4e-083664cb30c0@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kukjin Kim <kgene@kernel.org>
-Cc: kernel-janitors@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-for_each_compatible_node performs an of_node_get on each iteration, so a
-return from the loop requires an of_node_put.
+On Saturday, July 15, 2017 10:20:27 AM Florian Fainelli wrote:
+> 
+> On 07/15/2017 09:46 AM, Pavel Machek wrote:
+> > Hi!
+> > 
+> >>>> I had an idea of using an enum type encompassing all of the power states
+> >>>> defined for various platforms and serving both as a registry (to ensure the
+> >>>> uniqueness of the values assigned to the states) and a common ground
+> >>>> between platforms and drivers.
+> >>>>
+> >>>> Something like:
+> >>>>
+> >>>> enum platform_target_state {
+> >>>> 	PLATFORM_STATE_UNKNOWN = -1,
+> >>>> 	PLATFORM_STATE_WORKING = 0,
+> >>>> 	PLATFORM_STATE_ACPI_S1,
+> >>>> 	PLATFORM_STATE_ACPI_S2,
+> >>>> 	PLATFORM_STATE_ACPI_S3,
+> >>>> 	PLATFORM_STATE_MY_BOARD_1_GATE_CLOCKS,
+> >>>> 	PLATFORM_STATE_MY_BOARD_1_GATE_POWER,
+> >>>> 	PLATFORM_STATE_ANOTHER_BOARD_DO_CRAZY_STUFF,
+> >>>> 	...
+> >>>> };
+> >>>>
+> >>>> and define ->target_state to return a value of this type.
+> >>>>
+> >>>> Then, if a driver sees one of these and recognizes that value, it should
+> >>>> know exactly what to do.
+> >>>
+> >>> Remind me why this is good idea?
+> >>
+> >> Because there are drivers that need to do specific things during
+> >> suspend on a specific board when it goes into a specific state as a
+> >> whole.
+> > 
+> > We have seen driver that cares about voltage to his device being
+> > lost. That's reasonable.
+> > 
+> > Inquiring what the platform target state is... is not.
+> > 
+> >>> If board wants to know if certain regulator stays online during
+> >>> suspend, it should invent an API for _that_.
+> >>
+> >> Ideally, yes.  However, that may be problematic for multiplatform kernels,
+> >> because they would need to have all of those APIs built in and the driver
+> >> code to figure out which API to use would be rather nasty.
+> > 
+> > Lets do it the right way. Big enum is wrong.
+> 
+> The enum offers the advantage of centralizing how many different states
+> exist for all the platforms we know about in the kernel, it's easy to
+> define common values for platforms that have the same semantics, just
+> like it's simple to add new values for platform specific details.
 
-The semantic patch that fixes this problem is as follows
-(http://coccinelle.lip6.fr):
+Well, you seem to be liking this, so why don't you just implement it?
 
-// <smpl>
-@@
-local idexpression n;
-expression e,e1,e2;
-statement S;
-iterator i1;
-iterator name for_each_compatible_node;
-@@
-
- for_each_compatible_node(n,e1,e2) {
-   ...
-(
-   of_node_put(n);
-|
-   e = n
-|
-   return n;
-|
-   i1(...,n,...) S
-|
-+  of_node_put(n);
-?  return ...;
-)
-   ...
- }
-// </smpl>
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
----
- drivers/cpufreq/s5pv210-cpufreq.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff -u -p a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -612,6 +612,7 @@ static int s5pv210_cpufreq_probe(struct
- 		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
- 			pr_err("%s: failed to get alias of dmc node '%s'\n",
- 				__func__, np->name);
-+			of_node_put(np);
- 			return id;
- 		}
- 
-@@ -619,6 +620,7 @@ static int s5pv210_cpufreq_probe(struct
- 		if (!dmc_base[id]) {
- 			pr_err("%s: failed to map dmc%d registers\n",
- 				__func__, id);
-+			of_node_put(np);
- 			return -EFAULT;
- 		}
- 	}
+Thanks,
+Rafael
