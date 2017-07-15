@@ -1,165 +1,165 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: [RFC V2 1/6] cpufreq: Replace "max_transition_latency" with
- "dynamic_switching"
-Date: Sat, 15 Jul 2017 07:08:28 +0200
-Message-ID: <20170715050828.GA9760@light.dominikbrodowski.net>
-References: <cover.1499853492.git.viresh.kumar@linaro.org>
- <20170714070142.GA14515@isilmar-4.linta.de>
- <CAJZ5v0hagTXFmV94abxeEL5=dPn0FQtW7SogyK6iJd6ika+GUQ@mail.gmail.com>
- <2309380.IRBF8BkiFH@aspire.rjw.lan>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC 1/2] PM / suspend: Add platform_suspend_target_state()
+Date: Sat, 15 Jul 2017 08:28:38 +0200
+Message-ID: <20170715062838.GA20741@amd>
+References: <20170622085102.mpk7vxodpgxtrlfd@piout.net>
+ <6613228.WfFrGvAy1X@aspire.rjw.lan>
+ <85441336-8d89-f7aa-4fbe-a4edaf478649@gmail.com>
+ <2497538.J9F6XFeBfd@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="zYM0uCDKw75PZbzx"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from isilmar-4.linta.de ([136.243.71.142]:51686 "EHLO
-        isilmar-4.linta.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751019AbdGOFOZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Jul 2017 01:14:25 -0400
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2309380.IRBF8BkiFH@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <2497538.J9F6XFeBfd@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Florian Fainelli <f.fainelli@gmail.com>, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+List-Id: linux-pm@vger.kernel.org
 
 
---zYM0uCDKw75PZbzx
+--mYCpIKhGyMATD0i+
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Jul 15, 2017 at 12:06:24AM +0200, Rafael J. Wysocki wrote:
-> On Friday, July 14, 2017 01:11:58 PM Rafael J. Wysocki wrote:
-> > On Fri, Jul 14, 2017 at 9:01 AM, Dominik Brodowski
-> > <linux@dominikbrodowski.net> wrote:
-> > > On Thu, Jul 13, 2017 at 06:19:53PM +0200, Rafael J. Wysocki wrote:
-> > >> On Thu, Jul 13, 2017 at 7:40 AM, Viresh Kumar <viresh.kumar@linaro.o=
-rg> wrote:
-> > >> > There is no limitation in the ondemand or conservative governors w=
-hich
-> > >> > disallow the transition_latency to be greater than 10 ms.
-> > >> >
-> > >> > The max_transition_latency field is rather used to disallow automa=
-tic
-> > >> > dynamic frequency switching for platforms which didn't wanted these
-> > >> > governors to run.
-> > >> >
-> > >> > Replace max_transition_latency with a boolean (dynamic_switching) =
-and
-> > >> > check for transition_latency =3D=3D CPUFREQ_ETERNAL along with tha=
-t. This
-> > >> > makes it pretty straight forward to read/understand now.
+On Sat 2017-07-15 00:16:16, Rafael J. Wysocki wrote:
+> On Wednesday, July 12, 2017 11:08:19 AM Florian Fainelli wrote:
+> > On 06/29/2017 04:00 PM, Rafael J. Wysocki wrote:
+> > > On Thursday, June 22, 2017 06:08:36 PM Florian Fainelli wrote:
+> > >> Add an optional platform_suspend_ops callback: target_state, and a
+> > >> helper function globally visible to get this called:
+> > >> platform_suspend_target_state().
 > > >>
-> > >> Well, using CPUFREQ_ETERNAL for that on the driver side is still not
-> > >> particularly straightforward IMO, so maybe add a
-> > >> "no_dynamic_switching" to the driver structure and set it to "true"
-> > >> for the one driver in question?
-> > >
-> > > IIRC it's not just one driver which sets the latency to CPUFREQ_ETERN=
-AL, and
-> > > where dynamic switching might be harmful or at least lead to undefined
-> > > behavior.
+> > >> This is useful for platform specific drivers that may need to take a
+> > >> slightly different suspend/resume path based on the system's
+> > >> suspend/resume state being entered.
+> > >>
+> > >> Although this callback is optional and documented as such, it requir=
+es
+> > >> a platform_suspend_ops::begin callback to be implemented in order to
+> > >> provide an accurate suspend/resume state within the driver that
+> > >> implements this platform_suspend_ops.
+> > >>
+> > >> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+> > >> ---
+> > >>  include/linux/suspend.h | 12 ++++++++++++
+> > >>  kernel/power/suspend.c  | 15 +++++++++++++++
+> > >>  2 files changed, 27 insertions(+)
+> > >>
+> > >> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> > >> index d9718378a8be..d998a04a90a2 100644
+> > >> --- a/include/linux/suspend.h
+> > >> +++ b/include/linux/suspend.h
+> > >> @@ -172,6 +172,15 @@ static inline void dpm_save_failed_step(enum su=
+spend_stat_step step)
+> > >>   *	Called by the PM core if the suspending of devices fails.
+> > >>   *	This callback is optional and should only be implemented by plat=
+forms
+> > >>   *	which require special recovery actions in that situation.
+> > >> + *
+> > >> + * @target_state: Returns the suspend state the suspend_ops will be=
+ entering.
+> > >> + * 	Called by device drivers that need to know the platform specifi=
+c suspend
+> > >> + * 	state the system is about to enter.
+> > >> + * 	This callback is optional and should only be implemented by pla=
+tforms
+> > >> + * 	which require special handling of power management states within
+> > >> + * 	drivers. It does require @begin to be implemented to provide th=
+e suspend
+> > >> + * 	state. Return value is platform_suspend_ops specific, and may b=
+e a 1:1
+> > >> + * 	mapping to suspend_state_t when relevant.
+> > >>   */
+> > >>  struct platform_suspend_ops {
+> > >>  	int (*valid)(suspend_state_t state);
+> > >> @@ -184,6 +193,7 @@ struct platform_suspend_ops {
+> > >>  	bool (*suspend_again)(void);
+> > >>  	void (*end)(void);
+> > >>  	void (*recover)(void);
+> > >> +	int (*target_state)(void);
+> > >=20
+> > > I would use unsigned int (the sign should not matter).
+> > >=20
+> > >>  };
+> > >=20
+> > > That's almost what I was thinking about except that the values return=
+ed by
+> > > ->target_state should be unique, so it would be good to do something =
+to
+> > > ensure that.
+> > >=20
+> > > The concern is as follows.
+> > >=20
+> > > Say you have a driver develped for platform X where ->target_state re=
+turns
+> > > A for "mem" and B for "standby".  Then, the same IP is re-used on pla=
+tform Y
+> > > returning B for "mem" and C for "standby" and now the driver cannot
+> > > distinguish between them.
+> > >=20
+> > > Moreover, even if they both returned A for "mem" there might be diffe=
+rences
+> > > in how "mem" was defined by each of them and therefore in what the dr=
+iver was
+> > > expected to do to handle "mem" on X and Y.
 > >=20
-> > OK
-> >=20
-> > Still, though, using CPUFREQ_ETERNAL to indicate the "no dynamic
-> > switching" condition is somewhat convoluted, so why don't we have a
-> > flag to *explicitly* say that instead?
-> >=20
-> > Do you know which drivers they are or is it just all drivers that use
-> > CPUFREQ_ETERNAL?
+> > That makes sense, would you need the core implementation in
+> > platform_suspend_target_state() to range check what
+> > suspend_ops->target_state() returns against a set of reserved value say,
+> > checking from 0 up to ACPI_S_STATE_COUNT or is there another range you
+> > would like to see being used?
 >=20
-> Well, after the $subject patch it effectively is all drivers that use
-> CPUFREQ_ETERNAL anyway, so it looks like we actually can do a complete
-> switch-over.
+> I had an idea of using an enum type encompassing all of the power states
+> defined for various platforms and serving both as a registry (to ensure t=
+he
+> uniqueness of the values assigned to the states) and a common ground
+> between platforms and drivers.
+>=20
+> Something like:
+>=20
+> enum platform_target_state {
+> 	PLATFORM_STATE_UNKNOWN =3D -1,
+> 	PLATFORM_STATE_WORKING =3D 0,
+> 	PLATFORM_STATE_ACPI_S1,
+> 	PLATFORM_STATE_ACPI_S2,
+> 	PLATFORM_STATE_ACPI_S3,
+> 	PLATFORM_STATE_MY_BOARD_1_GATE_CLOCKS,
+> 	PLATFORM_STATE_MY_BOARD_1_GATE_POWER,
+> 	PLATFORM_STATE_ANOTHER_BOARD_DO_CRAZY_STUFF,
+> 	...
+> };
+>=20
+> and define ->target_state to return a value of this type.
+>=20
+> Then, if a driver sees one of these and recognizes that value, it should
+> know exactly what to do.
 
-Exactly. But lets take a quick look at the drivers ussing CPUFREQ_ETERNAL:
+Remind me why this is good idea?
 
-Using CPUFREQ_ETERNAL, as policy-setting drivers:
+We currently have 1364+ boards in tree. That will be rather large
+enum.
 
-- intel_pstate.c - for the intel_pstate driver, which defers to the hardware
-  to do frequency selection.
+If board wants to know if certain regulator stays online during
+suspend, it should invent an API for _that_.
+									Pavel
 
-- longrun.c - hardware-based frequency selection.
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-=3D> Those drivers are not interested in kernel-based dynamic frequency
-selection anyway.
-
-
-Using CPUFREQ_ETERNAL as a fallback if transition_latency is unknown:
-- arm_big_little.c
-- arm_big_little_dt.c
-- cpufreq-dt.c
-- imx6q-cpufreq.c
-- spear_cpufreq.c
-
-=3D> As it seems to be an error case, it seems best to bail out on the
-safe side and disallow dynamic frequency scaling. Platform experts might
-know better, though.
-
-
-Using CPUFREQ_ETERNAL unconditionally:
-- cpufreq-nforce2.c - over a decade old driver; has a commented-out hack
-  to mdelay(10ms) after each frequency transition. This smells like it might
-  be unsafe to do dynamic switching more often than that.
-
-- elanfreq.c - Has udelay(1ms+10ms) in transition path, so the same terms
-  and conditions seem to apply.
-
-- gx-suspmod.c - works by a mechanism which reminds me of CPU frequency
-  throttling, but chipset- and not CPU-based.
-
-- pmac32-cpufreq.c - for some models, it sets latency to ETERNAL. In some
-  frequency switchign code, it has mdelay(10ms) calls.
-
-- speedsstep-smi.c - this case was discussed previously.
-
-=3D> For those drivers, dynamic frequency scaling should not be enabled IMO.
-
-
-- sa1100-cpufreq.c and
-- sa1110-cpufreq.c - If I remember correctly, those drivers were used for
-  fast user-space based frequency scaling in the past.=20
-
-=3D> For these two drivers, enabling DFVS might be an option.
-
-
-- sh-cpufreq.c - looks fast, but I have no clue.
-
-- unicore2-cpufreq.c - same.
-
-=3D> For those drivers, I have no clue. So to be on the safe side, I'd opt =
-for
-dynamic frequency scaling to be set to off.
-
-
-To summarize: At first, I'd propose a *complete* switch-over from
-CPUFREQ_ETERNAL to setting the flag "no DVFS" you have proposed. Then, one
-might discuss with the maintainers of individual drivers/platforms on
-whether to relax this rule for a few of those drivers (sa11x0, sh-cpufreq,
-unicore2-cpufreq and the drivers using CPUFREQ_ETERNAL as a fallback).
-
-Best,
-	Dominik
-
---zYM0uCDKw75PZbzx
+--mYCpIKhGyMATD0i+
 Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-iQIzBAEBCAAdFiEEmgXaWKgmjrvkPhLCmpdgiUyNow0FAllpo0YACgkQmpdgiUyN
-ow26IxAAs4LDfKw6W7TXgqPUwYezv/AD67D+3toHCzfTIs8yFGNkouMcAgi3WGvf
-mGjRBsn10AxCN4m94nyx6N4F3GsbyMrjY6ldhv+4RVFYIlA5b1XsqsLmWNkyuTvw
-3YvgUWWnPAaEThfLeWWhy1Y6GMOacgmZf0NFnQuaapfH+BSlhb70ipeEH9BewaPV
-EVCgGiyHyZbjTpLdL66XVP4JKgGYwiyJZaspArC4thY3+nziI52ipPYYE7xQRLfa
-pSHMCJm8xaeyyFgGvNHrSaQvM9z5JktVs+eMAPisRaxp4IGyO3rF4TTHh7UbFmdY
-sKSXkdxd+gvxWuJwb+Dh1ISBRO5NB7mX6lNAmAMCb7I0BbH4ieSg/wQlONDRHC3j
-w9uFXBNspax3ReKdzERtkSp2s+FYlYpzdK7OrGcTZfkqhhQfHmPtcZPZPUXLbVOv
-BffgDO6dH/Hjg+4h2JrD1sUBK9HXLLz5aCnOz0H76dSu6V9c6F2hx0u2hKd0jmG4
-x4SbXViBq19vZVxAYS40y2eMiCjvPU9JhwmhrLPbrAFQiMUj7zzhSPVyl6PhfVeD
-A0A2bsdwAbVrJbnb9I74VSranFwsbQTYtwdWxcoqD6jO5OiTR/fvyq++BNk6x2p/
-qEHSckUxLcFB60itfNWwHbN+ULLA8syKTGedgmp0fNCtLv8qdsw=
-=Xzyp
+iEYEARECAAYFAllpthYACgkQMOfwapXb+vLUYgCcCqaZOu3fugVI0aWPyz/h63DK
+sWkAnROJ96JVTI9/ytoqt/c1GFAvMhiI
+=Z3kt
 -----END PGP SIGNATURE-----
 
---zYM0uCDKw75PZbzx--
+--mYCpIKhGyMATD0i+--
