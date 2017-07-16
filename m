@@ -1,58 +1,36 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2] PM / suspend: Add platform_suspend_target_state()
-Date: Thu, 6 Jul 2017 05:18:31 +0200
-Message-ID: <20170706031831.GE12954@xo-6d-61-c0.localdomain>
-References: <20170623010837.11199-1-f.fainelli@gmail.com>
- <20170716023610.4658-1-f.fainelli@gmail.com>
- <20170716023610.4658-2-f.fainelli@gmail.com>
+From: Ladislav Michl <ladis-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>
+Subject: [PATCH v6 0/3] power: supply: ltc2941-battery-gauge: Support LTC2942
+ and LTC2944
+Date: Sun, 16 Jul 2017 11:32:02 +0200
+Message-ID: <20170716093202.vfea4yylbzfec72v@lenoch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170716023610.4658-2-f.fainelli@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Looijmans <mike.looijmans-Oq418RWZeHk@public.gmane.org>, Dragos Bogdan <dragos.bogdan-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+This is the 6th version of patch.
+Changelog:
+- v2: reworked voltage computing to not overflow and keep precision
+- v3: update devicetree binding documentation
+- v4: add ltc2942 devicetree compatible
+- v5: reworked to incorporate Dragos' LTC2944 patch
+- v6: fix missing break in the switch statement, move LTC2942 and LTC2944
+      id definitions into respective patches
+ 
+LTC2942 is pin compatible with LTC2941 providing few more registers
+holding information about battery voltage and temperature. It can
+be runtime detected using bit A7 in the Status register.
 
-> Although this callback is optional and documented as such, it requires
-> a platform_suspend_ops::begin callback to be implemented in order to
-> provide an accurate suspend/resume state within the driver that
-> implements this platform_suspend_ops.
-> 
-> An enumeration: platform_target_state is defined which currently defines
-> the standard ACPI_S[1-4] states and can be extended with platform
-> specific suspend states.
-> 
-> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
-> ---
->  include/linux/suspend.h | 25 +++++++++++++++++++++++++
->  kernel/power/suspend.c  | 15 +++++++++++++++
->  2 files changed, 40 insertions(+)
-> 
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index 0b1cf32edfd7..6e6cc0778816 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -50,6 +50,16 @@ enum suspend_stat_step {
->  	SUSPEND_RESUME
->  };
->  
-> +enum platform_target_state {
-> +	PLATFORM_STATE_UNKNOWN = -1,
-> +	PLATFORM_STATE_WORKING = 0,
-> +	PLATFORM_STATE_ACPI_S1,
-> +	PLATFORM_STATE_ACPI_S2,
-> +	PLATFORM_STATE_ACPI_S3,
-> +	PLATFORM_STATE_ACPI_S4,
-> +	/* Add platform specific states here */
-> +};
-> +
+LTC2944 is compatible with LTC2943, but uses different
+voltage and current computing constants.
 
-As I tried to explain in the email thread, having list with all the possible platform
-states is no-go. We have about 1000 platforms supported...
-
-NAK.
-									Pavel
+Comments welcome,
+	ladis
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
