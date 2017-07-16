@@ -1,91 +1,98 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
 Subject: Re: [RFC 1/2] PM / suspend: Add platform_suspend_target_state()
-Date: Sun, 16 Jul 2017 15:41:16 +0200
-Message-ID: <20170716134116.wxwb3gevbhlereij@piout.net>
+Date: Sun, 16 Jul 2017 08:35:59 -0700
+Message-ID: <d8c15114-636d-79bb-883e-d2d4439f755d@gmail.com>
 References: <20170622085102.mpk7vxodpgxtrlfd@piout.net>
- <2497538.J9F6XFeBfd@aspire.rjw.lan>
- <20170715062838.GA20741@amd>
- <5864280.u6UQBsuXnA@aspire.rjw.lan>
- <20170715164626.GA1373@amd>
+ <2497538.J9F6XFeBfd@aspire.rjw.lan> <20170715062838.GA20741@amd>
+ <5864280.u6UQBsuXnA@aspire.rjw.lan> <20170715164626.GA1373@amd>
  <1a5ef0ae-16f3-5a61-ae4e-083664cb30c0@gmail.com>
  <20170715183358.4bnhshokalyulswz@piout.net>
  <20170706031819.GD12954@xo-6d-61-c0.localdomain>
+ <20170716134116.wxwb3gevbhlereij@piout.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:57661 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751274AbdGPNli (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Jul 2017 09:41:38 -0400
-Content-Disposition: inline
-In-Reply-To: <20170706031819.GD12954@xo-6d-61-c0.localdomain>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:33150 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751211AbdGPPgE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Jul 2017 11:36:04 -0400
+In-Reply-To: <20170716134116.wxwb3gevbhlereij@piout.net>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Florian Fainelli <f.fainelli@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>, Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 06/07/2017 at 05:18:19 +0200, Pavel Machek wrote:
-> On Sat 2017-07-15 20:33:58, Alexandre Belloni wrote:
-> > On 15/07/2017 at 10:20:27 -0700, Florian Fainelli wrote:
-> > > > We already have
-> > > > 
-> > > > struct regulator_state {
-> > > >        int uV; /* suspend voltage */
-> > > >        unsigned int mode; /* suspend regulator operating mode */
-> > > >        int enabled; /* is regulator enabled in this suspend state */
-> > > >        int disabled; /* is the regulator disabled in this suspend state */
-> > > > };
-> > > > 
-> > > >  * struct regulation_constraints - regulator operating constraints.
-> > > >   * @state_disk: State for regulator when system is suspended in disk
-> > > >   * mode.
-> > > >   * @state_mem: State for regulator when system is suspended in mem
-> > > >   * mode.
-> > > >   * @state_standby: State for regulator when system is suspended in
-> > > >   * standby
-> > > >   *                 mode.
-> > > >    
-> > > > . So it seems that maybe we should tell the drivers if we are entering
-> > > > "state_mem" or "state_standby" (something I may have opposed, sorry),
-> > > > then the driver can get neccessary information from regulator
-> > > > framework.
-> > > 
-> > > OK, so what would be the mechanism to tell these drivers about the
-> > > system wide suspend state they are entering if it is not via
-> > > platform_suspend_target_state()?
-> > > 
-> > > Keep in mind that regulators might be one aspect of what could be
-> > > causing the platform to behave specifically in one suspend state vs.
-> > > another, but there could be pieces of HW within the SoC that can't be
-> > > described with power domains, voltage islands etc. that would still have
-> > > inherent suspend states properties (like memory retention, pin/pad
-> > > controls etc. etc). We still need some mechanism, possibly centralized
-> > > 
-> > 
-> > I concur, the regulator stuff is one aspect of one of our suspend state
-> > (cutting VDDcore). But we have another state where the main clock (going
-> > to the IPs) is going from a few hundred MHz to 32kHz. This is currently
-> > handled by calling at91_suspend_entering_slow_clock(). I think it is
-> > important to take that into account so we can remove this hack from the
-> > kernel.
+
+
+On 07/16/2017 06:41 AM, Alexandre Belloni wrote:
+> On 06/07/2017 at 05:18:19 +0200, Pavel Machek wrote:
+>> On Sat 2017-07-15 20:33:58, Alexandre Belloni wrote:
+>>> On 15/07/2017 at 10:20:27 -0700, Florian Fainelli wrote:
+>>>>> We already have
+>>>>>
+>>>>> struct regulator_state {
+>>>>>        int uV; /* suspend voltage */
+>>>>>        unsigned int mode; /* suspend regulator operating mode */
+>>>>>        int enabled; /* is regulator enabled in this suspend state */
+>>>>>        int disabled; /* is the regulator disabled in this suspend state */
+>>>>> };
+>>>>>
+>>>>>  * struct regulation_constraints - regulator operating constraints.
+>>>>>   * @state_disk: State for regulator when system is suspended in disk
+>>>>>   * mode.
+>>>>>   * @state_mem: State for regulator when system is suspended in mem
+>>>>>   * mode.
+>>>>>   * @state_standby: State for regulator when system is suspended in
+>>>>>   * standby
+>>>>>   *                 mode.
+>>>>>    
+>>>>> . So it seems that maybe we should tell the drivers if we are entering
+>>>>> "state_mem" or "state_standby" (something I may have opposed, sorry),
+>>>>> then the driver can get neccessary information from regulator
+>>>>> framework.
+>>>>
+>>>> OK, so what would be the mechanism to tell these drivers about the
+>>>> system wide suspend state they are entering if it is not via
+>>>> platform_suspend_target_state()?
+>>>>
+>>>> Keep in mind that regulators might be one aspect of what could be
+>>>> causing the platform to behave specifically in one suspend state vs.
+>>>> another, but there could be pieces of HW within the SoC that can't be
+>>>> described with power domains, voltage islands etc. that would still have
+>>>> inherent suspend states properties (like memory retention, pin/pad
+>>>> controls etc. etc). We still need some mechanism, possibly centralized
+>>>>
+>>>
+>>> I concur, the regulator stuff is one aspect of one of our suspend state
+>>> (cutting VDDcore). But we have another state where the main clock (going
+>>> to the IPs) is going from a few hundred MHz to 32kHz. This is currently
+>>> handled by calling at91_suspend_entering_slow_clock(). I think it is
+>>> important to take that into account so we can remove this hack from the
+>>> kernel.
+>>
+>> Cure should not be worse then the disease... and it is in this case.
+>>
+>> For clocks, take a look at clock framework, perhaps it already has "clock_will_be_suspended"
+>> as regulator framework had. If not, implement it.
+>>
 > 
-> Cure should not be worse then the disease... and it is in this case.
+> See Rafael's comment, currently, the clock framework can't say whether
+> the clock will change because it doesn't know anything about the suspend
+> target.
 > 
-> For clocks, take a look at clock framework, perhaps it already has "clock_will_be_suspended"
-> as regulator framework had. If not, implement it.
+>> Same with memory retention, pin/pad controls.
+>>
 > 
+> Same here.
 
-See Rafael's comment, currently, the clock framework can't say whether
-the clock will change because it doesn't know anything about the suspend
-target.
+Exactly, here is another side effect of not knowing the platform
+suspend/state that I came across on our platforms:
 
-> Same with memory retention, pin/pad controls.
-> 
+https://patchwork.kernel.org/patch/9561575/
 
-Same here.
-
-
+(we later discussed this in details with Linus and this is why this very
+patch set is being introduced now)
 -- 
-Alexandre Belloni, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+Florian
