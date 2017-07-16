@@ -1,75 +1,81 @@
 From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: [PATCH 1/2] PM / suspend: Add platform_suspend_target_state()
-Date: Sun, 16 Jul 2017 08:41:22 -0700
-Message-ID: <12d5fe53-089c-87e8-53fe-8461489efba3@gmail.com>
-References: <20170623010837.11199-1-f.fainelli@gmail.com>
- <20170716023610.4658-1-f.fainelli@gmail.com>
- <20170716023610.4658-2-f.fainelli@gmail.com>
- <20170706031831.GE12954@xo-6d-61-c0.localdomain>
+Subject: Re: [RFC 1/2] PM / suspend: Add platform_suspend_target_state()
+Date: Sun, 16 Jul 2017 08:41:43 -0700
+Message-ID: <6d93ebd4-79aa-ad4c-6670-234de28c59ba@gmail.com>
+References: <20170622085102.mpk7vxodpgxtrlfd@piout.net>
+ <1703157.S2GHVxrQk4@aspire.rjw.lan>
+ <e680f86a-88db-8a53-dca6-a79d120d480b@gmail.com>
+ <3675920.H2f5xgTCgu@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:35364 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751211AbdGPPlZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Jul 2017 11:41:25 -0400
-In-Reply-To: <20170706031831.GE12954@xo-6d-61-c0.localdomain>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3675920.H2f5xgTCgu@aspire.rjw.lan>
 Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Mason <slash.tmp@free.fr>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
 
 
-On 07/05/2017 08:18 PM, Pavel Machek wrote:
-> Hi!
+On 07/16/2017 03:22 AM, Rafael J. Wysocki wrote:
+> On Saturday, July 15, 2017 07:36:21 PM Florian Fainelli wrote:
+>>
+>> On 07/15/2017 04:38 PM, Rafael J. Wysocki wrote:
+>>> On Sunday, July 16, 2017 01:34:53 AM Mason wrote:
+>>>> On 16/07/2017 01:24, Rafael J. Wysocki wrote:
+>>>>
+>>>>> On Saturday, July 15, 2017 10:20:27 AM Florian Fainelli wrote:
+>>>>>
+>>>>>> The enum offers the advantage of centralizing how many different states
+>>>>>> exist for all the platforms we know about in the kernel, it's easy to
+>>>>>> define common values for platforms that have the same semantics, just
+>>>>>> like it's simple to add new values for platform specific details.
+>>>>>
+>>>>> Well, you seem to be liking this, so why don't you just implement it?
+>>>>
+>>>> At the end of his message, Florian wrote:
+>>>>
+>>>>> In any case, just agree and I will be happy to follow-up with patches.
+>>>
+>>> But it may be hard to convince everybody without posting code changes
+>>> and often enough showing a patch makes a good argument.
+>>
+>> I had the patches ready last night, saw the emails this morning and
+>> decided to go mountain bike for a bit to think about it some more. You
+>> will find my follow-up patches that hopefully implement your recommendation.
 > 
->> Although this callback is optional and documented as such, it requires
->> a platform_suspend_ops::begin callback to be implemented in order to
->> provide an accurate suspend/resume state within the driver that
->> implements this platform_suspend_ops.
->>
->> An enumeration: platform_target_state is defined which currently defines
->> the standard ACPI_S[1-4] states and can be extended with platform
->> specific suspend states.
->>
->> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
->> ---
->>  include/linux/suspend.h | 25 +++++++++++++++++++++++++
->>  kernel/power/suspend.c  | 15 +++++++++++++++
->>  2 files changed, 40 insertions(+)
->>
->> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
->> index 0b1cf32edfd7..6e6cc0778816 100644
->> --- a/include/linux/suspend.h
->> +++ b/include/linux/suspend.h
->> @@ -50,6 +50,16 @@ enum suspend_stat_step {
->>  	SUSPEND_RESUME
->>  };
->>  
->> +enum platform_target_state {
->> +	PLATFORM_STATE_UNKNOWN = -1,
->> +	PLATFORM_STATE_WORKING = 0,
->> +	PLATFORM_STATE_ACPI_S1,
->> +	PLATFORM_STATE_ACPI_S2,
->> +	PLATFORM_STATE_ACPI_S3,
->> +	PLATFORM_STATE_ACPI_S4,
->> +	/* Add platform specific states here */
->> +};
->> +
+> OK, thanks!
 > 
-> As I tried to explain in the email thread, having list with all the possible platform
-> states is no-go. We have about 1000 platforms supported...
+> There is one problem with this I missed before, though, sorry about that.
+> 
+> Drivers need to be able to distinguish between suspend-to-idle and the platform
+> states too, so we need to store the argument passed to suspend_devices_and_enter()
+> somewhere too, either in the core or in the platform code.
+> 
+> And if we need to store it anyway, let's just store it in the core in a global var
+> (say pm_suspend_target_state), export that and be done.
 
-FYI, the recent (relatively recent) CPU hotplug conversion from
-notifiers to a state machine has a similar pattern whereby pieces of
-code needing to hook into the CPU hotplug state machine add their own
-enum values as they need. So far it's been working for them, and there
-were tons of CPU hotplug notifiers in the kernel.
+I was not sure this would be acceptable which was why I opted for making
+suspend_ops::begin store the state passed from suspend_ops::enter, I
+will change that.
 
-Anyhow, let me implement Rafael's suggestions and we can see how we move
-from there.
+> 
+> There still will be a concern regarding drivers that care about differences between
+> PM_SUSPEND_MEM and PM_SUSPEND_STANDBY, because those differences are
+> platform-dependent, but let's defer addressing this until we have a driver
+> that needs to run on different platforms with different definitions for those
+> things.
+
+Makes sense, thanks!
+
+> 
+> That should address the Pavel's objections too I guess.
+> 
+> Thanks,
+> Rafael
+> 
+
 -- 
 Florian
