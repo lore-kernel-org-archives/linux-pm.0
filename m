@@ -1,7 +1,7 @@
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH 2/3] thermal: core: Reorder 'thermal_zone_device_register()' error handling code
-Date: Sun, 16 Jul 2017 08:59:03 +0200
-Message-ID: <1b2b2a818d356097d5f6092745086b79d43aeafe.1500187753.git.christophe.jaillet@wanadoo.fr>
+Subject: [PATCH 3/3] thermal: core: Avoid code duplication in 'thermal_zone_device_register()'
+Date: Sun, 16 Jul 2017 08:59:04 +0200
+Message-ID: <8eeaa51b6d95f3b73ec476a01157dc6308a1b732.1500187753.git.christophe.jaillet@wanadoo.fr>
 References: <dcc79547980dca6c42c16c60f76cf8b4cbd5a392.1500187753.git.christophe.jaillet@wanadoo.fr>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <dcc79547980dca6c42c16c60f76cf8b4cbd5a392.1500187753.git.christophe.jaillet@wanadoo.fr>
@@ -12,39 +12,50 @@ To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 List-Id: linux-pm@vger.kernel.org
 
-Reorder code in the error handling path in order to match the way resources
-have been allocated.
-
-With this new order, we can avoid a call to 'device_unregister()' if
-'thermal_zone_create_device_groups'()' fails. At this point,
-'device_register()' has not been called yet.
+Jump in the error handling path in order to avoid code duplication if
+some function fail.
 
 Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- drivers/thermal/thermal_core.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/thermal/thermal_core.c | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 9743f3e65eb0..c58714800660 100644
+index c58714800660..fe4b812eeb12 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1232,7 +1232,7 @@ thermal_zone_device_register(const char *type, int trips, int mask,
- 	/* Add nodes that are always present via .groups */
- 	result = thermal_zone_create_device_groups(tz, mask);
- 	if (result)
--		goto unregister;
+@@ -1213,10 +1213,8 @@ thermal_zone_device_register(const char *type, int trips, int mask,
+ 	ida_init(&tz->ida);
+ 	mutex_init(&tz->lock);
+ 	result = ida_simple_get(&thermal_tz_ida, 0, 0, GFP_KERNEL);
+-	if (result < 0) {
+-		kfree(tz);
+-		return ERR_PTR(result);
+-	}
++	if (result < 0)
++		goto free_tz;
+ 
+ 	tz->id = result;
+ 	strlcpy(tz->type, type, sizeof(tz->type));
+@@ -1239,11 +1237,8 @@ thermal_zone_device_register(const char *type, int trips, int mask,
+ 
+ 	dev_set_name(&tz->device, "thermal_zone%d", tz->id);
+ 	result = device_register(&tz->device);
+-	if (result) {
+-		ida_simple_remove(&thermal_tz_ida, tz->id);
+-		kfree(tz);
+-		return ERR_PTR(result);
+-	}
++	if (result)
 +		goto remove_id;
  
- 	/* A new thermal zone needs to be updated anyway. */
- 	atomic_set(&tz->need_update, 1);
-@@ -1294,8 +1294,9 @@ thermal_zone_device_register(const char *type, int trips, int mask,
- 	return tz;
- 
- unregister:
--	ida_simple_remove(&thermal_tz_ida, tz->id);
+ 	for (count = 0; count < trips; count++) {
+ 		if (tz->ops->get_trip_type(tz, count, &trip_type))
+@@ -1297,6 +1292,7 @@ thermal_zone_device_register(const char *type, int trips, int mask,
  	device_unregister(&tz->device);
-+remove_id:
-+	ida_simple_remove(&thermal_tz_ida, tz->id);
+ remove_id:
+ 	ida_simple_remove(&thermal_tz_ida, tz->id);
++free_tz:
  	kfree(tz);
  	return ERR_PTR(result);
  }
