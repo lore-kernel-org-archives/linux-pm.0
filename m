@@ -1,184 +1,292 @@
-From: "Bogdan, Dragos" <Dragos.Bogdan-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v6 3/3] power: supply: ltc2941-battery-gauge: Add
- LTC2944 support
-Date: Mon, 17 Jul 2017 14:55:20 +0000
-Message-ID: <6067964B99C6A049AA5840B6F7BB2D0ABDAAD96B@NWD2MBX5.ad.analog.com>
-References: <20170716093202.vfea4yylbzfec72v@lenoch>
- <20170716093532.w6sqqtadwnbroj3i@lenoch>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH RESEND] tools/power/cpupower: allow running without cpu0
+Date: Mon, 17 Jul 2017 11:23:19 -0400
+Message-ID: <ca8bce98-611a-27df-6bd8-330c593f76d0@redhat.com>
+References: <1478871719-30660-1-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ladislav Michl <ladis-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: Mike Looijmans <mike.looijmans-Oq418RWZeHk@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:55760 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751280AbdGQPXU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 17 Jul 2017 11:23:20 -0400
+In-Reply-To: <1478871719-30660-1-git-send-email-prarit@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Thomas Renninger <trenn@suse.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On 07/16/2017 12:35 PM, Ladislav Michl wrote:=0A=
-> From: Dragos Bogdan <dragos.bogdan-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>=0A=
->=0A=
-> LTC2944 is compatible with LTC2943, but uses different=0A=
-> voltage and current computing constants.=0A=
->=0A=
-> Signed-off-by: Dragos Bogdan <dragos.bogdan-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>=0A=
-> Signed-off-by: Ladislav Michl <ladis-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>=0A=
-=0A=
-Tested-by: Dragos Bogdan <dragos.bogdan-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>=0A=
-=0A=
-> ---=0A=
->  Changes:=0A=
->  - v2: fixed voltage and current conversion=0A=
->  - v3: skipped=0A=
->  - v4: skipped=0A=
->  - v5: fixed voltage conversion overflow, rebased on LTC2942 patchset=0A=
->  - v6: fix missing break in the switch statement=0A=
->=0A=
->  .../devicetree/bindings/power/supply/ltc2941.txt   | 12 +++++-----=0A=
->  drivers/power/supply/ltc2941-battery-gauge.c       | 27 ++++++++++++++++=
-++----=0A=
->  2 files changed, 28 insertions(+), 11 deletions(-)=0A=
->=0A=
-> diff --git a/Documentation/devicetree/bindings/power/supply/ltc2941.txt b=
-/Documentation/devicetree/bindings/power/supply/ltc2941.txt=0A=
-> index 8ec10366295d..3b9ba147b041 100644=0A=
-> --- a/Documentation/devicetree/bindings/power/supply/ltc2941.txt=0A=
-> +++ b/Documentation/devicetree/bindings/power/supply/ltc2941.txt=0A=
-> @@ -1,14 +1,14 @@=0A=
-> -binding for LTC2941, LTC2942 and LTC2943 battery gauges=0A=
-> +binding for LTC2941, LTC2942, LTC2943 and LTC2944 battery gauges=0A=
->  =0A=
->  All chips measure battery capacity.=0A=
->  The LTC2942 is pin compatible with the LTC2941, it adds voltage and=0A=
-> -temperature monitoring, and is runtime detected. LTC2943 is software=0A=
-> -compatible, uses a slightly different conversion formula for the=0A=
-> -charge counter and adds voltage, current and temperature monitoring.=0A=
-> +temperature monitoring, and is runtime detected. LTC2943 and LTC2944=0A=
-> +is software compatible, uses a slightly different conversion formula=0A=
-> +for the charge counter and adds voltage, current and temperature monitor=
-ing.=0A=
->  =0A=
->  Required properties:=0A=
-> -- compatible: Should contain "lltc,ltc2941", "lltc,ltc2942" or "lltc,ltc=
-2943"=0A=
-> -    which also indicates the type of I2C chip attached.=0A=
-> +- compatible: Should contain "lltc,ltc2941", "lltc,ltc2942", "lltc,ltc29=
-43"=0A=
-> +    or "lltc,ltc2944" which also indicates the type of I2C chip attached=
-.=0A=
->  - reg: The 7-bit I2C address.=0A=
->  - lltc,resistor-sense: The sense resistor value in milli-ohms. Can be a =
-32-bit=0A=
->      negative value when the battery has been connected to the wrong end =
-of the=0A=
-> diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power=
-/supply/ltc2941-battery-gauge.c=0A=
-> index 42ff4e3daf35..08e4fd9ee607 100644=0A=
-> --- a/drivers/power/supply/ltc2941-battery-gauge.c=0A=
-> +++ b/drivers/power/supply/ltc2941-battery-gauge.c=0A=
-> @@ -1,6 +1,6 @@=0A=
->  /*=0A=
-> - * I2C client/driver for the Linear Technology LTC2941, LTC2942 and LTC2=
-943=0A=
-> - * Battery Gas Gauge IC=0A=
-> + * I2C client/driver for the Linear Technology LTC2941, LTC2942, LTC2943=
-=0A=
-> + * and LTC2944 Battery Gas Gauge IC=0A=
->   *=0A=
->   * Copyright (C) 2014 Topic Embedded Systems=0A=
->   *=0A=
-> @@ -48,6 +48,7 @@ enum ltc294x_id {=0A=
->  	LTC2941_ID,=0A=
->  	LTC2942_ID,=0A=
->  	LTC2943_ID,=0A=
-> +	LTC2944_ID,=0A=
->  };=0A=
->  =0A=
->  #define LTC2941_REG_STATUS_CHIP_ID	BIT(7)=0A=
-> @@ -153,7 +154,8 @@ static int ltc294x_reset(const struct ltc294x_info *i=
-nfo, int prescaler_exp)=0A=
->  	case LTC2942_ID:	/* 2942 measures every 2 sec */=0A=
->  		control |=3D LTC2942_REG_CONTROL_MODE_SCAN;=0A=
->  		break;=0A=
-> -	case LTC2943_ID:	/* 2943 measures every 10 sec */=0A=
-> +	case LTC2943_ID:=0A=
-> +	case LTC2944_ID:	/* 2943 and 2944 measure every 10 sec */=0A=
->  		control |=3D LTC2943_REG_CONTROL_MODE_SCAN;=0A=
->  		break;=0A=
->  	default:=0A=
-> @@ -269,6 +271,11 @@ static int ltc294x_get_voltage(const struct ltc294x_=
-info *info, int *val)=0A=
->  		value /=3D 0xFFFF;=0A=
->  		value *=3D 1000 / 2;=0A=
->  		break;=0A=
-> +	case LTC2944_ID:=0A=
-> +		value *=3D 70800 / 5*4;=0A=
-> +		value /=3D 0xFFFF;=0A=
-> +		value *=3D 1000 * 5/4;=0A=
-> +		break;=0A=
->  	default:=0A=
->  		value *=3D 6000 * 10;=0A=
->  		value /=3D 0xFFFF;=0A=
-> @@ -289,10 +296,14 @@ static int ltc294x_get_current(const struct ltc294x=
-_info *info, int *val)=0A=
->  		LTC2943_REG_CURRENT_MSB, &datar[0], 2);=0A=
->  	value =3D (datar[0] << 8) | datar[1];=0A=
->  	value -=3D 0x7FFF;=0A=
-> +	if (info->id =3D=3D LTC2944_ID)=0A=
-> +		value *=3D 64000;=0A=
-> +	else=0A=
-> +		value *=3D 60000;=0A=
->  	/* Value is in range -32k..+32k, r_sense is usually 10..50 mOhm,=0A=
->  	 * the formula below keeps everything in s32 range while preserving=0A=
->  	 * enough digits */=0A=
-> -	*val =3D 1000 * ((60000 * value) / (info->r_sense * 0x7FFF)); /* in uA =
-*/=0A=
-> +	*val =3D 1000 * (value / (info->r_sense * 0x7FFF)); /* in uA */=0A=
->  	return ret;=0A=
->  }=0A=
->  =0A=
-> @@ -470,6 +481,7 @@ static int ltc294x_i2c_probe(struct i2c_client *clien=
-t,=0A=
->  	info->supply_desc.type =3D POWER_SUPPLY_TYPE_BATTERY;=0A=
->  	info->supply_desc.properties =3D ltc294x_properties;=0A=
->  	switch (info->id) {=0A=
-> +	case LTC2944_ID:=0A=
->  	case LTC2943_ID:=0A=
->  		info->supply_desc.num_properties =3D=0A=
->  			ARRAY_SIZE(ltc294x_properties);=0A=
-> @@ -543,6 +555,7 @@ static const struct i2c_device_id ltc294x_i2c_id[] =
-=3D {=0A=
->  	{ "ltc2941", LTC2941_ID, },=0A=
->  	{ "ltc2942", LTC2942_ID, },=0A=
->  	{ "ltc2943", LTC2943_ID, },=0A=
-> +	{ "ltc2944", LTC2944_ID, },=0A=
->  	{ },=0A=
->  };=0A=
->  MODULE_DEVICE_TABLE(i2c, ltc294x_i2c_id);=0A=
-> @@ -560,6 +573,10 @@ static const struct of_device_id ltc294x_i2c_of_matc=
-h[] =3D {=0A=
->  		.compatible =3D "lltc,ltc2943",=0A=
->  		.data =3D (void *)LTC2943_ID,=0A=
->  	},=0A=
-> +	{=0A=
-> +		.compatible =3D "lltc,ltc2944",=0A=
-> +		.data =3D (void *)LTC2944_ID,=0A=
-> +	},=0A=
->  	{ },=0A=
->  };=0A=
->  MODULE_DEVICE_TABLE(of, ltc294x_i2c_of_match);=0A=
-> @@ -578,5 +595,5 @@ module_i2c_driver(ltc294x_driver);=0A=
->  =0A=
->  MODULE_AUTHOR("Auryn Verwegen, Topic Embedded Systems");=0A=
->  MODULE_AUTHOR("Mike Looijmans, Topic Embedded Products");=0A=
-> -MODULE_DESCRIPTION("LTC2941/LTC2942/LTC2943 Battery Gas Gauge IC driver"=
-);=0A=
-> +MODULE_DESCRIPTION("LTC2941/LTC2942/LTC2943/LTC2944 Battery Gas Gauge IC=
- driver");=0A=
->  MODULE_LICENSE("GPL");=0A=
-=0A=
-=0A=
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ping?  Thomas?  Rafael?
+
+... patch still applies.
+
+P.
+
+On 11/11/2016 08:41 AM, Prarit Bhargava wrote:
+> Linux-3.7 added CONFIG_BOOTPARAM_HOTPLUG_CPU0,
+> allowing systems to offline cpu0.
+> 
+> But when cpu0 is offline, cpupower monitor will not display all
+> processor and Mperf information:
+> 
+> [root@intel-skylake-dh-03 cpupower]# ./cpupower monitor
+> WARNING: at least one cpu is offline
+>     |Idle_Stats
+> CPU | POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S
+>    4|  0.00|  0.00|  0.00|  0.00|  0.90|  0.00| 96.13
+>    1|  0.00|  0.00|  5.49|  0.00|  0.01|  0.00| 92.26
+>    5|  0.00|  0.00|  0.00|  0.00|  0.46|  0.00| 99.50
+>    2| 45.42|  0.00|  0.00|  0.00| 22.94|  0.00| 28.84
+>    6|  0.00| 37.54|  0.00|  0.00|  0.00|  0.00|  0.00
+>    3|  0.00|  0.00|  0.00|  0.00|  0.30|  0.00| 91.99
+>    7|  0.00|  0.00|  0.00|  0.00|  4.70|  0.00|  0.70
+> 
+> This patch replaces the hard-coded use of cpu0 in cpupower with the
+> current cpu, allowing it to run without a cpu0.
+> 
+> After the patch is applied,
+> 
+> [root@intel-skylake-dh-03 cpupower]# ./cpupower monitor
+> WARNING: at least one cpu is offline
+>     |Nehalem                    || Mperf              || Idle_Stats
+> CPU | C3   | C6   | PC3  | PC6  || C0   | Cx   | Freq || POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S
+>    4|  0.01|  1.27|  0.00|  0.00||  0.04| 99.96|  3957||  0.00|  0.00|  0.00|  0.00|  1.43|  0.00| 98.52
+>    1|  0.00| 98.82|  0.00|  0.00||  0.05| 99.95|  3361||  0.00|  0.00|  0.01|  0.00|  0.03|  0.00| 99.88
+>    5|  0.00| 98.82|  0.00|  0.00||  0.09| 99.91|  3917||  0.00|  0.00|  0.00|  0.00| 99.38|  0.00|  0.50
+>    2|  0.33|  0.00|  0.00|  0.00||  0.00|100.00|  3890||  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|100.00
+>    6|  0.33|  0.00|  0.00|  0.00||  0.01| 99.99|  3903||  0.00|  0.00|  0.00|  0.00|  0.00|  0.00| 99.99
+>    3|  0.01|  0.71|  0.00|  0.00||  0.06| 99.94|  3678||  0.00|  0.00|  0.00|  0.00|  0.80|  0.00| 99.13
+>    7|  0.01|  0.71|  0.00|  0.00||  0.03| 99.97|  3538||  0.00|  0.69| 11.70|  0.00|  0.00|  0.00| 87.57
+> 
+> There are some minor cleanups included in this patch.
+> 
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+> Cc: Thomas Renninger <trenn@suse.com>
+> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> ---
+>  tools/power/cpupower/utils/cpupower.c              |   15 ++++++++++++---
+>  tools/power/cpupower/utils/helpers/cpuid.c         |    4 ++--
+>  tools/power/cpupower/utils/helpers/helpers.h       |    5 +++--
+>  tools/power/cpupower/utils/helpers/misc.c          |    2 +-
+>  .../cpupower/utils/idle_monitor/hsw_ext_idle.c     |    4 ++--
+>  .../cpupower/utils/idle_monitor/mperf_monitor.c    |    3 ++-
+>  tools/power/cpupower/utils/idle_monitor/nhm_idle.c |    8 ++++----
+>  tools/power/cpupower/utils/idle_monitor/snb_idle.c |    4 ++--
+>  8 files changed, 28 insertions(+), 17 deletions(-)
+> 
+> diff --git a/tools/power/cpupower/utils/cpupower.c b/tools/power/cpupower/utils/cpupower.c
+> index 9ea914378985..2dccf4998599 100644
+> --- a/tools/power/cpupower/utils/cpupower.c
+> +++ b/tools/power/cpupower/utils/cpupower.c
+> @@ -12,6 +12,7 @@
+>  #include <string.h>
+>  #include <unistd.h>
+>  #include <errno.h>
+> +#include <sched.h>
+>  #include <sys/types.h>
+>  #include <sys/stat.h>
+>  #include <sys/utsname.h>
+> @@ -31,6 +32,7 @@
+>   */
+>  struct cpupower_cpu_info cpupower_cpu_info;
+>  int run_as_root;
+> +int base_cpu;
+>  /* Affected cpus chosen by -c/--cpu param */
+>  struct bitmask *cpus_chosen;
+>  
+> @@ -174,6 +176,7 @@ int main(int argc, const char *argv[])
+>  	unsigned int i, ret;
+>  	struct stat statbuf;
+>  	struct utsname uts;
+> +	char pathname[32];
+>  
+>  	cpus_chosen = bitmask_alloc(sysconf(_SC_NPROCESSORS_CONF));
+>  
+> @@ -198,17 +201,23 @@ int main(int argc, const char *argv[])
+>  		argv[0] = cmd = "help";
+>  	}
+>  
+> -	get_cpu_info(0, &cpupower_cpu_info);
+> +	base_cpu = sched_getcpu();
+> +	if (base_cpu < 0) {
+> +		fprintf(stderr, _("No valid cpus found.\n"));
+> +		return EXIT_FAILURE;
+> +	}
+> +
+> +	get_cpu_info(&cpupower_cpu_info);
+>  	run_as_root = !geteuid();
+>  	if (run_as_root) {
+>  		ret = uname(&uts);
+> +		sprintf(pathname, "/dev/cpu/%d/msr", base_cpu);
+>  		if (!ret && !strcmp(uts.machine, "x86_64") &&
+> -		    stat("/dev/cpu/0/msr", &statbuf) != 0) {
+> +		    stat(pathname, &statbuf) != 0) {
+>  			if (system("modprobe msr") == -1)
+>  	fprintf(stderr, _("MSR access not available.\n"));
+>  		}
+>  	}
+> -		
+>  
+>  	for (i = 0; i < ARRAY_SIZE(commands); i++) {
+>  		struct cmd_struct *p = commands + i;
+> diff --git a/tools/power/cpupower/utils/helpers/cpuid.c b/tools/power/cpupower/utils/helpers/cpuid.c
+> index 93b0aa74ca03..fa3a765d87da 100644
+> --- a/tools/power/cpupower/utils/helpers/cpuid.c
+> +++ b/tools/power/cpupower/utils/helpers/cpuid.c
+> @@ -42,7 +42,7 @@
+>   *
+>   * TBD: Should there be a cpuid alternative for this if /proc is not mounted?
+>   */
+> -int get_cpu_info(unsigned int cpu, struct cpupower_cpu_info *cpu_info)
+> +int get_cpu_info(struct cpupower_cpu_info *cpu_info)
+>  {
+>  	FILE *fp;
+>  	char value[64];
+> @@ -70,7 +70,7 @@ int get_cpu_info(unsigned int cpu, struct cpupower_cpu_info *cpu_info)
+>  		if (!strncmp(value, "processor\t: ", 12))
+>  			sscanf(value, "processor\t: %u", &proc);
+>  
+> -		if (proc != cpu)
+> +		if (proc != (unsigned int)base_cpu)
+>  			continue;
+>  
+>  		/* Get CPU vendor */
+> diff --git a/tools/power/cpupower/utils/helpers/helpers.h b/tools/power/cpupower/utils/helpers/helpers.h
+> index afb66f80554e..2bc62f3ca4b8 100644
+> --- a/tools/power/cpupower/utils/helpers/helpers.h
+> +++ b/tools/power/cpupower/utils/helpers/helpers.h
+> @@ -34,6 +34,7 @@
+>  /* Internationalization ****************************/
+>  
+>  extern int run_as_root;
+> +extern int base_cpu;
+>  extern struct bitmask *cpus_chosen;
+>  
+>  /* Global verbose (-d) stuff *********************************/
+> @@ -85,11 +86,11 @@ struct cpupower_cpu_info {
+>   *
+>   * Extract CPU vendor, family, model, stepping info from /proc/cpuinfo
+>   *
+> - * Returns 0 on success or a negativ error code
+> + * Returns 0 on success or a negative error code
+>   * Only used on x86, below global's struct values are zero/unknown on
+>   * other archs
+>   */
+> -extern int get_cpu_info(unsigned int cpu, struct cpupower_cpu_info *cpu_info);
+> +extern int get_cpu_info(struct cpupower_cpu_info *cpu_info);
+>  extern struct cpupower_cpu_info cpupower_cpu_info;
+>  /* cpuid and cpuinfo helpers  **************************/
+>  
+> diff --git a/tools/power/cpupower/utils/helpers/misc.c b/tools/power/cpupower/utils/helpers/misc.c
+> index 1609243f5c64..fa5e5a942838 100644
+> --- a/tools/power/cpupower/utils/helpers/misc.c
+> +++ b/tools/power/cpupower/utils/helpers/misc.c
+> @@ -10,7 +10,7 @@ int cpufreq_has_boost_support(unsigned int cpu, int *support, int *active,
+>  
+>  	*support = *active = *states = 0;
+>  
+> -	ret = get_cpu_info(0, &cpu_info);
+> +	ret = get_cpu_info(&cpu_info);
+>  	if (ret)
+>  		return ret;
+>  
+> diff --git a/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c b/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
+> index ebeaba6571a3..f794d6bbb7e9 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
+> +++ b/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
+> @@ -123,7 +123,7 @@ static int hsw_ext_start(void)
+>  			previous_count[num][cpu] = val;
+>  		}
+>  	}
+> -	hsw_ext_get_count(TSC, &tsc_at_measure_start, 0);
+> +	hsw_ext_get_count(TSC, &tsc_at_measure_start, base_cpu);
+>  	return 0;
+>  }
+>  
+> @@ -132,7 +132,7 @@ static int hsw_ext_stop(void)
+>  	unsigned long long val;
+>  	int num, cpu;
+>  
+> -	hsw_ext_get_count(TSC, &tsc_at_measure_end, 0);
+> +	hsw_ext_get_count(TSC, &tsc_at_measure_end, base_cpu);
+>  
+>  	for (num = 0; num < HSW_EXT_CSTATE_COUNT; num++) {
+>  		for (cpu = 0; cpu < cpu_count; cpu++) {
+> diff --git a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+> index c83f1606970b..d7c2a6d13dea 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+> +++ b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+> @@ -80,7 +80,8 @@ static int mperf_get_count_freq(unsigned int id, unsigned long long *count,
+>  static int mperf_get_tsc(unsigned long long *tsc)
+>  {
+>  	int ret;
+> -	ret = read_msr(0, MSR_TSC, tsc);
+> +
+> +	ret = read_msr(base_cpu, MSR_TSC, tsc);
+>  	if (ret)
+>  		dprint("Reading TSC MSR failed, returning %llu\n", *tsc);
+>  	return ret;
+> diff --git a/tools/power/cpupower/utils/idle_monitor/nhm_idle.c b/tools/power/cpupower/utils/idle_monitor/nhm_idle.c
+> index d2a91dd0d563..abf8cb5f7349 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/nhm_idle.c
+> +++ b/tools/power/cpupower/utils/idle_monitor/nhm_idle.c
+> @@ -129,7 +129,7 @@ static int nhm_start(void)
+>  	int num, cpu;
+>  	unsigned long long dbg, val;
+>  
+> -	nhm_get_count(TSC, &tsc_at_measure_start, 0);
+> +	nhm_get_count(TSC, &tsc_at_measure_start, base_cpu);
+>  
+>  	for (num = 0; num < NHM_CSTATE_COUNT; num++) {
+>  		for (cpu = 0; cpu < cpu_count; cpu++) {
+> @@ -137,7 +137,7 @@ static int nhm_start(void)
+>  			previous_count[num][cpu] = val;
+>  		}
+>  	}
+> -	nhm_get_count(TSC, &dbg, 0);
+> +	nhm_get_count(TSC, &dbg, base_cpu);
+>  	dprint("TSC diff: %llu\n", dbg - tsc_at_measure_start);
+>  	return 0;
+>  }
+> @@ -148,7 +148,7 @@ static int nhm_stop(void)
+>  	unsigned long long dbg;
+>  	int num, cpu;
+>  
+> -	nhm_get_count(TSC, &tsc_at_measure_end, 0);
+> +	nhm_get_count(TSC, &tsc_at_measure_end, base_cpu);
+>  
+>  	for (num = 0; num < NHM_CSTATE_COUNT; num++) {
+>  		for (cpu = 0; cpu < cpu_count; cpu++) {
+> @@ -156,7 +156,7 @@ static int nhm_stop(void)
+>  			current_count[num][cpu] = val;
+>  		}
+>  	}
+> -	nhm_get_count(TSC, &dbg, 0);
+> +	nhm_get_count(TSC, &dbg, base_cpu);
+>  	dprint("TSC diff: %llu\n", dbg - tsc_at_measure_end);
+>  
+>  	return 0;
+> diff --git a/tools/power/cpupower/utils/idle_monitor/snb_idle.c b/tools/power/cpupower/utils/idle_monitor/snb_idle.c
+> index efc8a69c9aba..a2b45219648d 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/snb_idle.c
+> +++ b/tools/power/cpupower/utils/idle_monitor/snb_idle.c
+> @@ -120,7 +120,7 @@ static int snb_start(void)
+>  			previous_count[num][cpu] = val;
+>  		}
+>  	}
+> -	snb_get_count(TSC, &tsc_at_measure_start, 0);
+> +	snb_get_count(TSC, &tsc_at_measure_start, base_cpu);
+>  	return 0;
+>  }
+>  
+> @@ -129,7 +129,7 @@ static int snb_stop(void)
+>  	unsigned long long val;
+>  	int num, cpu;
+>  
+> -	snb_get_count(TSC, &tsc_at_measure_end, 0);
+> +	snb_get_count(TSC, &tsc_at_measure_end, base_cpu);
+>  
+>  	for (num = 0; num < SNB_CSTATE_COUNT; num++) {
+>  		for (cpu = 0; cpu < cpu_count; cpu++) {
+> 
