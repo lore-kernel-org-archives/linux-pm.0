@@ -1,80 +1,66 @@
-From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH v4 0/3] some fixups for MediaTek cpufreq driver
-Date: Mon, 17 Jul 2017 14:16:32 +0800
-Message-ID: <1500272192.16278.44.camel@mtkswgap22>
-References: <cover.1499692967.git.sean.wang@mediatek.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] PM / Domains: defer dev_pm_domain_set() until
+ genpd->attach_dev succeeds if present
+Date: Mon, 17 Jul 2017 09:01:51 +0200
+Message-ID: <CAPDyKFqJf+stWC4FAbXAxXgZgCXxc3KOPyG3YS008EWmH6vAcw@mail.gmail.com>
+References: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com> <1500029508-7103-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1499692967.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, jamesjj.liao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, shunli.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, jdelvare-l3A5Bk7waGM@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1500029508-7103-1-git-send-email-sudeep.holla@arm.com>
+Sender: stable-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "# v4 . 0+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Viresh
+On 14 July 2017 at 12:51, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> If the genpd->attach_dev or genpd->power_on fails, genpd_dev_pm_attach
+> may return -EPROBE_DEFER initially. However genpd_alloc_dev_data sets
+> the PM domain for the device unconditionally.
+>
+> When subsequent attempts are made to call genpd_dev_pm_attach, it may
+> return -EEXISTS checking dev->pm_domain without re-attempting to call
+> attach_dev or power_on.
+>
+> platform_drv_probe then attempts to call drv->probe as the return value
+> -EEXIST != -EPROBE_DEFER, which may end up in a situation where the
+> device is accessed without it's power domain switched on.
+>
+> Fixes: f104e1e5ef57 ("PM / Domains: Re-order initialization of generic_pm_domain_data")
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: <stable@vger.kernel.org> # v4.0+
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 
-I missed to add Acks from Rob for patch 2 and 3 since we sent out almost
-at the same time. Do I need to resend again for this or the series is
-okay for you?
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-	Sean
-
-
-On Mon, 2017-07-10 at 22:23 +0800, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org wrote:
-> From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> 
-> Changes since v3:
-> - remove the redundant line depends on ARM || ARM64 || COMPILE_TEST
-> since the whole Kconfig.arm file depends on ARM || ARM64.
-> - renaming from mtk-cpufreq.c to mediatek-cpufreq.c avoiding
-> collide and cause confusion at some point in time.
-> 
-> Changes since v2:
-> - correct the typo in the binding document
-> 
-> Changes since v1:
-> - drop those patches already accepted
-> - refine the commit messages and Kconfig dependency
-> - Kconfig menu entry and file name itself are updated with more
-> generic name to drop "MT8173" since this driver actually supports
-> all MediaTek SoCs.
-> - generate patchset again with git format-patch -C -M --thread=shallow
-> - fix binding examples by replacing '@' with '-' as the OPP nodes will
-> never have a "reg" property.
-> 
+> ---
+>  drivers/base/power/domain.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>
 > Hi,
-> 
-> The purpose of the series is
-> - (patch 1 to 3) to fix up current Mediatek cpufreq driver
-> can't work with the latest tree since one required CPU clock muxer missing
-> would cause the driver getting the resource fails when driver probe gets
-> called.
-> - (patch 4) to enable cpufreq feature on MT2701/MT7623 platform.
-> - (patch 5 to 6) to update the binding document to reflect
-> latest driver logic and add more examples guiding people how to apply for
-> Mediatek cpufreq driver.
-> 
-> Sean Wang (3):
->   cpufreq: mediatek: Add support of cpufreq to MT2701/MT7623 SoC
->   dt-bindings: cpufreq: move MediaTek cpufreq dt-bindings document to
->     proper place
->   dt-bindings: cpufreq: enhance MediaTek cpufreq dt-binding document
-> 
->  .../devicetree/bindings/clock/mt8173-cpu-dvfs.txt  |  83 -------
->  .../bindings/cpufreq/cpufreq-mediatek.txt          | 247 +++++++++++++++++++++
->  drivers/cpufreq/Kconfig.arm                        |   7 +-
->  drivers/cpufreq/Makefile                           |   2 +-
->  .../{mt8173-cpufreq.c => mediatek-cpufreq.c}       |   2 +
->  5 files changed, 253 insertions(+), 88 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek.txt
->  rename drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} (99%)
-> 
+>
+> I have added Cc/Fixes tags based on the original commit that caused the issue.
+> I need to workout a patch that can cleanly apply before commit 989561de9b51
+> ("PM / Domains: add setter for dev.pm_domain"), i.e. for v4.0.x to v4.4.x
+> This patch should apply from v4.5.x onwards.
 
+Thanks for checking this.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Perhaps we should change the stable tag to # v4.5+ instead then?
+Otherwise the stable people will just report problems when trying to
+apply it.
+
+>
+> Let me know if I got anything wrong.
+>
+> v1->v2: Moved dev_pm_domain_set(dev, NULL) from genpd_free_dev_data
+>
+> Regards,
+> Sudeep
+
+[...]
+
+Kind regards
+Uffe
