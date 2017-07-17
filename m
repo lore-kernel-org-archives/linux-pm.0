@@ -1,59 +1,68 @@
 From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Subject: Re: [PATCH] devfreq: rk3399_dmc: fix error code in
- rk3399_dmcfreq_probe()
-Date: Sun, 16 Jul 2017 23:50:32 -0500
-Message-ID: <c93a3d29-0da4-9d0a-db6c-444ec1033035@embeddedor.com>
-References: <CGME20170630071526epcas3p1104189e06db8f2d62622d72dc5f6fdd6@epcas3p1.samsung.com>
- <20170630071522.GA20486@embeddedgus> <5956057D.3070704@samsung.com>
- <CAJ0PZbQfwf6VrHLMWc_VL=7FgzFo7DpCugDfiZtawY1FDLcy7g@mail.gmail.com>
+Subject: Re: [PATCH v2] devfreq: tegra: fix error return code in
+ tegra_devfreq_probe()
+Date: Sun, 16 Jul 2017 23:52:00 -0500
+Message-ID: <38a5cf39-26a4-8498-add8-423dc39e3219@embeddedor.com>
+References: <20170703124738.GA3947@embeddedgus>
+ <5206e248-a3a7-8cb5-5d8f-a0c84bcb9e40@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJ0PZbQfwf6VrHLMWc_VL=7FgzFo7DpCugDfiZtawY1FDLcy7g@mail.gmail.com>
+In-Reply-To: <5206e248-a3a7-8cb5-5d8f-a0c84bcb9e40@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@gmail.com, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Jon Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thierry Reding <thierry.reding@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
 
-On 07/01/2017 02:50 AM, MyungJoo Ham wrote:
-> On Fri, Jun 30, 2017 at 5:02 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->> Hi,
+On 07/04/2017 03:35 AM, Jon Hunter wrote:
+>
+> On 03/07/17 13:47, Gustavo A. R. Silva wrote:
+>> platform_get_irq() returns an error code, but the tegra-devfreq
+>> driver ignores it and always returns -ENODEV. This is not correct,
+>> and prevents -EPROBE_DEFER from being propagated properly.
 >>
->> On 2017년 06월 30일 16:15, Gustavo A. R. Silva wrote:
->>> Print and propagate the return value of platform_get_irq on failure.
->>>
->>> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
->>> ---
->>>  drivers/devfreq/rk3399_dmc.c | 5 +++--
->>>  1 file changed, 3 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
->>> index 40a2499..1b89ebb 100644
->>> --- a/drivers/devfreq/rk3399_dmc.c
->>> +++ b/drivers/devfreq/rk3399_dmc.c
->>> @@ -336,8 +336,9 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
->>>
->>>       irq = platform_get_irq(pdev, 0);
->>>       if (irq < 0) {
->>> -             dev_err(&pdev->dev, "Cannot get the dmc interrupt resource\n");
->>> -             return -EINVAL;
->>> +             dev_err(&pdev->dev,
->>> +                     "Cannot get the dmc interrupt resource: %d\n", irq);
->>> +             return irq;
->>>       }
->>>       data = devm_kzalloc(dev, sizeof(struct rk3399_dmcfreq), GFP_KERNEL);
->>>       if (!data)
->>>
+>> Notice that platform_get_irq() no longer returns 0 on error:
+>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=e330b9a6bb35dc7097a4f02cb1ae7b6f96df92af
+>>
+>> Print and propagate the return value of platform_get_irq on failure.
 >>
 >> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+>> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+>> ---
+>> Changes in v2:
+>>  Rewrite commit message.
+>>
+>>  drivers/devfreq/tegra-devfreq.c | 6 +++---
+>>  1 file changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+>> index 214fff9..ae71215 100644
+>> --- a/drivers/devfreq/tegra-devfreq.c
+>> +++ b/drivers/devfreq/tegra-devfreq.c
+>> @@ -688,9 +688,9 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>>  	}
+>>
+>>  	irq = platform_get_irq(pdev, 0);
+>> -	if (irq <= 0) {
+>> -		dev_err(&pdev->dev, "Failed to get IRQ\n");
+>> -		return -ENODEV;
+>> +	if (irq < 0) {
+>> +		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", irq);
+>> +		return irq;
+>>  	}
+>>
+>>  	platform_set_drvdata(pdev, tegra);
 >
-> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Thanks.
+>
+> Acked-by: Jon Hunter <jonathanh@nvidia.com>
 >
 
-Thank you, Chanwoo and MyungJoo.
+Thank you, Jon.
 
 -- 
 Gustavo A. R. Silva
