@@ -1,68 +1,43 @@
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Subject: Re: [PATCH v2] devfreq: tegra: fix error return code in
- tegra_devfreq_probe()
-Date: Sun, 16 Jul 2017 23:52:00 -0500
-Message-ID: <38a5cf39-26a4-8498-add8-423dc39e3219@embeddedor.com>
-References: <20170703124738.GA3947@embeddedgus>
- <5206e248-a3a7-8cb5-5d8f-a0c84bcb9e40@nvidia.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: Regression with suspicious RCU usage splats with cpu_pm change
+Date: Sun, 16 Jul 2017 23:08:07 -0700
+Message-ID: <20170717060806.GC10026@atomide.com>
+References: <20170713070749.GE16509@atomide.com>
+ <c00272dc-cf84-81a2-b2e2-d52cadf7bcc6@linaro.org>
+ <CAJZ5v0j15uWyCRAPep4KwqSiC4UD4ZppAG++SUvN3Ok1wzDwNQ@mail.gmail.com>
+ <20170713124318.GK2393@linux.vnet.ibm.com>
+ <c5c6623b-ea1d-1bbf-ea80-5d93e7e81c6f@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5206e248-a3a7-8cb5-5d8f-a0c84bcb9e40@nvidia.com>
+Content-Disposition: inline
+In-Reply-To: <c5c6623b-ea1d-1bbf-ea80-5d93e7e81c6f@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thierry Reding <thierry.reding@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Alex Shi <alex.shi@linaro.org>
+Cc: paulmck@linux.vnet.ibm.com, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
+* Alex Shi <alex.shi@linaro.org> [170716 16:25]:
+> I reused the rcu_irq_enter_irqson() from RCU_NONIDLE to avoid this issue. 
+> It works fine.
+> 
+> Tony, Could you like to give a tested-by if this patch works for you.
 
+Yeah that keeps things booting for me with no splats so:
 
-On 07/04/2017 03:35 AM, Jon Hunter wrote:
->
-> On 03/07/17 13:47, Gustavo A. R. Silva wrote:
->> platform_get_irq() returns an error code, but the tegra-devfreq
->> driver ignores it and always returns -ENODEV. This is not correct,
->> and prevents -EPROBE_DEFER from being propagated properly.
->>
->> Notice that platform_get_irq() no longer returns 0 on error:
->> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=e330b9a6bb35dc7097a4f02cb1ae7b6f96df92af
->>
->> Print and propagate the return value of platform_get_irq on failure.
->>
->> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
->> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
->> ---
->> Changes in v2:
->>  Rewrite commit message.
->>
->>  drivers/devfreq/tegra-devfreq.c | 6 +++---
->>  1 file changed, 3 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
->> index 214fff9..ae71215 100644
->> --- a/drivers/devfreq/tegra-devfreq.c
->> +++ b/drivers/devfreq/tegra-devfreq.c
->> @@ -688,9 +688,9 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->>  	}
->>
->>  	irq = platform_get_irq(pdev, 0);
->> -	if (irq <= 0) {
->> -		dev_err(&pdev->dev, "Failed to get IRQ\n");
->> -		return -ENODEV;
->> +	if (irq < 0) {
->> +		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", irq);
->> +		return irq;
->>  	}
->>
->>  	platform_set_drvdata(pdev, tegra);
->
-> Thanks.
->
-> Acked-by: Jon Hunter <jonathanh@nvidia.com>
->
+Tested-by: Tony Lindgren <tony@atomide.com>
 
-Thank you, Jon.
+In general, it seems we're missing the knowledge in Linux kernel
+of when the entire system is idle. Right now it seems that only
+cpuidle_coupled knows that?
 
--- 
-Gustavo A. R. Silva
+We could probably simplify things by adding some PM state for
+entire system idle. Then cpuidle code and timer code could use
+that to test when it's safe to do whatever the SoC needs to do
+to enter deeper power states.
+
+If we already have something like that, please do let me know :)
+
+Regards,
+
+Tony
