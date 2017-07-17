@@ -1,90 +1,57 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH] thermal: tegra: delete unneeded of_node_put
-Date: Mon, 17 Jul 2017 14:47:14 +0100
-Message-ID: <66e7906c-9472-4fcb-7c04-750bb27d3989@nvidia.com>
-References: <1500108152-1812-1-git-send-email-Julia.Lawall@lip6.fr>
+From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
+Subject: Re: [PATCH v2 0/5] thermal: imx: Add nvmem-cells binding on imx6sx
+Date: Mon, 17 Jul 2017 16:00:22 +0200
+Message-ID: <20170717160022.6892b839@karo-electronics.de>
+References: <cover.1500041281.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1500108152-1812-1-git-send-email-Julia.Lawall-L2FTfq7BK8M@public.gmane.org>
-Content-Language: en-US
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Julia Lawall <Julia.Lawall-L2FTfq7BK8M@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: kernel-janitors-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1500041281.git.leonard.crestez@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Dong Aisheng <aisheng.dong@nxp.com>, Bai Ping <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
-On 15/07/17 09:42, Julia Lawall wrote:
-> Device node iterators perform an of_node_put on each iteration, so putting
-> an of_node_put before a continue results in a double put.
+On Fri, 14 Jul 2017 17:11:05 +0300 Leonard Crestez wrote:
+> On imx6sx accessing OCOTP directly is wrong because the ocotp clock needs to be
+> enabled first. Fix this by adding a nvmem-cells binding and using it on imx6sx,
+> imx6ul and imx6ull.
 > 
-> The semantic match that finds this problem is as follows
-> (http://coccinelle.lip6.fr):
+> The existing binding is kept around because it works fine on imx6qdl.
 > 
-> // <smpl>
-> @@
-> expression e1;
-> local idexpression child;
-> iterator name for_each_child_of_node;
-> @@
+> This was initially reported by Lothar Waßmann <LW@KARO-electronics.de> in reply
+> to a patch adding imx6ul/ull support:
 > 
->  for_each_child_of_node(e1,child) {
->    ... when != of_node_get(child)
-> *  of_node_put(child);
->    ...
-> *  continue;
-> }
-> // </smpl>
-> 
-> Furthermore, the call to thermal_of_cooling_device_register immediately
-> calls __thermal_cooling_device_register with the same arguments.  The
-> latter function stores the device node argument, which is the second
-> argument of for_each_child_of_node, in the returned thermal_cooling_device
-> structure.  This returned structure is then stored in the cdev field of
-> stc.  Thus it seems that the second argument of for_each_child_of_node
-> escapes the scope of the for_each_child_of_node, so an explicit of_node_get
-> on success of thermal_of_cooling_device_register is also needed.
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall-L2FTfq7BK8M@public.gmane.org>
+> Link: https://lkml.org/lkml/2017/6/9/578
 > 
 > ---
->  drivers/thermal/tegra/soctherm.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Changes since v1:
+>  * Move nvmem_cell_read_u32 to nvmem core (Shawn Guo, Srinivas Kandagatla)
+>  * Adjust binding description (Rob Herring)
+>  * Adjust formatting of thermal info cells (Shawn Guo)
+>  * Link: https://lkml.org/lkml/2017/7/6/426
 > 
-> diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-> index 7d2db23..10f4fdd 100644
-> --- a/drivers/thermal/tegra/soctherm.c
-> +++ b/drivers/thermal/tegra/soctherm.c
-> @@ -1014,7 +1014,6 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
->  		tcd = thermal_of_cooling_device_register(np_stcc,
->  							 (char *)name, ts,
->  							 &throt_cooling_ops);
-> -		of_node_put(np_stcc);
->  		if (IS_ERR_OR_NULL(tcd)) {
->  			dev_err(dev,
->  				"throttle-cfg: %s: failed to register cooling device\n",
-> @@ -1022,6 +1021,7 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
->  			continue;
->  		}
->  
-> +		of_node_get(np_stcc);
->  		stc->cdev = tcd;
->  		stc->init = true;
->  	}
+> Leonard Crestez (5):
+>   thermal: imx: Add nvmem-cells alternate binding for OCOTP access
+>   nvmem: core: Add nvmem_cell_read_u32
+>   thermal: imx: Add support for reading OCOTP through nvmem
+>   ARM: dts: imx6sx: Use nvmem-cells for tempmon
+>   ARM: dts: imx6ul: Add imx6ul-tempmon
+> 
+>  .../devicetree/bindings/thermal/imx-thermal.txt    |   7 ++
+>  arch/arm/boot/dts/imx6sx.dtsi                      |  13 ++-
+>  arch/arm/boot/dts/imx6ul.dtsi                      |  19 ++++
+>  drivers/nvmem/core.c                               |  37 ++++++++
+>  drivers/thermal/imx_thermal.c                      | 103 +++++++++++++++------
+>  include/linux/nvmem-consumer.h                     |   8 ++
+>  6 files changed, 156 insertions(+), 31 deletions(-)
+> 
+Works as expected on TX6UL-5010.
 
-Thanks for fixing this. However, I am wondering if it is better for the
-'of_node_get' to be placed within the
-thermal_of_cooling_device_register() function as it seems a bit odd if
-the caller needs to know that this is being stored for later use.
+Tested-By: Lothar Waßmann <LW@KARO-electronics.de>
 
-Also, taking a quick look, I see a couple other drivers calling
-thermal_of_cooling_device_register() and they are also not calling
-of_node_get on success. So it maybe easier to fix placing it in the
-thermal_of_cooling_device_register() function.
 
-Cheers
-Jon
-
--- 
-nvpublic
+Lothar Waßmann
