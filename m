@@ -1,36 +1,43 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 1/5] thermal: imx: Add nvmem-cells alternate binding
- for OCOTP access
-Date: Mon, 17 Jul 2017 13:57:34 -0500
-Message-ID: <20170717185734.r6vmeherekkhacoh@rob-hp-laptop>
-References: <cover.1500041281.git.leonard.crestez@nxp.com>
- <79ad86fbce37b169342704c397f0a1dbae0cfb75.1500041281.git.leonard.crestez@nxp.com>
+Subject: Re: [PATCH v6 3/3] power: supply: ltc2941-battery-gauge: Add LTC2944
+ support
+Date: Mon, 17 Jul 2017 14:42:03 -0500
+Message-ID: <20170717194203.we3rjftj7m6ojxgq@rob-hp-laptop>
+References: <20170716093202.vfea4yylbzfec72v@lenoch>
+ <20170716093532.w6sqqtadwnbroj3i@lenoch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:34611 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751334AbdGQTmF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2017 15:42:05 -0400
 Content-Disposition: inline
-In-Reply-To: <79ad86fbce37b169342704c397f0a1dbae0cfb75.1500041281.git.leonard.crestez@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Lothar =?iso-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>, Dong Aisheng <aisheng.dong@nxp.com>, Bai Ping <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20170716093532.w6sqqtadwnbroj3i@lenoch>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ladislav Michl <ladis@linux-mips.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Mike Looijmans <mike.looijmans@topic.nl>, Dragos Bogdan <dragos.bogdan@analog.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 
-On Fri, Jul 14, 2017 at 05:11:06PM +0300, Leonard Crestez wrote:
-> On newer imx SOCs accessing OCOTP directly is wrong because the ocotp
-> clock needs to be enabled first. Add a binding for accessing the same
-> values through the imx-ocotp nvmem driver using nvmem-cells. This is
-> similar to other thermal drivers.
+On Sun, Jul 16, 2017 at 11:35:32AM +0200, Ladislav Michl wrote:
+> From: Dragos Bogdan <dragos.bogdan@analog.com>
 > 
-> The old binding is preserved for compatibility and because it still
-> works fine on imx6qdl series chips.
+> LTC2944 is compatible with LTC2943, but uses different
+> voltage and current computing constants.
 > 
-> In theory this problem could be solved by adding a reference to the
-> OCOTP clock instead but it is better to hide such details in a specific
-> nvmem driver.
-> 
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> Signed-off-by: Dragos Bogdan <dragos.bogdan@analog.com>
+> Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
 > ---
->  Documentation/devicetree/bindings/thermal/imx-thermal.txt | 7 +++++++
->  1 file changed, 7 insertions(+)
+>  Changes:
+>  - v2: fixed voltage and current conversion
+>  - v3: skipped
+>  - v4: skipped
+>  - v5: fixed voltage conversion overflow, rebased on LTC2942 patchset
+>  - v6: fix missing break in the switch statement
+> 
+>  .../devicetree/bindings/power/supply/ltc2941.txt   | 12 +++++-----
 
 Acked-by: Rob Herring <robh@kernel.org>
+
+>  drivers/power/supply/ltc2941-battery-gauge.c       | 27 ++++++++++++++++++----
+>  2 files changed, 28 insertions(+), 11 deletions(-)
