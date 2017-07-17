@@ -1,88 +1,77 @@
-From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Subject: Re: [PATCH] PM / OPP: Don't check not plugged in CPUs to avoid error
-Date: Mon, 17 Jul 2017 15:03:23 +0200
-Message-ID: <CAHKzcEP5+btsJ1Tog4KQAynmmbBSixfWAxO9V0EFWeP5pP5M=w@mail.gmail.com>
-References: <20170713122201.30048-1-waldemarx.rymarkiewicz@intel.com>
- <20170713234226.GE22780@codeaurora.org> <20170717071234.GK352@vireshk-i7>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: supply: act8945a_charger: fix of_irq_get() error
+ check
+Date: Mon, 17 Jul 2017 15:23:53 +0200
+Message-ID: <20170717132353.kes73qjxfh2quy2l@earth>
+References: <20170716175244.300670810@cogentembedded.com>
+ <c0a5fce5-4185-249b-e206-4964d41ab05a@cogentembedded.com>
+ <20170717105003.riv7fe44jzmkffg3@earth>
+ <9f7d4b95-dcea-d8bf-8bf4-6551d4ab7b58@cogentembedded.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="l4zzoanpx7ohxfym"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:32851 "EHLO
-        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751280AbdGQNEF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2017 09:04:05 -0400
-Received: by mail-wm0-f68.google.com with SMTP id 65so3149678wmf.0
-        for <linux-pm@vger.kernel.org>; Mon, 17 Jul 2017 06:04:05 -0700 (PDT)
-In-Reply-To: <20170717071234.GK352@vireshk-i7>
+Received: from mail.kernel.org ([198.145.29.99]:44266 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751373AbdGQNX5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 17 Jul 2017 09:23:57 -0400
+Content-Disposition: inline
+In-Reply-To: <9f7d4b95-dcea-d8bf-8bf4-6551d4ab7b58@cogentembedded.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>
-
-On 17 July 2017 at 09:12, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 13-07-17, 16:42, Stephen Boyd wrote:
->> On 07/13, Waldemar Rymarkiewicz wrote:
-
->> Is there some way to iterate through all cpu nodes in DT without
->> using devices? I suppose some sort of loop on top of
->> of_get_cpu_node().
->
-> I am looking for the same thing :)
->
->> I worry that we may have some problem where we want to know about
->> all the CPUs that are sharing a particular OPP table but they
->> haven't been physically hotplugged yet.
-
-Isn't that cpufreq registers only online CPUs at boot up and will add
-hot-added CPUs later on calling cpufreq_online() ~>
-cpufreq_driver->init()?
-
-See   cpufreq_online()
-
-   http://elixir.free-electrons.com/linux/v4.13-rc1/source/drivers/cpufreq/cpufreq.c#L1143
-
-this calls cpufreq_driver->init() which check for sharing CPUs. If
-that's called for online_cpus only so I guess it's OK to check only
-within online cpus for shared freq_table. If a cpu is plugged in later
- this is called again, so we can eventually add this cpu to the mask.
-Is this right?
+To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Cc: linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
 
 
+--l4zzoanpx7ohxfym
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> We will have a problem if we are going to use OPP framework on
-> platforms where CPUs are hotpluggable. The cpumask returned by this
-> function is used by the cpufreq drivers to get the related_cpus mask
-> and that will be used when a cpu is inserted in later on.
+Hi,
 
-related_cpus bitmask is set in cpufreq_online() too,
+On Mon, Jul 17, 2017 at 03:00:26PM +0300, Sergei Shtylyov wrote:
+> Hello!
+>=20
+> On 07/17/2017 01:50 PM, Sebastian Reichel wrote:
+>=20
+> > > Forgot to mention that this patch is against Linus' repo as Sebastian=
+'s repo
+> > > lags behind at 4.10-rc1...
+> >=20
+> > You are supposed to use my for-next branch [0] and not master :) That
+> > one was 4.12-rc1 + power supply patches until a few hours ago and
+> > now is 4.13-rc1. So if you based on current master from Linus it
+> > should be ok. I will start reviewing patches for the v4.14 cycle
+> > shortly.
+>=20
+> I first tried to use 'fixes' but that one was at 4.8-rc1, then
+> switched to back to 'master'. Since this patch is a bug fix, I
+> didn't consider for-next.
 
-   http://elixir.free-electrons.com/linux/v4.13-rc1/source/drivers/cpufreq/cpufreq.c#L1188
+Right, I did not check carefully enough. I often do not have to
+send any fixes, so that branch tends to get stale.
 
-Policy->cpus is for online CPUs, so where are the offline CPUs added
-to related_cpus mask?
+-- Sebastian
 
+--l4zzoanpx7ohxfym
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> Do we have such users of OPP framework right now ? ARM doesn't have
-> such platforms AFAIK. Does MIPS have it ?
+-----BEGIN PGP SIGNATURE-----
 
-I don't think so there is an up streamed code that uses opp framework
-in such use case. I use MIPS platform which starts with maxcpu=4 but
-it puts 2 cpus offline at boot up for some reason. Will try to check
-how cpufreq behave if I hot-add a CPU in runtime.
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllsumcACgkQ2O7X88g7
++prBaQ//d2Gm3RN7oL1FyjW/SxbGXfw3VVMxkeRL+4x/pBz/TsbjBtU2TftmY305
+UelQkMBEwcWhel1GnSShIXQocN57PSqDB/vwyCX8A/wzJy2orfTcuOR9D0Hw1Erf
+AIT8gDF7jNV84Ri7g8HazJH3T00Seje7e/S3Hk0mkwWP7x5xt5YhVp0xUZrW3Dpx
+agJjKddm4W6lMH2wlgUK1oYCbPN50f0JTYeUBjOUprmRT4dai1J2ZbFKLho6v5NJ
+tTVSaRCMzMKbYr6eiDzf0maFnOeewGriUez+fIHO1HgcDzoeNs1UKgZ6ptqXqpCg
+sJbbzq01tzzw+immpxtebgtFtQM49QvUvbvnaeb+8TnXH1NLsa/RWjstTNLu8/EL
+t+N0TCegbg0/XYkaOshoeXAY7NvQGsGbFeQUbKp5PfhJvv7MUZu4TXZqWS++wnl+
+C1umRaIpnwnncV7a3aqQyHtPLSKwjnisldusy6ybvXiX0RoPsI6PkYmNejko6Gc3
+9G4zBxLIpbqM1lz/qeTzAoGmXb2BK7ndjXEyhCSSzigud3ZT8HRkSxIQDBIqTt9b
+2FQbM/hHmGDwdYD/W0mMsrp5aUL8FVKJe5DKM/TfdOIxN6LJSMx4FnUJZlcC/haq
+faqLDGPw1fdKOt7/iJqx3nydedbeGRjn5+Tkpluim1lcCXz6GXg=
+=q4fB
+-----END PGP SIGNATURE-----
 
->> This also raises the
->> question about what the DT looks like before and after a CPU is
->> inserted into a system. If the non-present CPU nodes are in DT
->> all the time, then it may make sense for cpufreq-dt to intersect
->> the OPP sharing mask with the cpu_present_mask.
->
-> We need the related-cpus mask in cpufreq to include non-present CPUs
-> as well.
-
-Why? can you refer to the code? I'd like to see it and understand better.
-
-/Waldek
-
->
-> --
-> viresh
+--l4zzoanpx7ohxfym--
