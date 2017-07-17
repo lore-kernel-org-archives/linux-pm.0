@@ -1,34 +1,42 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 3/5] ACPI / boot: Add number of legacy IRQs to debug output
-Date: Mon, 17 Jul 2017 13:24:02 +0300
-Message-ID: <20170717102404.27191-4-andriy.shevchenko@linux.intel.com>
-References: <20170717102404.27191-1-andriy.shevchenko@linux.intel.com>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [PATCH 1/2] thermal: int340x: constify attribute_group structures.
+Date: Mon, 17 Jul 2017 16:04:38 +0530
+Message-ID: <3b42983a016cbb0d1fb3b6bab625b78abf843474.1500287619.git.arvind.yadav.cs@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170717102404.27191-1-andriy.shevchenko@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: rui.zhang@intel.com, edubezval@gmail.com, andriy.shevchenko@linux.intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Sometimes it's useful to have when mp_config_acpi_legacy_irqs() is called.
+attribute_groups are not supposed to change at runtime. All functions
+working with attribute_groups provided by <linux/sysfs.h> work
+with const attribute_group. So mark the non-const structs as const.
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+   1687	    592	      0	   2279	    8e7	int3400_thermal.o
+
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+   1751	    528	      0	   2279	    8e7	int3400_thermal.o
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- arch/x86/kernel/acpi/boot.c | 2 +-
+ drivers/thermal/int340x_thermal/int3400_thermal.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 6d5b1346268a..0186d3bae610 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -1078,7 +1078,7 @@ static void __init mp_config_acpi_legacy_irqs(void)
- 	mp_bus_id_to_type[MP_ISA_BUS] = MP_BUS_ISA;
- #endif
- 	set_bit(MP_ISA_BUS, mp_bus_not_pci);
--	pr_debug("Bus #%d is ISA\n", MP_ISA_BUS);
-+	pr_debug("Bus #%d is ISA (nIRQs: %d)\n", MP_ISA_BUS, nr_legacy_irqs());
+diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
+index a9ec94e..b2ffbed 100644
+--- a/drivers/thermal/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+@@ -104,7 +104,7 @@ static ssize_t current_uuid_store(struct device *dev,
+ 	NULL
+ };
  
- 	/*
- 	 * Use the default configuration for the IRQs 0-15.  Unless
+-static struct attribute_group uuid_attribute_group = {
++static const struct attribute_group uuid_attribute_group = {
+ 	.attrs = uuid_attrs,
+ 	.name = "uuids"
+ };
 -- 
-2.11.0
+1.9.1
