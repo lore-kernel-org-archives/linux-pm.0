@@ -1,67 +1,88 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Regression with suspicious RCU usage splats with cpu_pm change
-Date: Mon, 17 Jul 2017 05:39:38 -0700
-Message-ID: <20170717123938.GP2393@linux.vnet.ibm.com>
-References: <20170713070749.GE16509@atomide.com>
- <c00272dc-cf84-81a2-b2e2-d52cadf7bcc6@linaro.org>
- <CAJZ5v0j15uWyCRAPep4KwqSiC4UD4ZppAG++SUvN3Ok1wzDwNQ@mail.gmail.com>
- <20170713124318.GK2393@linux.vnet.ibm.com>
- <c5c6623b-ea1d-1bbf-ea80-5d93e7e81c6f@linaro.org>
- <20170717060806.GC10026@atomide.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Subject: Re: [PATCH] PM / OPP: Don't check not plugged in CPUs to avoid error
+Date: Mon, 17 Jul 2017 15:03:23 +0200
+Message-ID: <CAHKzcEP5+btsJ1Tog4KQAynmmbBSixfWAxO9V0EFWeP5pP5M=w@mail.gmail.com>
+References: <20170713122201.30048-1-waldemarx.rymarkiewicz@intel.com>
+ <20170713234226.GE22780@codeaurora.org> <20170717071234.GK352@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:53169 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751335AbdGQMjo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2017 08:39:44 -0400
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id v6HCccDl133662
-        for <linux-pm@vger.kernel.org>; Mon, 17 Jul 2017 08:39:44 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2brqmnq33s-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Mon, 17 Jul 2017 08:39:43 -0400
-Received: from localhost
-        by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-        Mon, 17 Jul 2017 08:39:42 -0400
-Content-Disposition: inline
-In-Reply-To: <20170717060806.GC10026@atomide.com>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:32851 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751280AbdGQNEF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2017 09:04:05 -0400
+Received: by mail-wm0-f68.google.com with SMTP id 65so3149678wmf.0
+        for <linux-pm@vger.kernel.org>; Mon, 17 Jul 2017 06:04:05 -0700 (PDT)
+In-Reply-To: <20170717071234.GK352@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Alex Shi <alex.shi@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>
 
-On Sun, Jul 16, 2017 at 11:08:07PM -0700, Tony Lindgren wrote:
-> * Alex Shi <alex.shi@linaro.org> [170716 16:25]:
-> > I reused the rcu_irq_enter_irqson() from RCU_NONIDLE to avoid this issue. 
-> > It works fine.
-> > 
-> > Tony, Could you like to give a tested-by if this patch works for you.
-> 
-> Yeah that keeps things booting for me with no splats so:
-> 
-> Tested-by: Tony Lindgren <tony@atomide.com>
-> 
-> In general, it seems we're missing the knowledge in Linux kernel
-> of when the entire system is idle. Right now it seems that only
-> cpuidle_coupled knows that?
-> 
-> We could probably simplify things by adding some PM state for
-> entire system idle. Then cpuidle code and timer code could use
-> that to test when it's safe to do whatever the SoC needs to do
-> to enter deeper power states.
-> 
-> If we already have something like that, please do let me know :)
+On 17 July 2017 at 09:12, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 13-07-17, 16:42, Stephen Boyd wrote:
+>> On 07/13, Waldemar Rymarkiewicz wrote:
 
-Well, we used to have CONFIG_NO_HZ_FULL_SYSIDLE, which detected
-full-system idle lazily so as to avoid scalability bottlenecks.
-https://lwn.net/Articles/558284/
+>> Is there some way to iterate through all cpu nodes in DT without
+>> using devices? I suppose some sort of loop on top of
+>> of_get_cpu_node().
+>
+> I am looking for the same thing :)
+>
+>> I worry that we may have some problem where we want to know about
+>> all the CPUs that are sharing a particular OPP table but they
+>> haven't been physically hotplugged yet.
 
-No one was using it, so I removed it last merge window.  The
-patch that removed it is at sysidle.2017.05.11a, which can
-probably still be reverted cleanly.  Or just use v4.11 or earlier.
+Isn't that cpufreq registers only online CPUs at boot up and will add
+hot-added CPUs later on calling cpufreq_online() ~>
+cpufreq_driver->init()?
 
-						Thanx, Paul
+See   cpufreq_online()
+
+   http://elixir.free-electrons.com/linux/v4.13-rc1/source/drivers/cpufreq/cpufreq.c#L1143
+
+this calls cpufreq_driver->init() which check for sharing CPUs. If
+that's called for online_cpus only so I guess it's OK to check only
+within online cpus for shared freq_table. If a cpu is plugged in later
+ this is called again, so we can eventually add this cpu to the mask.
+Is this right?
+
+
+
+> We will have a problem if we are going to use OPP framework on
+> platforms where CPUs are hotpluggable. The cpumask returned by this
+> function is used by the cpufreq drivers to get the related_cpus mask
+> and that will be used when a cpu is inserted in later on.
+
+related_cpus bitmask is set in cpufreq_online() too,
+
+   http://elixir.free-electrons.com/linux/v4.13-rc1/source/drivers/cpufreq/cpufreq.c#L1188
+
+Policy->cpus is for online CPUs, so where are the offline CPUs added
+to related_cpus mask?
+
+
+> Do we have such users of OPP framework right now ? ARM doesn't have
+> such platforms AFAIK. Does MIPS have it ?
+
+I don't think so there is an up streamed code that uses opp framework
+in such use case. I use MIPS platform which starts with maxcpu=4 but
+it puts 2 cpus offline at boot up for some reason. Will try to check
+how cpufreq behave if I hot-add a CPU in runtime.
+
+>> This also raises the
+>> question about what the DT looks like before and after a CPU is
+>> inserted into a system. If the non-present CPU nodes are in DT
+>> all the time, then it may make sense for cpufreq-dt to intersect
+>> the OPP sharing mask with the cpu_present_mask.
+>
+> We need the related-cpus mask in cpufreq to include non-present CPUs
+> as well.
+
+Why? can you refer to the code? I'd like to see it and understand better.
+
+/Waldek
+
+>
+> --
+> viresh
