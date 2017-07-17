@@ -1,106 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC V2 1/6] cpufreq: Replace "max_transition_latency" with
- "dynamic_switching"
-Date: Mon, 17 Jul 2017 17:28:51 +0530
-Message-ID: <20170717115851.GR352@vireshk-i7>
-References: <cover.1499853492.git.viresh.kumar@linaro.org>
- <2309380.IRBF8BkiFH@aspire.rjw.lan>
- <20170715050828.GA9760@light.dominikbrodowski.net>
- <3209820.qRRISZfneG@aspire.rjw.lan>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Subject: Re: [PATCH] power: supply: act8945a_charger: fix of_irq_get() error
+ check
+Date: Mon, 17 Jul 2017 15:00:26 +0300
+Message-ID: <9f7d4b95-dcea-d8bf-8bf4-6551d4ab7b58@cogentembedded.com>
+References: <20170716175244.300670810@cogentembedded.com>
+ <c0a5fce5-4185-249b-e206-4964d41ab05a@cogentembedded.com>
+ <20170717105003.riv7fe44jzmkffg3@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3209820.qRRISZfneG@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f42.google.com ([209.85.215.42]:33726 "EHLO
+        mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751280AbdGQMAa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2017 08:00:30 -0400
+Received: by mail-lf0-f42.google.com with SMTP id z78so84199294lff.0
+        for <linux-pm@vger.kernel.org>; Mon, 17 Jul 2017 05:00:29 -0700 (PDT)
+In-Reply-To: <20170717105003.riv7fe44jzmkffg3@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
 
-On 15-07-17, 14:26, Rafael J. Wysocki wrote:
-> On Saturday, July 15, 2017 07:08:28 AM Dominik Brodowski wrote:
+Hello!
 
-> > Exactly. But lets take a quick look at the drivers ussing CPUFREQ_ETERNAL:
-> > 
-> > Using CPUFREQ_ETERNAL, as policy-setting drivers:
-> > 
-> > - intel_pstate.c - for the intel_pstate driver, which defers to the hardware
-> >   to do frequency selection.
-> > 
-> > - longrun.c - hardware-based frequency selection.
-> 
-> That may or may not be hardware-based, but if the ->setpolicy callback is
-> present, transition_latency doesn't matter anyway.
+On 07/17/2017 01:50 PM, Sebastian Reichel wrote:
 
-Right and to avoid confusion its probably better to avoid setting
-transition_latency completely from them. I will try to include that in
-my series.
+>> Forgot to mention that this patch is against Linus' repo as Sebastian's repo
+>> lags behind at 4.10-rc1...
+>
+> You are supposed to use my for-next branch [0] and not master :) That
+> one was 4.12-rc1 + power supply patches until a few hours ago and
+> now is 4.13-rc1. So if you based on current master from Linus it
+> should be ok. I will start reviewing patches for the v4.14 cycle
+> shortly.
 
-> > => Those drivers are not interested in kernel-based dynamic frequency
-> > selection anyway.
-> 
-> Right.
-> 
-> > 
-> > Using CPUFREQ_ETERNAL as a fallback if transition_latency is unknown:
-> > - arm_big_little.c
-> > - arm_big_little_dt.c
-> > - cpufreq-dt.c
-> > - imx6q-cpufreq.c
-> > - spear_cpufreq.c
-> > 
-> > => As it seems to be an error case, it seems best to bail out on the
-> > safe side and disallow dynamic frequency scaling. Platform experts might
-> > know better, though.
-> > 
-> 
-> Well, Viresh should know what to do for some of them at least. :-)
+    I first tried to use 'fixes' but that one was at 4.8-rc1, then switched to 
+back to 'master'.
+Since this patch is a bug fix, I didn't consider for-next.
 
-Yeah, they just don't know how much time it takes to change the
-frequency. We shouldn't disallow DVFS for them.
+> [0] https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/log/?h=for-next
+>
+> -- Sebastian
 
-> > Using CPUFREQ_ETERNAL unconditionally:
-> > - cpufreq-nforce2.c - over a decade old driver; has a commented-out hack
-> >   to mdelay(10ms) after each frequency transition. This smells like it might
-> >   be unsafe to do dynamic switching more often than that.
-> > 
-> > - elanfreq.c - Has udelay(1ms+10ms) in transition path, so the same terms
-> >   and conditions seem to apply.
-> > 
-> > - gx-suspmod.c - works by a mechanism which reminds me of CPU frequency
-> >   throttling, but chipset- and not CPU-based.
-> > 
-> > - pmac32-cpufreq.c - for some models, it sets latency to ETERNAL. In some
-> >   frequency switchign code, it has mdelay(10ms) calls.
-> > 
-> > - speedsstep-smi.c - this case was discussed previously.
-> > 
-> > => For those drivers, dynamic frequency scaling should not be enabled IMO.
-> 
-> Agreed.
-
-+1 and these are the drivers which should have this new variable set
-to avoid DVFS.
-
-Anyone who is setting CPUFREQ_ETERNAL unconditionally should be
-setting the new flag.
-
-> > To summarize: At first, I'd propose a *complete* switch-over from
-> > CPUFREQ_ETERNAL to setting the flag "no DVFS" you have proposed.
-> 
-> So we seem to be in agreement over this.
-
-The usage of CPUFREQ_ETERNAL had been confusing over the years, i.e.
-some use it to not allow ondemand/conservative, while others use it as
-they don't know their transition latencies.
-
-A complete switch over may not be good for the later.
-
-I would suggest we only move the platforms which set latency to
-CPUFREQ_ETERNAL unconditionally to the "no DVFS" list. And everyone
-else can still continue with CPUFREQ_ETERNAL. I have earlier proposed
-finding their latencies dynamically and will try to include that for
-them.
-
--- 
-viresh
+MBR, Sergei
