@@ -1,41 +1,88 @@
-From: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
-Subject: Re: [PATCH v4 1/3] cpufreq: mediatek: Add support of cpufreq to
- MT2701/MT7623 SoC
-Date: Mon, 17 Jul 2017 10:06:58 +0200
-Message-ID: <20170717100658.46898057@endymion>
-References: <cover.1499692967.git.sean.wang@mediatek.com>
-        <feabcfd53899954198c6620e9d9b68f4a3c55201.1499692967.git.sean.wang@mediatek.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: s5pv210: add missing of_node_put
+Date: Mon, 17 Jul 2017 14:13:45 +0530
+Message-ID: <20170717084345.GN352@vireshk-i7>
+References: <1500147653-31229-1-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <feabcfd53899954198c6620e9d9b68f4a3c55201.1499692967.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
-Cc: viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, jamesjj.liao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, shunli.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:33019 "EHLO
+        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751260AbdGQIns (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jul 2017 04:43:48 -0400
+Received: by mail-pf0-f180.google.com with SMTP id e26so5348720pfd.0
+        for <linux-pm@vger.kernel.org>; Mon, 17 Jul 2017 01:43:48 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1500147653-31229-1-git-send-email-Julia.Lawall@lip6.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Kukjin Kim <kgene@kernel.org>, kernel-janitors@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 10 Jul 2017 22:23:08 +0800, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org wrote:
-> From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+On 15-07-17, 21:40, Julia Lawall wrote:
+> for_each_compatible_node performs an of_node_get on each iteration, so a
+> return from the loop requires an of_node_put.
 > 
-> MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
-> single cluster and this hardware is also compatible with the existing
-> driver through enabling CPU frequency feature with operating-points-v2
-> bindings. Also, this driver actually supports all MediaTek SoCs, the
-> Kconfig menu entry and file name itself should be updated with more
-> generic name to drop "MT8173"
+> The semantic patch that fixes this problem is as follows
+> (http://coccinelle.lip6.fr):
 > 
-> Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Reviewed-by: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
+> // <smpl>
+> @@
+> local idexpression n;
+> expression e,e1,e2;
+> statement S;
+> iterator i1;
+> iterator name for_each_compatible_node;
+> @@
+> 
+>  for_each_compatible_node(n,e1,e2) {
+>    ...
+> (
+>    of_node_put(n);
+> |
+>    e = n
+> |
+>    return n;
+> |
+>    i1(...,n,...) S
+> |
+> +  of_node_put(n);
+> ?  return ...;
+> )
+>    ...
+>  }
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
+> ---
+>  drivers/cpufreq/s5pv210-cpufreq.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff -u -p a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+> --- a/drivers/cpufreq/s5pv210-cpufreq.c
+> +++ b/drivers/cpufreq/s5pv210-cpufreq.c
+> @@ -612,6 +612,7 @@ static int s5pv210_cpufreq_probe(struct
 
-Confirmed, looks good to me.
+Just before this location we also called of_find_compatible_node()
+directly and never did a of_node_put() for that. Can you please fix
+that as well ?
 
-Thanks,
+>  		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
+>  			pr_err("%s: failed to get alias of dmc node '%s'\n",
+>  				__func__, np->name);
+> +			of_node_put(np);
+>  			return id;
+>  		}
+>  
+> @@ -619,6 +620,7 @@ static int s5pv210_cpufreq_probe(struct
+>  		if (!dmc_base[id]) {
+>  			pr_err("%s: failed to map dmc%d registers\n",
+>  				__func__, id);
+> +			of_node_put(np);
+>  			return -EFAULT;
+>  		}
+>  	}
+
 -- 
-Jean Delvare
-SUSE L3 Support
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+viresh
