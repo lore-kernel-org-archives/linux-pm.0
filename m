@@ -1,73 +1,64 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2] PM / Domains: defer dev_pm_domain_set() until
- genpd->attach_dev succeeds if present
-Date: Mon, 17 Jul 2017 11:34:57 +0100
-Message-ID: <0f5d2da1-0390-c02f-e03b-df07aa40a52f@arm.com>
-References: <1498759251-11709-1-git-send-email-sudeep.holla@arm.com>
- <1500029508-7103-1-git-send-email-sudeep.holla@arm.com>
- <CAPDyKFqJf+stWC4FAbXAxXgZgCXxc3KOPyG3YS008EWmH6vAcw@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: supply: act8945a_charger: fix of_irq_get() error
+ check
+Date: Mon, 17 Jul 2017 12:50:04 +0200
+Message-ID: <20170717105003.riv7fe44jzmkffg3@earth>
+References: <20170716175244.300670810@cogentembedded.com>
+ <c0a5fce5-4185-249b-e206-4964d41ab05a@cogentembedded.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqJf+stWC4FAbXAxXgZgCXxc3KOPyG3YS008EWmH6vAcw@mail.gmail.com>
-Content-Language: en-US
-Sender: stable-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "# v4 . 0+" <stable@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="wy6gog4xm2jpreja"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:58706 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751351AbdGQKuH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 17 Jul 2017 06:50:07 -0400
+Content-Disposition: inline
+In-Reply-To: <c0a5fce5-4185-249b-e206-4964d41ab05a@cogentembedded.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Cc: linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
 
 
+--wy6gog4xm2jpreja
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On 17/07/17 08:01, Ulf Hansson wrote:
-> On 14 July 2017 at 12:51, Sudeep Holla <sudeep.holla@arm.com> wrote:
->> If the genpd->attach_dev or genpd->power_on fails, genpd_dev_pm_attach
->> may return -EPROBE_DEFER initially. However genpd_alloc_dev_data sets
->> the PM domain for the device unconditionally.
->>
->> When subsequent attempts are made to call genpd_dev_pm_attach, it may
->> return -EEXISTS checking dev->pm_domain without re-attempting to call
->> attach_dev or power_on.
->>
->> platform_drv_probe then attempts to call drv->probe as the return value
->> -EEXIST != -EPROBE_DEFER, which may end up in a situation where the
->> device is accessed without it's power domain switched on.
->>
->> Fixes: f104e1e5ef57 ("PM / Domains: Re-order initialization of generic_pm_domain_data")
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Kevin Hilman <khilman@kernel.org>
->> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->> Cc: <stable@vger.kernel.org> # v4.0+
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> 
-> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-> 
->> ---
->>  drivers/base/power/domain.c | 8 ++++----
->>  1 file changed, 4 insertions(+), 4 deletions(-)
->>
->> Hi,
->>
->> I have added Cc/Fixes tags based on the original commit that caused the issue.
->> I need to workout a patch that can cleanly apply before commit 989561de9b51
->> ("PM / Domains: add setter for dev.pm_domain"), i.e. for v4.0.x to v4.4.x
->> This patch should apply from v4.5.x onwards.
-> 
-> Thanks for checking this.
-> 
-> Perhaps we should change the stable tag to # v4.5+ instead then?
-> Otherwise the stable people will just report problems when trying to
-> apply it.
-> 
+Hi,
 
-Yes, I know. I thought then I can work out the solution for whatever
-version they need. Instead of trying to post patch for all versions from
-v4.0 to v4.4
-If that's not acceptable, then yes it should be #4.5+
-Rafael, can you just update that if required ?
+On Sun, Jul 16, 2017 at 08:55:13PM +0300, Sergei Shtylyov wrote:
+> Forgot to mention that this patch is against Linus' repo as Sebastian's repo
+> lags behind at 4.10-rc1...
 
-I am fine to work a patch for v4.[0-4].x when requested.
+You are supposed to use my for-next branch [0] and not master :) That
+one was 4.12-rc1 + power supply patches until a few hours ago and
+now is 4.13-rc1. So if you based on current master from Linus it
+should be ok. I will start reviewing patches for the v4.14 cycle
+shortly.
 
--- 
-Regards,
-Sudeep
+[0] https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/log/?h=for-next
+
+-- Sebastian
+
+--wy6gog4xm2jpreja
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAllsllkACgkQ2O7X88g7
++projQ//QhaYxk915L8U2K6ujStQDbUxgqXZtAfq86R24UhWTxGcrB+GdUChM4K5
+tF6kEu4qO9Nrg53K12qP4gMv9tBxbOagW/Bk2YxYsZ18hMHPfCflEmTUUl9UdvUx
+YtU2wfcTefXyDvLgsIft/1KdAr2RfDwowJuqDuf+T6v0gs307PNYf+oIP8Sl9yOC
+Ac6W45vp/689s94HVCAlK0b076PyYtXvpDaGZ+FXHju1SnLYTKJlO7lD/GQFv+BP
+4bN80Dd3MJwOAF0JA4GOLQfPDqcNC5QRl5/rjpI4QE+eXg3Ujrz3LtANHs+KzXVm
+pd303nq6fgElr75+S5kwiKmg3aMJPYNawDab9VpQRDFtUCRe5q/g7DhUgI9aULq6
+9JZPOgt82Wq0qTaczivSRdE9+8k7LeuXeDhkexlOApjpSMzUtK+2JJ5cCS4gXXf3
+my0TIuxVaBcHtUnJCMp3n0jcRYxPCcySB4tX8m6pTusHaBLlhsYQeroSacMclBHB
+6V027wrBGMmXkhEBUqY6CWkU6757NgPXswRpAmYyXNfFw/opIulhXfD647ln+egN
+LeqKcyZZ4Cb75jLfnWa2lLIc6QnwDfEtW000jGtNJ97DvjZAQlkVSLNg5+zXa9yS
+IIQiVGgr2BuWBkJ9xARCOQB2P2TycmwGhz8zwM/W3rs88l9VRvM=
+=sPvC
+-----END PGP SIGNATURE-----
+
+--wy6gog4xm2jpreja--
