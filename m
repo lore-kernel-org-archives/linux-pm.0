@@ -1,111 +1,89 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: [PATCH 1/4] rtc-lib: Add rtc_show_time(const char *prefix_msg)
-Date: Tue, 18 Jul 2017 19:52:24 +0200
-Message-ID: <20170718175224.xccqnv4zjggn4shu@piout.net>
-References: <20170718172525.114514-1-salyzyn@android.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH] selftests: cpufreq: Check cpuinfo_cur_freq set as
+ expected
+Date: Tue, 18 Jul 2017 22:34:19 +0300
+Message-ID: <1500406459.11874.1.camel@nxp.com>
+References: <704cfb6696840b3838576ea583b8ab8ed2265aaf.1499858779.git.leonard.crestez@nxp.com>
+         <20170713085537.GD352@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170718172525.114514-1-salyzyn@android.com>
+In-Reply-To: <20170713085537.GD352@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Salyzyn <salyzyn@android.com>
-Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, linux-rtc@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Shuah Khan <shuah@kernel.org>, linux-kselftest@vger.kernel.org, Octavian Purdila <octavian.purdila@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On 18/07/2017 at 10:25:23 -0700, Mark Salyzyn wrote:
-> Go directly to the rtc for persistent wall clock time and print.
-> Useful if REALTIME is required to be logged in a low level power
-> management function or when clock activities are suspended.  An
-> aid to permit user space alignment of kernel activities.
+On Thu, 2017-07-13 at 14:25 +0530, Viresh Kumar wrote:
+> On 12-07-17, 14:29, Leonard Crestez wrote:
+> > 
+> > This checks that the cpufreq driver actually sets the requested
+> > frequency.
+> > 
+> > Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> > 
+> > ---
+> > 
+> > I've been looking at using kselftests for imx. This patch exposes an
+> > issue with the imx6 cpufreq driver on imx6sx where frequencies are set
+> > incorrectly because of clk mishandling. This is already caught by some
+> > internal test scripts which also run against upstream but it's nice to
+> > make this visible through kselftest.
+> Sure, thanks for that.
 > 
-> Feature activated by CONFIG_RTC_SHOW_TIME.
+> > I'm not sure it's correct to check that frequency matches exactly,
+> > perhaps something like a 5% tolerance should be included for complex
+> > drivers where the target freq is only a "hint"?
+> We can do better, see below..
 > 
-> Signed-off-by: Mark Salyzyn <salyzyn@android.com>
-> ---
->  drivers/rtc/Kconfig   | 11 +++++++++++
->  drivers/rtc/rtc-lib.c | 16 ++++++++++++++++
->  include/linux/rtc.h   |  5 +++++
->  3 files changed, 32 insertions(+)
+> > I checked intel_pstate
+> > but it doesn't even seem to expose an userspace governor for manual
+> > frequency selection anyway.
+> Sure, and so that wouldn't be affected by this.
 > 
-> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-> index 72419ac2c52a..7c308605bf42 100644
-> --- a/drivers/rtc/Kconfig
-> +++ b/drivers/rtc/Kconfig
-> @@ -5,6 +5,17 @@
->  config RTC_LIB
->  	bool
->  
-> +config RTC_SHOW_TIME
-> +	bool "rtc_show_time instrumentation"
-> +	select RTC_LIB
-> +	help
-> +	  Activate rtc_show_time(const char *msg) wall clock time
-> +	  instrumentation.
-> +
-> +	  The instrumentation is used to help triage and synchronize
-> +	  kernel logs using CLOCK_MONOTONIC and user space activity
-> +	  logs utilizing CLOCK_REALTIME references.
-> +
->  config RTC_MC146818_LIB
->  	bool
->  	select RTC_LIB
-> diff --git a/drivers/rtc/rtc-lib.c b/drivers/rtc/rtc-lib.c
-> index 1ae7da5cfc60..676d6a83e843 100644
-> --- a/drivers/rtc/rtc-lib.c
-> +++ b/drivers/rtc/rtc-lib.c
-> @@ -94,6 +94,22 @@ void rtc_time64_to_tm(time64_t time, struct rtc_time *tm)
->  }
->  EXPORT_SYMBOL(rtc_time64_to_tm);
->  
-> +#ifdef CONFIG_RTC_SHOW_TIME
-> +void rtc_show_time(const char *prefix_msg)
-> +{
-> +	struct timespec ts;
-> +	struct rtc_time tm;
-> +
-> +	getnstimeofday(&ts);
-> +	rtc_time_to_tm(ts.tv_sec, &tm);
-
-Apart from using rtc_time_to_tm (and you should probably use
-rtc_time64_to_tm), none of this is actually related to the RTC
-subsystem. I feel like you should find another place to put that, maybe
-timekeeping_debug.c?
-
-> +	pr_info("%s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n",
-> +		prefix_msg ? prefix_msg : "Time:",
-> +		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-> +		tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
-> +}
-> +EXPORT_SYMBOL(rtc_show_time);
-> +#endif
-> +
->  /*
->   * Does the rtc_time represent a valid date/time?
->   */
-> diff --git a/include/linux/rtc.h b/include/linux/rtc.h
-> index 0a0f0d14a5fb..bf625e023799 100644
-> --- a/include/linux/rtc.h
-> +++ b/include/linux/rtc.h
-> @@ -22,6 +22,11 @@ extern int rtc_year_days(unsigned int day, unsigned int month, unsigned int year
->  extern int rtc_valid_tm(struct rtc_time *tm);
->  extern time64_t rtc_tm_to_time64(struct rtc_time *tm);
->  extern void rtc_time64_to_tm(time64_t time, struct rtc_time *tm);
-> +#ifdef CONFIG_RTC_SHOW_TIME
-> +extern void rtc_show_time(const char *prefix_msg);
-> +#else
-> +#define rtc_show_time(prefix_msg)
-> +#endif
->  ktime_t rtc_tm_to_ktime(struct rtc_time tm);
->  struct rtc_time rtc_ktime_to_tm(ktime_t kt);
->  
-> -- 
-> 2.13.2.932.g7449e964c-goog
+> > diff --git a/tools/testing/selftests/cpufreq/cpufreq.sh
+> > b/tools/testing/selftests/cpufreq/cpufreq.sh
+> > index 1ed3832..323b5bb 100755
+> > --- a/tools/testing/selftests/cpufreq/cpufreq.sh
+> > +++ b/tools/testing/selftests/cpufreq/cpufreq.sh
+> > @@ -151,6 +151,14 @@ test_all_frequencies()
+> >  	# Set all frequencies one-by-one
+> >  	for freq in $freqs; do
+> >  		set_cpu_frequency $1 $freq
+> > +
+> > +		local cur_freq
+> > +		cur_freq=`cat $CPUFREQROOT/$1/cpuinfo_cur_freq`
+> Yes, we want to verify if freq change happened or not, but may be only
+> reading scaling_cur_freq would be enough for now?
 > 
+> And that wouldn't be a problem for X86 (which Rafael mentioned) as
+> well IIUC.
+> 
+The semantics of scaling_cur_freq and cpuinfo_cur_freq are not very
+clear to me.
 
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+In my particular case I need to check cpuinfo_cur_freq because this is
+what ends up returning the rate of the arm clk. Otherwise
+scaling_cur_freq just returns policy->cur unless the driver has a
+setpolicy function (I don't understand that condition).
+
+Since commit f8475cef9008 ("x86: use common aperfmperf_khz_on_cpu() to
+calculate KHz using APERF/MPERF") scaling_cur_freq will also try to
+return the "computed frequency" on x86.
+
+I ran selftest with this patch on top of upstream on an AMD Phenom
+machine (scaling_driver="acpi_cpufreq") and it still passes. It returns
+the value computed through aperf/mperf in scaling_cur_freq but manual
+explicit switching between supported frequencies is reflected in
+cpuinfo_cur_freq, as the test expects.
+
+I'm not sure this means that cpuinfo_cur_freq is the correct choice, it
+seems like it works mostly by accident rather than ABI guarantees. I
+suspect that if people actually attempt to run this test on a wide
+variety of systems it will need an endless stream of platform-specific
+hacks to pass. Better to let this die.
+
+--
+Regards,
+Leonard
