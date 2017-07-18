@@ -1,59 +1,120 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v2 0/3] Introduce USB charger support in USB phy
-Date: Tue, 18 Jul 2017 15:13:00 +0800
-Message-ID: <CAMz4kuLp6C+ThKh8Y=QaocsPQ_swN7K4sMmebeGnnQA1M89G0w@mail.gmail.com>
-References: <cover.1499061617.git.baolin.wang@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f48.google.com ([209.85.218.48]:33637 "EHLO
-        mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751026AbdGRHNB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 03:13:01 -0400
-Received: by mail-oi0-f48.google.com with SMTP id p188so10155865oia.0
-        for <linux-pm@vger.kernel.org>; Tue, 18 Jul 2017 00:13:01 -0700 (PDT)
-In-Reply-To: <cover.1499061617.git.baolin.wang@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Subject: [PATCH v8 2/9] i2c: i2c-smbus: add of_i2c_setup_smbus_alert
+Date: Tue, 18 Jul 2017 16:19:37 +0800
+Message-ID: <1500365984-61404-3-git-send-email-preid@electromag.com.au>
+References: <1500365984-61404-1-git-send-email-preid@electromag.com.au>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1500365984-61404-1-git-send-email-preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jdelvare-IBi9RG/b67k@public.gmane.org, jglauber-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, david.daney-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>
-Cc: Jun Li <jun.li@nxp.com>, Peter Chen <peter.chen@freescale.com>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, NeilBrown <neilb@suse.com>, patches@opensource.wolfsonmicro.com, Baolin Wang <baolin.wang@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-Hi,
+This commit adds of_i2c_setup_smbus_alert which allows the smbalert
+driver to be attached to an i2c adapter via the device tree.
 
-On 3 July 2017 at 14:07, Baolin Wang <baolin.wang@linaro.org> wrote:
-> Currently the Linux kernel does not provide any standard integration of this
-> feature that integrates the USB subsystem with the system power regulation
-> provided by PMICs meaning that either vendors must add this in their kernels
-> or USB gadget devices based on Linux (such as mobile phones) may not behave
-> as they should. Thus provide a standard USB charger support in USB phy core
-> for doing this in kernel.
->
-> Now introduce one user with wm831x_power to support and test the usb charger.
->
-> Changes since v1:
->  - Fix building errors.
->
-> Baolin Wang (3):
->   include: uapi: usb: Introduce USB charger type and state definition
->   usb: phy: Add USB charger support
->   power: wm831x_power: Support USB charger current limit management
+Signed-off-by: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+---
+ Documentation/devicetree/bindings/i2c/i2c.txt |  4 ++--
+ drivers/i2c/i2c-smbus.c                       | 32 ++++++++++++++++++++++++++-
+ include/linux/i2c-smbus.h                     |  9 ++++++++
+ 3 files changed, 42 insertions(+), 3 deletions(-)
 
-Any suggestion for the USB charger support in USB phy core? Thanks.
-
->
->  drivers/power/supply/wm831x_power.c |   61 ++++++++
->  drivers/usb/phy/phy.c               |  265 +++++++++++++++++++++++++++++++++++
->  include/linux/usb/phy.h             |   49 +++++++
->  include/uapi/linux/usb/charger.h    |   31 ++++
->  4 files changed, 406 insertions(+)
->  create mode 100644 include/uapi/linux/usb/charger.h
->
-> --
-> 1.7.9.5
->
-
-
-
+diff --git a/Documentation/devicetree/bindings/i2c/i2c.txt b/Documentation/devicetree/bindings/i2c/i2c.txt
+index cee9d50..1126398 100644
+--- a/Documentation/devicetree/bindings/i2c/i2c.txt
++++ b/Documentation/devicetree/bindings/i2c/i2c.txt
+@@ -59,8 +59,8 @@ wants to support one of the below features, it should adapt the bindings below.
+ 	interrupts used by the device.
+ 
+ - interrupt-names
+-	"irq" and "wakeup" names are recognized by I2C core, other names are
+-	left to individual drivers.
++	"irq", "wakeup" and "smbus_alert" names are recognized by I2C core,
++	other names are	left to individual drivers.
+ 
+ - host-notify
+ 	device uses SMBus host notify protocol instead of interrupt line.
+diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
+index d4af270..a34f41d 100644
+--- a/drivers/i2c/i2c-smbus.c
++++ b/drivers/i2c/i2c-smbus.c
+@@ -21,6 +21,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/of_irq.h>
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
+ 
+@@ -139,7 +140,14 @@ static int smbalert_probe(struct i2c_client *ara,
+ 	if (!alert)
+ 		return -ENOMEM;
+ 
+-	irq = setup->irq;
++	if (setup) {
++		irq = setup->irq;
++	} else {
++		irq = of_irq_get_byname(adapter->dev.of_node, "smbus_alert");
++		if (irq <= 0)
++			return irq;
++	}
++
+ 	INIT_WORK(&alert->alert, smbalert_work);
+ 	alert->ara = ara;
+ 
+@@ -214,6 +222,28 @@ struct i2c_client *i2c_setup_smbus_alert(struct i2c_adapter *adapter,
+ }
+ EXPORT_SYMBOL_GPL(i2c_setup_smbus_alert);
+ 
++#if IS_ENABLED(CONFIG_OF)
++int of_i2c_setup_smbus_alert(struct i2c_adapter *adapter)
++{
++	struct i2c_client *client;
++	int irq;
++
++	irq = of_property_match_string(adapter->dev.of_node, "interrupt-names",
++				       "smbus_alert");
++	if (irq == -EINVAL || irq == -ENODATA)
++		return 0;
++	else if (irq < 0)
++		return irq;
++
++	client = i2c_setup_smbus_alert(adapter, NULL);
++	if (!client)
++		return -ENODEV;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_i2c_setup_smbus_alert);
++#endif
++
+ /**
+  * i2c_handle_smbus_alert - Handle an SMBus alert
+  * @ara: the ARA client on the relevant adapter
+diff --git a/include/linux/i2c-smbus.h b/include/linux/i2c-smbus.h
+index 19efbd1..fb0e040 100644
+--- a/include/linux/i2c-smbus.h
++++ b/include/linux/i2c-smbus.h
+@@ -49,4 +49,13 @@ struct i2c_client *i2c_setup_smbus_alert(struct i2c_adapter *adapter,
+ 					 struct i2c_smbus_alert_setup *setup);
+ int i2c_handle_smbus_alert(struct i2c_client *ara);
+ 
++#if IS_ENABLED(CONFIG_I2C_SMBUS) && IS_ENABLED(CONFIG_OF)
++int of_i2c_setup_smbus_alert(struct i2c_adapter *adap);
++#else
++static inline int of_i2c_setup_smbus_alert(struct i2c_adapter *adap)
++{
++	return 0;
++}
++#endif
++
+ #endif /* _LINUX_I2C_SMBUS_H */
 -- 
-Baolin.wang
-Best Regards
+1.8.3.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
