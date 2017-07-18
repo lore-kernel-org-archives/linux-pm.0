@@ -1,7 +1,7 @@
 From: Mark Salyzyn <salyzyn@android.com>
-Subject: [PATCH 3/4] PM: Print wall time at suspend entry and exit
-Date: Tue, 18 Jul 2017 10:25:58 -0700
-Message-ID: <20170718172600.114761-1-salyzyn@android.com>
+Subject: [PATCH 4/4] PM: Print wall time at hibernate entry and exit
+Date: Tue, 18 Jul 2017 10:26:16 -0700
+Message-ID: <20170718172617.114825-1-salyzyn@android.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
@@ -14,36 +14,41 @@ Feature activated by CONFIG_RTC_SHOW_TIME.
 
 Signed-off-by: Mark Salyzyn <salyzyn@android.com>
 ---
- kernel/power/suspend.c | 3 +++
- 1 file changed, 3 insertions(+)
+ kernel/power/hibernate.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 3ecf275d7e44..f44d2152ab3f 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -26,6 +26,7 @@
- #include <linux/suspend.h>
- #include <linux/syscore_ops.h>
- #include <linux/ftrace.h>
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index e1914c7b85b1..0b5460f9189b 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -32,11 +32,11 @@
+ #include <linux/ctype.h>
+ #include <linux/genhd.h>
+ #include <linux/ktime.h>
 +#include <linux/rtc.h>
  #include <trace/events/power.h>
- #include <linux/compiler.h>
- #include <linux/moduleparam.h>
-@@ -579,6 +580,7 @@ int pm_suspend(suspend_state_t state)
- 	if (state <= PM_SUSPEND_ON || state >= PM_SUSPEND_MAX)
- 		return -EINVAL;
  
-+	rtc_show_time("PM: suspend entry");
- 	error = enter_state(state);
- 	if (error) {
- 		suspend_stats.fail++;
-@@ -586,6 +588,7 @@ int pm_suspend(suspend_state_t state)
- 	} else {
- 		suspend_stats.success++;
- 	}
-+	rtc_show_time("PM: suspend exit");
- 	return error;
+ #include "power.h"
+ 
+-
+ static int nocompress;
+ static int noresume;
+ static int nohibernate;
+@@ -342,6 +342,7 @@ int hibernation_snapshot(int platform_mode)
+ 	pm_message_t msg;
+ 	int error;
+ 
++	rtc_show_time("PM: hibernation entry");
+ 	pm_suspend_clear_flags();
+ 	error = platform_begin(platform_mode);
+ 	if (error)
+@@ -409,6 +410,7 @@ int hibernation_snapshot(int platform_mode)
+ 	thaw_kernel_threads();
+  Cleanup:
+ 	swsusp_free();
++	rtc_show_time("PM: hibernation exit");
+ 	goto Close;
  }
- EXPORT_SYMBOL(pm_suspend);
+ 
 -- 
 2.13.2.932.g7449e964c-goog
