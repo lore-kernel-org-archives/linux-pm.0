@@ -1,61 +1,35 @@
-From: Peter Rosin <peda@axentia.se>
-Subject: Re: [PATCH v8 5/9] i2c: mux: pca954x: Return error if
- irq_create_mapping fails
-Date: Tue, 18 Jul 2017 22:41:49 +0200
-Message-ID: <418700bb-0c21-eed2-1342-66cfa74e72e2@axentia.se>
-References: <1500365984-61404-1-git-send-email-preid@electromag.com.au>
- <1500365984-61404-6-git-send-email-preid@electromag.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1500365984-61404-6-git-send-email-preid@electromag.com.au>
-Content-Language: en-US
-Sender: linux-i2c-owner@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>, wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, benjamin.tissoires@redhat.com, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+From: Mark Salyzyn <salyzyn@android.com>
+Subject: [PATCH v2 0/4] PM / Suspend: Print wall time
+Date: Tue, 18 Jul 2017 14:18:05 -0700
+Message-ID: <20170718211813.122971-1-salyzyn@android.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, andy.shevchenko@gmail.com, Mark Salyzyn <salyzyn@android.com>
 List-Id: linux-pm@vger.kernel.org
 
-Really minor nits, don't respin over this, but if you do respin over
-something else, please fix these as well.
+Helpful for post-mortem analysis to synchronize CLOCK_MONOTONIC
+kernel logs with CLOCK_REALTIME user space logs.  Post-mortem
+analysis for Battery and Power diagnosis.  Improved reporting
+of suspension times against the rtc wallclock, which is
+persistent even at the lowest power management states.
 
-On 2017-07-18 10:19, Phil Reid wrote:
-> irq_create_mapping can return an error, report error to log and return.
-> Cleanup will occur inprobe function when an error is returned.
+analyze_suspend.py requires a configured kernel to debug, these
+prints can remain in a field product with CONFIG_RTC_TIME_SHOW.
 
-s/inprobe/in the probe/
+Signed-off-by: Mark Salyzyn <salyzyn@android.com>
 
-> 
-> Suggested-by: Peter Rosin <peda@axentia.se>
-> Signed-off-by: Phil Reid <preid@electromag.com.au>
-> ---
->  drivers/i2c/muxes/i2c-mux-pca954x.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/i2c/muxes/i2c-mux-pca954x.c b/drivers/i2c/muxes/i2c-mux-pca954x.c
-> index 9867720..0594775 100644
-> --- a/drivers/i2c/muxes/i2c-mux-pca954x.c
-> +++ b/drivers/i2c/muxes/i2c-mux-pca954x.c
-> @@ -309,6 +309,10 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
->  
->  	for (c = 0; c < data->chip->nchans; c++) {
->  		irq = irq_create_mapping(data->irq, c);
-> +		if (irq <= 0) {
+v2:
+- move implementation to kernel timekeeping from rtc_lib files
+- use rtc_time64_to_tm() instead of rtc_time_to_tm()
+- use inline in include/linux/rtc.h for !CONFIG_RTC_SHOW_TIME
+- use late_initcall to ensure rtc_lib driver(s) are loaded
 
-irq_create_mapping returns an unsigned int, so I'd write that as
-
-		if (!irq) {
-
-Either way,
-
-Acked-by: Peter Rosin <peda@axentia.se>
-
-Cheers,
-Peter
-
-> +			dev_err(&client->dev, "failed irq create map\n");
-> +			return -EINVAL;
-> +		}
->  		irq_set_chip_data(irq, data);
->  		irq_set_chip_and_handler(irq, &pca954x_irq_chip,
->  			handle_simple_irq);
-> 
+---
+ include/linux/rtc.h         |    5 ++
+ kernel/power/hibernate.c    |    4 +-
+ kernel/power/suspend.c      |    3 +
+ kernel/time/Kconfig         |   11 +++++
+ kernel/time/Makefile        |    1 
+ kernel/time/rtc_show_time.c |   82 ++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 105 insertions(+), 1 deletion(-)
