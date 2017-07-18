@@ -1,61 +1,66 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH] devfreq: simple_ondemand: Update devfreq stats when
- governor started
-Date: Tue, 18 Jul 2017 10:35:49 +0000
-Message-ID: <20170718103549epcms1p87cf1d138e35426be0f95afa61fcebc85@epcms1p8>
-References: <1500372171-7194-1-git-send-email-jeffy.chen@rock-chips.com>
-        <CGME20170718100259epcas3p2886849647d4a6fe257a4e12854a10f7c@epcms1p8>
-Reply-To: myungjoo.ham@samsung.com
+From: Juri Lelli <Juri.Lelli@arm.com>
+Subject: Re: [PATCH] cpufreq: schedutil: Update last_update from
+ sugov_set_iowait_boost()
+Date: Tue, 18 Jul 2017 12:20:25 +0100
+Message-ID: <20170718112025.iujrikdrf2sechtp@e106622-lin>
+References: <4927469221fa6b2ea7efffb2da923dac930ab313.1500353473.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:45991 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751378AbdGRKfw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 06:35:52 -0400
-Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
-        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20170718103550epoutp03beeca787b3f039b646c3593b1aa21624~SZldMIwXT1424214242epoutp03t
-        for <linux-pm@vger.kernel.org>; Tue, 18 Jul 2017 10:35:50 +0000 (GMT)
-In-Reply-To: <1500372171-7194-1-git-send-email-jeffy.chen@rock-chips.com>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:51734 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751334AbdGRLUa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 18 Jul 2017 07:20:30 -0400
+Content-Disposition: inline
+In-Reply-To: <4927469221fa6b2ea7efffb2da923dac930ab313.1500353473.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "briannorris@chromium.org" <briannorris@chromium.org>, "javi.merino@kernel.org" <javi.merino@kernel.org>, "dianders@chromium.org" <dianders@chromium.org>, "lukasz.luba@arm.com" <lukasz.luba@arm.com>, Jeffy Chen <jeffy.chen@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, joelaf@google.com, linux-kernel@vger.kernel.org
 
-> If governor suspends soon after started, it may not have the chance to
-> update devfreq stats, which leaves devfreq stats' current frequence be
-> zero.
+Hi Viresh,
+
+On 18/07/17 10:24, Viresh Kumar wrote:
+> sg_cpu->last_update is always updated right after we call
+> sugov_set_iowait_boost() and its better to update it from that routine
+> itself. This makes it more readable.
 > 
-> So when the thermal core tries to throttle the power, it would failed
-> to get the correct static power of current frequence and print these
-> warnings:
-> [    2.024735] core: dev_pm_opp_get_voltage: Invalid parameters
-> [    2.024743] mali ff9a0000.gpu: Failed to get voltage for frequency 0:
-> -34
-> ...
-> [    2.026320] core: dev_pm_opp_get_voltage: Invalid parameters
-> [    2.026327] mali ff9a0000.gpu: Failed to get voltage for frequency 0:
-> -34
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> Update devfreq stats when governor started to avoid that.
-> 
-> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 29a397067ffa..63557b9f36b6 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -177,6 +177,8 @@ static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
+>  		if (delta_ns > TICK_NSEC)
+>  			sg_cpu->iowait_boost = 0;
+>  	}
+> +
+> +	sg_cpu->last_update = time;
+>  }
+>  
+>  static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
+> @@ -219,7 +221,6 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>  	bool busy;
+>  
+>  	sugov_set_iowait_boost(sg_cpu, time, flags);
+> -	sg_cpu->last_update = time;
+>  
+>  	if (!sugov_should_update_freq(sg_policy, time))
+>  		return;
+> @@ -299,7 +300,6 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>  	sg_cpu->flags = flags;
+>  
+>  	sugov_set_iowait_boost(sg_cpu, time, flags);
+> -	sg_cpu->last_update = time;
 
-How are you calling suspend/resume routins in the mali drivers?
+It actually belongs here, IMHO. We update other fields (util, max,
+flags) before looking at iowait. Why hiding the time update into a
+function dealing with only one of such fields?
 
-It appears that your mali device driver's suspend/resume routines are
-accessing "struct devfreq_dev_status" directly. Is this correct?
+Best,
 
-
-Plus, for MALI (if that assumption is correct), this issue might occur
-with other governors.
-
-If so, would it be better to put the first initializing call of
-devfreq_update_stats() at devfreq_add_device()?
-
-
-Cheers,
-MyungJoo
-
-ps. Where can I look at the mali-devfreq device driver? (I couldn't find it)
+- Juri
