@@ -1,68 +1,79 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: [RFC 08/22] x86/entry/64: Adapt assembly for PIE support
-Date: Tue, 18 Jul 2017 15:33:19 -0700
-Message-ID: <20170718223333.110371-9-thgarnie@google.com>
-References: <20170718223333.110371-1-thgarnie@google.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v2 1/4] time: rtc-lib: Add rtc_show_time(const char
+ *prefix_msg)
+Date: Wed, 19 Jul 2017 00:35:01 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1707190023010.2425@nanos>
+References: <20170718211930.123077-1-salyzyn@android.com> <alpine.DEB.2.20.1707182338470.2425@nanos> <8afb372a-3951-6fb9-c0be-82756623061f@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xen.org>
-In-Reply-To: <20170718223333.110371-1-thgarnie@google.com>
-List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xen.org>
-List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
-List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xen.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Thomas Garnier <thgarnie@google.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Brian Gerst <brgerst@gmail.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown>
-Cc: linux-arch@vger.kernel.org, kvm@vger.kernel.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org, linux-crypto@vger.kernel.org, kernel-hardening@lists.openwall.com, xen-devel@lists.xenproject.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from Galois.linutronix.de ([146.0.238.70]:41105 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751882AbdGRWfL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 18:35:11 -0400
+In-Reply-To: <8afb372a-3951-6fb9-c0be-82756623061f@android.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Salyzyn <salyzyn@android.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, andy.shevchenko@gmail.com, Mark Salyzyn <salyzyn@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thierry Strudel <tstrudel@google.com>, John Stultz <john.stultz@linaro.org>, Richard Cochran <richardcochran@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Kees Cook <keescook@chromium.org>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Prarit Bhargava <prarit@redhat.com>
 
-Q2hhbmdlIHRoZSBhc3NlbWJseSBjb2RlIHRvIHVzZSBvbmx5IHJlbGF0aXZlIHJlZmVyZW5jZXMg
-b2Ygc3ltYm9scyBmb3IgdGhlCmtlcm5lbCB0byBiZSBQSUUgY29tcGF0aWJsZS4KClBvc2l0aW9u
-IEluZGVwZW5kZW50IEV4ZWN1dGFibGUgKFBJRSkgc3VwcG9ydCB3aWxsIGFsbG93IHRvIGV4dGVu
-ZGVkIHRoZQpLQVNMUiByYW5kb21pemF0aW9uIHJhbmdlIGJlbG93IHRoZSAtMkcgbWVtb3J5IGxp
-bWl0LgoKU2lnbmVkLW9mZi1ieTogVGhvbWFzIEdhcm5pZXIgPHRoZ2FybmllQGdvb2dsZS5jb20+
-Ci0tLQogYXJjaC94ODYvZW50cnkvZW50cnlfNjQuUyB8IDIyICsrKysrKysrKysrKysrKy0tLS0t
-LS0KIDEgZmlsZSBjaGFuZ2VkLCAxNSBpbnNlcnRpb25zKCspLCA3IGRlbGV0aW9ucygtKQoKZGlm
-ZiAtLWdpdCBhL2FyY2gveDg2L2VudHJ5L2VudHJ5XzY0LlMgYi9hcmNoL3g4Ni9lbnRyeS9lbnRy
-eV82NC5TCmluZGV4IGE5YTgwMjdhNmMwZS4uNjkxYzQ3NTUyNjliIDEwMDY0NAotLS0gYS9hcmNo
-L3g4Ni9lbnRyeS9lbnRyeV82NC5TCisrKyBiL2FyY2gveDg2L2VudHJ5L2VudHJ5XzY0LlMKQEAg
-LTE5NSwxMiArMTk1LDE1IEBAIGVudHJ5X1NZU0NBTExfNjRfZmFzdHBhdGg6CiAJamEJMWYJCQkJ
-LyogcmV0dXJuIC1FTk9TWVMgKGFscmVhZHkgaW4gcHRfcmVncy0+YXgpICovCiAJbW92cQklcjEw
-LCAlcmN4CiAKKwkvKiBFbnN1cmVzIHRoZSBjYWxsIGlzIHBvc2l0aW9uIGluZGVwZW5kZW50ICov
-CisJbGVhcQlzeXNfY2FsbF90YWJsZSglcmlwKSwgJXIxMQorCiAJLyoKIAkgKiBUaGlzIGNhbGwg
-aW5zdHJ1Y3Rpb24gaXMgaGFuZGxlZCBzcGVjaWFsbHkgaW4gc3R1Yl9wdHJlZ3NfNjQuCiAJICog
-SXQgbWlnaHQgZW5kIHVwIGp1bXBpbmcgdG8gdGhlIHNsb3cgcGF0aC4gIElmIGl0IGp1bXBzLCBS
-QVgKIAkgKiBhbmQgYWxsIGFyZ3VtZW50IHJlZ2lzdGVycyBhcmUgY2xvYmJlcmVkLgogCSAqLwot
-CWNhbGwJKnN5c19jYWxsX3RhYmxlKCwgJXJheCwgOCkKKwljYWxsCSooJXIxMSwgJXJheCwgOCkK
-IC5MZW50cnlfU1lTQ0FMTF82NF9hZnRlcl9mYXN0cGF0aF9jYWxsOgogCiAJbW92cQklcmF4LCBS
-QVgoJXJzcCkKQEAgLTMzMyw3ICszMzYsOCBAQCBFTlRSWShzdHViX3B0cmVnc182NCkKIAkgKiBS
-QVggc3RvcmVzIGEgcG9pbnRlciB0byB0aGUgQyBmdW5jdGlvbiBpbXBsZW1lbnRpbmcgdGhlIHN5
-c2NhbGwuCiAJICogSVJRcyBhcmUgb24uCiAJICovCi0JY21wcQkkLkxlbnRyeV9TWVNDQUxMXzY0
-X2FmdGVyX2Zhc3RwYXRoX2NhbGwsICglcnNwKQorCWxlYXEJLkxlbnRyeV9TWVNDQUxMXzY0X2Fm
-dGVyX2Zhc3RwYXRoX2NhbGwoJXJpcCksICVyMTEKKwljbXBxCSVyMTEsICglcnNwKQogCWpuZQkx
-ZgogCiAJLyoKQEAgLTExMDksNyArMTExMyw4IEBAIEVOVFJZKGVycm9yX2VudHJ5KQogCW1vdmwJ
-JWVjeCwgJWVheAkJCS8qIHplcm8gZXh0ZW5kICovCiAJY21wcQklcmF4LCBSSVArOCglcnNwKQog
-CWplCS5MYnN0ZXBfaXJldAotCWNtcHEJJC5MZ3NfY2hhbmdlLCBSSVArOCglcnNwKQorCWxlYXEJ
-Lkxnc19jaGFuZ2UoJXJpcCksICVyY3gKKwljbXBxCSVyY3gsIFJJUCs4KCVyc3ApCiAJam5lCS5M
-ZXJyb3JfZW50cnlfZG9uZQogCiAJLyoKQEAgLTEzMjQsMTAgKzEzMjksMTAgQEAgRU5UUlkobm1p
-KQogCSAqIHJlc3VtZSB0aGUgb3V0ZXIgTk1JLgogCSAqLwogCi0JbW92cQkkcmVwZWF0X25taSwg
-JXJkeAorCWxlYXEJcmVwZWF0X25taSglcmlwKSwgJXJkeAogCWNtcHEJOCglcnNwKSwgJXJkeAog
-CWphCTFmCi0JbW92cQkkZW5kX3JlcGVhdF9ubWksICVyZHgKKwlsZWFxCWVuZF9yZXBlYXRfbm1p
-KCVyaXApLCAlcmR4CiAJY21wcQk4KCVyc3ApLCAlcmR4CiAJamEJbmVzdGVkX25taV9vdXQKIDE6
-CkBAIC0xMzgxLDcgKzEzODYsOCBAQCBuZXN0ZWRfbm1pOgogCXB1c2hxCSVyZHgKIAlwdXNoZnEK
-IAlwdXNocQkkX19LRVJORUxfQ1MKLQlwdXNocQkkcmVwZWF0X25taQorCWxlYXEJcmVwZWF0X25t
-aSglcmlwKSwgJXJkeAorCXB1c2hxCSVyZHgKIAogCS8qIFB1dCBzdGFjayBiYWNrICovCiAJYWRk
-cQkkKDYqOCksICVyc3AKQEAgLTE0MTksNyArMTQyNSw5IEBAIGZpcnN0X25taToKIAlhZGRxCSQ4
-LCAoJXJzcCkJLyogRml4IHVwIFJTUCAqLwogCXB1c2hmcQkJCS8qIFJGTEFHUyAqLwogCXB1c2hx
-CSRfX0tFUk5FTF9DUwkvKiBDUyAqLwotCXB1c2hxCSQxZgkJLyogUklQICovCisJcHVzaHEJJXJh
-eAkJLyogU3VwcG9ydCBQb3NpdGlvbiBJbmRlcGVuZGVudCBDb2RlICovCisJbGVhcQkxZiglcmlw
-KSwgJXJheAkvKiBSSVAgKi8KKwl4Y2hncQklcmF4LCAoJXJzcCkJLyogUmVzdG9yZSBSQVgsIHB1
-dCAxZiAqLwogCUlOVEVSUlVQVF9SRVRVUk4JLyogY29udGludWVzIGF0IHJlcGVhdF9ubWkgYmVs
-b3cgKi8KIDE6CiAjZW5kaWYKLS0gCjIuMTMuMi45MzIuZzc0NDllOTY0Yy1nb29nCgoKX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KWGVuLWRldmVsIG1haWxp
-bmcgbGlzdApYZW4tZGV2ZWxAbGlzdHMueGVuLm9yZwpodHRwczovL2xpc3RzLnhlbi5vcmcveGVu
-LWRldmVsCg==
+On Tue, 18 Jul 2017, Mark Salyzyn wrote:
+> On 07/18/2017 02:52 PM, Thomas Gleixner wrote:
+> > Why on earth do you need to print that information in RTC format? What's
+> > wrong with just doing:
+> > 
+> >        pr_info("My so important log message %lld\n",
+> > ktime_get_real_seconds());
+> 
+> Legacy (these prints have been in Android tree since 2013) for all our battery
+> and power analysis tools are keyed off RTC format. There is some momentum,
+> default should be epoch seconds/nanoseconds as that is a good example; and
+> another option can select RTC (the option can be an internal patch to alter
+> the format ... ick)
+
+Can we please fix the tools and not introduce that horror in the kernel?
+
+> > and then decoding the seconds in post processing? That's completely
+> > sufficient as you intend that for logging. Correlation with user space
+> > CLOCK_REALTIME is even simpler as this is the same as reading it from user
+> > space.
+> This is part of triage and post-analysis, there is no user space call that can
+> be made after the fact to correlate MONOTONIC time with REALTIME. The
+> historgram for the relationship between the two time formats is built up in
+> user space based on batched analysis of the kernel logs. Although the values
+> slip because of ntp and other sources, suspend/resume/hibernate/restore and
+> shutdown are definitive points of interest for analysis. The analysis is
+> performed on klogd data which has a longer logging span than the internal
+> buffer.
+
+Printing ktime_get_real_seconds() gives you the wall time. I was merily
+explaining that this is the same as reading CLOCK_REALTIME from userspace.
+
+Just for the record: You cannot use that stuff deep in the suspend/resume
+code because timekeeping is suspended there as well and that call to
+getnstimeofday() is going to trigger a WARNON() when called after
+timekeeping was suspended. So please be more precise about the limitations
+of this.
+
+> > If your main intention is logging/debugging, then you can just use
+> > tracepoints. The tracer allows correlation to user space tracing already.
+> tracepoints are disabled on field devices. As is debugfs. This is not
+> logging/debugging, but field battery and power analysis. Some of the data
+> shows up in the Battery Settings screen on the devices. We also _benefit_ from
+> this information when correlating kernel logs with user space logs during
+> triage.
+
+There was some discussion about making the clock source for dmesg time
+stamps selectable, so you can use MONOTONIC, REALTIME, BOOTTIME. The
+patches looked sensible, but there was some showstopper vs. the user space
+dmesg utility. See:
+
+  http://lkml.kernel.org/r/1456250040-22351-1-git-send-email-prarit@redhat.com
+
+I rather see that resolved and these patches merged than having yet another
+half baken special purpose debug band aid. Maybe Prarit can shed some light
+on the state of this.
+
+Thanks,
+
+	tglx
