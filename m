@@ -1,47 +1,34 @@
-From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [PATCH] devfreq: simple_ondemand: Update devfreq stats when governor started
-Date: Tue, 18 Jul 2017 18:02:51 +0800
-Message-ID: <1500372171-7194-1-git-send-email-jeffy.chen@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rui.zhang@intel.com, briannorris@chromium.org, javi.merino@kernel.org, dianders@chromium.org, lukasz.luba@arm.com, Jeffy Chen <jeffy.chen@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v2 5/5] ACPI / boot: Don't handle SCI on HW reduced
+ platforms
+Date: Tue, 18 Jul 2017 13:11:16 +0300
+Message-ID: <1500372676.29303.65.camel@linux.intel.com>
+References: <20170717132946.20892-1-andriy.shevchenko@linux.intel.com>
+         <20170717132946.20892-6-andriy.shevchenko@linux.intel.com>
+         <596DD9BF.5000509@huawei.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:29475 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751322AbdGRKPu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 18 Jul 2017 06:15:50 -0400
+In-Reply-To: <596DD9BF.5000509@huawei.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hanjun Guo <guohanjun@huawei.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 
-If governor suspends soon after started, it may not have the chance to
-update devfreq stats, which leaves devfreq stats' current frequence be
-zero.
+On Tue, 2017-07-18 at 17:49 +0800, Hanjun Guo wrote:
+> On 2017/7/17 21:29, Andy Shevchenko wrote:
+> > WIP
+> 
+> Does it mean not ready for upstream yet?
 
-So when the thermal core tries to throttle the power, it would failed
-to get the correct static power of current frequence and print these
-warnings:
-[    2.024735] core: dev_pm_opp_get_voltage: Invalid parameters
-[    2.024743] mali ff9a0000.gpu: Failed to get voltage for frequency 0:
--34
-...
-[    2.026320] core: dev_pm_opp_get_voltage: Invalid parameters
-[    2.026327] mali ff9a0000.gpu: Failed to get voltage for frequency 0:
--34
+Yep, this patch is subject to discussion. I will update it in v3, though
+it would be nice to discuss anyway (and test on some hardware reduced
+platforms).
 
-Update devfreq stats when governor started to avoid that.
-
-Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
----
-
- drivers/devfreq/governor_simpleondemand.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-index ae72ba5..26e0e58 100644
---- a/drivers/devfreq/governor_simpleondemand.c
-+++ b/drivers/devfreq/governor_simpleondemand.c
-@@ -98,6 +98,7 @@ static int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
- {
- 	switch (event) {
- 	case DEVFREQ_GOV_START:
-+		devfreq_update_stats(devfreq);
- 		devfreq_monitor_start(devfreq);
- 		break;
- 
 -- 
-2.1.4
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
