@@ -1,57 +1,135 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 4/5] ACPI / boot: Not all platform require acpi_reduced_hw_init()
-Date: Tue, 18 Jul 2017 18:04:19 +0300
-Message-ID: <20170718150420.61600-5-andriy.shevchenko@linux.intel.com>
-References: <20170718150420.61600-1-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170718150420.61600-1-andriy.shevchenko@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+Subject: [PATCH] cpufreq: dt: Don't use generic platdev driver for tango
+Date: Tue, 18 Jul 2017 18:48:39 +0200
+Message-ID: <f6b9a4e6-bbff-fe92-6867-547c581db3c8@sigmadesigns.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Some platform might take care of legacy devices on theirs own.
-Let's allow them to do that by exporting a weak function.
+On tango platforms, firmware configures the CPU clock, and Linux is
+then only allowed to use the cpu_clk_divider to change the frequency.
+Build the OPP table dynamically at init, in order to support whatever
+firmware throws at us.
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
 ---
- arch/x86/kernel/acpi/boot.c | 2 +-
- include/linux/acpi.h        | 3 +++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/tango4-smp8758.dtsi |  1 -
+ drivers/cpufreq/Kconfig.arm           |  5 +++++
+ drivers/cpufreq/Makefile              |  1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c  |  2 --
+ drivers/cpufreq/tango-cpufreq.c       | 38 +++++++++++++++++++++++++++++++++++
+ 5 files changed, 44 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/cpufreq/tango-cpufreq.c
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 0186d3bae610..71c0feae60a4 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -1348,7 +1348,7 @@ static int __init dmi_ignore_irq0_timer_override(const struct dmi_system_id *d)
-  *
-  * We initialize the Hardware-reduced ACPI model here:
-  */
--static void __init acpi_reduced_hw_init(void)
-+void __init __weak acpi_reduced_hw_init(void)
- {
- 	if (acpi_gbl_reduced_hardware) {
- 		/*
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 7443af1d16e7..5a19b2090db1 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -230,6 +230,8 @@ struct acpi_subtable_proc {
+diff --git a/arch/arm/boot/dts/tango4-smp8758.dtsi b/arch/arm/boot/dts/tango4-smp8758.dtsi
+index d2e65c46bcc7..eca33d568690 100644
+--- a/arch/arm/boot/dts/tango4-smp8758.dtsi
++++ b/arch/arm/boot/dts/tango4-smp8758.dtsi
+@@ -13,7 +13,6 @@
+ 			reg = <0>;
+ 			clocks = <&clkgen CPU_CLK>;
+ 			clock-latency = <1>;
+-			operating-points = <1215000 0 607500 0 405000 0 243000 0 135000 0>;
+ 		};
  
- void __iomem *__acpi_map_table(unsigned long phys, unsigned long size);
- void __acpi_unmap_table(void __iomem *map, unsigned long size);
+ 		cpu1: cpu@1 {
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 2011fec2d6ad..ea9ba00091bb 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -242,6 +242,11 @@ config ARM_STI_CPUFREQ
+ 	  this config option if you wish to add CPUFreq support for STi based
+ 	  SoCs.
+ 
++config ARM_TANGO_CPUFREQ
++	bool
++	depends on CPUFREQ_DT && ARCH_TANGO
++	default y
 +
-+void acpi_reduced_hw_init(void);
- int early_acpi_boot_init(void);
- int acpi_boot_init (void);
- void acpi_boot_table_init (void);
-@@ -682,6 +684,7 @@ static inline struct device *acpi_get_first_physical_node(struct acpi_device *ad
- static inline void acpi_early_init(void) { }
- static inline void acpi_subsystem_init(void) { }
+ config ARM_TEGRA20_CPUFREQ
+ 	bool "Tegra20 CPUFreq support"
+ 	depends on ARCH_TEGRA
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index ab3a42cd29ef..bb9841f57787 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -75,6 +75,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
+ obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
+ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+ obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
++obj-$(CONFIG_ARM_TANGO_CPUFREQ)		+= tango-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 1c262923fe58..6cbe77765f46 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -80,8 +80,6 @@ static const struct of_device_id machines[] __initconst = {
+ 	{ .compatible = "rockchip,rk3368", },
+ 	{ .compatible = "rockchip,rk3399", },
  
-+static inline void acpi_reduced_hw_init(void) { }
- static inline int early_acpi_boot_init(void)
- {
- 	return 0;
+-	{ .compatible = "sigma,tango4" },
+-
+ 	{ .compatible = "socionext,uniphier-pro5", },
+ 	{ .compatible = "socionext,uniphier-pxs2", },
+ 	{ .compatible = "socionext,uniphier-ld6b", },
+diff --git a/drivers/cpufreq/tango-cpufreq.c b/drivers/cpufreq/tango-cpufreq.c
+new file mode 100644
+index 000000000000..89a7f860bfe8
+--- /dev/null
++++ b/drivers/cpufreq/tango-cpufreq.c
+@@ -0,0 +1,38 @@
++#include <linux/of.h>
++#include <linux/cpu.h>
++#include <linux/clk.h>
++#include <linux/pm_opp.h>
++#include <linux/platform_device.h>
++
++static const struct of_device_id machines[] __initconst = {
++	{ .compatible = "sigma,tango4" },
++	{ /* sentinel */ }
++};
++
++static int __init tango_cpufreq_init(void)
++{
++	struct device *cpu_dev = get_cpu_device(0);
++	unsigned long max_freq;
++	struct clk *cpu_clk;
++	void *res;
++
++	if (!of_match_node(machines, of_root))
++		return -ENODEV;
++
++	cpu_clk = clk_get(cpu_dev, NULL);
++	if (IS_ERR(cpu_clk))
++		return -ENODEV;
++
++	max_freq = clk_get_rate(cpu_clk);
++
++	dev_pm_opp_add(cpu_dev, max_freq / 1, 0);
++	dev_pm_opp_add(cpu_dev, max_freq / 2, 0);
++	dev_pm_opp_add(cpu_dev, max_freq / 3, 0);
++	dev_pm_opp_add(cpu_dev, max_freq / 5, 0);
++	dev_pm_opp_add(cpu_dev, max_freq / 9, 0);
++
++	res = platform_device_register_data(NULL, "cpufreq-dt", -1, NULL, 0);
++
++	return PTR_ERR_OR_ZERO(res);
++}
++device_initcall(tango_cpufreq_init);
 -- 
 2.11.0
