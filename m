@@ -1,36 +1,59 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v5 2/5] tick: Add freeze timer events
-Date: Tue, 18 Jul 2017 08:40:35 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1707180838570.1945@nanos>
-References: <20170708000303.21863-1-dbasehore@chromium.org> <CAJZ5v0horA+vgR3bAbEu+AiqEFJ7JyZ49nTv6FBPHRvmXOUFpQ@mail.gmail.com> <CAGAzgsoFugSw=UQsJmep0woGg70J3nie0-EtvtQ4Ec1NG1usOg@mail.gmail.com> <7467728.lI8lN4PjS8@aspire.rjw.lan>
- <CAGAzgsq1c3HdMJ9801uqB+7USK9mqt9xtZTbH=EYv0KDLe+8=A@mail.gmail.com> <CAJZ5v0jaHAExRdwwhJU9p+tDB1ESEXqgfU_DLXev0su3qZaNBA@mail.gmail.com> <CAGAzgsqhV=e8ZuwA7NtOX_tg+HfQfYGg6oTTTRa2bp-LBOZ54w@mail.gmail.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v2 0/3] Introduce USB charger support in USB phy
+Date: Tue, 18 Jul 2017 15:13:00 +0800
+Message-ID: <CAMz4kuLp6C+ThKh8Y=QaocsPQ_swN7K4sMmebeGnnQA1M89G0w@mail.gmail.com>
+References: <cover.1499061617.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGAzgsqhV=e8ZuwA7NtOX_tg+HfQfYGg6oTTTRa2bp-LBOZ54w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "dbasehore ." <dbasehore@chromium.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, the arch/x86 maintainers <x86@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f48.google.com ([209.85.218.48]:33637 "EHLO
+        mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751026AbdGRHNB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 03:13:01 -0400
+Received: by mail-oi0-f48.google.com with SMTP id p188so10155865oia.0
+        for <linux-pm@vger.kernel.org>; Tue, 18 Jul 2017 00:13:01 -0700 (PDT)
+In-Reply-To: <cover.1499061617.git.baolin.wang@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>
+Cc: Jun Li <jun.li@nxp.com>, Peter Chen <peter.chen@freescale.com>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, NeilBrown <neilb@suse.com>, patches@opensource.wolfsonmicro.com, Baolin Wang <baolin.wang@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-On Mon, 17 Jul 2017, dbasehore . wrote:
-> On Mon, Jul 17, 2017 at 6:33 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> I could make a patch to try it out. I would probably add a flag to rtc
-> timers to indicate whether it wakes the system (default true). We
-> would have to add a sync with the rtc irq and the rtc irqwork. I would
-> probably add a rtc_timer_sync function that would flush the rtc irq
-> and flush the irqwork. I would call this after the freeze_ops sync
-> function since the sci irq needs to finish before syncing with the rtc
-> irq. Also, pm_wakeup_irq seems racy with the current implementation of
-> s2idle_loop since the RTC irq could be mistakenly set as pm_wakeup_irq
-> when something else actually triggered the full wakeup. Fortunately, I
-> don't think pm_wakeup_irq is used for anything except debugging, but
-> we might change that.
+Hi,
 
-There is another option which you might consider. We can reserve one of the
-HPET comparators for that purpose and have a special interrupt handler for
-it. Checking the HPET for expiry from the low level code should be trivial.
+On 3 July 2017 at 14:07, Baolin Wang <baolin.wang@linaro.org> wrote:
+> Currently the Linux kernel does not provide any standard integration of this
+> feature that integrates the USB subsystem with the system power regulation
+> provided by PMICs meaning that either vendors must add this in their kernels
+> or USB gadget devices based on Linux (such as mobile phones) may not behave
+> as they should. Thus provide a standard USB charger support in USB phy core
+> for doing this in kernel.
+>
+> Now introduce one user with wm831x_power to support and test the usb charger.
+>
+> Changes since v1:
+>  - Fix building errors.
+>
+> Baolin Wang (3):
+>   include: uapi: usb: Introduce USB charger type and state definition
+>   usb: phy: Add USB charger support
+>   power: wm831x_power: Support USB charger current limit management
 
-Thanks,
+Any suggestion for the USB charger support in USB phy core? Thanks.
 
-	tglx
+>
+>  drivers/power/supply/wm831x_power.c |   61 ++++++++
+>  drivers/usb/phy/phy.c               |  265 +++++++++++++++++++++++++++++++++++
+>  include/linux/usb/phy.h             |   49 +++++++
+>  include/uapi/linux/usb/charger.h    |   31 ++++
+>  4 files changed, 406 insertions(+)
+>  create mode 100644 include/uapi/linux/usb/charger.h
+>
+> --
+> 1.7.9.5
+>
+
+
+
+-- 
+Baolin.wang
+Best Regards
