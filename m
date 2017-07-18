@@ -1,86 +1,74 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v16 2/7] power: add power sequence library
-Date: Tue, 18 Jul 2017 12:29:55 +0800
-Message-ID: <20170718042955.GA12080@b29397-desktop>
-References: <1498027328-25078-1-git-send-email-peter.chen@nxp.com>
- <10723509.cz5GGA4OTz@aspire.rjw.lan>
- <20170710022815.GA8720@b29397-desktop>
- <2659617.dvNVihq86F@aspire.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: Don't check not plugged in CPUs to avoid error
+Date: Tue, 18 Jul 2017 10:05:36 +0530
+Message-ID: <20170718043536.GT352@vireshk-i7>
+References: <20170713122201.30048-1-waldemarx.rymarkiewicz@intel.com>
+ <20170713234226.GE22780@codeaurora.org>
+ <20170717071234.GK352@vireshk-i7>
+ <CAHKzcEP5+btsJ1Tog4KQAynmmbBSixfWAxO9V0EFWeP5pP5M=w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:33724 "EHLO
+        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751334AbdGREfk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 00:35:40 -0400
+Received: by mail-pf0-f170.google.com with SMTP id e26so5261849pfd.0
+        for <linux-pm@vger.kernel.org>; Mon, 17 Jul 2017 21:35:40 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <2659617.dvNVihq86F@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Chen <peter.chen@nxp.com>, mark.rutland@arm.com, ulf.hansson@linaro.org, heiko@sntech.de, stephen.boyd@linaro.org, frank.li@nxp.com, linux-kernel@vger.kernel.org, gary.bisson@boundarydevices.com, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, dbaryshkov@gmail.com, vaibhav.hiremath@linaro.org, krzk@kernel.org, mka@chromium.org, stern@rowland.harvard.edu, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, sre@kernel.org, broonie@kernel.org, p.zabel@pe
+In-Reply-To: <CAHKzcEP5+btsJ1Tog4KQAynmmbBSixfWAxO9V0EFWeP5pP5M=w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>
 
-On Mon, Jul 17, 2017 at 03:39:07PM +0200, Rafael J. Wysocki wrote:
-> > Sorry, I should describe more.
-> > 
-> > Let's take USB bus as an example, when the new USB device is at the
-> > host port, the device structure at device model is not created until
-> > it is discoverable by the USB bus. If this new USB device needs to be
-> > powered on before can be discoverable by the bus, the device structure
-> > will be not created without powering on operation. The code usb_alloc_dev
-> > (drivers/usb/core/usb.c) is only called for discoverable device.
-> > 
-> > Unlike the other bus, eg, platform bus, it creates device structure
-> > according to DT node. The USB bus was designed for hot plug model, the
-> > device structure is for discoverable device. In recent years, we begin
-> > to have some hard-wired USB device, Eg, onboard USB-hub, onboard USB 4G
-> > Modem, etc at the market. It needs some board level power operation before
-> > it can be found by the USB bus. This patch set is designed primarily for
-> > fix this kind of problem. You will see at at pwrseq_generic.c, we use DT
-> > version clock API of_clk_get and DT version gpio API of_get_named_gpio_flags
-> > instead of device structure version, like devm_clk_get and
-> > devm_gpiod_get_optional.
-> > 
-> > MMC system has similar use case, it creates power sequence platform
-> > device for this issue, but all those power stuffs (clock, gpio, etc)
-> > may not be suitable as a dedicated virtual device at DT, they are belonged
-> > to one physical device, so this patch set is created to see if this issue
-> > can be fixed better.
-> 
-> OK, thanks for the explanation.
-> 
-> The above needs to be part of your problem statement.
+On 17-07-17, 15:03, Waldemar Rymarkiewicz wrote:
+> Isn't that cpufreq registers only online CPUs at boot up and will add
+> hot-added CPUs later on calling cpufreq_online() ~>
 
-Ok, I will add it to cover letter.
+Yes, but its a bit complicated than that.
 
-> > 
-> > The bus will power up all device nodes in this bus according to DT
-> > information, the device structure has not created at this time.
-> 
-> OK
-> 
-> I still think that the information on power resources depended on by devices
-> should be used for power management as well as for the initial power-up.
-> 
-> The most straightforward way to arrange for that would be to make it possible
-> to find the DT node matching the device after the device has been discovered
-> and struct device created for it, say by USB.  That would require adding some
-> more information on the device to the DT node, probably.
+> cpufreq_driver->init()?
 
-After the device is created, the device node structure is under struct
-device, say dev->of_node. The most difficulty for this issue is the
-device creation is dynamic and is after the physical device is
-discovered by the bus, the initial power-up is needed before the device
-can be discovered by the bus.
+init() is called only once for a cpufreq policy and it should fill
+policy->cpus with all the *possible* CPUs that share their
+clock/voltage rails. i.e. it includes the CPUs which aren't hotplugged
+in yet.
 
-> 
-> Then, the DT device nodes would be used for the initial power-up and next, after
-> discovering a device, you'd do a lookup in the DT, find the node matching it
-> and read the power resuources information from there to populate the device's
-> power state structure.  From that point on you can simply use the interface I
-> suggested.
-> 
+Later on when the CPU gets hotplugged in, we check it in existing
+policies ->related_cpus field. If its their, then very minimal stuff
+is done, else a new policy is created.
 
-Just like I said above, without initial power-up, the device can't be
-discovered by the bus.
+> this calls cpufreq_driver->init() which check for sharing CPUs. If
+> that's called for online_cpus only so I guess it's OK to check only
+> within online cpus for shared freq_table. If a cpu is plugged in later
+>  this is called again, so we can eventually add this cpu to the mask.
+> Is this right?
+>
+> > We will have a problem if we are going to use OPP framework on
+> > platforms where CPUs are hotpluggable. The cpumask returned by this
+> > function is used by the cpufreq drivers to get the related_cpus mask
+> > and that will be used when a cpu is inserted in later on.
+
+And that's why I said this.
+
+> related_cpus bitmask is set in cpufreq_online() too,
+> 
+>    http://elixir.free-electrons.com/linux/v4.13-rc1/source/drivers/cpufreq/cpufreq.c#L1188
+> 
+> Policy->cpus is for online CPUs, so where are the offline CPUs added
+> to related_cpus mask?
+
+So policy->init() sets policy->cpus to all online+offline CPUs. That
+is copied to related_cpus by core and then policy->cpus is capped to
+only have online CPUs.
+ 
+> I don't think so there is an up streamed code that uses opp framework
+> in such use case. I use MIPS platform which starts with maxcpu=4 but
+> it puts 2 cpus offline at boot up for some reason. Will try to check
+> how cpufreq behave if I hot-add a CPU in runtime.
+
+Ok.
 
 -- 
-
-Best Regards,
-Peter Chen
+viresh
