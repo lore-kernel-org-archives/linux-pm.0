@@ -1,72 +1,50 @@
-From: jeffy <jeffy.chen@rock-chips.com>
-Subject: Re: [PATCH] devfreq: simple_ondemand: Update devfreq stats when governor
- started
-Date: Tue, 18 Jul 2017 19:27:26 +0800
-Message-ID: <596DF09E.10405@rock-chips.com>
-References: <1500372171-7194-1-git-send-email-jeffy.chen@rock-chips.com> <CGME20170718100259epcas3p2886849647d4a6fe257a4e12854a10f7c@epcms1p8> <20170718103549epcms1p87cf1d138e35426be0f95afa61fcebc85@epcms1p8>
+From: Juri Lelli <Juri.Lelli@arm.com>
+Subject: Re: [PATCH] cpufreq: schedutil: Update last_update from
+ sugov_set_iowait_boost()
+Date: Tue, 18 Jul 2017 12:35:52 +0100
+Message-ID: <20170718113552.v7fzhghp6oxwfoq4@e106622-lin>
+References: <4927469221fa6b2ea7efffb2da923dac930ab313.1500353473.git.viresh.kumar@linaro.org>
+ <20170718112025.iujrikdrf2sechtp@e106622-lin>
+ <20170718112550.GZ352@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.137]:55445 "EHLO
-        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751378AbdGRL1k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 07:27:40 -0400
-In-Reply-To: <20170718103549epcms1p87cf1d138e35426be0f95afa61fcebc85@epcms1p8>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170718112550.GZ352@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, joelaf@google.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "briannorris@chromium.org" <briannorris@chromium.org>, "javi.merino@kernel.org" <javi.merino@kernel.org>, "dianders@chromium.org" <dianders@chromium.org>, "lukasz.luba@arm.com" <lukasz.luba@arm.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-hi Ham,
+On 18/07/17 16:55, Viresh Kumar wrote:
+> On 18-07-17, 12:20, Juri Lelli wrote:
+> > Hi Viresh,
+> > 
+> > On 18/07/17 10:24, Viresh Kumar wrote:
 
-Thanks for your reply.
+[...]
 
-On 07/18/2017 06:35 PM, MyungJoo Ham wrote:
->> If governor suspends soon after started, it may not have the chance to
->> update devfreq stats, which leaves devfreq stats' current frequence be
->> zero.
->>
->> So when the thermal core tries to throttle the power, it would failed
->> to get the correct static power of current frequence and print these
->> warnings:
->> [    2.024735] core: dev_pm_opp_get_voltage: Invalid parameters
->> [    2.024743] mali ff9a0000.gpu: Failed to get voltage for frequency 0:
->> -34
->> ...
->> [    2.026320] core: dev_pm_opp_get_voltage: Invalid parameters
->> [    2.026327] mali ff9a0000.gpu: Failed to get voltage for frequency 0:
->> -34
->>
->> Update devfreq stats when governor started to avoid that.
->>
->> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
->
-> How are you calling suspend/resume routins in the mali drivers?
->
-i was porting mali driver from here:
-https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-4.4/drivers/gpu/arm/midgard/mali_kbase_core_linux.c#4079
-> It appears that your mali device driver's suspend/resume routines are
-> accessing "struct devfreq_dev_status" directly. Is this correct?
->
-no, but the suspend/resume would suspend/resume the governor.
->
-> Plus, for MALI (if that assumption is correct), this issue might occur
-> with other governors.
->
-> If so, would it be better to put the first initializing call of
-> devfreq_update_stats() at devfreq_add_device()?
->
-right, that make sense. i put it here because the comment of this 
-function said it should be called by governor, but you're right, it 
-would be better this way, will send new version soon.
->
-> Cheers,
-> MyungJoo
->
-> ps. Where can I look at the mali-devfreq device driver? (I couldn't find it)
-sorry, i should mention that, please check above link :)
->
->
->
->
+> > 
+> > It actually belongs here, IMHO. We update other fields (util, max,
+> > flags)
+> 
+> Yeah, because they have bigger roles and aren't specific to iowait
+> boost.
+> 
+> > before looking at iowait. Why hiding the time update into a
+> > function dealing with only one of such fields?
+> 
+> But last_update is very much specific to iowait_boost only and so it
+> should be updated from sugov_set_iowait_boost() IMHO.
+> 
+
+Huh, I see you point. However, I'm using it also to deal with stale CFS
+util values in my patches [1]. Sure, not mainline yet, but I guess I'll
+have to sort of revert your proposed change for my next version. Or
+think of a better idea. :)
+
+Thanks,
+
+- Juri
+
+[1] http://marc.info/?l=linux-kernel&m=149924526528298&w=2
