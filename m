@@ -1,35 +1,112 @@
 From: Mark Salyzyn <salyzyn@android.com>
-Subject: [PATCH v2 0/4] PM / Suspend: Print wall time
-Date: Tue, 18 Jul 2017 14:18:05 -0700
-Message-ID: <20170718211813.122971-1-salyzyn@android.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, andy.shevchenko@gmail.com, Mark Salyzyn <salyzyn@android.com>
+Subject: [PATCH v2 1/4] time: rtc-lib: Add rtc_show_time(const char *prefix_msg)
+Date: Tue, 18 Jul 2017 14:19:09 -0700
+Message-ID: <20170718211930.123077-1-salyzyn@android.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:35446 "EHLO
+        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751962AbdGRVTs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 17:19:48 -0400
+Received: by mail-pf0-f181.google.com with SMTP id e199so17024029pfh.2
+        for <linux-pm@vger.kernel.org>; Tue, 18 Jul 2017 14:19:48 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, andy.shevchenko@gmail.com, Mark Salyzyn <salyzyn@android.com>, Mark Salyzyn <salyzyn@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thierry Strudel <tstrudel@google.com>, Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Richard Cochran <richardcochran@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Kees Cook <keescook@chromium.org>
 
-Helpful for post-mortem analysis to synchronize CLOCK_MONOTONIC
-kernel logs with CLOCK_REALTIME user space logs.  Post-mortem
-analysis for Battery and Power diagnosis.  Improved reporting
-of suspension times against the rtc wallclock, which is
-persistent even at the lowest power management states.
+Go directly to the rtc for persistent wall clock time and print.
+Useful if REALTIME is required to be logged in a low level power
+management function or when clock activities are suspended.  An
+aid to permit user space alignment of kernel activities.
 
-analyze_suspend.py requires a configured kernel to debug, these
-prints can remain in a field product with CONFIG_RTC_TIME_SHOW.
+Feature activated by CONFIG_RTC_SHOW_TIME.
 
 Signed-off-by: Mark Salyzyn <salyzyn@android.com>
 
-v2:
+v2
 - move implementation to kernel timekeeping from rtc_lib files
 - use rtc_time64_to_tm() instead of rtc_time_to_tm()
 - use inline in include/linux/rtc.h for !CONFIG_RTC_SHOW_TIME
-- use late_initcall to ensure rtc_lib driver(s) are loaded
-
 ---
- include/linux/rtc.h         |    5 ++
- kernel/power/hibernate.c    |    4 +-
- kernel/power/suspend.c      |    3 +
- kernel/time/Kconfig         |   11 +++++
- kernel/time/Makefile        |    1 
- kernel/time/rtc_show_time.c |   82 ++++++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 105 insertions(+), 1 deletion(-)
+ include/linux/rtc.h         |  5 +++++
+ kernel/time/Kconfig         | 11 +++++++++++
+ kernel/time/Makefile        |  1 +
+ kernel/time/rtc_show_time.c | 23 +++++++++++++++++++++++
+ 4 files changed, 40 insertions(+)
+ create mode 100644 kernel/time/rtc_show_time.c
+
+diff --git a/include/linux/rtc.h b/include/linux/rtc.h
+index 0a0f0d14a5fb..779401c937d5 100644
+--- a/include/linux/rtc.h
++++ b/include/linux/rtc.h
+@@ -22,6 +22,11 @@ extern int rtc_year_days(unsigned int day, unsigned int month, unsigned int year
+ extern int rtc_valid_tm(struct rtc_time *tm);
+ extern time64_t rtc_tm_to_time64(struct rtc_time *tm);
+ extern void rtc_time64_to_tm(time64_t time, struct rtc_time *tm);
++#ifdef CONFIG_RTC_SHOW_TIME
++extern void rtc_show_time(const char *prefix_msg);
++#else
++static inline void rtc_show_time(const char *prefix_msg) { }
++#endif
+ ktime_t rtc_tm_to_ktime(struct rtc_time tm);
+ struct rtc_time rtc_ktime_to_tm(ktime_t kt);
+ 
+diff --git a/kernel/time/Kconfig b/kernel/time/Kconfig
+index ac09bc29eb08..4da093ae3e37 100644
+--- a/kernel/time/Kconfig
++++ b/kernel/time/Kconfig
+@@ -145,3 +145,14 @@ config HIGH_RES_TIMERS
+ 
+ endmenu
+ endif
++
++config RTC_SHOW_TIME
++	bool "rtc_show_time instrumentation"
++	select RTC_LIB
++	help
++	  Activate rtc_show_time(const char *msg) wall clock time
++	  instrumentation.
++
++	  The instrumentation is used to help triage and synchronize
++	  kernel logs using CLOCK_MONOTONIC and user space activity
++	  logs utilizing CLOCK_REALTIME references.
+diff --git a/kernel/time/Makefile b/kernel/time/Makefile
+index 938dbf33ef49..66f17e641052 100644
+--- a/kernel/time/Makefile
++++ b/kernel/time/Makefile
+@@ -17,3 +17,4 @@ obj-$(CONFIG_GENERIC_SCHED_CLOCK)		+= sched_clock.o
+ obj-$(CONFIG_TICK_ONESHOT)			+= tick-oneshot.o tick-sched.o
+ obj-$(CONFIG_DEBUG_FS)				+= timekeeping_debug.o
+ obj-$(CONFIG_TEST_UDELAY)			+= test_udelay.o
++obj-$(CONFIG_RTC_SHOW_TIME)			+= rtc_show_time.o
+diff --git a/kernel/time/rtc_show_time.c b/kernel/time/rtc_show_time.c
+new file mode 100644
+index 000000000000..bbf4f92abf4f
+--- /dev/null
++++ b/kernel/time/rtc_show_time.c
+@@ -0,0 +1,23 @@
++/*
++ * rtc time printing utility functions
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/rtc.h>
++
++void rtc_show_time(const char *prefix_msg)
++{
++	struct timespec ts;
++	struct rtc_time tm;
++
++	getnstimeofday(&ts);
++	rtc_time64_to_tm(ts.tv_sec, &tm);
++	pr_info("%s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n",
++		prefix_msg ? prefix_msg : "Time:",
++		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
++		tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
++}
++EXPORT_SYMBOL(rtc_show_time);
+-- 
+2.13.2.932.g7449e964c-goog
