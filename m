@@ -1,68 +1,61 @@
-From: <brian@oakcrestfuneralservices.com>
-Subject: (unknown)
-Date: Tue, 18 Jul 2017 20:17:05 -0000
-Message-ID: <150040902545.17373.10975825375264802404@nojabrsk.ru>
+From: Peter Rosin <peda@axentia.se>
+Subject: Re: [PATCH v8 5/9] i2c: mux: pca954x: Return error if
+ irq_create_mapping fails
+Date: Tue, 18 Jul 2017 22:41:49 +0200
+Message-ID: <418700bb-0c21-eed2-1342-66cfa74e72e2@axentia.se>
+References: <1500365984-61404-1-git-send-email-preid@electromag.com.au>
+ <1500365984-61404-6-git-send-email-preid@electromag.com.au>
 Mime-Version: 1.0
-Content-Type: application/zip; name="EMAIL_921905219268307_linux-pm.zip
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from adsl-212-220-0-111.nojabrsk.ru ([212.220.0.111]:58843 "HELO
-        nojabrsk.ru" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-        id S1751794AbdGRURL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 18 Jul 2017 16:17:11 -0400
-Subject: 
-Content-Disposition: attachment
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1500365984-61404-6-git-send-email-preid@electromag.com.au>
+Content-Language: en-US
+Sender: linux-i2c-owner@vger.kernel.org
+To: Phil Reid <preid@electromag.com.au>, wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, benjamin.tissoires@redhat.com, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-UEsDBBQDAAAIAHiB8koO+sr0ZQoAAGcLAAARAAAANDQ1NTQyNDE1ODQ1NS56aXDFlmc4GwgcxtMq
-RRxKzEO1R61WUGc0Rq/UbozeGVG192gqqghtnXV2jSBmo/aONFIi1K5dRW2pFSPEjqp169Pd89yH
-+3L3/394n9/zvt/f18SQ4QKIAQBgBgSE7hg0dCiBe1kBgNxGAAAIAAD0rNy8POTdFGU9EBs53b5U
-bVDkGEZ684OTI7rkgv11Zq2I9nqWCxIHLo3neL1LvQmVUh7dWqKg6pYEh7sxunZR5HCJuc1PTl0s
-4fWsCY860oJUQgaeQ58nr3d4C8GV0DORptOJt8zkMGZpET+f7DFQdaVRTUauBC/6DQQjsadgNW+m
-iIUDeXXCTvPEDTc+CIpNmaiUGV1X4rQv6zrCTYkYq1Gcr1DFTXmBFBbeWO279pKgWIVhcS3jhIJ0
-eWVW1J4LoSZsQZRzX2FSyMU+XhKq7d7PheFb6uq3yOlcA5aDFRO4BBoUKE1yPhdMpXVx1td7uSmI
-ilzxSeDZcnVzy22VZFKnNkyF0lI3vyT9MYxR+JiqxN2UKHsBkK7N9d4k79C0xDtSDWX6Ph6qtPta
-m+73/JE/cDlgOt0CXdMfc3UjiqsrIxVuwd/9I6/bWYWcQaBdMO8Vqg6mPF7QQnXkfbBKLrIb90D1
-01JVdkh1Zp1A8qF7GrOfALU1Xb2PIGD+YrN+Ujp2QQ/zw8Rk6h2qnkPObeUSZtU95/H9m5carv3k
-w3VPNSFpSnIgWJYbMwu3BNLfvCzlFfuMWWdlNPWN7gg/kgKHVAvfBOZjoejKlJjjBBPOkkqxJZN7
-V/YunNoFVJaz7hxHRzM7XOZOkiMvXk0ltYtN6jDki7xyBXW3V6y3VIohNnfvGpYcxRqYPSmUIq7P
-y1WCrskw8UEaOeVpxqiBEoWw85f8uBAVBF0BS6ErVg+kKlAWwux718p2vYXKWPuyR3sarUZ2QulX
-O35hMxxFgrpMFHLIYDcFSKfXdFLc8VWGSZxYcqmCzF4/p71LkBrzPXEQ5NtysS2hCTi6ucbnZwWt
-Z6iJa2b10WxiZgwoeaJew50JQ5IeWi8iQaoBCRcU4Z26xDDPtiCqbxF56xs+Pkngj1gqMEoYnnN/
-bDn6cbMeInvFu0D9IADVd1PqTngPCUCJ47A2uMKn4ZBpPSL5QekT6E2SShttMuBoY0zR309Q4LRv
-doRbbdW8kErJ7DRNFiT/xNjpR8+ZGnum77X/42aMRxbTD7w7bAIRgV7RtT/jV4Iab+OkCYEeStlV
-LZLf2nthY4pvvOa1+x4sZ3PXsnEqAnH4sC9usShT52pq9CXpp4S2+4vbN6IyoEYSRdzD0avtfg63
-5HP+VzzTKFJWslKW4Z9PmO8lDXczPq3kKL5YSWuhD/kHeODWF4bMvzgpCEdZ94PNsTzFthUJooVd
-s47xEt+AwjTc5m6TxlTcvaoUiohR0T8O5tUxrbB1ZHjbJyW9VVlnC8+CeeYJ2Qb7bpWFEUgpKa/x
-RbniOtOETz2BUFDsh51Ph7fWHFswsgcoNx9KStkcq4Nlkb4/+iflMAXOLdLBeHl140cn21eXAe/o
-7MsM5V2a3NI6PL9wfPcIdiNCX/m8Lkc/+00yAWMUiVUuX2damqM/ntFPlnTXcOGiVMxWmJeOa2pO
-4SetID0atRO00X32uAo30+J8qn9k2TCdhsJj8Yi3uxhE3PTOK/vj3Kx5IY+76TDjIuwLfDxxY7kE
-ZhqAVVyVNDMjxkRXT29AmISh+TarQMMjH5xFetGjoyQueGFaJzNWFdwaOtZzDaL+GCb1eBoMrCmR
-9xYRebAhNIoGL36cyV9oMIZBbmDz7EZqS7LYEHLdQY99CtIysbuOgOvQnLSpxIrOlMphHfmvRf4C
-pxmjaT3hIVi5FWjRBInHLPFhVSwsBedoHLQx7EWenHok9SSyNEJod4owRLh/HLvxdD1923gcnTN+
-/40epFYrG+nPsZkg/Fm9ndkHqZKm4i9XntjMsV51kksKRXAgpiNfO9jmv1vXGRbQVngjGF9kg22L
-qWKHpAz5lYBrdE+Kg/IqV5waSwaNgn8Kr1/Yj4ORPBKXqm3ju/HfCXM30kRvOV/lv3K+cOqM9t7j
-4ma7ZbMID9y7hJnkFhgHEML4czrFiKZCJVr94GkZLzvIl786gr4w3FF71fX6yVCSb8oxZ57wsc2U
-0Fny87s5ZPHhvCEqtlVd545wU2LzeDArjghy8uurAp4Gbp/+Evk8NLXZYmiJ0TNN07d0FIWKguCj
-yRBC9hs1f3e9mcDiTZfvNd8ih2BWbw14+7P28X1LTeQ52pYFza+v0Lr4vu1oLDJbS/VerTu/6wF5
-ftGwp2Z5BRK3UNoa8nTWYnorQ+YszQBK1wiPwA9qWJdnRjGEtO2wGB9BW7eFeCz3U1+FwKVkwbU2
-kVf4Vwou0V7XJOxPZt3TdRZWE4dVT65vXLN29RwQpbkTO2w8taxVtth1FxDTnua91WPmysDNtTkJ
-vsoZnIiOxTmIsXaQENDC97nyjnrofo2lOx/v2lSMg5KRRjABPaYSed1gAOK+7ERYts6ZtWpGKs02
-TbdxzzgTQ4KfqAtQGykTkhEC+ItKRysLtBY4eXoV4tCgriFsHF4/OjbzXNF0I3RXX5GrATmErueW
-uIRNvChYjhG/aCz4ssCvmKYoi549zOqRlqYawx5IOdeF87oVwm6nKzUgoqlEnIGXjEqDSN7RYKdG
-k5O8wMcKGUtz14qmCZsMk6xDy1y6bB2f0fVvpZ4O9aw6wR8YdS+VlBcowh0z+4/uPbYo0yzncQYH
-3ZpRz/7MIkoSiTodKGzdCStu65XStIBF1JtBk/0rEm5OiKydt3LdT32iZj/wBDJY+6EsfuWevG3m
-9tIhAp0dvhoWe1pkC6QHIPld5256EsNKD+qRZ23u0fgFjSZua0/Zu682WnYjCtmfLoZBz8wtgYQv
-CyTqTdKLgQUD4XcOdumu5rk7DokK1URC5QTd/bWkEZioNsVjHSBtS1TJ0KB6H4zBA/aGTNYGkXXU
-Ox/iXb7/uts/eihjjR0pZsq30Yzh8gwtBi+dsDcVrxWeUJbXe8ETmUi8i8bTaXv6cWu6J7AlwyPe
-Xrsru2t45pG6qupkUMwvO7Fds/7kDn38TE8oojDS50bsapUXbib23Uf/2O0dI00sxTE/3KqoX3Fu
-waYOozk2llWR22K9kmvtwq1OwWzLzPpubbzMEPLHB8W7NMU9W+r1spMUlP6cyb+svJ9gYHxANxrZ
-rS6ESXcKIFyI5lS/rVeaI8WUWpuHk7tGLSx7i8KBkmOmbD8vZ4L4TsoSvwm6fFmDrClA80Gx9vdK
-yuYR9aWc3DEqpa5V1VlK3w02thwoP2zx/K7anS4Tw3y205bYBfGA5/K1MYBx+rxMfJGPfJNoz8pf
-Hsw5rk663epD2rCgZB+2UzYVnxCG4DiP6xEdwJBCgywZFGuDBAex55PBKjQwsaMz5ME5tDPrh3XE
-1zOzFQLv18qIZ54YMuxUqxnP+W/65z/DM1v07BdGE8Nz5zUZ/mn1igH+PNEXBaGAv25gVoDoH9Y5
-AD/gBQOE5zxg+Nzf1cSQkemPzG9v85vusf5OvwJQSwECPwMUAwAACAB4gfJKDvrK9GUKAABnCwAA
-EQAkAAAAAAAAACCApIEAAAAANDQ1NTQyNDE1ODQ1NS56aXAKACAAAAAAAAEAGAAAmtMVAgDTAQCa
-0xUCANMBAJrTFQIA0wFQSwUGAAAAAAEAAQBjAAAAlAoAAAAA
+Really minor nits, don't respin over this, but if you do respin over
+something else, please fix these as well.
+
+On 2017-07-18 10:19, Phil Reid wrote:
+> irq_create_mapping can return an error, report error to log and return.
+> Cleanup will occur inprobe function when an error is returned.
+
+s/inprobe/in the probe/
+
+> 
+> Suggested-by: Peter Rosin <peda@axentia.se>
+> Signed-off-by: Phil Reid <preid@electromag.com.au>
+> ---
+>  drivers/i2c/muxes/i2c-mux-pca954x.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/i2c/muxes/i2c-mux-pca954x.c b/drivers/i2c/muxes/i2c-mux-pca954x.c
+> index 9867720..0594775 100644
+> --- a/drivers/i2c/muxes/i2c-mux-pca954x.c
+> +++ b/drivers/i2c/muxes/i2c-mux-pca954x.c
+> @@ -309,6 +309,10 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
+>  
+>  	for (c = 0; c < data->chip->nchans; c++) {
+>  		irq = irq_create_mapping(data->irq, c);
+> +		if (irq <= 0) {
+
+irq_create_mapping returns an unsigned int, so I'd write that as
+
+		if (!irq) {
+
+Either way,
+
+Acked-by: Peter Rosin <peda@axentia.se>
+
+Cheers,
+Peter
+
+> +			dev_err(&client->dev, "failed irq create map\n");
+> +			return -EINVAL;
+> +		}
+>  		irq_set_chip_data(irq, data);
+>  		irq_set_chip_and_handler(irq, &pca954x_irq_chip,
+>  			handle_simple_irq);
+> 
