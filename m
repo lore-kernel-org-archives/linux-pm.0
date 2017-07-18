@@ -1,7 +1,7 @@
 From: Mark Salyzyn <salyzyn@android.com>
-Subject: [PATCH 2/4] rtc-lib: Print wall time at die and reboot
-Date: Tue, 18 Jul 2017 10:25:43 -0700
-Message-ID: <20170718172545.114568-1-salyzyn@android.com>
+Subject: [PATCH 3/4] PM: Print wall time at suspend entry and exit
+Date: Tue, 18 Jul 2017 10:25:58 -0700
+Message-ID: <20170718172600.114761-1-salyzyn@android.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
@@ -14,84 +14,36 @@ Feature activated by CONFIG_RTC_SHOW_TIME.
 
 Signed-off-by: Mark Salyzyn <salyzyn@android.com>
 ---
- drivers/rtc/rtc-lib.c | 58 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
+ kernel/power/suspend.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/rtc/rtc-lib.c b/drivers/rtc/rtc-lib.c
-index 676d6a83e843..c28fdfbb99d4 100644
---- a/drivers/rtc/rtc-lib.c
-+++ b/drivers/rtc/rtc-lib.c
-@@ -12,6 +12,8 @@
- */
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 3ecf275d7e44..f44d2152ab3f 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -26,6 +26,7 @@
+ #include <linux/suspend.h>
+ #include <linux/syscore_ops.h>
+ #include <linux/ftrace.h>
++#include <linux/rtc.h>
+ #include <trace/events/power.h>
+ #include <linux/compiler.h>
+ #include <linux/moduleparam.h>
+@@ -579,6 +580,7 @@ int pm_suspend(suspend_state_t state)
+ 	if (state <= PM_SUSPEND_ON || state >= PM_SUSPEND_MAX)
+ 		return -EINVAL;
  
- #include <linux/export.h>
-+#include <linux/kdebug.h>
-+#include <linux/reboot.h>
- #include <linux/rtc.h>
- 
- static const unsigned char rtc_days_in_month[] = {
-@@ -108,6 +110,62 @@ void rtc_show_time(const char *prefix_msg)
- 		tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
++	rtc_show_time("PM: suspend entry");
+ 	error = enter_state(state);
+ 	if (error) {
+ 		suspend_stats.fail++;
+@@ -586,6 +588,7 @@ int pm_suspend(suspend_state_t state)
+ 	} else {
+ 		suspend_stats.success++;
+ 	}
++	rtc_show_time("PM: suspend exit");
+ 	return error;
  }
- EXPORT_SYMBOL(rtc_show_time);
-+
-+static int rtc_show_time_die_notify(struct notifier_block *self,
-+		unsigned long event, void *data)
-+{
-+	if (event != DIE_OOPS)
-+		return NOTIFY_DONE;
-+	rtc_show_time("Oops");
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block rtc_show_time_die_nb = {
-+	.notifier_call = rtc_show_time_die_notify,
-+	.priority = 0,
-+};
-+
-+static int rtc_show_time_reboot_notify(struct notifier_block *self,
-+		unsigned long event, void *data)
-+{
-+	const char *txt;
-+
-+	switch (event) {
-+	case SYS_RESTART:
-+		txt = "Restart";
-+		break;
-+	case SYS_HALT:
-+		txt = "Halt";
-+		break;
-+	case SYS_POWER_OFF:
-+		txt = "Power-Off";
-+		break;
-+	default:
-+		return NOTIFY_DONE;
-+	}
-+	rtc_show_time(txt);
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block rtc_show_time_reboot_nb = {
-+	.notifier_call = rtc_show_time_reboot_notify,
-+	.priority = 0,
-+};
-+
-+static __init int init_rtc_show_time(void)
-+{
-+	int ret;
-+
-+	ret = register_die_notifier(&rtc_show_time_die_nb);
-+	if (ret)
-+		pr_warn("Failed to register rtc_show_time die notifier\n");
-+	ret = register_reboot_notifier(&rtc_show_time_reboot_nb);
-+	if (ret)
-+		pr_warn("Failed to register rtc_show_time reboot notifier\n");
-+
-+	return ret;
-+}
-+device_initcall(init_rtc_show_time);
- #endif
- 
- /*
+ EXPORT_SYMBOL(pm_suspend);
 -- 
 2.13.2.932.g7449e964c-goog
