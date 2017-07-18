@@ -1,61 +1,38 @@
-From: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
-Subject: [PATCH v8 3/9] i2c: core: call of_i2c_setup_smbus_alert in i2c_register_adapter
-Date: Tue, 18 Jul 2017 16:19:38 +0800
-Message-ID: <1500365984-61404-4-git-send-email-preid@electromag.com.au>
+From: Phil Reid <preid@electromag.com.au>
+Subject: [PATCH v8 5/9] i2c: mux: pca954x: Return error if irq_create_mapping fails
+Date: Tue, 18 Jul 2017 16:19:40 +0800
+Message-ID: <1500365984-61404-6-git-send-email-preid@electromag.com.au>
 References: <1500365984-61404-1-git-send-email-preid@electromag.com.au>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1500365984-61404-1-git-send-email-preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jdelvare-IBi9RG/b67k@public.gmane.org, jglauber-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, david.daney-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1500365984-61404-1-git-send-email-preid@electromag.com.au>
+Sender: linux-i2c-owner@vger.kernel.org
+To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, benjamin.tissoires@redhat.com, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Phil Reid <preid@electromag.com.au>
 List-Id: linux-pm@vger.kernel.org
 
-Add a call to of_i2c_setup_smbus_alert when a i2c adapter is registered
-so the the smbalert driver can be registered.
+irq_create_mapping can return an error, report error to log and return.
+Cleanup will occur inprobe function when an error is returned.
 
-Signed-off-by: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Suggested-by: Peter Rosin <peda@axentia.se>
+Signed-off-by: Phil Reid <preid@electromag.com.au>
 ---
- drivers/i2c/i2c-core-base.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/i2c/muxes/i2c-mux-pca954x.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
-index 033b7b9..7006486 100644
---- a/drivers/i2c/i2c-core-base.c
-+++ b/drivers/i2c/i2c-core-base.c
-@@ -29,6 +29,7 @@
- #include <linux/errno.h>
- #include <linux/gpio.h>
- #include <linux/i2c.h>
-+#include <linux/i2c-smbus.h>
- #include <linux/idr.h>
- #include <linux/init.h>
- #include <linux/irqflags.h>
-@@ -1273,6 +1274,10 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
- 		goto out_list;
- 	}
+diff --git a/drivers/i2c/muxes/i2c-mux-pca954x.c b/drivers/i2c/muxes/i2c-mux-pca954x.c
+index 9867720..0594775 100644
+--- a/drivers/i2c/muxes/i2c-mux-pca954x.c
++++ b/drivers/i2c/muxes/i2c-mux-pca954x.c
+@@ -309,6 +309,10 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
  
-+	res = of_i2c_setup_smbus_alert(adap);
-+	if (res)
-+		goto out_reg;
-+
- 	dev_dbg(&adap->dev, "adapter [%s] registered\n", adap->name);
- 
- 	pm_runtime_no_callbacks(&adap->dev);
-@@ -1304,6 +1309,10 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
- 
- 	return 0;
- 
-+out_reg:
-+	init_completion(&adap->dev_released);
-+	device_unregister(&adap->dev);
-+	wait_for_completion(&adap->dev_released);
- out_list:
- 	mutex_lock(&core_lock);
- 	idr_remove(&i2c_adapter_idr, adap->nr);
+ 	for (c = 0; c < data->chip->nchans; c++) {
+ 		irq = irq_create_mapping(data->irq, c);
++		if (irq <= 0) {
++			dev_err(&client->dev, "failed irq create map\n");
++			return -EINVAL;
++		}
+ 		irq_set_chip_data(irq, data);
+ 		irq_set_chip_and_handler(irq, &pca954x_irq_chip,
+ 			handle_simple_irq);
 -- 
 1.8.3.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
