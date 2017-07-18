@@ -1,73 +1,57 @@
-From: Rob Herring <robh@kernel.org>
-Subject: [PATCH] PM / Domains: Convert to using %pOF instead of full_name
-Date: Tue, 18 Jul 2017 16:42:50 -0500
-Message-ID: <20170718214339.7774-10-robh@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+From: "dbasehore ." <dbasehore@chromium.org>
+Subject: Re: [PATCH v5 2/5] tick: Add freeze timer events
+Date: Tue, 18 Jul 2017 15:03:13 -0700
+Message-ID: <CAGAzgsoqjwK1HPK7jPKhC+YhH7EbVLjbYm+p-UARGmK_hvB=+A@mail.gmail.com>
+References: <20170708000303.21863-1-dbasehore@chromium.org>
+ <CAJZ5v0horA+vgR3bAbEu+AiqEFJ7JyZ49nTv6FBPHRvmXOUFpQ@mail.gmail.com>
+ <CAGAzgsoFugSw=UQsJmep0woGg70J3nie0-EtvtQ4Ec1NG1usOg@mail.gmail.com>
+ <7467728.lI8lN4PjS8@aspire.rjw.lan> <CAGAzgsq1c3HdMJ9801uqB+7USK9mqt9xtZTbH=EYv0KDLe+8=A@mail.gmail.com>
+ <CAJZ5v0jaHAExRdwwhJU9p+tDB1ESEXqgfU_DLXev0su3qZaNBA@mail.gmail.com>
+ <CAGAzgsqhV=e8ZuwA7NtOX_tg+HfQfYGg6oTTTRa2bp-LBOZ54w@mail.gmail.com>
+ <alpine.DEB.2.20.1707180838570.1945@nanos> <CAGAzgsqwOhTYz9D=XYkMYHBZsmajUH8HJoMOJOe3DfG8WVusRA@mail.gmail.com>
+ <alpine.DEB.2.20.1707182352340.2425@nanos>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.20.1707182352340.2425@nanos>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, the arch/x86 maintainers <x86@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Now that we have a custom printf format specifier, convert users of
-full_name to use %pOF instead. This is preparation to remove storing
-of the full path string for each node.
+On Tue, Jul 18, 2017 at 2:53 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Tue, 18 Jul 2017, dbasehore . wrote:
+>> On Mon, Jul 17, 2017 at 11:40 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>> > On Mon, 17 Jul 2017, dbasehore . wrote:
+>> >> On Mon, Jul 17, 2017 at 6:33 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> >> I could make a patch to try it out. I would probably add a flag to rtc
+>> >> timers to indicate whether it wakes the system (default true). We
+>> >> would have to add a sync with the rtc irq and the rtc irqwork. I would
+>> >> probably add a rtc_timer_sync function that would flush the rtc irq
+>> >> and flush the irqwork. I would call this after the freeze_ops sync
+>> >> function since the sci irq needs to finish before syncing with the rtc
+>> >> irq. Also, pm_wakeup_irq seems racy with the current implementation of
+>> >> s2idle_loop since the RTC irq could be mistakenly set as pm_wakeup_irq
+>> >> when something else actually triggered the full wakeup. Fortunately, I
+>> >> don't think pm_wakeup_irq is used for anything except debugging, but
+>> >> we might change that.
+>> >
+>> > There is another option which you might consider. We can reserve one of the
+>> > HPET comparators for that purpose and have a special interrupt handler for
+>> > it. Checking the HPET for expiry from the low level code should be trivial.
+>> >
+>> Does that handle setting up new timers properly or does the timer sync
+>> code still need to be written?
+>
+> Sorry, I don't understand the question. What is timer sync code?
+>
 
-Signed-off-by: Rob Herring <robh@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-pm@vger.kernel.org
----
- drivers/base/power/domain.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+Does the comparator allow you to have a completely separate alarm set
+in the hardware? If there's another timer setup (say some user
+specified wake alarm), we need to program that alarm after the current
+one goes off if we aren't able to program multiple alarms at the same
+time.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 3b8210ebb50e..d0989f9b5e67 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1743,7 +1743,7 @@ static int genpd_add_provider(struct device_node *np, genpd_xlate_t xlate,
- 	mutex_lock(&of_genpd_mutex);
- 	list_add(&cp->link, &of_genpd_providers);
- 	mutex_unlock(&of_genpd_mutex);
--	pr_debug("Added domain provider from %s\n", np->full_name);
-+	pr_debug("Added domain provider from %pOF\n", np);
-
- 	return 0;
- }
-@@ -2149,16 +2149,16 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
- 	err = of_property_read_u32(state_node, "entry-latency-us",
- 						&entry_latency);
- 	if (err) {
--		pr_debug(" * %s missing entry-latency-us property\n",
--						state_node->full_name);
-+		pr_debug(" * %pOF missing entry-latency-us property\n",
-+						state_node);
- 		return -EINVAL;
- 	}
-
- 	err = of_property_read_u32(state_node, "exit-latency-us",
- 						&exit_latency);
- 	if (err) {
--		pr_debug(" * %s missing exit-latency-us property\n",
--						state_node->full_name);
-+		pr_debug(" * %pOF missing exit-latency-us property\n",
-+						state_node);
- 		return -EINVAL;
- 	}
-
-@@ -2212,8 +2212,8 @@ int of_genpd_parse_idle_states(struct device_node *dn,
- 		ret = genpd_parse_state(&st[i++], np);
- 		if (ret) {
- 			pr_err
--			("Parsing idle state node %s failed with err %d\n",
--							np->full_name, ret);
-+			("Parsing idle state node %pOF failed with err %d\n",
-+							np, ret);
- 			of_node_put(np);
- 			kfree(st);
- 			return ret;
---
-2.11.0
+> Thanks,
+>
+>         tglx
