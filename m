@@ -1,86 +1,36 @@
-From: <sean.wang@mediatek.com>
-Subject: [PATCH v5 1/3] cpufreq: mediatek: Add support of cpufreq to MT2701/MT7623 SoC
-Date: Tue, 18 Jul 2017 14:01:43 +0800
-Message-ID: <feabcfd53899954198c6620e9d9b68f4a3c55201.1500355954.git.sean.wang@mediatek.com>
-References: <cover.1500355954.git.sean.wang@mediatek.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v5 2/5] tick: Add freeze timer events
+Date: Tue, 18 Jul 2017 08:40:35 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1707180838570.1945@nanos>
+References: <20170708000303.21863-1-dbasehore@chromium.org> <CAJZ5v0horA+vgR3bAbEu+AiqEFJ7JyZ49nTv6FBPHRvmXOUFpQ@mail.gmail.com> <CAGAzgsoFugSw=UQsJmep0woGg70J3nie0-EtvtQ4Ec1NG1usOg@mail.gmail.com> <7467728.lI8lN4PjS8@aspire.rjw.lan>
+ <CAGAzgsq1c3HdMJ9801uqB+7USK9mqt9xtZTbH=EYv0KDLe+8=A@mail.gmail.com> <CAJZ5v0jaHAExRdwwhJU9p+tDB1ESEXqgfU_DLXev0su3qZaNBA@mail.gmail.com> <CAGAzgsqhV=e8ZuwA7NtOX_tg+HfQfYGg6oTTTRa2bp-LBOZ54w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1500355954.git.sean.wang@mediatek.com>
+In-Reply-To: <CAGAzgsqhV=e8ZuwA7NtOX_tg+HfQfYGg6oTTTRa2bp-LBOZ54w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, robh+dt@kernel.org, matthias.bgg@gmail.com, jdelvare@suse.de, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>
+To: "dbasehore ." <dbasehore@chromium.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, the arch/x86 maintainers <x86@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sean Wang <sean.wang@mediatek.com>
+On Mon, 17 Jul 2017, dbasehore . wrote:
+> On Mon, Jul 17, 2017 at 6:33 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> I could make a patch to try it out. I would probably add a flag to rtc
+> timers to indicate whether it wakes the system (default true). We
+> would have to add a sync with the rtc irq and the rtc irqwork. I would
+> probably add a rtc_timer_sync function that would flush the rtc irq
+> and flush the irqwork. I would call this after the freeze_ops sync
+> function since the sci irq needs to finish before syncing with the rtc
+> irq. Also, pm_wakeup_irq seems racy with the current implementation of
+> s2idle_loop since the RTC irq could be mistakenly set as pm_wakeup_irq
+> when something else actually triggered the full wakeup. Fortunately, I
+> don't think pm_wakeup_irq is used for anything except debugging, but
+> we might change that.
 
-MT2701/MT7623 is a 32-bit ARMv7 based quad-core (4 * Cortex-A7) with
-single cluster and this hardware is also compatible with the existing
-driver through enabling CPU frequency feature with operating-points-v2
-bindings. Also, this driver actually supports all MediaTek SoCs, the
-Kconfig menu entry and file name itself should be updated with more
-generic name to drop "MT8173"
+There is another option which you might consider. We can reserve one of the
+HPET comparators for that purpose and have a special interrupt handler for
+it. Checking the HPET for expiry from the low level code should be trivial.
 
-Signed-off-by: Sean Wang <sean.wang@mediatek.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Reviewed-by: Jean Delvare <jdelvare@suse.de>
----
- drivers/cpufreq/Kconfig.arm                              | 7 +++----
- drivers/cpufreq/Makefile                                 | 2 +-
- drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} | 2 ++
- 3 files changed, 6 insertions(+), 5 deletions(-)
- rename drivers/cpufreq/{mt8173-cpufreq.c => mediatek-cpufreq.c} (99%)
+Thanks,
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 74ed7e9..24ef446 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -87,14 +87,13 @@ config ARM_KIRKWOOD_CPUFREQ
- 	  This adds the CPUFreq driver for Marvell Kirkwood
- 	  SoCs.
- 
--config ARM_MT8173_CPUFREQ
--	tristate "Mediatek MT8173 CPUFreq support"
-+config ARM_MEDIATEK_CPUFREQ
-+	tristate "CPU Frequency scaling support for MediaTek SoCs"
- 	depends on ARCH_MEDIATEK && REGULATOR
--	depends on ARM64 || (ARM_CPU_TOPOLOGY && COMPILE_TEST)
- 	depends on !CPU_THERMAL || THERMAL
- 	select PM_OPP
- 	help
--	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
-+	  This adds the CPUFreq driver support for MediaTek SoCs.
- 
- config ARM_OMAP2PLUS_CPUFREQ
- 	bool "TI OMAP2+"
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index b7e78f0..ea043aa 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -58,7 +58,7 @@ obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
- obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
- obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
- obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
--obj-$(CONFIG_ARM_MT8173_CPUFREQ)	+= mt8173-cpufreq.o
-+obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mediatek-cpufreq.o
- obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
- obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
- obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
-diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-similarity index 99%
-rename from drivers/cpufreq/mt8173-cpufreq.c
-rename to drivers/cpufreq/mediatek-cpufreq.c
-index fd1886f..481ec77 100644
---- a/drivers/cpufreq/mt8173-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -575,6 +575,8 @@ static struct platform_driver mt8173_cpufreq_platdrv = {
- 
- /* List of machines supported by this driver */
- static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
-+	{ .compatible = "mediatek,mt2701", },
-+	{ .compatible = "mediatek,mt7623", },
- 	{ .compatible = "mediatek,mt817x", },
- 	{ .compatible = "mediatek,mt8173", },
- 	{ .compatible = "mediatek,mt8176", },
--- 
-2.7.4
+	tglx
