@@ -1,57 +1,90 @@
-From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: [PATCH v5 2/5] tick: Add freeze timer events
-Date: Tue, 18 Jul 2017 15:03:13 -0700
-Message-ID: <CAGAzgsoqjwK1HPK7jPKhC+YhH7EbVLjbYm+p-UARGmK_hvB=+A@mail.gmail.com>
-References: <20170708000303.21863-1-dbasehore@chromium.org>
- <CAJZ5v0horA+vgR3bAbEu+AiqEFJ7JyZ49nTv6FBPHRvmXOUFpQ@mail.gmail.com>
- <CAGAzgsoFugSw=UQsJmep0woGg70J3nie0-EtvtQ4Ec1NG1usOg@mail.gmail.com>
- <7467728.lI8lN4PjS8@aspire.rjw.lan> <CAGAzgsq1c3HdMJ9801uqB+7USK9mqt9xtZTbH=EYv0KDLe+8=A@mail.gmail.com>
- <CAJZ5v0jaHAExRdwwhJU9p+tDB1ESEXqgfU_DLXev0su3qZaNBA@mail.gmail.com>
- <CAGAzgsqhV=e8ZuwA7NtOX_tg+HfQfYGg6oTTTRa2bp-LBOZ54w@mail.gmail.com>
- <alpine.DEB.2.20.1707180838570.1945@nanos> <CAGAzgsqwOhTYz9D=XYkMYHBZsmajUH8HJoMOJOe3DfG8WVusRA@mail.gmail.com>
- <alpine.DEB.2.20.1707182352340.2425@nanos>
+From: Mark Salyzyn <salyzyn@android.com>
+Subject: Re: [PATCH v2 1/4] time: rtc-lib: Add rtc_show_time(const char
+ *prefix_msg)
+Date: Tue, 18 Jul 2017 15:06:20 -0700
+Message-ID: <8afb372a-3951-6fb9-c0be-82756623061f@android.com>
+References: <20170718211930.123077-1-salyzyn@android.com>
+ <alpine.DEB.2.20.1707182338470.2425@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1707182352340.2425@nanos>
-Sender: platform-driver-x86-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.20.1707182338470.2425@nanos>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, the arch/x86 maintainers <x86@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
+Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, andy.shevchenko@gmail.com, Mark Salyzyn <salyzyn@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thierry Strudel <tstrudel@google.com>, John Stultz <john.stultz@linaro.org>, Richard Cochran <richardcochran@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Kees Cook <keescook@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 18, 2017 at 2:53 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Tue, 18 Jul 2017, dbasehore . wrote:
->> On Mon, Jul 17, 2017 at 11:40 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
->> > On Mon, 17 Jul 2017, dbasehore . wrote:
->> >> On Mon, Jul 17, 2017 at 6:33 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> >> I could make a patch to try it out. I would probably add a flag to rtc
->> >> timers to indicate whether it wakes the system (default true). We
->> >> would have to add a sync with the rtc irq and the rtc irqwork. I would
->> >> probably add a rtc_timer_sync function that would flush the rtc irq
->> >> and flush the irqwork. I would call this after the freeze_ops sync
->> >> function since the sci irq needs to finish before syncing with the rtc
->> >> irq. Also, pm_wakeup_irq seems racy with the current implementation of
->> >> s2idle_loop since the RTC irq could be mistakenly set as pm_wakeup_irq
->> >> when something else actually triggered the full wakeup. Fortunately, I
->> >> don't think pm_wakeup_irq is used for anything except debugging, but
->> >> we might change that.
->> >
->> > There is another option which you might consider. We can reserve one of the
->> > HPET comparators for that purpose and have a special interrupt handler for
->> > it. Checking the HPET for expiry from the low level code should be trivial.
->> >
->> Does that handle setting up new timers properly or does the timer sync
->> code still need to be written?
+On 07/18/2017 02:52 PM, Thomas Gleixner wrote:
+> On Tue, 18 Jul 2017, Mark Salyzyn wrote:
 >
-> Sorry, I don't understand the question. What is timer sync code?
+>> Go directly to the rtc for persistent wall clock time and print.
+>> Useful if REALTIME is required to be logged in a low level power
+>> management function or when clock activities are suspended.  An
+>> aid to permit user space alignment of kernel activities.
+> That's a horrible idea, really. And there is no point at all.
 >
+>> +void rtc_show_time(const char *prefix_msg)
+>> +{
+>> +	struct timespec ts;
+>> +	struct rtc_time tm;
+>> +
+>> +	getnstimeofday(&ts);
+> It calls getnstimeofday(), which is wrong to begin with as we switch
+> everything in kernel to the 64bit variants.
 
-Does the comparator allow you to have a completely separate alarm set
-in the hardware? If there's another timer setup (say some user
-specified wake alarm), we need to program that alarm after the current
-one goes off if we aren't able to program multiple alarms at the same
-time.
+oops, good catch.
+>
+>> +	rtc_time64_to_tm(ts.tv_sec, &tm);
+> This is even more wrong as rtc_time64_to_tm is for 64 bit wide second
+> values....
+Again, oops, changed rtc_time_to_tm to rtc_time64_to_tm as requested, 
+did not change other pieces.
+>
+>> +	pr_info("%s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n",
+>> +		prefix_msg ? prefix_msg : "Time:",
+>> +		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+>> +		tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
+> Why on earth do you need to print that information in RTC format? What's
+> wrong with just doing:
+>
+>        pr_info("My so important log message %lld\n", ktime_get_real_seconds());
 
+Legacy (these prints have been in Android tree since 2013) for all our 
+battery and power analysis tools are keyed off RTC format. There is some 
+momentum, default should be epoch seconds/nanoseconds as that is a good 
+example; and another option can select RTC (the option can be an 
+internal patch to alter the format ... ick)
+>
+> and then decoding the seconds in post processing? That's completely
+> sufficient as you intend that for logging. Correlation with user space
+> CLOCK_REALTIME is even simpler as this is the same as reading it from user
+> space.
+This is part of triage and post-analysis, there is no user space call 
+that can be made after the fact to correlate MONOTONIC time with 
+REALTIME. The historgram for the relationship between the two time 
+formats is built up in user space based on batched analysis of the 
+kernel logs. Although the values slip because of ntp and other sources, 
+suspend/resume/hibernate/restore and shutdown are definitive points of 
+interest for analysis. The analysis is performed on klogd data which has 
+a longer logging span than the internal buffer.
+>
+> If your main intention is logging/debugging, then you can just use
+> tracepoints. The tracer allows correlation to user space tracing already.
+tracepoints are disabled on field devices. As is debugfs. This is not 
+logging/debugging, but field battery and power analysis. Some of the 
+data shows up in the Battery Settings screen on the devices. We also 
+_benefit_ from this information when correlating kernel logs with user 
+space logs during triage.
+>
+> So unless you can come up with a reasonable explanation why all this voodoo
+> is required, this is going nowhere.
+>
 > Thanks,
 >
->         tglx
+> 	tglx
+>
+>
+>
+>
