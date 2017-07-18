@@ -1,123 +1,79 @@
 From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH v8 4/9] i2c: mux: pca954x: Call request irq after adding mux segments
-Date: Tue, 18 Jul 2017 16:19:39 +0800
-Message-ID: <1500365984-61404-5-git-send-email-preid@electromag.com.au>
+Subject: [PATCH v8 9/9] power: supply: sbs-battery: move gpio present detect to sbs_get_property
+Date: Tue, 18 Jul 2017 16:19:44 +0800
+Message-ID: <1500365984-61404-10-git-send-email-preid@electromag.com.au>
 References: <1500365984-61404-1-git-send-email-preid@electromag.com.au>
-Return-path: <linux-i2c-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from anchovy2.45ru.net.au ([203.30.46.146]:59968 "EHLO
+        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1751453AbdGRIT6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 04:19:58 -0400
 In-Reply-To: <1500365984-61404-1-git-send-email-preid@electromag.com.au>
-Sender: linux-i2c-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, benjamin.tissoires@redhat.com, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Phil Reid <preid@electromag.com.au>
-List-Id: linux-pm@vger.kernel.org
 
-The pca954x device do not have the ability to mask interrupts. For
-i2c slave devices that also don't have masking ability (eg ltc1760
-smbalert output) delay registering the irq until after the mux
-segments have been configured. During the mux add_adaptor call the
-core i2c system can register an smbalert handler which would then
-be called immediately when the irq is registered. This smbalert
-handler will then clear the pending irq.
+Currently when a gpio is defined for battery presence it is only used in
+the sbs_get_battery_presence_and_health function for 2 properties.
+All other properties currently try to read data form the battery before
+returning an error if not present. We should know in advance that no
+data is going to returned.
+
+As the driver tries multiple times to access a property, this prevents
+a lot of smbus accesses, which had a significant effect on device boot-up.
+As when the device is registered lots of property accesses are attempted
+during boot.
+
+If no gpio is used for presence detection no change in behaviour should
+occur.
 
 Signed-off-by: Phil Reid <preid@electromag.com.au>
-Acked-by: Peter Rosin <peda@axentia.se>
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
 ---
- drivers/i2c/muxes/i2c-mux-pca954x.c | 53 +++++++++++++++++--------------------
- 1 file changed, 25 insertions(+), 28 deletions(-)
+ drivers/power/supply/sbs-battery.c | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/i2c/muxes/i2c-mux-pca954x.c b/drivers/i2c/muxes/i2c-mux-pca954x.c
-index f1751c2..9867720 100644
---- a/drivers/i2c/muxes/i2c-mux-pca954x.c
-+++ b/drivers/i2c/muxes/i2c-mux-pca954x.c
-@@ -294,7 +294,7 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index f705945..686e7cb 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -325,16 +325,6 @@ static int sbs_get_battery_presence_and_health(
+ 	union power_supply_propval *val)
  {
- 	struct pca954x *data = i2c_mux_priv(muxc);
- 	struct i2c_client *client = data->client;
--	int c, err, irq;
-+	int c, irq;
- 
- 	if (!data->chip->has_irq || client->irq <= 0)
- 		return 0;
-@@ -314,24 +314,22 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
- 			handle_simple_irq);
- 	}
- 
--	err = devm_request_threaded_irq(&client->dev, data->client->irq, NULL,
--					pca954x_irq_handler,
--					IRQF_ONESHOT | IRQF_SHARED,
--					"pca954x", data);
--	if (err)
--		goto err_req_irq;
-+	return 0;
-+}
- 
--	disable_irq(data->client->irq);
-+static void pca954x_cleanup(struct i2c_mux_core *muxc)
-+{
-+	struct pca954x *data = i2c_mux_priv(muxc);
-+	int c, irq;
- 
--	return 0;
--err_req_irq:
--	for (c = 0; c < data->chip->nchans; c++) {
--		irq = irq_find_mapping(data->irq, c);
--		irq_dispose_mapping(irq);
-+	if (data->irq) {
-+		for (c = 0; c < data->chip->nchans; c++) {
-+			irq = irq_find_mapping(data->irq, c);
-+			irq_dispose_mapping(irq);
-+		}
-+		irq_domain_remove(data->irq);
- 	}
--	irq_domain_remove(data->irq);
+ 	s32 ret;
+-	struct sbs_info *chip = i2c_get_clientdata(client);
 -
--	return err;
-+	i2c_mux_del_adapters(muxc);
- }
- 
- /*
-@@ -417,6 +415,15 @@ static int pca954x_probe(struct i2c_client *client,
- 			goto fail_del_adapters;
- 	}
- 
-+	if (data->irq) {
-+		ret = devm_request_threaded_irq(&client->dev, data->client->irq,
-+						NULL, pca954x_irq_handler,
-+						IRQF_ONESHOT | IRQF_SHARED,
-+						"pca954x", data);
-+		if (ret)
-+			goto fail_del_adapters;
-+	}
-+
- 	dev_info(&client->dev,
- 		 "registered %d multiplexed busses for I2C %s %s\n",
- 		 num, data->chip->muxtype == pca954x_ismux
-@@ -425,25 +432,15 @@ static int pca954x_probe(struct i2c_client *client,
- 	return 0;
- 
- fail_del_adapters:
--	i2c_mux_del_adapters(muxc);
-+	pca954x_cleanup(muxc);
- 	return ret;
- }
- 
- static int pca954x_remove(struct i2c_client *client)
- {
- 	struct i2c_mux_core *muxc = i2c_get_clientdata(client);
--	struct pca954x *data = i2c_mux_priv(muxc);
--	int c, irq;
--
--	if (data->irq) {
--		for (c = 0; c < data->chip->nchans; c++) {
--			irq = irq_find_mapping(data->irq, c);
--			irq_dispose_mapping(irq);
--		}
--		irq_domain_remove(data->irq);
+-	if (psp == POWER_SUPPLY_PROP_PRESENT && chip->gpio_detect) {
+-		ret = gpiod_get_value_cansleep(chip->gpio_detect);
+-		if (ret < 0)
+-			return ret;
+-		val->intval = ret;
+-		chip->is_present = val->intval;
+-		return ret;
 -	}
  
--	i2c_mux_del_adapters(muxc);
-+	pca954x_cleanup(muxc);
- 	return 0;
- }
+ 	/*
+ 	 * Write to ManufacturerAccess with ManufacturerAccess command
+@@ -600,6 +590,19 @@ static int sbs_get_property(struct power_supply *psy,
+ 	struct sbs_info *chip = power_supply_get_drvdata(psy);
+ 	struct i2c_client *client = chip->client;
  
++	if (chip->gpio_detect) {
++		ret = gpiod_get_value_cansleep(chip->gpio_detect);
++		if (ret < 0)
++			return ret;
++		if (psp == POWER_SUPPLY_PROP_PRESENT) {
++			val->intval = ret;
++			chip->is_present = val->intval;
++			return 0;
++		}
++		if (ret == 0)
++			return -ENODATA;
++	}
++
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_PRESENT:
+ 	case POWER_SUPPLY_PROP_HEALTH:
 -- 
 1.8.3.1
