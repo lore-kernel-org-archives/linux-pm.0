@@ -1,82 +1,63 @@
-From: Rob Herring <robh@kernel.org>
-Subject: [PATCH] cpufreq: Convert to using %pOF instead of full_name
-Date: Tue, 18 Jul 2017 16:42:54 -0500
-Message-ID: <20170718214339.7774-14-robh@kernel.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v2 1/4] time: rtc-lib: Add rtc_show_time(const char
+ *prefix_msg)
+Date: Tue, 18 Jul 2017 23:52:16 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1707182338470.2425@nanos>
+References: <20170718211930.123077-1-salyzyn@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: devicetree@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org, Patrice Chotard <patrice.chotard@st.com>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170718211930.123077-1-salyzyn@android.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mark Salyzyn <salyzyn@android.com>
+Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, andy.shevchenko@gmail.com, Mark Salyzyn <salyzyn@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thierry Strudel <tstrudel@google.com>, John Stultz <john.stultz@linaro.org>, Richard Cochran <richardcochran@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Kees Cook <keescook@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Now that we have a custom printf format specifier, convert users of
-full_name to use %pOF instead. This is preparation to remove storing
-of the full path string for each node.
+On Tue, 18 Jul 2017, Mark Salyzyn wrote:
 
-Signed-off-by: Rob Herring <robh@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Patrice Chotard <patrice.chotard@st.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: kernel@stlinux.com
----
- drivers/cpufreq/pmac64-cpufreq.c | 2 +-
- drivers/cpufreq/sti-cpufreq.c    | 8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+> Go directly to the rtc for persistent wall clock time and print.
+> Useful if REALTIME is required to be logged in a low level power
+> management function or when clock activities are suspended.  An
+> aid to permit user space alignment of kernel activities.
 
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-index 267e0894c62d..be623dd7b9f2 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -516,7 +516,7 @@ static int __init g5_pm72_cpufreq_init(struct device_node *cpunode)
- 		goto bail;
- 	}
+That's a horrible idea, really. And there is no point at all.
 
--	DBG("cpufreq: i2c clock chip found: %s\n", hwclock->full_name);
-+	DBG("cpufreq: i2c clock chip found: %pOF\n", hwclock);
+> +void rtc_show_time(const char *prefix_msg)
+> +{
+> +	struct timespec ts;
+> +	struct rtc_time tm;
+> +
+> +	getnstimeofday(&ts);
 
- 	/* Now get all the platform functions */
- 	pfunc_cpu_getfreq =
-diff --git a/drivers/cpufreq/sti-cpufreq.c b/drivers/cpufreq/sti-cpufreq.c
-index d2d0430d09d4..47105735df12 100644
---- a/drivers/cpufreq/sti-cpufreq.c
-+++ b/drivers/cpufreq/sti-cpufreq.c
-@@ -65,8 +65,8 @@ static int sti_cpufreq_fetch_major(void) {
- 	ret = of_property_read_u32_index(np, "st,syscfg",
- 					 MAJOR_ID_INDEX, &major_offset);
- 	if (ret) {
--		dev_err(dev, "No major number offset provided in %s [%d]\n",
--			np->full_name, ret);
-+		dev_err(dev, "No major number offset provided in %pOF [%d]\n",
-+			np, ret);
- 		return ret;
- 	}
+It calls getnstimeofday(), which is wrong to begin with as we switch
+everything in kernel to the 64bit variants.
 
-@@ -92,8 +92,8 @@ static int sti_cpufreq_fetch_minor(void)
- 					 MINOR_ID_INDEX, &minor_offset);
- 	if (ret) {
- 		dev_err(dev,
--			"No minor number offset provided %s [%d]\n",
--			np->full_name, ret);
-+			"No minor number offset provided %pOF [%d]\n",
-+			np, ret);
- 		return ret;
- 	}
+> +	rtc_time64_to_tm(ts.tv_sec, &tm);
 
---
-2.11.0
+This is even more wrong as rtc_time64_to_tm is for 64 bit wide second
+values....
+
+> +	pr_info("%s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n",
+> +		prefix_msg ? prefix_msg : "Time:",
+> +		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+> +		tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
+
+Why on earth do you need to print that information in RTC format? What's
+wrong with just doing:
+
+      pr_info("My so important log message %lld\n", ktime_get_real_seconds());
+
+and then decoding the seconds in post processing? That's completely
+sufficient as you intend that for logging. Correlation with user space
+CLOCK_REALTIME is even simpler as this is the same as reading it from user
+space.
+
+If your main intention is logging/debugging, then you can just use
+tracepoints. The tracer allows correlation to user space tracing already.
+
+So unless you can come up with a reasonable explanation why all this voodoo
+is required, this is going nowhere.
+
+Thanks,
+
+	tglx
