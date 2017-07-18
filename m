@@ -1,53 +1,68 @@
-From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: [PATCH v5 2/5] tick: Add freeze timer events
-Date: Tue, 18 Jul 2017 13:09:48 -0700
-Message-ID: <CAGAzgsqwOhTYz9D=XYkMYHBZsmajUH8HJoMOJOe3DfG8WVusRA@mail.gmail.com>
-References: <20170708000303.21863-1-dbasehore@chromium.org>
- <CAJZ5v0horA+vgR3bAbEu+AiqEFJ7JyZ49nTv6FBPHRvmXOUFpQ@mail.gmail.com>
- <CAGAzgsoFugSw=UQsJmep0woGg70J3nie0-EtvtQ4Ec1NG1usOg@mail.gmail.com>
- <7467728.lI8lN4PjS8@aspire.rjw.lan> <CAGAzgsq1c3HdMJ9801uqB+7USK9mqt9xtZTbH=EYv0KDLe+8=A@mail.gmail.com>
- <CAJZ5v0jaHAExRdwwhJU9p+tDB1ESEXqgfU_DLXev0su3qZaNBA@mail.gmail.com>
- <CAGAzgsqhV=e8ZuwA7NtOX_tg+HfQfYGg6oTTTRa2bp-LBOZ54w@mail.gmail.com> <alpine.DEB.2.20.1707180838570.1945@nanos>
+From: <brian@oakcrestfuneralservices.com>
+Subject: (unknown)
+Date: Tue, 18 Jul 2017 20:17:05 -0000
+Message-ID: <150040902545.17373.10975825375264802404@nojabrsk.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: application/zip; name="EMAIL_921905219268307_linux-pm.zip
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f177.google.com ([209.85.128.177]:34838 "EHLO
-        mail-wr0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752368AbdGRUJv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 16:09:51 -0400
-Received: by mail-wr0-f177.google.com with SMTP id w4so43668106wrb.2
-        for <linux-pm@vger.kernel.org>; Tue, 18 Jul 2017 13:09:50 -0700 (PDT)
-In-Reply-To: <alpine.DEB.2.20.1707180838570.1945@nanos>
+Received: from adsl-212-220-0-111.nojabrsk.ru ([212.220.0.111]:58843 "HELO
+        nojabrsk.ru" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+        id S1751794AbdGRURL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 18 Jul 2017 16:17:11 -0400
+Subject: 
+Content-Disposition: attachment
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Rajneesh Bhardwaj <rajneesh.bhardwaj@intel.com>, the arch/x86 maintainers <x86@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-On Mon, Jul 17, 2017 at 11:40 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Mon, 17 Jul 2017, dbasehore . wrote:
->> On Mon, Jul 17, 2017 at 6:33 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> I could make a patch to try it out. I would probably add a flag to rtc
->> timers to indicate whether it wakes the system (default true). We
->> would have to add a sync with the rtc irq and the rtc irqwork. I would
->> probably add a rtc_timer_sync function that would flush the rtc irq
->> and flush the irqwork. I would call this after the freeze_ops sync
->> function since the sci irq needs to finish before syncing with the rtc
->> irq. Also, pm_wakeup_irq seems racy with the current implementation of
->> s2idle_loop since the RTC irq could be mistakenly set as pm_wakeup_irq
->> when something else actually triggered the full wakeup. Fortunately, I
->> don't think pm_wakeup_irq is used for anything except debugging, but
->> we might change that.
->
-> There is another option which you might consider. We can reserve one of the
-> HPET comparators for that purpose and have a special interrupt handler for
-> it. Checking the HPET for expiry from the low level code should be trivial.
->
-
-Does that handle setting up new timers properly or does the timer sync
-code still need to be written?
-
-> Thanks,
->
->         tglx
->
->
+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
