@@ -1,64 +1,47 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 3/4] PM: Print wall time at suspend & hibernate entry
- and exit
-Date: Wed, 19 Jul 2017 23:31:11 +0200
-Message-ID: <CAJZ5v0iLMe_Q+U6cGqw87G2POjB8Rt+Urp2ALrVhGALNnUF9Dg@mail.gmail.com>
-References: <20170719194600.29210-1-salyzyn@android.com> <CAJZ5v0iVwUy5fdvYu=6HEwLPpw7g6owbFuwNpUJcb_iJ3LCFMA@mail.gmail.com>
- <507dec5d-3beb-4dd8-0d5f-90f22fccccd2@android.com>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: [RFC 06/22] kvm: Adapt assembly for PIE support
+Date: Wed, 19 Jul 2017 15:44:48 -0700
+Message-ID: <CAJcbSZFjiqPoOUDFSU_WhneEJCEhrAe6nV4tRGOpRg7hsOk1-A@mail.gmail.com>
+References: <20170718223333.110371-1-thgarnie@google.com> <20170718223333.110371-7-thgarnie@google.com>
+ <CAMzpN2gF7QxDbVG-6ad3Qarcn1N_JT5tit9CMvQL95LQGeZivA@mail.gmail.com>
+ <CAJcbSZGqY=btU=+eWfgdhF0je0Yn_GxkymFHn+OV-1BuzgbRYw@mail.gmail.com> <0cdd02e1-8bf2-41cd-f085-c338c2fd8e25@zytor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <507dec5d-3beb-4dd8-0d5f-90f22fccccd2@android.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Salyzyn <salyzyn@android.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-rtc@vger.kernel.org
+Return-path: <kernel-hardening-return-9067-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <0cdd02e1-8bf2-41cd-f085-c338c2fd8e25@zytor.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Brian Gerst <brgerst@gmail.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christo
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 19, 2017 at 11:23 PM, Mark Salyzyn <salyzyn@android.com> wrote:
-> On 07/19/2017 01:40 PM, Rafael J. Wysocki wrote:
+On Wed, Jul 19, 2017 at 3:27 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> On 07/19/17 08:40, Thomas Garnier wrote:
+>>>
+>>> This doesn't look right.  It's accessing a per-cpu variable.  The
+>>> per-cpu section is an absolute, zero-based section and not subject to
+>>> relocation.
 >>
->> On Wed, Jul 19, 2017 at 9:45 PM, Mark Salyzyn <salyzyn@android.com> wrote:
->>>
->>> Permits power state and battery life diagnosis.
->>>
->>> Since one is not guaranteed to have a persistent hardware clock to
->>> report Suspended for in milliseconds, we report at a higher level
->>> at just the entry and exit points for suspend and hibernate.
->>>
->>> Feature activated by CONFIG_RTC_SHOW_TIME_*
->>>
->>> Signed-off-by: Mark Salyzyn <salyzyn@android.com>
->>>
->>> v2:
->>> - merge suspend and hibernate into a single patch
+>> PIE does not respect the zero-based section, it tries to have
+>> everything relative. Patch 16/22 also adapt per-cpu to work with PIE
+>> (while keeping the zero absolute design by default).
 >>
->> So now I guess you realize that this conflicts with
->> https://patchwork.kernel.org/patch/9850217/ and it actually would make
->> sense for it to go on top of that?
->>
->> Thanks,
->> Rafael
 >
+> This is silly.  The right thing is for PIE is to be explicitly absolute,
+> without (%rip).  The use of (%rip) memory references for percpu is just
+> an optimization.
+
+I agree that it is odd but that's how the compiler generates code. I
+will re-explore PIC options with mcmodel=small or medium, as mentioned
+on other threads.
+
 >
-> I see. It would make sense to merge the concepts a bit since the prints are
-> at the same locations.
-
-Exactly.
-
-> Optimization idea: rtc_show_time() in my patch series should be able to
-> support varargs, never be _disabled_ (CONFIG_RTC_SHOW_TIME_NONE idea is
-> dropped) and the function would be a drop-in replacement for pr_info, but
-> add the specified timestamp before the newline. Change it's name to
-> pr_info_show_time() instead to reflect this adjustment.
+>         -hpa
 >
-> I would also prefer that the base messages in patch/980217 be "PM: suspend
-> entry" and "PM: suspend exit", only because I believe 1.6billion Linux
-> devices would not need to be retooled, and besides these messages are
-> shorter/sweeter.
 
-I can change the messages in patch/980217 if that helps.
 
-> Anyone disagree with some more over-engineering (pr_info_show_time() and
-> varargs)
 
-Hmm, do it as a macro maybe?
+-- 
+Thomas
