@@ -1,81 +1,75 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: [PATCH v2 3/3] power: supply: sbs-battery: Add delay when
- changing capacity mode bit
-Date: Wed, 19 Jul 2017 10:16:57 +0800
-Message-ID: <2e5d513e-0091-9f3b-809f-fcc60b45b465@electromag.com.au>
-References: <1499766223-130934-1-git-send-email-preid@electromag.com.au>
- <1499766223-130934-4-git-send-email-preid@electromag.com.au>
- <79941e55f3f273a1cf796deb945f5e95@heine.so>
+From: Brian Gerst <brgerst@gmail.com>
+Subject: Re: [RFC 06/22] kvm: Adapt assembly for PIE support
+Date: Tue, 18 Jul 2017 22:49:15 -0400
+Message-ID: <CAMzpN2gF7QxDbVG-6ad3Qarcn1N_JT5tit9CMvQL95LQGeZivA@mail.gmail.com>
+References: <20170718223333.110371-1-thgarnie@google.com> <20170718223333.110371-7-thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy2.45ru.net.au ([203.30.46.146]:36860 "EHLO
-        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751969AbdGSCRC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 22:17:02 -0400
-In-Reply-To: <79941e55f3f273a1cf796deb945f5e95@heine.so>
-Content-Language: en-AU
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <kernel-hardening-return-9026-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20170718223333.110371-7-thgarnie@google.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>Chris
 List-Id: linux-pm@vger.kernel.org
-To: Michael Heinemann <posted@heine.so>, linux-pm@vger.kernel.org
-Cc: sre@kernel.org
 
-On 11/07/2017 19:31, Michael Heinemann wrote:
-> On 2017-07-11 11:43, Phil Reid wrote:
->> At least with the Inspired Energy compatible batteries a delay is required
->> after setting the capacity mode bit from amp to watts or the reverse.
->> Setting the bit and then immediately pooling the status register results
->> in an unknown error being returned in the register. Add the delay results
->> in and ok status being return. This was also seen when reading the charge
->> and energy registers where the wrong value was returned for the requested
->> mode.
->>
->> Signed-off-by: Phil Reid <preid@electromag.com.au>
-> 
-> Tested-by: Michael Heinemann <committed@heine.so>
+On Tue, Jul 18, 2017 at 6:33 PM, Thomas Garnier <thgarnie@google.com> wrote:
+> Change the assembly code to use only relative references of symbols for the
+> kernel to be PIE compatible. The new __ASM_GET_PTR_PRE macro is used to
+> get the address of a symbol on both 32 and 64-bit with PIE support.
+>
+> Position Independent Executable (PIE) support will allow to extended the
+> KASLR randomization range below the -2G memory limit.
+>
+> Signed-off-by: Thomas Garnier <thgarnie@google.com>
+> ---
+>  arch/x86/include/asm/kvm_host.h | 6 ++++--
+>  arch/x86/kernel/kvm.c           | 6 ++++--
+>  arch/x86/kvm/svm.c              | 4 ++--
+>  3 files changed, 10 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+> index 87ac4fba6d8e..3041201a3aeb 100644
+> --- a/arch/x86/include/asm/kvm_host.h
+> +++ b/arch/x86/include/asm/kvm_host.h
+> @@ -1352,9 +1352,11 @@ asmlinkage void kvm_spurious_fault(void);
+>         ".pushsection .fixup, \"ax\" \n" \
+>         "667: \n\t" \
+>         cleanup_insn "\n\t"                   \
+> -       "cmpb $0, kvm_rebooting \n\t"         \
+> +       "cmpb $0, kvm_rebooting" __ASM_SEL(,(%%rip)) " \n\t" \
+>         "jne 668b \n\t"                       \
+> -       __ASM_SIZE(push) " $666b \n\t"        \
+> +       __ASM_SIZE(push) "%%" _ASM_AX " \n\t"           \
+> +       __ASM_GET_PTR_PRE(666b) "%%" _ASM_AX "\n\t"     \
+> +       "xchg %%" _ASM_AX ", (%%" _ASM_SP ") \n\t"      \
+>         "call kvm_spurious_fault \n\t"        \
+>         ".popsection \n\t" \
+>         _ASM_EXTABLE(666b, 667b)
+> diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
+> index 71c17a5be983..53b8ad162589 100644
+> --- a/arch/x86/kernel/kvm.c
+> +++ b/arch/x86/kernel/kvm.c
+> @@ -618,8 +618,10 @@ asm(
+>  ".global __raw_callee_save___kvm_vcpu_is_preempted;"
+>  ".type __raw_callee_save___kvm_vcpu_is_preempted, @function;"
+>  "__raw_callee_save___kvm_vcpu_is_preempted:"
+> -"movq  __per_cpu_offset(,%rdi,8), %rax;"
+> -"cmpb  $0, " __stringify(KVM_STEAL_TIME_preempted) "+steal_time(%rax);"
+> +"leaq  __per_cpu_offset(%rip), %rax;"
+> +"movq  (%rax,%rdi,8), %rax;"
+> +"addq  " __stringify(KVM_STEAL_TIME_preempted) "+steal_time(%rip), %rax;"
 
-I received some feedback from inspired energy on this and they confirmed they need a
-delay between smbus transactions for their batteries.
-This is a deviation from the standard for their batteries only.
+This doesn't look right.  It's accessing a per-cpu variable.  The
+per-cpu section is an absolute, zero-based section and not subject to
+relocation.
 
-Perhaps this should delay should only be added if we detect and inspired energy
-battery. Could look at the manufacturer field to determine whether to add it.
+> +"cmpb  $0, (%rax);
+>  "setne %al;"
+>  "ret;"
+>  ".popsection");
 
-WDYR?
-
-
-> 
->> ---
->>  drivers/power/supply/sbs-battery.c | 3 +++
->>  1 file changed, 3 insertions(+)
->>
->> diff --git a/drivers/power/supply/sbs-battery.c
->> b/drivers/power/supply/sbs-battery.c
->> index 4594ed1..3473b45 100644
->> --- a/drivers/power/supply/sbs-battery.c
->> +++ b/drivers/power/supply/sbs-battery.c
->> @@ -14,6 +14,7 @@
->>   * more details.
->>   */
->>
->> +#include <linux/delay.h>
->>  #include <linux/err.h>
->>  #include <linux/gpio/consumer.h>
->>  #include <linux/i2c.h>
->> @@ -511,6 +512,8 @@ static enum sbs_battery_mode
->> sbs_set_battery_mode(struct i2c_client *client,
->>      if (ret < 0)
->>          return ret;
->>
->> +    usleep_range(1000, 2000);
->> +
->>      return original_val & BATTERY_MODE_MASK;
->>  }
-> 
-> 
-
-
--- 
-Regards
-Phil Reid
+--
+Brian Gerst
