@@ -1,142 +1,210 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH v9 0/9] Add sbs-manager with smbalert support
-Date: Wed, 19 Jul 2017 10:14:02 +0800
-Message-ID: <1500430451-43858-1-git-send-email-preid@electromag.com.au>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy1.45ru.net.au ([203.30.46.145]:36147 "EHLO
-        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1752315AbdGSCOW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 22:14:22 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Subject: [PATCH v9 1/9] i2c: i2c-smbus: Use threaded irq for smbalert
+Date: Wed, 19 Jul 2017 10:14:03 +0800
+Message-ID: <1500430451-43858-2-git-send-email-preid@electromag.com.au>
+References: <1500430451-43858-1-git-send-email-preid@electromag.com.au>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1500430451-43858-1-git-send-email-preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jdelvare-IBi9RG/b67k@public.gmane.org, jglauber-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, david.daney-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, preid@electromag.com.au, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, benjamin.tissoires@redhat.com
 
-This is another go of the sbs-manager driver using smbalert for
-irq support from a while ago. 
+Prior to this commit the smbalert_irq was handling in the hard irq
+context. This change switch to using a thread irq which avoids the need
+for the work thread. Using threaded irq also removes the need for the
+edge_triggered flag as the enabling / disabling of the hard irq for level
+triggered interrupts will be handled by the irq core.
 
-Enables the existing smbalert driver to be loaded via the device tree.
-Only need to add smbus_alert interrupt to the i2c bus segement in the
-devicetree and the core will then enable the alert driver.
+Without this change have an irq connected to something like an i2c gpio
+resulted in a null ptr deferences. Specifically handle_nested_irq calls
+the threaded irq handler.
 
-Reorders the rquest irq call in the pca954x driver to ensure each
-muxed i2c segment can handle service smbalerts on that segment before
-irq's are enabled. The pca954x can't mask individual irq's routed thru
-them.
+There are currently 3 in tree drivers affected by this change.
 
-Add the sbs-manager from Karl-Heinz.
-Add the alert call back and gpio interface to allow the battery detect
-logic in the existing sbs-battery driver to work.
+i2c-parport driver calls i2c_handle_smbus_alert in a hard irq context.
+This driver use edge trigger interrupts which skip the enable / disable
+calls. But it still need to handle the smbus transaction on a thread. So
+the work thread is kept for this driver.
 
-Changes from v5:
-- Documentation: Add sbs-manager device tree node documentation
-  - Use same style as sbs-charger for compatible property. 
-- power: Adds support for Smart Battery System Manager
-  - reorder kconfig / makefile
-  - remove errouinous le16 to cpu conversions
-  - while loops to for loops
-  - formating changes to error messages
-  - changed sbsm_set_proprty indentation (hopefully I got it right)
-  - removed CONFIG_OF conditional around of_device_id table
-  - ENODEV -> EINVAL in probe function for mismatched address
-  - Use BIT() macro in probe function
-  - add of_node assignment in probe function
-  - remove owner assignament and set of_match_table
-- power: supply: sbs-battery: Add alert callback
-  - Removed patch as Sebastian has queued it.
-- power: supply: sbs-manager: Add alert callback and battery change notification
-  - Use device_property_present instead of of_get_property
-  - Add depends on GPIOLIB
+i2c-parport-light & i2c-thunderx-pcidrv provide the irq number in the
+setup which will result in the thread irq being used.
 
-Changes from v6
-- Add 2 patches to remove incorrect le16_to_cpu calls in bq24735 & sbs-battery
-  this was identifed in review of v6
-- i2c: i2c-smbus: Use threaded irq for smbalert
-  - remove alert_edge_triggered flag, see new description
-  - rework the work thread and threaded irq,commit log has more details
-  - Update in tree drivers where required (untested)
-- i2c: i2c-smbus: add of_i2c_setup_smbus_alert
-  - Add Rob's ack for doc binding
-  - rework of_i2c_setup_smbus_alert so that it doesn't need to alloc memory
-    addressing concern about devres allocation.
-    Probe function looks up the irq number if platform data isn't defined.
-- i2c: core: call of_i2c_setup_smbus_alert in i2c_register_adapter
-  - investigate if the core will release the client
-    It looks like it will to me, in i2c_del_adapter it iterates thru all clients
-    and calls __unregister_client.
-- i2c: mux: pca954x: Call request irq after adding mux segments
-  - fix logic in guard for request irq
-  - fix identation
-  - add check to irq_create_mapping call
-- Documentation: Add sbs-manager device tree node documentation
-  - Remove leading 0's
-  - Add Rob's ack
-- power: Adds support for Smart Battery System Manager
-  - remove inc header <linux/of_device.h>
-  - add macro defines for various bit and masks.
-  - refactor loop around i2c_mux_add_adapter 
-  - Add ifdef CONFIG_OF around OF device table to save some bytes 
-- power: supply: sbs-manager: Add alert callback and battery change notification
-  - Add Sebastian's ack for binding
-- Added new patch
-  - power: supply: sbs-battery: move gpio present detect to sbs_get_property
+i2c-parport-light is edge trigger so the enable / disable call was
+skipped as well.
 
-Changes from v7
-- Remove 2 patches that have been applied for incorrect le16_to_cpu
-- i2c: i2c-smbus: Use threaded irq for smbalert
-  - Added reviewed by Benjamin
-- i2c: i2c-smbus: add of_i2c_setup_smbus_alert
-  - Remove rename of variable, use adapater instead of adap in new function
-  - Add CONFIG_OF guard 
-- i2c: core: call of_i2c_setup_smbus_alert in i2c_register_adapter
-  - Move call to just after register call and add error cleanup
-  - Didn't split this as per review comments as the 1 error 
-    of_property_match_string can return seems pretty unlikely.
-    I don't think there's much benefit to it.
-- i2c: mux: pca954x: Call request irq after adding mux segments
-  - split into two patches. 
-    pt1 as acked by Peter
-    pt2 the extra error handling for irq_create_mapping as suggested in his review
-- The rest
-  - Added reviewed by Sebastian
-    
-  
-Changes from v8
-- i2c: mux: pca954x: Return error if irq_create_mapping fails
-  - Add Peter's ack
-  - change return check to if (!irq)
+i2c-thunderx-pcidrv is getting the edge / level trigger setting from of
+data and was setting the flag as required. However the irq core should
+handle this automatically.
 
+Signed-off-by: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Reviewed-by: Benjamin Tissoires <benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+---
+ drivers/i2c/busses/i2c-parport-light.c   |  1 -
+ drivers/i2c/busses/i2c-parport.c         |  1 -
+ drivers/i2c/busses/i2c-thunderx-pcidrv.c |  6 -----
+ drivers/i2c/i2c-smbus.c                  | 41 +++++++++++++-------------------
+ include/linux/i2c-smbus.h                |  1 -
+ 5 files changed, 17 insertions(+), 33 deletions(-)
 
-Karl-Heinz Schneider (2):
-  Documentation: Add sbs-manager device tree node documentation
-  power: Adds support for Smart Battery System Manager
-
-Phil Reid (7):
-  i2c: i2c-smbus: Use threaded irq for smbalert
-  i2c: i2c-smbus: add of_i2c_setup_smbus_alert
-  i2c: core: call of_i2c_setup_smbus_alert in i2c_register_adapter
-  i2c: mux: pca954x: Call request irq after adding mux segments
-  i2c: mux: pca954x: Return error if irq_create_mapping fails
-  power: supply: sbs-manager: Add alert callback and battery change
-    notification
-  power: supply: sbs-battery: move gpio present detect to
-    sbs_get_property
-
- Documentation/devicetree/bindings/i2c/i2c.txt      |   4 +-
- .../bindings/power/supply/sbs,sbs-manager.txt      |  66 +++
- drivers/i2c/busses/i2c-parport-light.c             |   1 -
- drivers/i2c/busses/i2c-parport.c                   |   1 -
- drivers/i2c/busses/i2c-thunderx-pcidrv.c           |   6 -
- drivers/i2c/i2c-core-base.c                        |   9 +
- drivers/i2c/i2c-smbus.c                            |  71 ++--
- drivers/i2c/muxes/i2c-mux-pca954x.c                |  57 +--
- drivers/power/supply/Kconfig                       |  14 +
- drivers/power/supply/Makefile                      |   1 +
- drivers/power/supply/sbs-battery.c                 |  23 +-
- drivers/power/supply/sbs-manager.c                 | 444 +++++++++++++++++++++
- include/linux/i2c-smbus.h                          |  10 +-
- 13 files changed, 634 insertions(+), 73 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
- create mode 100644 drivers/power/supply/sbs-manager.c
-
+diff --git a/drivers/i2c/busses/i2c-parport-light.c b/drivers/i2c/busses/i2c-parport-light.c
+index faa8fb8..fa41ff7 100644
+--- a/drivers/i2c/busses/i2c-parport-light.c
++++ b/drivers/i2c/busses/i2c-parport-light.c
+@@ -123,7 +123,6 @@ static int parport_getsda(void *data)
+ 
+ /* SMBus alert support */
+ static struct i2c_smbus_alert_setup alert_data = {
+-	.alert_edge_triggered	= 1,
+ };
+ static struct i2c_client *ara;
+ static struct lineop parport_ctrl_irq = {
+diff --git a/drivers/i2c/busses/i2c-parport.c b/drivers/i2c/busses/i2c-parport.c
+index a8e54df..319209a 100644
+--- a/drivers/i2c/busses/i2c-parport.c
++++ b/drivers/i2c/busses/i2c-parport.c
+@@ -237,7 +237,6 @@ static void i2c_parport_attach(struct parport *port)
+ 
+ 	/* Setup SMBus alert if supported */
+ 	if (adapter_parm[type].smbus_alert) {
+-		adapter->alert_data.alert_edge_triggered = 1;
+ 		adapter->ara = i2c_setup_smbus_alert(&adapter->adapter,
+ 						     &adapter->alert_data);
+ 		if (adapter->ara)
+diff --git a/drivers/i2c/busses/i2c-thunderx-pcidrv.c b/drivers/i2c/busses/i2c-thunderx-pcidrv.c
+index ea35a895..925da84 100644
+--- a/drivers/i2c/busses/i2c-thunderx-pcidrv.c
++++ b/drivers/i2c/busses/i2c-thunderx-pcidrv.c
+@@ -118,8 +118,6 @@ static void thunder_i2c_clock_disable(struct device *dev, struct clk *clk)
+ static int thunder_i2c_smbus_setup_of(struct octeon_i2c *i2c,
+ 				      struct device_node *node)
+ {
+-	u32 type;
+-
+ 	if (!node)
+ 		return -EINVAL;
+ 
+@@ -127,10 +125,6 @@ static int thunder_i2c_smbus_setup_of(struct octeon_i2c *i2c,
+ 	if (!i2c->alert_data.irq)
+ 		return -EINVAL;
+ 
+-	type = irqd_get_trigger_type(irq_get_irq_data(i2c->alert_data.irq));
+-	i2c->alert_data.alert_edge_triggered =
+-		(type & IRQ_TYPE_LEVEL_MASK) ? 1 : 0;
+-
+ 	i2c->ara = i2c_setup_smbus_alert(&i2c->adap, &i2c->alert_data);
+ 	if (!i2c->ara)
+ 		return -ENODEV;
+diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
+index f9271c7..d4af270 100644
+--- a/drivers/i2c/i2c-smbus.c
++++ b/drivers/i2c/i2c-smbus.c
+@@ -25,8 +25,6 @@
+ #include <linux/workqueue.h>
+ 
+ struct i2c_smbus_alert {
+-	unsigned int		alert_edge_triggered:1;
+-	int			irq;
+ 	struct work_struct	alert;
+ 	struct i2c_client	*ara;		/* Alert response address */
+ };
+@@ -72,13 +70,12 @@ static int smbus_do_alert(struct device *dev, void *addrp)
+  * The alert IRQ handler needs to hand work off to a task which can issue
+  * SMBus calls, because those sleeping calls can't be made in IRQ context.
+  */
+-static void smbus_alert(struct work_struct *work)
++static irqreturn_t smbus_alert(int irq, void *d)
+ {
+-	struct i2c_smbus_alert *alert;
++	struct i2c_smbus_alert *alert = d;
+ 	struct i2c_client *ara;
+ 	unsigned short prev_addr = 0;	/* Not a valid address */
+ 
+-	alert = container_of(work, struct i2c_smbus_alert, alert);
+ 	ara = alert->ara;
+ 
+ 	for (;;) {
+@@ -115,21 +112,17 @@ static void smbus_alert(struct work_struct *work)
+ 		prev_addr = data.addr;
+ 	}
+ 
+-	/* We handled all alerts; re-enable level-triggered IRQs */
+-	if (!alert->alert_edge_triggered)
+-		enable_irq(alert->irq);
++	return IRQ_HANDLED;
+ }
+ 
+-static irqreturn_t smbalert_irq(int irq, void *d)
++static void smbalert_work(struct work_struct *work)
+ {
+-	struct i2c_smbus_alert *alert = d;
++	struct i2c_smbus_alert *alert;
++
++	alert = container_of(work, struct i2c_smbus_alert, alert);
+ 
+-	/* Disable level-triggered IRQs until we handle them */
+-	if (!alert->alert_edge_triggered)
+-		disable_irq_nosync(irq);
++	smbus_alert(0, alert);
+ 
+-	schedule_work(&alert->alert);
+-	return IRQ_HANDLED;
+ }
+ 
+ /* Setup SMBALERT# infrastructure */
+@@ -139,28 +132,28 @@ static int smbalert_probe(struct i2c_client *ara,
+ 	struct i2c_smbus_alert_setup *setup = dev_get_platdata(&ara->dev);
+ 	struct i2c_smbus_alert *alert;
+ 	struct i2c_adapter *adapter = ara->adapter;
+-	int res;
++	int res, irq;
+ 
+ 	alert = devm_kzalloc(&ara->dev, sizeof(struct i2c_smbus_alert),
+ 			     GFP_KERNEL);
+ 	if (!alert)
+ 		return -ENOMEM;
+ 
+-	alert->alert_edge_triggered = setup->alert_edge_triggered;
+-	alert->irq = setup->irq;
+-	INIT_WORK(&alert->alert, smbus_alert);
++	irq = setup->irq;
++	INIT_WORK(&alert->alert, smbalert_work);
+ 	alert->ara = ara;
+ 
+-	if (setup->irq > 0) {
+-		res = devm_request_irq(&ara->dev, setup->irq, smbalert_irq,
+-				       0, "smbus_alert", alert);
++	if (irq > 0) {
++		res = devm_request_threaded_irq(&ara->dev, irq,
++						NULL, smbus_alert,
++						IRQF_SHARED | IRQF_ONESHOT,
++						"smbus_alert", alert);
+ 		if (res)
+ 			return res;
+ 	}
+ 
+ 	i2c_set_clientdata(ara, alert);
+-	dev_info(&adapter->dev, "supports SMBALERT#, %s trigger\n",
+-		 setup->alert_edge_triggered ? "edge" : "level");
++	dev_info(&adapter->dev, "supports SMBALERT#\n");
+ 
+ 	return 0;
+ }
+diff --git a/include/linux/i2c-smbus.h b/include/linux/i2c-smbus.h
+index a138502..19efbd1 100644
+--- a/include/linux/i2c-smbus.h
++++ b/include/linux/i2c-smbus.h
+@@ -42,7 +42,6 @@
+  * properly set.
+  */
+ struct i2c_smbus_alert_setup {
+-	unsigned int		alert_edge_triggered:1;
+ 	int			irq;
+ };
+ 
 -- 
 1.8.3.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
