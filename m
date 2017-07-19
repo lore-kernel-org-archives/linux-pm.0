@@ -1,51 +1,76 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [RFC 21/22] x86/module: Add support for mcmodel large and PLTs
-Date: Wed, 19 Jul 2017 08:58:32 -0700
-Message-ID: <CAJcbSZFphkF8bcodkcwpK-oi3D7GTQXyTkOLPkmtWSPLPkvB0Q@mail.gmail.com>
-References: <20170718223333.110371-1-thgarnie@google.com> <20170718223333.110371-22-thgarnie@google.com>
- <c0bc2d98-d6eb-e3db-3799-2e28e9919f3d@zytor.com> <CAMzpN2j+Z27uudHXqqMhbk=s=pnk7LdA2FPkgmsdZzO3ysemsQ@mail.gmail.com>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH V3 8/9] cpufreq: Add CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING
+ cpufreq driver flag
+Date: Wed, 19 Jul 2017 18:30:54 +0200
+Message-ID: <20170719163054.GA32233@light.dominikbrodowski.net>
+References: <cover.1500373914.git.viresh.kumar@linaro.org>
+ <af15ad23b687e819919eeea687ff44bb37b8e9df.1500373914.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-9039-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAMzpN2j+Z27uudHXqqMhbk=s=pnk7LdA2FPkgmsdZzO3ysemsQ@mail.gmail.com>
-To: Brian Gerst <brgerst@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>Christ
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="jI8keyz6grp/JLjh"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <af15ad23b687e819919eeea687ff44bb37b8e9df.1500373914.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 18, 2017 at 8:59 PM, Brian Gerst <brgerst@gmail.com> wrote:
-> On Tue, Jul 18, 2017 at 9:35 PM, H. Peter Anvin <hpa@zytor.com> wrote:
->> On 07/18/17 15:33, Thomas Garnier wrote:
->>> With PIE support and KASLR extended range, the modules may be further
->>> away from the kernel than before breaking mcmodel=kernel expectations.
->>>
->>> Add an option to build modules with mcmodel=large. The modules generated
->>> code will make no assumptions on placement in memory.
->>>
->>> Despite this option, modules still expect kernel functions to be within
->>> 2G and generate relative calls. To solve this issue, the PLT arm64 code
->>> was adapted for x86_64. When a relative relocation go outside its range,
->>> a dynamic PLT entry is used to correctly jump to the destination.
->>
->> Why large as opposed to medium or medium-PIC?
->
-> Or for that matter, why not small-PIC?  We aren't changing the size of
-> the kernel to be larger than 2G text or data.  Small-PIC would still
-> allow it to be placed anywhere in the address space, and would
-> generate far better code.
 
-My understanding was that small=PIC and medium=PIC assume that the
-module code is in the lower 2G of memory. I will do additional testing
-on the modules to confirm that.
-
->
-> --
-> Brian Gerst
+--jI8keyz6grp/JLjh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 
+On Wed, Jul 19, 2017 at 03:42:48PM +0530, Viresh Kumar wrote:
+> The policy->transition_latency field is used for multiple purposes
+> today and its not straight forward at all. This is how it is used:
+>=20
+> A. Set the correct transition_latency value.
+>=20
+> B. Set it to CPUFREQ_ETERNAL because:
+>    1. We don't want automatic dynamic switching (with
+>       ondemand/conservative) to happen at all.
+>    2. We don't know the transition latency.
+>=20
+> This patch handles the B.1. case in a more readable way. A new flag for
+> the cpufreq drivers is added to disallow use of cpufreq governors which
+> have dynamic_switching flag set.
+>=20
+> All the current cpufreq drivers which are setting transition_latency
+> unconditionally to CPUFREQ_ETERNAL are updated to use it. They don't
+> need to set transition_latency anymore.
+>=20
+> There shouldn't be any functional change after this patch.
+>=20
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
--- 
-Thomas
+Looks good to me, so feel free to add:
+
+	Reviewed-by: Dominik Brodowski <linux@dominikbrodowski.net>
+
+Best,
+	Dominik
+
+--jI8keyz6grp/JLjh
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEmgXaWKgmjrvkPhLCmpdgiUyNow0FAllviTsACgkQmpdgiUyN
+ow2ioRAAjTNpeKQzQKAT4Is/AxqrR+Fzgkj5r0+XIhxU/mC25o0ylYZkmELbDRkA
+4tRJ1fKdLcCI5a+37TyXuNKU/WKgsoUDiocZIAEKmeFPmml38wycweBCOXgpJ70l
+BIElrZEHh+5uWywv9P2ouUVo/Xf+i3y2Lm3eM2Ef+BjpXcUnC5YNAl61U6YnY+re
+g8dk+gGR+WxMhEufm1EH4NJ5C7lMSHHNcVHgs6+dmRz6Z5szeJzEx2klyojXob92
+W+c4tE1839M24iLXrVWjHaTj1bCpjDaLij4pPOgziFMGwRC6c9RDgNlmICVzwAPU
+0Q2ycEuPpxNDep1MsgyFI+S/9jiyjQ3gBwiulcKm1LakCeX+3X9cUrCOmhJVo8Tb
+Ikai2sXHfyF22rwMcZF1WF2/9+utE/LkTnf+po2KrMJeAjR+ZlImPeU7KQtmMjbw
+ngLOgMkBxZg9RjJ6GqNmAqG2jx8Imi0F3iAGJPn1/nLqmYGN5kLCcTYHgHAdIIQv
+HWCbo7+OYlpBBou8BcSdt9+cRVTyVl1Wdq7FAqOnUD9CLmEm8Lp+/ilolKsGN1uD
+FNLwhahy/8smCmhFqXV65FrkFbqGoCfo04Twkj3f5ndnlOo4f6u7HQxbOIy92/aG
+HoDLJq51NeShdKhTGGesI2ZhVVZhrpzlPpcuyXUOf8xsTT7EYlk=
+=aO17
+-----END PGP SIGNATURE-----
+
+--jI8keyz6grp/JLjh--
