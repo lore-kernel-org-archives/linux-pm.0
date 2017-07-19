@@ -1,39 +1,37 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [patch v3 2/5] acpi / boot: correct address space of
- __acpi_map_table()
-Date: Wed, 19 Jul 2017 16:56:01 +0300
-Message-ID: <1500472561.29303.115.camel@linux.intel.com>
-References: <20170718150420.61600-1-andriy.shevchenko@linux.intel.com>
-         <20170718150420.61600-3-andriy.shevchenko@linux.intel.com>
-         <20170719130636.apmaj5ya4obkhvga@yury-thinkpad>
-         <20170719134051.zuf2rji46rfier64@yury-thinkpad>
+From: Christopher Lameter <cl@linux.com>
+Subject: Re: x86: PIE support and option to extend KASLR randomization
+Date: Wed, 19 Jul 2017 09:08:55 -0500 (CDT)
+Message-ID: <alpine.DEB.2.20.1707190906490.17764@nuc-kabylake>
+References: <20170718223333.110371-1-thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170719134051.zuf2rji46rfier64@yury-thinkpad>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Yury Norov <ynorov@caviumnetworks.com>
-Cc: "rafael j . wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, thomas gleixner <tglx@linutronix.de>, ingo molnar <mingo@redhat.com>, "h . peter anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, hanjun guo <guohanjun@huawei.com>, linux-acpi@vger.kernel.org, geert uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <kernel-hardening-return-9036-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20170718223333.110371-1-thgarnie@google.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?ISO-8859-2?Q?Radim_Kr=E8m=E1=F8?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Brian Gerst <brgerst@gmail.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2017-07-19 at 16:40 +0300, Yury Norov wrote:
-> On Wed, Jul 19, 2017 at 04:06:36PM +0300, yury norov wrote:
+On Tue, 18 Jul 2017, Thomas Garnier wrote:
 
-> > I just found this patch in next tree, and it seems it breaks build
-> > for
-> > arm64, and probably for ia64:
+> Performance/Size impact:
+> Hackbench (50% and 1600% loads):
+>  - PIE enabled: 7% to 8% on half load, 10% on heavy load.
+> slab_test (average of 10 runs):
+>  - PIE enabled: 3% to 4%
+> Kernbench (average of 10 Half and Optimal runs):
+>  - PIE enabled: 5% to 6%
+>
+> Size of vmlinux (Ubuntu configuration):
+>  File size:
+>  - PIE disabled: 472928672 bytes (-0.000169% from baseline)
+>  - PIE enabled: 216878461 bytes (-54.14% from baseline)
 
-I think you found previous version (v1). _This_ patch (v3 of it)
-actually solves that.
+Maybe we need something like CONFIG_PARANOIA so that we can determine at
+build time how much performance we want to sacrifice for performance?
 
-> > the patch below fixes it. (Tested on arm64 only.)
-> 
-> Ah, sorry. This is correct version.
-
-Thank you, I think Rafael might rebase with clean version (v3) his tree
-which will fix this.
-
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+Its going to be difficult to understand what all these hardening config
+options do.
