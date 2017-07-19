@@ -1,61 +1,93 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v2 1/4] time: rtc-lib: Add rtc_show_time(const char
- *prefix_msg)
-Date: Wed, 19 Jul 2017 09:23:25 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1707190913500.2286@nanos>
-References: <20170718211930.123077-1-salyzyn@android.com> <alpine.DEB.2.20.1707182338470.2425@nanos> <8afb372a-3951-6fb9-c0be-82756623061f@android.com> <alpine.DEB.2.20.1707190023010.2425@nanos> <5016ccc4-7faa-b61e-c0a1-b851620849c7@android.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: Regression with suspicious RCU usage splats with cpu_pm change
+Date: Wed, 19 Jul 2017 01:01:15 -0700
+Message-ID: <20170719080115.GN10026@atomide.com>
+References: <20170713070749.GE16509@atomide.com>
+ <c00272dc-cf84-81a2-b2e2-d52cadf7bcc6@linaro.org>
+ <CAJZ5v0j15uWyCRAPep4KwqSiC4UD4ZppAG++SUvN3Ok1wzDwNQ@mail.gmail.com>
+ <20170713124318.GK2393@linux.vnet.ibm.com>
+ <c5c6623b-ea1d-1bbf-ea80-5d93e7e81c6f@linaro.org>
+ <20170717060806.GC10026@atomide.com>
+ <20170717123938.GP2393@linux.vnet.ibm.com>
+ <20170718054137.GK10026@atomide.com>
+ <20170718170001.GD3981@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5016ccc4-7faa-b61e-c0a1-b851620849c7@android.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Salyzyn <salyzyn@android.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, andy.shevchenko@gmail.com, Mark Salyzyn <salyzyn@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thierry Strudel <tstrudel@google.com>, John Stultz <john.stultz@linaro.org>, Richard Cochran <richardcochran@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Kees Cook <keescook@chromium.org>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Prarit Bhargava <prarit@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:55086 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752808AbdGSIBT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 19 Jul 2017 04:01:19 -0400
+Content-Disposition: inline
+In-Reply-To: <20170718170001.GD3981@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Alex Shi <alex.shi@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>
 
-On Tue, 18 Jul 2017, Mark Salyzyn wrote:
-> On 07/18/2017 03:35 PM, Thomas Gleixner wrote:
-> > There was some discussion about making the clock source for dmesg time
-> > stamps selectable, so you can use MONOTONIC, REALTIME, BOOTTIME. The
-> > patches looked sensible, but there was some showstopper vs. the user space
-> > dmesg utility. See:
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> [170718 10:00]:
+> On Mon, Jul 17, 2017 at 10:41:38PM -0700, Tony Lindgren wrote:
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> [170717 05:40]:
+> > > On Sun, Jul 16, 2017 at 11:08:07PM -0700, Tony Lindgren wrote:
+> > > > * Alex Shi <alex.shi@linaro.org> [170716 16:25]:
+> > > > > I reused the rcu_irq_enter_irqson() from RCU_NONIDLE to avoid this issue. 
+> > > > > It works fine.
+> > > > > 
+> > > > > Tony, Could you like to give a tested-by if this patch works for you.
+> > > > 
+> > > > Yeah that keeps things booting for me with no splats so:
+> > > > 
+> > > > Tested-by: Tony Lindgren <tony@atomide.com>
+> > > > 
+> > > > In general, it seems we're missing the knowledge in Linux kernel
+> > > > of when the entire system is idle. Right now it seems that only
+> > > > cpuidle_coupled knows that?
+> > > > 
+> > > > We could probably simplify things by adding some PM state for
+> > > > entire system idle. Then cpuidle code and timer code could use
+> > > > that to test when it's safe to do whatever the SoC needs to do
+> > > > to enter deeper power states.
+> > > > 
+> > > > If we already have something like that, please do let me know :)
+> > > 
+> > > Well, we used to have CONFIG_NO_HZ_FULL_SYSIDLE, which detected
+> > > full-system idle lazily so as to avoid scalability bottlenecks.
+> > > https://lwn.net/Articles/558284/
+> > > 
+> > > No one was using it, so I removed it last merge window.  The
+> > > patch that removed it is at sysidle.2017.05.11a, which can
+> > > probably still be reverted cleanly.  Or just use v4.11 or earlier.
+> > 
+> > OK thanks for the pointer, for reference that commit is
+> > fe5ac724d81a ("rcu: Remove nohz_full full-system-idle state
+> > machine").
+> > 
+> > For a potential user, I think we could use it for example in
+> > cpuidle_enter_state_coupled() + omap_enter_idle_coupled() where
+> > we try to figure out if the system is fully idle before calling
+> > tick_broadcast_enter().
 > 
-> The timestamps are useful for the 'second' purpose of these patches when
-> dmesg time is BOOTTIME or MONOTONIC, and can be turned off if REALTIME
-> is selected. Having rtc_show_time a single point for switching this no doubt
-> helps,
-> not hinders, that dmesg issue.
+> Would you be willing to prototype your usage on v4.12?  It still has
+> NO_HZ_FULL_SYSIDLE.  You have to enable NO_HZ_FULL in order to enable
+> NO_HZ_FULL_SYSIDLE at the moment.
 > 
-> The inflection points would still serve a purpose, still need
-> suspend/resume/hibernate/restore. The reboot messages are _only_ useful to
-> us with their timestamps, as I checked and the only tools that use those are
-> for log synchronization. We may be able to do away with them on REALTIME
-> dmesg'ing; but the standardization of the message as a marker would have a
-> legacy purpose (!)
+> Either way, here is the important bit for usage:
 > 
-> NB: We have a similar configuration for the user space logger, which can be
-> configured to report in MONOTONIC time. We have yet to have a vendor
-> use the feature, opting for REALTIME logging for user space activities.
-> Our klogd (which runs at background priority and is batched) manages a
-> histogram relationship between MONOTONIC and REALTIME helped by these
-> prints and incorporates the REALTIME dmesg logs merged into our user
-> space logging database.
+> 	bool rcu_sys_is_idle(void);
+> 	void rcu_sysidle_force_exit(void);
+> 
+> The rcu_sys_is_idle() function returns true if all CPUs other than the
+> time-keeping CPU (that is, tick_do_timer_cpu, which is usually CPU 0)
+> are in their idle loop.  Of course, if you invoke rcu_sys_is_idle()
+> from any CPU other than the time-keeping CPU, you will automatically
+> get a return value of false.
+> 
+> RCU's idle-exit code already sets state appropriately, but if there
+> is some other circumstance where you need to force the state machine
+> out of all-CPUs-idle state, you can call rcu_sysidle_force_exit().
 
-There is another option to remedy this and the dmesg tooling issues:
-
-Instead of switching the time stamps in dmesg to a different clock we might
-as well have an optional secondary timestamp. So instead of:
-
- [  341.590930] wlan0: associated
-
-you would get:
-
- [  341.590930] [ sec.usec] wlan0: associated
-
-where the second time stamp would be CLOCK_REALTIME/BOOTTIME.
-
-That should also solve Prarits problem, hmm?
+OK sure I'll take a look at some point.
 
 Thanks,
 
-	tglx
+Tony
