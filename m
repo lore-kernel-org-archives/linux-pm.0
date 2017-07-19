@@ -1,12 +1,18 @@
 From: Mark Salyzyn <salyzyn@android.com>
 Subject: [PATCH v2 3/4] PM: Print wall time at suspend & hibernate entry and exit
-Date: Wed, 19 Jul 2017 12:45:58 -0700
-Message-ID: <20170719194600.29210-1-salyzyn@android.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, Mark Salyzyn <salyzyn@android.com>
+Date: Wed, 19 Jul 2017 12:48:13 -0700
+Message-ID: <20170719194814.29920-1-salyzyn@android.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f41.google.com ([74.125.83.41]:36029 "EHLO
+        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754316AbdGSTs1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jul 2017 15:48:27 -0400
+Received: by mail-pg0-f41.google.com with SMTP id 125so4456568pgi.3
+        for <linux-pm@vger.kernel.org>; Wed, 19 Jul 2017 12:48:26 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, prarit@redhat.com, andy.shevchenko@gmail.com, Mark Salyzyn <salyzyn@android.com>
 
 Permits power state and battery life diagnosis.
 
