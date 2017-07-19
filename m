@@ -1,43 +1,86 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: cpuidle and cpufreq coupling?
-Date: Thu, 20 Jul 2017 01:17:28 +0200
-Message-ID: <CAJZ5v0i2B0=cPB5VxXJUb36LW9hp_L7k-moj+Eg+vPvfPHFcSA@mail.gmail.com>
-References: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC 07/22] x86: relocate_kernel - Adapt assembly for PIE support
+Date: Wed, 19 Jul 2017 15:58:41 -0700
+Message-ID: <73652a62-579d-a28a-dc89-0ff8795f0f00@zytor.com>
+References: <20170718223333.110371-1-thgarnie@google.com>
+ <20170718223333.110371-8-thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Markus Mayer <code@mmayer.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <kernel-hardening-return-9075-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20170718223333.110371-8-thgarnie@google.com>
+Content-Language: en-US
+To: Thomas Garnier <thgarnie@google.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Brian Gerst <brgerst@gmail.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: x86@kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org, kvm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-sparse@vger.kernel.org, kernel-hardening@lists.openwall.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 20, 2017 at 12:54 AM, Florian Fainelli <f.fainelli@gmail.com> wrote:
-> Hi,
->
-> We have a particular ARM CPU design that is drawing quite a lot of
-> current upon exit from WFI, and it does so in a way even before the
-> first instruction out of WFI is executed. That means we cannot influence
-> directly the exit from WFI other than by changing the state in which it
-> would be previously entered because of this "dead" time during which the
-> internal logic needs to ramp up back where it left.
->
-> A naive approach to solving this problem because we have CPU frequency
-> scaling available would be to do the following:
->
-> - just before entering WFI, switch to a low frequency OPP
-> - enter WFI
-> - upon exit from WFI, ramp up the frequency back to e.g: highest OPP
->
-> Some of the parts that I am not exactly clear on would be:
->
-> - would that qualify as a cpuidle governor of some kind that ties in
-> which cpufreq?
-> - would using cpufreq_driver_fast_switch() be an appropriate API to use
-> from outside
+On 07/18/17 15:33, Thomas Garnier wrote:
+> Change the assembly code to use only relative references of symbols for the
+> kernel to be PIE compatible.
+> 
+> Position Independent Executable (PIE) support will allow to extended the
+> KASLR randomization range below the -2G memory limit.
+> 
+> Signed-off-by: Thomas Garnier <thgarnie@google.com>
+> ---
+>  arch/x86/kernel/relocate_kernel_64.S | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/x86/kernel/relocate_kernel_64.S b/arch/x86/kernel/relocate_kernel_64.S
+> index 98111b38ebfd..da817d1628ac 100644
+> --- a/arch/x86/kernel/relocate_kernel_64.S
+> +++ b/arch/x86/kernel/relocate_kernel_64.S
+> @@ -186,7 +186,7 @@ identity_mapped:
+>  	movq	%rax, %cr3
+>  	lea	PAGE_SIZE(%r8), %rsp
+>  	call	swap_pages
+> -	movq	$virtual_mapped, %rax
+> +	leaq	virtual_mapped(%rip), %rax
+>  	pushq	%rax
+>  	ret
+>  
 
-Generally, the idle driver is expected to manipulate OPPs as suitable
-for it at the low level.
+This is completely wrong.  The whole point is that %rip here is on an
+identity-mapped page, which means that its offset to the actual symbol
+is ill-defined.
 
-Thanks,
-Rafael
+The use of pushq/ret to do an indirect jump is bizarre, though, instead of:
+
+	pushq %r8
+	ret
+
+one ought to simply do
+
+	jmpq *%r8
+
+I think the author of this code was confused by the fact that we have to
+use this construct to do a *far* jump.
+
+There are some other very bizarre constructs in this file, that I can
+only assume comes from clumsy porting from 32 bits, for example:
+
+	call 1f
+1:
+	popq %r8
+	subq $(1b - relocate_kernel), %r8
+
+... instead of the much simpler ...
+
+	leaq relocate_kernel(%rip), %r8
+
+With this value in %r8 anyway, you can simply do:
+
+	leaq (virtual_mapped - relocate_kernel)(%r8), %rax
+	jmpq *%rax
+
+This patchset scares me.  There seems to be a lot of places where you
+have not been very aware of what is actually happening in the code, nor
+have done research about how the ABIs actually work and affect things.
+
+Sorry.
+
+	-hpa
