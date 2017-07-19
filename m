@@ -1,54 +1,35 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] devfreq: Convert to using %pOF instead of full_name
-Date: Wed, 19 Jul 2017 10:38:17 +0900
-Message-ID: <596EB809.7050605@samsung.com>
-References: <CGME20170718214411epcas2p43fc1475c80245889737ba9e731497e38@epcas2p4.samsung.com>
-        <20170718214339.7774-17-robh@kernel.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC 21/22] x86/module: Add support for mcmodel large and PLTs
+Date: Tue, 18 Jul 2017 18:35:05 -0700
+Message-ID: <c0bc2d98-d6eb-e3db-3799-2e28e9919f3d@zytor.com>
+References: <20170718223333.110371-1-thgarnie@google.com>
+ <20170718223333.110371-22-thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20170718214339.7774-17-robh@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <kernel-hardening-return-9025-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20170718223333.110371-22-thgarnie@google.com>
+Content-Language: en-US
+To: Thomas Garnier <thgarnie@google.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Brian Gerst <brgerst@gmail.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: x86@kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org, kvm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-sparse@vger.kernel.org, kernel-hardening@lists.openwall.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On 2017년 07월 19일 06:42, Rob Herring wrote:
-> Now that we have a custom printf format specifier, convert users of
-> full_name to use %pOF instead. This is preparation to remove storing
-> of the full path string for each node.
+On 07/18/17 15:33, Thomas Garnier wrote:
+> With PIE support and KASLR extended range, the modules may be further
+> away from the kernel than before breaking mcmodel=kernel expectations.
 > 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Cc: Chanwoo Choi <cw00.choi@samsung.com>
-> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Cc: Kyungmin Park <kyungmin.park@samsung.com>
-> Cc: linux-pm@vger.kernel.org
-> ---
->  drivers/devfreq/devfreq-event.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> Add an option to build modules with mcmodel=large. The modules generated
+> code will make no assumptions on placement in memory.
 > 
-> diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
-> index 8648b32ebc89..d67242d87744 100644
-> --- a/drivers/devfreq/devfreq-event.c
-> +++ b/drivers/devfreq/devfreq-event.c
-> @@ -277,8 +277,8 @@ int devfreq_event_get_edev_count(struct device *dev)
->  						sizeof(u32));
->  	if (count < 0) {
->  		dev_err(dev,
-> -			"failed to get the count of devfreq-event in %s node\n",
-> -			dev->of_node->full_name);
-> +			"failed to get the count of devfreq-event in %pOF node\n",
-> +			dev->of_node);
->  		return count;
->  	}
-> 
+> Despite this option, modules still expect kernel functions to be within
+> 2G and generate relative calls. To solve this issue, the PLT arm64 code
+> was adapted for x86_64. When a relative relocation go outside its range,
+> a dynamic PLT entry is used to correctly jump to the destination.
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Why large as opposed to medium or medium-PIC?
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+	-hpa
