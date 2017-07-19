@@ -1,37 +1,103 @@
-From: Christopher Lameter <cl@linux.com>
-Subject: Re: x86: PIE support and option to extend KASLR randomization
-Date: Wed, 19 Jul 2017 09:08:55 -0500 (CDT)
-Message-ID: <alpine.DEB.2.20.1707190906490.17764@nuc-kabylake>
-References: <20170718223333.110371-1-thgarnie@google.com>
+From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Subject: Re: [PATCH] PM / OPP: Don't check not plugged in CPUs to avoid error
+Date: Wed, 19 Jul 2017 16:10:23 +0200
+Message-ID: <CAHKzcENsE=So2omU2v27XoHEbvcpW1gmB5P0NM=Z-Bg=f_O_4g@mail.gmail.com>
+References: <20170713122201.30048-1-waldemarx.rymarkiewicz@intel.com>
+ <20170713234226.GE22780@codeaurora.org> <20170717071234.GK352@vireshk-i7>
+ <CAHKzcEP5+btsJ1Tog4KQAynmmbBSixfWAxO9V0EFWeP5pP5M=w@mail.gmail.com> <20170718043536.GT352@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <kernel-hardening-return-9036-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <20170718223333.110371-1-thgarnie@google.com>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?ISO-8859-2?Q?Radim_Kr=E8m=E1=F8?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Brian Gerst <brgerst@gmail.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:33351 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751400AbdGSOLF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jul 2017 10:11:05 -0400
+Received: by mail-wm0-f68.google.com with SMTP id 65so255861wmf.0
+        for <linux-pm@vger.kernel.org>; Wed, 19 Jul 2017 07:11:05 -0700 (PDT)
+In-Reply-To: <20170718043536.GT352@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>
 
-On Tue, 18 Jul 2017, Thomas Garnier wrote:
+On 18 July 2017 at 06:35, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 17-07-17, 15:03, Waldemar Rymarkiewicz wrote:
+> init() is called only once for a cpufreq policy and it should fill
+> policy->cpus with all the *possible* CPUs that share their
+> clock/voltage rails. i.e. it includes the CPUs which aren't hotplugged
+> in yet.
+> Later on when the CPU gets hotplugged in, we check it in existing
+> policies ->related_cpus field. If its their, then very minimal stuff
+> is done, else a new policy is created.
 
-> Performance/Size impact:
-> Hackbench (50% and 1600% loads):
->  - PIE enabled: 7% to 8% on half load, 10% on heavy load.
-> slab_test (average of 10 runs):
->  - PIE enabled: 3% to 4%
-> Kernbench (average of 10 Half and Optimal runs):
->  - PIE enabled: 5% to 6%
+I see. That is not obvious from the code what policy->cpus should
+initially include. Now I understand.
+
+policy->related_cpu contains online+offline cpus that share this policy
+policy->cpus initially includes online+offline, but end the end it
+keeps online cpus mask only that share this policy.
+
+> So policy->init() sets policy->cpus to all online+offline CPUs. That
+> is copied to related_cpus by core and then policy->cpus is capped to
+> only have online CPUs.
+
+>> I don't think so there is an up streamed code that uses opp framework
+>> in such use case. I use MIPS platform which starts with maxcpu=4 but
+>> it puts 2 cpus offline at boot up for some reason. Will try to check
+>> how cpufreq behave if I hot-add a CPU in runtime.
 >
-> Size of vmlinux (Ubuntu configuration):
->  File size:
->  - PIE disabled: 472928672 bytes (-0.000169% from baseline)
->  - PIE enabled: 216878461 bytes (-54.14% from baseline)
+> Ok.
+Unfortunately, I failed to test this on my platform, seems like
+hotplug is not fully supported yet.
 
-Maybe we need something like CONFIG_PARANOIA so that we can determine at
-build time how much performance we want to sacrifice for performance?
+Anyway, below a proposal how we can solve the problem of getting
+shared CPUs when hotplug is used.
 
-Its going to be difficult to understand what all these hardening config
-options do.
+
+@@ -555,8 +576,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_add_table);
+ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+                                   struct cpumask *cpumask)
+ {
+-       struct device_node *np, *tmp_np;
+-       struct device *tcpu_dev;
++       struct device_node *np, *tmp_np, *cpu_np;
+        int cpu, ret = 0;
+
+        /* Get OPP descriptor node */
+@@ -572,22 +592,16 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+        if (!of_property_read_bool(np, "opp-shared"))
+                goto put_cpu_node;
+
+-       for_each_possible_cpu(cpu) {
++       for_each_node_by_type(cpu_np, "cpu") {
++               cpu = of_device_node_get_cpu(cpu_np);
++
+                if (cpu == cpu_dev->id)
+                        continue;
+
+-               tcpu_dev = get_cpu_device(cpu);
+-               if (!tcpu_dev) {
+-                       dev_err(cpu_dev, "%s: failed to get cpu%d device\n",
+-                               __func__, cpu);
+-                       ret = -ENODEV;
+-                       goto put_cpu_node;
+-               }
+-
+                /* Get OPP descriptor node */
+-               tmp_np = _of_get_opp_desc_node(tcpu_dev);
++               tmp_np = of_parse_phandle(cpu_np, "operating-points-v2", 0);
+                if (!tmp_np) {
+-                       dev_err(tcpu_dev, "%s: Couldn't find tcpu_dev node.\n",
++                       dev_err(cpu_dev, "%s: Couldn't find tcpu_dev node.\n",
+                                __func__);
+                        ret = -ENOENT;
+                        goto put_cpu_node;
+
+
+the helper function
+   of_device_node_get_cpu()
+comes from ML  https://patchwork.kernel.org/patch/9830203/
+
+What are your thoughts?
+
+/Waldek
