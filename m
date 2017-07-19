@@ -1,41 +1,47 @@
-From: Mark Salyzyn <salyzyn@android.com>
-Subject: Re: [PATCH v3 1/4] time: rtc-lib: Add rtc_show_time(const char
- *prefix_msg)
-Date: Wed, 19 Jul 2017 07:52:03 -0700
-Message-ID: <99742846-b47b-4ee5-c971-e26e8a5f935b@android.com>
-References: <20170718221607.132539-1-salyzyn@android.com>
- <CALAqxLWK+_vnG_bpp4dPguNDTt1=JG6GANJm6b=V8gF1UGi1VQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: [PATCH 015/102] PM / devfreq: tegra: explicitly request exclusive reset control
+Date: Wed, 19 Jul 2017 17:25:19 +0200
+Message-ID: <20170719152646.25903-16-p.zabel@pengutronix.de>
+References: <20170719152646.25903-1-p.zabel@pengutronix.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CALAqxLWK+_vnG_bpp4dPguNDTt1=JG6GANJm6b=V8gF1UGi1VQ@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <20170719152646.25903-1-p.zabel@pengutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-rtc@vger.kernel.org, andy.shevchenko@gmail.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Mark Salyzyn <salyzyn@google.com>, Thierry Strudel <tstrudel@google.com>, Thomas Gleixner <tglx@linutronix.de>, Josh Triplett <josh@joshtriplett.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Kees Cook <keescook@chromium.org>
+To: linux-kernel@vger.kernel.org
+Cc: Philipp Zabel <p.zabel@pengutronix.de>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07/18/2017 05:00 PM, John Stultz wrote:
-> On Tue, Jul 18, 2017 at 3:15 PM, Mark Salyzyn <salyzyn@android.com> wrote:
->> Go directly to the rtc for persistent wall clock time and print.
-> So, first,  the above doesn't seem accurate to me. You're using
-> getnstimeofday64() which doesn't touch the RTC.
+Commit a53e35db70d1 ("reset: Ensure drivers are explicit when requesting
+reset lines") started to transition the reset control request API calls
+to explicitly state whether the driver needs exclusive or shared reset
+control behavior. Convert all drivers requesting exclusive resets to the
+explicit API call so the temporary transition helpers can be removed.
 
-I admit I got that backwards. I copied and pasted a line, that was 
-supposed to read "We can not go" ... The point was that persistent or 
-RTC clock is _not_ always available,
-so we have to print suspend times when the timeofday clock is available 
-at the points before suspend, and after suspend is complete.
+No functional changes.
 
-The "Suspended for" message (in ms, we want us at least) albeit helpful, 
-is performed at the bottom, and can only be reported if there is a 
-persistent clock available. On most Android devices, it is not available.
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: Jonathan Hunter <jonathanh@nvidia.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-tegra@vger.kernel.org
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+---
+ drivers/devfreq/tegra-devfreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I will post update, a better description in the primary patch, dropping 
-the intro, printing in <epoch>.<ns> format. I asked in another thread if 
-it would be OK to preserve the Legacy of RTC time format printing with 
-another CONFIG parameter since we have 5 years of tooling that depends 
-on that format.
-
--- Mark
+diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+index ae712159246fb..8108487b34192 100644
+--- a/drivers/devfreq/tegra-devfreq.c
++++ b/drivers/devfreq/tegra-devfreq.c
+@@ -628,7 +628,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 	if (IS_ERR(tegra->regs))
+ 		return PTR_ERR(tegra->regs);
+ 
+-	tegra->reset = devm_reset_control_get(&pdev->dev, "actmon");
++	tegra->reset = devm_reset_control_get_exclusive(&pdev->dev, "actmon");
+ 	if (IS_ERR(tegra->reset)) {
+ 		dev_err(&pdev->dev, "Failed to get reset\n");
+ 		return PTR_ERR(tegra->reset);
+-- 
+2.11.0
