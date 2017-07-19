@@ -1,43 +1,38 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: cpuidle and cpufreq coupling?
-Date: Wed, 19 Jul 2017 15:54:29 -0700
-Message-ID: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC 06/22] kvm: Adapt assembly for PIE support
+Date: Wed, 19 Jul 2017 15:27:20 -0700
+Message-ID: <0cdd02e1-8bf2-41cd-f085-c338c2fd8e25@zytor.com>
+References: <20170718223333.110371-1-thgarnie@google.com>
+ <20170718223333.110371-7-thgarnie@google.com>
+ <CAMzpN2gF7QxDbVG-6ad3Qarcn1N_JT5tit9CMvQL95LQGeZivA@mail.gmail.com>
+ <CAJcbSZGqY=btU=+eWfgdhF0je0Yn_GxkymFHn+OV-1BuzgbRYw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f170.google.com ([209.85.220.170]:34969 "EHLO
-        mail-qk0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753601AbdGSWyd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jul 2017 18:54:33 -0400
+Content-Transfer-Encoding: 7bit
+Return-path: <kernel-hardening-return-9070-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <CAJcbSZGqY=btU=+eWfgdhF0je0Yn_GxkymFHn+OV-1BuzgbRYw@mail.gmail.com>
 Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+To: Thomas Garnier <thgarnie@google.com>, Brian Gerst <brgerst@gmail.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, code@mmayer.net, daniel.lezcano@linaro.org
 
-Hi,
+On 07/19/17 08:40, Thomas Garnier wrote:
+>>
+>> This doesn't look right.  It's accessing a per-cpu variable.  The
+>> per-cpu section is an absolute, zero-based section and not subject to
+>> relocation.
+> 
+> PIE does not respect the zero-based section, it tries to have
+> everything relative. Patch 16/22 also adapt per-cpu to work with PIE
+> (while keeping the zero absolute design by default).
+> 
 
-We have a particular ARM CPU design that is drawing quite a lot of
-current upon exit from WFI, and it does so in a way even before the
-first instruction out of WFI is executed. That means we cannot influence
-directly the exit from WFI other than by changing the state in which it
-would be previously entered because of this "dead" time during which the
-internal logic needs to ramp up back where it left.
+This is silly.  The right thing is for PIE is to be explicitly absolute,
+without (%rip).  The use of (%rip) memory references for percpu is just
+an optimization.
 
-A naive approach to solving this problem because we have CPU frequency
-scaling available would be to do the following:
-
-- just before entering WFI, switch to a low frequency OPP
-- enter WFI
-- upon exit from WFI, ramp up the frequency back to e.g: highest OPP
-
-Some of the parts that I am not exactly clear on would be:
-
-- would that qualify as a cpuidle governor of some kind that ties in
-which cpufreq?
-- would using cpufreq_driver_fast_switch() be an appropriate API to use
-from outside
-
-Thanks!
--- 
-Florian
+	-hpa
