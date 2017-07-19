@@ -1,51 +1,205 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: Re: Re: x86: PIE support and option to extend
- KASLR randomization
-Date: Wed, 19 Jul 2017 12:21:05 -0700
-Message-ID: <CAGXu5jKRC0G9GCQoYfPF9htns=_KU53UTPTSt54BRYmgbGOp5w@mail.gmail.com>
-References: <20170718223333.110371-1-thgarnie@google.com> <alpine.DEB.2.20.1707190906490.17764@nuc-kabylake>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-9063-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: keescook@google.com
-In-Reply-To: <alpine.DEB.2.20.1707190906490.17764@nuc-kabylake>
-To: Christopher Lameter <cl@linux.com>
-Cc: Thomas Garnier <thgarnie@google.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Brian Gerst <brgerst@gmail.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@in>
+From: Mark Salyzyn <salyzyn@android.com>
+Subject: [PATCH v4 1/4] time: rtc-lib: Add rtc_show_time(const char *prefix_msg)
+Date: Wed, 19 Jul 2017 12:44:41 -0700
+Message-ID: <20170719194511.28899-1-salyzyn@android.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, Mark Salyzyn <salyzyn@android.com>, Kees Cook <keescook@chromium.org>, Anton Vorontsov <anton@enomsg.org>, Colin Cross <ccross@android.com>, Tony Luck <tony.luck@intel.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Richard Cochran <richardcochran@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 19, 2017 at 7:08 AM, Christopher Lameter <cl@linux.com> wrote:
-> On Tue, 18 Jul 2017, Thomas Garnier wrote:
->
->> Performance/Size impact:
->> Hackbench (50% and 1600% loads):
->>  - PIE enabled: 7% to 8% on half load, 10% on heavy load.
->> slab_test (average of 10 runs):
->>  - PIE enabled: 3% to 4%
->> Kernbench (average of 10 Half and Optimal runs):
->>  - PIE enabled: 5% to 6%
->>
->> Size of vmlinux (Ubuntu configuration):
->>  File size:
->>  - PIE disabled: 472928672 bytes (-0.000169% from baseline)
->>  - PIE enabled: 216878461 bytes (-54.14% from baseline)
->
-> Maybe we need something like CONFIG_PARANOIA so that we can determine at
-> build time how much performance we want to sacrifice for performance?
->
-> Its going to be difficult to understand what all these hardening config
-> options do.
+Primary purpose of rtc_show_time is to provide a marker used for
+post-mortem Battery and Power analysis.  These markers occur at
+major discontinuities of time, and thus optionally add a timestamp
+to aid the analysis.  This function is to be called at a higher
+level, and were added because of a lack of current kernel logging
+data.
 
-This kind of thing got discussed recently, and like
-CONFIG_EXPERIMENTAL, a global config doesn't really work. The best
-thing to do is to document each config as well as possible and system
-builders can decide.
+The persistent clock that is used to report Suspended for message
+is not present on all platforms, and is currently standardized for
+millisecond precision.
 
--Kees
+An added value to the time report is the ability in post-mortem
+triage analysis to synchronize kernel activities in MONOTONIC
+time with user space activities in REALTIME.
 
+Feature activated by CONFIG_RTC_SHOW_TIME_<TYPE>, where <TYPE> is
+None (default, disabled), realtime, boottime or monotonic.
+
+Since this is for post mortem field analysis, there is no debugfs
+or trace facility that can generally be leveraged.  analyze_suspend.py
+for example requires a debug configured kernel, on the other hand
+these prints can remain in a field product.  The purpose for
+rtc_show_time is not for development debugging.
+
+Data collected may be recorded by klogd with a longer logspan
+than the built-in dmesg buffer, or land in pstore console driver
+to be collected after a reboot.
+
+Signed-off-by: Mark Salyzyn <salyzyn@android.com>
+
+v2:
+- move implementation to kernel timekeeping from rtc_lib files
+- use rtc_time64_to_tm() instead of rtc_time_to_tm()
+- use inline in include/linux/rtc.h for !CONFIG_RTC_SHOW_TIME
+v3:
+- _correctly_ use rtc_time64_to_tm
+v4:
+- introduce CONFIG_RTC_SHOW_TIME_<TYPE> and split off rtc time
+  format printing to a separate patch.
+
+---
+ include/linux/rtc.h         |  5 +++
+ kernel/time/Kconfig         | 77 +++++++++++++++++++++++++++++++++++++++++++++
+ kernel/time/Makefile        |  1 +
+ kernel/time/rtc_show_time.c | 29 +++++++++++++++++
+ 4 files changed, 112 insertions(+)
+ create mode 100644 kernel/time/rtc_show_time.c
+
+diff --git a/include/linux/rtc.h b/include/linux/rtc.h
+index 0a0f0d14a5fb..779401c937d5 100644
+--- a/include/linux/rtc.h
++++ b/include/linux/rtc.h
+@@ -22,6 +22,11 @@ extern int rtc_year_days(unsigned int day, unsigned int month, unsigned int year
+ extern int rtc_valid_tm(struct rtc_time *tm);
+ extern time64_t rtc_tm_to_time64(struct rtc_time *tm);
+ extern void rtc_time64_to_tm(time64_t time, struct rtc_time *tm);
++#ifdef CONFIG_RTC_SHOW_TIME
++extern void rtc_show_time(const char *prefix_msg);
++#else
++static inline void rtc_show_time(const char *prefix_msg) { }
++#endif
+ ktime_t rtc_tm_to_ktime(struct rtc_time tm);
+ struct rtc_time rtc_ktime_to_tm(ktime_t kt);
+ 
+diff --git a/kernel/time/Kconfig b/kernel/time/Kconfig
+index ac09bc29eb08..2dc891056635 100644
+--- a/kernel/time/Kconfig
++++ b/kernel/time/Kconfig
+@@ -145,3 +145,80 @@ config HIGH_RES_TIMERS
+ 
+ endmenu
+ endif
++
++config RTC_SHOW_TIME
++	bool
++	help
++	  Activate optional rtc_show_time(const char *msg) wall clock
++	  time instrumentation.
++
++	  The primary use of the instrumentation is to aid field
++	  analysis of Battery and Power usage.  The instrumentation
++	  may also help triage and synchronize kernel logs and user
++	  space activity logs at key displacements.  For instance
++	  CLOCK_MONOTONIC stops while suspended, while CLOCK_REALTIME
++	  continues, and the timestamps help re-orient post-analysis.
++
++	  Select the appropriate RTC_SHOW_TIME_<type>
++
++choice
++	prompt "choose a clock for rtc_show_time"
++	config RTC_SHOW_TIME_NONE
++		bool "not activated"
++		help
++		  Turn off all printing associated with rtc_show_time
++
++		  The primary use of the instrumentation is to aid field
++		  analysis of Battery and Power usage.  The instrumentation
++		  may also help triage and synchronize kernel logs and user
++		  space activity logs at key displacements.  For instance
++		  CLOCK_MONOTONIC stops while suspended, while CLOCK_REALTIME
++		  continues, and the timestamps help re-orient post-analysis.
++
++		  This is the default behavior.
++	config RTC_SHOW_TIME_REALTIME
++		bool "realtime"
++		select RTC_SHOW_TIME
++		help
++		  Activate optional rtc_show_time(const char *msg) wall clock
++		  time instrumentation.
++
++		  The primary use of the instrumentation is to aid field
++		  analysis of Battery and Power usage.  The instrumentation
++		  may also help triage and synchronize kernel logs and user
++		  space activity logs at key displacements.  For instance
++		  CLOCK_MONOTONIC stops while suspended, while CLOCK_REALTIME
++		  continues, and the timestamps help re-orient post-analysis.
++
++		  Print realtime <epoch>.<ns> timestamp in rtc_show_time
++	config RTC_SHOW_TIME_MONOTONIC
++		bool "monotonic"
++		select RTC_SHOW_TIME
++		help
++		  Activate optional rtc_show_time(const char *msg) wall clock
++		  time instrumentation.
++
++		  The primary use of the instrumentation is to aid field
++		  analysis of Battery and Power usage.  The instrumentation
++		  may also help triage and synchronize kernel logs and user
++		  space activity logs at key displacements.  For instance
++		  CLOCK_MONOTONIC stops while suspended, while CLOCK_REALTIME
++		  continues, and the timestamps help re-orient post-analysis.
++
++		  Print only the supplied message in rtc_show_time
++	config RTC_SHOW_TIME_BOOTTIME
++		bool "boottime"
++		select RTC_SHOW_TIME
++		help
++		  Activate optional rtc_show_time(const char *msg) wall clock
++		  time instrumentation.
++
++		  The primary use of the instrumentation is to aid field
++		  analysis of Battery and Power usage.  The instrumentation
++		  may also help triage and synchronize kernel logs and user
++		  space activity logs at key displacements.  For instance
++		  CLOCK_MONOTONIC stops while suspended, while CLOCK_REALTIME
++		  continues, and the timestamps help re-orient post-analysis.
++
++		  Print boottime <s>.<ns> timestamp in rtc_show_time
++endchoice
+diff --git a/kernel/time/Makefile b/kernel/time/Makefile
+index 938dbf33ef49..66f17e641052 100644
+--- a/kernel/time/Makefile
++++ b/kernel/time/Makefile
+@@ -17,3 +17,4 @@ obj-$(CONFIG_GENERIC_SCHED_CLOCK)		+= sched_clock.o
+ obj-$(CONFIG_TICK_ONESHOT)			+= tick-oneshot.o tick-sched.o
+ obj-$(CONFIG_DEBUG_FS)				+= timekeeping_debug.o
+ obj-$(CONFIG_TEST_UDELAY)			+= test_udelay.o
++obj-$(CONFIG_RTC_SHOW_TIME)			+= rtc_show_time.o
+diff --git a/kernel/time/rtc_show_time.c b/kernel/time/rtc_show_time.c
+new file mode 100644
+index 000000000000..19a8a0cc94f0
+--- /dev/null
++++ b/kernel/time/rtc_show_time.c
+@@ -0,0 +1,29 @@
++/*
++ * rtc time printing utility functions
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/rtc.h>
++
++void rtc_show_time(const char *prefix_msg)
++{
++#if defined(CONFIG_RTC_SHOW_TIME_MONOTONIC) /* dmesg is in monotonic */
++	pr_info("%s\n", prefix_msg ? prefix_msg : "Time:");
++#elif defined(CONFIG_RTC_SHOW_TIME_BOOTTIME)
++	struct timespec64 ts;
++
++	getboottime64(&ts);
++	pr_info("%s %lu.%09lu B\n",
++		prefix_msg ? prefix_msg : "Time:", ts.tv_sec, ts.tv_nsec);
++#else /* realtime */
++	struct timespec64 ts;
++
++	getnstimeofday64(&ts);
++	pr_info("%s %lu.%09lu UTC\n",
++		prefix_msg ? prefix_msg : "Time:", ts.tv_sec, ts.tv_nsec);
++#endif
++}
++EXPORT_SYMBOL(rtc_show_time);
 -- 
-Kees Cook
-Pixel Security
+2.14.0.rc0.284.gd933b75aa4-goog
