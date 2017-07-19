@@ -1,85 +1,125 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC PATCH v1 8/8] sched/deadline: make bandwidth enforcement
- scale-invariant
-Date: Wed, 19 Jul 2017 12:16:24 +0100
-Message-ID: <20170719111624.fwcydcklmfeesfgb@e106622-lin>
-References: <20170705085905.6558-1-juri.lelli@arm.com>
- <20170705085905.6558-9-juri.lelli@arm.com>
- <20170719072143.lploljodns3kfucf@hirez.programming.kicks-ass.net>
- <20170719092029.oakmetq3u52e4rfw@e106622-lin>
- <20170719110028.uggud56bg2jh45ge@hirez.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH v16 2/7] power: add power sequence library
+Date: Wed, 19 Jul 2017 13:34:11 +0200
+Message-ID: <4318803.QsccSH3mIv@aspire.rjw.lan>
+References: <1498027328-25078-1-git-send-email-peter.chen@nxp.com> <CAJZ5v0hGbJuqqY6Pq5cYPrawSGW-zdhYHj0ovhJ9zXRAkBPCRQ@mail.gmail.com> <20170719025559.GC26218@b29397-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170719110028.uggud56bg2jh45ge@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170719025559.GC26218@b29397-desktop>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Stephen Boyd <stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, frank.li-3arQi8VN3Tc@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Gary Bisson <gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org>, Fabio Estevam <festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Vaibhav Hiremath <vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19/07/17 13:00, Peter Zijlstra wrote:
-> On Wed, Jul 19, 2017 at 10:20:29AM +0100, Juri Lelli wrote:
-> > On 19/07/17 09:21, Peter Zijlstra wrote:
-> > > On Wed, Jul 05, 2017 at 09:59:05AM +0100, Juri Lelli wrote:
-> > > > @@ -1156,9 +1157,26 @@ static void update_curr_dl(struct rq *rq)
-> > > >  	if (unlikely(dl_entity_is_special(dl_se)))
-> > > >  		return;
-> > > >  
-> > > > -	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM))
-> > > > -		delta_exec = grub_reclaim(delta_exec, rq, &curr->dl);
-> > > > -	dl_se->runtime -= delta_exec;
-> > > > +	/*
-> > > > +	 * For tasks that participate in GRUB, we implement GRUB-PA: the
-> > > > +	 * spare reclaimed bandwidth is used to clock down frequency.
-> > > > +	 *
-> > > > +	 * For the others, we still need to scale reservation parameters
-> > > > +	 * according to current frequency and CPU maximum capacity.
-> > > > +	 */
-> > > > +	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM)) {
-> > > > +		scaled_delta_exec = grub_reclaim(delta_exec,
-> > > > +						 rq,
-> > > > +						 &curr->dl);
-> > > > +	} else {
-> > > > +		unsigned long scale_freq = arch_scale_freq_capacity(cpu);
-> > > > +		unsigned long scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
-> > > > +
-> > > > +		scaled_delta_exec = cap_scale(delta_exec, scale_freq);
-> > > > +		scaled_delta_exec = cap_scale(scaled_delta_exec, scale_cpu);
-> > > > +	}
-> > > > +
-> > > > +	dl_se->runtime -= scaled_delta_exec;
-> > > >  
-> > > 
-> > > This I don't get... 
+On Wednesday, July 19, 2017 10:56:00 AM Peter Chen wrote:
+> On Tue, Jul 18, 2017 at 07:06:05PM +0200, Rafael J. Wysocki wrote:
+> > On Tue, Jul 18, 2017 at 6:29 AM, Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+> > > On Mon, Jul 17, 2017 at 03:39:07PM +0200, Rafael J. Wysocki wrote:
+> > >> > Sorry, I should describe more.
+> > >> >
+> > >> > Let's take USB bus as an example, when the new USB device is at the
+> > >> > host port, the device structure at device model is not created until
+> > >> > it is discoverable by the USB bus. If this new USB device needs to be
+> > >> > powered on before can be discoverable by the bus, the device structure
+> > >> > will be not created without powering on operation. The code usb_alloc_dev
+> > >> > (drivers/usb/core/usb.c) is only called for discoverable device.
+> > >> >
+> > >> > Unlike the other bus, eg, platform bus, it creates device structure
+> > >> > according to DT node. The USB bus was designed for hot plug model, the
+> > >> > device structure is for discoverable device. In recent years, we begin
+> > >> > to have some hard-wired USB device, Eg, onboard USB-hub, onboard USB 4G
+> > >> > Modem, etc at the market. It needs some board level power operation before
+> > >> > it can be found by the USB bus. This patch set is designed primarily for
+> > >> > fix this kind of problem. You will see at at pwrseq_generic.c, we use DT
+> > >> > version clock API of_clk_get and DT version gpio API of_get_named_gpio_flags
+> > >> > instead of device structure version, like devm_clk_get and
+> > >> > devm_gpiod_get_optional.
+> > >> >
+> > >> > MMC system has similar use case, it creates power sequence platform
+> > >> > device for this issue, but all those power stuffs (clock, gpio, etc)
+> > >> > may not be suitable as a dedicated virtual device at DT, they are belonged
+> > >> > to one physical device, so this patch set is created to see if this issue
+> > >> > can be fixed better.
+> > >>
+> > >> OK, thanks for the explanation.
+> > >>
+> > >> The above needs to be part of your problem statement.
+> > >
+> > > Ok, I will add it to cover letter.
+> > >
+> > >> >
+> > >> > The bus will power up all device nodes in this bus according to DT
+> > >> > information, the device structure has not created at this time.
+> > >>
+> > >> OK
+> > >>
+> > >> I still think that the information on power resources depended on by devices
+> > >> should be used for power management as well as for the initial power-up.
+> > >>
+> > >> The most straightforward way to arrange for that would be to make it possible
+> > >> to find the DT node matching the device after the device has been discovered
+> > >> and struct device created for it, say by USB.  That would require adding some
+> > >> more information on the device to the DT node, probably.
+> > >
+> > > After the device is created, the device node structure is under struct
+> > > device, say dev->of_node. The most difficulty for this issue is the
+> > > device creation is dynamic and is after the physical device is
+> > > discovered by the bus, the initial power-up is needed before the device
+> > > can be discovered by the bus.
 > > 
+> > So you power up all devices on the bus using the information from
+> > of_nodes upfront.
 > > 
-> > Considering that we use GRUB's active utilization to drive clock
-> > frequency selection, rationale is that GRUB tasks don't need any special
-> > scaling, as their delta_exec is already scaled according to GRUB rules.
-> > OTOH, normal tasks need to have their runtime (delta_exec) explicitly
-> > scaled considering current frequency (and CPU max capacity), otherwise
-> > they are going to receive less runtime than granted at AC, when
-> > frequency is reduced.
 > 
-> I don't think that quite works out. Given that the frequency selection
-> will never quite end up at exactly the same fraction (if the hardware
-> listens to your requests at all).
+> I think your mean call pm_device_power_up(struct device *dev) for bus
+> level device (eg, USB HUB for USB), yeah, I can do that. But we still
+> have below problem:
 > 
+> Where we can put the kinds of power sequence implementation
+> (eg, pwrseq_generic.c) and the match mechanism between device
+> node and kinds of power sequence(eg, of_pwrseq_on at core.c)? These
+> stuffs can be shared among subsystems, and is better to use
+> one framework for it. MMC subsystem adds such things at its core
+> folder (drivers/mmc/core/pwrseq*) currently.
 
-It's an approximation yes (how big it depends on the granularity of the
-available frequencies). But, for the !GRUB tasks it should be OK, as we
-always select a frequency (among the available ones) bigger than the
-current active utilization.
+The power sequence handling code can be generic IMO, because it doesn't
+depend on what bus the devices are on.  It just needs to provide some
+services to its users, but you need a clean interface between it and its
+users, of course.
 
-Also, for platforms/archs that don't redefine arch_scale_* this is not
-used. In case they are defined instead the assumption is that either hw
-listens to requests or scaling factors can be derived in some other ways
-(avgs?).
+There basically are two categories of devices, let's refer to them as USB-type
+and MMC-type.  The difference between them, as far as power sequences go,
+boils down to initialization and discovery.
 
-> Also, by not scaling the GRUB stuff, don't you run the risk of
-> attempting to hand out more idle time than there actually is?
+For the USB-type ones you need an upfront power-up pass over of_nodes
+under the bus controller.  That needs to be initiated by the controller driver,
+but may be carried out by the common code.
 
-The way I understand it is that for GRUB tasks we always scale
-considering the "correct" factor. Then frequency could be higher, but
-this spare idle time will be reclaimed by other GRUB tasks.
+After that, you need to match of_nodes to devices while discovering them.
+That also needs to be initiated by the bus controller, but there may be
+a helper function in the common code for that.  It may take a struct device
+for the just discovered device and the bus controller's of_node as arguments,
+look for an of_node under the bus controller matching the device and then
+attach the power sequence information to the struct device as appropriate.
+
+After the power sequence information has been attached to the struct
+device, it can just be used for controlling its power state in a generic
+fashion.
+
+In the MMC-type devices case the discovery if through of_node lookup IIUC,
+so then you may power up things as you discover them and attach the
+power sequence information to their struct device objects right away.
+
+Again, once you have done that, the power sequence information is
+there and it can be used for controlling the power states of devices
+generically.
+
+Thanks,
+Rafael
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
