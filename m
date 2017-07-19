@@ -1,57 +1,43 @@
 From: Mark Salyzyn <salyzyn@android.com>
-Subject: Re: [PATCH v2 3/4] PM: Print wall time at suspend & hibernate entry
- and exit
-Date: Wed, 19 Jul 2017 14:23:31 -0700
-Message-ID: <507dec5d-3beb-4dd8-0d5f-90f22fccccd2@android.com>
-References: <20170719194600.29210-1-salyzyn@android.com>
- <CAJZ5v0iVwUy5fdvYu=6HEwLPpw7g6owbFuwNpUJcb_iJ3LCFMA@mail.gmail.com>
+Subject: Re: [PATCH v4 1/4] time: rtc-lib: Add rtc_show_time(const char
+ *prefix_msg)
+Date: Wed, 19 Jul 2017 14:30:29 -0700
+Message-ID: <2b5d9884-fe61-a7a4-567c-01ae61d2fff4@android.com>
+References: <20170719194511.28899-1-salyzyn@android.com>
+ <20170719212241.kla3d3j6vgaxy4ba@piout.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iVwUy5fdvYu=6HEwLPpw7g6owbFuwNpUJcb_iJ3LCFMA@mail.gmail.com>
+In-Reply-To: <20170719212241.kla3d3j6vgaxy4ba@piout.net>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-rtc@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, linux-rtc@vger.kernel.org, Kees Cook <keescook@chromium.org>, Anton Vorontsov <anton@enomsg.org>, Colin Cross <ccross@android.com>, Tony Luck <tony.luck@intel.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Richard Cochran <richardcochran@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/19/2017 01:40 PM, Rafael J. Wysocki wrote:
-> On Wed, Jul 19, 2017 at 9:45 PM, Mark Salyzyn <salyzyn@android.com> wrote:
->> Permits power state and battery life diagnosis.
->>
->> Since one is not guaranteed to have a persistent hardware clock to
->> report Suspended for in milliseconds, we report at a higher level
->> at just the entry and exit points for suspend and hibernate.
->>
->> Feature activated by CONFIG_RTC_SHOW_TIME_*
->>
->> Signed-off-by: Mark Salyzyn <salyzyn@android.com>
->>
->> v2:
->> - merge suspend and hibernate into a single patch
-> So now I guess you realize that this conflicts with
-> https://patchwork.kernel.org/patch/9850217/ and it actually would make
-> sense for it to go on top of that?
+On 07/19/2017 02:22 PM, Alexandre Belloni wrote:
+> Hi,
 >
-> Thanks,
-> Rafael
+> On 19/07/2017 at 12:44:41 -0700, Mark Salyzyn wrote:
+>> Primary purpose of rtc_show_time is to provide a marker used for
+>> post-mortem Battery and Power analysis.  These markers occur at
+>> major discontinuities of time, and thus optionally add a timestamp
+>> to aid the analysis.  This function is to be called at a higher
+>> level, and were added because of a lack of current kernel logging
+>> data.
+>>
+> I really think you should drop rtc from the config, function and file
+> names because this doesn't have any relationship with any RTC stuff.
 
-I see. It would make sense to merge the concepts a bit since the prints 
-are at the same locations.
-
-Optimization idea: rtc_show_time() in my patch series should be able to 
-support varargs, never be _disabled_ (CONFIG_RTC_SHOW_TIME_NONE idea is 
-dropped) and the function would be a drop-in replacement for pr_info, 
-but add the specified timestamp before the newline. Change it's name to 
-pr_info_show_time() instead to reflect this adjustment.
-
-I would also prefer that the base messages in patch/980217 be "PM: 
-suspend entry" and "PM: suspend exit", only because I believe 1.6billion 
-Linux devices would not need to be retooled, and besides these messages 
-are shorter/sweeter.
-
-Anyone disagree with some more over-engineering (pr_info_show_time() and 
-varargs)
+Agreed and Thanks. In another response, this function has more in common 
+with a pr_info_show_time() than I previously have accepted. Most of the 
+rtc part goes away if I follow that thread/idea Leaving the following:
+> I can just see that you are (ab)using rtc_time64_to_tm because there is
+> no struct tm or gmtime() in the kernel.
+Yes, since we put that part into a separate patch, that can be 
+punted/accepted on its own, using rtc-lib is a simple concept. The 
+commit message for that patch should have had your line of sentiment in 
+it! (even (ab)using message :-) )
 
 -- Mark
