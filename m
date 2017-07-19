@@ -1,95 +1,52 @@
-From: Patrice CHOTARD <patrice.chotard@st.com>
-Subject: Re: [PATCH] cpufreq: Convert to using %pOF instead of full_name
-Date: Wed, 19 Jul 2017 07:06:06 +0000
-Message-ID: <25327197-4a70-e31c-5ccc-8becf4da8395@st.com>
-References: <20170718214339.7774-14-robh@kernel.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v1 8/8] sched/deadline: make bandwidth enforcement
+ scale-invariant
+Date: Wed, 19 Jul 2017 09:21:43 +0200
+Message-ID: <20170719072143.lploljodns3kfucf@hirez.programming.kicks-ass.net>
+References: <20170705085905.6558-1-juri.lelli@arm.com>
+ <20170705085905.6558-9-juri.lelli@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170718214339.7774-14-robh@kernel.org>
-Content-Language: en-US
-Content-ID: <F74187E25C75E149AC5B2FDB089031AE@st.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "kernel@stlinux.com" <kernel@stlinux.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([65.50.211.133]:55625 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752315AbdGSHWD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jul 2017 03:22:03 -0400
+Content-Disposition: inline
+In-Reply-To: <20170705085905.6558-9-juri.lelli@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
+On Wed, Jul 05, 2017 at 09:59:05AM +0100, Juri Lelli wrote:
+> @@ -1156,9 +1157,26 @@ static void update_curr_dl(struct rq *rq)
+>  	if (unlikely(dl_entity_is_special(dl_se)))
+>  		return;
+>  
+> -	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM))
+> -		delta_exec = grub_reclaim(delta_exec, rq, &curr->dl);
+> -	dl_se->runtime -= delta_exec;
+> +	/*
+> +	 * For tasks that participate in GRUB, we implement GRUB-PA: the
+> +	 * spare reclaimed bandwidth is used to clock down frequency.
+> +	 *
+> +	 * For the others, we still need to scale reservation parameters
+> +	 * according to current frequency and CPU maximum capacity.
+> +	 */
+> +	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM)) {
+> +		scaled_delta_exec = grub_reclaim(delta_exec,
+> +						 rq,
+> +						 &curr->dl);
+> +	} else {
+> +		unsigned long scale_freq = arch_scale_freq_capacity(cpu);
+> +		unsigned long scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
+> +
+> +		scaled_delta_exec = cap_scale(delta_exec, scale_freq);
+> +		scaled_delta_exec = cap_scale(scaled_delta_exec, scale_cpu);
+> +	}
+> +
+> +	dl_se->runtime -= scaled_delta_exec;
+>  
 
-On 07/18/2017 11:42 PM, Rob Herring wrote:
-> Now that we have a custom printf format specifier, convert users of
-> full_name to use %pOF instead. This is preparation to remove storing
-> of the full path string for each node.
-> 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Patrice Chotard <patrice.chotard@st.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: kernel@stlinux.com
-> ---
->   drivers/cpufreq/pmac64-cpufreq.c | 2 +-
->   drivers/cpufreq/sti-cpufreq.c    | 8 ++++----
->   2 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-> index 267e0894c62d..be623dd7b9f2 100644
-> --- a/drivers/cpufreq/pmac64-cpufreq.c
-> +++ b/drivers/cpufreq/pmac64-cpufreq.c
-> @@ -516,7 +516,7 @@ static int __init g5_pm72_cpufreq_init(struct device_node *cpunode)
->   		goto bail;
->   	}
-> 
-> -	DBG("cpufreq: i2c clock chip found: %s\n", hwclock->full_name);
-> +	DBG("cpufreq: i2c clock chip found: %pOF\n", hwclock);
-> 
->   	/* Now get all the platform functions */
->   	pfunc_cpu_getfreq =
-> diff --git a/drivers/cpufreq/sti-cpufreq.c b/drivers/cpufreq/sti-cpufreq.c
-> index d2d0430d09d4..47105735df12 100644
-> --- a/drivers/cpufreq/sti-cpufreq.c
-> +++ b/drivers/cpufreq/sti-cpufreq.c
-> @@ -65,8 +65,8 @@ static int sti_cpufreq_fetch_major(void) {
->   	ret = of_property_read_u32_index(np, "st,syscfg",
->   					 MAJOR_ID_INDEX, &major_offset);
->   	if (ret) {
-> -		dev_err(dev, "No major number offset provided in %s [%d]\n",
-> -			np->full_name, ret);
-> +		dev_err(dev, "No major number offset provided in %pOF [%d]\n",
-> +			np, ret);
->   		return ret;
->   	}
-> 
-> @@ -92,8 +92,8 @@ static int sti_cpufreq_fetch_minor(void)
->   					 MINOR_ID_INDEX, &minor_offset);
->   	if (ret) {
->   		dev_err(dev,
-> -			"No minor number offset provided %s [%d]\n",
-> -			np->full_name, ret);
-> +			"No minor number offset provided %pOF [%d]\n",
-> +			np, ret);
->   		return ret;
->   	}
-> 
-> --
-> 2.11.0
-> 
-
-For ST cpufreq:
-
-Acked-by: Patrice Chotard <patrice.chotard@st.com>
-
-Thanks
+This I don't get... 
