@@ -1,103 +1,79 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH v9 6/9] Documentation: Add sbs-manager device tree node documentation
-Date: Wed, 19 Jul 2017 10:14:08 +0800
-Message-ID: <1500430451-43858-7-git-send-email-preid@electromag.com.au>
+From: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Subject: [PATCH v9 9/9] power: supply: sbs-battery: move gpio present detect to sbs_get_property
+Date: Wed, 19 Jul 2017 10:14:11 +0800
+Message-ID: <1500430451-43858-10-git-send-email-preid@electromag.com.au>
 References: <1500430451-43858-1-git-send-email-preid@electromag.com.au>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy1.45ru.net.au ([203.30.46.145]:36238 "EHLO
-        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1752627AbdGSCOY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 22:14:24 -0400
-In-Reply-To: <1500430451-43858-1-git-send-email-preid@electromag.com.au>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1500430451-43858-1-git-send-email-preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jdelvare-IBi9RG/b67k@public.gmane.org, jglauber-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, david.daney-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, preid@electromag.com.au, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, benjamin.tissoires@redhat.com
-Cc: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
 
-From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Currently when a gpio is defined for battery presence it is only used in
+the sbs_get_battery_presence_and_health function for 2 properties.
+All other properties currently try to read data form the battery before
+returning an error if not present. We should know in advance that no
+data is going to returned.
 
-This patch adds device tree documentation for the sbs-manager
+As the driver tries multiple times to access a property, this prevents
+a lot of smbus accesses, which had a significant effect on device boot-up.
+As when the device is registered lots of property accesses are attempted
+during boot.
 
-Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Signed-off-by: Phil Reid <preid@electromag.com.au>
-Acked-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+If no gpio is used for presence detection no change in behaviour should
+occur.
+
+Signed-off-by: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Reviewed-by: Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
 ---
- .../bindings/power/supply/sbs,sbs-manager.txt      | 66 ++++++++++++++++++++++
- 1 file changed, 66 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
+ drivers/power/supply/sbs-battery.c | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
-new file mode 100644
-index 0000000..4b219557
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
-@@ -0,0 +1,66 @@
-+Binding for sbs-manager
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index f705945..686e7cb 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -325,16 +325,6 @@ static int sbs_get_battery_presence_and_health(
+ 	union power_supply_propval *val)
+ {
+ 	s32 ret;
+-	struct sbs_info *chip = i2c_get_clientdata(client);
+-
+-	if (psp == POWER_SUPPLY_PROP_PRESENT && chip->gpio_detect) {
+-		ret = gpiod_get_value_cansleep(chip->gpio_detect);
+-		if (ret < 0)
+-			return ret;
+-		val->intval = ret;
+-		chip->is_present = val->intval;
+-		return ret;
+-	}
+ 
+ 	/*
+ 	 * Write to ManufacturerAccess with ManufacturerAccess command
+@@ -600,6 +590,19 @@ static int sbs_get_property(struct power_supply *psy,
+ 	struct sbs_info *chip = power_supply_get_drvdata(psy);
+ 	struct i2c_client *client = chip->client;
+ 
++	if (chip->gpio_detect) {
++		ret = gpiod_get_value_cansleep(chip->gpio_detect);
++		if (ret < 0)
++			return ret;
++		if (psp == POWER_SUPPLY_PROP_PRESENT) {
++			val->intval = ret;
++			chip->is_present = val->intval;
++			return 0;
++		}
++		if (ret == 0)
++			return -ENODATA;
++	}
 +
-+Required properties:
-+- compatible: "<vendor>,<part-number>", "sbs,sbs-charger" as fallback. The part
-+  number compatible string might be used in order to take care of vendor
-+  specific registers.
-+- reg: integer, i2c address of the device. Should be <0xa>.
-+Optional properties:
-+- gpio-controller: Marks the port as GPIO controller.
-+  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
-+- #gpio-cells: Should be <2>. The first cell is the pin number, the second cell
-+  is used to specify optional parameters:
-+  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
-+
-+From OS view the device is basically an i2c-mux used to communicate with up to
-+four smart battery devices at address 0xb. The driver actually implements this
-+behaviour. So standard i2c-mux nodes can be used to register up to four slave
-+batteries. Channels will be numerated starting from 1 to 4.
-+
-+Example:
-+
-+batman@a {
-+    compatible = "lltc,ltc1760", "sbs,sbs-manager";
-+    reg = <0x0a>;
-+    #address-cells = <1>;
-+    #size-cells = <0>;
-+
-+    gpio-controller;
-+    #gpio-cells = <2>;
-+
-+    i2c@1 {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        reg = <1>;
-+
-+        battery@b {
-+            compatible = "ti,bq2060", "sbs,sbs-battery";
-+            reg = <0x0b>;
-+            sbs,battery-detect-gpios = <&batman 1 1>;
-+        };
-+    };
-+
-+    i2c@2 {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        reg = <2>;
-+
-+        battery@b {
-+            compatible = "ti,bq2060", "sbs,sbs-battery";
-+            reg = <0x0b>;
-+            sbs,battery-detect-gpios = <&batman 2 1>;
-+        };
-+    };
-+
-+    i2c@3 {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        reg = <3>;
-+
-+        battery@b {
-+            compatible = "ti,bq2060", "sbs,sbs-battery";
-+            reg = <0x0b>;
-+            sbs,battery-detect-gpios = <&batman 3 1>;
-+        };
-+    };
-+};
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_PRESENT:
+ 	case POWER_SUPPLY_PROP_HEALTH:
 -- 
 1.8.3.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
