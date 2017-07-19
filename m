@@ -1,50 +1,43 @@
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Subject: Re: [RFC 06/22] kvm: Adapt assembly for PIE support
-Date: Wed, 19 Jul 2017 23:58:07 +0100
-Message-ID: <CAKv+Gu_0o+PrMAWRSP5Y4R7QO87+zAYf=B=VDF1icqJvWL0PoA@mail.gmail.com>
-References: <20170718223333.110371-1-thgarnie@google.com> <20170718223333.110371-7-thgarnie@google.com>
- <CAMzpN2gF7QxDbVG-6ad3Qarcn1N_JT5tit9CMvQL95LQGeZivA@mail.gmail.com>
- <CAJcbSZGqY=btU=+eWfgdhF0je0Yn_GxkymFHn+OV-1BuzgbRYw@mail.gmail.com> <0cdd02e1-8bf2-41cd-f085-c338c2fd8e25@zytor.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: cpuidle and cpufreq coupling?
+Date: Thu, 20 Jul 2017 01:17:28 +0200
+Message-ID: <CAJZ5v0i2B0=cPB5VxXJUb36LW9hp_L7k-moj+Eg+vPvfPHFcSA@mail.gmail.com>
+References: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-9072-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <0cdd02e1-8bf2-41cd-f085-c338c2fd8e25@zytor.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Thomas Garnier <thgarnie@google.com>, Brian Gerst <brgerst@gmail.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.c>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Markus Mayer <code@mmayer.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19 July 2017 at 23:27, H. Peter Anvin <hpa@zytor.com> wrote:
-> On 07/19/17 08:40, Thomas Garnier wrote:
->>>
->>> This doesn't look right.  It's accessing a per-cpu variable.  The
->>> per-cpu section is an absolute, zero-based section and not subject to
->>> relocation.
->>
->> PIE does not respect the zero-based section, it tries to have
->> everything relative. Patch 16/22 also adapt per-cpu to work with PIE
->> (while keeping the zero absolute design by default).
->>
+On Thu, Jul 20, 2017 at 12:54 AM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+> Hi,
 >
-> This is silly.  The right thing is for PIE is to be explicitly absolute,
-> without (%rip).  The use of (%rip) memory references for percpu is just
-> an optimization.
+> We have a particular ARM CPU design that is drawing quite a lot of
+> current upon exit from WFI, and it does so in a way even before the
+> first instruction out of WFI is executed. That means we cannot influence
+> directly the exit from WFI other than by changing the state in which it
+> would be previously entered because of this "dead" time during which the
+> internal logic needs to ramp up back where it left.
 >
+> A naive approach to solving this problem because we have CPU frequency
+> scaling available would be to do the following:
+>
+> - just before entering WFI, switch to a low frequency OPP
+> - enter WFI
+> - upon exit from WFI, ramp up the frequency back to e.g: highest OPP
+>
+> Some of the parts that I am not exactly clear on would be:
+>
+> - would that qualify as a cpuidle governor of some kind that ties in
+> which cpufreq?
+> - would using cpufreq_driver_fast_switch() be an appropriate API to use
+> from outside
 
-Sadly, there is an issue in binutils that may prevent us from doing
-this as cleanly as we would want.
+Generally, the idle driver is expected to manipulate OPPs as suitable
+for it at the low level.
 
-For historical reasons, bfd.ld emits special symbols like
-__GLOBAL_OFFSET_TABLE__ as absolute symbols with a section index of
-SHN_ABS, even though it is quite obvious that they are relative like
-any other symbol that points into the image. Unfortunately, this means
-that binutils needs to emit R_X86_64_RELATIVE relocations even for
-SHN_ABS symbols, which means we lose the ability to use both absolute
-and relocatable symbols in the same PIE image (unless the reloc tool
-can filter them out)
-
-More info here:
-https://sourceware.org/bugzilla/show_bug.cgi?id=19818
+Thanks,
+Rafael
