@@ -1,142 +1,121 @@
-From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [PATCH v3 1/4] time: rtc-lib: Add rtc_show_time(const char *prefix_msg)
-Date: Tue, 18 Jul 2017 17:00:04 -0700
-Message-ID: <CALAqxLWK+_vnG_bpp4dPguNDTt1=JG6GANJm6b=V8gF1UGi1VQ@mail.gmail.com>
-References: <20170718221607.132539-1-salyzyn@android.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 3/3] PM / timekeeping: Print debug messages when requested
+Date: Wed, 19 Jul 2017 02:42:43 +0200
+Message-ID: <23461968.oJ1tNQorSa@aspire.rjw.lan>
+References: <2539550.y54cRb749c@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170718221607.132539-1-salyzyn@android.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Salyzyn <salyzyn@android.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-rtc@vger.kernel.org, andy.shevchenko@gmail.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Mark Salyzyn <salyzyn@google.com>, Thierry Strudel <tstrudel@google.com>, Thomas Gleixner <tglx@linutronix.de>, Josh Triplett <josh@joshtriplett.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Kees Cook <keescook@chromium.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50177 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751906AbdGSAvA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jul 2017 20:51:00 -0400
+In-Reply-To: <2539550.y54cRb749c@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On Tue, Jul 18, 2017 at 3:15 PM, Mark Salyzyn <salyzyn@android.com> wrote:
-> Go directly to the rtc for persistent wall clock time and print.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-So, first,  the above doesn't seem accurate to me. You're using
-getnstimeofday64() which doesn't touch the RTC.
+The messages printed by tk_debug_account_sleep_time() are basically
+useful for system sleep debugging, so print them only when the other
+debug messages from the core suspend/hibernate code are enabled.
 
-> Useful if REALTIME is required to be logged in a low level power
-> management function or when clock activities are suspended.  An
-> aid to permit user space alignment of kernel activities.
+While at it, make it clear that the messages from
+tk_debug_account_sleep_time() are about timekeeping suspend
+duration, because in general timekeeping may be suspeded and
+resumed for multiple times during one system suspend-resume cycle.
 
-This explanation doesn't make much sense either. I've tried looking
-over the patch series to better understand but its not super clear
-right off.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ include/linux/suspend.h         |   10 ++++++++--
+ kernel/power/main.c             |   10 +++++++---
+ kernel/time/timekeeping_debug.c |    5 +++--
+ 3 files changed, 18 insertions(+), 7 deletions(-)
 
-A good practice is to start by explaining what you want to do ("allow
-for battery and suspend time analysis"), and why the current upstream
-kernel doesn't provide what you need ("timekeeping can be suspended,
-so we want to reference the persistent clock that is always running
-and provide a way to align those timestamps with
-CLOCK_MONOTONIC/CLOCK_REALTIME timestamps that userspace uses"), and
-only then explain how your solution addresses this issue.
-
-
-> Feature activated by CONFIG_RTC_SHOW_TIME.
->
-> Signed-off-by: Mark Salyzyn <salyzyn@android.com>
->
-> v2
-> - move implementation to kernel timekeeping from rtc_lib files
-> - use rtc_time64_to_tm() instead of rtc_time_to_tm()
-> - use inline in include/linux/rtc.h for !CONFIG_RTC_SHOW_TIME
-> v3
-> - _correctly_ use rtc_time64_to_tm
-> ---
->  include/linux/rtc.h         |  5 +++++
->  kernel/time/Kconfig         | 11 +++++++++++
->  kernel/time/Makefile        |  1 +
->  kernel/time/rtc_show_time.c | 23 +++++++++++++++++++++++
->  4 files changed, 40 insertions(+)
->  create mode 100644 kernel/time/rtc_show_time.c
->
-> diff --git a/include/linux/rtc.h b/include/linux/rtc.h
-> index 0a0f0d14a5fb..779401c937d5 100644
-> --- a/include/linux/rtc.h
-> +++ b/include/linux/rtc.h
-> @@ -22,6 +22,11 @@ extern int rtc_year_days(unsigned int day, unsigned int month, unsigned int year
->  extern int rtc_valid_tm(struct rtc_time *tm);
->  extern time64_t rtc_tm_to_time64(struct rtc_time *tm);
->  extern void rtc_time64_to_tm(time64_t time, struct rtc_time *tm);
-> +#ifdef CONFIG_RTC_SHOW_TIME
-> +extern void rtc_show_time(const char *prefix_msg);
-> +#else
-> +static inline void rtc_show_time(const char *prefix_msg) { }
-> +#endif
->  ktime_t rtc_tm_to_ktime(struct rtc_time tm);
->  struct rtc_time rtc_ktime_to_tm(ktime_t kt);
->
-> diff --git a/kernel/time/Kconfig b/kernel/time/Kconfig
-> index ac09bc29eb08..4da093ae3e37 100644
-> --- a/kernel/time/Kconfig
-> +++ b/kernel/time/Kconfig
-> @@ -145,3 +145,14 @@ config HIGH_RES_TIMERS
->
->  endmenu
->  endif
-> +
-> +config RTC_SHOW_TIME
-> +       bool "rtc_show_time instrumentation"
-> +       select RTC_LIB
-> +       help
-> +         Activate rtc_show_time(const char *msg) wall clock time
-> +         instrumentation.
-> +
-> +         The instrumentation is used to help triage and synchronize
-> +         kernel logs using CLOCK_MONOTONIC and user space activity
-> +         logs utilizing CLOCK_REALTIME references.
-
-RTC_SHOW_TIME seems like a poor name for this, as you're not really
-doing much with the RTC here (other then printing the current
-CLOCK_REALTIME value to be printed out in in a format that's commonly
-used w/ RTC hardware).  As for the reference to CLOCK_MONOTONIC, I
-assume you are correlating that via printk timestamp (which may not
-always be enabled)?
-
-
-> diff --git a/kernel/time/Makefile b/kernel/time/Makefile
-> index 938dbf33ef49..66f17e641052 100644
-> --- a/kernel/time/Makefile
-> +++ b/kernel/time/Makefile
-> @@ -17,3 +17,4 @@ obj-$(CONFIG_GENERIC_SCHED_CLOCK)             += sched_clock.o
->  obj-$(CONFIG_TICK_ONESHOT)                     += tick-oneshot.o tick-sched.o
->  obj-$(CONFIG_DEBUG_FS)                         += timekeeping_debug.o
->  obj-$(CONFIG_TEST_UDELAY)                      += test_udelay.o
-> +obj-$(CONFIG_RTC_SHOW_TIME)                    += rtc_show_time.o
-> diff --git a/kernel/time/rtc_show_time.c b/kernel/time/rtc_show_time.c
-> new file mode 100644
-> index 000000000000..bbf4f92abf4f
-> --- /dev/null
-> +++ b/kernel/time/rtc_show_time.c
-> @@ -0,0 +1,23 @@
-> +/*
-> + * rtc time printing utility functions
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/rtc.h>
-> +
-> +void rtc_show_time(const char *prefix_msg)
-> +{
-> +       struct timespec64 ts;
-> +       struct rtc_time tm;
-> +
-> +       getnstimeofday64(&ts);
-> +       rtc_time64_to_tm(ts.tv_sec, &tm);
-> +       pr_info("%s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n",
-> +               prefix_msg ? prefix_msg : "Time:",
-> +               tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-> +               tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
-> +}
-> +EXPORT_SYMBOL(rtc_show_time);
-
-Overall, this does feel very single-use-case specific.
-
-thanks
--john
+Index: linux-pm/include/linux/suspend.h
+===================================================================
+--- linux-pm.orig/include/linux/suspend.h
++++ linux-pm/include/linux/suspend.h
+@@ -491,16 +491,22 @@ static inline void unlock_system_sleep(v
+ 
+ #ifdef CONFIG_PM_SLEEP_DEBUG
+ extern bool pm_print_times_enabled;
+-extern __printf(1, 2) void pm_pr_dbg(const char *fmt, ...);
++extern __printf(2, 3) void __pm_pr_dbg(bool defer, const char *fmt, ...);
+ #else
+ #define pm_print_times_enabled	(false)
+ 
+ #include <linux/printk.h>
+ 
+-#define pm_pr_dbg(fmt, ...) \
++#define pm_pr_dbg(defer, fmt, ...) \
+ 	no_printk(KERN_DEBUG fmt, ##__VA_ARGS__)
+ #endif
+ 
++#define pm_pr_dbg(fmt, ...) \
++	__pm_pr_dbg(false, fmt, ##__VA_ARGS__)
++
++#define pm_deferred_pr_dbg(fmt, ...) \
++	__pm_pr_dbg(true, fmt, ##__VA_ARGS__)
++
+ #ifdef CONFIG_PM_AUTOSLEEP
+ 
+ /* kernel/power/autosleep.c */
+Index: linux-pm/kernel/power/main.c
+===================================================================
+--- linux-pm.orig/kernel/power/main.c
++++ linux-pm/kernel/power/main.c
+@@ -388,13 +388,14 @@ static ssize_t pm_debug_messages_store(s
+ power_attr(pm_debug_messages);
+ 
+ /**
+- * pm_pr_dbg - Print a suspend debug message to the kernel log.
++ * __pm_pr_dbg - Print a suspend debug message to the kernel log.
++ * @defer: Whether or not to use printk_deferred() to print the message.
+  * @fmt: Message format.
+  *
+  * The message will be emitted if enabled through the pm_debug_messages
+  * sysfs attribute.
+  */
+-void pm_pr_dbg(const char *fmt, ...)
++void __pm_pr_dbg(bool defer, const char *fmt, ...)
+ {
+ 	struct va_format vaf;
+ 	va_list args;
+@@ -407,7 +408,10 @@ void pm_pr_dbg(const char *fmt, ...
+ 	vaf.fmt = fmt;
+ 	vaf.va = &args;
+ 
+-	printk(KERN_DEBUG "PM: %pV", &vaf);
++	if (defer)
++		printk_deferred(KERN_DEBUG "PM: %pV", &vaf);
++	else
++		printk(KERN_DEBUG "PM: %pV", &vaf);
+ 
+ 	va_end(args);
+ }
+Index: linux-pm/kernel/time/timekeeping_debug.c
+===================================================================
+--- linux-pm.orig/kernel/time/timekeeping_debug.c
++++ linux-pm/kernel/time/timekeeping_debug.c
+@@ -19,6 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/seq_file.h>
++#include <linux/suspend.h>
+ #include <linux/time.h>
+ 
+ #include "timekeeping_internal.h"
+@@ -75,7 +76,7 @@ void tk_debug_account_sleep_time(struct
+ 	int bin = min(fls(t->tv_sec), NUM_BINS-1);
+ 
+ 	sleep_time_bin[bin]++;
+-	printk_deferred(KERN_INFO "Suspended for %lld.%03lu seconds\n",
+-			(s64)t->tv_sec, t->tv_nsec / NSEC_PER_MSEC);
++	pm_deferred_pr_dbg("Timekeeping suspended for %lld.%03lu seconds\n",
++			   (s64)t->tv_sec, t->tv_nsec / NSEC_PER_MSEC);
+ }
+ 
