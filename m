@@ -1,99 +1,37 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v16 2/7] power: add power sequence library
-Date: Wed, 19 Jul 2017 10:56:00 +0800
-Message-ID: <20170719025559.GC26218@b29397-desktop>
-References: <1498027328-25078-1-git-send-email-peter.chen@nxp.com>
- <10723509.cz5GGA4OTz@aspire.rjw.lan>
- <20170710022815.GA8720@b29397-desktop>
- <2659617.dvNVihq86F@aspire.rjw.lan>
- <20170718042955.GA12080@b29397-desktop>
- <CAJZ5v0hGbJuqqY6Pq5cYPrawSGW-zdhYHj0ovhJ9zXRAkBPCRQ@mail.gmail.com>
+From: Brian Gerst <brgerst@gmail.com>
+Subject: Re: [RFC 16/22] x86/percpu: Adapt percpu for PIE support
+Date: Tue, 18 Jul 2017 23:08:34 -0400
+Message-ID: <CAMzpN2g5YkFZTY7yfvG03QUKc-=asKMZbqke9g4e2oT_pgg7Yw@mail.gmail.com>
+References: <20170718223333.110371-1-thgarnie@google.com> <20170718223333.110371-17-thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-sn1nam02on0072.outbound.protection.outlook.com ([104.47.36.72]:12672
-        "EHLO NAM02-SN1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1752072AbdGSC4p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 18 Jul 2017 22:56:45 -0400
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hGbJuqqY6Pq5cYPrawSGW-zdhYHj0ovhJ9zXRAkBPCRQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <kernel-hardening-return-9027-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20170718223333.110371-17-thgarnie@google.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>Chris
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Chen <peter.chen@nxp.com>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Stephen Boyd <stephen.boyd@linaro.org>, frank.li@nxp.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Gary Bisson <gary.bisson@boundarydevices.com>, Fabio Estevam <festevam@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Vaibhav Hiremath <vaibhav.hiremath@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, mka@chromium.org, Alan Stern <stern@rowland.harvard.edu>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, mail@maciej.szmigiero.name, Pawel Moll <pawel.moll@arm>
 
-On Tue, Jul 18, 2017 at 07:06:05PM +0200, Rafael J. Wysocki wrote:
-> On Tue, Jul 18, 2017 at 6:29 AM, Peter Chen <hzpeterchen@gmail.com> wrote:
-> > On Mon, Jul 17, 2017 at 03:39:07PM +0200, Rafael J. Wysocki wrote:
-> >> > Sorry, I should describe more.
-> >> >
-> >> > Let's take USB bus as an example, when the new USB device is at the
-> >> > host port, the device structure at device model is not created until
-> >> > it is discoverable by the USB bus. If this new USB device needs to be
-> >> > powered on before can be discoverable by the bus, the device structure
-> >> > will be not created without powering on operation. The code usb_alloc_dev
-> >> > (drivers/usb/core/usb.c) is only called for discoverable device.
-> >> >
-> >> > Unlike the other bus, eg, platform bus, it creates device structure
-> >> > according to DT node. The USB bus was designed for hot plug model, the
-> >> > device structure is for discoverable device. In recent years, we begin
-> >> > to have some hard-wired USB device, Eg, onboard USB-hub, onboard USB 4G
-> >> > Modem, etc at the market. It needs some board level power operation before
-> >> > it can be found by the USB bus. This patch set is designed primarily for
-> >> > fix this kind of problem. You will see at at pwrseq_generic.c, we use DT
-> >> > version clock API of_clk_get and DT version gpio API of_get_named_gpio_flags
-> >> > instead of device structure version, like devm_clk_get and
-> >> > devm_gpiod_get_optional.
-> >> >
-> >> > MMC system has similar use case, it creates power sequence platform
-> >> > device for this issue, but all those power stuffs (clock, gpio, etc)
-> >> > may not be suitable as a dedicated virtual device at DT, they are belonged
-> >> > to one physical device, so this patch set is created to see if this issue
-> >> > can be fixed better.
-> >>
-> >> OK, thanks for the explanation.
-> >>
-> >> The above needs to be part of your problem statement.
-> >
-> > Ok, I will add it to cover letter.
-> >
-> >> >
-> >> > The bus will power up all device nodes in this bus according to DT
-> >> > information, the device structure has not created at this time.
-> >>
-> >> OK
-> >>
-> >> I still think that the information on power resources depended on by devices
-> >> should be used for power management as well as for the initial power-up.
-> >>
-> >> The most straightforward way to arrange for that would be to make it possible
-> >> to find the DT node matching the device after the device has been discovered
-> >> and struct device created for it, say by USB.  That would require adding some
-> >> more information on the device to the DT node, probably.
-> >
-> > After the device is created, the device node structure is under struct
-> > device, say dev->of_node. The most difficulty for this issue is the
-> > device creation is dynamic and is after the physical device is
-> > discovered by the bus, the initial power-up is needed before the device
-> > can be discovered by the bus.
-> 
-> So you power up all devices on the bus using the information from
-> of_nodes upfront.
-> 
+On Tue, Jul 18, 2017 at 6:33 PM, Thomas Garnier <thgarnie@google.com> wrote:
+> Perpcu uses a clever design where the .percu ELF section has a virtual
+> address of zero and the relocation code avoid relocating specific
+> symbols. It makes the code simple and easily adaptable with or without
+> SMP support.
+>
+> This design is incompatible with PIE because generated code always try to
+> access the zero virtual address relative to the default mapping address.
+> It becomes impossible when KASLR is configured to go below -2G. This
+> patch solves this problem by removing the zero mapping and adapting the GS
+> base to be relative to the expected address. These changes are done only
+> when PIE is enabled. The original implementation is kept as-is
+> by default.
 
-I think your mean call pm_device_power_up(struct device *dev) for bus
-level device (eg, USB HUB for USB), yeah, I can do that. But we still
-have below problem:
+The reason the per-cpu section is zero-based on x86-64 is to
+workaround GCC hardcoding the stack protector canary at %gs:40.  So
+this patch is incompatible with CONFIG_STACK_PROTECTOR.
 
-Where we can put the kinds of power sequence implementation
-(eg, pwrseq_generic.c) and the match mechanism between device
-node and kinds of power sequence(eg, of_pwrseq_on at core.c)? These
-stuffs can be shared among subsystems, and is better to use
-one framework for it. MMC subsystem adds such things at its core
-folder (drivers/mmc/core/pwrseq*) currently.
-
--- 
-
-Best Regards,
-Peter Chen
+--
+Brian Gerst
