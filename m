@@ -1,52 +1,61 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH v1 8/8] sched/deadline: make bandwidth enforcement
- scale-invariant
-Date: Wed, 19 Jul 2017 09:21:43 +0200
-Message-ID: <20170719072143.lploljodns3kfucf@hirez.programming.kicks-ass.net>
-References: <20170705085905.6558-1-juri.lelli@arm.com>
- <20170705085905.6558-9-juri.lelli@arm.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v2 1/4] time: rtc-lib: Add rtc_show_time(const char
+ *prefix_msg)
+Date: Wed, 19 Jul 2017 09:23:25 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1707190913500.2286@nanos>
+References: <20170718211930.123077-1-salyzyn@android.com> <alpine.DEB.2.20.1707182338470.2425@nanos> <8afb372a-3951-6fb9-c0be-82756623061f@android.com> <alpine.DEB.2.20.1707190023010.2425@nanos> <5016ccc4-7faa-b61e-c0a1-b851620849c7@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:55625 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752315AbdGSHWD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jul 2017 03:22:03 -0400
-Content-Disposition: inline
-In-Reply-To: <20170705085905.6558-9-juri.lelli@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5016ccc4-7faa-b61e-c0a1-b851620849c7@android.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mark Salyzyn <salyzyn@android.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, andy.shevchenko@gmail.com, Mark Salyzyn <salyzyn@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thierry Strudel <tstrudel@google.com>, John Stultz <john.stultz@linaro.org>, Richard Cochran <richardcochran@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Kees Cook <keescook@chromium.org>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Prarit Bhargava <prarit@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
-On Wed, Jul 05, 2017 at 09:59:05AM +0100, Juri Lelli wrote:
-> @@ -1156,9 +1157,26 @@ static void update_curr_dl(struct rq *rq)
->  	if (unlikely(dl_entity_is_special(dl_se)))
->  		return;
->  
-> -	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM))
-> -		delta_exec = grub_reclaim(delta_exec, rq, &curr->dl);
-> -	dl_se->runtime -= delta_exec;
-> +	/*
-> +	 * For tasks that participate in GRUB, we implement GRUB-PA: the
-> +	 * spare reclaimed bandwidth is used to clock down frequency.
-> +	 *
-> +	 * For the others, we still need to scale reservation parameters
-> +	 * according to current frequency and CPU maximum capacity.
-> +	 */
-> +	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM)) {
-> +		scaled_delta_exec = grub_reclaim(delta_exec,
-> +						 rq,
-> +						 &curr->dl);
-> +	} else {
-> +		unsigned long scale_freq = arch_scale_freq_capacity(cpu);
-> +		unsigned long scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
-> +
-> +		scaled_delta_exec = cap_scale(delta_exec, scale_freq);
-> +		scaled_delta_exec = cap_scale(scaled_delta_exec, scale_cpu);
-> +	}
-> +
-> +	dl_se->runtime -= scaled_delta_exec;
->  
+On Tue, 18 Jul 2017, Mark Salyzyn wrote:
+> On 07/18/2017 03:35 PM, Thomas Gleixner wrote:
+> > There was some discussion about making the clock source for dmesg time
+> > stamps selectable, so you can use MONOTONIC, REALTIME, BOOTTIME. The
+> > patches looked sensible, but there was some showstopper vs. the user space
+> > dmesg utility. See:
+> 
+> The timestamps are useful for the 'second' purpose of these patches when
+> dmesg time is BOOTTIME or MONOTONIC, and can be turned off if REALTIME
+> is selected. Having rtc_show_time a single point for switching this no doubt
+> helps,
+> not hinders, that dmesg issue.
+> 
+> The inflection points would still serve a purpose, still need
+> suspend/resume/hibernate/restore. The reboot messages are _only_ useful to
+> us with their timestamps, as I checked and the only tools that use those are
+> for log synchronization. We may be able to do away with them on REALTIME
+> dmesg'ing; but the standardization of the message as a marker would have a
+> legacy purpose (!)
+> 
+> NB: We have a similar configuration for the user space logger, which can be
+> configured to report in MONOTONIC time. We have yet to have a vendor
+> use the feature, opting for REALTIME logging for user space activities.
+> Our klogd (which runs at background priority and is batched) manages a
+> histogram relationship between MONOTONIC and REALTIME helped by these
+> prints and incorporates the REALTIME dmesg logs merged into our user
+> space logging database.
 
-This I don't get... 
+There is another option to remedy this and the dmesg tooling issues:
+
+Instead of switching the time stamps in dmesg to a different clock we might
+as well have an optional secondary timestamp. So instead of:
+
+ [  341.590930] wlan0: associated
+
+you would get:
+
+ [  341.590930] [ sec.usec] wlan0: associated
+
+where the second time stamp would be CLOCK_REALTIME/BOOTTIME.
+
+That should also solve Prarits problem, hmm?
+
+Thanks,
+
+	tglx
