@@ -1,68 +1,92 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [Eas-dev] [PATCH V3 2/3] cpufreq: schedutil: Process remote
- callback for shared policies
-Date: Thu, 20 Jul 2017 15:58:01 +0200
-Message-ID: <20170720135801.qdqm5aypsxq45wrd@hirez.programming.kicks-ass.net>
-References: <cover.1499927699.git.viresh.kumar@linaro.org>
- <3fbaa9aaba19bfff5ff25d2c4141e88fb83f1ea9.1499927699.git.viresh.kumar@linaro.org>
- <5968263D.1020801@codeaurora.org>
- <20170714050320.GJ352@vireshk-i7>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: [RFC 16/22] x86/percpu: Adapt percpu for PIE support
+Date: Thu, 20 Jul 2017 07:26:39 -0700
+Message-ID: <CAJcbSZHuOhMHW6OTyt7-vZkPLS3XRQ48gpkF-TyohXpDW+825w@mail.gmail.com>
+References: <20170718223333.110371-1-thgarnie@google.com> <20170718223333.110371-17-thgarnie@google.com>
+ <CAMzpN2g5YkFZTY7yfvG03QUKc-=asKMZbqke9g4e2oT_pgg7Yw@mail.gmail.com>
+ <CAJcbSZFXrDZikh9P5M81ztkiMv7EhO4x0bzBdYE8RYC=HMZgqg@mail.gmail.com> <25a2974a-fbb4-ea4b-d090-582d6d0de7fd@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:34302 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S936357AbdGTN6K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 09:58:10 -0400
-Content-Disposition: inline
-In-Reply-To: <20170714050320.GJ352@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <kernel-hardening-return-9088-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <25a2974a-fbb4-ea4b-d090-582d6d0de7fd@zytor.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Brian Gerst <brgerst@gmail.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christo
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, smuckle.linux@gmail.com, eas-dev@lists.linaro.org, sudeep.holla@arm.com
 
-On Fri, Jul 14, 2017 at 10:33:20AM +0530, Viresh Kumar wrote:
-> On 13-07-17, 19:02, Saravana Kannan wrote:
-> > Honestly, this seems like such a chip/platform specific decision. There's no
-> > reason that one can't have a chip where you can change the frequency of any
-> > CPU from any other CPU. If there's such a limitation, we should let that be
-> > handled at the CPU freq driver level instead of having to know about any of
-> > that at the scheduler. Heck, at worst case, the CPU freq driver can send an
-> > IPI and execute that work on the CPU of interest.
-> > 
-> > In all Qualcomm chipsets (well, at least the ones that have been used in
-> > Android devices so far), we can switch the frequency of any CPU from any
-> > other CPU. If we can do that even without fast switching, why wouldn't any
-> > theoretical fast switching be incapable of supporting this?
+On Wed, Jul 19, 2017 at 4:33 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> On 07/19/17 11:26, Thomas Garnier wrote:
+>> On Tue, Jul 18, 2017 at 8:08 PM, Brian Gerst <brgerst@gmail.com> wrote:
+>>> On Tue, Jul 18, 2017 at 6:33 PM, Thomas Garnier <thgarnie@google.com> wrote:
+>>>> Perpcu uses a clever design where the .percu ELF section has a virtual
+>>>> address of zero and the relocation code avoid relocating specific
+>>>> symbols. It makes the code simple and easily adaptable with or without
+>>>> SMP support.
+>>>>
+>>>> This design is incompatible with PIE because generated code always try to
+>>>> access the zero virtual address relative to the default mapping address.
+>>>> It becomes impossible when KASLR is configured to go below -2G. This
+>>>> patch solves this problem by removing the zero mapping and adapting the GS
+>>>> base to be relative to the expected address. These changes are done only
+>>>> when PIE is enabled. The original implementation is kept as-is
+>>>> by default.
+>>>
+>>> The reason the per-cpu section is zero-based on x86-64 is to
+>>> workaround GCC hardcoding the stack protector canary at %gs:40.  So
+>>> this patch is incompatible with CONFIG_STACK_PROTECTOR.
+>>
+>> Ok, that make sense. I don't want this feature to not work with
+>> CONFIG_CC_STACKPROTECTOR*. One way to fix that would be adding a GDT
+>> entry for gs so gs:40 points to the correct memory address and
+>> gs:[rip+XX] works correctly through the MSR.
+>
+> What are you talking about?  A GDT entry and the MSR do the same thing,
+> except that a GDT entry is limited to an offset of 0-0xffffffff (which
+> doesn't work for us, obviously.)
+>
 
-I spoke with Sudeep since the last email; and the proposed interface
-(SCMI) is a shmem/mailbox one, which can indeed change the frequency of
-another CPU.
+A GDT entry would allow gs:0x40 to be valid while all gs:[rip+XX]
+addresses uses the MSR.
 
-> > Is this a limitation specific to x86 that we are assuming all
-> > architectures and platforms are going to have?
+I didn't tested it but that was used on the RFG mitigation [1]. The fs
+segment register was used for both thread storage and shadow stack.
 
-You are right in that x86 cannot do this. Sending IPIs is fairly
-expensive though :/
+[1] http://xlab.tencent.com/en/2016/11/02/return-flow-guard/
 
-> The default assumption in cpufreq core is that any CPU from a policy
-> can change freq for that policy. Yes, we surely have cases where any
-> CPU can change freq of any other CPU (even in different policies).
-> Perhaps all ARM platforms are like that, not sure.
-> 
-> And so I added a special flag for that in my previous version, but the
-> idea here is to get a simple solution merged first and then we can
-> have a separate patch later to support freq switching from all CPUs.
+>> Given the separate
+>> discussion on mcmodel, I am going first to check if we can move from
+>> PIE to PIC with a mcmodel=small or medium that would remove the percpu
+>> change requirement. I tried before without success but I understand
+>> better percpu and other components so maybe I can make it work.
+>
+>>> This is silly.  The right thing is for PIE is to be explicitly absolute,
+>>> without (%rip).  The use of (%rip) memory references for percpu is just
+>>> an optimization.
+>>
+>> I agree that it is odd but that's how the compiler generates code. I
+>> will re-explore PIC options with mcmodel=small or medium, as mentioned
+>> on other threads.
+>
+> Why should the way compiler generates code affect the way we do things
+> in assembly?
+>
+> That being said, the compiler now has support for generating this kind
+> of code explicitly via the __seg_gs pointer modifier.  That should let
+> us drop the __percpu_prefix and just use variables directly.  I suspect
+> we want to declare percpu variables as "volatile __seg_gs" to account
+> for the possibility of CPU switches.
+>
+> Older compilers won't be able to work with this, of course, but I think
+> that it is acceptable for those older compilers to not be able to
+> support PIE.
+>
+>         -hpa
+>
 
-I was going to write things about serialization here. How allowing remote
-updates would require extra serialization, in part inspired by your
-Changelog comment that says cpufreq-shared provides the required
-serialization.
 
-But I think that's all nonsense... That is, yes cpufreq-shared needs
-additional serialization, but that's not relevant for the problem at
-hand.
 
-The thing is, all of this cpufreq_update_*() crud is called with the
-relevant rq->lock held. So all those calls are already fully serialized
-between CPUs.
+-- 
+Thomas
