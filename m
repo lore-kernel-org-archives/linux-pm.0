@@ -1,87 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Don't check not plugged in CPUs to avoid error
-Date: Thu, 20 Jul 2017 09:01:58 +0530
-Message-ID: <20170720033158.GH352@vireshk-i7>
-References: <20170713122201.30048-1-waldemarx.rymarkiewicz@intel.com>
- <20170713234226.GE22780@codeaurora.org>
- <20170717071234.GK352@vireshk-i7>
- <CAHKzcEP5+btsJ1Tog4KQAynmmbBSixfWAxO9V0EFWeP5pP5M=w@mail.gmail.com>
- <20170718043536.GT352@vireshk-i7>
- <CAHKzcENsE=So2omU2v27XoHEbvcpW1gmB5P0NM=Z-Bg=f_O_4g@mail.gmail.com>
+From: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Subject: Re: [PATCH v8 3/9] i2c: core: call of_i2c_setup_smbus_alert in
+ i2c_register_adapter
+Date: Thu, 20 Jul 2017 12:44:52 +0800
+Message-ID: <c6e4dce0-853f-a4d4-be64-ef4bb0f68162@electromag.com.au>
+References: <201707200255.SHskJrcM%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f48.google.com ([74.125.83.48]:34523 "EHLO
-        mail-pg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932172AbdGTDcE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jul 2017 23:32:04 -0400
-Received: by mail-pg0-f48.google.com with SMTP id 123so8644060pgj.1
-        for <linux-pm@vger.kernel.org>; Wed, 19 Jul 2017 20:32:04 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAHKzcENsE=So2omU2v27XoHEbvcpW1gmB5P0NM=Z-Bg=f_O_4g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <201707200255.SHskJrcM%fengguang.wu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Language: en-AU
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: kbuild test robot <lkp-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: kbuild-all-JC7UmRfGjtg@public.gmane.org, wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jdelvare-IBi9RG/b67k@public.gmane.org, jglauber-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, david.daney-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>
 
-On 19-07-17, 16:10, Waldemar Rymarkiewicz wrote:
-> Anyway, below a proposal how we can solve the problem of getting
-> shared CPUs when hotplug is used.
+On 20/07/2017 02:30, kbuild test robot wrote:
+> Hi Phil,
 > 
+> [auto build test ERROR on wsa/i2c/for-next]
+> [also build test ERROR on v4.13-rc1]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 > 
-> @@ -555,8 +576,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_add_table);
->  int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
->                                    struct cpumask *cpumask)
->  {
-> -       struct device_node *np, *tmp_np;
-> -       struct device *tcpu_dev;
-> +       struct device_node *np, *tmp_np, *cpu_np;
->         int cpu, ret = 0;
+> url:    https://github.com/0day-ci/linux/commits/Phil-Reid/i2c-i2c-smbus-Use-threaded-irq-for-smbalert/20170719-095934
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/for-next
+> config: powerpc-ppc6xx_defconfig (attached as .config)
+> compiler: powerpc-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+> reproduce:
+>          wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>          chmod +x ~/bin/make.cross
+>          # save the attached .config to linux build tree
+>          make.cross ARCH=powerpc
 > 
->         /* Get OPP descriptor node */
-> @@ -572,22 +592,16 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
->         if (!of_property_read_bool(np, "opp-shared"))
->                 goto put_cpu_node;
+> All errors (new ones prefixed by >>):
 > 
-> -       for_each_possible_cpu(cpu) {
-> +       for_each_node_by_type(cpu_np, "cpu") {
-> +               cpu = of_device_node_get_cpu(cpu_np);
-
-Actually you can keep the original loop as it is and use
-of_get_cpu_node() here. We better open code of_device_node_get_cpu()
-here.
-
-> +
->                 if (cpu == cpu_dev->id)
->                         continue;
+>     drivers/i2c/i2c-core-base.o: In function `i2c_register_adapter':
+>>> drivers/i2c/i2c-core-base.c:1262: undefined reference to `of_i2c_setup_smbus_alert'
 > 
-> -               tcpu_dev = get_cpu_device(cpu);
-> -               if (!tcpu_dev) {
-> -                       dev_err(cpu_dev, "%s: failed to get cpu%d device\n",
-> -                               __func__, cpu);
-> -                       ret = -ENODEV;
-> -                       goto put_cpu_node;
-> -               }
-> -
->                 /* Get OPP descriptor node */
-> -               tmp_np = _of_get_opp_desc_node(tcpu_dev);
 
-I see dev_pm_opp_of_get_opp_desc_node() here, not sure how you got
-above change..
+I understand how this is occurring.
+I2C=y, OF=y and I2C_PARPORT=m
+I2C_PARPORT selects I2C_SMBUS setting it to m
 
-> +               tmp_np = of_parse_phandle(cpu_np, "operating-points-v2", 0);
+Calling a function in i2c-smbus (module) from i2c-core (builtin) is then a problem.
 
-I would create _opp_of_get_opp_desc_node(np) and use it everywhere,
-i.e. from dev_pm_opp_of_get_opp_desc_node() as well.
+However there doesn't seem to be a way (that I can see) to have select statement force I2C_SMBUS=y if I2C=y
 
->                 if (!tmp_np) {
-> -                       dev_err(tcpu_dev, "%s: Couldn't find tcpu_dev node.\n",
-> +                       dev_err(cpu_dev, "%s: Couldn't find tcpu_dev node.\n",
->                                 __func__);
->                         ret = -ENOENT;
->                         goto put_cpu_node;
+Can I get a hint on what the correct course of action is.
 
-Thanks.
+
 
 -- 
-viresh
+Regards
+Phil Reid
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
