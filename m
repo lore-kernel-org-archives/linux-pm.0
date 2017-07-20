@@ -1,58 +1,87 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC 16/22] x86/percpu: Adapt percpu for PIE support
-Date: Wed, 19 Jul 2017 20:03:16 -0700
-Message-ID: <b9bb87ee-7c85-3f94-3ef5-a3ca432f302d@zytor.com>
-References: <20170718223333.110371-1-thgarnie@google.com>
- <20170718223333.110371-17-thgarnie@google.com>
- <CAMzpN2g5YkFZTY7yfvG03QUKc-=asKMZbqke9g4e2oT_pgg7Yw@mail.gmail.com>
- <CAJcbSZFXrDZikh9P5M81ztkiMv7EhO4x0bzBdYE8RYC=HMZgqg@mail.gmail.com>
- <25a2974a-fbb4-ea4b-d090-582d6d0de7fd@zytor.com>
- <9b152d55-8a1a-75b5-58df-0fe33458107a@zytor.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: Don't check not plugged in CPUs to avoid error
+Date: Thu, 20 Jul 2017 09:01:58 +0530
+Message-ID: <20170720033158.GH352@vireshk-i7>
+References: <20170713122201.30048-1-waldemarx.rymarkiewicz@intel.com>
+ <20170713234226.GE22780@codeaurora.org>
+ <20170717071234.GK352@vireshk-i7>
+ <CAHKzcEP5+btsJ1Tog4KQAynmmbBSixfWAxO9V0EFWeP5pP5M=w@mail.gmail.com>
+ <20170718043536.GT352@vireshk-i7>
+ <CAHKzcENsE=So2omU2v27XoHEbvcpW1gmB5P0NM=Z-Bg=f_O_4g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <kernel-hardening-return-9083-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <9b152d55-8a1a-75b5-58df-0fe33458107a@zytor.com>
-Content-Language: en-US
-To: Thomas Garnier <thgarnie@google.com>, Brian Gerst <brgerst@gmail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f48.google.com ([74.125.83.48]:34523 "EHLO
+        mail-pg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932172AbdGTDcE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jul 2017 23:32:04 -0400
+Received: by mail-pg0-f48.google.com with SMTP id 123so8644060pgj.1
+        for <linux-pm@vger.kernel.org>; Wed, 19 Jul 2017 20:32:04 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAHKzcENsE=So2omU2v27XoHEbvcpW1gmB5P0NM=Z-Bg=f_O_4g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>
 
-On 07/19/17 19:21, H. Peter Anvin wrote:
-> On 07/19/17 16:33, H. Peter Anvin wrote:
->>>
->>> I agree that it is odd but that's how the compiler generates code. I
->>> will re-explore PIC options with mcmodel=small or medium, as mentioned
->>> on other threads.
->>
->> Why should the way compiler generates code affect the way we do things
->> in assembly?
->>
->> That being said, the compiler now has support for generating this kind
->> of code explicitly via the __seg_gs pointer modifier.  That should let
->> us drop the __percpu_prefix and just use variables directly.  I suspect
->> we want to declare percpu variables as "volatile __seg_gs" to account
->> for the possibility of CPU switches.
->>
->> Older compilers won't be able to work with this, of course, but I think
->> that it is acceptable for those older compilers to not be able to
->> support PIE.
->>
+On 19-07-17, 16:10, Waldemar Rymarkiewicz wrote:
+> Anyway, below a proposal how we can solve the problem of getting
+> shared CPUs when hotplug is used.
 > 
-> Grump.  It turns out that the compiler doesn't do the right thing for
-> symbols marked with the __seg_[fg]s markers.  __thread does the right
-> thing, but __thread a) has %fs: hard-coded, still, and b) I believe can
-> still cache %seg:0 arbitrarily long.
+> 
+> @@ -555,8 +576,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_add_table);
+>  int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+>                                    struct cpumask *cpumask)
+>  {
+> -       struct device_node *np, *tmp_np;
+> -       struct device *tcpu_dev;
+> +       struct device_node *np, *tmp_np, *cpu_np;
+>         int cpu, ret = 0;
+> 
+>         /* Get OPP descriptor node */
+> @@ -572,22 +592,16 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+>         if (!of_property_read_bool(np, "opp-shared"))
+>                 goto put_cpu_node;
+> 
+> -       for_each_possible_cpu(cpu) {
+> +       for_each_node_by_type(cpu_np, "cpu") {
+> +               cpu = of_device_node_get_cpu(cpu_np);
 
-I filed this bug report for gcc:
+Actually you can keep the original loop as it is and use
+of_get_cpu_node() here. We better open code of_device_node_get_cpu()
+here.
 
-https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81490
+> +
+>                 if (cpu == cpu_dev->id)
+>                         continue;
+> 
+> -               tcpu_dev = get_cpu_device(cpu);
+> -               if (!tcpu_dev) {
+> -                       dev_err(cpu_dev, "%s: failed to get cpu%d device\n",
+> -                               __func__, cpu);
+> -                       ret = -ENODEV;
+> -                       goto put_cpu_node;
+> -               }
+> -
+>                 /* Get OPP descriptor node */
+> -               tmp_np = _of_get_opp_desc_node(tcpu_dev);
 
-It might still be possible to work around this by playing really ugly
-games with __thread, but I haven't yet figured out how best to do that.
+I see dev_pm_opp_of_get_opp_desc_node() here, not sure how you got
+above change..
 
-	-hpa
+> +               tmp_np = of_parse_phandle(cpu_np, "operating-points-v2", 0);
+
+I would create _opp_of_get_opp_desc_node(np) and use it everywhere,
+i.e. from dev_pm_opp_of_get_opp_desc_node() as well.
+
+>                 if (!tmp_np) {
+> -                       dev_err(tcpu_dev, "%s: Couldn't find tcpu_dev node.\n",
+> +                       dev_err(cpu_dev, "%s: Couldn't find tcpu_dev node.\n",
+>                                 __func__);
+>                         ret = -ENOENT;
+>                         goto put_cpu_node;
+
+Thanks.
+
+-- 
+viresh
