@@ -1,44 +1,60 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [Eas-dev] [PATCH V3 2/3] cpufreq: schedutil: Process remote
- callback for shared policies
-Date: Thu, 20 Jul 2017 16:11:38 +0100
-Message-ID: <fec9b074-49d2-18ea-a259-4b1b372deae7@arm.com>
-References: <cover.1499927699.git.viresh.kumar@linaro.org>
- <3fbaa9aaba19bfff5ff25d2c4141e88fb83f1ea9.1499927699.git.viresh.kumar@linaro.org>
- <5968263D.1020801@codeaurora.org>
- <20170720122239.licc6yjd7jwipcvk@hirez.programming.kicks-ass.net>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: Re: [PATCH v4 2/2] thermal: uniphier: add UniPhier thermal driver
+Date: Fri, 21 Jul 2017 01:08:59 +0900
+Message-ID: <CAK7LNASKqwWY4gorRZLd0GPXymm2WNdxuZr_OOs6g7uzaKSCMQ@mail.gmail.com>
+References: <1499392475-17304-1-git-send-email-hayashi.kunihiko@socionext.com> <1499392475-17304-3-git-send-email-hayashi.kunihiko@socionext.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170720122239.licc6yjd7jwipcvk@hirez.programming.kicks-ass.net>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Saravana Kannan <skannan@codeaurora.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, smuckle.linux@gmail.com, eas-dev@lists.linaro.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from conssluserg-05.nifty.com ([210.131.2.90]:57247 "EHLO
+        conssluserg-05.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933887AbdGTQJP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 12:09:15 -0400
+In-Reply-To: <1499392475-17304-3-git-send-email-hayashi.kunihiko@socionext.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Cc: rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Masami Hiramatsu <masami.hiramatsu@linaro.org>, Jassi Brar <jaswinder.singh@linaro.org>
+
+2017-07-07 10:54 GMT+09:00 Kunihiko Hayashi <hayashi.kunihiko@socionext.com>:
+> Add a thermal driver for on-chip PVT (Process, Voltage and Temperature)
+> monitoring unit implemented on UniPhier SoCs. This driver supports
+> temperature monitoring and alert function.
+>
+> Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+
+
+Sparse reports several warnings.
+
+
+  CHECK   drivers/thermal/uniphier_thermal.c
+drivers/thermal/uniphier_thermal.c:276:52: warning: incorrect type in
+argument 1 (different base types)
+drivers/thermal/uniphier_thermal.c:276:52:    expected restricted
+__be32 const [usertype] *cell
+drivers/thermal/uniphier_thermal.c:276:52:    got unsigned int const
+[usertype] *[assigned] calib
+drivers/thermal/uniphier_thermal.c:277:58: warning: incorrect type in
+argument 1 (different base types)
+drivers/thermal/uniphier_thermal.c:277:58:    expected restricted
+__be32 const [usertype] *cell
+drivers/thermal/uniphier_thermal.c:277:58:    got unsigned int const
+[usertype] *
+drivers/thermal/uniphier_thermal.c:136:9: warning: cast truncates bits
+from constant value (fffffffff becomes ffffffff)
+drivers/thermal/uniphier_thermal.c:141:9: warning: cast truncates bits
+from constant value (7ffffffff becomes ffffffff)
+drivers/thermal/uniphier_thermal.c:153:9: warning: cast truncates bits
+from constant value (ffffffffff0001 becomes ffff0001)
+drivers/thermal/uniphier_thermal.c:170:9: warning: cast truncates bits
+from constant value (7ffffffffff becomes ffffffff)
+drivers/thermal/uniphier_thermal.c:185:9: warning: cast truncates bits
+from constant value (7ffffffffff becomes ffffffff)
 
 
 
-On 20/07/17 13:22, Peter Zijlstra wrote:
-> On Thu, Jul 13, 2017 at 07:02:37PM -0700, Saravana Kannan wrote:
->> In all Qualcomm chipsets (well, at least the ones that have been used in
->> Android devices so far), we can switch the frequency of any CPU from any
->> other CPU. If we can do that even without fast switching, why wouldn't any
->> theoretical fast switching be incapable of supporting this? Is this a
->> limitation specific to x86 that we are assuming all architectures and
->> platforms are going to have?
-> 
-> So the typical implementation of fast switching we're thinking of is the
-> CPU writing the DVFS request into a machine register. Now machine
-> registers are typically per logical CPU.
-> 
 
-But, if ARM decides to architect and move to it to a system/machine
-register, we will end up with the same limitation :( IMO.
 
-For now with SCMI kind of interface, there's no such limitation as
-yoalready mentioned in the follow up email.
 -- 
-Regards,
-Sudeep
+Best Regards
+Masahiro Yamada
