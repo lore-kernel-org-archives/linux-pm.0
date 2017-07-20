@@ -1,49 +1,51 @@
-From: Mark Salyzyn <salyzyn@android.com>
-Subject: Re: [PATCH 4/4] time: rtc-lib: Add CONFIG_RTC_SHOW_TIME_RTC
-Date: Thu, 20 Jul 2017 10:52:39 -0700
-Message-ID: <d3dce8d2-145a-d4ff-39cc-3b11e59ec921@android.com>
-References: <20170719195012.30187-1-salyzyn@android.com>
- <20170720082620.GB14149@amd>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f43.google.com ([74.125.83.43]:38514 "EHLO
-        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755477AbdGTRwl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 13:52:41 -0400
-Received: by mail-pg0-f43.google.com with SMTP id s4so17759095pgr.5
-        for <linux-pm@vger.kernel.org>; Thu, 20 Jul 2017 10:52:41 -0700 (PDT)
-In-Reply-To: <20170720082620.GB14149@amd>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Victor Aoqui <victora@linux.vnet.ibm.com>
+Subject: [PATCH] drivers: cpuidle: Disable preemption before get_lppaca function call in pseries_idle_probe function
+Date: Thu, 20 Jul 2017 14:57:35 -0300
+Message-ID: <20170720175735.3957-1-victora@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, daniel.lezcano@linaro.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: ltc-interlock@lists.linux.ibm.com, victora@br.ibm.com, victora@linux.vnet.ibm.com, mauricfo@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, prarit@redhat.com, andy.shevchenko@gmail.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 
-On 07/20/2017 01:26 AM, Pavel Machek wrote:
->> +#if defined(CONFIG_RTC_SHOW_TIME_RTC)
->> +	{
->> +		struct rtc_time tm;
->> +
->> +		rtc_time64_to_tm(ts.tv_sec, &tm);
->> +		pr_info("%s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n",
->> +			prefix_msg ? prefix_msg : "Time:",
->> +			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
->> +			tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
->> +	}
->> +#else
->
-> This was NAKed before. Are you even listening, or are you trying to
-> flood us with enough mail so that someone applies your patches by
-> mistake?
-> 									Pavel
+When CONFIG_PREEMPT=y, the following warning shows up:
 
-It was NAKed in the group, I put it aside in its own patch to keep from 
-throwing out the baby with the bathwater. Was hoping that a private 
-CONFIG_RTC_SHOW_TIME_RTC would be acceptable.
+BUG: using smp_processor_id() in preemptible [00000000] code: swapper/0/1
+caller is pseries_processor_idle_init+0x58/0x21c
 
-I guess not, topic is dead. A refresh is being tested that addresses 
-many of the other concerns.
+This warning shows up because preemption cannot occur when using
+get_paca(), otherwise the paca_struct it points to may be the wrong one
+just after.
 
--- Mark
+For this reason, preemption needs to be disabled before
+lppaca_shared_proc(get_lppaca()).
+
+Signed-off-by: Victor Aoqui <victora@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle-pseries.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index e9b3853..d6dda8c 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -233,12 +233,16 @@ static int pseries_cpuidle_driver_init(void)
+  */
+ static int pseries_idle_probe(void)
+ {
++	int retval;
+ 
+ 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
+ 		return -ENODEV;
+ 
+ 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+-		if (lppaca_shared_proc(get_lppaca())) {
++		preempt_disable();
++		retval = lppaca_shared_proc(get_lppaca());
++		preempt_enable();
++		if (retval) {
+ 			cpuidle_state_table = shared_states;
+ 			max_idle_state = ARRAY_SIZE(shared_states);
+ 		} else {
+-- 
+1.8.3.1
