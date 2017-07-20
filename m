@@ -1,58 +1,52 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 2/3] PM / sleep: Mark suspend/hibernation start and finish
-Date: Thu, 20 Jul 2017 23:05:34 +0200
-Message-ID: <CAJZ5v0hw5Zk6WEDN2=m5-e_JMRv_AbyBExcxOOKAv1OQAnU7=g@mail.gmail.com>
-References: <2539550.y54cRb749c@aspire.rjw.lan> <1528829.lXeqX43PVF@aspire.rjw.lan>
- <21457958.U8q3irAeUz@aspire.rjw.lan> <364d0454-a446-51c4-f9c5-15bc6670928a@android.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] drivers: cpuidle: Disable preemption before get_lppaca
+ function call in pseries_idle_probe function
+Date: Fri, 21 Jul 2017 07:21:53 +1000
+Message-ID: <1500585713.10674.10.camel@kernel.crashing.org>
+References: <20170720175735.3957-1-victora@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:36437 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932346AbdGTVFf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 17:05:35 -0400
-In-Reply-To: <364d0454-a446-51c4-f9c5-15bc6670928a@android.com>
+Received: from gate.crashing.org ([63.228.1.57]:56255 "EHLO gate.crashing.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934535AbdGTVWn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 20 Jul 2017 17:22:43 -0400
+In-Reply-To: <20170720175735.3957-1-victora@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Salyzyn <salyzyn@android.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Victor Aoqui <victora@linux.vnet.ibm.com>, rjw@rjwysocki.net, daniel.lezcano@linaro.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: ltc-interlock@lists.linux.ibm.com, victora@br.ibm.com, mauricfo@linux.vnet.ibm.com
 
-On Thu, Jul 20, 2017 at 7:49 PM, Mark Salyzyn <salyzyn@android.com> wrote:
-> On 07/19/2017 06:38 PM, Rafael J. Wysocki wrote:
->>
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Regardless of whether or not debug messages from the core system
->> suspend/hibernation code are enabled, it is useful to know when
->> system-wide transitions start and finish (or fail), so print "info"
->> messages at these points.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>
->> -> v2: Smiplified the messages as suggested by Mark.
->>
->> ---
->>   kernel/power/hibernate.c |    5 +++++
->>   kernel/power/suspend.c   |    2 ++
->>   2 files changed, 7 insertions(+)
->>
->> Index: linux-pm/kernel/power/hibernate.c
->> ===================================================================
->> --- linux-pm.orig/kernel/power/hibernate.c
->> +++ linux-pm/kernel/power/hibernate.c
->> @@ -692,6 +692,7 @@ int hibernate(void)
->>                 goto Unlock;
->>         }
->>   +     pr_info("hibernation entry\n");
->
-> nit (minor): Many of the logs report a PM: prefix. Flipping coin that the 3
-> characters provides any real gain is in your hands. My WAG is it would be
-> nice to be able to do dmesg | grep PM:
+On Thu, 2017-07-20 at 14:57 -0300, Victor Aoqui wrote:
+> When CONFIG_PREEMPT=y, the following warning shows up:
+> 
+> BUG: using smp_processor_id() in preemptible [00000000] code: swapper/0/1
+> caller is pseries_processor_idle_init+0x58/0x21c
+> 
+> This warning shows up because preemption cannot occur when using
+> get_paca(), otherwise the paca_struct it points to may be the wrong one
+> just after.
+> 
+> For this reason, preemption needs to be disabled before
+> lppaca_shared_proc(get_lppaca()).
 
-Yeah, that's why pr_fmt() is defined in hibernate.c.  It is missing in
-suspend.c ATM, though, hence the difference (but will be added there
-too).
+Also chekc the generated assembly. We had all sort of interesting
+issues where gcc would copy the paca pointer or the lppaca pointer
+to a GPR *outside* of the preempt disabled section...
 
-Thanks,
-Rafael
+In that specific case it's not a big deal but overall, I am not
+comfortable with PREEMPT on powerpc until we do something a bit
+more drastic...
+
+I would like to remove all such direct accesses to paca, instead have a
+"new" get_paca() written in asm that does the preempt disable then
+returns the PACA in a GPR (not directly use r13, hide that from gcc),
+and which is paired with a put_paca().
+
+The few places where we want to directly access r13 should be hand
+written in asm too to hide r13 from gcc, for accessing the irq_happened
+in the fast path of local_irq_enable/disable/... we should do the same
+with lock tokens.
+
+Ben.
