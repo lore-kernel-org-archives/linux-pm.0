@@ -1,56 +1,49 @@
 From: Mark Salyzyn <salyzyn@android.com>
-Subject: Re: [PATCH v2 2/3] PM / sleep: Mark suspend/hibernation start and
- finish
-Date: Thu, 20 Jul 2017 10:49:50 -0700
-Message-ID: <364d0454-a446-51c4-f9c5-15bc6670928a@android.com>
-References: <2539550.y54cRb749c@aspire.rjw.lan>
- <1528829.lXeqX43PVF@aspire.rjw.lan> <21457958.U8q3irAeUz@aspire.rjw.lan>
+Subject: Re: [PATCH 4/4] time: rtc-lib: Add CONFIG_RTC_SHOW_TIME_RTC
+Date: Thu, 20 Jul 2017 10:52:39 -0700
+Message-ID: <d3dce8d2-145a-d4ff-39cc-3b11e59ec921@android.com>
+References: <20170719195012.30187-1-salyzyn@android.com>
+ <20170720082620.GB14149@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f52.google.com ([74.125.83.52]:34035 "EHLO
-        mail-pg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753701AbdGTRtw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 13:49:52 -0400
-Received: by mail-pg0-f52.google.com with SMTP id 123so17835025pgj.1
-        for <linux-pm@vger.kernel.org>; Thu, 20 Jul 2017 10:49:52 -0700 (PDT)
-In-Reply-To: <21457958.U8q3irAeUz@aspire.rjw.lan>
+Received: from mail-pg0-f43.google.com ([74.125.83.43]:38514 "EHLO
+        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755477AbdGTRwl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 13:52:41 -0400
+Received: by mail-pg0-f43.google.com with SMTP id s4so17759095pgr.5
+        for <linux-pm@vger.kernel.org>; Thu, 20 Jul 2017 10:52:41 -0700 (PDT)
+In-Reply-To: <20170720082620.GB14149@amd>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, prarit@redhat.com, andy.shevchenko@gmail.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 
-On 07/19/2017 06:38 PM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 07/20/2017 01:26 AM, Pavel Machek wrote:
+>> +#if defined(CONFIG_RTC_SHOW_TIME_RTC)
+>> +	{
+>> +		struct rtc_time tm;
+>> +
+>> +		rtc_time64_to_tm(ts.tv_sec, &tm);
+>> +		pr_info("%s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n",
+>> +			prefix_msg ? prefix_msg : "Time:",
+>> +			tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+>> +			tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
+>> +	}
+>> +#else
 >
-> Regardless of whether or not debug messages from the core system
-> suspend/hibernation code are enabled, it is useful to know when
-> system-wide transitions start and finish (or fail), so print "info"
-> messages at these points.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->
-> -> v2: Smiplified the messages as suggested by Mark.
->
-> ---
->   kernel/power/hibernate.c |    5 +++++
->   kernel/power/suspend.c   |    2 ++
->   2 files changed, 7 insertions(+)
->
-> Index: linux-pm/kernel/power/hibernate.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/hibernate.c
-> +++ linux-pm/kernel/power/hibernate.c
-> @@ -692,6 +692,7 @@ int hibernate(void)
->   		goto Unlock;
->   	}
->   
-> +	pr_info("hibernation entry\n");
-nit (minor): Many of the logs report a PM: prefix. Flipping coin that 
-the 3 characters provides any real gain is in your hands. My WAG is it 
-would be nice to be able to do dmesg | grep PM:
+> This was NAKed before. Are you even listening, or are you trying to
+> flood us with enough mail so that someone applies your patches by
+> mistake?
+> 									Pavel
 
-Ack
+It was NAKed in the group, I put it aside in its own patch to keep from 
+throwing out the baby with the bathwater. Was hoping that a private 
+CONFIG_RTC_SHOW_TIME_RTC would be acceptable.
+
+I guess not, topic is dead. A refresh is being tested that addresses 
+many of the other concerns.
+
+-- Mark
