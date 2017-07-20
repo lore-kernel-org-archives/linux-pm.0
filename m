@@ -1,68 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: cpuidle and cpufreq coupling?
-Date: Thu, 20 Jul 2017 12:48:46 +0530
-Message-ID: <20170720071846.GK352@vireshk-i7>
-References: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
- <CAJZ5v0i2B0=cPB5VxXJUb36LW9hp_L7k-moj+Eg+vPvfPHFcSA@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] PM / suspend: Add suspend_target_state()
+Date: Thu, 20 Jul 2017 10:03:26 +0200
+Message-ID: <20170720080326.GA13103@amd>
+References: <2615c143-6cb2-1b89-d453-921306d665b6@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f45.google.com ([74.125.83.45]:34871 "EHLO
-        mail-pg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932637AbdGTHSu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 03:18:50 -0400
-Received: by mail-pg0-f45.google.com with SMTP id v190so10946493pgv.2
-        for <linux-pm@vger.kernel.org>; Thu, 20 Jul 2017 00:18:50 -0700 (PDT)
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55882 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932086AbdGTID2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 04:03:28 -0400
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0i2B0=cPB5VxXJUb36LW9hp_L7k-moj+Eg+vPvfPHFcSA@mail.gmail.com>
+In-Reply-To: <2615c143-6cb2-1b89-d453-921306d665b6@gmail.com>
+ <CAJZ5v0gJQHUMEXTbvb0q6rmW-1xuRWAwGMmo_CCE8mYj-xf5QA@mail.gmail.com>
+ <20170717200628.7018-1-f.fainelli@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Florian Fainelli <f.fainelli@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Markus Mayer <code@mmayer.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Florian Fainelli <f.fainelli@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, JB <jb_lescher@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Kevin Hilman <khilman@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 20-07-17, 01:17, Rafael J. Wysocki wrote:
-> On Thu, Jul 20, 2017 at 12:54 AM, Florian Fainelli <f.fainelli@gmail.com> wrote:
-> > Hi,
-> >
-> > We have a particular ARM CPU design that is drawing quite a lot of
-> > current upon exit from WFI, and it does so in a way even before the
-> > first instruction out of WFI is executed. That means we cannot influence
-> > directly the exit from WFI other than by changing the state in which it
-> > would be previously entered because of this "dead" time during which the
-> > internal logic needs to ramp up back where it left.
-> >
-> > A naive approach to solving this problem because we have CPU frequency
-> > scaling available would be to do the following:
-> >
-> > - just before entering WFI, switch to a low frequency OPP
-> > - enter WFI
-> > - upon exit from WFI, ramp up the frequency back to e.g: highest OPP
-> >
-> > Some of the parts that I am not exactly clear on would be:
-> >
-> > - would that qualify as a cpuidle governor of some kind that ties in
-> > which cpufreq?
-> > - would using cpufreq_driver_fast_switch() be an appropriate API to use
-> > from outside
-> 
-> Generally, the idle driver is expected to manipulate OPPs as suitable
-> for it at the low level.
 
-Does any idle driver do it today ?
+--d6Gm4EdcadzBjdND
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I am not sure, but I haven't heard anyone from ARM doing it. Though I
-may have completely missed it :)
+On Mon 2017-07-17 13:06:28, Florian Fainelli wrote:
+> Have the core suspend/resume framework store the system-wide suspend
+> state (suspend_state_t) we are about to enter, and expose it to drivers
+> via suspend_target_state() in order to retrieve that. The state is
+> assigned in suspend_devices_and_enter().
+>=20
+> This is useful for platform specific drivers that may need to take a
+> slightly different suspend/resume path based on the system's
+> suspend/resume state being entered.
+>=20
+> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 
-So, that must call into cpufreq (somehow) and look for a low power
-OPP?
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-@Florian: It would be more tricky then we anticipate. We don't always
-want to go to low OPP on idle, as we may get out of it very quickly
-and changing OPP twice (before and after idle) in that scenario would
-be a complete waste of time. And then I hope your ARM CPUs must be
-sharing clock/voltage lines with each other as well ? And in that case
-we shouldn't touch the OPP unless the whole cluster is going down, as
-some CPUs might be running code then.
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
--- 
-viresh
+--d6Gm4EdcadzBjdND
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAllwY84ACgkQMOfwapXb+vKF5ACeJTIFwpo4dtQf6sY3miTEJ2eW
+YqAAoJriVStVYjPAY3FkpsGX5ykFlzMQ
+=QOh3
+-----END PGP SIGNATURE-----
+
+--d6Gm4EdcadzBjdND--
