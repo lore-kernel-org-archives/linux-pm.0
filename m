@@ -1,47 +1,44 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: cpuidle and cpufreq coupling?
-Date: Thu, 20 Jul 2017 16:45:30 +0200
-Message-ID: <20170720144530.da6bqpdvt2cvbjjs@hirez.programming.kicks-ass.net>
-References: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
- <CAJZ5v0i2B0=cPB5VxXJUb36LW9hp_L7k-moj+Eg+vPvfPHFcSA@mail.gmail.com>
- <20170720071846.GK352@vireshk-i7>
- <CAJZ5v0hxK9iBR4RJBu9yutn7M=uTfsEwZZcwJie=17RuYtnuNA@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [Eas-dev] [PATCH V3 2/3] cpufreq: schedutil: Process remote
+ callback for shared policies
+Date: Thu, 20 Jul 2017 16:11:38 +0100
+Message-ID: <fec9b074-49d2-18ea-a259-4b1b372deae7@arm.com>
+References: <cover.1499927699.git.viresh.kumar@linaro.org>
+ <3fbaa9aaba19bfff5ff25d2c4141e88fb83f1ea9.1499927699.git.viresh.kumar@linaro.org>
+ <5968263D.1020801@codeaurora.org>
+ <20170720122239.licc6yjd7jwipcvk@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hxK9iBR4RJBu9yutn7M=uTfsEwZZcwJie=17RuYtnuNA@mail.gmail.com>
+In-Reply-To: <20170720122239.licc6yjd7jwipcvk@hirez.programming.kicks-ass.net>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Florian Fainelli <f.fainelli@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Markus Mayer <code@mmayer.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Peter Zijlstra <peterz@infradead.org>, Saravana Kannan <skannan@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, smuckle.linux@gmail.com, eas-dev@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 20, 2017 at 11:52:41AM +0200, Rafael J. Wysocki wrote:
-> On Thu, Jul 20, 2017 at 9:18 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 20-07-17, 01:17, Rafael J. Wysocki wrote:
-> >> On Thu, Jul 20, 2017 at 12:54 AM, Florian Fainelli <f.fainelli@gmail.com> wrote:
-> >> > Hi,
-> >> >
-> >> > We have a particular ARM CPU design that is drawing quite a lot of
-> >> > current upon exit from WFI, and it does so in a way even before the
-> >> > first instruction out of WFI is executed. That means we cannot influence
-> >> > directly the exit from WFI other than by changing the state in which it
-> >> > would be previously entered because of this "dead" time during which the
-> >> > internal logic needs to ramp up back where it left.
-> >> >
-> >> > A naive approach to solving this problem because we have CPU frequency
-> >> > scaling available would be to do the following:
-> >> >
-> >> > - just before entering WFI, switch to a low frequency OPP
-> >> > - enter WFI
-> >> > - upon exit from WFI, ramp up the frequency back to e.g: highest OPP
-> >> >
-> >> > Some of the parts that I am not exactly clear on would be:
-> >> >
-> >> > - would that qualify as a cpuidle governor of some kind that ties in
-> >> > which cpufreq?
-> >> > - would using cpufreq_driver_fast_switch() be an appropriate API to use
-> >> > from outside
 
-Can your ARM part change OPP without scheduling? Because (for obvious
-reasons) the idle thread is not supposed to block.
+
+On 20/07/17 13:22, Peter Zijlstra wrote:
+> On Thu, Jul 13, 2017 at 07:02:37PM -0700, Saravana Kannan wrote:
+>> In all Qualcomm chipsets (well, at least the ones that have been used in
+>> Android devices so far), we can switch the frequency of any CPU from any
+>> other CPU. If we can do that even without fast switching, why wouldn't any
+>> theoretical fast switching be incapable of supporting this? Is this a
+>> limitation specific to x86 that we are assuming all architectures and
+>> platforms are going to have?
+> 
+> So the typical implementation of fast switching we're thinking of is the
+> CPU writing the DVFS request into a machine register. Now machine
+> registers are typically per logical CPU.
+> 
+
+But, if ARM decides to architect and move to it to a system/machine
+register, we will end up with the same limitation :( IMO.
+
+For now with SCMI kind of interface, there's no such limitation as
+yoalready mentioned in the follow up email.
+-- 
+Regards,
+Sudeep
