@@ -1,75 +1,87 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: cpuidle and cpufreq coupling?
-Date: Thu, 20 Jul 2017 10:23:27 +0100
-Message-ID: <49e8479c-bc47-16fe-0bf9-8a4aba333909@arm.com>
-References: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
- <CAJZ5v0i2B0=cPB5VxXJUb36LW9hp_L7k-moj+Eg+vPvfPHFcSA@mail.gmail.com>
- <20170720071846.GK352@vireshk-i7>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: Re: [PATCH 000/102] Convert drivers to explicit reset API
+Date: Thu, 20 Jul 2017 11:24:24 +0200
+Message-ID: <1500542664.2354.27.camel@pengutronix.de>
+References: <20170719152646.25903-1-p.zabel@pengutronix.de>
+ <20170720081157.GA11630@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170720071846.GK352@vireshk-i7>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Florian Fainelli <f.fainelli@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Markus Mayer <code@mmayer.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Return-path: <ath10k-bounces+gldad-ath10k=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170720081157.GA11630@kroah.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/ath10k>,
+ <mailto:ath10k-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/ath10k/>
+List-Post: <mailto:ath10k@lists.infradead.org>
+List-Help: <mailto:ath10k-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/ath10k>,
+ <mailto:ath10k-request@lists.infradead.org?subject=subscribe>
+Sender: "ath10k" <ath10k-bounces@lists.infradead.org>
+Errors-To: ath10k-bounces+gldad-ath10k=m.gmane.org@lists.infradead.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Prashant Gaikwad <pgaikwad@nvidia.com>, Heiko Stuebner <heiko@sntech.de>, Peter Chen <Peter.Chen@nxp.com>, Linus Walleij <linus.walleij@linaro.org>, dri-devel@lists.freedesktop.org, Marc Dietrich <marvin24@gmx.de>, Rakesh Iyer <riyer@nvidia.com>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, linux-clk@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>, Wolfram Sang <wsa@the-dreams.de>, Xinliang Liu <z.liuxinliang@hisilicon.com>, Chanwoo Choi <cw00.choi@samsung.com>, Alan Stern <stern@rowland.harvard.edu>, Jiri Slaby <jslaby@suse.com>, Michael Turquette <mturquette@baylibre.com>, Guenter Roeck <linux@roeck-us.net>, Ohad Ben-Cohen <ohad@wizery.com>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Vincent Abriou <vincent.abriou@st.com>, Bin Liu <b-liu@ti.com>, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@
 List-Id: linux-pm@vger.kernel.org
 
+Hi Greg,
 
+The patches in this series are completely independent of each other, and
+I would like the subsystem maintainers to apply them at their own
+leisure.
+Well, except for the last one, which I will apply only after there are
+no more users of the transition helpers.
 
-On 20/07/17 08:18, Viresh Kumar wrote:
-> On 20-07-17, 01:17, Rafael J. Wysocki wrote:
->> On Thu, Jul 20, 2017 at 12:54 AM, Florian Fainelli <f.fainelli@gmail.com> wrote:
->>> Hi,
->>>
->>> We have a particular ARM CPU design that is drawing quite a lot of
->>> current upon exit from WFI, and it does so in a way even before the
->>> first instruction out of WFI is executed. That means we cannot influence
->>> directly the exit from WFI other than by changing the state in which it
->>> would be previously entered because of this "dead" time during which the
->>> internal logic needs to ramp up back where it left.
->>>
->>> A naive approach to solving this problem because we have CPU frequency
->>> scaling available would be to do the following:
->>>
->>> - just before entering WFI, switch to a low frequency OPP
->>> - enter WFI
->>> - upon exit from WFI, ramp up the frequency back to e.g: highest OPP
->>>
->>> Some of the parts that I am not exactly clear on would be:
->>>
->>> - would that qualify as a cpuidle governor of some kind that ties in
->>> which cpufreq?
->>> - would using cpufreq_driver_fast_switch() be an appropriate API to use
->>> from outside
->>
->> Generally, the idle driver is expected to manipulate OPPs as suitable
->> for it at the low level.
+On Thu, 2017-07-20 at 10:11 +0200, Greg Kroah-Hartman wrote:
+> On Wed, Jul 19, 2017 at 05:25:04PM +0200, Philipp Zabel wrote:
+> > The reset control API has two modes: exclusive access, where the driver
+> > expects to have full and immediate control over the state of the reset
+> > line, and shared (clock-like) access, where drivers only request reset
+> > deassertion while active, but don't care about the state of the reset line
+> > while inactive.
+> > 
+> > Commit a53e35db70d1 ("reset: Ensure drivers are explicit when requesting
+> > reset lines") started to transition the reset control request API calls
+> > to explicitly state whether the driver needs exclusive or shared reset
+> > control behavior.
+> > 
+> > This series converts all drivers that currently implicitly request
+> > exclusive reset controls to the corresponding explicit API call. It is,
+> > for the most part, generated from the following semantic patch:
 > 
-> Does any idle driver do it today ?
+> Hey, I'm all for large api changes, but this really seems ackward, isn't
+> there a "better" way to do this?
 
-> I am not sure, but I haven't heard anyone from ARM doing it. Though I
-> may have completely missed it :)
+It is a bit awkward. I am sorry I haven't done this earlier. Quite a few
+new drivers started using the old API after the explicit requests were
+introduced last year.
+
+> Why not, as you say the "implicit" request is exclusive, just leave
+> everything alone and state that the "reset_control_get()" call is
+> exclusive 
+
+I think it is better to let the drivers explicitly state what they
+expect from the API, and using reset_control_get_exclusive vs _shared
+helps driver developers to make a conscious decision.
+
+Further, the implicit API call predates shared reset support, so it is
+not clear that all of the old users really need exclusive control.
+A few drivers have been switched to the shared API already.
+
+> and make the shared one the "odd" usage as that seems to not
+> be the normal case.
+
+I am not sure, there have been people arguing that the "clock-like" case
+really is the common one. I suppose some of those drivers touched by the
+100 patches in this series could also be changed to shared. But I don't
+dare to make this decision for each of them.
+
+> That should be a much smaller patch right?
 > 
+> That way you don't break everything here, and require 100+ patches to
+> just change the name of a function from one to another and do nothing
+> else.
 
-It doesn't need to be in Linux. E.g. PSCI or any low lever driver can do
-that transparently.
+I don't break anything here, and I'm absolutely fine with squashing
+patches together per subsystem where that is preferable.
 
-> So, that must call into cpufreq (somehow) and look for a low power
-> OPP?
-> 
-
-That's seems hacky and NAK if it's PSCI platform. It's cleaner do such
-hacks/workarounds in platform specific PSCI firmware.
-
-> @Florian: It would be more tricky then we anticipate. We don't always
-> want to go to low OPP on idle, as we may get out of it very quickly
-> and changing OPP twice (before and after idle) in that scenario would
-> be a complete waste of time.
-
-Exactly.
-
--- 
-Regards,
-Sudeep
+regards
+Philipp
