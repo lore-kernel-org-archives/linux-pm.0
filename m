@@ -1,71 +1,59 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: Re: [PATCH 000/102] Convert drivers to explicit reset API
-Date: Thu, 20 Jul 2017 11:36:55 +0200
-Message-ID: <1500543415.2354.37.camel@pengutronix.de>
-References: <20170719152646.25903-1-p.zabel@pengutronix.de>
-         <20170719211515.46a1196c@windsurf>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: cpuidle and cpufreq coupling?
+Date: Thu, 20 Jul 2017 11:52:41 +0200
+Message-ID: <CAJZ5v0hxK9iBR4RJBu9yutn7M=uTfsEwZZcwJie=17RuYtnuNA@mail.gmail.com>
+References: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
+ <CAJZ5v0i2B0=cPB5VxXJUb36LW9hp_L7k-moj+Eg+vPvfPHFcSA@mail.gmail.com> <20170720071846.GK352@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mips-bounce@linux-mips.org>
-In-Reply-To: <20170719211515.46a1196c@windsurf>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Prashant Gaikwad <pgaikwad@nvidia.com>, Heiko Stuebner <heiko@sntech.de>, Peter Chen <Peter.Chen@nxp.com>, Linus Walleij <linus.walleij@linaro.org>, dri-devel@lists.freedesktop.org, Marc Dietrich <marvin24@gmx.de>, Rakesh Iyer <riyer@nvidia.com>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, linux-clk@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>, Wolfram Sang <wsa@the-dreams.de>, Xinliang Liu <z.liuxinliang@hisilicon.com>, Chanwoo Choi <cw00.choi@samsung.com>, Alan Stern <stern@rowland.harvard.edu>, Jiri Slaby <jslaby@suse.com>, Michael Turquette <mturquette@baylibre.com>, Guenter Roeck <linux@roeck-us.net>, Ohad Ben-Cohen <ohad@wizery.com>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170720071846.GK352@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Markus Mayer <code@mmayer.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Thomas,
+On Thu, Jul 20, 2017 at 9:18 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 20-07-17, 01:17, Rafael J. Wysocki wrote:
+>> On Thu, Jul 20, 2017 at 12:54 AM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+>> > Hi,
+>> >
+>> > We have a particular ARM CPU design that is drawing quite a lot of
+>> > current upon exit from WFI, and it does so in a way even before the
+>> > first instruction out of WFI is executed. That means we cannot influence
+>> > directly the exit from WFI other than by changing the state in which it
+>> > would be previously entered because of this "dead" time during which the
+>> > internal logic needs to ramp up back where it left.
+>> >
+>> > A naive approach to solving this problem because we have CPU frequency
+>> > scaling available would be to do the following:
+>> >
+>> > - just before entering WFI, switch to a low frequency OPP
+>> > - enter WFI
+>> > - upon exit from WFI, ramp up the frequency back to e.g: highest OPP
+>> >
+>> > Some of the parts that I am not exactly clear on would be:
+>> >
+>> > - would that qualify as a cpuidle governor of some kind that ties in
+>> > which cpufreq?
+>> > - would using cpufreq_driver_fast_switch() be an appropriate API to use
+>> > from outside
+>>
+>> Generally, the idle driver is expected to manipulate OPPs as suitable
+>> for it at the low level.
+>
+> Does any idle driver do it today ?
+>
+> I am not sure, but I haven't heard anyone from ARM doing it. Though I
+> may have completely missed it :)
 
-On Wed, 2017-07-19 at 21:15 +0200, Thomas Petazzoni wrote:
-> Hello,
-> 
-> On Wed, 19 Jul 2017 17:25:04 +0200, Philipp Zabel wrote:
-> > The reset control API has two modes: exclusive access, where the driver
-> > expects to have full and immediate control over the state of the reset
-> > line, and shared (clock-like) access, where drivers only request reset
-> > deassertion while active, but don't care about the state of the reset line
-> > while inactive.
-> > 
-> > Commit a53e35db70d1 ("reset: Ensure drivers are explicit when requesting
-> > reset lines") started to transition the reset control request API calls
-> > to explicitly state whether the driver needs exclusive or shared reset
-> > control behavior.
-> > 
-> > This series converts all drivers that currently implicitly request
-> > exclusive reset controls to the corresponding explicit API call. It is,
-> > for the most part, generated from the following semantic patch:
-> > 
-> > @@
-> > expression rstc, dev, id;
-> > @@
-> > -rstc = reset_control_get(dev, id);
-> > +rstc = reset_control_get_exclusive(dev, id);
-> 
-> I don't know if it has been discussed in the past, so forgive me if it
-> has been. Have you considered adding a "int flags" argument to the
-> existing reset_control_get_*() functions, rather than introducing
-> separate exclusive variants ?
-> 
-> Indeed, with a "int flags" argument you could in the future add more
-> variants/behaviors without actually multiplying the number of
-> functions. Something like the "flags" argument for request_irq() for
-> example.
+You may not, but that's what is recommended.
 
-I can't find the discussion right now, but I remember we had talked
-about this in the past.
-Behind the scenes, all the inline API functions already call common
-entry points with flags (well, currently separate bool parameters for
-shared and optional).
-One reason against exposing those as an int flags in the user facing API
-is the possibility to accidentally provide a wrong value.
+Had you attended PM sessions at the LPC and similar, you might have
+heard about it ...
 
-regards
-Philipp
+> So, that must call into cpufreq (somehow) and look for a low power
+> OPP?
+
+It should know what OPP to use and then coordinate with cpufreq so
+they don't go against each other (on shared policies).
