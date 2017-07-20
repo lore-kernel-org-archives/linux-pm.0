@@ -1,144 +1,93 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH] cpufreq: imx6q: Fix imx6sx low frequency support
-Date: Thu, 20 Jul 2017 01:16:08 +0000
-Message-ID: <AM3PR04MB131557FE521F61147DA5975DF5A70@AM3PR04MB1315.eurprd04.prod.outlook.com>
-References: <8e6f731906fe5f8dce6f23b1e8ad084c8041f49e.1500457396.git.leonard.crestez@nxp.com>
- <1500460107.13757.6.camel@pengutronix.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2 2/3] PM / sleep: Mark suspend/hibernation start and finish
+Date: Thu, 20 Jul 2017 03:38:07 +0200
+Message-ID: <21457958.U8q3irAeUz@aspire.rjw.lan>
+References: <2539550.y54cRb749c@aspire.rjw.lan> <1528829.lXeqX43PVF@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1500460107.13757.6.camel@pengutronix.de>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>, Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Octavian Purdila <octavian.purdila@nxp.com>, Jacky Bai <ping.bai@nxp.com>, "A.s. Dong" <aisheng.dong@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50456 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S932089AbdGTBqA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jul 2017 21:46:00 -0400
+In-Reply-To: <1528829.lXeqX43PVF@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Mark Salyzyn <salyzyn@android.com>
 
-DQoNCkJlc3QgUmVnYXJkcyENCkFuc29uIEh1YW5nDQoNCg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVz
-c2FnZS0tLS0tDQo+IEZyb206IEx1Y2FzIFN0YWNoIFttYWlsdG86bC5zdGFjaEBwZW5ndXRyb25p
-eC5kZV0NCj4gU2VudDogMjAxNy0wNy0xOSA2OjI4IFBNDQo+IFRvOiBMZW9uYXJkIENyZXN0ZXog
-PGxlb25hcmQuY3Jlc3RlekBueHAuY29tPg0KPiBDYzogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3Vt
-YXJAbGluYXJvLm9yZz47IFJhZmFlbCBKLiBXeXNvY2tpDQo+IDxyandAcmp3eXNvY2tpLm5ldD47
-IFNoYXduIEd1byA8c2hhd25ndW9Aa2VybmVsLm9yZz47IEZhYmlvIEVzdGV2YW0NCj4gPGZhYmlv
-LmVzdGV2YW1AbnhwLmNvbT47IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgT2N0YXZpYW4gUHVy
-ZGlsYQ0KPiA8b2N0YXZpYW4ucHVyZGlsYUBueHAuY29tPjsgQW5zb24gSHVhbmcgPGFuc29uLmh1
-YW5nQG54cC5jb20+OyBKYWNreQ0KPiBCYWkgPHBpbmcuYmFpQG54cC5jb20+OyBBLnMuIERvbmcg
-PGFpc2hlbmcuZG9uZ0BueHAuY29tPjsNCj4ga2VybmVsQHBlbmd1dHJvbml4LmRlOyBsaW51eC1h
-cm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJu
-ZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWZyZXE6IGlteDZxOiBGaXggaW14NnN4
-IGxvdyBmcmVxdWVuY3kgc3VwcG9ydA0KPiANCj4gSGkgTGVvbmFyZCwNCj4gDQo+IEFtIE1pdHR3
-b2NoLCBkZW4gMTkuMDcuMjAxNywgMTI6NTQgKzAzMDAgc2NocmllYiBMZW9uYXJkIENyZXN0ZXo6
-DQo+ID4gVGhpcyBwYXRjaCBjb250YWlucyB0aGUgbWluaW1hbCBjaGFuZ2VzIHJlcXVpcmVkIHRv
-IHN1cHBvcnQgaW14NnN4IE9QUA0KPiA+IG9mDQo+ID4gMTk4IE1oei4gV2l0aG91dCB0aGlzIHBh
-dGNoIGNwdWZyZXEgc3RpbGwgcmVwb3J0cyBzdWNjZXNzIGJ1dCB0aGUNCj4gPiBmcmVxdWVuY3kg
-aXMgbm90IGNoYW5nZWQsIHRoZSAiYXJtIiBjbG9jayB3aWxsIHN0aWxsIGJlIGF0IDM5NjAwMDAw
-MCBpbg0KPiBjbGtfc3VtbWFyeS4NCj4gPg0KPiA+IEluIG9yZGVyIHRvIGRvIHRoaXMgUExMMSBu
-ZWVkcyB0byBiZSBieXBhc3NlZCBidXQgc3RpbGwga2VwdCBlbmFibGVkLg0KPiA+IFRoaXMgaXMg
-cmVxdWlyZWQgZGVzcGl0ZSB0aGUgZmFjdCB0aGF0IHRoZSBhcm0gY2xrIGlzIGNvbmZpZ3VyZWQg
-dG8NCj4gPiBjb21lIGZyb20NCj4gPiBwbGwyX3BmZDIgYW5kIGZyb20gdGhlIGNsayBmcmFtZXdv
-cmsgcGVyc3BlY3RpdmUgcGxsMSBhbmQgcmVsYXRlZA0KPiA+IGNsb2NrcyBhcmUgdW51c2VkLg0K
-PiANCj4gSSdtIG5vdCByZWFsbHkgYW4gZXhwZXJ0IGZvciBNWDZTWCwgc28gYSBsaXR0bGUgYmFj
-a2dyb3VuZCBvbiB3aHkgUExMMSBuZWVkcyB0bw0KPiBiZSBrZXB0IGVuYWJsZWQgd291bGQgaGVs
-cCB0byByZXZpZXcgdGhpcyBjaGFuZ2UuDQoNCkhpLCBMdWNhcw0KCVRoZSBQTEwxIG5lZWRzIHRv
-IGJlIGVuYWJsZWQgaXMgYmVjYXVzZSB3aGVuIEFSTV9QT0RGIGlzIGNoYW5nZWQgaW4gQ0NNLA0K
-d2UgbmVlZCB0byBjaGVjayB0aGUgYnVzeSBiaXQgb2YgQ0NNX0NESElQUiBiaXQgMTYgYXJtX3Bv
-ZGZfYnVzeSwgYW5kIHRoaXMgYml0IGlzDQpzeW5jIHdpdGggUExMMSBjbG9jaywgc28gaWYgUExM
-MSBOT1QgZW5hYmxlZCwgdGhpcyBiaXQgd2lsbCBuZXZlciBnZXQgY2xlYXIuIFRoaXMgaXMgaGFy
-ZHdhcmUNCnJlcXVpcmVtZW50Lg0KDQpBbnNvbi4NCg0KPiANCj4gVGhhbmtzLA0KPiBMdWNhcw0K
-PiANCj4gPiBUaGlzIHBhdGNoIGFkZHMgcGxsMSwgcGxsX2J5cGFzcyBhbmQgcGxsMV9ieXBhc3Nf
-c3JjIGNsb2NrcyB0byB0aGUgaW14DQo+ID4gY3B1ZnJlcSBkcml2ZXIgYXMgaW14NnN4LXNwZWNp
-ZmljIGZvciB0aGUgYnlwYXNzIGxvZ2ljLg0KPiA+DQo+ID4gVGhlIGRlZmluaXRpb24gb2YgcGxs
-MV9zeXMgaXMgY2hhbmdlZCB0byBpbXhfY2xrX2ZpeGVkX2ZhY3RvciBzbyB0aGF0DQo+ID4gaXQn
-cyBuZXZlciBkaXNhYmxlZC4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IExlb25hcmQgQ3Jlc3Rl
-eiA8bGVvbmFyZC5jcmVzdGV6QG54cC5jb20+DQo+ID4gLS0tDQo+ID4NCj4gPiBTb21lIHBvdGVu
-dGlhbCBpc3N1ZXM6DQo+ID4NCj4gPiBJbiB0aGVvcnkgcGxsMV9zeXMgY291bGQgYmUgZXhwbGlj
-dGx5IGtlcHQgZW5hYmxlZCBmcm9tIGNwdWZyZXEuIEl0J3MNCj4gPiBub3QgY2xlYXIgdGhpcyB3
-b3VsZCBiZSBiZXR0ZXIgc2luY2UgdGhlIGludGVudGlvbiBpcyB0byBuZXZlciBsZXQNCj4gPiB0
-aGlzIGJlIGRpc2FibGVkLg0KPiA+DQo+ID4gVGhlIG5ldyBjbG9ja3MgYXJlIG9ubHkgYWRkZWQg
-Zm9yIGlteDZzeC4gVGhlIGZyZXF1ZW5jeSBjaGFuZ2luZyBjb2RlDQo+ID4gcmVsaWVzIG9uIHRo
-ZSBmYWN0IHRoYXQgdGhlIGNsayBBUEkgc2ltcGx5IGRvZXMgbm90aGluZyB3aGVuIGNhbGxlZA0K
-PiA+IHdpdGggYSBudWxsIGNsay4NCj4gPg0KPiA+IFBlcmhhcHMgaXQgbWlnaHQgYmUgYmV0dGVy
-IHRvIGFjY2VwdCBFTk9FTlQgZnJvbSBjbGtfZ2V0IG9uIHRoZXNlIG5ldw0KPiA+IGNsb2NrcyBp
-bnN0ZWFkIG9mIGNoZWNraW5nIG9mX21hY2hpbmVfaXNfY29tcGF0aWJsZS4NCj4gPg0KPiA+ICBh
-cmNoL2FybS9ib290L2R0cy9pbXg2c3guZHRzaSAgIHwgIDggKysrKysrLS0NCj4gPiAgZHJpdmVy
-cy9jbGsvaW14L2Nsay1pbXg2c3guYyAgICB8ICAyICstDQo+ID4gIGRyaXZlcnMvY3B1ZnJlcS9p
-bXg2cS1jcHVmcmVxLmMgfCAzMw0KPiA+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-Kw0KPiA+ICAzIGZpbGVzIGNoYW5nZWQsIDQwIGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0p
-DQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm0vYm9vdC9kdHMvaW14NnN4LmR0c2kNCj4g
-PiBiL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDZzeC5kdHNpIGluZGV4IGYxNmI5ZGYuLjQzOTQxMzcg
-MTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9hcm0vYm9vdC9kdHMvaW14NnN4LmR0c2kNCj4gPiArKysg
-Yi9hcmNoL2FybS9ib290L2R0cy9pbXg2c3guZHRzaQ0KPiA+IEBAIC04Nyw5ICs4NywxMyBAQA0K
-PiA+ICAJCQkJIDwmY2xrcyBJTVg2U1hfQ0xLX1BMTDJfUEZEMj4sDQo+ID4gIAkJCQkgPCZjbGtz
-IElNWDZTWF9DTEtfU1RFUD4sDQo+ID4gIAkJCQkgPCZjbGtzIElNWDZTWF9DTEtfUExMMV9TVz4s
-DQo+ID4gLQkJCQkgPCZjbGtzIElNWDZTWF9DTEtfUExMMV9TWVM+Ow0KPiA+ICsJCQkJIDwmY2xr
-cyBJTVg2U1hfQ0xLX1BMTDFfU1lTPiwNCj4gPiArCQkJCSA8JmNsa3MgSU1YNlNYX0NMS19QTEwx
-PiwNCj4gPiArCQkJCSA8JmNsa3MgSU1YNlNYX1BMTDFfQllQQVNTPiwNCj4gPiArCQkJCSA8JmNs
-a3MgSU1YNlNYX1BMTDFfQllQQVNTX1NSQz47DQo+ID4gIAkJCWNsb2NrLW5hbWVzID0gImFybSIs
-ICJwbGwyX3BmZDJfMzk2bSIsICJzdGVwIiwNCj4gPiAtCQkJCSAgICAgICJwbGwxX3N3IiwgInBs
-bDFfc3lzIjsNCj4gPiArCQkJCSAgICAgICJwbGwxX3N3IiwgInBsbDFfc3lzIiwgInBsbDEiLA0K
-PiA+ICsJCQkJICAgICAgInBsbDFfYnlwYXNzIiwgInBsbDFfYnlwYXNzX3NyYyI7DQo+ID4gIAkJ
-CWFybS1zdXBwbHkgPSA8JnJlZ19hcm0+Ow0KPiA+ICAJCQlzb2Mtc3VwcGx5ID0gPCZyZWdfc29j
-PjsNCj4gPiAgCQl9Ow0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Nsay9pbXgvY2xrLWlteDZz
-eC5jDQo+ID4gYi9kcml2ZXJzL2Nsay9pbXgvY2xrLWlteDZzeC5jIGluZGV4IGI1Yzk2ZGUuLmFh
-NjNiOTIgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jbGsvaW14L2Nsay1pbXg2c3guYw0KPiA+
-ICsrKyBiL2RyaXZlcnMvY2xrL2lteC9jbGstaW14NnN4LmMNCj4gPiBAQCAtMTk5LDcgKzE5OSw3
-IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBpbXg2c3hfY2xvY2tzX2luaXQoc3RydWN0DQo+IGRldmlj
-ZV9ub2RlICpjY21fbm9kZSkNCj4gPiAgCWNsa19zZXRfcGFyZW50KGNsa3NbSU1YNlNYX1BMTDZf
-QllQQVNTXSwgY2xrc1tJTVg2U1hfQ0xLX1BMTDZdKTsNCj4gPiAgCWNsa19zZXRfcGFyZW50KGNs
-a3NbSU1YNlNYX1BMTDdfQllQQVNTXSwgY2xrc1tJTVg2U1hfQ0xLX1BMTDddKTsNCj4gPg0KPiA+
-IC0JY2xrc1tJTVg2U1hfQ0xLX1BMTDFfU1lTXSAgICAgID0gaW14X2Nsa19nYXRlKCJwbGwxX3N5
-cyIsDQo+ICJwbGwxX2J5cGFzcyIsIGJhc2UgKyAweDAwLCAxMyk7DQo+ID4gKwljbGtzW0lNWDZT
-WF9DTEtfUExMMV9TWVNdICAgICAgPSBpbXhfY2xrX2ZpeGVkX2ZhY3RvcigicGxsMV9zeXMiLA0K
-PiAicGxsMV9ieXBhc3MiLCAxLCAxKTsNCj4gPiAgCWNsa3NbSU1YNlNYX0NMS19QTEwyX0JVU10g
-ICAgICA9IGlteF9jbGtfZ2F0ZSgicGxsMl9idXMiLA0KPiAicGxsMl9ieXBhc3MiLCBiYXNlICsg
-MHgzMCwgMTMpOw0KPiA+ICAJY2xrc1tJTVg2U1hfQ0xLX1BMTDNfVVNCX09UR10gID0gaW14X2Ns
-a19nYXRlKCJwbGwzX3VzYl9vdGciLA0KPiAicGxsM19ieXBhc3MiLCBiYXNlICsgMHgxMCwgMTMp
-Ow0KPiA+ICAJY2xrc1tJTVg2U1hfQ0xLX1BMTDRfQVVESU9dICAgID0gaW14X2Nsa19nYXRlKCJw
-bGw0X2F1ZGlvIiwNCj4gInBsbDRfYnlwYXNzIiwgYmFzZSArIDB4NzAsIDEzKTsNCj4gPiBkaWZm
-IC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYw0KPiA+IGIvZHJpdmVycy9j
-cHVmcmVxL2lteDZxLWNwdWZyZXEuYyBpbmRleCBiNmVkZDNjLi5jYWY3MjdhIDEwMDY0NA0KPiA+
-IC0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9pbXg2cS1jcHVmcmVxLmMNCj4gPiArKysgYi9kcml2ZXJz
-L2NwdWZyZXEvaW14NnEtY3B1ZnJlcS5jDQo+ID4gQEAgLTMxLDYgKzMxLDkgQEAgc3RhdGljIHN0
-cnVjdCBjbGsgKnN0ZXBfY2xrOyAgc3RhdGljIHN0cnVjdCBjbGsNCj4gPiAqcGxsMl9wZmQyXzM5
-Nm1fY2xrOw0KPiA+DQo+ID4gIC8qIGNsayB1c2VkIGJ5IGkuTVg2VUwgKi8NCj4gPiArc3RhdGlj
-IHN0cnVjdCBjbGsgKnBsbDFfYnlwYXNzOw0KPiA+ICtzdGF0aWMgc3RydWN0IGNsayAqcGxsMV9i
-eXBhc3Nfc3JjOw0KPiA+ICtzdGF0aWMgc3RydWN0IGNsayAqcGxsMTsNCj4gPiAgc3RhdGljIHN0
-cnVjdCBjbGsgKnBsbDJfYnVzX2NsazsNCj4gPiAgc3RhdGljIHN0cnVjdCBjbGsgKnNlY29uZGFy
-eV9zZWxfY2xrOw0KPiA+DQo+ID4gQEAgLTEyMiw4ICsxMjUsMjEgQEAgc3RhdGljIGludCBpbXg2
-cV9zZXRfdGFyZ2V0KHN0cnVjdCBjcHVmcmVxX3BvbGljeQ0KPiAqcG9saWN5LCB1bnNpZ25lZCBp
-bnQgaW5kZXgpDQo+ID4gIAkJY2xrX3NldF9wYXJlbnQoc3RlcF9jbGssIHBsbDJfcGZkMl8zOTZt
-X2Nsayk7DQo+ID4gIAkJY2xrX3NldF9wYXJlbnQocGxsMV9zd19jbGssIHN0ZXBfY2xrKTsNCj4g
-PiAgCQlpZiAoZnJlcV9oeiA+IGNsa19nZXRfcmF0ZShwbGwyX3BmZDJfMzk2bV9jbGspKSB7DQo+
-ID4gKwkJCS8qDQo+ID4gKwkJCSAqIEVuc3VyZSB0aGF0IHBsbDFfYnlwYXNzIGlzIHNldCBiYWNr
-IHRvDQo+ID4gKwkJCSAqIHBsbDEuIFdlIGhhdmUgdG8gZG8gdGhpcyBmaXJzdCBzbyB0aGF0IHRo
-ZQ0KPiA+ICsJCQkgKiBjaGFuZ2UgcmF0ZSBkb25lIHRvIHBsbDFfc3lzX2NsayBkb25lIGJlbG93
-DQo+ID4gKwkJCSAqIGNhbiBwcm9wYWdhdGUgdXAgdG8gcGxsMS4NCj4gPiArCQkJICovDQo+ID4g
-KwkJCWNsa19zZXRfcGFyZW50KHBsbDFfYnlwYXNzLCBwbGwxKTsNCj4gPiAgCQkJY2xrX3NldF9y
-YXRlKHBsbDFfc3lzX2NsaywgbmV3X2ZyZXEgKiAxMDAwKTsNCj4gPiAgCQkJY2xrX3NldF9wYXJl
-bnQocGxsMV9zd19jbGssIHBsbDFfc3lzX2Nsayk7DQo+ID4gKwkJfSBlbHNlIHsNCj4gPiArCQkJ
-LyoNCj4gPiArCQkJICogTmVlZCB0byBlbnN1cmUgdGhhdCBQTEwxIGlzIGJ5cGFzc2VkIGFuZCBl
-bmFibGVkDQo+ID4gKwkJCSAqIGJlZm9yZSBBUk0tUE9ERiBpcyBzZXQuDQo+ID4gKwkJCSAqLw0K
-PiA+ICsJCQljbGtfc2V0X3BhcmVudChwbGwxX2J5cGFzcywgcGxsMV9ieXBhc3Nfc3JjKTsNCj4g
-PiAgCQl9DQo+ID4gIAl9DQo+ID4NCj4gPiBAQCAtMjE2LDYgKzIzMiwxNyBAQCBzdGF0aWMgaW50
-IGlteDZxX2NwdWZyZXFfcHJvYmUoc3RydWN0DQo+IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4g
-PiAgCQlnb3RvIHB1dF9jbGs7DQo+ID4gIAl9DQo+ID4NCj4gPiArCWlmIChvZl9tYWNoaW5lX2lz
-X2NvbXBhdGlibGUoImZzbCxpbXg2c3giKSkgew0KPiA+ICsJCXBsbDEgPSBjbGtfZ2V0KGNwdV9k
-ZXYsICJwbGwxIik7DQo+ID4gKwkJcGxsMV9ieXBhc3MgPSBjbGtfZ2V0KGNwdV9kZXYsICJwbGwx
-X2J5cGFzcyIpOw0KPiA+ICsJCXBsbDFfYnlwYXNzX3NyYyA9IGNsa19nZXQoY3B1X2RldiwgInBs
-bDFfYnlwYXNzX3NyYyIpOw0KPiA+ICsJCWlmIChJU19FUlIocGxsMSkgfHwgSVNfRVJSKHBsbDFf
-YnlwYXNzKSB8fA0KPiBJU19FUlIocGxsMV9ieXBhc3Nfc3JjKSkgew0KPiA+ICsJCQlkZXZfZXJy
-KGNwdV9kZXYsICJmYWlsZWQgdG8gZ2V0IGNsb2NrcyBzcGVjaWZpYyB0bw0KPiBpbXg2c3hcbiIp
-Ow0KPiA+ICsJCQlyZXQgPSAtRU5PRU5UOw0KPiA+ICsJCQlnb3RvIHB1dF9jbGs7DQo+ID4gKwkJ
-fQ0KPiA+ICsJfQ0KPiA+ICsNCj4gPiAgCWlmIChvZl9tYWNoaW5lX2lzX2NvbXBhdGlibGUoImZz
-bCxpbXg2dWwiKSB8fA0KPiA+ICAJICAgIG9mX21hY2hpbmVfaXNfY29tcGF0aWJsZSgiZnNsLGlt
-eDZ1bGwiKSkgew0KPiA+ICAJCXBsbDJfYnVzX2NsayA9IGNsa19nZXQoY3B1X2RldiwgInBsbDJf
-YnVzIik7IEBAIC0zODAsNg0KPiArNDA3LDEyIEBADQo+ID4gc3RhdGljIGludCBpbXg2cV9jcHVm
-cmVxX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gIAkJY2xrX3B1dChz
-dGVwX2Nsayk7DQo+ID4gIAlpZiAoIUlTX0VSUihwbGwyX3BmZDJfMzk2bV9jbGspKQ0KPiA+ICAJ
-CWNsa19wdXQocGxsMl9wZmQyXzM5Nm1fY2xrKTsNCj4gPiArCWlmICghSVNfRVJSKHBsbDEpKQ0K
-PiA+ICsJCWNsa19wdXQocGxsMSk7DQo+ID4gKwlpZiAoIUlTX0VSUihwbGwxX2J5cGFzcykpDQo+
-ID4gKwkJY2xrX3B1dChwbGwxX2J5cGFzcyk7DQo+ID4gKwlpZiAoIUlTX0VSUihwbGwxX2J5cGFz
-c19zcmMpKQ0KPiA+ICsJCWNsa19wdXQocGxsMV9ieXBhc3Nfc3JjKTsNCj4gPiAgCWlmICghSVNf
-RVJSKHBsbDJfYnVzX2NsaykpDQo+ID4gIAkJY2xrX3B1dChwbGwyX2J1c19jbGspOw0KPiA+ICAJ
-aWYgKCFJU19FUlIoc2Vjb25kYXJ5X3NlbF9jbGspKQ0KPiANCg0K
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Regardless of whether or not debug messages from the core system
+suspend/hibernation code are enabled, it is useful to know when
+system-wide transitions start and finish (or fail), so print "info"
+messages at these points.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+-> v2: Smiplified the messages as suggested by Mark.
+
+---
+ kernel/power/hibernate.c |    5 +++++
+ kernel/power/suspend.c   |    2 ++
+ 2 files changed, 7 insertions(+)
+
+Index: linux-pm/kernel/power/hibernate.c
+===================================================================
+--- linux-pm.orig/kernel/power/hibernate.c
++++ linux-pm/kernel/power/hibernate.c
+@@ -692,6 +692,7 @@ int hibernate(void)
+ 		goto Unlock;
+ 	}
+ 
++	pr_info("hibernation entry\n");
+ 	pm_prepare_console();
+ 	error = __pm_notifier_call_chain(PM_HIBERNATION_PREPARE, -1, &nr_calls);
+ 	if (error) {
+@@ -762,6 +763,8 @@ int hibernate(void)
+ 	atomic_inc(&snapshot_device_available);
+  Unlock:
+ 	unlock_system_sleep();
++	pr_info("hibernation exit\n");
++
+ 	return error;
+ }
+ 
+@@ -868,6 +871,7 @@ static int software_resume(void)
+ 		goto Unlock;
+ 	}
+ 
++	pr_info("resume from hibernation\n");
+ 	pm_prepare_console();
+ 	error = __pm_notifier_call_chain(PM_RESTORE_PREPARE, -1, &nr_calls);
+ 	if (error) {
+@@ -884,6 +888,7 @@ static int software_resume(void)
+  Finish:
+ 	__pm_notifier_call_chain(PM_POST_RESTORE, nr_calls, NULL);
+ 	pm_restore_console();
++	pr_info("resume from hibernation failed (%d)\n", error);
+ 	atomic_inc(&snapshot_device_available);
+ 	/* For success case, the suspend path will release the lock */
+  Unlock:
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -579,6 +579,7 @@ int pm_suspend(suspend_state_t state)
+ 	if (state <= PM_SUSPEND_ON || state >= PM_SUSPEND_MAX)
+ 		return -EINVAL;
+ 
++	pr_info("PM: suspend entry (%s)\n", pm_states[state]);
+ 	error = enter_state(state);
+ 	if (error) {
+ 		suspend_stats.fail++;
+@@ -586,6 +587,7 @@ int pm_suspend(suspend_state_t state)
+ 	} else {
+ 		suspend_stats.success++;
+ 	}
++	pr_info("PM: suspend exit\n");
+ 	return error;
+ }
+ EXPORT_SYMBOL(pm_suspend);
