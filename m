@@ -1,63 +1,124 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.13-rc2
-Date: Thu, 20 Jul 2017 23:55:31 +0200
-Message-ID: <CAJZ5v0gv2LRp+ARKRcXisGyX4tUJ3Ouv5P1gr_mFO+Dk826cPA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 3/3] PM / timekeeping: Print debug messages when requested
+Date: Thu, 20 Jul 2017 23:52:55 +0200
+Message-ID: <3695232.IvXvX1Tf0z@aspire.rjw.lan>
+References: <2539550.y54cRb749c@aspire.rjw.lan> <23461968.oJ1tNQorSa@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f195.google.com ([209.85.223.195]:35567 "EHLO
-        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934927AbdGTVzc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 17:55:32 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <23461968.oJ1tNQorSa@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Linus,
+On Wednesday, July 19, 2017 02:42:43 AM Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The messages printed by tk_debug_account_sleep_time() are basically
+> useful for system sleep debugging, so print them only when the other
+> debug messages from the core suspend/hibernate code are enabled.
+> 
+> While at it, make it clear that the messages from
+> tk_debug_account_sleep_time() are about timekeeping suspend
+> duration, because in general timekeeping may be suspeded and
+> resumed for multiple times during one system suspend-resume cycle.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Please pull from the tag
+Any complaints or issues here?
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.13-rc2
+If not, I'm going to queue it up for 4.14.
 
-with top-most commit ffa64d5e0d2f053d76ff9b1d2f437150b49c4112
-
- Merge branches 'intel_pstate' and 'pm-domains'
-
-on top of commit 5771a8c08880cdca3bfb4a3fc6d309d6bba20877
-
- Linux v4.13-rc1
-
-to receive power management fixes for v4.13-rc2.
-
-These are two stable-candidate fixes for the intel_pstate driver and
-the generic power domains (genpd) framework.
-
-Specifics:
-
- - Fix the average CPU load computations in the intel_pstate driver
-   on Knights Landing (Xeon Phi) processors that require an extra
-   factor to compensate for a rate change differences between the
-   TSC and MPERF which is missing (Srinivas Pandruvada).
-
- - Fix an initialization ordering issue in the generic power domains
-   (genpd) framework (Sudeep Holla).
-
-Thanks!
-
-
----------------
-
-Srinivas Pandruvada (1):
-      cpufreq: intel_pstate: Correct the busy calculation for KNL
-
-Sudeep Holla (1):
-      PM / Domains: defer dev_pm_domain_set() until genpd->attach_dev
-succeeds if present
-
----------------
-
- drivers/base/power/domain.c    |  8 ++++----
- drivers/cpufreq/intel_pstate.c | 21 +++++++++++++++++++--
- 2 files changed, 23 insertions(+), 6 deletions(-)
+> ---
+>  include/linux/suspend.h         |   10 ++++++++--
+>  kernel/power/main.c             |   10 +++++++---
+>  kernel/time/timekeeping_debug.c |    5 +++--
+>  3 files changed, 18 insertions(+), 7 deletions(-)
+> 
+> Index: linux-pm/include/linux/suspend.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/suspend.h
+> +++ linux-pm/include/linux/suspend.h
+> @@ -491,16 +491,22 @@ static inline void unlock_system_sleep(v
+>  
+>  #ifdef CONFIG_PM_SLEEP_DEBUG
+>  extern bool pm_print_times_enabled;
+> -extern __printf(1, 2) void pm_pr_dbg(const char *fmt, ...);
+> +extern __printf(2, 3) void __pm_pr_dbg(bool defer, const char *fmt, ...);
+>  #else
+>  #define pm_print_times_enabled	(false)
+>  
+>  #include <linux/printk.h>
+>  
+> -#define pm_pr_dbg(fmt, ...) \
+> +#define pm_pr_dbg(defer, fmt, ...) \
+>  	no_printk(KERN_DEBUG fmt, ##__VA_ARGS__)
+>  #endif
+>  
+> +#define pm_pr_dbg(fmt, ...) \
+> +	__pm_pr_dbg(false, fmt, ##__VA_ARGS__)
+> +
+> +#define pm_deferred_pr_dbg(fmt, ...) \
+> +	__pm_pr_dbg(true, fmt, ##__VA_ARGS__)
+> +
+>  #ifdef CONFIG_PM_AUTOSLEEP
+>  
+>  /* kernel/power/autosleep.c */
+> Index: linux-pm/kernel/power/main.c
+> ===================================================================
+> --- linux-pm.orig/kernel/power/main.c
+> +++ linux-pm/kernel/power/main.c
+> @@ -388,13 +388,14 @@ static ssize_t pm_debug_messages_store(s
+>  power_attr(pm_debug_messages);
+>  
+>  /**
+> - * pm_pr_dbg - Print a suspend debug message to the kernel log.
+> + * __pm_pr_dbg - Print a suspend debug message to the kernel log.
+> + * @defer: Whether or not to use printk_deferred() to print the message.
+>   * @fmt: Message format.
+>   *
+>   * The message will be emitted if enabled through the pm_debug_messages
+>   * sysfs attribute.
+>   */
+> -void pm_pr_dbg(const char *fmt, ...)
+> +void __pm_pr_dbg(bool defer, const char *fmt, ...)
+>  {
+>  	struct va_format vaf;
+>  	va_list args;
+> @@ -407,7 +408,10 @@ void pm_pr_dbg(const char *fmt, ...
+>  	vaf.fmt = fmt;
+>  	vaf.va = &args;
+>  
+> -	printk(KERN_DEBUG "PM: %pV", &vaf);
+> +	if (defer)
+> +		printk_deferred(KERN_DEBUG "PM: %pV", &vaf);
+> +	else
+> +		printk(KERN_DEBUG "PM: %pV", &vaf);
+>  
+>  	va_end(args);
+>  }
+> Index: linux-pm/kernel/time/timekeeping_debug.c
+> ===================================================================
+> --- linux-pm.orig/kernel/time/timekeeping_debug.c
+> +++ linux-pm/kernel/time/timekeeping_debug.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/init.h>
+>  #include <linux/kernel.h>
+>  #include <linux/seq_file.h>
+> +#include <linux/suspend.h>
+>  #include <linux/time.h>
+>  
+>  #include "timekeeping_internal.h"
+> @@ -75,7 +76,7 @@ void tk_debug_account_sleep_time(struct
+>  	int bin = min(fls(t->tv_sec), NUM_BINS-1);
+>  
+>  	sleep_time_bin[bin]++;
+> -	printk_deferred(KERN_INFO "Suspended for %lld.%03lu seconds\n",
+> -			(s64)t->tv_sec, t->tv_nsec / NSEC_PER_MSEC);
+> +	pm_deferred_pr_dbg("Timekeeping suspended for %lld.%03lu seconds\n",
+> +			   (s64)t->tv_sec, t->tv_nsec / NSEC_PER_MSEC);
+>  }
+>  
+> 
