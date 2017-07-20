@@ -1,69 +1,56 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH v4 2/2] thermal: uniphier: add UniPhier thermal driver
-Date: Fri, 21 Jul 2017 02:09:18 +0900
-Message-ID: <CAK7LNATDY4SdGHH1_K2GhFcsXMuG_9vGECWNtNfBJ_D=AO785w@mail.gmail.com>
-References: <1499392475-17304-1-git-send-email-hayashi.kunihiko@socionext.com>
- <1499392475-17304-3-git-send-email-hayashi.kunihiko@socionext.com>
- <CAK7LNASKqwWY4gorRZLd0GPXymm2WNdxuZr_OOs6g7uzaKSCMQ@mail.gmail.com> <CAK7LNATDxacQXyJr=4b7zaWkX1Y6S8DMHEkQxECvmETemfGRfA@mail.gmail.com>
+From: Mark Salyzyn <salyzyn@android.com>
+Subject: Re: [PATCH v2 2/3] PM / sleep: Mark suspend/hibernation start and
+ finish
+Date: Thu, 20 Jul 2017 10:49:50 -0700
+Message-ID: <364d0454-a446-51c4-f9c5-15bc6670928a@android.com>
+References: <2539550.y54cRb749c@aspire.rjw.lan>
+ <1528829.lXeqX43PVF@aspire.rjw.lan> <21457958.U8q3irAeUz@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAK7LNATDxacQXyJr=4b7zaWkX1Y6S8DMHEkQxECvmETemfGRfA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Cc: rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Masami Hiramatsu <masami.hiramatsu@linaro.org>, Jassi Brar <jaswinder.singh@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f52.google.com ([74.125.83.52]:34035 "EHLO
+        mail-pg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753701AbdGTRtw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 13:49:52 -0400
+Received: by mail-pg0-f52.google.com with SMTP id 123so17835025pgj.1
+        for <linux-pm@vger.kernel.org>; Thu, 20 Jul 2017 10:49:52 -0700 (PDT)
+In-Reply-To: <21457958.U8q3irAeUz@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-2017-07-21 1:53 GMT+09:00 Masahiro Yamada <yamada.masahiro@socionext.com>:
-> 2017-07-21 1:08 GMT+09:00 Masahiro Yamada <yamada.masahiro@socionext.com>:
->> 2017-07-07 10:54 GMT+09:00 Kunihiko Hayashi <hayashi.kunihiko@socionext.com>:
->>> Add a thermal driver for on-chip PVT (Process, Voltage and Temperature)
->>> monitoring unit implemented on UniPhier SoCs. This driver supports
->>> temperature monitoring and alert function.
->>>
->>> Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
->>
->>
->> Sparse reports several warnings.
->>
->>
->>   CHECK   drivers/thermal/uniphier_thermal.c
->> drivers/thermal/uniphier_thermal.c:276:52: warning: incorrect type in
->> argument 1 (different base types)
->> drivers/thermal/uniphier_thermal.c:276:52:    expected restricted
->> __be32 const [usertype] *cell
->> drivers/thermal/uniphier_thermal.c:276:52:    got unsigned int const
->> [usertype] *[assigned] calib
->> drivers/thermal/uniphier_thermal.c:277:58: warning: incorrect type in
->> argument 1 (different base types)
->> drivers/thermal/uniphier_thermal.c:277:58:    expected restricted
->> __be32 const [usertype] *cell
->> drivers/thermal/uniphier_thermal.c:277:58:    got unsigned int const
->> [usertype] *
->> drivers/thermal/uniphier_thermal.c:136:9: warning: cast truncates bits
->> from constant value (fffffffff becomes ffffffff)
->> drivers/thermal/uniphier_thermal.c:141:9: warning: cast truncates bits
->> from constant value (7ffffffff becomes ffffffff)
->> drivers/thermal/uniphier_thermal.c:153:9: warning: cast truncates bits
->> from constant value (ffffffffff0001 becomes ffff0001)
->> drivers/thermal/uniphier_thermal.c:170:9: warning: cast truncates bits
->> from constant value (7ffffffffff becomes ffffffff)
->> drivers/thermal/uniphier_thermal.c:185:9: warning: cast truncates bits
->> from constant value (7ffffffffff becomes ffffffff)
->>
+On 07/19/2017 06:38 PM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> Hmm.
-> The endian mismatch can be fixed by replacing u32 with __be32.
+> Regardless of whether or not debug messages from the core system
+> suspend/hibernation code are enabled, it is useful to know when
+> system-wide transitions start and finish (or fail), so print "info"
+> messages at these points.
 >
-> I can not get the truncates bits warnings.
-> Why sparse complains about this...
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>
+> -> v2: Smiplified the messages as suggested by Mark.
+>
+> ---
+>   kernel/power/hibernate.c |    5 +++++
+>   kernel/power/suspend.c   |    2 ++
+>   2 files changed, 7 insertions(+)
+>
+> Index: linux-pm/kernel/power/hibernate.c
+> ===================================================================
+> --- linux-pm.orig/kernel/power/hibernate.c
+> +++ linux-pm/kernel/power/hibernate.c
+> @@ -692,6 +692,7 @@ int hibernate(void)
+>   		goto Unlock;
+>   	}
+>   
+> +	pr_info("hibernation entry\n");
+nit (minor): Many of the logs report a PM: prefix. Flipping coin that 
+the 3 characters provides any real gain is in your hands. My WAG is it 
+would be nice to be able to do dmesg | grep PM:
 
-My bad - I was cross-compiling with ARCH=arm, so I think that's why.
-
-I think the incorrect type should be fixed.  (u32 -> __be32)
-
-
-
--- 
-Best Regards
-Masahiro Yamada
+Ack
