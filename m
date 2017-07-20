@@ -1,57 +1,65 @@
-From: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Subject: Re: [PATCH 000/102] Convert drivers to explicit reset API
-Date: Thu, 20 Jul 2017 10:11:57 +0200
-Message-ID: <20170720081157.GA11630@kroah.com>
-References: <20170719152646.25903-1-p.zabel@pengutronix.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2 1/4] time: rtc-lib: Add rtc_show_time(const char
+ *prefix_msg)
+Date: Thu, 20 Jul 2017 10:20:56 +0200
+Message-ID: <20170720082056.GA14149@amd>
+References: <20170718211930.123077-1-salyzyn@android.com>
+ <alpine.DEB.2.20.1707182338470.2425@nanos>
+ <8afb372a-3951-6fb9-c0be-82756623061f@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="u3/rZRmxL6MmkK24"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56297 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933731AbdGTIU6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 04:20:58 -0400
 Content-Disposition: inline
-In-Reply-To: <20170719152646.25903-1-p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Peter Chen <Peter.Chen-3arQi8VN3Tc@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Marc Dietrich <marvin24-Mmb7MZpHnFY@public.gmane.org>, Rakesh Iyer <riyer-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Xinliang Liu <z.liuxinliang-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Jiri Slaby <jslaby-IBi9RG/b67k@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Ohad Ben-Cohen <ohad-Ix1uc/W3ht7QT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Vincent Abriou <vincent.abriou-qxv4g6HH51o@public.gmane.org>, Bin Liu <b-liu-l0cyMroinI0@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel@
+In-Reply-To: <8afb372a-3951-6fb9-c0be-82756623061f@android.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Salyzyn <salyzyn@android.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, linux-rtc@vger.kernel.org, andy.shevchenko@gmail.com, Mark Salyzyn <salyzyn@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Thierry Strudel <tstrudel@google.com>, John Stultz <john.stultz@linaro.org>, Richard Cochran <richardcochran@gmail.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Kees Cook <keescook@chromium.org>
 
-On Wed, Jul 19, 2017 at 05:25:04PM +0200, Philipp Zabel wrote:
-> The reset control API has two modes: exclusive access, where the driver
-> expects to have full and immediate control over the state of the reset
-> line, and shared (clock-like) access, where drivers only request reset
-> deassertion while active, but don't care about the state of the reset line
-> while inactive.
-> 
-> Commit a53e35db70d1 ("reset: Ensure drivers are explicit when requesting
-> reset lines") started to transition the reset control request API calls
-> to explicitly state whether the driver needs exclusive or shared reset
-> control behavior.
-> 
-> This series converts all drivers that currently implicitly request
-> exclusive reset controls to the corresponding explicit API call. It is,
-> for the most part, generated from the following semantic patch:
 
-Hey, I'm all for large api changes, but this really seems ackward, isn't
-there a "better" way to do this?
+--u3/rZRmxL6MmkK24
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Why not, as you say the "implicit" request is exclusive, just leave
-everything alone and state that the "reset_control_get()" call is
-exclusive and make the shared one the "odd" usage as that seems to not
-be the normal case.
+Hi!
 
-That should be a much smaller patch right?
+> >
+> >       pr_info("My so important log message %lld\n", ktime_get_real_seco=
+nds());
+>=20
+> Legacy (these prints have been in Android tree since 2013) for all our
+> battery and power analysis tools are keyed off RTC format. There is some
+> momentum, default should be epoch seconds/nanoseconds as that is a good
+> example; and another option can select RTC (the option can be an internal
+> patch to alter the format ... ick)
 
-That way you don't break everything here, and require 100+ patches to
-just change the name of a function from one to another and do nothing
-else.
+Yes, android development is broken. Please fix it, rather then trying
+to break kernel to match.
 
-thanks,
+Thank you,
+									Pavel
 
-greg k-h
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--u3/rZRmxL6MmkK24
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAllwZ+gACgkQMOfwapXb+vIVfwCePk4KpuLs/i0zZy9OPlVmW1m3
+63cAoLdybneTlT37SgH41azZUEDtbI8Z
+=dL6m
+-----END PGP SIGNATURE-----
+
+--u3/rZRmxL6MmkK24--
