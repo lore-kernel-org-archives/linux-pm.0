@@ -1,36 +1,82 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/2] PM / suspend: Messaging updates
-Date: Fri, 21 Jul 2017 22:42:30 +0200
-Message-ID: <1598403.3v8fpR9YnQ@aspire.rjw.lan>
-References: <1714767.SyJDFOT8Lq@aspire.rjw.lan> <CAHp75VdGUNTU1URWqRW-B1y=2Wrw0YU0U1orC7gcVBuQRYXxZQ@mail.gmail.com>
+Subject: Re: [PATCH 3/3] ACPI / PCI / PM: Rework acpi_pci_propagate_wakeup()
+Date: Fri, 21 Jul 2017 22:44:30 +0200
+Message-ID: <2174120.aKGTTYRMVV@aspire.rjw.lan>
+References: <3116391.JNS1F4DjTg@aspire.rjw.lan> <4853865.5aRGCM4CdQ@aspire.rjw.lan> <CAHp75VeQpmf5z1p9an2bvJDkAGeOxFyXz+VWk7OibNt+-9VMDw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49378 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753502AbdGUUuZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2017 16:50:25 -0400
-In-Reply-To: <CAHp75VdGUNTU1URWqRW-B1y=2Wrw0YU0U1orC7gcVBuQRYXxZQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAHp75VeQpmf5z1p9an2bvJDkAGeOxFyXz+VWk7OibNt+-9VMDw@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
 To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 21, 2017 06:13:45 PM Andy Shevchenko wrote:
-> On Fri, Jul 21, 2017 at 3:48 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > Hi,
-> >
-> > The first patch addresses a potential confusion regarding messages printed by
-> > the suspend core code to the kernel log and the second one adds a pr_fmt() to
-> > kernel/power/suspend.c.
-> >
-> > The patches are on top of the series I posted yesterday:
-> >
-> > http://marc.info/?l=linux-pm&m=150059650805506&w=2
+On Friday, July 21, 2017 06:45:03 PM Andy Shevchenko wrote:
+> On Fri, Jul 21, 2017 at 3:42 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 > 
-> Standardization is what I like.
+> > The acpi_pci_propagate_wakeup() routine is there to handle cases in
+> > which PCI bridges (or PCIe ports) are expected to signal wakeup
+> > for devices below them, but currently it doesn't do that correctly.
+> >
+> > The problem is that acpi_pci_propagate_wakeup() uses
+> > acpi_pm_set_device_wakeup() for bridges and if that routine is
+> > called for multiple times to disable wakeup for the same device,
+> > it will disable it on the first invocation and the next calls
+> > will have no effect (it works analogously when called to enable
+> > wakeup, but that is not a problem).
+> >
+> > Now, say acpi_pci_propagate_wakeup() has been called for two
+> > different devices under the same bridge and it has called
+> > acpi_pm_set_device_wakeup() for that bridge each time.  The
+> > bridge is now enabled to generate wakeup signals.  Next,
+> > suppose that one of the devices below it resumes and
+> > acpi_pci_propagate_wakeup() is called to disable wakeup for that
+> > device.  It will then call acpi_pm_set_device_wakeup() for the bridge
+> > and that will effectively disable remote wakeup for all devices under
+> > it even though some of them may still be suspended and remote wakeup
+> > may be expected to work for them.
+> >
+> > To address this (arguably theoretical) issue, allow
+> > wakeup.enable_count under struct acpi_device to grow beyond 1 in
+> > certain situations.  In particular, allow that to happen in
+> > acpi_pci_propagate_wakeup() when wakeup is enabled or disabled
+> > for PCI bridges, so that wakeup is actually disabled for the
+> > bridge when all devices under it resume and not when just one
+> > of them does that.
 > 
-> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> > -       if (wakeup->enable_count > 0)
+> > -               goto out;
+> > +       if (wakeup->enable_count > 0) {
+> > +               if (wakeup->enable_count < max_count)
+> > +                       goto inc;
+> > +               else
+> > +                       goto out;
+> > +       }
+> 
+> Wouldn't be simpler
 
-Thanks!
+I'm not really sure what you mean.
+
+In general, ->
+
+>     if (wakeup->enable_count >= max_count)
+>       goto out;
+
+-> this is unlikely and ->>
+
+>     if (wakeup->enable_count > 0)
+>       goto inc;
+
+->> this isn't.
+
+Why would checking an unlikely condition before a likely one covering it
+ever be better?
+
+> If max_count can be <= 0,
+
+No, it can't be.
+
+Thanks,
+Rafael
