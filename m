@@ -1,56 +1,94 @@
 From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Subject: [PATCH v5 0/2] add UniPhier thermal support
-Date: Fri, 21 Jul 2017 20:21:43 +0900
-Message-ID: <1500636105-11520-1-git-send-email-hayashi.kunihiko@socionext.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx.socionext.com ([202.248.49.38]:7812 "EHLO mx.socionext.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753111AbdGULV7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Jul 2017 07:21:59 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v5 1/2] dt-bindings: thermal: add binding documentation for UniPhier thermal monitor
+Date: Fri, 21 Jul 2017 20:21:44 +0900
+Message-ID: <1500636105-11520-2-git-send-email-hayashi.kunihiko@socionext.com>
+References: <1500636105-11520-1-git-send-email-hayashi.kunihiko@socionext.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1500636105-11520-1-git-send-email-hayashi.kunihiko@socionext.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, yamada.masahiro@socionext.com, masami.hiramatsu@linaro.org, jaswinder.singh@linaro.org, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+List-Id: linux-pm@vger.kernel.org
 
-This series adds support for CPU temperature monitor modules implemented
-on UniPhier LD20 and PXs2 SoCs. This driver supports temperature monitoring
-and alert function on the module.
+Add devicetree binding documentation for thermal monitor implemented on
+Socionext UniPhier SoCs.
 
-Changes in v4:
-- fix warnings from sparse by replacing u32 with __be32
-
-Changes in v3:
-- remove TMOD_MASK and use TMOD_WIDTH representing the bit width of TMOD
-
-Changes in v2:
-- add nsleep after starting and stopping PVT
-- replace temperature calculation with sign_extend32()
-
-Changes in v1:
-- separate dts from this patchset as another patchset
-- remove 'reg' description on the dt-bindings document
-- fix the order of calling initialization functions
-- replace mask bits to use GENMASK
-- fix calculation of temperature because of not considering a negative value
-- use devm_request_threaded_irq() instead of devm_request_irq() and
-  separate a thread function from the interrupt handler
-- add dependency to Kconfig
-- set 120C to CRITICAL_TEMP_LIMIT as maximum temperature
-- shrink each line of parameters to save the number of lines
-- improve some comments and copyright description
-
-Kunihiko Hayashi (2):
-  dt-bindings: thermal: add binding documentation for UniPhier thermal
-    monitor
-  thermal: uniphier: add UniPhier thermal driver
-
- .../bindings/thermal/uniphier-thermal.txt          |  64 ++++
- drivers/thermal/Kconfig                            |   8 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/uniphier_thermal.c                 | 386 +++++++++++++++++++++
- 4 files changed, 459 insertions(+)
+Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Acked-by: Rob Herring <robh@kernel.org>
+---
+ .../bindings/thermal/uniphier-thermal.txt          | 64 ++++++++++++++++++++++
+ 1 file changed, 64 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
- create mode 100644 drivers/thermal/uniphier_thermal.c
 
+diff --git a/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt b/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
+new file mode 100644
+index 0000000..686c0b4
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
+@@ -0,0 +1,64 @@
++* UniPhier Thermal bindings
++
++This describes the devicetree bindings for thermal monitor supported by
++PVT(Process, Voltage and Temperature) monitoring unit implemented on Socionext
++UniPhier SoCs.
++
++Required properties:
++- compatible :
++  - "socionext,uniphier-pxs2-thermal" : For UniPhier PXs2 SoC
++  - "socionext,uniphier-ld20-thermal" : For UniPhier LD20 SoC
++- interrupts : IRQ for the temperature alarm
++- #thermal-sensor-cells : Should be 0. See ./thermal.txt for details.
++
++Optional properties:
++- socionext,tmod-calibration: A pair of calibrated values referred from PVT,
++                              in case that the values aren't set on SoC,
++                              like a reference board.
++
++Example:
++
++	sysctrl@61840000 {
++		compatible = "socionext,uniphier-ld20-sysctrl",
++			     "simple-mfd", "syscon";
++		reg = <0x61840000 0x10000>;
++		...
++		pvtctl: pvtctl {
++			compatible = "socionext,uniphier-ld20-thermal";
++			interrupts = <0 3 1>;
++			#thermal-sensor-cells = <0>;
++		};
++		...
++	};
++
++	thermal-zones {
++		cpu_thermal {
++			polling-delay-passive = <250>;	/* 250ms */
++			polling-delay = <1000>;		/* 1000ms */
++			thermal-sensors = <&pvtctl>;
++
++			trips {
++				cpu_crit: cpu_crit {
++					temperature = <110000>;	/* 110C */
++					hysteresis = <2000>;
++					type = "critical";
++				};
++				cpu_alert: cpu_alert {
++					temperature = <100000>;	/* 100C */
++					hysteresis = <2000>;
++					type = "passive";
++				};
++			};
++
++			cooling-maps {
++				map0 {
++					trip = <&cpu_alert>;
++					cooling-device = <&cpu0 (-1) (-1)>;
++				};
++				map1 {
++					trip = <&cpu_alert>;
++					cooling-device = <&cpu2 (-1) (-1)>;
++				};
++			};
++		};
++	};
 -- 
 2.7.4
