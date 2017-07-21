@@ -1,444 +1,262 @@
-From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Subject: [PATCH v5 2/2] thermal: uniphier: add UniPhier thermal driver
-Date: Fri, 21 Jul 2017 20:21:45 +0900
-Message-ID: <1500636105-11520-3-git-send-email-hayashi.kunihiko@socionext.com>
-References: <1500636105-11520-1-git-send-email-hayashi.kunihiko@socionext.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 2/3] ACPI / PM: Split acpi_device_wakeup()
+Date: Fri, 21 Jul 2017 14:40:49 +0200
+Message-ID: <3408475.MC8krXn0zk@aspire.rjw.lan>
+References: <3116391.JNS1F4DjTg@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1500636105-11520-1-git-send-email-hayashi.kunihiko@socionext.com>
+In-Reply-To: <3116391.JNS1F4DjTg@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, yamada.masahiro@socionext.com, masami.hiramatsu@linaro.org, jaswinder.singh@linaro.org, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+To: Linux PCI <linux-pci@vger.kernel.org>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add a thermal driver for on-chip PVT (Process, Voltage and Temperature)
-monitoring unit implemented on UniPhier SoCs. This driver supports
-temperature monitoring and alert function.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+To prepare for a subsequent change and make the code somewhat easier
+to follow, do the following in the ACPI device wakeup handling code:
+
+ * Replace wakeup.flags.enabled under struct acpi_device with
+   wakeup.enable_count as that will be necessary going forward.
+
+   For now, wakeup.enable_count is not allowed to grow beyond 1,
+   so the current behavior is retained.
+
+ * Split acpi_device_wakeup() into acpi_device_wakeup_enable()
+   and acpi_device_wakeup_disable() and modify the callers of
+   it accordingly.
+
+ * Introduce a new acpi_wakeup_lock mutex to protect the wakeup
+   enabling/disabling code from races in case it is executed
+   more than once in parallel for the same device (which may
+   happen for bridges theoretically).
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/Kconfig            |   8 +
- drivers/thermal/Makefile           |   1 +
- drivers/thermal/uniphier_thermal.c | 386 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 395 insertions(+)
- create mode 100644 drivers/thermal/uniphier_thermal.c
+ drivers/acpi/device_pm.c |  121 ++++++++++++++++++++++++++++++-----------------
+ include/acpi/acpi_bus.h  |    2 
+ 2 files changed, 80 insertions(+), 43 deletions(-)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 776b343..6631826 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -453,4 +453,12 @@ config ZX2967_THERMAL
- 	  the primitive temperature sensor embedded in zx2967 SoCs.
- 	  This sensor generates the real time die temperature.
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -680,47 +680,74 @@ static void acpi_pm_notify_work_func(str
+ 	}
+ }
  
-+config UNIPHIER_THERMAL
-+	tristate "Socionext UniPhier thermal driver"
-+	depends on ARCH_UNIPHIER || COMPILE_TEST
-+	depends on THERMAL_OF && MFD_SYSCON
-+	help
-+	  Enable this to plug in UniPhier on-chip PVT thermal driver into the
-+	  thermal framework. The driver supports CPU thermal zone temperature
-+	  reporting and a couple of trip points.
- endif
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 7adae20..05b6e7c 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -58,3 +58,4 @@ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
- obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
- obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
- obj-$(CONFIG_ZX2967_THERMAL)	+= zx2967_thermal.o
-+obj-$(CONFIG_UNIPHIER_THERMAL)	+= uniphier_thermal.o
-diff --git a/drivers/thermal/uniphier_thermal.c b/drivers/thermal/uniphier_thermal.c
-new file mode 100644
-index 0000000..1a77c5bf
---- /dev/null
-+++ b/drivers/thermal/uniphier_thermal.c
-@@ -0,0 +1,386 @@
++static DEFINE_MUTEX(acpi_wakeup_lock);
++
+ /**
+- * acpi_device_wakeup - Enable/disable wakeup functionality for device.
+- * @adev: ACPI device to enable/disable wakeup functionality for.
++ * acpi_device_wakeup_enable - Enable wakeup functionality for device.
++ * @adev: ACPI device to enable wakeup functionality for.
+  * @target_state: State the system is transitioning into.
+- * @enable: Whether to enable or disable the wakeup functionality.
+  *
+- * Enable/disable the GPE associated with @adev so that it can generate
+- * wakeup signals for the device in response to external (remote) events and
+- * enable/disable device wakeup power.
++ * Enable the GPE associated with @adev so that it can generate wakeup signals
++ * for the device in response to external (remote) events and enable wakeup
++ * power for it.
+  *
+  * Callers must ensure that @adev is a valid ACPI device node before executing
+  * this function.
+  */
+-static int acpi_device_wakeup(struct acpi_device *adev, u32 target_state,
+-			      bool enable)
++static int acpi_device_wakeup_enable(struct acpi_device *adev, u32 target_state)
+ {
+ 	struct acpi_device_wakeup *wakeup = &adev->wakeup;
++	acpi_status status;
++	int error = 0;
+ 
+-	if (enable) {
+-		acpi_status res;
+-		int error;
++	mutex_lock(&acpi_wakeup_lock);
+ 
+-		if (adev->wakeup.flags.enabled)
+-			return 0;
++	if (wakeup->enable_count > 0)
++		goto out;
+ 
+-		error = acpi_enable_wakeup_device_power(adev, target_state);
+-		if (error)
+-			return error;
++	error = acpi_enable_wakeup_device_power(adev, target_state);
++	if (error)
++		goto out;
+ 
+-		res = acpi_enable_gpe(wakeup->gpe_device, wakeup->gpe_number);
+-		if (ACPI_FAILURE(res)) {
+-			acpi_disable_wakeup_device_power(adev);
+-			return -EIO;
+-		}
+-		adev->wakeup.flags.enabled = 1;
+-	} else if (adev->wakeup.flags.enabled) {
+-		acpi_disable_gpe(wakeup->gpe_device, wakeup->gpe_number);
++	status = acpi_enable_gpe(wakeup->gpe_device, wakeup->gpe_number);
++	if (ACPI_FAILURE(status)) {
+ 		acpi_disable_wakeup_device_power(adev);
+-		adev->wakeup.flags.enabled = 0;
++		error = -EIO;
++		goto out;
+ 	}
+-	return 0;
++
++	wakeup->enable_count++;
++
++out:
++	mutex_unlock(&acpi_wakeup_lock);
++	return error;
++}
++
 +/**
-+ * uniphier_thermal.c - Socionext UniPhier thermal driver
++ * acpi_device_wakeup_disable - Disable wakeup functionality for device.
++ * @adev: ACPI device to disable wakeup functionality for.
 + *
-+ * Copyright 2014      Panasonic Corporation
-+ * Copyright 2016-2017 Socionext Inc.
-+ * All rights reserved.
++ * Disable the GPE associated with @adev and disable wakeup power for it.
 + *
-+ * Author:
-+ *	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-+ *
-+ * This program is free software: you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2  of
-+ * the License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
++ * Callers must ensure that @adev is a valid ACPI device node before executing
++ * this function.
 + */
-+
-+#include <linux/bitops.h>
-+#include <linux/interrupt.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/thermal.h>
-+
-+#include "thermal_core.h"
-+
-+/*
-+ * block registers
-+ * addresses are the offset from .block_base
-+ */
-+#define PVTCTLEN			0x0000
-+#define PVTCTLEN_EN			BIT(0)
-+
-+#define PVTCTLMODE			0x0004
-+#define PVTCTLMODE_MASK			0xf
-+#define PVTCTLMODE_TEMPMON		0x5
-+
-+#define EMONREPEAT			0x0040
-+#define EMONREPEAT_ENDLESS		BIT(24)
-+#define EMONREPEAT_PERIOD		GENMASK(3, 0)
-+#define EMONREPEAT_PERIOD_1000000	0x9
-+
-+/*
-+ * common registers
-+ * addresses are the offset from .map_base
-+ */
-+#define PVTCTLSEL			0x0900
-+#define PVTCTLSEL_MASK			GENMASK(2, 0)
-+#define PVTCTLSEL_MONITOR		0
-+
-+#define SETALERT0			0x0910
-+#define SETALERT1			0x0914
-+#define SETALERT2			0x0918
-+#define SETALERT_TEMP_OVF		(GENMASK(7, 0) << 16)
-+#define SETALERT_TEMP_OVF_VALUE(val)	(((val) & GENMASK(7, 0)) << 16)
-+#define SETALERT_EN			BIT(0)
-+
-+#define PMALERTINTCTL			0x0920
-+#define PMALERTINTCTL_CLR(ch)		BIT(4 * (ch) + 2)
-+#define PMALERTINTCTL_SET(ch)		BIT(4 * (ch) + 1)
-+#define PMALERTINTCTL_EN(ch)		BIT(4 * (ch) + 0)
-+#define PMALERTINTCTL_MASK		(GENMASK(10, 8) | GENMASK(6, 4) | \
-+					 GENMASK(2, 0))
-+
-+#define TMOD				0x0928
-+#define TMOD_WIDTH			9
-+
-+#define TMODCOEF			0x0e5c
-+
-+#define TMODSETUP0_EN			BIT(30)
-+#define TMODSETUP0_VAL(val)		(((val) & GENMASK(13, 0)) << 16)
-+#define TMODSETUP1_EN			BIT(15)
-+#define TMODSETUP1_VAL(val)		((val) & GENMASK(14, 0))
-+
-+/* SoC critical temperature */
-+#define CRITICAL_TEMP_LIMIT		(120 * 1000)
-+
-+/* Max # of alert channels */
-+#define ALERT_CH_NUM			3
-+
-+/* SoC specific thermal sensor data */
-+struct uniphier_tm_soc_data {
-+	u32 map_base;
-+	u32 block_base;
-+	u32 tmod_setup_addr;
-+};
-+
-+struct uniphier_tm_dev {
-+	struct regmap *regmap;
-+	bool alert_en[ALERT_CH_NUM];
-+	u32 tmod_calib0;
-+	u32 tmod_calib1;
-+	struct thermal_zone_device *tz_dev;
-+	const struct uniphier_tm_soc_data *data;
-+};
-+
-+static int uniphier_tm_initialize_sensor(struct uniphier_tm_dev *tdev)
++static void acpi_device_wakeup_disable(struct acpi_device *adev)
 +{
-+	struct regmap *map = tdev->regmap;
-+	u32 val;
-+	int ret;
++	struct acpi_device_wakeup *wakeup = &adev->wakeup;
 +
-+	/* stop PVT */
-+	regmap_write_bits(map, tdev->data->block_base + PVTCTLEN,
-+			  PVTCTLEN_EN, 0);
++	mutex_lock(&acpi_wakeup_lock);
 +
-+	/*
-+	 * set default value if missing calibrated value
-+	 *
-+	 * Since SoC has a calibrated value that was set in advance,
-+	 * TMODCOEF shows non-zero and PVT refers the value internally.
-+	 *
-+	 * However, some boards don't have the calibrated value.
-+	 * In that case, TMODCOEF shows zero and the driver has to set
-+	 * default value manually.
-+	 */
-+	ret = regmap_read(map, tdev->data->map_base + TMODCOEF, &val);
-+	if (ret)
-+		return ret;
-+	if (!val)
-+		regmap_write(map, tdev->data->tmod_setup_addr,
-+			    TMODSETUP0_EN | TMODSETUP0_VAL(tdev->tmod_calib0) |
-+			    TMODSETUP1_EN | TMODSETUP1_VAL(tdev->tmod_calib1));
++	if (!wakeup->enable_count)
++		goto out;
 +
-+	/* select temperature mode */
-+	regmap_write_bits(map, tdev->data->block_base + PVTCTLMODE,
-+			  PVTCTLMODE_MASK, PVTCTLMODE_TEMPMON);
++	acpi_disable_gpe(wakeup->gpe_device, wakeup->gpe_number);
++	acpi_disable_wakeup_device_power(adev);
 +
-+	/* set monitoring period */
-+	regmap_write_bits(map, tdev->data->block_base + EMONREPEAT,
-+			  EMONREPEAT_ENDLESS | EMONREPEAT_PERIOD,
-+			  EMONREPEAT_ENDLESS | EMONREPEAT_PERIOD_1000000);
++	wakeup->enable_count--;
 +
-+	/* set monitor mode */
-+	regmap_write_bits(map, tdev->data->map_base + PVTCTLSEL,
-+			  PVTCTLSEL_MASK, PVTCTLSEL_MONITOR);
-+
-+	return 0;
-+}
-+
-+static void uniphier_tm_set_alert(struct uniphier_tm_dev *tdev, u32 ch,
-+				  u32 temp)
-+{
-+	struct regmap *map = tdev->regmap;
-+
-+	/* set alert temperature */
-+	regmap_write_bits(map, tdev->data->map_base + SETALERT0 + (ch << 2),
-+			  SETALERT_EN | SETALERT_TEMP_OVF,
-+			  SETALERT_EN |
-+			  SETALERT_TEMP_OVF_VALUE(temp / 1000));
-+}
-+
-+static void uniphier_tm_enable_sensor(struct uniphier_tm_dev *tdev)
-+{
-+	struct regmap *map = tdev->regmap;
-+	int i;
-+	u32 bits = 0;
-+
-+	for (i = 0; i < ALERT_CH_NUM; i++)
-+		if (tdev->alert_en[i])
-+			bits |= PMALERTINTCTL_EN(i);
-+
-+	/* enable alert interrupt */
-+	regmap_write_bits(map, tdev->data->map_base + PMALERTINTCTL,
-+			  PMALERTINTCTL_MASK, bits);
-+
-+	/* start PVT */
-+	regmap_write_bits(map, tdev->data->block_base + PVTCTLEN,
-+			  PVTCTLEN_EN, PVTCTLEN_EN);
-+
-+	usleep_range(700, 1500);	/* The spec note says at least 700us */
-+}
-+
-+static void uniphier_tm_disable_sensor(struct uniphier_tm_dev *tdev)
-+{
-+	struct regmap *map = tdev->regmap;
-+
-+	/* disable alert interrupt */
-+	regmap_write_bits(map, tdev->data->map_base + PMALERTINTCTL,
-+			  PMALERTINTCTL_MASK, 0);
-+
-+	/* stop PVT */
-+	regmap_write_bits(map, tdev->data->block_base + PVTCTLEN,
-+			  PVTCTLEN_EN, 0);
-+
-+	usleep_range(1000, 2000);	/* The spec note says at least 1ms */
-+}
-+
-+static int uniphier_tm_get_temp(void *data, int *out_temp)
-+{
-+	struct uniphier_tm_dev *tdev = data;
-+	struct regmap *map = tdev->regmap;
-+	int ret;
-+	u32 temp;
-+
-+	ret = regmap_read(map, tdev->data->map_base + TMOD, &temp);
-+	if (ret)
-+		return ret;
-+
-+	/* MSB of the TMOD field is a sign bit */
-+	*out_temp = sign_extend32(temp, TMOD_WIDTH - 1) * 1000;
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_of_device_ops uniphier_of_thermal_ops = {
-+	.get_temp = uniphier_tm_get_temp,
-+};
-+
-+static void uniphier_tm_irq_clear(struct uniphier_tm_dev *tdev)
-+{
-+	u32 mask = 0, bits = 0;
-+	int i;
-+
-+	for (i = 0; i < ALERT_CH_NUM; i++) {
-+		mask |= (PMALERTINTCTL_CLR(i) | PMALERTINTCTL_SET(i));
-+		bits |= PMALERTINTCTL_CLR(i);
++out:
++	mutex_unlock(&acpi_wakeup_lock);
+ }
+ 
+ /**
+@@ -742,9 +769,15 @@ int acpi_pm_set_device_wakeup(struct dev
+ 	if (!acpi_device_can_wakeup(adev))
+ 		return -EINVAL;
+ 
+-	error = acpi_device_wakeup(adev, acpi_target_system_state(), enable);
++	if (!enable) {
++		acpi_device_wakeup_disable(adev);
++		dev_dbg(dev, "Wakeup disabled by ACPI\n");
++		return 0;
 +	}
 +
-+	/* clear alert interrupt */
-+	regmap_write_bits(tdev->regmap,
-+			  tdev->data->map_base + PMALERTINTCTL, mask, bits);
-+}
-+
-+static irqreturn_t uniphier_tm_alarm_irq(int irq, void *_tdev)
-+{
-+	struct uniphier_tm_dev *tdev = _tdev;
-+
-+	disable_irq_nosync(irq);
-+	uniphier_tm_irq_clear(tdev);
-+
-+	return IRQ_WAKE_THREAD;
-+}
-+
-+static irqreturn_t uniphier_tm_alarm_irq_thread(int irq, void *_tdev)
-+{
-+	struct uniphier_tm_dev *tdev = _tdev;
-+
-+	thermal_zone_device_update(tdev->tz_dev, THERMAL_EVENT_UNSPECIFIED);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int uniphier_tm_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct regmap *regmap;
-+	struct device_node *parent;
-+	struct uniphier_tm_dev *tdev;
-+	const struct thermal_trip *trips;
-+	const __be32 *calib;
-+	int i, ret, irq, ntrips, crit_temp = INT_MAX;
-+
-+	tdev = devm_kzalloc(dev, sizeof(*tdev), GFP_KERNEL);
-+	if (!tdev)
-+		return -ENOMEM;
-+
-+	tdev->data = of_device_get_match_data(dev);
-+	if (WARN_ON(!tdev->data))
-+		return -EINVAL;
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0)
-+		return irq;
-+
-+	/* get tmod-calibration values */
-+	calib = of_get_property(dev->of_node, "socionext,tmod-calibration",
-+				NULL);
-+	if (calib) {
-+		tdev->tmod_calib0 = of_read_number(calib, 1);
-+		tdev->tmod_calib1 = of_read_number(calib + 1, 1);
++	error = acpi_device_wakeup_enable(adev, acpi_target_system_state());
+ 	if (!error)
+-		dev_dbg(dev, "Wakeup %s by ACPI\n", enable ? "enabled" : "disabled");
++		dev_dbg(dev, "Wakeup enabled by ACPI\n");
+ 
+ 	return error;
+ }
+@@ -798,13 +831,15 @@ int acpi_dev_runtime_suspend(struct devi
+ 
+ 	remote_wakeup = dev_pm_qos_flags(dev, PM_QOS_FLAG_REMOTE_WAKEUP) >
+ 				PM_QOS_FLAGS_NONE;
+-	error = acpi_device_wakeup(adev, ACPI_STATE_S0, remote_wakeup);
+-	if (remote_wakeup && error)
+-		return -EAGAIN;
++	if (remote_wakeup) {
++		error = acpi_device_wakeup_enable(adev, ACPI_STATE_S0);
++		if (error)
++			return -EAGAIN;
 +	}
-+
-+	/* get regmap from syscon node */
-+	parent = of_get_parent(dev->of_node); /* parent should be syscon node */
-+	regmap = syscon_node_to_regmap(parent);
-+	of_node_put(parent);
-+	if (IS_ERR(regmap)) {
-+		dev_err(dev, "failed to get regmap (error %ld)\n",
-+			PTR_ERR(regmap));
-+		return PTR_ERR(regmap);
+ 
+ 	error = acpi_dev_pm_low_power(dev, adev, ACPI_STATE_S0);
+-	if (error)
+-		acpi_device_wakeup(adev, ACPI_STATE_S0, false);
++	if (error && remote_wakeup)
++		acpi_device_wakeup_disable(adev);
+ 
+ 	return error;
+ }
+@@ -827,7 +862,7 @@ int acpi_dev_runtime_resume(struct devic
+ 		return 0;
+ 
+ 	error = acpi_dev_pm_full_power(adev);
+-	acpi_device_wakeup(adev, ACPI_STATE_S0, false);
++	acpi_device_wakeup_disable(adev);
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(acpi_dev_runtime_resume);
+@@ -882,13 +917,15 @@ int acpi_dev_suspend_late(struct device
+ 
+ 	target_state = acpi_target_system_state();
+ 	wakeup = device_may_wakeup(dev) && acpi_device_can_wakeup(adev);
+-	error = acpi_device_wakeup(adev, target_state, wakeup);
+-	if (wakeup && error)
+-		return error;
++	if (wakeup) {
++		error = acpi_device_wakeup_enable(adev, target_state);
++		if (error)
++			return error;
 +	}
-+	tdev->regmap = regmap;
-+
-+	ret = uniphier_tm_initialize_sensor(tdev);
-+	if (ret) {
-+		dev_err(dev, "failed to initialize sensor\n");
-+		return ret;
-+	}
-+
-+	ret = devm_request_threaded_irq(dev, irq, uniphier_tm_alarm_irq,
-+					uniphier_tm_alarm_irq_thread,
-+					0, "thermal", tdev);
-+	if (ret)
-+		return ret;
-+
-+	platform_set_drvdata(pdev, tdev);
-+
-+	tdev->tz_dev = devm_thermal_zone_of_sensor_register(dev, 0, tdev,
-+						&uniphier_of_thermal_ops);
-+	if (IS_ERR(tdev->tz_dev)) {
-+		dev_err(dev, "failed to register sensor device\n");
-+		return PTR_ERR(tdev->tz_dev);
-+	}
-+
-+	/* get trip points */
-+	trips = of_thermal_get_trip_points(tdev->tz_dev);
-+	ntrips = of_thermal_get_ntrips(tdev->tz_dev);
-+	if (ntrips > ALERT_CH_NUM) {
-+		dev_err(dev, "thermal zone has too many trips\n");
-+		return -E2BIG;
-+	}
-+
-+	/* set alert temperatures */
-+	for (i = 0; i < ntrips; i++) {
-+		if (trips[i].type == THERMAL_TRIP_CRITICAL &&
-+		    trips[i].temperature < crit_temp)
-+			crit_temp = trips[i].temperature;
-+		uniphier_tm_set_alert(tdev, i, trips[i].temperature);
-+		tdev->alert_en[i] = true;
-+	}
-+	if (crit_temp > CRITICAL_TEMP_LIMIT) {
-+		dev_err(dev, "critical trip is over limit(>%d), or not set\n",
-+			CRITICAL_TEMP_LIMIT);
-+		return -EINVAL;
-+	}
-+
-+	uniphier_tm_enable_sensor(tdev);
-+
-+	return 0;
-+}
-+
-+static int uniphier_tm_remove(struct platform_device *pdev)
-+{
-+	struct uniphier_tm_dev *tdev = platform_get_drvdata(pdev);
-+
-+	/* disable sensor */
-+	uniphier_tm_disable_sensor(tdev);
-+
-+	return 0;
-+}
-+
-+static const struct uniphier_tm_soc_data uniphier_pxs2_tm_data = {
-+	.map_base        = 0xe000,
-+	.block_base      = 0xe000,
-+	.tmod_setup_addr = 0xe904,
-+};
-+
-+static const struct uniphier_tm_soc_data uniphier_ld20_tm_data = {
-+	.map_base        = 0xe000,
-+	.block_base      = 0xe800,
-+	.tmod_setup_addr = 0xe938,
-+};
-+
-+static const struct of_device_id uniphier_tm_dt_ids[] = {
-+	{
-+		.compatible = "socionext,uniphier-pxs2-thermal",
-+		.data       = &uniphier_pxs2_tm_data,
-+	},
-+	{
-+		.compatible = "socionext,uniphier-ld20-thermal",
-+		.data       = &uniphier_ld20_tm_data,
-+	},
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, uniphier_tm_dt_ids);
-+
-+static struct platform_driver uniphier_tm_driver = {
-+	.probe = uniphier_tm_probe,
-+	.remove = uniphier_tm_remove,
-+	.driver = {
-+		.name = "uniphier-thermal",
-+		.of_match_table = uniphier_tm_dt_ids,
-+	},
-+};
-+module_platform_driver(uniphier_tm_driver);
-+
-+MODULE_AUTHOR("Kunihiko Hayashi <hayashi.kunihiko@socionext.com>");
-+MODULE_DESCRIPTION("UniPhier thermal driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.7.4
+ 
+ 	error = acpi_dev_pm_low_power(dev, adev, target_state);
+-	if (error)
+-		acpi_device_wakeup(adev, ACPI_STATE_UNKNOWN, false);
++	if (error && wakeup)
++		acpi_device_wakeup_disable(adev);
+ 
+ 	return error;
+ }
+@@ -911,7 +948,7 @@ int acpi_dev_resume_early(struct device
+ 		return 0;
+ 
+ 	error = acpi_dev_pm_full_power(adev);
+-	acpi_device_wakeup(adev, ACPI_STATE_UNKNOWN, false);
++	acpi_device_wakeup_disable(adev);
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(acpi_dev_resume_early);
+@@ -1054,7 +1091,7 @@ static void acpi_dev_pm_detach(struct de
+ 			 */
+ 			dev_pm_qos_hide_latency_limit(dev);
+ 			dev_pm_qos_hide_flags(dev);
+-			acpi_device_wakeup(adev, ACPI_STATE_S0, false);
++			acpi_device_wakeup_disable(adev);
+ 			acpi_dev_pm_low_power(dev, adev, ACPI_STATE_S0);
+ 		}
+ 	}
+@@ -1098,7 +1135,7 @@ int acpi_dev_pm_attach(struct device *de
+ 	dev_pm_domain_set(dev, &acpi_general_pm_domain);
+ 	if (power_on) {
+ 		acpi_dev_pm_full_power(adev);
+-		acpi_device_wakeup(adev, ACPI_STATE_S0, false);
++		acpi_device_wakeup_disable(adev);
+ 	}
+ 
+ 	dev->pm_domain->detach = acpi_dev_pm_detach;
+Index: linux-pm/include/acpi/acpi_bus.h
+===================================================================
+--- linux-pm.orig/include/acpi/acpi_bus.h
++++ linux-pm/include/acpi/acpi_bus.h
+@@ -316,7 +316,6 @@ struct acpi_device_perf {
+ struct acpi_device_wakeup_flags {
+ 	u8 valid:1;		/* Can successfully enable wakeup? */
+ 	u8 notifier_present:1;  /* Wake-up notify handler has been installed */
+-	u8 enabled:1;		/* Enabled for wakeup */
+ };
+ 
+ struct acpi_device_wakeup_context {
+@@ -333,6 +332,7 @@ struct acpi_device_wakeup {
+ 	struct acpi_device_wakeup_context context;
+ 	struct wakeup_source *ws;
+ 	int prepare_count;
++	int enable_count;
+ };
+ 
+ struct acpi_device_physical_node {
