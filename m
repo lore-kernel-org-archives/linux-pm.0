@@ -1,16 +1,20 @@
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
 Subject: Re: [PATCH v5 2/2] thermal: uniphier: add UniPhier thermal driver
-Date: Fri, 21 Jul 2017 22:21:04 +0900
-Message-ID: <CAK7LNASjwCCcRFk-3pXgBXBB4Nbx8Z-SY842=TZytqgqw6tfqg@mail.gmail.com>
+Date: Fri, 21 Jul 2017 22:21:05 +0900
+Message-ID: <CAK7LNATDnAbByOZN2YDUfnTQLwMiSPVZtz5rfewUzrC9uGUCHw@mail.gmail.com>
 References: <1500636105-11520-1-git-send-email-hayashi.kunihiko@socionext.com> <1500636105-11520-3-git-send-email-hayashi.kunihiko@socionext.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from conssluserg-05.nifty.com ([210.131.2.90]:42647 "EHLO
+        conssluserg-05.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750777AbdGUNVU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2017 09:21:20 -0400
 In-Reply-To: <1500636105-11520-3-git-send-email-hayashi.kunihiko@socionext.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
 Cc: rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Masami Hiramatsu <masami.hiramatsu@linaro.org>, Jassi Brar <jaswinder.singh@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
 2017-07-21 20:21 GMT+09:00 Kunihiko Hayashi <hayashi.kunihiko@socionext.com>:
 
