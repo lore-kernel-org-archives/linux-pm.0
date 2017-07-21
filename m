@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/4] PM / s2idle: Rearrange the main suspend-to-idle loop
-Date: Fri, 21 Jul 2017 02:07:54 +0200
-Message-ID: <4195890.oK06yMODBD@aspire.rjw.lan>
+Subject: [PATCH 2/4] PM / core: Split dpm_suspend_noirq() and dpm_resume_noirq()
+Date: Fri, 21 Jul 2017 02:09:22 +0200
+Message-ID: <2637300.76LCBDfMZE@aspire.rjw.lan>
 References: <1846472.PIoZyNk2cf@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,90 +15,154 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-As a preparation for subsequent changes, rearrange the core
-suspend-to-idle code by moving the initial invocation of
-dpm_suspend_noirq() into s2idle_loop().
+Put the device interrupts disabling and enabling as well as
+cpuidle_pause() and cpuidle_resume() called during the "noirq"
+stages of system suspend into separate functions to allow the
+core suspend-to-idle code to be optimized (later).
 
-This also causes debug messages from that code to appear in
-a less confusing order.
+The only functional difference this makes is that debug facilities
+and diagnostic tools will not include the above operations into the
+"noirq" device suspend/resume duration measurements.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/power/power.h   |    4 ++++
- kernel/power/suspend.c |   26 +++++++++++++-------------
- 2 files changed, 17 insertions(+), 13 deletions(-)
+ drivers/base/power/main.c |   67 +++++++++++++++++++++++++++++++---------------
+ include/linux/pm.h        |    4 ++
+ 2 files changed, 50 insertions(+), 21 deletions(-)
 
-Index: linux-pm/kernel/power/suspend.c
+Index: linux-pm/drivers/base/power/main.c
 ===================================================================
---- linux-pm.orig/kernel/power/suspend.c
-+++ linux-pm/kernel/power/suspend.c
-@@ -106,7 +106,13 @@ static void s2idle_loop(void)
- {
- 	pm_pr_dbg("suspend-to-idle\n");
- 
--	do {
-+	while (!dpm_suspend_noirq(PMSG_SUSPEND)) {
-+		/*
-+		 * Suspend-to-idle equals
-+		 * frozen processes + suspended devices + idle processors.
-+		 * Thus freeze_enter() should be called right after
-+		 * all devices have been suspended.
-+		 */
- 		freeze_enter();
- 
- 		if (freeze_ops && freeze_ops->wake)
-@@ -120,7 +126,7 @@ static void s2idle_loop(void)
- 			break;
- 
- 		pm_wakeup_clear(false);
--	} while (!dpm_suspend_noirq(PMSG_SUSPEND));
-+	}
- 
- 	pm_pr_dbg("resume from suspend-to-idle\n");
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -598,14 +598,7 @@ static void async_resume_noirq(void *dat
+ 	put_device(dev);
  }
-@@ -377,6 +383,11 @@ static int suspend_enter(suspend_state_t
- 	if (error)
- 		goto Devices_early_resume;
  
-+	if (state == PM_SUSPEND_FREEZE && pm_test_level != TEST_PLATFORM) {
-+		s2idle_loop();
-+		goto Platform_early_resume;
-+	}
+-/**
+- * dpm_resume_noirq - Execute "noirq resume" callbacks for all devices.
+- * @state: PM transition of the system being carried out.
+- *
+- * Call the "noirq" resume handlers for all devices in dpm_noirq_list and
+- * enable device drivers to receive interrupts.
+- */
+-void dpm_resume_noirq(pm_message_t state)
++void dpm_noirq_resume_devices(pm_message_t state)
+ {
+ 	struct device *dev;
+ 	ktime_t starttime = ktime_get();
+@@ -651,10 +644,27 @@ void dpm_resume_noirq(pm_message_t state
+ 	mutex_unlock(&dpm_list_mtx);
+ 	async_synchronize_full();
+ 	dpm_show_time(starttime, state, "noirq");
++	trace_suspend_resume(TPS("dpm_resume_noirq"), state.event, false);
++}
 +
- 	error = dpm_suspend_noirq(PMSG_SUSPEND);
++void dpm_noirq_end(void)
++{
+ 	resume_device_irqs();
+ 	device_wakeup_disarm_wake_irqs();
+ 	cpuidle_resume();
+-	trace_suspend_resume(TPS("dpm_resume_noirq"), state.event, false);
++}
++
++/**
++ * dpm_resume_noirq - Execute "noirq resume" callbacks for all devices.
++ * @state: PM transition of the system being carried out.
++ *
++ * Invoke the "noirq" resume callbacks for all devices in dpm_noirq_list and
++ * allow device drivers' interrupt handlers to be called.
++ */
++void dpm_resume_noirq(pm_message_t state)
++{
++	dpm_noirq_resume_devices(state);
++	dpm_noirq_end();
+ }
+ 
+ /**
+@@ -1154,22 +1164,19 @@ static int device_suspend_noirq(struct d
+ 	return __device_suspend_noirq(dev, pm_transition, false);
+ }
+ 
+-/**
+- * dpm_suspend_noirq - Execute "noirq suspend" callbacks for all devices.
+- * @state: PM transition of the system being carried out.
+- *
+- * Prevent device drivers from receiving interrupts and call the "noirq" suspend
+- * handlers for all non-sysdev devices.
+- */
+-int dpm_suspend_noirq(pm_message_t state)
++void dpm_noirq_begin(void)
++{
++	cpuidle_pause();
++	device_wakeup_arm_wake_irqs();
++	suspend_device_irqs();
++}
++
++int dpm_noirq_suspend_devices(pm_message_t state)
+ {
+ 	ktime_t starttime = ktime_get();
+ 	int error = 0;
+ 
+ 	trace_suspend_resume(TPS("dpm_suspend_noirq"), state.event, true);
+-	cpuidle_pause();
+-	device_wakeup_arm_wake_irqs();
+-	suspend_device_irqs();
+ 	mutex_lock(&dpm_list_mtx);
+ 	pm_transition = state;
+ 	async_error = 0;
+@@ -1204,7 +1211,6 @@ int dpm_suspend_noirq(pm_message_t state
  	if (error) {
- 		pr_err("PM: noirq suspend of devices failed\n");
-@@ -389,17 +400,6 @@ static int suspend_enter(suspend_state_t
- 	if (suspend_test(TEST_PLATFORM))
- 		goto Platform_wake;
+ 		suspend_stats.failed_suspend_noirq++;
+ 		dpm_save_failed_step(SUSPEND_SUSPEND_NOIRQ);
+-		dpm_resume_noirq(resume_event(state));
+ 	} else {
+ 		dpm_show_time(starttime, state, "noirq");
+ 	}
+@@ -1213,6 +1219,25 @@ int dpm_suspend_noirq(pm_message_t state
+ }
  
--	/*
--	 * PM_SUSPEND_FREEZE equals
--	 * frozen processes + suspended devices + idle processors.
--	 * Thus we should invoke freeze_enter() soon after
--	 * all the devices are suspended.
--	 */
--	if (state == PM_SUSPEND_FREEZE) {
--		s2idle_loop();
--		goto Platform_early_resume;
--	}
--
- 	error = disable_nonboot_cpus();
- 	if (error || suspend_test(TEST_CPUS))
- 		goto Enable_cpus;
-Index: linux-pm/kernel/power/power.h
+ /**
++ * dpm_suspend_noirq - Execute "noirq suspend" callbacks for all devices.
++ * @state: PM transition of the system being carried out.
++ *
++ * Prevent device drivers' interrupt handlers from being called and invoke
++ * "noirq" suspend callbacks for all non-sysdev devices.
++ */
++int dpm_suspend_noirq(pm_message_t state)
++{
++	int ret;
++
++	dpm_noirq_begin();
++	ret = dpm_noirq_suspend_devices(state);
++	if (ret)
++		dpm_resume_noirq(resume_event(state));
++
++	return ret;
++}
++
++/**
+  * device_suspend_late - Execute a "late suspend" callback for given device.
+  * @dev: Device to handle.
+  * @state: PM transition of the system being carried out.
+Index: linux-pm/include/linux/pm.h
 ===================================================================
---- linux-pm.orig/kernel/power/power.h
-+++ linux-pm/kernel/power/power.h
-@@ -245,7 +245,11 @@ enum {
- #define TEST_FIRST	TEST_NONE
- #define TEST_MAX	(__TEST_AFTER_LAST - 1)
- 
-+#ifdef CONFIG_PM_DEBUG
- extern int pm_test_level;
-+#else
-+#define pm_test_level	(TEST_NONE)
-+#endif
- 
- #ifdef CONFIG_SUSPEND_FREEZER
- static inline int suspend_freeze_processes(void)
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -689,6 +689,8 @@ struct dev_pm_domain {
+ extern void device_pm_lock(void);
+ extern void dpm_resume_start(pm_message_t state);
+ extern void dpm_resume_end(pm_message_t state);
++extern void dpm_noirq_resume_devices(pm_message_t state);
++extern void dpm_noirq_end(void);
+ extern void dpm_resume_noirq(pm_message_t state);
+ extern void dpm_resume_early(pm_message_t state);
+ extern void dpm_resume(pm_message_t state);
+@@ -697,6 +699,8 @@ extern void dpm_complete(pm_message_t st
+ extern void device_pm_unlock(void);
+ extern int dpm_suspend_end(pm_message_t state);
+ extern int dpm_suspend_start(pm_message_t state);
++extern void dpm_noirq_begin(void);
++extern int dpm_noirq_suspend_devices(pm_message_t state);
+ extern int dpm_suspend_noirq(pm_message_t state);
+ extern int dpm_suspend_late(pm_message_t state);
+ extern int dpm_suspend(pm_message_t state);
