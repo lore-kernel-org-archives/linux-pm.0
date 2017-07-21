@@ -1,58 +1,91 @@
-From: Vikram Mulukutla <markivx@codeaurora.org>
-Subject: Re: cpuidle and cpufreq coupling?
-Date: Thu, 20 Jul 2017 17:11:01 -0700
-Message-ID: <6b28e6f3-d961-24c8-ad90-8cd6cd844236@codeaurora.org>
-References: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
- <CAJZ5v0i2B0=cPB5VxXJUb36LW9hp_L7k-moj+Eg+vPvfPHFcSA@mail.gmail.com>
- <20170720071846.GK352@vireshk-i7>
- <CAJZ5v0hxK9iBR4RJBu9yutn7M=uTfsEwZZcwJie=17RuYtnuNA@mail.gmail.com>
- <20170720144530.da6bqpdvt2cvbjjs@hirez.programming.kicks-ass.net>
- <a237a845-c24e-c1dc-c910-e09a69d631b6@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 4/4] PM / sleep: Check pm_wakeup_pending() in __device_suspend_noirq()
+Date: Fri, 21 Jul 2017 02:12:10 +0200
+Message-ID: <2368592.7JbP7nRucL@aspire.rjw.lan>
+References: <1846472.PIoZyNk2cf@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:58384 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S964809AbdGUALC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 20:11:02 -0400
-In-Reply-To: <a237a845-c24e-c1dc-c910-e09a69d631b6@gmail.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52123 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S965133AbdGUAUZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 20:20:25 -0400
+In-Reply-To: <1846472.PIoZyNk2cf@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Markus Mayer <code@mmayer.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-On 7/20/2017 3:56 PM, Florian Fainelli wrote:
-> On 07/20/2017 07:45 AM, Peter Zijlstra wrote:
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-<snip>
+Restore the pm_wakeup_pending() check in __device_suspend_noirq()
+removed by commit eed4d47efe95 (ACPI / sleep: Ignore spurious SCI
+wakeups from suspend-to-idle) as that allows the function to return
+earlier if there's a wakeup event pending already (so that it may
+spend less time on carrying out operations that will be reversed
+shortly anyway) and rework the main suspend-to-idle loop to take
+that optimization into account.
 
->> 
->> Can your ARM part change OPP without scheduling? Because (for obvious
->> reasons) the idle thread is not supposed to block.
-> 
-> I think it should be able to do that, but I am not sure that if I went
-> through the cpufreq API it would be that straight forward so I may have
-> to re-implement some of the frequency scaling logic outside of cpufreq
-> (or rather make the low-level parts some kind of library I guess).
-> 
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/main.c |    5 +++++
+ kernel/power/suspend.c    |   19 ++++++++++++++++---
+ 2 files changed, 21 insertions(+), 3 deletions(-)
 
-I think I can safely mention that some of our non-upstream idle drivers
-in the past have invoked low level clock drivers to atomically switch
-CPUs to low frequency OPPs, with no interaction whatsoever with cpufreq.
-It was maintainable since both the idle and clock drivers were
-qcom-specific. However this is no longer necessary in recent designs and
-I really hope we never need to do this again...
-
-We didn't have to do a voltage switch and just PLL or mux
-work so this was doable. I'm guessing your atomic switching also allows
-voltage reduction?
-
-If your architecture allows another CPU to change the entering-idle 
-CPU's
-frequency, synchronization will be necessary as well - this is where it
-can get a bit tricky.
-
-Thanks,
-Vikram
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -106,19 +106,32 @@ static void s2idle_loop(void)
+ {
+ 	pm_pr_dbg("suspend-to-idle\n");
+ 
+-	while (!dpm_suspend_noirq(PMSG_SUSPEND)) {
++	for (;;) {
++		int error;
++
++		dpm_noirq_begin();
++
+ 		/*
+ 		 * Suspend-to-idle equals
+ 		 * frozen processes + suspended devices + idle processors.
+ 		 * Thus freeze_enter() should be called right after
+ 		 * all devices have been suspended.
+ 		 */
+-		freeze_enter();
++		error = dpm_noirq_suspend_devices(PMSG_SUSPEND);
++		if (!error)
++			freeze_enter();
++
++		dpm_noirq_resume_devices(PMSG_RESUME);
++		if (error && (error != -EBUSY || !pm_wakeup_pending())) {
++			dpm_noirq_end();
++			break;
++		}
+ 
+ 		if (freeze_ops && freeze_ops->wake)
+ 			freeze_ops->wake();
+ 
+-		dpm_resume_noirq(PMSG_RESUME);
++		dpm_noirq_end();
++
+ 		if (freeze_ops && freeze_ops->sync)
+ 			freeze_ops->sync();
+ 
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -1105,6 +1105,11 @@ static int __device_suspend_noirq(struct
+ 	if (async_error)
+ 		goto Complete;
+ 
++	if (pm_wakeup_pending()) {
++		async_error = -EBUSY;
++		goto Complete;
++	}
++
+ 	if (dev->power.syscore || dev->power.direct_complete)
+ 		goto Complete;
+ 
