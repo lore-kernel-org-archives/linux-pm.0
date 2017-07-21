@@ -1,84 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/3] ACPI / PCI / PM: Rework acpi_pci_propagate_wakeup()
-Date: Fri, 21 Jul 2017 23:02:56 +0200
-Message-ID: <2856428.3eiZuFhSvi@aspire.rjw.lan>
-References: <3116391.JNS1F4DjTg@aspire.rjw.lan> <CAHp75VeQpmf5z1p9an2bvJDkAGeOxFyXz+VWk7OibNt+-9VMDw@mail.gmail.com> <2174120.aKGTTYRMVV@aspire.rjw.lan>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH 2/3] ACPI / PM: Split acpi_device_wakeup()
+Date: Sat, 22 Jul 2017 00:19:51 +0300
+Message-ID: <CAHp75Vdp8L7FXL85umQGGVyP-J_2dELssw0V8vKLEaCN6doMXg@mail.gmail.com>
+References: <3116391.JNS1F4DjTg@aspire.rjw.lan> <3408475.MC8krXn0zk@aspire.rjw.lan>
+ <CAHp75VdJqyNBC=iy_FGVsxeskHko=P9=SJqrN8Hq1GtXZEyoRA@mail.gmail.com> <4010863.7uINOS7bBU@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2174120.aKGTTYRMVV@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f66.google.com ([209.85.218.66]:38721 "EHLO
+        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753111AbdGUVTw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2017 17:19:52 -0400
+In-Reply-To: <4010863.7uINOS7bBU@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>
 
-On Friday, July 21, 2017 10:44:30 PM Rafael J. Wysocki wrote:
-> On Friday, July 21, 2017 06:45:03 PM Andy Shevchenko wrote:
-> > On Fri, Jul 21, 2017 at 3:42 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > 
-> > > The acpi_pci_propagate_wakeup() routine is there to handle cases in
-> > > which PCI bridges (or PCIe ports) are expected to signal wakeup
-> > > for devices below them, but currently it doesn't do that correctly.
-> > >
-> > > The problem is that acpi_pci_propagate_wakeup() uses
-> > > acpi_pm_set_device_wakeup() for bridges and if that routine is
-> > > called for multiple times to disable wakeup for the same device,
-> > > it will disable it on the first invocation and the next calls
-> > > will have no effect (it works analogously when called to enable
-> > > wakeup, but that is not a problem).
-> > >
-> > > Now, say acpi_pci_propagate_wakeup() has been called for two
-> > > different devices under the same bridge and it has called
-> > > acpi_pm_set_device_wakeup() for that bridge each time.  The
-> > > bridge is now enabled to generate wakeup signals.  Next,
-> > > suppose that one of the devices below it resumes and
-> > > acpi_pci_propagate_wakeup() is called to disable wakeup for that
-> > > device.  It will then call acpi_pm_set_device_wakeup() for the bridge
-> > > and that will effectively disable remote wakeup for all devices under
-> > > it even though some of them may still be suspended and remote wakeup
-> > > may be expected to work for them.
-> > >
-> > > To address this (arguably theoretical) issue, allow
-> > > wakeup.enable_count under struct acpi_device to grow beyond 1 in
-> > > certain situations.  In particular, allow that to happen in
-> > > acpi_pci_propagate_wakeup() when wakeup is enabled or disabled
-> > > for PCI bridges, so that wakeup is actually disabled for the
-> > > bridge when all devices under it resume and not when just one
-> > > of them does that.
-> > 
-> > > -       if (wakeup->enable_count > 0)
-> > > -               goto out;
-> > > +       if (wakeup->enable_count > 0) {
-> > > +               if (wakeup->enable_count < max_count)
-> > > +                       goto inc;
-> > > +               else
-> > > +                       goto out;
-> > > +       }
-> > 
-> > Wouldn't be simpler
-> 
-> I'm not really sure what you mean.
-> 
-> In general, ->
-> 
-> >     if (wakeup->enable_count >= max_count)
-> >       goto out;
-> 
-> -> this is unlikely and ->>
-> 
-> >     if (wakeup->enable_count > 0)
-> >       goto inc;
-> 
-> ->> this isn't.
-> 
-> Why would checking an unlikely condition before a likely one covering it
-> ever be better?
+On Fri, Jul 21, 2017 at 11:49 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, July 21, 2017 06:27:39 PM Andy Shevchenko wrote:
+>> On Fri, Jul 21, 2017 at 3:40 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 
-OK, the common case is max_cout == 1 and it that case
-enable_count >= max_count is equivalent to enable_count > 0,
-so I guess fair enough.
+>> I prefer more self-explaining labels, though it's minor here
+>
+> Well, I prefer shorter ones.
+>
+>> To be constructive:
+>> out -> err_unlock
+>> out -> out_unlock or err_unlock (depends on context)
+>>
+>>
+>> > +out:
+>> > +       mutex_unlock(&acpi_wakeup_lock);
+>> > +       return error;
+>>
+>> > +out:
+>> > +       mutex_unlock(&acpi_wakeup_lock);
+>>
+>>
+>
+> So while I don't have a particular problem with appending the "_unlock" to the
+> "out", I'm not exactly sure why this would be an improvement.
+>
+> If that's just a matter of personal preference, then I would prefer to follow
+> my personal preference here, with all due respect.  [And besides, it follows
+> the general style of this file which matters too IMO.]
+>
+> But if there's more to it, just please let me know. :-)
 
-Thanks,
-Rafael
+"Choose label names which say what the goto does or why the goto exists.  An
+example of a good name could be ``out_free_buffer:`` if the goto frees
+``buffer``.
+Avoid using GW-BASIC names like ``err1:`` and ``err2:``, as you would have to
+renumber them if you ever add or remove exit paths, and they make correctness
+difficult to verify anyway."
 
+-- 
+With Best Regards,
+Andy Shevchenko
